@@ -17,7 +17,7 @@ struct Heap {
 typedef struct Heap Heap;
 
 struct YogVm {
-    BOOL do_gc;
+    BOOL need_gc;
     Heap* heap;
 };
 
@@ -26,6 +26,8 @@ typedef struct YogVm YogVm;
 struct YogEnv {
     YogVm* vm;
 };
+
+#define ENV_VM(env) ((env)->vm)
 
 typedef struct YogEnv YogEnv;
 
@@ -45,6 +47,7 @@ enum YogObjType {
     OBJ_BUFFER, 
     OBJ_TABLE, 
     OBJ_TABLE_ENTRY, 
+    OBJ_TABLE_ENTRY_ARRAY, 
 };
 
 typedef enum YogObjType YogObjType;
@@ -70,16 +73,17 @@ struct YogVal {
     } u;
 };
 
-#define VAL_TYPE(v) ((v).type)
-#define VAL_OBJ(v)  ((v).u.obj)
-#define VAL_VM(v)   ((v).u.vm)
-#define VAL_ENV(v)  ((v).u.env)
+#define YOGVAL_TYPE(v)      ((v).type)
+#define YOGVAL_NUM(v)       ((v).u.n)
+#define YOGVAL_FLOAT(v)     ((v).u.f)
+#define YOGVAL_SYMBOL(v)    ((v).u.symbol)
+#define YOGVAL_OBJ(v)       ((v).u.obj)
 
 typedef struct YogVal YogVal;
 
 struct YogHashType {
-    int (*compare)(YogVal, YogVal, YogVal);
-    int (*hash)(YogVal, YogVal);
+    int (*compare)(YogEnv*, YogVal, YogVal);
+    int (*hash)(YogEnv*, YogVal);
 };
 
 typedef struct YogHashType YogHashType;
@@ -108,6 +112,8 @@ void Yog_assert(YogEnv*, BOOL, const char*);
 YogVm* YogVm_new(size_t);
 YogVal YogVal_nil();
 YogVal YogVal_obj(YogObj*);
+YogObj* YogVm_alloc_obj(YogEnv*, YogVm* vm, YogObjType, size_t);
+BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
 
 #endif
 /**

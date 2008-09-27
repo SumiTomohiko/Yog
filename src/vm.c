@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <strings.h>
 #include "yog/yog.h"
 
 static Heap* 
@@ -9,6 +10,7 @@ new_heap(size_t size, Heap* next)
 
     void* ptr = malloc(size);
     Yog_assert(NULL, heap != NULL, "Can' allocate memory for heap.");
+    bzero(ptr, size);
 
     heap->base = heap->free = ptr;
     heap->next = next;
@@ -16,13 +18,12 @@ new_heap(size_t size, Heap* next)
     return heap;
 }
 
-void*
-YogVm_malloc(YogEnv* env, size_t size) 
+YogObj* 
+YogVm_alloc_obj(YogEnv* env, YogVm* vm, YogObjType type, size_t size) 
 {
     size_t unit = sizeof(void*);
     size_t alimented_size = ((size - unit) / unit + 1) * unit;
 
-    YogVm* vm = env->vm;
     Heap* heap = vm->heap;
     size_t rest_size = heap->size - (heap->free - heap->base);
     if (rest_size < alimented_size) {
@@ -34,14 +35,17 @@ YogVm_malloc(YogEnv* env, size_t size)
             allocate_size = heap->size;
         }
         vm->heap = new_heap(allocate_size, heap);
-        vm->do_gc = TRUE;
+        vm->need_gc = TRUE;
     }
 
-    void* ptr = heap->free;
+    YogObj* obj = (YogObj*)heap->free;
+    obj->type = type;
+    obj->forwarding_addr = NULL;
+    obj->size = alimented_size;
 
     heap->free += alimented_size;
 
-    return ptr;
+    return obj;
 }
 
 YogVm* 
@@ -50,7 +54,7 @@ YogVm_new(size_t heap_size)
     YogVm* vm = malloc(sizeof(YogVm));
     Yog_assert(NULL, vm != NULL, "Can' allocate memory for YogVm.");
 
-    vm->do_gc = TRUE;
+    vm->need_gc = FALSE;
     vm->heap = new_heap(heap_size, NULL);
 
     return vm;

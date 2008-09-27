@@ -6,7 +6,7 @@ int main(int argc, char* argv[])
     YogVm* vm = YogVm_new(INIT_HEAP_SIZE);
 #undef INIT_HEAP_SIZE
     YogEnv e = { vm };
-    YogVm_malloc(&e, 1024);
+    YogVm_alloc_obj(&e, e.vm, OBJ_BUFFER, 1024);
 
     return 0;
 }

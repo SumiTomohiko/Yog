@@ -1,6 +1,6 @@
 /* This is a public domain general purpose hash table package written by Peter Moore @ UCB. */
 
-/* static	char	sccsid[] = "@(#) st.c 5.1 89/12/14 Crucible"; */
+/* static        char        sccsid[] = "@(#) st.c 5.1 89/12/14 Crucible"; */
 
 #include "config.h"
 #include "defines.h"
@@ -10,6 +10,7 @@
 #endif
 #include <string.h>
 #include "st.h"
+#include "yog/yog.h"
 
 #define ST_DEFAULT_MAX_DENSITY 5
 #define ST_DEFAULT_INIT_TABLE_SIZE 11
@@ -23,6 +24,7 @@
      * allocated initially
      *
      */
+#if 0
 static int numcmp(long, long);
 static int numhash(long);
 static struct st_hash_type type_numhash = {
@@ -36,21 +38,40 @@ static struct st_hash_type type_strhash = {
     strcmp,
     strhash,
 };
-
-static void rehash(st_table *);
-
-#ifdef RUBY
-#define malloc xmalloc
-#define calloc xcalloc
 #endif
 
+static void
+rehash(YogEnv* env, YogTable* table)
+{
+    int new_num_bins = new_size(old_num_bins + 1);
+    YogTableEntry** new_bins = alloc_bins(env, new_num_bins);
+
+    int old_num_bins = table->num_bins;
+    int i = 0;
+    for(i = 0; i < old_num_bins; i++) {
+        YogTableEntry* ptr = table->bins[i];
+        while (ptr != NULL) {
+            YogTableEntry* next = ptr->next;
+            unsigned int hash_val = ptr->hash % new_num_bins;
+            ptr->next = new_bins[hash_val];
+            new_bins[hash_val] = ptr;
+            ptr = next;
+        }
+    }
+
+    table->num_bins = new_num_bins;
+    table->bins = new_bins;
+}
+
+#if 0
 #define alloc(type) (type*)malloc((unsigned)sizeof(type))
 #define Calloc(n,s) (char*)calloc((n),(s))
+#endif
 
-#define EQUAL(table,x,y) ((x)==(y) || (*table->type->compare)((x),(y)) == 0)
+#define EQUAL(env, table, x, y) ((x) == (y) || (*table->type->compare)((env), (x), (y)) == 0)
 
-#define do_hash(key,table) (unsigned int)(*(table)->type->hash)((key))
-#define do_hash_bin(key,table) (do_hash(key, table)%(table)->num_bins)
+#define do_hash(env, table, key) (unsigned int)(*(table)->type->hash)((env), (key))
+#define do_hash_bin(env, table, key) (do_hash(env, table, key) % (table)->num_bins)
 
 /*
  * MINSIZE is the minimum size of a dictionary.
@@ -62,35 +83,35 @@ static void rehash(st_table *);
 Table of prime numbers 2^n+a, 2<=n<=30.
 */
 static long primes[] = {
-	8 + 3,
-	16 + 3,
-	32 + 5,
-	64 + 3,
-	128 + 3,
-	256 + 27,
-	512 + 9,
-	1024 + 9,
-	2048 + 5,
-	4096 + 3,
-	8192 + 27,
-	16384 + 43,
-	32768 + 3,
-	65536 + 45,
-	131072 + 29,
-	262144 + 3,
-	524288 + 21,
-	1048576 + 7,
-	2097152 + 17,
-	4194304 + 15,
-	8388608 + 9,
-	16777216 + 43,
-	33554432 + 35,
-	67108864 + 15,
-	134217728 + 29,
-	268435456 + 3,
-	536870912 + 11,
-	1073741824 + 85,
-	0
+        8 + 3,
+        16 + 3,
+        32 + 5,
+        64 + 3,
+        128 + 3,
+        256 + 27,
+        512 + 9,
+        1024 + 9,
+        2048 + 5,
+        4096 + 3,
+        8192 + 27,
+        16384 + 43,
+        32768 + 3,
+        65536 + 45,
+        131072 + 29,
+        262144 + 3,
+        524288 + 21,
+        1048576 + 7,
+        2097152 + 17,
+        4194304 + 15,
+        8388608 + 9,
+        16777216 + 43,
+        33554432 + 35,
+        67108864 + 15,
+        134217728 + 29,
+        268435456 + 3,
+        536870912 + 11,
+        1073741824 + 85,
+        0
 };
 
 static int
@@ -101,20 +122,20 @@ new_size(size)
 
 #if 0
     for (i=3; i<31; i++) {
-	if ((1<<i) > size) return 1<<i;
+        if ((1<<i) > size) return 1<<i;
     }
     return -1;
 #else
     int newsize;
 
     for (i = 0, newsize = MINSIZE;
-	 i < sizeof(primes)/sizeof(primes[0]);
-	 i++, newsize <<= 1)
+         i < sizeof(primes)/sizeof(primes[0]);
+         i++, newsize <<= 1)
     {
-	if (newsize > size) return primes[i];
+        if (newsize > size) return primes[i];
     }
     /* Ran out of polynomials */
-    return -1;			/* should raise exception */
+    return -1;                        /* should raise exception */
 #endif
 }
 
@@ -131,38 +152,48 @@ stat_col()
 }
 #endif
 
-st_table*
-st_init_table_with_size(type, size)
-    struct st_hash_type *type;
-    int size;
+static YogTableEntry**
+alloc_bins(YogEnv* env, int size) 
 {
-    st_table *tbl;
+    return YogVm_alloc_obj(env, ENV_VM(env), OBJ_TABLE_ENTRY_ARRAY, size * sizeof(YogTableEntry*));
+}
+
+static YogTable*
+alloc_table(YogEnv* env) 
+{
+    return YogVm_alloc_obj(env, OBJ_TABLE, sizeof(YogTable));
+}
+
+static YogTable* 
+st_init_table_with_size(YogEnv* env, YogHashType* type, int size)
+{
+    YogTable* tbl = NULL;
 
 #ifdef HASH_LOG
     if (init_st == 0) {
-	init_st = 1;
-	atexit(stat_col);
+        init_st = 1;
+        atexit(stat_col);
     }
 #endif
 
-    size = new_size(size);	/* round up to prime number */
+    size = new_size(size);        /* round up to prime number */
 
-    tbl = alloc(st_table);
+    tbl = alloc_table(env);
     tbl->type = type;
     tbl->num_entries = 0;
     tbl->num_bins = size;
-    tbl->bins = (st_table_entry **)Calloc(size, sizeof(st_table_entry*));
+    tbl->bins = alloc_bins(env, size);
 
     return tbl;
 }
 
-st_table*
-st_init_table(type)
-    struct st_hash_type *type;
+static YogTable* 
+st_init_table(YogEnv* env, YogHashType* type)
 {
-    return st_init_table_with_size(type, 0);
+    return st_init_table_with_size(env, type, 0);
 }
 
+#if 0
 st_table*
 st_init_numtable(void)
 {
@@ -197,19 +228,20 @@ st_free_table(table)
     int i;
 
     for(i = 0; i < table->num_bins; i++) {
-	ptr = table->bins[i];
-	while (ptr != 0) {
-	    next = ptr->next;
-	    free(ptr);
-	    ptr = next;
-	}
+        ptr = table->bins[i];
+        while (ptr != 0) {
+            next = ptr->next;
+            free(ptr);
+            ptr = next;
+        }
     }
     free(table->bins);
     free(table);
 }
+#endif
 
-#define PTR_NOT_EQUAL(table, ptr, hash_val, key) \
-((ptr) != 0 && (ptr->hash != (hash_val) || !EQUAL((table), (key), (ptr)->key)))
+#define PTR_NOT_EQUAL(env, table, ptr, hash_val, key) \
+((ptr) != NULL && (ptr->hash != (hash_val) || !EQUAL((env), (table), (key), (ptr)->key)))
 
 #ifdef HASH_LOG
 #define COLLISION collision++
@@ -217,48 +249,52 @@ st_free_table(table)
 #define COLLISION
 #endif
 
-#define FIND_ENTRY(table, ptr, hash_val, bin_pos) do {\
-    bin_pos = hash_val%(table)->num_bins;\
+#define FIND_ENTRY(env, table, ptr, hash_val, bin_pos) do {\
+    bin_pos = hash_val % (table)->num_bins;\
     ptr = (table)->bins[bin_pos];\
-    if (PTR_NOT_EQUAL(table, ptr, hash_val, key)) {\
-	COLLISION;\
-	while (PTR_NOT_EQUAL(table, ptr->next, hash_val, key)) {\
-	    ptr = ptr->next;\
-	}\
-	ptr = ptr->next;\
+    if (PTR_NOT_EQUAL(env, table, ptr, hash_val, key)) {\
+        COLLISION;\
+        while (PTR_NOT_EQUAL(env, table, ptr->next, hash_val, key)) {\
+            ptr = ptr->next;\
+        }\
+        ptr = ptr->next;\
     }\
 } while (0)
 
-int
-st_lookup(table, key, value)
-    st_table *table;
-    register st_data_t key;
-    st_data_t *value;
+BOOL
+YogTable_lookup(YogEnv* env, YogTable* table, YogVal key, YogVal* value) 
 {
-    unsigned int hash_val, bin_pos;
-    register st_table_entry *ptr;
+    unsigned int hash_val = do_hash(env, table, key);
 
-    hash_val = do_hash(key, table);
-    FIND_ENTRY(table, ptr, hash_val, bin_pos);
+    unsigned int bin_pos = 0;
+    YogTableEntry* ptr = NULL;
+    FIND_ENTRY(env, table, ptr, hash_val, bin_pos);
 
-    if (ptr == 0) {
-	return 0;
+    if (ptr == NULL) {
+        return FALSE;
     }
     else {
-	if (value != 0)  *value = ptr->record;
-	return 1;
+        if (value != NULL) {
+            *value = ptr->record;
+        }
+        return TRUE;
     }
 }
 
-#define ADD_DIRECT(table, key, value, hash_val, bin_pos)\
+static YogTableEntry* 
+alloc_entry(YogEnv* env)
+{
+    return YogVm_alloc_obj(env, ENV_VM(env), OBJ_TABLE_ENTRY, sizeof(YogTableEntry));
+}
+
+#define ADD_DIRECT(env, table, key, value, hash_val, bin_pos)\
 do {\
-    st_table_entry *entry;\
-    if (table->num_entries/(table->num_bins) > ST_DEFAULT_MAX_DENSITY) {\
-	rehash(table);\
+    if (ST_DEFAULT_MAX_DENSITY < table->num_entries / (table->num_bins)) {\
+        rehash(env, table);\
         bin_pos = hash_val % table->num_bins;\
     }\
     \
-    entry = alloc(st_table_entry);\
+    YogTableEntry* entry = alloc_entry(env);\
     \
     entry->hash = hash_val;\
     entry->key = key;\
@@ -268,250 +304,207 @@ do {\
     table->num_entries++;\
 } while (0)
 
-int
-st_insert(table, key, value)
-    register st_table *table;
-    register st_data_t key;
-    st_data_t value;
+BOOL
+YogTable_insert(YogEnv* env, YogTable* table, YogVal key, YogVal value) 
 {
-    unsigned int hash_val, bin_pos;
-    register st_table_entry *ptr;
+    unsigned int hash_val = do_hash(env, key, table);
 
-    hash_val = do_hash(key, table);
-    FIND_ENTRY(table, ptr, hash_val, bin_pos);
+    unsigned int bin_pos = 0;
+    YogTableEntry* ptr = NULL;
+    FIND_ENTRY(env, table, ptr, hash_val, bin_pos);
 
-    if (ptr == 0) {
-	ADD_DIRECT(table, key, value, hash_val, bin_pos);
-	return 0;
+    if (ptr == NULL) {
+        ADD_DIRECT(env, table, key, value, hash_val, bin_pos);
+        return FALSE;
     }
     else {
-	ptr->record = value;
-	return 1;
+        ptr->record = value;
+        return TRUE;
     }
 }
 
 void
-st_add_direct(table, key, value)
-    st_table *table;
-    st_data_t key;
-    st_data_t value;
+YogTable_add_direct(YogEnv* env, YogTable* table, YogVal key, YogVal value) 
 {
-    unsigned int hash_val, bin_pos;
-
-    hash_val = do_hash(key, table);
-    bin_pos = hash_val % table->num_bins;
-    ADD_DIRECT(table, key, value, hash_val, bin_pos);
+    unsigned int hash_val = do_hash(env, key, table);
+    unsigned int bin_pos = hash_val % table->num_bins;
+    ADD_DIRECT(env, table, key, value, hash_val, bin_pos);
 }
 
-static void
-rehash(table)
-    register st_table *table;
+YogTable* 
+YogTable_copy(YogEnv* env, YogTable* table)
 {
-    register st_table_entry *ptr, *next, **new_bins;
-    int i, old_num_bins = table->num_bins, new_num_bins;
-    unsigned int hash_val;
-
-    new_num_bins = new_size(old_num_bins+1);
-    new_bins = (st_table_entry**)Calloc(new_num_bins, sizeof(st_table_entry*));
-
-    for(i = 0; i < old_num_bins; i++) {
-	ptr = table->bins[i];
-	while (ptr != 0) {
-	    next = ptr->next;
-	    hash_val = ptr->hash % new_num_bins;
-	    ptr->next = new_bins[hash_val];
-	    new_bins[hash_val] = ptr;
-	    ptr = next;
-	}
-    }
-    free(table->bins);
-    table->num_bins = new_num_bins;
-    table->bins = new_bins;
-}
-
-st_table*
-st_copy(old_table)
-    st_table *old_table;
-{
-    st_table *new_table;
-    st_table_entry *ptr, *entry;
-    int i, num_bins = old_table->num_bins;
-
-    new_table = alloc(st_table);
-    if (new_table == 0) {
-	return 0;
+    YogTable* new_table = alloc_table(env);
+    if (new_table == NULL) {
+        return NULL;
     }
 
-    *new_table = *old_table;
-    new_table->bins = (st_table_entry**)
-	Calloc((unsigned)num_bins, sizeof(st_table_entry*));
+    *new_table = *table;
 
-    if (new_table->bins == 0) {
-	free(new_table);
-	return 0;
+    int num_bins = table->num_bins;
+    new_table->bins = alloc_bins(env, num_bins);
+    if (new_table->bins == NULL) {
+        return NULL;
     }
 
-    for(i = 0; i < num_bins; i++) {
-	new_table->bins[i] = 0;
-	ptr = old_table->bins[i];
-	while (ptr != 0) {
-	    entry = alloc(st_table_entry);
-	    if (entry == 0) {
-		free(new_table->bins);
-		free(new_table);
-		return 0;
-	    }
-	    *entry = *ptr;
-	    entry->next = new_table->bins[i];
-	    new_table->bins[i] = entry;
-	    ptr = ptr->next;
-	}
+    int i = 0;
+    for (i = 0; i < num_bins; i++) {
+        YogTableEntry* ptr = table->bins[i];
+        while (ptr != 0) {
+            YogTableEntry* entry = alloc_entry(env);
+            if (entry == NULL) {
+                return NULL;
+            }
+
+            *entry = *ptr;
+
+            entry->next = new_table->bins[i];
+            new_table->bins[i] = entry;
+            ptr = ptr->next;
+        }
     }
+
     return new_table;
 }
 
-int
-st_delete(table, key, value)
-    register st_table *table;
-    register st_data_t *key;
-    st_data_t *value;
+BOOL
+YogTable_delete(YogEnv* env, YogTable* table, YogVal* key, YogVal* value) 
 {
-    unsigned int hash_val;
-    st_table_entry *tmp;
-    register st_table_entry *ptr;
+    unsigned int hash_val = do_hash_bin(env, *key, table);
+    YogTableEntry* ptr = table->bins[hash_val];
 
-    hash_val = do_hash_bin(*key, table);
-    ptr = table->bins[hash_val];
-
-    if (ptr == 0) {
-	if (value != 0) *value = 0;
-	return 0;
+    if (ptr == NULL) {
+        if (value != NULL) {
+            *value = YogVal_nil();
+        }
+        return FALSE;
     }
 
-    if (EQUAL(table, *key, ptr->key)) {
-	table->bins[hash_val] = ptr->next;
-	table->num_entries--;
-	if (value != 0) *value = ptr->record;
-	*key = ptr->key;
-	free(ptr);
-	return 1;
+    if (EQUAL(env, table, *key, ptr->key)) {
+        table->bins[hash_val] = ptr->next;
+        table->num_entries--;
+        if (value != NULL) {
+            *value = ptr->record;
+        }
+        *key = ptr->key;
+        return TRUE;
     }
 
-    for(; ptr->next != 0; ptr = ptr->next) {
-	if (EQUAL(table, ptr->next->key, *key)) {
-	    tmp = ptr->next;
-	    ptr->next = ptr->next->next;
-	    table->num_entries--;
-	    if (value != 0) *value = tmp->record;
-	    *key = tmp->key;
-	    free(tmp);
-	    return 1;
-	}
+    for(; ptr->next != NULL; ptr = ptr->next) {
+        if (EQUAL(env, table, ptr->next->key, *key)) {
+            YogTableEntry* tmp = ptr->next;
+            ptr->next = ptr->next->next;
+            table->num_entries--;
+            if (value != NULL) {
+                *value = tmp->record;
+            }
+            *key = tmp->key;
+            return TRUE;
+        }
     }
 
-    return 0;
+    return FALSE;
 }
 
-int
-st_delete_safe(table, key, value, never)
-    register st_table *table;
-    register st_data_t *key;
-    st_data_t *value;
-    st_data_t never;
+BOOL
+YogTable_delete_safe(YogEnv* env, YogTable* table, YogVal* key, YogVal* value, YogVal never)
 {
-    unsigned int hash_val;
-    register st_table_entry *ptr;
+    unsigned int hash_val = do_hash_bin(env, *key, table);
+    YogTableEntry* ptr = table->bins[hash_val];
 
-    hash_val = do_hash_bin(*key, table);
-    ptr = table->bins[hash_val];
-
-    if (ptr == 0) {
-	if (value != 0) *value = 0;
-	return 0;
+    if (ptr == NULL) {
+        if (value != NULL) {
+            *value = YogVal_nil();
+        }
+        return FALSE;
     }
 
-    for(; ptr != 0; ptr = ptr->next) {
-	if ((ptr->key != never) && EQUAL(table, ptr->key, *key)) {
-	    table->num_entries--;
-	    *key = ptr->key;
-	    if (value != 0) *value = ptr->record;
-	    ptr->key = ptr->record = never;
-	    return 1;
-	}
+    for(; ptr != NULL; ptr = ptr->next) {
+        if (!YogVal_equals_exact(env, ptr->key, never) && EQUAL(env, table, ptr->key, *key)) {
+            table->num_entries--;
+            *key = ptr->key;
+            if (value != NULL) {
+                *value = ptr->record;
+            }
+            ptr->key = ptr->record = never;
+            return TRUE;
+        }
     }
 
-    return 0;
+    return FALSE;
 }
 
 static int
-delete_never(key, value, never)
-    st_data_t key, value, never;
+delete_never(YogEnv* env, YogVal key, YogVal value, YogVal never)
 {
-    if (value == never) return ST_DELETE;
-    return ST_CONTINUE;
+    if (YogVal_equals_exact(env, value, never)) {
+        return ST_DELETE;
+    }
+    else {
+        return ST_CONTINUE;
+    }
 }
 
 void
-st_cleanup_safe(table, never)
-    st_table *table;
-    st_data_t never;
+YogTable_cleanup_safe(YogEnv* env, YogTable* table, YogVal never)
 {
     int num_entries = table->num_entries;
 
-    st_foreach(table, delete_never, never);
+    st_foreach(env, table, delete_never, never);
     table->num_entries = num_entries;
 }
 
-int
-st_foreach(table, func, arg)
-    st_table *table;
-    int (*func)();
-    st_data_t arg;
+BOOL
+YogTable_foreach(YogEnv* env, YogTable* table, int (*func)(YogEnv*, YogVal, YogVal, YogVal), YogVal arg)
 {
-    st_table_entry *ptr, *last, *tmp;
-    enum st_retval retval;
-    int i;
-
-    for(i = 0; i < table->num_bins; i++) {
-	last = 0;
-	for(ptr = table->bins[i]; ptr != 0;) {
-	    retval = (*func)(ptr->key, ptr->record, arg);
-	    switch (retval) {
-	    case ST_CHECK:	/* check if hash is modified during iteration */
-	        tmp = 0;
-		if (i < table->num_bins) {
-		    for (tmp = table->bins[i]; tmp; tmp=tmp->next) {
-			if (tmp == ptr) break;
-		    }
-		}
-		if (!tmp) {
-		    /* call func with error notice */
-		    return 1;
-		}
-		/* fall through */
-	    case ST_CONTINUE:
-		last = ptr;
-		ptr = ptr->next;
-		break;
-	    case ST_STOP:
-	        return 0;
-	    case ST_DELETE:
-		tmp = ptr;
-		if (last == 0) {
-		    table->bins[i] = ptr->next;
-		}
-		else {
-		    last->next = ptr->next;
-		}
-		ptr = ptr->next;
-		free(tmp);
-		table->num_entries--;
-	    }
-	}
+    int i = 0;
+    for (i = 0; i < table->num_bins; i++) {
+        YogTableEntry* last = NULL;
+        YogTableEntry* ptr = NULL;
+        for (ptr = table->bins[i]; ptr != NULL;) {
+            enum st_retval retval = (*func)(env, ptr->key, ptr->record, arg);
+            YogTableEntry* tmp = NULL;
+            switch (retval) {
+                case ST_CHECK:        /* check if hash is modified during iteration */
+                    tmp = NULL;
+                    if (i < table->num_bins) {
+                        for (tmp = table->bins[i]; tmp != NULL; tmp = tmp->next) {
+                            if (tmp == ptr) {
+                                break;
+                            }
+                        }
+                    }
+                    if (tmp == NULL) {
+                        /* call func with error notice */
+                        return FALSE;
+                    }
+                    /* fall through */
+                case ST_CONTINUE:
+                    last = ptr;
+                    ptr = ptr->next;
+                    break;
+                case ST_STOP:
+                    return TRUE;
+                    break;
+                case ST_DELETE:
+                    tmp = ptr;
+                    if (last == NULL) {
+                        table->bins[i] = ptr->next;
+                    }
+                    else {
+                        last->next = ptr->next;
+                    }
+                    ptr = ptr->next;
+                    table->num_entries--;
+                    break;
+            }
+        }
     }
-    return 0;
+
+    return TRUE;
 }
 
+#if 0
 static int
 strhash(string)
     register const char *string;
@@ -522,19 +515,19 @@ strhash(string)
     register unsigned int h = 0, g;
 
     while ((c = *string++) != '\0') {
-	h = ( h << 4 ) + c;
-	if ( g = h & 0xF0000000 )
-	    h ^= g >> 24;
-	h &= ~g;
+        h = ( h << 4 ) + c;
+        if ( g = h & 0xF0000000 )
+            h ^= g >> 24;
+        h &= ~g;
     }
     return h;
 #elif defined(HASH_PERL)
     register int val = 0;
 
     while ((c = *string++) != '\0') {
-	val += c;
-	val += (val << 10);
-	val ^= (val >> 6);
+        val += c;
+        val += (val << 10);
+        val ^= (val >> 6);
     }
     val += (val << 3);
     val ^= (val >> 11);
@@ -544,7 +537,7 @@ strhash(string)
     register int val = 0;
 
     while ((c = *string++) != '\0') {
-	val = val*997 + c;
+        val = val*997 + c;
     }
 
     return val + (val>>5);
@@ -564,10 +557,29 @@ numhash(n)
 {
     return n;
 }
+#endif
+
+static int 
+compare_symbol(YogEnv* env, YogVal a, YogVal b) 
+{
+    return VAL_SYMBOL(a) - VAL_SYMBOL(b);
+}
+
+static int 
+hash_symbol(YogEnv* env, YogVal a) 
+{
+    return VAL_SYMBOL(a);
+}
+
+static YogHashType type_symbol = {
+    compare_symbol, 
+    compare_hash
+};
 
 YogTable* 
-YogTable_new_symbol_table(YogVal env)
+YogTable_new_symbol_table(YogEnv* env)
 {
+    return st_init_table(env, &type_symbol)
 }
 
 /**
