@@ -100,7 +100,8 @@ typedef struct YogTableEntry YogTableEntry;
 
 struct YogTableEntryArray {
     YOGOBJ_HEAD;
-    YogTableEntry* items[1];
+    unsigned int size;
+    YogTableEntry* items[0];
 };
 
 typedef struct YogTableEntryArray YogTableEntryArray;

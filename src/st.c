@@ -47,7 +47,10 @@ static struct st_hash_type type_strhash = {
 static YogTableEntryArray*
 alloc_bins(YogEnv* env, int size) 
 {
-    return ALLOC_OBJ_SIZE(env, OBJ_TABLE_ENTRY_ARRAY, YogTableEntryArray, sizeof(YogObj) + size * sizeof(YogTableEntry*));
+    YogTableEntryArray* array = ALLOC_OBJ_SIZE(env, OBJ_TABLE_ENTRY_ARRAY, YogTableEntryArray, sizeof(YogTableEntryArray) + size * sizeof(YogTableEntry*));
+    array->size = size;
+
+    return array;
 }
 
 /*
