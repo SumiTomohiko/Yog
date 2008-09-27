@@ -5,8 +5,9 @@ int main(int argc, char* argv[])
 #define INIT_HEAP_SIZE  (1)
     YogVm* vm = YogVm_new(INIT_HEAP_SIZE);
 #undef INIT_HEAP_SIZE
-    YogEnv e = { vm };
-    YogVm_alloc_obj(&e, e.vm, OBJ_BUFFER, 1024);
+    YogEnv env = { vm };
+    YogVm_alloc_obj(&env, env.vm, OBJ_BUFFER, 1024);
+    YogTable_new_symbol_table(&env);
 
     return 0;
 }

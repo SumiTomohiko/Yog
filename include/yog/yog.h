@@ -9,8 +9,8 @@
 
 struct Heap {
     size_t size;
-    char* base;
-    char* free;
+    unsigned char* base;
+    unsigned char* free;
     struct Heap* next;
 };
 
@@ -98,12 +98,19 @@ struct YogTableEntry {
 
 typedef struct YogTableEntry YogTableEntry;
 
+struct YogTableEntryArray {
+    YOGOBJ_HEAD;
+    YogTableEntry* items[1];
+};
+
+typedef struct YogTableEntryArray YogTableEntryArray;
+
 struct YogTable {
     YOGOBJ_HEAD;
     YogHashType* type;
     int num_bins;
     int num_entries;
-    YogTableEntry** bins;
+    YogTableEntryArray* bins;
 };
 
 typedef struct YogTable YogTable;
@@ -114,6 +121,10 @@ YogVal YogVal_nil();
 YogVal YogVal_obj(YogObj*);
 YogObj* YogVm_alloc_obj(YogEnv*, YogVm* vm, YogObjType, size_t);
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
+YogTable* YogTable_new_symbol_table(YogEnv*);
+
+#define ALLOC_OBJ(env, obj_type, type)  (type*)YogVm_alloc_obj(env, ENV_VM(env), obj_type, sizeof(type))
+#define ALLOC_OBJ_SIZE(env, obj_type, type, size)   (type*)YogVm_alloc_obj(env, ENV_VM(env), obj_type, size)
 
 #endif
 /**
