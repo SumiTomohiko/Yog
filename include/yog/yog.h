@@ -63,12 +63,14 @@ struct YogObj {
 
 typedef struct YogObj YogObj;
 
+typedef unsigned int ID;
+
 struct YogVal {
     YogValType type;
     union {
         int n;
         double f;
-        unsigned int symbol;
+        ID symbol;
         YogObj* obj;
     } u;
 };
