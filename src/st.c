@@ -200,33 +200,33 @@ st_init_table(YogEnv* env, YogHashType* type)
 }
 
 #if 0
-st_table*
+static st_table*
 st_init_numtable(void)
 {
     return st_init_table(&type_numhash);
 }
 
-st_table*
+static st_table*
 st_init_numtable_with_size(size)
     int size;
 {
     return st_init_table_with_size(&type_numhash, size);
 }
 
-st_table*
+static st_table*
 st_init_strtable(void)
 {
     return st_init_table(&type_strhash);
 }
 
-st_table*
+static st_table*
 st_init_strtable_with_size(size)
     int size;
 {
     return st_init_table_with_size(&type_strhash, size);
 }
 
-void
+static void
 st_free_table(table)
     st_table *table;
 {
