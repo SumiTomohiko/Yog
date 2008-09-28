@@ -850,6 +850,12 @@ s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_INTTYPES_H\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_STDINT_H\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_UNISTD_H\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_STDLIB_H\)[	 (].*,\1define\2 1 ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_STRING_H\)[	 (].*,\1define\2 1 ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_STRINGS_H\)[	 (].*,\1define\2 1 ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_STDLIB_H\)[	 (].*,\1define\2 1 ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_MALLOC\)[	 (].*,\1define\2 1 ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_ATEXIT\)[	 (].*,\1define\2 1 ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_BZERO\)[	 (].*,\1define\2 1 ,
 s/ $//
 s,^[	 #]*u.*,/* & */,
 CEOF

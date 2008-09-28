@@ -1,6 +1,7 @@
 .deps
 Makefile
 autom4te.cache
+autoscan.log
 config.h
 config.log
 core
