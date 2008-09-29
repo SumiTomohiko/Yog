@@ -58,15 +58,19 @@
    enum yytokentype {
      ADD = 258,
      EQUAL = 259,
-     IDENTIFIER = 260,
-     PLUS = 261
+     PLUS = 260,
+     NUMBER = 261,
+     NEWLINE = 262,
+     NAME = 263
    };
 #endif
 /* Tokens.  */
 #define ADD 258
 #define EQUAL 259
-#define IDENTIFIER 260
-#define PLUS 261
+#define PLUS 260
+#define NUMBER 261
+#define NEWLINE 262
+#define NAME 263
 
 
 
@@ -76,6 +80,20 @@
 
 #include <stdio.h>
 #include "yog/yog.h"
+
+static YogEnv* yog_parsing_env = NULL;
+
+void 
+Yog_set_parsing_env(YogEnv* env) 
+{
+    yog_parsing_env = env;
+}
+
+YogEnv*
+Yog_get_parsing_env()
+{
+    return yog_parsing_env;
+}
 
 static void 
 yyerror(char* s)
@@ -108,12 +126,14 @@ int yylex(void);
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 17 "parser.y"
+#line 31 "parser.y"
 typedef union YYSTYPE {
     YogNode* node;
+    YogVal val;
+    ID name;
 } YYSTYPE;
 /* Line 191 of yacc.c.  */
-#line 117 "parser.c"
+#line 137 "parser.c"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -125,7 +145,7 @@ typedef union YYSTYPE {
 
 
 /* Line 219 of yacc.c.  */
-#line 129 "parser.c"
+#line 149 "parser.c"
 
 #if ! defined (YYSIZE_T) && defined (__SIZE_TYPE__)
 # define YYSIZE_T __SIZE_TYPE__
@@ -279,7 +299,7 @@ union yyalloc
 #define YYLAST   1
 
 /* YYNTOKENS -- Number of terminals. */
-#define YYNTOKENS  7
+#define YYNTOKENS  9
 /* YYNNTS -- Number of nonterminals. */
 #define YYNNTS  2
 /* YYNRULES -- Number of rules. */
@@ -289,7 +309,7 @@ union yyalloc
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   261
+#define YYMAXUTOK   263
 
 #define YYTRANSLATE(YYX)						\
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -323,7 +343,7 @@ static const unsigned char yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6
+       5,     6,     7,     8
 };
 
 #if YYDEBUG
@@ -337,13 +357,13 @@ static const unsigned char yyprhs[] =
 /* YYRHS -- A `-1'-separated list of the rules' RHS. */
 static const yysigned_char yyrhs[] =
 {
-       8,     0,    -1,     3,    -1
+      10,     0,    -1,     3,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned char yyrline[] =
 {
-       0,    29,    29
+       0,    47,    47
 };
 #endif
 
@@ -352,8 +372,8 @@ static const unsigned char yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals. */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "ADD", "EQUAL", "IDENTIFIER", "PLUS",
-  "$accept", "module", 0
+  "$end", "error", "$undefined", "ADD", "EQUAL", "PLUS", "NUMBER",
+  "NEWLINE", "NAME", "$accept", "module", 0
 };
 #endif
 
@@ -362,14 +382,14 @@ static const char *const yytname[] =
    token YYLEX-NUM.  */
 static const unsigned short int yytoknum[] =
 {
-       0,   256,   257,   258,   259,   260,   261
+       0,   256,   257,   258,   259,   260,   261,   262,   263
 };
 # endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const unsigned char yyr1[] =
 {
-       0,     7,     8
+       0,     9,    10
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -425,7 +445,7 @@ static const unsigned char yycheck[] =
    symbol of state STATE-NUM.  */
 static const unsigned char yystos[] =
 {
-       0,     3,     8,     0
+       0,     3,    10,     0
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1095,7 +1115,7 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 29 "parser.y"
+#line 47 "parser.y"
     { (yyval.node) = NULL; }
     break;
 
@@ -1104,7 +1124,7 @@ yyreduce:
     }
 
 /* Line 1126 of yacc.c.  */
-#line 1108 "parser.c"
+#line 1128 "parser.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1372,8 +1392,123 @@ yyreturn:
 }
 
 
-#line 31 "parser.y"
+#line 49 "parser.y"
 
+/*
+single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE
+file_input: (NEWLINE | stmt)* ENDMARKER
+eval_input: testlist NEWLINE* ENDMARKER
+
+decorator: '@' dotted_name [ '(' [arglist] ')' ] NEWLINE
+decorators: decorator+
+decorated: decorators (classdef | funcdef)
+funcdef: 'def' NAME parameters ['->' test] ':' suite
+parameters: '(' [typedargslist] ')'
+typedargslist: ((tfpdef ['=' test] ',')*
+                ('*' [tfpdef] (',' tfpdef ['=' test])* [',' '**' tfpdef] | '**' tfpdef)
+                | tfpdef ['=' test] (',' tfpdef ['=' test])* [','])
+tfpdef: NAME [':' test]
+varargslist: ((vfpdef ['=' test] ',')*
+              ('*' [vfpdef] (',' vfpdef ['=' test])*  [',' '**' vfpdef] | '**' vfpdef)
+              | vfpdef ['=' test] (',' vfpdef ['=' test])* [','])
+vfpdef: NAME
+
+stmt: simple_stmt | compound_stmt
+simple_stmt: small_stmt (';' small_stmt)* [';'] NEWLINE
+small_stmt: (expr_stmt | del_stmt | pass_stmt | flow_stmt |
+             import_stmt | global_stmt | nonlocal_stmt | assert_stmt)
+expr_stmt: testlist (augassign (yield_expr|testlist) |
+                     ('=' (yield_expr|testlist))*)
+augassign: ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' |
+            '<<=' | '>>=' | '**=' | '//=')
+# For normal assignments, additional restrictions enforced by the interpreter
+del_stmt: 'del' exprlist
+pass_stmt: 'pass'
+flow_stmt: break_stmt | continue_stmt | return_stmt | raise_stmt | yield_stmt
+break_stmt: 'break'
+continue_stmt: 'continue'
+return_stmt: 'return' [testlist]
+yield_stmt: yield_expr
+raise_stmt: 'raise' [test ['from' test]]
+import_stmt: import_name | import_from
+import_name: 'import' dotted_as_names
+# note below: the ('.' | '...') is necessary because '...' is tokenized as ELLIPSIS
+import_from: ('from' (('.' | '...')* dotted_name | ('.' | '...')+)
+              'import' ('*' | '(' import_as_names ')' | import_as_names))
+import_as_name: NAME ['as' NAME]
+dotted_as_name: dotted_name ['as' NAME]
+import_as_names: import_as_name (',' import_as_name)* [',']
+dotted_as_names: dotted_as_name (',' dotted_as_name)*
+dotted_name: NAME ('.' NAME)*
+global_stmt: 'global' NAME (',' NAME)*
+nonlocal_stmt: 'nonlocal' NAME (',' NAME)*
+assert_stmt: 'assert' test [',' test]
+
+compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated
+if_stmt: 'if' test ':' suite ('elif' test ':' suite)* ['else' ':' suite]
+while_stmt: 'while' test ':' suite ['else' ':' suite]
+for_stmt: 'for' exprlist 'in' testlist ':' suite ['else' ':' suite]
+try_stmt: ('try' ':' suite
+           ((except_clause ':' suite)+
+	    ['else' ':' suite]
+	    ['finally' ':' suite] |
+	   'finally' ':' suite))
+with_stmt: 'with' test [ with_var ] ':' suite
+with_var: 'as' expr
+# NB compile.c makes sure that the default except clause is last
+except_clause: 'except' [test ['as' NAME]]
+suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT
+
+test: or_test ['if' or_test 'else' test] | lambdef
+test_nocond: or_test | lambdef_nocond
+lambdef: 'lambda' [varargslist] ':' test
+lambdef_nocond: 'lambda' [varargslist] ':' test_nocond
+or_test: and_test ('or' and_test)*
+and_test: not_test ('and' not_test)*
+not_test: 'not' not_test | comparison
+comparison: star_expr (comp_op star_expr)*
+comp_op: '<'|'>'|'=='|'>='|'<='|'!='|'in'|'not' 'in'|'is'|'is' 'not'
+star_expr: ['*'] expr
+expr: xor_expr ('|' xor_expr)*
+xor_expr: and_expr ('^' and_expr)*
+and_expr: shift_expr ('&' shift_expr)*
+shift_expr: arith_expr (('<<'|'>>') arith_expr)*
+arith_expr: term (('+'|'-') term)*
+term: factor (('*'|'/'|'%'|'//') factor)*
+factor: ('+'|'-'|'~') factor | power
+power: atom trailer* ['**' factor]
+atom: ('(' [yield_expr|testlist_comp] ')' |
+       '[' [testlist_comp] ']' |
+       '{' [dictorsetmaker] '}' |
+       NAME | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False')
+testlist_comp: test ( comp_for | (',' test)* [','] )
+trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME
+subscriptlist: subscript (',' subscript)* [',']
+subscript: test | [test] ':' [test] [sliceop]
+sliceop: ':' [test]
+exprlist: star_expr (',' star_expr)* [',']
+testlist: test (',' test)* [',']
+dictorsetmaker: ( (test ':' test (comp_for | (',' test ':' test)* [','])) |
+                  (test (comp_for | (',' test)* [','])) )
+
+classdef: 'class' NAME ['(' [arglist] ')'] ':' suite
+
+arglist: (argument ',')* (argument [',']
+                         |'*' test (',' argument)* [',' '**' test] 
+                         |'**' test)
+argument: test [comp_for] | test '=' test  # Really [keyword '='] test
+
+comp_iter: comp_for | comp_if
+comp_for: 'for' exprlist 'in' or_test [comp_iter]
+comp_if: 'if' test_nocond [comp_iter]
+
+testlist1: test (',' test)*
+
+# not used in grammar, but may appear in "node" passed from Parser to Compiler
+encoding_decl: NAME
+
+yield_expr: 'yield' [testlist]
+*/
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

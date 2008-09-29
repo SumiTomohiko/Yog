@@ -1,6 +1,26 @@
 #include <stdlib.h>
+#include <string.h>
 #include <strings.h>
 #include "yog/yog.h"
+
+ID
+YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
+{
+    YogVal value = YogVal_nil();
+    if (YogTable_lookup(env, vm->name2id, YogVal_string(name), &value)) {
+        return YOGVAL_SYMBOL(value);
+    }
+
+    YogVal s = YogVal_string(strdup(name));
+    ID id = vm->next_id;
+    YogVal symbol = YogVal_symbol(id);
+    YogTable_add_direct(env, vm->name2id, s, symbol);
+    YogTable_add_direct(env, vm->id2name, symbol, s);
+
+    vm->next_id++;
+
+    return id;
+}
 
 static Heap* 
 new_heap(size_t size, Heap* next) 
@@ -56,6 +76,9 @@ YogVm_new(size_t heap_size)
 
     vm->need_gc = FALSE;
     vm->heap = new_heap(heap_size, NULL);
+    vm->next_id = 0;
+    vm->id2name = NULL;
+    vm->name2id = NULL;
 
     return vm;
 }

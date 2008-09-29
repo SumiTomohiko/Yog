@@ -31,26 +31,32 @@
    enum yytokentype {
      ADD = 258,
      EQUAL = 259,
-     IDENTIFIER = 260,
-     PLUS = 261
+     PLUS = 260,
+     NUMBER = 261,
+     NEWLINE = 262,
+     NAME = 263
    };
 #endif
 /* Tokens.  */
 #define ADD 258
 #define EQUAL 259
-#define IDENTIFIER 260
-#define PLUS 261
+#define PLUS 260
+#define NUMBER 261
+#define NEWLINE 262
+#define NAME 263
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 17 "parser.y"
+#line 31 "parser.y"
 typedef union YYSTYPE {
     YogNode* node;
+    YogVal val;
+    ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 54 "parser.h"
+#line 60 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

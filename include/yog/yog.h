@@ -16,9 +16,15 @@ struct Heap {
 
 typedef struct Heap Heap;
 
+typedef unsigned int ID;
+
 struct YogVm {
     BOOL need_gc;
     Heap* heap;
+
+    ID next_id;
+    struct YogTable* id2name;
+    struct YogTable* name2id;
 };
 
 typedef struct YogVm YogVm;
@@ -39,6 +45,7 @@ enum YogValType {
     VAL_FALSE, 
     VAL_NIL, 
     VAL_SYMBOL, 
+    VAL_STRING, 
 };
 
 typedef enum YogValType YogValType;
@@ -67,8 +74,6 @@ struct YogObj {
 
 typedef struct YogObj YogObj;
 
-typedef unsigned int ID;
-
 struct YogVal {
     YogValType type;
     union {
@@ -76,14 +81,16 @@ struct YogVal {
         double f;
         ID symbol;
         YogObj* obj;
+        const char* s;
     } u;
 };
 
 #define YOGVAL_TYPE(v)      ((v).type)
-#define YOGVAL_NUM(v)       ((v).u.n)
+#define YOGVAL_INT(v)       ((v).u.n)
 #define YOGVAL_FLOAT(v)     ((v).u.f)
 #define YOGVAL_SYMBOL(v)    ((v).u.symbol)
 #define YOGVAL_OBJ(v)       ((v).u.obj)
+#define YOGVAL_STRING(v)    ((v).u.s)
 
 typedef struct YogVal YogVal;
 
@@ -177,12 +184,17 @@ typedef struct YogNode YogNode;
 /* src/array.c */
 YogArray* YogArray_new(YogEnv*);
 
-/* src/main.c */
-
 /* src/value.c */
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
 YogVal YogVal_nil();
 YogVal YogVal_obj(YogObj*);
+YogVal YogVal_int(int);
+YogVal YogVal_string(const char*);
+YogVal YogVal_symbol(ID);
+
+/* src/parser.y */
+void Yog_set_parsing_env(YogEnv*);
+YogEnv* Yog_get_parsing_env();
 
 /* src/error.c */
 void Yog_assert(YogEnv*, BOOL, const char*);
@@ -197,8 +209,10 @@ BOOL YogTable_delete_safe(YogEnv*, YogTable*, YogVal*, YogVal*, YogVal);
 BOOL YogTable_foreach(YogEnv*, YogTable*, int (*)(YogEnv*, YogVal, YogVal, YogVal), YogVal);
 void YogTable_cleanup_safe(YogEnv*, YogTable*, YogVal);
 YogTable* YogTable_new_symbol_table(YogEnv*);
+YogTable* YogTable_new_string_table(YogEnv*);
 
 /* src/vm.c */
+ID YogVm_intern(YogEnv*, YogVm*, const char*);
 YogObj* YogVm_alloc_obj(YogEnv*, YogVm*, YogObjType, size_t);
 YogVm* YogVm_new(size_t);
 

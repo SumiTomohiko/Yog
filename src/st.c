@@ -36,10 +36,6 @@ static struct st_hash_type type_numhash = {
 
 /* extern int strcmp(const char *, const char *); */
 static int strhash(const char *);
-static struct st_hash_type type_strhash = {
-    strcmp,
-    strhash,
-};
 #endif
 
 #define TABLE_ENTRY_TOP(table, i)   (table)->bins->items[(i)]
@@ -512,8 +508,51 @@ YogTable_cleanup_safe(YogEnv* env, YogTable* table, YogVal never)
 
 #if 0
 static int
-strhash(string)
-    register const char *string;
+numcmp(x, y)
+    long x, y;
+{
+    return x != y;
+}
+
+static int
+numhash(n)
+    long n;
+{
+    return n;
+}
+#endif
+
+static int 
+compare_symbol(YogEnv* env, YogVal a, YogVal b) 
+{
+    return YOGVAL_SYMBOL(a) - YOGVAL_SYMBOL(b);
+}
+
+static int 
+hash_symbol(YogEnv* env, YogVal key) 
+{
+    return YOGVAL_SYMBOL(key);
+}
+
+static YogHashType type_symbol = {
+    compare_symbol, 
+    hash_symbol
+};
+
+YogTable* 
+YogTable_new_symbol_table(YogEnv* env)
+{
+    return st_init_table(env, &type_symbol);
+}
+
+static int 
+compare_string(YogEnv* env, YogVal a, YogVal b) 
+{
+    return strcmp(YOGVAL_STRING(a), YOGVAL_STRING(b));
+}
+
+static int
+strhash(const char* string)
 {
     register int c;
 
@@ -550,42 +589,21 @@ strhash(string)
 #endif
 }
 
-static int
-numcmp(x, y)
-    long x, y;
-{
-    return x != y;
-}
-
-static int
-numhash(n)
-    long n;
-{
-    return n;
-}
-#endif
-
 static int 
-compare_symbol(YogEnv* env, YogVal a, YogVal b) 
+hash_string(YogEnv* env, YogVal key) 
 {
-    return YOGVAL_SYMBOL(a) - YOGVAL_SYMBOL(b);
+    return strhash(YOGVAL_STRING(key));
 }
 
-static int 
-hash_symbol(YogEnv* env, YogVal a) 
-{
-    return YOGVAL_SYMBOL(a);
-}
-
-static YogHashType type_symbol = {
-    compare_symbol, 
-    hash_symbol
+static YogHashType type_string = {
+    compare_string, 
+    hash_string, 
 };
 
 YogTable* 
-YogTable_new_symbol_table(YogEnv* env)
+YogTable_new_string_table(YogEnv* env) 
 {
-    return st_init_table(env, &type_symbol);
+    return st_init_table(env, &type_string);
 }
 
 /**
