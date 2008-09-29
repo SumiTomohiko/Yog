@@ -49,14 +49,15 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 31 "parser.y"
+#line 45 "parser.y"
 typedef union YYSTYPE {
+    YogArray* array;
     YogNode* node;
     YogVal val;
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 60 "parser.h"
+#line 61 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

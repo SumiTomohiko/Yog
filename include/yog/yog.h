@@ -149,6 +149,7 @@ enum YogNodeType {
     NODE_ASSIGN, 
     NODE_ADD, 
     NODE_CALL, 
+    NODE_NAME, 
 };
 
 typedef enum YogNodeType YogNodeType;
@@ -182,6 +183,8 @@ typedef struct YogNode YogNode;
  */
 
 /* src/array.c */
+YogValArray* YogValArray_new(YogEnv*, unsigned int);
+void YogArray_push(YogEnv*, YogArray*, YogVal);
 YogArray* YogArray_new(YogEnv*);
 
 /* src/value.c */

@@ -3,11 +3,13 @@
 #include "yog/yog.h"
 
 static YogEnv* yog_parsing_env = NULL;
+static YogVm* yog_parsing_vm = NULL;
 
 void 
 Yog_set_parsing_env(YogEnv* env) 
 {
     yog_parsing_env = env;
+    yog_parsing_vm = ENV_VM(env);
 }
 
 YogEnv*
@@ -16,10 +18,22 @@ Yog_get_parsing_env()
     return yog_parsing_env;
 }
 
+#define ENV yog_parsing_env
+#define VM  yog_parsing_vm
+
 static void 
 yyerror(char* s)
 {
     fprintf(stderr, "%s\n", s);
+}
+
+static YogNode* 
+YogNode_new(YogEnv* env, YogNodeType type) 
+{
+    YogNode* node = ALLOC_OBJ(env, OBJ_NODE, YogNode);
+    node->type = type;
+
+    return node;
 }
 
 #if 0
@@ -29,6 +43,7 @@ int yylex(void);
 %}
 
 %union {
+    YogArray* array;
     YogNode* node;
     YogVal val;
     ID name;
@@ -41,11 +56,78 @@ int yylex(void);
 %token NEWLINE
 %token NAME
 
-%type<node> module
+%type<array> module
+%type<array> stmts
+%type<node> and_expr
+%type<node> arith_expr
+%type<node> assign_expr
+%type<node> atom
+%type<node> comparison
+%type<node> expr
+%type<node> factor
+%type<node> logical_and_expr
+%type<node> logical_or_expr
+%type<node> not_expr
+%type<node> or_expr
+%type<node> power
+%type<node> shift_expr
+%type<node> stmt
+%type<node> term
+%type<node> terminators
+%type<node> xor_expr
 
 %%
-module: ADD { $$ = NULL; }
-      ;
+module  : stmts
+        ;
+stmts   : stmt {
+            YogArray* array = YogArray_new(ENV);
+            YogArray_push(ENV, array, YogVal_obj(YOGOBJ($1)));
+            $$ = array;
+        }
+        | stmts terminators stmt {
+            if ($2 != NULL) {
+                YogArray_push(ENV, $1, YogVal_obj(YOGOBJ($3)));
+            }
+            $$ = $1;
+        }
+        ;
+terminators : NEWLINE { $$ = NULL; }
+            | terminators NEWLINE { $$ = NULL; }
+            ;
+stmt    : expr
+        ;
+expr    : assign_expr
+        ;
+assign_expr : logical_or_expr
+            ;
+logical_or_expr : logical_and_expr
+                ;
+logical_and_expr    : not_expr
+                    ;
+not_expr    : comparison
+            ;
+comparison  : xor_expr
+            ;
+xor_expr    : or_expr
+            ;
+or_expr : and_expr
+        ;
+and_expr    : shift_expr
+            ;
+shift_expr  : arith_expr
+            ;
+arith_expr  : term
+            ;
+term    : factor
+        ;
+factor  : power
+        ;
+power   : atom
+        ;
+atom    : NAME {
+            $$ = YogNode_new(ENV, NODE_NAME);
+        }
+        ;
 %%
 /*
 single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE

@@ -82,11 +82,13 @@
 #include "yog/yog.h"
 
 static YogEnv* yog_parsing_env = NULL;
+static YogVm* yog_parsing_vm = NULL;
 
 void 
 Yog_set_parsing_env(YogEnv* env) 
 {
     yog_parsing_env = env;
+    yog_parsing_vm = ENV_VM(env);
 }
 
 YogEnv*
@@ -95,10 +97,22 @@ Yog_get_parsing_env()
     return yog_parsing_env;
 }
 
+#define ENV yog_parsing_env
+#define VM  yog_parsing_vm
+
 static void 
 yyerror(char* s)
 {
     fprintf(stderr, "%s\n", s);
+}
+
+static YogNode* 
+YogNode_new(YogEnv* env, YogNodeType type) 
+{
+    YogNode* node = ALLOC_OBJ(env, OBJ_NODE, YogNode);
+    node->type = type;
+
+    return node;
 }
 
 #if 0
@@ -126,14 +140,15 @@ int yylex(void);
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 31 "parser.y"
+#line 45 "parser.y"
 typedef union YYSTYPE {
+    YogArray* array;
     YogNode* node;
     YogVal val;
     ID name;
 } YYSTYPE;
 /* Line 191 of yacc.c.  */
-#line 137 "parser.c"
+#line 152 "parser.c"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -145,7 +160,7 @@ typedef union YYSTYPE {
 
 
 /* Line 219 of yacc.c.  */
-#line 149 "parser.c"
+#line 164 "parser.c"
 
 #if ! defined (YYSIZE_T) && defined (__SIZE_TYPE__)
 # define YYSIZE_T __SIZE_TYPE__
@@ -294,18 +309,18 @@ union yyalloc
 #endif
 
 /* YYFINAL -- State number of the termination state. */
-#define YYFINAL  3
+#define YYFINAL  20
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   1
+#define YYLAST   5
 
 /* YYNTOKENS -- Number of terminals. */
 #define YYNTOKENS  9
 /* YYNNTS -- Number of nonterminals. */
-#define YYNNTS  2
+#define YYNNTS  20
 /* YYNRULES -- Number of rules. */
-#define YYNRULES  2
+#define YYNRULES  22
 /* YYNRULES -- Number of states. */
-#define YYNSTATES  4
+#define YYNSTATES  25
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
@@ -351,19 +366,27 @@ static const unsigned char yytranslate[] =
    YYRHS.  */
 static const unsigned char yyprhs[] =
 {
-       0,     0,     3
+       0,     0,     3,     5,     7,    11,    13,    16,    18,    20,
+      22,    24,    26,    28,    30,    32,    34,    36,    38,    40,
+      42,    44,    46
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS. */
 static const yysigned_char yyrhs[] =
 {
-      10,     0,    -1,     3,    -1
+      10,     0,    -1,    11,    -1,    13,    -1,    11,    12,    13,
+      -1,     7,    -1,    12,     7,    -1,    14,    -1,    15,    -1,
+      16,    -1,    17,    -1,    18,    -1,    19,    -1,    20,    -1,
+      21,    -1,    22,    -1,    23,    -1,    24,    -1,    25,    -1,
+      26,    -1,    27,    -1,    28,    -1,     8,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned char yyrline[] =
 {
-       0,    47,    47
+       0,    80,    80,    82,    87,    94,    95,    97,    99,   101,
+     103,   105,   107,   109,   111,   113,   115,   117,   119,   121,
+     123,   125,   127
 };
 #endif
 
@@ -373,7 +396,10 @@ static const unsigned char yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "ADD", "EQUAL", "PLUS", "NUMBER",
-  "NEWLINE", "NAME", "$accept", "module", 0
+  "NEWLINE", "NAME", "$accept", "module", "stmts", "terminators", "stmt",
+  "expr", "assign_expr", "logical_or_expr", "logical_and_expr", "not_expr",
+  "comparison", "xor_expr", "or_expr", "and_expr", "shift_expr",
+  "arith_expr", "term", "factor", "power", "atom", 0
 };
 #endif
 
@@ -389,13 +415,17 @@ static const unsigned short int yytoknum[] =
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const unsigned char yyr1[] =
 {
-       0,     9,    10
+       0,     9,    10,    11,    11,    12,    12,    13,    14,    15,
+      16,    17,    18,    19,    20,    21,    22,    23,    24,    25,
+      26,    27,    28
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
 static const unsigned char yyr2[] =
 {
-       0,     2,     1
+       0,     2,     1,     1,     3,     1,     2,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1
 };
 
 /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
@@ -403,27 +433,33 @@ static const unsigned char yyr2[] =
    means the default is an error.  */
 static const unsigned char yydefact[] =
 {
-       0,     2,     0,     1
+       0,    22,     0,     2,     3,     7,     8,     9,    10,    11,
+      12,    13,    14,    15,    16,    17,    18,    19,    20,    21,
+       1,     5,     0,     6,     4
 };
 
 /* YYDEFGOTO[NTERM-NUM]. */
 static const yysigned_char yydefgoto[] =
 {
-      -1,     2
+      -1,     2,     3,    22,     4,     5,     6,     7,     8,     9,
+      10,    11,    12,    13,    14,    15,    16,    17,    18,    19
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -4
+#define YYPACT_NINF -18
 static const yysigned_char yypact[] =
 {
-      -3,    -4,     1,    -4
+      -6,   -18,     3,    -3,   -18,   -18,   -18,   -18,   -18,   -18,
+     -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,
+     -18,   -18,    -7,   -18,   -18
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yysigned_char yypgoto[] =
 {
-      -4,    -4
+     -18,   -18,   -18,   -18,   -17,   -18,   -18,   -18,   -18,   -18,
+     -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -433,19 +469,21 @@ static const yysigned_char yypgoto[] =
 #define YYTABLE_NINF -1
 static const unsigned char yytable[] =
 {
-       1,     3
+      23,     1,     1,    20,    21,    24
 };
 
 static const unsigned char yycheck[] =
 {
-       3,     0
+       7,     8,     8,     0,     7,    22
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
    symbol of state STATE-NUM.  */
 static const unsigned char yystos[] =
 {
-       0,     3,    10,     0
+       0,     8,    10,    11,    13,    14,    15,    16,    17,    18,
+      19,    20,    21,    22,    23,    24,    25,    26,    27,    28,
+       0,     7,    12,     7,    13
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1114,9 +1152,40 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 2:
-#line 47 "parser.y"
+        case 3:
+#line 82 "parser.y"
+    {
+            YogArray* array = YogArray_new(ENV);
+            YogArray_push(ENV, array, YogVal_obj(YOGOBJ((yyvsp[0].node))));
+            (yyval.array) = array;
+        }
+    break;
+
+  case 4:
+#line 87 "parser.y"
+    {
+            if ((yyvsp[-1].node) != NULL) {
+                YogArray_push(ENV, (yyvsp[-2].array), YogVal_obj(YOGOBJ((yyvsp[0].node))));
+            }
+            (yyval.array) = (yyvsp[-2].array);
+        }
+    break;
+
+  case 5:
+#line 94 "parser.y"
     { (yyval.node) = NULL; }
+    break;
+
+  case 6:
+#line 95 "parser.y"
+    { (yyval.node) = NULL; }
+    break;
+
+  case 22:
+#line 127 "parser.y"
+    {
+            (yyval.node) = YogNode_new(ENV, NODE_NAME);
+        }
     break;
 
 
@@ -1124,7 +1193,7 @@ yyreduce:
     }
 
 /* Line 1126 of yacc.c.  */
-#line 1128 "parser.c"
+#line 1197 "parser.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1392,7 +1461,7 @@ yyreturn:
 }
 
 
-#line 49 "parser.y"
+#line 131 "parser.y"
 
 /*
 single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE
