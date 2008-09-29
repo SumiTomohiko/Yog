@@ -139,24 +139,9 @@ struct YogArray {
 typedef struct YogArray YogArray;
 
 enum YogNodeType {
+    NODE_ASSIGN, 
     NODE_ADD, 
-    NODE_ARGUMENT, 
-    NODE_ARRAY, 
-    NODE_ATTRIBUTE, 
     NODE_CALL, 
-    NODE_COMPARISON, 
-    NODE_COMPARISONS, 
-    NODE_FUNCTION, 
-    NODE_HASH, 
-    NODE_HASH_ENTRY, 
-    NODE_IDENTIFIER, 
-    NODE_LITERAL, 
-    NODE_LOGICAL_OR, 
-    NODE_OR, 
-    NODE_PLUS, 
-    NODE_RAISE, 
-    NODE_SUB, 
-    NODE_TRY, 
 };
 
 typedef enum YogNodeType YogNodeType;

@@ -4,6 +4,7 @@ autom4te.cache
 autoscan.log
 config.h
 config.log
+config.status
 core
 stamp-h1
 yog
