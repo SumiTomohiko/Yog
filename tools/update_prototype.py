@@ -11,7 +11,7 @@ class DeclarationInserter(object):
     files = { 
             "include/yog/yog.h": [
                     "src/error.c", "src/st.c", "src/value.c", "src/vm.c", 
-                    "src/array.c", "src/parser.y", 
+                    "src/array.c", "src/parser.y", "src/object.c", 
                     ], 
             }
 

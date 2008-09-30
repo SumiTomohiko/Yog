@@ -57,6 +57,7 @@ enum YogGCObjType {
     GCOBJ_ARRAY, 
     GCOBJ_VAL_ARRAY, 
     GCOBJ_NODE, 
+    GCOBJ_OBJ, 
 };
 
 typedef enum YogGCObjType YogGCObjType;
@@ -67,7 +68,7 @@ struct YogGCObj {
     size_t size;
 };
 
-#define YOGGCOBJ_HEAD                   YogGCObj obj_head
+#define YOGGCOBJ_HEAD                   YogGCObj gcobj_head
 #define YOGGCOBJ(obj)                   ((YogGCObj*)(obj))
 #define YOGGCOBJ_FORWARDING_ADDR(obj)   (YOGGCOBJ(obj)->forwarding_addr)
 #define YOGGCOBJ_SIZE(obj)              (YOGGCOBJ(obj)->size)
@@ -185,6 +186,16 @@ struct YogNode {
 
 typedef struct YogNode YogNode;
 
+struct YogObj {
+    YOGGCOBJ_HEAD;
+    YogTable* attrs;
+};
+
+#define YOGOBJ_HEAD YogObj  obj_head
+#define YOGOBJ(obj) ((YogObj*)obj)
+
+typedef struct YogObj YogObj;
+
 /* $PROTOTYPE_START$ */
 
 /**
@@ -195,6 +206,10 @@ typedef struct YogNode YogNode;
 YogValArray* YogValArray_new(YogEnv*, unsigned int);
 void YogArray_push(YogEnv*, YogArray*, YogVal);
 YogArray* YogArray_new(YogEnv*);
+
+/* src/object.c */
+void YogObj_init(YogEnv*, YogObj*);
+YogObj* YogObj_new(YogEnv*);
 
 /* src/value.c */
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
