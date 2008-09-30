@@ -208,7 +208,8 @@ void YogArray_push(YogEnv*, YogArray*, YogVal);
 YogArray* YogArray_new(YogEnv*);
 
 /* src/object.c */
-void YogObj_init(YogEnv*, YogObj*);
+void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
+void YogObj_init(YogEnv*, YogObj*, YogObj*);
 YogObj* YogObj_new(YogEnv*);
 
 /* src/value.c */
