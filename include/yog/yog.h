@@ -147,9 +147,10 @@ typedef struct YogArray YogArray;
 
 enum YogNodeType {
     NODE_ASSIGN, 
-    NODE_ADD, 
-    NODE_CALL, 
-    NODE_NAME, 
+    NODE_VARIABLE, 
+    NODE_LITERAL, 
+    NODE_METHOD_CALL, 
+    NODE_FUNCTION_CALL, 
 };
 
 typedef enum YogNodeType YogNodeType;
@@ -161,18 +162,26 @@ struct YogNode {
         ID id;
         YogVal val;
         struct YogNode* node;
-        YogArray* array;
     } u1;
     union {
+        ID id;
         struct YogNode* node;
     } u2;
+    union {
+        struct YogArray* array;
+    } u3;
 };
 
-#define NODE_LEFT(node)     (node).u1.node
-#define NODE_RIGHT(node)    (node).u2.node
-#define NODE_ID(node)       (node).u1.id
-#define NODE_VAL(node)      (node).u1.val
-#define NODE_ARRAY(node)    (node).u1.array
+#define NODE_LEFT(node)     (node)->u1.id
+#define NODE_RIGHT(node)    (node)->u2.node
+
+#define NODE_ID(node)       (node)->u1.id
+
+#define NODE_VAL(node)      (node)->u1.val
+
+#define NODE_RECEIVER(node) (node)->u1.node
+#define NODE_METHOD(node)   (node)->u2.id
+#define NODE_ARGS(node)     (node)->u3.array
 
 typedef struct YogNode YogNode;
 

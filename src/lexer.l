@@ -63,7 +63,7 @@ yywrap()
     return NAME;
 }
 <INITIAL>"="        return EQUAL;
-<INITIAL>"+"        return ADD;
+<INITIAL>"+"        return PLUS;
 <INITIAL>"\n"       return NEWLINE;
 <INITIAL>[0-9]+     {
     YogVal val = YogVal_int(atoi(yytext));

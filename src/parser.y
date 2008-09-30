@@ -36,6 +36,8 @@ YogNode_new(YogEnv* env, YogNodeType type)
     return node;
 }
 
+#define NODE_NEW(type)  YogNode_new(ENV, type)
+
 #if 0
 /* XXX: To avoid warning. Better way? */
 int yylex(void);
@@ -49,7 +51,6 @@ int yylex(void);
     ID name;
 }
 
-%token ADD
 %token EQUAL
 %token PLUS
 %token NUMBER
@@ -58,6 +59,7 @@ int yylex(void);
 
 %type<array> module
 %type<array> stmts
+%type<name> NAME
 %type<node> and_expr
 %type<node> arith_expr
 %type<node> assign_expr
@@ -73,32 +75,37 @@ int yylex(void);
 %type<node> shift_expr
 %type<node> stmt
 %type<node> term
-%type<node> terminators
 %type<node> xor_expr
+%type<val> NUMBER
 
 %%
 module  : stmts
         ;
-stmts   : stmt {
+stmts   : NEWLINE {
+            $$ = NULL;
+        }
+        | stmt NEWLINE {
             YogArray* array = YogArray_new(ENV);
             YogArray_push(ENV, array, YogVal_obj(YOGOBJ($1)));
             $$ = array;
         }
-        | stmts terminators stmt {
+        | stmts stmt {
             if ($2 != NULL) {
-                YogArray_push(ENV, $1, YogVal_obj(YOGOBJ($3)));
+                YogArray_push(ENV, $1, YogVal_obj(YOGOBJ($2)));
             }
             $$ = $1;
         }
         ;
-terminators : NEWLINE { $$ = NULL; }
-            | terminators NEWLINE { $$ = NULL; }
-            ;
 stmt    : expr
         ;
 expr    : assign_expr
         ;
-assign_expr : logical_or_expr
+assign_expr : NAME EQUAL logical_or_expr {
+                YogNode* node = NODE_NEW(NODE_ASSIGN);
+                NODE_LEFT(node) = $1;
+                NODE_RIGHT(node) = $3;
+                $$ = node;
+            }
             ;
 logical_or_expr : logical_and_expr
                 ;
@@ -117,6 +124,17 @@ and_expr    : shift_expr
 shift_expr  : arith_expr
             ;
 arith_expr  : term
+            | arith_expr PLUS term {
+                YogArray* args = YogArray_new(ENV);
+                YogArray_push(ENV, args, YogVal_obj(YOGOBJ($3)));
+
+                YogNode* node = NODE_NEW(NODE_METHOD_CALL);
+                NODE_RECEIVER(node) = $1;
+                NODE_METHOD(node) = YogVm_intern(ENV, VM, "+");
+                NODE_ARGS(node) = args;
+
+                $$ = node;
+            }
             ;
 term    : factor
         ;
@@ -125,7 +143,14 @@ factor  : power
 power   : atom
         ;
 atom    : NAME {
-            $$ = YogNode_new(ENV, NODE_NAME);
+            YogNode* node = NODE_NEW(NODE_VARIABLE);
+            NODE_ID(node) = $1;
+            $$ = node;
+        }
+        | NUMBER {
+            YogNode* node = NODE_NEW(NODE_LITERAL);
+            NODE_VAL(node) = $1;
+            $$ = node;
         }
         ;
 %%

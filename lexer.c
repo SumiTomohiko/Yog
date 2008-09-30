@@ -769,7 +769,7 @@ return EQUAL;
 case 3:
 YY_RULE_SETUP
 #line 66 "lexer.l"
-return ADD;
+return PLUS;
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */

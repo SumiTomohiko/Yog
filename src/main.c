@@ -1,4 +1,8 @@
+#include <stdio.h>
 #include "yog/yog.h"
+
+extern FILE* yyin;
+int yyparse();
 
 int main(int argc, char* argv[]) 
 {
@@ -9,9 +13,24 @@ int main(int argc, char* argv[])
     vm->id2name = YogTable_new_symbol_table(&env);
     vm->name2id = YogTable_new_string_table(&env);
 
+#if 0
     YogVm_alloc_obj(&env, env.vm, OBJ_ARRAY, 1024);
     YogTable_new_symbol_table(&env);
     YogArray_new(&env);
+#endif
+
+    Yog_set_parsing_env(&env);
+    FILE* yyin = NULL;
+    if (1 < argc) {
+        yyin = fopen(argv[1], "r");
+    }
+    else {
+        yyin = stdin;
+    }
+    yyparse();
+    if (1 < argc) {
+        fclose(yyin);
+    }
 
     return 0;
 }
