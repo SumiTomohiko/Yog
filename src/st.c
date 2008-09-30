@@ -548,7 +548,9 @@ YogTable_new_symbol_table(YogEnv* env)
 static int 
 compare_string(YogEnv* env, YogVal a, YogVal b) 
 {
-    return strcmp(YOGVAL_STRING(a), YOGVAL_STRING(b));
+#define GET_STR(val)    (((YogCharArray*)YOGVAL_GCOBJ(a))->items)
+    return strcmp(GET_STR(a), GET_STR(b));
+#undef GET_STR
 }
 
 static int
@@ -592,7 +594,8 @@ strhash(const char* string)
 static int 
 hash_string(YogEnv* env, YogVal key) 
 {
-    return strhash(YOGVAL_STRING(key));
+    YogCharArray* array = (YogCharArray*)YOGVAL_GCOBJ(key);
+    return strhash(array->items);
 }
 
 static YogHashType type_string = {
@@ -604,6 +607,35 @@ YogTable*
 YogTable_new_string_table(YogEnv* env) 
 {
     return st_init_table(env, &type_string);
+}
+
+BOOL
+YogTable_lookup_str(YogEnv* env, YogTable* table, const char* key, YogVal* value) 
+{
+    Yog_assert(env, table->type == &type_string, "Table type must be type_string.");
+
+    unsigned int hash_val = strhash(key);
+    unsigned int bin_pos = hash_val % table->num_bins;
+    YogTableEntry* entry = TABLE_ENTRY_TOP(table, bin_pos);
+
+#define NOT_EQUAL_ENTRY ((entry != NULL) && ((entry->hash != hash_val) || (strcmp(((YogCharArray*)YOGVAL_GCOBJ(entry->key))->items, key) != 0)))
+    if (NOT_EQUAL_ENTRY) {
+        COLLISION;
+        do {
+            entry = entry->next;
+        } while (NOT_EQUAL_ENTRY);
+    }
+#undef EQUAL_ENTRY
+
+    if (entry != NULL) {
+        if (value != NULL) {
+            *value = entry->record;
+        }
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
 }
 
 /**

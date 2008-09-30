@@ -45,7 +45,6 @@ enum YogValType {
     VAL_FALSE, 
     VAL_NIL, 
     VAL_SYMBOL, 
-    VAL_STRING, 
 };
 
 typedef enum YogValType YogValType;
@@ -58,6 +57,7 @@ enum YogGCObjType {
     GCOBJ_VAL_ARRAY, 
     GCOBJ_NODE, 
     GCOBJ_OBJ, 
+    GCOBJ_CHAR_ARRAY, 
 };
 
 typedef enum YogGCObjType YogGCObjType;
@@ -82,7 +82,6 @@ struct YogVal {
         double f;
         ID symbol;
         YogGCObj* gcobj;
-        const char* s;
     } u;
 };
 
@@ -91,7 +90,6 @@ struct YogVal {
 #define YOGVAL_FLOAT(v)     ((v).u.f)
 #define YOGVAL_SYMBOL(v)    ((v).u.symbol)
 #define YOGVAL_GCOBJ(v)     ((v).u.gcobj)
-#define YOGVAL_STRING(v)    ((v).u.s)
 
 typedef struct YogVal YogVal;
 
@@ -196,6 +194,13 @@ struct YogObj {
 
 typedef struct YogObj YogObj;
 
+struct YogCharArray {
+    YOGGCOBJ_HEAD;
+    char items[0];
+};
+
+typedef struct YogCharArray YogCharArray;
+
 /* $PROTOTYPE_START$ */
 
 /**
@@ -217,7 +222,6 @@ BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
 YogVal YogVal_nil();
 YogVal YogVal_gcobj(YogGCObj*);
 YogVal YogVal_int(int);
-YogVal YogVal_string(const char*);
 YogVal YogVal_symbol(ID);
 
 /* src/parser.y */
@@ -239,16 +243,22 @@ BOOL YogTable_foreach(YogEnv*, YogTable*, int (*)(YogEnv*, YogVal, YogVal, YogVa
 void YogTable_cleanup_safe(YogEnv*, YogTable*, YogVal);
 YogTable* YogTable_new_symbol_table(YogEnv*);
 YogTable* YogTable_new_string_table(YogEnv*);
+BOOL YogTable_lookup_str(YogEnv*, YogTable*, const char*, YogVal*);
 
 /* src/vm.c */
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
 YogGCObj* YogVm_alloc_gcobj(YogEnv*, YogVm*, YogGCObjType, size_t);
 YogVm* YogVm_new(size_t);
 
+/* src/string.c */
+YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
+YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
+
 /* $PROTOTYPE_END$ */
 
 #define ALLOC_OBJ(env, obj_type, type)  (type*)YogVm_alloc_gcobj(env, ENV_VM(env), obj_type, sizeof(type))
 #define ALLOC_OBJ_SIZE(env, obj_type, type, size)   (type*)YogVm_alloc_gcobj(env, ENV_VM(env), obj_type, size)
+#define ALLOC_OBJ_ITEM(env, obj_type, type, size, item_type)   ALLOC_OBJ_SIZE(env, obj_type, type, sizeof(type) + size * sizeof(item_type))
 
 #endif
 /**

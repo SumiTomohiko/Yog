@@ -4,7 +4,7 @@
 YogValArray* 
 YogValArray_new(YogEnv* env, unsigned int size) 
 {
-    YogValArray* array = ALLOC_OBJ_SIZE(env, GCOBJ_VAL_ARRAY, YogValArray, sizeof(YogValArray) + sizeof(YogVal) * size);
+    YogValArray* array = ALLOC_OBJ_ITEM(env, GCOBJ_VAL_ARRAY, YogValArray, size, YogVal);
     array->size = size;
 
     return array;

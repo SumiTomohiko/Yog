@@ -65,12 +65,6 @@ YogVal_int(int n)
 }
 
 YogVal
-YogVal_string(const char* s) 
-{
-    RETURN_VAL(VAL_STRING, YOGVAL_STRING, s);
-}
-
-YogVal
 YogVal_symbol(ID id) 
 {
     RETURN_VAL(VAL_SYMBOL, YOGVAL_SYMBOL, id);

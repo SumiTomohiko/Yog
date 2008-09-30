@@ -7,15 +7,16 @@ ID
 YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
 {
     YogVal value = YogVal_nil();
-    if (YogTable_lookup(env, vm->name2id, YogVal_string(name), &value)) {
+    if (YogTable_lookup_str(env, vm->name2id, name, &value)) {
         return YOGVAL_SYMBOL(value);
     }
 
-    YogVal s = YogVal_string(strdup(name));
+    YogCharArray* s = YogCharArray_new_str(env, name);
+    YogVal val = YogVal_gcobj(YOGGCOBJ(s));
     ID id = vm->next_id;
     YogVal symbol = YogVal_symbol(id);
-    YogTable_add_direct(env, vm->name2id, s, symbol);
-    YogTable_add_direct(env, vm->id2name, symbol, s);
+    YogTable_add_direct(env, vm->name2id, val, symbol);
+    YogTable_add_direct(env, vm->id2name, symbol, val);
 
     vm->next_id++;
 
