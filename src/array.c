@@ -4,7 +4,7 @@
 YogValArray* 
 YogValArray_new(YogEnv* env, unsigned int size) 
 {
-    YogValArray* array = ALLOC_OBJ_SIZE(env, OBJ_VAL_ARRAY, YogValArray, sizeof(YogValArray) + sizeof(YogVal) * size);
+    YogValArray* array = ALLOC_OBJ_SIZE(env, GCOBJ_VAL_ARRAY, YogValArray, sizeof(YogValArray) + sizeof(YogVal) * size);
     array->size = size;
 
     return array;
@@ -36,7 +36,7 @@ YogArray_new(YogEnv* env)
     YogValArray* body = YogValArray_new(env, INIT_SIZE);
 #undef INIT_SIZE
 
-    YogArray* array = ALLOC_OBJ(env, OBJ_ARRAY, YogArray);
+    YogArray* array = ALLOC_OBJ(env, GCOBJ_ARRAY, YogArray);
     array->size = 0;
     array->body = body;
 

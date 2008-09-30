@@ -47,7 +47,7 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 47 "parser.y"
+#line 54 "parser.y"
 typedef union YYSTYPE {
     YogArray* array;
     YogNode* node;

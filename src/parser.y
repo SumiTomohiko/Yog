@@ -2,24 +2,31 @@
 #include <stdio.h>
 #include "yog/yog.h"
 
-static YogEnv* yog_parsing_env = NULL;
-static YogVm* yog_parsing_vm = NULL;
+static YogEnv* parsing_env = NULL;
+static YogVm* parsing_vm = NULL;
+static YogArray* parsed_tree = NULL;
 
 void 
 Yog_set_parsing_env(YogEnv* env) 
 {
-    yog_parsing_env = env;
-    yog_parsing_vm = ENV_VM(env);
+    parsing_env = env;
+    parsing_vm = ENV_VM(env);
 }
 
 YogEnv*
 Yog_get_parsing_env()
 {
-    return yog_parsing_env;
+    return parsing_env;
 }
 
-#define ENV yog_parsing_env
-#define VM  yog_parsing_vm
+YogArray* 
+Yog_get_parsed_tree() 
+{
+    return parsed_tree;
+}
+
+#define ENV parsing_env
+#define VM  parsing_vm
 
 static void 
 yyerror(char* s)
@@ -30,7 +37,7 @@ yyerror(char* s)
 static YogNode* 
 YogNode_new(YogEnv* env, YogNodeType type) 
 {
-    YogNode* node = ALLOC_OBJ(env, OBJ_NODE, YogNode);
+    YogNode* node = ALLOC_OBJ(env, GCOBJ_NODE, YogNode);
     node->type = type;
 
     return node;
@@ -79,19 +86,21 @@ int yylex(void);
 %type<val> NUMBER
 
 %%
-module  : stmts
+module  : stmts {
+            parsed_tree = $1;
+        }
         ;
 stmts   : NEWLINE {
             $$ = NULL;
         }
         | stmt NEWLINE {
             YogArray* array = YogArray_new(ENV);
-            YogArray_push(ENV, array, YogVal_obj(YOGOBJ($1)));
+            YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ($1)));
             $$ = array;
         }
         | stmts stmt {
             if ($2 != NULL) {
-                YogArray_push(ENV, $1, YogVal_obj(YOGOBJ($2)));
+                YogArray_push(ENV, $1, YogVal_gcobj(YOGGCOBJ($2)));
             }
             $$ = $1;
         }
@@ -126,7 +135,7 @@ shift_expr  : arith_expr
 arith_expr  : term
             | arith_expr PLUS term {
                 YogArray* args = YogArray_new(ENV);
-                YogArray_push(ENV, args, YogVal_obj(YOGOBJ($3)));
+                YogArray_push(ENV, args, YogVal_gcobj(YOGGCOBJ($3)));
 
                 YogNode* node = NODE_NEW(NODE_METHOD_CALL);
                 NODE_RECEIVER(node) = $1;

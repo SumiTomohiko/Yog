@@ -43,7 +43,7 @@ static int strhash(const char *);
 static YogTableEntryArray*
 alloc_bins(YogEnv* env, int size) 
 {
-    YogTableEntryArray* array = ALLOC_OBJ_SIZE(env, OBJ_TABLE_ENTRY_ARRAY, YogTableEntryArray, sizeof(YogTableEntryArray) + size * sizeof(YogTableEntry*));
+    YogTableEntryArray* array = ALLOC_OBJ_SIZE(env, GCOBJ_TABLE_ENTRY_ARRAY, YogTableEntryArray, sizeof(YogTableEntryArray) + size * sizeof(YogTableEntry*));
     array->size = size;
 
     return array;
@@ -163,7 +163,7 @@ stat_col()
 static YogTable*
 alloc_table(YogEnv* env) 
 {
-    return ALLOC_OBJ(env, OBJ_TABLE, YogTable);
+    return ALLOC_OBJ(env, GCOBJ_TABLE, YogTable);
 }
 
 static YogTable* 
@@ -286,7 +286,7 @@ YogTable_lookup(YogEnv* env, YogTable* table, YogVal key, YogVal* value)
 static YogTableEntry* 
 alloc_entry(YogEnv* env)
 {
-    return ALLOC_OBJ(env, OBJ_TABLE_ENTRY, YogTableEntry);
+    return ALLOC_OBJ(env, GCOBJ_TABLE_ENTRY, YogTableEntry);
 }
 
 #define ADD_DIRECT(env, table, key, value, hash_val, bin_pos)\

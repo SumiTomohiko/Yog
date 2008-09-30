@@ -38,8 +38,8 @@ new_heap(size_t size, Heap* next)
     return heap;
 }
 
-YogObj* 
-YogVm_alloc_obj(YogEnv* env, YogVm* vm, YogObjType type, size_t size) 
+YogGCObj* 
+YogVm_alloc_gcobj(YogEnv* env, YogVm* vm, YogGCObjType type, size_t size) 
 {
     size_t unit = sizeof(void*);
     size_t alimented_size = ((size - unit) / unit + 1) * unit;
@@ -58,14 +58,14 @@ YogVm_alloc_obj(YogEnv* env, YogVm* vm, YogObjType type, size_t size)
         vm->need_gc = TRUE;
     }
 
-    YogObj* obj = (YogObj*)heap->free;
-    obj->type = type;
-    obj->forwarding_addr = NULL;
-    obj->size = alimented_size;
+    YogGCObj* gcobj = (YogGCObj*)heap->free;
+    gcobj->type = type;
+    YOGGCOBJ_FORWARDING_ADDR(gcobj) = NULL;
+    YOGGCOBJ_SIZE(gcobj) = alimented_size;
 
     heap->free += alimented_size;
 
-    return obj;
+    return gcobj;
 }
 
 YogVm* 

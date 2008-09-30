@@ -20,8 +20,8 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
         case VAL_SYMBOL:
             RETURN(YOGVAL_SYMBOL, a, b);
             break;
-        case VAL_OBJ:
-            RETURN(YOGVAL_OBJ, a, b);
+        case VAL_GCOBJ:
+            RETURN(YOGVAL_GCOBJ, a, b);
             break;
         case VAL_TRUE:
         case VAL_FALSE:
@@ -53,9 +53,9 @@ YogVal_nil()
 } while (0)
 
 YogVal
-YogVal_obj(YogObj* obj)
+YogVal_gcobj(YogGCObj* obj)
 {
-    RETURN_VAL(VAL_OBJ, YOGVAL_OBJ, obj);
+    RETURN_VAL(VAL_GCOBJ, YOGVAL_GCOBJ, obj);
 }
 
 YogVal
