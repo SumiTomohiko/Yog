@@ -1,0 +1,36 @@
+/**
+ * inst <name>
+ * (operand_type operand_name, ...)
+ * (pop_value, ...)
+ * <- top bottom ->
+ * (push_value, ...)
+ * <- top bottom ->
+ * {
+ *      C code.
+ * }
+ */
+
+inst push_const
+()
+()
+(value)
+{
+}
+
+inst call_method
+(ID method, uint8_t argc)
+(...)
+(...)
+{
+}
+
+inst store_global 
+(ID var) 
+(value) 
+()
+{
+}
+
+/**
+ * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
+ */

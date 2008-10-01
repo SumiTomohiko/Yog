@@ -17,3 +17,6 @@ AM_YFLAGS = -d
 
 update-prototype:
 	python tools/update_prototype.py
+
+insts:
+	python tools/inst.py src/insts.def
