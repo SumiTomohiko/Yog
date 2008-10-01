@@ -638,6 +638,29 @@ YogTable_lookup_str(YogEnv* env, YogTable* table, const char* key, YogVal* value
     }
 }
 
+static int 
+compare_val(YogEnv* env, YogVal a, YogVal b) 
+{
+    return YogVal_equals_exact(env, a, b) ? 0 : 1;
+}
+
+static int 
+hash_val(YogEnv* env, YogVal val) 
+{
+    return YogVal_hash(env, val);
+}
+
+static YogHashType type_val = {
+    compare_val, 
+    hash_val, 
+};
+
+YogTable* 
+YogTable_new_val_table(YogEnv* env) 
+{
+    return st_init_table(env, &type_val);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

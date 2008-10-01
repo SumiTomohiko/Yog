@@ -1,6 +1,19 @@
 #include <string.h>
 #include "yog/yog.h"
 
+YogVal 
+YogArray_at(YogEnv* env, YogArray* array, unsigned int n) 
+{
+    Yog_assert(env, n < array->size + 1, "Index exceed array size.");
+    return array->body->items[n];
+}
+
+unsigned int 
+YogArray_size(YogEnv* env, YogArray* array) 
+{
+    return array->size;
+}
+
 YogValArray* 
 YogValArray_new(YogEnv* env, unsigned int size) 
 {

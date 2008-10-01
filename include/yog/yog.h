@@ -234,6 +234,8 @@ typedef struct YogModule YogModule;
  */
 
 /* src/array.c */
+YogVal YogArray_at(YogEnv*, YogArray*, unsigned int);
+unsigned int YogArray_size(YogEnv*, YogArray*);
 YogValArray* YogValArray_new(YogEnv*, unsigned int);
 void YogArray_push(YogEnv*, YogArray*, YogVal);
 YogArray* YogArray_new(YogEnv*);
@@ -247,6 +249,7 @@ YogObj* YogObj_new(YogEnv*);
 YogByteArray* YogByteArray_new(YogEnv*, unsigned int);
 
 /* src/value.c */
+int YogVal_hash(YogEnv*, YogVal);
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
 YogVal YogVal_nil();
 YogVal YogVal_gcobj(YogGCObj*);
@@ -257,6 +260,9 @@ YogVal YogVal_symbol(ID);
 void Yog_set_parsing_env(YogEnv*);
 YogEnv* Yog_get_parsing_env();
 YogArray* Yog_get_parsed_tree();
+
+/* src/compile.c */
+YogCode* Yog_compile_module(YogEnv*, YogArray*);
 
 /* src/error.c */
 void Yog_assert(YogEnv*, BOOL, const char*);
@@ -273,6 +279,7 @@ void YogTable_cleanup_safe(YogEnv*, YogTable*, YogVal);
 YogTable* YogTable_new_symbol_table(YogEnv*);
 YogTable* YogTable_new_string_table(YogEnv*);
 BOOL YogTable_lookup_str(YogEnv*, YogTable*, const char*, YogVal*);
+YogTable* YogTable_new_val_table(YogEnv*);
 
 /* src/vm.c */
 ID YogVm_intern(YogEnv*, YogVm*, const char*);

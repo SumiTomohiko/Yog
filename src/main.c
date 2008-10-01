@@ -32,6 +32,9 @@ int main(int argc, char* argv[])
         fclose(yyin);
     }
 
+    YogArray* stmts = Yog_get_parsed_tree();
+    YogCode* code = Yog_compile_module(&env, stmts);
+
     return 0;
 }
 
