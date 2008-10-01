@@ -58,6 +58,9 @@ enum YogGCObjType {
     GCOBJ_NODE, 
     GCOBJ_OBJ, 
     GCOBJ_CHAR_ARRAY, 
+    GCOBJ_MODULE, 
+    GCOBJ_CODE, 
+    GCOBJ_BYTE_ARRAY, 
 };
 
 typedef enum YogGCObjType YogGCObjType;
@@ -201,6 +204,29 @@ struct YogCharArray {
 
 typedef struct YogCharArray YogCharArray;
 
+struct YogByteArray {
+    YOGGCOBJ_HEAD;
+    unsigned int size;
+    unsigned int capacity;
+    unsigned char items[0];
+};
+
+typedef struct YogByteArray YogByteArray;
+
+struct YogCode {
+    YOGGCOBJ_HEAD;
+    struct YogByteArray* insts;
+};
+
+typedef struct YogCode YogCode;
+
+struct YogModule {
+    YOGOBJ_HEAD;
+    struct YogCode* code;
+};
+
+typedef struct YogModule YogModule;
+
 /* $PROTOTYPE_START$ */
 
 /**
@@ -216,6 +242,9 @@ YogArray* YogArray_new(YogEnv*);
 void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
 void YogObj_init(YogEnv*, YogObj*, YogObj*);
 YogObj* YogObj_new(YogEnv*);
+
+/* src/binary.c */
+YogByteArray* YogByteArray_new(YogEnv*, unsigned int);
 
 /* src/value.c */
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
