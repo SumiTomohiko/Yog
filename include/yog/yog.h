@@ -1,14 +1,12 @@
 #ifndef __YOG_YOG_H__
 #define __YOG_YOG_H__
 
+#include <stdint.h>
 #include <stdlib.h>
 
 #define BOOL    int
 #define FALSE   (0)
 #define TRUE    (!FALSE)
-
-typedef unsigned char uint8_t;
-typedef unsigned int uint32_t;
 
 struct Heap {
     size_t size;
@@ -65,6 +63,8 @@ enum YogGCObjType {
     GCOBJ_CODE, 
     GCOBJ_BYTE_ARRAY, 
     GCOBJ_BINARY, 
+    GCOBJ_FRAME, 
+    GCOBJ_THREAD, 
 };
 
 typedef enum YogGCObjType YogGCObjType;
@@ -238,6 +238,25 @@ struct YogModule {
 };
 
 typedef struct YogModule YogModule;
+
+struct YogFrame {
+    YOGOBJ_HEAD;
+    struct YogCode* code;
+    unsigned int pc;
+    struct YogTable* pkg_vars;
+    struct YogArray* stack;
+};
+
+#define PKG_VARS(f) (f).pkg_vars
+
+typedef struct YogFrame YogFrame;
+
+struct YogThread {
+    YOGOBJ_HEAD;
+    struct YogFrame* cur_frame;
+};
+
+typedef struct YogThread YogThread;
 
 /* $PROTOTYPE_START$ */
 

@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "yog/insts.h"
 #include "yog/yog.h"
 
@@ -195,7 +196,7 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
     YogBinary* insts = data->insts;
     YogBinary_push_uint8(env, insts, INST(CALL_METHOD));
     YogBinary_push_uint32(env, insts, YogVm_intern(env, ENV_VM(env), "+"));
-    Yog_assert(env, argc < 256, "Too many arguments.");
+    Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments.");
     YogBinary_push_uint8(env, insts, argc);
 }
 
