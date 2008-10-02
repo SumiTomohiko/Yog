@@ -34,6 +34,8 @@ int main(int argc, char* argv[])
 
     YogArray* stmts = Yog_get_parsed_tree();
     YogCode* code = Yog_compile_module(&env, stmts);
+    YogThread* th = YogThread_new(&env);
+    YogThread_eval_code(&env, th, code);
 
     return 0;
 }

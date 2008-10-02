@@ -1,5 +1,10 @@
 #include "yog/yog.h"
 
+void 
+YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code) 
+{
+}
+
 YogThread*
 YogThread_new(YogEnv* env) 
 {

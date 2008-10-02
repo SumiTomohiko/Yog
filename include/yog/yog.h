@@ -247,7 +247,7 @@ struct YogFrame {
     struct YogArray* stack;
 };
 
-#define PKG_VARS(f) (f).pkg_vars
+#define PKG_VARS(f) (f)->pkg_vars
 
 typedef struct YogFrame YogFrame;
 
@@ -282,6 +282,10 @@ void YogBinary_push_uint8(YogEnv*, YogBinary*, uint8_t);
 void YogBinary_push_uint32(YogEnv*, YogBinary*, uint32_t);
 YogBinary* YogBinary_new(YogEnv*, unsigned int);
 
+/* src/thread.c */
+void YogThread_eval_code(YogEnv*, YogThread*, YogCode*);
+YogThread* YogThread_new(YogEnv*);
+
 /* src/value.c */
 int YogVal_hash(YogEnv*, YogVal);
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
@@ -303,6 +307,9 @@ YogCode* YogCode_new(YogEnv*);
 
 /* src/error.c */
 void Yog_assert(YogEnv*, BOOL, const char*);
+
+/* src/frame.c */
+YogFrame* YogFrame_new(YogEnv*);
 
 /* src/st.c */
 BOOL YogTable_lookup(YogEnv*, YogTable*, YogVal, YogVal*);
