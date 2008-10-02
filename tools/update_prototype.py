@@ -13,6 +13,7 @@ class DeclarationInserter(object):
                     "src/error.c", "src/st.c", "src/value.c", "src/vm.c", 
                     "src/array.c", "src/parser.y", "src/object.c", 
                     "src/string.c", "src/binary.c", "src/compile.c", 
+                    "src/code.c", 
                     ], 
             }
 

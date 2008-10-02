@@ -1,3 +1,4 @@
+#include "yog/insts.h"
 #include "yog/yog.h"
 
 typedef struct AstVisitor AstVisitor;
@@ -9,6 +10,8 @@ struct AstVisitor {
     VisitArray visit_stmts;
     VisitNode visit_stmt;
     VisitNode visit_assign;
+    VisitNode visit_method_call;
+    VisitNode visit_literal;
 };
 
 struct Var2IndexData {
@@ -25,35 +28,54 @@ struct Const2IndexData {
 
 typedef struct Const2IndexData Const2IndexData;
 
+struct CompileData {
+    YogTable* var2index;
+    YogTable* const2index;
+    YogBinary* insts;
+};
+
+typedef struct CompileData CompileData;
+
 static void 
 visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+#define VISIT(f)    do { \
+    if (visitor->f != NULL) { \
+        visitor->f(env, visitor, node, arg); \
+    } \
+} while (0)
     switch (node->type) {
     case NODE_ASSIGN: 
-        visitor->visit_assign(env, visitor, node, arg);
+        VISIT(visit_assign);
         break;
     case NODE_VARIABLE:
         break;
     case NODE_LITERAL:
+        VISIT(visit_literal);
         break;
     case NODE_METHOD_CALL:
-        {
-            visit_node(env, visitor, NODE_RECEIVER(node), arg);
-
-            unsigned int i = 0;
-            YogArray* args = NODE_ARGS(node);
-            unsigned int size = YogArray_size(env, args);
-            for (i = 0; i < size; i++) {
-                YogVal val = YogArray_at(env, args, i);
-                YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
-                visit_node(env, visitor, node, arg);
-            }
-        }
+        VISIT(visit_method_call);
         break;
     case NODE_FUNCTION_CALL:
         break;
     default:
         break;
+    }
+#undef VISIT
+}
+
+static void 
+xxx2index_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_RECEIVER(node), arg);
+
+    unsigned int i = 0;
+    YogArray* args = NODE_ARGS(node);
+    unsigned int size = YogArray_size(env, args);
+    for (i = 0; i < size; i++) {
+        YogVal val = YogArray_at(env, args, i);
+        YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
+        visit_node(env, visitor, node, arg);
     }
 }
 
@@ -88,6 +110,8 @@ make_var2index(YogEnv* env, YogArray* stmts)
     visitor.visit_stmts = visit_stmts;
     visitor.visit_stmt = visit_node;
     visitor.visit_assign = var2index_visit_assign;
+    visitor.visit_method_call = xxx2index_visit_method_call;
+    visitor.visit_literal = NULL;
 
     YogTable* var2index = YogTable_new_symbol_table(env);
     Var2IndexData data;
@@ -105,6 +129,18 @@ const2index_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* 
     visit_node(env, visitor, NODE_RIGHT(node), arg);
 }
 
+static void 
+const2index_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    Const2IndexData* data = arg;
+    YogVal val = NODE_VAL(node);
+    if (!YogTable_lookup(env, data->const2index, val, NULL)) {
+        YogVal next_id = YogVal_int(data->next_id);
+        YogTable_add_direct(env, data->const2index, val, next_id);
+        data->next_id++;
+    }
+}
+
 static YogTable* 
 make_const2index(YogEnv* env, YogArray* stmts) 
 {
@@ -112,6 +148,8 @@ make_const2index(YogEnv* env, YogArray* stmts)
     visitor.visit_stmts = visit_stmts;
     visitor.visit_stmt = visit_node;
     visitor.visit_assign = const2index_visit_assign;
+    visitor.visit_method_call = xxx2index_visit_method_call;
+    visitor.visit_literal = const2index_visit_literal;
 
     YogTable* const2index = YogTable_new_val_table(env);
     Const2IndexData data;
@@ -123,13 +161,89 @@ make_const2index(YogEnv* env, YogArray* stmts)
     return const2index;
 }
 
+static void 
+compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    visit_node(env, visitor, NODE_RIGHT(node), arg);
+
+    CompileData* data = arg;
+    YogVal symbol = YogVal_symbol(NODE_LEFT(node));
+    YogVal index = YogVal_nil();
+    if (!YogTable_lookup(env, data->var2index, symbol, &index)) {
+        Yog_assert(env, FALSE, "Can't find assigned symbol.");
+    }
+    YogBinary* insts = data->insts;
+    YogBinary_push_uint8(env, insts, INST(STORE_PACKAGE));
+    YogBinary_push_uint32(env, insts, YOGVAL_INT(index));
+}
+
+static void 
+compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_RECEIVER(node), arg);
+
+    unsigned int i = 0;
+    YogArray* args = NODE_ARGS(node);
+    unsigned int argc = YogArray_size(env, args);
+    for (i = 0; i < argc; i++) {
+        YogVal val = YogArray_at(env, args, i);
+        YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
+        visit_node(env, visitor, node, arg);
+    }
+
+    CompileData* data = arg;
+    YogBinary* insts = data->insts;
+    YogBinary_push_uint8(env, insts, INST(CALL_METHOD));
+    YogBinary_push_uint32(env, insts, YogVm_intern(env, ENV_VM(env), "+"));
+    Yog_assert(env, argc < 256, "Too many arguments.");
+    YogBinary_push_uint8(env, insts, argc);
+}
+
+static void 
+compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    CompileData* data = arg;
+    YogVal index = YogVal_nil();
+    if (!YogTable_lookup(env, data->const2index, NODE_VAL(node), &index)) {
+        Yog_assert(env, FALSE, "Can't find constant.");
+    }
+    YogBinary* insts = data->insts;
+    YogBinary_push_uint8(env, insts, INST(PUSH_CONST));
+    YogBinary_push_uint8(env, insts, YOGVAL_INT(index));
+}
+
+static YogBinary* 
+compile_module(YogEnv* env, YogArray* stmts, YogTable* var2index, YogTable* const2index) 
+{
+    AstVisitor visitor;
+    visitor.visit_stmts = visit_stmts;
+    visitor.visit_stmt = visit_node;
+    visitor.visit_assign = compile_visit_assign;
+    visitor.visit_method_call = compile_visit_method_call;
+    visitor.visit_literal = compile_visit_literal;
+
+    CompileData data;
+    data.var2index = var2index;
+    data.const2index = const2index;
+#define INIT_INSTS_SIZE (0)
+    data.insts = YogBinary_new(env, INIT_INSTS_SIZE);
+#undef INIT_INSTS_SIZE
+
+    visitor.visit_stmts(env, &visitor, stmts, &data);
+
+    return data.insts;
+}
+
 YogCode* 
 Yog_compile_module(YogEnv* env, YogArray* stmts) 
 {
     YogTable* var2index = make_var2index(env, stmts);
     YogTable* const2index = make_const2index(env, stmts);
+    YogBinary* insts = compile_module(env, stmts, var2index, const2index);
+    YogCode* code = YogCode_new(env);
+    code->insts = insts->body;
 
-    return NULL;
+    return code;
 }
 
 /**

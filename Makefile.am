@@ -10,12 +10,13 @@ yog_SOURCES = src/main.c \
 	      src/object.c \
 	      src/string.c \
 	      src/binary.c \
-	      src/compile.c
+	      src/compile.c \
+	      src/code.c
 yog_CFLAGS = -Iinclude
 AM_YFLAGS = -d
 #AM_LFLAGS = --noline
 
-update-prototype:
+proto:
 	python tools/update_prototype.py
 
 insts:

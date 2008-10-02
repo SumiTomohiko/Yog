@@ -7,6 +7,9 @@
 #define FALSE   (0)
 #define TRUE    (!FALSE)
 
+typedef unsigned char uint8_t;
+typedef unsigned int uint32_t;
+
 struct Heap {
     size_t size;
     unsigned char* base;
@@ -61,6 +64,7 @@ enum YogGCObjType {
     GCOBJ_MODULE, 
     GCOBJ_CODE, 
     GCOBJ_BYTE_ARRAY, 
+    GCOBJ_BINARY, 
 };
 
 typedef enum YogGCObjType YogGCObjType;
@@ -208,13 +212,21 @@ struct YogByteArray {
     YOGGCOBJ_HEAD;
     unsigned int size;
     unsigned int capacity;
-    unsigned char items[0];
+    uint8_t items[0];
 };
 
 typedef struct YogByteArray YogByteArray;
 
+struct YogBinary {
+    YOGGCOBJ_HEAD;
+    struct YogByteArray* body;
+};
+
+typedef struct YogBinary YogBinary;
+
 struct YogCode {
     YOGGCOBJ_HEAD;
+    struct YogValArray* consts;
     struct YogByteArray* insts;
 };
 
@@ -247,6 +259,9 @@ YogObj* YogObj_new(YogEnv*);
 
 /* src/binary.c */
 YogByteArray* YogByteArray_new(YogEnv*, unsigned int);
+void YogBinary_push_uint8(YogEnv*, YogBinary*, uint8_t);
+void YogBinary_push_uint32(YogEnv*, YogBinary*, uint32_t);
+YogBinary* YogBinary_new(YogEnv*, unsigned int);
 
 /* src/value.c */
 int YogVal_hash(YogEnv*, YogVal);
@@ -263,6 +278,9 @@ YogArray* Yog_get_parsed_tree();
 
 /* src/compile.c */
 YogCode* Yog_compile_module(YogEnv*, YogArray*);
+
+/* src/code.c */
+YogCode* YogCode_new(YogEnv*);
 
 /* src/error.c */
 void Yog_assert(YogEnv*, BOOL, const char*);

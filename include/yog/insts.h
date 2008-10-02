@@ -13,9 +13,9 @@ extern "C" {
 enum Inst {
     INST(PUSH_CONST) = 1, 
     INST(CALL_METHOD) = 2, 
-    INST(STORE_GLOBAL) = 3, 
+    INST(STORE_PACKAGE) = 3, 
 
-} Inst;
+};
 
 typedef enum Inst Inst;
 

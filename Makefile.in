@@ -53,7 +53,7 @@ am_yog_OBJECTS = yog-main.$(OBJEXT) yog-value.$(OBJEXT) \
 	yog-vm.$(OBJEXT) yog-error.$(OBJEXT) yog-st.$(OBJEXT) \
 	yog-array.$(OBJEXT) yog-parser.$(OBJEXT) yog-lexer.$(OBJEXT) \
 	yog-object.$(OBJEXT) yog-string.$(OBJEXT) yog-binary.$(OBJEXT) \
-	yog-compile.$(OBJEXT)
+	yog-compile.$(OBJEXT) yog-code.$(OBJEXT)
 yog_OBJECTS = $(am_yog_OBJECTS)
 yog_LDADD = $(LDADD)
 yog_LINK = $(CCLD) $(yog_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
@@ -183,7 +183,8 @@ yog_SOURCES = src/main.c \
 	      src/object.c \
 	      src/string.c \
 	      src/binary.c \
-	      src/compile.c
+	      src/compile.c \
+	      src/code.c
 
 yog_CFLAGS = -Iinclude
 AM_YFLAGS = -d
@@ -282,6 +283,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-binary.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-compile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-lexer.Po@am__quote@
@@ -474,6 +476,20 @@ yog-compile.obj: src/compile.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/compile.c' object='yog-compile.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-compile.obj `if test -f 'src/compile.c'; then $(CYGPATH_W) 'src/compile.c'; else $(CYGPATH_W) '$(srcdir)/src/compile.c'; fi`
+
+yog-code.o: src/code.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-code.o -MD -MP -MF $(DEPDIR)/yog-code.Tpo -c -o yog-code.o `test -f 'src/code.c' || echo '$(srcdir)/'`src/code.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-code.Tpo $(DEPDIR)/yog-code.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/code.c' object='yog-code.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-code.o `test -f 'src/code.c' || echo '$(srcdir)/'`src/code.c
+
+yog-code.obj: src/code.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-code.obj -MD -MP -MF $(DEPDIR)/yog-code.Tpo -c -o yog-code.obj `if test -f 'src/code.c'; then $(CYGPATH_W) 'src/code.c'; else $(CYGPATH_W) '$(srcdir)/src/code.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-code.Tpo $(DEPDIR)/yog-code.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/code.c' object='yog-code.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-code.obj `if test -f 'src/code.c'; then $(CYGPATH_W) 'src/code.c'; else $(CYGPATH_W) '$(srcdir)/src/code.c'; fi`
 
 .l.c:
 	$(am__skiplex) $(SHELL) $(YLWRAP) $< $(LEX_OUTPUT_ROOT).c $@ -- $(LEXCOMPILE)
@@ -780,7 +796,7 @@ uninstall-am: uninstall-binPROGRAMS
 
 #AM_LFLAGS = --noline
 
-update-prototype:
+proto:
 	python tools/update_prototype.py
 
 insts:
