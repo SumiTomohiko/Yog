@@ -235,14 +235,78 @@ compile_module(YogEnv* env, YogArray* stmts, YogTable* var2index, YogTable* cons
     return data.insts;
 }
 
+void 
+stack_size_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg) 
+{
+    unsigned int i = 0;
+    for (i = 0; i < YogArray_size(env, stmts); i++) {
+        YogVal val = YogArray_at(env, stmts, i);
+        YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
+
+        unsigned int stack_size = 0;
+        visitor->visit_stmt(env, visitor, node, &stack_size);
+        unsigned int* max_stack_size = (unsigned int*)arg;
+        if (*max_stack_size < stack_size) {
+            *max_stack_size = stack_size;
+        }
+    }
+}
+
+static void 
+stack_size_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_RIGHT(node), arg);
+}
+
+static void 
+stack_size_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_RECEIVER(node), arg);
+
+    unsigned int i = 0;
+    YogArray* args = NODE_ARGS(node);
+    unsigned int argc = YogArray_size(env, args);
+    for (i = 0; i < argc; i++) {
+        YogVal val = YogArray_at(env, args, i);
+        YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
+        visit_node(env, visitor, node, arg);
+    }
+}
+
+static void 
+stack_size_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    unsigned int* stack_size = (unsigned int*)arg;
+    (*stack_size)++;
+}
+
+unsigned int 
+count_stack_size(YogEnv* env, YogArray* stmts) 
+{
+    AstVisitor visitor;
+    visitor.visit_stmts = stack_size_visit_stmts;
+    visitor.visit_stmt = visit_node;
+    visitor.visit_assign = stack_size_visit_assign;
+    visitor.visit_method_call = stack_size_visit_method_call;
+    visitor.visit_literal = stack_size_visit_literal;
+
+    unsigned int stack_size = 0;
+    visitor.visit_stmts(env, &visitor, stmts, &stack_size);
+
+    return stack_size;
+}
+
 YogCode* 
 Yog_compile_module(YogEnv* env, YogArray* stmts) 
 {
     YogTable* var2index = make_var2index(env, stmts);
     YogTable* const2index = make_const2index(env, stmts);
+    unsigned int stack_size = count_stack_size(env, stmts);
     YogBinary* insts = compile_module(env, stmts, var2index, const2index);
+
     YogCode* code = YogCode_new(env);
     code->insts = insts->body;
+    code->stack_size = stack_size;
 
     return code;
 }
