@@ -4,8 +4,6 @@ YogFrame*
 YogFrame_new(YogEnv* env) 
 {
     YogFrame* frame = ALLOC_OBJ(env, GCOBJ_FRAME, YogFrame);
-    frame->code = NULL;
-    frame->pc = 0;
     PKG_VARS(frame) = NULL;
     frame->stack = NULL;
 }

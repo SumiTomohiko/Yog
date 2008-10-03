@@ -242,8 +242,6 @@ typedef struct YogModule YogModule;
 
 struct YogFrame {
     YOGOBJ_HEAD;
-    struct YogCode* code;
-    unsigned int pc;
     struct YogTable* pkg_vars;
     struct YogValArray* stack;
 };
