@@ -24,7 +24,7 @@ inst call_method
 {
 }
 
-inst store_package 
+inst store_pkg
 (ID id) 
 (value) 
 ()
