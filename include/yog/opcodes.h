@@ -8,16 +8,16 @@
 extern "C" {
 #endif
 
-#define INST(name)  INST_##name
+#define OP(name)  OP_##name
 
-enum Inst {
-    INST(PUSH_CONST) = 1, 
-    INST(CALL_METHOD) = 2, 
-    INST(STORE_PACKAGE) = 3, 
+enum OpCode {
+    OP(PUSH_CONST) = 1, 
+    OP(CALL_METHOD) = 2, 
+    OP(STORE_PKG) = 3, 
 
 };
 
-typedef enum Inst Inst;
+typedef enum OpCode OpCode;
 
 #if defined(__cplusplus)
 }

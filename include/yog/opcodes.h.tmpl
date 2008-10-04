@@ -4,13 +4,13 @@
 extern "C" {
 #endif
 
-#define INST(name)  INST_##name
+#define OP(name)  OP_##name
 
-enum Inst {
-${insts}
+enum OpCode {
+${opcodes}
 };
 
-typedef enum Inst Inst;
+typedef enum OpCode OpCode;
 
 #if defined(__cplusplus)
 }

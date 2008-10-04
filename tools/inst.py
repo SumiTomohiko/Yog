@@ -146,15 +146,15 @@ class CodeGenerator(object):
         finally:
             fp.close()
 
-    def gen_insts_h(self, inst_h, inst_h_tmpl):
-        insts = StringIO()
+    def gen_opcodes_h(self, opcodes_h, opcodes_h_tmpl):
+        opcodes = StringIO()
         for i, inst in enumerate(self.insts):
-            s = "    INST(%(name)s) = %(i)d, \n" \
+            s = "    OP(%(name)s) = %(i)d, \n" \
                     % { "name": inst.name.upper(), "i": i + 1}
-            insts.write(s)
-        kw = { "insts": insts.getvalue() }
-        s = self.substitute_template(inst_h_tmpl, kw)
-        self.write_file(inst_h, s)
+            opcodes.write(s)
+        kw = { "opcodes": opcodes.getvalue() }
+        s = self.substitute_template(opcodes_h_tmpl, kw)
+        self.write_file(opcodes_h, s)
 
     def get_c_footer(self):
         return """/**
@@ -371,7 +371,7 @@ class CodeGenerator(object):
             fp.close()
         return types
 
-    def do(self, def_, insts_h=None, insts_h_tmpl=None, 
+    def do(self, def_, opcodes_h=None, opcodes_h_tmpl=None, 
             thread_inc="thread.inc", compiler_inc="compiler.inc", 
             compiler_inc_tmpl=None, code_inc="code.inc", yog_h="yog.h", 
             debug=False):
@@ -384,9 +384,9 @@ class CodeGenerator(object):
         # Generate inst.h from templates/inst.h.tmpl .
         #templates_dir = "templates"
         include_dir = join("include", "yog")
-        insts_h = insts_h or join("include", "yog", "insts.h")
-        insts_h_tmpl = insts_h_tmpl or insts_h + ".tmpl"
-        self.gen_insts_h(insts_h, insts_h_tmpl)
+        opcodes_h = opcodes_h or join("include", "yog", "opcodes.h")
+        opcodes_h_tmpl = opcodes_h_tmpl or opcodes_h + ".tmpl"
+        self.gen_opcodes_h(opcodes_h, opcodes_h_tmpl)
 
         """
         # Generate thread.inc (no templates).

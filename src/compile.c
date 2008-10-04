@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "yog/insts.h"
+#include "yog/opcodes.h"
 #include "yog/yog.h"
 
 typedef struct AstVisitor AstVisitor;
@@ -174,7 +174,7 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         Yog_assert(env, FALSE, "Can't find assigned symbol.");
     }
     YogBinary* insts = data->insts;
-    YogBinary_push_uint8(env, insts, INST(STORE_PACKAGE));
+    YogBinary_push_uint8(env, insts, OP(STORE_PKG));
     YogBinary_push_uint32(env, insts, YOGVAL_INT(index));
 }
 
@@ -194,7 +194,7 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
 
     CompileData* data = arg;
     YogBinary* insts = data->insts;
-    YogBinary_push_uint8(env, insts, INST(CALL_METHOD));
+    YogBinary_push_uint8(env, insts, OP(CALL_METHOD));
     YogBinary_push_uint32(env, insts, YogVm_intern(env, ENV_VM(env), "+"));
     Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments.");
     YogBinary_push_uint8(env, insts, argc);
@@ -209,7 +209,7 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
         Yog_assert(env, FALSE, "Can't find constant.");
     }
     YogBinary* insts = data->insts;
-    YogBinary_push_uint8(env, insts, INST(PUSH_CONST));
+    YogBinary_push_uint8(env, insts, OP(PUSH_CONST));
     YogBinary_push_uint8(env, insts, YOGVAL_INT(index));
 }
 
