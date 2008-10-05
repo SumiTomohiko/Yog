@@ -7,6 +7,7 @@
 struct YogInst {
     YOGGCOBJ_HEAD;
 
+
     union {
         struct {
             uint8_t index;
@@ -21,6 +22,7 @@ struct YogInst {
     } u;
 };
 
+
 #define PUSH_CONST_INDEX(inst) ((inst)->u.push_const.index)
 #define CALL_METHOD_METHOD(inst) ((inst)->u.call_method.method)
 #define CALL_METHOD_ARGC(inst) ((inst)->u.call_method.argc)
@@ -29,5 +31,5 @@ struct YogInst {
 typedef struct YogInst YogInst;
 #endif
 /**
- * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
+ * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */
