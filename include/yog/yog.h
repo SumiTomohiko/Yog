@@ -257,6 +257,8 @@ struct YogThread {
 
 typedef struct YogThread YogThread;
 
+#include "yog/inst.h"
+
 /* $PROTOTYPE_START$ */
 
 /**
