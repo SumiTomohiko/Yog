@@ -1,3 +1,4 @@
+#include "yog/opcodes.h"
 #include "yog/yog.h"
 
 void 
@@ -9,11 +10,22 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
 
     unsigned int pc = 0;
     while (pc < code->insts->size) {
-        switch (code->insts->items[pc]) {
+#define CODE        (code)
+#define PC          (pc)
+#define STACK       (frame->stack)
+#define POP()       (YogValArray_pop(env, STACK))
+#define PUSH(val)   (YogValArray_push(env, STACK, val))
+        switch (code->insts->items[PC]) {
+#include "src/thread.inc"
         default:
             Yog_assert(env, FALSE, "Unknown instruction.");
             break;
         }
+#undef PUSH
+#undef POP
+#undef STACK
+#undef PC
+#undef CODE
     }
 }
 

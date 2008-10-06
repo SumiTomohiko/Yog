@@ -1,6 +1,12 @@
 #include <string.h>
 #include "yog/yog.h"
 
+unsigned int 
+YogByteArray_size(YogEnv* env, YogByteArray* array) 
+{
+    return array->size;
+}
+
 YogByteArray* 
 YogByteArray_new(YogEnv* env, unsigned int size) 
 {

@@ -13,7 +13,7 @@
 inst push_const
 (uint8_t index)
 ()
-(value)
+(val)
 {
 }
 
@@ -26,7 +26,7 @@ inst call_method
 
 inst store_pkg
 (ID id) 
-(value) 
+(val) 
 ()
 {
 }

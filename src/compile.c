@@ -235,7 +235,7 @@ compile_module(YogEnv* env, YogArray* stmts, YogTable* var2index, YogTable* cons
     return data.insts;
 }
 
-void 
+static void 
 stack_size_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg) 
 {
     unsigned int i = 0;
@@ -280,7 +280,7 @@ stack_size_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* 
     (*stack_size)++;
 }
 
-unsigned int 
+static unsigned int 
 count_stack_size(YogEnv* env, YogArray* stmts) 
 {
     AstVisitor visitor;

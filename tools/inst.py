@@ -166,15 +166,13 @@ class CodeGenerator(object):
         lineno = len(self.make_attention().split("\n")) - 1
         inc = StringIO()
         for inst in self.insts:
-            inc.write("#line %(lineno)d \"%(inc)s\"\n" 
-                    % { "lineno": lineno + 2, "inc": thread_inc })
+            inc.write("""
+#line %(lineno)d \"%(inc)s\"""" % { "lineno": lineno + 2, "inc": thread_inc })
             lineno += 1
 
             s = """
-    case INST(%(name)s):
-        {
-            yg_debug_printf(vm, "%(name)s\\n");
-""" % { "name": inst.name.upper() }
+    case OP(%(name)s):
+    {""" % { "name": inst.name.upper() }
             lineno += len(s.split("\n")) - 1
             inc.write(s)
 
@@ -185,10 +183,9 @@ class CodeGenerator(object):
                     raise Exception("%(name)s is used." % { "name": name })
 
                 s = """
-            assert(PC < YogBinary_size(vm, CODE->ops));
-            %(type)s %(name)s = *((%(type)s*)&CODE->ops->ptr[PC]);
-            PC += sizeof(%(type)s);
-""" % { "type": operand.type, "name": name }
+            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+            %(type)s %(name)s = *((%(type)s*)&CODE->insts->items[PC]);
+            PC += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
                 declared_names.add(name)
@@ -196,19 +193,16 @@ class CodeGenerator(object):
             for pop_value in inst.pop_values:
                 if pop_value not in declared_names:
                     s = """
-            assert(0 < YogArray_size(vm, STACK));
-"""
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "");"""
                     lineno += len(s.split("\n")) - 1
                     inc.write(s)
 
                     if (0 < len(inst.codes)) or (0 < len(inst.push_values)):
                         s = """
-            YogValue %(name)s = POP();
-""" % { "name": pop_value }
+            YogVal %(name)s = POP();""" % { "name": pop_value }
                     else:
                         s = """
-            POP();
-"""
+            POP();"""
                     lineno += len(s.split("\n")) - 1
                     inc.write(s)
                     declared_names.add(pop_value)
@@ -216,14 +210,13 @@ class CodeGenerator(object):
             for push_value in inst.push_values:
                 if push_value not in declared_names:
                     s = """
-            YogValue %(name)s = YogValue_new_undef(vm);
-""" % { "name": push_value }
+            YogVal %(name)s = YogVal_nil();""" % { "name": push_value }
                     lineno += len(s.split("\n")) - 1
                     inc.write(s)
                     declared_names.add(push_value)
 
-            s = "#line %(lineno)d \"%(def)s\"\n" % { 
-                    "lineno": inst.lineno + 6, "def": def_ }
+            s = """
+#line %(lineno)d \"%(def)s\"""" % { "lineno": inst.lineno + 6, "def": def_ }
             lineno += len(s.split("\n")) - 1
             inc.write(s)
 
@@ -242,25 +235,23 @@ class CodeGenerator(object):
                 lineno += 1
                 inc.write("\n")
 
-            inc.write("#line %(lineno)d \"%(inc)s\"\n" 
-                    % { "lineno": lineno + 2, "inc": thread_inc })
+            inc.write("""
+#line %(lineno)d \"%(inc)s\"""" % { "lineno": lineno + 2, "inc": thread_inc })
             lineno += 1
 
             for push_value in inst.push_values:
                 s = """
-            PUSH(%(name)s);
-""" % { "name": push_value }
+            PUSH(%(name)s);""" % { "name": push_value }
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
 
             s = """
-        }
         break;
-"""
+    }"""
             lineno += len(s.split("\n")) - 1
             inc.write(s)
 
-        inc.write(self.get_c_footer())
+        inc.write("\n" + self.get_c_footer())
         self.write_file(thread_inc, inc.getvalue())
 
     def gen_compiler_inc(self, compiler_inc, compiler_inc_tmpl):
@@ -298,7 +289,7 @@ class CodeGenerator(object):
 """ % { "name": name })
             for operand in inst.operands:
                 inc.write("""
-            assert(pc < YogBinary_size(vm, code->ops));
+            assert(pc < YogByteArray_size(env, code->ops));
             %(type)s %(name)s = *((%(type)s*)&code->ops->ptr[PC]);
             pc += sizeof(%(type)s);
 """ % { "type": operand.type, "name": operand.name })
@@ -402,7 +393,7 @@ class CodeGenerator(object):
             f.write(s)
 
     def do(self, def_, opcodes_h=None, opcodes_h_tmpl=None, 
-            thread_inc="thread.inc", compiler_inc="compiler.inc", 
+            thread_inc=None, compiler_inc="compiler.inc", 
             compiler_inc_tmpl=None, code_inc="code.inc", yog_h="yog.h", 
             debug=False):
         self.open(def_)
@@ -422,10 +413,12 @@ class CodeGenerator(object):
         inst_h_tmpl = inst_h + ".tmpl"
         self.gen_inst_h(inst_h, inst_h_tmpl)
 
-        """
         # Generate thread.inc (no templates).
+        src_dir = "src"
+        thread_inc = thread_inc or join(src_dir, "thread.inc")
         self.gen_thread_inc(def_, thread_inc)
 
+        """
         # Generate compiler.inc from templates/compiler.inc.tmpl .
         compiler_inc_tmpl = compiler_inc_tmpl or join(templates_dir, 
                 "%(compiler_inc)s.tmpl" % { "compiler_inc": compiler_inc })

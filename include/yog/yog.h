@@ -138,6 +138,7 @@ typedef struct YogTable YogTable;
 struct YogValArray {
     YOGGCOBJ_HEAD;
     unsigned int size;
+    unsigned int capacity;
     YogVal items[0];
 };
 
@@ -145,7 +146,6 @@ typedef struct YogValArray YogValArray;
 
 struct YogArray {
     YOGGCOBJ_HEAD;
-    unsigned int size;
     YogValArray* body; 
 };
 
@@ -266,7 +266,10 @@ typedef struct YogThread YogThread;
  */
 
 /* src/array.c */
+void YogValArray_push(YogEnv*, YogValArray*, YogVal);
+YogVal YogValArray_pop(YogEnv*, YogValArray*);
 YogVal YogArray_at(YogEnv*, YogArray*, unsigned int);
+unsigned int YogValArray_size(YogEnv*, YogValArray*);
 unsigned int YogArray_size(YogEnv*, YogArray*);
 YogValArray* YogValArray_new(YogEnv*, unsigned int);
 void YogArray_push(YogEnv*, YogArray*, YogVal);
