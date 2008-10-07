@@ -6,24 +6,24 @@
 #line 6 "src/thread.inc"
     case OP(PUSH_CONST):
     {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
-            uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
-            PC += sizeof(uint8_t);
-            YogVal val = YogVal_nil();
+        Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+        uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
+        PC += sizeof(uint8_t);
+        YogVal val = YogVal_nil();
 #line 18 "src/insts.def"
 #line 14 "src/thread.inc"
-            PUSH(val);
+        PUSH(val);
         break;
     }
 #line 18 "src/thread.inc"
     case OP(CALL_METHOD):
     {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
-            ID method = *((ID*)&CODE->insts->items[PC]);
-            PC += sizeof(ID);
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
-            uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
-            PC += sizeof(uint8_t);
+        Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+        ID method = *((ID*)&CODE->insts->items[PC]);
+        PC += sizeof(ID);
+        Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+        uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
+        PC += sizeof(uint8_t);
 #line 25 "src/insts.def"
 #line 28 "src/thread.inc"
         break;
@@ -31,11 +31,11 @@
 #line 31 "src/thread.inc"
     case OP(STORE_PKG):
     {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
-            ID id = *((ID*)&CODE->insts->items[PC]);
-            PC += sizeof(ID);
-            Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
-            POP();
+        Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+        ID id = *((ID*)&CODE->insts->items[PC]);
+        PC += sizeof(ID);
+        Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
+        POP();
 #line 32 "src/insts.def"
 #line 40 "src/thread.inc"
         break;

@@ -4,7 +4,8 @@
 extern FILE* yyin;
 int yyparse();
 
-int main(int argc, char* argv[]) 
+int 
+main(int argc, char* argv[]) 
 {
 #define INIT_HEAP_SIZE  (1)
     YogVm* vm = YogVm_new(INIT_HEAP_SIZE);
@@ -20,7 +21,6 @@ int main(int argc, char* argv[])
 #endif
 
     Yog_set_parsing_env(&env);
-    FILE* yyin = NULL;
     if (1 < argc) {
         yyin = fopen(argv[1], "r");
     }

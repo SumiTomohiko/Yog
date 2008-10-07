@@ -122,10 +122,8 @@ YogNode_new(YogEnv* env, YogNodeType type)
 
 #define NODE_NEW(type)  YogNode_new(ENV, type)
 
-#if 0
 /* XXX: To avoid warning. Better way? */
 int yylex(void);
-#endif
 
 
 /* Enabling traces.  */
@@ -147,7 +145,7 @@ int yylex(void);
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 54 "parser.y"
+#line 52 "parser.y"
 typedef union YYSTYPE {
     YogArray* array;
     YogNode* node;
@@ -155,7 +153,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 191 of yacc.c.  */
-#line 159 "parser.c"
+#line 157 "parser.c"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -167,7 +165,7 @@ typedef union YYSTYPE {
 
 
 /* Line 219 of yacc.c.  */
-#line 171 "parser.c"
+#line 169 "parser.c"
 
 #if ! defined (YYSIZE_T) && defined (__SIZE_TYPE__)
 # define YYSIZE_T __SIZE_TYPE__
@@ -392,9 +390,9 @@ static const yysigned_char yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned char yyrline[] =
 {
-       0,    89,    89,    93,    96,   101,   108,   110,   112,   119,
-     121,   123,   125,   127,   129,   131,   133,   135,   136,   148,
-     150,   152,   154,   159
+       0,    87,    87,    91,    94,    99,   106,   108,   110,   117,
+     119,   121,   123,   125,   127,   129,   131,   133,   134,   146,
+     148,   150,   152,   157
 };
 #endif
 
@@ -1163,21 +1161,21 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 89 "parser.y"
+#line 87 "parser.y"
     {
             parsed_tree = (yyvsp[0].array);
         }
     break;
 
   case 3:
-#line 93 "parser.y"
+#line 91 "parser.y"
     {
             (yyval.array) = NULL;
         }
     break;
 
   case 4:
-#line 96 "parser.y"
+#line 94 "parser.y"
     {
             YogArray* array = YogArray_new(ENV);
             YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ((yyvsp[-1].node))));
@@ -1186,7 +1184,7 @@ yyreduce:
     break;
 
   case 5:
-#line 101 "parser.y"
+#line 99 "parser.y"
     {
             if ((yyvsp[0].node) != NULL) {
                 YogArray_push(ENV, (yyvsp[-1].array), YogVal_gcobj(YOGGCOBJ((yyvsp[0].node))));
@@ -1196,7 +1194,7 @@ yyreduce:
     break;
 
   case 8:
-#line 112 "parser.y"
+#line 110 "parser.y"
     {
                 YogNode* node = NODE_NEW(NODE_ASSIGN);
                 NODE_LEFT(node) = (yyvsp[-2].name);
@@ -1206,7 +1204,7 @@ yyreduce:
     break;
 
   case 18:
-#line 136 "parser.y"
+#line 134 "parser.y"
     {
                 YogArray* args = YogArray_new(ENV);
                 YogArray_push(ENV, args, YogVal_gcobj(YOGGCOBJ((yyvsp[0].node))));
@@ -1221,7 +1219,7 @@ yyreduce:
     break;
 
   case 22:
-#line 154 "parser.y"
+#line 152 "parser.y"
     {
             YogNode* node = NODE_NEW(NODE_VARIABLE);
             NODE_ID(node) = (yyvsp[0].name);
@@ -1230,7 +1228,7 @@ yyreduce:
     break;
 
   case 23:
-#line 159 "parser.y"
+#line 157 "parser.y"
     {
             YogNode* node = NODE_NEW(NODE_LITERAL);
             NODE_VAL(node) = (yyvsp[0].val);
@@ -1243,7 +1241,7 @@ yyreduce:
     }
 
 /* Line 1126 of yacc.c.  */
-#line 1247 "parser.c"
+#line 1245 "parser.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1511,7 +1509,7 @@ yyreturn:
 }
 
 
-#line 165 "parser.y"
+#line 163 "parser.y"
 
 /*
 single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE

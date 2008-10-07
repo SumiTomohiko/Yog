@@ -12,13 +12,16 @@ push_char(char c)
 {
     YogBinary_push(yog_parsing.vm, yg_lex_buffer, c);
 }
+#endif
 
+#if 0
 #undef YY_INPUT
 #define YY_INPUT(buf, result, max_size) (result = my_yyinput(buf, max_size))
 
 static int
 my_yyinput(char *buf, int max_size)
 {
+#if 0
     if (eof) {
         if (!output_last_terminator) {
             output_last_terminator = TRUE;
@@ -29,6 +32,7 @@ my_yyinput(char *buf, int max_size)
             return 0;
         }
     }
+#endif
 
     int ch;
     int len;

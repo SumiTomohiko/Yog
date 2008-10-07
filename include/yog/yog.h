@@ -281,6 +281,9 @@ void YogObj_init(YogEnv*, YogObj*, YogObj*);
 YogObj* YogObj_new(YogEnv*);
 
 /* src/binary.c */
+unsigned int YogByteArray_size(YogEnv*, YogByteArray*);
+uint8_t YogByteArray_at(YogEnv*, YogByteArray*, unsigned int);
+void YogByteArray_print(YogEnv*, YogByteArray*);
 YogByteArray* YogByteArray_new(YogEnv*, unsigned int);
 void YogBinary_push_uint8(YogEnv*, YogBinary*, uint8_t);
 void YogBinary_push_uint32(YogEnv*, YogBinary*, uint32_t);

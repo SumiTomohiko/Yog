@@ -471,13 +471,16 @@ push_char(char c)
 {
     YogBinary_push(yog_parsing.vm, yg_lex_buffer, c);
 }
+#endif
 
+#if 0
 #undef YY_INPUT
 #define YY_INPUT(buf, result, max_size) (result = my_yyinput(buf, max_size))
 
 static int
 my_yyinput(char *buf, int max_size)
 {
+#if 0
     if (eof) {
         if (!output_last_terminator) {
             output_last_terminator = TRUE;
@@ -488,6 +491,7 @@ my_yyinput(char *buf, int max_size)
             return 0;
         }
     }
+#endif
 
     int ch;
     int len;
@@ -512,7 +516,7 @@ yywrap()
 }
 
 #define YY_SKIP_YYWRAP
-#line 516 "lexer.c"
+#line 520 "lexer.c"
 
 #define INITIAL 0
 
@@ -665,9 +669,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 57 "lexer.l"
+#line 61 "lexer.l"
 
-#line 671 "lexer.c"
+#line 675 "lexer.c"
 
 	if ( !(yy_init) )
 		{
@@ -752,7 +756,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 58 "lexer.l"
+#line 62 "lexer.l"
 {
     YogEnv* env = Yog_get_parsing_env();
     YogVm* vm = ENV_VM(env);
@@ -763,23 +767,23 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 65 "lexer.l"
+#line 69 "lexer.l"
 return EQUAL;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 66 "lexer.l"
+#line 70 "lexer.l"
 return PLUS;
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 67 "lexer.l"
+#line 71 "lexer.l"
 return NEWLINE;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 68 "lexer.l"
+#line 72 "lexer.l"
 {
     YogVal val = YogVal_int(atoi(yytext));
     yylval.val = val;
@@ -788,10 +792,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 73 "lexer.l"
+#line 77 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 795 "lexer.c"
+#line 799 "lexer.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1789,7 +1793,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 73 "lexer.l"
+#line 77 "lexer.l"
 
 
 /**

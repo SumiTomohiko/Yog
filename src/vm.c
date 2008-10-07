@@ -33,6 +33,7 @@ new_heap(size_t size, Heap* next)
     Yog_assert(NULL, heap != NULL, "Can' allocate memory for heap.");
     bzero(ptr, size);
 
+    heap->size = size;
     heap->base = heap->free = ptr;
     heap->next = next;
 
@@ -43,7 +44,7 @@ YogGCObj*
 YogVm_alloc_gcobj(YogEnv* env, YogVm* vm, YogGCObjType type, size_t size) 
 {
     size_t unit = sizeof(void*);
-    size_t alimented_size = ((size - unit) / unit + 1) * unit;
+    size_t alimented_size = ((size - 1) / unit + 1) * unit;
 
     Heap* heap = vm->heap;
     size_t rest_size = heap->size - (heap->free - heap->base);

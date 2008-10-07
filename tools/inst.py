@@ -183,9 +183,9 @@ class CodeGenerator(object):
                     raise Exception("%(name)s is used." % { "name": name })
 
                 s = """
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
-            %(type)s %(name)s = *((%(type)s*)&CODE->insts->items[PC]);
-            PC += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
+        Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+        %(type)s %(name)s = *((%(type)s*)&CODE->insts->items[PC]);
+        PC += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
                 declared_names.add(name)
@@ -193,16 +193,16 @@ class CodeGenerator(object):
             for pop_value in inst.pop_values:
                 if pop_value not in declared_names:
                     s = """
-            Yog_assert(env, 0 < YogValArray_size(env, STACK), "");"""
+        Yog_assert(env, 0 < YogValArray_size(env, STACK), "");"""
                     lineno += len(s.split("\n")) - 1
                     inc.write(s)
 
                     if (0 < len(inst.codes)) or (0 < len(inst.push_values)):
                         s = """
-            YogVal %(name)s = POP();""" % { "name": pop_value }
+        YogVal %(name)s = POP();""" % { "name": pop_value }
                     else:
                         s = """
-            POP();"""
+        POP();"""
                     lineno += len(s.split("\n")) - 1
                     inc.write(s)
                     declared_names.add(pop_value)
@@ -210,7 +210,7 @@ class CodeGenerator(object):
             for push_value in inst.push_values:
                 if push_value not in declared_names:
                     s = """
-            YogVal %(name)s = YogVal_nil();""" % { "name": push_value }
+        YogVal %(name)s = YogVal_nil();""" % { "name": push_value }
                     lineno += len(s.split("\n")) - 1
                     inc.write(s)
                     declared_names.add(push_value)
@@ -241,7 +241,7 @@ class CodeGenerator(object):
 
             for push_value in inst.push_values:
                 s = """
-            PUSH(%(name)s);""" % { "name": push_value }
+        PUSH(%(name)s);""" % { "name": push_value }
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
 

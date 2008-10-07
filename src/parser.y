@@ -45,10 +45,8 @@ YogNode_new(YogEnv* env, YogNodeType type)
 
 #define NODE_NEW(type)  YogNode_new(ENV, type)
 
-#if 0
 /* XXX: To avoid warning. Better way? */
 int yylex(void);
-#endif
 %}
 
 %union {

@@ -307,6 +307,7 @@ Yog_compile_module(YogEnv* env, YogArray* stmts)
     YogCode* code = YogCode_new(env);
     code->insts = insts->body;
     code->stack_size = stack_size;
+    YogByteArray_print(env, code->insts);
 
     return code;
 }
