@@ -15,7 +15,9 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
 #define STACK       (frame->stack)
 #define POP()       (YogValArray_pop(env, STACK))
 #define PUSH(val)   (YogValArray_push(env, STACK, val))
-        switch (code->insts->items[PC]) {
+        OpCode op = code->insts->items[PC];
+        PC += sizeof(uint8_t);
+        switch (op) {
 #include "src/thread.inc"
         default:
             Yog_assert(env, FALSE, "Unknown instruction.");
