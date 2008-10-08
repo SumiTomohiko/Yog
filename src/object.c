@@ -1,5 +1,6 @@
 #include "yog/yog.h"
 
+#if 0
 void 
 YogObj_set_attr(YogEnv* env, YogObj* obj, const char* name, YogVal val) 
 {
@@ -7,14 +8,22 @@ YogObj_set_attr(YogEnv* env, YogObj* obj, const char* name, YogVal val)
     YogVal key = YogVal_symbol(id);
     YogTable_insert(env, obj->attrs, key, val);
 }
+#endif
 
 void 
-YogObj_init(YogEnv* env, YogObj* obj, YogObj* klass) 
+YogBasicObj_init(YogEnv* env, YogBasicObj* obj, YogKlass* klass) 
 {
-    obj->attrs = YogTable_new_symbol_table(env);
-    YogObj_set_attr(env, obj, "class", YogVal_gcobj(YOGGCOBJ(klass)));
+    obj->klass = klass;
 }
 
+void 
+YogObj_init(YogEnv* env, YogObj* obj, YogKlass* klass) 
+{
+    obj->attrs = NULL;
+    YogBasicObj_init(env, YOGBASICOBJ(obj), klass);
+}
+
+#if 0
 YogObj*
 YogObj_new(YogEnv* env) 
 {
@@ -23,6 +32,7 @@ YogObj_new(YogEnv* env)
 
     return obj;
 }
+#endif
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

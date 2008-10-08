@@ -27,11 +27,17 @@
         uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
         PC += sizeof(uint8_t);
 #line 26 "src/insts.def"
+        YogVal args[argc];
+        unsigned int i = 0;
+        for (i = 0; i < argc; i++) {
+            args[i] = POP();
+        }
+        YogVal receiver = POP();
 
-#line 29 "src/thread.inc"
+#line 35 "src/thread.inc"
         break;
     }
-#line 32 "src/thread.inc"
+#line 38 "src/thread.inc"
     case OP(STORE_PKG):
     {
         Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
@@ -39,9 +45,9 @@
         PC += sizeof(ID);
         Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
         POP();
-#line 33 "src/insts.def"
+#line 39 "src/insts.def"
 
-#line 41 "src/thread.inc"
+#line 47 "src/thread.inc"
         break;
     }
 /**

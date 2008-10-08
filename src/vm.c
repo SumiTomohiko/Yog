@@ -82,6 +82,10 @@ YogVm_new(size_t heap_size)
     vm->id2name = NULL;
     vm->name2id = NULL;
 
+    vm->obj_klass = NULL;
+    vm->klass_klass = NULL;
+    vm->func_klass = NULL;
+
     return vm;
 }
 

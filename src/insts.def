@@ -23,6 +23,12 @@ inst call_method
 (...)
 (...)
 {
+    YogVal args[argc];
+    unsigned int i = 0;
+    for (i = 0; i < argc; i++) {
+        args[i] = POP();
+    }
+    YogVal receiver = POP();
 }
 
 inst store_pkg

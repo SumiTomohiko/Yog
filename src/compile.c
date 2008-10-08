@@ -333,7 +333,7 @@ table2array(YogEnv* env, YogTable* table)
         return array;
     }
     else {
-        return YogValArray_new(env, 0);
+        return NULL;
     }
 }
 

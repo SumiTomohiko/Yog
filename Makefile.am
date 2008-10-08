@@ -13,7 +13,9 @@ yog_SOURCES = src/main.c \
 	      src/compile.c \
 	      src/code.c \
 	      src/frame.c \
-	      src/thread.c
+	      src/thread.c \
+	      src/function.c \
+	      src/klass.c
 yog_CFLAGS = -Iinclude -Wall
 AM_YFLAGS = -d
 #AM_LFLAGS = --noline
