@@ -29,6 +29,8 @@ inst call_method
         args[i] = POP();
     }
     YogVal receiver = POP();
+    YogVal ret = YogThread_call_method(ENV, receiver, method, argc, args);
+    PUSH(ret);
 }
 
 inst store_pkg

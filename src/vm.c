@@ -82,6 +82,8 @@ YogVm_boot(YogEnv* env, YogVm* vm)
     YOGBASICOBJ(klass_klass)->klass = klass_klass;
     vm->obj_klass = obj_klass;
     vm->klass_klass = klass_klass;
+
+    vm->int_klass = YogInt_klass_new(env);
 }
 
 YogVm* 

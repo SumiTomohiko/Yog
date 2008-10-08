@@ -1,5 +1,21 @@
 #include "yog/yog.h"
 
+YogVal 
+YogObj_get_attr(YogEnv* env, YogObj* obj, ID name) 
+{
+    if (obj->attrs == NULL) {
+        Yog_assert(env, FALSE, "Object doesn't have attributes.");
+    }
+
+    YogVal key = YogVal_symbol(name);
+    YogVal attr = YogVal_nil();
+    if (!YogTable_lookup(env, obj->attrs, key, &attr)) {
+        Yog_assert(env, FALSE, "Can't find attribute.");
+    }
+
+    return attr;
+}
+
 void 
 YogObj_set_attr(YogEnv* env, YogObj* obj, const char* name, YogVal val) 
 {

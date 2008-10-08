@@ -33,11 +33,13 @@
             args[i] = POP();
         }
         YogVal receiver = POP();
+        YogVal ret = YogThread_call_method(ENV, receiver, method, argc, args);
+        PUSH(ret);
 
-#line 35 "src/thread.inc"
+#line 37 "src/thread.inc"
         break;
     }
-#line 38 "src/thread.inc"
+#line 40 "src/thread.inc"
     case OP(STORE_PKG):
     {
         Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
@@ -45,9 +47,9 @@
         PC += sizeof(ID);
         Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
         POP();
-#line 39 "src/insts.def"
+#line 41 "src/insts.def"
 
-#line 47 "src/thread.inc"
+#line 49 "src/thread.inc"
         break;
     }
 /**

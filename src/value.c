@@ -108,6 +108,26 @@ YogVal_func(YogFuncBody func)
     RETURN_VAL(VAL_FUNC, YOGVAL_FUNC, func);
 }
 
+YogKlass* 
+YogVal_get_klass(YogEnv* env, YogVal val) 
+{
+    switch (YOGVAL_TYPE(val)) {
+    case VAL_INT:
+        return ENV_VM(env)->int_klass;
+        break;
+    case VAL_FLOAT:
+    case VAL_GCOBJ:
+    case VAL_TRUE:
+    case VAL_FALSE:
+    case VAL_NIL:
+    case VAL_SYMBOL:
+    default:
+        Yog_assert(env, FALSE, "Uknown value type.");
+        break;
+    }
+    /* NOTREACHED */
+}
+
 #undef RETURN_VAL
 
 /**
