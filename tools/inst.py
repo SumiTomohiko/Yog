@@ -220,6 +220,7 @@ class CodeGenerator(object):
             lineno += len(s.split("\n")) - 1
             inc.write(s)
 
+            inc.write("\n")
             in_macro = False
             for line in [s.rstrip() for s in inst.codes]:
                 if line.startswith("#") or in_macro:
@@ -229,7 +230,7 @@ class CodeGenerator(object):
                     else:
                         in_macro = False
                 else:
-                    inc.write(" " * 8)
+                    inc.write(" " * 4)
                     inc.write(line)
                     in_macro = False
                 lineno += 1

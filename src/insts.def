@@ -15,6 +15,7 @@ inst push_const
 ()
 (val)
 {
+    val = CONSTS(index);
 }
 
 inst call_method

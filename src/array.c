@@ -19,10 +19,16 @@ YogValArray_pop(YogEnv* env, YogValArray* array)
 }
 
 YogVal 
+YogValArray_at(YogEnv* env, YogValArray* array, unsigned int n) 
+{
+    Yog_assert(env, n < array->size, "Index exceed array size.");
+    return array->items[n];
+}
+
+YogVal 
 YogArray_at(YogEnv* env, YogArray* array, unsigned int n) 
 {
-    Yog_assert(env, n < array->body->size + 1, "Index exceed array size.");
-    return array->body->items[n];
+    return YogValArray_at(env, array->body, n);
 }
 
 unsigned int 

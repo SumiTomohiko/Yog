@@ -268,6 +268,7 @@ typedef struct YogThread YogThread;
 /* src/array.c */
 void YogValArray_push(YogEnv*, YogValArray*, YogVal);
 YogVal YogValArray_pop(YogEnv*, YogValArray*);
+YogVal YogValArray_at(YogEnv*, YogValArray*, unsigned int);
 YogVal YogArray_at(YogEnv*, YogArray*, unsigned int);
 unsigned int YogValArray_size(YogEnv*, YogValArray*);
 unsigned int YogArray_size(YogEnv*, YogArray*);
@@ -325,8 +326,8 @@ void YogTable_add_direct(YogEnv*, YogTable*, YogVal, YogVal);
 YogTable* YogTable_copy(YogEnv*, YogTable*);
 BOOL YogTable_delete(YogEnv*, YogTable*, YogVal*, YogVal*);
 BOOL YogTable_delete_safe(YogEnv*, YogTable*, YogVal*, YogVal*, YogVal);
-BOOL YogTable_foreach(YogEnv*, YogTable*, int (*)(YogEnv*, YogVal, YogVal, YogVal), YogVal);
-void YogTable_cleanup_safe(YogEnv*, YogTable*, YogVal);
+BOOL YogTable_foreach(YogEnv*, YogTable*, int (*)(YogEnv*, YogVal, YogVal, YogVal*), YogVal*);
+void YogTable_cleanup_safe(YogEnv*, YogTable*, YogVal*);
 YogTable* YogTable_new_symbol_table(YogEnv*);
 YogTable* YogTable_new_string_table(YogEnv*);
 BOOL YogTable_lookup_str(YogEnv*, YogTable*, const char*, YogVal*);

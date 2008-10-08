@@ -437,9 +437,9 @@ YogTable_delete_safe(YogEnv* env, YogTable* table, YogVal* key, YogVal* value, Y
 }
 
 static int
-delete_never(YogEnv* env, YogVal key, YogVal value, YogVal never)
+delete_never(YogEnv* env, YogVal key, YogVal value, YogVal* never)
 {
-    if (YogVal_equals_exact(env, value, never)) {
+    if (YogVal_equals_exact(env, value, *never)) {
         return ST_DELETE;
     }
     else {
@@ -448,7 +448,7 @@ delete_never(YogEnv* env, YogVal key, YogVal value, YogVal never)
 }
 
 BOOL
-YogTable_foreach(YogEnv* env, YogTable* table, int (*func)(YogEnv*, YogVal, YogVal, YogVal), YogVal arg)
+YogTable_foreach(YogEnv* env, YogTable* table, int (*func)(YogEnv*, YogVal, YogVal, YogVal*), YogVal* arg)
 {
     int i = 0;
     for (i = 0; i < table->num_bins; i++) {
@@ -498,7 +498,7 @@ YogTable_foreach(YogEnv* env, YogTable* table, int (*func)(YogEnv*, YogVal, YogV
 }
 
 void
-YogTable_cleanup_safe(YogEnv* env, YogTable* table, YogVal never)
+YogTable_cleanup_safe(YogEnv* env, YogTable* table, YogVal* never)
 {
     int num_entries = table->num_entries;
 

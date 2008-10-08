@@ -1,5 +1,7 @@
+#include <limits.h>
 #include <stdint.h>
 #include "yog/opcodes.h"
+#include "yog/st.h"
 #include "yog/yog.h"
 
 typedef struct AstVisitor AstVisitor;
@@ -296,6 +298,45 @@ count_stack_size(YogEnv* env, YogArray* stmts)
     return stack_size;
 }
 
+static int 
+table2array_count_index(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
+{
+    if (YOGVAL_INT(*arg) < YOGVAL_INT(value)) {
+        *arg = value;
+    }
+
+    return ST_CONTINUE;
+}
+
+static int 
+table2array_fill_array(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
+{
+    YogValArray* array = (YogValArray*)YOGVAL_GCOBJ(*arg);
+    int index = YOGVAL_INT(value);
+    array->items[index] = key;
+
+    return ST_CONTINUE;
+}
+
+static YogValArray* 
+table2array(YogEnv* env, YogTable* table) 
+{
+    YogVal max_index = YogVal_int(INT_MIN);
+    YogTable_foreach(env, table, table2array_count_index, &max_index);
+    int index = YOGVAL_INT(max_index);
+    if (0 <= index) {
+        unsigned int size = index + 1;
+        YogValArray* array = YogValArray_new(env, size);
+        YogVal arg = YogVal_gcobj(YOGGCOBJ(array));
+        YogTable_foreach(env, table, table2array_fill_array, &arg);
+        array->size = size;
+        return array;
+    }
+    else {
+        return YogValArray_new(env, 0);
+    }
+}
+
 YogCode* 
 Yog_compile_module(YogEnv* env, YogArray* stmts) 
 {
@@ -305,8 +346,9 @@ Yog_compile_module(YogEnv* env, YogArray* stmts)
     YogBinary* insts = compile_module(env, stmts, var2index, const2index);
 
     YogCode* code = YogCode_new(env);
-    code->insts = insts->body;
     code->stack_size = stack_size;
+    code->consts = table2array(env, const2index);
+    code->insts = insts->body;
 
     return code;
 }
