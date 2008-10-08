@@ -1,0 +1,16 @@
+bin_PROGRAMS = yog
+yog_SOURCES = @SOURCES@
+yog_CFLAGS = -Iinclude -Wall
+AM_YFLAGS = -d
+#AM_LFLAGS = --noline
+
+proto:
+	python tools/update_prototype.py
+
+insts:
+	python tools/inst.py src/insts.def
+
+am:
+	python tools/update_automake.py
+
+# vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

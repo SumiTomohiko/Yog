@@ -70,6 +70,20 @@ YogVm_alloc_gcobj(YogEnv* env, YogVm* vm, YogGCObjType type, size_t size)
     return gcobj;
 }
 
+void 
+YogVm_boot(YogEnv* env, YogVm* vm) 
+{
+    vm->id2name = YogTable_new_symbol_table(env);
+    vm->name2id = YogTable_new_string_table(env);
+
+    YogKlass* obj_klass = YogKlass_new(env, NULL);
+    YogKlass* klass_klass = YogKlass_new(env, obj_klass);
+    YOGBASICOBJ(obj_klass)->klass = klass_klass;
+    YOGBASICOBJ(klass_klass)->klass = klass_klass;
+    vm->obj_klass = obj_klass;
+    vm->klass_klass = klass_klass;
+}
+
 YogVm* 
 YogVm_new(size_t heap_size) 
 {

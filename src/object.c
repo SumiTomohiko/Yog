@@ -1,14 +1,24 @@
 #include "yog/yog.h"
 
-#if 0
 void 
 YogObj_set_attr(YogEnv* env, YogObj* obj, const char* name, YogVal val) 
 {
     ID id = YogVm_intern(env, ENV_VM(env), name);
     YogVal key = YogVal_symbol(id);
+
+    if (obj->attrs == NULL) {
+        obj->attrs = YogTable_new_symbol_table(env);
+    }
+
     YogTable_insert(env, obj->attrs, key, val);
 }
-#endif
+
+void 
+YogObj_define_method(YogEnv* env, YogObj* obj, const char* name, YogFuncBody f) 
+{
+    YogVal val = YogVal_func(f);
+    YogObj_set_attr(env, obj, name, val);
+}
 
 void 
 YogBasicObj_init(YogEnv* env, YogBasicObj* obj, YogKlass* klass) 

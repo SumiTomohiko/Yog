@@ -102,6 +102,12 @@ YogVal_symbol(ID id)
     RETURN_VAL(VAL_SYMBOL, YOGVAL_SYMBOL, id);
 }
 
+YogVal 
+YogVal_func(YogFuncBody func) 
+{
+    RETURN_VAL(VAL_FUNC, YOGVAL_FUNC, func);
+}
+
 #undef RETURN_VAL
 
 /**
