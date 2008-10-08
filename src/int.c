@@ -9,7 +9,7 @@ add(YogEnv* env, YogVal receiver, int argc, YogVal* args)
         Yog_assert(env, args[i].type == VAL_INT, "");
     }
 
-    int result = YOGVAL_INT(args[0]) + YOGVAL_INT(args[1]);
+    int result = YOGVAL_INT(receiver) + YOGVAL_INT(args[0]);
 
     return YogVal_int(result);
 }

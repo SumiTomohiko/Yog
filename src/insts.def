@@ -38,6 +38,8 @@ inst store_pkg
 (val) 
 ()
 {
+    YogVal key = YogVal_symbol(id);
+    YogTable_insert(ENV, PKG_VARS(FRAME), key, val);
 }
 
 /**

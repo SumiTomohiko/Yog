@@ -1,5 +1,40 @@
+#include <stdio.h>
 #include "yog/yog.h"
 
+void 
+YogVal_print(YogEnv* env, YogVal val) 
+{
+    switch (YOGVAL_TYPE(val)) {
+    case VAL_INT:
+        printf("<int: %d>\n", YOGVAL_INT(val));
+        break;
+    case VAL_FLOAT:
+        printf("<float: %f>\n", YOGVAL_FLOAT(val));
+        break;
+    case VAL_GCOBJ:
+        printf("<object: %p>\n", YOGVAL_GCOBJ(val));
+        break;
+    case VAL_TRUE:
+        printf("<bool: true>\n");
+        break;
+    case VAL_FALSE:
+        printf("<bool: false>\n");
+        break;
+    case VAL_NIL:
+        printf("<nil>\n");
+        break;
+    case VAL_SYMBOL:
+        printf("<symbol: %d>\n", YOGVAL_SYMBOL(val));
+        break;
+    case VAL_FUNC:
+        printf("<function: %p>\n", YOGVAL_FUNC(val));
+        break;
+    default:
+        Yog_assert(env, FALSE, "Uknown value type.");
+        break;
+    }
+    /* NOTREACHED */
+}
 int 
 YogVal_hash(YogEnv* env, YogVal val) 
 {

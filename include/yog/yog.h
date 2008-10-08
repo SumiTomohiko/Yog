@@ -271,12 +271,12 @@ struct YogCode {
 
 typedef struct YogCode YogCode;
 
-struct YogModule {
+struct YogPackage {
     YOGOBJ_HEAD;
     struct YogCode* code;
 };
 
-typedef struct YogModule YogModule;
+typedef struct YogPackage YogPackage;
 
 struct YogFrame {
     YOGGCOBJ_HEAD;
@@ -343,6 +343,7 @@ YogThread* YogThread_new(YogEnv*);
 YogKlass* YogKlass_new(YogEnv*, YogKlass*);
 
 /* src/value.c */
+void YogVal_print(YogEnv*, YogVal);
 int YogVal_hash(YogEnv*, YogVal);
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
 YogVal YogVal_nil();

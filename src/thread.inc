@@ -46,10 +46,12 @@
         ID id = *((ID*)&CODE->insts->items[PC]);
         PC += sizeof(ID);
         Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
-        POP();
+        YogVal val = POP();
 #line 41 "src/insts.def"
+        YogVal key = YogVal_symbol(id);
+        YogTable_insert(ENV, PKG_VARS(FRAME), key, val);
 
-#line 49 "src/thread.inc"
+#line 51 "src/thread.inc"
         break;
     }
 /**

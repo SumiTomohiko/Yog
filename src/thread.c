@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "yog/opcodes.h"
 #include "yog/yog.h"
 
@@ -27,6 +28,14 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
 #define PUSH(val)       (YogValArray_push(env, STACK, val))
 #define CONSTS(index)   (YogValArray_at(env, code->consts, index))
 #define ENV             (env)
+#define FRAME           (frame)
+        if (0 < STACK->size) {
+            YogVal_print(env, STACK->items[STACK->size - 1]);
+        }
+        else {
+            printf("stack is empty.\n");
+        }
+
         OpCode op = code->insts->items[PC];
         PC += sizeof(uint8_t);
         switch (op) {
@@ -35,6 +44,7 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
             Yog_assert(env, FALSE, "Unknown instruction.");
             break;
         }
+#undef FRAME
 #undef ENV
 #undef CONSTS
 #undef PUSH
