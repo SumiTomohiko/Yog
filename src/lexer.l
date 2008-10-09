@@ -66,6 +66,7 @@ yywrap()
     yylval.name = name;
     return NAME;
 }
+<INITIAL>","        return COMMA;
 <INITIAL>"="        return EQUAL;
 <INITIAL>"+"        return PLUS;
 <INITIAL>"\n"       return NEWLINE;
@@ -74,6 +75,7 @@ yywrap()
     yylval.val = val;
     return NUMBER;
 }
+<INITIAL>[ \t]
 %%
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

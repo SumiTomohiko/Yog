@@ -29,19 +29,21 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     EQUAL = 258,
-     PLUS = 259,
-     NUMBER = 260,
-     NEWLINE = 261,
-     NAME = 262
+     COMMA = 258,
+     EQUAL = 259,
+     PLUS = 260,
+     NUMBER = 261,
+     NEWLINE = 262,
+     NAME = 263
    };
 #endif
 /* Tokens.  */
-#define EQUAL 258
-#define PLUS 259
-#define NUMBER 260
-#define NEWLINE 261
-#define NAME 262
+#define COMMA 258
+#define EQUAL 259
+#define PLUS 260
+#define NUMBER 261
+#define NEWLINE 262
+#define NAME 263
 
 
 
@@ -55,7 +57,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 59 "parser.h"
+#line 61 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

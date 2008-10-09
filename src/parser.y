@@ -56,12 +56,14 @@ int yylex(void);
     ID name;
 }
 
+%token COMMA
 %token EQUAL
 %token PLUS
 %token NUMBER
 %token NEWLINE
 %token NAME
 
+/*%type<array> args*/
 %type<array> module
 %type<array> stmts
 %type<name> NAME
@@ -88,22 +90,28 @@ module  : stmts {
             parsed_tree = $1;
         }
         ;
-stmts   : NEWLINE {
-            $$ = NULL;
+stmts   : stmt {
+            $$ = YogArray_new_elem(ENV, YogVal_gcobj(YOGGCOBJ($1)));
         }
-        | stmt NEWLINE {
-            YogArray* array = YogArray_new(ENV);
-            YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ($1)));
-            $$ = array;
-        }
-        | stmts stmt {
-            if ($2 != NULL) {
-                YogArray_push(ENV, $1, YogVal_gcobj(YOGGCOBJ($2)));
+        | stmts NEWLINE stmt {
+            if ($3 != NULL) {
+                YogArray_push(ENV, $1, YogVal_gcobj(YOGGCOBJ($3)));
             }
             $$ = $1;
         }
         ;
-stmt    : expr
+stmt    : /* empty */ {
+            $$ = NULL;
+        }
+        | expr
+        /*| NAME
+        | NAME args {
+        }
+        ;
+args    : expr {
+            $$ = YogArray_new_elem(ENV, YogVal_gcobj(YOGGCOBJ($1)));
+        }
+        | args COMMA expr */
         ;
 expr    : assign_expr
         ;

@@ -313,6 +313,7 @@ unsigned int YogArray_size(YogEnv*, YogArray*);
 YogValArray* YogValArray_new(YogEnv*, unsigned int);
 void YogArray_push(YogEnv*, YogArray*, YogVal);
 YogArray* YogArray_new(YogEnv*);
+YogArray* YogArray_new_elem(YogEnv*, YogVal);
 
 /* src/int.c */
 YogKlass* YogInt_klass_new(YogEnv*);
