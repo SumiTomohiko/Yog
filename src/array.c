@@ -83,14 +83,6 @@ YogArray_new(YogEnv* env)
     return array;
 }
 
-YogArray* 
-YogArray_new_elem(YogEnv* env, YogVal elem) 
-{
-    YogArray* array = YogArray_new(env);
-    YogArray_push(env, array, elem);
-    return array;
-}
-
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

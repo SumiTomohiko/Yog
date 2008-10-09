@@ -43,7 +43,21 @@ YogNode_new(YogEnv* env, YogNodeType type)
     return node;
 }
 
-#define NODE_NEW(type)  YogNode_new(ENV, type)
+#define NODE_NEW(type)                      YogNode_new(ENV, type)
+#define COMMAND_CALL_NEW(result, name)      do { \
+    result = NODE_NEW(NODE_COMMAND_CALL); \
+    NODE_COMMAND(result) = name; \
+} while (0)
+#define ARRAY_NEW(array, elem)              do { \
+    array = YogArray_new(ENV); \
+    YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ(elem))); \
+} while (0)
+#define ARRAY_PUSH(result, array, elem)     do { \
+    if (elem != NULL) { \
+        YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ(elem))); \
+    } \
+    result = array; \
+} while (0)
 
 /* XXX: To avoid warning. Better way? */
 int yylex(void);
@@ -63,7 +77,7 @@ int yylex(void);
 %token NEWLINE
 %token NAME
 
-/*%type<array> args*/
+%type<array> args
 %type<array> module
 %type<array> stmts
 %type<name> NAME
@@ -84,34 +98,33 @@ int yylex(void);
 %type<node> term
 %type<node> xor_expr
 %type<val> NUMBER
-
 %%
 module  : stmts {
             parsed_tree = $1;
         }
         ;
 stmts   : stmt {
-            $$ = YogArray_new_elem(ENV, YogVal_gcobj(YOGGCOBJ($1)));
+            ARRAY_NEW($$, $1);
         }
         | stmts NEWLINE stmt {
-            if ($3 != NULL) {
-                YogArray_push(ENV, $1, YogVal_gcobj(YOGGCOBJ($3)));
-            }
-            $$ = $1;
+            ARRAY_PUSH($$, $1, $3);
         }
         ;
 stmt    : /* empty */ {
             $$ = NULL;
         }
         | expr
-        /*| NAME
         | NAME args {
+            COMMAND_CALL_NEW($$, $1);
+            NODE_ARGS($$) = $2;
         }
         ;
 args    : expr {
-            $$ = YogArray_new_elem(ENV, YogVal_gcobj(YOGGCOBJ($1)));
+            ARRAY_NEW($$, $1);
         }
-        | args COMMA expr */
+        | args COMMA expr {
+            ARRAY_PUSH($$, $1, $3);
+        }
         ;
 expr    : assign_expr
         ;
@@ -121,6 +134,7 @@ assign_expr : NAME EQUAL logical_or_expr {
                 NODE_RIGHT(node) = $3;
                 $$ = node;
             }
+            | logical_or_expr
             ;
 logical_or_expr : logical_and_expr
                 ;

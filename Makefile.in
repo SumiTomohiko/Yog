@@ -174,27 +174,27 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-yog_SOURCES = src/array.c\
-	src/binary.c\
-	src/code.c\
-	src/compile.c\
-	src/error.c\
-	src/frame.c\
-	src/function.c\
-	src/int.c\
-	src/klass.c\
-	src/lexer.l\
-	src/main.c\
-	src/object.c\
-	src/parser.y\
-	src/st.c\
-	src/string.c\
-	src/thread.c\
-	src/value.c\
+yog_SOURCES = src/array.c \
+	src/binary.c \
+	src/code.c \
+	src/compile.c \
+	src/error.c \
+	src/frame.c \
+	src/function.c \
+	src/int.c \
+	src/klass.c \
+	src/lexer.l \
+	src/main.c \
+	src/object.c \
+	src/parser.y \
+	src/st.c \
+	src/string.c \
+	src/thread.c \
+	src/value.c \
 	src/vm.c
 
 yog_CFLAGS = -Iinclude -Wall
-AM_YFLAGS = -d
+AM_YFLAGS = -d --verbose
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

@@ -18,7 +18,7 @@ yog_SOURCES = src/array.c \
 	src/value.c \
 	src/vm.c
 yog_CFLAGS = -Iinclude -Wall
-AM_YFLAGS = -d
+AM_YFLAGS = -d --verbose
 #AM_LFLAGS = --noline
 
 proto:

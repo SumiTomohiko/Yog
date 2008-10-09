@@ -59,8 +59,6 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     case NODE_METHOD_CALL:
         VISIT(visit_method_call);
         break;
-    case NODE_FUNCTION_CALL:
-        break;
     default:
         break;
     }

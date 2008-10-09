@@ -168,7 +168,7 @@ enum YogNodeType {
     NODE_VARIABLE, 
     NODE_LITERAL, 
     NODE_METHOD_CALL, 
-    NODE_FUNCTION_CALL, 
+    NODE_COMMAND_CALL, 
 };
 
 typedef enum YogNodeType YogNodeType;
@@ -199,6 +199,7 @@ struct YogNode {
 
 #define NODE_RECEIVER(node) (node)->u1.node
 #define NODE_METHOD(node)   (node)->u2.id
+#define NODE_COMMAND(node)  (node)->u2.id
 #define NODE_ARGS(node)     (node)->u3.array
 
 typedef struct YogNode YogNode;
@@ -313,7 +314,6 @@ unsigned int YogArray_size(YogEnv*, YogArray*);
 YogValArray* YogValArray_new(YogEnv*, unsigned int);
 void YogArray_push(YogEnv*, YogArray*, YogVal);
 YogArray* YogArray_new(YogEnv*);
-YogArray* YogArray_new_elem(YogEnv*, YogVal);
 
 /* src/int.c */
 YogKlass* YogInt_klass_new(YogEnv*);
