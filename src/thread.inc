@@ -54,6 +54,26 @@
 #line 51 "src/thread.inc"
         break;
     }
+#line 54 "src/thread.inc"
+    case OP(CALL_COMMAND):
+    {
+        Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+        ID command = *((ID*)&CODE->insts->items[PC]);
+        PC += sizeof(ID);
+        Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+        uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
+        PC += sizeof(uint8_t);
+#line 50 "src/insts.def"
+        YogVal args[argc];
+        unsigned int i = 0;
+        for (i = 0; i < argc; i++) {
+            args[i] = POP();
+        }
+        YogThread_call_command(ENV, command, argc, args);
+
+#line 70 "src/thread.inc"
+        break;
+    }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

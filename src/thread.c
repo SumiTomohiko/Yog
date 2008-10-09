@@ -13,6 +13,12 @@ YogThread_call_method(YogEnv* env, YogVal receiver, ID method, unsigned int argc
 }
 
 void 
+YogThread_call_command(YogEnv* env, ID command, unsigned int argc, YogVal* args)
+{
+    /* TODO */
+}
+
+void 
 YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code) 
 {
     YogFrame* frame = YogFrame_new(env);

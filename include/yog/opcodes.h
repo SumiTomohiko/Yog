@@ -14,6 +14,7 @@ enum OpCode {
     OP(PUSH_CONST) = 1, 
     OP(CALL_METHOD) = 2, 
     OP(STORE_PKG) = 3, 
+    OP(CALL_COMMAND) = 4, 
 
 };
 

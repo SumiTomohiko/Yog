@@ -20,6 +20,10 @@ struct YogInst {
         struct {
             ID id;
         } store_pkg;
+        struct {
+            ID command;
+            uint8_t argc;
+        } call_command;
     } u;
 };
 
@@ -28,6 +32,8 @@ struct YogInst {
 #define CALL_METHOD_METHOD(inst) ((inst)->u.call_method.method)
 #define CALL_METHOD_ARGC(inst) ((inst)->u.call_method.argc)
 #define STORE_PKG_ID(inst) ((inst)->u.store_pkg.id)
+#define CALL_COMMAND_COMMAND(inst) ((inst)->u.call_command.command)
+#define CALL_COMMAND_ARGC(inst) ((inst)->u.call_command.argc)
 
 typedef struct YogInst YogInst;
 #endif

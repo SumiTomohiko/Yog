@@ -4,10 +4,21 @@
 #include "yog/st.h"
 #include "yog/yog.h"
 
+#define VISIT_EACH_ARGS()   do { \
+    unsigned int i = 0; \
+    YogArray* args = NODE_ARGS(node); \
+    unsigned int argc = YogArray_size(env, args); \
+    for (i = 0; i < argc; i++) { \
+        YogVal val = YogArray_at(env, args, i); \
+        YogNode* node = (YogNode*)YOGVAL_GCOBJ(val); \
+        visit_node(env, visitor, node, arg); \
+    } \
+} while (0)
+
 typedef struct AstVisitor AstVisitor;
 
-typedef void (*VisitNode)(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg);
-typedef void (*VisitArray)(YogEnv* env, AstVisitor* visitor, YogArray* array, void* arg);
+typedef void (*VisitNode)(YogEnv*, AstVisitor*, YogNode*, void*);
+typedef void (*VisitArray)(YogEnv*, AstVisitor*, YogArray*, void*);
 
 struct AstVisitor {
     VisitArray visit_stmts;
@@ -15,6 +26,7 @@ struct AstVisitor {
     VisitNode visit_assign;
     VisitNode visit_method_call;
     VisitNode visit_literal;
+    VisitNode visit_command_call;
 };
 
 struct Var2IndexData {
@@ -59,7 +71,11 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     case NODE_METHOD_CALL:
         VISIT(visit_method_call);
         break;
+    case NODE_COMMAND_CALL:
+        VISIT(visit_command_call);
+        break;
     default:
+        Yog_assert(env, FALSE, "Unknown node type.");
         break;
     }
 #undef VISIT
@@ -69,15 +85,7 @@ static void
 xxx2index_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_node(env, visitor, NODE_RECEIVER(node), arg);
-
-    unsigned int i = 0;
-    YogArray* args = NODE_ARGS(node);
-    unsigned int size = YogArray_size(env, args);
-    for (i = 0; i < size; i++) {
-        YogVal val = YogArray_at(env, args, i);
-        YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
-        visit_node(env, visitor, node, arg);
-    }
+    VISIT_EACH_ARGS();
 }
 
 static void 
@@ -104,6 +112,12 @@ var2index_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     }
 }
 
+static void 
+xxx2index_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    VISIT_EACH_ARGS();
+}
+
 static YogTable*
 make_var2index(YogEnv* env, YogArray* stmts)
 {
@@ -113,6 +127,7 @@ make_var2index(YogEnv* env, YogArray* stmts)
     visitor.visit_assign = var2index_visit_assign;
     visitor.visit_method_call = xxx2index_visit_method_call;
     visitor.visit_literal = NULL;
+    visitor.visit_command_call = xxx2index_visit_command_call;
 
     YogTable* var2index = YogTable_new_symbol_table(env);
     Var2IndexData data;
@@ -151,6 +166,7 @@ make_const2index(YogEnv* env, YogArray* stmts)
     visitor.visit_assign = const2index_visit_assign;
     visitor.visit_method_call = xxx2index_visit_method_call;
     visitor.visit_literal = const2index_visit_literal;
+    visitor.visit_command_call = xxx2index_visit_command_call;
 
     YogTable* const2index = YogTable_new_val_table(env);
     Const2IndexData data;
@@ -182,21 +198,15 @@ static void
 compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_node(env, visitor, NODE_RECEIVER(node), arg);
+    VISIT_EACH_ARGS();
 
-    unsigned int i = 0;
-    YogArray* args = NODE_ARGS(node);
-    unsigned int argc = YogArray_size(env, args);
-    for (i = 0; i < argc; i++) {
-        YogVal val = YogArray_at(env, args, i);
-        YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
-        visit_node(env, visitor, node, arg);
-    }
+    unsigned int argc = YogArray_size(env, NODE_ARGS(node));
+    Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for method call.");
 
     CompileData* data = arg;
     YogBinary* insts = data->insts;
     YogBinary_push_uint8(env, insts, OP(CALL_METHOD));
     YogBinary_push_uint32(env, insts, YogVm_intern(env, ENV_VM(env), "+"));
-    Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments.");
     YogBinary_push_uint8(env, insts, argc);
 }
 
@@ -213,6 +223,21 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
     YogBinary_push_uint8(env, insts, YOGVAL_INT(index));
 }
 
+static void 
+compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    VISIT_EACH_ARGS();
+
+    unsigned int argc = YogArray_size(env, NODE_ARGS(node));
+    Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for command call.");
+
+    CompileData* data = arg;
+    YogBinary* insts = data->insts;
+    YogBinary_push_uint8(env, insts, OP(CALL_COMMAND));
+    YogBinary_push_uint32(env, insts, NODE_COMMAND(node));
+    YogBinary_push_uint8(env, insts, argc);
+}
+
 static YogBinary* 
 compile_module(YogEnv* env, YogArray* stmts, YogTable* var2index, YogTable* const2index) 
 {
@@ -222,6 +247,7 @@ compile_module(YogEnv* env, YogArray* stmts, YogTable* var2index, YogTable* cons
     visitor.visit_assign = compile_visit_assign;
     visitor.visit_method_call = compile_visit_method_call;
     visitor.visit_literal = compile_visit_literal;
+    visitor.visit_command_call = compile_visit_command_call;
 
     CompileData data;
     data.var2index = var2index;
