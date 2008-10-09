@@ -32,4 +32,10 @@ insts:
 am:
 	python tools/update_automake.py
 
+test: yog$(EXEEXT)
+	py.test
+
+clean-generic:
+	find . -name "*.pyc" -print0 | xargs --null rm -f
+
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

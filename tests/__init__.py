@@ -1,0 +1,29 @@
+# -*- coding: utf-8 -*-
+
+from os import unlink
+from subprocess import PIPE, Popen
+from tempfile import mkstemp
+
+class TestCase(object):
+
+    def _test(self, src, stdout=None, stderr=None, status=None):
+        file = mkstemp(prefix="yog")[1]
+        try:
+            f = open(file, "w")
+            try:
+                f.write(src)
+            finally:
+                f.close()
+
+            proc = Popen(["./yog", file], stdout=PIPE, stderr=PIPE)
+            proc.wait()
+            if stdout is not None:
+                assert stdout == proc.stdout.read()
+            if stderr is not None:
+                assert stderr == proc.stderr.read()
+            if status is not None:
+                assert status == proc.returncode
+        finally:
+            unlink(file)
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
