@@ -3,11 +3,18 @@
 #include "yog/yog.h"
 
 YogVal 
-YogThread_call_method(YogEnv* env, YogVal receiver, ID method, unsigned int argc, YogVal* args) 
+YogThread_call_method(YogEnv* env, YogVal receiver, const char* method, unsigned int argc, YogVal* args) 
+{
+    ID id = YogVm_intern(env, ENV_VM(env), method);
+    return YogThread_call_method_id(env, receiver, id, argc, args);
+}
+
+YogVal 
+YogThread_call_method_id(YogEnv* env, YogVal receiver, ID method, unsigned int argc, YogVal* args) 
 {
     YogKlass* klass = YogVal_get_klass(env, receiver);
     YogVal attr = YogObj_get_attr(env, YOGOBJ(klass), method);
-    Yog_assert(env, attr.type == VAL_FUNC, "Attribute isn't a function.");
+    Yog_assert(env, YOGVAL_TYPE(attr) == VAL_FUNC, "Attribute isn't a function.");
     YogVal ret = (YOGVAL_FUNC(attr))(env, receiver, argc, args);
     return ret;
 }
@@ -15,7 +22,15 @@ YogThread_call_method(YogEnv* env, YogVal receiver, ID method, unsigned int argc
 void 
 YogThread_call_command(YogEnv* env, ID command, unsigned int argc, YogVal* args)
 {
-    /* TODO */
+    YogVm* vm = ENV_VM(env);
+    ID bltins = YogVm_intern(env, vm, "builtins");
+    YogVal pkg = YogVal_undef();
+    if (!YogTable_lookup(env, vm->pkgs, YogVal_symbol(bltins), &pkg)) {
+        Yog_assert(env, FALSE, "Can't find builtins package.");
+    }
+    YogVal attr = YogObj_get_attr(env, YOGOBJ(YOGVAL_GCOBJ(pkg)), command);
+    Yog_assert(env, YOGVAL_TYPE(attr) == VAL_FUNC, "Command isn't a function.");
+    (YOGVAL_FUNC(attr))(env, pkg, argc, args);
 }
 
 void 
@@ -35,12 +50,14 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
 #define CONSTS(index)   (YogValArray_at(env, code->consts, index))
 #define ENV             (env)
 #define FRAME           (frame)
+#if 0
         if (0 < STACK->size) {
             YogVal_print(env, STACK->items[STACK->size - 1]);
         }
         else {
             printf("stack is empty.\n");
         }
+#endif
 
         OpCode op = code->insts->items[PC];
         PC += sizeof(uint8_t);

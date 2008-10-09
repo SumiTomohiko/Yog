@@ -1,6 +1,7 @@
 bin_PROGRAMS = yog
 yog_SOURCES = src/array.c \
 	src/binary.c \
+	src/builtins.c \
 	src/code.c \
 	src/compile.c \
 	src/error.c \
@@ -11,6 +12,7 @@ yog_SOURCES = src/array.c \
 	src/lexer.l \
 	src/main.c \
 	src/object.c \
+	src/package.c \
 	src/parser.y \
 	src/st.c \
 	src/string.c \

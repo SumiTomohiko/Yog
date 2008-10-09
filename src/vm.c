@@ -70,20 +70,48 @@ YogVm_alloc_gcobj(YogEnv* env, YogVm* vm, YogGCObjType type, size_t size)
     return gcobj;
 }
 
-void 
-YogVm_boot(YogEnv* env, YogVm* vm) 
+static void 
+setup_builtins(YogEnv* env, YogVm* vm) 
+{
+    YogObj* builtins = Yog_bltins_new(env);
+    ID name = YogVm_intern(env, vm, "builtins");
+    YogTable_add_direct(env, vm->pkgs, YogVal_symbol(name), YogVal_gcobj(YOGGCOBJ(builtins)));
+}
+
+static void 
+setup_symbol_tables(YogEnv* env, YogVm* vm) 
 {
     vm->id2name = YogTable_new_symbol_table(env);
     vm->name2id = YogTable_new_string_table(env);
+}
 
+static void 
+setup_basic_klass(YogEnv* env, YogVm* vm) 
+{
     YogKlass* obj_klass = YogKlass_new(env, NULL);
     YogKlass* klass_klass = YogKlass_new(env, obj_klass);
     YOGBASICOBJ(obj_klass)->klass = klass_klass;
     YOGBASICOBJ(klass_klass)->klass = klass_klass;
     vm->obj_klass = obj_klass;
     vm->klass_klass = klass_klass;
+}
 
+static void 
+setup_klass(YogEnv* env, YogVm* vm) 
+{
     vm->int_klass = YogInt_klass_new(env);
+    vm->pkg_klass = YogPkg_klass_new(env);
+}
+
+void 
+YogVm_boot(YogEnv* env, YogVm* vm) 
+{
+    setup_symbol_tables(env, vm);
+    setup_basic_klass(env, vm);
+    setup_klass(env, vm);
+
+    vm->pkgs = YogTable_new_symbol_table(env);
+    setup_builtins(env, vm);
 }
 
 YogVm* 
@@ -101,6 +129,9 @@ YogVm_new(size_t heap_size)
     vm->obj_klass = NULL;
     vm->klass_klass = NULL;
     vm->func_klass = NULL;
+    vm->pkg_klass = NULL;
+
+    vm->pkgs = NULL;
 
     return vm;
 }

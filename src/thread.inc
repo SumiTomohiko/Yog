@@ -33,7 +33,7 @@
             args[i] = POP();
         }
         YogVal receiver = POP();
-        YogVal ret = YogThread_call_method(ENV, receiver, method, argc, args);
+        YogVal ret = YogThread_call_method_id(ENV, receiver, method, argc, args);
         PUSH(ret);
 
 #line 37 "src/thread.inc"

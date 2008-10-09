@@ -103,14 +103,25 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
     /* NOTREACHED */
 }
 
+#define RETURN_VAL(type)    do { \
+    YogVal val; \
+    YOGVAL_TYPE(val) = type; \
+    return val; \
+} while (0)
+
 YogVal
 YogVal_nil() 
 {
-    YogVal nil;
-    YOGVAL_TYPE(nil) = VAL_NIL;
-
-    return nil;
+    RETURN_VAL(VAL_NIL);
 }
+
+YogVal 
+YogVal_undef() 
+{
+    RETURN_VAL(VAL_UNDEF);
+}
+
+#undef RETURN_VAL
 
 #define RETURN_VAL(type, f, v)  do { \
     YogVal val; \
@@ -150,8 +161,26 @@ YogVal_get_klass(YogEnv* env, YogVal val)
     case VAL_INT:
         return ENV_VM(env)->int_klass;
         break;
-    case VAL_FLOAT:
     case VAL_GCOBJ:
+    {
+        YogGCObj* gcobj = YOGVAL_GCOBJ(val);
+        switch (gcobj->type) {
+        case GCOBJ_ARRAY: 
+        case GCOBJ_BINARY: 
+        case GCOBJ_KLASS: 
+        case GCOBJ_OBJ: 
+        {
+            YogBasicObj* obj = YOGBASICOBJ(gcobj);
+            return obj->klass;
+            break;
+        }
+        default:
+            Yog_assert(env, FALSE, "Can't get class of given value.");
+            break;
+        }
+        break;
+    }
+    case VAL_FLOAT:
     case VAL_TRUE:
     case VAL_FALSE:
     case VAL_NIL:
@@ -164,6 +193,43 @@ YogVal_get_klass(YogEnv* env, YogVal val)
 }
 
 #undef RETURN_VAL
+
+YogVal 
+YogVal_get_attr(YogEnv* env, YogVal val, ID name) 
+{
+#define RET_ATTR(obj)   do { \
+    YogVal attr = YogObj_get_attr(env, YOGOBJ(obj), name); \
+    if (YOGVAL_TYPE(attr) != VAL_UNDEF) { \
+        return attr; \
+    } \
+} while (0)
+    if (YOGVAL_TYPE(val) == VAL_GCOBJ) {
+        YogGCObj* gcobj = YOGVAL_GCOBJ(val);
+        switch (gcobj->type) {
+        case GCOBJ_KLASS: 
+        case GCOBJ_OBJ: 
+        {
+            RET_ATTR(gcobj);
+            break;
+        }
+        case GCOBJ_ARRAY: 
+        case GCOBJ_BINARY: 
+            /* TODO: generic attribute */
+            Yog_assert(env, FALSE, "Not implemented.");
+            break;
+        default:
+            Yog_assert(env, FALSE, "Can't get attribute of given type.");
+            break;
+        }
+    }
+
+    YogKlass* klass = YogVal_get_klass(env, val);
+    RET_ATTR(klass);
+#undef RET_ATTR
+
+    Yog_assert(env, FALSE, "Can't get attribute.");
+    /* NOTREACHED */
+}
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

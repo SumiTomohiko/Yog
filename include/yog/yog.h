@@ -31,6 +31,9 @@ struct YogVm {
     struct YogKlass* klass_klass;
     struct YogKlass* func_klass;
     struct YogKlass* int_klass;
+    struct YogKlass* pkg_klass;
+
+    struct YogTable* pkgs;
 };
 
 typedef struct YogVm YogVm;
@@ -44,6 +47,7 @@ struct YogEnv {
 typedef struct YogEnv YogEnv;
 
 enum YogValType {
+    VAL_UNDEF, 
     VAL_INT, 
     VAL_FLOAT, 
     VAL_GCOBJ, 
@@ -65,13 +69,15 @@ enum YogGCObjType {
     GCOBJ_NODE, 
     GCOBJ_OBJ, 
     GCOBJ_CHAR_ARRAY, 
-    GCOBJ_MODULE, 
+    GCOBJ_STRING, 
     GCOBJ_CODE, 
     GCOBJ_BYTE_ARRAY, 
     GCOBJ_BINARY, 
     GCOBJ_FRAME, 
     GCOBJ_THREAD, 
+#if 0
     GCOBJ_FUNC, 
+#endif
     GCOBJ_KLASS, 
 };
 
@@ -242,10 +248,19 @@ typedef struct YogFunc YogFunc;
 
 struct YogCharArray {
     YOGGCOBJ_HEAD;
+    unsigned int size;
+    unsigned int capacity;
     char items[0];
 };
 
 typedef struct YogCharArray YogCharArray;
+
+struct YogString {
+    YOGGCOBJ_HEAD;
+    struct YogCharArray* body;
+};
+
+typedef struct YogString YogString;
 
 struct YogByteArray {
     YOGGCOBJ_HEAD;
@@ -271,13 +286,6 @@ struct YogCode {
 };
 
 typedef struct YogCode YogCode;
-
-struct YogPackage {
-    YOGOBJ_HEAD;
-    struct YogCode* code;
-};
-
-typedef struct YogPackage YogPackage;
 
 struct YogFrame {
     YOGGCOBJ_HEAD;
@@ -315,6 +323,9 @@ YogValArray* YogValArray_new(YogEnv*, unsigned int);
 void YogArray_push(YogEnv*, YogArray*, YogVal);
 YogArray* YogArray_new(YogEnv*);
 
+/* src/package.c */
+YogKlass* YogPkg_klass_new(YogEnv*);
+
 /* src/int.c */
 YogKlass* YogInt_klass_new(YogEnv*);
 
@@ -324,7 +335,7 @@ void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
 void YogObj_define_method(YogEnv*, YogObj*, const char*, YogFuncBody);
 void YogBasicObj_init(YogEnv*, YogBasicObj*, YogKlass*);
 void YogObj_init(YogEnv*, YogObj*, YogKlass*);
-YogObj* YogObj_new(YogEnv*);
+YogObj* YogObj_new(YogEnv*, YogKlass*);
 
 /* src/binary.c */
 unsigned int YogByteArray_size(YogEnv*, YogByteArray*);
@@ -336,7 +347,9 @@ void YogBinary_push_uint32(YogEnv*, YogBinary*, uint32_t);
 YogBinary* YogBinary_new(YogEnv*, unsigned int);
 
 /* src/thread.c */
-YogVal YogThread_call_method(YogEnv*, YogVal, ID, unsigned int, YogVal*);
+YogVal YogThread_call_method(YogEnv*, YogVal, const char*, unsigned int, YogVal*);
+YogVal YogThread_call_method_id(YogEnv*, YogVal, ID, unsigned int, YogVal*);
+void YogThread_call_command(YogEnv*, ID, unsigned int, YogVal*);
 void YogThread_eval_code(YogEnv*, YogThread*, YogCode*);
 YogThread* YogThread_new(YogEnv*);
 
@@ -348,11 +361,13 @@ void YogVal_print(YogEnv*, YogVal);
 int YogVal_hash(YogEnv*, YogVal);
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
 YogVal YogVal_nil();
+YogVal YogVal_undef();
 YogVal YogVal_gcobj(YogGCObj*);
 YogVal YogVal_int(int);
 YogVal YogVal_symbol(ID);
 YogVal YogVal_func(YogFuncBody);
 YogKlass* YogVal_get_klass(YogEnv*, YogVal);
+YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
 
 /* src/parser.y */
 void Yog_set_parsing_env(YogEnv*);
@@ -385,6 +400,9 @@ YogTable* YogTable_new_string_table(YogEnv*);
 BOOL YogTable_lookup_str(YogEnv*, YogTable*, const char*, YogVal*);
 YogTable* YogTable_new_val_table(YogEnv*);
 
+/* src/builtins.c */
+YogObj* Yog_bltins_new(YogEnv*);
+
 /* src/vm.c */
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
 YogGCObj* YogVm_alloc_gcobj(YogEnv*, YogVm*, YogGCObjType, size_t);
@@ -394,6 +412,8 @@ YogVm* YogVm_new(size_t);
 /* src/string.c */
 YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
 YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
+YogString* YogString_new_format(YogEnv*, const char*, ...);
+YogString* YogString_new(YogEnv*);
 
 /* $PROTOTYPE_END$ */
 

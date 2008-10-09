@@ -49,16 +49,14 @@ YogObj_init(YogEnv* env, YogObj* obj, YogKlass* klass)
     YogBasicObj_init(env, YOGBASICOBJ(obj), klass);
 }
 
-#if 0
 YogObj*
-YogObj_new(YogEnv* env) 
+YogObj_new(YogEnv* env, YogKlass* klass) 
 {
     YogObj* obj = ALLOC_OBJ(env, GCOBJ_OBJ, YogObj);
-    YogObj_init(env, obj, NULL);
+    YogObj_init(env, obj, klass);
 
     return obj;
 }
-#endif
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
