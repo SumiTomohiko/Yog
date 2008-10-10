@@ -413,6 +413,7 @@ YogTable* YogTable_new_symbol_table(YogEnv*);
 YogTable* YogTable_new_string_table(YogEnv*);
 BOOL YogTable_lookup_str(YogEnv*, YogTable*, const char*, YogVal*);
 YogTable* YogTable_new_val_table(YogEnv*);
+int YogTable_size(YogEnv*, YogTable*);
 
 /* src/builtins.c */
 YogObj* Yog_bltins_new(YogEnv*);

@@ -30,6 +30,8 @@ struct YogInst {
             ID command;
             uint8_t argc;
         } call_command;
+        struct {
+        } make_func;
     } u;
 };
 

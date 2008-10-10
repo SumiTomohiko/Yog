@@ -55,6 +55,13 @@ inst call_command
     YogThread_call_command(ENV, command, argc, args);
 }
 
+inst make_func
+()
+(code)
+(func)
+{
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

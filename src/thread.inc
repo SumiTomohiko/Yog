@@ -74,6 +74,18 @@
 #line 70 "src/thread.inc"
             break;
         }
+#line 73 "src/thread.inc"
+    case OP(MAKE_FUNC):
+        {
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
+            YogVal code = POP();
+            YogVal func = YogVal_nil();
+#line 63 "src/insts.def"
+
+#line 80 "src/thread.inc"
+            PUSH(func);
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

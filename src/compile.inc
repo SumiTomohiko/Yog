@@ -57,6 +57,18 @@ CompileData_append_call_command(YogEnv* env, CompileData* data, ID command, uint
     data->last_inst = inst;
 }
 
+static void 
+CompileData_append_make_func(YogEnv* env, CompileData* data)
+{
+    YogInst* inst = YogInst_new(env);
+    inst->type = INST_OP;
+    INST_OPERAND(inst) = OP(MAKE_FUNC);
+
+
+    data->last_inst->next = inst;
+    data->last_inst = inst;
+}
+
 
 static YogBinary* 
 insts2bin(YogEnv* env, YogInst* inst) 
@@ -92,6 +104,11 @@ insts2bin(YogEnv* env, YogInst* inst)
                 YogBinary_push_uint8(env, code, OP(CALL_COMMAND));
                 YogBinary_push_id(env, code, CALL_COMMAND_COMMAND(inst));
                 YogBinary_push_uint8(env, code, CALL_COMMAND_ARGC(inst));
+                break;
+            }
+        case OP(MAKE_FUNC):
+            {
+                YogBinary_push_uint8(env, code, OP(MAKE_FUNC));
                 break;
             }
         default:

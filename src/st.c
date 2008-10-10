@@ -661,6 +661,12 @@ YogTable_new_val_table(YogEnv* env)
     return st_init_table(env, &type_val);
 }
 
+int 
+YogTable_size(YogEnv* env, YogTable* table) 
+{
+    return table->num_entries;
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

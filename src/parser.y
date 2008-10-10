@@ -51,12 +51,20 @@ YogNode_new(YogEnv* env, YogNodeType type)
 } while (0)
 
 #define OBJ_ARRAY_NEW(array, elem)  do { \
-    array = YogArray_new(ENV); \
-    YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ(elem))); \
+    if (elem != NULL) { \
+        array = YogArray_new(ENV); \
+        YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ(elem))); \
+    } \
+    else { \
+        array = NULL; \
+    } \
 } while (0)
 
 #define OBJ_ARRAY_PUSH(result, array, elem)     do { \
     if (elem != NULL) { \
+        if (array == NULL) { \
+            array = YogArray_new(ENV); \
+        } \
         YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ(elem))); \
     } \
     result = array; \
