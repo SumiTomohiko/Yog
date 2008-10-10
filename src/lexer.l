@@ -59,6 +59,14 @@ yywrap()
 #define YY_SKIP_YYWRAP
 %}
 %%
+<INITIAL>"("        return LPAR;
+<INITIAL>")"        return RPAR;
+<INITIAL>"+"        return PLUS;
+<INITIAL>","        return COMMA;
+<INITIAL>"="        return EQUAL;
+<INITIAL>"\n"       return NEWLINE;
+<INITIAL>"def"      return DEF;
+<INITIAL>"end"      return END;
 <INITIAL>[a-z]+     {
     YogEnv* env = Yog_get_parsing_env();
     YogVm* vm = ENV_VM(env);
@@ -66,10 +74,6 @@ yywrap()
     yylval.name = name;
     return NAME;
 }
-<INITIAL>","        return COMMA;
-<INITIAL>"="        return EQUAL;
-<INITIAL>"+"        return PLUS;
-<INITIAL>"\n"       return NEWLINE;
 <INITIAL>[0-9]+     {
     YogVal val = YogVal_int(atoi(yytext));
     yylval.val = val;

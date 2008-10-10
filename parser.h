@@ -30,26 +30,34 @@
       know about them.  */
    enum yytokentype {
      COMMA = 258,
-     EQUAL = 259,
-     PLUS = 260,
-     NUMBER = 261,
-     NEWLINE = 262,
-     NAME = 263
+     DEF = 259,
+     END = 260,
+     EQUAL = 261,
+     LPAR = 262,
+     NAME = 263,
+     NEWLINE = 264,
+     NUMBER = 265,
+     PLUS = 266,
+     RPAR = 267
    };
 #endif
 /* Tokens.  */
 #define COMMA 258
-#define EQUAL 259
-#define PLUS 260
-#define NUMBER 261
-#define NEWLINE 262
+#define DEF 259
+#define END 260
+#define EQUAL 261
+#define LPAR 262
 #define NAME 263
+#define NEWLINE 264
+#define NUMBER 265
+#define PLUS 266
+#define RPAR 267
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 66 "parser.y"
+#line 81 "parser.y"
 typedef union YYSTYPE {
     YogArray* array;
     YogNode* node;
@@ -57,7 +65,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 61 "parser.h"
+#line 69 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

@@ -43,20 +43,35 @@ YogNode_new(YogEnv* env, YogNodeType type)
     return node;
 }
 
-#define NODE_NEW(type)                      YogNode_new(ENV, type)
-#define COMMAND_CALL_NEW(result, name)      do { \
+#define NODE_NEW(type)                          YogNode_new(ENV, type)
+
+#define COMMAND_CALL_NEW(result, name)          do { \
     result = NODE_NEW(NODE_COMMAND_CALL); \
     NODE_COMMAND(result) = name; \
 } while (0)
-#define ARRAY_NEW(array, elem)              do { \
+
+#define OBJ_ARRAY_NEW(array, elem)  do { \
     array = YogArray_new(ENV); \
     YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ(elem))); \
 } while (0)
-#define ARRAY_PUSH(result, array, elem)     do { \
+
+#define OBJ_ARRAY_PUSH(result, array, elem)     do { \
     if (elem != NULL) { \
         YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ(elem))); \
     } \
     result = array; \
+} while (0)
+
+#define SYMBOL_ARRAY_PUSH(result, id)   do { \
+    YogVal val = YogVal_symbol(id); \
+    YogArray_push(ENV, result, val); \
+} while (0)
+
+#define FUNC_DEF_NEW(node, name, params, stmts)     do { \
+    node = NODE_NEW(NODE_FUNC_DEF); \
+    NODE_NAME(node) = name; \
+    NODE_PARAMS(node) = params; \
+    NODE_STMTS(node) = stmts; \
 } while (0)
 
 /* XXX: To avoid warning. Better way? */
@@ -71,14 +86,19 @@ int yylex(void);
 }
 
 %token COMMA
+%token DEF
+%token END
 %token EQUAL
-%token PLUS
-%token NUMBER
-%token NEWLINE
+%token LPAR
 %token NAME
+%token NEWLINE
+%token NUMBER
+%token PLUS
+%token RPAR
 
 %type<array> args
 %type<array> module
+%type<array> params
 %type<array> stmts
 %type<name> NAME
 %type<node> and_expr
@@ -88,6 +108,7 @@ int yylex(void);
 %type<node> comparison
 %type<node> expr
 %type<node> factor
+%type<node> func_def
 %type<node> logical_and_expr
 %type<node> logical_or_expr
 %type<node> not_expr
@@ -104,26 +125,43 @@ module  : stmts {
         }
         ;
 stmts   : stmt {
-            ARRAY_NEW($$, $1);
+            OBJ_ARRAY_NEW($$, $1);
         }
         | stmts NEWLINE stmt {
-            ARRAY_PUSH($$, $1, $3);
+            OBJ_ARRAY_PUSH($$, $1, $3);
         }
         ;
 stmt    : /* empty */ {
             $$ = NULL;
         }
+        | func_def
         | expr
         | NAME args {
             COMMAND_CALL_NEW($$, $1);
             NODE_ARGS($$) = $2;
         }
         ;
+func_def    : DEF NAME LPAR params RPAR stmts END {
+                FUNC_DEF_NEW($$, $2, $4, $6);
+            }
+            | DEF NAME LPAR RPAR stmts END {
+                FUNC_DEF_NEW($$, $2, NULL, $5);
+            }
+            ;
+params  : NAME {
+            $$ = YogArray_new(ENV);
+            SYMBOL_ARRAY_PUSH($$, $1);
+        }
+        | params COMMA NAME {
+            SYMBOL_ARRAY_PUSH($1, $3);
+            $$ = $1;
+        }
+        ;
 args    : expr {
-            ARRAY_NEW($$, $1);
+            OBJ_ARRAY_NEW($$, $1);
         }
         | args COMMA expr {
-            ARRAY_PUSH($$, $1, $3);
+            OBJ_ARRAY_PUSH($$, $1, $3);
         }
         ;
 expr    : assign_expr

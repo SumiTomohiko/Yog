@@ -176,6 +176,7 @@ enum YogNodeType {
     NODE_LITERAL, 
     NODE_METHOD_CALL, 
     NODE_COMMAND_CALL, 
+    NODE_FUNC_DEF, 
 };
 
 typedef enum YogNodeType YogNodeType;
@@ -191,6 +192,7 @@ struct YogNode {
     union {
         ID id;
         struct YogNode* node;
+        struct YogArray* array;
     } u2;
     union {
         struct YogArray* array;
@@ -208,6 +210,10 @@ struct YogNode {
 #define NODE_METHOD(node)   (node)->u2.id
 #define NODE_COMMAND(node)  (node)->u2.id
 #define NODE_ARGS(node)     (node)->u3.array
+
+#define NODE_NAME(node)     (node)->u1.id
+#define NODE_PARAMS(node)   (node)->u2.array
+#define NODE_STMTS(node)    (node)->u3.array
 
 typedef struct YogNode YogNode;
 
