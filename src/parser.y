@@ -43,14 +43,14 @@ YogNode_new(YogEnv* env, YogNodeType type)
     return node;
 }
 
-#define NODE_NEW(type)                          YogNode_new(ENV, type)
+#define NODE_NEW(type)  YogNode_new(ENV, type)
 
-#define COMMAND_CALL_NEW(result, name)          do { \
+#define COMMAND_CALL_NEW(result, name) do { \
     result = NODE_NEW(NODE_COMMAND_CALL); \
     NODE_COMMAND(result) = name; \
 } while (0)
 
-#define OBJ_ARRAY_NEW(array, elem)  do { \
+#define OBJ_ARRAY_NEW(array, elem) do { \
     if (elem != NULL) { \
         array = YogArray_new(ENV); \
         YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ(elem))); \
@@ -60,7 +60,7 @@ YogNode_new(YogEnv* env, YogNodeType type)
     } \
 } while (0)
 
-#define OBJ_ARRAY_PUSH(result, array, elem)     do { \
+#define OBJ_ARRAY_PUSH(result, array, elem) do { \
     if (elem != NULL) { \
         if (array == NULL) { \
             array = YogArray_new(ENV); \
@@ -70,16 +70,27 @@ YogNode_new(YogEnv* env, YogNodeType type)
     result = array; \
 } while (0)
 
-#define SYMBOL_ARRAY_PUSH(result, id)   do { \
+#define SYMBOL_ARRAY_PUSH(result, id) do { \
     YogVal val = YogVal_symbol(id); \
     YogArray_push(ENV, result, val); \
 } while (0)
 
-#define FUNC_DEF_NEW(node, name, params, stmts)     do { \
+#define FUNC_DEF_NEW(node, name, params, stmts) do { \
     node = NODE_NEW(NODE_FUNC_DEF); \
     NODE_NAME(node) = name; \
     NODE_PARAMS(node) = params; \
     NODE_STMTS(node) = stmts; \
+} while (0)
+
+#define FUNC_CALL_NEW(node, callee, args) do { \
+    node = NODE_NEW(NODE_FUNC_CALL); \
+    NODE_CALLEE(node) = callee; \
+    NODE_ARGS(node) = args; \
+} while (0)
+
+#define VARIABLE_NEW(node, id) do { \
+    node = NODE_NEW(NODE_VARIABLE); \
+    NODE_ID(node) = id; \
 } while (0)
 
 /* XXX: To avoid warning. Better way? */
@@ -218,14 +229,22 @@ factor  : power
 power   : atom
         ;
 atom    : NAME {
-            YogNode* node = NODE_NEW(NODE_VARIABLE);
-            NODE_ID(node) = $1;
-            $$ = node;
+            VARIABLE_NEW($$, $1);
         }
         | NUMBER {
             YogNode* node = NODE_NEW(NODE_LITERAL);
             NODE_VAL(node) = $1;
             $$ = node;
+        }
+        | NAME LPAR args RPAR {
+            YogNode* callee = NULL;
+            VARIABLE_NEW(callee, $1);
+            FUNC_CALL_NEW($$, callee, $3);
+        }
+        | NAME LPAR RPAR {
+            YogNode* callee = NULL;
+            VARIABLE_NEW(callee, $1);
+            FUNC_CALL_NEW($$, callee, NULL);
         }
         ;
 %%

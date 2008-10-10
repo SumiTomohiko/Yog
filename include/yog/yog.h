@@ -174,6 +174,7 @@ enum YogNodeType {
     NODE_LITERAL, 
     NODE_METHOD_CALL, 
     NODE_COMMAND_CALL, 
+    NODE_FUNC_CALL, 
     NODE_FUNC_DEF, 
 };
 
@@ -185,11 +186,11 @@ struct YogNode {
     union {
         ID id;
         YogVal val;
-        struct YogNode* node;
+        struct YogNode* nd;
     } u1;
     union {
         ID id;
-        struct YogNode* node;
+        struct YogNode* nd;
         struct YogArray* array;
     } u2;
     union {
@@ -198,15 +199,16 @@ struct YogNode {
 };
 
 #define NODE_LEFT(node)     (node)->u1.id
-#define NODE_RIGHT(node)    (node)->u2.node
+#define NODE_RIGHT(node)    (node)->u2.nd
 
 #define NODE_ID(node)       (node)->u1.id
 
 #define NODE_VAL(node)      (node)->u1.val
 
-#define NODE_RECEIVER(node) (node)->u1.node
+#define NODE_RECEIVER(node) (node)->u1.nd
 #define NODE_METHOD(node)   (node)->u2.id
 #define NODE_COMMAND(node)  (node)->u2.id
+#define NODE_CALLEE(node)   (node)->u1.nd
 #define NODE_ARGS(node)     (node)->u3.array
 
 #define NODE_NAME(node)     (node)->u1.id
