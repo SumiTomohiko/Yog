@@ -69,6 +69,27 @@ inst make_func
     func = YogVal_gcobj(YOGGCOBJ(f));
 }
 
+inst call_func
+(uint8_t argc) 
+(...)
+(ret)
+{
+    YogVal args[argc];
+    unsigned int i = 0;
+    for (i = 0; i < argc; i++) {
+        args[i] = POP();
+    }
+
+    YogVal callee = POP();
+}
+
+inst load_pkg
+(ID id) 
+()
+(val)
+{
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

@@ -3,15 +3,18 @@
 #include "yog/opcodes.h"
 #include "yog/st.h"
 #include "yog/yog.h"
+#include <stdio.h>
 
 #define VISIT_EACH_ARGS()   do { \
-    unsigned int i = 0; \
     YogArray* args = NODE_ARGS(node); \
-    unsigned int argc = YogArray_size(env, args); \
-    for (i = 0; i < argc; i++) { \
-        YogVal val = YogArray_at(env, args, i); \
-        YogNode* node = (YogNode*)YOGVAL_GCOBJ(val); \
-        visit_node(env, visitor, node, arg); \
+    if (args != NULL) { \
+        unsigned int argc = YogArray_size(env, args); \
+        unsigned int i = 0; \
+        for (i = 0; i < argc; i++) { \
+            YogVal val = YogArray_at(env, args, i); \
+            YogNode* node = (YogNode*)YOGVAL_GCOBJ(val); \
+            visit_node(env, visitor, node, arg); \
+        } \
     } \
 } while (0)
 
@@ -28,6 +31,8 @@ struct AstVisitor {
     VisitNode visit_literal;
     VisitNode visit_command_call;
     VisitNode visit_func_def;
+    VisitNode visit_func_call;
+    VisitNode visit_variable;
 };
 
 struct Var2IndexData {
@@ -68,7 +73,7 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         VISIT(visit_assign);
         break;
     case NODE_VARIABLE:
-        /* TODO */
+        VISIT(visit_variable);
         break;
     case NODE_LITERAL:
         VISIT(visit_literal);
@@ -81,6 +86,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         break;
     case NODE_FUNC_DEF:
         VISIT(visit_func_def);
+        break;
+    case NODE_FUNC_CALL:
+        VISIT(visit_func_call);
         break;
     default:
         Yog_assert(env, FALSE, "Unknown node type.");
@@ -145,6 +153,12 @@ var2index_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* 
 }
 
 static void 
+var2index_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    VISIT_EACH_ARGS();
+}
+
+static void 
 var2index_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_stmts = visit_stmts;
@@ -154,6 +168,8 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_literal = NULL;
     visitor->visit_command_call = var2index_visit_command_call;
     visitor->visit_func_def = var2index_visit_func_def;
+    visitor->visit_func_call = var2index_visit_func_call;
+    visitor->visit_variable = NULL;
 }
 
 static YogTable*
@@ -285,6 +301,14 @@ stack_size_need_one(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
+stack_size_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_CALLEE(node), arg);
+    /* TODO */
+    VISIT_EACH_ARGS();
+}
+
+static void 
 stack_size_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     VISIT_EACH_ARGS();
@@ -300,6 +324,8 @@ stack_size_init_visitor(AstVisitor* visitor)
     visitor->visit_literal = stack_size_need_one;
     visitor->visit_command_call = stack_size_visit_command_call;
     visitor->visit_func_def = stack_size_need_one;
+    visitor->visit_func_call = stack_size_visit_func_call;
+    visitor->visit_variable = stack_size_need_one;
 }
 
 static unsigned int 
@@ -425,6 +451,46 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     CompileData_append_make_func(env, data);
 }
 
+#if 0
+static int 
+lookup_var_index(YogEnv* env, YogTable* var2index, ID id) 
+{
+    YogVal val = YogVal_symbol(id);
+    YogVal index = YogVal_undef();
+    if (!YogTable_lookup(env, var2index, val, &index)) {
+        Yog_assert(env, FALSE, "Can't find var.");
+    }
+    return YOGVAL_INT(index);
+}
+#endif
+
+static void 
+compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_CALLEE(node), arg);
+    VISIT_EACH_ARGS();
+
+    unsigned int argc = 0;
+    YogArray* args = NODE_ARGS(node);
+    if (args != NULL) {
+        argc = YogArray_size(env, args);
+    }
+
+    CompileData* data = arg;
+    CompileData_append_call_func(env, data, argc);
+}
+
+static void 
+compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    ID id = NODE_ID(node);
+    CompileData* data = arg;
+#if 0
+    int index = lookup_var_index(env, data->var2index, id);
+#endif
+    CompileData_append_load_pkg(env, data, id);
+}
+
 static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
@@ -435,6 +501,8 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_literal = compile_visit_literal;
     visitor->visit_command_call = compile_visit_command_call;
     visitor->visit_func_def = compile_visit_func_def;
+    visitor->visit_func_call = compile_visit_func_call;
+    visitor->visit_variable = compile_visit_variable;
 }
 
 YogCode* 

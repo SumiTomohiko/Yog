@@ -16,6 +16,8 @@ enum OpCode {
     OP(STORE_PKG) = 3, 
     OP(CALL_COMMAND) = 4, 
     OP(MAKE_FUNC) = 5, 
+    OP(CALL_FUNC) = 6, 
+    OP(LOAD_PKG) = 7, 
 
 };
 

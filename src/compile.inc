@@ -69,6 +69,32 @@ CompileData_append_make_func(YogEnv* env, CompileData* data)
     data->last_inst = inst;
 }
 
+static void 
+CompileData_append_call_func(YogEnv* env, CompileData* data, uint8_t argc)
+{
+    YogInst* inst = YogInst_new(env);
+    inst->type = INST_OP;
+    INST_OPERAND(inst) = OP(CALL_FUNC);
+
+    CALL_FUNC_ARGC(inst) = argc;
+
+    data->last_inst->next = inst;
+    data->last_inst = inst;
+}
+
+static void 
+CompileData_append_load_pkg(YogEnv* env, CompileData* data, ID id)
+{
+    YogInst* inst = YogInst_new(env);
+    inst->type = INST_OP;
+    INST_OPERAND(inst) = OP(LOAD_PKG);
+
+    LOAD_PKG_ID(inst) = id;
+
+    data->last_inst->next = inst;
+    data->last_inst = inst;
+}
+
 
 static YogBinary* 
 insts2bin(YogEnv* env, YogInst* inst) 
@@ -109,6 +135,18 @@ insts2bin(YogEnv* env, YogInst* inst)
         case OP(MAKE_FUNC):
             {
                 YogBinary_push_uint8(env, code, OP(MAKE_FUNC));
+                break;
+            }
+        case OP(CALL_FUNC):
+            {
+                YogBinary_push_uint8(env, code, OP(CALL_FUNC));
+                YogBinary_push_uint8(env, code, CALL_FUNC_ARGC(inst));
+                break;
+            }
+        case OP(LOAD_PKG):
+            {
+                YogBinary_push_uint8(env, code, OP(LOAD_PKG));
+                YogBinary_push_id(env, code, LOAD_PKG_ID(inst));
                 break;
             }
         default:

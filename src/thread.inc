@@ -93,6 +93,39 @@
             PUSH(func);
             break;
         }
+#line 91 "src/thread.inc"
+    case OP(CALL_FUNC):
+        {
+            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+            uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
+            PC += sizeof(uint8_t);
+            YogVal ret = YogVal_nil();
+#line 77 "src/insts.def"
+            YogVal args[argc];
+            unsigned int i = 0;
+            for (i = 0; i < argc; i++) {
+                args[i] = POP();
+            }
+        
+            YogVal callee = POP();
+
+#line 106 "src/thread.inc"
+            PUSH(ret);
+            break;
+        }
+#line 110 "src/thread.inc"
+    case OP(LOAD_PKG):
+        {
+            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+            ID id = *((ID*)&CODE->insts->items[PC]);
+            PC += sizeof(ID);
+            YogVal val = YogVal_nil();
+#line 91 "src/insts.def"
+
+#line 118 "src/thread.inc"
+            PUSH(val);
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

@@ -32,6 +32,12 @@ struct YogInst {
         } call_command;
         struct {
         } make_func;
+        struct {
+            uint8_t argc;
+        } call_func;
+        struct {
+            ID id;
+        } load_pkg;
     } u;
 };
 
@@ -43,6 +49,8 @@ struct YogInst {
 #define STORE_PKG_ID(inst) ((inst)->u.store_pkg.id)
 #define CALL_COMMAND_COMMAND(inst) ((inst)->u.call_command.command)
 #define CALL_COMMAND_ARGC(inst) ((inst)->u.call_command.argc)
+#define CALL_FUNC_ARGC(inst) ((inst)->u.call_func.argc)
+#define LOAD_PKG_ID(inst) ((inst)->u.load_pkg.id)
 
 typedef struct YogInst YogInst;
 #endif
