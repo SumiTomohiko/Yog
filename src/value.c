@@ -35,6 +35,7 @@ YogVal_print(YogEnv* env, YogVal val)
     }
     /* NOTREACHED */
 }
+
 int 
 YogVal_hash(YogEnv* env, YogVal val) 
 {
@@ -64,7 +65,9 @@ YogVal_hash(YogEnv* env, YogVal val)
         Yog_assert(env, FALSE, "Uknown value type.");
         break;
     }
+
     /* NOTREACHED */
+    return 0;
 }
 
 BOOL
@@ -100,7 +103,9 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
         break;
     }
 #undef RETURN
+
     /* NOTREACHED */
+    return FALSE;
 }
 
 #define RETURN_VAL(type)    do { \
@@ -189,7 +194,9 @@ YogVal_get_klass(YogEnv* env, YogVal val)
         Yog_assert(env, FALSE, "Uknown value type.");
         break;
     }
+
     /* NOTREACHED */
+    return NULL;
 }
 
 #undef RETURN_VAL
@@ -228,7 +235,9 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
 #undef RET_ATTR
 
     Yog_assert(env, FALSE, "Can't get attribute.");
+
     /* NOTREACHED */
+    return YogVal_nil();
 }
 
 /**
