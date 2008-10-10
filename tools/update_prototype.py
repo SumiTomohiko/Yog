@@ -15,6 +15,7 @@ class DeclarationInserter(object):
                     "src/string.c", "src/binary.c", "src/compile.c", 
                     "src/code.c", "src/frame.c", "src/thread.c", "src/klass.c", 
                     "src/int.c", "src/builtins.c", "src/package.c", 
+                    "src/function.c", 
                     ], 
             }
 

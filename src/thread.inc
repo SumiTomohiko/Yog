@@ -81,8 +81,15 @@
             YogVal code = POP();
             YogVal func = YogVal_nil();
 #line 63 "src/insts.def"
+            YogGCObj* gcobj = YOGVAL_GCOBJ(code);
+            Yog_assert(ENV, gcobj->type == GCOBJ_CODE, "Object isn't YogCode.");
+            YogCode* c = (YogCode*)gcobj;
+        
+            YogFunc* f = YogFunc_new(ENV);
+            f->code = c;
+            func = YogVal_gcobj(YOGGCOBJ(f));
 
-#line 80 "src/thread.inc"
+#line 87 "src/thread.inc"
             PUSH(func);
             break;
         }
