@@ -11,7 +11,7 @@
             PC += sizeof(uint8_t);
             YogVal val = YogVal_nil();
 #line 18 "src/insts.def"
-        val = CONSTS(index);
+            val = CONSTS(index);
 
 #line 15 "src/thread.inc"
             PUSH(val);
@@ -27,14 +27,14 @@
             uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
 #line 26 "src/insts.def"
-        YogVal args[argc];
-        unsigned int i = 0;
-        for (i = 0; i < argc; i++) {
-            args[i] = POP();
-        }
-        YogVal receiver = POP();
-        YogVal ret = YogThread_call_method_id(ENV, receiver, method, argc, args);
-        PUSH(ret);
+            YogVal args[argc];
+            unsigned int i = 0;
+            for (i = 0; i < argc; i++) {
+                args[i] = POP();
+            }
+            YogVal receiver = POP();
+            YogVal ret = YogThread_call_method_id(ENV, receiver, method, argc, args);
+            PUSH(ret);
 
 #line 37 "src/thread.inc"
             break;
@@ -48,8 +48,8 @@
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
             YogVal val = POP();
 #line 41 "src/insts.def"
-        YogVal key = YogVal_symbol(id);
-        YogTable_insert(ENV, PKG_VARS(FRAME), key, val);
+            YogVal key = YogVal_symbol(id);
+            YogTable_insert(ENV, PKG_VARS(FRAME), key, val);
 
 #line 51 "src/thread.inc"
             break;
@@ -64,12 +64,12 @@
             uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
 #line 50 "src/insts.def"
-        YogVal args[argc];
-        unsigned int i = 0;
-        for (i = 0; i < argc; i++) {
-            args[i] = POP();
-        }
-        YogThread_call_command(ENV, command, argc, args);
+            YogVal args[argc];
+            unsigned int i = 0;
+            for (i = 0; i < argc; i++) {
+                args[i] = POP();
+            }
+            YogThread_call_command(ENV, command, argc, args);
 
 #line 70 "src/thread.inc"
             break;

@@ -230,7 +230,7 @@ class CodeGenerator(object):
                     else:
                         in_macro = False
                 else:
-                    inc.write(" " * 4)
+                    inc.write(" " * 8)
                     inc.write(line)
                     in_macro = False
                 lineno += 1
