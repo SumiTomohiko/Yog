@@ -47,9 +47,19 @@ struct CompileData {
     YogTable* var2index;
     YogTable* const2index;
     YogBinary* insts;
+    YogInst* last_inst;
 };
 
 typedef struct CompileData CompileData;
+
+static YogInst* 
+YogInst_new(YogEnv* env) 
+{
+    YogInst* inst = ALLOC_OBJ(env, GCOBJ_INST, YogInst);
+    inst->next = NULL;
+
+    return inst;
+}
 
 static void 
 visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
@@ -255,6 +265,9 @@ compile_module(YogEnv* env, YogArray* stmts, YogTable* var2index, YogTable* cons
 #define INIT_INSTS_SIZE (0)
     data.insts = YogBinary_new(env, INIT_INSTS_SIZE);
 #undef INIT_INSTS_SIZE
+    YogInst* first_inst = YogInst_new(env);
+    first_inst->type = INST_DUMMY;
+    data.last_inst = first_inst;
 
     visitor.visit_stmts(env, &visitor, stmts, &data);
 

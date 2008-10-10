@@ -364,22 +364,16 @@ class CodeGenerator(object):
         return types
 
     def gen_inst_h(self, inst_h, inst_h_tmpl):
-        union = StringIO()
-        union.write("""
-    union {""")
-
+        structs = StringIO()
         for inst in self.insts:
-            union.write("""
+            structs.write("""
         struct {""")
             for operand in inst.operands:
-                union.write("""
+                structs.write("""
             %(type)s %(name)s;""" % { "type": operand.type, "name": operand.name })
 
-            union.write("""
+            structs.write("""
         } %(name)s;""" % { "name": inst.name })
-
-        union.write("""
-    } u;""")
 
         macros = StringIO()
         for inst in self.insts:
@@ -387,7 +381,7 @@ class CodeGenerator(object):
                 macros.write("""
 #define %(inst_macro)s_%(operand_macro)s(inst) ((inst)->u.%(inst)s.%(operand)s)""" % { "inst_macro": inst.name.upper(), "operand_macro": operand.name.upper(), "inst": inst.name, "operand": operand.name })
 
-        kw = { "union": union.getvalue(), "macros": macros.getvalue() }
+        kw = { "structs": structs.getvalue(), "macros": macros.getvalue() }
         s = self.substitute_template(inst_h_tmpl, kw)
         with open(inst_h, "w") as f:
             f.write(self.make_attention())

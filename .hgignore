@@ -1,6 +1,7 @@
-.pyc
 .deps
+.pyc
 Makefile
+TAGS
 autom4te.cache
 autoscan.log
 config.h

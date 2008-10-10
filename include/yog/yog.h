@@ -79,6 +79,7 @@ enum YogGCObjType {
     GCOBJ_FUNC, 
 #endif
     GCOBJ_KLASS, 
+    GCOBJ_INST, 
 };
 
 typedef enum YogGCObjType YogGCObjType;
@@ -303,6 +304,13 @@ struct YogThread {
 };
 
 typedef struct YogThread YogThread;
+
+enum InstType {
+    INST_DUMMY, 
+    INST_OP, 
+};
+
+typedef enum InstType InstType;
 
 #include "yog/inst.h"
 

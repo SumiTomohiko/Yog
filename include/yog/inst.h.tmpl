@@ -1,10 +1,14 @@
-#ifndef __YOG_INSTS_H__
-#define __YOG_INSTS_H__
+#ifndef __YOG_INST_H__
+#define __YOG_INST_H__
 
 struct YogInst {
     YOGGCOBJ_HEAD;
 
-${union}
+    struct YogInst* next;
+    enum InstType type;
+    union {
+${structs}
+    } u;
 };
 
 ${macros}
