@@ -5,11 +5,15 @@
 #ifndef __YOG_INST_H__
 #define __YOG_INST_H__
 
+#include "yog/opcodes.h"
+
 struct YogInst {
     YOGGCOBJ_HEAD;
 
     struct YogInst* next;
+
     enum InstType type;
+    enum OpCode operand;
     union {
 
         struct {
@@ -29,6 +33,7 @@ struct YogInst {
     } u;
 };
 
+#define INST_OPERAND(inst)  ((inst)->operand)
 
 #define PUSH_CONST_INDEX(inst) ((inst)->u.push_const.index)
 #define CALL_METHOD_METHOD(inst) ((inst)->u.call_method.method)

@@ -46,7 +46,6 @@ typedef struct Const2IndexData Const2IndexData;
 struct CompileData {
     YogTable* var2index;
     YogTable* const2index;
-    YogBinary* insts;
     YogInst* last_inst;
 };
 
@@ -60,6 +59,8 @@ YogInst_new(YogEnv* env)
 
     return inst;
 }
+
+#include "src/compile.inc"
 
 static void 
 visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
@@ -199,9 +200,7 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     if (!YogTable_lookup(env, data->var2index, symbol, &index)) {
         Yog_assert(env, FALSE, "Can't find assigned symbol.");
     }
-    YogBinary* insts = data->insts;
-    YogBinary_push_uint8(env, insts, OP(STORE_PKG));
-    YogBinary_push_uint32(env, insts, YOGVAL_INT(index));
+    CompileData_append_store_pkg(env, data, YOGVAL_INT(index));
 }
 
 static void 
@@ -212,12 +211,8 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
 
     unsigned int argc = YogArray_size(env, NODE_ARGS(node));
     Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for method call.");
-
     CompileData* data = arg;
-    YogBinary* insts = data->insts;
-    YogBinary_push_uint8(env, insts, OP(CALL_METHOD));
-    YogBinary_push_uint32(env, insts, YogVm_intern(env, ENV_VM(env), "+"));
-    YogBinary_push_uint8(env, insts, argc);
+    CompileData_append_call_method(env, data, NODE_METHOD(node), argc);
 }
 
 static void 
@@ -228,9 +223,7 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
     if (!YogTable_lookup(env, data->const2index, NODE_VAL(node), &index)) {
         Yog_assert(env, FALSE, "Can't find constant.");
     }
-    YogBinary* insts = data->insts;
-    YogBinary_push_uint8(env, insts, OP(PUSH_CONST));
-    YogBinary_push_uint8(env, insts, YOGVAL_INT(index));
+    CompileData_append_push_const(env, data, YOGVAL_INT(index));
 }
 
 static void 
@@ -240,12 +233,8 @@ compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void
 
     unsigned int argc = YogArray_size(env, NODE_ARGS(node));
     Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for command call.");
-
     CompileData* data = arg;
-    YogBinary* insts = data->insts;
-    YogBinary_push_uint8(env, insts, OP(CALL_COMMAND));
-    YogBinary_push_uint32(env, insts, NODE_COMMAND(node));
-    YogBinary_push_uint8(env, insts, argc);
+    CompileData_append_call_command(env, data, NODE_COMMAND(node), argc);
 }
 
 static YogBinary* 
@@ -262,16 +251,13 @@ compile_module(YogEnv* env, YogArray* stmts, YogTable* var2index, YogTable* cons
     CompileData data;
     data.var2index = var2index;
     data.const2index = const2index;
-#define INIT_INSTS_SIZE (0)
-    data.insts = YogBinary_new(env, INIT_INSTS_SIZE);
-#undef INIT_INSTS_SIZE
-    YogInst* first_inst = YogInst_new(env);
-    first_inst->type = INST_DUMMY;
-    data.last_inst = first_inst;
+    YogInst* dummy_inst = YogInst_new(env);
+    dummy_inst->type = INST_DUMMY;
+    data.last_inst = dummy_inst;
 
     visitor.visit_stmts(env, &visitor, stmts, &data);
 
-    return data.insts;
+    return insts2bin(env, dummy_inst->next);
 }
 
 static void 

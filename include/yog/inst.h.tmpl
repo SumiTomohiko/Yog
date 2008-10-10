@@ -1,16 +1,21 @@
 #ifndef __YOG_INST_H__
 #define __YOG_INST_H__
 
+#include "yog/opcodes.h"
+
 struct YogInst {
     YOGGCOBJ_HEAD;
 
     struct YogInst* next;
+
     enum InstType type;
+    enum OpCode operand;
     union {
 ${structs}
     } u;
 };
 
+#define INST_OPERAND(inst)  ((inst)->operand)
 ${macros}
 
 typedef struct YogInst YogInst;

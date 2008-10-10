@@ -79,9 +79,9 @@ YogBinary_push_uint8(YogEnv* env, YogBinary* binary, uint8_t n)
 }
 
 void 
-YogBinary_push_uint32(YogEnv* env, YogBinary* binary, uint32_t n) 
+YogBinary_push_id(YogEnv* env, YogBinary* binary, ID id) 
 {
-    PUSH_TYPE(uint32_t, n);
+    PUSH_TYPE(ID, id);
 }
 
 #undef PUSH_TYPE

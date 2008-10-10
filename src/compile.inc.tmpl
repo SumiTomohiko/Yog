@@ -1,0 +1,26 @@
+${compile_data}
+
+static YogBinary* 
+insts2bin(YogEnv* env, YogInst* inst) 
+{
+#define INIT_BIN_SIZE   (0)
+    YogBinary* code = YogBinary_new(env, INIT_BIN_SIZE);
+#undef INIT_BIN_SIZE
+
+    while (inst != NULL) {
+        switch (INST_OPERAND(inst)) {
+${insts2bin}
+        default:
+            Yog_assert(env, FALSE, "Unkown instruction.");
+            break;
+        }
+
+        inst = inst->next;
+    }
+
+    return code;
+}
+
+/**
+ * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
+ */
