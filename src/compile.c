@@ -447,8 +447,11 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     YogVal val = YogVal_gcobj(YOGGCOBJ(code));
     int index = register_const(env, data, val);
 
+    ID id = NODE_NAME(node);
+
     CompileData_append_push_const(env, data, index);
     CompileData_append_make_func(env, data);
+    CompileData_append_store_pkg(env, data, id);
 }
 
 #if 0
