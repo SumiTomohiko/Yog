@@ -59,10 +59,11 @@ YogArray_push(YogEnv* env, YogArray* array, YogVal val)
     if (array->body->capacity < array->body->size + 1) {
         YogValArray* old_body = array->body;
 #define INCREASE_RATIO  (2)
-        unsigned int new_size = INCREASE_RATIO * old_body->size;
+        unsigned int new_capacity = INCREASE_RATIO * old_body->size;
 #undef INCREASE_RATIO
-        YogValArray* new_body = YogValArray_new(env, new_size);
+        YogValArray* new_body = YogValArray_new(env, new_capacity);
         memcpy(new_body->items, old_body->items, sizeof(YogVal) * old_body->size);
+        new_body->size = old_body->size;
 
         array->body = new_body;
     }

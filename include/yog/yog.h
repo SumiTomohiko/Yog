@@ -286,6 +286,7 @@ typedef struct YogBinary YogBinary;
 struct YogCode {
     YOGGCOBJ_HEAD;
     unsigned int stack_size;
+    unsigned int local_vars_count;
     struct YogValArray* consts;
     struct YogByteArray* insts;
 };
@@ -294,11 +295,15 @@ typedef struct YogCode YogCode;
 
 struct YogFrame {
     YOGGCOBJ_HEAD;
-    struct YogTable* pkg_vars;
+    union {
+        struct YogTable* pkg;
+        struct YogValArray* local;
+    } vars;
     struct YogValArray* stack;
 };
 
-#define PKG_VARS(f) (f)->pkg_vars
+#define PKG_VARS(f)     (f)->vars.pkg
+#define LOCAL_VARS(f)   (f)->vars.local
 
 typedef struct YogFrame YogFrame;
 

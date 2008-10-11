@@ -72,7 +72,7 @@ inst make_func
 inst call_func
 (uint8_t argc) 
 (...)
-(ret)
+(...)
 {
     YogVal args[argc];
     unsigned int i = 0;
@@ -81,6 +81,16 @@ inst call_func
     }
 
     YogVal callee = POP();
+    YogGCObj* gcobj = YOGVAL_GCOBJ(callee);
+    Yog_assert(ENV, gcobj->type == GCOBJ_FUNC, "Callee isn't function.");
+    YogFunc* func = (YogFunc*)gcobj;
+    YogCode* new_code = func->code;
+    YogFrame* new_frame = YogFrame_new(ENV);
+    LOCAL_VARS(new_frame) = YogValArray_new(ENV, new_code->local_vars_count);
+    new_frame->stack = YogValArray_new(ENV, new_code->stack_size);
+    FRAME = new_frame;
+    PC = 0;
+    CODE = new_code;
 }
 
 inst load_pkg
@@ -88,6 +98,10 @@ inst load_pkg
 ()
 (val)
 {
+    YogVal key = YogVal_symbol(id);
+    if (!YogTable_lookup(ENV, PKG_VARS(FRAME), key, &val)) {
+        Yog_assert(ENV, FALSE, "Can't find package var.");
+    }
 }
 
 /**

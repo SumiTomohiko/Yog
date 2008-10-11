@@ -3,7 +3,6 @@
 #include "yog/opcodes.h"
 #include "yog/st.h"
 #include "yog/yog.h"
-#include <stdio.h>
 
 #define VISIT_EACH_ARGS()   do { \
     YogArray* args = NODE_ARGS(node); \
@@ -41,7 +40,15 @@ struct Var2IndexData {
 
 typedef struct Var2IndexData Var2IndexData;
 
+enum Context {
+    CTX_PKG, 
+    CTX_FUNC, 
+};
+
+typedef enum Context Context;
+
 struct CompileData {
+    enum Context ctx;
     YogTable* var2index;
     YogTable* const2index;
     YogInst* last_inst;
@@ -111,8 +118,9 @@ visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg)
         return;
     }
 
+    unsigned int size = YogArray_size(env, stmts);
     unsigned int i = 0;
-    for (i = 0; i < YogArray_size(env, stmts); i++) {
+    for (i = 0; i < size; i++) {
         YogVal val = YogArray_at(env, stmts, i);
         YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
         visitor->visit_stmt(env, visitor, node, arg);
@@ -384,11 +392,10 @@ table2array(YogEnv* env, YogTable* table)
 }
 
 static YogCode* 
-compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2index) 
+compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2index, Context ctx) 
 {
-    make_var2index(env, stmts, var2index);
-
     CompileData data;
+    data.ctx = ctx;
     data.var2index = var2index;
     data.const2index = NULL;
     YogInst* dummy_inst = YogInst_new(env);
@@ -399,6 +406,9 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     YogBinary* bin = insts2bin(env, dummy_inst->next);
 
     YogCode* code = YogCode_new(env);
+    if (var2index != NULL) {
+        code->local_vars_count = YogTable_size(env, var2index);
+    }
     code->stack_size = count_stack_size(env, stmts);
     code->consts = table2array(env, data.const2index);
     code->insts = bin->body;
@@ -431,9 +441,10 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node)
 {
     YogTable* var2index = YogTable_new_symbol_table(env);
     register_params_var2index(env, node, var2index);
-
     YogArray* stmts = NODE_STMTS(node);
-    YogCode* code = compile_stmts(env, visitor, stmts, var2index);
+    make_var2index(env, stmts, var2index);
+
+    YogCode* code = compile_stmts(env, visitor, stmts, var2index, CTX_FUNC);
 
     return code;
 }
@@ -514,7 +525,7 @@ Yog_compile_module(YogEnv* env, YogArray* stmts)
     AstVisitor visitor;
     compile_init_visitor(&visitor);
 
-    return compile_stmts(env, &visitor, stmts, NULL);
+    return compile_stmts(env, &visitor, stmts, NULL, CTX_PKG);
 }
 
 /**

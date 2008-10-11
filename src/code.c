@@ -4,6 +4,8 @@ YogCode*
 YogCode_new(YogEnv* env) 
 {
     YogCode* code = ALLOC_OBJ(env, GCOBJ_CODE, YogCode);
+    code->stack_size = 0;
+    code->local_vars_count = 0;
     code->consts = NULL;
     code->insts = NULL;
 
