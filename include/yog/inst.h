@@ -44,12 +44,6 @@ struct YogInst {
         struct {
             unsigned int dest;
         } jump;
-        struct {
-        } raise;
-        struct {
-        } reraise;
-        struct {
-        } delete_exc;
     } u;
 };
 

@@ -125,30 +125,6 @@ inst jump
     PC = dest;
 }
 
-inst raise 
-()
-(val)
-()
-{
-    /* TODO */
-}
-
-inst reraise
-()
-()
-()
-{
-    /* TODO */
-}
-
-inst delete_exc
-()
-()
-()
-{
-    /* TODO */
-}
-
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

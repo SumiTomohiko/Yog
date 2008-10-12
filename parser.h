@@ -43,7 +43,8 @@
      NUMBER = 269,
      PLUS = 270,
      RPAR = 271,
-     TRY = 272
+     TRY = 272,
+     WHILE = 273
    };
 #endif
 /* Tokens.  */
@@ -62,6 +63,7 @@
 #define PLUS 270
 #define RPAR 271
 #define TRY 272
+#define WHILE 273
 
 
 
@@ -75,7 +77,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 79 "parser.h"
+#line 81 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

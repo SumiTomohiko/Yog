@@ -179,6 +179,7 @@ enum YogNodeType {
     NODE_FUNC_DEF, 
     NODE_TRY, 
     NODE_EXCEPT, 
+    NODE_WHILE, 
 };
 
 typedef enum YogNodeType YogNodeType;
@@ -230,6 +231,8 @@ struct YogNode {
 #define NODE_EXC_VAR(node)      (node)->u2.id
 #define NODE_EXC_STMTS(node)    (node)->u3.array
 #define NO_EXC_VAR              (UINT_MAX)
+
+#define NODE_TEST(node)     (node)->u1.nd
 
 typedef struct YogNode YogNode;
 
@@ -381,6 +384,7 @@ void YogByteArray_print(YogEnv*, YogByteArray*);
 YogByteArray* YogByteArray_new(YogEnv*, unsigned int);
 void YogBinary_push_uint8(YogEnv*, YogBinary*, uint8_t);
 void YogBinary_push_id(YogEnv*, YogBinary*, ID);
+void YogBinary_push_unsigned_int(YogEnv*, YogBinary*, unsigned int);
 YogBinary* YogBinary_new(YogEnv*, unsigned int);
 
 /* src/thread.c */

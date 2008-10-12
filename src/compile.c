@@ -32,6 +32,8 @@ struct AstVisitor {
     VisitNode visit_func_def;
     VisitNode visit_func_call;
     VisitNode visit_variable;
+    VisitNode visit_try;
+    VisitNode visit_except;
 };
 
 struct Var2IndexData {
@@ -96,6 +98,12 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         break;
     case NODE_FUNC_CALL:
         VISIT(visit_func_call);
+        break;
+    case NODE_TRY:
+        VISIT(visit_try);
+        break;
+    case NODE_EXCEPT:
+        VISIT(visit_except);
         break;
     default:
         Yog_assert(env, FALSE, "Unknown node type.");
@@ -167,6 +175,36 @@ var2index_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
 }
 
 static void 
+generic_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visitor->visit_stmts(env, visitor, NODE_TRY(node), arg);
+    YogArray* excepts = NODE_EXCEPTS(node);
+    if (excepts != NULL) {
+        unsigned int size = YogArray_size(env, excepts);
+        unsigned int i = 0;
+        for (i = 0; i < size; i++) {
+            YogVal val = YogArray_at(env, excepts, i);
+            YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
+            visit_node(env, visitor, node, arg);
+        }
+    }
+    visitor->visit_stmts(env, visitor, NODE_ELSE(node), arg);
+    visitor->visit_stmts(env, visitor, NODE_FINALLY(node), arg);
+}
+
+static void 
+var2index_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_EXC_TYPE(node), arg);
+    ID id = NODE_EXC_VAR(node);
+    if (id != NO_EXC_VAR) {
+        Var2IndexData* data = arg;
+        var2index_register(env, data->var2index, id);
+    }
+    visitor->visit_stmts(env, visitor, NODE_EXC_STMTS(node), arg);
+}
+
+static void 
 var2index_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_stmts = visit_stmts;
@@ -178,6 +216,8 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_func_def = var2index_visit_func_def;
     visitor->visit_func_call = var2index_visit_func_call;
     visitor->visit_variable = NULL;
+    visitor->visit_try = generic_visit_try;
+    visitor->visit_except = var2index_visit_except;
 }
 
 static YogTable*
@@ -323,6 +363,37 @@ stack_size_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, v
 }
 
 static void 
+stack_size_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    unsigned int stack_size = 0;
+    generic_visit_try(env, visitor, node, &stack_size);
+    if (stack_size < 1) {
+        stack_size = 1;
+    }
+    unsigned int* total_size = arg;
+    *total_size += stack_size;
+}
+
+static void 
+stack_size_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    unsigned int stack_size = 0;
+    visit_node(env, visitor, NODE_EXC_TYPE(node), &stack_size);
+    if (stack_size < 1) {
+        stack_size = 1;
+    }
+
+    unsigned int tmp = 0;
+    visitor->visit_stmts(env, visitor, NODE_EXC_STMTS(node), &tmp);
+    if (stack_size < tmp) {
+        stack_size = tmp;
+    }
+
+    unsigned int* result = arg;
+    *result = stack_size;
+}
+
+static void 
 stack_size_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_stmts = stack_size_visit_stmts;
@@ -334,6 +405,8 @@ stack_size_init_visitor(AstVisitor* visitor)
     visitor->visit_func_def = stack_size_need_one;
     visitor->visit_func_call = stack_size_visit_func_call;
     visitor->visit_variable = stack_size_need_one;
+    visitor->visit_try = stack_size_visit_try;
+    visitor->visit_except = stack_size_visit_except;
 }
 
 static unsigned int 
@@ -519,6 +592,18 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 }
 
 static void 
+compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    /* TODO */
+}
+
+static void 
+compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    /* TODO */
+}
+
+static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_stmts = visit_stmts;
@@ -530,6 +615,8 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_func_def = compile_visit_func_def;
     visitor->visit_func_call = compile_visit_func_call;
     visitor->visit_variable = compile_visit_variable;
+    visitor->visit_try = compile_visit_try;
+    visitor->visit_except = compile_visit_except;
 }
 
 YogCode* 

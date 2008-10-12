@@ -72,6 +72,7 @@ yywrap()
 <INITIAL>"except"   return EXCEPT;
 <INITIAL>"finally"  return FINALLY;
 <INITIAL>"try"      return TRY;
+<INITIAL>"while"    return WHILE;
 <INITIAL>[a-z]+     {
     YogEnv* env = Yog_get_parsing_env();
     YogVm* vm = ENV_VM(env);

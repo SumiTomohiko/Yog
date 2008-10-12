@@ -134,6 +134,7 @@ int yylex(void);
 %token PLUS
 %token RPAR
 %token TRY
+%token WHILE
 
 %type<array> args
 %type<array> excepts
@@ -181,6 +182,21 @@ stmt    : /* empty */ {
         | NAME args {
             COMMAND_CALL_NEW($$, $1);
             NODE_ARGS($$) = $2;
+        }
+        | TRY stmts excepts ELSE stmts finally_opt END {
+            TRY_NEW($$, $2, $3, $5, $6);
+        }
+        | TRY stmts excepts finally_opt END {
+            TRY_NEW($$, $2, $3, NULL, $4);
+        }
+        | TRY stmts FINALLY stmts END {
+            TRY_NEW($$, $2, NULL, NULL, $4);
+        }
+        | WHILE expr stmts END {
+            YogNode* node = NODE_NEW(NODE_WHILE);
+            NODE_TEST(node) = $2;
+            NODE_STMTS(node) = $3;
+            $$ = node;
         }
         ;
 func_def    : DEF NAME LPAR params RPAR stmts END {
@@ -268,15 +284,6 @@ atom    : NAME {
             YogNode* callee = NULL;
             VARIABLE_NEW(callee, $1);
             FUNC_CALL_NEW($$, callee, NULL);
-        }
-        | TRY stmts excepts ELSE stmts finally_opt END {
-            TRY_NEW($$, $2, $3, $5, $6);
-        }
-        | TRY stmts excepts finally_opt END {
-            TRY_NEW($$, $2, $3, NULL, $4);
-        }
-        | TRY stmts FINALLY stmts END {
-            TRY_NEW($$, $2, NULL, NULL, $4);
         }
         ;
 excepts : except {

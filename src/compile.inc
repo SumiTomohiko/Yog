@@ -121,42 +121,6 @@ CompileData_append_jump(YogEnv* env, CompileData* data, unsigned int dest)
     data->last_inst = inst;
 }
 
-static void 
-CompileData_append_raise(YogEnv* env, CompileData* data)
-{
-    YogInst* inst = YogInst_new(env);
-    inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(RAISE);
-
-
-    data->last_inst->next = inst;
-    data->last_inst = inst;
-}
-
-static void 
-CompileData_append_reraise(YogEnv* env, CompileData* data)
-{
-    YogInst* inst = YogInst_new(env);
-    inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(RERAISE);
-
-
-    data->last_inst->next = inst;
-    data->last_inst = inst;
-}
-
-static void 
-CompileData_append_delete_exc(YogEnv* env, CompileData* data)
-{
-    YogInst* inst = YogInst_new(env);
-    inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(DELETE_EXC);
-
-
-    data->last_inst->next = inst;
-    data->last_inst = inst;
-}
-
 
 static YogBinary* 
 insts2bin(YogEnv* env, YogInst* inst) 
@@ -221,21 +185,6 @@ insts2bin(YogEnv* env, YogInst* inst)
             {
                 YogBinary_push_uint8(env, code, OP(JUMP));
                 YogBinary_push_unsigned_int(env, code, JUMP_DEST(inst));
-                break;
-            }
-        case OP(RAISE):
-            {
-                YogBinary_push_uint8(env, code, OP(RAISE));
-                break;
-            }
-        case OP(RERAISE):
-            {
-                YogBinary_push_uint8(env, code, OP(RERAISE));
-                break;
-            }
-        case OP(DELETE_EXC):
-            {
-                YogBinary_push_uint8(env, code, OP(DELETE_EXC));
                 break;
             }
         default:
