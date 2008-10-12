@@ -1,6 +1,7 @@
 #ifndef __YOG_YOG_H__
 #define __YOG_YOG_H__
 
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -176,6 +177,8 @@ enum YogNodeType {
     NODE_COMMAND_CALL, 
     NODE_FUNC_CALL, 
     NODE_FUNC_DEF, 
+    NODE_TRY, 
+    NODE_EXCEPT, 
 };
 
 typedef enum YogNodeType YogNodeType;
@@ -187,6 +190,7 @@ struct YogNode {
         ID id;
         YogVal val;
         struct YogNode* nd;
+        struct YogArray* array;
     } u1;
     union {
         ID id;
@@ -196,6 +200,9 @@ struct YogNode {
     union {
         struct YogArray* array;
     } u3;
+    union {
+        struct YogArray* array;
+    } u4;
 };
 
 #define NODE_LEFT(node)     (node)->u1.id
@@ -214,6 +221,15 @@ struct YogNode {
 #define NODE_NAME(node)     (node)->u1.id
 #define NODE_PARAMS(node)   (node)->u2.array
 #define NODE_STMTS(node)    (node)->u3.array
+
+#define NODE_TRY(node)          (node)->u1.array
+#define NODE_EXCEPTS(node)      (node)->u2.array
+#define NODE_ELSE(node)         (node)->u3.array
+#define NODE_FINALLY(node)      (node)->u4.array
+#define NODE_EXC_TYPE(node)     (node)->u1.nd
+#define NODE_EXC_VAR(node)      (node)->u2.id
+#define NODE_EXC_STMTS(node)    (node)->u3.array
+#define NO_EXC_VAR              (UINT_MAX)
 
 typedef struct YogNode YogNode;
 

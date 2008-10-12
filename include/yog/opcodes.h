@@ -19,6 +19,10 @@ enum OpCode {
     OP(CALL_FUNC) = 6, 
     OP(LOAD_PKG) = 7, 
     OP(LOAD_LOCAL) = 8, 
+    OP(JUMP) = 9, 
+    OP(RAISE) = 10, 
+    OP(RERAISE) = 11, 
+    OP(DELETE_EXC) = 12, 
 
 };
 

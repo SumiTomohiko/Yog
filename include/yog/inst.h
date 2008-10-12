@@ -41,6 +41,15 @@ struct YogInst {
         struct {
             uint8_t index;
         } load_local;
+        struct {
+            unsigned int dest;
+        } jump;
+        struct {
+        } raise;
+        struct {
+        } reraise;
+        struct {
+        } delete_exc;
     } u;
 };
 
@@ -55,6 +64,7 @@ struct YogInst {
 #define CALL_FUNC_ARGC(inst) ((inst)->u.call_func.argc)
 #define LOAD_PKG_ID(inst) ((inst)->u.load_pkg.id)
 #define LOAD_LOCAL_INDEX(inst) ((inst)->u.load_local.index)
+#define JUMP_DEST(inst) ((inst)->u.jump.dest)
 
 typedef struct YogInst YogInst;
 #endif

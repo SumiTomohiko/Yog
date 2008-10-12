@@ -93,6 +93,21 @@ YogNode_new(YogEnv* env, YogNodeType type)
     NODE_ID(node) = id; \
 } while (0)
 
+#define TRY_NEW(node, try, excepts, else_, finally) do { \
+    node = NODE_NEW(NODE_TRY); \
+    NODE_TRY(node) = try; \
+    NODE_EXCEPTS(node) = excepts; \
+    NODE_ELSE(node) = else_; \
+    NODE_FINALLY(node) = finally; \
+} while (0)
+
+#define EXCEPT_NEW(node, type, var, stmts) do { \
+    node = NODE_NEW(NODE_EXCEPT); \
+    NODE_EXC_TYPE(node) = type; \
+    NODE_EXC_VAR(node) = var; \
+    NODE_EXC_STMTS(node) = stmts; \
+} while (0)
+
 /* XXX: To avoid warning. Better way? */
 int yylex(void);
 %}
@@ -104,18 +119,25 @@ int yylex(void);
     ID name;
 }
 
+%token AS
 %token COMMA
 %token DEF
+%token ELSE
 %token END
 %token EQUAL
+%token EXCEPT
+%token FINALLY
 %token LPAR
 %token NAME
 %token NEWLINE
 %token NUMBER
 %token PLUS
 %token RPAR
+%token TRY
 
 %type<array> args
+%type<array> excepts
+%type<array> finally_opt
 %type<array> module
 %type<array> params
 %type<array> stmts
@@ -125,6 +147,7 @@ int yylex(void);
 %type<node> assign_expr
 %type<node> atom
 %type<node> comparison
+%type<node> except
 %type<node> expr
 %type<node> factor
 %type<node> func_def
@@ -246,7 +269,38 @@ atom    : NAME {
             VARIABLE_NEW(callee, $1);
             FUNC_CALL_NEW($$, callee, NULL);
         }
+        | TRY stmts excepts ELSE stmts finally_opt END {
+            TRY_NEW($$, $2, $3, $5, $6);
+        }
+        | TRY stmts excepts finally_opt END {
+            TRY_NEW($$, $2, $3, NULL, $4);
+        }
+        | TRY stmts FINALLY stmts END {
+            TRY_NEW($$, $2, NULL, NULL, $4);
+        }
         ;
+excepts : except {
+            OBJ_ARRAY_NEW($$, $1);
+        }
+        | excepts except {
+            OBJ_ARRAY_PUSH($$, $1, $2);
+        }
+        ;
+except  : EXCEPT expr AS NAME stmts {
+            Yog_assert(ENV, $4 != NO_EXC_VAR, "Too many variables.");
+            EXCEPT_NEW($$, $2, $4, $5);
+        }
+        | EXCEPT expr stmts {
+            EXCEPT_NEW($$, $2, NO_EXC_VAR, $3);
+        }
+        ;
+finally_opt : /* empty */ {
+                $$ = NULL;
+            } 
+            | FINALLY stmts {
+                $$ = $2;
+            }
+            ;
 %%
 /*
 single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE

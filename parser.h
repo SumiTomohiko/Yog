@@ -29,35 +29,45 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     COMMA = 258,
-     DEF = 259,
-     END = 260,
-     EQUAL = 261,
-     LPAR = 262,
-     NAME = 263,
-     NEWLINE = 264,
-     NUMBER = 265,
-     PLUS = 266,
-     RPAR = 267
+     AS = 258,
+     COMMA = 259,
+     DEF = 260,
+     ELSE = 261,
+     END = 262,
+     EQUAL = 263,
+     EXCEPT = 264,
+     FINALLY = 265,
+     LPAR = 266,
+     NAME = 267,
+     NEWLINE = 268,
+     NUMBER = 269,
+     PLUS = 270,
+     RPAR = 271,
+     TRY = 272
    };
 #endif
 /* Tokens.  */
-#define COMMA 258
-#define DEF 259
-#define END 260
-#define EQUAL 261
-#define LPAR 262
-#define NAME 263
-#define NEWLINE 264
-#define NUMBER 265
-#define PLUS 266
-#define RPAR 267
+#define AS 258
+#define COMMA 259
+#define DEF 260
+#define ELSE 261
+#define END 262
+#define EQUAL 263
+#define EXCEPT 264
+#define FINALLY 265
+#define LPAR 266
+#define NAME 267
+#define NEWLINE 268
+#define NUMBER 269
+#define PLUS 270
+#define RPAR 271
+#define TRY 272
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 100 "parser.y"
+#line 115 "parser.y"
 typedef union YYSTYPE {
     YogArray* array;
     YogNode* node;
@@ -65,7 +75,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 69 "parser.h"
+#line 79 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

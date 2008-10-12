@@ -65,8 +65,13 @@ yywrap()
 <INITIAL>","        return COMMA;
 <INITIAL>"="        return EQUAL;
 <INITIAL>"\n"       return NEWLINE;
+<INITIAL>"as"       return AS;
 <INITIAL>"def"      return DEF;
+<INITIAL>"else"     return ELSE;
 <INITIAL>"end"      return END;
+<INITIAL>"except"   return EXCEPT;
+<INITIAL>"finally"  return FINALLY;
+<INITIAL>"try"      return TRY;
 <INITIAL>[a-z]+     {
     YogEnv* env = Yog_get_parsing_env();
     YogVm* vm = ENV_VM(env);

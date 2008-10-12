@@ -157,6 +157,47 @@
             PUSH(val);
             break;
         }
+#line 152 "src/thread.inc"
+    case OP(JUMP):
+        {
+            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+            unsigned int dest = *((unsigned int*)&CODE->insts->items[PC]);
+            PC += sizeof(unsigned int);
+#line 125 "src/insts.def"
+            PC = dest;
+
+#line 160 "src/thread.inc"
+            break;
+        }
+#line 163 "src/thread.inc"
+    case OP(RAISE):
+        {
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
+            YogVal val = POP();
+#line 133 "src/insts.def"
+            /* TODO */
+
+#line 170 "src/thread.inc"
+            break;
+        }
+#line 173 "src/thread.inc"
+    case OP(RERAISE):
+        {
+#line 141 "src/insts.def"
+            /* TODO */
+
+#line 178 "src/thread.inc"
+            break;
+        }
+#line 181 "src/thread.inc"
+    case OP(DELETE_EXC):
+        {
+#line 149 "src/insts.def"
+            /* TODO */
+
+#line 186 "src/thread.inc"
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

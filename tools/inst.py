@@ -69,7 +69,8 @@ class CodeGenerator(object):
         line = self.readline()
         operands = self.split_values(line)
         for operand in operands:
-            type, name = operand.split()
+            type = " ".join(operand.split()[:-1])
+            name = operand.split()[-1]
             inst.operands.append(Operand(type, name))
 
         line = self.readline()
@@ -256,7 +257,7 @@ class CodeGenerator(object):
         self.write_file(thread_inc, inc.getvalue())
 
     def convert_type_name(self, name):
-        name = name.lower()
+        name = name.lower().replace(" ", "_")
         suffix = "_t"
         if name.endswith(suffix):
             name = name[:- len(suffix)]
