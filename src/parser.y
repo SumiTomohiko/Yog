@@ -108,6 +108,16 @@ YogNode_new(YogEnv* env, YogNodeType type)
     NODE_EXC_STMTS(node) = stmts; \
 } while (0)
 
+#define BREAK_NEW(node, expr) do { \
+    node = NODE_NEW(NODE_BREAK); \
+    NODE_EXPR(node) = expr; \
+} while (0)
+
+#define NEXT_NEW(node, expr) do { \
+    node = NODE_NEW(NODE_NEXT); \
+    NODE_EXPR(node) = expr; \
+} while (0)
+
 /* XXX: To avoid warning. Better way? */
 int yylex(void);
 %}
@@ -120,6 +130,7 @@ int yylex(void);
 }
 
 %token AS
+%token BREAK
 %token COMMA
 %token DEF
 %token ELSE
@@ -130,6 +141,7 @@ int yylex(void);
 %token LPAR
 %token NAME
 %token NEWLINE
+%token NEXT
 %token NUMBER
 %token PLUS
 %token RPAR
@@ -197,6 +209,18 @@ stmt    : /* empty */ {
             NODE_TEST(node) = $2;
             NODE_STMTS(node) = $3;
             $$ = node;
+        }
+        | BREAK {
+            BREAK_NEW($$, NULL);
+        }
+        | BREAK expr {
+            BREAK_NEW($$, $2);
+        }
+        | NEXT {
+            NEXT_NEW($$, NULL);
+        }
+        | NEXT expr {
+            NEXT_NEW($$, $2);
         }
         ;
 func_def    : DEF NAME LPAR params RPAR stmts END {

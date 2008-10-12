@@ -66,11 +66,13 @@ yywrap()
 <INITIAL>"="        return EQUAL;
 <INITIAL>"\n"       return NEWLINE;
 <INITIAL>"as"       return AS;
+<INITIAL>"break"    return BREAK;
 <INITIAL>"def"      return DEF;
 <INITIAL>"else"     return ELSE;
 <INITIAL>"end"      return END;
 <INITIAL>"except"   return EXCEPT;
 <INITIAL>"finally"  return FINALLY;
+<INITIAL>"next"     return NEXT;
 <INITIAL>"try"      return TRY;
 <INITIAL>"while"    return WHILE;
 <INITIAL>[a-z]+     {

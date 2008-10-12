@@ -180,6 +180,8 @@ enum YogNodeType {
     NODE_TRY, 
     NODE_EXCEPT, 
     NODE_WHILE, 
+    NODE_BREAK, 
+    NODE_NEXT, 
 };
 
 typedef enum YogNodeType YogNodeType;
@@ -233,6 +235,8 @@ struct YogNode {
 #define NO_EXC_VAR              (UINT_MAX)
 
 #define NODE_TEST(node)     (node)->u1.nd
+
+#define NODE_EXPR(node)     (node)->u1.nd
 
 typedef struct YogNode YogNode;
 

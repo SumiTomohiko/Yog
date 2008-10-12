@@ -30,46 +30,50 @@
       know about them.  */
    enum yytokentype {
      AS = 258,
-     COMMA = 259,
-     DEF = 260,
-     ELSE = 261,
-     END = 262,
-     EQUAL = 263,
-     EXCEPT = 264,
-     FINALLY = 265,
-     LPAR = 266,
-     NAME = 267,
-     NEWLINE = 268,
-     NUMBER = 269,
-     PLUS = 270,
-     RPAR = 271,
-     TRY = 272,
-     WHILE = 273
+     BREAK = 259,
+     COMMA = 260,
+     DEF = 261,
+     ELSE = 262,
+     END = 263,
+     EQUAL = 264,
+     EXCEPT = 265,
+     FINALLY = 266,
+     LPAR = 267,
+     NAME = 268,
+     NEWLINE = 269,
+     NEXT = 270,
+     NUMBER = 271,
+     PLUS = 272,
+     RPAR = 273,
+     TRY = 274,
+     WHILE = 275
    };
 #endif
 /* Tokens.  */
 #define AS 258
-#define COMMA 259
-#define DEF 260
-#define ELSE 261
-#define END 262
-#define EQUAL 263
-#define EXCEPT 264
-#define FINALLY 265
-#define LPAR 266
-#define NAME 267
-#define NEWLINE 268
-#define NUMBER 269
-#define PLUS 270
-#define RPAR 271
-#define TRY 272
-#define WHILE 273
+#define BREAK 259
+#define COMMA 260
+#define DEF 261
+#define ELSE 262
+#define END 263
+#define EQUAL 264
+#define EXCEPT 265
+#define FINALLY 266
+#define LPAR 267
+#define NAME 268
+#define NEWLINE 269
+#define NEXT 270
+#define NUMBER 271
+#define PLUS 272
+#define RPAR 273
+#define TRY 274
+#define WHILE 275
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 115 "parser.y"
+#line 125 "parser.y"
 typedef union YYSTYPE {
     YogArray* array;
     YogNode* node;
@@ -77,7 +81,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 81 "parser.h"
+#line 85 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
