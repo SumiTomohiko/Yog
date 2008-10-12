@@ -446,6 +446,11 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node)
 
     YogCode* code = compile_stmts(env, visitor, stmts, var2index, CTX_FUNC);
 
+    YogArray* params = NODE_PARAMS(node);
+    if (params != NULL) {
+        code->argc = YogArray_size(env, params);
+    }
+
     return code;
 }
 
@@ -465,7 +470,6 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     CompileData_append_store_pkg(env, data, id);
 }
 
-#if 0
 static int 
 lookup_var_index(YogEnv* env, YogTable* var2index, ID id) 
 {
@@ -476,7 +480,6 @@ lookup_var_index(YogEnv* env, YogTable* var2index, ID id)
     }
     return YOGVAL_INT(index);
 }
-#endif
 
 static void 
 compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
@@ -499,10 +502,20 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 {
     ID id = NODE_ID(node);
     CompileData* data = arg;
-#if 0
-    int index = lookup_var_index(env, data->var2index, id);
-#endif
-    CompileData_append_load_pkg(env, data, id);
+    switch (data->ctx) {
+    case CTX_PKG:
+        CompileData_append_load_pkg(env, data, id);
+        break;
+    case CTX_FUNC:
+        {
+            int index = lookup_var_index(env, data->var2index, id);
+            CompileData_append_load_local(env, data, index);
+            break;
+        }
+    default:
+        Yog_assert(env, FALSE, "Unknown context.");
+        break;
+    }
 }
 
 static void 

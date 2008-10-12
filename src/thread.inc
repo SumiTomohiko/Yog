@@ -111,30 +111,49 @@
             Yog_assert(ENV, gcobj->type == GCOBJ_FUNC, "Callee isn't function.");
             YogFunc* func = (YogFunc*)gcobj;
             YogCode* new_code = func->code;
+            Yog_assert(ENV, new_code->argc == argc, "Arguments count miss match.");
+        
             YogFrame* new_frame = YogFrame_new(ENV);
             LOCAL_VARS(new_frame) = YogValArray_new(ENV, new_code->local_vars_count);
+            for (i = 0; i < argc; i++) {
+                LOCAL_VARS(new_frame)->items[i] = args[i];
+            }
             new_frame->stack = YogValArray_new(ENV, new_code->stack_size);
             FRAME = new_frame;
             PC = 0;
             CODE = new_code;
 
-#line 115 "src/thread.inc"
+#line 120 "src/thread.inc"
             break;
         }
-#line 118 "src/thread.inc"
+#line 123 "src/thread.inc"
     case OP(LOAD_PKG):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
             ID id = *((ID*)&CODE->insts->items[PC]);
             PC += sizeof(ID);
             YogVal val = YogVal_nil();
-#line 101 "src/insts.def"
+#line 106 "src/insts.def"
             YogVal key = YogVal_symbol(id);
             if (!YogTable_lookup(ENV, PKG_VARS(FRAME), key, &val)) {
                 Yog_assert(ENV, FALSE, "Can't find package var.");
             }
 
-#line 130 "src/thread.inc"
+#line 135 "src/thread.inc"
+            PUSH(val);
+            break;
+        }
+#line 139 "src/thread.inc"
+    case OP(LOAD_LOCAL):
+        {
+            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+            uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
+            PC += sizeof(uint8_t);
+            YogVal val = YogVal_nil();
+#line 117 "src/insts.def"
+            val = LOCAL_VARS(FRAME)->items[index];
+
+#line 148 "src/thread.inc"
             PUSH(val);
             break;
         }

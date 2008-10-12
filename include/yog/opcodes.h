@@ -18,6 +18,7 @@ enum OpCode {
     OP(MAKE_FUNC) = 5, 
     OP(CALL_FUNC) = 6, 
     OP(LOAD_PKG) = 7, 
+    OP(LOAD_LOCAL) = 8, 
 
 };
 

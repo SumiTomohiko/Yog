@@ -95,6 +95,19 @@ CompileData_append_load_pkg(YogEnv* env, CompileData* data, ID id)
     data->last_inst = inst;
 }
 
+static void 
+CompileData_append_load_local(YogEnv* env, CompileData* data, uint8_t index)
+{
+    YogInst* inst = YogInst_new(env);
+    inst->type = INST_OP;
+    INST_OPERAND(inst) = OP(LOAD_LOCAL);
+
+    LOAD_LOCAL_INDEX(inst) = index;
+
+    data->last_inst->next = inst;
+    data->last_inst = inst;
+}
+
 
 static YogBinary* 
 insts2bin(YogEnv* env, YogInst* inst) 
@@ -147,6 +160,12 @@ insts2bin(YogEnv* env, YogInst* inst)
             {
                 YogBinary_push_uint8(env, code, OP(LOAD_PKG));
                 YogBinary_push_id(env, code, LOAD_PKG_ID(inst));
+                break;
+            }
+        case OP(LOAD_LOCAL):
+            {
+                YogBinary_push_uint8(env, code, OP(LOAD_LOCAL));
+                YogBinary_push_uint8(env, code, LOAD_LOCAL_INDEX(inst));
                 break;
             }
         default:

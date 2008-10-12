@@ -85,8 +85,13 @@ inst call_func
     Yog_assert(ENV, gcobj->type == GCOBJ_FUNC, "Callee isn't function.");
     YogFunc* func = (YogFunc*)gcobj;
     YogCode* new_code = func->code;
+    Yog_assert(ENV, new_code->argc == argc, "Arguments count miss match.");
+
     YogFrame* new_frame = YogFrame_new(ENV);
     LOCAL_VARS(new_frame) = YogValArray_new(ENV, new_code->local_vars_count);
+    for (i = 0; i < argc; i++) {
+        LOCAL_VARS(new_frame)->items[i] = args[i];
+    }
     new_frame->stack = YogValArray_new(ENV, new_code->stack_size);
     FRAME = new_frame;
     PC = 0;
@@ -102,6 +107,14 @@ inst load_pkg
     if (!YogTable_lookup(ENV, PKG_VARS(FRAME), key, &val)) {
         Yog_assert(ENV, FALSE, "Can't find package var.");
     }
+}
+
+inst load_local
+(uint8_t index) 
+()
+(val)
+{
+    val = LOCAL_VARS(FRAME)->items[index];
 }
 
 /**

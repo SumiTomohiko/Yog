@@ -38,6 +38,9 @@ struct YogInst {
         struct {
             ID id;
         } load_pkg;
+        struct {
+            uint8_t index;
+        } load_local;
     } u;
 };
 
@@ -51,6 +54,7 @@ struct YogInst {
 #define CALL_COMMAND_ARGC(inst) ((inst)->u.call_command.argc)
 #define CALL_FUNC_ARGC(inst) ((inst)->u.call_func.argc)
 #define LOAD_PKG_ID(inst) ((inst)->u.load_pkg.id)
+#define LOAD_LOCAL_INDEX(inst) ((inst)->u.load_local.index)
 
 typedef struct YogInst YogInst;
 #endif

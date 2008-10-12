@@ -285,6 +285,7 @@ typedef struct YogBinary YogBinary;
 
 struct YogCode {
     YOGGCOBJ_HEAD;
+    unsigned int argc;
     unsigned int stack_size;
     unsigned int local_vars_count;
     struct YogValArray* consts;
