@@ -4,6 +4,8 @@ from tests import TestCase
 
 class TestException(TestCase):
 
+    disabled = True
+
     def test_except(self):
         self._test("""
 try
