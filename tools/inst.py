@@ -151,7 +151,7 @@ class CodeGenerator(object):
         opcodes = StringIO()
         for i, inst in enumerate(self.insts):
             s = "    OP(%(name)s) = %(i)d, \n" \
-                    % { "name": inst.name.upper(), "i": i + 1}
+                    % { "name": inst.name.upper(), "i": i }
             opcodes.write(s)
         kw = { "opcodes": opcodes.getvalue() }
         s = self.substitute_template(opcodes_h_tmpl, kw)
@@ -256,7 +256,7 @@ class CodeGenerator(object):
         inc.write("\n" + self.get_c_footer())
         self.write_file(thread_inc, inc.getvalue())
 
-    def convert_type_name(self, name):
+    def type_name2func_name(self, name):
         name = name.lower().replace(" ", "_")
         suffix = "_t"
         if name.endswith(suffix):
@@ -270,10 +270,10 @@ class CodeGenerator(object):
 static void 
 CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.name })
             for operand in inst.operands:
-                compile_data.write(", %(type)s %(name)s" % { "type": operand.type, "name": operand.name })
+                compile_data.write(", %(type)s %(name)s" % { "type": self.type_name2data_type(operand.type), "name": operand.name })
             compile_data.write(""")
 {
-    YogInst* inst = YogInst_new(env);
+    YogInst* inst = inst_new(env);
     inst->type = INST_OP;
     INST_OPERAND(inst) = OP(%(name)s);
 """ % { "name": inst.name.upper() })
@@ -282,25 +282,38 @@ CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.n
     %(inst)s_%(operand)s(inst) = %(name)s;""" % { "inst": inst.name.upper(), "operand": operand.name.upper(), "name": operand.name })
             compile_data.write("""
 
-    data->last_inst->next = inst;
-    data->last_inst = inst;
+    append_inst(data, inst);
 }
 """)
 
         insts2bin = StringIO()
         for inst in self.insts:
             insts2bin.write("""
-        case OP(%(name)s):
-            {
-                YogBinary_push_uint8(env, code, OP(%(name)s));""" % { "name": inst.name.upper() })
+            case OP(%(name)s):
+                {
+                    YogBinary_push_uint8(env, code, OP(%(name)s));""" % { "name": inst.name.upper() })
             for operand in inst.operands:
+                inst_attr = "%(inst)s_%(name)s(inst)" % { "inst": inst.name.upper(), "name": operand.name.upper() }
+                if operand.type == "pc_t":
+                    inst_attr = "LABEL_POS(" + inst_attr + ")"
                 insts2bin.write("""
-                YogBinary_push_%(type)s(env, code, %(inst)s_%(name)s(inst));""" % { "type": self.convert_type_name(operand.type), "inst": inst.name.upper(), "name": operand.name.upper() })
+                    YogBinary_push_%(type)s(env, code, %(inst_attr)s);""" % { "type": self.type_name2func_name(operand.type), "inst_attr": inst_attr })
             insts2bin.write("""
-                break;
-            }""")
+                    break;
+                }""")
 
-        s = self.substitute_template(compile_inc_tmpl, { "compile_data": compile_data.getvalue(), "insts2bin": insts2bin.getvalue() })
+        inst2size = StringIO()
+        for inst in self.insts:
+            inst2size.write(" " * 8 + "sizeof(uint8_t)")
+            for i, operand in enumerate(inst.operands):
+                inst2size.write(" + sizeof(%(type)s)" % { "type": operand.type })
+            inst2size.write(", /* %(name)s */\n" % { "name": inst.name })
+
+        s = self.substitute_template(
+                compile_inc_tmpl, 
+                { "compile_data": compile_data.getvalue(), 
+                    "insts2bin": insts2bin.getvalue(), 
+                    "inst2size": inst2size.getvalue() })
         with open(compile_inc, "w") as f:
             f.write(self.make_attention())
             f.write(s)
@@ -393,6 +406,12 @@ CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.n
             fp.close()
         return types
 
+    def type_name2data_type(self, type):
+        if type == "pc_t":
+            return "struct YogInst*"
+        else:
+            return type
+
     def gen_inst_h(self, inst_h, inst_h_tmpl):
         structs = StringIO()
         for inst in self.insts:
@@ -400,7 +419,7 @@ CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.n
         struct {""")
             for operand in inst.operands:
                 structs.write("""
-            %(type)s %(name)s;""" % { "type": operand.type, "name": operand.name })
+            %(type)s %(name)s;""" % { "type": self.type_name2data_type(operand.type), "name": operand.name })
 
             structs.write("""
         } %(name)s;""" % { "name": inst.name })
@@ -426,8 +445,7 @@ CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.n
             for inst in self.insts:
                 print `inst`
 
-        # Generate inst.h from templates/inst.h.tmpl .
-        #templates_dir = "templates"
+        # Generate inst.h from inst.h.tmpl .
         include_dir = join("include", "yog")
         opcodes_h = opcodes_h or join(include_dir, "opcodes.h")
         opcodes_h_tmpl = opcodes_h_tmpl or opcodes_h + ".tmpl"

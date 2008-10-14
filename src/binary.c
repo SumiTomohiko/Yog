@@ -90,6 +90,12 @@ YogBinary_push_unsigned_int(YogEnv* env, YogBinary* binary, unsigned int n)
     PUSH_TYPE(unsigned int, n);
 }
 
+void 
+YogBinary_push_pc(YogEnv* env, YogBinary* binary, pc_t pc) 
+{
+    PUSH_TYPE(pc_t, pc);
+}
+
 #undef PUSH_TYPE
 
 YogBinary* 

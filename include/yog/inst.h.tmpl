@@ -2,6 +2,7 @@
 #define __YOG_INST_H__
 
 #include "yog/opcodes.h"
+#include "yog/yog.h"
 
 struct YogInst {
     YOGGCOBJ_HEAD;
@@ -11,11 +12,13 @@ struct YogInst {
     enum InstType type;
     enum OpCode operand;
     union {
+        pc_t pos;
 ${structs}
     } u;
 };
 
 #define INST_OPERAND(inst)  ((inst)->operand)
+#define LABEL_POS(inst)     ((inst)->u.pos)
 ${macros}
 
 typedef struct YogInst YogInst;

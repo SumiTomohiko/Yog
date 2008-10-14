@@ -11,15 +11,16 @@ extern "C" {
 #define OP(name)  OP_##name
 
 enum OpCode {
-    OP(PUSH_CONST) = 1, 
-    OP(CALL_METHOD) = 2, 
-    OP(STORE_PKG) = 3, 
-    OP(CALL_COMMAND) = 4, 
-    OP(MAKE_FUNC) = 5, 
-    OP(CALL_FUNC) = 6, 
-    OP(LOAD_PKG) = 7, 
-    OP(LOAD_LOCAL) = 8, 
-    OP(JUMP) = 9, 
+    OP(PUSH_CONST) = 0, 
+    OP(CALL_METHOD) = 1, 
+    OP(STORE_PKG) = 2, 
+    OP(CALL_COMMAND) = 3, 
+    OP(MAKE_FUNC) = 4, 
+    OP(CALL_FUNC) = 5, 
+    OP(LOAD_PKG) = 6, 
+    OP(LOAD_LOCAL) = 7, 
+    OP(JUMP) = 8, 
+    OP(JUMP_IF_FALSE) = 9, 
 
 };
 

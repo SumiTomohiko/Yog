@@ -6,6 +6,7 @@
 #define __YOG_INST_H__
 
 #include "yog/opcodes.h"
+#include "yog/yog.h"
 
 struct YogInst {
     YOGGCOBJ_HEAD;
@@ -15,6 +16,7 @@ struct YogInst {
     enum InstType type;
     enum OpCode operand;
     union {
+        pc_t pos;
 
         struct {
             uint8_t index;
@@ -42,12 +44,16 @@ struct YogInst {
             uint8_t index;
         } load_local;
         struct {
-            unsigned int dest;
+            struct YogInst* dest;
         } jump;
+        struct {
+            struct YogInst* dest;
+        } jump_if_false;
     } u;
 };
 
 #define INST_OPERAND(inst)  ((inst)->operand)
+#define LABEL_POS(inst)     ((inst)->u.pos)
 
 #define PUSH_CONST_INDEX(inst) ((inst)->u.push_const.index)
 #define CALL_METHOD_METHOD(inst) ((inst)->u.call_method.method)
@@ -59,6 +65,7 @@ struct YogInst {
 #define LOAD_PKG_ID(inst) ((inst)->u.load_pkg.id)
 #define LOAD_LOCAL_INDEX(inst) ((inst)->u.load_local.index)
 #define JUMP_DEST(inst) ((inst)->u.jump.dest)
+#define JUMP_IF_FALSE_DEST(inst) ((inst)->u.jump_if_false.dest)
 
 typedef struct YogInst YogInst;
 #endif

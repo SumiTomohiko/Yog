@@ -34,6 +34,7 @@ struct AstVisitor {
     VisitNode visit_variable;
     VisitNode visit_try;
     VisitNode visit_except;
+    VisitNode visit_while;
 };
 
 struct Var2IndexData {
@@ -59,12 +60,38 @@ struct CompileData {
 typedef struct CompileData CompileData;
 
 static YogInst* 
-YogInst_new(YogEnv* env) 
+YogInst_new(YogEnv* env, InstType type) 
 {
     YogInst* inst = ALLOC_OBJ(env, GCOBJ_INST, YogInst);
+    inst->type = type;
     inst->next = NULL;
 
     return inst;
+}
+
+static YogInst* 
+inst_new(YogEnv* env) 
+{
+    return YogInst_new(env, INST_OP);
+}
+
+static YogInst* 
+label_new(YogEnv* env) 
+{
+    return YogInst_new(env, INST_LABEL);
+}
+
+static YogInst* 
+anchor_new(YogEnv* env) 
+{
+    return YogInst_new(env, INST_ANCHOR);
+}
+
+static void 
+append_inst(CompileData* data, YogInst* inst) 
+{
+    data->last_inst->next = inst;
+    data->last_inst = inst;
 }
 
 #include "src/compile.inc"
@@ -104,6 +131,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         break;
     case NODE_EXCEPT:
         VISIT(visit_except);
+        break;
+    case NODE_WHILE:
+        VISIT(visit_while);
         break;
     default:
         Yog_assert(env, FALSE, "Unknown node type.");
@@ -205,6 +235,13 @@ var2index_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 }
 
 static void 
+var2index_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_TEST(node), arg);
+    visitor->visit_stmts(env, visitor, NODE_STMTS(node), arg);
+}
+
+static void 
 var2index_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_stmts = visit_stmts;
@@ -218,6 +255,7 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_variable = NULL;
     visitor->visit_try = generic_visit_try;
     visitor->visit_except = var2index_visit_except;
+    visitor->visit_while = var2index_visit_while;
 }
 
 static YogTable*
@@ -303,6 +341,7 @@ compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void
     CompileData_append_call_command(env, data, NODE_COMMAND(node), argc);
 }
 
+#if 0
 static void 
 stack_size_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg) 
 {
@@ -416,6 +455,7 @@ count_stack_size(YogEnv* env, YogArray* stmts)
 
     return stack_size;
 }
+#endif
 
 static int 
 table2array_count_index(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
@@ -460,6 +500,31 @@ table2array(YogEnv* env, YogTable* table)
     }
 }
 
+void 
+set_label_pos(YogEnv* env, YogInst* first_inst) 
+{
+    pc_t pc = 0;
+    YogInst* inst = first_inst;
+    while (inst != NULL) {
+        switch (inst->type) {
+            case INST_OP:
+                pc += get_inst_size(inst);
+                break;
+            case INST_LABEL:
+                LABEL_POS(inst) = pc;
+                break;
+            case INST_ANCHOR:
+                Yog_assert(env, FALSE, "Instruction is anchor.");
+                break;
+            default:
+                Yog_assert(env, FALSE, "Unknown inst type.");
+                break;
+        }
+
+        inst = inst->next;
+    }
+}
+
 static YogCode* 
 compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2index, Context ctx) 
 {
@@ -467,18 +532,21 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     data.ctx = ctx;
     data.var2index = var2index;
     data.const2index = NULL;
-    YogInst* dummy_inst = YogInst_new(env);
-    dummy_inst->type = INST_DUMMY;
-    data.last_inst = dummy_inst;
+    YogInst* anchor = anchor_new(env);
+    data.last_inst = anchor;
 
     visitor->visit_stmts(env, visitor, stmts, &data);
-    YogBinary* bin = insts2bin(env, dummy_inst->next);
+    set_label_pos(env, anchor->next);
+    YogBinary* bin = insts2bin(env, anchor->next);
 
     YogCode* code = YogCode_new(env);
     if (var2index != NULL) {
         code->local_vars_count = YogTable_size(env, var2index);
     }
+#if 0
     code->stack_size = count_stack_size(env, stmts);
+#endif
+    code->stack_size = 32;
     code->consts = table2array(env, data.const2index);
     code->insts = bin->body;
 
@@ -599,6 +667,22 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
+compile_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    CompileData* data = arg;
+
+    YogInst* while_start = label_new(env);
+    YogInst* while_end = label_new(env);
+
+    append_inst(data, while_start);
+    visit_node(env, visitor, NODE_TEST(node), arg);
+    CompileData_append_jump_if_false(env, data, while_end);
+    visitor->visit_stmts(env, visitor, NODE_STMTS(node), arg);
+    CompileData_append_jump(env, data, while_start);
+    append_inst(data, while_end);
+}
+
+static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_stmts = visit_stmts;
@@ -612,6 +696,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_variable = compile_visit_variable;
     visitor->visit_try = compile_visit_try;
     visitor->visit_except = compile_visit_except;
+    visitor->visit_while = compile_visit_while;
 }
 
 YogCode* 
@@ -622,7 +707,9 @@ Yog_compile_module(YogEnv* env, YogArray* stmts)
     AstVisitor visitor;
     compile_init_visitor(&visitor);
 
-    return compile_stmts(env, &visitor, stmts, var2index, CTX_PKG);
+    YogCode* code = compile_stmts(env, &visitor, stmts, var2index, CTX_PKG);
+
+    return code;
 }
 
 /**

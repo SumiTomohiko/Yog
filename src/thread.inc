@@ -161,12 +161,29 @@
     case OP(JUMP):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
-            unsigned int dest = *((unsigned int*)&CODE->insts->items[PC]);
-            PC += sizeof(unsigned int);
+            pc_t dest = *((pc_t*)&CODE->insts->items[PC]);
+            PC += sizeof(pc_t);
 #line 125 "src/insts.def"
             PC = dest;
 
 #line 160 "src/thread.inc"
+            break;
+        }
+#line 163 "src/thread.inc"
+    case OP(JUMP_IF_FALSE):
+        {
+            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+            pc_t dest = *((pc_t*)&CODE->insts->items[PC]);
+            PC += sizeof(pc_t);
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
+            YogVal val = POP();
+#line 133 "src/insts.def"
+            YogValType type = YOGVAL_TYPE(val);
+            if ((type == VAL_NIL) || ((type == VAL_BOOL) && !YOGVAL_BOOL(val))) {
+                PC = dest;
+            }
+
+#line 176 "src/thread.inc"
             break;
         }
 /**

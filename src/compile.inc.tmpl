@@ -1,5 +1,15 @@
 ${compile_data}
 
+static unsigned int 
+get_inst_size(YogInst* inst) 
+{
+    unsigned int inst2size[] = {
+${inst2size}
+    };
+
+    return inst2size[inst->operand];
+}
+
 static YogBinary* 
 insts2bin(YogEnv* env, YogInst* inst) 
 {
@@ -8,11 +18,13 @@ insts2bin(YogEnv* env, YogInst* inst)
 #undef INIT_BIN_SIZE
 
     while (inst != NULL) {
-        switch (INST_OPERAND(inst)) {
+        if (inst->type == INST_OP) {
+            switch (INST_OPERAND(inst)) {
 ${insts2bin}
-        default:
-            Yog_assert(env, FALSE, "Unkown instruction.");
-            break;
+            default:
+                Yog_assert(env, FALSE, "Unkown instruction.");
+                break;
+            }
         }
 
         inst = inst->next;

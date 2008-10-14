@@ -40,7 +40,7 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
     PKG_VARS(frame) = YogTable_new_symbol_table(env);
     frame->stack = YogValArray_new(env, code->stack_size);
 
-    unsigned int pc = 0;
+    pc_t pc = 0;
     while (pc < code->insts->size) {
 #define CODE            (code)
 #define PC              (pc)

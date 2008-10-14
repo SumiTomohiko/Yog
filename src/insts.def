@@ -118,11 +118,22 @@ inst load_local
 }
 
 inst jump
-(unsigned int dest)
+(pc_t dest)
 ()
 ()
 {
     PC = dest;
+}
+
+inst jump_if_false
+(pc_t dest)
+(val)
+()
+{
+    YogValType type = YOGVAL_TYPE(val);
+    if ((type == VAL_NIL) || ((type == VAL_BOOL) && !YOGVAL_BOOL(val))) {
+        PC = dest;
+    }
 }
 
 /**

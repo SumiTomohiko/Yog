@@ -9,6 +9,8 @@
 #define FALSE   (0)
 #define TRUE    (!FALSE)
 
+typedef unsigned int pc_t;
+
 struct Heap {
     size_t size;
     unsigned char* base;
@@ -53,8 +55,7 @@ enum YogValType {
     VAL_INT, 
     VAL_FLOAT, 
     VAL_GCOBJ, 
-    VAL_TRUE, 
-    VAL_FALSE, 
+    VAL_BOOL, 
     VAL_NIL, 
     VAL_SYMBOL, 
     VAL_FUNC, 
@@ -107,6 +108,7 @@ struct YogVal {
         ID symbol;
         YogGCObj* gcobj;
         YogFuncBody func;
+        BOOL b;
     } u;
 };
 
@@ -116,6 +118,7 @@ struct YogVal {
 #define YOGVAL_SYMBOL(v)    ((v).u.symbol)
 #define YOGVAL_GCOBJ(v)     ((v).u.gcobj)
 #define YOGVAL_FUNC(v)      ((v).u.func)
+#define YOGVAL_BOOL(v)      ((v).u.b)
 
 typedef struct YogVal YogVal;
 
@@ -340,8 +343,9 @@ struct YogThread {
 typedef struct YogThread YogThread;
 
 enum InstType {
-    INST_DUMMY, 
+    INST_ANCHOR, 
     INST_OP, 
+    INST_LABEL, 
 };
 
 typedef enum InstType InstType;
@@ -390,6 +394,7 @@ YogByteArray* YogByteArray_new(YogEnv*, unsigned int);
 void YogBinary_push_uint8(YogEnv*, YogBinary*, uint8_t);
 void YogBinary_push_id(YogEnv*, YogBinary*, ID);
 void YogBinary_push_unsigned_int(YogEnv*, YogBinary*, unsigned int);
+void YogBinary_push_pc(YogEnv*, YogBinary*, pc_t);
 YogBinary* YogBinary_new(YogEnv*, unsigned int);
 
 /* src/thread.c */

@@ -9,6 +9,7 @@ class TestWhile(TestCase):
 i = 0
 while i < 1
     puts i
+    i = i + 1
 end""", """0
 """)
 
@@ -17,6 +18,7 @@ end""", """0
 i = 0
 while i < 2
     puts i
+    i = i + 1
 end""", """0
 1
 """)
@@ -26,6 +28,7 @@ end""", """0
 i = 0
 while i < 0
     puts i
+    i = i + 1
 end""", "")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -14,11 +14,13 @@ YogVal_print(YogEnv* env, YogVal val)
     case VAL_GCOBJ:
         printf("<object: %p>\n", YOGVAL_GCOBJ(val));
         break;
-    case VAL_TRUE:
-        printf("<bool: true>\n");
-        break;
-    case VAL_FALSE:
-        printf("<bool: false>\n");
+    case VAL_BOOL:
+        if (YOGVAL_BOOL(val)) {
+            printf("<bool: true>\n");
+        }
+        else {
+            printf("<bool: false>\n");
+        }
         break;
     case VAL_NIL:
         printf("<nil>\n");
@@ -49,11 +51,13 @@ YogVal_hash(YogEnv* env, YogVal val)
     case VAL_GCOBJ:
         return YOGVAL_INT(val);
         break;
-    case VAL_TRUE:
-        return 1;
-        break;
-    case VAL_FALSE:
-        return 0;
+    case VAL_BOOL:
+        if (YOGVAL_BOOL(val)) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
         break;
     case VAL_NIL:
         return 2;
@@ -93,8 +97,23 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
     case VAL_GCOBJ:
         RETURN(YOGVAL_GCOBJ, a, b);
         break;
-    case VAL_TRUE:
-    case VAL_FALSE:
+    case VAL_BOOL:
+        if (YOGVAL_BOOL(a)) {
+            if (YOGVAL_BOOL(b)) {
+                return TRUE;
+            }
+            else {
+                return FALSE;
+            }
+        }
+        else {
+            if (YOGVAL_BOOL(b)) {
+                return FALSE;
+            }
+            else {
+                return TRUE;
+            }
+        }
     case VAL_NIL:
         return TRUE;
         break;
@@ -108,23 +127,32 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
     return FALSE;
 }
 
-#define RETURN_VAL(type)    do { \
+#define RETURN_BOOL(b)  do { \
     YogVal val; \
-    YOGVAL_TYPE(val) = type; \
+    val.type = VAL_BOOL; \
+    YOGVAL_BOOL(val) = b; \
     return val; \
 } while (0)
 
 YogVal 
 YogVal_true()
 {
-    RETURN_VAL(VAL_TRUE);
+    RETURN_BOOL(TRUE);
 }
 
 YogVal 
 YogVal_false()
 {
-    RETURN_VAL(VAL_FALSE);
+    RETURN_BOOL(FALSE);
 }
+
+#undef RETURN_BOOL
+
+#define RETURN_VAL(type)    do { \
+    YogVal val; \
+    YOGVAL_TYPE(val) = type; \
+    return val; \
+} while (0)
 
 YogVal
 YogVal_nil() 
@@ -197,8 +225,7 @@ YogVal_get_klass(YogEnv* env, YogVal val)
             }
             break;
         }
-    case VAL_TRUE:
-    case VAL_FALSE:
+    case VAL_BOOL:
         return ENV_VM(env)->bool_klass;
         break;
     case VAL_FLOAT:
