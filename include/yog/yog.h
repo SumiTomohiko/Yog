@@ -33,6 +33,7 @@ struct YogVm {
     struct YogKlass* func_klass;
     struct YogKlass* int_klass;
     struct YogKlass* pkg_klass;
+    struct YogKlass* bool_klass;
 
     struct YogTable* pkgs;
 };
@@ -405,6 +406,8 @@ YogKlass* YogKlass_new(YogEnv*, YogKlass*);
 void YogVal_print(YogEnv*, YogVal);
 int YogVal_hash(YogEnv*, YogVal);
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
+YogVal YogVal_true();
+YogVal YogVal_false();
 YogVal YogVal_nil();
 YogVal YogVal_undef();
 YogVal YogVal_gcobj(YogGCObj*);
@@ -455,9 +458,13 @@ YogGCObj* YogVm_alloc_gcobj(YogEnv*, YogVm*, YogGCObjType, size_t);
 void YogVm_boot(YogEnv*, YogVm*);
 YogVm* YogVm_new(size_t);
 
+/* src/bool.c */
+YogKlass* YogBool_klass_new(YogEnv*);
+
 /* src/string.c */
 YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
 YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
+YogString* YogString_new_str(YogEnv*, const char*);
 YogString* YogString_new_format(YogEnv*, const char*, ...);
 YogString* YogString_new(YogEnv*);
 

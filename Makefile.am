@@ -1,6 +1,7 @@
 bin_PROGRAMS = yog
 yog_SOURCES = src/array.c \
 	src/binary.c \
+	src/bool.c \
 	src/builtins.c \
 	src/code.c \
 	src/compile.c \

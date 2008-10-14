@@ -56,12 +56,26 @@ yywrap()
     return 1;
 }
 
+static ID 
+intern(const char* s) 
+{
+    YogEnv* env = Yog_get_parsing_env();
+    YogVm* vm = ENV_VM(env);
+    ID id = YogVm_intern(env, vm, s);
+
+    return id;
+}
+
+#define RETURN_NAME(token) do { \
+    yylval.name = intern(yytext); \
+    return token; \
+} while (0)
+
 #define YY_SKIP_YYWRAP
 %}
 %%
 <INITIAL>"("        return LPAR;
 <INITIAL>")"        return RPAR;
-<INITIAL>"+"        return PLUS;
 <INITIAL>","        return COMMA;
 <INITIAL>"="        return EQUAL;
 <INITIAL>"\n"       return NEWLINE;
@@ -75,12 +89,14 @@ yywrap()
 <INITIAL>"next"     return NEXT;
 <INITIAL>"try"      return TRY;
 <INITIAL>"while"    return WHILE;
+<INITIAL>"+"        {
+    RETURN_NAME(PLUS);
+}
+<INITIAL>"<"        {
+    RETURN_NAME(COMP_OP);
+}
 <INITIAL>[a-z]+     {
-    YogEnv* env = Yog_get_parsing_env();
-    YogVm* vm = ENV_VM(env);
-    ID name = YogVm_intern(env, vm, yytext);
-    yylval.name = name;
-    return NAME;
+    RETURN_NAME(NAME);
 }
 <INITIAL>[0-9]+     {
     YogVal val = YogVal_int(atoi(yytext));

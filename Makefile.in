@@ -50,7 +50,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am_yog_OBJECTS = yog-array.$(OBJEXT) yog-binary.$(OBJEXT) \
-	yog-builtins.$(OBJEXT) yog-code.$(OBJEXT) \
+	yog-bool.$(OBJEXT) yog-builtins.$(OBJEXT) yog-code.$(OBJEXT) \
 	yog-compile.$(OBJEXT) yog-error.$(OBJEXT) yog-frame.$(OBJEXT) \
 	yog-function.$(OBJEXT) yog-int.$(OBJEXT) yog-klass.$(OBJEXT) \
 	yog-lexer.$(OBJEXT) yog-main.$(OBJEXT) yog-object.$(OBJEXT) \
@@ -177,6 +177,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 yog_SOURCES = src/array.c \
 	src/binary.c \
+	src/bool.c \
 	src/builtins.c \
 	src/code.c \
 	src/compile.c \
@@ -293,6 +294,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-binary.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-bool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-builtins.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-compile.Po@am__quote@
@@ -353,6 +355,20 @@ yog-binary.obj: src/binary.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/binary.c' object='yog-binary.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-binary.obj `if test -f 'src/binary.c'; then $(CYGPATH_W) 'src/binary.c'; else $(CYGPATH_W) '$(srcdir)/src/binary.c'; fi`
+
+yog-bool.o: src/bool.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-bool.o -MD -MP -MF $(DEPDIR)/yog-bool.Tpo -c -o yog-bool.o `test -f 'src/bool.c' || echo '$(srcdir)/'`src/bool.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-bool.Tpo $(DEPDIR)/yog-bool.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/bool.c' object='yog-bool.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-bool.o `test -f 'src/bool.c' || echo '$(srcdir)/'`src/bool.c
+
+yog-bool.obj: src/bool.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-bool.obj -MD -MP -MF $(DEPDIR)/yog-bool.Tpo -c -o yog-bool.obj `if test -f 'src/bool.c'; then $(CYGPATH_W) 'src/bool.c'; else $(CYGPATH_W) '$(srcdir)/src/bool.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-bool.Tpo $(DEPDIR)/yog-bool.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/bool.c' object='yog-bool.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-bool.obj `if test -f 'src/bool.c'; then $(CYGPATH_W) 'src/bool.c'; else $(CYGPATH_W) '$(srcdir)/src/bool.c'; fi`
 
 yog-builtins.o: src/builtins.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-builtins.o -MD -MP -MF $(DEPDIR)/yog-builtins.Tpo -c -o yog-builtins.o `test -f 'src/builtins.c' || echo '$(srcdir)/'`src/builtins.c
@@ -922,7 +938,7 @@ test: yog$(EXEEXT)
 	py.test
 
 clean-generic:
-	find . -name "*.pyc" | xargs rm -f
+	find . -name "*.pyc" -print0 | xargs --null rm -f
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

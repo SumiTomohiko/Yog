@@ -101,6 +101,7 @@ setup_klass(YogEnv* env, YogVm* vm)
 {
     vm->int_klass = YogInt_klass_new(env);
     vm->pkg_klass = YogPkg_klass_new(env);
+    vm->bool_klass = YogBool_klass_new(env);
 }
 
 void 
@@ -130,6 +131,7 @@ YogVm_new(size_t heap_size)
     vm->klass_klass = NULL;
     vm->func_klass = NULL;
     vm->pkg_klass = NULL;
+    vm->bool_klass = NULL;
 
     vm->pkgs = NULL;
 

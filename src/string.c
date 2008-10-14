@@ -24,6 +24,19 @@ YogCharArray_new_str(YogEnv* env, const char* s)
     return array;
 }
 
+#define RETURN_STR(s)   do { \
+    YogCharArray* body = YogCharArray_new_str(env, s); \
+    YogString* string = ALLOC_OBJ(env, GCOBJ_STRING, YogString); \
+    string->body = body; \
+    return string; \
+} while (0)
+
+YogString* 
+YogString_new_str(YogEnv* env, const char* s) 
+{
+    RETURN_STR(s);
+}
+
 YogString* 
 YogString_new_format(YogEnv* env, const char* fmt, ...) 
 {
@@ -34,13 +47,10 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
     vsnprintf(buf, BUFSIZE, fmt, ap);
 #undef BUFSIZE
     va_end(ap);
-    YogCharArray* body = YogCharArray_new_str(env, buf);
-
-    YogString* string = ALLOC_OBJ(env, GCOBJ_STRING, YogString);
-    string->body = body;
-
-    return string;
+    RETURN_STR(buf);
 }
+
+#undef RETURN_STR
 
 #if 0
 YogString* 

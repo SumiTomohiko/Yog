@@ -32,48 +32,50 @@
      AS = 258,
      BREAK = 259,
      COMMA = 260,
-     DEF = 261,
-     ELSE = 262,
-     END = 263,
-     EQUAL = 264,
-     EXCEPT = 265,
-     FINALLY = 266,
-     LPAR = 267,
-     NAME = 268,
-     NEWLINE = 269,
-     NEXT = 270,
-     NUMBER = 271,
-     PLUS = 272,
-     RPAR = 273,
-     TRY = 274,
-     WHILE = 275
+     COMP_OP = 261,
+     DEF = 262,
+     ELSE = 263,
+     END = 264,
+     EQUAL = 265,
+     EXCEPT = 266,
+     FINALLY = 267,
+     LPAR = 268,
+     NAME = 269,
+     NEWLINE = 270,
+     NEXT = 271,
+     NUMBER = 272,
+     PLUS = 273,
+     RPAR = 274,
+     TRY = 275,
+     WHILE = 276
    };
 #endif
 /* Tokens.  */
 #define AS 258
 #define BREAK 259
 #define COMMA 260
-#define DEF 261
-#define ELSE 262
-#define END 263
-#define EQUAL 264
-#define EXCEPT 265
-#define FINALLY 266
-#define LPAR 267
-#define NAME 268
-#define NEWLINE 269
-#define NEXT 270
-#define NUMBER 271
-#define PLUS 272
-#define RPAR 273
-#define TRY 274
-#define WHILE 275
+#define COMP_OP 261
+#define DEF 262
+#define ELSE 263
+#define END 264
+#define EQUAL 265
+#define EXCEPT 266
+#define FINALLY 267
+#define LPAR 268
+#define NAME 269
+#define NEWLINE 270
+#define NEXT 271
+#define NUMBER 272
+#define PLUS 273
+#define RPAR 274
+#define TRY 275
+#define WHILE 276
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 125 "parser.y"
+#line 134 "parser.y"
 typedef union YYSTYPE {
     YogArray* array;
     YogNode* node;
@@ -81,7 +83,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 85 "parser.h"
+#line 87 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

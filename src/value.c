@@ -114,6 +114,18 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
     return val; \
 } while (0)
 
+YogVal 
+YogVal_true()
+{
+    RETURN_VAL(VAL_TRUE);
+}
+
+YogVal 
+YogVal_false()
+{
+    RETURN_VAL(VAL_FALSE);
+}
+
 YogVal
 YogVal_nil() 
 {
@@ -167,27 +179,29 @@ YogVal_get_klass(YogEnv* env, YogVal val)
         return ENV_VM(env)->int_klass;
         break;
     case VAL_GCOBJ:
-    {
-        YogGCObj* gcobj = YOGVAL_GCOBJ(val);
-        switch (gcobj->type) {
-        case GCOBJ_ARRAY: 
-        case GCOBJ_BINARY: 
-        case GCOBJ_KLASS: 
-        case GCOBJ_OBJ: 
         {
-            YogBasicObj* obj = YOGBASICOBJ(gcobj);
-            return obj->klass;
+            YogGCObj* gcobj = YOGVAL_GCOBJ(val);
+            switch (gcobj->type) {
+            case GCOBJ_ARRAY: 
+            case GCOBJ_BINARY: 
+            case GCOBJ_KLASS: 
+            case GCOBJ_OBJ: 
+                {
+                    YogBasicObj* obj = YOGBASICOBJ(gcobj);
+                    return obj->klass;
+                    break;
+                }
+            default:
+                Yog_assert(env, FALSE, "Can't get class of given value.");
+                break;
+            }
             break;
         }
-        default:
-            Yog_assert(env, FALSE, "Can't get class of given value.");
-            break;
-        }
-        break;
-    }
-    case VAL_FLOAT:
     case VAL_TRUE:
     case VAL_FALSE:
+        return ENV_VM(env)->bool_klass;
+        break;
+    case VAL_FLOAT:
     case VAL_NIL:
     case VAL_SYMBOL:
     default:

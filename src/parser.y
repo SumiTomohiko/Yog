@@ -118,6 +118,15 @@ YogNode_new(YogEnv* env, YogNodeType type)
     NODE_EXPR(node) = expr; \
 } while (0)
 
+#define METHOD_CALL_NEW1(node, recv, name, arg) do { \
+    YogArray* args = YogArray_new(ENV); \
+    YogArray_push(ENV, args, YogVal_gcobj(YOGGCOBJ(arg))); \
+    node = NODE_NEW(NODE_METHOD_CALL); \
+    NODE_RECEIVER(node) = recv; \
+    NODE_METHOD(node) = name; \
+    NODE_ARGS(node) = args; \
+} while (0)
+
 /* XXX: To avoid warning. Better way? */
 int yylex(void);
 %}
@@ -132,6 +141,7 @@ int yylex(void);
 %token AS
 %token BREAK
 %token COMMA
+%token COMP_OP
 %token DEF
 %token ELSE
 %token END
@@ -154,7 +164,9 @@ int yylex(void);
 %type<array> module
 %type<array> params
 %type<array> stmts
+%type<name> COMP_OP
 %type<name> NAME
+%type<name> PLUS
 %type<node> and_expr
 %type<node> arith_expr
 %type<node> assign_expr
@@ -263,6 +275,9 @@ logical_and_expr    : not_expr
 not_expr    : comparison
             ;
 comparison  : xor_expr
+            | xor_expr COMP_OP xor_expr {
+                METHOD_CALL_NEW1($$, $1, $2, $3);
+            }
             ;
 xor_expr    : or_expr
             ;
@@ -274,15 +289,7 @@ shift_expr  : arith_expr
             ;
 arith_expr  : term
             | arith_expr PLUS term {
-                YogArray* args = YogArray_new(ENV);
-                YogArray_push(ENV, args, YogVal_gcobj(YOGGCOBJ($3)));
-
-                YogNode* node = NODE_NEW(NODE_METHOD_CALL);
-                NODE_RECEIVER(node) = $1;
-                NODE_METHOD(node) = YogVm_intern(ENV, VM, "+");
-                NODE_ARGS(node) = args;
-
-                $$ = node;
+                METHOD_CALL_NEW1($$, $1, $2, $3);
             }
             ;
 term    : factor
