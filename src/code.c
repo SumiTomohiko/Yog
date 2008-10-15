@@ -9,6 +9,8 @@ YogCode_new(YogEnv* env)
     code->local_vars_count = 0;
     code->consts = NULL;
     code->insts = NULL;
+    code->exc_tbl_size = 0;
+    code->exc_tbl = NULL;
 
     return code;
 }

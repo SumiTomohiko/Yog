@@ -19,6 +19,9 @@ struct YogInst {
         pc_t pos;
 
         struct {
+            ID id;
+        } load_special;
+        struct {
             uint8_t index;
         } push_const;
         struct {
@@ -28,6 +31,9 @@ struct YogInst {
         struct {
             ID id;
         } store_pkg;
+        struct {
+            uint8_t index;
+        } store_local;
         struct {
             ID command;
             uint8_t argc;
@@ -55,10 +61,12 @@ struct YogInst {
 #define INST_OPERAND(inst)  ((inst)->operand)
 #define LABEL_POS(inst)     ((inst)->u.pos)
 
+#define LOAD_SPECIAL_ID(inst) ((inst)->u.load_special.id)
 #define PUSH_CONST_INDEX(inst) ((inst)->u.push_const.index)
 #define CALL_METHOD_METHOD(inst) ((inst)->u.call_method.method)
 #define CALL_METHOD_ARGC(inst) ((inst)->u.call_method.argc)
 #define STORE_PKG_ID(inst) ((inst)->u.store_pkg.id)
+#define STORE_LOCAL_INDEX(inst) ((inst)->u.store_local.index)
 #define CALL_COMMAND_COMMAND(inst) ((inst)->u.call_command.command)
 #define CALL_COMMAND_ARGC(inst) ((inst)->u.call_command.argc)
 #define CALL_FUNC_ARGC(inst) ((inst)->u.call_func.argc)

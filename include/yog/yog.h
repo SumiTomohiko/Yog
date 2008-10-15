@@ -81,6 +81,8 @@ enum YogGCObjType {
     GCOBJ_FUNC, 
     GCOBJ_KLASS, 
     GCOBJ_INST, 
+    GCOBJ_EXC_LABEL_TABLE_ENTRY, 
+    GCOBJ_EXC_TBL, 
 };
 
 typedef enum YogGCObjType YogGCObjType;
@@ -310,6 +312,21 @@ struct YogBinary {
 
 typedef struct YogBinary YogBinary;
 
+struct YogExcTblEntry {
+    pc_t from;
+    pc_t to;
+    pc_t jmp_to;
+};
+
+typedef struct YogExcTblEntry YogExcTblEntry;
+
+struct YogExcTbl {
+    YOGGCOBJ_HEAD;
+    struct YogExcTblEntry items[0];
+};
+
+typedef struct YogExcTbl YogExcTbl;
+
 struct YogCode {
     YOGGCOBJ_HEAD;
     unsigned int argc;
@@ -317,6 +334,8 @@ struct YogCode {
     unsigned int local_vars_count;
     struct YogValArray* consts;
     struct YogByteArray* insts;
+    unsigned int exc_tbl_size;
+    struct YogExcTbl* exc_tbl;
 };
 
 typedef struct YogCode YogCode;
@@ -351,6 +370,15 @@ enum InstType {
 typedef enum InstType InstType;
 
 #include "yog/inst.h"
+
+struct YogExcLabelTableEntry {
+    struct YogExcLabelTableEntry* next;
+    struct YogInst* from;
+    struct YogInst* to;
+    struct YogInst* jmp_to;
+};
+
+typedef struct YogExcLabelTableEntry YogExcLabelTableEntry;
 
 /* $PROTOTYPE_START$ */
 

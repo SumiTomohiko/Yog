@@ -4,20 +4,33 @@
  */
 
 #line 6 "src/thread.inc"
+    case OP(LOAD_SPECIAL):
+        {
+            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+            ID id = *((ID*)&CODE->insts->items[PC]);
+            PC += sizeof(ID);
+            YogVal val = YogVal_nil();
+#line 18 "src/insts.def"
+
+#line 14 "src/thread.inc"
+            PUSH(val);
+            break;
+        }
+#line 18 "src/thread.inc"
     case OP(PUSH_CONST):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
             uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
             YogVal val = YogVal_nil();
-#line 18 "src/insts.def"
+#line 25 "src/insts.def"
             val = CONSTS(index);
 
-#line 15 "src/thread.inc"
+#line 27 "src/thread.inc"
             PUSH(val);
             break;
         }
-#line 19 "src/thread.inc"
+#line 31 "src/thread.inc"
     case OP(CALL_METHOD):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
@@ -26,7 +39,7 @@
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
             uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
-#line 26 "src/insts.def"
+#line 33 "src/insts.def"
             YogVal args[argc];
             unsigned int i = 0;
             for (i = 0; i < argc; i++) {
@@ -36,10 +49,10 @@
             YogVal ret = YogThread_call_method_id(ENV, receiver, method, argc, args);
             PUSH(ret);
 
-#line 37 "src/thread.inc"
+#line 49 "src/thread.inc"
             break;
         }
-#line 40 "src/thread.inc"
+#line 52 "src/thread.inc"
     case OP(STORE_PKG):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
@@ -47,14 +60,28 @@
             PC += sizeof(ID);
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
             YogVal val = POP();
-#line 41 "src/insts.def"
+#line 48 "src/insts.def"
             YogVal key = YogVal_symbol(id);
             YogTable_insert(ENV, PKG_VARS(FRAME), key, val);
 
-#line 51 "src/thread.inc"
+#line 63 "src/thread.inc"
             break;
         }
-#line 54 "src/thread.inc"
+#line 66 "src/thread.inc"
+    case OP(STORE_LOCAL):
+        {
+            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+            uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
+            PC += sizeof(uint8_t);
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
+            YogVal val = POP();
+#line 57 "src/insts.def"
+            LOCAL_VARS(FRAME)->items[index] = val;
+
+#line 76 "src/thread.inc"
+            break;
+        }
+#line 79 "src/thread.inc"
     case OP(CALL_COMMAND):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
@@ -63,7 +90,7 @@
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
             uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
-#line 50 "src/insts.def"
+#line 65 "src/insts.def"
             YogVal args[argc];
             unsigned int i = 0;
             for (i = 0; i < argc; i++) {
@@ -71,16 +98,16 @@
             }
             YogThread_call_command(ENV, command, argc, args);
 
-#line 70 "src/thread.inc"
+#line 95 "src/thread.inc"
             break;
         }
-#line 73 "src/thread.inc"
+#line 98 "src/thread.inc"
     case OP(MAKE_FUNC):
         {
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
             YogVal code = POP();
             YogVal func = YogVal_nil();
-#line 63 "src/insts.def"
+#line 78 "src/insts.def"
             YogGCObj* gcobj = YOGVAL_GCOBJ(code);
             Yog_assert(ENV, gcobj->type == GCOBJ_CODE, "Object isn't YogCode.");
             YogCode* c = (YogCode*)gcobj;
@@ -89,17 +116,17 @@
             f->code = c;
             func = YogVal_gcobj(YOGGCOBJ(f));
 
-#line 87 "src/thread.inc"
+#line 112 "src/thread.inc"
             PUSH(func);
             break;
         }
-#line 91 "src/thread.inc"
+#line 116 "src/thread.inc"
     case OP(CALL_FUNC):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
             uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
-#line 77 "src/insts.def"
+#line 92 "src/insts.def"
             YogVal args[argc];
             unsigned int i = 0;
             for (i = 0; i < argc; i++) {
@@ -123,53 +150,53 @@
             PC = 0;
             CODE = new_code;
 
-#line 120 "src/thread.inc"
+#line 145 "src/thread.inc"
             break;
         }
-#line 123 "src/thread.inc"
+#line 148 "src/thread.inc"
     case OP(LOAD_PKG):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
             ID id = *((ID*)&CODE->insts->items[PC]);
             PC += sizeof(ID);
             YogVal val = YogVal_nil();
-#line 106 "src/insts.def"
+#line 121 "src/insts.def"
             YogVal key = YogVal_symbol(id);
             if (!YogTable_lookup(ENV, PKG_VARS(FRAME), key, &val)) {
                 Yog_assert(ENV, FALSE, "Can't find package var.");
             }
 
-#line 135 "src/thread.inc"
+#line 160 "src/thread.inc"
             PUSH(val);
             break;
         }
-#line 139 "src/thread.inc"
+#line 164 "src/thread.inc"
     case OP(LOAD_LOCAL):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
             uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
             YogVal val = YogVal_nil();
-#line 117 "src/insts.def"
+#line 132 "src/insts.def"
             val = LOCAL_VARS(FRAME)->items[index];
 
-#line 148 "src/thread.inc"
+#line 173 "src/thread.inc"
             PUSH(val);
             break;
         }
-#line 152 "src/thread.inc"
+#line 177 "src/thread.inc"
     case OP(JUMP):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
             pc_t dest = *((pc_t*)&CODE->insts->items[PC]);
             PC += sizeof(pc_t);
-#line 125 "src/insts.def"
+#line 140 "src/insts.def"
             PC = dest;
 
-#line 160 "src/thread.inc"
+#line 185 "src/thread.inc"
             break;
         }
-#line 163 "src/thread.inc"
+#line 188 "src/thread.inc"
     case OP(JUMP_IF_FALSE):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
@@ -177,13 +204,13 @@
             PC += sizeof(pc_t);
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "");
             YogVal val = POP();
-#line 133 "src/insts.def"
+#line 148 "src/insts.def"
             YogValType type = YOGVAL_TYPE(val);
             if ((type == VAL_NIL) || ((type == VAL_BOOL) && !YOGVAL_BOOL(val))) {
                 PC = dest;
             }
 
-#line 176 "src/thread.inc"
+#line 201 "src/thread.inc"
             break;
         }
 /**

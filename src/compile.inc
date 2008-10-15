@@ -4,6 +4,18 @@
  */
 
 static void 
+CompileData_append_load_special(YogEnv* env, CompileData* data, ID id)
+{
+    YogInst* inst = inst_new(env);
+    inst->type = INST_OP;
+    INST_OPERAND(inst) = OP(LOAD_SPECIAL);
+
+    LOAD_SPECIAL_ID(inst) = id;
+
+    append_inst(data, inst);
+}
+
+static void 
 CompileData_append_push_const(YogEnv* env, CompileData* data, uint8_t index)
 {
     YogInst* inst = inst_new(env);
@@ -36,6 +48,18 @@ CompileData_append_store_pkg(YogEnv* env, CompileData* data, ID id)
     INST_OPERAND(inst) = OP(STORE_PKG);
 
     STORE_PKG_ID(inst) = id;
+
+    append_inst(data, inst);
+}
+
+static void 
+CompileData_append_store_local(YogEnv* env, CompileData* data, uint8_t index)
+{
+    YogInst* inst = inst_new(env);
+    inst->type = INST_OP;
+    INST_OPERAND(inst) = OP(STORE_LOCAL);
+
+    STORE_LOCAL_INDEX(inst) = index;
 
     append_inst(data, inst);
 }
@@ -129,9 +153,11 @@ static unsigned int
 get_inst_size(YogInst* inst) 
 {
     unsigned int inst2size[] = {
+        sizeof(uint8_t) + sizeof(ID), /* load_special */
         sizeof(uint8_t) + sizeof(uint8_t), /* push_const */
         sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t), /* call_method */
         sizeof(uint8_t) + sizeof(ID), /* store_pkg */
+        sizeof(uint8_t) + sizeof(uint8_t), /* store_local */
         sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t), /* call_command */
         sizeof(uint8_t), /* make_func */
         sizeof(uint8_t) + sizeof(uint8_t), /* call_func */
@@ -156,6 +182,12 @@ insts2bin(YogEnv* env, YogInst* inst)
         if (inst->type == INST_OP) {
             switch (INST_OPERAND(inst)) {
 
+            case OP(LOAD_SPECIAL):
+                {
+                    YogBinary_push_uint8(env, code, OP(LOAD_SPECIAL));
+                    YogBinary_push_id(env, code, LOAD_SPECIAL_ID(inst));
+                    break;
+                }
             case OP(PUSH_CONST):
                 {
                     YogBinary_push_uint8(env, code, OP(PUSH_CONST));
@@ -173,6 +205,12 @@ insts2bin(YogEnv* env, YogInst* inst)
                 {
                     YogBinary_push_uint8(env, code, OP(STORE_PKG));
                     YogBinary_push_id(env, code, STORE_PKG_ID(inst));
+                    break;
+                }
+            case OP(STORE_LOCAL):
+                {
+                    YogBinary_push_uint8(env, code, OP(STORE_LOCAL));
+                    YogBinary_push_uint8(env, code, STORE_LOCAL_INDEX(inst));
                     break;
                 }
             case OP(CALL_COMMAND):

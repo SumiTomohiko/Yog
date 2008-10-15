@@ -55,6 +55,8 @@ struct CompileData {
     YogTable* var2index;
     YogTable* const2index;
     YogInst* last_inst;
+    YogExcLabelTableEntry* exc_tbl;
+    YogExcLabelTableEntry* exc_tbl_last;
 };
 
 typedef struct CompileData CompileData;
@@ -85,6 +87,18 @@ static YogInst*
 anchor_new(YogEnv* env) 
 {
     return YogInst_new(env, INST_ANCHOR);
+}
+
+static YogExcLabelTableEntry* 
+YogExcLabelTableEntry_new(YogEnv* env) 
+{
+    YogExcLabelTableEntry* entry = ALLOC_OBJ(env, GCOBJ_EXC_LABEL_TABLE_ENTRY, YogExcLabelTableEntry);
+    entry->from = NULL;
+    entry->to = NULL;
+    entry->jmp_to = NULL;
+    entry->next = NULL;
+
+    return entry;
 }
 
 static void 
@@ -525,6 +539,36 @@ set_label_pos(YogEnv* env, YogInst* first_inst)
     }
 }
 
+static void 
+make_exc_tbl(YogEnv* env, YogCode* code, CompileData* data)
+{
+    unsigned int size = 0;
+    YogExcLabelTableEntry* entry = data->exc_tbl->next;
+    while (entry != NULL) {
+        size++;
+        entry = entry->next;
+    }
+
+    if (0 < size) {
+        YogExcTbl* exc_tbl = ALLOC_OBJ_ITEM(env, GCOBJ_EXC_TBL, YogExcTbl, size, sizeof(YogExcTblEntry));
+
+        unsigned int i = 0;
+        entry = data->exc_tbl->next;
+        while (entry != NULL) {
+            YogExcTblEntry ent = exc_tbl->items[i];
+            ent.from = LABEL_POS(entry->from);
+            ent.to = LABEL_POS(entry->to);
+            ent.jmp_to = LABEL_POS(entry->jmp_to);
+
+            i++;
+            entry = entry->next;
+        }
+
+        code->exc_tbl = exc_tbl;
+        code->exc_tbl_size = size;
+    }
+}
+
 static YogCode* 
 compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2index, Context ctx) 
 {
@@ -534,6 +578,8 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     data.const2index = NULL;
     YogInst* anchor = anchor_new(env);
     data.last_inst = anchor;
+    data.exc_tbl = YogExcLabelTableEntry_new(env);
+    data.exc_tbl_last = data.exc_tbl;
 
     visitor->visit_stmts(env, visitor, stmts, &data);
     set_label_pos(env, anchor->next);
@@ -549,6 +595,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     code->stack_size = 32;
     code->consts = table2array(env, data.const2index);
     code->insts = bin->body;
+    make_exc_tbl(env, code, &data);
 
     return code;
 }
@@ -655,15 +702,150 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 }
 
 static void 
-compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+append_store(YogEnv* env, CompileData* data, ID id) 
 {
-    /* TODO */
+    switch (data->ctx) {
+        case CTX_PKG:
+            {
+                uint8_t index = lookup_var_index(env, data->var2index, id);
+                CompileData_append_store_local(env, data, index);
+                break;
+            }
+        case CTX_FUNC:
+            {
+                CompileData_append_store_pkg(env, data, id);
+                break;
+            }
+        default:
+            Yog_assert(env, FALSE, "Unkown context.");
+            break;
+    }
 }
 
 static void 
-compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    /* TODO */
+    CompileData* data = arg;
+
+    YogInst* label_try_start = label_new(env);
+    YogInst* label_try_end = label_new(env);
+    YogInst* label_else_start = NULL;
+    YogInst* label_else_end = NULL;
+    YogInst* label_excepts_start = NULL;
+    YogInst* label_excepts_end = NULL;
+    YogInst* label_finally_normal_start = NULL;
+    YogInst* label_finally_error_start = NULL;
+    YogInst* label_try_stmt_end = label_new(env);
+
+    append_inst(data, label_try_start);
+    visitor->visit_stmts(env, visitor, NODE_TRY(node), arg);
+    append_inst(data, label_try_end);
+
+    YogArray* node_else = NODE_ELSE(node);
+    if (node_else != NULL) {
+        label_else_start = label_new(env);
+        label_else_end = label_new(env);
+        append_inst(data, label_else_start);
+        visitor->visit_stmts(env, visitor, node_else, arg);
+        append_inst(data, label_else_end);
+    }
+
+    YogArray* node_finally = NODE_FINALLY(node);
+    if (node_finally != NULL) {
+        label_finally_normal_start = label_new(env);
+        append_inst(data, label_finally_normal_start);
+        visitor->visit_stmts(env, visitor, node_finally, arg);
+    }
+    CompileData_append_jump(env, data, label_try_stmt_end);
+
+#define INTERN(s)   YogVm_intern(env, ENV_VM(env), s)
+#define RAISE       INTERN("raise")
+#define LOAD_EXC()  do { \
+    CompileData_append_load_special(env, data, INTERN("$!")); \
+} while (0)
+    YogArray* node_excepts = NODE_EXCEPTS(node);
+    if (node_excepts != NULL) {
+        label_excepts_start = label_new(env);
+        label_excepts_end = label_new(env);
+        unsigned int size = YogArray_size(env, node_excepts);
+        unsigned int i = 0;
+        for (i = 0; i < size; i++) {
+            YogInst* label_except_end = label_new(env);
+            YogVal val = YogArray_at(env, node_excepts, i);
+            YogNode* node_except = (YogNode*)YOGVAL_GCOBJ(val);
+            YogNode* node_type = NODE_EXC_TYPE(node_except);
+            if (node_type != NULL) {
+                visit_node(env, visitor, node_type, arg);
+                LOAD_EXC();
+                CompileData_append_call_method(env, data, INTERN("==="), 1);
+                CompileData_append_jump_if_false(env, data, label_except_end);
+
+                ID id = NODE_EXC_VAR(node_except);
+                if (id != NO_EXC_VAR) {
+                    LOAD_EXC();
+                    append_store(env, data, id);
+                }
+            }
+
+            visitor->visit_stmts(env, visitor, NODE_EXC_STMTS(node_except), arg);
+
+            if (label_finally_normal_start != NULL) {
+                CompileData_append_jump(env, data, label_finally_normal_start);
+            }
+            else {
+                CompileData_append_jump(env, data, label_try_stmt_end);
+            }
+            append_inst(data, label_except_end);
+        }
+
+        CompileData_append_call_command(env, data, RAISE, 0);
+    }
+
+    if (node_finally != NULL) {
+        label_finally_error_start = label_new(env);
+        append_inst(data, label_finally_error_start);
+        visitor->visit_stmts(env, visitor, node_finally, arg);
+    }
+    CompileData_append_call_command(env, data, RAISE, 0);
+#undef LOAD_EXC
+#undef RAISE
+#undef INTERN
+
+    append_inst(data, label_try_stmt_end);
+
+    if (label_excepts_start != NULL) {
+        YogExcLabelTableEntry* entry = YogExcLabelTableEntry_new(env);
+        entry->from = label_try_start;
+        entry->to = label_try_end;
+        entry->jmp_to = label_excepts_start;
+        data->exc_tbl_last->next = entry;
+        data->exc_tbl_last = entry;
+
+        if ((label_else_start != NULL) && (label_finally_error_start != NULL)) {
+            YogExcLabelTableEntry* entry = YogExcLabelTableEntry_new(env);
+            entry->from = label_else_start;
+            entry->to = label_else_end;
+            entry->jmp_to = label_finally_error_start;
+            data->exc_tbl_last->next = entry;
+            data->exc_tbl_last = entry;
+        }
+    }
+    else {
+        YogInst* from = label_try_start;
+        YogInst* to = NULL;
+        if (label_try_end->next == label_else_start) {
+            to = label_else_end;
+        }
+        else {
+            to = label_try_end;
+        }
+        YogExcLabelTableEntry* entry = YogExcLabelTableEntry_new(env);
+        entry->from = from;
+        entry->to = to;
+        entry->jmp_to = label_finally_error_start;
+        data->exc_tbl_last->next = entry;
+        data->exc_tbl_last = entry;
+    }
 }
 
 static void 
@@ -695,7 +877,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_func_call = compile_visit_func_call;
     visitor->visit_variable = compile_visit_variable;
     visitor->visit_try = compile_visit_try;
-    visitor->visit_except = compile_visit_except;
+    visitor->visit_except = NULL;
     visitor->visit_while = compile_visit_while;
 }
 

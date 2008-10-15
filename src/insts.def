@@ -10,6 +10,13 @@
  * }
  */
 
+inst load_special
+(ID id) 
+()
+(val) 
+{
+}
+
 inst push_const
 (uint8_t index)
 ()
@@ -40,6 +47,14 @@ inst store_pkg
 {
     YogVal key = YogVal_symbol(id);
     YogTable_insert(ENV, PKG_VARS(FRAME), key, val);
+}
+
+inst store_local
+(uint8_t index)
+(val)
+()
+{
+    LOCAL_VARS(FRAME)->items[index] = val;
 }
 
 inst call_command 
