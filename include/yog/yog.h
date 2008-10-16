@@ -2,6 +2,7 @@
 #define __YOG_YOG_H__
 
 #include <limits.h>
+#include <setjmp.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -43,7 +44,8 @@ struct YogVm {
 typedef struct YogVm YogVm;
 
 struct YogEnv {
-    YogVm* vm;
+    struct YogVm* vm;
+    struct YogThread* th;
 };
 
 #define ENV_VM(env) ((env)->vm)
@@ -121,6 +123,8 @@ struct YogVal {
 #define YOGVAL_GCOBJ(v)     ((v).u.gcobj)
 #define YOGVAL_FUNC(v)      ((v).u.func)
 #define YOGVAL_BOOL(v)      ((v).u.b)
+
+#define IS_UNDEF(v) (YOGVAL_TYPE(v) == VAL_UNDEF)
 
 typedef struct YogVal YogVal;
 
@@ -354,9 +358,18 @@ struct YogFrame {
 
 typedef struct YogFrame YogFrame;
 
+struct YogJmpBuf {
+    jmp_buf buf;
+    struct YogJmpBuf* prev;
+};
+
+typedef struct YogJmpBuf YogJmpBuf;
+
 struct YogThread {
     YOGGCOBJ_HEAD;
     struct YogFrame* cur_frame;
+    struct YogJmpBuf* jmp_buf_list;
+    struct YogVal jmp_val;
 };
 
 typedef struct YogThread YogThread;
@@ -506,6 +519,8 @@ YogString* YogString_new(YogEnv*);
 #define ALLOC_OBJ(env, gcobj_type, type)  (type*)YogVm_alloc_gcobj(env, ENV_VM(env), gcobj_type, sizeof(type))
 #define ALLOC_OBJ_SIZE(env, gcobj_type, type, size)   (type*)YogVm_alloc_gcobj(env, ENV_VM(env), gcobj_type, size)
 #define ALLOC_OBJ_ITEM(env, gcobj_type, type, size, item_type)   ALLOC_OBJ_SIZE(env, gcobj_type, type, sizeof(type) + size * sizeof(item_type))
+
+#define JMP_RAISE   (1)
 
 #endif
 /**

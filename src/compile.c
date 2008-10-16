@@ -113,6 +113,10 @@ append_inst(CompileData* data, YogInst* inst)
 static void 
 visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    if (node == NULL) {
+        return;
+    }
+
 #define VISIT(f)    do { \
     if (visitor->f != NULL) { \
         visitor->f(env, visitor, node, arg); \
@@ -550,15 +554,15 @@ make_exc_tbl(YogEnv* env, YogCode* code, CompileData* data)
     }
 
     if (0 < size) {
-        YogExcTbl* exc_tbl = ALLOC_OBJ_ITEM(env, GCOBJ_EXC_TBL, YogExcTbl, size, sizeof(YogExcTblEntry));
+        YogExcTbl* exc_tbl = ALLOC_OBJ_ITEM(env, GCOBJ_EXC_TBL, YogExcTbl, size, YogExcTblEntry);
 
         unsigned int i = 0;
         entry = data->exc_tbl->next;
         while (entry != NULL) {
-            YogExcTblEntry ent = exc_tbl->items[i];
-            ent.from = LABEL_POS(entry->from);
-            ent.to = LABEL_POS(entry->to);
-            ent.jmp_to = LABEL_POS(entry->jmp_to);
+            YogExcTblEntry* ent = &exc_tbl->items[i];
+            ent->from = LABEL_POS(entry->from);
+            ent->to = LABEL_POS(entry->to);
+            ent->jmp_to = LABEL_POS(entry->jmp_to);
 
             i++;
             entry = entry->next;
@@ -766,7 +770,8 @@ compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     YogArray* node_excepts = NODE_EXCEPTS(node);
     if (node_excepts != NULL) {
         label_excepts_start = label_new(env);
-        label_excepts_end = label_new(env);
+        append_inst(data, label_excepts_start);
+
         unsigned int size = YogArray_size(env, node_excepts);
         unsigned int i = 0;
         for (i = 0; i < size; i++) {
@@ -799,6 +804,9 @@ compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         }
 
         CompileData_append_call_command(env, data, RAISE, 0);
+
+        label_excepts_end = label_new(env);
+        append_inst(data, label_excepts_end);
     }
 
     if (node_finally != NULL) {

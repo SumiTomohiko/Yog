@@ -12,6 +12,7 @@ main(int argc, char* argv[])
 #undef INIT_HEAP_SIZE
     YogEnv env;
     env.vm = vm;
+    env.th = NULL;
     YogVm_boot(&env, vm);
 
 #if 0
@@ -35,6 +36,7 @@ main(int argc, char* argv[])
     YogArray* stmts = Yog_get_parsed_tree();
     YogCode* code = Yog_compile_module(&env, stmts);
     YogThread* th = YogThread_new(&env);
+    env.th = th;
     YogThread_eval_code(&env, th, code);
 
     return 0;

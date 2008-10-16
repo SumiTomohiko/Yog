@@ -324,12 +324,15 @@ excepts : except {
             OBJ_ARRAY_PUSH($$, $1, $2);
         }
         ;
-except  : EXCEPT expr AS NAME stmts {
+except  : EXCEPT expr AS NAME NEWLINE stmts {
             Yog_assert(ENV, $4 != NO_EXC_VAR, "Too many variables.");
-            EXCEPT_NEW($$, $2, $4, $5);
+            EXCEPT_NEW($$, $2, $4, $6);
         }
-        | EXCEPT expr stmts {
-            EXCEPT_NEW($$, $2, NO_EXC_VAR, $3);
+        | EXCEPT expr NEWLINE stmts {
+            EXCEPT_NEW($$, $2, NO_EXC_VAR, $4);
+        }
+        | EXCEPT NEWLINE stmts {
+            EXCEPT_NEW($$, NULL, NO_EXC_VAR, $3);
         }
         ;
 finally_opt : /* empty */ {

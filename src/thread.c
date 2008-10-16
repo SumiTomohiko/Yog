@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "yog/opcodes.h"
 #include "yog/yog.h"
 
@@ -41,6 +40,23 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
     frame->stack = YogValArray_new(env, code->stack_size);
 
     pc_t pc = 0;
+    YogJmpBuf jmpbuf;
+    int status = 0;
+    if ((status = setjmp(jmpbuf.buf)) == 0) {
+        jmpbuf.prev = th->jmp_buf_list;
+        th->jmp_buf_list = &jmpbuf;
+    }
+    else {
+        unsigned int i = 0;
+        for (i = 0; i < code->exc_tbl_size; i++) {
+            YogExcTblEntry* entry = &code->exc_tbl->items[i];
+            if ((entry->from <= pc) && (pc < entry->to)) {
+                pc = entry->jmp_to;
+                break;
+            }
+        }
+    }
+
     while (pc < code->insts->size) {
 #define CODE            (code)
 #define PC              (pc)
@@ -76,6 +92,8 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
 #undef PC
 #undef CODE
     }
+
+    th->jmp_buf_list = th->jmp_buf_list->prev;
 }
 
 YogThread*
@@ -83,6 +101,8 @@ YogThread_new(YogEnv* env)
 {
     YogThread* th = ALLOC_OBJ(env, GCOBJ_THREAD, YogThread);
     th->cur_frame = NULL;
+    th->jmp_buf_list = NULL;
+    th->jmp_val = YogVal_undef();
 
     return th;
 }

@@ -1,10 +1,24 @@
+#include <setjmp.h>
 #include <stdio.h>
 #include "yog/yog.h"
 
 static YogVal 
-bltins_p(YogEnv* env, YogVal recv, int argc, YogVal* args) 
+bltins_raise(YogEnv* env, YogVal recv, int argc, YogVal* args) 
 {
-    /* TODO */
+    YogThread* th = env->th;
+    YogVal jmp_val = YogVal_undef();
+    if (argc < 1) {
+        jmp_val = th->jmp_val;
+    }
+    else {
+        jmp_val = args[0];
+    }
+    Yog_assert(env, !IS_UNDEF(jmp_val), "jmp_val is undefined.");
+
+    th->jmp_val = jmp_val;
+    longjmp(th->jmp_buf_list->buf, JMP_RAISE);
+
+    /* NOTREACHED */
     return YogVal_nil();
 }
 
@@ -35,7 +49,7 @@ Yog_bltins_new(YogEnv* env)
 {
     YogObj* bltins = YogObj_new(env, ENV_VM(env)->pkg_klass);
     YogObj_define_method(env, bltins, "puts", bltins_puts);
-    YogObj_define_method(env, bltins, "p", bltins_p);
+    YogObj_define_method(env, bltins, "raise", bltins_raise);
 
     return bltins;
 }
