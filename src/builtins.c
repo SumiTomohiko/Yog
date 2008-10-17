@@ -29,10 +29,7 @@ bltins_puts(YogEnv* env, YogVal recv, int argc, YogVal* args)
         unsigned int i = 0;
         for (i = 0; i < argc; i++) {
             YogVal val = YogThread_call_method(env, args[i], "to_s", 0, NULL);
-            Yog_assert(env, YOGVAL_TYPE(val) == VAL_GCOBJ, "Can't get string by to_s.");
-            YogGCObj* gcobj = YOGVAL_GCOBJ(val);
-            Yog_assert(env, gcobj->type == GCOBJ_STRING, "Object isn't string.");
-            YogString* s = (YogString*)gcobj;
+            YogString* s = YOGVAL_PTR(val);
             printf("%s", s->body->items);
             printf("\n");
         }

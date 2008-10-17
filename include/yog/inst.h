@@ -9,12 +9,10 @@
 #include "yog/yog.h"
 
 struct YogInst {
-    YOGGCOBJ_HEAD;
-
     struct YogInst* next;
 
     enum InstType type;
-    enum OpCode operand;
+    enum OpCode opcode;
     union {
         pc_t pos;
 
@@ -58,7 +56,7 @@ struct YogInst {
     } u;
 };
 
-#define INST_OPERAND(inst)  ((inst)->operand)
+#define INST_OPCODE(inst)   ((inst)->opcode)
 #define LABEL_POS(inst)     ((inst)->u.pos)
 
 #define LOAD_SPECIAL_ID(inst) ((inst)->u.load_special.id)

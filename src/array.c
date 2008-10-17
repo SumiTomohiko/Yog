@@ -43,10 +43,24 @@ YogArray_size(YogEnv* env, YogArray* array)
     return YogValArray_size(env, array->body);
 }
 
+static void 
+gc_valarray_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogValArray* array = ptr;
+    unsigned int size = array->size;
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        YogVal val = array->items[i];
+        if (IS_PTR(val)) {
+            YOGVAL_PTR(array->items[i]) = do_gc(env, YOGVAL_PTR(val));
+        }
+    }
+}
+
 YogValArray* 
 YogValArray_new(YogEnv* env, unsigned int capacity) 
 {
-    YogValArray* array = ALLOC_OBJ_ITEM(env, GCOBJ_VAL_ARRAY, YogValArray, capacity, YogVal);
+    YogValArray* array = ALLOC_OBJ_ITEM(env, gc_valarray_children, YogValArray, capacity, YogVal);
     array->size = 0;
     array->capacity = capacity;
 
@@ -71,6 +85,13 @@ YogArray_push(YogEnv* env, YogArray* array, YogVal val)
     YogValArray_push(env, array->body, val);
 }
 
+static void 
+gc_array_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogArray* array = ptr;
+    array->body = do_gc(env, array->body);
+}
+
 YogArray* 
 YogArray_new(YogEnv* env)
 {
@@ -78,7 +99,7 @@ YogArray_new(YogEnv* env)
     YogValArray* body = YogValArray_new(env, INIT_SIZE);
 #undef INIT_SIZE
 
-    YogArray* array = ALLOC_OBJ(env, GCOBJ_ARRAY, YogArray);
+    YogArray* array = ALLOC_OBJ(env, gc_array_children, YogArray);
     array->body = body;
 
     return array;

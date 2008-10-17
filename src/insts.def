@@ -75,13 +75,10 @@ inst make_func
 (code)
 (func)
 {
-    YogGCObj* gcobj = YOGVAL_GCOBJ(code);
-    Yog_assert(ENV, gcobj->type == GCOBJ_CODE, "Object isn't YogCode.");
-    YogCode* c = (YogCode*)gcobj;
-
+    YogCode* c = YOGVAL_PTR(code);
     YogFunc* f = YogFunc_new(ENV);
     f->code = c;
-    func = YogVal_gcobj(YOGGCOBJ(f));
+    func = YogVal_obj(YOGBASICOBJ(f));
 }
 
 inst call_func
@@ -96,9 +93,7 @@ inst call_func
     }
 
     YogVal callee = POP();
-    YogGCObj* gcobj = YOGVAL_GCOBJ(callee);
-    Yog_assert(ENV, gcobj->type == GCOBJ_FUNC, "Callee isn't function.");
-    YogFunc* func = (YogFunc*)gcobj;
+    YogFunc* func = YOGVAL_PTR(callee);
     YogCode* new_code = func->code;
     Yog_assert(ENV, new_code->argc == argc, "Arguments count miss match.");
 

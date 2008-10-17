@@ -27,7 +27,7 @@ YogThread_call_command(YogEnv* env, ID command, unsigned int argc, YogVal* args)
     if (!YogTable_lookup(env, vm->pkgs, YogVal_symbol(bltins), &pkg)) {
         Yog_assert(env, FALSE, "Can't find builtins package.");
     }
-    YogVal attr = YogObj_get_attr(env, YOGOBJ(YOGVAL_GCOBJ(pkg)), command);
+    YogVal attr = YogObj_get_attr(env, YOGVAL_PTR(pkg), command);
     Yog_assert(env, YOGVAL_TYPE(attr) == VAL_FUNC, "Command isn't a function.");
     (YOGVAL_FUNC(attr))(env, pkg, argc, args);
 }
@@ -96,10 +96,17 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
     th->jmp_buf_list = th->jmp_buf_list->prev;
 }
 
+static void 
+gc_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogThread* th = ptr;
+    th->cur_frame = do_gc(env, th->cur_frame);
+}
+
 YogThread*
 YogThread_new(YogEnv* env) 
 {
-    YogThread* th = ALLOC_OBJ(env, GCOBJ_THREAD, YogThread);
+    YogThread* th = ALLOC_OBJ(env, gc_children, YogThread);
     th->cur_frame = NULL;
     th->jmp_buf_list = NULL;
     th->jmp_val = YogVal_undef();

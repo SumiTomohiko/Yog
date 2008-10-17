@@ -34,10 +34,61 @@ yyerror(char* s)
     fprintf(stderr, "%s\n", s);
 }
 
+static void 
+gc_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogNode* node = ptr;
+    switch (node->type) {
+        case NODE_ASSIGN:
+            NODE_RIGHT(node) = do_gc(env, NODE_RIGHT(node));
+            break;
+        case NODE_VARIABLE:
+            break;
+        case NODE_LITERAL:
+            break;
+        case NODE_METHOD_CALL:
+            NODE_RECEIVER(node) = do_gc(env, NODE_RECEIVER(node));
+            NODE_ARGS(node) = do_gc(env, NODE_ARGS(node));
+            break;
+        case NODE_COMMAND_CALL:
+            NODE_ARGS(node) = do_gc(env, NODE_ARGS(node));
+            break;
+        case NODE_FUNC_CALL:
+            NODE_CALLEE(node) = do_gc(env, NODE_CALLEE(node));
+            NODE_ARGS(node) = do_gc(env, NODE_ARGS(node));
+            break;
+        case NODE_FUNC_DEF:
+            NODE_PARAMS(node) = do_gc(env, NODE_PARAMS(node));
+            NODE_STMTS(node) = do_gc(env, NODE_STMTS(node));
+            break;
+        case NODE_TRY:
+            NODE_TRY(node) = do_gc(env, NODE_TRY(node));
+            NODE_EXCEPTS(node) = do_gc(env, NODE_EXCEPTS(node));
+            NODE_ELSE(node) = do_gc(env, NODE_ELSE(node));
+            NODE_FINALLY(node) = do_gc(env, NODE_FINALLY(node));
+            break;
+        case NODE_EXCEPT:
+            NODE_EXC_TYPE(node) = do_gc(env, NODE_EXC_TYPE(node));
+            NODE_EXC_STMTS(node) = do_gc(env, NODE_EXC_STMTS(node));
+            break;
+        case NODE_WHILE:
+            NODE_TEST(node) = do_gc(env, NODE_TEST(node));
+            NODE_STMTS(node) = do_gc(env, NODE_STMTS(node));
+            break;
+        case NODE_BREAK:
+        case NODE_NEXT:
+            NODE_EXPR(node) = do_gc(env, NODE_EXPR(node));
+            break;
+        default:
+            Yog_assert(env, FALSE, "Unknown node type.");
+            break;
+    }
+}
+
 static YogNode* 
 YogNode_new(YogEnv* env, YogNodeType type) 
 {
-    YogNode* node = ALLOC_OBJ(env, GCOBJ_NODE, YogNode);
+    YogNode* node = ALLOC_OBJ(env, gc_children, YogNode);
     node->type = type;
 
     return node;
@@ -53,7 +104,7 @@ YogNode_new(YogEnv* env, YogNodeType type)
 #define OBJ_ARRAY_NEW(array, elem) do { \
     if (elem != NULL) { \
         array = YogArray_new(ENV); \
-        YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ(elem))); \
+        YogArray_push(ENV, array, YogVal_ptr(elem)); \
     } \
     else { \
         array = NULL; \
@@ -65,7 +116,7 @@ YogNode_new(YogEnv* env, YogNodeType type)
         if (array == NULL) { \
             array = YogArray_new(ENV); \
         } \
-        YogArray_push(ENV, array, YogVal_gcobj(YOGGCOBJ(elem))); \
+        YogArray_push(ENV, array, YogVal_ptr(elem)); \
     } \
     result = array; \
 } while (0)
@@ -120,7 +171,7 @@ YogNode_new(YogEnv* env, YogNodeType type)
 
 #define METHOD_CALL_NEW1(node, recv, name, arg) do { \
     YogArray* args = YogArray_new(ENV); \
-    YogArray_push(ENV, args, YogVal_gcobj(YOGGCOBJ(arg))); \
+    YogArray_push(ENV, args, YogVal_ptr(arg)); \
     node = NODE_NEW(NODE_METHOD_CALL); \
     NODE_RECEIVER(node) = recv; \
     NODE_METHOD(node) = name; \

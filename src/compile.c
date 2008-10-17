@@ -11,7 +11,7 @@
         unsigned int i = 0; \
         for (i = 0; i < argc; i++) { \
             YogVal val = YogArray_at(env, args, i); \
-            YogNode* node = (YogNode*)YOGVAL_GCOBJ(val); \
+            YogNode* node = YOGVAL_PTR(val); \
             visit_node(env, visitor, node, arg); \
         } \
     } \
@@ -61,10 +61,30 @@ struct CompileData {
 
 typedef struct CompileData CompileData;
 
+static void 
+gc_inst_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogInst* inst = ptr;
+    inst->next = do_gc(env, inst->next);
+
+    if (inst->type == INST_OP) {
+        switch (INST_OPCODE(inst)) {
+            case OP(JUMP):
+                JUMP_DEST(inst) = do_gc(env, JUMP_DEST(inst));
+                break;
+            case OP(JUMP_IF_FALSE):
+                JUMP_IF_FALSE_DEST(inst) = do_gc(env, JUMP_IF_FALSE_DEST(inst));
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 static YogInst* 
 YogInst_new(YogEnv* env, InstType type) 
 {
-    YogInst* inst = ALLOC_OBJ(env, GCOBJ_INST, YogInst);
+    YogInst* inst = ALLOC_OBJ(env, gc_inst_children, YogInst);
     inst->type = type;
     inst->next = NULL;
 
@@ -89,10 +109,20 @@ anchor_new(YogEnv* env)
     return YogInst_new(env, INST_ANCHOR);
 }
 
+static void 
+gc_exc_label_tbl_entry(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogExcLabelTableEntry* entry = ptr;
+    entry->from = do_gc(env, entry->from);
+    entry->to = do_gc(env, entry->to);
+    entry->jmp_to = do_gc(env, entry->jmp_to);
+    entry->next = do_gc(env, entry->next);
+}
+
 static YogExcLabelTableEntry* 
 YogExcLabelTableEntry_new(YogEnv* env) 
 {
-    YogExcLabelTableEntry* entry = ALLOC_OBJ(env, GCOBJ_EXC_LABEL_TABLE_ENTRY, YogExcLabelTableEntry);
+    YogExcLabelTableEntry* entry = ALLOC_OBJ(env, gc_exc_label_tbl_entry, YogExcLabelTableEntry);
     entry->from = NULL;
     entry->to = NULL;
     entry->jmp_to = NULL;
@@ -178,7 +208,7 @@ visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg)
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
         YogVal val = YogArray_at(env, stmts, i);
-        YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
+        YogNode* node = YOGVAL_PTR(val);
         visitor->visit_stmt(env, visitor, node, arg);
     }
 }
@@ -232,7 +262,7 @@ generic_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         unsigned int i = 0;
         for (i = 0; i < size; i++) {
             YogVal val = YogArray_at(env, excepts, i);
-            YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
+            YogNode* node = YOGVAL_PTR(val);
             visit_node(env, visitor, node, arg);
         }
     }
@@ -488,7 +518,7 @@ table2array_count_index(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
 static int 
 table2array_fill_array(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
 {
-    YogValArray* array = (YogValArray*)YOGVAL_GCOBJ(*arg);
+    YogValArray* array = YOGVAL_PTR(*arg);
     int index = YOGVAL_INT(value);
     array->items[index] = key;
 
@@ -508,7 +538,7 @@ table2array(YogEnv* env, YogTable* table)
     if (0 <= index) {
         unsigned int size = index + 1;
         YogValArray* array = YogValArray_new(env, size);
-        YogVal arg = YogVal_gcobj(YOGGCOBJ(array));
+        YogVal arg = YogVal_ptr(array);
         YogTable_foreach(env, table, table2array_fill_array, &arg);
         array->size = size;
         return array;
@@ -554,7 +584,7 @@ make_exc_tbl(YogEnv* env, YogCode* code, CompileData* data)
     }
 
     if (0 < size) {
-        YogExcTbl* exc_tbl = ALLOC_OBJ_ITEM(env, GCOBJ_EXC_TBL, YogExcTbl, size, YogExcTblEntry);
+        YogExcTbl* exc_tbl = ALLOC_OBJ_ITEM(env, NULL, YogExcTbl, size, YogExcTblEntry);
 
         unsigned int i = 0;
         entry = data->exc_tbl->next;
@@ -659,7 +689,7 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     YogCode* code = compile_func(env, visitor, node);
 
     CompileData* data = arg;
-    YogVal val = YogVal_gcobj(YOGGCOBJ(code));
+    YogVal val = YogVal_ptr(code);
     int const_index = register_const(env, data, val);
 
     ID id = NODE_NAME(node);
@@ -777,7 +807,7 @@ compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         for (i = 0; i < size; i++) {
             YogInst* label_except_end = label_new(env);
             YogVal val = YogArray_at(env, node_excepts, i);
-            YogNode* node_except = (YogNode*)YOGVAL_GCOBJ(val);
+            YogNode* node_except = YOGVAL_PTR(val);
             YogNode* node_type = NODE_EXC_TYPE(node_except);
             if (node_type != NULL) {
                 visit_node(env, visitor, node_type, arg);

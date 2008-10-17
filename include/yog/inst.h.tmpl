@@ -5,19 +5,17 @@
 #include "yog/yog.h"
 
 struct YogInst {
-    YOGGCOBJ_HEAD;
-
     struct YogInst* next;
 
     enum InstType type;
-    enum OpCode operand;
+    enum OpCode opcode;
     union {
         pc_t pos;
 ${structs}
     } u;
 };
 
-#define INST_OPERAND(inst)  ((inst)->operand)
+#define INST_OPCODE(inst)   ((inst)->opcode)
 #define LABEL_POS(inst)     ((inst)->u.pos)
 ${macros}
 

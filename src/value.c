@@ -11,8 +11,8 @@ YogVal_print(YogEnv* env, YogVal val)
     case VAL_FLOAT:
         printf("<float: %f>\n", YOGVAL_FLOAT(val));
         break;
-    case VAL_GCOBJ:
-        printf("<object: %p>\n", YOGVAL_GCOBJ(val));
+    case VAL_PTR:
+        printf("<object: %p>\n", YOGVAL_PTR(val));
         break;
     case VAL_BOOL:
         if (YOGVAL_BOOL(val)) {
@@ -48,8 +48,11 @@ YogVal_hash(YogEnv* env, YogVal val)
     case VAL_FLOAT:
         return YOGVAL_INT(val);
         break;
-    case VAL_GCOBJ:
-        return YOGVAL_INT(val);
+    case VAL_OBJ:
+        return (int)YOGVAL_OBJ(val);
+        break;
+    case VAL_PTR:
+        return (int)YOGVAL_PTR(val);
         break;
     case VAL_BOOL:
         if (YOGVAL_BOOL(val)) {
@@ -94,8 +97,8 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
     case VAL_SYMBOL:
         RETURN(YOGVAL_SYMBOL, a, b);
         break;
-    case VAL_GCOBJ:
-        RETURN(YOGVAL_GCOBJ, a, b);
+    case VAL_PTR:
+        RETURN(YOGVAL_PTR, a, b);
         break;
     case VAL_BOOL:
         if (YOGVAL_BOOL(a)) {
@@ -175,10 +178,16 @@ YogVal_undef()
     return val; \
 } while (0)
 
-YogVal
-YogVal_gcobj(YogGCObj* obj)
+YogVal 
+YogVal_obj(YogBasicObj* obj) 
 {
-    RETURN_VAL(VAL_GCOBJ, YOGVAL_GCOBJ, obj);
+    RETURN_VAL(VAL_OBJ, YOGVAL_OBJ, obj);
+}
+
+YogVal
+YogVal_ptr(void * ptr)
+{
+    RETURN_VAL(VAL_PTR, YOGVAL_PTR, ptr);
 }
 
 YogVal
@@ -206,23 +215,10 @@ YogVal_get_klass(YogEnv* env, YogVal val)
     case VAL_INT:
         return ENV_VM(env)->int_klass;
         break;
-    case VAL_GCOBJ:
+    case VAL_OBJ:
         {
-            YogGCObj* gcobj = YOGVAL_GCOBJ(val);
-            switch (gcobj->type) {
-            case GCOBJ_ARRAY: 
-            case GCOBJ_BINARY: 
-            case GCOBJ_KLASS: 
-            case GCOBJ_OBJ: 
-                {
-                    YogBasicObj* obj = YOGBASICOBJ(gcobj);
-                    return obj->klass;
-                    break;
-                }
-            default:
-                Yog_assert(env, FALSE, "Can't get class of given value.");
-                break;
-            }
+            YogBasicObj* obj = YOGVAL_OBJ(val);
+            return obj->klass;
             break;
         }
     case VAL_BOOL:
@@ -231,6 +227,7 @@ YogVal_get_klass(YogEnv* env, YogVal val)
     case VAL_FLOAT:
     case VAL_NIL:
     case VAL_SYMBOL:
+    case VAL_PTR:
     default:
         Yog_assert(env, FALSE, "Uknown value type.");
         break;
@@ -247,27 +244,21 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
 {
 #define RET_ATTR(obj)   do { \
     YogVal attr = YogObj_get_attr(env, YOGOBJ(obj), name); \
-    if (YOGVAL_TYPE(attr) != VAL_UNDEF) { \
+    if (IS_UNDEF(attr)) { \
         return attr; \
     } \
 } while (0)
-    if (YOGVAL_TYPE(val) == VAL_GCOBJ) {
-        YogGCObj* gcobj = YOGVAL_GCOBJ(val);
-        switch (gcobj->type) {
-        case GCOBJ_KLASS: 
-        case GCOBJ_OBJ: 
-        {
-            RET_ATTR(gcobj);
-            break;
-        }
-        case GCOBJ_ARRAY: 
-        case GCOBJ_BINARY: 
-            /* TODO: generic attribute */
-            Yog_assert(env, FALSE, "Not implemented.");
-            break;
-        default:
-            Yog_assert(env, FALSE, "Can't get attribute of given type.");
-            break;
+    if (IS_OBJ(val)) {
+        YogBasicObj* obj = YOGVAL_OBJ(val);
+        switch (obj->type) {
+            case ST_OBJ: 
+            case ST_KLASS: 
+                RET_ATTR(obj);
+                break;
+            default:
+                /* TODO: generic attribute */
+                Yog_assert(env, FALSE, "Not implemented.");
+                break;
         }
     }
 

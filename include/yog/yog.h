@@ -56,7 +56,8 @@ enum YogValType {
     VAL_UNDEF, 
     VAL_INT, 
     VAL_FLOAT, 
-    VAL_GCOBJ, 
+    VAL_PTR, 
+    VAL_OBJ, 
     VAL_BOOL, 
     VAL_NIL, 
     VAL_SYMBOL, 
@@ -65,42 +66,17 @@ enum YogValType {
 
 typedef enum YogValType YogValType;
 
-enum YogGCObjType {
-    GCOBJ_TABLE, 
-    GCOBJ_TABLE_ENTRY, 
-    GCOBJ_TABLE_ENTRY_ARRAY, 
-    GCOBJ_ARRAY, 
-    GCOBJ_VAL_ARRAY, 
-    GCOBJ_NODE, 
-    GCOBJ_OBJ, 
-    GCOBJ_CHAR_ARRAY, 
-    GCOBJ_STRING, 
-    GCOBJ_CODE, 
-    GCOBJ_BYTE_ARRAY, 
-    GCOBJ_BINARY, 
-    GCOBJ_FRAME, 
-    GCOBJ_THREAD, 
-    GCOBJ_FUNC, 
-    GCOBJ_KLASS, 
-    GCOBJ_INST, 
-    GCOBJ_EXC_LABEL_TABLE_ENTRY, 
-    GCOBJ_EXC_TBL, 
-};
+typedef void* (*DoGc)(YogEnv* env, void* ptr);
 
-typedef enum YogGCObjType YogGCObjType;
+typedef void (*GcChildren)(YogEnv* env, void* ptr, DoGc do_gc);
 
-struct YogGCObj {
-    YogGCObjType type;
+struct GcHead {
+    GcChildren gc_children;
     void* forwarding_addr;
     size_t size;
 };
 
-#define YOGGCOBJ_HEAD                   struct YogGCObj base
-#define YOGGCOBJ(obj)                   ((YogGCObj*)(obj))
-#define YOGGCOBJ_FORWARDING_ADDR(obj)   (YOGGCOBJ(obj)->forwarding_addr)
-#define YOGGCOBJ_SIZE(obj)              (YOGGCOBJ(obj)->size)
-
-typedef struct YogGCObj YogGCObj;
+typedef struct GcHead GcHead;
 
 typedef struct YogVal (*YogFuncBody)(struct YogEnv*, struct YogVal, int, struct YogVal*);
 
@@ -110,7 +86,8 @@ struct YogVal {
         int n;
         double f;
         ID symbol;
-        YogGCObj* gcobj;
+        void * ptr;
+        struct YogBasicObj* obj;
         YogFuncBody func;
         BOOL b;
     } u;
@@ -120,11 +97,14 @@ struct YogVal {
 #define YOGVAL_INT(v)       ((v).u.n)
 #define YOGVAL_FLOAT(v)     ((v).u.f)
 #define YOGVAL_SYMBOL(v)    ((v).u.symbol)
-#define YOGVAL_GCOBJ(v)     ((v).u.gcobj)
+#define YOGVAL_PTR(v)       ((v).u.ptr)
 #define YOGVAL_FUNC(v)      ((v).u.func)
 #define YOGVAL_BOOL(v)      ((v).u.b)
+#define YOGVAL_OBJ(v)       ((v).u.obj)
 
 #define IS_UNDEF(v) (YOGVAL_TYPE(v) == VAL_UNDEF)
+#define IS_PTR(v)   (YOGVAL_TYPE(v) == VAL_PTR)
+#define IS_OBJ(v)   (YOGVAL_TYPE(v) == VAL_OBJ)
 
 typedef struct YogVal YogVal;
 
@@ -136,7 +116,6 @@ struct YogHashType {
 typedef struct YogHashType YogHashType;
 
 struct YogTableEntry {
-    YOGGCOBJ_HEAD;
     unsigned int hash;
     YogVal key;
     YogVal record;
@@ -146,7 +125,6 @@ struct YogTableEntry {
 typedef struct YogTableEntry YogTableEntry;
 
 struct YogTableEntryArray {
-    YOGGCOBJ_HEAD;
     unsigned int size;
     YogTableEntry* items[0];
 };
@@ -154,7 +132,6 @@ struct YogTableEntryArray {
 typedef struct YogTableEntryArray YogTableEntryArray;
 
 struct YogTable {
-    YOGGCOBJ_HEAD;
     YogHashType* type;
     int num_bins;
     int num_entries;
@@ -163,8 +140,24 @@ struct YogTable {
 
 typedef struct YogTable YogTable;
 
+#define ST_OBJ      (0)
+#define ST_ARRAY    (1)  
+#define ST_KLASS    (2)
+#define ST_FUNC     (3)
+#define ST_STR      (4)
+#define ST_BIN      (5)
+
+struct YogBasicObj {
+    unsigned int type;
+    struct YogKlass* klass;
+};
+
+#define YOGBASICOBJ_HEAD    struct YogBasicObj base
+#define YOGBASICOBJ(obj)    ((YogBasicObj*)obj)
+
+typedef struct YogBasicObj YogBasicObj;
+
 struct YogValArray {
-    YOGGCOBJ_HEAD;
     unsigned int size;
     unsigned int capacity;
     YogVal items[0];
@@ -173,7 +166,7 @@ struct YogValArray {
 typedef struct YogValArray YogValArray;
 
 struct YogArray {
-    YOGGCOBJ_HEAD;
+    YOGBASICOBJ_HEAD;
     YogValArray* body; 
 };
 
@@ -197,7 +190,6 @@ enum YogNodeType {
 typedef enum YogNodeType YogNodeType;
 
 struct YogNode {
-    YOGGCOBJ_HEAD;
     YogNodeType type;
     union {
         ID id;
@@ -250,16 +242,6 @@ struct YogNode {
 
 typedef struct YogNode YogNode;
 
-struct YogBasicObj {
-    YOGGCOBJ_HEAD;
-    struct YogKlass* klass;
-};
-
-#define YOGBASICOBJ_HEAD    struct YogBasicObj base
-#define YOGBASICOBJ(obj)    ((YogBasicObj*)obj)
-
-typedef struct YogBasicObj YogBasicObj;
-
 struct YogObj {
     YOGBASICOBJ_HEAD;
     YogTable* attrs;
@@ -285,7 +267,6 @@ struct YogFunc {
 typedef struct YogFunc YogFunc;
 
 struct YogCharArray {
-    YOGGCOBJ_HEAD;
     unsigned int size;
     unsigned int capacity;
     char items[0];
@@ -294,14 +275,13 @@ struct YogCharArray {
 typedef struct YogCharArray YogCharArray;
 
 struct YogString {
-    YOGGCOBJ_HEAD;
+    YOGBASICOBJ_HEAD;
     struct YogCharArray* body;
 };
 
 typedef struct YogString YogString;
 
 struct YogByteArray {
-    YOGGCOBJ_HEAD;
     unsigned int size;
     unsigned int capacity;
     uint8_t items[0];
@@ -310,7 +290,7 @@ struct YogByteArray {
 typedef struct YogByteArray YogByteArray;
 
 struct YogBinary {
-    YOGGCOBJ_HEAD;
+    YOGBASICOBJ_HEAD;
     struct YogByteArray* body;
 };
 
@@ -325,14 +305,12 @@ struct YogExcTblEntry {
 typedef struct YogExcTblEntry YogExcTblEntry;
 
 struct YogExcTbl {
-    YOGGCOBJ_HEAD;
     struct YogExcTblEntry items[0];
 };
 
 typedef struct YogExcTbl YogExcTbl;
 
 struct YogCode {
-    YOGGCOBJ_HEAD;
     unsigned int argc;
     unsigned int stack_size;
     unsigned int local_vars_count;
@@ -345,7 +323,6 @@ struct YogCode {
 typedef struct YogCode YogCode;
 
 struct YogFrame {
-    YOGGCOBJ_HEAD;
     union {
         struct YogTable* pkg;
         struct YogValArray* local;
@@ -366,7 +343,6 @@ struct YogJmpBuf {
 typedef struct YogJmpBuf YogJmpBuf;
 
 struct YogThread {
-    YOGGCOBJ_HEAD;
     struct YogFrame* cur_frame;
     struct YogJmpBuf* jmp_buf_list;
     struct YogVal jmp_val;
@@ -425,6 +401,7 @@ void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
 void YogObj_define_method(YogEnv*, YogObj*, const char*, YogFuncBody);
 void YogBasicObj_init(YogEnv*, YogBasicObj*, YogKlass*);
 void YogObj_init(YogEnv*, YogObj*, YogKlass*);
+void YogObj_gc_children(YogEnv*, void*, DoGc);
 YogObj* YogObj_new(YogEnv*, YogKlass*);
 
 /* src/binary.c */
@@ -456,7 +433,8 @@ YogVal YogVal_true();
 YogVal YogVal_false();
 YogVal YogVal_nil();
 YogVal YogVal_undef();
-YogVal YogVal_gcobj(YogGCObj*);
+YogVal YogVal_obj(YogBasicObj*);
+YogVal YogVal_ptr(void *);
 YogVal YogVal_int(int);
 YogVal YogVal_symbol(ID);
 YogVal YogVal_func(YogFuncBody);
@@ -469,6 +447,7 @@ YogEnv* Yog_get_parsing_env();
 YogArray* Yog_get_parsed_tree();
 
 /* src/compile.c */
+void set_label_pos(YogEnv*, YogInst*);
 YogCode* Yog_compile_module(YogEnv*, YogArray*);
 
 /* src/code.c */
@@ -500,7 +479,7 @@ YogObj* Yog_bltins_new(YogEnv*);
 
 /* src/vm.c */
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
-YogGCObj* YogVm_alloc_gcobj(YogEnv*, YogVm*, YogGCObjType, size_t);
+void* YogVm_alloc(YogEnv*, GcChildren, size_t);
 void YogVm_boot(YogEnv*, YogVm*);
 YogVm* YogVm_new(size_t);
 
@@ -512,13 +491,13 @@ YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
 YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
 YogString* YogString_new_str(YogEnv*, const char*);
 YogString* YogString_new_format(YogEnv*, const char*, ...);
-YogString* YogString_new(YogEnv*);
 
 /* $PROTOTYPE_END$ */
 
-#define ALLOC_OBJ(env, gcobj_type, type)  (type*)YogVm_alloc_gcobj(env, ENV_VM(env), gcobj_type, sizeof(type))
-#define ALLOC_OBJ_SIZE(env, gcobj_type, type, size)   (type*)YogVm_alloc_gcobj(env, ENV_VM(env), gcobj_type, size)
-#define ALLOC_OBJ_ITEM(env, gcobj_type, type, size, item_type)   ALLOC_OBJ_SIZE(env, gcobj_type, type, sizeof(type) + size * sizeof(item_type))
+#define ALLOC_OBJ(env, gc_children, type) \
+    YogVm_alloc(env, gc_children, sizeof(type));
+#define ALLOC_OBJ_ITEM(env, gc_children, type, size, item_type) \
+    YogVm_alloc(env, gc_children, sizeof(type) + size * sizeof(item_type));
 
 #define JMP_RAISE   (1)
 

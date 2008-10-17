@@ -6,7 +6,7 @@
 YogCharArray* 
 YogCharArray_new(YogEnv* env, unsigned int capacity) 
 {
-    YogCharArray* array = ALLOC_OBJ_ITEM(env, GCOBJ_CHAR_ARRAY, YogCharArray, capacity, char);
+    YogCharArray* array = ALLOC_OBJ_ITEM(env, NULL, YogCharArray, capacity, char);
     array->capacity = capacity;
     array->size = 0;
 
@@ -24,9 +24,16 @@ YogCharArray_new_str(YogEnv* env, const char* s)
     return array;
 }
 
+static void 
+gc_string_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogString* s = ptr;
+    s->body = do_gc(env, s->body);
+}
+
 #define RETURN_STR(s)   do { \
     YogCharArray* body = YogCharArray_new_str(env, s); \
-    YogString* string = ALLOC_OBJ(env, GCOBJ_STRING, YogString); \
+    YogString* string = ALLOC_OBJ(env, gc_string_children, YogString); \
     string->body = body; \
     return string; \
 } while (0)
@@ -51,20 +58,6 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
 }
 
 #undef RETURN_STR
-
-#if 0
-YogString* 
-YogString_new(YogEnv* env) 
-{
-#define INIT_CAPA   (0)
-    YogCharArray* body = YogCharArray_new(env, INIT_CAPA);
-#undef INIT_CAPA
-    YogString* string = ALLOC_OBJ(env, GCOBJ_STRING, YogString);
-    string->body = body;
-
-    return string;
-}
-#endif
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

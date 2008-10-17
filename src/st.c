@@ -40,12 +40,22 @@ static int strhash(const char *);
 
 #define TABLE_ENTRY_TOP(table, i)   (table)->bins->items[(i)]
 
+static void 
+gc_bins_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogTableEntryArray* array = ptr;
+    unsigned int size = array->size;
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        array->items[i] = do_gc(env, array->items[i]);
+    }
+}
+
 static YogTableEntryArray*
 alloc_bins(YogEnv* env, int size) 
 {
-    YogTableEntryArray* array = ALLOC_OBJ_SIZE(env, GCOBJ_TABLE_ENTRY_ARRAY, YogTableEntryArray, sizeof(YogTableEntryArray) + size * sizeof(YogTableEntry*));
+    YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, gc_bins_children, YogTableEntryArray, size, YogTableEntry*);
     array->size = size;
-
     return array;
 }
 
@@ -160,10 +170,18 @@ stat_col()
 }
 #endif
 
+static void 
+gc_table_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogTable* tbl = ptr;
+    tbl->bins = do_gc(env, tbl->bins);
+}
+
 static YogTable*
 alloc_table(YogEnv* env) 
 {
-    return ALLOC_OBJ(env, GCOBJ_TABLE, YogTable);
+    YogTable* tbl = ALLOC_OBJ(env, gc_table_children, YogTable);
+    return tbl;
 }
 
 static YogTable* 
@@ -283,10 +301,21 @@ YogTable_lookup(YogEnv* env, YogTable* table, YogVal key, YogVal* value)
     }
 }
 
+static void 
+gc_table_entry_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogTableEntry* entry = ptr;
+    entry->next = do_gc(env, entry->next);
+}
+
 static YogTableEntry* 
 alloc_entry(YogEnv* env)
 {
-    return ALLOC_OBJ(env, GCOBJ_TABLE_ENTRY, YogTableEntry);
+#if 0
+    return ALLOC_OBJ(env, gc_table_entry_children, YogTableEntry);
+#endif
+    YogTableEntry* entry = ALLOC_OBJ(env, gc_table_entry_children, YogTableEntry);
+    return entry;
 }
 
 #define ADD_DIRECT(env, table, key, value, hash_val, bin_pos)\
@@ -333,6 +362,7 @@ YogTable_add_direct(YogEnv* env, YogTable* table, YogVal key, YogVal value)
     ADD_DIRECT(env, table, key, value, hash_val, bin_pos);
 }
 
+#if 0
 YogTable* 
 YogTable_copy(YogEnv* env, YogTable* table)
 {
@@ -368,6 +398,7 @@ YogTable_copy(YogEnv* env, YogTable* table)
 
     return new_table;
 }
+#endif
 
 BOOL
 YogTable_delete(YogEnv* env, YogTable* table, YogVal* key, YogVal* value) 
@@ -548,7 +579,7 @@ YogTable_new_symbol_table(YogEnv* env)
 static int 
 compare_string(YogEnv* env, YogVal a, YogVal b) 
 {
-#define GET_STR(val)    (((YogCharArray*)YOGVAL_GCOBJ(a))->items)
+#define GET_STR(val)    (((YogCharArray*)YOGVAL_PTR(a))->items)
     return strcmp(GET_STR(a), GET_STR(b));
 #undef GET_STR
 }
@@ -594,7 +625,7 @@ strhash(const char* string)
 static int 
 hash_string(YogEnv* env, YogVal key) 
 {
-    YogCharArray* array = (YogCharArray*)YOGVAL_GCOBJ(key);
+    YogCharArray* array = YOGVAL_PTR(key);
     return strhash(array->items);
 }
 
@@ -618,7 +649,7 @@ YogTable_lookup_str(YogEnv* env, YogTable* table, const char* key, YogVal* value
     unsigned int bin_pos = hash_val % table->num_bins;
     YogTableEntry* entry = TABLE_ENTRY_TOP(table, bin_pos);
 
-#define NOT_EQUAL_ENTRY ((entry != NULL) && ((entry->hash != hash_val) || (strcmp(((YogCharArray*)YOGVAL_GCOBJ(entry->key))->items, key) != 0)))
+#define NOT_EQUAL_ENTRY ((entry != NULL) && ((entry->hash != hash_val) || (strcmp(((YogCharArray*)YOGVAL_PTR(entry->key))->items, key) != 0)))
     if (NOT_EQUAL_ENTRY) {
         COLLISION;
         do {

@@ -7,7 +7,7 @@ get_inst_size(YogInst* inst)
 ${inst2size}
     };
 
-    return inst2size[inst->operand];
+    return inst2size[INST_OPCODE(inst)];
 }
 
 static YogBinary* 
@@ -19,7 +19,7 @@ insts2bin(YogEnv* env, YogInst* inst)
 
     while (inst != NULL) {
         if (inst->type == INST_OP) {
-            switch (INST_OPERAND(inst)) {
+            switch (INST_OPCODE(inst)) {
 ${insts2bin}
             default:
                 Yog_assert(env, FALSE, "Unkown instruction.");

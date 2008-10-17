@@ -27,7 +27,7 @@ int_to_s(YogEnv* env, YogVal recv, int argc, YogVal* args)
     CHECK_TYPE(recv);
 
     YogString* s = YogString_new_format(env, "%d", YOGVAL_INT(recv));
-    YogVal val = YogVal_gcobj(YOGGCOBJ(s));
+    YogVal val = YogVal_obj(YOGBASICOBJ(s));
 
     return val;
 }

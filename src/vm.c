@@ -12,7 +12,7 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
     }
 
     YogCharArray* s = YogCharArray_new_str(env, name);
-    YogVal val = YogVal_gcobj(YOGGCOBJ(s));
+    YogVal val = YogVal_ptr(s);
     ID id = vm->next_id;
     YogVal symbol = YogVal_symbol(id);
     YogTable_add_direct(env, vm->name2id, val, symbol);
@@ -40,14 +40,16 @@ new_heap(size_t size, Heap* next)
     return heap;
 }
 
-YogGCObj* 
-YogVm_alloc_gcobj(YogEnv* env, YogVm* vm, YogGCObjType type, size_t size) 
+void* 
+YogVm_alloc(YogEnv* env, GcChildren gc_children, size_t size) 
 {
     size_t unit = sizeof(void*);
-    size_t alimented_size = ((size - 1) / unit + 1) * unit;
+    size_t alimented_size = ((size + sizeof(GcHead) - 1) / unit + 1) * unit;
 
+    YogVm* vm = ENV_VM(env);
     Heap* heap = vm->heap;
-    size_t rest_size = heap->size - (heap->free - heap->base);
+    size_t used_size = heap->free - heap->base;
+    size_t rest_size = heap->size - used_size;
     if (rest_size < alimented_size) {
         size_t allocate_size = 0;
         if (heap->size < alimented_size) {
@@ -56,18 +58,18 @@ YogVm_alloc_gcobj(YogEnv* env, YogVm* vm, YogGCObjType type, size_t size)
         else {
             allocate_size = heap->size;
         }
-        vm->heap = new_heap(allocate_size, heap);
+        vm->heap = heap = new_heap(allocate_size, heap);
         vm->need_gc = TRUE;
     }
 
-    YogGCObj* gcobj = (YogGCObj*)heap->free;
-    gcobj->type = type;
-    YOGGCOBJ_FORWARDING_ADDR(gcobj) = NULL;
-    YOGGCOBJ_SIZE(gcobj) = alimented_size;
+    GcHead* head = (GcHead*)heap->free;
+    head->gc_children = gc_children;
+    head->forwarding_addr = NULL;
+    head->size = alimented_size;
 
     heap->free += alimented_size;
 
-    return gcobj;
+    return head + 1;
 }
 
 static void 
@@ -75,7 +77,7 @@ setup_builtins(YogEnv* env, YogVm* vm)
 {
     YogObj* builtins = Yog_bltins_new(env);
     ID name = YogVm_intern(env, vm, "builtins");
-    YogTable_add_direct(env, vm->pkgs, YogVal_symbol(name), YogVal_gcobj(YOGGCOBJ(builtins)));
+    YogTable_add_direct(env, vm->pkgs, YogVal_symbol(name), YogVal_ptr(builtins));
 }
 
 static void 

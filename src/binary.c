@@ -44,7 +44,7 @@ YogByteArray_print(YogEnv* env, YogByteArray* array)
 YogByteArray* 
 YogByteArray_new(YogEnv* env, unsigned int size) 
 {
-    YogByteArray* array = ALLOC_OBJ_ITEM(env, GCOBJ_BYTE_ARRAY, YogByteArray, size, uint8_t);
+    YogByteArray* array = ALLOC_OBJ_ITEM(env, NULL, YogByteArray, size, uint8_t);
     array->size = 0;
     array->capacity = size;
 
@@ -98,11 +98,18 @@ YogBinary_push_pc(YogEnv* env, YogBinary* binary, pc_t pc)
 
 #undef PUSH_TYPE
 
+static void 
+gc_binary_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogBinary* bin = ptr;
+    bin->body = do_gc(env, bin->body);
+}
+
 YogBinary* 
 YogBinary_new(YogEnv* env, unsigned int size) 
 {
     YogByteArray* body = YogByteArray_new(env, size);
-    YogBinary* binary = ALLOC_OBJ(env, GCOBJ_BINARY, YogBinary);
+    YogBinary* binary = ALLOC_OBJ(env, gc_binary_children, YogBinary);
     binary->body = body;
 
     return binary;

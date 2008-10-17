@@ -8,7 +8,7 @@ CompileData_append_load_special(YogEnv* env, CompileData* data, ID id)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(LOAD_SPECIAL);
+    INST_OPCODE(inst) = OP(LOAD_SPECIAL);
 
     LOAD_SPECIAL_ID(inst) = id;
 
@@ -20,7 +20,7 @@ CompileData_append_push_const(YogEnv* env, CompileData* data, uint8_t index)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(PUSH_CONST);
+    INST_OPCODE(inst) = OP(PUSH_CONST);
 
     PUSH_CONST_INDEX(inst) = index;
 
@@ -32,7 +32,7 @@ CompileData_append_call_method(YogEnv* env, CompileData* data, ID method, uint8_
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(CALL_METHOD);
+    INST_OPCODE(inst) = OP(CALL_METHOD);
 
     CALL_METHOD_METHOD(inst) = method;
     CALL_METHOD_ARGC(inst) = argc;
@@ -45,7 +45,7 @@ CompileData_append_store_pkg(YogEnv* env, CompileData* data, ID id)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(STORE_PKG);
+    INST_OPCODE(inst) = OP(STORE_PKG);
 
     STORE_PKG_ID(inst) = id;
 
@@ -57,7 +57,7 @@ CompileData_append_store_local(YogEnv* env, CompileData* data, uint8_t index)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(STORE_LOCAL);
+    INST_OPCODE(inst) = OP(STORE_LOCAL);
 
     STORE_LOCAL_INDEX(inst) = index;
 
@@ -69,7 +69,7 @@ CompileData_append_call_command(YogEnv* env, CompileData* data, ID command, uint
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(CALL_COMMAND);
+    INST_OPCODE(inst) = OP(CALL_COMMAND);
 
     CALL_COMMAND_COMMAND(inst) = command;
     CALL_COMMAND_ARGC(inst) = argc;
@@ -82,7 +82,7 @@ CompileData_append_make_func(YogEnv* env, CompileData* data)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(MAKE_FUNC);
+    INST_OPCODE(inst) = OP(MAKE_FUNC);
 
 
     append_inst(data, inst);
@@ -93,7 +93,7 @@ CompileData_append_call_func(YogEnv* env, CompileData* data, uint8_t argc)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(CALL_FUNC);
+    INST_OPCODE(inst) = OP(CALL_FUNC);
 
     CALL_FUNC_ARGC(inst) = argc;
 
@@ -105,7 +105,7 @@ CompileData_append_load_pkg(YogEnv* env, CompileData* data, ID id)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(LOAD_PKG);
+    INST_OPCODE(inst) = OP(LOAD_PKG);
 
     LOAD_PKG_ID(inst) = id;
 
@@ -117,7 +117,7 @@ CompileData_append_load_local(YogEnv* env, CompileData* data, uint8_t index)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(LOAD_LOCAL);
+    INST_OPCODE(inst) = OP(LOAD_LOCAL);
 
     LOAD_LOCAL_INDEX(inst) = index;
 
@@ -129,7 +129,7 @@ CompileData_append_jump(YogEnv* env, CompileData* data, struct YogInst* dest)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(JUMP);
+    INST_OPCODE(inst) = OP(JUMP);
 
     JUMP_DEST(inst) = dest;
 
@@ -141,7 +141,7 @@ CompileData_append_jump_if_false(YogEnv* env, CompileData* data, struct YogInst*
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPERAND(inst) = OP(JUMP_IF_FALSE);
+    INST_OPCODE(inst) = OP(JUMP_IF_FALSE);
 
     JUMP_IF_FALSE_DEST(inst) = dest;
 
@@ -168,7 +168,7 @@ get_inst_size(YogInst* inst)
 
     };
 
-    return inst2size[inst->operand];
+    return inst2size[INST_OPCODE(inst)];
 }
 
 static YogBinary* 
@@ -180,7 +180,7 @@ insts2bin(YogEnv* env, YogInst* inst)
 
     while (inst != NULL) {
         if (inst->type == INST_OP) {
-            switch (INST_OPERAND(inst)) {
+            switch (INST_OPCODE(inst)) {
 
             case OP(LOAD_SPECIAL):
                 {

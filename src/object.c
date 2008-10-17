@@ -49,10 +49,17 @@ YogObj_init(YogEnv* env, YogObj* obj, YogKlass* klass)
     YogBasicObj_init(env, YOGBASICOBJ(obj), klass);
 }
 
+void 
+YogObj_gc_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    YogObj* obj = ptr;
+    obj->attrs = do_gc(env, obj->attrs);
+}
+
 YogObj*
 YogObj_new(YogEnv* env, YogKlass* klass) 
 {
-    YogObj* obj = ALLOC_OBJ(env, GCOBJ_OBJ, YogObj);
+    YogObj* obj = ALLOC_OBJ(env, YogObj_gc_children, YogObj);
     YogObj_init(env, obj, klass);
 
     return obj;

@@ -18,7 +18,7 @@ bool_to_s(YogEnv* env, YogVal recv, int argc, YogVal* args)
     }
 
     YogString* obj = YogString_new_str(env, s);
-    YogVal val = YogVal_gcobj(YOGGCOBJ(obj));
+    YogVal val = YogVal_obj(YOGBASICOBJ(obj));
 
     return val;
 }
