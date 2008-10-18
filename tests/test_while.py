@@ -55,4 +55,22 @@ puts 42""", """0
 42
 """)
 
+    def test_next(self):
+        self._test("""
+i = 0
+while i < 10
+    i = i + 1
+    if i < 5
+        next
+    end
+    puts i
+end
+puts 42""", """5
+6
+7
+8
+9
+42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
