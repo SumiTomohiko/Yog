@@ -36,6 +36,7 @@ struct AstVisitor {
     VisitNode visit_except;
     VisitNode visit_while;
     VisitNode visit_if;
+    VisitNode visit_break;
 };
 
 struct Var2IndexData {
@@ -58,6 +59,8 @@ struct CompileData {
     YogInst* last_inst;
     YogExcLabelTableEntry* exc_tbl;
     YogExcLabelTableEntry* exc_tbl_last;
+    struct YogInst* label_while_start;
+    struct YogInst* label_while_end;
 };
 
 typedef struct CompileData CompileData;
@@ -187,6 +190,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     case NODE_IF:
         VISIT(visit_if);
         break;
+    case NODE_BREAK:
+        VISIT(visit_break);
+        break;
     default:
         Yog_assert(env, FALSE, "Unknown node type.");
         break;
@@ -302,6 +308,12 @@ var2index_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
+var2index_visit_break(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_EXPR(node), arg);
+}
+
+static void 
 var2index_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_stmts = visit_stmts;
@@ -317,6 +329,7 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_except = var2index_visit_except;
     visitor->visit_while = var2index_visit_while;
     visitor->visit_if = var2index_visit_if;
+    visitor->visit_break = var2index_visit_break;
 }
 
 static YogTable*
@@ -627,6 +640,8 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     data.last_inst = anchor;
     data.exc_tbl = YogExcLabelTableEntry_new(env);
     data.exc_tbl_last = data.exc_tbl;
+    data.label_while_start = NULL;
+    data.label_while_end = NULL;
 
     visitor->visit_stmts(env, visitor, stmts, &data);
     set_label_pos(env, anchor->next);
@@ -907,12 +922,20 @@ compile_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     YogInst* while_start = label_new(env);
     YogInst* while_end = label_new(env);
 
+    YogInst* label_while_start_prev = data->label_while_start;
+    YogInst* label_while_end_prev = data->label_while_end;
+    data->label_while_start = while_start;
+    data->label_while_end = while_end;
+
     append_inst(data, while_start);
     visit_node(env, visitor, NODE_TEST(node), arg);
     CompileData_append_jump_if_false(env, data, while_end);
     visitor->visit_stmts(env, visitor, NODE_STMTS(node), arg);
     CompileData_append_jump(env, data, while_start);
     append_inst(data, while_end);
+
+    data->label_while_end = label_while_end_prev;
+    data->label_while_start = label_while_start_prev;
 }
 
 static void 
@@ -933,6 +956,21 @@ compile_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
+compile_visit_break(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    CompileData* data = arg;
+
+    YogNode* expr = NODE_EXPR(node);
+    if (data->label_while_start != NULL) {
+        Yog_assert(env, expr == NULL, "Can't return value with break in while.");
+        CompileData_append_jump(env, data, data->label_while_end);
+    }
+    else {
+        /* TODO */
+    }
+}
+
+static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_stmts = visit_stmts;
@@ -948,6 +986,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_except = NULL;
     visitor->visit_while = compile_visit_while;
     visitor->visit_if = compile_visit_if;
+    visitor->visit_break = compile_visit_break;
 }
 
 YogCode* 
