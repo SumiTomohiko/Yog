@@ -18,9 +18,11 @@ class TestCase(object):
             proc = Popen(["./yog", file], stdout=PIPE, stderr=PIPE)
             proc.wait()
             if stdout is not None:
-                assert stdout == proc.stdout.read()
+                out = proc.stdout.read()
+                assert stdout == out
             if stderr is not None:
-                assert stderr == proc.stderr.read()
+                err == proc.stderr.read()
+                assert stderr == err
             if status is not None:
                 assert status == proc.returncode
         finally:

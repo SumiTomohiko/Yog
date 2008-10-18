@@ -37,6 +37,7 @@ struct AstVisitor {
     VisitNode visit_while;
     VisitNode visit_if;
     VisitNode visit_break;
+    VisitNode visit_next;
 };
 
 struct Var2IndexData {
@@ -193,6 +194,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     case NODE_BREAK:
         VISIT(visit_break);
         break;
+    case NODE_NEXT:
+        VISIT(visit_next);
+        break;
     default:
         Yog_assert(env, FALSE, "Unknown node type.");
         break;
@@ -330,6 +334,7 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_while = var2index_visit_while;
     visitor->visit_if = var2index_visit_if;
     visitor->visit_break = var2index_visit_break;
+    visitor->visit_next = var2index_visit_break;
 }
 
 static YogTable*
@@ -956,18 +961,32 @@ compile_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
-compile_visit_break(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+compile_while_jump(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg, YogInst* jump_to) 
 {
     CompileData* data = arg;
 
     YogNode* expr = NODE_EXPR(node);
     if (data->label_while_start != NULL) {
-        Yog_assert(env, expr == NULL, "Can't return value with break in while.");
-        CompileData_append_jump(env, data, data->label_while_end);
+        Yog_assert(env, expr == NULL, "Can't return value with break/next.");
+        CompileData_append_jump(env, data, jump_to);
     }
     else {
         /* TODO */
     }
+}
+
+static void 
+compile_visit_break(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    CompileData* data = arg;
+    compile_while_jump(env, visitor, node, arg, data->label_while_end);
+}
+
+static void 
+compile_visit_next(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    CompileData* data = arg;
+    compile_while_jump(env, visitor, node, arg, data->label_while_start);
 }
 
 static void 
@@ -987,6 +1006,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_while = compile_visit_while;
     visitor->visit_if = compile_visit_if;
     visitor->visit_break = compile_visit_break;
+    visitor->visit_next = compile_visit_next;
 }
 
 YogCode* 
