@@ -31,4 +31,28 @@ while i < 0
     i = i + 1
 end""", "")
 
+    def test_break(self):
+        self._test("""
+i = 0
+while i < 100
+    if 10 < i
+        break
+    end
+    puts i
+    i = i + 1
+end
+puts 42""", """0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
