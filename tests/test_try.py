@@ -42,4 +42,64 @@ end
 43
 """)
 
+    def test_next_in_finally1(self):
+        self._test("""
+i = 0
+while i < 10
+    i = i + 1
+    try
+        next
+    finally
+        puts 42
+    end
+end
+""", """42
+42
+42
+42
+42
+42
+42
+42
+42
+42
+""")
+
+    def test_next_in_finally2(self):
+        self._test("""
+i = 0
+while i < 10
+    i = i + 1
+    try
+        try
+            next
+        finally
+            puts 42
+        end
+    finally
+        puts 43
+    end
+end
+""", """42
+43
+42
+43
+42
+43
+42
+43
+42
+43
+42
+43
+42
+43
+42
+43
+42
+43
+42
+43
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
