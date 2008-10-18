@@ -2,7 +2,7 @@
 
 from tests import TestCase
 
-class TestException(TestCase):
+class TestTry(TestCase):
 
     def test_except(self):
         self._test("""
