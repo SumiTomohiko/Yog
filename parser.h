@@ -34,20 +34,22 @@
      COMMA = 260,
      COMP_OP = 261,
      DEF = 262,
-     ELSE = 263,
-     END = 264,
-     EQUAL = 265,
-     EXCEPT = 266,
-     FINALLY = 267,
-     LPAR = 268,
-     NAME = 269,
-     NEWLINE = 270,
-     NEXT = 271,
-     NUMBER = 272,
-     PLUS = 273,
-     RPAR = 274,
-     TRY = 275,
-     WHILE = 276
+     ELIF = 263,
+     ELSE = 264,
+     END = 265,
+     EQUAL = 266,
+     EXCEPT = 267,
+     FINALLY = 268,
+     IF = 269,
+     LPAR = 270,
+     NAME = 271,
+     NEWLINE = 272,
+     NEXT = 273,
+     NUMBER = 274,
+     PLUS = 275,
+     RPAR = 276,
+     TRY = 277,
+     WHILE = 278
    };
 #endif
 /* Tokens.  */
@@ -56,26 +58,28 @@
 #define COMMA 260
 #define COMP_OP 261
 #define DEF 262
-#define ELSE 263
-#define END 264
-#define EQUAL 265
-#define EXCEPT 266
-#define FINALLY 267
-#define LPAR 268
-#define NAME 269
-#define NEWLINE 270
-#define NEXT 271
-#define NUMBER 272
-#define PLUS 273
-#define RPAR 274
-#define TRY 275
-#define WHILE 276
+#define ELIF 263
+#define ELSE 264
+#define END 265
+#define EQUAL 266
+#define EXCEPT 267
+#define FINALLY 268
+#define IF 269
+#define LPAR 270
+#define NAME 271
+#define NEWLINE 272
+#define NEXT 273
+#define NUMBER 274
+#define PLUS 275
+#define RPAR 276
+#define TRY 277
+#define WHILE 278
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 185 "parser.y"
+#line 192 "parser.y"
 typedef union YYSTYPE {
     YogArray* array;
     YogNode* node;
@@ -83,7 +87,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 87 "parser.h"
+#line 91 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

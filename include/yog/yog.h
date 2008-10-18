@@ -174,17 +174,18 @@ typedef struct YogArray YogArray;
 
 enum YogNodeType {
     NODE_ASSIGN, 
-    NODE_VARIABLE, 
-    NODE_LITERAL, 
-    NODE_METHOD_CALL, 
+    NODE_BREAK, 
     NODE_COMMAND_CALL, 
+    NODE_EXCEPT, 
     NODE_FUNC_CALL, 
     NODE_FUNC_DEF, 
-    NODE_TRY, 
-    NODE_EXCEPT, 
-    NODE_WHILE, 
-    NODE_BREAK, 
+    NODE_IF, 
+    NODE_LITERAL, 
+    NODE_METHOD_CALL, 
     NODE_NEXT, 
+    NODE_TRY, 
+    NODE_VARIABLE, 
+    NODE_WHILE, 
 };
 
 typedef enum YogNodeType YogNodeType;
@@ -239,6 +240,10 @@ struct YogNode {
 #define NODE_TEST(node)     (node)->u1.nd
 
 #define NODE_EXPR(node)     (node)->u1.nd
+
+#define NODE_IF_TEST(node)  (node)->u1.nd
+#define NODE_IF_STMTS(node) (node)->u2.array
+#define NODE_IF_TAIL(node)  (node)->u3.array
 
 typedef struct YogNode YogNode;
 

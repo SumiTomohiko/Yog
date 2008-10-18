@@ -178,6 +178,13 @@ YogNode_new(YogEnv* env, YogNodeType type)
     NODE_ARGS(node) = args; \
 } while (0)
 
+#define IF_NEW(node, expr, stmts, tail) do { \
+    node = NODE_NEW(NODE_IF); \
+    NODE_IF_TEST(node) = expr; \
+    NODE_IF_STMTS(node) = stmts; \
+    NODE_IF_TAIL(node) = tail; \
+} while (0)
+
 /* XXX: To avoid warning. Better way? */
 int yylex(void);
 %}
@@ -194,11 +201,14 @@ int yylex(void);
 %token COMMA
 %token COMP_OP
 %token DEF
+%token ELIF
+%token ELSE
 %token ELSE
 %token END
 %token EQUAL
 %token EXCEPT
 %token FINALLY
+%token IF
 %token LPAR
 %token NAME
 %token NEWLINE
@@ -210,8 +220,10 @@ int yylex(void);
 %token WHILE
 
 %type<array> args
+%type<array> else_opt
 %type<array> excepts
 %type<array> finally_opt
+%type<array> if_tail
 %type<array> module
 %type<array> params
 %type<array> stmts
@@ -285,7 +297,24 @@ stmt    : /* empty */ {
         | NEXT expr {
             NEXT_NEW($$, $2);
         }
+        | IF expr stmts if_tail END {
+            IF_NEW($$, $2, $3, $4);
+        }
         ;
+if_tail : else_opt
+        | ELIF expr stmts if_tail {
+            YogNode* node = NULL;
+            IF_NEW(node, $2, $3, $4);
+            OBJ_ARRAY_NEW($$, node);
+        }
+        ;
+else_opt    : /* empty */ {
+                $$ = NULL;
+            }
+            | ELSE stmts {
+                $$ = $2;
+            }
+            ;
 func_def    : DEF NAME LPAR params RPAR stmts END {
                 FUNC_DEF_NEW($$, $2, $4, $6);
             }

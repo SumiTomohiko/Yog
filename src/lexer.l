@@ -82,10 +82,12 @@ intern(const char* s)
 <INITIAL>"as"       return AS;
 <INITIAL>"break"    return BREAK;
 <INITIAL>"def"      return DEF;
+<INITIAL>"elif"     return ELIF;
 <INITIAL>"else"     return ELSE;
 <INITIAL>"end"      return END;
 <INITIAL>"except"   return EXCEPT;
 <INITIAL>"finally"  return FINALLY;
+<INITIAL>"if"       return IF;
 <INITIAL>"next"     return NEXT;
 <INITIAL>"try"      return TRY;
 <INITIAL>"while"    return WHILE;
