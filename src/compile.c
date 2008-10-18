@@ -53,6 +53,13 @@ enum Context {
 
 typedef enum Context Context;
 
+struct FinallyList {
+    struct FinallyList* next;
+    struct YogArray* nodes;
+};
+
+typedef struct FinallyList FinallyList;
+
 struct CompileData {
     enum Context ctx;
     YogTable* var2index;
@@ -62,6 +69,7 @@ struct CompileData {
     YogExcLabelTableEntry* exc_tbl_last;
     struct YogInst* label_while_start;
     struct YogInst* label_while_end;
+    struct FinallyList* finally_list;
 };
 
 typedef struct CompileData CompileData;
@@ -647,6 +655,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     data.exc_tbl_last = data.exc_tbl;
     data.label_while_start = NULL;
     data.label_while_end = NULL;
+    data.finally_list = NULL;
 
     visitor->visit_stmts(env, visitor, stmts, &data);
     set_label_pos(env, anchor->next);
@@ -804,6 +813,14 @@ compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     YogInst* label_finally_error_start = NULL;
     YogInst* label_try_stmt_end = label_new(env);
 
+    YogArray* node_finally = NODE_FINALLY(node);
+    if (node_finally != NULL) {
+        FinallyList finally_list;
+        finally_list.next = data->finally_list;
+        finally_list.nodes = node_finally;
+        data->finally_list = &finally_list;
+    }
+
     append_inst(data, label_try_start);
     visitor->visit_stmts(env, visitor, NODE_TRY(node), arg);
     append_inst(data, label_try_end);
@@ -817,7 +834,6 @@ compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         append_inst(data, label_else_end);
     }
 
-    YogArray* node_finally = NODE_FINALLY(node);
     if (node_finally != NULL) {
         label_finally_normal_start = label_new(env);
         append_inst(data, label_finally_normal_start);
@@ -883,6 +899,10 @@ compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 #undef INTERN
 
     append_inst(data, label_try_stmt_end);
+
+    if (node_finally != NULL) {
+        data->finally_list = data->finally_list->next;
+    }
 
     if (label_excepts_start != NULL) {
         YogExcLabelTableEntry* entry = YogExcLabelTableEntry_new(env);
@@ -968,6 +988,11 @@ compile_while_jump(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg, Y
     YogNode* expr = NODE_EXPR(node);
     if (data->label_while_start != NULL) {
         Yog_assert(env, expr == NULL, "Can't return value with break/next.");
+        FinallyList* finally_list = data->finally_list;
+        while (finally_list != NULL) {
+            visitor->visit_stmts(env, visitor, finally_list->nodes, arg);
+            finally_list = finally_list->next;
+        }
         CompileData_append_jump(env, data, jump_to);
     }
     else {
