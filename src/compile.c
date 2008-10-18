@@ -35,6 +35,7 @@ struct AstVisitor {
     VisitNode visit_try;
     VisitNode visit_except;
     VisitNode visit_while;
+    VisitNode visit_if;
 };
 
 struct Var2IndexData {
@@ -183,6 +184,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     case NODE_WHILE:
         VISIT(visit_while);
         break;
+    case NODE_IF:
+        VISIT(visit_if);
+        break;
     default:
         Yog_assert(env, FALSE, "Unknown node type.");
         break;
@@ -290,6 +294,14 @@ var2index_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
 }
 
 static void 
+var2index_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_IF_TEST(node), arg);
+    visitor->visit_stmts(env, visitor, NODE_IF_STMTS(node), arg);
+    visitor->visit_stmts(env, visitor, NODE_IF_TAIL(node), arg);
+}
+
+static void 
 var2index_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_stmts = visit_stmts;
@@ -304,6 +316,7 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_try = generic_visit_try;
     visitor->visit_except = var2index_visit_except;
     visitor->visit_while = var2index_visit_while;
+    visitor->visit_if = var2index_visit_if;
 }
 
 static YogTable*
@@ -903,6 +916,23 @@ compile_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
+compile_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    CompileData* data = arg;
+
+    YogInst* label_tail_start = label_new(env);
+    YogInst* label_stmt_end = label_new(env);
+
+    visit_node(env, visitor, NODE_IF_TEST(node), arg);
+    CompileData_append_jump_if_false(env, data, label_tail_start);
+    visitor->visit_stmts(env, visitor, NODE_IF_STMTS(node), arg);
+    CompileData_append_jump(env, data, label_stmt_end);
+    append_inst(data, label_tail_start);
+    visitor->visit_stmts(env, visitor, NODE_IF_TAIL(node), arg);
+    append_inst(data, label_stmt_end);
+}
+
+static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_stmts = visit_stmts;
@@ -917,6 +947,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_try = compile_visit_try;
     visitor->visit_except = NULL;
     visitor->visit_while = compile_visit_while;
+    visitor->visit_if = compile_visit_if;
 }
 
 YogCode* 
