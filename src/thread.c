@@ -35,6 +35,10 @@ YogThread_call_command(YogEnv* env, ID command, unsigned int argc, YogVal* args)
 void 
 YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code) 
 {
+#if 0
+    YogCode_dump(env, code);
+#endif
+
     YogFrame* frame = YogFrame_new(env);
     PKG_VARS(frame) = YogTable_new_symbol_table(env);
     frame->stack = YogValArray_new(env, code->stack_size);

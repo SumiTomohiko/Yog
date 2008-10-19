@@ -1,0 +1,17 @@
+#include <stdint.h>
+#include "yog/opcodes.h"
+#include "yog/yog.h"
+
+unsigned int 
+Yog_get_inst_size(OpCode op)
+{
+    unsigned int inst2size[] = {
+${inst2size}
+    };
+
+    return inst2size[op];
+}
+
+/**
+ * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
+ */

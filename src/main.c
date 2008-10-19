@@ -21,6 +21,7 @@ main(int argc, char* argv[])
     YogArray_new(&env);
 #endif
 
+    Yog_reset_lineno();
     Yog_set_parsing_env(&env);
     if (1 < argc) {
         yyin = fopen(argv[1], "r");

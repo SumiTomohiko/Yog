@@ -50,6 +50,20 @@ my_yyinput(char *buf, int max_size)
 }
 #endif
 
+static unsigned int lineno = 1;
+
+void 
+Yog_reset_lineno()
+{
+    lineno = 1;
+}
+
+unsigned int
+Yog_get_lineno() 
+{
+    return lineno;
+}
+
 static int
 yywrap()
 {
@@ -78,7 +92,6 @@ intern(const char* s)
 <INITIAL>")"        return RPAR;
 <INITIAL>","        return COMMA;
 <INITIAL>"="        return EQUAL;
-<INITIAL>"\n"       return NEWLINE;
 <INITIAL>"as"       return AS;
 <INITIAL>"break"    return BREAK;
 <INITIAL>"def"      return DEF;
@@ -91,6 +104,10 @@ intern(const char* s)
 <INITIAL>"next"     return NEXT;
 <INITIAL>"try"      return TRY;
 <INITIAL>"while"    return WHILE;
+<INITIAL>"\n"       {
+    lineno++;
+    return NEWLINE;
+}
 <INITIAL>"+"        {
     RETURN_NAME(PLUS);
 }

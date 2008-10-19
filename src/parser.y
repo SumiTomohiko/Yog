@@ -89,6 +89,7 @@ static YogNode*
 YogNode_new(YogEnv* env, YogNodeType type) 
 {
     YogNode* node = ALLOC_OBJ(env, gc_children, YogNode);
+    node->lineno = Yog_get_lineno();
     node->type = type;
 
     return node;

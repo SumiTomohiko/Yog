@@ -1,4 +1,22 @@
+#include <stdio.h>
 #include "yog/yog.h"
+
+#include "src/code.inc"
+
+void 
+YogCode_dump(YogEnv* env, YogCode* code) 
+{
+    pc_t pc = 0;
+    while (pc < code->insts->size) {
+        printf("%d", pc);
+
+        OpCode op = code->insts->items[pc];
+        printf(" %s", get_op_name(op));
+
+        printf("\n");
+        pc += Yog_get_inst_size(op);
+    }
+}
 
 static void 
 gc_children(YogEnv* env, void* ptr, DoGc do_gc) 
@@ -20,6 +38,8 @@ YogCode_new(YogEnv* env)
     code->insts = NULL;
     code->exc_tbl_size = 0;
     code->exc_tbl = NULL;
+    code->lineno_tbl_size = 0;
+    code->lineno_tbl = NULL;
 
     return code;
 }

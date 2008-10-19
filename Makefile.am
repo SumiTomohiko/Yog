@@ -8,6 +8,7 @@ yog_SOURCES = src/array.c \
 	src/error.c \
 	src/frame.c \
 	src/function.c \
+	src/inst.c \
 	src/int.c \
 	src/klass.c \
 	src/lexer.l \

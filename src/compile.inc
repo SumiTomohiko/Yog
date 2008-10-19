@@ -3,6 +3,7 @@
  * DO NOT TOUCH!!
  */
 
+
 static void 
 CompileData_append_load_special(YogEnv* env, CompileData* data, ID id)
 {
@@ -13,6 +14,8 @@ CompileData_append_load_special(YogEnv* env, CompileData* data, ID id)
     LOAD_SPECIAL_ID(inst) = id;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -25,6 +28,8 @@ CompileData_append_push_const(YogEnv* env, CompileData* data, uint8_t index)
     PUSH_CONST_INDEX(inst) = index;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -38,6 +43,8 @@ CompileData_append_call_method(YogEnv* env, CompileData* data, ID method, uint8_
     CALL_METHOD_ARGC(inst) = argc;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -50,6 +57,8 @@ CompileData_append_store_pkg(YogEnv* env, CompileData* data, ID id)
     STORE_PKG_ID(inst) = id;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -62,6 +71,8 @@ CompileData_append_store_local(YogEnv* env, CompileData* data, uint8_t index)
     STORE_LOCAL_INDEX(inst) = index;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -75,6 +86,8 @@ CompileData_append_call_command(YogEnv* env, CompileData* data, ID command, uint
     CALL_COMMAND_ARGC(inst) = argc;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -86,6 +99,8 @@ CompileData_append_make_func(YogEnv* env, CompileData* data)
 
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -98,6 +113,8 @@ CompileData_append_call_func(YogEnv* env, CompileData* data, uint8_t argc)
     CALL_FUNC_ARGC(inst) = argc;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -110,6 +127,8 @@ CompileData_append_load_pkg(YogEnv* env, CompileData* data, ID id)
     LOAD_PKG_ID(inst) = id;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -122,6 +141,8 @@ CompileData_append_load_local(YogEnv* env, CompileData* data, uint8_t index)
     LOAD_LOCAL_INDEX(inst) = index;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -134,6 +155,8 @@ CompileData_append_jump(YogEnv* env, CompileData* data, struct YogInst* dest)
     JUMP_DEST(inst) = dest;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
 static void 
@@ -146,30 +169,10 @@ CompileData_append_jump_if_false(YogEnv* env, CompileData* data, struct YogInst*
     JUMP_IF_FALSE_DEST(inst) = dest;
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
-
-static unsigned int 
-get_inst_size(YogInst* inst) 
-{
-    unsigned int inst2size[] = {
-        sizeof(uint8_t) + sizeof(ID), /* load_special */
-        sizeof(uint8_t) + sizeof(uint8_t), /* push_const */
-        sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t), /* call_method */
-        sizeof(uint8_t) + sizeof(ID), /* store_pkg */
-        sizeof(uint8_t) + sizeof(uint8_t), /* store_local */
-        sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t), /* call_command */
-        sizeof(uint8_t), /* make_func */
-        sizeof(uint8_t) + sizeof(uint8_t), /* call_func */
-        sizeof(uint8_t) + sizeof(ID), /* load_pkg */
-        sizeof(uint8_t) + sizeof(uint8_t), /* load_local */
-        sizeof(uint8_t) + sizeof(pc_t), /* jump */
-        sizeof(uint8_t) + sizeof(pc_t), /* jump_if_false */
-
-    };
-
-    return inst2size[INST_OPCODE(inst)];
-}
 
 static YogBinary* 
 insts2bin(YogEnv* env, YogInst* inst) 

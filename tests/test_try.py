@@ -4,13 +4,36 @@ from tests import TestCase
 
 class TestTry(TestCase):
 
-    def test_except(self):
+    disabled = True
+
+    def test_except1(self):
         self._test("""
 try
     raise 0
 except
     puts 42
 end""", "42\n")
+
+    def test_except2(self):
+        self._test("""
+i = 0
+while i < 10
+    i = i + 1
+
+    puts i
+    try
+        try
+            break
+        except
+            puts 100
+        finally
+            raise 0
+        end
+    except
+        puts 42
+    end
+end""", """42
+""")
 
     def test_break_in_finally1(self):
         self._test("""

@@ -60,6 +60,15 @@ struct FinallyList {
 
 typedef struct FinallyList FinallyList;
 
+struct LinenoList {
+    struct LinenoList* prev;
+    struct LinenoTableEntry entry;
+};
+
+typedef struct LinenoList LinenoList;
+
+#define SET_LINENO()    set_lineno(env, data, node->lineno)
+
 struct CompileData {
     enum Context ctx;
     YogTable* var2index;
@@ -70,9 +79,37 @@ struct CompileData {
     struct YogInst* label_while_start;
     struct YogInst* label_while_end;
     struct FinallyList* finally_list;
+
+    struct LinenoList* lineno_list;
+    pc_t pc;
 };
 
 typedef struct CompileData CompileData;
+
+static void 
+gc_lineno_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    LinenoList* elem = ptr;
+    elem->prev = do_gc(env, elem->prev);
+}
+
+static void 
+set_lineno(YogEnv* env, CompileData* data, unsigned int lineno) 
+{
+    if (data->lineno_list != NULL) {
+        if (data->lineno_list->entry.lineno == lineno) {
+            data->lineno_list->entry.pc_to = data->pc;
+            return;
+        }
+    }
+
+    LinenoList* elem = ALLOC_OBJ(env, gc_lineno_children, LinenoList);
+    elem->entry.pc_from = data->pc;
+    elem->entry.pc_to = data->pc;
+    elem->entry.lineno = lineno;
+    elem->prev = data->lineno_list;
+    data->lineno_list = elem;
+}
 
 static void 
 gc_inst_children(YogEnv* env, void* ptr, DoGc do_gc) 
@@ -147,6 +184,10 @@ YogExcLabelTableEntry_new(YogEnv* env)
 static void 
 append_inst(CompileData* data, YogInst* inst) 
 {
+    if (inst->type == INST_LABEL) {
+        LABEL_POS(inst) = data->pc;
+    }
+
     data->last_inst->next = inst;
     data->last_inst = inst;
 }
@@ -373,6 +414,7 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     if (!YogTable_lookup(env, data->var2index, symbol, &index)) {
         Yog_assert(env, FALSE, "Can't find assigned symbol.");
     }
+    SET_LINENO();
     CompileData_append_store_pkg(env, data, YOGVAL_INT(index));
 }
 
@@ -385,6 +427,7 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
     unsigned int argc = YogArray_size(env, NODE_ARGS(node));
     Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for method call.");
     CompileData* data = arg;
+    SET_LINENO();
     CompileData_append_call_method(env, data, NODE_METHOD(node), argc);
 }
 
@@ -414,6 +457,7 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
     YogVal val = NODE_VAL(node);
     int index = register_const(env, data, val);
 
+    SET_LINENO();
     CompileData_append_push_const(env, data, index);
 }
 
@@ -425,6 +469,7 @@ compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void
     unsigned int argc = YogArray_size(env, NODE_ARGS(node));
     Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for command call.");
     CompileData* data = arg;
+    SET_LINENO();
     CompileData_append_call_command(env, data, NODE_COMMAND(node), argc);
 }
 
@@ -587,31 +632,6 @@ table2array(YogEnv* env, YogTable* table)
     }
 }
 
-void 
-set_label_pos(YogEnv* env, YogInst* first_inst) 
-{
-    pc_t pc = 0;
-    YogInst* inst = first_inst;
-    while (inst != NULL) {
-        switch (inst->type) {
-            case INST_OP:
-                pc += get_inst_size(inst);
-                break;
-            case INST_LABEL:
-                LABEL_POS(inst) = pc;
-                break;
-            case INST_ANCHOR:
-                Yog_assert(env, FALSE, "Instruction is anchor.");
-                break;
-            default:
-                Yog_assert(env, FALSE, "Unknown inst type.");
-                break;
-        }
-
-        inst = inst->next;
-    }
-}
-
 static void 
 make_exc_tbl(YogEnv* env, YogCode* code, CompileData* data)
 {
@@ -642,6 +662,30 @@ make_exc_tbl(YogEnv* env, YogCode* code, CompileData* data)
     }
 }
 
+static void 
+make_lineno_tbl(YogEnv* env, YogCode* code, LinenoList* list)
+{
+    unsigned int size = 0;
+    LinenoList* elem = list;
+    while (elem != NULL) {
+        size++;
+        elem = elem->prev;
+    }
+
+    LinenoTableEntry* tbl = ALLOC_OBJ_SIZE(env, NULL, sizeof(LinenoTableEntry) * size);
+    unsigned int i = size - 1;
+    elem = list;
+    while (elem != NULL) {
+        LinenoTableEntry* entry = &tbl[i];
+        entry->pc_from = elem->entry.pc_from;
+        entry->pc_to = elem->entry.pc_to;
+        entry->lineno = elem->entry.lineno;
+
+        elem = elem->prev;
+        i--;
+    }
+}
+
 static YogCode* 
 compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2index, Context ctx) 
 {
@@ -656,9 +700,10 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     data.label_while_start = NULL;
     data.label_while_end = NULL;
     data.finally_list = NULL;
+    data.lineno_list = NULL;
+    data.pc = 0;
 
     visitor->visit_stmts(env, visitor, stmts, &data);
-    set_label_pos(env, anchor->next);
     YogBinary* bin = insts2bin(env, anchor->next);
 
     YogCode* code = YogCode_new(env);
@@ -672,6 +717,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     code->consts = table2array(env, data.const2index);
     code->insts = bin->body;
     make_exc_tbl(env, code, &data);
+    make_lineno_tbl(env, code, data.lineno_list);
 
     return code;
 }
@@ -739,6 +785,7 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 
     CompileData_append_push_const(env, data, const_index);
     CompileData_append_make_func(env, data);
+    SET_LINENO();
     CompileData_append_store_pkg(env, data, var_index);
 }
 
@@ -755,6 +802,7 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* a
     }
 
     CompileData* data = arg;
+    SET_LINENO();
     CompileData_append_call_func(env, data, argc);
 }
 
@@ -764,6 +812,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     CompileData* data = arg;
     ID id = NODE_ID(node);
     int index = lookup_var_index(env, data->var2index, id);
+    SET_LINENO();
     switch (data->ctx) {
     case CTX_PKG:
         CompileData_append_load_pkg(env, data, index);
@@ -993,6 +1042,7 @@ compile_while_jump(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg, Y
             visitor->visit_stmts(env, visitor, finally_list->nodes, arg);
             finally_list = finally_list->next;
         }
+        SET_LINENO();
         CompileData_append_jump(env, data, jump_to);
     }
     else {

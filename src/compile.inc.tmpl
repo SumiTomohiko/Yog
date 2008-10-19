@@ -1,14 +1,5 @@
+
 ${compile_data}
-
-static unsigned int 
-get_inst_size(YogInst* inst) 
-{
-    unsigned int inst2size[] = {
-${inst2size}
-    };
-
-    return inst2size[INST_OPCODE(inst)];
-}
 
 static YogBinary* 
 insts2bin(YogEnv* env, YogInst* inst) 

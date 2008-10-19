@@ -5,6 +5,7 @@
 #include <setjmp.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "yog/opcodes.h"
 
 #define BOOL    int
 #define FALSE   (0)
@@ -192,6 +193,7 @@ typedef enum YogNodeType YogNodeType;
 
 struct YogNode {
     YogNodeType type;
+    unsigned int lineno;
     union {
         ID id;
         YogVal val;
@@ -315,14 +317,26 @@ struct YogExcTbl {
 
 typedef struct YogExcTbl YogExcTbl;
 
+struct LinenoTableEntry {
+    pc_t pc_from;
+    pc_t pc_to;
+    unsigned int lineno;
+};
+
+typedef struct LinenoTableEntry LinenoTableEntry;
+
 struct YogCode {
     unsigned int argc;
     unsigned int stack_size;
     unsigned int local_vars_count;
     struct YogValArray* consts;
     struct YogByteArray* insts;
+
     unsigned int exc_tbl_size;
     struct YogExcTbl* exc_tbl;
+
+    unsigned int lineno_tbl_size;
+    struct LinenoTableEntry* lineno_tbl;
 };
 
 typedef struct YogCode YogCode;
@@ -452,10 +466,10 @@ YogEnv* Yog_get_parsing_env();
 YogArray* Yog_get_parsed_tree();
 
 /* src/compile.c */
-void set_label_pos(YogEnv*, YogInst*);
 YogCode* Yog_compile_module(YogEnv*, YogArray*);
 
 /* src/code.c */
+void YogCode_dump(YogEnv*, YogCode*);
 YogCode* YogCode_new(YogEnv*);
 
 /* src/error.c */
@@ -463,6 +477,10 @@ void Yog_assert(YogEnv*, BOOL, const char*);
 
 /* src/frame.c */
 YogFrame* YogFrame_new(YogEnv*);
+
+/* src/lexer.l */
+void Yog_reset_lineno();
+unsigned int Yog_get_lineno();
 
 /* src/st.c */
 BOOL YogTable_lookup(YogEnv*, YogTable*, YogVal, YogVal*);
@@ -478,6 +496,9 @@ YogTable* YogTable_new_string_table(YogEnv*);
 BOOL YogTable_lookup_str(YogEnv*, YogTable*, const char*, YogVal*);
 YogTable* YogTable_new_val_table(YogEnv*);
 int YogTable_size(YogEnv*, YogTable*);
+
+/* src/inst.c */
+unsigned int Yog_get_inst_size(OpCode);
 
 /* src/builtins.c */
 YogObj* Yog_bltins_new(YogEnv*);
@@ -499,10 +520,12 @@ YogString* YogString_new_format(YogEnv*, const char*, ...);
 
 /* $PROTOTYPE_END$ */
 
+#define ALLOC_OBJ_SIZE(env, gc_children, size) \
+    YogVm_alloc(env, gc_children, size)
 #define ALLOC_OBJ(env, gc_children, type) \
-    YogVm_alloc(env, gc_children, sizeof(type));
+    ALLOC_OBJ_SIZE(env, gc_children, sizeof(type))
 #define ALLOC_OBJ_ITEM(env, gc_children, type, size, item_type) \
-    YogVm_alloc(env, gc_children, sizeof(type) + size * sizeof(item_type));
+    ALLOC_OBJ_SIZE(env, gc_children, sizeof(type) + size * sizeof(item_type))
 
 #define JMP_RAISE   (1)
 

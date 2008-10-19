@@ -263,6 +263,21 @@ class CodeGenerator(object):
             name = name[:- len(suffix)]
         return name
 
+    def gen_inst_c(self, inst_c, inst_c_tmpl):
+        inst2size = StringIO()
+        for inst in self.insts:
+            inst2size.write(" " * 8 + "sizeof(uint8_t)")
+            for i, operand in enumerate(inst.operands):
+                inst2size.write(
+                        " + sizeof(%(type)s)" % { "type": operand.type })
+            inst2size.write(", /* %(name)s */\n" % { "name": inst.name })
+
+        s = self.substitute_template(
+                inst_c_tmpl, { "inst2size": inst2size.getvalue() })
+        with open(inst_c, "w") as f:
+            f.write(self.make_attention())
+            f.write(s)
+
     def gen_compile_inc(self, compile_inc, compile_inc_tmpl):
         compile_data = StringIO()
         for inst in self.insts:
@@ -283,6 +298,8 @@ CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.n
             compile_data.write("""
 
     append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 """)
 
@@ -302,109 +319,27 @@ CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.n
                     break;
                 }""")
 
-        inst2size = StringIO()
-        for inst in self.insts:
-            inst2size.write(" " * 8 + "sizeof(uint8_t)")
-            for i, operand in enumerate(inst.operands):
-                inst2size.write(" + sizeof(%(type)s)" % { "type": operand.type })
-            inst2size.write(", /* %(name)s */\n" % { "name": inst.name })
-
         s = self.substitute_template(
                 compile_inc_tmpl, 
                 { "compile_data": compile_data.getvalue(), 
-                    "insts2bin": insts2bin.getvalue(), 
-                    "inst2size": inst2size.getvalue() })
+                    "insts2bin": insts2bin.getvalue() })
         with open(compile_inc, "w") as f:
             f.write(self.make_attention())
             f.write(s)
 
-    def gen_code_inc(self, code_inc, types):
-        inc = StringIO()
+    def tmpl2file(self, tmpl, kw, filename):
+        s = self.substitute_template(tmpl, kw)
+        with open(filename, "w") as f:
+            f.write(self.make_attention())
+            f.write(s)
+
+    def gen_code_inc(self, code_inc, code_inc_tmpl):
+        op_names = StringIO()
         for inst in self.insts:
-            name = inst.name.upper()
-            inc.write("""
-    case INST(%(name)s):
-        {
-""" % { "name": name })
-            inc.write("""
-            snprintf(buffer, sizeof(buffer), "%%s(%%d)", "%(name)s", op);
-            YogString_append(vm, pp, buffer);
-            pc += sizeof(inst_t);
-""" % { "name": name })
-            for operand in inst.operands:
-                inc.write("""
-            assert(pc < YogByteArray_size(env, code->ops));
-            %(type)s %(name)s = *((%(type)s*)&code->ops->ptr[PC]);
-            pc += sizeof(%(type)s);
-""" % { "type": operand.type, "name": operand.name })
-
-                type_ = operand.type
-                while True:
-                    if type_ == "uint8_t":
-                        format = "%u"
-                        break
-                    elif type_ == "int32_t":
-                        format = "%d"
-                        break
-                    elif type_ == "unsigned long":
-                        format = "%lu"
-                        break
-                    elif type_ == "long":
-                        format = "%ld"
-                        break
-                    type_ = types[type_]
-                inc.write("""
-            snprintf(buffer, sizeof(buffer), " %(format)s", %(name)s);
-            YogString_append(vm, pp, buffer);
-""" % { "format": format, "name": operand.name })
-
-                if operand.type == "ID":
-                    inc.write("""
-            st_data_t data;
-            if (st_lookup(vm->symbols.id2name, %(name)s, &data)) {
-                const char* s = (const char*)data;
-                snprintf(buffer, sizeof(buffer), "(%%s)", s);
-                YogString_append(vm, pp, buffer);
-            } 
-            else {
-                assert(FALSE);
-            }
-""" % { "name": operand.name })
-                elif operand.type == "offset_t":
-                    inc.write("""
-            snprintf(buffer, sizeof(buffer), "(%%ld)", %(name)s + pc - sizeof(inst_t) - sizeof(offset_t));
-            YogString_append(vm, pp, buffer);
-""" % { "name": operand.name })
-
-            if name == "PUSH_CONST":
-                inc.write("""
-            YogString* str = YogValue_to_pp(vm, NULL, code->consts->ptr[index]);
-            snprintf(buffer, sizeof(buffer), "(%s)", str->ptr);
-            YogString_append(vm, pp, buffer);
-""")
-
-            inc.write("""
-        }
-        break;
-""")
-
-        inc.write(self.get_c_footer())
-        self.write_file(code_inc, inc.getvalue())
-
-    def get_types(self, yog_h):
-        types = {}
-        fp = open(yog_h)
-        try:
-            for line in fp:
-                line = line.strip()
-                if line.startswith("typedef "):
-                    keywords = line.split()
-                    type_ = keywords[-1][:-1]
-                    orig = " ".join(keywords[1:-1])
-                    types[type_] = orig
-        finally:
-            fp.close()
-        return types
+            op_names.write("""
+        "%(name)s", """ % { "name": inst.name.upper() })
+        kw = { "op_names": op_names.getvalue() }
+        self.tmpl2file(code_inc_tmpl, kw, code_inc)
 
     def type_name2data_type(self, type):
         if type == "pc_t":
@@ -431,14 +366,11 @@ CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.n
 #define %(inst_macro)s_%(operand_macro)s(inst) ((inst)->u.%(inst)s.%(operand)s)""" % { "inst_macro": inst.name.upper(), "operand_macro": operand.name.upper(), "inst": inst.name, "operand": operand.name })
 
         kw = { "structs": structs.getvalue(), "macros": macros.getvalue() }
-        s = self.substitute_template(inst_h_tmpl, kw)
-        with open(inst_h, "w") as f:
-            f.write(self.make_attention())
-            f.write(s)
+        self.tmpl2file(inst_h_tmpl, kw, inst_h)
 
     def do(self, def_, opcodes_h=None, opcodes_h_tmpl=None, 
             thread_inc=None, compile_inc=None, compile_inc_tmpl=None, 
-            code_inc="code.inc", yog_h="yog.h", debug=False):
+            code_inc=None, code_inc_tmpl=None, yog_h="yog.h", debug=False):
         self.open(def_)
         self.parse_def()
         if debug:
@@ -465,11 +397,14 @@ CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.n
         compile_inc_tmpl = compile_inc_tmpl or compile_inc + ".tmpl"
         self.gen_compile_inc(compile_inc, compile_inc_tmpl)
 
-        """
-        # Generate code.inc (no templates).
-        types = self.get_types(yog_h)
-        self.gen_code_inc(code_inc, types)
-        """
+        inst_c = join(src_dir, "inst.c")
+        inst_c_tmpl = inst_c + ".tmpl"
+        self.gen_inst_c(inst_c, inst_c_tmpl)
+
+        # Generate code.inc.
+        code_inc = code_inc or join(src_dir, "code.inc")
+        code_inc_tmpl = code_inc_tmpl or code_inc + ".tmpl"
+        self.gen_code_inc(code_inc, code_inc_tmpl)
 
 if __name__ == "__main__":
     CodeGenerator().do(argv[1])

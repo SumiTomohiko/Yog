@@ -377,12 +377,12 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[62] =
     {   0,
-        0,    0,   24,   23,   22,    5,    1,    2,   18,    3,
+        0,    0,   24,   23,   22,   17,    1,    2,   18,    3,
        21,   19,    4,   20,   20,   20,   20,   20,   20,   20,
-       20,   20,   20,   21,   20,    6,   20,   20,   20,   20,
-       20,   20,   14,   20,   20,   20,   20,    8,   20,   20,
-       11,   20,   20,   20,   16,   20,   20,    9,   10,   20,
-       20,   15,   20,    7,   20,   20,   17,   12,   20,   13,
+       20,   20,   20,   21,   20,    5,   20,   20,   20,   20,
+       20,   20,   13,   20,   20,   20,   20,    7,   20,   20,
+       10,   20,   20,   20,   15,   20,   20,    8,    9,   20,
+       20,   14,   20,    6,   20,   20,   16,   11,   20,   12,
         0
     } ;
 
@@ -544,6 +544,20 @@ my_yyinput(char *buf, int max_size)
 }
 #endif
 
+static unsigned int lineno = 1;
+
+void 
+Yog_reset_lineno()
+{
+    lineno = 1;
+}
+
+unsigned int
+Yog_get_lineno() 
+{
+    return lineno;
+}
+
 static int
 yywrap()
 {
@@ -566,7 +580,7 @@ intern(const char* s)
 } while (0)
 
 #define YY_SKIP_YYWRAP
-#line 570 "lexer.c"
+#line 584 "lexer.c"
 
 #define INITIAL 0
 
@@ -719,9 +733,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 76 "lexer.l"
+#line 90 "lexer.l"
 
-#line 725 "lexer.c"
+#line 739 "lexer.c"
 
 	if ( !(yy_init) )
 		{
@@ -806,114 +820,117 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 77 "lexer.l"
+#line 91 "lexer.l"
 return LPAR;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 78 "lexer.l"
+#line 92 "lexer.l"
 return RPAR;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 79 "lexer.l"
+#line 93 "lexer.l"
 return COMMA;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 80 "lexer.l"
+#line 94 "lexer.l"
 return EQUAL;
 	YY_BREAK
 case 5:
-/* rule 5 can match eol */
 YY_RULE_SETUP
-#line 81 "lexer.l"
-return NEWLINE;
+#line 95 "lexer.l"
+return AS;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 82 "lexer.l"
-return AS;
+#line 96 "lexer.l"
+return BREAK;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 83 "lexer.l"
-return BREAK;
+#line 97 "lexer.l"
+return DEF;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 84 "lexer.l"
-return DEF;
+#line 98 "lexer.l"
+return ELIF;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 85 "lexer.l"
-return ELIF;
+#line 99 "lexer.l"
+return ELSE;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 86 "lexer.l"
-return ELSE;
+#line 100 "lexer.l"
+return END;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 87 "lexer.l"
-return END;
+#line 101 "lexer.l"
+return EXCEPT;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 88 "lexer.l"
-return EXCEPT;
+#line 102 "lexer.l"
+return FINALLY;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 89 "lexer.l"
-return FINALLY;
+#line 103 "lexer.l"
+return IF;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 90 "lexer.l"
-return IF;
+#line 104 "lexer.l"
+return NEXT;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 91 "lexer.l"
-return NEXT;
+#line 105 "lexer.l"
+return TRY;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 92 "lexer.l"
-return TRY;
+#line 106 "lexer.l"
+return WHILE;
 	YY_BREAK
 case 17:
+/* rule 17 can match eol */
 YY_RULE_SETUP
-#line 93 "lexer.l"
-return WHILE;
+#line 107 "lexer.l"
+{
+    lineno++;
+    return NEWLINE;
+}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 94 "lexer.l"
+#line 111 "lexer.l"
 {
     RETURN_NAME(PLUS);
 }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 97 "lexer.l"
+#line 114 "lexer.l"
 {
     RETURN_NAME(COMP_OP);
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 100 "lexer.l"
+#line 117 "lexer.l"
 {
     RETURN_NAME(NAME);
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 103 "lexer.l"
+#line 120 "lexer.l"
 {
     YogVal val = YogVal_int(atoi(yytext));
     yylval.val = val;
@@ -922,15 +939,15 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 108 "lexer.l"
+#line 125 "lexer.l"
 
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 109 "lexer.l"
+#line 126 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 934 "lexer.c"
+#line 951 "lexer.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1928,7 +1945,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 109 "lexer.l"
+#line 126 "lexer.l"
 
 
 /**
