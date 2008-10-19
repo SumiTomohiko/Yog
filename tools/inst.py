@@ -184,7 +184,7 @@ class CodeGenerator(object):
                     raise Exception("%(name)s is used." % { "name": name })
 
                 s = """
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "");
+            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             %(type)s %(name)s = *((%(type)s*)&CODE->insts->items[PC]);
             PC += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
                 lineno += len(s.split("\n")) - 1
@@ -194,7 +194,7 @@ class CodeGenerator(object):
             for pop_value in inst.pop_values:
                 if pop_value not in declared_names:
                     s = """
-            Yog_assert(env, 0 < YogValArray_size(env, STACK), "");"""
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");"""
                     lineno += len(s.split("\n")) - 1
                     inc.write(s)
 

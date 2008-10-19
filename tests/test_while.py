@@ -31,6 +31,12 @@ while i < 0
     i = i + 1
 end""", "")
 
+    def test_while4(self):
+        self._test("""
+while i = 0
+    break
+end""", "", "")
+
     def test_break(self):
         self._test("""
 i = 0
