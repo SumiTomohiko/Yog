@@ -103,9 +103,15 @@ struct YogVal {
 #define YOGVAL_BOOL(v)      ((v).u.b)
 #define YOGVAL_OBJ(v)       ((v).u.obj)
 
-#define IS_UNDEF(v) (YOGVAL_TYPE(v) == VAL_UNDEF)
-#define IS_PTR(v)   (YOGVAL_TYPE(v) == VAL_PTR)
-#define IS_OBJ(v)   (YOGVAL_TYPE(v) == VAL_OBJ)
+#define IS_UNDEF(v)     (YOGVAL_TYPE(v) == VAL_UNDEF)
+#define IS_PTR(v)       (YOGVAL_TYPE(v) == VAL_PTR)
+#define IS_OBJ(v)       (YOGVAL_TYPE(v) == VAL_OBJ)
+#define IS_INT(v)       (YOGVAL_TYPE(v) == VAL_INT)
+#define IS_FLOAT(v)     (YOGVAL_TYPE(v) == VAL_FLOAT)
+#define IS_BOOL(v)      (YOGVAL_TYPE(v) == VAL_BOOL)
+#define IS_NIL(v)       (YOGVAL_TYPE(v) == VAL_NIL)
+#define IS_SYMBOL(v)    (YOGVAL_TYPE(v) == VAL_SYMBOL)
+#define IS_FUNC(v)      (YOGVAL_TYPE(v) == VAL_FUNC)
 
 typedef struct YogVal YogVal;
 
@@ -504,6 +510,7 @@ unsigned int Yog_get_inst_size(OpCode);
 YogObj* Yog_bltins_new(YogEnv*);
 
 /* src/vm.c */
+const char* YogVm_id2name(YogEnv*, YogVm*, ID);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
 void* YogVm_alloc(YogEnv*, GcChildren, size_t);
 void YogVm_boot(YogEnv*, YogVm*);

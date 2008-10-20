@@ -1,3 +1,4 @@
+#include <setjmp.h>
 #include "yog/opcodes.h"
 #include "yog/yog.h"
 
@@ -43,12 +44,12 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
     PKG_VARS(frame) = YogTable_new_symbol_table(env);
     frame->stack = YogValArray_new(env, code->stack_size);
 
-    pc_t pc = 0;
+    pc_t pc;
     YogJmpBuf jmpbuf;
-    int status = 0;
-    if ((status = setjmp(jmpbuf.buf)) == 0) {
+    if (setjmp(jmpbuf.buf) == 0) {
         jmpbuf.prev = th->jmp_buf_list;
         th->jmp_buf_list = &jmpbuf;
+        pc = 0;
     }
     else {
         unsigned int i = 0;

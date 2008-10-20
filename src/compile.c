@@ -685,6 +685,9 @@ make_lineno_tbl(YogEnv* env, YogCode* code, LinenoList* list)
         elem = elem->prev;
         i--;
     }
+
+    code->lineno_tbl = tbl;
+    code->lineno_tbl_size = size;
 }
 
 static YogCode* 

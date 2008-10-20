@@ -3,6 +3,19 @@
 #include <strings.h>
 #include "yog/yog.h"
 
+const char* 
+YogVm_id2name(YogEnv* env, YogVm* vm, ID id) 
+{
+    YogVal sym = YogVal_symbol(id);
+    YogVal val = YogVal_undef();
+    if (!YogTable_lookup(env, ENV_VM(env)->id2name, sym, &val)) {
+        Yog_assert(env, FALSE, "Can't find symbol.");
+    }
+
+    YogCharArray* ptr = YOGVAL_PTR(val);
+    return ptr->items;
+}
+
 ID
 YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
 {
