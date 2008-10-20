@@ -208,6 +208,18 @@
 #line 196 "src/thread.inc"
             break;
         }
+#line 199 "src/thread.inc"
+    case OP(DUP):
+        {
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
+            YogVal val = POP();
+#line 154 "src/insts.def"
+
+#line 205 "src/thread.inc"
+            PUSH(val);
+            PUSH(val);
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

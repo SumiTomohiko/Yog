@@ -23,6 +23,7 @@ enum OpCode {
     OP(LOAD_LOCAL) = 9, 
     OP(JUMP) = 10, 
     OP(JUMP_IF_FALSE) = 11, 
+    OP(DUP) = 12, 
 
 };
 

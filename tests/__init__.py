@@ -21,7 +21,7 @@ class TestCase(object):
                 out = proc.stdout.read()
                 assert stdout == out
             if stderr is not None:
-                err == proc.stderr.read()
+                err = proc.stderr.read()
                 assert stderr == err
             if status is not None:
                 assert status == proc.returncode

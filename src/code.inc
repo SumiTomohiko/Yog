@@ -20,6 +20,7 @@ get_op_name(OpCode op)
         "LOAD_LOCAL", 
         "JUMP", 
         "JUMP_IF_FALSE", 
+        "DUP", 
     };
 
     return op_names[op];

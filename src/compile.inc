@@ -173,6 +173,19 @@ CompileData_append_jump_if_false(YogEnv* env, CompileData* data, struct YogInst*
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
+static void 
+CompileData_append_dup(YogEnv* env, CompileData* data)
+{
+    YogInst* inst = inst_new(env);
+    inst->type = INST_OP;
+    INST_OPCODE(inst) = OP(DUP);
+
+
+    append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
+}
+
 
 static YogBinary* 
 insts2bin(YogEnv* env, YogInst* inst) 
@@ -256,6 +269,11 @@ insts2bin(YogEnv* env, YogInst* inst)
                 {
                     YogBinary_push_uint8(env, code, OP(JUMP_IF_FALSE));
                     YogBinary_push_pc(env, code, LABEL_POS(JUMP_IF_FALSE_DEST(inst)));
+                    break;
+                }
+            case OP(DUP):
+                {
+                    YogBinary_push_uint8(env, code, OP(DUP));
                     break;
                 }
             default:

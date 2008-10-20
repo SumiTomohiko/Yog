@@ -414,6 +414,7 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     if (!YogTable_lookup(env, data->var2index, symbol, &index)) {
         Yog_assert(env, FALSE, "Can't find assigned symbol.");
     }
+    CompileData_append_dup(env, data);
     SET_LINENO();
     CompileData_append_store_pkg(env, data, YOGVAL_INT(index));
 }

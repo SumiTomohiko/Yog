@@ -53,6 +53,8 @@ struct YogInst {
         struct {
             struct YogInst* dest;
         } jump_if_false;
+        struct {
+        } dup;
     } u;
 };
 

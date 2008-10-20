@@ -22,6 +22,7 @@ Yog_get_inst_size(OpCode op)
         sizeof(uint8_t) + sizeof(uint8_t), /* load_local */
         sizeof(uint8_t) + sizeof(pc_t), /* jump */
         sizeof(uint8_t) + sizeof(pc_t), /* jump_if_false */
+        sizeof(uint8_t), /* dup */
 
     };
 
