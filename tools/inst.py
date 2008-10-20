@@ -184,9 +184,9 @@ class CodeGenerator(object):
                     raise Exception("%(name)s is used." % { "name": name })
 
                 s = """
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            %(type)s %(name)s = *((%(type)s*)&CODE->insts->items[PC]);
-            PC += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            %(type)s %(name)s = *((%(type)s*)&CODE->insts->items[n]);
+            n += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
                 declared_names.add(name)
@@ -368,9 +368,9 @@ CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.n
         kw = { "structs": structs.getvalue(), "macros": macros.getvalue() }
         self.tmpl2file(inst_h_tmpl, kw, inst_h)
 
-    def do(self, def_, opcodes_h=None, opcodes_h_tmpl=None, 
-            thread_inc=None, compile_inc=None, compile_inc_tmpl=None, 
-            code_inc=None, code_inc_tmpl=None, yog_h="yog.h", debug=False):
+    def do(self, def_, opcodes_h=None, opcodes_h_tmpl=None, thread_inc=None, 
+            compile_inc=None, compile_inc_tmpl=None, code_inc=None, 
+            code_inc_tmpl=None, debug=False):
         self.open(def_)
         self.parse_def()
         if debug:

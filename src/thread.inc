@@ -6,9 +6,9 @@
 #line 6 "src/thread.inc"
     case OP(LOAD_SPECIAL):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            ID id = *((ID*)&CODE->insts->items[PC]);
-            PC += sizeof(ID);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            ID id = *((ID*)&CODE->insts->items[n]);
+            n += sizeof(ID);
             YogVal val = YogVal_nil();
 #line 18 "src/insts.def"
 
@@ -19,9 +19,9 @@
 #line 18 "src/thread.inc"
     case OP(PUSH_CONST):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
-            PC += sizeof(uint8_t);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t index = *((uint8_t*)&CODE->insts->items[n]);
+            n += sizeof(uint8_t);
             YogVal val = YogVal_nil();
 #line 25 "src/insts.def"
             val = CONSTS(index);
@@ -33,12 +33,12 @@
 #line 31 "src/thread.inc"
     case OP(CALL_METHOD):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            ID method = *((ID*)&CODE->insts->items[PC]);
-            PC += sizeof(ID);
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
-            PC += sizeof(uint8_t);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            ID method = *((ID*)&CODE->insts->items[n]);
+            n += sizeof(ID);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t argc = *((uint8_t*)&CODE->insts->items[n]);
+            n += sizeof(uint8_t);
 #line 33 "src/insts.def"
             YogVal args[argc];
             unsigned int i = 0;
@@ -55,9 +55,9 @@
 #line 52 "src/thread.inc"
     case OP(STORE_PKG):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            ID id = *((ID*)&CODE->insts->items[PC]);
-            PC += sizeof(ID);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            ID id = *((ID*)&CODE->insts->items[n]);
+            n += sizeof(ID);
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
             YogVal val = POP();
 #line 48 "src/insts.def"
@@ -70,9 +70,9 @@
 #line 66 "src/thread.inc"
     case OP(STORE_LOCAL):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
-            PC += sizeof(uint8_t);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t index = *((uint8_t*)&CODE->insts->items[n]);
+            n += sizeof(uint8_t);
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
             YogVal val = POP();
 #line 57 "src/insts.def"
@@ -84,12 +84,12 @@
 #line 79 "src/thread.inc"
     case OP(CALL_COMMAND):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            ID command = *((ID*)&CODE->insts->items[PC]);
-            PC += sizeof(ID);
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
-            PC += sizeof(uint8_t);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            ID command = *((ID*)&CODE->insts->items[n]);
+            n += sizeof(ID);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t argc = *((uint8_t*)&CODE->insts->items[n]);
+            n += sizeof(uint8_t);
 #line 65 "src/insts.def"
             YogVal args[argc];
             unsigned int i = 0;
@@ -120,9 +120,9 @@
 #line 113 "src/thread.inc"
     case OP(CALL_FUNC):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t argc = *((uint8_t*)&CODE->insts->items[PC]);
-            PC += sizeof(uint8_t);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t argc = *((uint8_t*)&CODE->insts->items[n]);
+            n += sizeof(uint8_t);
 #line 89 "src/insts.def"
             YogVal args[argc];
             unsigned int i = 0;
@@ -142,8 +142,8 @@
             }
             new_frame->stack = YogValArray_new(ENV, new_code->stack_size);
             FRAME = new_frame;
-            PC = 0;
             CODE = new_code;
+            JUMP(0);
 
 #line 140 "src/thread.inc"
             break;
@@ -151,9 +151,9 @@
 #line 143 "src/thread.inc"
     case OP(LOAD_PKG):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            ID id = *((ID*)&CODE->insts->items[PC]);
-            PC += sizeof(ID);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            ID id = *((ID*)&CODE->insts->items[n]);
+            n += sizeof(ID);
             YogVal val = YogVal_nil();
 #line 116 "src/insts.def"
             YogVal key = YogVal_symbol(id);
@@ -168,9 +168,9 @@
 #line 159 "src/thread.inc"
     case OP(LOAD_LOCAL):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
-            PC += sizeof(uint8_t);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t index = *((uint8_t*)&CODE->insts->items[n]);
+            n += sizeof(uint8_t);
             YogVal val = YogVal_nil();
 #line 127 "src/insts.def"
             val = LOCAL_VARS(FRAME)->items[index];
@@ -182,11 +182,11 @@
 #line 172 "src/thread.inc"
     case OP(JUMP):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            pc_t dest = *((pc_t*)&CODE->insts->items[PC]);
-            PC += sizeof(pc_t);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            pc_t dest = *((pc_t*)&CODE->insts->items[n]);
+            n += sizeof(pc_t);
 #line 135 "src/insts.def"
-            PC = dest;
+            JUMP(dest);
 
 #line 180 "src/thread.inc"
             break;
@@ -194,15 +194,15 @@
 #line 183 "src/thread.inc"
     case OP(JUMP_IF_FALSE):
         {
-            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            pc_t dest = *((pc_t*)&CODE->insts->items[PC]);
-            PC += sizeof(pc_t);
+            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            pc_t dest = *((pc_t*)&CODE->insts->items[n]);
+            n += sizeof(pc_t);
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
             YogVal val = POP();
 #line 143 "src/insts.def"
             YogValType type = YOGVAL_TYPE(val);
             if ((type == VAL_NIL) || ((type == VAL_BOOL) && !YOGVAL_BOOL(val))) {
-                PC = dest;
+                JUMP(dest);
             }
 
 #line 196 "src/thread.inc"

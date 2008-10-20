@@ -1,4 +1,5 @@
 #include <setjmp.h>
+#include <stdio.h>
 #include "yog/opcodes.h"
 #include "yog/yog.h"
 
@@ -44,9 +45,11 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
     PKG_VARS(frame) = YogTable_new_symbol_table(env);
     frame->stack = YogValArray_new(env, code->stack_size);
 
+#define POP_BUF()   th->jmp_buf_list = th->jmp_buf_list->prev
     volatile pc_t pc = 0;
     YogJmpBuf jmpbuf;
-    if (setjmp(jmpbuf.buf) == 0) {
+    int status = 0;
+    if ((status = setjmp(jmpbuf.buf)) == 0) {
         jmpbuf.prev = th->jmp_buf_list;
         th->jmp_buf_list = &jmpbuf;
     }
@@ -54,14 +57,24 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
         unsigned int i = 0;
         for (i = 0; i < code->exc_tbl_size; i++) {
             YogExcTblEntry* entry = &code->exc_tbl->items[i];
+            BOOL found = FALSE;
             if ((entry->from <= pc) && (pc < entry->to)) {
                 pc = entry->jmp_to;
+                found = TRUE;
                 break;
+            }
+            if (!found) {
+                POP_BUF();
+                Yog_assert(env, th->jmp_buf_list != NULL, "No more jmp_buf.");
+                longjmp(th->jmp_buf_list->buf, status);
             }
         }
     }
 
     while (pc < code->insts->size) {
+#if 0
+        printf("%s:%d pc=%d\n", __FILE__, __LINE__, pc);
+#endif
 #define CODE            (code)
 #define PC              (pc)
 #define STACK           (frame->stack)
@@ -70,6 +83,9 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
 #define CONSTS(index)   (YogValArray_at(env, code->consts, index))
 #define ENV             (env)
 #define FRAME           (frame)
+#define JUMP(m)         \
+    PC = m; \
+    continue
 #if 0
         if (0 < STACK->size) {
             YogVal_print(env, STACK->items[STACK->size - 1]);
@@ -80,13 +96,14 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
 #endif
 
         OpCode op = code->insts->items[PC];
-        PC += sizeof(uint8_t);
+        unsigned int n = PC + sizeof(uint8_t);
         switch (op) {
 #include "src/thread.inc"
         default:
             Yog_assert(env, FALSE, "Unknown instruction.");
             break;
         }
+#undef JUMP
 #undef FRAME
 #undef ENV
 #undef CONSTS
@@ -95,9 +112,12 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
 #undef STACK
 #undef PC
 #undef CODE
+
+        pc = n;
     }
 
-    th->jmp_buf_list = th->jmp_buf_list->prev;
+    POP_BUF();
+#undef POP_BUF
 }
 
 static void 

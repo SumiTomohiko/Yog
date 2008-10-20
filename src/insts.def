@@ -104,8 +104,8 @@ inst call_func
     }
     new_frame->stack = YogValArray_new(ENV, new_code->stack_size);
     FRAME = new_frame;
-    PC = 0;
     CODE = new_code;
+    JUMP(0);
 }
 
 inst load_pkg
@@ -132,7 +132,7 @@ inst jump
 ()
 ()
 {
-    PC = dest;
+    JUMP(dest);
 }
 
 inst jump_if_false
@@ -142,7 +142,7 @@ inst jump_if_false
 {
     YogValType type = YOGVAL_TYPE(val);
     if ((type == VAL_NIL) || ((type == VAL_BOOL) && !YOGVAL_BOOL(val))) {
-        PC = dest;
+        JUMP(dest);
     }
 }
 
