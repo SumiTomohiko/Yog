@@ -3,6 +3,46 @@
 
 #include "src/code.inc"
 
+static void 
+print_val(YogEnv* env, YogVal val) 
+{
+    if (IS_UNDEF(val)) {
+        printf("undef");
+    }
+    else if (IS_PTR(val)) {
+        printf("%p", YOGVAL_PTR(val));
+    }
+    else if (IS_OBJ(val)) {
+        printf("%p", YOGVAL_OBJ(val));
+    }
+    else if (IS_INT(val)) {
+        printf("%d", YOGVAL_INT(val));
+    }
+    else if (IS_FLOAT(val)) {
+        printf("%f", YOGVAL_FLOAT(val));
+    }
+    else if (IS_BOOL(val)) {
+        if (YOGVAL_BOOL(val)) {
+            printf("true");
+        }
+        else {
+            printf("false");
+        }
+    }
+    else if (IS_NIL(val)) {
+        printf("nil");
+    }
+    else if (IS_SYMBOL(val)) {
+        printf(" :%s", YogVm_id2name(env, ENV_VM(env), YOGVAL_SYMBOL(val)));
+    }
+    else if (IS_FUNC(val)) {
+        printf("%p", YOGVAL_FUNC(val));
+    }
+    else {
+        Yog_assert(env, FALSE, "Unknown value type.");
+    }
+}
+
 void 
 YogCode_dump(YogEnv* env, YogCode* code) 
 {
@@ -15,41 +55,7 @@ YogCode_dump(YogEnv* env, YogCode* code)
         printf("%05d ", i);
 
         YogVal val = code->consts->items[i];
-        if (IS_UNDEF(val)) {
-            printf("undef");
-        }
-        else if (IS_PTR(val)) {
-            printf("%p", YOGVAL_PTR(val));
-        }
-        else if (IS_OBJ(val)) {
-            printf("%p", YOGVAL_OBJ(val));
-        }
-        else if (IS_INT(val)) {
-            printf("%d", YOGVAL_INT(val));
-        }
-        else if (IS_FLOAT(val)) {
-            printf("%f", YOGVAL_FLOAT(val));
-        }
-        else if (IS_BOOL(val)) {
-            if (YOGVAL_BOOL(val)) {
-                printf("true");
-            }
-            else {
-                printf("false");
-            }
-        }
-        else if (IS_NIL(val)) {
-            printf("nil");
-        }
-        else if (IS_SYMBOL(val)) {
-            printf(" :%s", YogVm_id2name(env, ENV_VM(env), YOGVAL_SYMBOL(val)));
-        }
-        else if (IS_FUNC(val)) {
-            printf("%p", YOGVAL_FUNC(val));
-        }
-        else {
-            Yog_assert(env, FALSE, "Unknown value type.");
-        }
+        print_val(env, val);
 
         printf("\n");
     }
@@ -91,7 +97,9 @@ YogCode_dump(YogEnv* env, YogCode* code)
             case OP(PUSH_CONST):
                 {
                     uint8_t index = OPERAND(uint8_t);
-                    printf(" %d", index);
+                    printf(" %d (", index);
+                    print_val(env, code->consts->items[index]);
+                    printf(")");
                 }
                 break;
             case OP(CALL_COMMAND):

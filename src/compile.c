@@ -945,8 +945,8 @@ compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         label_finally_error_start = label_new(env);
         append_inst(data, label_finally_error_start);
         visitor->visit_stmts(env, visitor, node_finally, arg);
+        CompileData_append_call_command(env, data, RAISE, 0);
     }
-    CompileData_append_call_command(env, data, RAISE, 0);
 #undef LOAD_EXC
 #undef RAISE
 #undef INTERN
