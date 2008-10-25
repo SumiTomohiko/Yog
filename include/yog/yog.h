@@ -184,13 +184,14 @@ enum YogNodeType {
     NODE_BREAK, 
     NODE_COMMAND_CALL, 
     NODE_EXCEPT, 
+    NODE_EXCEPT_BODY, 
+    NODE_FINALLY, 
     NODE_FUNC_CALL, 
     NODE_FUNC_DEF, 
     NODE_IF, 
     NODE_LITERAL, 
     NODE_METHOD_CALL, 
     NODE_NEXT, 
-    NODE_TRY, 
     NODE_VARIABLE, 
     NODE_WHILE, 
 };
@@ -236,14 +237,13 @@ struct YogNode {
 #define NODE_PARAMS(node)   (node)->u2.array
 #define NODE_STMTS(node)    (node)->u3.array
 
-#define NODE_TRY(node)          (node)->u1.array
-#define NODE_EXCEPTS(node)      (node)->u2.array
-#define NODE_ELSE(node)         (node)->u3.array
-#define NODE_FINALLY(node)      (node)->u4.array
-#define NODE_EXC_TYPE(node)     (node)->u1.nd
-#define NODE_EXC_VAR(node)      (node)->u2.id
-#define NODE_EXC_STMTS(node)    (node)->u3.array
-#define NO_EXC_VAR              (UINT_MAX)
+#define NODE_HEAD(node)     (node)->u1.array
+#define NODE_BODY(node)     (node)->u3.array
+#define NODE_EXCEPTS(node)  (node)->u2.array
+#define NODE_ELSE(node)     (node)->u3.array
+#define NODE_EXC_TYPE(node) (node)->u1.nd
+#define NODE_EXC_VAR(node)  (node)->u2.id
+#define NO_EXC_VAR          (UINT_MAX)
 
 #define NODE_TEST(node)     (node)->u1.nd
 
@@ -312,7 +312,7 @@ typedef struct YogBinary YogBinary;
 struct YogExcTblEntry {
     pc_t from;
     pc_t to;
-    pc_t jmp_to;
+    pc_t target;
 };
 
 typedef struct YogExcTblEntry YogExcTblEntry;
@@ -384,15 +384,6 @@ enum InstType {
 typedef enum InstType InstType;
 
 #include "yog/inst.h"
-
-struct YogExcLabelTableEntry {
-    struct YogExcLabelTableEntry* next;
-    struct YogInst* from;
-    struct YogInst* to;
-    struct YogInst* jmp_to;
-};
-
-typedef struct YogExcLabelTableEntry YogExcLabelTableEntry;
 
 /* $PROTOTYPE_START$ */
 
@@ -535,6 +526,8 @@ YogString* YogString_new_format(YogEnv*, const char*, ...);
     ALLOC_OBJ_SIZE(env, gc_children, sizeof(type) + size * sizeof(item_type))
 
 #define JMP_RAISE   (1)
+
+#define DO_GC(env, do_gc, obj)  obj = (do_gc)((env), (obj))
 
 #endif
 /**

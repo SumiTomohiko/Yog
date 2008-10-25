@@ -4,6 +4,98 @@
 #include "yog/st.h"
 #include "yog/yog.h"
 
+typedef struct AstVisitor AstVisitor;
+
+typedef void (*VisitNode)(YogEnv*, AstVisitor*, YogNode*, void*);
+typedef void (*VisitArray)(YogEnv*, AstVisitor*, YogArray*, void*);
+
+struct AstVisitor {
+    VisitArray visit_stmts;
+    VisitNode visit_assign;
+    VisitNode visit_break;
+    VisitNode visit_command_call;
+    VisitNode visit_except;
+    VisitNode visit_except_body;
+    VisitNode visit_finally;
+    VisitNode visit_func_call;
+    VisitNode visit_func_def;
+    VisitNode visit_if;
+    VisitNode visit_literal;
+    VisitNode visit_method_call;
+    VisitNode visit_next;
+    VisitNode visit_stmt;
+    VisitNode visit_variable;
+    VisitNode visit_while;
+};
+
+struct Var2IndexData {
+    YogTable* var2index;
+};
+
+typedef struct Var2IndexData Var2IndexData;
+
+enum Context {
+    CTX_FUNC, 
+    CTX_PKG, 
+};
+
+typedef enum Context Context;
+
+struct FinallyListEntry {
+    struct FinallyListEntry* prev;
+
+    struct YogNode* node;
+};
+
+typedef struct FinallyListEntry FinallyListEntry;
+
+struct ExceptionTableEntry {
+    struct ExceptionTableEntry* next;
+
+    struct YogInst* from;
+    struct YogInst* to;
+    struct YogInst* target;
+};
+
+typedef struct ExceptionTableEntry ExceptionTableEntry;
+
+struct TryListEntry {
+    struct TryListEntry* prev;
+
+    struct YogNode* node;
+    struct ExceptionTableEntry* exc_tbl;
+};
+
+typedef struct TryListEntry TryListEntry;
+
+struct LinenoList {
+    struct LinenoList* prev;
+    struct LinenoTableEntry entry;
+};
+
+typedef struct LinenoList LinenoList;
+
+#define SET_LINENO()    set_lineno(env, data, node->lineno)
+
+struct CompileData {
+    enum Context ctx;
+    struct YogTable* var2index;
+    struct YogTable* const2index;
+    struct YogInst* last_inst;
+    struct ExceptionTableEntry* exc_tbl;
+    struct ExceptionTableEntry* exc_tbl_last;
+
+    struct YogInst* label_while_start;
+    struct YogInst* label_while_end;
+    struct FinallyListEntry* finally_list;
+    struct TryListEntry* try_list;
+
+    struct LinenoList* lineno_list;
+    pc_t pc;
+};
+
+typedef struct CompileData CompileData;
+
 #define VISIT_EACH_ARGS()   do { \
     YogArray* args = NODE_ARGS(node); \
     if (args != NULL) { \
@@ -17,74 +109,24 @@
     } \
 } while (0)
 
-typedef struct AstVisitor AstVisitor;
+#define INTERN(s)   YogVm_intern(env, ENV_VM(env), s)
+#define RAISE       INTERN("raise")
 
-typedef void (*VisitNode)(YogEnv*, AstVisitor*, YogNode*, void*);
-typedef void (*VisitArray)(YogEnv*, AstVisitor*, YogArray*, void*);
+#define PUSH_TRY()  do { \
+    TryListEntry try_list_entry; \
+    try_list_entry.prev = data->try_list; \
+    data->try_list = &try_list_entry; \
+    try_list_entry.node = node; \
+    try_list_entry.exc_tbl = NULL;
 
-struct AstVisitor {
-    VisitArray visit_stmts;
-    VisitNode visit_stmt;
-    VisitNode visit_assign;
-    VisitNode visit_method_call;
-    VisitNode visit_literal;
-    VisitNode visit_command_call;
-    VisitNode visit_func_def;
-    VisitNode visit_func_call;
-    VisitNode visit_variable;
-    VisitNode visit_try;
-    VisitNode visit_except;
-    VisitNode visit_while;
-    VisitNode visit_if;
-    VisitNode visit_break;
-    VisitNode visit_next;
-};
+#define POP_TRY() \
+    data->try_list = try_list_entry.prev; \
+} while (0)
 
-struct Var2IndexData {
-    YogTable* var2index;
-};
-
-typedef struct Var2IndexData Var2IndexData;
-
-enum Context {
-    CTX_PKG, 
-    CTX_FUNC, 
-};
-
-typedef enum Context Context;
-
-struct FinallyList {
-    struct FinallyList* next;
-    struct YogArray* nodes;
-};
-
-typedef struct FinallyList FinallyList;
-
-struct LinenoList {
-    struct LinenoList* prev;
-    struct LinenoTableEntry entry;
-};
-
-typedef struct LinenoList LinenoList;
-
-#define SET_LINENO()    set_lineno(env, data, node->lineno)
-
-struct CompileData {
-    enum Context ctx;
-    YogTable* var2index;
-    YogTable* const2index;
-    YogInst* last_inst;
-    YogExcLabelTableEntry* exc_tbl;
-    YogExcLabelTableEntry* exc_tbl_last;
-    struct YogInst* label_while_start;
-    struct YogInst* label_while_end;
-    struct FinallyList* finally_list;
-
-    struct LinenoList* lineno_list;
-    pc_t pc;
-};
-
-typedef struct CompileData CompileData;
+#define PUSH_EXCEPTION_TABLE_ENTRY() do { \
+    data->exc_tbl_last->next = entry; \
+    data->exc_tbl_last = entry; \
+} while (0)
 
 static void 
 gc_lineno_children(YogEnv* env, void* ptr, DoGc do_gc) 
@@ -160,28 +202,6 @@ anchor_new(YogEnv* env)
 }
 
 static void 
-gc_exc_label_tbl_entry(YogEnv* env, void* ptr, DoGc do_gc) 
-{
-    YogExcLabelTableEntry* entry = ptr;
-    entry->from = do_gc(env, entry->from);
-    entry->to = do_gc(env, entry->to);
-    entry->jmp_to = do_gc(env, entry->jmp_to);
-    entry->next = do_gc(env, entry->next);
-}
-
-static YogExcLabelTableEntry* 
-YogExcLabelTableEntry_new(YogEnv* env) 
-{
-    YogExcLabelTableEntry* entry = ALLOC_OBJ(env, gc_exc_label_tbl_entry, YogExcLabelTableEntry);
-    entry->from = NULL;
-    entry->to = NULL;
-    entry->jmp_to = NULL;
-    entry->next = NULL;
-
-    return entry;
-}
-
-static void 
 append_inst(CompileData* data, YogInst* inst) 
 {
     if (inst->type == INST_LABEL) {
@@ -228,11 +248,14 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     case NODE_FUNC_CALL:
         VISIT(visit_func_call);
         break;
-    case NODE_TRY:
-        VISIT(visit_try);
+    case NODE_FINALLY:
+        VISIT(visit_finally);
         break;
     case NODE_EXCEPT:
         VISIT(visit_except);
+        break;
+    case NODE_EXCEPT_BODY:
+        VISIT(visit_except_body);
         break;
     case NODE_WHILE:
         VISIT(visit_while);
@@ -316,25 +339,14 @@ var2index_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
 }
 
 static void 
-generic_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+var2index_visit_finally(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    visitor->visit_stmts(env, visitor, NODE_TRY(node), arg);
-    YogArray* excepts = NODE_EXCEPTS(node);
-    if (excepts != NULL) {
-        unsigned int size = YogArray_size(env, excepts);
-        unsigned int i = 0;
-        for (i = 0; i < size; i++) {
-            YogVal val = YogArray_at(env, excepts, i);
-            YogNode* node = YOGVAL_PTR(val);
-            visit_node(env, visitor, node, arg);
-        }
-    }
-    visitor->visit_stmts(env, visitor, NODE_ELSE(node), arg);
-    visitor->visit_stmts(env, visitor, NODE_FINALLY(node), arg);
+    visitor->visit_stmts(env, visitor, NODE_HEAD(node), arg);
+    visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
 }
 
 static void 
-var2index_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+var2index_visit_except_body(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_node(env, visitor, NODE_EXC_TYPE(node), arg);
     ID id = NODE_EXC_VAR(node);
@@ -342,7 +354,7 @@ var2index_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
         Var2IndexData* data = arg;
         var2index_register(env, data->var2index, id);
     }
-    visitor->visit_stmts(env, visitor, NODE_EXC_STMTS(node), arg);
+    visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
 }
 
 static void 
@@ -367,23 +379,41 @@ var2index_visit_break(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
 }
 
 static void 
+var2index_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visitor->visit_stmts(env, visitor, NODE_HEAD(node), arg);
+
+    YogArray* excepts = NODE_EXCEPTS(node);
+    unsigned int size = YogArray_size(env, excepts);
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        YogVal val = YogArray_at(env, excepts, i);
+        YogNode* node = YOGVAL_PTR(val);
+        visitor->visit_except_body(env, visitor, node, arg);
+    }
+
+    visitor->visit_stmts(env, visitor, NODE_ELSE(node), arg);
+}
+
+static void 
 var2index_init_visitor(AstVisitor* visitor) 
 {
-    visitor->visit_stmts = visit_stmts;
-    visitor->visit_stmt = visit_node;
     visitor->visit_assign = var2index_visit_assign;
-    visitor->visit_method_call = var2index_visit_method_call;
-    visitor->visit_literal = NULL;
-    visitor->visit_command_call = var2index_visit_command_call;
-    visitor->visit_func_def = var2index_visit_func_def;
-    visitor->visit_func_call = var2index_visit_func_call;
-    visitor->visit_variable = NULL;
-    visitor->visit_try = generic_visit_try;
-    visitor->visit_except = var2index_visit_except;
-    visitor->visit_while = var2index_visit_while;
-    visitor->visit_if = var2index_visit_if;
     visitor->visit_break = var2index_visit_break;
+    visitor->visit_command_call = var2index_visit_command_call;
+    visitor->visit_except = var2index_visit_except;
+    visitor->visit_except_body = var2index_visit_except_body;
+    visitor->visit_finally = var2index_visit_finally;
+    visitor->visit_func_call = var2index_visit_func_call;
+    visitor->visit_func_def = var2index_visit_func_def;
+    visitor->visit_if = var2index_visit_if;
+    visitor->visit_literal = NULL;
+    visitor->visit_method_call = var2index_visit_method_call;
     visitor->visit_next = var2index_visit_break;
+    visitor->visit_stmt = visit_node;
+    visitor->visit_stmts = visit_stmts;
+    visitor->visit_variable = NULL;
+    visitor->visit_while = var2index_visit_while;
 }
 
 static YogTable*
@@ -634,12 +664,19 @@ table2array(YogEnv* env, YogTable* table)
 }
 
 static void 
-make_exc_tbl(YogEnv* env, YogCode* code, CompileData* data)
+make_exception_table(YogEnv* env, YogCode* code, CompileData* data)
 {
     unsigned int size = 0;
-    YogExcLabelTableEntry* entry = data->exc_tbl->next;
+    ExceptionTableEntry* entry = data->exc_tbl;
     while (entry != NULL) {
-        size++;
+        if (entry->from != NULL) {
+            pc_t from = LABEL_POS(entry->from);
+            pc_t to = LABEL_POS(entry->to);
+            if (from != to) {
+                size++;
+            }
+        }
+
         entry = entry->next;
     }
 
@@ -647,24 +684,35 @@ make_exc_tbl(YogEnv* env, YogCode* code, CompileData* data)
         YogExcTbl* exc_tbl = ALLOC_OBJ_ITEM(env, NULL, YogExcTbl, size, YogExcTblEntry);
 
         unsigned int i = 0;
-        entry = data->exc_tbl->next;
+        entry = data->exc_tbl;
         while (entry != NULL) {
-            YogExcTblEntry* ent = &exc_tbl->items[i];
-            ent->from = LABEL_POS(entry->from);
-            ent->to = LABEL_POS(entry->to);
-            ent->jmp_to = LABEL_POS(entry->jmp_to);
+            if (entry->from != NULL) {
+                pc_t from = LABEL_POS(entry->from);
+                pc_t to = LABEL_POS(entry->to);
+                if (from != to) {
+                    YogExcTblEntry* ent = &exc_tbl->items[i];
+                    ent->from = from;
+                    ent->to = to;
+                    ent->target = LABEL_POS(entry->target);
 
-            i++;
+                    i++;
+                }
+            }
+
             entry = entry->next;
         }
 
         code->exc_tbl = exc_tbl;
         code->exc_tbl_size = size;
     }
+    else {
+        code->exc_tbl = NULL;
+        code->exc_tbl_size = 0;
+    }
 }
 
 static void 
-make_lineno_tbl(YogEnv* env, YogCode* code, LinenoList* list)
+make_lineno_table(YogEnv* env, YogCode* code, LinenoList* list)
 {
     unsigned int size = 0;
     LinenoList* elem = list;
@@ -690,6 +738,30 @@ make_lineno_tbl(YogEnv* env, YogCode* code, LinenoList* list)
     code->lineno_tbl_size = size;
 }
 
+static void 
+gc_exception_table_entry_children(YogEnv* env, void* ptr, DoGc do_gc) 
+{
+    ExceptionTableEntry* entry = ptr;
+#define GC(m)   DO_GC(env, do_gc, entry->m)
+    GC(next);
+    GC(from);
+    GC(to);
+    GC(target);
+#undef GC
+}
+
+static ExceptionTableEntry* 
+ExceptionTableEntry_new(YogEnv* env) 
+{
+    ExceptionTableEntry* entry = ALLOC_OBJ(env, gc_exception_table_entry_children, ExceptionTableEntry);
+    entry->next = NULL;
+    entry->from = NULL;
+    entry->to = NULL;
+    entry->target = NULL;
+
+    return entry;
+}
+
 static YogCode* 
 compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2index, Context ctx) 
 {
@@ -699,11 +771,12 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     data.const2index = NULL;
     YogInst* anchor = anchor_new(env);
     data.last_inst = anchor;
-    data.exc_tbl = YogExcLabelTableEntry_new(env);
+    data.exc_tbl = ExceptionTableEntry_new(env);
     data.exc_tbl_last = data.exc_tbl;
     data.label_while_start = NULL;
     data.label_while_end = NULL;
     data.finally_list = NULL;
+    data.try_list = NULL;
     data.lineno_list = NULL;
     data.pc = 0;
 
@@ -720,8 +793,8 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     code->stack_size = 32;
     code->consts = table2array(env, data.const2index);
     code->insts = bin->body;
-    make_exc_tbl(env, code, &data);
-    make_lineno_tbl(env, code, data.lineno_list);
+    make_exception_table(env, code, &data);
+    make_lineno_table(env, code, data.lineno_list);
 
     return code;
 }
@@ -852,144 +925,114 @@ append_store(YogEnv* env, CompileData* data, ID id)
 }
 
 static void 
-compile_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     CompileData* data = arg;
 
-    YogInst* label_try_start = label_new(env);
-    YogInst* label_try_end = label_new(env);
-    YogInst* label_else_start = NULL;
-    YogInst* label_else_end = NULL;
-    YogInst* label_excepts_start = NULL;
-    YogInst* label_excepts_end = NULL;
-    YogInst* label_finally_normal_start = NULL;
-    YogInst* label_finally_error_start = NULL;
-    YogInst* label_try_stmt_end = label_new(env);
+    YogInst* label_head_start = label_new(env);
+    YogInst* label_head_end = label_new(env);
+    YogInst* label_finally_error_start = label_new(env);
+    YogInst* label_finally_end = label_new(env);
 
-    YogArray* node_finally = NODE_FINALLY(node);
-    if (node_finally != NULL) {
-        FinallyList finally_list;
-        finally_list.next = data->finally_list;
-        finally_list.nodes = node_finally;
-        data->finally_list = &finally_list;
-    }
+    FinallyListEntry finally_list_entry;
+    finally_list_entry.prev = data->finally_list;
+    data->finally_list = &finally_list_entry;
+    finally_list_entry.node = node;
 
-    append_inst(data, label_try_start);
-    visitor->visit_stmts(env, visitor, NODE_TRY(node), arg);
-    append_inst(data, label_try_end);
+    PUSH_TRY();
 
-    YogArray* node_else = NODE_ELSE(node);
-    if (node_else != NULL) {
-        label_else_start = label_new(env);
-        label_else_end = label_new(env);
-        append_inst(data, label_else_start);
-        visitor->visit_stmts(env, visitor, node_else, arg);
-        append_inst(data, label_else_end);
-    }
+    ExceptionTableEntry* entry = ExceptionTableEntry_new(env);
+    entry->next = NULL;
+    entry->from = label_head_start;
+    entry->to = label_head_end;
+    entry->target = label_finally_error_start;
+    try_list_entry.exc_tbl = entry;
 
-    if (node_finally != NULL) {
-        label_finally_normal_start = label_new(env);
-        append_inst(data, label_finally_normal_start);
-        visitor->visit_stmts(env, visitor, node_finally, arg);
-    }
-    CompileData_append_jump(env, data, label_try_stmt_end);
+    append_inst(data, label_head_start);
+    visitor->visit_stmts(env, visitor, NODE_HEAD(node), arg);
+    append_inst(data, label_head_end);
 
-#define INTERN(s)   YogVm_intern(env, ENV_VM(env), s)
-#define RAISE       INTERN("raise")
-#define LOAD_EXC()  do { \
-    CompileData_append_load_special(env, data, INTERN("$!")); \
-} while (0)
-    YogArray* node_excepts = NODE_EXCEPTS(node);
-    if (node_excepts != NULL) {
-        label_excepts_start = label_new(env);
-        append_inst(data, label_excepts_start);
+    visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
+    CompileData_append_jump(env, data, label_finally_end);
 
-        unsigned int size = YogArray_size(env, node_excepts);
-        unsigned int i = 0;
-        for (i = 0; i < size; i++) {
-            YogInst* label_except_end = label_new(env);
-            YogVal val = YogArray_at(env, node_excepts, i);
-            YogNode* node_except = YOGVAL_PTR(val);
-            YogNode* node_type = NODE_EXC_TYPE(node_except);
-            if (node_type != NULL) {
-                visit_node(env, visitor, node_type, arg);
+    append_inst(data, label_finally_error_start);
+    visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
+    CompileData_append_call_command(env, data, RAISE, 0);
+
+    append_inst(data, label_finally_end);
+
+    PUSH_EXCEPTION_TABLE_ENTRY();
+
+    POP_TRY();
+
+    data->finally_list = finally_list_entry.prev;
+}
+
+static void 
+compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    CompileData* data = arg;
+
+    YogInst* label_head_start = label_new(env);
+    YogInst* label_head_end = label_new(env);
+    YogInst* label_excepts_start = label_new(env);
+    YogInst* label_else_start = label_new(env);
+    YogInst* label_else_end = label_new(env);
+
+    PUSH_TRY();
+
+    ExceptionTableEntry* entry = ExceptionTableEntry_new(env);
+    entry->next = NULL;
+    entry->from = label_head_start;
+    entry->to = label_head_end;
+    entry->target = label_excepts_start;
+    try_list_entry.exc_tbl = entry;
+
+    append_inst(data, label_head_start);
+    visitor->visit_stmts(env, visitor, NODE_HEAD(node), arg);
+    append_inst(data, label_head_end);
+    CompileData_append_jump(env, data, label_else_start);
+
+    append_inst(data, label_excepts_start);
+    YogArray* excepts = NODE_EXCEPTS(node);
+    unsigned int size = YogArray_size(env, excepts);
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        YogInst* label_body_end = label_new(env);
+
+        YogVal val = YogArray_at(env, excepts, i);
+        YogNode* node = YOGVAL_PTR(val);
+
+        YogNode* node_type = NODE_EXC_TYPE(node);
+        if (node_type != NULL) {
+            visit_node(env, visitor, node_type, arg);
+#define LOAD_EXC()  CompileData_append_load_special(env, data, INTERN("$!"))
+            LOAD_EXC();
+            CompileData_append_call_method(env, data, INTERN("==="), 1);
+            CompileData_append_jump_if_false(env, data, label_body_end);
+
+            ID id = NODE_EXC_VAR(node);
+            if (id != NO_EXC_VAR) {
                 LOAD_EXC();
-                CompileData_append_call_method(env, data, INTERN("==="), 1);
-                CompileData_append_jump_if_false(env, data, label_except_end);
-
-                ID id = NODE_EXC_VAR(node_except);
-                if (id != NO_EXC_VAR) {
-                    LOAD_EXC();
-                    append_store(env, data, id);
-                }
+                append_store(env, data, id);
             }
-
-            visitor->visit_stmts(env, visitor, NODE_EXC_STMTS(node_except), arg);
-
-            if (label_finally_normal_start != NULL) {
-                CompileData_append_jump(env, data, label_finally_normal_start);
-            }
-            else {
-                CompileData_append_jump(env, data, label_try_stmt_end);
-            }
-            append_inst(data, label_except_end);
-        }
-
-        CompileData_append_call_command(env, data, RAISE, 0);
-
-        label_excepts_end = label_new(env);
-        append_inst(data, label_excepts_end);
-    }
-
-    if (node_finally != NULL) {
-        label_finally_error_start = label_new(env);
-        append_inst(data, label_finally_error_start);
-        visitor->visit_stmts(env, visitor, node_finally, arg);
-        CompileData_append_call_command(env, data, RAISE, 0);
-    }
 #undef LOAD_EXC
-#undef RAISE
-#undef INTERN
-
-    append_inst(data, label_try_stmt_end);
-
-    if (node_finally != NULL) {
-        data->finally_list = data->finally_list->next;
-    }
-
-    if (label_excepts_start != NULL) {
-        YogExcLabelTableEntry* entry = YogExcLabelTableEntry_new(env);
-        entry->from = label_try_start;
-        entry->to = label_try_end;
-        entry->jmp_to = label_excepts_start;
-        data->exc_tbl_last->next = entry;
-        data->exc_tbl_last = entry;
-
-        if ((label_else_start != NULL) && (label_finally_error_start != NULL)) {
-            YogExcLabelTableEntry* entry = YogExcLabelTableEntry_new(env);
-            entry->from = label_else_start;
-            entry->to = label_else_end;
-            entry->jmp_to = label_finally_error_start;
-            data->exc_tbl_last->next = entry;
-            data->exc_tbl_last = entry;
         }
+
+        visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
+        CompileData_append_jump(env, data, label_else_end);
+
+        append_inst(data, label_body_end);
     }
-    else {
-        YogInst* from = label_try_start;
-        YogInst* to = NULL;
-        if (label_try_end->next == label_else_start) {
-            to = label_else_end;
-        }
-        else {
-            to = label_try_end;
-        }
-        YogExcLabelTableEntry* entry = YogExcLabelTableEntry_new(env);
-        entry->from = from;
-        entry->to = to;
-        entry->jmp_to = label_finally_error_start;
-        data->exc_tbl_last->next = entry;
-        data->exc_tbl_last = entry;
-    }
+    CompileData_append_call_command(env, data, RAISE, 0);
+
+    append_inst(data, label_else_start);
+    visitor->visit_stmts(env, visitor, NODE_ELSE(node), arg);
+    append_inst(data, label_else_end);
+
+    PUSH_EXCEPTION_TABLE_ENTRY();
+
+    POP_TRY();
 }
 
 static void 
@@ -1034,6 +1077,23 @@ compile_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
+split_exception_table(YogEnv* env, ExceptionTableEntry* exc_tbl, YogInst* label_from, YogInst* label_to)
+{
+    ExceptionTableEntry* entry = exc_tbl;
+    Yog_assert(env, entry != NULL, "Exception table is empty.");
+    while (entry->next != NULL) {
+        entry = entry->next;
+    }
+
+    ExceptionTableEntry* new_entry = ExceptionTableEntry_new(env);
+    new_entry->from = label_to;
+    new_entry->to = entry->to;
+    new_entry->target = entry->target;
+    entry->to = label_from;
+    entry->next = new_entry;
+}
+
+static void 
 compile_while_jump(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg, YogInst* jump_to) 
 {
     CompileData* data = arg;
@@ -1041,10 +1101,26 @@ compile_while_jump(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg, Y
     YogNode* expr = NODE_EXPR(node);
     if (data->label_while_start != NULL) {
         Yog_assert(env, expr == NULL, "Can't return value with break/next.");
-        FinallyList* finally_list = data->finally_list;
-        while (finally_list != NULL) {
-            visitor->visit_stmts(env, visitor, finally_list->nodes, arg);
-            finally_list = finally_list->next;
+        FinallyListEntry* finally_list_entry = data->finally_list;
+        while (finally_list_entry != NULL) {
+            YogInst* label_start = label_new(env);
+            YogInst* label_end = label_new(env);
+
+            append_inst(data, label_start);
+            visitor->visit_stmts(env, visitor, NODE_BODY(finally_list_entry->node), arg);
+            append_inst(data, label_end);
+
+            TryListEntry* try_list_entry = data->try_list;
+            while (TRUE) {
+                split_exception_table(env, try_list_entry->exc_tbl, label_start, label_end);
+                if (try_list_entry->node == finally_list_entry->node) {
+                    break;
+                }
+
+                try_list_entry = try_list_entry->prev;
+            }
+
+            finally_list_entry = finally_list_entry->prev;
         }
         SET_LINENO();
         CompileData_append_jump(env, data, jump_to);
@@ -1071,21 +1147,22 @@ compile_visit_next(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
-    visitor->visit_stmts = visit_stmts;
-    visitor->visit_stmt = visit_node;
     visitor->visit_assign = compile_visit_assign;
-    visitor->visit_method_call = compile_visit_method_call;
-    visitor->visit_literal = compile_visit_literal;
-    visitor->visit_command_call = compile_visit_command_call;
-    visitor->visit_func_def = compile_visit_func_def;
-    visitor->visit_func_call = compile_visit_func_call;
-    visitor->visit_variable = compile_visit_variable;
-    visitor->visit_try = compile_visit_try;
-    visitor->visit_except = NULL;
-    visitor->visit_while = compile_visit_while;
-    visitor->visit_if = compile_visit_if;
     visitor->visit_break = compile_visit_break;
+    visitor->visit_command_call = compile_visit_command_call;
+    visitor->visit_except = compile_visit_except;
+    visitor->visit_except_body = NULL;
+    visitor->visit_finally = compile_visit_finally;
+    visitor->visit_func_call = compile_visit_func_call;
+    visitor->visit_func_def = compile_visit_func_def;
+    visitor->visit_if = compile_visit_if;
+    visitor->visit_literal = compile_visit_literal;
+    visitor->visit_method_call = compile_visit_method_call;
     visitor->visit_next = compile_visit_next;
+    visitor->visit_stmt = visit_node;
+    visitor->visit_stmts = visit_stmts;
+    visitor->visit_variable = compile_visit_variable;
+    visitor->visit_while = compile_visit_while;
 }
 
 YogCode* 

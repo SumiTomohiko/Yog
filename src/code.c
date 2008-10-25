@@ -61,12 +61,12 @@ YogCode_dump(YogEnv* env, YogCode* code)
     }
 
     printf("=== Exception Table ===\n");
-    printf("From To JmpTo\n");
+    printf("From To Target\n");
 
     unsigned int exc_tbl_size = code->exc_tbl_size;
     for (i = 0; i < exc_tbl_size; i++) {
         YogExcTblEntry* entry = &code->exc_tbl->items[i];
-        printf("%05d %05d %05d\n", entry->from, entry->to, entry->jmp_to);
+        printf("%04d %04d %04d\n", entry->from, entry->to, entry->target);
     }
 
     printf("=== Code ===\n");
@@ -74,7 +74,7 @@ YogCode_dump(YogEnv* env, YogCode* code)
 
     pc_t pc = 0;
     while (pc < code->insts->size) {
-        printf("%05d", pc);
+        printf("%04d", pc);
 
         unsigned int size = code->lineno_tbl_size;
         for (i = 0; i < size; i++) {

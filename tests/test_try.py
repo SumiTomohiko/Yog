@@ -18,7 +18,6 @@ i = 0
 while i < 10
     i = i + 1
 
-    puts i
     try
         try
             break
@@ -31,24 +30,38 @@ while i < 10
         puts 42
     end
 end""", """42
+42
+42
+42
+42
+42
+42
+42
+42
+42
 """, "")
 
     def test_break_in_finally1(self):
         self._test("""
 i = 0
 while i < 10
+    i = i + 1
+
     try
         break
     finally
         puts 42
     end
 end
-""", "42\n", "")
+""", """42
+""", "")
 
     def test_break_in_finally2(self):
         self._test("""
 i = 0
 while i < 10
+    i = i + 1
+
     try
         try
             break
@@ -68,6 +81,7 @@ end
 i = 0
 while i < 10
     i = i + 1
+
     try
         next
     finally
@@ -91,6 +105,7 @@ end
 i = 0
 while i < 10
     i = i + 1
+
     try
         try
             next

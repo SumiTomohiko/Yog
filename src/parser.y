@@ -37,6 +37,7 @@ yyerror(char* s)
 static void 
 gc_children(YogEnv* env, void* ptr, DoGc do_gc) 
 {
+#define GC(f)   DO_GC(env, do_gc, f(node))
     YogNode* node = ptr;
     switch (node->type) {
         case NODE_ASSIGN:
@@ -61,15 +62,18 @@ gc_children(YogEnv* env, void* ptr, DoGc do_gc)
             NODE_PARAMS(node) = do_gc(env, NODE_PARAMS(node));
             NODE_STMTS(node) = do_gc(env, NODE_STMTS(node));
             break;
-        case NODE_TRY:
-            NODE_TRY(node) = do_gc(env, NODE_TRY(node));
-            NODE_EXCEPTS(node) = do_gc(env, NODE_EXCEPTS(node));
-            NODE_ELSE(node) = do_gc(env, NODE_ELSE(node));
-            NODE_FINALLY(node) = do_gc(env, NODE_FINALLY(node));
+        case NODE_FINALLY:
+            GC(NODE_HEAD);
+            GC(NODE_BODY);
             break;
         case NODE_EXCEPT:
-            NODE_EXC_TYPE(node) = do_gc(env, NODE_EXC_TYPE(node));
-            NODE_EXC_STMTS(node) = do_gc(env, NODE_EXC_STMTS(node));
+            GC(NODE_HEAD);
+            GC(NODE_EXCEPTS);
+            GC(NODE_ELSE);
+            break;
+        case NODE_EXCEPT_BODY:
+            GC(NODE_EXC_TYPE);
+            GC(NODE_BODY);
             break;
         case NODE_WHILE:
             NODE_TEST(node) = do_gc(env, NODE_TEST(node));
@@ -83,6 +87,7 @@ gc_children(YogEnv* env, void* ptr, DoGc do_gc)
             Yog_assert(env, FALSE, "Unknown node type.");
             break;
     }
+#undef GC
 }
 
 static YogNode* 
@@ -145,19 +150,33 @@ YogNode_new(YogEnv* env, YogNodeType type)
     NODE_ID(node) = id; \
 } while (0)
 
-#define TRY_NEW(node, try, excepts, else_, finally) do { \
-    node = NODE_NEW(NODE_TRY); \
-    NODE_TRY(node) = try; \
-    NODE_EXCEPTS(node) = excepts; \
-    NODE_ELSE(node) = else_; \
-    NODE_FINALLY(node) = finally; \
-} while (0)
-
-#define EXCEPT_NEW(node, type, var, stmts) do { \
-    node = NODE_NEW(NODE_EXCEPT); \
+#define EXCEPT_BODY_NEW(node, type, var, stmts) do { \
+    node = NODE_NEW(NODE_EXCEPT_BODY); \
     NODE_EXC_TYPE(node) = type; \
     NODE_EXC_VAR(node) = var; \
-    NODE_EXC_STMTS(node) = stmts; \
+    NODE_BODY(node) = stmts; \
+} while (0)
+
+#define EXCEPT_NEW(node, head, excepts, else_) do { \
+    node = NODE_NEW(NODE_EXCEPT); \
+    NODE_HEAD(node) = head; \
+    NODE_EXCEPTS(node) = excepts; \
+    NODE_ELSE(node) = else_; \
+} while (0)
+
+#define FINALLY_NEW(node, head, body) do { \
+    node = NODE_NEW(NODE_FINALLY); \
+    NODE_HEAD(node) = head; \
+    NODE_BODY(node) = body; \
+} while (0)
+
+#define EXCEPT_FINALLY_NEW(node, stmts, excepts, else_, finally) do { \
+    EXCEPT_NEW(node, stmts, excepts, else_); \
+    if (finally != NULL) { \
+        YogArray* array = NULL; \
+        OBJ_ARRAY_NEW(array, node); \
+        FINALLY_NEW(node, array, finally); \
+    } \
 } while (0)
 
 #define BREAK_NEW(node, expr) do { \
@@ -272,13 +291,13 @@ stmt    : /* empty */ {
             NODE_ARGS($$) = $2;
         }
         | TRY stmts excepts ELSE stmts finally_opt END {
-            TRY_NEW($$, $2, $3, $5, $6);
+            EXCEPT_FINALLY_NEW($$, $2, $3, $5, $6);
         }
         | TRY stmts excepts finally_opt END {
-            TRY_NEW($$, $2, $3, NULL, $4);
+            EXCEPT_FINALLY_NEW($$, $2, $3, NULL, $4);
         }
         | TRY stmts FINALLY stmts END {
-            TRY_NEW($$, $2, NULL, NULL, $4);
+            FINALLY_NEW($$, $2, $4);
         }
         | WHILE expr stmts END {
             YogNode* node = NODE_NEW(NODE_WHILE);
@@ -407,13 +426,13 @@ excepts : except {
         ;
 except  : EXCEPT expr AS NAME NEWLINE stmts {
             Yog_assert(ENV, $4 != NO_EXC_VAR, "Too many variables.");
-            EXCEPT_NEW($$, $2, $4, $6);
+            EXCEPT_BODY_NEW($$, $2, $4, $6);
         }
         | EXCEPT expr NEWLINE stmts {
-            EXCEPT_NEW($$, $2, NO_EXC_VAR, $4);
+            EXCEPT_BODY_NEW($$, $2, NO_EXC_VAR, $4);
         }
         | EXCEPT NEWLINE stmts {
-            EXCEPT_NEW($$, NULL, NO_EXC_VAR, $3);
+            EXCEPT_BODY_NEW($$, NULL, NO_EXC_VAR, $3);
         }
         ;
 finally_opt : /* empty */ {

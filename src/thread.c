@@ -59,7 +59,7 @@ YogThread_eval_code(YogEnv* env, YogThread* th, YogCode* code)
             YogExcTblEntry* entry = &code->exc_tbl->items[i];
             BOOL found = FALSE;
             if ((entry->from <= pc) && (pc < entry->to)) {
-                pc = entry->jmp_to;
+                pc = entry->target;
                 found = TRUE;
                 break;
             }
