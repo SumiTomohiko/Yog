@@ -1,53 +1,41 @@
 #include "yog/yog.h"
 
 #define CHECK_TYPE(v) do { \
-    Yog_assert(env, YOGVAL_TYPE(recv) == VAL_INT, "Value isn't int."); \
+    Yog_assert(env, YOGVAL_TYPE(v) == VAL_INT, "Value isn't int."); \
 } while (0)
 
-#define CHECK_ARGS(argc, args) do { \
-    unsigned int i = 0; \
-    for (i = 0; i < argc; i++) { \
-        CHECK_TYPE(args[i]); \
-    } \
-} while (0)
-
-#define CHECK_ARGC(expected, argc) do { \
-    Yog_assert(env, expected == argc, ""); \
-} while (0)
-
-#define CHECK_BIN_ARGS(recv, argc, args) do { \
-    CHECK_TYPE(recv); \
-    CHECK_ARGC(1, argc); \
-    CHECK_ARGS(argc, args); \
+#define CHECK_ARGS(self, v) do { \
+    CHECK_TYPE(self); \
+    CHECK_TYPE(v); \
 } while (0)
 
 static YogVal 
-int_to_s(YogEnv* env, YogVal recv, int argc, YogVal* args) 
+int_to_s(YogEnv* env, YogVal self, YogVal n)
 {
-    CHECK_TYPE(recv);
+    CHECK_TYPE(self);
 
-    YogString* s = YogString_new_format(env, "%d", YOGVAL_INT(recv));
+    YogString* s = YogString_new_format(env, "%d", YOGVAL_INT(self));
     YogVal val = YogVal_obj(YOGBASICOBJ(s));
 
     return val;
 }
 
 static YogVal 
-int_add(YogEnv* env, YogVal recv, int argc, YogVal* args) 
+int_add(YogEnv* env, YogVal self, YogVal n)
 {
-    CHECK_BIN_ARGS(recv, argc, args);
+    CHECK_ARGS(self, n);
 
-    int result = YOGVAL_INT(recv) + YOGVAL_INT(args[0]);
+    int result = YOGVAL_INT(self) + YOGVAL_INT(n);
 
     return YogVal_int(result);
 }
 
 static YogVal 
-int_less(YogEnv* env, YogVal recv, int argc, YogVal* args) 
+int_less(YogEnv* env, YogVal self, YogVal n)
 {
-    CHECK_BIN_ARGS(recv, argc, args);
+    CHECK_ARGS(self, n);
 
-    if (YOGVAL_INT(recv) < YOGVAL_INT(args[0])) {
+    if (YOGVAL_INT(self) < YOGVAL_INT(n)) {
         return YogVal_true();
     }
     else {
@@ -59,10 +47,13 @@ YogKlass*
 YogInt_klass_new(YogEnv* env) 
 {
     YogKlass* klass = YogKlass_new(env, ENV_VM(env)->obj_klass);
-    YogObj* obj = YOGOBJ(klass);
-    YogObj_define_method(env, obj, "+", int_add);
-    YogObj_define_method(env, obj, "<", int_less);
-    YogObj_define_method(env, obj, "to_s", int_to_s);
+#define DEFINE_METHOD(name, f) do { \
+    YogKlass_define_method(env, klass, name, f, 0, 0, 0, -1, "n", NULL); \
+} while (0)
+    DEFINE_METHOD("+", int_add);
+    DEFINE_METHOD("<", int_less);
+#undef DEFINE_METHOD
+    YogKlass_define_method(env, klass, "to_s", int_to_s, 0, 0, 0, 0, NULL);
 
     return klass;
 }

@@ -109,8 +109,9 @@ typedef struct CompileData CompileData;
     } \
 } while (0)
 
-#define INTERN(s)   YogVm_intern(env, ENV_VM(env), s)
-#define RAISE       INTERN("raise")
+#define RAISE   INTERN("raise")
+#define RERAISE() \
+    CompileData_append_call_command(env, data, RAISE, 0, 0, 0, 0, 0)
 
 #define PUSH_TRY()  do { \
     TryListEntry try_list_entry; \
@@ -459,7 +460,7 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
     Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for method call.");
     CompileData* data = arg;
     SET_LINENO();
-    CompileData_append_call_method(env, data, NODE_METHOD(node), argc);
+    CompileData_append_call_method(env, data, NODE_METHOD(node), argc, 0, 0, 0, 0);
 }
 
 static int
@@ -501,7 +502,7 @@ compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void
     Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for command call.");
     CompileData* data = arg;
     SET_LINENO();
-    CompileData_append_call_command(env, data, NODE_COMMAND(node), argc);
+    CompileData_append_call_command(env, data, NODE_COMMAND(node), argc, 0, 0, 0, 0);
 }
 
 #if 0
@@ -811,12 +812,87 @@ register_params_var2index(YogEnv* env, YogNode* node, YogTable* var2index)
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
         YogVal param = YogArray_at(env, params, i);
-        if (YogTable_lookup(env, var2index, param, NULL)) {
+        YogNode* node = YOGVAL_PTR(param);
+        ID id = NODE_NAME(node);
+        YogVal name = YogVal_symbol(id);
+        if (YogTable_lookup(env, var2index, name, NULL)) {
             Yog_assert(env, FALSE, "duplicated argument name in function definition");
         }
         YogVal index = YogVal_int(i);
-        YogTable_add_direct(env, var2index, param, index);
+        YogTable_add_direct(env, var2index, name, index);
     }
+}
+
+static void 
+setup_params(YogEnv* env, YogArray* params, YogCode* code) 
+{
+    YogArgInfo* arg_info = &code->arg_info;
+    arg_info->argc = 0;
+    arg_info->argnames = NULL;
+    arg_info->blockargc = 0;
+    arg_info->blockargname = 0;
+    arg_info->varargc = 0;
+    arg_info->kwargc = 0;
+
+    if (params == NULL) {
+        return;
+    }
+
+    unsigned int size = YogArray_size(env, params);
+    unsigned int argc = 0;
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        YogVal val = YogArray_at(env, params, i);
+        YogNode* node = YOGVAL_PTR(val);
+        if (node->type != NODE_PARAM) {
+            break;
+        }
+        argc++;
+    }
+    ID* argnames = NULL;
+    if (0 < argc) {
+        argnames = YogVm_alloc(env, NULL, sizeof(ID) * argc);
+        for (i = 0; i < argc; i++) {
+            YogVal val = YogArray_at(env, params, i);
+            YogNode* node = YOGVAL_PTR(val);
+            Yog_assert(env, node->type == NODE_PARAM, "Node must be NODE_PARAM.");
+            argnames[i] = NODE_NAME(node);
+        }
+    }
+    arg_info->argc = argc;
+    arg_info->argnames = argnames;
+    if (size == argc) {
+        return;
+    }
+
+    unsigned int n = argc;
+    YogVal val = YogArray_at(env, params, n);
+    YogNode* node = YOGVAL_PTR(val);
+    if (node->type == NODE_BLOCK_PARAM) {
+        arg_info->blockargc = 1;
+        arg_info->blockargname = NODE_NAME(node);
+        n++;
+        if (size == n) {
+            return;
+        }
+        val = YogArray_at(env, params, n);
+        node = YOGVAL_PTR(val);
+    }
+
+    if (node->type == NODE_VAR_PARAM) {
+        arg_info->varargc = 1;
+        n++;
+        if (size == n) {
+            return;
+        }
+        val = YogArray_at(env, params, n);
+        node = YOGVAL_PTR(val);
+    }
+
+    Yog_assert(env, node->type == NODE_KW_PARAM, "Node must be NODE_KW_PARAM.");
+    arg_info->kwargc = 1;
+    n++;
+    Yog_assert(env, size == n, "Parameters count is unmatched.");
 }
 
 static YogCode* 
@@ -828,11 +904,7 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node)
     make_var2index(env, stmts, var2index);
 
     YogCode* code = compile_stmts(env, visitor, stmts, var2index, CTX_FUNC);
-
-    YogArray* params = NODE_PARAMS(node);
-    if (params != NULL) {
-        code->argc = YogArray_size(env, params);
-    }
+    setup_params(env, NODE_PARAMS(node), code);
 
     return code;
 }
@@ -858,12 +930,24 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     int const_index = register_const(env, data, val);
 
     ID id = NODE_NAME(node);
+#if 0
     int var_index = lookup_var_index(env, data->var2index, id);
+#endif
 
     CompileData_append_push_const(env, data, const_index);
-    CompileData_append_make_func(env, data);
+    switch (data->ctx) {
+        case CTX_FUNC:
+            Yog_assert(env, FALSE, "TODO: NOT IMPLEMENTED");
+            break;
+        case CTX_PKG:
+            CompileData_append_make_package_method(env, data);
+            CompileData_append_store_pkg(env, data, id);
+            break;
+        default:
+            Yog_assert(env, FALSE, "Unknown context.");
+            break;
+    }
     SET_LINENO();
-    CompileData_append_store_pkg(env, data, var_index);
 }
 
 static void 
@@ -880,7 +964,7 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* a
 
     CompileData* data = arg;
     SET_LINENO();
-    CompileData_append_call_func(env, data, argc);
+    CompileData_append_call_function(env, data, argc, 0, 0, 0, 0);
 }
 
 static void 
@@ -888,14 +972,16 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 {
     CompileData* data = arg;
     ID id = NODE_ID(node);
-    int index = lookup_var_index(env, data->var2index, id);
     SET_LINENO();
     switch (data->ctx) {
-    case CTX_PKG:
-        CompileData_append_load_pkg(env, data, index);
-        break;
     case CTX_FUNC:
-        CompileData_append_load_local(env, data, index);
+        {
+            uint8_t index = lookup_var_index(env, data->var2index, id);
+            CompileData_append_load_local(env, data, index);
+            break;
+        }
+    case CTX_PKG:
+        CompileData_append_load_pkg(env, data, id);
         break;
     default:
         Yog_assert(env, FALSE, "Unknown context.");
@@ -907,17 +993,15 @@ static void
 append_store(YogEnv* env, CompileData* data, ID id) 
 {
     switch (data->ctx) {
-        case CTX_PKG:
+        case CTX_FUNC:
             {
                 uint8_t index = lookup_var_index(env, data->var2index, id);
                 CompileData_append_store_local(env, data, index);
                 break;
             }
-        case CTX_FUNC:
-            {
-                CompileData_append_store_pkg(env, data, id);
-                break;
-            }
+        case CTX_PKG:
+            CompileData_append_store_pkg(env, data, id);
+            break;
         default:
             Yog_assert(env, FALSE, "Unkown context.");
             break;
@@ -957,7 +1041,7 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
 
     append_inst(data, label_finally_error_start);
     visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
-    CompileData_append_call_command(env, data, RAISE, 0);
+    RERAISE();
 
     append_inst(data, label_finally_end);
 
@@ -1008,7 +1092,7 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
             visit_node(env, visitor, node_type, arg);
 #define LOAD_EXC()  CompileData_append_load_special(env, data, INTERN("$!"))
             LOAD_EXC();
-            CompileData_append_call_method(env, data, INTERN("==="), 1);
+            CompileData_append_call_method(env, data, INTERN("==="), 1, 0, 0, 0, 0);
             CompileData_append_jump_if_false(env, data, label_body_end);
 
             ID id = NODE_EXC_VAR(node);
@@ -1024,7 +1108,7 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 
         append_inst(data, label_body_end);
     }
-    CompileData_append_call_command(env, data, RAISE, 0);
+    RERAISE();
 
     append_inst(data, label_else_start);
     visitor->visit_stmts(env, visitor, NODE_ELSE(node), arg);

@@ -67,22 +67,39 @@ YogValArray_new(YogEnv* env, unsigned int capacity)
     return array;
 }
 
-void 
-YogArray_push(YogEnv* env, YogArray* array, YogVal val) 
+static void 
+ensure_array_size(YogEnv* env, YogArray* array, unsigned int size) 
 {
-    if (array->body->capacity < array->body->size + 1) {
+    if (array->body->capacity < size) {
         YogValArray* old_body = array->body;
+        unsigned int new_capacity = old_body->size;
+        do {
 #define INCREASE_RATIO  (2)
-        unsigned int new_capacity = INCREASE_RATIO * old_body->size;
+            new_capacity *= INCREASE_RATIO;
 #undef INCREASE_RATIO
+        } while (new_capacity < size);
         YogValArray* new_body = YogValArray_new(env, new_capacity);
         memcpy(new_body->items, old_body->items, sizeof(YogVal) * old_body->size);
         new_body->size = old_body->size;
 
         array->body = new_body;
     }
+}
 
+void 
+YogArray_push(YogEnv* env, YogArray* array, YogVal val) 
+{
+    ensure_array_size(env, array, YogArray_size(env, array) + 1);
     YogValArray_push(env, array->body, val);
+}
+
+void 
+YogArray_extend(YogEnv* env, YogArray* array, YogArray* a) 
+{
+    unsigned int old_size = YogArray_size(env, array);
+    unsigned int new_size = old_size + YogArray_size(env, a);
+    ensure_array_size(env, array, new_size);
+    memcpy(&array->body->items[old_size], &a->body->items[0], sizeof(YogVal) * YogArray_size(env, a));
 }
 
 static void 

@@ -29,57 +29,63 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     AS = 258,
-     BREAK = 259,
-     COMMA = 260,
-     COMP_OP = 261,
-     DEF = 262,
-     ELIF = 263,
-     ELSE = 264,
-     END = 265,
-     EQUAL = 266,
-     EXCEPT = 267,
-     FINALLY = 268,
-     IF = 269,
-     LPAR = 270,
-     NAME = 271,
-     NEWLINE = 272,
-     NEXT = 273,
-     NUMBER = 274,
-     PLUS = 275,
-     RPAR = 276,
-     TRY = 277,
-     WHILE = 278
+     AMPER = 258,
+     AS = 259,
+     BREAK = 260,
+     COMMA = 261,
+     COMP_OP = 262,
+     DEF = 263,
+     DOUBLE_STAR = 264,
+     ELIF = 265,
+     ELSE = 266,
+     END = 267,
+     EQUAL = 268,
+     EXCEPT = 269,
+     FINALLY = 270,
+     IF = 271,
+     LPAR = 272,
+     NAME = 273,
+     NEWLINE = 274,
+     NEXT = 275,
+     NUMBER = 276,
+     PLUS = 277,
+     RPAR = 278,
+     STAR = 279,
+     TRY = 280,
+     WHILE = 281
    };
 #endif
 /* Tokens.  */
-#define AS 258
-#define BREAK 259
-#define COMMA 260
-#define COMP_OP 261
-#define DEF 262
-#define ELIF 263
-#define ELSE 264
-#define END 265
-#define EQUAL 266
-#define EXCEPT 267
-#define FINALLY 268
-#define IF 269
-#define LPAR 270
-#define NAME 271
-#define NEWLINE 272
-#define NEXT 273
-#define NUMBER 274
-#define PLUS 275
-#define RPAR 276
-#define TRY 277
-#define WHILE 278
+#define AMPER 258
+#define AS 259
+#define BREAK 260
+#define COMMA 261
+#define COMP_OP 262
+#define DEF 263
+#define DOUBLE_STAR 264
+#define ELIF 265
+#define ELSE 266
+#define END 267
+#define EQUAL 268
+#define EXCEPT 269
+#define FINALLY 270
+#define IF 271
+#define LPAR 272
+#define NAME 273
+#define NEWLINE 274
+#define NEXT 275
+#define NUMBER 276
+#define PLUS 277
+#define RPAR 278
+#define STAR 279
+#define TRY 280
+#define WHILE 281
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 212 "parser.y"
+#line 242 "parser.y"
 typedef union YYSTYPE {
     YogArray* array;
     YogNode* node;
@@ -87,7 +93,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 91 "parser.h"
+#line 97 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

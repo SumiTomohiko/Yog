@@ -5,12 +5,12 @@
 } while (0)
 
 static YogVal 
-bool_to_s(YogEnv* env, YogVal recv, int argc, YogVal* args) 
+bool_to_s(YogEnv* env, YogVal self)
 {
-    CHECK_TYPE(recv);
+    CHECK_TYPE(self);
 
     const char* s = NULL;
-    if (YOGVAL_BOOL(recv)) {
+    if (YOGVAL_BOOL(self)) {
         s = "true";
     }
     else {
@@ -27,8 +27,7 @@ YogKlass*
 YogBool_klass_new(YogEnv* env) 
 {
     YogKlass* klass = YogKlass_new(env, ENV_VM(env)->obj_klass);
-    YogObj* obj = YOGOBJ(klass);
-    YogObj_define_method(env, obj, "to_s", bool_to_s);
+    YogKlass_define_method(env, klass, "to_s", bool_to_s, 0, 0, 0, 0, NULL);
 
     return klass;
 }

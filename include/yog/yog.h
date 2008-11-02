@@ -3,6 +3,7 @@
 
 #include <limits.h>
 #include <setjmp.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include "yog/opcodes.h"
@@ -38,6 +39,10 @@ struct YogVm {
     struct YogKlass* int_klass;
     struct YogKlass* pkg_klass;
     struct YogKlass* bool_klass;
+    struct YogKlass* builtin_bound_method_klass;
+    struct YogKlass* bound_method_klass;
+    struct YogKlass* builtin_unbound_method_klass;
+    struct YogKlass* unbound_method_klass;
 
     struct YogTable* pkgs;
 };
@@ -50,6 +55,7 @@ struct YogEnv {
 };
 
 #define ENV_VM(env) ((env)->vm)
+#define ENV_TH(env) ((env)->th)
 
 typedef struct YogEnv YogEnv;
 
@@ -62,7 +68,6 @@ enum YogValType {
     VAL_BOOL, 
     VAL_NIL, 
     VAL_SYMBOL, 
-    VAL_FUNC, 
 };
 
 typedef enum YogValType YogValType;
@@ -79,17 +84,14 @@ struct GcHead {
 
 typedef struct GcHead GcHead;
 
-typedef struct YogVal (*YogFuncBody)(struct YogEnv*, struct YogVal, int, struct YogVal*);
-
 struct YogVal {
-    YogValType type;
+    enum YogValType type;
     union {
         int n;
         double f;
         ID symbol;
         void * ptr;
         struct YogBasicObj* obj;
-        YogFuncBody func;
         BOOL b;
     } u;
 };
@@ -99,7 +101,6 @@ struct YogVal {
 #define YOGVAL_FLOAT(v)     ((v).u.f)
 #define YOGVAL_SYMBOL(v)    ((v).u.symbol)
 #define YOGVAL_PTR(v)       ((v).u.ptr)
-#define YOGVAL_FUNC(v)      ((v).u.func)
 #define YOGVAL_BOOL(v)      ((v).u.b)
 #define YOGVAL_OBJ(v)       ((v).u.obj)
 
@@ -111,7 +112,6 @@ struct YogVal {
 #define IS_BOOL(v)      (YOGVAL_TYPE(v) == VAL_BOOL)
 #define IS_NIL(v)       (YOGVAL_TYPE(v) == VAL_NIL)
 #define IS_SYMBOL(v)    (YOGVAL_TYPE(v) == VAL_SYMBOL)
-#define IS_FUNC(v)      (YOGVAL_TYPE(v) == VAL_FUNC)
 
 typedef struct YogVal YogVal;
 
@@ -147,15 +147,7 @@ struct YogTable {
 
 typedef struct YogTable YogTable;
 
-#define ST_OBJ      (0)
-#define ST_ARRAY    (1)  
-#define ST_KLASS    (2)
-#define ST_FUNC     (3)
-#define ST_STR      (4)
-#define ST_BIN      (5)
-
 struct YogBasicObj {
-    unsigned int type;
     struct YogKlass* klass;
 };
 
@@ -181,6 +173,7 @@ typedef struct YogArray YogArray;
 
 enum YogNodeType {
     NODE_ASSIGN, 
+    NODE_BLOCK_PARAM, 
     NODE_BREAK, 
     NODE_COMMAND_CALL, 
     NODE_EXCEPT, 
@@ -189,10 +182,13 @@ enum YogNodeType {
     NODE_FUNC_CALL, 
     NODE_FUNC_DEF, 
     NODE_IF, 
+    NODE_KW_PARAM, 
     NODE_LITERAL, 
     NODE_METHOD_CALL, 
     NODE_NEXT, 
+    NODE_PARAM, 
     NODE_VARIABLE, 
+    NODE_VAR_PARAM, 
     NODE_WHILE, 
 };
 
@@ -236,6 +232,7 @@ struct YogNode {
 #define NODE_NAME(node)     (node)->u1.id
 #define NODE_PARAMS(node)   (node)->u2.array
 #define NODE_STMTS(node)    (node)->u3.array
+#define NODE_DEFAULT(node)  (node)->u2.nd
 
 #define NODE_HEAD(node)     (node)->u1.array
 #define NODE_BODY(node)     (node)->u3.array
@@ -272,12 +269,55 @@ struct YogKlass {
 
 typedef struct YogKlass YogKlass;
 
-struct YogFunc {
+struct YogArgInfo {
+    unsigned int argc;
+    ID* argnames;
+    unsigned int blockargc;
+    ID blockargname;
+    unsigned int varargc;
+    unsigned int kwargc;
+};
+
+typedef struct YogArgInfo YogArgInfo;
+
+struct YogBuiltinFunction {
+    struct YogArgInfo arg_info;
+    int required_argc;
+
+    YogVal (*f)();
+};
+
+typedef struct YogBuiltinFunction YogBuiltinFunction;
+
+struct YogBuiltinBoundMethod {
+    YOGBASICOBJ_HEAD;
+    YogVal self;
+    struct YogBuiltinFunction* f;
+};
+
+typedef struct YogBuiltinBoundMethod YogBuiltinBoundMethod;
+
+struct YogBoundMethod {
+    YOGBASICOBJ_HEAD;
+    YogVal self;
+    struct YogCode* code;
+};
+
+typedef struct YogBoundMethod YogBoundMethod;
+
+struct YogBuiltinUnboundMethod {
+    YOGBASICOBJ_HEAD;
+    struct YogBuiltinFunction* f;
+};
+
+typedef struct YogBuiltinUnboundMethod YogBuiltinUnboundMethod;
+
+struct YogUnboundMethod {
     YOGBASICOBJ_HEAD;
     struct YogCode* code;
 };
 
-typedef struct YogFunc YogFunc;
+typedef struct YogUnboundMethod YogUnboundMethod;
 
 struct YogCharArray {
     unsigned int size;
@@ -332,7 +372,8 @@ struct LinenoTableEntry {
 typedef struct LinenoTableEntry LinenoTableEntry;
 
 struct YogCode {
-    unsigned int argc;
+    struct YogArgInfo arg_info;
+
     unsigned int stack_size;
     unsigned int local_vars_count;
     struct YogValArray* consts;
@@ -347,18 +388,53 @@ struct YogCode {
 
 typedef struct YogCode YogCode;
 
+enum YogFrameType {
+    FT_C, 
+    FT_PKG, 
+    FT_METHOD, 
+};
+
+typedef enum YogFrameType YogFrameType;
+
 struct YogFrame {
-    union {
-        struct YogTable* pkg;
-        struct YogValArray* local;
-    } vars;
+    enum YogFrameType type;
+};
+
+#define FRAME(f)    ((YogFrame*)(f))
+
+typedef struct YogFrame YogFrame;
+
+#define YogCFrame   YogFrame
+
+struct YogScriptFrame {
+    struct YogFrame base;
+    pc_t pc;
     struct YogValArray* stack;
 };
 
-#define PKG_VARS(f)     (f)->vars.pkg
-#define LOCAL_VARS(f)   (f)->vars.local
+#define SCRIPT_FRAME(f)     ((YogScriptFrame*)f)
 
-typedef struct YogFrame YogFrame;
+typedef struct YogScriptFrame YogScriptFrame;
+
+struct YogPkgFrame {
+    struct YogScriptFrame base;
+    struct YogTable* vars;
+    struct YogPkg* pkg;
+};
+
+#define PKG_FRAME(f)    ((YogPkgFrame*)f)
+#define PKG_VARS(f)     (PKG_FRAME(f)->vars)
+
+typedef struct YogPkgFrame YogPkgFrame;
+
+struct YogMethodFrame {
+    struct YogScriptFrame base;
+    struct YogValArray* vars;
+};
+
+#define LOCAL_VARS(f)   (((YogMethodFrame*)f)->vars)
+
+typedef struct YogMethodFrame YogMethodFrame;
 
 struct YogJmpBuf {
     jmp_buf buf;
@@ -385,14 +461,14 @@ typedef enum InstType InstType;
 
 #include "yog/inst.h"
 
+#define YogPkg      YogObj
+#define pkg_klass   obj_klass
+
 /* $PROTOTYPE_START$ */
 
 /**
  * DON'T EDIT THIS AREA. HERE IS GENERATED BY update_prototype.py.
  */
-
-/* src/function.c */
-YogFunc* YogFunc_new(YogEnv*);
 
 /* src/array.c */
 void YogValArray_push(YogEnv*, YogValArray*, YogVal);
@@ -403,22 +479,8 @@ unsigned int YogValArray_size(YogEnv*, YogValArray*);
 unsigned int YogArray_size(YogEnv*, YogArray*);
 YogValArray* YogValArray_new(YogEnv*, unsigned int);
 void YogArray_push(YogEnv*, YogArray*, YogVal);
+void YogArray_extend(YogEnv*, YogArray*, YogArray*);
 YogArray* YogArray_new(YogEnv*);
-
-/* src/package.c */
-YogKlass* YogPkg_klass_new(YogEnv*);
-
-/* src/int.c */
-YogKlass* YogInt_klass_new(YogEnv*);
-
-/* src/object.c */
-YogVal YogObj_get_attr(YogEnv*, YogObj*, ID);
-void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
-void YogObj_define_method(YogEnv*, YogObj*, const char*, YogFuncBody);
-void YogBasicObj_init(YogEnv*, YogBasicObj*, YogKlass*);
-void YogObj_init(YogEnv*, YogObj*, YogKlass*);
-void YogObj_gc_children(YogEnv*, void*, DoGc);
-YogObj* YogObj_new(YogEnv*, YogKlass*);
 
 /* src/binary.c */
 unsigned int YogByteArray_size(YogEnv*, YogByteArray*);
@@ -431,53 +493,71 @@ void YogBinary_push_unsigned_int(YogEnv*, YogBinary*, unsigned int);
 void YogBinary_push_pc(YogEnv*, YogBinary*, pc_t);
 YogBinary* YogBinary_new(YogEnv*, unsigned int);
 
-/* src/thread.c */
-YogVal YogThread_call_method(YogEnv*, YogVal, const char*, unsigned int, YogVal*);
-YogVal YogThread_call_method_id(YogEnv*, YogVal, ID, unsigned int, YogVal*);
-void YogThread_call_command(YogEnv*, ID, unsigned int, YogVal*);
-void YogThread_eval_code(YogEnv*, YogThread*, YogCode*);
-YogThread* YogThread_new(YogEnv*);
+/* src/bool.c */
+YogKlass* YogBool_klass_new(YogEnv*);
 
-/* src/klass.c */
-YogKlass* YogKlass_new(YogEnv*, YogKlass*);
-
-/* src/value.c */
-void YogVal_print(YogEnv*, YogVal);
-int YogVal_hash(YogEnv*, YogVal);
-BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
-YogVal YogVal_true();
-YogVal YogVal_false();
-YogVal YogVal_nil();
-YogVal YogVal_undef();
-YogVal YogVal_obj(YogBasicObj*);
-YogVal YogVal_ptr(void *);
-YogVal YogVal_int(int);
-YogVal YogVal_symbol(ID);
-YogVal YogVal_func(YogFuncBody);
-YogKlass* YogVal_get_klass(YogEnv*, YogVal);
-YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
-
-/* src/parser.y */
-void Yog_set_parsing_env(YogEnv*);
-YogEnv* Yog_get_parsing_env();
-YogArray* Yog_get_parsed_tree();
-
-/* src/compile.c */
-YogCode* Yog_compile_module(YogEnv*, YogArray*);
+/* src/builtins.c */
+YogPkg* Yog_bltins_new(YogEnv*);
 
 /* src/code.c */
 void YogCode_dump(YogEnv*, YogCode*);
 YogCode* YogCode_new(YogEnv*);
 
+/* src/compile.c */
+YogCode* Yog_compile_module(YogEnv*, YogArray*);
+
 /* src/error.c */
 void Yog_assert(YogEnv*, BOOL, const char*);
 
 /* src/frame.c */
-YogFrame* YogFrame_new(YogEnv*);
+YogPkgFrame* YogPkgFrame_new(YogEnv*);
+YogMethodFrame* YogMethodFrame_new(YogEnv*);
+YogCFrame* YogCFrame_new(YogEnv*);
+
+/* src/function.c */
+YogBuiltinFunction* YogBuiltinFunction_new(YogEnv*, const char*, void*, unsigned int, unsigned int, unsigned int, int, va_list);
+
+/* src/inst.c */
+unsigned int Yog_get_inst_size(OpCode);
+
+/* src/int.c */
+YogKlass* YogInt_klass_new(YogEnv*);
+
+/* src/klass.c */
+void YogKlass_define_method(YogEnv*, YogKlass*, const char*, void*, unsigned int, unsigned int, unsigned int, int, ...);
+YogKlass* YogKlass_new(YogEnv*, YogKlass*);
 
 /* src/lexer.l */
 void Yog_reset_lineno();
 unsigned int Yog_get_lineno();
+
+/* src/method.c */
+YogKlass* YogBuiltinBoundMethod_klass_new(YogEnv*);
+YogKlass* YogBoundMethod_klass_new(YogEnv*);
+YogKlass* YogBuiltinUnboundMethod_klass_new(YogEnv*);
+YogKlass* YogUnboundMethod_klass_new(YogEnv*);
+YogBuiltinBoundMethod* YogBuiltinBoundMethod_new(YogEnv*);
+YogBoundMethod* YogBoundMethod_new(YogEnv*);
+YogBuiltinUnboundMethod* YogBuiltinUnboundMethod_new(YogEnv*);
+YogUnboundMethod* YogUnboundMethod_new(YogEnv*);
+
+/* src/object.c */
+YogVal YogObj_get_attr(YogEnv*, YogObj*, ID);
+void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
+void YogBasicObj_init(YogEnv*, YogBasicObj*, YogKlass*);
+void YogObj_init(YogEnv*, YogObj*, YogKlass*);
+void YogObj_gc_children(YogEnv*, void*, DoGc);
+YogObj* YogObj_new(YogEnv*, YogKlass*);
+
+/* src/package.c */
+void YogPkg_define_method(YogEnv*, YogPkg*, const char*, void*, unsigned int, unsigned int, unsigned int, unsigned int, ...);
+YogKlass* YogPkg_klass_new(YogEnv*);
+YogPkg* YogPkg_new(YogEnv*);
+
+/* src/parser.y */
+void Yog_set_parsing_env(YogEnv*);
+YogEnv* Yog_get_parsing_env();
+YogArray* Yog_get_parsed_tree();
 
 /* src/st.c */
 BOOL YogTable_lookup(YogEnv*, YogTable*, YogVal, YogVal*);
@@ -494,11 +574,33 @@ BOOL YogTable_lookup_str(YogEnv*, YogTable*, const char*, YogVal*);
 YogTable* YogTable_new_val_table(YogEnv*);
 int YogTable_size(YogEnv*, YogTable*);
 
-/* src/inst.c */
-unsigned int Yog_get_inst_size(OpCode);
+/* src/string.c */
+YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
+YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
+YogString* YogString_new_str(YogEnv*, const char*);
+YogString* YogString_new_format(YogEnv*, const char*, ...);
 
-/* src/builtins.c */
-YogObj* Yog_bltins_new(YogEnv*);
+/* src/thread.c */
+YogVal YogThread_call_method(YogEnv*, YogThread*, YogVal, const char*, unsigned int, YogVal*);
+YogVal YogThread_call_method_id(YogEnv*, YogThread*, YogVal, ID, unsigned int, YogVal*);
+void YogThread_call_command(YogEnv*, ID, unsigned int, YogVal*);
+void YogThread_eval_package(YogEnv*, YogThread*, YogPkg*, YogCode*);
+YogThread* YogThread_new(YogEnv*);
+
+/* src/value.c */
+void YogVal_print(YogEnv*, YogVal);
+int YogVal_hash(YogEnv*, YogVal);
+BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
+YogVal YogVal_true();
+YogVal YogVal_false();
+YogVal YogVal_nil();
+YogVal YogVal_undef();
+YogVal YogVal_obj(YogBasicObj*);
+YogVal YogVal_ptr(void *);
+YogVal YogVal_int(int);
+YogVal YogVal_symbol(ID);
+YogKlass* YogVal_get_klass(YogEnv*, YogVal);
+YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
 
 /* src/vm.c */
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
@@ -506,15 +608,6 @@ ID YogVm_intern(YogEnv*, YogVm*, const char*);
 void* YogVm_alloc(YogEnv*, GcChildren, size_t);
 void YogVm_boot(YogEnv*, YogVm*);
 YogVm* YogVm_new(size_t);
-
-/* src/bool.c */
-YogKlass* YogBool_klass_new(YogEnv*);
-
-/* src/string.c */
-YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
-YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
-YogString* YogString_new_str(YogEnv*, const char*);
-YogString* YogString_new_format(YogEnv*, const char*, ...);
 
 /* $PROTOTYPE_END$ */
 
@@ -528,6 +621,9 @@ YogString* YogString_new_format(YogEnv*, const char*, ...);
 #define JMP_RAISE   (1)
 
 #define DO_GC(env, do_gc, obj)  obj = (do_gc)((env), (obj))
+
+#define INTERN(s)   YogVm_intern(env, ENV_VM(env), s)
+#define BUILTINS    "builtins"
 
 #endif
 /**

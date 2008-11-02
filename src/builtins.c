@@ -3,15 +3,15 @@
 #include "yog/yog.h"
 
 static YogVal 
-bltins_raise(YogEnv* env, YogVal recv, int argc, YogVal* args) 
+bltins_raise(YogEnv* env, YogVal self, YogVal exc)
 {
     YogThread* th = env->th;
     YogVal jmp_val = YogVal_undef();
-    if (argc < 1) {
+    if (IS_UNDEF(exc)) {
         jmp_val = th->jmp_val;
     }
     else {
-        jmp_val = args[0];
+        jmp_val = exc;
     }
     Yog_assert(env, !IS_UNDEF(jmp_val), "jmp_val is undefined.");
 
@@ -23,12 +23,14 @@ bltins_raise(YogEnv* env, YogVal recv, int argc, YogVal* args)
 }
 
 static YogVal 
-bltins_puts(YogEnv* env, YogVal recv, int argc, YogVal* args) 
+bltins_puts(YogEnv* env, YogVal self, YogArray* vararg)
 {
-    if (0 < argc) {
+    unsigned int size = YogArray_size(env, vararg);
+    if (0 < size) {
         unsigned int i = 0;
-        for (i = 0; i < argc; i++) {
-            YogVal val = YogThread_call_method(env, args[i], "to_s", 0, NULL);
+        for (i = 0; i < size; i++) {
+            YogVal arg = YogArray_at(env, vararg, i);
+            YogVal val = YogThread_call_method(env, ENV_TH(env), arg, "to_s", 0, NULL);
             YogString* s = YOGVAL_PTR(val);
             printf("%s", s->body->items);
             printf("\n");
@@ -41,12 +43,12 @@ bltins_puts(YogEnv* env, YogVal recv, int argc, YogVal* args)
     return YogVal_nil();
 }
 
-YogObj* 
+YogPkg* 
 Yog_bltins_new(YogEnv* env) 
 {
-    YogObj* bltins = YogObj_new(env, ENV_VM(env)->pkg_klass);
-    YogObj_define_method(env, bltins, "puts", bltins_puts);
-    YogObj_define_method(env, bltins, "raise", bltins_raise);
+    YogPkg* bltins = YogObj_new(env, ENV_VM(env)->pkg_klass);
+    YogPkg_define_method(env, bltins, "puts", bltins_puts, 0, 1, 0, 0, NULL);
+    YogPkg_define_method(env, bltins, "raise", bltins_raise, 0, 0, 0, 0, "exc", NULL);
 
     return bltins;
 }

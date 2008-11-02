@@ -102,6 +102,28 @@ YogNode_new(YogEnv* env, YogNodeType type)
 
 #define NODE_NEW(type)  YogNode_new(ENV, type)
 
+#define PARAMS_NEW(array, params_without_default, params_with_default, block_param, var_param, kw_param) do { \
+    array = YogArray_new(ENV); \
+    if (params_without_default != NULL) { \
+        YogArray_extend(ENV, array, params_without_default); \
+    } \
+    if (params_with_default != NULL) { \
+        YogArray_extend(ENV, array, params_with_default); \
+    } \
+    if (block_param != NULL) { \
+        YogVal val = YogVal_ptr(block_param); \
+        YogArray_push(ENV, array, val); \
+    } \
+    if (var_param != NULL) { \
+        YogVal val = YogVal_ptr(var_param); \
+        YogArray_push(ENV, array, val); \
+    } \
+    if (kw_param != NULL) { \
+        YogVal val = YogVal_ptr(kw_param); \
+        YogArray_push(ENV, array, val); \
+    } \
+} while (0)
+
 #define COMMAND_CALL_NEW(result, name) do { \
     result = NODE_NEW(NODE_COMMAND_CALL); \
     NODE_COMMAND(result) = name; \
@@ -127,9 +149,17 @@ YogNode_new(YogEnv* env, YogNodeType type)
     result = array; \
 } while (0)
 
-#define SYMBOL_ARRAY_PUSH(result, id) do { \
-    YogVal val = YogVal_symbol(id); \
-    YogArray_push(ENV, result, val); \
+#define PARAM_NEW(node, type, id, default_) do { \
+    node = NODE_NEW(type); \
+    NODE_NAME(node) = id; \
+    NODE_DEFAULT(node) = default_; \
+} while (0)
+
+#define PARAM_ARRAY_PUSH(array, id, default_) do { \
+    YogNode* node = NULL; \
+    PARAM_NEW(node, NODE_PARAM, id, default_); \
+    YogVal val = YogVal_ptr(node); \
+    YogArray_push(ENV, array, val); \
 } while (0)
 
 #define FUNC_DEF_NEW(node, name, params, stmts) do { \
@@ -216,13 +246,14 @@ int yylex(void);
     ID name;
 }
 
+%token AMPER
 %token AS
 %token BREAK
 %token COMMA
 %token COMP_OP
 %token DEF
+%token DOUBLE_STAR
 %token ELIF
-%token ELSE
 %token ELSE
 %token END
 %token EQUAL
@@ -236,6 +267,7 @@ int yylex(void);
 %token NUMBER
 %token PLUS
 %token RPAR
+%token STAR
 %token TRY
 %token WHILE
 
@@ -246,6 +278,8 @@ int yylex(void);
 %type<array> if_tail
 %type<array> module
 %type<array> params
+%type<array> params_with_default
+%type<array> params_without_default
 %type<array> stmts
 %type<name> COMP_OP
 %type<name> NAME
@@ -254,19 +288,25 @@ int yylex(void);
 %type<node> arith_expr
 %type<node> assign_expr
 %type<node> atom
+%type<node> block_param
 %type<node> comparison
 %type<node> except
 %type<node> expr
 %type<node> factor
 %type<node> func_def
+%type<node> kw_param
 %type<node> logical_and_expr
 %type<node> logical_or_expr
 %type<node> not_expr
 %type<node> or_expr
+%type<node> param_default
+%type<node> param_default_opt
+%type<node> param_with_default
 %type<node> power
 %type<node> shift_expr
 %type<node> stmt
 %type<node> term
+%type<node> var_param
 %type<node> xor_expr
 %type<val> NUMBER
 %%
@@ -338,19 +378,145 @@ else_opt    : /* empty */ {
 func_def    : DEF NAME LPAR params RPAR stmts END {
                 FUNC_DEF_NEW($$, $2, $4, $6);
             }
-            | DEF NAME LPAR RPAR stmts END {
-                FUNC_DEF_NEW($$, $2, NULL, $5);
-            }
             ;
-params  : NAME {
-            $$ = YogArray_new(ENV);
-            SYMBOL_ARRAY_PUSH($$, $1);
+params  : params_without_default COMMA params_with_default COMMA block_param COMMA var_param COMMA kw_param {
+            PARAMS_NEW($$, $1, $3, $5, $7, $9);
         }
-        | params COMMA NAME {
-            SYMBOL_ARRAY_PUSH($1, $3);
-            $$ = $1;
+        | params_without_default COMMA params_with_default COMMA block_param COMMA var_param {
+            PARAMS_NEW($$, $1, $3, $5, $7, NULL);
+        }
+        | params_without_default COMMA params_with_default COMMA block_param COMMA kw_param {
+            PARAMS_NEW($$, $1, $3, $5, NULL, $7);
+        }
+        | params_without_default COMMA params_with_default COMMA block_param {
+            PARAMS_NEW($$, $1, $3, $5, NULL, NULL);
+        }
+        | params_without_default COMMA params_with_default COMMA var_param COMMA kw_param {
+            PARAMS_NEW($$, $1, $3, NULL, $5, $7);
+        }
+        | params_without_default COMMA params_with_default COMMA var_param {
+            PARAMS_NEW($$, $1, $3, NULL, $5, NULL);
+        }
+        | params_without_default COMMA params_with_default COMMA kw_param {
+            PARAMS_NEW($$, $1, $3, NULL, NULL, $5);
+        }
+        | params_without_default COMMA params_with_default {
+            PARAMS_NEW($$, $1, $3, NULL, NULL, NULL);
+        }
+        | params_without_default COMMA block_param COMMA var_param COMMA kw_param {
+            PARAMS_NEW($$, $1, NULL, $3, $5, $7);
+        }
+        | params_without_default COMMA block_param COMMA var_param {
+            PARAMS_NEW($$, $1, NULL, $3, $5, NULL);
+        }
+        | params_without_default COMMA block_param COMMA kw_param {
+            PARAMS_NEW($$, $1, NULL, $3, NULL, $5);
+        }
+        | params_without_default COMMA block_param {
+            PARAMS_NEW($$, $1, NULL, $3, NULL, NULL);
+        }
+        | params_without_default COMMA var_param COMMA kw_param {
+            PARAMS_NEW($$, $1, NULL, NULL, $3, $5);
+        }
+        | params_without_default COMMA var_param {
+            PARAMS_NEW($$, $1, NULL, NULL, $3, NULL);
+        }
+        | params_without_default COMMA kw_param {
+            PARAMS_NEW($$, $1, NULL, NULL, NULL, $3);
+        }
+        | params_without_default {
+            PARAMS_NEW($$, $1, NULL, NULL, NULL, NULL);
+        }
+        | params_with_default COMMA block_param COMMA var_param COMMA kw_param {
+            PARAMS_NEW($$, NULL, $1, $3, $5, $7);
+        }
+        | params_with_default COMMA block_param COMMA var_param {
+            PARAMS_NEW($$, NULL, $1, $3, $5, NULL);
+        }
+        | params_with_default COMMA block_param COMMA kw_param {
+            PARAMS_NEW($$, NULL, $1, $3, NULL, $5);
+        }
+        | params_with_default COMMA block_param {
+            PARAMS_NEW($$, NULL, $1, $3, NULL, NULL);
+        }
+        | params_with_default COMMA var_param COMMA kw_param {
+            PARAMS_NEW($$, NULL, $1, NULL, $3, $5);
+        }
+        | params_with_default COMMA var_param {
+            PARAMS_NEW($$, NULL, $1, NULL, $3, NULL);
+        }
+        | params_with_default COMMA kw_param {
+            PARAMS_NEW($$, NULL, $1, NULL, NULL, $3);
+        }
+        | params_with_default {
+            PARAMS_NEW($$, NULL, $1, NULL, NULL, NULL);
+        }
+        | block_param COMMA var_param COMMA kw_param {
+            PARAMS_NEW($$, NULL, NULL, $1, $3, $5);
+        }
+        | block_param COMMA var_param {
+            PARAMS_NEW($$, NULL, NULL, $1, $3, NULL);
+        }
+        | block_param COMMA kw_param {
+            PARAMS_NEW($$, NULL, NULL, $1, NULL, $3);
+        }
+        | block_param {
+            PARAMS_NEW($$, NULL, NULL, $1, NULL, NULL);
+        }
+        | var_param COMMA kw_param {
+            PARAMS_NEW($$, NULL, NULL, NULL, $1, $3);
+        }
+        | var_param {
+            PARAMS_NEW($$, NULL, NULL, NULL, $1, NULL);
+        }
+        | kw_param {
+            PARAMS_NEW($$, NULL, NULL, NULL, NULL, $1);
+        }
+        | /* empty */ {
+            $$ = NULL;
         }
         ;
+kw_param    : DOUBLE_STAR NAME {
+                PARAM_NEW($$, NODE_KW_PARAM, $2, NULL);
+            }
+            ;
+var_param   : STAR NAME {
+                PARAM_NEW($$, NODE_VAR_PARAM, $2, NULL);
+            }
+            ;
+block_param     : AMPER NAME param_default_opt {
+                    PARAM_NEW($$, NODE_BLOCK_PARAM, $2, $3);
+                }
+                ;
+param_default_opt   : /* empty */ {
+                        $$ = NULL;
+                    }
+                    | param_default
+                    ;
+param_default   : EQUAL expr {
+                    $$ = $2;
+                }
+                ;
+params_without_default  : NAME {
+                            $$ = YogArray_new(ENV);
+                            PARAM_ARRAY_PUSH($$, $1, NULL);
+                        }
+                        | params_without_default COMMA NAME {
+                            PARAM_ARRAY_PUSH($1, $3, NULL);
+                            $$ = $1;
+                        }
+                        ;
+params_with_default     : param_with_default {
+                            OBJ_ARRAY_NEW($$, $1);
+                        }
+                        | params_with_default COMMA param_with_default {
+                            OBJ_ARRAY_PUSH($$, $1, $3);
+                        }
+                        ;
+param_with_default  : NAME param_default {
+                        PARAM_NEW($$, NODE_PARAM, $1, $2);
+                    }
+                    ;
 args    : expr {
             OBJ_ARRAY_NEW($$, $1);
         }

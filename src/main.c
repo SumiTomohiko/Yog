@@ -38,7 +38,8 @@ main(int argc, char* argv[])
     YogCode* code = Yog_compile_module(&env, stmts);
     YogThread* th = YogThread_new(&env);
     env.th = th;
-    YogThread_eval_code(&env, th, code);
+    YogPkg* pkg = YogPkg_new(&env);
+    YogThread_eval_package(&env, th, pkg, code);
 
     return 0;
 }

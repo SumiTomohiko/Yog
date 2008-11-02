@@ -13,6 +13,7 @@ yog_SOURCES = src/array.c \
 	src/klass.c \
 	src/lexer.l \
 	src/main.c \
+	src/method.c \
 	src/object.c \
 	src/package.c \
 	src/parser.y \

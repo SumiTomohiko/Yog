@@ -28,9 +28,6 @@ YogVal_print(YogEnv* env, YogVal val)
     case VAL_SYMBOL:
         printf("<symbol: %d>\n", YOGVAL_SYMBOL(val));
         break;
-    case VAL_FUNC:
-        printf("<function: %p>\n", YOGVAL_FUNC(val));
-        break;
     default:
         Yog_assert(env, FALSE, "Uknown value type.");
         break;
@@ -202,12 +199,6 @@ YogVal_symbol(ID id)
     RETURN_VAL(VAL_SYMBOL, YOGVAL_SYMBOL, id);
 }
 
-YogVal 
-YogVal_func(YogFuncBody func) 
-{
-    RETURN_VAL(VAL_FUNC, YOGVAL_FUNC, func);
-}
-
 YogKlass* 
 YogVal_get_klass(YogEnv* env, YogVal val) 
 {
@@ -250,15 +241,13 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
 } while (0)
     if (IS_OBJ(val)) {
         YogBasicObj* obj = YOGVAL_OBJ(val);
-        switch (obj->type) {
-            case ST_OBJ: 
-            case ST_KLASS: 
-                RET_ATTR(obj);
-                break;
-            default:
-                /* TODO: generic attribute */
-                Yog_assert(env, FALSE, "Not implemented.");
-                break;
+        YogVm* vm = ENV_VM(env);
+        if ((obj->klass == vm->obj_klass) || (obj->klass == vm->klass_klass)) {
+            RET_ATTR(obj);
+        }
+        else {
+            /* TODO: generic attribute */
+            Yog_assert(env, FALSE, "Not implemented.");
         }
     }
 

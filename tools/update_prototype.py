@@ -16,6 +16,7 @@ class DeclarationInserter(object):
                     "src/code.c", "src/frame.c", "src/thread.c", "src/klass.c", 
                     "src/int.c", "src/builtins.c", "src/package.c", 
                     "src/function.c", "src/bool.c", "src/lexer.l", "src/inst.c",
+                    "src/method.c", 
                     ], 
             }
 
@@ -58,7 +59,8 @@ class DeclarationInserter(object):
 
 """)
 
-        for filename, functions in declarations.items():
+        for filename in sorted(declarations):
+            functions = declarations[filename]
             header.append("/* %(filename)s */\n" % { "filename": filename })
             for function in functions:
                 header.append(function + "\n")

@@ -88,8 +88,11 @@ intern(const char* s)
 #define YY_SKIP_YYWRAP
 %}
 %%
+<INITIAL>"&"        return AMPER;
 <INITIAL>"("        return LPAR;
 <INITIAL>")"        return RPAR;
+<INITIAL>"*"        return STAR;
+<INITIAL>"**"       return DOUBLE_STAR;
 <INITIAL>","        return COMMA;
 <INITIAL>"="        return EQUAL;
 <INITIAL>"as"       return AS;

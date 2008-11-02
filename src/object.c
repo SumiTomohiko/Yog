@@ -30,13 +30,6 @@ YogObj_set_attr(YogEnv* env, YogObj* obj, const char* name, YogVal val)
 }
 
 void 
-YogObj_define_method(YogEnv* env, YogObj* obj, const char* name, YogFuncBody f) 
-{
-    YogVal val = YogVal_func(f);
-    YogObj_set_attr(env, obj, name, val);
-}
-
-void 
 YogBasicObj_init(YogEnv* env, YogBasicObj* obj, YogKlass* klass) 
 {
     obj->klass = klass;

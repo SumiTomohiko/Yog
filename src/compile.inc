@@ -33,7 +33,7 @@ CompileData_append_push_const(YogEnv* env, CompileData* data, uint8_t index)
 }
 
 static void 
-CompileData_append_call_method(YogEnv* env, CompileData* data, ID method, uint8_t argc)
+CompileData_append_call_method(YogEnv* env, CompileData* data, ID method, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
@@ -41,6 +41,10 @@ CompileData_append_call_method(YogEnv* env, CompileData* data, ID method, uint8_
 
     CALL_METHOD_METHOD(inst) = method;
     CALL_METHOD_ARGC(inst) = argc;
+    CALL_METHOD_KWARGC(inst) = kwargc;
+    CALL_METHOD_BLOCKARGC(inst) = blockargc;
+    CALL_METHOD_VARARGC(inst) = varargc;
+    CALL_METHOD_VARKWARGC(inst) = varkwargc;
 
     append_inst(data, inst);
 
@@ -76,7 +80,7 @@ CompileData_append_store_local(YogEnv* env, CompileData* data, uint8_t index)
 }
 
 static void 
-CompileData_append_call_command(YogEnv* env, CompileData* data, ID command, uint8_t argc)
+CompileData_append_call_command(YogEnv* env, CompileData* data, ID command, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
@@ -84,6 +88,10 @@ CompileData_append_call_command(YogEnv* env, CompileData* data, ID command, uint
 
     CALL_COMMAND_COMMAND(inst) = command;
     CALL_COMMAND_ARGC(inst) = argc;
+    CALL_COMMAND_KWARGC(inst) = kwargc;
+    CALL_COMMAND_BLOCKARGC(inst) = blockargc;
+    CALL_COMMAND_VARARGC(inst) = varargc;
+    CALL_COMMAND_VARKWARGC(inst) = varkwargc;
 
     append_inst(data, inst);
 
@@ -91,11 +99,11 @@ CompileData_append_call_command(YogEnv* env, CompileData* data, ID command, uint
 }
 
 static void 
-CompileData_append_make_func(YogEnv* env, CompileData* data)
+CompileData_append_make_package_method(YogEnv* env, CompileData* data)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPCODE(inst) = OP(MAKE_FUNC);
+    INST_OPCODE(inst) = OP(MAKE_PACKAGE_METHOD);
 
 
     append_inst(data, inst);
@@ -104,13 +112,17 @@ CompileData_append_make_func(YogEnv* env, CompileData* data)
 }
 
 static void 
-CompileData_append_call_func(YogEnv* env, CompileData* data, uint8_t argc)
+CompileData_append_call_function(YogEnv* env, CompileData* data, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
     YogInst* inst = inst_new(env);
     inst->type = INST_OP;
-    INST_OPCODE(inst) = OP(CALL_FUNC);
+    INST_OPCODE(inst) = OP(CALL_FUNCTION);
 
-    CALL_FUNC_ARGC(inst) = argc;
+    CALL_FUNCTION_ARGC(inst) = argc;
+    CALL_FUNCTION_KWARGC(inst) = kwargc;
+    CALL_FUNCTION_BLOCKARGC(inst) = blockargc;
+    CALL_FUNCTION_VARARGC(inst) = varargc;
+    CALL_FUNCTION_VARKWARGC(inst) = varkwargc;
 
     append_inst(data, inst);
 
@@ -215,6 +227,10 @@ insts2bin(YogEnv* env, YogInst* inst)
                     YogBinary_push_uint8(env, code, OP(CALL_METHOD));
                     YogBinary_push_id(env, code, CALL_METHOD_METHOD(inst));
                     YogBinary_push_uint8(env, code, CALL_METHOD_ARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_METHOD_KWARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_METHOD_BLOCKARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_METHOD_VARARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_METHOD_VARKWARGC(inst));
                     break;
                 }
             case OP(STORE_PKG):
@@ -234,17 +250,25 @@ insts2bin(YogEnv* env, YogInst* inst)
                     YogBinary_push_uint8(env, code, OP(CALL_COMMAND));
                     YogBinary_push_id(env, code, CALL_COMMAND_COMMAND(inst));
                     YogBinary_push_uint8(env, code, CALL_COMMAND_ARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_COMMAND_KWARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_COMMAND_BLOCKARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_COMMAND_VARARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_COMMAND_VARKWARGC(inst));
                     break;
                 }
-            case OP(MAKE_FUNC):
+            case OP(MAKE_PACKAGE_METHOD):
                 {
-                    YogBinary_push_uint8(env, code, OP(MAKE_FUNC));
+                    YogBinary_push_uint8(env, code, OP(MAKE_PACKAGE_METHOD));
                     break;
                 }
-            case OP(CALL_FUNC):
+            case OP(CALL_FUNCTION):
                 {
-                    YogBinary_push_uint8(env, code, OP(CALL_FUNC));
-                    YogBinary_push_uint8(env, code, CALL_FUNC_ARGC(inst));
+                    YogBinary_push_uint8(env, code, OP(CALL_FUNCTION));
+                    YogBinary_push_uint8(env, code, CALL_FUNCTION_ARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_FUNCTION_KWARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_FUNCTION_BLOCKARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_FUNCTION_VARARGC(inst));
+                    YogBinary_push_uint8(env, code, CALL_FUNCTION_VARKWARGC(inst));
                     break;
                 }
             case OP(LOAD_PKG):

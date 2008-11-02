@@ -89,7 +89,7 @@ static void
 setup_builtins(YogEnv* env, YogVm* vm) 
 {
     YogObj* builtins = Yog_bltins_new(env);
-    ID name = YogVm_intern(env, vm, "builtins");
+    ID name = YogVm_intern(env, vm, BUILTINS);
     YogTable_add_direct(env, vm->pkgs, YogVal_symbol(name), YogVal_ptr(builtins));
 }
 
@@ -114,6 +114,10 @@ setup_basic_klass(YogEnv* env, YogVm* vm)
 static void 
 setup_klass(YogEnv* env, YogVm* vm) 
 {
+    vm->builtin_bound_method_klass = YogBuiltinBoundMethod_klass_new(env);
+    vm->bound_method_klass = YogBoundMethod_klass_new(env);
+    vm->builtin_unbound_method_klass = YogBuiltinUnboundMethod_klass_new(env);
+    vm->unbound_method_klass = YogUnboundMethod_klass_new(env);
     vm->int_klass = YogInt_klass_new(env);
     vm->pkg_klass = YogPkg_klass_new(env);
     vm->bool_klass = YogBool_klass_new(env);
@@ -147,6 +151,10 @@ YogVm_new(size_t heap_size)
     vm->func_klass = NULL;
     vm->pkg_klass = NULL;
     vm->bool_klass = NULL;
+    vm->builtin_bound_method_klass = NULL;
+    vm->bound_method_klass = NULL;
+    vm->builtin_unbound_method_klass = NULL;
+    vm->unbound_method_klass = NULL;
 
     vm->pkgs = NULL;
 

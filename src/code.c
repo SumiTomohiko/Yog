@@ -35,9 +35,6 @@ print_val(YogEnv* env, YogVal val)
     else if (IS_SYMBOL(val)) {
         printf(" :%s", YogVm_id2name(env, ENV_VM(env), YOGVAL_SYMBOL(val)));
     }
-    else if (IS_FUNC(val)) {
-        printf("%p", YOGVAL_FUNC(val));
-    }
     else {
         Yog_assert(env, FALSE, "Unknown value type.");
     }
@@ -139,7 +136,14 @@ YogCode*
 YogCode_new(YogEnv* env) 
 {
     YogCode* code = ALLOC_OBJ(env, gc_children, YogCode);
-    code->argc = 0;
+    YogArgInfo* arg_info = &code->arg_info;
+    arg_info->argc = 0;
+    arg_info->argnames = NULL;
+    arg_info->blockargc = 0;
+    arg_info->blockargname = 0;
+    arg_info->varargc = 0;
+    arg_info->kwargc = 0;
+
     code->stack_size = 0;
     code->local_vars_count = 0;
     code->consts = NULL;

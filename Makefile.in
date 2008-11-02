@@ -54,9 +54,10 @@ am_yog_OBJECTS = yog-array.$(OBJEXT) yog-binary.$(OBJEXT) \
 	yog-compile.$(OBJEXT) yog-error.$(OBJEXT) yog-frame.$(OBJEXT) \
 	yog-function.$(OBJEXT) yog-inst.$(OBJEXT) yog-int.$(OBJEXT) \
 	yog-klass.$(OBJEXT) yog-lexer.$(OBJEXT) yog-main.$(OBJEXT) \
-	yog-object.$(OBJEXT) yog-package.$(OBJEXT) \
-	yog-parser.$(OBJEXT) yog-st.$(OBJEXT) yog-string.$(OBJEXT) \
-	yog-thread.$(OBJEXT) yog-value.$(OBJEXT) yog-vm.$(OBJEXT)
+	yog-method.$(OBJEXT) yog-object.$(OBJEXT) \
+	yog-package.$(OBJEXT) yog-parser.$(OBJEXT) yog-st.$(OBJEXT) \
+	yog-string.$(OBJEXT) yog-thread.$(OBJEXT) yog-value.$(OBJEXT) \
+	yog-vm.$(OBJEXT)
 yog_OBJECTS = $(am_yog_OBJECTS)
 yog_LDADD = $(LDADD)
 yog_LINK = $(CCLD) $(yog_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
@@ -189,6 +190,7 @@ yog_SOURCES = src/array.c \
 	src/klass.c \
 	src/lexer.l \
 	src/main.c \
+	src/method.c \
 	src/object.c \
 	src/package.c \
 	src/parser.y \
@@ -307,6 +309,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-klass.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-lexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-method.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-object.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-package.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-parser.Po@am__quote@
@@ -525,6 +528,20 @@ yog-main.obj: src/main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/main.c' object='yog-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-main.obj `if test -f 'src/main.c'; then $(CYGPATH_W) 'src/main.c'; else $(CYGPATH_W) '$(srcdir)/src/main.c'; fi`
+
+yog-method.o: src/method.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-method.o -MD -MP -MF $(DEPDIR)/yog-method.Tpo -c -o yog-method.o `test -f 'src/method.c' || echo '$(srcdir)/'`src/method.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-method.Tpo $(DEPDIR)/yog-method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/method.c' object='yog-method.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-method.o `test -f 'src/method.c' || echo '$(srcdir)/'`src/method.c
+
+yog-method.obj: src/method.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-method.obj -MD -MP -MF $(DEPDIR)/yog-method.Tpo -c -o yog-method.obj `if test -f 'src/method.c'; then $(CYGPATH_W) 'src/method.c'; else $(CYGPATH_W) '$(srcdir)/src/method.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-method.Tpo $(DEPDIR)/yog-method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/method.c' object='yog-method.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-method.obj `if test -f 'src/method.c'; then $(CYGPATH_W) 'src/method.c'; else $(CYGPATH_W) '$(srcdir)/src/method.c'; fi`
 
 yog-object.o: src/object.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-object.o -MD -MP -MF $(DEPDIR)/yog-object.Tpo -c -o yog-object.o `test -f 'src/object.c' || echo '$(srcdir)/'`src/object.c

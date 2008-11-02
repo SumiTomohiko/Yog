@@ -12,12 +12,12 @@ Yog_get_inst_size(OpCode op)
     unsigned int inst2size[] = {
         sizeof(uint8_t) + sizeof(ID), /* load_special */
         sizeof(uint8_t) + sizeof(uint8_t), /* push_const */
-        sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t), /* call_method */
+        sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* call_method */
         sizeof(uint8_t) + sizeof(ID), /* store_pkg */
         sizeof(uint8_t) + sizeof(uint8_t), /* store_local */
-        sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t), /* call_command */
-        sizeof(uint8_t), /* make_func */
-        sizeof(uint8_t) + sizeof(uint8_t), /* call_func */
+        sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* call_command */
+        sizeof(uint8_t), /* make_package_method */
+        sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* call_function */
         sizeof(uint8_t) + sizeof(ID), /* load_pkg */
         sizeof(uint8_t) + sizeof(uint8_t), /* load_local */
         sizeof(uint8_t) + sizeof(pc_t), /* jump */

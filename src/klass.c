@@ -1,4 +1,20 @@
+#include <stdarg.h>
 #include "yog/yog.h"
+
+void 
+YogKlass_define_method(YogEnv* env, YogKlass* klass, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, ...)
+{
+    va_list ap;
+    va_start(ap, required_argc);
+    YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, name, f, blockargc, varargc, kwargc, required_argc, ap);
+    va_end(ap);
+
+    YogBuiltinUnboundMethod* method = YogBuiltinUnboundMethod_new(env);
+    method->f = builtin_f;
+
+    YogVal val = YogVal_obj(YOGBASICOBJ(method));
+    YogObj_set_attr(env, YOGOBJ(klass), name, val);
+}
 
 static void 
 gc_children(YogEnv* env, void* ptr, DoGc do_gc) 

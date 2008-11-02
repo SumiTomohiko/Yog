@@ -25,6 +25,10 @@ struct YogInst {
         struct {
             ID method;
             uint8_t argc;
+            uint8_t kwargc;
+            uint8_t blockargc;
+            uint8_t varargc;
+            uint8_t varkwargc;
         } call_method;
         struct {
             ID id;
@@ -35,12 +39,20 @@ struct YogInst {
         struct {
             ID command;
             uint8_t argc;
+            uint8_t kwargc;
+            uint8_t blockargc;
+            uint8_t varargc;
+            uint8_t varkwargc;
         } call_command;
         struct {
-        } make_func;
+        } make_package_method;
         struct {
             uint8_t argc;
-        } call_func;
+            uint8_t kwargc;
+            uint8_t blockargc;
+            uint8_t varargc;
+            uint8_t varkwargc;
+        } call_function;
         struct {
             ID id;
         } load_pkg;
@@ -65,11 +77,23 @@ struct YogInst {
 #define PUSH_CONST_INDEX(inst) ((inst)->u.push_const.index)
 #define CALL_METHOD_METHOD(inst) ((inst)->u.call_method.method)
 #define CALL_METHOD_ARGC(inst) ((inst)->u.call_method.argc)
+#define CALL_METHOD_KWARGC(inst) ((inst)->u.call_method.kwargc)
+#define CALL_METHOD_BLOCKARGC(inst) ((inst)->u.call_method.blockargc)
+#define CALL_METHOD_VARARGC(inst) ((inst)->u.call_method.varargc)
+#define CALL_METHOD_VARKWARGC(inst) ((inst)->u.call_method.varkwargc)
 #define STORE_PKG_ID(inst) ((inst)->u.store_pkg.id)
 #define STORE_LOCAL_INDEX(inst) ((inst)->u.store_local.index)
 #define CALL_COMMAND_COMMAND(inst) ((inst)->u.call_command.command)
 #define CALL_COMMAND_ARGC(inst) ((inst)->u.call_command.argc)
-#define CALL_FUNC_ARGC(inst) ((inst)->u.call_func.argc)
+#define CALL_COMMAND_KWARGC(inst) ((inst)->u.call_command.kwargc)
+#define CALL_COMMAND_BLOCKARGC(inst) ((inst)->u.call_command.blockargc)
+#define CALL_COMMAND_VARARGC(inst) ((inst)->u.call_command.varargc)
+#define CALL_COMMAND_VARKWARGC(inst) ((inst)->u.call_command.varkwargc)
+#define CALL_FUNCTION_ARGC(inst) ((inst)->u.call_function.argc)
+#define CALL_FUNCTION_KWARGC(inst) ((inst)->u.call_function.kwargc)
+#define CALL_FUNCTION_BLOCKARGC(inst) ((inst)->u.call_function.blockargc)
+#define CALL_FUNCTION_VARARGC(inst) ((inst)->u.call_function.varargc)
+#define CALL_FUNCTION_VARKWARGC(inst) ((inst)->u.call_function.varkwargc)
 #define LOAD_PKG_ID(inst) ((inst)->u.load_pkg.id)
 #define LOAD_LOCAL_INDEX(inst) ((inst)->u.load_local.index)
 #define JUMP_DEST(inst) ((inst)->u.jump.dest)
