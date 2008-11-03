@@ -434,20 +434,46 @@ make_var2index(YogEnv* env, YogArray* stmts, YogTable* var2index)
     return var2index;
 }
 
+static int 
+lookup_var_index(YogEnv* env, YogTable* var2index, ID id) 
+{
+    YogVal val = YogVal_symbol(id);
+    YogVal index = YogVal_undef();
+    if (!YogTable_lookup(env, var2index, val, &index)) {
+        Yog_assert(env, FALSE, "Can't find var.");
+    }
+    return YOGVAL_INT(index);
+}
+
+static void 
+append_store(YogEnv* env, CompileData* data, ID id) 
+{
+    switch (data->ctx) {
+        case CTX_FUNC:
+            {
+                uint8_t index = lookup_var_index(env, data->var2index, id);
+                CompileData_append_store_local(env, data, index);
+                break;
+            }
+        case CTX_PKG:
+            CompileData_append_store_pkg(env, data, id);
+            break;
+        default:
+            Yog_assert(env, FALSE, "Unkown context.");
+            break;
+    }
+}
+
 static void 
 compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
     visit_node(env, visitor, NODE_RIGHT(node), arg);
 
     CompileData* data = arg;
-    YogVal symbol = YogVal_symbol(NODE_LEFT(node));
-    YogVal index = YogVal_nil();
-    if (!YogTable_lookup(env, data->var2index, symbol, &index)) {
-        Yog_assert(env, FALSE, "Can't find assigned symbol.");
-    }
     CompileData_append_dup(env, data);
-    SET_LINENO();
-    CompileData_append_store_pkg(env, data, YOGVAL_INT(index));
+
+    ID name = NODE_LEFT(node);
+    append_store(env, data, name);
 }
 
 static void 
@@ -909,17 +935,6 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node)
     return code;
 }
 
-static int 
-lookup_var_index(YogEnv* env, YogTable* var2index, ID id) 
-{
-    YogVal val = YogVal_symbol(id);
-    YogVal index = YogVal_undef();
-    if (!YogTable_lookup(env, var2index, val, &index)) {
-        Yog_assert(env, FALSE, "Can't find var.");
-    }
-    return YOGVAL_INT(index);
-}
-
 static void 
 compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
@@ -986,25 +1001,6 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     default:
         Yog_assert(env, FALSE, "Unknown context.");
         break;
-    }
-}
-
-static void 
-append_store(YogEnv* env, CompileData* data, ID id) 
-{
-    switch (data->ctx) {
-        case CTX_FUNC:
-            {
-                uint8_t index = lookup_var_index(env, data->var2index, id);
-                CompileData_append_store_local(env, data, index);
-                break;
-            }
-        case CTX_PKG:
-            CompileData_append_store_pkg(env, data, id);
-            break;
-        default:
-            Yog_assert(env, FALSE, "Unkown context.");
-            break;
     }
 }
 

@@ -91,6 +91,13 @@ YogCode_dump(YogEnv* env, YogCode* code)
         unsigned int n = pc + sizeof(uint8_t);
 #define OPERAND(type)   (*((type*)&code->insts->items[n]))
         switch (op) {
+            case OP(STORE_PKG):
+            case OP(LOAD_PKG):
+                {
+                    ID id = OPERAND(ID);
+                    printf(" %d", id);
+                }
+                break;
             case OP(PUSH_CONST):
                 {
                     uint8_t index = OPERAND(uint8_t);
