@@ -380,6 +380,7 @@ YogThread_eval_package(YogEnv* env, YogThread* th, YogPkg* pkg, YogCode* code)
     SCRIPT_FRAME(frame)->code = code;
     SCRIPT_FRAME(frame)->stack = YogValArray_new(env, code->stack_size);
     frame->vars = pkg->attrs;
+    frame->pkg = pkg;
 
     mainloop(env, th, SCRIPT_FRAME(frame), code);
 }

@@ -262,6 +262,9 @@ struct YogObj {
 
 typedef struct YogObj YogObj;
 
+#define YogPkg      YogObj
+#define pkg_klass   obj_klass
+
 struct YogKlass {
     YOGOBJ_HEAD;
     struct YogKlass* super;
@@ -461,9 +464,6 @@ enum InstType {
 typedef enum InstType InstType;
 
 #include "yog/inst.h"
-
-#define YogPkg      YogObj
-#define pkg_klass   obj_klass
 
 /* $PROTOTYPE_START$ */
 

@@ -874,7 +874,7 @@ register_params_var2index(YogEnv* env, YogNode* node, YogTable* var2index)
         if (YogTable_lookup(env, var2index, name, NULL)) {
             Yog_assert(env, FALSE, "duplicated argument name in function definition");
         }
-        YogVal index = YogVal_int(i);
+        YogVal index = YogVal_int(var2index->num_entries);
         YogTable_add_direct(env, var2index, name, index);
     }
 }
@@ -951,10 +951,20 @@ setup_params(YogEnv* env, YogArray* params, YogCode* code)
     Yog_assert(env, size == n, "Parameters count is unmatched.");
 }
 
+static void 
+register_self(YogEnv* env, YogTable* var2index) 
+{
+    ID name = INTERN("self");
+    YogVal key = YogVal_symbol(name);
+    YogVal val = YogVal_int(0);
+    YogTable_add_direct(env, var2index, key, val);
+}
+
 static YogCode* 
 compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node) 
 {
     YogTable* var2index = YogTable_new_symbol_table(env);
+    register_self(env, var2index);
     register_params_var2index(env, node, var2index);
     YogArray* stmts = NODE_STMTS(node);
     make_var2index(env, stmts, var2index);

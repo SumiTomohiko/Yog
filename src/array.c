@@ -100,6 +100,7 @@ YogArray_extend(YogEnv* env, YogArray* array, YogArray* a)
     unsigned int new_size = old_size + YogArray_size(env, a);
     ensure_array_size(env, array, new_size);
     memcpy(&array->body->items[old_size], &a->body->items[0], sizeof(YogVal) * YogArray_size(env, a));
+    array->body->size = new_size;
 }
 
 static void 
