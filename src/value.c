@@ -235,7 +235,7 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
 {
 #define RET_ATTR(obj)   do { \
     YogVal attr = YogObj_get_attr(env, YOGOBJ(obj), name); \
-    if (IS_UNDEF(attr)) { \
+    if (!IS_UNDEF(attr)) { \
         return attr; \
     } \
 } while (0)

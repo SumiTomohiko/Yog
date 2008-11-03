@@ -160,13 +160,50 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogCode* code, uint8_t posarg
     th->cur_frame = FRAME(frame);
 }
 
+#define CUR_FRAME   (th->cur_frame)
+#define STACK       (SCRIPT_FRAME(CUR_FRAME)->stack)
+#define PUSH(val)   (YogValArray_push(env, STACK, val))
+
+static void 
+call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
+{
+    Yog_assert(env, IS_OBJ(callee), "Callee is not object.");
+    YogBasicObj* obj = YOGVAL_OBJ(callee);
+    YogVm* vm = ENV_VM(env);
+    if (obj->klass == vm->builtin_bound_method_klass) {
+        YogBuiltinBoundMethod* method = (YogBuiltinBoundMethod*)obj;
+        YogVal val = call_builtin_bound_method(env, method, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
+        PUSH(val);
+    }
+    else if (obj->klass == vm->bound_method_klass) {
+        YogBoundMethod* method = (YogBoundMethod*)obj;
+        YogVal self = method->self;
+        YogCode* code = method->code;
+        call_code(env, th, self, code, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
+    }
+    else if (obj->klass == vm->builtin_unbound_method_klass) {
+        YogBuiltinUnboundMethod* method = (YogBuiltinUnboundMethod*)obj;
+        YogVal self = unbound_self;
+        YogVal val = call_builtin_unbound_method(env, self, method, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
+        PUSH(val);
+    }
+    else if (obj->klass == vm->unbound_method_klass) {
+        YogUnboundMethod* method = (YogUnboundMethod*)obj;
+        YogVal self = unbound_self;
+        YogCode* code = method->code;
+        call_code(env, th, self, code, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
+    }
+    else {
+        Yog_assert(env, FALSE, "Callee is not callable.");
+    }
+}
+
 static YogVal
 mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code) 
 {
     th->cur_frame = FRAME(frame);
 
 #define POP_BUF()   th->jmp_buf_list = th->jmp_buf_list->prev
-#define CUR_FRAME   (th->cur_frame)
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
     YogJmpBuf jmpbuf;
     int status = 0;
@@ -197,9 +234,7 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
         printf("%s:%d pc=%d\n", __FILE__, __LINE__, pc);
 #endif
 #define CODE            (code)
-#define STACK           (SCRIPT_FRAME(CUR_FRAME)->stack)
 #define POP()           (YogValArray_pop(env, STACK))
-#define PUSH(val)       (YogValArray_push(env, STACK, val))
 #define CONSTS(index)   (YogValArray_at(env, code->consts, index))
 #define ENV             (env)
 #define VM              (ENV_VM(ENV))
@@ -207,6 +242,33 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
 #define JUMP(m)         \
     PC = m; \
     continue
+#define POP_ARGS(args, kwargs, blockarg, vararg, varkwarg) \
+    YogVal varkwarg = YogVal_undef(); \
+    if (varkwargc == 1) { \
+        varkwarg = POP(); \
+    } \
+\
+    YogVal vararg = YogVal_undef(); \
+    if (varargc == 1) { \
+        vararg = POP(); \
+    } \
+\
+    YogVal blockarg = YogVal_undef(); \
+    if (blockargc == 1) { \
+        blockarg = POP(); \
+    } \
+\
+    YogVal kwargs[2 * kwargc]; \
+    unsigned int i = 0; \
+    for (i = kwargc; 0 < i; i--) { \
+        kwargs[2 * i - 1] = POP(); \
+        kwargs[2 * i - 2] = POP(); \
+    } \
+\
+    YogVal args[argc]; \
+    for (i = argc; 0 < i; i--) { \
+        args[i - 1] = POP(); \
+    }
 #if 0
         if (0 < STACK->size) {
             YogVal_print(env, STACK->items[STACK->size - 1]);
@@ -224,14 +286,13 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
             Yog_assert(env, FALSE, "Unknown instruction.");
             break;
         }
+#undef POP_ARGS
 #undef JUMP
 #undef THREAD
 #undef VM
 #undef ENV
 #undef CONSTS
-#undef PUSH
 #undef POP
-#undef STACK
 #undef CODE
 
         PC = n;
@@ -239,7 +300,6 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
 
     POP_BUF();
 #undef PC
-#undef CUR_FRAME
 #undef POP_BUF
 
     return YogVal_undef();

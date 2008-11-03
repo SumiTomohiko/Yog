@@ -30,14 +30,11 @@ inst call_method
 (...)
 (...)
 {
-    YogVal args[argc];
-    unsigned int i = 0;
-    for (i = 0; i < argc; i++) {
-        args[i] = POP();
-    }
+    POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
+
     YogVal receiver = POP();
-    YogVal ret = YogThread_call_method_id(ENV, THREAD, receiver, method, argc, args);
-    PUSH(ret);
+    YogVal attr = YogVal_get_attr(ENV, receiver, method);
+    call_method(ENV, THREAD, receiver, attr, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 }
 
 inst store_pkg
@@ -87,61 +84,11 @@ inst call_function
 (...)
 (...)
 {
-    YogVal varkwarg = YogVal_undef();
-    if (varkwargc == 1) {
-        varkwarg = POP();
-    }
-
-    YogVal vararg = YogVal_undef();
-    if (varargc == 1) {
-        vararg = POP();
-    }
-
-    YogVal blockarg = YogVal_undef();
-    if (blockargc == 1) {
-        blockarg = POP();
-    }
-
-    YogVal kwargs[2 * kwargc];
-    unsigned int i = 0;
-    for (i = kwargc; 0 < i; i--) {
-        kwargs[2 * i - 1] = POP();
-        kwargs[2 * i - 2] = POP();
-    }
-
-    YogVal args[argc];
-    for (i = argc; 0 < i; i--) {
-        args[i - 1] = POP();
-    }
+    POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
 
     YogVal callee = POP();
-    Yog_assert(ENV, IS_OBJ(callee), "Callee is not object.");
-    YogBasicObj* obj = YOGVAL_OBJ(callee);
-    if (obj->klass == VM->builtin_bound_method_klass) {
-        YogBuiltinBoundMethod* method = (YogBuiltinBoundMethod*)obj;
-        YogVal val = call_builtin_bound_method(ENV, method, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
-        PUSH(val);
-    }
-    else if (obj->klass == VM->bound_method_klass) {
-        YogBoundMethod* method = (YogBoundMethod*)obj;
-        YogVal self = method->self;
-        YogCode* code = method->code;
-        call_code(ENV, THREAD, self, code, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
-    }
-    else if (obj->klass == VM->builtin_unbound_method_klass) {
-        YogBuiltinUnboundMethod* method = (YogBuiltinUnboundMethod*)obj;
-        YogVal val = call_builtin_unbound_method(ENV, YogVal_undef(), method, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
-        PUSH(val);
-    }
-    else if (obj->klass == VM->unbound_method_klass) {
-        YogUnboundMethod* method = (YogUnboundMethod*)obj;
-        YogVal self = YogVal_undef();
-        YogCode* code = method->code;
-        call_code(ENV, THREAD, self, code, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
-    }
-    else {
-        Yog_assert(ENV, FALSE, "Callee is not callable.");
-    }
+    YogVal unbound_self = YogVal_undef();
+    call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 }
 
 inst load_pkg
