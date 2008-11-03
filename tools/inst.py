@@ -184,9 +184,9 @@ class CodeGenerator(object):
                     raise Exception("%(name)s is used." % { "name": name })
 
                 s = """
-            Yog_assert(env, n < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            %(type)s %(name)s = *((%(type)s*)&CODE->insts->items[n]);
-            n += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
+            Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            %(type)s %(name)s = *((%(type)s*)&CODE->insts->items[PC]);
+            PC += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
                 declared_names.add(name)

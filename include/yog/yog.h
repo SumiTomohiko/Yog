@@ -409,6 +409,7 @@ typedef struct YogFrame YogFrame;
 struct YogScriptFrame {
     struct YogFrame base;
     pc_t pc;
+    struct YogCode* code;
     struct YogValArray* stack;
 };
 

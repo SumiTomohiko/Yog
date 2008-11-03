@@ -154,6 +154,8 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogCode* code, uint8_t posarg
     fill_args(env, arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, &vars->items[1]);
 
     YogMethodFrame* frame = YogMethodFrame_new(env);
+    SCRIPT_FRAME(frame)->pc = 0;
+    SCRIPT_FRAME(frame)->code = code;
     SCRIPT_FRAME(frame)->stack = YogValArray_new(env, code->stack_size);
     frame->vars = vars;
 
@@ -219,10 +221,16 @@ lookup_builtins(YogEnv* env, ID name)
 static YogVal
 mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code) 
 {
+#if 0
+    printf("%s:%d mainloop(env=%p, th=%p, frame=%p, code=%p)\n", env, th, frame, code);
+    YogCode_dump(env, code);
+#endif
+
     th->cur_frame = FRAME(frame);
 
 #define POP_BUF()   th->jmp_buf_list = th->jmp_buf_list->prev
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
+#define CODE        (SCRIPT_FRAME(CUR_FRAME)->code)
     YogJmpBuf jmpbuf;
     int status = 0;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
@@ -231,8 +239,8 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
     }
     else {
         unsigned int i = 0;
-        for (i = 0; i < code->exc_tbl_size; i++) {
-            YogExcTblEntry* entry = &code->exc_tbl->items[i];
+        for (i = 0; i < CODE->exc_tbl_size; i++) {
+            YogExcTblEntry* entry = &CODE->exc_tbl->items[i];
             BOOL found = FALSE;
             if ((entry->from <= PC) && (PC < entry->to)) {
                 PC = entry->target;
@@ -247,19 +255,13 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
         }
     }
 
-    while (PC < code->insts->size) {
-#if 0
-        printf("%s:%d pc=%d\n", __FILE__, __LINE__, pc);
-#endif
-#define CODE            (code)
+    while (PC < CODE->insts->size) {
 #define POP()           (YogValArray_pop(env, STACK))
-#define CONSTS(index)   (YogValArray_at(env, code->consts, index))
+#define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define ENV             (env)
 #define VM              (ENV_VM(ENV))
 #define THREAD          (th)
-#define JUMP(m)         \
-    PC = m; \
-    continue
+#define JUMP(m)         PC = m;
 #define POP_ARGS(args, kwargs, blockarg, vararg, varkwarg) \
     YogVal varkwarg = YogVal_undef(); \
     if (varkwargc == 1) { \
@@ -296,8 +298,8 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
         }
 #endif
 
-        OpCode op = code->insts->items[PC];
-        unsigned int n = PC + sizeof(uint8_t);
+        OpCode op = CODE->insts->items[PC];
+        PC += sizeof(uint8_t);
         switch (op) {
 #include "src/thread.inc"
         default:
@@ -311,12 +313,10 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
 #undef ENV
 #undef CONSTS
 #undef POP
-#undef CODE
-
-        PC = n;
     }
 
     POP_BUF();
+#undef CODE
 #undef PC
 #undef POP_BUF
 
@@ -376,11 +376,8 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
 void 
 YogThread_eval_package(YogEnv* env, YogThread* th, YogPkg* pkg, YogCode* code) 
 {
-#if 0
-    YogCode_dump(env, code);
-#endif
-
     YogPkgFrame* frame = YogPkgFrame_new(env);
+    SCRIPT_FRAME(frame)->code = code;
     SCRIPT_FRAME(frame)->stack = YogValArray_new(env, code->stack_size);
     frame->vars = pkg->attrs;
 

@@ -20,6 +20,7 @@ YogScriptFrame_init(YogScriptFrame* frame, YogFrameType type)
 {
     YogFrame_init(FRAME(frame), type);
     frame->pc = 0;
+    frame->code = NULL;
     frame->stack = NULL;
 }
 
