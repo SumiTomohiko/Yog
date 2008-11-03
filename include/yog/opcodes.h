@@ -12,18 +12,19 @@ extern "C" {
 
 enum OpCode {
     OP(LOAD_SPECIAL) = 0, 
-    OP(PUSH_CONST) = 1, 
-    OP(CALL_METHOD) = 2, 
-    OP(STORE_PKG) = 3, 
-    OP(STORE_LOCAL) = 4, 
-    OP(CALL_COMMAND) = 5, 
-    OP(MAKE_PACKAGE_METHOD) = 6, 
-    OP(CALL_FUNCTION) = 7, 
-    OP(LOAD_PKG) = 8, 
-    OP(LOAD_LOCAL) = 9, 
-    OP(JUMP) = 10, 
-    OP(JUMP_IF_FALSE) = 11, 
-    OP(DUP) = 12, 
+    OP(POP) = 1, 
+    OP(PUSH_CONST) = 2, 
+    OP(CALL_METHOD) = 3, 
+    OP(STORE_PKG) = 4, 
+    OP(STORE_LOCAL) = 5, 
+    OP(CALL_COMMAND) = 6, 
+    OP(MAKE_PACKAGE_METHOD) = 7, 
+    OP(CALL_FUNCTION) = 8, 
+    OP(LOAD_PKG) = 9, 
+    OP(LOAD_LOCAL) = 10, 
+    OP(JUMP) = 11, 
+    OP(JUMP_IF_FALSE) = 12, 
+    OP(DUP) = 13, 
 
 };
 

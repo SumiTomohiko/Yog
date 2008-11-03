@@ -20,6 +20,8 @@ struct YogInst {
             ID id;
         } load_special;
         struct {
+        } pop;
+        struct {
             uint8_t index;
         } push_const;
         struct {

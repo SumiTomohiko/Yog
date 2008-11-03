@@ -17,6 +17,13 @@ inst load_special
 {
 }
 
+inst pop
+()
+(val)
+()
+{
+}
+
 inst push_const
 (uint8_t index)
 ()

@@ -19,6 +19,19 @@ CompileData_append_load_special(YogEnv* env, CompileData* data, ID id)
 }
 
 static void 
+CompileData_append_pop(YogEnv* env, CompileData* data)
+{
+    YogInst* inst = inst_new(env);
+    inst->type = INST_OP;
+    INST_OPCODE(inst) = OP(POP);
+
+
+    append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
+}
+
+static void 
 CompileData_append_push_const(YogEnv* env, CompileData* data, uint8_t index)
 {
     YogInst* inst = inst_new(env);
@@ -214,6 +227,11 @@ insts2bin(YogEnv* env, YogInst* inst)
                 {
                     YogBinary_push_uint8(env, code, OP(LOAD_SPECIAL));
                     YogBinary_push_id(env, code, LOAD_SPECIAL_ID(inst));
+                    break;
+                }
+            case OP(POP):
+                {
+                    YogBinary_push_uint8(env, code, OP(POP));
                     break;
                 }
             case OP(PUSH_CONST):

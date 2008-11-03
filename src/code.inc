@@ -9,6 +9,7 @@ get_op_name(OpCode op)
     char* op_names[] = {
 
         "LOAD_SPECIAL", 
+        "POP", 
         "PUSH_CONST", 
         "CALL_METHOD", 
         "STORE_PKG", 

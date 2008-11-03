@@ -222,7 +222,7 @@ static YogVal
 mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code) 
 {
 #if 0
-    printf("%s:%d mainloop(env=%p, th=%p, frame=%p, code=%p)\n", env, th, frame, code);
+    printf("%s:%d mainloop(env=%p, th=%p, frame=%p, code=%p)\n", __FILE__, __LINE__, env, th, frame, code);
     YogCode_dump(env, code);
 #endif
 

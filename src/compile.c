@@ -285,7 +285,37 @@ var2index_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, voi
 }
 
 static void 
-visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg) 
+compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg) 
+{
+    if (stmts == NULL) {
+        return;
+    }
+
+    CompileData* data = arg;
+
+    unsigned int size = YogArray_size(env, stmts);
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        YogVal val = YogArray_at(env, stmts, i);
+        YogNode* node = YOGVAL_PTR(val);
+        visitor->visit_stmt(env, visitor, node, arg);
+
+        switch (node->type) {
+            case NODE_COMMAND_CALL:
+            case NODE_FUNC_CALL:
+            case NODE_LITERAL:
+            case NODE_METHOD_CALL:
+            case NODE_VARIABLE:
+                CompileData_append_pop(env, data);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+static void 
+var2index_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg) 
 {
     if (stmts == NULL) {
         return;
@@ -412,7 +442,7 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_method_call = var2index_visit_method_call;
     visitor->visit_next = var2index_visit_break;
     visitor->visit_stmt = visit_node;
-    visitor->visit_stmts = visit_stmts;
+    visitor->visit_stmts = var2index_visit_stmts;
     visitor->visit_variable = NULL;
     visitor->visit_while = var2index_visit_while;
 }
@@ -1240,7 +1270,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_method_call = compile_visit_method_call;
     visitor->visit_next = compile_visit_next;
     visitor->visit_stmt = visit_node;
-    visitor->visit_stmts = visit_stmts;
+    visitor->visit_stmts = compile_visit_stmts;
     visitor->visit_variable = compile_visit_variable;
     visitor->visit_while = compile_visit_while;
 }
