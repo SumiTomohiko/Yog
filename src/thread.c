@@ -198,6 +198,24 @@ call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint
     }
 }
 
+static YogVal 
+lookup_builtins(YogEnv* env, ID name) 
+{
+    YogVal builtins_name = YogVal_symbol(INTERN(BUILTINS));
+    YogVal builtins = YogVal_undef();
+    YogVm* vm = ENV_VM(env);
+    if (!YogTable_lookup(env, vm->pkgs, builtins_name, &builtins)) {
+        Yog_assert(env, FALSE, "Can't find builtins package.");
+    }
+
+    YogPkg* pkg = (YogPkg*)YOGVAL_OBJ(builtins);
+    YogVal key = YogVal_symbol(name);
+    YogVal val = YogVal_undef();
+    YogTable_lookup(env, pkg->attrs, key, &val);
+
+    return val;
+}
+
 static YogVal
 mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code) 
 {
@@ -353,22 +371,6 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
     }
 
     return retval;
-}
-
-void 
-YogThread_call_command(YogEnv* env, ID command, unsigned int argc, YogVal* args)
-{
-#if 0
-    YogVm* vm = ENV_VM(env);
-    ID bltins = YogVm_intern(env, vm, "builtins");
-    YogVal pkg = YogVal_undef();
-    if (!YogTable_lookup(env, vm->pkgs, YogVal_symbol(bltins), &pkg)) {
-        Yog_assert(env, FALSE, "Can't find builtins package.");
-    }
-    YogVal attr = YogObj_get_attr(env, YOGVAL_PTR(pkg), command);
-    Yog_assert(env, YOGVAL_TYPE(attr) == VAL_FUNC, "Command isn't a function.");
-    (YOGVAL_FUNC(attr))(env, pkg, argc, args);
-#endif
 }
 
 void 
