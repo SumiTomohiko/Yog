@@ -98,6 +98,7 @@ intern(const char* s)
 <INITIAL>"as"       return AS;
 <INITIAL>"break"    return BREAK;
 <INITIAL>"def"      return DEF;
+<INITIAL>"do"       return DO;
 <INITIAL>"elif"     return ELIF;
 <INITIAL>"else"     return ELSE;
 <INITIAL>"end"      return END;
@@ -107,6 +108,8 @@ intern(const char* s)
 <INITIAL>"next"     return NEXT;
 <INITIAL>"try"      return TRY;
 <INITIAL>"while"    return WHILE;
+<INITIAL>"{"        return LBRACKET;
+<INITIAL>"}"        return RBRACKET;
 <INITIAL>"\n"       {
     lineno++;
     return NEWLINE;

@@ -102,6 +102,12 @@ YogNode_new(YogEnv* env, YogNodeType type)
 
 #define NODE_NEW(type)  YogNode_new(ENV, type)
 
+#define BLOCK_ARG_NEW(node, params, stmts) do { \
+    node = NODE_NEW(NODE_BLOCK_ARG); \
+    NODE_PARAMS(node) = params; \
+    NODE_STMTS(node) = stmts; \
+} while (0)
+
 #define PARAMS_NEW(array, params_without_default, params_with_default, block_param, var_param, kw_param) do { \
     array = YogArray_new(ENV); \
     if (params_without_default != NULL) { \
@@ -124,9 +130,11 @@ YogNode_new(YogEnv* env, YogNodeType type)
     } \
 } while (0)
 
-#define COMMAND_CALL_NEW(result, name) do { \
-    result = NODE_NEW(NODE_COMMAND_CALL); \
-    NODE_COMMAND(result) = name; \
+#define COMMAND_CALL_NEW(node, name, args, blockarg) do { \
+    node = NODE_NEW(NODE_COMMAND_CALL); \
+    NODE_COMMAND(node) = name; \
+    NODE_ARGS(node) = args; \
+    NODE_BLOCK(node) = blockarg; \
 } while (0)
 
 #define OBJ_ARRAY_NEW(array, elem) do { \
@@ -169,10 +177,11 @@ YogNode_new(YogEnv* env, YogNodeType type)
     NODE_STMTS(node) = stmts; \
 } while (0)
 
-#define FUNC_CALL_NEW(node, callee, args) do { \
+#define FUNC_CALL_NEW(node, callee, args, blockarg) do { \
     node = NODE_NEW(NODE_FUNC_CALL); \
     NODE_CALLEE(node) = callee; \
     NODE_ARGS(node) = args; \
+    NODE_BLOCK(node) = blockarg; \
 } while (0)
 
 #define VARIABLE_NEW(node, id) do { \
@@ -252,6 +261,7 @@ int yylex(void);
 %token COMMA
 %token COMP_OP
 %token DEF
+%token DO
 %token DOUBLE_STAR
 %token ELIF
 %token ELSE
@@ -260,12 +270,14 @@ int yylex(void);
 %token EXCEPT
 %token FINALLY
 %token IF
+%token LBRACKET
 %token LPAR
 %token NAME
 %token NEWLINE
 %token NEXT
 %token NUMBER
 %token PLUS
+%token RBRACKET
 %token RPAR
 %token STAR
 %token TRY
@@ -289,6 +301,7 @@ int yylex(void);
 %type<node> assign_expr
 %type<node> atom
 %type<node> block_param
+%type<node> blockarg_opt
 %type<node> comparison
 %type<node> except
 %type<node> expr
@@ -327,8 +340,12 @@ stmt    : /* empty */ {
         | func_def
         | expr
         | NAME args {
-            COMMAND_CALL_NEW($$, $1);
-            NODE_ARGS($$) = $2;
+            COMMAND_CALL_NEW($$, $1, $2, NULL);
+        }
+        | NAME args DO LPAR params RPAR stmts END {
+            YogNode* blockarg = NULL;
+            BLOCK_ARG_NEW(blockarg, $5, $7);
+            COMMAND_CALL_NEW($$, $1, $2, blockarg);
         }
         | TRY stmts excepts ELSE stmts finally_opt END {
             EXCEPT_FINALLY_NEW($$, $2, $3, $5, $6);
@@ -572,17 +589,24 @@ atom    : NAME {
             NODE_VAL(node) = $1;
             $$ = node;
         }
-        | NAME LPAR args RPAR {
+        | NAME LPAR args RPAR blockarg_opt {
             YogNode* callee = NULL;
             VARIABLE_NEW(callee, $1);
-            FUNC_CALL_NEW($$, callee, $3);
+            FUNC_CALL_NEW($$, callee, $3, $5);
         }
-        | NAME LPAR RPAR {
+        | NAME LPAR RPAR blockarg_opt {
             YogNode* callee = NULL;
             VARIABLE_NEW(callee, $1);
-            FUNC_CALL_NEW($$, callee, NULL);
+            FUNC_CALL_NEW($$, callee, NULL, $4);
         }
         ;
+blockarg_opt    : /* empty */ {
+                    $$ = NULL;
+                }
+                | LBRACKET LPAR params RPAR stmts RBRACKET {
+                    BLOCK_ARG_NEW($$, $3, $5);
+                }
+                ;
 excepts : except {
             OBJ_ARRAY_NEW($$, $1);
         }

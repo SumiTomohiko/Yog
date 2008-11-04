@@ -35,24 +35,27 @@
      COMMA = 261,
      COMP_OP = 262,
      DEF = 263,
-     DOUBLE_STAR = 264,
-     ELIF = 265,
-     ELSE = 266,
-     END = 267,
-     EQUAL = 268,
-     EXCEPT = 269,
-     FINALLY = 270,
-     IF = 271,
-     LPAR = 272,
-     NAME = 273,
-     NEWLINE = 274,
-     NEXT = 275,
-     NUMBER = 276,
-     PLUS = 277,
-     RPAR = 278,
-     STAR = 279,
-     TRY = 280,
-     WHILE = 281
+     DO = 264,
+     DOUBLE_STAR = 265,
+     ELIF = 266,
+     ELSE = 267,
+     END = 268,
+     EQUAL = 269,
+     EXCEPT = 270,
+     FINALLY = 271,
+     IF = 272,
+     LBRACKET = 273,
+     LPAR = 274,
+     NAME = 275,
+     NEWLINE = 276,
+     NEXT = 277,
+     NUMBER = 278,
+     PLUS = 279,
+     RBRACKET = 280,
+     RPAR = 281,
+     STAR = 282,
+     TRY = 283,
+     WHILE = 284
    };
 #endif
 /* Tokens.  */
@@ -62,30 +65,33 @@
 #define COMMA 261
 #define COMP_OP 262
 #define DEF 263
-#define DOUBLE_STAR 264
-#define ELIF 265
-#define ELSE 266
-#define END 267
-#define EQUAL 268
-#define EXCEPT 269
-#define FINALLY 270
-#define IF 271
-#define LPAR 272
-#define NAME 273
-#define NEWLINE 274
-#define NEXT 275
-#define NUMBER 276
-#define PLUS 277
-#define RPAR 278
-#define STAR 279
-#define TRY 280
-#define WHILE 281
+#define DO 264
+#define DOUBLE_STAR 265
+#define ELIF 266
+#define ELSE 267
+#define END 268
+#define EQUAL 269
+#define EXCEPT 270
+#define FINALLY 271
+#define IF 272
+#define LBRACKET 273
+#define LPAR 274
+#define NAME 275
+#define NEWLINE 276
+#define NEXT 277
+#define NUMBER 278
+#define PLUS 279
+#define RBRACKET 280
+#define RPAR 281
+#define STAR 282
+#define TRY 283
+#define WHILE 284
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 242 "parser.y"
+#line 251 "parser.y"
 typedef union YYSTYPE {
     YogArray* array;
     YogNode* node;
@@ -93,7 +99,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 97 "parser.h"
+#line 103 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

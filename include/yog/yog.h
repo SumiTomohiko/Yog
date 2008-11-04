@@ -173,6 +173,7 @@ typedef struct YogArray YogArray;
 
 enum YogNodeType {
     NODE_ASSIGN, 
+    NODE_BLOCK_ARG, 
     NODE_BLOCK_PARAM, 
     NODE_BREAK, 
     NODE_COMMAND_CALL, 
@@ -212,6 +213,7 @@ struct YogNode {
         struct YogArray* array;
     } u3;
     union {
+        struct YogNode* nd;
         struct YogArray* array;
     } u4;
 };
@@ -228,6 +230,7 @@ struct YogNode {
 #define NODE_COMMAND(node)  (node)->u2.id
 #define NODE_CALLEE(node)   (node)->u1.nd
 #define NODE_ARGS(node)     (node)->u3.array
+#define NODE_BLOCK(node)    (node)->u4.nd
 
 #define NODE_NAME(node)     (node)->u1.id
 #define NODE_PARAMS(node)   (node)->u2.array
