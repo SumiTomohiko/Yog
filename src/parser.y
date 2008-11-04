@@ -228,14 +228,18 @@ YogNode_new(YogEnv* env, YogNodeType type)
     NODE_EXPR(node) = expr; \
 } while (0)
 
-#define METHOD_CALL_NEW(node, recv, name, arg, blockarg) do { \
-    YogArray* args = YogArray_new(ENV); \
-    YogArray_push(ENV, args, YogVal_ptr(arg)); \
+#define METHOD_CALL_NEW(node, recv, name, args, blockarg) do { \
     node = NODE_NEW(NODE_METHOD_CALL); \
     NODE_RECEIVER(node) = recv; \
     NODE_METHOD(node) = name; \
     NODE_ARGS(node) = args; \
     NODE_BLOCK(node) = blockarg; \
+} while (0)
+
+#define METHOD_CALL_NEW1(node, recv, name, arg) do { \
+    YogArray* args = YogArray_new(ENV); \
+    YogArray_push(ENV, args, YogVal_ptr(arg)); \
+    METHOD_CALL_NEW(node, recv, name, args, NULL); \
 } while (0)
 
 #define IF_NEW(node, expr, stmts, tail) do { \
@@ -562,7 +566,7 @@ not_expr    : comparison
             ;
 comparison  : xor_expr
             | xor_expr COMP_OP xor_expr {
-                METHOD_CALL_NEW($$, $1, $2, $3, NULL);
+                METHOD_CALL_NEW1($$, $1, $2, $3);
             }
             ;
 xor_expr    : or_expr
@@ -575,7 +579,7 @@ shift_expr  : arith_expr
             ;
 arith_expr  : term
             | arith_expr PLUS term {
-                METHOD_CALL_NEW($$, $1, $2, $3, NULL);
+                METHOD_CALL_NEW1($$, $1, $2, $3);
             }
             ;
 term    : factor

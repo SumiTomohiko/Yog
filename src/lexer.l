@@ -121,7 +121,7 @@ intern(const char* s)
 <INITIAL>"<"        {
     RETURN_NAME(COMP_OP);
 }
-<INITIAL>[A-Za-z_][A-Za-z0-9_]+     {
+<INITIAL>[A-Za-z_][A-Za-z0-9_]*     {
     RETURN_NAME(NAME);
 }
 <INITIAL>[0-9]+     {

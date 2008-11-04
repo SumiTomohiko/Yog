@@ -29,9 +29,15 @@ bltins_puts(YogEnv* env, YogVal self, YogArray* vararg)
     if (0 < size) {
         unsigned int i = 0;
         for (i = 0; i < size; i++) {
+            YogString* s = NULL;
             YogVal arg = YogArray_at(env, vararg, i);
-            YogVal val = YogThread_call_method(env, ENV_TH(env), arg, "to_s", 0, NULL);
-            YogString* s = YOGVAL_PTR(val);
+            if (IS_OBJ(arg) && (YOGVAL_OBJ(arg)->klass == ENV_VM(env)->string_klass)) {
+                s = (YogString*)YOGVAL_OBJ(arg);
+            }
+            else {
+                YogVal val = YogThread_call_method(env, ENV_TH(env), arg, "to_s", 0, NULL);
+                s = YOGVAL_PTR(val);
+            }
             printf("%s", s->body->items);
             printf("\n");
         }

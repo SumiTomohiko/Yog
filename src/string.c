@@ -34,6 +34,7 @@ gc_string_children(YogEnv* env, void* ptr, DoGc do_gc)
 #define RETURN_STR(s)   do { \
     YogCharArray* body = YogCharArray_new_str(env, s); \
     YogString* string = ALLOC_OBJ(env, gc_string_children, YogString); \
+    YogBasicObj_init(env, YOGBASICOBJ(string), ENV_VM(env)->string_klass); \
     string->body = body; \
     return string; \
 } while (0)
@@ -58,6 +59,13 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
 }
 
 #undef RETURN_STR
+
+YogKlass* 
+YogString_klass_new(YogEnv* env) 
+{
+    YogKlass* klass = YogKlass_new(env, ENV_VM(env)->obj_klass);
+    return klass;
+}
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

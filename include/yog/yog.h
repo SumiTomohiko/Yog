@@ -37,6 +37,7 @@ struct YogVm {
     struct YogKlass* klass_klass;
     struct YogKlass* func_klass;
     struct YogKlass* int_klass;
+    struct YogKlass* string_klass;
     struct YogKlass* pkg_klass;
     struct YogKlass* bool_klass;
     struct YogKlass* builtin_bound_method_klass;
@@ -586,11 +587,11 @@ YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
 YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
 YogString* YogString_new_str(YogEnv*, const char*);
 YogString* YogString_new_format(YogEnv*, const char*, ...);
+YogKlass* YogString_klass_new(YogEnv*);
 
 /* src/thread.c */
 YogVal YogThread_call_method(YogEnv*, YogThread*, YogVal, const char*, unsigned int, YogVal*);
 YogVal YogThread_call_method_id(YogEnv*, YogThread*, YogVal, ID, unsigned int, YogVal*);
-void YogThread_call_command(YogEnv*, ID, unsigned int, YogVal*);
 void YogThread_eval_package(YogEnv*, YogThread*, YogPkg*, YogCode*);
 YogThread* YogThread_new(YogEnv*);
 

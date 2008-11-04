@@ -512,7 +512,11 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
     visit_node(env, visitor, NODE_RECEIVER(node), arg);
     VISIT_EACH_ARGS();
 
-    unsigned int argc = YogArray_size(env, NODE_ARGS(node));
+    unsigned int argc = 0;
+    YogArray* args = NODE_ARGS(node);
+    if (args != NULL) {
+        argc = YogArray_size(env, args);
+    }
     Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for method call.");
     CompileData* data = arg;
     SET_LINENO();

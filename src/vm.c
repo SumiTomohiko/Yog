@@ -112,13 +112,14 @@ setup_basic_klass(YogEnv* env, YogVm* vm)
 }
 
 static void 
-setup_klass(YogEnv* env, YogVm* vm) 
+setup_klasses(YogEnv* env, YogVm* vm) 
 {
     vm->builtin_bound_method_klass = YogBuiltinBoundMethod_klass_new(env);
     vm->bound_method_klass = YogBoundMethod_klass_new(env);
     vm->builtin_unbound_method_klass = YogBuiltinUnboundMethod_klass_new(env);
     vm->unbound_method_klass = YogUnboundMethod_klass_new(env);
     vm->int_klass = YogInt_klass_new(env);
+    vm->string_klass = YogString_klass_new(env);
     vm->pkg_klass = YogPkg_klass_new(env);
     vm->bool_klass = YogBool_klass_new(env);
 }
@@ -128,7 +129,7 @@ YogVm_boot(YogEnv* env, YogVm* vm)
 {
     setup_symbol_tables(env, vm);
     setup_basic_klass(env, vm);
-    setup_klass(env, vm);
+    setup_klasses(env, vm);
 
     vm->pkgs = YogTable_new_symbol_table(env);
     setup_builtins(env, vm);
@@ -149,6 +150,8 @@ YogVm_new(size_t heap_size)
     vm->obj_klass = NULL;
     vm->klass_klass = NULL;
     vm->func_klass = NULL;
+    vm->int_klass = NULL;
+    vm->string_klass = NULL;
     vm->pkg_klass = NULL;
     vm->bool_klass = NULL;
     vm->builtin_bound_method_klass = NULL;
