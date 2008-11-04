@@ -94,6 +94,7 @@ intern(const char* s)
 <INITIAL>"*"        return STAR;
 <INITIAL>"**"       return DOUBLE_STAR;
 <INITIAL>","        return COMMA;
+<INITIAL>"\."       return DOT;
 <INITIAL>"="        return EQUAL;
 <INITIAL>"as"       return AS;
 <INITIAL>"break"    return BREAK;
@@ -120,7 +121,7 @@ intern(const char* s)
 <INITIAL>"<"        {
     RETURN_NAME(COMP_OP);
 }
-<INITIAL>[a-z]+     {
+<INITIAL>[A-Za-z_][A-Za-z0-9_]+     {
     RETURN_NAME(NAME);
 }
 <INITIAL>[0-9]+     {

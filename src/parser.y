@@ -228,13 +228,14 @@ YogNode_new(YogEnv* env, YogNodeType type)
     NODE_EXPR(node) = expr; \
 } while (0)
 
-#define METHOD_CALL_NEW1(node, recv, name, arg) do { \
+#define METHOD_CALL_NEW(node, recv, name, arg, blockarg) do { \
     YogArray* args = YogArray_new(ENV); \
     YogArray_push(ENV, args, YogVal_ptr(arg)); \
     node = NODE_NEW(NODE_METHOD_CALL); \
     NODE_RECEIVER(node) = recv; \
     NODE_METHOD(node) = name; \
     NODE_ARGS(node) = args; \
+    NODE_BLOCK(node) = blockarg; \
 } while (0)
 
 #define IF_NEW(node, expr, stmts, tail) do { \
@@ -262,6 +263,7 @@ int yylex(void);
 %token COMP_OP
 %token DEF
 %token DO
+%token DOT
 %token DOUBLE_STAR
 %token ELIF
 %token ELSE
@@ -284,6 +286,7 @@ int yylex(void);
 %token WHILE
 
 %type<array> args
+%type<array> args_opt
 %type<array> else_opt
 %type<array> excepts
 %type<array> finally_opt
@@ -559,7 +562,7 @@ not_expr    : comparison
             ;
 comparison  : xor_expr
             | xor_expr COMP_OP xor_expr {
-                METHOD_CALL_NEW1($$, $1, $2, $3);
+                METHOD_CALL_NEW($$, $1, $2, $3, NULL);
             }
             ;
 xor_expr    : or_expr
@@ -572,7 +575,7 @@ shift_expr  : arith_expr
             ;
 arith_expr  : term
             | arith_expr PLUS term {
-                METHOD_CALL_NEW1($$, $1, $2, $3);
+                METHOD_CALL_NEW($$, $1, $2, $3, NULL);
             }
             ;
 term    : factor
@@ -589,17 +592,26 @@ atom    : NAME {
             NODE_VAL(node) = $1;
             $$ = node;
         }
-        | NAME LPAR args RPAR blockarg_opt {
-            YogNode* callee = NULL;
-            VARIABLE_NEW(callee, $1);
-            FUNC_CALL_NEW($$, callee, $3, $5);
+        | atom LPAR args_opt RPAR blockarg_opt {
+            if ($1->type == NODE_ATTR) {
+                METHOD_CALL_NEW($$, NODE_OBJ($1), NODE_NAME($1), $3, $5);
+            }
+            else {
+                FUNC_CALL_NEW($$, $1, $3, $5);
+            }
         }
-        | NAME LPAR RPAR blockarg_opt {
-            YogNode* callee = NULL;
-            VARIABLE_NEW(callee, $1);
-            FUNC_CALL_NEW($$, callee, NULL, $4);
+        | atom DOT NAME {
+            YogNode* node = NODE_NEW(NODE_ATTR);
+            NODE_OBJ(node) = $1;
+            NODE_NAME(node) = $3;
+            $$ = node;
         }
         ;
+args_opt    : /* empty */ {
+                $$ = NULL;
+            }
+            | args
+            ;
 blockarg_opt    : /* empty */ {
                     $$ = NULL;
                 }

@@ -173,6 +173,7 @@ typedef struct YogArray YogArray;
 
 enum YogNodeType {
     NODE_ASSIGN, 
+    NODE_ATTR, 
     NODE_BLOCK_ARG, 
     NODE_BLOCK_PARAM, 
     NODE_BREAK, 
@@ -252,6 +253,8 @@ struct YogNode {
 #define NODE_IF_TEST(node)  (node)->u1.nd
 #define NODE_IF_STMTS(node) (node)->u2.array
 #define NODE_IF_TAIL(node)  (node)->u3.array
+
+#define NODE_OBJ(node)      (node)->u2.nd
 
 typedef struct YogNode YogNode;
 
