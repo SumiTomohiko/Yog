@@ -31,63 +31,69 @@
    enum yytokentype {
      AMPER = 258,
      AS = 259,
-     BREAK = 260,
-     COMMA = 261,
-     COMP_OP = 262,
-     DEF = 263,
-     DO = 264,
-     DOT = 265,
-     DOUBLE_STAR = 266,
-     ELIF = 267,
-     ELSE = 268,
-     END = 269,
-     EQUAL = 270,
-     EXCEPT = 271,
-     FINALLY = 272,
-     IF = 273,
-     LBRACKET = 274,
-     LPAR = 275,
-     NAME = 276,
-     NEWLINE = 277,
-     NEXT = 278,
-     NUMBER = 279,
-     PLUS = 280,
-     RBRACKET = 281,
-     RPAR = 282,
-     STAR = 283,
-     TRY = 284,
-     WHILE = 285
+     BAR = 260,
+     BREAK = 261,
+     COMMA = 262,
+     COMP_OP = 263,
+     DEF = 264,
+     DO = 265,
+     DOT = 266,
+     DOUBLE_STAR = 267,
+     ELIF = 268,
+     ELSE = 269,
+     END = 270,
+     EQUAL = 271,
+     EXCEPT = 272,
+     FINALLY = 273,
+     IF = 274,
+     LBRACE = 275,
+     LBRACKET = 276,
+     LPAR = 277,
+     NAME = 278,
+     NEWLINE = 279,
+     NEXT = 280,
+     NUMBER = 281,
+     PLUS = 282,
+     RBRACE = 283,
+     RBRACKET = 284,
+     RPAR = 285,
+     STAR = 286,
+     TRY = 287,
+     WHILE = 288
    };
 #endif
 /* Tokens.  */
 #define AMPER 258
 #define AS 259
-#define BREAK 260
-#define COMMA 261
-#define COMP_OP 262
-#define DEF 263
-#define DO 264
-#define DOT 265
-#define DOUBLE_STAR 266
-#define ELIF 267
-#define ELSE 268
-#define END 269
-#define EQUAL 270
-#define EXCEPT 271
-#define FINALLY 272
-#define IF 273
-#define LBRACKET 274
-#define LPAR 275
-#define NAME 276
-#define NEWLINE 277
-#define NEXT 278
-#define NUMBER 279
-#define PLUS 280
-#define RBRACKET 281
-#define RPAR 282
-#define STAR 283
-#define TRY 284
-#define WHILE 285
+#define BAR 260
+#define BREAK 261
+#define COMMA 262
+#define COMP_OP 263
+#define DEF 264
+#define DO 265
+#define DOT 266
+#define DOUBLE_STAR 267
+#define ELIF 268
+#define ELSE 269
+#define END 270
+#define EQUAL 271
+#define EXCEPT 272
+#define FINALLY 273
+#define IF 274
+#define LBRACE 275
+#define LBRACKET 276
+#define LPAR 277
+#define NAME 278
+#define NEWLINE 279
+#define NEXT 280
+#define NUMBER 281
+#define PLUS 282
+#define RBRACE 283
+#define RBRACKET 284
+#define RPAR 285
+#define STAR 286
+#define TRY 287
+#define WHILE 288
 
 
 
@@ -101,7 +107,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 105 "parser.h"
+#line 111 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

@@ -94,8 +94,11 @@ intern(const char* s)
 <INITIAL>"*"        return STAR;
 <INITIAL>"**"       return DOUBLE_STAR;
 <INITIAL>","        return COMMA;
-<INITIAL>"\."       return DOT;
 <INITIAL>"="        return EQUAL;
+<INITIAL>"["        return LBRACKET;
+<INITIAL>"\."       return DOT;
+<INITIAL>"\|"       return BAR;
+<INITIAL>"]"        return RBRACKET;
 <INITIAL>"as"       return AS;
 <INITIAL>"break"    return BREAK;
 <INITIAL>"def"      return DEF;
@@ -109,8 +112,8 @@ intern(const char* s)
 <INITIAL>"next"     return NEXT;
 <INITIAL>"try"      return TRY;
 <INITIAL>"while"    return WHILE;
-<INITIAL>"{"        return LBRACKET;
-<INITIAL>"}"        return RBRACKET;
+<INITIAL>"{"        return LBRACE;
+<INITIAL>"}"        return RBRACE;
 <INITIAL>"\n"       {
     lineno++;
     return NEWLINE;

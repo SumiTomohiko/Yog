@@ -19,9 +19,9 @@ class TestInt(TestCase):
 
     def test_times(self):
         self._test("""
-10.times() { (n)
+10.times() do [n]
     puts n
-}
+end
 """, """0
 1
 2

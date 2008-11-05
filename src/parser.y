@@ -262,6 +262,7 @@ int yylex(void);
 
 %token AMPER
 %token AS
+%token BAR
 %token BREAK
 %token COMMA
 %token COMP_OP
@@ -276,6 +277,7 @@ int yylex(void);
 %token EXCEPT
 %token FINALLY
 %token IF
+%token LBRACE
 %token LBRACKET
 %token LPAR
 %token NAME
@@ -283,6 +285,7 @@ int yylex(void);
 %token NEXT
 %token NUMBER
 %token PLUS
+%token RBRACE
 %token RBRACKET
 %token RPAR
 %token STAR
@@ -349,11 +352,13 @@ stmt    : /* empty */ {
         | NAME args {
             COMMAND_CALL_NEW($$, $1, $2, NULL);
         }
+        /*
         | NAME args DO LPAR params RPAR stmts END {
             YogNode* blockarg = NULL;
             BLOCK_ARG_NEW(blockarg, $5, $7);
             COMMAND_CALL_NEW($$, $1, $2, blockarg);
         }
+        */
         | TRY stmts excepts ELSE stmts finally_opt END {
             EXCEPT_FINALLY_NEW($$, $2, $3, $5, $6);
         }
@@ -619,7 +624,7 @@ args_opt    : /* empty */ {
 blockarg_opt    : /* empty */ {
                     $$ = NULL;
                 }
-                | LBRACKET LPAR params RPAR stmts RBRACKET {
+                | DO LBRACKET params RBRACKET stmts END {
                     BLOCK_ARG_NEW($$, $3, $5);
                 }
                 ;
