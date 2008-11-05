@@ -264,6 +264,7 @@ int yylex(void);
 %token AS
 %token BAR
 %token BREAK
+%token CLASS
 %token COMMA
 %token COMP_OP
 %token DEF
@@ -276,6 +277,7 @@ int yylex(void);
 %token EQUAL
 %token EXCEPT
 %token FINALLY
+%token GREATER
 %token IF
 %token LBRACE
 %token LBRACKET
@@ -328,6 +330,7 @@ int yylex(void);
 %type<node> power
 %type<node> shift_expr
 %type<node> stmt
+%type<node> super_opt
 %type<node> term
 %type<node> var_param
 %type<node> xor_expr
@@ -389,7 +392,21 @@ stmt    : /* empty */ {
         | IF expr stmts if_tail END {
             IF_NEW($$, $2, $3, $4);
         }
+        | CLASS NAME super_opt stmts END {
+            YogNode* node = NODE_NEW(NODE_KLASS);
+            NODE_NAME(node) = $2;
+            NODE_SUPER(node) = $3;
+            NODE_STMTS(node) = $4;
+            $$ = node;
+        }
         ;
+super_opt   : /* empty */ {
+                $$ = NULL;
+            }
+            | GREATER expr {
+                $$ = $2;
+            }
+            ;
 if_tail : else_opt
         | ELIF expr stmts if_tail {
             YogNode* node = NULL;

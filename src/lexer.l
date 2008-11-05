@@ -95,12 +95,14 @@ intern(const char* s)
 <INITIAL>"**"       return DOUBLE_STAR;
 <INITIAL>","        return COMMA;
 <INITIAL>"="        return EQUAL;
+<INITIAL>">"        return GREATER;
 <INITIAL>"["        return LBRACKET;
 <INITIAL>"\."       return DOT;
 <INITIAL>"\|"       return BAR;
 <INITIAL>"]"        return RBRACKET;
 <INITIAL>"as"       return AS;
 <INITIAL>"break"    return BREAK;
+<INITIAL>"class"    return CLASS;
 <INITIAL>"def"      return DEF;
 <INITIAL>"do"       return DO;
 <INITIAL>"elif"     return ELIF;

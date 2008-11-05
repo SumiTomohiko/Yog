@@ -33,33 +33,35 @@
      AS = 259,
      BAR = 260,
      BREAK = 261,
-     COMMA = 262,
-     COMP_OP = 263,
-     DEF = 264,
-     DO = 265,
-     DOT = 266,
-     DOUBLE_STAR = 267,
-     ELIF = 268,
-     ELSE = 269,
-     END = 270,
-     EQUAL = 271,
-     EXCEPT = 272,
-     FINALLY = 273,
-     IF = 274,
-     LBRACE = 275,
-     LBRACKET = 276,
-     LPAR = 277,
-     NAME = 278,
-     NEWLINE = 279,
-     NEXT = 280,
-     NUMBER = 281,
-     PLUS = 282,
-     RBRACE = 283,
-     RBRACKET = 284,
-     RPAR = 285,
-     STAR = 286,
-     TRY = 287,
-     WHILE = 288
+     CLASS = 262,
+     COMMA = 263,
+     COMP_OP = 264,
+     DEF = 265,
+     DO = 266,
+     DOT = 267,
+     DOUBLE_STAR = 268,
+     ELIF = 269,
+     ELSE = 270,
+     END = 271,
+     EQUAL = 272,
+     EXCEPT = 273,
+     FINALLY = 274,
+     GREATER = 275,
+     IF = 276,
+     LBRACE = 277,
+     LBRACKET = 278,
+     LPAR = 279,
+     NAME = 280,
+     NEWLINE = 281,
+     NEXT = 282,
+     NUMBER = 283,
+     PLUS = 284,
+     RBRACE = 285,
+     RBRACKET = 286,
+     RPAR = 287,
+     STAR = 288,
+     TRY = 289,
+     WHILE = 290
    };
 #endif
 /* Tokens.  */
@@ -67,33 +69,35 @@
 #define AS 259
 #define BAR 260
 #define BREAK 261
-#define COMMA 262
-#define COMP_OP 263
-#define DEF 264
-#define DO 265
-#define DOT 266
-#define DOUBLE_STAR 267
-#define ELIF 268
-#define ELSE 269
-#define END 270
-#define EQUAL 271
-#define EXCEPT 272
-#define FINALLY 273
-#define IF 274
-#define LBRACE 275
-#define LBRACKET 276
-#define LPAR 277
-#define NAME 278
-#define NEWLINE 279
-#define NEXT 280
-#define NUMBER 281
-#define PLUS 282
-#define RBRACE 283
-#define RBRACKET 284
-#define RPAR 285
-#define STAR 286
-#define TRY 287
-#define WHILE 288
+#define CLASS 262
+#define COMMA 263
+#define COMP_OP 264
+#define DEF 265
+#define DO 266
+#define DOT 267
+#define DOUBLE_STAR 268
+#define ELIF 269
+#define ELSE 270
+#define END 271
+#define EQUAL 272
+#define EXCEPT 273
+#define FINALLY 274
+#define GREATER 275
+#define IF 276
+#define LBRACE 277
+#define LBRACKET 278
+#define LPAR 279
+#define NAME 280
+#define NEWLINE 281
+#define NEXT 282
+#define NUMBER 283
+#define PLUS 284
+#define RBRACE 285
+#define RBRACKET 286
+#define RPAR 287
+#define STAR 288
+#define TRY 289
+#define WHILE 290
 
 
 
@@ -107,7 +111,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 111 "parser.h"
+#line 115 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

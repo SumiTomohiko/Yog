@@ -186,6 +186,7 @@ enum YogNodeType {
     NODE_FUNC_CALL, 
     NODE_FUNC_DEF, 
     NODE_IF, 
+    NODE_KLASS, 
     NODE_KW_PARAM, 
     NODE_LITERAL, 
     NODE_METHOD_CALL, 
@@ -257,6 +258,8 @@ struct YogNode {
 #define NODE_IF_TAIL(node)  (node)->u3.array
 
 #define NODE_OBJ(node)      (node)->u2.nd
+
+#define NODE_SUPER(node)    (node)->u2.nd
 
 typedef struct YogNode YogNode;
 
