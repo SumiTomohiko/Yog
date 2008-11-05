@@ -44,6 +44,7 @@ struct YogVm {
     struct YogKlass* bound_method_klass;
     struct YogKlass* builtin_unbound_method_klass;
     struct YogKlass* unbound_method_klass;
+    struct YogKlass* pkg_block_klass;
 
     struct YogTable* pkgs;
 };
@@ -282,10 +283,17 @@ typedef struct YogKlass YogKlass;
 struct YogArgInfo {
     unsigned int argc;
     ID* argnames;
+    uint8_t* arg_index;
+
     unsigned int blockargc;
     ID blockargname;
+    uint8_t blockarg_index;
+
     unsigned int varargc;
+    uint8_t vararg_index;
+
     unsigned int kwargc;
+    uint8_t kwarg_index;
 };
 
 typedef struct YogArgInfo YogArgInfo;
@@ -429,8 +437,8 @@ typedef struct YogScriptFrame YogScriptFrame;
 
 struct YogPkgFrame {
     struct YogScriptFrame base;
-    struct YogTable* vars;
     struct YogPkg* pkg;
+    struct YogTable* vars;
 };
 
 #define PKG_FRAME(f)    ((YogPkgFrame*)f)
@@ -472,6 +480,25 @@ typedef enum InstType InstType;
 
 #include "yog/inst.h"
 
+struct YogBlock {
+    YOGBASICOBJ_HEAD;
+    struct YogCode* code;
+};
+
+#define BLOCK(obj)  ((YogBlock*)obj)
+
+typedef struct YogBlock YogBlock;
+
+struct YogPackageBlock {
+    struct YogBlock base;
+    struct YogPkg* pkg;
+    struct YogTable* vars;
+};
+
+#define PACKAGE_BLOCK(obj)  ((YogPackageBlock*)obj)
+
+typedef struct YogPackageBlock YogPackageBlock;
+
 /* $PROTOTYPE_START$ */
 
 /**
@@ -500,6 +527,10 @@ void YogBinary_push_id(YogEnv*, YogBinary*, ID);
 void YogBinary_push_unsigned_int(YogEnv*, YogBinary*, unsigned int);
 void YogBinary_push_pc(YogEnv*, YogBinary*, pc_t);
 YogBinary* YogBinary_new(YogEnv*, unsigned int);
+
+/* src/block.c */
+YogPackageBlock* YogPackageBlock_new(YogEnv*);
+YogKlass* YogPackageBlock_klass_new(YogEnv*);
 
 /* src/bool.c */
 YogKlass* YogBool_klass_new(YogEnv*);
@@ -591,6 +622,7 @@ YogKlass* YogString_klass_new(YogEnv*);
 
 /* src/thread.c */
 YogVal YogThread_call_method(YogEnv*, YogThread*, YogVal, const char*, unsigned int, YogVal*);
+YogVal YogThread_call_block(YogEnv*, YogThread*, YogVal, unsigned int, YogVal*);
 YogVal YogThread_call_method_id(YogEnv*, YogThread*, YogVal, ID, unsigned int, YogVal*);
 void YogThread_eval_package(YogEnv*, YogThread*, YogPkg*, YogCode*);
 YogThread* YogThread_new(YogEnv*);

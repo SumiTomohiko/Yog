@@ -143,6 +143,19 @@ inst dup
 {
 }
 
+inst make_package_block
+()
+(code)
+(block)
+{
+    YogPackageBlock* b = YogPackageBlock_new(env);
+    YogCode* c = YOGVAL_PTR(code);
+    BLOCK(b)->code = c;
+    b->pkg = PKG_FRAME(CUR_FRAME)->pkg;
+    b->vars = PKG_FRAME(CUR_FRAME)->vars;
+    block = YogVal_obj(YOGBASICOBJ(b));
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

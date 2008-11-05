@@ -118,10 +118,12 @@ setup_klasses(YogEnv* env, YogVm* vm)
     vm->bound_method_klass = YogBoundMethod_klass_new(env);
     vm->builtin_unbound_method_klass = YogBuiltinUnboundMethod_klass_new(env);
     vm->unbound_method_klass = YogUnboundMethod_klass_new(env);
+
     vm->int_klass = YogInt_klass_new(env);
     vm->string_klass = YogString_klass_new(env);
     vm->pkg_klass = YogPkg_klass_new(env);
     vm->bool_klass = YogBool_klass_new(env);
+    vm->pkg_block_klass = YogPackageBlock_klass_new(env);
 }
 
 void 
@@ -158,6 +160,7 @@ YogVm_new(size_t heap_size)
     vm->bound_method_klass = NULL;
     vm->builtin_unbound_method_klass = NULL;
     vm->unbound_method_klass = NULL;
+    vm->pkg_block_klass = NULL;
 
     vm->pkgs = NULL;
 

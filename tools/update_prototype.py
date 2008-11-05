@@ -16,7 +16,7 @@ class DeclarationInserter(object):
                     "src/code.c", "src/frame.c", "src/thread.c", "src/klass.c", 
                     "src/int.c", "src/builtins.c", "src/package.c", 
                     "src/function.c", "src/bool.c", "src/lexer.l", "src/inst.c",
-                    "src/method.c", 
+                    "src/method.c", "src/block.c", 
                     ], 
             }
 

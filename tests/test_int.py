@@ -19,7 +19,7 @@ class TestInt(TestCase):
 
     def test_times(self):
         self._test("""
-10.times() { (n) 
+10.times() { (n)
     puts n
 }
 """, """0

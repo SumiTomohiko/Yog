@@ -43,6 +43,21 @@ int_less(YogEnv* env, YogVal self, YogVal n)
     }
 }
 
+static YogVal 
+int_times(YogEnv* env, YogVal self, YogVal block) 
+{
+    int n = YOGVAL_INT(self);
+    unsigned int i = 0;
+    unsigned int argc = 1;
+    for (i = 0; i < n; i++) {
+        YogVal args[1];
+        args[0] = YogVal_int(i);
+        YogThread_call_block(env, ENV_TH(env), block, argc, args);
+    }
+
+    return YogVal_nil();
+}
+
 YogKlass* 
 YogInt_klass_new(YogEnv* env) 
 {
@@ -54,6 +69,7 @@ YogInt_klass_new(YogEnv* env)
     DEFINE_METHOD("<", int_less);
 #undef DEFINE_METHOD
     YogKlass_define_method(env, klass, "to_s", int_to_s, 0, 0, 0, 0, NULL);
+    YogKlass_define_method(env, klass, "times", int_times, 1, 0, 0, 0, "block", NULL);
 
     return klass;
 }

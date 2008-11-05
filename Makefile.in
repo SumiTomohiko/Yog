@@ -50,11 +50,11 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am_yog_OBJECTS = yog-array.$(OBJEXT) yog-binary.$(OBJEXT) \
-	yog-bool.$(OBJEXT) yog-builtins.$(OBJEXT) yog-code.$(OBJEXT) \
-	yog-compile.$(OBJEXT) yog-error.$(OBJEXT) yog-frame.$(OBJEXT) \
-	yog-function.$(OBJEXT) yog-inst.$(OBJEXT) yog-int.$(OBJEXT) \
-	yog-klass.$(OBJEXT) yog-lexer.$(OBJEXT) yog-main.$(OBJEXT) \
-	yog-method.$(OBJEXT) yog-object.$(OBJEXT) \
+	yog-block.$(OBJEXT) yog-bool.$(OBJEXT) yog-builtins.$(OBJEXT) \
+	yog-code.$(OBJEXT) yog-compile.$(OBJEXT) yog-error.$(OBJEXT) \
+	yog-frame.$(OBJEXT) yog-function.$(OBJEXT) yog-inst.$(OBJEXT) \
+	yog-int.$(OBJEXT) yog-klass.$(OBJEXT) yog-lexer.$(OBJEXT) \
+	yog-main.$(OBJEXT) yog-method.$(OBJEXT) yog-object.$(OBJEXT) \
 	yog-package.$(OBJEXT) yog-parser.$(OBJEXT) yog-st.$(OBJEXT) \
 	yog-string.$(OBJEXT) yog-thread.$(OBJEXT) yog-value.$(OBJEXT) \
 	yog-vm.$(OBJEXT)
@@ -178,6 +178,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 yog_SOURCES = src/array.c \
 	src/binary.c \
+	src/block.c \
 	src/bool.c \
 	src/builtins.c \
 	src/code.c \
@@ -297,6 +298,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-binary.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-bool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-builtins.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-code.Po@am__quote@
@@ -360,6 +362,20 @@ yog-binary.obj: src/binary.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/binary.c' object='yog-binary.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-binary.obj `if test -f 'src/binary.c'; then $(CYGPATH_W) 'src/binary.c'; else $(CYGPATH_W) '$(srcdir)/src/binary.c'; fi`
+
+yog-block.o: src/block.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-block.o -MD -MP -MF $(DEPDIR)/yog-block.Tpo -c -o yog-block.o `test -f 'src/block.c' || echo '$(srcdir)/'`src/block.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-block.Tpo $(DEPDIR)/yog-block.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/block.c' object='yog-block.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-block.o `test -f 'src/block.c' || echo '$(srcdir)/'`src/block.c
+
+yog-block.obj: src/block.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-block.obj -MD -MP -MF $(DEPDIR)/yog-block.Tpo -c -o yog-block.obj `if test -f 'src/block.c'; then $(CYGPATH_W) 'src/block.c'; else $(CYGPATH_W) '$(srcdir)/src/block.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-block.Tpo $(DEPDIR)/yog-block.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/block.c' object='yog-block.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-block.obj `if test -f 'src/block.c'; then $(CYGPATH_W) 'src/block.c'; else $(CYGPATH_W) '$(srcdir)/src/block.c'; fi`
 
 yog-bool.o: src/bool.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-bool.o -MD -MP -MF $(DEPDIR)/yog-bool.Tpo -c -o yog-bool.o `test -f 'src/bool.c' || echo '$(srcdir)/'`src/bool.c

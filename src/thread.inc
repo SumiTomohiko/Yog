@@ -249,6 +249,23 @@
             PUSH(val);
             break;
         }
+#line 238 "src/thread.inc"
+    case OP(MAKE_PACKAGE_BLOCK):
+        {
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
+            YogVal code = POP();
+            YogVal block = YogVal_nil();
+#line 151 "src/insts.def"
+            YogPackageBlock* b = YogPackageBlock_new(env);
+            YogCode* c = YOGVAL_PTR(code);
+            BLOCK(b)->code = c;
+            b->vars = PKG_FRAME(CUR_FRAME)->vars;
+            block = YogVal_obj(YOGBASICOBJ(b));
+
+#line 250 "src/thread.inc"
+            PUSH(block);
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

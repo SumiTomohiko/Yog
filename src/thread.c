@@ -338,6 +338,53 @@ eval_code(YogEnv* env, YogThread* th, YogCode* code, YogVal receiver, unsigned i
 }
 
 YogVal 
+YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc, YogVal* args) 
+{
+    YogBasicObj* obj = YOGVAL_OBJ(block);
+
+    YogVal retval = YogVal_undef();
+    if (obj->klass == ENV_VM(env)->pkg_block_klass) {
+        YogBlock* block = BLOCK(obj);
+        YogCode* code = block->code;
+        YogArgInfo* arg_info = &code->arg_info;
+
+#define SET_VAR(name) do { \
+    YogVal symbol = YogVal_symbol(name); \
+    YogTable_insert(env, vars, symbol, args[i]); \
+} while (0)
+        YogPackageBlock* pkg_block = PACKAGE_BLOCK(obj);
+        YogTable* vars = pkg_block->vars;
+        unsigned int i = 0;
+        for (i = 0; i < arg_info->argc; i++) {
+            ID name = arg_info->argnames[i];
+            SET_VAR(name);
+        }
+        if (i < arg_info->argc + arg_info->blockargc) {
+            ID name = arg_info->blockargname;
+            SET_VAR(name);
+            i++;
+        }
+#undef SET_VAR
+
+        YogPkgFrame* frame = YogPkgFrame_new(env);
+        SCRIPT_FRAME(frame)->code = code;
+        SCRIPT_FRAME(frame)->stack = YogValArray_new(env, code->stack_size);
+        frame->vars = vars;
+        frame->pkg = pkg_block->pkg;
+
+        th->cur_frame = FRAME(frame);
+        YogVal retval = mainloop(env, th, SCRIPT_FRAME(frame), code);
+
+        return retval;
+    }
+    else {
+        Yog_assert(env, FALSE, "Block class isn't PackageBlock.");
+    }
+
+    return retval;
+}
+
+YogVal 
 YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method, unsigned int argc, YogVal* args) 
 {
     YogKlass* klass = YogVal_get_klass(env, receiver);

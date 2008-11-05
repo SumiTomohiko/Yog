@@ -22,6 +22,7 @@ get_op_name(OpCode op)
         "JUMP", 
         "JUMP_IF_FALSE", 
         "DUP", 
+        "MAKE_PACKAGE_BLOCK", 
     };
 
     return op_names[op];

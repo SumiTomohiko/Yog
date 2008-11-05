@@ -21,43 +21,45 @@ YogBuiltinFunction_new(YogEnv* env, const char* name, void* f, unsigned int bloc
     ASSERT(kwargc);
 #undef ASSERT
 
-#define FOR_EACH_ARGNAME(ap, s) do { \
-    const char* s = NULL; \
-    while ((s = va_arg(ap, const char*)) != NULL)
-
-#define FOR_EACH_ARGNAME_END \
-} while (0)
+#define NEXT_STR(ap)    va_arg(ap, const char*)
 
     va_list aq;
     va_copy(aq, ap);
 
     unsigned int argc = 0;
-    FOR_EACH_ARGNAME(ap, s) {
+    const char* s = NULL;
+    while ((s = NEXT_STR(ap)) != NULL) {
         argc++;
     }
-    FOR_EACH_ARGNAME_END;
+    if (0 < blockargc) {
+        argc--;
+    }
 
     ID* argnames = NULL;
+    ID blockargname = 0;
     if (0 < argc) {
         argnames = YogVm_alloc(env, NULL, sizeof(ID) * argc);
         unsigned int i = 0;
-        FOR_EACH_ARGNAME(aq, s) {
+        for (i = 0; i < argc; i++) {
+            const char* s = NEXT_STR(aq);
             argnames[i] = INTERN(s);
+        }
+        if (0 < blockargc) {
+            blockargname = INTERN(s);
             i++;
         }
-        FOR_EACH_ARGNAME_END;
     }
 
-#undef FOR_EACH_ARGNAME_END
-#undef FOR_EACH_ARGNAME
+#undef NEXT_STR
 
     YogBuiltinFunction* builtin_f = ALLOC_OBJ(env, gc_builtin_function_children, YogBuiltinFunction);
     YogArgInfo* arg_info = &builtin_f->arg_info;
     arg_info->argc = argc;
+    arg_info->argnames = argnames;
     arg_info->blockargc = blockargc;
+    arg_info->blockargname = blockargname;
     arg_info->varargc = varargc;
     arg_info->kwargc = kwargc;
-    arg_info->argnames = argnames;
     builtin_f->required_argc = required_argc;
 
     builtin_f->f = f;

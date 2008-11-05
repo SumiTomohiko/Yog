@@ -69,6 +69,8 @@ struct YogInst {
         } jump_if_false;
         struct {
         } dup;
+        struct {
+        } make_package_block;
     } u;
 };
 
