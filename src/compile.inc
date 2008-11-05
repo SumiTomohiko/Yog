@@ -224,6 +224,32 @@ CompileData_append_make_package_block(YogEnv* env, CompileData* data)
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 
+static void 
+CompileData_append_make_klass(YogEnv* env, CompileData* data)
+{
+    YogInst* inst = inst_new(env);
+    inst->type = INST_OP;
+    INST_OPCODE(inst) = OP(MAKE_KLASS);
+
+
+    append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
+}
+
+static void 
+CompileData_append_make_method(YogEnv* env, CompileData* data)
+{
+    YogInst* inst = inst_new(env);
+    inst->type = INST_OP;
+    INST_OPCODE(inst) = OP(MAKE_METHOD);
+
+
+    append_inst(data, inst);
+
+    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
+}
+
 
 static YogBinary* 
 insts2bin(YogEnv* env, YogInst* inst) 
@@ -334,6 +360,16 @@ insts2bin(YogEnv* env, YogInst* inst)
             case OP(MAKE_PACKAGE_BLOCK):
                 {
                     YogBinary_push_uint8(env, code, OP(MAKE_PACKAGE_BLOCK));
+                    break;
+                }
+            case OP(MAKE_KLASS):
+                {
+                    YogBinary_push_uint8(env, code, OP(MAKE_KLASS));
+                    break;
+                }
+            case OP(MAKE_METHOD):
+                {
+                    YogBinary_push_uint8(env, code, OP(MAKE_METHOD));
                     break;
                 }
             default:

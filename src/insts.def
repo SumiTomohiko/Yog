@@ -156,6 +156,27 @@ inst make_package_block
     block = YogVal_obj(YOGBASICOBJ(b));
 }
 
+inst make_klass
+()
+(name, super, code)
+(klass)
+{
+    YogKlass* super_klass = YOGVAL_OBJ(super);
+    YogKlass* kls = YogKlass_new(ENV, super_klass);
+    YogTable* attrs = YOGOBJ(kls)->attrs;
+    /* TODO */
+}
+
+inst make_method
+()
+(code)
+(method)
+{
+    YogUnboundMethod* m = YogUnboundMethod_new(ENV);
+    m->code = YOGVAL_PTR(code);
+    method = YogVal_obj(YOGBASICOBJ(m));
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

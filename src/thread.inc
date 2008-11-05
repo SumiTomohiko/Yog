@@ -259,11 +259,47 @@
             YogPackageBlock* b = YogPackageBlock_new(env);
             YogCode* c = YOGVAL_PTR(code);
             BLOCK(b)->code = c;
+            b->pkg = PKG_FRAME(CUR_FRAME)->pkg;
             b->vars = PKG_FRAME(CUR_FRAME)->vars;
             block = YogVal_obj(YOGBASICOBJ(b));
 
-#line 250 "src/thread.inc"
+#line 251 "src/thread.inc"
             PUSH(block);
+            break;
+        }
+#line 255 "src/thread.inc"
+    case OP(MAKE_KLASS):
+        {
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
+            YogVal name = POP();
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
+            YogVal super = POP();
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
+            YogVal code = POP();
+            YogVal klass = YogVal_nil();
+#line 164 "src/insts.def"
+            YogKlass* super_klass = YOGVAL_OBJ(super);
+            YogKlass* kls = YogKlass_new(ENV, super_klass);
+            YogTable* attrs = YOGOBJ(kls);
+            /* TODO */
+
+#line 270 "src/thread.inc"
+            PUSH(klass);
+            break;
+        }
+#line 274 "src/thread.inc"
+    case OP(MAKE_METHOD):
+        {
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
+            YogVal code = POP();
+            YogVal method = YogVal_nil();
+#line 175 "src/insts.def"
+            YogUnboundMethod* m = YogUnboundMethod_new(ENV);
+            m->code = YOGVAL_PTR(code);
+            method = YogVal_obj(YOGBASICOBJ(m));
+
+#line 284 "src/thread.inc"
+            PUSH(method);
             break;
         }
 /**

@@ -26,6 +26,8 @@ enum OpCode {
     OP(JUMP_IF_FALSE) = 12, 
     OP(DUP) = 13, 
     OP(MAKE_PACKAGE_BLOCK) = 14, 
+    OP(MAKE_KLASS) = 15, 
+    OP(MAKE_METHOD) = 16, 
 
 };
 

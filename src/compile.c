@@ -21,6 +21,7 @@ struct AstVisitor {
     VisitNode visit_func_call;
     VisitNode visit_func_def;
     VisitNode visit_if;
+    VisitNode visit_klass;
     VisitNode visit_literal;
     VisitNode visit_method_call;
     VisitNode visit_next;
@@ -37,6 +38,7 @@ typedef struct Var2IndexData Var2IndexData;
 
 enum Context {
     CTX_FUNC, 
+    CTX_KLASS, 
     CTX_PKG, 
 };
 
@@ -132,6 +134,11 @@ typedef struct CompileData CompileData;
 #define PUSH_EXCEPTION_TABLE_ENTRY() do { \
     data->exc_tbl_last->next = entry; \
     data->exc_tbl_last = entry; \
+} while (0)
+
+#define ADD_PUSH_CONST(val) do { \
+    unsigned int index = register_const(env, data, val); \
+    CompileData_append_push_const(env, data, index); \
 } while (0)
 
 static void 
@@ -277,6 +284,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         break;
     case NODE_BLOCK_ARG:
         VISIT(visit_block);
+        break;
+    case NODE_KLASS:
+        VISIT(visit_klass);
         break;
     default:
         Yog_assert(env, FALSE, "Unknown node type.");
@@ -456,6 +466,17 @@ var2index_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
 }
 
 static void 
+var2index_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    Var2IndexData* data = arg;
+    ID name = NODE_NAME(node);
+    var2index_register(env, data->var2index, name);
+
+    YogNode* super = NODE_SUPER(node);
+    visit_node(env, visitor, super, arg);
+}
+
+static void 
 var2index_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_assign = var2index_visit_assign;
@@ -468,6 +489,7 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_func_call = var2index_visit_func_call;
     visitor->visit_func_def = var2index_visit_func_def;
     visitor->visit_if = var2index_visit_if;
+    visitor->visit_klass = var2index_visit_klass;
     visitor->visit_literal = NULL;
     visitor->visit_method_call = var2index_visit_method_call;
     visitor->visit_next = var2index_visit_break;
@@ -515,6 +537,7 @@ append_store(YogEnv* env, CompileData* data, ID id)
                 CompileData_append_store_local(env, data, index);
                 break;
             }
+        case CTX_KLASS:
         case CTX_PKG:
             CompileData_append_store_pkg(env, data, id);
             break;
@@ -582,11 +605,11 @@ static void
 compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     CompileData* data = arg;
+
     YogVal val = NODE_VAL(node);
-    int index = register_const(env, data, val);
+    ADD_PUSH_CONST(val);
 
     SET_LINENO();
-    CompileData_append_push_const(env, data, index);
 }
 
 static void 
@@ -1052,11 +1075,19 @@ register_self(YogEnv* env, YogTable* var2index)
     YogTable_add_direct(env, var2index, key, val);
 }
 
-static YogCode* 
-compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node) 
+static YogTable* 
+Var2Index_new(YogEnv* env) 
 {
     YogTable* var2index = YogTable_new_symbol_table(env);
     register_self(env, var2index);
+
+    return var2index;
+}
+
+static YogCode* 
+compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node) 
+{
+    YogTable* var2index = Var2Index_new(env);
 
     YogArray* params = NODE_PARAMS(node);
     register_params_var2index(env, params, var2index);
@@ -1076,22 +1107,33 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 
     CompileData* data = arg;
     YogVal val = YogVal_ptr(code);
-    int const_index = register_const(env, data, val);
+    ADD_PUSH_CONST(val);
 
     ID id = NODE_NAME(node);
 #if 0
     int var_index = lookup_var_index(env, data->var2index, id);
 #endif
-
-    CompileData_append_push_const(env, data, const_index);
     switch (data->ctx) {
         case CTX_FUNC:
             Yog_assert(env, FALSE, "TODO: NOT IMPLEMENTED");
             break;
+        case CTX_KLASS:
         case CTX_PKG:
-            CompileData_append_make_package_method(env, data);
-            CompileData_append_store_pkg(env, data, id);
-            break;
+            {
+                switch (data->ctx) {
+                    case CTX_KLASS:
+                        CompileData_append_make_method(env, data);
+                        break;
+                    case CTX_PKG:
+                        CompileData_append_make_package_method(env, data);
+                        break;
+                    default:
+                        Yog_assert(env, FALSE, "Invalid context type.");
+                        break;
+                }
+                CompileData_append_store_pkg(env, data, id);
+                break;
+            }
         default:
             Yog_assert(env, FALSE, "Unknown context.");
             break;
@@ -1134,6 +1176,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
             CompileData_append_load_local(env, data, index);
             break;
         }
+    case CTX_KLASS:
     case CTX_PKG:
         CompileData_append_load_pkg(env, data, id);
         break;
@@ -1385,11 +1428,10 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     YogCode* code = compile_block(env, visitor, node, data);
 
     YogVal val = YogVal_ptr(code);
-    int const_index = register_const(env, data, val);
-
-    CompileData_append_push_const(env, data, const_index);
+    ADD_PUSH_CONST(val);
     switch (data->ctx) {
         case CTX_FUNC:
+        case CTX_KLASS:
             Yog_assert(env, FALSE, "NOT IMPLEMENTED");
             break;
         case CTX_PKG:
@@ -1399,6 +1441,46 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
             Yog_assert(env, FALSE, "Unknown context.");
             break;
     }
+}
+
+static YogCode* 
+compile_klass(YogEnv* env, AstVisitor* visitor, YogArray* stmts, CompileData* daa)
+{
+    YogTable* var2index = Var2Index_new(env);
+    make_var2index(env, stmts, var2index);
+
+    YogCode* code = compile_stmts(env, visitor, stmts, var2index, CTX_KLASS);
+
+    return code;
+}
+
+static void 
+compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    CompileData* data = arg;
+
+    ID name = NODE_NAME(node);
+    YogVal val = YogVal_symbol(name);
+    ADD_PUSH_CONST(val);
+
+    YogNode* super = NODE_SUPER(node);
+    if (super != NULL) {
+        visit_node(env, visitor, super, arg);
+    }
+    else {
+        YogKlass* obj_klass = ENV_VM(env)->obj_klass;
+        val = YogVal_obj(YOGBASICOBJ(obj_klass));
+        ADD_PUSH_CONST(val);
+    }
+
+    YogArray* stmts = NODE_STMTS(node);
+    YogCode* code = compile_klass(env, visitor, stmts, data);
+    val = YogVal_ptr(code);
+    ADD_PUSH_CONST(val);
+
+    CompileData_append_make_klass(env, data);
+
+    append_store(env, data, name);
 }
 
 static void 
@@ -1414,6 +1496,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_func_call = compile_visit_func_call;
     visitor->visit_func_def = compile_visit_func_def;
     visitor->visit_if = compile_visit_if;
+    visitor->visit_klass = compile_visit_klass;
     visitor->visit_literal = compile_visit_literal;
     visitor->visit_method_call = compile_visit_method_call;
     visitor->visit_next = compile_visit_next;
