@@ -172,7 +172,7 @@ inst make_klass
     NAME_FRAME(frame)->self = YogVal_obj(YOGBASICOBJ(kls));
     NAME_FRAME(frame)->vars = attrs;
 
-    CUR_FRAME = FRAME(frame);
+    PUSH_FRAME(FRAME(frame));
 }
 
 inst make_method
@@ -199,6 +199,7 @@ inst ret
 (val)
 {
     POP_FRAME();
+    PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 }
 
 /**

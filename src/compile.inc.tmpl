@@ -9,13 +9,22 @@ insts2bin(YogEnv* env, YogInst* inst)
 #undef INIT_BIN_SIZE
 
     while (inst != NULL) {
-        if (inst->type == INST_OP) {
-            switch (INST_OPCODE(inst)) {
+        switch (inst->type) {
+            case INST_OP:
+                {
+                    switch (INST_OPCODE(inst)) {
 ${insts2bin}
-            default:
-                Yog_assert(env, FALSE, "Unkown instruction.");
-                break;
+                    default:
+                        Yog_assert(env, FALSE, "Unkown instruction.");
+                    break;
+                }
             }
+            case INST_ANCHOR:
+            case INST_LABEL:
+                break;
+            default:
+                Yog_assert(env, FALSE, "Unknown inst type.");
+                break;
         }
 
         inst = inst->next;

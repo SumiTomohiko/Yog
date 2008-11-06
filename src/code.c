@@ -46,7 +46,10 @@ YogCode_dump(YogEnv* env, YogCode* code)
     printf("=== Constants ===\n");
     printf("index value\n");
 
-    unsigned int consts_size = code->consts->size;
+    unsigned int consts_size = 0;
+    if (code->consts != NULL) {
+        consts_size = code->consts->size;
+    }
     unsigned int i = 0;
     for (i = 0; i < consts_size; i++) {
         printf("%05d ", i);

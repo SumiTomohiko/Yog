@@ -288,7 +288,7 @@
             NAME_FRAME(frame)->self = YogVal_obj(YOGBASICOBJ(kls));
             NAME_FRAME(frame)->vars = attrs;
         
-            CUR_FRAME = FRAME(frame);
+            PUSH_FRAME(FRAME(frame));
 
 #line 277 "src/thread.inc"
             break;
@@ -326,8 +326,9 @@
             YogVal val = POP();
 #line 201 "src/insts.def"
             POP_FRAME();
+            PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 
-#line 311 "src/thread.inc"
+#line 312 "src/thread.inc"
             PUSH(val);
             break;
         }

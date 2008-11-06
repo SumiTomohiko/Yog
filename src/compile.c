@@ -893,7 +893,7 @@ ExceptionTableEntry_new(YogEnv* env)
 }
 
 static YogCode* 
-compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2index, Context ctx) 
+compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
 {
     CompileData data;
     data.ctx = ctx;
@@ -911,7 +911,15 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     data.pc = 0;
 
     visitor->visit_stmts(env, visitor, stmts, &data);
-    YogBinary* bin = insts2bin(env, anchor->next);
+    if (tail != NULL) {
+        data.last_inst->next = tail;
+        YogInst* inst = tail;
+        while (inst->next != NULL) {
+            inst = inst->next;
+        }
+        data.last_inst = inst;
+    }
+    YogBinary* bin = insts2bin(env, anchor);
 
     YogCode* code = YogCode_new(env);
     if (var2index != NULL) {
@@ -1094,7 +1102,7 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node)
     YogArray* stmts = NODE_STMTS(node);
     make_var2index(env, stmts, var2index);
 
-    YogCode* code = compile_stmts(env, visitor, stmts, var2index, CTX_FUNC);
+    YogCode* code = compile_stmts(env, visitor, stmts, var2index, CTX_FUNC, NULL);
     setup_params(env, var2index, params, code);
 
     return code;
@@ -1414,7 +1422,7 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogNode* node, CompileData* data
     register_block_params_var2index(env, params, var2index);
 
     YogArray* stmts = NODE_STMTS(node);
-    YogCode* code = compile_stmts(env, visitor, stmts, var2index, data->ctx);
+    YogCode* code = compile_stmts(env, visitor, stmts, var2index, data->ctx, NULL);
 
     setup_params(env, var2index, params, code);
 
@@ -1449,7 +1457,14 @@ compile_klass(YogEnv* env, AstVisitor* visitor, YogArray* stmts, CompileData* da
     YogTable* var2index = Var2Index_new(env);
     make_var2index(env, stmts, var2index);
 
-    YogCode* code = compile_stmts(env, visitor, stmts, var2index, CTX_KLASS);
+    YogInst* ret = inst_new(env);
+    ret->next = NULL;
+    ret->opcode = OP(RET);
+    YogInst* push_self_name = inst_new(env);
+    push_self_name->next = ret;
+    push_self_name->opcode = OP(PUSH_SELF_NAME);
+
+    YogCode* code = compile_stmts(env, visitor, stmts, var2index, CTX_KLASS, push_self_name);
 
     return code;
 }
@@ -1481,9 +1496,6 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     CompileData_append_make_klass(env, data);
 
     append_store(env, data, name);
-
-    CompileData_append_push_self_name(env, data);
-    CompileData_append_ret(env, data);
 }
 
 static void 
@@ -1517,7 +1529,7 @@ Yog_compile_module(YogEnv* env, YogArray* stmts)
     AstVisitor visitor;
     compile_init_visitor(&visitor);
 
-    YogCode* code = compile_stmts(env, &visitor, stmts, var2index, CTX_PKG);
+    YogCode* code = compile_stmts(env, &visitor, stmts, var2index, CTX_PKG, NULL);
 
     return code;
 }

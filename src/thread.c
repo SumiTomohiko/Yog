@@ -157,6 +157,11 @@ call_builtin_bound_method(YogEnv* env, YogBuiltinBoundMethod* method, uint8_t po
 static void 
 setup_script_frame(YogEnv* env, YogScriptFrame* frame, YogCode* code) 
 {
+#if 0
+    printf("%s:%d setup_script_frame(env=%p, frame=%p, code=%p)\n", __FILE__, __LINE__, env, frame, code);
+    YogCode_dump(env, code);
+#endif
+
     frame->pc = 0;
     frame->code = code;
     frame->stack = YogValArray_new(env, code->stack_size);

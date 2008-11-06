@@ -306,18 +306,18 @@ CompileData_append_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.n
         insts2bin = StringIO()
         for inst in self.insts:
             insts2bin.write("""
-            case OP(%(name)s):
-                {
-                    YogBinary_push_uint8(env, code, OP(%(name)s));""" % { "name": inst.name.upper() })
+                        case OP(%(name)s):
+                            {
+                                YogBinary_push_uint8(env, code, OP(%(name)s));""" % { "name": inst.name.upper() })
             for operand in inst.operands:
                 inst_attr = "%(inst)s_%(name)s(inst)" % { "inst": inst.name.upper(), "name": operand.name.upper() }
                 if operand.type == "pc_t":
                     inst_attr = "LABEL_POS(" + inst_attr + ")"
                 insts2bin.write("""
-                    YogBinary_push_%(type)s(env, code, %(inst_attr)s);""" % { "type": self.type_name2func_name(operand.type), "inst_attr": inst_attr })
+                                YogBinary_push_%(type)s(env, code, %(inst_attr)s);""" % { "type": self.type_name2func_name(operand.type), "inst_attr": inst_attr })
             insts2bin.write("""
-                    break;
-                }""")
+                                break;
+                            }""")
 
         s = self.substitute_template(
                 compile_inc_tmpl, 
