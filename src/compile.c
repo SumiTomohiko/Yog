@@ -1481,6 +1481,9 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     CompileData_append_make_klass(env, data);
 
     append_store(env, data, name);
+
+    CompileData_append_push_self_name(env, data);
+    CompileData_append_ret(env, data);
 }
 
 static void 
