@@ -144,6 +144,14 @@ call_builtin_bound_method(YogEnv* env, YogBuiltinBoundMethod* method, uint8_t po
 #undef DECL_ARGS
 
 static void 
+setup_script_frame(YogEnv* env, YogScriptFrame* frame, YogCode* code) 
+{
+    frame->pc = 0;
+    frame->code = code;
+    frame->stack = YogValArray_new(env, code->stack_size);
+}
+
+static void 
 call_code(YogEnv* env, YogThread* th, YogVal self, YogCode* code, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
     YogValArray* vars = YogValArray_new(env, code->local_vars_count);
@@ -154,9 +162,7 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogCode* code, uint8_t posarg
     fill_args(env, arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, &vars->items[1]);
 
     YogMethodFrame* frame = YogMethodFrame_new(env);
-    SCRIPT_FRAME(frame)->pc = 0;
-    SCRIPT_FRAME(frame)->code = code;
-    SCRIPT_FRAME(frame)->stack = YogValArray_new(env, code->stack_size);
+    setup_script_frame(env, SCRIPT_FRAME(frame), code);
     frame->vars = vars;
 
     th->cur_frame = FRAME(frame);
@@ -367,10 +373,9 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
 #undef SET_VAR
 
         YogPkgFrame* frame = YogPkgFrame_new(env);
-        SCRIPT_FRAME(frame)->code = code;
-        SCRIPT_FRAME(frame)->stack = YogValArray_new(env, code->stack_size);
-        frame->vars = vars;
-        frame->pkg = pkg_block->pkg;
+        setup_script_frame(env, SCRIPT_FRAME(frame), code);
+        NAME_FRAME(frame)->self = pkg_block->self;
+        NAME_FRAME(frame)->vars = vars;
 
         th->cur_frame = FRAME(frame);
         YogVal retval = mainloop(env, th, SCRIPT_FRAME(frame), code);
@@ -424,10 +429,9 @@ void
 YogThread_eval_package(YogEnv* env, YogThread* th, YogPkg* pkg, YogCode* code) 
 {
     YogPkgFrame* frame = YogPkgFrame_new(env);
-    SCRIPT_FRAME(frame)->code = code;
-    SCRIPT_FRAME(frame)->stack = YogValArray_new(env, code->stack_size);
-    frame->vars = pkg->attrs;
-    frame->pkg = pkg;
+    setup_script_frame(env, SCRIPT_FRAME(frame), code);
+    NAME_FRAME(frame)->self = YogVal_obj(YOGBASICOBJ(pkg));
+    NAME_FRAME(frame)->vars = pkg->attrs;
 
     mainloop(env, th, SCRIPT_FRAME(frame), code);
 }

@@ -139,7 +139,7 @@
             YogVal method = YogVal_nil();
 #line 81 "src/insts.def"
             YogBoundMethod* m = YogBoundMethod_new(ENV);
-            m->self = YogVal_obj(YOGBASICOBJ(PKG_FRAME(CUR_FRAME)->pkg));
+            m->self = NAME_FRAME(CUR_FRAME)->self;
             m->code = YOGVAL_PTR(code);
         
             method = YogVal_obj(YOGBASICOBJ(m));
@@ -259,8 +259,8 @@
             YogPackageBlock* b = YogPackageBlock_new(env);
             YogCode* c = YOGVAL_PTR(code);
             BLOCK(b)->code = c;
-            b->pkg = PKG_FRAME(CUR_FRAME)->pkg;
-            b->vars = PKG_FRAME(CUR_FRAME)->vars;
+            b->self = NAME_FRAME(CUR_FRAME)->self;
+            b->vars = NAME_FRAME(CUR_FRAME)->vars;
             block = YogVal_obj(YOGBASICOBJ(b));
 
 #line 251 "src/thread.inc"
@@ -278,27 +278,34 @@
             YogVal code = POP();
             YogVal klass = YogVal_nil();
 #line 164 "src/insts.def"
-            YogKlass* super_klass = YOGVAL_OBJ(super);
+            YogKlass* super_klass = (YogKlass*)YOGVAL_OBJ(super);
             YogKlass* kls = YogKlass_new(ENV, super_klass);
-            YogTable* attrs = YOGOBJ(kls);
-            /* TODO */
+            YogTable* attrs = YOGOBJ(kls)->attrs = YogTable_new_symbol_table(ENV);
+            YogCode* c = YOGVAL_PTR(code);
+        
+            YogKlassFrame* frame = YogKlassFrame_new(ENV);
+            setup_script_frame(ENV, SCRIPT_FRAME(frame), c);
+            NAME_FRAME(frame)->self = YogVal_obj(YOGBASICOBJ(kls));
+            NAME_FRAME(frame)->vars = attrs;
+        
+            CUR_FRAME = FRAME(frame);
 
-#line 270 "src/thread.inc"
+#line 277 "src/thread.inc"
             PUSH(klass);
             break;
         }
-#line 274 "src/thread.inc"
+#line 281 "src/thread.inc"
     case OP(MAKE_METHOD):
         {
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
             YogVal code = POP();
             YogVal method = YogVal_nil();
-#line 175 "src/insts.def"
+#line 182 "src/insts.def"
             YogUnboundMethod* m = YogUnboundMethod_new(ENV);
             m->code = YOGVAL_PTR(code);
             method = YogVal_obj(YOGBASICOBJ(m));
 
-#line 284 "src/thread.inc"
+#line 291 "src/thread.inc"
             PUSH(method);
             break;
         }

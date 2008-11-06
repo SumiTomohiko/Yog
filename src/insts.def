@@ -79,7 +79,7 @@ inst make_package_method
 (method)
 {
     YogBoundMethod* m = YogBoundMethod_new(ENV);
-    m->self = YogVal_obj(YOGBASICOBJ(PKG_FRAME(CUR_FRAME)->pkg));
+    m->self = NAME_FRAME(CUR_FRAME)->self;
     m->code = YOGVAL_PTR(code);
 
     method = YogVal_obj(YOGBASICOBJ(m));
@@ -151,8 +151,8 @@ inst make_package_block
     YogPackageBlock* b = YogPackageBlock_new(env);
     YogCode* c = YOGVAL_PTR(code);
     BLOCK(b)->code = c;
-    b->pkg = PKG_FRAME(CUR_FRAME)->pkg;
-    b->vars = PKG_FRAME(CUR_FRAME)->vars;
+    b->self = NAME_FRAME(CUR_FRAME)->self;
+    b->vars = NAME_FRAME(CUR_FRAME)->vars;
     block = YogVal_obj(YOGBASICOBJ(b));
 }
 
@@ -161,10 +161,17 @@ inst make_klass
 (name, super, code)
 (klass)
 {
-    YogKlass* super_klass = YOGVAL_OBJ(super);
+    YogKlass* super_klass = (YogKlass*)YOGVAL_OBJ(super);
     YogKlass* kls = YogKlass_new(ENV, super_klass);
-    YogTable* attrs = YOGOBJ(kls)->attrs;
-    /* TODO */
+    YogTable* attrs = YOGOBJ(kls)->attrs = YogTable_new_symbol_table(ENV);
+    YogCode* c = YOGVAL_PTR(code);
+
+    YogKlassFrame* frame = YogKlassFrame_new(ENV);
+    setup_script_frame(ENV, SCRIPT_FRAME(frame), c);
+    NAME_FRAME(frame)->self = YogVal_obj(YOGBASICOBJ(kls));
+    NAME_FRAME(frame)->vars = attrs;
+
+    CUR_FRAME = FRAME(frame);
 }
 
 inst make_method

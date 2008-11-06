@@ -411,8 +411,9 @@ typedef struct YogCode YogCode;
 
 enum YogFrameType {
     FT_C, 
-    FT_PKG, 
+    FT_KLASS, 
     FT_METHOD, 
+    FT_PKG, 
 };
 
 typedef enum YogFrameType YogFrameType;
@@ -438,14 +439,24 @@ struct YogScriptFrame {
 
 typedef struct YogScriptFrame YogScriptFrame;
 
-struct YogPkgFrame {
+struct YogNameFrame {
     struct YogScriptFrame base;
-    struct YogPkg* pkg;
+    YogVal self;
     struct YogTable* vars;
 };
 
+#define NAME_FRAME(f)   ((YogNameFrame*)f)
+
+typedef struct YogNameFrame YogNameFrame;
+
+#define YogKlassFrame   YogNameFrame
+
+struct YogPkgFrame {
+    struct YogNameFrame base;
+};
+
 #define PKG_FRAME(f)    ((YogPkgFrame*)f)
-#define PKG_VARS(f)     (PKG_FRAME(f)->vars)
+#define PKG_VARS(f)     (NAME_FRAME(f)->vars)
 
 typedef struct YogPkgFrame YogPkgFrame;
 
@@ -494,7 +505,7 @@ typedef struct YogBlock YogBlock;
 
 struct YogPackageBlock {
     struct YogBlock base;
-    struct YogPkg* pkg;
+    YogVal self;
     struct YogTable* vars;
 };
 
@@ -552,6 +563,7 @@ YogCode* Yog_compile_module(YogEnv*, YogArray*);
 void Yog_assert(YogEnv*, BOOL, const char*);
 
 /* src/frame.c */
+YogNameFrame* YogNameFrame_new(YogEnv*);
 YogPkgFrame* YogPkgFrame_new(YogEnv*);
 YogMethodFrame* YogMethodFrame_new(YogEnv*);
 YogCFrame* YogCFrame_new(YogEnv*);
@@ -653,6 +665,8 @@ void YogVm_boot(YogEnv*, YogVm*);
 YogVm* YogVm_new(size_t);
 
 /* $PROTOTYPE_END$ */
+
+#define YogKlassFrame_new   YogNameFrame_new
 
 #define ALLOC_OBJ_SIZE(env, gc_children, size) \
     YogVm_alloc(env, gc_children, size)
