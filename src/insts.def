@@ -159,7 +159,7 @@ inst make_package_block
 inst make_klass
 ()
 (name, super, code)
-(klass)
+(...)
 {
     YogKlass* super_klass = (YogKlass*)YOGVAL_OBJ(super);
     YogKlass* kls = YogKlass_new(ENV, super_klass);

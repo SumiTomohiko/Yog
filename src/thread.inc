@@ -276,7 +276,6 @@
             YogVal super = POP();
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
             YogVal code = POP();
-            YogVal klass = YogVal_nil();
 #line 164 "src/insts.def"
             YogKlass* super_klass = (YogKlass*)YOGVAL_OBJ(super);
             YogKlass* kls = YogKlass_new(ENV, super_klass);
@@ -290,11 +289,10 @@
         
             CUR_FRAME = FRAME(frame);
 
-#line 277 "src/thread.inc"
-            PUSH(klass);
+#line 276 "src/thread.inc"
             break;
         }
-#line 281 "src/thread.inc"
+#line 279 "src/thread.inc"
     case OP(MAKE_METHOD):
         {
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
@@ -305,7 +303,7 @@
             m->code = YOGVAL_PTR(code);
             method = YogVal_obj(YOGBASICOBJ(m));
 
-#line 291 "src/thread.inc"
+#line 289 "src/thread.inc"
             PUSH(method);
             break;
         }
