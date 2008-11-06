@@ -271,11 +271,11 @@
     case OP(MAKE_KLASS):
         {
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
-            YogVal name = POP();
+            YogVal code = POP();
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
             YogVal super = POP();
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
-            YogVal code = POP();
+            YogVal name = POP();
 #line 164 "src/insts.def"
             YogKlass* super_klass = (YogKlass*)YOGVAL_OBJ(super);
             YogKlass* kls = YogKlass_new(ENV, super_klass);
