@@ -20,7 +20,8 @@ YogPkg_define_method(YogEnv* env, YogPkg* pkg, const char* name, void* f, unsign
 YogKlass* 
 YogPkg_klass_new(YogEnv* env) 
 {
-    return YogKlass_new(env, ENV_VM(env)->obj_klass);
+    YogKlass* klass = YogKlass_new(env, "Package", ENV_VM(env)->obj_klass);
+    return klass;
 }
 
 YogPkg* 

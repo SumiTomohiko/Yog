@@ -278,7 +278,8 @@
             YogVal name = POP();
 #line 164 "src/insts.def"
             YogKlass* super_klass = (YogKlass*)YOGVAL_OBJ(super);
-            YogKlass* kls = YogKlass_new(ENV, super_klass);
+            YogKlass* kls = YogKlass_new(ENV, NULL, super_klass);
+            kls->name = YOGVAL_SYMBOL(name);
             YogTable* attrs = YOGOBJ(kls)->attrs = YogTable_new_symbol_table(ENV);
             YogCode* c = YOGVAL_PTR(code);
         
@@ -289,22 +290,45 @@
         
             CUR_FRAME = FRAME(frame);
 
-#line 276 "src/thread.inc"
+#line 277 "src/thread.inc"
             break;
         }
-#line 279 "src/thread.inc"
+#line 280 "src/thread.inc"
     case OP(MAKE_METHOD):
         {
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
             YogVal code = POP();
             YogVal method = YogVal_nil();
-#line 182 "src/insts.def"
+#line 183 "src/insts.def"
             YogUnboundMethod* m = YogUnboundMethod_new(ENV);
             m->code = YOGVAL_PTR(code);
             method = YogVal_obj(YOGBASICOBJ(m));
 
-#line 289 "src/thread.inc"
+#line 290 "src/thread.inc"
             PUSH(method);
+            break;
+        }
+#line 294 "src/thread.inc"
+    case OP(PUSH_SELF_NAME):
+        {
+            YogVal self = YogVal_nil();
+#line 193 "src/insts.def"
+            self = NAME_FRAME(CUR_FRAME)->self;
+
+#line 300 "src/thread.inc"
+            PUSH(self);
+            break;
+        }
+#line 304 "src/thread.inc"
+    case OP(RET):
+        {
+            Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
+            YogVal val = POP();
+#line 201 "src/insts.def"
+            POP_FRAME();
+
+#line 311 "src/thread.inc"
+            PUSH(val);
             break;
         }
 /**

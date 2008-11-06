@@ -103,8 +103,8 @@ setup_symbol_tables(YogEnv* env, YogVm* vm)
 static void 
 setup_basic_klass(YogEnv* env, YogVm* vm) 
 {
-    YogKlass* obj_klass = YogKlass_new(env, NULL);
-    YogKlass* klass_klass = YogKlass_new(env, obj_klass);
+    YogKlass* obj_klass = YogKlass_new(env, "Object", NULL);
+    YogKlass* klass_klass = YogKlass_new(env, "Class", obj_klass);
     YOGBASICOBJ(obj_klass)->klass = klass_klass;
     YOGBASICOBJ(klass_klass)->klass = klass_klass;
     vm->obj_klass = obj_klass;

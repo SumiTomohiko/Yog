@@ -27,6 +27,8 @@ Yog_get_inst_size(OpCode op)
         sizeof(uint8_t), /* make_package_block */
         sizeof(uint8_t), /* make_klass */
         sizeof(uint8_t), /* make_method */
+        sizeof(uint8_t), /* push_self_name */
+        sizeof(uint8_t), /* ret */
 
     };
 

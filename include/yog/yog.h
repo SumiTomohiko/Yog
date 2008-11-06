@@ -278,6 +278,7 @@ typedef struct YogObj YogObj;
 
 struct YogKlass {
     YOGOBJ_HEAD;
+    ID name;
     struct YogKlass* super;
 };
 
@@ -419,6 +420,8 @@ enum YogFrameType {
 typedef enum YogFrameType YogFrameType;
 
 struct YogFrame {
+    struct YogFrame* prev;
+
     enum YogFrameType type;
 };
 
@@ -579,7 +582,7 @@ YogKlass* YogInt_klass_new(YogEnv*);
 
 /* src/klass.c */
 void YogKlass_define_method(YogEnv*, YogKlass*, const char*, void*, unsigned int, unsigned int, unsigned int, int, ...);
-YogKlass* YogKlass_new(YogEnv*, YogKlass*);
+YogKlass* YogKlass_new(YogEnv*, const char*, YogKlass*);
 
 /* src/lexer.l */
 void Yog_reset_lineno();

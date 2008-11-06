@@ -63,7 +63,8 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, ENV_VM(env)->obj_klass);
+    YogKlass* klass = YogKlass_new(env, "String", ENV_VM(env)->obj_klass);
+
     return klass;
 }
 

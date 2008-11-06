@@ -26,7 +26,7 @@ bool_to_s(YogEnv* env, YogVal self)
 YogKlass* 
 YogBool_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, ENV_VM(env)->obj_klass);
+    YogKlass* klass = YogKlass_new(env, "Bool", ENV_VM(env)->obj_klass);
     YogKlass_define_method(env, klass, "to_s", bool_to_s, 0, 0, 0, 0, NULL);
 
     return klass;

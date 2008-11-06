@@ -1,29 +1,31 @@
 #include "yog/yog.h"
 
-#define RETURN_NEW_KLASS    return YogKlass_new(env, ENV_VM(env)->obj_klass)
+#define RETURN_NEW_KLASS(name)  do { \
+    return YogKlass_new(env, name, ENV_VM(env)->obj_klass); \
+} while (0)
 
 YogKlass* 
 YogBuiltinBoundMethod_klass_new(YogEnv* env) 
 {
-    RETURN_NEW_KLASS;
+    RETURN_NEW_KLASS("BuiltinBoundMethod");
 }
 
 YogKlass* 
 YogBoundMethod_klass_new(YogEnv* env) 
 {
-    RETURN_NEW_KLASS;
+    RETURN_NEW_KLASS("BoundMethod");
 }
 
 YogKlass* 
 YogBuiltinUnboundMethod_klass_new(YogEnv* env) 
 {
-    RETURN_NEW_KLASS;
+    RETURN_NEW_KLASS("BuiltinUnboundMethod");
 }
 
 YogKlass* 
 YogUnboundMethod_klass_new(YogEnv* env) 
 {
-    RETURN_NEW_KLASS;
+    RETURN_NEW_KLASS("UnboundMethod");
 }
 
 #undef RETURN_NEW_KLASS

@@ -3,6 +3,17 @@
 #include "yog/opcodes.h"
 #include "yog/yog.h"
 
+#define CUR_FRAME   (th->cur_frame)
+
+#define PUSH_FRAME(f)   do { \
+    FRAME(f)->prev = CUR_FRAME; \
+    CUR_FRAME = FRAME(f); \
+} while (0)
+
+#define POP_FRAME()     do { \
+    CUR_FRAME = CUR_FRAME->prev; \
+} while (0)
+
 YogVal 
 YogThread_call_method(YogEnv* env, YogThread* th, YogVal receiver, const char* method, unsigned int argc, YogVal* args) 
 {
@@ -165,10 +176,9 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogCode* code, uint8_t posarg
     setup_script_frame(env, SCRIPT_FRAME(frame), code);
     frame->vars = vars;
 
-    th->cur_frame = FRAME(frame);
+    PUSH_FRAME(frame);
 }
 
-#define CUR_FRAME   (th->cur_frame)
 #define STACK       (SCRIPT_FRAME(CUR_FRAME)->stack)
 #define PUSH(val)   (YogValArray_push(env, STACK, val))
 
@@ -232,7 +242,7 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
     YogCode_dump(env, code);
 #endif
 
-    th->cur_frame = FRAME(frame);
+    PUSH_FRAME(frame);
 
 #define POP_BUF()   th->jmp_buf_list = th->jmp_buf_list->prev
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
@@ -333,12 +343,12 @@ static YogVal
 eval_code(YogEnv* env, YogThread* th, YogCode* code, YogVal receiver, unsigned int argc, YogVal args[]) 
 {
     YogCFrame* frame = YogCFrame_new(env);
-    th->cur_frame = frame;
+    PUSH_FRAME(frame);
 
     YogVal undef = YogVal_undef();
     call_code(env, th, receiver, code, argc, args, undef, 0, NULL, undef, undef);
 
-    YogVal retval = mainloop(env, th, SCRIPT_FRAME(th->cur_frame), code);
+    YogVal retval = mainloop(env, th, SCRIPT_FRAME(CUR_FRAME), code);
 
     return retval;
 }
@@ -377,7 +387,7 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
         NAME_FRAME(frame)->self = pkg_block->self;
         NAME_FRAME(frame)->vars = vars;
 
-        th->cur_frame = FRAME(frame);
+        PUSH_FRAME(frame);
         YogVal retval = mainloop(env, th, SCRIPT_FRAME(frame), code);
 
         return retval;

@@ -75,6 +75,10 @@ struct YogInst {
         } make_klass;
         struct {
         } make_method;
+        struct {
+        } push_self_name;
+        struct {
+        } ret;
     } u;
 };
 

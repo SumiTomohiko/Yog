@@ -28,6 +28,8 @@ enum OpCode {
     OP(MAKE_PACKAGE_BLOCK) = 14, 
     OP(MAKE_KLASS) = 15, 
     OP(MAKE_METHOD) = 16, 
+    OP(PUSH_SELF_NAME) = 17, 
+    OP(RET) = 18, 
 
 };
 

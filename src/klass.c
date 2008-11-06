@@ -26,10 +26,13 @@ gc_children(YogEnv* env, void* ptr, DoGc do_gc)
 }
 
 YogKlass* 
-YogKlass_new(YogEnv* env, YogKlass* super) 
+YogKlass_new(YogEnv* env, const char* name, YogKlass* super) 
 {
     YogKlass* klass = ALLOC_OBJ(env, gc_children, YogKlass);
     YogObj_init(env, YOGOBJ(klass), ENV_VM(env)->klass_klass);
+    if (name != NULL) {
+        klass->name = INTERN(name);
+    }
     klass->super = super;
 
     return klass;

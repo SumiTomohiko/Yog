@@ -61,7 +61,7 @@ int_times(YogEnv* env, YogVal self, YogVal block)
 YogKlass* 
 YogInt_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, ENV_VM(env)->obj_klass);
+    YogKlass* klass = YogKlass_new(env, "Int", ENV_VM(env)->obj_klass);
 #define DEFINE_METHOD(name, f) do { \
     YogKlass_define_method(env, klass, name, f, 0, 0, 0, -1, "n", NULL); \
 } while (0)

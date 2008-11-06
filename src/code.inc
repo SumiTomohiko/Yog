@@ -25,6 +25,8 @@ get_op_name(OpCode op)
         "MAKE_PACKAGE_BLOCK", 
         "MAKE_KLASS", 
         "MAKE_METHOD", 
+        "PUSH_SELF_NAME", 
+        "RET", 
     };
 
     return op_names[op];

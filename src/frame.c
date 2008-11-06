@@ -10,6 +10,7 @@ gc_pkg_frame_children(YogEnv* env, void* ptr, DoGc do_gc)
 static void 
 YogFrame_init(YogFrame* frame, YogFrameType type) 
 {
+    frame->prev = NULL;
     frame->type = type;
 }
 
