@@ -615,6 +615,7 @@ void YogObj_init(YogEnv*, YogObj*, unsigned int, YogKlass*);
 void YogObj_gc_children(YogEnv*, void*, DoGc);
 YogBasicObj* YogObj_allocate(YogEnv*, YogKlass*);
 YogObj* YogObj_new(YogEnv*, YogKlass*);
+void YogObj_klass_init(YogEnv*, YogKlass*);
 
 /* src/package.c */
 void YogPkg_define_method(YogEnv*, YogPkg*, const char*, void*, unsigned int, unsigned int, unsigned int, unsigned int, ...);

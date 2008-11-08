@@ -4,7 +4,7 @@ YogVal
 YogObj_get_attr(YogEnv* env, YogObj* obj, ID name) 
 {
     if (obj->attrs == NULL) {
-        Yog_assert(env, FALSE, "Object doesn't have attributes.");
+        return YogVal_undef();
     }
 
     YogVal key = YogVal_symbol(name);
@@ -64,6 +64,18 @@ YogObj_new(YogEnv* env, YogKlass* klass)
 {
     YogObj* obj = (YogObj*)YogObj_allocate(env, klass);
     return obj;
+}
+
+static YogVal 
+obj_init(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg) 
+{
+    return YogVal_nil();
+}
+
+void 
+YogObj_klass_init(YogEnv* env, YogKlass* klass) 
+{
+    YogKlass_define_method(env, klass, "initialize", obj_init, 1, 1, 0, 0, "block", NULL);
 }
 
 /**

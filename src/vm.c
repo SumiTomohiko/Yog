@@ -120,6 +120,7 @@ setup_klasses(YogEnv* env, YogVm* vm)
     vm->builtin_unbound_method_klass = YogBuiltinUnboundMethod_klass_new(env);
     vm->unbound_method_klass = YogUnboundMethod_klass_new(env);
 
+    YogObj_klass_init(env, vm->obj_klass);
     YogKlass_klass_init(env, vm->klass_klass);
 
     vm->int_klass = YogInt_klass_new(env);

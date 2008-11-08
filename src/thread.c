@@ -407,8 +407,7 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
 YogVal 
 YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method, unsigned int argc, YogVal* args) 
 {
-    YogKlass* klass = YogVal_get_klass(env, receiver);
-    YogVal attr = YogObj_get_attr(env, YOGOBJ(klass), method);
+    YogVal attr = YogVal_get_attr(env, receiver, method);
     Yog_assert(env, IS_OBJ(attr), "Attribute isn't object.");
     YogBasicObj* obj = YOGVAL_OBJ(attr);
 

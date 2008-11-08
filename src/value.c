@@ -247,8 +247,7 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
 } while (0)
     if (IS_OBJ(val)) {
         YogBasicObj* obj = YOGVAL_OBJ(val);
-        YogVm* vm = ENV_VM(env);
-        if ((obj->klass == vm->obj_klass) || (obj->klass == vm->klass_klass)) {
+        if (obj->flags & HAS_ATTRS) {
             RET_ATTR(obj);
         }
         else {
@@ -258,7 +257,10 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
     }
 
     YogKlass* klass = YogVal_get_klass(env, val);
-    RET_ATTR(klass);
+    do {
+        RET_ATTR(klass);
+        klass = klass->super;
+    } while (klass != NULL);
 #undef RET_ATTR
 
     Yog_assert(env, FALSE, "Can't get attribute.");
