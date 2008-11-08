@@ -25,17 +25,43 @@ gc_children(YogEnv* env, void* ptr, DoGc do_gc)
     klass->super = do_gc(env, klass->super);
 }
 
-YogKlass* 
-YogKlass_new(YogEnv* env, const char* name, YogKlass* super) 
+YogBasicObj* 
+YogKlass_allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogKlass* klass = ALLOC_OBJ(env, gc_children, YogKlass);
-    YogObj_init(env, YOGOBJ(klass), ENV_VM(env)->klass_klass);
+    YogObj* obj = ALLOC_OBJ(env, gc_children, YogKlass);
+    YogObj_init(env, obj, 0, klass);
+
+    return (YogBasicObj*)obj;
+}
+
+YogKlass* 
+YogKlass_new(YogEnv* env, Allocator allocator, const char* name, YogKlass* super) 
+{
+    YogKlass* klass = (YogKlass*)YogKlass_allocate(env, ENV_VM(env)->klass_klass);
+    klass->allocator = allocator;
     if (name != NULL) {
         klass->name = INTERN(name);
     }
     klass->super = super;
 
     return klass;
+}
+
+static YogVal 
+klass_new(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
+{
+    YogKlass* klass = (YogKlass*)YOGVAL_OBJ(self);
+    YogBasicObj* obj = (*klass->allocator)(env, klass);
+    YogVal val = YogVal_obj(obj);
+    YogThread_call_method(env, ENV_TH(env), val, "initialize", vararg->body->size, vararg->body->items);
+
+    return val;
+}
+
+void 
+YogKlass_klass_init(YogEnv* env, YogKlass* klass_klass) 
+{
+    YogKlass_define_method(env, klass_klass, "new", klass_new, 1, 1, 0, 0, "block", NULL);
 }
 
 /**

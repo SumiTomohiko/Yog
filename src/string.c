@@ -31,10 +31,18 @@ gc_string_children(YogEnv* env, void* ptr, DoGc do_gc)
     s->body = do_gc(env, s->body);
 }
 
+static YogBasicObj* 
+allocate(YogEnv* env, YogKlass* klass) 
+{
+    YogBasicObj* obj = ALLOC_OBJ(env, gc_string_children, YogString);
+    YogBasicObj_init(env, obj, 0, klass);
+
+    return obj;
+}
+
 #define RETURN_STR(s)   do { \
     YogCharArray* body = YogCharArray_new_str(env, s); \
-    YogString* string = ALLOC_OBJ(env, gc_string_children, YogString); \
-    YogBasicObj_init(env, YOGBASICOBJ(string), ENV_VM(env)->string_klass); \
+    YogString* string = (YogString*)allocate(env, ENV_VM(env)->string_klass); \
     string->body = body; \
     return string; \
 } while (0)
@@ -63,7 +71,7 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, "String", ENV_VM(env)->obj_klass);
+    YogKlass* klass = YogKlass_new(env, allocate, "String", ENV_VM(env)->obj_klass);
 
     return klass;
 }

@@ -5,6 +5,9 @@ void
 YogVal_print(YogEnv* env, YogVal val) 
 {
     switch (YOGVAL_TYPE(val)) {
+    case VAL_UNDEF:
+        printf("<undef>\n");
+        break;
     case VAL_INT:
         printf("<int: %d>\n", YOGVAL_INT(val));
         break;
@@ -12,7 +15,10 @@ YogVal_print(YogEnv* env, YogVal val)
         printf("<float: %f>\n", YOGVAL_FLOAT(val));
         break;
     case VAL_PTR:
-        printf("<object: %p>\n", YOGVAL_PTR(val));
+        printf("<ptr: %p>\n", YOGVAL_PTR(val));
+        break;
+    case VAL_OBJ:
+        printf("<object: %p>\n", YOGVAL_OBJ(val));
         break;
     case VAL_BOOL:
         if (YOGVAL_BOOL(val)) {

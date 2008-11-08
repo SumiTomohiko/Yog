@@ -57,16 +57,17 @@ void*
 YogVm_alloc(YogEnv* env, GcChildren gc_children, size_t size) 
 {
     size_t unit = sizeof(void*);
-    size_t alimented_size = ((size + sizeof(GcHead) - 1) / unit + 1) * unit;
+    size_t needed_size = size + sizeof(GcHead);
+    size_t aligned_size = ((needed_size - 1) / unit + 1) * unit;
 
     YogVm* vm = ENV_VM(env);
     Heap* heap = vm->heap;
     size_t used_size = heap->free - heap->base;
     size_t rest_size = heap->size - used_size;
-    if (rest_size < alimented_size) {
+    if (rest_size < aligned_size) {
         size_t allocate_size = 0;
-        if (heap->size < alimented_size) {
-            allocate_size = alimented_size;
+        if (heap->size < aligned_size) {
+            allocate_size = aligned_size;
         }
         else {
             allocate_size = heap->size;
@@ -78,9 +79,9 @@ YogVm_alloc(YogEnv* env, GcChildren gc_children, size_t size)
     GcHead* head = (GcHead*)heap->free;
     head->gc_children = gc_children;
     head->forwarding_addr = NULL;
-    head->size = alimented_size;
+    head->size = aligned_size;
 
-    heap->free += alimented_size;
+    heap->free += aligned_size;
 
     return head + 1;
 }
@@ -103,8 +104,8 @@ setup_symbol_tables(YogEnv* env, YogVm* vm)
 static void 
 setup_basic_klass(YogEnv* env, YogVm* vm) 
 {
-    YogKlass* obj_klass = YogKlass_new(env, "Object", NULL);
-    YogKlass* klass_klass = YogKlass_new(env, "Class", obj_klass);
+    YogKlass* obj_klass = YogKlass_new(env, YogObj_allocate, "Object", NULL);
+    YogKlass* klass_klass = YogKlass_new(env, YogKlass_allocate, "Class", obj_klass);
     YOGBASICOBJ(obj_klass)->klass = klass_klass;
     YOGBASICOBJ(klass_klass)->klass = klass_klass;
     vm->obj_klass = obj_klass;
@@ -118,6 +119,8 @@ setup_klasses(YogEnv* env, YogVm* vm)
     vm->bound_method_klass = YogBoundMethod_klass_new(env);
     vm->builtin_unbound_method_klass = YogBuiltinUnboundMethod_klass_new(env);
     vm->unbound_method_klass = YogUnboundMethod_klass_new(env);
+
+    YogKlass_klass_init(env, vm->klass_klass);
 
     vm->int_klass = YogInt_klass_new(env);
     vm->string_klass = YogString_klass_new(env);

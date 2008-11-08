@@ -3,7 +3,7 @@
 static void 
 YogBlock_init(YogEnv* env, YogBlock* block, YogKlass* klass) 
 {
-    YogBasicObj_init(env, YOGBASICOBJ(block), klass);
+    YogBasicObj_init(env, YOGBASICOBJ(block), 0, klass);
 }
 
 static void 
@@ -23,10 +23,18 @@ YogPackageBlock_new(YogEnv* env)
     return block;
 }
 
+static YogBasicObj* 
+allocate(YogEnv* env, YogKlass* klass) 
+{
+    YogBasicObj* obj = ALLOC_OBJ(env, NULL, YogPackageBlock);
+    YogBasicObj_init(env, obj, 0, klass);
+    return obj;
+}
+
 YogKlass* 
 YogPackageBlock_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, "PackageBlock", ENV_VM(env)->obj_klass);
+    YogKlass* klass = YogKlass_new(env, allocate, "PackageBlock", ENV_VM(env)->obj_klass);
     return klass;
 }
 

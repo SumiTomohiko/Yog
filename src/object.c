@@ -9,11 +9,12 @@ YogObj_get_attr(YogEnv* env, YogObj* obj, ID name)
 
     YogVal key = YogVal_symbol(name);
     YogVal attr = YogVal_nil();
-    if (!YogTable_lookup(env, obj->attrs, key, &attr)) {
-        Yog_assert(env, FALSE, "Can't find attribute.");
+    if (YogTable_lookup(env, obj->attrs, key, &attr)) {
+        return attr;
     }
-
-    return attr;
+    else {
+        return YogVal_undef();
+    }
 }
 
 void 
@@ -30,16 +31,17 @@ YogObj_set_attr(YogEnv* env, YogObj* obj, const char* name, YogVal val)
 }
 
 void 
-YogBasicObj_init(YogEnv* env, YogBasicObj* obj, YogKlass* klass) 
+YogBasicObj_init(YogEnv* env, YogBasicObj* obj, unsigned int flags, YogKlass* klass) 
 {
+    obj->flags = flags;
     obj->klass = klass;
 }
 
 void 
-YogObj_init(YogEnv* env, YogObj* obj, YogKlass* klass) 
+YogObj_init(YogEnv* env, YogObj* obj, unsigned int flags, YogKlass* klass) 
 {
     obj->attrs = NULL;
-    YogBasicObj_init(env, YOGBASICOBJ(obj), klass);
+    YogBasicObj_init(env, YOGBASICOBJ(obj), flags | HAS_ATTRS, klass);
 }
 
 void 
@@ -49,12 +51,18 @@ YogObj_gc_children(YogEnv* env, void* ptr, DoGc do_gc)
     obj->attrs = do_gc(env, obj->attrs);
 }
 
+YogBasicObj* 
+YogObj_allocate(YogEnv* env, YogKlass* klass)
+{
+    YogObj* obj = ALLOC_OBJ(env, YogObj_gc_children, YogObj);
+    YogObj_init(env, obj, 0, klass);
+    return (YogBasicObj*)obj;
+}
+
 YogObj*
 YogObj_new(YogEnv* env, YogKlass* klass) 
 {
-    YogObj* obj = ALLOC_OBJ(env, YogObj_gc_children, YogObj);
-    YogObj_init(env, obj, klass);
-
+    YogObj* obj = (YogObj*)YogObj_allocate(env, klass);
     return obj;
 }
 

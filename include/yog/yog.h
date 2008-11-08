@@ -150,8 +150,11 @@ struct YogTable {
 typedef struct YogTable YogTable;
 
 struct YogBasicObj {
+    unsigned int flags;
     struct YogKlass* klass;
 };
+
+#define HAS_ATTRS   (1)
 
 #define YOGBASICOBJ_HEAD    struct YogBasicObj base
 #define YOGBASICOBJ(obj)    ((YogBasicObj*)obj)
@@ -273,11 +276,15 @@ struct YogObj {
 
 typedef struct YogObj YogObj;
 
-#define YogPkg      YogObj
-#define pkg_klass   obj_klass
+#define YogPkg          YogObj
+#define YogPkg_init     YogObj_init
+#define pkg_klass       obj_klass
+
+typedef YogBasicObj* (*Allocator)(struct YogEnv*, struct YogKlass*);
 
 struct YogKlass {
     YOGOBJ_HEAD;
+    Allocator allocator;
     ID name;
     struct YogKlass* super;
 };
@@ -582,7 +589,9 @@ YogKlass* YogInt_klass_new(YogEnv*);
 
 /* src/klass.c */
 void YogKlass_define_method(YogEnv*, YogKlass*, const char*, void*, unsigned int, unsigned int, unsigned int, int, ...);
-YogKlass* YogKlass_new(YogEnv*, const char*, YogKlass*);
+YogBasicObj* YogKlass_allocate(YogEnv*, YogKlass*);
+YogKlass* YogKlass_new(YogEnv*, Allocator, const char*, YogKlass*);
+void YogKlass_klass_init(YogEnv*, YogKlass*);
 
 /* src/lexer.l */
 void Yog_reset_lineno();
@@ -601,9 +610,10 @@ YogUnboundMethod* YogUnboundMethod_new(YogEnv*);
 /* src/object.c */
 YogVal YogObj_get_attr(YogEnv*, YogObj*, ID);
 void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
-void YogBasicObj_init(YogEnv*, YogBasicObj*, YogKlass*);
-void YogObj_init(YogEnv*, YogObj*, YogKlass*);
+void YogBasicObj_init(YogEnv*, YogBasicObj*, unsigned int, YogKlass*);
+void YogObj_init(YogEnv*, YogObj*, unsigned int, YogKlass*);
 void YogObj_gc_children(YogEnv*, void*, DoGc);
+YogBasicObj* YogObj_allocate(YogEnv*, YogKlass*);
 YogObj* YogObj_new(YogEnv*, YogKlass*);
 
 /* src/package.c */

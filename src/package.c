@@ -17,10 +17,19 @@ YogPkg_define_method(YogEnv* env, YogPkg* pkg, const char* name, void* f, unsign
     YogObj_set_attr(env, pkg, name, val);
 }
 
+static YogBasicObj* 
+allocate(YogEnv* env, YogKlass* klass) 
+{
+    YogPkg* pkg = ALLOC_OBJ(env, NULL, sizeof(YogPkg));
+    YogPkg_init(env, pkg, 0, klass);
+
+    return (YogBasicObj*)pkg;
+}
+
 YogKlass* 
 YogPkg_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, "Package", ENV_VM(env)->obj_klass);
+    YogKlass* klass = YogKlass_new(env, allocate, "Package", ENV_VM(env)->obj_klass);
     return klass;
 }
 
@@ -28,7 +37,7 @@ YogPkg*
 YogPkg_new(YogEnv* env) 
 {
     YogPkg* pkg = ALLOC_OBJ(env, YogObj_gc_children, YogPkg);
-    YogObj_init(env, pkg, ENV_VM(env)->pkg_klass);
+    YogPkg_init(env, pkg, 0, ENV_VM(env)->pkg_klass);
     pkg->attrs = YogTable_new_symbol_table(env);
 
     return pkg;
