@@ -101,7 +101,7 @@ class DeclarationInserter(object):
         return params
 
     def _get_functions(self, filename):
-        declarations = []
+        declarations = {}
 
         lines = []
         fp = open(filename)
@@ -155,12 +155,16 @@ class DeclarationInserter(object):
                                             + param[-1][:n + 1]
                             args.append(type_)
 
-                    declarations.append(
+                    declarations[name] = \
                             "%(return_type)s %(name)s(%(args)s);" % { 
                                     "return_type": return_type, "name": name, 
-                                    "args": ", ".join(args) })
+                                    "args": ", ".join(args) }
 
-        return declarations
+        retval = []
+        for name in sorted(declarations):
+            retval.append(declarations[name])
+
+        return retval
 
     def do(self):
         for header, sources in self.files.items():
