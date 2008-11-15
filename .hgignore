@@ -8,6 +8,8 @@ config.h
 config.log
 config.status
 core
+onig/libtool
+onig/onig-config
 parser.output
 stamp-h1
 yog
