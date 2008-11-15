@@ -10,10 +10,12 @@ class AutomakeUpdater(object):
 
     def do(self):
         files = []
-        dirname = "src"
-        for filename in sorted(listdir(dirname)):
-            if splitext(filename)[1] in self.exts:
-                files.append(join(dirname, filename))
+        dirnames = ["src", "onig", join("onig", "enc")]
+        for dirname in dirnames:
+            for filename in sorted(listdir(dirname)):
+                if filename not in ("koi8.c", "mktable.c", "test.c", "testc.c", "testu.c"):
+                    if splitext(filename)[1] in self.exts:
+                        files.append(join(dirname, filename))
         files = " \\\n\t".join(files)
 
         with open("Makefile.am.tmpl") as tmpl:

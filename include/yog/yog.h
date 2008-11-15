@@ -645,7 +645,18 @@ YogPkg* YogPkg_new(YogEnv*);
 YogParser* YogParser_new(YogEnv*);
 YogArray* YogParser_parse_file(YogEnv*, YogParser*, const char*);
 
-/* src/st.c */
+/* src/string.c */
+YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
+YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
+void YogString_clear(YogEnv*, YogString*);
+YogKlass* YogString_klass_new(YogEnv*);
+YogString* YogString_new(YogEnv*);
+YogString* YogString_new_format(YogEnv*, const char*, ...);
+YogString* YogString_new_str(YogEnv*, const char*);
+void YogString_push(YogEnv*, YogString*, char);
+unsigned int YogString_size(YogEnv*, YogString*);
+
+/* src/table.c */
 void YogTable_add_direct(YogEnv*, YogTable*, YogVal, YogVal);
 void YogTable_cleanup_safe(YogEnv*, YogTable*, YogVal*);
 YogTable* YogTable_copy(YogEnv*, YogTable*);
@@ -659,17 +670,6 @@ YogTable* YogTable_new_string_table(YogEnv*);
 YogTable* YogTable_new_symbol_table(YogEnv*);
 YogTable* YogTable_new_val_table(YogEnv*);
 int YogTable_size(YogEnv*, YogTable*);
-
-/* src/string.c */
-YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
-YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
-void YogString_clear(YogEnv*, YogString*);
-YogKlass* YogString_klass_new(YogEnv*);
-YogString* YogString_new(YogEnv*);
-YogString* YogString_new_format(YogEnv*, const char*, ...);
-YogString* YogString_new_str(YogEnv*, const char*);
-void YogString_push(YogEnv*, YogString*, char);
-unsigned int YogString_size(YogEnv*, YogString*);
 
 /* src/thread.c */
 YogVal YogThread_call_block(YogEnv*, YogThread*, YogVal, unsigned int, YogVal*);

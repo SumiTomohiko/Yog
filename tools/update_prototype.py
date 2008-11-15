@@ -10,7 +10,7 @@ class DeclarationInserter(object):
     end = "$PROTOTYPE_END$"
     files = { 
             "include/yog/yog.h": [
-                    "src/error.c", "src/st.c", "src/value.c", "src/vm.c", 
+                    "src/error.c", "src/table.c", "src/value.c", "src/vm.c", 
                     "src/array.c", "src/parser.y", "src/object.c", 
                     "src/string.c", "src/binary.c", "src/compile.c", 
                     "src/code.c", "src/frame.c", "src/thread.c", "src/klass.c", 
