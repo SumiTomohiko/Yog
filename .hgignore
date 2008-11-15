@@ -1,4 +1,6 @@
 .deps
+.lo
+.o
 .pyc
 Makefile
 TAGS
@@ -10,6 +12,13 @@ config.status
 core
 onig/libtool
 onig/onig-config
+onig/sample/.libs
+onig/sample/crnl
+onig/sample/listcap
+onig/sample/names
+onig/sample/simple
+onig/sample/sql
+onig/sample/syntax
 parser.output
 stamp-h1
 yog

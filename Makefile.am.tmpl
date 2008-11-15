@@ -4,6 +4,8 @@ yog_CFLAGS = -Iinclude -Ionig -Wall
 AM_YFLAGS = -d --verbose
 #AM_LFLAGS = --noline
 
+SUBDIRS = onig
+
 proto:
 	python tools/update_prototype.py
 
