@@ -35,21 +35,21 @@
      BREAK = 261,
      CLASS = 262,
      COMMA = 263,
-     COMP_OP = 264,
-     DEF = 265,
-     DO = 266,
-     DOT = 267,
-     DOUBLE_STAR = 268,
-     ELIF = 269,
-     ELSE = 270,
-     END = 271,
-     EQUAL = 272,
-     EXCEPT = 273,
-     FINALLY = 274,
-     GREATER = 275,
-     IF = 276,
-     LBRACE = 277,
-     LBRACKET = 278,
+     DEF = 264,
+     DO = 265,
+     DOT = 266,
+     DOUBLE_STAR = 267,
+     ELIF = 268,
+     ELSE = 269,
+     END = 270,
+     EQUAL = 271,
+     EXCEPT = 272,
+     FINALLY = 273,
+     GREATER = 274,
+     IF = 275,
+     LBRACE = 276,
+     LBRACKET = 277,
+     LESS = 278,
      LPAR = 279,
      NAME = 280,
      NEWLINE = 281,
@@ -71,21 +71,21 @@
 #define BREAK 261
 #define CLASS 262
 #define COMMA 263
-#define COMP_OP 264
-#define DEF 265
-#define DO 266
-#define DOT 267
-#define DOUBLE_STAR 268
-#define ELIF 269
-#define ELSE 270
-#define END 271
-#define EQUAL 272
-#define EXCEPT 273
-#define FINALLY 274
-#define GREATER 275
-#define IF 276
-#define LBRACE 277
-#define LBRACKET 278
+#define DEF 264
+#define DO 265
+#define DOT 266
+#define DOUBLE_STAR 267
+#define ELIF 268
+#define ELSE 269
+#define END 270
+#define EQUAL 271
+#define EXCEPT 272
+#define FINALLY 273
+#define GREATER 274
+#define IF 275
+#define LBRACE 276
+#define LBRACKET 277
+#define LESS 278
 #define LPAR 279
 #define NAME 280
 #define NEWLINE 281
@@ -103,11 +103,11 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 256 "parser.y"
+#line 236 "parser.y"
 typedef union YYSTYPE {
-    YogArray* array;
-    YogNode* node;
-    YogVal val;
+    struct YogArray* array;
+    struct YogNode* node;
+    struct YogVal val;
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */

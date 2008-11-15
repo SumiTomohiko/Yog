@@ -5,6 +5,7 @@
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "yog/opcodes.h"
 
@@ -523,6 +524,24 @@ struct YogPackageBlock {
 
 typedef struct YogPackageBlock YogPackageBlock;
 
+struct YogLexer {
+    struct YogEnv* env;
+    FILE* fp;
+    struct YogString* line;
+    unsigned int next_index;
+    struct YogString* buffer;
+};
+
+typedef struct YogLexer YogLexer;
+
+struct YogParser {
+    struct YogEnv* env;
+    struct YogLexer* lexer;
+    struct YogArray* stmts;
+};
+
+typedef struct YogParser YogParser;
+
 /* $PROTOTYPE_START$ */
 
 /**
@@ -593,9 +612,9 @@ void YogKlass_define_method(YogEnv*, YogKlass*, const char*, void*, unsigned int
 void YogKlass_klass_init(YogEnv*, YogKlass*);
 YogKlass* YogKlass_new(YogEnv*, Allocator, const char*, YogKlass*);
 
-/* src/lexer.l */
-unsigned int Yog_get_lineno();
-void Yog_reset_lineno();
+/* src/lexer.c */
+YogLexer* YogLexer_new(YogEnv*);
+int yylex(YogLexer*);
 
 /* src/method.c */
 YogKlass* YogBoundMethod_klass_new(YogEnv*);
@@ -623,9 +642,8 @@ YogKlass* YogPkg_klass_new(YogEnv*);
 YogPkg* YogPkg_new(YogEnv*);
 
 /* src/parser.y */
-YogArray* Yog_get_parsed_tree();
-YogEnv* Yog_get_parsing_env();
-void Yog_set_parsing_env(YogEnv*);
+YogParser* YogParser_new(YogEnv*);
+YogArray* YogParser_parse_file(YogEnv*, YogParser*, const char*);
 
 /* src/st.c */
 void YogTable_add_direct(YogEnv*, YogTable*, YogVal, YogVal);
@@ -645,9 +663,13 @@ int YogTable_size(YogEnv*, YogTable*);
 /* src/string.c */
 YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
 YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
+void YogString_clear(YogEnv*, YogString*);
 YogKlass* YogString_klass_new(YogEnv*);
+YogString* YogString_new(YogEnv*);
 YogString* YogString_new_format(YogEnv*, const char*, ...);
 YogString* YogString_new_str(YogEnv*, const char*);
+void YogString_push(YogEnv*, YogString*, char);
+unsigned int YogString_size(YogEnv*, YogString*);
 
 /* src/thread.c */
 YogVal YogThread_call_block(YogEnv*, YogThread*, YogVal, unsigned int, YogVal*);
@@ -659,6 +681,7 @@ YogThread* YogThread_new(YogEnv*);
 /* src/value.c */
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
 YogVal YogVal_false();
+YogVal YogVal_float(float);
 YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
 YogKlass* YogVal_get_klass(YogEnv*, YogVal);
 int YogVal_hash(YogEnv*, YogVal);

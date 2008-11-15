@@ -1,0 +1,30 @@
+%{
+#include <string.h>
+#include "parser.h"
+
+typedef struct KeywordTableEntry KeywordTableEntry;
+%}
+%language=ANSI-C
+%define lookup-function-name __Yog_lookup_keyword__
+%struct-type
+struct KeywordTableEntry { const char* name; enum yytokentype type; };
+%readonly-tables
+%%
+as, AS
+break, BREAK
+class, CLASS
+def, DEF
+do, DO
+elif, ELIF
+else, ELSE
+end, END
+except, EXCEPT
+finally, FINALLY
+if, IF
+next, NEXT
+try, TRY
+while, WHILE
+%%
+/**
+ * vim: filetype=c
+ */

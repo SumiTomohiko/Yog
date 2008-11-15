@@ -1,8 +1,4 @@
-#include <stdio.h>
 #include "yog/yog.h"
-
-extern FILE* yyin;
-int yyparse();
 
 int 
 main(int argc, char* argv[]) 
@@ -21,21 +17,15 @@ main(int argc, char* argv[])
     YogArray_new(&env);
 #endif
 
-    Yog_reset_lineno();
-    Yog_set_parsing_env(&env);
+    YogParser* parser = YogParser_new(&env);
+    const char* filename = NULL;
     if (1 < argc) {
-        yyin = fopen(argv[1], "r");
+        filename = argv[1];
     }
-    else {
-        yyin = stdin;
-    }
-    yyparse();
-    if (1 < argc) {
-        fclose(yyin);
-    }
+    YogArray* stmts = YogParser_parse_file(&env, parser, filename);
 
-    YogArray* stmts = Yog_get_parsed_tree();
     YogCode* code = Yog_compile_module(&env, stmts);
+
     YogThread* th = YogThread_new(&env);
     env.th = th;
     YogPkg* pkg = YogPkg_new(&env);

@@ -35,8 +35,8 @@ subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	compile depcomp install-sh lexer.c missing mkinstalldirs \
-	parser.c parser.h ylwrap
+	compile depcomp install-sh missing mkinstalldirs parser.c \
+	parser.h ylwrap
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -69,9 +69,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-LEXCOMPILE = $(LEX) $(LFLAGS) $(AM_LFLAGS)
-YLWRAP = $(top_srcdir)/ylwrap
 YACCCOMPILE = $(YACC) $(YFLAGS) $(AM_YFLAGS)
+YLWRAP = $(top_srcdir)/ylwrap
 SOURCES = $(yog_SOURCES)
 DIST_SOURCES = $(yog_SOURCES)
 ETAGS = etags
@@ -189,7 +188,7 @@ yog_SOURCES = src/array.c \
 	src/inst.c \
 	src/int.c \
 	src/klass.c \
-	src/lexer.l \
+	src/lexer.c \
 	src/main.c \
 	src/method.c \
 	src/object.c \
@@ -207,7 +206,7 @@ all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .l .o .obj .y
+.SUFFIXES: .c .o .obj .y
 am--refresh:
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -517,19 +516,19 @@ yog-klass.obj: src/klass.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-klass.obj `if test -f 'src/klass.c'; then $(CYGPATH_W) 'src/klass.c'; else $(CYGPATH_W) '$(srcdir)/src/klass.c'; fi`
 
-yog-lexer.o: lexer.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-lexer.o -MD -MP -MF $(DEPDIR)/yog-lexer.Tpo -c -o yog-lexer.o `test -f 'lexer.c' || echo '$(srcdir)/'`lexer.c
+yog-lexer.o: src/lexer.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-lexer.o -MD -MP -MF $(DEPDIR)/yog-lexer.Tpo -c -o yog-lexer.o `test -f 'src/lexer.c' || echo '$(srcdir)/'`src/lexer.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-lexer.Tpo $(DEPDIR)/yog-lexer.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='lexer.c' object='yog-lexer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/lexer.c' object='yog-lexer.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-lexer.o `test -f 'lexer.c' || echo '$(srcdir)/'`lexer.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-lexer.o `test -f 'src/lexer.c' || echo '$(srcdir)/'`src/lexer.c
 
-yog-lexer.obj: lexer.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-lexer.obj -MD -MP -MF $(DEPDIR)/yog-lexer.Tpo -c -o yog-lexer.obj `if test -f 'lexer.c'; then $(CYGPATH_W) 'lexer.c'; else $(CYGPATH_W) '$(srcdir)/lexer.c'; fi`
+yog-lexer.obj: src/lexer.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-lexer.obj -MD -MP -MF $(DEPDIR)/yog-lexer.Tpo -c -o yog-lexer.obj `if test -f 'src/lexer.c'; then $(CYGPATH_W) 'src/lexer.c'; else $(CYGPATH_W) '$(srcdir)/src/lexer.c'; fi`
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-lexer.Tpo $(DEPDIR)/yog-lexer.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='lexer.c' object='yog-lexer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/lexer.c' object='yog-lexer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-lexer.obj `if test -f 'lexer.c'; then $(CYGPATH_W) 'lexer.c'; else $(CYGPATH_W) '$(srcdir)/lexer.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-lexer.obj `if test -f 'src/lexer.c'; then $(CYGPATH_W) 'src/lexer.c'; else $(CYGPATH_W) '$(srcdir)/src/lexer.c'; fi`
 
 yog-main.o: src/main.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-main.o -MD -MP -MF $(DEPDIR)/yog-main.Tpo -c -o yog-main.o `test -f 'src/main.c' || echo '$(srcdir)/'`src/main.c
@@ -670,13 +669,6 @@ yog-vm.obj: src/vm.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/vm.c' object='yog-vm.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-vm.obj `if test -f 'src/vm.c'; then $(CYGPATH_W) 'src/vm.c'; else $(CYGPATH_W) '$(srcdir)/src/vm.c'; fi`
-
-.l.c:
-	$(am__skiplex) $(SHELL) $(YLWRAP) $< $(LEX_OUTPUT_ROOT).c $@ -- $(LEXCOMPILE)
-
-lexer.c: src/lexer.l
-	$(am__skiplex) \
-	$(SHELL) $(YLWRAP) `test -f 'src/lexer.l' || echo '$(srcdir)/'`src/lexer.l $(LEX_OUTPUT_ROOT).c lexer.c -- $(LEX) $(LFLAGS) $(AM_LFLAGS)
 
 .y.c:
 	$(am__skipyacc) $(SHELL) $(YLWRAP) $< y.tab.c $@ y.tab.h $*.h y.output $*.output -- $(YACCCOMPILE)
@@ -892,7 +884,6 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-rm -f lexer.c
 	-rm -f parser.c
 	-rm -f parser.h
 clean: clean-am
@@ -988,6 +979,9 @@ test: yog$(EXEEXT)
 
 clean-generic:
 	find . -name "*.pyc" -print0 | xargs --null rm -f
+
+src/keywords.inc: src/keywords
+	gperf $< > $@
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

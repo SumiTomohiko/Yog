@@ -2,31 +2,11 @@
 #include <stdio.h>
 #include "yog/yog.h"
 
-static YogEnv* parsing_env = NULL;
-static YogVm* parsing_vm = NULL;
-static YogArray* parsed_tree = NULL;
-
-void 
-Yog_set_parsing_env(YogEnv* env) 
-{
-    parsing_env = env;
-    parsing_vm = ENV_VM(env);
-}
-
-YogEnv*
-Yog_get_parsing_env()
-{
-    return parsing_env;
-}
-
-YogArray* 
-Yog_get_parsed_tree() 
-{
-    return parsed_tree;
-}
-
-#define ENV parsing_env
-#define VM  parsing_vm
+#define YYPARSE_PARAM   parser
+#define PARSER          ((YogParser*)YYPARSE_PARAM)
+#define YYLEX_PARAM     (PARSER)->lexer
+#define ENV             (PARSER)->env
+#define VM              (PARSER)->vm
 
 static void 
 yyerror(char* s)
@@ -94,7 +74,10 @@ static YogNode*
 YogNode_new(YogEnv* env, YogNodeType type) 
 {
     YogNode* node = ALLOC_OBJ(env, gc_children, YogNode);
+#if 0
     node->lineno = Yog_get_lineno();
+#endif
+    node->lineno = 0;
     node->type = type;
 
     return node;
@@ -248,15 +231,12 @@ YogNode_new(YogEnv* env, YogNodeType type)
     NODE_IF_STMTS(node) = stmts; \
     NODE_IF_TAIL(node) = tail; \
 } while (0)
-
-/* XXX: To avoid warning. Better way? */
-int yylex(void);
 %}
 
 %union {
-    YogArray* array;
-    YogNode* node;
-    YogVal val;
+    struct YogArray* array;
+    struct YogNode* node;
+    struct YogVal val;
     ID name;
 }
 
@@ -266,7 +246,6 @@ int yylex(void);
 %token BREAK
 %token CLASS
 %token COMMA
-%token COMP_OP
 %token DEF
 %token DO
 %token DOT
@@ -281,6 +260,7 @@ int yylex(void);
 %token IF
 %token LBRACE
 %token LBRACKET
+%token LESS
 %token LPAR
 %token NAME
 %token NEWLINE
@@ -305,9 +285,10 @@ int yylex(void);
 %type<array> params_with_default
 %type<array> params_without_default
 %type<array> stmts
-%type<name> COMP_OP
+%type<name> LESS
 %type<name> NAME
 %type<name> PLUS
+%type<name> comp_op
 %type<node> and_expr
 %type<node> arith_expr
 %type<node> assign_expr
@@ -337,7 +318,7 @@ int yylex(void);
 %type<val> NUMBER
 %%
 module  : stmts {
-            parsed_tree = $1;
+            PARSER->stmts = $1;
         }
         ;
 stmts   : stmt {
@@ -587,9 +568,11 @@ logical_and_expr    : not_expr
 not_expr    : comparison
             ;
 comparison  : xor_expr
-            | xor_expr COMP_OP xor_expr {
+            | xor_expr comp_op xor_expr {
                 METHOD_CALL_NEW1($$, $1, $2, $3);
             }
+            ;
+comp_op     : LESS 
             ;
 xor_expr    : or_expr
             ;
@@ -786,6 +769,39 @@ encoding_decl: NAME
 
 yield_expr: 'yield' [testlist]
 */
+
+YogParser* 
+YogParser_new(YogEnv* env) 
+{
+    YogParser* parser = ALLOC_OBJ(env, NULL, YogParser);
+    parser->env = env;
+    parser->lexer = YogLexer_new(env);
+
+    return parser;
+}
+
+YogArray* 
+YogParser_parse_file(YogEnv* env, YogParser* parser, const char* filename)
+{
+    FILE* fp = NULL;
+    if (filename != NULL) {
+        fp = fopen(filename, "r");
+    }
+    else {
+        fp = stdin;
+    }
+    YogLexer* lexer = parser->lexer;
+    lexer->fp = fp;
+
+    yyparse(parser);
+
+    if (filename != NULL) {
+        fclose(fp);
+    }
+
+    return parser->stmts;
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

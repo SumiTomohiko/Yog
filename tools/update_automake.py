@@ -6,7 +6,7 @@ from os.path import join, splitext
 
 class AutomakeUpdater(object):
 
-    exts = [".c", ".l", ".y", ]
+    exts = [".c", ".y", ]
 
     def do(self):
         files = []

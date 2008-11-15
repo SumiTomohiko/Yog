@@ -199,6 +199,12 @@ YogVal_int(int n)
     RETURN_VAL(VAL_INT, YOGVAL_INT, n);
 }
 
+YogVal 
+YogVal_float(float f) 
+{
+    RETURN_VAL(VAL_FLOAT, YOGVAL_FLOAT, f);
+}
+
 YogVal
 YogVal_symbol(ID id) 
 {

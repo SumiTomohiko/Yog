@@ -12,7 +12,7 @@ yog_SOURCES = src/array.c \
 	src/inst.c \
 	src/int.c \
 	src/klass.c \
-	src/lexer.l \
+	src/lexer.c \
 	src/main.c \
 	src/method.c \
 	src/object.c \
@@ -41,5 +41,8 @@ test: yog$(EXEEXT)
 
 clean-generic:
 	find . -name "*.pyc" -print0 | xargs --null rm -f
+
+src/keywords.inc: src/keywords
+	gperf $< > $@
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
