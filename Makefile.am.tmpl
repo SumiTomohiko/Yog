@@ -1,10 +1,15 @@
+ONIG_DIR = onig
+ONIG_LIB = $(ONIG_DIR)/.libs/libonig.a
+
+SUBDIRS = $(ONIG_DIR)
+
 bin_PROGRAMS = yog
 yog_SOURCES = @SOURCES@
-yog_CFLAGS = -Iinclude -Ionig -Wall
+yog_CFLAGS = -Iinclude -I$(ONIG_DIR) -Wall
+yog_LDADD = $(ONIG_LIB)
+
 AM_YFLAGS = -d --verbose
 #AM_LFLAGS = --noline
-
-SUBDIRS = onig
 
 proto:
 	python tools/update_prototype.py

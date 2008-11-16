@@ -1,3 +1,8 @@
+ONIG_DIR = onig
+ONIG_LIB = $(ONIG_DIR)/.libs/libonig.a
+
+SUBDIRS = $(ONIG_DIR)
+
 bin_PROGRAMS = yog
 yog_SOURCES = src/array.c \
 	src/binary.c \
@@ -6,6 +11,7 @@ yog_SOURCES = src/array.c \
 	src/builtins.c \
 	src/code.c \
 	src/compile.c \
+	src/encoding.c \
 	src/error.c \
 	src/frame.c \
 	src/function.c \
@@ -23,11 +29,11 @@ yog_SOURCES = src/array.c \
 	src/thread.c \
 	src/value.c \
 	src/vm.c
-yog_CFLAGS = -Iinclude -Ionig -Wall
+yog_CFLAGS = -Iinclude -I$(ONIG_DIR) -Wall
+yog_LDADD = $(ONIG_LIB)
+
 AM_YFLAGS = -d --verbose
 #AM_LFLAGS = --noline
-
-SUBDIRS = onig
 
 proto:
 	python tools/update_prototype.py

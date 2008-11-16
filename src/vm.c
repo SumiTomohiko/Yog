@@ -130,6 +130,23 @@ setup_klasses(YogEnv* env, YogVm* vm)
     vm->pkg_block_klass = YogPackageBlock_klass_new(env);
 }
 
+static void 
+setup_encodings(YogEnv* env, YogVm* vm) 
+{
+#define REGISTER_ENCODING(name, onig)   do { \
+    ID id = INTERN(name); \
+    YogVal key = YogVal_symbol(id); \
+    YogEncoding* enc = YogEncoding_new(env, onig); \
+    YogVal val = YogVal_ptr(enc); \
+    YogTable_add_direct(env, vm->encodings, key, val); \
+} while (0)
+    REGISTER_ENCODING("ascii", ONIG_ENCODING_ASCII);
+    REGISTER_ENCODING("utf_8", ONIG_ENCODING_UTF8);
+    REGISTER_ENCODING("euc_jp", ONIG_ENCODING_EUC_JP);
+    REGISTER_ENCODING("shift_jis", ONIG_ENCODING_SJIS);
+#undef REGISTER_ENCODING
+}
+
 void 
 YogVm_boot(YogEnv* env, YogVm* vm) 
 {
@@ -139,6 +156,9 @@ YogVm_boot(YogEnv* env, YogVm* vm)
 
     vm->pkgs = YogTable_new_symbol_table(env);
     setup_builtins(env, vm);
+
+    vm->encodings = YogTable_new_symbol_table(env);
+    setup_encodings(env, vm);
 }
 
 YogVm* 
@@ -167,6 +187,8 @@ YogVm_new(size_t heap_size)
     vm->pkg_block_klass = NULL;
 
     vm->pkgs = NULL;
+
+    vm->encodings = NULL;
 
     return vm;
 }

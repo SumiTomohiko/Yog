@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "oniguruma.h"
 #include "yog/opcodes.h"
 
 #define BOOL    int
@@ -48,6 +49,8 @@ struct YogVm {
     struct YogKlass* pkg_block_klass;
 
     struct YogTable* pkgs;
+
+    struct YogTable* encodings;
 };
 
 typedef struct YogVm YogVm;
@@ -542,6 +545,12 @@ struct YogParser {
 
 typedef struct YogParser YogParser;
 
+struct YogEncoding {
+    OnigEncoding onig_enc;
+};
+
+typedef struct YogEncoding YogEncoding;
+
 /* $PROTOTYPE_START$ */
 
 /**
@@ -587,6 +596,9 @@ YogCode* YogCode_new(YogEnv*);
 
 /* src/compile.c */
 YogCode* Yog_compile_module(YogEnv*, YogArray*);
+
+/* src/encoding.c */
+YogEncoding* YogEncoding_new(YogEnv*, OnigEncoding);
 
 /* src/error.c */
 void Yog_assert(YogEnv*, BOOL, const char*);

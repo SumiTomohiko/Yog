@@ -51,15 +51,16 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am_yog_OBJECTS = yog-array.$(OBJEXT) yog-binary.$(OBJEXT) \
 	yog-block.$(OBJEXT) yog-bool.$(OBJEXT) yog-builtins.$(OBJEXT) \
-	yog-code.$(OBJEXT) yog-compile.$(OBJEXT) yog-error.$(OBJEXT) \
-	yog-frame.$(OBJEXT) yog-function.$(OBJEXT) yog-inst.$(OBJEXT) \
-	yog-int.$(OBJEXT) yog-klass.$(OBJEXT) yog-lexer.$(OBJEXT) \
-	yog-main.$(OBJEXT) yog-method.$(OBJEXT) yog-object.$(OBJEXT) \
+	yog-code.$(OBJEXT) yog-compile.$(OBJEXT) \
+	yog-encoding.$(OBJEXT) yog-error.$(OBJEXT) yog-frame.$(OBJEXT) \
+	yog-function.$(OBJEXT) yog-inst.$(OBJEXT) yog-int.$(OBJEXT) \
+	yog-klass.$(OBJEXT) yog-lexer.$(OBJEXT) yog-main.$(OBJEXT) \
+	yog-method.$(OBJEXT) yog-object.$(OBJEXT) \
 	yog-package.$(OBJEXT) yog-parser.$(OBJEXT) \
 	yog-string.$(OBJEXT) yog-table.$(OBJEXT) yog-thread.$(OBJEXT) \
 	yog-value.$(OBJEXT) yog-vm.$(OBJEXT)
 yog_OBJECTS = $(am_yog_OBJECTS)
-yog_LDADD = $(LDADD)
+yog_DEPENDENCIES = $(ONIG_LIB)
 yog_LINK = $(CCLD) $(yog_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
 	$@
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -186,6 +187,9 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+ONIG_DIR = onig
+ONIG_LIB = $(ONIG_DIR)/.libs/libonig.a
+SUBDIRS = $(ONIG_DIR)
 yog_SOURCES = src/array.c \
 	src/binary.c \
 	src/block.c \
@@ -193,6 +197,7 @@ yog_SOURCES = src/array.c \
 	src/builtins.c \
 	src/code.c \
 	src/compile.c \
+	src/encoding.c \
 	src/error.c \
 	src/frame.c \
 	src/function.c \
@@ -211,10 +216,9 @@ yog_SOURCES = src/array.c \
 	src/value.c \
 	src/vm.c
 
-yog_CFLAGS = -Iinclude -Ionig -Wall
+yog_CFLAGS = -Iinclude -I$(ONIG_DIR) -Wall
+yog_LDADD = $(ONIG_LIB)
 AM_YFLAGS = -d --verbose
-#AM_LFLAGS = --noline
-SUBDIRS = onig
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -315,6 +319,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-builtins.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-compile.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-encoding.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-frame.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-function.Po@am__quote@
@@ -444,6 +449,20 @@ yog-compile.obj: src/compile.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/compile.c' object='yog-compile.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-compile.obj `if test -f 'src/compile.c'; then $(CYGPATH_W) 'src/compile.c'; else $(CYGPATH_W) '$(srcdir)/src/compile.c'; fi`
+
+yog-encoding.o: src/encoding.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-encoding.o -MD -MP -MF $(DEPDIR)/yog-encoding.Tpo -c -o yog-encoding.o `test -f 'src/encoding.c' || echo '$(srcdir)/'`src/encoding.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-encoding.Tpo $(DEPDIR)/yog-encoding.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/encoding.c' object='yog-encoding.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-encoding.o `test -f 'src/encoding.c' || echo '$(srcdir)/'`src/encoding.c
+
+yog-encoding.obj: src/encoding.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-encoding.obj -MD -MP -MF $(DEPDIR)/yog-encoding.Tpo -c -o yog-encoding.obj `if test -f 'src/encoding.c'; then $(CYGPATH_W) 'src/encoding.c'; else $(CYGPATH_W) '$(srcdir)/src/encoding.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-encoding.Tpo $(DEPDIR)/yog-encoding.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/encoding.c' object='yog-encoding.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-encoding.obj `if test -f 'src/encoding.c'; then $(CYGPATH_W) 'src/encoding.c'; else $(CYGPATH_W) '$(srcdir)/src/encoding.c'; fi`
 
 yog-error.o: src/error.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-error.o -MD -MP -MF $(DEPDIR)/yog-error.Tpo -c -o yog-error.o `test -f 'src/error.c' || echo '$(srcdir)/'`src/error.c
@@ -1080,6 +1099,7 @@ uninstall-am: uninstall-binPROGRAMS
 	ps ps-am tags tags-recursive uninstall uninstall-am \
 	uninstall-binPROGRAMS
 
+#AM_LFLAGS = --noline
 
 proto:
 	python tools/update_prototype.py
