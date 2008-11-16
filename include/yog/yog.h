@@ -527,8 +527,15 @@ struct YogPackageBlock {
 
 typedef struct YogPackageBlock YogPackageBlock;
 
+struct YogEncoding {
+    OnigEncoding onig_enc;
+};
+
+typedef struct YogEncoding YogEncoding;
+
 struct YogLexer {
     struct YogEnv* env;
+    struct YogEncoding* encoding;
     FILE* fp;
     struct YogString* line;
     unsigned int next_index;
@@ -544,12 +551,6 @@ struct YogParser {
 };
 
 typedef struct YogParser YogParser;
-
-struct YogEncoding {
-    OnigEncoding onig_enc;
-};
-
-typedef struct YogEncoding YogEncoding;
 
 /* $PROTOTYPE_START$ */
 

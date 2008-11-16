@@ -268,6 +268,7 @@ YogLexer_new(YogEnv* env)
 {
     YogLexer* lexer = ALLOC_OBJ(env, NULL, YogLexer);
     lexer->env = env;
+    lexer->encoding = NULL;
     lexer->fp = NULL;
     lexer->line = YogString_new(env);
     lexer->next_index = 0;
