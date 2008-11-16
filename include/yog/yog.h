@@ -600,6 +600,7 @@ YogCode* Yog_compile_module(YogEnv*, YogArray*);
 
 /* src/encoding.c */
 YogEncoding* YogEncoding_new(YogEnv*, OnigEncoding);
+YogString* YogEncoding_normalize_name(YogEnv*, YogString*);
 
 /* src/error.c */
 void Yog_assert(YogEnv*, BOOL, const char*);
@@ -627,6 +628,7 @@ YogKlass* YogKlass_new(YogEnv*, Allocator, const char*, YogKlass*);
 
 /* src/lexer.c */
 YogLexer* YogLexer_new(YogEnv*);
+void YogLexer_read_encoding(YogEnv*, YogLexer*);
 int yylex(YogLexer*);
 
 /* src/method.c */
@@ -661,7 +663,10 @@ YogArray* YogParser_parse_file(YogEnv*, YogParser*, const char*);
 /* src/string.c */
 YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
 YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
+char YogString_at(YogEnv*, YogString*, unsigned int);
 void YogString_clear(YogEnv*, YogString*);
+YogString* YogString_clone(YogEnv*, YogString*);
+ID YogString_intern(YogEnv*, YogString*);
 YogKlass* YogString_klass_new(YogEnv*);
 YogString* YogString_new(YogEnv*);
 YogString* YogString_new_format(YogEnv*, const char*, ...);

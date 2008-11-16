@@ -3,6 +3,12 @@
 #include <string.h>
 #include "yog/yog.h"
 
+ID 
+YogString_intern(YogEnv* env, YogString* s) 
+{
+    return INTERN(s->body->items);
+}
+
 static void 
 YogCharArray_clear(YogEnv* env, YogCharArray* array) 
 {
@@ -146,6 +152,18 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
 }
 
 #undef RETURN_STR
+
+YogString* 
+YogString_clone(YogEnv* env, YogString* s) 
+{
+    return YogString_new_str(env, s->body->items);
+}
+
+char 
+YogString_at(YogEnv* env, YogString* s, unsigned int n) 
+{
+    return s->body->items[n];
+}
 
 YogKlass* 
 YogString_klass_new(YogEnv* env) 

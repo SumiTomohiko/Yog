@@ -783,20 +783,19 @@ YogParser_new(YogEnv* env)
 YogArray* 
 YogParser_parse_file(YogEnv* env, YogParser* parser, const char* filename)
 {
-    FILE* fp = NULL;
+    YogLexer* lexer = parser->lexer;
     if (filename != NULL) {
-        fp = fopen(filename, "r");
+        lexer->fp = fopen(filename, "r");
+        YogLexer_read_encoding(env, lexer);
     }
     else {
-        fp = stdin;
+        lexer->fp = stdin;
     }
-    YogLexer* lexer = parser->lexer;
-    lexer->fp = fp;
 
     yyparse(parser);
 
     if (filename != NULL) {
-        fclose(fp);
+        fclose(lexer->fp);
     }
 
     return parser->stmts;

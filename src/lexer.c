@@ -1,16 +1,17 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "yog/yog.h"
 
 #include "parser.h"
 
 static BOOL
-readline(YogEnv* env, YogLexer* lexer) 
+readline(YogEnv* env, YogLexer* lexer, FILE* fp) 
 {
     YogString* line = lexer->line;
     YogString_clear(env, line);
 
-    FILE* fp = lexer->fp;
     int c = 0;
     do {
         c = fgetc(fp);
@@ -24,7 +25,7 @@ readline(YogEnv* env, YogLexer* lexer)
         YogString_push(env, line, c);
     } while (1);
 
-    if (YogString_size(env, line) == 0) {
+    if (YogString_size(env, line) - 1 == 0) {
         return FALSE;
     }
 
@@ -71,28 +72,10 @@ skip_whitespace(YogLexer* lexer)
     pushback(lexer, c);
 }
 
-static BOOL
-is_alphabet(char c) 
-{
-    return (('A' <= c) && (c <= 'Z')) || (('a' <= c) && (c <= 'z'));
-}
-
 static BOOL 
-is_number(char c) 
+is_name_char(char c) 
 {
-    return ('0' <= c) && (c <= '9');
-}
-
-static BOOL 
-is_alphnum(char c) 
-{
-    return is_alphabet(c) || is_number(c);
-}
-
-static BOOL 
-is_ident_char(char c) 
-{
-    return is_alphnum(c) || (c == '_');
+    return isalnum(c) || (c == '_');
 }
 
 static void 
@@ -115,7 +98,7 @@ next_token(YogEnv* env, YogLexer* lexer)
     clear_buffer(env, lexer);
 
     if (YogString_size(env, lexer->line) - 1 == lexer->next_index) {
-        if (!readline(env, lexer)) {
+        if (!readline(env, lexer, lexer->fp)) {
             return -1;
         }
         lexer->next_index = 0;
@@ -146,7 +129,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                 do {
                     ADD_TOKEN_CHAR(c);
                     c = NEXTC();
-                } while (is_number(c));
+                } while (isdigit(c));
 
 #define RETURN_INT  do { \
     int n = atoi(lexer->buffer->body->items); \
@@ -155,12 +138,12 @@ next_token(YogEnv* env, YogLexer* lexer)
 } while (0)
                 if (c == '.') {
                     int c2 = NEXTC();
-                    if (is_number(c2)) {
+                    if (isdigit(c2)) {
                         ADD_TOKEN_CHAR(c);
                         do {
                             ADD_TOKEN_CHAR(c2);
                             c2 = NEXTC();
-                        } while (is_number(c2));
+                        } while (isdigit(c2));
                         PUSHBACK(c2);
 
                         float f = 0;
@@ -232,7 +215,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                 do {
                     ADD_TOKEN_CHAR(c);
                     c = NEXTC();
-                } while (is_ident_char(c));
+                } while (is_name_char(c));
                 PUSHBACK(c);
 
                 const char* name = lexer->buffer->body->items;
@@ -255,6 +238,74 @@ next_token(YogEnv* env, YogLexer* lexer)
 #undef NEXTC
 
     return 0;
+}
+
+static BOOL 
+is_coding_char(char c) 
+{
+    return is_name_char(c) || (c == '-');
+}
+
+static YogEncoding* 
+read_encoding(YogEnv* env, YogLexer* lexer) 
+{
+    YogEncoding* encoding = NULL;
+
+    while (readline(env, lexer, lexer->fp)) {
+        skip_whitespace(lexer);
+        int c = nextc(lexer);
+        if (c != '#') {
+            continue;
+        }
+
+        const char* s = &lexer->line->body->items[lexer->next_index];
+#define KEY     "coding"
+        const char* ptr = strstr(KEY, s);
+        ptr += strlen(KEY);
+#undef KEY
+        if ((*ptr != '=') && (*ptr != ':')) {
+            continue;
+        }
+        lexer->next_index += ptr - s;
+        skip_whitespace(lexer);
+
+        clear_buffer(env, lexer);
+        c = nextc(lexer);
+        while (is_coding_char(c)) {
+            add_token_char(env, lexer, c);
+            c = nextc(lexer);
+        }
+        YogString* coding = YogEncoding_normalize_name(env, lexer->buffer);
+        if (YogString_size(env, coding) - 1 < 1) {
+            continue;
+        }
+
+        ID id = YogString_intern(env, coding);
+        YogVal key = YogVal_symbol(id);
+        YogVal val = YogVal_undef();
+        if (!YogTable_lookup(env, ENV_VM(env)->encodings, key, &val)) {
+            continue;
+        }
+        encoding = YOGVAL_PTR(val);
+        break;
+    }
+
+    return encoding;
+}
+
+static void 
+reset_lexer(YogEnv* env, YogLexer* lexer) 
+{
+    fseek(lexer->fp, 0, SEEK_SET);
+    YogString_clear(env, lexer->line);
+    lexer->next_index = 0;
+}
+
+void 
+YogLexer_read_encoding(YogEnv* env, YogLexer* lexer) 
+{
+    lexer->encoding = read_encoding(env, lexer);
+    reset_lexer(env, lexer);
 }
 
 int 

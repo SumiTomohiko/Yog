@@ -141,9 +141,9 @@ setup_encodings(YogEnv* env, YogVm* vm)
     YogTable_add_direct(env, vm->encodings, key, val); \
 } while (0)
     REGISTER_ENCODING("ascii", ONIG_ENCODING_ASCII);
-    REGISTER_ENCODING("utf_8", ONIG_ENCODING_UTF8);
-    REGISTER_ENCODING("euc_jp", ONIG_ENCODING_EUC_JP);
-    REGISTER_ENCODING("shift_jis", ONIG_ENCODING_SJIS);
+    REGISTER_ENCODING("utf-8", ONIG_ENCODING_UTF8);
+    REGISTER_ENCODING("euc-jp", ONIG_ENCODING_EUC_JP);
+    REGISTER_ENCODING("shift-jis", ONIG_ENCODING_SJIS);
 #undef REGISTER_ENCODING
 }
 
