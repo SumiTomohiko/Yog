@@ -352,10 +352,10 @@ var2index_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* a
 static void 
 var2index_register(YogEnv* env, YogTable* var2index, ID var)
 {
-    YogVal symbol = YogVal_symbol(var);
+    YogVal symbol = ID2VAL(var);
     if (!YogTable_lookup(env, var2index, symbol, NULL)) {
         int size = YogTable_size(env, var2index);
-        YogVal index = YogVal_int(size);
+        YogVal index = INT2VAL(size);
         YogTable_add_direct(env, var2index, symbol, index);
     }
 }
@@ -520,8 +520,8 @@ make_var2index(YogEnv* env, YogArray* stmts, YogTable* var2index)
 static int 
 lookup_var_index(YogEnv* env, YogTable* var2index, ID id) 
 {
-    YogVal val = YogVal_symbol(id);
-    YogVal index = YogVal_undef();
+    YogVal val = ID2VAL(id);
+    YogVal index = YUNDEF;
     if (!YogTable_lookup(env, var2index, val, &index)) {
         Yog_assert(env, FALSE, "Can't find var.");
     }
@@ -590,10 +590,10 @@ register_const(YogEnv* env, CompileData* data, YogVal val)
         data->const2index = YogTable_new_symbol_table(env);
     }
 
-    YogVal index = YogVal_undef();
+    YogVal index = YUNDEF;
     if (!YogTable_lookup(env, data->const2index, val, &index)) {
         int size = YogTable_size(env, data->const2index);
-        index = YogVal_int(size);
+        index = INT2VAL(size);
         YogTable_add_direct(env, data->const2index, val, index);
         return size;
     }
@@ -778,13 +778,13 @@ table2array(YogEnv* env, YogTable* table)
         return NULL;
     }
 
-    YogVal max_index = YogVal_int(INT_MIN);
+    YogVal max_index = INT2VAL(INT_MIN);
     YogTable_foreach(env, table, table2array_count_index, &max_index);
     int index = VAL2INT(max_index);
     if (0 <= index) {
         unsigned int size = index + 1;
         YogValArray* array = YogValArray_new(env, size);
-        YogVal arg = YogVal_ptr(array);
+        YogVal arg = PTR2VAL(array);
         YogTable_foreach(env, table, table2array_fill_array, &arg);
         array->size = size;
         return array;
@@ -951,11 +951,11 @@ register_params_var2index(YogEnv* env, YogArray* params, YogTable* var2index)
         YogVal param = YogArray_at(env, params, i);
         YogNode* node = VAL2PTR(param);
         ID id = NODE_NAME(node);
-        YogVal name = YogVal_symbol(id);
+        YogVal name = ID2VAL(id);
         if (YogTable_lookup(env, var2index, name, NULL)) {
             Yog_assert(env, FALSE, "duplicated argument name in function definition");
         }
-        YogVal index = YogVal_int(var2index->num_entries);
+        YogVal index = INT2VAL(var2index->num_entries);
         YogTable_add_direct(env, var2index, name, index);
     }
 }
@@ -973,9 +973,9 @@ register_block_params_var2index(YogEnv* env, YogArray* params, YogTable* var2ind
         YogVal param = YogArray_at(env, params, i);
         YogNode* node = VAL2PTR(param);
         ID id = NODE_NAME(node);
-        YogVal name = YogVal_symbol(id);
+        YogVal name = ID2VAL(id);
         if (!YogTable_lookup(env, var2index, name, NULL)) {
-            YogVal index = YogVal_int(var2index->num_entries);
+            YogVal index = INT2VAL(var2index->num_entries);
             YogTable_add_direct(env, var2index, name, index);
         }
     }
@@ -1079,8 +1079,8 @@ static void
 register_self(YogEnv* env, YogTable* var2index) 
 {
     ID name = INTERN("self");
-    YogVal key = YogVal_symbol(name);
-    YogVal val = YogVal_int(0);
+    YogVal key = ID2VAL(name);
+    YogVal val = INT2VAL(0);
     YogTable_add_direct(env, var2index, key, val);
 }
 
@@ -1115,7 +1115,7 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     YogCode* code = compile_func(env, visitor, node);
 
     CompileData* data = arg;
-    YogVal val = YogVal_ptr(code);
+    YogVal val = PTR2VAL(code);
     ADD_PUSH_CONST(val);
 
     ID id = NODE_NAME(node);
@@ -1436,7 +1436,7 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     CompileData* data = arg;
     YogCode* code = compile_block(env, visitor, node, data);
 
-    YogVal val = YogVal_ptr(code);
+    YogVal val = PTR2VAL(code);
     ADD_PUSH_CONST(val);
     switch (data->ctx) {
         case CTX_FUNC:
@@ -1476,7 +1476,7 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     CompileData* data = arg;
 
     ID name = NODE_NAME(node);
-    YogVal val = YogVal_symbol(name);
+    YogVal val = ID2VAL(name);
     ADD_PUSH_CONST(val);
 
     YogNode* super = NODE_SUPER(node);
@@ -1485,13 +1485,13 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     }
     else {
         YogKlass* obj_klass = ENV_VM(env)->obj_klass;
-        val = YogVal_obj(YOGBASICOBJ(obj_klass));
+        val = OBJ2VAL(obj_klass);
         ADD_PUSH_CONST(val);
     }
 
     YogArray* stmts = NODE_STMTS(node);
     YogCode* code = compile_klass(env, visitor, stmts, data);
-    val = YogVal_ptr(code);
+    val = PTR2VAL(code);
     ADD_PUSH_CONST(val);
 
     CompileData_append_make_klass(env, data);

@@ -408,7 +408,7 @@ YogTable_delete(YogEnv* env, YogTable* table, YogVal* key, YogVal* value)
 
     if (ptr == NULL) {
         if (value != NULL) {
-            *value = YogVal_nil();
+            *value = YNIL;
         }
         return FALSE;
     }
@@ -447,7 +447,7 @@ YogTable_delete_safe(YogEnv* env, YogTable* table, YogVal* key, YogVal* value, Y
 
     if (ptr == NULL) {
         if (value != NULL) {
-            *value = YogVal_nil();
+            *value = YNIL;
         }
         return FALSE;
     }

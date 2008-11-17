@@ -28,7 +28,7 @@ fill_args(YogEnv* env, YogArgInfo* arg_info, uint8_t posargc, YogVal posargs[], 
 {
     unsigned int i = 0;
     for (i = 0; i < arg_info->argc + arg_info->blockargc; i++) {
-        args[i] = YogVal_undef();
+        args[i] = YUNDEF;
     }
 
     if (arg_info->argc < posargc) {
@@ -96,7 +96,7 @@ fill_builtin_function_args(YogEnv* env, YogBuiltinFunction* f, uint8_t posargc, 
     for (i = required_argc; i < argc; i++) {
         YogVal val = args[i];
         if (IS_UNDEF(val)) {
-            args[i] = YogVal_nil();
+            args[i] = YNIL;
         }
     }
 }
@@ -112,7 +112,7 @@ call_builtin_function(YogEnv* env, YogBuiltinFunction* f, YogVal self, YogVal ar
 #include "src/call_builtin_function.inc"
 
     /* NOTREACHED */
-    return YogVal_nil();
+    return YNIL;
 }
 
 #define DECL_ARGS \
@@ -124,7 +124,7 @@ call_builtin_function(YogEnv* env, YogBuiltinFunction* f, YogVal self, YogVal ar
     if (0 < arg_info->varargc) { \
         YogArray* vararg = YogArray_new(env); \
         unsigned int index = arg_info->argc + arg_info->blockargc; \
-        args[index] = YogVal_obj((YogBasicObj*)vararg); \
+        args[index] = OBJ2VAL(vararg); \
     }
 
 static YogVal 
@@ -224,16 +224,16 @@ call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint
 static YogVal 
 lookup_builtins(YogEnv* env, ID name) 
 {
-    YogVal builtins_name = YogVal_symbol(INTERN(BUILTINS));
-    YogVal builtins = YogVal_undef();
+    YogVal builtins_name = ID2VAL(INTERN(BUILTINS));
+    YogVal builtins = YUNDEF;
     YogVm* vm = ENV_VM(env);
     if (!YogTable_lookup(env, vm->pkgs, builtins_name, &builtins)) {
         Yog_assert(env, FALSE, "Can't find builtins package.");
     }
 
     YogPkg* pkg = (YogPkg*)VAL2OBJ(builtins);
-    YogVal key = YogVal_symbol(name);
-    YogVal val = YogVal_undef();
+    YogVal key = ID2VAL(name);
+    YogVal val = YUNDEF;
     YogTable_lookup(env, pkg->attrs, key, &val);
 
     return val;
@@ -284,17 +284,17 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
 #define THREAD          (th)
 #define JUMP(m)         PC = m;
 #define POP_ARGS(args, kwargs, blockarg, vararg, varkwarg) \
-    YogVal varkwarg = YogVal_undef(); \
+    YogVal varkwarg = YUNDEF; \
     if (varkwargc == 1) { \
         varkwarg = POP(); \
     } \
 \
-    YogVal vararg = YogVal_undef(); \
+    YogVal vararg = YUNDEF; \
     if (varargc == 1) { \
         vararg = POP(); \
     } \
 \
-    YogVal blockarg = YogVal_undef(); \
+    YogVal blockarg = YUNDEF; \
     if (blockargc == 1) { \
         blockarg = POP(); \
     } \
@@ -341,7 +341,7 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
 #undef PC
 #undef POP_BUF
 
-    return YogVal_undef();
+    return YUNDEF;
 }
 
 static YogVal 
@@ -350,7 +350,7 @@ eval_code(YogEnv* env, YogThread* th, YogCode* code, YogVal receiver, unsigned i
     YogCFrame* frame = YogCFrame_new(env);
     PUSH_FRAME(frame);
 
-    YogVal undef = YogVal_undef();
+    YogVal undef = YUNDEF;
     call_code(env, th, receiver, code, argc, args, undef, 0, NULL, undef, undef);
 
     YogVal retval = mainloop(env, th, SCRIPT_FRAME(CUR_FRAME), code);
@@ -363,14 +363,14 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
 {
     YogBasicObj* obj = VAL2OBJ(block);
 
-    YogVal retval = YogVal_undef();
+    YogVal retval = YUNDEF;
     if (obj->klass == ENV_VM(env)->pkg_block_klass) {
         YogBlock* block = BLOCK(obj);
         YogCode* code = block->code;
         YogArgInfo* arg_info = &code->arg_info;
 
 #define SET_VAR(name) do { \
-    YogVal symbol = YogVal_symbol(name); \
+    YogVal symbol = ID2VAL(name); \
     YogTable_insert(env, vars, symbol, args[i]); \
 } while (0)
         YogPackageBlock* pkg_block = PACKAGE_BLOCK(obj);
@@ -411,8 +411,8 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
     Yog_assert(env, IS_OBJ(attr), "Attribute isn't object.");
     YogBasicObj* obj = VAL2OBJ(attr);
 
-    YogVal retval = YogVal_undef();
-    YogVal undef = YogVal_undef();
+    YogVal retval = YUNDEF;
+    YogVal undef = YUNDEF;
     if (obj->klass == ENV_VM(env)->builtin_bound_method_klass) {
         YogBuiltinBoundMethod* method = (YogBuiltinBoundMethod*)obj;
         retval = call_builtin_bound_method(env, method, argc, args, undef, 0, NULL, undef, undef);
@@ -444,7 +444,7 @@ YogThread_eval_package(YogEnv* env, YogThread* th, YogPkg* pkg, YogCode* code)
 {
     YogPkgFrame* frame = YogPkgFrame_new(env);
     setup_script_frame(env, SCRIPT_FRAME(frame), code);
-    NAME_FRAME(frame)->self = YogVal_obj(YOGBASICOBJ(pkg));
+    NAME_FRAME(frame)->self = OBJ2VAL(pkg);
     NAME_FRAME(frame)->vars = pkg->attrs;
 
     mainloop(env, th, SCRIPT_FRAME(frame), code);
@@ -463,7 +463,7 @@ YogThread_new(YogEnv* env)
     YogThread* th = ALLOC_OBJ(env, gc_children, YogThread);
     th->cur_frame = NULL;
     th->jmp_buf_list = NULL;
-    th->jmp_val = YogVal_undef();
+    th->jmp_val = YUNDEF;
 
     return th;
 }

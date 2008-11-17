@@ -12,7 +12,7 @@ YogKlass_define_method(YogEnv* env, YogKlass* klass, const char* name, void* f, 
     YogBuiltinUnboundMethod* method = YogBuiltinUnboundMethod_new(env);
     method->f = builtin_f;
 
-    YogVal val = YogVal_obj(YOGBASICOBJ(method));
+    YogVal val = OBJ2VAL(method);
     YogObj_set_attr(env, YOGOBJ(klass), name, val);
 }
 
@@ -52,7 +52,7 @@ klass_new(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
 {
     YogKlass* klass = (YogKlass*)VAL2OBJ(self);
     YogBasicObj* obj = (*klass->allocator)(env, klass);
-    YogVal val = YogVal_obj(obj);
+    YogVal val = OBJ2VAL(obj);
     YogThread_call_method(env, ENV_TH(env), val, "initialize", vararg->body->size, vararg->body->items);
 
     return val;

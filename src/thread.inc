@@ -125,7 +125,7 @@
             POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
         
             YogVal val = lookup_builtins(ENV, command);
-            YogVal unbound_self = YogVal_undef();
+            YogVal unbound_self = YUNDEF;
             call_method(ENV, THREAD, unbound_self, val, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
 #line 124 "src/thread.inc"
@@ -142,7 +142,7 @@
             m->self = NAME_FRAME(CUR_FRAME)->self;
             m->code = VAL2PTR(code);
         
-            method = YogVal_obj(YOGBASICOBJ(m));
+            method = OBJ2VAL(m);
 
 #line 139 "src/thread.inc"
             PUSH(method);
@@ -170,7 +170,7 @@
             POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
         
             YogVal callee = POP();
-            YogVal unbound_self = YogVal_undef();
+            YogVal unbound_self = YUNDEF;
             call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
 #line 167 "src/thread.inc"
@@ -261,7 +261,7 @@
             BLOCK(b)->code = c;
             b->self = NAME_FRAME(CUR_FRAME)->self;
             b->vars = NAME_FRAME(CUR_FRAME)->vars;
-            block = YogVal_obj(YOGBASICOBJ(b));
+            block = OBJ2VAL(b);
 
 #line 251 "src/thread.inc"
             PUSH(block);
@@ -285,7 +285,7 @@
         
             YogKlassFrame* frame = YogKlassFrame_new(ENV);
             setup_script_frame(ENV, SCRIPT_FRAME(frame), c);
-            NAME_FRAME(frame)->self = YogVal_obj(YOGBASICOBJ(kls));
+            NAME_FRAME(frame)->self = OBJ2VAL(kls);
             NAME_FRAME(frame)->vars = attrs;
         
             PUSH_FRAME(FRAME(frame));
@@ -302,7 +302,7 @@
 #line 183 "src/insts.def"
             YogUnboundMethod* m = YogUnboundMethod_new(ENV);
             m->code = VAL2PTR(code);
-            method = YogVal_obj(YOGBASICOBJ(m));
+            method = OBJ2VAL(m);
 
 #line 290 "src/thread.inc"
             PUSH(method);

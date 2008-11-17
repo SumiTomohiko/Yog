@@ -10,10 +10,10 @@ YogPkg_define_method(YogEnv* env, YogPkg* pkg, const char* name, void* f, unsign
     va_end(ap);
 
     YogBuiltinBoundMethod* method = YogBuiltinBoundMethod_new(env);
-    method->self = YogVal_obj(YOGBASICOBJ(pkg));
+    method->self = OBJ2VAL(pkg);
     method->f = builtin_f;
 
-    YogVal val = YogVal_obj(YOGBASICOBJ(method));
+    YogVal val = OBJ2VAL(method);
     YogObj_set_attr(env, pkg, name, val);
 }
 

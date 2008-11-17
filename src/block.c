@@ -10,7 +10,7 @@ static void
 YogPackageBlock_init(YogEnv* env, YogPackageBlock* block) 
 {
     YogBlock_init(env, BLOCK(block), ENV_VM(env)->pkg_block_klass);
-    block->self = YogVal_undef();
+    block->self = YUNDEF;
     block->vars = NULL;
 }
 

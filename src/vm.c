@@ -6,8 +6,8 @@
 const char* 
 YogVm_id2name(YogEnv* env, YogVm* vm, ID id) 
 {
-    YogVal sym = YogVal_symbol(id);
-    YogVal val = YogVal_undef();
+    YogVal sym = ID2VAL(id);
+    YogVal val = YUNDEF;
     if (!YogTable_lookup(env, ENV_VM(env)->id2name, sym, &val)) {
         Yog_assert(env, FALSE, "Can't find symbol.");
     }
@@ -19,15 +19,15 @@ YogVm_id2name(YogEnv* env, YogVm* vm, ID id)
 ID
 YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
 {
-    YogVal value = YogVal_nil();
+    YogVal value = YNIL;
     if (YogTable_lookup_str(env, vm->name2id, name, &value)) {
         return VAL2ID(value);
     }
 
     YogCharArray* s = YogCharArray_new_str(env, name);
-    YogVal val = YogVal_ptr(s);
+    YogVal val = PTR2VAL(s);
     ID id = vm->next_id;
-    YogVal symbol = YogVal_symbol(id);
+    YogVal symbol = ID2VAL(id);
     YogTable_add_direct(env, vm->name2id, val, symbol);
     YogTable_add_direct(env, vm->id2name, symbol, val);
 
@@ -91,7 +91,7 @@ setup_builtins(YogEnv* env, YogVm* vm)
 {
     YogObj* builtins = Yog_bltins_new(env);
     ID name = YogVm_intern(env, vm, BUILTINS);
-    YogTable_add_direct(env, vm->pkgs, YogVal_symbol(name), YogVal_ptr(builtins));
+    YogTable_add_direct(env, vm->pkgs, ID2VAL(name), PTR2VAL(builtins));
 }
 
 static void 
@@ -135,9 +135,9 @@ setup_encodings(YogEnv* env, YogVm* vm)
 {
 #define REGISTER_ENCODING(name, onig)   do { \
     ID id = INTERN(name); \
-    YogVal key = YogVal_symbol(id); \
+    YogVal key = ID2VAL(id); \
     YogEncoding* enc = YogEncoding_new(env, onig); \
-    YogVal val = YogVal_ptr(enc); \
+    YogVal val = PTR2VAL(enc); \
     YogTable_add_direct(env, vm->encodings, key, val); \
 } while (0)
     REGISTER_ENCODING("ascii", ONIG_ENCODING_ASCII);

@@ -104,7 +104,7 @@ YogBuiltinBoundMethod*
 YogBuiltinBoundMethod_new(YogEnv* env) 
 {
     YogBuiltinBoundMethod* method = (YogBuiltinBoundMethod*)YogBuiltinBoundMethod_allocate(env, ENV_VM(env)->builtin_bound_method_klass);
-    method->self = YogVal_nil();
+    method->self = YNIL;
     method->f = NULL;
 
     return method;
@@ -114,7 +114,7 @@ YogBoundMethod*
 YogBoundMethod_new(YogEnv* env) 
 {
     YogBoundMethod* method = (YogBoundMethod*)YogBoundMethod_allocate(env, ENV_VM(env)->bound_method_klass);
-    method->self = YogVal_nil();
+    method->self = YNIL;
     method->code = NULL;
 
     return method;

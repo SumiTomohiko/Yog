@@ -49,7 +49,7 @@ inst store_pkg
 (val) 
 ()
 {
-    YogVal key = YogVal_symbol(id);
+    YogVal key = ID2VAL(id);
     YogTable_insert(ENV, PKG_VARS(CUR_FRAME), key, val);
 }
 
@@ -69,7 +69,7 @@ inst call_command
     POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
 
     YogVal val = lookup_builtins(ENV, command);
-    YogVal unbound_self = YogVal_undef();
+    YogVal unbound_self = YUNDEF;
     call_method(ENV, THREAD, unbound_self, val, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 }
 
@@ -82,7 +82,7 @@ inst make_package_method
     m->self = NAME_FRAME(CUR_FRAME)->self;
     m->code = VAL2PTR(code);
 
-    method = YogVal_obj(YOGBASICOBJ(m));
+    method = OBJ2VAL(m);
 }
 
 inst call_function
@@ -93,7 +93,7 @@ inst call_function
     POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
 
     YogVal callee = POP();
-    YogVal unbound_self = YogVal_undef();
+    YogVal unbound_self = YUNDEF;
     call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 }
 
@@ -102,7 +102,7 @@ inst load_pkg
 ()
 (val)
 {
-    YogVal key = YogVal_symbol(id);
+    YogVal key = ID2VAL(id);
     if (!YogTable_lookup(ENV, PKG_VARS(CUR_FRAME), key, &val)) {
         val = lookup_builtins(ENV, id);
         Yog_assert(ENV, !IS_UNDEF(val), "Can't find package var.");
@@ -153,7 +153,7 @@ inst make_package_block
     BLOCK(b)->code = c;
     b->self = NAME_FRAME(CUR_FRAME)->self;
     b->vars = NAME_FRAME(CUR_FRAME)->vars;
-    block = YogVal_obj(YOGBASICOBJ(b));
+    block = OBJ2VAL(b);
 }
 
 inst make_klass
@@ -169,7 +169,7 @@ inst make_klass
 
     YogKlassFrame* frame = YogKlassFrame_new(ENV);
     setup_script_frame(ENV, SCRIPT_FRAME(frame), c);
-    NAME_FRAME(frame)->self = YogVal_obj(YOGBASICOBJ(kls));
+    NAME_FRAME(frame)->self = OBJ2VAL(kls);
     NAME_FRAME(frame)->vars = attrs;
 
     PUSH_FRAME(FRAME(frame));
@@ -182,7 +182,7 @@ inst make_method
 {
     YogUnboundMethod* m = YogUnboundMethod_new(ENV);
     m->code = VAL2PTR(code);
-    method = YogVal_obj(YOGBASICOBJ(m));
+    method = OBJ2VAL(m);
 }
 
 inst push_self_name

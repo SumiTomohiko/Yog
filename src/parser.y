@@ -101,15 +101,15 @@ YogNode_new(YogEnv* env, YogNodeType type)
         YogArray_extend(ENV, array, params_with_default); \
     } \
     if (block_param != NULL) { \
-        YogVal val = YogVal_ptr(block_param); \
+        YogVal val = PTR2VAL(block_param); \
         YogArray_push(ENV, array, val); \
     } \
     if (var_param != NULL) { \
-        YogVal val = YogVal_ptr(var_param); \
+        YogVal val = PTR2VAL(var_param); \
         YogArray_push(ENV, array, val); \
     } \
     if (kw_param != NULL) { \
-        YogVal val = YogVal_ptr(kw_param); \
+        YogVal val = PTR2VAL(kw_param); \
         YogArray_push(ENV, array, val); \
     } \
 } while (0)
@@ -124,7 +124,7 @@ YogNode_new(YogEnv* env, YogNodeType type)
 #define OBJ_ARRAY_NEW(array, elem) do { \
     if (elem != NULL) { \
         array = YogArray_new(ENV); \
-        YogArray_push(ENV, array, YogVal_ptr(elem)); \
+        YogArray_push(ENV, array, PTR2VAL(elem)); \
     } \
     else { \
         array = NULL; \
@@ -136,7 +136,7 @@ YogNode_new(YogEnv* env, YogNodeType type)
         if (array == NULL) { \
             array = YogArray_new(ENV); \
         } \
-        YogArray_push(ENV, array, YogVal_ptr(elem)); \
+        YogArray_push(ENV, array, PTR2VAL(elem)); \
     } \
     result = array; \
 } while (0)
@@ -150,7 +150,7 @@ YogNode_new(YogEnv* env, YogNodeType type)
 #define PARAM_ARRAY_PUSH(array, id, default_) do { \
     YogNode* node = NULL; \
     PARAM_NEW(node, NODE_PARAM, id, default_); \
-    YogVal val = YogVal_ptr(node); \
+    YogVal val = PTR2VAL(node); \
     YogArray_push(ENV, array, val); \
 } while (0)
 
@@ -222,7 +222,7 @@ YogNode_new(YogEnv* env, YogNodeType type)
 
 #define METHOD_CALL_NEW1(node, recv, name, arg) do { \
     YogArray* args = YogArray_new(ENV); \
-    YogArray_push(ENV, args, YogVal_ptr(arg)); \
+    YogArray_push(ENV, args, PTR2VAL(arg)); \
     METHOD_CALL_NEW(node, recv, name, args, NULL); \
 } while (0)
 

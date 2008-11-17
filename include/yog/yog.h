@@ -620,6 +620,16 @@ YogVm* YogVm_new(size_t);
 #define INTERN(s)   YogVm_intern(env, ENV_VM(env), s)
 #define BUILTINS    "builtins"
 
+#define YTRUE           YogVal_true()
+#define YFALSE          YogVal_false()
+#define YNIL            YogVal_nil()
+#define YUNDEF          YogVal_undef()
+#define INT2VAL(n)      YogVal_int(n)
+#define FLOAT2VAL(f)    YogVal_float(f)
+#define OBJ2VAL(obj)    YogVal_obj((YogBasicObj*)obj)
+#define PTR2VAL(ptr)    YogVal_ptr(ptr)
+#define ID2VAL(id)      YogVal_symbol(id)
+
 #endif
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

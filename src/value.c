@@ -272,7 +272,7 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
     Yog_assert(env, FALSE, "Can't get attribute.");
 
     /* NOTREACHED */
-    return YogVal_nil();
+    return YNIL;
 }
 
 /**

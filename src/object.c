@@ -4,16 +4,16 @@ YogVal
 YogObj_get_attr(YogEnv* env, YogObj* obj, ID name) 
 {
     if (obj->attrs == NULL) {
-        return YogVal_undef();
+        return YUNDEF;
     }
 
-    YogVal key = YogVal_symbol(name);
-    YogVal attr = YogVal_nil();
+    YogVal key = ID2VAL(name);
+    YogVal attr = YNIL;
     if (YogTable_lookup(env, obj->attrs, key, &attr)) {
         return attr;
     }
     else {
-        return YogVal_undef();
+        return YUNDEF;
     }
 }
 
@@ -21,7 +21,7 @@ void
 YogObj_set_attr(YogEnv* env, YogObj* obj, const char* name, YogVal val) 
 {
     ID id = YogVm_intern(env, ENV_VM(env), name);
-    YogVal key = YogVal_symbol(id);
+    YogVal key = ID2VAL(id);
 
     if (obj->attrs == NULL) {
         obj->attrs = YogTable_new_symbol_table(env);
@@ -69,7 +69,7 @@ YogObj_new(YogEnv* env, YogKlass* klass)
 static YogVal 
 obj_init(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg) 
 {
-    return YogVal_nil();
+    return YNIL;
 }
 
 void 

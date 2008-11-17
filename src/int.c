@@ -15,7 +15,7 @@ int_to_s(YogEnv* env, YogVal self, YogVal n)
     CHECK_TYPE(self);
 
     YogString* s = YogString_new_format(env, "%d", VAL2INT(self));
-    YogVal val = YogVal_obj(YOGBASICOBJ(s));
+    YogVal val = OBJ2VAL(s);
 
     return val;
 }
@@ -27,7 +27,7 @@ int_add(YogEnv* env, YogVal self, YogVal n)
 
     int result = VAL2INT(self) + VAL2INT(n);
 
-    return YogVal_int(result);
+    return INT2VAL(result);
 }
 
 static YogVal 
@@ -36,10 +36,10 @@ int_less(YogEnv* env, YogVal self, YogVal n)
     CHECK_ARGS(self, n);
 
     if (VAL2INT(self) < VAL2INT(n)) {
-        return YogVal_true();
+        return YTRUE;
     }
     else {
-        return YogVal_false();
+        return YFALSE;
     }
 }
 
@@ -51,11 +51,11 @@ int_times(YogEnv* env, YogVal self, YogVal block)
     unsigned int argc = 1;
     for (i = 0; i < n; i++) {
         YogVal args[1];
-        args[0] = YogVal_int(i);
+        args[0] = INT2VAL(i);
         YogThread_call_block(env, ENV_TH(env), block, argc, args);
     }
 
-    return YogVal_nil();
+    return YNIL;
 }
 
 YogKlass* 

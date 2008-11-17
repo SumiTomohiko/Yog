@@ -6,7 +6,7 @@ static YogVal
 bltins_raise(YogEnv* env, YogVal self, YogVal exc)
 {
     YogThread* th = env->th;
-    YogVal jmp_val = YogVal_undef();
+    YogVal jmp_val = YUNDEF;
     if (IS_UNDEF(exc)) {
         jmp_val = th->jmp_val;
     }
@@ -19,7 +19,7 @@ bltins_raise(YogEnv* env, YogVal self, YogVal exc)
     longjmp(th->jmp_buf_list->buf, JMP_RAISE);
 
     /* NOTREACHED */
-    return YogVal_nil();
+    return YNIL;
 }
 
 static YogVal 
@@ -46,7 +46,7 @@ bltins_puts(YogEnv* env, YogVal self, YogArray* vararg)
         printf("\n");
     }
 
-    return YogVal_nil();
+    return YNIL;
 }
 
 YogPkg* 

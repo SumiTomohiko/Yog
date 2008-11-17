@@ -161,7 +161,7 @@ next_token(YogEnv* env, YogLexer* lexer)
 
 #define RETURN_INT  do { \
     int n = atoi(lexer->buffer->body->items); \
-    YogVal val = YogVal_int(n); \
+    YogVal val = INT2VAL(n); \
     RETURN_VAL(val, NUMBER); \
 } while (0)
                 if (c == '.') {
@@ -176,7 +176,7 @@ next_token(YogEnv* env, YogLexer* lexer)
 
                         float f = 0;
                         sscanf(lexer->buffer->body->items, "%f", &f);
-                        YogVal val = YogVal_float(f);
+                        YogVal val = FLOAT2VAL(f);
                         RETURN_VAL(val, NUMBER);
                     }
                     else {
@@ -327,8 +327,8 @@ read_encoding(YogEnv* env, YogLexer* lexer)
         }
 
         ID id = YogString_intern(env, coding);
-        YogVal key = YogVal_symbol(id);
-        YogVal val = YogVal_undef();
+        YogVal key = ID2VAL(id);
+        YogVal val = YUNDEF;
         if (!YogTable_lookup(env, ENV_VM(env)->encodings, key, &val)) {
             continue;
         }
