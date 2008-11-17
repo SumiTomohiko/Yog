@@ -119,7 +119,7 @@ typedef struct CompileData CompileData;
 
 #define RAISE   INTERN("raise")
 #define RERAISE() \
-    CompileData_append_call_command(env, data, RAISE, 0, 0, 0, 0, 0)
+    CompileData_add_call_command(env, data, RAISE, 0, 0, 0, 0, 0)
 
 #define PUSH_TRY()  do { \
     TryListEntry try_list_entry; \
@@ -139,7 +139,7 @@ typedef struct CompileData CompileData;
 
 #define ADD_PUSH_CONST(val) do { \
     unsigned int index = register_const(env, data, val); \
-    CompileData_append_push_const(env, data, index); \
+    CompileData_add_push_const(env, data, index); \
 } while (0)
 
 static void 
@@ -325,7 +325,7 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg
             case NODE_LITERAL:
             case NODE_METHOD_CALL:
             case NODE_VARIABLE:
-                CompileData_append_pop(env, data);
+                CompileData_add_pop(env, data);
                 break;
             default:
                 break;
@@ -535,12 +535,12 @@ append_store(YogEnv* env, CompileData* data, ID id)
         case CTX_FUNC:
             {
                 uint8_t index = lookup_var_index(env, data->var2index, id);
-                CompileData_append_store_local(env, data, index);
+                CompileData_add_store_local(env, data, index);
                 break;
             }
         case CTX_KLASS:
         case CTX_PKG:
-            CompileData_append_store_pkg(env, data, id);
+            CompileData_add_store_pkg(env, data, id);
             break;
         default:
             Yog_assert(env, FALSE, "Unkown context.");
@@ -554,7 +554,7 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     visit_node(env, visitor, NODE_RIGHT(node), arg);
 
     CompileData* data = arg;
-    CompileData_append_dup(env, data);
+    CompileData_add_dup(env, data);
 
     ID name = NODE_LEFT(node);
     append_store(env, data, name);
@@ -580,7 +580,7 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
 
     CompileData* data = arg;
     SET_LINENO();
-    CompileData_append_call_method(env, data, NODE_METHOD(node), argc, 0, blockargc, 0, 0);
+    CompileData_add_call_method(env, data, NODE_METHOD(node), argc, 0, blockargc, 0, 0);
 }
 
 static int
@@ -632,7 +632,7 @@ compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void
 
     CompileData* data = arg;
     SET_LINENO();
-    CompileData_append_call_command(env, data, NODE_COMMAND(node), argc, 0, blockargc, 0, 0);
+    CompileData_add_call_command(env, data, NODE_COMMAND(node), argc, 0, blockargc, 0, 0);
 }
 
 #if 0
@@ -1131,16 +1131,16 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
             {
                 switch (data->ctx) {
                     case CTX_KLASS:
-                        CompileData_append_make_method(env, data);
+                        CompileData_add_make_method(env, data);
                         break;
                     case CTX_PKG:
-                        CompileData_append_make_package_method(env, data);
+                        CompileData_add_make_package_method(env, data);
                         break;
                     default:
                         Yog_assert(env, FALSE, "Invalid context type.");
                         break;
                 }
-                CompileData_append_store_pkg(env, data, id);
+                CompileData_add_store_pkg(env, data, id);
                 break;
             }
         default:
@@ -1169,7 +1169,7 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* a
 
     CompileData* data = arg;
     SET_LINENO();
-    CompileData_append_call_function(env, data, argc, 0, blockargc, 0, 0);
+    CompileData_add_call_function(env, data, argc, 0, blockargc, 0, 0);
 }
 
 static void 
@@ -1182,12 +1182,12 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     case CTX_FUNC:
         {
             uint8_t index = lookup_var_index(env, data->var2index, id);
-            CompileData_append_load_local(env, data, index);
+            CompileData_add_load_local(env, data, index);
             break;
         }
     case CTX_KLASS:
     case CTX_PKG:
-        CompileData_append_load_pkg(env, data, id);
+        CompileData_add_load_pkg(env, data, id);
         break;
     default:
         Yog_assert(env, FALSE, "Unknown context.");
@@ -1224,7 +1224,7 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
     append_inst(data, label_head_end);
 
     visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
-    CompileData_append_jump(env, data, label_finally_end);
+    CompileData_add_jump(env, data, label_finally_end);
 
     append_inst(data, label_finally_error_start);
     visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
@@ -1262,7 +1262,7 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     append_inst(data, label_head_start);
     visitor->visit_stmts(env, visitor, NODE_HEAD(node), arg);
     append_inst(data, label_head_end);
-    CompileData_append_jump(env, data, label_else_start);
+    CompileData_add_jump(env, data, label_else_start);
 
     append_inst(data, label_excepts_start);
     YogArray* excepts = NODE_EXCEPTS(node);
@@ -1277,10 +1277,10 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         YogNode* node_type = NODE_EXC_TYPE(node);
         if (node_type != NULL) {
             visit_node(env, visitor, node_type, arg);
-#define LOAD_EXC()  CompileData_append_load_special(env, data, INTERN("$!"))
+#define LOAD_EXC()  CompileData_add_load_special(env, data, INTERN("$!"))
             LOAD_EXC();
-            CompileData_append_call_method(env, data, INTERN("==="), 1, 0, 0, 0, 0);
-            CompileData_append_jump_if_false(env, data, label_body_end);
+            CompileData_add_call_method(env, data, INTERN("==="), 1, 0, 0, 0, 0);
+            CompileData_add_jump_if_false(env, data, label_body_end);
 
             ID id = NODE_EXC_VAR(node);
             if (id != NO_EXC_VAR) {
@@ -1291,7 +1291,7 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         }
 
         visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
-        CompileData_append_jump(env, data, label_else_end);
+        CompileData_add_jump(env, data, label_else_end);
 
         append_inst(data, label_body_end);
     }
@@ -1321,9 +1321,9 @@ compile_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 
     append_inst(data, while_start);
     visit_node(env, visitor, NODE_TEST(node), arg);
-    CompileData_append_jump_if_false(env, data, while_end);
+    CompileData_add_jump_if_false(env, data, while_end);
     visitor->visit_stmts(env, visitor, NODE_STMTS(node), arg);
-    CompileData_append_jump(env, data, while_start);
+    CompileData_add_jump(env, data, while_start);
     append_inst(data, while_end);
 
     data->label_while_end = label_while_end_prev;
@@ -1339,9 +1339,9 @@ compile_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     YogInst* label_stmt_end = label_new(env);
 
     visit_node(env, visitor, NODE_IF_TEST(node), arg);
-    CompileData_append_jump_if_false(env, data, label_tail_start);
+    CompileData_add_jump_if_false(env, data, label_tail_start);
     visitor->visit_stmts(env, visitor, NODE_IF_STMTS(node), arg);
-    CompileData_append_jump(env, data, label_stmt_end);
+    CompileData_add_jump(env, data, label_stmt_end);
     append_inst(data, label_tail_start);
     visitor->visit_stmts(env, visitor, NODE_IF_TAIL(node), arg);
     append_inst(data, label_stmt_end);
@@ -1394,7 +1394,7 @@ compile_while_jump(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg, Y
             finally_list_entry = finally_list_entry->prev;
         }
         SET_LINENO();
-        CompileData_append_jump(env, data, jump_to);
+        CompileData_add_jump(env, data, jump_to);
     }
     else {
         /* TODO */
@@ -1444,7 +1444,7 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
             Yog_assert(env, FALSE, "NOT IMPLEMENTED");
             break;
         case CTX_PKG:
-            CompileData_append_make_package_block(env, data);
+            CompileData_add_make_package_block(env, data);
             break;
         default:
             Yog_assert(env, FALSE, "Unknown context.");
@@ -1494,7 +1494,7 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     val = PTR2VAL(code);
     ADD_PUSH_CONST(val);
 
-    CompileData_append_make_klass(env, data);
+    CompileData_add_make_klass(env, data);
 
     append_store(env, data, name);
 }
