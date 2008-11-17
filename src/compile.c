@@ -893,6 +893,17 @@ ExceptionTableEntry_new(YogEnv* env)
     return entry;
 }
 
+static void 
+CompileData_add_inst(CompileData* data, YogInst* inst) 
+{
+    data->last_inst->next = inst;
+
+    while (inst->next != NULL) {
+        inst = inst->next;
+    }
+    data->last_inst = inst;
+}
+
 static YogCode* 
 compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
 {
@@ -913,12 +924,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
 
     visitor->visit_stmts(env, visitor, stmts, &data);
     if (tail != NULL) {
-        data.last_inst->next = tail;
-        YogInst* inst = tail;
-        while (inst->next != NULL) {
-            inst = inst->next;
-        }
-        data.last_inst = inst;
+        CompileData_add_inst(&data, tail);
     }
     YogBinary* bin = insts2bin(env, anchor);
 
