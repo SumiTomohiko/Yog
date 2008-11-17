@@ -80,7 +80,7 @@
             Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");
             YogVal val = POP();
 #line 52 "src/insts.def"
-            YogVal key = YogVal_symbol(id);
+            YogVal key = ID2VAL(id);
             YogTable_insert(ENV, PKG_VARS(CUR_FRAME), key, val);
 
 #line 81 "src/thread.inc"
@@ -184,7 +184,7 @@
             PC += sizeof(ID);
             YogVal val = YogVal_nil();
 #line 105 "src/insts.def"
-            YogVal key = YogVal_symbol(id);
+            YogVal key = ID2VAL(id);
             if (!YogTable_lookup(ENV, PKG_VARS(CUR_FRAME), key, &val)) {
                 val = lookup_builtins(ENV, id);
                 Yog_assert(ENV, !IS_UNDEF(val), "Can't find package var.");
