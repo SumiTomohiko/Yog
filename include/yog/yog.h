@@ -599,6 +599,8 @@ YogCode* YogCode_new(YogEnv*);
 YogCode* Yog_compile_module(YogEnv*, YogArray*);
 
 /* src/encoding.c */
+YogEncoding* YogEncoding_get_default(YogEnv*);
+int YogEncoding_mbc_size(YogEnv*, YogEncoding*, const char*);
 YogEncoding* YogEncoding_new(YogEnv*, OnigEncoding);
 YogString* YogEncoding_normalize_name(YogEnv*, YogString*);
 

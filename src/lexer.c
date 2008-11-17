@@ -75,7 +75,12 @@ skip_whitespace(YogLexer* lexer)
 static BOOL 
 is_name_char(char c) 
 {
-    return isalnum(c) || (c == '_');
+    if (isascii(c)) {
+        return isalnum(c) || (c == '_');
+    }
+    else {
+        return TRUE;
+    }
 }
 
 static void 
@@ -92,23 +97,46 @@ add_token_char(YogEnv* env, YogLexer* lexer, char c)
 
 #include "src/keywords.inc"
 
+static YogEncoding* 
+get_encoding(YogEnv* env, YogLexer* lexer) 
+{
+    if (lexer->encoding == NULL) {
+        lexer->encoding = YogEncoding_get_default(env);
+    }
+    return lexer->encoding;
+}
+
 static int 
 next_token(YogEnv* env, YogLexer* lexer) 
 {
     clear_buffer(env, lexer);
 
-    if (YogString_size(env, lexer->line) - 1 == lexer->next_index) {
-        if (!readline(env, lexer, lexer->fp)) {
-            return -1;
-        }
-        lexer->next_index = 0;
-    }
-
-    skip_whitespace(lexer);
-
 #define NEXTC()                 nextc(lexer)
-#define ADD_TOKEN_CHAR(c)       add_token_char(env, lexer, c)
 #define PUSHBACK(c)             pushback(lexer, c)
+    char c = 0;
+    do {
+        if (lexer->next_index < YogString_size(env, lexer->line) - 1) {
+            c = NEXTC();
+            if (is_whitespace(c)) {
+                skip_whitespace(lexer);
+                continue;
+            }
+            else if (c == '#') {
+                do {
+                    c = NEXTC();
+                } while ((c != '\r') && (c != '\n'));
+            }
+            break;
+        }
+        else {
+            if (!readline(env, lexer, lexer->fp)) {
+                return -1;
+            }
+            lexer->next_index = 0;
+        }
+    } while (1);
+
+#define ADD_TOKEN_CHAR(c)       add_token_char(env, lexer, c)
 #define RETURN_VAL(val, type)   do { \
     yylval.val = val; \
     return type; \
@@ -121,7 +149,6 @@ next_token(YogEnv* env, YogLexer* lexer)
     yylval.name = name; \
     return type; \
 } while (0)
-    char c = NEXTC();
     switch (c) {
         case '0': case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9':
@@ -207,14 +234,27 @@ next_token(YogEnv* env, YogLexer* lexer)
                 return NEWLINE;
                 break;
             }
-        case '\0':
-            return 0;
-            break;
         default:
             {
                 do {
-                    ADD_TOKEN_CHAR(c);
-                    c = NEXTC();
+                    if (isascii(c)) {
+                        ADD_TOKEN_CHAR(c);
+                        c = NEXTC();
+                    }
+                    else {
+                        YogEncoding* enc = get_encoding(env, lexer);
+                        const char* ptr = &lexer->line->body->items[lexer->next_index - 1];
+                        int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
+                        int rest_size = (YogString_size(env, lexer->line) - 1) - lexer->next_index;
+                        if (rest_size < mbc_size) {
+                            Yog_assert(env, FALSE, "Invalid multibyte character.");
+                        }
+                        int i = 0;
+                        for (i = 0; i < mbc_size; i++) {
+                            ADD_TOKEN_CHAR(c);
+                            c = NEXTC();
+                        }
+                    }
                 } while (is_name_char(c));
                 PUSHBACK(c);
 
@@ -233,8 +273,8 @@ next_token(YogEnv* env, YogLexer* lexer)
 #undef RETURN_NAME1
 #undef BUFSIZE
 #undef RETURN_VAL
-#undef PUSHBACK
 #undef ADD_TOKEN_CHAR
+#undef PUSHBACK
 #undef NEXTC
 
     return 0;
@@ -243,7 +283,7 @@ next_token(YogEnv* env, YogLexer* lexer)
 static BOOL 
 is_coding_char(char c) 
 {
-    return is_name_char(c) || (c == '-');
+    return isalnum(c) || (c == '_') || (c == '-');
 }
 
 static YogEncoding* 
@@ -252,6 +292,8 @@ read_encoding(YogEnv* env, YogLexer* lexer)
     YogEncoding* encoding = NULL;
 
     while (readline(env, lexer, lexer->fp)) {
+        lexer->next_index = 0;
+
         skip_whitespace(lexer);
         int c = nextc(lexer);
         if (c != '#') {
@@ -260,13 +302,16 @@ read_encoding(YogEnv* env, YogLexer* lexer)
 
         const char* s = &lexer->line->body->items[lexer->next_index];
 #define KEY     "coding"
-        const char* ptr = strstr(KEY, s);
+        const char* ptr = strstr(s, KEY);
+        if (ptr == NULL) {
+            continue;
+        }
         ptr += strlen(KEY);
 #undef KEY
         if ((*ptr != '=') && (*ptr != ':')) {
             continue;
         }
-        lexer->next_index += ptr - s;
+        lexer->next_index += ptr - s + 1;
         skip_whitespace(lexer);
 
         clear_buffer(env, lexer);
