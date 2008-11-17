@@ -52,7 +52,7 @@ gc_valarray_children(YogEnv* env, void* ptr, DoGc do_gc)
     for (i = 0; i < size; i++) {
         YogVal val = array->items[i];
         if (IS_PTR(val)) {
-            YOGVAL_PTR(array->items[i]) = do_gc(env, YOGVAL_PTR(val));
+            VAL2PTR(array->items[i]) = do_gc(env, VAL2PTR(val));
         }
     }
 }

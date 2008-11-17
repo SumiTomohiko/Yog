@@ -80,7 +80,7 @@ inst make_package_method
 {
     YogBoundMethod* m = YogBoundMethod_new(ENV);
     m->self = NAME_FRAME(CUR_FRAME)->self;
-    m->code = YOGVAL_PTR(code);
+    m->code = VAL2PTR(code);
 
     method = YogVal_obj(YOGBASICOBJ(m));
 }
@@ -130,8 +130,8 @@ inst jump_if_false
 (val)
 ()
 {
-    YogValType type = YOGVAL_TYPE(val);
-    if ((type == VAL_NIL) || ((type == VAL_BOOL) && !YOGVAL_BOOL(val))) {
+    YogValType type = VAL_TYPE(val);
+    if ((type == VAL_NIL) || ((type == VAL_BOOL) && !VAL2BOOL(val))) {
         JUMP(dest);
     }
 }
@@ -149,7 +149,7 @@ inst make_package_block
 (block)
 {
     YogPackageBlock* b = YogPackageBlock_new(env);
-    YogCode* c = YOGVAL_PTR(code);
+    YogCode* c = VAL2PTR(code);
     BLOCK(b)->code = c;
     b->self = NAME_FRAME(CUR_FRAME)->self;
     b->vars = NAME_FRAME(CUR_FRAME)->vars;
@@ -161,11 +161,11 @@ inst make_klass
 (code, super, name)
 (...)
 {
-    YogKlass* super_klass = (YogKlass*)YOGVAL_OBJ(super);
+    YogKlass* super_klass = (YogKlass*)VAL2OBJ(super);
     YogKlass* kls = YogKlass_new(ENV, YogObj_allocate, NULL, super_klass);
-    kls->name = YOGVAL_SYMBOL(name);
+    kls->name = VAL2ID(name);
     YogTable* attrs = YOGOBJ(kls)->attrs = YogTable_new_symbol_table(ENV);
-    YogCode* c = YOGVAL_PTR(code);
+    YogCode* c = VAL2PTR(code);
 
     YogKlassFrame* frame = YogKlassFrame_new(ENV);
     setup_script_frame(ENV, SCRIPT_FRAME(frame), c);
@@ -181,7 +181,7 @@ inst make_method
 (method)
 {
     YogUnboundMethod* m = YogUnboundMethod_new(ENV);
-    m->code = YOGVAL_PTR(code);
+    m->code = VAL2PTR(code);
     method = YogVal_obj(YOGBASICOBJ(m));
 }
 

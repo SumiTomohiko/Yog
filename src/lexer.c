@@ -332,7 +332,7 @@ read_encoding(YogEnv* env, YogLexer* lexer)
         if (!YogTable_lookup(env, ENV_VM(env)->encodings, key, &val)) {
             continue;
         }
-        encoding = YOGVAL_PTR(val);
+        encoding = VAL2PTR(val);
         break;
     }
 

@@ -101,22 +101,22 @@ struct YogVal {
     } u;
 };
 
-#define YOGVAL_TYPE(v)      ((v).type)
-#define YOGVAL_INT(v)       ((v).u.n)
-#define YOGVAL_FLOAT(v)     ((v).u.f)
-#define YOGVAL_SYMBOL(v)    ((v).u.symbol)
-#define YOGVAL_PTR(v)       ((v).u.ptr)
-#define YOGVAL_BOOL(v)      ((v).u.b)
-#define YOGVAL_OBJ(v)       ((v).u.obj)
+#define VAL_TYPE(v)     ((v).type)
+#define VAL2INT(v)      ((v).u.n)
+#define VAL2FLOAT(v)    ((v).u.f)
+#define VAL2ID(v)       ((v).u.symbol)
+#define VAL2PTR(v)      ((v).u.ptr)
+#define VAL2BOOL(v)     ((v).u.b)
+#define VAL2OBJ(v)      ((v).u.obj)
 
-#define IS_UNDEF(v)     (YOGVAL_TYPE(v) == VAL_UNDEF)
-#define IS_PTR(v)       (YOGVAL_TYPE(v) == VAL_PTR)
-#define IS_OBJ(v)       (YOGVAL_TYPE(v) == VAL_OBJ)
-#define IS_INT(v)       (YOGVAL_TYPE(v) == VAL_INT)
-#define IS_FLOAT(v)     (YOGVAL_TYPE(v) == VAL_FLOAT)
-#define IS_BOOL(v)      (YOGVAL_TYPE(v) == VAL_BOOL)
-#define IS_NIL(v)       (YOGVAL_TYPE(v) == VAL_NIL)
-#define IS_SYMBOL(v)    (YOGVAL_TYPE(v) == VAL_SYMBOL)
+#define IS_UNDEF(v)     (VAL_TYPE(v) == VAL_UNDEF)
+#define IS_PTR(v)       (VAL_TYPE(v) == VAL_PTR)
+#define IS_OBJ(v)       (VAL_TYPE(v) == VAL_OBJ)
+#define IS_INT(v)       (VAL_TYPE(v) == VAL_INT)
+#define IS_FLOAT(v)     (VAL_TYPE(v) == VAL_FLOAT)
+#define IS_BOOL(v)      (VAL_TYPE(v) == VAL_BOOL)
+#define IS_NIL(v)       (VAL_TYPE(v) == VAL_NIL)
+#define IS_SYMBOL(v)    (VAL_TYPE(v) == VAL_SYMBOL)
 
 typedef struct YogVal YogVal;
 

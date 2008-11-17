@@ -4,24 +4,24 @@
 void 
 YogVal_print(YogEnv* env, YogVal val) 
 {
-    switch (YOGVAL_TYPE(val)) {
+    switch (VAL_TYPE(val)) {
     case VAL_UNDEF:
         printf("<undef>\n");
         break;
     case VAL_INT:
-        printf("<int: %d>\n", YOGVAL_INT(val));
+        printf("<int: %d>\n", VAL2INT(val));
         break;
     case VAL_FLOAT:
-        printf("<float: %f>\n", YOGVAL_FLOAT(val));
+        printf("<float: %f>\n", VAL2FLOAT(val));
         break;
     case VAL_PTR:
-        printf("<ptr: %p>\n", YOGVAL_PTR(val));
+        printf("<ptr: %p>\n", VAL2PTR(val));
         break;
     case VAL_OBJ:
-        printf("<object: %p>\n", YOGVAL_OBJ(val));
+        printf("<object: %p>\n", VAL2OBJ(val));
         break;
     case VAL_BOOL:
-        if (YOGVAL_BOOL(val)) {
+        if (VAL2BOOL(val)) {
             printf("<bool: true>\n");
         }
         else {
@@ -32,7 +32,7 @@ YogVal_print(YogEnv* env, YogVal val)
         printf("<nil>\n");
         break;
     case VAL_SYMBOL:
-        printf("<symbol: %d>\n", YOGVAL_SYMBOL(val));
+        printf("<symbol: %d>\n", VAL2ID(val));
         break;
     default:
         Yog_assert(env, FALSE, "Uknown value type.");
@@ -44,21 +44,21 @@ YogVal_print(YogEnv* env, YogVal val)
 int 
 YogVal_hash(YogEnv* env, YogVal val) 
 {
-    switch (YOGVAL_TYPE(val)) {
+    switch (VAL_TYPE(val)) {
     case VAL_INT:
-        return YOGVAL_INT(val);
+        return VAL2INT(val);
         break;
     case VAL_FLOAT:
-        return YOGVAL_INT(val);
+        return VAL2FLOAT(val);
         break;
     case VAL_OBJ:
-        return (int)YOGVAL_OBJ(val);
+        return (int)VAL2OBJ(val);
         break;
     case VAL_PTR:
-        return (int)YOGVAL_PTR(val);
+        return (int)VAL2PTR(val);
         break;
     case VAL_BOOL:
-        if (YOGVAL_BOOL(val)) {
+        if (VAL2BOOL(val)) {
             return 1;
         }
         else {
@@ -69,7 +69,7 @@ YogVal_hash(YogEnv* env, YogVal val)
         return 2;
         break;
     case VAL_SYMBOL:
-        return YOGVAL_SYMBOL(val);
+        return VAL2ID(val);
         break;
     default:
         Yog_assert(env, FALSE, "Uknown value type.");
@@ -83,29 +83,29 @@ YogVal_hash(YogEnv* env, YogVal val)
 BOOL
 YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b) 
 {
-    if (YOGVAL_TYPE(a) != YOGVAL_TYPE(b)) {
+    if (VAL_TYPE(a) != VAL_TYPE(b)) {
         return FALSE;
     }
 
 #define RETURN(f, a, b) do {            \
     return f(a) == f(b) ? TRUE : FALSE; \
 } while (0)
-    switch (YOGVAL_TYPE(a)) {
+    switch (VAL_TYPE(a)) {
     case VAL_INT:
-        RETURN(YOGVAL_INT, a, b);
+        RETURN(VAL2INT, a, b);
         break;
     case VAL_FLOAT:
-        RETURN(YOGVAL_FLOAT, a, b);
+        RETURN(VAL2FLOAT, a, b);
         break;
     case VAL_SYMBOL:
-        RETURN(YOGVAL_SYMBOL, a, b);
+        RETURN(VAL2ID, a, b);
         break;
     case VAL_PTR:
-        RETURN(YOGVAL_PTR, a, b);
+        RETURN(VAL2PTR, a, b);
         break;
     case VAL_BOOL:
-        if (YOGVAL_BOOL(a)) {
-            if (YOGVAL_BOOL(b)) {
+        if (VAL2BOOL(a)) {
+            if (VAL2BOOL(b)) {
                 return TRUE;
             }
             else {
@@ -113,7 +113,7 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
             }
         }
         else {
-            if (YOGVAL_BOOL(b)) {
+            if (VAL2BOOL(b)) {
                 return FALSE;
             }
             else {
@@ -136,7 +136,7 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
 #define RETURN_BOOL(b)  do { \
     YogVal val; \
     val.type = VAL_BOOL; \
-    YOGVAL_BOOL(val) = b; \
+    VAL2BOOL(val) = b; \
     return val; \
 } while (0)
 
@@ -156,7 +156,7 @@ YogVal_false()
 
 #define RETURN_VAL(type)    do { \
     YogVal val; \
-    YOGVAL_TYPE(val) = type; \
+    VAL_TYPE(val) = type; \
     return val; \
 } while (0)
 
@@ -176,7 +176,7 @@ YogVal_undef()
 
 #define RETURN_VAL(type, f, v)  do { \
     YogVal val; \
-    YOGVAL_TYPE(val) = type; \
+    VAL_TYPE(val) = type; \
     f(val) = v; \
     return val; \
 } while (0)
@@ -184,43 +184,43 @@ YogVal_undef()
 YogVal 
 YogVal_obj(YogBasicObj* obj) 
 {
-    RETURN_VAL(VAL_OBJ, YOGVAL_OBJ, obj);
+    RETURN_VAL(VAL_OBJ, VAL2OBJ, obj);
 }
 
 YogVal
 YogVal_ptr(void * ptr)
 {
-    RETURN_VAL(VAL_PTR, YOGVAL_PTR, ptr);
+    RETURN_VAL(VAL_PTR, VAL2PTR, ptr);
 }
 
 YogVal
 YogVal_int(int n)
 {
-    RETURN_VAL(VAL_INT, YOGVAL_INT, n);
+    RETURN_VAL(VAL_INT, VAL2INT, n);
 }
 
 YogVal 
 YogVal_float(float f) 
 {
-    RETURN_VAL(VAL_FLOAT, YOGVAL_FLOAT, f);
+    RETURN_VAL(VAL_FLOAT, VAL2FLOAT, f);
 }
 
 YogVal
 YogVal_symbol(ID id) 
 {
-    RETURN_VAL(VAL_SYMBOL, YOGVAL_SYMBOL, id);
+    RETURN_VAL(VAL_SYMBOL, VAL2ID, id);
 }
 
 YogKlass* 
 YogVal_get_klass(YogEnv* env, YogVal val) 
 {
-    switch (YOGVAL_TYPE(val)) {
+    switch (VAL_TYPE(val)) {
     case VAL_INT:
         return ENV_VM(env)->int_klass;
         break;
     case VAL_OBJ:
         {
-            YogBasicObj* obj = YOGVAL_OBJ(val);
+            YogBasicObj* obj = VAL2OBJ(val);
             return obj->klass;
             break;
         }
@@ -252,7 +252,7 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
     } \
 } while (0)
     if (IS_OBJ(val)) {
-        YogBasicObj* obj = YOGVAL_OBJ(val);
+        YogBasicObj* obj = VAL2OBJ(val);
         if (obj->flags & HAS_ATTRS) {
             RET_ATTR(obj);
         }

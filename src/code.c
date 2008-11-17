@@ -10,19 +10,19 @@ print_val(YogEnv* env, YogVal val)
         printf("undef");
     }
     else if (IS_PTR(val)) {
-        printf("%p", YOGVAL_PTR(val));
+        printf("%p", VAL2PTR(val));
     }
     else if (IS_OBJ(val)) {
-        printf("%p", YOGVAL_OBJ(val));
+        printf("%p", VAL2OBJ(val));
     }
     else if (IS_INT(val)) {
-        printf("%d", YOGVAL_INT(val));
+        printf("%d", VAL2INT(val));
     }
     else if (IS_FLOAT(val)) {
-        printf("%f", YOGVAL_FLOAT(val));
+        printf("%f", VAL2FLOAT(val));
     }
     else if (IS_BOOL(val)) {
-        if (YOGVAL_BOOL(val)) {
+        if (VAL2BOOL(val)) {
             printf("true");
         }
         else {
@@ -33,7 +33,7 @@ print_val(YogEnv* env, YogVal val)
         printf("nil");
     }
     else if (IS_SYMBOL(val)) {
-        printf(" :%s", YogVm_id2name(env, ENV_VM(env), YOGVAL_SYMBOL(val)));
+        printf(" :%s", YogVm_id2name(env, ENV_VM(env), VAL2ID(val)));
     }
     else {
         Yog_assert(env, FALSE, "Unknown value type.");

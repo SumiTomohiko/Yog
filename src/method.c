@@ -3,7 +3,7 @@
 #define GC_SELF(method) do { \
     YogVal self = method->self; \
     if (IS_OBJ(self)) { \
-        DO_GC(env, do_gc, YOGVAL_OBJ(self)); \
+        DO_GC(env, do_gc, VAL2OBJ(self)); \
     } \
 } while (0)
 

@@ -556,13 +556,13 @@ numhash(n)
 static int 
 compare_symbol(YogEnv* env, YogVal a, YogVal b) 
 {
-    return YOGVAL_SYMBOL(a) - YOGVAL_SYMBOL(b);
+    return VAL2ID(a) - VAL2ID(b);
 }
 
 static int 
 hash_symbol(YogEnv* env, YogVal key) 
 {
-    return YOGVAL_SYMBOL(key);
+    return VAL2ID(key);
 }
 
 static YogHashType type_symbol = {
@@ -579,7 +579,7 @@ YogTable_new_symbol_table(YogEnv* env)
 static int 
 compare_string(YogEnv* env, YogVal a, YogVal b) 
 {
-#define GET_STR(val)    (((YogCharArray*)YOGVAL_PTR(a))->items)
+#define GET_STR(val)    (((YogCharArray*)VAL2PTR(a))->items)
     return strcmp(GET_STR(a), GET_STR(b));
 #undef GET_STR
 }
@@ -625,7 +625,7 @@ strhash(const char* string)
 static int 
 hash_string(YogEnv* env, YogVal key) 
 {
-    YogCharArray* array = YOGVAL_PTR(key);
+    YogCharArray* array = VAL2PTR(key);
     return strhash(array->items);
 }
 
@@ -649,7 +649,7 @@ YogTable_lookup_str(YogEnv* env, YogTable* table, const char* key, YogVal* value
     unsigned int bin_pos = hash_val % table->num_bins;
     YogTableEntry* entry = TABLE_ENTRY_TOP(table, bin_pos);
 
-#define NOT_EQUAL_ENTRY ((entry != NULL) && ((entry->hash != hash_val) || (strcmp(((YogCharArray*)YOGVAL_PTR(entry->key))->items, key) != 0)))
+#define NOT_EQUAL_ENTRY ((entry != NULL) && ((entry->hash != hash_val) || (strcmp(((YogCharArray*)VAL2PTR(entry->key))->items, key) != 0)))
     if (NOT_EQUAL_ENTRY) {
         COLLISION;
         do {

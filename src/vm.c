@@ -12,7 +12,7 @@ YogVm_id2name(YogEnv* env, YogVm* vm, ID id)
         Yog_assert(env, FALSE, "Can't find symbol.");
     }
 
-    YogCharArray* ptr = YOGVAL_PTR(val);
+    YogCharArray* ptr = VAL2PTR(val);
     return ptr->items;
 }
 
@@ -21,7 +21,7 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
 {
     YogVal value = YogVal_nil();
     if (YogTable_lookup_str(env, vm->name2id, name, &value)) {
-        return YOGVAL_SYMBOL(value);
+        return VAL2ID(value);
     }
 
     YogCharArray* s = YogCharArray_new_str(env, name);

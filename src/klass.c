@@ -50,7 +50,7 @@ YogKlass_new(YogEnv* env, Allocator allocator, const char* name, YogKlass* super
 static YogVal 
 klass_new(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
 {
-    YogKlass* klass = (YogKlass*)YOGVAL_OBJ(self);
+    YogKlass* klass = (YogKlass*)VAL2OBJ(self);
     YogBasicObj* obj = (*klass->allocator)(env, klass);
     YogVal val = YogVal_obj(obj);
     YogThread_call_method(env, ENV_TH(env), val, "initialize", vararg->body->size, vararg->body->items);

@@ -37,7 +37,7 @@ fill_args(YogEnv* env, YogArgInfo* arg_info, uint8_t posargc, YogVal posargs[], 
         }
         Yog_assert(env, arg_info->varargc == 1, "Too many arguments.");
         unsigned int index = arg_info->argc + arg_info->blockargc;
-        YogArray* array = (YogArray*)YOGVAL_OBJ(args[index]);
+        YogArray* array = (YogArray*)VAL2OBJ(args[index]);
         for (i = arg_info->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }
@@ -56,7 +56,7 @@ fill_args(YogEnv* env, YogArgInfo* arg_info, uint8_t posargc, YogVal posargs[], 
 
     for (i = 0; i < kwargc; i++) {
         YogVal name = kwargs[2 * i];
-        ID id = YOGVAL_SYMBOL(name);
+        ID id = VAL2ID(name);
         unsigned int j = 0;
         for (j = 0; j < arg_info->argc; j++) {
             ID argname = arg_info->argnames[j];
@@ -191,7 +191,7 @@ static void
 call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
     Yog_assert(env, IS_OBJ(callee), "Callee is not object.");
-    YogBasicObj* obj = YOGVAL_OBJ(callee);
+    YogBasicObj* obj = VAL2OBJ(callee);
     YogVm* vm = ENV_VM(env);
     if (obj->klass == vm->builtin_bound_method_klass) {
         YogBuiltinBoundMethod* method = (YogBuiltinBoundMethod*)obj;
@@ -231,7 +231,7 @@ lookup_builtins(YogEnv* env, ID name)
         Yog_assert(env, FALSE, "Can't find builtins package.");
     }
 
-    YogPkg* pkg = (YogPkg*)YOGVAL_OBJ(builtins);
+    YogPkg* pkg = (YogPkg*)VAL2OBJ(builtins);
     YogVal key = YogVal_symbol(name);
     YogVal val = YogVal_undef();
     YogTable_lookup(env, pkg->attrs, key, &val);
@@ -361,7 +361,7 @@ eval_code(YogEnv* env, YogThread* th, YogCode* code, YogVal receiver, unsigned i
 YogVal 
 YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc, YogVal* args) 
 {
-    YogBasicObj* obj = YOGVAL_OBJ(block);
+    YogBasicObj* obj = VAL2OBJ(block);
 
     YogVal retval = YogVal_undef();
     if (obj->klass == ENV_VM(env)->pkg_block_klass) {
@@ -409,7 +409,7 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
 {
     YogVal attr = YogVal_get_attr(env, receiver, method);
     Yog_assert(env, IS_OBJ(attr), "Attribute isn't object.");
-    YogBasicObj* obj = YOGVAL_OBJ(attr);
+    YogBasicObj* obj = VAL2OBJ(attr);
 
     YogVal retval = YogVal_undef();
     YogVal undef = YogVal_undef();

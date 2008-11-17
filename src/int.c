@@ -1,7 +1,7 @@
 #include "yog/yog.h"
 
 #define CHECK_TYPE(v) do { \
-    Yog_assert(env, YOGVAL_TYPE(v) == VAL_INT, "Value isn't int."); \
+    Yog_assert(env, VAL_TYPE(v) == VAL_INT, "Value isn't int."); \
 } while (0)
 
 #define CHECK_ARGS(self, v) do { \
@@ -14,7 +14,7 @@ int_to_s(YogEnv* env, YogVal self, YogVal n)
 {
     CHECK_TYPE(self);
 
-    YogString* s = YogString_new_format(env, "%d", YOGVAL_INT(self));
+    YogString* s = YogString_new_format(env, "%d", VAL2INT(self));
     YogVal val = YogVal_obj(YOGBASICOBJ(s));
 
     return val;
@@ -25,7 +25,7 @@ int_add(YogEnv* env, YogVal self, YogVal n)
 {
     CHECK_ARGS(self, n);
 
-    int result = YOGVAL_INT(self) + YOGVAL_INT(n);
+    int result = VAL2INT(self) + VAL2INT(n);
 
     return YogVal_int(result);
 }
@@ -35,7 +35,7 @@ int_less(YogEnv* env, YogVal self, YogVal n)
 {
     CHECK_ARGS(self, n);
 
-    if (YOGVAL_INT(self) < YOGVAL_INT(n)) {
+    if (VAL2INT(self) < VAL2INT(n)) {
         return YogVal_true();
     }
     else {
@@ -46,7 +46,7 @@ int_less(YogEnv* env, YogVal self, YogVal n)
 static YogVal 
 int_times(YogEnv* env, YogVal self, YogVal block) 
 {
-    int n = YOGVAL_INT(self);
+    int n = VAL2INT(self);
     unsigned int i = 0;
     unsigned int argc = 1;
     for (i = 0; i < n; i++) {
