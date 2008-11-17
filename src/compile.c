@@ -1,6 +1,7 @@
 #include <limits.h>
 #include <stdint.h>
 #include "yog/opcodes.h"
+#include "yog/parser.h"
 #include "yog/st.h"
 #include "yog/yog.h"
 

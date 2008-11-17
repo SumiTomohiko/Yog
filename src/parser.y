@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "yog/parser.h"
 #include "yog/yog.h"
 
 #define YYPARSE_PARAM   parser

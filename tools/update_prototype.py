@@ -11,12 +11,15 @@ class DeclarationInserter(object):
     files = { 
             "include/yog/yog.h": [
                     "src/error.c", "src/table.c", "src/value.c", "src/vm.c", 
-                    "src/array.c", "src/parser.y", "src/object.c", 
-                    "src/string.c", "src/binary.c", "src/compile.c", 
-                    "src/code.c", "src/frame.c", "src/thread.c", "src/klass.c", 
-                    "src/int.c", "src/builtins.c", "src/package.c", 
-                    "src/function.c", "src/bool.c", "src/lexer.c", "src/inst.c",
-                    "src/method.c", "src/block.c", "src/encoding.c", 
+                    "src/array.c", "src/object.c", "src/string.c", 
+                    "src/binary.c", "src/compile.c", "src/code.c", 
+                    "src/frame.c", "src/thread.c", "src/klass.c", "src/int.c", 
+                    "src/builtins.c", "src/package.c", "src/function.c", 
+                    "src/bool.c", "src/inst.c", "src/method.c", "src/block.c", 
+                    "src/encoding.c", 
+                    ], 
+            "include/yog/parser.h": [
+                    "src/lexer.c", "src/parser.y", 
                     ], 
             }
 

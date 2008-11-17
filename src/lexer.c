@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include "yog/parser.h"
 #include "yog/yog.h"
 
 #include "parser.h"

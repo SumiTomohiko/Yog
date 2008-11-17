@@ -1,3 +1,4 @@
+#include "yog/parser.h"
 #include "yog/yog.h"
 
 int 
