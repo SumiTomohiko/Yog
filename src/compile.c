@@ -198,19 +198,19 @@ YogInst_new(YogEnv* env, InstType type)
 }
 
 static YogInst* 
-inst_new(YogEnv* env) 
+Inst_new(YogEnv* env) 
 {
     return YogInst_new(env, INST_OP);
 }
 
 static YogInst* 
-label_new(YogEnv* env) 
+Label_new(YogEnv* env) 
 {
     return YogInst_new(env, INST_LABEL);
 }
 
 static YogInst* 
-anchor_new(YogEnv* env) 
+Anchor_new(YogEnv* env) 
 {
     return YogInst_new(env, INST_ANCHOR);
 }
@@ -911,7 +911,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     data.ctx = ctx;
     data.var2index = var2index;
     data.const2index = NULL;
-    YogInst* anchor = anchor_new(env);
+    YogInst* anchor = Anchor_new(env);
     data.last_inst = anchor;
     data.exc_tbl = ExceptionTableEntry_new(env);
     data.exc_tbl_last = data.exc_tbl;
@@ -1206,10 +1206,10 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
 {
     CompileData* data = arg;
 
-    YogInst* label_head_start = label_new(env);
-    YogInst* label_head_end = label_new(env);
-    YogInst* label_finally_error_start = label_new(env);
-    YogInst* label_finally_end = label_new(env);
+    YogInst* label_head_start = Label_new(env);
+    YogInst* label_head_end = Label_new(env);
+    YogInst* label_finally_error_start = Label_new(env);
+    YogInst* label_finally_end = Label_new(env);
 
     FinallyListEntry finally_list_entry;
     finally_list_entry.prev = data->finally_list;
@@ -1250,11 +1250,11 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
     CompileData* data = arg;
 
-    YogInst* label_head_start = label_new(env);
-    YogInst* label_head_end = label_new(env);
-    YogInst* label_excepts_start = label_new(env);
-    YogInst* label_else_start = label_new(env);
-    YogInst* label_else_end = label_new(env);
+    YogInst* label_head_start = Label_new(env);
+    YogInst* label_head_end = Label_new(env);
+    YogInst* label_excepts_start = Label_new(env);
+    YogInst* label_else_start = Label_new(env);
+    YogInst* label_else_end = Label_new(env);
 
     PUSH_TRY();
 
@@ -1275,7 +1275,7 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     unsigned int size = YogArray_size(env, excepts);
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
-        YogInst* label_body_end = label_new(env);
+        YogInst* label_body_end = Label_new(env);
 
         YogVal val = YogArray_at(env, excepts, i);
         YogNode* node = VAL2PTR(val);
@@ -1317,8 +1317,8 @@ compile_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
     CompileData* data = arg;
 
-    YogInst* while_start = label_new(env);
-    YogInst* while_end = label_new(env);
+    YogInst* while_start = Label_new(env);
+    YogInst* while_end = Label_new(env);
 
     YogInst* label_while_start_prev = data->label_while_start;
     YogInst* label_while_end_prev = data->label_while_end;
@@ -1341,8 +1341,8 @@ compile_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
     CompileData* data = arg;
 
-    YogInst* label_tail_start = label_new(env);
-    YogInst* label_stmt_end = label_new(env);
+    YogInst* label_tail_start = Label_new(env);
+    YogInst* label_stmt_end = Label_new(env);
 
     visit_node(env, visitor, NODE_IF_TEST(node), arg);
     CompileData_add_jump_if_false(env, data, label_tail_start);
@@ -1380,8 +1380,8 @@ compile_while_jump(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg, Y
         Yog_assert(env, expr == NULL, "Can't return value with break/next.");
         FinallyListEntry* finally_list_entry = data->finally_list;
         while (finally_list_entry != NULL) {
-            YogInst* label_start = label_new(env);
-            YogInst* label_end = label_new(env);
+            YogInst* label_start = Label_new(env);
+            YogInst* label_end = Label_new(env);
 
             append_inst(data, label_start);
             visitor->visit_stmts(env, visitor, NODE_BODY(finally_list_entry->node), arg);
@@ -1464,10 +1464,10 @@ compile_klass(YogEnv* env, AstVisitor* visitor, YogArray* stmts, CompileData* da
     YogTable* var2index = Var2Index_new(env);
     make_var2index(env, stmts, var2index);
 
-    YogInst* ret = inst_new(env);
+    YogInst* ret = Inst_new(env);
     ret->next = NULL;
     ret->opcode = OP(RET);
-    YogInst* push_self_name = inst_new(env);
+    YogInst* push_self_name = Inst_new(env);
     push_self_name->next = ret;
     push_self_name->opcode = OP(PUSH_SELF_NAME);
 

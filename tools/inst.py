@@ -288,7 +288,7 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.name
                 compile_data.write(", %(type)s %(name)s" % { "type": self.type_name2data_type(operand.type), "name": operand.name })
             compile_data.write(""")
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(%(name)s);
 """ % { "name": inst.name.upper() })

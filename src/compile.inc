@@ -7,7 +7,7 @@
 static void 
 CompileData_add_load_special(YogEnv* env, CompileData* data, ID id)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(LOAD_SPECIAL);
 
@@ -21,7 +21,7 @@ CompileData_add_load_special(YogEnv* env, CompileData* data, ID id)
 static void 
 CompileData_add_pop(YogEnv* env, CompileData* data)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(POP);
 
@@ -34,7 +34,7 @@ CompileData_add_pop(YogEnv* env, CompileData* data)
 static void 
 CompileData_add_push_const(YogEnv* env, CompileData* data, uint8_t index)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(PUSH_CONST);
 
@@ -48,7 +48,7 @@ CompileData_add_push_const(YogEnv* env, CompileData* data, uint8_t index)
 static void 
 CompileData_add_call_method(YogEnv* env, CompileData* data, ID method, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(CALL_METHOD);
 
@@ -67,7 +67,7 @@ CompileData_add_call_method(YogEnv* env, CompileData* data, ID method, uint8_t a
 static void 
 CompileData_add_store_pkg(YogEnv* env, CompileData* data, ID id)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(STORE_PKG);
 
@@ -81,7 +81,7 @@ CompileData_add_store_pkg(YogEnv* env, CompileData* data, ID id)
 static void 
 CompileData_add_store_local(YogEnv* env, CompileData* data, uint8_t index)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(STORE_LOCAL);
 
@@ -95,7 +95,7 @@ CompileData_add_store_local(YogEnv* env, CompileData* data, uint8_t index)
 static void 
 CompileData_add_call_command(YogEnv* env, CompileData* data, ID command, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(CALL_COMMAND);
 
@@ -114,7 +114,7 @@ CompileData_add_call_command(YogEnv* env, CompileData* data, ID command, uint8_t
 static void 
 CompileData_add_make_package_method(YogEnv* env, CompileData* data)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(MAKE_PACKAGE_METHOD);
 
@@ -127,7 +127,7 @@ CompileData_add_make_package_method(YogEnv* env, CompileData* data)
 static void 
 CompileData_add_call_function(YogEnv* env, CompileData* data, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(CALL_FUNCTION);
 
@@ -145,7 +145,7 @@ CompileData_add_call_function(YogEnv* env, CompileData* data, uint8_t argc, uint
 static void 
 CompileData_add_load_pkg(YogEnv* env, CompileData* data, ID id)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(LOAD_PKG);
 
@@ -159,7 +159,7 @@ CompileData_add_load_pkg(YogEnv* env, CompileData* data, ID id)
 static void 
 CompileData_add_load_local(YogEnv* env, CompileData* data, uint8_t index)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(LOAD_LOCAL);
 
@@ -173,7 +173,7 @@ CompileData_add_load_local(YogEnv* env, CompileData* data, uint8_t index)
 static void 
 CompileData_add_jump(YogEnv* env, CompileData* data, struct YogInst* dest)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(JUMP);
 
@@ -187,7 +187,7 @@ CompileData_add_jump(YogEnv* env, CompileData* data, struct YogInst* dest)
 static void 
 CompileData_add_jump_if_false(YogEnv* env, CompileData* data, struct YogInst* dest)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(JUMP_IF_FALSE);
 
@@ -201,7 +201,7 @@ CompileData_add_jump_if_false(YogEnv* env, CompileData* data, struct YogInst* de
 static void 
 CompileData_add_dup(YogEnv* env, CompileData* data)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(DUP);
 
@@ -214,7 +214,7 @@ CompileData_add_dup(YogEnv* env, CompileData* data)
 static void 
 CompileData_add_make_package_block(YogEnv* env, CompileData* data)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(MAKE_PACKAGE_BLOCK);
 
@@ -227,7 +227,7 @@ CompileData_add_make_package_block(YogEnv* env, CompileData* data)
 static void 
 CompileData_add_make_klass(YogEnv* env, CompileData* data)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(MAKE_KLASS);
 
@@ -240,7 +240,7 @@ CompileData_add_make_klass(YogEnv* env, CompileData* data)
 static void 
 CompileData_add_make_method(YogEnv* env, CompileData* data)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(MAKE_METHOD);
 
@@ -253,7 +253,7 @@ CompileData_add_make_method(YogEnv* env, CompileData* data)
 static void 
 CompileData_add_push_self_name(YogEnv* env, CompileData* data)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(PUSH_SELF_NAME);
 
@@ -266,7 +266,7 @@ CompileData_add_push_self_name(YogEnv* env, CompileData* data)
 static void 
 CompileData_add_ret(YogEnv* env, CompileData* data)
 {
-    YogInst* inst = inst_new(env);
+    YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(RET);
 
