@@ -410,11 +410,13 @@ insts2bin(YogEnv* env, YogInst* inst)
                                 YogBinary_push_uint8(env, code, OP(RET));
                                 break;
                             }
-                    default:
-                        Yog_assert(env, FALSE, "Unkown instruction.");
-                    break;
+                        default:
+                            {
+                                Yog_assert(env, FALSE, "Unkown instruction.");
+                                break;
+                            }
+                    }
                 }
-            }
             case INST_ANCHOR:
             case INST_LABEL:
                 break;
@@ -427,6 +429,161 @@ insts2bin(YogEnv* env, YogInst* inst)
     }
 
     return code;
+}
+
+static int
+count_stack_size(YogEnv* env, YogInst* inst) 
+{
+    int max = 0;
+    int size = 0;
+
+    while (inst != NULL) {
+        switch (inst->type) {
+            case INST_OP:
+                {
+                    int pop_size = 0;
+                    int push_size = 0;
+                    switch (INST_OPCODE(inst)) {
+
+                        case OP(LOAD_SPECIAL):
+                            {
+                                pop_size = 0;
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(POP):
+                            {
+                                pop_size = 1;
+                                push_size = 0;
+                                break;
+                            }
+                        case OP(PUSH_CONST):
+                            {
+                                pop_size = 0;
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(CALL_METHOD):
+                            {
+                                pop_size = CALL_METHOD_ARGC(inst) + 2 * CALL_METHOD_KWARGC(inst) + CALL_METHOD_BLOCKARGC(inst) + CALL_METHOD_VARARGC(inst) + CALL_METHOD_VARKWARGC(inst);
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(STORE_NAME):
+                            {
+                                pop_size = 1;
+                                push_size = 0;
+                                break;
+                            }
+                        case OP(STORE_LOCAL):
+                            {
+                                pop_size = 1;
+                                push_size = 0;
+                                break;
+                            }
+                        case OP(CALL_COMMAND):
+                            {
+                                pop_size = CALL_COMMAND_ARGC(inst) + 2 * CALL_COMMAND_KWARGC(inst) + CALL_COMMAND_BLOCKARGC(inst) + CALL_COMMAND_VARARGC(inst) + CALL_COMMAND_VARKWARGC(inst);
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(MAKE_PACKAGE_METHOD):
+                            {
+                                pop_size = 1;
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(CALL_FUNCTION):
+                            {
+                                pop_size = CALL_FUNCTION_ARGC(inst) + 2 * CALL_FUNCTION_KWARGC(inst) + CALL_FUNCTION_BLOCKARGC(inst) + CALL_FUNCTION_VARARGC(inst) + CALL_FUNCTION_VARKWARGC(inst);
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(LOAD_NAME):
+                            {
+                                pop_size = 0;
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(LOAD_LOCAL):
+                            {
+                                pop_size = 0;
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(JUMP):
+                            {
+                                pop_size = 0;
+                                push_size = 0;
+                                break;
+                            }
+                        case OP(JUMP_IF_FALSE):
+                            {
+                                pop_size = 1;
+                                push_size = 0;
+                                break;
+                            }
+                        case OP(DUP):
+                            {
+                                pop_size = 1;
+                                push_size = 2;
+                                break;
+                            }
+                        case OP(MAKE_PACKAGE_BLOCK):
+                            {
+                                pop_size = 1;
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(MAKE_KLASS):
+                            {
+                                pop_size = 3;
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(MAKE_METHOD):
+                            {
+                                pop_size = 1;
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(PUSH_SELF_NAME):
+                            {
+                                pop_size = 0;
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(RET):
+                            {
+                                pop_size = 1;
+                                push_size = 1;
+                                break;
+                            }
+                        default:
+                            {
+                                Yog_assert(env, FALSE, "Unkown instruction.");
+                                break;
+                            }
+                    }
+                    size += push_size - pop_size;
+                    Yog_assert(env, 0 <= size, "Too many pops.");
+                    if (max < size) {
+                        max = size;
+                    }
+                    break;
+                }
+            case INST_ANCHOR:
+            case INST_LABEL:
+                break;
+            default:
+                Yog_assert(env, FALSE, "Unknown inst type.");
+                break;
+        }
+
+        inst = inst->next;
+    }
+
+    return max;
 }
 
 /**

@@ -320,6 +320,7 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg
         visitor->visit_stmt(env, visitor, node, arg);
 
         switch (node->type) {
+            case NODE_ASSIGN:
             case NODE_COMMAND_CALL:
             case NODE_FUNC_CALL:
             case NODE_LITERAL:
@@ -635,122 +636,6 @@ compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void
     CompileData_add_call_command(env, data, NODE_COMMAND(node), argc, 0, blockargc, 0, 0);
 }
 
-#if 0
-static void 
-stack_size_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg) 
-{
-    if (stmts == NULL) {
-        return;
-    }
-
-    unsigned int i = 0;
-    for (i = 0; i < YogArray_size(env, stmts); i++) {
-        YogVal val = YogArray_at(env, stmts, i);
-        YogNode* node = (YogNode*)YOGVAL_GCOBJ(val);
-
-        unsigned int stack_size = 0;
-        visitor->visit_stmt(env, visitor, node, &stack_size);
-        unsigned int* max_stack_size = (unsigned int*)arg;
-        if (*max_stack_size < stack_size) {
-            *max_stack_size = stack_size;
-        }
-    }
-}
-
-static void 
-stack_size_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
-{
-    visit_node(env, visitor, NODE_RIGHT(node), arg);
-}
-
-static void 
-stack_size_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
-{
-    visit_node(env, visitor, NODE_RECEIVER(node), arg);
-    VISIT_EACH_ARGS();
-}
-
-static void 
-stack_size_need_one(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
-{
-    unsigned int* stack_size = (unsigned int*)arg;
-    (*stack_size)++;
-}
-
-static void 
-stack_size_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
-{
-    visit_node(env, visitor, NODE_CALLEE(node), arg);
-    /* TODO */
-    VISIT_EACH_ARGS();
-}
-
-static void 
-stack_size_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
-{
-    VISIT_EACH_ARGS();
-}
-
-static void 
-stack_size_visit_try(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
-{
-    unsigned int stack_size = 0;
-    generic_visit_try(env, visitor, node, &stack_size);
-    if (stack_size < 1) {
-        stack_size = 1;
-    }
-    unsigned int* total_size = arg;
-    *total_size += stack_size;
-}
-
-static void 
-stack_size_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
-{
-    unsigned int stack_size = 0;
-    visit_node(env, visitor, NODE_EXC_TYPE(node), &stack_size);
-    if (stack_size < 1) {
-        stack_size = 1;
-    }
-
-    unsigned int tmp = 0;
-    visitor->visit_stmts(env, visitor, NODE_EXC_STMTS(node), &tmp);
-    if (stack_size < tmp) {
-        stack_size = tmp;
-    }
-
-    unsigned int* result = arg;
-    *result = stack_size;
-}
-
-static void 
-stack_size_init_visitor(AstVisitor* visitor) 
-{
-    visitor->visit_stmts = stack_size_visit_stmts;
-    visitor->visit_stmt = visit_node;
-    visitor->visit_assign = stack_size_visit_assign;
-    visitor->visit_method_call = stack_size_visit_method_call;
-    visitor->visit_literal = stack_size_need_one;
-    visitor->visit_command_call = stack_size_visit_command_call;
-    visitor->visit_func_def = stack_size_need_one;
-    visitor->visit_func_call = stack_size_visit_func_call;
-    visitor->visit_variable = stack_size_need_one;
-    visitor->visit_try = stack_size_visit_try;
-    visitor->visit_except = stack_size_visit_except;
-}
-
-static unsigned int 
-count_stack_size(YogEnv* env, YogArray* stmts) 
-{
-    AstVisitor visitor;
-    stack_size_init_visitor(&visitor);
-
-    unsigned int stack_size = 0;
-    visitor.visit_stmts(env, &visitor, stmts, &stack_size);
-
-    return stack_size;
-}
-#endif
-
 static int 
 table2array_count_index(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
 {
@@ -932,10 +817,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     if (var2index != NULL) {
         code->local_vars_count = YogTable_size(env, var2index);
     }
-#if 0
-    code->stack_size = count_stack_size(env, stmts);
-#endif
-    code->stack_size = 32;
+    code->stack_size = count_stack_size(env, anchor);
     code->consts = table2array(env, data.const2index);
     code->insts = bin->body;
     make_exception_table(env, code, &data);

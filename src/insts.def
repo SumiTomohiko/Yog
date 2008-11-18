@@ -34,8 +34,8 @@ inst push_const
 
 inst call_method
 (ID method, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
-(...)
-(...)
+(...) depth: argc + 2 * kwargc + blockargc + varargc + varkwargc
+(...) depth: 1
 {
     POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
 
@@ -63,8 +63,8 @@ inst store_local
 
 inst call_command 
 (ID command, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
-()
-()
+(...) depth: argc + 2 * kwargc + blockargc + varargc + varkwargc
+(...) depth: 1
 {
     POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
 
@@ -87,8 +87,8 @@ inst make_package_method
 
 inst call_function
 (uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
-(...)
-(...)
+(...) depth: argc + 2 * kwargc + blockargc + varargc + varkwargc
+(...) depth: 1
 {
     POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
 
@@ -159,7 +159,7 @@ inst make_package_block
 inst make_klass
 ()
 (code, super, name)
-(...)
+(...) depth: 1
 {
     YogKlass* super_klass = (YogKlass*)VAL2OBJ(super);
     YogKlass* kls = YogKlass_new(ENV, YogObj_allocate, NULL, super_klass);

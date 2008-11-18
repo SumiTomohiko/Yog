@@ -1,10 +1,11 @@
 #! python
 # -*- coding: utf-8 -*-
 
+from StringIO import StringIO
 from datetime import datetime
 from os.path import join
+from re import finditer
 from string import Template
-from StringIO import StringIO
 from sys import argv
 import re
 
@@ -23,7 +24,9 @@ class Inst(object):
         self.name = name
         self.operands = []
         self.pop_values = []
+        self.pop_size = "0"
         self.push_values = []
+        self.push_size = "0"
         self.codes = []
         self.lineno = lineno
 
@@ -60,8 +63,18 @@ class CodeGenerator(object):
     inst_end = re.compile(r"\A}\Z")
 
     def split_values(self, s):
-        return [s.strip() for s in s[1:-1].split(",") 
-                if (0 < len(s.strip())) and (s.strip() != "...")]
+        left = s.find("(")
+        right = s.find(")")
+        return [t.strip() for t in s[left + 1:right].split(",") 
+                if (0 < len(t.strip())) and (t.strip() != "...")]
+
+    def parse_depth(self, s):
+        t = "depth:"
+        n = s.find(t)
+        if n < 0:
+            return []
+        u = s[n + len(t):]
+        return finditer(r"(?P<star>\*)|(?P<plus>\+)|(?P<name>[a-z]+)|(?P<number>[0-9]+)", u)
 
     def parse_inst(self, name):
         inst = Inst(name, self.lineno)
@@ -75,9 +88,11 @@ class CodeGenerator(object):
 
         line = self.readline()
         inst.pop_values.extend(self.split_values(line))
+        inst.pop_size = self.parse_depth(line)
 
         line = self.readline()
         inst.push_values.extend(self.split_values(line))
+        inst.push_size = self.parse_depth(line)
 
         self.readline() # Skip "{"
 
@@ -273,6 +288,26 @@ class CodeGenerator(object):
             f.write(self.make_attention())
             f.write(s)
 
+    def stack_depth2c(self, name, iter, values):
+        c = ""
+        for m in iter:
+            if m.group("star"):
+                s = m.group("star")
+            elif m.group("plus"):
+                s = m.group("plus")
+            elif m.group("name"):
+                s = "%(inst)s_%(name)s(inst)" % { "name": m.group("name").upper(), "inst": name.upper() }
+            elif m.group("number"):
+                s = m.group("number")
+            else:
+                s = ""
+            if 0 < len(s):
+                c += " " + s
+        if len(c) == 0:
+            c = " " + str(len(values))
+
+        return c
+
     def gen_compile_inc(self, compile_inc, compile_inc_tmpl):
         compile_data = StringIO()
         for inst in self.insts:
@@ -314,10 +349,23 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.name
                                 break;
                             }""")
 
+        count_stack_size = StringIO()
+        for inst in self.insts:
+            pop_size = self.stack_depth2c(inst.name, inst.pop_size, inst.pop_values)
+            push_size = self.stack_depth2c(inst.name, inst.push_size, inst.push_values)
+            count_stack_size.write("""
+                        case OP(%(name)s):
+                            {
+                                pop_size =%(pop_size)s;
+                                push_size =%(push_size)s;
+                                break;
+                            }""" % { "name": inst.name.upper(), "pop_size": pop_size, "push_size": push_size })
+
         s = self.substitute_template(
                 compile_inc_tmpl, 
                 { "compile_data": compile_data.getvalue(), 
-                    "insts2bin": insts2bin.getvalue() })
+                    "insts2bin": insts2bin.getvalue(), 
+                    "count_stack_size": count_stack_size.getvalue() })
         with open(compile_inc, "w") as f:
             f.write(self.make_attention())
             f.write(s)

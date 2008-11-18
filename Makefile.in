@@ -219,6 +219,9 @@ yog_SOURCES = src/array.c \
 yog_CFLAGS = -Iinclude -I$(ONIG_DIR) -Wall
 yog_LDADD = $(ONIG_LIB)
 AM_YFLAGS = -d --verbose
+#AM_LFLAGS = --noline
+INSTS_DEF = src/insts.def
+INST_PY = tools/inst.py
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1099,7 +1102,6 @@ uninstall-am: uninstall-binPROGRAMS
 	ps ps-am tags tags-recursive uninstall uninstall-am \
 	uninstall-binPROGRAMS
 
-#AM_LFLAGS = --noline
 
 proto:
 	python tools/update_prototype.py
@@ -1121,7 +1123,13 @@ src/keywords.inc: src/keywords
 
 src/lexer.c: parser.h
 
-src/thread.inc src/code.inc src/compile.inc: src/insts.def tools/inst.py
+src/thread.inc: $(INSTS_DEF) $(INST_PY)
+	make insts
+
+src/code.inc: src/code.inc.tmpl $(INSTS_DEF) $(INST_PY)
+	make insts
+
+src/compile.inc: src/compile.inc.tmpl $(INSTS_DEF) $(INST_PY)
 	make insts
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
