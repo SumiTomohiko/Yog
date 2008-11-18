@@ -71,7 +71,7 @@
             break;
         }
 #line 69 "src/thread.inc"
-    case OP(STORE_PKG):
+    case OP(STORE_NAME):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             ID id = *((ID*)&CODE->insts->items[PC]);
@@ -79,7 +79,7 @@
             YogVal val = POP();
 #line 52 "src/insts.def"
             YogVal key = ID2VAL(id);
-            YogTable_insert(ENV, PKG_VARS(CUR_FRAME), key, val);
+            YogTable_insert(ENV, NAME_VARS(CUR_FRAME), key, val);
 
 #line 79 "src/thread.inc"
             break;
@@ -173,7 +173,7 @@
             break;
         }
 #line 166 "src/thread.inc"
-    case OP(LOAD_PKG):
+    case OP(LOAD_NAME):
         {
             Yog_assert(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             ID id = *((ID*)&CODE->insts->items[PC]);
@@ -181,7 +181,7 @@
             YogVal val = YogVal_nil();
 #line 105 "src/insts.def"
             YogVal key = ID2VAL(id);
-            if (!YogTable_lookup(ENV, PKG_VARS(CUR_FRAME), key, &val)) {
+            if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME), key, &val)) {
                 val = lookup_builtins(ENV, id);
                 Yog_assert(ENV, !IS_UNDEF(val), "Can't find package var.");
             }

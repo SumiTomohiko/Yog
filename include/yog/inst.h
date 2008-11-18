@@ -34,7 +34,7 @@ struct YogInst {
         } call_method;
         struct {
             ID id;
-        } store_pkg;
+        } store_name;
         struct {
             uint8_t index;
         } store_local;
@@ -57,7 +57,7 @@ struct YogInst {
         } call_function;
         struct {
             ID id;
-        } load_pkg;
+        } load_name;
         struct {
             uint8_t index;
         } load_local;
@@ -93,7 +93,7 @@ struct YogInst {
 #define CALL_METHOD_BLOCKARGC(inst) ((inst)->u.call_method.blockargc)
 #define CALL_METHOD_VARARGC(inst) ((inst)->u.call_method.varargc)
 #define CALL_METHOD_VARKWARGC(inst) ((inst)->u.call_method.varkwargc)
-#define STORE_PKG_ID(inst) ((inst)->u.store_pkg.id)
+#define STORE_NAME_ID(inst) ((inst)->u.store_name.id)
 #define STORE_LOCAL_INDEX(inst) ((inst)->u.store_local.index)
 #define CALL_COMMAND_COMMAND(inst) ((inst)->u.call_command.command)
 #define CALL_COMMAND_ARGC(inst) ((inst)->u.call_command.argc)
@@ -106,7 +106,7 @@ struct YogInst {
 #define CALL_FUNCTION_BLOCKARGC(inst) ((inst)->u.call_function.blockargc)
 #define CALL_FUNCTION_VARARGC(inst) ((inst)->u.call_function.varargc)
 #define CALL_FUNCTION_VARKWARGC(inst) ((inst)->u.call_function.varkwargc)
-#define LOAD_PKG_ID(inst) ((inst)->u.load_pkg.id)
+#define LOAD_NAME_ID(inst) ((inst)->u.load_name.id)
 #define LOAD_LOCAL_INDEX(inst) ((inst)->u.load_local.index)
 #define JUMP_DEST(inst) ((inst)->u.jump.dest)
 #define JUMP_IF_FALSE_DEST(inst) ((inst)->u.jump_if_false.dest)

@@ -14,12 +14,12 @@ Yog_get_inst_size(OpCode op)
         sizeof(uint8_t), /* pop */
         sizeof(uint8_t) + sizeof(uint8_t), /* push_const */
         sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* call_method */
-        sizeof(uint8_t) + sizeof(ID), /* store_pkg */
+        sizeof(uint8_t) + sizeof(ID), /* store_name */
         sizeof(uint8_t) + sizeof(uint8_t), /* store_local */
         sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* call_command */
         sizeof(uint8_t), /* make_package_method */
         sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* call_function */
-        sizeof(uint8_t) + sizeof(ID), /* load_pkg */
+        sizeof(uint8_t) + sizeof(ID), /* load_name */
         sizeof(uint8_t) + sizeof(uint8_t), /* load_local */
         sizeof(uint8_t) + sizeof(pc_t), /* jump */
         sizeof(uint8_t) + sizeof(pc_t), /* jump_if_false */

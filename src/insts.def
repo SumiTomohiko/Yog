@@ -44,13 +44,13 @@ inst call_method
     call_method(ENV, THREAD, receiver, attr, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 }
 
-inst store_pkg
+inst store_name
 (ID id) 
 (val) 
 ()
 {
     YogVal key = ID2VAL(id);
-    YogTable_insert(ENV, PKG_VARS(CUR_FRAME), key, val);
+    YogTable_insert(ENV, NAME_VARS(CUR_FRAME), key, val);
 }
 
 inst store_local
@@ -97,13 +97,13 @@ inst call_function
     call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 }
 
-inst load_pkg
+inst load_name
 (ID id) 
 ()
 (val)
 {
     YogVal key = ID2VAL(id);
-    if (!YogTable_lookup(ENV, PKG_VARS(CUR_FRAME), key, &val)) {
+    if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME), key, &val)) {
         val = lookup_builtins(ENV, id);
         Yog_assert(ENV, !IS_UNDEF(val), "Can't find package var.");
     }

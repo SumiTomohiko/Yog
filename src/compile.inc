@@ -65,13 +65,13 @@ CompileData_add_call_method(YogEnv* env, CompileData* data, ID method, uint8_t a
 }
 
 static void 
-CompileData_add_store_pkg(YogEnv* env, CompileData* data, ID id)
+CompileData_add_store_name(YogEnv* env, CompileData* data, ID id)
 {
     YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
-    INST_OPCODE(inst) = OP(STORE_PKG);
+    INST_OPCODE(inst) = OP(STORE_NAME);
 
-    STORE_PKG_ID(inst) = id;
+    STORE_NAME_ID(inst) = id;
 
     append_inst(data, inst);
 
@@ -143,13 +143,13 @@ CompileData_add_call_function(YogEnv* env, CompileData* data, uint8_t argc, uint
 }
 
 static void 
-CompileData_add_load_pkg(YogEnv* env, CompileData* data, ID id)
+CompileData_add_load_name(YogEnv* env, CompileData* data, ID id)
 {
     YogInst* inst = Inst_new(env);
     inst->type = INST_OP;
-    INST_OPCODE(inst) = OP(LOAD_PKG);
+    INST_OPCODE(inst) = OP(LOAD_NAME);
 
-    LOAD_PKG_ID(inst) = id;
+    LOAD_NAME_ID(inst) = id;
 
     append_inst(data, inst);
 
@@ -318,10 +318,10 @@ insts2bin(YogEnv* env, YogInst* inst)
                                 YogBinary_push_uint8(env, code, CALL_METHOD_VARKWARGC(inst));
                                 break;
                             }
-                        case OP(STORE_PKG):
+                        case OP(STORE_NAME):
                             {
-                                YogBinary_push_uint8(env, code, OP(STORE_PKG));
-                                YogBinary_push_id(env, code, STORE_PKG_ID(inst));
+                                YogBinary_push_uint8(env, code, OP(STORE_NAME));
+                                YogBinary_push_id(env, code, STORE_NAME_ID(inst));
                                 break;
                             }
                         case OP(STORE_LOCAL):
@@ -356,10 +356,10 @@ insts2bin(YogEnv* env, YogInst* inst)
                                 YogBinary_push_uint8(env, code, CALL_FUNCTION_VARKWARGC(inst));
                                 break;
                             }
-                        case OP(LOAD_PKG):
+                        case OP(LOAD_NAME):
                             {
-                                YogBinary_push_uint8(env, code, OP(LOAD_PKG));
-                                YogBinary_push_id(env, code, LOAD_PKG_ID(inst));
+                                YogBinary_push_uint8(env, code, OP(LOAD_NAME));
+                                YogBinary_push_id(env, code, LOAD_NAME_ID(inst));
                                 break;
                             }
                         case OP(LOAD_LOCAL):

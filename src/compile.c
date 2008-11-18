@@ -540,7 +540,7 @@ append_store(YogEnv* env, CompileData* data, ID id)
             }
         case CTX_KLASS:
         case CTX_PKG:
-            CompileData_add_store_pkg(env, data, id);
+            CompileData_add_store_name(env, data, id);
             break;
         default:
             Yog_assert(env, FALSE, "Unkown context.");
@@ -1146,7 +1146,7 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
                         Yog_assert(env, FALSE, "Invalid context type.");
                         break;
                 }
-                CompileData_add_store_pkg(env, data, id);
+                CompileData_add_store_name(env, data, id);
                 break;
             }
         default:
@@ -1193,7 +1193,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
         }
     case CTX_KLASS:
     case CTX_PKG:
-        CompileData_add_load_pkg(env, data, id);
+        CompileData_add_load_name(env, data, id);
         break;
     default:
         Yog_assert(env, FALSE, "Unknown context.");

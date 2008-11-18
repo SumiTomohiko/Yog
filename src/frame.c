@@ -8,10 +8,9 @@ gc_pkg_frame_children(YogEnv* env, void* ptr, DoGc do_gc)
 }
 
 static void 
-YogFrame_init(YogFrame* frame, YogFrameType type) 
+YogFrame_init(YogFrame* frame)
 {
     frame->prev = NULL;
-    frame->type = type;
 }
 
 void 
@@ -37,9 +36,9 @@ YogScriptFrame_pop_stack(YogEnv* env, YogScriptFrame* frame)
 }
 
 static void 
-YogScriptFrame_init(YogScriptFrame* frame, YogFrameType type) 
+YogScriptFrame_init(YogScriptFrame* frame)
 {
-    YogFrame_init(FRAME(frame), type);
+    YogFrame_init(FRAME(frame));
     frame->pc = 0;
     frame->code = NULL;
     frame->stack_size = 0;
@@ -47,9 +46,9 @@ YogScriptFrame_init(YogScriptFrame* frame, YogFrameType type)
 }
 
 static void 
-YogNameFrame_init(YogNameFrame* frame, YogFrameType type) 
+YogNameFrame_init(YogNameFrame* frame)
 {
-    YogScriptFrame_init(SCRIPT_FRAME(frame), type);
+    YogScriptFrame_init(SCRIPT_FRAME(frame));
     frame->vars = NULL;
 }
 
@@ -57,22 +56,7 @@ YogNameFrame*
 YogNameFrame_new(YogEnv* env) 
 {
     YogNameFrame* frame = ALLOC_OBJ(env, NULL, YogNameFrame);
-    YogNameFrame_init(frame, FT_KLASS);
-
-    return frame;
-}
-
-static void 
-YogPkgFrame_init(YogPkgFrame* frame) 
-{
-    YogNameFrame_init(NAME_FRAME(frame), FT_PKG);
-}
-
-YogPkgFrame* 
-YogPkgFrame_new(YogEnv* env) 
-{
-    YogPkgFrame* frame = ALLOC_OBJ(env, gc_pkg_frame_children, YogPkgFrame);
-    YogPkgFrame_init(frame);
+    YogNameFrame_init(frame);
 
     return frame;
 }
@@ -87,7 +71,7 @@ gc_method_frame_children(YogEnv* env, void* ptr, DoGc do_gc)
 static void 
 YogMethodFrame_init(YogMethodFrame* frame) 
 {
-    YogScriptFrame_init(SCRIPT_FRAME(frame), FT_METHOD);
+    YogScriptFrame_init(SCRIPT_FRAME(frame));
     frame->vars = NULL;
 }
 
@@ -103,7 +87,7 @@ YogMethodFrame_new(YogEnv* env)
 static void 
 YogCFrame_init(YogCFrame* frame) 
 {
-    YogFrame_init(FRAME(frame), FT_C);
+    YogFrame_init(FRAME(frame));
 }
 
 YogCFrame* 

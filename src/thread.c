@@ -386,7 +386,7 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
         }
 #undef SET_VAR
 
-        YogPkgFrame* frame = YogPkgFrame_new(env);
+        YogPackageFrame* frame = YogPackageFrame_new(env);
         setup_script_frame(env, SCRIPT_FRAME(frame), code);
         NAME_FRAME(frame)->self = pkg_block->self;
         NAME_FRAME(frame)->vars = vars;
@@ -441,7 +441,7 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
 void 
 YogThread_eval_package(YogEnv* env, YogThread* th, YogPkg* pkg, YogCode* code) 
 {
-    YogPkgFrame* frame = YogPkgFrame_new(env);
+    YogPackageFrame* frame = YogPackageFrame_new(env);
     setup_script_frame(env, SCRIPT_FRAME(frame), code);
     NAME_FRAME(frame)->self = OBJ2VAL(pkg);
     NAME_FRAME(frame)->vars = pkg->attrs;
