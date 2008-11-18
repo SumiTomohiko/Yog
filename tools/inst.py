@@ -193,11 +193,6 @@ class CodeGenerator(object):
 
             for pop_value in inst.pop_values:
                 if pop_value not in declared_names:
-                    s = """
-            Yog_assert(env, 0 < YogValArray_size(env, STACK), "stack depth is zero.");"""
-                    lineno += len(s.split("\n")) - 1
-                    inc.write(s)
-
                     if (0 < len(inst.codes)) or (0 < len(inst.push_values)):
                         s = """
             YogVal %(name)s = POP();""" % { "name": pop_value }

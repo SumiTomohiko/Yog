@@ -14,12 +14,35 @@ YogFrame_init(YogFrame* frame, YogFrameType type)
     frame->type = type;
 }
 
+void 
+YogScriptFrame_push_stack(YogEnv* env, YogScriptFrame* frame, YogVal val) 
+{
+    YogValArray* stack = frame->stack;
+    unsigned int capacity = YogValArray_size(env, stack);
+    Yog_assert(env, frame->stack_size < capacity, "Stack is full.");
+
+    stack->items[frame->stack_size] = val;
+    frame->stack_size++;
+}
+
+YogVal 
+YogScriptFrame_pop_stack(YogEnv* env, YogScriptFrame* frame) 
+{
+    Yog_assert(env, 0 < frame->stack_size, "Stack is empty.");
+
+    YogVal retval = YogValArray_at(env, frame->stack, frame->stack_size - 1);
+    frame->stack_size--;
+
+    return retval;
+}
+
 static void 
 YogScriptFrame_init(YogScriptFrame* frame, YogFrameType type) 
 {
     YogFrame_init(FRAME(frame), type);
     frame->pc = 0;
     frame->code = NULL;
+    frame->stack_size = 0;
     frame->stack = NULL;
 }
 

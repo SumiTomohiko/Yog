@@ -166,7 +166,6 @@ typedef struct YogBasicObj YogBasicObj;
 
 struct YogValArray {
     unsigned int size;
-    unsigned int capacity;
     YogVal items[0];
 };
 
@@ -174,6 +173,7 @@ typedef struct YogValArray YogValArray;
 
 struct YogArray {
     YOGBASICOBJ_HEAD;
+    unsigned int size;
     YogValArray* body; 
 };
 
@@ -355,6 +355,7 @@ struct YogScriptFrame {
     struct YogFrame base;
     pc_t pc;
     struct YogCode* code;
+    unsigned int stack_size;
     struct YogValArray* stack;
 };
 
@@ -456,8 +457,6 @@ void YogArray_push(YogEnv*, YogArray*, YogVal);
 unsigned int YogArray_size(YogEnv*, YogArray*);
 YogVal YogValArray_at(YogEnv*, YogValArray*, unsigned int);
 YogValArray* YogValArray_new(YogEnv*, unsigned int);
-YogVal YogValArray_pop(YogEnv*, YogValArray*);
-void YogValArray_push(YogEnv*, YogValArray*, YogVal);
 unsigned int YogValArray_size(YogEnv*, YogValArray*);
 
 /* src/binary.c */
@@ -502,6 +501,8 @@ YogCFrame* YogCFrame_new(YogEnv*);
 YogMethodFrame* YogMethodFrame_new(YogEnv*);
 YogNameFrame* YogNameFrame_new(YogEnv*);
 YogPkgFrame* YogPkgFrame_new(YogEnv*);
+YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);
+void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
 
 /* src/function.c */
 YogBuiltinFunction* YogBuiltinFunction_new(YogEnv*, const char*, void*, unsigned int, unsigned int, unsigned int, int, va_list);

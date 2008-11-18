@@ -184,8 +184,7 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogCode* code, uint8_t posarg
     PUSH_FRAME(frame);
 }
 
-#define STACK       (SCRIPT_FRAME(CUR_FRAME)->stack)
-#define PUSH(val)   (YogValArray_push(env, STACK, val))
+#define PUSH(val)   YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), val)
 
 static void 
 call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
@@ -277,7 +276,7 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
     }
 
     while (PC < CODE->insts->size) {
-#define POP()           (YogValArray_pop(env, STACK))
+#define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME)))
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define ENV             (env)
 #define VM              (ENV_VM(ENV))

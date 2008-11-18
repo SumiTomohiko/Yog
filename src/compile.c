@@ -786,7 +786,6 @@ table2array(YogEnv* env, YogTable* table)
         YogValArray* array = YogValArray_new(env, size);
         YogVal arg = PTR2VAL(array);
         YogTable_foreach(env, table, table2array_fill_array, &arg);
-        array->size = size;
         return array;
     }
     else {
