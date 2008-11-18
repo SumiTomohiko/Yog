@@ -216,7 +216,7 @@ Anchor_new(YogEnv* env)
 }
 
 static void 
-append_inst(CompileData* data, YogInst* inst) 
+add_inst(CompileData* data, YogInst* inst) 
 {
     if (inst->type == INST_LABEL) {
         LABEL_POS(inst) = data->pc;
@@ -1225,18 +1225,18 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
     entry->target = label_finally_error_start;
     try_list_entry.exc_tbl = entry;
 
-    append_inst(data, label_head_start);
+    add_inst(data, label_head_start);
     visitor->visit_stmts(env, visitor, NODE_HEAD(node), arg);
-    append_inst(data, label_head_end);
+    add_inst(data, label_head_end);
 
     visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
     CompileData_add_jump(env, data, label_finally_end);
 
-    append_inst(data, label_finally_error_start);
+    add_inst(data, label_finally_error_start);
     visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
     RERAISE();
 
-    append_inst(data, label_finally_end);
+    add_inst(data, label_finally_end);
 
     PUSH_EXCEPTION_TABLE_ENTRY();
 
@@ -1265,12 +1265,12 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     entry->target = label_excepts_start;
     try_list_entry.exc_tbl = entry;
 
-    append_inst(data, label_head_start);
+    add_inst(data, label_head_start);
     visitor->visit_stmts(env, visitor, NODE_HEAD(node), arg);
-    append_inst(data, label_head_end);
+    add_inst(data, label_head_end);
     CompileData_add_jump(env, data, label_else_start);
 
-    append_inst(data, label_excepts_start);
+    add_inst(data, label_excepts_start);
     YogArray* excepts = NODE_EXCEPTS(node);
     unsigned int size = YogArray_size(env, excepts);
     unsigned int i = 0;
@@ -1299,13 +1299,13 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
         CompileData_add_jump(env, data, label_else_end);
 
-        append_inst(data, label_body_end);
+        add_inst(data, label_body_end);
     }
     RERAISE();
 
-    append_inst(data, label_else_start);
+    add_inst(data, label_else_start);
     visitor->visit_stmts(env, visitor, NODE_ELSE(node), arg);
-    append_inst(data, label_else_end);
+    add_inst(data, label_else_end);
 
     PUSH_EXCEPTION_TABLE_ENTRY();
 
@@ -1325,12 +1325,12 @@ compile_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     data->label_while_start = while_start;
     data->label_while_end = while_end;
 
-    append_inst(data, while_start);
+    add_inst(data, while_start);
     visit_node(env, visitor, NODE_TEST(node), arg);
     CompileData_add_jump_if_false(env, data, while_end);
     visitor->visit_stmts(env, visitor, NODE_STMTS(node), arg);
     CompileData_add_jump(env, data, while_start);
-    append_inst(data, while_end);
+    add_inst(data, while_end);
 
     data->label_while_end = label_while_end_prev;
     data->label_while_start = label_while_start_prev;
@@ -1348,9 +1348,9 @@ compile_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     CompileData_add_jump_if_false(env, data, label_tail_start);
     visitor->visit_stmts(env, visitor, NODE_IF_STMTS(node), arg);
     CompileData_add_jump(env, data, label_stmt_end);
-    append_inst(data, label_tail_start);
+    add_inst(data, label_tail_start);
     visitor->visit_stmts(env, visitor, NODE_IF_TAIL(node), arg);
-    append_inst(data, label_stmt_end);
+    add_inst(data, label_stmt_end);
 }
 
 static void 
@@ -1383,9 +1383,9 @@ compile_while_jump(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg, Y
             YogInst* label_start = Label_new(env);
             YogInst* label_end = Label_new(env);
 
-            append_inst(data, label_start);
+            add_inst(data, label_start);
             visitor->visit_stmts(env, visitor, NODE_BODY(finally_list_entry->node), arg);
-            append_inst(data, label_end);
+            add_inst(data, label_end);
 
             TryListEntry* try_list_entry = data->try_list;
             while (TRUE) {

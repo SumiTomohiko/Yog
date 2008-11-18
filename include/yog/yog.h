@@ -542,7 +542,6 @@ unsigned int YogString_size(YogEnv*, YogString*);
 /* src/table.c */
 void YogTable_add_direct(YogEnv*, YogTable*, YogVal, YogVal);
 void YogTable_cleanup_safe(YogEnv*, YogTable*, YogVal*);
-YogTable* YogTable_copy(YogEnv*, YogTable*);
 BOOL YogTable_delete(YogEnv*, YogTable*, YogVal*, YogVal*);
 BOOL YogTable_delete_safe(YogEnv*, YogTable*, YogVal*, YogVal*, YogVal);
 BOOL YogTable_foreach(YogEnv*, YogTable*, int (*)(YogEnv*, YogVal, YogVal, YogVal*), YogVal*);

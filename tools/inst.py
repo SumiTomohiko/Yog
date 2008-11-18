@@ -292,7 +292,7 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.name
     %(inst)s_%(operand)s(inst) = %(name)s;""" % { "inst": inst.name.upper(), "operand": operand.name.upper(), "name": operand.name })
             compile_data.write("""
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }

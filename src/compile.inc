@@ -13,7 +13,7 @@ CompileData_add_load_special(YogEnv* env, CompileData* data, ID id)
 
     LOAD_SPECIAL_ID(inst) = id;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -26,7 +26,7 @@ CompileData_add_pop(YogEnv* env, CompileData* data)
     INST_OPCODE(inst) = OP(POP);
 
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -40,7 +40,7 @@ CompileData_add_push_const(YogEnv* env, CompileData* data, uint8_t index)
 
     PUSH_CONST_INDEX(inst) = index;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -59,7 +59,7 @@ CompileData_add_call_method(YogEnv* env, CompileData* data, ID method, uint8_t a
     CALL_METHOD_VARARGC(inst) = varargc;
     CALL_METHOD_VARKWARGC(inst) = varkwargc;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -73,7 +73,7 @@ CompileData_add_store_name(YogEnv* env, CompileData* data, ID id)
 
     STORE_NAME_ID(inst) = id;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -87,7 +87,7 @@ CompileData_add_store_local(YogEnv* env, CompileData* data, uint8_t index)
 
     STORE_LOCAL_INDEX(inst) = index;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -106,7 +106,7 @@ CompileData_add_call_command(YogEnv* env, CompileData* data, ID command, uint8_t
     CALL_COMMAND_VARARGC(inst) = varargc;
     CALL_COMMAND_VARKWARGC(inst) = varkwargc;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -119,7 +119,7 @@ CompileData_add_make_package_method(YogEnv* env, CompileData* data)
     INST_OPCODE(inst) = OP(MAKE_PACKAGE_METHOD);
 
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -137,7 +137,7 @@ CompileData_add_call_function(YogEnv* env, CompileData* data, uint8_t argc, uint
     CALL_FUNCTION_VARARGC(inst) = varargc;
     CALL_FUNCTION_VARKWARGC(inst) = varkwargc;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -151,7 +151,7 @@ CompileData_add_load_name(YogEnv* env, CompileData* data, ID id)
 
     LOAD_NAME_ID(inst) = id;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -165,7 +165,7 @@ CompileData_add_load_local(YogEnv* env, CompileData* data, uint8_t index)
 
     LOAD_LOCAL_INDEX(inst) = index;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -179,7 +179,7 @@ CompileData_add_jump(YogEnv* env, CompileData* data, struct YogInst* dest)
 
     JUMP_DEST(inst) = dest;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -193,7 +193,7 @@ CompileData_add_jump_if_false(YogEnv* env, CompileData* data, struct YogInst* de
 
     JUMP_IF_FALSE_DEST(inst) = dest;
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -206,7 +206,7 @@ CompileData_add_dup(YogEnv* env, CompileData* data)
     INST_OPCODE(inst) = OP(DUP);
 
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -219,7 +219,7 @@ CompileData_add_make_package_block(YogEnv* env, CompileData* data)
     INST_OPCODE(inst) = OP(MAKE_PACKAGE_BLOCK);
 
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -232,7 +232,7 @@ CompileData_add_make_klass(YogEnv* env, CompileData* data)
     INST_OPCODE(inst) = OP(MAKE_KLASS);
 
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -245,7 +245,7 @@ CompileData_add_make_method(YogEnv* env, CompileData* data)
     INST_OPCODE(inst) = OP(MAKE_METHOD);
 
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -258,7 +258,7 @@ CompileData_add_push_self_name(YogEnv* env, CompileData* data)
     INST_OPCODE(inst) = OP(PUSH_SELF_NAME);
 
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
@@ -271,7 +271,7 @@ CompileData_add_ret(YogEnv* env, CompileData* data)
     INST_OPCODE(inst) = OP(RET);
 
 
-    append_inst(data, inst);
+    add_inst(data, inst);
 
     data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
