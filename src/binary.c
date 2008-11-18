@@ -3,6 +3,21 @@
 #include "yog/yog.h"
 
 unsigned int 
+YogBinary_size(YogEnv* env, YogBinary* binary) 
+{
+    return binary->size;
+}
+
+void 
+YogBinary_shrink(YogEnv* env, YogBinary* binary) 
+{
+    unsigned int size = YogBinary_size(env, binary);
+    YogByteArray* body = YogByteArray_new(env, size);
+    memcpy(body->items, binary->body->items, size);
+    binary->body = body;
+}
+
+unsigned int 
 YogByteArray_size(YogEnv* env, YogByteArray* array) 
 {
     return array->size;
@@ -45,31 +60,29 @@ YogByteArray*
 YogByteArray_new(YogEnv* env, unsigned int size) 
 {
     YogByteArray* array = ALLOC_OBJ_ITEM(env, NULL, YogByteArray, size, uint8_t);
-    array->size = 0;
-    array->capacity = size;
+    array->size = size;
 
     return array;
 }
 
 static void 
-ensure_capacity(YogEnv* env, YogBinary* binary, unsigned int needed_size) 
+ensure_body_size(YogEnv* env, YogBinary* binary, unsigned int needed_size) 
 {
     YogByteArray* body = binary->body;
-    if (body->capacity < needed_size) {
+    if (body->size < needed_size) {
         unsigned int new_size = 2 * needed_size;
         YogByteArray* new_body = YogByteArray_new(env, new_size);
-        memcpy(new_body->items, body->items, body->size);
-        new_body->size = body->size;
+        memcpy(new_body->items, body->items, binary->size);
         binary->body = new_body;
     }
 }
 
 #define PUSH_TYPE(type, n)  do { \
-    ensure_capacity(env, binary, binary->body->size + sizeof(type)); \
+    ensure_body_size(env, binary, binary->size + sizeof(type)); \
 \
     YogByteArray* body = binary->body; \
-    *((type*)&body->items[body->size]) = n; \
-    body->size += sizeof(type); \
+    *((type*)&body->items[binary->size]) = n; \
+    binary->size += sizeof(type); \
 } while (0)
 
 void 
@@ -110,6 +123,7 @@ YogBinary_new(YogEnv* env, unsigned int size)
 {
     YogByteArray* body = YogByteArray_new(env, size);
     YogBinary* binary = ALLOC_OBJ(env, gc_binary_children, YogBinary);
+    binary->size = 0;
     binary->body = body;
 
     return binary;

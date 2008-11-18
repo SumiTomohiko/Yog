@@ -926,6 +926,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
         CompileData_add_inst(&data, tail);
     }
     YogBinary* bin = insts2bin(env, anchor);
+    YogBinary_shrink(env, bin);
 
     YogCode* code = YogCode_new(env);
     if (var2index != NULL) {

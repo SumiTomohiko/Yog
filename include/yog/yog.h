@@ -278,7 +278,6 @@ typedef struct YogString YogString;
 
 struct YogByteArray {
     unsigned int size;
-    unsigned int capacity;
     uint8_t items[0];
 };
 
@@ -286,6 +285,7 @@ typedef struct YogByteArray YogByteArray;
 
 struct YogBinary {
     YOGBASICOBJ_HEAD;
+    unsigned int size;
     struct YogByteArray* body;
 };
 
@@ -465,6 +465,8 @@ void YogBinary_push_id(YogEnv*, YogBinary*, ID);
 void YogBinary_push_pc(YogEnv*, YogBinary*, pc_t);
 void YogBinary_push_uint8(YogEnv*, YogBinary*, uint8_t);
 void YogBinary_push_unsigned_int(YogEnv*, YogBinary*, unsigned int);
+void YogBinary_shrink(YogEnv*, YogBinary*);
+unsigned int YogBinary_size(YogEnv*, YogBinary*);
 uint8_t YogByteArray_at(YogEnv*, YogByteArray*, unsigned int);
 YogByteArray* YogByteArray_new(YogEnv*, unsigned int);
 void YogByteArray_print(YogEnv*, YogByteArray*);
