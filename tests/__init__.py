@@ -6,7 +6,7 @@ from tempfile import mkstemp
 
 class TestCase(object):
 
-    def _test(self, src, stdout=None, stderr=None, status=None):
+    def _test(self, src, stdout="", stderr="", status=None):
         file = mkstemp(prefix="yog")[1]
         try:
             f = open(file, "w")
@@ -24,7 +24,8 @@ class TestCase(object):
                 err = proc.stderr.read()
                 assert stderr == err
             if status is not None:
-                assert status == proc.returncode
+                returncode = proc.returncode
+                assert status == returncode
         finally:
             unlink(file)
 
