@@ -1121,6 +1121,9 @@ src/keywords.inc: src/keywords
 
 src/lexer.c: parser.h
 
+src/thread.inc src/code.inc src/compile.inc: src/insts.def
+	make insts
+
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -55,4 +55,7 @@ src/keywords.inc: src/keywords
 
 src/lexer.c: parser.h
 
+src/thread.inc src/code.inc src/compile.inc: src/insts.def
+	make insts
+
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
