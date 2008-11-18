@@ -2,7 +2,7 @@
 #include "yog/yog.h"
 
 void 
-YogPkg_define_method(YogEnv* env, YogPkg* pkg, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, unsigned int required_argc, ...)
+YogPackage_define_method(YogEnv* env, YogPackage* pkg, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, unsigned int required_argc, ...)
 {
     va_list ap;
     va_start(ap, required_argc);
@@ -20,24 +20,23 @@ YogPkg_define_method(YogEnv* env, YogPkg* pkg, const char* name, void* f, unsign
 static YogBasicObj* 
 allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogPkg* pkg = ALLOC_OBJ(env, NULL, sizeof(YogPkg));
-    YogPkg_init(env, pkg, 0, klass);
+    YogPackage* pkg = ALLOC_OBJ(env, YogObj_gc_children, YogPackage);
+    YogPackage_init(env, pkg, 0, klass);
 
-    return (YogBasicObj*)pkg;
+    return YOGBASICOBJ(pkg);
 }
 
 YogKlass* 
-YogPkg_klass_new(YogEnv* env) 
+YogPackage_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, allocate, "Package", ENV_VM(env)->obj_klass);
+    YogKlass* klass = YogKlass_new(env, allocate, "Package", ENV_VM(env)->cObject);
     return klass;
 }
 
-YogPkg* 
-YogPkg_new(YogEnv* env) 
+YogPackage* 
+YogPackage_new(YogEnv* env) 
 {
-    YogPkg* pkg = ALLOC_OBJ(env, YogObj_gc_children, YogPkg);
-    YogPkg_init(env, pkg, 0, ENV_VM(env)->pkg_klass);
+    YogPackage* pkg = (YogPackage*)allocate(env, ENV_VM(env)->cPackage);
     pkg->attrs = YogTable_new_symbol_table(env);
 
     return pkg;

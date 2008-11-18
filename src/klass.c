@@ -37,7 +37,7 @@ YogKlass_allocate(YogEnv* env, YogKlass* klass)
 YogKlass* 
 YogKlass_new(YogEnv* env, Allocator allocator, const char* name, YogKlass* super) 
 {
-    YogKlass* klass = (YogKlass*)YogKlass_allocate(env, ENV_VM(env)->klass_klass);
+    YogKlass* klass = (YogKlass*)YogKlass_allocate(env, ENV_VM(env)->cKlass);
     klass->allocator = allocator;
     if (name != NULL) {
         klass->name = INTERN(name);
@@ -59,9 +59,9 @@ klass_new(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
 }
 
 void 
-YogKlass_klass_init(YogEnv* env, YogKlass* klass_klass) 
+YogKlass_klass_init(YogEnv* env, YogKlass* cKlass) 
 {
-    YogKlass_define_method(env, klass_klass, "new", klass_new, 1, 1, 0, 0, "block", NULL);
+    YogKlass_define_method(env, cKlass, "new", klass_new, 1, 1, 0, 0, "block", NULL);
 }
 
 /**

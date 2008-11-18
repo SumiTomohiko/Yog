@@ -120,14 +120,14 @@ allocate(YogEnv* env, YogKlass* klass)
 YogString* 
 YogString_new(YogEnv* env) 
 {
-    YogString* string = (YogString*)allocate(env, ENV_VM(env)->string_klass);
+    YogString* string = (YogString*)allocate(env, ENV_VM(env)->cString);
     string->body = NULL;
     return string;
 }
 
 #define RETURN_STR(s)   do { \
     YogCharArray* body = YogCharArray_new_str(env, s); \
-    YogString* string = (YogString*)allocate(env, ENV_VM(env)->string_klass); \
+    YogString* string = (YogString*)allocate(env, ENV_VM(env)->cString); \
     string->body = body; \
     return string; \
 } while (0)
@@ -168,7 +168,7 @@ YogString_at(YogEnv* env, YogString* s, unsigned int n)
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, allocate, "String", ENV_VM(env)->obj_klass);
+    YogKlass* klass = YogKlass_new(env, allocate, "String", ENV_VM(env)->cObject);
 
     return klass;
 }

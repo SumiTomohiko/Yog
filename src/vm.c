@@ -104,30 +104,30 @@ setup_symbol_tables(YogEnv* env, YogVm* vm)
 static void 
 setup_basic_klass(YogEnv* env, YogVm* vm) 
 {
-    YogKlass* obj_klass = YogKlass_new(env, YogObj_allocate, "Object", NULL);
-    YogKlass* klass_klass = YogKlass_new(env, YogKlass_allocate, "Class", obj_klass);
-    YOGBASICOBJ(obj_klass)->klass = klass_klass;
-    YOGBASICOBJ(klass_klass)->klass = klass_klass;
-    vm->obj_klass = obj_klass;
-    vm->klass_klass = klass_klass;
+    YogKlass* cObject = YogKlass_new(env, YogObj_allocate, "Object", NULL);
+    YogKlass* cKlass = YogKlass_new(env, YogKlass_allocate, "Class", cObject);
+    YOGBASICOBJ(cObject)->klass = cKlass;
+    YOGBASICOBJ(cKlass)->klass = cKlass;
+    vm->cObject = cObject;
+    vm->cKlass = cKlass;
 }
 
 static void 
 setup_klasses(YogEnv* env, YogVm* vm) 
 {
-    vm->builtin_bound_method_klass = YogBuiltinBoundMethod_klass_new(env);
-    vm->bound_method_klass = YogBoundMethod_klass_new(env);
-    vm->builtin_unbound_method_klass = YogBuiltinUnboundMethod_klass_new(env);
-    vm->unbound_method_klass = YogUnboundMethod_klass_new(env);
+    vm->cBuiltinBoundMethod = YogBuiltinBoundMethod_klass_new(env);
+    vm->cBoundMethod = YogBoundMethod_klass_new(env);
+    vm->cBuiltinUnboundMethod = YogBuiltinUnboundMethod_klass_new(env);
+    vm->cUnboundMethod = YogUnboundMethod_klass_new(env);
 
-    YogObj_klass_init(env, vm->obj_klass);
-    YogKlass_klass_init(env, vm->klass_klass);
+    YogObj_klass_init(env, vm->cObject);
+    YogKlass_klass_init(env, vm->cKlass);
 
-    vm->int_klass = YogInt_klass_new(env);
-    vm->string_klass = YogString_klass_new(env);
-    vm->pkg_klass = YogPkg_klass_new(env);
-    vm->bool_klass = YogBool_klass_new(env);
-    vm->pkg_block_klass = YogPackageBlock_klass_new(env);
+    vm->cInt = YogInt_klass_new(env);
+    vm->cString = YogString_klass_new(env);
+    vm->cPackage = YogPackage_klass_new(env);
+    vm->cBool = YogBool_klass_new(env);
+    vm->cPackageBlock = YogPackageBlock_klass_new(env);
 }
 
 static void 
@@ -173,18 +173,17 @@ YogVm_new(size_t heap_size)
     vm->id2name = NULL;
     vm->name2id = NULL;
 
-    vm->obj_klass = NULL;
-    vm->klass_klass = NULL;
-    vm->func_klass = NULL;
-    vm->int_klass = NULL;
-    vm->string_klass = NULL;
-    vm->pkg_klass = NULL;
-    vm->bool_klass = NULL;
-    vm->builtin_bound_method_klass = NULL;
-    vm->bound_method_klass = NULL;
-    vm->builtin_unbound_method_klass = NULL;
-    vm->unbound_method_klass = NULL;
-    vm->pkg_block_klass = NULL;
+    vm->cObject = NULL;
+    vm->cKlass = NULL;
+    vm->cInt = NULL;
+    vm->cString = NULL;
+    vm->cPackage = NULL;
+    vm->cBool = NULL;
+    vm->cBuiltinBoundMethod = NULL;
+    vm->cBoundMethod = NULL;
+    vm->cBuiltinUnboundMethod = NULL;
+    vm->cUnboundMethod = NULL;
+    vm->cPackageBlock = NULL;
 
     vm->pkgs = NULL;
 

@@ -9,7 +9,7 @@ YogBlock_init(YogEnv* env, YogBlock* block, YogKlass* klass)
 static void 
 YogPackageBlock_init(YogEnv* env, YogPackageBlock* block) 
 {
-    YogBlock_init(env, BLOCK(block), ENV_VM(env)->pkg_block_klass);
+    YogBlock_init(env, BLOCK(block), ENV_VM(env)->cPackageBlock);
     block->self = YUNDEF;
     block->vars = NULL;
 }
@@ -34,7 +34,7 @@ allocate(YogEnv* env, YogKlass* klass)
 YogKlass* 
 YogPackageBlock_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, allocate, "PackageBlock", ENV_VM(env)->obj_klass);
+    YogKlass* klass = YogKlass_new(env, allocate, "PackageBlock", ENV_VM(env)->cObject);
     return klass;
 }
 

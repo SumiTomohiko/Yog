@@ -29,7 +29,7 @@ main(int argc, char* argv[])
 
     YogThread* th = YogThread_new(&env);
     env.th = th;
-    YogPkg* pkg = YogPkg_new(&env);
+    YogPackage* pkg = YogPackage_new(&env);
     YogThread_eval_package(&env, th, pkg, code);
 
     return 0;

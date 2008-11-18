@@ -1490,8 +1490,8 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         visit_node(env, visitor, super, arg);
     }
     else {
-        YogKlass* obj_klass = ENV_VM(env)->obj_klass;
-        val = OBJ2VAL(obj_klass);
+        YogKlass* cObject = ENV_VM(env)->cObject;
+        val = OBJ2VAL(cObject);
         ADD_PUSH_CONST(val);
     }
 

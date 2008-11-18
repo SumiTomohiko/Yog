@@ -70,7 +70,7 @@ YogUnboundMethod_allocate(YogEnv* env, YogKlass* klass)
 }
 
 #define RETURN_NEW_KLASS(allocator, name)  do { \
-    YogKlass* klass = YogKlass_new(env, allocator, name, ENV_VM(env)->obj_klass); \
+    YogKlass* klass = YogKlass_new(env, allocator, name, ENV_VM(env)->cObject); \
     return klass; \
 } while (0)
 
@@ -103,7 +103,7 @@ YogUnboundMethod_klass_new(YogEnv* env)
 YogBuiltinBoundMethod* 
 YogBuiltinBoundMethod_new(YogEnv* env) 
 {
-    YogBuiltinBoundMethod* method = (YogBuiltinBoundMethod*)YogBuiltinBoundMethod_allocate(env, ENV_VM(env)->builtin_bound_method_klass);
+    YogBuiltinBoundMethod* method = (YogBuiltinBoundMethod*)YogBuiltinBoundMethod_allocate(env, ENV_VM(env)->cBuiltinBoundMethod);
     method->self = YNIL;
     method->f = NULL;
 
@@ -113,7 +113,7 @@ YogBuiltinBoundMethod_new(YogEnv* env)
 YogBoundMethod* 
 YogBoundMethod_new(YogEnv* env) 
 {
-    YogBoundMethod* method = (YogBoundMethod*)YogBoundMethod_allocate(env, ENV_VM(env)->bound_method_klass);
+    YogBoundMethod* method = (YogBoundMethod*)YogBoundMethod_allocate(env, ENV_VM(env)->cBoundMethod);
     method->self = YNIL;
     method->code = NULL;
 
@@ -123,7 +123,7 @@ YogBoundMethod_new(YogEnv* env)
 YogBuiltinUnboundMethod* 
 YogBuiltinUnboundMethod_new(YogEnv* env) 
 {
-    YogBuiltinUnboundMethod* method = (YogBuiltinUnboundMethod*)YogBuiltinUnboundMethod_allocate(env, ENV_VM(env)->builtin_unbound_method_klass);
+    YogBuiltinUnboundMethod* method = (YogBuiltinUnboundMethod*)YogBuiltinUnboundMethod_allocate(env, ENV_VM(env)->cBuiltinUnboundMethod);
     method->f = NULL;
 
     return method;
@@ -132,7 +132,7 @@ YogBuiltinUnboundMethod_new(YogEnv* env)
 YogUnboundMethod* 
 YogUnboundMethod_new(YogEnv* env) 
 {
-    YogUnboundMethod* method = (YogUnboundMethod*)YogUnboundMethod_allocate(env, ENV_VM(env)->unbound_method_klass);
+    YogUnboundMethod* method = (YogUnboundMethod*)YogUnboundMethod_allocate(env, ENV_VM(env)->cUnboundMethod);
     method->code = NULL;
 
     return method;

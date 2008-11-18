@@ -34,18 +34,17 @@ struct YogVm {
     struct YogTable* id2name;
     struct YogTable* name2id;
 
-    struct YogKlass* obj_klass;
-    struct YogKlass* klass_klass;
-    struct YogKlass* func_klass;
-    struct YogKlass* int_klass;
-    struct YogKlass* string_klass;
-    struct YogKlass* pkg_klass;
-    struct YogKlass* bool_klass;
-    struct YogKlass* builtin_bound_method_klass;
-    struct YogKlass* bound_method_klass;
-    struct YogKlass* builtin_unbound_method_klass;
-    struct YogKlass* unbound_method_klass;
-    struct YogKlass* pkg_block_klass;
+    struct YogKlass* cObject;
+    struct YogKlass* cKlass;
+    struct YogKlass* cInt;
+    struct YogKlass* cString;
+    struct YogKlass* cPackage;
+    struct YogKlass* cBool;
+    struct YogKlass* cBuiltinBoundMethod;
+    struct YogKlass* cBoundMethod;
+    struct YogKlass* cBuiltinUnboundMethod;
+    struct YogKlass* cUnboundMethod;
+    struct YogKlass* cPackageBlock;
 
     struct YogTable* pkgs;
 
@@ -189,9 +188,8 @@ struct YogObj {
 
 typedef struct YogObj YogObj;
 
-#define YogPkg          YogObj
-#define YogPkg_init     YogObj_init
-#define pkg_klass       obj_klass
+#define YogPackage          YogObj
+#define YogPackage_init     YogObj_init
 
 typedef YogBasicObj* (*Allocator)(struct YogEnv*, struct YogKlass*);
 
@@ -462,7 +460,7 @@ YogPackageBlock* YogPackageBlock_new(YogEnv*);
 YogKlass* YogBool_klass_new(YogEnv*);
 
 /* src/builtins.c */
-YogPkg* Yog_bltins_new(YogEnv*);
+YogPackage* Yog_bltins_new(YogEnv*);
 
 /* src/code.c */
 void YogCode_dump(YogEnv*, YogCode*);
@@ -523,9 +521,9 @@ YogObj* YogObj_new(YogEnv*, YogKlass*);
 void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
 
 /* src/package.c */
-void YogPkg_define_method(YogEnv*, YogPkg*, const char*, void*, unsigned int, unsigned int, unsigned int, unsigned int, ...);
-YogKlass* YogPkg_klass_new(YogEnv*);
-YogPkg* YogPkg_new(YogEnv*);
+void YogPackage_define_method(YogEnv*, YogPackage*, const char*, void*, unsigned int, unsigned int, unsigned int, unsigned int, ...);
+YogKlass* YogPackage_klass_new(YogEnv*);
+YogPackage* YogPackage_new(YogEnv*);
 
 /* src/string.c */
 YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
@@ -560,7 +558,7 @@ int YogTable_size(YogEnv*, YogTable*);
 YogVal YogThread_call_block(YogEnv*, YogThread*, YogVal, unsigned int, YogVal*);
 YogVal YogThread_call_method(YogEnv*, YogThread*, YogVal, const char*, unsigned int, YogVal*);
 YogVal YogThread_call_method_id(YogEnv*, YogThread*, YogVal, ID, unsigned int, YogVal*);
-void YogThread_eval_package(YogEnv*, YogThread*, YogPkg*, YogCode*);
+void YogThread_eval_package(YogEnv*, YogThread*, YogPackage*, YogCode*);
 YogThread* YogThread_new(YogEnv*);
 
 /* src/value.c */

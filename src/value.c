@@ -216,7 +216,7 @@ YogVal_get_klass(YogEnv* env, YogVal val)
 {
     switch (VAL_TYPE(val)) {
     case VAL_INT:
-        return ENV_VM(env)->int_klass;
+        return ENV_VM(env)->cInt;
         break;
     case VAL_OBJ:
         {
@@ -225,7 +225,7 @@ YogVal_get_klass(YogEnv* env, YogVal val)
             break;
         }
     case VAL_BOOL:
-        return ENV_VM(env)->bool_klass;
+        return ENV_VM(env)->cBool;
         break;
     case VAL_FLOAT:
     case VAL_NIL:
