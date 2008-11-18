@@ -62,7 +62,7 @@ ensure_body_size(YogEnv* env, YogArray* array, unsigned int size)
         }
 #undef INCREASE_RATIO
         YogValArray* new_body = YogValArray_new(env, new_size);
-        memcpy(new_body->items, old_body->items, sizeof(YogVal) * old_body->size);
+        memcpy(new_body->items, old_body->items, sizeof(YogVal) * array->size);
 
         array->body = new_body;
     }
