@@ -10,6 +10,7 @@ typedef struct KeywordTableEntry KeywordTableEntry;
 struct KeywordTableEntry { const char* name; enum yytokentype type; };
 %readonly-tables
 %%
+__LINE__, t__LINE__
 as, AS
 break, BREAK
 class, CLASS

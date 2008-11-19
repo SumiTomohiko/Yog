@@ -61,7 +61,8 @@
      RPAR = 287,
      STAR = 288,
      TRY = 289,
-     WHILE = 290
+     WHILE = 290,
+     t__LINE__ = 291
    };
 #endif
 /* Tokens.  */
@@ -98,12 +99,13 @@
 #define STAR 288
 #define TRY 289
 #define WHILE 290
+#define t__LINE__ 291
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 237 "parser.y"
+#line 242 "parser.y"
 typedef union YYSTYPE {
     struct YogArray* array;
     struct YogNode* node;
@@ -111,7 +113,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 115 "parser.h"
+#line 117 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

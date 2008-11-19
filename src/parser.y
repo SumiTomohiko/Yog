@@ -86,6 +86,11 @@ YogNode_new(YogEnv* env, YogNodeType type)
 
 #define NODE_NEW(type)  YogNode_new(ENV, type)
 
+#define LITERAL_NEW(node, val)  do { \
+    node = NODE_NEW(NODE_LITERAL); \
+    NODE_VAL(node) = val; \
+} while (0)
+
 #define BLOCK_ARG_NEW(node, params, stmts) do { \
     node = NODE_NEW(NODE_BLOCK_ARG); \
     NODE_PARAMS(node) = params; \
@@ -274,6 +279,7 @@ YogNode_new(YogEnv* env, YogNodeType type)
 %token STAR
 %token TRY
 %token WHILE
+%token t__LINE__
 
 %type<array> args
 %type<array> args_opt
@@ -325,7 +331,7 @@ module  : stmts {
 stmts   : stmt {
             OBJ_ARRAY_NEW($$, $1);
         }
-        | stmts NEWLINE stmt {
+        | stmts newline stmt {
             OBJ_ARRAY_PUSH($$, $1, $3);
         }
         ;
@@ -598,9 +604,12 @@ atom    : NAME {
             VARIABLE_NEW($$, $1);
         }
         | NUMBER {
-            YogNode* node = NODE_NEW(NODE_LITERAL);
-            NODE_VAL(node) = $1;
-            $$ = node;
+            LITERAL_NEW($$, $1);
+        }
+        | t__LINE__ {
+            int lineno = PARSER->lineno;
+            YogVal val = INT2VAL(lineno);
+            LITERAL_NEW($$, val);
         }
         | atom LPAR args_opt RPAR blockarg_opt {
             if ($1->type == NODE_ATTR) {
@@ -636,17 +645,21 @@ excepts : except {
             OBJ_ARRAY_PUSH($$, $1, $2);
         }
         ;
-except  : EXCEPT expr AS NAME NEWLINE stmts {
+except  : EXCEPT expr AS NAME newline stmts {
             Yog_assert(ENV, $4 != NO_EXC_VAR, "Too many variables.");
             EXCEPT_BODY_NEW($$, $2, $4, $6);
         }
-        | EXCEPT expr NEWLINE stmts {
+        | EXCEPT expr newline stmts {
             EXCEPT_BODY_NEW($$, $2, NO_EXC_VAR, $4);
         }
-        | EXCEPT NEWLINE stmts {
+        | EXCEPT newline stmts {
             EXCEPT_BODY_NEW($$, NULL, NO_EXC_VAR, $3);
         }
         ;
+newline     : NEWLINE {
+                PARSER->lineno++;
+            }
+            ;
 finally_opt : /* empty */ {
                 $$ = NULL;
             } 
@@ -777,6 +790,7 @@ YogParser_new(YogEnv* env)
     YogParser* parser = ALLOC_OBJ(env, NULL, YogParser);
     parser->env = env;
     parser->lexer = YogLexer_new(env);
+    parser->lineno = 1;
 
     return parser;
 }

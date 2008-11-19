@@ -109,6 +109,7 @@ struct YogParser {
     struct YogEnv* env;
     struct YogLexer* lexer;
     struct YogArray* stmts;
+    int lineno;
 };
 
 typedef struct YogParser YogParser;
