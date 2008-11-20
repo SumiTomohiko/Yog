@@ -50,7 +50,7 @@ bltins_puts(YogEnv* env, YogVal self, YogArray* vararg)
 }
 
 YogPackage* 
-Yog_bltins_new(YogEnv* env) 
+YogBuiltins_new(YogEnv* env) 
 {
     YogPackage* bltins = YogPackage_new(env);
     YogPackage_define_method(env, bltins, "puts", bltins_puts, 0, 1, 0, 0, NULL);

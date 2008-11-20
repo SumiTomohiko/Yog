@@ -89,7 +89,7 @@ YogVm_alloc(YogEnv* env, GcChildren gc_children, size_t size)
 static void 
 setup_builtins(YogEnv* env, YogVm* vm) 
 {
-    YogObj* builtins = Yog_bltins_new(env);
+    YogPackage* builtins = YogBuiltins_new(env);
     ID name = YogVm_intern(env, vm, BUILTINS);
     YogTable_add_direct(env, vm->pkgs, ID2VAL(name), PTR2VAL(builtins));
 }

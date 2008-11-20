@@ -460,7 +460,7 @@ YogPackageBlock* YogPackageBlock_new(YogEnv*);
 YogKlass* YogBool_klass_new(YogEnv*);
 
 /* src/builtins.c */
-YogPackage* Yog_bltins_new(YogEnv*);
+YogPackage* YogBuiltins_new(YogEnv*);
 
 /* src/code.c */
 void YogCode_dump(YogEnv*, YogCode*);
