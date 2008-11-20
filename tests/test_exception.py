@@ -9,7 +9,7 @@ class TestException(TestCase):
         def test_stderr(stderr):
             m = match("""Traceback (most recent call last):
   File "[^\"]+", line 1, in <module>
-Exception: 42
+Exception: 
 """, stderr)
             assert m is not None
 
