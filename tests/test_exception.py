@@ -8,8 +8,7 @@ class TestException(TestCase):
     def test_traceback(self):
         def test_stderr(stderr):
             m = match("""Traceback (most recent call last):
-  File "[^\"]+", line 9, in <module>
-  File "[^\"]+", line 7, in foo
+  File "[^\"]+", line 1, in <module>
 Exception: 42
 """, stderr)
             assert m is not None
