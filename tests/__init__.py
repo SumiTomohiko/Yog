@@ -19,13 +19,22 @@ class TestCase(object):
             proc.wait()
             if stdout is not None:
                 out = proc.stdout.read()
-                assert stdout == out
+                if callable(stdout):
+                    stdout(out)
+                else:
+                    assert stdout == out
             if stderr is not None:
                 err = proc.stderr.read()
-                assert stderr == err
+                if callable(stderr):
+                    stderr(err)
+                else:
+                    assert stderr == err
             if status is not None:
                 returncode = proc.returncode
-                assert status == returncode
+                if callable(status):
+                    status(returncode)
+                else:
+                    assert status == returncode
         finally:
             unlink(file)
 
