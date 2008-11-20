@@ -34,7 +34,8 @@ allocate(YogEnv* env, YogKlass* klass)
 YogKlass* 
 YogPackageBlock_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, allocate, "PackageBlock", ENV_VM(env)->cObject);
+    YogKlass* klass = YogKlass_new(env, "PackageBlock", ENV_VM(env)->cObject);
+    YogKlass_define_allocator(env, klass, allocate);
     return klass;
 }
 

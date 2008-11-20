@@ -104,10 +104,15 @@ setup_symbol_tables(YogEnv* env, YogVm* vm)
 static void 
 setup_basic_klass(YogEnv* env, YogVm* vm) 
 {
-    YogKlass* cObject = YogKlass_new(env, YogObj_allocate, "Object", NULL);
-    YogKlass* cKlass = YogKlass_new(env, YogKlass_allocate, "Class", cObject);
+    YogKlass* cObject = YogKlass_new(env, "Object", NULL);
+    YogKlass_define_allocator(env, cObject, YogObj_allocate);
+
+    YogKlass* cKlass = YogKlass_new(env, "Class", cObject);
+    YogKlass_define_allocator(env, cKlass, YogKlass_allocate);
+
     YOGBASICOBJ(cObject)->klass = cKlass;
     YOGBASICOBJ(cKlass)->klass = cKlass;
+
     vm->cObject = cObject;
     vm->cKlass = cKlass;
 }

@@ -478,6 +478,9 @@ YogString* YogEncoding_normalize_name(YogEnv*, YogString*);
 /* src/error.c */
 void Yog_assert(YogEnv*, BOOL, const char*);
 
+/* src/exception.c */
+YogKlass* YogException_new(YogEnv*);
+
 /* src/frame.c */
 YogCFrame* YogCFrame_new(YogEnv*);
 YogMethodFrame* YogMethodFrame_new(YogEnv*);
@@ -496,9 +499,10 @@ YogKlass* YogInt_klass_new(YogEnv*);
 
 /* src/klass.c */
 YogBasicObj* YogKlass_allocate(YogEnv*, YogKlass*);
+void YogKlass_define_allocator(YogEnv*, YogKlass*, Allocator);
 void YogKlass_define_method(YogEnv*, YogKlass*, const char*, void*, unsigned int, unsigned int, unsigned int, int, ...);
 void YogKlass_klass_init(YogEnv*, YogKlass*);
-YogKlass* YogKlass_new(YogEnv*, Allocator, const char*, YogKlass*);
+YogKlass* YogKlass_new(YogEnv*, const char*, YogKlass*);
 
 /* src/method.c */
 YogKlass* YogBoundMethod_klass_new(YogEnv*);

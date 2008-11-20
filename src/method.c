@@ -70,7 +70,8 @@ YogUnboundMethod_allocate(YogEnv* env, YogKlass* klass)
 }
 
 #define RETURN_NEW_KLASS(allocator, name)  do { \
-    YogKlass* klass = YogKlass_new(env, allocator, name, ENV_VM(env)->cObject); \
+    YogKlass* klass = YogKlass_new(env, name, ENV_VM(env)->cObject); \
+    YogKlass_define_allocator(env, klass, allocator); \
     return klass; \
 } while (0)
 

@@ -168,7 +168,8 @@ YogString_at(YogEnv* env, YogString* s, unsigned int n)
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, allocate, "String", ENV_VM(env)->cObject);
+    YogKlass* klass = YogKlass_new(env, "String", ENV_VM(env)->cObject);
+    YogKlass_define_allocator(env, klass, allocate);
 
     return klass;
 }
