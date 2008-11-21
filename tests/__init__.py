@@ -6,7 +6,7 @@ from tempfile import mkstemp
 
 class TestCase(object):
 
-    def _test(self, src, stdout="", stderr="", status=None):
+    def _test(self, src, stdout="", stderr="", status=None, options=[]):
         file = mkstemp(prefix="yog")[1]
         try:
             f = open(file, "w")
@@ -15,7 +15,11 @@ class TestCase(object):
             finally:
                 f.close()
 
-            proc = Popen(["./yog", file], stdout=PIPE, stderr=PIPE)
+            cmd = ["./yog"]
+            cmd.extend(options)
+            cmd.append(file)
+
+            proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
             proc.wait()
             if stdout is not None:
                 out = proc.stdout.read()

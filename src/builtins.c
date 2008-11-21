@@ -44,9 +44,14 @@ YogBuiltins_new(YogEnv* env)
     YogPackage_define_method(env, bltins, "puts", puts_, 0, 1, 0, 0, NULL);
     YogPackage_define_method(env, bltins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
 
-    YogKlass* klass = ENV_VM(env)->eException;
-    YogVal val = OBJ2VAL(klass);
-    YogObj_set_attr_id(env, bltins, klass->name, val);
+#define REGISTER_KLASS(c)   do { \
+    YogKlass* klass = ENV_VM(env)->c; \
+    YogVal val = OBJ2VAL(klass); \
+    YogObj_set_attr_id(env, bltins, klass->name, val); \
+} while (0)
+    REGISTER_KLASS(cObject);
+    REGISTER_KLASS(eException);
+#undef REGISTER_KLASS
 
     return bltins;
 }
