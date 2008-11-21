@@ -26,7 +26,7 @@ YogByteArray_size(YogEnv* env, YogByteArray* array)
 uint8_t 
 YogByteArray_at(YogEnv* env, YogByteArray* array, unsigned int n) 
 {
-    Yog_assert(env, n < YogByteArray_size(env, array), "");
+    YOG_ASSERT(env, n < YogByteArray_size(env, array), "");
     return array->items[n];
 }
 

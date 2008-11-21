@@ -9,7 +9,7 @@ YogVm_id2name(YogEnv* env, YogVm* vm, ID id)
     YogVal sym = ID2VAL(id);
     YogVal val = YUNDEF;
     if (!YogTable_lookup(env, ENV_VM(env)->id2name, sym, &val)) {
-        Yog_assert(env, FALSE, "Can't find symbol.");
+        YOG_ASSERT(env, FALSE, "Can't find symbol.");
     }
 
     YogCharArray* ptr = VAL2PTR(val);
@@ -40,10 +40,10 @@ static Heap*
 new_heap(size_t size, Heap* next) 
 {
     Heap* heap = malloc(sizeof(Heap));
-    Yog_assert(NULL, heap != NULL, "Can' allocate memory for heap.");
+    YOG_ASSERT(NULL, heap != NULL, "Can' allocate memory for heap.");
 
     void* ptr = malloc(size);
-    Yog_assert(NULL, heap != NULL, "Can' allocate memory for heap.");
+    YOG_ASSERT(NULL, heap != NULL, "Can' allocate memory for heap.");
     bzero(ptr, size);
 
     heap->size = size;
@@ -157,6 +157,7 @@ static void
 setup_exceptions(YogEnv* env, YogVm* vm) 
 {
     vm->eException = YogException_klass_new(env);
+    vm->eBugException = YogKlass_new(env, "BugException", vm->eException);
 }
 
 void 
@@ -178,7 +179,7 @@ YogVm*
 YogVm_new(size_t heap_size) 
 {
     YogVm* vm = malloc(sizeof(YogVm));
-    Yog_assert(NULL, vm != NULL, "Can' allocate memory for YogVm.");
+    YOG_ASSERT(NULL, vm != NULL, "Can' allocate memory for YogVm.");
 
     vm->need_gc = FALSE;
     vm->heap = new_heap(heap_size, NULL);
@@ -200,6 +201,7 @@ YogVm_new(size_t heap_size)
     vm->cNil = NULL;
 
     vm->eException = NULL;
+    vm->eBugException = NULL;
 
     vm->pkgs = NULL;
 

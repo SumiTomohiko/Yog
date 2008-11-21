@@ -35,7 +35,7 @@ YogVal_print(YogEnv* env, YogVal val)
         printf("<symbol: %d>\n", VAL2ID(val));
         break;
     default:
-        Yog_assert(env, FALSE, "Uknown value type.");
+        YOG_ASSERT(env, FALSE, "Uknown value type.");
         break;
     }
     /* NOTREACHED */
@@ -72,7 +72,7 @@ YogVal_hash(YogEnv* env, YogVal val)
         return VAL2ID(val);
         break;
     default:
-        Yog_assert(env, FALSE, "Uknown value type.");
+        YOG_ASSERT(env, FALSE, "Uknown value type.");
         break;
     }
 
@@ -124,7 +124,7 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
         return TRUE;
         break;
     default:
-        Yog_assert(env, FALSE, "Uknown value type.");
+        YOG_ASSERT(env, FALSE, "Uknown value type.");
         break;
     }
 #undef RETURN
@@ -234,7 +234,7 @@ YogVal_get_klass(YogEnv* env, YogVal val)
     case VAL_SYMBOL:
     case VAL_PTR:
     default:
-        Yog_assert(env, FALSE, "Uknown value type.");
+        YOG_ASSERT(env, FALSE, "Uknown value type.");
         break;
     }
 
@@ -270,7 +270,7 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
     } while (klass != NULL);
 #undef RET_ATTR
 
-    Yog_assert(env, FALSE, "Can't get attribute.");
+    YOG_ASSERT(env, FALSE, "Can't get attribute.");
 
     /* NOTREACHED */
     return YNIL;

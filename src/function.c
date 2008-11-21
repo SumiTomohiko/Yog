@@ -14,7 +14,7 @@ YogBuiltinFunction*
 YogBuiltinFunction_new(YogEnv* env, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, va_list ap)
 {
 #define ASSERT(name) do { \
-    Yog_assert(env, (name == 0) || (name == 1), #name "must be zero or one."); \
+    YOG_ASSERT(env, (name == 0) || (name == 1), #name "must be zero or one."); \
 } while (0)
     ASSERT(blockargc);
     ASSERT(varargc);

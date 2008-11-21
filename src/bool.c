@@ -1,7 +1,7 @@
 #include "yog/yog.h"
 
 #define CHECK_TYPE(v)   do { \
-    Yog_assert(env, VAL_TYPE(v) == VAL_BOOL, "value isn't bool."); \
+    YOG_ASSERT(env, VAL_TYPE(v) == VAL_BOOL, "value isn't bool."); \
 } while (0)
 
 static YogVal 

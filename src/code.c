@@ -36,7 +36,7 @@ print_val(YogEnv* env, YogVal val)
         printf(" :%s", YogVm_id2name(env, ENV_VM(env), VAL2ID(val)));
     }
     else {
-        Yog_assert(env, FALSE, "Unknown value type.");
+        YOG_ASSERT(env, FALSE, "Unknown value type.");
     }
 }
 

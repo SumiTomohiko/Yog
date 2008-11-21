@@ -30,21 +30,21 @@ if __name__ == "__main__":
                                     }""")
             s.append("""
                                 default:
-                                    Yog_assert(env, FALSE, "Too many arguments.");
+                                    YOG_ASSERT(env, FALSE, "Too many arguments.");
                                     break;
                             }
                         }""")
 
         s.append("""
                     default:
-                        Yog_assert(env, FALSE, "Too many varargc.");
+                        YOG_ASSERT(env, FALSE, "Too many varargc.");
                         break;
                 }
             }""")
 
     s.append("""
         default:
-            Yog_assert(env, FALSE, "Too many kwargc.");
+            YOG_ASSERT(env, FALSE, "Too many kwargc.");
             break;
     }
     

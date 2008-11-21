@@ -61,7 +61,7 @@ klass_new(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
     while (allocator == NULL) {
         YogKlass* super = klass->super;
         if (super == NULL) {
-            Yog_assert(env, FALSE, "Can't allocate object.");
+            YOG_ASSERT(env, FALSE, "Can't allocate object.");
         }
         allocator = super->allocator;
     }

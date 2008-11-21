@@ -65,7 +65,7 @@ gc_children(YogEnv* env, void* ptr, DoGc do_gc)
             NODE_EXPR(node) = do_gc(env, NODE_EXPR(node));
             break;
         default:
-            Yog_assert(env, FALSE, "Unknown node type.");
+            YOG_ASSERT(env, FALSE, "Unknown node type.");
             break;
     }
 #undef GC
@@ -643,7 +643,7 @@ excepts : except {
         }
         ;
 except  : EXCEPT expr AS NAME newline stmts {
-            Yog_assert(ENV, $4 != NO_EXC_VAR, "Too many variables.");
+            YOG_ASSERT(ENV, $4 != NO_EXC_VAR, "Too many variables.");
             EXCEPT_BODY_NEW($$, $2, $4, $6);
         }
         | EXCEPT expr newline stmts {

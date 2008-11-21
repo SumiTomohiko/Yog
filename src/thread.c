@@ -35,7 +35,7 @@ fill_args(YogEnv* env, YogArgInfo* arg_info, uint8_t posargc, YogVal posargs[], 
         for (i = 0; i < arg_info->argc; i++) {
             args[i] = posargs[i];
         }
-        Yog_assert(env, arg_info->varargc == 1, "Too many arguments.");
+        YOG_ASSERT(env, arg_info->varargc == 1, "Too many arguments.");
         unsigned int index = arg_info->argc + arg_info->blockargc;
         YogArray* array = OBJ_AS(YogArray, args[index]);
         for (i = arg_info->argc; i < posargc; i++) {
@@ -49,7 +49,7 @@ fill_args(YogEnv* env, YogArgInfo* arg_info, uint8_t posargc, YogVal posargs[], 
     }
 
     if (!IS_UNDEF(blockarg)) {
-        Yog_assert(env, arg_info->blockargc == 1, "Can't accept block argument.");
+        YOG_ASSERT(env, arg_info->blockargc == 1, "Can't accept block argument.");
         unsigned int index = arg_info->argc;
         args[index] = blockarg;
     }
@@ -61,7 +61,7 @@ fill_args(YogEnv* env, YogArgInfo* arg_info, uint8_t posargc, YogVal posargs[], 
         for (j = 0; j < arg_info->argc; j++) {
             ID argname = arg_info->argnames[j];
             if (argname == id) {
-                Yog_assert(env, !IS_UNDEF(args[j]), "Argument specified twice.");
+                YOG_ASSERT(env, !IS_UNDEF(args[j]), "Argument specified twice.");
                 args[j] = kwargs[2 * i + 1];
                 break;
             }
@@ -69,7 +69,7 @@ fill_args(YogEnv* env, YogArgInfo* arg_info, uint8_t posargc, YogVal posargs[], 
         if (j == arg_info->argc) {
             ID argname = arg_info->blockargname;
             if (argname == id) {
-                Yog_assert(env, !IS_UNDEF(args[j]), "Argument specified twice.");
+                YOG_ASSERT(env, !IS_UNDEF(args[j]), "Argument specified twice.");
                 args[argc - 1] = blockarg;
             }
         }
@@ -91,7 +91,7 @@ fill_builtin_function_args(YogEnv* env, YogBuiltinFunction* f, uint8_t posargc, 
     unsigned int i = 0;
     for (i = 0; i < required_argc; i++) {
         YogVal val = args[i];
-        Yog_assert(env, !IS_UNDEF(val), "Argument not specified.");
+        YOG_ASSERT(env, !IS_UNDEF(val), "Argument not specified.");
     }
     for (i = required_argc; i < argc; i++) {
         YogVal val = args[i];
@@ -118,7 +118,7 @@ call_builtin_function(YogEnv* env, YogBuiltinFunction* f, YogVal self, YogVal ar
 #define DECL_ARGS \
     YogBuiltinFunction* f = method->f; \
     YogArgInfo* arg_info = &f->arg_info; \
-    Yog_assert(env, (posargc <= arg_info->argc) || (0 < arg_info->varargc), "Too many argument(s)."); \
+    YOG_ASSERT(env, (posargc <= arg_info->argc) || (0 < arg_info->varargc), "Too many argument(s)."); \
     unsigned int argc = arg_info->argc + arg_info->blockargc + arg_info->varargc + arg_info->kwargc; \
     YogVal args[argc]; \
     if (0 < arg_info->varargc) { \
@@ -189,7 +189,7 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogCode* code, uint8_t posarg
 static void 
 call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
-    Yog_assert(env, IS_OBJ(callee), "Callee is not object.");
+    YOG_ASSERT(env, IS_OBJ(callee), "Callee is not object.");
     YogBasicObj* obj = VAL2OBJ(callee);
     YogVm* vm = ENV_VM(env);
     if (obj->klass == vm->cBuiltinBoundMethod) {
@@ -216,7 +216,7 @@ call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint
         call_code(env, th, self, code, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
     }
     else {
-        Yog_assert(env, FALSE, "Callee is not callable.");
+        YOG_ASSERT(env, FALSE, "Callee is not callable.");
     }
 }
 
@@ -227,7 +227,7 @@ lookup_builtins(YogEnv* env, ID name)
     YogVal builtins = YUNDEF;
     YogVm* vm = ENV_VM(env);
     if (!YogTable_lookup(env, vm->pkgs, builtins_name, &builtins)) {
-        Yog_assert(env, FALSE, "Can't find builtins package.");
+        YOG_ASSERT(env, FALSE, "Can't find builtins package.");
     }
 
     YogPackage* pkg = OBJ_AS(YogPackage, builtins);
@@ -348,7 +348,7 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
         switch (op) {
 #include "src/thread.inc"
         default:
-            Yog_assert(env, FALSE, "Unknown instruction.");
+            YOG_ASSERT(env, FALSE, "Unknown instruction.");
             break;
         }
 #undef POP_ARGS
@@ -422,7 +422,7 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
         return retval;
     }
     else {
-        Yog_assert(env, FALSE, "Block class isn't PackageBlock.");
+        YOG_ASSERT(env, FALSE, "Block class isn't PackageBlock.");
     }
 
     return retval;
@@ -432,7 +432,7 @@ YogVal
 YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method, unsigned int argc, YogVal* args) 
 {
     YogVal attr = YogVal_get_attr(env, receiver, method);
-    Yog_assert(env, IS_OBJ(attr), "Attribute isn't object.");
+    YOG_ASSERT(env, IS_OBJ(attr), "Attribute isn't object.");
     YogBasicObj* obj = VAL2OBJ(attr);
 
     YogVal retval = YUNDEF;
@@ -457,7 +457,7 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
         retval = eval_code(env, th, code, receiver, argc, args);
     }
     else {
-        Yog_assert(env, FALSE, "Callee is not callable.");
+        YOG_ASSERT(env, FALSE, "Callee is not callable.");
     }
 
     return retval;

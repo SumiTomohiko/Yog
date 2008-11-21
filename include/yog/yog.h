@@ -48,6 +48,7 @@ struct YogVm {
     struct YogKlass* cNil;
 
     struct YogKlass* eException;
+    struct YogKlass* eBugException;
 
     struct YogTable* pkgs;
 
@@ -508,9 +509,10 @@ YogEncoding* YogEncoding_new(YogEnv*, OnigEncoding);
 YogString* YogEncoding_normalize_name(YogEnv*, YogString*);
 
 /* src/error.c */
-void Yog_assert(YogEnv*, BOOL, const char*);
+void YogError_raise(YogEnv*, YogVal);
 
 /* src/exception.c */
+YogException* YogBugException_new(YogEnv*);
 YogKlass* YogException_klass_new(YogEnv*);
 
 /* src/frame.c */
@@ -655,6 +657,16 @@ YogVm* YogVm_new(size_t);
 #define OBJ2VAL(obj)    YogVal_obj((YogBasicObj*)obj)
 #define PTR2VAL(ptr)    YogVal_ptr(ptr)
 #define ID2VAL(id)      YogVal_symbol(id)
+
+#define YOG_ASSERT(env, test, ...)  do { \
+    if (!(test)) { \
+        YogString* msg = YogString_new_format(env, __VA_ARGS__); \
+        YogException* exc = YogBugException_new(env); \
+        exc->message = OBJ2VAL(msg); \
+        YogVal val = OBJ2VAL(exc); \
+        YogError_raise(env, val); \
+    } \
+} while (0)
 
 #endif
 /**

@@ -1,14 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <setjmp.h>
 #include "yog/yog.h"
 
 void 
-Yog_assert(YogEnv* env, BOOL result, const char* msg) 
+YogError_raise(YogEnv* env, YogVal exc) 
 {
-    if (!result) {
-        printf("%s\n", msg);
-        abort();
+    YogThread* th = ENV_TH(env);
+    YogVal jmp_val = YUNDEF;
+    if (IS_UNDEF(exc)) {
+        jmp_val = th->jmp_val;
     }
+    else {
+        jmp_val = exc;
+    }
+    YOG_ASSERT(env, !IS_UNDEF(jmp_val), "jmp_val is undefined.");
+
+    th->jmp_val = jmp_val;
+    longjmp(th->jmp_buf_list->buf, JMP_RAISE);
 }
 
 /**

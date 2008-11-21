@@ -105,7 +105,7 @@ inst load_name
     YogVal key = ID2VAL(id);
     if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME), key, &val)) {
         val = lookup_builtins(ENV, id);
-        Yog_assert(ENV, !IS_UNDEF(val), "Can't find package var.");
+        YOG_ASSERT(ENV, !IS_UNDEF(val), "Can't find package var.");
     }
 }
 

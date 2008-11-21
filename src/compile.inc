@@ -374,7 +374,7 @@ insts2bin(YogEnv* env, YogInst* inst)
                             }
                         default:
                             {
-                                Yog_assert(env, FALSE, "Unkown instruction.");
+                                YOG_ASSERT(env, FALSE, "Unkown instruction.");
                                 break;
                             }
                     }
@@ -383,7 +383,7 @@ insts2bin(YogEnv* env, YogInst* inst)
             case INST_LABEL:
                 break;
             default:
-                Yog_assert(env, FALSE, "Unknown inst type.");
+                YOG_ASSERT(env, FALSE, "Unknown inst type.");
                 break;
         }
 
@@ -523,12 +523,12 @@ count_stack_size(YogEnv* env, YogInst* inst)
                             }
                         default:
                             {
-                                Yog_assert(env, FALSE, "Unkown instruction.");
+                                YOG_ASSERT(env, FALSE, "Unkown instruction.");
                                 break;
                             }
                     }
                     size += push_size - pop_size;
-                    Yog_assert(env, 0 <= size, "Too many pops.");
+                    YOG_ASSERT(env, 0 <= size, "Too many pops.");
                     if (max < size) {
                         max = size;
                     }
@@ -538,7 +538,7 @@ count_stack_size(YogEnv* env, YogInst* inst)
             case INST_LABEL:
                 break;
             default:
-                Yog_assert(env, FALSE, "Unknown inst type.");
+                YOG_ASSERT(env, FALSE, "Unknown inst type.");
                 break;
         }
 

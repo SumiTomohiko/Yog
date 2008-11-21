@@ -1,29 +1,17 @@
-#include <setjmp.h>
 #include <stdio.h>
 #include "yog/yog.h"
 
 static YogVal 
-bltins_raise(YogEnv* env, YogVal self, YogVal exc)
+raise(YogEnv* env, YogVal self, YogVal exc)
 {
-    YogThread* th = env->th;
-    YogVal jmp_val = YUNDEF;
-    if (IS_UNDEF(exc)) {
-        jmp_val = th->jmp_val;
-    }
-    else {
-        jmp_val = exc;
-    }
-    Yog_assert(env, !IS_UNDEF(jmp_val), "jmp_val is undefined.");
-
-    th->jmp_val = jmp_val;
-    longjmp(th->jmp_buf_list->buf, JMP_RAISE);
+    YogError_raise(env, exc);
 
     /* NOTREACHED */
     return YNIL;
 }
 
 static YogVal 
-bltins_puts(YogEnv* env, YogVal self, YogArray* vararg)
+puts_(YogEnv* env, YogVal self, YogArray* vararg)
 {
     unsigned int size = YogArray_size(env, vararg);
     if (0 < size) {
@@ -53,8 +41,8 @@ YogPackage*
 YogBuiltins_new(YogEnv* env) 
 {
     YogPackage* bltins = YogPackage_new(env);
-    YogPackage_define_method(env, bltins, "puts", bltins_puts, 0, 1, 0, 0, NULL);
-    YogPackage_define_method(env, bltins, "raise", bltins_raise, 0, 0, 0, 0, "exc", NULL);
+    YogPackage_define_method(env, bltins, "puts", puts_, 0, 1, 0, 0, NULL);
+    YogPackage_define_method(env, bltins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
 
     YogKlass* klass = ENV_VM(env)->eException;
     YogVal val = OBJ2VAL(klass);

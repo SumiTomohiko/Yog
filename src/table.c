@@ -522,7 +522,7 @@ YogTable_new_string_table(YogEnv* env)
 BOOL
 YogTable_lookup_str(YogEnv* env, YogTable* table, const char* key, YogVal* value) 
 {
-    Yog_assert(env, table->type == &type_string, "Table type must be type_string.");
+    YOG_ASSERT(env, table->type == &type_string, "Table type must be type_string.");
 
     unsigned int hash_val = strhash(key);
     unsigned int bin_pos = hash_val % table->num_bins;

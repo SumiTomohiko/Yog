@@ -14,7 +14,7 @@ YogScriptFrame_push_stack(YogEnv* env, YogScriptFrame* frame, YogVal val)
 {
     YogValArray* stack = frame->stack;
     unsigned int capacity = YogValArray_size(env, stack);
-    Yog_assert(env, frame->stack_size < capacity, "Stack is full.");
+    YOG_ASSERT(env, frame->stack_size < capacity, "Stack is full.");
 
     stack->items[frame->stack_size] = val;
     frame->stack_size++;
@@ -23,7 +23,7 @@ YogScriptFrame_push_stack(YogEnv* env, YogScriptFrame* frame, YogVal val)
 YogVal 
 YogScriptFrame_pop_stack(YogEnv* env, YogScriptFrame* frame) 
 {
-    Yog_assert(env, 0 < frame->stack_size, "Stack is empty.");
+    YOG_ASSERT(env, 0 < frame->stack_size, "Stack is empty.");
 
     YogVal retval = YogValArray_at(env, frame->stack, frame->stack_size - 1);
     frame->stack_size--;

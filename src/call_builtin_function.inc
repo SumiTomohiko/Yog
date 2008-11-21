@@ -87,7 +87,7 @@
                                         break;
                                     }
                                 default:
-                                    Yog_assert(env, FALSE, "Too many arguments.");
+                                    YOG_ASSERT(env, FALSE, "Too many arguments.");
                                     break;
                             }
                         }
@@ -175,12 +175,12 @@
                                         break;
                                     }
                                 default:
-                                    Yog_assert(env, FALSE, "Too many arguments.");
+                                    YOG_ASSERT(env, FALSE, "Too many arguments.");
                                     break;
                             }
                         }
                     default:
-                        Yog_assert(env, FALSE, "Too many varargc.");
+                        YOG_ASSERT(env, FALSE, "Too many varargc.");
                         break;
                 }
             }
@@ -271,7 +271,7 @@
                                         break;
                                     }
                                 default:
-                                    Yog_assert(env, FALSE, "Too many arguments.");
+                                    YOG_ASSERT(env, FALSE, "Too many arguments.");
                                     break;
                             }
                         }
@@ -359,17 +359,17 @@
                                         break;
                                     }
                                 default:
-                                    Yog_assert(env, FALSE, "Too many arguments.");
+                                    YOG_ASSERT(env, FALSE, "Too many arguments.");
                                     break;
                             }
                         }
                     default:
-                        Yog_assert(env, FALSE, "Too many varargc.");
+                        YOG_ASSERT(env, FALSE, "Too many varargc.");
                         break;
                 }
             }
         default:
-            Yog_assert(env, FALSE, "Too many kwargc.");
+            YOG_ASSERT(env, FALSE, "Too many kwargc.");
             break;
     }
     

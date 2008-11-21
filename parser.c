@@ -200,7 +200,7 @@ gc_children(YogEnv* env, void* ptr, DoGc do_gc)
             NODE_EXPR(node) = do_gc(env, NODE_EXPR(node));
             break;
         default:
-            Yog_assert(env, FALSE, "Unknown node type.");
+            YOG_ASSERT(env, FALSE, "Unknown node type.");
             break;
     }
 #undef GC
@@ -2138,7 +2138,7 @@ yyreduce:
   case 100:
 #line 645 "parser.y"
     {
-            Yog_assert(ENV, (yyvsp[-2].name) != NO_EXC_VAR, "Too many variables.");
+            YOG_ASSERT(ENV, (yyvsp[-2].name) != NO_EXC_VAR, "Too many variables.");
             EXCEPT_BODY_NEW((yyval.node), (yyvsp[-4].node), (yyvsp[-2].name), (yyvsp[0].array));
         }
     break;

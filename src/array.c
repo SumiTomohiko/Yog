@@ -10,14 +10,14 @@ YogValArray_size(YogEnv* env, YogValArray* array)
 YogVal 
 YogValArray_at(YogEnv* env, YogValArray* array, unsigned int n) 
 {
-    Yog_assert(env, n < array->size, "Index exceed array body size.");
+    YOG_ASSERT(env, n < array->size, "Index exceed array body size.");
     return array->items[n];
 }
 
 YogVal 
 YogArray_at(YogEnv* env, YogArray* array, unsigned int n) 
 {
-    Yog_assert(env, n < array->size, "Index exceed array size.");
+    YOG_ASSERT(env, n < array->size, "Index exceed array size.");
     return YogValArray_at(env, array->body, n);
 }
 

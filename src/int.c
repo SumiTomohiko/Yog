@@ -1,7 +1,7 @@
 #include "yog/yog.h"
 
 #define CHECK_TYPE(v) do { \
-    Yog_assert(env, VAL_TYPE(v) == VAL_INT, "Value isn't int."); \
+    YOG_ASSERT(env, VAL_TYPE(v) == VAL_INT, "Value isn't int."); \
 } while (0)
 
 #define CHECK_ARGS(self, v) do { \

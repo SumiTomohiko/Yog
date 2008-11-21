@@ -253,7 +253,7 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         VISIT(visit_klass);
         break;
     default:
-        Yog_assert(env, FALSE, "Unknown node type.");
+        YOG_ASSERT(env, FALSE, "Unknown node type.");
         break;
     }
 #undef VISIT
@@ -487,7 +487,7 @@ lookup_var_index(YogEnv* env, YogTable* var2index, ID id)
     YogVal val = ID2VAL(id);
     YogVal index = YUNDEF;
     if (!YogTable_lookup(env, var2index, val, &index)) {
-        Yog_assert(env, FALSE, "Can't find var.");
+        YOG_ASSERT(env, FALSE, "Can't find var.");
     }
     return VAL2INT(index);
 }
@@ -507,7 +507,7 @@ append_store(YogEnv* env, CompileData* data, unsigned int lineno, ID id)
             CompileData_add_store_name(env, data, lineno, id);
             break;
         default:
-            Yog_assert(env, FALSE, "Unkown context.");
+            YOG_ASSERT(env, FALSE, "Unkown context.");
             break;
     }
 }
@@ -535,7 +535,7 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
     YogArray* args = NODE_ARGS(node);
     if (args != NULL) {
         argc = YogArray_size(env, args);
-        Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for method call.");
+        YOG_ASSERT(env, argc < UINT8_MAX + 1, "Too many arguments for method call.");
     }
 
     uint8_t blockargc = 0;
@@ -584,7 +584,7 @@ compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void
     YogArray* args = NODE_ARGS(node);
     if (args != NULL) {
         argc = YogArray_size(env, args);
-        Yog_assert(env, argc < UINT8_MAX + 1, "Too many arguments for command call.");
+        YOG_ASSERT(env, argc < UINT8_MAX + 1, "Too many arguments for command call.");
     }
 
     uint8_t blockargc = 0;
@@ -849,7 +849,7 @@ register_params_var2index(YogEnv* env, YogArray* params, YogTable* var2index)
         ID id = NODE_NAME(node);
         YogVal name = ID2VAL(id);
         if (YogTable_lookup(env, var2index, name, NULL)) {
-            Yog_assert(env, FALSE, "duplicated argument name in function definition");
+            YOG_ASSERT(env, FALSE, "duplicated argument name in function definition");
         }
         YogVal index = INT2VAL(var2index->num_entries);
         YogTable_add_direct(env, var2index, name, index);
@@ -915,7 +915,7 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
         for (i = 0; i < argc; i++) {
             YogVal val = YogArray_at(env, params, i);
             YogNode* node = VAL2PTR(val);
-            Yog_assert(env, node->type == NODE_PARAM, "Node must be NODE_PARAM.");
+            YOG_ASSERT(env, node->type == NODE_PARAM, "Node must be NODE_PARAM.");
 
             ID name = NODE_NAME(node);
             argnames[i] = name;
@@ -961,14 +961,14 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
         node = VAL2PTR(val);
     }
 
-    Yog_assert(env, node->type == NODE_KW_PARAM, "Node must be NODE_KW_PARAM.");
+    YOG_ASSERT(env, node->type == NODE_KW_PARAM, "Node must be NODE_KW_PARAM.");
     arg_info->kwargc = 1;
 
     ID name = NODE_NAME(node);
     arg_info->kwarg_index = lookup_var_index(env, var2index, name);
 
     n++;
-    Yog_assert(env, size == n, "Parameters count is unmatched.");
+    YOG_ASSERT(env, size == n, "Parameters count is unmatched.");
 }
 
 static void 
@@ -1024,7 +1024,7 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     unsigned int lineno = node->lineno;
     switch (data->ctx) {
         case CTX_FUNC:
-            Yog_assert(env, FALSE, "TODO: NOT IMPLEMENTED");
+            YOG_ASSERT(env, FALSE, "TODO: NOT IMPLEMENTED");
             break;
         case CTX_KLASS:
         case CTX_PKG:
@@ -1037,14 +1037,14 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
                         CompileData_add_make_package_method(env, data, lineno);
                         break;
                     default:
-                        Yog_assert(env, FALSE, "Invalid context type.");
+                        YOG_ASSERT(env, FALSE, "Invalid context type.");
                         break;
                 }
                 CompileData_add_store_name(env, data, lineno, id);
                 break;
             }
         default:
-            Yog_assert(env, FALSE, "Unknown context.");
+            YOG_ASSERT(env, FALSE, "Unknown context.");
             break;
     }
 }
@@ -1088,7 +1088,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
         CompileData_add_load_name(env, data, lineno, id);
         break;
     default:
-        Yog_assert(env, FALSE, "Unknown context.");
+        YOG_ASSERT(env, FALSE, "Unknown context.");
         break;
     }
 }
@@ -1275,7 +1275,7 @@ static void
 split_exception_table(YogEnv* env, ExceptionTableEntry* exc_tbl, YogInst* label_from, YogInst* label_to)
 {
     ExceptionTableEntry* entry = exc_tbl;
-    Yog_assert(env, entry != NULL, "Exception table is empty.");
+    YOG_ASSERT(env, entry != NULL, "Exception table is empty.");
     while (entry->next != NULL) {
         entry = entry->next;
     }
@@ -1295,7 +1295,7 @@ compile_while_jump(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg, Y
 
     YogNode* expr = NODE_EXPR(node);
     if (data->label_while_start != NULL) {
-        Yog_assert(env, expr == NULL, "Can't return value with break/next.");
+        YOG_ASSERT(env, expr == NULL, "Can't return value with break/next.");
         FinallyListEntry* finally_list_entry = data->finally_list;
         while (finally_list_entry != NULL) {
             YogInst* label_start = Label_new(env);
@@ -1367,13 +1367,13 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     switch (data->ctx) {
         case CTX_FUNC:
         case CTX_KLASS:
-            Yog_assert(env, FALSE, "NOT IMPLEMENTED");
+            YOG_ASSERT(env, FALSE, "NOT IMPLEMENTED");
             break;
         case CTX_PKG:
             CompileData_add_make_package_block(env, data, lineno);
             break;
         default:
-            Yog_assert(env, FALSE, "Unknown context.");
+            YOG_ASSERT(env, FALSE, "Unknown context.");
             break;
     }
 }

@@ -248,7 +248,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                         int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
                         int rest_size = (YogString_size(env, lexer->line) - 1) - lexer->next_index;
                         if (rest_size < mbc_size) {
-                            Yog_assert(env, FALSE, "Invalid multibyte character.");
+                            YOG_ASSERT(env, FALSE, "Invalid multibyte character.");
                         }
                         int i = 0;
                         for (i = 0; i < mbc_size; i++) {
