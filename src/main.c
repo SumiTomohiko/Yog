@@ -12,12 +12,6 @@ main(int argc, char* argv[])
     env.th = NULL;
     YogVm_boot(&env, vm);
 
-#if 0
-    YogVm_alloc_obj(&env, env.vm, OBJ_ARRAY, 1024);
-    YogTable_new_symbol_table(&env);
-    YogArray_new(&env);
-#endif
-
     YogParser* parser = YogParser_new(&env);
     const char* filename = NULL;
     if (1 < argc) {
