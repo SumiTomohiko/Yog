@@ -49,7 +49,7 @@ new_heap(size_t size, YogHeap* next)
 
     void* ptr = malloc(size);
     YOG_ASSERT(NULL, heap != NULL, "Can' allocate memory for heap.");
-    bzero(ptr, size);
+    memset(ptr, 0xcb, size);
 
     heap->size = size;
     heap->base = heap->free = ptr;

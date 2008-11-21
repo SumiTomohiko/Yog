@@ -44,7 +44,10 @@ static YogTableEntryArray*
 alloc_bins(YogEnv* env, int size) 
 {
     YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, gc_bins_children, YogTableEntryArray, size, YogTableEntry*);
+    bzero(array, sizeof(YogTableEntryArray) + size * sizeof(YogTableEntry*));
+
     array->size = size;
+
     return array;
 }
 
@@ -165,6 +168,11 @@ static YogTable*
 alloc_table(YogEnv* env) 
 {
     YogTable* tbl = ALLOC_OBJ(env, gc_table_children, YogTable);
+    tbl->type = NULL;
+    tbl->num_bins = 0;
+    tbl->num_entries = 0;
+    tbl->bins = NULL;
+
     return tbl;
 }
 
@@ -248,7 +256,13 @@ gc_table_entry_children(YogEnv* env, void* ptr, DoGc do_gc)
 static YogTableEntry* 
 alloc_entry(YogEnv* env)
 {
-    return ALLOC_OBJ(env, gc_table_entry_children, YogTableEntry);
+    YogTableEntry* entry = ALLOC_OBJ(env, gc_table_entry_children, YogTableEntry);
+    entry->hash = 0;
+    entry->key = YUNDEF;
+    entry->record = YUNDEF;
+    entry->next = NULL;
+
+    return entry;
 }
 
 #define ADD_DIRECT(env, table, key, value, hash_val, bin_pos)\

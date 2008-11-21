@@ -46,6 +46,10 @@ YogValArray_new(YogEnv* env, unsigned int size)
 {
     YogValArray* array = ALLOC_OBJ_ITEM(env, gc_valarray_children, YogValArray, size, YogVal);
     array->size = size;
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        array->items[i] = YUNDEF;
+    }
 
     return array;
 }
@@ -102,6 +106,7 @@ YogArray_new(YogEnv* env)
 #undef INIT_SIZE
 
     YogArray* array = ALLOC_OBJ(env, gc_array_children, YogArray);
+    array->size = 0;
     array->body = body;
 
     return array;
