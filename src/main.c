@@ -1,12 +1,27 @@
+#include <getopt.h>
 #include "yog/parser.h"
 #include "yog/yog.h"
 
 int 
 main(int argc, char* argv[]) 
 {
+    int always_gc = 0;
+    struct option options[] = {
+        { "always-gc", no_argument, &always_gc, 1 }, 
+        { 0, 0, 0, 0 }, 
+    };
+    getopt_long(argc, argv, "", options, NULL);
+
 #define INIT_HEAP_SIZE  (1)
     YogVm* vm = YogVm_new(INIT_HEAP_SIZE);
 #undef INIT_HEAP_SIZE
+    if (always_gc) {
+        vm->always_gc = TRUE;
+    }
+    else {
+        vm->always_gc = FALSE;
+    }
+
     YogEnv env;
     env.vm = vm;
     env.th = NULL;
@@ -14,8 +29,8 @@ main(int argc, char* argv[])
 
     YogParser* parser = YogParser_new(&env);
     const char* filename = NULL;
-    if (1 < argc) {
-        filename = argv[1];
+    if (optind < argc) {
+        filename = argv[optind];
     }
     YogArray* stmts = YogParser_parse_file(&env, parser, filename);
 

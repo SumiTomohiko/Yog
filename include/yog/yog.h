@@ -15,20 +15,22 @@
 
 typedef unsigned int pc_t;
 
-struct Heap {
+struct YogHeap {
     size_t size;
     unsigned char* base;
     unsigned char* free;
-    struct Heap* next;
+    struct YogHeap* next;
 };
 
-typedef struct Heap Heap;
+typedef struct YogHeap YogHeap;
 
 typedef unsigned int ID;
 
 struct YogVm {
+    BOOL always_gc;
+
     BOOL need_gc;
-    Heap* heap;
+    YogHeap* heap;
 
     ID next_id;
     struct YogTable* id2name;
@@ -625,6 +627,7 @@ YogVal YogVal_undef();
 /* src/vm.c */
 void* YogVm_alloc(YogEnv*, GcChildren, size_t);
 void YogVm_boot(YogEnv*, YogVm*);
+void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
 YogVm* YogVm_new(size_t);

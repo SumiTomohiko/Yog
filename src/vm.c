@@ -3,6 +3,11 @@
 #include <strings.h>
 #include "yog/yog.h"
 
+void 
+YogVm_gc(YogEnv* env, YogVm* vm) 
+{
+}
+
 const char* 
 YogVm_id2name(YogEnv* env, YogVm* vm, ID id) 
 {
@@ -36,10 +41,10 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
     return id;
 }
 
-static Heap* 
-new_heap(size_t size, Heap* next) 
+static YogHeap* 
+new_heap(size_t size, YogHeap* next) 
 {
-    Heap* heap = malloc(sizeof(Heap));
+    YogHeap* heap = malloc(sizeof(YogHeap));
     YOG_ASSERT(NULL, heap != NULL, "Can' allocate memory for heap.");
 
     void* ptr = malloc(size);
@@ -61,7 +66,7 @@ YogVm_alloc(YogEnv* env, GcChildren gc_children, size_t size)
     size_t aligned_size = ((needed_size - 1) / unit + 1) * unit;
 
     YogVm* vm = ENV_VM(env);
-    Heap* heap = vm->heap;
+    YogHeap* heap = vm->heap;
     size_t used_size = heap->free - heap->base;
     size_t rest_size = heap->size - used_size;
     if (rest_size < aligned_size) {
@@ -180,6 +185,8 @@ YogVm_new(size_t heap_size)
 {
     YogVm* vm = malloc(sizeof(YogVm));
     YOG_ASSERT(NULL, vm != NULL, "Can' allocate memory for YogVm.");
+
+    vm->always_gc = FALSE;
 
     vm->need_gc = FALSE;
     vm->heap = new_heap(heap_size, NULL);

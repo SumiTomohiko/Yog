@@ -301,10 +301,14 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
     }
 
     while (PC < CODE->insts->size) {
-#define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME)))
-#define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define ENV             (env)
 #define VM              (ENV_VM(ENV))
+        if (VM->need_gc || VM->always_gc) {
+            YogVm_gc(ENV, VM);
+        }
+
+#define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME)))
+#define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define THREAD          (th)
 #define JUMP(m)         PC = m;
 #define POP_ARGS(args, kwargs, blockarg, vararg, varkwarg) \
@@ -354,10 +358,11 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
 #undef POP_ARGS
 #undef JUMP
 #undef THREAD
-#undef VM
-#undef ENV
 #undef CONSTS
 #undef POP
+
+#undef VM
+#undef ENV
     }
 
     POP_BUF();
