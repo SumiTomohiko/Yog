@@ -65,7 +65,7 @@ YogCode_dump(YogEnv* env, YogCode* code)
 
     unsigned int exc_tbl_size = code->exc_tbl_size;
     for (i = 0; i < exc_tbl_size; i++) {
-        YogExcTblEntry* entry = &code->exc_tbl->items[i];
+        YogExceptionTableEntry* entry = &code->exc_tbl->items[i];
         printf("%04d %04d %04d\n", entry->from, entry->to, entry->target);
     }
 

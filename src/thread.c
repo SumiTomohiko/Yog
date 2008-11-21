@@ -261,7 +261,7 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
         unsigned int i = 0;
         BOOL found = FALSE;
         for (i = 0; i < CODE->exc_tbl_size; i++) {
-            YogExcTblEntry* entry = &CODE->exc_tbl->items[i];
+            YogExceptionTableEntry* entry = &CODE->exc_tbl->items[i];
             if ((entry->from <= PC) && (PC < entry->to)) {
                 PC = entry->target;
                 found = TRUE;

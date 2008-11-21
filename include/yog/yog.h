@@ -293,19 +293,19 @@ struct YogBinary {
 
 typedef struct YogBinary YogBinary;
 
-struct YogExcTblEntry {
+struct YogExceptionTableEntry {
     pc_t from;
     pc_t to;
     pc_t target;
 };
 
-typedef struct YogExcTblEntry YogExcTblEntry;
+typedef struct YogExceptionTableEntry YogExceptionTableEntry;
 
-struct YogExcTbl {
-    struct YogExcTblEntry items[0];
+struct YogExceptionTable {
+    struct YogExceptionTableEntry items[0];
 };
 
-typedef struct YogExcTbl YogExcTbl;
+typedef struct YogExceptionTable YogExceptionTable;
 
 struct YogLinenoTableEntry {
     pc_t pc_from;
@@ -324,7 +324,7 @@ struct YogCode {
     struct YogByteArray* insts;
 
     unsigned int exc_tbl_size;
-    struct YogExcTbl* exc_tbl;
+    struct YogExceptionTable* exc_tbl;
 
     unsigned int lineno_tbl_size;
     struct YogLinenoTableEntry* lineno_tbl;

@@ -656,7 +656,7 @@ make_exception_table(YogEnv* env, YogCode* code, CompileData* data)
     }
 
     if (0 < size) {
-        YogExcTbl* exc_tbl = ALLOC_OBJ_ITEM(env, NULL, YogExcTbl, size, YogExcTblEntry);
+        YogExceptionTable* exc_tbl = ALLOC_OBJ_ITEM(env, NULL, YogExceptionTable, size, YogExceptionTableEntry);
 
         unsigned int i = 0;
         entry = data->exc_tbl;
@@ -665,7 +665,7 @@ make_exception_table(YogEnv* env, YogCode* code, CompileData* data)
                 pc_t from = entry->from->pc;
                 pc_t to = entry->to->pc;
                 if (from != to) {
-                    YogExcTblEntry* ent = &exc_tbl->items[i];
+                    YogExceptionTableEntry* ent = &exc_tbl->items[i];
                     ent->from = from;
                     ent->to = to;
                     ent->target = entry->target->pc;
