@@ -54,18 +54,19 @@ YogKlass_new(YogEnv* env, const char* name, YogKlass* super)
 }
 
 static YogVal 
-klass_new(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
+new_(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
 {
     YogKlass* klass = OBJ_AS(YogKlass, self);
     Allocator allocator = klass->allocator;
     while (allocator == NULL) {
-        YogKlass* super = klass->super;
-        if (super == NULL) {
+        klass = klass->super;
+        if (klass == NULL) {
             YOG_ASSERT(env, FALSE, "Can't allocate object.");
         }
-        allocator = super->allocator;
+        allocator = klass->allocator;
     }
 
+    klass = OBJ_AS(YogKlass, self);
     YogBasicObj* obj = (*allocator)(env, klass);
     YogVal val = OBJ2VAL(obj);
     YogThread_call_method(env, ENV_TH(env), val, "initialize", vararg->body->size, vararg->body->items);
@@ -76,7 +77,7 @@ klass_new(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
 void 
 YogKlass_klass_init(YogEnv* env, YogKlass* cKlass) 
 {
-    YogKlass_define_method(env, cKlass, "new", klass_new, 1, 1, 0, 0, "block", NULL);
+    YogKlass_define_method(env, cKlass, "new", new_, 1, 1, 0, 0, "block", NULL);
 }
 
 /**
