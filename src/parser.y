@@ -72,19 +72,16 @@ gc_children(YogEnv* env, void* ptr, DoGc do_gc)
 }
 
 static YogNode* 
-YogNode_new(YogEnv* env, YogNodeType type) 
+make_node(YogEnv* env, YogParser* parser, YogNodeType type) 
 {
     YogNode* node = ALLOC_OBJ(env, gc_children, YogNode);
-#if 0
-    node->lineno = Yog_get_lineno();
-#endif
-    node->lineno = 0;
+    node->lineno = parser->lineno;
     node->type = type;
 
     return node;
 }
 
-#define NODE_NEW(type)  YogNode_new(ENV, type)
+#define NODE_NEW(type)  make_node(ENV, PARSER, type)
 
 #define LITERAL_NEW(node, val)  do { \
     node = NODE_NEW(NODE_LITERAL); \

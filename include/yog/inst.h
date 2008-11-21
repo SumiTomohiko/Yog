@@ -14,7 +14,6 @@ struct YogInst {
     enum InstType type;
     enum OpCode opcode;
     union {
-        pc_t pos;
 
         struct {
             ID id;
@@ -80,10 +79,13 @@ struct YogInst {
         struct {
         } ret;
     } u;
+
+    unsigned int lineno;
+    pc_t pc;
+    unsigned int size;
 };
 
 #define INST_OPCODE(inst)   ((inst)->opcode)
-#define LABEL_POS(inst)     ((inst)->u.pos)
 
 #define LOAD_SPECIAL_ID(inst) ((inst)->u.load_special.id)
 #define PUSH_CONST_INDEX(inst) ((inst)->u.push_const.index)

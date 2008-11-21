@@ -227,8 +227,10 @@ YogVal_get_klass(YogEnv* env, YogVal val)
     case VAL_BOOL:
         return ENV_VM(env)->cBool;
         break;
-    case VAL_FLOAT:
     case VAL_NIL:
+        return ENV_VM(env)->cNil;
+        break;
+    case VAL_FLOAT:
     case VAL_SYMBOL:
     case VAL_PTR:
     default:
@@ -258,7 +260,6 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
         }
         else {
             /* TODO: generic attribute */
-            Yog_assert(env, FALSE, "Not implemented.");
         }
     }
 

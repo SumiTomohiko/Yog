@@ -3,14 +3,10 @@
 #define GC(name)    DO_GC(env, do_gc, frame->name)
 
 static void 
-gc_pkg_frame_children(YogEnv* env, void* ptr, DoGc do_gc) 
-{
-}
-
-static void 
-YogFrame_init(YogFrame* frame)
+YogFrame_init(YogFrame* frame, YogFrameType type)
 {
     frame->prev = NULL;
+    frame->type = type;
 }
 
 void 
@@ -38,7 +34,7 @@ YogScriptFrame_pop_stack(YogEnv* env, YogScriptFrame* frame)
 static void 
 YogScriptFrame_init(YogScriptFrame* frame)
 {
-    YogFrame_init(FRAME(frame));
+    YogFrame_init(FRAME(frame), FRAME_SCRIPT);
     frame->pc = 0;
     frame->code = NULL;
     frame->stack_size = 0;
@@ -87,7 +83,7 @@ YogMethodFrame_new(YogEnv* env)
 static void 
 YogCFrame_init(YogCFrame* frame) 
 {
-    YogFrame_init(FRAME(frame));
+    YogFrame_init(FRAME(frame), FRAME_C);
 }
 
 YogCFrame* 

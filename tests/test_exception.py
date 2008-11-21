@@ -7,9 +7,9 @@ class TestException(TestCase):
 
     def test_traceback(self):
         def test_stderr(stderr):
-            m = match("""Traceback (most recent call last):
-  File "[^\"]+", line 1, in <module>
-Exception: 
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 1, in <module>
+Exception: nil
 """, stderr)
             assert m is not None
 

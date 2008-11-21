@@ -13,6 +13,7 @@ AM_YFLAGS = -d --verbose
 
 INSTS_DEF = src/insts.def
 INST_PY = tools/inst.py
+INST_CMD = make insts
 
 proto:
 	python tools/update_prototype.py
@@ -35,12 +36,15 @@ src/keywords.inc: src/keywords
 src/lexer.c: parser.h
 
 src/thread.inc: $(INSTS_DEF) $(INST_PY)
-	make insts
+	$(INST_CMD)
 
 src/code.inc: src/code.inc.tmpl $(INSTS_DEF) $(INST_PY)
-	make insts
+	$(INST_CMD)
 
 src/compile.inc: src/compile.inc.tmpl $(INSTS_DEF) $(INST_PY)
-	make insts
+	$(INST_CMD)
+
+include/yog/inst.h: include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
+	$(INST_CMD)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

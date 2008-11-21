@@ -161,7 +161,7 @@ inst make_klass
 (code, super, name)
 (...) depth: 1
 {
-    YogKlass* super_klass = (YogKlass*)VAL2OBJ(super);
+    YogKlass* super_klass = OBJ_AS(YogKlass, super);
     YogKlass* kls = YogKlass_new(ENV, NULL, super_klass);
     kls->name = VAL2ID(name);
     YogTable* attrs = YOGOBJ(kls)->attrs = YogTable_new_symbol_table(ENV);

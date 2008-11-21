@@ -72,15 +72,6 @@ struct TryListEntry {
 
 typedef struct TryListEntry TryListEntry;
 
-struct LinenoList {
-    struct LinenoList* prev;
-    struct LinenoTableEntry entry;
-};
-
-typedef struct LinenoList LinenoList;
-
-#define SET_LINENO()    set_lineno(env, data, node->lineno)
-
 struct CompileData {
     enum Context ctx;
     struct YogTable* var2index;
@@ -94,8 +85,7 @@ struct CompileData {
     struct FinallyListEntry* finally_list;
     struct TryListEntry* try_list;
 
-    struct LinenoList* lineno_list;
-    pc_t pc;
+    const char* filename;
 };
 
 typedef struct CompileData CompileData;
@@ -119,7 +109,7 @@ typedef struct CompileData CompileData;
 
 #define RAISE   INTERN("raise")
 #define RERAISE() \
-    CompileData_add_call_command(env, data, RAISE, 0, 0, 0, 0, 0)
+    CompileData_add_call_command(env, data, lineno, RAISE, 0, 0, 0, 0, 0)
 
 #define PUSH_TRY()  do { \
     TryListEntry try_list_entry; \
@@ -137,35 +127,10 @@ typedef struct CompileData CompileData;
     data->exc_tbl_last = entry; \
 } while (0)
 
-#define ADD_PUSH_CONST(val) do { \
+#define ADD_PUSH_CONST(val, lineno) do { \
     unsigned int index = register_const(env, data, val); \
-    CompileData_add_push_const(env, data, index); \
+    CompileData_add_push_const(env, data, lineno, index); \
 } while (0)
-
-static void 
-gc_lineno_children(YogEnv* env, void* ptr, DoGc do_gc) 
-{
-    LinenoList* elem = ptr;
-    elem->prev = do_gc(env, elem->prev);
-}
-
-static void 
-set_lineno(YogEnv* env, CompileData* data, unsigned int lineno) 
-{
-    if (data->lineno_list != NULL) {
-        if (data->lineno_list->entry.lineno == lineno) {
-            data->lineno_list->entry.pc_to = data->pc;
-            return;
-        }
-    }
-
-    LinenoList* elem = ALLOC_OBJ(env, gc_lineno_children, LinenoList);
-    elem->entry.pc_from = data->pc;
-    elem->entry.pc_to = data->pc;
-    elem->entry.lineno = lineno;
-    elem->prev = data->lineno_list;
-    data->lineno_list = elem;
-}
 
 static void 
 gc_inst_children(YogEnv* env, void* ptr, DoGc do_gc) 
@@ -188,40 +153,38 @@ gc_inst_children(YogEnv* env, void* ptr, DoGc do_gc)
 }
 
 static YogInst* 
-YogInst_new(YogEnv* env, InstType type) 
+YogInst_new(YogEnv* env, InstType type, unsigned int lineno) 
 {
     YogInst* inst = ALLOC_OBJ(env, gc_inst_children, YogInst);
     inst->type = type;
     inst->next = NULL;
+    inst->lineno = lineno;
+    inst->pc = 0;
 
     return inst;
 }
 
 static YogInst* 
-Inst_new(YogEnv* env) 
+Inst_new(YogEnv* env, unsigned int lineno) 
 {
-    return YogInst_new(env, INST_OP);
+    return YogInst_new(env, INST_OP, lineno);
 }
 
 static YogInst* 
-Label_new(YogEnv* env) 
+Label_new(YogEnv* env)
 {
-    return YogInst_new(env, INST_LABEL);
+    return YogInst_new(env, INST_LABEL, 0);
 }
 
 static YogInst* 
 Anchor_new(YogEnv* env) 
 {
-    return YogInst_new(env, INST_ANCHOR);
+    return YogInst_new(env, INST_ANCHOR, 0);
 }
 
 static void 
 add_inst(CompileData* data, YogInst* inst) 
 {
-    if (inst->type == INST_LABEL) {
-        LABEL_POS(inst) = data->pc;
-    }
-
     data->last_inst->next = inst;
     data->last_inst = inst;
 }
@@ -326,7 +289,7 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg
             case NODE_LITERAL:
             case NODE_METHOD_CALL:
             case NODE_VARIABLE:
-                CompileData_add_pop(env, data);
+                CompileData_add_pop(env, data, node->lineno);
                 break;
             default:
                 break;
@@ -530,18 +493,18 @@ lookup_var_index(YogEnv* env, YogTable* var2index, ID id)
 }
 
 static void 
-append_store(YogEnv* env, CompileData* data, ID id) 
+append_store(YogEnv* env, CompileData* data, unsigned int lineno, ID id) 
 {
     switch (data->ctx) {
         case CTX_FUNC:
             {
                 uint8_t index = lookup_var_index(env, data->var2index, id);
-                CompileData_add_store_local(env, data, index);
+                CompileData_add_store_local(env, data, lineno, index);
                 break;
             }
         case CTX_KLASS:
         case CTX_PKG:
-            CompileData_add_store_name(env, data, id);
+            CompileData_add_store_name(env, data, lineno, id);
             break;
         default:
             Yog_assert(env, FALSE, "Unkown context.");
@@ -555,10 +518,11 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     visit_node(env, visitor, NODE_RIGHT(node), arg);
 
     CompileData* data = arg;
-    CompileData_add_dup(env, data);
+    unsigned int lineno = node->lineno;
+    CompileData_add_dup(env, data, lineno);
 
     ID name = NODE_LEFT(node);
-    append_store(env, data, name);
+    append_store(env, data, lineno, name);
 }
 
 static void 
@@ -580,8 +544,7 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
     }
 
     CompileData* data = arg;
-    SET_LINENO();
-    CompileData_add_call_method(env, data, NODE_METHOD(node), argc, 0, blockargc, 0, 0);
+    CompileData_add_call_method(env, data, node->lineno, NODE_METHOD(node), argc, 0, blockargc, 0, 0);
 }
 
 static int
@@ -609,9 +572,7 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
     CompileData* data = arg;
 
     YogVal val = NODE_VAL(node);
-    ADD_PUSH_CONST(val);
-
-    SET_LINENO();
+    ADD_PUSH_CONST(val, node->lineno);
 }
 
 static void 
@@ -632,8 +593,7 @@ compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void
     }
 
     CompileData* data = arg;
-    SET_LINENO();
-    CompileData_add_call_command(env, data, NODE_COMMAND(node), argc, 0, blockargc, 0, 0);
+    CompileData_add_call_command(env, data, node->lineno, NODE_COMMAND(node), argc, 0, blockargc, 0, 0);
 }
 
 static int 
@@ -685,8 +645,8 @@ make_exception_table(YogEnv* env, YogCode* code, CompileData* data)
     ExceptionTableEntry* entry = data->exc_tbl;
     while (entry != NULL) {
         if (entry->from != NULL) {
-            pc_t from = LABEL_POS(entry->from);
-            pc_t to = LABEL_POS(entry->to);
+            pc_t from = entry->from->pc;
+            pc_t to = entry->to->pc;
             if (from != to) {
                 size++;
             }
@@ -702,13 +662,13 @@ make_exception_table(YogEnv* env, YogCode* code, CompileData* data)
         entry = data->exc_tbl;
         while (entry != NULL) {
             if (entry->from != NULL) {
-                pc_t from = LABEL_POS(entry->from);
-                pc_t to = LABEL_POS(entry->to);
+                pc_t from = entry->from->pc;
+                pc_t to = entry->to->pc;
                 if (from != to) {
                     YogExcTblEntry* ent = &exc_tbl->items[i];
                     ent->from = from;
                     ent->to = to;
-                    ent->target = LABEL_POS(entry->target);
+                    ent->target = entry->target->pc;
 
                     i++;
                 }
@@ -727,26 +687,44 @@ make_exception_table(YogEnv* env, YogCode* code, CompileData* data)
 }
 
 static void 
-make_lineno_table(YogEnv* env, YogCode* code, LinenoList* list)
+make_lineno_table(YogEnv* env, YogCode* code, YogInst* anchor)
 {
+    YogInst* inst = anchor;
+    unsigned int lineno = 0;
     unsigned int size = 0;
-    LinenoList* elem = list;
-    while (elem != NULL) {
-        size++;
-        elem = elem->prev;
+    while (inst != NULL) {
+        if (inst->type == INST_OP) {
+            if (lineno != inst->lineno) {
+                lineno = inst->lineno;
+                size++;
+            }
+        }
+
+        inst = inst->next;
     }
 
-    LinenoTableEntry* tbl = ALLOC_OBJ_SIZE(env, NULL, sizeof(LinenoTableEntry) * size);
-    unsigned int i = size - 1;
-    elem = list;
-    while (elem != NULL) {
-        LinenoTableEntry* entry = &tbl[i];
-        entry->pc_from = elem->entry.pc_from;
-        entry->pc_to = elem->entry.pc_to;
-        entry->lineno = elem->entry.lineno;
+    YogLinenoTableEntry* tbl = ALLOC_OBJ_SIZE(env, NULL, sizeof(YogLinenoTableEntry) * size);
+    inst = anchor;
+    int i = -1;
+    lineno = 0;
+    while (inst != NULL) {
+        if (inst->type == INST_OP) {
+            if (lineno != inst->lineno) {
+                i++;
+                YogLinenoTableEntry* entry = &tbl[i];
+                pc_t pc = inst->pc;
+                entry->pc_from = pc;
+                entry->pc_to = pc + inst->size;
+                lineno = inst->lineno;
+                entry->lineno = lineno;
+            }
+            else {
+                YogLinenoTableEntry* entry = &tbl[i];
+                entry->pc_to = inst->pc + inst->size;
+            }
+        }
 
-        elem = elem->prev;
-        i--;
+        inst = inst->next;
     }
 
     code->lineno_tbl = tbl;
@@ -788,8 +766,32 @@ CompileData_add_inst(CompileData* data, YogInst* inst)
     data->last_inst = inst;
 }
 
+static void 
+calc_pc(YogInst* inst) 
+{
+    pc_t pc = 0;
+    while (inst != NULL) {
+        switch (inst->type) {
+        case INST_OP:
+        case INST_LABEL:
+            inst->pc = pc;
+            break;
+        default:
+            break;
+        }
+
+        if (inst->type == INST_OP) {
+            unsigned int size = Yog_get_inst_size(INST_OPCODE(inst));
+            inst->size = size;
+            pc += size;
+        }
+
+        inst = inst->next;
+    }
+}
+
 static YogCode* 
-compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
+compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID fname, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
 {
     CompileData data;
     data.ctx = ctx;
@@ -803,15 +805,17 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     data.label_while_end = NULL;
     data.finally_list = NULL;
     data.try_list = NULL;
-    data.lineno_list = NULL;
-    data.pc = 0;
+    data.filename = filename;
 
     visitor->visit_stmts(env, visitor, stmts, &data);
     if (tail != NULL) {
         CompileData_add_inst(&data, tail);
     }
+
+    calc_pc(anchor);
     YogBinary* bin = insts2bin(env, anchor);
     YogBinary_shrink(env, bin);
+    YogByteArray* insts = bin->body;
 
     YogCode* code = YogCode_new(env);
     if (var2index != NULL) {
@@ -819,9 +823,13 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, YogTable* var2i
     }
     code->stack_size = count_stack_size(env, anchor);
     code->consts = table2array(env, data.const2index);
-    code->insts = bin->body;
+    code->insts = insts;
+
     make_exception_table(env, code, &data);
-    make_lineno_table(env, code, data.lineno_list);
+    make_lineno_table(env, code, anchor);
+
+    code->filename = filename;
+    code->fname = fname;
 
     return code;
 }
@@ -982,7 +990,7 @@ Var2Index_new(YogEnv* env)
 }
 
 static YogCode* 
-compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node) 
+compile_func(YogEnv* env, AstVisitor* visitor, const char* filename, YogNode* node) 
 {
     YogTable* var2index = Var2Index_new(env);
 
@@ -991,7 +999,9 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node)
     YogArray* stmts = NODE_STMTS(node);
     make_var2index(env, stmts, var2index);
 
-    YogCode* code = compile_stmts(env, visitor, stmts, var2index, CTX_FUNC, NULL);
+    ID name = NODE_NAME(node);
+
+    YogCode* code = compile_stmts(env, visitor, filename, name, stmts, var2index, CTX_FUNC, NULL);
     setup_params(env, var2index, params, code);
 
     return code;
@@ -1000,16 +1010,18 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogNode* node)
 static void 
 compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    YogCode* code = compile_func(env, visitor, node);
-
     CompileData* data = arg;
+
+    YogCode* code = compile_func(env, visitor, data->filename, node);
+
     YogVal val = PTR2VAL(code);
-    ADD_PUSH_CONST(val);
+    ADD_PUSH_CONST(val, node->lineno);
 
     ID id = NODE_NAME(node);
 #if 0
     int var_index = lookup_var_index(env, data->var2index, id);
 #endif
+    unsigned int lineno = node->lineno;
     switch (data->ctx) {
         case CTX_FUNC:
             Yog_assert(env, FALSE, "TODO: NOT IMPLEMENTED");
@@ -1019,23 +1031,22 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
             {
                 switch (data->ctx) {
                     case CTX_KLASS:
-                        CompileData_add_make_method(env, data);
+                        CompileData_add_make_method(env, data, lineno);
                         break;
                     case CTX_PKG:
-                        CompileData_add_make_package_method(env, data);
+                        CompileData_add_make_package_method(env, data, lineno);
                         break;
                     default:
                         Yog_assert(env, FALSE, "Invalid context type.");
                         break;
                 }
-                CompileData_add_store_name(env, data, id);
+                CompileData_add_store_name(env, data, lineno, id);
                 break;
             }
         default:
             Yog_assert(env, FALSE, "Unknown context.");
             break;
     }
-    SET_LINENO();
 }
 
 static void 
@@ -1056,8 +1067,7 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* a
     }
 
     CompileData* data = arg;
-    SET_LINENO();
-    CompileData_add_call_function(env, data, argc, 0, blockargc, 0, 0);
+    CompileData_add_call_function(env, data, node->lineno, argc, 0, blockargc, 0, 0);
 }
 
 static void 
@@ -1065,22 +1075,32 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 {
     CompileData* data = arg;
     ID id = NODE_ID(node);
-    SET_LINENO();
+    unsigned int lineno = node->lineno;
     switch (data->ctx) {
     case CTX_FUNC:
         {
             uint8_t index = lookup_var_index(env, data->var2index, id);
-            CompileData_add_load_local(env, data, index);
+            CompileData_add_load_local(env, data, lineno, index);
             break;
         }
     case CTX_KLASS:
     case CTX_PKG:
-        CompileData_add_load_name(env, data, id);
+        CompileData_add_load_name(env, data, lineno, id);
         break;
     default:
         Yog_assert(env, FALSE, "Unknown context.");
         break;
     }
+}
+
+static unsigned int 
+get_last_lineno(YogEnv* env, YogArray* stmts) 
+{
+    unsigned int size = YogArray_size(env, stmts);
+    YogVal val = YogArray_at(env, stmts, size - 1);
+    YogNode* node = VAL2PTR(val);
+
+    return node->lineno;
 }
 
 static void 
@@ -1111,11 +1131,14 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
     visitor->visit_stmts(env, visitor, NODE_HEAD(node), arg);
     add_inst(data, label_head_end);
 
-    visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
-    CompileData_add_jump(env, data, label_finally_end);
+    YogArray* stmts = NODE_BODY(node);
+    visitor->visit_stmts(env, visitor, stmts, arg);
+    unsigned int lineno = get_last_lineno(env, stmts);
+    CompileData_add_jump(env, data, lineno, label_finally_end);
 
     add_inst(data, label_finally_error_start);
-    visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
+    visitor->visit_stmts(env, visitor, stmts, arg);
+    lineno = get_last_lineno(env, stmts);
     RERAISE();
 
     add_inst(data, label_finally_end);
@@ -1148,9 +1171,11 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     try_list_entry.exc_tbl = entry;
 
     add_inst(data, label_head_start);
-    visitor->visit_stmts(env, visitor, NODE_HEAD(node), arg);
+    YogArray* stmts = NODE_HEAD(node);
+    visitor->visit_stmts(env, visitor, stmts, arg);
     add_inst(data, label_head_end);
-    CompileData_add_jump(env, data, label_else_start);
+    unsigned int lineno = get_last_lineno(env, stmts);
+    CompileData_add_jump(env, data, lineno, label_else_start);
 
     add_inst(data, label_excepts_start);
     YogArray* excepts = NODE_EXCEPTS(node);
@@ -1165,21 +1190,24 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         YogNode* node_type = NODE_EXC_TYPE(node);
         if (node_type != NULL) {
             visit_node(env, visitor, node_type, arg);
-#define LOAD_EXC()  CompileData_add_load_special(env, data, INTERN("$!"))
+#define LOAD_EXC()  CompileData_add_load_special(env, data, lineno, INTERN("$!"))
+            lineno = node_type->lineno;
             LOAD_EXC();
-            CompileData_add_call_method(env, data, INTERN("==="), 1, 0, 0, 0, 0);
-            CompileData_add_jump_if_false(env, data, label_body_end);
+            CompileData_add_call_method(env, data, lineno, INTERN("==="), 1, 0, 0, 0, 0);
+            CompileData_add_jump_if_false(env, data, lineno, label_body_end);
 
             ID id = NODE_EXC_VAR(node);
             if (id != NO_EXC_VAR) {
                 LOAD_EXC();
-                append_store(env, data, id);
+                append_store(env, data, node->lineno, id);
             }
 #undef LOAD_EXC
         }
 
-        visitor->visit_stmts(env, visitor, NODE_BODY(node), arg);
-        CompileData_add_jump(env, data, label_else_end);
+        YogArray* stmts = NODE_BODY(node);
+        visitor->visit_stmts(env, visitor, stmts, arg);
+        lineno = get_last_lineno(env, stmts);
+        CompileData_add_jump(env, data, lineno, label_else_end);
 
         add_inst(data, label_body_end);
     }
@@ -1208,10 +1236,14 @@ compile_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     data->label_while_end = while_end;
 
     add_inst(data, while_start);
-    visit_node(env, visitor, NODE_TEST(node), arg);
-    CompileData_add_jump_if_false(env, data, while_end);
-    visitor->visit_stmts(env, visitor, NODE_STMTS(node), arg);
-    CompileData_add_jump(env, data, while_start);
+    YogNode* test = NODE_TEST(node);
+    visit_node(env, visitor, test, arg);
+    CompileData_add_jump_if_false(env, data, test->lineno, while_end);
+
+    YogArray* stmts = NODE_STMTS(node);
+    visitor->visit_stmts(env, visitor, stmts, arg);
+    unsigned int lineno = get_last_lineno(env, stmts);
+    CompileData_add_jump(env, data, lineno, while_start);
     add_inst(data, while_end);
 
     data->label_while_end = label_while_end_prev;
@@ -1226,10 +1258,14 @@ compile_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     YogInst* label_tail_start = Label_new(env);
     YogInst* label_stmt_end = Label_new(env);
 
-    visit_node(env, visitor, NODE_IF_TEST(node), arg);
-    CompileData_add_jump_if_false(env, data, label_tail_start);
-    visitor->visit_stmts(env, visitor, NODE_IF_STMTS(node), arg);
-    CompileData_add_jump(env, data, label_stmt_end);
+    YogNode* test = NODE_IF_TEST(node);
+    visit_node(env, visitor, test, arg);
+    CompileData_add_jump_if_false(env, data, test->lineno, label_tail_start);
+
+    YogArray* stmts = NODE_IF_STMTS(node);
+    visitor->visit_stmts(env, visitor, stmts, arg);
+    unsigned int lineno = get_last_lineno(env, stmts);
+    CompileData_add_jump(env, data, lineno, label_stmt_end);
     add_inst(data, label_tail_start);
     visitor->visit_stmts(env, visitor, NODE_IF_TAIL(node), arg);
     add_inst(data, label_stmt_end);
@@ -1281,8 +1317,7 @@ compile_while_jump(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg, Y
 
             finally_list_entry = finally_list_entry->prev;
         }
-        SET_LINENO();
-        CompileData_add_jump(env, data, jump_to);
+        CompileData_add_jump(env, data, node->lineno, jump_to);
     }
     else {
         /* TODO */
@@ -1310,8 +1345,10 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogNode* node, CompileData* data
     YogTable* var2index = data->var2index;
     register_block_params_var2index(env, params, var2index);
 
+    const char* filename = data->filename;
+    ID name = INTERN("<block>");
     YogArray* stmts = NODE_STMTS(node);
-    YogCode* code = compile_stmts(env, visitor, stmts, var2index, data->ctx, NULL);
+    YogCode* code = compile_stmts(env, visitor, filename, name, stmts, var2index, data->ctx, NULL);
 
     setup_params(env, var2index, params, code);
 
@@ -1325,14 +1362,15 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     YogCode* code = compile_block(env, visitor, node, data);
 
     YogVal val = PTR2VAL(code);
-    ADD_PUSH_CONST(val);
+    unsigned int lineno = node->lineno;
+    ADD_PUSH_CONST(val, lineno);
     switch (data->ctx) {
         case CTX_FUNC:
         case CTX_KLASS:
             Yog_assert(env, FALSE, "NOT IMPLEMENTED");
             break;
         case CTX_PKG:
-            CompileData_add_make_package_block(env, data);
+            CompileData_add_make_package_block(env, data, lineno);
             break;
         default:
             Yog_assert(env, FALSE, "Unknown context.");
@@ -1341,19 +1379,23 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static YogCode* 
-compile_klass(YogEnv* env, AstVisitor* visitor, YogArray* stmts, CompileData* daa)
+compile_klass(YogEnv* env, AstVisitor* visitor, ID name, YogArray* stmts, CompileData* data)
 {
     YogTable* var2index = Var2Index_new(env);
     make_var2index(env, stmts, var2index);
 
-    YogInst* ret = Inst_new(env);
+    unsigned int lineno = get_last_lineno(env, stmts);
+
+    YogInst* ret = Inst_new(env, lineno);
     ret->next = NULL;
     ret->opcode = OP(RET);
-    YogInst* push_self_name = Inst_new(env);
+    YogInst* push_self_name = Inst_new(env, lineno);
     push_self_name->next = ret;
     push_self_name->opcode = OP(PUSH_SELF_NAME);
 
-    YogCode* code = compile_stmts(env, visitor, stmts, var2index, CTX_KLASS, push_self_name);
+    const char* filename = data->filename;
+
+    YogCode* code = compile_stmts(env, visitor, filename, name, stmts, var2index, CTX_KLASS, push_self_name);
 
     return code;
 }
@@ -1365,7 +1407,7 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 
     ID name = NODE_NAME(node);
     YogVal val = ID2VAL(name);
-    ADD_PUSH_CONST(val);
+    ADD_PUSH_CONST(val, node->lineno);
 
     YogNode* super = NODE_SUPER(node);
     if (super != NULL) {
@@ -1374,17 +1416,18 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     else {
         YogKlass* cObject = ENV_VM(env)->cObject;
         val = OBJ2VAL(cObject);
-        ADD_PUSH_CONST(val);
+        ADD_PUSH_CONST(val, node->lineno);
     }
 
     YogArray* stmts = NODE_STMTS(node);
-    YogCode* code = compile_klass(env, visitor, stmts, data);
+    YogCode* code = compile_klass(env, visitor, name, stmts, data);
     val = PTR2VAL(code);
-    ADD_PUSH_CONST(val);
+    unsigned int lineno = node->lineno;
+    ADD_PUSH_CONST(val, lineno);
 
-    CompileData_add_make_klass(env, data);
+    CompileData_add_make_klass(env, data, lineno);
 
-    append_store(env, data, name);
+    append_store(env, data, lineno, name);
 }
 
 static void 
@@ -1411,14 +1454,21 @@ compile_init_visitor(AstVisitor* visitor)
 }
 
 YogCode* 
-Yog_compile_module(YogEnv* env, YogArray* stmts) 
+Yog_compile_module(YogEnv* env, const char* filename, YogArray* stmts) 
 {
     YogTable* var2index = make_var2index(env, stmts, NULL);
 
     AstVisitor visitor;
     compile_init_visitor(&visitor);
 
-    YogCode* code = compile_stmts(env, &visitor, stmts, var2index, CTX_PKG, NULL);
+    if (filename == NULL) {
+        filename = "<stdin>";
+    }
+    filename = YogString_dup(env, filename);
+
+    ID name = INTERN("<module>");
+
+    YogCode* code = compile_stmts(env, &visitor, filename, name, stmts, var2index, CTX_PKG, NULL);
 
     return code;
 }

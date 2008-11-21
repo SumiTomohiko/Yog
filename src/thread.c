@@ -37,7 +37,7 @@ fill_args(YogEnv* env, YogArgInfo* arg_info, uint8_t posargc, YogVal posargs[], 
         }
         Yog_assert(env, arg_info->varargc == 1, "Too many arguments.");
         unsigned int index = arg_info->argc + arg_info->blockargc;
-        YogArray* array = (YogArray*)VAL2OBJ(args[index]);
+        YogArray* array = OBJ_AS(YogArray, args[index]);
         for (i = arg_info->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }
@@ -230,7 +230,7 @@ lookup_builtins(YogEnv* env, ID name)
         Yog_assert(env, FALSE, "Can't find builtins package.");
     }
 
-    YogPackage* pkg = (YogPackage*)VAL2OBJ(builtins);
+    YogPackage* pkg = OBJ_AS(YogPackage, builtins);
     YogVal key = ID2VAL(name);
     YogVal val = YUNDEF;
     YogTable_lookup(env, pkg->attrs, key, &val);
@@ -259,19 +259,44 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
     }
     else {
         unsigned int i = 0;
+        BOOL found = FALSE;
         for (i = 0; i < CODE->exc_tbl_size; i++) {
             YogExcTblEntry* entry = &CODE->exc_tbl->items[i];
-            BOOL found = FALSE;
             if ((entry->from <= PC) && (PC < entry->to)) {
                 PC = entry->target;
                 found = TRUE;
                 break;
             }
-            if (!found) {
-                POP_BUF();
-                Yog_assert(env, th->jmp_buf_list != NULL, "No more jmp_buf.");
-                longjmp(th->jmp_buf_list->buf, status);
+        }
+        if (!found) {
+            POP_BUF();
+            YogJmpBuf* list = th->jmp_buf_list;
+            if (list != NULL) {
+                longjmp(list->buf, status);
             }
+
+#define PRINT(...)  fprintf(stderr, __VA_ARGS__)
+            PRINT("Traceback (most recent call last):\n");
+
+            YogException* exc = OBJ_AS(YogException, th->jmp_val);
+            YogStackTraceEntry* st = exc->stack_trace;
+            while (st != NULL) {
+                const char* filename = st->filename;
+                unsigned int lineno = st->lineno;
+                const char* fname = YogVm_id2name(env, ENV_VM(env), st->fname);
+                PRINT("  File \"%s\", line %d, in %s\n", filename, lineno, fname);
+
+                st = st->lower;
+            }
+
+            YogKlass* klass = YOGBASICOBJ(exc)->klass;
+            const char* name = YogVm_id2name(env, ENV_VM(env), klass->name);
+            YogVal val = YogThread_call_method(env, th, exc->message, "to_s", 0, NULL);
+            YogString* msg = OBJ_AS(YogString, val);
+            PRINT("%s: %s\n", name, msg->body->items);
+#undef PRINT
+
+            return INT2VAL(-1);
         }
     }
 

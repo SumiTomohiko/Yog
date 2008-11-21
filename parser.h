@@ -105,7 +105,7 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 242 "parser.y"
+#line 239 "parser.y"
 typedef union YYSTYPE {
     struct YogArray* array;
     struct YogNode* node;

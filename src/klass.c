@@ -56,7 +56,7 @@ YogKlass_new(YogEnv* env, const char* name, YogKlass* super)
 static YogVal 
 klass_new(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
 {
-    YogKlass* klass = (YogKlass*)VAL2OBJ(self);
+    YogKlass* klass = OBJ_AS(YogKlass, self);
     Allocator allocator = klass->allocator;
     while (allocator == NULL) {
         YogKlass* super = klass->super;

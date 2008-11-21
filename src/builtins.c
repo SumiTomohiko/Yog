@@ -32,7 +32,7 @@ bltins_puts(YogEnv* env, YogVal self, YogArray* vararg)
             YogString* s = NULL;
             YogVal arg = YogArray_at(env, vararg, i);
             if (IS_OBJ(arg) && (VAL2OBJ(arg)->klass == ENV_VM(env)->cString)) {
-                s = (YogString*)VAL2OBJ(arg);
+                s = OBJ_AS(YogString, arg);
             }
             else {
                 YogVal val = YogThread_call_method(env, ENV_TH(env), arg, "to_s", 0, NULL);
@@ -55,6 +55,10 @@ YogBuiltins_new(YogEnv* env)
     YogPackage* bltins = YogPackage_new(env);
     YogPackage_define_method(env, bltins, "puts", bltins_puts, 0, 1, 0, 0, NULL);
     YogPackage_define_method(env, bltins, "raise", bltins_raise, 0, 0, 0, 0, "exc", NULL);
+
+    YogKlass* klass = ENV_VM(env)->eException;
+    YogVal val = OBJ2VAL(klass);
+    YogObj_set_attr_id(env, bltins, klass->name, val);
 
     return bltins;
 }

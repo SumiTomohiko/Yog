@@ -45,6 +45,9 @@ struct YogVm {
     struct YogKlass* cBuiltinUnboundMethod;
     struct YogKlass* cUnboundMethod;
     struct YogKlass* cPackageBlock;
+    struct YogKlass* cNil;
+
+    struct YogKlass* eException;
 
     struct YogTable* pkgs;
 
@@ -58,8 +61,8 @@ struct YogEnv {
     struct YogThread* th;
 };
 
-#define ENV_VM(env) ((env)->vm)
-#define ENV_TH(env) ((env)->th)
+#define ENV_VM(env)     ((env)->vm)
+#define ENV_TH(env)     ((env)->th)
 
 typedef struct YogEnv YogEnv;
 
@@ -100,13 +103,14 @@ struct YogVal {
     } u;
 };
 
-#define VAL_TYPE(v)     ((v).type)
-#define VAL2INT(v)      ((v).u.n)
-#define VAL2FLOAT(v)    ((v).u.f)
-#define VAL2ID(v)       ((v).u.symbol)
-#define VAL2PTR(v)      ((v).u.ptr)
-#define VAL2BOOL(v)     ((v).u.b)
-#define VAL2OBJ(v)      ((v).u.obj)
+#define VAL_TYPE(v)         ((v).type)
+#define VAL2INT(v)          ((v).u.n)
+#define VAL2FLOAT(v)        ((v).u.f)
+#define VAL2ID(v)           ((v).u.symbol)
+#define VAL2PTR(v)          ((v).u.ptr)
+#define VAL2BOOL(v)         ((v).u.b)
+#define VAL2OBJ(v)          ((v).u.obj)
+#define OBJ_AS(type, v)     ((type*)VAL2OBJ(v))
 
 #define IS_UNDEF(v)     (VAL_TYPE(v) == VAL_UNDEF)
 #define IS_PTR(v)       (VAL_TYPE(v) == VAL_PTR)
@@ -303,13 +307,13 @@ struct YogExcTbl {
 
 typedef struct YogExcTbl YogExcTbl;
 
-struct LinenoTableEntry {
+struct YogLinenoTableEntry {
     pc_t pc_from;
     pc_t pc_to;
     unsigned int lineno;
 };
 
-typedef struct LinenoTableEntry LinenoTableEntry;
+typedef struct YogLinenoTableEntry YogLinenoTableEntry;
 
 struct YogCode {
     struct YogArgInfo arg_info;
@@ -323,13 +327,24 @@ struct YogCode {
     struct YogExcTbl* exc_tbl;
 
     unsigned int lineno_tbl_size;
-    struct LinenoTableEntry* lineno_tbl;
+    struct YogLinenoTableEntry* lineno_tbl;
+
+    const char* filename;
+    ID fname;
 };
 
 typedef struct YogCode YogCode;
 
+enum YogFrameType {
+    FRAME_C, 
+    FRAME_SCRIPT, 
+};
+
+typedef enum YogFrameType YogFrameType;
+
 struct YogFrame {
     struct YogFrame* prev;
+    enum YogFrameType type;
 };
 
 #define FRAME(f)    ((YogFrame*)(f))
@@ -423,6 +438,23 @@ struct YogEncoding {
 
 typedef struct YogEncoding YogEncoding;
 
+struct YogStackTraceEntry {
+    struct YogStackTraceEntry* lower;
+    unsigned int lineno;
+    const char* filename;
+    ID fname;
+};
+
+typedef struct YogStackTraceEntry YogStackTraceEntry;
+
+struct YogException {
+    YOGBASICOBJ_HEAD;
+    struct YogStackTraceEntry* stack_trace;
+    struct YogVal message;
+};
+
+typedef struct YogException YogException;
+
 /* $PROTOTYPE_START$ */
 
 /**
@@ -467,7 +499,7 @@ void YogCode_dump(YogEnv*, YogCode*);
 YogCode* YogCode_new(YogEnv*);
 
 /* src/compile.c */
-YogCode* Yog_compile_module(YogEnv*, YogArray*);
+YogCode* Yog_compile_module(YogEnv*, const char*, YogArray*);
 
 /* src/encoding.c */
 YogEncoding* YogEncoding_get_default(YogEnv*);
@@ -479,7 +511,7 @@ YogString* YogEncoding_normalize_name(YogEnv*, YogString*);
 void Yog_assert(YogEnv*, BOOL, const char*);
 
 /* src/exception.c */
-YogKlass* YogException_new(YogEnv*);
+YogKlass* YogException_klass_new(YogEnv*);
 
 /* src/frame.c */
 YogCFrame* YogCFrame_new(YogEnv*);
@@ -514,6 +546,9 @@ YogBuiltinUnboundMethod* YogBuiltinUnboundMethod_new(YogEnv*);
 YogKlass* YogUnboundMethod_klass_new(YogEnv*);
 YogUnboundMethod* YogUnboundMethod_new(YogEnv*);
 
+/* src/nil.c */
+YogKlass* YogNil_klass_new(YogEnv*);
+
 /* src/object.c */
 void YogBasicObj_init(YogEnv*, YogBasicObj*, unsigned int, YogKlass*);
 YogBasicObj* YogObj_allocate(YogEnv*, YogKlass*);
@@ -523,11 +558,15 @@ void YogObj_init(YogEnv*, YogObj*, unsigned int, YogKlass*);
 void YogObj_klass_init(YogEnv*, YogKlass*);
 YogObj* YogObj_new(YogEnv*, YogKlass*);
 void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
+void YogObj_set_attr_id(YogEnv*, YogObj*, ID, YogVal);
 
 /* src/package.c */
 void YogPackage_define_method(YogEnv*, YogPackage*, const char*, void*, unsigned int, unsigned int, unsigned int, unsigned int, ...);
 YogKlass* YogPackage_klass_new(YogEnv*);
 YogPackage* YogPackage_new(YogEnv*);
+
+/* src/stacktrace.c */
+YogStackTraceEntry* YogStackTraceEntry_new(YogEnv*);
 
 /* src/string.c */
 YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
@@ -535,6 +574,7 @@ YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
 char YogString_at(YogEnv*, YogString*, unsigned int);
 void YogString_clear(YogEnv*, YogString*);
 YogString* YogString_clone(YogEnv*, YogString*);
+char* YogString_dup(YogEnv*, const char*);
 ID YogString_intern(YogEnv*, YogString*);
 YogKlass* YogString_klass_new(YogEnv*);
 YogString* YogString_new(YogEnv*);

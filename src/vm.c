@@ -133,6 +133,7 @@ setup_klasses(YogEnv* env, YogVm* vm)
     vm->cPackage = YogPackage_klass_new(env);
     vm->cBool = YogBool_klass_new(env);
     vm->cPackageBlock = YogPackageBlock_klass_new(env);
+    vm->cNil = YogNil_klass_new(env);
 }
 
 static void 
@@ -152,12 +153,19 @@ setup_encodings(YogEnv* env, YogVm* vm)
 #undef REGISTER_ENCODING
 }
 
+static void 
+setup_exceptions(YogEnv* env, YogVm* vm) 
+{
+    vm->eException = YogException_klass_new(env);
+}
+
 void 
 YogVm_boot(YogEnv* env, YogVm* vm) 
 {
     setup_symbol_tables(env, vm);
     setup_basic_klass(env, vm);
     setup_klasses(env, vm);
+    setup_exceptions(env, vm);
 
     vm->pkgs = YogTable_new_symbol_table(env);
     setup_builtins(env, vm);
@@ -189,6 +197,9 @@ YogVm_new(size_t heap_size)
     vm->cBuiltinUnboundMethod = NULL;
     vm->cUnboundMethod = NULL;
     vm->cPackageBlock = NULL;
+    vm->cNil = NULL;
+
+    vm->eException = NULL;
 
     vm->pkgs = NULL;
 

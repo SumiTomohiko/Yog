@@ -78,7 +78,7 @@ YogCode_dump(YogEnv* env, YogCode* code)
 
         unsigned int size = code->lineno_tbl_size;
         for (i = 0; i < size; i++) {
-            LinenoTableEntry* entry = &code->lineno_tbl[i];
+            YogLinenoTableEntry* entry = &code->lineno_tbl[i];
             if ((entry->pc_from <= pc) && (pc <= entry->pc_to)) {
                 printf(" %05d", entry->lineno);
                 break;
@@ -162,6 +162,9 @@ YogCode_new(YogEnv* env)
     code->exc_tbl = NULL;
     code->lineno_tbl_size = 0;
     code->lineno_tbl = NULL;
+
+    code->filename = NULL;
+    code->fname = 0;
 
     return code;
 }

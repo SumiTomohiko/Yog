@@ -18,16 +18,22 @@ YogObj_get_attr(YogEnv* env, YogObj* obj, ID name)
 }
 
 void 
-YogObj_set_attr(YogEnv* env, YogObj* obj, const char* name, YogVal val) 
+YogObj_set_attr_id(YogEnv* env, YogObj* obj, ID name, YogVal val) 
 {
-    ID id = YogVm_intern(env, ENV_VM(env), name);
-    YogVal key = ID2VAL(id);
+    YogVal key = ID2VAL(name);
 
     if (obj->attrs == NULL) {
         obj->attrs = YogTable_new_symbol_table(env);
     }
 
     YogTable_insert(env, obj->attrs, key, val);
+}
+
+void 
+YogObj_set_attr(YogEnv* env, YogObj* obj, const char* name, YogVal val) 
+{
+    ID id = YogVm_intern(env, ENV_VM(env), name);
+    YogObj_set_attr_id(env, obj, id, val);
 }
 
 void 

@@ -25,7 +25,7 @@ main(int argc, char* argv[])
     }
     YogArray* stmts = YogParser_parse_file(&env, parser, filename);
 
-    YogCode* code = Yog_compile_module(&env, stmts);
+    YogCode* code = Yog_compile_module(&env, filename, stmts);
 
     YogThread* th = YogThread_new(&env);
     env.th = th;

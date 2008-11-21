@@ -313,12 +313,12 @@ class CodeGenerator(object):
         for inst in self.insts:
             compile_data.write("""
 static void 
-CompileData_add_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.name })
+CompileData_add_%(inst)s(YogEnv* env, CompileData* data, unsigned int lineno""" % { "inst": inst.name })
             for operand in inst.operands:
                 compile_data.write(", %(type)s %(name)s" % { "type": self.type_name2data_type(operand.type), "name": operand.name })
             compile_data.write(""")
 {
-    YogInst* inst = Inst_new(env);
+    YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(%(name)s);
 """ % { "name": inst.name.upper() })
@@ -328,8 +328,6 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.name
             compile_data.write("""
 
     add_inst(data, inst);
-
-    data->pc += Yog_get_inst_size(INST_OPCODE(inst));
 }
 """)
 
@@ -342,7 +340,7 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data""" % { "inst": inst.name
             for operand in inst.operands:
                 inst_attr = "%(inst)s_%(name)s(inst)" % { "inst": inst.name.upper(), "name": operand.name.upper() }
                 if operand.type == "pc_t":
-                    inst_attr = "LABEL_POS(" + inst_attr + ")"
+                    inst_attr = inst_attr + "->pc"
                 insts2bin.write("""
                                 YogBinary_push_%(type)s(env, code, %(inst_attr)s);""" % { "type": self.type_name2func_name(operand.type), "inst_attr": inst_attr })
             insts2bin.write("""

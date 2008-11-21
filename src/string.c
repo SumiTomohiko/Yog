@@ -174,6 +174,16 @@ YogString_klass_new(YogEnv* env)
     return klass;
 }
 
+char* 
+YogString_dup(YogEnv* env, const char* s) 
+{
+    size_t size = strlen(s) + 1;
+    char* p = ALLOC_OBJ_SIZE(env, NULL, size);
+    memcpy(p, s, size);
+
+    return p;
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

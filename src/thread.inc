@@ -267,7 +267,7 @@
             YogVal super = POP();
             YogVal name = POP();
 #line 164 "src/insts.def"
-            YogKlass* super_klass = (YogKlass*)VAL2OBJ(super);
+            YogKlass* super_klass = OBJ_AS(YogKlass, super);
             YogKlass* kls = YogKlass_new(ENV, NULL, super_klass);
             kls->name = VAL2ID(name);
             YogTable* attrs = YOGOBJ(kls)->attrs = YogTable_new_symbol_table(ENV);

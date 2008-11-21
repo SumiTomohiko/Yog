@@ -10,13 +10,15 @@ struct YogInst {
     enum InstType type;
     enum OpCode opcode;
     union {
-        pc_t pos;
 ${structs}
     } u;
+
+    unsigned int lineno;
+    pc_t pc;
+    unsigned int size;
 };
 
 #define INST_OPCODE(inst)   ((inst)->opcode)
-#define LABEL_POS(inst)     ((inst)->u.pos)
 ${macros}
 
 typedef struct YogInst YogInst;
