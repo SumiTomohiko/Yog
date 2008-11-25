@@ -1180,7 +1180,8 @@ am:
 	python tools/update_automake.py
 
 test: yog$(EXEEXT)
-	py.test
+	GC=COPYING py.test
+	GC=MARK-SWEEP py.test
 
 clean-generic:
 	find . -name "*.pyc" -print0 | xargs --null rm -f

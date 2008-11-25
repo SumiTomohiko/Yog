@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from os import unlink
+from os import environ, unlink
 from subprocess import PIPE, Popen
 from tempfile import mkstemp
 
 class TestCase(object):
 
     def _test(self, src, stdout="", stderr="", status=None, options=[]):
-        options = options or ["--always-gc"]
+        env_gc = environ["GC"]
+        if env_gc == "COPYING":
+            gc = "copying"
+        elif env_gc == "MARK-SWEEP":
+            gc = "mark-sweep"
+
+        options = options or ["--always-gc", "--gc=%(gc)s" % { "gc": gc }]
 
         file = mkstemp(prefix="yog")[1]
         try:
