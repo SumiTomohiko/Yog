@@ -8,7 +8,7 @@ raise(YogEnv* env)
 
     if (!YogVal_is_subklass_of(env, exc, ENV_VM(env)->eException)) {
         YogVal receiver = OBJ2VAL(ENV_VM(env)->eException);
-        YogVal args[1] = { exc };
+        YogVal args[] = { exc };
         exc = YogThread_call_method(env, ENV_TH(env), receiver, "new", 1, args);
     }
 
