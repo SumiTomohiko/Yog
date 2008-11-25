@@ -45,6 +45,8 @@ YogCharArray_new_str(YogEnv* env, const char* s)
 static void 
 YogString_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
+    YogBasicObj_keep_children(env, ptr, keeper);
+
     YogString* s = ptr;
     s->body = (*keeper)(env, s->body);
 }

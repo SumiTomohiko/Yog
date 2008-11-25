@@ -7,6 +7,8 @@ from tempfile import mkstemp
 class TestCase(object):
 
     def _test(self, src, stdout="", stderr="", status=None, options=[]):
+        options = options or ["--always-gc"]
+
         file = mkstemp(prefix="yog")[1]
         try:
             f = open(file, "w")

@@ -9,6 +9,6 @@ class TestGc(TestCase):
 500.times() do [n]
     o = Object.new()
 end
-""", options=["--always-gc"])
+""")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
