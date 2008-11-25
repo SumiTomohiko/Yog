@@ -112,19 +112,18 @@ YogBinary_push_pc(YogEnv* env, YogBinary* binary, pc_t pc)
 #undef PUSH_TYPE
 
 static void 
-gc_binary_children(YogEnv* env, void* ptr, DoGc do_gc) 
+YogBinary_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogBinary* bin = ptr;
-    bin->body = do_gc(env, bin->body);
+    bin->body = (*keeper)(env, bin->body);
 }
 
 YogBinary* 
 YogBinary_new(YogEnv* env, unsigned int size) 
 {
-    YogByteArray* body = YogByteArray_new(env, size);
-    YogBinary* binary = ALLOC_OBJ(env, gc_binary_children, YogBinary);
+    YogBinary* binary = ALLOC_OBJ(env, YogBinary_keep_children, YogBinary);
     binary->size = 0;
-    binary->body = body;
+    binary->body = YogByteArray_new(env, size);
 
     return binary;
 }

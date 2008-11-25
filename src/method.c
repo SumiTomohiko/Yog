@@ -1,70 +1,76 @@
 #include "yog/yog.h"
 
-#define GC_SELF(method) do { \
-    YogVal self = method->self; \
-    if (IS_OBJ(self)) { \
-        DO_GC(env, do_gc, VAL2OBJ(self)); \
-    } \
-} while (0)
+#define KEEP_SUPER  YogBasicObj_keep_children(env, ptr, keeper)
+
+#define KEEP_SELF   method->self = YogVal_keep(env, method->self, keeper)
+#define KEEP_MEMBER(member)     method->member = (*keeper)(env, method->member)
 
 static void 
-gc_builtin_bound_method_children(YogEnv* env, void* ptr, DoGc do_gc) 
+YogBuiltinBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
+    KEEP_SUPER;
+
     YogBuiltinBoundMethod* method = ptr;
-    GC_SELF(method);
-    DO_GC(env, do_gc, method->f);
+    KEEP_SELF;
+    KEEP_MEMBER(f);
 }
 
 static YogBasicObj* 
 YogBuiltinBoundMethod_allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, gc_builtin_bound_method_children, YogBuiltinBoundMethod);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogBuiltinBoundMethod_keep_children, YogBuiltinBoundMethod);
     YogBasicObj_init(env, obj, 0, klass);
     return obj;
 }
 
 static void 
-gc_bound_method_children(YogEnv* env, void* ptr, DoGc do_gc) 
+YogBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
+    KEEP_SUPER;
+
     YogBoundMethod* method = ptr;
-    GC_SELF(method);
-    DO_GC(env, do_gc, method->code);
+    KEEP_SELF;
+    KEEP_MEMBER(code);
 }
 
 static YogBasicObj* 
 YogBoundMethod_allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, gc_bound_method_children, YogBoundMethod);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogBoundMethod_keep_children, YogBoundMethod);
     YogBasicObj_init(env, obj, 0, klass);
     return obj;
 }
 
 static void 
-gc_builtin_unbound_method_children(YogEnv* env, void* ptr, DoGc do_gc) 
+YogBuiltinUnboundMethod_keep_chldren(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
+    KEEP_SUPER;
+
     YogBuiltinUnboundMethod* method = ptr;
-    DO_GC(env, do_gc, method->f);
+    KEEP_MEMBER(f);
 }
 
 static YogBasicObj* 
 YogBuiltinUnboundMethod_allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, gc_builtin_unbound_method_children, YogBuiltinUnboundMethod);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogBuiltinUnboundMethod_keep_chldren, YogBuiltinUnboundMethod);
     YogBasicObj_init(env, obj, 0, klass);
     return obj;
 }
 
 static void 
-gc_unbound_method_children(YogEnv* env, void* ptr, DoGc do_gc) 
+YogUnboundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
+    KEEP_SUPER;
+
     YogUnboundMethod* method = ptr;
-    DO_GC(env, do_gc, method->code);
+    KEEP_MEMBER(code);
 }
 
 static YogBasicObj* 
 YogUnboundMethod_allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, gc_unbound_method_children, YogUnboundMethod);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogUnboundMethod_keep_children, YogUnboundMethod);
     YogBasicObj_init(env, obj, 0, klass);
     return obj;
 }

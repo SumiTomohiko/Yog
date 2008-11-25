@@ -14,10 +14,33 @@ YogPackageBlock_init(YogEnv* env, YogPackageBlock* block)
     block->vars = NULL;
 }
 
+#define KEEP_MEMBER(member)     block->member = (*keeper)(env, block->member)
+
+static void 
+YogBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogBasicObj_keep_children(env, ptr, keeper);
+
+    YogBlock* block = ptr;
+    KEEP_MEMBER(code);
+}
+
+static void 
+YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogBlock_keep_children(env, ptr, keeper);
+
+    YogPackageBlock* block = ptr;
+    block->self = YogVal_keep(env, block->self, keeper);
+    KEEP_MEMBER(vars);
+}
+
+#undef KEEP_MEMBER
+
 YogPackageBlock* 
 YogPackageBlock_new(YogEnv* env) 
 {
-    YogPackageBlock* block = ALLOC_OBJ(env, NULL, YogPackageBlock);
+    YogPackageBlock* block = ALLOC_OBJ(env, YogPackageBlock_keep_children, YogPackageBlock);
     YogPackageBlock_init(env, block);
 
     return block;
@@ -26,7 +49,7 @@ YogPackageBlock_new(YogEnv* env)
 static YogBasicObj* 
 allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, NULL, YogPackageBlock);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogPackageBlock_keep_children, YogPackageBlock);
     YogBasicObj_init(env, obj, 0, klass);
     return obj;
 }

@@ -1,6 +1,52 @@
 #include "yog/yog.h"
 
-#define GC(name)    DO_GC(env, do_gc, frame->name)
+#define KEEP(member)    frame->member = (*keeper)(env, frame->member)
+
+static void 
+YogFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogFrame* frame = ptr;
+    KEEP(prev);
+}
+
+static void 
+YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogFrame_keep_children(env, ptr, keeper);
+
+    YogCFrame* frame = ptr;
+    frame->self = YogVal_keep(env, frame->self, keeper);
+    KEEP(args);
+}
+
+static void 
+YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogFrame_keep_children(env, ptr, keeper);
+
+    YogScriptFrame* frame = ptr;
+    KEEP(code);
+    KEEP(stack);
+}
+
+static void 
+YogNameFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogScriptFrame_keep_children(env, ptr, keeper);
+
+    YogNameFrame* frame = ptr;
+    frame->self = YogVal_keep(env, frame->self, keeper);
+    KEEP(vars);
+}
+
+static void 
+YogMethodFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogScriptFrame_keep_children(env, ptr, keeper);
+
+    YogMethodFrame* frame = ptr;
+    KEEP(vars);
+}
 
 static void 
 YogFrame_init(YogFrame* frame, YogFrameType type)
@@ -25,7 +71,10 @@ YogScriptFrame_pop_stack(YogEnv* env, YogScriptFrame* frame)
 {
     YOG_ASSERT(env, 0 < frame->stack_size, "Stack is empty.");
 
-    YogVal retval = YogValArray_at(env, frame->stack, frame->stack_size - 1);
+    unsigned int index = frame->stack_size - 1;
+    YogVal retval = YogValArray_at(env, frame->stack, index);
+
+    frame->stack->items[index] = YUNDEF;
     frame->stack_size--;
 
     return retval;
@@ -51,17 +100,10 @@ YogNameFrame_init(YogNameFrame* frame)
 YogNameFrame* 
 YogNameFrame_new(YogEnv* env) 
 {
-    YogNameFrame* frame = ALLOC_OBJ(env, NULL, YogNameFrame);
+    YogNameFrame* frame = ALLOC_OBJ(env, YogNameFrame_keep_children, YogNameFrame);
     YogNameFrame_init(frame);
 
     return frame;
-}
-
-static void 
-gc_method_frame_children(YogEnv* env, void* ptr, DoGc do_gc) 
-{
-    YogMethodFrame* frame = ptr;
-    GC(vars);
 }
 
 static void 
@@ -74,7 +116,7 @@ YogMethodFrame_init(YogMethodFrame* frame)
 YogMethodFrame* 
 YogMethodFrame_new(YogEnv* env) 
 {
-    YogMethodFrame* frame = ALLOC_OBJ(env, gc_method_frame_children, YogMethodFrame);
+    YogMethodFrame* frame = ALLOC_OBJ(env, YogMethodFrame_keep_children, YogMethodFrame);
     YogMethodFrame_init(frame);
 
     return frame;
@@ -84,12 +126,15 @@ static void
 YogCFrame_init(YogCFrame* frame) 
 {
     YogFrame_init(FRAME(frame), FRAME_C);
+
+    frame->self = YUNDEF;
+    frame->args = NULL;
 }
 
 YogCFrame* 
 YogCFrame_new(YogEnv* env) 
 {
-    YogCFrame* frame = ALLOC_OBJ(env, NULL, YogCFrame);
+    YogCFrame* frame = ALLOC_OBJ(env, YogCFrame_keep_children, YogCFrame);
     YogCFrame_init(frame);
 
     return frame;

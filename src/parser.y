@@ -15,66 +15,10 @@ yyerror(char* s)
     fprintf(stderr, "%s\n", s);
 }
 
-static void 
-gc_children(YogEnv* env, void* ptr, DoGc do_gc) 
-{
-#define GC(f)   DO_GC(env, do_gc, f(node))
-    YogNode* node = ptr;
-    switch (node->type) {
-        case NODE_ASSIGN:
-            NODE_RIGHT(node) = do_gc(env, NODE_RIGHT(node));
-            break;
-        case NODE_VARIABLE:
-            break;
-        case NODE_LITERAL:
-            break;
-        case NODE_METHOD_CALL:
-            NODE_RECEIVER(node) = do_gc(env, NODE_RECEIVER(node));
-            NODE_ARGS(node) = do_gc(env, NODE_ARGS(node));
-            break;
-        case NODE_COMMAND_CALL:
-            NODE_ARGS(node) = do_gc(env, NODE_ARGS(node));
-            break;
-        case NODE_FUNC_CALL:
-            NODE_CALLEE(node) = do_gc(env, NODE_CALLEE(node));
-            NODE_ARGS(node) = do_gc(env, NODE_ARGS(node));
-            break;
-        case NODE_FUNC_DEF:
-            NODE_PARAMS(node) = do_gc(env, NODE_PARAMS(node));
-            NODE_STMTS(node) = do_gc(env, NODE_STMTS(node));
-            break;
-        case NODE_FINALLY:
-            GC(NODE_HEAD);
-            GC(NODE_BODY);
-            break;
-        case NODE_EXCEPT:
-            GC(NODE_HEAD);
-            GC(NODE_EXCEPTS);
-            GC(NODE_ELSE);
-            break;
-        case NODE_EXCEPT_BODY:
-            GC(NODE_EXC_TYPE);
-            GC(NODE_BODY);
-            break;
-        case NODE_WHILE:
-            NODE_TEST(node) = do_gc(env, NODE_TEST(node));
-            NODE_STMTS(node) = do_gc(env, NODE_STMTS(node));
-            break;
-        case NODE_BREAK:
-        case NODE_NEXT:
-            NODE_EXPR(node) = do_gc(env, NODE_EXPR(node));
-            break;
-        default:
-            YOG_ASSERT(env, FALSE, "Unknown node type.");
-            break;
-    }
-#undef GC
-}
-
 static YogNode* 
 make_node(YogEnv* env, YogParser* parser, YogNodeType type) 
 {
-    YogNode* node = ALLOC_OBJ(env, gc_children, YogNode);
+    YogNode* node = ALLOC_OBJ(env, NULL, YogNode);
     node->lineno = parser->lineno;
     node->type = type;
 

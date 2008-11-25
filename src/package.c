@@ -14,14 +14,32 @@ YogPackage_define_method(YogEnv* env, YogPackage* pkg, const char* name, void* f
     method->f = builtin_f;
 
     YogVal val = OBJ2VAL(method);
-    YogObj_set_attr(env, pkg, name, val);
+    YogObj_set_attr(env, YOGOBJ(pkg), name, val);
+}
+
+static void 
+YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogObj_keep_children(env, ptr, keeper);
+
+    YogPackage* pkg = ptr;
+    pkg->code = (*keeper)(env, pkg->code);
+}
+
+static void 
+YogPackage_init(YogEnv* env, YogPackage* pkg) 
+{
+    YogObj_init(env, YOGOBJ(pkg), 0, ENV_VM(env)->cPackage);
+
+    YOGOBJ(pkg)->attrs = YogTable_new_symbol_table(env);
+    pkg->code = NULL;
 }
 
 static YogBasicObj* 
 allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogPackage* pkg = ALLOC_OBJ(env, YogObj_gc_children, YogPackage);
-    YogPackage_init(env, pkg, 0, klass);
+    YogPackage* pkg = ALLOC_OBJ(env, YogPackage_keep_children, YogPackage);
+    YogPackage_init(env, pkg);
 
     return YOGBASICOBJ(pkg);
 }
@@ -38,7 +56,7 @@ YogPackage*
 YogPackage_new(YogEnv* env) 
 {
     YogPackage* pkg = (YogPackage*)allocate(env, ENV_VM(env)->cPackage);
-    pkg->attrs = YogTable_new_symbol_table(env);
+    YogPackage_init(env, pkg);
 
     return pkg;
 }

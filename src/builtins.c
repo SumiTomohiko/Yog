@@ -2,8 +2,18 @@
 #include "yog/yog.h"
 
 static YogVal 
-raise(YogEnv* env, YogVal self, YogVal exc)
+raise(YogEnv* env)
 {
+    YogVal exc = ARG(env, 0);
+
+    if (!YogVal_is_subklass_of(env, exc, ENV_VM(env)->eException)) {
+        YogVal receiver = OBJ2VAL(ENV_VM(env)->eException);
+        YogVal args[1] = { exc };
+        exc = YogThread_call_method(env, ENV_TH(env), receiver, "new", 1, args);
+    }
+
+    ENV_TH(env)->cur_frame = ENV_TH(env)->cur_frame->prev;
+
     YogError_raise(env, exc);
 
     /* NOTREACHED */
@@ -11,8 +21,9 @@ raise(YogEnv* env, YogVal self, YogVal exc)
 }
 
 static YogVal 
-puts_(YogEnv* env, YogVal self, YogArray* vararg)
+puts_(YogEnv* env)
 {
+    YogArray* vararg = OBJ_AS(YogArray, ARG(env, 0));
     unsigned int size = YogArray_size(env, vararg);
     if (0 < size) {
         unsigned int i = 0;
@@ -47,7 +58,7 @@ YogBuiltins_new(YogEnv* env)
 #define REGISTER_KLASS(c)   do { \
     YogKlass* klass = ENV_VM(env)->c; \
     YogVal val = OBJ2VAL(klass); \
-    YogObj_set_attr_id(env, bltins, klass->name, val); \
+    YogObj_set_attr_id(env, YOGOBJ(bltins), klass->name, val); \
 } while (0)
     REGISTER_KLASS(cObject);
     REGISTER_KLASS(eException);

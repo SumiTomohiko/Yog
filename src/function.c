@@ -2,12 +2,10 @@
 #include "yog/yog.h"
 
 static void 
-gc_builtin_function_children(YogEnv* env, void* ptr, DoGc do_gc) 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
-#if 0
     YogBuiltinFunction* f = ptr;
-    /* TODO */
-#endif
+    YogArgInfo_keep_children(env, &f->arg_info, keeper);
 }
 
 YogBuiltinFunction* 
@@ -52,10 +50,11 @@ YogBuiltinFunction_new(YogEnv* env, const char* name, void* f, unsigned int bloc
 
 #undef NEXT_STR
 
-    YogBuiltinFunction* builtin_f = ALLOC_OBJ(env, gc_builtin_function_children, YogBuiltinFunction);
+    YogBuiltinFunction* builtin_f = ALLOC_OBJ(env, keep_children, YogBuiltinFunction);
     YogArgInfo* arg_info = &builtin_f->arg_info;
     arg_info->argc = argc;
     arg_info->argnames = argnames;
+    arg_info->arg_index = NULL;
     arg_info->blockargc = blockargc;
     arg_info->blockargname = blockargname;
     arg_info->varargc = varargc;

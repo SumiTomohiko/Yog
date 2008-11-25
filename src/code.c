@@ -134,21 +134,32 @@ YogCode_dump(YogEnv* env, YogCode* code)
 }
 
 static void 
-gc_children(YogEnv* env, void* ptr, DoGc do_gc) 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogCode* code = ptr;
-    code->consts = do_gc(env, code->consts);
-    code->insts = do_gc(env, code->insts);
-    code->exc_tbl = do_gc(env, code->exc_tbl);
+
+    YogArgInfo* arg_info = &code->arg_info;
+    YogArgInfo_keep_children(env, arg_info, keeper);
+
+#define KEEP_MEMBER(member)     do { \
+    code->member = (*keeper)(env, (void*)code->member); \
+} while (0)
+    KEEP_MEMBER(consts);
+    KEEP_MEMBER(insts);
+    KEEP_MEMBER(exc_tbl);
+    KEEP_MEMBER(lineno_tbl);
+    KEEP_MEMBER(filename);
+#undef KEEP_MEMBER
 }
 
 YogCode* 
 YogCode_new(YogEnv* env) 
 {
-    YogCode* code = ALLOC_OBJ(env, gc_children, YogCode);
+    YogCode* code = ALLOC_OBJ(env, keep_children, YogCode);
     YogArgInfo* arg_info = &code->arg_info;
     arg_info->argc = 0;
     arg_info->argnames = NULL;
+    arg_info->arg_index = NULL;
     arg_info->blockargc = 0;
     arg_info->blockargname = 0;
     arg_info->varargc = 0;

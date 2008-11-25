@@ -43,10 +43,10 @@ YogCharArray_new_str(YogEnv* env, const char* s)
 }
 
 static void 
-gc_string_children(YogEnv* env, void* ptr, DoGc do_gc) 
+YogString_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogString* s = ptr;
-    s->body = do_gc(env, s->body);
+    s->body = (*keeper)(env, s->body);
 }
 
 unsigned int 
@@ -111,7 +111,7 @@ YogString_clear(YogEnv* env, YogString* string)
 static YogBasicObj* 
 allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, gc_string_children, YogString);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogString_keep_children, YogString);
     YogBasicObj_init(env, obj, 0, klass);
 
     return obj;
@@ -165,11 +165,18 @@ YogString_at(YogEnv* env, YogString* s, unsigned int n)
     return s->body->items[n];
 }
 
+static YogVal 
+to_s(YogEnv* env, YogVal self) 
+{
+    return self;
+}
+
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
     YogKlass* klass = YogKlass_new(env, "String", ENV_VM(env)->cObject);
     YogKlass_define_allocator(env, klass, allocate);
+    YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
 
     return klass;
 }

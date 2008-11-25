@@ -30,20 +30,20 @@
 #define TABLE_ENTRY_TOP(table, i)   (table)->bins->items[(i)]
 
 static void 
-gc_bins_children(YogEnv* env, void* ptr, DoGc do_gc) 
+keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogTableEntryArray* array = ptr;
     unsigned int size = array->size;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
-        array->items[i] = do_gc(env, array->items[i]);
+        array->items[i] = (*keeper)(env, array->items[i]);
     }
 }
 
 static YogTableEntryArray*
 alloc_bins(YogEnv* env, int size) 
 {
-    YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, gc_bins_children, YogTableEntryArray, size, YogTableEntry*);
+    YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, keep_bins_children, YogTableEntryArray, size, YogTableEntry*);
     bzero(array, sizeof(YogTableEntryArray) + size * sizeof(YogTableEntry*));
 
     array->size = size;
@@ -158,16 +158,16 @@ stat_col()
 #endif
 
 static void 
-gc_table_children(YogEnv* env, void* ptr, DoGc do_gc) 
+keep_table_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogTable* tbl = ptr;
-    tbl->bins = do_gc(env, tbl->bins);
+    tbl->bins = (*keeper)(env, tbl->bins);
 }
 
 static YogTable*
 alloc_table(YogEnv* env) 
 {
-    YogTable* tbl = ALLOC_OBJ(env, gc_table_children, YogTable);
+    YogTable* tbl = ALLOC_OBJ(env, keep_table_children, YogTable);
     tbl->type = NULL;
     tbl->num_bins = 0;
     tbl->num_entries = 0;
@@ -247,16 +247,20 @@ YogTable_lookup(YogEnv* env, YogTable* table, YogVal key, YogVal* value)
 }
 
 static void 
-gc_table_entry_children(YogEnv* env, void* ptr, DoGc do_gc) 
+keep_entry_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogTableEntry* entry = ptr;
-    entry->next = do_gc(env, entry->next);
+#define KEEP(member)    entry->member = YogVal_keep(env, entry->member, keeper)
+    KEEP(key);
+    KEEP(record);
+#undef KEEP
+    entry->next = (*keeper)(env, entry->next);
 }
 
 static YogTableEntry* 
 alloc_entry(YogEnv* env)
 {
-    YogTableEntry* entry = ALLOC_OBJ(env, gc_table_entry_children, YogTableEntry);
+    YogTableEntry* entry = ALLOC_OBJ(env, keep_entry_children, YogTableEntry);
     entry->hash = 0;
     entry->key = YUNDEF;
     entry->record = YUNDEF;
@@ -475,6 +479,11 @@ compare_string(YogEnv* env, YogVal a, YogVal b)
 #define GET_STR(val)    (((YogCharArray*)VAL2PTR(a))->items)
     return strcmp(GET_STR(a), GET_STR(b));
 #undef GET_STR
+#if 0
+    const char* s = VAL2STR(a);
+    const char* t = VAL2STR(b);
+    return strcmp(s, t);
+#endif
 }
 
 static int
@@ -520,6 +529,10 @@ hash_string(YogEnv* env, YogVal key)
 {
     YogCharArray* array = VAL2PTR(key);
     return strhash(array->items);
+#if 0
+    const char* s = VAL2STR(key);
+    return strhash(s);
+#endif
 }
 
 static YogHashType type_string = {
@@ -542,6 +555,9 @@ YogTable_lookup_str(YogEnv* env, YogTable* table, const char* key, YogVal* value
     unsigned int bin_pos = hash_val % table->num_bins;
     YogTableEntry* entry = TABLE_ENTRY_TOP(table, bin_pos);
 
+#if 0
+#define NOT_EQUAL_ENTRY ((entry != NULL) && ((entry->hash != hash_val) || (strcmp(VAL2STR(entry->key), key) != 0)))
+#endif
 #define NOT_EQUAL_ENTRY ((entry != NULL) && ((entry->hash != hash_val) || (strcmp(((YogCharArray*)VAL2PTR(entry->key))->items, key) != 0)))
     if (NOT_EQUAL_ENTRY) {
         COLLISION;

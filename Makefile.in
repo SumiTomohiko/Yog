@@ -49,18 +49,18 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_yog_OBJECTS = yog-array.$(OBJEXT) yog-binary.$(OBJEXT) \
-	yog-block.$(OBJEXT) yog-bool.$(OBJEXT) yog-builtins.$(OBJEXT) \
-	yog-code.$(OBJEXT) yog-compile.$(OBJEXT) \
-	yog-encoding.$(OBJEXT) yog-error.$(OBJEXT) \
-	yog-exception.$(OBJEXT) yog-frame.$(OBJEXT) \
-	yog-function.$(OBJEXT) yog-inst.$(OBJEXT) yog-int.$(OBJEXT) \
-	yog-klass.$(OBJEXT) yog-lexer.$(OBJEXT) yog-main.$(OBJEXT) \
-	yog-method.$(OBJEXT) yog-nil.$(OBJEXT) yog-object.$(OBJEXT) \
-	yog-package.$(OBJEXT) yog-parser.$(OBJEXT) \
-	yog-stacktrace.$(OBJEXT) yog-string.$(OBJEXT) \
-	yog-table.$(OBJEXT) yog-thread.$(OBJEXT) yog-value.$(OBJEXT) \
-	yog-vm.$(OBJEXT)
+am_yog_OBJECTS = yog-arg.$(OBJEXT) yog-array.$(OBJEXT) \
+	yog-binary.$(OBJEXT) yog-block.$(OBJEXT) yog-bool.$(OBJEXT) \
+	yog-builtins.$(OBJEXT) yog-code.$(OBJEXT) \
+	yog-compile.$(OBJEXT) yog-encoding.$(OBJEXT) \
+	yog-error.$(OBJEXT) yog-exception.$(OBJEXT) \
+	yog-frame.$(OBJEXT) yog-function.$(OBJEXT) yog-inst.$(OBJEXT) \
+	yog-int.$(OBJEXT) yog-klass.$(OBJEXT) yog-lexer.$(OBJEXT) \
+	yog-main.$(OBJEXT) yog-method.$(OBJEXT) yog-nil.$(OBJEXT) \
+	yog-object.$(OBJEXT) yog-package.$(OBJEXT) \
+	yog-parser.$(OBJEXT) yog-stacktrace.$(OBJEXT) \
+	yog-string.$(OBJEXT) yog-table.$(OBJEXT) yog-thread.$(OBJEXT) \
+	yog-value.$(OBJEXT) yog-vm.$(OBJEXT)
 yog_OBJECTS = $(am_yog_OBJECTS)
 yog_DEPENDENCIES = $(ONIG_LIB)
 yog_LINK = $(CCLD) $(yog_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
@@ -192,7 +192,8 @@ top_srcdir = @top_srcdir@
 ONIG_DIR = onig
 ONIG_LIB = $(ONIG_DIR)/.libs/libonig.a
 SUBDIRS = $(ONIG_DIR)
-yog_SOURCES = src/array.c \
+yog_SOURCES = src/arg.c \
+	src/array.c \
 	src/binary.c \
 	src/block.c \
 	src/bool.c \
@@ -321,6 +322,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-arg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-binary.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-block.Po@am__quote@
@@ -363,6 +365,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+yog-arg.o: src/arg.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-arg.o -MD -MP -MF $(DEPDIR)/yog-arg.Tpo -c -o yog-arg.o `test -f 'src/arg.c' || echo '$(srcdir)/'`src/arg.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-arg.Tpo $(DEPDIR)/yog-arg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/arg.c' object='yog-arg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-arg.o `test -f 'src/arg.c' || echo '$(srcdir)/'`src/arg.c
+
+yog-arg.obj: src/arg.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-arg.obj -MD -MP -MF $(DEPDIR)/yog-arg.Tpo -c -o yog-arg.obj `if test -f 'src/arg.c'; then $(CYGPATH_W) 'src/arg.c'; else $(CYGPATH_W) '$(srcdir)/src/arg.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-arg.Tpo $(DEPDIR)/yog-arg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/arg.c' object='yog-arg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-arg.obj `if test -f 'src/arg.c'; then $(CYGPATH_W) 'src/arg.c'; else $(CYGPATH_W) '$(srcdir)/src/arg.c'; fi`
 
 yog-array.o: src/array.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-array.o -MD -MP -MF $(DEPDIR)/yog-array.Tpo -c -o yog-array.o `test -f 'src/array.c' || echo '$(srcdir)/'`src/array.c

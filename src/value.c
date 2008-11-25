@@ -1,6 +1,48 @@
 #include <stdio.h>
 #include "yog/yog.h"
 
+YogVal 
+YogVal_keep(YogEnv* env, YogVal val, ObjectKeeper keeper) 
+{
+    switch (VAL_TYPE(val)) {
+    case VAL_UNDEF:
+    case VAL_INT:
+    case VAL_FLOAT:
+    case VAL_BOOL:
+    case VAL_NIL:
+    case VAL_SYMBOL:
+        return val;
+        break;
+    case VAL_STR:
+        {
+            const char* s = VAL2STR(val);
+            s = (*keeper)(env, (void*)s);
+            return STR2VAL(s);
+            break;
+        }
+    case VAL_PTR:
+        {
+            void* ptr = VAL2PTR(val);
+            ptr = (*keeper)(env, ptr);
+            return PTR2VAL(ptr);
+            break;
+        }
+    case VAL_OBJ:
+        {
+            YogBasicObj* obj = VAL2OBJ(val);
+            obj = (*keeper)(env, obj);
+            return OBJ2VAL(obj);
+            break;
+        }
+    default:
+        YOG_ASSERT(env, FALSE, "Uknown value type.");
+        break;
+    }
+
+    /* NOTREACHED */
+    return YUNDEF;
+}
+
 void 
 YogVal_print(YogEnv* env, YogVal val) 
 {
@@ -182,6 +224,12 @@ YogVal_undef()
 } while (0)
 
 YogVal 
+YogVal_str(const char* str) 
+{
+    RETURN_VAL(VAL_STR, VAL2STR, str);
+}
+
+YogVal 
 YogVal_obj(YogBasicObj* obj) 
 {
     RETURN_VAL(VAL_OBJ, VAL2OBJ, obj);
@@ -274,6 +322,20 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
 
     /* NOTREACHED */
     return YNIL;
+}
+
+BOOL 
+YogVal_is_subklass_of(YogEnv* env, YogVal val, YogKlass* klass) 
+{
+    YogKlass* valklass = YogVal_get_klass(env, val);
+    while (valklass != NULL) {
+        if (valklass == klass) {
+            return TRUE;
+        }
+        valklass = valklass->super;
+    }
+
+    return FALSE;
 }
 
 /**

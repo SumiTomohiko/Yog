@@ -17,18 +17,18 @@ YogKlass_define_method(YogEnv* env, YogKlass* klass, const char* name, void* f, 
 }
 
 static void 
-gc_children(YogEnv* env, void* ptr, DoGc do_gc) 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
-    YogObj_gc_children(env, ptr, do_gc);
+    YogObj_keep_children(env, ptr, keeper);
 
     YogKlass* klass = ptr;
-    klass->super = do_gc(env, klass->super);
+    klass->super = (*keeper)(env, klass->super);
 }
 
 YogBasicObj* 
 YogKlass_allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogObj* obj = ALLOC_OBJ(env, gc_children, YogKlass);
+    YogObj* obj = ALLOC_OBJ(env, keep_children, YogKlass);
     YogObj_init(env, obj, 0, klass);
 
     return (YogBasicObj*)obj;
@@ -54,8 +54,12 @@ YogKlass_new(YogEnv* env, const char* name, YogKlass* super)
 }
 
 static YogVal 
-new_(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
+new_(YogEnv* env)
 {
+    YogVal self = SELF(env);
+    YogVal blockarg = ARG(env, 0);
+    YogArray* vararg = OBJ_AS(YogArray, ARG(env, 1));
+
     YogKlass* klass = OBJ_AS(YogKlass, self);
     Allocator allocator = klass->allocator;
     while (allocator == NULL) {

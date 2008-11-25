@@ -51,16 +51,25 @@ YogObj_init(YogEnv* env, YogObj* obj, unsigned int flags, YogKlass* klass)
 }
 
 void 
-YogObj_gc_children(YogEnv* env, void* ptr, DoGc do_gc) 
+YogBasicObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
+    YogBasicObj* obj = ptr;
+    obj->klass = (*keeper)(env, obj->klass);
+}
+
+void 
+YogObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+{
+    YogBasicObj_keep_children(env, ptr, keeper);
+
     YogObj* obj = ptr;
-    obj->attrs = do_gc(env, obj->attrs);
+    obj->attrs = (*keeper)(env, obj->attrs);
 }
 
 YogBasicObj* 
 YogObj_allocate(YogEnv* env, YogKlass* klass)
 {
-    YogObj* obj = ALLOC_OBJ(env, YogObj_gc_children, YogObj);
+    YogObj* obj = ALLOC_OBJ(env, YogObj_keep_children, YogObj);
     YogObj_init(env, obj, 0, klass);
     return (YogBasicObj*)obj;
 }
@@ -73,7 +82,7 @@ YogObj_new(YogEnv* env, YogKlass* klass)
 }
 
 static YogVal 
-obj_init(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg) 
+initialize(YogEnv* env)
 {
     return YNIL;
 }
@@ -81,7 +90,7 @@ obj_init(YogEnv* env, YogVal self, YogVal blockarg, YogArray* vararg)
 void 
 YogObj_klass_init(YogEnv* env, YogKlass* klass) 
 {
-    YogKlass_define_method(env, klass, "initialize", obj_init, 1, 1, 0, 0, "block", NULL);
+    YogKlass_define_method(env, klass, "initialize", initialize, 1, 1, 0, 0, "block", NULL);
 }
 
 /**

@@ -133,18 +133,18 @@ typedef struct CompileData CompileData;
 } while (0)
 
 static void 
-gc_inst_children(YogEnv* env, void* ptr, DoGc do_gc) 
+Inst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogInst* inst = ptr;
-    inst->next = do_gc(env, inst->next);
+    inst->next = (*keeper)(env, inst->next);
 
     if (inst->type == INST_OP) {
         switch (INST_OPCODE(inst)) {
             case OP(JUMP):
-                JUMP_DEST(inst) = do_gc(env, JUMP_DEST(inst));
+                JUMP_DEST(inst) = (*keeper)(env, JUMP_DEST(inst));
                 break;
             case OP(JUMP_IF_FALSE):
-                JUMP_IF_FALSE_DEST(inst) = do_gc(env, JUMP_IF_FALSE_DEST(inst));
+                JUMP_IF_FALSE_DEST(inst) = (*keeper)(env, JUMP_IF_FALSE_DEST(inst));
                 break;
             default:
                 break;
@@ -155,7 +155,7 @@ gc_inst_children(YogEnv* env, void* ptr, DoGc do_gc)
 static YogInst* 
 YogInst_new(YogEnv* env, InstType type, unsigned int lineno) 
 {
-    YogInst* inst = ALLOC_OBJ(env, gc_inst_children, YogInst);
+    YogInst* inst = ALLOC_OBJ(env, Inst_keep_children, YogInst);
     inst->type = type;
     inst->next = NULL;
     inst->lineno = lineno;
@@ -732,21 +732,21 @@ make_lineno_table(YogEnv* env, YogCode* code, YogInst* anchor)
 }
 
 static void 
-gc_exception_table_entry_children(YogEnv* env, void* ptr, DoGc do_gc) 
+ExceptionTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     ExceptionTableEntry* entry = ptr;
-#define GC(m)   DO_GC(env, do_gc, entry->m)
-    GC(next);
-    GC(from);
-    GC(to);
-    GC(target);
-#undef GC
+#define KEEP_MEMBER(member)     entry->member = (*keeper)(env, entry->member)
+    KEEP_MEMBER(next);
+    KEEP_MEMBER(from);
+    KEEP_MEMBER(to);
+    KEEP_MEMBER(target);
+#undef KEEP_MEMBER
 }
 
 static ExceptionTableEntry* 
 ExceptionTableEntry_new(YogEnv* env) 
 {
-    ExceptionTableEntry* entry = ALLOC_OBJ(env, gc_exception_table_entry_children, ExceptionTableEntry);
+    ExceptionTableEntry* entry = ALLOC_OBJ(env, ExceptionTableEntry_keep_children, ExceptionTableEntry);
     entry->next = NULL;
     entry->from = NULL;
     entry->to = NULL;

@@ -4,7 +4,8 @@ ONIG_LIB = $(ONIG_DIR)/.libs/libonig.a
 SUBDIRS = $(ONIG_DIR)
 
 bin_PROGRAMS = yog
-yog_SOURCES = src/array.c \
+yog_SOURCES = src/arg.c \
+	src/array.c \
 	src/binary.c \
 	src/block.c \
 	src/bool.c \

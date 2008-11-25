@@ -1,7 +1,7 @@
 #include "yog/yog.h"
 
 static YogVal 
-to_s(YogEnv* env, YogVal self) 
+to_s(YogEnv* env)
 {
     YogString* s = YogString_new_str(env, "nil");
     YogVal val = OBJ2VAL(s);

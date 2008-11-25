@@ -12,7 +12,7 @@ class DeclarationInserter(object):
             "include/yog/yog.h": [
                     "src/error.c", "src/table.c", "src/value.c", "src/vm.c", 
                     "src/array.c", "src/object.c", "src/string.c", "src/nil.c", 
-                    "src/binary.c", "src/compile.c", "src/code.c", 
+                    "src/binary.c", "src/compile.c", "src/code.c", "src/arg.c", 
                     "src/frame.c", "src/thread.c", "src/klass.c", "src/int.c", 
                     "src/builtins.c", "src/package.c", "src/function.c", 
                     "src/bool.c", "src/inst.c", "src/method.c", "src/block.c", 
