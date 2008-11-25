@@ -91,15 +91,6 @@ typedef enum YogValType YogValType;
 typedef void* (*ObjectKeeper)(YogEnv*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
 
-struct GcHead {
-    unsigned int id;
-    ChildrenKeeper keeper;
-    void* forwarding_addr;
-    size_t size;
-};
-
-typedef struct GcHead GcHead;
-
 struct YogVal {
     enum YogValType type;
     union {

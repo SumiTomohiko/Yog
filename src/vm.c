@@ -3,6 +3,15 @@
 #include <strings.h>
 #include "yog/yog.h"
 
+struct CopyingHeader {
+    unsigned int id;
+    ChildrenKeeper keeper;
+    void* forwarding_addr;
+    size_t size;
+};
+
+typedef struct CopyingHeader CopyingHeader;
+
 void 
 YogVm_register_package(YogEnv* env, YogVm* vm, const char* name, YogPackage* pkg) 
 {
@@ -85,7 +94,7 @@ align(size_t size)
 void* 
 YogVm_alloc(YogEnv* env, ChildrenKeeper keeper, size_t size) 
 {
-    size_t needed_size = size + sizeof(GcHead);
+    size_t needed_size = size + sizeof(CopyingHeader);
     size_t aligned_size = align(needed_size);
 
     YogVm* vm = ENV_VM(env);
@@ -108,7 +117,7 @@ YogVm_alloc(YogEnv* env, ChildrenKeeper keeper, size_t size)
 
     static unsigned int id = 0;
 
-    GcHead* head = (GcHead*)heap->free;
+    CopyingHeader* head = (CopyingHeader*)heap->free;
     head->id = id++;
     head->keeper = keeper;
     head->forwarding_addr = NULL;
@@ -290,9 +299,9 @@ keep_object(YogEnv* env, void* ptr)
         return NULL;
     }
 
-    GcHead* header = (GcHead*)ptr - 1;
+    CopyingHeader* header = (CopyingHeader*)ptr - 1;
     if (header->forwarding_addr != NULL) {
-        return (GcHead*)header->forwarding_addr + 1;
+        return (CopyingHeader*)header->forwarding_addr + 1;
     }
 
     YogVm* vm = ENV_VM(env);
@@ -304,7 +313,7 @@ keep_object(YogEnv* env, void* ptr)
 
     vm->unscanned += size;
 
-    return (GcHead*)dest + 1;
+    return (CopyingHeader*)dest + 1;
 }
 
 static void 
@@ -343,7 +352,7 @@ YogVm_gc(YogEnv* env, YogVm* vm)
     keep_children(env, vm, keep_object);
 
     while (vm->scanned != vm->unscanned) {
-        GcHead* header = (GcHead*)vm->scanned;
+        CopyingHeader* header = (CopyingHeader*)vm->scanned;
         ChildrenKeeper keeper = header->keeper;
         if (keeper != NULL) {
             (*keeper)(env, header + 1, keep_object);
