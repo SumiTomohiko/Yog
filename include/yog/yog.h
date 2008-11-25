@@ -26,6 +26,13 @@ typedef struct YogHeap YogHeap;
 
 typedef unsigned int ID;
 
+enum GC_TYPE {
+    GC_COPYING, 
+    GC_MARK_SWEEP, 
+};
+
+typedef enum GC_TYPE GC_TYPE;
+
 struct YogVm {
     BOOL always_gc;
     BOOL disable_gc;
