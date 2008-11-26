@@ -8,10 +8,12 @@ class TestCase(object):
 
     def _test(self, src, stdout="", stderr="", status=None, options=[]):
         env_gc = environ["GC"]
-        if env_gc == "COPYING":
+        if env_gc == "copying":
             gc = "copying"
-        elif env_gc == "MARK-SWEEP":
+        elif env_gc == "mark-sweep":
             gc = "mark-sweep"
+        elif env_gc == "bdw":
+            gc = "bdw"
 
         options = options or ["--always-gc", "--gc=%(gc)s" % { "gc": gc }]
 

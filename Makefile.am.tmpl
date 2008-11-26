@@ -30,12 +30,16 @@ am:
 test: yog$(EXEEXT)
 	make test-copying
 	make test-mark-sweep
+	make test-bdw
 
 test-copying: 
-	GC=COPYING py.test
+	GC=copying py.test
 
 test-mark-sweep:
-	GC=MARK-SWEEP py.test
+	GC=mark-sweep py.test
+
+test-bdw:
+	GC=bdw py.test
 
 clean-generic:
 	find . -name "*.pyc" -print0 | xargs --null rm -f
