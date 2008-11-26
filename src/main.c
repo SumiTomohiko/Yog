@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
@@ -5,14 +6,51 @@
 #include "yog/yog.h"
 
 static void 
-usage(const char* cmd) 
+usage()
 {
-    printf("%s [options] [file]\n", cmd);
+    printf("yog [options] [file]\n");
     printf("options:\n");
     printf("  --always-gc: \n");
     printf("  --disable-gc: \n");
     printf("  --gc=[copying|mark-sweep]: \n");
+    printf("  --init-heap-size=size: \n");
+    printf("  --threshold=size: \n");
     printf("  --help: \n");
+}
+
+static size_t 
+parse_size(const char* s) 
+{
+    size_t total_size = 0;
+
+    const char* c = NULL;
+    size_t size = 0;
+    for (c = s; *c != '\0'; c++) {
+        char ch = tolower(*c);
+        if (ch == 'k') {
+            total_size += 1024 * size;
+            size = 0;
+        }
+        else if (ch == 'm') {
+            total_size += 1024 * 1024 * size;
+            size = 0;
+        }
+        else if (ch == 'g') {
+            total_size += 1024 * 1024 * 1024 * size;
+            size = 0;
+        }
+        else {
+            if ((ch < '0') || ('9' < ch)) {
+                fprintf(stderr, "Invalid size.\n");
+                usage();
+                exit(1);
+            }
+            size += 10 * size + (ch - '0');
+        }
+    }
+    total_size += size;
+
+    return total_size;
 }
 
 int 
@@ -21,21 +59,29 @@ main(int argc, char* argv[])
     int always_gc = 0;
     int disable_gc = 0;
     int help = 0;
+#define DEFAULT_INIT_HEAP_SIZE  (1)
+    size_t init_heap_size = DEFAULT_INIT_HEAP_SIZE;
+#undef DEFAULT_INIT_HEAP_SIZE
+#define DEFAULT_THRESHOLD   (1024)
+    size_t threshold = DEFAULT_THRESHOLD;
+#undef DEFAULT_THRESHOLD
     YogGcType gc_type = GC_COPYING;
     struct option options[] = {
         { "always-gc", no_argument, &always_gc, 1 }, 
         { "disable-gc", no_argument, &disable_gc, 1 },
         { "gc", required_argument, NULL, 'g' }, 
         { "help", no_argument, &help, 1 }, 
+        { "init-heap-size", required_argument, NULL, 'i' }, 
+        { "threshold", required_argument, NULL, 't' }, 
         { 0, 0, 0, 0 }, 
     };
-    char c = 0;
-#define USAGE       usage(argv[0])
+#define USAGE       usage()
 #define ERROR(msg)  do { \
     fprintf(stderr, "%s\n", msg); \
     USAGE; \
     return -1; \
 } while (0)
+    char c = 0;
     while ((c = getopt_long(argc, argv, "", options, NULL)) != -1) {
         switch (c) {
         case 0:
@@ -50,6 +96,12 @@ main(int argc, char* argv[])
             else {
                 ERROR("Unknown gc type.");
             }
+            break;
+        case 'i':
+            init_heap_size = parse_size(optarg);
+            break;
+        case 't':
+            threshold = parse_size(optarg);
             break;
         default:
             ERROR("Unknown option.");
@@ -84,14 +136,10 @@ main(int argc, char* argv[])
     YogVm_boot(&env, vm);
     switch (gc_type) {
     case GC_COPYING:
-#define INIT_HEAP_SIZE  (1)
-        YogVm_config_copying(&env, vm, INIT_HEAP_SIZE);
-#undef INIT_HEAP_SIZE
+        YogVm_config_copying(&env, vm, init_heap_size);
         break;
     case GC_MARK_SWEEP:
-#define THRESHOLD   (1024)
-        YogVm_config_mark_sweep(&env, vm, THRESHOLD);
-#undef THRESHOLD
+        YogVm_config_mark_sweep(&env, vm, threshold);
         break;
     default:
         ERROR("Unknown GC type.");

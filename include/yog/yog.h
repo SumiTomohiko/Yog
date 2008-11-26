@@ -682,6 +682,7 @@ void* YogVm_alloc(YogEnv*, YogVm*, ChildrenKeeper, size_t);
 void YogVm_boot(YogEnv*, YogVm*);
 void YogVm_config_copying(YogEnv*, YogVm*, unsigned int);
 void YogVm_config_mark_sweep(YogEnv*, YogVm*, size_t);
+void YogVm_delete(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
