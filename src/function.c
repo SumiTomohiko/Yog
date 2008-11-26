@@ -36,7 +36,7 @@ YogBuiltinFunction_new(YogEnv* env, const char* name, void* f, unsigned int bloc
     ID* argnames = NULL;
     ID blockargname = 0;
     if (0 < argc) {
-        argnames = YogVm_alloc(env, NULL, sizeof(ID) * argc);
+        argnames = YogVm_alloc(env, ENV_VM(env), NULL, sizeof(ID) * argc);
         unsigned int i = 0;
         for (i = 0; i < argc; i++) {
             const char* s = NEXT_STR(aq);

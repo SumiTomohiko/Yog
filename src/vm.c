@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -65,6 +66,12 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
     return id;
 }
 
+static void 
+initialize_memory(void* ptr, size_t size) 
+{
+    memset(ptr, 0xcb, size);
+}
+
 static YogHeap* 
 YogHeap_new(size_t size, YogHeap* next) 
 {
@@ -73,7 +80,7 @@ YogHeap_new(size_t size, YogHeap* next)
 
     void* ptr = malloc(size);
     YOG_ASSERT(NULL, heap != NULL, "Can' allocate memory for heap.");
-    memset(ptr, 0xcb, size);
+    initialize_memory(ptr, size);
 
     heap->size = size;
     heap->base = heap->free = ptr;
@@ -91,14 +98,13 @@ align(size_t size)
     return align_size;
 }
 
-void* 
-YogVm_alloc(YogEnv* env, ChildrenKeeper keeper, size_t size) 
+static void* 
+alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size) 
 {
     size_t needed_size = size + sizeof(CopyingHeader);
     size_t aligned_size = align(needed_size);
 
-    YogVm* vm = ENV_VM(env);
-    YogHeap* heap = vm->heap;
+    YogHeap* heap = vm->gc.copying.heap;
     size_t used_size = heap->free - heap->base;
     size_t rest_size = heap->size - used_size;
     if (rest_size < aligned_size) {
@@ -109,7 +115,7 @@ YogVm_alloc(YogEnv* env, ChildrenKeeper keeper, size_t size)
         else {
             allocate_size = heap->size;
         }
-        vm->heap = heap = YogHeap_new(allocate_size, heap);
+        vm->gc.copying.heap = heap = YogHeap_new(allocate_size, heap);
         if (!vm->disable_gc) {
             vm->need_gc = TRUE;
         }
@@ -126,6 +132,33 @@ YogVm_alloc(YogEnv* env, ChildrenKeeper keeper, size_t size)
     heap->free += aligned_size;
 
     return head + 1;
+}
+
+static void* 
+alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
+{
+    size_t total_size = size + sizeof(YogMarkSweepHeader);
+    YogMarkSweepHeader* header = malloc(total_size);
+    initialize_memory(header, total_size);
+
+    header->prev = NULL;
+    header->next = vm->gc.mark_sweep.header;
+    if (vm->gc.mark_sweep.header != NULL) {
+        vm->gc.mark_sweep.header->prev = header;
+    }
+    vm->gc.mark_sweep.header = header;
+
+    header->size = total_size;
+    header->keeper = keeper;
+    header->marked = FALSE;
+
+    return header + 1;
+}
+
+void* 
+YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size) 
+{
+    return (*vm->alloc_mem)(env, vm, keeper, size);
 }
 
 static void 
@@ -204,6 +237,8 @@ setup_exceptions(YogEnv* env, YogVm* vm)
 void 
 YogVm_boot(YogEnv* env, YogVm* vm) 
 {
+    (*vm->init_gc)(env, vm);
+
     setup_symbol_tables(env, vm);
     setup_basic_klass(env, vm);
     setup_klasses(env, vm);
@@ -214,49 +249,6 @@ YogVm_boot(YogEnv* env, YogVm* vm)
 
     vm->encodings = YogTable_new_symbol_table(env);
     setup_encodings(env, vm);
-}
-
-YogVm* 
-YogVm_new(size_t heap_size) 
-{
-    YogVm* vm = malloc(sizeof(YogVm));
-    YOG_ASSERT(NULL, vm != NULL, "Can' allocate memory for YogVm.");
-
-    vm->always_gc = FALSE;
-    vm->disable_gc = FALSE;
-
-    vm->need_gc = FALSE;
-    vm->heap = YogHeap_new(heap_size, NULL);
-    vm->scanned = NULL;
-    vm->unscanned = NULL;
-
-    vm->next_id = 0;
-    vm->id2name = NULL;
-    vm->name2id = NULL;
-
-    vm->cObject = NULL;
-    vm->cKlass = NULL;
-    vm->cInt = NULL;
-    vm->cString = NULL;
-    vm->cPackage = NULL;
-    vm->cBool = NULL;
-    vm->cBuiltinBoundMethod = NULL;
-    vm->cBoundMethod = NULL;
-    vm->cBuiltinUnboundMethod = NULL;
-    vm->cUnboundMethod = NULL;
-    vm->cPackageBlock = NULL;
-    vm->cNil = NULL;
-
-    vm->eException = NULL;
-    vm->eBugException = NULL;
-
-    vm->pkgs = NULL;
-
-    vm->encodings = NULL;
-
-    vm->thread = NULL;
-
-    return vm;
 }
 
 static void 
@@ -293,7 +285,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 }
 
 static void* 
-keep_object(YogEnv* env, void* ptr) 
+keep_object_copying(YogEnv* env, void* ptr) 
 {
     if (ptr == NULL) {
         return NULL;
@@ -305,25 +297,31 @@ keep_object(YogEnv* env, void* ptr)
     }
 
     YogVm* vm = ENV_VM(env);
-    unsigned char* dest = vm->unscanned;
+    unsigned char* dest = vm->gc.copying.unscanned;
     size_t size = header->size;
     memcpy(dest, header, size);
 
     header->forwarding_addr = dest;
 
-    vm->unscanned += size;
+    vm->gc.copying.unscanned += size;
 
     return (CopyingHeader*)dest + 1;
 }
 
 static void 
+destroy_memory(void* ptr, size_t size) 
+{
+    memset(ptr, 0xfe, size);
+}
+
+static void 
 free_heap(YogVm* vm) 
 {
-    YogHeap* heap = vm->heap;
+    YogHeap* heap = vm->gc.copying.heap;
     while (heap != NULL) {
         YogHeap* next = heap->next;
 
-        memset(heap->base, 0xfe, heap->size);
+        destroy_memory(heap->base, heap->size);
         free(heap->base);
         free(heap);
 
@@ -331,11 +329,11 @@ free_heap(YogVm* vm)
     }
 }
 
-void 
-YogVm_gc(YogEnv* env, YogVm* vm) 
+static void 
+copying_gc(YogEnv* env, YogVm* vm) 
 {
     unsigned int used_size = 0;
-    YogHeap* heap = vm->heap;
+    YogHeap* heap = vm->gc.copying.heap;
     while (heap != NULL) {
         unsigned int size = heap->free - heap->base;
         used_size += size;
@@ -347,24 +345,163 @@ YogVm_gc(YogEnv* env, YogVm* vm)
 #undef GROW_RATIO
     YogHeap* to_space = YogHeap_new(new_size, NULL);
 
-    vm->scanned = vm->unscanned = to_space->free;
+    vm->gc.copying.scanned = vm->gc.copying.unscanned = to_space->free;
 
-    keep_children(env, vm, keep_object);
+    keep_children(env, vm, keep_object_copying);
 
-    while (vm->scanned != vm->unscanned) {
-        CopyingHeader* header = (CopyingHeader*)vm->scanned;
+    while (vm->gc.copying.scanned != vm->gc.copying.unscanned) {
+        CopyingHeader* header = (CopyingHeader*)vm->gc.copying.scanned;
         ChildrenKeeper keeper = header->keeper;
         if (keeper != NULL) {
-            (*keeper)(env, header + 1, keep_object);
+            (*keeper)(env, header + 1, keep_object_copying);
         }
 
-        vm->scanned += header->size;
+        vm->gc.copying.scanned += header->size;
     }
 
     free_heap(vm);
 
-    to_space->free = vm->unscanned;
-    vm->heap = to_space;
+    to_space->free = vm->gc.copying.unscanned;
+    vm->gc.copying.heap = to_space;
+}
+
+static void 
+initialize_copying(YogEnv* env, YogVm* vm) 
+{
+    vm->gc.copying.heap = YogHeap_new(vm->gc.copying.init_heap_size, NULL);
+}
+
+static void 
+initialize_mark_sweep(YogEnv* env, YogVm* vm) 
+{
+    vm->gc.mark_sweep.header = NULL;
+}
+
+static void* 
+keep_object_mark_sweep(YogEnv* env, void* ptr) 
+{
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    YogMarkSweepHeader* header = (YogMarkSweepHeader*)ptr - 1;
+    if (!header->marked) {
+        header->marked = TRUE;
+
+        ChildrenKeeper keeper = header->keeper;
+        if (keeper != NULL) {
+            (*keeper)(env, ptr, keep_object_mark_sweep);
+        }
+    }
+
+    return ptr;
+}
+
+static void 
+mark_sweep_gc(YogEnv* env, YogVm* vm) 
+{
+    YogMarkSweepHeader* header = vm->gc.mark_sweep.header;
+    while (header != NULL) {
+        header->marked = FALSE;
+        header = header->next;
+    }
+
+    keep_children(env, vm, keep_object_mark_sweep);
+
+    header = vm->gc.mark_sweep.header;
+    while (header != NULL) {
+        YogMarkSweepHeader* next = header->next;
+
+        if (!header->marked) {
+            if (header->prev != NULL) {
+                header->prev->next = next;
+            }
+            else {
+                vm->gc.mark_sweep.header = next;
+            }
+            if (next != NULL) {
+                next->prev = header->prev;
+            }
+
+            destroy_memory(header, header->size);
+            free(header);
+        }
+
+        header = next;
+    }
+}
+
+YogVm* 
+YogVm_new(YogGcType gc)
+{
+    YogVm* vm = malloc(sizeof(YogVm));
+    YOG_ASSERT(NULL, vm != NULL, "Can' allocate memory for YogVm.");
+
+    vm->always_gc = FALSE;
+    vm->disable_gc = FALSE;
+
+    vm->need_gc = FALSE;
+    switch (gc) {
+    case GC_COPYING:
+        vm->init_gc = initialize_copying;
+        vm->exec_gc = copying_gc;
+        vm->alloc_mem = alloc_mem_copying;
+        vm->gc.copying.init_heap_size = 0;
+        vm->gc.copying.heap = NULL;
+        vm->gc.copying.scanned = NULL;
+        vm->gc.copying.unscanned = NULL;
+        break;
+    case GC_MARK_SWEEP:
+        vm->init_gc = initialize_mark_sweep;
+        vm->exec_gc = mark_sweep_gc;
+        vm->alloc_mem = alloc_mem_mark_sweep;
+        vm->gc.mark_sweep.header = NULL;
+        break;
+    default:
+        fprintf(stderr, "Unknown GC type.\n");
+        return NULL;
+        break;
+    }
+
+    vm->next_id = 0;
+    vm->id2name = NULL;
+    vm->name2id = NULL;
+
+    vm->cObject = NULL;
+    vm->cKlass = NULL;
+    vm->cInt = NULL;
+    vm->cString = NULL;
+    vm->cPackage = NULL;
+    vm->cBool = NULL;
+    vm->cBuiltinBoundMethod = NULL;
+    vm->cBoundMethod = NULL;
+    vm->cBuiltinUnboundMethod = NULL;
+    vm->cUnboundMethod = NULL;
+    vm->cPackageBlock = NULL;
+    vm->cNil = NULL;
+
+    vm->eException = NULL;
+    vm->eBugException = NULL;
+
+    vm->pkgs = NULL;
+
+    vm->encodings = NULL;
+
+    vm->thread = NULL;
+
+    return vm;
+}
+
+void 
+YogVm_gc(YogEnv* env, YogVm* vm) 
+{
+    (*vm->exec_gc)(env, vm);
+}
+
+void 
+YogVm_config_copying(YogEnv* env, YogVm* vm, unsigned int init_heap_size) 
+{
+    vm->gc.copying.init_heap_size = init_heap_size;
 }
 
 /**

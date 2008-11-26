@@ -910,8 +910,8 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
     ID* argnames = NULL;
     uint8_t* arg_index = NULL;
     if (0 < argc) {
-        argnames = YogVm_alloc(env, NULL, sizeof(ID) * argc);
-        arg_index = YogVm_alloc(env, NULL, sizeof(uint8_t) * argc);
+        argnames = YogVm_alloc(env, ENV_VM(env), NULL, sizeof(ID) * argc);
+        arg_index = YogVm_alloc(env, ENV_VM(env), NULL, sizeof(uint8_t) * argc);
         for (i = 0; i < argc; i++) {
             YogVal val = YogArray_at(env, params, i);
             YogNode* node = VAL2PTR(val);

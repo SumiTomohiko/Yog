@@ -21,7 +21,7 @@ main(int argc, char* argv[])
     int always_gc = 0;
     int disable_gc = 0;
     int help = 0;
-    GC_TYPE gc_type = GC_COPYING;
+    YogGcType gc_type = GC_COPYING;
     struct option options[] = {
         { "always-gc", no_argument, &always_gc, 1 }, 
         { "disable-gc", no_argument, &disable_gc, 1 },
@@ -67,9 +67,14 @@ main(int argc, char* argv[])
 #undef ERROR
 #undef USAGE
 
-#define INIT_HEAP_SIZE  (1)
-    YogVm* vm = YogVm_new(INIT_HEAP_SIZE);
-#undef INIT_HEAP_SIZE
+#define ERROR(msg)  do { \
+    fprintf(stderr, "%s\n", msg); \
+    return -2; \
+} while (0)
+    YogVm* vm = YogVm_new(gc_type);
+    if (vm == NULL) {
+        ERROR("Can't create VM.");
+    }
     vm->always_gc = always_gc ? TRUE : FALSE;
     vm->disable_gc = disable_gc ? TRUE : FALSE;
 
@@ -77,6 +82,18 @@ main(int argc, char* argv[])
     env.vm = vm;
     env.th = NULL;
     YogVm_boot(&env, vm);
+    switch (gc_type) {
+    case GC_COPYING:
+#define INIT_HEAP_SIZE  (1)
+        YogVm_config_copying(&env, vm, INIT_HEAP_SIZE);
+#undef INIT_HEAP_SIZE
+        break;
+    case GC_MARK_SWEEP:
+        break;
+    default:
+        ERROR("Unknown GC type.");
+        break;
+    }
 
     YogParser* parser = YogParser_new(&env);
     const char* filename = NULL;
@@ -97,6 +114,7 @@ main(int argc, char* argv[])
     YogThread_eval_package(&env, th, pkg);
 
     return 0;
+#undef ERROR
 }
 
 /**

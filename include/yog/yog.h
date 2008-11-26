@@ -26,21 +26,55 @@ typedef struct YogHeap YogHeap;
 
 typedef unsigned int ID;
 
-enum GC_TYPE {
+struct YogEnv {
+    struct YogVm* vm;
+    struct YogThread* th;
+};
+
+#define ENV_VM(env)     ((env)->vm)
+#define ENV_TH(env)     ((env)->th)
+
+typedef struct YogEnv YogEnv;
+
+enum YogGcType {
     GC_COPYING, 
     GC_MARK_SWEEP, 
 };
 
-typedef enum GC_TYPE GC_TYPE;
+typedef enum YogGcType YogGcType;
+
+typedef void* (*ObjectKeeper)(YogEnv*, void*);
+typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
+
+struct YogMarkSweepHeader {
+    struct YogMarkSweepHeader* prev;
+    struct YogMarkSweepHeader* next;
+    unsigned int size;
+    ChildrenKeeper keeper;
+    BOOL marked;
+};
+
+typedef struct YogMarkSweepHeader YogMarkSweepHeader;
 
 struct YogVm {
     BOOL always_gc;
     BOOL disable_gc;
 
+    void (*init_gc)(struct YogEnv* env, struct YogVm* vm);
+    void (*exec_gc)(struct YogEnv* env, struct YogVm* vm);
+    void* (*alloc_mem)(struct YogEnv* env, struct YogVm* vm, ChildrenKeeper keeper, size_t size);
     BOOL need_gc;
-    YogHeap* heap;
-    unsigned char* scanned;
-    unsigned char* unscanned;
+    union {
+        struct {
+            unsigned int init_heap_size;
+            struct YogHeap* heap;
+            unsigned char* scanned;
+            unsigned char* unscanned;
+        } copying; 
+        struct {
+            struct YogMarkSweepHeader* header;
+        } mark_sweep;
+    } gc;
 
     ID next_id;
     struct YogTable* id2name;
@@ -71,16 +105,6 @@ struct YogVm {
 
 typedef struct YogVm YogVm;
 
-struct YogEnv {
-    struct YogVm* vm;
-    struct YogThread* th;
-};
-
-#define ENV_VM(env)     ((env)->vm)
-#define ENV_TH(env)     ((env)->th)
-
-typedef struct YogEnv YogEnv;
-
 enum YogValType {
     VAL_UNDEF, 
     VAL_INT, 
@@ -94,9 +118,6 @@ enum YogValType {
 };
 
 typedef enum YogValType YogValType;
-
-typedef void* (*ObjectKeeper)(YogEnv*, void*);
-typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
 
 struct YogVal {
     enum YogValType type;
@@ -654,12 +675,13 @@ YogVal YogVal_true();
 YogVal YogVal_undef();
 
 /* src/vm.c */
-void* YogVm_alloc(YogEnv*, ChildrenKeeper, size_t);
+void* YogVm_alloc(YogEnv*, YogVm*, ChildrenKeeper, size_t);
 void YogVm_boot(YogEnv*, YogVm*);
+void YogVm_config_copying(YogEnv*, YogVm*, unsigned int);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
-YogVm* YogVm_new(size_t);
+YogVm* YogVm_new(YogGcType);
 void YogVm_register_package(YogEnv*, YogVm*, const char*, YogPackage*);
 
 /* $PROTOTYPE_END$ */
@@ -668,7 +690,7 @@ void YogVm_register_package(YogEnv*, YogVm*, const char*, YogPackage*);
 #define YogPackageFrame_new     YogNameFrame_new
 
 #define ALLOC_OBJ_SIZE(env, keep_children, size) \
-    YogVm_alloc(env, keep_children, size)
+    YogVm_alloc(env, ENV_VM(env), keep_children, size)
 #define ALLOC_OBJ(env, keep_children, type) \
     ALLOC_OBJ_SIZE(env, keep_children, sizeof(type))
 #define ALLOC_OBJ_ITEM(env, keep_children, type, size, item_type) \
