@@ -406,6 +406,13 @@ keep_object_mark_sweep(YogEnv* env, void* ptr)
 }
 
 static void 
+YogMarkSweepHeader_delete(YogMarkSweepHeader* header) 
+{
+    destroy_memory(header, header->size);
+    free(header);
+}
+
+static void 
 mark_sweep_gc(YogEnv* env, YogVm* vm) 
 {
     YogMarkSweepHeader* header = vm->gc.mark_sweep.header;
@@ -431,14 +438,32 @@ mark_sweep_gc(YogEnv* env, YogVm* vm)
                 next->prev = header->prev;
             }
 
-            destroy_memory(header, header->size);
-            free(header);
+            YogMarkSweepHeader_delete(header);
         }
 
         header = next;
     }
 
     vm->gc.mark_sweep.allocated_size = 0;
+}
+
+static void 
+free_mem_copying(YogEnv* env, YogVm* vm) 
+{
+    free_heap(vm);
+}
+
+static void 
+free_mem_mark_sweep(YogEnv* env, YogVm* vm) 
+{
+    YogMarkSweepHeader* header = vm->gc.mark_sweep.header;
+    while (header != NULL) {
+        YogMarkSweepHeader* next = header->next;
+
+        YogMarkSweepHeader_delete(header);
+
+        header = next;
+    }
 }
 
 YogVm* 
@@ -456,6 +481,7 @@ YogVm_new(YogGcType gc)
         vm->init_gc = initialize_copying;
         vm->exec_gc = copying_gc;
         vm->alloc_mem = alloc_mem_copying;
+        vm->free_mem = free_mem_copying;
         vm->gc.copying.init_heap_size = 0;
         vm->gc.copying.heap = NULL;
         vm->gc.copying.scanned = NULL;
@@ -465,6 +491,7 @@ YogVm_new(YogGcType gc)
         vm->init_gc = initialize_mark_sweep;
         vm->exec_gc = mark_sweep_gc;
         vm->alloc_mem = alloc_mem_mark_sweep;
+        vm->free_mem = free_mem_mark_sweep;
         vm->gc.mark_sweep.header = NULL;
         vm->gc.mark_sweep.threshold = 0;
         vm->gc.mark_sweep.allocated_size = 0;
@@ -520,6 +547,12 @@ void
 YogVm_config_mark_sweep(YogEnv* env, YogVm* vm, size_t threshold) 
 {
     vm->gc.mark_sweep.threshold = threshold;
+}
+
+void 
+YogVm_delete(YogEnv* env, YogVm* vm) 
+{
+    (*vm->free_mem)(env, vm);
 }
 
 /**

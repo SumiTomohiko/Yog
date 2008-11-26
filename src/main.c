@@ -116,6 +116,8 @@ main(int argc, char* argv[])
     YogVm_register_package(&env, env.vm, "__main__", pkg);
     YogThread_eval_package(&env, th, pkg);
 
+    YogVm_delete(&env, env.vm);
+
     return 0;
 #undef ERROR
 }

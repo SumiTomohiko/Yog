@@ -60,9 +60,10 @@ struct YogVm {
     BOOL always_gc;
     BOOL disable_gc;
 
-    void (*init_gc)(struct YogEnv* env, struct YogVm* vm);
-    void (*exec_gc)(struct YogEnv* env, struct YogVm* vm);
-    void* (*alloc_mem)(struct YogEnv* env, struct YogVm* vm, ChildrenKeeper keeper, size_t size);
+    void (*init_gc)(struct YogEnv*, struct YogVm*);
+    void (*exec_gc)(struct YogEnv*, struct YogVm*);
+    void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, size_t);
+    void (*free_mem)(struct YogEnv*, struct YogVm*);
     BOOL need_gc;
     union {
         struct {
