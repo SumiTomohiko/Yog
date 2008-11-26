@@ -89,6 +89,9 @@ main(int argc, char* argv[])
 #undef INIT_HEAP_SIZE
         break;
     case GC_MARK_SWEEP:
+#define THRESHOLD   (1024)
+        YogVm_config_mark_sweep(&env, vm, THRESHOLD);
+#undef THRESHOLD
         break;
     default:
         ERROR("Unknown GC type.");

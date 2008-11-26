@@ -152,6 +152,13 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
     header->keeper = keeper;
     header->marked = FALSE;
 
+    if (!vm->disable_gc) {
+        vm->gc.mark_sweep.allocated_size += total_size;
+        if (vm->gc.mark_sweep.threshold < vm->gc.mark_sweep.allocated_size) {
+            vm->need_gc = TRUE;
+        }
+    }
+
     return header + 1;
 }
 
@@ -375,6 +382,7 @@ static void
 initialize_mark_sweep(YogEnv* env, YogVm* vm) 
 {
     vm->gc.mark_sweep.header = NULL;
+    vm->gc.mark_sweep.allocated_size = 0;
 }
 
 static void* 
@@ -429,6 +437,8 @@ mark_sweep_gc(YogEnv* env, YogVm* vm)
 
         header = next;
     }
+
+    vm->gc.mark_sweep.allocated_size = 0;
 }
 
 YogVm* 
@@ -456,6 +466,8 @@ YogVm_new(YogGcType gc)
         vm->exec_gc = mark_sweep_gc;
         vm->alloc_mem = alloc_mem_mark_sweep;
         vm->gc.mark_sweep.header = NULL;
+        vm->gc.mark_sweep.threshold = 0;
+        vm->gc.mark_sweep.allocated_size = 0;
         break;
     default:
         fprintf(stderr, "Unknown GC type.\n");
@@ -502,6 +514,12 @@ void
 YogVm_config_copying(YogEnv* env, YogVm* vm, unsigned int init_heap_size) 
 {
     vm->gc.copying.init_heap_size = init_heap_size;
+}
+
+void 
+YogVm_config_mark_sweep(YogEnv* env, YogVm* vm, size_t threshold) 
+{
+    vm->gc.mark_sweep.threshold = threshold;
 }
 
 /**
