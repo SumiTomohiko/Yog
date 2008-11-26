@@ -482,7 +482,10 @@ bdw_gc(YogEnv* env, YogVm* vm)
 void* 
 alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size) 
 {
-    return GC_malloc(size);
+    void* ptr = GC_MALLOC(size);
+    initialize_memory(ptr, size);
+
+    return ptr;
 }
 
 static void 
