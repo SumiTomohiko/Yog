@@ -6,7 +6,6 @@
 #include "yog/yog.h"
 
 struct CopyingHeader {
-    unsigned int id;
     ChildrenKeeper keeper;
     void* forwarding_addr;
     size_t size;
@@ -122,10 +121,7 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
         }
     }
 
-    static unsigned int id = 0;
-
     CopyingHeader* head = (CopyingHeader*)heap->free;
-    head->id = id++;
     head->keeper = keeper;
     head->forwarding_addr = NULL;
     head->size = aligned_size;
