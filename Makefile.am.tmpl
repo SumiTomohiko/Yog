@@ -25,7 +25,13 @@ am:
 	python tools/update_automake.py
 
 test: yog$(EXEEXT)
+	make test-copying
+	make test-mark-sweep
+
+test-copying: 
 	GC=COPYING py.test
+
+test-mark-sweep:
 	GC=MARK-SWEEP py.test
 
 clean-generic:
