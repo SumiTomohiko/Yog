@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
+#include "gc.h"
 #include "yog/parser.h"
 #include "yog/yog.h"
 
@@ -12,7 +13,7 @@ usage()
     printf("options:\n");
     printf("  --always-gc: \n");
     printf("  --disable-gc: \n");
-    printf("  --gc=[copying|mark-sweep]: \n");
+    printf("  --gc=[bdw|copying|mark-sweep]: \n");
     printf("  --init-heap-size=size: \n");
     printf("  --threshold=size: \n");
     printf("  --help: \n");
@@ -87,7 +88,10 @@ main(int argc, char* argv[])
         case 0:
             break;
         case 'g':
-            if (strcmp(optarg, "copying") == 0) {
+            if (strcmp(optarg, "bdw") == 0) {
+                gc_type = GC_BDW;
+            }
+            else if (strcmp(optarg, "copying") == 0) {
                 gc_type = GC_COPYING;
             }
             else if (strcmp(optarg, "mark-sweep") == 0) {
@@ -123,23 +127,24 @@ main(int argc, char* argv[])
     fprintf(stderr, "%s\n", msg); \
     return -2; \
 } while (0)
-    YogVm* vm = YogVm_new(gc_type);
-    if (vm == NULL) {
-        ERROR("Can't create VM.");
-    }
-    vm->always_gc = always_gc ? TRUE : FALSE;
-    vm->disable_gc = disable_gc ? TRUE : FALSE;
+    YogVm vm;
+    YogVm_init(&vm, gc_type);
+    vm.always_gc = always_gc ? TRUE : FALSE;
+    vm.disable_gc = disable_gc ? TRUE : FALSE;
 
     YogEnv env;
-    env.vm = vm;
+    env.vm = &vm;
     env.th = NULL;
-    YogVm_boot(&env, vm);
+    YogVm_boot(&env, env.vm);
     switch (gc_type) {
+    case GC_BDW:
+        GC_INIT();
+        break;
     case GC_COPYING:
-        YogVm_config_copying(&env, vm, init_heap_size);
+        YogVm_config_copying(&env, env.vm, init_heap_size);
         break;
     case GC_MARK_SWEEP:
-        YogVm_config_mark_sweep(&env, vm, threshold);
+        YogVm_config_mark_sweep(&env, env.vm, threshold);
         break;
     default:
         ERROR("Unknown GC type.");

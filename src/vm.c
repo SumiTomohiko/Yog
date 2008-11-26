@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include "gc.h"
 #include "yog/yog.h"
 
 struct CopyingHeader {
@@ -466,17 +467,44 @@ free_mem_mark_sweep(YogEnv* env, YogVm* vm)
     }
 }
 
-YogVm* 
-YogVm_new(YogGcType gc)
+static void 
+initialize_bdw(YogEnv* env, YogVm* vm) 
 {
-    YogVm* vm = malloc(sizeof(YogVm));
-    YOG_ASSERT(NULL, vm != NULL, "Can' allocate memory for YogVm.");
+    /* empty */
+}
 
+static void 
+bdw_gc(YogEnv* env, YogVm* vm) 
+{
+    /* empty */
+}
+
+void* 
+alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size) 
+{
+    return GC_malloc(size);
+}
+
+static void 
+free_mem_bdw(YogEnv* env, YogVm* vm) 
+{
+    /* empty */
+}
+
+void 
+YogVm_init(YogVm* vm, YogGcType gc)
+{
     vm->always_gc = FALSE;
     vm->disable_gc = FALSE;
 
     vm->need_gc = FALSE;
     switch (gc) {
+    case GC_BDW:
+        vm->init_gc = initialize_bdw;
+        vm->exec_gc = bdw_gc;
+        vm->alloc_mem = alloc_mem_bdw;
+        vm->free_mem = free_mem_bdw;
+        break;
     case GC_COPYING:
         vm->init_gc = initialize_copying;
         vm->exec_gc = copying_gc;
@@ -498,7 +526,7 @@ YogVm_new(YogGcType gc)
         break;
     default:
         fprintf(stderr, "Unknown GC type.\n");
-        return NULL;
+        return;
         break;
     }
 
@@ -527,8 +555,6 @@ YogVm_new(YogGcType gc)
     vm->encodings = NULL;
 
     vm->thread = NULL;
-
-    return vm;
 }
 
 void 

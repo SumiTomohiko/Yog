@@ -37,7 +37,7 @@ yog_SOURCES = src/arg.c \
 	src/value.c \
 	src/vm.c
 yog_CFLAGS = -Iinclude -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
-yog_LDADD = $(BDWGC_LIB) $(ONIG_LIB)
+yog_LDADD = $(BDWGC_LIB) $(ONIG_LIB) -lpthread
 
 AM_YFLAGS = -d --verbose
 #AM_LFLAGS = --noline

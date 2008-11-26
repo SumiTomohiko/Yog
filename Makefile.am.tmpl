@@ -9,7 +9,7 @@ SUBDIRS = $(BDWGC_DIR) $(ONIG_DIR)
 bin_PROGRAMS = yog
 yog_SOURCES = @SOURCES@
 yog_CFLAGS = -Iinclude -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
-yog_LDADD = $(BDWGC_LIB) $(ONIG_LIB)
+yog_LDADD = $(BDWGC_LIB) $(ONIG_LIB) -lpthread
 
 AM_YFLAGS = -d --verbose
 #AM_LFLAGS = --noline

@@ -37,6 +37,7 @@ struct YogEnv {
 typedef struct YogEnv YogEnv;
 
 enum YogGcType {
+    GC_BDW, 
     GC_COPYING, 
     GC_MARK_SWEEP, 
 };
@@ -685,9 +686,10 @@ void YogVm_config_mark_sweep(YogEnv*, YogVm*, size_t);
 void YogVm_delete(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
+void YogVm_init(YogVm*, YogGcType);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
-YogVm* YogVm_new(YogGcType);
 void YogVm_register_package(YogEnv*, YogVm*, const char*, YogPackage*);
+void* alloc_mem_bdw(YogEnv*, YogVm*, ChildrenKeeper, size_t);
 
 /* $PROTOTYPE_END$ */
 
