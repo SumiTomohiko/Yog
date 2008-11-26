@@ -1,7 +1,10 @@
 ONIG_DIR = onig
 ONIG_LIB = $(ONIG_DIR)/.libs/libonig.a
 
-SUBDIRS = $(ONIG_DIR)
+BDWGC_DIR = bdwgc
+BDWGC_LIB = $(BDWGC_DIR)/.libs/libgc.a
+
+SUBDIRS = $(BDWGC_DIR) $(ONIG_DIR)
 
 bin_PROGRAMS = yog
 yog_SOURCES = src/arg.c \
@@ -33,8 +36,8 @@ yog_SOURCES = src/arg.c \
 	src/thread.c \
 	src/value.c \
 	src/vm.c
-yog_CFLAGS = -Iinclude -I$(ONIG_DIR) -Wall
-yog_LDADD = $(ONIG_LIB)
+yog_CFLAGS = -Iinclude -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
+yog_LDADD = $(BDWGC_LIB) $(ONIG_LIB)
 
 AM_YFLAGS = -d --verbose
 #AM_LFLAGS = --noline

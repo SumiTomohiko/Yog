@@ -6,6 +6,9 @@ Makefile
 TAGS
 autom4te.cache
 autoscan.log
+bdwgc/.dirstamp
+bdwgc/.libs
+bdwgc/libgc.la
 config.h
 config.log
 config.status

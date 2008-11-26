@@ -713,7 +713,7 @@ CPPFLAGS
 YACC
 YFLAGS
 CPP'
-ac_subdirs_all='onig'
+ac_subdirs_all='bdwgc onig'
 
 # Initialize some variables set by options.
 ac_init_help=
@@ -4984,7 +4984,7 @@ done
 
 ac_config_files="$ac_config_files Makefile"
 
-subdirs="$subdirs onig"
+subdirs="$subdirs bdwgc onig"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure

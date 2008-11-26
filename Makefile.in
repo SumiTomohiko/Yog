@@ -62,7 +62,7 @@ am_yog_OBJECTS = yog-arg.$(OBJEXT) yog-array.$(OBJEXT) \
 	yog-string.$(OBJEXT) yog-table.$(OBJEXT) yog-thread.$(OBJEXT) \
 	yog-value.$(OBJEXT) yog-vm.$(OBJEXT)
 yog_OBJECTS = $(am_yog_OBJECTS)
-yog_DEPENDENCIES = $(ONIG_LIB)
+yog_DEPENDENCIES = $(BDWGC_LIB) $(ONIG_LIB)
 yog_LINK = $(CCLD) $(yog_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
 	$@
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -191,7 +191,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ONIG_DIR = onig
 ONIG_LIB = $(ONIG_DIR)/.libs/libonig.a
-SUBDIRS = $(ONIG_DIR)
+BDWGC_DIR = bdwgc
+BDWGC_LIB = $(BDWGC_DIR)/.libs/libgc.a
+SUBDIRS = $(BDWGC_DIR) $(ONIG_DIR)
 yog_SOURCES = src/arg.c \
 	src/array.c \
 	src/binary.c \
@@ -222,8 +224,8 @@ yog_SOURCES = src/arg.c \
 	src/value.c \
 	src/vm.c
 
-yog_CFLAGS = -Iinclude -I$(ONIG_DIR) -Wall
-yog_LDADD = $(ONIG_LIB)
+yog_CFLAGS = -Iinclude -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
+yog_LDADD = $(BDWGC_LIB) $(ONIG_LIB)
 AM_YFLAGS = -d --verbose
 #AM_LFLAGS = --noline
 INSTS_DEF = src/insts.def
