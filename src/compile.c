@@ -26,6 +26,7 @@ struct AstVisitor {
     VisitNode visit_literal;
     VisitNode visit_method_call;
     VisitNode visit_next;
+    VisitNode visit_return;
     VisitNode visit_stmt;
     VisitNode visit_variable;
     VisitNode visit_while;
@@ -246,6 +247,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     case NODE_NEXT:
         VISIT(visit_next);
         break;
+    case NODE_RETURN:
+        VISIT(visit_return);
+        break;
     case NODE_BLOCK_ARG:
         VISIT(visit_block);
         break;
@@ -458,6 +462,7 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_literal = NULL;
     visitor->visit_method_call = var2index_visit_method_call;
     visitor->visit_next = var2index_visit_break;
+    visitor->visit_return = var2index_visit_break;
     visitor->visit_stmt = visit_node;
     visitor->visit_stmts = var2index_visit_stmts;
     visitor->visit_variable = NULL;
@@ -1431,6 +1436,15 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
+compile_visit_return(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    visit_node(env, visitor, NODE_EXPR(node), arg);
+
+    CompileData* data = arg;
+    CompileData_add_ret(env, data, node->lineno);
+}
+
+static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_assign = compile_visit_assign;
@@ -1447,6 +1461,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_literal = compile_visit_literal;
     visitor->visit_method_call = compile_visit_method_call;
     visitor->visit_next = compile_visit_next;
+    visitor->visit_return = compile_visit_return;
     visitor->visit_stmt = visit_node;
     visitor->visit_stmts = compile_visit_stmts;
     visitor->visit_variable = compile_visit_variable;
