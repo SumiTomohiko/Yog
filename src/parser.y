@@ -324,6 +324,9 @@ stmt    : /* empty */ {
         | NEXT expr {
             NEXT_NEW($$, $2);
         }
+        | RETURN {
+            RETURN_NEW($$, NULL);
+        }
         | RETURN expr {
             RETURN_NEW($$, $2);
         }

@@ -1438,10 +1438,18 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 static void 
 compile_visit_return(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
-    visit_node(env, visitor, NODE_EXPR(node), arg);
-
     CompileData* data = arg;
-    CompileData_add_ret(env, data, node->lineno);
+
+    YogNode* expr = NODE_EXPR(node);
+    unsigned int lineno = node->lineno;
+    if (expr != NULL) {
+        visit_node(env, visitor, expr, arg);
+    }
+    else {
+        ADD_PUSH_CONST(YNIL, lineno);
+    }
+
+    CompileData_add_ret(env, data, lineno);
 }
 
 static void 
