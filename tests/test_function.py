@@ -22,4 +22,13 @@ end
 foo(42)
 """, "42\n")
 
+    def test_no_return(self):
+        self._test("""
+def foo()
+end
+
+puts foo()
+""", """nil
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
