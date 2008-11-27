@@ -26,4 +26,14 @@ puts 43
 43
 """)
 
+    def test_return3(self):
+        self._test("""
+def foo()
+  return
+end
+
+puts foo()
+""", """nil
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
