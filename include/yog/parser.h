@@ -23,6 +23,7 @@ enum YogNodeType {
     NODE_METHOD_CALL, 
     NODE_NEXT, 
     NODE_PARAM, 
+    NODE_RETURN, 
     NODE_VARIABLE, 
     NODE_VAR_PARAM, 
     NODE_WHILE, 

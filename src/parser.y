@@ -158,6 +158,11 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
     NODE_EXPR(node) = expr; \
 } while (0)
 
+#define RETURN_NEW(node, expr) do { \
+    node = NODE_NEW(NODE_RETURN); \
+    NODE_EXPR(node) = expr; \
+} while (0)
+
 #define METHOD_CALL_NEW(node, recv, name, args, blockarg) do { \
     node = NODE_NEW(NODE_METHOD_CALL); \
     NODE_RECEIVER(node) = recv; \
@@ -216,6 +221,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %token PLUS
 %token RBRACE
 %token RBRACKET
+%token RETURN
 %token RPAR
 %token STAR
 %token TRY
@@ -317,6 +323,9 @@ stmt    : /* empty */ {
         }
         | NEXT expr {
             NEXT_NEW($$, $2);
+        }
+        | RETURN expr {
+            RETURN_NEW($$, $2);
         }
         | IF expr stmts if_tail END {
             IF_NEW($$, $2, $3, $4);

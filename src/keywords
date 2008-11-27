@@ -23,6 +23,7 @@ except, EXCEPT
 finally, FINALLY
 if, IF
 next, NEXT
+return, RETURN
 try, TRY
 while, WHILE
 %%

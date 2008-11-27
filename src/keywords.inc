@@ -38,7 +38,7 @@ typedef struct KeywordTableEntry KeywordTableEntry;
 #line 10 "src/keywords"
 struct KeywordTableEntry { const char* name; enum yytokentype type; };
 
-#define TOTAL_KEYWORDS 15
+#define TOTAL_KEYWORDS 16
 #define MIN_WORD_LENGTH 2
 #define MAX_WORD_LENGTH 8
 #define MIN_HASH_VALUE 2
@@ -68,7 +68,7 @@ hash (register const char *str, register unsigned int len)
       19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
       19, 19, 19, 19, 19, 10, 19, 19, 19, 19,
       10, 10,  0, 19, 19, 19, 19,  0, 19, 19,
-      19, 15, 19, 19, 19,  5,  5, 19, 19, 19,
+       0, 15, 19, 19, 19,  5,  5, 19, 19, 19,
       19,  5, 19, 19, 19, 19, 19, 19, 19, 19,
       19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
       19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
@@ -107,10 +107,11 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
       {"elif", ELIF},
 #line 15 "src/keywords"
       {"break", BREAK},
-      {""},
+#line 26 "src/keywords"
+      {"return", RETURN},
 #line 14 "src/keywords"
       {"as", AS},
-#line 26 "src/keywords"
+#line 27 "src/keywords"
       {"try", TRY},
 #line 25 "src/keywords"
       {"next", NEXT},
@@ -124,7 +125,7 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
       {"end", END},
 #line 20 "src/keywords"
       {"else", ELSE},
-#line 27 "src/keywords"
+#line 28 "src/keywords"
       {"while", WHILE},
       {""},
 #line 18 "src/keywords"
@@ -147,7 +148,7 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
     }
   return 0;
 }
-#line 28 "src/keywords"
+#line 29 "src/keywords"
 
 /**
  * vim: filetype=c
