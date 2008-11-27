@@ -99,7 +99,7 @@ align(size_t size)
 }
 
 static void* 
-alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size) 
+alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
 {
     size_t needed_size = size + sizeof(CopyingHeader);
     size_t aligned_size = align(needed_size);
@@ -160,7 +160,7 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
 }
 
 void* 
-YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size) 
+YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
 {
     return (*vm->alloc_mem)(env, vm, keeper, size);
 }
@@ -476,7 +476,7 @@ bdw_gc(YogEnv* env, YogVm* vm)
 }
 
 void* 
-alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size) 
+alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
 {
     void* ptr = GC_MALLOC(size);
     initialize_memory(ptr, size);

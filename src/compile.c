@@ -709,27 +709,29 @@ make_lineno_table(YogEnv* env, YogCode* code, YogInst* anchor)
     }
 
     YogLinenoTableEntry* tbl = ALLOC_OBJ_SIZE(env, NULL, sizeof(YogLinenoTableEntry) * size);
-    inst = anchor;
-    int i = -1;
-    lineno = 0;
-    while (inst != NULL) {
-        if (inst->type == INST_OP) {
-            if (lineno != inst->lineno) {
-                i++;
-                YogLinenoTableEntry* entry = &tbl[i];
-                pc_t pc = inst->pc;
-                entry->pc_from = pc;
-                entry->pc_to = pc + inst->size;
-                lineno = inst->lineno;
-                entry->lineno = lineno;
+    if (0 < size) {
+        inst = anchor;
+        int i = -1;
+        lineno = 0;
+        while (inst != NULL) {
+            if (inst->type == INST_OP) {
+                if (lineno != inst->lineno) {
+                    i++;
+                    YogLinenoTableEntry* entry = &tbl[i];
+                    pc_t pc = inst->pc;
+                    entry->pc_from = pc;
+                    entry->pc_to = pc + inst->size;
+                    lineno = inst->lineno;
+                    entry->lineno = lineno;
+                }
+                else {
+                    YogLinenoTableEntry* entry = &tbl[i];
+                    entry->pc_to = inst->pc + inst->size;
+                }
             }
-            else {
-                YogLinenoTableEntry* entry = &tbl[i];
-                entry->pc_to = inst->pc + inst->size;
-            }
-        }
 
-        inst = inst->next;
+            inst = inst->next;
+        }
     }
 
     code->lineno_tbl = tbl;
@@ -795,6 +797,13 @@ calc_pc(YogInst* inst)
     }
 }
 
+static void 
+CompileData_add_ret_nil(YogEnv* env, CompileData* data, unsigned int lineno) 
+{
+    ADD_PUSH_CONST(YNIL, lineno);
+    CompileData_add_ret(env, data, lineno);
+}
+
 static YogCode* 
 compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID fname, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
 {
@@ -816,6 +825,24 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID fname, 
     if (tail != NULL) {
         CompileData_add_inst(&data, tail);
     }
+    if (ctx == CTX_FUNC) {
+        if (stmts != NULL) {
+            unsigned int size = YogArray_size(env, stmts);
+            if (size < 1) {
+                CompileData_add_ret_nil(env, &data, 0);
+            }
+            else {
+                YogVal val = YogArray_at(env, stmts, size - 1);
+                YogNode* node = OBJ_AS(YogNode, val);
+                if (node->type != NODE_RETURN) {
+                    CompileData_add_ret_nil(env, &data, node->lineno);
+                }
+            }
+        }
+        else {
+            CompileData_add_ret_nil(env, &data, 0);
+        }
+    }
 
     calc_pc(anchor);
     YogBinary* bin = insts2bin(env, anchor);
@@ -835,6 +862,10 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID fname, 
 
     code->filename = filename;
     code->fname = fname;
+
+#if 0
+    YogCode_dump(env, code);
+#endif
 
     return code;
 }
@@ -915,8 +946,8 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
     ID* argnames = NULL;
     uint8_t* arg_index = NULL;
     if (0 < argc) {
-        argnames = YogVm_alloc(env, ENV_VM(env), NULL, sizeof(ID) * argc);
-        arg_index = YogVm_alloc(env, ENV_VM(env), NULL, sizeof(uint8_t) * argc);
+        argnames = ALLOC_OBJ_SIZE(env, NULL, sizeof(ID) * argc);
+        arg_index = ALLOC_OBJ_SIZE(env, NULL, sizeof(uint8_t) * argc);
         for (i = 0; i < argc; i++) {
             YogVal val = YogArray_at(env, params, i);
             YogNode* node = VAL2PTR(val);
