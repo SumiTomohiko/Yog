@@ -31,18 +31,18 @@ class TestCase(object):
 
             proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
             proc.wait()
-            if stdout is not None:
-                out = proc.stdout.read()
-                if callable(stdout):
-                    stdout(out)
-                else:
-                    assert stdout == out
             if stderr is not None:
                 err = proc.stderr.read()
                 if callable(stderr):
                     stderr(err)
                 else:
                     assert stderr == err
+            if stdout is not None:
+                out = proc.stdout.read()
+                if callable(stdout):
+                    stdout(out)
+                else:
+                    assert stdout == out
             if status is not None:
                 returncode = proc.returncode
                 if callable(status):
