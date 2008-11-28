@@ -36,4 +36,18 @@ puts foo()
 """, """nil
 """)
 
+    def test_finally(self):
+        self._test("""
+def foo()
+  bar = 42
+  try
+    return bar
+  finally
+    bar = 43
+  end
+end
+
+puts foo()""", """42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
