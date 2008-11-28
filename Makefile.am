@@ -48,6 +48,8 @@ INST_CMD = make insts
 
 GEN_AM_CMD = python tools/update_automake.py
 
+TEST_CMD = py.test
+
 proto:
 	python tools/update_prototype.py
 
@@ -63,13 +65,13 @@ test: yog$(EXEEXT)
 	make test-bdw
 
 test-copying: 
-	GC=copying py.test
+	GC=copying $(TEST_CMD)
 
 test-mark-sweep:
-	GC=mark-sweep py.test
+	GC=mark-sweep $(TEST_CMD)
 
 test-bdw:
-	GC=bdw py.test
+	GC=bdw $(TEST_CMD)
 
 clean-generic:
 	find . -name "*.pyc" -print0 | xargs --null rm -f
