@@ -46,6 +46,8 @@ INSTS_DEF = src/insts.def
 INST_PY = tools/inst.py
 INST_CMD = make insts
 
+GEN_AM_CMD = python tools/update_automake.py
+
 proto:
 	python tools/update_prototype.py
 
@@ -53,7 +55,7 @@ insts:
 	python tools/inst.py src/insts.def
 
 am:
-	python tools/update_automake.py
+	$(GEN_AM_CMD)
 
 test: yog$(EXEEXT)
 	make test-copying
@@ -88,5 +90,8 @@ src/compile.inc: src/compile.inc.tmpl $(INSTS_DEF) $(INST_PY)
 
 include/yog/inst.h: include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
+
+Makefile.am: Makefile.am.tmpl
+	$(GEN_AM_CMD)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
