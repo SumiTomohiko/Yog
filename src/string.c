@@ -74,16 +74,26 @@ ensure_body(YogEnv* env, YogString* string)
 }
 
 static void 
-grow_body(YogEnv* env, YogString* string) 
+ensure_size(YogEnv* env, YogString* string, unsigned int size) 
 {
-    YogCharArray* old_body = string->body;
+    YogCharArray* body = string->body;
+    if ((body == NULL) || (body->capacity < size)) {
+        unsigned int capacity = 1;
+        if (body != NULL) {
+            capacity = body->capacity;
+        }
+        do {
 #define RATIO   (2)
-    YogCharArray* new_body = YogCharArray_new(env, RATIO * old_body->capacity);
+            capacity = RATIO * capacity;
 #undef RATIO
-    memcpy(new_body->items, old_body->items, old_body->size);
-    new_body->size = old_body->size;
+        } while (capacity < size);
 
-    string->body = new_body;
+        YogCharArray* new_body = YogCharArray_new(env, capacity);
+        memcpy(new_body->items, body->items, body->size);
+        new_body->size = body->size;
+
+        string->body = new_body;
+    }
 }
 
 void 
@@ -92,8 +102,9 @@ YogString_push(YogEnv* env, YogString* string, char c)
     ensure_body(env, string);
 
     YogCharArray* body = string->body;
-    if (body->capacity < body->size + 1) {
-        grow_body(env, string);
+    unsigned int needed_size = body->size + 1;
+    if (body->capacity < needed_size) {
+        ensure_size(env, string, needed_size);
         body = string->body;
     }
 
@@ -199,6 +210,23 @@ add(YogEnv* env)
     return OBJ2VAL(s);
 }
 
+static YogVal 
+lshift(YogEnv* env) 
+{
+    YogVal self = SELF(env);
+    YogVal arg = ARG(env, 0);
+
+    YogString* s1 = OBJ_AS(YogString, self);
+    YogString* s2 = OBJ_AS(YogString, arg);
+    unsigned int size1 = YogString_size(env, s1);
+    unsigned int size2 = YogString_size(env, s2);
+    unsigned int size = size1 + size2 - 1;
+    ensure_size(env, s1, size);
+    memcpy(&s1->body->items[size1 - 1], s2->body->items, size2);
+
+    return self;
+}
+
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
@@ -206,6 +234,7 @@ YogString_klass_new(YogEnv* env)
     YogKlass_define_allocator(env, klass, allocate);
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
     YogKlass_define_method(env, klass, "+", add, 0, 0, 0, 0, "s", NULL);
+    YogKlass_define_method(env, klass, "<<", lshift, 0, 0, 0, 0, "s", NULL);
 
     return klass;
 }

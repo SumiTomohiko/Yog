@@ -51,20 +51,21 @@
      LBRACKET = 277,
      LESS = 278,
      LPAR = 279,
-     NAME = 280,
-     NEWLINE = 281,
-     NEXT = 282,
-     NUMBER = 283,
-     PLUS = 284,
-     RBRACE = 285,
-     RBRACKET = 286,
-     RETURN = 287,
-     RPAR = 288,
-     STAR = 289,
-     STRING = 290,
-     TRY = 291,
-     WHILE = 292,
-     t__LINE__ = 293
+     LSHIFT = 280,
+     NAME = 281,
+     NEWLINE = 282,
+     NEXT = 283,
+     NUMBER = 284,
+     PLUS = 285,
+     RBRACE = 286,
+     RBRACKET = 287,
+     RETURN = 288,
+     RPAR = 289,
+     STAR = 290,
+     STRING = 291,
+     TRY = 292,
+     WHILE = 293,
+     t__LINE__ = 294
    };
 #endif
 /* Tokens.  */
@@ -90,20 +91,21 @@
 #define LBRACKET 277
 #define LESS 278
 #define LPAR 279
-#define NAME 280
-#define NEWLINE 281
-#define NEXT 282
-#define NUMBER 283
-#define PLUS 284
-#define RBRACE 285
-#define RBRACKET 286
-#define RETURN 287
-#define RPAR 288
-#define STAR 289
-#define STRING 290
-#define TRY 291
-#define WHILE 292
-#define t__LINE__ 293
+#define LSHIFT 280
+#define NAME 281
+#define NEWLINE 282
+#define NEXT 283
+#define NUMBER 284
+#define PLUS 285
+#define RBRACE 286
+#define RBRACKET 287
+#define RETURN 288
+#define RPAR 289
+#define STAR 290
+#define STRING 291
+#define TRY 292
+#define WHILE 293
+#define t__LINE__ 294
 
 
 
@@ -117,7 +119,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 121 "parser.h"
+#line 123 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

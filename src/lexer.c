@@ -289,7 +289,16 @@ RETURN_VAL(val, NUMBER); \
         }
     case '<':
         {
-            RETURN_NAME1(c, LESS);
+            char c2 = NEXTC();
+            if (c2 == '<') {
+                ID name = INTERN("<<");
+                yylval.name = name;
+                return LSHIFT;
+            }
+            else {
+                PUSHBACK(c2);
+                RETURN_NAME1(c, LESS);
+            }
             break;
         }
     case '\r':

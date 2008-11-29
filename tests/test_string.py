@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from re import match
+
 from tests import TestCase
 
 class TestString(TestCase):

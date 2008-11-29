@@ -214,6 +214,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %token LBRACKET
 %token LESS
 %token LPAR
+%token LSHIFT
 %token NAME
 %token NEWLINE
 %token NEXT
@@ -241,6 +242,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %type<array> params_without_default
 %type<array> stmts
 %type<name> LESS
+%type<name> LSHIFT
 %type<name> NAME
 %type<name> PLUS
 %type<name> comp_op
@@ -543,6 +545,9 @@ or_expr : and_expr
 and_expr    : shift_expr
             ;
 shift_expr  : arith_expr
+            | shift_expr LSHIFT arith_expr {
+                METHOD_CALL_NEW1($$, $1, $2, $3);
+            }
             ;
 arith_expr  : term
             | arith_expr PLUS term {
