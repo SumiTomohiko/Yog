@@ -170,22 +170,35 @@ s[0] = \"f\"
 puts s""", """foo
 """)
 
-    def test_index1(self):
+    def test_subscript1(self):
         self._test("""
 s = \"foo\"
 puts s[0]""", """f
 """)
 
-    def test_index2(self):
+    def test_subscript2(self):
         self._test("""
 s = \"燦oo\"
 puts s[0]""", """燦
 """)
 
-    def test_index3(self):
+    def test_subscript3(self):
         self._test("""
 s = \"f燦o\"
 puts s[1]""", """燦
 """)
+
+    def test_subscript_error(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in String#\[\]
+IndexError: string index out of range
+""", stderr)
+            assert m is not None
+
+        self._test("""
+s = \"\"
+puts s[0]""", stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
