@@ -277,6 +277,9 @@ RETURN_VAL(val, NUMBER); \
     case '.':
         return DOT;
         break;
+    case ',':
+        return COMMA;
+        break;
     case '+':
         {
             RETURN_NAME1(c, PLUS);
