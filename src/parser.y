@@ -224,6 +224,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %token RETURN
 %token RPAR
 %token STAR
+%token STRING
 %token TRY
 %token WHILE
 %token t__LINE__
@@ -270,6 +271,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %type<node> var_param
 %type<node> xor_expr
 %type<val> NUMBER
+%type<val> STRING
 %%
 module  : stmts {
             PARSER->stmts = $1;
@@ -557,6 +559,9 @@ atom    : NAME {
             VARIABLE_NEW($$, $1);
         }
         | NUMBER {
+            LITERAL_NEW($$, $1);
+        }
+        | STRING {
             LITERAL_NEW($$, $1);
         }
         | t__LINE__ {

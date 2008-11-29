@@ -11,6 +11,7 @@ get_op_name(OpCode op)
         "LOAD_SPECIAL", 
         "POP", 
         "PUSH_CONST", 
+        "MAKE_STRING", 
         "CALL_METHOD", 
         "STORE_NAME", 
         "STORE_LOCAL", 

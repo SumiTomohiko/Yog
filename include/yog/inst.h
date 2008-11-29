@@ -24,6 +24,9 @@ struct YogInst {
             uint8_t index;
         } push_const;
         struct {
+            uint8_t index;
+        } make_string;
+        struct {
             ID method;
             uint8_t argc;
             uint8_t kwargc;
@@ -89,6 +92,7 @@ struct YogInst {
 
 #define LOAD_SPECIAL_ID(inst) ((inst)->u.load_special.id)
 #define PUSH_CONST_INDEX(inst) ((inst)->u.push_const.index)
+#define MAKE_STRING_INDEX(inst) ((inst)->u.make_string.index)
 #define CALL_METHOD_METHOD(inst) ((inst)->u.call_method.method)
 #define CALL_METHOD_ARGC(inst) ((inst)->u.call_method.argc)
 #define CALL_METHOD_KWARGC(inst) ((inst)->u.call_method.kwargc)

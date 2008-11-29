@@ -13,6 +13,7 @@ Yog_get_inst_size(OpCode op)
         sizeof(uint8_t) + sizeof(ID), /* load_special */
         sizeof(uint8_t), /* pop */
         sizeof(uint8_t) + sizeof(uint8_t), /* push_const */
+        sizeof(uint8_t) + sizeof(uint8_t), /* make_string */
         sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* call_method */
         sizeof(uint8_t) + sizeof(ID), /* store_name */
         sizeof(uint8_t) + sizeof(uint8_t), /* store_local */

@@ -127,6 +127,14 @@ YogString_new(YogEnv* env)
     return string;
 }
 
+YogString* 
+YogString_new_size(YogEnv* env, unsigned int size) 
+{
+    YogString* string = (YogString*)allocate(env, ENV_VM(env)->cString);
+    string->body = YogCharArray_new(env, size);
+    return string;
+}
+
 #define RETURN_STR(s)   do { \
     YogCharArray* body = YogCharArray_new_str(env, s); \
     YogString* string = (YogString*)allocate(env, ENV_VM(env)->cString); \
@@ -168,9 +176,27 @@ YogString_at(YogEnv* env, YogString* s, unsigned int n)
 }
 
 static YogVal 
-to_s(YogEnv* env, YogVal self) 
+to_s(YogEnv* env)
 {
-    return self;
+    return SELF(env);
+}
+
+static YogVal 
+add(YogEnv* env) 
+{
+    YogVal self = SELF(env);
+    YogVal arg = ARG(env, 0);
+
+    YogString* s1 = OBJ_AS(YogString, self);
+    YogString* s2 = OBJ_AS(YogString, arg);
+    unsigned int size1 = YogString_size(env, s1);
+    unsigned int size2 = YogString_size(env, s2);
+    unsigned int size = size1 + size2 - 1;
+    YogString* s = YogString_new_size(env, size);
+    memcpy(s->body->items, s1->body->items, size1);
+    memcpy(&s->body->items[size1 - 1], s2->body->items, size2);
+
+    return OBJ2VAL(s);
 }
 
 YogKlass* 
@@ -179,6 +205,7 @@ YogString_klass_new(YogEnv* env)
     YogKlass* klass = YogKlass_new(env, "String", ENV_VM(env)->cObject);
     YogKlass_define_allocator(env, klass, allocate);
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
+    YogKlass_define_method(env, klass, "+", add, 0, 0, 0, 0, "s", NULL);
 
     return klass;
 }

@@ -108,6 +108,31 @@ get_encoding(YogEnv* env, YogLexer* lexer)
 }
 
 static int 
+get_rest_size(YogEnv* env, YogLexer* lexer) 
+{
+    return (YogString_size(env, lexer->line) - 1) - lexer->next_index;
+}
+
+static void 
+push_multibyte_char(YogEnv* env, YogLexer* lexer) 
+{
+    YogEncoding* enc = get_encoding(env, lexer);
+    const char* ptr = &lexer->line->body->items[lexer->next_index - 1];
+    int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
+    int rest_size = get_rest_size(env, lexer);
+    if (rest_size < mbc_size) {
+        YOG_ASSERT(env, FALSE, "Invalid multibyte character.");
+    }
+    char c = 0;
+    int i = 0;
+    for (i = 0; i < mbc_size; i++) {
+        add_token_char(env, lexer, c);
+        c = nextc(lexer);
+    }
+    pushback(lexer, c);
+}
+
+static int 
 next_token(YogEnv* env, YogLexer* lexer) 
 {
     clear_buffer(env, lexer);
@@ -151,125 +176,160 @@ next_token(YogEnv* env, YogLexer* lexer)
     return type; \
 } while (0)
     switch (c) {
-        case '0': case '1': case '2': case '3': case '4':
-        case '5': case '6': case '7': case '8': case '9':
-            {
-                do {
-                    ADD_TOKEN_CHAR(c);
-                    c = NEXTC();
-                } while (isdigit(c));
+    case '0': case '1': case '2': case '3': case '4':
+    case '5': case '6': case '7': case '8': case '9':
+        {
+            do {
+                ADD_TOKEN_CHAR(c);
+                c = NEXTC();
+            } while (isdigit(c));
 
 #define RETURN_INT  do { \
-    int n = atoi(lexer->buffer->body->items); \
-    YogVal val = INT2VAL(n); \
-    RETURN_VAL(val, NUMBER); \
+int n = atoi(lexer->buffer->body->items); \
+YogVal val = INT2VAL(n); \
+RETURN_VAL(val, NUMBER); \
 } while (0)
-                if (c == '.') {
-                    int c2 = NEXTC();
-                    if (isdigit(c2)) {
-                        ADD_TOKEN_CHAR(c);
-                        do {
-                            ADD_TOKEN_CHAR(c2);
-                            c2 = NEXTC();
-                        } while (isdigit(c2));
-                        PUSHBACK(c2);
+            if (c == '.') {
+                int c2 = NEXTC();
+                if (isdigit(c2)) {
+                    ADD_TOKEN_CHAR(c);
+                    do {
+                        ADD_TOKEN_CHAR(c2);
+                        c2 = NEXTC();
+                    } while (isdigit(c2));
+                    PUSHBACK(c2);
 
-                        float f = 0;
-                        sscanf(lexer->buffer->body->items, "%f", &f);
-                        YogVal val = FLOAT2VAL(f);
-                        RETURN_VAL(val, NUMBER);
-                    }
-                    else {
-                        PUSHBACK(c2);
-                        PUSHBACK(c);
-                        RETURN_INT;
-                    }
+                    float f = 0;
+                    sscanf(lexer->buffer->body->items, "%f", &f);
+                    YogVal val = FLOAT2VAL(f);
+                    RETURN_VAL(val, NUMBER);
                 }
                 else {
+                    PUSHBACK(c2);
                     PUSHBACK(c);
                     RETURN_INT;
                 }
+            }
+            else {
+                PUSHBACK(c);
+                RETURN_INT;
+            }
 #undef RETURN_INT
-                break;
-            }
-        case '(':
-            return LPAR;
             break;
-        case ')':
-            return RPAR;
-            break;
-        case '[':
-            return LBRACKET;
-            break;
-        case ']':
-            return RBRACKET;
-            break;
-        case '.':
-            return DOT;
-            break;
-        case '+':
-            {
-                RETURN_NAME1(c, PLUS);
-                break;
-            }
-        case '=':
-            {
-                return EQUAL;
-                break;
-            }
-        case '<':
-            {
-                RETURN_NAME1(c, LESS);
-                break;
-            }
-        case '\r':
-            {
-                c = NEXTC();
-                if (c != '\n') {
-                    PUSHBACK(c);
-                }
-            }
-            /* FALLTHRU */
-        case '\n':
-            {
-                return NEWLINE;
-                break;
-            }
-        default:
-            {
-                do {
-                    if (isascii(c)) {
-                        ADD_TOKEN_CHAR(c);
+        }
+    case '\"':
+    case '\'':
+        {
+            char quote = c;
+
+            char c = NEXTC();
+            while (c != quote) {
+                if (isascii(c)) {
+                    if (c == '\\') {
+                        int rest_size = get_rest_size(env, lexer);
+                        YOG_ASSERT(env, 0 < rest_size, "invalid escape");
                         c = NEXTC();
+                        switch (c) {
+                        case '\\':
+                            ADD_TOKEN_CHAR('\\');
+                            break;
+                        case 'n':
+                            ADD_TOKEN_CHAR('\n');
+                            break;
+                        default:
+                            if (c == quote) {
+                                ADD_TOKEN_CHAR(c);
+                            }
+                            else {
+                                YOG_ASSERT(env, FALSE, "unknown escape sequence.");
+                            }
+                            break;
+                        }
                     }
                     else {
-                        YogEncoding* enc = get_encoding(env, lexer);
-                        const char* ptr = &lexer->line->body->items[lexer->next_index - 1];
-                        int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
-                        int rest_size = (YogString_size(env, lexer->line) - 1) - lexer->next_index;
-                        if (rest_size < mbc_size) {
-                            YOG_ASSERT(env, FALSE, "Invalid multibyte character.");
-                        }
-                        int i = 0;
-                        for (i = 0; i < mbc_size; i++) {
-                            ADD_TOKEN_CHAR(c);
-                            c = NEXTC();
-                        }
+                        ADD_TOKEN_CHAR(c);
                     }
-                } while (is_name_char(c));
-                PUSHBACK(c);
-
-                const char* name = lexer->buffer->body->items;
-                const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
-                if (entry != NULL) {
-                    return entry->type;
+                    c = NEXTC();
                 }
                 else {
-                    yylval.name = INTERN(name);
-                    return NAME;
+                    push_multibyte_char(env, lexer);
+                    c = NEXTC();
                 }
-                break;
             }
+
+            const char* s = YogString_dup(env, lexer->buffer->body->items);
+            yylval.val = STR2VAL(s);
+            return STRING;
+            break;
+        }
+    case '(':
+        return LPAR;
+        break;
+    case ')':
+        return RPAR;
+        break;
+    case '[':
+        return LBRACKET;
+        break;
+    case ']':
+        return RBRACKET;
+        break;
+    case '.':
+        return DOT;
+        break;
+    case '+':
+        {
+            RETURN_NAME1(c, PLUS);
+            break;
+        }
+    case '=':
+        {
+            return EQUAL;
+            break;
+        }
+    case '<':
+        {
+            RETURN_NAME1(c, LESS);
+            break;
+        }
+    case '\r':
+        {
+            c = NEXTC();
+            if (c != '\n') {
+                PUSHBACK(c);
+            }
+        }
+        /* FALLTHRU */
+    case '\n':
+        {
+            return NEWLINE;
+            break;
+        }
+    default:
+        {
+            do {
+                if (isascii(c)) {
+                    ADD_TOKEN_CHAR(c);
+                    c = NEXTC();
+                }
+                else {
+                    push_multibyte_char(env, lexer);
+                    c = NEXTC();
+                }
+            } while (is_name_char(c));
+            PUSHBACK(c);
+
+            const char* name = lexer->buffer->body->items;
+            const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
+            if (entry != NULL) {
+                return entry->type;
+            }
+            else {
+                yylval.name = INTERN(name);
+                return NAME;
+            }
+            break;
+        }
     }
 #undef RETURN_NAME1
 #undef BUFSIZE

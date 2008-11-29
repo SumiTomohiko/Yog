@@ -61,9 +61,10 @@
      RETURN = 287,
      RPAR = 288,
      STAR = 289,
-     TRY = 290,
-     WHILE = 291,
-     t__LINE__ = 292
+     STRING = 290,
+     TRY = 291,
+     WHILE = 292,
+     t__LINE__ = 293
    };
 #endif
 /* Tokens.  */
@@ -99,9 +100,10 @@
 #define RETURN 287
 #define RPAR 288
 #define STAR 289
-#define TRY 290
-#define WHILE 291
-#define t__LINE__ 292
+#define STRING 290
+#define TRY 291
+#define WHILE 292
+#define t__LINE__ 293
 
 
 
@@ -115,7 +117,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 119 "parser.h"
+#line 121 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

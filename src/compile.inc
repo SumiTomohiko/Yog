@@ -40,6 +40,18 @@ CompileData_add_push_const(YogEnv* env, CompileData* data, unsigned int lineno, 
 }
 
 static void 
+CompileData_add_make_string(YogEnv* env, CompileData* data, unsigned int lineno, uint8_t index)
+{
+    YogInst* inst = Inst_new(env, lineno);
+    inst->type = INST_OP;
+    INST_OPCODE(inst) = OP(MAKE_STRING);
+
+    MAKE_STRING_INDEX(inst) = index;
+
+    add_inst(data, inst);
+}
+
+static void 
 CompileData_add_call_method(YogEnv* env, CompileData* data, unsigned int lineno, ID method, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
     YogInst* inst = Inst_new(env, lineno);
@@ -269,6 +281,12 @@ insts2bin(YogEnv* env, YogInst* inst)
                                 YogBinary_push_uint8(env, code, PUSH_CONST_INDEX(inst));
                                 break;
                             }
+                        case OP(MAKE_STRING):
+                            {
+                                YogBinary_push_uint8(env, code, OP(MAKE_STRING));
+                                YogBinary_push_uint8(env, code, MAKE_STRING_INDEX(inst));
+                                break;
+                            }
                         case OP(CALL_METHOD):
                             {
                                 YogBinary_push_uint8(env, code, OP(CALL_METHOD));
@@ -420,6 +438,12 @@ count_stack_size(YogEnv* env, YogInst* inst)
                                 break;
                             }
                         case OP(PUSH_CONST):
+                            {
+                                pop_size = 0;
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(MAKE_STRING):
                             {
                                 pop_size = 0;
                                 push_size = 1;

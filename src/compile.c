@@ -577,7 +577,14 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
     CompileData* data = arg;
 
     YogVal val = NODE_VAL(node);
-    ADD_PUSH_CONST(val, node->lineno);
+    unsigned int lineno = node->lineno;
+    if (IS_STR(val)) {
+        unsigned int index = register_const(env, data, val);
+        CompileData_add_make_string(env, data, lineno, index);
+    }
+    else {
+        ADD_PUSH_CONST(val, lineno);
+    }
 }
 
 static void 

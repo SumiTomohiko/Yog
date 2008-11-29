@@ -32,6 +32,17 @@ inst push_const
     val = CONSTS(index);
 }
 
+inst make_string 
+(uint8_t index)
+()
+(val) 
+{
+    YogVal c = CONSTS(index);
+    YOG_ASSERT(ENV, IS_STR(c), "constant must be string.");
+    YogString* s = YogString_new_str(ENV, VAL2STR(c));
+    val = OBJ2VAL(s);
+}
+
 inst call_method
 (ID method, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 (...) depth: argc + 2 * kwargc + blockargc + varargc + varkwargc
