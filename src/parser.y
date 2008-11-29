@@ -265,6 +265,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %type<node> param_default
 %type<node> param_default_opt
 %type<node> param_with_default
+%type<node> postfix_expr
 %type<node> power
 %type<node> shift_expr
 %type<node> stmt
@@ -558,8 +559,30 @@ term    : factor
         ;
 factor  : power
         ;
-power   : atom
+power   : postfix_expr
         ;
+postfix_expr    : atom 
+                | postfix_expr LPAR args_opt RPAR blockarg_opt {
+                    if ($1->type == NODE_ATTR) {
+                        METHOD_CALL_NEW($$, NODE_OBJ($1), NODE_NAME($1), $3, $5);
+                    }
+                    else {
+                        FUNC_CALL_NEW($$, $1, $3, $5);
+                    }
+                }
+                | postfix_expr LBRACKET expr RBRACKET {
+                    YogNode* node = NODE_NEW(NODE_SUBSCRIPT);
+                    NODE_PREFIX(node) = $1;
+                    NODE_INDEX(node) = $3;
+                    $$ = node;
+                }
+                | postfix_expr DOT NAME {
+                    YogNode* node = NODE_NEW(NODE_ATTR);
+                    NODE_OBJ(node) = $1;
+                    NODE_NAME(node) = $3;
+                    $$ = node;
+                }
+                ;
 atom    : NAME {
             VARIABLE_NEW($$, $1);
         }
@@ -573,26 +596,6 @@ atom    : NAME {
             int lineno = PARSER->lineno;
             YogVal val = INT2VAL(lineno);
             LITERAL_NEW($$, val);
-        }
-        | atom LPAR args_opt RPAR blockarg_opt {
-            if ($1->type == NODE_ATTR) {
-                METHOD_CALL_NEW($$, NODE_OBJ($1), NODE_NAME($1), $3, $5);
-            }
-            else {
-                FUNC_CALL_NEW($$, $1, $3, $5);
-            }
-        }
-        | atom LBRACKET expr RBRACKET {
-            YogNode* node = NODE_NEW(NODE_SUBSCRIPT);
-            NODE_PREFIX(node) = $1;
-            NODE_INDEX(node) = $3;
-            $$ = node;
-        }
-        | atom DOT NAME {
-            YogNode* node = NODE_NEW(NODE_ATTR);
-            NODE_OBJ(node) = $1;
-            NODE_NAME(node) = $3;
-            $$ = node;
         }
         ;
 args_opt    : /* empty */ {
