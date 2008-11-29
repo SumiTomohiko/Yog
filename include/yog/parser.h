@@ -55,7 +55,7 @@ struct YogNode {
     } u4;
 };
 
-#define NODE_LEFT(node)     (node)->u1.id
+#define NODE_LEFT(node)     (node)->u1.nd
 #define NODE_RIGHT(node)    (node)->u2.nd
 
 #define NODE_ID(node)       (node)->u1.id

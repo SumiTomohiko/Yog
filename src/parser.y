@@ -518,7 +518,7 @@ args    : expr {
         ;
 expr    : assign_expr
         ;
-assign_expr : NAME EQUAL logical_or_expr {
+assign_expr : postfix_expr EQUAL logical_or_expr {
                 YogNode* node = NODE_NEW(NODE_ASSIGN);
                 NODE_LEFT(node) = $1;
                 NODE_RIGHT(node) = $3;

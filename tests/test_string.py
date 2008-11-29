@@ -148,7 +148,7 @@ end""", """foo
 bar
 """)
 
-    def test_index1(self):
+    def test_assign_subscript1(self):
         self._test("""
 s = \"foo\"
 s[0] = \"b\"
@@ -156,26 +156,33 @@ puts s
 """, """boo
 """)
 
-    def test_index2(self):
+    def test_assign_subscript2(self):
         self._test("""
 s = \"foo\"
 s[0] = \"燦\"
 puts s""", """燦oo
 """)
 
-    def test_index3(self):
+    def test_assign_subscript2(self):
+        self._test("""
+s = \"燦oo\"
+s[0] = \"f\"
+puts s""", """foo
+""")
+
+    def test_index1(self):
         self._test("""
 s = \"foo\"
 puts s[0]""", """f
 """)
 
-    def test_index4(self):
+    def test_index2(self):
         self._test("""
 s = \"燦oo\"
 puts s[0]""", """燦
 """)
 
-    def test_index5(self):
+    def test_index3(self):
         self._test("""
 s = \"f燦o\"
 puts s[1]""", """燦

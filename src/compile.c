@@ -335,9 +335,15 @@ var2index_register(YogEnv* env, YogTable* var2index, ID var)
 static void 
 var2index_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    ID id = NODE_LEFT(node);
-    Var2IndexData* data = arg;
-    var2index_register(env, data->var2index, id);
+    YogNode* left = NODE_LEFT(node);
+    if (left->type == NODE_VARIABLE) {
+        ID id = NODE_ID(left);
+        Var2IndexData* data = arg;
+        var2index_register(env, data->var2index, id);
+    }
+    else {
+        visit_node(env, visitor, left, arg);
+    }
 }
 
 static void 
@@ -532,14 +538,31 @@ append_store(YogEnv* env, CompileData* data, unsigned int lineno, ID id)
 static void 
 compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
-    visit_node(env, visitor, NODE_RIGHT(node), arg);
 
     CompileData* data = arg;
     unsigned int lineno = node->lineno;
-    CompileData_add_dup(env, data, lineno);
 
-    ID name = NODE_LEFT(node);
-    append_store(env, data, lineno, name);
+    YogNode* left = NODE_LEFT(node);
+    switch (left->type) {
+    case NODE_VARIABLE:
+        {
+            visit_node(env, visitor, NODE_RIGHT(node), arg);
+            CompileData_add_dup(env, data, lineno);
+
+            ID name = NODE_ID(left);
+            append_store(env, data, lineno, name);
+            break;
+        }
+    case NODE_SUBSCRIPT:
+        visit_node(env, visitor, NODE_PREFIX(left), arg);
+        visit_node(env, visitor, NODE_INDEX(left), arg);
+        visit_node(env, visitor, NODE_RIGHT(node), arg);
+        CompileData_add_call_method(env, data, lineno, INTERN("[]="), 2, 0, 0, 0, 0);
+        break;
+    default:
+        YOG_ASSERT(env, FALSE, "invalid node type.");
+        break;
+    }
 }
 
 static void 
