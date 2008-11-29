@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from os import environ, unlink
+from signal import SIGKILL
+from os import environ, kill, unlink
 from subprocess import PIPE, Popen
 from tempfile import mkstemp
+from time import time
 
 class TestCase(object):
 
-    def _test(self, src, stdout="", stderr="", status=None, options=[]):
+    def _test(self, src, stdout="", stderr="", status=None, options=[], timeout=5):
         env_gc = environ["GC"]
         if env_gc == "copying":
             gc = "copying"
@@ -30,7 +32,14 @@ class TestCase(object):
             cmd.append(file)
 
             proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
-            proc.wait()
+            time_begin = time()
+            while True:
+                if proc.poll() is not None:
+                    break
+                if timeout < time() - time_begin:
+                    kill(proc.pid, SIGKILL)
+                    assert False, "time is out."
+
             if stderr is not None:
                 err = proc.stderr.read()
                 if callable(stderr):

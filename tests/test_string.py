@@ -169,4 +169,16 @@ s = \"foo\"
 puts s[0]""", """f
 """)
 
+    def test_index4(self):
+        self._test("""
+s = \"燦oo\"
+puts s[0]""", """燦
+""")
+
+    def test_index5(self):
+        self._test("""
+s = \"f燦o\"
+puts s[1]""", """燦
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

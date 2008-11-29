@@ -48,15 +48,14 @@
             YogVal val = YogVal_nil();
 #line 40 "src/insts.def"
             YogVal c = CONSTS(index);
-            YOG_ASSERT(ENV, IS_STR(c), "constant must be string.");
-            YogString* s = YogString_new_str(ENV, VAL2STR(c));
+            YogString* s = YogString_clone(ENV, OBJ_AS(YogString, c));
             val = OBJ2VAL(s);
 
-#line 51 "src/thread.inc"
+#line 50 "src/thread.inc"
             PUSH(val);
             break;
         }
-#line 55 "src/thread.inc"
+#line 54 "src/thread.inc"
     case OP(CALL_METHOD):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -77,44 +76,44 @@
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             uint8_t varkwargc = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
-#line 51 "src/insts.def"
+#line 50 "src/insts.def"
             POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
         
             YogVal receiver = POP();
             YogVal attr = YogVal_get_attr(ENV, receiver, method);
             call_method(ENV, THREAD, receiver, attr, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
-#line 82 "src/thread.inc"
+#line 81 "src/thread.inc"
             break;
         }
-#line 85 "src/thread.inc"
+#line 84 "src/thread.inc"
     case OP(STORE_NAME):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             ID id = *((ID*)&CODE->insts->items[PC]);
             PC += sizeof(ID);
             YogVal val = POP();
-#line 63 "src/insts.def"
+#line 62 "src/insts.def"
             YogVal key = ID2VAL(id);
             YogTable_insert(ENV, NAME_VARS(CUR_FRAME), key, val);
 
-#line 95 "src/thread.inc"
+#line 94 "src/thread.inc"
             break;
         }
-#line 98 "src/thread.inc"
+#line 97 "src/thread.inc"
     case OP(STORE_LOCAL):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
             YogVal val = POP();
-#line 72 "src/insts.def"
+#line 71 "src/insts.def"
             LOCAL_VARS(CUR_FRAME)->items[index] = val;
 
-#line 107 "src/thread.inc"
+#line 106 "src/thread.inc"
             break;
         }
-#line 110 "src/thread.inc"
+#line 109 "src/thread.inc"
     case OP(CALL_COMMAND):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -135,33 +134,33 @@
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             uint8_t varkwargc = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
-#line 80 "src/insts.def"
+#line 79 "src/insts.def"
             POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
         
             YogVal val = lookup_builtins(ENV, command);
             YogVal unbound_self = YUNDEF;
             call_method(ENV, THREAD, unbound_self, val, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
-#line 137 "src/thread.inc"
+#line 136 "src/thread.inc"
             break;
         }
-#line 140 "src/thread.inc"
+#line 139 "src/thread.inc"
     case OP(MAKE_PACKAGE_METHOD):
         {
             YogVal code = POP();
             YogVal method = YogVal_nil();
-#line 92 "src/insts.def"
+#line 91 "src/insts.def"
             YogBoundMethod* m = YogBoundMethod_new(ENV);
             m->self = NAME_FRAME(CUR_FRAME)->self;
             m->code = VAL2PTR(code);
         
             method = OBJ2VAL(m);
 
-#line 151 "src/thread.inc"
+#line 150 "src/thread.inc"
             PUSH(method);
             break;
         }
-#line 155 "src/thread.inc"
+#line 154 "src/thread.inc"
     case OP(CALL_FUNCTION):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -179,93 +178,93 @@
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             uint8_t varkwargc = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
-#line 104 "src/insts.def"
+#line 103 "src/insts.def"
             POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
         
             YogVal callee = POP();
             YogVal unbound_self = YUNDEF;
             call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
-#line 179 "src/thread.inc"
+#line 178 "src/thread.inc"
             break;
         }
-#line 182 "src/thread.inc"
+#line 181 "src/thread.inc"
     case OP(LOAD_NAME):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             ID id = *((ID*)&CODE->insts->items[PC]);
             PC += sizeof(ID);
             YogVal val = YogVal_nil();
-#line 116 "src/insts.def"
+#line 115 "src/insts.def"
             YogVal key = ID2VAL(id);
             if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME), key, &val)) {
                 val = lookup_builtins(ENV, id);
                 YOG_ASSERT(ENV, !IS_UNDEF(val), "Can't find package var.");
             }
 
-#line 195 "src/thread.inc"
+#line 194 "src/thread.inc"
             PUSH(val);
             break;
         }
-#line 199 "src/thread.inc"
+#line 198 "src/thread.inc"
     case OP(LOAD_LOCAL):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
             PC += sizeof(uint8_t);
             YogVal val = YogVal_nil();
-#line 128 "src/insts.def"
+#line 127 "src/insts.def"
             val = LOCAL_VARS(CUR_FRAME)->items[index];
 
-#line 208 "src/thread.inc"
+#line 207 "src/thread.inc"
             PUSH(val);
             break;
         }
-#line 212 "src/thread.inc"
+#line 211 "src/thread.inc"
     case OP(JUMP):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             pc_t dest = *((pc_t*)&CODE->insts->items[PC]);
             PC += sizeof(pc_t);
-#line 136 "src/insts.def"
+#line 135 "src/insts.def"
             JUMP(dest);
 
-#line 220 "src/thread.inc"
+#line 219 "src/thread.inc"
             break;
         }
-#line 223 "src/thread.inc"
+#line 222 "src/thread.inc"
     case OP(JUMP_IF_FALSE):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             pc_t dest = *((pc_t*)&CODE->insts->items[PC]);
             PC += sizeof(pc_t);
             YogVal val = POP();
-#line 144 "src/insts.def"
+#line 143 "src/insts.def"
             YogValType type = VAL_TYPE(val);
             if ((type == VAL_NIL) || ((type == VAL_BOOL) && !VAL2BOOL(val))) {
                 JUMP(dest);
             }
 
-#line 235 "src/thread.inc"
+#line 234 "src/thread.inc"
             break;
         }
-#line 238 "src/thread.inc"
+#line 237 "src/thread.inc"
     case OP(DUP):
         {
             YogVal val = POP();
-#line 155 "src/insts.def"
+#line 154 "src/insts.def"
 
-#line 243 "src/thread.inc"
+#line 242 "src/thread.inc"
             PUSH(val);
             PUSH(val);
             break;
         }
-#line 248 "src/thread.inc"
+#line 247 "src/thread.inc"
     case OP(MAKE_PACKAGE_BLOCK):
         {
             YogVal code = POP();
             YogVal block = YogVal_nil();
-#line 162 "src/insts.def"
+#line 161 "src/insts.def"
             YogPackageBlock* b = YogPackageBlock_new(env);
             YogCode* c = VAL2PTR(code);
             BLOCK(b)->code = c;
@@ -273,17 +272,17 @@
             b->vars = NAME_FRAME(CUR_FRAME)->vars;
             block = OBJ2VAL(b);
 
-#line 260 "src/thread.inc"
+#line 259 "src/thread.inc"
             PUSH(block);
             break;
         }
-#line 264 "src/thread.inc"
+#line 263 "src/thread.inc"
     case OP(MAKE_KLASS):
         {
             YogVal code = POP();
             YogVal super = POP();
             YogVal name = POP();
-#line 175 "src/insts.def"
+#line 174 "src/insts.def"
             YogKlass* super_klass = OBJ_AS(YogKlass, super);
             YogKlass* kls = YogKlass_new(ENV, NULL, super_klass);
             kls->name = VAL2ID(name);
@@ -297,43 +296,43 @@
         
             PUSH_FRAME(FRAME(frame));
 
-#line 283 "src/thread.inc"
+#line 282 "src/thread.inc"
             break;
         }
-#line 286 "src/thread.inc"
+#line 285 "src/thread.inc"
     case OP(MAKE_METHOD):
         {
             YogVal code = POP();
             YogVal method = YogVal_nil();
-#line 194 "src/insts.def"
+#line 193 "src/insts.def"
             YogUnboundMethod* m = YogUnboundMethod_new(ENV);
             m->code = VAL2PTR(code);
             method = OBJ2VAL(m);
 
-#line 295 "src/thread.inc"
+#line 294 "src/thread.inc"
             PUSH(method);
             break;
         }
-#line 299 "src/thread.inc"
+#line 298 "src/thread.inc"
     case OP(PUSH_SELF_NAME):
         {
             YogVal self = YogVal_nil();
-#line 204 "src/insts.def"
+#line 203 "src/insts.def"
             self = NAME_FRAME(CUR_FRAME)->self;
 
-#line 305 "src/thread.inc"
+#line 304 "src/thread.inc"
             PUSH(self);
             break;
         }
-#line 309 "src/thread.inc"
+#line 308 "src/thread.inc"
     case OP(RET):
         {
             YogVal val = POP();
-#line 212 "src/insts.def"
+#line 211 "src/insts.def"
             POP_FRAME();
             PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 
-#line 316 "src/thread.inc"
+#line 315 "src/thread.inc"
             PUSH(val);
             break;
         }

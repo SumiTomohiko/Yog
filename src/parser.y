@@ -582,6 +582,12 @@ atom    : NAME {
                 FUNC_CALL_NEW($$, $1, $3, $5);
             }
         }
+        | atom LBRACKET expr RBRACKET {
+            YogNode* node = NODE_NEW(NODE_SUBSCRIPT);
+            NODE_PREFIX(node) = $1;
+            NODE_INDEX(node) = $3;
+            $$ = node;
+        }
         | atom DOT NAME {
             YogNode* node = NODE_NEW(NODE_ATTR);
             NODE_OBJ(node) = $1;

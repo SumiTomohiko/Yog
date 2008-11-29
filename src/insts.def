@@ -38,8 +38,7 @@ inst make_string
 (val) 
 {
     YogVal c = CONSTS(index);
-    YOG_ASSERT(ENV, IS_STR(c), "constant must be string.");
-    YogString* s = YogString_new_str(ENV, VAL2STR(c));
+    YogString* s = YogString_clone(ENV, OBJ_AS(YogString, c));
     val = OBJ2VAL(s);
 }
 

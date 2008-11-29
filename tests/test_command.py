@@ -22,4 +22,9 @@ end
 foo 42""", """42
 """)
 
+    def test_args(self):
+        self._test("puts 42, 43", """42
+43
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

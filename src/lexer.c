@@ -117,19 +117,17 @@ static void
 push_multibyte_char(YogEnv* env, YogLexer* lexer) 
 {
     YogEncoding* enc = get_encoding(env, lexer);
-    const char* ptr = &lexer->line->body->items[lexer->next_index - 1];
+    const char* ptr = &lexer->line->body->items[lexer->next_index];
     int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
     int rest_size = get_rest_size(env, lexer);
     if (rest_size < mbc_size) {
         YOG_ASSERT(env, FALSE, "Invalid multibyte character.");
     }
-    char c = 0;
     int i = 0;
     for (i = 0; i < mbc_size; i++) {
+        char c = nextc(lexer);
         add_token_char(env, lexer, c);
-        c = nextc(lexer);
     }
-    pushback(lexer, c);
 }
 
 static int 
@@ -252,13 +250,15 @@ RETURN_VAL(val, NUMBER); \
                     c = NEXTC();
                 }
                 else {
+                    PUSHBACK(c);
                     push_multibyte_char(env, lexer);
                     c = NEXTC();
                 }
             }
 
-            const char* s = YogString_dup(env, lexer->buffer->body->items);
-            yylval.val = STR2VAL(s);
+            YogString* s = YogString_clone(env, lexer->buffer);
+            s->encoding = get_encoding(env, lexer);
+            yylval.val = OBJ2VAL(s);
             return STRING;
             break;
         }
@@ -322,6 +322,7 @@ RETURN_VAL(val, NUMBER); \
                     c = NEXTC();
                 }
                 else {
+                    PUSHBACK(c);
                     push_multibyte_char(env, lexer);
                     c = NEXTC();
                 }

@@ -28,6 +28,7 @@ struct AstVisitor {
     VisitNode visit_next;
     VisitNode visit_return;
     VisitNode visit_stmt;
+    VisitNode visit_subscript;
     VisitNode visit_variable;
     VisitNode visit_while;
 };
@@ -256,6 +257,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     case NODE_KLASS:
         VISIT(visit_klass);
         break;
+    case NODE_SUBSCRIPT:
+        VISIT(visit_subscript);
+        break;
     default:
         YOG_ASSERT(env, FALSE, "Unknown node type.");
         break;
@@ -446,6 +450,13 @@ var2index_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
 }
 
 static void 
+var2index_visit_subscript(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    visit_node(env, visitor, NODE_PREFIX(node), arg);
+    visit_node(env, visitor, NODE_INDEX(node), arg);
+}
+
+static void 
 var2index_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_assign = var2index_visit_assign;
@@ -465,6 +476,7 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_return = var2index_visit_break;
     visitor->visit_stmt = visit_node;
     visitor->visit_stmts = var2index_visit_stmts;
+    visitor->visit_subscript = var2index_visit_subscript;
     visitor->visit_variable = NULL;
     visitor->visit_while = var2index_visit_while;
 }
@@ -1491,6 +1503,17 @@ compile_visit_return(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
+compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
+{
+    visit_node(env, visitor, NODE_PREFIX(node), arg);
+    visit_node(env, visitor, NODE_INDEX(node), arg);
+
+    CompileData* data = arg;
+    ID method = INTERN("[]");
+    CompileData_add_call_method(env, data, node->lineno, method, 1, 0, 0, 0, 0);
+}
+
+static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_assign = compile_visit_assign;
@@ -1510,6 +1533,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_return = compile_visit_return;
     visitor->visit_stmt = visit_node;
     visitor->visit_stmts = compile_visit_stmts;
+    visitor->visit_subscript = compile_visit_subscript;
     visitor->visit_variable = compile_visit_variable;
     visitor->visit_while = compile_visit_while;
 }

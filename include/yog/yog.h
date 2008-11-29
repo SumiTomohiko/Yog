@@ -312,6 +312,7 @@ typedef struct YogCharArray YogCharArray;
 
 struct YogString {
     YOGBASICOBJ_HEAD;
+    struct YogEncoding* encoding;
     struct YogCharArray* body;
 };
 

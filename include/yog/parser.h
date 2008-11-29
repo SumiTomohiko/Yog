@@ -24,6 +24,7 @@ enum YogNodeType {
     NODE_NEXT, 
     NODE_PARAM, 
     NODE_RETURN, 
+    NODE_SUBSCRIPT, 
     NODE_VARIABLE, 
     NODE_VAR_PARAM, 
     NODE_WHILE, 
@@ -92,6 +93,9 @@ struct YogNode {
 #define NODE_OBJ(node)      (node)->u2.nd
 
 #define NODE_SUPER(node)    (node)->u2.nd
+
+#define NODE_PREFIX(node)   (node)->u1.nd
+#define NODE_INDEX(node)    (node)->u2.nd
 
 typedef struct YogNode YogNode;
 

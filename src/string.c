@@ -48,7 +48,10 @@ YogString_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogBasicObj_keep_children(env, ptr, keeper);
 
     YogString* s = ptr;
-    s->body = (*keeper)(env, s->body);
+#define KEEP(member)    s->member = (*keeper)(env, s->member)
+    KEEP(encoding);
+    KEEP(body);
+#undef KEEP
 }
 
 unsigned int 
@@ -127,6 +130,10 @@ allocate(YogEnv* env, YogKlass* klass)
     YogBasicObj* obj = ALLOC_OBJ(env, YogString_keep_children, YogString);
     YogBasicObj_init(env, obj, 0, klass);
 
+    YogString* s = (YogString*)obj;
+    s->encoding = NULL;
+    s->body = NULL;
+
     return obj;
 }
 
@@ -134,7 +141,10 @@ YogString*
 YogString_new(YogEnv* env) 
 {
     YogString* string = (YogString*)allocate(env, ENV_VM(env)->cString);
+
+    string->encoding = NULL;
     string->body = NULL;
+
     return string;
 }
 
@@ -142,13 +152,17 @@ YogString*
 YogString_new_size(YogEnv* env, unsigned int size) 
 {
     YogString* string = (YogString*)allocate(env, ENV_VM(env)->cString);
+
+    string->encoding = NULL;
     string->body = YogCharArray_new(env, size);
+
     return string;
 }
 
 #define RETURN_STR(s)   do { \
     YogCharArray* body = YogCharArray_new_str(env, s); \
     YogString* string = (YogString*)allocate(env, ENV_VM(env)->cString); \
+    string->encoding = NULL; \
     string->body = body; \
     return string; \
 } while (0)
@@ -175,9 +189,12 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
 #undef RETURN_STR
 
 YogString* 
-YogString_clone(YogEnv* env, YogString* s) 
+YogString_clone(YogEnv* env, YogString* string) 
 {
-    return YogString_new_str(env, s->body->items);
+    YogString* s = YogString_new_str(env, string->body->items);
+    string->encoding = string->encoding;
+
+    return s;
 }
 
 char 
@@ -227,6 +244,34 @@ lshift(YogEnv* env)
     return self;
 }
 
+static YogVal 
+subscript(YogEnv* env) 
+{
+    YogVal self = SELF(env);
+    YogVal arg = ARG(env, 0);
+
+    YogString* retval = YogString_new(env);
+    YogString* s = OBJ_AS(YogString, self);
+    YogEncoding* enc = s->encoding;
+    const char* end = &s->body->items[s->body->size - 1];
+    int index = VAL2INT(arg);
+    const char* p = s->body->items;
+    unsigned int i = 0;
+    for (i = 0; i < index; i++) {
+        unsigned int size = YogEncoding_mbc_size(env, enc, p);
+        p += size;
+        YOG_ASSERT(env, p < end, "index out of bound.");
+    }
+    unsigned int size = YogEncoding_mbc_size(env, enc, p);
+    for (i = 0; i < size; i++) {
+        YOG_ASSERT(env, p < end, "string size is short.");
+        YogString_push(env, retval, *p);
+        p++;
+    }
+
+    return OBJ2VAL(retval);
+}
+
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
@@ -235,6 +280,7 @@ YogString_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
     YogKlass_define_method(env, klass, "+", add, 0, 0, 0, 0, "s", NULL);
     YogKlass_define_method(env, klass, "<<", lshift, 0, 0, 0, 0, "s", NULL);
+    YogKlass_define_method(env, klass, "[]", subscript, 0, 0, 0, 0, "n", NULL);
 
     return klass;
 }
