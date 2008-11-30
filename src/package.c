@@ -6,7 +6,7 @@ YogPackage_define_method(YogEnv* env, YogPackage* pkg, const char* name, void* f
 {
     va_list ap;
     va_start(ap, required_argc);
-    YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, name, f, blockargc, varargc, kwargc, required_argc, ap);
+    YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, f, blockargc, varargc, kwargc, required_argc, ap);
     va_end(ap);
 
     YogBuiltinBoundMethod* method = YogBuiltinBoundMethod_new(env);

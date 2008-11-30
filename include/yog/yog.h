@@ -576,7 +576,7 @@ YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);
 void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
 
 /* src/function.c */
-YogBuiltinFunction* YogBuiltinFunction_new(YogEnv*, const char*, void*, unsigned int, unsigned int, unsigned int, int, va_list);
+YogBuiltinFunction* YogBuiltinFunction_new(YogEnv*, void*, unsigned int, unsigned int, unsigned int, int, va_list);
 
 /* src/inst.c */
 unsigned int Yog_get_inst_size(OpCode);
@@ -635,6 +635,7 @@ ID YogString_intern(YogEnv*, YogString*);
 YogKlass* YogString_klass_new(YogEnv*);
 YogString* YogString_new(YogEnv*);
 YogString* YogString_new_format(YogEnv*, const char*, ...);
+YogString* YogString_new_size(YogEnv*, unsigned int);
 YogString* YogString_new_str(YogEnv*, const char*);
 void YogString_push(YogEnv*, YogString*, char);
 unsigned int YogString_size(YogEnv*, YogString*);
