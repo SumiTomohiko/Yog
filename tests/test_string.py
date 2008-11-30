@@ -188,7 +188,7 @@ s = \"f燦o\"
 puts s[1]""", """燦
 """)
 
-    def test_subscript_error(self):
+    def test_subscript_error1(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
@@ -200,5 +200,18 @@ IndexError: string index out of range
         self._test("""
 s = \"\"
 puts s[0]""", stderr=test_stderr)
+
+    def test_subscript_error2(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in String#\[\]
+TypeError: string index must be Int
+""", stderr)
+            assert m is not None
+
+        self._test("""
+s = \"\"
+puts s[\"\"]""", stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
