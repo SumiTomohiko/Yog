@@ -50,4 +50,62 @@ end
 foo = Foo.new()
 foo.bar()""", stderr=test_stderr)
 
+    def test_traceback_block1(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in Int#times
+  File "[^"]+", line 3, in <block>
+Exception: nil
+""", stderr)
+            assert m is not None
+
+        self._test("""
+1.times() do [n]
+  raise Exception.new()
+end""", stderr=test_stderr)
+
+    def test_traceback_block2(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 8, in <module>
+  File "[^"]+", line 3, in foo
+  File builtin, in Int#times
+  File "[^"]+", line 4, in <block>
+Exception: nil
+""", stderr)
+            assert m is not None
+
+        self._test("""
+def foo()
+  1.times() do [n]
+    raise Exception.new()
+  end
+end
+
+foo()""", stderr=test_stderr)
+
+    def test_traceback_block3(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 11, in <module>
+  File "[^"]+", line 4, in Foo#bar
+  File builtin, in Int#times
+  File "[^"]+", line 5, in <block>
+Exception: nil
+""", stderr)
+            assert m is not None
+
+        self._test("""
+class Foo
+  def bar()
+    1.times() do [n]
+      raise Exception.new()
+    end
+  end
+end
+
+foo = Foo.new()
+foo.bar()""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

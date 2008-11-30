@@ -26,6 +26,8 @@ typedef struct YogHeap YogHeap;
 
 typedef unsigned int ID;
 
+#define INVALID_ID  (UINT_MAX)
+
 struct YogEnv {
     struct YogVm* vm;
     struct YogThread* th;
@@ -370,7 +372,7 @@ struct YogCode {
     struct YogLinenoTableEntry* lineno_tbl;
 
     const char* filename;
-    ID fname;
+    ID func_name;
 };
 
 typedef struct YogCode YogCode;

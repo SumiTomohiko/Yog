@@ -175,7 +175,7 @@ YogCode_new(YogEnv* env)
     code->lineno_tbl = NULL;
 
     code->filename = NULL;
-    code->fname = 0;
+    code->func_name = 0;
 
     return code;
 }

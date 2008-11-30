@@ -847,7 +847,7 @@ CompileData_add_ret_nil(YogEnv* env, CompileData* data, unsigned int lineno)
 }
 
 static YogCode* 
-compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID fname, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
+compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID func_name, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
 {
     CompileData data;
     data.ctx = ctx;
@@ -903,7 +903,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID fname, 
     make_lineno_table(env, code, anchor);
 
     code->filename = filename;
-    code->fname = fname;
+    code->func_name = func_name;
 
 #if 0
     YogCode_dump(env, code);
