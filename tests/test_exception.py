@@ -108,4 +108,18 @@ end
 foo = Foo.new()
 foo.bar()""", stderr=test_stderr)
 
+    def test_traceback_klass(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 3, in <class Foo>
+Exception: nil
+""", stderr)
+            assert m is not None
+
+        self._test("""
+class Foo
+  raise Exception.new()
+end""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
