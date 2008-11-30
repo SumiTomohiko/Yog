@@ -206,7 +206,7 @@ puts s[0]""", stderr=test_stderr)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
   File builtin, in String#\[\]
-TypeError: string index must be Int
+TypeError: string index must be integer
 """, stderr)
             assert m is not None
 
