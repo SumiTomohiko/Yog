@@ -254,7 +254,9 @@ index2ptr(YogEnv* env, YogString* s, unsigned int index)
     for (i = 0; i < index; i++) {
         unsigned int size = YogEncoding_mbc_size(env, enc, p);
         p += size;
-        YOG_ASSERT(env, p < end, "index out of bound.");
+        if (end <= p) {
+            YogError_raise_index_error(env, "string index out of range");
+        }
     }
 
     return p;
@@ -274,7 +276,7 @@ subscript(YogEnv* env)
 
     unsigned int size = YogEncoding_mbc_size(env, s->encoding, p);
     if ((s->body->size - 1) - (p - s->body->items) < size) {
-        YOG_ASSERT(env, FALSE, "out of index");
+        YogError_raise_index_error(env, "string index out of range");
     }
     unsigned int i = 0;
     for (i = 0; i < size; i++) {

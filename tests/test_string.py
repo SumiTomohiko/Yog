@@ -206,6 +206,19 @@ puts s[0]""", stderr=test_stderr)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
   File builtin, in String#\[\]
+IndexError: string index out of range
+""", stderr)
+            assert m is not None
+
+        self._test("""
+s = \"\"
+puts s[1]""", stderr=test_stderr)
+
+    def test_subscript_error3(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in String#\[\]
 TypeError: string index must be integer
 """, stderr)
             assert m is not None

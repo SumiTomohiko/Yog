@@ -18,10 +18,9 @@ YogError_raise(YogEnv* env, YogVal exc)
     longjmp(th->jmp_buf_list->buf, JMP_RAISE);
 }
 
-void 
-YogError_raise_type_error(YogEnv* env, const char* msg) 
+static void 
+raise_error(YogEnv* env, YogKlass* klass, const char* msg) 
 {
-    YogKlass* klass = ENV_VM(env)->eTypeError;
     YogVal self = OBJ2VAL(klass);
 
     YogString* s = YogString_new_str(env, msg);
@@ -31,6 +30,18 @@ YogError_raise_type_error(YogEnv* env, const char* msg)
     YogVal val = YogThread_call_method(env, ENV_TH(env), self, "new", 1, args);
 
     YogError_raise(env, val);
+}
+
+void 
+YogError_raise_type_error(YogEnv* env, const char* msg) 
+{
+    raise_error(env, ENV_VM(env)->eTypeError, msg);
+}
+
+void 
+YogError_raise_index_error(YogEnv* env, const char* msg) 
+{
+    raise_error(env, ENV_VM(env)->eIndexError, msg);
 }
 
 /**

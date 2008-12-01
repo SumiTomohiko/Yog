@@ -102,6 +102,7 @@ struct YogVm {
     struct YogKlass* eException;
     struct YogKlass* eBugException;
     struct YogKlass* eTypeError;
+    struct YogKlass* eIndexError;
 
     struct YogTable* pkgs;
 
@@ -578,6 +579,7 @@ YogString* YogEncoding_normalize_name(YogEnv*, YogString*);
 
 /* src/error.c */
 void YogError_raise(YogEnv*, YogVal);
+void YogError_raise_index_error(YogEnv*, const char*);
 void YogError_raise_type_error(YogEnv*, const char*);
 
 /* src/exception.c */
