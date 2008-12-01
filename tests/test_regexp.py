@@ -19,4 +19,12 @@ s =~ //i""")
 s = \"\"
 s =~ /foo/i""")
 
+    def test_match_expr10(self):
+        self._test("""
+s = "foo"
+if s =~ /foo/
+  puts 42
+end""", """42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
