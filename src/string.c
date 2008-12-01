@@ -265,6 +265,7 @@ subscript(YogEnv* env)
 {
     YogVal self = SELF(env);
     YogVal arg = ARG(env, 0);
+    CHECK_INT(arg, "string index must be integer");
 
     YogString* retval = YogString_new(env);
     YogString* s = OBJ_AS(YogString, self);
@@ -290,6 +291,7 @@ assign_subscript(YogEnv* env)
     YogVal self = SELF(env);
     YogVal arg0 = ARG(env, 0);
     YogVal arg1 = ARG(env, 1);
+    CHECK_INT(arg0, "string index must be integer");
 
     YogString* s = OBJ_AS(YogString, self);
     int index = VAL2INT(arg0);

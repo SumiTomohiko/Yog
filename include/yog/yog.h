@@ -101,6 +101,7 @@ struct YogVm {
 
     struct YogKlass* eException;
     struct YogKlass* eBugException;
+    struct YogKlass* eTypeError;
 
     struct YogTable* pkgs;
 
@@ -157,6 +158,12 @@ struct YogVal {
 #define IS_NIL(v)       (VAL_TYPE(v) == VAL_NIL)
 #define IS_SYMBOL(v)    (VAL_TYPE(v) == VAL_SYMBOL)
 #define IS_STR(v)       (VAL_TYPE(v) == VAL_STR)
+
+#define CHECK_INT(v, msg)   do { \
+    if (!IS_INT(v)) { \
+        YogError_raise_type_error(env, msg); \
+    } \
+} while (0)
 
 typedef struct YogVal YogVal;
 
@@ -571,6 +578,7 @@ YogString* YogEncoding_normalize_name(YogEnv*, YogString*);
 
 /* src/error.c */
 void YogError_raise(YogEnv*, YogVal);
+void YogError_raise_type_error(YogEnv*, const char*);
 
 /* src/exception.c */
 YogException* YogBugException_new(YogEnv*);

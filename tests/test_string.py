@@ -214,4 +214,17 @@ TypeError: string index must be integer
 s = \"\"
 puts s[\"\"]""", stderr=test_stderr)
 
+    def test_assign_subscript_error1(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in String#\[\]=
+TypeError: string index must be integer
+""", stderr)
+            assert m is not None
+
+        self._test("""
+s = \"\"
+s[\"foo\"] = \"bar\"""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -18,6 +18,21 @@ YogError_raise(YogEnv* env, YogVal exc)
     longjmp(th->jmp_buf_list->buf, JMP_RAISE);
 }
 
+void 
+YogError_raise_type_error(YogEnv* env, const char* msg) 
+{
+    YogKlass* klass = ENV_VM(env)->eTypeError;
+    YogVal self = OBJ2VAL(klass);
+
+    YogString* s = YogString_new_str(env, msg);
+    YogVal arg = OBJ2VAL(s);
+    YogVal args[] = { arg, };
+
+    YogVal val = YogThread_call_method(env, ENV_TH(env), self, "new", 1, args);
+
+    YogError_raise(env, val);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
