@@ -335,6 +335,11 @@ next_token(YogEnv* env, YogLexer* lexer)
                 }
             }
 
+            c = NEXTC();
+            if (c != 'i') {
+                PUSHBACK(c);
+            }
+
 #if 0
             YogString* s = YogString_clone(env, lexer->buffer);
             s->encoding = get_encoding(env, lexer);
