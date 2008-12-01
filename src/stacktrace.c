@@ -17,7 +17,8 @@ YogStackTraceEntry_new(YogEnv* env)
     entry->lower = NULL;
     entry->lineno = 0;
     entry->filename = NULL;
-    entry->fname = 0;
+    entry->klass_name = INVALID_ID;
+    entry->func_name = INVALID_ID;
 
     return entry;
 }

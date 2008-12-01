@@ -137,6 +137,18 @@ CompileData_add_call_function(YogEnv* env, CompileData* data, unsigned int linen
 }
 
 static void 
+CompileData_add_load_global(YogEnv* env, CompileData* data, unsigned int lineno, ID id)
+{
+    YogInst* inst = Inst_new(env, lineno);
+    inst->type = INST_OP;
+    INST_OPCODE(inst) = OP(LOAD_GLOBAL);
+
+    LOAD_GLOBAL_ID(inst) = id;
+
+    add_inst(data, inst);
+}
+
+static void 
 CompileData_add_load_name(YogEnv* env, CompileData* data, unsigned int lineno, ID id)
 {
     YogInst* inst = Inst_new(env, lineno);
@@ -336,6 +348,12 @@ insts2bin(YogEnv* env, YogInst* inst)
                                 YogBinary_push_uint8(env, code, CALL_FUNCTION_VARKWARGC(inst));
                                 break;
                             }
+                        case OP(LOAD_GLOBAL):
+                            {
+                                YogBinary_push_uint8(env, code, OP(LOAD_GLOBAL));
+                                YogBinary_push_id(env, code, LOAD_GLOBAL_ID(inst));
+                                break;
+                            }
                         case OP(LOAD_NAME):
                             {
                                 YogBinary_push_uint8(env, code, OP(LOAD_NAME));
@@ -482,6 +500,12 @@ count_stack_size(YogEnv* env, YogInst* inst)
                         case OP(CALL_FUNCTION):
                             {
                                 pop_size = CALL_FUNCTION_ARGC(inst) + 2 * CALL_FUNCTION_KWARGC(inst) + CALL_FUNCTION_BLOCKARGC(inst) + CALL_FUNCTION_VARARGC(inst) + CALL_FUNCTION_VARKWARGC(inst);
+                                push_size = 1;
+                                break;
+                            }
+                        case OP(LOAD_GLOBAL):
+                            {
+                                pop_size = 0;
                                 push_size = 1;
                                 break;
                             }

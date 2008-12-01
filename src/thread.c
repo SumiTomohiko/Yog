@@ -109,6 +109,7 @@ call_builtin_function(YogEnv* env, YogThread* th, YogBuiltinFunction* f, YogVal 
     YogCFrame* frame = YogCFrame_new(env);
     frame->self = self;
     frame->args = args;
+    frame->f = f;
     PUSH_FRAME(frame);
 
     YogVal retval = (*f->f)(env);
@@ -287,17 +288,48 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
 
             YogException* exc = OBJ_AS(YogException, ENV_TH(env)->jmp_val);
             YogStackTraceEntry* st = exc->stack_trace;
+#define ID2NAME(id)     YogVm_id2name(env, ENV_VM(env), id)
             while (st != NULL) {
+                PRINT("  File ");
                 const char* filename = st->filename;
+                if (filename != NULL) {
+                    PRINT("\"%s\"", filename);
+                }
+                else {
+                    PRINT("builtin");
+                }
+
                 unsigned int lineno = st->lineno;
-                const char* fname = YogVm_id2name(env, ENV_VM(env), st->fname);
-                PRINT("  File \"%s\", line %d, in %s\n", filename, lineno, fname);
+                if (0 < lineno) {
+                    PRINT(", line %d", lineno);
+                }
+
+                PRINT(", in ");
+                ID klass_name = st->klass_name;
+                ID func_name = st->func_name;
+                if (klass_name != INVALID_ID) {
+                    if (func_name != INVALID_ID) {
+                        const char* s = ID2NAME(klass_name);
+                        const char* t = ID2NAME(func_name);
+                        PRINT("%s#%s", s, t);
+                    }
+                    else {
+                        const char* name = ID2NAME(klass_name);
+                        PRINT("<class %s>", name);
+                    }
+                }
+                else {
+                    const char* name = ID2NAME(func_name);
+                    PRINT("%s", name);
+                }
+                PRINT("\n");
 
                 st = st->lower;
             }
 
             YogKlass* klass = YOGBASICOBJ(exc)->klass;
-            const char* name = YogVm_id2name(env, ENV_VM(env), klass->name);
+            const char* name = ID2NAME(klass->name);
+#undef ID2NAME
             YogVal val = YogThread_call_method(env, ENV_TH(env), exc->message, "to_s", 0, NULL);
             YogString* msg = OBJ_AS(YogString, val);
             PRINT("%s: %s\n", name, msg->body->items);

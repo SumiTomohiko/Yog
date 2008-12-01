@@ -18,6 +18,7 @@ get_op_name(OpCode op)
         "CALL_COMMAND", 
         "MAKE_PACKAGE_METHOD", 
         "CALL_FUNCTION", 
+        "LOAD_GLOBAL", 
         "LOAD_NAME", 
         "LOAD_LOCAL", 
         "JUMP", 

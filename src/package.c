@@ -1,12 +1,16 @@
 #include <stdarg.h>
 #include "yog/yog.h"
 
+#include <stdio.h>
+
 void 
 YogPackage_define_method(YogEnv* env, YogPackage* pkg, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, unsigned int required_argc, ...)
 {
+    ID func_name = INTERN(name);
+
     va_list ap;
     va_start(ap, required_argc);
-    YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, f, blockargc, varargc, kwargc, required_argc, ap);
+    YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, f, INVALID_ID, func_name, blockargc, varargc, kwargc, required_argc, ap);
     va_end(ap);
 
     YogBuiltinBoundMethod* method = YogBuiltinBoundMethod_new(env);
@@ -14,7 +18,7 @@ YogPackage_define_method(YogEnv* env, YogPackage* pkg, const char* name, void* f
     method->f = builtin_f;
 
     YogVal val = OBJ2VAL(method);
-    YogObj_set_attr(env, YOGOBJ(pkg), name, val);
+    YogObj_set_attr_id(env, YOGOBJ(pkg), func_name, val);
 }
 
 static void 

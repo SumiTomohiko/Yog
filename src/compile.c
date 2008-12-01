@@ -88,6 +88,7 @@ struct CompileData {
     struct TryListEntry* try_list;
 
     const char* filename;
+    ID klass_name;
 };
 
 typedef struct CompileData CompileData;
@@ -509,29 +510,32 @@ lookup_var_index(YogEnv* env, YogTable* var2index, ID id)
 {
     YogVal val = ID2VAL(id);
     YogVal index = YUNDEF;
-    if (!YogTable_lookup(env, var2index, val, &index)) {
-        YOG_ASSERT(env, FALSE, "Can't find var.");
+    if (YogTable_lookup(env, var2index, val, &index)) {
+        return VAL2INT(index);
     }
-    return VAL2INT(index);
+    else {
+        return -1;
+    }
 }
 
 static void 
 append_store(YogEnv* env, CompileData* data, unsigned int lineno, ID id) 
 {
     switch (data->ctx) {
-        case CTX_FUNC:
-            {
-                uint8_t index = lookup_var_index(env, data->var2index, id);
-                CompileData_add_store_local(env, data, lineno, index);
-                break;
-            }
-        case CTX_KLASS:
-        case CTX_PKG:
-            CompileData_add_store_name(env, data, lineno, id);
+    case CTX_FUNC:
+        {
+            int index = lookup_var_index(env, data->var2index, id);
+            YOG_ASSERT(env, 0 <= index, "can't find variable index");
+            CompileData_add_store_local(env, data, lineno, index);
             break;
-        default:
-            YOG_ASSERT(env, FALSE, "Unkown context.");
-            break;
+        }
+    case CTX_KLASS:
+    case CTX_PKG:
+        CompileData_add_store_name(env, data, lineno, id);
+        break;
+    default:
+        YOG_ASSERT(env, FALSE, "Unkown context.");
+        break;
     }
 }
 
@@ -847,7 +851,7 @@ CompileData_add_ret_nil(YogEnv* env, CompileData* data, unsigned int lineno)
 }
 
 static YogCode* 
-compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID func_name, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
+compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, ID func_name, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
 {
     CompileData data;
     data.ctx = ctx;
@@ -862,6 +866,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID func_na
     data.finally_list = NULL;
     data.try_list = NULL;
     data.filename = filename;
+    data.klass_name = klass_name;
 
     visitor->visit_stmts(env, visitor, stmts, &data);
     if (tail != NULL) {
@@ -903,6 +908,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID func_na
     make_lineno_table(env, code, anchor);
 
     code->filename = filename;
+    code->klass_name = klass_name;
     code->func_name = func_name;
 
 #if 0
@@ -1068,7 +1074,7 @@ Var2Index_new(YogEnv* env)
 }
 
 static YogCode* 
-compile_func(YogEnv* env, AstVisitor* visitor, const char* filename, YogNode* node) 
+compile_func(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, YogNode* node) 
 {
     YogTable* var2index = Var2Index_new(env);
 
@@ -1077,9 +1083,9 @@ compile_func(YogEnv* env, AstVisitor* visitor, const char* filename, YogNode* no
     YogArray* stmts = NODE_STMTS(node);
     make_var2index(env, stmts, var2index);
 
-    ID name = NODE_NAME(node);
+    ID func_name = NODE_NAME(node);
 
-    YogCode* code = compile_stmts(env, visitor, filename, name, stmts, var2index, CTX_FUNC, NULL);
+    YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var2index, CTX_FUNC, NULL);
     setup_params(env, var2index, params, code);
 
     return code;
@@ -1090,7 +1096,12 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 {
     CompileData* data = arg;
 
-    YogCode* code = compile_func(env, visitor, data->filename, node);
+    ID klass_name = INVALID_ID;
+    if (data->ctx == CTX_KLASS) {
+        klass_name = data->klass_name;
+    }
+
+    YogCode* code = compile_func(env, visitor, data->filename, klass_name, node);
 
     YogVal val = PTR2VAL(code);
     ADD_PUSH_CONST(val, node->lineno);
@@ -1101,29 +1112,29 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 #endif
     unsigned int lineno = node->lineno;
     switch (data->ctx) {
-        case CTX_FUNC:
-            YOG_ASSERT(env, FALSE, "TODO: NOT IMPLEMENTED");
-            break;
-        case CTX_KLASS:
-        case CTX_PKG:
-            {
-                switch (data->ctx) {
-                    case CTX_KLASS:
-                        CompileData_add_make_method(env, data, lineno);
-                        break;
-                    case CTX_PKG:
-                        CompileData_add_make_package_method(env, data, lineno);
-                        break;
-                    default:
-                        YOG_ASSERT(env, FALSE, "Invalid context type.");
-                        break;
-                }
-                CompileData_add_store_name(env, data, lineno, id);
+    case CTX_FUNC:
+        YOG_ASSERT(env, FALSE, "TODO: NOT IMPLEMENTED");
+        break;
+    case CTX_KLASS:
+    case CTX_PKG:
+        {
+            switch (data->ctx) {
+            case CTX_KLASS:
+                CompileData_add_make_method(env, data, lineno);
+                break;
+            case CTX_PKG:
+                CompileData_add_make_package_method(env, data, lineno);
+                break;
+            default:
+                YOG_ASSERT(env, FALSE, "Invalid context type.");
                 break;
             }
-        default:
-            YOG_ASSERT(env, FALSE, "Unknown context.");
+            CompileData_add_store_name(env, data, lineno, id);
             break;
+        }
+    default:
+        YOG_ASSERT(env, FALSE, "Unknown context.");
+        break;
     }
 }
 
@@ -1157,8 +1168,13 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     switch (data->ctx) {
     case CTX_FUNC:
         {
-            uint8_t index = lookup_var_index(env, data->var2index, id);
-            CompileData_add_load_local(env, data, lineno, index);
+            int index = lookup_var_index(env, data->var2index, id);
+            if (0 <= index) {
+                CompileData_add_load_local(env, data, lineno, index);
+            }
+            else {
+                CompileData_add_load_global(env, data, lineno, id);
+            }
             break;
         }
     case CTX_KLASS:
@@ -1424,9 +1440,10 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogNode* node, CompileData* data
     register_block_params_var2index(env, params, var2index);
 
     const char* filename = data->filename;
-    ID name = INTERN("<block>");
+    ID klass_name = INVALID_ID;
+    ID func_name = INTERN("<block>");
     YogArray* stmts = NODE_STMTS(node);
-    YogCode* code = compile_stmts(env, visitor, filename, name, stmts, var2index, data->ctx, NULL);
+    YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var2index, data->ctx, NULL);
 
     setup_params(env, var2index, params, code);
 
@@ -1457,7 +1474,7 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static YogCode* 
-compile_klass(YogEnv* env, AstVisitor* visitor, ID name, YogArray* stmts, CompileData* data)
+compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogArray* stmts, CompileData* data)
 {
     YogTable* var2index = Var2Index_new(env);
     make_var2index(env, stmts, var2index);
@@ -1472,8 +1489,9 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID name, YogArray* stmts, Compil
     push_self_name->opcode = OP(PUSH_SELF_NAME);
 
     const char* filename = data->filename;
+    ID func_name = INVALID_ID;
 
-    YogCode* code = compile_stmts(env, visitor, filename, name, stmts, var2index, CTX_KLASS, push_self_name);
+    YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var2index, CTX_KLASS, push_self_name);
 
     return code;
 }
@@ -1574,9 +1592,10 @@ Yog_compile_module(YogEnv* env, const char* filename, YogArray* stmts)
     }
     filename = YogString_dup(env, filename);
 
-    ID name = INTERN("<module>");
+    ID klass_name = INVALID_ID;
+    ID func_name = INTERN("<module>");
 
-    YogCode* code = compile_stmts(env, &visitor, filename, name, stmts, var2index, CTX_PKG, NULL);
+    YogCode* code = compile_stmts(env, &visitor, filename, klass_name, func_name, stmts, var2index, CTX_PKG, NULL);
 
     return code;
 }

@@ -4,16 +4,18 @@
 void 
 YogKlass_define_method(YogEnv* env, YogKlass* klass, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, ...)
 {
+    ID func_name = INTERN(name);
+
     va_list ap;
     va_start(ap, required_argc);
-    YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, f, blockargc, varargc, kwargc, required_argc, ap);
+    YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, f, klass->name, func_name, blockargc, varargc, kwargc, required_argc, ap);
     va_end(ap);
 
     YogBuiltinUnboundMethod* method = YogBuiltinUnboundMethod_new(env);
     method->f = builtin_f;
 
     YogVal val = OBJ2VAL(method);
-    YogObj_set_attr(env, YOGOBJ(klass), name, val);
+    YogObj_set_attr_id(env, YOGOBJ(klass), func_name, val);
 }
 
 static void 

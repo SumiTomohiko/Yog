@@ -270,6 +270,9 @@ struct YogBuiltinFunction {
     int required_argc;
 
     YogVal (*f)();
+
+    ID klass_name;
+    ID func_name;
 };
 
 typedef struct YogBuiltinFunction YogBuiltinFunction;
@@ -372,6 +375,7 @@ struct YogCode {
     struct YogLinenoTableEntry* lineno_tbl;
 
     const char* filename;
+    ID klass_name;
     ID func_name;
 };
 
@@ -397,6 +401,7 @@ struct YogCFrame {
     struct YogFrame base;
     struct YogVal self;
     struct YogValArray* args;
+    struct YogBuiltinFunction* f;
 };
 
 typedef struct YogCFrame YogCFrame;
@@ -495,7 +500,8 @@ struct YogStackTraceEntry {
     struct YogStackTraceEntry* lower;
     unsigned int lineno;
     const char* filename;
-    ID fname;
+    ID klass_name;
+    ID func_name;
 };
 
 typedef struct YogStackTraceEntry YogStackTraceEntry;
@@ -578,7 +584,7 @@ YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);
 void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
 
 /* src/function.c */
-YogBuiltinFunction* YogBuiltinFunction_new(YogEnv*, void*, unsigned int, unsigned int, unsigned int, int, va_list);
+YogBuiltinFunction* YogBuiltinFunction_new(YogEnv*, void*, ID, ID, unsigned int, unsigned int, unsigned int, int, va_list);
 
 /* src/inst.c */
 unsigned int Yog_get_inst_size(OpCode);

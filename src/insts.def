@@ -107,6 +107,15 @@ inst call_function
     call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 }
 
+inst load_global
+(ID id)
+()
+(val) 
+{
+    val = lookup_builtins(ENV, id);
+    YOG_ASSERT(ENV, !IS_UNDEF(val), "can't find global variable");
+}
+
 inst load_name
 (ID id) 
 ()

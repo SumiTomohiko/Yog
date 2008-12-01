@@ -9,7 +9,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 }
 
 YogBuiltinFunction* 
-YogBuiltinFunction_new(YogEnv* env, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, va_list ap)
+YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, va_list ap)
 {
 #define ASSERT(name) do { \
     YOG_ASSERT(env, (name == 0) || (name == 1), #name "must be zero or one."); \
@@ -62,6 +62,9 @@ YogBuiltinFunction_new(YogEnv* env, void* f, unsigned int blockargc, unsigned in
     builtin_f->required_argc = required_argc;
 
     builtin_f->f = f;
+
+    builtin_f->klass_name = klass_name;
+    builtin_f->func_name = func_name;
 
     return builtin_f;
 }

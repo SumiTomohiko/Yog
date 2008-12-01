@@ -59,6 +59,9 @@ struct YogInst {
         } call_function;
         struct {
             ID id;
+        } load_global;
+        struct {
+            ID id;
         } load_name;
         struct {
             uint8_t index;
@@ -112,6 +115,7 @@ struct YogInst {
 #define CALL_FUNCTION_BLOCKARGC(inst) ((inst)->u.call_function.blockargc)
 #define CALL_FUNCTION_VARARGC(inst) ((inst)->u.call_function.varargc)
 #define CALL_FUNCTION_VARKWARGC(inst) ((inst)->u.call_function.varkwargc)
+#define LOAD_GLOBAL_ID(inst) ((inst)->u.load_global.id)
 #define LOAD_NAME_ID(inst) ((inst)->u.load_name.id)
 #define LOAD_LOCAL_INDEX(inst) ((inst)->u.load_local.index)
 #define JUMP_DEST(inst) ((inst)->u.jump.dest)
