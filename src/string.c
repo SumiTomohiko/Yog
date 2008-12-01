@@ -336,6 +336,12 @@ assign_subscript(YogEnv* env)
     return arg1;
 }
 
+static YogVal 
+match(YogEnv* env) 
+{
+    return YNIL;
+}
+
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
@@ -346,6 +352,7 @@ YogString_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "<<", lshift, 0, 0, 0, 0, "s", NULL);
     YogKlass_define_method(env, klass, "[]", subscript, 0, 0, 0, 0, "n", NULL);
     YogKlass_define_method(env, klass, "[]=", assign_subscript, 0, 0, 0, 0, "n", "s", NULL);
+    YogKlass_define_method(env, klass, "=~", match, 0, 0, 0, 0, "regexp", NULL);
 
     return klass;
 }
