@@ -36,36 +36,39 @@
      CLASS = 262,
      COMMA = 263,
      DEF = 264,
-     DO = 265,
-     DOT = 266,
-     DOUBLE_STAR = 267,
-     ELIF = 268,
-     ELSE = 269,
-     END = 270,
-     EQUAL = 271,
-     EXCEPT = 272,
-     FINALLY = 273,
-     GREATER = 274,
-     IF = 275,
-     LBRACE = 276,
-     LBRACKET = 277,
-     LESS = 278,
-     LPAR = 279,
-     LSHIFT = 280,
-     NAME = 281,
-     NEWLINE = 282,
-     NEXT = 283,
-     NUMBER = 284,
-     PLUS = 285,
-     RBRACE = 286,
-     RBRACKET = 287,
-     RETURN = 288,
-     RPAR = 289,
-     STAR = 290,
-     STRING = 291,
-     TRY = 292,
-     WHILE = 293,
-     t__LINE__ = 294
+     DIV = 265,
+     DO = 266,
+     DOT = 267,
+     DOUBLE_STAR = 268,
+     ELIF = 269,
+     ELSE = 270,
+     END = 271,
+     EQUAL = 272,
+     EQUAL_TILDA = 273,
+     EXCEPT = 274,
+     FINALLY = 275,
+     GREATER = 276,
+     IF = 277,
+     LBRACE = 278,
+     LBRACKET = 279,
+     LESS = 280,
+     LPAR = 281,
+     LSHIFT = 282,
+     NAME = 283,
+     NEWLINE = 284,
+     NEXT = 285,
+     NUMBER = 286,
+     PLUS = 287,
+     RBRACE = 288,
+     RBRACKET = 289,
+     REGEXP = 290,
+     RETURN = 291,
+     RPAR = 292,
+     STAR = 293,
+     STRING = 294,
+     TRY = 295,
+     WHILE = 296,
+     t__LINE__ = 297
    };
 #endif
 /* Tokens.  */
@@ -76,36 +79,39 @@
 #define CLASS 262
 #define COMMA 263
 #define DEF 264
-#define DO 265
-#define DOT 266
-#define DOUBLE_STAR 267
-#define ELIF 268
-#define ELSE 269
-#define END 270
-#define EQUAL 271
-#define EXCEPT 272
-#define FINALLY 273
-#define GREATER 274
-#define IF 275
-#define LBRACE 276
-#define LBRACKET 277
-#define LESS 278
-#define LPAR 279
-#define LSHIFT 280
-#define NAME 281
-#define NEWLINE 282
-#define NEXT 283
-#define NUMBER 284
-#define PLUS 285
-#define RBRACE 286
-#define RBRACKET 287
-#define RETURN 288
-#define RPAR 289
-#define STAR 290
-#define STRING 291
-#define TRY 292
-#define WHILE 293
-#define t__LINE__ 294
+#define DIV 265
+#define DO 266
+#define DOT 267
+#define DOUBLE_STAR 268
+#define ELIF 269
+#define ELSE 270
+#define END 271
+#define EQUAL 272
+#define EQUAL_TILDA 273
+#define EXCEPT 274
+#define FINALLY 275
+#define GREATER 276
+#define IF 277
+#define LBRACE 278
+#define LBRACKET 279
+#define LESS 280
+#define LPAR 281
+#define LSHIFT 282
+#define NAME 283
+#define NEWLINE 284
+#define NEXT 285
+#define NUMBER 286
+#define PLUS 287
+#define RBRACE 288
+#define RBRACKET 289
+#define REGEXP 290
+#define RETURN 291
+#define RPAR 292
+#define STAR 293
+#define STRING 294
+#define TRY 295
+#define WHILE 296
+#define t__LINE__ 297
 
 
 
@@ -119,7 +125,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 123 "parser.h"
+#line 129 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

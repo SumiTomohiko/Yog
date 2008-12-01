@@ -199,6 +199,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %token CLASS
 %token COMMA
 %token DEF
+%token DIV
 %token DO
 %token DOT
 %token DOUBLE_STAR
@@ -206,6 +207,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %token ELSE
 %token END
 %token EQUAL
+%token EQUAL_TILDA
 %token EXCEPT
 %token FINALLY
 %token GREATER
@@ -222,6 +224,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %token PLUS
 %token RBRACE
 %token RBRACKET
+%token REGEXP
 %token RETURN
 %token RPAR
 %token STAR
@@ -241,6 +244,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %type<array> params_with_default
 %type<array> params_without_default
 %type<array> stmts
+%type<name> EQUAL_TILDA
 %type<name> LESS
 %type<name> LSHIFT
 %type<name> NAME
@@ -260,6 +264,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %type<node> kw_param
 %type<node> logical_and_expr
 %type<node> logical_or_expr
+%type<node> match_expr
 %type<node> not_expr
 %type<node> or_expr
 %type<node> param_default
@@ -274,6 +279,7 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %type<node> var_param
 %type<node> xor_expr
 %type<val> NUMBER
+%type<val> REGEXP
 %type<val> STRING
 %%
 module  : stmts {
@@ -545,8 +551,13 @@ or_expr : and_expr
         ;
 and_expr    : shift_expr
             ;
-shift_expr  : arith_expr
+shift_expr  : match_expr 
             | shift_expr LSHIFT arith_expr {
+                METHOD_CALL_NEW1($$, $1, $2, $3);
+            }
+            ;
+match_expr  : arith_expr 
+            | match_expr EQUAL_TILDA arith_expr {
                 METHOD_CALL_NEW1($$, $1, $2, $3);
             }
             ;
@@ -587,6 +598,9 @@ atom    : NAME {
             VARIABLE_NEW($$, $1);
         }
         | NUMBER {
+            LITERAL_NEW($$, $1);
+        }
+        | REGEXP {
             LITERAL_NEW($$, $1);
         }
         | STRING {

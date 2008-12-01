@@ -135,8 +135,9 @@ next_token(YogEnv* env, YogLexer* lexer)
 {
     clear_buffer(env, lexer);
 
-#define NEXTC()                 nextc(lexer)
-#define PUSHBACK(c)             pushback(lexer, c)
+#define SET_STATE(stat)     lexer->state = stat
+#define NEXTC()             nextc(lexer)
+#define PUSHBACK(c)         pushback(lexer, c)
     char c = 0;
     do {
         if (lexer->next_index < YogString_size(env, lexer->line) - 1) {
@@ -165,13 +166,15 @@ next_token(YogEnv* env, YogLexer* lexer)
     yylval.val = val; \
     return type; \
 } while (0)
+#define RETURN_NAME(s, type)    do { \
+    yylval.name = INTERN(s); \
+    return type; \
+} while (0)
 #define BUFSIZE     (4)
 #define RETURN_NAME1(c, type)   do { \
     char buffer[BUFSIZE]; \
     snprintf(buffer, sizeof(buffer), "%c", c); \
-    ID name = INTERN(buffer); \
-    yylval.name = name; \
-    return type; \
+    RETURN_NAME(buffer, type); \
 } while (0)
     switch (c) {
     case '0': case '1': case '2': case '3': case '4':
@@ -183,9 +186,10 @@ next_token(YogEnv* env, YogLexer* lexer)
             } while (isdigit(c));
 
 #define RETURN_INT  do { \
-int n = atoi(lexer->buffer->body->items); \
-YogVal val = INT2VAL(n); \
-RETURN_VAL(val, NUMBER); \
+    int n = atoi(lexer->buffer->body->items); \
+    YogVal val = INT2VAL(n); \
+    SET_STATE(LS_OP); \
+    RETURN_VAL(val, NUMBER); \
 } while (0)
             if (c == '.') {
                 int c2 = NEXTC();
@@ -220,7 +224,7 @@ RETURN_VAL(val, NUMBER); \
         {
             char quote = c;
 
-            char c = NEXTC();
+            c = NEXTC();
             while (c != quote) {
                 if (isascii(c)) {
                     if (c == '\\') {
@@ -259,44 +263,106 @@ RETURN_VAL(val, NUMBER); \
             YogString* s = YogString_clone(env, lexer->buffer);
             s->encoding = get_encoding(env, lexer);
             yylval.val = OBJ2VAL(s);
+            SET_STATE(LS_OP);
             return STRING;
             break;
         }
     case '(':
+        SET_STATE(LS_EXPR);
         return LPAR;
         break;
     case ')':
+        SET_STATE(LS_OP);
         return RPAR;
         break;
     case '[':
+        SET_STATE(LS_EXPR);
         return LBRACKET;
         break;
     case ']':
+        SET_STATE(LS_OP);
         return RBRACKET;
         break;
     case '.':
+        SET_STATE(LS_EXPR);
         return DOT;
         break;
     case ',':
+        SET_STATE(LS_EXPR);
         return COMMA;
         break;
     case '+':
         {
+            SET_STATE(LS_EXPR);
             RETURN_NAME1(c, PLUS);
             break;
         }
-    case '=':
-        {
-            return EQUAL;
+    case '/':
+        if (lexer->state == LS_OP) {
+            return DIV;
+        }
+        else {
+            char delimitor = c;
+
+            c = NEXTC();
+            while (c != delimitor) {
+                if (isascii(c)) {
+                    if (c == '\\') {
+                        int rest_size = get_rest_size(env, lexer);
+                        YOG_ASSERT(env, 0 < rest_size, "invalid escape");
+                        c = NEXTC();
+                        switch (c) {
+                        case 'n':
+                            ADD_TOKEN_CHAR('\n');
+                            break;
+                        default:
+                            if (c != delimitor) {
+                                ADD_TOKEN_CHAR('\\');
+                            }
+                            ADD_TOKEN_CHAR(c);
+                            break;
+                        }
+                    }
+                    else {
+                        ADD_TOKEN_CHAR(c);
+                    }
+                    c = NEXTC();
+                }
+                else {
+                    PUSHBACK(c);
+                    push_multibyte_char(env, lexer);
+                    c = NEXTC();
+                }
+            }
+
+#if 0
+            YogString* s = YogString_clone(env, lexer->buffer);
+            s->encoding = get_encoding(env, lexer);
+            yylval.val = OBJ2VAL(s);
+#endif
+            SET_STATE(LS_EXPR);
+            return REGEXP;
             break;
         }
+        break;
+    case '=':
+        SET_STATE(LS_EXPR);
+
+        c = NEXTC();
+        if (c == '~') {
+            RETURN_NAME("=~", EQUAL_TILDA);
+        }
+        else {
+            return EQUAL;
+        }
+        break;
     case '<':
         {
+            SET_STATE(LS_EXPR);
+
             char c2 = NEXTC();
             if (c2 == '<') {
-                ID name = INTERN("<<");
-                yylval.name = name;
-                return LSHIFT;
+                RETURN_NAME("<<", LSHIFT);
             }
             else {
                 PUSHBACK(c2);
@@ -314,6 +380,7 @@ RETURN_VAL(val, NUMBER); \
         /* FALLTHRU */
     case '\n':
         {
+            SET_STATE(LS_EXPR);
             return NEWLINE;
             break;
         }
@@ -334,6 +401,7 @@ RETURN_VAL(val, NUMBER); \
 
             const char* name = lexer->buffer->body->items;
             const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
+            SET_STATE(LS_OP);
             if (entry != NULL) {
                 return entry->type;
             }
@@ -346,10 +414,12 @@ RETURN_VAL(val, NUMBER); \
     }
 #undef RETURN_NAME1
 #undef BUFSIZE
+#undef RETURN_NAME
 #undef RETURN_VAL
 #undef ADD_TOKEN_CHAR
 #undef PUSHBACK
 #undef NEXTC
+#undef SET_STATE
 
     return 0;
 }
@@ -437,6 +507,7 @@ YogLexer*
 YogLexer_new(YogEnv* env) 
 {
     YogLexer* lexer = ALLOC_OBJ(env, NULL, YogLexer);
+    lexer->state = LS_EXPR;
     lexer->env = env;
     lexer->encoding = NULL;
     lexer->fp = NULL;
