@@ -193,7 +193,7 @@ YogString*
 YogString_clone(YogEnv* env, YogString* string) 
 {
     YogString* s = YogString_new_str(env, string->body->items);
-    string->encoding = string->encoding;
+    s->encoding = string->encoding;
 
     return s;
 }
@@ -347,13 +347,16 @@ match(YogEnv* env)
     YogRegexp* regexp = OBJ_AS(YogRegexp, arg);
     OnigUChar* begin = (OnigUChar*)s->body->items;
     OnigUChar* end = begin + s->body->size;
-    int r = onig_search(regexp->onig_regexp, begin, end, begin, end, NULL, ONIG_OPTION_NONE);
+    OnigRegion* region = onig_region_new();
+    int r = onig_search(regexp->onig_regexp, begin, end, begin, end, region, ONIG_OPTION_NONE);
     if (r == ONIG_MISMATCH) {
         return YNIL;
     }
-    else {
-        return YTRUE;
-    }
+
+    YogMatch* match = YogMatch_new(env, s, regexp, region);
+    YogVal retval = OBJ2VAL(match);
+
+    return retval;
 }
 
 YogKlass* 
@@ -366,7 +369,7 @@ YogString_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "<<", lshift, 0, 0, 0, 0, "s", NULL);
     YogKlass_define_method(env, klass, "[]", subscript, 0, 0, 0, 0, "n", NULL);
     YogKlass_define_method(env, klass, "[]=", assign_subscript, 0, 0, 0, 0, "n", "s", NULL);
-    YogKlass_define_method(env, klass, "=~", match, 0, 0, 0, 0, "regexp", NULL);
+    YogKlass_define_method(env, klass, "=~", match, 0, 0, 0, 1, "regexp", NULL);
 
     return klass;
 }

@@ -101,6 +101,7 @@ typedef struct YogNode YogNode;
 
 enum YogLexerState {
     LS_EXPR, 
+    LS_NAME, 
     LS_OP, 
 };
 

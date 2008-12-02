@@ -209,6 +209,7 @@ setup_klasses(YogEnv* env, YogVm* vm)
     vm->cInt = YogInt_klass_new(env);
     vm->cString = YogString_klass_new(env);
     vm->cRegexp = YogRegexp_klass_new(env);
+    vm->cMatch = YogMatch_klass_new(env);
     vm->cPackage = YogPackage_klass_new(env);
     vm->cBool = YogBool_klass_new(env);
     vm->cPackageBlock = YogPackageBlock_klass_new(env);
@@ -276,6 +277,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP_MEMBER(cInt);
     KEEP_MEMBER(cString);
     KEEP_MEMBER(cRegexp);
+    KEEP_MEMBER(cMatch);
     KEEP_MEMBER(cPackage);
     KEEP_MEMBER(cBool);
     KEEP_MEMBER(cBuiltinBoundMethod);
@@ -548,6 +550,7 @@ YogVm_init(YogVm* vm, YogGcType gc)
     vm->cInt = NULL;
     vm->cString = NULL;
     vm->cRegexp = NULL;
+    vm->cMatch = NULL;
     vm->cPackage = NULL;
     vm->cBool = NULL;
     vm->cBuiltinBoundMethod = NULL;

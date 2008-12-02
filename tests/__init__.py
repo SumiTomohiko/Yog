@@ -8,7 +8,7 @@ from time import time
 
 class TestCase(object):
 
-    def _test(self, src, stdout="", stderr="", status=None, options=[], timeout=5):
+    def _test(self, src, stdout="", stderr="", status=None, options=[], timeout=5, remove_tmpfile=True):
         try:
             env_gc = environ["GC"]
         except KeyError:
@@ -22,7 +22,7 @@ class TestCase(object):
 
         options = options or ["--always-gc", "--gc=%(gc)s" % { "gc": gc }]
 
-        file = mkstemp(prefix="yog")[1]
+        file = mkstemp(prefix="yog", suffix=".yg")[1]
         try:
             f = open(file, "w")
             try:
@@ -62,6 +62,7 @@ class TestCase(object):
                 else:
                     assert status == returncode
         finally:
-            unlink(file)
+            if remove_tmpfile:
+                unlink(file)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

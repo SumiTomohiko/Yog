@@ -91,6 +91,7 @@ struct YogVm {
     struct YogKlass* cInt;
     struct YogKlass* cString;
     struct YogKlass* cRegexp;
+    struct YogKlass* cMatch;
     struct YogKlass* cPackage;
     struct YogKlass* cBool;
     struct YogKlass* cBuiltinBoundMethod;
@@ -160,6 +161,10 @@ struct YogVal {
 #define IS_NIL(v)       (VAL_TYPE(v) == VAL_NIL)
 #define IS_SYMBOL(v)    (VAL_TYPE(v) == VAL_SYMBOL)
 #define IS_STR(v)       (VAL_TYPE(v) == VAL_STR)
+
+#define KLASS_OF(v)     (OBJ_AS(YogBasicObj, v)->klass)
+#define IS_OBJ_OF(klass, v) \
+                        (IS_OBJ(v) && (KLASS_OF(v) == ENV_VM(env)->klass))
 
 #define CHECK_INT(v, msg)   do { \
     if (!IS_INT(v)) { \
@@ -525,10 +530,19 @@ typedef struct YogException YogException;
 
 struct YogRegexp {
     YOGBASICOBJ_HEAD;
-    struct re_pattern_buffer* onig_regexp;
+    OnigRegex onig_regexp;
 };
 
 typedef struct YogRegexp YogRegexp;
+
+struct YogMatch {
+    YOGBASICOBJ_HEAD;
+    struct YogString* str;
+    struct YogRegexp* regexp;
+    OnigRegion* onig_region;
+};
+
+typedef struct YogMatch YogMatch;
 
 /* $PROTOTYPE_START$ */
 
@@ -648,6 +662,8 @@ YogKlass* YogPackage_klass_new(YogEnv*);
 YogPackage* YogPackage_new(YogEnv*);
 
 /* src/regexp.c */
+YogKlass* YogMatch_klass_new(YogEnv*);
+YogMatch* YogMatch_new(YogEnv*, YogString*, YogRegexp*, OnigRegion*);
 YogKlass* YogRegexp_klass_new(YogEnv*);
 YogRegexp* YogRegexp_new(YogEnv*, YogString*, OnigOptionType);
 

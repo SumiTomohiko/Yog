@@ -275,7 +275,7 @@ next_token(YogEnv* env, YogLexer* lexer)
         return RBRACKET;
         break;
     case '.':
-        SET_STATE(LS_EXPR);
+        SET_STATE(LS_NAME);
         return DOT;
         break;
     case ',':
@@ -399,16 +399,24 @@ next_token(YogEnv* env, YogLexer* lexer)
             } while (is_name_char(c));
             PUSHBACK(c);
 
+            int type = 0;
             const char* name = lexer->buffer->body->items;
-            const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
-            SET_STATE(LS_OP);
-            if (entry != NULL) {
-                return entry->type;
+            if (lexer->state == LS_NAME) {
+                yylval.name = INTERN(name);
+                type = NAME;
             }
             else {
-                yylval.name = INTERN(name);
-                return NAME;
+                const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
+                if (entry != NULL) {
+                    type = entry->type;
+                }
+                else {
+                    yylval.name = INTERN(name);
+                    type = NAME;
+                }
             }
+            SET_STATE(LS_OP);
+            return type;
             break;
         }
     }
