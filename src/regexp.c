@@ -4,6 +4,8 @@
 static void 
 YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
+    YogBasicObj_keep_children(env, ptr, keeper);
+
     YogMatch* match = ptr;
 #define KEEP(member)    match->member = (*keeper)(env, match->member)
     KEEP(str);
@@ -59,7 +61,7 @@ group2index(YogEnv* env, YogMatch* match, YogVal arg)
         YogString* s = OBJ_AS(YogString, arg);
         OnigRegex onig_regexp = match->regexp->onig_regexp;
         OnigUChar* name_begin = (OnigUChar*)s->body->items;
-        OnigUChar* name_end = name_begin + s->body->size;
+        OnigUChar* name_end = name_begin + s->body->size - 1;
         int* num_list = NULL;
         int r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, &num_list);
         YOG_ASSERT(env, r == 1, "TODO: index error?");
@@ -68,7 +70,7 @@ group2index(YogEnv* env, YogMatch* match, YogVal arg)
     else if (IS_INT(arg)) {
         index = VAL2INT(arg);
     }
-    else if (IS_UNDEF(arg)) {
+    else if (IS_NIL(arg)) {
         index = 0;
     }
     else {
