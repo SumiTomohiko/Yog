@@ -36,4 +36,12 @@ else
 end""", """42
 """)
 
+    def test_match_ignore_case10(self):
+        self._test("""
+s = "foo"
+if s =~ /FOO/i
+  puts 42
+end""", """42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
