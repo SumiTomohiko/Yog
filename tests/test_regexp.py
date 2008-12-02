@@ -27,4 +27,13 @@ if s =~ /foo/
 end""", """42
 """)
 
+    def test_match_expr20(self):
+        self._test("""
+s = "foo"
+if s =~ /bar/
+else
+  puts 42
+end""", """42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
