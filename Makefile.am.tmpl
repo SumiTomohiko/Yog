@@ -68,4 +68,7 @@ include/yog/inst.h: include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
 Makefile.am: Makefile.am.tmpl
 	$(GEN_AM_CMD)
 
+push: 
+	PYTHONPATH=. hg push
+
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

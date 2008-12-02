@@ -1237,6 +1237,9 @@ include/yog/inst.h: include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
 Makefile.am: Makefile.am.tmpl
 	$(GEN_AM_CMD)
 
+push: 
+	PYTHONPATH=. hg push
+
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
