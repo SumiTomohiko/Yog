@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include "oniguruma.h"
 #include "yog/parser.h"
 #include "yog/yog.h"
 
@@ -98,15 +99,6 @@ add_token_char(YogEnv* env, YogLexer* lexer, char c)
 
 #include "src/keywords.inc"
 
-static YogEncoding* 
-get_encoding(YogEnv* env, YogLexer* lexer) 
-{
-    if (lexer->encoding == NULL) {
-        lexer->encoding = YogEncoding_get_default(env);
-    }
-    return lexer->encoding;
-}
-
 static int 
 get_rest_size(YogEnv* env, YogLexer* lexer) 
 {
@@ -116,7 +108,7 @@ get_rest_size(YogEnv* env, YogLexer* lexer)
 static void 
 push_multibyte_char(YogEnv* env, YogLexer* lexer) 
 {
-    YogEncoding* enc = get_encoding(env, lexer);
+    YogEncoding* enc = lexer->buffer->encoding;
     const char* ptr = &lexer->line->body->items[lexer->next_index];
     int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
     int rest_size = get_rest_size(env, lexer);
@@ -261,7 +253,6 @@ next_token(YogEnv* env, YogLexer* lexer)
             }
 
             YogString* s = YogString_clone(env, lexer->buffer);
-            s->encoding = get_encoding(env, lexer);
             yylval.val = OBJ2VAL(s);
             SET_STATE(LS_OP);
             return STRING;
@@ -335,16 +326,20 @@ next_token(YogEnv* env, YogLexer* lexer)
                 }
             }
 
+            BOOL ignore_case = TRUE;
             c = NEXTC();
             if (c != 'i') {
+                ignore_case = FALSE;
                 PUSHBACK(c);
             }
 
-#if 0
-            YogString* s = YogString_clone(env, lexer->buffer);
-            s->encoding = get_encoding(env, lexer);
-            yylval.val = OBJ2VAL(s);
-#endif
+            OnigOptionType option = ONIG_OPTION_NONE;
+            if (ignore_case) {
+                option = ONIG_OPTION_IGNORECASE;
+            }
+            YogRegexp* regexp = YogRegexp_new(env, lexer->buffer, option);
+            yylval.val = OBJ2VAL(regexp);
+
             SET_STATE(LS_EXPR);
             return REGEXP;
             break;
@@ -498,7 +493,11 @@ reset_lexer(YogEnv* env, YogLexer* lexer)
 void 
 YogLexer_read_encoding(YogEnv* env, YogLexer* lexer) 
 {
-    lexer->encoding = read_encoding(env, lexer);
+    YogEncoding* enc = read_encoding(env, lexer);
+    if (enc == NULL) {
+        enc = YogEncoding_get_default(env);
+    }
+    lexer->buffer->encoding = enc;
     reset_lexer(env, lexer);
 }
 
@@ -514,7 +513,6 @@ YogLexer_new(YogEnv* env)
     YogLexer* lexer = ALLOC_OBJ(env, NULL, YogLexer);
     lexer->state = LS_EXPR;
     lexer->env = env;
-    lexer->encoding = NULL;
     lexer->fp = NULL;
     lexer->line = YogString_new(env);
     lexer->next_index = 0;

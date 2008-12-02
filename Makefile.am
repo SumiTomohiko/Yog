@@ -30,6 +30,7 @@ yog_SOURCES = src/arg.c \
 	src/object.c \
 	src/package.c \
 	src/parser.y \
+	src/regexp.c \
 	src/stacktrace.c \
 	src/string.c \
 	src/table.c \

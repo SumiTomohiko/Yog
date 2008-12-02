@@ -9,7 +9,10 @@ from time import time
 class TestCase(object):
 
     def _test(self, src, stdout="", stderr="", status=None, options=[], timeout=5):
-        env_gc = environ["GC"]
+        try:
+            env_gc = environ["GC"]
+        except KeyError:
+            env_gc = "copying"
         if env_gc == "copying":
             gc = "copying"
         elif env_gc == "mark-sweep":

@@ -90,6 +90,7 @@ struct YogVm {
     struct YogKlass* cKlass;
     struct YogKlass* cInt;
     struct YogKlass* cString;
+    struct YogKlass* cRegexp;
     struct YogKlass* cPackage;
     struct YogKlass* cBool;
     struct YogKlass* cBuiltinBoundMethod;
@@ -522,6 +523,13 @@ struct YogException {
 
 typedef struct YogException YogException;
 
+struct YogRegexp {
+    YOGBASICOBJ_HEAD;
+    struct re_pattern_buffer* onig_regexp;
+};
+
+typedef struct YogRegexp YogRegexp;
+
 /* $PROTOTYPE_START$ */
 
 /**
@@ -638,6 +646,10 @@ void YogObj_set_attr_id(YogEnv*, YogObj*, ID, YogVal);
 void YogPackage_define_method(YogEnv*, YogPackage*, const char*, void*, unsigned int, unsigned int, unsigned int, unsigned int, ...);
 YogKlass* YogPackage_klass_new(YogEnv*);
 YogPackage* YogPackage_new(YogEnv*);
+
+/* src/regexp.c */
+YogKlass* YogRegexp_klass_new(YogEnv*);
+YogRegexp* YogRegexp_new(YogEnv*, YogString*, OnigOptionType);
 
 /* src/stacktrace.c */
 YogStackTraceEntry* YogStackTraceEntry_new(YogEnv*);

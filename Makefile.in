@@ -58,9 +58,10 @@ am_yog_OBJECTS = yog-arg.$(OBJEXT) yog-array.$(OBJEXT) \
 	yog-int.$(OBJEXT) yog-klass.$(OBJEXT) yog-lexer.$(OBJEXT) \
 	yog-main.$(OBJEXT) yog-method.$(OBJEXT) yog-nil.$(OBJEXT) \
 	yog-object.$(OBJEXT) yog-package.$(OBJEXT) \
-	yog-parser.$(OBJEXT) yog-stacktrace.$(OBJEXT) \
-	yog-string.$(OBJEXT) yog-table.$(OBJEXT) yog-thread.$(OBJEXT) \
-	yog-value.$(OBJEXT) yog-vm.$(OBJEXT)
+	yog-parser.$(OBJEXT) yog-regexp.$(OBJEXT) \
+	yog-stacktrace.$(OBJEXT) yog-string.$(OBJEXT) \
+	yog-table.$(OBJEXT) yog-thread.$(OBJEXT) yog-value.$(OBJEXT) \
+	yog-vm.$(OBJEXT)
 yog_OBJECTS = $(am_yog_OBJECTS)
 yog_DEPENDENCIES = $(BDWGC_LIB) $(ONIG_LIB)
 yog_LINK = $(CCLD) $(yog_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
@@ -217,6 +218,7 @@ yog_SOURCES = src/arg.c \
 	src/object.c \
 	src/package.c \
 	src/parser.y \
+	src/regexp.c \
 	src/stacktrace.c \
 	src/string.c \
 	src/table.c \
@@ -349,6 +351,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-object.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-package.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-parser.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-regexp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-string.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-table.Po@am__quote@
@@ -691,6 +694,20 @@ yog-parser.obj: parser.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='parser.c' object='yog-parser.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-parser.obj `if test -f 'parser.c'; then $(CYGPATH_W) 'parser.c'; else $(CYGPATH_W) '$(srcdir)/parser.c'; fi`
+
+yog-regexp.o: src/regexp.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-regexp.o -MD -MP -MF $(DEPDIR)/yog-regexp.Tpo -c -o yog-regexp.o `test -f 'src/regexp.c' || echo '$(srcdir)/'`src/regexp.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-regexp.Tpo $(DEPDIR)/yog-regexp.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/regexp.c' object='yog-regexp.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-regexp.o `test -f 'src/regexp.c' || echo '$(srcdir)/'`src/regexp.c
+
+yog-regexp.obj: src/regexp.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-regexp.obj -MD -MP -MF $(DEPDIR)/yog-regexp.Tpo -c -o yog-regexp.obj `if test -f 'src/regexp.c'; then $(CYGPATH_W) 'src/regexp.c'; else $(CYGPATH_W) '$(srcdir)/src/regexp.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog-regexp.Tpo $(DEPDIR)/yog-regexp.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/regexp.c' object='yog-regexp.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -c -o yog-regexp.obj `if test -f 'src/regexp.c'; then $(CYGPATH_W) 'src/regexp.c'; else $(CYGPATH_W) '$(srcdir)/src/regexp.c'; fi`
 
 yog-stacktrace.o: src/stacktrace.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_CFLAGS) $(CFLAGS) -MT yog-stacktrace.o -MD -MP -MF $(DEPDIR)/yog-stacktrace.Tpo -c -o yog-stacktrace.o `test -f 'src/stacktrace.c' || echo '$(srcdir)/'`src/stacktrace.c

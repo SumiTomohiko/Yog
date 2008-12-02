@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include "oniguruma.h"
 #include "yog/yog.h"
 
 ID 
@@ -339,7 +340,20 @@ assign_subscript(YogEnv* env)
 static YogVal 
 match(YogEnv* env) 
 {
-    return YNIL;
+    YogVal self = SELF(env);
+    YogVal arg = ARG(env, 0);
+
+    YogString* s = OBJ_AS(YogString, self);
+    YogRegexp* regexp = OBJ_AS(YogRegexp, arg);
+    OnigUChar* begin = (OnigUChar*)s->body->items;
+    OnigUChar* end = begin + s->body->size;
+    int r = onig_search(regexp->onig_regexp, begin, end, begin, end, NULL, ONIG_OPTION_NONE);
+    if (r == ONIG_MISMATCH) {
+        return YNIL;
+    }
+    else {
+        return YTRUE;
+    }
 }
 
 YogKlass* 

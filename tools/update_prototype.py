@@ -17,6 +17,7 @@ class DeclarationInserter(object):
                     "src/builtins.c", "src/package.c", "src/function.c", 
                     "src/bool.c", "src/inst.c", "src/method.c", "src/block.c", 
                     "src/encoding.c", "src/exception.c", "src/stacktrace.c", 
+                    "src/regexp.c", 
                     ], 
             "include/yog/parser.h": [
                     "src/lexer.c", "src/parser.y", 

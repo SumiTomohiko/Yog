@@ -109,7 +109,6 @@ typedef enum YogLexerState YogLexerState;
 struct YogLexer {
     enum YogLexerState state;
     struct YogEnv* env;
-    struct YogEncoding* encoding;
     FILE* fp;
     struct YogString* line;
     unsigned int next_index;
