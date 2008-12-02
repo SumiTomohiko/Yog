@@ -104,12 +104,6 @@ group(YogEnv* env)
     return retval;
 }
 
-static YogVal 
-start(YogEnv* env) 
-{
-    return YNIL;
-}
-
 static int 
 ptr2index(YogEnv* env, YogString* s, const char* ptr) 
 {
@@ -122,6 +116,25 @@ ptr2index(YogEnv* env, YogString* s, const char* ptr)
     }
 
     return index;
+}
+
+static YogVal 
+start(YogEnv* env) 
+{
+    YogVal self = SELF(env);
+    YogVal arg = ARG(env, 0);
+
+    YogMatch* match = OBJ_AS(YogMatch, self);
+    int index = group2index(env, match, arg);
+    OnigRegion* region = match->onig_region;
+    if ((index < 0) || (region->num_regs <= index)) {
+        YOG_ASSERT(env, FALSE, "TODO: index error");
+    }
+    YogString* s = match->str;
+    const char* start = s->body->items + region->beg[index];
+    int n = ptr2index(env, s, start);
+
+    return INT2VAL(n);
 }
 
 static YogVal 
