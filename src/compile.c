@@ -1357,11 +1357,21 @@ compile_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     CompileData_add_jump_if_false(env, data, test->lineno, label_tail_start);
 
     YogArray* stmts = NODE_IF_STMTS(node);
-    visitor->visit_stmts(env, visitor, stmts, arg);
-    unsigned int lineno = get_last_lineno(env, stmts);
+    unsigned int lineno = 0;
+    if (stmts != NULL) {
+        visitor->visit_stmts(env, visitor, stmts, arg);
+        lineno = get_last_lineno(env, stmts);
+    }
+    else {
+        lineno = test->lineno;
+    }
     CompileData_add_jump(env, data, lineno, label_stmt_end);
+
     add_inst(data, label_tail_start);
-    visitor->visit_stmts(env, visitor, NODE_IF_TAIL(node), arg);
+    YogArray* tail = NODE_IF_TAIL(node);
+    if (tail != NULL) {
+        visitor->visit_stmts(env, visitor, tail, arg);
+    }
     add_inst(data, label_stmt_end);
 }
 

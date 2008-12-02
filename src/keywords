@@ -20,10 +20,12 @@ elif, ELIF
 else, ELSE
 end, END
 except, EXCEPT
+false, tFALSE
 finally, FINALLY
 if, IF
 next, NEXT
 return, RETURN
+true, tTRUE
 try, TRY
 while, WHILE
 %%

@@ -231,6 +231,8 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
 %token STRING
 %token TRY
 %token WHILE
+%token tFALSE
+%token tTRUE
 %token t__LINE__
 
 %type<array> args
@@ -605,6 +607,12 @@ atom    : NAME {
         }
         | STRING {
             LITERAL_NEW($$, $1);
+        }
+        | tTRUE {
+            LITERAL_NEW($$, YTRUE);
+        }
+        | tFALSE {
+            LITERAL_NEW($$, YFALSE);
         }
         | t__LINE__ {
             int lineno = PARSER->lineno;

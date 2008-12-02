@@ -68,7 +68,9 @@
      STRING = 294,
      TRY = 295,
      WHILE = 296,
-     t__LINE__ = 297
+     tFALSE = 297,
+     tTRUE = 298,
+     t__LINE__ = 299
    };
 #endif
 /* Tokens.  */
@@ -111,7 +113,9 @@
 #define STRING 294
 #define TRY 295
 #define WHILE 296
-#define t__LINE__ 297
+#define tFALSE 297
+#define tTRUE 298
+#define t__LINE__ 299
 
 
 
@@ -125,7 +129,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 129 "parser.h"
+#line 133 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

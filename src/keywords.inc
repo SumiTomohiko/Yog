@@ -1,6 +1,6 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
 /* Command-line: gperf src/keywords  */
-/* Computed positions: -k'$' */
+/* Computed positions: -k'1,3' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
@@ -38,12 +38,12 @@ typedef struct KeywordTableEntry KeywordTableEntry;
 #line 10 "src/keywords"
 struct KeywordTableEntry { const char* name; enum yytokentype type; };
 
-#define TOTAL_KEYWORDS 16
+#define TOTAL_KEYWORDS 18
 #define MIN_WORD_LENGTH 2
 #define MAX_WORD_LENGTH 8
 #define MIN_HASH_VALUE 2
-#define MAX_HASH_VALUE 18
-/* maximum key range = 17, duplicates = 0 */
+#define MAX_HASH_VALUE 20
+/* maximum key range = 19, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -57,34 +57,46 @@ hash (register const char *str, register unsigned int len)
 {
   static const unsigned char asso_values[] =
     {
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 10, 19, 19, 19, 19,
-      10, 10,  0, 19, 19, 19, 19,  0, 19, 19,
-       0, 15, 19, 19, 19,  5,  5, 19, 19, 19,
-      19,  5, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-      19, 19, 19, 19, 19, 19
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21,  5, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21,  5, 21, 10, 15,  0,
+       5,  0,  5, 21, 21,  0, 21, 21,  0, 21,
+       5, 21, 21, 21,  5, 15,  0, 10, 21,  0,
+       0,  0, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+      21, 21, 21, 21, 21, 21
     };
-  return len + asso_values[(unsigned char)str[len - 1]];
+  register int hval = len;
+
+  switch (hval)
+    {
+      default:
+        hval += asso_values[(unsigned char)str[2]];
+      /*FALLTHROUGH*/
+      case 2:
+      case 1:
+        hval += asso_values[(unsigned char)str[0]];
+        break;
+    }
+  return hval;
 }
 
 #ifdef __GNUC__
@@ -99,39 +111,43 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
   static const struct KeywordTableEntry wordlist[] =
     {
       {""}, {""},
-#line 24 "src/keywords"
+#line 25 "src/keywords"
       {"if", IF},
-#line 17 "src/keywords"
-      {"def", DEF},
+#line 29 "src/keywords"
+      {"try", TRY},
 #line 19 "src/keywords"
       {"elif", ELIF},
-#line 15 "src/keywords"
-      {"break", BREAK},
+#line 30 "src/keywords"
+      {"while", WHILE},
+#line 22 "src/keywords"
+      {"except", EXCEPT},
+#line 18 "src/keywords"
+      {"do", DO},
+#line 21 "src/keywords"
+      {"end", END},
 #line 26 "src/keywords"
+      {"next", NEXT},
+#line 23 "src/keywords"
+      {"false", tFALSE},
+#line 27 "src/keywords"
       {"return", RETURN},
 #line 14 "src/keywords"
       {"as", AS},
-#line 27 "src/keywords"
-      {"try", TRY},
-#line 25 "src/keywords"
-      {"next", NEXT},
+#line 17 "src/keywords"
+      {"def", DEF},
+#line 28 "src/keywords"
+      {"true", tTRUE},
 #line 16 "src/keywords"
       {"class", CLASS},
-#line 22 "src/keywords"
-      {"except", EXCEPT},
-#line 23 "src/keywords"
+      {""},
+#line 24 "src/keywords"
       {"finally", FINALLY},
-#line 21 "src/keywords"
-      {"end", END},
+#line 13 "src/keywords"
+      {"__LINE__", t__LINE__},
 #line 20 "src/keywords"
       {"else", ELSE},
-#line 28 "src/keywords"
-      {"while", WHILE},
-      {""},
-#line 18 "src/keywords"
-      {"do", DO},
-#line 13 "src/keywords"
-      {"__LINE__", t__LINE__}
+#line 15 "src/keywords"
+      {"break", BREAK}
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
@@ -148,7 +164,7 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
     }
   return 0;
 }
-#line 29 "src/keywords"
+#line 31 "src/keywords"
 
 /**
  * vim: filetype=c
