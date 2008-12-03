@@ -1,6 +1,8 @@
 #include <setjmp.h>
 #include <stdio.h>
+#include "yog/code.h"
 #include "yog/opcodes.h"
+#include "yog/st.h"
 #include "yog/yog.h"
 
 #define CUR_FRAME   (ENV_TH(env)->cur_frame)

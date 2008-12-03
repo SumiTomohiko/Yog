@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "oniguruma.h"
+#include "yog/encoding.h"
+#include "yog/regexp.h"
 #include "yog/yog.h"
 
 ID 

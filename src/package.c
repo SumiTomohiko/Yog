@@ -1,7 +1,6 @@
 #include <stdarg.h>
+#include "yog/st.h"
 #include "yog/yog.h"
-
-#include <stdio.h>
 
 void 
 YogPackage_define_method(YogEnv* env, YogPackage* pkg, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, unsigned int required_argc, ...)

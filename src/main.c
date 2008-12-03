@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "gc.h"
+#include "yog/code.h"
+#include "yog/compile.h"
 #include "yog/parser.h"
 #include "yog/yog.h"
 

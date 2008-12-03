@@ -3,7 +3,10 @@
 #include <string.h>
 #include <unistd.h>
 #include "oniguruma.h"
+#include "yog/encoding.h"
 #include "yog/parser.h"
+#include "yog/regexp.h"
+#include "yog/st.h"
 #include "yog/yog.h"
 
 #include "parser.h"

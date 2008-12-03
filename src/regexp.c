@@ -1,4 +1,6 @@
 #include <string.h>
+#include "yog/encoding.h"
+#include "yog/regexp.h"
 #include "yog/yog.h"
 
 static void 

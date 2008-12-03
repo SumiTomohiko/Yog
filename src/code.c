@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include "yog/code.h"
+#include "yog/inst.h"
+#include "yog/opcodes.h"
 #include "yog/yog.h"
 
 #include "src/code.inc"

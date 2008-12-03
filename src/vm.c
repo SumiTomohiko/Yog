@@ -3,6 +3,9 @@
 #include <string.h>
 #include <strings.h>
 #include "gc.h"
+#include "yog/encoding.h"
+#include "yog/regexp.h"
+#include "yog/st.h"
 #include "yog/yog.h"
 
 struct CopyingHeader {

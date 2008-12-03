@@ -6,22 +6,29 @@ import re
 
 class DeclarationInserter(object):
 
-    start = "$PROTOTYPE_START$"
-    end = "$PROTOTYPE_END$"
+    start = "/* PROTOTYPE_START */"
+    end = "/* PROTOTYPE_END */"
     files = { 
             "include/yog/yog.h": [
-                    "src/error.c", "src/table.c", "src/value.c", "src/vm.c", 
-                    "src/array.c", "src/object.c", "src/string.c", "src/nil.c", 
-                    "src/binary.c", "src/compile.c", "src/code.c", "src/arg.c", 
-                    "src/frame.c", "src/thread.c", "src/klass.c", "src/int.c", 
+                    "src/error.c", "src/value.c", "src/vm.c", "src/object.c", 
+                    "src/nil.c", "src/binary.c", "src/arg.c", "src/frame.c", 
+                    "src/thread.c", "src/klass.c", "src/int.c", "src/bool.c", 
                     "src/builtins.c", "src/package.c", "src/function.c", 
-                    "src/bool.c", "src/inst.c", "src/method.c", "src/block.c", 
-                    "src/encoding.c", "src/exception.c", "src/stacktrace.c", 
-                    "src/regexp.c", 
+                    "src/method.c", "src/block.c", 
                     ], 
+            "include/yog/code.h": [ "src/code.c", ], 
+            "include/yog/compile.h": [ "src/compile.c", ], 
+            "include/yog/array.h": [ "src/array.c", ], 
             "include/yog/parser.h": [
                     "src/lexer.c", "src/parser.y", 
                     ], 
+            "include/yog/regexp.h": [ "src/regexp.c", ], 
+            "include/yog/string.h": [ "src/string.c", ], 
+            "include/yog/encoding.h": [ "src/encoding.c", ], 
+            "include/yog/exception.h": [ 
+                    "src/exception.c", "src/stacktrace.c", ], 
+            "include/yog/inst.h.tmpl": [ "src/inst.c", ], 
+            "include/yog/st.h": [ "src/table.c", ], 
             }
 
     def _find(self, lines, s, start):

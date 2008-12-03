@@ -406,7 +406,7 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data, unsigned int lineno""" 
                 macros.write("""
 #define %(inst_macro)s_%(operand_macro)s(inst) ((inst)->u.%(inst)s.%(operand)s)""" % { "inst_macro": inst.name.upper(), "operand_macro": operand.name.upper(), "inst": inst.name, "operand": operand.name })
 
-        kw = { "structs": structs.getvalue(), "macros": macros.getvalue() }
+        kw = { "structs": structs.getvalue(), "macros": macros.getvalue(), }
         self.tmpl2file(inst_h_tmpl, kw, inst_h)
 
     def do(self, def_, opcodes_h=None, opcodes_h_tmpl=None, thread_inc=None, 
