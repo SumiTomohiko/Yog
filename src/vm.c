@@ -8,6 +8,25 @@
 #include "yog/st.h"
 #include "yog/yog.h"
 
+struct YogHeap {
+    size_t size;
+    unsigned char* base;
+    unsigned char* free;
+    struct YogHeap* next;
+};
+
+typedef struct YogHeap YogHeap;
+
+struct YogMarkSweepHeader {
+    struct YogMarkSweepHeader* prev;
+    struct YogMarkSweepHeader* next;
+    unsigned int size;
+    ChildrenKeeper keeper;
+    BOOL marked;
+};
+
+typedef struct YogMarkSweepHeader YogMarkSweepHeader;
+
 struct CopyingHeader {
     ChildrenKeeper keeper;
     void* forwarding_addr;

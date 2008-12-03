@@ -14,15 +14,6 @@
 
 typedef unsigned int pc_t;
 
-struct YogHeap {
-    size_t size;
-    unsigned char* base;
-    unsigned char* free;
-    struct YogHeap* next;
-};
-
-typedef struct YogHeap YogHeap;
-
 typedef unsigned int ID;
 
 #define INVALID_ID  (UINT_MAX)
@@ -47,16 +38,6 @@ typedef enum YogGcType YogGcType;
 
 typedef void* (*ObjectKeeper)(YogEnv*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
-
-struct YogMarkSweepHeader {
-    struct YogMarkSweepHeader* prev;
-    struct YogMarkSweepHeader* next;
-    unsigned int size;
-    ChildrenKeeper keeper;
-    BOOL marked;
-};
-
-typedef struct YogMarkSweepHeader YogMarkSweepHeader;
 
 struct YogVm {
     BOOL always_gc;
@@ -194,13 +175,6 @@ struct YogObj {
 #define YOGOBJ(obj) ((YogObj*)obj)
 
 typedef struct YogObj YogObj;
-
-struct YogPackage {
-    YOGOBJ_HEAD;
-    struct YogCode* code;
-};
-
-typedef struct YogPackage YogPackage;
 
 typedef YogBasicObj* (*Allocator)(struct YogEnv*, struct YogKlass*);
 
@@ -387,6 +361,8 @@ struct YogPackageBlock {
 
 typedef struct YogPackageBlock YogPackageBlock;
 
+#include "yog/package.h"
+
 /* PROTOTYPE_START */
 
 /**
@@ -468,11 +444,6 @@ void YogObj_klass_init(YogEnv*, YogKlass*);
 YogObj* YogObj_new(YogEnv*, YogKlass*);
 void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
 void YogObj_set_attr_id(YogEnv*, YogObj*, ID, YogVal);
-
-/* src/package.c */
-void YogPackage_define_method(YogEnv*, YogPackage*, const char*, void*, unsigned int, unsigned int, unsigned int, unsigned int, ...);
-YogKlass* YogPackage_klass_new(YogEnv*);
-YogPackage* YogPackage_new(YogEnv*);
 
 /* src/thread.c */
 YogVal YogThread_call_block(YogEnv*, YogThread*, YogVal, unsigned int, YogVal*);
