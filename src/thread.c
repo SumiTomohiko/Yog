@@ -1,5 +1,6 @@
 #include <setjmp.h>
 #include <stdio.h>
+#include "yog/binary.h"
 #include "yog/code.h"
 #include "yog/opcodes.h"
 #include "yog/st.h"

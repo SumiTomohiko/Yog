@@ -247,21 +247,6 @@ struct YogUnboundMethod {
 
 typedef struct YogUnboundMethod YogUnboundMethod;
 
-struct YogByteArray {
-    unsigned int size;
-    uint8_t items[0];
-};
-
-typedef struct YogByteArray YogByteArray;
-
-struct YogBinary {
-    YOGBASICOBJ_HEAD;
-    unsigned int size;
-    struct YogByteArray* body;
-};
-
-typedef struct YogBinary YogBinary;
-
 enum YogFrameType {
     FRAME_C, 
     FRAME_SCRIPT, 
@@ -371,19 +356,6 @@ typedef struct YogPackageBlock YogPackageBlock;
 
 /* src/arg.c */
 void YogArgInfo_keep_children(YogEnv*, void*, ObjectKeeper);
-
-/* src/binary.c */
-YogBinary* YogBinary_new(YogEnv*, unsigned int);
-void YogBinary_push_id(YogEnv*, YogBinary*, ID);
-void YogBinary_push_pc(YogEnv*, YogBinary*, pc_t);
-void YogBinary_push_uint8(YogEnv*, YogBinary*, uint8_t);
-void YogBinary_push_unsigned_int(YogEnv*, YogBinary*, unsigned int);
-void YogBinary_shrink(YogEnv*, YogBinary*);
-unsigned int YogBinary_size(YogEnv*, YogBinary*);
-uint8_t YogByteArray_at(YogEnv*, YogByteArray*, unsigned int);
-YogByteArray* YogByteArray_new(YogEnv*, unsigned int);
-void YogByteArray_print(YogEnv*, YogByteArray*);
-unsigned int YogByteArray_size(YogEnv*, YogByteArray*);
 
 /* src/block.c */
 YogKlass* YogPackageBlock_klass_new(YogEnv*);

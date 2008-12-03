@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "yog/binary.h"
 #include "yog/code.h"
 #include "yog/inst.h"
 #include "yog/opcodes.h"

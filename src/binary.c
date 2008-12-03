@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "yog/binary.h"
 #include "yog/yog.h"
 
 unsigned int 
