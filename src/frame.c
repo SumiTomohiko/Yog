@@ -1,3 +1,4 @@
+#include "yog/error.h"
 #include "yog/yog.h"
 
 #define KEEP(member)    frame->member = (*keeper)(env, frame->member)

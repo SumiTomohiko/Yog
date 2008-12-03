@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include "yog/arg.h"
 #include "yog/binary.h"
 #include "yog/code.h"
+#include "yog/error.h"
 #include "yog/inst.h"
 #include "yog/opcodes.h"
 #include "yog/yog.h"

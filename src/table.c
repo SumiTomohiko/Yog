@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #endif
 #include <string.h>
+#include "yog/error.h"
 #include "yog/st.h"
 #include "yog/yog.h"
 

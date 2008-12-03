@@ -1,4 +1,5 @@
 #include <setjmp.h>
+#include "yog/error.h"
 #include "yog/yog.h"
 
 void 

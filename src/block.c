@@ -1,3 +1,4 @@
+#include "yog/block.h"
 #include "yog/yog.h"
 
 static void 

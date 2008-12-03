@@ -10,11 +10,19 @@ class DeclarationInserter(object):
     end = "/* PROTOTYPE_END */"
     files = { 
             "include/yog/yog.h": [
-                    "src/error.c", "src/value.c", "src/vm.c", "src/object.c", 
-                    "src/nil.c", "src/arg.c", "src/frame.c", "src/thread.c", 
-                    "src/klass.c", "src/int.c", "src/bool.c", "src/builtins.c", 
-                    "src/function.c", "src/method.c", "src/block.c", 
+                    "src/value.c", "src/vm.c", "src/object.c", "src/frame.c", 
+                    "src/thread.c", 
                     ], 
+            "include/yog/builtins.h": [ "src/builtins.c", ], 
+            "include/yog/error.h": [ "src/error.c", ], 
+            "include/yog/bool.h": [ "src/bool.c", ], 
+            "include/yog/int.h": [ "src/int.c", ], 
+            "include/yog/arg.h": [ "src/arg.c", ], 
+            "include/yog/block.h": [ "src/block.c", ], 
+            "include/yog/klass.h": [ "src/klass.c", ], 
+            "include/yog/nil.h": [ "src/nil.c", ], 
+            "include/yog/function.h": [ "src/function.c", ], 
+            "include/yog/method.h": [ "src/method.c", ], 
             "include/yog/binary.h": [ "src/binary.c", ], 
             "include/yog/package.h": [ "src/package.c", ], 
             "include/yog/code.h": [ "src/code.c", ], 

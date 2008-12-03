@@ -1,3 +1,4 @@
+#include "yog/string.h"
 #include "yog/yog.h"
 
 static YogVal 

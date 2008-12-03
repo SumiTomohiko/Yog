@@ -1,3 +1,4 @@
+#include "yog/arg.h"
 #include "yog/yog.h"
 
 void 

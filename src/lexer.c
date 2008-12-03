@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "oniguruma.h"
 #include "yog/encoding.h"
+#include "yog/error.h"
 #include "yog/parser.h"
 #include "yog/regexp.h"
 #include "yog/st.h"

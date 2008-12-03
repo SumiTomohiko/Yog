@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "yog/error.h"
 #include "yog/parser.h"
 #include "yog/yog.h"
 

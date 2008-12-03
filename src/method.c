@@ -1,3 +1,4 @@
+#include "yog/method.h"
 #include "yog/yog.h"
 
 #define KEEP_SUPER  YogBasicObj_keep_children(env, ptr, keeper)

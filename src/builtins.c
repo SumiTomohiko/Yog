@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "yog/error.h"
 #include "yog/yog.h"
 
 static YogVal 

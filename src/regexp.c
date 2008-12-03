@@ -1,5 +1,6 @@
 #include <string.h>
 #include "yog/encoding.h"
+#include "yog/error.h"
 #include "yog/regexp.h"
 #include "yog/yog.h"
 

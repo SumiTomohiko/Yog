@@ -3,7 +3,14 @@
 #include <string.h>
 #include <strings.h>
 #include "gc.h"
+#include "yog/block.h"
+#include "yog/bool.h"
+#include "yog/builtins.h"
 #include "yog/encoding.h"
+#include "yog/error.h"
+#include "yog/int.h"
+#include "yog/method.h"
+#include "yog/nil.h"
 #include "yog/regexp.h"
 #include "yog/st.h"
 #include "yog/yog.h"

@@ -1,6 +1,7 @@
 #ifndef __YOG_CODE_H__
 #define __YOG_CODE_H__
 
+#include "yog/arg.h"
 #include "yog/yog.h"
 
 struct YogExceptionTableEntry {

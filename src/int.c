@@ -1,3 +1,4 @@
+#include "yog/error.h"
 #include "yog/yog.h"
 
 #define CHECK_TYPE(v) do { \

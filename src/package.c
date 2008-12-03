@@ -1,4 +1,6 @@
 #include <stdarg.h>
+#include "yog/function.h"
+#include "yog/method.h"
 #include "yog/st.h"
 #include "yog/yog.h"
 
