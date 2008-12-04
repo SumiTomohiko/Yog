@@ -189,6 +189,12 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
 }
 
 void* 
+YogVm_realloc(YogEnv* env, YogVm* vm, void* ptr, size_t size) 
+{
+    return (*vm->realloc_mem)(env, vm, ptr, size);
+}
+
+void* 
 YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
 {
     return (*vm->alloc_mem)(env, vm, keeper, size);
@@ -516,7 +522,7 @@ bdw_gc(YogEnv* env, YogVm* vm)
     /* empty */
 }
 
-void* 
+static void* 
 alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
 {
     void* ptr = GC_MALLOC(size);
@@ -531,6 +537,39 @@ free_mem_bdw(YogEnv* env, YogVm* vm)
     /* empty */
 }
 
+static void* 
+realloc_mem_bdw(YogEnv* env, YogVm* vm, void* ptr, size_t size) 
+{
+    return GC_REALLOC(ptr, size);
+}
+
+#define REALLOC(type)   do { \
+    type* header = (type*)ptr - 1; \
+    size_t total_size = size + sizeof(type); \
+    if (total_size < header->size) { \
+        return ptr; \
+    } \
+\
+    void* dest = YogVm_alloc(env, vm, header->keeper, size); \
+    memcpy(dest, ptr, header->size - sizeof(type)); \
+\
+    return dest; \
+} while (0)
+
+static void* 
+realloc_mem_copying(YogEnv* env, YogVm* vm, void* ptr, size_t size)
+{
+    REALLOC(CopyingHeader);
+}
+
+static void*
+realloc_mem_mark_sweep(YogEnv* env, YogVm* vm, void* ptr, size_t size)
+{
+    REALLOC(YogMarkSweepHeader);
+}
+
+#undef REALLOC
+
 void 
 YogVm_init(YogVm* vm, YogGcType gc)
 {
@@ -543,12 +582,14 @@ YogVm_init(YogVm* vm, YogGcType gc)
         vm->init_gc = initialize_bdw;
         vm->exec_gc = bdw_gc;
         vm->alloc_mem = alloc_mem_bdw;
+        vm->realloc_mem = realloc_mem_bdw;
         vm->free_mem = free_mem_bdw;
         break;
     case GC_COPYING:
         vm->init_gc = initialize_copying;
         vm->exec_gc = copying_gc;
         vm->alloc_mem = alloc_mem_copying;
+        vm->realloc_mem = realloc_mem_copying;
         vm->free_mem = free_mem_copying;
         vm->gc.copying.init_heap_size = 0;
         vm->gc.copying.heap = NULL;
@@ -559,6 +600,7 @@ YogVm_init(YogVm* vm, YogGcType gc)
         vm->init_gc = initialize_mark_sweep;
         vm->exec_gc = mark_sweep_gc;
         vm->alloc_mem = alloc_mem_mark_sweep;
+        vm->realloc_mem = realloc_mem_mark_sweep;
         vm->free_mem = free_mem_mark_sweep;
         vm->gc.mark_sweep.header = NULL;
         vm->gc.mark_sweep.threshold = 0;
