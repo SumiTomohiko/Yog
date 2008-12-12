@@ -161,7 +161,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogCode* 
 YogCode_new(YogEnv* env) 
 {
-    YogCode* code = ALLOC_OBJ(env, keep_children, YogCode);
+    YogCode* code = ALLOC_OBJ(env, keep_children, NULL, YogCode);
     YogArgInfo* arg_info = &code->arg_info;
     arg_info->argc = 0;
     arg_info->argnames = NULL;

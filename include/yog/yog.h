@@ -38,6 +38,7 @@ typedef enum YogGcType YogGcType;
 
 typedef void* (*ObjectKeeper)(YogEnv*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
+typedef void (*Finalizer)(YogEnv*, void*);
 
 struct YogVm {
     BOOL always_gc;
@@ -45,7 +46,7 @@ struct YogVm {
 
     void (*init_gc)(struct YogEnv*, struct YogVm*);
     void (*exec_gc)(struct YogEnv*, struct YogVm*);
-    void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, size_t);
+    void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, Finalizer, size_t);
     void* (*realloc_mem)(struct YogEnv*, struct YogVm*, void*, size_t);
     void (*free_mem)(struct YogEnv*, struct YogVm*);
     BOOL need_gc;
@@ -316,7 +317,7 @@ YogVal YogVal_true();
 YogVal YogVal_undef();
 
 /* src/vm.c */
-void* YogVm_alloc(YogEnv*, YogVm*, ChildrenKeeper, size_t);
+void* YogVm_alloc(YogEnv*, YogVm*, ChildrenKeeper, Finalizer, size_t);
 void YogVm_boot(YogEnv*, YogVm*);
 void YogVm_config_copying(YogEnv*, YogVm*, unsigned int);
 void YogVm_config_mark_sweep(YogEnv*, YogVm*, size_t);
@@ -333,12 +334,12 @@ void YogVm_register_package(YogEnv*, YogVm*, const char*, YogPackage*);
 #define YogKlassFrame_new       YogNameFrame_new
 #define YogPackageFrame_new     YogNameFrame_new
 
-#define ALLOC_OBJ_SIZE(env, keep_children, size) \
-    YogVm_alloc(env, ENV_VM(env), keep_children, size)
-#define ALLOC_OBJ(env, keep_children, type) \
-    ALLOC_OBJ_SIZE(env, keep_children, sizeof(type))
-#define ALLOC_OBJ_ITEM(env, keep_children, type, size, item_type) \
-    ALLOC_OBJ_SIZE(env, keep_children, sizeof(type) + size * sizeof(item_type))
+#define ALLOC_OBJ_SIZE(env, keep_children, finalizer, size) \
+    YogVm_alloc(env, ENV_VM(env), keep_children, finalizer, size)
+#define ALLOC_OBJ(env, keep_children, finalizer, type) \
+    ALLOC_OBJ_SIZE(env, keep_children, finalizer, sizeof(type))
+#define ALLOC_OBJ_ITEM(env, keep_children, finalizer, type, size, item_type) \
+    ALLOC_OBJ_SIZE(env, keep_children, finalizer, sizeof(type) + size * sizeof(item_type))
 #define REALLOC_OBJ(env, ptr, size) \
     YogVm_realloc(env, ENV_VM(env), ptr, size)
 

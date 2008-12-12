@@ -163,7 +163,7 @@ Inst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogInst* 
 YogInst_new(YogEnv* env, InstType type, unsigned int lineno) 
 {
-    YogInst* inst = ALLOC_OBJ(env, Inst_keep_children, YogInst);
+    YogInst* inst = ALLOC_OBJ(env, Inst_keep_children, NULL, YogInst);
     inst->type = type;
     inst->next = NULL;
     inst->lineno = lineno;
@@ -712,7 +712,7 @@ make_exception_table(YogEnv* env, YogCode* code, CompileData* data)
     }
 
     if (0 < size) {
-        YogExceptionTable* exc_tbl = ALLOC_OBJ_ITEM(env, NULL, YogExceptionTable, size, YogExceptionTableEntry);
+        YogExceptionTable* exc_tbl = ALLOC_OBJ_ITEM(env, NULL, NULL, YogExceptionTable, size, YogExceptionTableEntry);
 
         unsigned int i = 0;
         entry = data->exc_tbl;
@@ -759,7 +759,7 @@ make_lineno_table(YogEnv* env, YogCode* code, YogInst* anchor)
         inst = inst->next;
     }
 
-    YogLinenoTableEntry* tbl = ALLOC_OBJ_SIZE(env, NULL, sizeof(YogLinenoTableEntry) * size);
+    YogLinenoTableEntry* tbl = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(YogLinenoTableEntry) * size);
     if (0 < size) {
         inst = anchor;
         int i = -1;
@@ -804,7 +804,7 @@ ExceptionTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static ExceptionTableEntry* 
 ExceptionTableEntry_new(YogEnv* env) 
 {
-    ExceptionTableEntry* entry = ALLOC_OBJ(env, ExceptionTableEntry_keep_children, ExceptionTableEntry);
+    ExceptionTableEntry* entry = ALLOC_OBJ(env, ExceptionTableEntry_keep_children, NULL, ExceptionTableEntry);
     entry->next = NULL;
     entry->from = NULL;
     entry->to = NULL;
@@ -999,8 +999,8 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
     ID* argnames = NULL;
     uint8_t* arg_index = NULL;
     if (0 < argc) {
-        argnames = ALLOC_OBJ_SIZE(env, NULL, sizeof(ID) * argc);
-        arg_index = ALLOC_OBJ_SIZE(env, NULL, sizeof(uint8_t) * argc);
+        argnames = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * argc);
+        arg_index = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(uint8_t) * argc);
         for (i = 0; i < argc; i++) {
             YogVal val = YogArray_at(env, params, i);
             YogNode* node = VAL2PTR(val);

@@ -19,7 +19,7 @@ YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogMatch* 
 YogMatch_new(YogEnv* env, YogString* str, YogRegexp* regexp, OnigRegion* onig_region) 
 {
-    YogMatch* match = ALLOC_OBJ(env, YogMatch_keep_children, YogMatch);
+    YogMatch* match = ALLOC_OBJ(env, YogMatch_keep_children, NULL, YogMatch);
     YogBasicObj_init(env, YOGBASICOBJ(match), 0, ENV_VM(env)->cMatch);
     match->str = str;
     match->regexp = regexp;
@@ -42,7 +42,7 @@ YogRegexp_new(YogEnv* env, YogString* pattern, OnigOptionType option)
         return NULL;
     }
 
-    YogRegexp* regexp = ALLOC_OBJ(env, NULL, YogRegexp);
+    YogRegexp* regexp = ALLOC_OBJ(env, NULL, NULL, YogRegexp);
     YogBasicObj_init(env, YOGBASICOBJ(regexp), 0, ENV_VM(env)->cRegexp);
     regexp->onig_regexp = onig_regexp;
 

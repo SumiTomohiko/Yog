@@ -44,7 +44,7 @@ YogValArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogValArray* 
 YogValArray_new(YogEnv* env, unsigned int size) 
 {
-    YogValArray* array = ALLOC_OBJ_ITEM(env, YogValArray_keep_children, YogValArray, size, YogVal);
+    YogValArray* array = ALLOC_OBJ_ITEM(env, YogValArray_keep_children, NULL, YogValArray, size, YogVal);
     array->size = size;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
@@ -105,7 +105,7 @@ YogArray_new(YogEnv* env)
     YogValArray* body = YogValArray_new(env, INIT_SIZE);
 #undef INIT_SIZE
 
-    YogArray* array = ALLOC_OBJ(env, YogArray_keep_children, YogArray);
+    YogArray* array = ALLOC_OBJ(env, YogArray_keep_children, NULL, YogArray);
     array->size = 0;
     array->body = body;
 

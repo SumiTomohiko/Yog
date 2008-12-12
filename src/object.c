@@ -70,7 +70,7 @@ YogObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogBasicObj* 
 YogObj_allocate(YogEnv* env, YogKlass* klass)
 {
-    YogObj* obj = ALLOC_OBJ(env, YogObj_keep_children, YogObj);
+    YogObj* obj = ALLOC_OBJ(env, YogObj_keep_children, NULL, YogObj);
     YogObj_init(env, obj, 0, klass);
     return (YogBasicObj*)obj;
 }

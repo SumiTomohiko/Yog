@@ -170,7 +170,7 @@ yyerror(char* s)
 static YogNode* 
 make_node(YogEnv* env, YogParser* parser, YogNodeType type) 
 {
-    YogNode* node = ALLOC_OBJ(env, NULL, YogNode);
+    YogNode* node = ALLOC_OBJ(env, NULL, NULL, YogNode);
     node->lineno = parser->lineno;
     node->type = type;
 
@@ -2623,7 +2623,7 @@ yield_expr: 'yield' [testlist]
 YogParser* 
 YogParser_new(YogEnv* env) 
 {
-    YogParser* parser = ALLOC_OBJ(env, NULL, YogParser);
+    YogParser* parser = ALLOC_OBJ(env, NULL, NULL, YogParser);
     parser->env = env;
     parser->lexer = YogLexer_new(env);
     parser->lineno = 1;

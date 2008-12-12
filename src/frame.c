@@ -101,7 +101,7 @@ YogNameFrame_init(YogNameFrame* frame)
 YogNameFrame* 
 YogNameFrame_new(YogEnv* env) 
 {
-    YogNameFrame* frame = ALLOC_OBJ(env, YogNameFrame_keep_children, YogNameFrame);
+    YogNameFrame* frame = ALLOC_OBJ(env, YogNameFrame_keep_children, NULL, YogNameFrame);
     YogNameFrame_init(frame);
 
     return frame;
@@ -117,7 +117,7 @@ YogMethodFrame_init(YogMethodFrame* frame)
 YogMethodFrame* 
 YogMethodFrame_new(YogEnv* env) 
 {
-    YogMethodFrame* frame = ALLOC_OBJ(env, YogMethodFrame_keep_children, YogMethodFrame);
+    YogMethodFrame* frame = ALLOC_OBJ(env, YogMethodFrame_keep_children, NULL, YogMethodFrame);
     YogMethodFrame_init(frame);
 
     return frame;
@@ -135,7 +135,7 @@ YogCFrame_init(YogCFrame* frame)
 YogCFrame* 
 YogCFrame_new(YogEnv* env) 
 {
-    YogCFrame* frame = ALLOC_OBJ(env, YogCFrame_keep_children, YogCFrame);
+    YogCFrame* frame = ALLOC_OBJ(env, YogCFrame_keep_children, NULL, YogCFrame);
     YogCFrame_init(frame);
 
     return frame;

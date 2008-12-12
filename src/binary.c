@@ -61,7 +61,7 @@ YogByteArray_print(YogEnv* env, YogByteArray* array)
 YogByteArray* 
 YogByteArray_new(YogEnv* env, unsigned int size) 
 {
-    YogByteArray* array = ALLOC_OBJ_ITEM(env, NULL, YogByteArray, size, uint8_t);
+    YogByteArray* array = ALLOC_OBJ_ITEM(env, NULL, NULL, YogByteArray, size, uint8_t);
     array->size = size;
 
     return array;
@@ -123,7 +123,7 @@ YogBinary_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogBinary* 
 YogBinary_new(YogEnv* env, unsigned int size) 
 {
-    YogBinary* binary = ALLOC_OBJ(env, YogBinary_keep_children, YogBinary);
+    YogBinary* binary = ALLOC_OBJ(env, YogBinary_keep_children, NULL, YogBinary);
     binary->size = 0;
     binary->body = YogByteArray_new(env, size);
 

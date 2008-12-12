@@ -540,7 +540,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogThread*
 YogThread_new(YogEnv* env) 
 {
-    YogThread* th = ALLOC_OBJ(env, keep_children, YogThread);
+    YogThread* th = ALLOC_OBJ(env, keep_children, NULL, YogThread);
     th->cur_frame = NULL;
     th->jmp_buf_list = NULL;
     th->jmp_val = YUNDEF;

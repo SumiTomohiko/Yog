@@ -44,7 +44,7 @@ keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogTableEntryArray*
 alloc_bins(YogEnv* env, int size) 
 {
-    YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, keep_bins_children, YogTableEntryArray, size, YogTableEntry*);
+    YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogTableEntry*);
     bzero(array, sizeof(YogTableEntryArray) + size * sizeof(YogTableEntry*));
 
     array->size = size;
@@ -168,7 +168,7 @@ keep_table_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogTable*
 alloc_table(YogEnv* env) 
 {
-    YogTable* tbl = ALLOC_OBJ(env, keep_table_children, YogTable);
+    YogTable* tbl = ALLOC_OBJ(env, keep_table_children, NULL, YogTable);
     tbl->type = NULL;
     tbl->num_bins = 0;
     tbl->num_entries = 0;
@@ -261,7 +261,7 @@ keep_entry_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogTableEntry* 
 alloc_entry(YogEnv* env)
 {
-    YogTableEntry* entry = ALLOC_OBJ(env, keep_entry_children, YogTableEntry);
+    YogTableEntry* entry = ALLOC_OBJ(env, keep_entry_children, NULL, YogTableEntry);
     entry->hash = 0;
     entry->key = YUNDEF;
     entry->record = YUNDEF;

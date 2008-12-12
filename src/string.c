@@ -28,7 +28,7 @@ YogCharArray_clear(YogEnv* env, YogCharArray* array)
 YogCharArray* 
 YogCharArray_new(YogEnv* env, unsigned int capacity) 
 {
-    YogCharArray* array = ALLOC_OBJ_ITEM(env, NULL, YogCharArray, capacity, char);
+    YogCharArray* array = ALLOC_OBJ_ITEM(env, NULL, NULL, YogCharArray, capacity, char);
     array->capacity = capacity;
     YogCharArray_clear(env, array);
 
@@ -131,7 +131,7 @@ YogString_clear(YogEnv* env, YogString* string)
 static YogBasicObj* 
 allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, YogString_keep_children, YogString);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogString_keep_children, NULL, YogString);
     YogBasicObj_init(env, obj, 0, klass);
 
     YogString* s = (YogString*)obj;
@@ -381,7 +381,7 @@ char*
 YogString_dup(YogEnv* env, const char* s) 
 {
     size_t size = strlen(s) + 1;
-    char* p = ALLOC_OBJ_SIZE(env, NULL, size);
+    char* p = ALLOC_OBJ_SIZE(env, NULL, NULL, size);
     memcpy(p, s, size);
 
     return p;

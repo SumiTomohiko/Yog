@@ -14,7 +14,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogStackTraceEntry* 
 YogStackTraceEntry_new(YogEnv* env) 
 {
-    YogStackTraceEntry* entry = ALLOC_OBJ(env, keep_children, YogStackTraceEntry);
+    YogStackTraceEntry* entry = ALLOC_OBJ(env, keep_children, NULL, YogStackTraceEntry);
     entry->lower = NULL;
     entry->lineno = 0;
     entry->filename = NULL;

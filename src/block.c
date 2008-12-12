@@ -41,7 +41,7 @@ YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogPackageBlock* 
 YogPackageBlock_new(YogEnv* env) 
 {
-    YogPackageBlock* block = ALLOC_OBJ(env, YogPackageBlock_keep_children, YogPackageBlock);
+    YogPackageBlock* block = ALLOC_OBJ(env, YogPackageBlock_keep_children, NULL, YogPackageBlock);
     YogPackageBlock_init(env, block);
 
     return block;
@@ -50,7 +50,7 @@ YogPackageBlock_new(YogEnv* env)
 static YogBasicObj* 
 allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, YogPackageBlock_keep_children, YogPackageBlock);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogPackageBlock_keep_children, NULL, YogPackageBlock);
     YogBasicObj_init(env, obj, 0, klass);
     return obj;
 }

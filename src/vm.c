@@ -29,6 +29,7 @@ struct YogMarkSweepHeader {
     struct YogMarkSweepHeader* next;
     unsigned int size;
     ChildrenKeeper keeper;
+    Finalizer finalizer;
     BOOL marked;
 };
 
@@ -36,11 +37,18 @@ typedef struct YogMarkSweepHeader YogMarkSweepHeader;
 
 struct CopyingHeader {
     ChildrenKeeper keeper;
+    Finalizer finalizer;
     void* forwarding_addr;
     size_t size;
 };
 
 typedef struct CopyingHeader CopyingHeader;
+
+struct BdwHeader {
+    Finalizer finalizer;
+};
+
+typedef struct BdwHeader BdwHeader;
 
 void 
 YogVm_register_package(YogEnv* env, YogVm* vm, const char* name, YogPackage* pkg) 
@@ -128,7 +136,7 @@ align(size_t size)
 }
 
 static void* 
-alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
+alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     size_t needed_size = size + sizeof(CopyingHeader);
     size_t aligned_size = align(needed_size);
@@ -152,6 +160,7 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
 
     CopyingHeader* head = (CopyingHeader*)heap->free;
     head->keeper = keeper;
+    head->finalizer = finalizer;
     head->forwarding_addr = NULL;
     head->size = aligned_size;
 
@@ -161,7 +170,7 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
 }
 
 static void* 
-alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
+alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     size_t total_size = size + sizeof(YogMarkSweepHeader);
     YogMarkSweepHeader* header = malloc(total_size);
@@ -176,6 +185,7 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
 
     header->size = total_size;
     header->keeper = keeper;
+    header->finalizer = finalizer;
     header->marked = FALSE;
 
     if (!vm->disable_gc) {
@@ -195,9 +205,9 @@ YogVm_realloc(YogEnv* env, YogVm* vm, void* ptr, size_t size)
 }
 
 void* 
-YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
+YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    return (*vm->alloc_mem)(env, vm, keeper, size);
+    return (*vm->alloc_mem)(env, vm, keeper, finalizer, size);
 }
 
 static void 
@@ -381,6 +391,28 @@ free_heap(YogVm* vm)
 }
 
 static void 
+finalize_copying(YogEnv* env, YogVm* vm) 
+{
+    YogHeap* heap = vm->gc.copying.heap;
+    while (heap != NULL) {
+        unsigned char* ptr = heap->base;
+        unsigned char* to = heap->free;
+        while (ptr < to) {
+            CopyingHeader* header = (CopyingHeader*)ptr;
+            if (header->forwarding_addr == NULL) {
+                if (header->finalizer != NULL) {
+                    (*header->finalizer)(env, header + 1);
+                }
+            }
+
+            ptr += header->size;
+        }
+
+        heap = heap->next;
+    }
+}
+
+static void 
 copying_gc(YogEnv* env, YogVm* vm) 
 {
     unsigned int used_size = 0;
@@ -410,6 +442,7 @@ copying_gc(YogEnv* env, YogVm* vm)
         vm->gc.copying.scanned += header->size;
     }
 
+    finalize_copying(env, vm);
     free_heap(vm);
 
     to_space->free = vm->gc.copying.unscanned;
@@ -472,6 +505,10 @@ mark_sweep_gc(YogEnv* env, YogVm* vm)
         YogMarkSweepHeader* next = header->next;
 
         if (!header->marked) {
+            if (header->finalizer != NULL) {
+                (*header->finalizer)(env, header + 1);
+            }
+
             if (header->prev != NULL) {
                 header->prev->next = next;
             }
@@ -522,13 +559,26 @@ bdw_gc(YogEnv* env, YogVm* vm)
     /* empty */
 }
 
-static void* 
-alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, size_t size)
+static void 
+bdw_finalizer(void* obj, void* client_data)
 {
-    void* ptr = GC_MALLOC(size);
-    initialize_memory(ptr, size);
+    BdwHeader* header = obj;
+    YogEnv* env = client_data;
+    (*header->finalizer)(env, header + 1);
+}
 
-    return ptr;
+static void* 
+alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+{
+    unsigned int total_size = size + sizeof(BdwHeader);
+    BdwHeader* header = GC_MALLOC(total_size);
+    initialize_memory(header, total_size);
+
+    header->finalizer = finalizer;
+
+    GC_REGISTER_FINALIZER(header, bdw_finalizer, env, 0, 0);
+
+    return header + 1;
 }
 
 static void 
@@ -550,7 +600,7 @@ realloc_mem_bdw(YogEnv* env, YogVm* vm, void* ptr, size_t size)
         return ptr; \
     } \
 \
-    void* dest = YogVm_alloc(env, vm, header->keeper, size); \
+    void* dest = YogVm_alloc(env, vm, header->keeper, header->finalizer, size); \
     memcpy(dest, ptr, header->size - sizeof(type)); \
 \
     return dest; \

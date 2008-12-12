@@ -43,7 +43,7 @@ YogPackage_init(YogEnv* env, YogPackage* pkg)
 static YogBasicObj* 
 allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogPackage* pkg = ALLOC_OBJ(env, YogPackage_keep_children, YogPackage);
+    YogPackage* pkg = ALLOC_OBJ(env, YogPackage_keep_children, NULL, YogPackage);
     YogPackage_init(env, pkg);
 
     return YOGBASICOBJ(pkg);

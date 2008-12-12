@@ -19,7 +19,7 @@ YogBuiltinBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogBasicObj* 
 YogBuiltinBoundMethod_allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, YogBuiltinBoundMethod_keep_children, YogBuiltinBoundMethod);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogBuiltinBoundMethod_keep_children, NULL, YogBuiltinBoundMethod);
     YogBasicObj_init(env, obj, 0, klass);
     return obj;
 }
@@ -37,7 +37,7 @@ YogBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogBasicObj* 
 YogBoundMethod_allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, YogBoundMethod_keep_children, YogBoundMethod);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogBoundMethod_keep_children, NULL, YogBoundMethod);
     YogBasicObj_init(env, obj, 0, klass);
     return obj;
 }
@@ -54,7 +54,7 @@ YogBuiltinUnboundMethod_keep_chldren(YogEnv* env, void* ptr, ObjectKeeper keeper
 static YogBasicObj* 
 YogBuiltinUnboundMethod_allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, YogBuiltinUnboundMethod_keep_chldren, YogBuiltinUnboundMethod);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogBuiltinUnboundMethod_keep_chldren, NULL, YogBuiltinUnboundMethod);
     YogBasicObj_init(env, obj, 0, klass);
     return obj;
 }
@@ -71,7 +71,7 @@ YogUnboundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogBasicObj* 
 YogUnboundMethod_allocate(YogEnv* env, YogKlass* klass) 
 {
-    YogBasicObj* obj = ALLOC_OBJ(env, YogUnboundMethod_keep_children, YogUnboundMethod);
+    YogBasicObj* obj = ALLOC_OBJ(env, YogUnboundMethod_keep_children, NULL, YogUnboundMethod);
     YogBasicObj_init(env, obj, 0, klass);
     return obj;
 }

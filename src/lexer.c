@@ -522,7 +522,7 @@ yylex(YogLexer* lexer)
 YogLexer* 
 YogLexer_new(YogEnv* env) 
 {
-    YogLexer* lexer = ALLOC_OBJ(env, NULL, YogLexer);
+    YogLexer* lexer = ALLOC_OBJ(env, NULL, NULL, YogLexer);
     lexer->state = LS_EXPR;
     lexer->env = env;
     lexer->fp = NULL;
