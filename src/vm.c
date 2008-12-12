@@ -413,6 +413,13 @@ finalize_copying(YogEnv* env, YogVm* vm)
 }
 
 static void 
+free_mem_copying(YogEnv* env, YogVm* vm) 
+{
+    finalize_copying(env, vm);
+    free_heap(vm);
+}
+
+static void 
 copying_gc(YogEnv* env, YogVm* vm) 
 {
     unsigned int used_size = 0;
@@ -442,8 +449,7 @@ copying_gc(YogEnv* env, YogVm* vm)
         vm->gc.copying.scanned += header->size;
     }
 
-    finalize_copying(env, vm);
-    free_heap(vm);
+    free_mem_copying(env, vm);
 
     to_space->free = vm->gc.copying.unscanned;
     vm->gc.copying.heap = to_space;
@@ -490,6 +496,14 @@ YogMarkSweepHeader_delete(YogMarkSweepHeader* header)
 }
 
 static void 
+finalize_mark_sweep(YogEnv* env, YogMarkSweepHeader* header) 
+{
+    if (header->finalizer != NULL) {
+        (*header->finalizer)(env, header + 1);
+    }
+}
+
+static void 
 mark_sweep_gc(YogEnv* env, YogVm* vm) 
 {
     YogMarkSweepHeader* header = vm->gc.mark_sweep.header;
@@ -505,9 +519,7 @@ mark_sweep_gc(YogEnv* env, YogVm* vm)
         YogMarkSweepHeader* next = header->next;
 
         if (!header->marked) {
-            if (header->finalizer != NULL) {
-                (*header->finalizer)(env, header + 1);
-            }
+            finalize_mark_sweep(env, header);
 
             if (header->prev != NULL) {
                 header->prev->next = next;
@@ -529,18 +541,13 @@ mark_sweep_gc(YogEnv* env, YogVm* vm)
 }
 
 static void 
-free_mem_copying(YogEnv* env, YogVm* vm) 
-{
-    free_heap(vm);
-}
-
-static void 
 free_mem_mark_sweep(YogEnv* env, YogVm* vm) 
 {
     YogMarkSweepHeader* header = vm->gc.mark_sweep.header;
     while (header != NULL) {
         YogMarkSweepHeader* next = header->next;
 
+        finalize_mark_sweep(env, header);
         YogMarkSweepHeader_delete(header);
 
         header = next;

@@ -1,4 +1,5 @@
 #include <string.h>
+#include "oniguruma.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/regexp.h"
@@ -16,16 +17,34 @@ YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #undef KEEP
 }
 
+#include <stdio.h>
+
+static void 
+YogMatch_finalize(YogEnv* env, void* ptr) 
+{
+    YogMatch* match = ptr;
+    onig_region_free(match->onig_region, 1);
+    match->onig_region = NULL;
+}
+
 YogMatch* 
 YogMatch_new(YogEnv* env, YogString* str, YogRegexp* regexp, OnigRegion* onig_region) 
 {
-    YogMatch* match = ALLOC_OBJ(env, YogMatch_keep_children, NULL, YogMatch);
+    YogMatch* match = ALLOC_OBJ(env, YogMatch_keep_children, YogMatch_finalize, YogMatch);
     YogBasicObj_init(env, YOGBASICOBJ(match), 0, ENV_VM(env)->cMatch);
     match->str = str;
     match->regexp = regexp;
     match->onig_region = onig_region;
 
     return match;
+}
+
+static void 
+YogRegexp_finalize(YogEnv* env, void* ptr) 
+{
+    YogRegexp* regexp = ptr;
+    onig_free(regexp->onig_regexp);
+    regexp->onig_regexp = NULL;
 }
 
 YogRegexp* 
@@ -42,7 +61,7 @@ YogRegexp_new(YogEnv* env, YogString* pattern, OnigOptionType option)
         return NULL;
     }
 
-    YogRegexp* regexp = ALLOC_OBJ(env, NULL, NULL, YogRegexp);
+    YogRegexp* regexp = ALLOC_OBJ(env, NULL, YogRegexp_finalize, YogRegexp);
     YogBasicObj_init(env, YOGBASICOBJ(regexp), 0, ENV_VM(env)->cRegexp);
     regexp->onig_regexp = onig_regexp;
 
