@@ -45,11 +45,9 @@ struct YogVm {
     BOOL disable_gc;
 
     void (*init_gc)(struct YogEnv*, struct YogVm*);
-    void (*exec_gc)(struct YogEnv*, struct YogVm*);
     void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, Finalizer, size_t);
     void* (*realloc_mem)(struct YogEnv*, struct YogVm*, void*, size_t);
     void (*free_mem)(struct YogEnv*, struct YogVm*);
-    BOOL need_gc;
     union {
         struct {
             unsigned int init_heap_size;

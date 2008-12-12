@@ -349,12 +349,7 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
     while (PC < CODE->insts->size) {
 #define ENV             (env)
 #define VM              (ENV_VM(ENV))
-        if (VM->need_gc || VM->always_gc) {
-            YogVm_gc(ENV, VM);
-            th = VM->thread;
-            ENV_TH(env) = th;
-            VM->need_gc = FALSE;
-        }
+        th = VM->thread;
 
 #define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME)))
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
