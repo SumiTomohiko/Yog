@@ -17,8 +17,6 @@ YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #undef KEEP
 }
 
-#include <stdio.h>
-
 static void 
 YogMatch_finalize(YogEnv* env, void* ptr) 
 {
