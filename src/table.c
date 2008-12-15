@@ -281,7 +281,7 @@ alloc_entry(YogEnv* env)
 do {\
     FRAME_DECL_LOCALS3(env, table_idx, PTR2VAL(table), key_idx, key, value_idx, value); \
     FRAME_LOCAL_PTR(env, table, table_idx); \
-    if (ST_DEFAULT_MAX_DENSITY < table->num_entries / (table->num_bins)) {\
+    if (env->vm->always_gc || (ST_DEFAULT_MAX_DENSITY < table->num_entries / (table->num_bins))) {\
         rehash(env, table); \
         FRAME_LOCAL_PTR(env, table, table_idx); \
         bin_pos = hash_val % table->num_bins;\
