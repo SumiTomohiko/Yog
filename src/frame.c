@@ -1,7 +1,38 @@
+#include <stdarg.h>
 #include <string.h>
 #include "yog/array.h"
 #include "yog/error.h"
 #include "yog/yog.h"
+
+static void 
+extend_locals(YogEnv* env, YogFrame* frame, unsigned int n) 
+{
+    unsigned int capacity = frame->locals->size + n;
+    YogValArray* locals = YogValArray_new(env, capacity);
+    frame = env->th->cur_frame;
+    unsigned int size = frame->locals_size;
+    memcpy(locals->items, frame->locals->items, sizeof(YogVal) * size);
+    frame->locals = locals;
+}
+
+void 
+YogFrame_add_locals(YogEnv* env, YogFrame* frame, unsigned int n, ...)
+{
+    YogValArray* locals = frame->locals;
+    unsigned int locals_size = frame->locals_size;
+
+    va_list ap;
+    va_start(ap, n);
+    unsigned int i = 0;
+    for (i = 0; i < n; i++) {
+        locals->items[locals_size + i] = va_arg(ap, YogVal);
+    }
+    va_end(ap);
+
+    frame->locals_size = locals_size + n;
+
+    extend_locals(env, frame, n);
+}
 
 unsigned int
 YogFrame_add_local(YogEnv* env, YogFrame* frame, YogVal val) 
@@ -10,17 +41,6 @@ YogFrame_add_local(YogEnv* env, YogFrame* frame, YogVal val)
     unsigned int index = frame->locals_size;
     locals->items[index] = val;
     frame->locals_size++;
-
-    unsigned int size = frame->locals_size;
-    unsigned int capacity = frame->locals->size;
-    if (capacity < size + 1) {
-#define RATIO   (2)
-        YogValArray* new_locals = YogValArray_new(env, RATIO * capacity);
-#undef RATIO
-        frame = env->th->cur_frame;
-        memcpy(new_locals->items, frame->locals->items, sizeof(YogVal) * size);
-        frame->locals = new_locals;
-    }
 
     return index;
 }

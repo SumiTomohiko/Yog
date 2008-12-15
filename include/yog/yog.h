@@ -196,13 +196,32 @@ struct YogFrame {
 
 #include "yog/array.h"
 
+#define MAX_LOCALS  (8)
+
 #define CUR_FRAME(env)  (env)->th->cur_frame
-#define FRAME_LOCAL(env, i) \
+#define FRAME_DECL_LOCAL(env, index, val) \
+    unsigned int index = CUR_FRAME(env)->locals_size; \
+    YogFrame_add_locals(env, CUR_FRAME(env), 1, val);
+#define FRAME_DECL_LOCALS2(env, index1, val1, index2, val2) \
+    unsigned int index1 = CUR_FRAME(env)->locals_size; \
+    unsigned int index2 = CUR_FRAME(env)->locals_size + 1; \
+    YogFrame_add_locals(env, CUR_FRAME(env), 2, val1, val2);
+#define FRAME_DECL_LOCALS3(env, index1, val1, index2, val2, index3, val3) \
+    unsigned int index1 = CUR_FRAME(env)->locals_size; \
+    unsigned int index2 = CUR_FRAME(env)->locals_size + 1; \
+    unsigned int index3 = CUR_FRAME(env)->locals_size + 2; \
+    YogFrame_add_locals(env, CUR_FRAME(env), 3, val1, val2, val3);
+#define FRAME_DECL_LOCALS4(env, index1, val1, index2, val2, index3, val3, index4, val4) \
+    unsigned int index1 = CUR_FRAME(env)->locals_size; \
+    unsigned int index2 = CUR_FRAME(env)->locals_size + 1; \
+    unsigned int index3 = CUR_FRAME(env)->locals_size + 2; \
+    unsigned int index4 = CUR_FRAME(env)->locals_size + 3; \
+    YogFrame_add_locals(env, CUR_FRAME(env), 4, val1, val2, val3, val4);
+
+#define __FRAME_LOCAL__(env, i) \
     YogValArray_at(env, CUR_FRAME(env)->locals, i)
-#define FRAME_LOCAL_PTR(env, ptr, i) \
-    ptr = VAL2PTR(FRAME_LOCAL(env, i))
-#define FRAME_ADD_LOCAL_PTR(env, index, ptr) \
-    unsigned int index = YogFrame_add_local(env, CUR_FRAME(env), PTR2VAL(ptr))
+#define FRAME_LOCAL(env, val, i)        val = __FRAME_LOCAL__(env, i)
+#define FRAME_LOCAL_PTR(env, ptr, i)    ptr = VAL2PTR(__FRAME_LOCAL__(env, i))
 
 typedef struct YogFrame YogFrame;
 
@@ -282,6 +301,7 @@ typedef struct YogThread YogThread;
 /* src/frame.c */
 YogCFrame* YogCFrame_new(YogEnv*);
 unsigned int YogFrame_add_local(YogEnv*, YogFrame*, YogVal);
+void YogFrame_add_locals(YogEnv*, YogFrame*, unsigned int, ...);
 YogMethodFrame* YogMethodFrame_new(YogEnv*);
 YogNameFrame* YogNameFrame_new(YogEnv*);
 YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);

@@ -91,11 +91,14 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
 #endif
     YogCharArray* s = YogCharArray_new_str(env, name);
     YogVal val = PTR2VAL(s);
+    FRAME_DECL_LOCAL(env, index, val);
+    FRAME_LOCAL(env, val, index);
 
     ID id = vm->next_id;
     YogVal symbol = ID2VAL(id);
 
     YogTable_add_direct(env, vm->name2id, val, symbol);
+    FRAME_LOCAL(env, val, index);
     YogTable_add_direct(env, vm->id2name, symbol, val);
 
     vm->next_id++;

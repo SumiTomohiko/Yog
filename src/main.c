@@ -162,11 +162,9 @@ main(int argc, char* argv[])
 
     YogFrame* frame = FRAME(YogCFrame_new(&env));
     thread.cur_frame = frame;
-#define INIT_LOCALS_SIZE     (1)
-    YogValArray* locals = YogValArray_new(&env, INIT_LOCALS_SIZE);
-#undef INIT_LOCALS_SIZE
-    frame = thread.cur_frame;
-    frame->locals = locals;
+    frame->locals_size = 0;
+    YogValArray* locals = YogValArray_new(&env, MAX_LOCALS);
+    thread.cur_frame->locals = locals;
 
     YogVm_boot(&env, env.vm);
 
