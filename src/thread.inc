@@ -95,7 +95,7 @@
             YogVal val = POP();
 #line 62 "src/insts.def"
             YogVal key = ID2VAL(id);
-            YogTable_insert(ENV, NAME_VARS(CUR_FRAME), key, val);
+            YogTable_insert(ENV, NAME_VARS(CUR_FRAME(ENV)), key, val);
 
 #line 94 "src/thread.inc"
             break;
@@ -108,7 +108,7 @@
             PC += sizeof(uint8_t);
             YogVal val = POP();
 #line 71 "src/insts.def"
-            LOCAL_VARS(CUR_FRAME)->items[index] = val;
+            LOCAL_VARS(CUR_FRAME(ENV))->items[index] = val;
 
 #line 106 "src/thread.inc"
             break;
@@ -151,7 +151,7 @@
             YogVal method = YogVal_nil();
 #line 91 "src/insts.def"
             YogBoundMethod* m = YogBoundMethod_new(ENV);
-            m->self = NAME_FRAME(CUR_FRAME)->self;
+            m->self = NAME_FRAME(CUR_FRAME(ENV))->self;
             m->code = VAL2PTR(code);
         
             method = OBJ2VAL(m);
@@ -212,7 +212,7 @@
             YogVal val = YogVal_nil();
 #line 124 "src/insts.def"
             YogVal key = ID2VAL(id);
-            if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME), key, &val)) {
+            if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME(ENV)), key, &val)) {
                 val = lookup_builtins(ENV, id);
                 YOG_ASSERT(ENV, !IS_UNDEF(val), "Can't find package var.");
             }
@@ -229,7 +229,7 @@
             PC += sizeof(uint8_t);
             YogVal val = YogVal_nil();
 #line 136 "src/insts.def"
-            val = LOCAL_VARS(CUR_FRAME)->items[index];
+            val = LOCAL_VARS(CUR_FRAME(ENV))->items[index];
 
 #line 221 "src/thread.inc"
             PUSH(val);
@@ -283,8 +283,8 @@
             YogPackageBlock* b = YogPackageBlock_new(env);
             YogCode* c = VAL2PTR(code);
             BLOCK(b)->code = c;
-            b->self = NAME_FRAME(CUR_FRAME)->self;
-            b->vars = NAME_FRAME(CUR_FRAME)->vars;
+            b->self = NAME_FRAME(CUR_FRAME(ENV))->self;
+            b->vars = NAME_FRAME(CUR_FRAME(ENV))->vars;
             block = OBJ2VAL(b);
 
 #line 273 "src/thread.inc"
@@ -333,7 +333,7 @@
         {
             YogVal self = YogVal_nil();
 #line 212 "src/insts.def"
-            self = NAME_FRAME(CUR_FRAME)->self;
+            self = NAME_FRAME(CUR_FRAME(ENV))->self;
 
 #line 318 "src/thread.inc"
             PUSH(self);
@@ -345,7 +345,7 @@
             YogVal val = POP();
 #line 220 "src/insts.def"
             POP_FRAME();
-            PC = SCRIPT_FRAME(CUR_FRAME)->pc;
+            PC = SCRIPT_FRAME(CUR_FRAME(ENV))->pc;
 
 #line 329 "src/thread.inc"
             PUSH(val);

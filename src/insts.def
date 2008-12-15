@@ -60,7 +60,7 @@ inst store_name
 ()
 {
     YogVal key = ID2VAL(id);
-    YogTable_insert(ENV, NAME_VARS(CUR_FRAME), key, val);
+    YogTable_insert(ENV, NAME_VARS(CUR_FRAME(ENV)), key, val);
 }
 
 inst store_local
@@ -68,7 +68,7 @@ inst store_local
 (val)
 ()
 {
-    LOCAL_VARS(CUR_FRAME)->items[index] = val;
+    LOCAL_VARS(CUR_FRAME(ENV))->items[index] = val;
 }
 
 inst call_command 
@@ -89,7 +89,7 @@ inst make_package_method
 (method)
 {
     YogBoundMethod* m = YogBoundMethod_new(ENV);
-    m->self = NAME_FRAME(CUR_FRAME)->self;
+    m->self = NAME_FRAME(CUR_FRAME(ENV))->self;
     m->code = VAL2PTR(code);
 
     method = OBJ2VAL(m);
@@ -122,7 +122,7 @@ inst load_name
 (val)
 {
     YogVal key = ID2VAL(id);
-    if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME), key, &val)) {
+    if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME(ENV)), key, &val)) {
         val = lookup_builtins(ENV, id);
         YOG_ASSERT(ENV, !IS_UNDEF(val), "Can't find package var.");
     }
@@ -133,7 +133,7 @@ inst load_local
 ()
 (val)
 {
-    val = LOCAL_VARS(CUR_FRAME)->items[index];
+    val = LOCAL_VARS(CUR_FRAME(ENV))->items[index];
 }
 
 inst jump
@@ -170,8 +170,8 @@ inst make_package_block
     YogPackageBlock* b = YogPackageBlock_new(env);
     YogCode* c = VAL2PTR(code);
     BLOCK(b)->code = c;
-    b->self = NAME_FRAME(CUR_FRAME)->self;
-    b->vars = NAME_FRAME(CUR_FRAME)->vars;
+    b->self = NAME_FRAME(CUR_FRAME(ENV))->self;
+    b->vars = NAME_FRAME(CUR_FRAME(ENV))->vars;
     block = OBJ2VAL(b);
 }
 
@@ -209,7 +209,7 @@ inst push_self_name
 ()
 (self)
 {
-    self = NAME_FRAME(CUR_FRAME)->self;
+    self = NAME_FRAME(CUR_FRAME(ENV))->self;
 }
 
 inst ret
@@ -218,7 +218,7 @@ inst ret
 (val)
 {
     POP_FRAME();
-    PC = SCRIPT_FRAME(CUR_FRAME)->pc;
+    PC = SCRIPT_FRAME(CUR_FRAME(ENV))->pc;
 }
 
 /**

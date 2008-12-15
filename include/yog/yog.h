@@ -188,9 +188,21 @@ typedef enum YogFrameType YogFrameType;
 struct YogFrame {
     struct YogFrame* prev;
     enum YogFrameType type;
+    struct YogValArray* locals;
+    unsigned int locals_size;
 };
 
 #define FRAME(f)    ((YogFrame*)(f))
+
+#include "yog/array.h"
+
+#define CUR_FRAME(env)  (env)->th->cur_frame
+#define FRAME_LOCAL(env, i) \
+    YogValArray_at(env, CUR_FRAME(env)->locals, i)
+#define FRAME_LOCAL_PTR(env, ptr, i) \
+    ptr = VAL2PTR(FRAME_LOCAL(env, i))
+#define FRAME_ADD_LOCAL_PTR(env, index, ptr) \
+    unsigned int index = YogFrame_add_local(env, CUR_FRAME(env), PTR2VAL(ptr))
 
 typedef struct YogFrame YogFrame;
 
@@ -203,12 +215,10 @@ struct YogCFrame {
 
 typedef struct YogCFrame YogCFrame;
 
-#include "yog/array.h"
-
 #define C_FRAME(frame)      ((YogCFrame*)(frame))
 #define CUR_C_FRAME(env)    (C_FRAME((env)->th->cur_frame))
 #define SELF(env)           (CUR_C_FRAME(env)->self)
-#define ARG(env, i)         (CUR_C_FRAME(env)->args->items[(i)])
+#define ARG(env, i)         (CUR_C_FRAME(env)->args->items[i])
 
 struct YogScriptFrame {
     struct YogFrame base;
@@ -271,6 +281,7 @@ typedef struct YogThread YogThread;
 
 /* src/frame.c */
 YogCFrame* YogCFrame_new(YogEnv*);
+unsigned int YogFrame_add_local(YogEnv*, YogFrame*, YogVal);
 YogMethodFrame* YogMethodFrame_new(YogEnv*);
 YogNameFrame* YogNameFrame_new(YogEnv*);
 YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);
@@ -293,6 +304,8 @@ YogVal YogThread_call_block(YogEnv*, YogThread*, YogVal, unsigned int, YogVal*);
 YogVal YogThread_call_method(YogEnv*, YogThread*, YogVal, const char*, unsigned int, YogVal*);
 YogVal YogThread_call_method_id(YogEnv*, YogThread*, YogVal, ID, unsigned int, YogVal*);
 void YogThread_eval_package(YogEnv*, YogThread*, YogPackage*);
+void YogThread_init(YogEnv*, YogThread*);
+void YogThread_keep_children(YogEnv*, void*, ObjectKeeper);
 YogThread* YogThread_new(YogEnv*);
 
 /* src/value.c */
@@ -320,9 +333,9 @@ void YogVm_boot(YogEnv*, YogVm*);
 void YogVm_config_copying(YogEnv*, YogVm*, unsigned int);
 void YogVm_config_mark_sweep(YogEnv*, YogVm*, size_t);
 void YogVm_delete(YogEnv*, YogVm*);
-void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
 void YogVm_init(YogVm*, YogGcType);
+void YogVm_initialize_memory(YogEnv*, YogVm*);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
 void* YogVm_realloc(YogEnv*, YogVm*, void*, size_t);
 void YogVm_register_package(YogEnv*, YogVm*, const char*, YogPackage*);

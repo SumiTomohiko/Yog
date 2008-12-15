@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "gc.h"
+#include "yog/array.h"
 #include "yog/code.h"
 #include "yog/compile.h"
 #include "yog/parser.h"
@@ -125,6 +126,10 @@ main(int argc, char* argv[])
 #undef ERROR
 #undef USAGE
 
+    YogEnv env;
+    env.vm = NULL;
+    env.th = NULL;
+
 #define ERROR(msg)  do { \
     fprintf(stderr, "%s\n", msg); \
     return -2; \
@@ -133,11 +138,12 @@ main(int argc, char* argv[])
     YogVm_init(&vm, gc_type);
     vm.always_gc = always_gc ? TRUE : FALSE;
     vm.disable_gc = disable_gc ? TRUE : FALSE;
-
-    YogEnv env;
     env.vm = &vm;
-    env.th = NULL;
-    YogVm_boot(&env, env.vm);
+
+    YogThread thread;
+    YogThread_init(&env, &thread);
+    vm.thread = env.th = &thread;
+
     switch (gc_type) {
     case GC_BDW:
         GC_INIT();
@@ -152,6 +158,17 @@ main(int argc, char* argv[])
         ERROR("Unknown GC type.");
         break;
     }
+    YogVm_initialize_memory(&env, &vm);
+
+    YogFrame* frame = FRAME(YogCFrame_new(&env));
+    thread.cur_frame = frame;
+#define INIT_LOCALS_SIZE     (1)
+    YogValArray* locals = YogValArray_new(&env, INIT_LOCALS_SIZE);
+#undef INIT_LOCALS_SIZE
+    frame = thread.cur_frame;
+    frame->locals = locals;
+
+    YogVm_boot(&env, env.vm);
 
     YogParser* parser = YogParser_new(&env);
     const char* filename = NULL;
@@ -162,14 +179,19 @@ main(int argc, char* argv[])
 
     YogCode* code = Yog_compile_module(&env, filename, stmts);
 
+#if 0
     YogThread* th = YogThread_new(&env);
     env.th = th;
     env.vm->thread = th;
+#endif
 
     YogPackage* pkg = YogPackage_new(&env);
     pkg->code = code;
     YogVm_register_package(&env, env.vm, "__main__", pkg);
-    YogThread_eval_package(&env, th, pkg);
+
+    thread.cur_frame = NULL;
+
+    YogThread_eval_package(&env, &thread, pkg);
 
     YogVm_delete(&env, env.vm);
 

@@ -168,8 +168,11 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
     KEEP_MEMBER(encodings);
 
+#if 0
     KEEP_MEMBER(thread);
+#endif
 #undef KEEP_MEMBER
+    YogThread_keep_children(env, vm->thread, keeper);
 }
 
 static void* 
@@ -523,10 +526,14 @@ setup_exceptions(YogEnv* env, YogVm* vm)
 }
 
 void 
-YogVm_boot(YogEnv* env, YogVm* vm) 
+YogVm_initialize_memory(YogEnv* env, YogVm* vm)
 {
     (*vm->init_gc)(env, vm);
+}
 
+void 
+YogVm_boot(YogEnv* env, YogVm* vm) 
+{
     setup_symbol_tables(env, vm);
     setup_basic_klass(env, vm);
     setup_klasses(env, vm);

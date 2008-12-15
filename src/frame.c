@@ -1,5 +1,29 @@
+#include <string.h>
+#include "yog/array.h"
 #include "yog/error.h"
 #include "yog/yog.h"
+
+unsigned int
+YogFrame_add_local(YogEnv* env, YogFrame* frame, YogVal val) 
+{
+    YogValArray* locals = frame->locals;
+    unsigned int index = frame->locals_size;
+    locals->items[index] = val;
+    frame->locals_size++;
+
+    unsigned int size = frame->locals_size;
+    unsigned int capacity = frame->locals->size;
+    if (capacity < size + 1) {
+#define RATIO   (2)
+        YogValArray* new_locals = YogValArray_new(env, RATIO * capacity);
+#undef RATIO
+        frame = env->th->cur_frame;
+        memcpy(new_locals->items, frame->locals->items, sizeof(YogVal) * size);
+        frame->locals = new_locals;
+    }
+
+    return index;
+}
 
 #define KEEP(member)    frame->member = (*keeper)(env, frame->member)
 
@@ -8,6 +32,7 @@ YogFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogFrame* frame = ptr;
     KEEP(prev);
+    KEEP(locals);
 }
 
 static void 
@@ -49,11 +74,15 @@ YogMethodFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP(vars);
 }
 
+#undef KEEP
+
 static void 
 YogFrame_init(YogFrame* frame, YogFrameType type)
 {
     frame->prev = NULL;
     frame->type = type;
+    frame->locals = NULL;
+    frame->locals_size = 0;
 }
 
 void 
@@ -124,7 +153,7 @@ YogMethodFrame_new(YogEnv* env)
 }
 
 static void 
-YogCFrame_init(YogCFrame* frame) 
+YogCFrame_init(YogEnv* env, YogCFrame* frame) 
 {
     YogFrame_init(FRAME(frame), FRAME_C);
 
@@ -136,7 +165,7 @@ YogCFrame*
 YogCFrame_new(YogEnv* env) 
 {
     YogCFrame* frame = ALLOC_OBJ(env, YogCFrame_keep_children, NULL, YogCFrame);
-    YogCFrame_init(frame);
+    YogCFrame_init(env, frame);
 
     return frame;
 }
