@@ -53,9 +53,12 @@ typedef struct BdwHeader BdwHeader;
 void 
 YogVm_register_package(YogEnv* env, YogVm* vm, const char* name, YogPackage* pkg) 
 {
+    FRAME_DECL_LOCAL(env, pkg_idx, OBJ2VAL(pkg));
+
     ID id = YogVm_intern(env, vm, name);
     YogVal key = ID2VAL(id);
 
+    FRAME_LOCAL_OBJ(env, pkg, YogPackage, pkg_idx);
     YogVal value = OBJ2VAL(pkg);
 
     YogTable_add_direct(env, vm->pkgs, key, value);
