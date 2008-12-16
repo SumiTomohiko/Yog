@@ -7,15 +7,20 @@
 void 
 YogPackage_define_method(YogEnv* env, YogPackage* pkg, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, unsigned int required_argc, ...)
 {
+    FRAME_DECL_LOCAL(env, pkg_idx, OBJ2VAL(pkg));
+
     ID func_name = INTERN(name);
 
     va_list ap;
     va_start(ap, required_argc);
     YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, f, INVALID_ID, func_name, blockargc, varargc, kwargc, required_argc, ap);
     va_end(ap);
+    FRAME_DECL_LOCAL(env, builtin_f_idx, OBJ2VAL(builtin_f));
 
     YogBuiltinBoundMethod* method = YogBuiltinBoundMethod_new(env);
+    FRAME_LOCAL_OBJ(env, pkg, YogPackage, pkg_idx);
     method->self = OBJ2VAL(pkg);
+    FRAME_LOCAL_PTR(env, builtin_f, builtin_f_idx);
     method->f = builtin_f;
 
     YogVal val = OBJ2VAL(method);
@@ -48,7 +53,6 @@ allocate(YogEnv* env, YogKlass* klass)
     return YOGBASICOBJ(pkg);
 #undef UPDATE_PTR
 }
-
 
 YogKlass* 
 YogPackage_klass_new(YogEnv* env) 

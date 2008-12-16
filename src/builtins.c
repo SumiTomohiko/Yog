@@ -53,19 +53,26 @@ YogPackage*
 YogBuiltins_new(YogEnv* env) 
 {
     YogPackage* bltins = YogPackage_new(env);
+    FRAME_DECL_LOCAL(env, bltins_idx, OBJ2VAL(bltins));
+#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, bltins, YogPackage, bltins_idx)
+    UPDATE_PTR;
     YogPackage_define_method(env, bltins, "puts", puts_, 0, 1, 0, 0, NULL);
+    UPDATE_PTR;
     YogPackage_define_method(env, bltins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
 
 #define REGISTER_KLASS(c)   do { \
     YogKlass* klass = ENV_VM(env)->c; \
     YogVal val = OBJ2VAL(klass); \
+    UPDATE_PTR; \
     YogObj_set_attr_id(env, YOGOBJ(bltins), klass->name, val); \
 } while (0)
     REGISTER_KLASS(cObject);
     REGISTER_KLASS(eException);
 #undef REGISTER_KLASS
 
+    UPDATE_PTR;
     return bltins;
+#undef UPDATE_PTR
 }
 
 /**
