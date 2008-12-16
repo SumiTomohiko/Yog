@@ -366,15 +366,28 @@ YogKlass*
 YogString_klass_new(YogEnv* env) 
 {
     YogKlass* klass = YogKlass_new(env, "String", ENV_VM(env)->cObject);
+    FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
+
+#define UPDATE_PTR   FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx)
+    UPDATE_PTR;
     YogKlass_define_allocator(env, klass, allocate);
+
+    UPDATE_PTR;
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
+    UPDATE_PTR;
     YogKlass_define_method(env, klass, "+", add, 0, 0, 0, 0, "s", NULL);
+    UPDATE_PTR;
     YogKlass_define_method(env, klass, "<<", lshift, 0, 0, 0, 0, "s", NULL);
+    UPDATE_PTR;
     YogKlass_define_method(env, klass, "[]", subscript, 0, 0, 0, 0, "n", NULL);
+    UPDATE_PTR;
     YogKlass_define_method(env, klass, "[]=", assign_subscript, 0, 0, 0, 0, "n", "s", NULL);
+    UPDATE_PTR;
     YogKlass_define_method(env, klass, "=~", match, 0, 0, 0, 1, "regexp", NULL);
 
+    UPDATE_PTR;
     return klass;
+#undef UPDATE_PTR
 }
 
 char* 
