@@ -76,13 +76,20 @@ YogKlass*
 YogInt_klass_new(YogEnv* env) 
 {
     YogKlass* klass = YogKlass_new(env, "Int", ENV_VM(env)->cObject);
-#define DEFINE_METHOD(name, f) do { \
+    FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
+
+#define DEFINE_METHOD(name, f)  do { \
+    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx); \
     YogKlass_define_method(env, klass, name, f, 0, 0, 0, -1, "n", NULL); \
 } while (0)
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("<", less);
 #undef DEFINE_METHOD
+
+    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
+
+    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     YogKlass_define_method(env, klass, "times", times, 1, 0, 0, 0, "block", NULL);
 
     return klass;
