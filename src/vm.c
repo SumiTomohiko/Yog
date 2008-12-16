@@ -298,7 +298,7 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
     size_t used_size = heap->free - heap->base;
     size_t rest_size = heap->size - used_size;
     if (!vm->disable_gc) {
-        if ((rest_size < aligned_size) || vm->always_gc) {
+        if ((rest_size < aligned_size) || vm->gc_stress) {
             copying_gc(env, vm);
             heap = vm->gc.copying.heap;
             used_size = heap->free - heap->base;
@@ -406,7 +406,7 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer fi
     if (!vm->disable_gc) {
         unsigned int threshold = vm->gc.mark_sweep.threshold;
         unsigned int allocated_size = vm->gc.mark_sweep.allocated_size;
-        if ((threshold < allocated_size) || vm->always_gc) {
+        if ((threshold < allocated_size) || vm->gc_stress) {
             mark_sweep_gc(env, vm);
             vm->gc.mark_sweep.allocated_size = 0;
         }
@@ -646,7 +646,7 @@ realloc_mem_mark_sweep(YogEnv* env, YogVm* vm, void* ptr, size_t size)
 void 
 YogVm_init(YogVm* vm, YogGcType gc)
 {
-    vm->always_gc = FALSE;
+    vm->gc_stress = FALSE;
     vm->disable_gc = FALSE;
 
     switch (gc) {

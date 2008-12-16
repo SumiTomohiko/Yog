@@ -41,7 +41,7 @@ typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
 typedef void (*Finalizer)(YogEnv*, void*);
 
 struct YogVm {
-    BOOL always_gc;
+    BOOL gc_stress;
     BOOL disable_gc;
 
     void (*init_gc)(struct YogEnv*, struct YogVm*);

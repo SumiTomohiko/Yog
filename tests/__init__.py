@@ -20,7 +20,7 @@ class TestCase(object):
         elif env_gc == "bdw":
             gc = "bdw"
 
-        options = options or ["--always-gc", "--gc=%(gc)s" % { "gc": gc }]
+        options = options or ["--gc-stress", "--gc=%(gc)s" % { "gc": gc }]
 
         file = mkstemp(prefix="yog", suffix=".yg")[1]
         try:

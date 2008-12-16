@@ -14,9 +14,9 @@ usage()
 {
     printf("yog [options] [file]\n");
     printf("options:\n");
-    printf("  --always-gc: \n");
     printf("  --disable-gc: \n");
     printf("  --gc=[bdw|copying|mark-sweep]: \n");
+    printf("  --gc-stress: \n");
     printf("  --init-heap-size=size: \n");
     printf("  --threshold=size: \n");
     printf("  --help: \n");
@@ -60,7 +60,7 @@ parse_size(const char* s)
 int 
 main(int argc, char* argv[]) 
 {
-    int always_gc = 0;
+    int gc_stress = 0;
     int disable_gc = 0;
     int help = 0;
 #define DEFAULT_INIT_HEAP_SIZE  (1)
@@ -71,9 +71,9 @@ main(int argc, char* argv[])
 #undef DEFAULT_THRESHOLD
     YogGcType gc_type = GC_COPYING;
     struct option options[] = {
-        { "always-gc", no_argument, &always_gc, 1 }, 
         { "disable-gc", no_argument, &disable_gc, 1 },
         { "gc", required_argument, NULL, 'g' }, 
+        { "gc-stress", no_argument, &gc_stress, 1 }, 
         { "help", no_argument, &help, 1 }, 
         { "init-heap-size", required_argument, NULL, 'i' }, 
         { "threshold", required_argument, NULL, 't' }, 
@@ -120,8 +120,8 @@ main(int argc, char* argv[])
         USAGE;
         return 0;
     }
-    if (always_gc && disable_gc) {
-        ERROR("Can't specify always_gc and disable_gc at same time.");
+    if (gc_stress && disable_gc) {
+        ERROR("Can't specify gc_stress and disable_gc at same time.");
     }
 #undef ERROR
 #undef USAGE
@@ -136,7 +136,7 @@ main(int argc, char* argv[])
 } while (0)
     YogVm vm;
     YogVm_init(&vm, gc_type);
-    vm.always_gc = always_gc ? TRUE : FALSE;
+    vm.gc_stress = gc_stress ? TRUE : FALSE;
     vm.disable_gc = disable_gc ? TRUE : FALSE;
     env.vm = &vm;
 
