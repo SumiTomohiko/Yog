@@ -92,6 +92,7 @@ YogInt_klass_new(YogEnv* env)
     FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     YogKlass_define_method(env, klass, "times", times, 1, 0, 0, 0, "block", NULL);
 
+    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     return klass;
 }
 

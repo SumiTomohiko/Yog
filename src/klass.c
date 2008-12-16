@@ -39,8 +39,9 @@ YogBasicObj*
 YogKlass_allocate(YogEnv* env, YogKlass* klass) 
 {
     FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
-    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
+
     YogObj* obj = ALLOC_OBJ(env, keep_children, NULL, YogKlass);
+
     FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     YogObj_init(env, obj, 0, klass);
 
@@ -57,19 +58,22 @@ YogKlass*
 YogKlass_new(YogEnv* env, const char* name, YogKlass* super) 
 {
     FRAME_DECL_LOCAL(env, super_idx, OBJ2VAL(super));
-    FRAME_LOCAL_OBJ(env, super, YogKlass, super_idx);
+
     YogKlass* klass = (YogKlass*)YogKlass_allocate(env, ENV_VM(env)->cKlass);
-    FRAME_LOCAL_OBJ(env, super, YogKlass, super_idx);
+
     klass->allocator = NULL;
     klass->name = INVALID_ID;
+    FRAME_LOCAL_OBJ(env, super, YogKlass, super_idx);
     klass->super = super;
     FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
-    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
 
     if (name != NULL) {
         ID id = INTERN(name);
         FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
         klass->name = id;
+    }
+    else {
+        FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     }
 
     return klass;
