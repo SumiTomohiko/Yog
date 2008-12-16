@@ -31,38 +31,44 @@ YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     pkg->code = (*keeper)(env, pkg->code);
 }
 
-static void 
-YogPackage_init(YogEnv* env, YogPackage* pkg) 
-{
-    YogObj_init(env, YOGOBJ(pkg), 0, ENV_VM(env)->cPackage);
-
-    YOGOBJ(pkg)->attrs = YogTable_new_symbol_table(env);
-    pkg->code = NULL;
-}
-
 static YogBasicObj* 
 allocate(YogEnv* env, YogKlass* klass) 
 {
     YogPackage* pkg = ALLOC_OBJ(env, YogPackage_keep_children, NULL, YogPackage);
-    YogPackage_init(env, pkg);
+    YogObj_init(env, YOGOBJ(pkg), 0, ENV_VM(env)->cPackage);
+    pkg->code = NULL;
+    FRAME_DECL_LOCAL(env, pkg_idx, OBJ2VAL(pkg));
 
+    YogTable* attrs = YogTable_new_symbol_table(env);
+#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, pkg, YogPackage, pkg_idx)
+    UPDATE_PTR;
+    YOGOBJ(pkg)->attrs = attrs;
+
+    UPDATE_PTR;
     return YOGBASICOBJ(pkg);
+#undef UPDATE_PTR
 }
+
 
 YogKlass* 
 YogPackage_klass_new(YogEnv* env) 
 {
     YogKlass* klass = YogKlass_new(env, "Package", ENV_VM(env)->cObject);
+    FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
+
+#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx)
+    UPDATE_PTR;
     YogKlass_define_allocator(env, klass, allocate);
+
+    UPDATE_PTR;
     return klass;
+#undef UPDATE_PTR
 }
 
 YogPackage* 
 YogPackage_new(YogEnv* env) 
 {
     YogPackage* pkg = (YogPackage*)allocate(env, ENV_VM(env)->cPackage);
-    YogPackage_init(env, pkg);
-
     return pkg;
 }
 
