@@ -9,7 +9,7 @@ extend_locals(YogEnv* env, YogFrame* frame, unsigned int n)
 {
     unsigned int capacity = frame->locals->size + n;
     YogValArray* locals = YogValArray_new(env, capacity);
-    frame = env->th->cur_frame;
+    frame = CUR_FRAME(env);
     unsigned int size = frame->locals_size;
     memcpy(locals->items, frame->locals->items, sizeof(YogVal) * size);
     frame->locals = locals;

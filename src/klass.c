@@ -7,16 +7,21 @@
 void 
 YogKlass_define_method(YogEnv* env, YogKlass* klass, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, ...)
 {
+    FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
     ID func_name = INTERN(name);
 
     va_list ap;
     va_start(ap, required_argc);
+    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, f, klass->name, func_name, blockargc, varargc, kwargc, required_argc, ap);
+    FRAME_DECL_LOCAL(env, builtin_f_idx, PTR2VAL(builtin_f));
     va_end(ap);
 
     YogBuiltinUnboundMethod* method = YogBuiltinUnboundMethod_new(env);
+    FRAME_LOCAL_PTR(env, builtin_f, builtin_f_idx);
     method->f = builtin_f;
 
+    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     YogVal val = OBJ2VAL(method);
     YogObj_set_attr_id(env, YOGOBJ(klass), func_name, val);
 }
