@@ -220,8 +220,11 @@ struct YogFrame {
 
 #define __FRAME_LOCAL__(env, i) \
     YogValArray_at(env, CUR_FRAME(env)->locals, i)
-#define FRAME_LOCAL(env, val, i)        val = __FRAME_LOCAL__(env, i)
-#define FRAME_LOCAL_PTR(env, ptr, i)    ptr = VAL2PTR(__FRAME_LOCAL__(env, i))
+#define FRAME_LOCAL(env, val, i)    val = __FRAME_LOCAL__(env, i)
+#define FRAME_LOCAL_PTR(env, ptr, i) \
+                                    ptr = VAL2PTR(__FRAME_LOCAL__(env, i))
+#define FRAME_LOCAL_OBJ(env, obj, type, i) \
+                                    obj = OBJ_AS(type, __FRAME_LOCAL__(env, i))
 
 typedef struct YogFrame YogFrame;
 

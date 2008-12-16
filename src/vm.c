@@ -465,9 +465,12 @@ static void
 setup_basic_klass(YogEnv* env, YogVm* vm) 
 {
     YogKlass* cObject = YogKlass_new(env, "Object", NULL);
+    FRAME_DECL_LOCAL(env, cObject_idx, OBJ2VAL(cObject));
+    FRAME_LOCAL_OBJ(env, cObject, YogKlass, cObject_idx);
     YogKlass_define_allocator(env, cObject, YogObj_allocate);
 
     YogKlass* cKlass = YogKlass_new(env, "Class", cObject);
+    FRAME_LOCAL_OBJ(env, cObject, YogKlass, cObject_idx);
     YogKlass_define_allocator(env, cKlass, YogKlass_allocate);
 
     YOGBASICOBJ(cObject)->klass = cKlass;
