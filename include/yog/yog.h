@@ -288,6 +288,7 @@ struct YogThread {
     struct YogFrame* cur_frame;
     struct YogJmpBuf* jmp_buf_list;
     struct YogVal jmp_val;
+    struct YogParser* parser;
 };
 
 typedef struct YogThread YogThread;

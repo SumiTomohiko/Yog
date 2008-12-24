@@ -7,6 +7,7 @@
 #include "yog/function.h"
 #include "yog/method.h"
 #include "yog/opcodes.h"
+#include "yog/parser.h"
 #include "yog/st.h"
 #include "yog/yog.h"
 
@@ -529,6 +530,11 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
     th->cur_frame = (*keeper)(env, th->cur_frame);
     th->jmp_val = YogVal_keep(env, th->jmp_val, keeper);
+
+    YogParser* parser = th->parser;
+    if (parser != NULL) {
+        YogParser_keep_children(env, parser, keeper);
+    }
 }
 
 void 
@@ -537,6 +543,7 @@ YogThread_init(YogEnv* env, YogThread* th)
     th->cur_frame = NULL;
     th->jmp_buf_list = NULL;
     th->jmp_val = YUNDEF;
+    th->parser = NULL;
 }
 
 YogThread*

@@ -139,7 +139,8 @@ void YogLexer_read_encoding(YogEnv*, YogLexer*);
 int yylex(YogLexer*);
 
 /* src/parser.y */
-YogParser* YogParser_new(YogEnv*);
+void YogParser_initialize(YogEnv*, YogParser*);
+void YogParser_keep_children(YogEnv*, void*, ObjectKeeper);
 YogArray* YogParser_parse_file(YogEnv*, YogParser*, const char*);
 
 /* PROTOTYPE_END */

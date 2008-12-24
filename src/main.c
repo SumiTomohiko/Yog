@@ -168,12 +168,15 @@ main(int argc, char* argv[])
 
     YogVm_boot(&env, env.vm);
 
-    YogParser* parser = YogParser_new(&env);
+    YogParser parser;
+    YogParser_initialize(&env, &parser);
+    thread.parser = &parser;
     const char* filename = NULL;
     if (optind < argc) {
         filename = argv[optind];
     }
-    YogArray* stmts = YogParser_parse_file(&env, parser, filename);
+    YogArray* stmts = YogParser_parse_file(&env, &parser, filename);
+    thread.parser = NULL;
 
     YogCode* code = Yog_compile_module(&env, filename, stmts);
 
