@@ -2620,13 +2620,29 @@ encoding_decl: NAME
 yield_expr: 'yield' [testlist]
 */
 
+static void 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogParser* parser = ptr;
+#define KEEP(member)    parser->member = (*keeper)(env, parser->member)
+    KEEP(lexer);
+    KEEP(stmts);
+#undef KEEP
+}
+
 YogParser* 
 YogParser_new(YogEnv* env) 
 {
-    YogParser* parser = ALLOC_OBJ(env, NULL, NULL, YogParser);
+    YogParser* parser = ALLOC_OBJ(env, keep_children, NULL, YogParser);
     parser->env = env;
-    parser->lexer = YogLexer_new(env);
+    parser->lexer = NULL;
+    parser->stmts = NULL;
     parser->lineno = 1;
+    FRAME_DECL_LOCAL(env, parser_idx, PTR2VAL(parser));
+
+    YogLexer* lexer = YogLexer_new(env);
+    FRAME_LOCAL_PTR(env, parser, parser_idx);
+    parser->lexer = lexer;
 
     return parser;
 }
@@ -2634,6 +2650,9 @@ YogParser_new(YogEnv* env)
 YogArray* 
 YogParser_parse_file(YogEnv* env, YogParser* parser, const char* filename)
 {
+    FRAME_DECL_LOCAL(env, parser_idx, PTR2VAL(parser));
+
+    FRAME_LOCAL_PTR(env, parser, parser_idx);
     YogLexer* lexer = parser->lexer;
     if (filename != NULL) {
         lexer->fp = fopen(filename, "r");
@@ -2643,6 +2662,7 @@ YogParser_parse_file(YogEnv* env, YogParser* parser, const char* filename)
         lexer->fp = stdin;
     }
 
+    FRAME_LOCAL_PTR(env, parser, parser_idx);
     yyparse(parser);
 
     if (filename != NULL) {

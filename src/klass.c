@@ -8,6 +8,7 @@ void
 YogKlass_define_method(YogEnv* env, YogKlass* klass, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, ...)
 {
     FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
+
     ID func_name = INTERN(name);
 
     va_list ap;

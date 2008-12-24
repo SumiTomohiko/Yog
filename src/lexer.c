@@ -16,6 +16,9 @@ static BOOL
 readline(YogEnv* env, YogLexer* lexer, FILE* fp) 
 {
     YogString* line = lexer->line;
+    FRAME_DECL_LOCAL(env, line_idx, OBJ2VAL(line));
+#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, line, YogString, line_idx)
+    UPDATE_PTR;
     YogString_clear(env, line);
 
     int c = 0;
@@ -25,15 +28,19 @@ readline(YogEnv* env, YogLexer* lexer, FILE* fp)
             break;
         }
         if ((c == '\n') || (c == '\r')) {
+            UPDATE_PTR;
             YogString_push(env, line, c);
             break;
         }
+        UPDATE_PTR;
         YogString_push(env, line, c);
     } while (1);
 
+    UPDATE_PTR;
     if (YogString_size(env, line) - 1 == 0) {
         return FALSE;
     }
+#undef UPDATE_PTR
 
     if (c == '\r') {
         c = fgetc(fp);
@@ -112,6 +119,10 @@ get_rest_size(YogEnv* env, YogLexer* lexer)
 static void 
 push_multibyte_char(YogEnv* env, YogLexer* lexer) 
 {
+    FRAME_DECL_LOCAL(env, lexer_idx, PTR2VAL(lexer));
+#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, lexer, YogLexer, lexer_idx)
+
+    UPDATE_PTR;
     YogEncoding* enc = lexer->buffer->encoding;
     const char* ptr = &lexer->line->body->items[lexer->next_index];
     int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
@@ -122,8 +133,10 @@ push_multibyte_char(YogEnv* env, YogLexer* lexer)
     int i = 0;
     for (i = 0; i < mbc_size; i++) {
         char c = nextc(lexer);
+        UPDATE_PTR;
         add_token_char(env, lexer, c);
     }
+#undef UPDATE_PTR
 }
 
 static int 
@@ -131,10 +144,14 @@ next_token(YogEnv* env, YogLexer* lexer)
 {
     clear_buffer(env, lexer);
 
+    FRAME_DECL_LOCAL(env, lexer_idx, PTR2VAL(lexer));
+#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, lexer, YogLexer, lexer_idx)
+
 #define SET_STATE(stat)     lexer->state = stat
 #define NEXTC()             nextc(lexer)
 #define PUSHBACK(c)         pushback(lexer, c)
     char c = 0;
+    UPDATE_PTR;
     do {
         if (lexer->next_index < YogString_size(env, lexer->line) - 1) {
             c = NEXTC();
@@ -153,11 +170,15 @@ next_token(YogEnv* env, YogLexer* lexer)
             if (!readline(env, lexer, lexer->fp)) {
                 return -1;
             }
+            UPDATE_PTR;
             lexer->next_index = 0;
         }
     } while (1);
 
-#define ADD_TOKEN_CHAR(c)       add_token_char(env, lexer, c)
+#define ADD_TOKEN_CHAR(c)       do { \
+    UPDATE_PTR; \
+    add_token_char(env, lexer, c); \
+} while (0)
 #define RETURN_VAL(val, type)   do { \
     yylval.val = val; \
     return type; \
@@ -178,10 +199,12 @@ next_token(YogEnv* env, YogLexer* lexer)
         {
             do {
                 ADD_TOKEN_CHAR(c);
+                UPDATE_PTR;
                 c = NEXTC();
             } while (isdigit(c));
 
 #define RETURN_INT  do { \
+    UPDATE_PTR; \
     int n = atoi(lexer->buffer->body->items); \
     YogVal val = INT2VAL(n); \
     SET_STATE(LS_OP); \
@@ -193,6 +216,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                     ADD_TOKEN_CHAR(c);
                     do {
                         ADD_TOKEN_CHAR(c2);
+                        UPDATE_PTR;
                         c2 = NEXTC();
                     } while (isdigit(c2));
                     PUSHBACK(c2);
@@ -247,17 +271,20 @@ next_token(YogEnv* env, YogLexer* lexer)
                     else {
                         ADD_TOKEN_CHAR(c);
                     }
+                    UPDATE_PTR;
                     c = NEXTC();
                 }
                 else {
                     PUSHBACK(c);
                     push_multibyte_char(env, lexer);
+                    UPDATE_PTR;
                     c = NEXTC();
                 }
             }
 
             YogString* s = YogString_clone(env, lexer->buffer);
             yylval.val = OBJ2VAL(s);
+            UPDATE_PTR;
             SET_STATE(LS_OP);
             return STRING;
             break;
@@ -313,6 +340,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                         default:
                             if (c != delimitor) {
                                 ADD_TOKEN_CHAR('\\');
+                                UPDATE_PTR;
                             }
                             ADD_TOKEN_CHAR(c);
                             break;
@@ -321,11 +349,13 @@ next_token(YogEnv* env, YogLexer* lexer)
                     else {
                         ADD_TOKEN_CHAR(c);
                     }
+                    UPDATE_PTR;
                     c = NEXTC();
                 }
                 else {
                     PUSHBACK(c);
                     push_multibyte_char(env, lexer);
+                    UPDATE_PTR;
                     c = NEXTC();
                 }
             }
@@ -344,6 +374,7 @@ next_token(YogEnv* env, YogLexer* lexer)
             YogRegexp* regexp = YogRegexp_new(env, lexer->buffer, option);
             yylval.val = OBJ2VAL(regexp);
 
+            UPDATE_PTR;
             SET_STATE(LS_EXPR);
             return REGEXP;
             break;
@@ -393,11 +424,13 @@ next_token(YogEnv* env, YogLexer* lexer)
             do {
                 if (isascii(c)) {
                     ADD_TOKEN_CHAR(c);
+                    UPDATE_PTR;
                     c = NEXTC();
                 }
                 else {
                     PUSHBACK(c);
                     push_multibyte_char(env, lexer);
+                    UPDATE_PTR;
                     c = NEXTC();
                 }
             } while (is_name_char(c));
@@ -419,6 +452,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                     type = NAME;
                 }
             }
+            UPDATE_PTR;
             SET_STATE(LS_OP);
             return type;
             break;
@@ -433,6 +467,8 @@ next_token(YogEnv* env, YogLexer* lexer)
 #undef NEXTC
 #undef SET_STATE
 
+#undef UPDATE_PTR
+
     return 0;
 }
 
@@ -445,14 +481,20 @@ is_coding_char(char c)
 static YogEncoding* 
 read_encoding(YogEnv* env, YogLexer* lexer) 
 {
+    FRAME_DECL_LOCAL(env, lexer_idx, PTR2VAL(lexer));
+#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, lexer, YogLexer, lexer_idx)
+
     YogEncoding* encoding = NULL;
 
+    UPDATE_PTR;
     while (readline(env, lexer, lexer->fp)) {
+        UPDATE_PTR;
         lexer->next_index = 0;
 
         skip_whitespace(lexer);
         int c = nextc(lexer);
         if (c != '#') {
+            UPDATE_PTR;
             continue;
         }
 
@@ -460,11 +502,13 @@ read_encoding(YogEnv* env, YogLexer* lexer)
 #define KEY     "coding"
         const char* ptr = strstr(s, KEY);
         if (ptr == NULL) {
+            UPDATE_PTR;
             continue;
         }
         ptr += strlen(KEY);
 #undef KEY
         if ((*ptr != '=') && (*ptr != ':')) {
+            UPDATE_PTR;
             continue;
         }
         lexer->next_index += ptr - s + 1;
@@ -474,10 +518,12 @@ read_encoding(YogEnv* env, YogLexer* lexer)
         c = nextc(lexer);
         while (is_coding_char(c)) {
             add_token_char(env, lexer, c);
+            UPDATE_PTR;
             c = nextc(lexer);
         }
         YogString* coding = YogEncoding_normalize_name(env, lexer->buffer);
         if (YogString_size(env, coding) - 1 < 1) {
+            UPDATE_PTR;
             continue;
         }
 
@@ -485,6 +531,7 @@ read_encoding(YogEnv* env, YogLexer* lexer)
         YogVal key = ID2VAL(id);
         YogVal val = YUNDEF;
         if (!YogTable_lookup(env, ENV_VM(env)->encodings, key, &val)) {
+            UPDATE_PTR;
             continue;
         }
         encoding = VAL2PTR(val);
@@ -492,6 +539,7 @@ read_encoding(YogEnv* env, YogLexer* lexer)
     }
 
     return encoding;
+#undef UPDATE_PTR
 }
 
 static void 
@@ -505,12 +553,18 @@ reset_lexer(YogEnv* env, YogLexer* lexer)
 void 
 YogLexer_read_encoding(YogEnv* env, YogLexer* lexer) 
 {
+    FRAME_DECL_LOCAL(env, lexer_idx, PTR2VAL(lexer));
+#define UPDATE_PTR  FRAME_LOCAL_PTR(env, lexer, lexer_idx)
+
+    UPDATE_PTR;
     YogEncoding* enc = read_encoding(env, lexer);
     if (enc == NULL) {
         enc = YogEncoding_get_default(env);
     }
+    UPDATE_PTR;
     lexer->buffer->encoding = enc;
     reset_lexer(env, lexer);
+#undef UPDATE_PTR
 }
 
 int 
@@ -519,16 +573,38 @@ yylex(YogLexer* lexer)
     return next_token(lexer->env, lexer);
 }
 
+static void 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogLexer* lexer = ptr;
+
+#define KEEP_MEMBER(member)     lexer->member = (*keeper)(env, lexer->member)
+    KEEP_MEMBER(line);
+    KEEP_MEMBER(buffer);
+#undef KEEP_MEMBER
+}
+
 YogLexer* 
 YogLexer_new(YogEnv* env) 
 {
-    YogLexer* lexer = ALLOC_OBJ(env, NULL, NULL, YogLexer);
+    YogLexer* lexer = ALLOC_OBJ(env, keep_children, NULL, YogLexer);
     lexer->state = LS_EXPR;
     lexer->env = env;
     lexer->fp = NULL;
-    lexer->line = YogString_new(env);
+    lexer->line = NULL;
     lexer->next_index = 0;
-    lexer->buffer = YogString_new(env);
+    lexer->buffer = NULL;
+    FRAME_DECL_LOCAL(env, lexer_idx, PTR2VAL(lexer));
+
+#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, lexer, YogLexer, lexer_idx)
+    YogString* line = YogString_new(env);
+    UPDATE_PTR;
+    lexer->line = line;
+
+    YogString* buffer = YogString_new(env);
+    UPDATE_PTR;
+    lexer->buffer = buffer;
+#undef UPDATE_PTR
 
     return lexer;
 }

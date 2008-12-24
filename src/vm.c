@@ -36,6 +36,7 @@ struct YogMarkSweepHeader {
 typedef struct YogMarkSweepHeader YogMarkSweepHeader;
 
 struct CopyingHeader {
+    unsigned int id;
     ChildrenKeeper keeper;
     Finalizer finalizer;
     void* forwarding_addr;
@@ -320,7 +321,10 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
         vm->gc.copying.heap = heap = YogHeap_new(allocate_size, heap);
     }
 
+    static unsigned int id = 0;
+
     CopyingHeader* head = (CopyingHeader*)heap->free;
+    head->id = id++;
     head->keeper = keeper;
     head->finalizer = finalizer;
     head->forwarding_addr = NULL;
@@ -473,9 +477,9 @@ setup_basic_klass(YogEnv* env, YogVm* vm)
     YogKlass_define_allocator(env, cObject, YogObj_allocate);
 
     YogKlass* cKlass = YogKlass_new(env, "Class", cObject);
-    FRAME_LOCAL_OBJ(env, cObject, YogKlass, cObject_idx);
     YogKlass_define_allocator(env, cKlass, YogKlass_allocate);
 
+    FRAME_LOCAL_OBJ(env, cObject, YogKlass, cObject_idx);
     YOGBASICOBJ(cObject)->klass = cKlass;
     YOGBASICOBJ(cKlass)->klass = cKlass;
 

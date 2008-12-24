@@ -136,9 +136,10 @@ YogException_klass_new(YogEnv* env)
 {
     YogKlass* klass = YogKlass_new(env, "Exception", ENV_VM(env)->cObject);
     FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
+#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx)
+    UPDATE_PTR;
     YogKlass_define_allocator(env, klass, allocate);
 
-#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx)
     UPDATE_PTR;
     YogKlass_define_method(env, klass, "initialize", initialize, 0, 0, 0, 0, "message", NULL);
     UPDATE_PTR;

@@ -43,8 +43,9 @@ YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsign
         const char* s = NULL;
         for (i = 0; i < argc; i++) {
             s = NEXT_STR(aq);
+            ID id = INTERN(s);
             FRAME_LOCAL_PTR(env, argnames, argnames_idx);
-            argnames[i] = INTERN(s);
+            argnames[i] = id;
         }
         if (0 < blockargc) {
             s = NEXT_STR(aq);
