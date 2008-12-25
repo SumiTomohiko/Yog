@@ -15,27 +15,119 @@ yyerror(char* s)
     fprintf(stderr, "%s\n", s);
 }
 
-static YogNode* 
-make_node(YogEnv* env, YogParser* parser, YogNodeType type) 
+static void 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
-    YogNode* node = ALLOC_OBJ(env, NULL, NULL, YogNode);
+    YogNode* node = ptr;
+
+#define KEEP(member)    node->u.member = (*keeper)(env, node->u.member)
+    switch (node->type) {
+    case NODE_ASSIGN:
+        KEEP(assign.left);
+        KEEP(assign.right);
+        break;
+    case NODE_ATTR:
+        KEEP(attr.obj);
+        break;
+    case NODE_BLOCK_ARG:
+        KEEP(blockarg.params);
+        KEEP(blockarg.stmts);
+        break;
+    case NODE_BLOCK_PARAM:
+    case NODE_KW_PARAM:
+    case NODE_PARAM:
+    case NODE_VAR_PARAM:
+        KEEP(param.default_);
+        break;
+    case NODE_BREAK:
+        KEEP(break_.expr);
+        break;
+    case NODE_COMMAND_CALL:
+        KEEP(command_call.args);
+        KEEP(command_call.blockarg);
+        break;
+    case NODE_EXCEPT:
+        KEEP(except.head);
+        KEEP(except.excepts);
+        KEEP(except.else_);
+        break;
+    case NODE_EXCEPT_BODY:
+        KEEP(except_body.type);
+        KEEP(except_body.stmts);
+        break;
+    case NODE_FINALLY:
+        KEEP(finally.head);
+        KEEP(finally.body);
+        break;
+    case NODE_FUNC_CALL:
+        KEEP(func_call.callee);
+        KEEP(func_call.args);
+        KEEP(func_call.blockarg);
+        break;
+    case NODE_FUNC_DEF:
+        KEEP(funcdef.params);
+        KEEP(funcdef.stmts);
+        break;
+    case NODE_IF:
+        KEEP(if_.test);
+        KEEP(if_.stmts);
+        KEEP(if_.tail);
+        break;
+    case NODE_KLASS:
+        KEEP(klass.super);
+        KEEP(klass.stmts);
+        break;
+    case NODE_LITERAL:
+        break;
+    case NODE_METHOD_CALL:
+        KEEP(method_call.recv);
+        KEEP(method_call.args);
+        KEEP(method_call.blockarg);
+        break;
+    case NODE_NEXT:
+        KEEP(next.expr);
+        break;
+    case NODE_RETURN:
+        KEEP(return_.expr);
+        break;
+    case NODE_SUBSCRIPT:
+        KEEP(subscript.prefix);
+        KEEP(subscript.index);
+        break;
+    case NODE_VARIABLE:
+        break;
+    case NODE_WHILE:
+        KEEP(while_.test);
+        KEEP(while_.stmts);
+        break;
+    default:
+        YOG_ASSERT(env, FALSE, "Unknown node type.");
+        break;
+    }
+#undef KEEP
+}
+
+static YogNode* 
+YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type) 
+{
+    YogNode* node = ALLOC_OBJ(env, keep_children, NULL, YogNode);
     node->lineno = parser->lineno;
     node->type = type;
 
     return node;
 }
 
-#define NODE_NEW(type)  make_node(ENV, PARSER, type)
+#define NODE_NEW(type)  YogNode_new(ENV, PARSER, type)
 
-#define LITERAL_NEW(node, val)  do { \
+#define LITERAL_NEW(node, val_)  do { \
     node = NODE_NEW(NODE_LITERAL); \
-    NODE_VAL(node) = val; \
+    node->u.literal.val = val_; \
 } while (0)
 
-#define BLOCK_ARG_NEW(node, params, stmts) do { \
+#define BLOCK_ARG_NEW(node, params_, stmts_) do { \
     node = NODE_NEW(NODE_BLOCK_ARG); \
-    NODE_PARAMS(node) = params; \
-    NODE_STMTS(node) = stmts; \
+    node->u.blockarg.params = params_; \
+    node->u.blockarg.stmts = stmts_; \
 } while (0)
 
 #define PARAMS_NEW(array, params_without_default, params_with_default, block_param, var_param, kw_param) do { \
@@ -60,11 +152,11 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
     } \
 } while (0)
 
-#define COMMAND_CALL_NEW(node, name, args, blockarg) do { \
+#define COMMAND_CALL_NEW(node, name_, args_, blockarg_) do { \
     node = NODE_NEW(NODE_COMMAND_CALL); \
-    NODE_COMMAND(node) = name; \
-    NODE_ARGS(node) = args; \
-    NODE_BLOCK(node) = blockarg; \
+    node->u.command_call.name = name_; \
+    node->u.command_call.args = args_; \
+    node->u.command_call.blockarg = blockarg_; \
 } while (0)
 
 #define OBJ_ARRAY_NEW(array, elem) do { \
@@ -87,10 +179,10 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
     result = array; \
 } while (0)
 
-#define PARAM_NEW(node, type, id, default_) do { \
+#define PARAM_NEW(node, type, id, default__) do { \
     node = NODE_NEW(type); \
-    NODE_NAME(node) = id; \
-    NODE_DEFAULT(node) = default_; \
+    node->u.param.name = id; \
+    node->u.param.default_ = default__; \
 } while (0)
 
 #define PARAM_ARRAY_PUSH(array, id, default_) do { \
@@ -100,43 +192,43 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
     YogArray_push(ENV, array, val); \
 } while (0)
 
-#define FUNC_DEF_NEW(node, name, params, stmts) do { \
+#define FUNC_DEF_NEW(node, name_, params_, stmts_) do { \
     node = NODE_NEW(NODE_FUNC_DEF); \
-    NODE_NAME(node) = name; \
-    NODE_PARAMS(node) = params; \
-    NODE_STMTS(node) = stmts; \
+    node->u.funcdef.name = name_; \
+    node->u.funcdef.params = params_; \
+    node->u.funcdef.stmts = stmts_; \
 } while (0)
 
-#define FUNC_CALL_NEW(node, callee, args, blockarg) do { \
+#define FUNC_CALL_NEW(node, callee_, args_, blockarg_) do { \
     node = NODE_NEW(NODE_FUNC_CALL); \
-    NODE_CALLEE(node) = callee; \
-    NODE_ARGS(node) = args; \
-    NODE_BLOCK(node) = blockarg; \
+    node->u.func_call.callee = callee_; \
+    node->u.func_call.args = args_; \
+    node->u.func_call.blockarg = blockarg_; \
 } while (0)
 
-#define VARIABLE_NEW(node, id) do { \
+#define VARIABLE_NEW(node, id_) do { \
     node = NODE_NEW(NODE_VARIABLE); \
-    NODE_ID(node) = id; \
+    node->u.variable.id = id_; \
 } while (0)
 
-#define EXCEPT_BODY_NEW(node, type, var, stmts) do { \
+#define EXCEPT_BODY_NEW(node, type_, var_, stmts_) do { \
     node = NODE_NEW(NODE_EXCEPT_BODY); \
-    NODE_EXC_TYPE(node) = type; \
-    NODE_EXC_VAR(node) = var; \
-    NODE_BODY(node) = stmts; \
+    node->u.except_body.type = type_; \
+    node->u.except_body.var = var_; \
+    node->u.except_body.stmts = stmts_; \
 } while (0)
 
-#define EXCEPT_NEW(node, head, excepts, else_) do { \
+#define EXCEPT_NEW(node, head_, excepts_, else__) do { \
     node = NODE_NEW(NODE_EXCEPT); \
-    NODE_HEAD(node) = head; \
-    NODE_EXCEPTS(node) = excepts; \
-    NODE_ELSE(node) = else_; \
+    node->u.except.head = head_; \
+    node->u.except.excepts = excepts_; \
+    node->u.except.else_ = else__; \
 } while (0)
 
-#define FINALLY_NEW(node, head, body) do { \
+#define FINALLY_NEW(node, head_, body_) do { \
     node = NODE_NEW(NODE_FINALLY); \
-    NODE_HEAD(node) = head; \
-    NODE_BODY(node) = body; \
+    node->u.finally.head = head_; \
+    node->u.finally.body = body_; \
 } while (0)
 
 #define EXCEPT_FINALLY_NEW(node, stmts, excepts, else_, finally) do { \
@@ -148,27 +240,27 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
     } \
 } while (0)
 
-#define BREAK_NEW(node, expr) do { \
+#define BREAK_NEW(node, expr_) do { \
     node = NODE_NEW(NODE_BREAK); \
-    NODE_EXPR(node) = expr; \
+    node->u.break_.expr = expr_; \
 } while (0)
 
-#define NEXT_NEW(node, expr) do { \
+#define NEXT_NEW(node, expr_) do { \
     node = NODE_NEW(NODE_NEXT); \
-    NODE_EXPR(node) = expr; \
+    node->u.next.expr = expr_; \
 } while (0)
 
-#define RETURN_NEW(node, expr) do { \
+#define RETURN_NEW(node, expr_) do { \
     node = NODE_NEW(NODE_RETURN); \
-    NODE_EXPR(node) = expr; \
+    node->u.return_.expr = expr_; \
 } while (0)
 
-#define METHOD_CALL_NEW(node, recv, name, args, blockarg) do { \
+#define METHOD_CALL_NEW(node, recv_, name_, args_, blockarg_) do { \
     node = NODE_NEW(NODE_METHOD_CALL); \
-    NODE_RECEIVER(node) = recv; \
-    NODE_METHOD(node) = name; \
-    NODE_ARGS(node) = args; \
-    NODE_BLOCK(node) = blockarg; \
+    node->u.method_call.recv = recv_; \
+    node->u.method_call.name = name_; \
+    node->u.method_call.args = args_; \
+    node->u.method_call.blockarg = blockarg_; \
 } while (0)
 
 #define METHOD_CALL_NEW1(node, recv, name, arg) do { \
@@ -177,11 +269,42 @@ make_node(YogEnv* env, YogParser* parser, YogNodeType type)
     METHOD_CALL_NEW(node, recv, name, args, NULL); \
 } while (0)
 
-#define IF_NEW(node, expr, stmts, tail) do { \
+#define IF_NEW(node, test_, stmts_, tail_) do { \
     node = NODE_NEW(NODE_IF); \
-    NODE_IF_TEST(node) = expr; \
-    NODE_IF_STMTS(node) = stmts; \
-    NODE_IF_TAIL(node) = tail; \
+    node->u.if_.test = test_; \
+    node->u.if_.stmts = stmts_; \
+    node->u.if_.tail = tail_; \
+} while (0)
+
+#define WHILE_NEW(node, test_, stmts_) do { \
+    node = NODE_NEW(NODE_WHILE); \
+    node->u.while_.test = test_; \
+    node->u.while_.stmts = stmts_; \
+} while (0)
+
+#define KLASS_NEW(node, name_, super_, stmts_) do { \
+    node = NODE_NEW(NODE_KLASS); \
+    node->u.klass.name = name_; \
+    node->u.klass.super = super_; \
+    node->u.klass.stmts = stmts_; \
+} while (0);
+
+#define ASSIGN_NEW(node, left_, right_) do { \
+    node = NODE_NEW(NODE_ASSIGN); \
+    node->u.assign.left = left_; \
+    node->u.assign.right = right_; \
+} while (0)
+
+#define SUBSCRIPT_NEW(node, prefix_, index_) do { \
+    node = NODE_NEW(NODE_SUBSCRIPT); \
+    node->u.subscript.prefix = prefix_; \
+    node->u.subscript.index = index_; \
+} while (0)
+
+#define ATTR_NEW(node, obj_, name_) do { \
+    node = NODE_NEW(NODE_ATTR); \
+    node->u.attr.obj = obj_; \
+    node->u.attr.name = name_; \
 } while (0)
 %}
 
@@ -320,10 +443,7 @@ stmt    : /* empty */ {
             FINALLY_NEW($$, $2, $4);
         }
         | WHILE expr stmts END {
-            YogNode* node = NODE_NEW(NODE_WHILE);
-            NODE_TEST(node) = $2;
-            NODE_STMTS(node) = $3;
-            $$ = node;
+            WHILE_NEW($$, $2, $3);
         }
         | BREAK {
             BREAK_NEW($$, NULL);
@@ -347,11 +467,7 @@ stmt    : /* empty */ {
             IF_NEW($$, $2, $3, $4);
         }
         | CLASS NAME super_opt stmts END {
-            YogNode* node = NODE_NEW(NODE_KLASS);
-            NODE_NAME(node) = $2;
-            NODE_SUPER(node) = $3;
-            NODE_STMTS(node) = $4;
-            $$ = node;
+            KLASS_NEW($$, $2, $3, $4);
         }
         ;
 super_opt   : /* empty */ {
@@ -527,10 +643,7 @@ args    : expr {
 expr    : assign_expr
         ;
 assign_expr : postfix_expr EQUAL logical_or_expr {
-                YogNode* node = NODE_NEW(NODE_ASSIGN);
-                NODE_LEFT(node) = $1;
-                NODE_RIGHT(node) = $3;
-                $$ = node;
+                ASSIGN_NEW($$, $1, $3);
             }
             | logical_or_expr
             ;
@@ -577,23 +690,17 @@ power   : postfix_expr
 postfix_expr    : atom 
                 | postfix_expr LPAR args_opt RPAR blockarg_opt {
                     if ($1->type == NODE_ATTR) {
-                        METHOD_CALL_NEW($$, NODE_OBJ($1), NODE_NAME($1), $3, $5);
+                        METHOD_CALL_NEW($$, $1->u.attr.obj, $1->u.attr.name, $3, $5);
                     }
                     else {
                         FUNC_CALL_NEW($$, $1, $3, $5);
                     }
                 }
                 | postfix_expr LBRACKET expr RBRACKET {
-                    YogNode* node = NODE_NEW(NODE_SUBSCRIPT);
-                    NODE_PREFIX(node) = $1;
-                    NODE_INDEX(node) = $3;
-                    $$ = node;
+                    SUBSCRIPT_NEW($$, $1, $3);
                 }
                 | postfix_expr DOT NAME {
-                    YogNode* node = NODE_NEW(NODE_ATTR);
-                    NODE_OBJ(node) = $1;
-                    NODE_NAME(node) = $3;
-                    $$ = node;
+                    ATTR_NEW($$, $1, $3);
                 }
                 ;
 atom    : NAME {

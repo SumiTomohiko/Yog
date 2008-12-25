@@ -36,66 +36,94 @@ struct YogNode {
     YogNodeType type;
     unsigned int lineno;
     union {
-        ID id;
-        YogVal val;
-        struct YogNode* nd;
-        struct YogArray* array;
-    } u1;
-    union {
-        ID id;
-        struct YogNode* nd;
-        struct YogArray* array;
-    } u2;
-    union {
-        struct YogArray* array;
-    } u3;
-    union {
-        struct YogNode* nd;
-        struct YogArray* array;
-    } u4;
+        struct {
+            struct YogNode* left;
+            struct YogNode* right;
+        } assign;
+        struct {
+            struct YogNode* obj;
+            ID name;
+        } attr;
+        struct {
+            struct YogArray* params;
+            struct YogArray* stmts;
+        } blockarg;
+        struct {
+            struct YogNode* expr;
+        } break_;
+        struct {
+            ID name;
+            struct YogArray* args;
+            struct YogNode* blockarg;
+        } command_call;
+        struct {
+            struct YogArray* head;
+            struct YogArray* excepts;
+            struct YogArray* else_;
+        } except;
+        struct {
+            struct YogNode* type;
+            ID var;
+            struct YogArray* stmts;
+        } except_body;
+        struct {
+            struct YogArray* head;
+            struct YogArray* body;
+        } finally;
+        struct {
+            struct YogNode* callee;
+            struct YogArray* args;
+            struct YogNode* blockarg;
+        } func_call;
+        struct {
+            ID name;
+            struct YogArray* params;
+            struct YogArray* stmts;
+        } funcdef;
+        struct {
+            struct YogNode* test;
+            struct YogArray* stmts;
+            struct YogArray* tail;
+        } if_;
+        struct {
+            ID name;
+            struct YogNode* super;
+            struct YogArray* stmts;
+        } klass;
+        struct {
+            struct YogVal val;
+        } literal;
+        struct {
+            struct YogNode* recv;
+            ID name;
+            struct YogArray* args;
+            struct YogNode* blockarg;
+        } method_call;
+        struct {
+            struct YogNode* expr;
+        } next;
+        struct {
+            ID name;
+            struct YogNode* default_;
+        } param;
+        struct {
+            struct YogNode* expr;
+        } return_;
+        struct {
+            struct YogNode* prefix;
+            struct YogNode* index;
+        } subscript;
+        struct {
+            ID id;
+        } variable;
+        struct {
+            struct YogNode* test;
+            struct YogArray* stmts;
+        } while_;
+    } u;
 };
 
-#define NODE_LEFT(node)     (node)->u1.nd
-#define NODE_RIGHT(node)    (node)->u2.nd
-
-#define NODE_ID(node)       (node)->u1.id
-
-#define NODE_VAL(node)      (node)->u1.val
-
-#define NODE_RECEIVER(node) (node)->u1.nd
-#define NODE_METHOD(node)   (node)->u2.id
-#define NODE_COMMAND(node)  (node)->u2.id
-#define NODE_CALLEE(node)   (node)->u1.nd
-#define NODE_ARGS(node)     (node)->u3.array
-#define NODE_BLOCK(node)    (node)->u4.nd
-
-#define NODE_NAME(node)     (node)->u1.id
-#define NODE_PARAMS(node)   (node)->u2.array
-#define NODE_STMTS(node)    (node)->u3.array
-#define NODE_DEFAULT(node)  (node)->u2.nd
-
-#define NODE_HEAD(node)     (node)->u1.array
-#define NODE_BODY(node)     (node)->u3.array
-#define NODE_EXCEPTS(node)  (node)->u2.array
-#define NODE_ELSE(node)     (node)->u3.array
-#define NODE_EXC_TYPE(node) (node)->u1.nd
-#define NODE_EXC_VAR(node)  (node)->u2.id
-#define NO_EXC_VAR          (UINT_MAX)
-
-#define NODE_TEST(node)     (node)->u1.nd
-
-#define NODE_EXPR(node)     (node)->u1.nd
-
-#define NODE_IF_TEST(node)  (node)->u1.nd
-#define NODE_IF_STMTS(node) (node)->u2.array
-#define NODE_IF_TAIL(node)  (node)->u3.array
-
-#define NODE_OBJ(node)      (node)->u2.nd
-
-#define NODE_SUPER(node)    (node)->u2.nd
-
-#define NODE_PREFIX(node)   (node)->u1.nd
-#define NODE_INDEX(node)    (node)->u2.nd
+#define NO_EXC_VAR  (UINT_MAX)
 
 typedef struct YogNode YogNode;
 
