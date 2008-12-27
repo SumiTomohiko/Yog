@@ -202,21 +202,21 @@ struct YogFrame {
 #define FRAME_DECL_LOCAL(env, index, val) \
     unsigned int index = CUR_FRAME(env)->locals_size; \
     YogFrame_add_locals(env, CUR_FRAME(env), 1, val)
-#define FRAME_DECL_LOCALS2(env, index1, val1, index2, val2) \
-    unsigned int index1 = CUR_FRAME(env)->locals_size; \
-    unsigned int index2 = CUR_FRAME(env)->locals_size + 1; \
-    YogFrame_add_locals(env, CUR_FRAME(env), 2, val1, val2)
-#define FRAME_DECL_LOCALS3(env, index1, val1, index2, val2, index3, val3) \
-    unsigned int index1 = CUR_FRAME(env)->locals_size; \
-    unsigned int index2 = CUR_FRAME(env)->locals_size + 1; \
-    unsigned int index3 = CUR_FRAME(env)->locals_size + 2; \
-    YogFrame_add_locals(env, CUR_FRAME(env), 3, val1, val2, val3)
-#define FRAME_DECL_LOCALS4(env, index1, val1, index2, val2, index3, val3, index4, val4) \
-    unsigned int index1 = CUR_FRAME(env)->locals_size; \
-    unsigned int index2 = CUR_FRAME(env)->locals_size + 1; \
-    unsigned int index3 = CUR_FRAME(env)->locals_size + 2; \
-    unsigned int index4 = CUR_FRAME(env)->locals_size + 3; \
-    YogFrame_add_locals(env, CUR_FRAME(env), 4, val1, val2, val3, val4)
+#define FRAME_DECL_LOCALS2(env, index0, val0, index1, val1) \
+    unsigned int index0 = CUR_FRAME(env)->locals_size; \
+    unsigned int index1 = CUR_FRAME(env)->locals_size + 1; \
+    YogFrame_add_locals(env, CUR_FRAME(env), 2, val0, val1)
+#define FRAME_DECL_LOCALS3(env, index0, val0, index1, val1, index2, val2) \
+    unsigned int index0 = CUR_FRAME(env)->locals_size; \
+    unsigned int index1 = CUR_FRAME(env)->locals_size + 1; \
+    unsigned int index2 = CUR_FRAME(env)->locals_size + 2; \
+    YogFrame_add_locals(env, CUR_FRAME(env), 3, val0, val1, val2)
+#define FRAME_DECL_LOCALS4(env, index0, val0, index1, val1, index2, val2, index3, val3) \
+    unsigned int index0 = CUR_FRAME(env)->locals_size; \
+    unsigned int index1 = CUR_FRAME(env)->locals_size + 1; \
+    unsigned int index2 = CUR_FRAME(env)->locals_size + 2; \
+    unsigned int index3 = CUR_FRAME(env)->locals_size + 3; \
+    YogFrame_add_locals(env, CUR_FRAME(env), 4, val0, val1, val2, val3)
 
 #define __FRAME_LOCAL__(env, i) \
     YogValArray_at(env, CUR_FRAME(env)->locals, i)

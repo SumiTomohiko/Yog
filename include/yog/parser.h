@@ -155,6 +155,10 @@ struct YogParser {
 
 typedef struct YogParser YogParser;
 
+#define ARRAY_TYPE  unsigned int
+#define NODE_TYPE   unsigned int
+#define NODE_NONE   (UINT_MAX)
+
 /* PROTOTYPE_START */
 
 /**

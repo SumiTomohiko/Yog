@@ -119,198 +119,455 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 
 #define NODE_NEW(type)  YogNode_new(ENV, PARSER, type)
 
+#define ASSIGN(var, index, ptr)         var = index
+#define ASSIGN_PTR(var, param)          do { \
+    if (param != NODE_NONE) { \
+        FRAME_LOCAL_PTR(ENV, var, param); \
+    } \
+    else { \
+        var = NULL; \
+    } \
+} while (0)
+#define ASSIGN_OBJ(var, type, param)    do { \
+    if (param != NODE_NONE) { \
+        FRAME_LOCAL_OBJ(ENV, var, type, param); \
+    } \
+    else { \
+        var = NULL; \
+    } \
+} while (0)
+#define ASSIGN_ARRAY(var, param)        ASSIGN_OBJ(var, YogArray, param)
+
 #define LITERAL_NEW(node, val_)  do { \
-    node = NODE_NEW(NODE_LITERAL); \
-    node->u.literal.val = val_; \
+    YogNode* nd = NODE_NEW(NODE_LITERAL); \
+    nd->u.literal.val = val_; \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define BLOCK_ARG_NEW(node, params_, stmts_) do { \
-    node = NODE_NEW(NODE_BLOCK_ARG); \
-    node->u.blockarg.params = params_; \
-    node->u.blockarg.stmts = stmts_; \
+    YogNode* nd = NODE_NEW(NODE_BLOCK_ARG); \
+    \
+    YogArray* params = NULL; \
+    ASSIGN_ARRAY(params, params_); \
+    nd->u.blockarg.params = params; \
+    \
+    YogArray* stmts = NULL; \
+    ASSIGN_ARRAY(stmts, stmts_); \
+    nd->u.blockarg.stmts = stmts; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
-#define PARAMS_NEW(array, params_without_default, params_with_default, block_param, var_param, kw_param) do { \
-    array = YogArray_new(ENV); \
+#define PARAMS_NEW(array, params_without_default_, params_with_default_, block_param_, var_param_, kw_param_) do { \
+    YogArray* ary = YogArray_new(ENV); \
+    FRAME_DECL_LOCAL(ENV, ary_idx, OBJ2VAL(ary)); \
+    \
+    YogArray* params_without_default = NULL; \
+    ASSIGN_ARRAY(params_without_default, params_without_default_); \
     if (params_without_default != NULL) { \
-        YogArray_extend(ENV, array, params_without_default); \
+        FRAME_LOCAL_OBJ(ENV, ary, YogArray, ary_idx); \
+        YogArray_extend(ENV, ary, params_without_default); \
     } \
+    \
+    YogArray* params_with_default = NULL; \
+    ASSIGN_ARRAY(params_with_default, params_with_default_); \
     if (params_with_default != NULL) { \
-        YogArray_extend(ENV, array, params_with_default); \
+        FRAME_LOCAL_OBJ(ENV, ary, YogArray, ary_idx); \
+        YogArray_extend(ENV, ary, params_with_default); \
     } \
+    \
+    YogNode* block_param = NULL; \
+    ASSIGN_PTR(block_param, block_param_); \
     if (block_param != NULL) { \
+        FRAME_LOCAL_OBJ(ENV, ary, YogArray, ary_idx); \
         YogVal val = PTR2VAL(block_param); \
-        YogArray_push(ENV, array, val); \
+        YogArray_push(ENV, ary, val); \
     } \
+    \
+    YogNode* var_param = NULL; \
+    ASSIGN_PTR(var_param, var_param_); \
     if (var_param != NULL) { \
+        FRAME_LOCAL_OBJ(ENV, ary, YogArray, ary_idx); \
         YogVal val = PTR2VAL(var_param); \
-        YogArray_push(ENV, array, val); \
+        YogArray_push(ENV, ary, val); \
     } \
+    \
+    YogNode* kw_param = NULL; \
+    ASSIGN_PTR(kw_param, kw_param_); \
     if (kw_param != NULL) { \
+        FRAME_LOCAL_OBJ(ENV, ary, YogArray, ary_idx); \
         YogVal val = PTR2VAL(kw_param); \
-        YogArray_push(ENV, array, val); \
+        YogArray_push(ENV, ary, val); \
     } \
+    \
+    ASSIGN(array, ary_idx, ary); \
 } while (0)
 
 #define COMMAND_CALL_NEW(node, name_, args_, blockarg_) do { \
-    node = NODE_NEW(NODE_COMMAND_CALL); \
-    node->u.command_call.name = name_; \
-    node->u.command_call.args = args_; \
-    node->u.command_call.blockarg = blockarg_; \
+    YogNode* nd = NODE_NEW(NODE_COMMAND_CALL); \
+    nd->u.command_call.name = name_; \
+    \
+    YogArray* args = NULL; \
+    ASSIGN_ARRAY(args, args_); \
+    nd->u.command_call.args = args; \
+    \
+    YogNode* blockarg = NULL; \
+    ASSIGN_PTR(blockarg, blockarg_); \
+    nd->u.command_call.blockarg = blockarg; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
-#define OBJ_ARRAY_NEW(array, elem) do { \
+#define OBJ_ARRAY_NEW(array, elem_) do { \
+    YogNode* elem = NULL; \
+    ASSIGN_PTR(elem, elem_); \
+    \
     if (elem != NULL) { \
-        array = YogArray_new(ENV); \
-        YogArray_push(ENV, array, PTR2VAL(elem)); \
+        YogArray* ary = YogArray_new(ENV); \
+        FRAME_DECL_LOCAL(ENV, ary_idx, OBJ2VAL(ary)); \
+        \
+        FRAME_LOCAL_OBJ(ENV, ary, YogArray, ary_idx); \
+        ASSIGN_PTR(elem, elem_); \
+        YogArray_push(ENV, ary, PTR2VAL(elem)); \
+        \
+        ASSIGN(array, ary_idx, ary); \
     } \
     else { \
-        array = NULL; \
+        YogArray* ary = NULL; \
+        FRAME_DECL_LOCAL(ENV, ary_idx, OBJ2VAL(ary)); \
+        \
+        ASSIGN(array, ary_idx, ary); \
     } \
 } while (0)
 
-#define OBJ_ARRAY_PUSH(result, array, elem) do { \
+#define OBJ_ARRAY_PUSH(result, array_, elem_) do { \
+    YogNode* elem = NULL; \
+    ASSIGN_PTR(elem, elem_); \
     if (elem != NULL) { \
-        if (array == NULL) { \
-            array = YogArray_new(ENV); \
+        YogArray* array = NULL; \
+        ASSIGN_ARRAY(array, array_); \
+        if (array != NULL) { \
+            YogArray_push(ENV, array, PTR2VAL(elem)); \
+            \
+            result = array_; \
         } \
-        YogArray_push(ENV, array, PTR2VAL(elem)); \
+        else { \
+            array = YogArray_new(ENV); \
+            FRAME_DECL_LOCAL(ENV, array_idx, OBJ2VAL(array)); \
+            \
+            FRAME_LOCAL_OBJ(ENV, array, YogArray, array_idx); \
+            ASSIGN_PTR(elem, elem_); \
+            YogArray_push(ENV, array, PTR2VAL(elem)); \
+            \
+            result = array_idx; \
+        } \
     } \
-    result = array; \
+    else { \
+        result = array_; \
+    } \
 } while (0)
 
 #define PARAM_NEW(node, type, id, default__) do { \
-    node = NODE_NEW(type); \
-    node->u.param.name = id; \
-    node->u.param.default_ = default__; \
+    YogNode* nd = NODE_NEW(type); \
+    nd->u.param.name = id; \
+    \
+    YogNode* default_ = NULL; \
+    ASSIGN_PTR(default_, default__); \
+    nd->u.param.default_ = default_; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
-#define PARAM_ARRAY_PUSH(array, id, default_) do { \
+#define PARAM_ARRAY_PUSH(array_, id, default_) do { \
     YogNode* node = NULL; \
-    PARAM_NEW(node, NODE_PARAM, id, default_); \
-    YogVal val = PTR2VAL(node); \
-    YogArray_push(ENV, array, val); \
+    FRAME_DECL_LOCAL(ENV, node_idx, PTR2VAL(node)); \
+    PARAM_NEW(node_idx, NODE_PARAM, id, default_); \
+    \
+    YogArray* array = NULL; \
+    ASSIGN_ARRAY(array, array_); \
+    YogArray_push(ENV, array, PTR2VAL(node)); \
 } while (0)
 
 #define FUNC_DEF_NEW(node, name_, params_, stmts_) do { \
-    node = NODE_NEW(NODE_FUNC_DEF); \
-    node->u.funcdef.name = name_; \
-    node->u.funcdef.params = params_; \
-    node->u.funcdef.stmts = stmts_; \
+    YogNode* nd = NODE_NEW(NODE_FUNC_DEF); \
+    nd->u.funcdef.name = name_; \
+    \
+    YogArray* params = NULL; \
+    ASSIGN_ARRAY(params, params_); \
+    nd->u.funcdef.params = params; \
+    \
+    YogArray* stmts = NULL; \
+    ASSIGN_ARRAY(stmts, stmts_); \
+    nd->u.funcdef.stmts = stmts; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define FUNC_CALL_NEW(node, callee_, args_, blockarg_) do { \
-    node = NODE_NEW(NODE_FUNC_CALL); \
-    node->u.func_call.callee = callee_; \
-    node->u.func_call.args = args_; \
-    node->u.func_call.blockarg = blockarg_; \
+    YogNode* nd = NODE_NEW(NODE_FUNC_CALL); \
+    \
+    YogNode* callee = NULL; \
+    ASSIGN_PTR(callee, callee_); \
+    nd->u.func_call.callee = callee; \
+    \
+    YogArray* args = NULL; \
+    ASSIGN_ARRAY(args, args_); \
+    nd->u.func_call.args = args; \
+    \
+    YogNode* blockarg = NULL; \
+    ASSIGN_PTR(blockarg, blockarg_); \
+    nd->u.func_call.blockarg = blockarg; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define VARIABLE_NEW(node, id_) do { \
-    node = NODE_NEW(NODE_VARIABLE); \
-    node->u.variable.id = id_; \
+    YogNode* nd = NODE_NEW(NODE_VARIABLE); \
+    nd->u.variable.id = id_; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define EXCEPT_BODY_NEW(node, type_, var_, stmts_) do { \
-    node = NODE_NEW(NODE_EXCEPT_BODY); \
-    node->u.except_body.type = type_; \
-    node->u.except_body.var = var_; \
-    node->u.except_body.stmts = stmts_; \
+    YogNode* nd = NODE_NEW(NODE_EXCEPT_BODY); \
+    \
+    YogNode* type = NULL; \
+    ASSIGN_PTR(type, type_); \
+    nd->u.except_body.type = type; \
+    \
+    nd->u.except_body.var = var_; \
+    \
+    YogArray* stmts = NULL; \
+    ASSIGN_ARRAY(stmts, stmts_); \
+    nd->u.except_body.stmts = stmts; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define EXCEPT_NEW(node, head_, excepts_, else__) do { \
-    node = NODE_NEW(NODE_EXCEPT); \
-    node->u.except.head = head_; \
-    node->u.except.excepts = excepts_; \
-    node->u.except.else_ = else__; \
+    YogNode* EXCEPT_NEW_nd = NODE_NEW(NODE_EXCEPT); \
+    \
+    YogArray* head = NULL; \
+    ASSIGN_ARRAY(head, head_); \
+    EXCEPT_NEW_nd->u.except.head = head; \
+    \
+    YogArray* excepts = NULL; \
+    ASSIGN_ARRAY(excepts, excepts_); \
+    EXCEPT_NEW_nd->u.except.excepts = excepts; \
+    \
+    YogArray* else_ = NULL; \
+    ASSIGN_ARRAY(else_, else__); \
+    EXCEPT_NEW_nd->u.except.else_ = else_; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(EXCEPT_NEW_nd)); \
+    ASSIGN(node, nd_idx, EXCEPT_NEW_nd); \
 } while (0)
 
 #define FINALLY_NEW(node, head_, body_) do { \
-    node = NODE_NEW(NODE_FINALLY); \
-    node->u.finally.head = head_; \
-    node->u.finally.body = body_; \
+    YogNode* FINALLY_NEW_nd = NODE_NEW(NODE_FINALLY); \
+    \
+    YogArray* head = NULL; \
+    ASSIGN_ARRAY(head, head_); \
+    FINALLY_NEW_nd->u.finally.head = head; \
+    \
+    YogArray* body = NULL; \
+    ASSIGN_ARRAY(body, body_); \
+    FINALLY_NEW_nd->u.finally.body = body; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(FINALLY_NEW_nd)); \
+    ASSIGN(node, nd_idx, FINALLY_NEW_nd); \
 } while (0)
 
-#define EXCEPT_FINALLY_NEW(node, stmts, excepts, else_, finally) do { \
-    EXCEPT_NEW(node, stmts, excepts, else_); \
+#define EXCEPT_FINALLY_NEW(node, stmts, excepts, else_, finally_) do { \
+    NODE_TYPE nd = NODE_NONE; \
+    EXCEPT_NEW(nd, stmts, excepts, else_); \
+    \
+    YogArray* finally = NULL; \
+    ASSIGN_ARRAY(finally, finally_); \
     if (finally != NULL) { \
-        YogArray* array = NULL; \
-        OBJ_ARRAY_NEW(array, node); \
-        FINALLY_NEW(node, array, finally); \
+        ARRAY_TYPE array = NODE_NONE; \
+        OBJ_ARRAY_NEW(array, nd); \
+        FINALLY_NEW(nd, array, finally_); \
     } \
+    \
+    YogNode* pnode = NULL; \
+    FRAME_LOCAL_PTR(ENV, pnode, nd); \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(pnode)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define BREAK_NEW(node, expr_) do { \
-    node = NODE_NEW(NODE_BREAK); \
-    node->u.break_.expr = expr_; \
+    YogNode* nd = NODE_NEW(NODE_BREAK); \
+    \
+    YogNode* expr = NULL; \
+    ASSIGN_PTR(expr, expr_); \
+    nd->u.break_.expr = expr; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define NEXT_NEW(node, expr_) do { \
-    node = NODE_NEW(NODE_NEXT); \
-    node->u.next.expr = expr_; \
+    YogNode* nd = NODE_NEW(NODE_NEXT); \
+    \
+    YogNode* expr = NULL; \
+    ASSIGN_PTR(expr, expr_); \
+    nd->u.next.expr = expr; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define RETURN_NEW(node, expr_) do { \
-    node = NODE_NEW(NODE_RETURN); \
-    node->u.return_.expr = expr_; \
+    YogNode* nd = NODE_NEW(NODE_RETURN); \
+    \
+    YogNode* expr = NULL; \
+    ASSIGN_PTR(expr, expr_); \
+    nd->u.return_.expr = expr; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define METHOD_CALL_NEW(node, recv_, name_, args_, blockarg_) do { \
-    node = NODE_NEW(NODE_METHOD_CALL); \
-    node->u.method_call.recv = recv_; \
-    node->u.method_call.name = name_; \
-    node->u.method_call.args = args_; \
-    node->u.method_call.blockarg = blockarg_; \
+    YogNode* nd = NODE_NEW(NODE_METHOD_CALL); \
+    \
+    YogNode* recv = NULL; \
+    ASSIGN_PTR(recv, recv_); \
+    nd->u.method_call.recv = recv; \
+    \
+    nd->u.method_call.name = name_; \
+    \
+    YogArray* args = NULL; \
+    ASSIGN_ARRAY(args, args_); \
+    nd->u.method_call.args = args; \
+    \
+    YogNode* blockarg = NULL; \
+    ASSIGN_PTR(blockarg, blockarg_); \
+    nd->u.method_call.blockarg = blockarg; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
-#define METHOD_CALL_NEW1(node, recv, name, arg) do { \
+#define METHOD_CALL_NEW1(node, recv, name, arg_) do { \
     YogArray* args = YogArray_new(ENV); \
+    FRAME_DECL_LOCAL(ENV, args_idx, OBJ2VAL(args)); \
+    \
+    ASSIGN_ARRAY(args, args_idx); \
+    YogNode* arg = NULL; \
+    ASSIGN_PTR(arg, arg_); \
     YogArray_push(ENV, args, PTR2VAL(arg)); \
-    METHOD_CALL_NEW(node, recv, name, args, NULL); \
+    \
+    ASSIGN_ARRAY(args, args_idx); \
+    METHOD_CALL_NEW(node, recv, name, args_idx, NODE_NONE); \
 } while (0)
 
 #define IF_NEW(node, test_, stmts_, tail_) do { \
-    node = NODE_NEW(NODE_IF); \
-    node->u.if_.test = test_; \
-    node->u.if_.stmts = stmts_; \
-    node->u.if_.tail = tail_; \
+    YogNode* nd = NODE_NEW(NODE_IF); \
+    \
+    YogNode* test = NULL; \
+    ASSIGN_PTR(test, test_); \
+    nd->u.if_.test = test; \
+    \
+    YogArray* stmts = NULL; \
+    ASSIGN_ARRAY(stmts, stmts_); \
+    nd->u.if_.stmts = stmts; \
+    \
+    YogArray* tail = NULL; \
+    ASSIGN_ARRAY(tail, tail_); \
+    nd->u.if_.tail = tail; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define WHILE_NEW(node, test_, stmts_) do { \
-    node = NODE_NEW(NODE_WHILE); \
-    node->u.while_.test = test_; \
-    node->u.while_.stmts = stmts_; \
+    YogNode* nd = NODE_NEW(NODE_WHILE); \
+    \
+    YogNode* test = NULL; \
+    ASSIGN_PTR(test, test_); \
+    nd->u.while_.test = test; \
+    \
+    YogArray* stmts = NULL; \
+    ASSIGN_ARRAY(stmts, stmts_); \
+    nd->u.while_.stmts = stmts; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define KLASS_NEW(node, name_, super_, stmts_) do { \
-    node = NODE_NEW(NODE_KLASS); \
-    node->u.klass.name = name_; \
-    node->u.klass.super = super_; \
-    node->u.klass.stmts = stmts_; \
+    YogNode* nd = NODE_NEW(NODE_KLASS); \
+    nd->u.klass.name = name_; \
+    \
+    YogNode* super = NULL; \
+    ASSIGN_PTR(super, super_); \
+    nd->u.klass.super = super; \
+    \
+    YogArray* stmts = NULL; \
+    ASSIGN_ARRAY(stmts, stmts_); \
+    nd->u.klass.stmts = stmts; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0);
 
 #define ASSIGN_NEW(node, left_, right_) do { \
-    node = NODE_NEW(NODE_ASSIGN); \
-    node->u.assign.left = left_; \
-    node->u.assign.right = right_; \
+    YogNode* nd = NODE_NEW(NODE_ASSIGN); \
+    \
+    YogNode* left = NULL; \
+    ASSIGN_PTR(left, left_); \
+    nd->u.assign.left = left; \
+    \
+    YogNode* right = NULL; \
+    ASSIGN_PTR(right, right_); \
+    nd->u.assign.right = right; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define SUBSCRIPT_NEW(node, prefix_, index_) do { \
-    node = NODE_NEW(NODE_SUBSCRIPT); \
-    node->u.subscript.prefix = prefix_; \
-    node->u.subscript.index = index_; \
+    YogNode* nd = NODE_NEW(NODE_SUBSCRIPT); \
+    \
+    YogNode* prefix = NULL; \
+    ASSIGN_PTR(prefix, prefix_); \
+    nd->u.subscript.prefix = prefix; \
+    \
+    YogNode* index = NULL; \
+    ASSIGN_PTR(index, index_); \
+    nd->u.subscript.index = index; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 
 #define ATTR_NEW(node, obj_, name_) do { \
-    node = NODE_NEW(NODE_ATTR); \
-    node->u.attr.obj = obj_; \
-    node->u.attr.name = name_; \
+    YogNode* nd = NODE_NEW(NODE_ATTR); \
+    \
+    YogNode* obj = NULL; \
+    ASSIGN_PTR(obj, obj_); \
+    nd->u.attr.obj = obj; \
+    \
+    nd->u.attr.name = name_; \
+    \
+    FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
+    ASSIGN(node, nd_idx, nd); \
 } while (0)
 %}
 
 %union {
-    struct YogArray* array;
-    struct YogNode* node;
+    ARRAY_TYPE array;
+    NODE_TYPE node;
     struct YogVal val;
     ID name;
 }
@@ -408,7 +665,9 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 %type<val> STRING
 %%
 module  : stmts {
-            PARSER->stmts = $1;
+            YogArray* stmts = NULL;
+            ASSIGN_ARRAY(stmts, $1);
+            PARSER->stmts = stmts;
         }
         ;
 stmts   : stmt {
@@ -419,12 +678,12 @@ stmts   : stmt {
         }
         ;
 stmt    : /* empty */ {
-            $$ = NULL;
+            $$ = NODE_NONE;
         }
         | func_def
         | expr
         | NAME args {
-            COMMAND_CALL_NEW($$, $1, $2, NULL);
+            COMMAND_CALL_NEW($$, $1, $2, NODE_NONE);
         }
         /*
         | NAME args DO LPAR params RPAR stmts END {
@@ -437,7 +696,7 @@ stmt    : /* empty */ {
             EXCEPT_FINALLY_NEW($$, $2, $3, $5, $6);
         }
         | TRY stmts excepts finally_opt END {
-            EXCEPT_FINALLY_NEW($$, $2, $3, NULL, $4);
+            EXCEPT_FINALLY_NEW($$, $2, $3, NODE_NONE, $4);
         }
         | TRY stmts FINALLY stmts END {
             FINALLY_NEW($$, $2, $4);
@@ -446,19 +705,19 @@ stmt    : /* empty */ {
             WHILE_NEW($$, $2, $3);
         }
         | BREAK {
-            BREAK_NEW($$, NULL);
+            BREAK_NEW($$, NODE_NONE);
         }
         | BREAK expr {
             BREAK_NEW($$, $2);
         }
         | NEXT {
-            NEXT_NEW($$, NULL);
+            NEXT_NEW($$, NODE_NONE);
         }
         | NEXT expr {
             NEXT_NEW($$, $2);
         }
         | RETURN {
-            RETURN_NEW($$, NULL);
+            RETURN_NEW($$, NODE_NONE);
         }
         | RETURN expr {
             RETURN_NEW($$, $2);
@@ -471,7 +730,7 @@ stmt    : /* empty */ {
         }
         ;
 super_opt   : /* empty */ {
-                $$ = NULL;
+                $$ = NODE_NONE;
             }
             | GREATER expr {
                 $$ = $2;
@@ -479,13 +738,13 @@ super_opt   : /* empty */ {
             ;
 if_tail : else_opt
         | ELIF expr stmts if_tail {
-            YogNode* node = NULL;
+            NODE_TYPE node;
             IF_NEW(node, $2, $3, $4);
             OBJ_ARRAY_NEW($$, node);
         }
         ;
 else_opt    : /* empty */ {
-                $$ = NULL;
+                $$ = NODE_NONE;
             }
             | ELSE stmts {
                 $$ = $2;
@@ -499,105 +758,105 @@ params  : params_without_default COMMA params_with_default COMMA block_param COM
             PARAMS_NEW($$, $1, $3, $5, $7, $9);
         }
         | params_without_default COMMA params_with_default COMMA block_param COMMA var_param {
-            PARAMS_NEW($$, $1, $3, $5, $7, NULL);
+            PARAMS_NEW($$, $1, $3, $5, $7, NODE_NONE);
         }
         | params_without_default COMMA params_with_default COMMA block_param COMMA kw_param {
-            PARAMS_NEW($$, $1, $3, $5, NULL, $7);
+            PARAMS_NEW($$, $1, $3, $5, NODE_NONE, $7);
         }
         | params_without_default COMMA params_with_default COMMA block_param {
-            PARAMS_NEW($$, $1, $3, $5, NULL, NULL);
+            PARAMS_NEW($$, $1, $3, $5, NODE_NONE, NODE_NONE);
         }
         | params_without_default COMMA params_with_default COMMA var_param COMMA kw_param {
-            PARAMS_NEW($$, $1, $3, NULL, $5, $7);
+            PARAMS_NEW($$, $1, $3, NODE_NONE, $5, $7);
         }
         | params_without_default COMMA params_with_default COMMA var_param {
-            PARAMS_NEW($$, $1, $3, NULL, $5, NULL);
+            PARAMS_NEW($$, $1, $3, NODE_NONE, $5, NODE_NONE);
         }
         | params_without_default COMMA params_with_default COMMA kw_param {
-            PARAMS_NEW($$, $1, $3, NULL, NULL, $5);
+            PARAMS_NEW($$, $1, $3, NODE_NONE, NODE_NONE, $5);
         }
         | params_without_default COMMA params_with_default {
-            PARAMS_NEW($$, $1, $3, NULL, NULL, NULL);
+            PARAMS_NEW($$, $1, $3, NODE_NONE, NODE_NONE, NODE_NONE);
         }
         | params_without_default COMMA block_param COMMA var_param COMMA kw_param {
-            PARAMS_NEW($$, $1, NULL, $3, $5, $7);
+            PARAMS_NEW($$, $1, NODE_NONE, $3, $5, $7);
         }
         | params_without_default COMMA block_param COMMA var_param {
-            PARAMS_NEW($$, $1, NULL, $3, $5, NULL);
+            PARAMS_NEW($$, $1, NODE_NONE, $3, $5, NODE_NONE);
         }
         | params_without_default COMMA block_param COMMA kw_param {
-            PARAMS_NEW($$, $1, NULL, $3, NULL, $5);
+            PARAMS_NEW($$, $1, NODE_NONE, $3, NODE_NONE, $5);
         }
         | params_without_default COMMA block_param {
-            PARAMS_NEW($$, $1, NULL, $3, NULL, NULL);
+            PARAMS_NEW($$, $1, NODE_NONE, $3, NODE_NONE, NODE_NONE);
         }
         | params_without_default COMMA var_param COMMA kw_param {
-            PARAMS_NEW($$, $1, NULL, NULL, $3, $5);
+            PARAMS_NEW($$, $1, NODE_NONE, NODE_NONE, $3, $5);
         }
         | params_without_default COMMA var_param {
-            PARAMS_NEW($$, $1, NULL, NULL, $3, NULL);
+            PARAMS_NEW($$, $1, NODE_NONE, NODE_NONE, $3, NODE_NONE);
         }
         | params_without_default COMMA kw_param {
-            PARAMS_NEW($$, $1, NULL, NULL, NULL, $3);
+            PARAMS_NEW($$, $1, NODE_NONE, NODE_NONE, NODE_NONE, $3);
         }
         | params_without_default {
-            PARAMS_NEW($$, $1, NULL, NULL, NULL, NULL);
+            PARAMS_NEW($$, $1, NODE_NONE, NODE_NONE, NODE_NONE, NODE_NONE);
         }
         | params_with_default COMMA block_param COMMA var_param COMMA kw_param {
-            PARAMS_NEW($$, NULL, $1, $3, $5, $7);
+            PARAMS_NEW($$, NODE_NONE, $1, $3, $5, $7);
         }
         | params_with_default COMMA block_param COMMA var_param {
-            PARAMS_NEW($$, NULL, $1, $3, $5, NULL);
+            PARAMS_NEW($$, NODE_NONE, $1, $3, $5, NODE_NONE);
         }
         | params_with_default COMMA block_param COMMA kw_param {
-            PARAMS_NEW($$, NULL, $1, $3, NULL, $5);
+            PARAMS_NEW($$, NODE_NONE, $1, $3, NODE_NONE, $5);
         }
         | params_with_default COMMA block_param {
-            PARAMS_NEW($$, NULL, $1, $3, NULL, NULL);
+            PARAMS_NEW($$, NODE_NONE, $1, $3, NODE_NONE, NODE_NONE);
         }
         | params_with_default COMMA var_param COMMA kw_param {
-            PARAMS_NEW($$, NULL, $1, NULL, $3, $5);
+            PARAMS_NEW($$, NODE_NONE, $1, NODE_NONE, $3, $5);
         }
         | params_with_default COMMA var_param {
-            PARAMS_NEW($$, NULL, $1, NULL, $3, NULL);
+            PARAMS_NEW($$, NODE_NONE, $1, NODE_NONE, $3, NODE_NONE);
         }
         | params_with_default COMMA kw_param {
-            PARAMS_NEW($$, NULL, $1, NULL, NULL, $3);
+            PARAMS_NEW($$, NODE_NONE, $1, NODE_NONE, NODE_NONE, $3);
         }
         | params_with_default {
-            PARAMS_NEW($$, NULL, $1, NULL, NULL, NULL);
+            PARAMS_NEW($$, NODE_NONE, $1, NODE_NONE, NODE_NONE, NODE_NONE);
         }
         | block_param COMMA var_param COMMA kw_param {
-            PARAMS_NEW($$, NULL, NULL, $1, $3, $5);
+            PARAMS_NEW($$, NODE_NONE, NODE_NONE, $1, $3, $5);
         }
         | block_param COMMA var_param {
-            PARAMS_NEW($$, NULL, NULL, $1, $3, NULL);
+            PARAMS_NEW($$, NODE_NONE, NODE_NONE, $1, $3, NODE_NONE);
         }
         | block_param COMMA kw_param {
-            PARAMS_NEW($$, NULL, NULL, $1, NULL, $3);
+            PARAMS_NEW($$, NODE_NONE, NODE_NONE, $1, NODE_NONE, $3);
         }
         | block_param {
-            PARAMS_NEW($$, NULL, NULL, $1, NULL, NULL);
+            PARAMS_NEW($$, NODE_NONE, NODE_NONE, $1, NODE_NONE, NODE_NONE);
         }
         | var_param COMMA kw_param {
-            PARAMS_NEW($$, NULL, NULL, NULL, $1, $3);
+            PARAMS_NEW($$, NODE_NONE, NODE_NONE, NODE_NONE, $1, $3);
         }
         | var_param {
-            PARAMS_NEW($$, NULL, NULL, NULL, $1, NULL);
+            PARAMS_NEW($$, NODE_NONE, NODE_NONE, NODE_NONE, $1, NODE_NONE);
         }
         | kw_param {
-            PARAMS_NEW($$, NULL, NULL, NULL, NULL, $1);
+            PARAMS_NEW($$, NODE_NONE, NODE_NONE, NODE_NONE, NODE_NONE, $1);
         }
         | /* empty */ {
-            $$ = NULL;
+            $$ = NODE_NONE;
         }
         ;
 kw_param    : DOUBLE_STAR NAME {
-                PARAM_NEW($$, NODE_KW_PARAM, $2, NULL);
+                PARAM_NEW($$, NODE_KW_PARAM, $2, NODE_NONE);
             }
             ;
 var_param   : STAR NAME {
-                PARAM_NEW($$, NODE_VAR_PARAM, $2, NULL);
+                PARAM_NEW($$, NODE_VAR_PARAM, $2, NODE_NONE);
             }
             ;
 block_param     : AMPER NAME param_default_opt {
@@ -605,7 +864,7 @@ block_param     : AMPER NAME param_default_opt {
                 }
                 ;
 param_default_opt   : /* empty */ {
-                        $$ = NULL;
+                        $$ = NODE_NONE;
                     }
                     | param_default
                     ;
@@ -614,11 +873,13 @@ param_default   : EQUAL expr {
                 }
                 ;
 params_without_default  : NAME {
-                            $$ = YogArray_new(ENV);
-                            PARAM_ARRAY_PUSH($$, $1, NULL);
+                            YogArray* array = YogArray_new(ENV);
+                            FRAME_DECL_LOCAL(ENV, array_idx, OBJ2VAL(array));
+                            $$ = array_idx;
+                            PARAM_ARRAY_PUSH($$, $1, NODE_NONE);
                         }
                         | params_without_default COMMA NAME {
-                            PARAM_ARRAY_PUSH($1, $3, NULL);
+                            PARAM_ARRAY_PUSH($1, $3, NODE_NONE);
                             $$ = $1;
                         }
                         ;
@@ -689,8 +950,11 @@ power   : postfix_expr
         ;
 postfix_expr    : atom 
                 | postfix_expr LPAR args_opt RPAR blockarg_opt {
-                    if ($1->type == NODE_ATTR) {
-                        METHOD_CALL_NEW($$, $1->u.attr.obj, $1->u.attr.name, $3, $5);
+                    YogNode* postfix_expr_node = NULL;
+                    ASSIGN_PTR(postfix_expr_node, $1);
+                    if (postfix_expr_node->type == NODE_ATTR) {
+                        FRAME_DECL_LOCAL(ENV, obj_idx, OBJ2VAL(postfix_expr_node->u.attr.obj));
+                        METHOD_CALL_NEW($$, obj_idx, postfix_expr_node->u.attr.name, $3, $5);
                     }
                     else {
                         FUNC_CALL_NEW($$, $1, $3, $5);
@@ -728,12 +992,12 @@ atom    : NAME {
         }
         ;
 args_opt    : /* empty */ {
-                $$ = NULL;
+                $$ = NODE_NONE;
             }
             | args
             ;
 blockarg_opt    : /* empty */ {
-                    $$ = NULL;
+                    $$ = NODE_NONE;
                 }
                 | DO LBRACKET params RBRACKET stmts END {
                     BLOCK_ARG_NEW($$, $3, $5);
@@ -754,7 +1018,7 @@ except  : EXCEPT expr AS NAME newline stmts {
             EXCEPT_BODY_NEW($$, $2, NO_EXC_VAR, $4);
         }
         | EXCEPT newline stmts {
-            EXCEPT_BODY_NEW($$, NULL, NO_EXC_VAR, $3);
+            EXCEPT_BODY_NEW($$, NODE_NONE, NO_EXC_VAR, $3);
         }
         ;
 newline     : NEWLINE {
@@ -762,7 +1026,7 @@ newline     : NEWLINE {
             }
             ;
 finally_opt : /* empty */ {
-                $$ = NULL;
+                $$ = NODE_NONE;
             } 
             | FINALLY stmts {
                 $$ = $2;
