@@ -217,14 +217,25 @@ YogString_clone(YogEnv* env, YogString* string)
 {
     FRAME_DECL_LOCAL(env, string_idx, OBJ2VAL(string));
 
-#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, string, YogString, string_idx)
-    UPDATE_PTR;
-    YogString* s = YogString_new_str(env, string->body->items);
-    UPDATE_PTR;
-    s->encoding = string->encoding;
-#undef UPDATE_PTR
+#define UPDATE_STRING   FRAME_LOCAL_OBJ(env, string, YogString, string_idx)
+    UPDATE_STRING;
+    unsigned int size = string->body->size;
+    YogCharArray* body = YogCharArray_new(env, size);
+    UPDATE_STRING;
+    memcpy(body->items, string->body->items, size);
+    FRAME_DECL_LOCAL(env, body_idx, PTR2VAL(body));
+#define UPDATE_BODY     FRAME_LOCAL_PTR(env, body, body_idx)
 
-    return s;
+    YogString* clone = (YogString*)allocate(env, ENV_VM(env)->cString);
+    UPDATE_STRING;
+    clone->encoding = string->encoding;
+    UPDATE_BODY;
+    clone->body = body;
+
+#undef UPDATE_BODY
+#undef UPDATE_STRING
+
+    return clone;
 }
 
 char 
