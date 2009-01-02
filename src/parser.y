@@ -467,7 +467,6 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
     ASSIGN_PTR(arg, arg_); \
     YogArray_push(ENV, args, PTR2VAL(arg)); \
     \
-    ASSIGN_ARRAY(args, args_idx); \
     METHOD_CALL_NEW(node, recv, name, args_idx, NODE_NONE); \
 } while (0)
 
@@ -1184,7 +1183,7 @@ YogParser_parse_file(YogEnv* env, YogParser* parser, const char* filename)
     yyparse(parser);
 
     if (filename != NULL) {
-        fclose(lexer->fp);
+        fclose(parser->lexer->fp);
     }
 
     return parser->stmts;

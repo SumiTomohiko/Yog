@@ -618,7 +618,6 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
     ASSIGN_PTR(arg, arg_); \
     YogArray_push(ENV, args, PTR2VAL(arg)); \
     \
-    ASSIGN_ARRAY(args, args_idx); \
     METHOD_CALL_NEW(node, recv, name, args_idx, NODE_NONE); \
 } while (0)
 
@@ -735,7 +734,7 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 568 "parser.y"
+#line 567 "parser.y"
 typedef union YYSTYPE {
     ARRAY_TYPE array;
     NODE_TYPE node;
@@ -743,7 +742,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 191 of yacc.c.  */
-#line 747 "parser.c"
+#line 746 "parser.c"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -755,7 +754,7 @@ typedef union YYSTYPE {
 
 
 /* Line 219 of yacc.c.  */
-#line 759 "parser.c"
+#line 758 "parser.c"
 
 #if ! defined (YYSIZE_T) && defined (__SIZE_TYPE__)
 # define YYSIZE_T __SIZE_TYPE__
@@ -1028,18 +1027,18 @@ static const yysigned_char yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned short int yyrline[] =
 {
-       0,   667,   667,   673,   676,   680,   683,   684,   685,   695,
-     698,   701,   704,   707,   710,   713,   716,   719,   722,   725,
-     728,   732,   735,   739,   740,   746,   749,   753,   757,   760,
-     763,   766,   769,   772,   775,   778,   781,   784,   787,   790,
-     793,   796,   799,   802,   805,   808,   811,   814,   817,   820,
-     823,   826,   829,   832,   835,   838,   841,   844,   847,   850,
-     854,   858,   862,   866,   869,   871,   875,   881,   886,   889,
-     893,   897,   900,   904,   906,   909,   911,   913,   915,   917,
-     918,   922,   924,   926,   928,   930,   931,   935,   936,   940,
-     941,   945,   947,   949,   951,   952,   963,   966,   970,   973,
-     976,   979,   982,   985,   988,   994,   997,   999,  1002,  1006,
-    1009,  1013,  1017,  1020,  1024,  1028,  1031
+       0,   666,   666,   672,   675,   679,   682,   683,   684,   694,
+     697,   700,   703,   706,   709,   712,   715,   718,   721,   724,
+     727,   731,   734,   738,   739,   745,   748,   752,   756,   759,
+     762,   765,   768,   771,   774,   777,   780,   783,   786,   789,
+     792,   795,   798,   801,   804,   807,   810,   813,   816,   819,
+     822,   825,   828,   831,   834,   837,   840,   843,   846,   849,
+     853,   857,   861,   865,   868,   870,   874,   880,   885,   888,
+     892,   896,   899,   903,   905,   908,   910,   912,   914,   916,
+     917,   921,   923,   925,   927,   929,   930,   934,   935,   939,
+     940,   944,   946,   948,   950,   951,   962,   965,   969,   972,
+     975,   978,   981,   984,   987,   993,   996,   998,  1001,  1005,
+    1008,  1012,  1016,  1019,  1023,  1027,  1030
 };
 #endif
 
@@ -1930,7 +1929,7 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 667 "parser.y"
+#line 666 "parser.y"
     {
             YogArray* stmts = NULL;
             ASSIGN_ARRAY(stmts, (yyvsp[0].array));
@@ -1939,133 +1938,133 @@ yyreduce:
     break;
 
   case 3:
-#line 673 "parser.y"
+#line 672 "parser.y"
     {
             OBJ_ARRAY_NEW((yyval.array), (yyvsp[0].node));
         }
     break;
 
   case 4:
-#line 676 "parser.y"
+#line 675 "parser.y"
     {
             OBJ_ARRAY_PUSH((yyval.array), (yyvsp[-2].array), (yyvsp[0].node));
         }
     break;
 
   case 5:
-#line 680 "parser.y"
+#line 679 "parser.y"
     {
             (yyval.node) = NODE_NONE;
         }
     break;
 
   case 8:
-#line 685 "parser.y"
+#line 684 "parser.y"
     {
             COMMAND_CALL_NEW((yyval.node), (yyvsp[-1].name), (yyvsp[0].array), NODE_NONE);
         }
     break;
 
   case 9:
-#line 695 "parser.y"
+#line 694 "parser.y"
     {
             EXCEPT_FINALLY_NEW((yyval.node), (yyvsp[-5].array), (yyvsp[-4].array), (yyvsp[-2].array), (yyvsp[-1].array));
         }
     break;
 
   case 10:
-#line 698 "parser.y"
+#line 697 "parser.y"
     {
             EXCEPT_FINALLY_NEW((yyval.node), (yyvsp[-3].array), (yyvsp[-2].array), NODE_NONE, (yyvsp[-1].array));
         }
     break;
 
   case 11:
-#line 701 "parser.y"
+#line 700 "parser.y"
     {
             FINALLY_NEW((yyval.node), (yyvsp[-3].array), (yyvsp[-1].array));
         }
     break;
 
   case 12:
-#line 704 "parser.y"
+#line 703 "parser.y"
     {
             WHILE_NEW((yyval.node), (yyvsp[-2].node), (yyvsp[-1].array));
         }
     break;
 
   case 13:
-#line 707 "parser.y"
+#line 706 "parser.y"
     {
             BREAK_NEW((yyval.node), NODE_NONE);
         }
     break;
 
   case 14:
-#line 710 "parser.y"
+#line 709 "parser.y"
     {
             BREAK_NEW((yyval.node), (yyvsp[0].node));
         }
     break;
 
   case 15:
-#line 713 "parser.y"
+#line 712 "parser.y"
     {
             NEXT_NEW((yyval.node), NODE_NONE);
         }
     break;
 
   case 16:
-#line 716 "parser.y"
+#line 715 "parser.y"
     {
             NEXT_NEW((yyval.node), (yyvsp[0].node));
         }
     break;
 
   case 17:
-#line 719 "parser.y"
+#line 718 "parser.y"
     {
             RETURN_NEW((yyval.node), NODE_NONE);
         }
     break;
 
   case 18:
-#line 722 "parser.y"
+#line 721 "parser.y"
     {
             RETURN_NEW((yyval.node), (yyvsp[0].node));
         }
     break;
 
   case 19:
-#line 725 "parser.y"
+#line 724 "parser.y"
     {
             IF_NEW((yyval.node), (yyvsp[-3].node), (yyvsp[-2].array), (yyvsp[-1].array));
         }
     break;
 
   case 20:
-#line 728 "parser.y"
+#line 727 "parser.y"
     {
             KLASS_NEW((yyval.node), (yyvsp[-3].name), (yyvsp[-2].node), (yyvsp[-1].array));
         }
     break;
 
   case 21:
-#line 732 "parser.y"
+#line 731 "parser.y"
     {
                 (yyval.node) = NODE_NONE;
             }
     break;
 
   case 22:
-#line 735 "parser.y"
+#line 734 "parser.y"
     {
                 (yyval.node) = (yyvsp[0].node);
             }
     break;
 
   case 24:
-#line 740 "parser.y"
+#line 739 "parser.y"
     {
             NODE_TYPE node;
             IF_NEW(node, (yyvsp[-2].node), (yyvsp[-1].array), (yyvsp[0].array));
@@ -2074,287 +2073,287 @@ yyreduce:
     break;
 
   case 25:
-#line 746 "parser.y"
+#line 745 "parser.y"
     {
                 (yyval.array) = NODE_NONE;
             }
     break;
 
   case 26:
-#line 749 "parser.y"
+#line 748 "parser.y"
     {
                 (yyval.array) = (yyvsp[0].array);
             }
     break;
 
   case 27:
-#line 753 "parser.y"
+#line 752 "parser.y"
     {
                 FUNC_DEF_NEW((yyval.node), (yyvsp[-5].name), (yyvsp[-3].array), (yyvsp[-1].array));
             }
     break;
 
   case 28:
-#line 757 "parser.y"
+#line 756 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-8].array), (yyvsp[-6].array), (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 29:
-#line 760 "parser.y"
+#line 759 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-6].array), (yyvsp[-4].array), (yyvsp[-2].node), (yyvsp[0].node), NODE_NONE);
         }
     break;
 
   case 30:
-#line 763 "parser.y"
+#line 762 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-6].array), (yyvsp[-4].array), (yyvsp[-2].node), NODE_NONE, (yyvsp[0].node));
         }
     break;
 
   case 31:
-#line 766 "parser.y"
+#line 765 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), (yyvsp[-2].array), (yyvsp[0].node), NODE_NONE, NODE_NONE);
         }
     break;
 
   case 32:
-#line 769 "parser.y"
+#line 768 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-6].array), (yyvsp[-4].array), NODE_NONE, (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 33:
-#line 772 "parser.y"
+#line 771 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), (yyvsp[-2].array), NODE_NONE, (yyvsp[0].node), NODE_NONE);
         }
     break;
 
   case 34:
-#line 775 "parser.y"
+#line 774 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), (yyvsp[-2].array), NODE_NONE, NODE_NONE, (yyvsp[0].node));
         }
     break;
 
   case 35:
-#line 778 "parser.y"
+#line 777 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-2].array), (yyvsp[0].array), NODE_NONE, NODE_NONE, NODE_NONE);
         }
     break;
 
   case 36:
-#line 781 "parser.y"
+#line 780 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-6].array), NODE_NONE, (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 37:
-#line 784 "parser.y"
+#line 783 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), NODE_NONE, (yyvsp[-2].node), (yyvsp[0].node), NODE_NONE);
         }
     break;
 
   case 38:
-#line 787 "parser.y"
+#line 786 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), NODE_NONE, (yyvsp[-2].node), NODE_NONE, (yyvsp[0].node));
         }
     break;
 
   case 39:
-#line 790 "parser.y"
+#line 789 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-2].array), NODE_NONE, (yyvsp[0].node), NODE_NONE, NODE_NONE);
         }
     break;
 
   case 40:
-#line 793 "parser.y"
+#line 792 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), NODE_NONE, NODE_NONE, (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 41:
-#line 796 "parser.y"
+#line 795 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-2].array), NODE_NONE, NODE_NONE, (yyvsp[0].node), NODE_NONE);
         }
     break;
 
   case 42:
-#line 799 "parser.y"
+#line 798 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-2].array), NODE_NONE, NODE_NONE, NODE_NONE, (yyvsp[0].node));
         }
     break;
 
   case 43:
-#line 802 "parser.y"
+#line 801 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[0].array), NODE_NONE, NODE_NONE, NODE_NONE, NODE_NONE);
         }
     break;
 
   case 44:
-#line 805 "parser.y"
+#line 804 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, (yyvsp[-6].array), (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 45:
-#line 808 "parser.y"
+#line 807 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, (yyvsp[-4].array), (yyvsp[-2].node), (yyvsp[0].node), NODE_NONE);
         }
     break;
 
   case 46:
-#line 811 "parser.y"
+#line 810 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, (yyvsp[-4].array), (yyvsp[-2].node), NODE_NONE, (yyvsp[0].node));
         }
     break;
 
   case 47:
-#line 814 "parser.y"
+#line 813 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, (yyvsp[-2].array), (yyvsp[0].node), NODE_NONE, NODE_NONE);
         }
     break;
 
   case 48:
-#line 817 "parser.y"
+#line 816 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, (yyvsp[-4].array), NODE_NONE, (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 49:
-#line 820 "parser.y"
+#line 819 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, (yyvsp[-2].array), NODE_NONE, (yyvsp[0].node), NODE_NONE);
         }
     break;
 
   case 50:
-#line 823 "parser.y"
+#line 822 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, (yyvsp[-2].array), NODE_NONE, NODE_NONE, (yyvsp[0].node));
         }
     break;
 
   case 51:
-#line 826 "parser.y"
+#line 825 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, (yyvsp[0].array), NODE_NONE, NODE_NONE, NODE_NONE);
         }
     break;
 
   case 52:
-#line 829 "parser.y"
+#line 828 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, NODE_NONE, (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 53:
-#line 832 "parser.y"
+#line 831 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, NODE_NONE, (yyvsp[-2].node), (yyvsp[0].node), NODE_NONE);
         }
     break;
 
   case 54:
-#line 835 "parser.y"
+#line 834 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, NODE_NONE, (yyvsp[-2].node), NODE_NONE, (yyvsp[0].node));
         }
     break;
 
   case 55:
-#line 838 "parser.y"
+#line 837 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, NODE_NONE, (yyvsp[0].node), NODE_NONE, NODE_NONE);
         }
     break;
 
   case 56:
-#line 841 "parser.y"
+#line 840 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, NODE_NONE, NODE_NONE, (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 57:
-#line 844 "parser.y"
+#line 843 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, NODE_NONE, NODE_NONE, (yyvsp[0].node), NODE_NONE);
         }
     break;
 
   case 58:
-#line 847 "parser.y"
+#line 846 "parser.y"
     {
             PARAMS_NEW((yyval.array), NODE_NONE, NODE_NONE, NODE_NONE, NODE_NONE, (yyvsp[0].node));
         }
     break;
 
   case 59:
-#line 850 "parser.y"
+#line 849 "parser.y"
     {
             (yyval.array) = NODE_NONE;
         }
     break;
 
   case 60:
-#line 854 "parser.y"
+#line 853 "parser.y"
     {
                 PARAM_NEW((yyval.node), NODE_KW_PARAM, (yyvsp[0].name), NODE_NONE);
             }
     break;
 
   case 61:
-#line 858 "parser.y"
+#line 857 "parser.y"
     {
                 PARAM_NEW((yyval.node), NODE_VAR_PARAM, (yyvsp[0].name), NODE_NONE);
             }
     break;
 
   case 62:
-#line 862 "parser.y"
+#line 861 "parser.y"
     {
                     PARAM_NEW((yyval.node), NODE_BLOCK_PARAM, (yyvsp[-1].name), (yyvsp[0].node));
                 }
     break;
 
   case 63:
-#line 866 "parser.y"
+#line 865 "parser.y"
     {
                         (yyval.node) = NODE_NONE;
                     }
     break;
 
   case 65:
-#line 871 "parser.y"
+#line 870 "parser.y"
     {
                     (yyval.node) = (yyvsp[0].node);
                 }
     break;
 
   case 66:
-#line 875 "parser.y"
+#line 874 "parser.y"
     {
                             YogArray* array = YogArray_new(ENV);
                             FRAME_DECL_LOCAL(ENV, array_idx, OBJ2VAL(array));
@@ -2364,7 +2363,7 @@ yyreduce:
     break;
 
   case 67:
-#line 881 "parser.y"
+#line 880 "parser.y"
     {
                             PARAM_ARRAY_PUSH((yyvsp[-2].array), (yyvsp[0].name), NODE_NONE);
                             (yyval.array) = (yyvsp[-2].array);
@@ -2372,77 +2371,77 @@ yyreduce:
     break;
 
   case 68:
-#line 886 "parser.y"
+#line 885 "parser.y"
     {
                             OBJ_ARRAY_NEW((yyval.array), (yyvsp[0].node));
                         }
     break;
 
   case 69:
-#line 889 "parser.y"
+#line 888 "parser.y"
     {
                             OBJ_ARRAY_PUSH((yyval.array), (yyvsp[-2].array), (yyvsp[0].node));
                         }
     break;
 
   case 70:
-#line 893 "parser.y"
+#line 892 "parser.y"
     {
                         PARAM_NEW((yyval.node), NODE_PARAM, (yyvsp[-1].name), (yyvsp[0].node));
                     }
     break;
 
   case 71:
-#line 897 "parser.y"
+#line 896 "parser.y"
     {
             OBJ_ARRAY_NEW((yyval.array), (yyvsp[0].node));
         }
     break;
 
   case 72:
-#line 900 "parser.y"
+#line 899 "parser.y"
     {
             OBJ_ARRAY_PUSH((yyval.array), (yyvsp[-2].array), (yyvsp[0].node));
         }
     break;
 
   case 74:
-#line 906 "parser.y"
+#line 905 "parser.y"
     {
                 ASSIGN_NEW((yyval.node), (yyvsp[-2].node), (yyvsp[0].node));
             }
     break;
 
   case 80:
-#line 918 "parser.y"
+#line 917 "parser.y"
     {
                 METHOD_CALL_NEW1((yyval.node), (yyvsp[-2].node), (yyvsp[-1].name), (yyvsp[0].node));
             }
     break;
 
   case 86:
-#line 931 "parser.y"
+#line 930 "parser.y"
     {
                 METHOD_CALL_NEW1((yyval.node), (yyvsp[-2].node), (yyvsp[-1].name), (yyvsp[0].node));
             }
     break;
 
   case 88:
-#line 936 "parser.y"
+#line 935 "parser.y"
     {
                 METHOD_CALL_NEW1((yyval.node), (yyvsp[-2].node), (yyvsp[-1].name), (yyvsp[0].node));
             }
     break;
 
   case 90:
-#line 941 "parser.y"
+#line 940 "parser.y"
     {
                 METHOD_CALL_NEW1((yyval.node), (yyvsp[-2].node), (yyvsp[-1].name), (yyvsp[0].node));
             }
     break;
 
   case 95:
-#line 952 "parser.y"
+#line 951 "parser.y"
     {
                     YogNode* postfix_expr_node = NULL;
                     ASSIGN_PTR(postfix_expr_node, (yyvsp[-4].node));
@@ -2457,63 +2456,63 @@ yyreduce:
     break;
 
   case 96:
-#line 963 "parser.y"
+#line 962 "parser.y"
     {
                     SUBSCRIPT_NEW((yyval.node), (yyvsp[-3].node), (yyvsp[-1].node));
                 }
     break;
 
   case 97:
-#line 966 "parser.y"
+#line 965 "parser.y"
     {
                     ATTR_NEW((yyval.node), (yyvsp[-2].node), (yyvsp[0].name));
                 }
     break;
 
   case 98:
-#line 970 "parser.y"
+#line 969 "parser.y"
     {
             VARIABLE_NEW((yyval.node), (yyvsp[0].name));
         }
     break;
 
   case 99:
-#line 973 "parser.y"
+#line 972 "parser.y"
     {
             LITERAL_NEW((yyval.node), (yyvsp[0].val));
         }
     break;
 
   case 100:
-#line 976 "parser.y"
+#line 975 "parser.y"
     {
             LITERAL_NEW((yyval.node), (yyvsp[0].val));
         }
     break;
 
   case 101:
-#line 979 "parser.y"
+#line 978 "parser.y"
     {
             LITERAL_NEW((yyval.node), (yyvsp[0].val));
         }
     break;
 
   case 102:
-#line 982 "parser.y"
+#line 981 "parser.y"
     {
             LITERAL_NEW((yyval.node), YTRUE);
         }
     break;
 
   case 103:
-#line 985 "parser.y"
+#line 984 "parser.y"
     {
             LITERAL_NEW((yyval.node), YFALSE);
         }
     break;
 
   case 104:
-#line 988 "parser.y"
+#line 987 "parser.y"
     {
             int lineno = PARSER->lineno;
             YogVal val = INT2VAL(lineno);
@@ -2522,42 +2521,42 @@ yyreduce:
     break;
 
   case 105:
-#line 994 "parser.y"
+#line 993 "parser.y"
     {
                 (yyval.array) = NODE_NONE;
             }
     break;
 
   case 107:
-#line 999 "parser.y"
+#line 998 "parser.y"
     {
                     (yyval.node) = NODE_NONE;
                 }
     break;
 
   case 108:
-#line 1002 "parser.y"
+#line 1001 "parser.y"
     {
                     BLOCK_ARG_NEW((yyval.node), (yyvsp[-3].array), (yyvsp[-1].array));
                 }
     break;
 
   case 109:
-#line 1006 "parser.y"
+#line 1005 "parser.y"
     {
             OBJ_ARRAY_NEW((yyval.array), (yyvsp[0].node));
         }
     break;
 
   case 110:
-#line 1009 "parser.y"
+#line 1008 "parser.y"
     {
             OBJ_ARRAY_PUSH((yyval.array), (yyvsp[-1].array), (yyvsp[0].node));
         }
     break;
 
   case 111:
-#line 1013 "parser.y"
+#line 1012 "parser.y"
     {
             YOG_ASSERT(ENV, (yyvsp[-2].name) != NO_EXC_VAR, "Too many variables.");
             EXCEPT_BODY_NEW((yyval.node), (yyvsp[-4].node), (yyvsp[-2].name), (yyvsp[0].array));
@@ -2565,35 +2564,35 @@ yyreduce:
     break;
 
   case 112:
-#line 1017 "parser.y"
+#line 1016 "parser.y"
     {
             EXCEPT_BODY_NEW((yyval.node), (yyvsp[-2].node), NO_EXC_VAR, (yyvsp[0].array));
         }
     break;
 
   case 113:
-#line 1020 "parser.y"
+#line 1019 "parser.y"
     {
             EXCEPT_BODY_NEW((yyval.node), NODE_NONE, NO_EXC_VAR, (yyvsp[0].array));
         }
     break;
 
   case 114:
-#line 1024 "parser.y"
+#line 1023 "parser.y"
     {
                 PARSER->lineno++;
             }
     break;
 
   case 115:
-#line 1028 "parser.y"
+#line 1027 "parser.y"
     {
                 (yyval.array) = NODE_NONE;
             }
     break;
 
   case 116:
-#line 1031 "parser.y"
+#line 1030 "parser.y"
     {
                 (yyval.array) = (yyvsp[0].array);
             }
@@ -2604,7 +2603,7 @@ yyreduce:
     }
 
 /* Line 1126 of yacc.c.  */
-#line 2608 "parser.c"
+#line 2607 "parser.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2872,7 +2871,7 @@ yyreturn:
 }
 
 
-#line 1035 "parser.y"
+#line 1034 "parser.y"
 
 /*
 single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE
@@ -3025,7 +3024,7 @@ YogParser_parse_file(YogEnv* env, YogParser* parser, const char* filename)
     yyparse(parser);
 
     if (filename != NULL) {
-        fclose(lexer->fp);
+        fclose(parser->lexer->fp);
     }
 
     return parser->stmts;
