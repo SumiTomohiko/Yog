@@ -180,12 +180,6 @@ main(int argc, char* argv[])
 
     YogCode* code = Yog_compile_module(&env, filename, stmts);
 
-#if 0
-    YogThread* th = YogThread_new(&env);
-    env.th = th;
-    env.vm->thread = th;
-#endif
-
     YogPackage* pkg = YogPackage_new(&env);
     pkg->code = code;
     YogVm_register_package(&env, env.vm, "__main__", pkg);
