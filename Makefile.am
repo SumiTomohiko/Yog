@@ -76,6 +76,7 @@ test-bdw:
 
 clean-generic:
 	find . -name "*.pyc" -print0 | xargs --null rm -f
+	rm -f vgcore.*
 
 src/keywords.inc: src/keywords
 	gperf $< > $@
