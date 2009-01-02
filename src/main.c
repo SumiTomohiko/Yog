@@ -178,7 +178,7 @@ main(int argc, char* argv[])
     YogArray* stmts = YogParser_parse_file(&env, &parser, filename);
     thread.parser = NULL;
 
-    YogCode* code = Yog_compile_module(&env, filename, stmts);
+    YogCode* code = YogCompiler_compile_module(&env, filename, stmts);
 
     YogPackage* pkg = YogPackage_new(&env);
     pkg->code = code;

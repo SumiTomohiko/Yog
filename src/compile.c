@@ -1600,7 +1600,7 @@ compile_init_visitor(AstVisitor* visitor)
 }
 
 YogCode* 
-Yog_compile_module(YogEnv* env, const char* filename, YogArray* stmts) 
+YogCompiler_compile_module(YogEnv* env, const char* filename, YogArray* stmts) 
 {
     YogTable* var2index = make_var2index(env, stmts, NULL);
 

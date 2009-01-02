@@ -10,7 +10,7 @@
  */
 
 /* src/compile.c */
-YogCode* Yog_compile_module(YogEnv*, const char*, YogArray*);
+YogCode* YogCompiler_compile_module(YogEnv*, const char*, YogArray*);
 
 /* PROTOTYPE_END */
 
