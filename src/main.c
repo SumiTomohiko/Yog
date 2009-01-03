@@ -179,8 +179,10 @@ main(int argc, char* argv[])
     thread.parser = NULL;
 
     YogCode* code = YogCompiler_compile_module(&env, filename, stmts);
+    FRAME_DECL_LOCAL(&env, code_idx, PTR2VAL(code));
 
     YogPackage* pkg = YogPackage_new(&env);
+    FRAME_LOCAL_PTR(&env, code, code_idx);
     pkg->code = code;
     YogVm_register_package(&env, env.vm, "__main__", pkg);
 

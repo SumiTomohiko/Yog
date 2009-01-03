@@ -98,17 +98,23 @@ struct CompileData {
 
 typedef struct CompileData CompileData;
 
-#define VISIT_EACH_ARGS(args, blockarg)   do { \
+#define VISIT_EACH_ARGS(env, args, blockarg, arg)   do { \
+    FRAME_DECL_LOCALS3(env, arg_idx, PTR2VAL(arg), args_idx, OBJ2VAL(args), blockarg_idx, PTR2VAL(blockarg)); \
+    \
     if (args != NULL) { \
         unsigned int argc = YogArray_size(env, args); \
         unsigned int i = 0; \
         for (i = 0; i < argc; i++) { \
+            FRAME_LOCAL_ARRAY(env, args, args_idx); \
             YogVal val = YogArray_at(env, args, i); \
             YogNode* node = VAL2PTR(val); \
+            FRAME_LOCAL_PTR(env, arg, arg_idx); \
             visit_node(env, visitor, node, arg); \
         } \
     } \
     if (blockarg != NULL) { \
+        FRAME_LOCAL_PTR(env, blockarg, blockarg_idx); \
+        FRAME_LOCAL_PTR(env, arg, arg_idx); \
         visit_node(env, visitor, blockarg, arg); \
     } \
 } while (0)
@@ -133,9 +139,12 @@ typedef struct CompileData CompileData;
     data->exc_tbl_last = entry; \
 } while (0)
 
-#define ADD_PUSH_CONST(val, lineno) do { \
-    unsigned int index = register_const(env, data, val); \
-    CompileData_add_push_const(env, data, lineno, index); \
+#define DECL_NODE_ARG(env, node, arg) \
+    FRAME_DECL_LOCALS2(env, node_idx, PTR2VAL(node), arg_idx, PTR2VAL(arg))
+
+#define UPDATE_NODE_ARG(env, node, arg)     do { \
+    FRAME_LOCAL_PTR(env, node, node_idx); \
+    FRAME_LOCAL_PTR(env, arg, arg_idx); \
 } while (0)
 
 static void 
@@ -146,14 +155,14 @@ Inst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
     if (inst->type == INST_OP) {
         switch (INST_OPCODE(inst)) {
-            case OP(JUMP):
-                JUMP_DEST(inst) = (*keeper)(env, JUMP_DEST(inst));
-                break;
-            case OP(JUMP_IF_FALSE):
-                JUMP_IF_FALSE_DEST(inst) = (*keeper)(env, JUMP_IF_FALSE_DEST(inst));
-                break;
-            default:
-                break;
+        case OP(JUMP):
+            JUMP_DEST(inst) = (*keeper)(env, JUMP_DEST(inst));
+            break;
+        case OP(JUMP_IF_FALSE):
+            JUMP_IF_FALSE_DEST(inst) = (*keeper)(env, JUMP_IF_FALSE_DEST(inst));
+            break;
+        default:
+            break;
         }
     }
 }
@@ -274,8 +283,13 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 static void 
 var2index_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    DECL_NODE_ARG(env, node, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visit_node(env, visitor, node->u.method_call.recv, arg);
-    VISIT_EACH_ARGS(node->u.method_call.args, node->u.method_call.blockarg);
+
+    UPDATE_NODE_ARG(env, node, arg);
+    VISIT_EACH_ARGS(env, node->u.method_call.args, node->u.method_call.blockarg, arg);
 }
 
 static void 
@@ -287,26 +301,42 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg
 
     CompileData* data = arg;
 
+    FRAME_DECL_LOCALS2(env, stmts_idx, OBJ2VAL(stmts), data_idx, PTR2VAL(data));
+
+#define UPDATE_STMTS    FRAME_LOCAL_ARRAY(env, stmts, stmts_idx)
+    UPDATE_STMTS;
     unsigned int size = YogArray_size(env, stmts);
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
+        UPDATE_STMTS;
         YogVal val = YogArray_at(env, stmts, i);
         YogNode* node = VAL2PTR(val);
-        visitor->visit_stmt(env, visitor, node, arg);
+        FRAME_DECL_LOCAL(env, node_idx, PTR2VAL(node));
+
+#define UPDATE_NODE     FRAME_LOCAL_PTR(env, node, node_idx)
+        UPDATE_NODE;
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+        UPDATE_DATA;
+        visitor->visit_stmt(env, visitor, node, data);
 
         switch (node->type) {
-            case NODE_ASSIGN:
-            case NODE_COMMAND_CALL:
-            case NODE_FUNC_CALL:
-            case NODE_LITERAL:
-            case NODE_METHOD_CALL:
-            case NODE_VARIABLE:
-                CompileData_add_pop(env, data, node->lineno);
-                break;
-            default:
-                break;
+        case NODE_ASSIGN:
+        case NODE_COMMAND_CALL:
+        case NODE_FUNC_CALL:
+        case NODE_LITERAL:
+        case NODE_METHOD_CALL:
+        case NODE_VARIABLE:
+            UPDATE_NODE;
+            UPDATE_DATA;
+            CompileData_add_pop(env, data, node->lineno);
+            break;
+        default:
+            break;
         }
+#undef UPDATE_DATA
+#undef UPDATE_NODE
     }
+#undef UPDATE_STMTS
 }
 
 static void 
@@ -316,13 +346,22 @@ var2index_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* a
         return;
     }
 
+    FRAME_DECL_LOCALS2(env, stmts_idx, OBJ2VAL(stmts), arg_idx, PTR2VAL(arg));
+
+#define UPDATE_LOCALS   do { \
+    FRAME_LOCAL_ARRAY(env, stmts, stmts_idx); \
+    FRAME_LOCAL_PTR(env, arg, arg_idx); \
+} while (0)
+    UPDATE_LOCALS;
     unsigned int size = YogArray_size(env, stmts);
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
+        UPDATE_LOCALS;
         YogVal val = YogArray_at(env, stmts, i);
         YogNode* node = VAL2PTR(val);
         visitor->visit_stmt(env, visitor, node, arg);
     }
+#undef UPDATE_LOCALS
 }
 
 static void 
@@ -353,7 +392,7 @@ var2index_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 static void 
 var2index_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    VISIT_EACH_ARGS(node->u.command_call.args, node->u.command_call.blockarg);
+    VISIT_EACH_ARGS(env, node->u.command_call.args, node->u.command_call.blockarg, arg);
 }
 
 static void 
@@ -367,24 +406,35 @@ var2index_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* 
 static void 
 var2index_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    VISIT_EACH_ARGS(node->u.func_call.args, node->u.func_call.blockarg);
+    VISIT_EACH_ARGS(env, node->u.func_call.args, node->u.func_call.blockarg, arg);
 }
 
 static void 
 var2index_visit_finally(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    DECL_NODE_ARG(env, node, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visitor->visit_stmts(env, visitor, node->u.finally.head, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visitor->visit_stmts(env, visitor, node->u.finally.body, arg);
 }
 
 static void 
 var2index_visit_except_body(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    DECL_NODE_ARG(env, node, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visit_node(env, visitor, node->u.except_body.type, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     ID id = node->u.except_body.var;
     if (id != NO_EXC_VAR) {
         Var2IndexData* data = arg;
         var2index_register(env, data->var2index, id);
+        UPDATE_NODE_ARG(env, node, arg);
     }
     visitor->visit_stmts(env, visitor, node->u.except_body.stmts, arg);
 }
@@ -392,15 +442,27 @@ var2index_visit_except_body(YogEnv* env, AstVisitor* visitor, YogNode* node, voi
 static void 
 var2index_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    DECL_NODE_ARG(env, node, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visit_node(env, visitor, node->u.while_.test, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visitor->visit_stmts(env, visitor, node->u.while_.stmts, arg);
 }
 
 static void 
 var2index_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    DECL_NODE_ARG(env, node, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visit_node(env, visitor, node->u.if_.test, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visitor->visit_stmts(env, visitor, node->u.if_.stmts, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visitor->visit_stmts(env, visitor, node->u.if_.tail, arg);
 }
 
@@ -413,8 +475,12 @@ var2index_visit_break(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
 static void 
 var2index_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    DECL_NODE_ARG(env, node, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visitor->visit_stmts(env, visitor, node->u.except.head, arg);
 
+    UPDATE_NODE_ARG(env, node, arg);
     YogArray* excepts = node->u.except.excepts;
     unsigned int size = YogArray_size(env, excepts);
     unsigned int i = 0;
@@ -422,6 +488,7 @@ var2index_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
         YogVal val = YogArray_at(env, excepts, i);
         YogNode* node = VAL2PTR(val);
         visitor->visit_except_body(env, visitor, node, arg);
+        UPDATE_NODE_ARG(env, node, arg);
     }
 
     visitor->visit_stmts(env, visitor, node->u.except.else_, arg);
@@ -431,38 +498,67 @@ static void
 var2index_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     Var2IndexData* data = arg;
+    FRAME_DECL_LOCALS2(env, node_idx, PTR2VAL(node), data_idx, PTR2VAL(data));
 
+    FRAME_LOCAL_PTR(env, node, node_idx);
     YogArray* params = node->u.blockarg.params;
     if (params != NULL) {
+        FRAME_DECL_LOCAL(env, params_idx, params);
+
+        FRAME_LOCAL_ARRAY(env, params, params_idx);
         unsigned int size = YogArray_size(env, params);
         unsigned int i = 0;
         for (i = 0; i < size; i++) {
+            FRAME_LOCAL_ARRAY(env, params, params_idx);
             YogVal val = YogArray_at(env, params, i);
             YogNode* param = VAL2PTR(val);
+            FRAME_DECL_LOCAL(env, param_idx, PTR2VAL(param));
+
+            FRAME_LOCAL_PTR(env, param, param_idx);
             ID name = param->u.param.name;
+            FRAME_LOCAL_PTR(env, data, data_idx);
             var2index_register(env, data->var2index, name);
-            visit_node(env, visitor, param->u.param.default_, arg);
+
+            FRAME_LOCAL_PTR(env, param, param_idx);
+            FRAME_LOCAL_PTR(env, data, data_idx);
+            visit_node(env, visitor, param->u.param.default_, data);
         }
     }
 
-    visitor->visit_stmts(env, visitor, node->u.blockarg.stmts, arg);
+    FRAME_LOCAL_PTR(env, node, node_idx);
+    FRAME_LOCAL_PTR(env, data, data_idx);
+    visitor->visit_stmts(env, visitor, node->u.blockarg.stmts, data);
 }
 
 static void 
 var2index_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     Var2IndexData* data = arg;
+    FRAME_DECL_LOCALS2(env, node_idx, PTR2VAL(node), data_idx, PTR2VAL(data));
+
+#define UPDATE_NODE     FRAME_LOCAL_PTR(env, node, node_idx)
+    UPDATE_NODE;
     ID name = node->u.klass.name;
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+    UPDATE_DATA;
     var2index_register(env, data->var2index, name);
 
+    UPDATE_NODE;
     YogNode* super = node->u.klass.super;
-    visit_node(env, visitor, super, arg);
+    UPDATE_DATA;
+    visit_node(env, visitor, super, data);
+#undef UPDATE_DATA
+#undef UPDATE_NODE
 }
 
 static void 
 var2index_visit_subscript(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    DECL_NODE_ARG(env, node, arg);
+    UPDATE_NODE_ARG(env, node, arg);
     visit_node(env, visitor, node->u.subscript.prefix, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visit_node(env, visitor, node->u.subscript.index, arg);
 }
 
@@ -491,19 +587,44 @@ var2index_init_visitor(AstVisitor* visitor)
     visitor->visit_while = var2index_visit_while;
 }
 
+static void 
+Var2IndexData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    Var2IndexData* data = ptr;
+
+#define KEEP(member)    data->member = (*keeper)(env, data->member)
+    KEEP(var2index);
+#undef KEEP
+}
+
+static Var2IndexData* 
+Var2IndexData_new(YogEnv* env) 
+{
+    Var2IndexData* data = ALLOC_OBJ(env, Var2IndexData_keep_children, NULL, Var2IndexData);
+    data->var2index = NULL;
+
+    return data;
+}
+
 static YogTable*
 make_var2index(YogEnv* env, YogArray* stmts, YogTable* var2index)
 {
+    FRAME_DECL_LOCAL(env, stmts_idx, OBJ2VAL(stmts));
+
     AstVisitor visitor;
     var2index_init_visitor(&visitor);
+
+    Var2IndexData* data = Var2IndexData_new(env);
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
 
     if (var2index == NULL) {
         var2index = YogTable_new_symbol_table(env);
     }
-    Var2IndexData data;
-    data.var2index = var2index;
+    FRAME_LOCAL_PTR(env, data, data_idx);
+    data->var2index = var2index;
 
-    visitor.visit_stmts(env, &visitor, stmts, &data);
+    FRAME_LOCAL_ARRAY(env, stmts, stmts_idx);
+    visitor.visit_stmts(env, &visitor, stmts, data);
 
     return var2index;
 }
@@ -545,40 +666,73 @@ append_store(YogEnv* env, CompileData* data, unsigned int lineno, ID id)
 static void 
 compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
-
     CompileData* data = arg;
+    FRAME_DECL_LOCALS2(env, node_idx, PTR2VAL(node), data_idx, PTR2VAL(data));
+
+#define UPDATE_NODE     FRAME_LOCAL_PTR(env, node, node_idx)
+    UPDATE_NODE;
     unsigned int lineno = node->lineno;
 
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
     YogNode* left = node->u.assign.left;
     switch (left->type) {
     case NODE_VARIABLE:
         {
-            visit_node(env, visitor, node->u.assign.right, arg);
+            UPDATE_DATA;
+            visit_node(env, visitor, node->u.assign.right, data);
+
+            UPDATE_DATA;
             CompileData_add_dup(env, data, lineno);
 
+            UPDATE_NODE;
             ID name = node->u.variable.id;
+            UPDATE_DATA;
             append_store(env, data, lineno, name);
             break;
         }
     case NODE_SUBSCRIPT:
-        visit_node(env, visitor, left->u.subscript.prefix, arg);
-        visit_node(env, visitor, left->u.subscript.index, arg);
-        visit_node(env, visitor, node->u.assign.right, arg);
-        CompileData_add_call_method(env, data, lineno, INTERN("[]="), 2, 0, 0, 0, 0);
-        break;
+        {
+            FRAME_DECL_LOCAL(env, left_idx, PTR2VAL(left));
+
+#define UPDATE_LEFT     FRAME_LOCAL_PTR(env, left, left_idx)
+            UPDATE_LEFT;
+            UPDATE_DATA;
+            visit_node(env, visitor, left->u.subscript.prefix, data);
+
+            UPDATE_LEFT;
+            UPDATE_DATA;
+            visit_node(env, visitor, left->u.subscript.index, data);
+
+            UPDATE_NODE;
+            UPDATE_DATA;
+            visit_node(env, visitor, node->u.assign.right, data);
+
+            UPDATE_DATA;
+            CompileData_add_call_method(env, data, lineno, INTERN("[]="), 2, 0, 0, 0, 0);
+            break;
+#undef UPDATE_LEFT
+        }
     default:
         YOG_ASSERT(env, FALSE, "invalid node type.");
         break;
     }
+#undef UPDATE_DATA
+#undef UPDATE_NODE
 }
 
 static void 
 compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    DECL_NODE_ARG(env, node, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visit_node(env, visitor, node->u.method_call.recv, arg);
-    VISIT_EACH_ARGS(node->u.method_call.args, node->u.method_call.blockarg);
+
+    UPDATE_NODE_ARG(env, node, arg);
+    VISIT_EACH_ARGS(env, node->u.method_call.args, node->u.method_call.blockarg, arg);
 
     unsigned int argc = 0;
+    UPDATE_NODE_ARG(env, node, arg);
     YogArray* args = node->u.method_call.args;
     if (args != NULL) {
         argc = YogArray_size(env, args);
@@ -597,8 +751,15 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
 static int
 register_const(YogEnv* env, CompileData* data, YogVal val) 
 {
+    FRAME_DECL_LOCAL(env, data_idx, data);
+
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+    UPDATE_DATA;
     if (data->const2index == NULL) {
-        data->const2index = YogTable_new_symbol_table(env);
+        YogTable* const2index = YogTable_new_symbol_table(env);
+        UPDATE_DATA;
+        data->const2index = const2index;
+        UPDATE_DATA;
     }
 
     YogVal index = YUNDEF;
@@ -611,6 +772,21 @@ register_const(YogEnv* env, CompileData* data, YogVal val)
     else {
         return VAL2INT(index);
     }
+#undef UPDATE_DATA
+}
+
+static void 
+add_push_const(YogEnv* env, CompileData* data, YogVal val, unsigned int lineno) 
+{
+    FRAME_DECL_LOCALS2(env, data_idx, PTR2VAL(data), val_idx, val);
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+    UPDATE_DATA;
+    FRAME_LOCAL(env, val, val_idx);
+    unsigned int index = register_const(env, data, val);
+
+    UPDATE_DATA;
+    CompileData_add_push_const(env, data, lineno, index);
+#undef UPDATE_DATA
 }
 
 static void 
@@ -621,20 +797,31 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
     YogVal val = node->u.literal.val;
     unsigned int lineno = node->lineno;
     if (IS_STR(val)) {
+        FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+        UPDATE_DATA;
         unsigned int index = register_const(env, data, val);
+
+        UPDATE_DATA;
         CompileData_add_make_string(env, data, lineno, index);
+#undef UPDATE_DATA
     }
     else {
-        ADD_PUSH_CONST(val, lineno);
+        add_push_const(env, data, val, lineno);
     }
 }
 
 static void 
 compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
-    VISIT_EACH_ARGS(node->u.command_call.args, node->u.command_call.blockarg);
+    DECL_NODE_ARG(env, node, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
+    VISIT_EACH_ARGS(env, node->u.command_call.args, node->u.command_call.blockarg, arg);
 
     unsigned int argc = 0;
+    UPDATE_NODE_ARG(env, node, arg);
     YogArray* args = node->u.command_call.args;
     if (args != NULL) {
         argc = YogArray_size(env, args);
@@ -681,9 +868,12 @@ table2array(YogEnv* env, YogTable* table)
     YogTable_foreach(env, table, table2array_count_index, &max_index);
     int index = VAL2INT(max_index);
     if (0 <= index) {
+        FRAME_DECL_LOCAL(env, table_idx, PTR2VAL(table));
+
         unsigned int size = index + 1;
         YogValArray* array = YogValArray_new(env, size);
         YogVal arg = PTR2VAL(array);
+        FRAME_LOCAL_PTR(env, table, table_idx);
         YogTable_foreach(env, table, table2array_fill_array, &arg);
         return array;
     }
@@ -710,9 +900,12 @@ make_exception_table(YogEnv* env, YogCode* code, CompileData* data)
     }
 
     if (0 < size) {
+        FRAME_DECL_LOCALS2(env, code_idx, PTR2VAL(code), data_idx, PTR2VAL(data));
+
         YogExceptionTable* exc_tbl = ALLOC_OBJ_ITEM(env, NULL, NULL, YogExceptionTable, size, YogExceptionTableEntry);
 
         unsigned int i = 0;
+        FRAME_LOCAL_PTR(env, data, data_idx);
         entry = data->exc_tbl;
         while (entry != NULL) {
             if (entry->from != NULL) {
@@ -731,6 +924,7 @@ make_exception_table(YogEnv* env, YogCode* code, CompileData* data)
             entry = entry->next;
         }
 
+        FRAME_LOCAL_PTR(env, code, code_idx);
         code->exc_tbl = exc_tbl;
         code->exc_tbl_size = size;
     }
@@ -757,8 +951,11 @@ make_lineno_table(YogEnv* env, YogCode* code, YogInst* anchor)
         inst = inst->next;
     }
 
+    FRAME_DECL_LOCALS2(env, code_idx, PTR2VAL(code), anchor_idx, PTR2VAL(anchor));
+
     YogLinenoTableEntry* tbl = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(YogLinenoTableEntry) * size);
     if (0 < size) {
+        FRAME_LOCAL_PTR(env, anchor, anchor_idx);
         inst = anchor;
         int i = -1;
         lineno = 0;
@@ -783,6 +980,7 @@ make_lineno_table(YogEnv* env, YogCode* code, YogInst* anchor)
         }
     }
 
+    FRAME_LOCAL_PTR(env, code, code_idx);
     code->lineno_tbl = tbl;
     code->lineno_tbl_size = size;
 }
@@ -791,12 +989,12 @@ static void
 ExceptionTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     ExceptionTableEntry* entry = ptr;
-#define KEEP_MEMBER(member)     entry->member = (*keeper)(env, entry->member)
-    KEEP_MEMBER(next);
-    KEEP_MEMBER(from);
-    KEEP_MEMBER(to);
-    KEEP_MEMBER(target);
-#undef KEEP_MEMBER
+#define KEEP(member)    entry->member = (*keeper)(env, entry->member)
+    KEEP(next);
+    KEEP(from);
+    KEEP(to);
+    KEEP(target);
+#undef KEEP
 }
 
 static ExceptionTableEntry* 
@@ -849,67 +1047,147 @@ calc_pc(YogInst* inst)
 static void 
 CompileData_add_ret_nil(YogEnv* env, CompileData* data, unsigned int lineno) 
 {
-    ADD_PUSH_CONST(YNIL, lineno);
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+    UPDATE_DATA;
+    add_push_const(env, data, YNIL, lineno);
+
+    UPDATE_DATA;
     CompileData_add_ret(env, data, lineno);
+#undef UPDATE_DATA
+}
+
+static void 
+CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    CompileData* data = ptr;
+#define KEEP(member)    data->member = (*keeper)(env, (void*)data->member)
+    KEEP(var2index);
+    KEEP(const2index);
+    KEEP(last_inst);
+    KEEP(exc_tbl);
+    KEEP(exc_tbl_last);
+    KEEP(filename);
+#undef KEEP
+}
+
+static CompileData* 
+CompileData_new(YogEnv* env) 
+{
+    CompileData* data = ALLOC_OBJ(env, CompileData_keep_children, NULL, CompileData);
+    data->ctx = CTX_FUNC;
+    data->var2index = NULL;
+    data->const2index = NULL;
+    data->last_inst = NULL;
+    data->exc_tbl = NULL;
+    data->exc_tbl_last = NULL;
+    data->label_while_start = NULL;
+    data->label_while_end = NULL;
+    data->finally_list = NULL;
+    data->try_list = NULL;
+    data->filename = NULL;
+    data->klass_name = INVALID_ID;
+
+    return data;
 }
 
 static YogCode* 
 compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, ID func_name, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
 {
-    CompileData data;
-    data.ctx = ctx;
-    data.var2index = var2index;
-    data.const2index = NULL;
-    YogInst* anchor = Anchor_new(env);
-    data.last_inst = anchor;
-    data.exc_tbl = ExceptionTableEntry_new(env);
-    data.exc_tbl_last = data.exc_tbl;
-    data.label_while_start = NULL;
-    data.label_while_end = NULL;
-    data.finally_list = NULL;
-    data.try_list = NULL;
-    data.filename = filename;
-    data.klass_name = klass_name;
+    FRAME_DECL_LOCALS4(env, filename_idx, PTR2VAL((char*)filename), stmts_idx, PTR2VAL(stmts), var2index_idx, PTR2VAL(var2index), tail_idx, PTR2VAL(tail));
 
-    visitor->visit_stmts(env, visitor, stmts, &data);
+    CompileData* data = CompileData_new(env);
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+    UPDATE_DATA;
+#define UPDATE_VAR2INDEX    FRAME_LOCAL_PTR(env, var2index, var2index_idx)
+    UPDATE_VAR2INDEX;
+    data->var2index = var2index;
+
+    YogInst* anchor = Anchor_new(env);
+    FRAME_DECL_LOCAL(env, anchor_idx, PTR2VAL(anchor));
+    UPDATE_DATA;
+#define UPDATE_ANCHOR   FRAME_LOCAL_PTR(env, anchor, anchor_idx)
+    UPDATE_ANCHOR;
+    data->last_inst = anchor;
+
+    ExceptionTableEntry* exc_tbl_ent = ExceptionTableEntry_new(env);
+    UPDATE_DATA;
+    data->exc_tbl = exc_tbl_ent;
+    data->exc_tbl_last = exc_tbl_ent;
+
+#define UPDATE_FILENAME     FRAME_LOCAL_PTR(env, filename, filename_idx)
+    UPDATE_FILENAME;
+    data->filename = filename;
+
+    data->klass_name = klass_name;
+
+    FRAME_LOCAL_ARRAY(env, stmts, stmts_idx);
+    visitor->visit_stmts(env, visitor, stmts, data);
     if (tail != NULL) {
-        CompileData_add_inst(&data, tail);
+        UPDATE_DATA;
+        FRAME_LOCAL_PTR(env, tail, tail_idx);
+        CompileData_add_inst(data, tail);
     }
     if (ctx == CTX_FUNC) {
+        FRAME_LOCAL_PTR(env, stmts, stmts_idx);
         if (stmts != NULL) {
             unsigned int size = YogArray_size(env, stmts);
             if (size < 1) {
-                CompileData_add_ret_nil(env, &data, 0);
+                UPDATE_DATA;
+                CompileData_add_ret_nil(env, data, 0);
             }
             else {
                 YogVal val = YogArray_at(env, stmts, size - 1);
-                YogNode* node = OBJ_AS(YogNode, val);
+                YogNode* node = VAL2PTR(val);
                 if (node->type != NODE_RETURN) {
-                    CompileData_add_ret_nil(env, &data, node->lineno);
+                    UPDATE_DATA;
+                    CompileData_add_ret_nil(env, data, node->lineno);
                 }
             }
         }
         else {
-            CompileData_add_ret_nil(env, &data, 0);
+            UPDATE_DATA;
+            CompileData_add_ret_nil(env, data, 0);
         }
     }
 
+    UPDATE_ANCHOR;
     calc_pc(anchor);
     YogBinary* bin = insts2bin(env, anchor);
+    FRAME_DECL_LOCAL(env, bin_idx, OBJ2VAL(bin));
+#define UPDATE_BIN  FRAME_LOCAL_OBJ(env, bin, YogBinary, bin_idx)
+    UPDATE_BIN;
     YogBinary_shrink(env, bin);
+    UPDATE_BIN;
     YogByteArray* insts = bin->body;
+#undef UPDATE_BIN
 
     YogCode* code = YogCode_new(env);
     if (var2index != NULL) {
+        UPDATE_VAR2INDEX;
         code->local_vars_count = YogTable_size(env, var2index);
     }
+    UPDATE_ANCHOR;
     code->stack_size = count_stack_size(env, anchor);
-    code->consts = table2array(env, data.const2index);
+    FRAME_DECL_LOCAL(env, code_idx, PTR2VAL(code));
+    UPDATE_DATA;
+    YogValArray* consts = table2array(env, data->const2index);
+#define UPDATE_CODE     FRAME_LOCAL_PTR(env, code, code_idx)
+    UPDATE_CODE;
+    code->consts = consts;
     code->insts = insts;
 
-    make_exception_table(env, code, &data);
+    UPDATE_DATA;
+    make_exception_table(env, code, data);
+    UPDATE_CODE;
+    UPDATE_ANCHOR;
     make_lineno_table(env, code, anchor);
 
+    UPDATE_CODE;
+    UPDATE_FILENAME;
     code->filename = filename;
     code->klass_name = klass_name;
     code->func_name = func_name;
@@ -919,6 +1197,10 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
 #endif
 
     return code;
+#undef UPDATE_FILENAME
+#undef UPDATE_ANCHOR
+#undef UPDATE_VAR2INDEX
+#undef UPDATE_DATA
 }
 
 static void 
@@ -928,19 +1210,26 @@ register_params_var2index(YogEnv* env, YogArray* params, YogTable* var2index)
         return;
     }
 
+    FRAME_DECL_LOCALS2(env, params_idx, OBJ2VAL(params), var2index_idx, PTR2VAL(var2index));
+
+#define UPDATE_PARAMS   FRAME_LOCAL_ARRAY(env, params, params_idx)
+    UPDATE_PARAMS;
     unsigned int size = YogArray_size(env, params);
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
+        UPDATE_PARAMS;
         YogVal param = YogArray_at(env, params, i);
         YogNode* node = VAL2PTR(param);
         ID id = node->u.param.name;
         YogVal name = ID2VAL(id);
+        FRAME_LOCAL_PTR(env, var2index, var2index_idx);
         if (YogTable_lookup(env, var2index, name, NULL)) {
             YOG_ASSERT(env, FALSE, "duplicated argument name in function definition");
         }
         YogVal index = INT2VAL(var2index->num_entries);
         YogTable_add_direct(env, var2index, name, index);
     }
+#undef UPDATE_PARAMS
 }
 
 static void 
@@ -950,24 +1239,33 @@ register_block_params_var2index(YogEnv* env, YogArray* params, YogTable* var2ind
         return;
     }
 
+    FRAME_DECL_LOCALS2(env, params_idx, OBJ2VAL(params), var2index_idx, PTR2VAL(var2index));
+
+#define UPDATE_PARAMS   FRAME_LOCAL_ARRAY(env, params, params_idx)
+    UPDATE_PARAMS;
     unsigned int size = YogArray_size(env, params);
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
+        UPDATE_PARAMS;
         YogVal param = YogArray_at(env, params, i);
         YogNode* node = VAL2PTR(param);
         ID id = node->u.param.name;
         YogVal name = ID2VAL(id);
+        FRAME_LOCAL_PTR(env, var2index, var2index_idx);
         if (!YogTable_lookup(env, var2index, name, NULL)) {
             YogVal index = INT2VAL(var2index->num_entries);
             YogTable_add_direct(env, var2index, name, index);
         }
     }
+#undef UPDATE_PARAMS
 }
 
 static void 
 setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code) 
 {
-    YogArgInfo* arg_info = &code->arg_info;
+    YogArgInfo* arg_info = NULL;
+#define UPDATE_ARG_INFO     arg_info = &code->arg_info
+    UPDATE_ARG_INFO;
     arg_info->argc = 0;
     arg_info->argnames = NULL;
     arg_info->arg_index = 0;
@@ -994,11 +1292,18 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
         }
         argc++;
     }
+
+    FRAME_DECL_LOCALS3(env, var2index_idx, PTR2VAL(var2index), params_idx, OBJ2VAL(params), code_idx, PTR2VAL(code));
+
+#define UPDATE_PARAMS       FRAME_LOCAL_ARRAY(env, params, params_idx)
+#define UPDATE_VAR2INDEX    FRAME_LOCAL_PTR(env, var2index, var2index_idx)
     ID* argnames = NULL;
     uint8_t* arg_index = NULL;
     if (0 < argc) {
         argnames = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * argc);
         arg_index = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(uint8_t) * argc);
+        UPDATE_PARAMS;
+        UPDATE_VAR2INDEX;
         for (i = 0; i < argc; i++) {
             YogVal val = YogArray_at(env, params, i);
             YogNode* node = VAL2PTR(val);
@@ -1009,6 +1314,12 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
             arg_index[i] = lookup_var_index(env, var2index, name);
         }
     }
+    else {
+        UPDATE_PARAMS;
+        UPDATE_VAR2INDEX;
+    }
+    FRAME_LOCAL_PTR(env, code, code_idx);
+    UPDATE_ARG_INFO;
     arg_info->argc = argc;
     arg_info->argnames = argnames;
     arg_info->arg_index = arg_index;
@@ -1056,6 +1367,9 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
 
     n++;
     YOG_ASSERT(env, size == n, "Parameters count is unmatched.");
+#undef UPDATE_VAR2INDEX
+#undef UPDATE_PARAMS
+#undef UPDATE_ARG_INFO
 }
 
 static void 
@@ -1071,27 +1385,58 @@ static YogTable*
 Var2Index_new(YogEnv* env) 
 {
     YogTable* var2index = YogTable_new_symbol_table(env);
+    FRAME_DECL_LOCAL(env, var2index_idx, PTR2VAL(var2index));
+
+#define UPDATE_VAR2INDEX    FRAME_LOCAL_PTR(env, var2index, var2index_idx)
+    UPDATE_VAR2INDEX;
     register_self(env, var2index);
 
+    UPDATE_VAR2INDEX;
     return var2index;
+#undef UPDATE_VAR2INDEX
 }
 
 static YogCode* 
 compile_func(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, YogNode* node) 
 {
-    YogTable* var2index = Var2Index_new(env);
+    FRAME_DECL_LOCALS2(env, filename_idx, PTR2VAL((char*)filename), node_idx, PTR2VAL(node));
 
+    YogTable* var2index = Var2Index_new(env);
+    FRAME_DECL_LOCAL(env, var2index_idx, PTR2VAL(var2index));
+
+#define UPDATE_NODE     FRAME_LOCAL_PTR(env, node, node_idx)
+    UPDATE_NODE;
     YogArray* params = node->u.funcdef.params;
+#define UPDATE_VAR2INDEX    FRAME_LOCAL_PTR(env, var2index, var2index_idx)
+    UPDATE_VAR2INDEX;
     register_params_var2index(env, params, var2index);
-    YogArray* stmts = node->u.funcdef.stmts;
+    UPDATE_NODE;
+    YogArray* stmts = NULL;
+#define UPDATE_STMTS    stmts = node->u.funcdef.stmts
+    UPDATE_STMTS;
+    UPDATE_VAR2INDEX;
     make_var2index(env, stmts, var2index);
 
+    UPDATE_NODE;
     ID func_name = node->u.funcdef.name;
 
+    FRAME_LOCAL_PTR(env, filename, filename_idx);
+    UPDATE_NODE;
+    UPDATE_STMTS;
+    UPDATE_VAR2INDEX;
     YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var2index, CTX_FUNC, NULL);
+    FRAME_DECL_LOCAL(env, code_idx, PTR2VAL(code));
+
+#define UPDATE_CODE     FRAME_LOCAL_PTR(env, code, code_idx)
+    UPDATE_CODE;
     setup_params(env, var2index, params, code);
 
+    UPDATE_CODE;
     return code;
+#undef UPDATE_CODE
+#undef UPDATE_STMTS
+#undef UPDATE_VAR2INDEX
+#undef UPDATE_NODE
 }
 
 static void 
@@ -1104,16 +1449,25 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
         klass_name = data->klass_name;
     }
 
+    FRAME_DECL_LOCALS2(env, node_idx, PTR2VAL(node), data_idx, PTR2VAL(data));
+
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+#define UPDATE_NODE     FRAME_LOCAL_PTR(env, node, node_idx)
+    UPDATE_DATA;
+    UPDATE_NODE;
     YogCode* code = compile_func(env, visitor, data->filename, klass_name, node);
 
+    UPDATE_DATA;
     YogVal val = PTR2VAL(code);
-    ADD_PUSH_CONST(val, node->lineno);
+    add_push_const(env, data, val, node->lineno);
 
+    UPDATE_NODE;
     ID id = node->u.funcdef.name;
 #if 0
     int var_index = lookup_var_index(env, data->var2index, id);
 #endif
     unsigned int lineno = node->lineno;
+    UPDATE_DATA;
     switch (data->ctx) {
     case CTX_FUNC:
         YOG_ASSERT(env, FALSE, "TODO: NOT IMPLEMENTED");
@@ -1132,6 +1486,7 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
                 YOG_ASSERT(env, FALSE, "Invalid context type.");
                 break;
             }
+            UPDATE_DATA;
             CompileData_add_store_name(env, data, lineno, id);
             break;
         }
@@ -1139,14 +1494,21 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
         YOG_ASSERT(env, FALSE, "Unknown context.");
         break;
     }
+#undef UPDATE_NODE
+#undef UPDATE_DATA
 }
 
 static void 
 compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    DECL_NODE_ARG(env, node, arg);
+    UPDATE_NODE_ARG(env, node, arg);
     visit_node(env, visitor, node->u.func_call.callee, arg);
-    VISIT_EACH_ARGS(node->u.func_call.args, node->u.func_call.blockarg);
 
+    UPDATE_NODE_ARG(env, node, arg);
+    VISIT_EACH_ARGS(env, node->u.func_call.args, node->u.func_call.blockarg, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     unsigned int argc = 0;
     YogArray* args = node->u.func_call.args;
     if (args != NULL) {
@@ -1474,31 +1836,50 @@ static void
 compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
     CompileData* data = arg;
+    FRAME_DECL_LOCALS2(env, node_idx, PTR2VAL(node), data_idx, PTR2VAL(data));
+
+#define UPDATE_NODE     FRAME_LOCAL_PTR(env, node, node_idx)
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+    UPDATE_NODE;
+    UPDATE_DATA;
     YogCode* code = compile_block(env, visitor, node, data);
 
     YogVal val = PTR2VAL(code);
+    UPDATE_NODE;
     unsigned int lineno = node->lineno;
-    ADD_PUSH_CONST(val, lineno);
+    UPDATE_DATA;
+    add_push_const(env, data, val, lineno);
     switch (data->ctx) {
         case CTX_FUNC:
         case CTX_KLASS:
             YOG_ASSERT(env, FALSE, "NOT IMPLEMENTED");
             break;
         case CTX_PKG:
+            UPDATE_DATA;
             CompileData_add_make_package_block(env, data, lineno);
             break;
         default:
             YOG_ASSERT(env, FALSE, "Unknown context.");
             break;
     }
+#undef UPDATE_DATA
+#undef UPDATE_NODE
 }
 
 static YogCode* 
 compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogArray* stmts, CompileData* data)
 {
+    FRAME_DECL_LOCALS2(env, stmts_idx, OBJ2VAL(stmts), data_idx, PTR2VAL(data));
+
     YogTable* var2index = Var2Index_new(env);
+    FRAME_DECL_LOCAL(env, var2index_idx, PTR2VAL(var2index));
+#define UPDATE_STMTS    FRAME_LOCAL_ARRAY(env, stmts, stmts_idx)
+    UPDATE_STMTS;
+#define UPDATE_VAR2INDEX    FRAME_LOCAL_PTR(env, var2index, var2index_idx)
+    UPDATE_VAR2INDEX;
     make_var2index(env, stmts, var2index);
 
+    UPDATE_STMTS;
     unsigned int lineno = get_last_lineno(env, stmts);
 
     YogInst* ret = Inst_new(env, lineno);
@@ -1508,67 +1889,99 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogArray* stmts, 
     push_self_name->next = ret;
     push_self_name->opcode = OP(PUSH_SELF_NAME);
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     const char* filename = data->filename;
     ID func_name = INVALID_ID;
 
+    UPDATE_STMTS;
+    UPDATE_VAR2INDEX;
     YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var2index, CTX_KLASS, push_self_name);
 
     return code;
+#undef UPDATE_VAR2INDEX
+#undef UPDATE_STMTS
 }
 
 static void 
 compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
     CompileData* data = arg;
+    FRAME_DECL_LOCALS2(env, node_idx, PTR2VAL(node), data_idx, PTR2VAL(data));
 
+#define UPDATE_NODE     FRAME_LOCAL_PTR(env, node, node_idx)
+    UPDATE_NODE;
     ID name = node->u.klass.name;
     YogVal val = ID2VAL(name);
-    ADD_PUSH_CONST(val, node->lineno);
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+    UPDATE_DATA;
+    add_push_const(env, data, val, node->lineno);
 
+    UPDATE_NODE;
     YogNode* super = node->u.klass.super;
+    UPDATE_DATA;
     if (super != NULL) {
-        visit_node(env, visitor, super, arg);
+        visit_node(env, visitor, super, data);
     }
     else {
         YogKlass* cObject = ENV_VM(env)->cObject;
         val = OBJ2VAL(cObject);
-        ADD_PUSH_CONST(val, node->lineno);
+        add_push_const(env, data, val, node->lineno);
     }
 
+    UPDATE_NODE;
     YogArray* stmts = node->u.klass.stmts;
+    UPDATE_DATA;
     YogCode* code = compile_klass(env, visitor, name, stmts, data);
     val = PTR2VAL(code);
     unsigned int lineno = node->lineno;
-    ADD_PUSH_CONST(val, lineno);
+    UPDATE_DATA;
+    add_push_const(env, data, val, lineno);
 
+    UPDATE_DATA;
     CompileData_add_make_klass(env, data, lineno);
 
+    UPDATE_DATA;
     append_store(env, data, lineno, name);
+#undef UPDATE_DATA
+#undef UPDATE_NODE
 }
 
 static void 
 compile_visit_return(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
     CompileData* data = arg;
+    FRAME_DECL_LOCALS2(env, node_idx, PTR2VAL(node), data_idx, PTR2VAL(data));
 
+#define UPDATE_NODE     FRAME_LOCAL_PTR(env, node, node_idx)
+    UPDATE_NODE;
     YogNode* expr = node->u.return_.expr;
     unsigned int lineno = node->lineno;
+#define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
+    UPDATE_DATA;
     if (expr != NULL) {
-        visit_node(env, visitor, expr, arg);
+        visit_node(env, visitor, expr, data);
     }
     else {
-        ADD_PUSH_CONST(YNIL, lineno);
+        add_push_const(env, data, YNIL, lineno);
     }
 
+    UPDATE_DATA;
     CompileData_add_ret(env, data, lineno);
+#undef UPDATE_DATA
+#undef UPDATE_NODE
 }
 
 static void 
 compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 {
+    DECL_NODE_ARG(env, node, arg);
+    UPDATE_NODE_ARG(env, node, arg);
     visit_node(env, visitor, node->u.subscript.prefix, arg);
+
+    UPDATE_NODE_ARG(env, node, arg);
     visit_node(env, visitor, node->u.subscript.index, arg);
 
+    UPDATE_NODE_ARG(env, node, arg);
     CompileData* data = arg;
     ID method = INTERN("[]");
     CompileData_add_call_method(env, data, node->lineno, method, 1, 0, 0, 0, 0);
@@ -1602,7 +2015,12 @@ compile_init_visitor(AstVisitor* visitor)
 YogCode* 
 YogCompiler_compile_module(YogEnv* env, const char* filename, YogArray* stmts) 
 {
+    FRAME_DECL_LOCAL(env, stmts_idx, OBJ2VAL(stmts));
+
+#define UPDATE_STMTS    FRAME_LOCAL_OBJ(env, stmts, YogArray, stmts_idx)
+    UPDATE_STMTS;
     YogTable* var2index = make_var2index(env, stmts, NULL);
+    FRAME_DECL_LOCAL(env, var2index_idx, PTR2VAL(var2index));
 
     AstVisitor visitor;
     compile_init_visitor(&visitor);
@@ -1615,7 +2033,10 @@ YogCompiler_compile_module(YogEnv* env, const char* filename, YogArray* stmts)
     ID klass_name = INVALID_ID;
     ID func_name = INTERN("<module>");
 
+    UPDATE_STMTS;
+    FRAME_LOCAL_PTR(env, var2index, var2index_idx);
     YogCode* code = compile_stmts(env, &visitor, filename, klass_name, func_name, stmts, var2index, CTX_PKG, NULL);
+#undef UPDATE_STMTS
 
     return code;
 }
