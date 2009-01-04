@@ -610,7 +610,7 @@ Var2IndexData_new(YogEnv* env)
 static YogTable*
 make_var2index(YogEnv* env, YogArray* stmts, YogTable* var2index)
 {
-    FRAME_DECL_LOCAL(env, stmts_idx, OBJ2VAL(stmts));
+    FRAME_DECL_LOCALS2(env, stmts_idx, OBJ2VAL(stmts), var2index_idx, PTR2VAL(var2index));
 
     AstVisitor visitor;
     var2index_init_visitor(&visitor);
@@ -618,16 +618,27 @@ make_var2index(YogEnv* env, YogArray* stmts, YogTable* var2index)
     Var2IndexData* data = Var2IndexData_new(env);
     FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
 
-    if (var2index == NULL) {
-        var2index = YogTable_new_symbol_table(env);
+    YogTable* v2i = NULL;
+    if (var2index != NULL) {
+        FRAME_LOCAL_PTR(env, var2index, var2index_idx);
+        v2i = var2index;
     }
+    else {
+        v2i = YogTable_new_symbol_table(env);
+    }
+    FRAME_DECL_LOCAL(env, v2i_idx, PTR2VAL(v2i));
+
     FRAME_LOCAL_PTR(env, data, data_idx);
-    data->var2index = var2index;
+#define UPDATE_V2I  FRAME_LOCAL_PTR(env, v2i, v2i_idx)
+    UPDATE_V2I;
+    data->var2index = v2i;
 
     FRAME_LOCAL_ARRAY(env, stmts, stmts_idx);
     visitor.visit_stmts(env, &visitor, stmts, data);
 
-    return var2index;
+    UPDATE_V2I;
+    return v2i;
+#undef UPDATE_V2I
 }
 
 static int 
