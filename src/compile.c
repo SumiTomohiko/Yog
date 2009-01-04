@@ -99,9 +99,10 @@ struct CompileData {
 typedef struct CompileData CompileData;
 
 #define VISIT_EACH_ARGS(env, args, blockarg, arg)   do { \
-    FRAME_DECL_LOCALS3(env, arg_idx, PTR2VAL(arg), args_idx, OBJ2VAL(args), blockarg_idx, PTR2VAL(blockarg)); \
+    FRAME_DECL_LOCALS3(env, args_idx, OBJ2VAL(args), blockarg_idx, PTR2VAL(blockarg), arg_idx, PTR2VAL(arg)); \
     \
     if (args != NULL) { \
+        FRAME_LOCAL_ARRAY(env, args, args_idx); \
         unsigned int argc = YogArray_size(env, args); \
         unsigned int i = 0; \
         for (i = 0; i < argc; i++) { \
