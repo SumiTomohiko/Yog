@@ -98,28 +98,6 @@ struct CompileData {
 
 typedef struct CompileData CompileData;
 
-#define VISIT_EACH_ARGS(env, args, blockarg, arg)   do { \
-    FRAME_DECL_LOCALS3(env, args_idx, OBJ2VAL(args), blockarg_idx, PTR2VAL(blockarg), arg_idx, PTR2VAL(arg)); \
-    \
-    if (args != NULL) { \
-        FRAME_LOCAL_ARRAY(env, args, args_idx); \
-        unsigned int argc = YogArray_size(env, args); \
-        unsigned int i = 0; \
-        for (i = 0; i < argc; i++) { \
-            FRAME_LOCAL_ARRAY(env, args, args_idx); \
-            YogVal val = YogArray_at(env, args, i); \
-            YogNode* node = VAL2PTR(val); \
-            FRAME_LOCAL_PTR(env, arg, arg_idx); \
-            visit_node(env, visitor, node, arg); \
-        } \
-    } \
-    if (blockarg != NULL) { \
-        FRAME_LOCAL_PTR(env, blockarg, blockarg_idx); \
-        FRAME_LOCAL_PTR(env, arg, arg_idx); \
-        visit_node(env, visitor, blockarg, arg); \
-    } \
-} while (0)
-
 #define RAISE   INTERN("raise")
 #define RERAISE() \
     CompileData_add_call_command(env, data, lineno, RAISE, 0, 0, 0, 0, 0)
@@ -282,6 +260,30 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
+visit_each_args(YogEnv* env, AstVisitor* visitor, YogArray* args, YogNode* blockarg, void* arg) 
+{
+    FRAME_DECL_LOCALS3(env, args_idx, OBJ2VAL(args), blockarg_idx, PTR2VAL(blockarg), arg_idx, PTR2VAL(arg));
+   
+    FRAME_LOCAL_ARRAY(env, args, args_idx);
+    if (args != NULL) {
+        unsigned int argc = YogArray_size(env, args);
+        unsigned int i = 0;
+        for (i = 0; i < argc; i++) {
+            FRAME_LOCAL_ARRAY(env, args, args_idx);
+            YogVal val = YogArray_at(env, args, i);
+            YogNode* node = VAL2PTR(val);
+            FRAME_LOCAL_PTR(env, arg, arg_idx);
+            visit_node(env, visitor, node, arg);
+        }
+    }
+    FRAME_LOCAL_PTR(env, blockarg, blockarg_idx);
+    if (blockarg != NULL) {
+        FRAME_LOCAL_PTR(env, arg, arg_idx);
+        visit_node(env, visitor, blockarg, arg);
+    }
+}
+
+static void 
 var2index_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     DECL_NODE_ARG(env, node, arg);
@@ -290,7 +292,7 @@ var2index_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, voi
     visit_node(env, visitor, node->u.method_call.recv, arg);
 
     UPDATE_NODE_ARG(env, node, arg);
-    VISIT_EACH_ARGS(env, node->u.method_call.args, node->u.method_call.blockarg, arg);
+    visit_each_args(env, visitor, node->u.method_call.args, node->u.method_call.blockarg, arg);
 }
 
 static void 
@@ -393,7 +395,7 @@ var2index_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 static void 
 var2index_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    VISIT_EACH_ARGS(env, node->u.command_call.args, node->u.command_call.blockarg, arg);
+    visit_each_args(env, visitor, node->u.method_call.args, node->u.method_call.blockarg, arg);
 }
 
 static void 
@@ -407,7 +409,7 @@ var2index_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* 
 static void 
 var2index_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    VISIT_EACH_ARGS(env, node->u.func_call.args, node->u.func_call.blockarg, arg);
+    visit_each_args(env, visitor, node->u.func_call.args, node->u.func_call.blockarg, arg);
 }
 
 static void 
@@ -741,7 +743,7 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
     visit_node(env, visitor, node->u.method_call.recv, arg);
 
     UPDATE_NODE_ARG(env, node, arg);
-    VISIT_EACH_ARGS(env, node->u.method_call.args, node->u.method_call.blockarg, arg);
+    visit_each_args(env, visitor, node->u.method_call.args, node->u.method_call.blockarg, arg);
 
     unsigned int argc = 0;
     UPDATE_NODE_ARG(env, node, arg);
@@ -830,7 +832,7 @@ compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void
     DECL_NODE_ARG(env, node, arg);
 
     UPDATE_NODE_ARG(env, node, arg);
-    VISIT_EACH_ARGS(env, node->u.command_call.args, node->u.command_call.blockarg, arg);
+    visit_each_args(env, visitor, node->u.command_call.args, node->u.command_call.blockarg, arg);
 
     unsigned int argc = 0;
     UPDATE_NODE_ARG(env, node, arg);
@@ -1518,7 +1520,7 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* a
     visit_node(env, visitor, node->u.func_call.callee, arg);
 
     UPDATE_NODE_ARG(env, node, arg);
-    VISIT_EACH_ARGS(env, node->u.func_call.args, node->u.func_call.blockarg, arg);
+    visit_each_args(env, visitor, node->u.func_call.args, node->u.func_call.blockarg, arg);
 
     UPDATE_NODE_ARG(env, node, arg);
     unsigned int argc = 0;
