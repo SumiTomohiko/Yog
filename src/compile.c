@@ -2043,10 +2043,12 @@ YogCompiler_compile_module(YogEnv* env, const char* filename, YogArray* stmts)
         filename = "<stdin>";
     }
     filename = YogString_dup(env, filename);
+    FRAME_DECL_LOCAL(env, filename_idx, PTR2VAL((char*)filename));
 
     ID klass_name = INVALID_ID;
     ID func_name = INTERN("<module>");
 
+    FRAME_LOCAL_PTR(env, filename, filename_idx);
     UPDATE_STMTS;
     FRAME_LOCAL_PTR(env, var2index, var2index_idx);
     YogCode* code = compile_stmts(env, &visitor, filename, klass_name, func_name, stmts, var2index, CTX_PKG, NULL);
