@@ -15,6 +15,7 @@ YogVal_keep(YogEnv* env, YogVal val, ObjectKeeper keeper)
     case VAL_SYMBOL:
         return val;
         break;
+#if 0
     case VAL_STR:
         {
             const char* s = VAL2STR(val);
@@ -22,6 +23,7 @@ YogVal_keep(YogEnv* env, YogVal val, ObjectKeeper keeper)
             return STR2VAL(s);
             break;
         }
+#endif
     case VAL_PTR:
         {
             void* ptr = VAL2PTR(val);

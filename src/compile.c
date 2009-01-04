@@ -765,7 +765,7 @@ compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void*
 static int
 register_const(YogEnv* env, CompileData* data, YogVal val) 
 {
-    FRAME_DECL_LOCAL(env, data_idx, data);
+    FRAME_DECL_LOCALS2(env, data_idx, PTR2VAL(data), val_idx, val);
 
 #define UPDATE_DATA     FRAME_LOCAL_PTR(env, data, data_idx)
     UPDATE_DATA;
@@ -776,6 +776,7 @@ register_const(YogEnv* env, CompileData* data, YogVal val)
         UPDATE_DATA;
     }
 
+    FRAME_LOCAL(env, val, val_idx);
     YogVal index = YUNDEF;
     if (!YogTable_lookup(env, data->const2index, val, &index)) {
         int size = YogTable_size(env, data->const2index);

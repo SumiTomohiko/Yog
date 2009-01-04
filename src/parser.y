@@ -78,6 +78,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
         KEEP(klass.stmts);
         break;
     case NODE_LITERAL:
+        node->u.literal.val = YogVal_keep(env, node->u.literal.val, keeper);
         break;
     case NODE_METHOD_CALL:
         KEEP(method_call.recv);
@@ -138,9 +139,13 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 } while (0)
 #define ASSIGN_ARRAY(var, param)        ASSIGN_OBJ(var, YogArray, param)
 
-#define LITERAL_NEW(node, val_)  do { \
+#define LITERAL_NEW(node, val_)     do { \
+    FRAME_DECL_LOCAL(ENV, val_idx, val_); \
+    \
     YogNode* nd = NODE_NEW(NODE_LITERAL); \
-    nd->u.literal.val = val_; \
+    YogVal val = YUNDEF; \
+    FRAME_LOCAL(ENV, val, val_idx); \
+    nd->u.literal.val = val; \
     FRAME_DECL_LOCAL(ENV, nd_idx, PTR2VAL(nd)); \
     ASSIGN(node, nd_idx, nd); \
 } while (0)

@@ -121,7 +121,7 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 567 "parser.y"
+#line 572 "parser.y"
 typedef union YYSTYPE {
     ARRAY_TYPE array;
     NODE_TYPE node;
