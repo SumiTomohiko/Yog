@@ -322,6 +322,7 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg
         UPDATE_DATA;
         visitor->visit_stmt(env, visitor, node, data);
 
+        UPDATE_NODE;
         switch (node->type) {
         case NODE_ASSIGN:
         case NODE_COMMAND_CALL:
@@ -329,7 +330,6 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg
         case NODE_LITERAL:
         case NODE_METHOD_CALL:
         case NODE_VARIABLE:
-            UPDATE_NODE;
             UPDATE_DATA;
             CompileData_add_pop(env, data, node->lineno);
             break;
