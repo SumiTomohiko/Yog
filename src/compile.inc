@@ -7,53 +7,67 @@
 static void 
 CompileData_add_load_special(YogEnv* env, CompileData* data, unsigned int lineno, ID id)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(LOAD_SPECIAL);
 
     LOAD_SPECIAL_ID(inst) = id;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_pop(YogEnv* env, CompileData* data, unsigned int lineno)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(POP);
 
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_push_const(YogEnv* env, CompileData* data, unsigned int lineno, uint8_t index)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(PUSH_CONST);
 
     PUSH_CONST_INDEX(inst) = index;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_make_string(YogEnv* env, CompileData* data, unsigned int lineno, uint8_t index)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(MAKE_STRING);
 
     MAKE_STRING_INDEX(inst) = index;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_call_method(YogEnv* env, CompileData* data, unsigned int lineno, ID method, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(CALL_METHOD);
@@ -65,36 +79,45 @@ CompileData_add_call_method(YogEnv* env, CompileData* data, unsigned int lineno,
     CALL_METHOD_VARARGC(inst) = varargc;
     CALL_METHOD_VARKWARGC(inst) = varkwargc;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_store_name(YogEnv* env, CompileData* data, unsigned int lineno, ID id)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(STORE_NAME);
 
     STORE_NAME_ID(inst) = id;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_store_local(YogEnv* env, CompileData* data, unsigned int lineno, uint8_t index)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(STORE_LOCAL);
 
     STORE_LOCAL_INDEX(inst) = index;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_call_command(YogEnv* env, CompileData* data, unsigned int lineno, ID command, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(CALL_COMMAND);
@@ -106,23 +129,29 @@ CompileData_add_call_command(YogEnv* env, CompileData* data, unsigned int lineno
     CALL_COMMAND_VARARGC(inst) = varargc;
     CALL_COMMAND_VARKWARGC(inst) = varkwargc;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_make_package_method(YogEnv* env, CompileData* data, unsigned int lineno)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(MAKE_PACKAGE_METHOD);
 
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_call_function(YogEnv* env, CompileData* data, unsigned int lineno, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(CALL_FUNCTION);
@@ -133,132 +162,166 @@ CompileData_add_call_function(YogEnv* env, CompileData* data, unsigned int linen
     CALL_FUNCTION_VARARGC(inst) = varargc;
     CALL_FUNCTION_VARKWARGC(inst) = varkwargc;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_load_global(YogEnv* env, CompileData* data, unsigned int lineno, ID id)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(LOAD_GLOBAL);
 
     LOAD_GLOBAL_ID(inst) = id;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_load_name(YogEnv* env, CompileData* data, unsigned int lineno, ID id)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(LOAD_NAME);
 
     LOAD_NAME_ID(inst) = id;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_load_local(YogEnv* env, CompileData* data, unsigned int lineno, uint8_t index)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(LOAD_LOCAL);
 
     LOAD_LOCAL_INDEX(inst) = index;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_jump(YogEnv* env, CompileData* data, unsigned int lineno, struct YogInst* dest)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(JUMP);
 
     JUMP_DEST(inst) = dest;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_jump_if_false(YogEnv* env, CompileData* data, unsigned int lineno, struct YogInst* dest)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(JUMP_IF_FALSE);
 
     JUMP_IF_FALSE_DEST(inst) = dest;
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_dup(YogEnv* env, CompileData* data, unsigned int lineno)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(DUP);
 
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_make_package_block(YogEnv* env, CompileData* data, unsigned int lineno)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(MAKE_PACKAGE_BLOCK);
 
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_make_klass(YogEnv* env, CompileData* data, unsigned int lineno)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(MAKE_KLASS);
 
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_make_method(YogEnv* env, CompileData* data, unsigned int lineno)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(MAKE_METHOD);
 
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_push_self_name(YogEnv* env, CompileData* data, unsigned int lineno)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(PUSH_SELF_NAME);
 
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 
 static void 
 CompileData_add_ret(YogEnv* env, CompileData* data, unsigned int lineno)
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(RET);
 
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 

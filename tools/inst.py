@@ -318,6 +318,8 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data, unsigned int lineno""" 
                 compile_data.write(", %(type)s %(name)s" % { "type": self.type_name2data_type(operand.type), "name": operand.name })
             compile_data.write(""")
 {
+    FRAME_DECL_LOCAL(env, data_idx, PTR2VAL(data));
+
     YogInst* inst = Inst_new(env, lineno);
     inst->type = INST_OP;
     INST_OPCODE(inst) = OP(%(name)s);
@@ -327,6 +329,7 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data, unsigned int lineno""" 
     %(inst)s_%(operand)s(inst) = %(name)s;""" % { "inst": inst.name.upper(), "operand": operand.name.upper(), "name": operand.name })
             compile_data.write("""
 
+    FRAME_LOCAL_PTR(env, data, data_idx);
     add_inst(data, inst);
 }
 """)
