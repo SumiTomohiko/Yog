@@ -334,9 +334,15 @@ insts2bin(YogEnv* env, YogInst* inst)
 #define INIT_BIN_SIZE   (0)
     YogBinary* code = YogBinary_new(env, INIT_BIN_SIZE);
 #undef INIT_BIN_SIZE
+    FRAME_DECL_LOCAL(env, code_idx, OBJ2VAL(code));
 
-    FRAME_LOCAL_PTR(env, inst, inst_idx);
+#define UPDATE_CODE     FRAME_LOCAL_OBJ(env, code, YogBinary, code_idx)
+#define UPDATE_INST     FRAME_LOCAL_PTR(env, inst, inst_idx)
+    UPDATE_INST;
     while (inst != NULL) {
+        FRAME_DECL_LOCAL(env, inst_idx, PTR2VAL(inst));
+
+        UPDATE_INST;
         switch (inst->type) {
         case INST_OP:
             {
@@ -344,133 +350,208 @@ insts2bin(YogEnv* env, YogInst* inst)
 
                 case OP(LOAD_SPECIAL):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(LOAD_SPECIAL));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_id(env, code, LOAD_SPECIAL_ID(inst));
                         break;
                     }
                 case OP(POP):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(POP));
                         break;
                     }
                 case OP(PUSH_CONST):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(PUSH_CONST));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, PUSH_CONST_INDEX(inst));
                         break;
                     }
                 case OP(MAKE_STRING):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(MAKE_STRING));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, MAKE_STRING_INDEX(inst));
                         break;
                     }
                 case OP(CALL_METHOD):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(CALL_METHOD));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_id(env, code, CALL_METHOD_METHOD(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_METHOD_ARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_METHOD_KWARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_METHOD_BLOCKARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_METHOD_VARARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_METHOD_VARKWARGC(inst));
                         break;
                     }
                 case OP(STORE_NAME):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(STORE_NAME));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_id(env, code, STORE_NAME_ID(inst));
                         break;
                     }
                 case OP(STORE_LOCAL):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(STORE_LOCAL));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, STORE_LOCAL_INDEX(inst));
                         break;
                     }
                 case OP(CALL_COMMAND):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(CALL_COMMAND));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_id(env, code, CALL_COMMAND_COMMAND(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_COMMAND_ARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_COMMAND_KWARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_COMMAND_BLOCKARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_COMMAND_VARARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_COMMAND_VARKWARGC(inst));
                         break;
                     }
                 case OP(MAKE_PACKAGE_METHOD):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(MAKE_PACKAGE_METHOD));
                         break;
                     }
                 case OP(CALL_FUNCTION):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(CALL_FUNCTION));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_FUNCTION_ARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_FUNCTION_KWARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_FUNCTION_BLOCKARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_FUNCTION_VARARGC(inst));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, CALL_FUNCTION_VARKWARGC(inst));
                         break;
                     }
                 case OP(LOAD_GLOBAL):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(LOAD_GLOBAL));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_id(env, code, LOAD_GLOBAL_ID(inst));
                         break;
                     }
                 case OP(LOAD_NAME):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(LOAD_NAME));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_id(env, code, LOAD_NAME_ID(inst));
                         break;
                     }
                 case OP(LOAD_LOCAL):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(LOAD_LOCAL));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_uint8(env, code, LOAD_LOCAL_INDEX(inst));
                         break;
                     }
                 case OP(JUMP):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(JUMP));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_pc(env, code, JUMP_DEST(inst)->pc);
                         break;
                     }
                 case OP(JUMP_IF_FALSE):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(JUMP_IF_FALSE));
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_pc(env, code, JUMP_IF_FALSE_DEST(inst)->pc);
                         break;
                     }
                 case OP(DUP):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(DUP));
                         break;
                     }
                 case OP(MAKE_PACKAGE_BLOCK):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(MAKE_PACKAGE_BLOCK));
                         break;
                     }
                 case OP(MAKE_KLASS):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(MAKE_KLASS));
                         break;
                     }
                 case OP(MAKE_METHOD):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(MAKE_METHOD));
                         break;
                     }
                 case OP(PUSH_SELF_NAME):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(PUSH_SELF_NAME));
                         break;
                     }
                 case OP(RET):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(RET));
                         break;
                     }
@@ -490,10 +571,14 @@ insts2bin(YogEnv* env, YogInst* inst)
             break;
         }
 
+        UPDATE_INST;
         inst = inst->next;
     }
+#undef UPDATE_INST
 
+    UPDATE_CODE;
     return code;
+#undef UPDATE_CODE
 }
 
 static int

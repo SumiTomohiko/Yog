@@ -339,12 +339,15 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data, unsigned int lineno""" 
             insts2bin.write("""
                 case OP(%(name)s):
                     {
+                        UPDATE_CODE;
                         YogBinary_push_uint8(env, code, OP(%(name)s));""" % { "name": inst.name.upper() })
             for operand in inst.operands:
                 inst_attr = "%(inst)s_%(name)s(inst)" % { "inst": inst.name.upper(), "name": operand.name.upper() }
                 if operand.type == "pc_t":
                     inst_attr = inst_attr + "->pc"
                 insts2bin.write("""
+                        UPDATE_CODE;
+                        UPDATE_INST;
                         YogBinary_push_%(type)s(env, code, %(inst_attr)s);""" % { "type": self.type_name2func_name(operand.type), "inst_attr": inst_attr })
             insts2bin.write("""
                         break;

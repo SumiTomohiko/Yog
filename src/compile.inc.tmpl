@@ -9,9 +9,15 @@ insts2bin(YogEnv* env, YogInst* inst)
 #define INIT_BIN_SIZE   (0)
     YogBinary* code = YogBinary_new(env, INIT_BIN_SIZE);
 #undef INIT_BIN_SIZE
+    FRAME_DECL_LOCAL(env, code_idx, OBJ2VAL(code));
 
-    FRAME_LOCAL_PTR(env, inst, inst_idx);
+#define UPDATE_CODE     FRAME_LOCAL_OBJ(env, code, YogBinary, code_idx)
+#define UPDATE_INST     FRAME_LOCAL_PTR(env, inst, inst_idx)
+    UPDATE_INST;
     while (inst != NULL) {
+        FRAME_DECL_LOCAL(env, inst_idx, PTR2VAL(inst));
+
+        UPDATE_INST;
         switch (inst->type) {
         case INST_OP:
             {
@@ -33,10 +39,14 @@ ${insts2bin}
             break;
         }
 
+        UPDATE_INST;
         inst = inst->next;
     }
+#undef UPDATE_INST
 
+    UPDATE_CODE;
     return code;
+#undef UPDATE_CODE
 }
 
 static int

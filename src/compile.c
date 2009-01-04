@@ -127,7 +127,7 @@ typedef struct CompileData CompileData;
 } while (0)
 
 static void 
-Inst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogInst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogInst* inst = ptr;
     inst->next = (*keeper)(env, inst->next);
@@ -149,7 +149,7 @@ Inst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogInst* 
 YogInst_new(YogEnv* env, InstType type, unsigned int lineno) 
 {
-    YogInst* inst = ALLOC_OBJ(env, Inst_keep_children, NULL, YogInst);
+    YogInst* inst = ALLOC_OBJ(env, YogInst_keep_children, NULL, YogInst);
     inst->type = type;
     inst->next = NULL;
     inst->lineno = lineno;
@@ -1900,7 +1900,9 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogArray* stmts, 
     YogInst* ret = Inst_new(env, lineno);
     ret->next = NULL;
     ret->opcode = OP(RET);
+    FRAME_DECL_LOCAL(env, ret_idx, PTR2VAL(ret));
     YogInst* push_self_name = Inst_new(env, lineno);
+    FRAME_LOCAL_PTR(env, ret, ret_idx);
     push_self_name->next = ret;
     push_self_name->opcode = OP(PUSH_SELF_NAME);
 

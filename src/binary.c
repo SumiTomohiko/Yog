@@ -74,15 +74,14 @@ YogByteArray_new(YogEnv* env, unsigned int size)
 static void 
 ensure_body_size(YogEnv* env, YogBinary* binary, unsigned int needed_size) 
 {
-    YogByteArray* body = binary->body;
-    if (body->size < needed_size) {
+    if (binary->body->size < needed_size) {
         unsigned int new_size = 2 * needed_size;
 
         FRAME_DECL_LOCAL(env, binary_idx, OBJ2VAL(binary));
 
         YogByteArray* new_body = YogByteArray_new(env, new_size);
         FRAME_LOCAL_OBJ(env, binary, YogBinary, binary_idx);
-        memcpy(new_body->items, body->items, binary->size);
+        memcpy(new_body->items, binary->body->items, binary->size);
         binary->body = new_body;
     }
 }
