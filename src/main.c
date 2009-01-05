@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "gc.h"
-#include "yog/array.h"
 #include "yog/code.h"
 #include "yog/compile.h"
 #include "yog/parser.h"
@@ -15,11 +14,11 @@ usage()
     printf("yog [options] [file]\n");
     printf("options:\n");
     printf("  --disable-gc: \n");
-    printf("  --gc=[bdw|copying|mark-sweep]: \n");
     printf("  --gc-stress: \n");
+    printf("  --gc=[bdw|copying|mark-sweep]: \n");
+    printf("  --help: \n");
     printf("  --init-heap-size=size: \n");
     printf("  --threshold=size: \n");
-    printf("  --help: \n");
 }
 
 static size_t 
@@ -126,10 +125,6 @@ main(int argc, char* argv[])
 #undef ERROR
 #undef USAGE
 
-    YogEnv env;
-    env.vm = NULL;
-    env.th = NULL;
-
 #define ERROR(msg)  do { \
     fprintf(stderr, "%s\n", msg); \
     return -2; \
@@ -138,12 +133,11 @@ main(int argc, char* argv[])
     YogVm_init(&vm, gc_type);
     vm.gc_stress = gc_stress ? TRUE : FALSE;
     vm.disable_gc = disable_gc ? TRUE : FALSE;
+
+    YogEnv env;
     env.vm = &vm;
-
-    YogThread thread;
-    YogThread_init(&env, &thread);
-    vm.thread = env.th = &thread;
-
+    env.th = NULL;
+    YogVm_boot(&env, env.vm);
     switch (gc_type) {
     case GC_BDW:
         GC_INIT();
@@ -158,37 +152,26 @@ main(int argc, char* argv[])
         ERROR("Unknown GC type.");
         break;
     }
-    YogVm_initialize_memory(&env, &vm);
-
-    YogFrame* frame = FRAME(YogCFrame_new(&env));
-    thread.cur_frame = frame;
-    frame->locals_size = 0;
-    YogValArray* locals = YogValArray_new(&env, MAX_LOCALS);
-    thread.cur_frame->locals = locals;
-
-    YogVm_boot(&env, env.vm);
 
     YogParser parser;
     YogParser_initialize(&env, &parser);
-    thread.parser = &parser;
+
     const char* filename = NULL;
     if (optind < argc) {
         filename = argv[optind];
     }
     YogArray* stmts = YogParser_parse_file(&env, &parser, filename);
-    thread.parser = NULL;
 
     YogCode* code = YogCompiler_compile_module(&env, filename, stmts);
-    FRAME_DECL_LOCAL(&env, code_idx, PTR2VAL(code));
+
+    YogThread* th = YogThread_new(&env);
+    env.th = th;
+    env.vm->thread = th;
 
     YogPackage* pkg = YogPackage_new(&env);
-    FRAME_LOCAL_PTR(&env, code, code_idx);
     pkg->code = code;
     YogVm_register_package(&env, env.vm, "__main__", pkg);
-
-    thread.cur_frame = NULL;
-
-    YogThread_eval_package(&env, &thread, pkg);
+    YogThread_eval_package(&env, th, pkg);
 
     YogVm_delete(&env, env.vm);
 

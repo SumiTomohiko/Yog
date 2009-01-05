@@ -14,11 +14,7 @@ void
 YogBinary_shrink(YogEnv* env, YogBinary* binary) 
 {
     unsigned int size = YogBinary_size(env, binary);
-
-    FRAME_DECL_LOCAL(env, binary_idx, OBJ2VAL(binary));
-
     YogByteArray* body = YogByteArray_new(env, size);
-    FRAME_LOCAL_OBJ(env, binary, YogBinary, binary_idx);
     memcpy(body->items, binary->body->items, size);
     binary->body = body;
 }
@@ -74,25 +70,18 @@ YogByteArray_new(YogEnv* env, unsigned int size)
 static void 
 ensure_body_size(YogEnv* env, YogBinary* binary, unsigned int needed_size) 
 {
-    if (binary->body->size < needed_size) {
+    YogByteArray* body = binary->body;
+    if (body->size < needed_size) {
         unsigned int new_size = 2 * needed_size;
-
-        FRAME_DECL_LOCAL(env, binary_idx, OBJ2VAL(binary));
-
         YogByteArray* new_body = YogByteArray_new(env, new_size);
-        FRAME_LOCAL_OBJ(env, binary, YogBinary, binary_idx);
-        memcpy(new_body->items, binary->body->items, binary->size);
+        memcpy(new_body->items, body->items, binary->size);
         binary->body = new_body;
     }
 }
 
 #define PUSH_TYPE(type, n)  do { \
-    FRAME_DECL_LOCAL(env, binary_idx, OBJ2VAL(binary)); \
-    \
-    FRAME_LOCAL_OBJ(env, binary, YogBinary, binary_idx); \
     ensure_body_size(env, binary, binary->size + sizeof(type)); \
-    \
-    FRAME_LOCAL_OBJ(env, binary, YogBinary, binary_idx); \
+\
     YogByteArray* body = binary->body; \
     *((type*)&body->items[binary->size]) = n; \
     binary->size += sizeof(type); \
@@ -136,12 +125,7 @@ YogBinary_new(YogEnv* env, unsigned int size)
 {
     YogBinary* binary = ALLOC_OBJ(env, YogBinary_keep_children, NULL, YogBinary);
     binary->size = 0;
-    binary->body = NULL;
-    FRAME_DECL_LOCAL(env, binary_idx, OBJ2VAL(binary));
-    
-    YogByteArray* body = YogByteArray_new(env, size);
-    FRAME_LOCAL_OBJ(env, binary, YogBinary, binary_idx);
-    binary->body = body;
+    binary->body = YogByteArray_new(env, size);
 
     return binary;
 }

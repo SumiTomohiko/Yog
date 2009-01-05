@@ -7,22 +7,16 @@
 void 
 YogKlass_define_method(YogEnv* env, YogKlass* klass, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, ...)
 {
-    FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
-
     ID func_name = INTERN(name);
 
     va_list ap;
     va_start(ap, required_argc);
-    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, f, klass->name, func_name, blockargc, varargc, kwargc, required_argc, ap);
-    FRAME_DECL_LOCAL(env, builtin_f_idx, PTR2VAL(builtin_f));
     va_end(ap);
 
     YogBuiltinUnboundMethod* method = YogBuiltinUnboundMethod_new(env);
-    FRAME_LOCAL_PTR(env, builtin_f, builtin_f_idx);
     method->f = builtin_f;
 
-    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     YogVal val = OBJ2VAL(method);
     YogObj_set_attr_id(env, YOGOBJ(klass), func_name, val);
 }
@@ -39,11 +33,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogBasicObj* 
 YogKlass_allocate(YogEnv* env, YogKlass* klass) 
 {
-    FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
-
     YogObj* obj = ALLOC_OBJ(env, keep_children, NULL, YogKlass);
-
-    FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
     YogObj_init(env, obj, 0, klass);
 
     return (YogBasicObj*)obj;
@@ -58,24 +48,12 @@ YogKlass_define_allocator(YogEnv* env, YogKlass* klass, Allocator allocator)
 YogKlass* 
 YogKlass_new(YogEnv* env, const char* name, YogKlass* super) 
 {
-    FRAME_DECL_LOCAL(env, super_idx, OBJ2VAL(super));
-
     YogKlass* klass = (YogKlass*)YogKlass_allocate(env, ENV_VM(env)->cKlass);
-
     klass->allocator = NULL;
-    klass->name = INVALID_ID;
-    FRAME_LOCAL_OBJ(env, super, YogKlass, super_idx);
-    klass->super = super;
-    FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
-
     if (name != NULL) {
-        ID id = INTERN(name);
-        FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
-        klass->name = id;
+        klass->name = INTERN(name);
     }
-    else {
-        FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx);
-    }
+    klass->super = super;
 
     return klass;
 }

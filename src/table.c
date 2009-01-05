@@ -120,12 +120,9 @@ new_size(int size)
 static void
 rehash(YogEnv* env, YogTable* table)
 {
-    FRAME_DECL_LOCAL(env, table_idx, PTR2VAL(table));
-    FRAME_LOCAL_PTR(env, table, table_idx);
     int old_num_bins = table->num_bins;
     int new_num_bins = new_size(old_num_bins + 1);
     YogTableEntryArray* new_bins = alloc_bins(env, new_num_bins);
-    FRAME_LOCAL_PTR(env, table, table_idx);
 
     int i = 0;
     for(i = 0; i < old_num_bins; i++) {
@@ -183,6 +180,8 @@ alloc_table(YogEnv* env)
 static YogTable* 
 st_init_table_with_size(YogEnv* env, YogHashType* type, int size)
 {
+    YogTable* tbl = NULL;
+
 #ifdef HASH_LOG
     if (init_st == 0) {
         init_st = 1;
@@ -192,17 +191,11 @@ st_init_table_with_size(YogEnv* env, YogHashType* type, int size)
 
     size = new_size(size);        /* round up to prime number */
 
-    YogTable* tbl = alloc_table(env);
-    FRAME_DECL_LOCAL(env, tbl_idx, PTR2VAL(tbl));
-    FRAME_LOCAL_PTR(env, tbl, tbl_idx);
+    tbl = alloc_table(env);
     tbl->type = type;
     tbl->num_entries = 0;
     tbl->num_bins = size;
-    tbl->bins = NULL;
-
-    YogTableEntryArray* bins = alloc_bins(env, size);
-    FRAME_LOCAL_PTR(env, tbl, tbl_idx);
-    tbl->bins = bins;
+    tbl->bins = alloc_bins(env, size);
 
     return tbl;
 }
@@ -279,22 +272,16 @@ alloc_entry(YogEnv* env)
 
 #define ADD_DIRECT(env, table, key, value, hash_val, bin_pos)\
 do {\
-    FRAME_DECL_LOCALS3(env, table_idx, PTR2VAL(table), key_idx, key, value_idx, value); \
-    FRAME_LOCAL_PTR(env, table, table_idx); \
     if (ST_DEFAULT_MAX_DENSITY < table->num_entries / (table->num_bins)) {\
-        rehash(env, table); \
-        FRAME_LOCAL_PTR(env, table, table_idx); \
+        rehash(env, table);\
         bin_pos = hash_val % table->num_bins;\
     }\
     \
     YogTableEntry* entry = alloc_entry(env);\
     \
     entry->hash = hash_val;\
-    FRAME_LOCAL(env, key, key_idx); \
     entry->key = key;\
-    FRAME_LOCAL(env, value, value_idx); \
     entry->record = value;\
-    FRAME_LOCAL_PTR(env, table, table_idx); \
     entry->next = TABLE_ENTRY_TOP(table, bin_pos);\
     TABLE_ENTRY_TOP(table, bin_pos) = entry;\
     table->num_entries++;\

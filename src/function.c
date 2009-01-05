@@ -23,11 +23,13 @@ YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsign
 #undef ASSERT
 
 #define NEXT_STR(ap)    va_arg(ap, const char*)
+
     va_list aq;
     va_copy(aq, ap);
 
     unsigned int argc = 0;
-    while (NEXT_STR(ap) != NULL) {
+    const char* s = NULL;
+    while ((s = NEXT_STR(ap)) != NULL) {
         argc++;
     }
     if (0 < blockargc) {
@@ -38,29 +40,22 @@ YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsign
     ID blockargname = 0;
     if (0 < argc) {
         argnames = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * argc);
-        FRAME_DECL_LOCAL(env, argnames_idx, PTR2VAL(argnames));
         unsigned int i = 0;
-        const char* s = NULL;
         for (i = 0; i < argc; i++) {
-            s = NEXT_STR(aq);
-            ID id = INTERN(s);
-            FRAME_LOCAL_PTR(env, argnames, argnames_idx);
-            argnames[i] = id;
+            const char* s = NEXT_STR(aq);
+            argnames[i] = INTERN(s);
         }
         if (0 < blockargc) {
-            s = NEXT_STR(aq);
             blockargname = INTERN(s);
             i++;
         }
-        FRAME_LOCAL_PTR(env, argnames, argnames_idx);
     }
-    FRAME_DECL_LOCAL(env, argnames_idx, PTR2VAL(argnames));
+
 #undef NEXT_STR
 
     YogBuiltinFunction* builtin_f = ALLOC_OBJ(env, keep_children, NULL, YogBuiltinFunction);
     YogArgInfo* arg_info = &builtin_f->arg_info;
     arg_info->argc = argc;
-    FRAME_LOCAL_PTR(env, argnames, argnames_idx);
     arg_info->argnames = argnames;
     arg_info->arg_index = NULL;
     arg_info->blockargc = blockargc;

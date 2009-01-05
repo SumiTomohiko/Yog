@@ -21,18 +21,12 @@ YogObj_get_attr(YogEnv* env, YogObj* obj, ID name)
 void 
 YogObj_set_attr_id(YogEnv* env, YogObj* obj, ID name, YogVal val) 
 {
-    FRAME_DECL_LOCALS2(env, obj_idx, OBJ2VAL(obj), val_idx, val);
-
     YogVal key = ID2VAL(name);
 
-    FRAME_LOCAL_OBJ(env, obj, YogObj, obj_idx);
     if (obj->attrs == NULL) {
-        YogTable* attrs = YogTable_new_symbol_table(env);
-        FRAME_LOCAL_OBJ(env, obj, YogObj, obj_idx);
-        obj->attrs = attrs;
+        obj->attrs = YogTable_new_symbol_table(env);
     }
 
-    FRAME_LOCAL(env, val, val_idx);
     YogTable_insert(env, obj->attrs, key, val);
 }
 

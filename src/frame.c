@@ -5,19 +5,24 @@
 #include "yog/yog.h"
 
 static void 
-extend_locals(YogEnv* env, YogFrame* frame, unsigned int n) 
+extend_locals(YogEnv* env, YogCFrame* frame, unsigned int n) 
 {
-    unsigned int capacity = frame->locals->size + n;
-    YogValArray* locals = YogValArray_new(env, capacity);
-    frame = CUR_FRAME(env);
-    unsigned int size = frame->locals_size;
-    memcpy(locals->items, frame->locals->items, sizeof(YogVal) * size);
-    frame->locals = locals;
+    YogValArray* old_locals = frame->locals;
+    unsigned int capacity = (old_locals != NULL ? old_locals->size : 0) + n;
+
+    YogValArray* new_locals = YogValArray_new(env, capacity);
+    if (old_locals != NULL) {
+        unsigned int size = frame->locals_size;
+        memcpy(new_locals->items, old_locals->items, sizeof(YogVal) * size);
+    }
+    frame->locals = new_locals;
 }
 
 void 
-YogFrame_add_locals(YogEnv* env, YogFrame* frame, unsigned int n, ...)
+YogFrame_add_locals(YogEnv* env, YogCFrame* frame, unsigned int n, ...)
 {
+    extend_locals(env, frame, n);
+
     YogValArray* locals = frame->locals;
     unsigned int locals_size = frame->locals_size;
 
@@ -30,19 +35,6 @@ YogFrame_add_locals(YogEnv* env, YogFrame* frame, unsigned int n, ...)
     va_end(ap);
 
     frame->locals_size = locals_size + n;
-
-    extend_locals(env, frame, n);
-}
-
-unsigned int
-YogFrame_add_local(YogEnv* env, YogFrame* frame, YogVal val) 
-{
-    YogValArray* locals = frame->locals;
-    unsigned int index = frame->locals_size;
-    locals->items[index] = val;
-    frame->locals_size++;
-
-    return index;
 }
 
 #define KEEP(member)    frame->member = (*keeper)(env, frame->member)
@@ -52,7 +44,6 @@ YogFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogFrame* frame = ptr;
     KEEP(prev);
-    KEEP(locals);
 }
 
 static void 
@@ -63,6 +54,7 @@ YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogCFrame* frame = ptr;
     frame->self = YogVal_keep(env, frame->self, keeper);
     KEEP(args);
+    KEEP(locals);
 }
 
 static void 
@@ -101,8 +93,6 @@ YogFrame_init(YogFrame* frame, YogFrameType type)
 {
     frame->prev = NULL;
     frame->type = type;
-    frame->locals = NULL;
-    frame->locals_size = 0;
 }
 
 void 
@@ -179,6 +169,8 @@ YogCFrame_init(YogEnv* env, YogCFrame* frame)
 
     frame->self = YUNDEF;
     frame->args = NULL;
+    frame->locals = NULL;
+    frame->locals_size = 0;
 }
 
 YogCFrame* 

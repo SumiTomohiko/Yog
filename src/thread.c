@@ -7,17 +7,18 @@
 #include "yog/function.h"
 #include "yog/method.h"
 #include "yog/opcodes.h"
-#include "yog/parser.h"
 #include "yog/st.h"
 #include "yog/yog.h"
 
+#define CUR_FRAME   (ENV_TH(env)->cur_frame)
+
 #define PUSH_FRAME(f)   do { \
-    FRAME(f)->prev = CUR_FRAME(env); \
-    CUR_FRAME(env) = FRAME(f); \
+    FRAME(f)->prev = CUR_FRAME; \
+    CUR_FRAME = FRAME(f); \
 } while (0)
 
 #define POP_FRAME()     do { \
-    CUR_FRAME(env) = CUR_FRAME(env)->prev; \
+    CUR_FRAME = CUR_FRAME->prev; \
 } while (0)
 
 YogVal 
@@ -194,8 +195,7 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogCode* code, uint8_t posarg
     PUSH_FRAME(frame);
 }
 
-#define PUSH(val) \
-    YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME(env)), val)
+#define PUSH(val)   YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), val)
 
 static void 
 call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
@@ -262,8 +262,8 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
     PUSH_FRAME(frame);
 
 #define POP_BUF()   ENV_TH(env)->jmp_buf_list = ENV_TH(env)->jmp_buf_list->prev
-#define PC          (SCRIPT_FRAME(CUR_FRAME(env))->pc)
-#define CODE        (SCRIPT_FRAME(CUR_FRAME(env))->code)
+#define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
+#define CODE        (SCRIPT_FRAME(CUR_FRAME)->code)
     YogJmpBuf jmpbuf;
     int status = 0;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
@@ -273,7 +273,7 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
     else {
         unsigned int i = 0;
         BOOL found = FALSE;
-        if (CUR_FRAME(env)->type != FRAME_C) {
+        if (CUR_FRAME->type != FRAME_C) {
             for (i = 0; i < CODE->exc_tbl_size; i++) {
                 YogExceptionTableEntry* entry = &CODE->exc_tbl->items[i];
                 if ((entry->from <= PC) && (PC < entry->to)) {
@@ -349,9 +349,14 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
     while (PC < CODE->insts->size) {
 #define ENV             (env)
 #define VM              (ENV_VM(ENV))
-        th = VM->thread;
+        if (VM->need_gc || VM->gc_stress) {
+            YogVm_gc(ENV, VM);
+            th = VM->thread;
+            ENV_TH(env) = th;
+            VM->need_gc = FALSE;
+        }
 
-#define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME(env))))
+#define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME)))
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define THREAD          (ENV_TH(env))
 #define JUMP(m)         PC = m;
@@ -425,7 +430,7 @@ eval_code(YogEnv* env, YogThread* th, YogCode* code, YogVal receiver, unsigned i
     YogVal undef = YUNDEF;
     call_code(env, th, receiver, code, argc, args, undef, 0, NULL, undef, undef);
 
-    YogVal retval = mainloop(env, th, SCRIPT_FRAME(CUR_FRAME(env)), code);
+    YogVal retval = mainloop(env, th, SCRIPT_FRAME(CUR_FRAME), code);
 
     return retval;
 }
@@ -523,34 +528,22 @@ YogThread_eval_package(YogEnv* env, YogThread* th, YogPackage* pkg)
     mainloop(env, th, SCRIPT_FRAME(frame), code);
 }
 
-void 
-YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+static void 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogThread* th = ptr;
 
     th->cur_frame = (*keeper)(env, th->cur_frame);
     th->jmp_val = YogVal_keep(env, th->jmp_val, keeper);
-
-    YogParser* parser = th->parser;
-    if (parser != NULL) {
-        YogParser_keep_children(env, parser, keeper);
-    }
-}
-
-void 
-YogThread_init(YogEnv* env, YogThread* th) 
-{
-    th->cur_frame = NULL;
-    th->jmp_buf_list = NULL;
-    th->jmp_val = YUNDEF;
-    th->parser = NULL;
 }
 
 YogThread*
 YogThread_new(YogEnv* env) 
 {
-    YogThread* th = ALLOC_OBJ(env, YogThread_keep_children, NULL, YogThread);
-    YogThread_init(env, th);
+    YogThread* th = ALLOC_OBJ(env, keep_children, NULL, YogThread);
+    th->cur_frame = NULL;
+    th->jmp_buf_list = NULL;
+    th->jmp_val = YUNDEF;
 
     return th;
 }

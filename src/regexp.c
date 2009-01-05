@@ -180,19 +180,11 @@ YogKlass*
 YogMatch_klass_new(YogEnv* env) 
 {
     YogKlass* klass = YogKlass_new(env, "Match", ENV_VM(env)->cObject);
-    FRAME_DECL_LOCAL(env, klass_idx, OBJ2VAL(klass));
-
-#define UPDATE_PTR  FRAME_LOCAL_OBJ(env, klass, YogKlass, klass_idx)
-    UPDATE_PTR;
     YogKlass_define_method(env, klass, "group", group, 0, 0, 0, 0, "group", NULL);
-    UPDATE_PTR;
     YogKlass_define_method(env, klass, "start", start, 0, 0, 0, 0, "group", NULL);
-    UPDATE_PTR;
     YogKlass_define_method(env, klass, "end", end, 0, 0, 0, 0, "group", NULL);
 
-    UPDATE_PTR;
     return klass;
-#undef UPDATE_PTR
 }
 
 /**
