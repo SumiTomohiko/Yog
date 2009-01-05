@@ -1176,9 +1176,6 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
 #define UPDATE_BIN  FRAME_LOCAL_OBJ(env, bin, YogBinary, bin_idx)
     UPDATE_BIN;
     YogBinary_shrink(env, bin);
-    UPDATE_BIN;
-    YogByteArray* insts = bin->body;
-#undef UPDATE_BIN
 
     YogCode* code = YogCode_new(env);
     if (var2index != NULL) {
@@ -1193,7 +1190,8 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
 #define UPDATE_CODE     FRAME_LOCAL_PTR(env, code, code_idx)
     UPDATE_CODE;
     code->consts = consts;
-    code->insts = insts;
+    UPDATE_BIN;
+    code->insts = bin->body;
 
     UPDATE_DATA;
     make_exception_table(env, code, data);
@@ -1212,6 +1210,8 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
 #endif
 
     return code;
+#undef UPDATE_CODE
+#undef UPDATE_BIN
 #undef UPDATE_FILENAME
 #undef UPDATE_ANCHOR
 #undef UPDATE_VAR2INDEX
