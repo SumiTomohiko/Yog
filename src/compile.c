@@ -984,7 +984,7 @@ register_block_params_var2index(YogEnv* env, YogArray* params, YogTable* var2ind
 static void 
 setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code) 
 {
-    YogArgInfo* arg_info = NULL;
+    YogArgInfo* arg_info = &code->arg_info;
     arg_info->argc = 0;
     arg_info->argnames = NULL;
     arg_info->arg_index = 0;
