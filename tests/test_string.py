@@ -63,15 +63,9 @@ puts '\\\\'""", """\\
 """)
 
     def test_escape5(self):
-        def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
-ParseError: unknown escape sequence (\\w)
-""", stderr)
-            assert m is not None
-
         self._test("""
-puts \"\\w\"""", stderr=test_stderr)
+puts \"\\w\"""", """w
+""")
 
     def test_add(self):
         self._test("""

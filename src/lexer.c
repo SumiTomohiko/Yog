@@ -235,12 +235,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                             ADD_TOKEN_CHAR('\n');
                             break;
                         default:
-                            if (c == quote) {
-                                ADD_TOKEN_CHAR(c);
-                            }
-                            else {
-                                YOG_ASSERT(env, FALSE, "unknown escape sequence.");
-                            }
+                            ADD_TOKEN_CHAR(c);
                             break;
                         }
                     }
