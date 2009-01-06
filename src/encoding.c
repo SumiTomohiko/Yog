@@ -4,6 +4,12 @@
 #include "yog/st.h"
 #include "yog/yog.h"
 
+char* 
+YogEncoding_left_adjust_char_head(YogEnv* env, YogEncoding* enc, const char* start, const char* p) 
+{
+    return (char*)(*enc->onig_enc->left_adjust_char_head)((OnigUChar*)start, (OnigUChar*)p);
+}
+
 YogEncoding* 
 YogEncoding_get_default(YogEnv* env) 
 {

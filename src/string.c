@@ -153,6 +153,24 @@ YogString_new(YogEnv* env)
 }
 
 YogString* 
+YogString_new_range(YogEnv* env, YogEncoding* enc, const char* start, const char* end) 
+{
+    unsigned int size = 0;
+    if (start < end) {
+        size = end - start + 1;
+    }
+    YogCharArray* body = YogCharArray_new(env, size + 1);
+    memcpy(body->items, start, size);
+    body->items[size] = '\0';
+
+    YogString* s = YogString_new(env);
+    s->encoding = enc;
+    s->body = body;
+
+    return s;
+}
+
+YogString* 
 YogString_new_size(YogEnv* env, unsigned int size) 
 {
     YogString* string = (YogString*)allocate(env, ENV_VM(env)->cString);
@@ -362,6 +380,40 @@ match(YogEnv* env)
     return retval;
 }
 
+static YogVal 
+each_line(YogEnv* env) 
+{
+    unsigned int i = 0;
+    do {
+        YogVal self = SELF(env);
+        YogString* s = OBJ_AS(YogString, self);
+        YogCharArray* body = s->body;
+        const char* start = body->items + i;
+        const char* p = memchr(start, '\n', body->size - i - 1);
+        if (p == NULL) {
+            p = body->items + body->size - 1;
+        }
+        YogEncoding* enc = s->encoding;
+        p = YogEncoding_left_adjust_char_head(env, enc, body->items, p);
+        const char* end = p - 1;
+        const char* next = p + YogEncoding_mbc_size(env, enc, p);
+        YogString* line = YogString_new_range(env, enc, start, end);
+        YogVal block = ARG(env, 0);
+        YogVal args[] = { OBJ2VAL(line), };
+
+        i = next - body->items;
+        unsigned int size = body->size;
+
+        YogThread_call_block(env, env->th, block, sizeof(args), args);
+
+        if (size - 1 < i) {
+            break;
+        }
+    } while (1);
+
+    return YNIL;
+}
+
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
@@ -373,6 +425,7 @@ YogString_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "[]", subscript, 0, 0, 0, 0, "n", NULL);
     YogKlass_define_method(env, klass, "[]=", assign_subscript, 0, 0, 0, 0, "n", "s", NULL);
     YogKlass_define_method(env, klass, "=~", match, 0, 0, 0, 1, "regexp", NULL);
+    YogKlass_define_method(env, klass, "each_line", each_line, 1, 0, 0, 1, "block", NULL);
 
     return klass;
 }

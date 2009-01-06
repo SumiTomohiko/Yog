@@ -142,7 +142,7 @@ end""", """foo
 
     def test_each_line2(self):
         self._test("""
-\"foo\nbar\".each_line() do [l]
+\"foo\\nbar\".each_line() do [l]
   puts l
 end""", """foo
 bar
