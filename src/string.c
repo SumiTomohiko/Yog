@@ -156,7 +156,7 @@ YogString*
 YogString_new_range(YogEnv* env, YogEncoding* enc, const char* start, const char* end) 
 {
     unsigned int size = 0;
-    if (start < end) {
+    if (start <= end) {
         size = end - start + 1;
     }
     YogCharArray* body = YogCharArray_new(env, size + 1);
@@ -439,6 +439,35 @@ each_byte(YogEnv* env)
     return YNIL;
 }
 
+static YogVal 
+each_char(YogEnv* env) 
+{
+    unsigned int i = 0;
+    do {
+        YogVal self = SELF(env);
+        YogString* s = OBJ_AS(YogString, self);
+        YogCharArray* body = s->body;
+        const char* start = body->items + i;
+        YogEncoding* enc = s->encoding;
+        const char* next = start + YogEncoding_mbc_size(env, enc, start);
+        const char* end = next - 1;
+        YogString* c = YogString_new_range(env, enc, start, end);
+        YogVal block = ARG(env, 0);
+        YogVal args[] = { OBJ2VAL(c), };
+
+        i = next - body->items;
+        unsigned int size = body->size;
+
+        YogThread_call_block(env, env->th, block, sizeof(args), args);
+
+        if (size - 1 < i + 1) {
+            break;
+        }
+    } while (1);
+
+    return YNIL;
+}
+
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
@@ -452,6 +481,7 @@ YogString_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "=~", match, 0, 0, 0, 1, "regexp", NULL);
     YogKlass_define_method(env, klass, "each_line", each_line, 1, 0, 0, 1, "block", NULL);
     YogKlass_define_method(env, klass, "each_byte", each_byte, 1, 0, 0, 1, "block", NULL);
+    YogKlass_define_method(env, klass, "each_char", each_char, 1, 0, 0, 1, "block", NULL);
 
     return klass;
 }
