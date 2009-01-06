@@ -414,6 +414,31 @@ each_line(YogEnv* env)
     return YNIL;
 }
 
+static YogVal 
+each_byte(YogEnv* env) 
+{
+    unsigned int i = 0;
+    do {
+        YogVal self = SELF(env);
+        YogString* s = OBJ_AS(YogString, self);
+        YogCharArray* body = s->body;
+        unsigned char p = body->items[i];
+        YogVal block = ARG(env, 0);
+        YogVal args[] = { INT2VAL(p), };
+
+        i++;
+        unsigned int size = body->size;
+
+        YogThread_call_block(env, env->th, block, sizeof(args), args);
+
+        if (size - 1 < i + 1) {
+            break;
+        }
+    } while (1);
+
+    return YNIL;
+}
+
 YogKlass* 
 YogString_klass_new(YogEnv* env) 
 {
@@ -426,6 +451,7 @@ YogString_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "[]=", assign_subscript, 0, 0, 0, 0, "n", "s", NULL);
     YogKlass_define_method(env, klass, "=~", match, 0, 0, 0, 1, "regexp", NULL);
     YogKlass_define_method(env, klass, "each_line", each_line, 1, 0, 0, 1, "block", NULL);
+    YogKlass_define_method(env, klass, "each_byte", each_byte, 1, 0, 0, 1, "block", NULL);
 
     return klass;
 }
