@@ -1,6 +1,26 @@
 #include <setjmp.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "yog/error.h"
 #include "yog/yog.h"
+
+void 
+YogError_bug(YogEnv* env, const char* filename, unsigned int lineno, const char* fmt, ...) 
+{
+    FILE* stream = stderr;
+
+    fprintf(stream, "[BUG]\n");
+    fprintf(stream, "at %s:%d\n", filename, lineno);
+
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stream, fmt, ap);
+    va_end(ap);
+
+    fprintf(stream, "\n");
+
+    exit(-1);
+}
 
 void 
 YogError_raise(YogEnv* env, YogVal exc) 

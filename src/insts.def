@@ -221,6 +221,30 @@ inst ret
     PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 }
 
+inst store_nonlocal
+(uint8_t level, uint8_t index) 
+()
+(val) 
+{
+    /* TODO */
+}
+
+inst load_nonlocal 
+(uint8_t level, uint8_t index) 
+(val)
+()
+{
+    /* TODO */
+}
+
+inst store_global 
+(ID name) 
+(val) 
+()
+{
+    /* TODO */
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

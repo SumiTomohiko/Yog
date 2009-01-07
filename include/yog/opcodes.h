@@ -32,6 +32,9 @@ enum OpCode {
     OP(MAKE_METHOD) = 18, 
     OP(PUSH_SELF_NAME) = 19, 
     OP(RET) = 20, 
+    OP(STORE_NONLOCAL) = 21, 
+    OP(LOAD_NONLOCAL) = 22, 
+    OP(STORE_GLOBAL) = 23, 
 
 };
 

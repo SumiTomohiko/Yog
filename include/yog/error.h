@@ -5,13 +5,13 @@
 #include "yog/string.h"
 #include "yog/yog.h"
 
+#define YOG_BUG(env, ...)    do { \
+    YogError_bug(env, __FILE__, __LINE__, __VA_ARGS__); \
+} while (0)
+
 #define YOG_ASSERT(env, test, ...)  do { \
     if (!(test)) { \
-        YogString* msg = YogString_new_format(env, __VA_ARGS__); \
-        YogException* exc = YogBugException_new(env); \
-        exc->message = OBJ2VAL(msg); \
-        YogVal val = OBJ2VAL(exc); \
-        YogError_raise(env, val); \
+        YOG_BUG(env, __VA_ARGS__); \
     } \
 } while (0)
 
@@ -22,6 +22,7 @@
  */
 
 /* src/error.c */
+void YogError_bug(YogEnv*, const char*, unsigned int, const char*, ...);
 void YogError_raise(YogEnv*, YogVal);
 void YogError_raise_index_error(YogEnv*, const char*);
 void YogError_raise_type_error(YogEnv*, const char*);

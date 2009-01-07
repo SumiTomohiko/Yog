@@ -2,7 +2,6 @@
 #define __YOG_ENCODING_H__
 
 #include "oniguruma.h"
-#include "yog/string.h"
 #include "yog/yog.h"
 
 struct YogEncoding {
@@ -10,6 +9,8 @@ struct YogEncoding {
 };
 
 typedef struct YogEncoding YogEncoding;
+
+#include "yog/string.h"
 
 /* PROTOTYPE_START */
 

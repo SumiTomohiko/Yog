@@ -351,6 +351,52 @@
             PUSH(val);
             break;
         }
+#line 333 "src/thread.inc"
+    case OP(STORE_NONLOCAL):
+        {
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t level = *((uint8_t*)&CODE->insts->items[PC]);
+            PC += sizeof(uint8_t);
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
+            PC += sizeof(uint8_t);
+            YogVal val = YogVal_nil();
+#line 229 "src/insts.def"
+            /* TODO */
+
+#line 345 "src/thread.inc"
+            PUSH(val);
+            break;
+        }
+#line 349 "src/thread.inc"
+    case OP(LOAD_NONLOCAL):
+        {
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t level = *((uint8_t*)&CODE->insts->items[PC]);
+            PC += sizeof(uint8_t);
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t index = *((uint8_t*)&CODE->insts->items[PC]);
+            PC += sizeof(uint8_t);
+            YogVal val = POP();
+#line 237 "src/insts.def"
+            /* TODO */
+
+#line 361 "src/thread.inc"
+            break;
+        }
+#line 364 "src/thread.inc"
+    case OP(STORE_GLOBAL):
+        {
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            ID name = *((ID*)&CODE->insts->items[PC]);
+            PC += sizeof(ID);
+            YogVal val = POP();
+#line 245 "src/insts.def"
+            /* TODO */
+
+#line 373 "src/thread.inc"
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

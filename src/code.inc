@@ -29,6 +29,9 @@ get_op_name(OpCode op)
         "MAKE_METHOD", 
         "PUSH_SELF_NAME", 
         "RET", 
+        "STORE_NONLOCAL", 
+        "LOAD_NONLOCAL", 
+        "STORE_GLOBAL", 
     };
 
     return op_names[op];

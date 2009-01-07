@@ -31,6 +31,9 @@ Yog_get_inst_size(OpCode op)
         sizeof(uint8_t), /* make_method */
         sizeof(uint8_t), /* push_self_name */
         sizeof(uint8_t), /* ret */
+        sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* store_nonlocal */
+        sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* load_nonlocal */
+        sizeof(uint8_t) + sizeof(ID), /* store_global */
 
     };
 

@@ -262,6 +262,44 @@ CompileData_add_ret(YogEnv* env, CompileData* data, unsigned int lineno)
     add_inst(data, inst);
 }
 
+static void 
+CompileData_add_store_nonlocal(YogEnv* env, CompileData* data, unsigned int lineno, uint8_t level, uint8_t index)
+{
+    YogInst* inst = Inst_new(env, lineno);
+    inst->type = INST_OP;
+    INST_OPCODE(inst) = OP(STORE_NONLOCAL);
+
+    STORE_NONLOCAL_LEVEL(inst) = level;
+    STORE_NONLOCAL_INDEX(inst) = index;
+
+    add_inst(data, inst);
+}
+
+static void 
+CompileData_add_load_nonlocal(YogEnv* env, CompileData* data, unsigned int lineno, uint8_t level, uint8_t index)
+{
+    YogInst* inst = Inst_new(env, lineno);
+    inst->type = INST_OP;
+    INST_OPCODE(inst) = OP(LOAD_NONLOCAL);
+
+    LOAD_NONLOCAL_LEVEL(inst) = level;
+    LOAD_NONLOCAL_INDEX(inst) = index;
+
+    add_inst(data, inst);
+}
+
+static void 
+CompileData_add_store_global(YogEnv* env, CompileData* data, unsigned int lineno, ID name)
+{
+    YogInst* inst = Inst_new(env, lineno);
+    inst->type = INST_OP;
+    INST_OPCODE(inst) = OP(STORE_GLOBAL);
+
+    STORE_GLOBAL_NAME(inst) = name;
+
+    add_inst(data, inst);
+}
+
 
 static YogBinary* 
 insts2bin(YogEnv* env, YogInst* inst) 
@@ -406,6 +444,26 @@ insts2bin(YogEnv* env, YogInst* inst)
                 case OP(RET):
                     {
                         YogBinary_push_uint8(env, code, OP(RET));
+                        break;
+                    }
+                case OP(STORE_NONLOCAL):
+                    {
+                        YogBinary_push_uint8(env, code, OP(STORE_NONLOCAL));
+                        YogBinary_push_uint8(env, code, STORE_NONLOCAL_LEVEL(inst));
+                        YogBinary_push_uint8(env, code, STORE_NONLOCAL_INDEX(inst));
+                        break;
+                    }
+                case OP(LOAD_NONLOCAL):
+                    {
+                        YogBinary_push_uint8(env, code, OP(LOAD_NONLOCAL));
+                        YogBinary_push_uint8(env, code, LOAD_NONLOCAL_LEVEL(inst));
+                        YogBinary_push_uint8(env, code, LOAD_NONLOCAL_INDEX(inst));
+                        break;
+                    }
+                case OP(STORE_GLOBAL):
+                    {
+                        YogBinary_push_uint8(env, code, OP(STORE_GLOBAL));
+                        YogBinary_push_id(env, code, STORE_GLOBAL_NAME(inst));
                         break;
                     }
                 default:
@@ -567,6 +625,24 @@ count_stack_size(YogEnv* env, YogInst* inst)
                     {
                         pop_size = 1;
                         push_size = 1;
+                        break;
+                    }
+                case OP(STORE_NONLOCAL):
+                    {
+                        pop_size = 0;
+                        push_size = 1;
+                        break;
+                    }
+                case OP(LOAD_NONLOCAL):
+                    {
+                        pop_size = 1;
+                        push_size = 0;
+                        break;
+                    }
+                case OP(STORE_GLOBAL):
+                    {
+                        pop_size = 1;
+                        push_size = 0;
                         break;
                     }
                 default:

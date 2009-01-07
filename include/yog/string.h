@@ -19,6 +19,8 @@ struct YogString {
 
 typedef struct YogString YogString;
 
+#include "yog/encoding.h"
+
 /* PROTOTYPE_START */
 
 /**
@@ -36,6 +38,7 @@ ID YogString_intern(YogEnv*, YogString*);
 YogKlass* YogString_klass_new(YogEnv*);
 YogString* YogString_new(YogEnv*);
 YogString* YogString_new_format(YogEnv*, const char*, ...);
+YogString* YogString_new_range(YogEnv*, YogEncoding*, const char*, const char*);
 YogString* YogString_new_size(YogEnv*, unsigned int);
 YogString* YogString_new_str(YogEnv*, const char*);
 void YogString_push(YogEnv*, YogString*, char);

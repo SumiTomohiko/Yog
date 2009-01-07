@@ -92,6 +92,17 @@ struct YogInst {
         } push_self_name;
         struct {
         } ret;
+        struct {
+            uint8_t level;
+            uint8_t index;
+        } store_nonlocal;
+        struct {
+            uint8_t level;
+            uint8_t index;
+        } load_nonlocal;
+        struct {
+            ID name;
+        } store_global;
     } u;
 
     unsigned int lineno;
@@ -128,6 +139,11 @@ struct YogInst {
 #define LOAD_LOCAL_INDEX(inst) ((inst)->u.load_local.index)
 #define JUMP_DEST(inst) ((inst)->u.jump.dest)
 #define JUMP_IF_FALSE_DEST(inst) ((inst)->u.jump_if_false.dest)
+#define STORE_NONLOCAL_LEVEL(inst) ((inst)->u.store_nonlocal.level)
+#define STORE_NONLOCAL_INDEX(inst) ((inst)->u.store_nonlocal.index)
+#define LOAD_NONLOCAL_LEVEL(inst) ((inst)->u.load_nonlocal.level)
+#define LOAD_NONLOCAL_INDEX(inst) ((inst)->u.load_nonlocal.index)
+#define STORE_GLOBAL_NAME(inst) ((inst)->u.store_global.name)
 
 typedef struct YogInst YogInst;
 
