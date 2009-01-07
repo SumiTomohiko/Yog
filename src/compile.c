@@ -31,6 +31,7 @@ struct AstVisitor {
     VisitNode visit_literal;
     VisitNode visit_method_call;
     VisitNode visit_next;
+    VisitNode visit_nonlocal;
     VisitNode visit_return;
     VisitNode visit_stmt;
     VisitNode visit_subscript;
@@ -38,11 +39,22 @@ struct AstVisitor {
     VisitNode visit_while;
 };
 
-struct Var2IndexData {
-    YogTable* var2index;
+struct ScanVarData {
+    struct YogTable* var_tbl;
 };
 
-typedef struct Var2IndexData Var2IndexData;
+typedef struct ScanVarData ScanVarData;
+
+struct ScanVarEntry {
+    unsigned int index;
+    unsigned int flags;
+};
+
+#define VAR_ASSIGNED    (0x01)
+#define VAR_PARAM       (0x02)
+#define VAR_NONLOCAL    (0x04)
+
+typedef struct ScanVarEntry ScanVarEntry;
 
 enum Context {
     CTX_FUNC, 
@@ -81,7 +93,7 @@ typedef struct TryListEntry TryListEntry;
 
 struct CompileData {
     enum Context ctx;
-    struct YogTable* var2index;
+    struct YogTable* var_tbl;
     struct YogTable* const2index;
     struct YogInst* last_inst;
     struct ExceptionTableEntry* exc_tbl;
@@ -232,6 +244,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     case NODE_NEXT:
         VISIT(visit_next);
         break;
+    case NODE_NONLOCAL:
+        VISIT(visit_nonlocal);
+        break;
     case NODE_RETURN:
         VISIT(visit_return);
         break;
@@ -269,7 +284,7 @@ visit_each_args(YogEnv* env, AstVisitor* visitor, YogArray* args, YogNode* block
 }
 
 static void 
-var2index_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_method_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_node(env, visitor, node->u.method_call.recv, arg);
     visit_each_args(env, visitor, node->u.method_call.args, node->u.method_call.blockarg, arg);
@@ -307,7 +322,7 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg
 }
 
 static void 
-var2index_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg) 
+scan_var_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* arg) 
 {
     if (stmts == NULL) {
         return;
@@ -322,25 +337,40 @@ var2index_visit_stmts(YogEnv* env, AstVisitor* visitor, YogArray* stmts, void* a
     }
 }
 
-static void 
-var2index_register(YogEnv* env, YogTable* var2index, ID var)
+static ScanVarEntry* 
+ScanVarEntry_new(YogEnv* env, unsigned int index, unsigned int flags) 
 {
-    YogVal symbol = ID2VAL(var);
-    if (!YogTable_lookup(env, var2index, symbol, NULL)) {
-        int size = YogTable_size(env, var2index);
-        YogVal index = INT2VAL(size);
-        YogTable_add_direct(env, var2index, symbol, index);
+    ScanVarEntry* ent = ALLOC_OBJ(env, NULL, NULL, ScanVarEntry);
+    ent->index = index;
+    ent->flags = flags;
+
+    return ent;
+}
+
+static void 
+scan_var_register(YogEnv* env, YogTable* var_tbl, ID var, unsigned int flags)
+{
+    YogVal key = ID2VAL(var);
+    YogVal val = YUNDEF;
+    if (!YogTable_lookup(env, var_tbl, key, &val)) {
+        int index = YogTable_size(env, var_tbl);
+        ScanVarEntry* ent = ScanVarEntry_new(env, index, flags);
+        YogTable_add_direct(env, var_tbl, key, PTR2VAL(ent));
+    }
+    else {
+        ScanVarEntry* ent = VAL2PTR(val);
+        ent->flags |= flags;
     }
 }
 
 static void 
-var2index_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     YogNode* left = node->u.assign.left;
     if (left->type == NODE_VARIABLE) {
         ID id = left->u.variable.id;
-        Var2IndexData* data = arg;
-        var2index_register(env, data->var2index, id);
+        ScanVarData* data = arg;
+        scan_var_register(env, data->var_tbl, id, VAR_ASSIGNED);
     }
     else {
         visit_node(env, visitor, left, arg);
@@ -348,54 +378,54 @@ var2index_visit_assign(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 }
 
 static void 
-var2index_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_command_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_each_args(env, visitor, node->u.command_call.args, node->u.command_call.blockarg, arg);
 }
 
 static void 
-var2index_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     ID id = node->u.funcdef.name;
-    Var2IndexData* data = arg;
-    var2index_register(env, data->var2index, id);
+    ScanVarData* data = arg;
+    scan_var_register(env, data->var_tbl, id, VAR_ASSIGNED);
 }
 
 static void 
-var2index_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_each_args(env, visitor, node->u.func_call.args, node->u.func_call.blockarg, arg);
 }
 
 static void 
-var2index_visit_finally(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_finally(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visitor->visit_stmts(env, visitor, node->u.finally.head, arg);
     visitor->visit_stmts(env, visitor, node->u.finally.body, arg);
 }
 
 static void 
-var2index_visit_except_body(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_except_body(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_node(env, visitor, node->u.except_body.type, arg);
 
     ID id = node->u.except_body.var;
     if (id != NO_EXC_VAR) {
-        Var2IndexData* data = arg;
-        var2index_register(env, data->var2index, id);
+        ScanVarData* data = arg;
+        scan_var_register(env, data->var_tbl, id, VAR_ASSIGNED);
     }
     visitor->visit_stmts(env, visitor, node->u.except_body.stmts, arg);
 }
 
 static void 
-var2index_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_while(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_node(env, visitor, node->u.while_.test, arg);
     visitor->visit_stmts(env, visitor, node->u.while_.stmts, arg);
 }
 
 static void 
-var2index_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_node(env, visitor, node->u.if_.test, arg);
     visitor->visit_stmts(env, visitor, node->u.if_.stmts, arg);
@@ -403,13 +433,13 @@ var2index_visit_if(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 }
 
 static void 
-var2index_visit_break(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_break(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_node(env, visitor, node->u.break_.expr, arg);
 }
 
 static void 
-var2index_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visitor->visit_stmts(env, visitor, node->u.except.head, arg);
 
@@ -426,9 +456,9 @@ var2index_visit_except(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 }
 
 static void 
-var2index_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    Var2IndexData* data = arg;
+    ScanVarData* data = arg;
 
     YogArray* params = node->u.blockarg.params;
     if (params != NULL) {
@@ -438,7 +468,7 @@ var2index_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
             YogVal val = YogArray_at(env, params, i);
             YogNode* param = VAL2PTR(val);
             ID name = param->u.param.name;
-            var2index_register(env, data->var2index, name);
+            scan_var_register(env, data->var_tbl, name, VAR_PARAM);
 
             visit_node(env, visitor, param->u.param.default_, data);
         }
@@ -448,73 +478,90 @@ var2index_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
 }
 
 static void 
-var2index_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    Var2IndexData* data = arg;
+    ScanVarData* data = arg;
 
     ID name = node->u.klass.name;
-    var2index_register(env, data->var2index, name);
+    scan_var_register(env, data->var_tbl, name, VAR_ASSIGNED);
 
     YogNode* super = node->u.klass.super;
     visit_node(env, visitor, super, data);
 }
 
 static void 
-var2index_visit_subscript(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+scan_var_visit_subscript(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
     visit_node(env, visitor, node->u.subscript.prefix, arg);
     visit_node(env, visitor, node->u.subscript.index, arg);
 }
 
 static void 
-var2index_init_visitor(AstVisitor* visitor) 
+scan_var_visit_nonlocal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
-    visitor->visit_assign = var2index_visit_assign;
-    visitor->visit_block = var2index_visit_block;
-    visitor->visit_break = var2index_visit_break;
-    visitor->visit_command_call = var2index_visit_command_call;
-    visitor->visit_except = var2index_visit_except;
-    visitor->visit_except_body = var2index_visit_except_body;
-    visitor->visit_finally = var2index_visit_finally;
-    visitor->visit_func_call = var2index_visit_func_call;
-    visitor->visit_func_def = var2index_visit_func_def;
-    visitor->visit_if = var2index_visit_if;
-    visitor->visit_klass = var2index_visit_klass;
+    YogArray* names = node->u.nonlocal.names;
+    unsigned int size = YogArray_size(env, names);
+
+    ScanVarData* data = arg;
+
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        YogVal val = YogArray_at(env, names, i);
+        scan_var_register(env,  data->var_tbl, VAL2ID(val), VAR_NONLOCAL);
+    }
+}
+
+static void 
+scan_var_init_visitor(AstVisitor* visitor) 
+{
+    visitor->visit_assign = scan_var_visit_assign;
+    visitor->visit_block = scan_var_visit_block;
+    visitor->visit_break = scan_var_visit_break;
+    visitor->visit_command_call = scan_var_visit_command_call;
+    visitor->visit_except = scan_var_visit_except;
+    visitor->visit_except_body = scan_var_visit_except_body;
+    visitor->visit_finally = scan_var_visit_finally;
+    visitor->visit_func_call = scan_var_visit_func_call;
+    visitor->visit_func_def = scan_var_visit_func_def;
+    visitor->visit_if = scan_var_visit_if;
+    visitor->visit_klass = scan_var_visit_klass;
     visitor->visit_literal = NULL;
-    visitor->visit_method_call = var2index_visit_method_call;
-    visitor->visit_next = var2index_visit_break;
-    visitor->visit_return = var2index_visit_break;
+    visitor->visit_method_call = scan_var_visit_method_call;
+    visitor->visit_next = scan_var_visit_break;
+    visitor->visit_nonlocal = scan_var_visit_nonlocal;
+    visitor->visit_return = scan_var_visit_break;
     visitor->visit_stmt = visit_node;
-    visitor->visit_stmts = var2index_visit_stmts;
-    visitor->visit_subscript = var2index_visit_subscript;
+    visitor->visit_stmts = scan_var_visit_stmts;
+    visitor->visit_subscript = scan_var_visit_subscript;
     visitor->visit_variable = NULL;
-    visitor->visit_while = var2index_visit_while;
+    visitor->visit_while = scan_var_visit_while;
 }
 
 static YogTable*
-make_var2index(YogEnv* env, YogArray* stmts, YogTable* var2index)
+make_var_table(YogEnv* env, YogArray* stmts, YogTable* var_tbl)
 {
     AstVisitor visitor;
-    var2index_init_visitor(&visitor);
+    scan_var_init_visitor(&visitor);
 
-    Var2IndexData data;
-    if (var2index == NULL) {
-        var2index = YogTable_new_symbol_table(env);
+    if (var_tbl == NULL) {
+        var_tbl = YogTable_new_symbol_table(env);
     }
-    data.var2index = var2index;
+    ScanVarData data;
+    data.var_tbl = var_tbl;
 
     visitor.visit_stmts(env, &visitor, stmts, &data);
 
-    return var2index;
+    return var_tbl;
 }
 
 static int 
-lookup_var_index(YogEnv* env, YogTable* var2index, ID id) 
+lookup_var_index(YogEnv* env, YogTable* var_tbl, ID id) 
 {
-    YogVal val = ID2VAL(id);
-    YogVal index = YUNDEF;
-    if (YogTable_lookup(env, var2index, val, &index)) {
-        return VAL2INT(index);
+    YogVal key = ID2VAL(id);
+    YogVal val = YUNDEF;
+    if (YogTable_lookup(env, var_tbl, key, &val)) {
+        ScanVarEntry* ent = VAL2PTR(val);
+        return ent->index;
     }
     else {
         return -1;
@@ -527,7 +574,7 @@ append_store(YogEnv* env, CompileData* data, unsigned int lineno, ID id)
     switch (data->ctx) {
     case CTX_FUNC:
         {
-            int index = lookup_var_index(env, data->var2index, id);
+            int index = lookup_var_index(env, data->var_tbl, id);
             YOG_ASSERT(env, 0 <= index, "can't find variable index");
             CompileData_add_store_local(env, data, lineno, index);
             break;
@@ -865,11 +912,11 @@ CompileData_add_ret_nil(YogEnv* env, CompileData* data, unsigned int lineno)
 }
 
 static YogCode* 
-compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, ID func_name, YogArray* stmts, YogTable* var2index, Context ctx, YogInst* tail) 
+compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, ID func_name, YogArray* stmts, YogTable* var_tbl, Context ctx, YogInst* tail) 
 {
     CompileData data;
     data.ctx = ctx;
-    data.var2index = var2index;
+    data.var_tbl = var_tbl;
     data.const2index = NULL;
     data.label_while_start = NULL;
     data.label_while_end = NULL;
@@ -916,8 +963,8 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
     YogBinary_shrink(env, bin);
 
     YogCode* code = YogCode_new(env);
-    if (var2index != NULL) {
-        code->local_vars_count = YogTable_size(env, var2index);
+    if (var_tbl != NULL) {
+        code->local_vars_count = YogTable_size(env, var_tbl);
     }
     code->stack_size = count_stack_size(env, anchor);
     YogValArray* consts = table2array(env, data.const2index);
@@ -939,7 +986,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
 }
 
 static void 
-register_params_var2index(YogEnv* env, YogArray* params, YogTable* var2index) 
+register_params_var_table(YogEnv* env, YogArray* params, YogTable* var_tbl) 
 {
     if (params == NULL) {
         return;
@@ -952,16 +999,16 @@ register_params_var2index(YogEnv* env, YogArray* params, YogTable* var2index)
         YogNode* node = VAL2PTR(param);
         ID id = node->u.param.name;
         YogVal name = ID2VAL(id);
-        if (YogTable_lookup(env, var2index, name, NULL)) {
+        if (YogTable_lookup(env, var_tbl, name, NULL)) {
             YOG_ASSERT(env, FALSE, "duplicated argument name in function definition");
         }
-        YogVal index = INT2VAL(var2index->num_entries);
-        YogTable_add_direct(env, var2index, name, index);
+        int index = YogTable_size(env, var_tbl);
+        YogTable_add_direct(env, var_tbl, name, INT2VAL(index));
     }
 }
 
 static void 
-register_block_params_var2index(YogEnv* env, YogArray* params, YogTable* var2index) 
+register_block_params_var_table(YogEnv* env, YogArray* params, YogTable* var_tbl) 
 {
     if (params == NULL) {
         return;
@@ -974,15 +1021,15 @@ register_block_params_var2index(YogEnv* env, YogArray* params, YogTable* var2ind
         YogNode* node = VAL2PTR(param);
         ID id = node->u.param.name;
         YogVal name = ID2VAL(id);
-        if (!YogTable_lookup(env, var2index, name, NULL)) {
-            YogVal index = INT2VAL(var2index->num_entries);
-            YogTable_add_direct(env, var2index, name, index);
+        if (!YogTable_lookup(env, var_tbl, name, NULL)) {
+            YogVal index = INT2VAL(var_tbl->num_entries);
+            YogTable_add_direct(env, var_tbl, name, index);
         }
     }
 }
 
 static void 
-setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code) 
+setup_params(YogEnv* env, YogTable* var_tbl, YogArray* params, YogCode* code) 
 {
     YogArgInfo* arg_info = &code->arg_info;
     arg_info->argc = 0;
@@ -1024,7 +1071,7 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
 
             ID name = node->u.param.name;
             argnames[i] = name;
-            arg_index[i] = lookup_var_index(env, var2index, name);
+            arg_index[i] = lookup_var_index(env, var_tbl, name);
         }
     }
 
@@ -1043,7 +1090,7 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
 
         ID name = node->u.param.name;
         arg_info->blockargname = name;
-        arg_info->blockarg_index = lookup_var_index(env, var2index, name);
+        arg_info->blockarg_index = lookup_var_index(env, var_tbl, name);
 
         n++;
         if (size == n) {
@@ -1057,7 +1104,7 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
         arg_info->varargc = 1;
 
         ID name = node->u.param.name;
-        arg_info->vararg_index = lookup_var_index(env, var2index, name);
+        arg_info->vararg_index = lookup_var_index(env, var_tbl, name);
 
         n++;
         if (size == n) {
@@ -1071,44 +1118,44 @@ setup_params(YogEnv* env, YogTable* var2index, YogArray* params, YogCode* code)
     arg_info->kwargc = 1;
 
     ID name = node->u.param.name;
-    arg_info->kwarg_index = lookup_var_index(env, var2index, name);
+    arg_info->kwarg_index = lookup_var_index(env, var_tbl, name);
 
     n++;
     YOG_ASSERT(env, size == n, "Parameters count is unmatched.");
 }
 
 static void 
-register_self(YogEnv* env, YogTable* var2index) 
+register_self(YogEnv* env, YogTable* var_tbl) 
 {
     ID name = INTERN("self");
     YogVal key = ID2VAL(name);
     YogVal val = INT2VAL(0);
-    YogTable_add_direct(env, var2index, key, val);
+    YogTable_add_direct(env, var_tbl, key, val);
 }
 
 static YogTable* 
-Var2Index_new(YogEnv* env) 
+var_table_new(YogEnv* env) 
 {
-    YogTable* var2index = YogTable_new_symbol_table(env);
-    register_self(env, var2index);
-    return var2index;
+    YogTable* var_tbl = YogTable_new_symbol_table(env);
+    register_self(env, var_tbl);
+    return var_tbl;
 }
 
 static YogCode* 
 compile_func(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, YogNode* node) 
 {
-    YogTable* var2index = Var2Index_new(env);
+    YogTable* var_tbl = var_table_new(env);
 
     YogArray* params = node->u.funcdef.params;
-    register_params_var2index(env, params, var2index);
+    register_params_var_table(env, params, var_tbl);
 
     YogArray* stmts = node->u.funcdef.stmts;
-    make_var2index(env, stmts, var2index);
+    make_var_table(env, stmts, var_tbl);
 
     ID func_name = node->u.funcdef.name;
 
-    YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var2index, CTX_FUNC, NULL);
-    setup_params(env, var2index, params, code);
+    YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var_tbl, CTX_FUNC, NULL);
+    setup_params(env, var_tbl, params, code);
 
     return code;
 }
@@ -1130,7 +1177,7 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
 
     ID id = node->u.funcdef.name;
 #if 0
-    int var_index = lookup_var_index(env, data->var2index, id);
+    int var_index = lookup_var_index(env, data->var_tbl, id);
 #endif
     unsigned int lineno = node->lineno;
     switch (data->ctx) {
@@ -1191,7 +1238,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     switch (data->ctx) {
     case CTX_FUNC:
         {
-            int index = lookup_var_index(env, data->var2index, id);
+            int index = lookup_var_index(env, data->var_tbl, id);
             if (0 <= index) {
                 CompileData_add_load_local(env, data, lineno, index);
             }
@@ -1476,16 +1523,16 @@ static YogCode*
 compile_block(YogEnv* env, AstVisitor* visitor, YogNode* node, CompileData* data) 
 {
     YogArray* params = node->u.blockarg.params;
-    YogTable* var2index = data->var2index;
-    register_block_params_var2index(env, params, var2index);
+    YogTable* var_tbl = data->var_tbl;
+    register_block_params_var_table(env, params, var_tbl);
 
     const char* filename = data->filename;
     ID klass_name = INVALID_ID;
     ID func_name = INTERN("<block>");
     YogArray* stmts = node->u.blockarg.stmts;
-    YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var2index, data->ctx, NULL);
+    YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var_tbl, data->ctx, NULL);
 
-    setup_params(env, var2index, params, code);
+    setup_params(env, var_tbl, params, code);
 
     return code;
 }
@@ -1517,8 +1564,7 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
 static YogCode* 
 compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogArray* stmts, CompileData* data)
 {
-    YogTable* var2index = Var2Index_new(env);
-    make_var2index(env, stmts, var2index);
+    YogTable* var_tbl = make_var_table(env, stmts, NULL);
 
     unsigned int lineno = get_last_lineno(env, stmts);
 
@@ -1532,7 +1578,7 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogArray* stmts, 
     const char* filename = data->filename;
     ID func_name = INVALID_ID;
 
-    YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var2index, CTX_KLASS, push_self_name);
+    YogCode* code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, var_tbl, CTX_KLASS, push_self_name);
 
     return code;
 }
@@ -1612,6 +1658,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_literal = compile_visit_literal;
     visitor->visit_method_call = compile_visit_method_call;
     visitor->visit_next = compile_visit_next;
+    visitor->visit_nonlocal = NULL;
     visitor->visit_return = compile_visit_return;
     visitor->visit_stmt = visit_node;
     visitor->visit_stmts = compile_visit_stmts;
@@ -1623,7 +1670,7 @@ compile_init_visitor(AstVisitor* visitor)
 YogCode* 
 YogCompiler_compile_module(YogEnv* env, const char* filename, YogArray* stmts) 
 {
-    YogTable* var2index = make_var2index(env, stmts, NULL);
+    YogTable* var_tbl = make_var_table(env, stmts, NULL);
 
     AstVisitor visitor;
     compile_init_visitor(&visitor);
@@ -1636,7 +1683,7 @@ YogCompiler_compile_module(YogEnv* env, const char* filename, YogArray* stmts)
     ID klass_name = INVALID_ID;
     ID func_name = INTERN("<module>");
 
-    YogCode* code = compile_stmts(env, &visitor, filename, klass_name, func_name, stmts, var2index, CTX_PKG, NULL);
+    YogCode* code = compile_stmts(env, &visitor, filename, klass_name, func_name, stmts, var_tbl, CTX_PKG, NULL);
 
     return code;
 }

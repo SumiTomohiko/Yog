@@ -24,6 +24,7 @@ false, tFALSE
 finally, FINALLY
 if, IF
 next, NEXT
+nonlocal, NONLOCAL
 return, RETURN
 true, tTRUE
 try, TRY

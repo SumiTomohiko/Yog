@@ -88,6 +88,9 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     case NODE_NEXT:
         KEEP(next.expr);
         break;
+    case NODE_NONLOCAL:
+        KEEP(nonlocal.names);
+        break;
     case NODE_RETURN:
         KEEP(return_.expr);
         break;
@@ -312,6 +315,11 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
     node->u.attr.obj = obj_; \
     node->u.attr.name = name_; \
 } while (0)
+
+#define NONLOCAL_NEW(node, names_) do { \
+    node = NODE_NEW(NODE_NONLOCAL); \
+    node->u.nonlocal.names = names_; \
+} while (0)
 %}
 
 %union {
@@ -349,6 +357,7 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 %token NAME
 %token NEWLINE
 %token NEXT
+%token NONLOCAL
 %token NUMBER
 %token PLUS
 %token RBRACE
@@ -371,6 +380,7 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 %type<array> finally_opt
 %type<array> if_tail
 %type<array> module
+%type<array> names
 %type<array> params
 %type<array> params_with_default
 %type<array> params_without_default
@@ -474,6 +484,18 @@ stmt    : /* empty */ {
         }
         | CLASS NAME super_opt stmts END {
             KLASS_NEW($$, $2, $3, $4);
+        }
+        | NONLOCAL names {
+            NONLOCAL_NEW($$, $2);
+        }
+        ;
+names   : NAME {
+            $$ = YogArray_new(ENV);
+            YogArray_push(ENV, $$, ID2VAL(NAME));
+        }
+        | names COMMA NAME {
+            YogArray_push(ENV, $1, ID2VAL($3));
+            $$ = $1;
         }
         ;
 super_opt   : /* empty */ {

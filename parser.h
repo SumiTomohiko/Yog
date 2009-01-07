@@ -57,20 +57,21 @@
      NAME = 283,
      NEWLINE = 284,
      NEXT = 285,
-     NUMBER = 286,
-     PLUS = 287,
-     RBRACE = 288,
-     RBRACKET = 289,
-     REGEXP = 290,
-     RETURN = 291,
-     RPAR = 292,
-     STAR = 293,
-     STRING = 294,
-     TRY = 295,
-     WHILE = 296,
-     tFALSE = 297,
-     tTRUE = 298,
-     t__LINE__ = 299
+     NONLOCAL = 286,
+     NUMBER = 287,
+     PLUS = 288,
+     RBRACE = 289,
+     RBRACKET = 290,
+     REGEXP = 291,
+     RETURN = 292,
+     RPAR = 293,
+     STAR = 294,
+     STRING = 295,
+     TRY = 296,
+     WHILE = 297,
+     tFALSE = 298,
+     tTRUE = 299,
+     t__LINE__ = 300
    };
 #endif
 /* Tokens.  */
@@ -102,26 +103,27 @@
 #define NAME 283
 #define NEWLINE 284
 #define NEXT 285
-#define NUMBER 286
-#define PLUS 287
-#define RBRACE 288
-#define RBRACKET 289
-#define REGEXP 290
-#define RETURN 291
-#define RPAR 292
-#define STAR 293
-#define STRING 294
-#define TRY 295
-#define WHILE 296
-#define tFALSE 297
-#define tTRUE 298
-#define t__LINE__ 299
+#define NONLOCAL 286
+#define NUMBER 287
+#define PLUS 288
+#define RBRACE 289
+#define RBRACKET 290
+#define REGEXP 291
+#define RETURN 292
+#define RPAR 293
+#define STAR 294
+#define STRING 295
+#define TRY 296
+#define WHILE 297
+#define tFALSE 298
+#define tTRUE 299
+#define t__LINE__ 300
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 317 "parser.y"
+#line 325 "parser.y"
 typedef union YYSTYPE {
     struct YogArray* array;
     struct YogNode* node;
@@ -129,7 +131,7 @@ typedef union YYSTYPE {
     ID name;
 } YYSTYPE;
 /* Line 1403 of yacc.c.  */
-#line 133 "parser.h"
+#line 135 "parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
