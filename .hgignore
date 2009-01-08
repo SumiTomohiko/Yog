@@ -8,6 +8,7 @@ autom4te.cache
 autoscan.log
 bdwgc/.dirstamp
 bdwgc/.libs
+bdwgc/bdw-gc.pc
 bdwgc/libgc.la
 config.h
 config.log
