@@ -45,9 +45,12 @@ static YogTableEntryArray*
 alloc_bins(YogEnv* env, int size) 
 {
     YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogTableEntry*);
-    bzero(array, sizeof(YogTableEntryArray) + size * sizeof(YogTableEntry*));
 
     array->size = size;
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        array->items[i] = NULL;
+    }
 
     return array;
 }
@@ -140,7 +143,7 @@ rehash(YogEnv* env, YogTable* table)
     table->bins = new_bins;
 }
 
-#define EQUAL(env, table, x, y) ((*table->type->compare)((env), (x), (y)) == 0)
+#define EQUAL(env, table, x, y) ((*(table)->type->compare)((env), (x), (y)) == 0)
 
 #define do_hash(env, table, key) (unsigned int)(*(table)->type->hash)((env), (key))
 #define do_hash_bin(env, table, key) (do_hash(env, table, key) % (table)->num_bins)
@@ -207,7 +210,7 @@ st_init_table(YogEnv* env, YogHashType* type)
 }
 
 #define PTR_NOT_EQUAL(env, table, ptr, hash_val, key) \
-((ptr) != NULL && (ptr->hash != (hash_val) || !EQUAL((env), (table), (key), (ptr)->key)))
+((ptr) != NULL && ((ptr)->hash != (hash_val) || !EQUAL((env), (table), (key), (ptr)->key)))
 
 #ifdef HASH_LOG
 #define COLLISION collision++
@@ -215,17 +218,19 @@ st_init_table(YogEnv* env, YogHashType* type)
 #define COLLISION
 #endif
 
-#define FIND_ENTRY(env, table, ptr, hash_val, bin_pos) do {\
-    bin_pos = hash_val % (table)->num_bins;\
-    ptr = TABLE_ENTRY_TOP(table, bin_pos);\
-    if (PTR_NOT_EQUAL(env, table, ptr, hash_val, key)) {\
-        COLLISION;\
-        while (PTR_NOT_EQUAL(env, table, ptr->next, hash_val, key)) {\
-            ptr = ptr->next;\
-        }\
-        ptr = ptr->next;\
-    }\
-} while (0)
+static void 
+find_entry(YogEnv* env, YogTable* table, YogTableEntry** ptr, unsigned int hash_val, unsigned int* bin_pos, YogVal key) 
+{
+    *bin_pos = hash_val % (table)->num_bins;
+    *ptr = TABLE_ENTRY_TOP(table, *bin_pos);
+    if (PTR_NOT_EQUAL(env, table, *ptr, hash_val, key)) {
+        COLLISION;
+        while (PTR_NOT_EQUAL(env, table, (*ptr)->next, hash_val, key)) {
+            *ptr = (*ptr)->next;
+        }
+        *ptr = (*ptr)->next;
+    }
+}
 
 BOOL
 YogTable_lookup(YogEnv* env, YogTable* table, YogVal key, YogVal* value) 
@@ -234,7 +239,7 @@ YogTable_lookup(YogEnv* env, YogTable* table, YogVal key, YogVal* value)
 
     unsigned int bin_pos = 0;
     YogTableEntry* ptr = NULL;
-    FIND_ENTRY(env, table, ptr, hash_val, bin_pos);
+    find_entry(env, table, &ptr, hash_val, &bin_pos, key);
 
     if (ptr == NULL) {
         return FALSE;
@@ -270,22 +275,24 @@ alloc_entry(YogEnv* env)
     return entry;
 }
 
-#define ADD_DIRECT(env, table, key, value, hash_val, bin_pos)\
-do {\
-    if (ST_DEFAULT_MAX_DENSITY < table->num_entries / (table->num_bins)) {\
-        rehash(env, table);\
-        bin_pos = hash_val % table->num_bins;\
-    }\
-    \
-    YogTableEntry* entry = alloc_entry(env);\
-    \
-    entry->hash = hash_val;\
-    entry->key = key;\
-    entry->record = value;\
-    entry->next = TABLE_ENTRY_TOP(table, bin_pos);\
-    TABLE_ENTRY_TOP(table, bin_pos) = entry;\
-    table->num_entries++;\
-} while (0)
+static void 
+add_direct(YogEnv* env, YogTable* table, YogVal key, YogVal value, unsigned int hash_val, unsigned int bin_pos) 
+{
+    if (ST_DEFAULT_MAX_DENSITY < table->num_entries / (table->num_bins)) {
+        rehash(env, table);
+        bin_pos = hash_val % table->num_bins;
+    }
+
+    YogTableEntry* entry = alloc_entry(env);
+
+    entry->hash = hash_val;
+    entry->key = key;
+    entry->record = value;
+    entry->next = TABLE_ENTRY_TOP(table, bin_pos);
+
+    TABLE_ENTRY_TOP(table, bin_pos) = entry;
+    table->num_entries++;
+}
 
 BOOL
 YogTable_insert(YogEnv* env, YogTable* table, YogVal key, YogVal value) 
@@ -294,10 +301,10 @@ YogTable_insert(YogEnv* env, YogTable* table, YogVal key, YogVal value)
 
     unsigned int bin_pos = 0;
     YogTableEntry* ptr = NULL;
-    FIND_ENTRY(env, table, ptr, hash_val, bin_pos);
+    find_entry(env, table, &ptr, hash_val, &bin_pos, key);
 
     if (ptr == NULL) {
-        ADD_DIRECT(env, table, key, value, hash_val, bin_pos);
+        add_direct(env, table, key, value, hash_val, bin_pos);
         return FALSE;
     }
     else {
@@ -311,7 +318,7 @@ YogTable_add_direct(YogEnv* env, YogTable* table, YogVal key, YogVal value)
 {
     unsigned int hash_val = do_hash(env, table, key);
     unsigned int bin_pos = hash_val % table->num_bins;
-    ADD_DIRECT(env, table, key, value, hash_val, bin_pos);
+    add_direct(env, table, key, value, hash_val, bin_pos);
 }
 
 BOOL

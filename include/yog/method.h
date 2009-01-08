@@ -11,14 +11,6 @@ struct YogBuiltinBoundMethod {
 
 typedef struct YogBuiltinBoundMethod YogBuiltinBoundMethod;
 
-struct YogBoundMethod {
-    YOGBASICOBJ_HEAD;
-    struct YogVal self;
-    struct YogCode* code;
-};
-
-typedef struct YogBoundMethod YogBoundMethod;
-
 struct YogBuiltinUnboundMethod {
     YOGBASICOBJ_HEAD;
     struct YogBuiltinFunction* f;
@@ -26,9 +18,26 @@ struct YogBuiltinUnboundMethod {
 
 typedef struct YogBuiltinUnboundMethod YogBuiltinUnboundMethod;
 
-struct YogUnboundMethod {
+struct YogScriptMethod {
     YOGBASICOBJ_HEAD;
     struct YogCode* code;
+    struct YogTable* globals;
+    struct YogOuterVars* outer_vars;
+};
+
+#define SCRIPT_METHOD(method)   ((YogScriptMethod*)method)
+
+typedef struct YogScriptMethod YogScriptMethod;
+
+struct YogBoundMethod {
+    struct YogScriptMethod base;
+    struct YogVal self;
+};
+
+typedef struct YogBoundMethod YogBoundMethod;
+
+struct YogUnboundMethod {
+    struct YogScriptMethod base;
 };
 
 typedef struct YogUnboundMethod YogUnboundMethod;

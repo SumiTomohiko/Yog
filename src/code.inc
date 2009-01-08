@@ -3,10 +3,10 @@
  * DO NOT TOUCH!!
  */
 
-static char* 
-get_op_name(OpCode op) 
+const char* 
+YogCode_get_op_name(OpCode op) 
 {
-    char* op_names[] = {
+    const char* op_names[] = {
 
         "LOAD_SPECIAL", 
         "POP", 

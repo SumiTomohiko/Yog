@@ -19,7 +19,7 @@ YogError_bug(YogEnv* env, const char* filename, unsigned int lineno, const char*
 
     fprintf(stream, "\n");
 
-    exit(-1);
+    abort();
 }
 
 void 

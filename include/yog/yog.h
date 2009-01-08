@@ -106,7 +106,9 @@ enum YogValType {
     VAL_BOOL, 
     VAL_NIL, 
     VAL_SYMBOL, 
+#if 0
     VAL_STR, 
+#endif
 };
 
 typedef enum YogValType YogValType;
@@ -120,7 +122,9 @@ struct YogVal {
         void * ptr;
         struct YogBasicObj* obj;
         BOOL b;
+#if 0
         const char* str;
+#endif
     } u;
 };
 
@@ -227,12 +231,21 @@ typedef struct YogCFrame YogCFrame;
 #define FRAME_LOCAL_ARRAY(env, obj, i) \
                                     FRAME_LOCAL_OBJ(env, obj, YogArray, i)
 
+struct YogOuterVars {
+    unsigned int size;
+    struct YogValArray* items[0];
+};
+
+typedef struct YogOuterVars YogOuterVars;
+
 struct YogScriptFrame {
     struct YogFrame base;
     pc_t pc;
     struct YogCode* code;
     unsigned int stack_size;
     struct YogValArray* stack;
+    struct YogTable* globals;
+    struct YogOuterVars* outer_vars;
 };
 
 #define SCRIPT_FRAME(f)     ((YogScriptFrame*)f)
@@ -241,7 +254,7 @@ typedef struct YogScriptFrame YogScriptFrame;
 
 struct YogNameFrame {
     struct YogScriptFrame base;
-    YogVal self;
+    struct YogVal self;
     struct YogTable* vars;
 };
 
@@ -291,6 +304,7 @@ YogCFrame* YogCFrame_new(YogEnv*);
 void YogFrame_add_locals(YogEnv*, YogCFrame*, unsigned int, ...);
 YogMethodFrame* YogMethodFrame_new(YogEnv*);
 YogNameFrame* YogNameFrame_new(YogEnv*);
+YogOuterVars* YogOuterVars_new(YogEnv*, unsigned int);
 YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);
 void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
 

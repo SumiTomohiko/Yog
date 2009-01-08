@@ -404,7 +404,7 @@ each_line(YogEnv* env)
         i = next - body->items;
         unsigned int size = body->size;
 
-        YogThread_call_block(env, env->th, block, sizeof(args), args);
+        YogThread_call_block(env, env->th, block, sizeof(args) / sizeof(args[0]), args);
 
         if (size - 1 < i) {
             break;

@@ -89,8 +89,8 @@ inst make_package_method
 (method)
 {
     YogBoundMethod* m = YogBoundMethod_new(ENV);
+    setup_script_method(ENV, SCRIPT_METHOD(m), VAL2PTR(code));
     m->self = NAME_FRAME(CUR_FRAME)->self;
-    m->code = VAL2PTR(code);
 
     method = OBJ2VAL(m);
 }
@@ -112,7 +112,10 @@ inst load_global
 ()
 (val) 
 {
-    val = lookup_builtins(ENV, id);
+    YogTable* globals = SCRIPT_FRAME(CUR_FRAME)->globals;
+    if (!YogTable_lookup(ENV, globals, ID2VAL(id), &val)) {
+        val = lookup_builtins(ENV, id);
+    }
     YOG_ASSERT(ENV, !IS_UNDEF(val), "can't find global variable");
 }
 
@@ -200,7 +203,8 @@ inst make_method
 (method)
 {
     YogUnboundMethod* m = YogUnboundMethod_new(ENV);
-    m->code = VAL2PTR(code);
+    setup_script_method(ENV, SCRIPT_METHOD(m), VAL2PTR(code));
+
     method = OBJ2VAL(m);
 }
 
@@ -242,7 +246,8 @@ inst store_global
 (val) 
 ()
 {
-    /* TODO */
+    YogTable* globals = SCRIPT_FRAME(CUR_FRAME)->globals;
+    YogTable_insert(ENV, globals, ID2VAL(name), val);
 }
 
 /**

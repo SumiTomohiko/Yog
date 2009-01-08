@@ -166,6 +166,29 @@ call_builtin_bound_method(YogEnv* env, YogThread* th, YogBuiltinBoundMethod* met
 #undef DECL_ARGS
 
 static void 
+setup_script_method(YogEnv* env, YogScriptMethod* method, YogCode* code) 
+{
+    method->code = code;
+    method->globals = SCRIPT_FRAME(CUR_FRAME)->globals;
+
+    unsigned int outer_size = code->outer_size;
+    YogOuterVars* outer_vars = YogOuterVars_new(env, outer_size);
+
+    YogFrame* frame = CUR_FRAME->prev;
+    unsigned int i = 0;
+    for (i = 0; i < outer_size; i++) {
+        YOG_ASSERT(env, frame != NULL, "frame is NULL");
+        YOG_ASSERT(env, frame->type == FRAME_SCRIPT, "frame type isn't FRAME_SCRIPT");
+
+        outer_vars->items[i] = LOCAL_VARS(frame);
+
+        frame = frame->prev;
+    }
+
+    method->outer_vars = outer_vars;
+}
+
+static void 
 setup_script_frame(YogEnv* env, YogScriptFrame* frame, YogCode* code) 
 {
 #if 0
@@ -191,6 +214,7 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogCode* code, uint8_t posarg
     YogMethodFrame* frame = YogMethodFrame_new(env);
     setup_script_frame(env, SCRIPT_FRAME(frame), code);
     frame->vars = vars;
+    SCRIPT_FRAME(frame)->globals = SCRIPT_FRAME(CUR_FRAME)->globals;
 
     PUSH_FRAME(frame);
 }
@@ -211,7 +235,7 @@ call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint
     else if (obj->klass == vm->cBoundMethod) {
         YogBoundMethod* method = (YogBoundMethod*)obj;
         YogVal self = method->self;
-        YogCode* code = method->code;
+        YogCode* code = SCRIPT_METHOD(method)->code;
         call_code(env, th, self, code, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
     }
     else if (obj->klass == vm->cBuiltinUnboundMethod) {
@@ -223,7 +247,7 @@ call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint
     else if (obj->klass == vm->cUnboundMethod) {
         YogUnboundMethod* method = (YogUnboundMethod*)obj;
         YogVal self = unbound_self;
-        YogCode* code = method->code;
+        YogCode* code = SCRIPT_METHOD(method)->code;
         call_code(env, th, self, code, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
     }
     else {
@@ -260,6 +284,17 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
 #endif
 
     PUSH_FRAME(frame);
+
+    do {
+        YogFrame* frame = CUR_FRAME;
+        while (frame != NULL) {
+            if (frame->type == FRAME_SCRIPT) {
+                YogScriptFrame* script_frame = (YogScriptFrame*)frame;
+            }
+
+            frame = frame->prev;
+        }
+    } while (0);
 
 #define POP_BUF()   ENV_TH(env)->jmp_buf_list = ENV_TH(env)->jmp_buf_list->prev
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
@@ -397,6 +432,10 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
 #endif
 
         OpCode op = CODE->insts->items[PC];
+#if 0
+        printf("%s:%d PC=%d\n", __FILE__, __LINE__, PC);
+        printf("%s:%d op=%s\n", __FILE__, __LINE__, YogCode_get_op_name(op));
+#endif
         PC += sizeof(uint8_t);
         switch (op) {
 #include "src/thread.inc"
@@ -469,6 +508,19 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
         NAME_FRAME(frame)->self = pkg_block->self;
         NAME_FRAME(frame)->vars = vars;
 
+        YogTable* globals = NULL;
+        YogFrame* f = CUR_FRAME->prev;
+        while (f != NULL) {
+            if (f->type == FRAME_SCRIPT) {
+                globals = SCRIPT_FRAME(f)->globals;
+                break;
+            }
+
+            f = f->prev;
+        }
+        YOG_ASSERT(env, globals != NULL, "globals is NULL");
+        SCRIPT_FRAME(frame)->globals = globals;
+
         YogVal retval = mainloop(env, th, SCRIPT_FRAME(frame), code);
 
         return retval;
@@ -496,7 +548,7 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
     else if (obj->klass == ENV_VM(env)->cBoundMethod) {
         YogBoundMethod* method = (YogBoundMethod*)obj;
         YogVal self = method->self;
-        YogCode* code = method->code;
+        YogCode* code = SCRIPT_METHOD(method)->code;
         retval = eval_code(env, th, code, self, argc, args);
     }
     else if (obj->klass == ENV_VM(env)->cBuiltinUnboundMethod) {
@@ -505,7 +557,7 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
     }
     else if (obj->klass == ENV_VM(env)->cUnboundMethod) {
         YogUnboundMethod* method = (YogUnboundMethod*)obj;
-        YogCode* code = method->code;
+        YogCode* code = SCRIPT_METHOD(method)->code;
         retval = eval_code(env, th, code, receiver, argc, args);
     }
     else {
@@ -524,6 +576,7 @@ YogThread_eval_package(YogEnv* env, YogThread* th, YogPackage* pkg)
     setup_script_frame(env, SCRIPT_FRAME(frame), code);
     NAME_FRAME(frame)->self = OBJ2VAL(pkg);
     NAME_FRAME(frame)->vars = YOGOBJ(pkg)->attrs;
+    SCRIPT_FRAME(frame)->globals = NAME_FRAME(frame)->vars;
 
     mainloop(env, th, SCRIPT_FRAME(frame), code);
 }

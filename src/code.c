@@ -95,7 +95,7 @@ YogCode_dump(YogEnv* env, YogCode* code)
         }
 
         OpCode op = code->insts->items[pc];
-        printf(" %s", get_op_name(op));
+        printf(" %s", YogCode_get_op_name(op));
 
         unsigned int n = pc + sizeof(uint8_t);
 #define OPERAND(type)   (*((type*)&code->insts->items[n]))
@@ -175,6 +175,7 @@ YogCode_new(YogEnv* env)
     code->local_vars_count = 0;
     code->consts = NULL;
     code->insts = NULL;
+    code->outer_size = 0;
     code->exc_tbl_size = 0;
     code->exc_tbl = NULL;
     code->lineno_tbl_size = 0;

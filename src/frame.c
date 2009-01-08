@@ -4,6 +4,8 @@
 #include "yog/error.h"
 #include "yog/yog.h"
 
+#include <stdio.h>
+
 static void 
 extend_locals(YogEnv* env, YogCFrame* frame, unsigned int n) 
 {
@@ -65,6 +67,8 @@ YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogScriptFrame* frame = ptr;
     KEEP(code);
     KEEP(stack);
+    KEEP(globals);
+    KEEP(outer_vars);
 }
 
 static void 
@@ -128,6 +132,8 @@ YogScriptFrame_init(YogScriptFrame* frame)
     frame->code = NULL;
     frame->stack_size = 0;
     frame->stack = NULL;
+    frame->globals = NULL;
+    frame->outer_vars = NULL;
 }
 
 static void 
@@ -180,6 +186,31 @@ YogCFrame_new(YogEnv* env)
     YogCFrame_init(env, frame);
 
     return frame;
+}
+
+static void 
+YogOuterVars_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogOuterVars* vars = ptr;
+
+    unsigned int size = vars->size;
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        vars->items[i] = (*keeper)(env, vars->items[i]);
+    }
+}
+
+YogOuterVars* 
+YogOuterVars_new(YogEnv* env, unsigned int size) 
+{
+    YogOuterVars* vars = ALLOC_OBJ_ITEM(env, YogOuterVars_keep_children, NULL, YogOuterVars, size, YogValArray*);
+    vars->size = size;
+    unsigned int i = 0;
+    for (i = 0; i < size; i++) {
+        vars->items[i] = NULL;
+    }
+
+    return vars;
 }
 
 /**

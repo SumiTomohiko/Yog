@@ -25,7 +25,7 @@ class DeclarationInserter(object):
             "include/yog/method.h": [ "src/method.c", ], 
             "include/yog/binary.h": [ "src/binary.c", ], 
             "include/yog/package.h": [ "src/package.c", ], 
-            "include/yog/code.h": [ "src/code.c", ], 
+            "include/yog/code.h": [ "src/code.c", "src/code.inc", ], 
             "include/yog/compile.h": [ "src/compile.c", ], 
             "include/yog/array.h": [ "src/array.c", ], 
             "include/yog/parser.h": [

@@ -698,15 +698,16 @@ static int
 register_const(YogEnv* env, CompileData* data, YogVal val) 
 {
     if (data->const2index == NULL) {
-        YogTable* const2index = YogTable_new_symbol_table(env);
-        data->const2index = const2index;
+        data->const2index = YogTable_new_symbol_table(env);
     }
 
+    YogTable* const2index = data->const2index;
+
     YogVal index = YUNDEF;
-    if (!YogTable_lookup(env, data->const2index, val, &index)) {
-        int size = YogTable_size(env, data->const2index);
+    if (!YogTable_lookup(env, const2index, val, &index)) {
+        int size = YogTable_size(env, const2index);
         index = INT2VAL(size);
-        YogTable_add_direct(env, data->const2index, val, index);
+        YogTable_add_direct(env, const2index, val, index);
         return size;
     }
     else {
@@ -728,7 +729,7 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
 
     YogVal val = node->u.literal.val;
     unsigned int lineno = node->lineno;
-    if (IS_STR(val)) {
+    if (YogVal_get_klass(env, val) == ENV_VM(env)->cString) {
         unsigned int index = register_const(env, data, val);
         CompileData_add_make_string(env, data, lineno, index);
     }
@@ -1002,6 +1003,30 @@ CompileData_initialize(CompileData* data, Context ctx, YogTable* vars, YogInst* 
     data->outer = NULL;
 }
 
+static int 
+get_max_outer_level_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
+{
+    Var* var = VAL2PTR(val);
+    if (var->type == VT_NONLOCAL) {
+        int max_level = VAL2INT(*arg);
+        int level = var->u.nonlocal.level;
+        if (max_level < level) {
+            *arg = INT2VAL(level);
+        }
+    }
+
+    return ST_CONTINUE;
+}
+
+static unsigned int 
+get_max_outer_level(YogEnv* env, YogTable* vars) 
+{
+    YogVal arg = INT2VAL(0);
+    YogTable_foreach(env, vars, get_max_outer_level_callback, &arg);
+
+    return VAL2INT(arg);
+}
+
 static YogCode* 
 compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, ID func_name, YogArray* stmts, YogTable* vars, Context ctx, YogInst* tail) 
 {
@@ -1040,9 +1065,9 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
     YogCode* code = YogCode_new(env);
     code->local_vars_count = count_locals(env, vars);
     code->stack_size = count_stack_size(env, anchor);
-    YogValArray* consts = table2array(env, data.const2index);
-    code->consts = consts;
+    code->consts = table2array(env, data.const2index);
     code->insts = bin->body;
+    code->outer_size = get_max_outer_level(env, vars);
 
     make_exception_table(env, code, &data);
     make_lineno_table(env, code, anchor);
@@ -1105,8 +1130,12 @@ static unsigned int
 lookup_local_var_index(YogEnv* env, YogTable* vars, ID name) 
 {
     Var* var = lookup_var(env, vars, name);
-    YOG_ASSERT(env, var->type == VT_LOCAL, "variable type isn't local");
-    return var->u.local.index;
+    if (var->type == VT_LOCAL) {
+        return var->u.local.index;
+    }
+    else {
+        return 0;
+    }
 }
 
 static void 

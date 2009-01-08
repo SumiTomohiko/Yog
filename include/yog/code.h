@@ -33,6 +33,7 @@ struct YogCode {
     unsigned int local_vars_count;
     struct YogValArray* consts;
     struct YogByteArray* insts;
+    unsigned int outer_size;
 
     unsigned int exc_tbl_size;
     struct YogExceptionTable* exc_tbl;
@@ -47,6 +48,8 @@ struct YogCode {
 
 typedef struct YogCode YogCode;
 
+#include "yog/opcodes.h"
+
 /* PROTOTYPE_START */
 
 /**
@@ -56,6 +59,9 @@ typedef struct YogCode YogCode;
 /* src/code.c */
 void YogCode_dump(YogEnv*, YogCode*);
 YogCode* YogCode_new(YogEnv*);
+
+/* src/code.inc */
+const char* YogCode_get_op_name(OpCode);
 
 /* PROTOTYPE_END */
 
