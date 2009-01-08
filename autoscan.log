@@ -1,0 +1,13 @@
+autoscan: warning: missing AC_CHECK_FUNCS([atexit]) wanted by: 
+	src/st.c:181
+autoscan: warning: missing AC_CHECK_FUNCS([bzero]) wanted by: 
+	src/vm.c:13
+autoscan: warning: missing AC_C_CONST wanted by: 
+	src/st.c:38
+	src/st.c:516
+	src/error.c:6
+	include/yog/yog.h:203
+autoscan: warning: missing AC_FUNC_MALLOC wanted by: 
+	src/vm.c:8
+	src/vm.c:11
+	src/vm.c:54

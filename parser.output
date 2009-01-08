@@ -1,0 +1,3078 @@
+Terminals which are not used
+
+   BAR
+   DIV
+   LBRACE
+   RBRACE
+
+
+文法
+
+    0 $accept: module $end
+
+    1 module: stmts
+
+    2 stmts: stmt
+    3      | stmts newline stmt
+
+    4 stmt: /* 空 */
+    5     | func_def
+    6     | expr
+    7     | NAME args
+    8     | TRY stmts excepts ELSE stmts finally_opt END
+    9     | TRY stmts excepts finally_opt END
+   10     | TRY stmts FINALLY stmts END
+   11     | WHILE expr stmts END
+   12     | BREAK
+   13     | BREAK expr
+   14     | NEXT
+   15     | NEXT expr
+   16     | RETURN
+   17     | RETURN expr
+   18     | IF expr stmts if_tail END
+   19     | CLASS NAME super_opt stmts END
+   20     | NONLOCAL names
+
+   21 names: NAME
+   22      | names COMMA NAME
+
+   23 super_opt: /* 空 */
+   24          | GREATER expr
+
+   25 if_tail: else_opt
+   26        | ELIF expr stmts if_tail
+
+   27 else_opt: /* 空 */
+   28         | ELSE stmts
+
+   29 func_def: DEF NAME LPAR params RPAR stmts END
+
+   30 params: params_without_default COMMA params_with_default COMMA block_param COMMA var_param COMMA kw_param
+   31       | params_without_default COMMA params_with_default COMMA block_param COMMA var_param
+   32       | params_without_default COMMA params_with_default COMMA block_param COMMA kw_param
+   33       | params_without_default COMMA params_with_default COMMA block_param
+   34       | params_without_default COMMA params_with_default COMMA var_param COMMA kw_param
+   35       | params_without_default COMMA params_with_default COMMA var_param
+   36       | params_without_default COMMA params_with_default COMMA kw_param
+   37       | params_without_default COMMA params_with_default
+   38       | params_without_default COMMA block_param COMMA var_param COMMA kw_param
+   39       | params_without_default COMMA block_param COMMA var_param
+   40       | params_without_default COMMA block_param COMMA kw_param
+   41       | params_without_default COMMA block_param
+   42       | params_without_default COMMA var_param COMMA kw_param
+   43       | params_without_default COMMA var_param
+   44       | params_without_default COMMA kw_param
+   45       | params_without_default
+   46       | params_with_default COMMA block_param COMMA var_param COMMA kw_param
+   47       | params_with_default COMMA block_param COMMA var_param
+   48       | params_with_default COMMA block_param COMMA kw_param
+   49       | params_with_default COMMA block_param
+   50       | params_with_default COMMA var_param COMMA kw_param
+   51       | params_with_default COMMA var_param
+   52       | params_with_default COMMA kw_param
+   53       | params_with_default
+   54       | block_param COMMA var_param COMMA kw_param
+   55       | block_param COMMA var_param
+   56       | block_param COMMA kw_param
+   57       | block_param
+   58       | var_param COMMA kw_param
+   59       | var_param
+   60       | kw_param
+   61       | /* 空 */
+
+   62 kw_param: DOUBLE_STAR NAME
+
+   63 var_param: STAR NAME
+
+   64 block_param: AMPER NAME param_default_opt
+
+   65 param_default_opt: /* 空 */
+   66                  | param_default
+
+   67 param_default: EQUAL expr
+
+   68 params_without_default: NAME
+   69                       | params_without_default COMMA NAME
+
+   70 params_with_default: param_with_default
+   71                    | params_with_default COMMA param_with_default
+
+   72 param_with_default: NAME param_default
+
+   73 args: expr
+   74     | args COMMA expr
+
+   75 expr: assign_expr
+
+   76 assign_expr: postfix_expr EQUAL logical_or_expr
+   77            | logical_or_expr
+
+   78 logical_or_expr: logical_and_expr
+
+   79 logical_and_expr: not_expr
+
+   80 not_expr: comparison
+
+   81 comparison: xor_expr
+   82           | xor_expr comp_op xor_expr
+
+   83 comp_op: LESS
+
+   84 xor_expr: or_expr
+
+   85 or_expr: and_expr
+
+   86 and_expr: shift_expr
+
+   87 shift_expr: match_expr
+   88           | shift_expr LSHIFT arith_expr
+
+   89 match_expr: arith_expr
+   90           | match_expr EQUAL_TILDA arith_expr
+
+   91 arith_expr: term
+   92           | arith_expr PLUS term
+
+   93 term: factor
+
+   94 factor: power
+
+   95 power: postfix_expr
+
+   96 postfix_expr: atom
+   97             | postfix_expr LPAR args_opt RPAR blockarg_opt
+   98             | postfix_expr LBRACKET expr RBRACKET
+   99             | postfix_expr DOT NAME
+
+  100 atom: NAME
+  101     | NUMBER
+  102     | REGEXP
+  103     | STRING
+  104     | tTRUE
+  105     | tFALSE
+  106     | t__LINE__
+
+  107 args_opt: /* 空 */
+  108         | args
+
+  109 blockarg_opt: /* 空 */
+  110             | DO LBRACKET params RBRACKET stmts END
+
+  111 excepts: except
+  112        | excepts except
+
+  113 except: EXCEPT expr AS NAME newline stmts
+  114       | EXCEPT expr newline stmts
+  115       | EXCEPT newline stmts
+
+  116 newline: NEWLINE
+
+  117 finally_opt: /* 空 */
+  118            | FINALLY stmts
+
+
+出現位置の規則による終端
+
+$end (0) 0
+error (256)
+AMPER (258) 64
+AS (259) 113
+BAR (260)
+BREAK (261) 12 13
+CLASS (262) 19
+COMMA (263) 22 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 46 47 48
+    49 50 51 52 54 55 56 58 69 71 74
+DEF (264) 29
+DIV (265)
+DO (266) 110
+DOT (267) 99
+DOUBLE_STAR (268) 62
+ELIF (269) 26
+ELSE (270) 8 28
+END (271) 8 9 10 11 18 19 29 110
+EQUAL (272) 67 76
+EQUAL_TILDA (273) 90
+EXCEPT (274) 113 114 115
+FINALLY (275) 10 118
+GREATER (276) 24
+IF (277) 18
+LBRACE (278)
+LBRACKET (279) 98 110
+LESS (280) 83
+LPAR (281) 29 97
+LSHIFT (282) 88
+NAME (283) 7 19 21 22 29 62 63 64 68 69 72 99 100 113
+NEWLINE (284) 116
+NEXT (285) 14 15
+NONLOCAL (286) 20
+NUMBER (287) 101
+PLUS (288) 92
+RBRACE (289)
+RBRACKET (290) 98 110
+REGEXP (291) 102
+RETURN (292) 16 17
+RPAR (293) 29 97
+STAR (294) 63
+STRING (295) 103
+TRY (296) 8 9 10
+WHILE (297) 11
+tFALSE (298) 105
+tTRUE (299) 104
+t__LINE__ (300) 106
+
+
+出現位置の規則による非終端
+
+$accept (46)
+    左辺: 0
+module (47)
+    左辺: 1, 右辺: 0
+stmts (48)
+    左辺: 2 3, 右辺: 1 3 8 9 10 11 18 19 26 28 29 110 113 114 115
+    118
+stmt (49)
+    左辺: 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20,
+    右辺: 2 3
+names (50)
+    左辺: 21 22, 右辺: 20 22
+super_opt (51)
+    左辺: 23 24, 右辺: 19
+if_tail (52)
+    左辺: 25 26, 右辺: 18 26
+else_opt (53)
+    左辺: 27 28, 右辺: 25
+func_def (54)
+    左辺: 29, 右辺: 5
+params (55)
+    左辺: 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48
+    49 50 51 52 53 54 55 56 57 58 59 60 61, 右辺: 29 110
+kw_param (56)
+    左辺: 62, 右辺: 30 32 34 36 38 40 42 44 46 48 50 52 54 56 58
+    60
+var_param (57)
+    左辺: 63, 右辺: 30 31 34 35 38 39 42 43 46 47 50 51 54 55 58
+    59
+block_param (58)
+    左辺: 64, 右辺: 30 31 32 33 38 39 40 41 46 47 48 49 54 55 56
+    57
+param_default_opt (59)
+    左辺: 65 66, 右辺: 64
+param_default (60)
+    左辺: 67, 右辺: 66 72
+params_without_default (61)
+    左辺: 68 69, 右辺: 30 31 32 33 34 35 36 37 38 39 40 41 42 43
+    44 45 69
+params_with_default (62)
+    左辺: 70 71, 右辺: 30 31 32 33 34 35 36 37 46 47 48 49 50 51
+    52 53 71
+param_with_default (63)
+    左辺: 72, 右辺: 70 71
+args (64)
+    左辺: 73 74, 右辺: 7 74 108
+expr (65)
+    左辺: 75, 右辺: 6 11 13 15 17 18 24 26 67 73 74 98 113 114
+assign_expr (66)
+    左辺: 76 77, 右辺: 75
+logical_or_expr (67)
+    左辺: 78, 右辺: 76 77
+logical_and_expr (68)
+    左辺: 79, 右辺: 78
+not_expr (69)
+    左辺: 80, 右辺: 79
+comparison (70)
+    左辺: 81 82, 右辺: 80
+comp_op (71)
+    左辺: 83, 右辺: 82
+xor_expr (72)
+    左辺: 84, 右辺: 81 82
+or_expr (73)
+    左辺: 85, 右辺: 84
+and_expr (74)
+    左辺: 86, 右辺: 85
+shift_expr (75)
+    左辺: 87 88, 右辺: 86 88
+match_expr (76)
+    左辺: 89 90, 右辺: 87 90
+arith_expr (77)
+    左辺: 91 92, 右辺: 88 89 90 92
+term (78)
+    左辺: 93, 右辺: 91 92
+factor (79)
+    左辺: 94, 右辺: 93
+power (80)
+    左辺: 95, 右辺: 94
+postfix_expr (81)
+    左辺: 96 97 98 99, 右辺: 76 95 97 98 99
+atom (82)
+    左辺: 100 101 102 103 104 105 106, 右辺: 96
+args_opt (83)
+    左辺: 107 108, 右辺: 97
+blockarg_opt (84)
+    左辺: 109 110, 右辺: 97
+excepts (85)
+    左辺: 111 112, 右辺: 8 9 112
+except (86)
+    左辺: 113 114 115, 右辺: 111 112
+newline (87)
+    左辺: 116, 右辺: 3 113 114 115
+finally_opt (88)
+    左辺: 117 118, 右辺: 8 9
+
+
+状態 0
+
+    0 $accept: . module $end
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    module            go to state 17
+    stmts             go to state 18
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 1
+
+   12 stmt: BREAK .
+   13     | BREAK . expr
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 12 (stmt)
+
+    expr              go to state 39
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 2
+
+   19 stmt: CLASS . NAME super_opt stmts END
+
+    NAME  shift, and go to state 40
+
+
+状態 3
+
+   29 func_def: DEF . NAME LPAR params RPAR stmts END
+
+    NAME  shift, and go to state 41
+
+
+状態 4
+
+   18 stmt: IF . expr stmts if_tail END
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    expr              go to state 42
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 5
+
+    7 stmt: NAME . args
+  100 atom: NAME .
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 100 (atom)
+
+    args              go to state 43
+    expr              go to state 44
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 6
+
+   14 stmt: NEXT .
+   15     | NEXT . expr
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 14 (stmt)
+
+    expr              go to state 45
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 7
+
+   20 stmt: NONLOCAL . names
+
+    NAME  shift, and go to state 46
+
+    names  go to state 47
+
+
+状態 8
+
+  101 atom: NUMBER .
+
+    $default  reduce using rule 101 (atom)
+
+
+状態 9
+
+  102 atom: REGEXP .
+
+    $default  reduce using rule 102 (atom)
+
+
+状態 10
+
+   16 stmt: RETURN .
+   17     | RETURN . expr
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 16 (stmt)
+
+    expr              go to state 48
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 11
+
+  103 atom: STRING .
+
+    $default  reduce using rule 103 (atom)
+
+
+状態 12
+
+    8 stmt: TRY . stmts excepts ELSE stmts finally_opt END
+    9     | TRY . stmts excepts finally_opt END
+   10     | TRY . stmts FINALLY stmts END
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 49
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 13
+
+   11 stmt: WHILE . expr stmts END
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    expr              go to state 50
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 14
+
+  105 atom: tFALSE .
+
+    $default  reduce using rule 105 (atom)
+
+
+状態 15
+
+  104 atom: tTRUE .
+
+    $default  reduce using rule 104 (atom)
+
+
+状態 16
+
+  106 atom: t__LINE__ .
+
+    $default  reduce using rule 106 (atom)
+
+
+状態 17
+
+    0 $accept: module . $end
+
+    $end  shift, and go to state 51
+
+
+状態 18
+
+    1 module: stmts .
+    3 stmts: stmts . newline stmt
+
+    NEWLINE  shift, and go to state 52
+
+    $default  reduce using rule 1 (module)
+
+    newline  go to state 53
+
+
+状態 19
+
+    2 stmts: stmt .
+
+    $default  reduce using rule 2 (stmts)
+
+
+状態 20
+
+    5 stmt: func_def .
+
+    $default  reduce using rule 5 (stmt)
+
+
+状態 21
+
+    6 stmt: expr .
+
+    $default  reduce using rule 6 (stmt)
+
+
+状態 22
+
+   75 expr: assign_expr .
+
+    $default  reduce using rule 75 (expr)
+
+
+状態 23
+
+   77 assign_expr: logical_or_expr .
+
+    $default  reduce using rule 77 (assign_expr)
+
+
+状態 24
+
+   78 logical_or_expr: logical_and_expr .
+
+    $default  reduce using rule 78 (logical_or_expr)
+
+
+状態 25
+
+   79 logical_and_expr: not_expr .
+
+    $default  reduce using rule 79 (logical_and_expr)
+
+
+状態 26
+
+   80 not_expr: comparison .
+
+    $default  reduce using rule 80 (not_expr)
+
+
+状態 27
+
+   81 comparison: xor_expr .
+   82           | xor_expr . comp_op xor_expr
+
+    LESS  shift, and go to state 54
+
+    $default  reduce using rule 81 (comparison)
+
+    comp_op  go to state 55
+
+
+状態 28
+
+   84 xor_expr: or_expr .
+
+    $default  reduce using rule 84 (xor_expr)
+
+
+状態 29
+
+   85 or_expr: and_expr .
+
+    $default  reduce using rule 85 (or_expr)
+
+
+状態 30
+
+   86 and_expr: shift_expr .
+   88 shift_expr: shift_expr . LSHIFT arith_expr
+
+    LSHIFT  shift, and go to state 56
+
+    $default  reduce using rule 86 (and_expr)
+
+
+状態 31
+
+   87 shift_expr: match_expr .
+   90 match_expr: match_expr . EQUAL_TILDA arith_expr
+
+    EQUAL_TILDA  shift, and go to state 57
+
+    $default  reduce using rule 87 (shift_expr)
+
+
+状態 32
+
+   89 match_expr: arith_expr .
+   92 arith_expr: arith_expr . PLUS term
+
+    PLUS  shift, and go to state 58
+
+    $default  reduce using rule 89 (match_expr)
+
+
+状態 33
+
+   91 arith_expr: term .
+
+    $default  reduce using rule 91 (arith_expr)
+
+
+状態 34
+
+   93 term: factor .
+
+    $default  reduce using rule 93 (term)
+
+
+状態 35
+
+   94 factor: power .
+
+    $default  reduce using rule 94 (factor)
+
+
+状態 36
+
+   76 assign_expr: postfix_expr . EQUAL logical_or_expr
+   95 power: postfix_expr .
+   97 postfix_expr: postfix_expr . LPAR args_opt RPAR blockarg_opt
+   98             | postfix_expr . LBRACKET expr RBRACKET
+   99             | postfix_expr . DOT NAME
+
+    DOT       shift, and go to state 59
+    EQUAL     shift, and go to state 60
+    LBRACKET  shift, and go to state 61
+    LPAR      shift, and go to state 62
+
+    $default  reduce using rule 95 (power)
+
+
+状態 37
+
+   96 postfix_expr: atom .
+
+    $default  reduce using rule 96 (postfix_expr)
+
+
+状態 38
+
+  100 atom: NAME .
+
+    $default  reduce using rule 100 (atom)
+
+
+状態 39
+
+   13 stmt: BREAK expr .
+
+    $default  reduce using rule 13 (stmt)
+
+
+状態 40
+
+   19 stmt: CLASS NAME . super_opt stmts END
+
+    GREATER  shift, and go to state 63
+
+    $default  reduce using rule 23 (super_opt)
+
+    super_opt  go to state 64
+
+
+状態 41
+
+   29 func_def: DEF NAME . LPAR params RPAR stmts END
+
+    LPAR  shift, and go to state 65
+
+
+状態 42
+
+   18 stmt: IF expr . stmts if_tail END
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 66
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 43
+
+    7 stmt: NAME args .
+   74 args: args . COMMA expr
+
+    COMMA  shift, and go to state 67
+
+    $default  reduce using rule 7 (stmt)
+
+
+状態 44
+
+   73 args: expr .
+
+    $default  reduce using rule 73 (args)
+
+
+状態 45
+
+   15 stmt: NEXT expr .
+
+    $default  reduce using rule 15 (stmt)
+
+
+状態 46
+
+   21 names: NAME .
+
+    $default  reduce using rule 21 (names)
+
+
+状態 47
+
+   20 stmt: NONLOCAL names .
+   22 names: names . COMMA NAME
+
+    COMMA  shift, and go to state 68
+
+    $default  reduce using rule 20 (stmt)
+
+
+状態 48
+
+   17 stmt: RETURN expr .
+
+    $default  reduce using rule 17 (stmt)
+
+
+状態 49
+
+    3 stmts: stmts . newline stmt
+    8 stmt: TRY stmts . excepts ELSE stmts finally_opt END
+    9     | TRY stmts . excepts finally_opt END
+   10     | TRY stmts . FINALLY stmts END
+
+    EXCEPT   shift, and go to state 69
+    FINALLY  shift, and go to state 70
+    NEWLINE  shift, and go to state 52
+
+    excepts  go to state 71
+    except   go to state 72
+    newline  go to state 53
+
+
+状態 50
+
+   11 stmt: WHILE expr . stmts END
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 73
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 51
+
+    0 $accept: module $end .
+
+    $default  accept
+
+
+状態 52
+
+  116 newline: NEWLINE .
+
+    $default  reduce using rule 116 (newline)
+
+
+状態 53
+
+    3 stmts: stmts newline . stmt
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmt              go to state 74
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 54
+
+   83 comp_op: LESS .
+
+    $default  reduce using rule 83 (comp_op)
+
+
+状態 55
+
+   82 comparison: xor_expr comp_op . xor_expr
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    xor_expr      go to state 75
+    or_expr       go to state 28
+    and_expr      go to state 29
+    shift_expr    go to state 30
+    match_expr    go to state 31
+    arith_expr    go to state 32
+    term          go to state 33
+    factor        go to state 34
+    power         go to state 35
+    postfix_expr  go to state 76
+    atom          go to state 37
+
+
+状態 56
+
+   88 shift_expr: shift_expr LSHIFT . arith_expr
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    arith_expr    go to state 77
+    term          go to state 33
+    factor        go to state 34
+    power         go to state 35
+    postfix_expr  go to state 76
+    atom          go to state 37
+
+
+状態 57
+
+   90 match_expr: match_expr EQUAL_TILDA . arith_expr
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    arith_expr    go to state 78
+    term          go to state 33
+    factor        go to state 34
+    power         go to state 35
+    postfix_expr  go to state 76
+    atom          go to state 37
+
+
+状態 58
+
+   92 arith_expr: arith_expr PLUS . term
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    term          go to state 79
+    factor        go to state 34
+    power         go to state 35
+    postfix_expr  go to state 76
+    atom          go to state 37
+
+
+状態 59
+
+   99 postfix_expr: postfix_expr DOT . NAME
+
+    NAME  shift, and go to state 80
+
+
+状態 60
+
+   76 assign_expr: postfix_expr EQUAL . logical_or_expr
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    logical_or_expr   go to state 81
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 76
+    atom              go to state 37
+
+
+状態 61
+
+   98 postfix_expr: postfix_expr LBRACKET . expr RBRACKET
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    expr              go to state 82
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 62
+
+   97 postfix_expr: postfix_expr LPAR . args_opt RPAR blockarg_opt
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 107 (args_opt)
+
+    args              go to state 83
+    expr              go to state 44
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+    args_opt          go to state 84
+
+
+状態 63
+
+   24 super_opt: GREATER . expr
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    expr              go to state 85
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 64
+
+   19 stmt: CLASS NAME super_opt . stmts END
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 86
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 65
+
+   29 func_def: DEF NAME LPAR . params RPAR stmts END
+
+    AMPER        shift, and go to state 87
+    DOUBLE_STAR  shift, and go to state 88
+    NAME         shift, and go to state 89
+    STAR         shift, and go to state 90
+
+    $default  reduce using rule 61 (params)
+
+    params                  go to state 91
+    kw_param                go to state 92
+    var_param               go to state 93
+    block_param             go to state 94
+    params_without_default  go to state 95
+    params_with_default     go to state 96
+    param_with_default      go to state 97
+
+
+状態 66
+
+    3 stmts: stmts . newline stmt
+   18 stmt: IF expr stmts . if_tail END
+
+    ELIF     shift, and go to state 98
+    ELSE     shift, and go to state 99
+    NEWLINE  shift, and go to state 52
+
+    $default  reduce using rule 27 (else_opt)
+
+    if_tail   go to state 100
+    else_opt  go to state 101
+    newline   go to state 53
+
+
+状態 67
+
+   74 args: args COMMA . expr
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    expr              go to state 102
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 68
+
+   22 names: names COMMA . NAME
+
+    NAME  shift, and go to state 103
+
+
+状態 69
+
+  113 except: EXCEPT . expr AS NAME newline stmts
+  114       | EXCEPT . expr newline stmts
+  115       | EXCEPT . newline stmts
+
+    NAME       shift, and go to state 38
+    NEWLINE    shift, and go to state 52
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    expr              go to state 104
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+    newline           go to state 105
+
+
+状態 70
+
+   10 stmt: TRY stmts FINALLY . stmts END
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 106
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 71
+
+    8 stmt: TRY stmts excepts . ELSE stmts finally_opt END
+    9     | TRY stmts excepts . finally_opt END
+  112 excepts: excepts . except
+
+    ELSE     shift, and go to state 107
+    EXCEPT   shift, and go to state 69
+    FINALLY  shift, and go to state 108
+
+    $default  reduce using rule 117 (finally_opt)
+
+    except       go to state 109
+    finally_opt  go to state 110
+
+
+状態 72
+
+  111 excepts: except .
+
+    $default  reduce using rule 111 (excepts)
+
+
+状態 73
+
+    3 stmts: stmts . newline stmt
+   11 stmt: WHILE expr stmts . END
+
+    END      shift, and go to state 111
+    NEWLINE  shift, and go to state 52
+
+    newline  go to state 53
+
+
+状態 74
+
+    3 stmts: stmts newline stmt .
+
+    $default  reduce using rule 3 (stmts)
+
+
+状態 75
+
+   82 comparison: xor_expr comp_op xor_expr .
+
+    $default  reduce using rule 82 (comparison)
+
+
+状態 76
+
+   95 power: postfix_expr .
+   97 postfix_expr: postfix_expr . LPAR args_opt RPAR blockarg_opt
+   98             | postfix_expr . LBRACKET expr RBRACKET
+   99             | postfix_expr . DOT NAME
+
+    DOT       shift, and go to state 59
+    LBRACKET  shift, and go to state 61
+    LPAR      shift, and go to state 62
+
+    $default  reduce using rule 95 (power)
+
+
+状態 77
+
+   88 shift_expr: shift_expr LSHIFT arith_expr .
+   92 arith_expr: arith_expr . PLUS term
+
+    PLUS  shift, and go to state 58
+
+    $default  reduce using rule 88 (shift_expr)
+
+
+状態 78
+
+   90 match_expr: match_expr EQUAL_TILDA arith_expr .
+   92 arith_expr: arith_expr . PLUS term
+
+    PLUS  shift, and go to state 58
+
+    $default  reduce using rule 90 (match_expr)
+
+
+状態 79
+
+   92 arith_expr: arith_expr PLUS term .
+
+    $default  reduce using rule 92 (arith_expr)
+
+
+状態 80
+
+   99 postfix_expr: postfix_expr DOT NAME .
+
+    $default  reduce using rule 99 (postfix_expr)
+
+
+状態 81
+
+   76 assign_expr: postfix_expr EQUAL logical_or_expr .
+
+    $default  reduce using rule 76 (assign_expr)
+
+
+状態 82
+
+   98 postfix_expr: postfix_expr LBRACKET expr . RBRACKET
+
+    RBRACKET  shift, and go to state 112
+
+
+状態 83
+
+   74 args: args . COMMA expr
+  108 args_opt: args .
+
+    COMMA  shift, and go to state 67
+
+    $default  reduce using rule 108 (args_opt)
+
+
+状態 84
+
+   97 postfix_expr: postfix_expr LPAR args_opt . RPAR blockarg_opt
+
+    RPAR  shift, and go to state 113
+
+
+状態 85
+
+   24 super_opt: GREATER expr .
+
+    $default  reduce using rule 24 (super_opt)
+
+
+状態 86
+
+    3 stmts: stmts . newline stmt
+   19 stmt: CLASS NAME super_opt stmts . END
+
+    END      shift, and go to state 114
+    NEWLINE  shift, and go to state 52
+
+    newline  go to state 53
+
+
+状態 87
+
+   64 block_param: AMPER . NAME param_default_opt
+
+    NAME  shift, and go to state 115
+
+
+状態 88
+
+   62 kw_param: DOUBLE_STAR . NAME
+
+    NAME  shift, and go to state 116
+
+
+状態 89
+
+   68 params_without_default: NAME .
+   72 param_with_default: NAME . param_default
+
+    EQUAL  shift, and go to state 117
+
+    $default  reduce using rule 68 (params_without_default)
+
+    param_default  go to state 118
+
+
+状態 90
+
+   63 var_param: STAR . NAME
+
+    NAME  shift, and go to state 119
+
+
+状態 91
+
+   29 func_def: DEF NAME LPAR params . RPAR stmts END
+
+    RPAR  shift, and go to state 120
+
+
+状態 92
+
+   60 params: kw_param .
+
+    $default  reduce using rule 60 (params)
+
+
+状態 93
+
+   58 params: var_param . COMMA kw_param
+   59       | var_param .
+
+    COMMA  shift, and go to state 121
+
+    $default  reduce using rule 59 (params)
+
+
+状態 94
+
+   54 params: block_param . COMMA var_param COMMA kw_param
+   55       | block_param . COMMA var_param
+   56       | block_param . COMMA kw_param
+   57       | block_param .
+
+    COMMA  shift, and go to state 122
+
+    $default  reduce using rule 57 (params)
+
+
+状態 95
+
+   30 params: params_without_default . COMMA params_with_default COMMA block_param COMMA var_param COMMA kw_param
+   31       | params_without_default . COMMA params_with_default COMMA block_param COMMA var_param
+   32       | params_without_default . COMMA params_with_default COMMA block_param COMMA kw_param
+   33       | params_without_default . COMMA params_with_default COMMA block_param
+   34       | params_without_default . COMMA params_with_default COMMA var_param COMMA kw_param
+   35       | params_without_default . COMMA params_with_default COMMA var_param
+   36       | params_without_default . COMMA params_with_default COMMA kw_param
+   37       | params_without_default . COMMA params_with_default
+   38       | params_without_default . COMMA block_param COMMA var_param COMMA kw_param
+   39       | params_without_default . COMMA block_param COMMA var_param
+   40       | params_without_default . COMMA block_param COMMA kw_param
+   41       | params_without_default . COMMA block_param
+   42       | params_without_default . COMMA var_param COMMA kw_param
+   43       | params_without_default . COMMA var_param
+   44       | params_without_default . COMMA kw_param
+   45       | params_without_default .
+   69 params_without_default: params_without_default . COMMA NAME
+
+    COMMA  shift, and go to state 123
+
+    $default  reduce using rule 45 (params)
+
+
+状態 96
+
+   46 params: params_with_default . COMMA block_param COMMA var_param COMMA kw_param
+   47       | params_with_default . COMMA block_param COMMA var_param
+   48       | params_with_default . COMMA block_param COMMA kw_param
+   49       | params_with_default . COMMA block_param
+   50       | params_with_default . COMMA var_param COMMA kw_param
+   51       | params_with_default . COMMA var_param
+   52       | params_with_default . COMMA kw_param
+   53       | params_with_default .
+   71 params_with_default: params_with_default . COMMA param_with_default
+
+    COMMA  shift, and go to state 124
+
+    $default  reduce using rule 53 (params)
+
+
+状態 97
+
+   70 params_with_default: param_with_default .
+
+    $default  reduce using rule 70 (params_with_default)
+
+
+状態 98
+
+   26 if_tail: ELIF . expr stmts if_tail
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    expr              go to state 125
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 99
+
+   28 else_opt: ELSE . stmts
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 126
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 100
+
+   18 stmt: IF expr stmts if_tail . END
+
+    END  shift, and go to state 127
+
+
+状態 101
+
+   25 if_tail: else_opt .
+
+    $default  reduce using rule 25 (if_tail)
+
+
+状態 102
+
+   74 args: args COMMA expr .
+
+    $default  reduce using rule 74 (args)
+
+
+状態 103
+
+   22 names: names COMMA NAME .
+
+    $default  reduce using rule 22 (names)
+
+
+状態 104
+
+  113 except: EXCEPT expr . AS NAME newline stmts
+  114       | EXCEPT expr . newline stmts
+
+    AS       shift, and go to state 128
+    NEWLINE  shift, and go to state 52
+
+    newline  go to state 129
+
+
+状態 105
+
+  115 except: EXCEPT newline . stmts
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 130
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 106
+
+    3 stmts: stmts . newline stmt
+   10 stmt: TRY stmts FINALLY stmts . END
+
+    END      shift, and go to state 131
+    NEWLINE  shift, and go to state 52
+
+    newline  go to state 53
+
+
+状態 107
+
+    8 stmt: TRY stmts excepts ELSE . stmts finally_opt END
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 132
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 108
+
+  118 finally_opt: FINALLY . stmts
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 133
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 109
+
+  112 excepts: excepts except .
+
+    $default  reduce using rule 112 (excepts)
+
+
+状態 110
+
+    9 stmt: TRY stmts excepts finally_opt . END
+
+    END  shift, and go to state 134
+
+
+状態 111
+
+   11 stmt: WHILE expr stmts END .
+
+    $default  reduce using rule 11 (stmt)
+
+
+状態 112
+
+   98 postfix_expr: postfix_expr LBRACKET expr RBRACKET .
+
+    $default  reduce using rule 98 (postfix_expr)
+
+
+状態 113
+
+   97 postfix_expr: postfix_expr LPAR args_opt RPAR . blockarg_opt
+
+    DO  shift, and go to state 135
+
+    $default  reduce using rule 109 (blockarg_opt)
+
+    blockarg_opt  go to state 136
+
+
+状態 114
+
+   19 stmt: CLASS NAME super_opt stmts END .
+
+    $default  reduce using rule 19 (stmt)
+
+
+状態 115
+
+   64 block_param: AMPER NAME . param_default_opt
+
+    EQUAL  shift, and go to state 117
+
+    $default  reduce using rule 65 (param_default_opt)
+
+    param_default_opt  go to state 137
+    param_default      go to state 138
+
+
+状態 116
+
+   62 kw_param: DOUBLE_STAR NAME .
+
+    $default  reduce using rule 62 (kw_param)
+
+
+状態 117
+
+   67 param_default: EQUAL . expr
+
+    NAME       shift, and go to state 38
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    STRING     shift, and go to state 11
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    expr              go to state 139
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 118
+
+   72 param_with_default: NAME param_default .
+
+    $default  reduce using rule 72 (param_with_default)
+
+
+状態 119
+
+   63 var_param: STAR NAME .
+
+    $default  reduce using rule 63 (var_param)
+
+
+状態 120
+
+   29 func_def: DEF NAME LPAR params RPAR . stmts END
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 140
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 121
+
+   58 params: var_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+
+    kw_param  go to state 141
+
+
+状態 122
+
+   54 params: block_param COMMA . var_param COMMA kw_param
+   55       | block_param COMMA . var_param
+   56       | block_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+    STAR         shift, and go to state 90
+
+    kw_param   go to state 142
+    var_param  go to state 143
+
+
+状態 123
+
+   30 params: params_without_default COMMA . params_with_default COMMA block_param COMMA var_param COMMA kw_param
+   31       | params_without_default COMMA . params_with_default COMMA block_param COMMA var_param
+   32       | params_without_default COMMA . params_with_default COMMA block_param COMMA kw_param
+   33       | params_without_default COMMA . params_with_default COMMA block_param
+   34       | params_without_default COMMA . params_with_default COMMA var_param COMMA kw_param
+   35       | params_without_default COMMA . params_with_default COMMA var_param
+   36       | params_without_default COMMA . params_with_default COMMA kw_param
+   37       | params_without_default COMMA . params_with_default
+   38       | params_without_default COMMA . block_param COMMA var_param COMMA kw_param
+   39       | params_without_default COMMA . block_param COMMA var_param
+   40       | params_without_default COMMA . block_param COMMA kw_param
+   41       | params_without_default COMMA . block_param
+   42       | params_without_default COMMA . var_param COMMA kw_param
+   43       | params_without_default COMMA . var_param
+   44       | params_without_default COMMA . kw_param
+   69 params_without_default: params_without_default COMMA . NAME
+
+    AMPER        shift, and go to state 87
+    DOUBLE_STAR  shift, and go to state 88
+    NAME         shift, and go to state 144
+    STAR         shift, and go to state 90
+
+    kw_param             go to state 145
+    var_param            go to state 146
+    block_param          go to state 147
+    params_with_default  go to state 148
+    param_with_default   go to state 97
+
+
+状態 124
+
+   46 params: params_with_default COMMA . block_param COMMA var_param COMMA kw_param
+   47       | params_with_default COMMA . block_param COMMA var_param
+   48       | params_with_default COMMA . block_param COMMA kw_param
+   49       | params_with_default COMMA . block_param
+   50       | params_with_default COMMA . var_param COMMA kw_param
+   51       | params_with_default COMMA . var_param
+   52       | params_with_default COMMA . kw_param
+   71 params_with_default: params_with_default COMMA . param_with_default
+
+    AMPER        shift, and go to state 87
+    DOUBLE_STAR  shift, and go to state 88
+    NAME         shift, and go to state 149
+    STAR         shift, and go to state 90
+
+    kw_param            go to state 150
+    var_param           go to state 151
+    block_param         go to state 152
+    param_with_default  go to state 153
+
+
+状態 125
+
+   26 if_tail: ELIF expr . stmts if_tail
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 154
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 126
+
+    3 stmts: stmts . newline stmt
+   28 else_opt: ELSE stmts .
+
+    NEWLINE  shift, and go to state 52
+
+    $default  reduce using rule 28 (else_opt)
+
+    newline  go to state 53
+
+
+状態 127
+
+   18 stmt: IF expr stmts if_tail END .
+
+    $default  reduce using rule 18 (stmt)
+
+
+状態 128
+
+  113 except: EXCEPT expr AS . NAME newline stmts
+
+    NAME  shift, and go to state 155
+
+
+状態 129
+
+  114 except: EXCEPT expr newline . stmts
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 156
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 130
+
+    3 stmts: stmts . newline stmt
+  115 except: EXCEPT newline stmts .
+
+    NEWLINE  shift, and go to state 52
+
+    $default  reduce using rule 115 (except)
+
+    newline  go to state 53
+
+
+状態 131
+
+   10 stmt: TRY stmts FINALLY stmts END .
+
+    $default  reduce using rule 10 (stmt)
+
+
+状態 132
+
+    3 stmts: stmts . newline stmt
+    8 stmt: TRY stmts excepts ELSE stmts . finally_opt END
+
+    FINALLY  shift, and go to state 108
+    NEWLINE  shift, and go to state 52
+
+    $default  reduce using rule 117 (finally_opt)
+
+    newline      go to state 53
+    finally_opt  go to state 157
+
+
+状態 133
+
+    3 stmts: stmts . newline stmt
+  118 finally_opt: FINALLY stmts .
+
+    NEWLINE  shift, and go to state 52
+
+    $default  reduce using rule 118 (finally_opt)
+
+    newline  go to state 53
+
+
+状態 134
+
+    9 stmt: TRY stmts excepts finally_opt END .
+
+    $default  reduce using rule 9 (stmt)
+
+
+状態 135
+
+  110 blockarg_opt: DO . LBRACKET params RBRACKET stmts END
+
+    LBRACKET  shift, and go to state 158
+
+
+状態 136
+
+   97 postfix_expr: postfix_expr LPAR args_opt RPAR blockarg_opt .
+
+    $default  reduce using rule 97 (postfix_expr)
+
+
+状態 137
+
+   64 block_param: AMPER NAME param_default_opt .
+
+    $default  reduce using rule 64 (block_param)
+
+
+状態 138
+
+   66 param_default_opt: param_default .
+
+    $default  reduce using rule 66 (param_default_opt)
+
+
+状態 139
+
+   67 param_default: EQUAL expr .
+
+    $default  reduce using rule 67 (param_default)
+
+
+状態 140
+
+    3 stmts: stmts . newline stmt
+   29 func_def: DEF NAME LPAR params RPAR stmts . END
+
+    END      shift, and go to state 159
+    NEWLINE  shift, and go to state 52
+
+    newline  go to state 53
+
+
+状態 141
+
+   58 params: var_param COMMA kw_param .
+
+    $default  reduce using rule 58 (params)
+
+
+状態 142
+
+   56 params: block_param COMMA kw_param .
+
+    $default  reduce using rule 56 (params)
+
+
+状態 143
+
+   54 params: block_param COMMA var_param . COMMA kw_param
+   55       | block_param COMMA var_param .
+
+    COMMA  shift, and go to state 160
+
+    $default  reduce using rule 55 (params)
+
+
+状態 144
+
+   69 params_without_default: params_without_default COMMA NAME .
+   72 param_with_default: NAME . param_default
+
+    EQUAL  shift, and go to state 117
+
+    $default  reduce using rule 69 (params_without_default)
+
+    param_default  go to state 118
+
+
+状態 145
+
+   44 params: params_without_default COMMA kw_param .
+
+    $default  reduce using rule 44 (params)
+
+
+状態 146
+
+   42 params: params_without_default COMMA var_param . COMMA kw_param
+   43       | params_without_default COMMA var_param .
+
+    COMMA  shift, and go to state 161
+
+    $default  reduce using rule 43 (params)
+
+
+状態 147
+
+   38 params: params_without_default COMMA block_param . COMMA var_param COMMA kw_param
+   39       | params_without_default COMMA block_param . COMMA var_param
+   40       | params_without_default COMMA block_param . COMMA kw_param
+   41       | params_without_default COMMA block_param .
+
+    COMMA  shift, and go to state 162
+
+    $default  reduce using rule 41 (params)
+
+
+状態 148
+
+   30 params: params_without_default COMMA params_with_default . COMMA block_param COMMA var_param COMMA kw_param
+   31       | params_without_default COMMA params_with_default . COMMA block_param COMMA var_param
+   32       | params_without_default COMMA params_with_default . COMMA block_param COMMA kw_param
+   33       | params_without_default COMMA params_with_default . COMMA block_param
+   34       | params_without_default COMMA params_with_default . COMMA var_param COMMA kw_param
+   35       | params_without_default COMMA params_with_default . COMMA var_param
+   36       | params_without_default COMMA params_with_default . COMMA kw_param
+   37       | params_without_default COMMA params_with_default .
+   71 params_with_default: params_with_default . COMMA param_with_default
+
+    COMMA  shift, and go to state 163
+
+    $default  reduce using rule 37 (params)
+
+
+状態 149
+
+   72 param_with_default: NAME . param_default
+
+    EQUAL  shift, and go to state 117
+
+    param_default  go to state 118
+
+
+状態 150
+
+   52 params: params_with_default COMMA kw_param .
+
+    $default  reduce using rule 52 (params)
+
+
+状態 151
+
+   50 params: params_with_default COMMA var_param . COMMA kw_param
+   51       | params_with_default COMMA var_param .
+
+    COMMA  shift, and go to state 164
+
+    $default  reduce using rule 51 (params)
+
+
+状態 152
+
+   46 params: params_with_default COMMA block_param . COMMA var_param COMMA kw_param
+   47       | params_with_default COMMA block_param . COMMA var_param
+   48       | params_with_default COMMA block_param . COMMA kw_param
+   49       | params_with_default COMMA block_param .
+
+    COMMA  shift, and go to state 165
+
+    $default  reduce using rule 49 (params)
+
+
+状態 153
+
+   71 params_with_default: params_with_default COMMA param_with_default .
+
+    $default  reduce using rule 71 (params_with_default)
+
+
+状態 154
+
+    3 stmts: stmts . newline stmt
+   26 if_tail: ELIF expr stmts . if_tail
+
+    ELIF     shift, and go to state 98
+    ELSE     shift, and go to state 99
+    NEWLINE  shift, and go to state 52
+
+    $default  reduce using rule 27 (else_opt)
+
+    if_tail   go to state 166
+    else_opt  go to state 101
+    newline   go to state 53
+
+
+状態 155
+
+  113 except: EXCEPT expr AS NAME . newline stmts
+
+    NEWLINE  shift, and go to state 52
+
+    newline  go to state 167
+
+
+状態 156
+
+    3 stmts: stmts . newline stmt
+  114 except: EXCEPT expr newline stmts .
+
+    NEWLINE  shift, and go to state 52
+
+    $default  reduce using rule 114 (except)
+
+    newline  go to state 53
+
+
+状態 157
+
+    8 stmt: TRY stmts excepts ELSE stmts finally_opt . END
+
+    END  shift, and go to state 168
+
+
+状態 158
+
+  110 blockarg_opt: DO LBRACKET . params RBRACKET stmts END
+
+    AMPER        shift, and go to state 87
+    DOUBLE_STAR  shift, and go to state 88
+    NAME         shift, and go to state 89
+    STAR         shift, and go to state 90
+
+    $default  reduce using rule 61 (params)
+
+    params                  go to state 169
+    kw_param                go to state 92
+    var_param               go to state 93
+    block_param             go to state 94
+    params_without_default  go to state 95
+    params_with_default     go to state 96
+    param_with_default      go to state 97
+
+
+状態 159
+
+   29 func_def: DEF NAME LPAR params RPAR stmts END .
+
+    $default  reduce using rule 29 (func_def)
+
+
+状態 160
+
+   54 params: block_param COMMA var_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+
+    kw_param  go to state 170
+
+
+状態 161
+
+   42 params: params_without_default COMMA var_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+
+    kw_param  go to state 171
+
+
+状態 162
+
+   38 params: params_without_default COMMA block_param COMMA . var_param COMMA kw_param
+   39       | params_without_default COMMA block_param COMMA . var_param
+   40       | params_without_default COMMA block_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+    STAR         shift, and go to state 90
+
+    kw_param   go to state 172
+    var_param  go to state 173
+
+
+状態 163
+
+   30 params: params_without_default COMMA params_with_default COMMA . block_param COMMA var_param COMMA kw_param
+   31       | params_without_default COMMA params_with_default COMMA . block_param COMMA var_param
+   32       | params_without_default COMMA params_with_default COMMA . block_param COMMA kw_param
+   33       | params_without_default COMMA params_with_default COMMA . block_param
+   34       | params_without_default COMMA params_with_default COMMA . var_param COMMA kw_param
+   35       | params_without_default COMMA params_with_default COMMA . var_param
+   36       | params_without_default COMMA params_with_default COMMA . kw_param
+   71 params_with_default: params_with_default COMMA . param_with_default
+
+    AMPER        shift, and go to state 87
+    DOUBLE_STAR  shift, and go to state 88
+    NAME         shift, and go to state 149
+    STAR         shift, and go to state 90
+
+    kw_param            go to state 174
+    var_param           go to state 175
+    block_param         go to state 176
+    param_with_default  go to state 153
+
+
+状態 164
+
+   50 params: params_with_default COMMA var_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+
+    kw_param  go to state 177
+
+
+状態 165
+
+   46 params: params_with_default COMMA block_param COMMA . var_param COMMA kw_param
+   47       | params_with_default COMMA block_param COMMA . var_param
+   48       | params_with_default COMMA block_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+    STAR         shift, and go to state 90
+
+    kw_param   go to state 178
+    var_param  go to state 179
+
+
+状態 166
+
+   26 if_tail: ELIF expr stmts if_tail .
+
+    $default  reduce using rule 26 (if_tail)
+
+
+状態 167
+
+  113 except: EXCEPT expr AS NAME newline . stmts
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 180
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 168
+
+    8 stmt: TRY stmts excepts ELSE stmts finally_opt END .
+
+    $default  reduce using rule 8 (stmt)
+
+
+状態 169
+
+  110 blockarg_opt: DO LBRACKET params . RBRACKET stmts END
+
+    RBRACKET  shift, and go to state 181
+
+
+状態 170
+
+   54 params: block_param COMMA var_param COMMA kw_param .
+
+    $default  reduce using rule 54 (params)
+
+
+状態 171
+
+   42 params: params_without_default COMMA var_param COMMA kw_param .
+
+    $default  reduce using rule 42 (params)
+
+
+状態 172
+
+   40 params: params_without_default COMMA block_param COMMA kw_param .
+
+    $default  reduce using rule 40 (params)
+
+
+状態 173
+
+   38 params: params_without_default COMMA block_param COMMA var_param . COMMA kw_param
+   39       | params_without_default COMMA block_param COMMA var_param .
+
+    COMMA  shift, and go to state 182
+
+    $default  reduce using rule 39 (params)
+
+
+状態 174
+
+   36 params: params_without_default COMMA params_with_default COMMA kw_param .
+
+    $default  reduce using rule 36 (params)
+
+
+状態 175
+
+   34 params: params_without_default COMMA params_with_default COMMA var_param . COMMA kw_param
+   35       | params_without_default COMMA params_with_default COMMA var_param .
+
+    COMMA  shift, and go to state 183
+
+    $default  reduce using rule 35 (params)
+
+
+状態 176
+
+   30 params: params_without_default COMMA params_with_default COMMA block_param . COMMA var_param COMMA kw_param
+   31       | params_without_default COMMA params_with_default COMMA block_param . COMMA var_param
+   32       | params_without_default COMMA params_with_default COMMA block_param . COMMA kw_param
+   33       | params_without_default COMMA params_with_default COMMA block_param .
+
+    COMMA  shift, and go to state 184
+
+    $default  reduce using rule 33 (params)
+
+
+状態 177
+
+   50 params: params_with_default COMMA var_param COMMA kw_param .
+
+    $default  reduce using rule 50 (params)
+
+
+状態 178
+
+   48 params: params_with_default COMMA block_param COMMA kw_param .
+
+    $default  reduce using rule 48 (params)
+
+
+状態 179
+
+   46 params: params_with_default COMMA block_param COMMA var_param . COMMA kw_param
+   47       | params_with_default COMMA block_param COMMA var_param .
+
+    COMMA  shift, and go to state 185
+
+    $default  reduce using rule 47 (params)
+
+
+状態 180
+
+    3 stmts: stmts . newline stmt
+  113 except: EXCEPT expr AS NAME newline stmts .
+
+    NEWLINE  shift, and go to state 52
+
+    $default  reduce using rule 113 (except)
+
+    newline  go to state 53
+
+
+状態 181
+
+  110 blockarg_opt: DO LBRACKET params RBRACKET . stmts END
+
+    BREAK      shift, and go to state 1
+    CLASS      shift, and go to state 2
+    DEF        shift, and go to state 3
+    IF         shift, and go to state 4
+    NAME       shift, and go to state 5
+    NEXT       shift, and go to state 6
+    NONLOCAL   shift, and go to state 7
+    NUMBER     shift, and go to state 8
+    REGEXP     shift, and go to state 9
+    RETURN     shift, and go to state 10
+    STRING     shift, and go to state 11
+    TRY        shift, and go to state 12
+    WHILE      shift, and go to state 13
+    tFALSE     shift, and go to state 14
+    tTRUE      shift, and go to state 15
+    t__LINE__  shift, and go to state 16
+
+    $default  reduce using rule 4 (stmt)
+
+    stmts             go to state 186
+    stmt              go to state 19
+    func_def          go to state 20
+    expr              go to state 21
+    assign_expr       go to state 22
+    logical_or_expr   go to state 23
+    logical_and_expr  go to state 24
+    not_expr          go to state 25
+    comparison        go to state 26
+    xor_expr          go to state 27
+    or_expr           go to state 28
+    and_expr          go to state 29
+    shift_expr        go to state 30
+    match_expr        go to state 31
+    arith_expr        go to state 32
+    term              go to state 33
+    factor            go to state 34
+    power             go to state 35
+    postfix_expr      go to state 36
+    atom              go to state 37
+
+
+状態 182
+
+   38 params: params_without_default COMMA block_param COMMA var_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+
+    kw_param  go to state 187
+
+
+状態 183
+
+   34 params: params_without_default COMMA params_with_default COMMA var_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+
+    kw_param  go to state 188
+
+
+状態 184
+
+   30 params: params_without_default COMMA params_with_default COMMA block_param COMMA . var_param COMMA kw_param
+   31       | params_without_default COMMA params_with_default COMMA block_param COMMA . var_param
+   32       | params_without_default COMMA params_with_default COMMA block_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+    STAR         shift, and go to state 90
+
+    kw_param   go to state 189
+    var_param  go to state 190
+
+
+状態 185
+
+   46 params: params_with_default COMMA block_param COMMA var_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+
+    kw_param  go to state 191
+
+
+状態 186
+
+    3 stmts: stmts . newline stmt
+  110 blockarg_opt: DO LBRACKET params RBRACKET stmts . END
+
+    END      shift, and go to state 192
+    NEWLINE  shift, and go to state 52
+
+    newline  go to state 53
+
+
+状態 187
+
+   38 params: params_without_default COMMA block_param COMMA var_param COMMA kw_param .
+
+    $default  reduce using rule 38 (params)
+
+
+状態 188
+
+   34 params: params_without_default COMMA params_with_default COMMA var_param COMMA kw_param .
+
+    $default  reduce using rule 34 (params)
+
+
+状態 189
+
+   32 params: params_without_default COMMA params_with_default COMMA block_param COMMA kw_param .
+
+    $default  reduce using rule 32 (params)
+
+
+状態 190
+
+   30 params: params_without_default COMMA params_with_default COMMA block_param COMMA var_param . COMMA kw_param
+   31       | params_without_default COMMA params_with_default COMMA block_param COMMA var_param .
+
+    COMMA  shift, and go to state 193
+
+    $default  reduce using rule 31 (params)
+
+
+状態 191
+
+   46 params: params_with_default COMMA block_param COMMA var_param COMMA kw_param .
+
+    $default  reduce using rule 46 (params)
+
+
+状態 192
+
+  110 blockarg_opt: DO LBRACKET params RBRACKET stmts END .
+
+    $default  reduce using rule 110 (blockarg_opt)
+
+
+状態 193
+
+   30 params: params_without_default COMMA params_with_default COMMA block_param COMMA var_param COMMA . kw_param
+
+    DOUBLE_STAR  shift, and go to state 88
+
+    kw_param  go to state 194
+
+
+状態 194
+
+   30 params: params_without_default COMMA params_with_default COMMA block_param COMMA var_param COMMA kw_param .
+
+    $default  reduce using rule 30 (params)
