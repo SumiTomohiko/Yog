@@ -219,6 +219,17 @@ CompileData_add_make_package_block(YogEnv* env, CompileData* data, unsigned int 
 }
 
 static void 
+CompileData_add_make_block(YogEnv* env, CompileData* data, unsigned int lineno)
+{
+    YogInst* inst = Inst_new(env, lineno);
+    inst->type = INST_OP;
+    INST_OPCODE(inst) = OP(MAKE_BLOCK);
+
+
+    add_inst(data, inst);
+}
+
+static void 
 CompileData_add_make_klass(YogEnv* env, CompileData* data, unsigned int lineno)
 {
     YogInst* inst = Inst_new(env, lineno);
@@ -426,6 +437,11 @@ insts2bin(YogEnv* env, YogInst* inst)
                         YogBinary_push_uint8(env, code, OP(MAKE_PACKAGE_BLOCK));
                         break;
                     }
+                case OP(MAKE_BLOCK):
+                    {
+                        YogBinary_push_uint8(env, code, OP(MAKE_BLOCK));
+                        break;
+                    }
                 case OP(MAKE_KLASS):
                     {
                         YogBinary_push_uint8(env, code, OP(MAKE_KLASS));
@@ -598,6 +614,12 @@ count_stack_size(YogEnv* env, YogInst* inst)
                         break;
                     }
                 case OP(MAKE_PACKAGE_BLOCK):
+                    {
+                        pop_size = 1;
+                        push_size = 1;
+                        break;
+                    }
+                case OP(MAKE_BLOCK):
                     {
                         pop_size = 1;
                         push_size = 1;

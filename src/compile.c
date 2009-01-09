@@ -1783,8 +1783,10 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
     add_push_const(env, data, val, lineno);
     switch (data->ctx) {
         case CTX_FUNC:
+            CompileData_add_make_block(env, data, lineno);
+            break;
         case CTX_KLASS:
-            YOG_ASSERT(env, FALSE, "NOT IMPLEMENTED");
+            YOG_BUG(env, "not implemented");
             break;
         case CTX_PKG:
             CompileData_add_make_package_block(env, data, lineno);

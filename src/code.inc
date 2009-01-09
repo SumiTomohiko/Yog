@@ -25,6 +25,7 @@ YogCode_get_op_name(OpCode op)
         "JUMP_IF_FALSE", 
         "DUP", 
         "MAKE_PACKAGE_BLOCK", 
+        "MAKE_BLOCK", 
         "MAKE_KLASS", 
         "MAKE_METHOD", 
         "PUSH_SELF_NAME", 

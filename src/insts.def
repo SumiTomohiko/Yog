@@ -172,9 +172,23 @@ inst make_package_block
 {
     YogPackageBlock* b = YogPackageBlock_new(env);
     YogCode* c = VAL2PTR(code);
-    BLOCK(b)->code = c;
+    BASIC_BLOCK(b)->code = c;
     b->self = NAME_FRAME(CUR_FRAME)->self;
     b->vars = NAME_FRAME(CUR_FRAME)->vars;
+    block = OBJ2VAL(b);
+}
+
+inst make_block
+()
+(code)
+(block) 
+{
+    YogBlock* b = YogBlock_new(ENV);
+    BASIC_BLOCK(b)->code = VAL2PTR(code);
+    b->locals = METHOD_FRAME(CUR_FRAME)->vars;
+    b->outer_vars = SCRIPT_FRAME(CUR_FRAME)->outer_vars;
+    b->globals = SCRIPT_FRAME(CUR_FRAME)->globals;
+
     block = OBJ2VAL(b);
 }
 
@@ -222,6 +236,10 @@ inst ret
 (val)
 {
     POP_FRAME();
+    if (CUR_FRAME->type == FRAME_C) {
+        return val;
+    }
+
     PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 }
 

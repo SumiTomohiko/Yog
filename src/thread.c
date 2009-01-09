@@ -412,19 +412,23 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
         args[i - 1] = POP(); \
     }
         OpCode op = CODE->insts->items[PC];
-#if 0
-        YogValArray* stack = SCRIPT_FRAME(CUR_FRAME)->stack;
-        unsigned int stack_size = SCRIPT_FRAME(CUR_FRAME)->stack_size;
-        if (0 < stack_size) {
-            YogVal_print(env, stack->items[stack_size - 1]);
-        }
-        else {
-            printf("stack is empty.\n");
-        }
 
-        printf("%s:%d PC=%d\n", __FILE__, __LINE__, PC);
-        printf("%s:%d op=%s\n", __FILE__, __LINE__, YogCode_get_op_name(op));
+#if 0
+        do {
+            YogValArray* stack = SCRIPT_FRAME(CUR_FRAME)->stack;
+            unsigned int stack_size = SCRIPT_FRAME(CUR_FRAME)->stack_size;
+            if (0 < stack_size) {
+                YogVal_print(env, stack->items[stack_size - 1]);
+            }
+            else {
+                printf("stack is empty.\n");
+            }
+
+            printf("%s:%d PC=%d\n", __FILE__, __LINE__, PC);
+            printf("%s:%d op=%s\n", __FILE__, __LINE__, YogCode_get_op_name(op));
+        } while (0);
 #endif
+
         PC += sizeof(uint8_t);
         switch (op) {
 #include "src/thread.inc"
@@ -470,7 +474,7 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
 
     YogVal retval = YUNDEF;
     if (obj->klass == ENV_VM(env)->cPackageBlock) {
-        YogBlock* block = BLOCK(obj);
+        YogBasicBlock* block = BASIC_BLOCK(obj);
         YogCode* code = block->code;
         YogArgInfo* arg_info = &code->arg_info;
 
@@ -510,12 +514,19 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
         YOG_ASSERT(env, globals != NULL, "globals is NULL");
         SCRIPT_FRAME(frame)->globals = globals;
 
-        YogVal retval = mainloop(env, th, SCRIPT_FRAME(frame), code);
-
-        return retval;
+        retval = mainloop(env, th, SCRIPT_FRAME(frame), code);
     }
     else {
-        YOG_ASSERT(env, FALSE, "Block class isn't PackageBlock.");
+        YogMethodFrame* frame = YogMethodFrame_new(env);
+        YogCode* code = BASIC_BLOCK(obj)->code;
+        setup_script_frame(env, SCRIPT_FRAME(frame), code);
+        SCRIPT_FRAME(frame)->globals = BLOCK(obj)->globals;
+        SCRIPT_FRAME(frame)->outer_vars = BLOCK(obj)->outer_vars;
+        frame->vars = BLOCK(obj)->locals;
+
+        fill_args(env, &code->arg_info, argc, args, YUNDEF, 0, NULL, YUNDEF, YUNDEF, frame->vars->size, &frame->vars->items[1]);
+
+        retval = mainloop(env, th, SCRIPT_FRAME(frame), code);
     }
 
     return retval;

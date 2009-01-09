@@ -271,7 +271,8 @@ struct YogMethodFrame {
     struct YogValArray* vars;
 };
 
-#define LOCAL_VARS(f)   (((YogMethodFrame*)f)->vars)
+#define METHOD_FRAME(f)     ((YogMethodFrame*)(f))
+#define LOCAL_VARS(f)       (METHOD_FRAME(f)->vars)
 
 typedef struct YogMethodFrame YogMethodFrame;
 

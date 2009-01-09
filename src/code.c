@@ -100,37 +100,43 @@ YogCode_dump(YogEnv* env, YogCode* code)
         unsigned int n = pc + sizeof(uint8_t);
 #define OPERAND(type)   (*((type*)&code->insts->items[n]))
         switch (op) {
-            case OP(STORE_NAME):
-            case OP(LOAD_NAME):
-                {
-                    ID id = OPERAND(ID);
-                    printf(" %d", id);
-                }
-                break;
-            case OP(PUSH_CONST):
-                {
-                    uint8_t index = OPERAND(uint8_t);
-                    printf(" %d (", index);
-                    print_val(env, code->consts->items[index]);
-                    printf(")");
-                }
-                break;
-            case OP(CALL_COMMAND):
-            case OP(CALL_METHOD):
-                {
-                    ID id = OPERAND(ID);
-                    printf(" :%s", YogVm_id2name(env, ENV_VM(env), id));
-                }
-                break;
-            case OP(JUMP_IF_FALSE):
-            case OP(JUMP):
-                {
-                    unsigned int to = OPERAND(unsigned int);
-                    printf(" %d", to);
-                }
-                break;
-            default:
-                break;
+        case OP(LOAD_LOCAL):
+            {
+                uint8_t index = OPERAND(uint8_t);
+                printf(" %d", index);
+            }
+            break;
+        case OP(STORE_NAME):
+        case OP(LOAD_NAME):
+            {
+                ID id = OPERAND(ID);
+                printf(" %d", id);
+            }
+            break;
+        case OP(PUSH_CONST):
+            {
+                uint8_t index = OPERAND(uint8_t);
+                printf(" %d (", index);
+                print_val(env, code->consts->items[index]);
+                printf(")");
+            }
+            break;
+        case OP(CALL_COMMAND):
+        case OP(CALL_METHOD):
+            {
+                ID id = OPERAND(ID);
+                printf(" :%s", YogVm_id2name(env, ENV_VM(env), id));
+            }
+            break;
+        case OP(JUMP_IF_FALSE):
+        case OP(JUMP):
+            {
+                unsigned int to = OPERAND(unsigned int);
+                printf(" %d", to);
+            }
+            break;
+        default:
+            break;
         }
 #undef OPERAND
 

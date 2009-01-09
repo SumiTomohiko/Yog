@@ -28,13 +28,14 @@ enum OpCode {
     OP(JUMP_IF_FALSE) = 14, 
     OP(DUP) = 15, 
     OP(MAKE_PACKAGE_BLOCK) = 16, 
-    OP(MAKE_KLASS) = 17, 
-    OP(MAKE_METHOD) = 18, 
-    OP(PUSH_SELF_NAME) = 19, 
-    OP(RET) = 20, 
-    OP(STORE_NONLOCAL) = 21, 
-    OP(LOAD_NONLOCAL) = 22, 
-    OP(STORE_GLOBAL) = 23, 
+    OP(MAKE_BLOCK) = 17, 
+    OP(MAKE_KLASS) = 18, 
+    OP(MAKE_METHOD) = 19, 
+    OP(PUSH_SELF_NAME) = 20, 
+    OP(RET) = 21, 
+    OP(STORE_NONLOCAL) = 22, 
+    OP(LOAD_NONLOCAL) = 23, 
+    OP(STORE_GLOBAL) = 24, 
 
 };
 

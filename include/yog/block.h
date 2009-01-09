@@ -1,19 +1,31 @@
 #ifndef __YOG_BLOCK_H__
 #define __YOG_BLOCK_H__
 
+#include "yog/st.h"
 #include "yog/yog.h"
 
-struct YogBlock {
+struct YogBasicBlock {
     YOGBASICOBJ_HEAD;
     struct YogCode* code;
 };
 
-#define BLOCK(obj)  ((YogBlock*)obj)
+#define BASIC_BLOCK(obj)  ((YogBasicBlock*)obj)
+
+typedef struct YogBasicBlock YogBasicBlock;
+
+struct YogBlock {
+    struct YogBasicBlock base;
+    struct YogValArray* locals;
+    struct YogOuterVars* outer_vars;
+    struct YogTable* globals;
+};
+
+#define BLOCK(obj)  ((YogBlock*)(obj))
 
 typedef struct YogBlock YogBlock;
 
 struct YogPackageBlock {
-    struct YogBlock base;
+    struct YogBasicBlock base;
     struct YogVal self;
     struct YogTable* vars;
 };
@@ -29,6 +41,7 @@ typedef struct YogPackageBlock YogPackageBlock;
  */
 
 /* src/block.c */
+YogBlock* YogBlock_new(YogEnv*);
 YogKlass* YogPackageBlock_klass_new(YogEnv*);
 YogPackageBlock* YogPackageBlock_new(YogEnv*);
 
