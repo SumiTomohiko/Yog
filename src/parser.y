@@ -327,6 +327,7 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
     struct YogNode* node;
     struct YogVal val;
     ID name;
+    unsigned int lineno;
 }
 
 %token AMPER
@@ -482,8 +483,9 @@ stmt    : /* empty */ {
         | IF expr stmts if_tail END {
             IF_NEW($$, $2, $3, $4);
         }
-        | CLASS NAME super_opt stmts END {
-            KLASS_NEW($$, $2, $3, $4);
+        | CLASS { $<lineno>$ = PARSER->lineno; } NAME super_opt stmts END {
+            KLASS_NEW($$, $3, $4, $5);
+            $$->lineno = $<lineno>2;
         }
         | NONLOCAL names {
             NONLOCAL_NEW($$, $2);
