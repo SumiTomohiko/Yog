@@ -424,6 +424,7 @@ scan_var_visit_func_def(YogEnv* env, AstVisitor* visitor, YogNode* node, void* a
 static void 
 scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
 {
+    visit_node(env, visitor, node->u.func_call.callee, arg);
     visit_each_args(env, visitor, node->u.func_call.args, node->u.func_call.blockarg, arg);
 }
 
