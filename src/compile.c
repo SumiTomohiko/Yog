@@ -53,9 +53,11 @@ struct ScanVarEntry {
 #define VAR_ASSIGNED        (0x01)
 #define VAR_PARAM           (0x02)
 #define VAR_NONLOCAL        (0x04)
+#define VAR_USED            (0x08)
 #define IS_ASSIGNED(flags)  (flags | VAR_ASSIGNED)
 #define IS_PARAM(flags)     (flags | VAR_PARAM)
 #define IS_NONLOCAL(flags)  (flags | VAR_NONLOCAL)
+#define IS_USED(flags)      (flags | VAR_USED)
 
 typedef struct ScanVarEntry ScanVarEntry;
 
@@ -540,6 +542,13 @@ scan_var_visit_nonlocal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* a
 }
 
 static void 
+scan_var_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg) 
+{
+    ScanVarData* data = arg;
+    scan_var_register(env, data->var_tbl, node->u.variable.id, VAR_USED);
+}
+
+static void 
 scan_var_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_assign = scan_var_visit_assign;
@@ -561,7 +570,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_stmt = visit_node;
     visitor->visit_stmts = scan_var_visit_stmts;
     visitor->visit_subscript = scan_var_visit_subscript;
-    visitor->visit_variable = NULL;
+    visitor->visit_variable = scan_var_visit_variable;
     visitor->visit_while = scan_var_visit_while;
 }
 
@@ -1443,6 +1452,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogNode* node, void* ar
     case CTX_FUNC:
         {
             Var* var = lookup_var(env, data->vars, id);
+            YOG_ASSERT(env, var != NULL, "can't find variable");
             switch (var->type) {
             case VT_GLOBAL:
                 CompileData_add_load_global(env, data, lineno, id);
