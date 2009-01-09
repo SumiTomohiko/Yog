@@ -1823,7 +1823,7 @@ yyreduce:
 #line 492 "parser.y"
     {
             (yyval.array) = YogArray_new(ENV);
-            YogArray_push(ENV, (yyval.array), ID2VAL(NAME));
+            YogArray_push(ENV, (yyval.array), ID2VAL((yyvsp[0].name)));
         }
     break;
 

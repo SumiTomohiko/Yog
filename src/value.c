@@ -80,7 +80,7 @@ YogVal_print(YogEnv* env, YogVal val)
         printf("<symbol: %d>\n", VAL2ID(val));
         break;
     default:
-        YOG_ASSERT(env, FALSE, "Uknown value type.");
+        YOG_BUG(env, "uknown value type (0x%x)", VAL_TYPE(val));
         break;
     }
     /* NOTREACHED */
@@ -202,6 +202,7 @@ YogVal_false()
 #define RETURN_VAL(type)    do { \
     YogVal val; \
     VAL_TYPE(val) = type; \
+    val.u.n = 0; \
     return val; \
 } while (0)
 

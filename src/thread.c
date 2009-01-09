@@ -285,17 +285,6 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
 
     PUSH_FRAME(frame);
 
-    do {
-        YogFrame* frame = CUR_FRAME;
-        while (frame != NULL) {
-            if (frame->type == FRAME_SCRIPT) {
-                YogScriptFrame* script_frame = (YogScriptFrame*)frame;
-            }
-
-            frame = frame->prev;
-        }
-    } while (0);
-
 #define POP_BUF()   ENV_TH(env)->jmp_buf_list = ENV_TH(env)->jmp_buf_list->prev
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
 #define CODE        (SCRIPT_FRAME(CUR_FRAME)->code)
@@ -422,17 +411,17 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
     for (i = argc; 0 < i; i--) { \
         args[i - 1] = POP(); \
     }
+        OpCode op = CODE->insts->items[PC];
 #if 0
-        if (0 < STACK->size) {
-            YogVal_print(env, STACK->items[STACK->size - 1]);
+        YogValArray* stack = SCRIPT_FRAME(CUR_FRAME)->stack;
+        unsigned int stack_size = SCRIPT_FRAME(CUR_FRAME)->stack_size;
+        if (0 < stack_size) {
+            YogVal_print(env, stack->items[stack_size - 1]);
         }
         else {
             printf("stack is empty.\n");
         }
-#endif
 
-        OpCode op = CODE->insts->items[PC];
-#if 0
         printf("%s:%d PC=%d\n", __FILE__, __LINE__, PC);
         printf("%s:%d op=%s\n", __FILE__, __LINE__, YogCode_get_op_name(op));
 #endif

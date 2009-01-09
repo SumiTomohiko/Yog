@@ -54,10 +54,10 @@ struct ScanVarEntry {
 #define VAR_PARAM           (0x02)
 #define VAR_NONLOCAL        (0x04)
 #define VAR_USED            (0x08)
-#define IS_ASSIGNED(flags)  (flags | VAR_ASSIGNED)
-#define IS_PARAM(flags)     (flags | VAR_PARAM)
-#define IS_NONLOCAL(flags)  (flags | VAR_NONLOCAL)
-#define IS_USED(flags)      (flags | VAR_USED)
+#define IS_ASSIGNED(flags)  (flags & VAR_ASSIGNED)
+#define IS_PARAM(flags)     (flags & VAR_PARAM)
+#define IS_NONLOCAL(flags)  (flags & VAR_NONLOCAL)
+#define IS_USED(flags)      (flags & VAR_USED)
 
 typedef struct ScanVarEntry ScanVarEntry;
 
@@ -538,7 +538,8 @@ scan_var_visit_nonlocal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* a
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
         YogVal val = YogArray_at(env, names, i);
-        scan_var_register(env,  data->var_tbl, VAL2ID(val), VAR_NONLOCAL);
+        ID name = VAL2ID(val);
+        scan_var_register(env,  data->var_tbl, name, VAR_NONLOCAL);
     }
 }
 
@@ -1248,9 +1249,7 @@ static void
 register_self(YogEnv* env, YogTable* var_tbl) 
 {
     ID name = INTERN("self");
-    YogVal key = ID2VAL(name);
-    YogVal val = INT2VAL(0);
-    YogTable_add_direct(env, var_tbl, key, val);
+    scan_var_register(env, var_tbl, name, VAR_PARAM);
 }
 
 static BOOL
@@ -1260,6 +1259,10 @@ find_outer_var(YogEnv* env, ID name, CompileData* outer, unsigned int* plevel, u
 
     int level = 0;
     while (outer != NULL) {
+        if (outer->outer == NULL) {
+            return FALSE;
+        }
+
         YogVal val = YUNDEF;
         if (YogTable_lookup(env, outer->vars, key, &val)) {
             Var* var = VAL2PTR(val);
@@ -1307,7 +1310,6 @@ var_table_new(YogEnv* env)
 struct Flags2TypeArg {
     struct YogTable* vars;
     struct CompileData* data;
-    unsigned int nlocals;
 };
 
 typedef struct Flags2TypeArg Flags2TypeArg;
@@ -1316,7 +1318,8 @@ static int
 vars_flags2type_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
 {
     ID name = VAL2ID(key);
-    int flags = VAL2INT(val);
+    ScanVarEntry* ent = VAL2PTR(val);
+    int flags = ent->flags;
     Flags2TypeArg* parg = VAL2PTR(*arg);
     Var* var = Var_new(env);
     if (IS_NONLOCAL(flags) || (!IS_ASSIGNED(flags) && !IS_PARAM(flags))) {
@@ -1333,8 +1336,7 @@ vars_flags2type_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
     }
     else {
         var->type = VT_LOCAL;
-        var->u.local.index = parg->nlocals;
-        parg->nlocals++;
+        var->u.local.index = ent->index;
     }
 
     YogTable_add_direct(env, parg->vars, key, PTR2VAL(var));
@@ -1350,7 +1352,6 @@ vars_flags2type(YogEnv* env, YogTable* var_tbl, CompileData* outer)
     Flags2TypeArg arg;
     arg.vars = vars;
     arg.data = outer;
-    arg.nlocals = 0;
     YogVal val = PTR2VAL(&arg);
     YogTable_foreach(env, var_tbl, vars_flags2type_callback, &val);
 

@@ -491,7 +491,7 @@ stmt    : /* empty */ {
         ;
 names   : NAME {
             $$ = YogArray_new(ENV);
-            YogArray_push(ENV, $$, ID2VAL(NAME));
+            YogArray_push(ENV, $$, ID2VAL($1));
         }
         | names COMMA NAME {
             YogArray_push(ENV, $1, ID2VAL($3));
