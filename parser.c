@@ -666,16 +666,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state. */
 #define YYFINAL  51
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   195
+#define YYLAST   199
 
 /* YYNTOKENS -- Number of terminals. */
 #define YYNTOKENS  46
 /* YYNNTS -- Number of nonterminals. */
-#define YYNNTS  45
+#define YYNNTS  46
 /* YYNRULES -- Number of rules. */
-#define YYNRULES  121
+#define YYNRULES  123
 /* YYNRULES -- Number of states. */
-#define YYNSTATES  197
+#define YYNSTATES  198
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
@@ -736,17 +736,17 @@ static const unsigned short int yyprhs[] =
      311,   313,   315,   317,   319,   323,   325,   327,   329,   331,
      333,   337,   339,   343,   345,   349,   351,   353,   355,   357,
      358,   365,   370,   374,   376,   378,   380,   382,   384,   386,
-     388,   389,   391,   392,   399,   401,   404,   411,   416,   420,
-     422,   423
+     388,   389,   391,   392,   397,   398,   402,   404,   407,   414,
+     419,   423,   425,   426
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS. */
 static const yysigned_char yyrhs[] =
 {
-      47,     0,    -1,    48,    -1,    49,    -1,    48,    89,    49,
+      47,     0,    -1,    48,    -1,    49,    -1,    48,    90,    49,
       -1,    -1,    55,    -1,    66,    -1,    28,    65,    -1,    41,
-      48,    87,    15,    48,    90,    16,    -1,    41,    48,    87,
-      90,    16,    -1,    41,    48,    20,    48,    16,    -1,    42,
+      48,    88,    15,    48,    91,    16,    -1,    41,    48,    88,
+      91,    16,    -1,    41,    48,    20,    48,    16,    -1,    42,
       66,    48,    16,    -1,     6,    -1,     6,    66,    -1,    30,
       -1,    30,    66,    -1,    37,    -1,    37,    66,    -1,    22,
       66,    48,    53,    16,    -1,    -1,     7,    50,    28,    52,
@@ -782,28 +782,28 @@ static const yysigned_char yyrhs[] =
       26,    85,    38,    86,    -1,    82,    24,    66,    35,    -1,
       82,    12,    28,    -1,    28,    -1,    32,    -1,    36,    -1,
       40,    -1,    44,    -1,    43,    -1,    45,    -1,    -1,    65,
-      -1,    -1,    11,    24,    56,    35,    48,    16,    -1,    88,
-      -1,    87,    88,    -1,    19,    66,     4,    28,    89,    48,
-      -1,    19,    66,    89,    48,    -1,    19,    89,    48,    -1,
-      29,    -1,    -1,    20,    48,    -1
+      -1,    -1,    11,    87,    48,    16,    -1,    -1,    24,    56,
+      35,    -1,    89,    -1,    88,    89,    -1,    19,    66,     4,
+      28,    90,    48,    -1,    19,    66,    90,    48,    -1,    19,
+      90,    48,    -1,    29,    -1,    -1,    20,    48,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned short int yyrline[] =
 {
-       0,   427,   427,   431,   434,   438,   441,   442,   450,   460,
-     463,   466,   469,   472,   475,   478,   481,   484,   487,   490,
-     493,   493,   497,   501,   505,   510,   513,   517,   518,   524,
-     527,   531,   535,   538,   541,   544,   547,   550,   553,   556,
-     559,   562,   565,   568,   571,   574,   577,   580,   583,   586,
-     589,   592,   595,   598,   601,   604,   607,   610,   613,   616,
-     619,   622,   625,   628,   632,   636,   640,   644,   647,   649,
-     653,   657,   662,   665,   669,   673,   676,   680,   682,   685,
-     687,   689,   691,   693,   694,   698,   700,   702,   704,   706,
-     707,   711,   712,   716,   717,   721,   723,   725,   727,   728,
-     728,   737,   740,   744,   747,   750,   753,   756,   759,   762,
-     768,   771,   773,   776,   780,   783,   787,   791,   794,   798,
-     802,   805
+       0,   428,   428,   432,   435,   439,   442,   443,   451,   461,
+     464,   467,   470,   473,   476,   479,   482,   485,   488,   491,
+     494,   494,   498,   502,   506,   511,   514,   518,   519,   525,
+     528,   532,   536,   539,   542,   545,   548,   551,   554,   557,
+     560,   563,   566,   569,   572,   575,   578,   581,   584,   587,
+     590,   593,   596,   599,   602,   605,   608,   611,   614,   617,
+     620,   623,   626,   629,   633,   637,   641,   645,   648,   650,
+     654,   658,   663,   666,   670,   674,   677,   681,   683,   686,
+     688,   690,   692,   694,   695,   699,   701,   703,   705,   707,
+     708,   712,   713,   717,   718,   722,   724,   726,   728,   729,
+     729,   738,   741,   745,   748,   751,   754,   757,   760,   763,
+     769,   772,   774,   777,   781,   784,   788,   791,   795,   799,
+     802,   806,   810,   813
 };
 #endif
 
@@ -825,8 +825,8 @@ static const char *const yytname[] =
   "args", "expr", "assign_expr", "logical_or_expr", "logical_and_expr",
   "not_expr", "comparison", "comp_op", "xor_expr", "or_expr", "and_expr",
   "shift_expr", "match_expr", "arith_expr", "term", "factor", "power",
-  "postfix_expr", "@2", "atom", "args_opt", "blockarg_opt", "excepts",
-  "except", "newline", "finally_opt", 0
+  "postfix_expr", "@2", "atom", "args_opt", "blockarg_opt",
+  "blockarg_params_opt", "excepts", "except", "newline", "finally_opt", 0
 };
 #endif
 
@@ -857,8 +857,8 @@ static const unsigned char yyr1[] =
       68,    69,    70,    71,    71,    72,    73,    74,    75,    76,
       76,    77,    77,    78,    78,    79,    80,    81,    82,    83,
       82,    82,    82,    84,    84,    84,    84,    84,    84,    84,
-      85,    85,    86,    86,    87,    87,    88,    88,    88,    89,
-      90,    90
+      85,    85,    86,    86,    87,    87,    88,    88,    89,    89,
+      89,    90,    91,    91
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -875,8 +875,8 @@ static const unsigned char yyr2[] =
        1,     1,     1,     1,     3,     1,     1,     1,     1,     1,
        3,     1,     3,     1,     3,     1,     1,     1,     1,     0,
        6,     4,     3,     1,     1,     1,     1,     1,     1,     1,
-       0,     1,     0,     6,     1,     2,     6,     4,     3,     1,
-       0,     2
+       0,     1,     0,     4,     0,     3,     1,     2,     6,     4,
+       3,     1,     0,     2
 };
 
 /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
@@ -889,21 +889,21 @@ static const unsigned char yydefact[] =
        6,     7,    77,    79,    80,    81,    82,    83,    86,    87,
       88,    89,    91,    93,    95,    96,    97,    98,   103,    14,
        0,     0,     5,     8,    75,    16,    23,    22,    18,     0,
-       5,     1,   119,     5,    85,     0,     0,     0,     0,     0,
+       5,     1,   121,     5,    85,     0,     0,     0,     0,     0,
        0,     0,     0,    25,    63,    29,     0,     0,     0,     5,
-     120,   114,     0,     4,    84,    97,    90,    92,    94,   102,
+     122,   116,     0,     4,    84,    97,    90,    92,    94,   102,
       78,     0,   110,     0,     5,     0,     0,    70,     0,     0,
       62,    61,    59,    47,    55,    72,     0,     5,     0,    27,
-      76,    24,     0,     5,     0,     5,     5,   115,     0,    12,
+      76,    24,     0,     5,     0,     5,     5,   117,     0,    12,
      101,   111,     0,    26,     0,    67,    64,     0,    74,    65,
        5,     0,     0,     0,     0,     5,    30,    19,     0,     5,
-     118,    11,   120,   121,    10,   112,    21,    66,    68,    69,
+     120,    11,   122,   123,    10,   112,    21,    66,    68,    69,
        0,    60,    58,    57,    71,    46,    45,    43,    39,     0,
-      54,    53,    51,    73,    29,     0,   117,     0,     0,   100,
+      54,    53,    51,    73,    29,     0,   119,     0,   114,   100,
       31,     0,     0,     0,     0,     0,     0,    28,     5,     9,
-      63,    56,    44,    42,    41,    38,    37,    35,    52,    50,
-      49,   116,     0,     0,     0,     0,     0,     5,    40,    36,
-      34,    33,    48,     0,     0,   113,    32
+      63,     5,    56,    44,    42,    41,    38,    37,    35,    52,
+      50,    49,   118,     0,     0,     0,     0,     0,     0,   115,
+     113,    40,    36,    34,    33,    48,     0,    32
 };
 
 /* YYDEFGOTO[NTERM-NUM]. */
@@ -913,7 +913,7 @@ static const short int yydefgoto[] =
       89,    90,    91,    92,   137,   118,    93,    94,    95,    43,
       21,    22,    23,    24,    25,    26,    55,    27,    28,    29,
       30,    31,    32,    33,    34,    35,    36,    62,    37,   112,
-     159,    70,    71,    53,   108
+     159,   171,    70,    71,    53,   108
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
@@ -921,36 +921,36 @@ static const short int yydefgoto[] =
 #define YYPACT_NINF -121
 static const short int yypact[] =
 {
-     105,   129,  -121,   -11,   129,   129,   129,    -9,  -121,  -121,
-     129,  -121,   105,   129,  -121,  -121,  -121,    27,     0,  -121,
+      98,   135,  -121,   -11,   135,   135,   135,    -9,  -121,  -121,
+     135,  -121,    98,   135,  -121,  -121,  -121,    27,     0,  -121,
     -121,  -121,  -121,  -121,  -121,  -121,  -121,    22,  -121,  -121,
-      14,    56,    37,  -121,  -121,  -121,    51,  -121,  -121,  -121,
-      54,    61,   105,    81,  -121,  -121,  -121,    82,  -121,    36,
-     105,  -121,  -121,   105,  -121,   129,   129,   129,   129,    64,
-     129,   129,    69,    75,     9,    17,   129,    87,   123,   105,
-     109,  -121,     5,  -121,  -121,    52,    37,    37,  -121,  -121,
-    -121,    84,   129,   129,   105,    88,    97,    93,    98,    92,
-    -121,   124,   126,   130,   131,  -121,   129,   105,   127,  -121,
-    -121,  -121,    16,   105,     7,   105,   105,  -121,   128,  -121,
-    -121,    81,   102,  -121,    10,    93,  -121,   129,  -121,  -121,
-     105,   140,     3,    12,    15,   105,     0,  -121,   132,   105,
-       0,  -121,     4,     0,  -121,   143,  -121,  -121,  -121,  -121,
-      50,  -121,  -121,   150,    93,  -121,   154,   156,   162,    93,
-    -121,   163,   168,  -121,    17,     0,     0,   161,   155,  -121,
-    -121,   140,   140,     3,    15,   140,     3,  -121,   105,  -121,
-       9,  -121,  -121,  -121,   170,  -121,   172,   173,  -121,  -121,
-     174,     0,   148,   140,   140,     3,   140,   105,  -121,  -121,
-    -121,   176,  -121,    57,   140,  -121,  -121
+      53,    23,    48,  -121,  -121,  -121,    51,  -121,  -121,  -121,
+      61,    56,    98,    78,  -121,  -121,  -121,    82,  -121,    36,
+      98,  -121,  -121,    98,  -121,   135,   135,   135,   135,    64,
+     135,   135,    69,    75,     9,    17,   135,    87,   117,    98,
+     112,  -121,     5,  -121,  -121,    52,    48,    48,  -121,  -121,
+    -121,    71,   135,   135,    98,    88,    91,   104,   108,    99,
+    -121,   136,   139,   140,   142,  -121,   135,    98,   138,  -121,
+    -121,  -121,    16,    98,     7,    98,    98,  -121,   148,  -121,
+    -121,    78,   113,  -121,    10,   104,  -121,   135,  -121,  -121,
+      98,   145,     3,    12,    15,    98,     0,  -121,   124,    98,
+       0,  -121,     4,     0,  -121,   144,  -121,  -121,  -121,  -121,
+      50,  -121,  -121,   157,   104,  -121,   158,   160,   161,   104,
+    -121,   162,   164,  -121,    17,     0,     0,   165,   149,  -121,
+    -121,   145,   145,     3,    15,   145,     3,  -121,    98,  -121,
+       9,    98,  -121,  -121,  -121,   166,  -121,   168,   169,  -121,
+    -121,   174,     0,   150,    58,   145,   145,     3,   145,  -121,
+    -121,  -121,  -121,  -121,   175,  -121,   145,  -121
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const short int yypgoto[] =
 {
-    -121,  -121,   -12,   133,  -121,  -121,  -121,    31,  -121,  -121,
-      18,   -63,  -114,  -120,  -121,    72,  -121,    66,  -111,   108,
-       1,  -121,   134,  -121,  -121,  -121,  -121,   136,  -121,  -121,
-    -121,  -121,    24,   135,  -121,  -121,    49,  -121,  -121,  -121,
-    -121,  -121,   122,   -67,    63
+    -121,  -121,   -12,   131,  -121,  -121,  -121,    32,  -121,  -121,
+      18,   -63,  -114,  -120,  -121,    72,  -121,    66,  -111,   109,
+       1,  -121,   130,  -121,  -121,  -121,  -121,   137,  -121,  -121,
+    -121,  -121,    14,   141,  -121,  -121,    54,  -121,  -121,  -121,
+    -121,  -121,  -121,   123,   -67,    62
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -964,46 +964,46 @@ static const short int yytable[] =
      151,    48,    85,   153,    50,    85,    86,    41,    85,    46,
      128,   109,    86,   131,   106,    86,   136,    51,    86,    52,
       65,    96,    97,    52,    52,   129,    52,    87,    72,    52,
-     144,    56,    88,   149,   177,    52,    52,    54,    88,   174,
-     176,    88,   180,   153,    88,    68,    69,   104,   141,   142,
+     144,    57,    88,   149,   178,    52,    52,    54,    88,   175,
+     177,    88,   181,   153,    88,    68,    69,   104,   141,   142,
      145,   150,    81,    59,    59,    52,   160,   100,    60,   102,
-      58,   191,   114,   195,    57,    61,    61,   -99,   -99,    52,
-      76,    77,    63,    44,   113,   126,    52,    64,   168,    66,
-      67,   130,    79,   132,   133,    82,    83,   125,   171,   172,
-     173,   175,   178,   179,    75,    75,    75,    75,   140,    75,
-     117,     1,     2,   154,     3,   101,   115,   156,   139,   110,
-     188,   189,   190,   192,   105,   116,   119,     4,    68,   106,
-     120,   196,   121,     5,   122,     6,     7,     8,   123,   124,
-     135,     9,    10,   127,   134,    11,    12,    13,    14,    15,
-      16,    38,    52,    86,   158,     8,   181,    38,   161,     9,
-     155,     8,   162,    11,   163,     9,    14,    15,    16,    11,
-     164,   165,    14,    15,    16,   193,   166,   169,   183,   170,
-     184,   185,   186,   187,   194,   167,    73,   138,   182,   148,
-     111,    74,   107,    78,    80,   157
+      76,    77,   114,   194,   190,    61,    61,   -99,   -99,    52,
+      56,    58,    64,    44,   113,   126,    66,    52,   168,    63,
+      67,   130,    79,   132,   133,    82,    83,   125,   172,   173,
+     174,   176,   179,   180,     1,     2,   110,     3,   140,    75,
+      75,    75,    75,   154,    75,   101,   115,   156,   139,   116,
+       4,   117,   191,   192,   193,   195,     5,   105,     6,     7,
+       8,    68,   106,   197,     9,    10,   119,   120,    11,    12,
+      13,    14,    15,    16,   121,    38,    52,   122,   123,     8,
+     124,   135,   155,     9,   127,   158,   182,    11,    86,   184,
+      14,    15,    16,    38,   134,   161,   162,     8,   163,   164,
+     165,     9,   166,   170,   185,    11,   186,   187,    14,    15,
+      16,   169,   188,   196,    73,   189,   167,   138,   183,   148,
+      80,   111,    74,   107,   157,     0,     0,     0,     0,    78
 };
 
-static const unsigned char yycheck[] =
+static const short int yycheck[] =
 {
       12,    68,     1,   123,   124,     4,     5,     6,   122,   123,
      124,    10,     3,   124,    13,     3,    13,    28,     3,    28,
        4,    16,    13,    16,    20,    13,    16,     0,    13,    29,
       42,    14,    15,    29,    29,   102,    29,    28,    50,    29,
-      28,    27,    39,    28,   164,    29,    29,    25,    39,   163,
+      28,    18,    39,    28,   164,    29,    29,    25,    39,   163,
      164,    39,   166,   164,    39,    19,    20,    69,   121,   122,
      123,   124,    61,    12,    12,    29,    16,    66,    17,    68,
-      33,   185,    84,    16,    18,    24,    24,    26,    26,    29,
-      56,    57,    28,    82,    83,    97,    29,    26,   155,     8,
+      56,    57,    84,   187,    16,    24,    24,    26,    26,    29,
+      27,    33,    26,    82,    83,    97,     8,    29,   155,    28,
        8,   103,    28,   105,   106,    26,    21,    96,   161,   162,
-     163,   164,   165,   166,    55,    56,    57,    58,   120,    60,
-      17,     6,     7,   125,     9,    28,    28,   129,   117,    35,
-     183,   184,   185,   186,    15,    28,    28,    22,    19,    20,
-      38,   194,     8,    28,     8,    30,    31,    32,     8,     8,
-      38,    36,    37,    16,    16,    40,    41,    42,    43,    44,
-      45,    28,    29,    13,    11,    32,   168,    28,     8,    36,
-      28,    32,     8,    40,     8,    36,    43,    44,    45,    40,
-       8,     8,    43,    44,    45,   187,     8,    16,     8,    24,
-       8,     8,     8,    35,     8,   154,    53,   115,   170,   123,
-      82,    55,    70,    58,    60,   132
+     163,   164,   165,   166,     6,     7,    35,     9,   120,    55,
+      56,    57,    58,   125,    60,    28,    28,   129,   117,    28,
+      22,    17,   185,   186,   187,   188,    28,    15,    30,    31,
+      32,    19,    20,   196,    36,    37,    28,    38,    40,    41,
+      42,    43,    44,    45,     8,    28,    29,     8,     8,    32,
+       8,    38,    28,    36,    16,    11,   168,    40,    13,   171,
+      43,    44,    45,    28,    16,     8,     8,    32,     8,     8,
+       8,    36,     8,    24,     8,    40,     8,     8,    43,    44,
+      45,    16,     8,     8,    53,    35,   154,   115,   170,   123,
+      60,    82,    55,    70,   132,    -1,    -1,    -1,    -1,    58
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -1015,21 +1015,21 @@ static const unsigned char yystos[] =
       55,    66,    67,    68,    69,    70,    71,    73,    74,    75,
       76,    77,    78,    79,    80,    81,    82,    84,    28,    66,
       50,    28,    66,    65,    66,    66,    28,    51,    66,    48,
-      66,     0,    29,    89,    25,    72,    27,    18,    33,    12,
+      66,     0,    29,    90,    25,    72,    27,    18,    33,    12,
       17,    24,    83,    28,    26,    48,     8,     8,    19,    20,
-      87,    88,    48,    49,    73,    82,    78,    78,    79,    28,
+      88,    89,    48,    49,    73,    82,    78,    78,    79,    28,
       68,    66,    26,    21,    52,     3,    13,    28,    39,    56,
       57,    58,    59,    62,    63,    64,    14,    15,    53,    54,
-      66,    28,    66,    89,    48,    15,    20,    88,    90,    16,
+      66,    28,    66,    90,    48,    15,    20,    89,    91,    16,
       35,    65,    85,    66,    48,    28,    28,    17,    61,    28,
-      38,     8,     8,     8,     8,    66,    48,    16,     4,    89,
+      38,     8,     8,     8,     8,    66,    48,    16,     4,    90,
       48,    16,    48,    48,    16,    38,    16,    60,    61,    66,
       48,    57,    57,    58,    28,    57,    58,    59,    63,    28,
-      57,    58,    59,    64,    48,    28,    48,    90,    11,    86,
-      16,     8,     8,     8,     8,     8,     8,    53,    89,    16,
-      24,    57,    57,    57,    58,    57,    58,    59,    57,    57,
-      58,    48,    56,     8,     8,     8,     8,    35,    57,    57,
-      57,    58,    57,    48,     8,    16,    57
+      57,    58,    59,    64,    48,    28,    48,    91,    11,    86,
+      16,     8,     8,     8,     8,     8,     8,    53,    90,    16,
+      24,    87,    57,    57,    57,    58,    57,    58,    59,    57,
+      57,    58,    48,    56,    48,     8,     8,     8,     8,    35,
+      16,    57,    57,    57,    58,    57,     8,    57
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1699,35 +1699,35 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 427 "parser.y"
+#line 428 "parser.y"
     {
             PARSER->stmts = (yyvsp[0].array);
         }
     break;
 
   case 3:
-#line 431 "parser.y"
+#line 432 "parser.y"
     {
             OBJ_ARRAY_NEW((yyval.array), (yyvsp[0].node));
         }
     break;
 
   case 4:
-#line 434 "parser.y"
+#line 435 "parser.y"
     {
             OBJ_ARRAY_PUSH((yyval.array), (yyvsp[-2].array), (yyvsp[0].node));
         }
     break;
 
   case 5:
-#line 438 "parser.y"
+#line 439 "parser.y"
     {
             (yyval.node) = NULL;
         }
     break;
 
   case 7:
-#line 442 "parser.y"
+#line 443 "parser.y"
     {
             if ((yyvsp[0].node)->type == NODE_VARIABLE) {
                 COMMAND_CALL_NEW((yyval.node), (yyvsp[0].node)->u.variable.id, NULL, NULL);
@@ -1739,96 +1739,96 @@ yyreduce:
     break;
 
   case 8:
-#line 450 "parser.y"
+#line 451 "parser.y"
     {
             COMMAND_CALL_NEW((yyval.node), (yyvsp[-1].name), (yyvsp[0].array), NULL);
         }
     break;
 
   case 9:
-#line 460 "parser.y"
+#line 461 "parser.y"
     {
             EXCEPT_FINALLY_NEW((yyval.node), (yyvsp[-5].array), (yyvsp[-4].array), (yyvsp[-2].array), (yyvsp[-1].array));
         }
     break;
 
   case 10:
-#line 463 "parser.y"
+#line 464 "parser.y"
     {
             EXCEPT_FINALLY_NEW((yyval.node), (yyvsp[-3].array), (yyvsp[-2].array), NULL, (yyvsp[-1].array));
         }
     break;
 
   case 11:
-#line 466 "parser.y"
+#line 467 "parser.y"
     {
             FINALLY_NEW((yyval.node), (yyvsp[-3].array), (yyvsp[-1].array));
         }
     break;
 
   case 12:
-#line 469 "parser.y"
+#line 470 "parser.y"
     {
             WHILE_NEW((yyval.node), (yyvsp[-2].node), (yyvsp[-1].array));
         }
     break;
 
   case 13:
-#line 472 "parser.y"
+#line 473 "parser.y"
     {
             BREAK_NEW((yyval.node), NULL);
         }
     break;
 
   case 14:
-#line 475 "parser.y"
+#line 476 "parser.y"
     {
             BREAK_NEW((yyval.node), (yyvsp[0].node));
         }
     break;
 
   case 15:
-#line 478 "parser.y"
+#line 479 "parser.y"
     {
             NEXT_NEW((yyval.node), NULL);
         }
     break;
 
   case 16:
-#line 481 "parser.y"
+#line 482 "parser.y"
     {
             NEXT_NEW((yyval.node), (yyvsp[0].node));
         }
     break;
 
   case 17:
-#line 484 "parser.y"
+#line 485 "parser.y"
     {
             RETURN_NEW((yyval.node), NULL);
         }
     break;
 
   case 18:
-#line 487 "parser.y"
+#line 488 "parser.y"
     {
             RETURN_NEW((yyval.node), (yyvsp[0].node));
         }
     break;
 
   case 19:
-#line 490 "parser.y"
+#line 491 "parser.y"
     {
             IF_NEW((yyval.node), (yyvsp[-3].node), (yyvsp[-2].array), (yyvsp[-1].array));
         }
     break;
 
   case 20:
-#line 493 "parser.y"
+#line 494 "parser.y"
     { (yyval.lineno) = PARSER->lineno; }
     break;
 
   case 21:
-#line 493 "parser.y"
+#line 494 "parser.y"
     {
             KLASS_NEW((yyval.node), (yyvsp[-3].name), (yyvsp[-2].node), (yyvsp[-1].array));
             (yyval.node)->lineno = (yyvsp[-4].lineno);
@@ -1836,14 +1836,14 @@ yyreduce:
     break;
 
   case 22:
-#line 497 "parser.y"
+#line 498 "parser.y"
     {
             NONLOCAL_NEW((yyval.node), (yyvsp[0].array));
         }
     break;
 
   case 23:
-#line 501 "parser.y"
+#line 502 "parser.y"
     {
             (yyval.array) = YogArray_new(ENV);
             YogArray_push(ENV, (yyval.array), ID2VAL((yyvsp[0].name)));
@@ -1851,7 +1851,7 @@ yyreduce:
     break;
 
   case 24:
-#line 505 "parser.y"
+#line 506 "parser.y"
     {
             YogArray_push(ENV, (yyvsp[-2].array), ID2VAL((yyvsp[0].name)));
             (yyval.array) = (yyvsp[-2].array);
@@ -1859,21 +1859,21 @@ yyreduce:
     break;
 
   case 25:
-#line 510 "parser.y"
+#line 511 "parser.y"
     {
                 (yyval.node) = NULL;
             }
     break;
 
   case 26:
-#line 513 "parser.y"
+#line 514 "parser.y"
     {
                 (yyval.node) = (yyvsp[0].node);
             }
     break;
 
   case 28:
-#line 518 "parser.y"
+#line 519 "parser.y"
     {
             YogNode* node = NULL;
             IF_NEW(node, (yyvsp[-2].node), (yyvsp[-1].array), (yyvsp[0].array));
@@ -1882,287 +1882,287 @@ yyreduce:
     break;
 
   case 29:
-#line 524 "parser.y"
+#line 525 "parser.y"
     {
                 (yyval.array) = NULL;
             }
     break;
 
   case 30:
-#line 527 "parser.y"
+#line 528 "parser.y"
     {
                 (yyval.array) = (yyvsp[0].array);
             }
     break;
 
   case 31:
-#line 531 "parser.y"
+#line 532 "parser.y"
     {
                 FUNC_DEF_NEW((yyval.node), (yyvsp[-5].name), (yyvsp[-3].array), (yyvsp[-1].array));
             }
     break;
 
   case 32:
-#line 535 "parser.y"
+#line 536 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-8].array), (yyvsp[-6].array), (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 33:
-#line 538 "parser.y"
+#line 539 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-6].array), (yyvsp[-4].array), (yyvsp[-2].node), (yyvsp[0].node), NULL);
         }
     break;
 
   case 34:
-#line 541 "parser.y"
+#line 542 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-6].array), (yyvsp[-4].array), (yyvsp[-2].node), NULL, (yyvsp[0].node));
         }
     break;
 
   case 35:
-#line 544 "parser.y"
+#line 545 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), (yyvsp[-2].array), (yyvsp[0].node), NULL, NULL);
         }
     break;
 
   case 36:
-#line 547 "parser.y"
+#line 548 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-6].array), (yyvsp[-4].array), NULL, (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 37:
-#line 550 "parser.y"
+#line 551 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), (yyvsp[-2].array), NULL, (yyvsp[0].node), NULL);
         }
     break;
 
   case 38:
-#line 553 "parser.y"
+#line 554 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), (yyvsp[-2].array), NULL, NULL, (yyvsp[0].node));
         }
     break;
 
   case 39:
-#line 556 "parser.y"
+#line 557 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-2].array), (yyvsp[0].array), NULL, NULL, NULL);
         }
     break;
 
   case 40:
-#line 559 "parser.y"
+#line 560 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-6].array), NULL, (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 41:
-#line 562 "parser.y"
+#line 563 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
         }
     break;
 
   case 42:
-#line 565 "parser.y"
+#line 566 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), NULL, (yyvsp[-2].node), NULL, (yyvsp[0].node));
         }
     break;
 
   case 43:
-#line 568 "parser.y"
+#line 569 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-2].array), NULL, (yyvsp[0].node), NULL, NULL);
         }
     break;
 
   case 44:
-#line 571 "parser.y"
+#line 572 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-4].array), NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 45:
-#line 574 "parser.y"
+#line 575 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-2].array), NULL, NULL, (yyvsp[0].node), NULL);
         }
     break;
 
   case 46:
-#line 577 "parser.y"
+#line 578 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[-2].array), NULL, NULL, NULL, (yyvsp[0].node));
         }
     break;
 
   case 47:
-#line 580 "parser.y"
+#line 581 "parser.y"
     {
             PARAMS_NEW((yyval.array), (yyvsp[0].array), NULL, NULL, NULL, NULL);
         }
     break;
 
   case 48:
-#line 583 "parser.y"
+#line 584 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, (yyvsp[-6].array), (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 49:
-#line 586 "parser.y"
+#line 587 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, (yyvsp[-4].array), (yyvsp[-2].node), (yyvsp[0].node), NULL);
         }
     break;
 
   case 50:
-#line 589 "parser.y"
+#line 590 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, (yyvsp[-4].array), (yyvsp[-2].node), NULL, (yyvsp[0].node));
         }
     break;
 
   case 51:
-#line 592 "parser.y"
+#line 593 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, (yyvsp[-2].array), (yyvsp[0].node), NULL, NULL);
         }
     break;
 
   case 52:
-#line 595 "parser.y"
+#line 596 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, (yyvsp[-4].array), NULL, (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 53:
-#line 598 "parser.y"
+#line 599 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, (yyvsp[-2].array), NULL, (yyvsp[0].node), NULL);
         }
     break;
 
   case 54:
-#line 601 "parser.y"
+#line 602 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, (yyvsp[-2].array), NULL, NULL, (yyvsp[0].node));
         }
     break;
 
   case 55:
-#line 604 "parser.y"
+#line 605 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, (yyvsp[0].array), NULL, NULL, NULL);
         }
     break;
 
   case 56:
-#line 607 "parser.y"
+#line 608 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, NULL, (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 57:
-#line 610 "parser.y"
+#line 611 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node), NULL);
         }
     break;
 
   case 58:
-#line 613 "parser.y"
+#line 614 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, NULL, (yyvsp[-2].node), NULL, (yyvsp[0].node));
         }
     break;
 
   case 59:
-#line 616 "parser.y"
+#line 617 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, NULL, (yyvsp[0].node), NULL, NULL);
         }
     break;
 
   case 60:
-#line 619 "parser.y"
+#line 620 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node));
         }
     break;
 
   case 61:
-#line 622 "parser.y"
+#line 623 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, NULL, NULL, (yyvsp[0].node), NULL);
         }
     break;
 
   case 62:
-#line 625 "parser.y"
+#line 626 "parser.y"
     {
             PARAMS_NEW((yyval.array), NULL, NULL, NULL, NULL, (yyvsp[0].node));
         }
     break;
 
   case 63:
-#line 628 "parser.y"
+#line 629 "parser.y"
     {
             (yyval.array) = NULL;
         }
     break;
 
   case 64:
-#line 632 "parser.y"
+#line 633 "parser.y"
     {
                 PARAM_NEW((yyval.node), NODE_KW_PARAM, (yyvsp[0].name), NULL);
             }
     break;
 
   case 65:
-#line 636 "parser.y"
+#line 637 "parser.y"
     {
                 PARAM_NEW((yyval.node), NODE_VAR_PARAM, (yyvsp[0].name), NULL);
             }
     break;
 
   case 66:
-#line 640 "parser.y"
+#line 641 "parser.y"
     {
                     PARAM_NEW((yyval.node), NODE_BLOCK_PARAM, (yyvsp[-1].name), (yyvsp[0].node));
                 }
     break;
 
   case 67:
-#line 644 "parser.y"
+#line 645 "parser.y"
     {
                         (yyval.node) = NULL;
                     }
     break;
 
   case 69:
-#line 649 "parser.y"
+#line 650 "parser.y"
     {
                     (yyval.node) = (yyvsp[0].node);
                 }
     break;
 
   case 70:
-#line 653 "parser.y"
+#line 654 "parser.y"
     {
                             (yyval.array) = YogArray_new(ENV);
                             PARAM_ARRAY_PUSH((yyval.array), (yyvsp[0].name), NULL);
@@ -2170,7 +2170,7 @@ yyreduce:
     break;
 
   case 71:
-#line 657 "parser.y"
+#line 658 "parser.y"
     {
                             PARAM_ARRAY_PUSH((yyvsp[-2].array), (yyvsp[0].name), NULL);
                             (yyval.array) = (yyvsp[-2].array);
@@ -2178,82 +2178,82 @@ yyreduce:
     break;
 
   case 72:
-#line 662 "parser.y"
+#line 663 "parser.y"
     {
                             OBJ_ARRAY_NEW((yyval.array), (yyvsp[0].node));
                         }
     break;
 
   case 73:
-#line 665 "parser.y"
+#line 666 "parser.y"
     {
                             OBJ_ARRAY_PUSH((yyval.array), (yyvsp[-2].array), (yyvsp[0].node));
                         }
     break;
 
   case 74:
-#line 669 "parser.y"
+#line 670 "parser.y"
     {
                         PARAM_NEW((yyval.node), NODE_PARAM, (yyvsp[-1].name), (yyvsp[0].node));
                     }
     break;
 
   case 75:
-#line 673 "parser.y"
+#line 674 "parser.y"
     {
             OBJ_ARRAY_NEW((yyval.array), (yyvsp[0].node));
         }
     break;
 
   case 76:
-#line 676 "parser.y"
+#line 677 "parser.y"
     {
             OBJ_ARRAY_PUSH((yyval.array), (yyvsp[-2].array), (yyvsp[0].node));
         }
     break;
 
   case 78:
-#line 682 "parser.y"
+#line 683 "parser.y"
     {
                 ASSIGN_NEW((yyval.node), (yyvsp[-2].node), (yyvsp[0].node));
             }
     break;
 
   case 84:
-#line 694 "parser.y"
+#line 695 "parser.y"
     {
                 METHOD_CALL_NEW1((yyval.node), (yyvsp[-2].node), (yyvsp[-1].name), (yyvsp[0].node));
             }
     break;
 
   case 90:
-#line 707 "parser.y"
+#line 708 "parser.y"
     {
                 METHOD_CALL_NEW1((yyval.node), (yyvsp[-2].node), (yyvsp[-1].name), (yyvsp[0].node));
             }
     break;
 
   case 92:
-#line 712 "parser.y"
+#line 713 "parser.y"
     {
                 METHOD_CALL_NEW1((yyval.node), (yyvsp[-2].node), (yyvsp[-1].name), (yyvsp[0].node));
             }
     break;
 
   case 94:
-#line 717 "parser.y"
+#line 718 "parser.y"
     {
                 METHOD_CALL_NEW1((yyval.node), (yyvsp[-2].node), (yyvsp[-1].name), (yyvsp[0].node));
             }
     break;
 
   case 99:
-#line 728 "parser.y"
+#line 729 "parser.y"
     { (yyval.lineno) = PARSER->lineno; }
     break;
 
   case 100:
-#line 728 "parser.y"
+#line 729 "parser.y"
     {
                     if ((yyvsp[-5].node)->type == NODE_ATTR) {
                         METHOD_CALL_NEW((yyval.node), (yyvsp[-5].node)->u.attr.obj, (yyvsp[-5].node)->u.attr.name, (yyvsp[-2].array), (yyvsp[0].node));
@@ -2266,63 +2266,63 @@ yyreduce:
     break;
 
   case 101:
-#line 737 "parser.y"
+#line 738 "parser.y"
     {
                     SUBSCRIPT_NEW((yyval.node), (yyvsp[-3].node), (yyvsp[-1].node));
                 }
     break;
 
   case 102:
-#line 740 "parser.y"
+#line 741 "parser.y"
     {
                     ATTR_NEW((yyval.node), (yyvsp[-2].node), (yyvsp[0].name));
                 }
     break;
 
   case 103:
-#line 744 "parser.y"
+#line 745 "parser.y"
     {
             VARIABLE_NEW((yyval.node), (yyvsp[0].name));
         }
     break;
 
   case 104:
-#line 747 "parser.y"
+#line 748 "parser.y"
     {
             LITERAL_NEW((yyval.node), (yyvsp[0].val));
         }
     break;
 
   case 105:
-#line 750 "parser.y"
+#line 751 "parser.y"
     {
             LITERAL_NEW((yyval.node), (yyvsp[0].val));
         }
     break;
 
   case 106:
-#line 753 "parser.y"
+#line 754 "parser.y"
     {
             LITERAL_NEW((yyval.node), (yyvsp[0].val));
         }
     break;
 
   case 107:
-#line 756 "parser.y"
+#line 757 "parser.y"
     {
             LITERAL_NEW((yyval.node), YTRUE);
         }
     break;
 
   case 108:
-#line 759 "parser.y"
+#line 760 "parser.y"
     {
             LITERAL_NEW((yyval.node), YFALSE);
         }
     break;
 
   case 109:
-#line 762 "parser.y"
+#line 763 "parser.y"
     {
             int lineno = PARSER->lineno;
             YogVal val = INT2VAL(lineno);
@@ -2331,78 +2331,92 @@ yyreduce:
     break;
 
   case 110:
-#line 768 "parser.y"
+#line 769 "parser.y"
     {
                 (yyval.array) = NULL;
             }
     break;
 
   case 112:
-#line 773 "parser.y"
+#line 774 "parser.y"
     {
                     (yyval.node) = NULL;
                 }
     break;
 
   case 113:
-#line 776 "parser.y"
+#line 777 "parser.y"
     {
-                    BLOCK_ARG_NEW((yyval.node), (yyvsp[-3].array), (yyvsp[-1].array));
+                    BLOCK_ARG_NEW((yyval.node), (yyvsp[-2].array), (yyvsp[-1].array));
                 }
     break;
 
   case 114:
-#line 780 "parser.y"
+#line 781 "parser.y"
     {
-            OBJ_ARRAY_NEW((yyval.array), (yyvsp[0].node));
-        }
+                            (yyval.array) = NULL;
+                        }
     break;
 
   case 115:
-#line 783 "parser.y"
+#line 784 "parser.y"
     {
-            OBJ_ARRAY_PUSH((yyval.array), (yyvsp[-1].array), (yyvsp[0].node));
-        }
+                            (yyval.array) = (yyvsp[-1].array);
+                        }
     break;
 
   case 116:
-#line 787 "parser.y"
+#line 788 "parser.y"
     {
-            YOG_ASSERT(ENV, (yyvsp[-2].name) != NO_EXC_VAR, "Too many variables.");
-            EXCEPT_BODY_NEW((yyval.node), (yyvsp[-4].node), (yyvsp[-2].name), (yyvsp[0].array));
+            OBJ_ARRAY_NEW((yyval.array), (yyvsp[0].node));
         }
     break;
 
   case 117:
 #line 791 "parser.y"
     {
-            EXCEPT_BODY_NEW((yyval.node), (yyvsp[-2].node), NO_EXC_VAR, (yyvsp[0].array));
+            OBJ_ARRAY_PUSH((yyval.array), (yyvsp[-1].array), (yyvsp[0].node));
         }
     break;
 
   case 118:
-#line 794 "parser.y"
+#line 795 "parser.y"
     {
-            EXCEPT_BODY_NEW((yyval.node), NULL, NO_EXC_VAR, (yyvsp[0].array));
+            YOG_ASSERT(ENV, (yyvsp[-2].name) != NO_EXC_VAR, "Too many variables.");
+            EXCEPT_BODY_NEW((yyval.node), (yyvsp[-4].node), (yyvsp[-2].name), (yyvsp[0].array));
         }
     break;
 
   case 119:
-#line 798 "parser.y"
+#line 799 "parser.y"
     {
-                PARSER->lineno++;
-            }
+            EXCEPT_BODY_NEW((yyval.node), (yyvsp[-2].node), NO_EXC_VAR, (yyvsp[0].array));
+        }
     break;
 
   case 120:
 #line 802 "parser.y"
     {
+            EXCEPT_BODY_NEW((yyval.node), NULL, NO_EXC_VAR, (yyvsp[0].array));
+        }
+    break;
+
+  case 121:
+#line 806 "parser.y"
+    {
+                PARSER->lineno++;
+            }
+    break;
+
+  case 122:
+#line 810 "parser.y"
+    {
                 (yyval.array) = NULL;
             }
     break;
 
-  case 121:
-#line 805 "parser.y"
+  case 123:
+#line 813 "parser.y"
     {
                 (yyval.array) = (yyvsp[0].array);
             }
@@ -2413,7 +2427,7 @@ yyreduce:
     }
 
 /* Line 1126 of yacc.c.  */
-#line 2417 "parser.c"
+#line 2431 "parser.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2681,7 +2695,7 @@ yyreturn:
 }
 
 
-#line 809 "parser.y"
+#line 817 "parser.y"
 
 /*
 single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE

@@ -376,6 +376,7 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 
 %type<array> args
 %type<array> args_opt
+%type<array> blockarg_params_opt
 %type<array> else_opt
 %type<array> excepts
 %type<array> finally_opt
@@ -773,10 +774,17 @@ args_opt    : /* empty */ {
 blockarg_opt    : /* empty */ {
                     $$ = NULL;
                 }
-                | DO LBRACKET params RBRACKET stmts END {
-                    BLOCK_ARG_NEW($$, $3, $5);
+                | DO blockarg_params_opt stmts END {
+                    BLOCK_ARG_NEW($$, $2, $3);
                 }
                 ;
+blockarg_params_opt     : /* empty */ {
+                            $$ = NULL;
+                        }
+                        | LBRACKET params RBRACKET {
+                            $$ = $2;
+                        }
+                        ;
 excepts : except {
             OBJ_ARRAY_NEW($$, $1);
         }
