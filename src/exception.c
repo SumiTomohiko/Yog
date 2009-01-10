@@ -37,7 +37,8 @@ skip_frame(YogEnv* env, YogFrame* frame, const char* func_name)
             }
             break;
         }
-    case FRAME_SCRIPT:
+    case FRAME_METHOD:
+    case FRAME_NAME:
         {
             YogScriptFrame* f = SCRIPT_FRAME(frame);
             if (f->code->func_name == name) {
@@ -77,7 +78,8 @@ initialize(YogEnv* env)
                 entry->func_name = f->f->func_name;
                 break;
             }
-        case FRAME_SCRIPT:
+        case FRAME_METHOD:
+        case FRAME_NAME:
             {
                 YogScriptFrame* f = SCRIPT_FRAME(frame);
                 YogCode* code = f->code;

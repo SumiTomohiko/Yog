@@ -156,6 +156,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #define KEEP_MEMBER(member)     do { \
     code->member = (*keeper)(env, (void*)code->member); \
 } while (0)
+    KEEP_MEMBER(local_vars_names);
     KEEP_MEMBER(consts);
     KEEP_MEMBER(insts);
     KEEP_MEMBER(exc_tbl);
@@ -179,6 +180,7 @@ YogCode_new(YogEnv* env)
 
     code->stack_size = 0;
     code->local_vars_count = 0;
+    code->local_vars_names = NULL;
     code->consts = NULL;
     code->insts = NULL;
     code->outer_size = 0;

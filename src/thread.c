@@ -178,7 +178,7 @@ setup_script_method(YogEnv* env, YogScriptMethod* method, YogCode* code)
     unsigned int i = 0;
     for (i = 0; i < outer_size; i++) {
         YOG_ASSERT(env, frame != NULL, "frame is NULL");
-        YOG_ASSERT(env, frame->type == FRAME_SCRIPT, "frame type isn't FRAME_SCRIPT");
+        YOG_ASSERT(env, frame->type == FRAME_METHOD, "frame type isn't FRAME_METHOD");
 
         outer_vars->items[i] = LOCAL_VARS(frame);
 
@@ -253,6 +253,42 @@ call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint
     else {
         YOG_ASSERT(env, FALSE, "Callee is not callable.");
     }
+}
+
+static BOOL
+lookup_frame_vars(YogEnv* env, YogFrame* frame, ID name, YogVal* val) 
+{
+    switch (frame->type) {
+    case FRAME_C:
+        break;
+    case FRAME_METHOD:
+        {
+            YogCode* code = SCRIPT_FRAME(frame)->code;
+            unsigned int count = code->local_vars_count;
+            ID* names = code->local_vars_names;
+            unsigned int i = 0;
+            for (i = 0; i < count; i++) {
+                if (names[i] == name) {
+                    *val = METHOD_FRAME(frame)->vars->items[i];
+                    return TRUE;
+                }
+            }
+        }
+        break;
+    case FRAME_NAME:
+        {
+            YogTable* vars = NAME_FRAME(frame)->vars;
+            if (YogTable_lookup(env, vars, ID2VAL(name), val)) {
+                return TRUE;
+            }
+        }
+        break;
+    default:
+        YOG_BUG(env, "unknown frame type (0x%x)", frame->type);
+        break;
+    }
+
+    return FALSE;
 }
 
 static YogVal 
@@ -504,7 +540,7 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
         YogTable* globals = NULL;
         YogFrame* f = CUR_FRAME->prev;
         while (f != NULL) {
-            if (f->type == FRAME_SCRIPT) {
+            if ((f->type == FRAME_METHOD) || (f->type == FRAME_NAME)) {
                 globals = SCRIPT_FRAME(f)->globals;
                 break;
             }

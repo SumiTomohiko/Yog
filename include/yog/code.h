@@ -31,6 +31,7 @@ struct YogCode {
 
     unsigned int stack_size;
     unsigned int local_vars_count;
+    ID* local_vars_names;
     struct YogValArray* consts;
     struct YogByteArray* insts;
     unsigned int outer_size;

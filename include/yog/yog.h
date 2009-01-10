@@ -186,7 +186,8 @@ typedef YogBasicObj* (*Allocator)(struct YogEnv*, struct YogKlass*);
 
 enum YogFrameType {
     FRAME_C, 
-    FRAME_SCRIPT, 
+    FRAME_METHOD, 
+    FRAME_NAME, 
 };
 
 typedef enum YogFrameType YogFrameType;

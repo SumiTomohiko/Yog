@@ -1038,6 +1038,43 @@ get_max_outer_level(YogEnv* env, YogTable* vars)
     return VAL2INT(arg);
 }
 
+struct AllocLocalVarsTableArg {
+    ID* names;
+    unsigned int count;
+};
+
+typedef struct AllocLocalVarsTableArg AllocLocalVarsTableArg;
+
+static int 
+alloc_local_vars_table_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
+{
+    Var* var = VAL2PTR(val);
+    if (var->type == VT_LOCAL) {
+        AllocLocalVarsTableArg* p = VAL2PTR(*arg);
+        Var* var = VAL2PTR(val);
+        unsigned int index = var->u.local.index;
+        YOG_ASSERT(env, index < p->count, "local var index over count");
+        p->names[index] = VAL2ID(key);
+    }
+
+    return ST_CONTINUE;
+}
+
+static ID* 
+alloc_local_vars_table(YogEnv* env, YogTable* vars, unsigned int count) 
+{
+    ID* names = ALLOC_OBJ(env, NULL, NULL, sizeof(ID) * count);
+
+    AllocLocalVarsTableArg arg;
+    arg.names = names;
+    arg.count = count;
+    YogVal val = PTR2VAL(&arg);
+
+    YogTable_foreach(env, vars, alloc_local_vars_table_callback, &val);
+
+    return names;
+}
+
 static YogCode* 
 compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, ID func_name, YogArray* stmts, YogTable* vars, Context ctx, YogInst* tail) 
 {
@@ -1075,6 +1112,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
 
     YogCode* code = YogCode_new(env);
     code->local_vars_count = count_locals(env, vars);
+    code->local_vars_names = alloc_local_vars_table(env, vars, code->local_vars_count);
     code->stack_size = count_stack_size(env, anchor);
     code->consts = table2array(env, data.const2index);
     code->insts = bin->body;

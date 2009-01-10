@@ -78,9 +78,13 @@ inst call_command
 {
     POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
 
-    YogVal val = lookup_builtins(ENV, command);
+    YogVal callee = YUNDEF;
+    if (!lookup_frame_vars(ENV, CUR_FRAME, command, &callee)) {
+        callee = lookup_builtins(ENV, command);
+    }
+
     YogVal unbound_self = YUNDEF;
-    call_method(ENV, THREAD, unbound_self, val, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+    call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 }
 
 inst make_package_method

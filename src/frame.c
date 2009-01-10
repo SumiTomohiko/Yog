@@ -126,9 +126,9 @@ YogScriptFrame_pop_stack(YogEnv* env, YogScriptFrame* frame)
 }
 
 static void 
-YogScriptFrame_init(YogScriptFrame* frame)
+YogScriptFrame_init(YogScriptFrame* frame, YogFrameType type)
 {
-    YogFrame_init(FRAME(frame), FRAME_SCRIPT);
+    YogFrame_init(FRAME(frame), type);
     frame->pc = 0;
     frame->code = NULL;
     frame->stack_size = 0;
@@ -140,7 +140,7 @@ YogScriptFrame_init(YogScriptFrame* frame)
 static void 
 YogNameFrame_init(YogNameFrame* frame)
 {
-    YogScriptFrame_init(SCRIPT_FRAME(frame));
+    YogScriptFrame_init(SCRIPT_FRAME(frame), FRAME_NAME);
     frame->vars = NULL;
 }
 
@@ -156,7 +156,7 @@ YogNameFrame_new(YogEnv* env)
 static void 
 YogMethodFrame_init(YogMethodFrame* frame) 
 {
-    YogScriptFrame_init(SCRIPT_FRAME(frame));
+    YogScriptFrame_init(SCRIPT_FRAME(frame), FRAME_METHOD);
     frame->vars = NULL;
 }
 
