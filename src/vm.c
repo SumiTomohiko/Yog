@@ -67,7 +67,7 @@ YogVm_id2name(YogEnv* env, YogVm* vm, ID id)
     YogVal sym = ID2VAL(id);
     YogVal val = YUNDEF;
     if (!YogTable_lookup(env, ENV_VM(env)->id2name, sym, &val)) {
-        YOG_ASSERT(env, FALSE, "Can't find symbol.");
+        YOG_BUG(env, "can't find symbol (0x%x)", id);
     }
 
     YogCharArray* ptr = VAL2PTR(val);

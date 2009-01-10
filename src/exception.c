@@ -4,8 +4,6 @@
 #include "yog/function.h"
 #include "yog/yog.h"
 
-#include <stdio.h>
-
 static void 
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {

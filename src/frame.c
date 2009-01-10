@@ -55,6 +55,7 @@ YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
     YogCFrame* frame = ptr;
     frame->self = YogVal_keep(env, frame->self, keeper);
+    KEEP(f);
     KEEP(args);
     KEEP(locals);
 }

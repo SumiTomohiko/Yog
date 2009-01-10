@@ -718,13 +718,14 @@ factor  : power
 power   : postfix_expr
         ;
 postfix_expr    : atom 
-                | postfix_expr LPAR args_opt RPAR blockarg_opt {
+                | postfix_expr { $<lineno>$ = PARSER->lineno; } LPAR args_opt RPAR blockarg_opt {
                     if ($1->type == NODE_ATTR) {
-                        METHOD_CALL_NEW($$, $1->u.attr.obj, $1->u.attr.name, $3, $5);
+                        METHOD_CALL_NEW($$, $1->u.attr.obj, $1->u.attr.name, $4, $6);
                     }
                     else {
-                        FUNC_CALL_NEW($$, $1, $3, $5);
+                        FUNC_CALL_NEW($$, $1, $4, $6);
                     }
+                    $$->lineno = $<lineno>2;
                 }
                 | postfix_expr LBRACKET expr RBRACKET {
                     SUBSCRIPT_NEW($$, $1, $3);
