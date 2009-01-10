@@ -1063,7 +1063,7 @@ alloc_local_vars_table_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg
 static ID* 
 alloc_local_vars_table(YogEnv* env, YogTable* vars, unsigned int count) 
 {
-    ID* names = ALLOC_OBJ(env, NULL, NULL, sizeof(ID) * count);
+    ID* names = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * count);
 
     AllocLocalVarsTableArg arg;
     arg.names = names;
