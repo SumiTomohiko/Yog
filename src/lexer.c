@@ -257,6 +257,12 @@ next_token(YogEnv* env, YogLexer* lexer)
             return STRING;
             break;
         }
+    case '{':
+        return LBRACE;
+        break;
+    case '}':
+        return RBRACE;
+        break;
     case '(':
         SET_STATE(LS_EXPR);
         return LPAR;

@@ -777,6 +777,9 @@ blockarg_opt    : /* empty */ {
                 | DO blockarg_params_opt stmts END {
                     BLOCK_ARG_NEW($$, $2, $3);
                 }
+                | LBRACE blockarg_params_opt stmts RBRACE {
+                    BLOCK_ARG_NEW($$, $2, $3);
+                }
                 ;
 blockarg_params_opt     : /* empty */ {
                             $$ = NULL;
