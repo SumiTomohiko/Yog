@@ -571,9 +571,7 @@ bdw_finalizer(void* obj, void* client_data)
 {
     BdwHeader* header = obj;
     YogEnv* env = client_data;
-    if (header->finalizer != NULL) {
-        (*header->finalizer)(env, header + 1);
-    }
+    (*header->finalizer)(env, header + 1);
 }
 
 static void* 
@@ -585,7 +583,9 @@ alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer
 
     header->finalizer = finalizer;
 
-    GC_REGISTER_FINALIZER(header, bdw_finalizer, env, 0, 0);
+    if (finalizer != NULL) {
+        GC_REGISTER_FINALIZER(header, bdw_finalizer, env, 0, 0);
+    }
 
     return header + 1;
 }
