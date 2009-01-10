@@ -571,7 +571,9 @@ bdw_finalizer(void* obj, void* client_data)
 {
     BdwHeader* header = obj;
     YogEnv* env = client_data;
-    (*header->finalizer)(env, header + 1);
+    if (header->finalizer != NULL) {
+        (*header->finalizer)(env, header + 1);
+    }
 }
 
 static void* 
