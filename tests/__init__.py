@@ -8,7 +8,7 @@ from time import time
 
 class TestCase(object):
 
-    def _test(self, src, stdout="", stderr="", status=None, options=[], timeout=5, remove_tmpfile=True):
+    def _test(self, src, stdout="", stderr="", status=0, options=[], timeout=5, remove_tmpfile=True):
         try:
             env_gc = environ["GC"]
         except KeyError:
@@ -49,18 +49,19 @@ class TestCase(object):
                     stderr(err)
                 else:
                     assert stderr == err
+
             if stdout is not None:
                 out = proc.stdout.read()
                 if callable(stdout):
                     stdout(out)
                 else:
                     assert stdout == out
-            if status is not None:
-                returncode = proc.returncode
-                if callable(status):
-                    status(returncode)
-                else:
-                    assert status == returncode
+
+            returncode = proc.returncode
+            if callable(status):
+                status(returncode)
+            else:
+                assert status == returncode
         finally:
             if remove_tmpfile:
                 unlink(file)
