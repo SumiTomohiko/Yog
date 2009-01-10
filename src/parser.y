@@ -439,7 +439,14 @@ stmt    : /* empty */ {
             $$ = NULL;
         }
         | func_def
-        | expr
+        | expr {
+            if ($1->type == NODE_VARIABLE) {
+                COMMAND_CALL_NEW($$, $1->u.variable.id, NULL, NULL);
+            }
+            else {
+                $$ = $1;
+            }
+        }
         | NAME args {
             COMMAND_CALL_NEW($$, $1, $2, NULL);
         }
