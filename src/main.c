@@ -18,6 +18,7 @@ usage()
     printf("  --gc=[bdw|copying|mark-sweep]: \n");
     printf("  --help: \n");
     printf("  --init-heap-size=size: \n");
+    printf("  --print-gc-stat: \n");
     printf("  --threshold=size: \n");
 }
 
@@ -69,12 +70,14 @@ main(int argc, char* argv[])
     size_t threshold = DEFAULT_THRESHOLD;
 #undef DEFAULT_THRESHOLD
     YogGcType gc_type = GC_COPYING;
+    int print_gc_stat = 0;
     struct option options[] = {
         { "disable-gc", no_argument, &disable_gc, 1 },
         { "gc", required_argument, NULL, 'g' }, 
         { "gc-stress", no_argument, &gc_stress, 1 }, 
         { "help", no_argument, &help, 1 }, 
         { "init-heap-size", required_argument, NULL, 'i' }, 
+        { "print-gc-stat", no_argument, &print_gc_stat, 1 }, 
         { "threshold", required_argument, NULL, 't' }, 
         { 0, 0, 0, 0 }, 
     };
@@ -133,6 +136,7 @@ main(int argc, char* argv[])
     YogVm_init(&vm, gc_type);
     vm.gc_stress = gc_stress ? TRUE : FALSE;
     vm.disable_gc = disable_gc ? TRUE : FALSE;
+    vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
 
     YogEnv env;
     env.vm = &vm;

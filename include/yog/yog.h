@@ -63,6 +63,10 @@ struct YogVm {
             size_t allocated_size;
         } mark_sweep;
     } gc;
+    struct {
+        BOOL print;
+        unsigned int time;
+    } gc_stat;
 
     ID next_id;
     struct YogTable* id2name;

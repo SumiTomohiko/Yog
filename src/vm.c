@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/time.h>
+#include <time.h>
 #include "gc.h"
 #include "yog/block.h"
 #include "yog/bool.h"
@@ -670,6 +672,8 @@ YogVm_init(YogVm* vm, YogGcType gc)
         return;
         break;
     }
+    vm->gc_stat.print = FALSE;
+    vm->gc_stat.time = 0;
 
     vm->next_id = 0;
     vm->id2name = NULL;
@@ -705,7 +709,19 @@ YogVm_init(YogVm* vm, YogGcType gc)
 void 
 YogVm_gc(YogEnv* env, YogVm* vm) 
 {
+    struct timeval begin;
+    gettimeofday(&begin, NULL);
+
     (*vm->exec_gc)(env, vm);
+
+    struct timeval end;
+    gettimeofday(&end, NULL);
+    unsigned int span = 1000000 * (end.tv_sec - begin.tv_sec) + (end.tv_usec - begin.tv_usec);
+    if (vm->gc_stat.print) {
+        printf("time [usec]\n%d\n", span);
+    }
+
+    vm->gc_stat.time += span;
 }
 
 void 
