@@ -779,7 +779,6 @@ print_gc_statistics(YogVm* vm, unsigned int duration)
 {
     printf("--- GC infomation ---\n");
     printf("Duration[usec] %d\n", duration);
-    printf("Duration total[usec] %d\n", vm->gc_stat.duration_total);
 
     printf("Servive #");
     int i;
