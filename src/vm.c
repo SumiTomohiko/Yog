@@ -26,7 +26,14 @@ struct YogHeap {
 
 typedef struct YogHeap YogHeap;
 
+struct GcObjectStat {
+    unsigned int survive_num;
+};
+
+typedef struct GcObjectStat GcObjectStat;
+
 struct YogMarkSweepHeader {
+    struct GcObjectStat stat;
     struct YogMarkSweepHeader* prev;
     struct YogMarkSweepHeader* next;
     unsigned int size;
@@ -38,6 +45,7 @@ struct YogMarkSweepHeader {
 typedef struct YogMarkSweepHeader YogMarkSweepHeader;
 
 struct CopyingHeader {
+    struct GcObjectStat stat;
     ChildrenKeeper keeper;
     Finalizer finalizer;
     void* forwarding_addr;
@@ -51,6 +59,45 @@ struct BdwHeader {
 };
 
 typedef struct BdwHeader BdwHeader;
+
+#define SURVIVE_NUM_UNIT    8
+
+static void 
+GcObjectStat_increment_survive_num(GcObjectStat* stat) 
+{
+    stat->survive_num++;
+}
+
+static void 
+reset_total_object_count(YogVm* vm) 
+{
+    vm->gc_stat.total_obj_num = 0;
+}
+
+static void 
+reset_living_object_count(YogVm* vm)
+{
+    int i;
+    for (i = 0; i < SURVIVE_INDEX_MAX; i++) {
+        vm->gc_stat.living_obj_num[i] = 0;
+    }
+}
+
+static void 
+increment_total_object_number(YogVm* vm) 
+{
+    vm->gc_stat.total_obj_num++;
+}
+
+static void 
+increment_living_object_number(YogVm* vm, unsigned int survive_num) 
+{
+    int index = survive_num / SURVIVE_NUM_UNIT;
+    if (SURVIVE_INDEX_MAX  - 1 < index) {
+        index = SURVIVE_INDEX_MAX - 1;
+    }
+    vm->gc_stat.living_obj_num[index]++;
+}
 
 void 
 YogVm_register_package(YogEnv* env, YogVm* vm, const char* name, YogPackage* pkg) 
@@ -137,6 +184,12 @@ align(size_t size)
     return align_size;
 }
 
+static void 
+GcObjectStat_initialize(GcObjectStat* stat) 
+{
+    stat->survive_num = 0;
+}
+
 static void* 
 alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
@@ -160,15 +213,18 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
         }
     }
 
-    CopyingHeader* head = (CopyingHeader*)heap->free;
-    head->keeper = keeper;
-    head->finalizer = finalizer;
-    head->forwarding_addr = NULL;
-    head->size = aligned_size;
+    CopyingHeader* header = (CopyingHeader*)heap->free;
+    GcObjectStat_initialize(&header->stat);
+    header->keeper = keeper;
+    header->finalizer = finalizer;
+    header->forwarding_addr = NULL;
+    header->size = aligned_size;
 
     heap->free += aligned_size;
 
-    return head + 1;
+    increment_total_object_number(vm);
+
+    return header + 1;
 }
 
 static void* 
@@ -177,6 +233,7 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer fi
     size_t total_size = size + sizeof(YogMarkSweepHeader);
     YogMarkSweepHeader* header = malloc(total_size);
     initialize_memory(header, total_size);
+    GcObjectStat_initialize(&header->stat);
 
     header->prev = NULL;
     header->next = vm->gc.mark_sweep.header;
@@ -196,6 +253,8 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer fi
             vm->need_gc = TRUE;
         }
     }
+
+    increment_total_object_number(ENV_VM(env));
 
     return header + 1;
 }
@@ -359,6 +418,10 @@ keep_object_copying(YogEnv* env, void* ptr)
         return (CopyingHeader*)header->forwarding_addr + 1;
     }
 
+    GcObjectStat_increment_survive_num(&header->stat);
+    increment_living_object_number(ENV_VM(env), header->stat.survive_num);
+    increment_total_object_number(ENV_VM(env));
+
     YogVm* vm = ENV_VM(env);
     unsigned char* dest = vm->gc.copying.unscanned;
     size_t size = header->size;
@@ -479,6 +542,9 @@ keep_object_mark_sweep(YogEnv* env, void* ptr)
 
     YogMarkSweepHeader* header = (YogMarkSweepHeader*)ptr - 1;
     if (!header->marked) {
+        GcObjectStat_increment_survive_num(&header->stat);
+        increment_living_object_number(ENV_VM(env), header->stat.survive_num);
+        increment_total_object_number(ENV_VM(env));
         header->marked = TRUE;
 
         ChildrenKeeper keeper = header->keeper;
@@ -673,7 +739,9 @@ YogVm_init(YogVm* vm, YogGcType gc)
         break;
     }
     vm->gc_stat.print = FALSE;
-    vm->gc_stat.time = 0;
+    vm->gc_stat.duration_total = 0;
+    reset_living_object_count(vm);
+    reset_total_object_count(vm);
 
     vm->next_id = 0;
     vm->id2name = NULL;
@@ -706,9 +774,32 @@ YogVm_init(YogVm* vm, YogGcType gc)
     vm->thread = NULL;
 }
 
+static void 
+print_gc_statistics(YogVm* vm, unsigned int duration) 
+{
+    printf("--- GC infomation ---\n");
+    printf("Duration[usec] %d\n", duration);
+    printf("Duration total[usec] %d\n", vm->gc_stat.duration_total);
+
+    printf("Servive #");
+    int i;
+    for (i = 0; i < SURVIVE_INDEX_MAX - 1; i++) {
+        printf(" %2d-%2d", SURVIVE_NUM_UNIT * i + 1, SURVIVE_NUM_UNIT * (i + 1));
+    }
+    printf(" %d+\n", SURVIVE_NUM_UNIT * (SURVIVE_INDEX_MAX - 1) + 1);
+    printf("Objects #");
+    for (i = 0; i < SURVIVE_INDEX_MAX; i++) {
+        printf(" %5d", vm->gc_stat.living_obj_num[i]);
+    }
+    printf("\n");
+}
+
 void 
 YogVm_gc(YogEnv* env, YogVm* vm) 
 {
+    reset_living_object_count(vm);
+    reset_total_object_count(vm);
+
     struct timeval begin;
     gettimeofday(&begin, NULL);
 
@@ -716,12 +807,13 @@ YogVm_gc(YogEnv* env, YogVm* vm)
 
     struct timeval end;
     gettimeofday(&end, NULL);
-    unsigned int span = 1000000 * (end.tv_sec - begin.tv_sec) + (end.tv_usec - begin.tv_usec);
-    if (vm->gc_stat.print) {
-        printf("time [usec]\n%d\n", span);
-    }
+    unsigned int duration = 1000000 * (end.tv_sec - begin.tv_sec) + (end.tv_usec - begin.tv_usec);
 
-    vm->gc_stat.time += span;
+    vm->gc_stat.duration_total += duration;
+
+    if (vm->gc_stat.print) {
+        print_gc_statistics(vm, duration);
+    }
 }
 
 void 

@@ -40,6 +40,8 @@ typedef void* (*ObjectKeeper)(YogEnv*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
 typedef void (*Finalizer)(YogEnv*, void*);
 
+#define SURVIVE_INDEX_MAX    8
+
 struct YogVm {
     BOOL gc_stress;
     BOOL disable_gc;
@@ -65,7 +67,9 @@ struct YogVm {
     } gc;
     struct {
         BOOL print;
-        unsigned int time;
+        unsigned int duration_total;
+        unsigned int living_obj_num[SURVIVE_INDEX_MAX];
+        unsigned int total_obj_num;
     } gc_stat;
 
     ID next_id;

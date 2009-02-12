@@ -178,7 +178,7 @@ main(int argc, char* argv[])
     YogThread_eval_package(&env, th, pkg);
 
     if (vm.gc_stat.print) {
-        printf("Time GC spent: %d[usec]\n", vm.gc_stat.time);
+        printf("GC duration total: %d[usec]\n", vm.gc_stat.duration_total);
     }
 
     YogVm_delete(&env, env.vm);
