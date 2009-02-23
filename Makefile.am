@@ -71,6 +71,9 @@ test-copying:
 test-mark-sweep:
 	GC=mark-sweep $(TEST_CMD)
 
+test-mark-sweep-compact: 
+	GC=mark-sweep-compact $(TEST_CMD)
+
 test-bdw:
 	GC=bdw $(TEST_CMD)
 

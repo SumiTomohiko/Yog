@@ -17,6 +17,8 @@ class TestCase(object):
             gc = "copying"
         elif env_gc == "mark-sweep":
             gc = "mark-sweep"
+        elif env_gc == "mark-sweep-compact":
+            gc = "mark-sweep-compact"
         elif env_gc == "bdw":
             gc = "bdw"
 
