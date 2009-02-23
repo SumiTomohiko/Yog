@@ -700,7 +700,20 @@ realloc_mem_mark_sweep(YogEnv* env, YogVm* vm, void* ptr, size_t size)
 static void 
 initialize_mark_sweep_compact(YogEnv* env, YogVm* vm) 
 {
-    /* empty */
+    unsigned int i;
+    for (i = 0; i < MARK_SWEEP_COMPACT_NUM_SIZE; i++) {
+        vm->gc.mark_sweep_compact.heap.freelist[i].next = NULL;
+    }
+
+    unsigned int sizes[] = { 8, 16, 32, 64, 128, 256, 512, 1024, 2048, };
+    unsigned int index = 0;
+    unsigned int size;
+    for (size = 0; size < MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE; size++) {
+        if (sizes[index] < size) {
+            index++;
+        }
+        vm->gc.mark_sweep_compact.heap.size2index[size] = index;
+    }
 }
 
 static void 
