@@ -43,6 +43,25 @@ typedef void (*Finalizer)(YogEnv*, void*);
 
 #define SURVIVE_INDEX_MAX    8
 
+struct YogMarkSweepCompactFreeList {
+    struct YogMarkSweepCompactFreeList* next;
+};
+
+typedef struct YogMarkSweepCompactFreeList YogMarkSweepCompactFreeList;
+
+#define MARK_SWEEP_COMPACT_NUM_SIZE         9
+#define MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE  2049
+
+struct YogMarkSweepCompactHeap {
+    size_t chunk_size;
+    struct YogMarkSweepCompactChunk* chunks;
+    struct YogMarkSweepCompactLargeObject* large_obj;
+    struct YogMarkSweepCompactFreeList freelist[MARK_SWEEP_COMPACT_NUM_SIZE];
+    unsigned int size2index[MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE];
+};
+
+typedef struct YogMarkSweepCompactHeap YogMarkSweepCompactHeap;
+
 struct YogVm {
     BOOL gc_stress;
     BOOL disable_gc;
@@ -65,6 +84,9 @@ struct YogVm {
             size_t threshold;
             size_t allocated_size;
         } mark_sweep;
+        struct {
+            struct YogMarkSweepCompactHeap heap;
+        } mark_sweep_compact;
     } gc;
     struct {
         BOOL print;
@@ -362,6 +384,7 @@ void* YogVm_alloc(YogEnv*, YogVm*, ChildrenKeeper, Finalizer, size_t);
 void YogVm_boot(YogEnv*, YogVm*);
 void YogVm_config_copying(YogEnv*, YogVm*, unsigned int);
 void YogVm_config_mark_sweep(YogEnv*, YogVm*, size_t);
+void YogVm_config_mark_sweep_compact(YogEnv*, YogVm*, size_t);
 void YogVm_delete(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);

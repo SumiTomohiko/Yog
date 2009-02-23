@@ -697,6 +697,31 @@ realloc_mem_mark_sweep(YogEnv* env, YogVm* vm, void* ptr, size_t size)
 
 #undef REALLOC
 
+static void 
+initialize_mark_sweep_compact(YogEnv* env, YogVm* vm) 
+{
+    /* empty */
+}
+
+static void 
+mark_sweep_compact_gc(YogEnv* env, YogVm* vm) 
+{
+    /* TODO */
+}
+
+static void* 
+alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+{
+    /* TODO */
+    return NULL;
+}
+
+static void 
+free_mem_mark_sweep_compact(YogEnv* env, YogVm* vm) 
+{
+    /* TODO */
+}
+
 void 
 YogVm_init(YogVm* vm, YogGcType gc)
 {
@@ -733,9 +758,19 @@ YogVm_init(YogVm* vm, YogGcType gc)
         vm->gc.mark_sweep.threshold = 0;
         vm->gc.mark_sweep.allocated_size = 0;
         break;
+    case GC_MARK_SWEEP_COMPACT:
+        vm->init_gc = initialize_mark_sweep_compact;
+        vm->exec_gc = mark_sweep_compact_gc;
+        vm->alloc_mem = alloc_mem_mark_sweep_compact;
+        vm->realloc_mem = NULL;
+        vm->free_mem = free_mem_mark_sweep_compact;
+        vm->gc.mark_sweep_compact.heap.chunks = NULL;
+        vm->gc.mark_sweep_compact.heap.large_obj = NULL;
+        vm->gc.mark_sweep_compact.heap.chunk_size = 0;
+        break;
     default:
-        fprintf(stderr, "Unknown GC type.\n");
-        return;
+        fprintf(stderr, "Unknown GC type.");
+        abort();
         break;
     }
     vm->gc_stat.print = FALSE;
@@ -831,6 +866,12 @@ void
 YogVm_delete(YogEnv* env, YogVm* vm) 
 {
     (*vm->free_mem)(env, vm);
+}
+
+void 
+YogVm_config_mark_sweep_compact(YogEnv* env, YogVm* vm, size_t chunk_size) 
+{
+    vm->gc.mark_sweep_compact.heap.chunk_size = chunk_size;
 }
 
 /**

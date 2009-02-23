@@ -5,6 +5,7 @@
 #include "gc.h"
 #include "yog/code.h"
 #include "yog/compile.h"
+#include "yog/error.h"
 #include "yog/parser.h"
 #include "yog/yog.h"
 
@@ -144,7 +145,6 @@ main(int argc, char* argv[])
     YogEnv env;
     env.vm = &vm;
     env.th = NULL;
-    YogVm_boot(&env, env.vm);
     switch (gc_type) {
     case GC_BDW:
         GC_INIT();
@@ -155,10 +155,16 @@ main(int argc, char* argv[])
     case GC_MARK_SWEEP:
         YogVm_config_mark_sweep(&env, env.vm, threshold);
         break;
+    case GC_MARK_SWEEP_COMPACT:
+#define CHUNK_SIZE  (16 * 1024 * 1024)
+        YogVm_config_mark_sweep_compact(&env, env.vm, CHUNK_SIZE);
+#undef CHUNK_SIZE
+        break;
     default:
-        ERROR("Unknown GC type.");
+        YOG_BUG(&env, "Unknown GC type");
         break;
     }
+    YogVm_boot(&env, env.vm);
 
     YogParser parser;
     YogParser_initialize(&env, &parser);
