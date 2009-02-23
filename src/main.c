@@ -15,7 +15,7 @@ usage()
     printf("options:\n");
     printf("  --disable-gc: \n");
     printf("  --gc-stress: \n");
-    printf("  --gc=[bdw|copying|mark-sweep]: \n");
+    printf("  --gc=[bdw|copying|mark-sweep|mark-sweep-compact]: \n");
     printf("  --help: \n");
     printf("  --init-heap-size=size: \n");
     printf("  --print-gc-stat: \n");
@@ -101,6 +101,9 @@ main(int argc, char* argv[])
             }
             else if (strcmp(optarg, "mark-sweep") == 0) {
                 gc_type = GC_MARK_SWEEP;
+            }
+            else if (strcmp(optarg, "mark-sweep-compact") == 0) {
+                gc_type = GC_MARK_SWEEP_COMPACT;
             }
             else {
                 ERROR("Unknown gc type.");

@@ -32,6 +32,7 @@ enum YogGcType {
     GC_BDW, 
     GC_COPYING, 
     GC_MARK_SWEEP, 
+    GC_MARK_SWEEP_COMPACT, 
 };
 
 typedef enum YogGcType YogGcType;
