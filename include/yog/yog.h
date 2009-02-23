@@ -56,7 +56,8 @@ struct YogMarkSweepCompactHeap {
     size_t chunk_size;
     struct YogMarkSweepCompactChunk* chunks;
     struct YogMarkSweepCompactLargeObject* large_obj;
-    struct YogMarkSweepCompactFreeList freelist[MARK_SWEEP_COMPACT_NUM_SIZE];
+    struct YogMarkSweepCompactFreeList* freelist[MARK_SWEEP_COMPACT_NUM_SIZE];
+    size_t freelist_size[MARK_SWEEP_COMPACT_NUM_SIZE];
     unsigned int size2index[MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE];
 };
 
