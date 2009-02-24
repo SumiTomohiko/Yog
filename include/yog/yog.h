@@ -49,7 +49,7 @@ struct YogMarkSweepCompactFreeList {
 
 typedef struct YogMarkSweepCompactFreeList YogMarkSweepCompactFreeList;
 
-#define MARK_SWEEP_COMPACT_NUM_SIZE         9
+#define MARK_SWEEP_COMPACT_NUM_SIZE         7
 #define MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE  2049
 
 struct YogMarkSweepCompactHeap {
@@ -87,6 +87,7 @@ struct YogVm {
         } mark_sweep;
         struct {
             struct YogMarkSweepCompactHeap heap;
+            struct YogMarkSweepCompactHeader* header;
         } mark_sweep_compact;
     } gc;
     struct {

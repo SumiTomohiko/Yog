@@ -18,6 +18,14 @@
 #include "yog/st.h"
 #include "yog/yog.h"
 
+#define PAGE_SIZE   4096
+
+struct GcObjectStat {
+    unsigned int survive_num;
+};
+
+typedef struct GcObjectStat GcObjectStat;
+
 struct YogMarkSweepCompactChunk {
     struct YogMarkSweepCompactChunk* next;
     struct YogMarkSweepCompactFreeList* pages;
@@ -26,12 +34,25 @@ struct YogMarkSweepCompactChunk {
 typedef struct YogMarkSweepCompactChunk YogMarkSweepCompactChunk;
 
 struct YogMarkSweepCompactPage {
+    size_t obj_size;
     unsigned int num_obj;
     unsigned int num_obj_avail;
     struct YogMarkSweepCompactChunk* chunk;
 };
 
 typedef struct YogMarkSweepCompactPage YogMarkSweepCompactPage;
+
+struct YogMarkSweepCompactHeader {
+    struct GcObjectStat stat;
+    struct YogMarkSweepCompactHeader* prev;
+    struct YogMarkSweepCompactHeader* next;
+    ChildrenKeeper keeper;
+    Finalizer finalizer;
+    BOOL marked;
+    size_t size;
+};
+
+typedef struct YogMarkSweepCompactHeader YogMarkSweepCompactHeader;
 
 struct YogHeap {
     size_t size;
@@ -41,12 +62,6 @@ struct YogHeap {
 };
 
 typedef struct YogHeap YogHeap;
-
-struct GcObjectStat {
-    unsigned int survive_num;
-};
-
-typedef struct GcObjectStat GcObjectStat;
 
 struct YogMarkSweepHeader {
     struct GcObjectStat stat;
@@ -587,6 +602,29 @@ finalize_mark_sweep(YogEnv* env, YogMarkSweepHeader* header)
     }
 }
 
+static void* 
+keep_object_mark_sweep_compact(YogEnv* env, void* ptr) 
+{
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)ptr - 1;
+    if (!header->marked) {
+        GcObjectStat_increment_survive_num(&header->stat);
+        increment_living_object_number(ENV_VM(env), header->stat.survive_num);
+        increment_total_object_number(ENV_VM(env));
+        header->marked = TRUE;
+
+        ChildrenKeeper keeper = header->keeper;
+        if (keeper != NULL) {
+            (*keeper)(env, ptr, keep_object_mark_sweep_compact);
+        }
+    }
+
+    return ptr;
+}
+
 static void 
 mark_sweep_gc(YogEnv* env, YogVm* vm) 
 {
@@ -721,7 +759,7 @@ initialize_mark_sweep_compact(YogEnv* env, YogVm* vm)
         vm->gc.mark_sweep_compact.heap.freelist[i] = NULL;
     }
 
-    unsigned int sizes[] = { 8, 16, 32, 64, 128, 256, 512, 1024, 2048, };
+    unsigned int sizes[] = { 32, 64, 128, 256, 512, 1024, 2048, };
     unsigned int index = 0;
     unsigned int size;
     for (size = 0; size < MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE; size++) {
@@ -734,31 +772,112 @@ initialize_mark_sweep_compact(YogEnv* env, YogVm* vm)
     for (i = 0; i < MARK_SWEEP_COMPACT_NUM_SIZE; i++) {
         vm->gc.mark_sweep_compact.heap.freelist_size[i] = sizes[i];
     }
+
+    vm->gc.mark_sweep_compact.header = NULL;
+}
+
+static void 
+finalize_mark_sweep_compact(YogEnv* env, YogMarkSweepCompactHeader* header) 
+{
+    if (header->finalizer != NULL) {
+        (*header->finalizer)(env, header + 1);
+    }
+}
+
+static void 
+YogMarkSweepCompactHeader_delete(YogVm* vm, YogMarkSweepCompactHeader* header) 
+{
+    size_t size = header->size;
+    destroy_memory(header, size);
+
+    YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)((uintptr_t)header & ~(PAGE_SIZE - 1));
+    page->num_obj_avail++;
+    if (page->num_obj_avail < page->num_obj) {
+        unsigned int index = vm->gc.mark_sweep_compact.heap.size2index[size];
+        YogMarkSweepCompactFreeList* list = (YogMarkSweepCompactFreeList*)header;
+        list->next = vm->gc.mark_sweep_compact.heap.freelist[index];
+        vm->gc.mark_sweep_compact.heap.freelist[index] = list;
+    }
+    else {
+        YogMarkSweepCompactChunk* chunk = page->chunk;
+        YogMarkSweepCompactFreeList* prev_pages = chunk->pages;
+        ((YogMarkSweepCompactFreeList*)page)->next = chunk->pages;
+        chunk->pages = (YogMarkSweepCompactFreeList*)page;
+        if (prev_pages == NULL) {
+            chunk->next = vm->gc.mark_sweep_compact.heap.chunks;
+            vm->gc.mark_sweep_compact.heap.chunks = chunk;
+        }
+    }
 }
 
 static void 
 mark_sweep_compact_gc(YogEnv* env, YogVm* vm) 
 {
-    /* TODO */
+    YogMarkSweepCompactHeader* header = vm->gc.mark_sweep_compact.header;
+    while (header != NULL) {
+        header->marked = FALSE;
+        header = header->next;
+    }
+
+    keep_children(env, vm, keep_object_mark_sweep_compact);
+
+    header = vm->gc.mark_sweep_compact.header;
+    while (header != NULL) {
+        YogMarkSweepCompactHeader* next = header->next;
+
+        if (!header->marked) {
+            finalize_mark_sweep_compact(env, header);
+
+            if (header->prev != NULL) {
+                header->prev->next = next;
+            }
+            else {
+                vm->gc.mark_sweep_compact.header = next;
+            }
+            if (next != NULL) {
+                next->prev = header->prev;
+            }
+
+            YogMarkSweepCompactHeader_delete(vm, header);
+        }
+
+        header = next;
+    }
 }
 
 static void* 
 alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
+    size_t total_size = size + sizeof(YogMarkSweepCompactHeader);
 #define IS_SMALL_OBJECT(size) (size < (MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE - 1))
-    if (IS_SMALL_OBJECT(size)) {
-        unsigned int index = vm->gc.mark_sweep_compact.heap.size2index[size];
+    if (IS_SMALL_OBJECT(total_size)) {
+        unsigned int index = vm->gc.mark_sweep_compact.heap.size2index[total_size];
         YogMarkSweepCompactFreeList** freelist = vm->gc.mark_sweep_compact.heap.freelist;
 #define RETURN_OBJECT   do { \
-    void* p = freelist[index]; \
+    YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)freelist[index]; \
     freelist[index] = freelist[index]->next; \
-    return p; \
+    \
+    YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)((uintptr_t)header & ~(PAGE_SIZE - 1)); \
+    page->num_obj_avail--; \
+    \
+    header->stat.survive_num = 0; \
+    header->prev = NULL; \
+    header->next = vm->gc.mark_sweep_compact.header; \
+    header->keeper = keeper; \
+    header->finalizer = finalizer; \
+    header->marked = FALSE; \
+    header->size = total_size; \
+    if (vm->gc.mark_sweep_compact.header != NULL) { \
+        vm->gc.mark_sweep_compact.header->prev = header; \
+    } \
+    vm->gc.mark_sweep_compact.header = header; \
+    \
+    return header + 1; \
 } while (0)
         if (freelist[index] != NULL) {
             RETURN_OBJECT;
         }
 
-#define PAGE_SIZE   (4096)
         YogMarkSweepCompactChunk* chunk = vm->gc.mark_sweep_compact.heap.chunks;
         if (chunk == NULL) {
             chunk = malloc(sizeof(YogMarkSweepCompactChunk));
@@ -809,12 +928,12 @@ alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Fina
         }
         obj = NULL;
 
+        page->obj_size = size;
         page->num_obj = num_obj;
         page->num_obj_avail = num_obj;
         page->chunk = chunk;
 
         RETURN_OBJECT;
-#undef PAGE_SIZE
 #undef RETURN_OBJECT
     }
     else {
