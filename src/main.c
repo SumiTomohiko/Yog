@@ -67,7 +67,7 @@ main(int argc, char* argv[])
 #define DEFAULT_INIT_HEAP_SIZE  (1)
     size_t init_heap_size = DEFAULT_INIT_HEAP_SIZE;
 #undef DEFAULT_INIT_HEAP_SIZE
-#define DEFAULT_THRESHOLD   (1024)
+#define DEFAULT_THRESHOLD   (1024 * 1024)
     size_t threshold = DEFAULT_THRESHOLD;
 #undef DEFAULT_THRESHOLD
     YogGcType gc_type = GC_COPYING;
@@ -157,7 +157,7 @@ main(int argc, char* argv[])
         break;
     case GC_MARK_SWEEP_COMPACT:
 #define CHUNK_SIZE  (16 * 1024 * 1024)
-        YogVm_config_mark_sweep_compact(&env, env.vm, CHUNK_SIZE);
+        YogVm_config_mark_sweep_compact(&env, env.vm, CHUNK_SIZE, threshold);
 #undef CHUNK_SIZE
         break;
     default:
@@ -187,7 +187,8 @@ main(int argc, char* argv[])
     YogThread_eval_package(&env, th, pkg);
 
     if (vm.gc_stat.print) {
-        printf("GC duration total: %d[usec]\n", vm.gc_stat.duration_total);
+        printf("GC duration total: %u[usec]\n", vm.gc_stat.duration_total);
+        printf("allocation #: %u\n", vm.gc_stat.num_alloc);
     }
 
     YogVm_delete(&env, env.vm);

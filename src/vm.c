@@ -26,6 +26,12 @@ struct GcObjectStat {
 
 typedef struct GcObjectStat GcObjectStat;
 
+struct YogMarkSweepCompactFreeList {
+    struct YogMarkSweepCompactFreeList* next;
+};
+
+typedef struct YogMarkSweepCompactFreeList YogMarkSweepCompactFreeList;
+
 struct YogMarkSweepCompactChunk {
     struct YogMarkSweepCompactChunk* next;
     struct YogMarkSweepCompactFreeList* pages;
@@ -34,9 +40,11 @@ struct YogMarkSweepCompactChunk {
 typedef struct YogMarkSweepCompactChunk YogMarkSweepCompactChunk;
 
 struct YogMarkSweepCompactPage {
+    struct YogMarkSweepCompactPage* next;
     size_t obj_size;
     unsigned int num_obj;
     unsigned int num_obj_avail;
+    struct YogMarkSweepCompactFreeList* freelist;
     struct YogMarkSweepCompactChunk* chunk;
 };
 
@@ -299,6 +307,8 @@ YogVm_realloc(YogEnv* env, YogVm* vm, void* ptr, size_t size)
 void* 
 YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
+    vm->gc_stat.num_alloc++;
+
     return (*vm->alloc_mem)(env, vm, keeper, finalizer, size);
 }
 
@@ -754,9 +764,11 @@ realloc_mem_mark_sweep(YogEnv* env, YogVm* vm, void* ptr, size_t size)
 static void 
 initialize_mark_sweep_compact(YogEnv* env, YogVm* vm) 
 {
+    vm->gc.mark_sweep_compact.heap.chunks = NULL;
+
     unsigned int i;
     for (i = 0; i < MARK_SWEEP_COMPACT_NUM_SIZE; i++) {
-        vm->gc.mark_sweep_compact.heap.freelist[i] = NULL;
+        vm->gc.mark_sweep_compact.heap.pages[i] = NULL;
     }
 
     unsigned int sizes[] = { 32, 64, 128, 256, 512, 1024, 2048, };
@@ -792,21 +804,34 @@ YogMarkSweepCompactHeader_delete(YogVm* vm, YogMarkSweepCompactHeader* header)
 
     YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)((uintptr_t)header & ~(PAGE_SIZE - 1));
     page->num_obj_avail++;
-    if (page->num_obj_avail < page->num_obj) {
-        unsigned int index = vm->gc.mark_sweep_compact.heap.size2index[size];
-        YogMarkSweepCompactFreeList* list = (YogMarkSweepCompactFreeList*)header;
-        list->next = vm->gc.mark_sweep_compact.heap.freelist[index];
-        vm->gc.mark_sweep_compact.heap.freelist[index] = list;
-    }
-    else {
+    YogMarkSweepCompactHeap* heap = &vm->gc.mark_sweep_compact.heap;
+    unsigned int index = heap->size2index[size];
+    if (page->num_obj_avail == page->num_obj) {
+        YogMarkSweepCompactPage* pages = heap->pages[index];
+        if (pages == page) {
+            heap->pages[index] = pages->next;
+        }
+        else {
+            while (pages != NULL) {
+                if (pages->next == page) {
+                    pages->next = page->next;
+                    break;
+                }
+                pages = pages->next;
+            }
+        }
+
         YogMarkSweepCompactChunk* chunk = page->chunk;
-        YogMarkSweepCompactFreeList* prev_pages = chunk->pages;
         ((YogMarkSweepCompactFreeList*)page)->next = chunk->pages;
         chunk->pages = (YogMarkSweepCompactFreeList*)page;
-        if (prev_pages == NULL) {
-            chunk->next = vm->gc.mark_sweep_compact.heap.chunks;
-            vm->gc.mark_sweep_compact.heap.chunks = chunk;
+    }
+    else {
+        if (page->num_obj_avail == 1) {
+            page->next = heap->pages[index];
+            heap->pages[index] = page;
         }
+        ((YogMarkSweepCompactFreeList*)header)->next = page->freelist;
+        page->freelist = (YogMarkSweepCompactFreeList*)header;
     }
 }
 
@@ -843,98 +868,110 @@ mark_sweep_compact_gc(YogEnv* env, YogVm* vm)
 
         header = next;
     }
+
+    /**
+     * TODO: free large objects.
+     */
+
+    vm->gc.mark_sweep_compact.allocated_size = 0;
 }
 
 static void* 
 alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     size_t total_size = size + sizeof(YogMarkSweepCompactHeader);
+    vm->gc.mark_sweep_compact.allocated_size += total_size;
+    if (!vm->disable_gc) {
+        if (vm->gc.mark_sweep_compact.threshold < vm->gc.mark_sweep_compact.allocated_size) {
+            vm->need_gc = TRUE;
+        }
+    }
+
 #define IS_SMALL_OBJECT(size) (size < (MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE - 1))
     if (IS_SMALL_OBJECT(total_size)) {
         unsigned int index = vm->gc.mark_sweep_compact.heap.size2index[total_size];
-        YogMarkSweepCompactFreeList** freelist = vm->gc.mark_sweep_compact.heap.freelist;
-#define RETURN_OBJECT   do { \
-    YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)freelist[index]; \
-    freelist[index] = freelist[index]->next; \
-    \
-    YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)((uintptr_t)header & ~(PAGE_SIZE - 1)); \
-    page->num_obj_avail--; \
-    \
-    header->stat.survive_num = 0; \
-    header->prev = NULL; \
-    header->next = vm->gc.mark_sweep_compact.header; \
-    header->keeper = keeper; \
-    header->finalizer = finalizer; \
-    header->marked = FALSE; \
-    header->size = total_size; \
-    if (vm->gc.mark_sweep_compact.header != NULL) { \
-        vm->gc.mark_sweep_compact.header->prev = header; \
-    } \
-    vm->gc.mark_sweep_compact.header = header; \
-    \
-    return header + 1; \
-} while (0)
-        if (freelist[index] != NULL) {
-            RETURN_OBJECT;
-        }
+        YogMarkSweepCompactPage* page = vm->gc.mark_sweep_compact.heap.pages[index];
+        if (page == NULL) {
+            YogMarkSweepCompactChunk* chunk = vm->gc.mark_sweep_compact.heap.chunks;
+            if (chunk == NULL) {
+                chunk = malloc(sizeof(YogMarkSweepCompactChunk));
 
-        YogMarkSweepCompactChunk* chunk = vm->gc.mark_sweep_compact.heap.chunks;
-        if (chunk == NULL) {
-            chunk = malloc(sizeof(YogMarkSweepCompactChunk));
+                size_t chunk_size = vm->gc.mark_sweep_compact.heap.chunk_size;
+                size_t mmap_size = chunk_size + PAGE_SIZE;
+                unsigned char* mmap_begin = mmap(NULL, mmap_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+                YOG_ASSERT(env, mmap_begin != MAP_FAILED, "mmap failure");
+                unsigned char* chunk_begin = (unsigned char*)(((uintptr_t)mmap_begin + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1));
+                if (mmap_begin != chunk_begin) {
+                    munmap(mmap_begin, chunk_begin - mmap_begin);
+                }
+                unsigned char* mmap_end = mmap_begin + mmap_size;
+                unsigned char* chunk_end = chunk_begin + chunk_size;
+                if (mmap_end != chunk_end) {
+                    munmap(chunk_end, mmap_end - chunk_end);
+                }
 
-            size_t chunk_size = vm->gc.mark_sweep_compact.heap.chunk_size;
-            size_t mmap_size = chunk_size + PAGE_SIZE;
-            unsigned char* mmap_begin = mmap(NULL, mmap_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-            unsigned char* chunk_begin = (unsigned char*)(((uintptr_t)mmap_begin + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1));
-            if (mmap_begin != chunk_begin) {
-                munmap(mmap_begin, chunk_begin - mmap_begin);
-            }
-            unsigned char* mmap_end = mmap_begin + mmap_size;
-            unsigned char* chunk_end = chunk_begin + chunk_size;
-            if (mmap_end != chunk_end) {
-                munmap(chunk_end, mmap_end - chunk_end);
+                YogMarkSweepCompactFreeList* pages = (YogMarkSweepCompactFreeList*)mmap_begin;
+                unsigned int num_pages = chunk_size / PAGE_SIZE;
+                unsigned int i;
+                for (i = 0; i < num_pages - 1; i++) {
+                    pages->next = (YogMarkSweepCompactFreeList*)((unsigned char*)pages + PAGE_SIZE);
+                    pages = pages->next;
+                }
+                pages->next = NULL;
+
+                chunk->pages = (YogMarkSweepCompactFreeList*)mmap_begin;
+
+                chunk->next = NULL;
+                vm->gc.mark_sweep_compact.heap.chunks = chunk;
             }
 
-            YogMarkSweepCompactFreeList* pages = (YogMarkSweepCompactFreeList*)mmap_begin;
-            unsigned int num_pages = chunk_size / PAGE_SIZE;
+            page = (YogMarkSweepCompactPage*)chunk->pages;
+            chunk->pages = chunk->pages->next;
+            if (chunk->pages == NULL) {
+                vm->gc.mark_sweep_compact.heap.chunks = chunk->next;
+            }
+            vm->gc.mark_sweep_compact.heap.pages[index] = page;
+
+            unsigned int size = vm->gc.mark_sweep_compact.heap.freelist_size[index];
+            unsigned int num_obj = (PAGE_SIZE - sizeof(YogMarkSweepCompactPage)) / size;
+            YogMarkSweepCompactFreeList* obj = (YogMarkSweepCompactFreeList*)(page + 1);
+            page->freelist = obj;
             unsigned int i;
-            for (i = 0; i < num_pages - 1; i++) {
-                pages->next = (YogMarkSweepCompactFreeList*)((unsigned char*)pages + PAGE_SIZE);
-                pages = pages->next;
+            for (i = 0; i < num_obj - 1; i++) {
+                obj->next = (YogMarkSweepCompactFreeList*)((unsigned char*)obj + size);
+                obj = obj->next;
             }
-            pages->next = NULL;
+            obj->next = NULL;
 
-            chunk->pages = (YogMarkSweepCompactFreeList*)mmap_begin;
-
-            chunk->next = NULL;
-            vm->gc.mark_sweep_compact.heap.chunks = chunk;
+            page->next = NULL;
+            page->obj_size = size;
+            page->num_obj = num_obj;
+            page->num_obj_avail = num_obj;
+            page->chunk = chunk;
         }
 
-        YogMarkSweepCompactFreeList* pages = chunk->pages;
-        chunk->pages = pages->next;
-        if (chunk->pages == NULL) {
-            vm->gc.mark_sweep_compact.heap.chunks = chunk->next;
+        YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)page->freelist;
+        page->freelist = page->freelist->next;
+        page->num_obj_avail--;
+        if (page->num_obj_avail == 0) {
+            vm->gc.mark_sweep_compact.heap.pages[index] = page->next;
         }
 
-        YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)pages;
-        unsigned int size = vm->gc.mark_sweep_compact.heap.freelist_size[index];
-        unsigned int num_obj = (PAGE_SIZE - sizeof(YogMarkSweepCompactPage)) / size;
-        YogMarkSweepCompactFreeList* obj = (YogMarkSweepCompactFreeList*)(page + 1);
-        freelist[index] = obj;
-        unsigned int i;
-        for (i = 0; i < num_obj - 1; i++) {
-            obj->next = (YogMarkSweepCompactFreeList*)((unsigned char*)obj + size);
-            obj = obj->next;
+        initialize_memory(header, total_size);
+        GcObjectStat_initialize(&header->stat);
+        header->prev = NULL;
+        header->next = vm->gc.mark_sweep_compact.header;
+        if (vm->gc.mark_sweep_compact.header != NULL) {
+            vm->gc.mark_sweep_compact.header->prev = header;
         }
-        obj = NULL;
+        vm->gc.mark_sweep_compact.header = header;
 
-        page->obj_size = size;
-        page->num_obj = num_obj;
-        page->num_obj_avail = num_obj;
-        page->chunk = chunk;
+        header->size = total_size;
+        header->keeper = keeper;
+        header->finalizer = finalizer;
+        header->marked = FALSE;
 
-        RETURN_OBJECT;
-#undef RETURN_OBJECT
+        return header + 1;
     }
     else {
         /* TODO */
@@ -996,6 +1033,8 @@ YogVm_init(YogVm* vm, YogGcType gc)
         vm->gc.mark_sweep_compact.heap.chunks = NULL;
         vm->gc.mark_sweep_compact.heap.large_obj = NULL;
         vm->gc.mark_sweep_compact.heap.chunk_size = 0;
+        vm->gc.mark_sweep_compact.threshold = 0;
+        vm->gc.mark_sweep_compact.allocated_size = 0;
         break;
     default:
         fprintf(stderr, "Unknown GC type.");
@@ -1006,6 +1045,7 @@ YogVm_init(YogVm* vm, YogGcType gc)
     vm->gc_stat.duration_total = 0;
     reset_living_object_count(vm);
     reset_total_object_count(vm);
+    vm->gc_stat.num_alloc = 0;
 
     vm->next_id = 0;
     vm->id2name = NULL;
@@ -1098,9 +1138,10 @@ YogVm_delete(YogEnv* env, YogVm* vm)
 }
 
 void 
-YogVm_config_mark_sweep_compact(YogEnv* env, YogVm* vm, size_t chunk_size) 
+YogVm_config_mark_sweep_compact(YogEnv* env, YogVm* vm, size_t chunk_size, size_t threshold) 
 {
     vm->gc.mark_sweep_compact.heap.chunk_size = chunk_size;
+    vm->gc.mark_sweep_compact.threshold = threshold;
 }
 
 /**
