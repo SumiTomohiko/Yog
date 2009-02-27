@@ -49,6 +49,8 @@ typedef void (*Finalizer)(YogEnv*, void*);
 struct YogMarkSweepCompactHeap {
     size_t chunk_size;
     struct YogMarkSweepCompactChunk* chunks;
+    struct YogMarkSweepCompactChunk* all_chunks;
+    struct YogMarkSweepCompactChunk* last_chunk;
     struct YogMarkSweepCompactPage* pages[MARK_SWEEP_COMPACT_NUM_SIZE];
     struct YogMarkSweepCompactLargeObject* large_obj;
     size_t freelist_size[MARK_SWEEP_COMPACT_NUM_SIZE];
