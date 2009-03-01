@@ -4,8 +4,6 @@
 #include "yog/error.h"
 #include "yog/yog.h"
 
-#include <stdio.h>
-
 static void 
 extend_locals(YogEnv* env, YogCFrame* frame, unsigned int n) 
 {
