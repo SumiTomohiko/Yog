@@ -8,7 +8,7 @@ from time import time
 
 class TestCase(object):
 
-    def _test(self, src, stdout="", stderr="", status=0, options=[], timeout=5, remove_tmpfile=True):
+    def _test(self, src, stdout="", stderr="", status=0, options=[], timeout=30, remove_tmpfile=True):
         try:
             env_gc = environ["GC"]
         except KeyError:
