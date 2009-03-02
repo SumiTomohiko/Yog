@@ -624,6 +624,20 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
     th->cur_frame = (*keeper)(env, th->cur_frame);
     th->jmp_val = YogVal_keep(env, th->jmp_val, keeper);
+
+    YogLocals* locals = th->locals;
+    while (locals != NULL) {
+        unsigned int i;
+        for (i = 0; i < locals->num_vals; i++) {
+            unsigned int j;
+            for (j = 0; j < locals->size; j++) {
+                YogVal* val = &locals->vals[i][j];
+                *val = YogVal_keep(env, *val, keeper);
+            }
+        }
+
+        locals = locals->next;
+    }
 }
 
 YogThread*
@@ -633,6 +647,7 @@ YogThread_new(YogEnv* env)
     th->cur_frame = NULL;
     th->jmp_buf_list = NULL;
     th->jmp_val = YUNDEF;
+    th->locals = NULL;
 
     return th;
 }

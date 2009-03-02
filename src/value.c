@@ -132,21 +132,21 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
         return FALSE;
     }
 
-#define RETURN(f, a, b) do {            \
+#define RET(f, a, b) do {            \
     return f(a) == f(b) ? TRUE : FALSE; \
 } while (0)
     switch (VAL_TYPE(a)) {
     case VAL_INT:
-        RETURN(VAL2INT, a, b);
+        RET(VAL2INT, a, b);
         break;
     case VAL_FLOAT:
-        RETURN(VAL2FLOAT, a, b);
+        RET(VAL2FLOAT, a, b);
         break;
     case VAL_SYMBOL:
-        RETURN(VAL2ID, a, b);
+        RET(VAL2ID, a, b);
         break;
     case VAL_PTR:
-        RETURN(VAL2PTR, a, b);
+        RET(VAL2PTR, a, b);
         break;
     case VAL_BOOL:
         if (VAL2BOOL(a)) {
@@ -172,7 +172,7 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
         YOG_ASSERT(env, FALSE, "Uknown value type.");
         break;
     }
-#undef RETURN
+#undef RET
 
     /* NOTREACHED */
     return FALSE;

@@ -251,19 +251,6 @@ typedef struct YogCFrame YogCFrame;
 #define SELF(env)           (CUR_C_FRAME(env)->self)
 #define ARG(env, i)         (CUR_C_FRAME(env)->args->items[i])
 
-#define FRAME_DECL_LOCAL(env, index, val) \
-    unsigned int index = CUR_C_FRAME(env)->locals_size; \
-    YogFrame_add_locals(env, CUR_FRAME(env), 1, val)
-#define __FRAME_LOCAL__(env, i) \
-    YogValArray_at(env, CUR_FRAME(env)->locals, i)
-#define FRAME_LOCAL(env, val, i)    val = __FRAME_LOCAL__(env, i)
-#define FRAME_LOCAL_PTR(env, ptr, i) \
-                                    ptr = VAL2PTR(__FRAME_LOCAL__(env, i))
-#define FRAME_LOCAL_OBJ(env, obj, type, i) \
-                                    obj = OBJ_AS(type, __FRAME_LOCAL__(env, i))
-#define FRAME_LOCAL_ARRAY(env, obj, i) \
-                                    FRAME_LOCAL_OBJ(env, obj, YogArray, i)
-
 struct YogOuterVars {
     unsigned int size;
     struct YogValArray* items[0];
@@ -316,10 +303,41 @@ struct YogJmpBuf {
 
 typedef struct YogJmpBuf YogJmpBuf;
 
+#define NUM_VALS    4
+
+struct YogLocals {
+    struct YogLocals* next;
+    unsigned int num_vals;
+    unsigned int size;
+    struct YogVal* vals[NUM_VALS];
+};
+
+typedef struct YogLocals YogLocals;
+
+#define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = ENV_TH(env)->locals
+#define RESTORE_LOCALS(env)     ENV_TH(env)->locals = __cur_locals__
+#define PUSH_LOCAL(env, x) \
+    YogLocals __locals_##x##__; \
+    __locals_##x##__.num_vals = 1; \
+    __locals_##x##__.size = 1; \
+    __locals_##x##__.vals[0] = &(x); \
+    __locals_##x##__.next = ENV_TH(env)->locals; \
+    ENV_TH(env)->locals = &__locals_##x##__
+#define POP_LOCALS(env)         ENV_TH(env)->locals = ENV_TH(env)->locals->next
+#define RETURN(env, val)        do { \
+    RESTORE_LOCALS(env); \
+    return val; \
+} while (0)
+#define RETURN_VOID(env)        do { \
+    RESTORE_LOCALS(env); \
+    return; \
+} while (0)
+
 struct YogThread {
     struct YogFrame* cur_frame;
     struct YogJmpBuf* jmp_buf_list;
     struct YogVal jmp_val;
+    struct YogLocals* locals;
 };
 
 typedef struct YogThread YogThread;
