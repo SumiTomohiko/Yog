@@ -173,18 +173,27 @@ main(int argc, char* argv[])
     if (optind < argc) {
         filename = argv[optind];
     }
-    YogArray* stmts = YogParser_parse_file(&env, &parser, filename);
 
-    YogCode* code = YogCompiler_compile_module(&env, filename, stmts);
+    do {
+        YogVal stmts = YNIL;
+        YogVal code = YNIL;
+        YogVal pkg = YNIL;
+        PUSH_LOCALS3(&env, stmts, code, pkg);
 
-    YogThread* th = YogThread_new(&env);
-    env.th = th;
-    env.vm->thread = th;
+        stmts = OBJ2VAL(YogParser_parse_file(&env, &parser, filename));
+        code = PTR2VAL(YogCompiler_compile_module(&env, filename, OBJ_AS(YogArray, stmts)));
 
-    YogPackage* pkg = YogPackage_new(&env);
-    pkg->code = code;
-    YogVm_register_package(&env, env.vm, "__main__", pkg);
-    YogThread_eval_package(&env, th, pkg);
+        YogThread* th = YogThread_new(&env);
+        env.th = th;
+        env.vm->thread = th;
+
+        pkg = OBJ2VAL(YogPackage_new(&env));
+        OBJ_AS(YogPackage, pkg)->code = VAL2PTR(code);
+        YogVm_register_package(&env, env.vm, "__main__", OBJ_AS(YogPackage, pkg));
+        YogThread_eval_package(&env, th, OBJ_AS(YogPackage, pkg));
+
+        POP_LOCALS(&env);
+    } while (0);
 
     if (vm.gc_stat.print) {
         printf("GC duration total: %u[usec]\n", vm.gc_stat.duration_total);

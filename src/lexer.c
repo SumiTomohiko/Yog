@@ -185,7 +185,7 @@ next_token(YogEnv* env, YogLexer* lexer)
     int n = atoi(lexer->buffer->body->items); \
     YogVal val = INT2VAL(n); \
     SET_STATE(LS_OP); \
-    RETURN_VAL(val, NUMBER); \
+    RETURN_VAL(val, tNUMBER); \
 } while (0)
             if (c == '.') {
                 int c2 = NEXTC();
@@ -200,7 +200,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                     float f = 0;
                     sscanf(lexer->buffer->body->items, "%f", &f);
                     YogVal val = FLOAT2VAL(f);
-                    RETURN_VAL(val, NUMBER);
+                    RETURN_VAL(val, tNUMBER);
                 }
                 else {
                     PUSHBACK(c2);
@@ -254,48 +254,48 @@ next_token(YogEnv* env, YogLexer* lexer)
             YogString* s = YogString_clone(env, lexer->buffer);
             yylval.val = OBJ2VAL(s);
             SET_STATE(LS_OP);
-            return STRING;
+            return tSTRING;
             break;
         }
     case '{':
-        return LBRACE;
+        return tLBRACE;
         break;
     case '}':
-        return RBRACE;
+        return tRBRACE;
         break;
     case '(':
         SET_STATE(LS_EXPR);
-        return LPAR;
+        return tLPAR;
         break;
     case ')':
         SET_STATE(LS_OP);
-        return RPAR;
+        return tRPAR;
         break;
     case '[':
         SET_STATE(LS_EXPR);
-        return LBRACKET;
+        return tLBRACKET;
         break;
     case ']':
         SET_STATE(LS_OP);
-        return RBRACKET;
+        return tRBRACKET;
         break;
     case '.':
         SET_STATE(LS_NAME);
-        return DOT;
+        return tDOT;
         break;
     case ',':
         SET_STATE(LS_EXPR);
-        return COMMA;
+        return tCOMMA;
         break;
     case '+':
         {
             SET_STATE(LS_EXPR);
-            RETURN_NAME1(c, PLUS);
+            RETURN_NAME1(c, tPLUS);
             break;
         }
     case '/':
         if (lexer->state == LS_OP) {
-            return DIV;
+            return tDIV;
         }
         else {
             char delimitor = c;
@@ -346,7 +346,7 @@ next_token(YogEnv* env, YogLexer* lexer)
             yylval.val = OBJ2VAL(regexp);
 
             SET_STATE(LS_EXPR);
-            return REGEXP;
+            return tREGEXP;
             break;
         }
         break;
@@ -355,10 +355,10 @@ next_token(YogEnv* env, YogLexer* lexer)
 
         c = NEXTC();
         if (c == '~') {
-            RETURN_NAME("=~", EQUAL_TILDA);
+            RETURN_NAME("=~", tEQUAL_TILDA);
         }
         else {
-            return EQUAL;
+            return tEQUAL;
         }
         break;
     case '<':
@@ -367,11 +367,11 @@ next_token(YogEnv* env, YogLexer* lexer)
 
             char c2 = NEXTC();
             if (c2 == '<') {
-                RETURN_NAME("<<", LSHIFT);
+                RETURN_NAME("<<", tLSHIFT);
             }
             else {
                 PUSHBACK(c2);
-                RETURN_NAME1(c, LESS);
+                RETURN_NAME1(c, tLESS);
             }
             break;
         }
@@ -386,7 +386,7 @@ next_token(YogEnv* env, YogLexer* lexer)
     case '\n':
         {
             SET_STATE(LS_EXPR);
-            return NEWLINE;
+            return tNEWLINE;
             break;
         }
     default:
@@ -408,7 +408,7 @@ next_token(YogEnv* env, YogLexer* lexer)
             const char* name = lexer->buffer->body->items;
             if (lexer->state == LS_NAME) {
                 yylval.name = INTERN(name);
-                type = NAME;
+                type = tNAME;
             }
             else {
                 const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
@@ -417,7 +417,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                 }
                 else {
                     yylval.name = INTERN(name);
-                    type = NAME;
+                    type = tNAME;
                 }
             }
             SET_STATE(LS_OP);

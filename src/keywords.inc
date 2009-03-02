@@ -112,46 +112,46 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
     {
       {""}, {""},
 #line 18 "src/keywords"
-      {"do", DO},
+      {"do", tDO},
 #line 17 "src/keywords"
-      {"def", DEF},
+      {"def", tDEF},
 #line 26 "src/keywords"
-      {"next", NEXT},
+      {"next", tNEXT},
 #line 23 "src/keywords"
       {"false", tFALSE},
       {""},
 #line 24 "src/keywords"
-      {"finally", FINALLY},
+      {"finally", tFINALLY},
 #line 27 "src/keywords"
-      {"nonlocal", NONLOCAL},
+      {"nonlocal", tNONLOCAL},
       {""}, {""}, {""},
 #line 25 "src/keywords"
-      {"if", IF},
+      {"if", tIF},
 #line 21 "src/keywords"
-      {"end", END},
+      {"end", tEND},
 #line 29 "src/keywords"
       {"true", tTRUE},
 #line 31 "src/keywords"
-      {"while", WHILE},
+      {"while", tWHILE},
 #line 22 "src/keywords"
-      {"except", EXCEPT},
+      {"except", tEXCEPT},
 #line 14 "src/keywords"
-      {"as", AS},
+      {"as", tAS},
 #line 30 "src/keywords"
-      {"try", TRY},
+      {"try", tTRY},
 #line 20 "src/keywords"
-      {"else", ELSE},
+      {"else", tELSE},
 #line 16 "src/keywords"
-      {"class", CLASS},
+      {"class", tCLASS},
 #line 28 "src/keywords"
-      {"return", RETURN},
+      {"return", tRETURN},
       {""},
 #line 13 "src/keywords"
       {"__LINE__", t__LINE__},
 #line 19 "src/keywords"
-      {"elif", ELIF},
+      {"elif", tELIF},
 #line 15 "src/keywords"
-      {"break", BREAK}
+      {"break", tBREAK}
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)

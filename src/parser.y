@@ -330,46 +330,46 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
     unsigned int lineno;
 }
 
-%token AMPER
-%token AS
-%token BAR
-%token BREAK
-%token CLASS
-%token COMMA
-%token DEF
-%token DIV
-%token DO
-%token DOT
-%token DOUBLE_STAR
-%token ELIF
-%token ELSE
-%token END
-%token EQUAL
-%token EQUAL_TILDA
-%token EXCEPT
-%token FINALLY
-%token GREATER
-%token IF
-%token LBRACE
-%token LBRACKET
-%token LESS
-%token LPAR
-%token LSHIFT
-%token NAME
-%token NEWLINE
-%token NEXT
-%token NONLOCAL
-%token NUMBER
-%token PLUS
-%token RBRACE
-%token RBRACKET
-%token REGEXP
-%token RETURN
-%token RPAR
-%token STAR
-%token STRING
-%token TRY
-%token WHILE
+%token tAMPER
+%token tAS
+%token tBAR
+%token tBREAK
+%token tCLASS
+%token tCOMMA
+%token tDEF
+%token tDIV
+%token tDO
+%token tDOT
+%token tDOUBLE_STAR
+%token tELIF
+%token tELSE
+%token tEND
+%token tEQUAL
+%token tEQUAL_TILDA
+%token tEXCEPT
+%token tFINALLY
+%token tGREATER
+%token tIF
+%token tLBRACE
+%token tLBRACKET
+%token tLESS
+%token tLPAR
+%token tLSHIFT
+%token tNAME
+%token tNEWLINE
+%token tNEXT
+%token tNONLOCAL
+%token tNUMBER
+%token tPLUS
+%token tRBRACE
+%token tRBRACKET
+%token tREGEXP
+%token tRETURN
+%token tRPAR
+%token tSTAR
+%token tSTRING
+%token tTRY
+%token tWHILE
 %token tFALSE
 %token tTRUE
 %token t__LINE__
@@ -387,11 +387,11 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 %type<array> params_with_default
 %type<array> params_without_default
 %type<array> stmts
-%type<name> EQUAL_TILDA
-%type<name> LESS
-%type<name> LSHIFT
-%type<name> NAME
-%type<name> PLUS
+%type<name> tEQUAL_TILDA
+%type<name> tLESS
+%type<name> tLSHIFT
+%type<name> tNAME
+%type<name> tPLUS
 %type<name> comp_op
 %type<node> and_expr
 %type<node> arith_expr
@@ -421,9 +421,9 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 %type<node> term
 %type<node> var_param
 %type<node> xor_expr
-%type<val> NUMBER
-%type<val> REGEXP
-%type<val> STRING
+%type<val> tNUMBER
+%type<val> tREGEXP
+%type<val> tSTRING
 %%
 module  : stmts {
             PARSER->stmts = $1;
@@ -448,7 +448,7 @@ stmt    : /* empty */ {
                 $$ = $1;
             }
         }
-        | NAME args {
+        | tNAME args {
             COMMAND_CALL_NEW($$, $1, $2, NULL);
         }
         /*
@@ -458,52 +458,52 @@ stmt    : /* empty */ {
             COMMAND_CALL_NEW($$, $1, $2, blockarg);
         }
         */
-        | TRY stmts excepts ELSE stmts finally_opt END {
+        | tTRY stmts excepts tELSE stmts finally_opt tEND {
             EXCEPT_FINALLY_NEW($$, $2, $3, $5, $6);
         }
-        | TRY stmts excepts finally_opt END {
+        | tTRY stmts excepts finally_opt tEND {
             EXCEPT_FINALLY_NEW($$, $2, $3, NULL, $4);
         }
-        | TRY stmts FINALLY stmts END {
+        | tTRY stmts tFINALLY stmts tEND {
             FINALLY_NEW($$, $2, $4);
         }
-        | WHILE expr stmts END {
+        | tWHILE expr stmts tEND {
             WHILE_NEW($$, $2, $3);
         }
-        | BREAK {
+        | tBREAK {
             BREAK_NEW($$, NULL);
         }
-        | BREAK expr {
+        | tBREAK expr {
             BREAK_NEW($$, $2);
         }
-        | NEXT {
+        | tNEXT {
             NEXT_NEW($$, NULL);
         }
-        | NEXT expr {
+        | tNEXT expr {
             NEXT_NEW($$, $2);
         }
-        | RETURN {
+        | tRETURN {
             RETURN_NEW($$, NULL);
         }
-        | RETURN expr {
+        | tRETURN expr {
             RETURN_NEW($$, $2);
         }
-        | IF expr stmts if_tail END {
+        | tIF expr stmts if_tail tEND {
             IF_NEW($$, $2, $3, $4);
         }
-        | CLASS { $<lineno>$ = PARSER->lineno; } NAME super_opt stmts END {
+        | tCLASS { $<lineno>$ = PARSER->lineno; } tNAME super_opt stmts tEND {
             KLASS_NEW($$, $3, $4, $5);
             $$->lineno = $<lineno>2;
         }
-        | NONLOCAL names {
+        | tNONLOCAL names {
             NONLOCAL_NEW($$, $2);
         }
         ;
-names   : NAME {
+names   : tNAME {
             $$ = YogArray_new(ENV);
             YogArray_push(ENV, $$, ID2VAL($1));
         }
-        | names COMMA NAME {
+        | names tCOMMA tNAME {
             YogArray_push(ENV, $1, ID2VAL($3));
             $$ = $1;
         }
@@ -511,12 +511,12 @@ names   : NAME {
 super_opt   : /* empty */ {
                 $$ = NULL;
             }
-            | GREATER expr {
+            | tGREATER expr {
                 $$ = $2;
             }
             ;
 if_tail : else_opt
-        | ELIF expr stmts if_tail {
+        | tELIF expr stmts if_tail {
             YogNode* node = NULL;
             IF_NEW(node, $2, $3, $4);
             OBJ_ARRAY_NEW($$, node);
@@ -525,99 +525,99 @@ if_tail : else_opt
 else_opt    : /* empty */ {
                 $$ = NULL;
             }
-            | ELSE stmts {
+            | tELSE stmts {
                 $$ = $2;
             }
             ;
-func_def    : DEF NAME LPAR params RPAR stmts END {
+func_def    : tDEF tNAME tLPAR params tRPAR stmts tEND {
                 FUNC_DEF_NEW($$, $2, $4, $6);
             }
             ;
-params  : params_without_default COMMA params_with_default COMMA block_param COMMA var_param COMMA kw_param {
+params  : params_without_default tCOMMA params_with_default tCOMMA block_param tCOMMA var_param tCOMMA kw_param {
             PARAMS_NEW($$, $1, $3, $5, $7, $9);
         }
-        | params_without_default COMMA params_with_default COMMA block_param COMMA var_param {
+        | params_without_default tCOMMA params_with_default tCOMMA block_param tCOMMA var_param {
             PARAMS_NEW($$, $1, $3, $5, $7, NULL);
         }
-        | params_without_default COMMA params_with_default COMMA block_param COMMA kw_param {
+        | params_without_default tCOMMA params_with_default tCOMMA block_param tCOMMA kw_param {
             PARAMS_NEW($$, $1, $3, $5, NULL, $7);
         }
-        | params_without_default COMMA params_with_default COMMA block_param {
+        | params_without_default tCOMMA params_with_default tCOMMA block_param {
             PARAMS_NEW($$, $1, $3, $5, NULL, NULL);
         }
-        | params_without_default COMMA params_with_default COMMA var_param COMMA kw_param {
+        | params_without_default tCOMMA params_with_default tCOMMA var_param tCOMMA kw_param {
             PARAMS_NEW($$, $1, $3, NULL, $5, $7);
         }
-        | params_without_default COMMA params_with_default COMMA var_param {
+        | params_without_default tCOMMA params_with_default tCOMMA var_param {
             PARAMS_NEW($$, $1, $3, NULL, $5, NULL);
         }
-        | params_without_default COMMA params_with_default COMMA kw_param {
+        | params_without_default tCOMMA params_with_default tCOMMA kw_param {
             PARAMS_NEW($$, $1, $3, NULL, NULL, $5);
         }
-        | params_without_default COMMA params_with_default {
+        | params_without_default tCOMMA params_with_default {
             PARAMS_NEW($$, $1, $3, NULL, NULL, NULL);
         }
-        | params_without_default COMMA block_param COMMA var_param COMMA kw_param {
+        | params_without_default tCOMMA block_param tCOMMA var_param tCOMMA kw_param {
             PARAMS_NEW($$, $1, NULL, $3, $5, $7);
         }
-        | params_without_default COMMA block_param COMMA var_param {
+        | params_without_default tCOMMA block_param tCOMMA var_param {
             PARAMS_NEW($$, $1, NULL, $3, $5, NULL);
         }
-        | params_without_default COMMA block_param COMMA kw_param {
+        | params_without_default tCOMMA block_param tCOMMA kw_param {
             PARAMS_NEW($$, $1, NULL, $3, NULL, $5);
         }
-        | params_without_default COMMA block_param {
+        | params_without_default tCOMMA block_param {
             PARAMS_NEW($$, $1, NULL, $3, NULL, NULL);
         }
-        | params_without_default COMMA var_param COMMA kw_param {
+        | params_without_default tCOMMA var_param tCOMMA kw_param {
             PARAMS_NEW($$, $1, NULL, NULL, $3, $5);
         }
-        | params_without_default COMMA var_param {
+        | params_without_default tCOMMA var_param {
             PARAMS_NEW($$, $1, NULL, NULL, $3, NULL);
         }
-        | params_without_default COMMA kw_param {
+        | params_without_default tCOMMA kw_param {
             PARAMS_NEW($$, $1, NULL, NULL, NULL, $3);
         }
         | params_without_default {
             PARAMS_NEW($$, $1, NULL, NULL, NULL, NULL);
         }
-        | params_with_default COMMA block_param COMMA var_param COMMA kw_param {
+        | params_with_default tCOMMA block_param tCOMMA var_param tCOMMA kw_param {
             PARAMS_NEW($$, NULL, $1, $3, $5, $7);
         }
-        | params_with_default COMMA block_param COMMA var_param {
+        | params_with_default tCOMMA block_param tCOMMA var_param {
             PARAMS_NEW($$, NULL, $1, $3, $5, NULL);
         }
-        | params_with_default COMMA block_param COMMA kw_param {
+        | params_with_default tCOMMA block_param tCOMMA kw_param {
             PARAMS_NEW($$, NULL, $1, $3, NULL, $5);
         }
-        | params_with_default COMMA block_param {
+        | params_with_default tCOMMA block_param {
             PARAMS_NEW($$, NULL, $1, $3, NULL, NULL);
         }
-        | params_with_default COMMA var_param COMMA kw_param {
+        | params_with_default tCOMMA var_param tCOMMA kw_param {
             PARAMS_NEW($$, NULL, $1, NULL, $3, $5);
         }
-        | params_with_default COMMA var_param {
+        | params_with_default tCOMMA var_param {
             PARAMS_NEW($$, NULL, $1, NULL, $3, NULL);
         }
-        | params_with_default COMMA kw_param {
+        | params_with_default tCOMMA kw_param {
             PARAMS_NEW($$, NULL, $1, NULL, NULL, $3);
         }
         | params_with_default {
             PARAMS_NEW($$, NULL, $1, NULL, NULL, NULL);
         }
-        | block_param COMMA var_param COMMA kw_param {
+        | block_param tCOMMA var_param tCOMMA kw_param {
             PARAMS_NEW($$, NULL, NULL, $1, $3, $5);
         }
-        | block_param COMMA var_param {
+        | block_param tCOMMA var_param {
             PARAMS_NEW($$, NULL, NULL, $1, $3, NULL);
         }
-        | block_param COMMA kw_param {
+        | block_param tCOMMA kw_param {
             PARAMS_NEW($$, NULL, NULL, $1, NULL, $3);
         }
         | block_param {
             PARAMS_NEW($$, NULL, NULL, $1, NULL, NULL);
         }
-        | var_param COMMA kw_param {
+        | var_param tCOMMA kw_param {
             PARAMS_NEW($$, NULL, NULL, NULL, $1, $3);
         }
         | var_param {
@@ -630,15 +630,15 @@ params  : params_without_default COMMA params_with_default COMMA block_param COM
             $$ = NULL;
         }
         ;
-kw_param    : DOUBLE_STAR NAME {
+kw_param    : tDOUBLE_STAR tNAME {
                 PARAM_NEW($$, NODE_KW_PARAM, $2, NULL);
             }
             ;
-var_param   : STAR NAME {
+var_param   : tSTAR tNAME {
                 PARAM_NEW($$, NODE_VAR_PARAM, $2, NULL);
             }
             ;
-block_param     : AMPER NAME param_default_opt {
+block_param     : tAMPER tNAME param_default_opt {
                     PARAM_NEW($$, NODE_BLOCK_PARAM, $2, $3);
                 }
                 ;
@@ -647,15 +647,15 @@ param_default_opt   : /* empty */ {
                     }
                     | param_default
                     ;
-param_default   : EQUAL expr {
+param_default   : tEQUAL expr {
                     $$ = $2;
                 }
                 ;
-params_without_default  : NAME {
+params_without_default  : tNAME {
                             $$ = YogArray_new(ENV);
                             PARAM_ARRAY_PUSH($$, $1, NULL);
                         }
-                        | params_without_default COMMA NAME {
+                        | params_without_default tCOMMA tNAME {
                             PARAM_ARRAY_PUSH($1, $3, NULL);
                             $$ = $1;
                         }
@@ -663,24 +663,24 @@ params_without_default  : NAME {
 params_with_default     : param_with_default {
                             OBJ_ARRAY_NEW($$, $1);
                         }
-                        | params_with_default COMMA param_with_default {
+                        | params_with_default tCOMMA param_with_default {
                             OBJ_ARRAY_PUSH($$, $1, $3);
                         }
                         ;
-param_with_default  : NAME param_default {
+param_with_default  : tNAME param_default {
                         PARAM_NEW($$, NODE_PARAM, $1, $2);
                     }
                     ;
 args    : expr {
             OBJ_ARRAY_NEW($$, $1);
         }
-        | args COMMA expr {
+        | args tCOMMA expr {
             OBJ_ARRAY_PUSH($$, $1, $3);
         }
         ;
 expr    : assign_expr
         ;
-assign_expr : postfix_expr EQUAL logical_or_expr {
+assign_expr : postfix_expr tEQUAL logical_or_expr {
                 ASSIGN_NEW($$, $1, $3);
             }
             | logical_or_expr
@@ -696,7 +696,7 @@ comparison  : xor_expr
                 METHOD_CALL_NEW1($$, $1, $2, $3);
             }
             ;
-comp_op     : LESS 
+comp_op     : tLESS 
             ;
 xor_expr    : or_expr
             ;
@@ -705,17 +705,17 @@ or_expr : and_expr
 and_expr    : shift_expr
             ;
 shift_expr  : match_expr 
-            | shift_expr LSHIFT arith_expr {
+            | shift_expr tLSHIFT arith_expr {
                 METHOD_CALL_NEW1($$, $1, $2, $3);
             }
             ;
 match_expr  : arith_expr 
-            | match_expr EQUAL_TILDA arith_expr {
+            | match_expr tEQUAL_TILDA arith_expr {
                 METHOD_CALL_NEW1($$, $1, $2, $3);
             }
             ;
 arith_expr  : term
-            | arith_expr PLUS term {
+            | arith_expr tPLUS term {
                 METHOD_CALL_NEW1($$, $1, $2, $3);
             }
             ;
@@ -726,7 +726,7 @@ factor  : power
 power   : postfix_expr
         ;
 postfix_expr    : atom 
-                | postfix_expr { $<lineno>$ = PARSER->lineno; } LPAR args_opt RPAR blockarg_opt {
+                | postfix_expr { $<lineno>$ = PARSER->lineno; } tLPAR args_opt tRPAR blockarg_opt {
                     if ($1->type == NODE_ATTR) {
                         METHOD_CALL_NEW($$, $1->u.attr.obj, $1->u.attr.name, $4, $6);
                     }
@@ -735,23 +735,23 @@ postfix_expr    : atom
                     }
                     $$->lineno = $<lineno>2;
                 }
-                | postfix_expr LBRACKET expr RBRACKET {
+                | postfix_expr tLBRACKET expr tRBRACKET {
                     SUBSCRIPT_NEW($$, $1, $3);
                 }
-                | postfix_expr DOT NAME {
+                | postfix_expr tDOT tNAME {
                     ATTR_NEW($$, $1, $3);
                 }
                 ;
-atom    : NAME {
+atom    : tNAME {
             VARIABLE_NEW($$, $1);
         }
-        | NUMBER {
+        | tNUMBER {
             LITERAL_NEW($$, $1);
         }
-        | REGEXP {
+        | tREGEXP {
             LITERAL_NEW($$, $1);
         }
-        | STRING {
+        | tSTRING {
             LITERAL_NEW($$, $1);
         }
         | tTRUE {
@@ -774,17 +774,17 @@ args_opt    : /* empty */ {
 blockarg_opt    : /* empty */ {
                     $$ = NULL;
                 }
-                | DO blockarg_params_opt stmts END {
+                | tDO blockarg_params_opt stmts tEND {
                     BLOCK_ARG_NEW($$, $2, $3);
                 }
-                | LBRACE blockarg_params_opt stmts RBRACE {
+                | tLBRACE blockarg_params_opt stmts tRBRACE {
                     BLOCK_ARG_NEW($$, $2, $3);
                 }
                 ;
 blockarg_params_opt     : /* empty */ {
                             $$ = NULL;
                         }
-                        | LBRACKET params RBRACKET {
+                        | tLBRACKET params tRBRACKET {
                             $$ = $2;
                         }
                         ;
@@ -795,25 +795,25 @@ excepts : except {
             OBJ_ARRAY_PUSH($$, $1, $2);
         }
         ;
-except  : EXCEPT expr AS NAME newline stmts {
+except  : tEXCEPT expr tAS tNAME newline stmts {
             YOG_ASSERT(ENV, $4 != NO_EXC_VAR, "Too many variables.");
             EXCEPT_BODY_NEW($$, $2, $4, $6);
         }
-        | EXCEPT expr newline stmts {
+        | tEXCEPT expr newline stmts {
             EXCEPT_BODY_NEW($$, $2, NO_EXC_VAR, $4);
         }
-        | EXCEPT newline stmts {
+        | tEXCEPT newline stmts {
             EXCEPT_BODY_NEW($$, NULL, NO_EXC_VAR, $3);
         }
         ;
-newline     : NEWLINE {
+newline     : tNEWLINE {
                 PARSER->lineno++;
             }
             ;
 finally_opt : /* empty */ {
                 $$ = NULL;
             } 
-            | FINALLY stmts {
+            | tFINALLY stmts {
                 $$ = $2;
             }
             ;

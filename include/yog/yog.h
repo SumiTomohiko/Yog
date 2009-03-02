@@ -321,8 +321,31 @@ typedef struct YogLocals YogLocals;
     __locals_##x##__.num_vals = 1; \
     __locals_##x##__.size = 1; \
     __locals_##x##__.vals[0] = &(x); \
+    __locals_##x##__.vals[1] = NULL; \
+    __locals_##x##__.vals[2] = NULL; \
+    __locals_##x##__.vals[3] = NULL; \
     __locals_##x##__.next = ENV_TH(env)->locals; \
     ENV_TH(env)->locals = &__locals_##x##__
+#define PUSH_LOCALS2(env, x, y) \
+    YogLocals __locals_##x##_##y##__; \
+    __locals_##x##_##y##__.num_vals = 2; \
+    __locals_##x##_##y##__.size = 1; \
+    __locals_##x##_##y##__.vals[0] = &(x); \
+    __locals_##x##_##y##__.vals[1] = &(y); \
+    __locals_##x##_##y##__.vals[2] = NULL; \
+    __locals_##x##_##y##__.vals[3] = NULL; \
+    __locals_##x##_##y##__.next = ENV_TH(env)->locals; \
+    ENV_TH(env)->locals = &__locals_##x##_##y##__
+#define PUSH_LOCALS3(env, x, y, z) \
+    YogLocals __locals_##x##_##y##_##z##__; \
+    __locals_##x##_##y##_##z##__.num_vals = 3; \
+    __locals_##x##_##y##_##z##__.size = 1; \
+    __locals_##x##_##y##_##z##__.vals[0] = &(x); \
+    __locals_##x##_##y##_##z##__.vals[1] = &(y); \
+    __locals_##x##_##y##_##z##__.vals[2] = &(z); \
+    __locals_##x##_##y##_##z##__.vals[3] = NULL; \
+    __locals_##x##_##y##_##z##__.next = ENV_TH(env)->locals; \
+    ENV_TH(env)->locals = &__locals_##x##_##y##_##z##__
 #define POP_LOCALS(env)         ENV_TH(env)->locals = ENV_TH(env)->locals->next
 #define RETURN(env, val)        do { \
     RESTORE_LOCALS(env); \

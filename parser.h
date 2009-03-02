@@ -29,92 +29,92 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     AMPER = 258,
-     AS = 259,
-     BAR = 260,
-     BREAK = 261,
-     CLASS = 262,
-     COMMA = 263,
-     DEF = 264,
-     DIV = 265,
-     DO = 266,
-     DOT = 267,
-     DOUBLE_STAR = 268,
-     ELIF = 269,
-     ELSE = 270,
-     END = 271,
-     EQUAL = 272,
-     EQUAL_TILDA = 273,
-     EXCEPT = 274,
-     FINALLY = 275,
-     GREATER = 276,
-     IF = 277,
-     LBRACE = 278,
-     LBRACKET = 279,
-     LESS = 280,
-     LPAR = 281,
-     LSHIFT = 282,
-     NAME = 283,
-     NEWLINE = 284,
-     NEXT = 285,
-     NONLOCAL = 286,
-     NUMBER = 287,
-     PLUS = 288,
-     RBRACE = 289,
-     RBRACKET = 290,
-     REGEXP = 291,
-     RETURN = 292,
-     RPAR = 293,
-     STAR = 294,
-     STRING = 295,
-     TRY = 296,
-     WHILE = 297,
+     tAMPER = 258,
+     tAS = 259,
+     tBAR = 260,
+     tBREAK = 261,
+     tCLASS = 262,
+     tCOMMA = 263,
+     tDEF = 264,
+     tDIV = 265,
+     tDO = 266,
+     tDOT = 267,
+     tDOUBLE_STAR = 268,
+     tELIF = 269,
+     tELSE = 270,
+     tEND = 271,
+     tEQUAL = 272,
+     tEQUAL_TILDA = 273,
+     tEXCEPT = 274,
+     tFINALLY = 275,
+     tGREATER = 276,
+     tIF = 277,
+     tLBRACE = 278,
+     tLBRACKET = 279,
+     tLESS = 280,
+     tLPAR = 281,
+     tLSHIFT = 282,
+     tNAME = 283,
+     tNEWLINE = 284,
+     tNEXT = 285,
+     tNONLOCAL = 286,
+     tNUMBER = 287,
+     tPLUS = 288,
+     tRBRACE = 289,
+     tRBRACKET = 290,
+     tREGEXP = 291,
+     tRETURN = 292,
+     tRPAR = 293,
+     tSTAR = 294,
+     tSTRING = 295,
+     tTRY = 296,
+     tWHILE = 297,
      tFALSE = 298,
      tTRUE = 299,
      t__LINE__ = 300
    };
 #endif
 /* Tokens.  */
-#define AMPER 258
-#define AS 259
-#define BAR 260
-#define BREAK 261
-#define CLASS 262
-#define COMMA 263
-#define DEF 264
-#define DIV 265
-#define DO 266
-#define DOT 267
-#define DOUBLE_STAR 268
-#define ELIF 269
-#define ELSE 270
-#define END 271
-#define EQUAL 272
-#define EQUAL_TILDA 273
-#define EXCEPT 274
-#define FINALLY 275
-#define GREATER 276
-#define IF 277
-#define LBRACE 278
-#define LBRACKET 279
-#define LESS 280
-#define LPAR 281
-#define LSHIFT 282
-#define NAME 283
-#define NEWLINE 284
-#define NEXT 285
-#define NONLOCAL 286
-#define NUMBER 287
-#define PLUS 288
-#define RBRACE 289
-#define RBRACKET 290
-#define REGEXP 291
-#define RETURN 292
-#define RPAR 293
-#define STAR 294
-#define STRING 295
-#define TRY 296
-#define WHILE 297
+#define tAMPER 258
+#define tAS 259
+#define tBAR 260
+#define tBREAK 261
+#define tCLASS 262
+#define tCOMMA 263
+#define tDEF 264
+#define tDIV 265
+#define tDO 266
+#define tDOT 267
+#define tDOUBLE_STAR 268
+#define tELIF 269
+#define tELSE 270
+#define tEND 271
+#define tEQUAL 272
+#define tEQUAL_TILDA 273
+#define tEXCEPT 274
+#define tFINALLY 275
+#define tGREATER 276
+#define tIF 277
+#define tLBRACE 278
+#define tLBRACKET 279
+#define tLESS 280
+#define tLPAR 281
+#define tLSHIFT 282
+#define tNAME 283
+#define tNEWLINE 284
+#define tNEXT 285
+#define tNONLOCAL 286
+#define tNUMBER 287
+#define tPLUS 288
+#define tRBRACE 289
+#define tRBRACKET 290
+#define tREGEXP 291
+#define tRETURN 292
+#define tRPAR 293
+#define tSTAR 294
+#define tSTRING 295
+#define tTRY 296
+#define tWHILE 297
 #define tFALSE 298
 #define tTRUE 299
 #define t__LINE__ 300

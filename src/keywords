@@ -11,24 +11,24 @@ struct KeywordTableEntry { const char* name; enum yytokentype type; };
 %readonly-tables
 %%
 __LINE__, t__LINE__
-as, AS
-break, BREAK
-class, CLASS
-def, DEF
-do, DO
-elif, ELIF
-else, ELSE
-end, END
-except, EXCEPT
+as, tAS
+break, tBREAK
+class, tCLASS
+def, tDEF
+do, tDO
+elif, tELIF
+else, tELSE
+end, tEND
+except, tEXCEPT
 false, tFALSE
-finally, FINALLY
-if, IF
-next, NEXT
-nonlocal, NONLOCAL
-return, RETURN
+finally, tFINALLY
+if, tIF
+next, tNEXT
+nonlocal, tNONLOCAL
+return, tRETURN
 true, tTRUE
-try, TRY
-while, WHILE
+try, tTRY
+while, tWHILE
 %%
 /**
  * vim: filetype=c
