@@ -64,7 +64,7 @@ main(int argc, char* argv[])
     int gc_stress = 0;
     int disable_gc = 0;
     int help = 0;
-#define DEFAULT_INIT_HEAP_SIZE  (1)
+#define DEFAULT_INIT_HEAP_SIZE  (16 * 1024 * 1024)
     size_t init_heap_size = DEFAULT_INIT_HEAP_SIZE;
 #undef DEFAULT_INIT_HEAP_SIZE
 #define DEFAULT_THRESHOLD   (1024 * 1024)

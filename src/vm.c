@@ -251,43 +251,6 @@ GcObjectStat_initialize(GcObjectStat* stat)
 }
 
 static void* 
-alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
-{
-    size_t needed_size = size + sizeof(CopyingHeader);
-    size_t rounded_size = round_size(needed_size);
-
-    YogHeap* heap = vm->gc.copying.heap;
-    size_t used_size = heap->free - heap->base;
-    size_t rest_size = heap->size - used_size;
-    if (rest_size < rounded_size) {
-        size_t allocate_size = 0;
-        if (heap->size < rounded_size) {
-            allocate_size = rounded_size;
-        }
-        else {
-            allocate_size = heap->size;
-        }
-        vm->gc.copying.heap = heap = YogHeap_new(allocate_size, heap);
-        if (!vm->disable_gc) {
-            vm->need_gc = TRUE;
-        }
-    }
-
-    CopyingHeader* header = (CopyingHeader*)heap->free;
-    GcObjectStat_initialize(&header->stat);
-    header->keeper = keeper;
-    header->finalizer = finalizer;
-    header->forwarding_addr = NULL;
-    header->size = rounded_size;
-
-    heap->free += rounded_size;
-
-    increment_total_object_number(vm);
-
-    return header + 1;
-}
-
-static void* 
 alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     size_t total_size = size + sizeof(YogMarkSweepHeader);
@@ -557,10 +520,8 @@ copying_gc(YogEnv* env, YogVm* vm)
         heap = heap->next;
     }
 
-#define GROW_RATIO  (1.1)
-    unsigned int new_size = round_size(GROW_RATIO * used_size);
-#undef GROW_RATIO
-    YogHeap* to_space = YogHeap_new(new_size, NULL);
+    unsigned int heap_size = vm->gc.copying.init_heap_size;
+    YogHeap* to_space = YogHeap_new(heap_size, NULL);
 
     vm->gc.copying.scanned = vm->gc.copying.unscanned = to_space->free;
 
@@ -580,6 +541,37 @@ copying_gc(YogEnv* env, YogVm* vm)
 
     to_space->free = vm->gc.copying.unscanned;
     vm->gc.copying.heap = to_space;
+}
+
+static void* 
+alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+{
+    size_t needed_size = size + sizeof(CopyingHeader);
+    size_t rounded_size = round_size(needed_size);
+
+    YogHeap* heap = vm->gc.copying.heap;
+#define REST_SIZE(heap)     ((heap)->size - ((heap)->free - (heap)->base))
+    size_t rest_size = REST_SIZE(heap);
+    if ((rest_size < rounded_size) || vm->gc_stress) {
+        copying_gc(env, vm);
+        heap = vm->gc.copying.heap;
+        rest_size = REST_SIZE(heap);
+        YOG_ASSERT(env, rounded_size <= rest_size, "out of memory");
+    }
+#undef REST_SIZE
+
+    CopyingHeader* header = (CopyingHeader*)heap->free;
+    GcObjectStat_initialize(&header->stat);
+    header->keeper = keeper;
+    header->finalizer = finalizer;
+    header->forwarding_addr = NULL;
+    header->size = rounded_size;
+
+    heap->free += rounded_size;
+
+    increment_total_object_number(vm);
+
+    return header + 1;
 }
 
 static void 
