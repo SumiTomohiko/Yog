@@ -63,6 +63,7 @@ am:
 test: yog$(EXEEXT)
 	make test-copying
 	make test-mark-sweep
+	make test-mark-sweep-compact
 	make test-bdw
 
 test-copying: 

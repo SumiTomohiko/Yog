@@ -237,13 +237,11 @@ YogHeap_new(size_t size, YogHeap* next)
     return heap;
 }
 
-static unsigned int 
-align(size_t size) 
+static size_t
+round_size(size_t size) 
 {
     size_t unit = sizeof(void*);
-    size_t align_size = ((size - 1) / unit + 1) * unit;
-
-    return align_size;
+    return (size + unit - 1) & ~(unit - 1);
 }
 
 static void 
@@ -256,15 +254,15 @@ static void*
 alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     size_t needed_size = size + sizeof(CopyingHeader);
-    size_t aligned_size = align(needed_size);
+    size_t rounded_size = round_size(needed_size);
 
     YogHeap* heap = vm->gc.copying.heap;
     size_t used_size = heap->free - heap->base;
     size_t rest_size = heap->size - used_size;
-    if (rest_size < aligned_size) {
+    if (rest_size < rounded_size) {
         size_t allocate_size = 0;
-        if (heap->size < aligned_size) {
-            allocate_size = aligned_size;
+        if (heap->size < rounded_size) {
+            allocate_size = rounded_size;
         }
         else {
             allocate_size = heap->size;
@@ -280,9 +278,9 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
     header->keeper = keeper;
     header->finalizer = finalizer;
     header->forwarding_addr = NULL;
-    header->size = aligned_size;
+    header->size = rounded_size;
 
-    heap->free += aligned_size;
+    heap->free += rounded_size;
 
     increment_total_object_number(vm);
 
@@ -560,7 +558,7 @@ copying_gc(YogEnv* env, YogVm* vm)
     }
 
 #define GROW_RATIO  (1.1)
-    unsigned int new_size = align(GROW_RATIO * used_size);
+    unsigned int new_size = round_size(GROW_RATIO * used_size);
 #undef GROW_RATIO
     YogHeap* to_space = YogHeap_new(new_size, NULL);
 
