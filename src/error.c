@@ -40,16 +40,10 @@ YogError_raise(YogEnv* env, YogVal exc)
 }
 
 static void 
-raise_error(YogEnv* env, YogKlass* klass, const char* msg) 
+raise_error(YogEnv* env, YogVal klass, const char* msg) 
 {
-    YogVal self = OBJ2VAL(klass);
-
-    YogString* s = YogString_new_str(env, msg);
-    YogVal arg = OBJ2VAL(s);
-    YogVal args[] = { arg, };
-
-    YogVal val = YogThread_call_method(env, ENV_TH(env), self, "new", 1, args);
-
+    YogVal args[] = { YogString_new_str(env, msg), };
+    YogVal val = YogThread_call_method(env, ENV_TH(env), klass, "new", 1, args);
     YogError_raise(env, val);
 }
 

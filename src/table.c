@@ -183,7 +183,10 @@ alloc_table(YogEnv* env)
 static YogTable* 
 st_init_table_with_size(YogEnv* env, YogHashType* type, int size)
 {
-    YogTable* tbl = NULL;
+    SAVE_LOCALS(env);
+
+    YogVal tbl = YUNDEF;
+    PUSH_LOCAL(env, tbl);
 
 #ifdef HASH_LOG
     if (init_st == 0) {
@@ -194,13 +197,14 @@ st_init_table_with_size(YogEnv* env, YogHashType* type, int size)
 
     size = new_size(size);        /* round up to prime number */
 
-    tbl = alloc_table(env);
-    tbl->type = type;
-    tbl->num_entries = 0;
-    tbl->num_bins = size;
-    tbl->bins = alloc_bins(env, size);
+    tbl = PTR2VAL(alloc_table(env));
+    PTR_AS(YogTable, tbl)->type = type;
+    PTR_AS(YogTable, tbl)->num_entries = 0;
+    PTR_AS(YogTable, tbl)->num_bins = size;
+    YogTableEntryArray* bins = alloc_bins(env, size);
+    PTR_AS(YogTable, tbl)->bins = bins;
 
-    return tbl;
+    RETURN(env, PTR_AS(YogTable, tbl));
 }
 
 static YogTable* 

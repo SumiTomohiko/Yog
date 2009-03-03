@@ -19,9 +19,9 @@ typedef struct YogPackage YogPackage;
  */
 
 /* src/package.c */
-void YogPackage_define_method(YogEnv*, YogPackage*, const char*, void*, unsigned int, unsigned int, unsigned int, unsigned int, ...);
-YogKlass* YogPackage_klass_new(YogEnv*);
-YogPackage* YogPackage_new(YogEnv*);
+void YogPackage_define_method(YogEnv*, YogVal, const char*, void*, unsigned int, unsigned int, unsigned int, unsigned int, ...);
+YogVal YogPackage_klass_new(YogEnv*);
+YogVal YogPackage_new(YogEnv*);
 
 /* PROTOTYPE_END */
 

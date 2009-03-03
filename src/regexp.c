@@ -45,32 +45,31 @@ YogRegexp_finalize(YogEnv* env, void* ptr)
     regexp->onig_regexp = NULL;
 }
 
-YogRegexp* 
-YogRegexp_new(YogEnv* env, YogString* pattern, OnigOptionType option) 
+YogVal 
+YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option) 
 {
     OnigRegex onig_regexp = NULL;
-    OnigUChar* pattern_begin = (OnigUChar*)pattern->body->items;
-    OnigUChar* pattern_end = pattern_begin + pattern->body->size - 1;
+    OnigUChar* pattern_begin = (OnigUChar*)OBJ_AS(YogString, pattern)->body->items;
+    OnigUChar* pattern_end = pattern_begin + OBJ_AS(YogString, pattern)->body->size - 1;
     OnigSyntaxType* syntax = ONIG_SYNTAX_DEFAULT;
     OnigErrorInfo einfo;
 
-    int r = onig_new(&onig_regexp, pattern_begin, pattern_end, option, pattern->encoding->onig_enc, syntax, &einfo);
+    int r = onig_new(&onig_regexp, pattern_begin, pattern_end, option, OBJ_AS(YogString, pattern)->encoding->onig_enc, syntax, &einfo);
     if (r != ONIG_NORMAL) {
-        return NULL;
+        return YNIL;
     }
 
     YogRegexp* regexp = ALLOC_OBJ(env, NULL, YogRegexp_finalize, YogRegexp);
     YogBasicObj_init(env, YOGBASICOBJ(regexp), 0, ENV_VM(env)->cRegexp);
     regexp->onig_regexp = onig_regexp;
 
-    return regexp;
+    return OBJ2VAL(regexp);
 }
 
-YogKlass* 
+YogVal 
 YogRegexp_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, "Regexp", ENV_VM(env)->cObject);
-    return klass;
+    return YogKlass_new(env, "Regexp", ENV_VM(env)->cObject);
 }
 
 static int 
@@ -116,12 +115,11 @@ group(YogEnv* env)
     int begin = region->beg[index];
     int end = region->end[index];
     int size = end - begin;
-    YogString* s = YogString_new_size(env, size + 1);
-    memcpy(s->body->items, &match->str->body->items[begin], size);
-    s->body->items[size] = '\0';
-    YogVal retval = OBJ2VAL(s);
+    YogVal s = YogString_new_size(env, size + 1);
+    memcpy(OBJ_AS(YogString, s)->body->items, &match->str->body->items[begin], size);
+    OBJ_AS(YogString, s)->body->items[size] = '\0';
 
-    return retval;
+    return s;
 }
 
 static int 
@@ -176,10 +174,10 @@ end(YogEnv* env)
     return INT2VAL(n);
 }
 
-YogKlass* 
+YogVal 
 YogMatch_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, "Match", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Match", ENV_VM(env)->cObject);
     YogKlass_define_method(env, klass, "group", group, 0, 0, 0, 0, "group", NULL);
     YogKlass_define_method(env, klass, "start", start, 0, 0, 0, 0, "group", NULL);
     YogKlass_define_method(env, klass, "end", end, 0, 0, 0, 0, "group", NULL);

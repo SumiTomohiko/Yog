@@ -14,13 +14,13 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     exc->message = YogVal_keep(env, exc->message, keeper);
 }
 
-static YogBasicObj* 
-allocate(YogEnv* env, YogKlass* klass) 
+static YogVal 
+allocate(YogEnv* env, YogVal klass) 
 {
     YogBasicObj* obj = ALLOC_OBJ(env, keep_children, NULL, YogException);
     YogBasicObj_init(env, obj, 0, klass);
 
-    return obj;
+    return OBJ2VAL(obj);
 }
 
 static YogFrame* 
@@ -133,10 +133,10 @@ to_s(YogEnv* env)
     return retval;
 }
 
-YogKlass* 
+YogVal 
 YogException_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, "Exception", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Exception", ENV_VM(env)->cObject);
     YogKlass_define_allocator(env, klass, allocate);
     YogKlass_define_method(env, klass, "initialize", initialize, 0, 0, 0, 0, "message", NULL);
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
@@ -145,15 +145,11 @@ YogException_klass_new(YogEnv* env)
 #undef UPDATE_PTR
 }
 
-YogException* 
+YogVal 
 YogBugException_new(YogEnv* env) 
 {
-    YogKlass* klass = ENV_VM(env)->eBugException;
-    YogVal self = OBJ2VAL(klass);
-    YogVal obj = YogThread_call_method(env, ENV_TH(env), self, "new", 0, NULL);
-    YogException* exc = OBJ_AS(YogException, obj);
-
-    return exc;
+    YogVal self = ENV_VM(env)->eBugException;
+    return YogThread_call_method(env, ENV_TH(env), self, "new", 0, NULL);
 }
 
 /**

@@ -28,10 +28,10 @@ YogEncoding_mbc_size(YogEnv* env, YogEncoding* enc, const char* p)
     return (*enc->onig_enc->mbc_enc_len)((const unsigned char*)p);
 }
 
-YogString* 
-YogEncoding_normalize_name(YogEnv* env, YogString* name) 
+YogVal 
+YogEncoding_normalize_name(YogEnv* env, YogVal name) 
 {
-    YogString* s = YogString_clone(env, name);
+    YogVal s = YogString_clone(env, name);
     unsigned int size = YogString_size(env, s) - 1;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
@@ -43,7 +43,7 @@ YogEncoding_normalize_name(YogEnv* env, YogString* name)
         else {
             c2 = tolower(c);
         }
-        s->body->items[i] = c2;
+        OBJ_AS(YogString, s)->body->items[i] = c2;
     }
 
     return s;

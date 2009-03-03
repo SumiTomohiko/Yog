@@ -5,7 +5,7 @@
 #include "yog/yog.h"
 
 void 
-YogPackage_define_method(YogEnv* env, YogPackage* pkg, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, unsigned int required_argc, ...)
+YogPackage_define_method(YogEnv* env, YogVal pkg, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, unsigned int required_argc, ...)
 {
     ID func_name = INTERN(name);
 
@@ -14,12 +14,11 @@ YogPackage_define_method(YogEnv* env, YogPackage* pkg, const char* name, void* f
     YogBuiltinFunction* builtin_f = YogBuiltinFunction_new(env, f, INVALID_ID, func_name, blockargc, varargc, kwargc, required_argc, ap);
     va_end(ap);
 
-    YogBuiltinBoundMethod* method = YogBuiltinBoundMethod_new(env);
-    method->self = OBJ2VAL(pkg);
-    method->f = builtin_f;
+    YogVal method = YogBuiltinBoundMethod_new(env);
+    OBJ_AS(YogBuiltinBoundMethod, method)->self = pkg;
+    OBJ_AS(YogBuiltinBoundMethod, method)->f = builtin_f;
 
-    YogVal val = OBJ2VAL(method);
-    YogObj_set_attr_id(env, YOGOBJ(pkg), func_name, val);
+    YogObj_set_attr_id(env, pkg, func_name, method);
 }
 
 static void 
@@ -32,35 +31,35 @@ YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 }
 
 static void 
-YogPackage_init(YogEnv* env, YogPackage* pkg) 
+YogPackage_init(YogEnv* env, YogVal pkg) 
 {
-    YogObj_init(env, YOGOBJ(pkg), 0, ENV_VM(env)->cPackage);
+    YogObj_init(env, OBJ_AS(YogObj, pkg), 0, ENV_VM(env)->cPackage);
 
-    YOGOBJ(pkg)->attrs = YogTable_new_symbol_table(env);
-    pkg->code = NULL;
+    OBJ_AS(YogObj, pkg)->attrs = YogTable_new_symbol_table(env);
+    OBJ_AS(YogPackage, pkg)->code = NULL;
 }
 
-static YogBasicObj* 
-allocate(YogEnv* env, YogKlass* klass) 
+static YogVal 
+allocate(YogEnv* env, YogVal klass) 
 {
-    YogPackage* pkg = ALLOC_OBJ(env, YogPackage_keep_children, NULL, YogPackage);
+    YogVal pkg = OBJ2VAL(ALLOC_OBJ(env, YogPackage_keep_children, NULL, YogPackage));
     YogPackage_init(env, pkg);
 
-    return YOGBASICOBJ(pkg);
+    return pkg;
 }
 
-YogKlass* 
+YogVal 
 YogPackage_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, "Package", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Package", ENV_VM(env)->cObject);
     YogKlass_define_allocator(env, klass, allocate);
     return klass;
 }
 
-YogPackage* 
+YogVal 
 YogPackage_new(YogEnv* env) 
 {
-    YogPackage* pkg = (YogPackage*)allocate(env, ENV_VM(env)->cPackage);
+    YogVal pkg = allocate(env, ENV_VM(env)->cPackage);
     YogPackage_init(env, pkg);
 
     return pkg;

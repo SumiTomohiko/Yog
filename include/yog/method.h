@@ -49,14 +49,14 @@ typedef struct YogUnboundMethod YogUnboundMethod;
  */
 
 /* src/method.c */
-YogKlass* YogBoundMethod_klass_new(YogEnv*);
-YogBoundMethod* YogBoundMethod_new(YogEnv*);
-YogKlass* YogBuiltinBoundMethod_klass_new(YogEnv*);
-YogBuiltinBoundMethod* YogBuiltinBoundMethod_new(YogEnv*);
-YogKlass* YogBuiltinUnboundMethod_klass_new(YogEnv*);
-YogBuiltinUnboundMethod* YogBuiltinUnboundMethod_new(YogEnv*);
-YogKlass* YogUnboundMethod_klass_new(YogEnv*);
-YogUnboundMethod* YogUnboundMethod_new(YogEnv*);
+YogVal YogBoundMethod_klass_new(YogEnv*);
+YogVal YogBoundMethod_new(YogEnv*);
+YogVal YogBuiltinBoundMethod_klass_new(YogEnv*);
+YogVal YogBuiltinBoundMethod_new(YogEnv*);
+YogVal YogBuiltinUnboundMethod_klass_new(YogEnv*);
+YogVal YogBuiltinUnboundMethod_new(YogEnv*);
+YogVal YogUnboundMethod_klass_new(YogEnv*);
+YogVal YogUnboundMethod_new(YogEnv*);
 
 /* PROTOTYPE_END */
 

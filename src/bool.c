@@ -19,16 +19,13 @@ to_s(YogEnv* env)
         s = "false";
     }
 
-    YogString* obj = YogString_new_str(env, s);
-    YogVal val = OBJ2VAL(obj);
-
-    return val;
+    return YogString_new_str(env, s);
 }
 
-YogKlass* 
+YogVal 
 YogBool_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, "Bool", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Bool", ENV_VM(env)->cObject);
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
 
     return klass;

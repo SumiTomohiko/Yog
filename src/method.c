@@ -16,8 +16,8 @@ YogBuiltinBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP(f);
 }
 
-static YogBasicObj* 
-YogBuiltinBoundMethod_allocate(YogEnv* env, YogKlass* klass) 
+static YogVal 
+YogBuiltinBoundMethod_allocate(YogEnv* env, YogVal klass) 
 {
     YogBuiltinBoundMethod* method = ALLOC_OBJ(env, YogBuiltinBoundMethod_keep_children, NULL, YogBuiltinBoundMethod);
     YogBasicObj_init(env, (YogBasicObj*)method, 0, klass);
@@ -25,7 +25,7 @@ YogBuiltinBoundMethod_allocate(YogEnv* env, YogKlass* klass)
     method->self = YNIL;
     method->f = NULL;
 
-    return (YogBasicObj*)method;
+    return OBJ2VAL(method);
 }
 
 static void 
@@ -41,7 +41,7 @@ YogScriptMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 }
 
 static void 
-YogScriptMethod_init(YogEnv* env, YogScriptMethod* method, YogKlass* klass) 
+YogScriptMethod_init(YogEnv* env, YogScriptMethod* method, YogVal klass) 
 {
     YogBasicObj_init(env, (YogBasicObj*)method, 0, klass);
 
@@ -59,15 +59,15 @@ YogBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP_SELF;
 }
 
-static YogBasicObj* 
-YogBoundMethod_allocate(YogEnv* env, YogKlass* klass) 
+static YogVal 
+YogBoundMethod_allocate(YogEnv* env, YogVal klass)
 {
     YogBoundMethod* method = ALLOC_OBJ(env, YogBoundMethod_keep_children, NULL, YogBoundMethod);
     YogScriptMethod_init(env, (YogScriptMethod*)method, klass);
 
     method->self = YNIL;
 
-    return (YogBasicObj*)method;
+    return OBJ2VAL(method);
 }
 
 static void 
@@ -79,15 +79,15 @@ YogBuiltinUnboundMethod_keep_chldren(YogEnv* env, void* ptr, ObjectKeeper keeper
     KEEP(f);
 }
 
-static YogBasicObj* 
-YogBuiltinUnboundMethod_allocate(YogEnv* env, YogKlass* klass) 
+static YogVal 
+YogBuiltinUnboundMethod_allocate(YogEnv* env, YogVal klass) 
 {
     YogBuiltinUnboundMethod* method = ALLOC_OBJ(env, YogBuiltinUnboundMethod_keep_chldren, NULL, YogBuiltinUnboundMethod);
     YogBasicObj_init(env, (YogBasicObj*)method, 0, klass);
 
     method->f = NULL;
 
-    return (YogBasicObj*)method;
+    return OBJ2VAL(method);
 }
 
 static void 
@@ -96,40 +96,40 @@ YogUnboundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogScriptMethod_keep_children(env, ptr, keeper);
 }
 
-static YogBasicObj* 
-YogUnboundMethod_allocate(YogEnv* env, YogKlass* klass) 
+static YogVal 
+YogUnboundMethod_allocate(YogEnv* env, YogVal klass) 
 {
     YogScriptMethod* method = ALLOC_OBJ(env, YogUnboundMethod_keep_children, NULL, YogUnboundMethod);
     YogScriptMethod_init(env, method, klass);
 
-    return (YogBasicObj*)method;
+    return OBJ2VAL(method);
 }
 
 #define RETURN_NEW_KLASS(allocator, name)  do { \
-    YogKlass* klass = YogKlass_new(env, name, ENV_VM(env)->cObject); \
+    YogVal klass = YogKlass_new(env, name, ENV_VM(env)->cObject); \
     YogKlass_define_allocator(env, klass, allocator); \
     return klass; \
 } while (0)
 
-YogKlass* 
+YogVal 
 YogBuiltinBoundMethod_klass_new(YogEnv* env) 
 {
     RETURN_NEW_KLASS(YogBuiltinBoundMethod_allocate, "BuiltinBoundMethod");
 }
 
-YogKlass* 
+YogVal 
 YogBoundMethod_klass_new(YogEnv* env) 
 {
     RETURN_NEW_KLASS(YogBoundMethod_allocate, "BoundMethod");
 }
 
-YogKlass* 
+YogVal 
 YogBuiltinUnboundMethod_klass_new(YogEnv* env) 
 {
     RETURN_NEW_KLASS(YogBuiltinUnboundMethod_allocate, "BuiltinUnboundMethod");
 }
 
-YogKlass* 
+YogVal 
 YogUnboundMethod_klass_new(YogEnv* env) 
 {
     RETURN_NEW_KLASS(YogUnboundMethod_allocate, "UnboundMethod");
@@ -137,36 +137,28 @@ YogUnboundMethod_klass_new(YogEnv* env)
 
 #undef RETURN_NEW_KLASS
 
-YogBuiltinBoundMethod* 
+YogVal 
 YogBuiltinBoundMethod_new(YogEnv* env) 
 {
-    YogBuiltinBoundMethod* method = (YogBuiltinBoundMethod*)YogBuiltinBoundMethod_allocate(env, ENV_VM(env)->cBuiltinBoundMethod);
-
-    return method;
+    return YogBuiltinBoundMethod_allocate(env, ENV_VM(env)->cBuiltinBoundMethod);
 }
 
-YogBoundMethod* 
+YogVal 
 YogBoundMethod_new(YogEnv* env) 
 {
-    YogBoundMethod* method = (YogBoundMethod*)YogBoundMethod_allocate(env, ENV_VM(env)->cBoundMethod);
-
-    return method;
+    return YogBoundMethod_allocate(env, ENV_VM(env)->cBoundMethod);
 }
 
-YogBuiltinUnboundMethod* 
+YogVal 
 YogBuiltinUnboundMethod_new(YogEnv* env) 
 {
-    YogBuiltinUnboundMethod* method = (YogBuiltinUnboundMethod*)YogBuiltinUnboundMethod_allocate(env, ENV_VM(env)->cBuiltinUnboundMethod);
-
-    return method;
+    return YogBuiltinUnboundMethod_allocate(env, ENV_VM(env)->cBuiltinUnboundMethod);
 }
 
-YogUnboundMethod* 
+YogVal 
 YogUnboundMethod_new(YogEnv* env) 
 {
-    YogUnboundMethod* method = (YogUnboundMethod*)YogUnboundMethod_allocate(env, ENV_VM(env)->cUnboundMethod);
-
-    return method;
+    return YogUnboundMethod_allocate(env, ENV_VM(env)->cUnboundMethod);
 }
 
 /**

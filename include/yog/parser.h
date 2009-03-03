@@ -143,9 +143,9 @@ struct YogLexer {
     enum YogLexerState state;
     struct YogEnv* env;
     FILE* fp;
-    struct YogString* line;
+    struct YogVal line;
     unsigned int next_index;
-    struct YogString* buffer;
+    struct YogVal buffer;
 };
 
 typedef struct YogLexer YogLexer;

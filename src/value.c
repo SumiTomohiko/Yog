@@ -265,7 +265,7 @@ YogVal_symbol(ID id)
     RETURN_VAL(VAL_SYMBOL, VAL2ID, id);
 }
 
-YogKlass* 
+YogVal 
 YogVal_get_klass(YogEnv* env, YogVal val) 
 {
     switch (VAL_TYPE(val)) {
@@ -293,7 +293,7 @@ YogVal_get_klass(YogEnv* env, YogVal val)
     }
 
     /* NOTREACHED */
-    return NULL;
+    return YUNDEF;
 }
 
 #undef RETURN_VAL
@@ -302,26 +302,25 @@ YogVal
 YogVal_get_attr(YogEnv* env, YogVal val, ID name) 
 {
 #define RET_ATTR(obj)   do { \
-    YogVal attr = YogObj_get_attr(env, YOGOBJ(obj), name); \
+    YogVal attr = YogObj_get_attr(env, OBJ_AS(YogObj, obj), name); \
     if (!IS_UNDEF(attr)) { \
         return attr; \
     } \
 } while (0)
     if (IS_OBJ(val)) {
-        YogBasicObj* obj = VAL2OBJ(val);
-        if (obj->flags & HAS_ATTRS) {
-            RET_ATTR(obj);
+        if (OBJ_AS(YogBasicObj, val)->flags & HAS_ATTRS) {
+            RET_ATTR(val);
         }
         else {
             /* TODO: generic attribute */
         }
     }
 
-    YogKlass* klass = YogVal_get_klass(env, val);
+    YogVal klass = YogVal_get_klass(env, val);
     do {
         RET_ATTR(klass);
-        klass = klass->super;
-    } while (klass != NULL);
+        klass = OBJ_AS(YogKlass, klass)->super;
+    } while (VAL2PTR(klass) != NULL);
 #undef RET_ATTR
 
     YOG_ASSERT(env, FALSE, "Can't get attribute.");
@@ -331,14 +330,14 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
 }
 
 BOOL 
-YogVal_is_subklass_of(YogEnv* env, YogVal val, YogKlass* klass) 
+YogVal_is_subklass_of(YogEnv* env, YogVal val, YogVal klass) 
 {
-    YogKlass* valklass = YogVal_get_klass(env, val);
-    while (valklass != NULL) {
-        if (valklass == klass) {
+    YogVal valklass = YogVal_get_klass(env, val);
+    while (!IS_NIL(valklass)) {
+        if (OBJ_AS(YogKlass, valklass) == OBJ_AS(YogKlass, klass)) {
             return TRUE;
         }
-        valklass = valklass->super;
+        valklass = OBJ_AS(YogKlass, valklass)->super;
     }
 
     return FALSE;

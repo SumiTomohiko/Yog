@@ -28,8 +28,8 @@ typedef struct YogException YogException;
  */
 
 /* src/exception.c */
-YogException* YogBugException_new(YogEnv*);
-YogKlass* YogException_klass_new(YogEnv*);
+YogVal YogBugException_new(YogEnv*);
+YogVal YogException_klass_new(YogEnv*);
 
 /* src/stacktrace.c */
 YogStackTraceEntry* YogStackTraceEntry_new(YogEnv*);

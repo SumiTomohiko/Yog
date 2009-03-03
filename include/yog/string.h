@@ -30,19 +30,19 @@ typedef struct YogString YogString;
 /* src/string.c */
 YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
 YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
-char YogString_at(YogEnv*, YogString*, unsigned int);
-void YogString_clear(YogEnv*, YogString*);
-YogString* YogString_clone(YogEnv*, YogString*);
+char YogString_at(YogEnv*, YogVal, unsigned int);
+void YogString_clear(YogEnv*, YogVal);
+YogVal YogString_clone(YogEnv*, YogVal);
 char* YogString_dup(YogEnv*, const char*);
-ID YogString_intern(YogEnv*, YogString*);
-YogKlass* YogString_klass_new(YogEnv*);
-YogString* YogString_new(YogEnv*);
-YogString* YogString_new_format(YogEnv*, const char*, ...);
-YogString* YogString_new_range(YogEnv*, YogEncoding*, const char*, const char*);
-YogString* YogString_new_size(YogEnv*, unsigned int);
-YogString* YogString_new_str(YogEnv*, const char*);
-void YogString_push(YogEnv*, YogString*, char);
-unsigned int YogString_size(YogEnv*, YogString*);
+ID YogString_intern(YogEnv*, YogVal);
+YogVal YogString_klass_new(YogEnv*);
+YogVal YogString_new(YogEnv*);
+YogVal YogString_new_format(YogEnv*, const char*, ...);
+YogVal YogString_new_range(YogEnv*, YogEncoding*, const char*, const char*);
+YogVal YogString_new_size(YogEnv*, unsigned int);
+YogVal YogString_new_str(YogEnv*, const char*);
+void YogString_push(YogEnv*, YogVal, char);
+unsigned int YogString_size(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

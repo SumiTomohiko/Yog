@@ -8,7 +8,7 @@
  */
 
 /* src/nil.c */
-YogKlass* YogNil_klass_new(YogEnv*);
+YogVal YogNil_klass_new(YogEnv*);
 
 /* PROTOTYPE_END */
 

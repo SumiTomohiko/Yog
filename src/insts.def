@@ -38,8 +38,7 @@ inst make_string
 (val) 
 {
     YogVal c = CONSTS(index);
-    YogString* s = YogString_clone(ENV, OBJ_AS(YogString, c));
-    val = OBJ2VAL(s);
+    val = YogString_clone(ENV, c);
 }
 
 inst call_method
@@ -92,11 +91,9 @@ inst make_package_method
 (code)
 (method)
 {
-    YogBoundMethod* m = YogBoundMethod_new(ENV);
-    setup_script_method(ENV, SCRIPT_METHOD(m), VAL2PTR(code));
-    m->self = NAME_FRAME(CUR_FRAME)->self;
-
-    method = OBJ2VAL(m);
+    method = YogBoundMethod_new(ENV);
+    setup_script_method(ENV, OBJ_AS(YogScriptMethod, method), VAL2PTR(code));
+    OBJ_AS(YogBoundMethod, method)->self = NAME_FRAME(CUR_FRAME)->self;
 }
 
 inst call_function
@@ -174,12 +171,11 @@ inst make_package_block
 (code)
 (block)
 {
-    YogPackageBlock* b = YogPackageBlock_new(env);
+    block = YogPackageBlock_new(env);
     YogCode* c = VAL2PTR(code);
-    BASIC_BLOCK(b)->code = c;
-    b->self = NAME_FRAME(CUR_FRAME)->self;
-    b->vars = NAME_FRAME(CUR_FRAME)->vars;
-    block = OBJ2VAL(b);
+    OBJ_AS(YogBasicBlock, block)->code = c;
+    OBJ_AS(YogPackageBlock, block)->self = NAME_FRAME(CUR_FRAME)->self;
+    OBJ_AS(YogPackageBlock, block)->vars = NAME_FRAME(CUR_FRAME)->vars;
 }
 
 inst make_block
@@ -187,13 +183,11 @@ inst make_block
 (code)
 (block) 
 {
-    YogBlock* b = YogBlock_new(ENV);
-    BASIC_BLOCK(b)->code = VAL2PTR(code);
-    b->locals = METHOD_FRAME(CUR_FRAME)->vars;
-    b->outer_vars = SCRIPT_FRAME(CUR_FRAME)->outer_vars;
-    b->globals = SCRIPT_FRAME(CUR_FRAME)->globals;
-
-    block = OBJ2VAL(b);
+    block = YogBlock_new(ENV);
+    OBJ_AS(YogBasicBlock, block)->code = VAL2PTR(code);
+    OBJ_AS(YogBlock, block)->locals = METHOD_FRAME(CUR_FRAME)->vars;
+    OBJ_AS(YogBlock, block)->outer_vars = SCRIPT_FRAME(CUR_FRAME)->outer_vars;
+    OBJ_AS(YogBlock, block)->globals = SCRIPT_FRAME(CUR_FRAME)->globals;
 }
 
 inst make_klass
@@ -201,15 +195,14 @@ inst make_klass
 (code, super, name)
 (...) depth: 1
 {
-    YogKlass* super_klass = OBJ_AS(YogKlass, super);
-    YogKlass* kls = YogKlass_new(ENV, NULL, super_klass);
-    kls->name = VAL2ID(name);
-    YogTable* attrs = YOGOBJ(kls)->attrs = YogTable_new_symbol_table(ENV);
+    YogVal kls = YogKlass_new(ENV, NULL, super);
+    OBJ_AS(YogKlass, kls)->name = VAL2ID(name);
+    YogTable* attrs = OBJ_AS(YogObj, kls)->attrs = YogTable_new_symbol_table(ENV);
     YogCode* c = VAL2PTR(code);
 
     YogKlassFrame* frame = YogKlassFrame_new(ENV);
     setup_script_frame(ENV, SCRIPT_FRAME(frame), c);
-    NAME_FRAME(frame)->self = OBJ2VAL(kls);
+    NAME_FRAME(frame)->self = kls;
     NAME_FRAME(frame)->vars = attrs;
 
     PUSH_FRAME(FRAME(frame));
@@ -220,10 +213,8 @@ inst make_method
 (code)
 (method)
 {
-    YogUnboundMethod* m = YogUnboundMethod_new(ENV);
-    setup_script_method(ENV, SCRIPT_METHOD(m), VAL2PTR(code));
-
-    method = OBJ2VAL(m);
+    method = YogUnboundMethod_new(ENV);
+    setup_script_method(ENV, OBJ_AS(YogScriptMethod, method), VAL2PTR(code));
 }
 
 inst push_self_name

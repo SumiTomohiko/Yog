@@ -740,7 +740,7 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg
 
     YogVal val = node->u.literal.val;
     unsigned int lineno = node->lineno;
-    if (YogVal_get_klass(env, val) == ENV_VM(env)->cString) {
+    if (VAL2PTR(YogVal_get_klass(env, val)) == VAL2PTR(ENV_VM(env)->cString)) {
         unsigned int index = register_const(env, data, val);
         CompileData_add_make_string(env, data, lineno, index);
     }
@@ -1872,9 +1872,8 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogNode* node, void* arg)
         visit_node(env, visitor, super, data);
     }
     else {
-        YogKlass* cObject = ENV_VM(env)->cObject;
-        val = OBJ2VAL(cObject);
-        add_push_const(env, data, val, node->lineno);
+        YogVal cObject = ENV_VM(env)->cObject;
+        add_push_const(env, data, cObject, node->lineno);
     }
 
     YogArray* stmts = node->u.klass.stmts;

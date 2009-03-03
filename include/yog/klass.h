@@ -7,7 +7,7 @@ struct YogKlass {
     YOGOBJ_HEAD;
     Allocator allocator;
     ID name;
-    struct YogKlass* super;
+    struct YogVal super;
 };
 
 typedef struct YogKlass YogKlass;
@@ -19,11 +19,11 @@ typedef struct YogKlass YogKlass;
  */
 
 /* src/klass.c */
-YogBasicObj* YogKlass_allocate(YogEnv*, YogKlass*);
-void YogKlass_define_allocator(YogEnv*, YogKlass*, Allocator);
-void YogKlass_define_method(YogEnv*, YogKlass*, const char*, void*, unsigned int, unsigned int, unsigned int, int, ...);
-void YogKlass_klass_init(YogEnv*, YogKlass*);
-YogKlass* YogKlass_new(YogEnv*, const char*, YogKlass*);
+YogVal YogKlass_allocate(YogEnv*, YogVal);
+void YogKlass_define_allocator(YogEnv*, YogVal, Allocator);
+void YogKlass_define_method(YogEnv*, YogVal, const char*, void*, unsigned int, unsigned int, unsigned int, int, ...);
+void YogKlass_klass_init(YogEnv*, YogVal);
+YogVal YogKlass_new(YogEnv*, const char*, YogVal);
 
 /* PROTOTYPE_END */
 

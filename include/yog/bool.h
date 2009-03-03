@@ -8,7 +8,7 @@
  */
 
 /* src/bool.c */
-YogKlass* YogBool_klass_new(YogEnv*);
+YogVal YogBool_klass_new(YogEnv*);
 
 /* PROTOTYPE_END */
 

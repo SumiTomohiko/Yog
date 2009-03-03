@@ -2,7 +2,7 @@
 #include "yog/yog.h"
 
 static void 
-YogBasicBlock_init(YogEnv* env, YogBasicBlock* block, YogKlass* klass) 
+YogBasicBlock_init(YogEnv* env, YogBasicBlock* block, YogVal klass) 
 {
     YogBasicObj_init(env, YOGBASICOBJ(block), 0, klass);
 }
@@ -39,19 +39,19 @@ YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
 #undef KEEP_MEMBER
 
-static YogBasicObj* 
-YogPackageBlock_allocate(YogEnv* env, YogKlass* klass) 
+static YogVal 
+YogPackageBlock_allocate(YogEnv* env, YogVal klass) 
 {
     YogPackageBlock* block = ALLOC_OBJ(env, YogPackageBlock_keep_children, NULL, YogPackageBlock);
     YogPackageBlock_init(env, block);
 
-    return (YogBasicObj*)block;
+    return OBJ2VAL(block);
 }
 
-YogPackageBlock* 
+YogVal 
 YogPackageBlock_new(YogEnv* env) 
 {
-    return (YogPackageBlock*)YogPackageBlock_allocate(env, ENV_VM(env)->cPackageBlock);
+    return YogPackageBlock_allocate(env, ENV_VM(env)->cPackageBlock);
 }
 
 static void 
@@ -70,26 +70,26 @@ YogBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static void 
 YogBlock_init(YogEnv* env, YogBlock* block) 
 {
-    YogBasicBlock_init(env, BASIC_BLOCK(block), NULL);
+    YogBasicBlock_init(env, BASIC_BLOCK(block), YNIL);
 
     block->locals = NULL;
     block->outer_vars = NULL;
     block->globals = NULL;
 }
 
-YogBlock* 
+YogVal 
 YogBlock_new(YogEnv* env) 
 {
     YogBlock* block = ALLOC_OBJ(env, YogBlock_keep_children, NULL, YogBlock);
     YogBlock_init(env, block);
 
-    return block;
+    return OBJ2VAL(block);
 }
 
-YogKlass* 
+YogVal 
 YogPackageBlock_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, "PackageBlock", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "PackageBlock", ENV_VM(env)->cObject);
     YogKlass_define_allocator(env, klass, YogPackageBlock_allocate);
     return klass;
 }

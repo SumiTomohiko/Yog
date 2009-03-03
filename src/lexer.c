@@ -15,7 +15,7 @@
 static BOOL
 readline(YogEnv* env, YogLexer* lexer, FILE* fp) 
 {
-    YogString* line = lexer->line;
+    YogVal line = lexer->line;
     YogString_clear(env, line);
 
     int c = 0;
@@ -48,8 +48,8 @@ readline(YogEnv* env, YogLexer* lexer, FILE* fp)
 static char
 nextc(YogLexer* lexer) 
 {
-    YogString* line = lexer->line;
-    char c = line->body->items[lexer->next_index];
+    YogVal line = lexer->line;
+    char c = OBJ_AS(YogString, line)->body->items[lexer->next_index];
     lexer->next_index++;
 
     return c;
@@ -112,8 +112,8 @@ get_rest_size(YogEnv* env, YogLexer* lexer)
 static void 
 push_multibyte_char(YogEnv* env, YogLexer* lexer) 
 {
-    YogEncoding* enc = lexer->buffer->encoding;
-    const char* ptr = &lexer->line->body->items[lexer->next_index];
+    YogEncoding* enc = OBJ_AS(YogString, lexer->buffer)->encoding;
+    const char* ptr = &OBJ_AS(YogString, lexer->line)->body->items[lexer->next_index];
     int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
     int rest_size = get_rest_size(env, lexer);
     if (rest_size < mbc_size) {
@@ -182,7 +182,7 @@ next_token(YogEnv* env, YogLexer* lexer)
             } while (isdigit(c));
 
 #define RETURN_INT  do { \
-    int n = atoi(lexer->buffer->body->items); \
+    int n = atoi(OBJ_AS(YogString, lexer->buffer)->body->items); \
     YogVal val = INT2VAL(n); \
     SET_STATE(LS_OP); \
     RETURN_VAL(val, tNUMBER); \
@@ -198,7 +198,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                     PUSHBACK(c2);
 
                     float f = 0;
-                    sscanf(lexer->buffer->body->items, "%f", &f);
+                    sscanf(OBJ_AS(YogString, lexer->buffer)->body->items, "%f", &f);
                     YogVal val = FLOAT2VAL(f);
                     RETURN_VAL(val, tNUMBER);
                 }
@@ -251,8 +251,7 @@ next_token(YogEnv* env, YogLexer* lexer)
                 }
             }
 
-            YogString* s = YogString_clone(env, lexer->buffer);
-            yylval.val = OBJ2VAL(s);
+            yylval.val = YogString_clone(env, lexer->buffer);
             SET_STATE(LS_OP);
             return tSTRING;
             break;
@@ -342,8 +341,7 @@ next_token(YogEnv* env, YogLexer* lexer)
             if (ignore_case) {
                 option = ONIG_OPTION_IGNORECASE;
             }
-            YogRegexp* regexp = YogRegexp_new(env, lexer->buffer, option);
-            yylval.val = OBJ2VAL(regexp);
+            yylval.val = YogRegexp_new(env, lexer->buffer, option);
 
             SET_STATE(LS_EXPR);
             return tREGEXP;
@@ -405,7 +403,7 @@ next_token(YogEnv* env, YogLexer* lexer)
             PUSHBACK(c);
 
             int type = 0;
-            const char* name = lexer->buffer->body->items;
+            const char* name = OBJ_AS(YogString, lexer->buffer)->body->items;
             if (lexer->state == LS_NAME) {
                 yylval.name = INTERN(name);
                 type = tNAME;
@@ -457,7 +455,7 @@ read_encoding(YogEnv* env, YogLexer* lexer)
             continue;
         }
 
-        const char* s = &lexer->line->body->items[lexer->next_index];
+        const char* s = &OBJ_AS(YogString, lexer->line)->body->items[lexer->next_index];
 #define KEY     "coding"
         const char* ptr = strstr(s, KEY);
         if (ptr == NULL) {
@@ -477,7 +475,7 @@ read_encoding(YogEnv* env, YogLexer* lexer)
             add_token_char(env, lexer, c);
             c = nextc(lexer);
         }
-        YogString* coding = YogEncoding_normalize_name(env, lexer->buffer);
+        YogVal coding = YogEncoding_normalize_name(env, lexer->buffer);
         if (YogString_size(env, coding) - 1 < 1) {
             continue;
         }
@@ -510,7 +508,7 @@ YogLexer_read_encoding(YogEnv* env, YogLexer* lexer)
     if (enc == NULL) {
         enc = YogEncoding_get_default(env);
     }
-    lexer->buffer->encoding = enc;
+    OBJ_AS(YogString, lexer->buffer)->encoding = enc;
     reset_lexer(env, lexer);
 }
 

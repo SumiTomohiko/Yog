@@ -27,10 +27,10 @@ typedef struct YogMatch YogMatch;
  */
 
 /* src/regexp.c */
-YogKlass* YogMatch_klass_new(YogEnv*);
+YogVal YogMatch_klass_new(YogEnv*);
 YogMatch* YogMatch_new(YogEnv*, YogString*, YogRegexp*, OnigRegion*);
-YogKlass* YogRegexp_klass_new(YogEnv*);
-YogRegexp* YogRegexp_new(YogEnv*, YogString*, OnigOptionType);
+YogVal YogRegexp_klass_new(YogEnv*);
+YogVal YogRegexp_new(YogEnv*, YogVal, OnigOptionType);
 
 /* PROTOTYPE_END */
 

@@ -8,7 +8,7 @@
  */
 
 /* src/int.c */
-YogKlass* YogInt_klass_new(YogEnv*);
+YogVal YogInt_klass_new(YogEnv*);
 
 /* PROTOTYPE_END */
 

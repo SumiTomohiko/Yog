@@ -141,7 +141,19 @@ call_builtin_function(YogEnv* env, YogThread* th, YogBuiltinFunction* f, YogVal 
 static YogVal 
 call_builtin_unbound_method(YogEnv* env, YogThread* th, YogVal receiver, YogBuiltinUnboundMethod* method, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg) 
 {
+#if 0
     DECL_ARGS;
+#endif
+    YogBuiltinFunction* f = method->f;
+    YogArgInfo* arg_info = &f->arg_info;
+    YOG_ASSERT(env, (posargc <= arg_info->argc) || (0 < arg_info->varargc), "Too many argument(s).");
+    unsigned int argc = arg_info->argc + arg_info->blockargc + arg_info->varargc + arg_info->kwargc;
+    YogValArray* args = YogValArray_new(env, argc);
+    if (0 < arg_info->varargc) {
+        YogArray* vararg = YogArray_new(env);
+        unsigned int index = arg_info->argc + arg_info->blockargc;
+        args->items[index] = OBJ2VAL(vararg);
+    }
 
     fill_builtin_function_args(env, f, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, args);
 
@@ -226,25 +238,24 @@ call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint
 {
     YOG_ASSERT(env, IS_OBJ(callee), "Callee is not object.");
     YogBasicObj* obj = VAL2OBJ(callee);
-    YogVm* vm = ENV_VM(env);
-    if (obj->klass == vm->cBuiltinBoundMethod) {
+    if (IS_OBJ_OF(cBuiltinBoundMethod, callee)) {
         YogBuiltinBoundMethod* method = (YogBuiltinBoundMethod*)obj;
         YogVal val = call_builtin_bound_method(env, th, method, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
         PUSH(val);
     }
-    else if (obj->klass == vm->cBoundMethod) {
+    else if (IS_OBJ_OF(cBoundMethod, callee)) {
         YogBoundMethod* method = (YogBoundMethod*)obj;
         YogVal self = method->self;
         YogCode* code = SCRIPT_METHOD(method)->code;
         call_code(env, th, self, code, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
     }
-    else if (obj->klass == vm->cBuiltinUnboundMethod) {
+    else if (IS_OBJ_OF(cBuiltinUnboundMethod, callee)) {
         YogBuiltinUnboundMethod* method = (YogBuiltinUnboundMethod*)obj;
         YogVal self = unbound_self;
         YogVal val = call_builtin_unbound_method(env, th, self, method, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
         PUSH(val);
     }
-    else if (obj->klass == vm->cUnboundMethod) {
+    else if (IS_OBJ_OF(cUnboundMethod, callee)) {
         YogUnboundMethod* method = (YogUnboundMethod*)obj;
         YogVal self = unbound_self;
         YogCode* code = SCRIPT_METHOD(method)->code;
@@ -394,8 +405,8 @@ mainloop(YogEnv* env, YogThread* th, YogScriptFrame* frame, YogCode* code)
                 st = st->lower;
             }
 
-            YogKlass* klass = YOGBASICOBJ(exc)->klass;
-            const char* name = ID2NAME(klass->name);
+            YogVal klass = YOGBASICOBJ(exc)->klass;
+            const char* name = ID2NAME(OBJ_AS(YogKlass, klass)->name);
 #undef ID2NAME
             YogVal val = YogThread_call_method(env, ENV_TH(env), exc->message, "to_s", 0, NULL);
             YogString* msg = OBJ_AS(YogString, val);
@@ -509,7 +520,7 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
     YogBasicObj* obj = VAL2OBJ(block);
 
     YogVal retval = YUNDEF;
-    if (obj->klass == ENV_VM(env)->cPackageBlock) {
+    if (IS_OBJ_OF(cPackageBlock, block)) {
         YogBasicBlock* block = BASIC_BLOCK(obj);
         YogCode* code = block->code;
         YogArgInfo* arg_info = &code->arg_info;
@@ -577,21 +588,21 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
 
     YogVal retval = YUNDEF;
     YogVal undef = YUNDEF;
-    if (obj->klass == ENV_VM(env)->cBuiltinBoundMethod) {
+    if (IS_OBJ_OF(cBuiltinBoundMethod, attr)) {
         YogBuiltinBoundMethod* method = (YogBuiltinBoundMethod*)obj;
         retval = call_builtin_bound_method(env, th, method, argc, args, undef, 0, NULL, undef, undef);
     }
-    else if (obj->klass == ENV_VM(env)->cBoundMethod) {
+    else if (IS_OBJ_OF(cBoundMethod, attr)) {
         YogBoundMethod* method = (YogBoundMethod*)obj;
         YogVal self = method->self;
         YogCode* code = SCRIPT_METHOD(method)->code;
         retval = eval_code(env, th, code, self, argc, args);
     }
-    else if (obj->klass == ENV_VM(env)->cBuiltinUnboundMethod) {
+    else if (IS_OBJ_OF(cBuiltinUnboundMethod, attr)) {
         YogBuiltinUnboundMethod* method = (YogBuiltinUnboundMethod*)obj;
         retval = call_builtin_unbound_method(env, th, receiver, method, argc, args, undef, 0, NULL, undef, undef);
     }
-    else if (obj->klass == ENV_VM(env)->cUnboundMethod) {
+    else if (IS_OBJ_OF(cUnboundMethod, attr)) {
         YogUnboundMethod* method = (YogUnboundMethod*)obj;
         YogCode* code = SCRIPT_METHOD(method)->code;
         retval = eval_code(env, th, code, receiver, argc, args);

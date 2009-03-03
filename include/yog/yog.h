@@ -18,6 +18,69 @@ typedef unsigned int ID;
 
 #define INVALID_ID  (UINT_MAX)
 
+enum YogValType {
+    VAL_UNDEF, 
+    VAL_INT, 
+    VAL_FLOAT, 
+    VAL_PTR, 
+    VAL_OBJ, 
+    VAL_BOOL, 
+    VAL_NIL, 
+    VAL_SYMBOL, 
+#if 0
+    VAL_STR, 
+#endif
+};
+
+typedef enum YogValType YogValType;
+
+struct YogVal {
+    enum YogValType type;
+    union {
+        int n;
+        double f;
+        ID symbol;
+        void * ptr;
+        struct YogBasicObj* obj;
+        BOOL b;
+#if 0
+        const char* str;
+#endif
+    } u;
+};
+
+#define VAL_TYPE(v)         ((v).type)
+#define VAL2INT(v)          ((v).u.n)
+#define VAL2FLOAT(v)        ((v).u.f)
+#define VAL2ID(v)           ((v).u.symbol)
+#define VAL2PTR(v)          ((v).u.ptr)
+#define VAL2BOOL(v)         ((v).u.b)
+#define VAL2OBJ(v)          ((v).u.obj)
+#define VAL2STR(v)          ((v).u.str)
+#define PTR_AS(type, v)     ((type*)VAL2PTR(v))
+#define OBJ_AS(type, v)     ((type*)VAL2OBJ(v))
+
+#define IS_UNDEF(v)     (VAL_TYPE(v) == VAL_UNDEF)
+#define IS_PTR(v)       (VAL_TYPE(v) == VAL_PTR)
+#define IS_OBJ(v)       (VAL_TYPE(v) == VAL_OBJ)
+#define IS_INT(v)       (VAL_TYPE(v) == VAL_INT)
+#define IS_FLOAT(v)     (VAL_TYPE(v) == VAL_FLOAT)
+#define IS_BOOL(v)      (VAL_TYPE(v) == VAL_BOOL)
+#define IS_NIL(v)       (VAL_TYPE(v) == VAL_NIL)
+#define IS_SYMBOL(v)    (VAL_TYPE(v) == VAL_SYMBOL)
+#define IS_STR(v)       (VAL_TYPE(v) == VAL_STR)
+
+#define KLASS_OF(v)     (OBJ_AS(YogBasicObj, v)->klass)
+#define IS_OBJ_OF(k, v) (IS_OBJ(v) && (VAL2OBJ(KLASS_OF(v)) == VAL2OBJ(ENV_VM(env)->k)))
+
+#define CHECK_INT(v, msg)   do { \
+    if (!IS_INT(v)) { \
+        YogError_raise_type_error(env, msg); \
+    } \
+} while (0)
+
+typedef struct YogVal YogVal;
+
 struct YogEnv {
     struct YogVm* vm;
     struct YogThread* th;
@@ -94,31 +157,32 @@ struct YogVm {
         unsigned int living_obj_num[SURVIVE_INDEX_MAX];
         unsigned int total_obj_num;
         unsigned int num_alloc;
+        size_t total_allocated_size;
     } gc_stat;
 
     ID next_id;
     struct YogTable* id2name;
     struct YogTable* name2id;
 
-    struct YogKlass* cObject;
-    struct YogKlass* cKlass;
-    struct YogKlass* cInt;
-    struct YogKlass* cString;
-    struct YogKlass* cRegexp;
-    struct YogKlass* cMatch;
-    struct YogKlass* cPackage;
-    struct YogKlass* cBool;
-    struct YogKlass* cBuiltinBoundMethod;
-    struct YogKlass* cBoundMethod;
-    struct YogKlass* cBuiltinUnboundMethod;
-    struct YogKlass* cUnboundMethod;
-    struct YogKlass* cPackageBlock;
-    struct YogKlass* cNil;
+    struct YogVal cObject;
+    struct YogVal cKlass;
+    struct YogVal cInt;
+    struct YogVal cString;
+    struct YogVal cRegexp;
+    struct YogVal cMatch;
+    struct YogVal cPackage;
+    struct YogVal cBool;
+    struct YogVal cBuiltinBoundMethod;
+    struct YogVal cBoundMethod;
+    struct YogVal cBuiltinUnboundMethod;
+    struct YogVal cUnboundMethod;
+    struct YogVal cPackageBlock;
+    struct YogVal cNil;
 
-    struct YogKlass* eException;
-    struct YogKlass* eBugException;
-    struct YogKlass* eTypeError;
-    struct YogKlass* eIndexError;
+    struct YogVal eException;
+    struct YogVal eBugException;
+    struct YogVal eTypeError;
+    struct YogVal eIndexError;
 
     struct YogTable* pkgs;
 
@@ -129,72 +193,9 @@ struct YogVm {
 
 typedef struct YogVm YogVm;
 
-enum YogValType {
-    VAL_UNDEF, 
-    VAL_INT, 
-    VAL_FLOAT, 
-    VAL_PTR, 
-    VAL_OBJ, 
-    VAL_BOOL, 
-    VAL_NIL, 
-    VAL_SYMBOL, 
-#if 0
-    VAL_STR, 
-#endif
-};
-
-typedef enum YogValType YogValType;
-
-struct YogVal {
-    enum YogValType type;
-    union {
-        int n;
-        double f;
-        ID symbol;
-        void * ptr;
-        struct YogBasicObj* obj;
-        BOOL b;
-#if 0
-        const char* str;
-#endif
-    } u;
-};
-
-#define VAL_TYPE(v)         ((v).type)
-#define VAL2INT(v)          ((v).u.n)
-#define VAL2FLOAT(v)        ((v).u.f)
-#define VAL2ID(v)           ((v).u.symbol)
-#define VAL2PTR(v)          ((v).u.ptr)
-#define VAL2BOOL(v)         ((v).u.b)
-#define VAL2OBJ(v)          ((v).u.obj)
-#define VAL2STR(v)          ((v).u.str)
-#define OBJ_AS(type, v)     ((type*)VAL2OBJ(v))
-
-#define IS_UNDEF(v)     (VAL_TYPE(v) == VAL_UNDEF)
-#define IS_PTR(v)       (VAL_TYPE(v) == VAL_PTR)
-#define IS_OBJ(v)       (VAL_TYPE(v) == VAL_OBJ)
-#define IS_INT(v)       (VAL_TYPE(v) == VAL_INT)
-#define IS_FLOAT(v)     (VAL_TYPE(v) == VAL_FLOAT)
-#define IS_BOOL(v)      (VAL_TYPE(v) == VAL_BOOL)
-#define IS_NIL(v)       (VAL_TYPE(v) == VAL_NIL)
-#define IS_SYMBOL(v)    (VAL_TYPE(v) == VAL_SYMBOL)
-#define IS_STR(v)       (VAL_TYPE(v) == VAL_STR)
-
-#define KLASS_OF(v)     (OBJ_AS(YogBasicObj, v)->klass)
-#define IS_OBJ_OF(klass, v) \
-                        (IS_OBJ(v) && (KLASS_OF(v) == ENV_VM(env)->klass))
-
-#define CHECK_INT(v, msg)   do { \
-    if (!IS_INT(v)) { \
-        YogError_raise_type_error(env, msg); \
-    } \
-} while (0)
-
-typedef struct YogVal YogVal;
-
 struct YogBasicObj {
     unsigned int flags;
-    struct YogKlass* klass;
+    struct YogVal klass;
 };
 
 #define HAS_ATTRS   (1)
@@ -214,7 +215,7 @@ struct YogObj {
 
 typedef struct YogObj YogObj;
 
-typedef YogBasicObj* (*Allocator)(struct YogEnv*, struct YogKlass*);
+typedef YogVal (*Allocator)(struct YogEnv*, struct YogVal);
 
 enum YogFrameType {
     FRAME_C, 
@@ -346,6 +347,16 @@ typedef struct YogLocals YogLocals;
     __locals_##x##_##y##_##z##__.vals[3] = NULL; \
     __locals_##x##_##y##_##z##__.next = ENV_TH(env)->locals; \
     ENV_TH(env)->locals = &__locals_##x##_##y##_##z##__
+#define PUSH_LOCALS4(env, x, y, z, t) \
+    YogLocals __locals_##x##_##y##_##z##_##t##__; \
+    __locals_##x##_##y##_##z##_##t##__.num_vals = 4; \
+    __locals_##x##_##y##_##z##_##t##__.size = 1; \
+    __locals_##x##_##y##_##z##_##t##__.vals[0] = &(x); \
+    __locals_##x##_##y##_##z##_##t##__.vals[1] = &(y); \
+    __locals_##x##_##y##_##z##_##t##__.vals[2] = &(z); \
+    __locals_##x##_##y##_##z##_##t##__.vals[3] = &(t); \
+    __locals_##x##_##y##_##z##_##t##__.next = ENV_TH(env)->locals; \
+    ENV_TH(env)->locals = &__locals_##x##_##y##_##z##_##t##__
 #define POP_LOCALS(env)         ENV_TH(env)->locals = ENV_TH(env)->locals->next
 #define RETURN(env, val)        do { \
     RESTORE_LOCALS(env); \
@@ -384,16 +395,16 @@ YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);
 void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
 
 /* src/object.c */
-void YogBasicObj_init(YogEnv*, YogBasicObj*, unsigned int, YogKlass*);
+void YogBasicObj_init(YogEnv*, YogBasicObj*, unsigned int, YogVal);
 void YogBasicObj_keep_children(YogEnv*, void*, ObjectKeeper);
-YogBasicObj* YogObj_allocate(YogEnv*, YogKlass*);
+YogVal YogObj_allocate(YogEnv*, YogVal);
 YogVal YogObj_get_attr(YogEnv*, YogObj*, ID);
-void YogObj_init(YogEnv*, YogObj*, unsigned int, YogKlass*);
+void YogObj_init(YogEnv*, YogObj*, unsigned int, YogVal);
 void YogObj_keep_children(YogEnv*, void*, ObjectKeeper);
-void YogObj_klass_init(YogEnv*, YogKlass*);
-YogObj* YogObj_new(YogEnv*, YogKlass*);
-void YogObj_set_attr(YogEnv*, YogObj*, const char*, YogVal);
-void YogObj_set_attr_id(YogEnv*, YogObj*, ID, YogVal);
+void YogObj_klass_init(YogEnv*, YogVal);
+YogVal YogObj_new(YogEnv*, YogVal);
+void YogObj_set_attr(YogEnv*, YogVal, const char*, YogVal);
+void YogObj_set_attr_id(YogEnv*, YogVal, ID, YogVal);
 
 /* src/thread.c */
 YogVal YogThread_call_block(YogEnv*, YogThread*, YogVal, unsigned int, YogVal*);
@@ -407,10 +418,10 @@ BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
 YogVal YogVal_false();
 YogVal YogVal_float(float);
 YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
-YogKlass* YogVal_get_klass(YogEnv*, YogVal);
+YogVal YogVal_get_klass(YogEnv*, YogVal);
 int YogVal_hash(YogEnv*, YogVal);
 YogVal YogVal_int(int);
-BOOL YogVal_is_subklass_of(YogEnv*, YogVal, YogKlass*);
+BOOL YogVal_is_subklass_of(YogEnv*, YogVal, YogVal);
 YogVal YogVal_keep(YogEnv*, YogVal, ObjectKeeper);
 YogVal YogVal_nil();
 YogVal YogVal_obj(YogBasicObj*);
@@ -431,9 +442,11 @@ void YogVm_delete(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
 void YogVm_init(YogVm*, YogGcType);
+void YogVm_initialize_gc(YogEnv*, YogVm*);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
 void* YogVm_realloc(YogEnv*, YogVm*, void*, size_t);
-void YogVm_register_package(YogEnv*, YogVm*, const char*, YogPackage*);
+void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
+unsigned int object_number_of_page(size_t);
 
 /* PROTOTYPE_END */
 

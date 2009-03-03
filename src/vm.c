@@ -162,14 +162,12 @@ increment_living_object_number(YogVm* vm, unsigned int survive_num)
 }
 
 void 
-YogVm_register_package(YogEnv* env, YogVm* vm, const char* name, YogPackage* pkg) 
+YogVm_register_package(YogEnv* env, YogVm* vm, const char* name, YogVal pkg) 
 {
     ID id = YogVm_intern(env, vm, name);
     YogVal key = ID2VAL(id);
 
-    YogVal value = OBJ2VAL(pkg);
-
-    YogTable_add_direct(env, vm->pkgs, key, value);
+    YogTable_add_direct(env, vm->pkgs, key, pkg);
 }
 
 const char* 
@@ -299,7 +297,7 @@ YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, 
 static void 
 setup_builtins(YogEnv* env, YogVm* vm) 
 {
-    YogPackage* builtins = YogBuiltins_new(env);
+    YogVal builtins = YogBuiltins_new(env);
     YogVm_register_package(env, vm, BUILTINS, builtins);
 }
 
@@ -313,14 +311,14 @@ setup_symbol_tables(YogEnv* env, YogVm* vm)
 static void 
 setup_basic_klass(YogEnv* env, YogVm* vm) 
 {
-    YogKlass* cObject = YogKlass_new(env, "Object", NULL);
+    YogVal cObject = YogKlass_new(env, "Object", YNIL);
     YogKlass_define_allocator(env, cObject, YogObj_allocate);
 
-    YogKlass* cKlass = YogKlass_new(env, "Class", cObject);
+    YogVal cKlass = YogKlass_new(env, "Class", cObject);
     YogKlass_define_allocator(env, cKlass, YogKlass_allocate);
 
-    YOGBASICOBJ(cObject)->klass = cKlass;
-    YOGBASICOBJ(cKlass)->klass = cKlass;
+    OBJ_AS(YogBasicObj, cObject)->klass = cKlass;
+    OBJ_AS(YogBasicObj, cKlass)->klass = cKlass;
 
     vm->cObject = cObject;
     vm->cKlass = cKlass;
@@ -378,10 +376,14 @@ setup_exceptions(YogEnv* env, YogVm* vm)
 }
 
 void 
-YogVm_boot(YogEnv* env, YogVm* vm) 
+YogVm_initialize_gc(YogEnv* env, YogVm* vm) 
 {
     (*vm->init_gc)(env, vm);
+}
 
+void 
+YogVm_boot(YogEnv* env, YogVm* vm) 
+{
     setup_symbol_tables(env, vm);
     setup_basic_klass(env, vm);
     setup_klasses(env, vm);
@@ -403,6 +405,12 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP_MEMBER(id2name);
     KEEP_MEMBER(name2id);
 
+    KEEP_MEMBER(pkgs);
+    KEEP_MEMBER(encodings);
+    KEEP_MEMBER(thread);
+#undef KEEP_MEMBER
+
+#define KEEP_MEMBER(member)     vm->member = YogVal_keep(env, vm->member, keeper)
     KEEP_MEMBER(cObject);
     KEEP_MEMBER(cKlass);
     KEEP_MEMBER(cInt);
@@ -422,12 +430,6 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP_MEMBER(eBugException);
     KEEP_MEMBER(eTypeError);
     KEEP_MEMBER(eIndexError);
-
-    KEEP_MEMBER(pkgs);
-
-    KEEP_MEMBER(encodings);
-
-    KEEP_MEMBER(thread);
 #undef KEEP_MEMBER
 }
 
@@ -548,14 +550,17 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
 {
     size_t needed_size = size + sizeof(CopyingHeader);
     size_t rounded_size = round_size(needed_size);
+    vm->gc_stat.total_allocated_size += rounded_size;
 
     YogHeap* heap = vm->gc.copying.heap;
 #define REST_SIZE(heap)     ((heap)->size - ((heap)->free - (heap)->base))
     size_t rest_size = REST_SIZE(heap);
     if ((rest_size < rounded_size) || vm->gc_stress) {
-        copying_gc(env, vm);
-        heap = vm->gc.copying.heap;
-        rest_size = REST_SIZE(heap);
+        if (!vm->disable_gc) {
+            copying_gc(env, vm);
+            heap = vm->gc.copying.heap;
+            rest_size = REST_SIZE(heap);
+        }
         YOG_ASSERT(env, rounded_size <= rest_size, "out of memory");
     }
 #undef REST_SIZE
@@ -1352,30 +1357,31 @@ YogVm_init(YogVm* vm, YogGcType gc)
     reset_living_object_count(vm);
     reset_total_object_count(vm);
     vm->gc_stat.num_alloc = 0;
+    vm->gc_stat.total_allocated_size = 0;
 
     vm->next_id = 0;
     vm->id2name = NULL;
     vm->name2id = NULL;
 
-    vm->cObject = NULL;
-    vm->cKlass = NULL;
-    vm->cInt = NULL;
-    vm->cString = NULL;
-    vm->cRegexp = NULL;
-    vm->cMatch = NULL;
-    vm->cPackage = NULL;
-    vm->cBool = NULL;
-    vm->cBuiltinBoundMethod = NULL;
-    vm->cBoundMethod = NULL;
-    vm->cBuiltinUnboundMethod = NULL;
-    vm->cUnboundMethod = NULL;
-    vm->cPackageBlock = NULL;
-    vm->cNil = NULL;
+    vm->cObject = YUNDEF;
+    vm->cKlass = YUNDEF;
+    vm->cInt = YUNDEF;
+    vm->cString = YUNDEF;
+    vm->cRegexp = YUNDEF;
+    vm->cMatch = YUNDEF;
+    vm->cPackage = YUNDEF;
+    vm->cBool = YUNDEF;
+    vm->cBuiltinBoundMethod = YUNDEF;
+    vm->cBoundMethod = YUNDEF;
+    vm->cBuiltinUnboundMethod = YUNDEF;
+    vm->cUnboundMethod = YUNDEF;
+    vm->cPackageBlock = YUNDEF;
+    vm->cNil = YUNDEF;
 
-    vm->eException = NULL;
-    vm->eBugException = NULL;
-    vm->eTypeError = NULL;
-    vm->eIndexError = NULL;
+    vm->eException = YUNDEF;
+    vm->eBugException = YUNDEF;
+    vm->eTypeError = YUNDEF;
+    vm->eIndexError = YUNDEF;
 
     vm->pkgs = NULL;
 

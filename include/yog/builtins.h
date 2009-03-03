@@ -8,7 +8,7 @@
  */
 
 /* src/builtins.c */
-YogPackage* YogBuiltins_new(YogEnv*);
+YogVal YogBuiltins_new(YogEnv*);
 
 /* PROTOTYPE_END */
 

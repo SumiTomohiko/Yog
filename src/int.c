@@ -17,10 +17,7 @@ to_s(YogEnv* env)
 
     CHECK_TYPE(self);
 
-    YogString* s = YogString_new_format(env, "%d", VAL2INT(self));
-    YogVal val = OBJ2VAL(s);
-
-    return val;
+    return YogString_new_format(env, "%d", VAL2INT(self));
 }
 
 static YogVal 
@@ -72,10 +69,10 @@ times(YogEnv* env)
     return YNIL;
 }
 
-YogKlass* 
+YogVal 
 YogInt_klass_new(YogEnv* env) 
 {
-    YogKlass* klass = YogKlass_new(env, "Int", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Int", ENV_VM(env)->cObject);
 #define DEFINE_METHOD(name, f) do { \
     YogKlass_define_method(env, klass, name, f, 0, 0, 0, -1, "n", NULL); \
 } while (0)
