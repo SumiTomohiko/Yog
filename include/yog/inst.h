@@ -17,7 +17,7 @@ enum InstType {
 typedef enum InstType InstType;
 
 struct YogInst {
-    struct YogInst* next;
+    struct YogVal next;
 
     enum InstType type;
     enum OpCode opcode;
@@ -75,10 +75,10 @@ struct YogInst {
             uint8_t index;
         } load_local;
         struct {
-            struct YogInst* dest;
+            struct YogVal dest;
         } jump;
         struct {
-            struct YogInst* dest;
+            struct YogVal dest;
         } jump_if_false;
         struct {
         } dup;
@@ -112,42 +112,44 @@ struct YogInst {
     unsigned int size;
 };
 
-#define INST_OPCODE(inst)   ((inst)->opcode)
+#define INST_OPCODE(v)  (INST(v)->opcode)
 
-#define LOAD_SPECIAL_ID(inst) ((inst)->u.load_special.id)
-#define PUSH_CONST_INDEX(inst) ((inst)->u.push_const.index)
-#define MAKE_STRING_INDEX(inst) ((inst)->u.make_string.index)
-#define CALL_METHOD_METHOD(inst) ((inst)->u.call_method.method)
-#define CALL_METHOD_ARGC(inst) ((inst)->u.call_method.argc)
-#define CALL_METHOD_KWARGC(inst) ((inst)->u.call_method.kwargc)
-#define CALL_METHOD_BLOCKARGC(inst) ((inst)->u.call_method.blockargc)
-#define CALL_METHOD_VARARGC(inst) ((inst)->u.call_method.varargc)
-#define CALL_METHOD_VARKWARGC(inst) ((inst)->u.call_method.varkwargc)
-#define STORE_NAME_ID(inst) ((inst)->u.store_name.id)
-#define STORE_LOCAL_INDEX(inst) ((inst)->u.store_local.index)
-#define CALL_COMMAND_COMMAND(inst) ((inst)->u.call_command.command)
-#define CALL_COMMAND_ARGC(inst) ((inst)->u.call_command.argc)
-#define CALL_COMMAND_KWARGC(inst) ((inst)->u.call_command.kwargc)
-#define CALL_COMMAND_BLOCKARGC(inst) ((inst)->u.call_command.blockargc)
-#define CALL_COMMAND_VARARGC(inst) ((inst)->u.call_command.varargc)
-#define CALL_COMMAND_VARKWARGC(inst) ((inst)->u.call_command.varkwargc)
-#define CALL_FUNCTION_ARGC(inst) ((inst)->u.call_function.argc)
-#define CALL_FUNCTION_KWARGC(inst) ((inst)->u.call_function.kwargc)
-#define CALL_FUNCTION_BLOCKARGC(inst) ((inst)->u.call_function.blockargc)
-#define CALL_FUNCTION_VARARGC(inst) ((inst)->u.call_function.varargc)
-#define CALL_FUNCTION_VARKWARGC(inst) ((inst)->u.call_function.varkwargc)
-#define LOAD_GLOBAL_ID(inst) ((inst)->u.load_global.id)
-#define LOAD_NAME_ID(inst) ((inst)->u.load_name.id)
-#define LOAD_LOCAL_INDEX(inst) ((inst)->u.load_local.index)
-#define JUMP_DEST(inst) ((inst)->u.jump.dest)
-#define JUMP_IF_FALSE_DEST(inst) ((inst)->u.jump_if_false.dest)
-#define STORE_NONLOCAL_LEVEL(inst) ((inst)->u.store_nonlocal.level)
-#define STORE_NONLOCAL_INDEX(inst) ((inst)->u.store_nonlocal.index)
-#define LOAD_NONLOCAL_LEVEL(inst) ((inst)->u.load_nonlocal.level)
-#define LOAD_NONLOCAL_INDEX(inst) ((inst)->u.load_nonlocal.index)
-#define STORE_GLOBAL_NAME(inst) ((inst)->u.store_global.name)
+#define LOAD_SPECIAL_ID(inst) (INST(inst)->u.load_special.id)
+#define PUSH_CONST_INDEX(inst) (INST(inst)->u.push_const.index)
+#define MAKE_STRING_INDEX(inst) (INST(inst)->u.make_string.index)
+#define CALL_METHOD_METHOD(inst) (INST(inst)->u.call_method.method)
+#define CALL_METHOD_ARGC(inst) (INST(inst)->u.call_method.argc)
+#define CALL_METHOD_KWARGC(inst) (INST(inst)->u.call_method.kwargc)
+#define CALL_METHOD_BLOCKARGC(inst) (INST(inst)->u.call_method.blockargc)
+#define CALL_METHOD_VARARGC(inst) (INST(inst)->u.call_method.varargc)
+#define CALL_METHOD_VARKWARGC(inst) (INST(inst)->u.call_method.varkwargc)
+#define STORE_NAME_ID(inst) (INST(inst)->u.store_name.id)
+#define STORE_LOCAL_INDEX(inst) (INST(inst)->u.store_local.index)
+#define CALL_COMMAND_COMMAND(inst) (INST(inst)->u.call_command.command)
+#define CALL_COMMAND_ARGC(inst) (INST(inst)->u.call_command.argc)
+#define CALL_COMMAND_KWARGC(inst) (INST(inst)->u.call_command.kwargc)
+#define CALL_COMMAND_BLOCKARGC(inst) (INST(inst)->u.call_command.blockargc)
+#define CALL_COMMAND_VARARGC(inst) (INST(inst)->u.call_command.varargc)
+#define CALL_COMMAND_VARKWARGC(inst) (INST(inst)->u.call_command.varkwargc)
+#define CALL_FUNCTION_ARGC(inst) (INST(inst)->u.call_function.argc)
+#define CALL_FUNCTION_KWARGC(inst) (INST(inst)->u.call_function.kwargc)
+#define CALL_FUNCTION_BLOCKARGC(inst) (INST(inst)->u.call_function.blockargc)
+#define CALL_FUNCTION_VARARGC(inst) (INST(inst)->u.call_function.varargc)
+#define CALL_FUNCTION_VARKWARGC(inst) (INST(inst)->u.call_function.varkwargc)
+#define LOAD_GLOBAL_ID(inst) (INST(inst)->u.load_global.id)
+#define LOAD_NAME_ID(inst) (INST(inst)->u.load_name.id)
+#define LOAD_LOCAL_INDEX(inst) (INST(inst)->u.load_local.index)
+#define JUMP_DEST(inst) (INST(inst)->u.jump.dest)
+#define JUMP_IF_FALSE_DEST(inst) (INST(inst)->u.jump_if_false.dest)
+#define STORE_NONLOCAL_LEVEL(inst) (INST(inst)->u.store_nonlocal.level)
+#define STORE_NONLOCAL_INDEX(inst) (INST(inst)->u.store_nonlocal.index)
+#define LOAD_NONLOCAL_LEVEL(inst) (INST(inst)->u.load_nonlocal.level)
+#define LOAD_NONLOCAL_INDEX(inst) (INST(inst)->u.load_nonlocal.index)
+#define STORE_GLOBAL_NAME(inst) (INST(inst)->u.store_global.name)
 
 typedef struct YogInst YogInst;
+
+#define INST(v)     PTR_AS(YogInst, (v))
 
 /* PROTOTYPE_START */
 

@@ -13,19 +13,21 @@ YogBuiltinBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
     YogBuiltinBoundMethod* method = ptr;
     KEEP_SELF;
-    KEEP(f);
+    method->f = YogVal_keep(env, method->f, keeper);
 }
 
 static YogVal 
 YogBuiltinBoundMethod_allocate(YogEnv* env, YogVal klass) 
 {
+    SAVE_LOCALS(env);
+    PUSH_LOCAL(env, klass);
+
     YogBuiltinBoundMethod* method = ALLOC_OBJ(env, YogBuiltinBoundMethod_keep_children, NULL, YogBuiltinBoundMethod);
+    method->self = YNIL;
+    method->f = PTR2VAL(NULL);
     YogBasicObj_init(env, (YogBasicObj*)method, 0, klass);
 
-    method->self = YNIL;
-    method->f = NULL;
-
-    return OBJ2VAL(method);
+    RETURN(env, OBJ2VAL(method));
 }
 
 static void 
@@ -35,7 +37,7 @@ YogScriptMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
     YogScriptMethod* method = ptr;
 
-    KEEP(code);
+    method->code = YogVal_keep(env, method->code, keeper);
     KEEP(globals);
     KEEP(outer_vars);
 }
@@ -45,7 +47,7 @@ YogScriptMethod_init(YogEnv* env, YogScriptMethod* method, YogVal klass)
 {
     YogBasicObj_init(env, (YogBasicObj*)method, 0, klass);
 
-    method->code = NULL;
+    method->code = YUNDEF;
     method->globals = NULL;
     method->outer_vars = NULL;
 }
@@ -62,12 +64,15 @@ YogBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogVal 
 YogBoundMethod_allocate(YogEnv* env, YogVal klass)
 {
+    SAVE_LOCALS(env);
+    PUSH_LOCAL(env, klass);
+
     YogBoundMethod* method = ALLOC_OBJ(env, YogBoundMethod_keep_children, NULL, YogBoundMethod);
     YogScriptMethod_init(env, (YogScriptMethod*)method, klass);
 
     method->self = YNIL;
 
-    return OBJ2VAL(method);
+    RETURN(env, OBJ2VAL(method));
 }
 
 static void 
@@ -76,18 +81,20 @@ YogBuiltinUnboundMethod_keep_chldren(YogEnv* env, void* ptr, ObjectKeeper keeper
     KEEP_BASIC_OBJ;
 
     YogBuiltinUnboundMethod* method = ptr;
-    KEEP(f);
+    method->f = YogVal_keep(env, method->f, keeper);
 }
 
 static YogVal 
 YogBuiltinUnboundMethod_allocate(YogEnv* env, YogVal klass) 
 {
+    SAVE_LOCALS(env);
+    PUSH_LOCAL(env, klass);
+
     YogBuiltinUnboundMethod* method = ALLOC_OBJ(env, YogBuiltinUnboundMethod_keep_chldren, NULL, YogBuiltinUnboundMethod);
+    method->f = PTR2VAL(NULL);
     YogBasicObj_init(env, (YogBasicObj*)method, 0, klass);
 
-    method->f = NULL;
-
-    return OBJ2VAL(method);
+    RETURN(env, OBJ2VAL(method));
 }
 
 static void 
@@ -99,15 +106,22 @@ YogUnboundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogVal 
 YogUnboundMethod_allocate(YogEnv* env, YogVal klass) 
 {
+    SAVE_LOCALS(env);
+    PUSH_LOCAL(env, klass);
+
     YogScriptMethod* method = ALLOC_OBJ(env, YogUnboundMethod_keep_children, NULL, YogUnboundMethod);
     YogScriptMethod_init(env, method, klass);
 
-    return OBJ2VAL(method);
+    RETURN(env, OBJ2VAL(method));
 }
 
 #define RETURN_NEW_KLASS(allocator, name)  do { \
     YogVal klass = YogKlass_new(env, name, ENV_VM(env)->cObject); \
+    PUSH_LOCAL(env, klass); \
+    \
     YogKlass_define_allocator(env, klass, allocator); \
+    \
+    POP_LOCALS(env); \
     return klass; \
 } while (0)
 

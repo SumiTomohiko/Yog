@@ -33,16 +33,16 @@ skip_frame(YogEnv* env, YogFrame* frame, const char* func_name)
         {
             YogCFrame* f = C_FRAME(frame);
             if (f->f->func_name == name) {
-                return frame->prev;
+                return PTR_AS(YogFrame, frame->prev);
             }
             break;
         }
     case FRAME_METHOD:
     case FRAME_NAME:
         {
-            YogScriptFrame* f = SCRIPT_FRAME(frame);
-            if (f->code->func_name == name) {
-                return frame->prev;
+            YogScriptFrame* f = (YogScriptFrame*)frame;
+            if (PTR_AS(YogCode, f->code)->func_name == name) {
+                return PTR_AS(YogFrame, frame->prev);
             }
             break;
         }
@@ -61,7 +61,7 @@ initialize(YogEnv* env)
     YogVal message = ARG(env, 0);
 
     YogStackTraceEntry* st = NULL;
-    YogFrame* frame = ENV_TH(env)->cur_frame;
+    YogFrame* frame = PTR_AS(YogFrame, ENV_TH(env)->cur_frame);
     frame = skip_frame(env, frame, "initialize");
     frame = skip_frame(env, frame, "new");
 
@@ -81,8 +81,8 @@ initialize(YogEnv* env)
         case FRAME_METHOD:
         case FRAME_NAME:
             {
-                YogScriptFrame* f = SCRIPT_FRAME(frame);
-                YogCode* code = f->code;
+                YogScriptFrame* f = (YogScriptFrame*)frame;
+                YogCode* code = PTR_AS(YogCode, f->code);
                 unsigned int lineno = 0;
                 pc_t pc = f->pc - 1;
                 unsigned int i = 0;
@@ -108,7 +108,7 @@ initialize(YogEnv* env)
         entry->lower = st;
         st = entry;
 
-        frame = frame->prev;
+        frame = PTR_AS(YogFrame, frame->prev);
     }
 
     YogException* exc = OBJ_AS(YogException, self);
@@ -137,10 +137,13 @@ YogVal
 YogException_klass_new(YogEnv* env) 
 {
     YogVal klass = YogKlass_new(env, "Exception", ENV_VM(env)->cObject);
+    PUSH_LOCAL(env, klass);
+
     YogKlass_define_allocator(env, klass, allocate);
     YogKlass_define_method(env, klass, "initialize", initialize, 0, 0, 0, 0, "message", NULL);
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
 
+    POP_LOCALS(env);
     return klass;
 #undef UPDATE_PTR
 }

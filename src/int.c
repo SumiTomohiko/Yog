@@ -73,6 +73,7 @@ YogVal
 YogInt_klass_new(YogEnv* env) 
 {
     YogVal klass = YogKlass_new(env, "Int", ENV_VM(env)->cObject);
+    PUSH_LOCAL(env, klass);
 #define DEFINE_METHOD(name, f) do { \
     YogKlass_define_method(env, klass, name, f, 0, 0, 0, -1, "n", NULL); \
 } while (0)
@@ -82,6 +83,7 @@ YogInt_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
     YogKlass_define_method(env, klass, "times", times, 1, 0, 0, 0, "block", NULL);
 
+    POP_LOCALS(env);
     return klass;
 }
 

@@ -5,6 +5,7 @@ static void
 YogBasicBlock_init(YogEnv* env, YogBasicBlock* block, YogVal klass) 
 {
     YogBasicObj_init(env, YOGBASICOBJ(block), 0, klass);
+    block->code = YUNDEF;
 }
 
 static void 
@@ -24,7 +25,7 @@ YogBasicBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogBasicObj_keep_children(env, ptr, keeper);
 
     YogBasicBlock* block = ptr;
-    KEEP_MEMBER(code);
+    block->code = YogVal_keep(env, block->code, keeper);
 }
 
 static void 
@@ -89,8 +90,14 @@ YogBlock_new(YogEnv* env)
 YogVal 
 YogPackageBlock_klass_new(YogEnv* env) 
 {
-    YogVal klass = YogKlass_new(env, "PackageBlock", ENV_VM(env)->cObject);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = YogKlass_new(env, "PackageBlock", ENV_VM(env)->cObject);
+
     YogKlass_define_allocator(env, klass, YogPackageBlock_allocate);
+
+    POP_LOCALS(env);
     return klass;
 }
 

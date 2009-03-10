@@ -17,16 +17,18 @@ YogValArray_at(YogEnv* env, YogValArray* array, unsigned int n)
 }
 
 YogVal 
-YogArray_at(YogEnv* env, YogArray* array, unsigned int n) 
+YogArray_at(YogEnv* env, YogVal array, unsigned int n) 
 {
-    YOG_ASSERT(env, n < array->size, "Index exceed array size.");
-    return YogValArray_at(env, array->body, n);
+    size_t size = OBJ_AS(YogArray, array)->size;
+    YOG_ASSERT(env, n < size, "Index exceed array size.");
+
+    return YogValArray_at(env, OBJ_AS(YogArray, array)->body, n);
 }
 
 unsigned int 
-YogArray_size(YogEnv* env, YogArray* array) 
+YogArray_size(YogEnv* env, YogVal array) 
 {
-    return array->size;
+    return OBJ_AS(YogArray, array)->size;
 }
 
 static void 
@@ -55,40 +57,64 @@ YogValArray_new(YogEnv* env, unsigned int size)
 }
 
 static void 
-ensure_body_size(YogEnv* env, YogArray* array, unsigned int size) 
+ensure_body_size(YogEnv* env, YogVal array, unsigned int size) 
 {
-    if (array->body->size < size) {
-        YogValArray* old_body = array->body;
+    SAVE_ARG(env, array);
+
+    if (OBJ_AS(YogArray, array)->body->size < size) {
+        YogVal old_body = PTR2VAL(OBJ_AS(YogArray, array)->body);
+        PUSH_LOCAL(env, old_body);
 #define INCREASE_RATIO  (2)
-        unsigned int new_size = INCREASE_RATIO * old_body->size;
+        size_t old_size = PTR_AS(YogValArray, old_body)->size;
+        unsigned int new_size = INCREASE_RATIO * old_size;
         while (new_size < size) {
             new_size *= INCREASE_RATIO;
         }
 #undef INCREASE_RATIO
         YogValArray* new_body = YogValArray_new(env, new_size);
-        memcpy(new_body->items, old_body->items, sizeof(YogVal) * array->size);
+        size_t cur_size = OBJ_AS(YogArray, array)->size;
+        YogVal* to = new_body->items;
+        YogVal* from = PTR_AS(YogValArray, old_body)->items;
+        memcpy(to, from, sizeof(YogVal) * cur_size);
 
-        array->body = new_body;
+        OBJ_AS(YogArray, array)->body = new_body;
+
+        POP_LOCALS(env);
     }
+
+    RETURN_VOID(env);
 }
 
 void 
-YogArray_push(YogEnv* env, YogArray* array, YogVal val) 
+YogArray_push(YogEnv* env, YogVal array, YogVal val) 
 {
+    SAVE_ARGS2(env, array, val);
+
     ensure_body_size(env, array, YogArray_size(env, array) + 1);
 
-    array->body->items[array->size] = val;
-    array->size++;
+    size_t size = OBJ_AS(YogArray, array)->size;
+    OBJ_AS(YogArray, array)->body->items[size] = val;
+    OBJ_AS(YogArray, array)->size++;
+
+    RETURN_VOID(env);
 }
 
 void 
-YogArray_extend(YogEnv* env, YogArray* array, YogArray* a) 
+YogArray_extend(YogEnv* env, YogVal array, YogVal a) 
 {
+    SAVE_ARGS2(env, array, a);
+
     unsigned int old_size = YogArray_size(env, array);
     unsigned int new_size = old_size + YogArray_size(env, a);
     ensure_body_size(env, array, new_size);
-    memcpy(&array->body->items[old_size], &a->body->items[0], sizeof(YogVal) * YogArray_size(env, a));
-    array->size = new_size;
+
+    YogVal* to = &OBJ_AS(YogArray, array)->body->items[old_size];
+    YogVal* from = &OBJ_AS(YogArray, a)->body->items[0];
+    memcpy(to, from, sizeof(YogVal) * YogArray_size(env, a));
+
+    OBJ_AS(YogArray, array)->size = new_size;
+
+    RETURN_VOID(env);
 }
 
 static void 
@@ -98,18 +124,21 @@ YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     array->body = (*keeper)(env, array->body);
 }
 
-YogArray* 
+YogVal 
 YogArray_new(YogEnv* env)
 {
+    SAVE_LOCALS(env);
+
 #define INIT_SIZE   (1)
-    YogValArray* body = YogValArray_new(env, INIT_SIZE);
+    YogVal body = PTR2VAL(YogValArray_new(env, INIT_SIZE));
 #undef INIT_SIZE
+    PUSH_LOCAL(env, body);
 
     YogArray* array = ALLOC_OBJ(env, YogArray_keep_children, NULL, YogArray);
     array->size = 0;
-    array->body = body;
+    array->body = PTR_AS(YogValArray, body);
 
-    return array;
+    RETURN(env, OBJ2VAL(array));
 }
 
 /**

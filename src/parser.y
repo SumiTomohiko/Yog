@@ -1,4 +1,5 @@
 %{
+/* TODO: replace yacc to lemon.c */
 #include <stdio.h>
 #include "yog/error.h"
 #include "yog/parser.h"
@@ -20,7 +21,9 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogNode* node = ptr;
 
-#define KEEP(member)    node->u.member = (*keeper)(env, node->u.member)
+#define KEEP(member)    do { \
+    node->u.member = YogVal_keep(env, node->u.member, keeper); \
+} while (0)
     switch (node->type) {
     case NODE_ASSIGN:
         KEEP(assign.left);
@@ -111,139 +114,137 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #undef KEEP
 }
 
-static YogNode* 
+static YogVal 
 YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type) 
 {
     YogNode* node = ALLOC_OBJ(env, YogNode_keep_children, NULL, YogNode);
     node->lineno = parser->lineno;
     node->type = type;
 
-    return node;
+    return PTR2VAL(node);
 }
 
 #define NODE_NEW(type)  YogNode_new(ENV, PARSER, type)
+#define NODE(v)         PTR_AS(YogNode, (v))
 
 #define LITERAL_NEW(node, val_) do { \
     node = NODE_NEW(NODE_LITERAL); \
-    node->u.literal.val = val_; \
+    NODE(node)->u.literal.val = val_; \
 } while (0)
 
 #define BLOCK_ARG_NEW(node, params_, stmts_) do { \
     node = NODE_NEW(NODE_BLOCK_ARG); \
-    node->u.blockarg.params = params_; \
-    node->u.blockarg.stmts = stmts_; \
+    NODE(node)->u.blockarg.params = params_; \
+    NODE(node)->u.blockarg.stmts = stmts_; \
 } while (0)
 
 #define PARAMS_NEW(array, params_without_default, params_with_default, block_param, var_param, kw_param) do { \
     array = YogArray_new(ENV); \
     \
-    if (params_without_default != NULL) { \
+    if (IS_OBJ(params_without_default)) { \
         YogArray_extend(ENV, array, params_without_default); \
     } \
     \
-    if (params_with_default != NULL) { \
+    if (IS_OBJ(params_with_default)) { \
         YogArray_extend(ENV, array, params_with_default); \
     } \
     \
-    if (block_param != NULL) { \
-        YogVal val = PTR2VAL(block_param); \
-        YogArray_push(ENV, array, val); \
+    if (IS_PTR(block_param)) { \
+        YogArray_push(ENV, array, block_param); \
     } \
     \
-    if (var_param != NULL) { \
-        YogVal val = PTR2VAL(var_param); \
-        YogArray_push(ENV, array, val); \
+    if (IS_PTR(var_param)) { \
+        YogArray_push(ENV, array, var_param); \
     } \
     \
-    if (kw_param != NULL) { \
-        YogVal val = PTR2VAL(kw_param); \
-        YogArray_push(ENV, array, val); \
+    if (IS_PTR(kw_param)) { \
+        YogArray_push(ENV, array, kw_param); \
     } \
 } while (0)
 
 #define COMMAND_CALL_NEW(node, name_, args_, blockarg_) do { \
     node = NODE_NEW(NODE_COMMAND_CALL); \
-    node->u.command_call.name = name_; \
-    node->u.command_call.args = args_; \
-    node->u.command_call.blockarg = blockarg_; \
+    NODE(node)->u.command_call.name = name_; \
+    NODE(node)->u.command_call.args = args_; \
+    NODE(node)->u.command_call.blockarg = blockarg_; \
 } while (0)
 
 #define OBJ_ARRAY_NEW(array, elem) do { \
-    if (elem != NULL) { \
+    if (IS_PTR(elem)) { \
         array = YogArray_new(ENV); \
-        YogArray_push(ENV, array, PTR2VAL(elem)); \
+        YogArray_push(ENV, array, elem); \
     } \
     else { \
-        array = NULL; \
+        array = YNIL; \
     } \
 } while (0)
 
 #define OBJ_ARRAY_PUSH(result, array, elem) do { \
-    if (elem != NULL) { \
-        if (array == NULL) { \
+    if (IS_PTR(elem)) { \
+        if (!IS_OBJ(array)) { \
             array = YogArray_new(ENV); \
         } \
-        YogArray_push(ENV, array, PTR2VAL(elem)); \
+        YogArray_push(ENV, array, elem); \
     } \
     result = array; \
 } while (0)
 
 #define PARAM_NEW(node, type, id, default__) do { \
     node = NODE_NEW(type); \
-    node->u.param.name = id; \
-    node->u.param.default_ = default__; \
+    NODE(node)->u.param.name = id; \
+    NODE(node)->u.param.default_ = default__; \
 } while (0)
 
 #define PARAM_ARRAY_PUSH(array, id, default_) do { \
-    YogNode* node = NULL; \
+    YogVal node = YUNDEF; \
     PARAM_NEW(node, NODE_PARAM, id, default_); \
-    YogArray_push(ENV, array, PTR2VAL(node)); \
+    YogArray_push(ENV, array, node); \
 } while (0)
 
 #define FUNC_DEF_NEW(node, name_, params_, stmts_) do { \
     node = NODE_NEW(NODE_FUNC_DEF); \
-    node->u.funcdef.name = name_; \
-    node->u.funcdef.params = params_; \
-    node->u.funcdef.stmts = stmts_; \
+    NODE(node)->u.funcdef.name = name_; \
+    NODE(node)->u.funcdef.params = params_; \
+    NODE(node)->u.funcdef.stmts = stmts_; \
 } while (0)
 
 #define FUNC_CALL_NEW(node, callee_, args_, blockarg_) do { \
     node = NODE_NEW(NODE_FUNC_CALL); \
-    node->u.func_call.callee = callee_; \
-    node->u.func_call.args = args_; \
-    node->u.func_call.blockarg = blockarg_; \
+    NODE(node)->u.func_call.callee = callee_; \
+    NODE(node)->u.func_call.args = args_; \
+    NODE(node)->u.func_call.blockarg = blockarg_; \
 } while (0)
 
 #define VARIABLE_NEW(node, id_) do { \
     node = NODE_NEW(NODE_VARIABLE); \
-    node->u.variable.id = id_; \
+    NODE(node)->u.variable.id = id_; \
 } while (0)
 
 #define EXCEPT_BODY_NEW(node, type_, var_, stmts_) do { \
     node = NODE_NEW(NODE_EXCEPT_BODY); \
-    node->u.except_body.type = type_; \
-    node->u.except_body.var = var_; \
-    node->u.except_body.stmts = stmts_; \
+    NODE(node)->u.except_body.type = type_; \
+    NODE(node)->u.except_body.var = var_; \
+    NODE(node)->u.except_body.stmts = stmts_; \
 } while (0)
 
 #define EXCEPT_NEW(node, head_, excepts_, else__) do { \
     node = NODE_NEW(NODE_EXCEPT); \
-    node->u.except.head = head_; \
-    node->u.except.excepts = excepts_; \
-    node->u.except.else_ = else__; \
+    NODE(node)->u.except.head = head_; \
+    NODE(node)->u.except.excepts = excepts_; \
+    NODE(node)->u.except.else_ = else__; \
 } while (0)
 
 #define FINALLY_NEW(node, head_, body_) do { \
     node = NODE_NEW(NODE_FINALLY); \
-    node->u.finally.head = head_; \
-    node->u.finally.body = body_; \
+    NODE(node)->u.finally.head = head_; \
+    NODE(node)->u.finally.body = body_; \
 } while (0)
 
 #define EXCEPT_FINALLY_NEW(node, stmts, excepts, else_, finally) do { \
     EXCEPT_NEW(node, stmts, excepts, else_); \
     \
-    if (finally != NULL) { \
-        YogArray* array = NULL; \
+    if (IS_PTR(finally)) { \
+        YogVal array = YUNDEF; \
         OBJ_ARRAY_NEW(array, node); \
         FINALLY_NEW(node, array, finally); \
     } \
@@ -251,80 +252,78 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 
 #define BREAK_NEW(node, expr_) do { \
     node = NODE_NEW(NODE_BREAK); \
-    node->u.break_.expr = expr_; \
+    NODE(node)->u.break_.expr = expr_; \
 } while (0)
 
 #define NEXT_NEW(node, expr_) do { \
     node = NODE_NEW(NODE_NEXT); \
-    node->u.next.expr = expr_; \
+    NODE(node)->u.next.expr = expr_; \
 } while (0)
 
 #define RETURN_NEW(node, expr_) do { \
     node = NODE_NEW(NODE_RETURN); \
-    node->u.return_.expr = expr_; \
+    NODE(node)->u.return_.expr = expr_; \
 } while (0)
 
 #define METHOD_CALL_NEW(node, recv_, name_, args_, blockarg_) do { \
     node = NODE_NEW(NODE_METHOD_CALL); \
-    node->u.method_call.recv = recv_; \
-    node->u.method_call.name = name_; \
-    node->u.method_call.args = args_; \
-    node->u.method_call.blockarg = blockarg_; \
+    NODE(node)->u.method_call.recv = recv_; \
+    NODE(node)->u.method_call.name = name_; \
+    NODE(node)->u.method_call.args = args_; \
+    NODE(node)->u.method_call.blockarg = blockarg_; \
 } while (0)
 
 #define METHOD_CALL_NEW1(node, recv, name, arg) do { \
-    YogArray* args = YogArray_new(ENV); \
-    YogArray_push(ENV, args, PTR2VAL(arg)); \
-    METHOD_CALL_NEW(node, recv, name, args, NULL); \
+    YogVal args = YogArray_new(ENV); \
+    YogArray_push(ENV, args, arg); \
+    METHOD_CALL_NEW(node, recv, name, args, YNIL); \
 } while (0)
 
 #define IF_NEW(node, test_, stmts_, tail_) do { \
     node = NODE_NEW(NODE_IF); \
-    node->u.if_.test = test_; \
-    node->u.if_.stmts = stmts_; \
-    node->u.if_.tail = tail_; \
+    NODE(node)->u.if_.test = test_; \
+    NODE(node)->u.if_.stmts = stmts_; \
+    NODE(node)->u.if_.tail = tail_; \
 } while (0)
 
 #define WHILE_NEW(node, test_, stmts_) do { \
     node = NODE_NEW(NODE_WHILE); \
-    node->u.while_.test = test_; \
-    node->u.while_.stmts = stmts_; \
+    NODE(node)->u.while_.test = test_; \
+    NODE(node)->u.while_.stmts = stmts_; \
 } while (0)
 
 #define KLASS_NEW(node, name_, super_, stmts_) do { \
     node = NODE_NEW(NODE_KLASS); \
-    node->u.klass.name = name_; \
-    node->u.klass.super = super_; \
-    node->u.klass.stmts = stmts_; \
+    NODE(node)->u.klass.name = name_; \
+    NODE(node)->u.klass.super = super_; \
+    NODE(node)->u.klass.stmts = stmts_; \
 } while (0);
 
 #define ASSIGN_NEW(node, left_, right_) do { \
     node = NODE_NEW(NODE_ASSIGN); \
-    node->u.assign.left = left_; \
-    node->u.assign.right = right_; \
+    NODE(node)->u.assign.left = left_; \
+    NODE(node)->u.assign.right = right_; \
 } while (0)
 
 #define SUBSCRIPT_NEW(node, prefix_, index_) do { \
     node = NODE_NEW(NODE_SUBSCRIPT); \
-    node->u.subscript.prefix = prefix_; \
-    node->u.subscript.index = index_; \
+    NODE(node)->u.subscript.prefix = prefix_; \
+    NODE(node)->u.subscript.index = index_; \
 } while (0)
 
 #define ATTR_NEW(node, obj_, name_) do { \
     node = NODE_NEW(NODE_ATTR); \
-    node->u.attr.obj = obj_; \
-    node->u.attr.name = name_; \
+    NODE(node)->u.attr.obj = obj_; \
+    NODE(node)->u.attr.name = name_; \
 } while (0)
 
 #define NONLOCAL_NEW(node, names_) do { \
     node = NODE_NEW(NODE_NONLOCAL); \
-    node->u.nonlocal.names = names_; \
+    NODE(node)->u.nonlocal.names = names_; \
 } while (0)
 %}
 
 %union {
-    struct YogArray* array;
-    struct YogNode* node;
     struct YogVal val;
     ID name;
     unsigned int lineno;
@@ -374,56 +373,56 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 %token tTRUE
 %token t__LINE__
 
-%type<array> args
-%type<array> args_opt
-%type<array> blockarg_params_opt
-%type<array> else_opt
-%type<array> excepts
-%type<array> finally_opt
-%type<array> if_tail
-%type<array> module
-%type<array> names
-%type<array> params
-%type<array> params_with_default
-%type<array> params_without_default
-%type<array> stmts
+%type<name> comp_op
 %type<name> tEQUAL_TILDA
 %type<name> tLESS
 %type<name> tLSHIFT
 %type<name> tNAME
 %type<name> tPLUS
-%type<name> comp_op
-%type<node> and_expr
-%type<node> arith_expr
-%type<node> assign_expr
-%type<node> atom
-%type<node> block_param
-%type<node> blockarg_opt
-%type<node> comparison
-%type<node> except
-%type<node> expr
-%type<node> factor
-%type<node> func_def
-%type<node> kw_param
-%type<node> logical_and_expr
-%type<node> logical_or_expr
-%type<node> match_expr
-%type<node> not_expr
-%type<node> or_expr
-%type<node> param_default
-%type<node> param_default_opt
-%type<node> param_with_default
-%type<node> postfix_expr
-%type<node> power
-%type<node> shift_expr
-%type<node> stmt
-%type<node> super_opt
-%type<node> term
-%type<node> var_param
-%type<node> xor_expr
+%type<val> and_expr
+%type<val> args
+%type<val> args_opt
+%type<val> arith_expr
+%type<val> assign_expr
+%type<val> atom
+%type<val> block_param
+%type<val> blockarg_opt
+%type<val> blockarg_params_opt
+%type<val> comparison
+%type<val> else_opt
+%type<val> except
+%type<val> excepts
+%type<val> expr
+%type<val> factor
+%type<val> finally_opt
+%type<val> func_def
+%type<val> if_tail
+%type<val> kw_param
+%type<val> logical_and_expr
+%type<val> logical_or_expr
+%type<val> match_expr
+%type<val> module
+%type<val> names
+%type<val> not_expr
+%type<val> or_expr
+%type<val> param_default
+%type<val> param_default_opt
+%type<val> param_with_default
+%type<val> params
+%type<val> params_with_default
+%type<val> params_without_default
+%type<val> postfix_expr
+%type<val> power
+%type<val> shift_expr
+%type<val> stmt
+%type<val> stmts
+%type<val> super_opt
 %type<val> tNUMBER
 %type<val> tREGEXP
 %type<val> tSTRING
+%type<val> term
+%type<val> var_param
+%type<val> xor_expr
 %%
 module  : stmts {
             PARSER->stmts = $1;
@@ -437,19 +436,19 @@ stmts   : stmt {
         }
         ;
 stmt    : /* empty */ {
-            $$ = NULL;
+            $$ = YNIL;
         }
         | func_def
         | expr {
-            if ($1->type == NODE_VARIABLE) {
-                COMMAND_CALL_NEW($$, $1->u.variable.id, NULL, NULL);
+            if (PTR_AS(YogNode, $1)->type == NODE_VARIABLE) {
+                COMMAND_CALL_NEW($$, PTR_AS(YogNode, $1)->u.variable.id, YNIL, YNIL);
             }
             else {
                 $$ = $1;
             }
         }
         | tNAME args {
-            COMMAND_CALL_NEW($$, $1, $2, NULL);
+            COMMAND_CALL_NEW($$, $1, $2, YNIL);
         }
         /*
         | NAME args DO LPAR params RPAR stmts END {
@@ -462,7 +461,7 @@ stmt    : /* empty */ {
             EXCEPT_FINALLY_NEW($$, $2, $3, $5, $6);
         }
         | tTRY stmts excepts finally_opt tEND {
-            EXCEPT_FINALLY_NEW($$, $2, $3, NULL, $4);
+            EXCEPT_FINALLY_NEW($$, $2, $3, YNIL, $4);
         }
         | tTRY stmts tFINALLY stmts tEND {
             FINALLY_NEW($$, $2, $4);
@@ -471,19 +470,19 @@ stmt    : /* empty */ {
             WHILE_NEW($$, $2, $3);
         }
         | tBREAK {
-            BREAK_NEW($$, NULL);
+            BREAK_NEW($$, YNIL);
         }
         | tBREAK expr {
             BREAK_NEW($$, $2);
         }
         | tNEXT {
-            NEXT_NEW($$, NULL);
+            NEXT_NEW($$, YNIL);
         }
         | tNEXT expr {
             NEXT_NEW($$, $2);
         }
         | tRETURN {
-            RETURN_NEW($$, NULL);
+            RETURN_NEW($$, YNIL);
         }
         | tRETURN expr {
             RETURN_NEW($$, $2);
@@ -493,7 +492,7 @@ stmt    : /* empty */ {
         }
         | tCLASS { $<lineno>$ = PARSER->lineno; } tNAME super_opt stmts tEND {
             KLASS_NEW($$, $3, $4, $5);
-            $$->lineno = $<lineno>2;
+            NODE($$)->lineno = $<lineno>2;
         }
         | tNONLOCAL names {
             NONLOCAL_NEW($$, $2);
@@ -509,7 +508,7 @@ names   : tNAME {
         }
         ;
 super_opt   : /* empty */ {
-                $$ = NULL;
+                $$ = YNIL;
             }
             | tGREATER expr {
                 $$ = $2;
@@ -517,13 +516,13 @@ super_opt   : /* empty */ {
             ;
 if_tail : else_opt
         | tELIF expr stmts if_tail {
-            YogNode* node = NULL;
+            YogVal node = YUNDEF;
             IF_NEW(node, $2, $3, $4);
             OBJ_ARRAY_NEW($$, node);
         }
         ;
 else_opt    : /* empty */ {
-                $$ = NULL;
+                $$ = YNIL;
             }
             | tELSE stmts {
                 $$ = $2;
@@ -537,105 +536,105 @@ params  : params_without_default tCOMMA params_with_default tCOMMA block_param t
             PARAMS_NEW($$, $1, $3, $5, $7, $9);
         }
         | params_without_default tCOMMA params_with_default tCOMMA block_param tCOMMA var_param {
-            PARAMS_NEW($$, $1, $3, $5, $7, NULL);
+            PARAMS_NEW($$, $1, $3, $5, $7, YNIL);
         }
         | params_without_default tCOMMA params_with_default tCOMMA block_param tCOMMA kw_param {
-            PARAMS_NEW($$, $1, $3, $5, NULL, $7);
+            PARAMS_NEW($$, $1, $3, $5, YNIL, $7);
         }
         | params_without_default tCOMMA params_with_default tCOMMA block_param {
-            PARAMS_NEW($$, $1, $3, $5, NULL, NULL);
+            PARAMS_NEW($$, $1, $3, $5, YNIL, YNIL);
         }
         | params_without_default tCOMMA params_with_default tCOMMA var_param tCOMMA kw_param {
-            PARAMS_NEW($$, $1, $3, NULL, $5, $7);
+            PARAMS_NEW($$, $1, $3, YNIL, $5, $7);
         }
         | params_without_default tCOMMA params_with_default tCOMMA var_param {
-            PARAMS_NEW($$, $1, $3, NULL, $5, NULL);
+            PARAMS_NEW($$, $1, $3, YNIL, $5, YNIL);
         }
         | params_without_default tCOMMA params_with_default tCOMMA kw_param {
-            PARAMS_NEW($$, $1, $3, NULL, NULL, $5);
+            PARAMS_NEW($$, $1, $3, YNIL, YNIL, $5);
         }
         | params_without_default tCOMMA params_with_default {
-            PARAMS_NEW($$, $1, $3, NULL, NULL, NULL);
+            PARAMS_NEW($$, $1, $3, YNIL, YNIL, YNIL);
         }
         | params_without_default tCOMMA block_param tCOMMA var_param tCOMMA kw_param {
-            PARAMS_NEW($$, $1, NULL, $3, $5, $7);
+            PARAMS_NEW($$, $1, YNIL, $3, $5, $7);
         }
         | params_without_default tCOMMA block_param tCOMMA var_param {
-            PARAMS_NEW($$, $1, NULL, $3, $5, NULL);
+            PARAMS_NEW($$, $1, YNIL, $3, $5, YNIL);
         }
         | params_without_default tCOMMA block_param tCOMMA kw_param {
-            PARAMS_NEW($$, $1, NULL, $3, NULL, $5);
+            PARAMS_NEW($$, $1, YNIL, $3, YNIL, $5);
         }
         | params_without_default tCOMMA block_param {
-            PARAMS_NEW($$, $1, NULL, $3, NULL, NULL);
+            PARAMS_NEW($$, $1, YNIL, $3, YNIL, YNIL);
         }
         | params_without_default tCOMMA var_param tCOMMA kw_param {
-            PARAMS_NEW($$, $1, NULL, NULL, $3, $5);
+            PARAMS_NEW($$, $1, YNIL, YNIL, $3, $5);
         }
         | params_without_default tCOMMA var_param {
-            PARAMS_NEW($$, $1, NULL, NULL, $3, NULL);
+            PARAMS_NEW($$, $1, YNIL, YNIL, $3, YNIL);
         }
         | params_without_default tCOMMA kw_param {
-            PARAMS_NEW($$, $1, NULL, NULL, NULL, $3);
+            PARAMS_NEW($$, $1, YNIL, YNIL, YNIL, $3);
         }
         | params_without_default {
-            PARAMS_NEW($$, $1, NULL, NULL, NULL, NULL);
+            PARAMS_NEW($$, $1, YNIL, YNIL, YNIL, YNIL);
         }
         | params_with_default tCOMMA block_param tCOMMA var_param tCOMMA kw_param {
-            PARAMS_NEW($$, NULL, $1, $3, $5, $7);
+            PARAMS_NEW($$, YNIL, $1, $3, $5, $7);
         }
         | params_with_default tCOMMA block_param tCOMMA var_param {
-            PARAMS_NEW($$, NULL, $1, $3, $5, NULL);
+            PARAMS_NEW($$, YNIL, $1, $3, $5, YNIL);
         }
         | params_with_default tCOMMA block_param tCOMMA kw_param {
-            PARAMS_NEW($$, NULL, $1, $3, NULL, $5);
+            PARAMS_NEW($$, YNIL, $1, $3, YNIL, $5);
         }
         | params_with_default tCOMMA block_param {
-            PARAMS_NEW($$, NULL, $1, $3, NULL, NULL);
+            PARAMS_NEW($$, YNIL, $1, $3, YNIL, YNIL);
         }
         | params_with_default tCOMMA var_param tCOMMA kw_param {
-            PARAMS_NEW($$, NULL, $1, NULL, $3, $5);
+            PARAMS_NEW($$, YNIL, $1, YNIL, $3, $5);
         }
         | params_with_default tCOMMA var_param {
-            PARAMS_NEW($$, NULL, $1, NULL, $3, NULL);
+            PARAMS_NEW($$, YNIL, $1, YNIL, $3, YNIL);
         }
         | params_with_default tCOMMA kw_param {
-            PARAMS_NEW($$, NULL, $1, NULL, NULL, $3);
+            PARAMS_NEW($$, YNIL, $1, YNIL, YNIL, $3);
         }
         | params_with_default {
-            PARAMS_NEW($$, NULL, $1, NULL, NULL, NULL);
+            PARAMS_NEW($$, YNIL, $1, YNIL, YNIL, YNIL);
         }
         | block_param tCOMMA var_param tCOMMA kw_param {
-            PARAMS_NEW($$, NULL, NULL, $1, $3, $5);
+            PARAMS_NEW($$, YNIL, YNIL, $1, $3, $5);
         }
         | block_param tCOMMA var_param {
-            PARAMS_NEW($$, NULL, NULL, $1, $3, NULL);
+            PARAMS_NEW($$, YNIL, YNIL, $1, $3, YNIL);
         }
         | block_param tCOMMA kw_param {
-            PARAMS_NEW($$, NULL, NULL, $1, NULL, $3);
+            PARAMS_NEW($$, YNIL, YNIL, $1, YNIL, $3);
         }
         | block_param {
-            PARAMS_NEW($$, NULL, NULL, $1, NULL, NULL);
+            PARAMS_NEW($$, YNIL, YNIL, $1, YNIL, YNIL);
         }
         | var_param tCOMMA kw_param {
-            PARAMS_NEW($$, NULL, NULL, NULL, $1, $3);
+            PARAMS_NEW($$, YNIL, YNIL, YNIL, $1, $3);
         }
         | var_param {
-            PARAMS_NEW($$, NULL, NULL, NULL, $1, NULL);
+            PARAMS_NEW($$, YNIL, YNIL, YNIL, $1, YNIL);
         }
         | kw_param {
-            PARAMS_NEW($$, NULL, NULL, NULL, NULL, $1);
+            PARAMS_NEW($$, YNIL, YNIL, YNIL, YNIL, $1);
         }
         | /* empty */ {
-            $$ = NULL;
+            $$ = YNIL;
         }
         ;
 kw_param    : tDOUBLE_STAR tNAME {
-                PARAM_NEW($$, NODE_KW_PARAM, $2, NULL);
+                PARAM_NEW($$, NODE_KW_PARAM, $2, YNIL);
             }
             ;
 var_param   : tSTAR tNAME {
-                PARAM_NEW($$, NODE_VAR_PARAM, $2, NULL);
+                PARAM_NEW($$, NODE_VAR_PARAM, $2, YNIL);
             }
             ;
 block_param     : tAMPER tNAME param_default_opt {
@@ -643,7 +642,7 @@ block_param     : tAMPER tNAME param_default_opt {
                 }
                 ;
 param_default_opt   : /* empty */ {
-                        $$ = NULL;
+                        $$ = YNIL;
                     }
                     | param_default
                     ;
@@ -653,10 +652,10 @@ param_default   : tEQUAL expr {
                 ;
 params_without_default  : tNAME {
                             $$ = YogArray_new(ENV);
-                            PARAM_ARRAY_PUSH($$, $1, NULL);
+                            PARAM_ARRAY_PUSH($$, $1, YNIL);
                         }
                         | params_without_default tCOMMA tNAME {
-                            PARAM_ARRAY_PUSH($1, $3, NULL);
+                            PARAM_ARRAY_PUSH($1, $3, YNIL);
                             $$ = $1;
                         }
                         ;
@@ -727,13 +726,13 @@ power   : postfix_expr
         ;
 postfix_expr    : atom 
                 | postfix_expr { $<lineno>$ = PARSER->lineno; } tLPAR args_opt tRPAR blockarg_opt {
-                    if ($1->type == NODE_ATTR) {
-                        METHOD_CALL_NEW($$, $1->u.attr.obj, $1->u.attr.name, $4, $6);
+                    if (NODE($1)->type == NODE_ATTR) {
+                        METHOD_CALL_NEW($$, NODE($1)->u.attr.obj, NODE($1)->u.attr.name, $4, $6);
                     }
                     else {
                         FUNC_CALL_NEW($$, $1, $4, $6);
                     }
-                    $$->lineno = $<lineno>2;
+                    NODE($$)->lineno = $<lineno>2;
                 }
                 | postfix_expr tLBRACKET expr tRBRACKET {
                     SUBSCRIPT_NEW($$, $1, $3);
@@ -767,12 +766,12 @@ atom    : tNAME {
         }
         ;
 args_opt    : /* empty */ {
-                $$ = NULL;
+                $$ = YNIL;
             }
             | args
             ;
 blockarg_opt    : /* empty */ {
-                    $$ = NULL;
+                    $$ = YNIL;
                 }
                 | tDO blockarg_params_opt stmts tEND {
                     BLOCK_ARG_NEW($$, $2, $3);
@@ -782,7 +781,7 @@ blockarg_opt    : /* empty */ {
                 }
                 ;
 blockarg_params_opt     : /* empty */ {
-                            $$ = NULL;
+                            $$ = YNIL;
                         }
                         | tLBRACKET params tRBRACKET {
                             $$ = $2;
@@ -803,7 +802,7 @@ except  : tEXCEPT expr tAS tNAME newline stmts {
             EXCEPT_BODY_NEW($$, $2, NO_EXC_VAR, $4);
         }
         | tEXCEPT newline stmts {
-            EXCEPT_BODY_NEW($$, NULL, NO_EXC_VAR, $3);
+            EXCEPT_BODY_NEW($$, YNIL, NO_EXC_VAR, $3);
         }
         ;
 newline     : tNEWLINE {
@@ -811,7 +810,7 @@ newline     : tNEWLINE {
             }
             ;
 finally_opt : /* empty */ {
-                $$ = NULL;
+                $$ = YNIL;
             } 
             | tFINALLY stmts {
                 $$ = $2;
@@ -934,45 +933,60 @@ encoding_decl: NAME
 yield_expr: 'yield' [testlist]
 */
 
-void 
+static void 
 YogParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
     YogParser* parser = ptr;
-#define KEEP(member)    parser->member = (*keeper)(env, parser->member)
+#define KEEP(member)    do { \
+    parser->member = YogVal_keep(env, parser->member, keeper); \
+} while (0)
     KEEP(lexer);
     KEEP(stmts);
 #undef KEEP
 }
 
-void 
-YogParser_initialize(YogEnv* env, YogParser* parser) 
+static YogVal 
+YogParser_new(YogEnv* env) 
 {
+    YogParser* parser = ALLOC_OBJ(env, YogParser_keep_children, NULL, YogParser);
     parser->env = env;
-    parser->lexer = NULL;
-    parser->stmts = NULL;
+    parser->lexer = YUNDEF;
+    parser->stmts = YUNDEF;
     parser->lineno = 1;
+
+    return PTR2VAL(parser);
 }
 
-YogArray* 
-YogParser_parse_file(YogEnv* env, YogParser* parser, const char* filename)
+YogVal 
+YogParser_parse_file(YogEnv* env, const char* filename)
 {
-    YogLexer* lexer = YogLexer_new(env);
-    parser->lexer = lexer;
+    SAVE_LOCALS(env);
+
+    YogVal parser = YUNDEF;
+    YogVal lexer = YUNDEF;
+    PUSH_LOCALS2(env, parser, lexer);
+
+    parser = YogParser_new(env);
+    lexer = YogLexer_new(env);
+    PTR_AS(YogParser, parser)->lexer = lexer;
     if (filename != NULL) {
-        lexer->fp = fopen(filename, "r");
+        PTR_AS(YogLexer, lexer)->fp = fopen(filename, "r");
         YogLexer_read_encoding(env, lexer);
     }
     else {
-        lexer->fp = stdin;
+        PTR_AS(YogLexer, lexer)->fp = stdin;
     }
 
-    yyparse(parser);
+    BOOL old_disable_gc = ENV_VM(env)->disable_gc;
+    ENV_VM(env)->disable_gc = TRUE;
+    yyparse(PTR_AS(YogParser, parser));
+    ENV_VM(env)->disable_gc = old_disable_gc;
 
     if (filename != NULL) {
-        fclose(lexer->fp);
+        fclose(PTR_AS(YogLexer, lexer)->fp);
     }
 
-    return parser->stmts;
+    RETURN(env, PTR_AS(YogParser, parser)->stmts);
 }
 
 /**

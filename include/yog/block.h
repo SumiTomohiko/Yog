@@ -6,7 +6,7 @@
 
 struct YogBasicBlock {
     YOGBASICOBJ_HEAD;
-    struct YogCode* code;
+    struct YogVal code;
 };
 
 #define BASIC_BLOCK(obj)  ((YogBasicBlock*)obj)

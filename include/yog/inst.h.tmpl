@@ -13,7 +13,7 @@ enum InstType {
 typedef enum InstType InstType;
 
 struct YogInst {
-    struct YogInst* next;
+    struct YogVal next;
 
     enum InstType type;
     enum OpCode opcode;
@@ -26,10 +26,12 @@ ${structs}
     unsigned int size;
 };
 
-#define INST_OPCODE(inst)   ((inst)->opcode)
+#define INST_OPCODE(v)  (INST(v)->opcode)
 ${macros}
 
 typedef struct YogInst YogInst;
+
+#define INST(v)     PTR_AS(YogInst, (v))
 
 /* PROTOTYPE_START */
 

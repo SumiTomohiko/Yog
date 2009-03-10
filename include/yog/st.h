@@ -53,18 +53,19 @@ enum st_retval {
  */
 
 /* src/table.c */
-void YogTable_add_direct(YogEnv*, YogTable*, YogVal, YogVal);
-void YogTable_cleanup_safe(YogEnv*, YogTable*, YogVal*);
-BOOL YogTable_delete(YogEnv*, YogTable*, YogVal*, YogVal*);
-BOOL YogTable_delete_safe(YogEnv*, YogTable*, YogVal*, YogVal*, YogVal);
-BOOL YogTable_foreach(YogEnv*, YogTable*, int (*)(YogEnv*, YogVal, YogVal, YogVal*), YogVal*);
-BOOL YogTable_insert(YogEnv*, YogTable*, YogVal, YogVal);
-BOOL YogTable_lookup(YogEnv*, YogTable*, YogVal, YogVal*);
-BOOL YogTable_lookup_str(YogEnv*, YogTable*, const char*, YogVal*);
-YogTable* YogTable_new_string_table(YogEnv*);
-YogTable* YogTable_new_symbol_table(YogEnv*);
-YogTable* YogTable_new_val_table(YogEnv*);
-int YogTable_size(YogEnv*, YogTable*);
+void YogTable_add_direct(YogEnv*, YogVal, YogVal, YogVal);
+void YogTable_cleanup_safe(YogEnv*, YogVal, YogVal*);
+BOOL YogTable_delete(YogEnv*, YogVal, YogVal*, YogVal*);
+BOOL YogTable_delete_safe(YogEnv*, YogVal, YogVal*, YogVal*, YogVal);
+void YogTable_dump(YogEnv*, YogVal);
+BOOL YogTable_foreach(YogEnv*, YogVal, int (*)(YogEnv*, YogVal, YogVal, YogVal*), YogVal*);
+BOOL YogTable_insert(YogEnv*, YogVal, YogVal, YogVal);
+BOOL YogTable_lookup(YogEnv*, YogVal, YogVal, YogVal*);
+BOOL YogTable_lookup_str(YogEnv*, YogVal, const char*, YogVal*);
+YogVal YogTable_new_string_table(YogEnv*);
+YogVal YogTable_new_symbol_table(YogEnv*);
+YogVal YogTable_new_val_table(YogEnv*);
+int YogTable_size(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

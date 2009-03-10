@@ -27,7 +27,7 @@ struct YogLinenoTableEntry {
 typedef struct YogLinenoTableEntry YogLinenoTableEntry;
 
 struct YogCode {
-    struct YogArgInfo arg_info;
+    struct YogVal arg_info;
 
     unsigned int stack_size;
     unsigned int local_vars_count;
@@ -37,7 +37,7 @@ struct YogCode {
     unsigned int outer_size;
 
     unsigned int exc_tbl_size;
-    struct YogExceptionTable* exc_tbl;
+    struct YogVal exc_tbl;
 
     unsigned int lineno_tbl_size;
     struct YogLinenoTableEntry* lineno_tbl;
@@ -49,6 +49,8 @@ struct YogCode {
 
 typedef struct YogCode YogCode;
 
+#define CODE(v)     PTR_AS(YogCode, (v))
+
 #include "yog/opcodes.h"
 
 /* PROTOTYPE_START */
@@ -58,8 +60,8 @@ typedef struct YogCode YogCode;
  */
 
 /* src/code.c */
-void YogCode_dump(YogEnv*, YogCode*);
-YogCode* YogCode_new(YogEnv*);
+void YogCode_dump(YogEnv*, YogVal);
+YogVal YogCode_new(YogEnv*);
 
 /* src/code.inc */
 const char* YogCode_get_op_name(OpCode);

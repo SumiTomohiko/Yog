@@ -51,6 +51,10 @@ inst call_method
     YogVal receiver = POP();
     YogVal attr = YogVal_get_attr(ENV, receiver, method);
     call_method(ENV, THREAD, receiver, attr, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+
+    POP_LOCALS(ENV);
+    POP_LOCALS(ENV);
+    POP_LOCALS(ENV);
 }
 
 inst store_name
@@ -59,7 +63,7 @@ inst store_name
 ()
 {
     YogVal key = ID2VAL(id);
-    YogTable_insert(ENV, NAME_VARS(CUR_FRAME), key, val);
+    YogTable_insert(ENV, PTR2VAL(NAME_VARS(CUR_FRAME)), key, val);
 }
 
 inst store_local
@@ -84,6 +88,10 @@ inst call_command
 
     YogVal unbound_self = YUNDEF;
     call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+
+    POP_LOCALS(ENV);
+    POP_LOCALS(ENV);
+    POP_LOCALS(ENV);
 }
 
 inst make_package_method
@@ -92,8 +100,9 @@ inst make_package_method
 (method)
 {
     method = YogBoundMethod_new(ENV);
-    setup_script_method(ENV, OBJ_AS(YogScriptMethod, method), VAL2PTR(code));
-    OBJ_AS(YogBoundMethod, method)->self = NAME_FRAME(CUR_FRAME)->self;
+    setup_script_method(ENV, method, code);
+    YogVal self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
+    OBJ_AS(YogBoundMethod, method)->self = self;
 }
 
 inst call_function
@@ -106,6 +115,10 @@ inst call_function
     YogVal callee = POP();
     YogVal unbound_self = YUNDEF;
     call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+
+    POP_LOCALS(ENV);
+    POP_LOCALS(ENV);
+    POP_LOCALS(ENV);
 }
 
 inst load_global
@@ -114,7 +127,7 @@ inst load_global
 (val) 
 {
     YogTable* globals = SCRIPT_FRAME(CUR_FRAME)->globals;
-    if (!YogTable_lookup(ENV, globals, ID2VAL(id), &val)) {
+    if (!YogTable_lookup(ENV, PTR2VAL(globals), ID2VAL(id), &val)) {
         val = lookup_builtins(ENV, id);
     }
     YOG_ASSERT(ENV, !IS_UNDEF(val), "can't find global variable");
@@ -126,7 +139,7 @@ inst load_name
 (val)
 {
     YogVal key = ID2VAL(id);
-    if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME), key, &val)) {
+    if (!YogTable_lookup(ENV, PTR2VAL(NAME_VARS(CUR_FRAME)), key, &val)) {
         val = lookup_builtins(ENV, id);
         YOG_ASSERT(ENV, !IS_UNDEF(val), "Can't find package var.");
     }
@@ -172,10 +185,11 @@ inst make_package_block
 (block)
 {
     block = YogPackageBlock_new(env);
-    YogCode* c = VAL2PTR(code);
-    OBJ_AS(YogBasicBlock, block)->code = c;
-    OBJ_AS(YogPackageBlock, block)->self = NAME_FRAME(CUR_FRAME)->self;
-    OBJ_AS(YogPackageBlock, block)->vars = NAME_FRAME(CUR_FRAME)->vars;
+    OBJ_AS(YogBasicBlock, block)->code = code;
+    YogVal self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
+    OBJ_AS(YogPackageBlock, block)->self = self;
+    YogTable* vars = PTR_AS(YogNameFrame, CUR_FRAME)->vars;
+    OBJ_AS(YogPackageBlock, block)->vars = vars;
 }
 
 inst make_block
@@ -184,8 +198,8 @@ inst make_block
 (block) 
 {
     block = YogBlock_new(ENV);
-    OBJ_AS(YogBasicBlock, block)->code = VAL2PTR(code);
-    OBJ_AS(YogBlock, block)->locals = METHOD_FRAME(CUR_FRAME)->vars;
+    OBJ_AS(YogBasicBlock, block)->code = code;
+    OBJ_AS(YogBlock, block)->locals = PTR_AS(YogMethodFrame, CUR_FRAME)->vars;
     OBJ_AS(YogBlock, block)->outer_vars = SCRIPT_FRAME(CUR_FRAME)->outer_vars;
     OBJ_AS(YogBlock, block)->globals = SCRIPT_FRAME(CUR_FRAME)->globals;
 }
@@ -197,15 +211,15 @@ inst make_klass
 {
     YogVal kls = YogKlass_new(ENV, NULL, super);
     OBJ_AS(YogKlass, kls)->name = VAL2ID(name);
-    YogTable* attrs = OBJ_AS(YogObj, kls)->attrs = YogTable_new_symbol_table(ENV);
-    YogCode* c = VAL2PTR(code);
+    YogVal attrs = YogTable_new_symbol_table(ENV);
+    OBJ_AS(YogObj, kls)->attrs = attrs;
 
-    YogKlassFrame* frame = YogKlassFrame_new(ENV);
-    setup_script_frame(ENV, SCRIPT_FRAME(frame), c);
-    NAME_FRAME(frame)->self = kls;
-    NAME_FRAME(frame)->vars = attrs;
+    YogVal frame = YogKlassFrame_new(ENV);
+    setup_script_frame(ENV, frame, code);
+    PTR_AS(YogNameFrame, frame)->self = kls;
+    PTR_AS(YogNameFrame, frame)->vars = PTR_AS(YogTable, attrs);
 
-    PUSH_FRAME(FRAME(frame));
+    PUSH_FRAME(frame);
 }
 
 inst make_method
@@ -214,7 +228,7 @@ inst make_method
 (method)
 {
     method = YogUnboundMethod_new(ENV);
-    setup_script_method(ENV, OBJ_AS(YogScriptMethod, method), VAL2PTR(code));
+    setup_script_method(ENV, method, code);
 }
 
 inst push_self_name
@@ -222,7 +236,7 @@ inst push_self_name
 ()
 (self)
 {
-    self = NAME_FRAME(CUR_FRAME)->self;
+    self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
 }
 
 inst ret
@@ -231,7 +245,7 @@ inst ret
 (val)
 {
     POP_FRAME();
-    if (CUR_FRAME->type == FRAME_C) {
+    if (PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_C) {
         return val;
     }
 
@@ -260,7 +274,7 @@ inst store_global
 ()
 {
     YogTable* globals = SCRIPT_FRAME(CUR_FRAME)->globals;
-    YogTable_insert(ENV, globals, ID2VAL(name), val);
+    YogTable_insert(ENV, PTR2VAL(globals), ID2VAL(name), val);
 }
 
 /**

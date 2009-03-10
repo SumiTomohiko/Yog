@@ -320,7 +320,7 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
     do {
         RET_ATTR(klass);
         klass = OBJ_AS(YogKlass, klass)->super;
-    } while (VAL2PTR(klass) != NULL);
+    } while (IS_PTR(klass));
 #undef RET_ATTR
 
     YOG_ASSERT(env, FALSE, "Can't get attribute.");

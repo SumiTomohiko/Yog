@@ -37,14 +37,14 @@ YogFrame_add_locals(YogEnv* env, YogCFrame* frame, unsigned int n, ...)
     frame->locals_size = locals_size + n;
 }
 
-#define KEEP(member)    frame->member = (*keeper)(env, frame->member)
-
 static void 
 YogFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
     YogFrame* frame = ptr;
-    KEEP(prev);
+    frame->prev = YogVal_keep(env, frame->prev, keeper);
 }
+
+#define KEEP(member)    frame->member = (*keeper)(env, frame->member)
 
 static void 
 YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
@@ -64,7 +64,7 @@ YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogFrame_keep_children(env, ptr, keeper);
 
     YogScriptFrame* frame = ptr;
-    KEEP(code);
+    frame->code = YogVal_keep(env, frame->code, keeper);
     KEEP(stack);
     KEEP(globals);
     KEEP(outer_vars);
@@ -94,7 +94,7 @@ YogMethodFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static void 
 YogFrame_init(YogFrame* frame, YogFrameType type)
 {
-    frame->prev = NULL;
+    frame->prev = YNIL;
     frame->type = type;
 }
 
@@ -126,9 +126,9 @@ YogScriptFrame_pop_stack(YogEnv* env, YogScriptFrame* frame)
 static void 
 YogScriptFrame_init(YogScriptFrame* frame, YogFrameType type)
 {
-    YogFrame_init(FRAME(frame), type);
+    YogFrame_init((YogFrame*)frame, type);
     frame->pc = 0;
-    frame->code = NULL;
+    frame->code = YUNDEF;
     frame->stack_size = 0;
     frame->stack = NULL;
     frame->globals = NULL;
@@ -138,23 +138,24 @@ YogScriptFrame_init(YogScriptFrame* frame, YogFrameType type)
 static void 
 YogNameFrame_init(YogNameFrame* frame)
 {
-    YogScriptFrame_init(SCRIPT_FRAME(frame), FRAME_NAME);
+    YogScriptFrame_init((YogScriptFrame*)frame, FRAME_NAME);
+    frame->self = YUNDEF;
     frame->vars = NULL;
 }
 
-YogNameFrame* 
+YogVal 
 YogNameFrame_new(YogEnv* env) 
 {
     YogNameFrame* frame = ALLOC_OBJ(env, YogNameFrame_keep_children, NULL, YogNameFrame);
     YogNameFrame_init(frame);
 
-    return frame;
+    return PTR2VAL(frame);
 }
 
 static void 
 YogMethodFrame_init(YogMethodFrame* frame) 
 {
-    YogScriptFrame_init(SCRIPT_FRAME(frame), FRAME_METHOD);
+    YogScriptFrame_init((YogScriptFrame*)frame, FRAME_METHOD);
     frame->vars = NULL;
 }
 
@@ -170,7 +171,7 @@ YogMethodFrame_new(YogEnv* env)
 static void 
 YogCFrame_init(YogEnv* env, YogCFrame* frame) 
 {
-    YogFrame_init(FRAME(frame), FRAME_C);
+    YogFrame_init((YogFrame*)frame, FRAME_C);
 
     frame->self = YUNDEF;
     frame->args = NULL;

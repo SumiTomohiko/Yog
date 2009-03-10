@@ -1,15 +1,18 @@
 
 ${compile_data}
 
-static YogBinary* 
-insts2bin(YogEnv* env, YogInst* inst) 
+static YogVal 
+insts2bin(YogEnv* env, YogVal inst) 
 {
-#define INIT_BIN_SIZE   (0)
-    YogBinary* code = YogBinary_new(env, INIT_BIN_SIZE);
-#undef INIT_BIN_SIZE
+    SAVE_ARG(env, inst);
 
-    while (inst != NULL) {
-        switch (inst->type) {
+#define INIT_BIN_SIZE   (0)
+    YogVal code = YogBinary_new(env, INIT_BIN_SIZE);
+#undef INIT_BIN_SIZE
+    PUSH_LOCAL(env, code);
+
+    while (IS_PTR(inst)) {
+        switch (INST(inst)->type) {
         case INST_OP:
             {
                 switch (INST_OPCODE(inst)) {
@@ -29,20 +32,20 @@ ${insts2bin}
             break;
         }
 
-        inst = inst->next;
+        inst = INST(inst)->next;
     }
 
-    return code;
+    RETURN(env, code);
 }
 
 static int
-count_stack_size(YogEnv* env, YogInst* inst) 
+count_stack_size(YogEnv* env, YogVal inst) 
 {
     int max = 0;
     int size = 0;
 
-    while (inst != NULL) {
-        switch (inst->type) {
+    while (IS_PTR(inst)) {
+        switch (INST(inst)->type) {
         case INST_OP:
             {
                 int pop_size = 0;
@@ -70,7 +73,7 @@ ${count_stack_size}
             break;
         }
 
-        inst = inst->next;
+        inst = INST(inst)->next;
     }
 
     return max;

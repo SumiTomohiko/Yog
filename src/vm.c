@@ -112,6 +112,7 @@ struct CopyingHeader {
     Finalizer finalizer;
     void* forwarding_addr;
     size_t size;
+    unsigned int id;
 };
 
 typedef struct CopyingHeader CopyingHeader;
@@ -164,10 +165,15 @@ increment_living_object_number(YogVm* vm, unsigned int survive_num)
 void 
 YogVm_register_package(YogEnv* env, YogVm* vm, const char* name, YogVal pkg) 
 {
+    SAVE_LOCALS(env);
+    PUSH_LOCAL(env, pkg);
+
     ID id = YogVm_intern(env, vm, name);
     YogVal key = ID2VAL(id);
 
     YogTable_add_direct(env, vm->pkgs, key, pkg);
+
+    RETURN_VOID(env);
 }
 
 const char* 
@@ -189,6 +195,8 @@ YogVm_id2name(YogEnv* env, YogVm* vm, ID id)
 ID
 YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
 {
+    SAVE_LOCALS(env);
+
     YogVal value = YUNDEF;
     if (YogTable_lookup_str(env, vm->name2id, name, &value)) {
         return VAL2ID(value);
@@ -200,6 +208,7 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
 #endif
     YogCharArray* s = YogCharArray_new_str(env, name);
     YogVal val = PTR2VAL(s);
+    PUSH_LOCAL(env, val);
 
     ID id = vm->next_id;
     YogVal symbol = ID2VAL(id);
@@ -209,7 +218,7 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
 
     vm->next_id++;
 
-    return id;
+    RETURN(env, id);
 }
 
 static void 
@@ -291,7 +300,9 @@ YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, 
 {
     vm->gc_stat.num_alloc++;
 
-    return (*vm->alloc_mem)(env, vm, keeper, finalizer, size);
+    void* ptr = (*vm->alloc_mem)(env, vm, keeper, finalizer, size);
+
+    return ptr;
 }
 
 static void 
@@ -311,10 +322,14 @@ setup_symbol_tables(YogEnv* env, YogVm* vm)
 static void 
 setup_basic_klass(YogEnv* env, YogVm* vm) 
 {
-    YogVal cObject = YogKlass_new(env, "Object", YNIL);
+    YogVal cObject = YUNDEF;
+    YogVal cKlass = YUNDEF;
+    PUSH_LOCALS2(env, cObject, cKlass);
+
+    cObject = YogKlass_new(env, "Object", YNIL);
     YogKlass_define_allocator(env, cObject, YogObj_allocate);
 
-    YogVal cKlass = YogKlass_new(env, "Class", cObject);
+    cKlass = YogKlass_new(env, "Class", cObject);
     YogKlass_define_allocator(env, cKlass, YogKlass_allocate);
 
     OBJ_AS(YogBasicObj, cObject)->klass = cKlass;
@@ -322,6 +337,8 @@ setup_basic_klass(YogEnv* env, YogVm* vm)
 
     vm->cObject = cObject;
     vm->cKlass = cKlass;
+
+    POP_LOCALS(env);
 }
 
 static void 
@@ -348,6 +365,7 @@ setup_klasses(YogEnv* env, YogVm* vm)
 static void 
 setup_encodings(YogEnv* env, YogVm* vm) 
 {
+    /* TODO: changed not to use macro */
 #define REGISTER_ENCODING(name, onig)   do { \
     ID id = INTERN(name); \
     YogVal key = ID2VAL(id); \
@@ -401,16 +419,14 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogVm* vm = ptr;
 
-#define KEEP_MEMBER(member)     vm->member = (*keeper)(env, vm->member)
+    YogThread_keep_children(env, vm->thread, keeper);
+
+#define KEEP_MEMBER(member)     do { \
+    vm->member = YogVal_keep(env, vm->member, keeper); \
+} while (0)
     KEEP_MEMBER(id2name);
     KEEP_MEMBER(name2id);
 
-    KEEP_MEMBER(pkgs);
-    KEEP_MEMBER(encodings);
-    KEEP_MEMBER(thread);
-#undef KEEP_MEMBER
-
-#define KEEP_MEMBER(member)     vm->member = YogVal_keep(env, vm->member, keeper)
     KEEP_MEMBER(cObject);
     KEEP_MEMBER(cKlass);
     KEEP_MEMBER(cInt);
@@ -430,6 +446,9 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP_MEMBER(eBugException);
     KEEP_MEMBER(eTypeError);
     KEEP_MEMBER(eIndexError);
+
+    KEEP_MEMBER(pkgs);
+    KEEP_MEMBER(encodings);
 #undef KEEP_MEMBER
 }
 
@@ -571,6 +590,8 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
     header->finalizer = finalizer;
     header->forwarding_addr = NULL;
     header->size = rounded_size;
+    static unsigned int id = 0;
+    header->id = id++;
 
     heap->free += rounded_size;
 
@@ -1297,6 +1318,40 @@ free_mem_mark_sweep_compact(YogEnv* env, YogVm* vm)
     /* TODO */
 }
 
+#if 0
+static void 
+dump_mem_not_supported(YogEnv* env, YogVm* vm) 
+{
+    YOG_ASSERT(env, FALSE, "dumping memory is not supported for this GC");
+}
+
+static void 
+dump_mem_copying(YogEnv* env, YogVm* vm) 
+{
+    printf("-------------------- memory dump --------------------\n");
+
+    YogHeap* heap = vm->gc.copying.heap;
+    unsigned char* ptr = heap->base;
+    while (ptr < heap->free) {
+        CopyingHeader* header = (CopyingHeader*)ptr;
+        printf("address: %p-%p\n", header, ptr + header->size);
+        printf("  keeper: %p\n", header->keeper);
+        printf("  finalizer: %p\n", header->finalizer);
+        printf("  forwarding_addr: %p\n", header->forwarding_addr);
+        printf("  size: %u\n", header->size);
+        printf("\n");
+
+        ptr += header->size;
+    }
+}
+
+void 
+YogVm_dump_memory(YogEnv* env, YogVm* vm) 
+{
+    (*vm->dump_mem)(env, vm);
+}
+#endif
+
 void 
 YogVm_init(YogVm* vm, YogGcType gc)
 {
@@ -1311,6 +1366,9 @@ YogVm_init(YogVm* vm, YogGcType gc)
         vm->alloc_mem = alloc_mem_bdw;
         vm->realloc_mem = realloc_mem_bdw;
         vm->free_mem = free_mem_bdw;
+#if 0
+        vm->dump_mem = dump_mem_not_supported;
+#endif
         break;
     case GC_COPYING:
         vm->init_gc = initialize_copying;
@@ -1318,6 +1376,9 @@ YogVm_init(YogVm* vm, YogGcType gc)
         vm->alloc_mem = alloc_mem_copying;
         vm->realloc_mem = realloc_mem_copying;
         vm->free_mem = free_mem_copying;
+#if 0
+        vm->dump_mem = dump_mem_copying;
+#endif
         vm->gc.copying.init_heap_size = 0;
         vm->gc.copying.heap = NULL;
         vm->gc.copying.scanned = NULL;
@@ -1329,6 +1390,9 @@ YogVm_init(YogVm* vm, YogGcType gc)
         vm->alloc_mem = alloc_mem_mark_sweep;
         vm->realloc_mem = realloc_mem_mark_sweep;
         vm->free_mem = free_mem_mark_sweep;
+#if 0
+        vm->dump_mem = dump_mem_not_supported;
+#endif
         vm->gc.mark_sweep.header = NULL;
         vm->gc.mark_sweep.threshold = 0;
         vm->gc.mark_sweep.allocated_size = 0;
@@ -1339,6 +1403,9 @@ YogVm_init(YogVm* vm, YogGcType gc)
         vm->alloc_mem = alloc_mem_mark_sweep_compact;
         vm->realloc_mem = NULL;
         vm->free_mem = free_mem_mark_sweep_compact;
+#if 0
+        vm->dump_mem = dump_mem_not_supported;
+#endif
         vm->gc.mark_sweep_compact.heap.chunks = NULL;
         vm->gc.mark_sweep_compact.heap.all_chunks = NULL;
         vm->gc.mark_sweep_compact.heap.all_chunks_last = NULL;
@@ -1360,8 +1427,8 @@ YogVm_init(YogVm* vm, YogGcType gc)
     vm->gc_stat.total_allocated_size = 0;
 
     vm->next_id = 0;
-    vm->id2name = NULL;
-    vm->name2id = NULL;
+    vm->id2name = PTR2VAL(NULL);
+    vm->name2id = PTR2VAL(NULL);
 
     vm->cObject = YUNDEF;
     vm->cKlass = YUNDEF;
@@ -1383,9 +1450,9 @@ YogVm_init(YogVm* vm, YogGcType gc)
     vm->eTypeError = YUNDEF;
     vm->eIndexError = YUNDEF;
 
-    vm->pkgs = NULL;
+    vm->pkgs = PTR2VAL(NULL);
 
-    vm->encodings = NULL;
+    vm->encodings = PTR2VAL(NULL);
 
     vm->thread = NULL;
 }

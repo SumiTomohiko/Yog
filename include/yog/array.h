@@ -25,11 +25,11 @@ typedef struct YogArray YogArray;
  */
 
 /* src/array.c */
-YogVal YogArray_at(YogEnv*, YogArray*, unsigned int);
-void YogArray_extend(YogEnv*, YogArray*, YogArray*);
-YogArray* YogArray_new(YogEnv*);
-void YogArray_push(YogEnv*, YogArray*, YogVal);
-unsigned int YogArray_size(YogEnv*, YogArray*);
+YogVal YogArray_at(YogEnv*, YogVal, unsigned int);
+void YogArray_extend(YogEnv*, YogVal, YogVal);
+YogVal YogArray_new(YogEnv*);
+void YogArray_push(YogEnv*, YogVal, YogVal);
+unsigned int YogArray_size(YogEnv*, YogVal);
 YogVal YogValArray_at(YogEnv*, YogValArray*, unsigned int);
 YogValArray* YogValArray_new(YogEnv*, unsigned int);
 unsigned int YogValArray_size(YogEnv*, YogValArray*);

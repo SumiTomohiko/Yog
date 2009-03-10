@@ -21,6 +21,8 @@ struct YogArgInfo {
 
 typedef struct YogArgInfo YogArgInfo;
 
+#define ARG_INFO(v)     PTR_AS(YogArgInfo, (v))
+
 /* PROTOTYPE_START */
 
 /**
@@ -28,7 +30,7 @@ typedef struct YogArgInfo YogArgInfo;
  */
 
 /* src/arg.c */
-void YogArgInfo_keep_children(YogEnv*, void*, ObjectKeeper);
+YogVal YogArgInfo_new(YogEnv*);
 
 /* PROTOTYPE_END */
 

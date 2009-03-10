@@ -4,7 +4,7 @@
 YogVal 
 YogObj_get_attr(YogEnv* env, YogObj* obj, ID name) 
 {
-    if (obj->attrs == NULL) {
+    if (VAL2PTR(obj->attrs) == NULL) {
         return YUNDEF;
     }
 
@@ -21,20 +21,30 @@ YogObj_get_attr(YogEnv* env, YogObj* obj, ID name)
 void 
 YogObj_set_attr_id(YogEnv* env, YogVal obj, ID name, YogVal val) 
 {
+    SAVE_LOCALS(env);
+    PUSH_LOCALS2(env, obj, val);
+
     YogVal key = ID2VAL(name);
 
-    if (OBJ_AS(YogObj, obj)->attrs == NULL) {
-        OBJ_AS(YogObj, obj)->attrs = YogTable_new_symbol_table(env);
+    if (VAL2PTR(OBJ_AS(YogObj, obj)->attrs) == NULL) {
+        YogVal attrs = YogTable_new_symbol_table(env);
+        OBJ_AS(YogObj, obj)->attrs = attrs;
     }
 
     YogTable_insert(env, OBJ_AS(YogObj, obj)->attrs, key, val);
+
+    RETURN_VOID(env);
 }
 
 void 
 YogObj_set_attr(YogEnv* env, YogVal obj, const char* name, YogVal val) 
 {
+    SAVE_ARGS2(env, obj, val);
+
     ID id = YogVm_intern(env, ENV_VM(env), name);
     YogObj_set_attr_id(env, obj, id, val);
+
+    RETURN_VOID(env);
 }
 
 void 
@@ -47,7 +57,7 @@ YogBasicObj_init(YogEnv* env, YogBasicObj* obj, unsigned int flags, YogVal klass
 void 
 YogObj_init(YogEnv* env, YogObj* obj, unsigned int flags, YogVal klass) 
 {
-    obj->attrs = NULL;
+    obj->attrs = PTR2VAL(NULL);
     YogBasicObj_init(env, YOGBASICOBJ(obj), flags | HAS_ATTRS, klass);
 }
 
@@ -64,15 +74,18 @@ YogObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogBasicObj_keep_children(env, ptr, keeper);
 
     YogObj* obj = ptr;
-    obj->attrs = (*keeper)(env, obj->attrs);
+    obj->attrs = PTR2VAL((*keeper)(env, VAL2PTR(obj->attrs)));
 }
 
 YogVal 
 YogObj_allocate(YogEnv* env, YogVal klass)
 {
+    SAVE_ARG(env, klass);
+
     YogObj* obj = ALLOC_OBJ(env, YogObj_keep_children, NULL, YogObj);
     YogObj_init(env, obj, 0, klass);
-    return OBJ2VAL(obj);
+
+    RETURN(env, OBJ2VAL(obj));
 }
 
 YogVal 

@@ -26,8 +26,11 @@ YogVal
 YogBool_klass_new(YogEnv* env) 
 {
     YogVal klass = YogKlass_new(env, "Bool", ENV_VM(env)->cObject);
+    PUSH_LOCAL(env, klass);
+
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
 
+    POP_LOCALS(env);
     return klass;
 }
 

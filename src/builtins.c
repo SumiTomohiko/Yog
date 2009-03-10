@@ -13,7 +13,7 @@ raise(YogEnv* env)
         exc = YogThread_call_method(env, ENV_TH(env), receiver, "new", 1, args);
     }
 
-    ENV_TH(env)->cur_frame = ENV_TH(env)->cur_frame->prev;
+    ENV_TH(env)->cur_frame = PTR_AS(YogFrame, ENV_TH(env)->cur_frame)->prev;
 
     YogError_raise(env, exc);
 
@@ -24,7 +24,7 @@ raise(YogEnv* env)
 static YogVal 
 puts_(YogEnv* env)
 {
-    YogArray* vararg = OBJ_AS(YogArray, ARG(env, 0));
+    YogVal vararg = ARG(env, 0);
     unsigned int size = YogArray_size(env, vararg);
     if (0 < size) {
         unsigned int i = 0;
@@ -49,10 +49,14 @@ puts_(YogEnv* env)
     return YNIL;
 }
 
+#include "yog/st.h"
+
 YogVal 
 YogBuiltins_new(YogEnv* env) 
 {
     YogVal bltins = YogPackage_new(env);
+    PUSH_LOCAL(env, bltins);
+
     YogPackage_define_method(env, bltins, "puts", puts_, 0, 1, 0, 0, NULL);
     YogPackage_define_method(env, bltins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
 
@@ -64,6 +68,7 @@ YogBuiltins_new(YogEnv* env)
     REGISTER_KLASS(eException);
 #undef REGISTER_KLASS
 
+    POP_LOCALS(env);
     return bltins;
 }
 

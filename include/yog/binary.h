@@ -25,13 +25,13 @@ typedef struct YogBinary YogBinary;
  */
 
 /* src/binary.c */
-YogBinary* YogBinary_new(YogEnv*, unsigned int);
-void YogBinary_push_id(YogEnv*, YogBinary*, ID);
-void YogBinary_push_pc(YogEnv*, YogBinary*, pc_t);
-void YogBinary_push_uint8(YogEnv*, YogBinary*, uint8_t);
-void YogBinary_push_unsigned_int(YogEnv*, YogBinary*, unsigned int);
-void YogBinary_shrink(YogEnv*, YogBinary*);
-unsigned int YogBinary_size(YogEnv*, YogBinary*);
+YogVal YogBinary_new(YogEnv*, unsigned int);
+void YogBinary_push_id(YogEnv*, YogVal, ID);
+void YogBinary_push_pc(YogEnv*, YogVal, pc_t);
+void YogBinary_push_uint8(YogEnv*, YogVal, uint8_t);
+void YogBinary_push_unsigned_int(YogEnv*, YogVal, unsigned int);
+void YogBinary_shrink(YogEnv*, YogVal);
+unsigned int YogBinary_size(YogEnv*, YogVal);
 uint8_t YogByteArray_at(YogEnv*, YogByteArray*, unsigned int);
 YogByteArray* YogByteArray_new(YogEnv*, unsigned int);
 void YogByteArray_print(YogEnv*, YogByteArray*);

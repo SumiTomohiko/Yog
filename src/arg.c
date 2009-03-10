@@ -1,7 +1,7 @@
 #include "yog/arg.h"
 #include "yog/yog.h"
 
-void 
+static void 
 YogArgInfo_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogArgInfo* arg_info = ptr;
@@ -11,6 +11,21 @@ YogArgInfo_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP_MEMBER(argnames);
     KEEP_MEMBER(arg_index);
 #undef KEEP_MEMBER
+}
+
+YogVal 
+YogArgInfo_new(YogEnv* env) 
+{
+    YogArgInfo* arg_info = ALLOC_OBJ(env, YogArgInfo_keep_children, NULL, YogArgInfo);
+    arg_info->argc = 0;
+    arg_info->argnames = NULL;
+    arg_info->arg_index = NULL;
+    arg_info->blockargc = 0;
+    arg_info->blockargname = 0;
+    arg_info->varargc = 0;
+    arg_info->kwargc = 0;
+
+    return PTR2VAL(arg_info);
 }
 
 /**

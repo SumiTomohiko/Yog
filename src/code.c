@@ -47,20 +47,20 @@ print_val(YogEnv* env, YogVal val)
 }
 
 void 
-YogCode_dump(YogEnv* env, YogCode* code) 
+YogCode_dump(YogEnv* env, YogVal code)
 {
     printf("=== Constants ===\n");
     printf("index value\n");
 
     unsigned int consts_size = 0;
-    if (code->consts != NULL) {
-        consts_size = code->consts->size;
+    if (PTR_AS(YogCode, code)->consts != NULL) {
+        consts_size = PTR_AS(YogCode, code)->consts->size;
     }
     unsigned int i = 0;
     for (i = 0; i < consts_size; i++) {
         printf("%05d ", i);
 
-        YogVal val = code->consts->items[i];
+        YogVal val = PTR_AS(YogCode, code)->consts->items[i];
         print_val(env, val);
 
         printf("\n");
@@ -69,9 +69,9 @@ YogCode_dump(YogEnv* env, YogCode* code)
     printf("=== Exception Table ===\n");
     printf("From To Target\n");
 
-    unsigned int exc_tbl_size = code->exc_tbl_size;
+    unsigned int exc_tbl_size = PTR_AS(YogCode, code)->exc_tbl_size;
     for (i = 0; i < exc_tbl_size; i++) {
-        YogExceptionTableEntry* entry = &code->exc_tbl->items[i];
+        YogExceptionTableEntry* entry = &PTR_AS(YogExceptionTable, PTR_AS(YogCode, code)->exc_tbl)->items[i];
         printf("%04d %04d %04d\n", entry->from, entry->to, entry->target);
     }
 
@@ -79,12 +79,12 @@ YogCode_dump(YogEnv* env, YogCode* code)
     printf("PC Lineno Instruction\n");
 
     pc_t pc = 0;
-    while (pc < code->insts->size) {
+    while (pc < PTR_AS(YogCode, code)->insts->size) {
         printf("%04d", pc);
 
-        unsigned int size = code->lineno_tbl_size;
+        unsigned int size = PTR_AS(YogCode, code)->lineno_tbl_size;
         for (i = 0; i < size; i++) {
-            YogLinenoTableEntry* entry = &code->lineno_tbl[i];
+            YogLinenoTableEntry* entry = &PTR_AS(YogCode, code)->lineno_tbl[i];
             if ((entry->pc_from <= pc) && (pc <= entry->pc_to)) {
                 printf(" %05d", entry->lineno);
                 break;
@@ -94,44 +94,61 @@ YogCode_dump(YogEnv* env, YogCode* code)
             printf("      ");
         }
 
-        OpCode op = code->insts->items[pc];
+        OpCode op = PTR_AS(YogCode, code)->insts->items[pc];
         printf(" %s", YogCode_get_op_name(op));
 
         unsigned int n = pc + sizeof(uint8_t);
-#define OPERAND(type)   (*((type*)&code->insts->items[n]))
+#define OPERAND(type, offset) \
+        (*((type*)&PTR_AS(YogCode, code)->insts->items[n + (offset)]))
         switch (op) {
         case OP(LOAD_LOCAL):
             {
-                uint8_t index = OPERAND(uint8_t);
+                uint8_t index = OPERAND(uint8_t, 0);
                 printf(" %d", index);
             }
             break;
         case OP(STORE_NAME):
         case OP(LOAD_NAME):
             {
-                ID id = OPERAND(ID);
+                ID id = OPERAND(ID, 0);
                 printf(" %d", id);
             }
             break;
         case OP(PUSH_CONST):
             {
-                uint8_t index = OPERAND(uint8_t);
+                uint8_t index = OPERAND(uint8_t, 0);
                 printf(" %d (", index);
-                print_val(env, code->consts->items[index]);
+                print_val(env, PTR_AS(YogCode, code)->consts->items[index]);
                 printf(")");
             }
             break;
         case OP(CALL_COMMAND):
         case OP(CALL_METHOD):
             {
-                ID id = OPERAND(ID);
+                unsigned int offset = 0;
+                ID id = OPERAND(ID, offset);
                 printf(" :%s", YogVm_id2name(env, ENV_VM(env), id));
+                offset += sizeof(ID);
+                uint8_t argc = OPERAND(uint8_t, offset);
+                printf(" %d", argc);
+                offset += sizeof(uint8_t);
+                uint8_t kwargc = OPERAND(uint8_t, offset);
+                printf(" %d", kwargc);
+                offset += sizeof(uint8_t);
+                uint8_t blockargc = OPERAND(uint8_t, offset);
+                printf(" %d", blockargc);
+                offset += sizeof(uint8_t);
+                uint8_t varargc = OPERAND(uint8_t, offset);
+                printf(" %d", varargc);
+                offset += sizeof(uint8_t);
+                uint8_t varkwargc = OPERAND(uint8_t, offset);
+                printf(" %d", varkwargc);
             }
             break;
         case OP(JUMP_IF_FALSE):
         case OP(JUMP):
             {
-                unsigned int to = OPERAND(unsigned int);
+                unsigned int to = OPERAND(unsigned int, 0);
                 printf(" %d", to);
             }
             break;
@@ -150,8 +167,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogCode* code = ptr;
 
-    YogArgInfo* arg_info = &code->arg_info;
-    YogArgInfo_keep_children(env, arg_info, keeper);
+    code->arg_info = YogVal_keep(env, code->arg_info, keeper);
 
 #define KEEP_MEMBER(member)     do { \
     code->member = (*keeper)(env, (void*)code->member); \
@@ -159,40 +175,39 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP_MEMBER(local_vars_names);
     KEEP_MEMBER(consts);
     KEEP_MEMBER(insts);
-    KEEP_MEMBER(exc_tbl);
     KEEP_MEMBER(lineno_tbl);
     KEEP_MEMBER(filename);
 #undef KEEP_MEMBER
+
+    code->exc_tbl = YogVal_keep(env, code->exc_tbl, keeper);
 }
 
-YogCode* 
+YogVal 
 YogCode_new(YogEnv* env) 
 {
-    YogCode* code = ALLOC_OBJ(env, keep_children, NULL, YogCode);
-    YogArgInfo* arg_info = &code->arg_info;
-    arg_info->argc = 0;
-    arg_info->argnames = NULL;
-    arg_info->arg_index = NULL;
-    arg_info->blockargc = 0;
-    arg_info->blockargname = 0;
-    arg_info->varargc = 0;
-    arg_info->kwargc = 0;
+    YogVal code = YUNDEF;
+    PUSH_LOCAL(env, code);
 
-    code->stack_size = 0;
-    code->local_vars_count = 0;
-    code->local_vars_names = NULL;
-    code->consts = NULL;
-    code->insts = NULL;
-    code->outer_size = 0;
-    code->exc_tbl_size = 0;
-    code->exc_tbl = NULL;
-    code->lineno_tbl_size = 0;
-    code->lineno_tbl = NULL;
+    code = PTR2VAL(ALLOC_OBJ(env, keep_children, NULL, YogCode));
+    CODE(code)->arg_info = YUNDEF;
+    CODE(code)->stack_size = 0;
+    CODE(code)->local_vars_count = 0;
+    CODE(code)->local_vars_names = NULL;
+    CODE(code)->consts = NULL;
+    CODE(code)->insts = NULL;
+    CODE(code)->outer_size = 0;
+    CODE(code)->exc_tbl_size = 0;
+    CODE(code)->exc_tbl = YUNDEF;
+    CODE(code)->lineno_tbl_size = 0;
+    CODE(code)->lineno_tbl = NULL;
+    CODE(code)->filename = NULL;
+    CODE(code)->klass_name = INVALID_ID;
+    CODE(code)->func_name = INVALID_ID;
 
-    code->filename = NULL;
-    code->klass_name = INVALID_ID;
-    code->func_name = INVALID_ID;
+    YogVal arg_info = YogArgInfo_new(env);
+    CODE(code)->arg_info = arg_info;
 
+    POP_LOCALS(env);
     return code;
 }
 

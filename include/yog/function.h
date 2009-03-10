@@ -5,7 +5,7 @@
 #include "yog/yog.h"
 
 struct YogBuiltinFunction {
-    struct YogArgInfo arg_info;
+    struct YogVal arg_info;
     int required_argc;
 
     struct YogVal (*f)();
@@ -16,6 +16,8 @@ struct YogBuiltinFunction {
 
 typedef struct YogBuiltinFunction YogBuiltinFunction;
 
+#define BUILTIN_FUNCTION(v)     PTR_AS(YogBuiltinFunction, (v))
+
 /* PROTOTYPE_START */
 
 /**
@@ -23,7 +25,7 @@ typedef struct YogBuiltinFunction YogBuiltinFunction;
  */
 
 /* src/function.c */
-YogBuiltinFunction* YogBuiltinFunction_new(YogEnv*, void*, ID, ID, unsigned int, unsigned int, unsigned int, int, va_list);
+YogVal YogBuiltinFunction_new(YogEnv*, void*, ID, ID, unsigned int, unsigned int, unsigned int, int, va_list);
 
 /* PROTOTYPE_END */
 

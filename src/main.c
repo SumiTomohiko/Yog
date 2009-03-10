@@ -167,34 +167,28 @@ main(int argc, char* argv[])
     YogVm_initialize_gc(&env, env.vm);
 
     do {
+        YogThread thread;
+        YogThread_initialize(&env, &thread);
+        vm.thread = env.th = &thread;
+
         YogVal stmts = YUNDEF;
         YogVal code = YUNDEF;
         YogVal pkg = YUNDEF;
-        YogVal thread = YUNDEF;
-
-        thread = PTR2VAL(YogThread_new(&env));
-        env.th = PTR_AS(YogThread, thread);
-        env.vm->thread = PTR_AS(YogThread, thread);
-
-        PUSH_LOCALS4(&env, stmts, code, pkg, thread);
+        PUSH_LOCALS3(&env, stmts, code, pkg);
 
         YogVm_boot(&env, env.vm);
-
-        YogParser parser;
-        YogParser_initialize(&env, &parser);
 
         const char* filename = NULL;
         if (optind < argc) {
             filename = argv[optind];
         }
-
-        stmts = OBJ2VAL(YogParser_parse_file(&env, &parser, filename));
-        code = PTR2VAL(YogCompiler_compile_module(&env, filename, OBJ_AS(YogArray, stmts)));
+        stmts = YogParser_parse_file(&env, filename);
+        code = YogCompiler_compile_module(&env, filename, stmts);
 
         pkg = YogPackage_new(&env);
         OBJ_AS(YogPackage, pkg)->code = VAL2PTR(code);
         YogVm_register_package(&env, env.vm, "__main__", pkg);
-        YogThread_eval_package(&env, PTR_AS(YogThread, thread), OBJ_AS(YogPackage, pkg));
+        YogThread_eval_package(&env, &thread, pkg);
 
         POP_LOCALS(&env);
     } while (0);

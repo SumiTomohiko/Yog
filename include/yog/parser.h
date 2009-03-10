@@ -38,91 +38,91 @@ struct YogNode {
     unsigned int lineno;
     union {
         struct {
-            struct YogNode* left;
-            struct YogNode* right;
+            struct YogVal left;
+            struct YogVal right;
         } assign;
         struct {
-            struct YogNode* obj;
+            struct YogVal obj;
             ID name;
         } attr;
         struct {
-            struct YogArray* params;
-            struct YogArray* stmts;
+            struct YogVal params;
+            struct YogVal stmts;
         } blockarg;
         struct {
-            struct YogNode* expr;
+            struct YogVal expr;
         } break_;
         struct {
             ID name;
-            struct YogArray* args;
-            struct YogNode* blockarg;
+            struct YogVal args;
+            struct YogVal blockarg;
         } command_call;
         struct {
-            struct YogArray* head;
-            struct YogArray* excepts;
-            struct YogArray* else_;
+            struct YogVal head;
+            struct YogVal excepts;
+            struct YogVal else_;
         } except;
         struct {
-            struct YogNode* type;
+            struct YogVal type;
             ID var;
-            struct YogArray* stmts;
+            struct YogVal stmts;
         } except_body;
         struct {
-            struct YogArray* head;
-            struct YogArray* body;
+            struct YogVal head;
+            struct YogVal body;
         } finally;
         struct {
-            struct YogNode* callee;
-            struct YogArray* args;
-            struct YogNode* blockarg;
+            struct YogVal callee;
+            struct YogVal args;
+            struct YogVal blockarg;
         } func_call;
         struct {
             ID name;
-            struct YogArray* params;
-            struct YogArray* stmts;
+            struct YogVal params;
+            struct YogVal stmts;
         } funcdef;
         struct {
-            struct YogNode* test;
-            struct YogArray* stmts;
-            struct YogArray* tail;
+            struct YogVal test;
+            struct YogVal stmts;
+            struct YogVal tail;
         } if_;
         struct {
             ID name;
-            struct YogNode* super;
-            struct YogArray* stmts;
+            struct YogVal super;
+            struct YogVal stmts;
         } klass;
         struct {
             struct YogVal val;
         } literal;
         struct {
-            struct YogNode* recv;
+            struct YogVal recv;
             ID name;
-            struct YogArray* args;
-            struct YogNode* blockarg;
+            struct YogVal args;
+            struct YogVal blockarg;
         } method_call;
         struct {
-            struct YogNode* expr;
+            struct YogVal expr;
         } next;
         struct {
-            struct YogArray* names;
+            struct YogVal names;
         } nonlocal;
         struct {
             ID name;
-            struct YogNode* default_;
+            struct YogVal default_;
         } param;
         struct {
-            struct YogNode* expr;
+            struct YogVal expr;
         } return_;
         struct {
-            struct YogNode* prefix;
-            struct YogNode* index;
+            struct YogVal prefix;
+            struct YogVal index;
         } subscript;
         struct {
             ID id;
         } variable;
         struct {
-            struct YogNode* test;
-            struct YogArray* stmts;
+            struct YogVal test;
+            struct YogVal stmts;
         } while_;
     } u;
 };
@@ -152,8 +152,8 @@ typedef struct YogLexer YogLexer;
 
 struct YogParser {
     struct YogEnv* env;
-    struct YogLexer* lexer;
-    struct YogArray* stmts;
+    struct YogVal lexer;
+    struct YogVal stmts;
     int lineno;
 };
 
@@ -166,14 +166,12 @@ typedef struct YogParser YogParser;
  */
 
 /* src/lexer.c */
-YogLexer* YogLexer_new(YogEnv*);
-void YogLexer_read_encoding(YogEnv*, YogLexer*);
-int yylex(YogLexer*);
+YogVal YogLexer_new(YogEnv*);
+void YogLexer_read_encoding(YogEnv*, YogVal);
+int yylex(YogVal);
 
 /* src/parser.y */
-void YogParser_initialize(YogEnv*, YogParser*);
-void YogParser_keep_children(YogEnv*, void*, ObjectKeeper);
-YogArray* YogParser_parse_file(YogEnv*, YogParser*, const char*);
+YogVal YogParser_parse_file(YogEnv*, const char*);
 
 /* PROTOTYPE_END */
 

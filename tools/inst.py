@@ -178,6 +178,32 @@ class CodeGenerator(object):
  */
 """
 
+    def remove_duplicate_elem(self, a):
+        retval = []
+        for elem in a:
+            found = False
+            for e in retval:
+                if elem == e:
+                    found = True
+                    break
+            if not found:
+                retval.append(elem)
+        return retval
+
+    def split_array(self, a, num):
+        retval = []
+        n = 0
+        child = []
+        for elem in a:
+            child.append(elem)
+            n += 1
+            if n == num:
+                retval.append(child)
+                n = 0
+                child = []
+        retval.append(child)
+        return retval
+
     def gen_thread_inc(self, def_, thread_inc):
         lineno = len(self.make_attention().split("\n")) - 1
         inc = StringIO()
@@ -206,25 +232,46 @@ class CodeGenerator(object):
                 inc.write(s)
                 declared_names.add(name)
 
-            for pop_value in inst.pop_values:
-                if pop_value not in declared_names:
-                    if (0 < len(inst.codes)) or (0 < len(inst.push_values)):
-                        s = """
-            YogVal %(name)s = POP();""" % { "name": pop_value }
-                    else:
-                        s = """
-            POP();"""
-                    lineno += len(s.split("\n")) - 1
-                    inc.write(s)
-                    declared_names.add(pop_value)
-
-            for push_value in inst.push_values:
-                if push_value not in declared_names:
+            for val in inst.pop_values:
+                if val not in declared_names:
+                    if len(inst.codes) == 0:
+                        continue
                     s = """
-            YogVal %(name)s = YogVal_nil();""" % { "name": push_value }
+            YogVal %(name)s = YUNDEF;""" % { "name": val }
                     lineno += len(s.split("\n")) - 1
                     inc.write(s)
-                    declared_names.add(push_value)
+                    declared_names.add(val)
+            for val in inst.push_values:
+                if val not in declared_names:
+                    s = """
+            YogVal %(name)s = YUNDEF;""" % { "name": val }
+                    lineno += len(s.split("\n")) - 1
+                    inc.write(s)
+                    declared_names.add(val)
+            stack_vals_all = inst.pop_values + inst.push_values
+            stack_vals = self.remove_duplicate_elem(stack_vals_all)
+            num_stack_vals = len(stack_vals)
+            if (0 < num_stack_vals) and ((0 < len(inst.codes)) or (0 < len(inst.push_values))):
+                children = self.split_array(stack_vals, 5)
+                for child in children:
+                    index = len(child)
+                    if index == 1:
+                        macro = "PUSH_LOCAL"
+                    else:
+                        macro = "PUSH_LOCALS%(index)d" % { "index": index }
+                    s = """
+            %(macro)s(ENV, %(vars)s);""" % { "macro": macro, "vars": ", ".join(child) }
+                    lineno += len(s.split("\n")) - 1
+                    inc.write(s)
+            for pop_value in inst.pop_values:
+                if (0 < len(inst.codes)) or (0 < len(inst.push_values)):
+                    s = """
+            %(name)s = POP();""" % { "name": pop_value }
+                else:
+                    s = """
+            POP();"""
+                lineno += len(s.split("\n")) - 1
+                inc.write(s)
 
             s = """
 #line %(lineno)d \"%(def)s\"""" % { "lineno": inst.lineno + 6, "def": def_ }
@@ -254,6 +301,12 @@ class CodeGenerator(object):
             for push_value in inst.push_values:
                 s = """
             PUSH(%(name)s);""" % { "name": push_value }
+                lineno += len(s.split("\n")) - 1
+                inc.write(s)
+
+            if (0 < num_stack_vals) and ((0 < len(inst.codes)) or (0 < len(inst.push_values))):
+                s = """
+            POP_LOCALS(ENV);"""
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
 
@@ -313,13 +366,15 @@ class CodeGenerator(object):
         for inst in self.insts:
             compile_data.write("""
 static void 
-CompileData_add_%(inst)s(YogEnv* env, CompileData* data, unsigned int lineno""" % { "inst": inst.name })
+CompileData_add_%(inst)s(YogEnv* env, YogVal data, unsigned int lineno""" % { "inst": inst.name })
             for operand in inst.operands:
                 compile_data.write(", %(type)s %(name)s" % { "type": self.type_name2data_type(operand.type), "name": operand.name })
             compile_data.write(""")
 {
-    YogInst* inst = Inst_new(env, lineno);
-    inst->type = INST_OP;
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
     INST_OPCODE(inst) = OP(%(name)s);
 """ % { "name": inst.name.upper() })
             for operand in inst.operands:
@@ -328,6 +383,8 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data, unsigned int lineno""" 
             compile_data.write("""
 
     add_inst(data, inst);
+
+    RETURN_VOID(env);
 }
 """)
 
@@ -340,7 +397,7 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data, unsigned int lineno""" 
             for operand in inst.operands:
                 inst_attr = "%(inst)s_%(name)s(inst)" % { "inst": inst.name.upper(), "name": operand.name.upper() }
                 if operand.type == "pc_t":
-                    inst_attr = inst_attr + "->pc"
+                    inst_attr = "INST(" + inst_attr + ")->pc"
                 insts2bin.write("""
                         YogBinary_push_%(type)s(env, code, %(inst_attr)s);""" % { "type": self.type_name2func_name(operand.type), "inst_attr": inst_attr })
             insts2bin.write("""
@@ -384,7 +441,7 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data, unsigned int lineno""" 
 
     def type_name2data_type(self, type):
         if type == "pc_t":
-            return "struct YogInst*"
+            return "struct YogVal"
         else:
             return type
 
@@ -404,7 +461,7 @@ CompileData_add_%(inst)s(YogEnv* env, CompileData* data, unsigned int lineno""" 
         for inst in self.insts:
             for operand in inst.operands:
                 macros.write("""
-#define %(inst_macro)s_%(operand_macro)s(inst) ((inst)->u.%(inst)s.%(operand)s)""" % { "inst_macro": inst.name.upper(), "operand_macro": operand.name.upper(), "inst": inst.name, "operand": operand.name })
+#define %(inst_macro)s_%(operand_macro)s(inst) (INST(inst)->u.%(inst)s.%(operand)s)""" % { "inst_macro": inst.name.upper(), "operand_macro": operand.name.upper(), "inst": inst.name, "operand": operand.name })
 
         kw = { "structs": structs.getvalue(), "macros": macros.getvalue(), }
         self.tmpl2file(inst_h_tmpl, kw, inst_h)

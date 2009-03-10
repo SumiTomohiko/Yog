@@ -8,12 +8,19 @@ static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogBuiltinFunction* f = ptr;
-    YogArgInfo_keep_children(env, &f->arg_info, keeper);
+    f->arg_info = YogVal_keep(env, f->arg_info, keeper);
 }
 
-YogBuiltinFunction* 
+YogVal 
 YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, va_list ap)
 {
+    SAVE_LOCALS(env);
+
+    YogVal argnames = YUNDEF;
+    YogVal builtin_f = YUNDEF;
+    YogVal arg_info = YUNDEF;
+    PUSH_LOCALS3(env, argnames, builtin_f, arg_info);
+
 #define ASSERT(name) do { \
     YOG_ASSERT(env, (name == 0) || (name == 1), #name "must be zero or one."); \
 } while (0)
@@ -36,14 +43,15 @@ YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsign
         argc--;
     }
 
-    ID* argnames = NULL;
+    argnames = PTR2VAL(NULL);
     ID blockargname = 0;
     if (0 < argc) {
-        argnames = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * argc);
+        argnames = PTR2VAL(ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * argc));
         unsigned int i = 0;
         for (i = 0; i < argc; i++) {
             const char* s = NEXT_STR(aq);
-            argnames[i] = INTERN(s);
+            ID id = INTERN(s);
+            PTR_AS(ID, argnames)[i] = id;
         }
         if (0 < blockargc) {
             blockargname = INTERN(s);
@@ -53,23 +61,24 @@ YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsign
 
 #undef NEXT_STR
 
-    YogBuiltinFunction* builtin_f = ALLOC_OBJ(env, keep_children, NULL, YogBuiltinFunction);
-    YogArgInfo* arg_info = &builtin_f->arg_info;
-    arg_info->argc = argc;
-    arg_info->argnames = argnames;
-    arg_info->arg_index = NULL;
-    arg_info->blockargc = blockargc;
-    arg_info->blockargname = blockargname;
-    arg_info->varargc = varargc;
-    arg_info->kwargc = kwargc;
-    builtin_f->required_argc = required_argc;
+    builtin_f = PTR2VAL(ALLOC_OBJ(env, keep_children, NULL, YogBuiltinFunction));
+    BUILTIN_FUNCTION(builtin_f)->arg_info = YUNDEF;
+    BUILTIN_FUNCTION(builtin_f)->f = f;
+    BUILTIN_FUNCTION(builtin_f)->klass_name = klass_name;
+    BUILTIN_FUNCTION(builtin_f)->func_name = func_name;
+    BUILTIN_FUNCTION(builtin_f)->required_argc = required_argc;
 
-    builtin_f->f = f;
+    arg_info = YogArgInfo_new(env);
+    ARG_INFO(arg_info)->argc = argc;
+    ARG_INFO(arg_info)->argnames = VAL2PTR(argnames);
+    ARG_INFO(arg_info)->arg_index = NULL;
+    ARG_INFO(arg_info)->blockargc = blockargc;
+    ARG_INFO(arg_info)->blockargname = blockargname;
+    ARG_INFO(arg_info)->varargc = varargc;
+    ARG_INFO(arg_info)->kwargc = kwargc;
+    BUILTIN_FUNCTION(builtin_f)->arg_info = arg_info;
 
-    builtin_f->klass_name = klass_name;
-    builtin_f->func_name = func_name;
-
-    return builtin_f;
+    RETURN(env, builtin_f);
 }
 
 /**

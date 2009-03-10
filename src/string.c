@@ -71,23 +71,33 @@ YogString_size(YogEnv* env, YogVal string)
 }
 
 static void 
-ensure_body(YogEnv* env, YogString* string) 
+ensure_body(YogEnv* env, YogVal string) 
 {
-    if (string->body == NULL) {
+    SAVE_LOCALS(env);
+    PUSH_LOCAL(env, string);
+
+    if (OBJ_AS(YogString, string)->body == NULL) {
 #define CAPACITY    (1)
-        string->body = YogCharArray_new(env, CAPACITY);
+        YogCharArray* body = YogCharArray_new(env, CAPACITY);
 #undef CAPACITY
+        OBJ_AS(YogString, string)->body = body;
     }
+
+    RETURN_VOID(env);
 }
 
 static void 
-ensure_size(YogEnv* env, YogString* string, unsigned int size) 
+ensure_size(YogEnv* env, YogVal string, unsigned int size) 
 {
-    YogCharArray* body = string->body;
-    if ((body == NULL) || (body->capacity < size)) {
+    SAVE_LOCALS(env);
+    PUSH_LOCAL(env, string);
+
+    YogVal body = PTR2VAL(OBJ_AS(YogString, string)->body);
+    PUSH_LOCAL(env, body);
+    if ((VAL2PTR(body) == NULL) || (PTR_AS(YogCharArray, body)->capacity < size)) {
         unsigned int capacity = 1;
-        if (body != NULL) {
-            capacity = body->capacity;
+        if (VAL2PTR(body) != NULL) {
+            capacity = PTR_AS(YogCharArray, body)->capacity;
         }
         do {
 #define RATIO   (2)
@@ -96,28 +106,35 @@ ensure_size(YogEnv* env, YogString* string, unsigned int size)
         } while (capacity < size);
 
         YogCharArray* new_body = YogCharArray_new(env, capacity);
-        memcpy(new_body->items, body->items, body->size);
-        new_body->size = body->size;
+        memcpy(new_body->items, PTR_AS(YogCharArray, body)->items, PTR_AS(YogCharArray, body)->size);
+        new_body->size = PTR_AS(YogCharArray, body)->size;
 
-        string->body = new_body;
+        OBJ_AS(YogString, string)->body = new_body;
     }
+
+    RETURN_VOID(env);
 }
 
 void 
 YogString_push(YogEnv* env, YogVal string, char c) 
 {
-    ensure_body(env, OBJ_AS(YogString, string));
+    SAVE_LOCALS(env);
+    PUSH_LOCAL(env, string);
+
+    ensure_body(env, string);
 
     YogCharArray* body = OBJ_AS(YogString, string)->body;
     unsigned int needed_size = body->size + 1;
     if (body->capacity < needed_size) {
-        ensure_size(env, OBJ_AS(YogString, string), needed_size);
+        ensure_size(env, string, needed_size);
         body = OBJ_AS(YogString, string)->body;
     }
 
     body->items[body->size - 1] = c;
     body->items[body->size] = '\0';
     body->size++;
+
+    RETURN_VOID(env);
 }
 
 void 
@@ -131,6 +148,9 @@ YogString_clear(YogEnv* env, YogVal string)
 static YogVal 
 allocate(YogEnv* env, YogVal klass) 
 {
+    SAVE_LOCALS(env);
+    PUSH_LOCAL(env, klass);
+
     YogBasicObj* obj = ALLOC_OBJ(env, YogString_keep_children, NULL, YogString);
     YogBasicObj_init(env, obj, 0, klass);
 
@@ -138,7 +158,7 @@ allocate(YogEnv* env, YogVal klass)
     s->encoding = NULL;
     s->body = NULL;
 
-    return OBJ2VAL(obj);
+    RETURN(env, OBJ2VAL(obj));
 }
 
 YogVal 
@@ -155,37 +175,50 @@ YogString_new(YogEnv* env)
 YogVal 
 YogString_new_range(YogEnv* env, YogEncoding* enc, const char* start, const char* end) 
 {
+    SAVE_LOCALS(env);
+
     unsigned int size = 0;
     if (start <= end) {
         size = end - start + 1;
     }
-    YogCharArray* body = YogCharArray_new(env, size + 1);
-    memcpy(body->items, start, size);
-    body->items[size] = '\0';
+    YogVal body = PTR2VAL(YogCharArray_new(env, size + 1));
+    memcpy(PTR_AS(YogCharArray, body)->items, start, size);
+    PTR_AS(YogCharArray, body)->items[size] = '\0';
+    PUSH_LOCAL(env, body);
 
     YogVal s = YogString_new(env);
     OBJ_AS(YogString, s)->encoding = enc;
-    OBJ_AS(YogString, s)->body = body;
+    OBJ_AS(YogString, s)->body = PTR_AS(YogCharArray, body);
 
-    return s;
+    RETURN(env, s);
 }
 
 YogVal 
 YogString_new_size(YogEnv* env, unsigned int size) 
 {
-    YogVal string = allocate(env, ENV_VM(env)->cString);
+    SAVE_LOCALS(env);
+    YogVal string = YUNDEF;
+    YogVal body = YUNDEF;
+    PUSH_LOCALS2(env, string, body);
+
+    string = allocate(env, ENV_VM(env)->cString);
+    body = PTR2VAL(YogCharArray_new(env, size));
 
     OBJ_AS(YogString, string)->encoding = NULL;
-    OBJ_AS(YogString, string)->body = YogCharArray_new(env, size);
+    OBJ_AS(YogString, string)->body = PTR_AS(YogCharArray, body);
 
-    return string;
+    RETURN(env, string);
 }
 
 #define RETURN_STR(s)   do { \
-    YogCharArray* body = YogCharArray_new_str(env, s); \
+    YogVal body = PTR2VAL(YogCharArray_new_str(env, s)); \
+    PUSH_LOCAL(env, body); \
+    \
     YogVal string = allocate(env, ENV_VM(env)->cString); \
     OBJ_AS(YogString, string)->encoding = NULL; \
-    OBJ_AS(YogString, string)->body = body; \
+    OBJ_AS(YogString, string)->body = PTR_AS(YogCharArray, body); \
+    \
+    POP_LOCALS(env); \
     return string; \
 } while (0)
 
@@ -213,10 +246,13 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
 YogVal 
 YogString_clone(YogEnv* env, YogVal string) 
 {
+    SAVE_LOCALS(env);
+    PUSH_LOCAL(env, string);
+
     YogVal s = YogString_new_str(env, OBJ_AS(YogString, string)->body->items);
     OBJ_AS(YogString, s)->encoding = OBJ_AS(YogString, string)->encoding;
 
-    return s;
+    RETURN(env, s);
 }
 
 char 
@@ -256,7 +292,7 @@ lshift(YogEnv* env)
     unsigned int size1 = YogString_size(env, self);
     unsigned int size2 = YogString_size(env, arg);
     unsigned int size = size1 + size2 - 1;
-    ensure_size(env, OBJ_AS(YogString, self), size);
+    ensure_size(env, self, size);
     memcpy(&OBJ_AS(YogString, self)->body->items[size1 - 1], OBJ_AS(YogString, arg)->body->items, size2);
 
     return self;
@@ -332,7 +368,7 @@ assign_subscript(YogEnv* env)
     }
     else if (size_orig < size) {
         const char* r = s->body->items;
-        ensure_size(env, s, s->body->size - size_orig + size);
+        ensure_size(env, OBJ2VAL(s), s->body->size - size_orig + size);
         p = s->body->items + (p - r);
         memmove(p + (size - size_orig), p, s->body->size - (p - s->body->items));
         unsigned int i = 0;
@@ -468,6 +504,8 @@ YogVal
 YogString_klass_new(YogEnv* env) 
 {
     YogVal klass = YogKlass_new(env, "String", ENV_VM(env)->cObject);
+    PUSH_LOCAL(env, klass);
+
     YogKlass_define_allocator(env, klass, allocate);
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
     YogKlass_define_method(env, klass, "+", add, 0, 0, 0, 0, "s", NULL);
@@ -479,6 +517,7 @@ YogString_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "each_byte", each_byte, 1, 0, 0, 1, "block", NULL);
     YogKlass_define_method(env, klass, "each_char", each_char, 1, 0, 0, 1, "block", NULL);
 
+    POP_LOCALS(env);
     return klass;
 }
 

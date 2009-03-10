@@ -131,6 +131,9 @@ struct YogVm {
     void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, Finalizer, size_t);
     void* (*realloc_mem)(struct YogEnv*, struct YogVm*, void*, size_t);
     void (*free_mem)(struct YogEnv*, struct YogVm*);
+#if 0
+    void (*dump_mem)(struct YogEnv*, struct YogVm*);
+#endif
     BOOL need_gc;
     union {
         struct {
@@ -161,8 +164,8 @@ struct YogVm {
     } gc_stat;
 
     ID next_id;
-    struct YogTable* id2name;
-    struct YogTable* name2id;
+    struct YogVal id2name;
+    struct YogVal name2id;
 
     struct YogVal cObject;
     struct YogVal cKlass;
@@ -184,9 +187,9 @@ struct YogVm {
     struct YogVal eTypeError;
     struct YogVal eIndexError;
 
-    struct YogTable* pkgs;
+    struct YogVal pkgs;
 
-    struct YogTable* encodings;
+    struct YogVal encodings;
 
     struct YogThread* thread;
 };
@@ -207,7 +210,7 @@ typedef struct YogBasicObj YogBasicObj;
 
 struct YogObj {
     YOGBASICOBJ_HEAD;
-    struct YogTable* attrs;
+    struct YogVal attrs;
 };
 
 #define YOGOBJ_HEAD struct YogObj base
@@ -226,11 +229,9 @@ enum YogFrameType {
 typedef enum YogFrameType YogFrameType;
 
 struct YogFrame {
-    struct YogFrame* prev;
+    struct YogVal prev;
     enum YogFrameType type;
 };
-
-#define FRAME(f)    ((YogFrame*)(f))
 
 typedef struct YogFrame YogFrame;
 
@@ -248,7 +249,7 @@ typedef struct YogCFrame YogCFrame;
 #include "yog/array.h"
 
 #define C_FRAME(frame)      ((YogCFrame*)(frame))
-#define CUR_C_FRAME(env)    (C_FRAME((env)->th->cur_frame))
+#define CUR_C_FRAME(env)    PTR_AS(YogCFrame, (env)->th->cur_frame)
 #define SELF(env)           (CUR_C_FRAME(env)->self)
 #define ARG(env, i)         (CUR_C_FRAME(env)->args->items[i])
 
@@ -262,16 +263,16 @@ typedef struct YogOuterVars YogOuterVars;
 struct YogScriptFrame {
     struct YogFrame base;
     pc_t pc;
-    struct YogCode* code;
+    struct YogVal code;
     unsigned int stack_size;
     struct YogValArray* stack;
     struct YogTable* globals;
     struct YogOuterVars* outer_vars;
 };
 
-#define SCRIPT_FRAME(f)     ((YogScriptFrame*)f)
-
 typedef struct YogScriptFrame YogScriptFrame;
+
+#define SCRIPT_FRAME(v)     PTR_AS(YogScriptFrame, (v))
 
 struct YogNameFrame {
     struct YogScriptFrame base;
@@ -279,10 +280,10 @@ struct YogNameFrame {
     struct YogTable* vars;
 };
 
-#define NAME_FRAME(f)   ((YogNameFrame*)f)
-#define NAME_VARS(f)    (NAME_FRAME(f)->vars)
-
 typedef struct YogNameFrame YogNameFrame;
+
+#define NAME_FRAME(v)   PTR_AS(YogNameFrame, (v))
+#define NAME_VARS(v)    (NAME_FRAME(v)->vars)
 
 #define YogKlassFrame       YogNameFrame
 #define YogPackageFrame     YogNameFrame
@@ -292,10 +293,10 @@ struct YogMethodFrame {
     struct YogValArray* vars;
 };
 
-#define METHOD_FRAME(f)     ((YogMethodFrame*)(f))
-#define LOCAL_VARS(f)       (METHOD_FRAME(f)->vars)
-
 typedef struct YogMethodFrame YogMethodFrame;
+
+#define METHOD_FRAME(v)     PTR_AS(YogMethodFrame, (v))
+#define LOCAL_VARS(f)       (METHOD_FRAME(f)->vars)
 
 struct YogJmpBuf {
     jmp_buf buf;
@@ -304,7 +305,7 @@ struct YogJmpBuf {
 
 typedef struct YogJmpBuf YogJmpBuf;
 
-#define NUM_VALS    4
+#define NUM_VALS    5
 
 struct YogLocals {
     struct YogLocals* next;
@@ -325,6 +326,7 @@ typedef struct YogLocals YogLocals;
     __locals_##x##__.vals[1] = NULL; \
     __locals_##x##__.vals[2] = NULL; \
     __locals_##x##__.vals[3] = NULL; \
+    __locals_##x##__.vals[4] = NULL; \
     __locals_##x##__.next = ENV_TH(env)->locals; \
     ENV_TH(env)->locals = &__locals_##x##__
 #define PUSH_LOCALS2(env, x, y) \
@@ -335,6 +337,7 @@ typedef struct YogLocals YogLocals;
     __locals_##x##_##y##__.vals[1] = &(y); \
     __locals_##x##_##y##__.vals[2] = NULL; \
     __locals_##x##_##y##__.vals[3] = NULL; \
+    __locals_##x##_##y##__.vals[4] = NULL; \
     __locals_##x##_##y##__.next = ENV_TH(env)->locals; \
     ENV_TH(env)->locals = &__locals_##x##_##y##__
 #define PUSH_LOCALS3(env, x, y, z) \
@@ -345,6 +348,7 @@ typedef struct YogLocals YogLocals;
     __locals_##x##_##y##_##z##__.vals[1] = &(y); \
     __locals_##x##_##y##_##z##__.vals[2] = &(z); \
     __locals_##x##_##y##_##z##__.vals[3] = NULL; \
+    __locals_##x##_##y##_##z##__.vals[4] = NULL; \
     __locals_##x##_##y##_##z##__.next = ENV_TH(env)->locals; \
     ENV_TH(env)->locals = &__locals_##x##_##y##_##z##__
 #define PUSH_LOCALS4(env, x, y, z, t) \
@@ -355,8 +359,44 @@ typedef struct YogLocals YogLocals;
     __locals_##x##_##y##_##z##_##t##__.vals[1] = &(y); \
     __locals_##x##_##y##_##z##_##t##__.vals[2] = &(z); \
     __locals_##x##_##y##_##z##_##t##__.vals[3] = &(t); \
+    __locals_##x##_##y##_##z##_##t##__.vals[4] = NULL; \
     __locals_##x##_##y##_##z##_##t##__.next = ENV_TH(env)->locals; \
     ENV_TH(env)->locals = &__locals_##x##_##y##_##z##_##t##__
+#define PUSH_LOCALS5(env, x, y, z, t, u) \
+    YogLocals __locals_##x##_##y##_##z##_##t##_##u##__; \
+    __locals_##x##_##y##_##z##_##t##_##u##__.num_vals = 5; \
+    __locals_##x##_##y##_##z##_##t##_##u##__.size = 1; \
+    __locals_##x##_##y##_##z##_##t##_##u##__.vals[0] = &(x); \
+    __locals_##x##_##y##_##z##_##t##_##u##__.vals[1] = &(y); \
+    __locals_##x##_##y##_##z##_##t##_##u##__.vals[2] = &(z); \
+    __locals_##x##_##y##_##z##_##t##_##u##__.vals[3] = &(t); \
+    __locals_##x##_##y##_##z##_##t##_##u##__.vals[4] = &(u); \
+    __locals_##x##_##y##_##z##_##t##_##u##__.next = ENV_TH(env)->locals; \
+    ENV_TH(env)->locals = &__locals_##x##_##y##_##z##_##t##_##u##__
+#define PUSH_LOCALSX(env, num, x) \
+    YogLocals __locals_##x##__; \
+    __locals_##x##__.num_vals = 1; \
+    __locals_##x##__.size = (num); \
+    __locals_##x##__.vals[0] = (x); \
+    __locals_##x##__.vals[1] = NULL; \
+    __locals_##x##__.vals[2] = NULL; \
+    __locals_##x##__.vals[3] = NULL; \
+    __locals_##x##__.vals[4] = NULL; \
+    __locals_##x##__.next = ENV_TH(env)->locals; \
+    ENV_TH(env)->locals = &__locals_##x##__
+#define SAVE_ARG(env, x)        SAVE_LOCALS((env)); \
+                                PUSH_LOCAL((env), x)
+#define SAVE_ARGS2(env, x, y)   SAVE_LOCALS((env)); \
+                                PUSH_LOCALS2((env), x, y)
+#define SAVE_ARGS3(env, x, y, z)  \
+                                SAVE_LOCALS((env)); \
+                                PUSH_LOCALS3((env), x, y, z)
+#define SAVE_ARGS4(env, x, y, z, t)  \
+                                SAVE_LOCALS((env)); \
+                                PUSH_LOCALS4((env), x, y, z, t)
+#define SAVE_ARGS5(env, x, y, z, t, u)  \
+                                SAVE_LOCALS((env)); \
+                                PUSH_LOCALS5((env), x, y, z, t, u)
 #define POP_LOCALS(env)         ENV_TH(env)->locals = ENV_TH(env)->locals->next
 #define RETURN(env, val)        do { \
     RESTORE_LOCALS(env); \
@@ -368,7 +408,7 @@ typedef struct YogLocals YogLocals;
 } while (0)
 
 struct YogThread {
-    struct YogFrame* cur_frame;
+    struct YogVal cur_frame;
     struct YogJmpBuf* jmp_buf_list;
     struct YogVal jmp_val;
     struct YogLocals* locals;
@@ -389,7 +429,7 @@ typedef struct YogThread YogThread;
 YogCFrame* YogCFrame_new(YogEnv*);
 void YogFrame_add_locals(YogEnv*, YogCFrame*, unsigned int, ...);
 YogMethodFrame* YogMethodFrame_new(YogEnv*);
-YogNameFrame* YogNameFrame_new(YogEnv*);
+YogVal YogNameFrame_new(YogEnv*);
 YogOuterVars* YogOuterVars_new(YogEnv*, unsigned int);
 YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);
 void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
@@ -410,7 +450,9 @@ void YogObj_set_attr_id(YogEnv*, YogVal, ID, YogVal);
 YogVal YogThread_call_block(YogEnv*, YogThread*, YogVal, unsigned int, YogVal*);
 YogVal YogThread_call_method(YogEnv*, YogThread*, YogVal, const char*, unsigned int, YogVal*);
 YogVal YogThread_call_method_id(YogEnv*, YogThread*, YogVal, ID, unsigned int, YogVal*);
-void YogThread_eval_package(YogEnv*, YogThread*, YogPackage*);
+void YogThread_eval_package(YogEnv*, YogThread*, YogVal);
+void YogThread_initialize(YogEnv*, YogThread*);
+void YogThread_keep_children(YogEnv*, void*, ObjectKeeper);
 YogThread* YogThread_new(YogEnv*);
 
 /* src/value.c */
@@ -439,6 +481,7 @@ void YogVm_config_copying(YogEnv*, YogVm*, unsigned int);
 void YogVm_config_mark_sweep(YogEnv*, YogVm*, size_t);
 void YogVm_config_mark_sweep_compact(YogEnv*, YogVm*, size_t, size_t);
 void YogVm_delete(YogEnv*, YogVm*);
+void YogVm_dump_memory(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
 void YogVm_init(YogVm*, YogGcType);
