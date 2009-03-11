@@ -81,7 +81,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
         KEEP(klass.stmts);
         break;
     case NODE_LITERAL:
-        node->u.literal.val = YogVal_keep(env, node->u.literal.val, keeper);
+        KEEP(literal.val);
         break;
     case NODE_METHOD_CALL:
         KEEP(method_call.recv);

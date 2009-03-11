@@ -1177,7 +1177,10 @@ CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP(last_inst);
     KEEP(exc_tbl);
     KEEP(exc_tbl_last);
+    KEEP(label_while_start);
+    KEEP(label_while_end);
     KEEP(finally_list);
+    KEEP(try_list);
     KEEP(outer);
 #undef KEEP
     data->filename = (*keeper)(env, data->filename);

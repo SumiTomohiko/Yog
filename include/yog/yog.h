@@ -5,6 +5,7 @@
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "oniguruma.h"
 
@@ -161,6 +162,7 @@ struct YogVm {
         unsigned int total_obj_num;
         unsigned int num_alloc;
         size_t total_allocated_size;
+        unsigned int exec_num;
     } gc_stat;
 
     ID next_id;
@@ -318,6 +320,11 @@ typedef struct YogLocals YogLocals;
 
 #define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = ENV_TH(env)->locals
 #define RESTORE_LOCALS(env)     ENV_TH(env)->locals = __cur_locals__
+#define PUSH_LOCAL_TABLE(env, tbl) \
+do { \
+    tbl.next = ENV_TH(env)->locals; \
+    ENV_TH(env)->locals = &tbl; \
+} while (0)
 #define PUSH_LOCAL(env, x) \
     YogLocals __locals_##x##__; \
     __locals_##x##__.num_vals = 1; \
@@ -327,8 +334,7 @@ typedef struct YogLocals YogLocals;
     __locals_##x##__.vals[2] = NULL; \
     __locals_##x##__.vals[3] = NULL; \
     __locals_##x##__.vals[4] = NULL; \
-    __locals_##x##__.next = ENV_TH(env)->locals; \
-    ENV_TH(env)->locals = &__locals_##x##__
+    PUSH_LOCAL_TABLE(env, __locals_##x##__);
 #define PUSH_LOCALS2(env, x, y) \
     YogLocals __locals_##x##_##y##__; \
     __locals_##x##_##y##__.num_vals = 2; \
@@ -338,8 +344,7 @@ typedef struct YogLocals YogLocals;
     __locals_##x##_##y##__.vals[2] = NULL; \
     __locals_##x##_##y##__.vals[3] = NULL; \
     __locals_##x##_##y##__.vals[4] = NULL; \
-    __locals_##x##_##y##__.next = ENV_TH(env)->locals; \
-    ENV_TH(env)->locals = &__locals_##x##_##y##__
+    PUSH_LOCAL_TABLE(env, __locals_##x##_##y##__);
 #define PUSH_LOCALS3(env, x, y, z) \
     YogLocals __locals_##x##_##y##_##z##__; \
     __locals_##x##_##y##_##z##__.num_vals = 3; \
@@ -349,8 +354,7 @@ typedef struct YogLocals YogLocals;
     __locals_##x##_##y##_##z##__.vals[2] = &(z); \
     __locals_##x##_##y##_##z##__.vals[3] = NULL; \
     __locals_##x##_##y##_##z##__.vals[4] = NULL; \
-    __locals_##x##_##y##_##z##__.next = ENV_TH(env)->locals; \
-    ENV_TH(env)->locals = &__locals_##x##_##y##_##z##__
+    PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##__);
 #define PUSH_LOCALS4(env, x, y, z, t) \
     YogLocals __locals_##x##_##y##_##z##_##t##__; \
     __locals_##x##_##y##_##z##_##t##__.num_vals = 4; \
@@ -360,8 +364,7 @@ typedef struct YogLocals YogLocals;
     __locals_##x##_##y##_##z##_##t##__.vals[2] = &(z); \
     __locals_##x##_##y##_##z##_##t##__.vals[3] = &(t); \
     __locals_##x##_##y##_##z##_##t##__.vals[4] = NULL; \
-    __locals_##x##_##y##_##z##_##t##__.next = ENV_TH(env)->locals; \
-    ENV_TH(env)->locals = &__locals_##x##_##y##_##z##_##t##__
+    PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##_##t##__);
 #define PUSH_LOCALS5(env, x, y, z, t, u) \
     YogLocals __locals_##x##_##y##_##z##_##t##_##u##__; \
     __locals_##x##_##y##_##z##_##t##_##u##__.num_vals = 5; \
@@ -371,8 +374,7 @@ typedef struct YogLocals YogLocals;
     __locals_##x##_##y##_##z##_##t##_##u##__.vals[2] = &(z); \
     __locals_##x##_##y##_##z##_##t##_##u##__.vals[3] = &(t); \
     __locals_##x##_##y##_##z##_##t##_##u##__.vals[4] = &(u); \
-    __locals_##x##_##y##_##z##_##t##_##u##__.next = ENV_TH(env)->locals; \
-    ENV_TH(env)->locals = &__locals_##x##_##y##_##z##_##t##_##u##__
+    PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##_##t##_##u##__);
 #define PUSH_LOCALSX(env, num, x) \
     YogLocals __locals_##x##__; \
     __locals_##x##__.num_vals = 1; \
@@ -382,8 +384,7 @@ typedef struct YogLocals YogLocals;
     __locals_##x##__.vals[2] = NULL; \
     __locals_##x##__.vals[3] = NULL; \
     __locals_##x##__.vals[4] = NULL; \
-    __locals_##x##__.next = ENV_TH(env)->locals; \
-    ENV_TH(env)->locals = &__locals_##x##__
+    PUSH_LOCAL_TABLE(env, __locals_##x##__);
 #define SAVE_ARG(env, x)        SAVE_LOCALS((env)); \
                                 PUSH_LOCAL((env), x)
 #define SAVE_ARGS2(env, x, y)   SAVE_LOCALS((env)); \
@@ -520,6 +521,13 @@ unsigned int object_number_of_page(size_t);
 #define PTR2VAL(ptr)    YogVal_ptr(ptr)
 #define ID2VAL(id)      YogVal_symbol(id)
 #define STR2VAL(str)    YogVal_str(str)
+
+#define DPRINTF(...)    do { \
+    printf("%s:%d ", __FILE__, __LINE__); \
+    printf(__VA_ARGS__); \
+    printf("\n"); \
+    fflush(stdout); \
+} while (0)
 
 #endif
 /**

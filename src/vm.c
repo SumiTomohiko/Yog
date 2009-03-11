@@ -533,6 +533,8 @@ free_mem_copying(YogEnv* env, YogVm* vm)
 static void 
 copying_gc(YogEnv* env, YogVm* vm) 
 {
+    vm->gc_stat.exec_num++;
+
     unsigned int used_size = 0;
     YogHeap* heap = vm->gc.copying.heap;
     while (heap != NULL) {
@@ -1425,6 +1427,7 @@ YogVm_init(YogVm* vm, YogGcType gc)
     reset_total_object_count(vm);
     vm->gc_stat.num_alloc = 0;
     vm->gc_stat.total_allocated_size = 0;
+    vm->gc_stat.exec_num = 0;
 
     vm->next_id = 0;
     vm->id2name = PTR2VAL(NULL);

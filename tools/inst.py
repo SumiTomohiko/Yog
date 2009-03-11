@@ -361,6 +361,13 @@ class CodeGenerator(object):
 
         return c
 
+    def get_pc_operands(self, inst):
+        retval = []
+        for operand in inst.operands:
+            if operand.type == "pc_t":
+                retval.append(operand)
+        return retval
+
     def gen_compile_inc(self, compile_inc, compile_inc_tmpl):
         compile_data = StringIO()
         for inst in self.insts:
@@ -369,14 +376,21 @@ static void
 CompileData_add_%(inst)s(YogEnv* env, YogVal data, unsigned int lineno""" % { "inst": inst.name })
             for operand in inst.operands:
                 compile_data.write(", %(type)s %(name)s" % { "type": self.type_name2data_type(operand.type), "name": operand.name })
+            pc_operands = self.get_pc_operands(inst)
+            if len(pc_operands) == 0:
+                s = ""
+                save_arg_args_num = ""
+            else:
+                s = "S"
+                save_arg_args_num = str(1 + len(pc_operands))
             compile_data.write(""")
 {
-    SAVE_ARG(env, data);
+    SAVE_ARG%(s)s%(save_arg_args_num)s(%(save_arg_args)s);
 
     YogVal inst = Inst_new(env, lineno);
     INST(inst)->type = INST_OP;
     INST_OPCODE(inst) = OP(%(name)s);
-""" % { "name": inst.name.upper() })
+""" % { "name": inst.name.upper(), "s": s, "save_arg_args_num": save_arg_args_num, "save_arg_args":  ", ".join(["env", "data"] + map(lambda op: op.name, pc_operands)), })
             for operand in inst.operands:
                 compile_data.write("""
     %(inst)s_%(operand)s(inst) = %(name)s;""" % { "inst": inst.name.upper(), "operand": operand.name.upper(), "name": operand.name })
