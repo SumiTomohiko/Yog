@@ -211,7 +211,10 @@ YogString_new_size(YogEnv* env, unsigned int size)
 }
 
 #define RETURN_STR(s)   do { \
-    YogVal body = PTR2VAL(YogCharArray_new_str(env, s)); \
+    size_t len = strlen(s); \
+    char buffer[len + 1]; \
+    strcpy(buffer, s); \
+    YogVal body = PTR2VAL(YogCharArray_new_str(env, buffer)); \
     PUSH_LOCAL(env, body); \
     \
     YogVal string = allocate(env, ENV_VM(env)->cString); \
@@ -246,8 +249,7 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
 YogVal 
 YogString_clone(YogEnv* env, YogVal string) 
 {
-    SAVE_LOCALS(env);
-    PUSH_LOCAL(env, string);
+    SAVE_ARG(env, string);
 
     YogVal s = YogString_new_str(env, OBJ_AS(YogString, string)->body->items);
     OBJ_AS(YogString, s)->encoding = OBJ_AS(YogString, string)->encoding;
