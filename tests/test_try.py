@@ -138,4 +138,11 @@ end
 43
 """, "")
 
+    def test_blank_try(self):
+        self._test("""
+try
+except
+  puts 42
+end""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
