@@ -2084,7 +2084,7 @@ split_exception_table(YogEnv* env, YogVal exc_tbl_entry, YogVal label_from, YogV
     PUSH_LOCAL(env, entry);
 
     entry = exc_tbl_entry;
-    YOG_ASSERT(env, !IS_PTR(entry), "Exception table is empty.");
+    YOG_ASSERT(env, IS_PTR(entry), "Exception table is empty.");
     while (IS_PTR(EXCEPTION_TABLE_ENTRY(entry)->next)) {
         entry = EXCEPTION_TABLE_ENTRY(entry)->next;
     }

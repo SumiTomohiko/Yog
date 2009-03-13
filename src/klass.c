@@ -33,14 +33,13 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogObj_keep_children(env, ptr, keeper);
 
     YogKlass* klass = ptr;
-    klass->super = PTR2VAL((*keeper)(env, VAL2PTR(klass->super)));
+    klass->super = YogVal_keep(env, klass->super, keeper);
 }
 
 YogVal 
 YogKlass_allocate(YogEnv* env, YogVal klass)
 {
-    SAVE_LOCALS(env);
-    PUSH_LOCAL(env, klass);
+    SAVE_ARG(env, klass);
 
     YogObj* obj = ALLOC_OBJ(env, keep_children, NULL, YogKlass);
     YogObj_init(env, obj, 0, klass);
@@ -73,7 +72,6 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
         OBJ_AS(YogKlass, klass)->name = id;
     }
     OBJ_AS(YogKlass, klass)->super = super;
-
     RETURN(env, klass);
 }
 

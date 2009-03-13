@@ -65,7 +65,7 @@ void
 YogBasicObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
     YogBasicObj* obj = ptr;
-    obj->klass = OBJ2VAL((*keeper)(env, VAL2OBJ(obj->klass)));
+    obj->klass = YogVal_keep(env, obj->klass, keeper);
 }
 
 void 
@@ -74,7 +74,7 @@ YogObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogBasicObj_keep_children(env, ptr, keeper);
 
     YogObj* obj = ptr;
-    obj->attrs = PTR2VAL((*keeper)(env, VAL2PTR(obj->attrs)));
+    obj->attrs = YogVal_keep(env, obj->attrs, keeper);
 }
 
 YogVal 

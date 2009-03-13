@@ -5,23 +5,23 @@ static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
     YogStackTraceEntry* entry = ptr;
+    entry->lower = YogVal_keep(env, entry->lower, keeper);
 #define KEEP_MEMBER(member)     entry->member = (*keeper)(env, (void*)entry->member)
-    KEEP_MEMBER(lower);
     KEEP_MEMBER(filename);
 #undef KEEP_MEMBER
 }
 
-YogStackTraceEntry* 
+YogVal 
 YogStackTraceEntry_new(YogEnv* env) 
 {
     YogStackTraceEntry* entry = ALLOC_OBJ(env, keep_children, NULL, YogStackTraceEntry);
-    entry->lower = NULL;
+    entry->lower = YUNDEF;
     entry->lineno = 0;
     entry->filename = NULL;
     entry->klass_name = INVALID_ID;
     entry->func_name = INVALID_ID;
 
-    return entry;
+    return PTR2VAL(entry);
 }
 
 /**

@@ -1,5 +1,6 @@
 #include <setjmp.h>
 #include <stdio.h>
+#include <string.h>
 #include "yog/arg.h"
 #include "yog/binary.h"
 #include "yog/block.h"
@@ -453,11 +454,11 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
             PRINT("Traceback (most recent call last):\n");
 
             YogException* exc = OBJ_AS(YogException, ENV_TH(env)->jmp_val);
-            YogStackTraceEntry* st = exc->stack_trace;
+            YogVal st = exc->stack_trace;
 #define ID2NAME(id)     YogVm_id2name(env, ENV_VM(env), id)
-            while (st != NULL) {
+            while (IS_PTR(st)) {
                 PRINT("  File ");
-                const char* filename = st->filename;
+                const char* filename = PTR_AS(YogStackTraceEntry, st)->filename;
                 if (filename != NULL) {
                     PRINT("\"%s\"", filename);
                 }
@@ -465,14 +466,14 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
                     PRINT("builtin");
                 }
 
-                unsigned int lineno = st->lineno;
+                unsigned int lineno = PTR_AS(YogStackTraceEntry, st)->lineno;
                 if (0 < lineno) {
                     PRINT(", line %d", lineno);
                 }
 
                 PRINT(", in ");
-                ID klass_name = st->klass_name;
-                ID func_name = st->func_name;
+                ID klass_name = PTR_AS(YogStackTraceEntry, st)->klass_name;
+                ID func_name = PTR_AS(YogStackTraceEntry, st)->func_name;
                 if (klass_name != INVALID_ID) {
                     if (func_name != INVALID_ID) {
                         const char* s = ID2NAME(klass_name);
@@ -490,16 +491,19 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
                 }
                 PRINT("\n");
 
-                st = st->lower;
+                st = PTR_AS(YogStackTraceEntry, st)->lower;
             }
 
             YogVal klass = YOGBASICOBJ(exc)->klass;
-            YogVal name = PTR2VAL(ID2NAME(OBJ_AS(YogKlass, klass)->name));
-            PUSH_LOCAL(env, name);
+            const char* name = ID2NAME(OBJ_AS(YogKlass, klass)->name);
+            /* dirty hack */
+            size_t len = strlen(name);
+            const char s[len + 1];
+            strcpy(s, name);
 #undef ID2NAME
             YogVal val = YogThread_call_method(env, ENV_TH(env), exc->message, "to_s", 0, NULL);
             YogString* msg = OBJ_AS(YogString, val);
-            PRINT("%s: %s\n", PTR_AS(const char, name), msg->body->items);
+            PRINT("%s: %s\n", s, msg->body->items);
 #undef PRINT
 
             RETURN(env, INT2VAL(-1));

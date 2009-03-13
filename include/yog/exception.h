@@ -4,7 +4,7 @@
 #include "yog/yog.h"
 
 struct YogStackTraceEntry {
-    struct YogStackTraceEntry* lower;
+    struct YogVal lower;
     unsigned int lineno;
     const char* filename;
     ID klass_name;
@@ -15,7 +15,7 @@ typedef struct YogStackTraceEntry YogStackTraceEntry;
 
 struct YogException {
     YOGBASICOBJ_HEAD;
-    struct YogStackTraceEntry* stack_trace;
+    struct YogVal stack_trace;
     struct YogVal message;
 };
 
@@ -32,7 +32,7 @@ YogVal YogBugException_new(YogEnv*);
 YogVal YogException_klass_new(YogEnv*);
 
 /* src/stacktrace.c */
-YogStackTraceEntry* YogStackTraceEntry_new(YogEnv*);
+YogVal YogStackTraceEntry_new(YogEnv*);
 
 /* PROTOTYPE_END */
 

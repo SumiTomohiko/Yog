@@ -243,7 +243,7 @@ YogNode_new(YogEnv* env, YogParser* parser, YogNodeType type)
 #define EXCEPT_FINALLY_NEW(node, stmts, excepts, else_, finally) do { \
     EXCEPT_NEW(node, stmts, excepts, else_); \
     \
-    if (IS_PTR(finally)) { \
+    if (IS_OBJ(finally)) { \
         YogVal array = YUNDEF; \
         OBJ_ARRAY_NEW(array, node); \
         FINALLY_NEW(node, array, finally); \
