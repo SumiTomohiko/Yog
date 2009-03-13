@@ -456,11 +456,17 @@ static void*
 keep_object_copying(YogEnv* env, void* ptr) 
 {
     if (ptr == NULL) {
+#if 0
+        DPRINTF("keep_object_copying: exec_num=0x%08x, NULL->NULL", ENV_VM(env)->gc_stat.exec_num);
+#endif
         return NULL;
     }
 
     CopyingHeader* header = (CopyingHeader*)ptr - 1;
     if (header->forwarding_addr != NULL) {
+#if 0
+        DPRINTF("keep_object_copying: exec_num=0x%08x, %p->(%p)", ENV_VM(env)->gc_stat.exec_num, ptr, (CopyingHeader*)header->forwarding_addr + 1);
+#endif
         return (CopyingHeader*)header->forwarding_addr + 1;
     }
 
@@ -477,6 +483,9 @@ keep_object_copying(YogEnv* env, void* ptr)
 
     vm->gc.copying.unscanned += size;
 
+#if 0
+    DPRINTF("keep_object_copying: exec_num=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, ptr, (CopyingHeader*)dest + 1);
+#endif
     return (CopyingHeader*)dest + 1;
 }
 
@@ -545,6 +554,9 @@ copying_gc(YogEnv* env, YogVm* vm)
 
     unsigned int heap_size = vm->gc.copying.init_heap_size;
     YogHeap* to_space = YogHeap_new(heap_size, NULL);
+#if 0
+    DPRINTF("new heap: exec_num=0x%08x, %p-%p", vm->gc_stat.exec_num, to_space->base, (unsigned char*)to_space->base + to_space->size);
+#endif
 
     vm->gc.copying.scanned = vm->gc.copying.unscanned = to_space->free;
 

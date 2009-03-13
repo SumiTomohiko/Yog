@@ -320,11 +320,23 @@ typedef struct YogLocals YogLocals;
 
 #define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = ENV_TH(env)->locals
 #define RESTORE_LOCALS(env)     ENV_TH(env)->locals = __cur_locals__
-#define PUSH_LOCAL_TABLE(env, tbl) \
+#if 0
+#   define PUSH_LOCAL_TABLE(env, tbl) \
+do { \
+    unsigned int i; \
+    for (i = 0; i < tbl.num_vals; i++) { \
+        DPRINTF("tbl.vals[%d]=%p", i, tbl.vals[i]); \
+    } \
+    tbl.next = ENV_TH(env)->locals; \
+    ENV_TH(env)->locals = &tbl; \
+} while (0)
+#else
+#   define PUSH_LOCAL_TABLE(env, tbl) \
 do { \
     tbl.next = ENV_TH(env)->locals; \
     ENV_TH(env)->locals = &tbl; \
 } while (0)
+#endif
 #define PUSH_LOCAL(env, x) \
     YogLocals __locals_##x##__; \
     __locals_##x##__.num_vals = 1; \

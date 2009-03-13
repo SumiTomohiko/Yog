@@ -1581,9 +1581,15 @@ Var_new(YogEnv* env)
 static YogVal 
 var_table_new(YogEnv* env) 
 {
-    YogVal var_tbl = YogTable_new_symbol_table(env);
+    SAVE_LOCALS(env);
+
+    YogVal var_tbl = YUNDEF;
+    PUSH_LOCAL(env, var_tbl);
+
+    var_tbl = YogTable_new_symbol_table(env);
     register_self(env, var_tbl);
-    return var_tbl;
+
+    RETURN(env, var_tbl);
 }
 
 struct Flags2TypeArg {
@@ -1671,7 +1677,8 @@ vars_flags2type(YogEnv* env, YogVal var_tbl, YogVal outer)
 static YogVal 
 compile_func(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, YogVal node, YogVal upper) 
 {
-    SAVE_ARGS2(env, node, upper);
+    YogVal name = PTR2VAL(filename);
+    SAVE_ARGS3(env, name, node, upper);
 
     YogVal var_tbl = YUNDEF;
     YogVal params = YUNDEF;
@@ -1690,7 +1697,7 @@ compile_func(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_na
 
     ID func_name = NODE(node)->u.funcdef.name;
 
-    YogVal code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL);
+    YogVal code = compile_stmts(env, visitor, PTR_AS(const char, name), klass_name, func_name, stmts, vars, CTX_FUNC, YNIL);
     PUSH_LOCAL(env, code);
     setup_params(env, vars, params, code);
 

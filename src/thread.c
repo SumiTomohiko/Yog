@@ -292,9 +292,13 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogVal code, uint8_t posargc,
     PUSH_LOCALSX(env, posargc, posargs);
     PUSH_LOCALSX(env, 2 * kwargc, kwargs);
 
+    YogVal vars = YUNDEF;
+    YogVal frame = YUNDEF;
+    PUSH_LOCALS2(env, vars, frame);
+
     unsigned int local_vars_count = PTR_AS(YogCode, code)->local_vars_count;
-    YogValArray* vars = YogValArray_new(env, local_vars_count);
-    vars->items[0] = self;
+    vars = PTR2VAL(YogValArray_new(env, local_vars_count));
+    PTR_AS(YogValArray, vars)->items[0] = self;
 
     YogVal arg_info = PTR_AS(YogCode, code)->arg_info;
     unsigned int code_argc = PTR_AS(YogArgInfo, arg_info)->argc;
@@ -302,11 +306,11 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogVal code, uint8_t posargc,
     unsigned int code_varargc = PTR_AS(YogArgInfo, arg_info)->varargc;
     unsigned int code_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
     unsigned int argc = code_argc + code_blockargc + code_varargc + code_kwargc;
-    fill_args(env, arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, PTR2VAL(vars), 1);
+    fill_args(env, arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, vars, 1);
 
-    YogVal frame = PTR2VAL(YogMethodFrame_new(env));
+    frame = PTR2VAL(YogMethodFrame_new(env));
     setup_script_frame(env, frame, code);
-    PTR_AS(YogMethodFrame, frame)->vars = vars;
+    PTR_AS(YogMethodFrame, frame)->vars = PTR_AS(YogValArray, vars);
     PTR_AS(YogScriptFrame, frame)->globals = SCRIPT_FRAME(CUR_FRAME)->globals;
 
     PUSH_FRAME(frame);
@@ -498,7 +502,7 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
             const char* name = ID2NAME(OBJ_AS(YogKlass, klass)->name);
             /* dirty hack */
             size_t len = strlen(name);
-            const char s[len + 1];
+            char s[len + 1];
             strcpy(s, name);
 #undef ID2NAME
             YogVal val = YogThread_call_method(env, ENV_TH(env), exc->message, "to_s", 0, NULL);
