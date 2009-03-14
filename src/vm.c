@@ -455,18 +455,19 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static void* 
 keep_object_copying(YogEnv* env, void* ptr) 
 {
-    if (ptr == NULL) {
 #if 0
-        DPRINTF("keep_object_copying: exec_num=0x%08x, NULL->NULL", ENV_VM(env)->gc_stat.exec_num);
+#   define PRINT(...)   DPRINTF(__VA_ARGS__)
+#else
+#   define PRINT(...)
 #endif
+    if (ptr == NULL) {
+        PRINT("keep_object_copying: exec_num=0x%08x, NULL->NULL", ENV_VM(env)->gc_stat.exec_num);
         return NULL;
     }
 
     CopyingHeader* header = (CopyingHeader*)ptr - 1;
     if (header->forwarding_addr != NULL) {
-#if 0
-        DPRINTF("keep_object_copying: exec_num=0x%08x, %p->(%p)", ENV_VM(env)->gc_stat.exec_num, ptr, (CopyingHeader*)header->forwarding_addr + 1);
-#endif
+        PRINT("keep_object_copying: exec_num=0x%08x, %p->(%p)", ENV_VM(env)->gc_stat.exec_num, ptr, (CopyingHeader*)header->forwarding_addr + 1);
         return (CopyingHeader*)header->forwarding_addr + 1;
     }
 
@@ -483,10 +484,9 @@ keep_object_copying(YogEnv* env, void* ptr)
 
     vm->gc.copying.unscanned += size;
 
-#if 0
-    DPRINTF("keep_object_copying: exec_num=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, ptr, (CopyingHeader*)dest + 1);
-#endif
+    PRINT("keep_object_copying: exec_num=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, ptr, (CopyingHeader*)dest + 1);
     return (CopyingHeader*)dest + 1;
+#undef PRINT
 }
 
 static void 
@@ -555,8 +555,14 @@ copying_gc(YogEnv* env, YogVm* vm)
     unsigned int heap_size = vm->gc.copying.init_heap_size;
     YogHeap* to_space = YogHeap_new(heap_size, NULL);
 #if 0
-    DPRINTF("new heap: exec_num=0x%08x, %p-%p", vm->gc_stat.exec_num, to_space->base, (unsigned char*)to_space->base + to_space->size);
+#   define PRINT_HEAP(text, heap)   do { \
+    DPRINTF("%s: exec_num=0x%08x, %p-%p", (text), vm->gc_stat.exec_num, (heap)->base, (unsigned char*)(heap)->base + (heap)->size); \
+} while (0)
+#else 
+#   define PRINT_HEAP(text, heap)
 #endif
+    PRINT_HEAP("old heap", vm->gc.copying.heap);
+    PRINT_HEAP("new heap", to_space);
 
     vm->gc.copying.scanned = vm->gc.copying.unscanned = to_space->free;
 

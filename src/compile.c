@@ -1787,7 +1787,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     case CTX_FUNC:
         {
             YogVal var = lookup_var(env, COMPILE_DATA(data)->vars, id);
-            YOG_ASSERT(env, !IS_PTR(var), "can't find variable");
+            YOG_ASSERT(env, IS_PTR(var), "can't find variable");
             switch (VAR(var)->type) {
             case VT_GLOBAL:
                 CompileData_add_load_global(env, data, lineno, id);

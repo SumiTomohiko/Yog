@@ -27,7 +27,9 @@ YogVal
 YogThread_call_method(YogEnv* env, YogThread* th, YogVal receiver, const char* method, unsigned int argc, YogVal* args) 
 {
     SAVE_ARG(env, receiver);
+#if 0
     PUSH_LOCALSX(env, argc, args);
+#endif
 
     ID id = YogVm_intern(env, ENV_VM(env), method);
     YogVal retval = YogThread_call_method_id(env, th, receiver, id, argc, args);
@@ -39,8 +41,10 @@ static void
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, unsigned int argc, YogVal args, unsigned int args_offset) 
 {
     SAVE_ARGS5(env, arg_info, blockarg, vararg, varkwarg, args);
+#if 0
     PUSH_LOCALSX(env, posargc, posargs);
     PUSH_LOCALSX(env, 2 * kwargc, kwargs);
+#endif
 
     unsigned int i = 0;
     unsigned int arg_argc = ARG_INFO(arg_info)->argc;
@@ -104,8 +108,10 @@ static void
 fill_builtin_function_args(YogEnv* env, YogVal f, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal args)
 {
     SAVE_ARGS5(env, f, blockarg, vararg, varkwarg, args);
+#if 0
     PUSH_LOCALSX(env, posargc, posargs);
     PUSH_LOCALSX(env, 2 * kwargc, kwargs);
+#endif
 
     unsigned int argc = YogValArray_size(env, PTR_AS(YogValArray, args));
 
@@ -167,8 +173,10 @@ static YogVal
 call_builtin_unbound_method(YogEnv* env, YogThread* th, YogVal receiver, YogVal method, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg) 
 {
     SAVE_ARGS5(env, receiver, method, blockarg, vararg, varkwarg);
+#if 0
     PUSH_LOCALSX(env, posargc, posargs);
     PUSH_LOCALSX(env, 2 * kwargc, kwargs);
+#endif
 
     YogVal args = YUNDEF;
     YogVal f = YUNDEF;
@@ -203,8 +211,10 @@ static YogVal
 call_builtin_bound_method(YogEnv* env, YogThread* th, YogVal method, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg) 
 {
     SAVE_ARGS4(env, method, blockarg, vararg, varkwarg);
+#if 0
     PUSH_LOCALSX(env, posargc, posargs);
     PUSH_LOCALSX(env, 2 * kwargc, kwargs);
+#endif
 
     YogVal args = YUNDEF;
     YogVal f = YUNDEF;
@@ -289,8 +299,10 @@ static void
 call_code(YogEnv* env, YogThread* th, YogVal self, YogVal code, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
     SAVE_ARGS5(env, self, code, blockarg, vararg, varkwarg);
+#if 0
     PUSH_LOCALSX(env, posargc, posargs);
     PUSH_LOCALSX(env, 2 * kwargc, kwargs);
+#endif
 
     YogVal vars = YUNDEF;
     YogVal frame = YUNDEF;
@@ -324,8 +336,10 @@ static void
 call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
     SAVE_ARGS5(env, unbound_self, callee, blockarg, vararg, varkwarg);
+#if 0
     PUSH_LOCALSX(env, posargc, posargs);
     PUSH_LOCALSX(env, 2 * kwargc, kwargs);
+#endif
 
     YOG_ASSERT(env, IS_OBJ(callee), "Callee is not object.");
     if (IS_OBJ_OF(cBuiltinBoundMethod, callee)) {
@@ -627,7 +641,9 @@ static YogVal
 eval_code(YogEnv* env, YogThread* th, YogVal code, YogVal receiver, unsigned int argc, YogVal args[]) 
 {
     SAVE_ARGS2(env, code, receiver);
+#if 0
     PUSH_LOCALSX(env, argc, args);
+#endif
 
     YogVal undef = YUNDEF;
     call_code(env, th, receiver, code, argc, args, undef, 0, NULL, undef, undef);
@@ -641,7 +657,9 @@ YogVal
 YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc, YogVal* args) 
 {
     SAVE_ARG(env, block);
+#if 0
     PUSH_LOCALSX(env, argc, args);
+#endif
 
     YogVal retval = YUNDEF;
     if (IS_OBJ_OF(cPackageBlock, block)) {
@@ -723,7 +741,9 @@ YogVal
 YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method, unsigned int argc, YogVal* args) 
 {
     SAVE_ARG(env, receiver);
+#if 0
     PUSH_LOCALSX(env, argc, args);
+#endif
 
     YogVal attr = YogVal_get_attr(env, receiver, method);
     YOG_ASSERT(env, IS_OBJ(attr), "Attribute isn't object.");
