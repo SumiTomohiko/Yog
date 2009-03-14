@@ -461,13 +461,13 @@ keep_object_copying(YogEnv* env, void* ptr)
 #   define PRINT(...)
 #endif
     if (ptr == NULL) {
-        PRINT("keep_object_copying: exec_num=0x%08x, NULL->NULL", ENV_VM(env)->gc_stat.exec_num);
+        PRINT("exec_num=0x%08x, NULL->NULL", ENV_VM(env)->gc_stat.exec_num);
         return NULL;
     }
 
     CopyingHeader* header = (CopyingHeader*)ptr - 1;
     if (header->forwarding_addr != NULL) {
-        PRINT("keep_object_copying: exec_num=0x%08x, %p->(%p)", ENV_VM(env)->gc_stat.exec_num, ptr, (CopyingHeader*)header->forwarding_addr + 1);
+        PRINT("exec_num=0x%08x, id=0x%08x, %p->(%p)", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (CopyingHeader*)header->forwarding_addr + 1);
         return (CopyingHeader*)header->forwarding_addr + 1;
     }
 
@@ -484,7 +484,7 @@ keep_object_copying(YogEnv* env, void* ptr)
 
     vm->gc.copying.unscanned += size;
 
-    PRINT("keep_object_copying: exec_num=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, ptr, (CopyingHeader*)dest + 1);
+    PRINT("exec_num=0x%08x, id=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (CopyingHeader*)dest + 1);
     return (CopyingHeader*)dest + 1;
 #undef PRINT
 }

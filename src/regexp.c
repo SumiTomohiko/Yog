@@ -11,7 +11,7 @@ YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogBasicObj_keep_children(env, ptr, keeper);
 
     YogMatch* match = ptr;
-#define KEEP(member)    match->member = (*keeper)(env, match->member)
+#define KEEP(member)    match->member = YogVal_keep(env, match->member, keeper)
     KEEP(str);
     KEEP(regexp);
 #undef KEEP
@@ -26,15 +26,17 @@ YogMatch_finalize(YogEnv* env, void* ptr)
 }
 
 YogMatch* 
-YogMatch_new(YogEnv* env, YogString* str, YogRegexp* regexp, OnigRegion* onig_region) 
+YogMatch_new(YogEnv* env, YogVal str, YogVal regexp, OnigRegion* onig_region) 
 {
+    SAVE_ARGS2(env, str, regexp);
+
     YogMatch* match = ALLOC_OBJ(env, YogMatch_keep_children, YogMatch_finalize, YogMatch);
     YogBasicObj_init(env, YOGBASICOBJ(match), 0, ENV_VM(env)->cMatch);
     match->str = str;
     match->regexp = regexp;
     match->onig_region = onig_region;
 
-    return match;
+    RETURN(env, match);
 }
 
 static void 
@@ -78,7 +80,7 @@ group2index(YogEnv* env, YogMatch* match, YogVal arg)
     int index = 0;
     if (IS_OBJ_OF(cString, arg)) {
         YogString* s = OBJ_AS(YogString, arg);
-        OnigRegex onig_regexp = match->regexp->onig_regexp;
+        OnigRegex onig_regexp = OBJ_AS(YogRegexp, match->regexp)->onig_regexp;
         OnigUChar* name_begin = (OnigUChar*)s->body->items;
         OnigUChar* name_end = name_begin + s->body->size - 1;
         int* num_list = NULL;
@@ -116,7 +118,8 @@ group(YogEnv* env)
     int end = region->end[index];
     int size = end - begin;
     YogVal s = YogString_new_size(env, size + 1);
-    memcpy(OBJ_AS(YogString, s)->body->items, &match->str->body->items[begin], size);
+    YogVal str = OBJ_AS(YogMatch, SELF(env))->str;
+    memcpy(OBJ_AS(YogString, s)->body->items, &OBJ_AS(YogString, str)->body->items[begin], size);
     OBJ_AS(YogString, s)->body->items[size] = '\0';
 
     return s;
@@ -148,7 +151,7 @@ start(YogEnv* env)
     if ((index < 0) || (region->num_regs <= index)) {
         YOG_ASSERT(env, FALSE, "TODO: index error");
     }
-    YogString* s = match->str;
+    YogString* s = OBJ_AS(YogString, match->str);
     const char* start = s->body->items + region->beg[index];
     int n = ptr2index(env, s, start);
 
@@ -167,7 +170,7 @@ end(YogEnv* env)
     if ((index < 0) || (region->num_regs <= index)) {
         YOG_ASSERT(env, FALSE, "TODO: index error");
     }
-    YogString* s = match->str;
+    YogString* s = OBJ_AS(YogString, match->str);
     const char* end = s->body->items + region->end[index] - 1;
     int n = ptr2index(env, s, end) + 1;
 

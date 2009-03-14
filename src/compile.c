@@ -1754,10 +1754,14 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
 {
     SAVE_ARGS2(env, node, data);
 
+    YogVal args = YUNDEF;
+    YogVal blockarg = YUNDEF;
+    PUSH_LOCALS2(env, args, blockarg);
+
     visit_node(env, visitor, NODE(node)->u.func_call.callee, data);
 
-    YogVal args = NODE(node)->u.func_call.args;
-    YogVal blockarg = NODE(node)->u.func_call.blockarg;
+    args = NODE(node)->u.func_call.args;
+    blockarg = NODE(node)->u.func_call.blockarg;
     visit_each_args(env, visitor, args, blockarg, data);
 
     unsigned int argc = 0;

@@ -122,6 +122,25 @@ YogCode_dump(YogEnv* env, YogVal code)
                 printf(")");
             }
             break;
+        case OP(CALL_FUNCTION):
+            {
+                unsigned int offset = 0;
+                uint8_t argc = OPERAND(uint8_t, offset);
+                printf(" %d", argc);
+                offset += sizeof(uint8_t);
+                uint8_t kwargc = OPERAND(uint8_t, offset);
+                printf(" %d", kwargc);
+                offset += sizeof(uint8_t);
+                uint8_t blockargc = OPERAND(uint8_t, offset);
+                printf(" %d", blockargc);
+                offset += sizeof(uint8_t);
+                uint8_t varargc = OPERAND(uint8_t, offset);
+                printf(" %d", varargc);
+                offset += sizeof(uint8_t);
+                uint8_t varkwargc = OPERAND(uint8_t, offset);
+                printf(" %d", varkwargc);
+            }
+            break;
         case OP(CALL_COMMAND):
         case OP(CALL_METHOD):
             {

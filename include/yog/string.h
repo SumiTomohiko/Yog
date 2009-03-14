@@ -38,7 +38,7 @@ ID YogString_intern(YogEnv*, YogVal);
 YogVal YogString_klass_new(YogEnv*);
 YogVal YogString_new(YogEnv*);
 YogVal YogString_new_format(YogEnv*, const char*, ...);
-YogVal YogString_new_range(YogEnv*, YogEncoding*, const char*, const char*);
+YogVal YogString_new_range(YogEnv*, YogVal, const char*, const char*);
 YogVal YogString_new_size(YogEnv*, unsigned int);
 YogVal YogString_new_str(YogEnv*, const char*);
 void YogString_push(YogEnv*, YogVal, char);

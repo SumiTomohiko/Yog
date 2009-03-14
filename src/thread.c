@@ -430,8 +430,11 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
     SAVE_ARGS2(env, frame, code);
 
 #if 0
-    YogCode_dump(env, code);
+#   define DUMP_CODE    YogCode_dump(env, code)
+#else
+#   define DUMP_CODE
 #endif
+    DUMP_CODE;
 
     PUSH_FRAME(frame);
 
