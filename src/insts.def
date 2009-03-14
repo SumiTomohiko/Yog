@@ -63,7 +63,8 @@ inst store_name
 ()
 {
     YogVal key = ID2VAL(id);
-    YogTable_insert(ENV, PTR2VAL(NAME_VARS(CUR_FRAME)), key, val);
+    YogTable* vars = NAME_VARS(CUR_FRAME);
+    YogTable_insert(ENV, PTR2VAL(vars), key, val);
 }
 
 inst store_local
@@ -209,17 +210,25 @@ inst make_klass
 (code, super, name)
 (...) depth: 1
 {
-    YogVal kls = YogKlass_new(ENV, NULL, super);
+    YogVal kls = YUNDEF;
+    YogVal frame = YUNDEF;
+    YogVal attrs = YUNDEF;
+    PUSH_LOCALS3(ENV, kls, frame, attrs);
+
+    kls = YogKlass_new(ENV, NULL, super);
     OBJ_AS(YogKlass, kls)->name = VAL2ID(name);
-    YogVal attrs = YogTable_new_symbol_table(ENV);
+    OBJ_AS(YogObj, kls)->attrs = YUNDEF;
+    attrs = YogTable_new_symbol_table(ENV);
     OBJ_AS(YogObj, kls)->attrs = attrs;
 
-    YogVal frame = YogKlassFrame_new(ENV);
+    frame = YogKlassFrame_new(ENV);
     setup_script_frame(ENV, frame, code);
     PTR_AS(YogNameFrame, frame)->self = kls;
     PTR_AS(YogNameFrame, frame)->vars = PTR_AS(YogTable, attrs);
 
     PUSH_FRAME(frame);
+
+    POP_LOCALS(ENV);
 }
 
 inst make_method
