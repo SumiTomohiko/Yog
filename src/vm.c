@@ -1376,7 +1376,6 @@ YogVm_init(YogVm* vm, YogGcType gc)
     vm->gc_stress = FALSE;
     vm->disable_gc = FALSE;
 
-    vm->need_gc = FALSE;
     switch (gc) {
     case GC_BDW:
         vm->init_gc = initialize_bdw;

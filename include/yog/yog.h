@@ -135,7 +135,6 @@ struct YogVm {
 #if 0
     void (*dump_mem)(struct YogEnv*, struct YogVm*);
 #endif
-    BOOL need_gc;
     union {
         struct {
             unsigned int init_heap_size;
