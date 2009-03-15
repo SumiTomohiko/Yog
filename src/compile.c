@@ -1951,7 +1951,13 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     stmts = NODE(node)->u.except.head;
     visitor->visit_stmts(env, visitor, stmts, data);
     add_inst(data, label_head_end);
-    unsigned int lineno = get_last_lineno(env, stmts);
+    unsigned int lineno;
+    if (IS_OBJ(stmts)) {
+        lineno = get_last_lineno(env, stmts);
+    }
+    else {
+        lineno = NODE(node)->lineno;
+    }
     CompileData_add_jump(env, data, lineno, label_else_start);
 
     add_inst(data, label_excepts_start);
