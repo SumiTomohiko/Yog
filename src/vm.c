@@ -542,8 +542,6 @@ free_mem_copying(YogEnv* env, YogVm* vm)
 static void 
 copying_gc(YogEnv* env, YogVm* vm) 
 {
-    vm->gc_stat.exec_num++;
-
     unsigned int used_size = 0;
     YogHeap* heap = vm->gc.copying.heap;
     while (heap != NULL) {
@@ -596,7 +594,7 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
     size_t rest_size = REST_SIZE(heap);
     if ((rest_size < rounded_size) || vm->gc_stress) {
         if (!vm->disable_gc) {
-            copying_gc(env, vm);
+            YogVm_gc(env, vm);
             heap = vm->gc.copying.heap;
             rest_size = REST_SIZE(heap);
         }
@@ -1513,6 +1511,7 @@ YogVm_gc(YogEnv* env, YogVm* vm)
     unsigned int duration = 1000000 * (end.tv_sec - begin.tv_sec) + (end.tv_usec - begin.tv_usec);
 
     vm->gc_stat.duration_total += duration;
+    vm->gc_stat.exec_num++;
 
     if (vm->gc_stat.print) {
         print_gc_statistics(vm, duration);
