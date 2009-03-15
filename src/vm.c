@@ -1069,7 +1069,7 @@ update_pointer(YogEnv* env, void* ptr)
 }
 
 static void 
-remake_freelist(YogEnv* env, YogVm* vm, YogCompactor* compactor) 
+remake_freelist(YogEnv* env, YogVm* vm, YogCompactor* compactor, YogMarkSweepCompactPage* last_page) 
 {
     YogMarkSweepCompactHeap* heap = &vm->gc.mark_sweep_compact.heap;
 
@@ -1098,31 +1098,22 @@ remake_freelist(YogEnv* env, YogVm* vm, YogCompactor* compactor)
         }
     }
 
-    YogMarkSweepCompactChunk* chunk = compactor->cur_chunk;
-    YogMarkSweepCompactPage* last_page = NULL;
-    void* chunk_begin = chunk->first_page;
-    void* chunk_end = (unsigned char*)chunk_begin + heap->chunk_size;
-    for (i = 0; i < MARK_SWEEP_COMPACT_NUM_SIZE; i++) {
-        YogMarkSweepCompactPage* page = heap->pages[i];
-        if ((page != NULL) && (chunk_begin <= (void*)page) && ((void*)page <= chunk_end)) {
-            if (last_page != NULL) {
-                if (last_page < page) {
-                    last_page = page;
-                }
-            }
-            else {
-                last_page = page;
-            }
+    if (last_page != NULL) {
+        YogMarkSweepCompactChunk* chunk = compactor->cur_chunk;
+        if (chunk == NULL) {
+            return;
         }
+
+        unsigned char* page = (unsigned char*)last_page + PAGE_SIZE;
+        void* chunk_begin = chunk->first_page;
+        void* chunk_end = (unsigned char*)chunk_begin + heap->chunk_size;
+        while (page + PAGE_SIZE < (unsigned char*)chunk_end) {
+            unsigned char* next_page = page + PAGE_SIZE;
+            ((YogMarkSweepCompactFreeList*)page)->next = (YogMarkSweepCompactFreeList*)next_page;
+            page = next_page;
+        }
+        ((YogMarkSweepCompactFreeList*)page)->next = NULL;
     }
-    YOG_ASSERT(env, last_page != NULL, "page is NULL");
-    unsigned char* page = (unsigned char*)last_page + PAGE_SIZE;
-    while (page + PAGE_SIZE < (unsigned char*)chunk_end) {
-        unsigned char* next_page = page + PAGE_SIZE;
-        ((YogMarkSweepCompactFreeList*)page)->next = (YogMarkSweepCompactFreeList*)next_page;
-        page = next_page;
-    }
-    ((YogMarkSweepCompactFreeList*)page)->next = NULL;
 }
 
 static void 
@@ -1156,8 +1147,13 @@ compact(YogEnv* env, YogVm* vm)
     YogCompactor_initialize(&compactor);
     compactor.callback = set_forward_address;
     iterate_objects(env, vm, &compactor);
+    YogMarkSweepCompactPage* last_page = compactor.next_page;
 
     keep_children(env, vm, update_pointer);
+    YogMarkSweepCompactHeader** front = &vm->gc.mark_sweep_compact.header;
+    if (*front != NULL) {
+        *front = (*front)->forwarding_addr;
+    }
 
     YogCompactor_initialize(&compactor);
     compactor.callback = copy_object;
@@ -1166,7 +1162,7 @@ compact(YogEnv* env, YogVm* vm)
     free_chunks(env, vm, &compactor);
     vm->gc.mark_sweep_compact.heap.all_chunks_last = compactor.cur_chunk;
 
-    remake_freelist(env, vm, &compactor);
+    remake_freelist(env, vm, &compactor, last_page);
 }
 
 static void 
@@ -1208,7 +1204,6 @@ mark_sweep_compact_gc(YogEnv* env, YogVm* vm)
      */
 
     compact(env, vm);
-    vm->gc.mark_sweep_compact.header = vm->gc.mark_sweep_compact.header->forwarding_addr;
 
     vm->gc.mark_sweep_compact.allocated_size = 0;
 }
@@ -1217,12 +1212,15 @@ static void*
 alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     size_t total_size = size + sizeof(YogMarkSweepCompactHeader);
-    vm->gc.mark_sweep_compact.allocated_size += total_size;
     if (!vm->disable_gc) {
-        if (vm->gc.mark_sweep_compact.threshold < vm->gc.mark_sweep_compact.allocated_size) {
-            vm->need_gc = TRUE;
+        unsigned int threshold = vm->gc.mark_sweep_compact.threshold;
+        unsigned int allocated_size = vm->gc.mark_sweep_compact.allocated_size;
+        if ((threshold < allocated_size) || vm->gc_stress) {
+            YogVm_gc(env, vm);
         }
     }
+
+    vm->gc.mark_sweep_compact.allocated_size += total_size;
 
 #define IS_SMALL_OBJECT(size) ((size) < (MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE - 1))
     if (IS_SMALL_OBJECT(total_size)) {
