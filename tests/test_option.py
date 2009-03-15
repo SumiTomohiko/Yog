@@ -7,27 +7,6 @@ class TestOption(TestCase):
     def _test_option(self, options):
         self._test("", options=options)
 
-    def _test_init_heap_size(self, size):
-        self._test_option(["--gc=copying", "--init-heap-size=%(size)s" % { "size": size }])
-
-    def test_init_heap_size1(self):
-        self._test_init_heap_size("42")
-
-    def test_init_heap_size2(self):
-        self._test_init_heap_size("42k")
-
-    def test_init_heap_size3(self):
-        self._test_init_heap_size("42K")
-
-    def test_init_heap_size4(self):
-        self._test_init_heap_size("42m")
-
-    def test_init_heap_size5(self):
-        self._test_init_heap_size("42M")
-
-    def test_init_heap_size6(self):
-        self._test_init_heap_size("42M43k44")
-
     def _test_threshold(self, threshold):
         self._test_option(["--gc=mark-sweep", "--threshold=%(threshold)s" % { "threshold": threshold }])
 
