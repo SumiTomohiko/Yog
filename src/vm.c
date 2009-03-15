@@ -260,6 +260,14 @@ GcObjectStat_initialize(GcObjectStat* stat)
 static void* 
 alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
+    if (!vm->disable_gc) {
+        unsigned int threshold = vm->gc.mark_sweep.threshold;
+        unsigned int allocated_size = vm->gc.mark_sweep.allocated_size;
+        if ((threshold < allocated_size) || vm->gc_stress) {
+            YogVm_gc(env, vm);
+        }
+    }
+
     size_t total_size = size + sizeof(YogMarkSweepHeader);
     YogMarkSweepHeader* header = malloc(total_size);
     initialize_memory(header, total_size);
@@ -277,13 +285,7 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer fi
     header->finalizer = finalizer;
     header->marked = FALSE;
 
-    if (!vm->disable_gc) {
-        vm->gc.mark_sweep.allocated_size += total_size;
-        if (vm->gc.mark_sweep.threshold < vm->gc.mark_sweep.allocated_size) {
-            vm->need_gc = TRUE;
-        }
-    }
-
+    vm->gc.mark_sweep.allocated_size += total_size;
     increment_total_object_number(ENV_VM(env));
 
     return header + 1;
