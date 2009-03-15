@@ -10,7 +10,9 @@ raise(YogEnv* env)
     if (!YogVal_is_subklass_of(env, exc, ENV_VM(env)->eException)) {
         YogVal receiver = ENV_VM(env)->eException;
         YogVal args[] = { exc };
+        PUSH_LOCALSX(env, array_sizeof(args), args);
         exc = YogThread_call_method(env, ENV_TH(env), receiver, "new", 1, args);
+        POP_LOCALS(env);
     }
 
     ENV_TH(env)->cur_frame = PTR_AS(YogFrame, ENV_TH(env)->cur_frame)->prev;

@@ -42,8 +42,12 @@ YogError_raise(YogEnv* env, YogVal exc)
 static void 
 raise_error(YogEnv* env, YogVal klass, const char* msg) 
 {
+    SAVE_ARG(env, klass);
+
     YogVal args[] = { YogString_new_str(env, msg), };
+    PUSH_LOCALSX(env, 1, args);
     YogVal val = YogThread_call_method(env, ENV_TH(env), klass, "new", 1, args);
+    RESTORE_LOCALS(env);
     YogError_raise(env, val);
 }
 

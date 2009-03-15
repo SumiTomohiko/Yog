@@ -103,6 +103,7 @@ new_(YogEnv* env)
     for (i = 0; i < size; i++) {
         args[i] = items[i];
     }
+    PUSH_LOCALSX(env, size, args);
     YogThread_call_method(env, ENV_TH(env), obj, "initialize", size, args);
 
     POP_LOCALS(env);

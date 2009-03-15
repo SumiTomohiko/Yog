@@ -541,6 +541,8 @@ unsigned int object_number_of_page(size_t);
     fflush(stdout); \
 } while (0)
 
+#define array_sizeof(a)     (sizeof(a) / sizeof(a[0]))
+
 #endif
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
