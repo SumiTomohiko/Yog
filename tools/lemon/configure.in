@@ -2,31 +2,29 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT(Yog, 0.9.0.0, tom@nekomimists.ddo.jp)
-AM_INIT_AUTOMAKE([dist-bzip2])
-AC_CONFIG_SRCDIR([config.h.in])
+AC_INIT(FULL-PACKAGE-NAME, VERSION, BUG-REPORT-ADDRESS)
+AM_INIT_AUTOMAKE
+AC_CONFIG_SRCDIR([lemon.c])
 AC_CONFIG_HEADER([config.h])
+AC_CONFIG_FILES([Makefile])
 
 # Checks for programs.
 AC_PROG_CC
-AM_PROG_CC_C_O
-AC_PROG_YACC
-AM_PROG_LEX
 
 # Checks for libraries.
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([stdlib.h string.h strings.h])
+AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC
-AC_CHECK_FUNCS([atexit bzero])
+AC_FUNC_REALLOC
+AC_FUNC_STRTOD
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS([memset strchr strrchr strtol])
 
-AC_CONFIG_FILES([Makefile])
-AC_CONFIG_SUBDIRS([bdwgc onig tools/lemon])
 AC_OUTPUT
