@@ -450,11 +450,11 @@ each_line(YogEnv* env)
         p = YogEncoding_left_adjust_char_head(env, enc, body->items, p);
         const char* end = p - 1;
         const char* next = p + YogEncoding_mbc_size(env, enc, p);
+        i = next - OBJ_AS(YogString, SELF(env))->body->items;
         YogVal line = YogString_new_range(env, PTR2VAL(enc), start, end);
         YogVal block = ARG(env, 0);
         YogVal args[] = { line, };
 
-        i = next - OBJ_AS(YogString, SELF(env))->body->items;
         unsigned int size = OBJ_AS(YogString, SELF(env))->body->size;
 
         YogThread_call_block(env, env->th, block, sizeof(args) / sizeof(args[0]), args);
