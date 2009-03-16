@@ -27,6 +27,8 @@ static YogVal
 puts_(YogEnv* env)
 {
     YogVal vararg = ARG(env, 0);
+    PUSH_LOCAL(env, vararg);
+
     unsigned int size = YogArray_size(env, vararg);
     if (0 < size) {
         unsigned int i = 0;
@@ -48,6 +50,7 @@ puts_(YogEnv* env)
         printf("\n");
     }
 
+    POP_LOCALS(env);
     return YNIL;
 }
 
