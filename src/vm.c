@@ -575,7 +575,9 @@ copying_gc(YogEnv* env, YogVm* vm)
     }
 
     finalize_copying(env, vm);
-    destroy_memory(from_space->items, from_space->size);
+
+    size_t size = from_space->free - from_space->items;
+    destroy_memory(from_space->items, size);
 
     to_space->free = vm->gc.copying.unscanned;
 
