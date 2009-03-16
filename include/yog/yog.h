@@ -138,7 +138,8 @@ struct YogVm {
     union {
         struct {
             unsigned int init_heap_size;
-            struct YogHeap* heap;
+            struct YogHeap* active_heap;
+            struct YogHeap* inactive_heap;
             unsigned char* scanned;
             unsigned char* unscanned;
         } copying; 

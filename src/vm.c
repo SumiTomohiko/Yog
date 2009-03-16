@@ -87,9 +87,8 @@ typedef struct YogCompactor YogCompactor;
 
 struct YogHeap {
     size_t size;
-    unsigned char* base;
     unsigned char* free;
-    struct YogHeap* next;
+    unsigned char items[0];
 };
 
 typedef struct YogHeap YogHeap;
@@ -228,18 +227,14 @@ initialize_memory(void* ptr, size_t size)
 }
 
 static YogHeap* 
-YogHeap_new(size_t size, YogHeap* next) 
+YogHeap_new(size_t size)
 {
-    YogHeap* heap = malloc(sizeof(YogHeap));
+    YogHeap* heap = malloc(sizeof(YogHeap) + size);
     YOG_ASSERT(NULL, heap != NULL, "Can' allocate memory for heap.");
-
-    void* ptr = malloc(size);
-    YOG_ASSERT(NULL, heap != NULL, "Can' allocate memory for heap.");
-    initialize_memory(ptr, size);
 
     heap->size = size;
-    heap->base = heap->free = ptr;
-    heap->next = next;
+    heap->free = heap->items;
+    initialize_memory(heap->items, size);
 
     return heap;
 }
@@ -498,39 +493,40 @@ destroy_memory(void* ptr, size_t size)
 }
 
 static void 
+free_heap_internal(YogHeap* heap) 
+{
+    destroy_memory(heap->items, heap->size);
+    free(heap);
+}
+
+static void 
 free_heap(YogVm* vm) 
 {
-    YogHeap* heap = vm->gc.copying.heap;
-    while (heap != NULL) {
-        YogHeap* next = heap->next;
-
-        destroy_memory(heap->base, heap->size);
-        free(heap->base);
-        free(heap);
-
-        heap = next;
-    }
+#define FREE_HEAP(heap)     do { \
+    free_heap_internal((heap)); \
+    (heap) = NULL; \
+} while (0)
+    FREE_HEAP(vm->gc.copying.active_heap);
+    FREE_HEAP(vm->gc.copying.inactive_heap);
+#undef FREE_HEAP
 }
 
 static void 
 finalize_copying(YogEnv* env, YogVm* vm) 
 {
-    YogHeap* heap = vm->gc.copying.heap;
-    while (heap != NULL) {
-        unsigned char* ptr = heap->base;
-        unsigned char* to = heap->free;
-        while (ptr < to) {
-            CopyingHeader* header = (CopyingHeader*)ptr;
-            if (header->forwarding_addr == NULL) {
-                if (header->finalizer != NULL) {
-                    (*header->finalizer)(env, header + 1);
-                }
-            }
+    YogHeap* heap = vm->gc.copying.active_heap;
 
-            ptr += header->size;
+    unsigned char* ptr = heap->items;
+    unsigned char* to = heap->free;
+    while (ptr < to) {
+        CopyingHeader* header = (CopyingHeader*)ptr;
+        if (header->forwarding_addr == NULL) {
+            if (header->finalizer != NULL) {
+                (*header->finalizer)(env, header + 1);
+            }
         }
 
-        heap = heap->next;
+        ptr += header->size;
     }
 }
 
@@ -542,29 +538,29 @@ free_mem_copying(YogEnv* env, YogVm* vm)
 }
 
 static void 
+swap_heap(YogHeap** a, YogHeap** b) 
+{
+    YogHeap* tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+static void 
 copying_gc(YogEnv* env, YogVm* vm) 
 {
-    unsigned int used_size = 0;
-    YogHeap* heap = vm->gc.copying.heap;
-    while (heap != NULL) {
-        unsigned int size = heap->free - heap->base;
-        used_size += size;
-        heap = heap->next;
-    }
-
-    unsigned int heap_size = vm->gc.copying.init_heap_size;
-    YogHeap* to_space = YogHeap_new(heap_size, NULL);
+    YogHeap* from_space = vm->gc.copying.active_heap;
+    YogHeap* to_space = vm->gc.copying.inactive_heap;
 #if 0
 #   define PRINT_HEAP(text, heap)   do { \
-    DPRINTF("%s: exec_num=0x%08x, %p-%p", (text), vm->gc_stat.exec_num, (heap)->base, (unsigned char*)(heap)->base + (heap)->size); \
+    DPRINTF("%s: exec_num=0x%08x, %p-%p", (text), vm->gc_stat.exec_num, (heap)->items, (unsigned char*)(heap)->items + (heap)->size); \
 } while (0)
 #else 
 #   define PRINT_HEAP(text, heap)
 #endif
-    PRINT_HEAP("old heap", vm->gc.copying.heap);
-    PRINT_HEAP("new heap", to_space);
+    PRINT_HEAP("from-space", from_space);
+    PRINT_HEAP("to-space", to_space);
 
-    vm->gc.copying.scanned = vm->gc.copying.unscanned = to_space->free;
+    vm->gc.copying.scanned = vm->gc.copying.unscanned = to_space->items;
 
     keep_children(env, vm, keep_object_copying);
 
@@ -578,10 +574,12 @@ copying_gc(YogEnv* env, YogVm* vm)
         vm->gc.copying.scanned += header->size;
     }
 
-    free_mem_copying(env, vm);
+    finalize_copying(env, vm);
+    destroy_memory(from_space->items, from_space->size);
 
     to_space->free = vm->gc.copying.unscanned;
-    vm->gc.copying.heap = to_space;
+
+    swap_heap(&vm->gc.copying.active_heap, &vm->gc.copying.inactive_heap);
 }
 
 static void* 
@@ -591,13 +589,13 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
     size_t rounded_size = round_size(needed_size);
     vm->gc_stat.total_allocated_size += rounded_size;
 
-    YogHeap* heap = vm->gc.copying.heap;
-#define REST_SIZE(heap)     ((heap)->size - ((heap)->free - (heap)->base))
+    YogHeap* heap = vm->gc.copying.active_heap;;
+#define REST_SIZE(heap)     ((heap)->size - ((heap)->free - (heap)->items))
     size_t rest_size = REST_SIZE(heap);
     if ((rest_size < rounded_size) || vm->gc_stress) {
         if (!vm->disable_gc) {
             YogVm_gc(env, vm);
-            heap = vm->gc.copying.heap;
+            heap = vm->gc.copying.active_heap;
             rest_size = REST_SIZE(heap);
         }
         YOG_ASSERT(env, rounded_size <= rest_size, "out of memory");
@@ -623,7 +621,9 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
 static void 
 initialize_copying(YogEnv* env, YogVm* vm) 
 {
-    vm->gc.copying.heap = YogHeap_new(vm->gc.copying.init_heap_size, NULL);
+    size_t heap_size = vm->gc.copying.init_heap_size;
+    vm->gc.copying.active_heap = YogHeap_new(heap_size);
+    vm->gc.copying.inactive_heap = YogHeap_new(heap_size);
 }
 
 static void 
@@ -1397,7 +1397,8 @@ YogVm_init(YogVm* vm, YogGcType gc)
         vm->dump_mem = dump_mem_copying;
 #endif
         vm->gc.copying.init_heap_size = 0;
-        vm->gc.copying.heap = NULL;
+        vm->gc.copying.active_heap = NULL;
+        vm->gc.copying.inactive_heap = NULL;
         vm->gc.copying.scanned = NULL;
         vm->gc.copying.unscanned = NULL;
         break;
