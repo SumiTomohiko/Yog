@@ -240,7 +240,6 @@ INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
 INST_CMD = make insts
 GEN_AM_CMD = python $(ROOT_DIR)/tools/update_automake.py .
-TEST_CMD = py.test
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

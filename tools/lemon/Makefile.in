@@ -34,8 +34,7 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = lemon$(EXEEXT)
 subdir = tools/lemon
-DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	AUTHORS COPYING ChangeLog INSTALL NEWS
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libtool.m4 \
 	$(top_srcdir)/configure.in
