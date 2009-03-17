@@ -13,11 +13,13 @@ class AutomakeUpdater(object):
         dirname = "src"
         for filename in sorted(listdir(dirname)):
             if splitext(filename)[1] in self.exts:
-                files.append(join(dirname, filename))
+                files.append(filename)
         files = " \\\n\t".join(files)
 
-        with open("Makefile.am.tmpl") as tmpl:
-            with open("Makefile.am", "w") as am:
+        template = join(dirname, "Makefile.am.tmpl")
+        dest = join(dirname, "Makefile.am")
+        with open(template) as tmpl:
+            with open(dest, "w") as am:
                 for line in tmpl:
                     am.write(line.replace("@SOURCES@", files))
 
