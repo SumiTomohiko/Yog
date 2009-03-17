@@ -572,11 +572,6 @@ s,@AMDEPBACKSLASH@,|#_!!_#|\\,g
 s,@CCDEPMODE@,|#_!!_#|depmode=gcc3,g
 s,@am__fastdepCC_TRUE@,|#_!!_#|,g
 s,@am__fastdepCC_FALSE@,|#_!!_#|#,g
-s,@YACC@,|#_!!_#|bison -y,g
-s,@YFLAGS@,|#_!!_#|,g
-s,@LEX@,|#_!!_#|flex,g
-s,@LEX_OUTPUT_ROOT@,|#_!!_#|lex.yy,g
-s,@LEXLIB@,|#_!!_#|-lfl,g
 s,@build@,|#_!!_#|i686-pc-linux-gnu,g
 s,@build_cpu@,|#_!!_#|i686,g
 s,@build_vendor@,|#_!!_#|pc,g
@@ -594,14 +589,14 @@ s,@RANLIB@,|#_!!_#|ranlib,g
 s,@CPP@,|#_!!_#|gcc -E,g
 s,@CXX@,|#_!!_#|g++,g
 s,@CXXFLAGS@,|#_!!_#|-g -O2,g
-CEOF
-cat >"$tmp/subs-2.sed" <<\CEOF
-/@[a-zA-Z_][a-zA-Z_0-9]*@/!b end
 s,@ac_ct_CXX@,|#_!!_#|g++,g
 s,@CXXDEPMODE@,|#_!!_#|depmode=gcc3,g
 s,@am__fastdepCXX_TRUE@,|#_!!_#|,g
 s,@am__fastdepCXX_FALSE@,|#_!!_#|#,g
 s,@CXXCPP@,|#_!!_#|g++ -E,g
+CEOF
+cat >"$tmp/subs-2.sed" <<\CEOF
+/@[a-zA-Z_][a-zA-Z_0-9]*@/!b end
 s,@F77@,|#_!!_#|,g
 s,@FFLAGS@,|#_!!_#|,g
 s,@ac_ct_F77@,|#_!!_#|,g
@@ -873,7 +868,6 @@ s,^\([	 #]*\)[^	 ]*\([	 ]*PACKAGE_STRING\)[	 (].*,\1define\2 "Yog 0.9.0.0" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*PACKAGE_BUGREPORT\)[	 (].*,\1define\2 "tom@nekomimists.ddo.jp" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*PACKAGE\)[	 (].*,\1define\2 "yog" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*VERSION\)[	 (].*,\1define\2 "0.9.0.0" ,
-s,^\([	 #]*\)[^	 ]*\([	 ]*YYTEXT_POINTER\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*STDC_HEADERS\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_SYS_TYPES_H\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_SYS_STAT_H\)[	 (].*,\1define\2 1 ,

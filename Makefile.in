@@ -13,7 +13,10 @@ all: $(YOG)
 	(cd $(ONIG_DIR); make)
 	(cd $(BDW_DIR); make)
 	(cd $(YOG_DIR); make)
-	./libtool --tag=CC --mode=link $(CC) -o $@ $(YOG_LIB) $(ONIG_LIB) $(BDW_LIB)
+	./libtool --tag=CC --mode=link $(CC) -o $< $(YOG_LIB) $(ONIG_LIB) $(BDW_LIB)
+
+proto: 
+	python tools/update_prototype.py
 
 am--refresh:
 	@:

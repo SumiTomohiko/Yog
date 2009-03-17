@@ -8,6 +8,7 @@
 #include "yog/parser.h"
 #include "yog/regexp.h"
 #include "yog/st.h"
+#include "yog/token.h"
 #include "yog/yog.h"
 
 #include "parser.h"
@@ -106,7 +107,7 @@ add_token_char(YogEnv* env, YogVal lexer, char c)
     YogString_push(env, PTR_AS(YogLexer, lexer)->buffer, c);
 }
 
-#include "src/keywords.inc"
+#include "keywords.inc"
 
 static int 
 get_rest_size(YogEnv* env, YogVal lexer) 
@@ -141,8 +142,8 @@ push_multibyte_char(YogEnv* env, YogVal lexer)
     RETURN_VOID(env);
 }
 
-static int 
-next_token(YogEnv* env, YogVal lexer) 
+BOOL 
+YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal token)
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, lexer);
@@ -177,20 +178,26 @@ next_token(YogEnv* env, YogVal lexer)
         }
     } while (1);
 
-#define ADD_TOKEN_CHAR(c)       add_token_char(env, lexer, c)
-#define RETURN_VAL(val_, type)  do { \
-    yylval.val = (val_); \
-    RETURN(env, (type)); \
+#define ADD_TOKEN_CHAR(c)               add_token_char(env, lexer, c)
+#define RETURN_TOKEN(type_)             do { \
+    PTR_AS(YogToken, token)->type = type_; \
+    RETURN(env, TRUE); \
 } while (0)
-#define RETURN_NAME(s, type)    do { \
-    yylval.name = INTERN(s); \
-    RETURN(env, (type)); \
+#define RETURN_VAL_TOKEN(type_, val_)   do { \
+    PTR_AS(YogToken, token)->type = (type_); \
+    PTR_AS(YogToken, token)->u.val = (val_); \
+    RETURN(env, TRUE); \
 } while (0)
-#define BUFSIZE     (4)
-#define RETURN_NAME1(c, type)   do { \
+#define RETURN_ID_TOKEN(type_, s)       do { \
+    PTR_AS(YogToken, token)->type = (type_); \
+    PTR_AS(YogToken, token)->u.id = INTERN(s); \
+    RETURN(env, TRUE); \
+} while (0)
+#define BUFSIZE                         (4)
+#define RETURN_ID_TOKEN1(type, c)       do { \
     char buffer[BUFSIZE]; \
     snprintf(buffer, sizeof(buffer), "%c", (c)); \
-    RETURN_NAME(buffer, (type)); \
+    RETURN_ID_TOKEN((type), buffer); \
 } while (0)
     switch (c) {
     case '0': case '1': case '2': case '3': case '4':
@@ -206,7 +213,7 @@ next_token(YogEnv* env, YogVal lexer)
     int n = atoi(OBJ_AS(YogString, buffer)->body->items); \
     YogVal val = INT2VAL(n); \
     SET_STATE(LS_OP); \
-    RETURN_VAL(val, tNUMBER); \
+    RETURN_VAL_TOKEN(TK_NUMBER, val); \
 } while (0)
             if (c == '.') {
                 int c2 = NEXTC();
@@ -222,7 +229,7 @@ next_token(YogEnv* env, YogVal lexer)
                     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
                     sscanf(OBJ_AS(YogString, buffer)->body->items, "%f", &f);
                     YogVal val = FLOAT2VAL(f);
-                    RETURN_VAL(val, tNUMBER);
+                    RETURN_VAL_TOKEN(TK_NUMBER, val);
                 }
                 else {
                     PUSHBACK(c2);
@@ -274,50 +281,53 @@ next_token(YogEnv* env, YogVal lexer)
             }
 
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-            yylval.val = YogString_clone(env, buffer);
+            YogVal val = YogString_clone(env, buffer);
             SET_STATE(LS_OP);
-            RETURN(env, tSTRING);
+            RETURN_VAL_TOKEN(TK_STRING, val);
             break;
         }
     case '{':
-        RETURN(env, tLBRACE);
+        RETURN_TOKEN(TK_LBRACE);
         break;
     case '}':
-        RETURN(env, tRBRACE);
+        RETURN_TOKEN(TK_RBRACE);
         break;
     case '(':
         SET_STATE(LS_EXPR);
-        RETURN(env, tLPAR);
+        RETURN_TOKEN(TK_LPAR);
         break;
     case ')':
         SET_STATE(LS_OP);
-        RETURN(env, tRPAR);
+        RETURN_TOKEN(TK_RPAR);
         break;
     case '[':
         SET_STATE(LS_EXPR);
-        RETURN(env, tLBRACKET);
+        RETURN_TOKEN(TK_LBRACKET);
         break;
     case ']':
         SET_STATE(LS_OP);
-        RETURN(env, tRBRACKET);
+        RETURN_TOKEN(TK_RBRACKET);
         break;
     case '.':
         SET_STATE(LS_NAME);
-        RETURN(env, tDOT);
+        RETURN_TOKEN(TK_DOT);
         break;
     case ',':
         SET_STATE(LS_EXPR);
-        RETURN(env, tCOMMA);
+        RETURN_TOKEN(TK_COMMA);
         break;
     case '+':
         {
             SET_STATE(LS_EXPR);
-            RETURN_NAME1(c, tPLUS);
+            RETURN_ID_TOKEN1(TK_PLUS, c);
             break;
         }
     case '/':
         if (PTR_AS(YogLexer, lexer)->state == LS_OP) {
-            RETURN(env, tDIV);
+            YOG_ASSERT(env, FALSE, "not supported");
+#if 0
+            RETURN_TOKEN(TK_DIV);
+#endif
         }
         else {
             char delimitor = c;
@@ -365,10 +375,10 @@ next_token(YogEnv* env, YogVal lexer)
                 option = ONIG_OPTION_IGNORECASE;
             }
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-            yylval.val = YogRegexp_new(env, buffer, option);
+            YogVal val = YogRegexp_new(env, buffer, option);
 
             SET_STATE(LS_EXPR);
-            RETURN(env, tREGEXP);
+            RETURN_VAL_TOKEN(TK_REGEXP, val);
             break;
         }
         break;
@@ -377,10 +387,10 @@ next_token(YogEnv* env, YogVal lexer)
 
         c = NEXTC();
         if (c == '~') {
-            RETURN_NAME("=~", tEQUAL_TILDA);
+            RETURN_ID_TOKEN(TK_EQUAL_TILDA, "=~");
         }
         else {
-            RETURN(env, tEQUAL);
+            RETURN_TOKEN(TK_EQUAL);
         }
         break;
     case '<':
@@ -389,11 +399,11 @@ next_token(YogEnv* env, YogVal lexer)
 
             char c2 = NEXTC();
             if (c2 == '<') {
-                RETURN_NAME("<<", tLSHIFT);
+                RETURN_ID_TOKEN(TK_LSHIFT, "<<");
             }
             else {
                 PUSHBACK(c2);
-                RETURN_NAME1(c, tLESS);
+                RETURN_ID_TOKEN1(TK_LESS, c);
             }
             break;
         }
@@ -408,7 +418,7 @@ next_token(YogEnv* env, YogVal lexer)
     case '\n':
         {
             SET_STATE(LS_EXPR);
-            RETURN(env, tNEWLINE);
+            RETURN_TOKEN(TK_NEWLINE);
             break;
         }
     default:
@@ -430,8 +440,8 @@ next_token(YogEnv* env, YogVal lexer)
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
             const char* name = OBJ_AS(YogString, buffer)->body->items;
             if (PTR_AS(YogLexer, lexer)->state == LS_NAME) {
-                yylval.name = INTERN(name);
-                type = tNAME;
+                type = TK_NAME;
+                PTR_AS(YogToken, token)->u.id = INTERN(name);
             }
             else {
                 const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
@@ -439,12 +449,12 @@ next_token(YogEnv* env, YogVal lexer)
                     type = entry->type;
                 }
                 else {
-                    yylval.name = INTERN(name);
-                    type = tNAME;
+                    type = TK_NAME;
+                    PTR_AS(YogToken, token)->u.id = INTERN(name);
                 }
             }
             SET_STATE(LS_OP);
-            RETURN(env, type);
+            RETURN_TOKEN(type);
             break;
         }
     }
@@ -547,13 +557,6 @@ YogLexer_read_encoding(YogEnv* env, YogVal lexer)
     reset_lexer(env, lexer);
 
     RETURN_VOID(env);
-}
-
-int 
-yylex(YogVal lexer) 
-{
-    YogEnv* env = PTR_AS(YogLexer, lexer)->env;
-    return next_token(env, lexer);
 }
 
 static void 

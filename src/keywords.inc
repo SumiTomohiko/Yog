@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: gperf src/keywords  */
+/* Command-line: gperf ../src/keywords  */
 /* Computed positions: -k'1,3' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -29,14 +29,14 @@
 #error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
 #endif
 
-#line 1 "src/keywords"
+#line 1 "../src/keywords"
 
 #include <string.h>
 #include "parser.h"
 
 typedef struct KeywordTableEntry KeywordTableEntry;
-#line 10 "src/keywords"
-struct KeywordTableEntry { const char* name; enum yytokentype type; };
+#line 10 "../src/keywords"
+struct KeywordTableEntry { const char* name; unsigned int type; };
 
 #define TOTAL_KEYWORDS 19
 #define MIN_WORD_LENGTH 2
@@ -111,47 +111,47 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
   static const struct KeywordTableEntry wordlist[] =
     {
       {""}, {""},
-#line 18 "src/keywords"
-      {"do", tDO},
-#line 17 "src/keywords"
-      {"def", tDEF},
-#line 26 "src/keywords"
-      {"next", tNEXT},
-#line 23 "src/keywords"
-      {"false", tFALSE},
+#line 18 "../src/keywords"
+      {"do", TK_DO},
+#line 17 "../src/keywords"
+      {"def", TK_DEF},
+#line 26 "../src/keywords"
+      {"next", TK_NEXT},
+#line 23 "../src/keywords"
+      {"false", TK_FALSE},
       {""},
-#line 24 "src/keywords"
-      {"finally", tFINALLY},
-#line 27 "src/keywords"
-      {"nonlocal", tNONLOCAL},
+#line 24 "../src/keywords"
+      {"finally", TK_FINALLY},
+#line 27 "../src/keywords"
+      {"nonlocal", TK_NONLOCAL},
       {""}, {""}, {""},
-#line 25 "src/keywords"
-      {"if", tIF},
-#line 21 "src/keywords"
-      {"end", tEND},
-#line 29 "src/keywords"
-      {"true", tTRUE},
-#line 31 "src/keywords"
-      {"while", tWHILE},
-#line 22 "src/keywords"
-      {"except", tEXCEPT},
-#line 14 "src/keywords"
-      {"as", tAS},
-#line 30 "src/keywords"
-      {"try", tTRY},
-#line 20 "src/keywords"
-      {"else", tELSE},
-#line 16 "src/keywords"
-      {"class", tCLASS},
-#line 28 "src/keywords"
-      {"return", tRETURN},
+#line 25 "../src/keywords"
+      {"if", TK_IF},
+#line 21 "../src/keywords"
+      {"end", TK_END},
+#line 29 "../src/keywords"
+      {"true", TK_TRUE},
+#line 31 "../src/keywords"
+      {"while", TK_WHILE},
+#line 22 "../src/keywords"
+      {"except", TK_EXCEPT},
+#line 14 "../src/keywords"
+      {"as", TK_AS},
+#line 30 "../src/keywords"
+      {"try", TK_TRY},
+#line 20 "../src/keywords"
+      {"else", TK_ELSE},
+#line 16 "../src/keywords"
+      {"class", TK_CLASS},
+#line 28 "../src/keywords"
+      {"return", TK_RETURN},
       {""},
-#line 13 "src/keywords"
-      {"__LINE__", t__LINE__},
-#line 19 "src/keywords"
-      {"elif", tELIF},
-#line 15 "src/keywords"
-      {"break", tBREAK}
+#line 13 "../src/keywords"
+      {"__LINE__", TK_LINE },
+#line 19 "../src/keywords"
+      {"elif", TK_ELIF},
+#line 15 "../src/keywords"
+      {"break", TK_BREAK}
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
@@ -168,7 +168,7 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
     }
   return 0;
 }
-#line 32 "src/keywords"
+#line 32 "../src/keywords"
 
 /**
  * vim: filetype=c

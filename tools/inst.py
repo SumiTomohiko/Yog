@@ -482,7 +482,7 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, unsigned int lineno""" % { "i
 
     def do(self, def_, opcodes_h=None, opcodes_h_tmpl=None, thread_inc=None, 
             compile_inc=None, compile_inc_tmpl=None, code_inc=None, 
-            code_inc_tmpl=None, debug=False):
+            code_inc_tmpl=None, debug=False, basedir=""):
         self.open(def_)
         self.parse_def()
         if debug:
@@ -490,7 +490,7 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, unsigned int lineno""" % { "i
                 print `inst`
 
         # Generate inst.h from inst.h.tmpl .
-        include_dir = join("include", "yog")
+        include_dir = join(basedir, "include", "yog")
         opcodes_h = opcodes_h or join(include_dir, "opcodes.h")
         opcodes_h_tmpl = opcodes_h_tmpl or opcodes_h + ".tmpl"
         self.gen_opcodes_h(opcodes_h, opcodes_h_tmpl)
@@ -501,24 +501,24 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, unsigned int lineno""" % { "i
 
         # Generate thread.inc (no templates).
         src_dir = "src"
-        thread_inc = thread_inc or join(src_dir, "thread.inc")
+        thread_inc = thread_inc or join(basedir, src_dir, "thread.inc")
         self.gen_thread_inc(def_, thread_inc)
 
         # Generate compile.inc.
-        compile_inc = compile_inc or join(src_dir, "compile.inc")
+        compile_inc = compile_inc or join(basedir, src_dir, "compile.inc")
         compile_inc_tmpl = compile_inc_tmpl or compile_inc + ".tmpl"
         self.gen_compile_inc(compile_inc, compile_inc_tmpl)
 
-        inst_c = join(src_dir, "inst.c")
+        inst_c = join(basedir, src_dir, "inst.c")
         inst_c_tmpl = inst_c + ".tmpl"
         self.gen_inst_c(inst_c, inst_c_tmpl)
 
         # Generate code.inc.
-        code_inc = code_inc or join(src_dir, "code.inc")
+        code_inc = code_inc or join(basedir, src_dir, "code.inc")
         code_inc_tmpl = code_inc_tmpl or code_inc + ".tmpl"
         self.gen_code_inc(code_inc, code_inc_tmpl)
 
 if __name__ == "__main__":
-    CodeGenerator().do(argv[1])
+    CodeGenerator().do(argv[1], basedir=argv[2])
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

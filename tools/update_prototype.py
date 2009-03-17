@@ -33,6 +33,7 @@ class DeclarationInserter(object):
                     ], 
             "include/yog/regexp.h": [ "src/regexp.c", ], 
             "include/yog/string.h": [ "src/string.c", ], 
+            "include/yog/token.h": [ "src/token.c", ], 
             "include/yog/encoding.h": [ "src/encoding.c", ], 
             "include/yog/exception.h": [ 
                     "src/exception.c", "src/stacktrace.c", ], 

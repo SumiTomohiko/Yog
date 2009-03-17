@@ -7,28 +7,28 @@ typedef struct KeywordTableEntry KeywordTableEntry;
 %language=ANSI-C
 %define lookup-function-name __Yog_lookup_keyword__
 %struct-type
-struct KeywordTableEntry { const char* name; enum yytokentype type; };
+struct KeywordTableEntry { const char* name; unsigned int type; };
 %readonly-tables
 %%
-__LINE__, t__LINE__
-as, tAS
-break, tBREAK
-class, tCLASS
-def, tDEF
-do, tDO
-elif, tELIF
-else, tELSE
-end, tEND
-except, tEXCEPT
-false, tFALSE
-finally, tFINALLY
-if, tIF
-next, tNEXT
-nonlocal, tNONLOCAL
-return, tRETURN
-true, tTRUE
-try, tTRY
-while, tWHILE
+__LINE__, TK_LINE 
+as, TK_AS
+break, TK_BREAK
+class, TK_CLASS
+def, TK_DEF
+do, TK_DO
+elif, TK_ELIF
+else, TK_ELSE
+end, TK_END
+except, TK_EXCEPT
+false, TK_FALSE
+finally, TK_FINALLY
+if, TK_IF
+next, TK_NEXT
+nonlocal, TK_NONLOCAL
+return, TK_RETURN
+true, TK_TRUE
+try, TK_TRY
+while, TK_WHILE
 %%
 /**
  * vim: filetype=c

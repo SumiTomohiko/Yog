@@ -2,6 +2,7 @@
 #define __YOG_PARSER_H__
 
 #include <stdio.h>
+#include "yog/token.h"
 #include "yog/yog.h"
 
 enum YogNodeType {
@@ -167,8 +168,8 @@ typedef struct YogParser YogParser;
 
 /* src/lexer.c */
 YogVal YogLexer_new(YogEnv*);
+BOOL YogLexer_next_token(YogEnv*, YogVal, YogVal);
 void YogLexer_read_encoding(YogEnv*, YogVal);
-int yylex(YogVal);
 
 /* src/parser.y */
 YogVal YogParser_parse_file(YogEnv*, const char*);

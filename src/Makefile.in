@@ -33,8 +33,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 subdir = src
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in parser.c \
-	parser.h
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in parser.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libtool.m4 \
 	$(top_srcdir)/configure.in
@@ -63,7 +62,8 @@ am_libyog_la_OBJECTS = libyog_la-arg.lo libyog_la-array.lo \
 	libyog_la-method.lo libyog_la-nil.lo libyog_la-object.lo \
 	libyog_la-package.lo libyog_la-parser.lo libyog_la-regexp.lo \
 	libyog_la-stacktrace.lo libyog_la-string.lo libyog_la-table.lo \
-	libyog_la-thread.lo libyog_la-value.lo libyog_la-vm.lo
+	libyog_la-thread.lo libyog_la-token.lo libyog_la-value.lo \
+	libyog_la-vm.lo
 libyog_la_OBJECTS = $(am_libyog_la_OBJECTS)
 libyog_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libyog_la_CFLAGS) \
@@ -123,9 +123,6 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
-LEX = @LEX@
-LEXLIB = @LEXLIB@
-LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -146,8 +143,6 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
-YACC = @YACC@
-YFLAGS = @YFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -203,6 +198,10 @@ top_srcdir = @top_srcdir@
 ROOT_DIR = ..
 ONIG_DIR = $(ROOT_DIR)/onig
 BDWGC_DIR = $(ROOT_DIR)/bdwgc
+LEMON_DIR = $(ROOT_DIR)/tools/lemon
+LEMON = $(LEMON_DIR)/lemon
+YACC = $(LEMON)
+BUILT_SOURCES = parser.h keywords.inc
 lib_LTLIBRARIES = libyog.la
 libyog_la_SOURCES = arg.c \
 	array.c \
@@ -232,23 +231,18 @@ libyog_la_SOURCES = arg.c \
 	string.c \
 	table.c \
 	thread.c \
+	token.c \
 	value.c \
 	vm.c
 
 libyog_la_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
-
-#LEMON = $(ROOT_DIR)/tools/lemon/lemon
-
-#$(LEMON): 
-#	(cd $(ROOT_DIR)/tools/lemon; make)
-AM_YFLAGS = -d --verbose
-#AM_LFLAGS = --noline
 INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
 INST_CMD = make insts
-GEN_AM_CMD = python $(ROOT_DIR)/tools/update_automake.py
+GEN_AM_CMD = python $(ROOT_DIR)/tools/update_automake.py .
 TEST_CMD = py.test
-all: all-am
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj .y
@@ -308,11 +302,6 @@ clean-libLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-parser.h: parser.c
-	@if test ! -f $@; then \
-	  rm -f parser.c; \
-	  $(MAKE) $(AM_MAKEFLAGS) parser.c; \
-	else :; fi
 libyog.la: $(libyog_la_OBJECTS) $(libyog_la_DEPENDENCIES) 
 	$(libyog_la_LINK) -rpath $(libdir) $(libyog_la_OBJECTS) $(libyog_la_LIBADD) $(LIBS)
 
@@ -350,6 +339,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-table.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-thread.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-token.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-value.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-vm.Plo@am__quote@
 
@@ -570,6 +560,13 @@ libyog_la-thread.lo: thread.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyog_la_CFLAGS) $(CFLAGS) -c -o libyog_la-thread.lo `test -f 'thread.c' || echo '$(srcdir)/'`thread.c
 
+libyog_la-token.lo: token.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyog_la_CFLAGS) $(CFLAGS) -MT libyog_la-token.lo -MD -MP -MF $(DEPDIR)/libyog_la-token.Tpo -c -o libyog_la-token.lo `test -f 'token.c' || echo '$(srcdir)/'`token.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libyog_la-token.Tpo $(DEPDIR)/libyog_la-token.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='token.c' object='libyog_la-token.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyog_la_CFLAGS) $(CFLAGS) -c -o libyog_la-token.lo `test -f 'token.c' || echo '$(srcdir)/'`token.c
+
 libyog_la-value.lo: value.c
 @am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyog_la_CFLAGS) $(CFLAGS) -MT libyog_la-value.lo -MD -MP -MF $(DEPDIR)/libyog_la-value.Tpo -c -o libyog_la-value.lo `test -f 'value.c' || echo '$(srcdir)/'`value.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libyog_la-value.Tpo $(DEPDIR)/libyog_la-value.Plo
@@ -583,9 +580,6 @@ libyog_la-vm.lo: vm.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='vm.c' object='libyog_la-vm.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyog_la_CFLAGS) $(CFLAGS) -c -o libyog_la-vm.lo `test -f 'vm.c' || echo '$(srcdir)/'`vm.c
-
-.y.c:
-	$(am__skipyacc) $(SHELL) $(YLWRAP) $< y.tab.c $@ y.tab.h $*.h y.output $*.output -- $(YACCCOMPILE)
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -667,13 +661,15 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -698,7 +694,7 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 	-rm -f parser.c
-	-rm -f parser.h
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
@@ -776,15 +772,23 @@ uninstall-am: uninstall-libLTLIBRARIES
 
 
 insts:
-	python $(ROOT_DIR)/tools/inst.py insts.def
+	python $(ROOT_DIR)/tools/inst.py insts.def ..
 
 am:
 	$(GEN_AM_CMD)
 
+.y.c:
+	(cd $(LEMON_DIR); make)
+	$(LEMON) $<
+
+#parser.c: parser.lt parser.y $(LEMON)
+#	(cd $(LEMON_DIR); make)
+#	$(LEMON) parser.y
+
 keywords.inc: keywords
 	gperf $< > $@
 
-keywords lexer.c: parser.h
+#keywords lexer.c: parser.h
 
 thread.inc: $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)

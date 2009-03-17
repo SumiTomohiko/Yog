@@ -3,6 +3,12 @@ ROOT_DIR = ..
 ONIG_DIR = $(ROOT_DIR)/onig
 BDWGC_DIR = $(ROOT_DIR)/bdwgc
 
+LEMON_DIR = $(ROOT_DIR)/tools/lemon
+LEMON = $(LEMON_DIR)/lemon
+YACC = $(LEMON)
+
+BUILT_SOURCES = parser.h keywords.inc
+
 lib_LTLIBRARIES = libyog.la
 libyog_la_SOURCES = arg.c \
 	array.c \
@@ -32,36 +38,37 @@ libyog_la_SOURCES = arg.c \
 	string.c \
 	table.c \
 	thread.c \
+	token.c \
 	value.c \
 	vm.c
 libyog_la_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
-
-#LEMON = $(ROOT_DIR)/tools/lemon/lemon
-
-#$(LEMON): 
-#	(cd $(ROOT_DIR)/tools/lemon; make)
-
-AM_YFLAGS = -d --verbose
-#AM_LFLAGS = --noline
 
 INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
 INST_CMD = make insts
 
-GEN_AM_CMD = python $(ROOT_DIR)/tools/update_automake.py
+GEN_AM_CMD = python $(ROOT_DIR)/tools/update_automake.py .
 
 TEST_CMD = py.test
 
 insts:
-	python $(ROOT_DIR)/tools/inst.py insts.def
+	python $(ROOT_DIR)/tools/inst.py insts.def ..
 
 am:
 	$(GEN_AM_CMD)
 
+.y.c:
+	(cd $(LEMON_DIR); make)
+	$(LEMON) $<
+
+#parser.c: parser.lt parser.y $(LEMON)
+#	(cd $(LEMON_DIR); make)
+#	$(LEMON) parser.y
+
 keywords.inc: keywords
 	gperf $< > $@
 
-keywords lexer.c: parser.h
+#keywords lexer.c: parser.h
 
 thread.inc: $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
