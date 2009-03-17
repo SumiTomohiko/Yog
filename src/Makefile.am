@@ -49,8 +49,6 @@ INST_CMD = make insts
 
 GEN_AM_CMD = python $(ROOT_DIR)/tools/update_automake.py .
 
-TEST_CMD = py.test
-
 insts:
 	python $(ROOT_DIR)/tools/inst.py insts.def ..
 
