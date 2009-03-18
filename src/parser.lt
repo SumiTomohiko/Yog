@@ -816,3 +816,7 @@ void Parse(
   }while( yymajor!=YYNOCODE && yypParser->yyidx>=0 );
   return;
 }
+
+/**
+ * vim: filetype=c
+ */
