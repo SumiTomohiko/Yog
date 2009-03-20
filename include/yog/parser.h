@@ -168,11 +168,11 @@ typedef struct YogParser YogParser;
 
 /* src/lexer.c */
 YogVal YogLexer_new(YogEnv*);
-BOOL YogLexer_next_token(YogEnv*, YogVal, YogVal);
+BOOL YogLexer_next_token(YogEnv*, YogVal, YogVal*);
 void YogLexer_read_encoding(YogEnv*, YogVal);
 
 /* src/parser.y */
-YogVal YogParser_parse_file(YogEnv*, const char*);
+YogVal YogParser_parse_file(YogEnv*, const char*, BOOL);
 
 /* PROTOTYPE_END */
 

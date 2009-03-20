@@ -16,9 +16,9 @@
 
 typedef struct ParserState ParserState;
 
-void* ParseAlloc(void* (*)(size_t));
-void Parse(struct YogEnv*, void*, int, YogVal, YogVal*);
-void ParseFree(void*, void (*)(void*));
+static void Parse(struct YogEnv*, struct YogVal, int, YogVal, YogVal*);
+static YogVal LemonParser_new(YogEnv*);
+static void ParseTrace(FILE*, char*);
 
 static void 
 YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
@@ -186,7 +186,8 @@ YogNode_new(YogEnv* env, YogNodeType type)
 #define OBJ_ARRAY_PUSH(result, array, elem) do { \
     if (IS_PTR(elem)) { \
         if (!IS_OBJ(array)) { \
-            array = YogArray_new(env); \
+            YogVal a = YogArray_new(env); \
+            array = a; \
         } \
         YogArray_push(env, array, elem); \
     } \
@@ -278,9 +279,16 @@ YogNode_new(YogEnv* env, YogNodeType type)
 } while (0)
 
 #define METHOD_CALL_NEW1(node, recv, name, arg) do { \
-    YogVal args = YogArray_new(env); \
+    YogVal args = YUNDEF; \
+    PUSH_LOCAL(env, args); \
+    \
+    args = YogArray_new(env); \
     YogArray_push(env, args, arg); \
-    METHOD_CALL_NEW(node, recv, name, args, YNIL); \
+    \
+    YogVal blockarg = YNIL; \
+    METHOD_CALL_NEW(node, recv, name, args, blockarg); \
+    \
+    POP_LOCALS(env); \
 } while (0)
 
 #define IF_NEW(node, test_, stmts_, tail_) do { \
@@ -327,14 +335,15 @@ YogNode_new(YogEnv* env, YogNodeType type)
 } while (0)
 
 YogVal 
-YogParser_parse_file(YogEnv* env, const char* filename)
+YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
 {
     SAVE_LOCALS(env);
 
     YogVal lexer = YUNDEF;
-    YogVal tree = YUNDEF;
+    YogVal ast = YUNDEF;
+    YogVal lemon_parser = YUNDEF;
     YogVal token = YUNDEF;
-    PUSH_LOCALS3(env, lexer, tree, token);
+    PUSH_LOCALS4(env, lexer, ast, lemon_parser, token);
 
     FILE* fp;
     if (filename != NULL) {
@@ -347,20 +356,27 @@ YogParser_parse_file(YogEnv* env, const char* filename)
 
     lexer = YogLexer_new(env);
     PTR_AS(YogLexer, lexer)->fp = fp;
-
-    void* lemon_parser = ParseAlloc(malloc);
-    token = YogToken_new(env);
-    while (YogLexer_next_token(env, lexer, token)) {
-        Parse(env, lemon_parser, token.type, token, &tree);
+    if (filename != NULL) {
+        YogLexer_read_encoding(env, lexer);
     }
-    Parse(env, lemon_parser, 0, token, NULL);
-    ParseFree(lemon_parser, free);
+
+    lemon_parser = LemonParser_new(env);
+    if (debug) {
+        ParseTrace(stdout, "parser> ");
+    }
+    while (YogLexer_next_token(env, lexer, &token)) {
+        unsigned int type = PTR_AS(YogToken, token)->type;
+        YogVm_gc(env, ENV_VM(env));
+        YogVm_gc(env, ENV_VM(env));
+        Parse(env, lemon_parser, type, token, &ast);
+    }
+    Parse(env, lemon_parser, 0, YNIL, &ast);
 
     if (filename != NULL) {
         fclose(fp);
     }
 
-    RETURN(env, tree);
+    RETURN(env, ast);
 }
 }   // end of %include
 
@@ -378,17 +394,22 @@ stmts(A) ::= stmts(B) newline stmt(C). {
 stmt(A) ::= /* empty */. {
     A = YNIL;
 }
-stmt ::= func_def.
+stmt(A) ::= func_def(B). {
+    A = B;
+}
 stmt(A) ::= expr(B). {
     if (PTR_AS(YogNode, B)->type == NODE_VARIABLE) {
-        COMMAND_CALL_NEW(A, PTR_AS(YogNode, B)->u.variable.id, YNIL, YNIL);
+        YogVal args = YNIL;
+        YogVal blockarg = YNIL;
+        COMMAND_CALL_NEW(A, PTR_AS(YogNode, B)->u.variable.id, args, blockarg);
     }
     else {
         A = B;
     }
 }
 stmt(A) ::= NAME(B) args(C). {
-    COMMAND_CALL_NEW(A, PTR_AS(YogToken, B)->u.id, C, YNIL);
+    YogVal blockarg = YNIL;
+    COMMAND_CALL_NEW(A, PTR_AS(YogToken, B)->u.id, C, blockarg);
 }
         /*
         | NAME args DO LPAR params RPAR stmts END {
@@ -401,7 +422,8 @@ stmt(A) ::= TRY stmts(B) excepts(C) ELSE stmts(D) finally_opt(E) END. {
     EXCEPT_FINALLY_NEW(A, B, C, D, E);
 }
 stmt(A) ::= TRY stmts(B) excepts(C) finally_opt(D) END. {
-    EXCEPT_FINALLY_NEW(A, B, C, YNIL, D);
+    YogVal finally = YNIL;
+    EXCEPT_FINALLY_NEW(A, B, C, finally, D);
 }
 stmt(A) ::= TRY stmts(B) FINALLY stmts(C) END. {
     FINALLY_NEW(A, B, C);
@@ -410,19 +432,22 @@ stmt(A) ::= WHILE expr(B) stmts(C) END. {
     WHILE_NEW(A, B, C);
 }
 stmt(A) ::= BREAK. {
-    BREAK_NEW(A, YNIL);
+    YogVal expr = YNIL;
+    BREAK_NEW(A, expr);
 }
 stmt(A) ::= BREAK expr(B). {
     BREAK_NEW(A, B);
 }
 stmt(A) ::= NEXT. {
-    NEXT_NEW(A, YNIL);
+    YogVal expr = YNIL;
+    NEXT_NEW(A, expr);
 }
 stmt(A) ::= NEXT expr(B). {
     NEXT_NEW(A, B);
 }
 stmt(A) ::= RETURN. {
-    RETURN_NEW(A, YNIL);
+    YogVal expr = YNIL;
+    RETURN_NEW(A, expr);
 }
 stmt(A) ::= RETURN expr(B). {
     RETURN_NEW(A, B);
@@ -455,7 +480,9 @@ super_opt(A) ::= GREATER expr(B). {
     A = B;
 }
 
-if_tail ::= else_opt.
+if_tail(A) ::= else_opt(B). {
+    A = B;
+}
 if_tail(A) ::= ELIF expr(B) stmts(C) if_tail(D). {
     YogVal node = YUNDEF;
     IF_NEW(node, B, C, D);
@@ -477,105 +504,187 @@ params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA block
     PARAMS_NEW(A, B, C, D, E, F);
 }
 params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA block_param(D) COMMA var_param(E). {
-    PARAMS_NEW(A, B, C, D, E, YNIL);
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, B, C, D, E, kw_param);
 }
 params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA block_param(D) COMMA kw_param(E). {
-    PARAMS_NEW(A, B, C, D, YNIL, E);
+    YogVal var_param = YNIL;
+    PARAMS_NEW(A, B, C, D, var_param, E);
 }
 params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA block_param(D). {
-    PARAMS_NEW(A, B, C, D, YNIL, YNIL);
+    YogVal var_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, B, C, D, var_param, kw_param);
 }
 params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA var_param(D) COMMA kw_param(E). {
-    PARAMS_NEW(A, B, C, YNIL, D, E);
+    YogVal block_param = YNIL;
+    PARAMS_NEW(A, B, C, block_param, D, E);
 }
 params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA var_param(D). {
-    PARAMS_NEW(A, B, C, YNIL, D, YNIL);
+    YogVal block_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, B, C, block_param, D, kw_param);
 }
 params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA kw_param(D). {
-    PARAMS_NEW(A, B, C, YNIL, YNIL, D);
+    YogVal block_param = YNIL;
+    YogVal var_param = YNIL;
+    PARAMS_NEW(A, B, C, block_param, var_param, D);
 }
 params(A) ::= params_without_default(B) COMMA params_with_default(C). {
-    PARAMS_NEW(A, B, C, YNIL, YNIL, YNIL);
+    YogVal block_param = YNIL;
+    YogVal var_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, B, C, block_param, var_param, kw_param);
 }
 params(A) ::= params_without_default(B) COMMA block_param(C) COMMA var_param(D) COMMA kw_param(E). {
-    PARAMS_NEW(A, B, YNIL, C, D, E);
+    YogVal params_with_default = YNIL;
+    PARAMS_NEW(A, B, params_with_default, C, D, E);
 }
 params(A) ::= params_without_default(B) COMMA block_param(C) COMMA var_param(D). {
-    PARAMS_NEW(A, B, YNIL, C, D, YNIL);
+    YogVal params_with_default = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, B, params_with_default, C, D, kw_param);
 }
 params(A) ::= params_without_default(B) COMMA block_param(C) COMMA kw_param(D). {
-    PARAMS_NEW(A, B, YNIL, C, YNIL, D);
+    YogVal params_with_default = YNIL;
+    YogVal var_param = YNIL;
+    PARAMS_NEW(A, B, params_with_default, C, var_param, D);
 }
 params(A) ::= params_without_default(B) COMMA block_param(C). {
-    PARAMS_NEW(A, B, YNIL, C, YNIL, YNIL);
+    YogVal params_with_default = YNIL;
+    YogVal var_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, B, params_with_default, C, var_param, kw_param);
 }
 params(A) ::= params_without_default(B) COMMA var_param(C) COMMA kw_param(D). {
-    PARAMS_NEW(A, B, YNIL, YNIL, C, D);
+    YogVal params_with_default = YNIL;
+    YogVal block_param = YNIL;
+    PARAMS_NEW(A, B, params_with_default, block_param, C, D);
 }
 params(A) ::= params_without_default(B) COMMA var_param(C). {
-    PARAMS_NEW(A, B, YNIL, YNIL, C, YNIL);
+    YogVal params_with_default = YNIL;
+    YogVal block_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, B, params_with_default, block_param, C, kw_param);
 }
 params(A) ::= params_without_default(B) COMMA kw_param(C). {
-    PARAMS_NEW(A, B, YNIL, YNIL, YNIL, C);
+    YogVal params_with_default = YNIL;
+    YogVal block_param = YNIL;
+    YogVal var_param = YNIL;
+    PARAMS_NEW(A, B, params_with_default, block_param, var_param, C);
 }
 params(A) ::= params_without_default(B). {
-    PARAMS_NEW(A, B, YNIL, YNIL, YNIL, YNIL);
+    YogVal params_with_default = YNIL;
+    YogVal block_param = YNIL;
+    YogVal var_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, B, params_with_default, block_param, var_param, kw_param);
 }
 params(A) ::= params_with_default(B) COMMA block_param(C) COMMA var_param(D) COMMA kw_param(E). {
-    PARAMS_NEW(A, YNIL, B, C, D, E);
+    YogVal params_without_default = YNIL;
+    PARAMS_NEW(A, params_without_default, B, C, D, E);
 }
 params(A) ::= params_with_default(B) COMMA block_param(C) COMMA var_param(D). {
-    PARAMS_NEW(A, YNIL, B, C, D, YNIL);
+    YogVal params_without_default = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, params_without_default, B, C, D, kw_param);
 }
 params(A) ::= params_with_default(B) COMMA block_param(C) COMMA kw_param(D). {
-    PARAMS_NEW(A, YNIL, B, C, YNIL, D);
+    YogVal params_without_default = YNIL;
+    YogVal var_param = YNIL;
+    PARAMS_NEW(A, params_without_default, B, C, var_param, D);
 }
 params(A) ::= params_with_default(B) COMMA block_param(C). {
-    PARAMS_NEW(A, YNIL, B, C, YNIL, YNIL);
+    YogVal params_without_default = YNIL;
+    YogVal var_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, params_without_default, B, C, var_param, kw_param);
 }
 params(A) ::= params_with_default(B) COMMA var_param(C) COMMA kw_param(D). {
-    PARAMS_NEW(A, YNIL, B, YNIL, C, D);
+    YogVal params_without_default = YNIL;
+    YogVal block_param = YNIL;
+    PARAMS_NEW(A, params_without_default, B, block_param, C, D);
 }
 params(A) ::= params_with_default(B) COMMA var_param(C). {
-    PARAMS_NEW(A, YNIL, B, YNIL, C, YNIL);
+    YogVal params_without_default = YNIL;
+    YogVal block_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, params_without_default, B, block_param, C, kw_param);
 }
 params(A) ::= params_with_default(B) COMMA kw_param(C). {
-    PARAMS_NEW(A, YNIL, B, YNIL, YNIL, C);
+    YogVal params_without_default = YNIL;
+    YogVal block_param = YNIL;
+    YogVal var_param = YNIL;
+    PARAMS_NEW(A, params_without_default, B, block_param, var_param, C);
 }
 params(A) ::= params_with_default(B). {
-    PARAMS_NEW(A, YNIL, B, YNIL, YNIL, YNIL);
+    YogVal params_without_default = YNIL;
+    YogVal block_param = YNIL;
+    YogVal var_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, params_without_default, B, block_param, var_param, kw_param);
 }
 params(A) ::= block_param(B) COMMA var_param(C) COMMA kw_param(D). {
-    PARAMS_NEW(A, YNIL, YNIL, B, C, D);
+    YogVal params_without_default = YNIL;
+    YogVal params_with_default = YNIL;
+    PARAMS_NEW(A, params_without_default, params_with_default, B, C, D);
 }
 params(A) ::= block_param(B) COMMA var_param(C). {
-    PARAMS_NEW(A, YNIL, YNIL, B, C, YNIL);
+    YogVal params_without_default = YNIL;
+    YogVal params_with_default = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, params_without_default, params_with_default, B, C, kw_param);
 }
 params(A) ::= block_param(B) COMMA kw_param(C). {
-    PARAMS_NEW(A, YNIL, YNIL, B, YNIL, C);
+    YogVal params_without_default = YNIL;
+    YogVal params_with_default = YNIL;
+    YogVal var_param = YNIL;
+    PARAMS_NEW(A, params_without_default, params_with_default, B, var_param, C);
 }
 params(A) ::= block_param(B). {
-    PARAMS_NEW(A, YNIL, YNIL, B, YNIL, YNIL);
+    YogVal params_without_default = YNIL;
+    YogVal params_with_default = YNIL;
+    YogVal var_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, params_without_default, params_with_default, B, var_param, kw_param);
 }
 params(A) ::= var_param(B) COMMA kw_param(C). {
-    PARAMS_NEW(A, YNIL, YNIL, YNIL, B, C);
+    YogVal params_without_default = YNIL;
+    YogVal params_with_default = YNIL;
+    YogVal block_param = YNIL;
+    PARAMS_NEW(A, params_without_default, params_with_default, block_param, B, C);
 }
 params(A) ::= var_param(B). {
-    PARAMS_NEW(A, YNIL, YNIL, YNIL, B, YNIL);
+    YogVal params_without_default = YNIL;
+    YogVal params_with_default = YNIL;
+    YogVal block_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, params_without_default, params_with_default, block_param, B, kw_param);
 }
 params(A) ::= kw_param(B). {
-    PARAMS_NEW(A, YNIL, YNIL, YNIL, YNIL, B);
+    YogVal params_without_default = YNIL;
+    YogVal params_with_default = YNIL;
+    YogVal block_param = YNIL;
+    YogVal var_param = YNIL;
+    PARAMS_NEW(A, params_without_default, params_with_default, block_param, var_param, B);
 }
 params(A) ::= /* empty */. {
-    A = YNIL;
+    YogVal params_without_default = YNIL;
+    YogVal params_with_default = YNIL;
+    YogVal block_param = YNIL;
+    YogVal var_param = YNIL;
+    YogVal kw_param = YNIL;
+    PARAMS_NEW(A, params_without_default, params_with_default, block_param, var_param, kw_param);
 }
 
 kw_param(A) ::= DOUBLE_STAR NAME(B). {
-    PARAM_NEW(A, NODE_KW_PARAM, PTR_AS(YogToken, B)->u.id, YNIL);
+    YogVal default_ = YNIL;
+    PARAM_NEW(A, NODE_KW_PARAM, PTR_AS(YogToken, B)->u.id, default_);
 }
 
 var_param(A) ::= STAR NAME(B). {
-    PARAM_NEW(A, NODE_VAR_PARAM, PTR_AS(YogToken, B)->u.id, YNIL);
+    YogVal default_ = YNIL;
+    PARAM_NEW(A, NODE_VAR_PARAM, PTR_AS(YogToken, B)->u.id, default_);
 }
 
 block_param(A) ::= AMPER NAME(B) param_default_opt(C). {
@@ -585,7 +694,9 @@ block_param(A) ::= AMPER NAME(B) param_default_opt(C). {
 param_default_opt(A) ::= /* empty */. {
     A = YNIL;
 }
-param_default_opt ::= param_default.
+param_default_opt(A) ::= param_default(B). {
+    A = B;
+}
 
 param_default(A) ::= EQUAL expr(B). {
     A = B;
@@ -621,58 +732,92 @@ args(A) ::= args(B) COMMA expr(C). {
     OBJ_ARRAY_PUSH(A, B, C);
 }
 
-expr ::= assign_expr.
+expr(A) ::= assign_expr(B). {
+    A = B;
+}
 
 assign_expr(A) ::= postfix_expr(B) EQUAL logical_or_expr(C). {
     ASSIGN_NEW(A, B, C);
 }
-assign_expr ::= logical_or_expr.
+assign_expr(A) ::= logical_or_expr(B). {
+    A = B;
+}
 
-logical_or_expr ::= logical_and_expr.
+logical_or_expr(A) ::= logical_and_expr(B). {
+    A = B;
+}
 
-logical_and_expr ::= not_expr.
+logical_and_expr(A) ::= not_expr(B). {
+    A = B;
+}
 
-not_expr ::= comparison.
+not_expr(A) ::= comparison(B). {
+    A = B;
+}
 
-comparison ::= xor_expr.
+comparison(A) ::= xor_expr(B). {
+    A = B;
+}
 comparison(A) ::= xor_expr(B) comp_op(C) xor_expr(D). {
     ID id = PTR_AS(YogToken, C)->u.id;
     METHOD_CALL_NEW1(A, B, id, D);
 }
 
-comp_op ::= LESS.
+comp_op(A) ::= LESS(B). {
+    A = B;
+}
 
-xor_expr ::= or_expr.
+xor_expr(A) ::= or_expr(B). {
+    A = B;
+}
 
-or_expr ::= and_expr.
+or_expr(A) ::= and_expr(B). {
+    A = B;
+}
 
-and_expr ::= shift_expr.
+and_expr(A) ::= shift_expr(B). {
+    A = B;
+}
 
-shift_expr ::= match_expr.
+shift_expr(A) ::= match_expr(B). {
+    A = B;
+}
 shift_expr(A) ::= shift_expr(B) LSHIFT(C) arith_expr(D). {
     ID id = PTR_AS(YogToken, C)->u.id;
     METHOD_CALL_NEW1(A, B, id, D);
 }
 
-match_expr ::= arith_expr.
+match_expr(A) ::= arith_expr(B). {
+    A = B;
+}
 match_expr(A) ::= match_expr(B) EQUAL_TILDA(C) arith_expr(D). {
     ID id = PTR_AS(YogToken, C)->u.id;
     METHOD_CALL_NEW1(A, B, id, D);
 }
 
-arith_expr ::= term.
+arith_expr(A) ::= term(B). {
+    A = B;
+}
 arith_expr(A) ::= arith_expr(B) PLUS(C) term(D). {
     ID id = PTR_AS(YogToken, C)->u.id;
     METHOD_CALL_NEW1(A, B, id, D);
 }
 
-term ::= factor.
+term(A) ::= factor(B). {
+    A = B;
+}
 
-factor ::= power.
+factor(A) ::= power(B). {
+    A = B;
+}
 
-power ::= postfix_expr.
+power(A) ::= postfix_expr(B). {
+    A = B;
+}
 
-postfix_expr ::= atom.
+postfix_expr(A) ::= atom(B). {
+    A = B;
+}
 postfix_expr(A) ::= postfix_expr(B) LPAR args_opt(C) RPAR blockarg_opt(D). {
     if (NODE(B)->type == NODE_ATTR) {
         METHOD_CALL_NEW(A, NODE(B)->u.attr.obj, NODE(B)->u.attr.name, C, D);
@@ -694,13 +839,22 @@ atom(A) ::= NAME(B). {
     VARIABLE_NEW(A, id);
 }
 atom(A) ::= NUMBER(B). {
-    LITERAL_NEW(A, B);
+    YogVal val = PTR_AS(YogToken, B)->u.val;
+    PUSH_LOCAL(env, val);
+    LITERAL_NEW(A, val);
+    POP_LOCALS(env);
 }
 atom(A) ::= REGEXP(B). {
-    LITERAL_NEW(A, B);
+    YogVal val = PTR_AS(YogToken, B)->u.val;
+    PUSH_LOCAL(env, val);
+    LITERAL_NEW(A, val);
+    POP_LOCALS(env);
 }
 atom(A) ::= STRING(B). {
-    LITERAL_NEW(A, B);
+    YogVal val = PTR_AS(YogToken, B)->u.val;
+    PUSH_LOCAL(env, val);
+    LITERAL_NEW(A, val);
+    POP_LOCALS(env);
 }
 atom(A) ::= TRUE. {
     LITERAL_NEW(A, YTRUE);
@@ -717,7 +871,9 @@ atom(A) ::= LINE(B). {
 args_opt(A) ::= /* empty */. {
     A = YNIL;
 }
-args_opt ::= args.
+args_opt(A) ::= args(B). {
+    A = B;
+}
 
 blockarg_opt(A) ::= /* empty */. {
     A = YNIL;
@@ -755,7 +911,9 @@ except(A) ::= EXCEPT newline stmts(B). {
     EXCEPT_BODY_NEW(A, YNIL, NO_EXC_VAR, B);
 }
 
-newline ::= NEWLINE.
+newline(A) ::= NEWLINE(B). {
+    A = B;
+}
 
 finally_opt(A) ::= /* empty */. {
     A = YNIL;

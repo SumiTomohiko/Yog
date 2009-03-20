@@ -143,10 +143,12 @@ push_multibyte_char(YogEnv* env, YogVal lexer)
 }
 
 BOOL 
-YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal token)
+YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 {
-    SAVE_LOCALS(env);
-    PUSH_LOCAL(env, lexer);
+    SAVE_ARG(env, lexer);
+
+    YogVal token_val = YUNDEF;
+    PUSH_LOCAL(env, token_val);
 
     clear_buffer(env, lexer);
 
@@ -172,26 +174,28 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal token)
         }
         else {
             if (!readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
-                RETURN(env, -1);
+                RETURN(env, FALSE);
             }
             PTR_AS(YogLexer, lexer)->next_index = 0;
         }
     } while (1);
 
 #define ADD_TOKEN_CHAR(c)               add_token_char(env, lexer, c)
-#define RETURN_TOKEN(type_)             do { \
-    PTR_AS(YogToken, token)->type = type_; \
-    RETURN(env, TRUE); \
-} while (0)
 #define RETURN_VAL_TOKEN(type_, val_)   do { \
-    PTR_AS(YogToken, token)->type = (type_); \
-    PTR_AS(YogToken, token)->u.val = (val_); \
+    *token = YogToken_new(env); \
+    PTR_AS(YogToken, *token)->type = (type_); \
+    PTR_AS(YogToken, *token)->u.val = (val_); \
     RETURN(env, TRUE); \
 } while (0)
 #define RETURN_ID_TOKEN(type_, s)       do { \
-    PTR_AS(YogToken, token)->type = (type_); \
-    PTR_AS(YogToken, token)->u.id = INTERN(s); \
+    ID id = INTERN(s); \
+    *token = YogToken_new(env); \
+    PTR_AS(YogToken, *token)->type = (type_); \
+    PTR_AS(YogToken, *token)->u.id = id; \
     RETURN(env, TRUE); \
+} while (0)
+#define RETURN_TOKEN(type_)             do { \
+    RETURN_VAL_TOKEN((type_), YUNDEF); \
 } while (0)
 #define BUFSIZE                         (4)
 #define RETURN_ID_TOKEN1(type, c)       do { \
@@ -281,9 +285,9 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal token)
             }
 
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-            YogVal val = YogString_clone(env, buffer);
+            token_val = YogString_clone(env, buffer);
             SET_STATE(LS_OP);
-            RETURN_VAL_TOKEN(TK_STRING, val);
+            RETURN_VAL_TOKEN(TK_STRING, token_val);
             break;
         }
     case '{':
@@ -375,10 +379,10 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal token)
                 option = ONIG_OPTION_IGNORECASE;
             }
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-            YogVal val = YogRegexp_new(env, buffer, option);
+            token_val = YogRegexp_new(env, buffer, option);
 
             SET_STATE(LS_EXPR);
-            RETURN_VAL_TOKEN(TK_REGEXP, val);
+            RETURN_VAL_TOKEN(TK_REGEXP, token_val);
             break;
         }
         break;
@@ -436,25 +440,30 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal token)
             } while (is_name_char(c));
             PUSHBACK(c);
 
-            int type = 0;
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
             const char* name = OBJ_AS(YogString, buffer)->body->items;
             if (PTR_AS(YogLexer, lexer)->state == LS_NAME) {
-                type = TK_NAME;
-                PTR_AS(YogToken, token)->u.id = INTERN(name);
+                ID id = INTERN(name);
+                *token = YogToken_new(env);
+                PTR_AS(YogToken, *token)->type = TK_NAME;
+                PTR_AS(YogToken, *token)->u.id = id;
             }
             else {
                 const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
                 if (entry != NULL) {
-                    type = entry->type;
+                    *token = YogToken_new(env);
+                    PTR_AS(YogToken, *token)->type = entry->type;
+                    PTR_AS(YogToken, *token)->u.val = YUNDEF;
                 }
                 else {
-                    type = TK_NAME;
-                    PTR_AS(YogToken, token)->u.id = INTERN(name);
+                    ID id = INTERN(name);
+                    *token = YogToken_new(env);
+                    PTR_AS(YogToken, *token)->type = TK_NAME;
+                    PTR_AS(YogToken, *token)->u.id = id;
                 }
             }
             SET_STATE(LS_OP);
-            RETURN_TOKEN(type);
+            RETURN(env, TRUE);
             break;
         }
     }

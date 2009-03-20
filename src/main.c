@@ -14,6 +14,7 @@ usage()
 {
     printf("yog [options] [file]\n");
     printf("options:\n");
+    printf("  --debug-parser: \n");
     printf("  --disable-gc: \n");
     printf("  --gc-stress: \n");
     printf("  --gc=[bdw|copying|mark-sweep|mark-sweep-compact]: \n");
@@ -61,6 +62,7 @@ parse_size(const char* s)
 int 
 main(int argc, char* argv[]) 
 {
+    int debug_parser = 0;
     int gc_stress = 0;
     int disable_gc = 0;
     int help = 0;
@@ -73,6 +75,7 @@ main(int argc, char* argv[])
     YogGcType gc_type = GC_COPYING;
     int print_gc_stat = 0;
     struct option options[] = {
+        { "debug-parser", no_argument, &debug_parser, 1 }, 
         { "disable-gc", no_argument, &disable_gc, 1 },
         { "gc", required_argument, NULL, 'g' }, 
         { "gc-stress", no_argument, &gc_stress, 1 }, 
@@ -182,7 +185,7 @@ main(int argc, char* argv[])
         if (optind < argc) {
             filename = argv[optind];
         }
-        stmts = YogParser_parse_file(&env, filename);
+        stmts = YogParser_parse_file(&env, filename, debug_parser != 0);
         code = YogCompiler_compile_module(&env, filename, stmts);
 
         pkg = YogPackage_new(&env);

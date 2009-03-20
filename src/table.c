@@ -689,11 +689,26 @@ dump_callback(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
     return ST_CONTINUE;
 }
 
+static int
+dump_string_callback(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
+{
+    printf("  \"%s\" => ", PTR_AS(YogCharArray, key)->items);
+    print_val(env, value);
+    printf(", \n");
+
+    return ST_CONTINUE;
+}
+
 void 
 YogTable_dump(YogEnv* env, YogVal table) 
 {
     printf("{ \n");
-    YogTable_foreach(env, table, dump_callback, NULL);
+    if (PTR_AS(YogTable, table)->type == &type_val) {
+        YogTable_foreach(env, table, dump_callback, NULL);
+    }
+    else if (PTR_AS(YogTable, table)->type == &type_string) {
+        YogTable_foreach(env, table, dump_string_callback, NULL);
+    }
     printf("}\n");
 }
 

@@ -240,6 +240,7 @@ INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
 INST_CMD = make insts
 GEN_AM_CMD = python $(ROOT_DIR)/tools/update_automake.py .
+TEST_CMD = py.test
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -580,6 +581,9 @@ libyog_la-vm.lo: vm.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyog_la_CFLAGS) $(CFLAGS) -c -o libyog_la-vm.lo `test -f 'vm.c' || echo '$(srcdir)/'`vm.c
 
+.y.c:
+	$(am__skipyacc) $(SHELL) $(YLWRAP) $< y.tab.c $@ y.tab.h $*.h y.output $*.output -- $(YACCCOMPILE)
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -776,13 +780,9 @@ insts:
 am:
 	$(GEN_AM_CMD)
 
-.y.c:
+parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); make)
-	$(LEMON) $<
-
-#parser.c: parser.lt parser.y $(LEMON)
-#	(cd $(LEMON_DIR); make)
-#	$(LEMON) parser.y
+	$(LEMON) parser.y
 
 keywords.inc: keywords
 	gperf $< > $@

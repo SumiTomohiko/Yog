@@ -49,19 +49,17 @@ INST_CMD = make insts
 
 GEN_AM_CMD = python $(ROOT_DIR)/tools/update_automake.py .
 
+TEST_CMD = py.test
+
 insts:
 	python $(ROOT_DIR)/tools/inst.py insts.def ..
 
 am:
 	$(GEN_AM_CMD)
 
-.y.c:
+parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); make)
-	$(LEMON) $<
-
-#parser.c: parser.lt parser.y $(LEMON)
-#	(cd $(LEMON_DIR); make)
-#	$(LEMON) parser.y
+	$(LEMON) parser.y
 
 keywords.inc: keywords
 	gperf $< > $@

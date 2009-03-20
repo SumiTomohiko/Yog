@@ -205,7 +205,12 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
     const char* s = YogString_dup(env, name);
     YogVal val = STR2VAL(s);
 #endif
-    YogCharArray* s = YogCharArray_new_str(env, name);
+    /* TODO: dirty hack */
+    size_t size = strlen(name);
+    char buffer[size + 1];
+    strcpy(buffer, name);
+
+    YogCharArray* s = YogCharArray_new_str(env, buffer);
     YogVal val = PTR2VAL(s);
     PUSH_LOCAL(env, val);
 
