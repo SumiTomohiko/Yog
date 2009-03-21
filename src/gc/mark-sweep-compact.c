@@ -65,8 +65,8 @@ struct YogMarkSweepCompactHeader {
 
 typedef struct YogMarkSweepCompactHeader YogMarkSweepCompactHeader;
 
-static void 
-gc(YogMarkSweepCompact* msc) 
+void 
+YogMarkSweepCompact_gc(YogMarkSweepCompact* msc) 
 {
 }
 
@@ -87,7 +87,7 @@ YogMarkSweepCompact_alloc(YogMarkSweepCompact* msc, ChildrenKeeper keeper, Final
 {
     size_t total_size = size + sizeof(YogMarkSweepCompactHeader);
     if (msc->threshold <= msc->allocated_size) {
-        gc(msc);
+        YogMarkSweepCompact_gc(msc);
     }
 
     msc->allocated_size += total_size;

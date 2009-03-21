@@ -42,6 +42,7 @@ typedef struct YogMarkSweepCompact YogMarkSweepCompact;
 /* src/gc/mark-sweep-compact.c */
 void* YogMarkSweepCompact_alloc(YogMarkSweepCompact*, ChildrenKeeper, Finalizer, size_t);
 void YogMarkSweepCompact_finalize(YogMarkSweepCompact*);
+void YogMarkSweepCompact_gc(YogMarkSweepCompact*);
 void YogMarkSweepCompact_initialize(YogMarkSweepCompact*, size_t, size_t);
 unsigned int object_number_of_page(size_t);
 
