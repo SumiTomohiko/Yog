@@ -39,14 +39,18 @@ test_assign_page1(YogMarkSweepCompact* msc)
 
 CREATE_TEST(assign_page1);
 
-#if 0
 static void 
 test_use_up_page1(YogMarkSweepCompact* msc) 
 {
+    unsigned int obj_num = 63;
+    unsigned int i;
+    for (i = 0; i < obj_num; i++) {
+        YogMarkSweepCompact_alloc(msc, NULL, NULL, 0);
+    }
+    CU_ASSERT_PTR_NULL(msc->pages[0]);
 }
 
-CREATE_TEST(use_up_page);
-#endif
+CREATE_TEST(use_up_page1);
 
 int 
 main(int argc, const char* argv[]) 
@@ -72,6 +76,7 @@ main(int argc, const char* argv[])
 } while (0)
     ADD_TEST(alloc1);
     ADD_TEST(assign_page1);
+    ADD_TEST(use_up_page1);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
