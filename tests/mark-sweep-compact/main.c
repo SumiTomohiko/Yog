@@ -6,12 +6,15 @@
 
 #include "yog/gc/mark-sweep-compact.h"
 
+#define CHUNK_SIZE  (1 * 1024 * 1024)
+#define THRESHOLD   (512 * 1024)
+
 #define CREATE_TEST(name) \
     static void \
     name() \
     { \
         YogMarkSweepCompact msc; \
-        YogMarkSweepCompact_initialize(&msc); \
+        YogMarkSweepCompact_initialize(&msc, CHUNK_SIZE, THRESHOLD); \
         \
         test_##name(&msc); \
         \

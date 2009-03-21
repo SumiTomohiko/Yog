@@ -95,7 +95,7 @@ typedef struct YogMarkSweepCompact YogMarkSweepCompact;
 /* src/gc/mark-sweep-compact.c */
 void* YogMarkSweepCompact_alloc(YogMarkSweepCompact*, size_t);
 void YogMarkSweepCompact_finalize(YogMarkSweepCompact*);
-void YogMarkSweepCompact_initialize(YogMarkSweepCompact*);
+void YogMarkSweepCompact_initialize(YogMarkSweepCompact*, size_t, size_t);
 
 /* PROTOTYPE_END */
 
