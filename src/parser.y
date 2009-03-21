@@ -250,8 +250,10 @@ YogNode_new(YogEnv* env, YogNodeType type)
     \
     if (IS_OBJ(finally)) { \
         YogVal array = YUNDEF; \
+        PUSH_LOCAL(env, array); \
         OBJ_ARRAY_NEW(array, node); \
         FINALLY_NEW(node, array, finally); \
+        POP_LOCALS(env); \
     } \
 } while (0)
 
