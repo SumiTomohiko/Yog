@@ -3,10 +3,21 @@
 
 #include <stddef.h>
 
+/* TODO: commonize with yog/yog.h */
+typedef struct YogEnv YogEnv;
+typedef void* (*ObjectKeeper)(YogEnv*, void*);
+typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
+typedef void (*Finalizer)(YogEnv*, void*);
+
 #define MARK_SWEEP_COMPACT_NUM_SIZE         7
 #define MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE  2049
 
+#define ERR_NONE    0
+#define ERR_MMAP    1
+#define ERR_MUNMAP  2
+
 struct YogMarkSweepCompact {
+    unsigned int err;
     size_t chunk_size;
     struct YogMarkSweepCompactChunk* chunks;
     struct YogMarkSweepCompactChunk* all_chunks;
@@ -29,9 +40,10 @@ typedef struct YogMarkSweepCompact YogMarkSweepCompact;
  */
 
 /* src/gc/mark-sweep-compact.c */
-void* YogMarkSweepCompact_alloc(YogMarkSweepCompact*, size_t);
+void* YogMarkSweepCompact_alloc(YogMarkSweepCompact*, ChildrenKeeper, Finalizer, size_t);
 void YogMarkSweepCompact_finalize(YogMarkSweepCompact*);
 void YogMarkSweepCompact_initialize(YogMarkSweepCompact*, size_t, size_t);
+unsigned int object_number_of_page(size_t);
 
 /* PROTOTYPE_END */
 
