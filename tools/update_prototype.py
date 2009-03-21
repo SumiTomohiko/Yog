@@ -39,6 +39,8 @@ class DeclarationInserter(object):
                     "src/exception.c", "src/stacktrace.c", ], 
             "include/yog/inst.h.tmpl": [ "src/inst.c", ], 
             "include/yog/st.h": [ "src/table.c", ], 
+            "include/yog/gc/mark-sweep-compact.h": [ 
+                "src/gc/mark-sweep-compact.c", ], 
             }
 
     def _find(self, lines, s, start):

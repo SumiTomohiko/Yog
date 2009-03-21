@@ -50,7 +50,8 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_test_OBJECTS = test-main.$(OBJEXT)
+am_test_OBJECTS = test-main.$(OBJEXT) \
+	test-mark-sweep-compact.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
 test_LDADD = $(LDADD)
 test_LINK = $(CCLD) $(test_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -161,9 +162,9 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SRC_DIR = $(top_srcdir)/src
-test_SOURCES = main.c
-test_CFLAGS = -Wall
+YOG_DIR = ../..
+test_SOURCES = main.c $(YOG_DIR)/src/gc/mark-sweep-compact.c
+test_CFLAGS = -Wall -I$(YOG_DIR)/include
 test_LFLAGS = -lcunit
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -254,6 +255,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-mark-sweep-compact.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -282,6 +284,20 @@ test-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='test-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+
+test-mark-sweep-compact.o: $(YOG_DIR)/src/gc/mark-sweep-compact.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-mark-sweep-compact.o -MD -MP -MF $(DEPDIR)/test-mark-sweep-compact.Tpo -c -o test-mark-sweep-compact.o `test -f '$(YOG_DIR)/src/gc/mark-sweep-compact.c' || echo '$(srcdir)/'`$(YOG_DIR)/src/gc/mark-sweep-compact.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test-mark-sweep-compact.Tpo $(DEPDIR)/test-mark-sweep-compact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(YOG_DIR)/src/gc/mark-sweep-compact.c' object='test-mark-sweep-compact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-mark-sweep-compact.o `test -f '$(YOG_DIR)/src/gc/mark-sweep-compact.c' || echo '$(srcdir)/'`$(YOG_DIR)/src/gc/mark-sweep-compact.c
+
+test-mark-sweep-compact.obj: $(YOG_DIR)/src/gc/mark-sweep-compact.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-mark-sweep-compact.obj -MD -MP -MF $(DEPDIR)/test-mark-sweep-compact.Tpo -c -o test-mark-sweep-compact.obj `if test -f '$(YOG_DIR)/src/gc/mark-sweep-compact.c'; then $(CYGPATH_W) '$(YOG_DIR)/src/gc/mark-sweep-compact.c'; else $(CYGPATH_W) '$(srcdir)/$(YOG_DIR)/src/gc/mark-sweep-compact.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test-mark-sweep-compact.Tpo $(DEPDIR)/test-mark-sweep-compact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(YOG_DIR)/src/gc/mark-sweep-compact.c' object='test-mark-sweep-compact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-mark-sweep-compact.obj `if test -f '$(YOG_DIR)/src/gc/mark-sweep-compact.c'; then $(CYGPATH_W) '$(YOG_DIR)/src/gc/mark-sweep-compact.c'; else $(CYGPATH_W) '$(srcdir)/$(YOG_DIR)/src/gc/mark-sweep-compact.c'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
