@@ -142,23 +142,14 @@ typedef enum YogLexerState YogLexerState;
 
 struct YogLexer {
     enum YogLexerState state;
-    struct YogEnv* env;
     FILE* fp;
     struct YogVal line;
     unsigned int next_index;
     struct YogVal buffer;
+    unsigned int lineno;
 };
 
 typedef struct YogLexer YogLexer;
-
-struct YogParser {
-    struct YogEnv* env;
-    struct YogVal lexer;
-    struct YogVal stmts;
-    int lineno;
-};
-
-typedef struct YogParser YogParser;
 
 /* PROTOTYPE_START */
 

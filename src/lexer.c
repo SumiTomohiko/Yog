@@ -47,6 +47,8 @@ readline(YogEnv* env, YogVal lexer, FILE* fp)
         }
     }
 
+    PTR_AS(YogLexer, lexer)->lineno++;
+
     RETURN(env, TRUE);
 }
 
@@ -180,25 +182,33 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
         }
     } while (1);
 
-#define ADD_TOKEN_CHAR(c)               add_token_char(env, lexer, c)
-#define RETURN_VAL_TOKEN(type_, val_)   do { \
-    *token = YogToken_new(env); \
-    PTR_AS(YogToken, *token)->type = (type_); \
-    PTR_AS(YogToken, *token)->u.val = (val_); \
+#define ADD_TOKEN_CHAR(c)                   add_token_char(env, lexer, c)
+#define VAL_TOKEN_NEW(token, type_, val_)   do { \
+    token = YogToken_new(env); \
+    PTR_AS(YogToken, token)->type = (type_); \
+    PTR_AS(YogToken, token)->u.val = (val_); \
+    PTR_AS(YogToken, token)->lineno = PTR_AS(YogLexer, lexer)->lineno; \
+} while (0)
+#define ID_TOKEN_NEW(token, type_, id_)     do { \
+    token = YogToken_new(env); \
+    PTR_AS(YogToken, token)->type = (type_); \
+    PTR_AS(YogToken, token)->u.id = (id_); \
+    PTR_AS(YogToken, token)->lineno = PTR_AS(YogLexer, lexer)->lineno; \
+} while (0)
+#define RETURN_VAL_TOKEN(type, val)         do { \
+    VAL_TOKEN_NEW(*token, type, val); \
     RETURN(env, TRUE); \
 } while (0)
-#define RETURN_ID_TOKEN(type_, s)       do { \
+#define RETURN_ID_TOKEN(type, s)            do { \
     ID id = INTERN(s); \
-    *token = YogToken_new(env); \
-    PTR_AS(YogToken, *token)->type = (type_); \
-    PTR_AS(YogToken, *token)->u.id = id; \
+    ID_TOKEN_NEW(*token, type, id); \
     RETURN(env, TRUE); \
 } while (0)
-#define RETURN_TOKEN(type_)             do { \
+#define RETURN_TOKEN(type_)                 do { \
     RETURN_VAL_TOKEN((type_), YUNDEF); \
 } while (0)
-#define BUFSIZE                         (4)
-#define RETURN_ID_TOKEN1(type, c)       do { \
+#define BUFSIZE                             (4)
+#define RETURN_ID_TOKEN1(type, c)           do { \
     char buffer[BUFSIZE]; \
     snprintf(buffer, sizeof(buffer), "%c", (c)); \
     RETURN_ID_TOKEN((type), buffer); \
@@ -444,22 +454,16 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             const char* name = OBJ_AS(YogString, buffer)->body->items;
             if (PTR_AS(YogLexer, lexer)->state == LS_NAME) {
                 ID id = INTERN(name);
-                *token = YogToken_new(env);
-                PTR_AS(YogToken, *token)->type = TK_NAME;
-                PTR_AS(YogToken, *token)->u.id = id;
+                ID_TOKEN_NEW(*token, TK_NAME, id);
             }
             else {
                 const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
                 if (entry != NULL) {
-                    *token = YogToken_new(env);
-                    PTR_AS(YogToken, *token)->type = entry->type;
-                    PTR_AS(YogToken, *token)->u.val = YUNDEF;
+                    VAL_TOKEN_NEW(*token, entry->type, YUNDEF);
                 }
                 else {
                     ID id = INTERN(name);
-                    *token = YogToken_new(env);
-                    PTR_AS(YogToken, *token)->type = TK_NAME;
-                    PTR_AS(YogToken, *token)->u.id = id;
+                    ID_TOKEN_NEW(*token, TK_NAME, id);
                 }
             }
             SET_STATE(LS_OP);
@@ -549,6 +553,7 @@ reset_lexer(YogEnv* env, YogVal lexer)
     fseek(PTR_AS(YogLexer, lexer)->fp, 0, SEEK_SET);
     YogString_clear(env, PTR_AS(YogLexer, lexer)->line);
     PTR_AS(YogLexer, lexer)->next_index = 0;
+    PTR_AS(YogLexer, lexer)->lineno = 0;
 }
 
 void 
@@ -585,11 +590,11 @@ YogLexer_new(YogEnv* env)
 
     YogVal lexer = PTR2VAL(ALLOC_OBJ(env, keep_children, NULL, YogLexer));
     PTR_AS(YogLexer, lexer)->state = LS_EXPR;
-    PTR_AS(YogLexer, lexer)->env = env;
     PTR_AS(YogLexer, lexer)->fp = NULL;
     PTR_AS(YogLexer, lexer)->line = YUNDEF;
     PTR_AS(YogLexer, lexer)->next_index = 0;
     PTR_AS(YogLexer, lexer)->buffer = YUNDEF;
+    PTR_AS(YogLexer, lexer)->lineno = 0;
     PUSH_LOCAL(env, lexer);
 
     YogVal line = YogString_new(env);
