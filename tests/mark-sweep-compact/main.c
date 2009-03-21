@@ -21,6 +21,8 @@
 static void 
 test_alloc1(YogMarkSweepCompact* msc) 
 {
+    void* ptr = YogMarkSweepCompact_alloc(msc, 0);
+    CU_ASSERT_PTR_NOT_NULL(ptr);
 }
 
 CREATE_TEST(alloc1);
