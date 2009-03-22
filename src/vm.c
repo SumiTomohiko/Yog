@@ -836,7 +836,10 @@ alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Fina
 static void 
 initialize_mark_sweep_compact(YogEnv* env, YogVm* vm) 
 {
+#if 0
     YogMarkSweepCompact_initialize(env, &vm->gc.mark_sweep_compact, 16 * 1024 * 1024, 1 * 1024 * 1024, vm, keep_children);
+#endif
+    YogMarkSweepCompact_initialize(env, &vm->gc.mark_sweep_compact, 16 * 1024 * 1024, 0, vm, keep_children);
 #if 0
     vm->gc.mark_sweep_compact.heap.chunks = NULL;
 
