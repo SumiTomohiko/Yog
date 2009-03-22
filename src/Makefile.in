@@ -63,7 +63,7 @@ am_libyog_la_OBJECTS = libyog_la-arg.lo libyog_la-array.lo \
 	libyog_la-package.lo libyog_la-parser.lo libyog_la-regexp.lo \
 	libyog_la-stacktrace.lo libyog_la-string.lo libyog_la-table.lo \
 	libyog_la-thread.lo libyog_la-token.lo libyog_la-value.lo \
-	libyog_la-vm.lo
+	libyog_la-vm.lo libyog_la-mark-sweep-compact.lo
 libyog_la_OBJECTS = $(am_libyog_la_OBJECTS)
 libyog_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libyog_la_CFLAGS) \
@@ -233,7 +233,7 @@ libyog_la_SOURCES = arg.c \
 	thread.c \
 	token.c \
 	value.c \
-	vm.c
+	vm.c gc/mark-sweep-compact.c
 
 libyog_la_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
 INSTS_DEF = insts.def
@@ -329,6 +329,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-klass.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-lexer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-main.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-mark-sweep-compact.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-method.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-nil.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyog_la-object.Plo@am__quote@
@@ -580,6 +581,13 @@ libyog_la-vm.lo: vm.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='vm.c' object='libyog_la-vm.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyog_la_CFLAGS) $(CFLAGS) -c -o libyog_la-vm.lo `test -f 'vm.c' || echo '$(srcdir)/'`vm.c
+
+libyog_la-mark-sweep-compact.lo: gc/mark-sweep-compact.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyog_la_CFLAGS) $(CFLAGS) -MT libyog_la-mark-sweep-compact.lo -MD -MP -MF $(DEPDIR)/libyog_la-mark-sweep-compact.Tpo -c -o libyog_la-mark-sweep-compact.lo `test -f 'gc/mark-sweep-compact.c' || echo '$(srcdir)/'`gc/mark-sweep-compact.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libyog_la-mark-sweep-compact.Tpo $(DEPDIR)/libyog_la-mark-sweep-compact.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gc/mark-sweep-compact.c' object='libyog_la-mark-sweep-compact.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyog_la_CFLAGS) $(CFLAGS) -c -o libyog_la-mark-sweep-compact.lo `test -f 'gc/mark-sweep-compact.c' || echo '$(srcdir)/'`gc/mark-sweep-compact.c
 
 .y.c:
 	$(am__skipyacc) $(SHELL) $(YLWRAP) $< y.tab.c $@ y.tab.h $*.h y.output $*.output -- $(YACCCOMPILE)

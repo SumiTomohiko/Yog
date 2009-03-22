@@ -4,10 +4,12 @@
 #include <stddef.h>
 
 /* TODO: commonize with yog/yog.h */
+#ifndef __YOG_YOG_H__
 typedef struct YogEnv YogEnv;
 typedef void* (*ObjectKeeper)(YogEnv*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
 typedef void (*Finalizer)(YogEnv*, void*);
+#endif
 
 #define MARK_SWEEP_COMPACT_NUM_SIZE         7
 #define MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE  2049

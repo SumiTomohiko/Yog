@@ -827,9 +827,17 @@ realloc_mem_mark_sweep(YogEnv* env, YogVm* vm, void* ptr, size_t size)
 
 #undef REALLOC
 
+static void* 
+alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+{
+    return YogMarkSweepCompact_alloc(env, &vm->gc.mark_sweep_compact, keeper, finalizer, size);
+}
+
 static void 
 initialize_mark_sweep_compact(YogEnv* env, YogVm* vm) 
 {
+    YogMarkSweepCompact_initialize(env, &vm->gc.mark_sweep_compact, 16 * 1024 * 1024, 1 * 1024 * 1024, vm, keep_children);
+#if 0
     vm->gc.mark_sweep_compact.heap.chunks = NULL;
 
     unsigned int i;
@@ -852,8 +860,10 @@ initialize_mark_sweep_compact(YogEnv* env, YogVm* vm)
     }
 
     vm->gc.mark_sweep_compact.header = NULL;
+#endif
 }
 
+#if 0
 static void 
 finalize_mark_sweep_compact(YogEnv* env, YogMarkSweepCompactHeader* header) 
 {
@@ -1336,6 +1346,7 @@ alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Fina
 
     return NULL;
 }
+#endif
 
 static void 
 free_mem_mark_sweep_compact(YogEnv* env, YogVm* vm) 
@@ -1424,13 +1435,15 @@ YogVm_init(YogVm* vm, YogGcType gc)
         break;
     case GC_MARK_SWEEP_COMPACT:
         vm->init_gc = initialize_mark_sweep_compact;
+#if 0
         vm->exec_gc = mark_sweep_compact_gc;
+#endif
+        vm->exec_gc = NULL;
         vm->alloc_mem = alloc_mem_mark_sweep_compact;
         vm->realloc_mem = NULL;
         vm->free_mem = free_mem_mark_sweep_compact;
 #if 0
         vm->dump_mem = dump_mem_not_supported;
-#endif
         vm->gc.mark_sweep_compact.heap.chunks = NULL;
         vm->gc.mark_sweep_compact.heap.all_chunks = NULL;
         vm->gc.mark_sweep_compact.heap.all_chunks_last = NULL;
@@ -1438,6 +1451,7 @@ YogVm_init(YogVm* vm, YogGcType gc)
         vm->gc.mark_sweep_compact.heap.chunk_size = 0;
         vm->gc.mark_sweep_compact.threshold = 0;
         vm->gc.mark_sweep_compact.allocated_size = 0;
+#endif
         break;
     default:
         fprintf(stderr, "Unknown GC type.");
@@ -1546,8 +1560,10 @@ YogVm_delete(YogEnv* env, YogVm* vm)
 void 
 YogVm_config_mark_sweep_compact(YogEnv* env, YogVm* vm, size_t chunk_size, size_t threshold) 
 {
+#if 0
     vm->gc.mark_sweep_compact.heap.chunk_size = chunk_size;
     vm->gc.mark_sweep_compact.threshold = threshold;
+#endif
 }
 
 /**

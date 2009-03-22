@@ -40,7 +40,7 @@ libyog_la_SOURCES = arg.c \
 	thread.c \
 	token.c \
 	value.c \
-	vm.c
+	vm.c gc/mark-sweep-compact.c
 libyog_la_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
 
 INSTS_DEF = insts.def

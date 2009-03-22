@@ -9,8 +9,6 @@
 #include <stdlib.h>
 #include "oniguruma.h"
 
-#include "yog/gc/mark-sweep-compact.h"
-
 #define BOOL    int
 #define FALSE   (0)
 #define TRUE    (!FALSE)
@@ -107,9 +105,9 @@ typedef void* (*ObjectKeeper)(YogEnv*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
 typedef void (*Finalizer)(YogEnv*, void*);
 
-#if 0
 #define SURVIVE_INDEX_MAX    8
 
+#if 0
 #define MARK_SWEEP_COMPACT_NUM_SIZE         7
 #define MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE  2049
 
@@ -126,6 +124,8 @@ struct YogMarkSweepCompactHeap {
 
 typedef struct YogMarkSweepCompactHeap YogMarkSweepCompactHeap;
 #endif
+
+#include "yog/gc/mark-sweep-compact.h"
 
 struct YogVm {
     BOOL gc_stress;
@@ -152,12 +152,15 @@ struct YogVm {
             size_t threshold;
             size_t allocated_size;
         } mark_sweep;
+        YogMarkSweepCompact mark_sweep_compact;
+#if 0
         struct {
             struct YogMarkSweepCompactHeap heap;
             struct YogMarkSweepCompactHeader* header;
             size_t threshold;
             size_t allocated_size;
         } mark_sweep_compact;
+#endif
     } gc;
     struct {
         BOOL print;
