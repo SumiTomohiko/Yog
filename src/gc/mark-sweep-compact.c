@@ -411,7 +411,7 @@ compact(YogEnv* env, YogMarkSweepCompact* msc)
     iterate_objects(msc, &compactor);
     YogMarkSweepCompactPage* last_page = compactor.next_page;
 
-    (*msc->root_keeper)(env, msc->root, keep_object);
+    (*msc->root_keeper)(env, msc->root, update_pointer);
     YogMarkSweepCompactHeader** front = &msc->header;
     if (*front != NULL) {
         *front = (*front)->forwarding_addr;
