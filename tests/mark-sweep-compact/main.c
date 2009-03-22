@@ -65,6 +65,45 @@ test_gc1(YogMarkSweepCompact* msc)
 
 CREATE_TEST(gc1, NULL, gc1_keeper);
 
+static void* gc2_ptr = NULL;
+
+static void 
+gc2_keeper(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    gc2_ptr = (*keeper)(env, gc2_ptr);
+}
+
+static void 
+test_gc2(YogMarkSweepCompact* msc) 
+{
+    gc2_ptr = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    void* gc2_ptr_old = gc2_ptr;
+    YogMarkSweepCompact_gc(NULL, msc);
+    CU_ASSERT_PTR_EQUAL(gc2_ptr, gc2_ptr_old);
+}
+
+CREATE_TEST(gc2, NULL, gc2_keeper);
+
+static void* gc3_ptr1 = NULL;
+static void* gc3_ptr2 = NULL;
+
+static void 
+gc3_keeper(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    gc3_ptr2 = (*keeper)(env, gc3_ptr2);
+}
+
+static void 
+test_gc3(YogMarkSweepCompact* msc) 
+{
+    gc3_ptr1 = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    gc3_ptr2 = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    YogMarkSweepCompact_gc(NULL, msc);
+    CU_ASSERT_PTR_EQUAL(gc3_ptr2, gc3_ptr1);
+}
+
+CREATE_TEST(gc3, NULL, gc3_keeper);
+
 int 
 main(int argc, const char* argv[]) 
 {
@@ -91,6 +130,8 @@ main(int argc, const char* argv[])
     ADD_TEST(assign_page1);
     ADD_TEST(use_up_page1);
     ADD_TEST(gc1);
+    ADD_TEST(gc2);
+    ADD_TEST(gc3);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
