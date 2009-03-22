@@ -15,6 +15,7 @@ typedef void (*Finalizer)(YogEnv*, void*);
 #define ERR_NONE    0
 #define ERR_MMAP    1
 #define ERR_MUNMAP  2
+#define ERR_MALLOC  3
 
 struct YogMarkSweepCompact {
     unsigned int err;

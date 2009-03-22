@@ -99,6 +99,10 @@ YogMarkSweepCompact_alloc(YogMarkSweepCompact* msc, ChildrenKeeper keeper, Final
             YogMarkSweepCompactChunk* chunk = msc->chunks;
             if (chunk == NULL) {
                 chunk = malloc(sizeof(YogMarkSweepCompactChunk));
+                if (chunk == NULL) {
+                    msc->err = ERR_MALLOC;
+                    return NULL;
+                }
 
                 size_t chunk_size = msc->chunk_size;
                 size_t mmap_size = chunk_size + PAGE_SIZE;
