@@ -4,6 +4,10 @@
 #include <CUnit/CUnit.h>
 #include "yog/gc/mark-sweep-compact.h"
 
+#if 0
+#define PAGE_SIZE   4096
+#define CHUNK_SIZE  (2 * PAGE_SIZE)
+#endif
 #define CHUNK_SIZE  (1 * 1024 * 1024)
 #define THRESHOLD   CHUNK_SIZE
 
