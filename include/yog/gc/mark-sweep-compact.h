@@ -30,6 +30,8 @@ struct YogMarkSweepCompact {
     struct YogMarkSweepCompactHeader* header;
     size_t threshold;
     size_t allocated_size;
+    void* root;
+    ChildrenKeeper root_keeper;
 };
 
 typedef struct YogMarkSweepCompact YogMarkSweepCompact;
@@ -41,11 +43,10 @@ typedef struct YogMarkSweepCompact YogMarkSweepCompact;
  */
 
 /* src/gc/mark-sweep-compact.c */
-void* YogMarkSweepCompact_alloc(YogMarkSweepCompact*, ChildrenKeeper, Finalizer, size_t);
-void YogMarkSweepCompact_finalize(YogMarkSweepCompact*);
-void YogMarkSweepCompact_gc(YogMarkSweepCompact*);
-void YogMarkSweepCompact_initialize(YogMarkSweepCompact*, size_t, size_t);
-unsigned int object_number_of_page(size_t);
+void* YogMarkSweepCompact_alloc(YogEnv*, YogMarkSweepCompact*, ChildrenKeeper, Finalizer, size_t);
+void YogMarkSweepCompact_finalize(YogEnv*, YogMarkSweepCompact*);
+void YogMarkSweepCompact_gc(YogEnv*, YogMarkSweepCompact*);
+void YogMarkSweepCompact_initialize(YogEnv*, YogMarkSweepCompact*, size_t, size_t, void*, ChildrenKeeper);
 
 /* PROTOTYPE_END */
 

@@ -1,43 +1,41 @@
 #include <stdlib.h>
 #include <stdio.h>
-
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
-
 #include "yog/gc/mark-sweep-compact.h"
 
 #define CHUNK_SIZE  (1 * 1024 * 1024)
-#define THRESHOLD   (512 * 1024)
+#define THRESHOLD   CHUNK_SIZE
 
-#define CREATE_TEST(name) \
+#define CREATE_TEST(name, root, keeper) \
     static void \
     name() \
     { \
         YogMarkSweepCompact msc; \
-        YogMarkSweepCompact_initialize(&msc, CHUNK_SIZE, THRESHOLD); \
+        YogMarkSweepCompact_initialize(NULL, &msc, CHUNK_SIZE, THRESHOLD, root, keeper); \
         \
         test_##name(&msc); \
         \
-        YogMarkSweepCompact_finalize(&msc); \
+        YogMarkSweepCompact_finalize(NULL, &msc); \
     }
 
 static void 
 test_alloc1(YogMarkSweepCompact* msc) 
 {
-    void* ptr = YogMarkSweepCompact_alloc(msc, NULL, NULL, 0);
+    void* ptr = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
     CU_ASSERT_PTR_NOT_NULL(ptr);
 }
 
-CREATE_TEST(alloc1);
+CREATE_TEST(alloc1, NULL, NULL);
 
 static void 
 test_assign_page1(YogMarkSweepCompact* msc) 
 {
-    YogMarkSweepCompact_alloc(msc, NULL, NULL, 0);
+    YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
     CU_ASSERT_PTR_NOT_NULL(msc->pages[0]);
 }
 
-CREATE_TEST(assign_page1);
+CREATE_TEST(assign_page1, NULL, NULL);
 
 static void 
 test_use_up_page1(YogMarkSweepCompact* msc) 
@@ -45,22 +43,27 @@ test_use_up_page1(YogMarkSweepCompact* msc)
     unsigned int obj_num = 63;
     unsigned int i;
     for (i = 0; i < obj_num; i++) {
-        YogMarkSweepCompact_alloc(msc, NULL, NULL, 0);
+        YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
     }
     CU_ASSERT_PTR_NULL(msc->pages[0]);
 }
 
-CREATE_TEST(use_up_page1);
+CREATE_TEST(use_up_page1, NULL, NULL);
+
+static void 
+gc1_keeper(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+}
 
 static void 
 test_gc1(YogMarkSweepCompact* msc) 
 {
-    YogMarkSweepCompact_alloc(msc, NULL, NULL, 0);
-    YogMarkSweepCompact_gc(msc);
+    YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    YogMarkSweepCompact_gc(NULL, msc);
     CU_ASSERT_PTR_NULL(msc->pages[0]);
 }
 
-CREATE_TEST(gc1);
+CREATE_TEST(gc1, NULL, gc1_keeper);
 
 int 
 main(int argc, const char* argv[]) 
@@ -88,6 +91,7 @@ main(int argc, const char* argv[])
     ADD_TEST(assign_page1);
     ADD_TEST(use_up_page1);
     ADD_TEST(gc1);
+#undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
@@ -95,7 +99,6 @@ main(int argc, const char* argv[])
     CU_cleanup_registry();
 
     return 0;
-#undef ADD_TEST
 #undef ERROR
 }
 

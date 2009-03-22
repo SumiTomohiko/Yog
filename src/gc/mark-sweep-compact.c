@@ -13,7 +13,6 @@
 #define SURVIVE_INDEX_MAX    8
 
 #define PAGE_SIZE       4096
-#define PTR2PAGE(p)     ((YogMarkSweepCompactPage*)((uintptr_t)(p) & ~(PAGE_SIZE - 1)))
 
 struct YogMarkSweepCompactFreeList {
     struct YogMarkSweepCompactFreeList* next;
@@ -65,12 +64,138 @@ struct YogMarkSweepCompactHeader {
 
 typedef struct YogMarkSweepCompactHeader YogMarkSweepCompactHeader;
 
-void 
-YogMarkSweepCompact_gc(YogMarkSweepCompact* msc) 
+static YogMarkSweepCompactPage* 
+ptr2page(void* p) 
+{
+    return ((YogMarkSweepCompactPage*)((uintptr_t)(p) & ~(PAGE_SIZE - 1)));
+}
+
+static void* 
+keep_object(YogEnv* env, void* ptr) 
+{
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)ptr - 1;
+    if (!header->marked) {
+#if 0
+        GcObjectStat_increment_survive_num(&header->stat);
+        increment_living_object_number(ENV_VM(env), header->stat.survive_num);
+        increment_total_object_number(ENV_VM(env));
+#endif
+        header->marked = TRUE;
+
+        ChildrenKeeper keeper = header->keeper;
+        if (keeper != NULL) {
+            (*keeper)(env, ptr, keep_object);
+        }
+    }
+
+    return ptr;
+}
+
+static void 
+finalize(YogEnv* env, YogMarkSweepCompactHeader* header) 
+{
+    if (header->finalizer != NULL) {
+        (*header->finalizer)(env, header + 1);
+    }
+}
+
+static void 
+destroy_memory(void* ptr, size_t size) 
+{
+    memset(ptr, 0xfd, size);
+}
+
+static void 
+delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header) 
+{
+    size_t size = header->size;
+    destroy_memory(header, size);
+
+    YogMarkSweepCompactPage* page = ptr2page(header);
+    page->num_obj_avail++;
+    unsigned int index = msc->size2index[size];
+    if (page->num_obj_avail == page->num_obj) {
+        YogMarkSweepCompactPage* pages = msc->pages[index];
+        if (pages == page) {
+            msc->pages[index] = pages->next;
+        }
+        else {
+            while (pages != NULL) {
+                if (pages->next == page) {
+                    pages->next = page->next;
+                    break;
+                }
+                pages = pages->next;
+            }
+        }
+
+        YogMarkSweepCompactChunk* chunk = page->chunk;
+        ((YogMarkSweepCompactFreeList*)page)->next = chunk->pages;
+        chunk->pages = (YogMarkSweepCompactFreeList*)page;
+    }
+    else {
+        if (page->num_obj_avail == 1) {
+            page->next = msc->pages[index];
+            msc->pages[index] = page;
+        }
+        ((YogMarkSweepCompactFreeList*)header)->next = page->freelist;
+        page->freelist = (YogMarkSweepCompactFreeList*)header;
+    }
+}
+
+static void 
+compact(YogMarkSweepCompact* msc) 
 {
 }
 
-unsigned int 
+void 
+YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc) 
+{
+    YogMarkSweepCompactHeader* header = msc->header;
+    while (header != NULL) {
+        header->updated = header->marked = FALSE;
+        header = header->next;
+    }
+
+    (*msc->root_keeper)(env, msc->root, keep_object);
+
+    header = msc->header;
+    while (header != NULL) {
+        YogMarkSweepCompactHeader* next = header->next;
+
+        if (!header->marked) {
+            finalize(env, header);
+
+            if (header->prev != NULL) {
+                header->prev->next = next;
+            }
+            else {
+                msc->header = next;
+            }
+            if (next != NULL) {
+                next->prev = header->prev;
+            }
+
+            delete(msc, header);
+        }
+
+        header = next;
+    }
+
+    /**
+     * TODO: free large objects.
+     */
+
+    compact(msc);
+
+    msc->allocated_size = 0;
+}
+
+static unsigned int 
 object_number_of_page(size_t obj_size) 
 {
     return (PAGE_SIZE - sizeof(YogMarkSweepCompactPage)) / obj_size;
@@ -83,11 +208,11 @@ initialize_memory(void* ptr, size_t size)
 }
 
 void* 
-YogMarkSweepCompact_alloc(YogMarkSweepCompact* msc, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
+YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
 {
     size_t total_size = size + sizeof(YogMarkSweepCompactHeader);
     if (msc->threshold <= msc->allocated_size) {
-        YogMarkSweepCompact_gc(msc);
+        YogMarkSweepCompact_gc(env, msc);
     }
 
     msc->allocated_size += total_size;
@@ -216,7 +341,7 @@ YogMarkSweepCompact_alloc(YogMarkSweepCompact* msc, ChildrenKeeper keeper, Final
 }
 
 void 
-YogMarkSweepCompact_initialize(YogMarkSweepCompact* msc, size_t chunk_size, size_t threshold) 
+YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chunk_size, size_t threshold, void* root, ChildrenKeeper root_keeper) 
 {
     msc->err = ERR_NONE;
     msc->chunk_size = chunk_size;
@@ -243,10 +368,12 @@ YogMarkSweepCompact_initialize(YogMarkSweepCompact* msc, size_t chunk_size, size
     msc->header = NULL;
     msc->threshold = threshold;
     msc->allocated_size = 0;
+    msc->root = root;
+    msc->root_keeper = root_keeper;
 }
 
 void 
-YogMarkSweepCompact_finalize(YogMarkSweepCompact* msc) 
+YogMarkSweepCompact_finalize(YogEnv* env, YogMarkSweepCompact* msc) 
 {
 }
 
