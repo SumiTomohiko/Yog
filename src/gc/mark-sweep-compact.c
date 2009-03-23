@@ -689,7 +689,8 @@ CREATE_TEST(assign_page1, NULL, NULL);
 static void 
 test_use_up_page1(YogMarkSweepCompact* msc) 
 {
-    unsigned int obj_num = 63;
+    size_t size = msc->freelist_size[0];
+    unsigned int obj_num = object_number_of_page(size);
     unsigned int i;
     for (i = 0; i < obj_num; i++) {
         YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
@@ -700,7 +701,7 @@ test_use_up_page1(YogMarkSweepCompact* msc)
 CREATE_TEST(use_up_page1, NULL, NULL);
 
 static void 
-gc1_keeper(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+dummy_keeper(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
 }
 
@@ -712,7 +713,7 @@ test_gc1(YogMarkSweepCompact* msc)
     CU_ASSERT_PTR_NULL(msc->pages[0]);
 }
 
-CREATE_TEST(gc1, NULL, gc1_keeper);
+CREATE_TEST(gc1, NULL, dummy_keeper);
 
 static void* gc2_ptr = NULL;
 
@@ -754,11 +755,6 @@ test_gc3(YogMarkSweepCompact* msc)
 CREATE_TEST(gc3, NULL, gc3_keeper);
 
 static void 
-page_freelist1_keeper(YogEnv* env, void* ptr, ObjectKeeper keeper) 
-{
-}
-
-static void 
 test_page_freelist1(YogMarkSweepCompact* msc) 
 {
     void* ptr1 = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
@@ -767,7 +763,55 @@ test_page_freelist1(YogMarkSweepCompact* msc)
     CU_ASSERT_PTR_EQUAL(ptr1, ptr2);
 }
 
-CREATE_TEST(page_freelist1, NULL, page_freelist1_keeper);
+CREATE_TEST(page_freelist1, NULL, dummy_keeper);
+
+static void 
+test_page_freelist2(YogMarkSweepCompact* msc) 
+{
+    size_t size = msc->freelist_size[0];
+    unsigned int obj_num = object_number_of_page(size);
+    unsigned int i;
+    for (i = 0; i < obj_num; i++) {
+        YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    }
+    YogMarkSweepCompact_gc(NULL, msc);
+
+    unsigned int page_num = msc->chunk_size / PAGE_SIZE;
+    unsigned char* page = (unsigned char*)msc->chunks->first_page;
+    for (i = 0; i < page_num - 1; i++) {
+        unsigned char* page_begin = page + PAGE_SIZE * i;
+        unsigned char* page_end = page_begin + PAGE_SIZE;
+        CU_ASSERT_PTR_EQUAL(*(void**)page_begin, page_end);
+    }
+    unsigned char* page_begin = page + PAGE_SIZE * (page_num - 1);
+    CU_ASSERT_PTR_NULL(*(void**)page_begin);
+}
+
+CREATE_TEST(page_freelist2, NULL, dummy_keeper);
+
+static void 
+test_page_freelist3(YogMarkSweepCompact* msc) 
+{
+    size_t size = msc->freelist_size[0];
+    unsigned int obj_num = object_number_of_page(size);
+    unsigned int i;
+    for (i = 0; i < obj_num; i++) {
+        YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    }
+    YogMarkSweepCompact_gc(NULL, msc);
+
+    unsigned int page_num = msc->chunk_size / PAGE_SIZE;
+    unsigned char* page = (unsigned char*)msc->chunks->first_page;
+    for (i = 0; i < page_num - 1; i++) {
+        unsigned char* page_begin = page + PAGE_SIZE * i;
+        unsigned char* page_end = page_begin + PAGE_SIZE;
+        CU_ASSERT_PTR_EQUAL(*(void**)page_begin, page_end);
+    }
+    unsigned char* page_begin = page + PAGE_SIZE * (page_num - 1);
+    CU_ASSERT_PTR_NULL(*(void**)page_begin);
+}
+
+CREATE_TEST(page_freelist3, NULL, dummy_keeper);
 
 #define PRIVATE
 
@@ -799,6 +843,8 @@ main(int argc, const char* argv[])
     ADD_TEST(gc2);
     ADD_TEST(gc3);
     ADD_TEST(page_freelist1);
+    ADD_TEST(page_freelist2);
+    ADD_TEST(page_freelist3);
     ADD_TEST(use_up_page1);
 #undef ADD_TEST
 
