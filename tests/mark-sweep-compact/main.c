@@ -4,10 +4,7 @@
 #include <CUnit/CUnit.h>
 #include "yog/gc/mark-sweep-compact.h"
 
-#if 0
 #define PAGE_SIZE   4096
-#define CHUNK_SIZE  (2 * PAGE_SIZE)
-#endif
 #define CHUNK_SIZE  (1 * 1024 * 1024)
 #define THRESHOLD   CHUNK_SIZE
 
@@ -108,6 +105,22 @@ test_gc3(YogMarkSweepCompact* msc)
 
 CREATE_TEST(gc3, NULL, gc3_keeper);
 
+static void 
+page_freelist1_keeper(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+}
+
+static void 
+test_page_freelist1(YogMarkSweepCompact* msc) 
+{
+    void* ptr1 = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    YogMarkSweepCompact_gc(NULL, msc);
+    void* ptr2 = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    CU_ASSERT_PTR_EQUAL(ptr1, ptr2);
+}
+
+CREATE_TEST(page_freelist1, NULL, page_freelist1_keeper);
+
 int 
 main(int argc, const char* argv[]) 
 {
@@ -132,10 +145,11 @@ main(int argc, const char* argv[])
 } while (0)
     ADD_TEST(alloc1);
     ADD_TEST(assign_page1);
-    ADD_TEST(use_up_page1);
     ADD_TEST(gc1);
     ADD_TEST(gc2);
     ADD_TEST(gc3);
+    ADD_TEST(page_freelist1);
+    ADD_TEST(use_up_page1);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);

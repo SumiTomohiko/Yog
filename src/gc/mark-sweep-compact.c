@@ -644,6 +644,7 @@ YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chu
 void 
 YogMarkSweepCompact_finalize(YogEnv* env, YogMarkSweepCompact* msc) 
 {
+    /* TODO */
 }
 
 /**
