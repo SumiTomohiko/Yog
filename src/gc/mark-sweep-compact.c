@@ -813,6 +813,55 @@ test_page_freelist3(YogMarkSweepCompact* msc)
 
 CREATE_TEST(page_freelist3, NULL, dummy_keeper);
 
+static void* page_freelist4_ptr = NULL;
+
+static void 
+page_freelist4_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    page_freelist4_ptr = (*keeper)(env, page_freelist4_ptr);
+}
+
+static void 
+test_page_freelist4(YogMarkSweepCompact* msc) 
+{
+    size_t size = msc->freelist_size[0];
+    unsigned int obj_num = object_number_of_page(size) + 1;
+    unsigned int i;
+    for (i = 1; i < obj_num; i++) {
+        YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    }
+    page_freelist4_ptr = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+
+    unsigned int page_num = msc->chunk_size / PAGE_SIZE - 1;
+    unsigned char* page = (unsigned char*)msc->chunks->first_page;
+    for (i = 0; i < page_num - 1; i++) {
+        unsigned char* page_begin = page + PAGE_SIZE * (i + 1);
+        unsigned char* page_end = page_begin + PAGE_SIZE;
+        CU_ASSERT_PTR_EQUAL(*(void**)page_begin, page_end);
+    }
+    unsigned char* page_begin = page + PAGE_SIZE * page_num;
+    CU_ASSERT_PTR_NULL(*(void**)page_begin);
+}
+
+CREATE_TEST(page_freelist4, NULL, page_freelist4_keep_children);
+
+static void 
+test_page1(YogMarkSweepCompact* msc) 
+{
+    unsigned int index = 0;
+    size_t size = msc->freelist_size[index];
+    unsigned int obj_num = object_number_of_page(size) + 1;
+    unsigned int i;
+    for (i = 0; i < obj_num - 1; i++) {
+        YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    }
+    void* p = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    void* page = ptr2page(p);
+    CU_ASSERT_PTR_EQUAL(msc->pages[index], page);
+}
+
+CREATE_TEST(page1, NULL, NULL);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -842,9 +891,11 @@ main(int argc, const char* argv[])
     ADD_TEST(gc1);
     ADD_TEST(gc2);
     ADD_TEST(gc3);
+    ADD_TEST(page1);
     ADD_TEST(page_freelist1);
     ADD_TEST(page_freelist2);
     ADD_TEST(page_freelist3);
+    ADD_TEST(page_freelist4);
     ADD_TEST(use_up_page1);
 #undef ADD_TEST
 
