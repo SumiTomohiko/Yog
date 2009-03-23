@@ -301,7 +301,7 @@ on `(hostname || uname -n) 2>/dev/null | sed 1q`
 "
 
 # Files that config.status was made for.
-config_files=" Makefile src/Makefile tools/lemon/Makefile"
+config_files=" Makefile src/Makefile tools/lemon/Makefile tests/mark-sweep-compact/Makefile"
 config_headers=" config.h"
 config_commands=" depfiles"
 
@@ -440,6 +440,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "tools/lemon/Makefile") CONFIG_FILES="$CONFIG_FILES tools/lemon/Makefile" ;;
+    "tests/mark-sweep-compact/Makefile") CONFIG_FILES="$CONFIG_FILES tests/mark-sweep-compact/Makefile" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -503,7 +504,7 @@ s,@PACKAGE_NAME@,|#_!!_#|Yog,g
 s,@PACKAGE_TARNAME@,|#_!!_#|yog,g
 s,@PACKAGE_VERSION@,|#_!!_#|0.9.0.0,g
 s,@PACKAGE_STRING@,|#_!!_#|Yog 0.9.0.0,g
-s,@PACKAGE_BUGREPORT@,|#_!!_#|tom@|#_!!_#|nekomimists.ddo.jp,g
+s,@PACKAGE_BUGREPORT@,|#_!!_#|no-define,g
 s,@exec_prefix@,|#_!!_#|${prefix},g
 s,@prefix@,|#_!!_#|/home/tom,g
 s,@program_transform_name@,|#_!!_#|s\,x\,x\,,g
@@ -865,7 +866,7 @@ s,^\([	 #]*\)[^	 ]*\([	 ]*PACKAGE_NAME\)[	 (].*,\1define\2 "Yog" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*PACKAGE_TARNAME\)[	 (].*,\1define\2 "yog" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*PACKAGE_VERSION\)[	 (].*,\1define\2 "0.9.0.0" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*PACKAGE_STRING\)[	 (].*,\1define\2 "Yog 0.9.0.0" ,
-s,^\([	 #]*\)[^	 ]*\([	 ]*PACKAGE_BUGREPORT\)[	 (].*,\1define\2 "tom@nekomimists.ddo.jp" ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*PACKAGE_BUGREPORT\)[	 (].*,\1define\2 "no-define" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*PACKAGE\)[	 (].*,\1define\2 "yog" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*VERSION\)[	 (].*,\1define\2 "0.9.0.0" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*STDC_HEADERS\)[	 (].*,\1define\2 1 ,
