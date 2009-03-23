@@ -235,7 +235,7 @@ free_chunks(YogMarkSweepCompact* msc, Compactor* compactor)
 }
 
 static void 
-remake_freelist(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactPage* last_page) 
+remake_freelist(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactPage* first_free_page) 
 {
     unsigned int i;
     for (i = 0; i < MARK_SWEEP_COMPACT_NUM_SIZE; i++) {
@@ -262,13 +262,13 @@ remake_freelist(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepComp
         }
     }
 
-    if (last_page != NULL) {
+    if (first_free_page != NULL) {
         YogMarkSweepCompactChunk* chunk = compactor->cur_chunk;
         if (chunk == NULL) {
             return;
         }
 
-        unsigned char* page = (unsigned char*)last_page + PAGE_SIZE;
+        unsigned char* page = (unsigned char*)first_free_page;
         unsigned char* chunk_begin = (unsigned char*)chunk->first_page;
         unsigned char* chunk_end = chunk_begin + msc->chunk_size;
         while (page + PAGE_SIZE < chunk_end) {
@@ -414,7 +414,7 @@ compact(YogEnv* env, YogMarkSweepCompact* msc)
     Compactor_initialize(&compactor);
     compactor.callback = set_forward_address;
     iterate_objects(msc, &compactor);
-    YogMarkSweepCompactPage* last_page = compactor.next_page;
+    YogMarkSweepCompactPage* first_free_page = compactor.next_page;
 
     (*msc->root_keeper)(env, msc->root, update_pointer);
     YogMarkSweepCompactHeader** front = &msc->header;
@@ -429,7 +429,7 @@ compact(YogEnv* env, YogMarkSweepCompact* msc)
     free_chunks(msc, &compactor);
     msc->all_chunks_last = compactor.cur_chunk;
 
-    remake_freelist(msc, &compactor, last_page);
+    remake_freelist(msc, &compactor, first_free_page);
 }
 
 void 
@@ -831,6 +831,8 @@ test_page_freelist4(YogMarkSweepCompact* msc)
         YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
     }
     page_freelist4_ptr = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+
+    YogMarkSweepCompact_gc(NULL, msc);
 
     unsigned int page_num = msc->chunk_size / PAGE_SIZE - 1;
     unsigned char* page = (unsigned char*)msc->chunks->first_page;
