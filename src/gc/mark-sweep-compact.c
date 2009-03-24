@@ -277,6 +277,7 @@ remake_freelist(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepComp
             page = next_page;
         }
         ((YogMarkSweepCompactFreeList*)page)->next = NULL;
+        chunk->pages = (YogMarkSweepCompactFreeList*)first_free_page;
     }
 }
 
