@@ -107,24 +107,6 @@ typedef void (*Finalizer)(YogEnv*, void*);
 
 #define SURVIVE_INDEX_MAX    8
 
-#if 0
-#define MARK_SWEEP_COMPACT_NUM_SIZE         7
-#define MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE  2049
-
-struct YogMarkSweepCompactHeap {
-    size_t chunk_size;
-    struct YogMarkSweepCompactChunk* chunks;
-    struct YogMarkSweepCompactChunk* all_chunks;
-    struct YogMarkSweepCompactChunk* all_chunks_last;
-    struct YogMarkSweepCompactPage* pages[MARK_SWEEP_COMPACT_NUM_SIZE];
-    struct YogMarkSweepCompactLargeObject* large_obj;
-    size_t freelist_size[MARK_SWEEP_COMPACT_NUM_SIZE];
-    unsigned int size2index[MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE];
-};
-
-typedef struct YogMarkSweepCompactHeap YogMarkSweepCompactHeap;
-#endif
-
 #include "yog/gc/mark-sweep-compact.h"
 
 struct YogVm {
