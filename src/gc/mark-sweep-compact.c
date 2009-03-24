@@ -847,6 +847,34 @@ test_page_freelist4(YogMarkSweepCompact* msc)
 
 CREATE_TEST(page_freelist4, NULL, page_freelist4_keep_children);
 
+static void* page_freelist5_ptr = NULL;
+
+static void 
+page_freelist5_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    page_freelist5_ptr = (*keeper)(env, page_freelist5_ptr);
+}
+
+static void 
+test_page_freelist5(YogMarkSweepCompact* msc) 
+{
+    size_t size = msc->freelist_size[0];
+    unsigned int obj_num = object_number_of_page(size) + 1;
+    unsigned int i;
+    for (i = 1; i < obj_num; i++) {
+        YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+    }
+    page_freelist5_ptr = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
+
+    YogMarkSweepCompact_gc(NULL, msc);
+
+    unsigned char* first_page = (unsigned char*)msc->chunks->first_page;
+    unsigned char* page = first_page + PAGE_SIZE;
+    CU_ASSERT_PTR_EQUAL(msc->chunks->pages, page);
+}
+
+CREATE_TEST(page_freelist5, NULL, page_freelist5_keep_children);
+
 static void 
 test_page1(YogMarkSweepCompact* msc) 
 {
@@ -898,6 +926,7 @@ main(int argc, const char* argv[])
     ADD_TEST(page_freelist2);
     ADD_TEST(page_freelist3);
     ADD_TEST(page_freelist4);
+    ADD_TEST(page_freelist5);
     ADD_TEST(use_up_page1);
 #undef ADD_TEST
 
