@@ -93,7 +93,6 @@ struct YogHeap {
 };
 
 typedef struct YogHeap YogHeap;
-#endif
 
 struct YogMarkSweepHeader {
     struct GcObjectStat stat;
@@ -107,7 +106,6 @@ struct YogMarkSweepHeader {
 
 typedef struct YogMarkSweepHeader YogMarkSweepHeader;
 
-#if 0
 struct CopyingHeader {
     struct GcObjectStat stat;
     ChildrenKeeper keeper;
@@ -266,6 +264,8 @@ GcObjectStat_initialize(GcObjectStat* stat)
 static void* 
 alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
+    return YogMarkSweep_alloc(env, &vm->gc.mark_sweep, keeper, finalizer, size);
+#if 0
     if (!vm->disable_gc) {
         unsigned int threshold = vm->gc.mark_sweep.threshold;
         unsigned int allocated_size = vm->gc.mark_sweep.allocated_size;
@@ -295,6 +295,7 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer fi
     increment_total_object_number(ENV_VM(env));
 
     return header + 1;
+#endif
 }
 
 void* 
@@ -655,10 +656,14 @@ initialize_copying(YogEnv* env, YogVm* vm)
 static void 
 initialize_mark_sweep(YogEnv* env, YogVm* vm) 
 {
+#if 0
     vm->gc.mark_sweep.header = NULL;
     vm->gc.mark_sweep.allocated_size = 0;
+#endif
+    YogMarkSweep_initialize(env, &vm->gc.mark_sweep, 0, vm, keep_children);
 }
 
+#if 0
 static void* 
 keep_object_mark_sweep(YogEnv* env, void* ptr) 
 {
@@ -696,6 +701,7 @@ finalize_mark_sweep(YogEnv* env, YogMarkSweepHeader* header)
         (*header->finalizer)(env, header + 1);
     }
 }
+#endif
 
 static void* 
 keep_object_mark_sweep_compact(YogEnv* env, void* ptr) 
@@ -720,6 +726,7 @@ keep_object_mark_sweep_compact(YogEnv* env, void* ptr)
     return ptr;
 }
 
+#if 0
 static void 
 mark_sweep_gc(YogEnv* env, YogVm* vm) 
 {
@@ -756,10 +763,13 @@ mark_sweep_gc(YogEnv* env, YogVm* vm)
 
     vm->gc.mark_sweep.allocated_size = 0;
 }
+#endif
 
 static void 
 free_mem_mark_sweep(YogEnv* env, YogVm* vm) 
 {
+    return YogMarkSweep_finalize(env, &vm->gc.mark_sweep);
+#if 0
     YogMarkSweepHeader* header = vm->gc.mark_sweep.header;
     while (header != NULL) {
         YogMarkSweepHeader* next = header->next;
@@ -769,6 +779,7 @@ free_mem_mark_sweep(YogEnv* env, YogVm* vm)
 
         header = next;
     }
+#endif
 }
 
 static void 
@@ -841,11 +852,13 @@ realloc_mem_copying(YogEnv* env, YogVm* vm, void* ptr, size_t size)
     return NULL;
 }
 
+#if 0
 static void*
 realloc_mem_mark_sweep(YogEnv* env, YogVm* vm, void* ptr, size_t size)
 {
     REALLOC(YogMarkSweepHeader);
 }
+#endif
 
 #undef REALLOC
 
@@ -946,16 +959,22 @@ YogVm_init(YogVm* vm, YogGcType gc)
         break;
     case GC_MARK_SWEEP:
         vm->init_gc = initialize_mark_sweep;
+#if 0
         vm->exec_gc = mark_sweep_gc;
+#endif
+        vm->exec_gc = NULL;
         vm->alloc_mem = alloc_mem_mark_sweep;
+#if 0
         vm->realloc_mem = realloc_mem_mark_sweep;
+#endif
+        vm->realloc_mem = NULL;
         vm->free_mem = free_mem_mark_sweep;
 #if 0
         vm->dump_mem = dump_mem_not_supported;
-#endif
         vm->gc.mark_sweep.header = NULL;
         vm->gc.mark_sweep.threshold = 0;
         vm->gc.mark_sweep.allocated_size = 0;
+#endif
         break;
     case GC_MARK_SWEEP_COMPACT:
         vm->init_gc = initialize_mark_sweep_compact;

@@ -108,6 +108,7 @@ typedef void (*Finalizer)(YogEnv*, void*);
 #define SURVIVE_INDEX_MAX    8
 
 #include "yog/gc/copying.h"
+#include "yog/gc/mark-sweep.h"
 #include "yog/gc/mark-sweep-compact.h"
 
 struct YogVm {
@@ -133,11 +134,14 @@ struct YogVm {
         } copying; 
 #endif
         YogCopying copying;
+#if 0
         struct {
             struct YogMarkSweepHeader* header;
             size_t threshold;
             size_t allocated_size;
         } mark_sweep;
+#endif
+        YogMarkSweep mark_sweep;
         YogMarkSweepCompact mark_sweep_compact;
 #if 0
         struct {
