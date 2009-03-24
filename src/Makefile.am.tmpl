@@ -10,7 +10,7 @@ YACC = $(LEMON)
 BUILT_SOURCES = parser.h keywords.inc
 
 lib_LTLIBRARIES = libyog.la
-libyog_la_SOURCES = @SOURCES@ gc/mark-sweep-compact.c
+libyog_la_SOURCES = @SOURCES@
 libyog_la_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
 
 INSTS_DEF = insts.def

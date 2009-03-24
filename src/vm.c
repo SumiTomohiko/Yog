@@ -85,6 +85,7 @@ struct YogCompactor {
 
 typedef struct YogCompactor YogCompactor;
 
+#if 0
 struct YogHeap {
     size_t size;
     unsigned char* free;
@@ -92,6 +93,7 @@ struct YogHeap {
 };
 
 typedef struct YogHeap YogHeap;
+#endif
 
 struct YogMarkSweepHeader {
     struct GcObjectStat stat;
@@ -105,6 +107,7 @@ struct YogMarkSweepHeader {
 
 typedef struct YogMarkSweepHeader YogMarkSweepHeader;
 
+#if 0
 struct CopyingHeader {
     struct GcObjectStat stat;
     ChildrenKeeper keeper;
@@ -115,6 +118,7 @@ struct CopyingHeader {
 };
 
 typedef struct CopyingHeader CopyingHeader;
+#endif
 
 struct BdwHeader {
     Finalizer finalizer;
@@ -231,6 +235,7 @@ initialize_memory(void* ptr, size_t size)
     memset(ptr, 0xcb, size);
 }
 
+#if 0
 static YogHeap* 
 YogHeap_new(size_t size)
 {
@@ -250,6 +255,7 @@ round_size(size_t size)
     size_t unit = sizeof(void*);
     return (size + unit - 1) & ~(unit - 1);
 }
+#endif
 
 static void 
 GcObjectStat_initialize(GcObjectStat* stat) 
@@ -454,6 +460,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #undef KEEP_MEMBER
 }
 
+#if 0
 static void* 
 keep_object_copying(YogEnv* env, void* ptr) 
 {
@@ -490,6 +497,7 @@ keep_object_copying(YogEnv* env, void* ptr)
     return (CopyingHeader*)dest + 1;
 #undef PRINT
 }
+#endif
 
 static void 
 destroy_memory(void* ptr, size_t size) 
@@ -497,6 +505,7 @@ destroy_memory(void* ptr, size_t size)
     memset(ptr, 0xfe, size);
 }
 
+#if 0
 static void 
 free_heap_internal(YogHeap* heap) 
 {
@@ -534,14 +543,15 @@ finalize_copying(YogEnv* env, YogVm* vm)
         ptr += header->size;
     }
 }
+#endif
 
 static void 
 free_mem_copying(YogEnv* env, YogVm* vm) 
 {
-    finalize_copying(env, vm);
-    free_heap(vm);
+    YogCopying_finalize(env, &vm->gc.copying);
 }
 
+#if 0
 static void 
 swap_heap(YogHeap** a, YogHeap** b) 
 {
@@ -588,10 +598,13 @@ copying_gc(YogEnv* env, YogVm* vm)
 
     swap_heap(&vm->gc.copying.active_heap, &vm->gc.copying.inactive_heap);
 }
+#endif
 
 static void* 
 alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
+    return YogCopying_alloc(env, &vm->gc.copying, keeper, finalizer, size);
+#if 0
     size_t needed_size = size + sizeof(CopyingHeader);
     size_t rounded_size = round_size(needed_size);
     vm->gc_stat.total_allocated_size += rounded_size;
@@ -623,14 +636,20 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
     increment_total_object_number(vm);
 
     return header + 1;
+#endif
 }
 
 static void 
 initialize_copying(YogEnv* env, YogVm* vm) 
 {
+#if 0
     size_t heap_size = vm->gc.copying.init_heap_size;
     vm->gc.copying.active_heap = YogHeap_new(heap_size);
     vm->gc.copying.inactive_heap = YogHeap_new(heap_size);
+#endif
+#define HEAP_SIZE   (16 * 1024 * 1024)
+    YogCopying_initialize(env, &vm->gc.copying, vm->gc_stress, HEAP_SIZE, vm, keep_children);
+#undef HEAP_SIZE
 }
 
 static void 
@@ -816,7 +835,10 @@ realloc_mem_bdw(YogEnv* env, YogVm* vm, void* ptr, size_t size)
 static void* 
 realloc_mem_copying(YogEnv* env, YogVm* vm, void* ptr, size_t size)
 {
+#if 0
     REALLOC(CopyingHeader);
+#endif
+    return NULL;
 }
 
 static void*
@@ -903,18 +925,24 @@ YogVm_init(YogVm* vm, YogGcType gc)
         break;
     case GC_COPYING:
         vm->init_gc = initialize_copying;
+#if 0
         vm->exec_gc = copying_gc;
+#endif
+        vm->exec_gc = NULL;
         vm->alloc_mem = alloc_mem_copying;
+#if 0
         vm->realloc_mem = realloc_mem_copying;
+#endif
+        vm->realloc_mem = NULL;
         vm->free_mem = free_mem_copying;
 #if 0
         vm->dump_mem = dump_mem_copying;
-#endif
         vm->gc.copying.init_heap_size = 0;
         vm->gc.copying.active_heap = NULL;
         vm->gc.copying.inactive_heap = NULL;
         vm->gc.copying.scanned = NULL;
         vm->gc.copying.unscanned = NULL;
+#endif
         break;
     case GC_MARK_SWEEP:
         vm->init_gc = initialize_mark_sweep;
@@ -1038,7 +1066,9 @@ YogVm_gc(YogEnv* env, YogVm* vm)
 void 
 YogVm_config_copying(YogEnv* env, YogVm* vm, unsigned int init_heap_size) 
 {
+#if 0
     vm->gc.copying.init_heap_size = init_heap_size;
+#endif
 }
 
 void 

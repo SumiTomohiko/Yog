@@ -41,6 +41,7 @@ class DeclarationInserter(object):
             "include/yog/st.h": [ "src/table.c", ], 
             "include/yog/gc/mark-sweep-compact.h": [ 
                 "src/gc/mark-sweep-compact.c", ], 
+            "include/yog/gc/copying.h": [ "src/gc/copying.c", ], 
             }
 
     def _find(self, lines, s, start):
