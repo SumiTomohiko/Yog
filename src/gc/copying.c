@@ -9,6 +9,10 @@
 #include "yog/yog.h"
 #include "yog/gc/copying.h"
 
+#if 0
+#define DEBUG
+#endif
+
 struct YogCopyingHeap {
     size_t size;
     unsigned char* free;
@@ -63,7 +67,7 @@ round_size(size_t size)
 static void* 
 keep_object(YogEnv* env, void* ptr) 
 {
-#if 0
+#ifdef DEBUG
 #   define PRINT(...)   DPRINTF(__VA_ARGS__)
 #else
 #   define PRINT(...)
@@ -163,9 +167,9 @@ YogCopying_gc(YogEnv* env, YogCopying* copying)
 {
     YogCopyingHeap* from_space = copying->active_heap;
     YogCopyingHeap* to_space = copying->inactive_heap;
-#if 0
+#ifdef DEBUG
 #   define PRINT_HEAP(text, heap)   do { \
-    DPRINTF("%s: exec_num=0x%08x, %p-%p", (text), vm->gc_stat.exec_num, (heap)->items, (unsigned char*)(heap)->items + (heap)->size); \
+    DPRINTF("%s: exec_num=0x%08x, %p-%p", (text), env->vm->gc_stat.exec_num, (heap)->items, (unsigned char*)(heap)->items + (heap)->size); \
 } while (0)
 #else 
 #   define PRINT_HEAP(text, heap)
@@ -229,10 +233,8 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
     header->finalizer = finalizer;
     header->forwarding_addr = NULL;
     header->size = rounded_size;
-#if 0
     static unsigned int id = 0;
     header->id = id++;
-#endif
 
     heap->free += rounded_size;
 
@@ -250,7 +252,7 @@ YogCopying_initialize(YogEnv* env, YogCopying* copying, BOOL stress, size_t heap
     copying->stress = stress;
     copying->active_heap = YogCopyingHeap_new(copying, heap_size);
     copying->inactive_heap = YogCopyingHeap_new(copying, heap_size);
-#if 0
+#ifdef DEBUG
 #   define PRINT_HEAP(text, heap)   do { \
     DPRINTF("%s: %p (%p-%p)", (text), (heap), (heap)->items, (unsigned char*)(heap)->items + (heap)->size); \
 } while (0)

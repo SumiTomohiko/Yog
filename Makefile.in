@@ -15,6 +15,11 @@ all:
 	(cd $(YOG_DIR); make)
 	./libtool --tag=CC --mode=link $(CC) -o $(YOG) $(YOG_LIB) $(ONIG_LIB) $(BDW_LIB)
 
+clean: 
+	cd $(ONIG_DIR) && make clean
+	cd $(BDW_DIR) && make clean
+	cd $(YOG_DIR) && make clean
+
 proto: 
 	python tools/update_prototype.py
 

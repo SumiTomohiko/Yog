@@ -421,47 +421,48 @@ delete_never(YogEnv* env, YogVal key, YogVal value, YogVal* never)
 BOOL
 YogTable_foreach(YogEnv* env, YogVal table, int (*func)(YogEnv*, YogVal, YogVal, YogVal*), YogVal* arg)
 {
-    SAVE_LOCALS(env);
-    PUSH_LOCAL(env, table);
+    SAVE_ARG(env, table);
+
+    YogVal last = YUNDEF;
+    YogVal ptr = YUNDEF;
+    YogVal tmp = YUNDEF;
+    PUSH_LOCALS3(env, last, ptr, tmp);
 
     int i = 0;
     for (i = 0; i < PTR_AS(YogTable, table)->num_bins; i++) {
-        YogTableEntry* last = NULL;
-        YogTableEntry* ptr = NULL;
-        for (ptr = TABLE_ENTRY_TOP(table, i); ptr != NULL;) {
-            enum st_retval retval = (*func)(env, ptr->key, ptr->record, arg);
-            YogTableEntry* tmp = NULL;
+        for (ptr = PTR2VAL(TABLE_ENTRY_TOP(table, i)); VAL2PTR(ptr) != NULL;) {
+            enum st_retval retval = (*func)(env, PTR_AS(YogTableEntry, ptr)->key, PTR_AS(YogTableEntry, ptr)->record, arg);
             switch (retval) {
                 case ST_CHECK:        /* check if hash is modified during iteration */
-                    tmp = NULL;
+                    tmp = PTR2VAL(NULL);
                     if (i < PTR_AS(YogTable, table)->num_bins) {
-                        for (tmp = TABLE_ENTRY_TOP(table, i); tmp != NULL; tmp = tmp->next) {
-                            if (tmp == ptr) {
+                        for (tmp = PTR2VAL(TABLE_ENTRY_TOP(table, i)); VAL2PTR(tmp) != NULL; tmp = PTR2VAL(PTR_AS(YogTableEntry, tmp)->next)) {
+                            if (VAL2PTR(tmp) == VAL2PTR(ptr)) {
                                 break;
                             }
                         }
                     }
-                    if (tmp == NULL) {
+                    if (VAL2PTR(tmp) == NULL) {
                         /* call func with error notice */
                         RETURN(env, FALSE);
                     }
                     /* fall through */
                 case ST_CONTINUE:
                     last = ptr;
-                    ptr = ptr->next;
+                    ptr = PTR2VAL(PTR_AS(YogTableEntry, ptr)->next);
                     break;
                 case ST_STOP:
                     RETURN(env, TRUE);
                     break;
                 case ST_DELETE:
                     tmp = ptr;
-                    if (last == NULL) {
-                        TABLE_ENTRY_TOP(table, i) = ptr->next;
+                    if (VAL2PTR(last) == NULL) {
+                        TABLE_ENTRY_TOP(table, i) = PTR_AS(YogTableEntry, ptr)->next;
                     }
                     else {
-                        last->next = ptr->next;
+                        PTR_AS(YogTableEntry, last)->next = PTR_AS(YogTableEntry, ptr)->next;
                     }
-                    ptr = ptr->next;
+                    ptr = PTR2VAL(PTR_AS(YogTableEntry, ptr)->next);
                     PTR_AS(YogTable, table)->num_entries--;
                     break;
             }
