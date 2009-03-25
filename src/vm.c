@@ -325,31 +325,6 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
     return YogCopying_alloc(env, &vm->gc.copying, keeper, finalizer, size);
 }
 
-#if 0
-static void* 
-keep_object_mark_sweep_compact(YogEnv* env, void* ptr) 
-{
-    if (ptr == NULL) {
-        return NULL;
-    }
-
-    YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)ptr - 1;
-    if (!header->marked) {
-        GcObjectStat_increment_survive_num(&header->stat);
-        increment_living_object_number(ENV_VM(env), header->stat.survive_num);
-        increment_total_object_number(ENV_VM(env));
-        header->marked = TRUE;
-
-        ChildrenKeeper keeper = header->keeper;
-        if (keeper != NULL) {
-            (*keeper)(env, ptr, keep_object_mark_sweep_compact);
-        }
-    }
-
-    return ptr;
-}
-#endif
-
 static void 
 free_mem_mark_sweep(YogEnv* env, YogVm* vm) 
 {
