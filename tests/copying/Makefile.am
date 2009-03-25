@@ -5,4 +5,4 @@ bin_PROGRAMS = test
 test_SOURCES = $(YOG_DIR)/src/gc/copying.c
 
 test_CFLAGS = -Wall -I$(YOG_DIR)/include -DTEST
-test_LFLAGS = -lcunit
+test_LDFLAGS = -lcunit

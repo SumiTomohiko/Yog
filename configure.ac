@@ -13,6 +13,7 @@ AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
+AC_CHECK_LIB([cunit], [CU_initialize_registry], with_cunit="yes", with_cunit="no")
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -27,5 +28,10 @@ AC_FUNC_MALLOC
 AC_CHECK_FUNCS([atexit bzero])
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile])
+if test "${with_cunit}" = "yes"; then
+    AC_CONFIG_FILES([tests/copying/Makefile tests/mark-sweep-compact/Makefile])
+fi
 AC_CONFIG_SUBDIRS([bdwgc onig])
 AC_OUTPUT
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
