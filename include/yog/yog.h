@@ -115,42 +115,12 @@ struct YogVm {
     BOOL gc_stress;
     BOOL disable_gc;
 
-    void (*init_gc)(struct YogEnv*, struct YogVm*);
-    void (*exec_gc)(struct YogEnv*, struct YogVm*);
     void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, Finalizer, size_t);
-    void* (*realloc_mem)(struct YogEnv*, struct YogVm*, void*, size_t);
     void (*free_mem)(struct YogEnv*, struct YogVm*);
-#if 0
-    void (*dump_mem)(struct YogEnv*, struct YogVm*);
-#endif
     union {
-#if 0
-        struct {
-            unsigned int init_heap_size;
-            struct YogHeap* active_heap;
-            struct YogHeap* inactive_heap;
-            unsigned char* scanned;
-            unsigned char* unscanned;
-        } copying; 
-#endif
         YogCopying copying;
-#if 0
-        struct {
-            struct YogMarkSweepHeader* header;
-            size_t threshold;
-            size_t allocated_size;
-        } mark_sweep;
-#endif
         YogMarkSweep mark_sweep;
         YogMarkSweepCompact mark_sweep_compact;
-#if 0
-        struct {
-            struct YogMarkSweepCompactHeap heap;
-            struct YogMarkSweepCompactHeader* header;
-            size_t threshold;
-            size_t allocated_size;
-        } mark_sweep_compact;
-#endif
     } gc;
     struct {
         BOOL print;

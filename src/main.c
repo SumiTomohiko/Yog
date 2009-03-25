@@ -156,9 +156,15 @@ main(int argc, char* argv[])
         YogVm_config_copying(&env, env.vm, init_heap_size);
         break;
     case GC_MARK_SWEEP:
+        if (gc_stress) {
+            threshold = 0;
+        }
         YogVm_config_mark_sweep(&env, env.vm, threshold);
         break;
     case GC_MARK_SWEEP_COMPACT:
+        if (gc_stress) {
+            threshold = 0;
+        }
 #define CHUNK_SIZE  (16 * 1024 * 1024)
         YogVm_config_mark_sweep_compact(&env, env.vm, CHUNK_SIZE, threshold);
 #undef CHUNK_SIZE
@@ -167,7 +173,6 @@ main(int argc, char* argv[])
         YOG_BUG(&env, "Unknown GC type");
         break;
     }
-    YogVm_initialize_gc(&env, env.vm);
 
     do {
         YogThread thread;
