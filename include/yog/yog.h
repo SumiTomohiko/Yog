@@ -461,13 +461,10 @@ void YogVm_config_copying(YogEnv*, YogVm*, unsigned int);
 void YogVm_config_mark_sweep(YogEnv*, YogVm*, size_t);
 void YogVm_config_mark_sweep_compact(YogEnv*, YogVm*, size_t, size_t);
 void YogVm_delete(YogEnv*, YogVm*);
-void YogVm_dump_memory(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
 void YogVm_init(YogVm*, YogGcType);
-void YogVm_initialize_gc(YogEnv*, YogVm*);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
-void* YogVm_realloc(YogEnv*, YogVm*, void*, size_t);
 void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
 
 /* PROTOTYPE_END */

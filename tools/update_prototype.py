@@ -43,6 +43,7 @@ class DeclarationInserter(object):
                 "src/gc/mark-sweep-compact.c", ], 
             "include/yog/gc/copying.h": [ "src/gc/copying.c", ], 
             "include/yog/gc/mark-sweep.h": [ "src/gc/mark-sweep.c", ], 
+            "include/yog/gc/bdw.h": [ "src/gc/bdw.c", ], 
             }
 
     def _find(self, lines, s, start):

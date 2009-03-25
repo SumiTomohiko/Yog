@@ -5,12 +5,12 @@
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <time.h>
-#include "gc.h"
 #include "yog/block.h"
 #include "yog/bool.h"
 #include "yog/builtins.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
+#include "yog/gc/bdw.h"
 #include "yog/int.h"
 #include "yog/method.h"
 #include "yog/nil.h"
@@ -28,12 +28,6 @@ struct GcObjectStat {
 
 typedef struct GcObjectStat GcObjectStat;
 #endif
-
-struct BdwHeader {
-    Finalizer finalizer;
-};
-
-typedef struct BdwHeader BdwHeader;
 
 #define SURVIVE_NUM_UNIT    8
 
@@ -140,12 +134,6 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
     vm->next_id++;
 
     RETURN(env, id);
-}
-
-static void 
-initialize_memory(void* ptr, size_t size) 
-{
-    memset(ptr, 0xcb, size);
 }
 
 #if 0
@@ -331,34 +319,10 @@ free_mem_mark_sweep(YogEnv* env, YogVm* vm)
     return YogMarkSweep_finalize(env, &vm->gc.mark_sweep);
 }
 
-static void 
-bdw_finalizer(void* obj, void* client_data)
-{
-    BdwHeader* header = obj;
-    YogEnv* env = client_data;
-    (*header->finalizer)(env, header + 1);
-}
-
 static void* 
 alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    unsigned int total_size = size + sizeof(BdwHeader);
-    BdwHeader* header = GC_MALLOC(total_size);
-    initialize_memory(header, total_size);
-
-    header->finalizer = finalizer;
-
-    if (finalizer != NULL) {
-        GC_REGISTER_FINALIZER(header, bdw_finalizer, env, 0, 0);
-    }
-
-    return header + 1;
-}
-
-static void 
-free_mem_bdw(YogEnv* env, YogVm* vm) 
-{
-    /* empty */
+    return YogBDW_alloc(env, vm, keeper, finalizer, size);
 }
 
 static void* 
@@ -382,7 +346,7 @@ YogVm_init(YogVm* vm, YogGcType gc)
     switch (gc) {
     case GC_BDW:
         vm->alloc_mem = alloc_mem_bdw;
-        vm->free_mem = free_mem_bdw;
+        vm->free_mem = NULL;
         break;
     case GC_COPYING:
         vm->alloc_mem = alloc_mem_copying;
@@ -501,7 +465,9 @@ YogVm_config_mark_sweep(YogEnv* env, YogVm* vm, size_t threshold)
 void 
 YogVm_delete(YogEnv* env, YogVm* vm) 
 {
-    (*vm->free_mem)(env, vm);
+    if (vm->free_mem != NULL) {
+        (*vm->free_mem)(env, vm);
+    }
 }
 
 void 

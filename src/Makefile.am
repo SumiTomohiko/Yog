@@ -23,6 +23,7 @@ libyog_la_SOURCES = arg.c \
 	exception.c \
 	frame.c \
 	function.c \
+	gc/bdw.c \
 	gc/copying.c \
 	gc/mark-sweep-compact.c \
 	gc/mark-sweep.c \
