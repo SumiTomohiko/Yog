@@ -1,7 +1,13 @@
 
-YOG = yog
+YOG_COPYING = yog-copying
+YOG_MARK_SWEEP = yog-mark-sweep
+YOG_MARK_SWEEP_COMPACT = yog-mark-sweep-compact
+YOG_BDW = yog-bdw
 YOG_DIR = src
-YOG_LIB = $(YOG_DIR)/libyog.la
+YOG_COPYING_LIB = $(YOG_DIR)/libyog-copying.la
+YOG_MARK_SWEEP_LIB = $(YOG_DIR)/libyog-mark-sweep.la
+YOG_MARK_SWEEP_COMPACT_LIB = $(YOG_DIR)/libyog-mark-sweep-compact.la
+YOG_BDW_LIB = $(YOG_DIR)/libyog-bdw.la
 
 ONIG_DIR = onig
 ONIG_LIB = $(ONIG_DIR)/libonig.la
@@ -13,7 +19,10 @@ all:
 	(cd $(ONIG_DIR); make)
 	(cd $(BDW_DIR); make)
 	(cd $(YOG_DIR); make)
-	./libtool --tag=CC --mode=link $(CC) -o $(YOG) $(YOG_LIB) $(ONIG_LIB) $(BDW_LIB)
+	./libtool --tag=CC --mode=link $(CC) -o $(YOG_COPYING) $(YOG_COPYING_LIB) $(ONIG_LIB) $(BDW_LIB)
+	./libtool --tag=CC --mode=link $(CC) -o $(YOG_MARK_SWEEP) $(YOG_MARK_SWEEP_LIB) $(ONIG_LIB) $(BDW_LIB)
+	./libtool --tag=CC --mode=link $(CC) -o $(YOG_MARK_SWEEP_COMPACT) $(YOG_MARK_SWEEP_COMPACT_LIB) $(ONIG_LIB) $(BDW_LIB)
+	./libtool --tag=CC --mode=link $(CC) -o $(YOG_BDW) $(YOG_BDW_LIB) $(ONIG_LIB) $(BDW_LIB)
 
 clean: 
 	cd $(ONIG_DIR) && make clean

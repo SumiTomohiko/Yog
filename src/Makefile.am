@@ -9,8 +9,11 @@ YACC = $(LEMON)
 
 BUILT_SOURCES = parser.h keywords.inc
 
-lib_LTLIBRARIES = libyog.la
-libyog_la_SOURCES = arg.c \
+lib_LTLIBRARIES = libyog-copying.la \
+		  libyog-mark-sweep.la \
+		  libyog-mark-sweep-compact.la \
+		  libyog-bdw.la
+COMMON_SOURCES = arg.c \
 	array.c \
 	binary.c \
 	block.c \
@@ -45,7 +48,15 @@ libyog_la_SOURCES = arg.c \
 	token.c \
 	value.c \
 	vm.c
-libyog_la_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
+COMMON_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
+libyog_copying_la_SOURCES = $(COMMON_SOURCES)
+libyog_copying_la_CFLAGS = $(COMMON_CFLAGS)
+libyog_mark_sweep_la_SOURCES = $(COMMON_SOURCES)
+libyog_mark_sweep_la_CFLAGS = $(COMMON_CFLAGS)
+libyog_mark_sweep_compact_la_SOURCES = $(COMMON_SOURCES)
+libyog_mark_sweep_compact_la_CFLAGS = $(COMMON_CFLAGS)
+libyog_bdw_la_SOURCES = $(COMMON_SOURCES)
+libyog_bdw_la_CFLAGS = $(COMMON_CFLAGS)
 
 INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
