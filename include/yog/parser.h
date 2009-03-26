@@ -2,8 +2,18 @@
 #define __YOG_PARSER_H__
 
 #include <stdio.h>
-#include "yog/token.h"
 #include "yog/yog.h"
+
+struct YogToken {
+    unsigned int type;
+    union {
+        ID id;
+        YogVal val;
+    } u;
+    unsigned int lineno;
+};
+
+typedef struct YogToken YogToken;
 
 enum YogNodeType {
     NODE_ASSIGN, 

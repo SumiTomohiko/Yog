@@ -8,10 +8,59 @@
 #include "yog/parser.h"
 #include "yog/regexp.h"
 #include "yog/st.h"
-#include "yog/token.h"
 #include "yog/yog.h"
 
 #include "parser.h"
+
+static void 
+YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    YogToken* token = ptr;
+    switch (token->type) {
+    case TK_NUMBER: /* FALLTHRU */
+    case TK_REGEXP: /* FALLTHRU */
+    case TK_STRING: /* FALLTHRU */
+        token->u.val = YogVal_keep(env, token->u.val, keeper);
+        break;
+    default:
+        break;
+    }
+}
+
+static YogVal 
+YogToken_new(YogEnv* env) 
+{
+    YogToken* token = ALLOC_OBJ(env, YogToken_keep_children, NULL, YogToken);
+    token->type = 0;
+    token->u.val = YUNDEF;
+    token->lineno = 0;
+
+    return PTR2VAL(token);
+}
+
+static YogVal 
+ValToken_new(YogEnv* env, unsigned int type, YogVal val, unsigned int lineno) 
+{
+    SAVE_ARG(env, val);
+
+    YogVal token = YogToken_new(env);
+    PTR_AS(YogToken, token)->type = type;
+    PTR_AS(YogToken, token)->u.val = val;
+    PTR_AS(YogToken, token)->lineno = lineno;
+
+    RETURN(env, token);
+}
+
+static YogVal 
+IDToken_new(YogEnv* env, unsigned int type, ID id, unsigned int lineno) 
+{
+    YogVal token = YogToken_new(env);
+    PTR_AS(YogToken, token)->type = type;
+    PTR_AS(YogToken, token)->u.id = id;
+    PTR_AS(YogToken, token)->lineno = lineno;
+
+    return token;
+}
 
 static BOOL
 readline(YogEnv* env, YogVal lexer, FILE* fp) 
@@ -149,9 +198,6 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 {
     SAVE_ARG(env, lexer);
 
-    YogVal token_val = YUNDEF;
-    PUSH_LOCAL(env, token_val);
-
     clear_buffer(env, lexer);
 
 #define SET_STATE(stat)     PTR_AS(YogLexer, lexer)->state = stat
@@ -183,25 +229,13 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
     } while (1);
 
 #define ADD_TOKEN_CHAR(c)                   add_token_char(env, lexer, c)
-#define VAL_TOKEN_NEW(token, type_, val_)   do { \
-    token = YogToken_new(env); \
-    PTR_AS(YogToken, token)->type = (type_); \
-    PTR_AS(YogToken, token)->u.val = (val_); \
-    PTR_AS(YogToken, token)->lineno = PTR_AS(YogLexer, lexer)->lineno; \
-} while (0)
-#define ID_TOKEN_NEW(token, type_, id_)     do { \
-    token = YogToken_new(env); \
-    PTR_AS(YogToken, token)->type = (type_); \
-    PTR_AS(YogToken, token)->u.id = (id_); \
-    PTR_AS(YogToken, token)->lineno = PTR_AS(YogLexer, lexer)->lineno; \
-} while (0)
 #define RETURN_VAL_TOKEN(type, val)         do { \
-    VAL_TOKEN_NEW(*token, type, val); \
+    *token = ValToken_new(env, type, val, PTR_AS(YogLexer, lexer)->lineno); \
     RETURN(env, TRUE); \
 } while (0)
 #define RETURN_ID_TOKEN(type, s)            do { \
     ID id = INTERN(s); \
-    ID_TOKEN_NEW(*token, type, id); \
+    *token = IDToken_new(env, type, id, PTR_AS(YogLexer, lexer)->lineno); \
     RETURN(env, TRUE); \
 } while (0)
 #define RETURN_TOKEN(type_)                 do { \
@@ -295,9 +329,9 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             }
 
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-            token_val = YogString_clone(env, buffer);
+            YogVal val = YogString_clone(env, buffer);
             SET_STATE(LS_OP);
-            RETURN_VAL_TOKEN(TK_STRING, token_val);
+            RETURN_VAL_TOKEN(TK_STRING, val);
             break;
         }
     case '{':
@@ -389,10 +423,10 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
                 option = ONIG_OPTION_IGNORECASE;
             }
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-            token_val = YogRegexp_new(env, buffer, option);
+            YogVal val = YogRegexp_new(env, buffer, option);
 
             SET_STATE(LS_EXPR);
-            RETURN_VAL_TOKEN(TK_REGEXP, token_val);
+            RETURN_VAL_TOKEN(TK_REGEXP, val);
             break;
         }
         break;
@@ -454,16 +488,19 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             const char* name = OBJ_AS(YogString, buffer)->body->items;
             if (PTR_AS(YogLexer, lexer)->state == LS_NAME) {
                 ID id = INTERN(name);
-                ID_TOKEN_NEW(*token, TK_NAME, id);
+                unsigned int lineno = PTR_AS(YogLexer, lexer)->lineno;
+                *token = IDToken_new(env, TK_NAME, id, lineno);
             }
             else {
                 const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
                 if (entry != NULL) {
-                    VAL_TOKEN_NEW(*token, entry->type, YUNDEF);
+                    unsigned int lineno = PTR_AS(YogLexer, lexer)->lineno;
+                    *token = ValToken_new(env, entry->type, YUNDEF, lineno);
                 }
                 else {
                     ID id = INTERN(name);
-                    ID_TOKEN_NEW(*token, TK_NAME, id);
+                    unsigned int lineno = PTR_AS(YogLexer, lexer)->lineno;
+                    *token = IDToken_new(env, TK_NAME, id, lineno);
                 }
             }
             SET_STATE(LS_OP);

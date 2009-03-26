@@ -45,7 +45,6 @@ COMMON_SOURCES = arg.c \
 	string.c \
 	table.c \
 	thread.c \
-	token.c \
 	value.c \
 	vm.c
 COMMON_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
