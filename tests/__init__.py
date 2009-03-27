@@ -14,19 +14,15 @@ class TestCase(object):
         except KeyError:
             env_gc = "copying"
         if env_gc == "copying":
-            gc = "copying"
             cmd_name = "yog-copying"
         elif env_gc == "mark-sweep":
-            gc = "mark-sweep"
             cmd_name = "yog-mark-sweep"
         elif env_gc == "mark-sweep-compact":
-            gc = "mark-sweep-compact"
             cmd_name = "yog-mark-sweep-compact"
         elif env_gc == "bdw":
-            gc = "bdw"
             cmd_name = "yog-bdw"
 
-        options = options or ["--gc-stress", "--gc=%(gc)s" % { "gc": gc }]
+        options = options or ["--gc-stress"]
 
         file = mkstemp(prefix="yog", suffix=".yg")[1]
         try:
