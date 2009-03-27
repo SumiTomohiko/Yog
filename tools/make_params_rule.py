@@ -42,56 +42,41 @@ if __name__ == "__main__":
                             rules = "/* empty */"
                         s.append("""
 params(A) ::= %(rules)s. {""" % { "rules": rules })
-                        if a0 == "":
-                            s.append("""
-    YogVal params_without_default = YNIL;""")
-                        if a1 == "":
-                            s.append("""
-    YogVal params_with_default = YNIL;""")
-                        if a2 == "":
-                            s.append("""
-    YogVal block_param = YNIL;""")
-                        if a3 == "":
-                            s.append("""
-    YogVal var_param = YNIL;""")
-                        if a4 == "":
-                            s.append("""
-    YogVal kw_param = YNIL;""")
 
-                        params = ["A"]
+                        params = []
                         symbol_index = 0
                         if a0 != "":
                             symbol = symbols[symbol_index]
                             symbol_index += 1
                             params.append(symbol)
                         else:
-                            params.append("params_without_default")
+                            params.append("YNIL")
                         if a1 != "":
                             symbol = symbols[symbol_index]
                             symbol_index += 1
                             params.append(symbol)
                         else:
-                            params.append("params_with_default")
+                            params.append("YNIL")
                         if a2 != "":
                             symbol = symbols[symbol_index]
                             symbol_index += 1
                             params.append(symbol)
                         else:
-                            params.append("block_param")
+                            params.append("YNIL")
                         if a3 != "":
                             symbol = symbols[symbol_index]
                             symbol_index += 1
                             params.append(symbol)
                         else:
-                            params.append("var_param")
+                            params.append("YNIL")
                         if a4 != "":
                             symbol = symbols[symbol_index]
                             symbol_index += 1
                             params.append(symbol)
                         else:
-                            params.append("kw_param")
+                            params.append("YNIL")
                         s.append("""
-    PARAMS_NEW(%(params)s);
+    A = Params_new(env, %(params)s);
 }""" % { "params": ", ".join(params) })
 
     print "".join(s)
