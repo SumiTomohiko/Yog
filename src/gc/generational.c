@@ -20,7 +20,11 @@ YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stre
 void 
 YogGenerational_finalize(YogEnv* env, YogGenerational* generational) 
 {
-    /* TODO */
+    YogMarkSweepCompact* msc = &generational->msc;
+    YogMarkSweepCompact_finalize(env, msc);
+
+    YogCopying* copying = &generational->copying;
+    YogCopying_finalize(env, copying);
 }
 
 void* 
