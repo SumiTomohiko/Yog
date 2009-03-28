@@ -19,6 +19,13 @@ YogGenerational_finalize(YogEnv* env, YogGenerational* generational)
     /* TODO */
 }
 
+void* 
+YogGenerational_alloc(YogEnv* env, YogGenerational* copying, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+{
+    /* TODO */
+    return NULL;
+}
+
 #ifdef TEST
 #define CHUNK_SIZE  (1 * 1024 * 1024)
 #define THRESHOLD   CHUNK_SIZE
@@ -41,6 +48,9 @@ YogGenerational_finalize(YogEnv* env, YogGenerational* generational)
 static void 
 test_alloc1(YogEnv* env) 
 {
+    YogGenerational* gen = &env->vm->gc.generational;
+    void* ptr = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    CU_ASSERT_PTR_NOT_NULL(ptr);
 }
 
 CREATE_TEST(alloc1, NULL, NULL);
