@@ -29,7 +29,9 @@ AC_CHECK_FUNCS([atexit bzero])
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile])
 if test "${with_cunit}" = "yes"; then
-    AC_CONFIG_FILES([tests/copying/Makefile tests/mark-sweep-compact/Makefile])
+    AC_CONFIG_FILES([tests/copying/Makefile 
+                     tests/mark-sweep-compact/Makefile
+                     tests/generational/Makefile])
 fi
 AC_CONFIG_SUBDIRS([bdwgc onig])
 AC_OUTPUT

@@ -20197,7 +20197,7 @@ done
 ac_config_files="$ac_config_files Makefile src/Makefile tools/lemon/Makefile"
 
 if test "${with_cunit}" = "yes"; then
-    ac_config_files="$ac_config_files tests/copying/Makefile tests/mark-sweep-compact/Makefile"
+    ac_config_files="$ac_config_files tests/copying/Makefile tests/mark-sweep-compact/Makefile tests/generational/Makefile"
 
 fi
 subdirs="$subdirs bdwgc onig"
@@ -20793,6 +20793,7 @@ do
     "tools/lemon/Makefile") CONFIG_FILES="$CONFIG_FILES tools/lemon/Makefile" ;;
     "tests/copying/Makefile") CONFIG_FILES="$CONFIG_FILES tests/copying/Makefile" ;;
     "tests/mark-sweep-compact/Makefile") CONFIG_FILES="$CONFIG_FILES tests/mark-sweep-compact/Makefile" ;;
+    "tests/generational/Makefile") CONFIG_FILES="$CONFIG_FILES tests/generational/Makefile" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
