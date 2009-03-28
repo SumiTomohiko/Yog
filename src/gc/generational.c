@@ -20,6 +20,8 @@ YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stre
 void 
 YogGenerational_finalize(YogEnv* env, YogGenerational* generational) 
 {
+    generational->err = ERR_GEN_NONE;
+
     YogMarkSweepCompact* msc = &generational->msc;
     YogMarkSweepCompact_finalize(env, msc);
 
@@ -28,9 +30,37 @@ YogGenerational_finalize(YogEnv* env, YogGenerational* generational)
 }
 
 void* 
-YogGenerational_alloc(YogEnv* env, YogGenerational* copying, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    /* TODO */
+    YogCopying* copying = &generational->copying;
+    void* ptr = YogCopying_alloc(env, copying, keeper, finalizer, size);
+    if (ptr != NULL) {
+        return ptr;
+    }
+
+    YogMarkSweepCompact* msc = &generational->msc;
+    ptr = YogMarkSweepCompact_alloc(env, msc, keeper, finalizer, size);
+    if (ptr != NULL) {
+        return ptr;
+    }
+
+    unsigned int err;
+    switch (msc->err) {
+    case ERR_MSC_MMAP:
+        err = ERR_GEN_MMAP;
+        break;
+    case ERR_MSC_MUNMAP: 
+        err = ERR_GEN_MUNMAP;
+        break;
+    case ERR_MSC_MALLOC: 
+        err = ERR_GEN_MALLOC;
+        break;
+    default:
+        err = ERR_GEN_UNKNOWN;
+        break;
+    }
+    generational->err = err;
+
     return NULL;
 }
 

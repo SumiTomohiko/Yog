@@ -500,7 +500,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
             if (chunk == NULL) {
                 chunk = malloc(sizeof(YogMarkSweepCompactChunk));
                 if (chunk == NULL) {
-                    msc->err = ERR_MALLOC;
+                    msc->err = ERR_MSC_MALLOC;
                     return NULL;
                 }
 
@@ -510,14 +510,14 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 int flags = MAP_PRIVATE | MAP_ANONYMOUS;
                 unsigned char* mmap_begin = mmap(NULL, mmap_size, proto, flags, -1, 0);
                 if (mmap_begin == MAP_FAILED) {
-                    msc->err = ERR_MMAP;
+                    msc->err = ERR_MSC_MMAP;
                     return NULL;
                 }
                 unsigned char* chunk_begin = (unsigned char*)(((uintptr_t)mmap_begin + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1));
                 if (mmap_begin != chunk_begin) {
                     int retval = munmap(mmap_begin, chunk_begin - mmap_begin);
                     if (retval != 0) {
-                        msc->err = ERR_MUNMAP;
+                        msc->err = ERR_MSC_MUNMAP;
                         return NULL;
                     }
                 }
@@ -526,7 +526,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 if (mmap_end != chunk_end) {
                     int retval = munmap(chunk_end, mmap_end - chunk_end);
                     if (retval != 0) {
-                        msc->err = ERR_MUNMAP;
+                        msc->err = ERR_MSC_MUNMAP;
                         return NULL;
                     }
                 }
@@ -618,7 +618,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 void 
 YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chunk_size, size_t threshold, void* root, ChildrenKeeper root_keeper) 
 {
-    msc->err = ERR_NONE;
+    msc->err = ERR_MSC_NONE;
     msc->chunk_size = chunk_size;
     msc->chunks = NULL;
     msc->all_chunks = NULL;

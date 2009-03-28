@@ -14,10 +14,10 @@ typedef void (*Finalizer)(YogEnv*, void*);
 #define MARK_SWEEP_COMPACT_NUM_SIZE         7
 #define MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE  2049
 
-#define ERR_NONE    0
-#define ERR_MMAP    1
-#define ERR_MUNMAP  2
-#define ERR_MALLOC  3
+#define ERR_MSC_NONE    0
+#define ERR_MSC_MMAP    1
+#define ERR_MSC_MUNMAP  2
+#define ERR_MSC_MALLOC  3
 
 struct YogMarkSweepCompact {
     unsigned int err;

@@ -16,7 +16,14 @@ typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
 typedef void (*Finalizer)(YogEnv*, void*);
 #endif
 
+#define ERR_GEN_NONE        0
+#define ERR_GEN_MMAP        1
+#define ERR_GEN_MUNMAP      2
+#define ERR_GEN_MALLOC      3
+#define ERR_GEN_UNKNOWN     4
+
 struct YogGenerational {
+    unsigned int err;
     struct YogCopying copying;
     struct YogMarkSweepCompact msc;
 };
