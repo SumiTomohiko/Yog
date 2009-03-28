@@ -17,7 +17,6 @@ usage()
     printf("  --debug-parser: \n");
     printf("  --disable-gc: \n");
     printf("  --gc-stress: \n");
-    printf("  --gc=[bdw|copying|mark-sweep|mark-sweep-compact]: \n");
     printf("  --help: \n");
     printf("  --init-heap-size=size: \n");
     printf("  --print-gc-stat: \n");
@@ -72,12 +71,10 @@ main(int argc, char* argv[])
 #define DEFAULT_THRESHOLD   (1024 * 1024)
     size_t threshold = DEFAULT_THRESHOLD;
 #undef DEFAULT_THRESHOLD
-    YogGcType gc_type = GC_COPYING;
     int print_gc_stat = 0;
     struct option options[] = {
         { "debug-parser", no_argument, &debug_parser, 1 }, 
         { "disable-gc", no_argument, &disable_gc, 1 },
-        { "gc", required_argument, NULL, 'g' }, 
         { "gc-stress", no_argument, &gc_stress, 1 }, 
         { "help", no_argument, &help, 1 }, 
         { "init-heap-size", required_argument, NULL, 'i' }, 
@@ -95,23 +92,6 @@ main(int argc, char* argv[])
     while ((c = getopt_long(argc, argv, "", options, NULL)) != -1) {
         switch (c) {
         case 0:
-            break;
-        case 'g':
-            if (strcmp(optarg, "bdw") == 0) {
-                gc_type = GC_BDW;
-            }
-            else if (strcmp(optarg, "copying") == 0) {
-                gc_type = GC_COPYING;
-            }
-            else if (strcmp(optarg, "mark-sweep") == 0) {
-                gc_type = GC_MARK_SWEEP;
-            }
-            else if (strcmp(optarg, "mark-sweep-compact") == 0) {
-                gc_type = GC_MARK_SWEEP_COMPACT;
-            }
-            else {
-                ERROR("Unknown gc type.");
-            }
             break;
         case 'i':
             init_heap_size = parse_size(optarg);
@@ -140,7 +120,7 @@ main(int argc, char* argv[])
     return -2; \
 } while (0)
     YogVm vm;
-    YogVm_init(&vm, gc_type);
+    YogVm_init(&vm);
     vm.gc_stress = gc_stress ? TRUE : FALSE;
     vm.disable_gc = disable_gc ? TRUE : FALSE;
     vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
@@ -148,31 +128,25 @@ main(int argc, char* argv[])
     YogEnv env;
     env.vm = &vm;
     env.th = NULL;
-    switch (gc_type) {
-    case GC_BDW:
-        GC_INIT();
-        break;
-    case GC_COPYING:
-        YogVm_config_copying(&env, env.vm, init_heap_size);
-        break;
-    case GC_MARK_SWEEP:
-        if (gc_stress) {
-            threshold = 0;
-        }
-        YogVm_config_mark_sweep(&env, env.vm, threshold);
-        break;
-    case GC_MARK_SWEEP_COMPACT:
-        if (gc_stress) {
-            threshold = 0;
-        }
-#define CHUNK_SIZE  (16 * 1024 * 1024)
-        YogVm_config_mark_sweep_compact(&env, env.vm, CHUNK_SIZE, threshold);
-#undef CHUNK_SIZE
-        break;
-    default:
-        YOG_BUG(&env, "Unknown GC type");
-        break;
+#if GC == BDW
+    GC_INIT();
+#elif GC == COPYING
+    YogVm_config_copying(&env, env.vm, init_heap_size);
+#elif GC == MARK_SWEEP
+    if (gc_stress) {
+        threshold = 0;
     }
+    YogVm_config_mark_sweep(&env, env.vm, threshold);
+#elif GC == MARK_SWEEP_COMPACT
+    if (gc_stress) {
+        threshold = 0;
+    }
+#   define CHUNK_SIZE  (16 * 1024 * 1024)
+    YogVm_config_mark_sweep_compact(&env, env.vm, CHUNK_SIZE, threshold);
+#   undef CHUNK_SIZE
+#else
+#   error "unknown GC type"
+#endif
 
     do {
         YogThread thread;

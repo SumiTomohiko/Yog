@@ -92,24 +92,24 @@ struct YogEnv {
 
 typedef struct YogEnv YogEnv;
 
-enum YogGcType {
-    GC_BDW, 
-    GC_COPYING, 
-    GC_MARK_SWEEP, 
-    GC_MARK_SWEEP_COMPACT, 
-};
-
-typedef enum YogGcType YogGcType;
-
 typedef void* (*ObjectKeeper)(YogEnv*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
 typedef void (*Finalizer)(YogEnv*, void*);
 
 #define SURVIVE_INDEX_MAX    8
 
-#include "yog/gc/copying.h"
-#include "yog/gc/mark-sweep.h"
-#include "yog/gc/mark-sweep-compact.h"
+#define COPYING             1
+#define MARK_SWEEP          2
+#define MARK_SWEEP_COMPACT  3
+#define BDW                 4
+
+#if GC == COPYING
+#   include "yog/gc/copying.h"
+#elif GC == MARK_SWEEP
+#   include "yog/gc/mark-sweep.h"
+#elif GC == MARK_SWEEP_COMPACT
+#   include "yog/gc/mark-sweep-compact.h"
+#endif
 
 struct YogVm {
     BOOL gc_stress;
@@ -118,9 +118,13 @@ struct YogVm {
     void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, Finalizer, size_t);
     void (*free_mem)(struct YogEnv*, struct YogVm*);
     union {
+#if GC == COPYING
         YogCopying copying;
+#elif GC == MARK_SWEEP
         YogMarkSweep mark_sweep;
+#elif GC == MARK_SWEEP_COMPACT
         YogMarkSweepCompact mark_sweep_compact;
+#endif
     } gc;
     struct {
         BOOL print;
@@ -463,7 +467,7 @@ void YogVm_config_mark_sweep_compact(YogEnv*, YogVm*, size_t, size_t);
 void YogVm_delete(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
-void YogVm_init(YogVm*, YogGcType);
+void YogVm_init(YogVm*);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
 void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
 

@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -143,12 +142,6 @@ GcObjectStat_initialize(GcObjectStat* stat)
     stat->survive_num = 0;
 }
 #endif
-
-static void* 
-alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
-{
-    return YogMarkSweep_alloc(env, &vm->gc.mark_sweep, keeper, finalizer, size);
-}
 
 void* 
 YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
@@ -301,6 +294,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #undef KEEP_MEMBER
 }
 
+#if GC == COPYING
 static void 
 free_mem_copying(YogEnv* env, YogVm* vm) 
 {
@@ -312,7 +306,9 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
 {
     return YogCopying_alloc(env, &vm->gc.copying, keeper, finalizer, size);
 }
+#endif
 
+#if GC == MARK_SWEEP
 static void 
 free_mem_mark_sweep(YogEnv* env, YogVm* vm) 
 {
@@ -320,11 +316,21 @@ free_mem_mark_sweep(YogEnv* env, YogVm* vm)
 }
 
 static void* 
+alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+{
+    return YogMarkSweep_alloc(env, &vm->gc.mark_sweep, keeper, finalizer, size);
+}
+#endif
+
+#if GC == BDW
+static void* 
 alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     return YogBDW_alloc(env, vm, keeper, finalizer, size);
 }
+#endif
 
+#if GC == MARK_SWEEP_COMPACT
 static void* 
 alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
@@ -336,35 +342,29 @@ free_mem_mark_sweep_compact(YogEnv* env, YogVm* vm)
 {
     /* TODO */
 }
+#endif
 
 void 
-YogVm_init(YogVm* vm, YogGcType gc)
+YogVm_init(YogVm* vm) 
 {
     vm->gc_stress = FALSE;
     vm->disable_gc = FALSE;
 
-    switch (gc) {
-    case GC_BDW:
-        vm->alloc_mem = alloc_mem_bdw;
-        vm->free_mem = NULL;
-        break;
-    case GC_COPYING:
-        vm->alloc_mem = alloc_mem_copying;
-        vm->free_mem = free_mem_copying;
-        break;
-    case GC_MARK_SWEEP:
-        vm->alloc_mem = alloc_mem_mark_sweep;
-        vm->free_mem = free_mem_mark_sweep;
-        break;
-    case GC_MARK_SWEEP_COMPACT:
-        vm->alloc_mem = alloc_mem_mark_sweep_compact;
-        vm->free_mem = free_mem_mark_sweep_compact;
-        break;
-    default:
-        fprintf(stderr, "Unknown GC type.");
-        abort();
-        break;
-    }
+#if GC == COPYING
+    vm->alloc_mem = alloc_mem_copying;
+    vm->free_mem = free_mem_copying;
+#elif GC == MARK_SWEEP
+    vm->alloc_mem = alloc_mem_mark_sweep;
+    vm->free_mem = free_mem_mark_sweep;
+#elif GC == MARK_SWEEP_COMPACT
+    vm->alloc_mem = alloc_mem_mark_sweep_compact;
+    vm->free_mem = free_mem_mark_sweep_compact;
+#elif GC == BDW
+    vm->alloc_mem = alloc_mem_bdw;
+    vm->free_mem = NULL;
+#else
+#   error "unknown GC type"
+#endif
     vm->gc_stat.print = FALSE;
     vm->gc_stat.duration_total = 0;
     reset_living_object_count(vm);
@@ -450,17 +450,29 @@ YogVm_gc(YogEnv* env, YogVm* vm)
 }
 #endif
 
+#if GC == COPYING
 void 
 YogVm_config_copying(YogEnv* env, YogVm* vm, unsigned int init_heap_size) 
 {
     YogCopying_initialize(env, &vm->gc.copying, vm->gc_stress, init_heap_size, vm, keep_children);
 }
+#endif
 
+#if GC == MARK_SWEEP
 void 
 YogVm_config_mark_sweep(YogEnv* env, YogVm* vm, size_t threshold) 
 {
     YogMarkSweep_initialize(env, &vm->gc.mark_sweep, threshold, vm, keep_children);
 }
+#endif
+
+#if GC == MARK_SWEEP_COMPACT
+void 
+YogVm_config_mark_sweep_compact(YogEnv* env, YogVm* vm, size_t chunk_size, size_t threshold) 
+{
+    YogMarkSweepCompact_initialize(env, &vm->gc.mark_sweep_compact, chunk_size, threshold, vm, keep_children);
+}
+#endif
 
 void 
 YogVm_delete(YogEnv* env, YogVm* vm) 
@@ -468,12 +480,6 @@ YogVm_delete(YogEnv* env, YogVm* vm)
     if (vm->free_mem != NULL) {
         (*vm->free_mem)(env, vm);
     }
-}
-
-void 
-YogVm_config_mark_sweep_compact(YogEnv* env, YogVm* vm, size_t chunk_size, size_t threshold) 
-{
-    YogMarkSweepCompact_initialize(env, &vm->gc.mark_sweep_compact, chunk_size, threshold, vm, keep_children);
 }
 
 /**

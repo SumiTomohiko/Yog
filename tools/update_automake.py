@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from os import listdir
-from os.path import isdir, join, splitext
+from os.path import isfile, join, splitext
 from sys import argv
 
 class AutomakeUpdater(object):
@@ -18,9 +18,7 @@ class AutomakeUpdater(object):
                 continue
 
             path = join(dirpath, filename)
-            if isdir(path):
-                retval.extend(self.listfiles(path, join(dirname, filename)))
-            else:
+            if isfile(path):
                 ext = splitext(filename)[1]
                 if ext in self.exts:
                     retval.append(join(dirname, filename))

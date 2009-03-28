@@ -8,7 +8,7 @@ class TestOption(TestCase):
         self._test("", options=options)
 
     def _test_threshold(self, threshold):
-        self._test_option(["--gc=mark-sweep", "--threshold=%(threshold)s" % { "threshold": threshold }])
+        self._test_option(["--threshold=%(threshold)s" % { "threshold": threshold }])
 
     def test_threshold1(self):
         self._test_threshold("42")

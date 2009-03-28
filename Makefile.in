@@ -19,9 +19,9 @@ all:
 	(cd $(ONIG_DIR); make)
 	(cd $(BDW_DIR); make)
 	(cd $(YOG_DIR); make)
-	./libtool --tag=CC --mode=link $(CC) -o $(YOG_COPYING) $(YOG_COPYING_LIB) $(ONIG_LIB) $(BDW_LIB)
-	./libtool --tag=CC --mode=link $(CC) -o $(YOG_MARK_SWEEP) $(YOG_MARK_SWEEP_LIB) $(ONIG_LIB) $(BDW_LIB)
-	./libtool --tag=CC --mode=link $(CC) -o $(YOG_MARK_SWEEP_COMPACT) $(YOG_MARK_SWEEP_COMPACT_LIB) $(ONIG_LIB) $(BDW_LIB)
+	./libtool --tag=CC --mode=link $(CC) -o $(YOG_COPYING) $(YOG_COPYING_LIB) $(ONIG_LIB)
+	./libtool --tag=CC --mode=link $(CC) -o $(YOG_MARK_SWEEP) $(YOG_MARK_SWEEP_LIB) $(ONIG_LIB)
+	./libtool --tag=CC --mode=link $(CC) -o $(YOG_MARK_SWEEP_COMPACT) $(YOG_MARK_SWEEP_COMPACT_LIB) $(ONIG_LIB)
 	./libtool --tag=CC --mode=link $(CC) -o $(YOG_BDW) $(YOG_BDW_LIB) $(ONIG_LIB) $(BDW_LIB)
 
 clean: 
