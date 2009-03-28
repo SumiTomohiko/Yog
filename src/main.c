@@ -128,16 +128,16 @@ main(int argc, char* argv[])
     YogEnv env;
     env.vm = &vm;
     env.th = NULL;
-#if GC == BDW
+#if GC_BDW
     GC_INIT();
-#elif GC == COPYING
+#elif GC_COPYING
     YogVm_config_copying(&env, env.vm, init_heap_size);
-#elif GC == MARK_SWEEP
+#elif GC_MARK_SWEEP
     if (gc_stress) {
         threshold = 0;
     }
     YogVm_config_mark_sweep(&env, env.vm, threshold);
-#elif GC == MARK_SWEEP_COMPACT
+#elif GC_MARK_SWEEP_COMPACT
     if (gc_stress) {
         threshold = 0;
     }

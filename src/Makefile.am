@@ -45,13 +45,13 @@ COMMON_SOURCES = arg.c \
 	vm.c
 COMMON_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
 libyog_copying_la_SOURCES = $(COMMON_SOURCES) gc/copying.c
-libyog_copying_la_CFLAGS = $(COMMON_CFLAGS) -DGC=COPYING
+libyog_copying_la_CFLAGS = $(COMMON_CFLAGS) -DGC_COPYING
 libyog_mark_sweep_la_SOURCES = $(COMMON_SOURCES) gc/mark-sweep.c
-libyog_mark_sweep_la_CFLAGS = $(COMMON_CFLAGS) -DGC=MARK_SWEEP
+libyog_mark_sweep_la_CFLAGS = $(COMMON_CFLAGS) -DGC_MARK_SWEEP
 libyog_mark_sweep_compact_la_SOURCES = $(COMMON_SOURCES) gc/mark-sweep-compact.c
-libyog_mark_sweep_compact_la_CFLAGS = $(COMMON_CFLAGS) -DGC=MARK_SWEEP_COMPACT
+libyog_mark_sweep_compact_la_CFLAGS = $(COMMON_CFLAGS) -DGC_MARK_SWEEP_COMPACT
 libyog_bdw_la_SOURCES = $(COMMON_SOURCES) gc/bdw.c
-libyog_bdw_la_CFLAGS = $(COMMON_CFLAGS) -DGC=BDW
+libyog_bdw_la_CFLAGS = $(COMMON_CFLAGS) -DGC_BDW
 
 INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py

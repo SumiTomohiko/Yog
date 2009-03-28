@@ -98,17 +98,14 @@ typedef void (*Finalizer)(YogEnv*, void*);
 
 #define SURVIVE_INDEX_MAX    8
 
-#define COPYING             1
-#define MARK_SWEEP          2
-#define MARK_SWEEP_COMPACT  3
-#define BDW                 4
-
-#if GC == COPYING
+#if GC_COPYING
 #   include "yog/gc/copying.h"
-#elif GC == MARK_SWEEP
+#elif GC_MARK_SWEEP
 #   include "yog/gc/mark-sweep.h"
-#elif GC == MARK_SWEEP_COMPACT
+#elif GC_MARK_SWEEP_COMPACT
 #   include "yog/gc/mark-sweep-compact.h"
+#elif GC_GENERATIONAL
+#   include "yog/gc/generational.h"
 #endif
 
 struct YogVm {
@@ -118,12 +115,14 @@ struct YogVm {
     void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, Finalizer, size_t);
     void (*free_mem)(struct YogEnv*, struct YogVm*);
     union {
-#if GC == COPYING
+#if GC_COPYING
         YogCopying copying;
-#elif GC == MARK_SWEEP
+#elif GC_MARK_SWEEP
         YogMarkSweep mark_sweep;
-#elif GC == MARK_SWEEP_COMPACT
+#elif GC_MARK_SWEEP_COMPACT
         YogMarkSweepCompact mark_sweep_compact;
+#elif GC_GENERATIONAL
+        YogGenerational generational;
 #endif
     } gc;
     struct {

@@ -4,8 +4,47 @@
 #   include <CUnit/Basic.h>
 #   include <CUnit/CUnit.h>
 #endif
+#include "yog/yog.h"
+#include "yog/gc/generational.h"
+
+void 
+YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, void* root, ObjectKeeper root_keeper) 
+{
+    /* TODO */
+}
+
+void 
+YogGenerational_finalize(YogEnv* env, YogGenerational* generational) 
+{
+    /* TODO */
+}
 
 #ifdef TEST
+#define CHUNK_SIZE  (1 * 1024 * 1024)
+#define THRESHOLD   CHUNK_SIZE
+#define HEAP_SIZE   (1 * 1024 * 1024)
+
+#define CREATE_TEST(name, root, root_keeper) \
+    static void \
+    name() \
+    { \
+        YogVm vm; \
+        YogEnv env; \
+        env.vm = &vm; \
+        YogGenerational_initialize(&env, &vm.gc.generational, FALSE, HEAP_SIZE, CHUNK_SIZE, THRESHOLD, root, root_keeper); \
+        \
+        test_##name(&env); \
+        \
+        YogGenerational_finalize(&env, &vm.gc.generational); \
+    }
+
+static void 
+test_alloc1(YogEnv* env) 
+{
+}
+
+CREATE_TEST(alloc1, NULL, NULL);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -30,7 +69,7 @@ main(int argc, const char* argv[])
         ERROR("failed CU_add_test %s", #name); \
     } \
 } while (0)
-    /* TODO */
+    ADD_TEST(alloc1);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);

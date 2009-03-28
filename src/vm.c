@@ -294,7 +294,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #undef KEEP_MEMBER
 }
 
-#if GC == COPYING
+#if GC_COPYING
 static void 
 free_mem_copying(YogEnv* env, YogVm* vm) 
 {
@@ -308,7 +308,7 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
 }
 #endif
 
-#if GC == MARK_SWEEP
+#if GC_MARK_SWEEP
 static void 
 free_mem_mark_sweep(YogEnv* env, YogVm* vm) 
 {
@@ -322,7 +322,7 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer fi
 }
 #endif
 
-#if GC == BDW
+#if GC_BDW
 static void* 
 alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
@@ -330,7 +330,7 @@ alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer
 }
 #endif
 
-#if GC == MARK_SWEEP_COMPACT
+#if GC_MARK_SWEEP_COMPACT
 static void* 
 alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
@@ -350,16 +350,16 @@ YogVm_init(YogVm* vm)
     vm->gc_stress = FALSE;
     vm->disable_gc = FALSE;
 
-#if GC == COPYING
+#if GC_COPYING
     vm->alloc_mem = alloc_mem_copying;
     vm->free_mem = free_mem_copying;
-#elif GC == MARK_SWEEP
+#elif GC_MARK_SWEEP
     vm->alloc_mem = alloc_mem_mark_sweep;
     vm->free_mem = free_mem_mark_sweep;
-#elif GC == MARK_SWEEP_COMPACT
+#elif GC_MARK_SWEEP_COMPACT
     vm->alloc_mem = alloc_mem_mark_sweep_compact;
     vm->free_mem = free_mem_mark_sweep_compact;
-#elif GC == BDW
+#elif GC_BDW
     vm->alloc_mem = alloc_mem_bdw;
     vm->free_mem = NULL;
 #else
@@ -450,7 +450,7 @@ YogVm_gc(YogEnv* env, YogVm* vm)
 }
 #endif
 
-#if GC == COPYING
+#if GC_COPYING
 void 
 YogVm_config_copying(YogEnv* env, YogVm* vm, unsigned int init_heap_size) 
 {
@@ -458,7 +458,7 @@ YogVm_config_copying(YogEnv* env, YogVm* vm, unsigned int init_heap_size)
 }
 #endif
 
-#if GC == MARK_SWEEP
+#if GC_MARK_SWEEP
 void 
 YogVm_config_mark_sweep(YogEnv* env, YogVm* vm, size_t threshold) 
 {
@@ -466,7 +466,7 @@ YogVm_config_mark_sweep(YogEnv* env, YogVm* vm, size_t threshold)
 }
 #endif
 
-#if GC == MARK_SWEEP_COMPACT
+#if GC_MARK_SWEEP_COMPACT
 void 
 YogVm_config_mark_sweep_compact(YogEnv* env, YogVm* vm, size_t chunk_size, size_t threshold) 
 {
