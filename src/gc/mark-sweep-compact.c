@@ -4,7 +4,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include "yog/gc/mark-sweep-compact.h"
-#ifdef TEST
+#ifdef TEST_MARK_SWEEP_COMPACT
 #   include <stdio.h>
 #   include <CUnit/Basic.h>
 #   include <CUnit/CUnit.h>
@@ -653,7 +653,7 @@ YogMarkSweepCompact_finalize(YogEnv* env, YogMarkSweepCompact* msc)
     /* TODO */
 }
 
-#ifdef TEST
+#ifdef TEST_MARK_SWEEP_COMPACT
 #define CHUNK_SIZE  (1 * 1024 * 1024)
 #define THRESHOLD   CHUNK_SIZE
 

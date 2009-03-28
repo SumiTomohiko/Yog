@@ -1,8 +1,11 @@
 
 YOG_DIR = ../..
+GC_DIR = $(YOG_DIR)/src/gc
 
-bin_PROGRAMS = test
-test_SOURCES = $(YOG_DIR)/src/gc/generational.c
+bin_PROGRAMS = test-generational
 
-test_CFLAGS = -Wall -I$(YOG_DIR)/include -DTEST -DGC_GENERATIONAL
-test_LDFLAGS = -lcunit
+test_generational_SOURCES = $(GC_DIR)/generational.c $(GC_DIR)/copying.c \
+			    $(GC_DIR)/mark-sweep-compact.c
+test_generational_CFLAGS = -Wall -I$(YOG_DIR)/include -DTEST_GENERATIONAL \
+			   -DGC_GENERATIONAL
+test_generational_LDFLAGS = -lcunit

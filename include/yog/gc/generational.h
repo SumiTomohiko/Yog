@@ -2,6 +2,8 @@
 #define __YOG_GC_GENERATIONAL_H__
 
 #include <stddef.h>
+#include "yog/gc/copying.h"
+#include "yog/gc/mark-sweep-compact.h"
 
 /* TODO: commonize with yog/yog.h */
 #ifndef __YOG_YOG_H__
@@ -15,6 +17,8 @@ typedef void (*Finalizer)(YogEnv*, void*);
 #endif
 
 struct YogGenerational {
+    struct YogCopying copying;
+    struct YogMarkSweepCompact msc;
 };
 
 typedef struct YogGenerational YogGenerational;

@@ -1,4 +1,4 @@
-#ifdef TEST
+#ifdef TEST_GENERATIONAL
 #   include <stdio.h>
 #   include <stdlib.h>
 #   include <CUnit/Basic.h>
@@ -10,7 +10,11 @@
 void 
 YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, void* root, ObjectKeeper root_keeper) 
 {
-    /* TODO */
+    YogCopying* copying = &generational->copying;
+    YogCopying_initialize(env, copying, stress, young_heap_size, NULL, NULL);
+
+    YogMarkSweepCompact* msc = &generational->msc;
+    YogMarkSweepCompact_initialize(env, msc, old_chunk_size, old_threshold, NULL, NULL);
 }
 
 void 
@@ -26,7 +30,7 @@ YogGenerational_alloc(YogEnv* env, YogGenerational* copying, ChildrenKeeper keep
     return NULL;
 }
 
-#ifdef TEST
+#ifdef TEST_GENERATIONAL
 #define CHUNK_SIZE  (1 * 1024 * 1024)
 #define THRESHOLD   CHUNK_SIZE
 #define HEAP_SIZE   (1 * 1024 * 1024)

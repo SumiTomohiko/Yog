@@ -32,7 +32,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = test$(EXEEXT)
+bin_PROGRAMS = test-generational$(EXEEXT)
 subdir = tests/generational
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -46,12 +46,16 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_test_OBJECTS = test-generational.$(OBJEXT)
-test_OBJECTS = $(am_test_OBJECTS)
-test_LDADD = $(LDADD)
-test_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(test_CFLAGS) $(CFLAGS) $(test_LDFLAGS) \
-	$(LDFLAGS) -o $@
+am_test_generational_OBJECTS =  \
+	test_generational-generational.$(OBJEXT) \
+	test_generational-copying.$(OBJEXT) \
+	test_generational-mark-sweep-compact.$(OBJEXT)
+test_generational_OBJECTS = $(am_test_generational_OBJECTS)
+test_generational_LDADD = $(LDADD)
+test_generational_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(test_generational_CFLAGS) $(CFLAGS) \
+	$(test_generational_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -64,8 +68,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(test_SOURCES)
-DIST_SOURCES = $(test_SOURCES)
+SOURCES = $(test_generational_SOURCES)
+DIST_SOURCES = $(test_generational_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -176,9 +180,14 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 YOG_DIR = ../..
-test_SOURCES = $(YOG_DIR)/src/gc/generational.c
-test_CFLAGS = -Wall -I$(YOG_DIR)/include -DTEST -DGC_GENERATIONAL
-test_LDFLAGS = -lcunit
+GC_DIR = $(YOG_DIR)/src/gc
+test_generational_SOURCES = $(GC_DIR)/generational.c $(GC_DIR)/copying.c \
+			    $(GC_DIR)/mark-sweep-compact.c
+
+test_generational_CFLAGS = -Wall -I$(YOG_DIR)/include -DTEST_GENERATIONAL \
+			   -DGC_GENERATIONAL
+
+test_generational_LDFLAGS = -lcunit
 all: all-am
 
 .SUFFIXES:
@@ -240,9 +249,9 @@ clean-binPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-test$(EXEEXT): $(test_OBJECTS) $(test_DEPENDENCIES) 
-	@rm -f test$(EXEEXT)
-	$(test_LINK) $(test_OBJECTS) $(test_LDADD) $(LIBS)
+test-generational$(EXEEXT): $(test_generational_OBJECTS) $(test_generational_DEPENDENCIES) 
+	@rm -f test-generational$(EXEEXT)
+	$(test_generational_LINK) $(test_generational_OBJECTS) $(test_generational_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -250,7 +259,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-generational.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-copying.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-generational.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-mark-sweep-compact.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -273,19 +284,47 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-test-generational.o: $(YOG_DIR)/src/gc/generational.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-generational.o -MD -MP -MF $(DEPDIR)/test-generational.Tpo -c -o test-generational.o `test -f '$(YOG_DIR)/src/gc/generational.c' || echo '$(srcdir)/'`$(YOG_DIR)/src/gc/generational.c
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test-generational.Tpo $(DEPDIR)/test-generational.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(YOG_DIR)/src/gc/generational.c' object='test-generational.o' libtool=no @AMDEPBACKSLASH@
+test_generational-generational.o: $(GC_DIR)/generational.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-generational.o -MD -MP -MF $(DEPDIR)/test_generational-generational.Tpo -c -o test_generational-generational.o `test -f '$(GC_DIR)/generational.c' || echo '$(srcdir)/'`$(GC_DIR)/generational.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-generational.Tpo $(DEPDIR)/test_generational-generational.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(GC_DIR)/generational.c' object='test_generational-generational.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-generational.o `test -f '$(YOG_DIR)/src/gc/generational.c' || echo '$(srcdir)/'`$(YOG_DIR)/src/gc/generational.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-generational.o `test -f '$(GC_DIR)/generational.c' || echo '$(srcdir)/'`$(GC_DIR)/generational.c
 
-test-generational.obj: $(YOG_DIR)/src/gc/generational.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-generational.obj -MD -MP -MF $(DEPDIR)/test-generational.Tpo -c -o test-generational.obj `if test -f '$(YOG_DIR)/src/gc/generational.c'; then $(CYGPATH_W) '$(YOG_DIR)/src/gc/generational.c'; else $(CYGPATH_W) '$(srcdir)/$(YOG_DIR)/src/gc/generational.c'; fi`
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test-generational.Tpo $(DEPDIR)/test-generational.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(YOG_DIR)/src/gc/generational.c' object='test-generational.obj' libtool=no @AMDEPBACKSLASH@
+test_generational-generational.obj: $(GC_DIR)/generational.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-generational.obj -MD -MP -MF $(DEPDIR)/test_generational-generational.Tpo -c -o test_generational-generational.obj `if test -f '$(GC_DIR)/generational.c'; then $(CYGPATH_W) '$(GC_DIR)/generational.c'; else $(CYGPATH_W) '$(srcdir)/$(GC_DIR)/generational.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-generational.Tpo $(DEPDIR)/test_generational-generational.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(GC_DIR)/generational.c' object='test_generational-generational.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-generational.obj `if test -f '$(YOG_DIR)/src/gc/generational.c'; then $(CYGPATH_W) '$(YOG_DIR)/src/gc/generational.c'; else $(CYGPATH_W) '$(srcdir)/$(YOG_DIR)/src/gc/generational.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-generational.obj `if test -f '$(GC_DIR)/generational.c'; then $(CYGPATH_W) '$(GC_DIR)/generational.c'; else $(CYGPATH_W) '$(srcdir)/$(GC_DIR)/generational.c'; fi`
+
+test_generational-copying.o: $(GC_DIR)/copying.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-copying.o -MD -MP -MF $(DEPDIR)/test_generational-copying.Tpo -c -o test_generational-copying.o `test -f '$(GC_DIR)/copying.c' || echo '$(srcdir)/'`$(GC_DIR)/copying.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-copying.Tpo $(DEPDIR)/test_generational-copying.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(GC_DIR)/copying.c' object='test_generational-copying.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-copying.o `test -f '$(GC_DIR)/copying.c' || echo '$(srcdir)/'`$(GC_DIR)/copying.c
+
+test_generational-copying.obj: $(GC_DIR)/copying.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-copying.obj -MD -MP -MF $(DEPDIR)/test_generational-copying.Tpo -c -o test_generational-copying.obj `if test -f '$(GC_DIR)/copying.c'; then $(CYGPATH_W) '$(GC_DIR)/copying.c'; else $(CYGPATH_W) '$(srcdir)/$(GC_DIR)/copying.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-copying.Tpo $(DEPDIR)/test_generational-copying.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(GC_DIR)/copying.c' object='test_generational-copying.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-copying.obj `if test -f '$(GC_DIR)/copying.c'; then $(CYGPATH_W) '$(GC_DIR)/copying.c'; else $(CYGPATH_W) '$(srcdir)/$(GC_DIR)/copying.c'; fi`
+
+test_generational-mark-sweep-compact.o: $(GC_DIR)/mark-sweep-compact.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-mark-sweep-compact.o -MD -MP -MF $(DEPDIR)/test_generational-mark-sweep-compact.Tpo -c -o test_generational-mark-sweep-compact.o `test -f '$(GC_DIR)/mark-sweep-compact.c' || echo '$(srcdir)/'`$(GC_DIR)/mark-sweep-compact.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-mark-sweep-compact.Tpo $(DEPDIR)/test_generational-mark-sweep-compact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(GC_DIR)/mark-sweep-compact.c' object='test_generational-mark-sweep-compact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-mark-sweep-compact.o `test -f '$(GC_DIR)/mark-sweep-compact.c' || echo '$(srcdir)/'`$(GC_DIR)/mark-sweep-compact.c
+
+test_generational-mark-sweep-compact.obj: $(GC_DIR)/mark-sweep-compact.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-mark-sweep-compact.obj -MD -MP -MF $(DEPDIR)/test_generational-mark-sweep-compact.Tpo -c -o test_generational-mark-sweep-compact.obj `if test -f '$(GC_DIR)/mark-sweep-compact.c'; then $(CYGPATH_W) '$(GC_DIR)/mark-sweep-compact.c'; else $(CYGPATH_W) '$(srcdir)/$(GC_DIR)/mark-sweep-compact.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-mark-sweep-compact.Tpo $(DEPDIR)/test_generational-mark-sweep-compact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(GC_DIR)/mark-sweep-compact.c' object='test_generational-mark-sweep-compact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-mark-sweep-compact.obj `if test -f '$(GC_DIR)/mark-sweep-compact.c'; then $(CYGPATH_W) '$(GC_DIR)/mark-sweep-compact.c'; else $(CYGPATH_W) '$(srcdir)/$(GC_DIR)/mark-sweep-compact.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -32,7 +32,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = test$(EXEEXT)
+bin_PROGRAMS = test-copying$(EXEEXT)
 subdir = tests/copying
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -46,12 +46,12 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_test_OBJECTS = test-copying.$(OBJEXT)
-test_OBJECTS = $(am_test_OBJECTS)
-test_LDADD = $(LDADD)
-test_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(test_CFLAGS) $(CFLAGS) $(test_LDFLAGS) \
-	$(LDFLAGS) -o $@
+am_test_copying_OBJECTS = test_copying-copying.$(OBJEXT)
+test_copying_OBJECTS = $(am_test_copying_OBJECTS)
+test_copying_LDADD = $(LDADD)
+test_copying_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_copying_CFLAGS) \
+	$(CFLAGS) $(test_copying_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -64,8 +64,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(test_SOURCES)
-DIST_SOURCES = $(test_SOURCES)
+SOURCES = $(test_copying_SOURCES)
+DIST_SOURCES = $(test_copying_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -176,9 +176,9 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 YOG_DIR = ../..
-test_SOURCES = $(YOG_DIR)/src/gc/copying.c
-test_CFLAGS = -Wall -I$(YOG_DIR)/include -DTEST
-test_LDFLAGS = -lcunit
+test_copying_SOURCES = $(YOG_DIR)/src/gc/copying.c
+test_copying_CFLAGS = -Wall -I$(YOG_DIR)/include -DTEST_COPYING -DGC_COPYING
+test_copying_LDFLAGS = -lcunit
 all: all-am
 
 .SUFFIXES:
@@ -240,9 +240,9 @@ clean-binPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-test$(EXEEXT): $(test_OBJECTS) $(test_DEPENDENCIES) 
-	@rm -f test$(EXEEXT)
-	$(test_LINK) $(test_OBJECTS) $(test_LDADD) $(LIBS)
+test-copying$(EXEEXT): $(test_copying_OBJECTS) $(test_copying_DEPENDENCIES) 
+	@rm -f test-copying$(EXEEXT)
+	$(test_copying_LINK) $(test_copying_OBJECTS) $(test_copying_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -250,7 +250,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-copying.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_copying-copying.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -273,19 +273,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-test-copying.o: $(YOG_DIR)/src/gc/copying.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-copying.o -MD -MP -MF $(DEPDIR)/test-copying.Tpo -c -o test-copying.o `test -f '$(YOG_DIR)/src/gc/copying.c' || echo '$(srcdir)/'`$(YOG_DIR)/src/gc/copying.c
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test-copying.Tpo $(DEPDIR)/test-copying.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(YOG_DIR)/src/gc/copying.c' object='test-copying.o' libtool=no @AMDEPBACKSLASH@
+test_copying-copying.o: $(YOG_DIR)/src/gc/copying.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_copying_CFLAGS) $(CFLAGS) -MT test_copying-copying.o -MD -MP -MF $(DEPDIR)/test_copying-copying.Tpo -c -o test_copying-copying.o `test -f '$(YOG_DIR)/src/gc/copying.c' || echo '$(srcdir)/'`$(YOG_DIR)/src/gc/copying.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_copying-copying.Tpo $(DEPDIR)/test_copying-copying.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(YOG_DIR)/src/gc/copying.c' object='test_copying-copying.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-copying.o `test -f '$(YOG_DIR)/src/gc/copying.c' || echo '$(srcdir)/'`$(YOG_DIR)/src/gc/copying.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_copying_CFLAGS) $(CFLAGS) -c -o test_copying-copying.o `test -f '$(YOG_DIR)/src/gc/copying.c' || echo '$(srcdir)/'`$(YOG_DIR)/src/gc/copying.c
 
-test-copying.obj: $(YOG_DIR)/src/gc/copying.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-copying.obj -MD -MP -MF $(DEPDIR)/test-copying.Tpo -c -o test-copying.obj `if test -f '$(YOG_DIR)/src/gc/copying.c'; then $(CYGPATH_W) '$(YOG_DIR)/src/gc/copying.c'; else $(CYGPATH_W) '$(srcdir)/$(YOG_DIR)/src/gc/copying.c'; fi`
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test-copying.Tpo $(DEPDIR)/test-copying.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(YOG_DIR)/src/gc/copying.c' object='test-copying.obj' libtool=no @AMDEPBACKSLASH@
+test_copying-copying.obj: $(YOG_DIR)/src/gc/copying.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_copying_CFLAGS) $(CFLAGS) -MT test_copying-copying.obj -MD -MP -MF $(DEPDIR)/test_copying-copying.Tpo -c -o test_copying-copying.obj `if test -f '$(YOG_DIR)/src/gc/copying.c'; then $(CYGPATH_W) '$(YOG_DIR)/src/gc/copying.c'; else $(CYGPATH_W) '$(srcdir)/$(YOG_DIR)/src/gc/copying.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_copying-copying.Tpo $(DEPDIR)/test_copying-copying.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(YOG_DIR)/src/gc/copying.c' object='test_copying-copying.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-copying.obj `if test -f '$(YOG_DIR)/src/gc/copying.c'; then $(CYGPATH_W) '$(YOG_DIR)/src/gc/copying.c'; else $(CYGPATH_W) '$(srcdir)/$(YOG_DIR)/src/gc/copying.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_copying_CFLAGS) $(CFLAGS) -c -o test_copying-copying.obj `if test -f '$(YOG_DIR)/src/gc/copying.c'; then $(CYGPATH_W) '$(YOG_DIR)/src/gc/copying.c'; else $(CYGPATH_W) '$(srcdir)/$(YOG_DIR)/src/gc/copying.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

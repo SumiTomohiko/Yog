@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef TEST
+#ifdef TEST_COPYING
 #   include <stdio.h>
 #   include <CUnit/Basic.h>
 #   include <CUnit/CUnit.h>
@@ -90,13 +90,22 @@ keep_object(YogEnv* env, void* ptr)
 #endif
 
     YogVm* vm = ENV_VM(env);
-    unsigned char* dest = vm->gc.copying.unscanned;
+    unsigned char* dest;
+#if GC_COPYING
+    dest = vm->gc.copying.unscanned;
+#elif GC_GENERATIONAL
+    dest = vm->gc.generational.copying.unscanned;
+#endif
     size_t size = header->size;
     memcpy(dest, header, size);
 
     header->forwarding_addr = dest;
 
+#if GC_COPYING
     vm->gc.copying.unscanned += size;
+#elif GC_GENERATIONAL
+    vm->gc.generational.copying.unscanned += size;
+#endif
 
     PRINT("exec_num=0x%08x, id=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (CopyingHeader*)dest + 1);
     return (CopyingHeader*)dest + 1;
@@ -268,8 +277,7 @@ YogCopying_initialize(YogEnv* env, YogCopying* copying, BOOL stress, size_t heap
     copying->root_keeper = root_keeper;
 }
 
-#ifdef TEST
-
+#ifdef TEST_COPYING
 #define HEAP_SIZE   (1 * 1024 * 1024)
 
 #define CREATE_TEST(name, root, root_keeper) \
