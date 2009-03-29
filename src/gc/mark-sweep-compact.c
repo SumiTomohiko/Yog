@@ -474,10 +474,6 @@ YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc)
         header = next;
     }
 
-    /**
-     * TODO: free large objects.
-     */
-
     compact(env, msc);
 
     msc->allocated_size = 0;
@@ -915,6 +911,47 @@ test_page1(YogMarkSweepCompact* msc)
 
 CREATE_TEST(page1, NULL, NULL);
 
+static BOOL test_finalize_large1_flag = FALSE;
+
+static void 
+finalize_large1_finalizer(YogEnv* env, void* ptr)
+{
+    test_finalize_large1_flag = TRUE;
+}
+
+static void 
+finalize_large1()
+{
+    YogMarkSweepCompact msc;
+    YogMarkSweepCompact_initialize(NULL, &msc, CHUNK_SIZE, THRESHOLD, NULL, NULL);
+
+    size_t size = MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE;
+    YogMarkSweepCompact_alloc(NULL, &msc, NULL, finalize_large1_finalizer, size);
+
+    YogMarkSweepCompact_finalize(NULL, &msc);
+
+    CU_ASSERT_TRUE(test_finalize_large1_flag);
+}
+
+static BOOL gc_large1_flag = FALSE;
+
+static void 
+gc_large1_finalizer(YogEnv* env, void* ptr) 
+{
+    gc_large1_flag = TRUE;
+}
+
+static void 
+test_gc_large1(YogMarkSweepCompact* msc) 
+{
+    size_t size = MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE;
+    YogMarkSweepCompact_alloc(NULL, msc, NULL, gc_large1_finalizer, size);
+    YogMarkSweepCompact_gc(NULL, msc);
+    CU_ASSERT_TRUE(gc_large1_flag);
+}
+
+CREATE_TEST(gc_large1, NULL, dummy_keeper);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -942,9 +979,11 @@ main(int argc, const char* argv[])
     ADD_TEST(alloc1);
     ADD_TEST(alloc_large1);
     ADD_TEST(assign_page1);
+    ADD_TEST(finalize_large1);
     ADD_TEST(gc1);
     ADD_TEST(gc2);
     ADD_TEST(gc3);
+    ADD_TEST(gc_large1);
     ADD_TEST(page1);
     ADD_TEST(page_freelist1);
     ADD_TEST(page_freelist2);
