@@ -679,6 +679,16 @@ test_alloc1(YogMarkSweepCompact* msc)
 CREATE_TEST(alloc1, NULL, NULL);
 
 static void 
+test_alloc_large1(YogMarkSweepCompact* msc) 
+{
+    size_t size = MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE;
+    void* ptr = YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, size);
+    CU_ASSERT_PTR_NOT_NULL(ptr);
+}
+
+CREATE_TEST(alloc_large1, NULL, NULL);
+
+static void 
 test_assign_page1(YogMarkSweepCompact* msc) 
 {
     YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
@@ -918,6 +928,7 @@ main(int argc, const char* argv[])
     } \
 } while (0)
     ADD_TEST(alloc1);
+    ADD_TEST(alloc_large1);
     ADD_TEST(assign_page1);
     ADD_TEST(gc1);
     ADD_TEST(gc2);
