@@ -59,8 +59,8 @@ round_size(size_t size)
     return (size + unit - 1) & ~(unit - 1);
 }
 
-static void* 
-keep_object(YogEnv* env, void* ptr) 
+void* 
+YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr) 
 {
 #ifdef DEBUG
 #   define PRINT(...)   DPRINTF(__VA_ARGS__)
@@ -84,28 +84,27 @@ keep_object(YogEnv* env, void* ptr)
     increment_total_object_number(ENV_VM(env));
 #endif
 
-    YogVm* vm = ENV_VM(env);
-    unsigned char* dest;
-#if GC_COPYING
-    dest = vm->gc.copying.unscanned;
-#elif GC_GENERATIONAL
-    dest = vm->gc.generational.copying.unscanned;
-#endif
+    unsigned char* dest = copying->unscanned;
     size_t size = header->size;
     memcpy(dest, header, size);
 
     header->forwarding_addr = dest;
 
-#if GC_COPYING
-    vm->gc.copying.unscanned += size;
-#elif GC_GENERATIONAL
-    vm->gc.generational.copying.unscanned += size;
-#endif
+    copying->unscanned += size;
 
     PRINT("exec_num=0x%08x, id=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (CopyingHeader*)dest + 1);
     return (CopyingHeader*)dest + 1;
 #undef PRINT
 }
+
+#if defined(GC_COPYING)
+static void* 
+keep_object(YogEnv* env, void* ptr) 
+{
+    YogCopying* copying = &env->vm->gc.copying;
+    return YogCopying_copy(env, copying, ptr);
+}
+#endif
 
 static void 
 destroy_memory(void* ptr, size_t size) 
@@ -167,7 +166,7 @@ swap_heap(YogCopyingHeap** a, YogCopyingHeap** b)
 }
 
 void 
-YogCopying_gc(YogEnv* env, YogCopying* copying) 
+YogCopying_do_gc(YogEnv* env, YogCopying* copying, ObjectKeeper obj_keeper) 
 {
     YogCopyingHeap* from_space = copying->active_heap;
     YogCopyingHeap* to_space = copying->inactive_heap;
@@ -184,13 +183,13 @@ YogCopying_gc(YogEnv* env, YogCopying* copying)
 
     copying->scanned = copying->unscanned = to_space->items;
 
-    (*copying->root_keeper)(env, copying->root, keep_object);
+    (*copying->root_keeper)(env, copying->root, obj_keeper);
 
     while (copying->scanned != copying->unscanned) {
         CopyingHeader* header = (CopyingHeader*)copying->scanned;
         ChildrenKeeper keeper = header->keeper;
         if (keeper != NULL) {
-            (*keeper)(env, header + 1, keep_object);
+            (*keeper)(env, header + 1, obj_keeper);
         }
 
         copying->scanned += header->size;
@@ -205,6 +204,14 @@ YogCopying_gc(YogEnv* env, YogCopying* copying)
 
     swap_heap(&copying->active_heap, &copying->inactive_heap);
 }
+
+#if defined(GC_COPYING)
+void 
+YogCopying_gc(YogEnv* env, YogCopying* copying) 
+{
+    YogCopying_do_gc(env, copying, keep_object);
+}
+#endif
 
 void* 
 YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
@@ -223,9 +230,9 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
             return NULL;
         }
 
-#if GC_COPYING
+#if defined(GC_COPYING)
         YogCopying_gc(env, copying);
-#elif GC_GENERATIONAL
+#elif defined(GC_GENERATIONAL)
         YogGenerational_minor_gc(env, &env->vm->gc.generational);
 #endif
         heap = copying->active_heap;

@@ -350,17 +350,20 @@ YogVm_init(YogVm* vm)
     vm->gc_stress = FALSE;
     vm->disable_gc = FALSE;
 
-#if GC_COPYING
+#if defined(GC_COPYING)
     vm->alloc_mem = alloc_mem_copying;
     vm->free_mem = free_mem_copying;
-#elif GC_MARK_SWEEP
+#elif defined(GC_MARK_SWEEP)
     vm->alloc_mem = alloc_mem_mark_sweep;
     vm->free_mem = free_mem_mark_sweep;
-#elif GC_MARK_SWEEP_COMPACT
+#elif defined(GC_MARK_SWEEP_COMPACT)
     vm->alloc_mem = alloc_mem_mark_sweep_compact;
     vm->free_mem = free_mem_mark_sweep_compact;
-#elif GC_BDW
+#elif defined(GC_BDW)
     vm->alloc_mem = alloc_mem_bdw;
+    vm->free_mem = NULL;
+#elif defined(GC_GENERATIONAL)
+    vm->alloc_mem = NULL;
     vm->free_mem = NULL;
 #else
 #   error "unknown GC type"

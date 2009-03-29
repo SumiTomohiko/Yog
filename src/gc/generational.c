@@ -7,17 +7,29 @@
 #include "yog/yog.h"
 #include "yog/gc/generational.h"
 
+static void* 
+minor_gc_keep_object(YogEnv* env, void* ptr) 
+{
+    if (ptr == NULL) {
+        return NULL;
+    }
+    if (!IS_YOUNG(env, PTR2VAL(ptr))) {
+        return ptr;
+    }
+    return YogCopying_copy(env, &env->vm->gc.generational.copying, ptr);
+}
+
 void 
 YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational) 
 {
-    /* TODO */
+    YogCopying_do_gc(env, &generational->copying, minor_gc_keep_object);
 }
 
 void 
 YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, void* root, ChildrenKeeper root_keeper) 
 {
     YogCopying* copying = &generational->copying;
-    YogCopying_initialize(env, copying, stress, young_heap_size, NULL, NULL);
+    YogCopying_initialize(env, copying, stress, young_heap_size, root, root_keeper);
 
     YogMarkSweepCompact* msc = &generational->msc;
     YogMarkSweepCompact_initialize(env, msc, old_chunk_size, old_threshold, NULL, NULL);
@@ -138,7 +150,7 @@ test_minor_gc1(YogEnv* env)
     CU_ASSERT_PTR_NOT_EQUAL(minor_gc1_ptr, minor_gc1_ptr_old);
 }
 
-CREATE_TEST(minor_gc1, minor_gc1_keep_children, NULL);
+CREATE_TEST(minor_gc1, NULL, minor_gc1_keep_children);
 
 #define PRIVATE
 

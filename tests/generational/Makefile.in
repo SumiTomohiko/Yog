@@ -49,7 +49,31 @@ PROGRAMS = $(bin_PROGRAMS)
 am_test_generational_OBJECTS =  \
 	test_generational-generational.$(OBJEXT) \
 	test_generational-copying.$(OBJEXT) \
-	test_generational-mark-sweep-compact.$(OBJEXT)
+	test_generational-mark-sweep-compact.$(OBJEXT) \
+	test_generational-value.$(OBJEXT) \
+	test_generational-error.$(OBJEXT) \
+	test_generational-object.$(OBJEXT) \
+	test_generational-table.$(OBJEXT) \
+	test_generational-vm.$(OBJEXT) \
+	test_generational-klass.$(OBJEXT) \
+	test_generational-string.$(OBJEXT) \
+	test_generational-thread.$(OBJEXT) \
+	test_generational-encoding.$(OBJEXT) \
+	test_generational-frame.$(OBJEXT) \
+	test_generational-array.$(OBJEXT) \
+	test_generational-binary.$(OBJEXT) \
+	test_generational-package.$(OBJEXT) \
+	test_generational-method.$(OBJEXT) \
+	test_generational-function.$(OBJEXT) \
+	test_generational-nil.$(OBJEXT) \
+	test_generational-exception.$(OBJEXT) \
+	test_generational-arg.$(OBJEXT) \
+	test_generational-stacktrace.$(OBJEXT) \
+	test_generational-int.$(OBJEXT) \
+	test_generational-regexp.$(OBJEXT) \
+	test_generational-block.$(OBJEXT) \
+	test_generational-bool.$(OBJEXT) \
+	test_generational-builtins.$(OBJEXT)
 test_generational_OBJECTS = $(am_test_generational_OBJECTS)
 test_generational_LDADD = $(LDADD)
 test_generational_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -180,14 +204,27 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 YOG_DIR = ../..
-GC_DIR = $(YOG_DIR)/src/gc
+SRC_DIR = $(YOG_DIR)/src
+GC_DIR = $(SRC_DIR)/gc
 test_generational_SOURCES = $(GC_DIR)/generational.c $(GC_DIR)/copying.c \
-			    $(GC_DIR)/mark-sweep-compact.c
+			    $(GC_DIR)/mark-sweep-compact.c $(SRC_DIR)/value.c \
+			    $(SRC_DIR)/error.c $(SRC_DIR)/object.c \
+			    $(SRC_DIR)/table.c $(SRC_DIR)/vm.c \
+			    $(SRC_DIR)/klass.c $(SRC_DIR)/string.c \
+			    $(SRC_DIR)/thread.c $(SRC_DIR)/encoding.c \
+			    $(SRC_DIR)/frame.c $(SRC_DIR)/array.c \
+			    $(SRC_DIR)/binary.c $(SRC_DIR)/package.c \
+			    $(SRC_DIR)/method.c $(SRC_DIR)/function.c \
+			    $(SRC_DIR)/nil.c $(SRC_DIR)/exception.c \
+			    $(SRC_DIR)/arg.c $(SRC_DIR)/stacktrace.c \
+			    $(SRC_DIR)/int.c $(SRC_DIR)/regexp.c \
+			    $(SRC_DIR)/block.c $(SRC_DIR)/bool.c \
+			    $(SRC_DIR)/builtins.c
 
 test_generational_CFLAGS = -Wall -I$(YOG_DIR)/include -DTEST_GENERATIONAL \
 			   -DGC_GENERATIONAL
 
-test_generational_LDFLAGS = -lcunit
+test_generational_LDFLAGS = -lcunit -lonig
 all: all-am
 
 .SUFFIXES:
@@ -259,9 +296,33 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-arg.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-array.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-binary.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-block.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-bool.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-builtins.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-copying.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-encoding.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-error.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-exception.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-frame.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-function.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-generational.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-int.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-klass.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-mark-sweep-compact.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-method.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-nil.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-object.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-package.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-regexp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-stacktrace.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-string.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-table.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-thread.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-value.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_generational-vm.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -325,6 +386,342 @@ test_generational-mark-sweep-compact.obj: $(GC_DIR)/mark-sweep-compact.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(GC_DIR)/mark-sweep-compact.c' object='test_generational-mark-sweep-compact.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-mark-sweep-compact.obj `if test -f '$(GC_DIR)/mark-sweep-compact.c'; then $(CYGPATH_W) '$(GC_DIR)/mark-sweep-compact.c'; else $(CYGPATH_W) '$(srcdir)/$(GC_DIR)/mark-sweep-compact.c'; fi`
+
+test_generational-value.o: $(SRC_DIR)/value.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-value.o -MD -MP -MF $(DEPDIR)/test_generational-value.Tpo -c -o test_generational-value.o `test -f '$(SRC_DIR)/value.c' || echo '$(srcdir)/'`$(SRC_DIR)/value.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-value.Tpo $(DEPDIR)/test_generational-value.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/value.c' object='test_generational-value.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-value.o `test -f '$(SRC_DIR)/value.c' || echo '$(srcdir)/'`$(SRC_DIR)/value.c
+
+test_generational-value.obj: $(SRC_DIR)/value.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-value.obj -MD -MP -MF $(DEPDIR)/test_generational-value.Tpo -c -o test_generational-value.obj `if test -f '$(SRC_DIR)/value.c'; then $(CYGPATH_W) '$(SRC_DIR)/value.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/value.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-value.Tpo $(DEPDIR)/test_generational-value.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/value.c' object='test_generational-value.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-value.obj `if test -f '$(SRC_DIR)/value.c'; then $(CYGPATH_W) '$(SRC_DIR)/value.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/value.c'; fi`
+
+test_generational-error.o: $(SRC_DIR)/error.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-error.o -MD -MP -MF $(DEPDIR)/test_generational-error.Tpo -c -o test_generational-error.o `test -f '$(SRC_DIR)/error.c' || echo '$(srcdir)/'`$(SRC_DIR)/error.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-error.Tpo $(DEPDIR)/test_generational-error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/error.c' object='test_generational-error.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-error.o `test -f '$(SRC_DIR)/error.c' || echo '$(srcdir)/'`$(SRC_DIR)/error.c
+
+test_generational-error.obj: $(SRC_DIR)/error.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-error.obj -MD -MP -MF $(DEPDIR)/test_generational-error.Tpo -c -o test_generational-error.obj `if test -f '$(SRC_DIR)/error.c'; then $(CYGPATH_W) '$(SRC_DIR)/error.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/error.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-error.Tpo $(DEPDIR)/test_generational-error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/error.c' object='test_generational-error.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-error.obj `if test -f '$(SRC_DIR)/error.c'; then $(CYGPATH_W) '$(SRC_DIR)/error.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/error.c'; fi`
+
+test_generational-object.o: $(SRC_DIR)/object.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-object.o -MD -MP -MF $(DEPDIR)/test_generational-object.Tpo -c -o test_generational-object.o `test -f '$(SRC_DIR)/object.c' || echo '$(srcdir)/'`$(SRC_DIR)/object.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-object.Tpo $(DEPDIR)/test_generational-object.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/object.c' object='test_generational-object.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-object.o `test -f '$(SRC_DIR)/object.c' || echo '$(srcdir)/'`$(SRC_DIR)/object.c
+
+test_generational-object.obj: $(SRC_DIR)/object.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-object.obj -MD -MP -MF $(DEPDIR)/test_generational-object.Tpo -c -o test_generational-object.obj `if test -f '$(SRC_DIR)/object.c'; then $(CYGPATH_W) '$(SRC_DIR)/object.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/object.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-object.Tpo $(DEPDIR)/test_generational-object.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/object.c' object='test_generational-object.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-object.obj `if test -f '$(SRC_DIR)/object.c'; then $(CYGPATH_W) '$(SRC_DIR)/object.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/object.c'; fi`
+
+test_generational-table.o: $(SRC_DIR)/table.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-table.o -MD -MP -MF $(DEPDIR)/test_generational-table.Tpo -c -o test_generational-table.o `test -f '$(SRC_DIR)/table.c' || echo '$(srcdir)/'`$(SRC_DIR)/table.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-table.Tpo $(DEPDIR)/test_generational-table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/table.c' object='test_generational-table.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-table.o `test -f '$(SRC_DIR)/table.c' || echo '$(srcdir)/'`$(SRC_DIR)/table.c
+
+test_generational-table.obj: $(SRC_DIR)/table.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-table.obj -MD -MP -MF $(DEPDIR)/test_generational-table.Tpo -c -o test_generational-table.obj `if test -f '$(SRC_DIR)/table.c'; then $(CYGPATH_W) '$(SRC_DIR)/table.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/table.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-table.Tpo $(DEPDIR)/test_generational-table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/table.c' object='test_generational-table.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-table.obj `if test -f '$(SRC_DIR)/table.c'; then $(CYGPATH_W) '$(SRC_DIR)/table.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/table.c'; fi`
+
+test_generational-vm.o: $(SRC_DIR)/vm.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-vm.o -MD -MP -MF $(DEPDIR)/test_generational-vm.Tpo -c -o test_generational-vm.o `test -f '$(SRC_DIR)/vm.c' || echo '$(srcdir)/'`$(SRC_DIR)/vm.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-vm.Tpo $(DEPDIR)/test_generational-vm.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/vm.c' object='test_generational-vm.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-vm.o `test -f '$(SRC_DIR)/vm.c' || echo '$(srcdir)/'`$(SRC_DIR)/vm.c
+
+test_generational-vm.obj: $(SRC_DIR)/vm.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-vm.obj -MD -MP -MF $(DEPDIR)/test_generational-vm.Tpo -c -o test_generational-vm.obj `if test -f '$(SRC_DIR)/vm.c'; then $(CYGPATH_W) '$(SRC_DIR)/vm.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/vm.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-vm.Tpo $(DEPDIR)/test_generational-vm.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/vm.c' object='test_generational-vm.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-vm.obj `if test -f '$(SRC_DIR)/vm.c'; then $(CYGPATH_W) '$(SRC_DIR)/vm.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/vm.c'; fi`
+
+test_generational-klass.o: $(SRC_DIR)/klass.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-klass.o -MD -MP -MF $(DEPDIR)/test_generational-klass.Tpo -c -o test_generational-klass.o `test -f '$(SRC_DIR)/klass.c' || echo '$(srcdir)/'`$(SRC_DIR)/klass.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-klass.Tpo $(DEPDIR)/test_generational-klass.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/klass.c' object='test_generational-klass.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-klass.o `test -f '$(SRC_DIR)/klass.c' || echo '$(srcdir)/'`$(SRC_DIR)/klass.c
+
+test_generational-klass.obj: $(SRC_DIR)/klass.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-klass.obj -MD -MP -MF $(DEPDIR)/test_generational-klass.Tpo -c -o test_generational-klass.obj `if test -f '$(SRC_DIR)/klass.c'; then $(CYGPATH_W) '$(SRC_DIR)/klass.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/klass.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-klass.Tpo $(DEPDIR)/test_generational-klass.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/klass.c' object='test_generational-klass.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-klass.obj `if test -f '$(SRC_DIR)/klass.c'; then $(CYGPATH_W) '$(SRC_DIR)/klass.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/klass.c'; fi`
+
+test_generational-string.o: $(SRC_DIR)/string.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-string.o -MD -MP -MF $(DEPDIR)/test_generational-string.Tpo -c -o test_generational-string.o `test -f '$(SRC_DIR)/string.c' || echo '$(srcdir)/'`$(SRC_DIR)/string.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-string.Tpo $(DEPDIR)/test_generational-string.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/string.c' object='test_generational-string.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-string.o `test -f '$(SRC_DIR)/string.c' || echo '$(srcdir)/'`$(SRC_DIR)/string.c
+
+test_generational-string.obj: $(SRC_DIR)/string.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-string.obj -MD -MP -MF $(DEPDIR)/test_generational-string.Tpo -c -o test_generational-string.obj `if test -f '$(SRC_DIR)/string.c'; then $(CYGPATH_W) '$(SRC_DIR)/string.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/string.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-string.Tpo $(DEPDIR)/test_generational-string.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/string.c' object='test_generational-string.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-string.obj `if test -f '$(SRC_DIR)/string.c'; then $(CYGPATH_W) '$(SRC_DIR)/string.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/string.c'; fi`
+
+test_generational-thread.o: $(SRC_DIR)/thread.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-thread.o -MD -MP -MF $(DEPDIR)/test_generational-thread.Tpo -c -o test_generational-thread.o `test -f '$(SRC_DIR)/thread.c' || echo '$(srcdir)/'`$(SRC_DIR)/thread.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-thread.Tpo $(DEPDIR)/test_generational-thread.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/thread.c' object='test_generational-thread.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-thread.o `test -f '$(SRC_DIR)/thread.c' || echo '$(srcdir)/'`$(SRC_DIR)/thread.c
+
+test_generational-thread.obj: $(SRC_DIR)/thread.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-thread.obj -MD -MP -MF $(DEPDIR)/test_generational-thread.Tpo -c -o test_generational-thread.obj `if test -f '$(SRC_DIR)/thread.c'; then $(CYGPATH_W) '$(SRC_DIR)/thread.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/thread.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-thread.Tpo $(DEPDIR)/test_generational-thread.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/thread.c' object='test_generational-thread.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-thread.obj `if test -f '$(SRC_DIR)/thread.c'; then $(CYGPATH_W) '$(SRC_DIR)/thread.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/thread.c'; fi`
+
+test_generational-encoding.o: $(SRC_DIR)/encoding.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-encoding.o -MD -MP -MF $(DEPDIR)/test_generational-encoding.Tpo -c -o test_generational-encoding.o `test -f '$(SRC_DIR)/encoding.c' || echo '$(srcdir)/'`$(SRC_DIR)/encoding.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-encoding.Tpo $(DEPDIR)/test_generational-encoding.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/encoding.c' object='test_generational-encoding.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-encoding.o `test -f '$(SRC_DIR)/encoding.c' || echo '$(srcdir)/'`$(SRC_DIR)/encoding.c
+
+test_generational-encoding.obj: $(SRC_DIR)/encoding.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-encoding.obj -MD -MP -MF $(DEPDIR)/test_generational-encoding.Tpo -c -o test_generational-encoding.obj `if test -f '$(SRC_DIR)/encoding.c'; then $(CYGPATH_W) '$(SRC_DIR)/encoding.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/encoding.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-encoding.Tpo $(DEPDIR)/test_generational-encoding.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/encoding.c' object='test_generational-encoding.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-encoding.obj `if test -f '$(SRC_DIR)/encoding.c'; then $(CYGPATH_W) '$(SRC_DIR)/encoding.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/encoding.c'; fi`
+
+test_generational-frame.o: $(SRC_DIR)/frame.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-frame.o -MD -MP -MF $(DEPDIR)/test_generational-frame.Tpo -c -o test_generational-frame.o `test -f '$(SRC_DIR)/frame.c' || echo '$(srcdir)/'`$(SRC_DIR)/frame.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-frame.Tpo $(DEPDIR)/test_generational-frame.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/frame.c' object='test_generational-frame.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-frame.o `test -f '$(SRC_DIR)/frame.c' || echo '$(srcdir)/'`$(SRC_DIR)/frame.c
+
+test_generational-frame.obj: $(SRC_DIR)/frame.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-frame.obj -MD -MP -MF $(DEPDIR)/test_generational-frame.Tpo -c -o test_generational-frame.obj `if test -f '$(SRC_DIR)/frame.c'; then $(CYGPATH_W) '$(SRC_DIR)/frame.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/frame.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-frame.Tpo $(DEPDIR)/test_generational-frame.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/frame.c' object='test_generational-frame.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-frame.obj `if test -f '$(SRC_DIR)/frame.c'; then $(CYGPATH_W) '$(SRC_DIR)/frame.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/frame.c'; fi`
+
+test_generational-array.o: $(SRC_DIR)/array.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-array.o -MD -MP -MF $(DEPDIR)/test_generational-array.Tpo -c -o test_generational-array.o `test -f '$(SRC_DIR)/array.c' || echo '$(srcdir)/'`$(SRC_DIR)/array.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-array.Tpo $(DEPDIR)/test_generational-array.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/array.c' object='test_generational-array.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-array.o `test -f '$(SRC_DIR)/array.c' || echo '$(srcdir)/'`$(SRC_DIR)/array.c
+
+test_generational-array.obj: $(SRC_DIR)/array.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-array.obj -MD -MP -MF $(DEPDIR)/test_generational-array.Tpo -c -o test_generational-array.obj `if test -f '$(SRC_DIR)/array.c'; then $(CYGPATH_W) '$(SRC_DIR)/array.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/array.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-array.Tpo $(DEPDIR)/test_generational-array.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/array.c' object='test_generational-array.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-array.obj `if test -f '$(SRC_DIR)/array.c'; then $(CYGPATH_W) '$(SRC_DIR)/array.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/array.c'; fi`
+
+test_generational-binary.o: $(SRC_DIR)/binary.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-binary.o -MD -MP -MF $(DEPDIR)/test_generational-binary.Tpo -c -o test_generational-binary.o `test -f '$(SRC_DIR)/binary.c' || echo '$(srcdir)/'`$(SRC_DIR)/binary.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-binary.Tpo $(DEPDIR)/test_generational-binary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/binary.c' object='test_generational-binary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-binary.o `test -f '$(SRC_DIR)/binary.c' || echo '$(srcdir)/'`$(SRC_DIR)/binary.c
+
+test_generational-binary.obj: $(SRC_DIR)/binary.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-binary.obj -MD -MP -MF $(DEPDIR)/test_generational-binary.Tpo -c -o test_generational-binary.obj `if test -f '$(SRC_DIR)/binary.c'; then $(CYGPATH_W) '$(SRC_DIR)/binary.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/binary.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-binary.Tpo $(DEPDIR)/test_generational-binary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/binary.c' object='test_generational-binary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-binary.obj `if test -f '$(SRC_DIR)/binary.c'; then $(CYGPATH_W) '$(SRC_DIR)/binary.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/binary.c'; fi`
+
+test_generational-package.o: $(SRC_DIR)/package.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-package.o -MD -MP -MF $(DEPDIR)/test_generational-package.Tpo -c -o test_generational-package.o `test -f '$(SRC_DIR)/package.c' || echo '$(srcdir)/'`$(SRC_DIR)/package.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-package.Tpo $(DEPDIR)/test_generational-package.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/package.c' object='test_generational-package.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-package.o `test -f '$(SRC_DIR)/package.c' || echo '$(srcdir)/'`$(SRC_DIR)/package.c
+
+test_generational-package.obj: $(SRC_DIR)/package.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-package.obj -MD -MP -MF $(DEPDIR)/test_generational-package.Tpo -c -o test_generational-package.obj `if test -f '$(SRC_DIR)/package.c'; then $(CYGPATH_W) '$(SRC_DIR)/package.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/package.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-package.Tpo $(DEPDIR)/test_generational-package.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/package.c' object='test_generational-package.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-package.obj `if test -f '$(SRC_DIR)/package.c'; then $(CYGPATH_W) '$(SRC_DIR)/package.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/package.c'; fi`
+
+test_generational-method.o: $(SRC_DIR)/method.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-method.o -MD -MP -MF $(DEPDIR)/test_generational-method.Tpo -c -o test_generational-method.o `test -f '$(SRC_DIR)/method.c' || echo '$(srcdir)/'`$(SRC_DIR)/method.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-method.Tpo $(DEPDIR)/test_generational-method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/method.c' object='test_generational-method.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-method.o `test -f '$(SRC_DIR)/method.c' || echo '$(srcdir)/'`$(SRC_DIR)/method.c
+
+test_generational-method.obj: $(SRC_DIR)/method.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-method.obj -MD -MP -MF $(DEPDIR)/test_generational-method.Tpo -c -o test_generational-method.obj `if test -f '$(SRC_DIR)/method.c'; then $(CYGPATH_W) '$(SRC_DIR)/method.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/method.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-method.Tpo $(DEPDIR)/test_generational-method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/method.c' object='test_generational-method.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-method.obj `if test -f '$(SRC_DIR)/method.c'; then $(CYGPATH_W) '$(SRC_DIR)/method.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/method.c'; fi`
+
+test_generational-function.o: $(SRC_DIR)/function.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-function.o -MD -MP -MF $(DEPDIR)/test_generational-function.Tpo -c -o test_generational-function.o `test -f '$(SRC_DIR)/function.c' || echo '$(srcdir)/'`$(SRC_DIR)/function.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-function.Tpo $(DEPDIR)/test_generational-function.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/function.c' object='test_generational-function.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-function.o `test -f '$(SRC_DIR)/function.c' || echo '$(srcdir)/'`$(SRC_DIR)/function.c
+
+test_generational-function.obj: $(SRC_DIR)/function.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-function.obj -MD -MP -MF $(DEPDIR)/test_generational-function.Tpo -c -o test_generational-function.obj `if test -f '$(SRC_DIR)/function.c'; then $(CYGPATH_W) '$(SRC_DIR)/function.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/function.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-function.Tpo $(DEPDIR)/test_generational-function.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/function.c' object='test_generational-function.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-function.obj `if test -f '$(SRC_DIR)/function.c'; then $(CYGPATH_W) '$(SRC_DIR)/function.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/function.c'; fi`
+
+test_generational-nil.o: $(SRC_DIR)/nil.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-nil.o -MD -MP -MF $(DEPDIR)/test_generational-nil.Tpo -c -o test_generational-nil.o `test -f '$(SRC_DIR)/nil.c' || echo '$(srcdir)/'`$(SRC_DIR)/nil.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-nil.Tpo $(DEPDIR)/test_generational-nil.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/nil.c' object='test_generational-nil.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-nil.o `test -f '$(SRC_DIR)/nil.c' || echo '$(srcdir)/'`$(SRC_DIR)/nil.c
+
+test_generational-nil.obj: $(SRC_DIR)/nil.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-nil.obj -MD -MP -MF $(DEPDIR)/test_generational-nil.Tpo -c -o test_generational-nil.obj `if test -f '$(SRC_DIR)/nil.c'; then $(CYGPATH_W) '$(SRC_DIR)/nil.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/nil.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-nil.Tpo $(DEPDIR)/test_generational-nil.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/nil.c' object='test_generational-nil.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-nil.obj `if test -f '$(SRC_DIR)/nil.c'; then $(CYGPATH_W) '$(SRC_DIR)/nil.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/nil.c'; fi`
+
+test_generational-exception.o: $(SRC_DIR)/exception.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-exception.o -MD -MP -MF $(DEPDIR)/test_generational-exception.Tpo -c -o test_generational-exception.o `test -f '$(SRC_DIR)/exception.c' || echo '$(srcdir)/'`$(SRC_DIR)/exception.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-exception.Tpo $(DEPDIR)/test_generational-exception.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/exception.c' object='test_generational-exception.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-exception.o `test -f '$(SRC_DIR)/exception.c' || echo '$(srcdir)/'`$(SRC_DIR)/exception.c
+
+test_generational-exception.obj: $(SRC_DIR)/exception.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-exception.obj -MD -MP -MF $(DEPDIR)/test_generational-exception.Tpo -c -o test_generational-exception.obj `if test -f '$(SRC_DIR)/exception.c'; then $(CYGPATH_W) '$(SRC_DIR)/exception.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/exception.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-exception.Tpo $(DEPDIR)/test_generational-exception.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/exception.c' object='test_generational-exception.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-exception.obj `if test -f '$(SRC_DIR)/exception.c'; then $(CYGPATH_W) '$(SRC_DIR)/exception.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/exception.c'; fi`
+
+test_generational-arg.o: $(SRC_DIR)/arg.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-arg.o -MD -MP -MF $(DEPDIR)/test_generational-arg.Tpo -c -o test_generational-arg.o `test -f '$(SRC_DIR)/arg.c' || echo '$(srcdir)/'`$(SRC_DIR)/arg.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-arg.Tpo $(DEPDIR)/test_generational-arg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/arg.c' object='test_generational-arg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-arg.o `test -f '$(SRC_DIR)/arg.c' || echo '$(srcdir)/'`$(SRC_DIR)/arg.c
+
+test_generational-arg.obj: $(SRC_DIR)/arg.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-arg.obj -MD -MP -MF $(DEPDIR)/test_generational-arg.Tpo -c -o test_generational-arg.obj `if test -f '$(SRC_DIR)/arg.c'; then $(CYGPATH_W) '$(SRC_DIR)/arg.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/arg.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-arg.Tpo $(DEPDIR)/test_generational-arg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/arg.c' object='test_generational-arg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-arg.obj `if test -f '$(SRC_DIR)/arg.c'; then $(CYGPATH_W) '$(SRC_DIR)/arg.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/arg.c'; fi`
+
+test_generational-stacktrace.o: $(SRC_DIR)/stacktrace.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-stacktrace.o -MD -MP -MF $(DEPDIR)/test_generational-stacktrace.Tpo -c -o test_generational-stacktrace.o `test -f '$(SRC_DIR)/stacktrace.c' || echo '$(srcdir)/'`$(SRC_DIR)/stacktrace.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-stacktrace.Tpo $(DEPDIR)/test_generational-stacktrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/stacktrace.c' object='test_generational-stacktrace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-stacktrace.o `test -f '$(SRC_DIR)/stacktrace.c' || echo '$(srcdir)/'`$(SRC_DIR)/stacktrace.c
+
+test_generational-stacktrace.obj: $(SRC_DIR)/stacktrace.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-stacktrace.obj -MD -MP -MF $(DEPDIR)/test_generational-stacktrace.Tpo -c -o test_generational-stacktrace.obj `if test -f '$(SRC_DIR)/stacktrace.c'; then $(CYGPATH_W) '$(SRC_DIR)/stacktrace.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/stacktrace.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-stacktrace.Tpo $(DEPDIR)/test_generational-stacktrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/stacktrace.c' object='test_generational-stacktrace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-stacktrace.obj `if test -f '$(SRC_DIR)/stacktrace.c'; then $(CYGPATH_W) '$(SRC_DIR)/stacktrace.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/stacktrace.c'; fi`
+
+test_generational-int.o: $(SRC_DIR)/int.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-int.o -MD -MP -MF $(DEPDIR)/test_generational-int.Tpo -c -o test_generational-int.o `test -f '$(SRC_DIR)/int.c' || echo '$(srcdir)/'`$(SRC_DIR)/int.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-int.Tpo $(DEPDIR)/test_generational-int.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/int.c' object='test_generational-int.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-int.o `test -f '$(SRC_DIR)/int.c' || echo '$(srcdir)/'`$(SRC_DIR)/int.c
+
+test_generational-int.obj: $(SRC_DIR)/int.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-int.obj -MD -MP -MF $(DEPDIR)/test_generational-int.Tpo -c -o test_generational-int.obj `if test -f '$(SRC_DIR)/int.c'; then $(CYGPATH_W) '$(SRC_DIR)/int.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/int.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-int.Tpo $(DEPDIR)/test_generational-int.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/int.c' object='test_generational-int.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-int.obj `if test -f '$(SRC_DIR)/int.c'; then $(CYGPATH_W) '$(SRC_DIR)/int.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/int.c'; fi`
+
+test_generational-regexp.o: $(SRC_DIR)/regexp.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-regexp.o -MD -MP -MF $(DEPDIR)/test_generational-regexp.Tpo -c -o test_generational-regexp.o `test -f '$(SRC_DIR)/regexp.c' || echo '$(srcdir)/'`$(SRC_DIR)/regexp.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-regexp.Tpo $(DEPDIR)/test_generational-regexp.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/regexp.c' object='test_generational-regexp.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-regexp.o `test -f '$(SRC_DIR)/regexp.c' || echo '$(srcdir)/'`$(SRC_DIR)/regexp.c
+
+test_generational-regexp.obj: $(SRC_DIR)/regexp.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-regexp.obj -MD -MP -MF $(DEPDIR)/test_generational-regexp.Tpo -c -o test_generational-regexp.obj `if test -f '$(SRC_DIR)/regexp.c'; then $(CYGPATH_W) '$(SRC_DIR)/regexp.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/regexp.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-regexp.Tpo $(DEPDIR)/test_generational-regexp.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/regexp.c' object='test_generational-regexp.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-regexp.obj `if test -f '$(SRC_DIR)/regexp.c'; then $(CYGPATH_W) '$(SRC_DIR)/regexp.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/regexp.c'; fi`
+
+test_generational-block.o: $(SRC_DIR)/block.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-block.o -MD -MP -MF $(DEPDIR)/test_generational-block.Tpo -c -o test_generational-block.o `test -f '$(SRC_DIR)/block.c' || echo '$(srcdir)/'`$(SRC_DIR)/block.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-block.Tpo $(DEPDIR)/test_generational-block.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/block.c' object='test_generational-block.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-block.o `test -f '$(SRC_DIR)/block.c' || echo '$(srcdir)/'`$(SRC_DIR)/block.c
+
+test_generational-block.obj: $(SRC_DIR)/block.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-block.obj -MD -MP -MF $(DEPDIR)/test_generational-block.Tpo -c -o test_generational-block.obj `if test -f '$(SRC_DIR)/block.c'; then $(CYGPATH_W) '$(SRC_DIR)/block.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/block.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-block.Tpo $(DEPDIR)/test_generational-block.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/block.c' object='test_generational-block.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-block.obj `if test -f '$(SRC_DIR)/block.c'; then $(CYGPATH_W) '$(SRC_DIR)/block.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/block.c'; fi`
+
+test_generational-bool.o: $(SRC_DIR)/bool.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-bool.o -MD -MP -MF $(DEPDIR)/test_generational-bool.Tpo -c -o test_generational-bool.o `test -f '$(SRC_DIR)/bool.c' || echo '$(srcdir)/'`$(SRC_DIR)/bool.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-bool.Tpo $(DEPDIR)/test_generational-bool.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/bool.c' object='test_generational-bool.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-bool.o `test -f '$(SRC_DIR)/bool.c' || echo '$(srcdir)/'`$(SRC_DIR)/bool.c
+
+test_generational-bool.obj: $(SRC_DIR)/bool.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-bool.obj -MD -MP -MF $(DEPDIR)/test_generational-bool.Tpo -c -o test_generational-bool.obj `if test -f '$(SRC_DIR)/bool.c'; then $(CYGPATH_W) '$(SRC_DIR)/bool.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/bool.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-bool.Tpo $(DEPDIR)/test_generational-bool.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/bool.c' object='test_generational-bool.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-bool.obj `if test -f '$(SRC_DIR)/bool.c'; then $(CYGPATH_W) '$(SRC_DIR)/bool.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/bool.c'; fi`
+
+test_generational-builtins.o: $(SRC_DIR)/builtins.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-builtins.o -MD -MP -MF $(DEPDIR)/test_generational-builtins.Tpo -c -o test_generational-builtins.o `test -f '$(SRC_DIR)/builtins.c' || echo '$(srcdir)/'`$(SRC_DIR)/builtins.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-builtins.Tpo $(DEPDIR)/test_generational-builtins.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/builtins.c' object='test_generational-builtins.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-builtins.o `test -f '$(SRC_DIR)/builtins.c' || echo '$(srcdir)/'`$(SRC_DIR)/builtins.c
+
+test_generational-builtins.obj: $(SRC_DIR)/builtins.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -MT test_generational-builtins.obj -MD -MP -MF $(DEPDIR)/test_generational-builtins.Tpo -c -o test_generational-builtins.obj `if test -f '$(SRC_DIR)/builtins.c'; then $(CYGPATH_W) '$(SRC_DIR)/builtins.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/builtins.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/test_generational-builtins.Tpo $(DEPDIR)/test_generational-builtins.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(SRC_DIR)/builtins.c' object='test_generational-builtins.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_generational_CFLAGS) $(CFLAGS) -c -o test_generational-builtins.obj `if test -f '$(SRC_DIR)/builtins.c'; then $(CYGPATH_W) '$(SRC_DIR)/builtins.c'; else $(CYGPATH_W) '$(srcdir)/$(SRC_DIR)/builtins.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
