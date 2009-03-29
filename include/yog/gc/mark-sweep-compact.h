@@ -26,7 +26,6 @@ struct YogMarkSweepCompact {
     struct YogMarkSweepCompactChunk* all_chunks;
     struct YogMarkSweepCompactChunk* all_chunks_last;
     struct YogMarkSweepCompactPage* pages[MARK_SWEEP_COMPACT_NUM_SIZE];
-    struct YogMarkSweepCompactLargeObject* large_obj;
     size_t freelist_size[MARK_SWEEP_COMPACT_NUM_SIZE];
     unsigned int size2index[MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE];
     struct YogMarkSweepCompactHeader* header;

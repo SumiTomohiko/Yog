@@ -19,6 +19,8 @@
 
 #define PAGE_SIZE       4096
 
+#define IS_SMALL_OBJ(size)  ((size) < MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE - 1)
+
 struct YogMarkSweepCompactFreeList {
     struct YogMarkSweepCompactFreeList* next;
 };
@@ -130,35 +132,40 @@ delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header)
     size_t size = header->size;
     destroy_memory(header, size);
 
-    YogMarkSweepCompactPage* page = ptr2page(header);
-    page->num_obj_avail++;
-    unsigned int index = msc->size2index[size];
-    if (page->num_obj_avail == page->num_obj) {
-        YogMarkSweepCompactPage* pages = msc->pages[index];
-        if (pages == page) {
-            msc->pages[index] = pages->next;
+    if (IS_SMALL_OBJ(size)) {
+        YogMarkSweepCompactPage* page = ptr2page(header);
+        page->num_obj_avail++;
+        unsigned int index = msc->size2index[size];
+        if (page->num_obj_avail == page->num_obj) {
+            YogMarkSweepCompactPage* pages = msc->pages[index];
+            if (pages == page) {
+                msc->pages[index] = pages->next;
+            }
+            else {
+                while (pages != NULL) {
+                    if (pages->next == page) {
+                        pages->next = page->next;
+                        break;
+                    }
+                    pages = pages->next;
+                }
+            }
+
+            YogMarkSweepCompactChunk* chunk = page->chunk;
+            ((YogMarkSweepCompactFreeList*)page)->next = chunk->pages;
+            chunk->pages = (YogMarkSweepCompactFreeList*)page;
         }
         else {
-            while (pages != NULL) {
-                if (pages->next == page) {
-                    pages->next = page->next;
-                    break;
-                }
-                pages = pages->next;
+            if (page->num_obj_avail == 1) {
+                page->next = msc->pages[index];
+                msc->pages[index] = page;
             }
+            ((YogMarkSweepCompactFreeList*)header)->next = page->freelist;
+            page->freelist = (YogMarkSweepCompactFreeList*)header;
         }
-
-        YogMarkSweepCompactChunk* chunk = page->chunk;
-        ((YogMarkSweepCompactFreeList*)page)->next = chunk->pages;
-        chunk->pages = (YogMarkSweepCompactFreeList*)page;
     }
     else {
-        if (page->num_obj_avail == 1) {
-            page->next = msc->pages[index];
-            msc->pages[index] = page;
-        }
-        ((YogMarkSweepCompactFreeList*)header)->next = page->freelist;
-        page->freelist = (YogMarkSweepCompactFreeList*)header;
+        munmap(header, size);
     }
 }
 
@@ -492,7 +499,12 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 
     msc->allocated_size += total_size;
 
-    if (total_size < MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE - 1) {
+    YogMarkSweepCompactHeader* header;
+#define ERROR(reason)   do { \
+    msc->err = reason; \
+    return NULL; \
+} while (0)
+    if (IS_SMALL_OBJ(total_size)) {
         unsigned int index = msc->size2index[total_size];
         YogMarkSweepCompactPage* page = msc->pages[index];
         if (page == NULL) {
@@ -500,8 +512,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
             if (chunk == NULL) {
                 chunk = malloc(sizeof(YogMarkSweepCompactChunk));
                 if (chunk == NULL) {
-                    msc->err = ERR_MSC_MALLOC;
-                    return NULL;
+                    ERROR(ERR_MSC_MALLOC);
                 }
 
                 size_t chunk_size = msc->chunk_size;
@@ -510,15 +521,13 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 int flags = MAP_PRIVATE | MAP_ANONYMOUS;
                 unsigned char* mmap_begin = mmap(NULL, mmap_size, proto, flags, -1, 0);
                 if (mmap_begin == MAP_FAILED) {
-                    msc->err = ERR_MSC_MMAP;
-                    return NULL;
+                    ERROR(ERR_MSC_MMAP);
                 }
                 unsigned char* chunk_begin = (unsigned char*)(((uintptr_t)mmap_begin + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1));
                 if (mmap_begin != chunk_begin) {
                     int retval = munmap(mmap_begin, chunk_begin - mmap_begin);
                     if (retval != 0) {
-                        msc->err = ERR_MSC_MUNMAP;
-                        return NULL;
+                        ERROR(ERR_MSC_MUNMAP);
                     }
                 }
                 unsigned char* mmap_end = mmap_begin + mmap_size;
@@ -526,8 +535,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 if (mmap_end != chunk_end) {
                     int retval = munmap(chunk_end, mmap_end - chunk_end);
                     if (retval != 0) {
-                        msc->err = ERR_MSC_MUNMAP;
-                        return NULL;
+                        ERROR(ERR_MSC_MUNMAP);
                     }
                 }
 
@@ -580,39 +588,44 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
             page->chunk = chunk;
         }
 
-        YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)page->freelist;
+        header = (YogMarkSweepCompactHeader*)page->freelist;
         page->freelist = page->freelist->next;
         page->num_obj_avail--;
         if (page->num_obj_avail == 0) {
             msc->pages[index] = page->next;
         }
-
-        initialize_memory(header, total_size);
 #if 0
         GcObjectStat_initialize(&header->stat);
 #endif
-        header->prev = NULL;
-        header->next = msc->header;
-        if (msc->header != NULL) {
-            msc->header->prev = header;
-        }
-        msc->header = header;
-
-        header->flags = OBJ_USED;
-        header->forwarding_addr = NULL;
-        header->size = total_size;
-        header->keeper = keeper;
-        header->finalizer = finalizer;
-        header->updated = header->marked = FALSE;
-
-        return header + 1;
     }
     else {
-        /* TODO */
-        abort();
+        int prot = PROT_READ | PROT_WRITE;
+        int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+        void* ptr = mmap(NULL, total_size, prot, flags, -1, 0);
+        if (ptr == MAP_FAILED) {
+            ERROR(ERR_MSC_MMAP);
+        }
+        header = ptr;
     }
+#undef ERROR
 
-    return NULL;
+    initialize_memory(header, total_size);
+
+    header->prev = NULL;
+    header->next = msc->header;
+    if (msc->header != NULL) {
+        msc->header->prev = header;
+    }
+    msc->header = header;
+
+    header->flags = OBJ_USED;
+    header->forwarding_addr = NULL;
+    header->size = total_size;
+    header->keeper = keeper;
+    header->finalizer = finalizer;
+    header->updated = header->marked = FALSE;
+
+    return header + 1;
 }
 
 void 
@@ -627,7 +640,6 @@ YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chu
     for (i = 0; i < MARK_SWEEP_COMPACT_NUM_SIZE; i++) {
         msc->pages[i] = NULL;
     }
-    msc->large_obj = NULL;
     unsigned int sizes[] = { /* 8, 16, 32,*/ 64, 128, 256, 512, 1024, 2048, };
     unsigned int index = 0;
     unsigned int size;
