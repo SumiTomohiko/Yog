@@ -8,7 +8,13 @@
 #include "yog/gc/generational.h"
 
 void 
-YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, void* root, ObjectKeeper root_keeper) 
+YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational) 
+{
+    /* TODO */
+}
+
+void 
+YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, void* root, ChildrenKeeper root_keeper) 
 {
     YogCopying* copying = &generational->copying;
     YogCopying_initialize(env, copying, stress, young_heap_size, NULL, NULL);
@@ -93,6 +99,23 @@ test_alloc1(YogEnv* env)
 
 CREATE_TEST(alloc1, NULL, NULL);
 
+#if 0
+static void 
+dummy_keeper(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+}
+#endif
+
+static void 
+test_alloc2(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    void* ptr = YogGenerational_alloc(env, gen, NULL, NULL, HEAP_SIZE + 1);
+    CU_ASSERT_PTR_NOT_NULL(ptr);
+}
+
+CREATE_TEST(alloc2, NULL, NULL);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -118,6 +141,7 @@ main(int argc, const char* argv[])
     } \
 } while (0)
     ADD_TEST(alloc1);
+    ADD_TEST(alloc2);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);

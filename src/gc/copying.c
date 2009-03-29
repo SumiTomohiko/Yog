@@ -8,6 +8,9 @@
 #endif
 #include "yog/yog.h"
 #include "yog/gc/copying.h"
+#if GC_GENERATIONAL
+#   include "yog/gc/generational.h"
+#endif
 
 #if 0
 #define DEBUG
@@ -224,7 +227,15 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 #define REST_SIZE(heap)     ((heap)->size - ((heap)->free - (heap)->items))
     size_t rest_size = REST_SIZE(heap);
     if ((rest_size < rounded_size) || copying->stress) {
+        if (!copying->stress && (heap->size < rounded_size)) {
+            return NULL;
+        }
+
+#if GC_COPYING
         YogCopying_gc(env, copying);
+#elif GC_GENERATIONAL
+        YogGenerational_minor_gc(env, &env->vm->gc.generational);
+#endif
         heap = copying->active_heap;
         rest_size = REST_SIZE(heap);
         if (rest_size < rounded_size) {

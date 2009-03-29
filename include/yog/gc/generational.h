@@ -37,8 +37,10 @@ typedef struct YogGenerational YogGenerational;
  */
 
 /* src/gc/generational.c */
+void* YogGenerational_alloc(YogEnv*, YogGenerational*, ChildrenKeeper, Finalizer, size_t);
 void YogGenerational_finalize(YogEnv*, YogGenerational*);
-void YogGenerational_initialize(YogEnv*, YogGenerational*, BOOL, size_t, size_t, size_t, void*, ObjectKeeper);
+void YogGenerational_initialize(YogEnv*, YogGenerational*, BOOL, size_t, size_t, size_t, void*, ChildrenKeeper);
+void YogGenerational_minor_gc(YogEnv*, YogGenerational*);
 
 /* PROTOTYPE_END */
 
