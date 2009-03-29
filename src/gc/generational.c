@@ -7,8 +7,6 @@
 #include "yog/yog.h"
 #include "yog/gc/generational.h"
 
-#define IS_YOUNG(env, ptr)  FALSE
-
 void 
 YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational) 
 {
@@ -118,7 +116,7 @@ test_alloc2(YogEnv* env)
 
 CREATE_TEST(alloc2, NULL, NULL);
 
-static void* minor_gc1_ptr = NULL;
+static unsigned char* minor_gc1_ptr;
 
 static void
 minor_gc1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
@@ -131,8 +129,13 @@ test_minor_gc1(YogEnv* env)
 {
     YogGenerational* gen = &env->vm->gc.generational;
     minor_gc1_ptr = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    unsigned char* minor_gc1_ptr_old = minor_gc1_ptr;
+
     YogGenerational_minor_gc(env, gen);
-    CU_ASSERT_TRUE(IS_YOUNG(env, minor_gc1_ptr));
+
+    YogCopyingHeap* heap = gen->copying.active_heap;
+    CU_ASSERT_TRUE((heap->items <= minor_gc1_ptr) && (minor_gc1_ptr <= heap->items + heap->size));
+    CU_ASSERT_PTR_NOT_EQUAL(minor_gc1_ptr, minor_gc1_ptr_old);
 }
 
 CREATE_TEST(minor_gc1, minor_gc1_keep_children, NULL);

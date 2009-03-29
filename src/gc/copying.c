@@ -16,14 +16,6 @@
 #define DEBUG
 #endif
 
-struct YogCopyingHeap {
-    size_t size;
-    unsigned char* free;
-    unsigned char items[0];
-};
-
-typedef struct YogCopyingHeap YogCopyingHeap;
-
 struct CopyingHeader {
 #if 0
     struct GcObjectStat stat;

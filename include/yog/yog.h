@@ -62,7 +62,7 @@ struct YogVal {
 #define OBJ_AS(type, v)     ((type*)VAL2OBJ(v))
 
 #define IS_UNDEF(v)     (VAL_TYPE(v) == VAL_UNDEF)
-#define IS_PTR(v)       (VAL_TYPE(v) == VAL_PTR)
+#define IS_PTR(v)       ((VAL_TYPE(v) == VAL_PTR) || IS_OBJ(v))
 #define IS_OBJ(v)       (VAL_TYPE(v) == VAL_OBJ)
 #define IS_INT(v)       (VAL_TYPE(v) == VAL_INT)
 #define IS_FLOAT(v)     (VAL_TYPE(v) == VAL_FLOAT)

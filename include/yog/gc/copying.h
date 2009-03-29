@@ -16,6 +16,14 @@ typedef void (*Finalizer)(YogEnv*, void*);
 #define ERR_COPYING_MALLOC          1
 #define ERR_COPYING_OUT_OF_MEMORY   2
 
+struct YogCopyingHeap {
+    size_t size;
+    unsigned char* free;
+    unsigned char items[0];
+};
+
+typedef struct YogCopyingHeap YogCopyingHeap;
+
 struct YogCopying {
     unsigned int err;
     BOOL stress;
