@@ -658,7 +658,22 @@ YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chu
 void 
 YogMarkSweepCompact_finalize(YogEnv* env, YogMarkSweepCompact* msc) 
 {
-    /* TODO */
+    YogMarkSweepCompactHeader* header = msc->header;
+    while (header != NULL) {
+        YogMarkSweepCompactHeader* next = header->next;
+
+        finalize(env, header);
+        delete(msc, header);
+
+        header = next;
+    }
+
+    YogMarkSweepCompactChunk* chunk = msc->all_chunks;
+    while (chunk != NULL) {
+        YogMarkSweepCompactChunk* next = chunk->all_chunks_next;
+        free_chunk(msc, chunk);
+        chunk = next;
+    }
 }
 
 #ifdef TEST_MARK_SWEEP_COMPACT
