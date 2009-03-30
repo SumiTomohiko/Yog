@@ -16,19 +16,6 @@
 #define DEBUG
 #endif
 
-struct CopyingHeader {
-#if 0
-    struct GcObjectStat stat;
-#endif
-    ChildrenKeeper keeper;
-    Finalizer finalizer;
-    void* forwarding_addr;
-    size_t size;
-    unsigned int id;
-};
-
-typedef struct CopyingHeader CopyingHeader;
-
 /* TODO: commonize with the other GC */
 static void 
 initialize_memory(void* ptr, size_t size) 
@@ -72,10 +59,10 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
         return NULL;
     }
 
-    CopyingHeader* header = (CopyingHeader*)ptr - 1;
+    YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
     if (header->forwarding_addr != NULL) {
-        PRINT("exec_num=0x%08x, id=0x%08x, %p->(%p)", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (CopyingHeader*)header->forwarding_addr + 1);
-        return (CopyingHeader*)header->forwarding_addr + 1;
+        PRINT("exec_num=0x%08x, id=0x%08x, %p->(%p)", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (YogCopyingHeader*)header->forwarding_addr + 1);
+        return (YogCopyingHeader*)header->forwarding_addr + 1;
     }
 
 #if 0
@@ -92,8 +79,8 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
 
     copying->unscanned += size;
 
-    PRINT("exec_num=0x%08x, id=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (CopyingHeader*)dest + 1);
-    return (CopyingHeader*)dest + 1;
+    PRINT("exec_num=0x%08x, id=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (YogCopyingHeader*)dest + 1);
+    return (YogCopyingHeader*)dest + 1;
 #undef PRINT
 }
 
@@ -139,7 +126,7 @@ finalize(YogEnv* env, YogCopying* copying)
     unsigned char* ptr = heap->items;
     unsigned char* to = heap->free;
     while (ptr < to) {
-        CopyingHeader* header = (CopyingHeader*)ptr;
+        YogCopyingHeader* header = (YogCopyingHeader*)ptr;
         if (header->forwarding_addr == NULL) {
             if (header->finalizer != NULL) {
                 (*header->finalizer)(env, header + 1);
@@ -186,7 +173,7 @@ YogCopying_do_gc(YogEnv* env, YogCopying* copying, ObjectKeeper obj_keeper)
     (*copying->root_keeper)(env, copying->root, obj_keeper);
 
     while (copying->scanned != copying->unscanned) {
-        CopyingHeader* header = (CopyingHeader*)copying->scanned;
+        YogCopyingHeader* header = (YogCopyingHeader*)copying->scanned;
         ChildrenKeeper keeper = header->keeper;
         if (keeper != NULL) {
             (*keeper)(env, header + 1, obj_keeper);
@@ -216,7 +203,7 @@ YogCopying_gc(YogEnv* env, YogCopying* copying)
 void* 
 YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    size_t needed_size = size + sizeof(CopyingHeader);
+    size_t needed_size = size + sizeof(YogCopyingHeader);
     size_t rounded_size = round_size(needed_size);
 #if 0
     vm->gc_stat.total_allocated_size += rounded_size;
@@ -244,7 +231,7 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
     }
 #undef REST_SIZE
 
-    CopyingHeader* header = (CopyingHeader*)heap->free;
+    YogCopyingHeader* header = (YogCopyingHeader*)heap->free;
 #if 0
     GcObjectStat_initialize(&header->stat);
 #endif
@@ -310,7 +297,7 @@ test_alloc1(YogEnv* env)
     YogCopying* copying = &env->vm->gc.copying;
     void* actual = YogCopying_alloc(env, copying, NULL, NULL, 0);
     YogCopyingHeap* heap = copying->active_heap;
-    void* expected = (unsigned char*)heap->items + sizeof(CopyingHeader);
+    void* expected = (unsigned char*)heap->items + sizeof(YogCopyingHeader);
     CU_ASSERT_PTR_EQUAL(actual, expected);
 }
 
@@ -330,7 +317,7 @@ test_gc1(YogEnv* env)
     YogCopying* copying = &env->vm->gc.copying;
     gc1_ptr = YogCopying_alloc(env, copying, NULL, NULL, 0);
     YogCopyingHeap* heap = copying->inactive_heap;
-    void* expected = (unsigned char*)heap->items + sizeof(CopyingHeader);
+    void* expected = (unsigned char*)heap->items + sizeof(YogCopyingHeader);
     YogCopying_gc(env, copying);
     CU_ASSERT_PTR_EQUAL(gc1_ptr, expected);
 }

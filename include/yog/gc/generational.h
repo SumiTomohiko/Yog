@@ -6,7 +6,7 @@
 #include "yog/gc/mark-sweep-compact.h"
 
 /* TODO: commonize with yog/yog.h */
-#ifndef __YOG_YOG_H__
+#if !defined(__YOG_YOG_H__) && !defined(__YOG_GC_GENERATIONAL_H__)
 typedef int BOOL;
 #define FALSE   0
 #define TRUE    (!(FALSE))
@@ -26,6 +26,7 @@ struct YogGenerational {
     unsigned int err;
     struct YogCopying copying;
     struct YogMarkSweepCompact msc;
+    unsigned int tenure;
 };
 
 typedef struct YogGenerational YogGenerational;
@@ -41,7 +42,8 @@ typedef struct YogGenerational YogGenerational;
 /* src/gc/generational.c */
 void* YogGenerational_alloc(YogEnv*, YogGenerational*, ChildrenKeeper, Finalizer, size_t);
 void YogGenerational_finalize(YogEnv*, YogGenerational*);
-void YogGenerational_initialize(YogEnv*, YogGenerational*, BOOL, size_t, size_t, size_t, void*, ChildrenKeeper);
+void YogGenerational_initialize(YogEnv*, YogGenerational*, BOOL, size_t, size_t, size_t, unsigned int, void*, ChildrenKeeper);
+void YogGenerational_major_gc(YogEnv*, YogGenerational*);
 void YogGenerational_minor_gc(YogEnv*, YogGenerational*);
 
 /* PROTOTYPE_END */

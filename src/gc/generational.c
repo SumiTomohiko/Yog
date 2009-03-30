@@ -8,6 +8,19 @@
 #include "yog/gc/generational.h"
 
 static void* 
+major_gc_keep_object(YogEnv* env, void* ptr) 
+{
+    /* TODO */
+    return NULL;
+}
+
+void 
+YogGenerational_major_gc(YogEnv* env, YogGenerational* generational) 
+{
+    YogCopying_do_gc(env, &generational->copying, major_gc_keep_object);
+}
+
+static void* 
 minor_gc_keep_object(YogEnv* env, void* ptr) 
 {
     if (ptr == NULL) {
@@ -26,13 +39,17 @@ YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational)
 }
 
 void 
-YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, void* root, ChildrenKeeper root_keeper) 
+YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure, void* root, ChildrenKeeper root_keeper) 
 {
+    generational->err = ERR_GEN_NONE;
+
     YogCopying* copying = &generational->copying;
     YogCopying_initialize(env, copying, stress, young_heap_size, root, root_keeper);
 
     YogMarkSweepCompact* msc = &generational->msc;
     YogMarkSweepCompact_initialize(env, msc, old_chunk_size, old_threshold, NULL, NULL);
+
+    generational->tenure = tenure;
 }
 
 void 
@@ -86,6 +103,7 @@ YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper
 #define CHUNK_SIZE  (1 * 1024 * 1024)
 #define THRESHOLD   CHUNK_SIZE
 #define HEAP_SIZE   (1 * 1024 * 1024)
+#define TENURE      32
 
 #define CREATE_TEST(name, root, root_keeper) \
     static void \
@@ -94,7 +112,7 @@ YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper
         YogVm vm; \
         YogEnv env; \
         env.vm = &vm; \
-        YogGenerational_initialize(&env, &vm.gc.generational, FALSE, HEAP_SIZE, CHUNK_SIZE, THRESHOLD, root, root_keeper); \
+        YogGenerational_initialize(&env, &vm.gc.generational, FALSE, HEAP_SIZE, CHUNK_SIZE, THRESHOLD, TENURE, root, root_keeper); \
         \
         test_##name(&env); \
         \
@@ -152,6 +170,36 @@ test_minor_gc1(YogEnv* env)
 
 CREATE_TEST(minor_gc1, NULL, minor_gc1_keep_children);
 
+static unsigned char* minor_gc2_ptr;
+
+static void
+minor_gc2_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    minor_gc2_ptr = (*keeper)(env, minor_gc2_ptr);
+}
+
+static void 
+oldify(YogEnv* env, YogGenerational* gen, void* ptr) 
+{
+    YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
+    header->servive_num = gen->tenure - 1;
+}
+
+static void 
+test_minor_gc2(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    minor_gc2_ptr = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    oldify(env, gen, minor_gc2_ptr);
+
+    YogGenerational_minor_gc(env, gen);
+
+    YogCopyingHeap* heap = gen->copying.active_heap;
+    CU_ASSERT_TRUE((minor_gc2_ptr < heap->items) || (heap->items + heap->size < minor_gc2_ptr));
+}
+
+CREATE_TEST(minor_gc2, NULL, minor_gc2_keep_children);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -179,6 +227,7 @@ main(int argc, const char* argv[])
     ADD_TEST(alloc1);
     ADD_TEST(alloc2);
     ADD_TEST(minor_gc1);
+    ADD_TEST(minor_gc2);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);

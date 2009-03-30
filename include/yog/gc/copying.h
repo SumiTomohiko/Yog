@@ -2,7 +2,7 @@
 #define __COPYING_H__
 
 /* TODO: commonize with yog/yog.h */
-#ifndef __YOG_YOG_H__
+#if !defined(__YOG_YOG_H__) && !defined(__YOG_GC_MARK_SWEEP_COMPACT_H__)
 typedef int BOOL;
 #define FALSE   0
 #define TRUE    (!(FALSE))
@@ -11,6 +11,22 @@ typedef void* (*ObjectKeeper)(YogEnv*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
 typedef void (*Finalizer)(YogEnv*, void*);
 #endif
+
+struct YogCopyingHeader {
+#if 0
+    struct GcObjectStat stat;
+#endif
+    ChildrenKeeper keeper;
+    Finalizer finalizer;
+    void* forwarding_addr;
+    size_t size;
+    unsigned int id;
+#if defined(GC_GENERATIONAL)
+    unsigned int servive_num;
+#endif
+};
+
+typedef struct YogCopyingHeader YogCopyingHeader;
 
 #define ERR_COPYING_NONE            0
 #define ERR_COPYING_MALLOC          1

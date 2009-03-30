@@ -1,10 +1,13 @@
-#ifndef __YOG_GC_MARK_SWEEP_COMPACT__
-#define __YOG_GC_MARK_SWEEP_COMPACT__
+#ifndef __YOG_GC_MARK_SWEEP_COMPACT_H__
+#define __YOG_GC_MARK_SWEEP_COMPACT_H__
 
 #include <stddef.h>
 
 /* TODO: commonize with yog/yog.h */
-#ifndef __YOG_YOG_H__
+#if !defined(__YOG_YOG_H__)
+typedef int BOOL;
+#define FALSE   0
+#define TRUE    (!(FALSE))
 typedef struct YogEnv YogEnv;
 typedef void* (*ObjectKeeper)(YogEnv*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);

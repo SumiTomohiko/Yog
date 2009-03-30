@@ -3,17 +3,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include "yog/yog.h"
 #include "yog/gc/mark-sweep-compact.h"
-#ifdef TEST_MARK_SWEEP_COMPACT
+#if defined(GC_GENERATIONAL)
+#   include "yog/gc/generational.h"
+#endif
+#if defined(TEST_MARK_SWEEP_COMPACT)
 #   include <stdio.h>
 #   include <CUnit/Basic.h>
 #   include <CUnit/CUnit.h>
 #endif
 
 /* TODO: commonize with yog/yog.h */
-#define BOOL    int
-#define FALSE   (0)
-#define TRUE    (!FALSE)
+#if defined(__YOG_YOG_H__)
+#   define BOOL    int
+#   define FALSE   (0)
+#   define TRUE    (!FALSE)
+#endif
 
 #define SURVIVE_INDEX_MAX    8
 
@@ -490,7 +496,11 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 {
     size_t total_size = size + sizeof(YogMarkSweepCompactHeader);
     if (msc->threshold <= msc->allocated_size) {
+#if defined(GC_MARK_SWEEP_COMPACT)
         YogMarkSweepCompact_gc(env, msc);
+#elif defined(GC_GENERATIONAL)
+        YogGenerational_major_gc(env, &env->vm->gc.generational);
+#endif
     }
 
     msc->allocated_size += total_size;
