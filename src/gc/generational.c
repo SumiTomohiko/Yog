@@ -9,16 +9,52 @@
 #endif
 
 static void* 
+copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
+    header->servive_num++;
+    if (header->servive_num < gen->tenure) {
+        return YogCopying_copy(env, &gen->copying, ptr);
+    }
+    else {
+        YogMarkSweepCompact* msc = &gen->msc;
+        ChildrenKeeper keeper = header->keeper;
+        Finalizer finalizer = header->finalizer;
+        size_t size = header->size - sizeof(YogCopyingHeader);
+        void* p = YogMarkSweepCompact_alloc(env, msc, keeper, finalizer, size);
+        memcpy(p, ptr, size);
+        header->forwarding_addr = p;
+        YogMarkSweepCompact_mark_recursively(env, p, obj_keeper);
+        return p;
+    }
+}
+
+static void* 
 major_gc_keep_object(YogEnv* env, void* ptr) 
 {
-    /* TODO */
-    return NULL;
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    if (!IS_YOUNG(env, PTR2VAL(ptr))) {
+        return YogMarkSweepCompact_mark_recursively(env, ptr, major_gc_keep_object);
+    }
+    else {
+        return copy_young_object(env, ptr, major_gc_keep_object);
+    }
 }
 
 void 
 YogGenerational_major_gc(YogEnv* env, YogGenerational* generational) 
 {
+    YogMarkSweepCompact* msc = &generational->msc;
+    msc->in_gc = TRUE;
+    YogMarkSweepCompact_unmark_all(env, msc);
+
     YogCopying_do_gc(env, &generational->copying, major_gc_keep_object);
+
+    msc->in_gc = FALSE;
 }
 
 static void* 
@@ -31,27 +67,18 @@ minor_gc_keep_object(YogEnv* env, void* ptr)
         return ptr;
     }
 
-    YogGenerational* gen = &env->vm->gc.generational;
-    YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
-    header->servive_num++;
-    if (header->servive_num < gen->tenure) {
-        return YogCopying_copy(env, &gen->copying, ptr);
-    }
-    else {
-        YogMarkSweepCompact* msc = &gen->msc;
-        ChildrenKeeper keeper = header->keeper;
-        Finalizer finalizer = header->finalizer;
-        size_t size = header->size;
-        void* p = YogMarkSweepCompact_alloc(env, msc, keeper, finalizer, size);
-        memcpy(p, ptr, size);
-        return p;
-    }
+    return copy_young_object(env, ptr, minor_gc_keep_object);
 }
 
 void 
 YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational) 
 {
+    YogMarkSweepCompact* msc = &generational->msc;
+    msc->in_gc = TRUE;
+
     YogCopying_do_gc(env, &generational->copying, minor_gc_keep_object);
+
+    msc->in_gc = FALSE;
 }
 
 void 

@@ -36,6 +36,9 @@ struct YogMarkSweepCompact {
     size_t allocated_size;
     void* root;
     ChildrenKeeper root_keeper;
+#if defined(GC_GENERATIONAL)
+    BOOL in_gc;
+#endif
 };
 
 typedef struct YogMarkSweepCompact YogMarkSweepCompact;
@@ -51,6 +54,8 @@ void* YogMarkSweepCompact_alloc(YogEnv*, YogMarkSweepCompact*, ChildrenKeeper, F
 void YogMarkSweepCompact_finalize(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_gc(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_initialize(YogEnv*, YogMarkSweepCompact*, size_t, size_t, void*, ChildrenKeeper);
+void* YogMarkSweepCompact_mark_recursively(YogEnv*, void*, ObjectKeeper);
+void YogMarkSweepCompact_unmark_all(YogEnv*, YogMarkSweepCompact*);
 
 /* PROTOTYPE_END */
 

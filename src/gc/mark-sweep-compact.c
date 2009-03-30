@@ -87,14 +87,24 @@ struct Compactor {
 
 typedef struct Compactor Compactor;
 
+void 
+YogMarkSweepCompact_unmark_all(YogEnv* env, YogMarkSweepCompact* msc) 
+{
+    YogMarkSweepCompactHeader* header = msc->header;
+    while (header != NULL) {
+        header->updated = header->marked = FALSE;
+        header = header->next;
+    }
+}
+
 static YogMarkSweepCompactPage* 
 ptr2page(void* p) 
 {
     return ((YogMarkSweepCompactPage*)((uintptr_t)(p) & ~(PAGE_SIZE - 1)));
 }
 
-static void* 
-keep_object(YogEnv* env, void* ptr) 
+void* 
+YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper obj_keeper) 
 {
     if (ptr == NULL) {
         return NULL;
@@ -111,11 +121,17 @@ keep_object(YogEnv* env, void* ptr)
 
         ChildrenKeeper keeper = header->keeper;
         if (keeper != NULL) {
-            (*keeper)(env, ptr, keep_object);
+            (*keeper)(env, ptr, obj_keeper);
         }
     }
 
     return ptr;
+}
+
+static void* 
+keep_object(YogEnv* env, void* ptr) 
+{
+    return YogMarkSweepCompact_mark_recursively(env, ptr, keep_object);
 }
 
 static void 
@@ -449,15 +465,11 @@ compact(YogEnv* env, YogMarkSweepCompact* msc)
 void 
 YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc) 
 {
-    YogMarkSweepCompactHeader* header = msc->header;
-    while (header != NULL) {
-        header->updated = header->marked = FALSE;
-        header = header->next;
-    }
+    YogMarkSweepCompact_unmark_all(env, msc);
 
     (*msc->root_keeper)(env, msc->root, keep_object);
 
-    header = msc->header;
+    YogMarkSweepCompactHeader* header = msc->header;
     while (header != NULL) {
         YogMarkSweepCompactHeader* next = header->next;
 
@@ -499,7 +511,9 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 #if defined(GC_MARK_SWEEP_COMPACT)
         YogMarkSweepCompact_gc(env, msc);
 #elif defined(GC_GENERATIONAL)
-        YogGenerational_major_gc(env, &env->vm->gc.generational);
+        if (!msc->in_gc) {
+            YogGenerational_major_gc(env, &env->vm->gc.generational);
+        }
 #endif
     }
 
@@ -663,6 +677,9 @@ YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chu
     msc->allocated_size = 0;
     msc->root = root;
     msc->root_keeper = root_keeper;
+#if defined(GC_GENERATIONAL)
+    msc->in_gc = FALSE;
+#endif
 }
 
 void 
