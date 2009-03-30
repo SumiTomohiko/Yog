@@ -241,6 +241,9 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
     header->size = rounded_size;
     static unsigned int id = 0;
     header->id = id++;
+#if defined(GC_GENERATIONAL)
+    header->servive_num = 0;
+#endif
 
     heap->free += rounded_size;
 
