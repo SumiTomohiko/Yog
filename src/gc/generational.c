@@ -53,6 +53,7 @@ YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
     YogMarkSweepCompact_unmark_all(env, msc);
 
     YogCopying_do_gc(env, &generational->copying, major_gc_keep_object);
+    YogMarkSweepCompact_delete_garbage(env, msc);
 
     msc->in_gc = FALSE;
 }

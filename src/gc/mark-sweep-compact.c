@@ -463,12 +463,8 @@ compact(YogEnv* env, YogMarkSweepCompact* msc)
 }
 
 void 
-YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc) 
+YogMarkSweepCompact_delete_garbage(YogEnv* env, YogMarkSweepCompact* msc) 
 {
-    YogMarkSweepCompact_unmark_all(env, msc);
-
-    (*msc->root_keeper)(env, msc->root, keep_object);
-
     YogMarkSweepCompactHeader* header = msc->header;
     while (header != NULL) {
         YogMarkSweepCompactHeader* next = header->next;
@@ -491,6 +487,16 @@ YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc)
 
         header = next;
     }
+}
+
+void 
+YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc) 
+{
+    YogMarkSweepCompact_unmark_all(env, msc);
+
+    (*msc->root_keeper)(env, msc->root, keep_object);
+
+    YogMarkSweepCompact_delete_garbage(env, msc);
 
     compact(env, msc);
 
