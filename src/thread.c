@@ -821,10 +821,20 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
         locals = locals->next;
     }
 
+#if defined(GC_GENERATIONAL)
     void*** p;
     for (p = th->ref_tbl; p < th->ref_tbl_ptr; p++) {
         **p = (*keeper)(env, **p);
     }
+#endif
+}
+
+void 
+YogThread_reset_ref_tbl(YogEnv* env, YogThread* thread) 
+{
+#if defined(GC_GENERATIONAL)
+    thread->ref_tbl_ptr = thread->ref_tbl;
+#endif
 }
 
 void 
@@ -834,17 +844,21 @@ YogThread_initialize(YogEnv* env, YogThread* thread)
     thread->jmp_buf_list = NULL;
     thread->jmp_val = YUNDEF;
     thread->locals = NULL;
-#define REF_TBL_SIZE    256
+#if defined(GC_GENERATIONAL)
+#   define REF_TBL_SIZE     256
     thread->ref_tbl = malloc(REF_TBL_SIZE * sizeof(void**));
-    thread->ref_tbl_ptr = thread->ref_tbl;
     thread->ref_tbl_limit = thread->ref_tbl + REF_TBL_SIZE;
-#undef REF_TBL_SIZE
+    YogThread_reset_ref_tbl(env, thread);
+#   undef REF_TBL_SIZE
+#endif
 }
 
 void 
 YogThread_finalize(YogEnv* env, YogThread* thread) 
 {
+#if defined(GC_GENERATIONAL)
     free(thread->ref_tbl);
+#endif
 }
 
 YogThread*

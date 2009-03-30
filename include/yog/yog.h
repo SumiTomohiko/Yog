@@ -395,17 +395,20 @@ struct YogThread {
     struct YogJmpBuf* jmp_buf_list;
     struct YogVal jmp_val;
     struct YogLocals* locals;
+#if defined(GC_GENERATIONAL)
     void*** ref_tbl;
     void*** ref_tbl_ptr;
     void*** ref_tbl_limit;
+#endif
 };
 
 typedef struct YogThread YogThread;
 
 #include "yog/error.h"
 
-#define REF_TBL_GROW_SIZE   256
-#define ADD_REF(env, ptr)   do { \
+#if defined(GC_GENERATIONAL)
+#   define REF_TBL_GROW_SIZE   256
+#   define ADD_REF(env, ptr)   do { \
     YogThread* thread = (env)->th; \
     if (thread->ref_tbl_ptr == thread->ref_tbl_limit) { \
         unsigned int size = thread->ref_tbl_limit - thread->ref_tbl; \
@@ -418,6 +421,9 @@ typedef struct YogThread YogThread;
     *thread->ref_tbl_ptr = &(ptr); \
     thread->ref_tbl_ptr++; \
 } while (0)
+#else
+#   define ADD_REF(env, ptr)
+#endif
 
 #include "yog/klass.h"
 #include "yog/package.h"
@@ -458,6 +464,7 @@ void YogThread_finalize(YogEnv*, YogThread*);
 void YogThread_initialize(YogEnv*, YogThread*);
 void YogThread_keep_children(YogEnv*, void*, ObjectKeeper);
 YogThread* YogThread_new(YogEnv*);
+void YogThread_reset_ref_tbl(YogEnv*, YogThread*);
 
 /* src/value.c */
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);

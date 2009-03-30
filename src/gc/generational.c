@@ -82,6 +82,7 @@ YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
     YogMarkSweepCompact_delete_garbage(env, msc);
     YogMarkSweepCompact_do_compaction(env, msc, update_pointer);
 
+    YogThread_reset_ref_tbl(env, env->th);
     msc->in_gc = FALSE;
 }
 
@@ -106,6 +107,7 @@ YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational)
 
     YogCopying_do_gc(env, &generational->copying, minor_gc_keep_object);
 
+    YogThread_reset_ref_tbl(env, env->th);
     msc->in_gc = FALSE;
 }
 
