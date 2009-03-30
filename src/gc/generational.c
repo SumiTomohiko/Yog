@@ -189,7 +189,7 @@ test_alloc2(YogEnv* env)
 
 CREATE_TEST(alloc2, NULL, NULL);
 
-static unsigned char* minor_gc1_ptr;
+static unsigned char* minor_gc1_ptr = NULL;
 
 static void
 minor_gc1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
@@ -213,7 +213,7 @@ test_minor_gc1(YogEnv* env)
 
 CREATE_TEST(minor_gc1, NULL, minor_gc1_keep_children);
 
-static unsigned char* minor_gc2_ptr;
+static unsigned char* minor_gc2_ptr = NULL;
 
 static void
 minor_gc2_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
@@ -243,7 +243,7 @@ test_minor_gc2(YogEnv* env)
 
 CREATE_TEST(minor_gc2, NULL, minor_gc2_keep_children);
 
-static unsigned char* major_gc1_ptr;
+static unsigned char* major_gc1_ptr = NULL;
 
 static void
 major_gc1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
@@ -267,7 +267,7 @@ test_major_gc1(YogEnv* env)
 
 CREATE_TEST(major_gc1, NULL, major_gc1_keep_children);
 
-static unsigned char* major_gc2_ptr;
+static unsigned char* major_gc2_ptr = NULL;
 
 static void
 major_gc2_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
@@ -289,6 +289,37 @@ test_major_gc2(YogEnv* env)
 }
 
 CREATE_TEST(major_gc2, NULL, major_gc2_keep_children);
+
+static void
+major_gc3_ptr_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    *(void**)ptr = (*keeper)(env, *(void**)ptr);
+}
+
+static unsigned char* major_gc3_ptr = NULL;
+
+static void
+major_gc3_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    major_gc3_ptr = (*keeper)(env, major_gc3_ptr);
+}
+
+static void 
+test_major_gc3(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    major_gc3_ptr = YogGenerational_alloc(env, gen, major_gc3_ptr_keep_children, NULL, sizeof(void*));
+    *(void**)major_gc3_ptr = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    unsigned char* major_gc3_ptr_old = *(void**)major_gc3_ptr;
+
+    YogGenerational_major_gc(env, gen);
+
+    YogCopyingHeap* heap = gen->copying.active_heap;
+    CU_ASSERT_TRUE((heap->items <= (unsigned char*)(*(void**)major_gc3_ptr)) && ((unsigned char*)(*(void**)major_gc3_ptr) <= heap->items + heap->size));
+    CU_ASSERT_PTR_NOT_EQUAL(major_gc3_ptr, major_gc3_ptr_old);
+}
+
+CREATE_TEST(major_gc3, NULL, major_gc3_keep_children);
 
 #define PRIVATE
 
@@ -320,6 +351,7 @@ main(int argc, const char* argv[])
     ADD_TEST(minor_gc2);
     ADD_TEST(major_gc1);
     ADD_TEST(major_gc2);
+    ADD_TEST(major_gc3);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
