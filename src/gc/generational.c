@@ -216,6 +216,53 @@ test_minor_gc2(YogEnv* env)
 
 CREATE_TEST(minor_gc2, NULL, minor_gc2_keep_children);
 
+static unsigned char* major_gc1_ptr;
+
+static void
+major_gc1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    major_gc1_ptr = (*keeper)(env, major_gc1_ptr);
+}
+
+static void 
+test_major_gc1(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    major_gc1_ptr = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    unsigned char* major_gc1_ptr_old = major_gc1_ptr;
+
+    YogGenerational_major_gc(env, gen);
+
+    YogCopyingHeap* heap = gen->copying.active_heap;
+    CU_ASSERT_TRUE((heap->items <= major_gc1_ptr) && (major_gc1_ptr <= heap->items + heap->size));
+    CU_ASSERT_PTR_NOT_EQUAL(major_gc1_ptr, major_gc1_ptr_old);
+}
+
+CREATE_TEST(major_gc1, NULL, major_gc1_keep_children);
+
+static unsigned char* major_gc2_ptr;
+
+static void
+major_gc2_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    major_gc2_ptr = (*keeper)(env, major_gc2_ptr);
+}
+
+static void 
+test_major_gc2(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    major_gc2_ptr = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    oldify(env, gen, major_gc2_ptr);
+
+    YogGenerational_major_gc(env, gen);
+
+    YogCopyingHeap* heap = gen->copying.active_heap;
+    CU_ASSERT_TRUE((major_gc2_ptr < heap->items) || (heap->items + heap->size < major_gc2_ptr));
+}
+
+CREATE_TEST(major_gc2, NULL, major_gc2_keep_children);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -244,6 +291,8 @@ main(int argc, const char* argv[])
     ADD_TEST(alloc2);
     ADD_TEST(minor_gc1);
     ADD_TEST(minor_gc2);
+    ADD_TEST(major_gc1);
+    ADD_TEST(major_gc2);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
