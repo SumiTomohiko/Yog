@@ -172,6 +172,8 @@ main(int argc, char* argv[])
         YogVm_register_package(&env, env.vm, "__main__", pkg);
         YogThread_eval_package(&env, &thread, pkg);
 
+        YogThread_finalize(&env, &thread);
+
         POP_LOCALS(&env);
     } while (0);
 

@@ -395,11 +395,29 @@ struct YogThread {
     struct YogJmpBuf* jmp_buf_list;
     struct YogVal jmp_val;
     struct YogLocals* locals;
+    void*** ref_tbl;
+    void*** ref_tbl_ptr;
+    void*** ref_tbl_limit;
 };
 
 typedef struct YogThread YogThread;
 
-#define ADD_REF(env, ptr)
+#include "yog/error.h"
+
+#define REF_TBL_GROW_SIZE   256
+#define ADD_REF(env, ptr)   do { \
+    YogThread* thread = (env)->th; \
+    if (thread->ref_tbl_ptr == thread->ref_tbl_limit) { \
+        unsigned int size = thread->ref_tbl_limit - thread->ref_tbl; \
+        unsigned int new_size = size + REF_TBL_GROW_SIZE * sizeof(void**); \
+        thread->ref_tbl = realloc(thread->ref_tbl, new_size); \
+        YOG_ASSERT((env), thread->ref_tbl != NULL, "Can't grow ref_tbl"); \
+        thread->ref_tbl_ptr = thread->ref_tbl + size / sizeof(void**); \
+        thread->ref_tbl_limit = thread->ref_tbl + new_size / sizeof(void**); \
+    } \
+    *thread->ref_tbl_ptr = &(ptr); \
+    thread->ref_tbl_ptr++; \
+} while (0)
 
 #include "yog/klass.h"
 #include "yog/package.h"
@@ -436,6 +454,7 @@ YogVal YogThread_call_block(YogEnv*, YogThread*, YogVal, unsigned int, YogVal*);
 YogVal YogThread_call_method(YogEnv*, YogThread*, YogVal, const char*, unsigned int, YogVal*);
 YogVal YogThread_call_method_id(YogEnv*, YogThread*, YogVal, ID, unsigned int, YogVal*);
 void YogThread_eval_package(YogEnv*, YogThread*, YogVal);
+void YogThread_finalize(YogEnv*, YogThread*);
 void YogThread_initialize(YogEnv*, YogThread*);
 void YogThread_keep_children(YogEnv*, void*, ObjectKeeper);
 YogThread* YogThread_new(YogEnv*);

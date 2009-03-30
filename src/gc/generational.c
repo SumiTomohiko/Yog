@@ -397,27 +397,28 @@ test_finalize2(YogEnv* env)
 
 CREATE_TEST(finalize2, NULL, finalize2_root_keeper);
 
+YogThread thread;
+
 static void 
 test_ref_tbl1(YogEnv* env) 
 {
-    YogThread thread;
     YogThread_initialize(env, &thread);
     env->th = &thread;
 
     YogGenerational* gen = &env->vm->gc.generational;
     void* ptr = YogGenerational_alloc(env, gen, NULL, NULL, sizeof(int));
     *(int*)ptr = 42;
-    ADD_REF(&thread, ptr);
+    ADD_REF(env, ptr);
 
     void* ptr_old = ptr;
 
     YogGenerational_minor_gc(env, gen);
 
     CU_ASSERT_PTR_NOT_EQUAL(ptr, ptr_old);
-    CU_ASSERT_NOT_EQUAL(*(int*)ptr, 42);
+    CU_ASSERT_EQUAL(*(int*)ptr, 42);
 }
 
-CREATE_TEST(ref_tbl1, NULL, dummy_keeper);
+CREATE_TEST(ref_tbl1, &thread, YogThread_keep_children);
 
 #define PRIVATE
 
