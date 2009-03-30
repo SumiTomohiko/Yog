@@ -14,6 +14,26 @@ typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
 typedef void (*Finalizer)(YogEnv*, void*);
 #endif
 
+struct YogMarkSweepCompactHeader {
+    unsigned int flags;
+#if 0
+    struct GcObjectStat stat;
+#endif
+    struct YogMarkSweepCompactHeader* forwarding_addr;
+    struct YogMarkSweepCompactHeader* prev;
+    struct YogMarkSweepCompactHeader* next;
+    ChildrenKeeper keeper;
+    Finalizer finalizer;
+    BOOL marked;
+    BOOL updated;
+    size_t size;
+};
+
+#define OBJ_USED        0x01
+#define IS_OBJ_USED(o)  ((o)->flags & OBJ_USED)
+
+typedef struct YogMarkSweepCompactHeader YogMarkSweepCompactHeader;
+
 #define MARK_SWEEP_COMPACT_NUM_SIZE         7
 #define MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE  2049
 
@@ -52,6 +72,7 @@ typedef struct YogMarkSweepCompact YogMarkSweepCompact;
 /* src/gc/mark-sweep-compact.c */
 void* YogMarkSweepCompact_alloc(YogEnv*, YogMarkSweepCompact*, ChildrenKeeper, Finalizer, size_t);
 void YogMarkSweepCompact_delete_garbage(YogEnv*, YogMarkSweepCompact*);
+void YogMarkSweepCompact_do_compaction(YogEnv*, YogMarkSweepCompact*, ObjectKeeper);
 void YogMarkSweepCompact_finalize(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_gc(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_initialize(YogEnv*, YogMarkSweepCompact*, size_t, size_t, void*, ChildrenKeeper);

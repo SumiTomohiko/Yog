@@ -45,6 +45,32 @@ major_gc_keep_object(YogEnv* env, void* ptr)
     }
 }
 
+static void* 
+update_pointer(YogEnv* env, void* ptr) 
+{
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    void* forwarding_addr;
+    ChildrenKeeper keeper;
+    if (IS_YOUNG(env, PTR2VAL(ptr))) {
+        YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
+        keeper = header->keeper;
+        forwarding_addr = ptr;
+    }
+    else {
+        YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)ptr - 1;
+        keeper = header->keeper;
+        forwarding_addr = header->forwarding_addr;
+    }
+    if (keeper != NULL) {
+        (*keeper)(env, ptr, update_pointer);
+    }
+
+    return forwarding_addr;
+}
+
 void 
 YogGenerational_major_gc(YogEnv* env, YogGenerational* generational) 
 {
@@ -54,6 +80,7 @@ YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
 
     YogCopying_do_gc(env, &generational->copying, major_gc_keep_object);
     YogMarkSweepCompact_delete_garbage(env, msc);
+    YogMarkSweepCompact_do_compaction(env, msc, update_pointer);
 
     msc->in_gc = FALSE;
 }
@@ -91,7 +118,7 @@ YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stre
     YogCopying_initialize(env, copying, stress, young_heap_size, root, root_keeper);
 
     YogMarkSweepCompact* msc = &generational->msc;
-    YogMarkSweepCompact_initialize(env, msc, old_chunk_size, old_threshold, NULL, NULL);
+    YogMarkSweepCompact_initialize(env, msc, old_chunk_size, old_threshold, root, root_keeper);
 
     generational->tenure = tenure;
 }

@@ -57,26 +57,6 @@ struct YogMarkSweepCompactPage {
 
 typedef struct YogMarkSweepCompactPage YogMarkSweepCompactPage;
 
-struct YogMarkSweepCompactHeader {
-    unsigned int flags;
-#if 0
-    struct GcObjectStat stat;
-#endif
-    struct YogMarkSweepCompactHeader* forwarding_addr;
-    struct YogMarkSweepCompactHeader* prev;
-    struct YogMarkSweepCompactHeader* next;
-    ChildrenKeeper keeper;
-    Finalizer finalizer;
-    BOOL marked;
-    BOOL updated;
-    size_t size;
-};
-
-#define OBJ_USED        0x01
-#define IS_OBJ_USED(o)  ((o)->flags & OBJ_USED)
-
-typedef struct YogMarkSweepCompactHeader YogMarkSweepCompactHeader;
-
 struct Compactor {
     void (*callback)(struct YogMarkSweepCompact*, struct Compactor*, struct YogMarkSweepCompactHeader*); 
     struct YogMarkSweepCompactChunk* cur_chunk;
@@ -437,8 +417,8 @@ update_pointer(YogEnv* env, void* ptr)
     return to;
 }
 
-static void 
-compact(YogEnv* env, YogMarkSweepCompact* msc) 
+void 
+YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectKeeper update_pointer) 
 {
     Compactor compactor;
     Compactor_initialize(&compactor);
@@ -460,6 +440,12 @@ compact(YogEnv* env, YogMarkSweepCompact* msc)
     msc->all_chunks_last = compactor.cur_chunk;
 
     remake_freelist(msc, &compactor, first_free_page);
+}
+
+static void 
+compact(YogEnv* env, YogMarkSweepCompact* msc) 
+{
+    YogMarkSweepCompact_do_compaction(env, msc, update_pointer);
 }
 
 void 
