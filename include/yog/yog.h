@@ -399,6 +399,8 @@ struct YogThread {
 
 typedef struct YogThread YogThread;
 
+#define ADD_REF(env, ptr)
+
 #include "yog/klass.h"
 #include "yog/package.h"
 
