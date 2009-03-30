@@ -338,6 +338,37 @@ test_finalize1(YogEnv* env)
 
 CREATE_TEST(finalize1, NULL, dummy_keeper);
 
+static BOOL finalize2_flag = FALSE;
+static void* finalize2_ptr = NULL;
+
+static void 
+finalize2_finalize(YogEnv* env, void* ptr) 
+{
+    finalize2_flag = TRUE;
+}
+
+static void 
+finalize2_root_keeper(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    finalize2_ptr = (*keeper)(env, finalize2_ptr);
+}
+
+static void 
+test_finalize2(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    finalize2_ptr = YogGenerational_alloc(env, gen, NULL, finalize2_finalize, 0);
+    oldify(env, gen, finalize2_ptr);
+    YogGenerational_minor_gc(env, gen);
+
+    finalize2_ptr = NULL;
+    YogGenerational_major_gc(env, gen);
+
+    CU_ASSERT_TRUE(finalize2_flag);
+}
+
+CREATE_TEST(finalize2, NULL, finalize2_root_keeper);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -370,6 +401,7 @@ main(int argc, const char* argv[])
     ADD_TEST(major_gc2);
     ADD_TEST(major_gc3);
     ADD_TEST(finalize1);
+    ADD_TEST(finalize2);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
