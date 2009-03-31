@@ -8,6 +8,26 @@
 #   include <CUnit/CUnit.h>
 #endif
 
+static void 
+oldify(YogEnv* env, YogGenerational* gen, void* ptr) 
+{
+    YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
+    header->servive_num = gen->tenure - 1;
+}
+
+static void 
+oldify_all_callback(YogEnv* env, YogCopyingHeader* header) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    oldify(env, gen, header + 1);
+}
+
+void 
+YogGenerational_oldify_all(YogEnv* env, YogGenerational* gen) 
+{
+    YogCopying_iterate_objects(env, &gen->copying, oldify_all_callback);
+}
+
 static void* 
 copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
 {
@@ -247,13 +267,6 @@ static void
 minor_gc2_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
     minor_gc2_ptr = (*keeper)(env, minor_gc2_ptr);
-}
-
-static void 
-oldify(YogEnv* env, YogGenerational* gen, void* ptr) 
-{
-    YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
-    header->servive_num = gen->tenure - 1;
 }
 
 static void 

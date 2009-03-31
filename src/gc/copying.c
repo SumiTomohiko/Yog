@@ -118,8 +118,8 @@ free_heap(YogCopying* copying)
 #undef FREE_HEAP
 }
 
-static void 
-finalize(YogEnv* env, YogCopying* copying) 
+void 
+YogCopying_iterate_objects(YogEnv* env, YogCopying* copying, void (*callback)(YogEnv*, YogCopyingHeader*))
 {
     YogCopyingHeap* heap = copying->active_heap;
 
@@ -127,14 +127,26 @@ finalize(YogEnv* env, YogCopying* copying)
     unsigned char* to = heap->free;
     while (ptr < to) {
         YogCopyingHeader* header = (YogCopyingHeader*)ptr;
-        if (header->forwarding_addr == NULL) {
-            if (header->finalizer != NULL) {
-                (*header->finalizer)(env, header + 1);
-            }
-        }
+        (*callback)(env, header);
 
         ptr += header->size;
     }
+}
+
+static void 
+finalize_each(YogEnv* env, YogCopyingHeader* header) 
+{
+    if (header->forwarding_addr == NULL) {
+        if (header->finalizer != NULL) {
+            (*header->finalizer)(env, header + 1);
+        }
+    }
+}
+
+static void 
+finalize(YogEnv* env, YogCopying* copying) 
+{
+    YogCopying_iterate_objects(env, copying, finalize_each);
 }
 
 void 
@@ -220,7 +232,12 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 #if defined(GC_COPYING)
         YogCopying_gc(env, copying);
 #elif defined(GC_GENERATIONAL)
-        YogGenerational_minor_gc(env, &env->vm->gc.generational);
+        YogGenerational* gen = &env->vm->gc.generational;
+        YogGenerational_minor_gc(env, gen);
+        if (copying->stress) {
+            YogGenerational_oldify_all(env, gen);
+            YogGenerational_major_gc(env, gen);
+        }
 #endif
         heap = copying->active_heap;
         rest_size = REST_SIZE(heap);

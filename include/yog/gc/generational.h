@@ -45,6 +45,7 @@ void YogGenerational_finalize(YogEnv*, YogGenerational*);
 void YogGenerational_initialize(YogEnv*, YogGenerational*, BOOL, size_t, size_t, size_t, unsigned int, void*, ChildrenKeeper);
 void YogGenerational_major_gc(YogEnv*, YogGenerational*);
 void YogGenerational_minor_gc(YogEnv*, YogGenerational*);
+void YogGenerational_oldify_all(YogEnv*, YogGenerational*);
 
 /* PROTOTYPE_END */
 

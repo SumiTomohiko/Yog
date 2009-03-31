@@ -66,6 +66,7 @@ void YogCopying_do_gc(YogEnv*, YogCopying*, ObjectKeeper);
 void YogCopying_finalize(YogEnv*, YogCopying*);
 void YogCopying_gc(YogEnv*, YogCopying*);
 void YogCopying_initialize(YogEnv*, YogCopying*, BOOL, size_t, void*, ChildrenKeeper);
+void YogCopying_iterate_objects(YogEnv*, YogCopying*, void (*)(YogEnv*, YogCopyingHeader*));
 
 /* PROTOTYPE_END */
 
