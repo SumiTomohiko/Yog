@@ -421,7 +421,7 @@ typedef struct YogThread YogThread;
     *thread->ref_tbl_ptr = &(ptr); \
     thread->ref_tbl_ptr++; \
 } while (0)
-#   define MODITY(env, fp, val)    do { \
+#   define MODIFY(env, fp, val)    do { \
     if (!IS_YOUNG_PTR(&(fp))) { \
         YogVal old = (fp); \
         if (!IS_YOUNG(old) && IS_YOUNG(val)) { \
