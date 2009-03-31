@@ -40,6 +40,15 @@ copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
     YogGenerational* gen = &env->vm->gc.generational;
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
     DEBUG(DPRINTF("alive: %p", header));
+    if (header->forwarding_addr != NULL) {
+        if (IS_YOUNG_PTR(env, header->forwarding_addr)) {
+            return header->forwarding_addr + 1;
+        }
+        else {
+            return (YogMarkSweepCompactHeader*)header->forwarding_addr + 1;
+        }
+    }
+
     header->servive_num++;
     if (header->servive_num < gen->tenure) {
         return YogCopying_copy(env, &gen->copying, ptr);
@@ -52,7 +61,7 @@ copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
         void* p = YogMarkSweepCompact_alloc(env, msc, keeper, finalizer, size);
         DEBUG(DPRINTF("tenure: %p (%p)->%p (%p)", header, ptr, (YogMarkSweepCompactHeader*)p - 1, p));
         memcpy(p, ptr, size);
-        header->forwarding_addr = p;
+        header->forwarding_addr = (YogMarkSweepCompactHeader*)p - 1;
         YogMarkSweepCompact_mark_recursively(env, p, obj_keeper);
         return p;
     }
@@ -90,7 +99,8 @@ update_pointer(YogEnv* env, void* ptr)
     else {
         YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)ptr - 1;
         keeper = header->keeper;
-        forwarding_addr = header->forwarding_addr;
+        forwarding_addr = (YogMarkSweepCompactHeader*)header->forwarding_addr + 1;
+        DEBUG(DPRINTF("update: %p->%p", header, header->forwarding_addr));
     }
     if (keeper != NULL) {
         (*keeper)(env, ptr, update_pointer);
