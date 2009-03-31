@@ -31,7 +31,8 @@ struct YogGenerational {
 
 typedef struct YogGenerational YogGenerational;
 
-#define IS_YOUNG(env, val)  (IS_PTR(val) && (env->vm->gc.generational.copying.active_heap->items <= (unsigned char*)VAL2PTR(val)) && ((unsigned char*)VAL2PTR(val) <= env->vm->gc.generational.copying.active_heap->items + env->vm->gc.generational.copying.active_heap->size))
+#define IS_YOUNG_PTR(env, ptr)  ((env->vm->gc.generational.copying.active_heap->items <= (unsigned char*)(ptr)) && ((unsigned char*)(ptr) <= env->vm->gc.generational.copying.active_heap->items + env->vm->gc.generational.copying.active_heap->size))
+#define IS_YOUNG(env, val)      (IS_PTR(val) && IS_YOUNG_PTR(env, VAL2PTR(val)))
 
 /* PROTOTYPE_START */
 
