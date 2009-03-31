@@ -429,7 +429,7 @@ update_pointer(YogEnv* env, void* ptr)
 void 
 YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectKeeper update_pointer) 
 {
-    DEBUG(DPRINTF("YogMarkSweepCompact_do_compaction(env=%p, msc=%p, update_pointer=%p)", env, msc, update_pointer));
+    DEBUG(DPRINTF("compaction"));
     Compactor compactor;
     Compactor_initialize(&compactor);
     compactor.callback = set_forward_address;
