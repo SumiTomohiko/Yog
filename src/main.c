@@ -128,21 +128,27 @@ main(int argc, char* argv[])
     YogEnv env;
     env.vm = &vm;
     env.th = NULL;
-#if GC_BDW
+#if defined(GC_BDW)
     GC_INIT();
-#elif GC_COPYING
+#elif defined(GC_COPYING)
     YogVm_config_copying(&env, env.vm, init_heap_size);
-#elif GC_MARK_SWEEP
+#elif defined(GC_MARK_SWEEP)
     if (gc_stress) {
         threshold = 0;
     }
     YogVm_config_mark_sweep(&env, env.vm, threshold);
-#elif GC_MARK_SWEEP_COMPACT
+#elif defined(GC_MARK_SWEEP_COMPACT)
     if (gc_stress) {
         threshold = 0;
     }
 #   define CHUNK_SIZE  (16 * 1024 * 1024)
     YogVm_config_mark_sweep_compact(&env, env.vm, CHUNK_SIZE, threshold);
+#   undef CHUNK_SIZE
+#elif defined(GC_GENERATIONAL)
+#   define CHUNK_SIZE  (16 * 1024 * 1024)
+#   define TENURE       32
+    YogVm_config_generational(&env, env.vm, init_heap_size, CHUNK_SIZE, threshold, TENURE);
+#   undef TENURE
 #   undef CHUNK_SIZE
 #else
 #   error "unknown GC type"

@@ -308,6 +308,20 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
 }
 #endif
 
+#if defined(GC_GENERATIONAL)
+static void 
+alloc_mem_generational(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
+{
+    return YogGenerational_alloc(env, &vm->gc.generational, keeper, finalizer, size);
+}
+
+static void 
+free_mem_generational(YogEnv* env, YogVm* vm) 
+{
+    YogGenerational_finalize(env, &vm->gc.generational);
+}
+#endif
+
 #if GC_MARK_SWEEP
 static void 
 free_mem_mark_sweep(YogEnv* env, YogVm* vm) 
@@ -363,8 +377,8 @@ YogVm_init(YogVm* vm)
     vm->alloc_mem = alloc_mem_bdw;
     vm->free_mem = NULL;
 #elif defined(GC_GENERATIONAL)
-    vm->alloc_mem = NULL;
-    vm->free_mem = NULL;
+    vm->alloc_mem = alloc_mem_generational;
+    vm->free_mem = free_mem_generational;
 #else
 #   error "unknown GC type"
 #endif
@@ -474,6 +488,14 @@ void
 YogVm_config_mark_sweep_compact(YogEnv* env, YogVm* vm, size_t chunk_size, size_t threshold) 
 {
     YogMarkSweepCompact_initialize(env, &vm->gc.mark_sweep_compact, chunk_size, threshold, vm, keep_children);
+}
+#endif
+
+#if defined(GC_GENERATIONAL)
+void 
+YogVm_config_generational(YogEnv* env, YogVm* vm, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure) 
+{
+    YogGenerational_initialize(env, &vm->gc.generational, vm->gc_stress, young_heap_size, old_chunk_size, old_threshold, tenure, vm, keep_children);
 }
 #endif
 
