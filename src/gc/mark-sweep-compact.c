@@ -21,6 +21,12 @@
 #   define TRUE    (!FALSE)
 #endif
 
+#if 0
+#   define DEBUG(x)     x
+#else
+#   define DEBUG(x)
+#endif
+
 #define SURVIVE_INDEX_MAX    8
 
 #define PAGE_SIZE       4096
@@ -72,6 +78,7 @@ YogMarkSweepCompact_unmark_all(YogEnv* env, YogMarkSweepCompact* msc)
 {
     YogMarkSweepCompactHeader* header = msc->header;
     while (header != NULL) {
+        DEBUG(DPRINTF("header=%p", header));
         header->updated = header->marked = FALSE;
         header = header->next;
     }
@@ -117,6 +124,7 @@ keep_object(YogEnv* env, void* ptr)
 static void 
 finalize(YogEnv* env, YogMarkSweepCompactHeader* header) 
 {
+    DEBUG(DPRINTF("finalize: %p", header));
     if (header->finalizer != NULL) {
         (*header->finalizer)(env, header + 1);
     }
@@ -358,6 +366,7 @@ static void
 copy_object(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactHeader* header)
 {
     size_t size = header->size;
+    DEBUG(DPRINTF("move: %p->%p", header, header->forwarding_addr));
     memcpy(header->forwarding_addr, header, size);
 
     YogMarkSweepCompactPage* page = ptr2page(header->forwarding_addr);
@@ -420,6 +429,7 @@ update_pointer(YogEnv* env, void* ptr)
 void 
 YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectKeeper update_pointer) 
 {
+    DEBUG(DPRINTF("YogMarkSweepCompact_do_compaction(env=%p, msc=%p, update_pointer=%p)", env, msc, update_pointer));
     Compactor compactor;
     Compactor_initialize(&compactor);
     compactor.callback = set_forward_address;
@@ -454,6 +464,7 @@ YogMarkSweepCompact_delete_garbage(YogEnv* env, YogMarkSweepCompact* msc)
     YogMarkSweepCompactHeader* header = msc->header;
     while (header != NULL) {
         YogMarkSweepCompactHeader* next = header->next;
+        DEBUG(DPRINTF("header=%p", header));
 
         if (!header->marked) {
             finalize(env, header);

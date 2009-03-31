@@ -8,6 +8,12 @@
 #   include <CUnit/CUnit.h>
 #endif
 
+#if 0
+#   define DEBUG(x) x
+#else
+#   define DEBUG(x)
+#endif
+
 static void 
 oldify(YogEnv* env, YogGenerational* gen, void* ptr) 
 {
@@ -33,6 +39,7 @@ copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
 {
     YogGenerational* gen = &env->vm->gc.generational;
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
+    DEBUG(DPRINTF("alive: %p", header));
     header->servive_num++;
     if (header->servive_num < gen->tenure) {
         return YogCopying_copy(env, &gen->copying, ptr);
@@ -43,6 +50,7 @@ copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
         Finalizer finalizer = header->finalizer;
         size_t size = header->size - sizeof(YogCopyingHeader);
         void* p = YogMarkSweepCompact_alloc(env, msc, keeper, finalizer, size);
+        DEBUG(DPRINTF("tenure: %p (%p)->%p (%p)", header, ptr, (YogMarkSweepCompactHeader*)p - 1, p));
         memcpy(p, ptr, size);
         header->forwarding_addr = p;
         YogMarkSweepCompact_mark_recursively(env, p, obj_keeper);
@@ -94,6 +102,7 @@ update_pointer(YogEnv* env, void* ptr)
 void 
 YogGenerational_major_gc(YogEnv* env, YogGenerational* generational) 
 {
+    DEBUG(DPRINTF("major GC"));
     YogMarkSweepCompact* msc = &generational->msc;
     msc->in_gc = TRUE;
     YogMarkSweepCompact_unmark_all(env, msc);
@@ -122,6 +131,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr)
 void 
 YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational) 
 {
+    DEBUG(DPRINTF("minor GC"));
     YogMarkSweepCompact* msc = &generational->msc;
     msc->in_gc = TRUE;
 
@@ -163,12 +173,14 @@ YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper
     YogCopying* copying = &generational->copying;
     void* ptr = YogCopying_alloc(env, copying, keeper, finalizer, size);
     if (ptr != NULL) {
+        DEBUG(DPRINTF("alloc new: %p (%p)", (YogCopyingHeader*)ptr - 1, ptr));
         return ptr;
     }
 
     YogMarkSweepCompact* msc = &generational->msc;
     ptr = YogMarkSweepCompact_alloc(env, msc, keeper, finalizer, size);
     if (ptr != NULL) {
+        DEBUG(DPRINTF("alloc old: %p (%p)", (YogMarkSweepCompactHeader*)ptr - 1, ptr));
         return ptr;
     }
 
@@ -435,6 +447,30 @@ test_ref_tbl1(YogEnv* env)
 
 CREATE_TEST(ref_tbl1, &thread, YogThread_keep_children);
 
+static void* forwarding_addr1_ptr1 = NULL;
+static void* forwarding_addr1_ptr2 = NULL;
+
+static void 
+forwarding_addr1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    forwarding_addr1_ptr1 = (*keeper)(env, forwarding_addr1_ptr1);
+    forwarding_addr1_ptr2 = (*keeper)(env, forwarding_addr1_ptr2);
+}
+
+static void 
+test_forwarding_addr1(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    forwarding_addr1_ptr1 = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    forwarding_addr1_ptr2 = forwarding_addr1_ptr1;
+    oldify(env, gen, forwarding_addr1_ptr1);
+    YogGenerational_major_gc(env, gen);
+
+    CU_ASSERT_PTR_EQUAL(forwarding_addr1_ptr1, forwarding_addr1_ptr2);
+}
+
+CREATE_TEST(forwarding_addr1, NULL, forwarding_addr1_keep_children);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -469,6 +505,7 @@ main(int argc, const char* argv[])
     ADD_TEST(finalize1);
     ADD_TEST(finalize2);
     ADD_TEST(ref_tbl1);
+    ADD_TEST(forwarding_addr1);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);

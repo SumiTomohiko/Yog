@@ -309,7 +309,7 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
 #endif
 
 #if defined(GC_GENERATIONAL)
-static void 
+static void*
 alloc_mem_generational(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
 {
     return YogGenerational_alloc(env, &vm->gc.generational, keeper, finalizer, size);

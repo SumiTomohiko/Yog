@@ -13,7 +13,7 @@
 #endif
 
 #if 0
-#define DEBUG
+#   define DEBUG
 #endif
 
 /* TODO: commonize with the other GC */
@@ -50,18 +50,24 @@ void*
 YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr) 
 {
 #ifdef DEBUG
-#   define PRINT(...)   DPRINTF(__VA_ARGS__)
+#   define PRINT(...)   DPRINTF("copy: " __VA_ARGS__)
 #else
 #   define PRINT(...)
 #endif
     if (ptr == NULL) {
+#if 0
         PRINT("exec_num=0x%08x, NULL->NULL", ENV_VM(env)->gc_stat.exec_num);
+#endif
+        PRINT("NULL->NULL");
         return NULL;
     }
 
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
     if (header->forwarding_addr != NULL) {
+#if 0
         PRINT("exec_num=0x%08x, id=0x%08x, %p->(%p)", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (YogCopyingHeader*)header->forwarding_addr + 1);
+#endif
+        PRINT("%p->(%p)", header, header->forwarding_addr);
         return (YogCopyingHeader*)header->forwarding_addr + 1;
     }
 
@@ -79,7 +85,10 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
 
     copying->unscanned += size;
 
+#if 0
     PRINT("exec_num=0x%08x, id=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (YogCopyingHeader*)dest + 1);
+#endif
+    PRINT("%p->%p", header, dest);
     return (YogCopyingHeader*)dest + 1;
 #undef PRINT
 }
@@ -137,6 +146,9 @@ static void
 finalize_each(YogEnv* env, YogCopyingHeader* header) 
 {
     if (header->forwarding_addr == NULL) {
+#if defined(DEBUG)
+        DPRINTF("finalize: %p", header);
+#endif
         if (header->finalizer != NULL) {
             (*header->finalizer)(env, header + 1);
         }
