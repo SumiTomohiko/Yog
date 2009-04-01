@@ -39,14 +39,19 @@ copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
 {
     YogGenerational* gen = &env->vm->gc.generational;
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
-    DEBUG(DPRINTF("alive: %p", header));
+    DEBUG(DPRINTF("alive: %p (%p)", header, ptr));
     if (header->forwarding_addr != NULL) {
+        DEBUG(DPRINTF("moved: %p->%p", header, header->forwarding_addr));
+        void* to;
         if (IS_YOUNG_PTR(env, header->forwarding_addr)) {
-            return header->forwarding_addr + 1;
+            to = header->forwarding_addr + 1;
+            DEBUG(DPRINTF("to=%p", to));
         }
         else {
-            return (YogMarkSweepCompactHeader*)header->forwarding_addr + 1;
+            to = (YogMarkSweepCompactHeader*)header->forwarding_addr + 1;
+            DEBUG(DPRINTF("to=%p", to));
         }
+        return to;
     }
 
     header->servive_num++;
@@ -85,6 +90,7 @@ major_gc_keep_object(YogEnv* env, void* ptr)
 static void* 
 update_pointer(YogEnv* env, void* ptr) 
 {
+    DEBUG(DPRINTF("updating: %p", ptr));
     if (ptr == NULL) {
         return NULL;
     }
@@ -481,6 +487,29 @@ test_forwarding_addr1(YogEnv* env)
 
 CREATE_TEST(forwarding_addr1, NULL, forwarding_addr1_keep_children);
 
+static void* forwarding_addr2_ptr1 = NULL;
+static void* forwarding_addr2_ptr2 = NULL;
+
+static void 
+forwarding_addr2_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    forwarding_addr2_ptr1 = (*keeper)(env, forwarding_addr2_ptr1);
+    forwarding_addr2_ptr2 = (*keeper)(env, forwarding_addr2_ptr2);
+}
+
+static void 
+test_forwarding_addr2(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    forwarding_addr2_ptr1 = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    forwarding_addr2_ptr2 = forwarding_addr2_ptr1;
+    YogGenerational_minor_gc(env, gen);
+
+    CU_ASSERT_PTR_EQUAL(forwarding_addr2_ptr1, forwarding_addr2_ptr2);
+}
+
+CREATE_TEST(forwarding_addr2, NULL, forwarding_addr2_keep_children);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -516,6 +545,7 @@ main(int argc, const char* argv[])
     ADD_TEST(finalize2);
     ADD_TEST(ref_tbl1);
     ADD_TEST(forwarding_addr1);
+    ADD_TEST(forwarding_addr2);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);

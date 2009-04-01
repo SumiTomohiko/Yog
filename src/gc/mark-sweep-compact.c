@@ -76,6 +76,7 @@ typedef struct Compactor Compactor;
 void 
 YogMarkSweepCompact_unmark_all(YogEnv* env, YogMarkSweepCompact* msc) 
 {
+    DEBUG(DPRINTF("unmark all"));
     YogMarkSweepCompactHeader* header = msc->header;
     while (header != NULL) {
         DEBUG(DPRINTF("header=%p", header));

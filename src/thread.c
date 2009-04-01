@@ -13,6 +13,12 @@
 #include "yog/st.h"
 #include "yog/yog.h"
 
+#if 0
+#   define DEBUG(x)     x
+#else
+#   define DEBUG(x)
+#endif
+
 #define CUR_FRAME   (ENV_TH(env)->cur_frame)
 
 #define PUSH_FRAME(f)   do { \
@@ -814,6 +820,7 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
             unsigned int j;
             for (j = 0; j < locals->size; j++) {
                 YogVal* val = &vals[j];
+                DEBUG(DPRINTF("val=%p", val));
                 *val = YogVal_keep(env, *val, keeper);
             }
         }

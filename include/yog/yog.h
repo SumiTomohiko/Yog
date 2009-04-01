@@ -420,14 +420,14 @@ typedef struct YogThread YogThread;
         thread->ref_tbl_ptr = thread->ref_tbl + size / sizeof(void**); \
         thread->ref_tbl_limit = thread->ref_tbl + new_size / sizeof(void**); \
     } \
-    *thread->ref_tbl_ptr = &(VAL2PTR(val)); \
+    *thread->ref_tbl_ptr = &(val); \
     thread->ref_tbl_ptr++; \
 } while (0)
 #   define MODIFY(env, fp, val)    do { \
     if (!IS_YOUNG_PTR((env), &(fp))) { \
         YogVal old = (fp); \
         if (!IS_YOUNG((env), old) && IS_YOUNG((env), (val))) { \
-            ADD_REF((env), (fp)); \
+            ADD_REF((env), VAL2PTR((fp))); \
         } \
     } \
     (fp) = (val); \
