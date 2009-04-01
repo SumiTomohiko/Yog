@@ -16,6 +16,15 @@
 #   define DEBUG
 #endif
 
+BOOL 
+YogCopying_is_in_inactive_heap(YogEnv* env, YogCopying* copying, void* ptr) 
+{
+    YogCopyingHeap* heap = copying->inactive_heap;
+    void* from = heap->items;
+    void* to = heap->items + heap->size;
+    return (from <= ptr) && (ptr < to);
+}
+
 /* TODO: commonize with the other GC */
 static void 
 initialize_memory(void* ptr, size_t size) 

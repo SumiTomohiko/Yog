@@ -43,12 +43,14 @@ copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
     if (header->forwarding_addr != NULL) {
         DEBUG(DPRINTF("moved: %p->%p", header, header->forwarding_addr));
         void* to;
-        if (IS_YOUNG_PTR(env, header->forwarding_addr)) {
-            to = header->forwarding_addr + 1;
+        YogCopyingHeader* forwarding_addr = header->forwarding_addr;
+        YogCopying* copying = &env->vm->gc.generational.copying;
+        if (YogCopying_is_in_inactive_heap(env, copying, forwarding_addr)) {
+            to = forwarding_addr + 1;
             DEBUG(DPRINTF("to=%p", to));
         }
         else {
-            to = (YogMarkSweepCompactHeader*)header->forwarding_addr + 1;
+            to = (YogMarkSweepCompactHeader*)forwarding_addr + 1;
             DEBUG(DPRINTF("to=%p", to));
         }
         return to;
