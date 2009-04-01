@@ -998,6 +998,31 @@ test_gc_large1(YogMarkSweepCompact* msc)
 
 CREATE_TEST(gc_large1, NULL, dummy_keeper);
 
+static void* compact1_ptr = NULL;
+
+static void 
+compact1_ptr_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    *(void**)ptr = (*keeper)(env, *(void**)ptr);
+}
+
+static void 
+compact1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    compact1_ptr = (*keeper)(env, compact1_ptr);
+}
+
+static void 
+test_compact1(YogMarkSweepCompact* msc) 
+{
+    compact1_ptr = YogMarkSweepCompact_alloc(NULL, msc, compact1_ptr_keep_children, NULL, sizeof(void*));
+    *(void**)compact1_ptr = compact1_ptr;
+    YogMarkSweepCompact_gc(NULL, msc);
+    CU_ASSERT_PTR_EQUAL(compact1_ptr, *(void**)compact1_ptr);
+}
+
+CREATE_TEST(compact1, NULL, compact1_keep_children);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -1037,6 +1062,7 @@ main(int argc, const char* argv[])
     ADD_TEST(page_freelist4);
     ADD_TEST(page_freelist5);
     ADD_TEST(use_up_page1);
+    ADD_TEST(compact1);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);

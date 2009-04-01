@@ -513,6 +513,60 @@ test_forwarding_addr2(YogEnv* env)
 
 CREATE_TEST(forwarding_addr2, NULL, forwarding_addr2_keep_children);
 
+static void* compact1_ptr = NULL;
+
+static void 
+compact1_ptr_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    *(void**)ptr = (*keeper)(env, *(void**)ptr);
+}
+
+static void 
+compact1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    compact1_ptr = (*keeper)(env, compact1_ptr);
+}
+
+static void 
+test_compact1(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    compact1_ptr = YogGenerational_alloc(env, gen, compact1_ptr_keep_children, NULL, sizeof(void*));
+    *(void**)compact1_ptr = compact1_ptr;
+    oldify(env, gen, compact1_ptr);
+    YogGenerational_minor_gc(env, gen);
+    YogGenerational_major_gc(env, gen);
+    CU_ASSERT_PTR_EQUAL(compact1_ptr, *(void**)compact1_ptr);
+}
+
+CREATE_TEST(compact1, NULL, compact1_keep_children);
+
+static void* compact2_ptr = NULL;
+
+static void 
+compact2_ptr_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    *(void**)compact2_ptr = (*keeper)(env, *(void**)compact2_ptr);
+}
+
+static void 
+compact2_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    compact2_ptr = (*keeper)(env, compact2_ptr);
+}
+
+static void 
+test_compact2(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    compact2_ptr = YogGenerational_alloc(env, gen, compact2_ptr_keep_children, NULL, sizeof(void*));
+    *(void**)compact2_ptr = compact2_ptr;
+    YogGenerational_major_gc(env, gen);
+    CU_ASSERT_PTR_EQUAL(compact2_ptr, *(void**)compact2_ptr);
+}
+
+CREATE_TEST(compact2, NULL, compact2_keep_children);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -549,6 +603,8 @@ main(int argc, const char* argv[])
     ADD_TEST(ref_tbl1);
     ADD_TEST(forwarding_addr1);
     ADD_TEST(forwarding_addr2);
+    ADD_TEST(compact1);
+    ADD_TEST(compact2);
 #undef ADD_TEST
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
