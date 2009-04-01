@@ -15,6 +15,12 @@
 #include "yog/st.h"
 #include "yog/yog.h"
 
+#if 0
+#   define DEBUG(x)     x
+#else
+#   define DEBUG(x)
+#endif
+
 #define ST_DEFAULT_MAX_DENSITY 5
 #define ST_DEFAULT_INIT_TABLE_SIZE 11
 
@@ -37,19 +43,20 @@ keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     unsigned int size = array->size;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
-        array->items[i] = (*keeper)(env, array->items[i]);
+        array->items[i] = YogVal_keep(env, array->items[i], keeper);
     }
 }
 
 static YogVal 
 alloc_bins(YogEnv* env, int size) 
 {
-    YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogTableEntry*);
+    DEBUG(DPRINTF("alloc_bins"));
+    YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogVal);
 
     array->size = size;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
-        array->items[i] = NULL;
+        array->items[i] = YNIL;
     }
 
     return PTR2VAL(array);
@@ -123,6 +130,7 @@ new_size(int size)
 static void
 rehash(YogEnv* env, YogVal table)
 {
+    DEBUG(DPRINTF("rehash"));
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, table);
 
@@ -132,11 +140,11 @@ rehash(YogEnv* env, YogVal table)
 
     int i = 0;
     for(i = 0; i < old_num_bins; i++) {
-        YogTableEntry* ptr = TABLE_ENTRY_TOP(table, i);
-        while (ptr != NULL) {
-            YogTableEntry* next = ptr->next;
-            unsigned int hash_val = ptr->hash % new_num_bins;
-            ptr->next = PTR_AS(YogTableEntryArray, new_bins)->items[hash_val];
+        YogVal ptr = TABLE_ENTRY_TOP(table, i);
+        while (VAL2PTR(ptr) != NULL) {
+            YogVal next = PTR_AS(YogTableEntry, ptr)->next;
+            unsigned int hash_val = PTR_AS(YogTableEntry, ptr)->hash % new_num_bins;
+            PTR_AS(YogTableEntry, ptr)->next = PTR_AS(YogTableEntryArray, new_bins)->items[hash_val];
             PTR_AS(YogTableEntryArray, new_bins)->items[hash_val] = ptr;
             ptr = next;
         }
@@ -219,7 +227,7 @@ st_init_table(YogEnv* env, YogHashType* type)
 }
 
 #define PTR_NOT_EQUAL(env, table, ptr, hash_val, key) \
-((ptr) != NULL && ((ptr)->hash != (hash_val) || !EQUAL((env), (table), (key), (ptr)->key)))
+(VAL2PTR((ptr)) != NULL && (PTR_AS(YogTableEntry, (ptr))->hash != (hash_val) || !EQUAL((env), (table), (key), PTR_AS(YogTableEntry, (ptr))->key)))
 
 #ifdef HASH_LOG
 #define COLLISION collision++
@@ -228,16 +236,16 @@ st_init_table(YogEnv* env, YogHashType* type)
 #endif
 
 static void 
-find_entry(YogEnv* env, YogVal table, YogTableEntry** ptr, unsigned int hash_val, unsigned int* bin_pos, YogVal key) 
+find_entry(YogEnv* env, YogVal table, YogVal* ptr, unsigned int hash_val, unsigned int* bin_pos, YogVal key) 
 {
     *bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
     *ptr = TABLE_ENTRY_TOP(table, *bin_pos);
     if (PTR_NOT_EQUAL(env, table, *ptr, hash_val, key)) {
         COLLISION;
-        while (PTR_NOT_EQUAL(env, table, (*ptr)->next, hash_val, key)) {
-            *ptr = (*ptr)->next;
+        while (PTR_NOT_EQUAL(env, table, PTR_AS(YogTableEntry, (*ptr))->next, hash_val, key)) {
+            *ptr = PTR_AS(YogTableEntry, (*ptr))->next;
         }
-        *ptr = (*ptr)->next;
+        *ptr = PTR_AS(YogTableEntry, (*ptr))->next;
     }
 }
 
@@ -247,15 +255,15 @@ YogTable_lookup(YogEnv* env, YogVal table, YogVal key, YogVal* value)
     unsigned int hash_val = do_hash(env, table, key);
 
     unsigned int bin_pos = 0;
-    YogTableEntry* ptr = NULL;
+    YogVal ptr = YNIL;
     find_entry(env, table, &ptr, hash_val, &bin_pos, key);
 
-    if (ptr == NULL) {
+    if (!IS_PTR(ptr)) {
         return FALSE;
     }
     else {
         if (value != NULL) {
-            *value = ptr->record;
+            *value = PTR_AS(YogTableEntry, ptr)->record;
         }
         return TRUE;
     }
@@ -268,20 +276,21 @@ keep_entry_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #define KEEP(member)    entry->member = YogVal_keep(env, entry->member, keeper)
     KEEP(key);
     KEEP(record);
+    KEEP(next);
 #undef KEEP
-    entry->next = (*keeper)(env, entry->next);
 }
 
-static YogTableEntry* 
+static YogVal 
 alloc_entry(YogEnv* env)
 {
     YogTableEntry* entry = ALLOC_OBJ(env, keep_entry_children, NULL, YogTableEntry);
+    DEBUG(DPRINTF("alloc_entry: %p", entry));
     entry->hash = 0;
     entry->key = YUNDEF;
     entry->record = YUNDEF;
-    entry->next = NULL;
+    entry->next = YUNDEF;
 
-    return entry;
+    return PTR2VAL(entry);
 }
 
 static void 
@@ -295,14 +304,14 @@ add_direct(YogEnv* env, YogVal table, YogVal key, YogVal value, unsigned int has
         bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
     }
 
-    YogTableEntry* entry = alloc_entry(env);
+    YogVal entry = alloc_entry(env);
 
-    entry->hash = hash_val;
-    entry->key = key;
-    entry->record = value;
-    entry->next = TABLE_ENTRY_TOP(table, bin_pos);
+    PTR_AS(YogTableEntry, entry)->hash = hash_val;
+    PTR_AS(YogTableEntry, entry)->key = key;
+    PTR_AS(YogTableEntry, entry)->record = value;
+    PTR_AS(YogTableEntry, entry)->next = TABLE_ENTRY_TOP(table, bin_pos);
 
-    TABLE_ENTRY_TOP(table, bin_pos) = entry;
+    MODIFY(env, TABLE_ENTRY_TOP(table, bin_pos), entry);
     PTR_AS(YogTable, table)->num_entries++;
 
     RETURN_VOID(env);
@@ -314,15 +323,15 @@ YogTable_insert(YogEnv* env, YogVal table, YogVal key, YogVal value)
     unsigned int hash_val = do_hash(env, table, key);
 
     unsigned int bin_pos = 0;
-    YogTableEntry* ptr = NULL;
+    YogVal ptr = YNIL;
     find_entry(env, table, &ptr, hash_val, &bin_pos, key);
 
-    if (ptr == NULL) {
+    if (!IS_PTR(ptr)) {
         add_direct(env, table, key, value, hash_val, bin_pos);
         return FALSE;
     }
     else {
-        ptr->record = value;
+        PTR_AS(YogTableEntry, ptr)->record = value;
         return TRUE;
     }
 }
@@ -344,34 +353,35 @@ BOOL
 YogTable_delete(YogEnv* env, YogVal table, YogVal* key, YogVal* value) 
 {
     unsigned int hash_val = do_hash_bin(env, table, *key);
-    YogTableEntry* ptr = TABLE_ENTRY_TOP(table, hash_val);
+    YogVal ptr = TABLE_ENTRY_TOP(table, hash_val);
 
-    if (ptr == NULL) {
+    if (!IS_PTR(ptr)) {
         if (value != NULL) {
             *value = YNIL;
         }
         return FALSE;
     }
 
-    if (EQUAL(env, table, *key, ptr->key)) {
-        TABLE_ENTRY_TOP(table, hash_val) = ptr->next;
+    if (EQUAL(env, table, *key, PTR_AS(YogTableEntry, ptr)->key)) {
+        TABLE_ENTRY_TOP(table, hash_val) = PTR_AS(YogTableEntry, ptr)->next;
         PTR_AS(YogTable, table)->num_entries--;
         if (value != NULL) {
-            *value = ptr->record;
+            *value = PTR_AS(YogTableEntry, ptr)->record;
         }
-        *key = ptr->key;
+        *key = PTR_AS(YogTableEntry, ptr)->key;
         return TRUE;
     }
 
-    for(; ptr->next != NULL; ptr = ptr->next) {
-        if (EQUAL(env, table, ptr->next->key, *key)) {
-            YogTableEntry* tmp = ptr->next;
-            ptr->next = ptr->next->next;
+    for(; IS_PTR(PTR_AS(YogTableEntry, ptr)->next); ptr = PTR_AS(YogTableEntry, ptr)->next) {
+        YogVal next = PTR_AS(YogTableEntry, ptr)->next;
+        if (EQUAL(env, table, PTR_AS(YogTableEntry, next)->key, *key)) {
+            YogVal tmp = next;
+            PTR_AS(YogTableEntry, ptr)->next = PTR_AS(YogTableEntry, next)->next;
             PTR_AS(YogTable, table)->num_entries--;
             if (value != NULL) {
-                *value = tmp->record;
+                *value = PTR_AS(YogTableEntry, tmp)->record;
             }
-            *key = tmp->key;
+            *key = PTR_AS(YogTableEntry, tmp)->key;
             return TRUE;
         }
     }
@@ -383,23 +393,24 @@ BOOL
 YogTable_delete_safe(YogEnv* env, YogVal table, YogVal* key, YogVal* value, YogVal never)
 {
     unsigned int hash_val = do_hash_bin(env, table, *key);
-    YogTableEntry* ptr = TABLE_ENTRY_TOP(table, hash_val);
+    YogVal ptr = TABLE_ENTRY_TOP(table, hash_val);
 
-    if (ptr == NULL) {
+    if (!IS_PTR(ptr)) {
         if (value != NULL) {
             *value = YNIL;
         }
         return FALSE;
     }
 
-    for(; ptr != NULL; ptr = ptr->next) {
-        if (!YogVal_equals_exact(env, ptr->key, never) && EQUAL(env, table, ptr->key, *key)) {
+    for(; IS_PTR(ptr); ptr = PTR_AS(YogTableEntry, ptr)->next) {
+        YogVal ptr_key = PTR_AS(YogTableEntry, ptr)->key;
+        if (!YogVal_equals_exact(env, ptr_key, never) && EQUAL(env, table, ptr_key, *key)) {
             PTR_AS(YogTable, table)->num_entries--;
-            *key = ptr->key;
+            *key = ptr_key;
             if (value != NULL) {
-                *value = ptr->record;
+                *value = PTR_AS(YogTableEntry, ptr)->record;
             }
-            ptr->key = ptr->record = never;
+            PTR_AS(YogTableEntry, ptr)->key = PTR_AS(YogTableEntry, ptr)->record = never;
             return TRUE;
         }
     }
@@ -430,39 +441,39 @@ YogTable_foreach(YogEnv* env, YogVal table, int (*func)(YogEnv*, YogVal, YogVal,
 
     int i = 0;
     for (i = 0; i < PTR_AS(YogTable, table)->num_bins; i++) {
-        for (ptr = PTR2VAL(TABLE_ENTRY_TOP(table, i)); VAL2PTR(ptr) != NULL;) {
+        for (ptr = TABLE_ENTRY_TOP(table, i); IS_PTR(ptr);) {
             enum st_retval retval = (*func)(env, PTR_AS(YogTableEntry, ptr)->key, PTR_AS(YogTableEntry, ptr)->record, arg);
             switch (retval) {
                 case ST_CHECK:        /* check if hash is modified during iteration */
                     tmp = PTR2VAL(NULL);
                     if (i < PTR_AS(YogTable, table)->num_bins) {
-                        for (tmp = PTR2VAL(TABLE_ENTRY_TOP(table, i)); VAL2PTR(tmp) != NULL; tmp = PTR2VAL(PTR_AS(YogTableEntry, tmp)->next)) {
+                        for (tmp = TABLE_ENTRY_TOP(table, i); IS_PTR(tmp); tmp = PTR_AS(YogTableEntry, tmp)->next) {
                             if (VAL2PTR(tmp) == VAL2PTR(ptr)) {
                                 break;
                             }
                         }
                     }
-                    if (VAL2PTR(tmp) == NULL) {
+                    if (!IS_PTR(tmp)) {
                         /* call func with error notice */
                         RETURN(env, FALSE);
                     }
                     /* fall through */
                 case ST_CONTINUE:
                     last = ptr;
-                    ptr = PTR2VAL(PTR_AS(YogTableEntry, ptr)->next);
+                    ptr = PTR_AS(YogTableEntry, ptr)->next;
                     break;
                 case ST_STOP:
                     RETURN(env, TRUE);
                     break;
                 case ST_DELETE:
                     tmp = ptr;
-                    if (VAL2PTR(last) == NULL) {
+                    if (!IS_PTR(last)) {
                         TABLE_ENTRY_TOP(table, i) = PTR_AS(YogTableEntry, ptr)->next;
                     }
                     else {
                         PTR_AS(YogTableEntry, last)->next = PTR_AS(YogTableEntry, ptr)->next;
                     }
-                    ptr = PTR2VAL(PTR_AS(YogTableEntry, ptr)->next);
+                    ptr = PTR_AS(YogTableEntry, ptr)->next;
                     PTR_AS(YogTable, table)->num_entries--;
                     break;
             }
@@ -584,23 +595,23 @@ YogTable_lookup_str(YogEnv* env, YogVal table, const char* key, YogVal* value)
 
     unsigned int hash_val = strhash(key);
     unsigned int bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
-    YogTableEntry* entry = TABLE_ENTRY_TOP(table, bin_pos);
+    YogVal entry = TABLE_ENTRY_TOP(table, bin_pos);
 
 #if 0
 #define NOT_EQUAL_ENTRY ((entry != NULL) && ((entry->hash != hash_val) || (strcmp(VAL2STR(entry->key), key) != 0)))
 #endif
-#define NOT_EQUAL_ENTRY ((entry != NULL) && ((entry->hash != hash_val) || (strcmp(((YogCharArray*)VAL2PTR(entry->key))->items, key) != 0)))
+#define NOT_EQUAL_ENTRY (IS_PTR(entry) && ((PTR_AS(YogTableEntry, entry)->hash != hash_val) || (strcmp(((YogCharArray*)VAL2PTR(PTR_AS(YogTableEntry, entry)->key))->items, key) != 0)))
     if (NOT_EQUAL_ENTRY) {
         COLLISION;
         do {
-            entry = entry->next;
+            entry = PTR_AS(YogTableEntry, entry)->next;
         } while (NOT_EQUAL_ENTRY);
     }
 #undef EQUAL_ENTRY
 
-    if (entry != NULL) {
+    if (IS_PTR(entry)) {
         if (value != NULL) {
-            *value = entry->record;
+            *value = PTR_AS(YogTableEntry, entry)->record;
         }
         return TRUE;
     }

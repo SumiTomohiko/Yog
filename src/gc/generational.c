@@ -111,6 +111,7 @@ update_pointer(YogEnv* env, void* ptr)
         DEBUG(DPRINTF("update: %p->%p", header, header->forwarding_addr));
     }
     if (keeper != NULL) {
+        DEBUG(DPRINTF("ptr=%p, keeper=%p", ptr, keeper));
         (*keeper)(env, ptr, update_pointer);
     }
 

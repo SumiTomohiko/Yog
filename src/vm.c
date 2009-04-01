@@ -17,6 +17,12 @@
 #include "yog/st.h"
 #include "yog/yog.h"
 
+#if 0
+#   define DEBUG(x)     x
+#else
+#   define DEBUG(x)
+#endif
+
 #define PAGE_SIZE       4096
 #define PTR2PAGE(p)     ((YogMarkSweepCompactPage*)((uintptr_t)p & ~(PAGE_SIZE - 1)))
 
@@ -120,6 +126,7 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
     char buffer[size + 1];
     strcpy(buffer, name);
 
+    DEBUG(DPRINTF("buffer=\"%s\"", buffer));
     YogCharArray* s = YogCharArray_new_str(env, buffer);
     YogVal val = PTR2VAL(s);
     PUSH_LOCAL(env, val);

@@ -18,14 +18,14 @@ struct YogTableEntry {
     unsigned int hash;
     struct YogVal key;
     struct YogVal record;
-    struct YogTableEntry* next;
+    struct YogVal next;
 };
 
 typedef struct YogTableEntry YogTableEntry;
 
 struct YogTableEntryArray {
     unsigned int size;
-    struct YogTableEntry* items[0];
+    struct YogVal items[0];
 };
 
 typedef struct YogTableEntryArray YogTableEntryArray;
