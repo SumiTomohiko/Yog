@@ -97,25 +97,33 @@ update_pointer(YogEnv* env, void* ptr)
         return NULL;
     }
 
-    void* forwarding_addr;
-    ChildrenKeeper keeper;
-    if (IS_YOUNG(env, PTR2VAL(ptr))) {
+    if (IS_YOUNG_PTR(env, ptr)) {
         YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
-        keeper = header->keeper;
-        forwarding_addr = ptr;
+        if (!header->updated) {
+            header->updated = TRUE;
+            ChildrenKeeper keeper = header->keeper;
+            if (keeper != NULL) {
+                DEBUG(DPRINTF("ptr=%p, keeper=%p", ptr, keeper));
+                (*keeper)(env, ptr, update_pointer);
+            }
+        }
+        return ptr;
     }
     else {
-        YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)ptr - 1;
-        keeper = header->keeper;
-        forwarding_addr = (YogMarkSweepCompactHeader*)header->forwarding_addr + 1;
-        DEBUG(DPRINTF("update: %p->%p", header, header->forwarding_addr));
+        return YogMarkSweepCompact_update_pointer(env, ptr, update_pointer);
     }
-    if (keeper != NULL) {
-        DEBUG(DPRINTF("ptr=%p, keeper=%p", ptr, keeper));
-        (*keeper)(env, ptr, update_pointer);
-    }
+}
 
-    return forwarding_addr;
+static void 
+initialize_young_updated_callback(YogEnv* env, YogCopyingHeader* header) 
+{
+    header->updated = FALSE;
+}
+
+static void 
+initialize_young_updated(YogEnv* env, YogGenerational* generational) 
+{
+    YogCopying_iterate_objects(env, &generational->copying, initialize_young_updated_callback);
 }
 
 void 
@@ -128,6 +136,8 @@ YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
 
     YogCopying_do_gc(env, &generational->copying, major_gc_keep_object);
     YogMarkSweepCompact_delete_garbage(env, msc);
+
+    initialize_young_updated(env, generational);
     YogMarkSweepCompact_do_compaction(env, msc, update_pointer);
 
     YogThread_reset_ref_tbl(env, env->th);

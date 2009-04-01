@@ -399,8 +399,8 @@ copy_object(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactH
     page->num_obj_avail--;
 }
 
-static void* 
-update_pointer(YogEnv* env, void* ptr) 
+void* 
+YogMarkSweepCompact_update_pointer(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
     if (ptr == NULL) {
         return NULL;
@@ -410,9 +410,9 @@ update_pointer(YogEnv* env, void* ptr)
     if (!header->updated) {
         header->updated = TRUE;
 
-        ChildrenKeeper keeper = header->keeper;
-        if (keeper != NULL) {
-            (*keeper)(env, ptr, update_pointer);
+        ChildrenKeeper children_keeper = header->keeper;
+        if (children_keeper != NULL) {
+            (*children_keeper)(env, ptr, keeper);
         }
 
         if (header->prev != NULL) {
@@ -425,6 +425,12 @@ update_pointer(YogEnv* env, void* ptr)
 
     void* to = header->forwarding_addr + 1;
     return to;
+}
+
+static void* 
+update_pointer(YogEnv* env, void* ptr) 
+{
+    return YogMarkSweepCompact_update_pointer(env, ptr, update_pointer);
 }
 
 void 

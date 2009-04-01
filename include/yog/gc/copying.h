@@ -23,6 +23,7 @@ struct YogCopyingHeader {
     unsigned int id;
 #if defined(GC_GENERATIONAL)
     unsigned int servive_num;
+    BOOL updated;
 #endif
 };
 

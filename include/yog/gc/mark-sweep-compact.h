@@ -78,6 +78,7 @@ void YogMarkSweepCompact_gc(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_initialize(YogEnv*, YogMarkSweepCompact*, size_t, size_t, void*, ChildrenKeeper);
 void* YogMarkSweepCompact_mark_recursively(YogEnv*, void*, ObjectKeeper);
 void YogMarkSweepCompact_unmark_all(YogEnv*, YogMarkSweepCompact*);
+void* YogMarkSweepCompact_update_pointer(YogEnv*, void*, ObjectKeeper);
 
 /* PROTOTYPE_END */
 
