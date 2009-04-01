@@ -28,7 +28,7 @@
      *
      */
 
-#define TABLE_ENTRY_TOP(table, i)   (PTR_AS(YogTable, table)->bins->items[(i)])
+#define TABLE_ENTRY_TOP(table, i)   (PTR_AS(YogTableEntryArray, PTR_AS(YogTable, table)->bins)->items[(i)])
 
 static void 
 keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
@@ -41,7 +41,7 @@ keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     }
 }
 
-static YogTableEntryArray*
+static YogVal 
 alloc_bins(YogEnv* env, int size) 
 {
     YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogTableEntry*);
@@ -52,7 +52,7 @@ alloc_bins(YogEnv* env, int size)
         array->items[i] = NULL;
     }
 
-    return array;
+    return PTR2VAL(array);
 }
 
 /*
@@ -128,7 +128,7 @@ rehash(YogEnv* env, YogVal table)
 
     int old_num_bins = PTR_AS(YogTable, table)->num_bins;
     int new_num_bins = new_size(old_num_bins + 1);
-    YogTableEntryArray* new_bins = alloc_bins(env, new_num_bins);
+    YogVal new_bins = alloc_bins(env, new_num_bins);
 
     int i = 0;
     for(i = 0; i < old_num_bins; i++) {
@@ -136,8 +136,8 @@ rehash(YogEnv* env, YogVal table)
         while (ptr != NULL) {
             YogTableEntry* next = ptr->next;
             unsigned int hash_val = ptr->hash % new_num_bins;
-            ptr->next = new_bins->items[hash_val];
-            new_bins->items[hash_val] = ptr;
+            ptr->next = PTR_AS(YogTableEntryArray, new_bins)->items[hash_val];
+            PTR_AS(YogTableEntryArray, new_bins)->items[hash_val] = ptr;
             ptr = next;
         }
     }
@@ -170,19 +170,19 @@ static void
 keep_table_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogTable* tbl = ptr;
-    tbl->bins = (*keeper)(env, tbl->bins);
+    tbl->bins = YogVal_keep(env, tbl->bins, keeper);
 }
 
-static YogTable*
+static YogVal 
 alloc_table(YogEnv* env) 
 {
     YogTable* tbl = ALLOC_OBJ(env, keep_table_children, NULL, YogTable);
     tbl->type = NULL;
     tbl->num_bins = 0;
     tbl->num_entries = 0;
-    tbl->bins = NULL;
+    tbl->bins = YNIL;
 
-    return tbl;
+    return PTR2VAL(tbl);
 }
 
 static YogVal 
@@ -202,12 +202,12 @@ st_init_table_with_size(YogEnv* env, YogHashType* type, int size)
 
     size = new_size(size);        /* round up to prime number */
 
-    tbl = PTR2VAL(alloc_table(env));
+    tbl = alloc_table(env);
     PTR_AS(YogTable, tbl)->type = type;
     PTR_AS(YogTable, tbl)->num_entries = 0;
     PTR_AS(YogTable, tbl)->num_bins = size;
-    YogTableEntryArray* bins = alloc_bins(env, size);
-    PTR_AS(YogTable, tbl)->bins = bins;
+    YogVal bins = alloc_bins(env, size);
+    MODIFY(env, PTR_AS(YogTable, tbl)->bins, bins);
 
     RETURN(env, tbl);
 }

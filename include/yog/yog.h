@@ -407,8 +407,10 @@ typedef struct YogThread YogThread;
 #include "yog/error.h"
 
 #if defined(GC_GENERATIONAL)
-#   define REF_TBL_GROW_SIZE   256
-#   define ADD_REF(env, ptr)   do { \
+#   define IS_YOUNG_PTR(env, ptr)  (((env)->vm->gc.generational.copying.active_heap->items <= (unsigned char*)(ptr)) && ((unsigned char*)(ptr) <= (env)->vm->gc.generational.copying.active_heap->items + (env)->vm->gc.generational.copying.active_heap->size))
+#   define IS_YOUNG(env, val)   (IS_PTR((val)) && IS_YOUNG_PTR((env), VAL2PTR(val)))
+#   define REF_TBL_GROW_SIZE    256
+#   define ADD_REF(env, val)    do { \
     YogThread* thread = (env)->th; \
     if (thread->ref_tbl_ptr == thread->ref_tbl_limit) { \
         unsigned int size = thread->ref_tbl_limit - thread->ref_tbl; \
@@ -418,21 +420,21 @@ typedef struct YogThread YogThread;
         thread->ref_tbl_ptr = thread->ref_tbl + size / sizeof(void**); \
         thread->ref_tbl_limit = thread->ref_tbl + new_size / sizeof(void**); \
     } \
-    *thread->ref_tbl_ptr = &(ptr); \
+    *thread->ref_tbl_ptr = &(VAL2PTR(val)); \
     thread->ref_tbl_ptr++; \
 } while (0)
 #   define MODIFY(env, fp, val)    do { \
-    if (!IS_YOUNG_PTR(&(fp))) { \
+    if (!IS_YOUNG_PTR((env), &(fp))) { \
         YogVal old = (fp); \
-        if (!IS_YOUNG(old) && IS_YOUNG(val)) { \
-            ADD_REF(env, &(fp)); \
+        if (!IS_YOUNG((env), old) && IS_YOUNG((env), (val))) { \
+            ADD_REF((env), (fp)); \
         } \
     } \
-    (fp) = val; \
+    (fp) = (val); \
 } while (0)
 #else
 #   define ADD_REF(env, ptr)
-#   define MODIFY(env, fp, val)
+#   define MODIFY(env, fp, val)     (fp) = (val)
 #endif
 
 #include "yog/klass.h"

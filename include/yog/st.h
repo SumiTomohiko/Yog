@@ -34,7 +34,7 @@ struct YogTable {
     struct YogHashType* type;
     int num_bins;
     int num_entries;
-    struct YogTableEntryArray* bins;
+    struct YogVal bins;
 };
 
 typedef struct YogTable YogTable;
