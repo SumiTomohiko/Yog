@@ -4,6 +4,12 @@
 /* First off, code is included that follows the "include" declaration
 ** in the input grammar file. */
 #include <stdio.h>
+
+#if 0
+#   define DEBUG(x)     x
+#else
+#   define DEBUG(x)
+#endif
 %%
 /* Next is all token values, in a form suitable for use by makeheaders.
 ** This section will be null unless lemon is run with the -m switch.
@@ -177,9 +183,11 @@ dump_parser_stack(YogEnv* env, YogVal parser)
     DPRINTF("-------------------- dump of stack --------------------");
     int i;
     for (i = 0; i < PTR_AS(yyParser, parser)->yyidx; i++) {
-        DPRINTF("PTR_AS(yyParser, parser)->yyidx=%d, i=%d", PTR_AS(yyParser, parser)->yyidx, i);
         YogVal val = PTR_AS(yyParser, parser)->yystack[i + 1].minor.yy0;
+        DPRINTF("PTR_AS(yyParser, parser)->yyidx=%d, i=%d, val=%p", PTR_AS(yyParser, parser)->yyidx, i, VAL2PTR(val));
+#if 0
         YogVal_print(env, val);
+#endif
     }
     DPRINTF("-------------------- end of stack --------------------");
 }
@@ -507,6 +515,7 @@ static void yyStackOverflow(YogVal parser, YYMINORTYPE *yypMinor){
 ** Perform a shift action.
 */
 static void yy_shift(
+  YogEnv* env, 
   YogVal parser, 
   int yyNewState,               /* The new state to shift in */
   int yyMajor,                  /* The major token to shift in */
@@ -537,6 +546,7 @@ static void yy_shift(
   yytos->stateno = (YYACTIONTYPE)yyNewState;
   yytos->major = (YYCODETYPE)yyMajor;
   yytos->minor = *yypMinor;
+  ADD_REF(env, VAL2PTR(yytos->minor.yy0));
 #ifndef NDEBUG
   if( yyTraceFILE && PTR_AS(yyParser, parser)->yyidx>0 ){
     int i;
@@ -649,7 +659,7 @@ static void yy_reduce(
     }else
 #endif
     {
-      yy_shift(parser,yyact,yygoto,&yygotominor);
+      yy_shift(env, parser, yyact, yygoto, &yygotominor);
     }
   }else{
     assert( yyact == YYNSTATE + YYNRULE + 1 );
@@ -786,7 +796,7 @@ static void Parse(
     yyact = yy_find_shift_action(parser,(YYCODETYPE)yymajor);
     if( yyact<YYNSTATE ){
       assert( !yyendofinput );  /* Impossible to shift the $ token */
-      yy_shift(parser,yyact,yymajor,&yyminorunion);
+      yy_shift(env, parser, yyact, yymajor, &yyminorunion);
       PTR_AS(yyParser, parser)->yyerrcnt--;
       yymajor = YYNOCODE;
     }else if( yyact < YYNSTATE + YYNRULE ){
@@ -852,7 +862,7 @@ static void Parse(
         }else if( yymx!=YYERRORSYMBOL ){
           YYMINORTYPE u2;
           u2.YYERRSYMDT = 0;
-          yy_shift(parser, yyact, YYERRORSYMBOL, &u2);
+          yy_shift(env, parser, yyact, YYERRORSYMBOL, &u2);
         }
       }
       PTR_AS(yyParser, parser)->yyerrcnt = 3;

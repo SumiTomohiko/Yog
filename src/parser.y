@@ -14,12 +14,6 @@
 #include "yog/parser.h"
 #include "yog/yog.h"
 
-#if 0
-#   define DEBUG(x)     x
-#else
-#   define DEBUG(x)
-#endif
-
 typedef struct ParserState ParserState;
 
 static void Parse(struct YogEnv*, struct YogVal, int, YogVal, YogVal*);
@@ -228,10 +222,8 @@ Array_push(YogEnv* env, YogVal array, YogVal elem)
     if (IS_PTR(elem)) {
         if (!IS_OBJ(array)) {
             array = YogArray_new(env);
-            DEBUG(DPRINTF("array=%p", VAL2PTR(array)));
         }
         YogArray_push(env, array, elem);
-        DEBUG(DPRINTF("array=%p", VAL2PTR(array)));
     }
 
     RETURN(env, array);
@@ -566,12 +558,9 @@ module ::= stmts(A). {
 
 stmts(A) ::= stmt(B). {
     A = Array_new(env, B);
-    DEBUG(DPRINTF("A=%p", VAL2PTR(A)));
 }
 stmts(A) ::= stmts(B) NEWLINE stmt(C). {
-    DEBUG(DPRINTF("B=%p", VAL2PTR(B)));
     A = Array_push(env, B, C);
-    DEBUG(DPRINTF("A=%p", VAL2PTR(A)));
 }
 
 stmt(A) ::= /* empty */. {
