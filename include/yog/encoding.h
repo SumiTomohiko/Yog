@@ -19,9 +19,9 @@ typedef struct YogEncoding YogEncoding;
  */
 
 /* src/encoding.c */
-YogEncoding* YogEncoding_get_default(YogEnv*);
-char* YogEncoding_left_adjust_char_head(YogEnv*, YogEncoding*, const char*, const char*);
-int YogEncoding_mbc_size(YogEnv*, YogEncoding*, const char*);
+YogVal YogEncoding_get_default(YogEnv*);
+char* YogEncoding_left_adjust_char_head(YogEnv*, YogVal, const char*, const char*);
+int YogEncoding_mbc_size(YogEnv*, YogVal, const char*);
 YogEncoding* YogEncoding_new(YogEnv*, OnigEncoding);
 YogVal YogEncoding_normalize_name(YogEnv*, YogVal);
 

@@ -21,8 +21,8 @@ typedef struct YogBuiltinUnboundMethod YogBuiltinUnboundMethod;
 struct YogScriptMethod {
     YOGBASICOBJ_HEAD;
     struct YogVal code;
-    struct YogTable* globals;
-    struct YogOuterVars* outer_vars;
+    struct YogVal globals;
+    struct YogVal outer_vars;
 };
 
 typedef struct YogScriptMethod YogScriptMethod;

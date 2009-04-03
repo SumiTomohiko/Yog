@@ -13,7 +13,7 @@ typedef struct YogByteArray YogByteArray;
 struct YogBinary {
     YOGBASICOBJ_HEAD;
     unsigned int size;
-    struct YogByteArray* body;
+    struct YogVal body;
 };
 
 typedef struct YogBinary YogBinary;
@@ -33,9 +33,9 @@ void YogBinary_push_unsigned_int(YogEnv*, YogVal, unsigned int);
 void YogBinary_shrink(YogEnv*, YogVal);
 unsigned int YogBinary_size(YogEnv*, YogVal);
 uint8_t YogByteArray_at(YogEnv*, YogByteArray*, unsigned int);
-YogByteArray* YogByteArray_new(YogEnv*, unsigned int);
+YogVal YogByteArray_new(YogEnv*, unsigned int);
 void YogByteArray_print(YogEnv*, YogByteArray*);
-unsigned int YogByteArray_size(YogEnv*, YogByteArray*);
+unsigned int YogByteArray_size(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

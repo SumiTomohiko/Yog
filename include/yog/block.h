@@ -15,9 +15,9 @@ typedef struct YogBasicBlock YogBasicBlock;
 
 struct YogBlock {
     struct YogBasicBlock base;
-    struct YogValArray* locals;
-    struct YogOuterVars* outer_vars;
-    struct YogTable* globals;
+    struct YogVal locals;
+    struct YogVal outer_vars;
+    struct YogVal globals;
 };
 
 #define BLOCK(obj)  ((YogBlock*)(obj))
@@ -27,7 +27,7 @@ typedef struct YogBlock YogBlock;
 struct YogPackageBlock {
     struct YogBasicBlock base;
     struct YogVal self;
-    struct YogTable* vars;
+    struct YogVal vars;
 };
 
 #define PACKAGE_BLOCK(obj)  ((YogPackageBlock*)obj)

@@ -18,8 +18,8 @@ YogPackage_define_method(YogEnv* env, YogVal pkg, const char* name, void* f, uns
     PUSH_LOCAL(env, builtin_f);
 
     YogVal method = YogBuiltinBoundMethod_new(env);
-    OBJ_AS(YogBuiltinBoundMethod, method)->self = pkg;
-    OBJ_AS(YogBuiltinBoundMethod, method)->f = builtin_f;
+    MODIFY(env, OBJ_AS(YogBuiltinBoundMethod, method)->self, pkg);
+    MODIFY(env, OBJ_AS(YogBuiltinBoundMethod, method)->f, builtin_f);
     PUSH_LOCAL(env, method);
 
     YogObj_set_attr_id(env, pkg, func_name, method);
@@ -33,7 +33,7 @@ YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogObj_keep_children(env, ptr, keeper);
 
     YogPackage* pkg = ptr;
-    pkg->code = (*keeper)(env, pkg->code);
+    pkg->code = YogVal_keep(env, pkg->code, keeper);
 }
 
 static void 
@@ -42,11 +42,11 @@ YogPackage_init(YogEnv* env, YogVal pkg)
     SAVE_ARG(env, pkg);
 
     YogObj_init(env, OBJ_AS(YogObj, pkg), 0, ENV_VM(env)->cPackage);
-    OBJ_AS(YogObj, pkg)->attrs = PTR2VAL(NULL);
-    OBJ_AS(YogPackage, pkg)->code = NULL;
+    MODIFY(env, OBJ_AS(YogObj, pkg)->attrs, PTR2VAL(NULL));
+    OBJ_AS(YogPackage, pkg)->code = YUNDEF;
 
     YogVal attrs = YogTable_new_symbol_table(env);
-    OBJ_AS(YogObj, pkg)->attrs = attrs;
+    MODIFY(env, OBJ_AS(YogObj, pkg)->attrs, attrs);
 
     RETURN_VOID(env);
 }

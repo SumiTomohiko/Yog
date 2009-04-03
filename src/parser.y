@@ -137,7 +137,7 @@ Literal_new(YogEnv* env, unsigned int lineno, YogVal val)
     SAVE_ARG(env, val);
 
     YogVal node = YogNode_new(env, NODE_LITERAL, lineno);
-    NODE(node)->u.literal.val = val;
+    MODIFY(env, NODE(node)->u.literal.val, val);
 
     RETURN(env, node);
 }
@@ -148,8 +148,8 @@ BlockArg_new(YogEnv* env, unsigned int lineno, YogVal params, YogVal stmts)
     SAVE_ARGS2(env, params, stmts);
 
     YogVal node = YogNode_new(env, NODE_BLOCK_ARG, lineno);
-    NODE(node)->u.blockarg.params = params;
-    NODE(node)->u.blockarg.stmts = stmts;
+    MODIFY(env, NODE(node)->u.blockarg.params, params);
+    MODIFY(env, NODE(node)->u.blockarg.stmts, stmts);
 
     RETURN(env, node);
 }
@@ -189,8 +189,8 @@ CommandCall_new(YogEnv* env, unsigned int lineno, ID name, YogVal args, YogVal b
 
     YogVal node = YogNode_new(env, NODE_COMMAND_CALL, lineno);
     NODE(node)->u.command_call.name = name;
-    NODE(node)->u.command_call.args = args;
-    NODE(node)->u.command_call.blockarg = blockarg;
+    MODIFY(env, NODE(node)->u.command_call.args, args);
+    MODIFY(env, NODE(node)->u.command_call.blockarg, blockarg);
 
     RETURN(env, node);
 }
@@ -236,7 +236,7 @@ Param_new(YogEnv* env, YogNodeType type, unsigned int lineno, ID id, YogVal defa
 
     YogVal node = YogNode_new(env, type, lineno);
     NODE(node)->u.param.name = id;
-    NODE(node)->u.param.default_ = default_;
+    MODIFY(env, NODE(node)->u.param.default_, default_);
 
     RETURN(env, node);
 }
@@ -259,8 +259,8 @@ FuncDef_new(YogEnv* env, unsigned int lineno, ID name, YogVal params, YogVal stm
 
     YogVal node = YogNode_new(env, NODE_FUNC_DEF, lineno);
     NODE(node)->u.funcdef.name = name;
-    NODE(node)->u.funcdef.params = params;
-    NODE(node)->u.funcdef.stmts = stmts;
+    MODIFY(env, NODE(node)->u.funcdef.params, params);
+    MODIFY(env, NODE(node)->u.funcdef.stmts, stmts);
 
     RETURN(env, node);
 }
@@ -271,9 +271,9 @@ FuncCall_new(YogEnv* env, unsigned int lineno, YogVal callee, YogVal args, YogVa
     SAVE_ARGS3(env, callee, args, blockarg);
 
     YogVal node = NODE_NEW(NODE_FUNC_CALL, lineno);
-    NODE(node)->u.func_call.callee = callee;
-    NODE(node)->u.func_call.args = args;
-    NODE(node)->u.func_call.blockarg = blockarg;
+    MODIFY(env, NODE(node)->u.func_call.callee, callee);
+    MODIFY(env, NODE(node)->u.func_call.args, args);
+    MODIFY(env, NODE(node)->u.func_call.blockarg, blockarg);
 
     RETURN(env, node);
 }
@@ -293,9 +293,9 @@ ExceptBody_new(YogEnv* env, unsigned int lineno, YogVal type, ID var, YogVal stm
     SAVE_ARGS2(env, type, stmts);
 
     YogVal node = NODE_NEW(NODE_EXCEPT_BODY, lineno);
-    NODE(node)->u.except_body.type = type;
+    MODIFY(env, NODE(node)->u.except_body.type, type);
     NODE(node)->u.except_body.var = var;
-    NODE(node)->u.except_body.stmts = stmts;
+    MODIFY(env, NODE(node)->u.except_body.stmts, stmts);
 
     RETURN(env, node);
 }
@@ -306,9 +306,9 @@ Except_new(YogEnv* env, unsigned int lineno, YogVal head, YogVal excepts, YogVal
     SAVE_ARGS3(env, head, excepts, else_);
 
     YogVal node = NODE_NEW(NODE_EXCEPT, lineno);
-    NODE(node)->u.except.head = head;
-    NODE(node)->u.except.excepts = excepts;
-    NODE(node)->u.except.else_ = else_;
+    MODIFY(env, NODE(node)->u.except.head, head);
+    MODIFY(env, NODE(node)->u.except.excepts, excepts);
+    MODIFY(env, NODE(node)->u.except.else_, else_);
 
     RETURN(env, node);
 }
@@ -319,8 +319,8 @@ Finally_new(YogEnv* env, unsigned int lineno, YogVal head, YogVal body)
     SAVE_ARGS2(env, head, body);
 
     YogVal node = NODE_NEW(NODE_FINALLY, lineno);
-    NODE(node)->u.finally.head = head;
-    NODE(node)->u.finally.body = body;
+    MODIFY(env, NODE(node)->u.finally.head, head);
+    MODIFY(env, NODE(node)->u.finally.body, body);
 
     RETURN(env, node);
 }
@@ -353,7 +353,7 @@ Break_new(YogEnv* env, unsigned int lineno, YogVal expr)
     SAVE_ARG(env, expr);
 
     YogVal node = YogNode_new(env, NODE_BREAK, lineno);
-    NODE(node)->u.break_.expr = expr;
+    MODIFY(env, NODE(node)->u.break_.expr, expr);
 
     RETURN(env, node);
 }
@@ -364,7 +364,7 @@ Next_new(YogEnv* env, unsigned int lineno, YogVal expr)
     SAVE_ARG(env, expr);
 
     YogVal node = NODE_NEW(NODE_NEXT, lineno);
-    NODE(node)->u.next.expr = expr;
+    MODIFY(env, NODE(node)->u.next.expr, expr);
 
     RETURN(env, node);
 }
@@ -375,7 +375,7 @@ Return_new(YogEnv* env, unsigned int lineno, YogVal expr)
     SAVE_ARG(env, expr);
 
     YogVal node = NODE_NEW(NODE_RETURN, lineno);
-    NODE(node)->u.return_.expr = expr;
+    MODIFY(env, NODE(node)->u.return_.expr, expr);
 
     RETURN(env, node);
 }
@@ -386,10 +386,10 @@ MethodCall_new(YogEnv* env, unsigned int lineno, YogVal recv, ID name, YogVal ar
     SAVE_ARGS3(env, recv, args, blockarg);
 
     YogVal node = NODE_NEW(NODE_METHOD_CALL, lineno);
-    NODE(node)->u.method_call.recv = recv;
+    MODIFY(env, NODE(node)->u.method_call.recv, recv);
     NODE(node)->u.method_call.name = name;
-    NODE(node)->u.method_call.args = args;
-    NODE(node)->u.method_call.blockarg = blockarg;
+    MODIFY(env, NODE(node)->u.method_call.args, args);
+    MODIFY(env, NODE(node)->u.method_call.blockarg, blockarg);
 
     RETURN(env, node);
 }
@@ -426,9 +426,9 @@ If_new(YogEnv* env, unsigned int lineno, YogVal test, YogVal stmts, YogVal tail)
     SAVE_ARGS3(env, test, stmts, tail);
 
     YogVal node = YogNode_new(env, NODE_IF, lineno);
-    NODE(node)->u.if_.test = test;
-    NODE(node)->u.if_.stmts = stmts;
-    NODE(node)->u.if_.tail = tail;
+    MODIFY(env, NODE(node)->u.if_.test, test);
+    MODIFY(env, NODE(node)->u.if_.stmts, stmts);
+    MODIFY(env, NODE(node)->u.if_.tail, tail);
 
     RETURN(env, node);
 }
@@ -439,8 +439,8 @@ While_new(YogEnv* env, unsigned int lineno, YogVal test, YogVal stmts)
     SAVE_ARGS2(env, test, stmts);
 
     YogVal node = YogNode_new(env, NODE_WHILE, lineno);
-    NODE(node)->u.while_.test = test;
-    NODE(node)->u.while_.stmts = stmts;
+    MODIFY(env, NODE(node)->u.while_.test, test);
+    MODIFY(env, NODE(node)->u.while_.stmts, stmts);
 
     RETURN(env, node);
 }
@@ -452,8 +452,8 @@ Klass_new(YogEnv* env, unsigned int lineno, ID name, YogVal super, YogVal stmts)
 
     YogVal node = YogNode_new(env, NODE_KLASS, lineno);
     NODE(node)->u.klass.name = name;
-    NODE(node)->u.klass.super = super;
-    NODE(node)->u.klass.stmts = stmts;
+    MODIFY(env, NODE(node)->u.klass.super, super);
+    MODIFY(env, NODE(node)->u.klass.stmts, stmts);
 
     RETURN(env, node);
 }
@@ -464,8 +464,8 @@ Assign_new(YogEnv* env, unsigned int lineno, YogVal left, YogVal right)
     SAVE_ARGS2(env, left, right);
 
     YogVal node = NODE_NEW(NODE_ASSIGN, lineno);
-    NODE(node)->u.assign.left = left;
-    NODE(node)->u.assign.right = right;
+    MODIFY(env, NODE(node)->u.assign.left, left);
+    MODIFY(env, NODE(node)->u.assign.right, right);
 
     RETURN(env, node);
 }
@@ -476,8 +476,8 @@ Subscript_new(YogEnv* env, unsigned int lineno, YogVal prefix, YogVal index)
     SAVE_ARGS2(env, prefix, index);
 
     YogVal node = YogNode_new(env, NODE_SUBSCRIPT, lineno);
-    NODE(node)->u.subscript.prefix = prefix;
-    NODE(node)->u.subscript.index = index;
+    MODIFY(env, NODE(node)->u.subscript.prefix, prefix);
+    MODIFY(env, NODE(node)->u.subscript.index, index);
 
     RETURN(env, node);
 }
@@ -488,7 +488,7 @@ Attr_new(YogEnv* env, unsigned int lineno, YogVal obj, ID name)
     SAVE_ARG(env, obj);
 
     YogVal node = YogNode_new(env, NODE_ATTR, lineno);
-    NODE(node)->u.attr.obj = obj;
+    MODIFY(env, NODE(node)->u.attr.obj, obj);
     NODE(node)->u.attr.name = name;
 
     RETURN(env, node);
@@ -500,7 +500,7 @@ Nonlocal_new(YogEnv* env, unsigned int lineno, YogVal names)
     SAVE_ARG(env, names);
 
     YogVal node = YogNode_new(env, NODE_NONLOCAL, lineno);
-    NODE(node)->u.nonlocal.names = names;
+    MODIFY(env, NODE(node)->u.nonlocal.names, names);
 
     RETURN(env, node);
 }

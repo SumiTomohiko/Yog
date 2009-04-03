@@ -226,7 +226,7 @@ class CodeGenerator(object):
 
                 s = """
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            %(type)s %(name)s = *((%(type)s*)&CODE->insts->items[PC]);
+            %(type)s %(name)s = *((%(type)s*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
@@ -396,7 +396,7 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, unsigned int lineno""" % { "i
     %(inst)s_%(operand)s(inst) = %(name)s;""" % { "inst": inst.name.upper(), "operand": operand.name.upper(), "name": operand.name })
             compile_data.write("""
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }

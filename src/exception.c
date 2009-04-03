@@ -95,7 +95,8 @@ initialize(YogEnv* env)
                 pc_t pc = PTR_AS(YogScriptFrame, frame)->pc - 1;
                 unsigned int i = 0;
                 for (i = 0; i < PTR_AS(YogCode, code)->lineno_tbl_size; i++) {
-                    YogLinenoTableEntry* entry = &PTR_AS(YogCode, code)->lineno_tbl[i];
+                    YogVal lineno_tbl = PTR_AS(YogCode, code)->lineno_tbl;
+                    YogLinenoTableEntry* entry = &PTR_AS(YogLinenoTableEntry, lineno_tbl)[i];
                     if ((entry->pc_from <= pc) && (pc < entry->pc_to)) {
                         lineno = entry->lineno;
                         break;
@@ -116,7 +117,7 @@ initialize(YogEnv* env)
             break;
         }
 
-        PTR_AS(YogStackTraceEntry, entry)->lower = st;
+        MODIFY(env, PTR_AS(YogStackTraceEntry, entry)->lower, st);
         st = entry;
 
         frame = PTR_AS(YogFrame, frame)->prev;

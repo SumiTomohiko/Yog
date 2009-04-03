@@ -42,7 +42,7 @@ puts_(YogEnv* env)
                 YogVal val = YogThread_call_method(env, ENV_TH(env), arg, "to_s", 0, NULL);
                 s = VAL2PTR(val);
             }
-            printf("%s", s->body->items);
+            printf("%s", PTR_AS(YogCharArray, s->body)->items);
             printf("\n");
         }
     }

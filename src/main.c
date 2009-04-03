@@ -174,7 +174,7 @@ main(int argc, char* argv[])
         code = YogCompiler_compile_module(&env, filename, stmts);
 
         pkg = YogPackage_new(&env);
-        OBJ_AS(YogPackage, pkg)->code = VAL2PTR(code);
+        MODIFY(&env, OBJ_AS(YogPackage, pkg)->code, code);
         YogVm_register_package(&env, env.vm, "__main__", pkg);
         YogThread_eval_package(&env, &thread, pkg);
 

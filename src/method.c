@@ -3,8 +3,10 @@
 
 #define KEEP_BASIC_OBJ  YogBasicObj_keep_children(env, ptr, keeper)
 
-#define KEEP_SELF       method->self = YogVal_keep(env, method->self, keeper)
-#define KEEP(member)    method->member = (*keeper)(env, method->member)
+#define KEEP_VAL(member)    do { \
+    method->member = YogVal_keep(env, method->member, keeper); \
+} while (0)
+#define KEEP_SELF           KEEP_VAL(self)
 
 static void 
 YogBuiltinBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
@@ -38,8 +40,8 @@ YogScriptMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogScriptMethod* method = ptr;
 
     method->code = YogVal_keep(env, method->code, keeper);
-    KEEP(globals);
-    KEEP(outer_vars);
+    KEEP_VAL(globals);
+    KEEP_VAL(outer_vars);
 }
 
 static void 
@@ -48,8 +50,8 @@ YogScriptMethod_init(YogEnv* env, YogScriptMethod* method, YogVal klass)
     YogBasicObj_init(env, (YogBasicObj*)method, 0, klass);
 
     method->code = YUNDEF;
-    method->globals = NULL;
-    method->outer_vars = NULL;
+    method->globals = YUNDEF;
+    method->outer_vars = YUNDEF;
 }
 
 static void 

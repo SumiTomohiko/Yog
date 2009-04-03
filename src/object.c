@@ -28,7 +28,7 @@ YogObj_set_attr_id(YogEnv* env, YogVal obj, ID name, YogVal val)
 
     if (VAL2PTR(OBJ_AS(YogObj, obj)->attrs) == NULL) {
         YogVal attrs = YogTable_new_symbol_table(env);
-        OBJ_AS(YogObj, obj)->attrs = attrs;
+        MODIFY(env, OBJ_AS(YogObj, obj)->attrs, attrs);
     }
 
     YogTable_insert(env, OBJ_AS(YogObj, obj)->attrs, key, val);

@@ -106,7 +106,8 @@ nextc(YogVal lexer)
 {
     YogVal line = PTR_AS(YogLexer, lexer)->line;
     unsigned int next_index = PTR_AS(YogLexer, lexer)->next_index;
-    char c = OBJ_AS(YogString, line)->body->items[next_index];
+    YogVal body = OBJ_AS(YogString, line)->body;
+    char c = PTR_AS(YogCharArray, body)->items[next_index];
     PTR_AS(YogLexer, lexer)->next_index++;
 
     return c;
@@ -175,10 +176,11 @@ push_multibyte_char(YogEnv* env, YogVal lexer)
     PUSH_LOCAL(env, lexer);
 
     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-    YogEncoding* enc = OBJ_AS(YogString, buffer)->encoding;
+    YogVal enc = OBJ_AS(YogString, buffer)->encoding;
     YogVal line = PTR_AS(YogLexer, lexer)->line;
     unsigned int next_index = PTR_AS(YogLexer, lexer)->next_index;
-    const char* ptr = &OBJ_AS(YogString, line)->body->items[next_index];
+    YogVal body = OBJ_AS(YogString, line)->body;
+    const char* ptr = &PTR_AS(YogCharArray, body)->items[next_index];
     int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
     int rest_size = get_rest_size(env, lexer);
     if (rest_size < mbc_size) {
@@ -258,7 +260,8 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 
 #define RETURN_INT  do { \
     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer; \
-    int n = atoi(OBJ_AS(YogString, buffer)->body->items); \
+    YogVal body = OBJ_AS(YogString, buffer)->body; \
+    int n = atoi(PTR_AS(YogCharArray, body)->items); \
     YogVal val = INT2VAL(n); \
     SET_STATE(LS_OP); \
     RETURN_VAL_TOKEN(TK_NUMBER, val); \
@@ -275,7 +278,8 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 
                     float f = 0;
                     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-                    sscanf(OBJ_AS(YogString, buffer)->body->items, "%f", &f);
+                    YogVal body = OBJ_AS(YogString, buffer)->body;
+                    sscanf(PTR_AS(YogCharArray, body)->items, "%f", &f);
                     YogVal val = FLOAT2VAL(f);
                     RETURN_VAL_TOKEN(TK_NUMBER, val);
                 }
@@ -485,7 +489,8 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             PUSHBACK(c);
 
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-            const char* name = OBJ_AS(YogString, buffer)->body->items;
+            YogVal body = OBJ_AS(YogString, buffer)->body;
+            const char* name = PTR_AS(YogCharArray, body)->items;
             if (PTR_AS(YogLexer, lexer)->state == LS_NAME) {
                 ID id = INTERN(name);
                 unsigned int lineno = PTR_AS(YogLexer, lexer)->lineno;
@@ -526,13 +531,13 @@ is_coding_char(char c)
     return isalnum(c) || (c == '_') || (c == '-');
 }
 
-static YogEncoding* 
+static YogVal 
 read_encoding(YogEnv* env, YogVal lexer) 
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, lexer);
 
-    YogEncoding* encoding = NULL;
+    YogVal encoding = YUNDEF;
 
     while (readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
         PTR_AS(YogLexer, lexer)->next_index = 0;
@@ -545,7 +550,8 @@ read_encoding(YogEnv* env, YogVal lexer)
 
         YogVal line = PTR_AS(YogLexer, lexer)->line;
         unsigned int next_index = PTR_AS(YogLexer, lexer)->next_index;
-        const char* s = &OBJ_AS(YogString, line)->body->items[next_index];
+        YogVal body = OBJ_AS(YogString, line)->body;
+        const char* s = &PTR_AS(YogCharArray, body)->items[next_index];
 #define KEY     "coding"
         const char* ptr = strstr(s, KEY);
         if (ptr == NULL) {
@@ -577,7 +583,7 @@ read_encoding(YogEnv* env, YogVal lexer)
         if (!YogTable_lookup(env, ENV_VM(env)->encodings, key, &val)) {
             continue;
         }
-        encoding = VAL2PTR(val);
+        encoding = val;
         break;
     }
 
@@ -599,12 +605,12 @@ YogLexer_read_encoding(YogEnv* env, YogVal lexer)
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, lexer);
 
-    YogEncoding* enc = read_encoding(env, lexer);
-    if (enc == NULL) {
+    YogVal enc = read_encoding(env, lexer);
+    if (!IS_PTR(enc)) {
         enc = YogEncoding_get_default(env);
     }
     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-    OBJ_AS(YogString, buffer)->encoding = enc;
+    MODIFY(env, OBJ_AS(YogString, buffer)->encoding, enc);
     reset_lexer(env, lexer);
 
     RETURN_VOID(env);
@@ -635,10 +641,10 @@ YogLexer_new(YogEnv* env)
     PUSH_LOCAL(env, lexer);
 
     YogVal line = YogString_new(env);
-    PTR_AS(YogLexer, lexer)->line = line;
+    MODIFY(env, PTR_AS(YogLexer, lexer)->line, line);
 
     YogVal buffer = YogString_new(env);
-    PTR_AS(YogLexer, lexer)->buffer = buffer;
+    MODIFY(env, PTR_AS(YogLexer, lexer)->buffer, buffer);
 
     RETURN(env, lexer);
 }

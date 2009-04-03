@@ -183,7 +183,7 @@ YogInst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogVal inst = PTR2VAL(ptr);
 
-    INST(inst)->next = YogVal_keep(env, INST(inst)->next, keeper);
+    MODIFY(env, INST(inst)->next, YogVal_keep(env, INST(inst)->next, keeper));
 
     if (INST(inst)->type == INST_OP) {
         switch (INST_OPCODE(inst)) {
@@ -230,10 +230,10 @@ Anchor_new(YogEnv* env)
 }
 
 static void 
-add_inst(YogVal data, YogVal inst) 
+add_inst(YogEnv* env, YogVal data, YogVal inst) 
 {
-    INST(COMPILE_DATA(data)->last_inst)->next = inst;
-    COMPILE_DATA(data)->last_inst = inst;
+    MODIFY(env, INST(COMPILE_DATA(data)->last_inst)->next, inst);
+    MODIFY(env, COMPILE_DATA(data)->last_inst, inst);
 }
 
 #include "src/compile.inc"
@@ -708,7 +708,7 @@ make_var_table(YogEnv* env, YogVal stmts, YogVal var_tbl)
         var_tbl = YogTable_new_symbol_table(env);
     }
     YogVal data = ScanVarData_new(env);
-    SCAN_VAR_DATA(data)->var_tbl = var_tbl;
+    MODIFY(env, SCAN_VAR_DATA(data)->var_tbl, var_tbl);
 
     visitor.visit_stmts(env, &visitor, stmts, data);
 
@@ -851,7 +851,7 @@ register_const(YogEnv* env, YogVal data, YogVal const_)
 
     if (!IS_PTR(const2index)) {
         const2index = YogTable_new_symbol_table(env);
-        COMPILE_DATA(data)->const2index = const2index;
+        MODIFY(env, COMPILE_DATA(data)->const2index, const2index);
     }
 
     YogVal index = YUNDEF;
@@ -945,18 +945,17 @@ table2array_count_index(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
 static int 
 table2array_fill_array(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
 {
-    YogValArray* array = VAL2PTR(*arg);
     int index = VAL2INT(value);
-    array->items[index] = key;
+    MODIFY(env, PTR_AS(YogValArray, *arg)->items[index], key);
 
     return ST_CONTINUE;
 }
 
-static YogValArray* 
+static YogVal 
 table2array(YogEnv* env, YogVal table) 
 {
     if (!IS_PTR(table)) {
-        return NULL;
+        return YNIL;
     }
 
     SAVE_ARG(env, table);
@@ -964,13 +963,12 @@ table2array(YogEnv* env, YogVal table)
     YogVal max_index = INT2VAL(INT_MIN);
     YogTable_foreach(env, table, table2array_count_index, &max_index);
     int index = VAL2INT(max_index);
-    YogValArray* retval = NULL;
+    YogVal retval = YNIL;
     if (0 <= index) {
         unsigned int size = index + 1;
-        YogValArray* array = YogValArray_new(env, size);
-        YogVal arg = PTR2VAL(array);
+        YogVal arg = YogValArray_new(env, size);
         YogTable_foreach(env, table, table2array_fill_array, &arg);
-        retval = array;
+        retval = arg;
     }
 
     RETURN(env, retval);
@@ -1017,7 +1015,7 @@ make_exception_table(YogEnv* env, YogVal code, YogVal data)
             entry = EXCEPTION_TABLE_ENTRY(entry)->next;
         }
 
-        CODE(code)->exc_tbl = PTR2VAL(exc_tbl);
+        MODIFY(env, CODE(code)->exc_tbl, PTR2VAL(exc_tbl));
         CODE(code)->exc_tbl_size = size;
     }
     else {
@@ -1047,7 +1045,7 @@ make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
         inst = INST(inst)->next;
     }
 
-    YogLinenoTableEntry* tbl = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(YogLinenoTableEntry) * size);
+    YogVal tbl = PTR2VAL(ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(YogLinenoTableEntry) * size));
     if (0 < size) {
         inst = anchor;
         int i = -1;
@@ -1056,7 +1054,7 @@ make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
             if (INST(inst)->type == INST_OP) {
                 if (lineno != INST(inst)->lineno) {
                     i++;
-                    YogLinenoTableEntry* entry = &tbl[i];
+                    YogLinenoTableEntry* entry = &PTR_AS(YogLinenoTableEntry, tbl)[i];
                     pc_t pc = INST(inst)->pc;
                     entry->pc_from = pc;
                     entry->pc_to = pc + INST(inst)->size;
@@ -1064,7 +1062,7 @@ make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
                     entry->lineno = lineno;
                 }
                 else {
-                    YogLinenoTableEntry* entry = &tbl[i];
+                    YogLinenoTableEntry* entry = &PTR_AS(YogLinenoTableEntry, tbl)[i];
                     entry->pc_to = INST(inst)->pc + INST(inst)->size;
                 }
             }
@@ -1073,7 +1071,7 @@ make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
         }
     }
 
-    CODE(code)->lineno_tbl = tbl;
+    MODIFY(env, CODE(code)->lineno_tbl, tbl);
     CODE(code)->lineno_tbl_size = size;
 
     RETURN_VOID(env);
@@ -1104,14 +1102,14 @@ ExceptionTableEntry_new(YogEnv* env)
 }
 
 static void 
-CompileData_add_inst(YogVal data, YogVal inst) 
+CompileData_add_inst(YogEnv* env, YogVal data, YogVal inst) 
 {
-    INST(COMPILE_DATA(data)->last_inst)->next = inst;
+    MODIFY(env, INST(COMPILE_DATA(data)->last_inst)->next, inst);
 
     while (IS_PTR(INST(inst)->next)) {
         inst = INST(inst)->next;
     }
-    COMPILE_DATA(data)->last_inst = inst;
+    MODIFY(env, COMPILE_DATA(data)->last_inst, inst);
 }
 
 static void 
@@ -1316,7 +1314,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
 
     visitor->visit_stmts(env, visitor, stmts, data);
     if (IS_PTR(tail)) {
-        CompileData_add_inst(data, tail);
+        CompileData_add_inst(env, data, tail);
     }
     if (ctx == CTX_FUNC) {
         if (IS_OBJ(stmts)) {
@@ -1350,9 +1348,9 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
     ID* local_vars_names = alloc_local_vars_table(env, vars, local_vars_count);
     CODE(code)->local_vars_names = local_vars_names;
     CODE(code)->stack_size = count_stack_size(env, anchor);
-    YogValArray* consts = table2array(env, COMPILE_DATA(data)->const2index);
-    CODE(code)->consts = consts;
-    CODE(code)->insts = PTR_AS(YogBinary, bin)->body;
+    YogVal consts = table2array(env, COMPILE_DATA(data)->const2index);
+    MODIFY(env, CODE(code)->consts, consts);
+    MODIFY(env, CODE(code)->insts, PTR_AS(YogBinary, bin)->body);
     CODE(code)->outer_size = get_max_outer_level(env, vars);
 
     make_exception_table(env, code, data);
@@ -1666,8 +1664,8 @@ vars_flags2type(YogEnv* env, YogVal var_tbl, YogVal outer)
     vars = YogTable_new_symbol_table(env);
 
     arg = Flags2TypeArg_new(env);
-    FLAGS2TYPE_ARG(arg)->vars = vars;
-    FLAGS2TYPE_ARG(arg)->outer = outer;
+    MODIFY(env, FLAGS2TYPE_ARG(arg)->vars, vars);
+    MODIFY(env, FLAGS2TYPE_ARG(arg)->outer, outer);
 
     YogTable_foreach(env, var_tbl, vars_flags2type_callback, &arg);
 
@@ -1877,40 +1875,40 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     PUSH_LOCALS3(env, finally_list_entry, exc_tbl_entry, stmts);
 
     finally_list_entry = FinallyListEntry_new(env);
-    FINALLY_LIST_ENTRY(finally_list_entry)->prev = COMPILE_DATA(data)->finally_list;
-    COMPILE_DATA(data)->finally_list = finally_list_entry;
-    FINALLY_LIST_ENTRY(finally_list_entry)->node = node;
+    MODIFY(env, FINALLY_LIST_ENTRY(finally_list_entry)->prev, COMPILE_DATA(data)->finally_list);
+    MODIFY(env, COMPILE_DATA(data)->finally_list, finally_list_entry);
+    MODIFY(env, FINALLY_LIST_ENTRY(finally_list_entry)->node, node);
 
     PUSH_TRY();
 
     exc_tbl_entry = ExceptionTableEntry_new(env);
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->next = YNIL;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->from = label_head_start;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->to = label_head_end;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->target = label_finally_error_start;
-    TRY_LIST_ENTRY(try_list_entry)->exc_tbl = exc_tbl_entry;
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->from, label_head_start);
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->to, label_head_end);
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->target, label_finally_error_start);
+    MODIFY(env, TRY_LIST_ENTRY(try_list_entry)->exc_tbl, exc_tbl_entry);
 
-    add_inst(data, label_head_start);
+    add_inst(env, data, label_head_start);
     visitor->visit_stmts(env, visitor, NODE(node)->u.finally.head, data);
-    add_inst(data, label_head_end);
+    add_inst(env, data, label_head_end);
 
     stmts = NODE(node)->u.finally.body;
     visitor->visit_stmts(env, visitor, stmts, data);
     unsigned int lineno = get_last_lineno(env, stmts);
     CompileData_add_jump(env, data, lineno, label_finally_end);
 
-    add_inst(data, label_finally_error_start);
+    add_inst(env, data, label_finally_error_start);
     visitor->visit_stmts(env, visitor, stmts, data);
     lineno = get_last_lineno(env, stmts);
     RERAISE();
 
-    add_inst(data, label_finally_end);
+    add_inst(env, data, label_finally_end);
 
     PUSH_EXCEPTION_TABLE_ENTRY();
 
     POP_TRY();
 
-    COMPILE_DATA(data)->finally_list = FINALLY_LIST_ENTRY(finally_list_entry)->prev;
+    MODIFY(env, COMPILE_DATA(data)->finally_list, FINALLY_LIST_ENTRY(finally_list_entry)->prev);
 
     RETURN_VOID(env);
 }
@@ -1942,15 +1940,15 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
     exc_tbl_entry = ExceptionTableEntry_new(env);
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->next = YNIL;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->from = label_head_start;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->to = label_head_end;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->target = label_excepts_start;
-    TRY_LIST_ENTRY(try_list_entry)->exc_tbl = exc_tbl_entry;
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->from, label_head_start);
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->to, label_head_end);
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->target, label_excepts_start);
+    MODIFY(env, TRY_LIST_ENTRY(try_list_entry)->exc_tbl, exc_tbl_entry);
 
-    add_inst(data, label_head_start);
+    add_inst(env, data, label_head_start);
     stmts = NODE(node)->u.except.head;
     visitor->visit_stmts(env, visitor, stmts, data);
-    add_inst(data, label_head_end);
+    add_inst(env, data, label_head_end);
     unsigned int lineno;
     if (IS_OBJ(stmts)) {
         lineno = get_last_lineno(env, stmts);
@@ -1960,7 +1958,7 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     }
     CompileData_add_jump(env, data, lineno, label_else_start);
 
-    add_inst(data, label_excepts_start);
+    add_inst(env, data, label_excepts_start);
     excepts = NODE(node)->u.except.excepts;
     unsigned int size = YogArray_size(env, excepts);
     unsigned int i = 0;
@@ -1996,15 +1994,15 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
         lineno = get_last_lineno(env, stmts);
         CompileData_add_jump(env, data, lineno, label_else_end);
 
-        add_inst(data, label_body_end);
+        add_inst(env, data, label_body_end);
 
         POP_LOCALS(env);
     }
     RERAISE();
 
-    add_inst(data, label_else_start);
+    add_inst(env, data, label_else_start);
     visitor->visit_stmts(env, visitor, NODE(node)->u.except.else_, data);
-    add_inst(data, label_else_end);
+    add_inst(env, data, label_else_end);
 
     PUSH_EXCEPTION_TABLE_ENTRY();
 
@@ -2030,10 +2028,10 @@ compile_visit_while(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
     label_while_start_prev = COMPILE_DATA(data)->label_while_start;
     label_while_end_prev = COMPILE_DATA(data)->label_while_end;
-    COMPILE_DATA(data)->label_while_start = while_start;
-    COMPILE_DATA(data)->label_while_end = while_end;
+    MODIFY(env, COMPILE_DATA(data)->label_while_start, while_start);
+    MODIFY(env, COMPILE_DATA(data)->label_while_end, while_end);
 
-    add_inst(data, while_start);
+    add_inst(env, data, while_start);
     test = NODE(node)->u.while_.test;
     visit_node(env, visitor, test, data);
     CompileData_add_jump_if_false(env, data, NODE(test)->lineno, while_end);
@@ -2043,10 +2041,10 @@ compile_visit_while(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     visitor->visit_stmts(env, visitor, stmts, data);
     unsigned int lineno = get_last_lineno(env, stmts);
     CompileData_add_jump(env, data, lineno, while_start);
-    add_inst(data, while_end);
+    add_inst(env, data, while_end);
 
-    COMPILE_DATA(data)->label_while_end = label_while_end_prev;
-    COMPILE_DATA(data)->label_while_start = label_while_start_prev;
+    MODIFY(env, COMPILE_DATA(data)->label_while_end, label_while_end_prev);
+    MODIFY(env, COMPILE_DATA(data)->label_while_start, label_while_start_prev);
 
     RETURN_VOID(env);
 }
@@ -2082,12 +2080,12 @@ compile_visit_if(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     }
     CompileData_add_jump(env, data, lineno, label_stmt_end);
 
-    add_inst(data, label_tail_start);
+    add_inst(env, data, label_tail_start);
     tail = NODE(node)->u.if_.tail;
     if (IS_OBJ(tail)) {
         visitor->visit_stmts(env, visitor, tail, data);
     }
-    add_inst(data, label_stmt_end);
+    add_inst(env, data, label_stmt_end);
 
     RETURN_VOID(env);
 }
@@ -2107,11 +2105,11 @@ split_exception_table(YogEnv* env, YogVal exc_tbl_entry, YogVal label_from, YogV
     }
 
     YogVal new_entry = ExceptionTableEntry_new(env);
-    EXCEPTION_TABLE_ENTRY(new_entry)->from = label_to;
-    EXCEPTION_TABLE_ENTRY(new_entry)->to = EXCEPTION_TABLE_ENTRY(entry)->to;
-    EXCEPTION_TABLE_ENTRY(new_entry)->target = EXCEPTION_TABLE_ENTRY(entry)->target;
-    EXCEPTION_TABLE_ENTRY(entry)->to = label_from;
-    EXCEPTION_TABLE_ENTRY(entry)->next = new_entry;
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(new_entry)->from, label_to);
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(new_entry)->to, EXCEPTION_TABLE_ENTRY(entry)->to);
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(new_entry)->target, EXCEPTION_TABLE_ENTRY(entry)->target);
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(entry)->to, label_from);
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(entry)->next, new_entry);
 
     RETURN_VOID(env);
 }
@@ -2142,9 +2140,9 @@ compile_while_jump(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, Y
             label_start = Label_new(env);
             label_end = Label_new(env);
 
-            add_inst(data, label_start);
+            add_inst(env, data, label_start);
             visitor->visit_stmts(env, visitor, NODE(FINALLY_LIST_ENTRY(finally_list_entry)->node)->u.finally.body, data);
-            add_inst(data, label_end);
+            add_inst(env, data, label_end);
 
             try_list_entry = COMPILE_DATA(data)->try_list;
             while (TRUE) {
@@ -2258,7 +2256,7 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, Yog
     INST(ret)->next = YNIL;
     INST(ret)->opcode = OP(RET);
     push_self_name = Inst_new(env, lineno);
-    INST(push_self_name)->next = ret;
+    MODIFY(env, INST(push_self_name)->next, ret);
     INST(push_self_name)->opcode = OP(PUSH_SELF_NAME);
 
     const char* filename = COMPILE_DATA(data)->filename;

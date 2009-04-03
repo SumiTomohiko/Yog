@@ -127,15 +127,14 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
     strcpy(buffer, name);
 
     DEBUG(DPRINTF("buffer=\"%s\"", buffer));
-    YogCharArray* s = YogCharArray_new_str(env, buffer);
-    YogVal val = PTR2VAL(s);
-    PUSH_LOCAL(env, val);
+    YogVal s = YogCharArray_new_str(env, buffer);
+    PUSH_LOCAL(env, s);
 
     ID id = vm->next_id;
     YogVal symbol = ID2VAL(id);
 
-    YogTable_add_direct(env, vm->name2id, val, symbol);
-    YogTable_add_direct(env, vm->id2name, symbol, val);
+    YogTable_add_direct(env, vm->name2id, s, symbol);
+    YogTable_add_direct(env, vm->id2name, symbol, s);
 
     vm->next_id++;
 
@@ -187,8 +186,8 @@ setup_basic_klass(YogEnv* env, YogVm* vm)
     cKlass = YogKlass_new(env, "Class", cObject);
     YogKlass_define_allocator(env, cKlass, YogKlass_allocate);
 
-    OBJ_AS(YogBasicObj, cObject)->klass = cKlass;
-    OBJ_AS(YogBasicObj, cKlass)->klass = cKlass;
+    MODIFY(env, OBJ_AS(YogBasicObj, cObject)->klass, cKlass);
+    MODIFY(env, OBJ_AS(YogBasicObj, cKlass)->klass, cKlass);
 
     vm->cObject = cObject;
     vm->cKlass = cKlass;

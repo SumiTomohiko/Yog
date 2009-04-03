@@ -144,14 +144,14 @@ rehash(YogEnv* env, YogVal table)
         while (VAL2PTR(ptr) != NULL) {
             YogVal next = PTR_AS(YogTableEntry, ptr)->next;
             unsigned int hash_val = PTR_AS(YogTableEntry, ptr)->hash % new_num_bins;
-            PTR_AS(YogTableEntry, ptr)->next = PTR_AS(YogTableEntryArray, new_bins)->items[hash_val];
+            MODIFY(env, PTR_AS(YogTableEntry, ptr)->next, PTR_AS(YogTableEntryArray, new_bins)->items[hash_val]);
             PTR_AS(YogTableEntryArray, new_bins)->items[hash_val] = ptr;
             ptr = next;
         }
     }
 
     PTR_AS(YogTable, table)->num_bins = new_num_bins;
-    PTR_AS(YogTable, table)->bins = new_bins;
+    MODIFY(env, PTR_AS(YogTable, table)->bins, new_bins);
 
     RETURN_VOID(env);
 }
@@ -307,9 +307,9 @@ add_direct(YogEnv* env, YogVal table, YogVal key, YogVal value, unsigned int has
     YogVal entry = alloc_entry(env);
 
     PTR_AS(YogTableEntry, entry)->hash = hash_val;
-    PTR_AS(YogTableEntry, entry)->key = key;
-    PTR_AS(YogTableEntry, entry)->record = value;
-    PTR_AS(YogTableEntry, entry)->next = TABLE_ENTRY_TOP(table, bin_pos);
+    MODIFY(env, PTR_AS(YogTableEntry, entry)->key, key);
+    MODIFY(env, PTR_AS(YogTableEntry, entry)->record, value);
+    MODIFY(env, PTR_AS(YogTableEntry, entry)->next, TABLE_ENTRY_TOP(table, bin_pos));
 
     MODIFY(env, TABLE_ENTRY_TOP(table, bin_pos), entry);
     PTR_AS(YogTable, table)->num_entries++;
@@ -331,7 +331,7 @@ YogTable_insert(YogEnv* env, YogVal table, YogVal key, YogVal value)
         return FALSE;
     }
     else {
-        PTR_AS(YogTableEntry, ptr)->record = value;
+        MODIFY(env, PTR_AS(YogTableEntry, ptr)->record, value);
         return TRUE;
     }
 }
@@ -376,7 +376,7 @@ YogTable_delete(YogEnv* env, YogVal table, YogVal* key, YogVal* value)
         YogVal next = PTR_AS(YogTableEntry, ptr)->next;
         if (EQUAL(env, table, PTR_AS(YogTableEntry, next)->key, *key)) {
             YogVal tmp = next;
-            PTR_AS(YogTableEntry, ptr)->next = PTR_AS(YogTableEntry, next)->next;
+            MODIFY(env, PTR_AS(YogTableEntry, ptr)->next, PTR_AS(YogTableEntry, next)->next);
             PTR_AS(YogTable, table)->num_entries--;
             if (value != NULL) {
                 *value = PTR_AS(YogTableEntry, tmp)->record;
@@ -410,7 +410,7 @@ YogTable_delete_safe(YogEnv* env, YogVal table, YogVal* key, YogVal* value, YogV
             if (value != NULL) {
                 *value = PTR_AS(YogTableEntry, ptr)->record;
             }
-            PTR_AS(YogTableEntry, ptr)->key = PTR_AS(YogTableEntry, ptr)->record = never;
+            MODIFY(env, PTR_AS(YogTableEntry, ptr)->key, PTR_AS(YogTableEntry, ptr)->record = never);
             return TRUE;
         }
     }
@@ -471,7 +471,7 @@ YogTable_foreach(YogEnv* env, YogVal table, int (*func)(YogEnv*, YogVal, YogVal,
                         TABLE_ENTRY_TOP(table, i) = PTR_AS(YogTableEntry, ptr)->next;
                     }
                     else {
-                        PTR_AS(YogTableEntry, last)->next = PTR_AS(YogTableEntry, ptr)->next;
+                        MODIFY(env, PTR_AS(YogTableEntry, last)->next, PTR_AS(YogTableEntry, ptr)->next);
                     }
                     ptr = PTR_AS(YogTableEntry, ptr)->next;
                     PTR_AS(YogTable, table)->num_entries--;

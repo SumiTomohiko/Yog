@@ -15,7 +15,7 @@ CompileData_add_load_special(YogEnv* env, YogVal data, unsigned int lineno, ID i
 
     LOAD_SPECIAL_ID(inst) = id;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -30,7 +30,7 @@ CompileData_add_pop(YogEnv* env, YogVal data, unsigned int lineno)
     INST_OPCODE(inst) = OP(POP);
 
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -46,7 +46,7 @@ CompileData_add_push_const(YogEnv* env, YogVal data, unsigned int lineno, uint8_
 
     PUSH_CONST_INDEX(inst) = index;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -62,7 +62,7 @@ CompileData_add_make_string(YogEnv* env, YogVal data, unsigned int lineno, uint8
 
     MAKE_STRING_INDEX(inst) = index;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -83,7 +83,7 @@ CompileData_add_call_method(YogEnv* env, YogVal data, unsigned int lineno, ID me
     CALL_METHOD_VARARGC(inst) = varargc;
     CALL_METHOD_VARKWARGC(inst) = varkwargc;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -99,7 +99,7 @@ CompileData_add_store_name(YogEnv* env, YogVal data, unsigned int lineno, ID id)
 
     STORE_NAME_ID(inst) = id;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -115,7 +115,7 @@ CompileData_add_store_local(YogEnv* env, YogVal data, unsigned int lineno, uint8
 
     STORE_LOCAL_INDEX(inst) = index;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -136,7 +136,7 @@ CompileData_add_call_command(YogEnv* env, YogVal data, unsigned int lineno, ID c
     CALL_COMMAND_VARARGC(inst) = varargc;
     CALL_COMMAND_VARKWARGC(inst) = varkwargc;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -151,7 +151,7 @@ CompileData_add_make_package_method(YogEnv* env, YogVal data, unsigned int linen
     INST_OPCODE(inst) = OP(MAKE_PACKAGE_METHOD);
 
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -171,7 +171,7 @@ CompileData_add_call_function(YogEnv* env, YogVal data, unsigned int lineno, uin
     CALL_FUNCTION_VARARGC(inst) = varargc;
     CALL_FUNCTION_VARKWARGC(inst) = varkwargc;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -187,7 +187,7 @@ CompileData_add_load_global(YogEnv* env, YogVal data, unsigned int lineno, ID id
 
     LOAD_GLOBAL_ID(inst) = id;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -203,7 +203,7 @@ CompileData_add_load_name(YogEnv* env, YogVal data, unsigned int lineno, ID id)
 
     LOAD_NAME_ID(inst) = id;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -219,7 +219,7 @@ CompileData_add_load_local(YogEnv* env, YogVal data, unsigned int lineno, uint8_
 
     LOAD_LOCAL_INDEX(inst) = index;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -235,7 +235,7 @@ CompileData_add_jump(YogEnv* env, YogVal data, unsigned int lineno, struct YogVa
 
     JUMP_DEST(inst) = dest;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -251,7 +251,7 @@ CompileData_add_jump_if_false(YogEnv* env, YogVal data, unsigned int lineno, str
 
     JUMP_IF_FALSE_DEST(inst) = dest;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -266,7 +266,7 @@ CompileData_add_dup(YogEnv* env, YogVal data, unsigned int lineno)
     INST_OPCODE(inst) = OP(DUP);
 
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -281,7 +281,7 @@ CompileData_add_make_package_block(YogEnv* env, YogVal data, unsigned int lineno
     INST_OPCODE(inst) = OP(MAKE_PACKAGE_BLOCK);
 
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -296,7 +296,7 @@ CompileData_add_make_block(YogEnv* env, YogVal data, unsigned int lineno)
     INST_OPCODE(inst) = OP(MAKE_BLOCK);
 
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -311,7 +311,7 @@ CompileData_add_make_klass(YogEnv* env, YogVal data, unsigned int lineno)
     INST_OPCODE(inst) = OP(MAKE_KLASS);
 
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -326,7 +326,7 @@ CompileData_add_make_method(YogEnv* env, YogVal data, unsigned int lineno)
     INST_OPCODE(inst) = OP(MAKE_METHOD);
 
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -341,7 +341,7 @@ CompileData_add_push_self_name(YogEnv* env, YogVal data, unsigned int lineno)
     INST_OPCODE(inst) = OP(PUSH_SELF_NAME);
 
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -356,7 +356,7 @@ CompileData_add_ret(YogEnv* env, YogVal data, unsigned int lineno)
     INST_OPCODE(inst) = OP(RET);
 
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -373,7 +373,7 @@ CompileData_add_store_nonlocal(YogEnv* env, YogVal data, unsigned int lineno, ui
     STORE_NONLOCAL_LEVEL(inst) = level;
     STORE_NONLOCAL_INDEX(inst) = index;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -390,7 +390,7 @@ CompileData_add_load_nonlocal(YogEnv* env, YogVal data, unsigned int lineno, uin
     LOAD_NONLOCAL_LEVEL(inst) = level;
     LOAD_NONLOCAL_INDEX(inst) = index;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }
@@ -406,7 +406,7 @@ CompileData_add_store_global(YogEnv* env, YogVal data, unsigned int lineno, ID n
 
     STORE_GLOBAL_NAME(inst) = name;
 
-    add_inst(data, inst);
+    add_inst(env, data, inst);
 
     RETURN_VOID(env);
 }

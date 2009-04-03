@@ -16,19 +16,23 @@ YogBinary_shrink(YogEnv* env, YogVal binary)
     SAVE_ARG(env, binary);
 
     unsigned int size = YogBinary_size(env, binary);
-    YogByteArray* body = YogByteArray_new(env, size);
-    memcpy(body->items, PTR_AS(YogBinary, binary)->body->items, size);
-    PTR_AS(YogBinary, binary)->body = body;
+    YogVal new_body = YogByteArray_new(env, size);
+    uint8_t* to = PTR_AS(YogByteArray, new_body)->items;
+    YogVal old_body = PTR_AS(YogBinary, binary)->body;
+    uint8_t* from = PTR_AS(YogByteArray, old_body)->items;
+    memcpy(to, from, size);
+    MODIFY(env, PTR_AS(YogBinary, binary)->body, new_body);
 
     RETURN_VOID(env);
 }
 
 unsigned int 
-YogByteArray_size(YogEnv* env, YogByteArray* array) 
+YogByteArray_size(YogEnv* env, YogVal array) 
 {
-    return array->size;
+    return PTR_AS(YogByteArray, array)->size;
 }
 
+#if 0
 uint8_t 
 YogByteArray_at(YogEnv* env, YogByteArray* array, unsigned int n) 
 {
@@ -61,14 +65,15 @@ YogByteArray_print(YogEnv* env, YogByteArray* array)
 #undef MAX
     printf("\n");
 }
+#endif
 
-YogByteArray* 
+YogVal 
 YogByteArray_new(YogEnv* env, unsigned int size) 
 {
     YogByteArray* array = ALLOC_OBJ_ITEM(env, NULL, NULL, YogByteArray, size, uint8_t);
     array->size = size;
 
-    return array;
+    return PTR2VAL(array);
 }
 
 static void 
@@ -79,15 +84,15 @@ ensure_body_size(YogEnv* env, YogVal binary, unsigned int needed_size)
     YogVal body = YUNDEF;
     PUSH_LOCAL(env, body);
 
-    body = PTR2VAL(PTR_AS(YogBinary, binary)->body);
+    body = PTR_AS(YogBinary, binary)->body;
     size_t cur_size = PTR_AS(YogBinary, binary)->size;
     if (cur_size < needed_size) {
         unsigned int new_size = 2 * needed_size;
-        YogByteArray* new_body = YogByteArray_new(env, new_size);
-        unsigned char* to = new_body->items;
+        YogVal new_body = YogByteArray_new(env, new_size);
+        unsigned char* to = PTR_AS(YogByteArray, new_body)->items;
         unsigned char* from = PTR_AS(YogByteArray, body)->items;
         memcpy(to, from, cur_size);
-        PTR_AS(YogBinary, binary)->body = new_body;
+        MODIFY(env, PTR_AS(YogBinary, binary)->body, new_body);
     }
 
     RETURN_VOID(env);
@@ -96,11 +101,12 @@ ensure_body_size(YogEnv* env, YogVal binary, unsigned int needed_size)
 #define PUSH_TYPE(type, n)  do { \
     SAVE_ARG(env, binary); \
 \
-    size_t size = PTR_AS(YogBinary, binary)->size + sizeof(type); \
-    ensure_body_size(env, binary, size); \
+    size_t needed_size = PTR_AS(YogBinary, binary)->size + sizeof(type); \
+    ensure_body_size(env, binary, needed_size); \
 \
-    YogByteArray* body = PTR_AS(YogBinary, binary)->body; \
-    *((type*)&body->items[PTR_AS(YogBinary, binary)->size]) = n; \
+    YogVal body = PTR_AS(YogBinary, binary)->body; \
+    unsigned int size = PTR_AS(YogBinary, binary)->size; \
+    *((type*)&PTR_AS(YogByteArray, body)->items[size]) = n; \
     PTR_AS(YogBinary, binary)->size += sizeof(type); \
 \
     RETURN_VOID(env); \
@@ -136,7 +142,7 @@ static void
 YogBinary_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogBinary* bin = ptr;
-    bin->body = (*keeper)(env, bin->body);
+    bin->body = YogVal_keep(env, bin->body, keeper);
 }
 
 YogVal 
@@ -144,11 +150,11 @@ YogBinary_new(YogEnv* env, unsigned int size)
 {
     YogVal binary = PTR2VAL(ALLOC_OBJ(env, YogBinary_keep_children, NULL, YogBinary));
     PTR_AS(YogBinary, binary)->size = 0;
-    PTR_AS(YogBinary, binary)->body = NULL;
+    PTR_AS(YogBinary, binary)->body = YUNDEF;
     PUSH_LOCAL(env, binary);
 
-    YogByteArray* body = YogByteArray_new(env, size);
-    PTR_AS(YogBinary, binary)->body = body;
+    YogVal body = YogByteArray_new(env, size);
+    MODIFY(env, PTR_AS(YogBinary, binary)->body, body);
 
     POP_LOCALS(env);
 

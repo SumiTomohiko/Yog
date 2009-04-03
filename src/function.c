@@ -76,7 +76,7 @@ YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsign
     ARG_INFO(arg_info)->blockargname = blockargname;
     ARG_INFO(arg_info)->varargc = varargc;
     ARG_INFO(arg_info)->kwargc = kwargc;
-    BUILTIN_FUNCTION(builtin_f)->arg_info = arg_info;
+    MODIFY(env, BUILTIN_FUNCTION(builtin_f)->arg_info, arg_info);
 
     RETURN(env, builtin_f);
 }

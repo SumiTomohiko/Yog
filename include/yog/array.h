@@ -13,7 +13,7 @@ typedef struct YogValArray YogValArray;
 struct YogArray {
     YOGBASICOBJ_HEAD;
     unsigned int size;
-    struct YogValArray* body; 
+    struct YogVal body; 
 };
 
 typedef struct YogArray YogArray;
@@ -30,9 +30,9 @@ void YogArray_extend(YogEnv*, YogVal, YogVal);
 YogVal YogArray_new(YogEnv*);
 void YogArray_push(YogEnv*, YogVal, YogVal);
 unsigned int YogArray_size(YogEnv*, YogVal);
-YogVal YogValArray_at(YogEnv*, YogValArray*, unsigned int);
-YogValArray* YogValArray_new(YogEnv*, unsigned int);
-unsigned int YogValArray_size(YogEnv*, YogValArray*);
+YogVal YogValArray_at(YogEnv*, YogVal, unsigned int);
+YogVal YogValArray_new(YogEnv*, unsigned int);
+unsigned int YogValArray_size(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

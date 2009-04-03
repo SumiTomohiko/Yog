@@ -13,8 +13,8 @@ typedef struct YogCharArray YogCharArray;
 
 struct YogString {
     YOGBASICOBJ_HEAD;
-    struct YogEncoding* encoding;
-    struct YogCharArray* body;
+    struct YogVal encoding;
+    struct YogVal body;
 };
 
 typedef struct YogString YogString;
@@ -28,8 +28,8 @@ typedef struct YogString YogString;
  */
 
 /* src/string.c */
-YogCharArray* YogCharArray_new(YogEnv*, unsigned int);
-YogCharArray* YogCharArray_new_str(YogEnv*, const char*);
+YogVal YogCharArray_new(YogEnv*, unsigned int);
+YogVal YogCharArray_new_str(YogEnv*, const char*);
 char YogString_at(YogEnv*, YogVal, unsigned int);
 void YogString_clear(YogEnv*, YogVal);
 YogVal YogString_clone(YogEnv*, YogVal);

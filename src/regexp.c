@@ -51,12 +51,16 @@ YogVal
 YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option) 
 {
     OnigRegex onig_regexp = NULL;
-    OnigUChar* pattern_begin = (OnigUChar*)OBJ_AS(YogString, pattern)->body->items;
-    OnigUChar* pattern_end = pattern_begin + OBJ_AS(YogString, pattern)->body->size - 1;
+    YogVal body = OBJ_AS(YogString, pattern)->body;
+    OnigUChar* pattern_begin = (OnigUChar*)PTR_AS(YogCharArray, body)->items;
+    unsigned int size = PTR_AS(YogCharArray, body)->size;
+    OnigUChar* pattern_end = pattern_begin + size - 1;
     OnigSyntaxType* syntax = ONIG_SYNTAX_DEFAULT;
     OnigErrorInfo einfo;
 
-    int r = onig_new(&onig_regexp, pattern_begin, pattern_end, option, OBJ_AS(YogString, pattern)->encoding->onig_enc, syntax, &einfo);
+    YogVal enc = OBJ_AS(YogString, pattern)->encoding;
+    OnigEncoding onig = PTR_AS(YogEncoding, enc)->onig_enc;
+    int r = onig_new(&onig_regexp, pattern_begin, pattern_end, option, onig, syntax, &einfo);
     if (r != ONIG_NORMAL) {
         return YNIL;
     }
@@ -81,8 +85,9 @@ group2index(YogEnv* env, YogMatch* match, YogVal arg)
     if (IS_OBJ_OF(cString, arg)) {
         YogString* s = OBJ_AS(YogString, arg);
         OnigRegex onig_regexp = OBJ_AS(YogRegexp, match->regexp)->onig_regexp;
-        OnigUChar* name_begin = (OnigUChar*)s->body->items;
-        OnigUChar* name_end = name_begin + s->body->size - 1;
+        YogVal body = s->body;
+        OnigUChar* name_begin = (OnigUChar*)PTR_AS(YogCharArray, body)->items;
+        OnigUChar* name_end = name_begin + PTR_AS(YogCharArray, body)->size - 1;
         int* num_list = NULL;
         int r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, &num_list);
         YOG_ASSERT(env, r == 1, "TODO: index error?");
@@ -119,8 +124,12 @@ group(YogEnv* env)
     int size = end - begin;
     YogVal s = YogString_new_size(env, size + 1);
     YogVal str = OBJ_AS(YogMatch, SELF(env))->str;
-    memcpy(OBJ_AS(YogString, s)->body->items, &OBJ_AS(YogString, str)->body->items[begin], size);
-    OBJ_AS(YogString, s)->body->items[size] = '\0';
+    YogVal to_body = OBJ_AS(YogString, s)->body;
+    char* p = PTR_AS(YogCharArray, to_body)->items;
+    YogVal from_body = OBJ_AS(YogString, str)->body;
+    const char* q = &PTR_AS(YogCharArray, from_body)->items[begin];
+    memcpy(p, q, size);
+    PTR_AS(YogCharArray, to_body)->items[size] = '\0';
 
     return s;
 }
@@ -129,8 +138,9 @@ static int
 ptr2index(YogEnv* env, YogString* s, const char* ptr) 
 {
     unsigned int index = 0;
-    YogEncoding* enc = s->encoding;
-    const char* p = s->body->items;
+    YogVal enc = s->encoding;
+    YogVal body = s->body;
+    const char* p = PTR_AS(YogCharArray, body)->items;
     while (p < ptr) {
         p += YogEncoding_mbc_size(env, enc, p);
         index++;
@@ -152,7 +162,8 @@ start(YogEnv* env)
         YOG_ASSERT(env, FALSE, "TODO: index error");
     }
     YogString* s = OBJ_AS(YogString, match->str);
-    const char* start = s->body->items + region->beg[index];
+    YogVal body = s->body;
+    const char* start = PTR_AS(YogCharArray, body)->items + region->beg[index];
     int n = ptr2index(env, s, start);
 
     return INT2VAL(n);
@@ -171,7 +182,9 @@ end(YogEnv* env)
         YOG_ASSERT(env, FALSE, "TODO: index error");
     }
     YogString* s = OBJ_AS(YogString, match->str);
-    const char* end = s->body->items + region->end[index] - 1;
+    YogVal body = s->body;
+    const char* p = PTR_AS(YogCharArray, body)->items;
+    const char* end = p + region->end[index] - 1;
     int n = ptr2index(env, s, end) + 1;
 
     return INT2VAL(n);

@@ -19,7 +19,7 @@ YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f, uns
     PUSH_LOCAL(env, builtin_f);
 
     YogVal method = YogBuiltinUnboundMethod_new(env);
-    OBJ_AS(YogBuiltinUnboundMethod, method)->f = builtin_f;
+    MODIFY(env, OBJ_AS(YogBuiltinUnboundMethod, method)->f, builtin_f);
     PUSH_LOCAL(env, method);
 
     YogObj_set_attr_id(env, klass, func_name, method);
@@ -64,14 +64,14 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
     klass = YogKlass_allocate(env, ENV_VM(env)->cKlass);
     OBJ_AS(YogKlass, klass)->allocator = NULL;
     OBJ_AS(YogKlass, klass)->name = INVALID_ID;
-    OBJ_AS(YogKlass, klass)->super = PTR2VAL(NULL);
+    MODIFY(env, OBJ_AS(YogKlass, klass)->super, PTR2VAL(NULL));
 
     OBJ_AS(YogKlass, klass)->allocator = NULL;
     if (name != NULL) {
         ID id = INTERN(name);
         OBJ_AS(YogKlass, klass)->name = id;
     }
-    OBJ_AS(YogKlass, klass)->super = super;
+    MODIFY(env, OBJ_AS(YogKlass, klass)->super, super);
     RETURN(env, klass);
 }
 
@@ -95,8 +95,9 @@ new_(YogEnv* env)
     }
 
     obj = (*allocator)(env, self);
-    unsigned int size = OBJ_AS(YogArray, vararg)->body->size;
-    YogVal* items = OBJ_AS(YogArray, vararg)->body->items;
+    YogVal body = OBJ_AS(YogArray, vararg)->body;
+    unsigned int size = PTR_AS(YogValArray, body)->size;
+    YogVal* items = PTR_AS(YogValArray, body)->items;
     /* TODO: dirty hack */
     YogVal args[size];
     unsigned int i;

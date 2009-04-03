@@ -14,7 +14,7 @@ YogPackageBlock_init(YogEnv* env, YogPackageBlock* block)
     YogBasicBlock_init(env, BASIC_BLOCK(block), ENV_VM(env)->cPackageBlock);
 
     block->self = YUNDEF;
-    block->vars = NULL;
+    block->vars = YUNDEF;
 }
 
 #define KEEP_MEMBER(member)     block->member = (*keeper)(env, block->member)
@@ -34,8 +34,10 @@ YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogBasicBlock_keep_children(env, ptr, keeper);
 
     YogPackageBlock* block = ptr;
-    block->self = YogVal_keep(env, block->self, keeper);
-    KEEP_MEMBER(vars);
+#define KEEP(member)    block->member = YogVal_keep(env, block->member, keeper)
+    KEEP(self);
+    KEEP(vars);
+#undef KEEP
 }
 
 #undef KEEP_MEMBER
@@ -61,7 +63,7 @@ YogBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogBasicBlock_keep_children(env, ptr, keeper);
 
     YogBlock* block = ptr;
-#define KEEP(member)    block->member = (*keeper)(env, block->member)
+#define KEEP(member)    block->member = YogVal_keep(env, block->member, keeper)
     KEEP(locals);
     KEEP(outer_vars);
     KEEP(globals);
@@ -73,9 +75,9 @@ YogBlock_init(YogEnv* env, YogBlock* block)
 {
     YogBasicBlock_init(env, BASIC_BLOCK(block), YNIL);
 
-    block->locals = NULL;
-    block->outer_vars = NULL;
-    block->globals = NULL;
+    block->locals = YUNDEF;
+    block->outer_vars = YUNDEF;
+    block->globals = YUNDEF;
 }
 
 YogVal 

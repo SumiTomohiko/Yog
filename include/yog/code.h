@@ -32,15 +32,15 @@ struct YogCode {
     unsigned int stack_size;
     unsigned int local_vars_count;
     ID* local_vars_names;
-    struct YogValArray* consts;
-    struct YogByteArray* insts;
+    struct YogVal consts;
+    struct YogVal insts;
     unsigned int outer_size;
 
     unsigned int exc_tbl_size;
     struct YogVal exc_tbl;
 
     unsigned int lineno_tbl_size;
-    struct YogLinenoTableEntry* lineno_tbl;
+    struct YogVal lineno_tbl;
 
     const char* filename;
     ID klass_name;

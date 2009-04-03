@@ -5,12 +5,13 @@
 #include "yog/yog.h"
 
 char* 
-YogEncoding_left_adjust_char_head(YogEnv* env, YogEncoding* enc, const char* start, const char* p) 
+YogEncoding_left_adjust_char_head(YogEnv* env, YogVal enc, const char* start, const char* p) 
 {
-    return (char*)(*enc->onig_enc->left_adjust_char_head)((OnigUChar*)start, (OnigUChar*)p);
+    OnigEncoding onig = PTR_AS(YogEncoding, enc)->onig_enc;
+    return (char*)(*onig->left_adjust_char_head)((OnigUChar*)start, (OnigUChar*)p);
 }
 
-YogEncoding* 
+YogVal 
 YogEncoding_get_default(YogEnv* env) 
 {
     ID name = INTERN("utf-8");
@@ -19,13 +20,14 @@ YogEncoding_get_default(YogEnv* env)
     if (!YogTable_lookup(env, ENV_VM(env)->encodings, key, &val)) {
         YOG_ASSERT(env, FALSE, "Can't find default encoding.");
     }
-    return VAL2PTR(val);
+    return val;
 }
 
 int 
-YogEncoding_mbc_size(YogEnv* env, YogEncoding* enc, const char* p) 
+YogEncoding_mbc_size(YogEnv* env, YogVal enc, const char* p) 
 {
-    return (*enc->onig_enc->mbc_enc_len)((const unsigned char*)p);
+    OnigEncoding onig = PTR_AS(YogEncoding, enc)->onig_enc;
+    return (*onig->mbc_enc_len)((const unsigned char*)p);
 }
 
 YogVal 
@@ -43,7 +45,8 @@ YogEncoding_normalize_name(YogEnv* env, YogVal name)
         else {
             c2 = tolower(c);
         }
-        OBJ_AS(YogString, s)->body->items[i] = c2;
+        YogVal body = OBJ_AS(YogString, s)->body;
+        PTR_AS(YogCharArray, body)->items[i] = c2;
     }
 
     return s;
