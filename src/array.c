@@ -139,11 +139,11 @@ YogArray_new(YogEnv* env)
 #undef INIT_SIZE
     PUSH_LOCAL(env, body);
 
-    YogArray* array = ALLOC_OBJ(env, YogArray_keep_children, NULL, YogArray);
-    array->size = 0;
-    array->body = body;
+    YogVal array = OBJ2VAL(ALLOC_OBJ(env, YogArray_keep_children, NULL, YogArray));
+    OBJ_AS(YogArray, array)->size = 0;
+    MODIFY(env, OBJ_AS(YogArray, array)->body, body);
 
-    RETURN(env, OBJ2VAL(array));
+    RETURN(env, array);
 }
 
 /**
