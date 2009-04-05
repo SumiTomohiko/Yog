@@ -21,6 +21,8 @@ class TestCase(object):
             cmd_name = "yog-mark-sweep-compact"
         elif env_gc == "bdw":
             cmd_name = "yog-bdw"
+        elif env_gc == "generational":
+            cmd_name = "yog-generational"
 
         options = options or ["--gc-stress"]
 

@@ -42,7 +42,7 @@ struct YogCode {
     unsigned int lineno_tbl_size;
     struct YogVal lineno_tbl;
 
-    const char* filename;
+    YogVal filename;
     ID klass_name;
     ID func_name;
 };

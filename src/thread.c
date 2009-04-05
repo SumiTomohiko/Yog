@@ -498,9 +498,10 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
 #define ID2NAME(id)     YogVm_id2name(env, ENV_VM(env), id)
             while (IS_PTR(st)) {
                 PRINT("  File ");
-                const char* filename = PTR_AS(YogStackTraceEntry, st)->filename;
-                if (filename != NULL) {
-                    PRINT("\"%s\"", filename);
+                YogVal filename = PTR_AS(YogStackTraceEntry, st)->filename;
+                if (IS_PTR(filename)) {
+                    const char* name = PTR_AS(YogCharArray, filename)->items;
+                    PRINT("\"%s\"", name);
                 }
                 else {
                     PRINT("builtin");

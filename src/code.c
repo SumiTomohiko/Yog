@@ -197,7 +197,6 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     code->member = (*keeper)(env, (void*)code->member); \
 } while (0)
     KEEP_MEMBER(local_vars_names);
-    KEEP_MEMBER(filename);
 #undef KEEP_MEMBER
 
 #define KEEP(member)    code->member = YogVal_keep(env, code->member, keeper)
@@ -205,6 +204,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP(insts);
     KEEP(consts);
     KEEP(exc_tbl);
+    KEEP(filename);
 #undef KEEP
 }
 
@@ -226,7 +226,7 @@ YogCode_new(YogEnv* env)
     CODE(code)->exc_tbl = YUNDEF;
     CODE(code)->lineno_tbl_size = 0;
     CODE(code)->lineno_tbl = YUNDEF;
-    CODE(code)->filename = NULL;
+    CODE(code)->filename = YUNDEF;
     CODE(code)->klass_name = INVALID_ID;
     CODE(code)->func_name = INVALID_ID;
 

@@ -84,7 +84,7 @@ initialize(YogEnv* env)
                 ID klass_name = PTR_AS(YogBuiltinFunction, f)->klass_name;
                 ID func_name = PTR_AS(YogBuiltinFunction, f)->func_name;
                 PTR_AS(YogStackTraceEntry, entry)->lineno = 0;
-                PTR_AS(YogStackTraceEntry, entry)->filename = NULL;
+                PTR_AS(YogStackTraceEntry, entry)->filename = YNIL;
                 PTR_AS(YogStackTraceEntry, entry)->klass_name = klass_name;
                 PTR_AS(YogStackTraceEntry, entry)->func_name = func_name;
                 break;
@@ -105,11 +105,11 @@ initialize(YogEnv* env)
                     }
                 }
 
-                const char* filename = PTR_AS(YogCode, code)->filename;
+                YogVal filename = PTR_AS(YogCode, code)->filename;
                 ID klass_name = PTR_AS(YogCode, code)->klass_name;
                 ID func_name = PTR_AS(YogCode, code)->func_name;
                 PTR_AS(YogStackTraceEntry, entry)->lineno = lineno;
-                PTR_AS(YogStackTraceEntry, entry)->filename = filename;
+                MODIFY(env, PTR_AS(YogStackTraceEntry, entry)->filename, filename);
                 PTR_AS(YogStackTraceEntry, entry)->klass_name = klass_name;
                 PTR_AS(YogStackTraceEntry, entry)->func_name = func_name;
                 break;
@@ -125,12 +125,11 @@ initialize(YogEnv* env)
         frame = PTR_AS(YogFrame, frame)->prev;
     }
 
-    YogException* exc = OBJ_AS(YogException, self);
-    exc->stack_trace = st;
+    MODIFY(env, PTR_AS(YogException, self)->stack_trace, st);
     if (IS_UNDEF(message)) {
         message = YNIL;
     }
-    exc->message = message;
+    MODIFY(env, PTR_AS(YogException, self)->message, message);
 
     return YNIL;
 }

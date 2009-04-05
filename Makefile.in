@@ -42,6 +42,7 @@ test:
 	make test-mark-sweep
 	make test-mark-sweep-compact
 	make test-bdw
+	make test-generational
 test-copying: 
 	GC=copying $(TEST_CMD)
 test-mark-sweep: 
@@ -50,6 +51,8 @@ test-mark-sweep-compact:
 	GC=mark-sweep-compact $(TEST_CMD)
 test-bdw:
 	GC=bdw $(TEST_CMD)
+test-generational:
+	GC=generational $(TEST_CMD)
 
 am--refresh:
 	@:

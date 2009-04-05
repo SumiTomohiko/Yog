@@ -142,7 +142,7 @@ struct CompileData {
     struct YogVal finally_list;
     struct YogVal try_list;
 
-    const char* filename;
+    YogVal filename;
     ID klass_name;
 
     struct YogVal outer;
@@ -160,20 +160,20 @@ typedef struct CompileData CompileData;
     YogVal try_list_entry = TryListEntry_new(env); \
     PUSH_LOCAL(env, try_list_entry); \
     \
-    TRY_LIST_ENTRY(try_list_entry)->prev = COMPILE_DATA(data)->try_list; \
-    COMPILE_DATA(data)->try_list = try_list_entry; \
-    TRY_LIST_ENTRY(try_list_entry)->node = node; \
+    MODIFY(env, TRY_LIST_ENTRY(try_list_entry)->prev, COMPILE_DATA(data)->try_list); \
+    MODIFY(env, COMPILE_DATA(data)->try_list, try_list_entry); \
+    MODIFY(env, TRY_LIST_ENTRY(try_list_entry)->node, node); \
     TRY_LIST_ENTRY(try_list_entry)->exc_tbl = YNIL;
 
 #define POP_TRY() \
-    COMPILE_DATA(data)->try_list = TRY_LIST_ENTRY(try_list_entry)->prev; \
+    MODIFY(env, COMPILE_DATA(data)->try_list, TRY_LIST_ENTRY(try_list_entry)->prev); \
     POP_LOCALS(env); \
 } while (0)
 
 #define PUSH_EXCEPTION_TABLE_ENTRY() do { \
     YogVal last = COMPILE_DATA(data)->exc_tbl_last; \
-    EXCEPTION_TABLE_ENTRY(last)->next = exc_tbl_entry; \
-    COMPILE_DATA(data)->exc_tbl_last = exc_tbl_entry; \
+    MODIFY(env, EXCEPTION_TABLE_ENTRY(last)->next, exc_tbl_entry); \
+    MODIFY(env, COMPILE_DATA(data)->exc_tbl_last, exc_tbl_entry); \
 } while (0)
 
 #define NODE(p)     PTR_AS(YogNode, (p))
@@ -1184,34 +1184,32 @@ CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     KEEP(finally_list);
     KEEP(try_list);
     KEEP(outer);
+    KEEP(filename);
 #undef KEEP
-    data->filename = (*keeper)(env, data->filename);
 }
 
 static YogVal 
-CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, const char* filename, ID klass_name) 
+CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID klass_name) 
 {
-    YogVal name = PTR2VAL(filename);
-    SAVE_ARGS4(env, vars, anchor, exc_tbl_ent, name);
+    SAVE_ARGS4(env, vars, anchor, exc_tbl_ent, filename);
 
-    CompileData* data = ALLOC_OBJ(env, CompileData_keep_children, NULL, CompileData);
-    data->ctx = ctx;
-    data->vars = vars;
-    data->const2index = YUNDEF;
-    data->label_while_start = YUNDEF;
-    data->label_while_end = YUNDEF;
-    data->finally_list = YUNDEF;
-    data->try_list = YUNDEF;
-    data->filename = filename;
-    data->klass_name = INVALID_ID;
-    data->last_inst = anchor;
-    data->exc_tbl = exc_tbl_ent;
-    data->exc_tbl_last = exc_tbl_ent;
-    data->filename = VAL2PTR(name);
-    data->klass_name = klass_name;
-    data->outer = YUNDEF;
+    YogVal data = PTR2VAL(ALLOC_OBJ(env, CompileData_keep_children, NULL, CompileData));
+    COMPILE_DATA(data)->ctx = ctx;
+    MODIFY(env, COMPILE_DATA(data)->vars, vars);
+    COMPILE_DATA(data)->const2index = YUNDEF;
+    COMPILE_DATA(data)->label_while_start = YUNDEF;
+    COMPILE_DATA(data)->label_while_end = YUNDEF;
+    COMPILE_DATA(data)->finally_list = YUNDEF;
+    COMPILE_DATA(data)->try_list = YUNDEF;
+    COMPILE_DATA(data)->klass_name = INVALID_ID;
+    MODIFY(env, COMPILE_DATA(data)->last_inst, anchor);
+    MODIFY(env, COMPILE_DATA(data)->exc_tbl, exc_tbl_ent);
+    MODIFY(env, COMPILE_DATA(data)->exc_tbl_last, exc_tbl_ent);
+    MODIFY(env, COMPILE_DATA(data)->filename, filename);
+    COMPILE_DATA(data)->klass_name = klass_name;
+    COMPILE_DATA(data)->outer = YUNDEF;
 
-    RETURN(env, PTR2VAL(data));
+    RETURN(env, data);
 }
 
 static int 
@@ -1296,21 +1294,18 @@ alloc_local_vars_table(YogEnv* env, YogVal vars, unsigned int count)
 }
 
 static YogVal 
-compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, ID func_name, YogVal stmts, YogVal vars, Context ctx, YogVal tail) 
+compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, ID func_name, YogVal stmts, YogVal vars, Context ctx, YogVal tail) 
 {
-    SAVE_ARGS3(env, stmts, vars, tail);
+    SAVE_ARGS4(env, filename, stmts, vars, tail);
 
-    YogVal name = YUNDEF;
     YogVal anchor = YUNDEF;
     YogVal exc_tbl_ent = YUNDEF;
     YogVal data = YUNDEF;
-    PUSH_LOCALS4(env, name, anchor, exc_tbl_ent, data);
-
-    name = PTR2VAL(filename);
+    PUSH_LOCALS3(env, anchor, exc_tbl_ent, data);
 
     anchor = Anchor_new(env);
     exc_tbl_ent = ExceptionTableEntry_new(env);
-    data = CompileData_new(env, ctx, vars, anchor, exc_tbl_ent, VAL2PTR(name), klass_name);
+    data = CompileData_new(env, ctx, vars, anchor, exc_tbl_ent, filename, klass_name);
 
     visitor->visit_stmts(env, visitor, stmts, data);
     if (IS_PTR(tail)) {
@@ -1356,7 +1351,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_n
     make_exception_table(env, code, data);
     make_lineno_table(env, code, anchor);
 
-    CODE(code)->filename = VAL2PTR(name);
+    CODE(code)->filename = filename;
     CODE(code)->klass_name = klass_name;
     CODE(code)->func_name = func_name;
 
@@ -1673,10 +1668,9 @@ vars_flags2type(YogEnv* env, YogVal var_tbl, YogVal outer)
 }
 
 static YogVal 
-compile_func(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_name, YogVal node, YogVal upper) 
+compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, YogVal node, YogVal upper) 
 {
-    YogVal name = PTR2VAL(filename);
-    SAVE_ARGS3(env, name, node, upper);
+    SAVE_ARGS3(env, filename, node, upper);
 
     YogVal var_tbl = YUNDEF;
     YogVal params = YUNDEF;
@@ -1695,7 +1689,7 @@ compile_func(YogEnv* env, AstVisitor* visitor, const char* filename, ID klass_na
 
     ID func_name = NODE(node)->u.funcdef.name;
 
-    YogVal code = compile_stmts(env, visitor, PTR_AS(const char, name), klass_name, func_name, stmts, vars, CTX_FUNC, YNIL);
+    YogVal code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL);
     PUSH_LOCAL(env, code);
     setup_params(env, vars, params, code);
 
@@ -2198,11 +2192,11 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     YogTable* vars = vars_flags2type(env, var_tbl, data->upper);
 #endif
 
-    filename = PTR2VAL(COMPILE_DATA(data)->filename);
+    filename = COMPILE_DATA(data)->filename;
     ID klass_name = INVALID_ID;
     ID func_name = INTERN("<block>");
     stmts = NODE(node)->u.blockarg.stmts;
-    code = compile_stmts(env, visitor, PTR_AS(const char, filename), klass_name, func_name, stmts, vars, COMPILE_DATA(data)->ctx, YNIL);
+    code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, COMPILE_DATA(data)->ctx, YNIL);
 
     setup_params(env, vars, params, code);
 
@@ -2259,7 +2253,7 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, Yog
     MODIFY(env, INST(push_self_name)->next, ret);
     INST(push_self_name)->opcode = OP(PUSH_SELF_NAME);
 
-    const char* filename = COMPILE_DATA(data)->filename;
+    YogVal filename = COMPILE_DATA(data)->filename;
     ID func_name = INVALID_ID;
 
     YogVal code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_KLASS, push_self_name);
@@ -2379,12 +2373,12 @@ YogCompiler_compile_module(YogEnv* env, const char* filename, YogVal stmts)
     if (filename == NULL) {
         filename = "<stdin>";
     }
-    name = PTR2VAL(YogString_dup(env, filename));
+    name = YogCharArray_new_str(env, filename);
 
     ID klass_name = INVALID_ID;
     ID func_name = INTERN("<module>");
 
-    YogVal code = compile_stmts(env, &visitor, VAL2PTR(name), klass_name, func_name, stmts, vars, CTX_PKG, YNIL);
+    YogVal code = compile_stmts(env, &visitor, name, klass_name, func_name, stmts, vars, CTX_PKG, YNIL);
 
     RETURN(env, code);
 }
