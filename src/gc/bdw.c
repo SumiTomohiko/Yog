@@ -26,6 +26,10 @@ initialize_memory(void* ptr, size_t size)
 void* 
 YogBDW_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
+    if (vm->gc_stress) {
+        GC_gcollect();
+    }
+
     unsigned int total_size = size + sizeof(BDWHeader);
     BDWHeader* header = GC_MALLOC(total_size);
     initialize_memory(header, total_size);
