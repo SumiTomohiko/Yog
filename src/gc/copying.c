@@ -16,14 +16,27 @@
 #   define DEBUG
 #endif
 
+#define IS_IN_HEAP(ptr, heap)   do { \
+    void* from = heap->items; \
+    void* to = heap->items + heap->size; \
+    return (from <= ptr) && (ptr < to); \
+} while (0)
+
+BOOL 
+YogCopying_is_in_active_heap(YogEnv* env, YogCopying* copying, void* ptr) 
+{
+    YogCopyingHeap* heap = copying->active_heap;
+    IS_IN_HEAP(ptr, heap);
+}
+
 BOOL 
 YogCopying_is_in_inactive_heap(YogEnv* env, YogCopying* copying, void* ptr) 
 {
     YogCopyingHeap* heap = copying->inactive_heap;
-    void* from = heap->items;
-    void* to = heap->items + heap->size;
-    return (from <= ptr) && (ptr < to);
+    IS_IN_HEAP(ptr, heap);
 }
+
+#undef IS_IN_HEAP
 
 /* TODO: commonize with the other GC */
 static void 

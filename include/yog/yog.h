@@ -478,7 +478,7 @@ void YogThread_finalize(YogEnv*, YogThread*);
 void YogThread_initialize(YogEnv*, YogThread*);
 void YogThread_keep_children(YogEnv*, void*, ObjectKeeper);
 YogThread* YogThread_new(YogEnv*);
-void YogThread_reset_ref_tbl(YogEnv*, YogThread*);
+void YogThread_shrink_ref_tbl(YogEnv*, YogThread*);
 
 /* src/value.c */
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);

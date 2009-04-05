@@ -840,11 +840,18 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 }
 
 void 
-YogThread_reset_ref_tbl(YogEnv* env, YogThread* thread) 
+YogThread_shrink_ref_tbl(YogEnv* env, YogThread* thread) 
 {
-#if defined(GC_GENERATIONAL)
-    thread->ref_tbl_ptr = thread->ref_tbl;
-#endif
+    void*** to = thread->ref_tbl;
+    void*** p;
+    for (p = thread->ref_tbl; p < thread->ref_tbl_ptr; p++) {
+        YogCopying* copying = &env->vm->gc.generational.copying;
+        if (YogCopying_is_in_active_heap(env, copying, **p)) {
+            *to = *p;
+            to++;
+        }
+    }
+    thread->ref_tbl_ptr = to;
 }
 
 void 
@@ -858,7 +865,7 @@ YogThread_initialize(YogEnv* env, YogThread* thread)
 #   define REF_TBL_SIZE     256
     thread->ref_tbl = malloc(REF_TBL_SIZE * sizeof(void**));
     thread->ref_tbl_limit = thread->ref_tbl + REF_TBL_SIZE;
-    YogThread_reset_ref_tbl(env, thread);
+    thread->ref_tbl_ptr = thread->ref_tbl;
 #   undef REF_TBL_SIZE
 #endif
 }
