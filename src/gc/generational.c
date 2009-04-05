@@ -485,7 +485,7 @@ static void* ref_tbl2_ptr1;
 static void* ref_tbl2_ptr2;
 
 static void
-ref_tbl2_ptr_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+ref_tbl2_ptr1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
     *(void**)ptr = (*keeper)(env, *(void**)ptr);
 }
@@ -497,7 +497,7 @@ test_ref_tbl2(YogEnv* env)
     env->th = env->vm->thread = &ref_tbl2_thread;
 
     YogGenerational* gen = &env->vm->gc.generational;
-    ref_tbl2_ptr1 = YogGenerational_alloc(env, gen, ref_tbl2_ptr_keep_children, NULL, sizeof(void*));
+    ref_tbl2_ptr1 = YogGenerational_alloc(env, gen, ref_tbl2_ptr1_keep_children, NULL, sizeof(void*));
     *(void**)ref_tbl2_ptr1 = NULL;
     oldify(env, gen, ref_tbl2_ptr1);
     YogGenerational_minor_gc(env, gen);
@@ -513,6 +513,40 @@ test_ref_tbl2(YogEnv* env)
 }
 
 CREATE_TEST(ref_tbl2, &ref_tbl2_thread, YogThread_keep_children);
+
+static YogThread ref_tbl3_thread;
+static void* ref_tbl3_ptr1;
+static void* ref_tbl3_ptr2;
+
+static void
+ref_tbl3_ptr1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    *(void**)ptr = (*keeper)(env, *(void**)ptr);
+}
+
+static void 
+test_ref_tbl3(YogEnv* env) 
+{
+    YogThread_initialize(env, &ref_tbl3_thread);
+    env->th = env->vm->thread = &ref_tbl3_thread;
+
+    YogGenerational* gen = &env->vm->gc.generational;
+    ref_tbl3_ptr1 = YogGenerational_alloc(env, gen, ref_tbl3_ptr1_keep_children, NULL, sizeof(void*));
+    *(void**)ref_tbl3_ptr1 = NULL;
+    oldify(env, gen, ref_tbl3_ptr1);
+    YogGenerational_minor_gc(env, gen);
+
+    ref_tbl3_ptr2 = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    *(void**)ref_tbl3_ptr1 = ref_tbl3_ptr2;
+    ADD_REF(env, *(void**)ref_tbl3_ptr1);
+    void*** ref_tbl_ptr_old = ref_tbl3_thread.ref_tbl_ptr;
+    YogGenerational_major_gc(env, gen);
+
+    CU_ASSERT_PTR_EQUAL(*(void**)ref_tbl3_ptr1, *ref_tbl3_thread.ref_tbl[0]);
+    CU_ASSERT_PTR_EQUAL(ref_tbl_ptr_old, ref_tbl3_thread.ref_tbl_ptr);
+}
+
+CREATE_TEST(ref_tbl3, &ref_tbl3_thread, YogThread_keep_children);
 
 static void* forwarding_addr1_ptr1 = NULL;
 static void* forwarding_addr1_ptr2 = NULL;
@@ -650,6 +684,7 @@ main(int argc, const char* argv[])
     ADD_TEST(finalize2);
     ADD_TEST(ref_tbl1);
     ADD_TEST(ref_tbl2);
+    ADD_TEST(ref_tbl3);
     ADD_TEST(forwarding_addr1);
     ADD_TEST(forwarding_addr2);
     ADD_TEST(compact1);
