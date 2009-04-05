@@ -146,7 +146,7 @@ main(int argc, char* argv[])
 #   undef CHUNK_SIZE
 #elif defined(GC_GENERATIONAL)
 #   define CHUNK_SIZE  (16 * 1024 * 1024)
-#   define TENURE       32
+#   define TENURE       1
     YogVm_config_generational(&env, env.vm, init_heap_size, CHUNK_SIZE, threshold, TENURE);
 #   undef TENURE
 #   undef CHUNK_SIZE

@@ -63,7 +63,9 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
 
     if (ARG_INFO(arg_info)->argc < posargc) {
         for (i = 0; i < ARG_INFO(arg_info)->argc; i++) {
-            PTR_AS(YogValArray, args)->items[args_offset + i] = posargs[i];
+            YogVal* items = PTR_AS(YogValArray, args)->items;
+            YogVal arg = posargs[i];
+            MODIFY(env, items[args_offset + i], arg);
         }
         YOG_ASSERT(env, ARG_INFO(arg_info)->varargc == 1, "Too many arguments.");
         unsigned int argc = ARG_INFO(arg_info)->argc;
@@ -76,14 +78,17 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     }
     else {
         for (i = 0; i < posargc; i++) {
-            PTR_AS(YogValArray, args)->items[args_offset + i] = posargs[i];
+            YogVal* items = PTR_AS(YogValArray, args)->items;
+            YogVal arg = posargs[i];
+            MODIFY(env, items[args_offset + i], arg);
         }
     }
 
     if (!IS_UNDEF(blockarg)) {
         YOG_ASSERT(env, ARG_INFO(arg_info)->blockargc == 1, "Can't accept block argument.");
+        YogVal* items = PTR_AS(YogValArray, args)->items;
         unsigned int index = ARG_INFO(arg_info)->argc;
-        PTR_AS(YogValArray, args)->items[args_offset + index] = blockarg;
+        MODIFY(env, items[args_offset + index], blockarg);
     }
 
     for (i = 0; i < kwargc; i++) {
@@ -94,8 +99,9 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             ID argname = ARG_INFO(arg_info)->argnames[j];
             if (argname == id) {
                 YOG_ASSERT(env, !IS_UNDEF(PTR_AS(YogValArray, args)->items[j]), "Argument specified twice.");
+                YogVal* items = PTR_AS(YogValArray, args)->items;
                 YogVal val = kwargs[2 * i + 1];
-                PTR_AS(YogValArray, args)->items[args_offset + j] = val;
+                MODIFY(env, items[args_offset + j], val);
                 break;
             }
         }
@@ -103,7 +109,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             ID argname = ARG_INFO(arg_info)->blockargname;
             if (argname == id) {
                 YOG_ASSERT(env, !IS_UNDEF(PTR_AS(YogValArray, args)->items[args_offset + j]), "Argument specified twice.");
-                PTR_AS(YogValArray, args)->items[args_offset + argc - 1] = blockarg;
+                YogVal* items = PTR_AS(YogValArray, args)->items;
+                MODIFY(env, items[args_offset + argc - 1], blockarg);
             }
         }
     }
@@ -151,11 +158,11 @@ call_builtin_function(YogEnv* env, YogThread* th, YogVal f, YogVal self, YogVal 
 {
     SAVE_ARGS3(env, f, self, args);
 
-    YogCFrame* frame = YogCFrame_new(env);
-    frame->self = self;
-    frame->args = PTR_AS(YogValArray, args);
-    frame->f = PTR_AS(YogBuiltinFunction, f);
-    PUSH_FRAME(PTR2VAL(frame));
+    YogVal frame = YogCFrame_new(env);
+    MODIFY(env, PTR_AS(YogCFrame, frame)->self, self);
+    MODIFY(env, PTR_AS(YogCFrame, frame)->args, args);
+    MODIFY(env, PTR_AS(YogCFrame, frame)->f, f);
+    PUSH_FRAME(frame);
 
     YogVal retval = (*PTR_AS(YogBuiltinFunction, f)->f)(env);
 
@@ -173,7 +180,8 @@ call_builtin_function(YogEnv* env, YogThread* th, YogVal f, YogVal self, YogVal 
     if (0 < arg_info->varargc) { \
         YogVal vararg = YogArray_new(env); \
         unsigned int index = arg_info->argc + arg_info->blockargc; \
-        PTR_AS(YogValArray, args)->items[index] = vararg; \
+        YogVal* items = PTR_AS(YogValArray, args)->items; \
+        MODIFY(env, items[index], vararg); \
     }
 
 static YogVal 
@@ -204,7 +212,8 @@ call_builtin_unbound_method(YogEnv* env, YogThread* th, YogVal receiver, YogVal 
     if (0 < f_varargc) {
         YogVal vararg = YogArray_new(env);
         unsigned int index = f_argc + f_blockargc;
-        PTR_AS(YogValArray, args)->items[index] = vararg;
+        YogVal* items = PTR_AS(YogValArray, args)->items;
+        MODIFY(env, items[index], vararg);
     }
 
     fill_builtin_function_args(env, f, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, args);
@@ -241,8 +250,9 @@ call_builtin_bound_method(YogEnv* env, YogThread* th, YogVal method, uint8_t pos
     args = YogValArray_new(env, argc);
     if (0 < f_varargc) {
         YogVal vararg = YogArray_new(env);
+        YogVal* items = PTR_AS(YogValArray, args)->items;
         unsigned int index = f_argc + f_blockargc;
-        PTR_AS(YogValArray, args)->items[index] = vararg;
+        MODIFY(env, items[index], vararg);
     }
 
     fill_builtin_function_args(env, f, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, args);
@@ -318,7 +328,7 @@ call_code(YogEnv* env, YogThread* th, YogVal self, YogVal code, uint8_t posargc,
 
     unsigned int local_vars_count = PTR_AS(YogCode, code)->local_vars_count;
     vars = YogValArray_new(env, local_vars_count);
-    PTR_AS(YogValArray, vars)->items[0] = self;
+    MODIFY(env, PTR_AS(YogValArray, vars)->items[0], self);
 
     YogVal arg_info = PTR_AS(YogCode, code)->arg_info;
     unsigned int code_argc = PTR_AS(YogArgInfo, arg_info)->argc;
@@ -839,6 +849,7 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #endif
 }
 
+#if defined(GC_GENERATIONAL)
 void 
 YogThread_shrink_ref_tbl(YogEnv* env, YogThread* thread) 
 {
@@ -853,6 +864,7 @@ YogThread_shrink_ref_tbl(YogEnv* env, YogThread* thread)
     }
     thread->ref_tbl_ptr = to;
 }
+#endif
 
 void 
 YogThread_initialize(YogEnv* env, YogThread* thread) 

@@ -58,9 +58,9 @@ YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     YogFrame_keep_children(env, ptr, keeper);
 
     YogCFrame* frame = ptr;
-    frame->self = YogVal_keep(env, frame->self, keeper);
-    KEEP(f);
-    KEEP(args);
+    KEEP_VAL(self);
+    KEEP_VAL(f);
+    KEEP_VAL(args);
 #if 0
     KEEP_VAL(locals);
 #endif
@@ -184,20 +184,21 @@ YogCFrame_init(YogEnv* env, YogCFrame* frame)
     YogFrame_init((YogFrame*)frame, FRAME_C);
 
     frame->self = YUNDEF;
-    frame->args = NULL;
+    frame->args = YUNDEF;
+    frame->f = YUNDEF;
 #if 0
     frame->locals = YUNDEF;
     frame->locals_size = 0;
 #endif
 }
 
-YogCFrame* 
+YogVal 
 YogCFrame_new(YogEnv* env) 
 {
     YogCFrame* frame = ALLOC_OBJ(env, YogCFrame_keep_children, NULL, YogCFrame);
     YogCFrame_init(env, frame);
 
-    return frame;
+    return PTR2VAL(frame);
 }
 
 static void 

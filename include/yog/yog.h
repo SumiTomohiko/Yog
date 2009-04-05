@@ -210,8 +210,8 @@ typedef struct YogFrame YogFrame;
 struct YogCFrame {
     struct YogFrame base;
     struct YogVal self;
-    struct YogValArray* args;
-    struct YogBuiltinFunction* f;
+    struct YogVal args;
+    struct YogVal f;
 #if 0
     struct YogVal locals;
     unsigned int locals_size;
@@ -225,7 +225,7 @@ typedef struct YogCFrame YogCFrame;
 #define C_FRAME(frame)      ((YogCFrame*)(frame))
 #define CUR_C_FRAME(env)    PTR_AS(YogCFrame, (env)->th->cur_frame)
 #define SELF(env)           (CUR_C_FRAME(env)->self)
-#define ARG(env, i)         (CUR_C_FRAME(env)->args->items[i])
+#define ARG(env, i)         (PTR_AS(YogValArray, CUR_C_FRAME(env)->args)->items[i])
 
 struct YogOuterVars {
     unsigned int size;
@@ -449,7 +449,7 @@ typedef struct YogThread YogThread;
  */
 
 /* src/frame.c */
-YogCFrame* YogCFrame_new(YogEnv*);
+YogVal YogCFrame_new(YogEnv*);
 void YogFrame_add_locals(YogEnv*, YogCFrame*, unsigned int, ...);
 YogMethodFrame* YogMethodFrame_new(YogEnv*);
 YogVal YogNameFrame_new(YogEnv*);
