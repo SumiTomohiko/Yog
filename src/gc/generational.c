@@ -548,6 +548,72 @@ test_ref_tbl3(YogEnv* env)
 
 CREATE_TEST(ref_tbl3, &ref_tbl3_thread, YogThread_keep_children);
 
+static YogThread ref_tbl4_thread;
+static void* ref_tbl4_ptr1;
+static void* ref_tbl4_ptr2;
+
+static void
+ref_tbl4_ptr1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    *(void**)ptr = (*keeper)(env, *(void**)ptr);
+}
+
+static void 
+test_ref_tbl4(YogEnv* env) 
+{
+    YogThread_initialize(env, &ref_tbl4_thread);
+    env->th = env->vm->thread = &ref_tbl4_thread;
+
+    YogGenerational* gen = &env->vm->gc.generational;
+    ref_tbl4_ptr1 = YogGenerational_alloc(env, gen, ref_tbl4_ptr1_keep_children, NULL, sizeof(void*));
+    *(void**)ref_tbl4_ptr1 = NULL;
+    oldify(env, gen, ref_tbl4_ptr1);
+    YogGenerational_minor_gc(env, gen);
+
+    ref_tbl4_ptr2 = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    *(void**)ref_tbl4_ptr1 = ref_tbl4_ptr2;
+    ADD_REF(env, *(void**)ref_tbl4_ptr1);
+    oldify(env, gen, ref_tbl4_ptr2);
+    YogGenerational_minor_gc(env, gen);
+
+    CU_ASSERT_PTR_EQUAL(ref_tbl4_thread.ref_tbl, ref_tbl4_thread.ref_tbl_ptr);
+}
+
+CREATE_TEST(ref_tbl4, &ref_tbl4_thread, YogThread_keep_children);
+
+static YogThread ref_tbl5_thread;
+static void* ref_tbl5_ptr1;
+static void* ref_tbl5_ptr2;
+
+static void
+ref_tbl5_ptr1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    *(void**)ptr = (*keeper)(env, *(void**)ptr);
+}
+
+static void 
+test_ref_tbl5(YogEnv* env) 
+{
+    YogThread_initialize(env, &ref_tbl5_thread);
+    env->th = env->vm->thread = &ref_tbl5_thread;
+
+    YogGenerational* gen = &env->vm->gc.generational;
+    ref_tbl5_ptr1 = YogGenerational_alloc(env, gen, ref_tbl5_ptr1_keep_children, NULL, sizeof(void*));
+    *(void**)ref_tbl5_ptr1 = NULL;
+    oldify(env, gen, ref_tbl5_ptr1);
+    YogGenerational_minor_gc(env, gen);
+
+    ref_tbl5_ptr2 = YogGenerational_alloc(env, gen, NULL, NULL, 0);
+    *(void**)ref_tbl5_ptr1 = ref_tbl5_ptr2;
+    ADD_REF(env, *(void**)ref_tbl5_ptr1);
+    oldify(env, gen, ref_tbl5_ptr2);
+    YogGenerational_major_gc(env, gen);
+
+    CU_ASSERT_PTR_EQUAL(ref_tbl5_thread.ref_tbl, ref_tbl5_thread.ref_tbl_ptr);
+}
+
+CREATE_TEST(ref_tbl5, &ref_tbl5_thread, YogThread_keep_children);
+
 static void* forwarding_addr1_ptr1 = NULL;
 static void* forwarding_addr1_ptr2 = NULL;
 
@@ -685,6 +751,8 @@ main(int argc, const char* argv[])
     ADD_TEST(ref_tbl1);
     ADD_TEST(ref_tbl2);
     ADD_TEST(ref_tbl3);
+    ADD_TEST(ref_tbl4);
+    ADD_TEST(ref_tbl5);
     ADD_TEST(forwarding_addr1);
     ADD_TEST(forwarding_addr2);
     ADD_TEST(compact1);
