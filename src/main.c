@@ -15,7 +15,6 @@ usage()
     printf("yog [options] [file]\n");
     printf("options:\n");
     printf("  --debug-parser: \n");
-    printf("  --disable-gc: \n");
     printf("  --gc-stress: \n");
     printf("  --help: \n");
     printf("  --init-heap-size=size: \n");
@@ -63,18 +62,16 @@ main(int argc, char* argv[])
 {
     int debug_parser = 0;
     int gc_stress = 0;
-    int disable_gc = 0;
     int help = 0;
-#define DEFAULT_INIT_HEAP_SIZE  (16 * 1024 * 1024)
+#define DEFAULT_INIT_HEAP_SIZE  (1 * 1024 * 1024)
     size_t init_heap_size = DEFAULT_INIT_HEAP_SIZE;
 #undef DEFAULT_INIT_HEAP_SIZE
-#define DEFAULT_THRESHOLD   (1024 * 1024)
+#define DEFAULT_THRESHOLD   (1 * 1024 * 1024)
     size_t threshold = DEFAULT_THRESHOLD;
 #undef DEFAULT_THRESHOLD
     int print_gc_stat = 0;
     struct option options[] = {
         { "debug-parser", no_argument, &debug_parser, 1 }, 
-        { "disable-gc", no_argument, &disable_gc, 1 },
         { "gc-stress", no_argument, &gc_stress, 1 }, 
         { "help", no_argument, &help, 1 }, 
         { "init-heap-size", required_argument, NULL, 'i' }, 
@@ -109,9 +106,6 @@ main(int argc, char* argv[])
         USAGE;
         return 0;
     }
-    if (gc_stress && disable_gc) {
-        ERROR("Can't specify gc_stress and disable_gc at same time.");
-    }
 #undef ERROR
 #undef USAGE
 
@@ -122,7 +116,6 @@ main(int argc, char* argv[])
     YogVm vm;
     YogVm_init(&vm);
     vm.gc_stress = gc_stress ? TRUE : FALSE;
-    vm.disable_gc = disable_gc ? TRUE : FALSE;
     vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
 
     YogEnv env;

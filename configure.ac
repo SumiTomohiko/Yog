@@ -34,6 +34,12 @@ if test "${enable_profile}" = "yes"; then
     CFLAGS="-pg ${CFLAGS}"
     LDFLAGS="-pg ${LDFLAGS}"
 fi
+AC_ARG_ENABLE(google-perftools, 
+              AC_HELP_STRING([--enable-google-perftools], 
+                             [enable google-perftools [[default=no]]]))
+if test "${enable_google_perftools}" = "yes"; then
+    LDFLAGS="-lprofiler ${LDFLAGS}"
+fi
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile])
 if test "${with_cunit}" = "yes"; then

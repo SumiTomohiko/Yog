@@ -368,7 +368,6 @@ void
 YogVm_init(YogVm* vm) 
 {
     vm->gc_stress = FALSE;
-    vm->disable_gc = FALSE;
 
 #if defined(GC_COPYING)
     vm->alloc_mem = alloc_mem_copying;

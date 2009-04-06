@@ -110,7 +110,6 @@ typedef void (*Finalizer)(YogEnv*, void*);
 
 struct YogVm {
     BOOL gc_stress;
-    BOOL disable_gc;
 
     void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, Finalizer, size_t);
     void (*free_mem)(struct YogEnv*, struct YogVm*);
