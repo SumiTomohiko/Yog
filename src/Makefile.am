@@ -57,6 +57,28 @@ libyog_generational_la_SOURCES = $(COMMON_SOURCES) gc/generational.c \
 				 gc/copying.c gc/mark-sweep-compact.c
 libyog_generational_la_CFLAGS = $(COMMON_CFLAGS) -DGC_GENERATIONAL
 
+bin_PROGRAMS = yog-copying \
+	       yog-mark-sweep \
+	       yog-mark-sweep-compact \
+	       yog-bdw \
+	       yog-generational
+yog_COMMON_LDFLAGS = $(ROOT_DIR)/onig/libonig.la
+yog_copying_SOURCES = $(libyog_copying_la_SOURCES)
+yog_copying_CFLAGS = $(libyog_copying_la_CFLAGS)
+yog_copying_LDFLAGS = $(yog_COMMON_LDFLAGS)
+yog_mark_sweep_SOURCES = $(libyog_mark_sweep_la_SOURCES)
+yog_mark_sweep_CFLAGS = $(libyog_mark_sweep_la_CFLAGS)
+yog_mark_sweep_LDFLAGS = $(yog_COMMON_LDFLAGS)
+yog_mark_sweep_compact_SOURCES = $(libyog_mark_sweep_compact_la_SOURCES)
+yog_mark_sweep_compact_CFLAGS = $(libyog_mark_sweep_compact_la_CFLAGS)
+yog_mark_sweep_compact_LDFLAGS = $(yog_COMMON_LDFLAGS)
+yog_bdw_SOURCES = $(libyog_bdw_la_SOURCES)
+yog_bdw_CFLAGS = $(libyog_bdw_la_CFLAGS)
+yog_bdw_LDFLAGS = $(yog_COMMON_LDFLAGS) $(ROOT_DIR)/bdwgc/libgc.la
+yog_generational_SOURCES = $(libyog_generational_la_SOURCES)
+yog_generational_CFLAGS = $(libyog_generational_la_CFLAGS)
+yog_generational_LDFLAGS = $(yog_COMMON_LDFLAGS)
+
 INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
 INST_CMD = make insts

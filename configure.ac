@@ -27,6 +27,14 @@ AC_TYPE_SIZE_T
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([atexit bzero])
 
+AC_ARG_ENABLE(profile, 
+              AC_HELP_STRING([--enable-profile], 
+                             [enable gprof profiling [[default=no]]]))
+if test "${enable_profile}" = "yes"; then
+    CFLAGS="-pg ${CFLAGS}"
+    LDFLAGS="-pg ${LDFLAGS}"
+fi
+
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile])
 if test "${with_cunit}" = "yes"; then
     AC_CONFIG_FILES([tests/copying/Makefile 
