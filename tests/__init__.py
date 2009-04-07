@@ -2,6 +2,7 @@
 
 from signal import SIGKILL
 from os import environ, kill, unlink
+from os.path import join
 from subprocess import PIPE, Popen
 from tempfile import mkstemp
 from time import time
@@ -34,7 +35,7 @@ class TestCase(object):
             finally:
                 f.close()
 
-            cmd = ["./" + cmd_name]
+            cmd = [join("src", cmd_name)]
             cmd.extend(options)
             cmd.append(file)
 

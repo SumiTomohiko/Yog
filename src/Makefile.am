@@ -62,7 +62,7 @@ bin_PROGRAMS = yog-copying \
 	       yog-mark-sweep-compact \
 	       yog-bdw \
 	       yog-generational
-yog_COMMON_LDFLAGS = $(ROOT_DIR)/onig/libonig.la
+yog_COMMON_LDFLAGS = $(ONIG_DIR)/.libs/libonig.a
 yog_copying_SOURCES = $(libyog_copying_la_SOURCES)
 yog_copying_CFLAGS = $(libyog_copying_la_CFLAGS)
 yog_copying_LDFLAGS = $(yog_COMMON_LDFLAGS)
@@ -74,7 +74,7 @@ yog_mark_sweep_compact_CFLAGS = $(libyog_mark_sweep_compact_la_CFLAGS)
 yog_mark_sweep_compact_LDFLAGS = $(yog_COMMON_LDFLAGS)
 yog_bdw_SOURCES = $(libyog_bdw_la_SOURCES)
 yog_bdw_CFLAGS = $(libyog_bdw_la_CFLAGS)
-yog_bdw_LDFLAGS = $(yog_COMMON_LDFLAGS) $(ROOT_DIR)/bdwgc/libgc.la
+yog_bdw_LDFLAGS = $(yog_COMMON_LDFLAGS) $(BDWGC_DIR)/.libs/libgc.a -lpthread
 yog_generational_SOURCES = $(libyog_generational_la_SOURCES)
 yog_generational_CFLAGS = $(libyog_generational_la_CFLAGS)
 yog_generational_LDFLAGS = $(yog_COMMON_LDFLAGS)
