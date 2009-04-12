@@ -1,4 +1,4 @@
-#ifndef __YOG_ERROR_H__
+#if !defined(__YOG_ERROR_H__)
 #define __YOG_ERROR_H__
 
 #if 0

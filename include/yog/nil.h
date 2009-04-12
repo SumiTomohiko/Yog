@@ -1,4 +1,4 @@
-#ifndef __YOG_NIL_H__
+#if !defined(__YOG_NIL_H__)
 #define __YOG_NIL_H__
 
 /* PROTOTYPE_START */

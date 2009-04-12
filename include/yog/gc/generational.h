@@ -1,4 +1,4 @@
-#ifndef __YOG_GC_GENERATIONAL_H__
+#if !defined(__YOG_GC_GENERATIONAL_H__)
 #define __YOG_GC_GENERATIONAL_H__
 
 #include <stddef.h>

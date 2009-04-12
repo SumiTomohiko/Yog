@@ -7,7 +7,7 @@
 #   include "defines.h"
 #endif
 #include <stdio.h>
-#ifdef HAVE_STDLIB_H
+#if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include <string.h>
@@ -165,7 +165,7 @@ rehash(YogEnv* env, YogVal table)
 #define do_hash(env, table, key) (unsigned int)(*PTR_AS(YogTable, table)->type->hash)((env), (key))
 #define do_hash_bin(env, table, key) (do_hash(env, table, key) % PTR_AS(YogTable, table)->num_bins)
 
-#ifdef HASH_LOG
+#if defined(HASH_LOG)
 static int collision = 0;
 static int init_st = 0;
 
@@ -205,7 +205,7 @@ st_init_table_with_size(YogEnv* env, YogHashType* type, int size)
     YogVal tbl = YUNDEF;
     PUSH_LOCAL(env, tbl);
 
-#ifdef HASH_LOG
+#if defined(HASH_LOG)
     if (init_st == 0) {
         init_st = 1;
         atexit(stat_col);
@@ -233,7 +233,7 @@ st_init_table(YogEnv* env, YogHashType* type)
 #define PTR_NOT_EQUAL(env, table, ptr, hash_val, key) \
 (VAL2PTR((ptr)) != NULL && (PTR_AS(YogTableEntry, (ptr))->hash != (hash_val) || !EQUAL((env), (table), (key), PTR_AS(YogTableEntry, (ptr))->key)))
 
-#ifdef HASH_LOG
+#if defined(HASH_LOG)
 #define COLLISION collision++
 #else
 #define COLLISION
@@ -537,7 +537,7 @@ strhash(const char* string)
 {
     register int c;
 
-#ifdef HASH_ELFHASH
+#if defined(HASH_ELFHASH)
     register unsigned int h = 0, g;
 
     while ((c = *string++) != '\0') {

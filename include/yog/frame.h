@@ -1,4 +1,4 @@
-#ifndef __YOG_FRAME_H__
+#if !defined(__YOG_FRAME_H__)
 #define __YOG_FRAME_H__
 
 #include "yog/yog.h"

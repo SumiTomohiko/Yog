@@ -1,4 +1,4 @@
-#ifndef __YOG_ENV_H__
+#if !defined(__YOG_ENV_H__)
 #define __YOG_ENV_H__
 
 struct YogEnv {

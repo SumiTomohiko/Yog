@@ -1,4 +1,4 @@
-#ifndef __YOG_PARSER_H__
+#if !defined(__YOG_PARSER_H__)
 #define __YOG_PARSER_H__
 
 #include <stdio.h>

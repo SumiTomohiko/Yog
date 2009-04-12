@@ -713,7 +713,7 @@ YogMarkSweepCompact_finalize(YogEnv* env, YogMarkSweepCompact* msc)
     }
 }
 
-#ifdef TEST_MARK_SWEEP_COMPACT
+#if defined(TEST_MARK_SWEEP_COMPACT)
 #define CHUNK_SIZE  (1 * 1024 * 1024)
 #define THRESHOLD   CHUNK_SIZE
 

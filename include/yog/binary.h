@@ -1,4 +1,4 @@
-#ifndef __YOG_BINARY_H__
+#if !defined(__YOG_BINARY_H__)
 #define __YOG_BINARY_H__
 
 #include "yog/object.h"

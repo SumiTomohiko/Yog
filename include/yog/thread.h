@@ -1,4 +1,4 @@
-#ifndef __YOG_THREAD_H__
+#if !defined(__YOG_THREAD_H__)
 #define __YOG_THREAD_H__
 
 #include <setjmp.h>

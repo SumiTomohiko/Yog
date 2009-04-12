@@ -2,7 +2,7 @@
 
 /* @(#) st.h 5.1 89/12/14 */
 
-#ifndef __YOG_ST_H__
+#if !defined(__YOG_ST_H__)
 #define __YOG_ST_H__
 
 #include "yog/yog.h"

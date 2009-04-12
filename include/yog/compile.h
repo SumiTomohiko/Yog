@@ -1,4 +1,4 @@
-#ifndef __YOG_COMPILE_H__
+#if !defined(__YOG_COMPILE_H__)
 #define __YOG_COMPILE_H__
 
 #include "yog/array.h"

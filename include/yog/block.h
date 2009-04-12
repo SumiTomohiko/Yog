@@ -1,4 +1,4 @@
-#ifndef __YOG_BLOCK_H__
+#if !defined(__YOG_BLOCK_H__)
 #define __YOG_BLOCK_H__
 
 #include "yog/object.h"

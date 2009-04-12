@@ -1,4 +1,4 @@
-#ifndef __YOG_ENCODING_H__
+#if !defined(__YOG_ENCODING_H__)
 #define __YOG_ENCODING_H__
 
 #include "oniguruma.h"

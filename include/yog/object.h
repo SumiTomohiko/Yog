@@ -1,4 +1,4 @@
-#ifndef __YOG_OBJECT_H__
+#if !defined(__YOG_OBJECT_H__)
 #define __YOG_OBJECT_H__
 
 #include "yog/yog.h"

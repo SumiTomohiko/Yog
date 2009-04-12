@@ -1,4 +1,4 @@
-#ifndef __YOG_REGEXP_H__
+#if !defined(__YOG_REGEXP_H__)
 #define __YOG_REGEXP_H__
 
 #include "oniguruma.h"

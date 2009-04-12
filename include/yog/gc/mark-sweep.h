@@ -1,10 +1,10 @@
-#ifndef __YOG_MARK_SWEEP_H__
+#if !defined(__YOG_MARK_SWEEP_H__)
 #define __YOG_MARK_SWEEP_H__
 
 #include <stddef.h>
 
 /* TODO: commonize with yog/yog.h */
-#ifndef __YOG_YOG_H__
+#if !defined(__YOG_YOG_H__)
 typedef struct YogEnv YogEnv;
 typedef void* (*ObjectKeeper)(YogEnv*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);

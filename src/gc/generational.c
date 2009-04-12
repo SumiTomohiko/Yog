@@ -4,7 +4,7 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 #include "yog/gc/generational.h"
-#ifdef TEST_GENERATIONAL
+#if defined(TEST_GENERATIONAL)
 #   include <stdio.h>
 #   include <stdlib.h>
 #   include <CUnit/Basic.h>
@@ -236,7 +236,7 @@ YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper
     return NULL;
 }
 
-#ifdef TEST_GENERATIONAL
+#if defined(TEST_GENERATIONAL)
 #define CHUNK_SIZE  (1 * 1024 * 1024)
 #define THRESHOLD   CHUNK_SIZE
 #define HEAP_SIZE   (1 * 1024 * 1024)

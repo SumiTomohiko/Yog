@@ -1,4 +1,4 @@
-#ifndef __YOG_YOG_H__
+#if !defined(__YOG_YOG_H__)
 #define __YOG_YOG_H__
 
 #include <limits.h>

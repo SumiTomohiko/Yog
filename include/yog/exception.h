@@ -1,4 +1,4 @@
-#ifndef __YOG_EXCEPTION_H__
+#if !defined(__YOG_EXCEPTION_H__)
 #define __YOG_EXCEPTION_H__
 
 #include "yog/object.h"

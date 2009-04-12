@@ -1,4 +1,4 @@
-#ifndef __YOG_GC_BDW_H__
+#if !defined(__YOG_GC_BDW_H__)
 #define __YOG_GC_BDW_H__
 
 #include <stddef.h>

@@ -1,4 +1,4 @@
-#ifndef __COPYING_H__
+#if !defined(__COPYING_H__)
 #define __COPYING_H__
 
 /* TODO: commonize with yog/yog.h */

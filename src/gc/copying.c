@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef TEST_COPYING
+#if defined(TEST_COPYING)
 #   include <stdio.h>
 #   include <CUnit/Basic.h>
 #   include <CUnit/CUnit.h>
@@ -73,7 +73,7 @@ round_size(size_t size)
 void* 
 YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr) 
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 #   define PRINT(...)   DPRINTF("copy: " __VA_ARGS__)
 #else
 #   define PRINT(...)
@@ -205,7 +205,7 @@ YogCopying_do_gc(YogEnv* env, YogCopying* copying, ObjectKeeper obj_keeper)
 {
     YogCopyingHeap* from_space = copying->active_heap;
     YogCopyingHeap* to_space = copying->inactive_heap;
-#ifdef DEBUG
+#if defined(DEBUG)
 #   define PRINT_HEAP(text, heap)   do { \
     DPRINTF("%s: exec_num=0x%08x, %p-%p", (text), env->vm->gc_stat.exec_num, (heap)->items, (unsigned char*)(heap)->items + (heap)->size); \
 } while (0)
@@ -315,7 +315,7 @@ YogCopying_initialize(YogEnv* env, YogCopying* copying, BOOL stress, size_t heap
     copying->stress = stress;
     copying->active_heap = YogCopyingHeap_new(copying, heap_size);
     copying->inactive_heap = YogCopyingHeap_new(copying, heap_size);
-#ifdef DEBUG
+#if defined(DEBUG)
 #   define PRINT_HEAP(text, heap)   do { \
     DPRINTF("%s: %p (%p-%p)", (text), (heap), (heap)->items, (unsigned char*)(heap)->items + (heap)->size); \
 } while (0)
@@ -331,7 +331,7 @@ YogCopying_initialize(YogEnv* env, YogCopying* copying, BOOL stress, size_t heap
     copying->root_keeper = root_keeper;
 }
 
-#ifdef TEST_COPYING
+#if defined(TEST_COPYING)
 #define HEAP_SIZE   (1 * 1024 * 1024)
 
 #define CREATE_TEST(name, root, root_keeper) \

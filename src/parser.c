@@ -572,7 +572,7 @@ YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
 */
 /* Make sure the INTERFACE macro is defined.
 */
-#ifndef INTERFACE
+#if !defined(INTERFACE)
 # define INTERFACE 1
 #endif
 /* The next thing included is series of defines which control
@@ -618,7 +618,7 @@ typedef union {
   ParseTOKENTYPE yy0;
   YogVal yy77;
 } YYMINORTYPE;
-#ifndef YYSTACKDEPTH
+#if !defined(YYSTACKDEPTH)
 #define YYSTACKDEPTH 100
 #endif
 #define ParseARG_SDECL  YogVal* pval ;
@@ -973,7 +973,7 @@ static const YYACTIONTYPE yy_default[] = {
 ** but it does not parse, the type of the token is changed to ID and
 ** the parse is retried before an error is thrown.
 */
-#ifdef YYFALLBACK
+#if defined(YYFALLBACK)
 static const YYCODETYPE yyFallback[] = {
 };
 #endif /* YYFALLBACK */
@@ -1003,7 +1003,7 @@ typedef struct yyStackEntry yyStackEntry;
 ** the following structure */
 struct yyParser {
   int yyidx;                    /* Index of top element in stack */
-#ifdef YYTRACKMAXSTACKDEPTH
+#if defined(YYTRACKMAXSTACKDEPTH)
   int yyidxMax;                 /* Maximum value of yyidx */
 #endif
   int yyerrcnt;                 /* Shifts left before out of the error */
@@ -1034,13 +1034,13 @@ dump_parser_stack(YogEnv* env, YogVal parser)
 }
 #endif
 
-#ifndef NDEBUG
+#if !defined(NDEBUG)
 #include <stdio.h>
 static FILE *yyTraceFILE = 0;
 static char *yyTracePrompt = 0;
 #endif /* NDEBUG */
 
-#ifndef NDEBUG
+#if !defined(NDEBUG)
 /* 
 ** Turn parser tracing on by giving a stream to which to write the trace
 ** and a prompt to preface each trace message.  Tracing is turned off
@@ -1066,7 +1066,7 @@ static void ParseTrace(FILE *TraceFILE, char *zTracePrompt){
 }
 #endif /* NDEBUG */
 
-#ifndef NDEBUG
+#if !defined(NDEBUG)
 /* For tracing shifts, the names of all terminals and nonterminals
 ** are required.  The following table supplies these names */
 static const char *const yyTokenName[] = { 
@@ -1095,7 +1095,7 @@ static const char *const yyTokenName[] = {
 };
 #endif /* NDEBUG */
 
-#ifndef NDEBUG
+#if !defined(NDEBUG)
 /* For tracing reduce actions, the names of all rules are required.
 */
 static const char *const yyRuleName[] = {
@@ -1236,7 +1236,7 @@ static void yyGrowStack(yyParser *p){
   if( pNew ){
     p->yystack = pNew;
     p->yystksz = newSize;
-#ifndef NDEBUG
+#if !defined(NDEBUG)
     if( yyTraceFILE ){
       fprintf(yyTraceFILE,"%sStack grows to %d entries!\n",
               yyTracePrompt, p->yystksz);
@@ -1275,7 +1275,7 @@ LemonParser_new(YogEnv* env)
   yyParser *pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
   if( pParser ){
     pParser->yyidx = -1;
-#ifdef YYTRACKMAXSTACKDEPTH
+#if defined(YYTRACKMAXSTACKDEPTH)
     pParser->yyidxMax = 0;
 #endif
 #if YYSTACKDEPTH<=0
@@ -1332,7 +1332,7 @@ static int yy_pop_parser_stack(YogVal parser) {
   yyStackEntry *yytos = &PTR_AS(yyParser, parser)->yystack[yyidx];
 
   if (PTR_AS(yyParser, parser)->yyidx < 0) return 0;
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   if (yyTraceFILE && (0 <= PTR_AS(yyParser, parser)->yyidx)) {
     fprintf(yyTraceFILE,"%sPopping %s\n",
       yyTracePrompt,
@@ -1375,7 +1375,7 @@ void ParseFree(
 /*
 ** Return the peak depth of the stack for a parser.
 */
-#ifdef YYTRACKMAXSTACKDEPTH
+#if defined(YYTRACKMAXSTACKDEPTH)
 static int ParseStackPeak(YogVal parser) {
   return PTR_AS(yyParser, parser)->yyidxMax;
 }
@@ -1404,11 +1404,11 @@ static int yy_find_shift_action(
   i += iLookAhead;
   if( i<0 || i>=YY_SZ_ACTTAB || yy_lookahead[i]!=iLookAhead ){
     if( iLookAhead>0 ){
-#ifdef YYFALLBACK
+#if defined(YYFALLBACK)
       YYCODETYPE iFallback;            /* Fallback token */
       if( iLookAhead<sizeof(yyFallback)/sizeof(yyFallback[0])
              && (iFallback = yyFallback[iLookAhead])!=0 ){
-#ifndef NDEBUG
+#if !defined(NDEBUG)
         if( yyTraceFILE ){
           fprintf(yyTraceFILE, "%sFALLBACK %s => %s\n",
              yyTracePrompt, yyTokenName[iLookAhead], yyTokenName[iFallback]);
@@ -1417,11 +1417,11 @@ static int yy_find_shift_action(
         return yy_find_shift_action(parser, iFallback);
       }
 #endif
-#ifdef YYWILDCARD
+#if defined(YYWILDCARD)
       {
         int j = i - iLookAhead + YYWILDCARD;
         if( j>=0 && j<YY_SZ_ACTTAB && yy_lookahead[j]==YYWILDCARD ){
-#ifndef NDEBUG
+#if !defined(NDEBUG)
           if( yyTraceFILE ){
             fprintf(yyTraceFILE, "%sWILDCARD %s => %s\n",
                yyTracePrompt, yyTokenName[iLookAhead], yyTokenName[YYWILDCARD]);
@@ -1451,7 +1451,7 @@ static int yy_find_reduce_action(
   YYCODETYPE iLookAhead     /* The look-ahead token */
 ){
   int i;
-#ifdef YYERRORSYMBOL
+#if defined(YYERRORSYMBOL)
   if( stateno>YY_REDUCE_MAX ){
     return yy_default[stateno];
   }
@@ -1462,7 +1462,7 @@ static int yy_find_reduce_action(
   assert( i!=YY_REDUCE_USE_DFLT );
   assert( iLookAhead!=YYNOCODE );
   i += iLookAhead;
-#ifdef YYERRORSYMBOL
+#if defined(YYERRORSYMBOL)
   if( i<0 || i>=YY_SZ_ACTTAB || yy_lookahead[i]!=iLookAhead ){
     return yy_default[stateno];
   }
@@ -1479,7 +1479,7 @@ static int yy_find_reduce_action(
 static void yyStackOverflow(YogVal parser, YYMINORTYPE *yypMinor){
    ParseARG_FETCH;
    PTR_AS(yyParser, parser)->yyidx--;
-#ifndef NDEBUG
+#if !defined(NDEBUG)
    if( yyTraceFILE ){
      fprintf(yyTraceFILE,"%sStack Overflow!\n",yyTracePrompt);
    }
@@ -1502,7 +1502,7 @@ static void yy_shift(
 ){
   yyStackEntry *yytos;
   PTR_AS(yyParser, parser)->yyidx++;
-#ifdef YYTRACKMAXSTACKDEPTH
+#if defined(YYTRACKMAXSTACKDEPTH)
   if( PTR_AS(yyParser, parser)->yyidx>PTR_AS(yyParser, parser)->yyidxMax ){
     PTR_AS(yyParser, parser)->yyidxMax = PTR_AS(yyParser, parser)->yyidx;
   }
@@ -1526,7 +1526,7 @@ static void yy_shift(
   yytos->major = (YYCODETYPE)yyMajor;
   yytos->minor = *yypMinor;
   ADD_REF(env, VAL2PTR(yytos->minor.yy0));
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   if( yyTraceFILE && PTR_AS(yyParser, parser)->yyidx>0 ){
     int i;
     fprintf(yyTraceFILE,"%sShift %d\n",yyTracePrompt,yyNewState);
@@ -1702,7 +1702,7 @@ static void yy_reduce(
   PUSH_LOCAL_TABLE(env, locals);
 
   ParseARG_FETCH;
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   if( yyTraceFILE && yyruleno>=0 
         && yyruleno<(int)(sizeof(yyRuleName)/sizeof(yyRuleName[0])) ){
     fprintf(yyTraceFILE, "%sReduce [%s].\n", yyTracePrompt,
@@ -2417,7 +2417,7 @@ static void yy_reduce(
   PTR_AS(yyParser, parser)->yyidx -= yysize;
   yyact = yy_find_reduce_action(yymsp[-yysize].stateno,(YYCODETYPE)yygoto);
   if( yyact < YYNSTATE ){
-#ifdef NDEBUG
+#if defined(NDEBUG)
     /* If we are not debugging and the reduce action popped at least
     ** one element off the stack, then we can push the new element back
     ** onto the stack here, and skip the stack overflow test in yy_shift().
@@ -2448,7 +2448,7 @@ static void yy_parse_failed(
     YogVal parser
 ){
   ParseARG_FETCH;
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   if( yyTraceFILE ){
     fprintf(yyTraceFILE,"%sFail!\n",yyTracePrompt);
   }
@@ -2479,7 +2479,7 @@ static void yy_accept(
   YogVal parser
 ){
   ParseARG_FETCH;
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   if( yyTraceFILE ){
     fprintf(yyTraceFILE,"%sAccept!\n",yyTracePrompt);
   }
@@ -2531,7 +2531,7 @@ static void Parse(
 
   int yyact;            /* The parser action. */
   int yyendofinput;     /* True if we are at the end of input */
-#ifdef YYERRORSYMBOL
+#if defined(YYERRORSYMBOL)
   int yyerrorhit = 0;   /* True if yymajor has invoked an error */
 #endif
 
@@ -2555,7 +2555,7 @@ static void Parse(
   yyendofinput = (yymajor==0);
   ParseARG_STORE;
 
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   if( yyTraceFILE ){
     fprintf(yyTraceFILE,"%sInput %s\n",yyTracePrompt,yyTokenName[yymajor]);
   }
@@ -2572,15 +2572,15 @@ static void Parse(
       yy_reduce(env, parser, yyact-YYNSTATE);
     }else{
       assert( yyact == YY_ERROR_ACTION );
-#ifdef YYERRORSYMBOL
+#if defined(YYERRORSYMBOL)
       int yymx;
 #endif
-#ifndef NDEBUG
+#if !defined(NDEBUG)
       if( yyTraceFILE ){
         fprintf(yyTraceFILE,"%sSyntax Error!\n",yyTracePrompt);
       }
 #endif
-#ifdef YYERRORSYMBOL
+#if defined(YYERRORSYMBOL)
       /* A syntax error has occurred.
       ** The response to an error depends upon whether or not the
       ** grammar defines an error token "ERROR".  
@@ -2606,7 +2606,7 @@ static void Parse(
       int yyidx = PTR_AS(yyParser, parser)->yyidx;
       yymx = PTR_AS(yyParser, parser)->yystack[yyidx].major;
       if( yymx==YYERRORSYMBOL || yyerrorhit ){
-#ifndef NDEBUG
+#if !defined(NDEBUG)
         if( yyTraceFILE ){
           fprintf(yyTraceFILE,"%sDiscard input token %s\n",
              yyTracePrompt,yyTokenName[yymajor]);

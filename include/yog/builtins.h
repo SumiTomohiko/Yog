@@ -1,4 +1,4 @@
-#ifndef __YOG_BUILTINS_H__
+#if !defined(__YOG_BUILTINS_H__)
 #define __YOG_BUILTINS_H__
 
 /* PROTOTYPE_START */

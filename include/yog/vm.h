@@ -1,4 +1,4 @@
-#ifndef __YOG_VM_H__
+#if !defined(__YOG_VM_H__)
 #define __YOG_VM_H__
 
 #include "yog/yog.h"

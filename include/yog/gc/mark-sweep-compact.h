@@ -1,4 +1,4 @@
-#ifndef __YOG_GC_MARK_SWEEP_COMPACT_H__
+#if !defined(__YOG_GC_MARK_SWEEP_COMPACT_H__)
 #define __YOG_GC_MARK_SWEEP_COMPACT_H__
 
 #include <stddef.h>
