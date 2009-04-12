@@ -1,4 +1,10 @@
+#include "yog/env.h"
 #include "yog/error.h"
+#include "yog/frame.h"
+#include "yog/klass.h"
+#include "yog/string.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 #define CHECK_TYPE(v) do { \
@@ -63,7 +69,7 @@ times(YogEnv* env)
 
         YogVal block = ARG(env, 0);
 
-        YogThread_call_block(env, ENV_TH(env), block, argc, args);
+        YogThread_call_block(env, env->th, block, argc, args);
     }
 
     return YNIL;
@@ -72,7 +78,7 @@ times(YogEnv* env)
 YogVal 
 YogInt_klass_new(YogEnv* env) 
 {
-    YogVal klass = YogKlass_new(env, "Int", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Int", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 #define DEFINE_METHOD(name, f) do { \
     YogKlass_define_method(env, klass, name, f, 0, 0, 0, -1, "n", NULL); \

@@ -1,4 +1,5 @@
 #include "yog/exception.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 static void 

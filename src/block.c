@@ -1,4 +1,7 @@
 #include "yog/block.h"
+#include "yog/klass.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 static void 
@@ -11,7 +14,7 @@ YogBasicBlock_init(YogEnv* env, YogBasicBlock* block, YogVal klass)
 static void 
 YogPackageBlock_init(YogEnv* env, YogPackageBlock* block) 
 {
-    YogBasicBlock_init(env, BASIC_BLOCK(block), ENV_VM(env)->cPackageBlock);
+    YogBasicBlock_init(env, BASIC_BLOCK(block), env->vm->cPackageBlock);
 
     block->self = YUNDEF;
     block->vars = YUNDEF;
@@ -54,7 +57,7 @@ YogPackageBlock_allocate(YogEnv* env, YogVal klass)
 YogVal 
 YogPackageBlock_new(YogEnv* env) 
 {
-    return YogPackageBlock_allocate(env, ENV_VM(env)->cPackageBlock);
+    return YogPackageBlock_allocate(env, env->vm->cPackageBlock);
 }
 
 static void 
@@ -95,7 +98,7 @@ YogPackageBlock_klass_new(YogEnv* env)
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "PackageBlock", ENV_VM(env)->cObject);
+    klass = YogKlass_new(env, "PackageBlock", env->vm->cObject);
 
     YogKlass_define_allocator(env, klass, YogPackageBlock_allocate);
 

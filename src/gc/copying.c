@@ -6,6 +6,8 @@
 #   include <CUnit/Basic.h>
 #   include <CUnit/CUnit.h>
 #endif
+#include "yog/env.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 #include "yog/gc/copying.h"
 #if GC_GENERATIONAL

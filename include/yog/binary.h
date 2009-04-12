@@ -1,6 +1,7 @@
 #ifndef __YOG_BINARY_H__
 #define __YOG_BINARY_H__
 
+#include "yog/object.h"
 #include "yog/yog.h"
 
 struct YogByteArray {

@@ -1,8 +1,13 @@
 #include <string.h>
 #include "oniguruma.h"
 #include "yog/encoding.h"
+#include "yog/env.h"
 #include "yog/error.h"
+#include "yog/frame.h"
+#include "yog/klass.h"
 #include "yog/regexp.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 static void 
@@ -31,7 +36,7 @@ YogMatch_new(YogEnv* env, YogVal str, YogVal regexp, OnigRegion* onig_region)
     SAVE_ARGS2(env, str, regexp);
 
     YogMatch* match = ALLOC_OBJ(env, YogMatch_keep_children, YogMatch_finalize, YogMatch);
-    YogBasicObj_init(env, YOGBASICOBJ(match), 0, ENV_VM(env)->cMatch);
+    YogBasicObj_init(env, YOGBASICOBJ(match), 0, env->vm->cMatch);
     match->str = str;
     match->regexp = regexp;
     match->onig_region = onig_region;
@@ -66,7 +71,7 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
     }
 
     YogRegexp* regexp = ALLOC_OBJ(env, NULL, YogRegexp_finalize, YogRegexp);
-    YogBasicObj_init(env, YOGBASICOBJ(regexp), 0, ENV_VM(env)->cRegexp);
+    YogBasicObj_init(env, YOGBASICOBJ(regexp), 0, env->vm->cRegexp);
     regexp->onig_regexp = onig_regexp;
 
     return OBJ2VAL(regexp);
@@ -75,7 +80,7 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
 YogVal 
 YogRegexp_klass_new(YogEnv* env) 
 {
-    return YogKlass_new(env, "Regexp", ENV_VM(env)->cObject);
+    return YogKlass_new(env, "Regexp", env->vm->cObject);
 }
 
 static int 
@@ -193,7 +198,7 @@ end(YogEnv* env)
 YogVal 
 YogMatch_klass_new(YogEnv* env) 
 {
-    YogVal klass = YogKlass_new(env, "Match", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Match", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_method(env, klass, "group", group, 0, 0, 0, 0, "group", NULL);

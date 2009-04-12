@@ -1,6 +1,7 @@
 #ifndef __YOG_KLASS_H__
 #define __YOG_KLASS_H__
 
+#include "yog/object.h"
 #include "yog/yog.h"
 
 struct YogKlass {

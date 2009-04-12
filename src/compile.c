@@ -1,6 +1,7 @@
 #include <limits.h>
 #include <stdint.h>
 #include "yog/arg.h"
+#include "yog/array.h"
 #include "yog/binary.h"
 #include "yog/code.h"
 #include "yog/error.h"
@@ -8,6 +9,9 @@
 #include "yog/opcodes.h"
 #include "yog/parser.h"
 #include "yog/st.h"
+#include "yog/string.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 typedef struct AstVisitor AstVisitor;
@@ -890,7 +894,7 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 
     val = NODE(node)->u.literal.val;
     unsigned int lineno = NODE(node)->lineno;
-    if (VAL2PTR(YogVal_get_klass(env, val)) == VAL2PTR(ENV_VM(env)->cString)) {
+    if (VAL2PTR(YogVal_get_klass(env, val)) == VAL2PTR(env->vm->cString)) {
         unsigned int index = register_const(env, data, val);
         CompileData_add_make_string(env, data, lineno, index);
     }
@@ -2279,7 +2283,7 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
         visit_node(env, visitor, super, data);
     }
     else {
-        YogVal cObject = ENV_VM(env)->cObject;
+        YogVal cObject = env->vm->cObject;
         add_push_const(env, data, cObject, NODE(node)->lineno);
     }
 

@@ -11,8 +11,12 @@
 #include <stdlib.h>
 #endif
 #include <string.h>
+#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/st.h"
+#include "yog/string.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 #if 0
@@ -682,7 +686,7 @@ print_val(YogEnv* env, YogVal val)
         printf("nil");
     }
     else if (IS_SYMBOL(val)) {
-        printf(" :%s", YogVm_id2name(env, ENV_VM(env), VAL2ID(val)));
+        printf(" :%s", YogVm_id2name(env, env->vm, VAL2ID(val)));
     }
     else {
         YOG_ASSERT(env, FALSE, "Unknown value type.");

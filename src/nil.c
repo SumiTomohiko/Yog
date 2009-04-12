@@ -1,4 +1,8 @@
+#include "yog/env.h"
+#include "yog/klass.h"
 #include "yog/string.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 static YogVal 
@@ -10,7 +14,7 @@ to_s(YogEnv* env)
 YogVal 
 YogNil_klass_new(YogEnv* env) 
 {
-    YogVal klass = YogKlass_new(env, "Nil", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Nil", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);

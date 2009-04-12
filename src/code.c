@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include "yog/arg.h"
+#include "yog/array.h"
 #include "yog/binary.h"
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/inst.h"
 #include "yog/opcodes.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 #include "src/code.inc"
@@ -39,7 +42,7 @@ print_val(YogEnv* env, YogVal val)
         printf("nil");
     }
     else if (IS_SYMBOL(val)) {
-        printf(" :%s", YogVm_id2name(env, ENV_VM(env), VAL2ID(val)));
+        printf(" :%s", YogVm_id2name(env, env->vm, VAL2ID(val)));
     }
     else {
         YOG_ASSERT(env, FALSE, "Unknown value type.");
@@ -151,7 +154,7 @@ YogCode_dump(YogEnv* env, YogVal code)
             {
                 unsigned int offset = 0;
                 ID id = OPERAND(ID, offset);
-                printf(" :%s", YogVm_id2name(env, ENV_VM(env), id));
+                printf(" :%s", YogVm_id2name(env, env->vm, id));
                 offset += sizeof(ID);
                 uint8_t argc = OPERAND(uint8_t, offset);
                 printf(" %d", argc);

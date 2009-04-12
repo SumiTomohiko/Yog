@@ -2,6 +2,7 @@
 #define __YOG_REGEXP_H__
 
 #include "oniguruma.h"
+#include "yog/object.h"
 #include "yog/yog.h"
 
 struct YogRegexp {

@@ -9,12 +9,17 @@
 #include "yog/builtins.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
+#include "yog/exception.h"
 #include "yog/gc/bdw.h"
 #include "yog/int.h"
+#include "yog/klass.h"
 #include "yog/method.h"
 #include "yog/nil.h"
+#include "yog/package.h"
 #include "yog/regexp.h"
 #include "yog/st.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 #if 0
@@ -96,7 +101,7 @@ YogVm_id2name(YogEnv* env, YogVm* vm, ID id)
 {
     YogVal sym = ID2VAL(id);
     YogVal val = YUNDEF;
-    if (!YogTable_lookup(env, ENV_VM(env)->id2name, sym, &val)) {
+    if (!YogTable_lookup(env, env->vm->id2name, sym, &val)) {
         YOG_BUG(env, "can't find symbol (0x%x)", id);
     }
 

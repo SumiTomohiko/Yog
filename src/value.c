@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "yog/error.h"
+#include "yog/klass.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 YogVal 
@@ -270,7 +272,7 @@ YogVal_get_klass(YogEnv* env, YogVal val)
 {
     switch (VAL_TYPE(val)) {
     case VAL_INT:
-        return ENV_VM(env)->cInt;
+        return env->vm->cInt;
         break;
     case VAL_OBJ:
         {
@@ -279,10 +281,10 @@ YogVal_get_klass(YogEnv* env, YogVal val)
             break;
         }
     case VAL_BOOL:
-        return ENV_VM(env)->cBool;
+        return env->vm->cBool;
         break;
     case VAL_NIL:
-        return ENV_VM(env)->cNil;
+        return env->vm->cNil;
         break;
     case VAL_FLOAT:
     case VAL_SYMBOL:

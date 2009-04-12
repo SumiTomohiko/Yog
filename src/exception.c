@@ -1,7 +1,12 @@
 #include "yog/code.h"
+#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/exception.h"
+#include "yog/frame.h"
 #include "yog/function.h"
+#include "yog/klass.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 static void 
@@ -69,7 +74,7 @@ initialize(YogEnv* env)
     YogVal st = YUNDEF;
     PUSH_LOCALS4(env, self, message, frame, st);
 
-    frame = ENV_TH(env)->cur_frame;
+    frame = env->th->cur_frame;
     frame = skip_frame(env, frame, "initialize");
     frame = skip_frame(env, frame, "new");
 
@@ -141,7 +146,7 @@ to_s(YogEnv* env)
 
     YogException* exc = OBJ_AS(YogException, self);
     YogVal msg = exc->message;
-    YogVal retval = YogThread_call_method(env, ENV_TH(env), msg, "to_s", 0, NULL);
+    YogVal retval = YogThread_call_method(env, env->th, msg, "to_s", 0, NULL);
 
     return retval;
 }
@@ -149,7 +154,7 @@ to_s(YogEnv* env)
 YogVal 
 YogException_klass_new(YogEnv* env) 
 {
-    YogVal klass = YogKlass_new(env, "Exception", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Exception", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_allocator(env, klass, allocate);
@@ -164,8 +169,8 @@ YogException_klass_new(YogEnv* env)
 YogVal 
 YogBugException_new(YogEnv* env) 
 {
-    YogVal self = ENV_VM(env)->eBugException;
-    return YogThread_call_method(env, ENV_TH(env), self, "new", 0, NULL);
+    YogVal self = env->vm->eBugException;
+    return YogThread_call_method(env, env->th, self, "new", 0, NULL);
 }
 
 /**

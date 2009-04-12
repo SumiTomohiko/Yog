@@ -1,7 +1,9 @@
 #include <ctype.h>
 #include "yog/encoding.h"
+#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/st.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 char* 
@@ -17,7 +19,7 @@ YogEncoding_get_default(YogEnv* env)
     ID name = INTERN("utf-8");
     YogVal key = ID2VAL(name);
     YogVal val = YUNDEF;
-    if (!YogTable_lookup(env, ENV_VM(env)->encodings, key, &val)) {
+    if (!YogTable_lookup(env, env->vm->encodings, key, &val)) {
         YOG_ASSERT(env, FALSE, "Can't find default encoding.");
     }
     return val;

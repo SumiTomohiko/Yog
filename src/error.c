@@ -1,7 +1,11 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "yog/env.h"
 #include "yog/error.h"
+#include "yog/string.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 void 
@@ -25,7 +29,7 @@ YogError_bug(YogEnv* env, const char* filename, unsigned int lineno, const char*
 void 
 YogError_raise(YogEnv* env, YogVal exc) 
 {
-    YogThread* th = ENV_TH(env);
+    YogThread* th = env->th;
     YogVal jmp_val = YUNDEF;
     if (IS_UNDEF(exc)) {
         jmp_val = th->jmp_val;
@@ -46,7 +50,7 @@ raise_error(YogEnv* env, YogVal klass, const char* msg)
 
     YogVal args[] = { YogString_new_str(env, msg), };
     PUSH_LOCALSX(env, 1, args);
-    YogVal val = YogThread_call_method(env, ENV_TH(env), klass, "new", 1, args);
+    YogVal val = YogThread_call_method(env, env->th, klass, "new", 1, args);
     RESTORE_LOCALS(env);
     YogError_raise(env, val);
 }
@@ -54,13 +58,13 @@ raise_error(YogEnv* env, YogVal klass, const char* msg)
 void 
 YogError_raise_type_error(YogEnv* env, const char* msg) 
 {
-    raise_error(env, ENV_VM(env)->eTypeError, msg);
+    raise_error(env, env->vm->eTypeError, msg);
 }
 
 void 
 YogError_raise_index_error(YogEnv* env, const char* msg) 
 {
-    raise_error(env, ENV_VM(env)->eIndexError, msg);
+    raise_error(env, env->vm->eIndexError, msg);
 }
 
 /**

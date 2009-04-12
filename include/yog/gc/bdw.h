@@ -1,6 +1,10 @@
 #ifndef __YOG_GC_BDW_H__
 #define __YOG_GC_BDW_H__
 
+#include <stddef.h>
+#include "yog/vm.h"
+#include "yog/yog.h"
+
 /* PROTOTYPE_START */
 
 /**

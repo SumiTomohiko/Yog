@@ -1,5 +1,12 @@
 #include <stdio.h>
+#include "yog/array.h"
+#include "yog/env.h"
 #include "yog/error.h"
+#include "yog/frame.h"
+#include "yog/klass.h"
+#include "yog/package.h"
+#include "yog/string.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 static YogVal 
@@ -7,15 +14,15 @@ raise(YogEnv* env)
 {
     YogVal exc = ARG(env, 0);
 
-    if (!YogVal_is_subklass_of(env, exc, ENV_VM(env)->eException)) {
-        YogVal receiver = ENV_VM(env)->eException;
+    if (!YogVal_is_subklass_of(env, exc, env->vm->eException)) {
+        YogVal receiver = env->vm->eException;
         YogVal args[] = { exc };
         PUSH_LOCALSX(env, array_sizeof(args), args);
-        exc = YogThread_call_method(env, ENV_TH(env), receiver, "new", 1, args);
+        exc = YogThread_call_method(env, env->th, receiver, "new", 1, args);
         POP_LOCALS(env);
     }
 
-    ENV_TH(env)->cur_frame = PTR_AS(YogFrame, ENV_TH(env)->cur_frame)->prev;
+    env->th->cur_frame = PTR_AS(YogFrame, env->th->cur_frame)->prev;
 
     YogError_raise(env, exc);
 
@@ -35,11 +42,11 @@ puts_(YogEnv* env)
         for (i = 0; i < size; i++) {
             YogString* s = NULL;
             YogVal arg = YogArray_at(env, vararg, i);
-            if (IS_OBJ(arg) && (VAL2PTR(VAL2OBJ(arg)->klass) == VAL2PTR(ENV_VM(env)->cString))) {
+            if (IS_OBJ(arg) && (VAL2PTR(VAL2OBJ(arg)->klass) == VAL2PTR(env->vm->cString))) {
                 s = OBJ_AS(YogString, arg);
             }
             else {
-                YogVal val = YogThread_call_method(env, ENV_TH(env), arg, "to_s", 0, NULL);
+                YogVal val = YogThread_call_method(env, env->th, arg, "to_s", 0, NULL);
                 s = VAL2PTR(val);
             }
             printf("%s", PTR_AS(YogCharArray, s->body)->items);
@@ -66,7 +73,7 @@ YogBuiltins_new(YogEnv* env)
     YogPackage_define_method(env, bltins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
 
 #define REGISTER_KLASS(c)   do { \
-    YogVal klass = ENV_VM(env)->c; \
+    YogVal klass = env->vm->c; \
     YogObj_set_attr_id(env, bltins, OBJ_AS(YogKlass, klass)->name, klass); \
 } while (0)
     REGISTER_KLASS(cObject);

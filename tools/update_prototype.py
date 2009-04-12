@@ -9,10 +9,7 @@ class DeclarationInserter(object):
     start = "/* PROTOTYPE_START */"
     end = "/* PROTOTYPE_END */"
     files = { 
-            "include/yog/yog.h": [
-                    "src/value.c", "src/vm.c", "src/object.c", "src/frame.c", 
-                    "src/thread.c", 
-                    ], 
+            "include/yog/yog.h": [ "src/value.c", ], 
             "include/yog/builtins.h": [ "src/builtins.c", ], 
             "include/yog/error.h": [ "src/error.c", ], 
             "include/yog/bool.h": [ "src/bool.c", ], 
@@ -44,6 +41,10 @@ class DeclarationInserter(object):
             "include/yog/gc/mark-sweep.h": [ "src/gc/mark-sweep.c", ], 
             "include/yog/gc/bdw.h": [ "src/gc/bdw.c", ], 
             "include/yog/gc/generational.h": [ "src/gc/generational.c", ], 
+            "include/yog/thread.h": [ "src/thread.c", ], 
+            "include/yog/vm.h": [ "src/vm.c", ], 
+            "include/yog/object.h": [ "src/object.c", ], 
+            "include/yog/frame.h": [ "src/frame.c", ], 
             }
 
     def _find(self, lines, s, start):

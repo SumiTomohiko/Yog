@@ -1,4 +1,7 @@
 #include <string.h>
+#include "yog/env.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 #include "yog/gc/generational.h"
 #ifdef TEST_GENERATIONAL

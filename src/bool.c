@@ -1,4 +1,8 @@
 #include "yog/error.h"
+#include "yog/frame.h"
+#include "yog/klass.h"
+#include "yog/string.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 #define CHECK_TYPE(v)   do { \
@@ -25,7 +29,7 @@ to_s(YogEnv* env)
 YogVal 
 YogBool_klass_new(YogEnv* env) 
 {
-    YogVal klass = YogKlass_new(env, "Bool", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Bool", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);

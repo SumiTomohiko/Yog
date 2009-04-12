@@ -1,6 +1,7 @@
 #ifndef __YOG_BLOCK_H__
 #define __YOG_BLOCK_H__
 
+#include "yog/object.h"
 #include "yog/st.h"
 #include "yog/yog.h"
 

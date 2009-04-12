@@ -10,8 +10,12 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "yog/array.h"
+#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/parser.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 typedef struct ParserState ParserState;

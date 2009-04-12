@@ -1,7 +1,11 @@
 #include <stdarg.h>
+#include "yog/env.h"
 #include "yog/function.h"
 #include "yog/method.h"
+#include "yog/package.h"
 #include "yog/st.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 void 
@@ -41,7 +45,7 @@ YogPackage_init(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
 
-    YogObj_init(env, OBJ_AS(YogObj, pkg), 0, ENV_VM(env)->cPackage);
+    YogObj_init(env, OBJ_AS(YogObj, pkg), 0, env->vm->cPackage);
     MODIFY(env, OBJ_AS(YogObj, pkg)->attrs, PTR2VAL(NULL));
     OBJ_AS(YogPackage, pkg)->code = YUNDEF;
 
@@ -66,7 +70,7 @@ allocate(YogEnv* env, YogVal klass)
 YogVal 
 YogPackage_klass_new(YogEnv* env) 
 {
-    YogVal klass = YogKlass_new(env, "Package", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "Package", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_allocator(env, klass, allocate);
@@ -78,7 +82,7 @@ YogPackage_klass_new(YogEnv* env)
 YogVal 
 YogPackage_new(YogEnv* env) 
 {
-    YogVal pkg = allocate(env, ENV_VM(env)->cPackage);
+    YogVal pkg = allocate(env, env->vm->cPackage);
     PUSH_LOCAL(env, pkg);
 
     YogPackage_init(env, pkg);

@@ -1,6 +1,7 @@
 #ifndef __YOG_EXCEPTION_H__
 #define __YOG_EXCEPTION_H__
 
+#include "yog/object.h"
 #include "yog/yog.h"
 
 struct YogStackTraceEntry {

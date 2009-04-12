@@ -4,10 +4,13 @@
 #include <unistd.h>
 #include "oniguruma.h"
 #include "yog/encoding.h"
+#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/parser.h"
 #include "yog/regexp.h"
 #include "yog/st.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 #include "parser.h"
@@ -580,7 +583,7 @@ read_encoding(YogEnv* env, YogVal lexer)
         ID id = YogString_intern(env, coding);
         YogVal key = ID2VAL(id);
         YogVal val = YUNDEF;
-        if (!YogTable_lookup(env, ENV_VM(env)->encodings, key, &val)) {
+        if (!YogTable_lookup(env, env->vm->encodings, key, &val)) {
             continue;
         }
         encoding = val;

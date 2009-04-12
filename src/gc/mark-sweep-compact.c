@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include "yog/env.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 #include "yog/gc/mark-sweep-compact.h"
 #if defined(GC_GENERATIONAL)

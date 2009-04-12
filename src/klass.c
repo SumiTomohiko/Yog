@@ -1,7 +1,12 @@
 #include <stdarg.h>
+#include "yog/env.h"
 #include "yog/error.h"
+#include "yog/frame.h"
 #include "yog/function.h"
+#include "yog/klass.h"
 #include "yog/method.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 void 
@@ -61,7 +66,7 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_allocate(env, ENV_VM(env)->cKlass);
+    klass = YogKlass_allocate(env, env->vm->cKlass);
     OBJ_AS(YogKlass, klass)->allocator = NULL;
     OBJ_AS(YogKlass, klass)->name = INVALID_ID;
     MODIFY(env, OBJ_AS(YogKlass, klass)->super, PTR2VAL(NULL));
@@ -105,7 +110,7 @@ new_(YogEnv* env)
         args[i] = items[i];
     }
     PUSH_LOCALSX(env, size, args);
-    YogThread_call_method(env, ENV_TH(env), obj, "initialize", size, args);
+    YogThread_call_method(env, env->th, obj, "initialize", size, args);
 
     POP_LOCALS(env);
     return obj;

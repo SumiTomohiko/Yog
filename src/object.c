@@ -1,4 +1,9 @@
+#include "yog/env.h"
+#include "yog/klass.h"
+#include "yog/object.h"
 #include "yog/st.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 YogVal 
@@ -41,7 +46,7 @@ YogObj_set_attr(YogEnv* env, YogVal obj, const char* name, YogVal val)
 {
     SAVE_ARGS2(env, obj, val);
 
-    ID id = YogVm_intern(env, ENV_VM(env), name);
+    ID id = YogVm_intern(env, env->vm, name);
     YogObj_set_attr_id(env, obj, id, val);
 
     RETURN_VOID(env);

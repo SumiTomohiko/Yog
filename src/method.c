@@ -1,4 +1,8 @@
+#include "yog/env.h"
+#include "yog/klass.h"
 #include "yog/method.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 #define KEEP_BASIC_OBJ  YogBasicObj_keep_children(env, ptr, keeper)
@@ -118,7 +122,7 @@ YogUnboundMethod_allocate(YogEnv* env, YogVal klass)
 }
 
 #define RETURN_NEW_KLASS(allocator, name)  do { \
-    YogVal klass = YogKlass_new(env, name, ENV_VM(env)->cObject); \
+    YogVal klass = YogKlass_new(env, name, env->vm->cObject); \
     PUSH_LOCAL(env, klass); \
     \
     YogKlass_define_allocator(env, klass, allocator); \
@@ -156,25 +160,25 @@ YogUnboundMethod_klass_new(YogEnv* env)
 YogVal 
 YogBuiltinBoundMethod_new(YogEnv* env) 
 {
-    return YogBuiltinBoundMethod_allocate(env, ENV_VM(env)->cBuiltinBoundMethod);
+    return YogBuiltinBoundMethod_allocate(env, env->vm->cBuiltinBoundMethod);
 }
 
 YogVal 
 YogBoundMethod_new(YogEnv* env) 
 {
-    return YogBoundMethod_allocate(env, ENV_VM(env)->cBoundMethod);
+    return YogBoundMethod_allocate(env, env->vm->cBoundMethod);
 }
 
 YogVal 
 YogBuiltinUnboundMethod_new(YogEnv* env) 
 {
-    return YogBuiltinUnboundMethod_allocate(env, ENV_VM(env)->cBuiltinUnboundMethod);
+    return YogBuiltinUnboundMethod_allocate(env, env->vm->cBuiltinUnboundMethod);
 }
 
 YogVal 
 YogUnboundMethod_new(YogEnv* env) 
 {
-    return YogUnboundMethod_allocate(env, ENV_VM(env)->cUnboundMethod);
+    return YogUnboundMethod_allocate(env, env->vm->cUnboundMethod);
 }
 
 /**

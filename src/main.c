@@ -2,12 +2,18 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
-#include "gc.h"
 #include "yog/code.h"
 #include "yog/compile.h"
+#include "yog/env.h"
 #include "yog/error.h"
+#include "yog/package.h"
 #include "yog/parser.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
+#if defined(GC_BDW)
+#   include "gc.h"
+#endif
 
 static void 
 usage()

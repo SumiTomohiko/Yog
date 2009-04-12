@@ -3,8 +3,13 @@
 #include <string.h>
 #include "oniguruma.h"
 #include "yog/encoding.h"
+#include "yog/env.h"
 #include "yog/error.h"
+#include "yog/frame.h"
+#include "yog/klass.h"
 #include "yog/regexp.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 ID 
@@ -170,7 +175,7 @@ allocate(YogEnv* env, YogVal klass)
 YogVal 
 YogString_new(YogEnv* env) 
 {
-    YogVal string = allocate(env, ENV_VM(env)->cString);
+    YogVal string = allocate(env, env->vm->cString);
 
     OBJ_AS(YogString, string)->encoding = YUNDEF;
     OBJ_AS(YogString, string)->body = YUNDEF;
@@ -212,7 +217,7 @@ YogString_new_size(YogEnv* env, unsigned int size)
     YogVal body = YUNDEF;
     PUSH_LOCALS2(env, string, body);
 
-    string = allocate(env, ENV_VM(env)->cString);
+    string = allocate(env, env->vm->cString);
     body = YogCharArray_new(env, size);
 
     OBJ_AS(YogString, string)->encoding = YNIL;
@@ -228,7 +233,7 @@ YogString_new_size(YogEnv* env, unsigned int size)
     YogVal body = YogCharArray_new_str(env, buffer); \
     PUSH_LOCAL(env, body); \
     \
-    YogVal string = allocate(env, ENV_VM(env)->cString); \
+    YogVal string = allocate(env, env->vm->cString); \
     OBJ_AS(YogString, string)->encoding = YNIL; \
     OBJ_AS(YogString, string)->body = body; \
     \
@@ -556,7 +561,7 @@ each_char(YogEnv* env)
 YogVal 
 YogString_klass_new(YogEnv* env) 
 {
-    YogVal klass = YogKlass_new(env, "String", ENV_VM(env)->cObject);
+    YogVal klass = YogKlass_new(env, "String", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_allocator(env, klass, allocate);

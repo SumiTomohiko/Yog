@@ -7,10 +7,16 @@
 #include "yog/block.h"
 #include "yog/code.h"
 #include "yog/error.h"
+#include "yog/exception.h"
+#include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/method.h"
 #include "yog/opcodes.h"
+#include "yog/package.h"
 #include "yog/st.h"
+#include "yog/string.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 #if 0
@@ -19,7 +25,7 @@
 #   define DEBUG(x)
 #endif
 
-#define CUR_FRAME   (ENV_TH(env)->cur_frame)
+#define CUR_FRAME   (env->th->cur_frame)
 
 #define PUSH_FRAME(f)   do { \
     PTR_AS(YogFrame, (f))->prev = CUR_FRAME; \
@@ -38,7 +44,7 @@ YogThread_call_method(YogEnv* env, YogThread* th, YogVal receiver, const char* m
     PUSH_LOCALSX(env, argc, args);
 #endif
 
-    ID id = YogVm_intern(env, ENV_VM(env), method);
+    ID id = YogVm_intern(env, env->vm, method);
     YogVal retval = YogThread_call_method_id(env, th, receiver, id, argc, args);
 
     RETURN(env, retval);
@@ -428,7 +434,7 @@ lookup_builtins(YogEnv* env, ID name)
 {
     YogVal builtins_name = ID2VAL(INTERN(BUILTINS));
     YogVal builtins = YUNDEF;
-    YogVm* vm = ENV_VM(env);
+    YogVm* vm = env->vm;
     if (!YogTable_lookup(env, vm->pkgs, builtins_name, &builtins)) {
         YOG_ASSERT(env, FALSE, "Can't find builtins package.");
     }
@@ -457,15 +463,15 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
 
     PUSH_FRAME(frame);
 
-#define POP_BUF()   ENV_TH(env)->jmp_buf_list = ENV_TH(env)->jmp_buf_list->prev
+#define POP_BUF()   env->th->jmp_buf_list = env->th->jmp_buf_list->prev
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
 #undef CODE
 #define CODE        PTR_AS(YogCode, SCRIPT_FRAME(CUR_FRAME)->code)
     YogJmpBuf jmpbuf;
     int status = 0;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
-        jmpbuf.prev = ENV_TH(env)->jmp_buf_list;
-        ENV_TH(env)->jmp_buf_list = &jmpbuf;
+        jmpbuf.prev = env->th->jmp_buf_list;
+        env->th->jmp_buf_list = &jmpbuf;
     }
     else {
         RESTORE_LOCALS(env);
@@ -485,7 +491,7 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
         }
         if (!found) {
             POP_BUF();
-            YogJmpBuf* list = ENV_TH(env)->jmp_buf_list;
+            YogJmpBuf* list = env->th->jmp_buf_list;
             if (list != NULL) {
                 longjmp(list->buf, status);
             }
@@ -493,9 +499,9 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
 #define PRINT(...)  fprintf(stderr, __VA_ARGS__)
             PRINT("Traceback (most recent call last):\n");
 
-            YogException* exc = OBJ_AS(YogException, ENV_TH(env)->jmp_val);
+            YogException* exc = OBJ_AS(YogException, env->th->jmp_val);
             YogVal st = exc->stack_trace;
-#define ID2NAME(id)     YogVm_id2name(env, ENV_VM(env), id)
+#define ID2NAME(id)     YogVm_id2name(env, env->vm, id)
             while (IS_PTR(st)) {
                 PRINT("  File ");
                 YogVal filename = PTR_AS(YogStackTraceEntry, st)->filename;
@@ -542,7 +548,7 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
             char s[len + 1];
             strcpy(s, name);
 #undef ID2NAME
-            YogVal val = YogThread_call_method(env, ENV_TH(env), exc->message, "to_s", 0, NULL);
+            YogVal val = YogThread_call_method(env, env->th, exc->message, "to_s", 0, NULL);
             YogString* msg = OBJ_AS(YogString, val);
             PRINT("%s: %s\n", s, PTR_AS(YogCharArray, msg->body)->items);
 #undef PRINT
@@ -556,7 +562,7 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
 #define VM              (ENV_VM(ENV))
 #define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME)))
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
-#define THREAD          (ENV_TH(env))
+#define THREAD          (env->th)
 #define JUMP(m)         PC = m;
 #define POP_ARGS(args, kwargs, blockarg, vararg, varkwarg) \
     YogVal varkwarg = YUNDEF; \

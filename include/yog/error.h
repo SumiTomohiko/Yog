@@ -1,9 +1,13 @@
 #ifndef __YOG_ERROR_H__
 #define __YOG_ERROR_H__
 
+#if 0
 #include "yog/exception.h"
 #include "yog/string.h"
+#endif
 #include "yog/yog.h"
+
+#define JMP_RAISE   (1)
 
 #define YOG_BUG(env, ...)    do { \
     YogError_bug(env, __FILE__, __LINE__, __VA_ARGS__); \

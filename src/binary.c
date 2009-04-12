@@ -2,6 +2,8 @@
 #include <string.h>
 #include "yog/binary.h"
 #include "yog/error.h"
+#include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 unsigned int 

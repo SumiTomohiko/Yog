@@ -1,6 +1,7 @@
 #ifndef __YOG_PACKAGE_H__
 #define __YOG_PACKAGE_H__
 
+#include "yog/object.h"
 #include "yog/yog.h"
 
 struct YogPackage {
