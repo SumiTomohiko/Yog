@@ -10,6 +10,7 @@
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/exception.h"
+#include "yog/float.h"
 #include "yog/gc/bdw.h"
 #include "yog/int.h"
 #include "yog/klass.h"
@@ -219,6 +220,7 @@ setup_klasses(YogEnv* env, YogVm* vm)
     vm->cBool = YogBool_klass_new(env);
     vm->cPackageBlock = YogPackageBlock_klass_new(env);
     vm->cNil = YogNil_klass_new(env);
+    vm->cFloat = YogFloat_klass_new(env);
 }
 
 static void 

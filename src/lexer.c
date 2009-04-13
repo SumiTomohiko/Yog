@@ -6,6 +6,7 @@
 #include "yog/encoding.h"
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/float.h"
 #include "yog/parser.h"
 #include "yog/regexp.h"
 #include "yog/st.h"
@@ -283,7 +284,8 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
                     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
                     YogVal body = OBJ_AS(YogString, buffer)->body;
                     sscanf(PTR_AS(YogCharArray, body)->items, "%f", &f);
-                    YogVal val = FLOAT2VAL(f);
+                    YogVal val = YogFloat_new(env);
+                    PTR_AS(YogFloat, val)->val = f;
                     RETURN_VAL_TOKEN(TK_NUMBER, val);
                 }
                 else {

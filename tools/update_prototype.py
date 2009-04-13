@@ -45,6 +45,7 @@ class DeclarationInserter(object):
             "include/yog/vm.h": [ "src/vm.c", ], 
             "include/yog/object.h": [ "src/object.c", ], 
             "include/yog/frame.h": [ "src/frame.c", ], 
+            "include/yog/float.h": [ "src/float.c", ], 
             }
 
     def _find(self, lines, s, start):

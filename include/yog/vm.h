@@ -59,6 +59,7 @@ struct YogVm {
     struct YogVal cUnboundMethod;
     struct YogVal cPackageBlock;
     struct YogVal cNil;
+    struct YogVal cFloat;
 
     struct YogVal eException;
     struct YogVal eBugException;

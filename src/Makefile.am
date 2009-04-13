@@ -25,6 +25,7 @@ COMMON_SOURCES = arg.c \
 	encoding.c \
 	error.c \
 	exception.c \
+	float.c \
 	frame.c \
 	function.c \
 	inst.c \
