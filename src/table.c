@@ -237,7 +237,7 @@ st_init_table(YogEnv* env, YogHashType* type)
 #define COLLISION
 #endif
 
-static void 
+inline static void 
 find_entry(YogEnv* env, YogVal table, YogVal* ptr, unsigned int hash_val, unsigned int* bin_pos, YogVal key) 
 {
     *bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
