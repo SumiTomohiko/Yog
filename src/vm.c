@@ -278,7 +278,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogVm* vm = ptr;
 
-    YogThread_keep_children(env, vm->thread, keeper);
+    YogThreadCtx_keep_children(env, vm->thread, keeper);
 
 #define KEEP_MEMBER(member)     do { \
     vm->member = YogVal_keep(env, vm->member, keeper); \

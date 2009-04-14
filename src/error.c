@@ -31,18 +31,18 @@ YogError_bug(YogEnv* env, const char* filename, unsigned int lineno, const char*
 void 
 YogError_raise(YogEnv* env, YogVal exc) 
 {
-    YogThread* th = env->th;
+    YogThreadCtx* thread_ctx = env->thread_ctx;
     YogVal jmp_val = YUNDEF;
     if (IS_UNDEF(exc)) {
-        jmp_val = th->jmp_val;
+        jmp_val = thread_ctx->jmp_val;
     }
     else {
         jmp_val = exc;
     }
     YOG_ASSERT(env, !IS_UNDEF(jmp_val), "jmp_val is undefined.");
 
-    th->jmp_val = jmp_val;
-    longjmp(th->jmp_buf_list->buf, JMP_RAISE);
+    thread_ctx->jmp_val = jmp_val;
+    longjmp(thread_ctx->jmp_buf_list->buf, JMP_RAISE);
 }
 
 static void 

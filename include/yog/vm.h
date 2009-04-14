@@ -70,7 +70,7 @@ struct YogVm {
 
     YogVal encodings;
 
-    struct YogThread* thread;
+    struct YogThreadCtx* thread;
 };
 
 typedef struct YogVm YogVm;

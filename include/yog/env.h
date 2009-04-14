@@ -1,15 +1,13 @@
 #if !defined(__YOG_ENV_H__)
 #define __YOG_ENV_H__
 
+#include "yog/thread.h"
+#include "yog/vm.h"
+
 struct YogEnv {
     struct YogVm* vm;
-    struct YogThread* th;
+    struct YogThreadCtx* thread_ctx;
 };
-
-#if 0
-#define ENV_VM(env)     ((env)->vm)
-#define ENV_TH(env)     ((env)->th)
-#endif
 
 #endif
 /**

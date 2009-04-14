@@ -24,8 +24,8 @@ typedef struct YogLocals YogLocals;
 
 #include "yog/env.h"
 
-#define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = (env)->th->locals
-#define RESTORE_LOCALS(env)     (env)->th->locals = __cur_locals__
+#define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = (env)->thread_ctx->locals
+#define RESTORE_LOCALS(env)     (env)->thread_ctx->locals = __cur_locals__
 #if 0
 #   define PUSH_LOCAL_TABLE(env, tbl) \
 do { \
@@ -33,14 +33,14 @@ do { \
     for (i = 0; i < tbl.num_vals; i++) { \
         DPRINTF("tbl.vals[%d]=%p", i, tbl.vals[i]); \
     } \
-    tbl.next = (env)->th->locals; \
-    (env)->th->locals = &tbl; \
+    tbl.next = (env)->thread_ctx->locals; \
+    (env)->thread_ctx->locals = &tbl; \
 } while (0)
 #else
 #   define PUSH_LOCAL_TABLE(env, tbl) \
 do { \
-    tbl.next = (env)->th->locals; \
-    (env)->th->locals = &tbl; \
+    tbl.next = (env)->thread_ctx->locals; \
+    (env)->thread_ctx->locals = &tbl; \
 } while (0)
 #endif
 #define PUSH_LOCAL(env, x) \
@@ -116,7 +116,7 @@ do { \
 #define SAVE_ARGS5(env, x, y, z, t, u)  \
                                 SAVE_LOCALS((env)); \
                                 PUSH_LOCALS5((env), x, y, z, t, u)
-#define POP_LOCALS(env)         (env)->th->locals = (env)->th->locals->next
+#define POP_LOCALS(env)         (env)->thread_ctx->locals = (env)->thread_ctx->locals->next
 #define RETURN(env, val)        do { \
     RESTORE_LOCALS(env); \
     return val; \
@@ -126,7 +126,7 @@ do { \
     return; \
 } while (0)
 
-struct YogThread {
+struct YogThreadCtx {
     YogVal cur_frame;
     struct YogJmpBuf* jmp_buf_list;
     YogVal jmp_val;
@@ -138,7 +138,7 @@ struct YogThread {
 #endif
 };
 
-typedef struct YogThread YogThread;
+typedef struct YogThreadCtx YogThreadCtx;
 
 #include "yog/error.h"
 
@@ -150,7 +150,7 @@ typedef struct YogThread YogThread;
 #   define IS_YOUNG(env, val)   (IS_PTR((val)) && IS_YOUNG_PTR((env), VAL2PTR(val)))
 #   define REF_TBL_GROW_SIZE    256
 #   define ADD_REF(env, val)    do { \
-    YogThread* thread = (env)->th; \
+    YogThreadCtx* thread = (env)->thread_ctx; \
     if (thread->ref_tbl_ptr == thread->ref_tbl_limit) { \
         unsigned int size = thread->ref_tbl_limit - thread->ref_tbl; \
         unsigned int new_size = size + REF_TBL_GROW_SIZE * sizeof(void**); \
@@ -183,15 +183,11 @@ typedef struct YogThread YogThread;
  */
 
 /* src/thread.c */
-YogVal YogThread_call_block(YogEnv*, YogThread*, YogVal, unsigned int, YogVal*);
-YogVal YogThread_call_method(YogEnv*, YogThread*, YogVal, const char*, unsigned int, YogVal*);
-YogVal YogThread_call_method_id(YogEnv*, YogThread*, YogVal, ID, unsigned int, YogVal*);
-void YogThread_eval_package(YogEnv*, YogThread*, YogVal);
-void YogThread_finalize(YogEnv*, YogThread*);
-void YogThread_initialize(YogEnv*, YogVal);
-void YogThread_keep_children(YogEnv*, void*, ObjectKeeper);
-YogVal YogThread_new(YogEnv*);
-void YogThread_shrink_ref_tbl(YogEnv*, YogThread*);
+void YogThreadCtx_finalize(YogEnv*, YogThreadCtx*);
+void YogThreadCtx_initialize(YogEnv*, YogVal);
+void YogThreadCtx_keep_children(YogEnv*, void*, ObjectKeeper);
+YogVal YogThreadCtx_new(YogEnv*);
+void YogThreadCtx_shrink_ref_tbl(YogEnv*, YogThreadCtx*);
 
 /* PROTOTYPE_END */
 

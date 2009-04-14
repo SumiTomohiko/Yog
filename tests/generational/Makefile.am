@@ -18,7 +18,8 @@ test_generational_SOURCES = $(GC_DIR)/generational.c $(GC_DIR)/copying.c \
 			    $(SRC_DIR)/arg.c $(SRC_DIR)/stacktrace.c \
 			    $(SRC_DIR)/int.c $(SRC_DIR)/regexp.c \
 			    $(SRC_DIR)/block.c $(SRC_DIR)/bool.c \
-			    $(SRC_DIR)/builtins.c
+			    $(SRC_DIR)/builtins.c $(SRC_DIR)/eval.c \
+			    $(SRC_DIR)/float.c
 test_generational_CFLAGS = -Wall -I$(YOG_DIR)/include -DTEST_GENERATIONAL \
 			   -DGC_GENERATIONAL
 test_generational_LDFLAGS = -lcunit -lonig

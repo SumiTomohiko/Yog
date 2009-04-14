@@ -9,14 +9,14 @@
 #endif
 
 void 
-YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogThreadCtx_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
-    YogThread* th = ptr;
+    YogThreadCtx* thread_ctx = ptr;
 
-    th->cur_frame = YogVal_keep(env, th->cur_frame, keeper);
-    th->jmp_val = YogVal_keep(env, th->jmp_val, keeper);
+    thread_ctx->cur_frame = YogVal_keep(env, thread_ctx->cur_frame, keeper);
+    thread_ctx->jmp_val = YogVal_keep(env, thread_ctx->jmp_val, keeper);
 
-    YogLocals* locals = th->locals;
+    YogLocals* locals = thread_ctx->locals;
     while (locals != NULL) {
         unsigned int i;
         for (i = 0; i < locals->num_vals; i++) {
@@ -38,7 +38,7 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
 #if defined(GC_GENERATIONAL)
     YogVal** p;
-    for (p = th->ref_tbl; p < th->ref_tbl_ptr; p++) {
+    for (p = thread_ctx->ref_tbl; p < thread_ctx->ref_tbl_ptr; p++) {
         **p = YogVal_keep(env, **p, keeper);
     }
 #endif
@@ -46,7 +46,7 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
 #if defined(GC_GENERATIONAL)
 void 
-YogThread_shrink_ref_tbl(YogEnv* env, YogThread* thread) 
+YogThreadCtx_shrink_ref_tbl(YogEnv* env, YogThreadCtx* thread) 
 {
     YogVal** to = thread->ref_tbl;
     YogVal** p;
@@ -62,23 +62,23 @@ YogThread_shrink_ref_tbl(YogEnv* env, YogThread* thread)
 #endif
 
 void 
-YogThread_initialize(YogEnv* env, YogVal thread)
+YogThreadCtx_initialize(YogEnv* env, YogVal thread)
 {
-    PTR_AS(YogThread, thread)->cur_frame = YNIL;
-    PTR_AS(YogThread, thread)->jmp_buf_list = NULL;
-    PTR_AS(YogThread, thread)->jmp_val = YUNDEF;
-    PTR_AS(YogThread, thread)->locals = NULL;
+    PTR_AS(YogThreadCtx, thread)->cur_frame = YNIL;
+    PTR_AS(YogThreadCtx, thread)->jmp_buf_list = NULL;
+    PTR_AS(YogThreadCtx, thread)->jmp_val = YUNDEF;
+    PTR_AS(YogThreadCtx, thread)->locals = NULL;
 #if defined(GC_GENERATIONAL)
 #   define REF_TBL_SIZE     256
-    PTR_AS(YogThread, thread)->ref_tbl = malloc(REF_TBL_SIZE * sizeof(YogVal*));
-    PTR_AS(YogThread, thread)->ref_tbl_limit = PTR_AS(YogThread, thread)->ref_tbl + REF_TBL_SIZE;
-    PTR_AS(YogThread, thread)->ref_tbl_ptr = PTR_AS(YogThread, thread)->ref_tbl;
+    PTR_AS(YogThreadCtx, thread)->ref_tbl = malloc(REF_TBL_SIZE * sizeof(YogVal*));
+    PTR_AS(YogThreadCtx, thread)->ref_tbl_limit = PTR_AS(YogThreadCtx, thread)->ref_tbl + REF_TBL_SIZE;
+    PTR_AS(YogThreadCtx, thread)->ref_tbl_ptr = PTR_AS(YogThreadCtx, thread)->ref_tbl;
 #   undef REF_TBL_SIZE
 #endif
 }
 
 void 
-YogThread_finalize(YogEnv* env, YogThread* thread) 
+YogThreadCtx_finalize(YogEnv* env, YogThreadCtx* thread) 
 {
 #if defined(GC_GENERATIONAL)
     free(thread->ref_tbl);
@@ -86,12 +86,12 @@ YogThread_finalize(YogEnv* env, YogThread* thread)
 }
 
 YogVal 
-YogThread_new(YogEnv* env) 
+YogThreadCtx_new(YogEnv* env) 
 {
-    YogVal th = ALLOC_OBJ(env, YogThread_keep_children, NULL, YogThread);
-    YogThread_initialize(env, th);
+    YogVal thread_ctx = ALLOC_OBJ(env, YogThreadCtx_keep_children, NULL, YogThreadCtx);
+    YogThreadCtx_initialize(env, thread_ctx);
 
-    return th;
+    return thread_ctx;
 }
 
 /**
