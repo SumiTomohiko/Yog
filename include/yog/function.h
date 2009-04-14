@@ -1,14 +1,15 @@
 #if !defined(__YOG_FUNCTION_H__)
 #define __YOG_FUNCTION_H__
 
+#include <stdarg.h>
 #include "yog/arg.h"
 #include "yog/yog.h"
 
 struct YogBuiltinFunction {
-    struct YogVal arg_info;
+    YogVal arg_info;
     int required_argc;
 
-    struct YogVal (*f)();
+    YogVal (*f)();
 
     ID klass_name;
     ID func_name;

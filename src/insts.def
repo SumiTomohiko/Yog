@@ -104,7 +104,7 @@ inst make_package_method
     method = YogBoundMethod_new(ENV);
     setup_script_method(ENV, method, code);
     YogVal self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
-    MODIFY(env, OBJ_AS(YogBoundMethod, method)->self, self);
+    MODIFY(env, PTR_AS(YogBoundMethod, method)->self, self);
 }
 
 inst call_function
@@ -169,8 +169,7 @@ inst jump_if_false
 (val)
 ()
 {
-    YogValType type = VAL_TYPE(val);
-    if ((type == VAL_NIL) || ((type == VAL_BOOL) && !VAL2BOOL(val))) {
+    if (IS_NIL(val) || IS_FALSE(val)) {
         JUMP(dest);
     }
 }
@@ -188,11 +187,11 @@ inst make_package_block
 (block)
 {
     block = YogPackageBlock_new(env);
-    MODIFY(env, OBJ_AS(YogBasicBlock, block)->code, code);
+    MODIFY(env, PTR_AS(YogBasicBlock, block)->code, code);
     YogVal self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
-    MODIFY(env, OBJ_AS(YogPackageBlock, block)->self, self);
+    MODIFY(env, PTR_AS(YogPackageBlock, block)->self, self);
     YogVal vars = PTR_AS(YogNameFrame, CUR_FRAME)->vars;
-    MODIFY(env, OBJ_AS(YogPackageBlock, block)->vars, vars);
+    MODIFY(env, PTR_AS(YogPackageBlock, block)->vars, vars);
 }
 
 inst make_block
@@ -201,10 +200,10 @@ inst make_block
 (block) 
 {
     block = YogBlock_new(ENV);
-    MODIFY(env, OBJ_AS(YogBasicBlock, block)->code, code);
-    MODIFY(env, OBJ_AS(YogBlock, block)->locals, PTR_AS(YogMethodFrame, CUR_FRAME)->vars);
-    MODIFY(env, OBJ_AS(YogBlock, block)->outer_vars, SCRIPT_FRAME(CUR_FRAME)->outer_vars);
-    MODIFY(env, OBJ_AS(YogBlock, block)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
+    MODIFY(env, PTR_AS(YogBasicBlock, block)->code, code);
+    MODIFY(env, PTR_AS(YogBlock, block)->locals, PTR_AS(YogMethodFrame, CUR_FRAME)->vars);
+    MODIFY(env, PTR_AS(YogBlock, block)->outer_vars, SCRIPT_FRAME(CUR_FRAME)->outer_vars);
+    MODIFY(env, PTR_AS(YogBlock, block)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
 }
 
 inst make_klass
@@ -218,10 +217,10 @@ inst make_klass
     PUSH_LOCALS3(ENV, kls, frame, attrs);
 
     kls = YogKlass_new(ENV, NULL, super);
-    OBJ_AS(YogKlass, kls)->name = VAL2ID(name);
-    OBJ_AS(YogObj, kls)->attrs = YUNDEF;
+    PTR_AS(YogKlass, kls)->name = VAL2ID(name);
+    PTR_AS(YogObj, kls)->attrs = YUNDEF;
     attrs = YogTable_new_symbol_table(ENV);
-    MODIFY(env, OBJ_AS(YogObj, kls)->attrs, attrs);
+    MODIFY(env, PTR_AS(YogObj, kls)->attrs, attrs);
 
     frame = YogKlassFrame_new(ENV);
     setup_script_frame(ENV, frame, code);

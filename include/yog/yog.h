@@ -1,83 +1,84 @@
 #if !defined(__YOG_YOG_H__)
 #define __YOG_YOG_H__
 
-#include <limits.h>
-#include <setjmp.h>
-#include <stdarg.h>
-#include <stdint.h>
+#if defined(HAVE_CONFIG_H)
+#   include "config.h"
+#endif
+#if defined(HAVE_LIMITS_H)
+#   include <limits.h>
+#endif
 #include <stdio.h>
-#include <stdlib.h>
-#include "oniguruma.h"
 
 #define BOOL    int
 #define FALSE   (0)
 #define TRUE    (!FALSE)
 
-typedef unsigned int pc_t;
+/**
+ * tagged pointer
+ *
+ * FEDC BA09 8765 4321 FEDC BA09 8765 4321
+ * ---------------------------------------
+ * xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxx1 Fixnum
+ * 0000 0000 0000 0000 0000 0000 0000 0010 undef
+ * 0000 0000 0000 0000 0000 0000 0000 0110 nil
+ * xxxx xxxx xxxx xxxx xxxx xxxx xxxx 1010 Bool
+ * 0000 0000 0000 0000 0000 0000 0000 1010 false
+ * 0000 0000 0000 0000 0000 0000 0001 1010 true
+ * xxxx xxxx xxxx xxxx xxxx xxxx xxxx 1110 Symbol
+ * xxxx xxxx xxxx xxxx xxxx xxxx xxxx xx00 pointer
+ */
 
+#if SIZEOF_VOIDP == SIZEOF_INT
+typedef unsigned int YogVal;
 typedef unsigned int ID;
-
-#define INVALID_ID  (UINT_MAX)
-
-enum YogValType {
-    VAL_UNDEF, 
-    VAL_INT, 
-    VAL_FLOAT, 
-    VAL_PTR, 
-    VAL_OBJ, 
-    VAL_BOOL, 
-    VAL_NIL, 
-    VAL_SYMBOL, 
-#if 0
-    VAL_STR, 
+#   define INVALID_ID   VAL2ID(UINT_MAX & (~1))
+typedef unsigned int pc_t;
+#   define SIGNED_TYPE  int
+#elif SIZEOF_VOIDP == SIZEOF_LONG
+typedef unsigned long YogVal;
+typedef unsigned long ID;
+#   define INVALID_ID   VAL2ID(ULONG_MAX & (~1))
+typedef unsigned long pc_t;
+#   define SIGNED_TYPE  long
+#elif SIZEOF_VOIDP == SIZEOF_LONG_LONG
+typedef unsigned long long YogVal;
+typedef unsigned long long ID;
+#   define INVALID_ID   VAL2ID(ULLONG_MAX & (~1))
+typedef unsigned long long pc_t;
+#   define SIGNED_TYPE  long long
+#else
+#   error "No integer type available to represent pointers"
 #endif
-};
 
-typedef enum YogValType YogValType;
+#define YUNDEF          0x02
+#define YNIL            0x06
+#define YFALSE          0x0a
+#define YTRUE           0x1a
 
-struct YogVal {
-    enum YogValType type;
-    union {
-        int n;
-        double f;
-        ID symbol;
-        void * ptr;
-        struct YogBasicObj* obj;
-        BOOL b;
-#if 0
-        const char* str;
-#endif
-    } u;
-};
+#define INT2VAL(n)      (((n) << 1) + 1)
+#define PTR2VAL(ptr)    ((YogVal)(ptr))
+#define ID2VAL(id)      (((id) << 4) | 0x0e)
+#define VAL2INT(v)      ((SIGNED_TYPE)(v) / 2)
+#define VAL2ID(v)       ((v) >> 4)
+#define VAL2PTR(v)      ((void*)(v))
+#define VAL2BOOL(v)     ((v) >> 4)
 
-#define VAL_TYPE(v)         ((v).type)
-#define VAL2INT(v)          ((v).u.n)
-#define VAL2FLOAT(v)        ((v).u.f)
-#define VAL2ID(v)           ((v).u.symbol)
-#define VAL2PTR(v)          ((v).u.ptr)
-#define VAL2BOOL(v)         ((v).u.b)
-#define VAL2OBJ(v)          ((v).u.obj)
-#define VAL2STR(v)          ((v).u.str)
 #define PTR_AS(type, v)     ((type*)VAL2PTR(v))
-#define OBJ_AS(type, v)     ((type*)VAL2OBJ(v))
 
-#define IS_UNDEF(v)     (VAL_TYPE(v) == VAL_UNDEF)
-#define IS_PTR(v)       ((VAL_TYPE(v) == VAL_PTR) || IS_OBJ(v))
-#define IS_OBJ(v)       (VAL_TYPE(v) == VAL_OBJ)
-#define IS_INT(v)       (VAL_TYPE(v) == VAL_INT)
-#define IS_FLOAT(v)     (VAL_TYPE(v) == VAL_FLOAT)
-#define IS_BOOL(v)      (VAL_TYPE(v) == VAL_BOOL)
-#define IS_NIL(v)       (VAL_TYPE(v) == VAL_NIL)
-#define IS_SYMBOL(v)    (VAL_TYPE(v) == VAL_SYMBOL)
-#define IS_STR(v)       (VAL_TYPE(v) == VAL_STR)
+#define IS_UNDEF(v)     ((v) == 0x02)
+#define IS_PTR(v)       (((v) & 0x03) == 0)
+#define IS_INT(v)       (((v) & 0x01) == 0x01)
+#define IS_BOOL(v)      (((v) & 0x0f) == 0x0a)
+#define IS_TRUE(v)      ((v) == YTRUE)
+#define IS_FALSE(v)     ((v) == YFALSE)
+#define IS_NIL(v)       ((v) == 0x06)
+#define IS_SYMBOL(v)    (((v) & 0x0f) == 0x0e)
 
 #define CHECK_INT(v, msg)   do { \
     if (!IS_INT(v)) { \
         YogError_raise_type_error(env, msg); \
     } \
 } while (0)
-
-typedef struct YogVal YogVal;
 
 typedef struct YogEnv YogEnv;
 
@@ -95,35 +96,14 @@ typedef struct YogBasicObj YogBasicObj;
 
 /* src/value.c */
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
-YogVal YogVal_false();
-YogVal YogVal_float(float);
 YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
 YogVal YogVal_get_klass(YogEnv*, YogVal);
 int YogVal_hash(YogEnv*, YogVal);
-YogVal YogVal_int(int);
 BOOL YogVal_is_subklass_of(YogEnv*, YogVal, YogVal);
 YogVal YogVal_keep(YogEnv*, YogVal, ObjectKeeper);
-YogVal YogVal_nil();
-YogVal YogVal_obj(YogBasicObj*);
 void YogVal_print(YogEnv*, YogVal);
-YogVal YogVal_ptr(void *);
-YogVal YogVal_str(const char*);
-YogVal YogVal_symbol(ID);
-YogVal YogVal_true();
-YogVal YogVal_undef();
 
 /* PROTOTYPE_END */
-
-#define YTRUE           YogVal_true()
-#define YFALSE          YogVal_false()
-#define YNIL            YogVal_nil()
-#define YUNDEF          YogVal_undef()
-#define INT2VAL(n)      YogVal_int(n)
-#define FLOAT2VAL(f)    YogVal_float(f)
-#define OBJ2VAL(obj)    YogVal_obj((YogBasicObj*)obj)
-#define PTR2VAL(ptr)    YogVal_ptr(ptr)
-#define ID2VAL(id)      YogVal_symbol(id)
-#define STR2VAL(str)    YogVal_str(str)
 
 #define DPRINTF(...)    do { \
     printf("%s:%d ", __FILE__, __LINE__); \

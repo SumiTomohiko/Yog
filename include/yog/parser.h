@@ -49,91 +49,91 @@ struct YogNode {
     unsigned int lineno;
     union {
         struct {
-            struct YogVal left;
-            struct YogVal right;
+            YogVal left;
+            YogVal right;
         } assign;
         struct {
-            struct YogVal obj;
+            YogVal obj;
             ID name;
         } attr;
         struct {
-            struct YogVal params;
-            struct YogVal stmts;
+            YogVal params;
+            YogVal stmts;
         } blockarg;
         struct {
-            struct YogVal expr;
+            YogVal expr;
         } break_;
         struct {
             ID name;
-            struct YogVal args;
-            struct YogVal blockarg;
+            YogVal args;
+            YogVal blockarg;
         } command_call;
         struct {
-            struct YogVal head;
-            struct YogVal excepts;
-            struct YogVal else_;
+            YogVal head;
+            YogVal excepts;
+            YogVal else_;
         } except;
         struct {
-            struct YogVal type;
+            YogVal type;
             ID var;
-            struct YogVal stmts;
+            YogVal stmts;
         } except_body;
         struct {
-            struct YogVal head;
-            struct YogVal body;
+            YogVal head;
+            YogVal body;
         } finally;
         struct {
-            struct YogVal callee;
-            struct YogVal args;
-            struct YogVal blockarg;
+            YogVal callee;
+            YogVal args;
+            YogVal blockarg;
         } func_call;
         struct {
             ID name;
-            struct YogVal params;
-            struct YogVal stmts;
+            YogVal params;
+            YogVal stmts;
         } funcdef;
         struct {
-            struct YogVal test;
-            struct YogVal stmts;
-            struct YogVal tail;
+            YogVal test;
+            YogVal stmts;
+            YogVal tail;
         } if_;
         struct {
             ID name;
-            struct YogVal super;
-            struct YogVal stmts;
+            YogVal super;
+            YogVal stmts;
         } klass;
         struct {
-            struct YogVal val;
+            YogVal val;
         } literal;
         struct {
-            struct YogVal recv;
+            YogVal recv;
             ID name;
-            struct YogVal args;
-            struct YogVal blockarg;
+            YogVal args;
+            YogVal blockarg;
         } method_call;
         struct {
-            struct YogVal expr;
+            YogVal expr;
         } next;
         struct {
-            struct YogVal names;
+            YogVal names;
         } nonlocal;
         struct {
             ID name;
-            struct YogVal default_;
+            YogVal default_;
         } param;
         struct {
-            struct YogVal expr;
+            YogVal expr;
         } return_;
         struct {
-            struct YogVal prefix;
-            struct YogVal index;
+            YogVal prefix;
+            YogVal index;
         } subscript;
         struct {
             ID id;
         } variable;
         struct {
-            struct YogVal test;
-            struct YogVal stmts;
+            YogVal test;
+            YogVal stmts;
         } while_;
     } u;
 };
@@ -153,9 +153,9 @@ typedef enum YogLexerState YogLexerState;
 struct YogLexer {
     enum YogLexerState state;
     FILE* fp;
-    struct YogVal line;
+    YogVal line;
     unsigned int next_index;
-    struct YogVal buffer;
+    YogVal buffer;
     unsigned int lineno;
 };
 

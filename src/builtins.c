@@ -4,6 +4,7 @@
 #include "yog/error.h"
 #include "yog/frame.h"
 #include "yog/klass.h"
+#include "yog/object.h"
 #include "yog/package.h"
 #include "yog/string.h"
 #include "yog/vm.h"
@@ -42,8 +43,8 @@ puts_(YogEnv* env)
         for (i = 0; i < size; i++) {
             YogString* s = NULL;
             YogVal arg = YogArray_at(env, vararg, i);
-            if (IS_OBJ(arg) && (VAL2PTR(VAL2OBJ(arg)->klass) == VAL2PTR(env->vm->cString))) {
-                s = OBJ_AS(YogString, arg);
+            if (IS_OBJ_OF(cString, arg)) {
+                s = PTR_AS(YogString, arg);
             }
             else {
                 YogVal val = YogThread_call_method(env, env->th, arg, "to_s", 0, NULL);
@@ -74,7 +75,7 @@ YogBuiltins_new(YogEnv* env)
 
 #define REGISTER_KLASS(c)   do { \
     YogVal klass = env->vm->c; \
-    YogObj_set_attr_id(env, bltins, OBJ_AS(YogKlass, klass)->name, klass); \
+    YogObj_set_attr_id(env, bltins, PTR_AS(YogKlass, klass)->name, klass); \
 } while (0)
     REGISTER_KLASS(cObject);
     REGISTER_KLASS(eException);

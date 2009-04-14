@@ -180,7 +180,7 @@
             method = YogBoundMethod_new(ENV);
             setup_script_method(ENV, method, code);
             YogVal self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
-            MODIFY(env, OBJ_AS(YogBoundMethod, method)->self, self);
+            MODIFY(env, PTR_AS(YogBoundMethod, method)->self, self);
 
 #line 176 "../src/thread.inc"
             PUSH(method);
@@ -298,69 +298,68 @@
             PUSH_LOCAL(ENV, val);
             val = POP();
 #line 172 "insts.def"
-            YogValType type = VAL_TYPE(val);
-            if ((type == VAL_NIL) || ((type == VAL_BOOL) && !VAL2BOOL(val))) {
+            if (IS_NIL(val) || IS_FALSE(val)) {
                 JUMP(dest);
             }
 
-#line 291 "../src/thread.inc"
+#line 290 "../src/thread.inc"
             POP_LOCALS(ENV);
             break;
         }
-#line 295 "../src/thread.inc"
+#line 294 "../src/thread.inc"
     case OP(DUP):
         {
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
             val = POP();
-#line 183 "insts.def"
+#line 182 "insts.def"
 
-#line 302 "../src/thread.inc"
+#line 301 "../src/thread.inc"
             PUSH(val);
             PUSH(val);
             POP_LOCALS(ENV);
             break;
         }
-#line 308 "../src/thread.inc"
+#line 307 "../src/thread.inc"
     case OP(MAKE_PACKAGE_BLOCK):
         {
             YogVal code = YUNDEF;
             YogVal block = YUNDEF;
             PUSH_LOCALS2(ENV, code, block);
             code = POP();
-#line 190 "insts.def"
+#line 189 "insts.def"
             block = YogPackageBlock_new(env);
-            MODIFY(env, OBJ_AS(YogBasicBlock, block)->code, code);
+            MODIFY(env, PTR_AS(YogBasicBlock, block)->code, code);
             YogVal self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
-            MODIFY(env, OBJ_AS(YogPackageBlock, block)->self, self);
+            MODIFY(env, PTR_AS(YogPackageBlock, block)->self, self);
             YogVal vars = PTR_AS(YogNameFrame, CUR_FRAME)->vars;
-            MODIFY(env, OBJ_AS(YogPackageBlock, block)->vars, vars);
+            MODIFY(env, PTR_AS(YogPackageBlock, block)->vars, vars);
 
-#line 322 "../src/thread.inc"
+#line 321 "../src/thread.inc"
             PUSH(block);
             POP_LOCALS(ENV);
             break;
         }
-#line 327 "../src/thread.inc"
+#line 326 "../src/thread.inc"
     case OP(MAKE_BLOCK):
         {
             YogVal code = YUNDEF;
             YogVal block = YUNDEF;
             PUSH_LOCALS2(ENV, code, block);
             code = POP();
-#line 203 "insts.def"
+#line 202 "insts.def"
             block = YogBlock_new(ENV);
-            MODIFY(env, OBJ_AS(YogBasicBlock, block)->code, code);
-            MODIFY(env, OBJ_AS(YogBlock, block)->locals, PTR_AS(YogMethodFrame, CUR_FRAME)->vars);
-            MODIFY(env, OBJ_AS(YogBlock, block)->outer_vars, SCRIPT_FRAME(CUR_FRAME)->outer_vars);
-            MODIFY(env, OBJ_AS(YogBlock, block)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
+            MODIFY(env, PTR_AS(YogBasicBlock, block)->code, code);
+            MODIFY(env, PTR_AS(YogBlock, block)->locals, PTR_AS(YogMethodFrame, CUR_FRAME)->vars);
+            MODIFY(env, PTR_AS(YogBlock, block)->outer_vars, SCRIPT_FRAME(CUR_FRAME)->outer_vars);
+            MODIFY(env, PTR_AS(YogBlock, block)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
 
-#line 340 "../src/thread.inc"
+#line 339 "../src/thread.inc"
             PUSH(block);
             POP_LOCALS(ENV);
             break;
         }
-#line 345 "../src/thread.inc"
+#line 344 "../src/thread.inc"
     case OP(MAKE_KLASS):
         {
             YogVal code = YUNDEF;
@@ -370,17 +369,17 @@
             code = POP();
             super = POP();
             name = POP();
-#line 215 "insts.def"
+#line 214 "insts.def"
             YogVal kls = YUNDEF;
             YogVal frame = YUNDEF;
             YogVal attrs = YUNDEF;
             PUSH_LOCALS3(ENV, kls, frame, attrs);
         
             kls = YogKlass_new(ENV, NULL, super);
-            OBJ_AS(YogKlass, kls)->name = VAL2ID(name);
-            OBJ_AS(YogObj, kls)->attrs = YUNDEF;
+            PTR_AS(YogKlass, kls)->name = VAL2ID(name);
+            PTR_AS(YogObj, kls)->attrs = YUNDEF;
             attrs = YogTable_new_symbol_table(ENV);
-            MODIFY(env, OBJ_AS(YogObj, kls)->attrs, attrs);
+            MODIFY(env, PTR_AS(YogObj, kls)->attrs, attrs);
         
             frame = YogKlassFrame_new(ENV);
             setup_script_frame(ENV, frame, code);
@@ -391,46 +390,46 @@
         
             POP_LOCALS(ENV);
 
-#line 375 "../src/thread.inc"
+#line 374 "../src/thread.inc"
             POP_LOCALS(ENV);
             break;
         }
-#line 379 "../src/thread.inc"
+#line 378 "../src/thread.inc"
     case OP(MAKE_METHOD):
         {
             YogVal code = YUNDEF;
             YogVal method = YUNDEF;
             PUSH_LOCALS2(ENV, code, method);
             code = POP();
-#line 241 "insts.def"
+#line 240 "insts.def"
             method = YogUnboundMethod_new(ENV);
             setup_script_method(ENV, method, code);
 
-#line 389 "../src/thread.inc"
+#line 388 "../src/thread.inc"
             PUSH(method);
             POP_LOCALS(ENV);
             break;
         }
-#line 394 "../src/thread.inc"
+#line 393 "../src/thread.inc"
     case OP(PUSH_SELF_NAME):
         {
             YogVal self = YUNDEF;
             PUSH_LOCAL(ENV, self);
-#line 250 "insts.def"
+#line 249 "insts.def"
             self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
 
-#line 401 "../src/thread.inc"
+#line 400 "../src/thread.inc"
             PUSH(self);
             POP_LOCALS(ENV);
             break;
         }
-#line 406 "../src/thread.inc"
+#line 405 "../src/thread.inc"
     case OP(RET):
         {
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
             val = POP();
-#line 258 "insts.def"
+#line 257 "insts.def"
             POP_FRAME();
             if (PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_C) {
                 return val;
@@ -438,12 +437,12 @@
         
             PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 
-#line 419 "../src/thread.inc"
+#line 418 "../src/thread.inc"
             PUSH(val);
             POP_LOCALS(ENV);
             break;
         }
-#line 424 "../src/thread.inc"
+#line 423 "../src/thread.inc"
     case OP(STORE_NONLOCAL):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -454,15 +453,15 @@
             PC += sizeof(uint8_t);
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
-#line 271 "insts.def"
+#line 270 "insts.def"
             /* TODO */
 
-#line 437 "../src/thread.inc"
+#line 436 "../src/thread.inc"
             PUSH(val);
             POP_LOCALS(ENV);
             break;
         }
-#line 442 "../src/thread.inc"
+#line 441 "../src/thread.inc"
     case OP(LOAD_NONLOCAL):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -474,14 +473,14 @@
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
             val = POP();
-#line 279 "insts.def"
+#line 278 "insts.def"
             /* TODO */
 
-#line 456 "../src/thread.inc"
+#line 455 "../src/thread.inc"
             POP_LOCALS(ENV);
             break;
         }
-#line 460 "../src/thread.inc"
+#line 459 "../src/thread.inc"
     case OP(STORE_GLOBAL):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -490,11 +489,11 @@
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
             val = POP();
-#line 287 "insts.def"
+#line 286 "insts.def"
             YogVal globals = SCRIPT_FRAME(CUR_FRAME)->globals;
             YogTable_insert(ENV, globals, ID2VAL(name), val);
 
-#line 472 "../src/thread.inc"
+#line 471 "../src/thread.inc"
             POP_LOCALS(ENV);
             break;
         }

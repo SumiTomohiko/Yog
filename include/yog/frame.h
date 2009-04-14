@@ -12,7 +12,7 @@ enum YogFrameType {
 typedef enum YogFrameType YogFrameType;
 
 struct YogFrame {
-    struct YogVal prev;
+    YogVal prev;
     enum YogFrameType type;
 };
 
@@ -20,9 +20,9 @@ typedef struct YogFrame YogFrame;
 
 struct YogCFrame {
     struct YogFrame base;
-    struct YogVal self;
-    struct YogVal args;
-    struct YogVal f;
+    YogVal self;
+    YogVal args;
+    YogVal f;
 #if 0
     struct YogVal locals;
     unsigned int locals_size;
@@ -42,7 +42,7 @@ typedef struct YogCFrame YogCFrame;
 
 struct YogOuterVars {
     unsigned int size;
-    struct YogVal items[0];
+    YogVal items[0];
 };
 
 typedef struct YogOuterVars YogOuterVars;
@@ -50,11 +50,11 @@ typedef struct YogOuterVars YogOuterVars;
 struct YogScriptFrame {
     struct YogFrame base;
     pc_t pc;
-    struct YogVal code;
+    YogVal code;
     unsigned int stack_size;
-    struct YogVal stack;
-    struct YogVal globals;
-    struct YogVal outer_vars;
+    YogVal stack;
+    YogVal globals;
+    YogVal outer_vars;
 };
 
 typedef struct YogScriptFrame YogScriptFrame;
@@ -63,8 +63,8 @@ typedef struct YogScriptFrame YogScriptFrame;
 
 struct YogNameFrame {
     struct YogScriptFrame base;
-    struct YogVal self;
-    struct YogVal vars;
+    YogVal self;
+    YogVal vars;
 };
 
 typedef struct YogNameFrame YogNameFrame;
@@ -77,7 +77,7 @@ typedef struct YogNameFrame YogNameFrame;
 
 struct YogMethodFrame {
     struct YogScriptFrame base;
-    struct YogVal vars;
+    YogVal vars;
 };
 
 typedef struct YogMethodFrame YogMethodFrame;
@@ -97,7 +97,7 @@ typedef struct YogMethodFrame YogMethodFrame;
 /* src/frame.c */
 YogVal YogCFrame_new(YogEnv*);
 void YogFrame_add_locals(YogEnv*, YogCFrame*, unsigned int, ...);
-YogMethodFrame* YogMethodFrame_new(YogEnv*);
+YogVal YogMethodFrame_new(YogEnv*);
 YogVal YogNameFrame_new(YogEnv*);
 YogVal YogOuterVars_new(YogEnv*, unsigned int);
 YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);

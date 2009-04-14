@@ -14,8 +14,8 @@ typedef struct YogRegexp YogRegexp;
 
 struct YogMatch {
     YOGBASICOBJ_HEAD;
-    struct YogVal str;
-    struct YogVal regexp;
+    YogVal str;
+    YogVal regexp;
     OnigRegion* onig_region;
 };
 
@@ -29,7 +29,7 @@ typedef struct YogMatch YogMatch;
 
 /* src/regexp.c */
 YogVal YogMatch_klass_new(YogEnv*);
-YogMatch* YogMatch_new(YogEnv*, YogVal, YogVal, OnigRegion*);
+YogVal YogMatch_new(YogEnv*, YogVal, YogVal, OnigRegion*);
 YogVal YogRegexp_klass_new(YogEnv*);
 YogVal YogRegexp_new(YogEnv*, YogVal, OnigOptionType);
 

@@ -22,7 +22,7 @@ typedef struct YogEncoding YogEncoding;
 YogVal YogEncoding_get_default(YogEnv*);
 char* YogEncoding_left_adjust_char_head(YogEnv*, YogVal, const char*, const char*);
 int YogEncoding_mbc_size(YogEnv*, YogVal, const char*);
-YogEncoding* YogEncoding_new(YogEnv*, OnigEncoding);
+YogVal YogEncoding_new(YogEnv*, OnigEncoding);
 YogVal YogEncoding_normalize_name(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */

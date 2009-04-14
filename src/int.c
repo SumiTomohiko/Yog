@@ -8,7 +8,7 @@
 #include "yog/yog.h"
 
 #define CHECK_TYPE(v) do { \
-    YOG_ASSERT(env, VAL_TYPE(v) == VAL_INT, "Value isn't int."); \
+    YOG_ASSERT(env, IS_INT(v), "Value isn't int."); \
 } while (0)
 
 #define CHECK_ARGS(self, v) do { \

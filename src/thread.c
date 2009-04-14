@@ -102,7 +102,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         ID id = VAL2ID(name);
         unsigned int j = 0;
         for (j = 0; j < ARG_INFO(arg_info)->argc; j++) {
-            ID argname = ARG_INFO(arg_info)->argnames[j];
+            YogVal argnames = ARG_INFO(arg_info)->argnames;
+            ID argname = PTR_AS(ID, argnames)[j];
             if (argname == id) {
                 YOG_ASSERT(env, !IS_UNDEF(PTR_AS(YogValArray, args)->items[j]), "Argument specified twice.");
                 YogVal* items = PTR_AS(YogValArray, args)->items;
@@ -135,14 +136,14 @@ fill_builtin_function_args(YogEnv* env, YogVal f, uint8_t posargc, YogVal posarg
 
     unsigned int argc = YogValArray_size(env, args);
 
-    fill_args(env, OBJ_AS(YogBuiltinFunction, f)->arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, args, 0);
+    fill_args(env, PTR_AS(YogBuiltinFunction, f)->arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, args, 0);
 
     int required_argc = 0;
-    if (OBJ_AS(YogBuiltinFunction, f)->required_argc < 0) {
+    if (PTR_AS(YogBuiltinFunction, f)->required_argc < 0) {
         required_argc = argc;
     }
     else {
-        required_argc = OBJ_AS(YogBuiltinFunction, f)->required_argc;
+        required_argc = PTR_AS(YogBuiltinFunction, f)->required_argc;
     }
     unsigned int i = 0;
     for (i = 0; i < required_argc; i++) {
@@ -179,7 +180,7 @@ call_builtin_function(YogEnv* env, YogThread* th, YogVal f, YogVal self, YogVal 
 
 #define DECL_ARGS \
     YogVal f = method->f; \
-    YogArgInfo* arg_info = &OBJ_AS(YogBuiltinFunction, f)->arg_info; \
+    YogArgInfo* arg_info = &PTR_AS(YogBuiltinFunction, f)->arg_info; \
     YOG_ASSERT(env, (posargc <= arg_info->argc) || (0 < arg_info->varargc), "Too many argument(s)."); \
     unsigned int argc = arg_info->argc + arg_info->blockargc + arg_info->varargc + arg_info->kwargc; \
     YogVal args = YogValArray_new(env, argc); \
@@ -206,7 +207,7 @@ call_builtin_unbound_method(YogEnv* env, YogThread* th, YogVal receiver, YogVal 
 #if 0
     DECL_ARGS;
 #endif
-    f = OBJ_AS(YogBuiltinUnboundMethod, method)->f;
+    f = PTR_AS(YogBuiltinUnboundMethod, method)->f;
     YogVal arg_info = PTR_AS(YogBuiltinFunction, f)->arg_info;
     unsigned int f_argc = PTR_AS(YogArgInfo, arg_info)->argc;
     unsigned int f_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
@@ -245,8 +246,8 @@ call_builtin_bound_method(YogEnv* env, YogThread* th, YogVal method, uint8_t pos
 #if 0
     DECL_ARGS;
 #endif
-    f = OBJ_AS(YogBuiltinBoundMethod, method)->f;
-    YogVal arg_info = OBJ_AS(YogBuiltinFunction, f)->arg_info;
+    f = PTR_AS(YogBuiltinBoundMethod, method)->f;
+    YogVal arg_info = PTR_AS(YogBuiltinFunction, f)->arg_info;
     unsigned int f_argc = PTR_AS(YogArgInfo, arg_info)->argc;
     unsigned int f_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
     unsigned int f_varargc = PTR_AS(YogArgInfo, arg_info)->varargc;
@@ -263,7 +264,7 @@ call_builtin_bound_method(YogEnv* env, YogThread* th, YogVal method, uint8_t pos
 
     fill_builtin_function_args(env, f, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, args);
 
-    YogVal self = OBJ_AS(YogBuiltinBoundMethod, method)->self;
+    YogVal self = PTR_AS(YogBuiltinBoundMethod, method)->self;
     YogVal retval = call_builtin_function(env, th, f, self, args);
 
     RETURN(env, retval);
@@ -276,8 +277,8 @@ setup_script_method(YogEnv* env, YogVal method, YogVal code)
 {
     SAVE_ARGS2(env, method, code);
 
-    MODIFY(env, SCRIPT_METHOD(method)->code, code);
-    MODIFY(env, SCRIPT_METHOD(method)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
+    MODIFY(env, PTR_AS(YogScriptMethod, method)->code, code);
+    MODIFY(env, PTR_AS(YogScriptMethod, method)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
 
     unsigned int outer_size = PTR_AS(YogCode, code)->outer_size;
     YogVal outer_vars = YogOuterVars_new(env, outer_size);
@@ -294,7 +295,7 @@ setup_script_method(YogEnv* env, YogVal method, YogVal code)
         frame = PTR_AS(YogFrame, frame)->prev;
     }
 
-    MODIFY(env, SCRIPT_METHOD(method)->outer_vars, outer_vars);
+    MODIFY(env, PTR_AS(YogScriptMethod, method)->outer_vars, outer_vars);
 
     RETURN_VOID(env);
 }
@@ -365,14 +366,14 @@ call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint
     PUSH_LOCALSX(env, 2 * kwargc, kwargs);
 #endif
 
-    YOG_ASSERT(env, IS_OBJ(callee), "Callee is not object.");
+    YOG_ASSERT(env, IS_PTR(callee), "Callee is not object.");
     if (IS_OBJ_OF(cBuiltinBoundMethod, callee)) {
         YogVal val = call_builtin_bound_method(env, th, callee, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
         PUSH(val);
     }
     else if (IS_OBJ_OF(cBoundMethod, callee)) {
         YogVal self = PTR_AS(YogBoundMethod, callee)->self;
-        YogVal code = SCRIPT_METHOD(callee)->code;
+        YogVal code = PTR_AS(YogScriptMethod, callee)->code;
         call_code(env, th, self, code, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
     }
     else if (IS_OBJ_OF(cBuiltinUnboundMethod, callee)) {
@@ -382,7 +383,7 @@ call_method(YogEnv* env, YogThread* th, YogVal unbound_self, YogVal callee, uint
     }
     else if (IS_OBJ_OF(cUnboundMethod, callee)) {
         YogVal self = unbound_self;
-        YogVal code = SCRIPT_METHOD(callee)->code;
+        YogVal code = PTR_AS(YogScriptMethod, callee)->code;
         call_code(env, th, self, code, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
     }
     else {
@@ -439,7 +440,7 @@ lookup_builtins(YogEnv* env, ID name)
         YOG_ASSERT(env, FALSE, "Can't find builtins package.");
     }
 
-    YogPackage* pkg = OBJ_AS(YogPackage, builtins);
+    YogPackage* pkg = PTR_AS(YogPackage, builtins);
     YogVal key = ID2VAL(name);
     YogVal val = YUNDEF;
     if (!YogTable_lookup(env, YOGOBJ(pkg)->attrs, key, &val)) {
@@ -499,7 +500,7 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
 #define PRINT(...)  fprintf(stderr, __VA_ARGS__)
             PRINT("Traceback (most recent call last):\n");
 
-            YogException* exc = OBJ_AS(YogException, env->th->jmp_val);
+            YogException* exc = PTR_AS(YogException, env->th->jmp_val);
             YogVal st = exc->stack_trace;
 #define ID2NAME(id)     YogVm_id2name(env, env->vm, id)
             while (IS_PTR(st)) {
@@ -542,14 +543,14 @@ mainloop(YogEnv* env, YogThread* th, YogVal frame, YogVal code)
             }
 
             YogVal klass = YOGBASICOBJ(exc)->klass;
-            const char* name = ID2NAME(OBJ_AS(YogKlass, klass)->name);
+            const char* name = ID2NAME(PTR_AS(YogKlass, klass)->name);
             /* dirty hack */
             size_t len = strlen(name);
             char s[len + 1];
             strcpy(s, name);
 #undef ID2NAME
             YogVal val = YogThread_call_method(env, env->th, exc->message, "to_s", 0, NULL);
-            YogString* msg = OBJ_AS(YogString, val);
+            YogString* msg = PTR_AS(YogString, val);
             PRINT("%s: %s\n", s, PTR_AS(YogCharArray, msg->body)->items);
 #undef PRINT
 
@@ -702,7 +703,8 @@ YogThread_call_block(YogEnv* env, YogThread* th, YogVal block, unsigned int argc
         unsigned int argc = PTR_AS(YogArgInfo, arg_info)->argc;
         unsigned int i = 0;
         for (i = 0; i < argc; i++) {
-            ID name = PTR_AS(YogArgInfo, arg_info)->argnames[i];
+            YogVal argnames = PTR_AS(YogArgInfo, arg_info)->argnames;
+            ID name = PTR_AS(ID, argnames)[i];
             SET_VAR(name);
         }
         unsigned int blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
@@ -769,7 +771,7 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
 #endif
 
     YogVal attr = YogVal_get_attr(env, receiver, method);
-    YOG_ASSERT(env, IS_OBJ(attr), "Attribute isn't object.");
+    YOG_ASSERT(env, IS_PTR(attr), "Attribute isn't object.");
 
     YogVal retval = YUNDEF;
     YogVal undef = YUNDEF;
@@ -777,7 +779,7 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
         retval = call_builtin_bound_method(env, th, attr, argc, args, undef, 0, NULL, undef, undef);
     }
     else if (IS_OBJ_OF(cBoundMethod, attr)) {
-        YogBoundMethod* method = OBJ_AS(YogBoundMethod, attr);
+        YogBoundMethod* method = PTR_AS(YogBoundMethod, attr);
         YogVal self = method->self;
         YogVal code = ((YogScriptMethod*)method)->code;
         retval = eval_code(env, th, code, self, argc, args);
@@ -786,7 +788,7 @@ YogThread_call_method_id(YogEnv* env, YogThread* th, YogVal receiver, ID method,
         retval = call_builtin_unbound_method(env, th, receiver, attr, argc, args, undef, 0, NULL, undef, undef);
     }
     else if (IS_OBJ_OF(cUnboundMethod, attr)) {
-        YogUnboundMethod* method = OBJ_AS(YogUnboundMethod, attr);
+        YogUnboundMethod* method = PTR_AS(YogUnboundMethod, attr);
         YogVal code = ((YogScriptMethod*)method)->code;
         retval = eval_code(env, th, code, receiver, argc, args);
     }
@@ -849,9 +851,9 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
     }
 
 #if defined(GC_GENERATIONAL)
-    void*** p;
+    YogVal** p;
     for (p = th->ref_tbl; p < th->ref_tbl_ptr; p++) {
-        **p = (*keeper)(env, **p);
+        **p = YogVal_keep(env, **p, keeper);
     }
 #endif
 }
@@ -860,11 +862,11 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 void 
 YogThread_shrink_ref_tbl(YogEnv* env, YogThread* thread) 
 {
-    void*** to = thread->ref_tbl;
-    void*** p;
+    YogVal** to = thread->ref_tbl;
+    YogVal** p;
     for (p = thread->ref_tbl; p < thread->ref_tbl_ptr; p++) {
         YogCopying* copying = &env->vm->gc.generational.copying;
-        if (YogCopying_is_in_active_heap(env, copying, **p)) {
+        if (YogCopying_is_in_active_heap(env, copying, VAL2PTR(**p))) {
             *to = *p;
             to++;
         }
@@ -874,17 +876,17 @@ YogThread_shrink_ref_tbl(YogEnv* env, YogThread* thread)
 #endif
 
 void 
-YogThread_initialize(YogEnv* env, YogThread* thread) 
+YogThread_initialize(YogEnv* env, YogVal thread)
 {
-    thread->cur_frame = YNIL;
-    thread->jmp_buf_list = NULL;
-    thread->jmp_val = YUNDEF;
-    thread->locals = NULL;
+    PTR_AS(YogThread, thread)->cur_frame = YNIL;
+    PTR_AS(YogThread, thread)->jmp_buf_list = NULL;
+    PTR_AS(YogThread, thread)->jmp_val = YUNDEF;
+    PTR_AS(YogThread, thread)->locals = NULL;
 #if defined(GC_GENERATIONAL)
 #   define REF_TBL_SIZE     256
-    thread->ref_tbl = malloc(REF_TBL_SIZE * sizeof(void**));
-    thread->ref_tbl_limit = thread->ref_tbl + REF_TBL_SIZE;
-    thread->ref_tbl_ptr = thread->ref_tbl;
+    PTR_AS(YogThread, thread)->ref_tbl = malloc(REF_TBL_SIZE * sizeof(YogVal*));
+    PTR_AS(YogThread, thread)->ref_tbl_limit = PTR_AS(YogThread, thread)->ref_tbl + REF_TBL_SIZE;
+    PTR_AS(YogThread, thread)->ref_tbl_ptr = PTR_AS(YogThread, thread)->ref_tbl;
 #   undef REF_TBL_SIZE
 #endif
 }
@@ -897,10 +899,10 @@ YogThread_finalize(YogEnv* env, YogThread* thread)
 #endif
 }
 
-YogThread*
+YogVal 
 YogThread_new(YogEnv* env) 
 {
-    YogThread* th = ALLOC_OBJ(env, YogThread_keep_children, NULL, YogThread);
+    YogVal th = ALLOC_OBJ(env, YogThread_keep_children, NULL, YogThread);
     YogThread_initialize(env, th);
 
     return th;

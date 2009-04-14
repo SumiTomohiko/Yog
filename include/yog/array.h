@@ -6,7 +6,7 @@
 
 struct YogValArray {
     unsigned int size;
-    struct YogVal items[0];
+    YogVal items[0];
 };
 
 typedef struct YogValArray YogValArray;
@@ -14,7 +14,7 @@ typedef struct YogValArray YogValArray;
 struct YogArray {
     YOGBASICOBJ_HEAD;
     unsigned int size;
-    struct YogVal body; 
+    YogVal body; 
 };
 
 typedef struct YogArray YogArray;

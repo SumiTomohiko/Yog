@@ -27,20 +27,20 @@ struct YogLinenoTableEntry {
 typedef struct YogLinenoTableEntry YogLinenoTableEntry;
 
 struct YogCode {
-    struct YogVal arg_info;
+    YogVal arg_info;
 
     unsigned int stack_size;
     unsigned int local_vars_count;
     ID* local_vars_names;
-    struct YogVal consts;
-    struct YogVal insts;
+    YogVal consts;
+    YogVal insts;
     unsigned int outer_size;
 
     unsigned int exc_tbl_size;
-    struct YogVal exc_tbl;
+    YogVal exc_tbl;
 
     unsigned int lineno_tbl_size;
-    struct YogVal lineno_tbl;
+    YogVal lineno_tbl;
 
     YogVal filename;
     ID klass_name;

@@ -1,12 +1,13 @@
 #if !defined(__YOG_ARG_H__)
 #define __YOG_ARG_H__
 
+#include <stdint.h>
 #include "yog/yog.h"
 
 struct YogArgInfo {
     unsigned int argc;
-    ID* argnames;
-    uint8_t* arg_index;
+    YogVal argnames;
+    YogVal arg_index;
 
     unsigned int blockargc;
     ID blockargname;

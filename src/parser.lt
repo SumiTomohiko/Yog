@@ -246,19 +246,19 @@ static const char *const yyRuleName[] = {
 /*
 ** Try to increase the size of the parser stack.
 */
-static void yyGrowStack(yyParser *p){
+static void yyGrowStack(YogVal p){
   int newSize;
   yyStackEntry *pNew;
 
-  newSize = p->yystksz*2 + 100;
-  pNew = realloc(p->yystack, newSize*sizeof(pNew[0]));
+  newSize = PTR_AS(yyParser, p)->yystksz*2 + 100;
+  pNew = realloc(PTR_AS(yyParser, p)->yystack, newSize * sizeof(pNew[0]));
   if( pNew ){
-    p->yystack = pNew;
-    p->yystksz = newSize;
+    PTR_AS(yyParser, p)->yystack = pNew;
+    PTR_AS(yyParser, p)->yystksz = newSize;
 #if !defined(NDEBUG)
     if( yyTraceFILE ){
       fprintf(yyTraceFILE,"%sStack grows to %d entries!\n",
-              yyTracePrompt, p->yystksz);
+              yyTracePrompt, PTR_AS(yyParser, p)->yystksz);
     }
 #endif
   }
@@ -291,24 +291,24 @@ LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogVal 
 LemonParser_new(YogEnv* env) 
 {
-  yyParser *pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
-  if( pParser ){
-    pParser->yyidx = -1;
+    YogVal pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
+  if (IS_PTR(pParser)) {
+    PTR_AS(yyParser, pParser)->yyidx = -1;
 #if defined(YYTRACKMAXSTACKDEPTH)
-    pParser->yyidxMax = 0;
+    PTR_AS(yyParser, pParser)->yyidxMax = 0;
 #endif
 #if YYSTACKDEPTH<=0
-    pParser->yystack = NULL;
-    pParser->yystksz = 0;
+    PTR_AS(yyParser, pParser)->yystack = NULL;
+    PTR_AS(yyParser, pParser)->yystksz = 0;
     yyGrowStack(pParser);
 #else
     int i;
     for (i = 0; i < YYSTACKDEPTH; i++) {
-        pParser->yystack[i].minor.yy0 = YUNDEF;
+        PTR_AS(yyParser, pParser)->yystack[i].minor.yy0 = YUNDEF;
     }
 #endif
   }
-  return PTR2VAL(pParser);
+  return pParser;
 }
 
 /* The following function deletes the value associated with a
@@ -546,7 +546,7 @@ static void yy_shift(
   yytos->stateno = (YYACTIONTYPE)yyNewState;
   yytos->major = (YYCODETYPE)yyMajor;
   yytos->minor = *yypMinor;
-  ADD_REF(env, VAL2PTR(yytos->minor.yy0));
+  ADD_REF(env, yytos->minor.yy0);
 #if !defined(NDEBUG)
   if( yyTraceFILE && PTR_AS(yyParser, parser)->yyidx>0 ){
     int i;

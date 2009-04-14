@@ -7,15 +7,15 @@
 #include "yog/yog.h"
 
 YogVal 
-YogObj_get_attr(YogEnv* env, YogObj* obj, ID name) 
+YogObj_get_attr(YogEnv* env, YogVal obj, ID name) 
 {
-    if (VAL2PTR(obj->attrs) == NULL) {
+    if (!IS_PTR(PTR_AS(YogObj, obj)->attrs)) {
         return YUNDEF;
     }
 
     YogVal key = ID2VAL(name);
     YogVal attr = YNIL;
-    if (YogTable_lookup(env, obj->attrs, key, &attr)) {
+    if (YogTable_lookup(env, PTR_AS(YogObj, obj)->attrs, key, &attr)) {
         return attr;
     }
     else {
@@ -31,12 +31,12 @@ YogObj_set_attr_id(YogEnv* env, YogVal obj, ID name, YogVal val)
 
     YogVal key = ID2VAL(name);
 
-    if (VAL2PTR(OBJ_AS(YogObj, obj)->attrs) == NULL) {
+    if (!IS_PTR(PTR_AS(YogObj, obj)->attrs)) {
         YogVal attrs = YogTable_new_symbol_table(env);
-        MODIFY(env, OBJ_AS(YogObj, obj)->attrs, attrs);
+        MODIFY(env, PTR_AS(YogObj, obj)->attrs, attrs);
     }
 
-    YogTable_insert(env, OBJ_AS(YogObj, obj)->attrs, key, val);
+    YogTable_insert(env, PTR_AS(YogObj, obj)->attrs, key, val);
 
     RETURN_VOID(env);
 }
@@ -53,17 +53,17 @@ YogObj_set_attr(YogEnv* env, YogVal obj, const char* name, YogVal val)
 }
 
 void 
-YogBasicObj_init(YogEnv* env, YogBasicObj* obj, unsigned int flags, YogVal klass) 
+YogBasicObj_init(YogEnv* env, YogVal obj, unsigned int flags, YogVal klass) 
 {
-    obj->flags = flags;
-    obj->klass = klass;
+    PTR_AS(YogBasicObj, obj)->flags = flags;
+    MODIFY(env, PTR_AS(YogBasicObj, obj)->klass, klass);
 }
 
 void 
-YogObj_init(YogEnv* env, YogObj* obj, unsigned int flags, YogVal klass) 
+YogObj_init(YogEnv* env, YogVal obj, unsigned int flags, YogVal klass) 
 {
-    obj->attrs = PTR2VAL(NULL);
-    YogBasicObj_init(env, YOGBASICOBJ(obj), flags | HAS_ATTRS, klass);
+    PTR_AS(YogObj, obj)->attrs = YUNDEF;
+    YogBasicObj_init(env, obj, flags | HAS_ATTRS, klass);
 }
 
 void 
@@ -87,10 +87,10 @@ YogObj_allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
-    YogObj* obj = ALLOC_OBJ(env, YogObj_keep_children, NULL, YogObj);
+    YogVal obj = ALLOC_OBJ(env, YogObj_keep_children, NULL, YogObj);
     YogObj_init(env, obj, 0, klass);
 
-    RETURN(env, OBJ2VAL(obj));
+    RETURN(env, obj);
 }
 
 YogVal 

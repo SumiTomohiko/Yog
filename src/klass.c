@@ -19,12 +19,12 @@ YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f, uns
 
     va_list ap;
     va_start(ap, required_argc);
-    YogVal builtin_f = YogBuiltinFunction_new(env, f, OBJ_AS(YogKlass, klass)->name, func_name, blockargc, varargc, kwargc, required_argc, ap);
+    YogVal builtin_f = YogBuiltinFunction_new(env, f, PTR_AS(YogKlass, klass)->name, func_name, blockargc, varargc, kwargc, required_argc, ap);
     va_end(ap);
     PUSH_LOCAL(env, builtin_f);
 
     YogVal method = YogBuiltinUnboundMethod_new(env);
-    MODIFY(env, OBJ_AS(YogBuiltinUnboundMethod, method)->f, builtin_f);
+    MODIFY(env, PTR_AS(YogBuiltinUnboundMethod, method)->f, builtin_f);
     PUSH_LOCAL(env, method);
 
     YogObj_set_attr_id(env, klass, func_name, method);
@@ -46,16 +46,16 @@ YogKlass_allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
-    YogObj* obj = ALLOC_OBJ(env, keep_children, NULL, YogKlass);
+    YogVal obj = ALLOC_OBJ(env, keep_children, NULL, YogKlass);
     YogObj_init(env, obj, 0, klass);
 
-    RETURN(env, OBJ2VAL(obj));
+    RETURN(env, obj);
 }
 
 void 
 YogKlass_define_allocator(YogEnv* env, YogVal klass, Allocator allocator) 
 {
-    OBJ_AS(YogKlass, klass)->allocator = allocator;
+    PTR_AS(YogKlass, klass)->allocator = allocator;
 }
 
 YogVal 
@@ -67,16 +67,16 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_allocate(env, env->vm->cKlass);
-    OBJ_AS(YogKlass, klass)->allocator = NULL;
-    OBJ_AS(YogKlass, klass)->name = INVALID_ID;
-    MODIFY(env, OBJ_AS(YogKlass, klass)->super, PTR2VAL(NULL));
+    PTR_AS(YogKlass, klass)->allocator = NULL;
+    PTR_AS(YogKlass, klass)->name = INVALID_ID;
+    MODIFY(env, PTR_AS(YogKlass, klass)->super, PTR2VAL(NULL));
 
-    OBJ_AS(YogKlass, klass)->allocator = NULL;
+    PTR_AS(YogKlass, klass)->allocator = NULL;
     if (name != NULL) {
         ID id = INTERN(name);
-        OBJ_AS(YogKlass, klass)->name = id;
+        PTR_AS(YogKlass, klass)->name = id;
     }
-    MODIFY(env, OBJ_AS(YogKlass, klass)->super, super);
+    MODIFY(env, PTR_AS(YogKlass, klass)->super, super);
     RETURN(env, klass);
 }
 
@@ -89,18 +89,18 @@ new_(YogEnv* env)
     YogVal obj = YUNDEF;
     PUSH_LOCALS4(env, self, blockarg, vararg, obj);
 
-    Allocator allocator = OBJ_AS(YogKlass, self)->allocator;
+    Allocator allocator = PTR_AS(YogKlass, self)->allocator;
     YogVal klass = self;
     while (allocator == NULL) {
-        klass = OBJ_AS(YogKlass, klass)->super;
+        klass = PTR_AS(YogKlass, klass)->super;
         if (VAL2PTR(klass) == NULL) {
             YOG_ASSERT(env, FALSE, "Can't allocate object.");
         }
-        allocator = OBJ_AS(YogKlass, klass)->allocator;
+        allocator = PTR_AS(YogKlass, klass)->allocator;
     }
 
     obj = (*allocator)(env, self);
-    YogVal body = OBJ_AS(YogArray, vararg)->body;
+    YogVal body = PTR_AS(YogArray, vararg)->body;
     unsigned int size = PTR_AS(YogValArray, body)->size;
     YogVal* items = PTR_AS(YogValArray, body)->items;
     /* TODO: dirty hack */

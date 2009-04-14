@@ -6,7 +6,7 @@
 
 struct YogPackage {
     YOGOBJ_HEAD;
-    struct YogVal code;
+    YogVal code;
 };
 
 typedef struct YogPackage YogPackage;

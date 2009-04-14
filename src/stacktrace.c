@@ -15,14 +15,14 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogVal 
 YogStackTraceEntry_new(YogEnv* env) 
 {
-    YogStackTraceEntry* entry = ALLOC_OBJ(env, keep_children, NULL, YogStackTraceEntry);
-    entry->lower = YUNDEF;
-    entry->lineno = 0;
-    entry->filename = YUNDEF;
-    entry->klass_name = INVALID_ID;
-    entry->func_name = INVALID_ID;
+    YogVal entry = ALLOC_OBJ(env, keep_children, NULL, YogStackTraceEntry);
+    PTR_AS(YogStackTraceEntry, entry)->lower = YUNDEF;
+    PTR_AS(YogStackTraceEntry, entry)->lineno = 0;
+    PTR_AS(YogStackTraceEntry, entry)->filename = YUNDEF;
+    PTR_AS(YogStackTraceEntry, entry)->klass_name = INVALID_ID;
+    PTR_AS(YogStackTraceEntry, entry)->func_name = INVALID_ID;
 
-    return PTR2VAL(entry);
+    return entry;
 }
 
 /**

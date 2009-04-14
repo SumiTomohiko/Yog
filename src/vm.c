@@ -155,14 +155,19 @@ GcObjectStat_initialize(GcObjectStat* stat)
 }
 #endif
 
-void* 
+YogVal 
 YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     vm->gc_stat.num_alloc++;
 
     void* ptr = (*vm->alloc_mem)(env, vm, keeper, finalizer, size);
 
-    return ptr;
+    if (ptr != NULL) {
+        return PTR2VAL(ptr);
+    }
+    else {
+        return YNIL;
+    }
 }
 
 static void 
@@ -192,8 +197,8 @@ setup_basic_klass(YogEnv* env, YogVm* vm)
     cKlass = YogKlass_new(env, "Class", cObject);
     YogKlass_define_allocator(env, cKlass, YogKlass_allocate);
 
-    MODIFY(env, OBJ_AS(YogBasicObj, cObject)->klass, cKlass);
-    MODIFY(env, OBJ_AS(YogBasicObj, cKlass)->klass, cKlass);
+    MODIFY(env, PTR_AS(YogBasicObj, cObject)->klass, cKlass);
+    MODIFY(env, PTR_AS(YogBasicObj, cKlass)->klass, cKlass);
 
     vm->cObject = cObject;
     vm->cKlass = cKlass;
@@ -230,9 +235,8 @@ setup_encodings(YogEnv* env, YogVm* vm)
 #define REGISTER_ENCODING(name, onig)   do { \
     ID id = INTERN(name); \
     YogVal key = ID2VAL(id); \
-    YogEncoding* enc = YogEncoding_new(env, onig); \
-    YogVal val = PTR2VAL(enc); \
-    YogTable_add_direct(env, vm->encodings, key, val); \
+    YogVal enc = YogEncoding_new(env, onig); \
+    YogTable_add_direct(env, vm->encodings, key, enc); \
 } while (0)
     REGISTER_ENCODING("ascii", ONIG_ENCODING_ASCII);
     REGISTER_ENCODING("utf-8", ONIG_ENCODING_UTF8);

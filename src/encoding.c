@@ -47,18 +47,18 @@ YogEncoding_normalize_name(YogEnv* env, YogVal name)
         else {
             c2 = tolower(c);
         }
-        YogVal body = OBJ_AS(YogString, s)->body;
+        YogVal body = PTR_AS(YogString, s)->body;
         PTR_AS(YogCharArray, body)->items[i] = c2;
     }
 
     return s;
 }
 
-YogEncoding* 
+YogVal 
 YogEncoding_new(YogEnv* env, OnigEncoding onig_enc) 
 {
-    YogEncoding* enc = ALLOC_OBJ(env, NULL, NULL, YogEncoding);
-    enc->onig_enc = onig_enc;
+    YogVal enc = ALLOC_OBJ(env, NULL, NULL, YogEncoding);
+    PTR_AS(YogEncoding, enc)->onig_enc = onig_enc;
 
     return enc;
 }

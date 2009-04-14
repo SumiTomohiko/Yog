@@ -17,7 +17,7 @@ enum InstType {
 typedef enum InstType InstType;
 
 struct YogInst {
-    struct YogVal next;
+    YogVal next;
 
     enum InstType type;
     enum OpCode opcode;
@@ -75,10 +75,10 @@ struct YogInst {
             uint8_t index;
         } load_local;
         struct {
-            struct YogVal dest;
+            YogVal dest;
         } jump;
         struct {
-            struct YogVal dest;
+            YogVal dest;
         } jump_if_false;
         struct {
         } dup;

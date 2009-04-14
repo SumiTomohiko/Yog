@@ -25,7 +25,7 @@
 
 typedef struct ParserState ParserState;
 
-static void Parse(struct YogEnv*, struct YogVal, int, YogVal, YogVal*);
+static void Parse(struct YogEnv*, YogVal, int, YogVal, YogVal*);
 static YogVal LemonParser_new(YogEnv*);
 static void ParseTrace(FILE*, char*);
 
@@ -130,11 +130,11 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogVal 
 YogNode_new(YogEnv* env, YogNodeType type, unsigned int lineno) 
 {
-    YogNode* node = ALLOC_OBJ(env, YogNode_keep_children, NULL, YogNode);
-    node->lineno = lineno;
-    node->type = type;
+    YogVal node = ALLOC_OBJ(env, YogNode_keep_children, NULL, YogNode);
+    PTR_AS(YogNode, node)->lineno = lineno;
+    PTR_AS(YogNode, node)->type = type;
 
-    return PTR2VAL(node);
+    return node;
 }
 
 #define NODE_NEW(type, lineno)  YogNode_new(env, (type), (lineno))
@@ -172,10 +172,10 @@ Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_defaul
     PUSH_LOCAL(env, array);
 
     array = YogArray_new(env);
-    if (IS_OBJ(params_without_default)) {
+    if (IS_PTR(params_without_default)) {
         YogArray_extend(env, array, params_without_default);
     }
-    if (IS_OBJ(params_with_default)) {
+    if (IS_PTR(params_with_default)) {
         YogArray_extend(env, array, params_with_default);
     }
     if (IS_PTR(block_param)) {
@@ -229,7 +229,7 @@ Array_push(YogEnv* env, YogVal array, YogVal elem)
     SAVE_ARGS2(env, array, elem);
 
     if (IS_PTR(elem)) {
-        if (!IS_OBJ(array)) {
+        if (!IS_PTR(array)) {
             array = YogArray_new(env);
         }
         YogArray_push(env, array, elem);
@@ -345,7 +345,7 @@ ExceptFinally_new(YogEnv* env, unsigned int lineno, YogVal stmts, YogVal excepts
     except = Except_new(env, lineno, stmts, excepts, else_);
 
     YogVal node;
-    if (IS_OBJ(finally)) {
+    if (IS_PTR(finally)) {
         YogVal array = Array_new(env, except);
         node = Finally_new(env, lineno, array, finally);
     }
@@ -618,7 +618,7 @@ typedef union {
   ParseTOKENTYPE yy0;
   YogVal yy77;
 } YYMINORTYPE;
-#if !defined(YYSTACKDEPTH)
+#ifndef YYSTACKDEPTH
 #define YYSTACKDEPTH 100
 #endif
 #define ParseARG_SDECL  YogVal* pval ;
@@ -1227,19 +1227,19 @@ static const char *const yyRuleName[] = {
 /*
 ** Try to increase the size of the parser stack.
 */
-static void yyGrowStack(yyParser *p){
+static void yyGrowStack(YogVal p){
   int newSize;
   yyStackEntry *pNew;
 
-  newSize = p->yystksz*2 + 100;
-  pNew = realloc(p->yystack, newSize*sizeof(pNew[0]));
+  newSize = PTR_AS(yyParser, p)->yystksz*2 + 100;
+  pNew = realloc(PTR_AS(yyParser, p)->yystack, newSize * sizeof(pNew[0]));
   if( pNew ){
-    p->yystack = pNew;
-    p->yystksz = newSize;
+    PTR_AS(yyParser, p)->yystack = pNew;
+    PTR_AS(yyParser, p)->yystksz = newSize;
 #if !defined(NDEBUG)
     if( yyTraceFILE ){
       fprintf(yyTraceFILE,"%sStack grows to %d entries!\n",
-              yyTracePrompt, p->yystksz);
+              yyTracePrompt, PTR_AS(yyParser, p)->yystksz);
     }
 #endif
   }
@@ -1272,24 +1272,24 @@ LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogVal 
 LemonParser_new(YogEnv* env) 
 {
-  yyParser *pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
-  if( pParser ){
-    pParser->yyidx = -1;
+    YogVal pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
+  if (IS_PTR(pParser)) {
+    PTR_AS(yyParser, pParser)->yyidx = -1;
 #if defined(YYTRACKMAXSTACKDEPTH)
-    pParser->yyidxMax = 0;
+    PTR_AS(yyParser, pParser)->yyidxMax = 0;
 #endif
 #if YYSTACKDEPTH<=0
-    pParser->yystack = NULL;
-    pParser->yystksz = 0;
+    PTR_AS(yyParser, pParser)->yystack = NULL;
+    PTR_AS(yyParser, pParser)->yystksz = 0;
     yyGrowStack(pParser);
 #else
     int i;
     for (i = 0; i < YYSTACKDEPTH; i++) {
-        pParser->yystack[i].minor.yy0 = YUNDEF;
+        PTR_AS(yyParser, pParser)->yystack[i].minor.yy0 = YUNDEF;
     }
 #endif
   }
-  return PTR2VAL(pParser);
+  return pParser;
 }
 
 /* The following function deletes the value associated with a
@@ -1525,7 +1525,7 @@ static void yy_shift(
   yytos->stateno = (YYACTIONTYPE)yyNewState;
   yytos->major = (YYCODETYPE)yyMajor;
   yytos->minor = *yypMinor;
-  ADD_REF(env, VAL2PTR(yytos->minor.yy0));
+  ADD_REF(env, yytos->minor.yy0);
 #if !defined(NDEBUG)
   if( yyTraceFILE && PTR_AS(yyParser, parser)->yyidx>0 ){
     int i;

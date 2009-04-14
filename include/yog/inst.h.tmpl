@@ -13,7 +13,7 @@ enum InstType {
 typedef enum InstType InstType;
 
 struct YogInst {
-    struct YogVal next;
+    YogVal next;
 
     enum InstType type;
     enum OpCode opcode;

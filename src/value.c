@@ -7,120 +7,72 @@
 YogVal 
 YogVal_keep(YogEnv* env, YogVal val, ObjectKeeper keeper) 
 {
-    switch (VAL_TYPE(val)) {
-    case VAL_UNDEF:
-    case VAL_INT:
-    case VAL_FLOAT:
-    case VAL_BOOL:
-    case VAL_NIL:
-    case VAL_SYMBOL:
-        return val;
-        break;
-#if 0
-    case VAL_STR:
-        {
-            const char* s = VAL2STR(val);
-            s = (*keeper)(env, (void*)s);
-            return STR2VAL(s);
-            break;
-        }
-#endif
-    case VAL_PTR:
-        {
-            void* ptr = VAL2PTR(val);
-            ptr = (*keeper)(env, ptr);
-            return PTR2VAL(ptr);
-            break;
-        }
-    case VAL_OBJ:
-        {
-            YogBasicObj* obj = VAL2OBJ(val);
-            obj = (*keeper)(env, obj);
-            return OBJ2VAL(obj);
-            break;
-        }
-    default:
-        YOG_ASSERT(env, FALSE, "Uknown value type.");
-        break;
+    if (IS_PTR(val)) {
+        void* ptr = VAL2PTR(val);
+        ptr = (*keeper)(env, ptr);
+        return PTR2VAL(ptr);
     }
-
-    /* NOTREACHED */
-    return YUNDEF;
+    else {
+        return val;
+    }
 }
 
 void 
 YogVal_print(YogEnv* env, YogVal val) 
 {
-    switch (VAL_TYPE(val)) {
-    case VAL_UNDEF:
+    if (IS_UNDEF(val)) {
         printf("<undef>\n");
-        break;
-    case VAL_INT:
+    }
+    else if (IS_INT(val)) {
         printf("<int: %d>\n", VAL2INT(val));
-        break;
-    case VAL_FLOAT:
-        printf("<float: %f>\n", VAL2FLOAT(val));
-        break;
-    case VAL_PTR:
+    }
+    else if (IS_PTR(val)) {
         printf("<ptr: %p>\n", VAL2PTR(val));
-        break;
-    case VAL_OBJ:
-        printf("<object: %p>\n", VAL2OBJ(val));
-        break;
-    case VAL_BOOL:
+    }
+    else if (IS_BOOL(val)) {
         if (VAL2BOOL(val)) {
             printf("<bool: true>\n");
         }
         else {
             printf("<bool: false>\n");
         }
-        break;
-    case VAL_NIL:
-        printf("<nil>\n");
-        break;
-    case VAL_SYMBOL:
-        printf("<symbol: %d>\n", VAL2ID(val));
-        break;
-    default:
-        YOG_BUG(env, "uknown value type (0x%x)", VAL_TYPE(val));
-        break;
     }
-    /* NOTREACHED */
+    else if (IS_NIL(val)) {
+        printf("<nil>\n");
+    }
+    else if (IS_SYMBOL(val)) {
+        printf("<symbol: %d>\n", VAL2ID(val));
+    }
+    else {
+        YOG_BUG(env, "uknown value type (0x%08x)", val);
+    }
 }
 
 int 
 YogVal_hash(YogEnv* env, YogVal val) 
 {
-    switch (VAL_TYPE(val)) {
-    case VAL_INT:
+    if (IS_INT(val)) {
         return VAL2INT(val);
-        break;
-    case VAL_FLOAT:
-        return VAL2FLOAT(val);
-        break;
-    case VAL_OBJ:
-        return (int)VAL2OBJ(val);
-        break;
-    case VAL_PTR:
+    }
+    else if (IS_PTR(val)) {
         return (int)VAL2PTR(val);
-        break;
-    case VAL_BOOL:
+    }
+    else if (IS_BOOL(val)) {
         if (VAL2BOOL(val)) {
             return 1;
         }
         else {
             return 0;
         }
-        break;
-    case VAL_NIL:
+    }
+    else if (IS_NIL(val)) {
         return 2;
-        break;
-    case VAL_SYMBOL:
+    }
+    else if (IS_SYMBOL(val)) {
         return VAL2ID(val);
-        break;
-    default:
+    }
+    else {
         YOG_ASSERT(env, FALSE, "Uknown value type.");
-        break;
     }
 
     /* NOTREACHED */
@@ -130,27 +82,31 @@ YogVal_hash(YogEnv* env, YogVal val)
 BOOL
 YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b) 
 {
-    if (VAL_TYPE(a) != VAL_TYPE(b)) {
-        return FALSE;
-    }
-
 #define RET(f, a, b) do {            \
     return f(a) == f(b) ? TRUE : FALSE; \
 } while (0)
-    switch (VAL_TYPE(a)) {
-    case VAL_INT:
+    if (IS_INT(a)) {
+        if (!IS_INT(b)) {
+            return FALSE;
+        }
         RET(VAL2INT, a, b);
-        break;
-    case VAL_FLOAT:
-        RET(VAL2FLOAT, a, b);
-        break;
-    case VAL_SYMBOL:
+    }
+    else if (IS_SYMBOL(a)) {
+        if (!IS_SYMBOL(b)) {
+            return FALSE;
+        }
         RET(VAL2ID, a, b);
-        break;
-    case VAL_PTR:
+    }
+    else if (IS_PTR(a)) {
+        if (!IS_PTR(b)) {
+            return FALSE;
+        }
         RET(VAL2PTR, a, b);
-        break;
-    case VAL_BOOL:
+    }
+    else if (IS_BOOL(a)) {
+        if (!IS_BOOL(b)) {
+            return FALSE;
+        }
         if (VAL2BOOL(a)) {
             if (VAL2BOOL(b)) {
                 return TRUE;
@@ -167,12 +123,15 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
                 return TRUE;
             }
         }
-    case VAL_NIL:
+    }
+    else if (IS_NIL(a)) {
+        if (!IS_NIL(b)) {
+            return FALSE;
+        }
         return TRUE;
-        break;
-    default:
+    }
+    else {
         YOG_ASSERT(env, FALSE, "Uknown value type.");
-        break;
     }
 #undef RET
 
@@ -180,137 +139,40 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
     return FALSE;
 }
 
-#define RETURN_BOOL(b)  do { \
-    YogVal val; \
-    val.type = VAL_BOOL; \
-    VAL2BOOL(val) = b; \
-    return val; \
-} while (0)
-
-YogVal 
-YogVal_true()
-{
-    RETURN_BOOL(TRUE);
-}
-
-YogVal 
-YogVal_false()
-{
-    RETURN_BOOL(FALSE);
-}
-
-#undef RETURN_BOOL
-
-#define RETURN_VAL(type)    do { \
-    YogVal val; \
-    VAL_TYPE(val) = type; \
-    val.u.n = 0; \
-    return val; \
-} while (0)
-
-YogVal
-YogVal_nil() 
-{
-    RETURN_VAL(VAL_NIL);
-}
-
-YogVal 
-YogVal_undef() 
-{
-    RETURN_VAL(VAL_UNDEF);
-}
-
-#undef RETURN_VAL
-
-#define RETURN_VAL(type, f, v)  do { \
-    YogVal val; \
-    VAL_TYPE(val) = type; \
-    f(val) = v; \
-    return val; \
-} while (0)
-
-#if 0
-YogVal 
-YogVal_str(const char* str) 
-{
-    RETURN_VAL(VAL_STR, VAL2STR, str);
-}
-#endif
-
-YogVal 
-YogVal_obj(YogBasicObj* obj) 
-{
-    RETURN_VAL(VAL_OBJ, VAL2OBJ, obj);
-}
-
-YogVal
-YogVal_ptr(void * ptr)
-{
-    RETURN_VAL(VAL_PTR, VAL2PTR, ptr);
-}
-
-YogVal
-YogVal_int(int n)
-{
-    RETURN_VAL(VAL_INT, VAL2INT, n);
-}
-
-YogVal 
-YogVal_float(float f) 
-{
-    RETURN_VAL(VAL_FLOAT, VAL2FLOAT, f);
-}
-
-YogVal
-YogVal_symbol(ID id) 
-{
-    RETURN_VAL(VAL_SYMBOL, VAL2ID, id);
-}
-
 YogVal 
 YogVal_get_klass(YogEnv* env, YogVal val) 
 {
-    switch (VAL_TYPE(val)) {
-    case VAL_INT:
+    if (IS_INT(val)) {
         return env->vm->cInt;
-        break;
-    case VAL_OBJ:
-        {
-            YogBasicObj* obj = VAL2OBJ(val);
-            return obj->klass;
-            break;
-        }
-    case VAL_BOOL:
+    }
+    else if (IS_PTR(val)) {
+        return PTR_AS(YogBasicObj, val)->klass;
+    }
+    else if (IS_BOOL(val)) {
         return env->vm->cBool;
-        break;
-    case VAL_NIL:
+    }
+    else if (IS_NIL(val)) {
         return env->vm->cNil;
-        break;
-    case VAL_FLOAT:
-    case VAL_SYMBOL:
-    case VAL_PTR:
-    default:
+    }
+    else {
         YOG_ASSERT(env, FALSE, "Uknown value type.");
-        break;
     }
 
     /* NOTREACHED */
     return YUNDEF;
 }
 
-#undef RETURN_VAL
-
 YogVal 
 YogVal_get_attr(YogEnv* env, YogVal val, ID name) 
 {
 #define RET_ATTR(obj)   do { \
-    YogVal attr = YogObj_get_attr(env, OBJ_AS(YogObj, obj), name); \
+    YogVal attr = YogObj_get_attr(env, obj, name); \
     if (!IS_UNDEF(attr)) { \
         return attr; \
     } \
 } while (0)
-    if (IS_OBJ(val)) {
-        if (OBJ_AS(YogBasicObj, val)->flags & HAS_ATTRS) {
+    if (IS_PTR(val)) {
+        if (PTR_AS(YogBasicObj, val)->flags & HAS_ATTRS) {
             RET_ATTR(val);
         }
         else {
@@ -321,8 +183,8 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
     YogVal klass = YogVal_get_klass(env, val);
     do {
         RET_ATTR(klass);
-        klass = OBJ_AS(YogKlass, klass)->super;
-    } while (IS_OBJ(klass));
+        klass = PTR_AS(YogKlass, klass)->super;
+    } while (IS_PTR(klass));
 #undef RET_ATTR
 
     YOG_ASSERT(env, FALSE, "Can't get attribute.");
@@ -336,10 +198,10 @@ YogVal_is_subklass_of(YogEnv* env, YogVal val, YogVal klass)
 {
     YogVal valklass = YogVal_get_klass(env, val);
     while (!IS_NIL(valklass)) {
-        if (OBJ_AS(YogKlass, valklass) == OBJ_AS(YogKlass, klass)) {
+        if (PTR_AS(YogKlass, valklass) == PTR_AS(YogKlass, klass)) {
             return TRUE;
         }
-        valklass = OBJ_AS(YogKlass, valklass)->super;
+        valklass = PTR_AS(YogKlass, valklass)->super;
     }
 
     return FALSE;

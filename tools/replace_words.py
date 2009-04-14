@@ -9,7 +9,7 @@ def main():
     dirname = "src"
     for name in listdir(dirname):
         ext = splitext(name)[1]
-        if ext in (".c", ".y"):
+        if ext in (".c", ".y", ".lt"):
             path = join(dirname, name)
             orig = path + ".orig"
             if not exists(orig):
@@ -19,17 +19,10 @@ def main():
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        regex = compile(r"^(.*)(ALLOC_OBJ\w*)\(([^,]+),\s*([^,]+),\s+([^,]+)\)(.*)")
+                        regex = compile(r"^(?P<head>.*)\bOBJ_AS\((?P<type>\w+),\s*(?P<var>\w+)\)(?P<tail>.*)$")
                         m = regex.match(line)
                         if m is not None:
-                            s = "%s%s(%s, %s, NULL, %s)%s\n" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
-                            out.write(s)
-                            continue
-
-                        regex = compile(r"^(.*)(ALLOC_OBJ\w*)\(([^,]+),\s*([^,]+),\s+([^,]+),\s+([^,]+),\s+([^,]+)\)(.*)")
-                        m = regex.match(line)
-                        if m is not None:
-                            s = "%s%s(%s, %s, NULL, %s, %s, %s)%s\n" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6), m.group(7), m.group(8))
+                            s = "%(head)sPTR_AS(%(type)s, %(var)s)%(tail)s\n" % { "head": m.group("head"), "type": m.group("type"), "var": m.group("var"), "tail": m.group("tail") }
                             out.write(s)
                             continue
 

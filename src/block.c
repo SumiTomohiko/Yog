@@ -5,19 +5,19 @@
 #include "yog/yog.h"
 
 static void 
-YogBasicBlock_init(YogEnv* env, YogBasicBlock* block, YogVal klass) 
+YogBasicBlock_init(YogEnv* env, YogVal block, YogVal klass) 
 {
-    YogBasicObj_init(env, YOGBASICOBJ(block), 0, klass);
-    block->code = YUNDEF;
+    YogBasicObj_init(env, block, 0, klass);
+    PTR_AS(YogBasicBlock, block)->code = YUNDEF;
 }
 
 static void 
-YogPackageBlock_init(YogEnv* env, YogPackageBlock* block) 
+YogPackageBlock_init(YogEnv* env, YogVal block) 
 {
-    YogBasicBlock_init(env, BASIC_BLOCK(block), env->vm->cPackageBlock);
+    YogBasicBlock_init(env, block, env->vm->cPackageBlock);
 
-    block->self = YUNDEF;
-    block->vars = YUNDEF;
+    PTR_AS(YogPackageBlock, block)->self = YUNDEF;
+    PTR_AS(YogPackageBlock, block)->vars = YUNDEF;
 }
 
 #define KEEP_MEMBER(member)     block->member = (*keeper)(env, block->member)
@@ -48,10 +48,10 @@ YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogVal 
 YogPackageBlock_allocate(YogEnv* env, YogVal klass) 
 {
-    YogPackageBlock* block = ALLOC_OBJ(env, YogPackageBlock_keep_children, NULL, YogPackageBlock);
+    YogVal block = ALLOC_OBJ(env, YogPackageBlock_keep_children, NULL, YogPackageBlock);
     YogPackageBlock_init(env, block);
 
-    return OBJ2VAL(block);
+    return block;
 }
 
 YogVal 
@@ -74,22 +74,22 @@ YogBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 }
 
 static void 
-YogBlock_init(YogEnv* env, YogBlock* block) 
+YogBlock_init(YogEnv* env, YogVal block)
 {
-    YogBasicBlock_init(env, BASIC_BLOCK(block), YNIL);
+    YogBasicBlock_init(env, block, YNIL);
 
-    block->locals = YUNDEF;
-    block->outer_vars = YUNDEF;
-    block->globals = YUNDEF;
+    PTR_AS(YogBlock, block)->locals = YUNDEF;
+    PTR_AS(YogBlock, block)->outer_vars = YUNDEF;
+    PTR_AS(YogBlock, block)->globals = YUNDEF;
 }
 
 YogVal 
 YogBlock_new(YogEnv* env) 
 {
-    YogBlock* block = ALLOC_OBJ(env, YogBlock_keep_children, NULL, YogBlock);
+    YogVal block = ALLOC_OBJ(env, YogBlock_keep_children, NULL, YogBlock);
     YogBlock_init(env, block);
 
-    return OBJ2VAL(block);
+    return block;
 }
 
 YogVal 

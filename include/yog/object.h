@@ -5,7 +5,7 @@
 
 struct YogBasicObj {
     unsigned int flags;
-    struct YogVal klass;
+    YogVal klass;
 };
 
 #define HAS_ATTRS   (1)
@@ -15,7 +15,7 @@ struct YogBasicObj {
 
 struct YogObj {
     YOGBASICOBJ_HEAD;
-    struct YogVal attrs;
+    YogVal attrs;
 };
 
 #define YOGOBJ_HEAD struct YogObj base
@@ -23,10 +23,10 @@ struct YogObj {
 
 typedef struct YogObj YogObj;
 
-typedef struct YogVal (*Allocator)(struct YogEnv*, struct YogVal);
+typedef YogVal (*Allocator)(struct YogEnv*, YogVal);
 
-#define KLASS_OF(v)     (OBJ_AS(YogBasicObj, v)->klass)
-#define IS_OBJ_OF(k, v) (IS_OBJ(v) && (VAL2OBJ(KLASS_OF(v)) == VAL2OBJ(env->vm->k)))
+#define KLASS_OF(v)     (PTR_AS(YogBasicObj, v)->klass)
+#define IS_OBJ_OF(k, v) (IS_PTR(v) && (KLASS_OF(v) == env->vm->k))
 
 /* PROTOTYPE_START */
 
@@ -35,11 +35,11 @@ typedef struct YogVal (*Allocator)(struct YogEnv*, struct YogVal);
  */
 
 /* src/object.c */
-void YogBasicObj_init(YogEnv*, YogBasicObj*, unsigned int, YogVal);
+void YogBasicObj_init(YogEnv*, YogVal, unsigned int, YogVal);
 void YogBasicObj_keep_children(YogEnv*, void*, ObjectKeeper);
 YogVal YogObj_allocate(YogEnv*, YogVal);
-YogVal YogObj_get_attr(YogEnv*, YogObj*, ID);
-void YogObj_init(YogEnv*, YogObj*, unsigned int, YogVal);
+YogVal YogObj_get_attr(YogEnv*, YogVal, ID);
+void YogObj_init(YogEnv*, YogVal, unsigned int, YogVal);
 void YogObj_keep_children(YogEnv*, void*, ObjectKeeper);
 void YogObj_klass_init(YogEnv*, YogVal);
 YogVal YogObj_new(YogEnv*, YogVal);

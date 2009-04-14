@@ -14,8 +14,8 @@ typedef struct YogCharArray YogCharArray;
 
 struct YogString {
     YOGBASICOBJ_HEAD;
-    struct YogVal encoding;
-    struct YogVal body;
+    YogVal encoding;
+    YogVal body;
 };
 
 typedef struct YogString YogString;

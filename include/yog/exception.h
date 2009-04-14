@@ -5,7 +5,7 @@
 #include "yog/yog.h"
 
 struct YogStackTraceEntry {
-    struct YogVal lower;
+    YogVal lower;
     unsigned int lineno;
     YogVal filename;
     ID klass_name;
@@ -16,8 +16,8 @@ typedef struct YogStackTraceEntry YogStackTraceEntry;
 
 struct YogException {
     YOGBASICOBJ_HEAD;
-    struct YogVal stack_trace;
-    struct YogVal message;
+    YogVal stack_trace;
+    YogVal message;
 };
 
 typedef struct YogException YogException;

@@ -8,7 +8,7 @@ struct YogKlass {
     YOGOBJ_HEAD;
     Allocator allocator;
     ID name;
-    struct YogVal super;
+    YogVal super;
 };
 
 typedef struct YogKlass YogKlass;

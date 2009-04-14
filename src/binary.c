@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include "yog/binary.h"
@@ -72,10 +73,10 @@ YogByteArray_print(YogEnv* env, YogByteArray* array)
 YogVal 
 YogByteArray_new(YogEnv* env, unsigned int size) 
 {
-    YogByteArray* array = ALLOC_OBJ_ITEM(env, NULL, NULL, YogByteArray, size, uint8_t);
-    array->size = size;
+    YogVal array = ALLOC_OBJ_ITEM(env, NULL, NULL, YogByteArray, size, uint8_t);
+    PTR_AS(YogByteArray, array)->size = size;
 
-    return PTR2VAL(array);
+    return array;
 }
 
 static void 

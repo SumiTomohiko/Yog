@@ -7,7 +7,7 @@
 
 struct YogBasicBlock {
     YOGBASICOBJ_HEAD;
-    struct YogVal code;
+    YogVal code;
 };
 
 #define BASIC_BLOCK(obj)  ((YogBasicBlock*)obj)
@@ -16,9 +16,9 @@ typedef struct YogBasicBlock YogBasicBlock;
 
 struct YogBlock {
     struct YogBasicBlock base;
-    struct YogVal locals;
-    struct YogVal outer_vars;
-    struct YogVal globals;
+    YogVal locals;
+    YogVal outer_vars;
+    YogVal globals;
 };
 
 #define BLOCK(obj)  ((YogBlock*)(obj))
@@ -27,8 +27,8 @@ typedef struct YogBlock YogBlock;
 
 struct YogPackageBlock {
     struct YogBasicBlock base;
-    struct YogVal self;
-    struct YogVal vars;
+    YogVal self;
+    YogVal vars;
 };
 
 #define PACKAGE_BLOCK(obj)  ((YogPackageBlock*)obj)

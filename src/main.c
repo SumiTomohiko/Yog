@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <getopt.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "yog/code.h"
 #include "yog/compile.h"
@@ -155,7 +156,7 @@ main(int argc, char* argv[])
 
     do {
         YogThread thread;
-        YogThread_initialize(&env, &thread);
+        YogThread_initialize(&env, PTR2VAL(&thread));
         vm.thread = env.th = &thread;
 
         YogVal stmts = YUNDEF;
@@ -173,7 +174,7 @@ main(int argc, char* argv[])
         code = YogCompiler_compile_module(&env, filename, stmts);
 
         pkg = YogPackage_new(&env);
-        MODIFY(&env, OBJ_AS(YogPackage, pkg)->code, code);
+        MODIFY(&env, PTR_AS(YogPackage, pkg)->code, code);
         YogVm_register_package(&env, env.vm, "__main__", pkg);
         YogThread_eval_package(&env, &thread, pkg);
 

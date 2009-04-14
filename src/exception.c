@@ -24,12 +24,12 @@ allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
-    YogException* exc = ALLOC_OBJ(env, keep_children, NULL, YogException);
-    YogBasicObj_init(env, (YogBasicObj*)exc, 0, klass);
-    exc->stack_trace = YNIL;
-    exc->message = YNIL;
+    YogVal exc = ALLOC_OBJ(env, keep_children, NULL, YogException);
+    YogBasicObj_init(env, exc, 0, klass);
+    PTR_AS(YogException, exc)->stack_trace = YNIL;
+    PTR_AS(YogException, exc)->message = YNIL;
 
-    RETURN(env, OBJ2VAL(exc));
+    RETURN(env, exc);
 }
 
 static YogVal 
@@ -144,7 +144,7 @@ to_s(YogEnv* env)
 {
     YogVal self = SELF(env);
 
-    YogException* exc = OBJ_AS(YogException, self);
+    YogException* exc = PTR_AS(YogException, self);
     YogVal msg = exc->message;
     YogVal retval = YogThread_call_method(env, env->th, msg, "to_s", 0, NULL);
 

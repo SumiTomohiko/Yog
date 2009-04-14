@@ -225,7 +225,7 @@ CompileData_add_load_local(YogEnv* env, YogVal data, unsigned int lineno, uint8_
 }
 
 static void 
-CompileData_add_jump(YogEnv* env, YogVal data, unsigned int lineno, struct YogVal dest)
+CompileData_add_jump(YogEnv* env, YogVal data, unsigned int lineno, YogVal dest)
 {
     SAVE_ARGS2(env, data, dest);
 
@@ -241,7 +241,7 @@ CompileData_add_jump(YogEnv* env, YogVal data, unsigned int lineno, struct YogVa
 }
 
 static void 
-CompileData_add_jump_if_false(YogEnv* env, YogVal data, unsigned int lineno, struct YogVal dest)
+CompileData_add_jump_if_false(YogEnv* env, YogVal data, unsigned int lineno, YogVal dest)
 {
     SAVE_ARGS2(env, data, dest);
 

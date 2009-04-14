@@ -16,16 +16,16 @@ typedef struct YogHashType YogHashType;
 
 struct YogTableEntry {
     unsigned int hash;
-    struct YogVal key;
-    struct YogVal record;
-    struct YogVal next;
+    YogVal key;
+    YogVal record;
+    YogVal next;
 };
 
 typedef struct YogTableEntry YogTableEntry;
 
 struct YogTableEntryArray {
     unsigned int size;
-    struct YogVal items[0];
+    YogVal items[0];
 };
 
 typedef struct YogTableEntryArray YogTableEntryArray;
@@ -34,7 +34,7 @@ struct YogTable {
     struct YogHashType* type;
     int num_bins;
     int num_entries;
-    struct YogVal bins;
+    YogVal bins;
 };
 
 typedef struct YogTable YogTable;

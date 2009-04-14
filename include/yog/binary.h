@@ -1,6 +1,7 @@
 #if !defined(__YOG_BINARY_H__)
 #define __YOG_BINARY_H__
 
+#include <stdint.h>
 #include "yog/object.h"
 #include "yog/yog.h"
 
@@ -14,7 +15,7 @@ typedef struct YogByteArray YogByteArray;
 struct YogBinary {
     YOGBASICOBJ_HEAD;
     unsigned int size;
-    struct YogVal body;
+    YogVal body;
 };
 
 typedef struct YogBinary YogBinary;

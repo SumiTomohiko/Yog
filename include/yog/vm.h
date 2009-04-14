@@ -42,33 +42,33 @@ struct YogVm {
     } gc_stat;
 
     ID next_id;
-    struct YogVal id2name;
-    struct YogVal name2id;
+    YogVal id2name;
+    YogVal name2id;
 
-    struct YogVal cObject;
-    struct YogVal cKlass;
-    struct YogVal cInt;
-    struct YogVal cString;
-    struct YogVal cRegexp;
-    struct YogVal cMatch;
-    struct YogVal cPackage;
-    struct YogVal cBool;
-    struct YogVal cBuiltinBoundMethod;
-    struct YogVal cBoundMethod;
-    struct YogVal cBuiltinUnboundMethod;
-    struct YogVal cUnboundMethod;
-    struct YogVal cPackageBlock;
-    struct YogVal cNil;
-    struct YogVal cFloat;
+    YogVal cObject;
+    YogVal cKlass;
+    YogVal cInt;
+    YogVal cString;
+    YogVal cRegexp;
+    YogVal cMatch;
+    YogVal cPackage;
+    YogVal cBool;
+    YogVal cBuiltinBoundMethod;
+    YogVal cBoundMethod;
+    YogVal cBuiltinUnboundMethod;
+    YogVal cUnboundMethod;
+    YogVal cPackageBlock;
+    YogVal cNil;
+    YogVal cFloat;
 
-    struct YogVal eException;
-    struct YogVal eBugException;
-    struct YogVal eTypeError;
-    struct YogVal eIndexError;
+    YogVal eException;
+    YogVal eBugException;
+    YogVal eTypeError;
+    YogVal eIndexError;
 
-    struct YogVal pkgs;
+    YogVal pkgs;
 
-    struct YogVal encodings;
+    YogVal encodings;
 
     struct YogThread* thread;
 };
@@ -82,7 +82,7 @@ typedef struct YogVm YogVm;
  */
 
 /* src/vm.c */
-void* YogVm_alloc(YogEnv*, YogVm*, ChildrenKeeper, Finalizer, size_t);
+YogVal YogVm_alloc(YogEnv*, YogVm*, ChildrenKeeper, Finalizer, size_t);
 void YogVm_boot(YogEnv*, YogVm*);
 void YogVm_config_copying(YogEnv*, YogVm*, unsigned int);
 void YogVm_config_generational(YogEnv*, YogVm*, size_t, size_t, size_t, unsigned int);

@@ -17,7 +17,7 @@ struct YogLocals {
     struct YogLocals* next;
     unsigned int num_vals;
     unsigned int size;
-    struct YogVal* vals[NUM_VALS];
+    YogVal* vals[NUM_VALS];
 };
 
 typedef struct YogLocals YogLocals;
@@ -127,14 +127,14 @@ do { \
 } while (0)
 
 struct YogThread {
-    struct YogVal cur_frame;
+    YogVal cur_frame;
     struct YogJmpBuf* jmp_buf_list;
-    struct YogVal jmp_val;
+    YogVal jmp_val;
     struct YogLocals* locals;
 #if defined(GC_GENERATIONAL)
-    void*** ref_tbl;
-    void*** ref_tbl_ptr;
-    void*** ref_tbl_limit;
+    YogVal** ref_tbl;
+    YogVal** ref_tbl_ptr;
+    YogVal** ref_tbl_limit;
 #endif
 };
 
@@ -143,6 +143,7 @@ typedef struct YogThread YogThread;
 #include "yog/error.h"
 
 #if defined(GC_GENERATIONAL)
+#   include <stdlib.h>
 #   include "yog/env.h"
 #   include "yog/vm.h"
 #   define IS_YOUNG_PTR(env, ptr)  (((env)->vm->gc.generational.copying.active_heap->items <= (unsigned char*)(ptr)) && ((unsigned char*)(ptr) <= (env)->vm->gc.generational.copying.active_heap->items + (env)->vm->gc.generational.copying.active_heap->size))
@@ -155,8 +156,8 @@ typedef struct YogThread YogThread;
         unsigned int new_size = size + REF_TBL_GROW_SIZE * sizeof(void**); \
         thread->ref_tbl = realloc(thread->ref_tbl, new_size); \
         YOG_ASSERT((env), thread->ref_tbl != NULL, "Can't grow ref_tbl"); \
-        thread->ref_tbl_ptr = thread->ref_tbl + size / sizeof(void**); \
-        thread->ref_tbl_limit = thread->ref_tbl + new_size / sizeof(void**); \
+        thread->ref_tbl_ptr = thread->ref_tbl + size / sizeof(YogVal*); \
+        thread->ref_tbl_limit = thread->ref_tbl + new_size / sizeof(YogVal*); \
     } \
     *thread->ref_tbl_ptr = &(val); \
     thread->ref_tbl_ptr++; \
@@ -165,7 +166,7 @@ typedef struct YogThread YogThread;
     if (!IS_YOUNG_PTR((env), &(fp))) { \
         YogVal old = (fp); \
         if (!IS_YOUNG((env), old) && IS_YOUNG((env), (val))) { \
-            ADD_REF((env), VAL2PTR((fp))); \
+            ADD_REF((env), (fp)); \
         } \
     } \
     (fp) = (val); \
@@ -187,9 +188,9 @@ YogVal YogThread_call_method(YogEnv*, YogThread*, YogVal, const char*, unsigned 
 YogVal YogThread_call_method_id(YogEnv*, YogThread*, YogVal, ID, unsigned int, YogVal*);
 void YogThread_eval_package(YogEnv*, YogThread*, YogVal);
 void YogThread_finalize(YogEnv*, YogThread*);
-void YogThread_initialize(YogEnv*, YogThread*);
+void YogThread_initialize(YogEnv*, YogVal);
 void YogThread_keep_children(YogEnv*, void*, ObjectKeeper);
-YogThread* YogThread_new(YogEnv*);
+YogVal YogThread_new(YogEnv*);
 void YogThread_shrink_ref_tbl(YogEnv*, YogThread*);
 
 /* PROTOTYPE_END */

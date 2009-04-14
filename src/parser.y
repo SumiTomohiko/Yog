@@ -20,7 +20,7 @@
 
 typedef struct ParserState ParserState;
 
-static void Parse(struct YogEnv*, struct YogVal, int, YogVal, YogVal*);
+static void Parse(struct YogEnv*, YogVal, int, YogVal, YogVal*);
 static YogVal LemonParser_new(YogEnv*);
 static void ParseTrace(FILE*, char*);
 
@@ -125,11 +125,11 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogVal 
 YogNode_new(YogEnv* env, YogNodeType type, unsigned int lineno) 
 {
-    YogNode* node = ALLOC_OBJ(env, YogNode_keep_children, NULL, YogNode);
-    node->lineno = lineno;
-    node->type = type;
+    YogVal node = ALLOC_OBJ(env, YogNode_keep_children, NULL, YogNode);
+    PTR_AS(YogNode, node)->lineno = lineno;
+    PTR_AS(YogNode, node)->type = type;
 
-    return PTR2VAL(node);
+    return node;
 }
 
 #define NODE_NEW(type, lineno)  YogNode_new(env, (type), (lineno))
@@ -167,10 +167,10 @@ Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_defaul
     PUSH_LOCAL(env, array);
 
     array = YogArray_new(env);
-    if (IS_OBJ(params_without_default)) {
+    if (IS_PTR(params_without_default)) {
         YogArray_extend(env, array, params_without_default);
     }
-    if (IS_OBJ(params_with_default)) {
+    if (IS_PTR(params_with_default)) {
         YogArray_extend(env, array, params_with_default);
     }
     if (IS_PTR(block_param)) {
@@ -224,7 +224,7 @@ Array_push(YogEnv* env, YogVal array, YogVal elem)
     SAVE_ARGS2(env, array, elem);
 
     if (IS_PTR(elem)) {
-        if (!IS_OBJ(array)) {
+        if (!IS_PTR(array)) {
             array = YogArray_new(env);
         }
         YogArray_push(env, array, elem);
@@ -340,7 +340,7 @@ ExceptFinally_new(YogEnv* env, unsigned int lineno, YogVal stmts, YogVal excepts
     except = Except_new(env, lineno, stmts, excepts, else_);
 
     YogVal node;
-    if (IS_OBJ(finally)) {
+    if (IS_PTR(finally)) {
         YogVal array = Array_new(env, except);
         node = Finally_new(env, lineno, array, finally);
     }

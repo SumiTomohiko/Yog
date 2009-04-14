@@ -54,16 +54,15 @@ keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogVal 
 alloc_bins(YogEnv* env, int size) 
 {
-    DEBUG(DPRINTF("alloc_bins"));
-    YogTableEntryArray* array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogVal);
+    YogVal array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogVal);
 
-    array->size = size;
+    PTR_AS(YogTableEntryArray, array)->size = size;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
-        array->items[i] = YNIL;
+        PTR_AS(YogTableEntryArray, array)->items[i] = YNIL;
     }
 
-    return PTR2VAL(array);
+    return array;
 }
 
 /*
@@ -134,7 +133,6 @@ new_size(int size)
 static void
 rehash(YogEnv* env, YogVal table)
 {
-    DEBUG(DPRINTF("rehash"));
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, table);
 
@@ -188,13 +186,13 @@ keep_table_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogVal 
 alloc_table(YogEnv* env) 
 {
-    YogTable* tbl = ALLOC_OBJ(env, keep_table_children, NULL, YogTable);
-    tbl->type = NULL;
-    tbl->num_bins = 0;
-    tbl->num_entries = 0;
-    tbl->bins = YNIL;
+    YogVal tbl = ALLOC_OBJ(env, keep_table_children, NULL, YogTable);
+    PTR_AS(YogTable, tbl)->type = NULL;
+    PTR_AS(YogTable, tbl)->num_bins = 0;
+    PTR_AS(YogTable, tbl)->num_entries = 0;
+    PTR_AS(YogTable, tbl)->bins = YNIL;
 
-    return PTR2VAL(tbl);
+    return tbl;
 }
 
 static YogVal 
@@ -231,7 +229,7 @@ st_init_table(YogEnv* env, YogHashType* type)
 }
 
 #define PTR_NOT_EQUAL(env, table, ptr, hash_val, key) \
-(VAL2PTR((ptr)) != NULL && (PTR_AS(YogTableEntry, (ptr))->hash != (hash_val) || !EQUAL((env), (table), (key), PTR_AS(YogTableEntry, (ptr))->key)))
+    (IS_PTR((ptr)) && (PTR_AS(YogTableEntry, (ptr))->hash != (hash_val) || !EQUAL((env), (table), (key), PTR_AS(YogTableEntry, (ptr))->key)))
 
 #if defined(HASH_LOG)
 #define COLLISION collision++
@@ -287,14 +285,13 @@ keep_entry_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static YogVal 
 alloc_entry(YogEnv* env)
 {
-    YogTableEntry* entry = ALLOC_OBJ(env, keep_entry_children, NULL, YogTableEntry);
-    DEBUG(DPRINTF("alloc_entry: %p", entry));
-    entry->hash = 0;
-    entry->key = YUNDEF;
-    entry->record = YUNDEF;
-    entry->next = YUNDEF;
+    YogVal entry = ALLOC_OBJ(env, keep_entry_children, NULL, YogTableEntry);
+    PTR_AS(YogTableEntry, entry)->hash = 0;
+    PTR_AS(YogTableEntry, entry)->key = YUNDEF;
+    PTR_AS(YogTableEntry, entry)->record = YUNDEF;
+    PTR_AS(YogTableEntry, entry)->next = YUNDEF;
 
-    return PTR2VAL(entry);
+    return entry;
 }
 
 static void 
@@ -665,14 +662,8 @@ print_val(YogEnv* env, YogVal val)
     else if (IS_PTR(val)) {
         printf("%p", VAL2PTR(val));
     }
-    else if (IS_OBJ(val)) {
-        printf("%p", VAL2OBJ(val));
-    }
     else if (IS_INT(val)) {
         printf("%d", VAL2INT(val));
-    }
-    else if (IS_FLOAT(val)) {
-        printf("%f", VAL2FLOAT(val));
     }
     else if (IS_BOOL(val)) {
         if (VAL2BOOL(val)) {

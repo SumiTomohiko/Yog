@@ -455,7 +455,7 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, unsigned int lineno""" % { "i
 
     def type_name2data_type(self, type):
         if type == "pc_t":
-            return "struct YogVal"
+            return "YogVal"
         else:
             return type
 

@@ -63,7 +63,7 @@ YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsign
 
 #undef NEXT_STR
 
-    builtin_f = PTR2VAL(ALLOC_OBJ(env, keep_children, NULL, YogBuiltinFunction));
+    builtin_f = ALLOC_OBJ(env, keep_children, NULL, YogBuiltinFunction);
     BUILTIN_FUNCTION(builtin_f)->arg_info = YUNDEF;
     BUILTIN_FUNCTION(builtin_f)->f = f;
     BUILTIN_FUNCTION(builtin_f)->klass_name = klass_name;
@@ -72,8 +72,8 @@ YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsign
 
     arg_info = YogArgInfo_new(env);
     ARG_INFO(arg_info)->argc = argc;
-    ARG_INFO(arg_info)->argnames = VAL2PTR(argnames);
-    ARG_INFO(arg_info)->arg_index = NULL;
+    MODIFY(env, ARG_INFO(arg_info)->argnames, argnames);
+    ARG_INFO(arg_info)->arg_index = YUNDEF;
     ARG_INFO(arg_info)->blockargc = blockargc;
     ARG_INFO(arg_info)->blockargname = blockargname;
     ARG_INFO(arg_info)->varargc = varargc;

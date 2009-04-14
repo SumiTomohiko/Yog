@@ -7,7 +7,7 @@ YogArgInfo_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogArgInfo* arg_info = ptr;
 #define KEEP_MEMBER(member)     do { \
-    arg_info->member = (*keeper)(env, arg_info->member); \
+    arg_info->member = YogVal_keep(env, arg_info->member, keeper); \
 } while (0)
     KEEP_MEMBER(argnames);
     KEEP_MEMBER(arg_index);
@@ -17,16 +17,16 @@ YogArgInfo_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 YogVal 
 YogArgInfo_new(YogEnv* env) 
 {
-    YogArgInfo* arg_info = ALLOC_OBJ(env, YogArgInfo_keep_children, NULL, YogArgInfo);
-    arg_info->argc = 0;
-    arg_info->argnames = NULL;
-    arg_info->arg_index = NULL;
-    arg_info->blockargc = 0;
-    arg_info->blockargname = 0;
-    arg_info->varargc = 0;
-    arg_info->kwargc = 0;
+    YogVal arg_info = ALLOC_OBJ(env, YogArgInfo_keep_children, NULL, YogArgInfo);
+    PTR_AS(YogArgInfo, arg_info)->argc = 0;
+    PTR_AS(YogArgInfo, arg_info)->argnames = YUNDEF;
+    PTR_AS(YogArgInfo, arg_info)->arg_index = YUNDEF;
+    PTR_AS(YogArgInfo, arg_info)->blockargc = 0;
+    PTR_AS(YogArgInfo, arg_info)->blockargname = 0;
+    PTR_AS(YogArgInfo, arg_info)->varargc = 0;
+    PTR_AS(YogArgInfo, arg_info)->kwargc = 0;
 
-    return PTR2VAL(arg_info);
+    return arg_info;
 }
 
 /**
