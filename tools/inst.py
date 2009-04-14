@@ -204,12 +204,12 @@ class CodeGenerator(object):
         retval.append(child)
         return retval
 
-    def gen_thread_inc(self, def_, thread_inc):
+    def gen_eval_inc(self, def_, eval_inc):
         lineno = len(self.make_attention().split("\n")) - 1
         inc = StringIO()
         for inst in self.insts:
             inc.write("""
-#line %(lineno)d \"%(inc)s\"""" % { "lineno": lineno + 2, "inc": thread_inc })
+#line %(lineno)d \"%(inc)s\"""" % { "lineno": lineno + 2, "inc": eval_inc })
             lineno += 1
 
             s = """
@@ -295,7 +295,7 @@ class CodeGenerator(object):
                 inc.write("\n")
 
             inc.write("""
-#line %(lineno)d \"%(inc)s\"""" % { "lineno": lineno + 2, "inc": thread_inc })
+#line %(lineno)d \"%(inc)s\"""" % { "lineno": lineno + 2, "inc": eval_inc })
             lineno += 1
 
             for push_value in inst.push_values:
@@ -317,7 +317,7 @@ class CodeGenerator(object):
             inc.write(s)
 
         inc.write("\n" + self.get_c_footer())
-        self.write_file(thread_inc, inc.getvalue())
+        self.write_file(eval_inc, inc.getvalue())
 
     def type_name2func_name(self, name):
         name = name.lower().replace(" ", "_")
@@ -480,7 +480,7 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, unsigned int lineno""" % { "i
         kw = { "structs": structs.getvalue(), "macros": macros.getvalue(), }
         self.tmpl2file(inst_h_tmpl, kw, inst_h)
 
-    def do(self, def_, opcodes_h=None, opcodes_h_tmpl=None, thread_inc=None, 
+    def do(self, def_, opcodes_h=None, opcodes_h_tmpl=None, eval_inc=None, 
             compile_inc=None, compile_inc_tmpl=None, code_inc=None, 
             code_inc_tmpl=None, debug=False, basedir=""):
         self.open(def_)
@@ -501,8 +501,8 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, unsigned int lineno""" % { "i
 
         # Generate thread.inc (no templates).
         src_dir = "src"
-        thread_inc = thread_inc or join(basedir, src_dir, "thread.inc")
-        self.gen_thread_inc(def_, thread_inc)
+        eval_inc = eval_inc or join(basedir, src_dir, "eval.inc")
+        self.gen_eval_inc(def_, eval_inc)
 
         # Generate compile.inc.
         compile_inc = compile_inc or join(basedir, src_dir, "compile.inc")

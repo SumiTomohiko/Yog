@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
@@ -51,7 +52,7 @@ raise_error(YogEnv* env, YogVal klass, const char* msg)
 
     YogVal args[] = { YogString_new_str(env, msg), };
     PUSH_LOCALSX(env, 1, args);
-    YogVal val = YogThread_call_method(env, env->th, klass, "new", 1, args);
+    YogVal val = YogEval_call_method(env, klass, "new", 1, args);
     RESTORE_LOCALS(env);
     YogError_raise(env, val);
 }

@@ -5,10 +5,10 @@
 #include "yog/encoding.h"
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/klass.h"
 #include "yog/regexp.h"
-#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -490,7 +490,7 @@ each_line(YogEnv* env)
 
         unsigned int size = PTR_AS(YogCharArray, PTR_AS(YogString, SELF(env))->body)->size;
 
-        YogThread_call_block(env, env->th, block, sizeof(args) / sizeof(args[0]), args);
+        YogEval_call_block(env, block, sizeof(args) / sizeof(args[0]), args);
 
         if (size - 1 < i) {
             break;
@@ -515,7 +515,7 @@ each_byte(YogEnv* env)
         i++;
         unsigned int size = PTR_AS(YogCharArray, body)->size;
 
-        YogThread_call_block(env, env->th, block, sizeof(args) / sizeof(args[0]), args);
+        YogEval_call_block(env, block, sizeof(args) / sizeof(args[0]), args);
 
         if (size - 1 < i + 1) {
             break;
@@ -544,7 +544,7 @@ each_char(YogEnv* env)
 
         unsigned int size = PTR_AS(YogCharArray, PTR_AS(YogString, SELF(env))->body)->size;
 
-        YogThread_call_block(env, env->th, block, sizeof(args) / sizeof(args[0]), args);
+        YogEval_call_block(env, block, sizeof(args) / sizeof(args[0]), args);
 
         if (size - 1 < i + 1) {
             break;

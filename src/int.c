@@ -1,9 +1,9 @@
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/klass.h"
 #include "yog/string.h"
-#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -69,7 +69,7 @@ times(YogEnv* env)
 
         YogVal block = ARG(env, 0);
 
-        YogThread_call_block(env, env->th, block, argc, args);
+        YogEval_call_block(env, block, argc, args);
     }
 
     return YNIL;

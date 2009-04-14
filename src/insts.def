@@ -50,7 +50,7 @@ inst call_method
 
     YogVal receiver = POP();
     YogVal attr = YogVal_get_attr(ENV, receiver, method);
-    call_method(ENV, THREAD, receiver, attr, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+    call_method(ENV, receiver, attr, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
     POP_LOCALS(ENV);
     POP_LOCALS(ENV);
@@ -89,7 +89,7 @@ inst call_command
     }
 
     YogVal unbound_self = YUNDEF;
-    call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+    call_method(ENV, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
     POP_LOCALS(ENV);
     POP_LOCALS(ENV);
@@ -116,7 +116,7 @@ inst call_function
 
     YogVal callee = POP();
     YogVal unbound_self = YUNDEF;
-    call_method(ENV, THREAD, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+    call_method(ENV, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
     POP_LOCALS(ENV);
     POP_LOCALS(ENV);

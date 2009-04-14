@@ -8,12 +8,6 @@ LEMON = $(LEMON_DIR)/lemon
 YACC = $(LEMON)
 
 BUILT_SOURCES = parser.h keywords.inc
-
-lib_LTLIBRARIES = libyog-copying.la \
-		  libyog-mark-sweep.la \
-		  libyog-mark-sweep-compact.la \
-		  libyog-bdw.la \
-		  libyog-generational.la
 COMMON_SOURCES = arg.c \
 	array.c \
 	binary.c \
@@ -24,6 +18,7 @@ COMMON_SOURCES = arg.c \
 	compile.c \
 	encoding.c \
 	error.c \
+	eval.c \
 	exception.c \
 	float.c \
 	frame.c \
@@ -46,39 +41,29 @@ COMMON_SOURCES = arg.c \
 	value.c \
 	vm.c
 COMMON_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
-libyog_copying_la_SOURCES = $(COMMON_SOURCES) gc/copying.c
-libyog_copying_la_CFLAGS = $(COMMON_CFLAGS) -DGC_COPYING
-libyog_mark_sweep_la_SOURCES = $(COMMON_SOURCES) gc/mark-sweep.c
-libyog_mark_sweep_la_CFLAGS = $(COMMON_CFLAGS) -DGC_MARK_SWEEP
-libyog_mark_sweep_compact_la_SOURCES = $(COMMON_SOURCES) gc/mark-sweep-compact.c
-libyog_mark_sweep_compact_la_CFLAGS = $(COMMON_CFLAGS) -DGC_MARK_SWEEP_COMPACT
-libyog_bdw_la_SOURCES = $(COMMON_SOURCES) gc/bdw.c
-libyog_bdw_la_CFLAGS = $(COMMON_CFLAGS) -DGC_BDW
-libyog_generational_la_SOURCES = $(COMMON_SOURCES) gc/generational.c \
-				 gc/copying.c gc/mark-sweep-compact.c
-libyog_generational_la_CFLAGS = $(COMMON_CFLAGS) -DGC_GENERATIONAL
+COMMON_LDFLAGS = $(ONIG_DIR)/.libs/libonig.a
 
 bin_PROGRAMS = yog-copying \
 	       yog-mark-sweep \
 	       yog-mark-sweep-compact \
 	       yog-bdw \
 	       yog-generational
-yog_COMMON_LDFLAGS = $(ONIG_DIR)/.libs/libonig.a
-yog_copying_SOURCES = $(libyog_copying_la_SOURCES)
-yog_copying_CFLAGS = $(libyog_copying_la_CFLAGS)
-yog_copying_LDFLAGS = $(yog_COMMON_LDFLAGS)
-yog_mark_sweep_SOURCES = $(libyog_mark_sweep_la_SOURCES)
-yog_mark_sweep_CFLAGS = $(libyog_mark_sweep_la_CFLAGS)
-yog_mark_sweep_LDFLAGS = $(yog_COMMON_LDFLAGS)
-yog_mark_sweep_compact_SOURCES = $(libyog_mark_sweep_compact_la_SOURCES)
-yog_mark_sweep_compact_CFLAGS = $(libyog_mark_sweep_compact_la_CFLAGS)
-yog_mark_sweep_compact_LDFLAGS = $(yog_COMMON_LDFLAGS)
-yog_bdw_SOURCES = $(libyog_bdw_la_SOURCES)
-yog_bdw_CFLAGS = $(libyog_bdw_la_CFLAGS)
-yog_bdw_LDFLAGS = $(yog_COMMON_LDFLAGS) $(BDWGC_DIR)/.libs/libgc.a -lpthread
-yog_generational_SOURCES = $(libyog_generational_la_SOURCES)
-yog_generational_CFLAGS = $(libyog_generational_la_CFLAGS)
-yog_generational_LDFLAGS = $(yog_COMMON_LDFLAGS)
+yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
+yog_copying_CFLAGS = $(COMMON_CFLAGS) -DGC_COPYING
+yog_copying_LDFLAGS = $(COMMON_LDFLAGS)
+yog_mark_sweep_SOURCES = $(COMMON_SOURCES) gc/mark-sweep.c
+yog_mark_sweep_CFLAGS = $(COMMON_CFLAGS) -DGC_MARK_SWEEP
+yog_mark_sweep_LDFLAGS = $(COMMON_LDFLAGS)
+yog_mark_sweep_compact_SOURCES = $(COMMON_SOURCES) gc/mark-sweep-compact.c
+yog_mark_sweep_compact_CFLAGS = $(COMMON_CFLAGS) -DGC_MARK_SWEEP_COMPACT
+yog_mark_sweep_compact_LDFLAGS = $(COMMON_LDFLAGS)
+yog_bdw_SOURCES = $(COMMON_SOURCES) gc/bdw.c
+yog_bdw_CFLAGS = $(COMMON_CFLAGS) -DGC_BDW
+yog_bdw_LDFLAGS = $(COMMON_LDFLAGS) $(BDWGC_DIR)/.libs/libgc.a -lpthread
+yog_generational_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
+			   gc/mark-sweep-compact.c
+yog_generational_CFLAGS = $(COMMON_CFLAGS) -DGC_GENERATIONAL
+yog_generational_LDFLAGS = $(COMMON_LDFLAGS)
 
 INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
@@ -103,7 +88,7 @@ keywords.inc: keywords
 
 #keywords lexer.c: parser.h
 
-thread.inc: $(INSTS_DEF) $(INST_PY)
+eval.inc: $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
 code.inc: code.inc.tmpl $(INSTS_DEF) $(INST_PY)

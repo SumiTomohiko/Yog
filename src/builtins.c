@@ -2,6 +2,7 @@
 #include "yog/array.h"
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/klass.h"
 #include "yog/object.h"
@@ -19,7 +20,7 @@ raise(YogEnv* env)
         YogVal receiver = env->vm->eException;
         YogVal args[] = { exc };
         PUSH_LOCALSX(env, array_sizeof(args), args);
-        exc = YogThread_call_method(env, env->th, receiver, "new", 1, args);
+        exc = YogEval_call_method(env, receiver, "new", 1, args);
         POP_LOCALS(env);
     }
 
@@ -47,7 +48,7 @@ puts_(YogEnv* env)
                 s = PTR_AS(YogString, arg);
             }
             else {
-                YogVal val = YogThread_call_method(env, env->th, arg, "to_s", 0, NULL);
+                YogVal val = YogEval_call_method(env, arg, "to_s", 0, NULL);
                 s = VAL2PTR(val);
             }
             printf("%s", PTR_AS(YogCharArray, s->body)->items);

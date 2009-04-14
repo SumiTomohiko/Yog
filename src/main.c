@@ -7,6 +7,7 @@
 #include "yog/compile.h"
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/package.h"
 #include "yog/parser.h"
 #include "yog/thread.h"
@@ -176,7 +177,7 @@ main(int argc, char* argv[])
         pkg = YogPackage_new(&env);
         MODIFY(&env, PTR_AS(YogPackage, pkg)->code, code);
         YogVm_register_package(&env, env.vm, "__main__", pkg);
-        YogThread_eval_package(&env, &thread, pkg);
+        YogEval_eval_package(&env, pkg);
 
         YogThread_finalize(&env, &thread);
 

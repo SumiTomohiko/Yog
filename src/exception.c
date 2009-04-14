@@ -1,11 +1,11 @@
 #include "yog/code.h"
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/exception.h"
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/klass.h"
-#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -146,7 +146,7 @@ to_s(YogEnv* env)
 
     YogException* exc = PTR_AS(YogException, self);
     YogVal msg = exc->message;
-    YogVal retval = YogThread_call_method(env, env->th, msg, "to_s", 0, NULL);
+    YogVal retval = YogEval_call_method(env, msg, "to_s", 0, NULL);
 
     return retval;
 }
@@ -170,7 +170,7 @@ YogVal
 YogBugException_new(YogEnv* env) 
 {
     YogVal self = env->vm->eBugException;
-    return YogThread_call_method(env, env->th, self, "new", 0, NULL);
+    return YogEval_call_method(env, self, "new", 0, NULL);
 }
 
 /**
