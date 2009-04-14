@@ -46,42 +46,42 @@ YogThreadCtx_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
 #if defined(GC_GENERATIONAL)
 void 
-YogThreadCtx_shrink_ref_tbl(YogEnv* env, YogThreadCtx* thread) 
+YogThreadCtx_shrink_ref_tbl(YogEnv* env, YogThreadCtx* thread_ctx) 
 {
-    YogVal** to = thread->ref_tbl;
+    YogVal** to = thread_ctx->ref_tbl;
     YogVal** p;
-    for (p = thread->ref_tbl; p < thread->ref_tbl_ptr; p++) {
+    for (p = thread_ctx->ref_tbl; p < thread_ctx->ref_tbl_ptr; p++) {
         YogCopying* copying = &env->vm->gc.generational.copying;
         if (YogCopying_is_in_active_heap(env, copying, VAL2PTR(**p))) {
             *to = *p;
             to++;
         }
     }
-    thread->ref_tbl_ptr = to;
+    thread_ctx->ref_tbl_ptr = to;
 }
 #endif
 
 void 
-YogThreadCtx_initialize(YogEnv* env, YogVal thread)
+YogThreadCtx_initialize(YogEnv* env, YogVal thread_ctx)
 {
-    PTR_AS(YogThreadCtx, thread)->cur_frame = YNIL;
-    PTR_AS(YogThreadCtx, thread)->jmp_buf_list = NULL;
-    PTR_AS(YogThreadCtx, thread)->jmp_val = YUNDEF;
-    PTR_AS(YogThreadCtx, thread)->locals = NULL;
+    PTR_AS(YogThreadCtx, thread_ctx)->cur_frame = YNIL;
+    PTR_AS(YogThreadCtx, thread_ctx)->jmp_buf_list = NULL;
+    PTR_AS(YogThreadCtx, thread_ctx)->jmp_val = YUNDEF;
+    PTR_AS(YogThreadCtx, thread_ctx)->locals = NULL;
 #if defined(GC_GENERATIONAL)
 #   define REF_TBL_SIZE     256
-    PTR_AS(YogThreadCtx, thread)->ref_tbl = malloc(REF_TBL_SIZE * sizeof(YogVal*));
-    PTR_AS(YogThreadCtx, thread)->ref_tbl_limit = PTR_AS(YogThreadCtx, thread)->ref_tbl + REF_TBL_SIZE;
-    PTR_AS(YogThreadCtx, thread)->ref_tbl_ptr = PTR_AS(YogThreadCtx, thread)->ref_tbl;
+    PTR_AS(YogThreadCtx, thread_ctx)->ref_tbl = malloc(REF_TBL_SIZE * sizeof(YogVal*));
+    PTR_AS(YogThreadCtx, thread_ctx)->ref_tbl_limit = PTR_AS(YogThreadCtx, thread_ctx)->ref_tbl + REF_TBL_SIZE;
+    PTR_AS(YogThreadCtx, thread_ctx)->ref_tbl_ptr = PTR_AS(YogThreadCtx, thread_ctx)->ref_tbl;
 #   undef REF_TBL_SIZE
 #endif
 }
 
 void 
-YogThreadCtx_finalize(YogEnv* env, YogThreadCtx* thread) 
+YogThreadCtx_finalize(YogEnv* env, YogThreadCtx* thread_ctx) 
 {
 #if defined(GC_GENERATIONAL)
-    free(thread->ref_tbl);
+    free(thread_ctx->ref_tbl);
 #endif
 }
 
