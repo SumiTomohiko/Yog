@@ -143,7 +143,7 @@ YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
     initialize_young_updated(env, generational);
     YogMarkSweepCompact_do_compaction(env, msc, update_pointer);
 
-    YogThreadCtx_shrink_ref_tbl(env, env->thread_ctx);
+    YogThread_shrink_ref_tbl(env, env->thread);
     msc->in_gc = FALSE;
 }
 
@@ -169,7 +169,7 @@ YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational)
 
     YogCopying_do_gc(env, &generational->copying, minor_gc_keep_object);
 
-    YogThreadCtx_shrink_ref_tbl(env, env->thread_ctx);
+    YogThread_shrink_ref_tbl(env, env->thread);
     msc->in_gc = FALSE;
 }
 
@@ -246,13 +246,13 @@ YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper
     static void \
     name() \
     { \
-        YogThreadCtx thread; \
-        YogThreadCtx_initialize(NULL, &thread); \
+        YogThread thread; \
+        YogThread_initialize(NULL, &thread); \
         YogVm vm; \
         vm.thread = &thread; \
         YogEnv env; \
         env.vm = &vm; \
-        env.thread_ctx = &thread; \
+        env.thread = &thread; \
         YogGenerational_initialize(&env, &vm.gc.generational, FALSE, HEAP_SIZE, CHUNK_SIZE, THRESHOLD, TENURE, root, root_keeper); \
         \
         test_##name(&env); \
@@ -460,13 +460,13 @@ test_finalize2(YogEnv* env)
 
 CREATE_TEST(finalize2, NULL, finalize2_root_keeper);
 
-static YogThreadCtx ref_tbl1_thread;
+static YogThread ref_tbl1_thread;
 
 static void 
 test_ref_tbl1(YogEnv* env) 
 {
-    YogThreadCtx_initialize(env, &ref_tbl1_thread);
-    env->thread_ctx = env->vm->thread = &ref_tbl1_thread;
+    YogThread_initialize(env, &ref_tbl1_thread);
+    env->thread = env->vm->thread = &ref_tbl1_thread;
 
     YogGenerational* gen = &env->vm->gc.generational;
     void* ptr = YogGenerational_alloc(env, gen, NULL, NULL, sizeof(int));
@@ -481,9 +481,9 @@ test_ref_tbl1(YogEnv* env)
     CU_ASSERT_EQUAL(*(int*)ptr, 42);
 }
 
-CREATE_TEST(ref_tbl1, &ref_tbl1_thread, YogThreadCtx_keep_children);
+CREATE_TEST(ref_tbl1, &ref_tbl1_thread, YogThread_keep_children);
 
-static YogThreadCtx ref_tbl2_thread;
+static YogThread ref_tbl2_thread;
 static void* ref_tbl2_ptr1;
 static void* ref_tbl2_ptr2;
 
@@ -496,8 +496,8 @@ ref_tbl2_ptr1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static void 
 test_ref_tbl2(YogEnv* env) 
 {
-    YogThreadCtx_initialize(env, &ref_tbl2_thread);
-    env->thread_ctx = env->vm->thread = &ref_tbl2_thread;
+    YogThread_initialize(env, &ref_tbl2_thread);
+    env->thread = env->vm->thread = &ref_tbl2_thread;
 
     YogGenerational* gen = &env->vm->gc.generational;
     ref_tbl2_ptr1 = YogGenerational_alloc(env, gen, ref_tbl2_ptr1_keep_children, NULL, sizeof(void*));
@@ -515,9 +515,9 @@ test_ref_tbl2(YogEnv* env)
     CU_ASSERT_PTR_EQUAL(ref_tbl_ptr_old, ref_tbl2_thread.ref_tbl_ptr);
 }
 
-CREATE_TEST(ref_tbl2, &ref_tbl2_thread, YogThreadCtx_keep_children);
+CREATE_TEST(ref_tbl2, &ref_tbl2_thread, YogThread_keep_children);
 
-static YogThreadCtx ref_tbl3_thread;
+static YogThread ref_tbl3_thread;
 static void* ref_tbl3_ptr1;
 static void* ref_tbl3_ptr2;
 
@@ -530,8 +530,8 @@ ref_tbl3_ptr1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static void 
 test_ref_tbl3(YogEnv* env) 
 {
-    YogThreadCtx_initialize(env, &ref_tbl3_thread);
-    env->thread_ctx = env->vm->thread = &ref_tbl3_thread;
+    YogThread_initialize(env, &ref_tbl3_thread);
+    env->thread = env->vm->thread = &ref_tbl3_thread;
 
     YogGenerational* gen = &env->vm->gc.generational;
     ref_tbl3_ptr1 = YogGenerational_alloc(env, gen, ref_tbl3_ptr1_keep_children, NULL, sizeof(void*));
@@ -549,9 +549,9 @@ test_ref_tbl3(YogEnv* env)
     CU_ASSERT_PTR_EQUAL(ref_tbl_ptr_old, ref_tbl3_thread.ref_tbl_ptr);
 }
 
-CREATE_TEST(ref_tbl3, &ref_tbl3_thread, YogThreadCtx_keep_children);
+CREATE_TEST(ref_tbl3, &ref_tbl3_thread, YogThread_keep_children);
 
-static YogThreadCtx ref_tbl4_thread;
+static YogThread ref_tbl4_thread;
 static void* ref_tbl4_ptr1;
 static void* ref_tbl4_ptr2;
 
@@ -564,8 +564,8 @@ ref_tbl4_ptr1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static void 
 test_ref_tbl4(YogEnv* env) 
 {
-    YogThreadCtx_initialize(env, &ref_tbl4_thread);
-    env->thread_ctx = env->vm->thread = &ref_tbl4_thread;
+    YogThread_initialize(env, &ref_tbl4_thread);
+    env->thread = env->vm->thread = &ref_tbl4_thread;
 
     YogGenerational* gen = &env->vm->gc.generational;
     ref_tbl4_ptr1 = YogGenerational_alloc(env, gen, ref_tbl4_ptr1_keep_children, NULL, sizeof(void*));
@@ -582,9 +582,9 @@ test_ref_tbl4(YogEnv* env)
     CU_ASSERT_PTR_EQUAL(ref_tbl4_thread.ref_tbl, ref_tbl4_thread.ref_tbl_ptr);
 }
 
-CREATE_TEST(ref_tbl4, &ref_tbl4_thread, YogThreadCtx_keep_children);
+CREATE_TEST(ref_tbl4, &ref_tbl4_thread, YogThread_keep_children);
 
-static YogThreadCtx ref_tbl5_thread;
+static YogThread ref_tbl5_thread;
 static void* ref_tbl5_ptr1;
 static void* ref_tbl5_ptr2;
 
@@ -597,8 +597,8 @@ ref_tbl5_ptr1_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 static void 
 test_ref_tbl5(YogEnv* env) 
 {
-    YogThreadCtx_initialize(env, &ref_tbl5_thread);
-    env->thread_ctx = env->vm->thread = &ref_tbl5_thread;
+    YogThread_initialize(env, &ref_tbl5_thread);
+    env->thread = env->vm->thread = &ref_tbl5_thread;
 
     YogGenerational* gen = &env->vm->gc.generational;
     ref_tbl5_ptr1 = YogGenerational_alloc(env, gen, ref_tbl5_ptr1_keep_children, NULL, sizeof(void*));
@@ -615,7 +615,7 @@ test_ref_tbl5(YogEnv* env)
     CU_ASSERT_PTR_EQUAL(ref_tbl5_thread.ref_tbl, ref_tbl5_thread.ref_tbl_ptr);
 }
 
-CREATE_TEST(ref_tbl5, &ref_tbl5_thread, YogThreadCtx_keep_children);
+CREATE_TEST(ref_tbl5, &ref_tbl5_thread, YogThread_keep_children);
 
 static void* forwarding_addr1_ptr1 = NULL;
 static void* forwarding_addr1_ptr2 = NULL;

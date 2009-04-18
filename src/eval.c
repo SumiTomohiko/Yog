@@ -19,7 +19,7 @@
 #   define DEBUG(x)
 #endif
 
-#define CUR_FRAME   (env->thread_ctx->cur_frame)
+#define CUR_FRAME   (env->thread->cur_frame)
 
 #define PUSH_FRAME(f)   do { \
     PTR_AS(YogFrame, (f))->prev = CUR_FRAME; \
@@ -458,15 +458,15 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
 
     PUSH_FRAME(frame);
 
-#define POP_BUF()   env->thread_ctx->jmp_buf_list = env->thread_ctx->jmp_buf_list->prev
+#define POP_BUF()   env->thread->jmp_buf_list = env->thread->jmp_buf_list->prev
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
 #undef CODE
 #define CODE        PTR_AS(YogCode, SCRIPT_FRAME(CUR_FRAME)->code)
     YogJmpBuf jmpbuf;
     int status = 0;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
-        jmpbuf.prev = env->thread_ctx->jmp_buf_list;
-        env->thread_ctx->jmp_buf_list = &jmpbuf;
+        jmpbuf.prev = env->thread->jmp_buf_list;
+        env->thread->jmp_buf_list = &jmpbuf;
     }
     else {
         RESTORE_LOCALS(env);
@@ -486,7 +486,7 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
         }
         if (!found) {
             POP_BUF();
-            YogJmpBuf* list = env->thread_ctx->jmp_buf_list;
+            YogJmpBuf* list = env->thread->jmp_buf_list;
             if (list != NULL) {
                 longjmp(list->buf, status);
             }
@@ -494,7 +494,7 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
 #define PRINT(...)  fprintf(stderr, __VA_ARGS__)
             PRINT("Traceback (most recent call last):\n");
 
-            YogException* exc = PTR_AS(YogException, env->thread_ctx->jmp_val);
+            YogException* exc = PTR_AS(YogException, env->thread->jmp_val);
             YogVal st = exc->stack_trace;
 #define ID2NAME(id)     YogVm_id2name(env, env->vm, id)
             while (IS_PTR(st)) {
@@ -557,7 +557,7 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
 #define VM              (ENV_VM(ENV))
 #define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME)))
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
-#define THREAD          (env->thread_ctx)
+#define THREAD          (env->thread)
 #define JUMP(m)         PC = m;
 #define POP_ARGS(args, kwargs, blockarg, vararg, varkwarg) \
     YogVal varkwarg = YUNDEF; \

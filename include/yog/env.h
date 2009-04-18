@@ -6,7 +6,7 @@
 
 struct YogEnv {
     struct YogVm* vm;
-    struct YogThreadCtx* thread_ctx;
+    struct YogThread* thread;
 };
 
 #endif

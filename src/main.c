@@ -128,7 +128,7 @@ main(int argc, char* argv[])
 
     YogEnv env;
     env.vm = &vm;
-    env.thread_ctx = NULL;
+    env.thread = NULL;
 #if defined(GC_BDW)
     GC_INIT();
 #elif defined(GC_COPYING)
@@ -156,9 +156,9 @@ main(int argc, char* argv[])
 #endif
 
     do {
-        YogThreadCtx thread_ctx;
-        YogThreadCtx_initialize(&env, PTR2VAL(&thread_ctx));
-        vm.thread = env.thread_ctx = &thread_ctx;
+        YogThread thread;
+        YogThread_initialize(&env, PTR2VAL(&thread));
+        vm.thread = env.thread = &thread;
 
         YogVal stmts = YUNDEF;
         YogVal code = YUNDEF;
@@ -179,7 +179,7 @@ main(int argc, char* argv[])
         YogVm_register_package(&env, env.vm, "__main__", pkg);
         YogEval_eval_package(&env, pkg);
 
-        YogThreadCtx_finalize(&env, &thread_ctx);
+        YogThread_finalize(&env, &thread);
 
         POP_LOCALS(&env);
     } while (0);

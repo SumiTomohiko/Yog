@@ -24,8 +24,8 @@ raise(YogEnv* env)
         POP_LOCALS(env);
     }
 
-    YogVal cur_frame = env->thread_ctx->cur_frame;
-    env->thread_ctx->cur_frame = PTR_AS(YogFrame, cur_frame)->prev;
+    YogVal cur_frame = env->thread->cur_frame;
+    env->thread->cur_frame = PTR_AS(YogFrame, cur_frame)->prev;
 
     YogError_raise(env, exc);
 

@@ -74,7 +74,7 @@ initialize(YogEnv* env)
     YogVal st = YUNDEF;
     PUSH_LOCALS4(env, self, message, frame, st);
 
-    frame = env->thread_ctx->cur_frame;
+    frame = env->thread->cur_frame;
     frame = skip_frame(env, frame, "initialize");
     frame = skip_frame(env, frame, "new");
 
