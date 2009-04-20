@@ -594,12 +594,6 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 }
                 pages->next = NULL;
 
-#if defined(GC_GENERATIONAL)
-                if (mprotect(chunk_begin, chunk_size, PROT_READ) != 0) {
-                    ERROR(ERR_MSC_MPROTECT);
-                }
-#endif
-
                 chunk->pages = (YogMarkSweepCompactFreeList*)mmap_begin;
                 chunk->first_page = (YogMarkSweepCompactPage*)mmap_begin;
 
@@ -607,6 +601,10 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 size_t flags_size = (num_pages + BITS_PER_BYTE - 1) & ~(BITS_PER_BYTE - 1);
                 chunk->grey_page_flags = malloc(flags_size);
                 bzero(chunk->grey_page_flags, flags_size);
+
+                if (mprotect(chunk_begin, chunk_size, PROT_READ) != 0) {
+                    ERROR(ERR_MSC_MPROTECT);
+                }
 #endif
 
                 chunk->next = NULL;
@@ -745,6 +743,37 @@ YogMarkSweepCompact_finalize(YogEnv* env, YogMarkSweepCompact* msc)
 }
 
 #if defined(GC_GENERATIONAL)
+void 
+YogMarkSweepCompact_iterate_grey_pages(YogEnv* env, YogMarkSweepCompact* msc, ObjectKeeper keeper)
+{
+    YogMarkSweepCompactChunk* chunk = msc->all_chunks;
+    while (chunk != NULL) {
+        unsigned int page_num = msc->chunk_size / PAGE_SIZE;
+        unsigned int i;
+        for (i = 0; i < page_num; i++) {
+            unsigned int flags_index = i / BITS_PER_BYTE;
+            unsigned int index = i % BITS_PER_BYTE;
+            if ((chunk->grey_page_flags[flags_index] & (1 << index)) != 0) {
+                unsigned char* first_page = (unsigned char*)chunk->first_page;
+                unsigned char* page_begin = first_page + PAGE_SIZE * i;
+                YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)page_begin;
+                size_t obj_size = page->obj_size;
+                unsigned int obj_num = object_number_of_page(obj_size);
+                unsigned int j;
+                for (j = 0; j < obj_num; i++) {
+                    unsigned char* obj = page_begin + sizeof(YogMarkSweepCompactPage) + obj_size * j;
+                    YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)obj;
+                    if (IS_OBJ_USED(header)) {
+                        (*header->keeper)(env, header + 1, keeper);
+                    }
+                }
+            }
+        }
+
+        chunk = chunk->all_chunks_next;
+    }
+}
+
 static int
 sigsegv_handler(void* fault_address, int serious) 
 {
@@ -753,12 +782,14 @@ sigsegv_handler(void* fault_address, int serious)
         return 0;
     }
 
-    YogMarkSweepCompactChunk* chunk = page->chunk;
-    YogMarkSweepCompactPage* first_page = chunk->first_page;
-    unsigned int page_index = (page - first_page) / PAGE_SIZE;
-    unsigned int flag_index = page_index / BITS_PER_BYTE;
-    unsigned int index = page_index % BITS_PER_BYTE;
-    chunk->grey_page_flags[flag_index] |= 1 << index;
+    if (IS_PAGE_USED(page)) {
+        YogMarkSweepCompactChunk* chunk = page->chunk;
+        YogMarkSweepCompactPage* first_page = chunk->first_page;
+        unsigned int page_index = (page - first_page) / PAGE_SIZE;
+        unsigned int flag_index = page_index / BITS_PER_BYTE;
+        unsigned int index = page_index % BITS_PER_BYTE;
+        chunk->grey_page_flags[flag_index] |= 1 << index;
+    }
 
     return 1;
 }

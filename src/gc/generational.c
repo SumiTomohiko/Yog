@@ -168,6 +168,7 @@ YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational)
     msc->in_gc = TRUE;
 
     YogCopying_do_gc(env, &generational->copying, minor_gc_keep_object);
+    YogMarkSweepCompact_iterate_grey_pages(env, msc, minor_gc_keep_object);
 
     YogThread_shrink_ref_tbl(env, env->thread);
     msc->in_gc = FALSE;
