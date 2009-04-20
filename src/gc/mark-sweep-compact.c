@@ -77,6 +77,12 @@ typedef struct Compactor Compactor;
 typedef void (*Callback)(struct YogMarkSweepCompact*, struct Compactor*, struct YogMarkSweepCompactHeader*);
 
 void 
+YogMarkSweepCompact_grey_page(YogEnv* env, YogMarkSweepCompact* msc, void* ptr) 
+{
+    /* TODO */
+}
+
+void 
 YogMarkSweepCompact_unmark_all(YogEnv* env, YogMarkSweepCompact* msc) 
 {
     DEBUG(DPRINTF("unmark all"));
