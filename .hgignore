@@ -1,4 +1,6 @@
+.a
 .deps
+.la
 .lo
 .o
 .pyc
@@ -24,5 +26,9 @@ onig/sample/simple
 onig/sample/sql
 onig/sample/syntax
 parser.output
+sigsegv/src/sigsegv.h
+sigsegv/tests/sigsegv1
+sigsegv/tests/sigsegv2
+sigsegv/tests/sigsegv3
 stamp-h1
 yog

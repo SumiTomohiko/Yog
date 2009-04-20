@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/mman.h>
 #include "yog/env.h"
 #include "yog/vm.h"
@@ -30,6 +31,8 @@
 #   define DEBUG(x)
 #endif
 
+#define BITS_PER_BYTE   8
+
 #define SURVIVE_INDEX_MAX    8
 
 #define PAGE_SIZE       4096
@@ -47,6 +50,9 @@ struct YogMarkSweepCompactChunk {
     struct YogMarkSweepCompactChunk* all_chunks_next;
     struct YogMarkSweepCompactFreeList* pages;
     struct YogMarkSweepCompactPage* first_page;
+#if defined(GC_GENERATIONAL)
+    unsigned char* grey_page_flags;
+#endif
 };
 
 typedef struct YogMarkSweepCompactChunk YogMarkSweepCompactChunk;
@@ -242,6 +248,9 @@ static void
 free_chunk(YogMarkSweepCompact* msc, YogMarkSweepCompactChunk* chunk) 
 {
     munmap(chunk->first_page, msc->chunk_size);
+#if defined(GC_GENERATIONAL)
+    free(chunk->grey_page_flags);
+#endif
     free(chunk);
 }
 
@@ -594,6 +603,12 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 chunk->pages = (YogMarkSweepCompactFreeList*)mmap_begin;
                 chunk->first_page = (YogMarkSweepCompactPage*)mmap_begin;
 
+#if defined(GC_GENERATIONAL)
+                size_t flags_size = (num_pages + BITS_PER_BYTE - 1) & ~(BITS_PER_BYTE - 1);
+                chunk->grey_page_flags = malloc(flags_size);
+                bzero(chunk->grey_page_flags, flags_size);
+#endif
+
                 chunk->next = NULL;
                 msc->chunks = chunk;
                 if (msc->all_chunks != NULL) {
@@ -737,6 +752,13 @@ sigsegv_handler(void* fault_address, int serious)
     if (mprotect(page, PAGE_SIZE, PROT_READ | PROT_WRITE) != 0) {
         return 0;
     }
+
+    YogMarkSweepCompactChunk* chunk = page->chunk;
+    YogMarkSweepCompactPage* first_page = chunk->first_page;
+    unsigned int page_index = (page - first_page) / PAGE_SIZE;
+    unsigned int flag_index = page_index / BITS_PER_BYTE;
+    unsigned int index = page_index % BITS_PER_BYTE;
+    chunk->grey_page_flags[flag_index] |= 1 << index;
 
     return 1;
 }
