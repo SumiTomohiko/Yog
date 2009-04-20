@@ -660,6 +660,9 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
     header->keeper = keeper;
     header->finalizer = finalizer;
     header->updated = header->marked = FALSE;
+#if defined(GC_GENERATIONAL)
+    header->gen = GEN_OLD;
+#endif
 
     return header + 1;
 }

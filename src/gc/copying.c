@@ -10,7 +10,7 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 #include "yog/gc/copying.h"
-#if GC_GENERATIONAL
+#if defined(GC_GENERATIONAL)
 #   include "yog/gc/generational.h"
 #endif
 
@@ -297,6 +297,7 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 #if defined(GC_GENERATIONAL)
     header->servive_num = 0;
     header->updated = FALSE;
+    header->gen = GEN_YOUNG;
 #endif
 
     heap->free += rounded_size;

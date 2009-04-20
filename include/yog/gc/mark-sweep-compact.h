@@ -27,6 +27,9 @@ struct YogMarkSweepCompactHeader {
     BOOL marked;
     BOOL updated;
     size_t size;
+#if defined(GC_GENERATIONAL)
+    unsigned int gen;
+#endif
 };
 
 #define OBJ_USED        0x01

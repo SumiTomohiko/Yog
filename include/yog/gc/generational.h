@@ -31,6 +31,9 @@ struct YogGenerational {
 
 typedef struct YogGenerational YogGenerational;
 
+#define GEN_YOUNG   1
+#define GEN_OLD     2
+
 /* PROTOTYPE_START */
 
 /**
