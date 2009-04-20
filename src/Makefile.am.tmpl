@@ -2,6 +2,7 @@
 ROOT_DIR = ..
 ONIG_DIR = $(ROOT_DIR)/onig
 BDWGC_DIR = $(ROOT_DIR)/bdwgc
+SIGSEGV_DIR = $(ROOT_DIR)/sigsegv
 
 LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
@@ -31,8 +32,10 @@ yog_bdw_CFLAGS = $(COMMON_CFLAGS) -DGC_BDW
 yog_bdw_LDFLAGS = $(COMMON_LDFLAGS) $(BDWGC_DIR)/.libs/libgc.a -lpthread
 yog_generational_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
 			   gc/mark-sweep-compact.c
-yog_generational_CFLAGS = $(COMMON_CFLAGS) -DGC_GENERATIONAL
-yog_generational_LDFLAGS = $(COMMON_LDFLAGS)
+yog_generational_CFLAGS = $(COMMON_CFLAGS) -DGC_GENERATIONAL \
+			  -I$(SIGSEGV_DIR)/src
+yog_generational_LDFLAGS = $(COMMON_LDFLAGS) \
+			   $(SIGSEGV_DIR)/src/.libs/libsigsegv.a
 
 INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py

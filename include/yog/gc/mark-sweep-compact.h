@@ -44,6 +44,9 @@ typedef struct YogMarkSweepCompactHeader YogMarkSweepCompactHeader;
 #define ERR_MSC_MMAP    1
 #define ERR_MSC_MUNMAP  2
 #define ERR_MSC_MALLOC  3
+#if defined(GC_GENERATIONAL)
+#   define ERR_MSC_MPROTECT     4
+#endif
 
 struct YogMarkSweepCompact {
     unsigned int err;

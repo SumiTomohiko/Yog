@@ -17,12 +17,14 @@ ONIG_LIB = $(ONIG_DIR)/libonig.la
 BDW_DIR = bdwgc
 BDW_LIB = $(BDW_DIR)/libgc.la
 
+SIGSEGV_DIR = sigsegv
+
+SUBDIRS = src $(ONIG_DIR) $(BDW_DIR) $(SIGSEGV_DIR)
+
 LDFLAGS = -pg
 
 all: 
-	(cd $(ONIG_DIR); make)
-	(cd $(BDW_DIR); make)
-	(cd $(YOG_DIR); make)
+	for subdir in $(SUBDIRS); do (cd $${subdir}; make); done
 
 clean: 
 	cd $(ONIG_DIR) && make clean

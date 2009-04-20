@@ -33,6 +33,7 @@ AC_CHECK_SIZEOF(void*)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(long long)
+AC_C_INLINE
 
 # Checks for library functions.
 AC_FUNC_MALLOC
@@ -63,7 +64,8 @@ if test "${with_cunit}" = "yes"; then
                      tests/generational/Makefile])
 fi
 AC_CONFIG_SUBDIRS([bdwgc
-                   onig])
+                   onig
+                   sigsegv])
 AC_OUTPUT
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

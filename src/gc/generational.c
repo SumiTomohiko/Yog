@@ -1,9 +1,9 @@
 #include <string.h>
 #include "yog/env.h"
+#include "yog/gc/generational.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
-#include "yog/gc/generational.h"
 #if defined(TEST_GENERATIONAL)
 #   include <stdio.h>
 #   include <stdlib.h>

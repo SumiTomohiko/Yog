@@ -8,6 +8,7 @@
 #include "yog/yog.h"
 #include "yog/gc/mark-sweep-compact.h"
 #if defined(GC_GENERATIONAL)
+#   include "sigsegv.h"
 #   include "yog/gc/generational.h"
 #endif
 #if defined(TEST_MARK_SWEEP_COMPACT)
@@ -584,6 +585,12 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 }
                 pages->next = NULL;
 
+#if defined(GC_GENERATIONAL)
+                if (mprotect(chunk_begin, chunk_size, PROT_READ) != 0) {
+                    ERROR(ERR_MSC_MPROTECT);
+                }
+#endif
+
                 chunk->pages = (YogMarkSweepCompactFreeList*)mmap_begin;
                 chunk->first_page = (YogMarkSweepCompactPage*)mmap_begin;
 
@@ -721,6 +728,29 @@ YogMarkSweepCompact_finalize(YogEnv* env, YogMarkSweepCompact* msc)
         chunk = next;
     }
 }
+
+#if defined(GC_GENERATIONAL)
+static int
+sigsegv_handler(void* fault_address, int serious) 
+{
+    YogMarkSweepCompactPage* page = ptr2page(fault_address);
+    if (mprotect(page, PAGE_SIZE, PROT_READ | PROT_WRITE) != 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
+BOOL
+YogMarkSweepCompact_install_sigsegv_handler(YogEnv* env) 
+{
+    if (sigsegv_install_handler(sigsegv_handler) != 0) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+#endif
 
 #if defined(TEST_MARK_SWEEP_COMPACT)
 #define CHUNK_SIZE  (1 * 1024 * 1024)
