@@ -2,6 +2,7 @@
 YOG_DIR = ../..
 SRC_DIR = $(YOG_DIR)/src
 GC_DIR = $(SRC_DIR)/gc
+SIGSEGV_DIR = $(YOG_DIR)/sigsegv
 
 bin_PROGRAMS = test-generational
 
@@ -20,6 +21,6 @@ test_generational_SOURCES = $(GC_DIR)/generational.c $(GC_DIR)/copying.c \
 			    $(SRC_DIR)/block.c $(SRC_DIR)/bool.c \
 			    $(SRC_DIR)/builtins.c $(SRC_DIR)/eval.c \
 			    $(SRC_DIR)/float.c
-test_generational_CFLAGS = -Wall -I$(YOG_DIR)/include -DTEST_GENERATIONAL \
-			   -DGC_GENERATIONAL
-test_generational_LDFLAGS = -lcunit -lonig
+test_generational_CFLAGS = -Wall -I$(YOG_DIR)/include -I$(SIGSEGV_DIR)/src \
+			   -DTEST_GENERATIONAL -DGC_GENERATIONAL
+test_generational_LDFLAGS = -lcunit -lonig $(SIGSEGV_DIR)/src/.libs/libsigsegv.a

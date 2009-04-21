@@ -147,7 +147,7 @@ main(int argc, char* argv[])
 #   undef CHUNK_SIZE
 #elif defined(GC_GENERATIONAL)
 #   define CHUNK_SIZE  (16 * 1024 * 1024)
-#   define TENURE       1
+#   define TENURE       32
     if (!YogMarkSweepCompact_install_sigsegv_handler(&env)) {
         ERROR("failed installing SIGSEGV handler");
     }

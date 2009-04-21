@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -35,31 +36,7 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
         locals = locals->next;
     }
-
-#if defined(GC_GENERATIONAL)
-    YogVal** p;
-    for (p = thread->ref_tbl; p < thread->ref_tbl_ptr; p++) {
-        **p = YogVal_keep(env, **p, keeper);
-    }
-#endif
 }
-
-#if defined(GC_GENERATIONAL)
-void 
-YogThread_shrink_ref_tbl(YogEnv* env, YogThread* thread) 
-{
-    YogVal** to = thread->ref_tbl;
-    YogVal** p;
-    for (p = thread->ref_tbl; p < thread->ref_tbl_ptr; p++) {
-        YogCopying* copying = &env->vm->gc.generational.copying;
-        if (YogCopying_is_in_active_heap(env, copying, VAL2PTR(**p))) {
-            *to = *p;
-            to++;
-        }
-    }
-    thread->ref_tbl_ptr = to;
-}
-#endif
 
 void 
 YogThread_initialize(YogEnv* env, YogVal thread)
@@ -68,21 +45,11 @@ YogThread_initialize(YogEnv* env, YogVal thread)
     PTR_AS(YogThread, thread)->jmp_buf_list = NULL;
     PTR_AS(YogThread, thread)->jmp_val = YUNDEF;
     PTR_AS(YogThread, thread)->locals = NULL;
-#if defined(GC_GENERATIONAL)
-#   define REF_TBL_SIZE     256
-    PTR_AS(YogThread, thread)->ref_tbl = malloc(REF_TBL_SIZE * sizeof(YogVal*));
-    PTR_AS(YogThread, thread)->ref_tbl_limit = PTR_AS(YogThread, thread)->ref_tbl + REF_TBL_SIZE;
-    PTR_AS(YogThread, thread)->ref_tbl_ptr = PTR_AS(YogThread, thread)->ref_tbl;
-#   undef REF_TBL_SIZE
-#endif
 }
 
 void 
 YogThread_finalize(YogEnv* env, YogThread* thread) 
 {
-#if defined(GC_GENERATIONAL)
-    free(thread->ref_tbl);
-#endif
 }
 
 YogVal 

@@ -19,7 +19,7 @@ BDW_LIB = $(BDW_DIR)/libgc.la
 
 SIGSEGV_DIR = sigsegv
 
-SUBDIRS = src $(ONIG_DIR) $(BDW_DIR) $(SIGSEGV_DIR)
+SUBDIRS = $(ONIG_DIR) $(BDW_DIR) $(SIGSEGV_DIR) src
 
 LDFLAGS = -pg
 

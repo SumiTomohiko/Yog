@@ -65,6 +65,7 @@ struct YogMarkSweepCompact {
 #if defined(GC_GENERATIONAL)
     BOOL in_gc;
     unsigned char* grey_pages;
+    BOOL has_young_ref;
 #endif
 };
 
@@ -82,10 +83,10 @@ void YogMarkSweepCompact_delete_garbage(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_do_compaction(YogEnv*, YogMarkSweepCompact*, ObjectKeeper);
 void YogMarkSweepCompact_finalize(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_gc(YogEnv*, YogMarkSweepCompact*);
-void YogMarkSweepCompact_grey_page(YogEnv*, YogMarkSweepCompact*, void*);
+void YogMarkSweepCompact_grey_page(void*);
 void YogMarkSweepCompact_initialize(YogEnv*, YogMarkSweepCompact*, size_t, size_t, void*, ChildrenKeeper);
 BOOL YogMarkSweepCompact_install_sigsegv_handler(YogEnv*);
-void YogMarkSweepCompact_iterate_grey_pages(YogEnv*, YogMarkSweepCompact*, ObjectKeeper);
+void YogMarkSweepCompact_iterate_grey_pages(YogEnv*, YogMarkSweepCompact*);
 void* YogMarkSweepCompact_mark_recursively(YogEnv*, void*, ObjectKeeper);
 void YogMarkSweepCompact_unmark_all(YogEnv*, YogMarkSweepCompact*);
 void* YogMarkSweepCompact_update_pointer(YogEnv*, void*, ObjectKeeper);

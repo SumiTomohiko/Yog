@@ -3,6 +3,7 @@
 #include "yog/binary.h"
 #include "yog/block.h"
 #include "yog/code.h"
+#include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
 #include "yog/frame.h"
