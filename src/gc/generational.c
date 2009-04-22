@@ -68,7 +68,7 @@ YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keepe
         Finalizer finalizer = header->finalizer;
         size_t size = header->size - sizeof(YogCopyingHeader);
         void* p = YogMarkSweepCompact_alloc(env, msc, keeper, finalizer, size);
-        DEBUG(DPRINTF("tenure: %p (%p)->%p (%p)", header, ptr, (YogMarkSweepCompactHeader*)p - 1, p));
+        DEBUG(DPRINTF("tenure: %p-%p (%p)->%p-%p (%p)", header, (unsigned char*)header + header->size, ptr, (YogMarkSweepCompactHeader*)p - 1, (unsigned char*)((YogMarkSweepCompactHeader*)p) + header->size, p));
         memcpy(p, ptr, size);
         header->forwarding_addr = (YogMarkSweepCompactHeader*)p - 1;
         YogMarkSweepCompact_mark_recursively(env, p, obj_keeper);
@@ -160,7 +160,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr)
 void 
 YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational) 
 {
-    DEBUG(DPRINTF("minor GC"));
+    DEBUG(DPRINTF("minor GC..."));
     YogMarkSweepCompact* msc = &generational->msc;
     msc->in_gc = TRUE;
 
@@ -169,6 +169,7 @@ YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational)
     YogCopying_do_gc(env, &generational->copying, minor_gc_keep_object);
 
     msc->in_gc = FALSE;
+    DEBUG(DPRINTF("minor GC done."));
 }
 
 void 
@@ -595,6 +596,31 @@ test_grey_page1(YogEnv* env)
 
 CREATE_TEST(grey_page1, NULL, grey_page1_keep_children);
 
+static void* grey_page2_ptr;
+
+static void
+grey_page2_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+{
+    grey_page2_ptr = (*keeper)(env, grey_page2_ptr);
+}
+
+static void 
+test_grey_page2(YogEnv* env) 
+{
+    YogGenerational* gen = &env->vm->gc.generational;
+    grey_page2_ptr = YogGenerational_alloc(env, gen, grey_page1_ptr_keep_children, NULL, 0);
+    oldify(env, gen, grey_page2_ptr);
+    YogGenerational_minor_gc(env, gen);
+
+    YogMarkSweepCompact_grey_page(grey_page2_ptr);
+    grey_page2_ptr = NULL;
+    YogGenerational_major_gc(env, gen);
+
+    YogGenerational_minor_gc(env, gen);
+}
+
+CREATE_TEST(grey_page2, NULL, grey_page2_keep_children);
+
 #define PRIVATE
 
 PRIVATE int 
@@ -628,6 +654,7 @@ main(int argc, const char* argv[])
     ADD_TEST(forwarding_addr1);
     ADD_TEST(forwarding_addr2);
     ADD_TEST(grey_page1);
+    ADD_TEST(grey_page2);
     ADD_TEST(major_gc1);
     ADD_TEST(major_gc2);
     ADD_TEST(major_gc3);

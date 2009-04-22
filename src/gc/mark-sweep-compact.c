@@ -158,6 +158,7 @@ delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header)
         page->num_obj_avail++;
         unsigned int index = msc->size2index[size];
         if (page->num_obj_avail == page->num_obj) {
+            DEBUG(DPRINTF("page %p is empty", page));
             YogMarkSweepCompactPage* pages = msc->pages[index];
             if (pages == page) {
                 msc->pages[index] = pages->next;
@@ -177,11 +178,13 @@ delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header)
             chunk->pages = (YogMarkSweepCompactFreeList*)page;
         }
         else {
+            DEBUG(DPRINTF("page %p is not empty", page));
             if (page->num_obj_avail == 1) {
                 page->next = msc->pages[index];
                 msc->pages[index] = page;
             }
             ((YogMarkSweepCompactFreeList*)header)->next = page->freelist;
+            DEBUG(DPRINTF("*(void**)header(%p)=%p", header, *(void**)header));
             page->freelist = (YogMarkSweepCompactFreeList*)header;
         }
     }
@@ -623,6 +626,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 msc->chunks = chunk->next;
             }
             msc->pages[index] = page;
+            DEBUG(DPRINTF("assign page: %p", page));
 
             unsigned int size = msc->freelist_size[index];
             unsigned int num_obj = object_number_of_page(size);
@@ -631,9 +635,11 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
             unsigned int i;
             for (i = 0; i < num_obj - 1; i++) {
                 obj->next = (YogMarkSweepCompactFreeList*)((unsigned char*)obj + size);
+                DEBUG(DPRINTF("*(void**)(obj=%p)=%p", obj, *(void**)obj));
                 obj = obj->next;
             }
             obj->next = NULL;
+            DEBUG(DPRINTF("*(void**)(obj=%p)=%p", obj, *(void**)obj));
 
             page->flags = PAGE_USED;
             page->next = NULL;
@@ -788,9 +794,9 @@ YogMarkSweepCompact_iterate_grey_pages(YogEnv* env, YogMarkSweepCompact* msc)
 #endif
 
             if ((flags & (1 << bit_index)) != 0) {
-                DEBUG(DPRINTF("page is grey"));
                 unsigned char* first_page = (unsigned char*)chunk->first_page;
                 unsigned char* page_begin = first_page + PAGE_SIZE * i;
+                DEBUG(DPRINTF("page %p-%p is grey", page_begin, page_begin + PAGE_SIZE));
                 YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)page_begin;
                 size_t obj_size = page->obj_size;
                 unsigned int obj_num = object_number_of_page(obj_size);
@@ -802,6 +808,7 @@ YogMarkSweepCompact_iterate_grey_pages(YogEnv* env, YogMarkSweepCompact* msc)
                     YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)obj;
                     if (IS_OBJ_USED(header)) {
                         DEBUG(DPRINTF("IS_OBJ_USED(header=%p)", header));
+                        DEBUG(DPRINTF("header(%p)->flags=0x%08x", header, header->flags));
                         DEBUG(DPRINTF("header + 1=%p", header + 1));
                         DEBUG(DPRINTF("header->keeper=%p", header->keeper));
                         ChildrenKeeper keeper = header->keeper;
@@ -828,10 +835,16 @@ YogMarkSweepCompact_grey_page(void* ptr)
     YogMarkSweepCompactChunk* chunk = page->chunk;
     YogMarkSweepCompactPage* first_page = chunk->first_page;
     unsigned int page_offset = (uintptr_t)page - (uintptr_t)first_page;
+    DEBUG(DPRINTF("page_offset=0x%08x", page_offset));
     unsigned int page_index = page_offset / PAGE_SIZE;
+    DEBUG(DPRINTF("page_index=0x%08x", page_index));
     unsigned int flag_index = page_index / BITS_PER_BYTE;
+    DEBUG(DPRINTF("flag_index=0x%08x", flag_index));
     unsigned int bit_index = page_index % BITS_PER_BYTE;
+    DEBUG(DPRINTF("bit_index=0x%08x", bit_index));
+    DEBUG(DPRINTF("grey_page_flags[%d]=0x%08x", flag_index, chunk->grey_page_flags[flag_index]));
     chunk->grey_page_flags[flag_index] |= 1 << bit_index;
+    DEBUG(DPRINTF("grey_page_flags[%d]=0x%08x", flag_index, chunk->grey_page_flags[flag_index]));
 }
 
 static int
