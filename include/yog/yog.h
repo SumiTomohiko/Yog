@@ -16,7 +16,7 @@
 /**
  * tagged pointer
  *
- * FEDC BA09 8765 4321 FEDC BA09 8765 4321
+ * FEDC BA98 7654 3210 FEDC BA98 7654 3210
  * ---------------------------------------
  * xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxx1 Fixnum
  * 0000 0000 0000 0000 0000 0000 0000 0010 undef

@@ -407,8 +407,8 @@ YogVm_init(YogVm* vm)
     vm->gc_stat.exec_num = 0;
 
     vm->next_id = 0;
-    vm->id2name = PTR2VAL(NULL);
-    vm->name2id = PTR2VAL(NULL);
+    vm->id2name = YUNDEF;
+    vm->name2id = YUNDEF;
 
     vm->cObject = YUNDEF;
     vm->cKlass = YUNDEF;

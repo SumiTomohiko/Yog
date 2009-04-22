@@ -589,6 +589,23 @@ YogTable_new_string_table(YogEnv* env)
     return st_init_table(env, &type_string);
 }
 
+inline static BOOL
+is_not_equal_entry(YogEnv* env, YogVal table, YogVal entry, const char* key, unsigned int hash_val) 
+{
+    if (!IS_PTR(entry)) {
+        return FALSE;
+    }
+    if (PTR_AS(YogTableEntry, entry)->hash != hash_val) {
+        return TRUE;
+    }
+    YogVal s = PTR_AS(YogTableEntry, entry)->key;
+    if (strcmp(PTR_AS(YogCharArray, s)->items, key) != 0) {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 BOOL
 YogTable_lookup_str(YogEnv* env, YogVal table, const char* key, YogVal* value) 
 {
@@ -598,17 +615,12 @@ YogTable_lookup_str(YogEnv* env, YogVal table, const char* key, YogVal* value)
     unsigned int bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
     YogVal entry = TABLE_ENTRY_TOP(table, bin_pos);
 
-#if 0
-#define NOT_EQUAL_ENTRY ((entry != NULL) && ((entry->hash != hash_val) || (strcmp(VAL2STR(entry->key), key) != 0)))
-#endif
-#define NOT_EQUAL_ENTRY (IS_PTR(entry) && ((PTR_AS(YogTableEntry, entry)->hash != hash_val) || (strcmp(((YogCharArray*)VAL2PTR(PTR_AS(YogTableEntry, entry)->key))->items, key) != 0)))
-    if (NOT_EQUAL_ENTRY) {
+    if (is_not_equal_entry(env, table, entry, key, hash_val)) {
         COLLISION;
         do {
             entry = PTR_AS(YogTableEntry, entry)->next;
-        } while (NOT_EQUAL_ENTRY);
+        } while (is_not_equal_entry(env, table, entry, key, hash_val));
     }
-#undef EQUAL_ENTRY
 
     if (IS_PTR(entry)) {
         if (value != NULL) {
@@ -656,6 +668,7 @@ YogTable_size(YogEnv* env, YogVal table)
 static void 
 print_val(YogEnv* env, YogVal val) 
 {
+    printf("%s:%d val=0x%08x\n", __FILE__, __LINE__, val);
     if (IS_UNDEF(val)) {
         printf("undef");
     }
@@ -677,7 +690,10 @@ print_val(YogEnv* env, YogVal val)
         printf("nil");
     }
     else if (IS_SYMBOL(val)) {
+        printf(" 0x%08x", VAL2ID(val));
+#if 0
         printf(" :%s", YogVm_id2name(env, env->vm, VAL2ID(val)));
+#endif
     }
     else {
         YOG_ASSERT(env, FALSE, "Unknown value type.");
@@ -709,14 +725,18 @@ dump_string_callback(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
 void 
 YogTable_dump(YogEnv* env, YogVal table) 
 {
-    printf("{ \n");
+    if (!IS_PTR(table)) {
+        return;
+    }
+
+    printf("{");
     if (PTR_AS(YogTable, table)->type == &type_val) {
         YogTable_foreach(env, table, dump_callback, NULL);
     }
     else if (PTR_AS(YogTable, table)->type == &type_string) {
         YogTable_foreach(env, table, dump_string_callback, NULL);
     }
-    printf("}\n");
+    printf("}");
 }
 
 /**
