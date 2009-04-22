@@ -147,6 +147,39 @@ destroy_memory(void* ptr, size_t size)
     memset(ptr, 0xfd, size);
 }
 
+#if defined(GC_GENERATIONAL)
+static void 
+get_index_of_page_table(YogMarkSweepCompactPage* page, unsigned int* flag_index, unsigned int* bit_index) 
+{
+    YogMarkSweepCompactChunk* chunk = page->chunk;
+    YogMarkSweepCompactPage* first_page = chunk->first_page;
+    unsigned int page_offset = (uintptr_t)page - (uintptr_t)first_page;
+    unsigned int page_index = page_offset / PAGE_SIZE;
+    *flag_index = page_index / BITS_PER_BYTE;
+    *bit_index = page_index % BITS_PER_BYTE;
+}
+
+static void 
+white_page(void* ptr) 
+{
+    YogMarkSweepCompactPage* page = ptr2page(ptr);
+    unsigned int flag_index = 0;
+    unsigned int bit_index = 0;
+    get_index_of_page_table(page, &flag_index, &bit_index);
+    page->chunk->grey_page_flags[flag_index] &= ~(1 << bit_index);
+}
+
+void 
+YogMarkSweepCompact_grey_page(void* ptr) 
+{
+    YogMarkSweepCompactPage* page = ptr2page(ptr);
+    unsigned int flag_index = 0;
+    unsigned int bit_index = 0;
+    get_index_of_page_table(page, &flag_index, &bit_index);
+    page->chunk->grey_page_flags[flag_index] |= 1 << bit_index;
+}
+#endif
+
 static void 
 delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header) 
 {
@@ -176,6 +209,10 @@ delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header)
             YogMarkSweepCompactChunk* chunk = page->chunk;
             ((YogMarkSweepCompactFreeList*)page)->next = chunk->pages;
             chunk->pages = (YogMarkSweepCompactFreeList*)page;
+
+#if defined(GC_GENERATIONAL)
+            white_page(page);
+#endif
         }
         else {
             DEBUG(DPRINTF("page %p is not empty", page));
@@ -826,25 +863,6 @@ YogMarkSweepCompact_iterate_grey_pages(YogEnv* env, YogMarkSweepCompact* msc)
 
         chunk = chunk->all_chunks_next;
     }
-}
-
-void 
-YogMarkSweepCompact_grey_page(void* ptr) 
-{
-    YogMarkSweepCompactPage* page = ptr2page(ptr);
-    YogMarkSweepCompactChunk* chunk = page->chunk;
-    YogMarkSweepCompactPage* first_page = chunk->first_page;
-    unsigned int page_offset = (uintptr_t)page - (uintptr_t)first_page;
-    DEBUG(DPRINTF("page_offset=0x%08x", page_offset));
-    unsigned int page_index = page_offset / PAGE_SIZE;
-    DEBUG(DPRINTF("page_index=0x%08x", page_index));
-    unsigned int flag_index = page_index / BITS_PER_BYTE;
-    DEBUG(DPRINTF("flag_index=0x%08x", flag_index));
-    unsigned int bit_index = page_index % BITS_PER_BYTE;
-    DEBUG(DPRINTF("bit_index=0x%08x", bit_index));
-    DEBUG(DPRINTF("grey_page_flags[%d]=0x%08x", flag_index, chunk->grey_page_flags[flag_index]));
-    chunk->grey_page_flags[flag_index] |= 1 << bit_index;
-    DEBUG(DPRINTF("grey_page_flags[%d]=0x%08x", flag_index, chunk->grey_page_flags[flag_index]));
 }
 
 static int
