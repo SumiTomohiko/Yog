@@ -1,0 +1,18 @@
+#!/bin/sh
+
+mkdir="/bin/mkdir"
+rm="/bin/rm"
+
+tmpdir="/tmp/$$"
+${mkdir} -p "${tmpdir}"
+
+url="http://bitbucket.org/SumiTomohiko/yog"
+name="yog"
+cd "${tmpdir}"
+hg clone "${url}" "${name}"
+cd "${tmpdir}/${name}"
+./configure && make
+
+${rm} -rf "${tmpdir}"
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
