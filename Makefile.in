@@ -24,12 +24,29 @@ SUBDIRS = $(ONIG_DIR) $(BDW_DIR) $(SIGSEGV_DIR) src
 LDFLAGS = -pg
 
 all: 
-	for subdir in $(SUBDIRS); do (cd $${subdir}; make); done
+	for subdir in $(SUBDIRS); do \
+		(cd $${subdir}; make); \
+	done
 
 clean: 
-	cd $(ONIG_DIR) && make clean
-	cd $(BDW_DIR) && make clean
-	cd $(YOG_DIR) && make clean
+	for subdir in $(SUBDIRS); do \
+		(cd $${subdir}; make clean); \
+	done
+
+distclean: 
+	for subdir in $(SUBDIRS); do \
+		(cd $${subdir}; make distclean); \
+	done
+
+maintainer-clean: 
+	for subdir in $(SUBDIRS); do \
+		(cd $${subdir}; make maintainer-clean); \
+	done
+
+mostlyclean: 
+	for subdir in $(SUBDIRS); do \
+		(cd $${subdir}; make mostlyclean); \
+	done
 
 proto: 
 	python tools/update_prototype.py
