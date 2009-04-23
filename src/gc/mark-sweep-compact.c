@@ -163,6 +163,7 @@ static void
 white_page(void* ptr) 
 {
     YogMarkSweepCompactPage* page = ptr2page(ptr);
+    DEBUG(DPRINTF("white page: %p-%p", page, (unsigned char*)page + PAGE_SIZE));
     unsigned int flag_index = 0;
     unsigned int bit_index = 0;
     get_index_of_page_table(page, &flag_index, &bit_index);
@@ -173,6 +174,7 @@ void
 YogMarkSweepCompact_grey_page(void* ptr) 
 {
     YogMarkSweepCompactPage* page = ptr2page(ptr);
+    DEBUG(DPRINTF("grey page: %p-%p", page, (unsigned char*)page + PAGE_SIZE));
     unsigned int flag_index = 0;
     unsigned int bit_index = 0;
     get_index_of_page_table(page, &flag_index, &bit_index);
@@ -833,6 +835,7 @@ YogMarkSweepCompact_iterate_grey_pages(YogEnv* env, YogMarkSweepCompact* msc)
             if ((flags & (1 << bit_index)) != 0) {
                 unsigned char* first_page = (unsigned char*)chunk->first_page;
                 unsigned char* page_begin = first_page + PAGE_SIZE * i;
+                DPRINTF("page %p-%p is grey", page_begin, page_begin + PAGE_SIZE);
                 DEBUG(DPRINTF("page %p-%p is grey", page_begin, page_begin + PAGE_SIZE));
                 YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)page_begin;
                 size_t obj_size = page->obj_size;
@@ -855,7 +858,7 @@ YogMarkSweepCompact_iterate_grey_pages(YogEnv* env, YogMarkSweepCompact* msc)
                     }
                 }
                 if (!msc->has_young_ref) {
-                    chunk->grey_page_flags[flags_index] &= ~(1 << bit_index);
+                    white_page(page);
                     protect_page(page_begin, PROT_READ);
                 }
             }
