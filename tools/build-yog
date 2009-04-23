@@ -1,5 +1,6 @@
 #!/bin/sh
 
+make="/usr/bin/make"
 mkdir="/bin/mkdir"
 rm="/bin/rm"
 
@@ -11,7 +12,7 @@ name="yog"
 cd "${tmpdir}"
 hg clone "${url}" "${name}"
 cd "${tmpdir}/${name}"
-./configure && make
+./configure && ${make}
 
 ${rm} -rf "${tmpdir}"
 
