@@ -154,7 +154,6 @@ void YogThread_finalize(YogEnv*, YogThread*);
 void YogThread_initialize(YogEnv*, YogVal);
 void YogThread_keep_children(YogEnv*, void*, ObjectKeeper);
 YogVal YogThread_new(YogEnv*);
-void YogThread_shrink_ref_tbl(YogEnv*, YogThread*);
 
 /* PROTOTYPE_END */
 
