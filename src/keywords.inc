@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: gperf ../src/keywords  */
+/* Command-line: gperf keywords  */
 /* Computed positions: -k'1,3' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -29,13 +29,13 @@
 #error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
 #endif
 
-#line 1 "../src/keywords"
+#line 1 "keywords"
 
 #include <string.h>
 #include "parser.h"
 
 typedef struct KeywordTableEntry KeywordTableEntry;
-#line 10 "../src/keywords"
+#line 10 "keywords"
 struct KeywordTableEntry { const char* name; unsigned int type; };
 
 #define TOTAL_KEYWORDS 19
@@ -111,46 +111,46 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
   static const struct KeywordTableEntry wordlist[] =
     {
       {""}, {""},
-#line 18 "../src/keywords"
+#line 18 "keywords"
       {"do", TK_DO},
-#line 17 "../src/keywords"
+#line 17 "keywords"
       {"def", TK_DEF},
-#line 26 "../src/keywords"
+#line 26 "keywords"
       {"next", TK_NEXT},
-#line 23 "../src/keywords"
+#line 23 "keywords"
       {"false", TK_FALSE},
       {""},
-#line 24 "../src/keywords"
+#line 24 "keywords"
       {"finally", TK_FINALLY},
-#line 27 "../src/keywords"
+#line 27 "keywords"
       {"nonlocal", TK_NONLOCAL},
       {""}, {""}, {""},
-#line 25 "../src/keywords"
+#line 25 "keywords"
       {"if", TK_IF},
-#line 21 "../src/keywords"
+#line 21 "keywords"
       {"end", TK_END},
-#line 29 "../src/keywords"
+#line 29 "keywords"
       {"true", TK_TRUE},
-#line 31 "../src/keywords"
+#line 31 "keywords"
       {"while", TK_WHILE},
-#line 22 "../src/keywords"
+#line 22 "keywords"
       {"except", TK_EXCEPT},
-#line 14 "../src/keywords"
+#line 14 "keywords"
       {"as", TK_AS},
-#line 30 "../src/keywords"
+#line 30 "keywords"
       {"try", TK_TRY},
-#line 20 "../src/keywords"
+#line 20 "keywords"
       {"else", TK_ELSE},
-#line 16 "../src/keywords"
+#line 16 "keywords"
       {"class", TK_CLASS},
-#line 28 "../src/keywords"
+#line 28 "keywords"
       {"return", TK_RETURN},
       {""},
-#line 13 "../src/keywords"
+#line 13 "keywords"
       {"__LINE__", TK_LINE },
-#line 19 "../src/keywords"
+#line 19 "keywords"
       {"elif", TK_ELIF},
-#line 15 "../src/keywords"
+#line 15 "keywords"
       {"break", TK_BREAK}
     };
 
@@ -168,7 +168,7 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
     }
   return 0;
 }
-#line 32 "../src/keywords"
+#line 32 "keywords"
 
 /**
  * vim: filetype=c

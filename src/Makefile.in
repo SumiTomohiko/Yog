@@ -374,27 +374,27 @@ COMMON_SOURCES = arg.c \
 	value.c \
 	vm.c
 
-COMMON_CFLAGS = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
-COMMON_LDFLAGS = $(ONIG_DIR)/.libs/libonig.a
+CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
+LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
-yog_copying_CFLAGS = $(COMMON_CFLAGS) -DGC_COPYING
-yog_copying_LDFLAGS = $(COMMON_LDFLAGS)
+yog_copying_CFLAGS = $(CFLAGS_COMMON) -DGC_COPYING
+yog_copying_LDFLAGS = $(LDFLAGS_COMMON)
 yog_mark_sweep_SOURCES = $(COMMON_SOURCES) gc/mark-sweep.c
-yog_mark_sweep_CFLAGS = $(COMMON_CFLAGS) -DGC_MARK_SWEEP
-yog_mark_sweep_LDFLAGS = $(COMMON_LDFLAGS)
+yog_mark_sweep_CFLAGS = $(CFLAGS_COMMON) -DGC_MARK_SWEEP
+yog_mark_sweep_LDFLAGS = $(LDFLAGS_COMMON)
 yog_mark_sweep_compact_SOURCES = $(COMMON_SOURCES) gc/mark-sweep-compact.c
-yog_mark_sweep_compact_CFLAGS = $(COMMON_CFLAGS) -DGC_MARK_SWEEP_COMPACT
-yog_mark_sweep_compact_LDFLAGS = $(COMMON_LDFLAGS)
+yog_mark_sweep_compact_CFLAGS = $(CFLAGS_COMMON) -DGC_MARK_SWEEP_COMPACT
+yog_mark_sweep_compact_LDFLAGS = $(LDFLAGS_COMMON)
 yog_bdw_SOURCES = $(COMMON_SOURCES) gc/bdw.c
-yog_bdw_CFLAGS = $(COMMON_CFLAGS) -DGC_BDW
-yog_bdw_LDFLAGS = $(COMMON_LDFLAGS) $(BDWGC_DIR)/.libs/libgc.a -lpthread
+yog_bdw_CFLAGS = $(CFLAGS_COMMON) -DGC_BDW
+yog_bdw_LDFLAGS = $(LDFLAGS_COMMON) $(BDWGC_DIR)/.libs/libgc.a -lpthread
 yog_generational_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
 			   gc/mark-sweep-compact.c
 
-yog_generational_CFLAGS = $(COMMON_CFLAGS) -DGC_GENERATIONAL \
+yog_generational_CFLAGS = $(CFLAGS_COMMON) -DGC_GENERATIONAL \
 			  -I$(SIGSEGV_DIR)/src
 
-yog_generational_LDFLAGS = $(COMMON_LDFLAGS) \
+yog_generational_LDFLAGS = $(LDFLAGS_COMMON) \
 			   $(SIGSEGV_DIR)/src/.libs/libsigsegv.a
 
 INSTS_DEF = insts.def
@@ -3211,8 +3211,8 @@ insts:
 am:
 	$(GEN_AM_CMD)
 
-parser.c: parser.y parser.lt $(LEMON)
-	(cd $(LEMON_DIR); make)
+parser.h parser.c: parser.y parser.lt $(LEMON)
+	(cd $(LEMON_DIR); $(MAKE))
 	$(LEMON) parser.y
 
 keywords.inc: keywords
