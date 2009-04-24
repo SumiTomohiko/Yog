@@ -1,5 +1,6 @@
 #!/bin/sh
 
+hg="${HOME}/bin/hg"
 make="/usr/bin/make"
 mkdir="/bin/mkdir"
 rm="/bin/rm"
@@ -10,7 +11,7 @@ ${mkdir} -p "${tmpdir}"
 url="http://bitbucket.org/SumiTomohiko/yog"
 name="yog"
 cd "${tmpdir}"
-hg clone "${url}" "${name}"
+${hg} clone "${url}" "${name}"
 cd "${tmpdir}/${name}"
 ./configure && ${make}
 
