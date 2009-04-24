@@ -692,8 +692,10 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
             page->chunk = chunk;
 
 #if defined(GC_GENERATIONAL)
-            if (protect_page(page, PROT_READ) != 0) {
-                ERROR(ERR_MSC_MPROTECT);
+            if (!msc->in_gc) {
+                if (protect_page(page, PROT_READ) != 0) {
+                    ERROR(ERR_MSC_MPROTECT);
+                }
             }
 #endif
         }
@@ -932,7 +934,7 @@ YogMarkSweepCompact_unprotect_all_pages(YogEnv* env, YogMarkSweepCompact* msc)
     YogMarkSweepCompactChunk* chunk = msc->all_chunks;
     while (chunk != NULL) {
         int prot = PROT_READ | PROT_WRITE;
-        if (mprotect(chunk->first_page, PAGE_SIZE, prot) != 0) {
+        if (mprotect(chunk->first_page, msc->chunk_size, prot) != 0) {
             YOG_BUG(env, "mprotect failed");
         }
         chunk = chunk->all_chunks_next;

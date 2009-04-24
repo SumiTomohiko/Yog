@@ -131,7 +131,7 @@ initialize_young_updated(YogEnv* env, YogGenerational* generational)
 void 
 YogGenerational_major_gc(YogEnv* env, YogGenerational* generational) 
 {
-    DEBUG(DPRINTF("major GC"));
+    DEBUG(DPRINTF("major GC..."));
     YogMarkSweepCompact* msc = &generational->msc;
     msc->in_gc = TRUE;
     YogMarkSweepCompact_unprotect_all_pages(env, msc);
@@ -144,6 +144,7 @@ YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
     initialize_young_updated(env, generational);
     YogMarkSweepCompact_protect_white_pages(env, msc);
     msc->in_gc = FALSE;
+    DEBUG(DPRINTF("major GC done"));
 }
 
 static void* 
