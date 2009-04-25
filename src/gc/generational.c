@@ -172,7 +172,6 @@ YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational)
     YogMarkSweepCompact_trace_grey_children(env, msc);
     YogCopying_do_gc(env, &generational->copying, minor_gc_keep_object);
 
-    YogMarkSweepCompact_protect_white_pages(env, msc);
     msc->in_gc = FALSE;
     DEBUG(DPRINTF("minor GC done."));
 }
