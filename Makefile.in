@@ -9,24 +9,24 @@ CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 			 configure.lineno config.status.lineno
 
 all: 
-	for subdir in $(SUBDIRS); do \
+	@for subdir in $(SUBDIRS); do \
 		(cd $${subdir}; $(MAKE)); \
 	done
 
 clean: 
-	for subdir in $(SUBDIRS); do \
+	@for subdir in $(SUBDIRS); do \
 		(cd $${subdir}; $(MAKE) clean); \
 	done
 
 distclean: 
-	for subdir in $(SUBDIRS); do \
+	@for subdir in $(SUBDIRS); do \
 		(cd $${subdir}; $(MAKE) distclean); \
 	done
 	rm -f $(CONFIG_DISTCLEAN_FILES)
 	rm -f Makefile
 
 maintainer-clean: 
-	for subdir in $(SUBDIRS); do \
+	@for subdir in $(SUBDIRS); do \
 		(cd $${subdir}; $(MAKE) maintainer-clean); \
 	done
 	rm -f $(CONFIG_DISTCLEAN_FILES)
@@ -39,11 +39,11 @@ proto:
 TEST_CMD = py.test
 
 test: 
-	make test-copying
-	make test-mark-sweep
-	make test-mark-sweep-compact
-	make test-bdw
-	make test-generational
+	$(MAKE) test-copying
+	$(MAKE) test-mark-sweep
+	$(MAKE) test-mark-sweep-compact
+	$(MAKE) test-bdw
+	$(MAKE) test-generational
 test-copying: 
 	GC=copying $(TEST_CMD)
 test-mark-sweep: 
