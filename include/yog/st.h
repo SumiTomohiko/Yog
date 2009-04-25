@@ -65,6 +65,7 @@ BOOL YogTable_lookup_str(YogEnv*, YogVal, const char*, YogVal*);
 YogVal YogTable_new_string_table(YogEnv*);
 YogVal YogTable_new_symbol_table(YogEnv*);
 YogVal YogTable_new_val_table(YogEnv*);
+void YogTable_raw_dump(YogEnv*, YogVal);
 int YogTable_size(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */

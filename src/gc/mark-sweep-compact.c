@@ -85,7 +85,7 @@ typedef struct Compactor Compactor;
 typedef void (*Callback)(struct YogMarkSweepCompact*, struct Compactor*, struct YogMarkSweepCompactHeader*);
 
 typedef void (*IteratePagesCallback)(YogEnv*, YogMarkSweepCompact*, YogMarkSweepCompactChunk*, unsigned int, YogMarkSweepCompactPage*); 
-typedef BOOL (*PageSelector)(YogMarkSweepCompactChunk*, unsigned int); 
+typedef BOOL (*PageSelector)(YogMarkSweepCompactChunk*, unsigned int, YogMarkSweepCompactPage*); 
 
 void 
 YogMarkSweepCompact_unmark_all(YogEnv* env, YogMarkSweepCompact* msc) 
@@ -831,7 +831,7 @@ iterate_pages(YogEnv* env, YogMarkSweepCompact* msc, PageSelector selector, Iter
             unsigned char* first_page = (unsigned char*)chunk->first_page;
             unsigned char* page_begin = first_page + PAGE_SIZE * i;
             YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)page_begin;
-            if ((*selector)(chunk, i)) {
+            if ((*selector)(chunk, i, page)) {
                 (*callback)(env, msc, chunk, i, page);
             }
         }
@@ -841,7 +841,7 @@ iterate_pages(YogEnv* env, YogMarkSweepCompact* msc, PageSelector selector, Iter
 }
 
 static BOOL
-is_grey_page(YogMarkSweepCompactChunk* chunk, unsigned int page_index) 
+is_grey_page(YogMarkSweepCompactChunk* chunk, unsigned int page_index, YogMarkSweepCompactPage* page) 
 {
     unsigned int flags_index = page_index / BITS_PER_BYTE;
     unsigned int bit_index = page_index % BITS_PER_BYTE;
@@ -856,9 +856,9 @@ is_grey_page(YogMarkSweepCompactChunk* chunk, unsigned int page_index)
 }
 
 static BOOL
-is_white_page(YogMarkSweepCompactChunk* chunk, unsigned int page_index) 
+is_white_page(YogMarkSweepCompactChunk* chunk, unsigned int page_index, YogMarkSweepCompactPage* page) 
 {
-    return is_grey_page(chunk, page_index);
+    return IS_PAGE_USED(page) && !is_grey_page(chunk, page_index, page);
 }
 
 static void 
