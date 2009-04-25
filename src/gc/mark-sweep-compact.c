@@ -820,81 +820,76 @@ minor_gc_keep_object(YogEnv* env, void* ptr)
     return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object);
 }
 
-static void 
-iterate_pages(YogEnv* env, YogMarkSweepCompact* msc, PageSelector selector, IteratePagesCallback callback) 
-{
-    YogMarkSweepCompactChunk* chunk = msc->all_chunks;
-    while (chunk != NULL) {
-        unsigned int page_num = msc->chunk_size / PAGE_SIZE;
-        unsigned int i;
-        for (i = 0; i < page_num; i++) {
-            unsigned char* first_page = (unsigned char*)chunk->first_page;
-            unsigned char* page_begin = first_page + PAGE_SIZE * i;
-            YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)page_begin;
-            if ((*selector)(chunk, i, page)) {
-                (*callback)(env, msc, chunk, i, page);
-            }
-        }
+#define ITERATE_PAGES(env, msc, test_page, proc)    do { \
+    YogMarkSweepCompactChunk* chunk = msc->all_chunks; \
+    while (chunk != NULL) { \
+        unsigned int page_num = msc->chunk_size / PAGE_SIZE; \
+        unsigned int i; \
+        for (i = 0; i < page_num; i++) { \
+            unsigned char* first_page = (unsigned char*)chunk->first_page; \
+            unsigned char* page_begin = first_page + PAGE_SIZE * i; \
+            YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)page_begin; \
+            if (test_page(chunk, i, page)) { \
+                proc(env, msc, chunk, i, page); \
+            } \
+        } \
+\
+        chunk = chunk->all_chunks_next; \
+    } \
+} while (0)
 
-        chunk = chunk->all_chunks_next;
-    }
-}
+#define FLAGS(chunk, page_index) \
+    (chunk)->grey_page_flags[(page_index) / BITS_PER_BYTE]
+#define BIT_POS(page_index) ((page_index) % BITS_PER_BYTE)
+#define IS_GREY_PAGE(chunk, page_index, page) \
+    ((FLAGS((chunk), (page_index)) & (1 << BIT_POS((page_index)))) != 0)
 
-static BOOL
-is_grey_page(YogMarkSweepCompactChunk* chunk, unsigned int page_index, YogMarkSweepCompactPage* page) 
-{
-    unsigned int flags_index = page_index / BITS_PER_BYTE;
-    unsigned int bit_index = page_index % BITS_PER_BYTE;
-    unsigned int flags = chunk->grey_page_flags[flags_index];
-
-    if ((flags & (1 << bit_index)) != 0) {
-        return TRUE;
-    }
-    else {
-        return FALSE;
-    }
-}
-
-static BOOL
-is_white_page(YogMarkSweepCompactChunk* chunk, unsigned int page_index, YogMarkSweepCompactPage* page) 
-{
-    return IS_PAGE_USED(page) && !is_grey_page(chunk, page_index, page);
-}
-
-static void 
-trace_grey_objects(YogEnv* env , YogMarkSweepCompact* msc, YogMarkSweepCompactChunk* chunk, unsigned int page_index, YogMarkSweepCompactPage* page) 
-{
-    size_t obj_size = page->obj_size;
-    unsigned int obj_num = object_number_of_page(obj_size);
-    unsigned int j;
-    msc->has_young_ref = FALSE;
-    for (j = 0; j < obj_num; j++) {
-        unsigned char* obj = (unsigned char*)page + sizeof(YogMarkSweepCompactPage) + obj_size * j;
-        YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)obj;
-        if (IS_OBJ_USED(header)) {
-            ChildrenKeeper keeper = header->keeper;
-            if (keeper != NULL) {
-                (*keeper)(env, header + 1, minor_gc_keep_object);
-            }
-        }
-    }
-    if (!msc->has_young_ref) {
-        white_page(page);
-        protect_page(page, PROT_READ);
-    }
-}
-
-static void 
-iterate_grey_pages(YogEnv* env, YogMarkSweepCompact* msc, IteratePagesCallback callback) 
-{
-    iterate_pages(env, msc, is_grey_page, callback);
-}
+#define TRACE_GREY_OBJECTS(env, msc, chunk, page_index, page)   do { \
+    size_t obj_size = page->obj_size; \
+    unsigned int obj_num = object_number_of_page(obj_size); \
+    unsigned int j; \
+    msc->has_young_ref = FALSE; \
+    for (j = 0; j < obj_num; j++) { \
+        unsigned char* obj = (unsigned char*)page + sizeof(YogMarkSweepCompactPage) + obj_size * j; \
+        YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)obj; \
+        if (IS_OBJ_USED(header)) { \
+            ChildrenKeeper keeper = header->keeper; \
+            if (keeper != NULL) { \
+                (*keeper)(env, header + 1, minor_gc_keep_object); \
+            } \
+        } \
+    } \
+    if (!msc->has_young_ref) { \
+        white_page(page); \
+        protect_page(page, PROT_READ); \
+    } \
+} while (0)
 
 void 
 YogMarkSweepCompact_trace_grey_children(YogEnv* env, YogMarkSweepCompact* msc) 
 {
-    iterate_grey_pages(env, msc, trace_grey_objects);
+    ITERATE_PAGES(env, msc, IS_GREY_PAGE, TRACE_GREY_OBJECTS);
 }
+
+#undef TRACE_GREY_OBJECTS
+
+#define IS_WHITE_PAGE(chunk, page_index, page) \
+    (IS_PAGE_USED((page)) && !IS_GREY_PAGE((chunk), (page_index), (page)))
+#define PROTECT_WHITE_PAGE(env, msc, chunk, page_index, page)   do { \
+    protect_page(page, PROT_READ); \
+} while (0)
+
+void 
+YogMarkSweepCompact_protect_white_pages(YogEnv* env, YogMarkSweepCompact* msc) 
+{
+    ITERATE_PAGES(env, msc, IS_WHITE_PAGE, PROTECT_WHITE_PAGE);
+}
+
+#undef PROTECT_WHITE_PAGE
+#undef IS_WHITE_PAGE
+#undef IS_GREY_PAGE
+#undef BIT_POS
+#undef FLAGS
 
 static int
 sigsegv_handler(void* fault_address, int serious) 
@@ -939,24 +934,6 @@ YogMarkSweepCompact_unprotect_all_pages(YogEnv* env, YogMarkSweepCompact* msc)
         }
         chunk = chunk->all_chunks_next;
     }
-}
-
-static void 
-protect_white_page(YogEnv* env, YogMarkSweepCompact* msc, YogMarkSweepCompactChunk* chunk, unsigned int page_index, YogMarkSweepCompactPage* page) 
-{
-    protect_page(page, PROT_READ);
-}
-
-static void 
-iterate_white_pages(YogEnv* env, YogMarkSweepCompact* msc, IteratePagesCallback callback) 
-{
-    iterate_pages(env, msc, is_white_page, callback);
-}
-
-void 
-YogMarkSweepCompact_protect_white_pages(YogEnv* env, YogMarkSweepCompact* msc) 
-{
-    iterate_white_pages(env, msc, protect_white_page);
 }
 #endif
 
