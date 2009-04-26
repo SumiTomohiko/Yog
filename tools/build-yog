@@ -11,7 +11,7 @@ ${mkdir} -p "${tmpdir}"
 url="http://bitbucket.org/SumiTomohiko/yog"
 name="yog"
 cd "${tmpdir}"
-${hg} clone "${url}" "${name}"
+PYTHONPATH="${HOME}/lib/python" ${hg} clone "${url}" "${name}"
 cd "${tmpdir}/${name}"
 ./configure && ${make}
 
