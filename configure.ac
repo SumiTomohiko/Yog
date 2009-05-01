@@ -74,12 +74,12 @@ case "${host}" in
 *)
     AC_CONFIG_SUBDIRS([bdwgc])
     DIRS="bdwgc"
-    TEST_TARGETS="test-bdwgc"
+    TEST_TARGETS="test-bdw"
     BIN_PROGRAMS="yog-bdw"
     ;;
 esac
 DIRS="${DIRS} onig sigsegv src"
-TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-comact test-generational"
+TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
 BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact yog-generational"
 
 AC_SUBST(DIRS)
