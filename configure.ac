@@ -63,8 +63,30 @@ if test "${with_cunit}" = "yes"; then
                      tests/mark-sweep-compact/Makefile
                      tests/generational/Makefile])
 fi
-AC_CONFIG_SUBDIRS([bdwgc
-                   onig
+
+AC_CANONICAL_HOST
+case "${host}" in
+*-*-openbsd*)
+    DIRS=""
+    TEST_TARGETS=""
+    BIN_PROGRAMS=""
+    ;;
+*)
+    AC_CONFIG_SUBDIRS([bdwgc])
+    DIRS="bdwgc"
+    TEST_TARGETS="test-bdwgc"
+    BIN_PROGRAMS="yog-bdw"
+    ;;
+esac
+DIRS="${DIRS} onig sigsegv src"
+TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-comact test-generational"
+BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact yog-generational"
+
+AC_SUBST(DIRS)
+AC_SUBST(TEST_TARGETS)
+AC_SUBST(BIN_PROGRAMS)
+
+AC_CONFIG_SUBDIRS([onig
                    sigsegv])
 AC_OUTPUT
 

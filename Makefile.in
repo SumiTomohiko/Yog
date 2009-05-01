@@ -1,32 +1,28 @@
 
-ONIG_DIR = onig
-BDW_DIR = bdwgc
-SIGSEGV_DIR = sigsegv
-YOG_DIR = src
-SUBDIRS = $(ONIG_DIR) $(BDW_DIR) $(SIGSEGV_DIR) $(YOG_DIR)
+DIRS = @DIRS@
 
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 			 configure.lineno config.status.lineno
 
 all: 
-	@for subdir in $(SUBDIRS); do \
+	@for subdir in $(DIRS); do \
 		(cd $${subdir}; $(MAKE)); \
 	done
 
 clean: 
-	@for subdir in $(SUBDIRS); do \
+	@for subdir in $(DIRS); do \
 		(cd $${subdir}; $(MAKE) clean); \
 	done
 
 distclean: 
-	@for subdir in $(SUBDIRS); do \
+	@for subdir in $(DIRS); do \
 		(cd $${subdir}; $(MAKE) distclean); \
 	done
 	rm -f $(CONFIG_DISTCLEAN_FILES)
 	rm -f Makefile
 
 maintainer-clean: 
-	@for subdir in $(SUBDIRS); do \
+	@for subdir in $(DIRS); do \
 		(cd $${subdir}; $(MAKE) maintainer-clean); \
 	done
 	rm -f $(CONFIG_DISTCLEAN_FILES)
@@ -37,13 +33,12 @@ proto:
 	python tools/update_prototype.py
 
 TEST_CMD = py.test
+TEST_TARGETS = @TEST_TARGETS@
 
 test: 
-	$(MAKE) test-copying
-	$(MAKE) test-mark-sweep
-	$(MAKE) test-mark-sweep-compact
-	$(MAKE) test-bdw
-	$(MAKE) test-generational
+	@for target in $(TEST_TARGETS); do \
+		$(MAKE) $${target}; \
+	done
 test-copying: 
 	GC=copying $(TEST_CMD)
 test-mark-sweep: 

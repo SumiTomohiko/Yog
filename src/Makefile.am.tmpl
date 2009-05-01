@@ -13,11 +13,9 @@ COMMON_SOURCES = @SOURCES@
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
 LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a
 
-bin_PROGRAMS = yog-copying \
-	       yog-mark-sweep \
-	       yog-mark-sweep-compact \
-	       yog-bdw \
-	       yog-generational
+EXTRA_PROGRAMS = yog-bdw yog-copying yog-mark-sweep yog-mark-swee-compact \
+		 yog-mark-sweep-compact yog-generational
+bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
 yog_copying_CFLAGS = $(CFLAGS_COMMON) -DGC_COPYING
 yog_copying_LDFLAGS = $(LDFLAGS_COMMON)
