@@ -2,8 +2,8 @@
 #include "yog/arg.h"
 #include "yog/error.h"
 #include "yog/function.h"
+#include "yog/gc.h"
 #include "yog/thread.h"
-#include "yog/vm.h"
 #include "yog/yog.h"
 
 static void 

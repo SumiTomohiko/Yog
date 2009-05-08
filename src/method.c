@@ -1,8 +1,8 @@
 #include "yog/env.h"
+#include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/method.h"
 #include "yog/thread.h"
-#include "yog/vm.h"
 #include "yog/yog.h"
 
 #define KEEP_BASIC_OBJ  YogBasicObj_keep_children(env, ptr, keeper)

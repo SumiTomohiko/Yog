@@ -155,21 +155,6 @@ GcObjectStat_initialize(GcObjectStat* stat)
 }
 #endif
 
-YogVal 
-YogVm_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
-{
-    vm->gc_stat.num_alloc++;
-
-    void* ptr = (*vm->alloc_mem)(env, vm, keeper, finalizer, size);
-
-    if (ptr != NULL) {
-        return PTR2VAL(ptr);
-    }
-    else {
-        return YNIL;
-    }
-}
-
 static void 
 setup_builtins(YogEnv* env, YogVm* vm) 
 {

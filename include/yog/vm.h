@@ -82,7 +82,6 @@ typedef struct YogVm YogVm;
  */
 
 /* src/vm.c */
-YogVal YogVm_alloc(YogEnv*, YogVm*, ChildrenKeeper, Finalizer, size_t);
 void YogVm_boot(YogEnv*, YogVm*);
 void YogVm_config_copying(YogEnv*, YogVm*, unsigned int);
 void YogVm_config_generational(YogEnv*, YogVm*, size_t, size_t, size_t, unsigned int);
@@ -98,15 +97,6 @@ void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
 /* PROTOTYPE_END */
 
 #include "yog/env.h"
-
-#define ALLOC_OBJ_SIZE(env, keep_children, finalizer, size) \
-    YogVm_alloc(env, env->vm, keep_children, finalizer, size)
-#define ALLOC_OBJ(env, keep_children, finalizer, type) \
-    ALLOC_OBJ_SIZE(env, keep_children, finalizer, sizeof(type))
-#define ALLOC_OBJ_ITEM(env, keep_children, finalizer, type, size, item_type) \
-    ALLOC_OBJ_SIZE(env, keep_children, finalizer, sizeof(type) + size * sizeof(item_type))
-#define REALLOC_OBJ(env, ptr, size) \
-    YogVm_realloc(env, ENV_VM(env), ptr, size)
 
 #define INTERN(s)   YogVm_intern(env, env->vm, s)
 #define BUILTINS    "builtins"

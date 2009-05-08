@@ -1,8 +1,8 @@
 #include "yog/env.h"
 #include "yog/float.h"
+#include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/thread.h"
-#include "yog/vm.h"
 #include "yog/yog.h"
 
 static YogVal 

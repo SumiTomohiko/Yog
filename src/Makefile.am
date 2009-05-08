@@ -24,6 +24,7 @@ COMMON_SOURCES = arg.c \
 	float.c \
 	frame.c \
 	function.c \
+	gc.c \
 	inst.c \
 	int.c \
 	klass.c \

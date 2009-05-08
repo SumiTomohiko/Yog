@@ -4,10 +4,10 @@
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/frame.h"
+#include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/regexp.h"
 #include "yog/thread.h"
-#include "yog/vm.h"
 #include "yog/yog.h"
 
 static void 

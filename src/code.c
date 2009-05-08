@@ -4,10 +4,10 @@
 #include "yog/binary.h"
 #include "yog/code.h"
 #include "yog/error.h"
+#include "yog/gc.h"
 #include "yog/inst.h"
 #include "yog/opcodes.h"
 #include "yog/thread.h"
-#include "yog/vm.h"
 #include "yog/yog.h"
 
 #include "src/code.inc"

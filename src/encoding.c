@@ -2,8 +2,8 @@
 #include "yog/encoding.h"
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/gc.h"
 #include "yog/st.h"
-#include "yog/vm.h"
 #include "yog/yog.h"
 
 char* 

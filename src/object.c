@@ -1,9 +1,9 @@
 #include "yog/env.h"
+#include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/object.h"
 #include "yog/st.h"
 #include "yog/thread.h"
-#include "yog/vm.h"
 #include "yog/yog.h"
 
 YogVal 

@@ -1,11 +1,11 @@
 #include <stdarg.h>
 #include "yog/env.h"
 #include "yog/function.h"
+#include "yog/gc.h"
 #include "yog/method.h"
 #include "yog/package.h"
 #include "yog/st.h"
 #include "yog/thread.h"
-#include "yog/vm.h"
 #include "yog/yog.h"
 
 void 
