@@ -470,6 +470,8 @@ scan_var_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
         visit_node(env, visitor, left, data);
     }
 
+    visit_node(env, visitor, NODE(node)->u.assign.right, data);
+
     RETURN_VOID(env);
 }
 
