@@ -128,6 +128,7 @@ main(int argc, char* argv[])
     YogVal thread = PTR2VAL(&dummy_thread);
 #if defined(GC_BDW)
     GC_INIT();
+    YogThread_config_bdw(NULL, thread, gc_stress);
 #elif defined(GC_COPYING)
     YogThread_config_copying(NULL, thread, gc_stress, init_heap_size, &vm, YogVm_keep_children);
 #elif defined(GC_MARK_SWEEP)
@@ -151,8 +152,6 @@ main(int argc, char* argv[])
     YogThread_config_generational(NULL, thread, &threshold, init_heap_size, CHUNK_SIZE, threshold, TENURE, &vm, YogVm_keep_children);
 #   undef TENURE
 #   undef CHUNK_SIZE
-#elif defined(GC_BDW)
-    YogThread_config_bdw(env, thread, gc_stress);
 #endif
 
     vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
