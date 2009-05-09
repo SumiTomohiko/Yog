@@ -155,7 +155,7 @@ main(int argc, char* argv[])
     if (!YogMarkSweepCompact_install_sigsegv_handler(&env)) {
         ERROR("failed installing SIGSEGV handler");
     }
-    YogThread_config_generational(&env, dummy_thread, &threshold, init_heap_size, CHUNK_SIZE, threshold, TENURE, &vm, YogVm_keep_children);
+    YogThread_config_generational(&env, dummy_thread, threshold, init_heap_size, CHUNK_SIZE, threshold, TENURE, &vm, YogVm_keep_children);
 #   undef TENURE
 #   undef CHUNK_SIZE
 #endif
@@ -163,6 +163,7 @@ main(int argc, char* argv[])
     YogVal main_thread = YogThread_new(&env);
     memcpy(VAL2PTR(main_thread), VAL2PTR(dummy_thread), sizeof(YogThread));
     env.thread = main_thread;
+    vm.main_thread = main_thread;
 
     vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
 
