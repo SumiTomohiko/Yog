@@ -317,10 +317,13 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 }
 
 void 
-YogCopying_initialize(YogEnv* env, YogCopying* copying, BOOL stress, size_t heap_size, void* root, ChildrenKeeper root_keeper) 
+YogCopying_allocate_heap(YogEnv* env, YogCopying* copying) 
 {
-    copying->err = ERR_COPYING_NONE;
-    copying->stress = stress;
+    if (copying->active_heap) {
+        return;
+    }
+
+    size_t heap_size = copying->heap_size;
     copying->active_heap = YogCopyingHeap_new(copying, heap_size);
     copying->inactive_heap = YogCopyingHeap_new(copying, heap_size);
 #if defined(DEBUG)
@@ -333,6 +336,17 @@ YogCopying_initialize(YogEnv* env, YogCopying* copying, BOOL stress, size_t heap
     PRINT_HEAP("active heap", copying->active_heap);
     PRINT_HEAP("inactive heap", copying->inactive_heap);
 #undef PRINT_HEAP
+
+}
+
+void 
+YogCopying_initialize(YogEnv* env, YogCopying* copying, BOOL stress, size_t heap_size, void* root, ChildrenKeeper root_keeper) 
+{
+    copying->err = ERR_COPYING_NONE;
+    copying->stress = stress;
+    copying->heap_size = heap_size;
+    copying->active_heap = NULL;
+    copying->inactive_heap = NULL;
     copying->scanned = NULL;
     copying->unscanned = NULL;
     copying->root = root;

@@ -62,10 +62,6 @@ typedef struct YogVm YogVm;
 
 /* src/vm.c */
 void YogVm_boot(YogEnv*, YogVm*);
-void YogVm_config_copying(YogEnv*, YogVm*, unsigned int);
-void YogVm_config_generational(YogEnv*, YogVm*, size_t, size_t, size_t, unsigned int);
-void YogVm_config_mark_sweep(YogEnv*, YogVm*, size_t);
-void YogVm_config_mark_sweep_compact(YogEnv*, YogVm*, size_t, size_t);
 void YogVm_delete(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);

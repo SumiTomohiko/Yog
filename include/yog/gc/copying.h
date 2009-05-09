@@ -1,6 +1,10 @@
 #if !defined(__COPYING_H__)
 #define __COPYING_H__
 
+#if HAVE_SYS_TYPES_H
+#   include <sys/types.h>
+#endif
+
 /* TODO: commonize with yog/yog.h */
 #if !defined(__YOG_YOG_H__) && !defined(__YOG_GC_MARK_SWEEP_COMPACT_H__)
 typedef int BOOL;
@@ -45,6 +49,7 @@ typedef struct YogCopyingHeap YogCopyingHeap;
 struct YogCopying {
     unsigned int err;
     BOOL stress;
+    size_t heap_size;
     struct YogCopyingHeap* active_heap;
     struct YogCopyingHeap* inactive_heap;
     unsigned char* scanned;
@@ -63,6 +68,7 @@ typedef struct YogCopying YogCopying;
 
 /* src/gc/copying.c */
 void* YogCopying_alloc(YogEnv*, YogCopying*, ChildrenKeeper, Finalizer, size_t);
+void YogCopying_allocate_heap(YogEnv*, YogCopying*);
 void* YogCopying_copy(YogEnv*, YogCopying*, void*);
 void YogCopying_do_gc(YogEnv*, YogCopying*, ObjectKeeper);
 void YogCopying_finalize(YogEnv*, YogCopying*);
