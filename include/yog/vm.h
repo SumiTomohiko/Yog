@@ -1,6 +1,7 @@
 #if !defined(__YOG_VM_H__)
 #define __YOG_VM_H__
 
+#include <pthread.h>
 #if HAVE_SYS_TYPES_H
 #   include <sys/types.h>
 #endif
@@ -50,6 +51,13 @@ struct YogVm {
 
     YogVal main_thread;
     YogVal threads;
+
+    pthread_mutex_t global_interp_lock;
+    BOOL running_gc;
+    BOOL waiting_suspend;
+    unsigned int suspend_counter;
+    pthread_cond_t threads_suspend_cond;
+    pthread_cond_t gc_finish_cond;
 };
 
 typedef struct YogVm YogVm;

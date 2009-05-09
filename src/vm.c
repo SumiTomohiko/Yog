@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -337,6 +338,13 @@ YogVm_init(YogVm* vm)
 
     vm->main_thread = YUNDEF;
     vm->threads = YUNDEF;
+
+    pthread_mutex_init(&vm->global_interp_lock, NULL);
+    vm->running_gc = FALSE;
+    vm->waiting_suspend = FALSE;
+    vm->suspend_counter = 0;
+    pthread_cond_init(&vm->threads_suspend_cond, NULL);
+    pthread_cond_init(&vm->gc_finish_cond, NULL);
 }
 
 #if 0
