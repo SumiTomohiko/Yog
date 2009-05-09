@@ -32,17 +32,27 @@ wait_gc_finish(YogEnv* env)
     }
 }
 
+/**
+ * This function assumes that caller holds global interpreter lock.
+ */
+void 
+YogGC_suspend(YogEnv* env) 
+{
+    YogVm* vm = env->vm;
+    vm->suspend_counter--;
+    if (vm->suspend_counter == 0) {
+        wakeup_gc_thread(env);
+    }
+    wait_gc_finish(env);
+}
+
 YogVal 
 YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
 {
     YogVm* vm = env->vm;
     if (vm->waiting_suspend) {
         YogVm_aquire_global_interp_lock(env, vm);
-        vm->suspend_counter--;
-        if (vm->suspend_counter == 0) {
-            wakeup_gc_thread(env);
-        }
-        wait_gc_finish(env);
+        YogGC_suspend(env);
         YogVm_release_global_interp_lock(env, vm);
     }
 
@@ -73,6 +83,61 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
     else {
         return YNIL;
     }
+}
+
+static unsigned int 
+count_threads(YogEnv* env, YogVm* vm) 
+{
+    unsigned int n = 0;
+    YogVal thread = vm->threads;
+    while (IS_PTR(thread)) {
+        n++;
+        thread = PTR_AS(YogThread, thread)->next;
+    }
+
+    return n;
+}
+
+static void 
+wait_suspend(YogEnv* env) 
+{
+    YogVm* vm = env->vm;
+    while (vm->suspend_counter != 0) {
+        pthread_cond_wait(&vm->threads_suspend_cond, &vm->global_interp_lock);
+    }
+}
+
+static void 
+wakeup_suspend_threads(YogEnv* env) 
+{
+    YogVm* vm = env->vm;
+    pthread_cond_signal(&vm->gc_finish_cond);
+}
+
+static void 
+gc(YogEnv* env) 
+{
+    /* TODO */
+}
+
+void 
+YogGC_perform(YogEnv* env) 
+{
+    YogVm* vm = env->vm;
+    YogVm_aquire_global_interp_lock(env, vm);
+    if (vm->waiting_suspend) {
+        YogGC_suspend(env);
+    }
+    else {
+        vm->running_gc = TRUE;
+        vm->suspend_counter = count_threads(env, vm);
+        vm->waiting_suspend = TRUE;
+        wait_suspend(env);
+        gc(env);
+        vm->running_gc = FALSE;
+        wakeup_suspend_threads(env);
+    }
+    YogVm_release_global_interp_lock(env, vm);
 }
 
 /**

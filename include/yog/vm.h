@@ -69,6 +69,7 @@ typedef struct YogVm YogVm;
  */
 
 /* src/vm.c */
+void YogVm_add_thread(YogEnv*, YogVm*, YogVal);
 void YogVm_aquire_global_interp_lock(YogEnv*, YogVm*);
 void YogVm_boot(YogEnv*, YogVm*);
 void YogVm_delete(YogEnv*, YogVm*);

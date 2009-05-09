@@ -415,6 +415,21 @@ YogVm_release_global_interp_lock(YogEnv* env, YogVm* vm)
     pthread_mutex_unlock(&vm->global_interp_lock);
 }
 
+void 
+YogVm_add_thread(YogEnv* env, YogVm* vm, YogVal thread) 
+{
+    YogVm_aquire_global_interp_lock(env, vm);
+    if (vm->waiting_suspend) {
+        YogGC_suspend(env);
+    }
+
+    PTR_AS(YogThread, vm->threads)->prev = thread;
+    PTR_AS(YogThread, thread)->next = vm->threads;
+    vm->threads = thread;
+
+    YogVm_release_global_interp_lock(env, vm);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

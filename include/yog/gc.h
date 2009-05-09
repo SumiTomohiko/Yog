@@ -19,6 +19,8 @@
 
 /* src/gc.c */
 YogVal YogGC_allocate(YogEnv*, ChildrenKeeper, Finalizer, size_t);
+void YogGC_perform(YogEnv*);
+void YogGC_suspend(YogEnv*);
 
 /* PROTOTYPE_END */
 
