@@ -403,6 +403,18 @@ YogVm_delete(YogEnv* env, YogVm* vm)
 #endif
 }
 
+void 
+YogVm_aquire_global_interp_lock(YogEnv* env, YogVm* vm)
+{
+    pthread_mutex_lock(&vm->global_interp_lock);
+}
+
+void 
+YogVm_release_global_interp_lock(YogEnv* env, YogVm* vm) 
+{
+    pthread_mutex_unlock(&vm->global_interp_lock);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

@@ -69,6 +69,7 @@ typedef struct YogVm YogVm;
  */
 
 /* src/vm.c */
+void YogVm_aquire_global_interp_lock(YogEnv*, YogVm*);
 void YogVm_boot(YogEnv*, YogVm*);
 void YogVm_delete(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
@@ -77,6 +78,7 @@ void YogVm_init(YogVm*);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
 void YogVm_keep_children(YogEnv*, void*, ObjectKeeper);
 void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
+void YogVm_release_global_interp_lock(YogEnv*, YogVm*);
 
 /* PROTOTYPE_END */
 

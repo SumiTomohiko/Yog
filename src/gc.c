@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <sys/types.h>
 #include "yog/env.h"
 #if defined(GC_COPYING)
@@ -12,11 +13,39 @@
 #   include "yog/gc/bdw.h"
 #endif
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
+
+static void 
+wakeup_gc_thread(YogEnv* env) 
+{
+    YogVm* vm = env->vm;
+    pthread_cond_signal(&vm->threads_suspend_cond);
+}
+
+static void 
+wait_gc_finish(YogEnv* env) 
+{
+    YogVm* vm = env->vm;
+    while (vm->running_gc) {
+        pthread_cond_wait(&vm->gc_finish_cond, &vm->global_interp_lock);
+    }
+}
 
 YogVal 
 YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
 {
+    YogVm* vm = env->vm;
+    if (vm->waiting_suspend) {
+        YogVm_aquire_global_interp_lock(env, vm);
+        vm->suspend_counter--;
+        if (vm->suspend_counter == 0) {
+            wakeup_gc_thread(env);
+        }
+        wait_gc_finish(env);
+        YogVm_release_global_interp_lock(env, vm);
+    }
+
     YogVal thread = env->thread;
 #if defined(GC_COPYING)
 #   define GC       &PTR_AS(YogThread, thread)->copying
