@@ -7,6 +7,7 @@
 #   include <CUnit/CUnit.h>
 #endif
 #include "yog/env.h"
+#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 #include "yog/gc/copying.h"
@@ -121,7 +122,7 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
 static void* 
 keep_object(YogEnv* env, void* ptr) 
 {
-    YogCopying* copying = &env->vm->gc.copying;
+    YogCopying* copying = &PTR_AS(YogThread, env->thread)->copying;
     return YogCopying_copy(env, copying, ptr);
 }
 #endif
@@ -274,7 +275,7 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 #if defined(GC_COPYING)
         YogCopying_gc(env, copying);
 #elif defined(GC_GENERATIONAL)
-        YogGenerational* gen = &env->vm->gc.generational;
+        YogGenerational* gen = &PTR_AS(YogThread, env->thread)->generational;
         YogGenerational_minor_gc(env, gen);
         if (copying->stress) {
             YogGenerational_oldify_all(env, gen);

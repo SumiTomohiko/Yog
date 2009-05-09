@@ -36,7 +36,8 @@ typedef struct YogCFrame YogCFrame;
 #include "yog/thread.h"
 
 #define C_FRAME(frame)      ((YogCFrame*)(frame))
-#define CUR_C_FRAME(env)    PTR_AS(YogCFrame, (env)->thread->cur_frame)
+#define CUR_C_FRAME(env) \
+    PTR_AS(YogCFrame, PTR_AS(YogThread, (env)->thread)->cur_frame)
 #define SELF(env)           (CUR_C_FRAME(env)->self)
 #define ARG(env, i)         (PTR_AS(YogValArray, CUR_C_FRAME(env)->args)->items[i])
 

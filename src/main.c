@@ -123,45 +123,47 @@ main(int argc, char* argv[])
 } while (0)
     YogVm vm;
     YogVm_init(&vm);
-    vm.gc_stress = gc_stress ? TRUE : FALSE;
-    vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
 
-    YogEnv env;
-    env.vm = &vm;
-    env.thread = NULL;
+    YogThread dummy_thread;
+    YogVal thread = PTR2VAL(&dummy_thread);
 #if defined(GC_BDW)
     GC_INIT();
 #elif defined(GC_COPYING)
-    YogVm_config_copying(&env, env.vm, init_heap_size);
+    YogThread_config_copying(NULL, thread, gc_stress, init_heap_size, &vm, YogVm_keep_children);
 #elif defined(GC_MARK_SWEEP)
     if (gc_stress) {
         threshold = 0;
     }
-    YogVm_config_mark_sweep(&env, env.vm, threshold);
+    YogThread_config_mark_sweep(NULL, thread, threshold, &vm, YogVm_keep_children);
 #elif defined(GC_MARK_SWEEP_COMPACT)
     if (gc_stress) {
         threshold = 0;
     }
 #   define CHUNK_SIZE  (16 * 1024 * 1024)
-    YogVm_config_mark_sweep_compact(&env, env.vm, CHUNK_SIZE, threshold);
+    YogThread_config_mark_sweep_compact(NULL, thread, CHUNK_SIZE, threshold, &vm, YogVm_keep_children);
 #   undef CHUNK_SIZE
 #elif defined(GC_GENERATIONAL)
 #   define CHUNK_SIZE  (16 * 1024 * 1024)
 #   define TENURE       32
-    if (!YogMarkSweepCompact_install_sigsegv_handler(&env)) {
+    if (!YogMarkSweepCompact_install_sigsegv_handler(NULL)) {
         ERROR("failed installing SIGSEGV handler");
     }
-    YogVm_config_generational(&env, env.vm, init_heap_size, CHUNK_SIZE, threshold, TENURE);
+    YogThread_config_generational(NULL, thread, &threshold, init_heap_size, CHUNK_SIZE, threshold, TENURE, &vm, YogVm_keep_children);
 #   undef TENURE
 #   undef CHUNK_SIZE
-#else
-#   error "unknown GC type"
+#elif defined(GC_BDW)
+    YogThread_config_bdw(env, thread, gc_stress);
 #endif
 
+    vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
+
+    YogEnv env;
+    env.vm = &vm;
+    env.thread = YUNDEF;
+
     do {
-        YogThread thread;
-        YogThread_initialize(&env, PTR2VAL(&thread));
-        vm.thread = env.thread = &thread;
+        YogThread_initialize(&env, thread);
+        env.thread = thread;
 
         YogVal stmts = YUNDEF;
         YogVal code = YUNDEF;
@@ -181,8 +183,6 @@ main(int argc, char* argv[])
         MODIFY(&env, PTR_AS(YogPackage, pkg)->code, code);
         YogVm_register_package(&env, env.vm, "__main__", pkg);
         YogEval_eval_package(&env, pkg);
-
-        YogThread_finalize(&env, &thread);
 
         POP_LOCALS(&env);
     } while (0);

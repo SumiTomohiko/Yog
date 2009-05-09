@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "gc.h"
+#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -27,7 +28,7 @@ initialize_memory(void* ptr, size_t size)
 void* 
 YogBDW_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    if (vm->gc_stress) {
+    if (PTR_AS(YogThread, env->thread)->bdw.stress) {
         GC_gcollect();
     }
 
@@ -42,6 +43,12 @@ YogBDW_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer,
     }
 
     return header + 1;
+}
+
+void
+YogBDW_initialize(YogEnv* env, YogBDW* bdw, BOOL stress) 
+{
+    bdw->stress = stress;
 }
 
 /**

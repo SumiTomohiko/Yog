@@ -258,16 +258,16 @@ YogVm_boot(YogEnv* env, YogVm* vm)
     setup_encodings(env, vm);
 }
 
-static void 
-keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+void 
+YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
 {
     YogVm* vm = ptr;
-
-    YogThread_keep_children(env, vm->thread, keeper);
 
 #define KEEP_MEMBER(member)     do { \
     vm->member = YogVal_keep(env, vm->member, keeper); \
 } while (0)
+    KEEP_MEMBER(main_thread);
+
     KEEP_MEMBER(id2name);
     KEEP_MEMBER(name2id);
 
@@ -297,6 +297,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 }
 
 #if GC_COPYING
+#if 0
 static void 
 free_mem_copying(YogEnv* env, YogVm* vm) 
 {
@@ -309,8 +310,10 @@ alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer final
     return YogCopying_alloc(env, &vm->gc.copying, keeper, finalizer, size);
 }
 #endif
+#endif
 
 #if defined(GC_GENERATIONAL)
+#if 0
 static void*
 alloc_mem_generational(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
 {
@@ -323,8 +326,10 @@ free_mem_generational(YogEnv* env, YogVm* vm)
     YogGenerational_finalize(env, &vm->gc.generational);
 }
 #endif
+#endif
 
 #if GC_MARK_SWEEP
+#if 0
 static void 
 free_mem_mark_sweep(YogEnv* env, YogVm* vm) 
 {
@@ -337,16 +342,20 @@ alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer fi
     return YogMarkSweep_alloc(env, &vm->gc.mark_sweep, keeper, finalizer, size);
 }
 #endif
+#endif
 
 #if GC_BDW
+#if 0
 static void* 
 alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     return YogBDW_alloc(env, vm, keeper, finalizer, size);
 }
 #endif
+#endif
 
 #if GC_MARK_SWEEP_COMPACT
+#if 0
 static void* 
 alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
@@ -359,12 +368,16 @@ free_mem_mark_sweep_compact(YogEnv* env, YogVm* vm)
     /* TODO */
 }
 #endif
+#endif
 
 void 
 YogVm_init(YogVm* vm) 
 {
+#if 0
     vm->gc_stress = FALSE;
+#endif
 
+#if 0
 #if defined(GC_COPYING)
     vm->alloc_mem = alloc_mem_copying;
     vm->free_mem = free_mem_copying;
@@ -382,6 +395,7 @@ YogVm_init(YogVm* vm)
     vm->free_mem = free_mem_generational;
 #else
 #   error "unknown GC type"
+#endif
 #endif
     vm->gc_stat.print = FALSE;
     vm->gc_stat.duration_total = 0;
@@ -419,7 +433,8 @@ YogVm_init(YogVm* vm)
 
     vm->encodings = PTR2VAL(NULL);
 
-    vm->thread = NULL;
+    vm->main_thread = YUNDEF;
+    vm->threads = YUNDEF;
 }
 
 #if 0
@@ -465,38 +480,6 @@ YogVm_gc(YogEnv* env, YogVm* vm)
     if (vm->gc_stat.print) {
         print_gc_statistics(vm, duration);
     }
-}
-#endif
-
-#if GC_COPYING
-void 
-YogVm_config_copying(YogEnv* env, YogVm* vm, unsigned int init_heap_size) 
-{
-    YogCopying_initialize(env, &vm->gc.copying, vm->gc_stress, init_heap_size, vm, keep_children);
-}
-#endif
-
-#if GC_MARK_SWEEP
-void 
-YogVm_config_mark_sweep(YogEnv* env, YogVm* vm, size_t threshold) 
-{
-    YogMarkSweep_initialize(env, &vm->gc.mark_sweep, threshold, vm, keep_children);
-}
-#endif
-
-#if GC_MARK_SWEEP_COMPACT
-void 
-YogVm_config_mark_sweep_compact(YogEnv* env, YogVm* vm, size_t chunk_size, size_t threshold) 
-{
-    YogMarkSweepCompact_initialize(env, &vm->gc.mark_sweep_compact, chunk_size, threshold, vm, keep_children);
-}
-#endif
-
-#if defined(GC_GENERATIONAL)
-void 
-YogVm_config_generational(YogEnv* env, YogVm* vm, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure) 
-{
-    YogGenerational_initialize(env, &vm->gc.generational, vm->gc_stress, young_heap_size, old_chunk_size, old_threshold, tenure, vm, keep_children);
 }
 #endif
 

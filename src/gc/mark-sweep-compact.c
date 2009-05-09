@@ -6,6 +6,7 @@
 #include <sys/mman.h>
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 #include "yog/gc/mark-sweep-compact.h"
@@ -587,7 +588,9 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
         YogMarkSweepCompact_gc(env, msc);
 #elif defined(GC_GENERATIONAL)
         if (!msc->in_gc) {
-            YogGenerational_major_gc(env, &env->vm->gc.generational);
+            YogVal thread = env->thread;
+            YogGenerational* gen = &PTR_AS(YogThread, thread)->generational;
+            YogGenerational_major_gc(env, gen);
         }
 #endif
     }
@@ -815,7 +818,8 @@ minor_gc_keep_object(YogEnv* env, void* ptr)
         return ptr;
     }
 
-    YogMarkSweepCompact* msc = &env->vm->gc.generational.msc;
+    YogVal thread = env->thread;
+    YogMarkSweepCompact* msc = &PTR_AS(YogThread, thread)->generational.msc;
     msc->has_young_ref = TRUE;
     return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object);
 }

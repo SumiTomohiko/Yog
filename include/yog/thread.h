@@ -2,6 +2,17 @@
 #define __YOG_THREAD_H__
 
 #include <setjmp.h>
+#if defined(GC_COPYING)
+#   include "yog/gc/copying.h"
+#elif defined(GC_MARK_SWEEP)
+#   include "yog/gc/mark-sweep.h"
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   include "yog/gc/mark-sweep-compact.h"
+#elif defined(GC_GENERATIONAL)
+#   include "yog/gc/generational.h"
+#elif defined(GC_BDW)
+#   include "yog/gc/bdw.h"
+#endif
 #include "yog/yog.h"
 
 struct YogJmpBuf {
@@ -24,8 +35,10 @@ typedef struct YogLocals YogLocals;
 
 #include "yog/env.h"
 
-#define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = (env)->thread->locals
-#define RESTORE_LOCALS(env)     (env)->thread->locals = __cur_locals__
+#define SAVE_LOCALS(env) \
+    YogLocals* __cur_locals__ = PTR_AS(YogThread, (env)->thread)->locals
+#define RESTORE_LOCALS(env) \
+    PTR_AS(YogThread, (env)->thread)->locals = __cur_locals__
 #if 0
 #   define PUSH_LOCAL_TABLE(env, tbl) \
 do { \
@@ -33,14 +46,14 @@ do { \
     for (i = 0; i < tbl.num_vals; i++) { \
         DPRINTF("tbl.vals[%d]=%p", i, tbl.vals[i]); \
     } \
-    tbl.next = (env)->thread->locals; \
-    (env)->thread->locals = &tbl; \
+    tbl.next = PTR_AS(YogThread, (env)->thread)->locals; \
+    PTR_AS(YogThread, (env)->thread)->locals = &tbl; \
 } while (0)
 #else
 #   define PUSH_LOCAL_TABLE(env, tbl) \
 do { \
-    tbl.next = (env)->thread->locals; \
-    (env)->thread->locals = &tbl; \
+    tbl.next = PTR_AS(YogThread, (env)->thread)->locals; \
+    PTR_AS(YogThread, (env)->thread)->locals = &tbl; \
 } while (0)
 #endif
 #define PUSH_LOCAL(env, x) \
@@ -116,7 +129,10 @@ do { \
 #define SAVE_ARGS5(env, x, y, z, t, u)  \
                                 SAVE_LOCALS((env)); \
                                 PUSH_LOCALS5((env), x, y, z, t, u)
-#define POP_LOCALS(env)         (env)->thread->locals = (env)->thread->locals->next
+#define POP_LOCALS(env) do { \
+    YogLocals* next = PTR_AS(YogThread, (env)->thread)->locals->next; \
+    PTR_AS(YogThread, (env)->thread)->locals = next; \
+} while (0)
 #define RETURN(env, val)        do { \
     RESTORE_LOCALS(env); \
     return val; \
@@ -127,6 +143,21 @@ do { \
 } while (0)
 
 struct YogThread {
+    YogVal prev;
+    YogVal next;
+
+#if defined(GC_COPYING)
+    YogCopying copying;
+#elif defined(GC_MARK_SWEEP)
+    YogMarkSweep mark_sweep;
+#elif defined(GC_MARK_SWEEP_COMPACT)
+    YogMarkSweepCompact mark_sweep_compact;
+#elif defined(GC_GENERATIONAL)
+    YogGenerational generational;
+#elif defined(GC_BDW)
+    YogBDW bdw;
+#endif
+
     YogVal cur_frame;
     struct YogJmpBuf* jmp_buf_list;
     YogVal jmp_val;
@@ -150,7 +181,11 @@ typedef struct YogThread YogThread;
  */
 
 /* src/thread.c */
-void YogThread_finalize(YogEnv*, YogThread*);
+void YogThread_config_bdw(YogEnv*, YogVal, BOOL);
+void YogThread_config_copying(YogEnv*, YogVal, BOOL, size_t, void*, ChildrenKeeper);
+void YogThread_config_generational(YogEnv*, YogVal, BOOL, size_t, size_t, size_t, unsigned int, void*, ChildrenKeeper);
+void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t, void*, ChildrenKeeper);
+void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t, size_t, void*, ChildrenKeeper);
 void YogThread_initialize(YogEnv*, YogVal);
 void YogThread_keep_children(YogEnv*, void*, ObjectKeeper);
 YogVal YogThread_new(YogEnv*);

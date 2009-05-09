@@ -20,7 +20,7 @@
 #   define DEBUG(x)
 #endif
 
-#define CUR_FRAME   (env->thread->cur_frame)
+#define CUR_FRAME   PTR_AS(YogThread, env->thread)->cur_frame
 
 #define PUSH_FRAME(f)   do { \
     PTR_AS(YogFrame, (f))->prev = CUR_FRAME; \
@@ -459,15 +459,18 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
 
     PUSH_FRAME(frame);
 
-#define POP_BUF()   env->thread->jmp_buf_list = env->thread->jmp_buf_list->prev
+#define POP_BUF()   do { \
+    YogJmpBuf* prev = PTR_AS(YogThread, env->thread)->jmp_buf_list->prev; \
+    PTR_AS(YogThread, env->thread)->jmp_buf_list = prev; \
+} while (0)
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
 #undef CODE
 #define CODE        PTR_AS(YogCode, SCRIPT_FRAME(CUR_FRAME)->code)
     YogJmpBuf jmpbuf;
     int status = 0;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
-        jmpbuf.prev = env->thread->jmp_buf_list;
-        env->thread->jmp_buf_list = &jmpbuf;
+        jmpbuf.prev = PTR_AS(YogThread, env->thread)->jmp_buf_list;
+        PTR_AS(YogThread, env->thread)->jmp_buf_list = &jmpbuf;
     }
     else {
         RESTORE_LOCALS(env);
@@ -487,7 +490,7 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
         }
         if (!found) {
             POP_BUF();
-            YogJmpBuf* list = env->thread->jmp_buf_list;
+            YogJmpBuf* list = PTR_AS(YogThread, env->thread)->jmp_buf_list;
             if (list != NULL) {
                 longjmp(list->buf, status);
             }
@@ -495,7 +498,8 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
 #define PRINT(...)  fprintf(stderr, __VA_ARGS__)
             PRINT("Traceback (most recent call last):\n");
 
-            YogException* exc = PTR_AS(YogException, env->thread->jmp_val);
+            YogVal jmp_val = PTR_AS(YogThread, env->thread)->jmp_val;
+            YogException* exc = PTR_AS(YogException, jmp_val);
             YogVal st = exc->stack_trace;
 #define ID2NAME(id)     YogVm_id2name(env, env->vm, id)
             while (IS_PTR(st)) {

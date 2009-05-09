@@ -3,34 +3,12 @@
 
 #include "yog/yog.h"
 
-#if GC_COPYING
-#   include "yog/gc/copying.h"
-#elif GC_MARK_SWEEP
-#   include "yog/gc/mark-sweep.h"
-#elif GC_MARK_SWEEP_COMPACT
-#   include "yog/gc/mark-sweep-compact.h"
-#elif GC_GENERATIONAL
-#   include "yog/gc/generational.h"
-#endif
-
 #define SURVIVE_INDEX_MAX    8
 
 struct YogVm {
-    BOOL gc_stress;
-
     void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, Finalizer, size_t);
     void (*free_mem)(struct YogEnv*, struct YogVm*);
-    union {
-#if GC_COPYING
-        YogCopying copying;
-#elif GC_MARK_SWEEP
-        YogMarkSweep mark_sweep;
-#elif GC_MARK_SWEEP_COMPACT
-        YogMarkSweepCompact mark_sweep_compact;
-#elif GC_GENERATIONAL
-        YogGenerational generational;
-#endif
-    } gc;
+
     struct {
         BOOL print;
         unsigned int duration_total;
@@ -70,7 +48,8 @@ struct YogVm {
 
     YogVal encodings;
 
-    struct YogThread* thread;
+    YogVal main_thread;
+    YogVal threads;
 };
 
 typedef struct YogVm YogVm;
@@ -92,6 +71,7 @@ void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
 void YogVm_init(YogVm*);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
+void YogVm_keep_children(YogEnv*, void*, ObjectKeeper);
 void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
 
 /* PROTOTYPE_END */

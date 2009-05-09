@@ -1,6 +1,7 @@
 #include <string.h>
 #include "yog/env.h"
 #include "yog/gc/generational.h"
+#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 #if defined(TEST_GENERATIONAL)
@@ -26,7 +27,7 @@ oldify(YogEnv* env, YogGenerational* gen, void* ptr)
 static void 
 oldify_all_callback(YogEnv* env, YogCopyingHeader* header) 
 {
-    YogGenerational* gen = &env->vm->gc.generational;
+    YogGenerational* gen = &PTR_AS(YogThread, env->thread)->generational;
     oldify(env, gen, header + 1);
 }
 
@@ -39,14 +40,14 @@ YogGenerational_oldify_all(YogEnv* env, YogGenerational* gen)
 void* 
 YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
 {
-    YogGenerational* gen = &env->vm->gc.generational;
+    YogGenerational* gen = &PTR_AS(YogThread, env->thread)->generational;
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
     DEBUG(DPRINTF("alive: %p (%p)", header, ptr));
     if (header->forwarding_addr != NULL) {
         DEBUG(DPRINTF("moved: %p->%p", header, header->forwarding_addr));
         void* to;
         YogCopyingHeader* forwarding_addr = header->forwarding_addr;
-        YogCopying* copying = &env->vm->gc.generational.copying;
+        YogCopying* copying = &gen->copying;
         if (YogCopying_is_in_inactive_heap(env, copying, forwarding_addr)) {
             to = forwarding_addr + 1;
             DEBUG(DPRINTF("to=%p", to));

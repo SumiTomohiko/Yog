@@ -1,5 +1,19 @@
 #include <stdlib.h>
+#if HAVE_SYS_TYPES_H
+#   include <sys/types.h>
+#endif
 #include "yog/gc.h"
+#if defined(GC_COPYING)
+#   include "yog/gc/copying.h"
+#elif defined(GC_MARK_SWEEP)
+#   include "yog/gc/mark-sweep.h"
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   include "yog/gc/mark-sweep-compact.h"
+#elif defined(GC_GENERATIONAL)
+#   include "yog/gc/generational.h"
+#elif defined(GC_BDW)
+#   include "yog/gc/bdw.h"
+#endif
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -41,16 +55,54 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 void 
 YogThread_initialize(YogEnv* env, YogVal thread)
 {
+    PTR_AS(YogThread, thread)->prev = YUNDEF;
+    PTR_AS(YogThread, thread)->next = YUNDEF;
+
     PTR_AS(YogThread, thread)->cur_frame = YNIL;
     PTR_AS(YogThread, thread)->jmp_buf_list = NULL;
     PTR_AS(YogThread, thread)->jmp_val = YUNDEF;
     PTR_AS(YogThread, thread)->locals = NULL;
 }
 
+#if defined(GC_COPYING)
 void 
-YogThread_finalize(YogEnv* env, YogThread* thread) 
+YogThread_config_copying(YogEnv* env, YogVal thread, BOOL gc_stress, size_t init_heap_size, void* root, ChildrenKeeper root_keeper) 
 {
+    YogCopying_initialize(env, &PTR_AS(YogThread, thread)->copying, gc_stress, init_heap_size, root, root_keeper);
 }
+#endif
+
+#if defined(GC_MARK_SWEEP)
+void 
+YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t threshold, void* root, ChildrenKeeper root_keeper) 
+{
+    YogMarkSweep_initialize(env, &PTR_AS(YogThread, thread)->mark_sweep, threshold, root, root_keeper);
+}
+#endif
+
+#if defined(GC_MARK_SWEEP_COMPACT)
+void 
+YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_size, size_t threshold, void* root, ChildrenKeeper root_keeper) 
+{
+    YogMarkSweepCompact_initialize(env, &PTR_AS(YogThread, thread)->mark_sweep_compact, chunk_size, threshold, root, root_keeper);
+}
+#endif
+
+#if defined(GC_GENERATIONAL)
+void 
+YogThread_config_generational(YogEnv* env, YogVal thread, BOOL gc_stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure, void* root, ChildrenKeeper root_keeper) 
+{
+    YogGenerational_initialize(env, &PTR_AS(YogThread, thread)->generational, gc_stress, young_heap_size, old_chunk_size, old_threshold, tenure, root, root_keeper);
+}
+#endif
+
+#if defined(GC_BDW)
+void 
+YogThread_config_bdw(YogEnv* env, YogVal thread, BOOL gc_stress) 
+{
+    YogBDW_initialize(env, &PTR_AS(YogThread, thread)->bdw, gc_stress);
+}
+#endif
 
 YogVal 
 YogThread_new(YogEnv* env) 
