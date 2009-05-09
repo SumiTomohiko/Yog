@@ -1,14 +1,14 @@
 #if !defined(__YOG_VM_H__)
 #define __YOG_VM_H__
 
+#if HAVE_SYS_TYPES_H
+#   include <sys/types.h>
+#endif
 #include "yog/yog.h"
 
 #define SURVIVE_INDEX_MAX    8
 
 struct YogVm {
-    void* (*alloc_mem)(struct YogEnv*, struct YogVm*, ChildrenKeeper, Finalizer, size_t);
-    void (*free_mem)(struct YogEnv*, struct YogVm*);
-
     struct {
         BOOL print;
         unsigned int duration_total;

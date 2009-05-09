@@ -2,7 +2,6 @@
 #include <string.h>
 #include "gc.h"
 #include "yog/thread.h"
-#include "yog/vm.h"
 #include "yog/yog.h"
 
 struct BDWHeader {
@@ -26,9 +25,9 @@ initialize_memory(void* ptr, size_t size)
 }
 
 void* 
-YogBDW_alloc(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+YogBDW_alloc(YogEnv* env, YogBDW* bdw, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    if (PTR_AS(YogThread, env->thread)->bdw.stress) {
+    if (bdw->stress) {
         GC_gcollect();
     }
 

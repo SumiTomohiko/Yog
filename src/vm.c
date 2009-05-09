@@ -296,107 +296,9 @@ YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #undef KEEP_MEMBER
 }
 
-#if GC_COPYING
-#if 0
-static void 
-free_mem_copying(YogEnv* env, YogVm* vm) 
-{
-    YogCopying_finalize(env, &vm->gc.copying);
-}
-
-static void* 
-alloc_mem_copying(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
-{
-    return YogCopying_alloc(env, &vm->gc.copying, keeper, finalizer, size);
-}
-#endif
-#endif
-
-#if defined(GC_GENERATIONAL)
-#if 0
-static void*
-alloc_mem_generational(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
-{
-    return YogGenerational_alloc(env, &vm->gc.generational, keeper, finalizer, size);
-}
-
-static void 
-free_mem_generational(YogEnv* env, YogVm* vm) 
-{
-    YogGenerational_finalize(env, &vm->gc.generational);
-}
-#endif
-#endif
-
-#if GC_MARK_SWEEP
-#if 0
-static void 
-free_mem_mark_sweep(YogEnv* env, YogVm* vm) 
-{
-    return YogMarkSweep_finalize(env, &vm->gc.mark_sweep);
-}
-
-static void* 
-alloc_mem_mark_sweep(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
-{
-    return YogMarkSweep_alloc(env, &vm->gc.mark_sweep, keeper, finalizer, size);
-}
-#endif
-#endif
-
-#if GC_BDW
-#if 0
-static void* 
-alloc_mem_bdw(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
-{
-    return YogBDW_alloc(env, vm, keeper, finalizer, size);
-}
-#endif
-#endif
-
-#if GC_MARK_SWEEP_COMPACT
-#if 0
-static void* 
-alloc_mem_mark_sweep_compact(YogEnv* env, YogVm* vm, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
-{
-    return YogMarkSweepCompact_alloc(env, &vm->gc.mark_sweep_compact, keeper, finalizer, size);
-}
-
-static void 
-free_mem_mark_sweep_compact(YogEnv* env, YogVm* vm) 
-{
-    /* TODO */
-}
-#endif
-#endif
-
 void 
 YogVm_init(YogVm* vm) 
 {
-#if 0
-    vm->gc_stress = FALSE;
-#endif
-
-#if 0
-#if defined(GC_COPYING)
-    vm->alloc_mem = alloc_mem_copying;
-    vm->free_mem = free_mem_copying;
-#elif defined(GC_MARK_SWEEP)
-    vm->alloc_mem = alloc_mem_mark_sweep;
-    vm->free_mem = free_mem_mark_sweep;
-#elif defined(GC_MARK_SWEEP_COMPACT)
-    vm->alloc_mem = alloc_mem_mark_sweep_compact;
-    vm->free_mem = free_mem_mark_sweep_compact;
-#elif defined(GC_BDW)
-    vm->alloc_mem = alloc_mem_bdw;
-    vm->free_mem = NULL;
-#elif defined(GC_GENERATIONAL)
-    vm->alloc_mem = alloc_mem_generational;
-    vm->free_mem = free_mem_generational;
-#else
-#   error "unknown GC type"
-#endif
-#endif
     vm->gc_stat.print = FALSE;
     vm->gc_stat.duration_total = 0;
     reset_living_object_count(vm);
@@ -486,9 +388,11 @@ YogVm_gc(YogEnv* env, YogVm* vm)
 void 
 YogVm_delete(YogEnv* env, YogVm* vm) 
 {
+#if 0
     if (vm->free_mem != NULL) {
         (*vm->free_mem)(env, vm);
     }
+#endif
 }
 
 /**

@@ -18,7 +18,7 @@ typedef struct YogBDW YogBDW;
  */
 
 /* src/gc/bdw.c */
-void* YogBDW_alloc(YogEnv*, YogVm*, ChildrenKeeper, Finalizer, size_t);
+void* YogBDW_alloc(YogEnv*, YogBDW*, ChildrenKeeper, Finalizer, size_t);
 void YogBDW_initialize(YogEnv*, YogBDW*, BOOL);
 
 /* PROTOTYPE_END */
