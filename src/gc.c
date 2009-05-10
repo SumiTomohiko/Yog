@@ -16,6 +16,8 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+typedef void (*GC)(YogEnv*);
+
 static void 
 wakeup_gc_thread(YogEnv* env) 
 {
@@ -115,13 +117,7 @@ wakeup_suspend_threads(YogEnv* env)
 }
 
 static void 
-gc(YogEnv* env) 
-{
-    /* TODO */
-}
-
-void 
-YogGC_perform(YogEnv* env) 
+perform(YogEnv* env, GC gc) 
 {
     YogVm* vm = env->vm;
     YogVm_aquire_global_interp_lock(env, vm);
@@ -133,12 +129,68 @@ YogGC_perform(YogEnv* env)
         vm->suspend_counter = count_threads(env, vm);
         vm->waiting_suspend = TRUE;
         wait_suspend(env);
-        gc(env);
+        (*gc)(env);
         vm->running_gc = FALSE;
         wakeup_suspend_threads(env);
     }
     YogVm_release_global_interp_lock(env, vm);
 }
+
+#if !defined(GC_GENERATIONAL) && !defined(GC_BDW)
+static void 
+gc(YogEnv* env) 
+{
+    YogVal main_thread = env->vm->main_thread;
+#define GET_GC(type)    &PTR_AS(YogThread, main_thread)->type
+#if defined(GC_COPYING)
+    YogCopying* copying = GET_GC(copying);
+    YogCopying_gc(env, copying);
+#elif defined(GC_MARK_SWEEP)
+    YogMarkSweep* mark_sweep = GET_GC(mark_sweep);
+    YogMarkSweep_gc(env, mark_sweep);
+#elif defined(GC_MARK_SWEEP_COMPACT)
+    YogMarkSweepCompact* mark_sweep_compact = GET_GC(mark_sweep_compact);
+    YogMarkSweepCompact_gc(env, mark_sweep_compact);
+#endif
+#undef GET_GC
+}
+
+void 
+YogGC_perform(YogEnv* env) 
+{
+    perform(env, gc);
+}
+#endif
+
+#if defined(GC_GENERATIONAL)
+#   define GET_GEN(thread)  &PTR_AS(YogThread, (thread))->generational
+static void 
+minor_gc(YogEnv* env) 
+{
+    YogGenerational* gen = GET_GEN(env->vm->main_thread);
+    YogGenerational_minor_gc(env, gen);
+}
+
+static void 
+major_gc(YogEnv* env) 
+{
+    YogGenerational* gen = GET_GEN(env->vm->main_thread);
+    YogGenerational_major_gc(env, gen);
+}
+#   undef GET_GEN
+
+void 
+YogGC_perform_minor(YogEnv* env) 
+{
+    perform(env, minor_gc);
+}
+
+void 
+YogGC_perform_major(YogEnv* env) 
+{
+    perform(env, major_gc);
+}
+#endif
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

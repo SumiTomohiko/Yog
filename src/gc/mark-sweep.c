@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "yog/gc.h"
 #include "yog/gc/mark-sweep.h"
 
 /* TODO: commonize with yog/yog.h */
@@ -138,7 +139,7 @@ void*
 YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     if (ms->threshold <= ms->allocated_size) {
-        YogMarkSweep_gc(env, ms);
+        YogGC_perform(env);
     }
 
     size_t total_size = size + sizeof(YogMarkSweepHeader);

@@ -9,6 +9,7 @@
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
+#include "yog/gc.h"
 #include "yog/gc/mark-sweep-compact.h"
 #if defined(GC_GENERATIONAL)
 #   include "sigsegv.h"
@@ -585,12 +586,10 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
     size_t total_size = size + sizeof(YogMarkSweepCompactHeader);
     if (msc->threshold <= msc->allocated_size) {
 #if defined(GC_MARK_SWEEP_COMPACT)
-        YogMarkSweepCompact_gc(env, msc);
+        YogGC_perform(env);
 #elif defined(GC_GENERATIONAL)
         if (!msc->in_gc) {
-            YogVal thread = env->thread;
-            YogGenerational* gen = &PTR_AS(YogThread, thread)->generational;
-            YogGenerational_major_gc(env, gen);
+            YogGC_perform_major(env);
         }
 #endif
     }

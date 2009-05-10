@@ -7,13 +7,11 @@
 #   include <CUnit/CUnit.h>
 #endif
 #include "yog/env.h"
+#include "yog/gc.h"
+#include "yog/gc/copying.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
-#include "yog/gc/copying.h"
-#if defined(GC_GENERATIONAL)
-#   include "yog/gc/generational.h"
-#endif
 
 #if 0
 #   define DEBUG
@@ -273,13 +271,14 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
         }
 
 #if defined(GC_COPYING)
-        YogCopying_gc(env, copying);
+        YogGC_perform(env);
 #elif defined(GC_GENERATIONAL)
-        YogGenerational* gen = &PTR_AS(YogThread, env->thread)->generational;
-        YogGenerational_minor_gc(env, gen);
+        YogGC_perform_minor(env);
         if (copying->stress) {
+#if 0
             YogGenerational_oldify_all(env, gen);
-            YogGenerational_major_gc(env, gen);
+#endif
+            YogGC_perform_major(env);
         }
 #endif
         heap = copying->active_heap;
