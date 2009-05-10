@@ -128,7 +128,7 @@ perform(YogEnv* env, GC gc)
     }
     else {
         vm->running_gc = TRUE;
-        vm->suspend_counter = count_threads(env, vm);
+        vm->suspend_counter = count_threads(env, vm) - 1;
         vm->waiting_suspend = TRUE;
         wait_suspend(env);
         (*gc)(env);
