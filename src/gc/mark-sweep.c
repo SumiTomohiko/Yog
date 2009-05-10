@@ -75,17 +75,23 @@ delete(YogMarkSweepHeader* header)
 }
 
 void 
-YogMarkSweep_gc(YogEnv* env, YogMarkSweep* ms) 
+YogMarkSweep_prepare(YogEnv* env, YogMarkSweep* ms) 
 {
     YogMarkSweepHeader* header = ms->header;
     while (header != NULL) {
         header->marked = FALSE;
         header = header->next;
     }
+}
+
+void 
+YogMarkSweep_gc(YogEnv* env, YogMarkSweep* ms) 
+{
+    YogMarkSweep_prepare(env, ms);
 
     (*ms->root_keeper)(env, ms->root, keep_object);
 
-    header = ms->header;
+    YogMarkSweepHeader* header = ms->header;
     while (header != NULL) {
         YogMarkSweepHeader* next = header->next;
 

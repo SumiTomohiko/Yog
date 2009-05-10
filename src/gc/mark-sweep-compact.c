@@ -90,7 +90,7 @@ typedef void (*IteratePagesCallback)(YogEnv*, YogMarkSweepCompact*, YogMarkSweep
 typedef BOOL (*PageSelector)(YogMarkSweepCompactChunk*, unsigned int, YogMarkSweepCompactPage*); 
 
 void 
-YogMarkSweepCompact_unmark_all(YogEnv* env, YogMarkSweepCompact* msc) 
+YogMarkSweepCompact_prepare(YogEnv* env, YogMarkSweepCompact* msc) 
 {
     DEBUG(DPRINTF("unmark all"));
     YogMarkSweepCompactHeader* header = msc->header;
@@ -554,7 +554,7 @@ YogMarkSweepCompact_delete_garbage(YogEnv* env, YogMarkSweepCompact* msc)
 void 
 YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc) 
 {
-    YogMarkSweepCompact_unmark_all(env, msc);
+    YogMarkSweepCompact_prepare(env, msc);
 
     (*msc->root_keeper)(env, msc->root, keep_object);
 

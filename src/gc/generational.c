@@ -136,9 +136,9 @@ YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
     YogMarkSweepCompact* msc = &generational->msc;
     msc->in_gc = TRUE;
     YogMarkSweepCompact_unprotect_all_pages(env, msc);
-    YogMarkSweepCompact_unmark_all(env, msc);
+    YogMarkSweepCompact_prepare(env, msc);
 
-    YogCopying_initialize_gc(env, &generational->copying);
+    YogCopying_prepare(env, &generational->copying);
     YogCopying_do_gc(env, &generational->copying, major_gc_keep_object);
     YogMarkSweepCompact_delete_garbage(env, msc);
 
@@ -169,7 +169,7 @@ YogGenerational_minor_gc(YogEnv* env, YogGenerational* generational)
     msc->in_gc = TRUE;
     YogMarkSweepCompact_unprotect_all_pages(env, msc);
 
-    YogCopying_initialize_gc(env, &generational->copying);
+    YogCopying_prepare(env, &generational->copying);
     YogMarkSweepCompact_trace_grey_children(env, msc);
     YogCopying_do_gc(env, &generational->copying, minor_gc_keep_object);
 

@@ -32,6 +32,7 @@ void* YogMarkSweep_alloc(YogEnv*, YogMarkSweep*, ChildrenKeeper, Finalizer, size
 void YogMarkSweep_finalize(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_gc(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_initialize(YogEnv*, YogMarkSweep*, size_t, void*, ChildrenKeeper);
+void YogMarkSweep_prepare(YogEnv*, YogMarkSweep*);
 
 /* PROTOTYPE_END */
 

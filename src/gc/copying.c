@@ -200,7 +200,7 @@ swap_heap(YogCopyingHeap** a, YogCopyingHeap** b)
 }
 
 void 
-YogCopying_initialize_gc(YogEnv* env, YogCopying* copying) 
+YogCopying_prepare(YogEnv* env, YogCopying* copying) 
 {
     YogCopyingHeap* to_space = copying->inactive_heap;
     copying->scanned = copying->unscanned = to_space->items;
@@ -248,7 +248,7 @@ YogCopying_do_gc(YogEnv* env, YogCopying* copying, ObjectKeeper obj_keeper)
 void 
 YogCopying_gc(YogEnv* env, YogCopying* copying) 
 {
-    YogCopying_initialize_gc(env, copying);
+    YogCopying_prepare(env, copying);
     YogCopying_do_gc(env, copying, keep_object);
 }
 #endif
