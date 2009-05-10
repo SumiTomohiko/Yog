@@ -49,7 +49,6 @@ struct YogVm {
 
     YogVal encodings;
 
-    YogVal main_thread;
     YogVal threads;
 
     pthread_mutex_t global_interp_lock;
@@ -80,6 +79,7 @@ ID YogVm_intern(YogEnv*, YogVm*, const char*);
 void YogVm_keep_children(YogEnv*, void*, ObjectKeeper);
 void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
 void YogVm_release_global_interp_lock(YogEnv*, YogVm*);
+void YogVm_set_main_thread(YogEnv*, YogVm*, YogVal);
 
 /* PROTOTYPE_END */
 

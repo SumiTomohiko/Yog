@@ -267,8 +267,6 @@ YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 #define KEEP_MEMBER(member)     do { \
     vm->member = YogVal_keep(env, vm->member, keeper); \
 } while (0)
-    KEEP_MEMBER(main_thread);
-
     KEEP_MEMBER(id2name);
     KEEP_MEMBER(name2id);
 
@@ -336,7 +334,6 @@ YogVm_init(YogVm* vm)
 
     vm->encodings = PTR2VAL(NULL);
 
-    vm->main_thread = YUNDEF;
     vm->threads = YUNDEF;
 
     pthread_mutex_init(&vm->global_interp_lock, NULL);
@@ -415,6 +412,7 @@ YogVm_release_global_interp_lock(YogEnv* env, YogVm* vm)
     pthread_mutex_unlock(&vm->global_interp_lock);
 }
 
+#if 0
 void 
 YogVm_add_thread(YogEnv* env, YogVm* vm, YogVal thread) 
 {
@@ -428,6 +426,13 @@ YogVm_add_thread(YogEnv* env, YogVm* vm, YogVal thread)
     vm->threads = thread;
 
     YogVm_release_global_interp_lock(env, vm);
+}
+#endif
+
+void 
+YogVm_set_main_thread(YogEnv* env, YogVm* vm, YogVal thread) 
+{
+    vm->threads = thread;
 }
 
 /**

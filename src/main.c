@@ -163,7 +163,7 @@ main(int argc, char* argv[])
     YogVal main_thread = YogThread_new(&env);
     memcpy(VAL2PTR(main_thread), VAL2PTR(dummy_thread), sizeof(YogThread));
     env.thread = main_thread;
-    vm.main_thread = main_thread;
+    YogVm_set_main_thread(&env, &vm, main_thread);
 
     vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
 

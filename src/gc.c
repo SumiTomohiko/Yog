@@ -16,6 +16,8 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+#define MAIN_THREAD(vm)     (vm)->threads
+
 typedef void (*GC)(YogEnv*);
 
 static void 
@@ -140,7 +142,7 @@ perform(YogEnv* env, GC gc)
 static void 
 gc(YogEnv* env) 
 {
-    YogVal main_thread = env->vm->main_thread;
+    YogVal main_thread = MAIN_THREAD(env->vm);
 #define GET_GC(type)    &PTR_AS(YogThread, main_thread)->type
 #if defined(GC_COPYING)
     YogCopying* copying = GET_GC(copying);
@@ -167,14 +169,16 @@ YogGC_perform(YogEnv* env)
 static void 
 minor_gc(YogEnv* env) 
 {
-    YogGenerational* gen = GET_GEN(env->vm->main_thread);
+    YogVal main_thread = MAIN_THREAD(env->vm);
+    YogGenerational* gen = GET_GEN(main_thread);
     YogGenerational_minor_gc(env, gen);
 }
 
 static void 
 major_gc(YogEnv* env) 
 {
-    YogGenerational* gen = GET_GEN(env->vm->main_thread);
+    YogVal main_thread = MAIN_THREAD(env->vm);
+    YogGenerational* gen = GET_GEN(main_thread);
     YogGenerational_major_gc(env, gen);
 }
 #   undef GET_GEN
