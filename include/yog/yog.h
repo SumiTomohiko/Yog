@@ -19,11 +19,11 @@
  * FEDC BA98 7654 3210 FEDC BA98 7654 3210
  * ---------------------------------------
  * xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxx1 Fixnum
- * 0000 0000 0000 0000 0000 0000 0000 0010 undef
- * 0000 0000 0000 0000 0000 0000 0000 0110 nil
+ * 0000 0000 0000 0000 0000 0000 0000 0010 undef (0x02)
+ * 0000 0000 0000 0000 0000 0000 0000 0110 nil (0x06)
  * xxxx xxxx xxxx xxxx xxxx xxxx xxxx 1010 Bool
- * 0000 0000 0000 0000 0000 0000 0000 1010 false
- * 0000 0000 0000 0000 0000 0000 0001 1010 true
+ * 0000 0000 0000 0000 0000 0000 0000 1010 false (0x0a)
+ * 0000 0000 0000 0000 0000 0000 0001 1010 true (0x1a)
  * xxxx xxxx xxxx xxxx xxxx xxxx xxxx 1110 Symbol
  * xxxx xxxx xxxx xxxx xxxx xxxx xxxx xx00 pointer
  */
