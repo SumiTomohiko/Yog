@@ -127,6 +127,20 @@ wait_suspend(YogEnv* env)
 }
 
 static void 
+run_gc(YogEnv* env, GC gc)
+{
+    YogVm* vm = env->vm;
+    unsigned int threads_num = count_threads(env, vm);
+    if (0 < threads_num) {
+        vm->suspend_counter = threads_num - 1;
+        vm->waiting_suspend = TRUE;
+        wait_suspend(env);
+        (*gc)(env);
+        vm->waiting_suspend = FALSE;
+    }
+}
+
+static void 
 perform(YogEnv* env, GC gc) 
 {
     YogVm* vm = env->vm;
@@ -136,14 +150,7 @@ perform(YogEnv* env, GC gc)
     }
     else {
         vm->running_gc = TRUE;
-        unsigned int threads_num = count_threads(env, vm);
-        if (0 < threads_num) {
-            vm->suspend_counter = threads_num - 1;
-            vm->waiting_suspend = TRUE;
-            wait_suspend(env);
-            (*gc)(env);
-            vm->waiting_suspend = FALSE;
-        }
+        run_gc(env, gc);
         vm->running_gc = FALSE;
         wakeup_suspend_threads(env);
     }
