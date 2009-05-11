@@ -7,10 +7,10 @@
 #include "yog/yog.h"
 
 static void 
-keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBuiltinFunction* f = ptr;
-    f->arg_info = YogVal_keep(env, f->arg_info, keeper);
+    YogGC_keep(env, &f->arg_info, keeper, heap);
 }
 
 YogVal 

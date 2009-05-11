@@ -12,6 +12,7 @@
 #include "yog/error.h"
 #include "yog/exception.h"
 #include "yog/float.h"
+#include "yog/gc.h"
 #include "yog/gc/bdw.h"
 #include "yog/int.h"
 #include "yog/klass.h"
@@ -260,40 +261,38 @@ YogVm_boot(YogEnv* env, YogVm* vm)
 }
 
 void 
-YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogVm* vm = ptr;
 
-#define KEEP_MEMBER(member)     do { \
-    vm->member = YogVal_keep(env, vm->member, keeper); \
-} while (0)
-    KEEP_MEMBER(id2name);
-    KEEP_MEMBER(name2id);
+#define KEEP(member)    YogGC_keep(env, &vm->member, keeper, heap)
+    KEEP(id2name);
+    KEEP(name2id);
 
-    KEEP_MEMBER(cObject);
-    KEEP_MEMBER(cKlass);
-    KEEP_MEMBER(cInt);
-    KEEP_MEMBER(cString);
-    KEEP_MEMBER(cRegexp);
-    KEEP_MEMBER(cMatch);
-    KEEP_MEMBER(cPackage);
-    KEEP_MEMBER(cBool);
-    KEEP_MEMBER(cBuiltinBoundMethod);
-    KEEP_MEMBER(cBoundMethod);
-    KEEP_MEMBER(cBuiltinUnboundMethod);
-    KEEP_MEMBER(cUnboundMethod);
-    KEEP_MEMBER(cPackageBlock);
-    KEEP_MEMBER(cNil);
+    KEEP(cObject);
+    KEEP(cKlass);
+    KEEP(cInt);
+    KEEP(cString);
+    KEEP(cRegexp);
+    KEEP(cMatch);
+    KEEP(cPackage);
+    KEEP(cBool);
+    KEEP(cBuiltinBoundMethod);
+    KEEP(cBoundMethod);
+    KEEP(cBuiltinUnboundMethod);
+    KEEP(cUnboundMethod);
+    KEEP(cPackageBlock);
+    KEEP(cNil);
 
-    KEEP_MEMBER(eException);
-    KEEP_MEMBER(eBugException);
-    KEEP_MEMBER(eTypeError);
-    KEEP_MEMBER(eIndexError);
+    KEEP(eException);
+    KEEP(eBugException);
+    KEEP(eTypeError);
+    KEEP(eIndexError);
 
-    KEEP_MEMBER(pkgs);
-    KEEP_MEMBER(encodings);
-    KEEP_MEMBER(threads);
-#undef KEEP_MEMBER
+    KEEP(pkgs);
+    KEEP(encodings);
+    KEEP(threads);
+#undef KEEP
 }
 
 void 

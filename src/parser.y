@@ -25,13 +25,11 @@ static YogVal LemonParser_new(YogEnv*);
 static void ParseTrace(FILE*, char*);
 
 static void 
-YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogNode* node = ptr;
 
-#define KEEP(member)    do { \
-    node->u.member = YogVal_keep(env, node->u.member, keeper); \
-} while (0)
+#define KEEP(member)    YogGC_keep(env, &node->u.member, keeper, heap)
     switch (node->type) {
     case NODE_ASSIGN:
         KEEP(assign.left);

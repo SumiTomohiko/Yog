@@ -87,13 +87,13 @@ void YogMarkSweepCompact_grey_page(void*);
 void YogMarkSweepCompact_initialize(YogEnv*, YogMarkSweepCompact*, size_t, size_t, void*, ChildrenKeeper);
 BOOL YogMarkSweepCompact_install_sigsegv_handler(YogEnv*);
 void YogMarkSweepCompact_keep_vm(YogEnv*, YogMarkSweepCompact*);
-void* YogMarkSweepCompact_mark_recursively(YogEnv*, void*, ObjectKeeper);
+void* YogMarkSweepCompact_mark_recursively(YogEnv*, void*, ObjectKeeper, void*);
 void YogMarkSweepCompact_post_gc(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_prepare(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_protect_white_pages(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_trace_grey_children(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_unprotect_all_pages(YogEnv*, YogMarkSweepCompact*);
-void* YogMarkSweepCompact_update_pointer(YogEnv*, void*, ObjectKeeper);
+void* YogMarkSweepCompact_update_pointer(YogEnv*, void*, ObjectKeeper, void*);
 
 /* PROTOTYPE_END */
 

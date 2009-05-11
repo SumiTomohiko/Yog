@@ -32,12 +32,12 @@ YogPackage_define_method(YogEnv* env, YogVal pkg, const char* name, void* f, uns
 }
 
 static void 
-YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogObj_keep_children(env, ptr, keeper);
+    YogObj_keep_children(env, ptr, keeper, heap);
 
     YogPackage* pkg = ptr;
-    pkg->code = YogVal_keep(env, pkg->code, keeper);
+    YogGC_keep(env, &pkg->code, keeper, heap);
 }
 
 static void 

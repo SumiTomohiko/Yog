@@ -33,12 +33,12 @@ YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f, uns
 }
 
 static void 
-keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogObj_keep_children(env, ptr, keeper);
+    YogObj_keep_children(env, ptr, keeper, heap);
 
     YogKlass* klass = ptr;
-    klass->super = YogVal_keep(env, klass->super, keeper);
+    YogGC_keep(env, &klass->super, keeper, heap);
 }
 
 YogVal 

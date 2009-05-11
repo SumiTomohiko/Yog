@@ -76,7 +76,7 @@ void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
 void YogVm_init(YogVm*);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
-void YogVm_keep_children(YogEnv*, void*, ObjectKeeper);
+void YogVm_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
 void YogVm_release_global_interp_lock(YogEnv*, YogVm*);
 void YogVm_set_main_thread(YogEnv*, YogVm*, YogVal);

@@ -183,19 +183,19 @@ typedef struct CompileData CompileData;
 #define NODE(p)     PTR_AS(YogNode, (p))
 
 static void 
-YogInst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogInst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogVal inst = PTR2VAL(ptr);
 
-    MODIFY(env, INST(inst)->next, YogVal_keep(env, INST(inst)->next, keeper));
+    YogGC_keep(env, &INST(inst)->next, keeper, heap);
 
     if (INST(inst)->type == INST_OP) {
         switch (INST_OPCODE(inst)) {
         case OP(JUMP):
-            JUMP_DEST(inst) = YogVal_keep(env, JUMP_DEST(inst), keeper);
+            YogGC_keep(env, &JUMP_DEST(inst), keeper, heap);
             break;
         case OP(JUMP_IF_FALSE):
-            JUMP_IF_FALSE_DEST(inst) = YogVal_keep(env, JUMP_IF_FALSE_DEST(inst), keeper);
+            YogGC_keep(env, &JUMP_IF_FALSE_DEST(inst), keeper, heap);
             break;
         default:
             break;
@@ -243,10 +243,10 @@ add_inst(YogEnv* env, YogVal data, YogVal inst)
 #include "src/compile.inc"
 
 static void 
-TryListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+TryListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     TryListEntry* entry = ptr;
-#define KEEP(member)    entry->member = YogVal_keep(env, entry->member, keeper)
+#define KEEP(member)    YogGC_keep(env, &entry->member, keeper, heap)
     KEEP(prev);
     KEEP(node);
     KEEP(exc_tbl);
@@ -686,10 +686,10 @@ scan_var_init_visitor(AstVisitor* visitor)
 }
 
 static void 
-ScanVarData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+ScanVarData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap) 
 {
     ScanVarData* data = ptr;
-    data->var_tbl = YogVal_keep(env, data->var_tbl, keeper);
+    YogGC_keep(env, &data->var_tbl, keeper, heap);
 }
 
 static YogVal 
@@ -1083,10 +1083,10 @@ make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
 }
 
 static void 
-ExceptionTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+ExceptionTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     ExceptionTableEntry* entry = ptr;
-#define KEEP(member)    entry->member = YogVal_keep(env, entry->member, keeper)
+#define KEEP(member)    YogGC_keep(env, &entry->member, keeper, heap)
     KEEP(next);
     KEEP(from);
     KEEP(to);
@@ -1173,12 +1173,10 @@ count_locals(YogEnv* env, YogVal vars)
 }
 
 static void 
-CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     CompileData* data = ptr;
-#define KEEP(member)    do { \
-    data->member = YogVal_keep(env, data->member, keeper); \
-} while (0)
+#define KEEP(member)    YogGC_keep(env, &data->member, keeper, heap)
     KEEP(vars);
     KEEP(const2index);
     KEEP(last_inst);
@@ -1263,10 +1261,10 @@ alloc_local_vars_table_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg
 }
 
 static void 
-AllocLocalVarsTableArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+AllocLocalVarsTableArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     AllocLocalVarsTableArg* arg = ptr;
-    arg->names = YogVal_keep(env, arg->names, keeper);
+    YogGC_keep(env, &arg->names, keeper, heap);
 }
 
 static YogVal 
@@ -1632,10 +1630,10 @@ vars_flags2type_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
 }
 
 static void 
-Flags2TypeArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+Flags2TypeArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     Flags2TypeArg* arg = ptr;
-#define KEEP(member)    arg->member = YogVal_keep(env, arg->member, keeper)
+#define KEEP(member)    YogGC_keep(env, &arg->member, keeper, heap)
     KEEP(vars);
     KEEP(outer);
 #undef KEEP
@@ -1832,10 +1830,10 @@ get_last_lineno(YogEnv* env, YogVal stmts)
 }
 
 static void 
-FinallyListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+FinallyListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     FinallyListEntry* ent = ptr;
-#define KEEP(member)    ent->member = YogVal_keep(env, ent->member, keeper)
+#define KEEP(member)    YogGC_keep(env, &ent->member, keeper, heap)
     KEEP(prev);
     KEEP(node);
 #undef KEEP

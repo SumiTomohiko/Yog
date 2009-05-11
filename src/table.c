@@ -41,13 +41,13 @@
 #define TABLE_ENTRY_TOP(table, i)   (PTR_AS(YogTableEntryArray, PTR_AS(YogTable, table)->bins)->items[(i)])
 
 static void 
-keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogTableEntryArray* array = ptr;
     unsigned int size = array->size;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
-        array->items[i] = YogVal_keep(env, array->items[i], keeper);
+        YogGC_keep(env, &array->items[i], keeper, heap);
     }
 }
 
@@ -177,10 +177,10 @@ stat_col()
 #endif
 
 static void 
-keep_table_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+keep_table_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogTable* tbl = ptr;
-    tbl->bins = YogVal_keep(env, tbl->bins, keeper);
+    YogGC_keep(env, &tbl->bins, keeper, heap);
 }
 
 static YogVal 
@@ -272,10 +272,10 @@ YogTable_lookup(YogEnv* env, YogVal table, YogVal key, YogVal* value)
 }
 
 static void 
-keep_entry_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+keep_entry_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogTableEntry* entry = ptr;
-#define KEEP(member)    entry->member = YogVal_keep(env, entry->member, keeper)
+#define KEEP(member)    YogGC_keep(env, &entry->member, keeper, heap)
     KEEP(key);
     KEEP(record);
     KEEP(next);

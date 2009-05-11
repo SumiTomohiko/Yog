@@ -44,60 +44,57 @@ YogFrame_add_locals(YogEnv* env, YogCFrame* frame, unsigned int n, ...)
 #endif
 
 static void 
-YogFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogFrame* frame = ptr;
-    frame->prev = YogVal_keep(env, frame->prev, keeper);
+    YogGC_keep(env, &frame->prev, keeper, heap);
 }
 
-#define KEEP(member)        frame->member = (*keeper)(env, frame->member)
-#define KEEP_VAL(member)    do { \
-    frame->member = YogVal_keep(env, frame->member, keeper); \
-} while (0)
+#define KEEP(member)    YogGC_keep(env, &frame->member, keeper, heap)
 
 static void 
-YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogFrame_keep_children(env, ptr, keeper);
+    YogFrame_keep_children(env, ptr, keeper, heap);
 
     YogCFrame* frame = ptr;
-    KEEP_VAL(self);
-    KEEP_VAL(f);
-    KEEP_VAL(args);
+    KEEP(self);
+    KEEP(f);
+    KEEP(args);
 #if 0
-    KEEP_VAL(locals);
+    KEEP(locals);
 #endif
 }
 
 static void 
-YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogFrame_keep_children(env, ptr, keeper);
+    YogFrame_keep_children(env, ptr, keeper, heap);
 
     YogScriptFrame* frame = ptr;
-    frame->code = YogVal_keep(env, frame->code, keeper);
-    KEEP_VAL(stack);
-    KEEP_VAL(globals);
-    KEEP_VAL(outer_vars);
+    KEEP(code);
+    KEEP(stack);
+    KEEP(globals);
+    KEEP(outer_vars);
 }
 
 static void 
-YogNameFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogNameFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogScriptFrame_keep_children(env, ptr, keeper);
+    YogScriptFrame_keep_children(env, ptr, keeper, heap);
 
     YogNameFrame* frame = ptr;
-    frame->self = YogVal_keep(env, frame->self, keeper);
-    KEEP_VAL(vars);
+    KEEP(self);
+    KEEP(vars);
 }
 
 static void 
-YogMethodFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogMethodFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogScriptFrame_keep_children(env, ptr, keeper);
+    YogScriptFrame_keep_children(env, ptr, keeper, heap);
 
     YogMethodFrame* frame = ptr;
-    KEEP_VAL(vars);
+    KEEP(vars);
 }
 
 #undef KEEP
@@ -201,14 +198,14 @@ YogCFrame_new(YogEnv* env)
 }
 
 static void 
-YogOuterVars_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogOuterVars_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogOuterVars* vars = ptr;
 
     unsigned int size = vars->size;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
-        vars->items[i] = YogVal_keep(env, vars->items[i], keeper);
+        YogGC_keep(env, &vars->items[i], keeper, heap);
     }
 }
 

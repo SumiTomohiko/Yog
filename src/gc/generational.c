@@ -38,9 +38,9 @@ YogGenerational_oldify_all(YogEnv* env, YogGenerational* gen)
 }
 
 void* 
-YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
+YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper, void* heap)
 {
-    YogGenerational* gen = PTR_AS(YogThread, env->thread)->generational;
+    YogGenerational* gen = heap;
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
     DEBUG(DPRINTF("alive: %p (%p)", header, ptr));
     if (header->forwarding_addr != NULL) {
@@ -72,26 +72,27 @@ YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keepe
         DEBUG(DPRINTF("tenure: %p-%p (%p)->%p-%p (%p)", header, (unsigned char*)header + header->size, ptr, (YogMarkSweepCompactHeader*)p - 1, (unsigned char*)((YogMarkSweepCompactHeader*)p) + header->size, p));
         memcpy(p, ptr, size);
         header->forwarding_addr = (YogMarkSweepCompactHeader*)p - 1;
-        YogMarkSweepCompact_mark_recursively(env, p, obj_keeper);
+        YogMarkSweepCompact_mark_recursively(env, p, obj_keeper, NULL);
         return p;
     }
 }
 
-static void* 
-major_gc_keep_object(YogEnv* env, void* ptr) 
+static void*
+major_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 {
     if (ptr == NULL) {
         return NULL;
     }
 
     if (!IS_YOUNG(ptr)) {
-        return YogMarkSweepCompact_mark_recursively(env, ptr, major_gc_keep_object);
+        return YogMarkSweepCompact_mark_recursively(env, ptr, major_gc_keep_object, heap);
     }
     else {
-        return YogGenerational_copy_young_object(env, ptr, major_gc_keep_object);
+        return YogGenerational_copy_young_object(env, ptr, major_gc_keep_object, heap);
     }
 }
 
+#if 0
 static void* 
 update_pointer(YogEnv* env, void* ptr) 
 {
@@ -116,6 +117,7 @@ update_pointer(YogEnv* env, void* ptr)
         return YogMarkSweepCompact_update_pointer(env, ptr, update_pointer);
     }
 }
+#endif
 
 static void 
 initialize_young_updated_callback(YogEnv* env, YogCopyingHeader* header) 
@@ -148,8 +150,8 @@ YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
     DEBUG(DPRINTF("major GC done"));
 }
 
-static void* 
-minor_gc_keep_object(YogEnv* env, void* ptr) 
+static void*
+minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 {
     if (ptr == NULL) {
         return NULL;
@@ -158,7 +160,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr)
         return ptr;
     }
 
-    return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object);
+    return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object, heap);
 }
 
 void 

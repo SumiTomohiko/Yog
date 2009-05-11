@@ -54,12 +54,12 @@ YogCharArray_new_str(YogEnv* env, const char* s)
 }
 
 static void 
-YogString_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogString_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogBasicObj_keep_children(env, ptr, keeper);
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogString* s = ptr;
-#define KEEP(member)    s->member = YogVal_keep(env, s->member, keeper)
+#define KEEP(member)    YogGC_keep(env, &s->member, keeper, heap)
     KEEP(body);
     KEEP(encoding);
 #undef KEEP

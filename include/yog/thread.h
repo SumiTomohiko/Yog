@@ -174,6 +174,18 @@ typedef struct YogThread YogThread;
 #define ADD_REF(env, ptr)
 #define MODIFY(env, fp, val)     (fp) = (val)
 
+#if defined(GC_COPYING)
+#   define THREAD_GC    copying
+#elif defined(GC_MARK_SWEEP)
+#   define THREAD_GC    mark_sweep
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   define THREAD_GC    mark_sweep_compact
+#elif defined(GC_GENERATIONAL)
+#   define THREAD_GC    generational
+#elif defined(GC_BDW)
+#   define THREAD_GC    bdw
+#endif
+
 /* PROTOTYPE_START */
 
 /**

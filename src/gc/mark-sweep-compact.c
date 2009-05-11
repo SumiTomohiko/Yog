@@ -108,7 +108,7 @@ ptr2page(void* p)
 }
 
 void* 
-YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper obj_keeper) 
+YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper obj_keeper, void* heap) 
 {
     if (ptr == NULL) {
         return NULL;
@@ -125,7 +125,7 @@ YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper obj_ke
 
         ChildrenKeeper keeper = header->keeper;
         if (keeper != NULL) {
-            (*keeper)(env, ptr, obj_keeper);
+            (*keeper)(env, ptr, obj_keeper, heap);
         }
     }
 
@@ -454,7 +454,7 @@ copy_object(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactH
 }
 
 void* 
-YogMarkSweepCompact_update_pointer(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogMarkSweepCompact_update_pointer(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     if (ptr == NULL) {
         return NULL;
@@ -466,7 +466,7 @@ YogMarkSweepCompact_update_pointer(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
         ChildrenKeeper children_keeper = header->keeper;
         if (children_keeper != NULL) {
-            (*children_keeper)(env, ptr, keeper);
+            (*children_keeper)(env, ptr, keeper, heap);
         }
 
         if (header->prev != NULL) {
@@ -482,9 +482,9 @@ YogMarkSweepCompact_update_pointer(YogEnv* env, void* ptr, ObjectKeeper keeper)
 }
 
 static void* 
-update_pointer(YogEnv* env, void* ptr) 
+update_pointer(YogEnv* env, void* ptr, void* heap)
 {
-    return YogMarkSweepCompact_update_pointer(env, ptr, update_pointer);
+    return YogMarkSweepCompact_update_pointer(env, ptr, update_pointer, heap);
 }
 
 void 
@@ -496,7 +496,7 @@ YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectK
     iterate_objects(msc, &compactor, set_forward_address);
     YogMarkSweepCompactPage* first_free_page = compactor.next_page;
 
-    (*msc->root_keeper)(env, msc->root, update_pointer);
+    (*msc->root_keeper)(env, msc->root, update_pointer, msc);
     YogMarkSweepCompactHeader** front = &msc->header;
     if (*front != NULL) {
         *front = (*front)->forwarding_addr;
@@ -546,16 +546,16 @@ YogMarkSweepCompact_delete_garbage(YogEnv* env, YogMarkSweepCompact* msc)
 }
 
 #if defined(GC_MARK_SWEEP_COMPACT)
-static void* 
-keep_object(YogEnv* env, void* ptr) 
+static void*
+keep_object(YogEnv* env, void* ptr, void* heap)
 {
-    return YogMarkSweepCompact_mark_recursively(env, ptr, keep_object);
+    return YogMarkSweepCompact_mark_recursively(env, ptr, keep_object, heap);
 }
 
 void 
 YogMarkSweepCompact_keep_vm(YogEnv* env, YogMarkSweepCompact* msc)
 {
-    YogVm_keep_children(env, env->vm, keep_object);
+    YogVm_keep_children(env, env->vm, keep_object, msc);
 }
 
 void
@@ -569,7 +569,7 @@ YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc)
 {
     YogMarkSweepCompact_prepare(env, msc);
 
-    (*msc->root_keeper)(env, msc->root, keep_object);
+    (*msc->root_keeper)(env, msc->root, keep_object, msc);
 
     YogMarkSweepCompact_delete_garbage(env, msc);
 
@@ -821,7 +821,7 @@ YogMarkSweepCompact_finalize(YogEnv* env, YogMarkSweepCompact* msc)
 
 #if defined(GC_GENERATIONAL)
 static void* 
-minor_gc_keep_object(YogEnv* env, void* ptr) 
+minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 {
     if (ptr == NULL) {
         return NULL;
@@ -833,7 +833,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr)
     YogVal thread = env->thread;
     YogMarkSweepCompact* msc = &PTR_AS(YogThread, thread)->generational->msc;
     msc->has_young_ref = TRUE;
-    return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object);
+    return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object, heap);
 }
 
 #define ITERATE_PAGES(env, msc, test_page, proc)    do { \
@@ -871,7 +871,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr)
         if (IS_OBJ_USED(header)) { \
             ChildrenKeeper keeper = header->keeper; \
             if (keeper != NULL) { \
-                (*keeper)(env, header + 1, minor_gc_keep_object); \
+                (*keeper)(env, header + 1, minor_gc_keep_object, msc); \
             } \
         } \
     } \

@@ -3,10 +3,10 @@
 #include "yog/yog.h"
 
 static void 
-keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogStackTraceEntry* entry = ptr;
-#define KEEP(member)    entry->member = YogVal_keep(env, entry->member, keeper)
+#define KEEP(member)    YogGC_keep(env, &entry->member, keeper, heap)
     KEEP(lower);
     KEEP(filename);
 #undef KEEP_MEMBER

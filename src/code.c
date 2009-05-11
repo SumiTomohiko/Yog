@@ -184,19 +184,19 @@ YogCode_dump(YogEnv* env, YogVal code)
 }
 
 static void 
-keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogCode* code = ptr;
 
-    code->arg_info = YogVal_keep(env, code->arg_info, keeper);
+    YogGC_keep(env, &code->arg_info, keeper, heap);
 
 #define KEEP_MEMBER(member)     do { \
-    code->member = (*keeper)(env, (void*)code->member); \
+    code->member = (*keeper)(env, (void*)code->member, heap); \
 } while (0)
     KEEP_MEMBER(local_vars_names);
 #undef KEEP_MEMBER
 
-#define KEEP(member)    code->member = YogVal_keep(env, code->member, keeper)
+#define KEEP(member)    YogGC_keep(env, &code->member, keeper, heap)
     KEEP(lineno_tbl);
     KEEP(insts);
     KEEP(consts);

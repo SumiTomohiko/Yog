@@ -35,14 +35,14 @@ YogArray_size(YogEnv* env, YogVal array)
 }
 
 static void 
-YogValArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogValArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogValArray* array = ptr;
 
     unsigned int size = array->size;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
-        array->items[i] = YogVal_keep(env, array->items[i], keeper);
+        YogGC_keep(env, &array->items[i], keeper, heap);
     }
 }
 
@@ -125,10 +125,10 @@ YogArray_extend(YogEnv* env, YogVal array, YogVal a)
 }
 
 static void 
-YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogArray* array = ptr;
-    array->body = YogVal_keep(env, array->body, keeper);
+    (*keeper)(env, &array->body, heap);
 }
 
 YogVal 

@@ -266,13 +266,12 @@ static void yyGrowStack(YogVal p){
 #endif
 
 static void 
-LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     yyParser* pParser = ptr;
     int i;
     for (i = 0; i < pParser->yyidx; i++) {
-        YogVal minor = pParser->yystack[i + 1].minor.yy0;
-        pParser->yystack[i + 1].minor.yy0 = YogVal_keep(env, minor, keeper);
+        YogGC_keep(env, &pParser->yystack[i + 1].minor.yy0, keeper, heap);
     }
 }
 

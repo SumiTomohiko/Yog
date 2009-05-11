@@ -281,6 +281,16 @@ YogGC_perform_major(YogEnv* env)
 }
 #endif
 
+void 
+YogGC_keep(YogEnv* env, YogVal* val, ObjectKeeper keeper, void* heap) 
+{
+    if (!IS_PTR(*val)) {
+        return;
+    }
+
+    *val = PTR2VAL((*keeper)(env, VAL2PTR(*val), heap));
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

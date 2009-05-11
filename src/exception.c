@@ -10,13 +10,15 @@
 #include "yog/yog.h"
 
 static void 
-keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogBasicObj_keep_children(env, ptr, keeper);
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogException* exc = ptr;
-    exc->stack_trace = YogVal_keep(env, exc->stack_trace, keeper);
-    exc->message = YogVal_keep(env, exc->message, keeper);
+#define KEEP(member)    YogGC_keep(env, &exc->member, keeper, heap)
+    KEEP(stack_trace);
+    KEEP(message);
+#undef KEEP
 }
 
 static YogVal 

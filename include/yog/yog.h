@@ -82,8 +82,8 @@ typedef unsigned long long pc_t;
 
 typedef struct YogEnv YogEnv;
 
-typedef void* (*ObjectKeeper)(YogEnv*, void*);
-typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
+typedef void* (*ObjectKeeper)(YogEnv*, void*, void*);
+typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper, void*);
 typedef void (*Finalizer)(YogEnv*, void*);
 
 typedef struct YogBasicObj YogBasicObj;
@@ -100,7 +100,6 @@ YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
 YogVal YogVal_get_klass(YogEnv*, YogVal);
 int YogVal_hash(YogEnv*, YogVal);
 BOOL YogVal_is_subklass_of(YogEnv*, YogVal, YogVal);
-YogVal YogVal_keep(YogEnv*, YogVal, ObjectKeeper);
 void YogVal_print(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */

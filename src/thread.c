@@ -24,14 +24,17 @@
 #endif
 
 static void 
-keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogThread* thread = ptr;
 
-#define KEEP(m)    thread->m = YogVal_keep(env, thread->m, keeper)
+#define KEEP(member)    YogGC_keep(env, &thread->member, keeper, heap)
     KEEP(prev);
     KEEP(next);
+#undef KEEP
 
+    void* thread_heap = thread->THREAD_GC;
+#define KEEP(member)    YogGC_keep(env, &thread->member, keeper, thread_heap)
     KEEP(cur_frame);
     KEEP(jmp_val);
 #undef KEEP
@@ -49,7 +52,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
             for (j = 0; j < locals->size; j++) {
                 YogVal* val = &vals[j];
                 DEBUG(DPRINTF("val=%p", val));
-                *val = YogVal_keep(env, *val, keeper);
+                YogGC_keep(env, val, keeper, thread_heap);
             }
         }
 
@@ -118,7 +121,7 @@ YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_siz
 void 
 YogThread_config_generational(YogEnv* env, YogVal thread, BOOL gc_stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure, void* root, ChildrenKeeper root_keeper) 
 {
-    YogGenerational* generational = sizeof(YogGenerational);
+    YogGenerational* generational = malloc(sizeof(YogGenerational));
     YogGenerational_initialize(env, generational, gc_stress, young_heap_size, old_chunk_size, old_threshold, tenure, root, root_keeper);
     PTR_AS(YogThread, thread)->generational = generational;
 }

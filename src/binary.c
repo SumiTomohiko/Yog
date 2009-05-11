@@ -142,10 +142,10 @@ YogBinary_push_pc(YogEnv* env, YogVal binary, pc_t pc)
 #undef PUSH_TYPE
 
 static void 
-YogBinary_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogBinary_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBinary* bin = ptr;
-    bin->body = YogVal_keep(env, bin->body, keeper);
+    YogGC_keep(env, &bin->body, keeper, heap);
 }
 
 YogVal 

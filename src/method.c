@@ -5,21 +5,18 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-#define KEEP_BASIC_OBJ  YogBasicObj_keep_children(env, ptr, keeper)
-
-#define KEEP_VAL(member)    do { \
-    method->member = YogVal_keep(env, method->member, keeper); \
-} while (0)
+#define KEEP_BASIC_OBJ      YogBasicObj_keep_children(env, ptr, keeper, heap)
+#define KEEP_VAL(member)    YogGC_keep(env, &method->member, keeper, heap)
 #define KEEP_SELF           KEEP_VAL(self)
 
 static void 
-YogBuiltinBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogBuiltinBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     KEEP_BASIC_OBJ;
 
     YogBuiltinBoundMethod* method = ptr;
     KEEP_SELF;
-    method->f = YogVal_keep(env, method->f, keeper);
+    KEEP_VAL(f);
 }
 
 static YogVal 
@@ -37,13 +34,13 @@ YogBuiltinBoundMethod_allocate(YogEnv* env, YogVal klass)
 }
 
 static void 
-YogScriptMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogScriptMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     KEEP_BASIC_OBJ;
 
     YogScriptMethod* method = ptr;
 
-    method->code = YogVal_keep(env, method->code, keeper);
+    KEEP_VAL(code);
     KEEP_VAL(globals);
     KEEP_VAL(outer_vars);
 }
@@ -59,9 +56,9 @@ YogScriptMethod_init(YogEnv* env, YogVal method, YogVal klass)
 }
 
 static void 
-YogBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogBoundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogScriptMethod_keep_children(env, ptr, keeper);
+    YogScriptMethod_keep_children(env, ptr, keeper, heap);
 
     YogBoundMethod* method = ptr;
     KEEP_SELF;
@@ -82,12 +79,12 @@ YogBoundMethod_allocate(YogEnv* env, YogVal klass)
 }
 
 static void 
-YogBuiltinUnboundMethod_keep_chldren(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogBuiltinUnboundMethod_keep_chldren(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     KEEP_BASIC_OBJ;
 
     YogBuiltinUnboundMethod* method = ptr;
-    method->f = YogVal_keep(env, method->f, keeper);
+    KEEP_VAL(f);
 }
 
 static YogVal 
@@ -104,9 +101,9 @@ YogBuiltinUnboundMethod_allocate(YogEnv* env, YogVal klass)
 }
 
 static void 
-YogUnboundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogUnboundMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogScriptMethod_keep_children(env, ptr, keeper);
+    YogScriptMethod_keep_children(env, ptr, keeper, heap);
 }
 
 static YogVal 

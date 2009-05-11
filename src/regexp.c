@@ -11,12 +11,12 @@
 #include "yog/yog.h"
 
 static void 
-YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogBasicObj_keep_children(env, ptr, keeper);
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogMatch* match = ptr;
-#define KEEP(member)    match->member = YogVal_keep(env, match->member, keeper)
+#define KEEP(member)    YogGC_keep(env, &match->member, keeper, heap)
     KEEP(str);
     KEEP(regexp);
 #undef KEEP

@@ -67,19 +67,19 @@ YogObj_init(YogEnv* env, YogVal obj, unsigned int flags, YogVal klass)
 }
 
 void 
-YogBasicObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogBasicObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap) 
 {
     YogBasicObj* obj = ptr;
-    obj->klass = YogVal_keep(env, obj->klass, keeper);
+    YogGC_keep(env, &obj->klass, keeper, heap);
 }
 
 void 
-YogObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+YogObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogBasicObj_keep_children(env, ptr, keeper);
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogObj* obj = ptr;
-    obj->attrs = YogVal_keep(env, obj->attrs, keeper);
+    YogGC_keep(env, &obj->attrs, keeper, heap);
 }
 
 YogVal 

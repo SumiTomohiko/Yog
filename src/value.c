@@ -4,19 +4,6 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-YogVal 
-YogVal_keep(YogEnv* env, YogVal val, ObjectKeeper keeper) 
-{
-    if (IS_PTR(val)) {
-        void* ptr = VAL2PTR(val);
-        ptr = (*keeper)(env, ptr);
-        return PTR2VAL(ptr);
-    }
-    else {
-        return val;
-    }
-}
-
 void 
 YogVal_print(YogEnv* env, YogVal val) 
 {

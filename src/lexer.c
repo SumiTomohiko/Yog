@@ -18,14 +18,14 @@
 #include "parser.h"
 
 static void 
-YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogToken* token = ptr;
     switch (token->type) {
     case TK_NUMBER: /* FALLTHRU */
     case TK_REGEXP: /* FALLTHRU */
     case TK_STRING: /* FALLTHRU */
-        token->u.val = YogVal_keep(env, token->u.val, keeper);
+        YogGC_keep(env, &token->u.val, keeper, heap);
         break;
     default:
         break;
@@ -623,10 +623,10 @@ YogLexer_read_encoding(YogEnv* env, YogVal lexer)
 }
 
 static void 
-keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper) 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogLexer* lexer = ptr;
-#define KEEP(member)    lexer->member = YogVal_keep(env, lexer->member, keeper)
+#define KEEP(member)    YogGC_keep(env, &lexer->member, keeper, heap)
     KEEP(line);
     KEEP(buffer);
 #undef KEEP

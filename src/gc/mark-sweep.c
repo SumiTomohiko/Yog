@@ -29,27 +29,22 @@ initialize_memory(void* ptr, size_t size)
     memset(ptr, 0xcb, size);
 }
 
-static void* 
-keep_object(YogEnv* env, void* ptr) 
+static void*
+keep_object(YogEnv* env, void* ptr, void* heap)
 {
-    if (ptr == NULL) {
-        return NULL;
-    }
-
     YogMarkSweepHeader* header = (YogMarkSweepHeader*)ptr - 1;
-    if (!header->marked) {
-#if 0
-        GcObjectStat_increment_survive_num(&header->stat);
-        increment_living_object_number(ENV_VM(env), header->stat.survive_num);
-        increment_total_object_number(ENV_VM(env));
-#endif
-        header->marked = TRUE;
-
-        ChildrenKeeper keeper = header->keeper;
-        if (keeper != NULL) {
-            (*keeper)(env, ptr, keep_object);
-        }
+    if (header->marked) {
+        return ptr;
     }
+
+    header->marked = TRUE;
+
+    ChildrenKeeper keeper = header->keeper;
+    if (keeper == NULL) {
+        return ptr;
+    }
+
+    (*keeper)(env, ptr, keep_object, heap);
 
     return ptr;
 }
@@ -123,7 +118,7 @@ YogMarkSweep_gc(YogEnv* env, YogMarkSweep* ms)
 {
     YogMarkSweep_prepare(env, ms);
 
-    (*ms->root_keeper)(env, ms->root, keep_object);
+    (*ms->root_keeper)(env, ms->root, keep_object, ms);
 
     YogMarkSweep_delete_garbage(env, ms);
     YogMarkSweep_post_gc(env, ms);
@@ -190,7 +185,7 @@ YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finaliz
 void 
 YogMarkSweep_keep_vm(YogEnv* env, YogMarkSweep* ms) 
 {
-    YogVm_keep_children(env, env->vm, keep_object);
+    YogVm_keep_children(env, env->vm, keep_object, ms);
 }
 
 /**
