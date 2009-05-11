@@ -28,8 +28,13 @@ YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogThread* thread = ptr;
 
-    thread->cur_frame = YogVal_keep(env, thread->cur_frame, keeper);
-    thread->jmp_val = YogVal_keep(env, thread->jmp_val, keeper);
+#define KEEP(m)    thread->m = YogVal_keep(env, thread->m, keeper)
+    KEEP(prev);
+    KEEP(next);
+
+    KEEP(cur_frame);
+    KEEP(jmp_val);
+#undef KEEP
 
     YogLocals* locals = thread->locals;
     while (locals != NULL) {

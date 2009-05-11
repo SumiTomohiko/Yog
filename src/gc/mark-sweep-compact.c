@@ -132,12 +132,6 @@ YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper obj_ke
     return ptr;
 }
 
-static void* 
-keep_object(YogEnv* env, void* ptr) 
-{
-    return YogMarkSweepCompact_mark_recursively(env, ptr, keep_object);
-}
-
 static void 
 finalize(YogEnv* env, YogMarkSweepCompactHeader* header) 
 {
@@ -551,6 +545,19 @@ YogMarkSweepCompact_delete_garbage(YogEnv* env, YogMarkSweepCompact* msc)
     }
 }
 
+#if defined(GC_MARK_SWEEP_COMPACT)
+static void* 
+keep_object(YogEnv* env, void* ptr) 
+{
+    return YogMarkSweepCompact_mark_recursively(env, ptr, keep_object);
+}
+
+void 
+YogMarkSweepCompact_keep_vm(YogEnv* env, YogMarkSweepCompact* msc)
+{
+    YogVm_keep_children(env, env->vm, keep_object);
+}
+
 void 
 YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc) 
 {
@@ -564,6 +571,7 @@ YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc)
 
     msc->allocated_size = 0;
 }
+#endif
 
 static void 
 initialize_memory(void* ptr, size_t size) 

@@ -292,6 +292,7 @@ YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 
     KEEP_MEMBER(pkgs);
     KEEP_MEMBER(encodings);
+    KEEP_MEMBER(threads);
 #undef KEEP_MEMBER
 }
 

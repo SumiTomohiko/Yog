@@ -2,6 +2,7 @@
 #include <string.h>
 #include "yog/gc.h"
 #include "yog/gc/mark-sweep.h"
+#include "yog/vm.h"
 
 /* TODO: commonize with yog/yog.h */
 #define BOOL    int
@@ -173,6 +174,12 @@ YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finaliz
 #endif
 
     return header + 1;
+}
+
+void 
+YogMarkSweep_keep_vm(YogEnv* env, YogMarkSweep* ms) 
+{
+    YogVm_keep_children(env, env->vm, keep_object);
 }
 
 /**

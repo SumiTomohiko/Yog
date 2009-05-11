@@ -102,6 +102,7 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
     }
 }
 
+#if !defined(GC_BDW)
 static unsigned int 
 count_threads(YogEnv* env, YogVm* vm) 
 {
@@ -116,19 +117,19 @@ count_threads(YogEnv* env, YogVm* vm)
 }
 
 static void 
+wakeup_suspend_threads(YogEnv* env) 
+{
+    YogVm* vm = env->vm;
+    pthread_cond_signal(&vm->gc_finish_cond);
+}
+
+static void 
 wait_suspend(YogEnv* env) 
 {
     YogVm* vm = env->vm;
     while (vm->suspend_counter != 0) {
         pthread_cond_wait(&vm->threads_suspend_cond, &vm->global_interp_lock);
     }
-}
-
-static void 
-wakeup_suspend_threads(YogEnv* env) 
-{
-    YogVm* vm = env->vm;
-    pthread_cond_signal(&vm->gc_finish_cond);
 }
 
 static void 
@@ -150,6 +151,7 @@ perform(YogEnv* env, GC gc)
     }
     YogVm_release_global_interp_lock(env, vm);
 }
+#endif
 
 #if !defined(GC_GENERATIONAL) && !defined(GC_BDW)
 static void 
@@ -172,9 +174,25 @@ prepare(YogEnv* env)
 }
 
 static void 
+keep_vm(YogEnv* env) 
+{
+    YogVal main_thread = MAIN_THREAD(env->vm);
+#if defined(GC_COPYING)
+#   define KEEP     YogCopying_keep_vm
+#elif defined(GC_MARK_SWEEP)
+#   define KEEP     YogMarkSweep_keep_vm
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   define KEEP     YogMarkSweepCompact_keep_vm
+#endif
+    KEEP(env, GET_GC(main_thread));
+#undef KEEP
+}
+
+static void 
 gc(YogEnv* env) 
 {
     prepare(env);
+    keep_vm(env);
 
 #if 0
     YogVal main_thread = MAIN_THREAD(env->vm);

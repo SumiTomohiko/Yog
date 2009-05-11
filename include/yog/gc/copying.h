@@ -77,6 +77,7 @@ void YogCopying_initialize(YogEnv*, YogCopying*, BOOL, size_t, void*, ChildrenKe
 BOOL YogCopying_is_in_active_heap(YogEnv*, YogCopying*, void*);
 BOOL YogCopying_is_in_inactive_heap(YogEnv*, YogCopying*, void*);
 void YogCopying_iterate_objects(YogEnv*, YogCopying*, void (*)(YogEnv*, YogCopyingHeader*));
+void YogCopying_keep_vm(YogEnv*, YogCopying*);
 void YogCopying_prepare(YogEnv*, YogCopying*);
 
 /* PROTOTYPE_END */

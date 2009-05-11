@@ -123,6 +123,12 @@ keep_object(YogEnv* env, void* ptr)
     YogCopying* copying = &PTR_AS(YogThread, env->thread)->copying;
     return YogCopying_copy(env, copying, ptr);
 }
+
+void 
+YogCopying_keep_vm(YogEnv* env, YogCopying* copying) 
+{
+    YogVm_keep_children(env, env->vm, keep_object);
+}
 #endif
 
 static void 
