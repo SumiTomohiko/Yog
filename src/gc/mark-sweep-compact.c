@@ -831,7 +831,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr)
     }
 
     YogVal thread = env->thread;
-    YogMarkSweepCompact* msc = &PTR_AS(YogThread, thread)->generational.msc;
+    YogMarkSweepCompact* msc = &PTR_AS(YogThread, thread)->generational->msc;
     msc->has_young_ref = TRUE;
     return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object);
 }

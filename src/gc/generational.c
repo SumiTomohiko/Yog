@@ -27,7 +27,7 @@ oldify(YogEnv* env, YogGenerational* gen, void* ptr)
 static void 
 oldify_all_callback(YogEnv* env, YogCopyingHeader* header) 
 {
-    YogGenerational* gen = &PTR_AS(YogThread, env->thread)->generational;
+    YogGenerational* gen = PTR_AS(YogThread, env->thread)->generational;
     oldify(env, gen, header + 1);
 }
 
@@ -40,7 +40,7 @@ YogGenerational_oldify_all(YogEnv* env, YogGenerational* gen)
 void* 
 YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper)
 {
-    YogGenerational* gen = &PTR_AS(YogThread, env->thread)->generational;
+    YogGenerational* gen = PTR_AS(YogThread, env->thread)->generational;
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
     DEBUG(DPRINTF("alive: %p (%p)", header, ptr));
     if (header->forwarding_addr != NULL) {

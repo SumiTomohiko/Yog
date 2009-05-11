@@ -63,6 +63,20 @@ YogThread_initialize(YogEnv* env, YogVal thread)
     PTR_AS(YogThread, thread)->prev = YUNDEF;
     PTR_AS(YogThread, thread)->next = YUNDEF;
 
+#if defined(GC_COPYING)
+#   define GC   copying
+#elif defined(GC_MARK_SWEEP)
+#   define GC   mark_sweep
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   define GC   mark_sweep_compact
+#elif defined(GC_GENERATIONAL)
+#   define GC   generational
+#elif defined(GC_BDW)
+#   define GC   bdw
+#endif
+    PTR_AS(YogThread, thread)->GC = NULL;
+#undef GC
+
     PTR_AS(YogThread, thread)->cur_frame = YNIL;
     PTR_AS(YogThread, thread)->jmp_buf_list = NULL;
     PTR_AS(YogThread, thread)->jmp_val = YUNDEF;
@@ -73,7 +87,9 @@ YogThread_initialize(YogEnv* env, YogVal thread)
 void 
 YogThread_config_copying(YogEnv* env, YogVal thread, BOOL gc_stress, size_t init_heap_size, void* root, ChildrenKeeper root_keeper) 
 {
-    YogCopying_initialize(env, &PTR_AS(YogThread, thread)->copying, gc_stress, init_heap_size, root, root_keeper);
+    YogCopying* copying = malloc(sizeof(YogCopying));
+    YogCopying_initialize(env, copying, gc_stress, init_heap_size, root, root_keeper);
+    PTR_AS(YogThread, thread)->copying = copying;
 }
 #endif
 
@@ -81,7 +97,9 @@ YogThread_config_copying(YogEnv* env, YogVal thread, BOOL gc_stress, size_t init
 void 
 YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t threshold, void* root, ChildrenKeeper root_keeper) 
 {
-    YogMarkSweep_initialize(env, &PTR_AS(YogThread, thread)->mark_sweep, threshold, root, root_keeper);
+    YogMarkSweep* mark_sweep = malloc(sizeof(YogMarkSweep));
+    YogMarkSweep_initialize(env, mark_sweep, threshold, root, root_keeper);
+    PTR_AS(YogThread, thread)->mark_sweep = mark_sweep;
 }
 #endif
 
@@ -89,7 +107,10 @@ YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t threshold, void* 
 void 
 YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_size, size_t threshold, void* root, ChildrenKeeper root_keeper) 
 {
-    YogMarkSweepCompact_initialize(env, &PTR_AS(YogThread, thread)->mark_sweep_compact, chunk_size, threshold, root, root_keeper);
+    size_t size = sizeof(YogMarkSweepCompact);
+    YogMarkSweepCompact* mark_sweep_compact = malloc(size);
+    YogMarkSweepCompact_initialize(env, mark_sweep_compact, chunk_size, threshold, root, root_keeper);
+    PTR_AS(YogThread, thread)->mark_sweep_compact = mark_sweep_compact;
 }
 #endif
 
@@ -97,7 +118,9 @@ YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_siz
 void 
 YogThread_config_generational(YogEnv* env, YogVal thread, BOOL gc_stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure, void* root, ChildrenKeeper root_keeper) 
 {
-    YogGenerational_initialize(env, &PTR_AS(YogThread, thread)->generational, gc_stress, young_heap_size, old_chunk_size, old_threshold, tenure, root, root_keeper);
+    YogGenerational* generational = sizeof(YogGenerational);
+    YogGenerational_initialize(env, generational, gc_stress, young_heap_size, old_chunk_size, old_threshold, tenure, root, root_keeper);
+    PTR_AS(YogThread, thread)->generational = generational;
 }
 #endif
 
@@ -105,7 +128,9 @@ YogThread_config_generational(YogEnv* env, YogVal thread, BOOL gc_stress, size_t
 void 
 YogThread_config_bdw(YogEnv* env, YogVal thread, BOOL gc_stress) 
 {
-    YogBDW_initialize(env, &PTR_AS(YogThread, thread)->bdw, gc_stress);
+    YogBDW* bdw = malloc(sizeof(YogBDW));
+    YogBDW_initialize(env, bdw, gc_stress);
+    PTR_AS(YogThread, thread)->bdw = bdw;
 }
 #endif
 
@@ -114,7 +139,7 @@ finalize(YogEnv* env, void* ptr)
 {
 #if defined(GC_COPYING) || defined(GC_MARK_SWEEP) || defined(GC_MARK_SWEEP_COMPACT)
     YogThread* thread = ptr;
-#   define GET_GC(type)    &thread->type
+#   define GET_GC(type)     thread->type
 #   if defined(GC_COPYING)
 #       define FINALIZE     YogCopying_finalize
 #       define GC           GET_GC(copying)
@@ -125,7 +150,9 @@ finalize(YogEnv* env, void* ptr)
 #       define FINALIZE     YogMarkSweepCompact_finalize
 #       define GC           GET_GC(mark_sweep_compact)
 #   endif
-    FINALIZE(env, GC);
+    void* gc = GC;
+    FINALIZE(env, gc);
+    free(gc);
 #   undef GC
 #   undef FINALIZE
 #   undef GET_GC

@@ -18,7 +18,7 @@
 
 #define MAIN_THREAD(vm)     (vm)->threads
 
-#define GC_OF(thread, type)     &PTR_AS(YogThread, (thread))->type
+#define GC_OF(thread, type)     PTR_AS(YogThread, (thread))->type
 #if defined(GC_COPYING)
 #   define GET_GC(thread)       GC_OF(thread, copying)
 #elif defined(GC_MARK_SWEEP)
@@ -75,24 +75,18 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
 
     YogVal thread = env->thread;
 #if defined(GC_COPYING)
-#   define GC       &PTR_AS(YogThread, thread)->copying
 #   define ALLOC    YogCopying_alloc
 #elif defined(GC_MARK_SWEEP)
-#   define GC       &PTR_AS(YogThread, thread)->mark_sweep
 #   define ALLOC    YogMarkSweep_alloc
 #elif defined(GC_MARK_SWEEP_COMPACT)
-#   define GC       &PTR_AS(YogThread, thread)->mark_sweep_compact
 #   define ALLOC    YogMarkSweepCompact_alloc
 #elif defined(GC_GENERATIONAL)
-#   define GC       &PTR_AS(YogThread, thread)->generational
 #   define ALLOC    YogGenerational_alloc
 #elif defined(GC_BDW)
-#   define GC       &PTR_AS(YogThread, thread)->bdw
 #   define ALLOC    YogBDW_alloc
 #endif
-    void* ptr = ALLOC(env, GC, keeper, finalizer, size);
+    void* ptr = ALLOC(env, GET_GC(thread), keeper, finalizer, size);
 #undef ALLOC
-#undef GC
 
     if (ptr != NULL) {
         return PTR2VAL(ptr);
@@ -256,7 +250,7 @@ YogGC_perform(YogEnv* env)
 #endif
 
 #if defined(GC_GENERATIONAL)
-#   define GET_GEN(thread)  &PTR_AS(YogThread, (thread))->generational
+#   define GET_GEN(thread)  PTR_AS(YogThread, (thread))->generational
 static void 
 minor_gc(YogEnv* env) 
 {

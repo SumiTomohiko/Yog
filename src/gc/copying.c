@@ -214,19 +214,6 @@ YogCopying_post_gc(YogEnv* env, YogCopying* copying)
 void 
 YogCopying_do_gc(YogEnv* env, YogCopying* copying, ObjectKeeper obj_keeper) 
 {
-    YogCopyingHeap* from_space = copying->active_heap;
-    YogCopyingHeap* to_space = copying->inactive_heap;
-#if defined(DEBUG)
-#   define PRINT_HEAP(text, heap)   do { \
-    DPRINTF("%s: exec_num=0x%08x, %p-%p", (text), env->vm->gc_stat.exec_num, (heap)->items, (unsigned char*)(heap)->items + (heap)->size); \
-} while (0)
-#else 
-#   define PRINT_HEAP(text, heap)
-#endif
-    PRINT_HEAP("from-space", from_space);
-    PRINT_HEAP("to-space", to_space);
-#undef PRINT_HEAP
-
     (*copying->root_keeper)(env, copying->root, obj_keeper);
 
     while (copying->scanned != copying->unscanned) {
@@ -247,7 +234,7 @@ YogCopying_do_gc(YogEnv* env, YogCopying* copying, ObjectKeeper obj_keeper)
 static void* 
 keep_object(YogEnv* env, void* ptr) 
 {
-    YogCopying* copying = &PTR_AS(YogThread, env->thread)->copying;
+    YogCopying* copying = PTR_AS(YogThread, env->thread)->copying;
     return YogCopying_copy(env, copying, ptr);
 }
 
@@ -260,11 +247,7 @@ YogCopying_keep_vm(YogEnv* env, YogCopying* copying)
 void
 YogCopying_cheney_scan(YogEnv* env, YogCopying* copying)
 {
-    if (copying->scanned == copying->unscanned) {
-        return FALSE;
-    }
-
-    do {
+    while (copying->scanned == copying->unscanned) {
         YogCopyingHeader* header = (YogCopyingHeader*)copying->scanned;
         ChildrenKeeper keeper = header->keeper;
         if (keeper != NULL) {
@@ -272,9 +255,7 @@ YogCopying_cheney_scan(YogEnv* env, YogCopying* copying)
         }
 
         copying->scanned += header->size;
-    } while (copying->scanned != copying->unscanned);
-
-    return TRUE;
+    }
 }
 
 void 

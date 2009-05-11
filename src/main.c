@@ -136,7 +136,7 @@ main(int argc, char* argv[])
     YogThread_config_bdw(&env, dummy_thread, gc_stress);
 #elif defined(GC_COPYING)
     YogThread_config_copying(&env, dummy_thread, gc_stress, init_heap_size, &vm, YogVm_keep_children);
-    YogCopying_allocate_heap(&env, &PTR_AS(YogThread, dummy_thread)->copying);
+    YogCopying_allocate_heap(&env, PTR_AS(YogThread, dummy_thread)->copying);
 #elif defined(GC_MARK_SWEEP)
     if (gc_stress) {
         threshold = 0;

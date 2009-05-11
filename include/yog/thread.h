@@ -147,15 +147,15 @@ struct YogThread {
     YogVal next;
 
 #if defined(GC_COPYING)
-    YogCopying copying;
+    YogCopying* copying;
 #elif defined(GC_MARK_SWEEP)
-    YogMarkSweep mark_sweep;
+    YogMarkSweep* mark_sweep;
 #elif defined(GC_MARK_SWEEP_COMPACT)
-    YogMarkSweepCompact mark_sweep_compact;
+    YogMarkSweepCompact* mark_sweep_compact;
 #elif defined(GC_GENERATIONAL)
-    YogGenerational generational;
+    YogGenerational* generational;
 #elif defined(GC_BDW)
-    YogBDW bdw;
+    YogBDW* bdw;
 #endif
 
     YogVal cur_frame;
