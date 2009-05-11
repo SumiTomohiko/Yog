@@ -134,7 +134,6 @@ YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
     char buffer[size + 1];
     strcpy(buffer, name);
 
-    DEBUG(DPRINTF("buffer=\"%s\"", buffer));
     YogVal s = YogCharArray_new_str(env, buffer);
     PUSH_LOCAL(env, s);
 
