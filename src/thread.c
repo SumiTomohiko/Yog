@@ -23,8 +23,8 @@
 #   define DEBUG(x)
 #endif
 
-void 
-YogThread_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
+static void 
+keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper)
 {
     YogThread* thread = ptr;
 
@@ -109,10 +109,33 @@ YogThread_config_bdw(YogEnv* env, YogVal thread, BOOL gc_stress)
 }
 #endif
 
+static void
+finalize(YogEnv* env, void* ptr)
+{
+#if defined(GC_COPYING) || defined(GC_MARK_SWEEP) || defined(GC_MARK_SWEEP_COMPACT)
+    YogThread* thread = ptr;
+#   define GET_GC(type)    &thread->type
+#   if defined(GC_COPYING)
+#       define FINALIZE     YogCopying_finalize
+#       define GC           GET_GC(copying)
+#   elif defined(GC_MARK_SWEEP)
+#       define FINALIZE     YogMarkSweep_finalize
+#       define GC           GET_GC(mark_sweep)
+#   elif defined(GC_MARK_SWEEP_COMPACT)
+#       define FINALIZE     YogMarkSweepCompact_finalize
+#       define GC           GET_GC(mark_sweep_compact)
+#   endif
+    FINALIZE(env, GC);
+#   undef GC
+#   undef FINALIZE
+#   undef GET_GC
+#endif
+}
+
 YogVal 
 YogThread_new(YogEnv* env) 
 {
-    YogVal thread = ALLOC_OBJ(env, YogThread_keep_children, NULL, YogThread);
+    YogVal thread = ALLOC_OBJ(env, keep_children, finalize, YogThread);
     YogThread_initialize(env, thread);
 
     return thread;

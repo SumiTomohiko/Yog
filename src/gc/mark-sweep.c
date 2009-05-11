@@ -85,13 +85,9 @@ YogMarkSweep_prepare(YogEnv* env, YogMarkSweep* ms)
     }
 }
 
-void 
-YogMarkSweep_gc(YogEnv* env, YogMarkSweep* ms) 
+void
+YogMarkSweep_delete_garbage(YogEnv* env, YogMarkSweep* ms)
 {
-    YogMarkSweep_prepare(env, ms);
-
-    (*ms->root_keeper)(env, ms->root, keep_object);
-
     YogMarkSweepHeader* header = ms->header;
     while (header != NULL) {
         YogMarkSweepHeader* next = header->next;
@@ -114,6 +110,16 @@ YogMarkSweep_gc(YogEnv* env, YogMarkSweep* ms)
 
         header = next;
     }
+}
+
+void 
+YogMarkSweep_gc(YogEnv* env, YogMarkSweep* ms) 
+{
+    YogMarkSweep_prepare(env, ms);
+
+    (*ms->root_keeper)(env, ms->root, keep_object);
+
+    YogMarkSweep_delete_garbage(env, ms);
 
     ms->allocated_size = 0;
 }

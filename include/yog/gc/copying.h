@@ -69,7 +69,9 @@ typedef struct YogCopying YogCopying;
 /* src/gc/copying.c */
 void* YogCopying_alloc(YogEnv*, YogCopying*, ChildrenKeeper, Finalizer, size_t);
 void YogCopying_allocate_heap(YogEnv*, YogCopying*);
+void YogCopying_cheney_scan(YogEnv*, YogCopying*);
 void* YogCopying_copy(YogEnv*, YogCopying*, void*);
+void YogCopying_delete_garbage(YogEnv*, YogCopying*);
 void YogCopying_do_gc(YogEnv*, YogCopying*, ObjectKeeper);
 void YogCopying_finalize(YogEnv*, YogCopying*);
 void YogCopying_gc(YogEnv*, YogCopying*);

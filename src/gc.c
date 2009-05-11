@@ -153,7 +153,7 @@ perform(YogEnv* env, GC gc)
 }
 #endif
 
-#if !defined(GC_GENERATIONAL) && !defined(GC_BDW)
+#if defined(GC_COPYING) || defined(GC_MARK_SWEEP) || defined(GC_MARK_SWEEP_COMPACT)
 static void 
 prepare(YogEnv* env) 
 {
@@ -188,27 +188,45 @@ keep_vm(YogEnv* env)
 #undef KEEP
 }
 
+#if defined(GC_COPYING)
+static void 
+cheney_scan(YogEnv* env) 
+{
+    YogVal thread = env->vm->threads;
+    while (IS_PTR(thread)) {
+        YogCopying_cheney_scan(env, GET_GC(thread));
+        thread = PTR_AS(YogThread, thread)->next;
+    }
+}
+#endif
+
+static void
+delete_garbage(YogEnv* env)
+{
+    YogVal thread = env->vm->threads;
+    while (IS_PTR(thread)) {
+#if defined(GC_COPYING)
+#   define DELETE   YogCopying_delete_garbage
+#elif defined(GC_MARK_SWEEP)
+#   define DELETE   YogMarkSweep_delete_garbage
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   define DELETE   YogMarkSweepCompact_delete_garbage
+#endif
+        DELETE(env, GET_GC(thread));
+#undef DELETE
+        thread = PTR_AS(YogThread, thread)->next;
+    }
+}
+
 static void 
 gc(YogEnv* env) 
 {
     prepare(env);
     keep_vm(env);
-
-#if 0
-    YogVal main_thread = MAIN_THREAD(env->vm);
-#define GET_GC(type)    &PTR_AS(YogThread, main_thread)->type
 #if defined(GC_COPYING)
-    YogCopying* copying = GET_GC(copying);
-    YogCopying_gc(env, copying);
-#elif defined(GC_MARK_SWEEP)
-    YogMarkSweep* mark_sweep = GET_GC(mark_sweep);
-    YogMarkSweep_gc(env, mark_sweep);
-#elif defined(GC_MARK_SWEEP_COMPACT)
-    YogMarkSweepCompact* mark_sweep_compact = GET_GC(mark_sweep_compact);
-    YogMarkSweepCompact_gc(env, mark_sweep_compact);
+    cheney_scan(env);
 #endif
-#undef GET_GC
-#endif
+    delete_garbage(env);
 }
 
 void 
