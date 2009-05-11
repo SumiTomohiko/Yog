@@ -166,6 +166,19 @@ main(int argc, char* argv[])
     env.thread = main_thread;
     YogVm_set_main_thread(&env, &vm, main_thread);
 
+#define GUARD_ENV(env) \
+    YogLocals env_guard; \
+    env_guard.num_vals = 1; \
+    env_guard.size = 1; \
+    env_guard.vals[0] = &((env).thread); \
+    env_guard.vals[1] = NULL; \
+    env_guard.vals[2] = NULL; \
+    env_guard.vals[3] = NULL; \
+    env_guard.vals[4] = NULL; \
+    PUSH_LOCAL_TABLE(&env, env_guard);
+    GUARD_ENV(env);
+#undef GUARD_ENV
+
     vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
 
     do {

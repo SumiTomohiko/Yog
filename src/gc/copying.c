@@ -246,7 +246,7 @@ YogCopying_keep_vm(YogEnv* env, YogCopying* copying)
 void
 YogCopying_cheney_scan(YogEnv* env, YogCopying* copying)
 {
-    while (copying->scanned == copying->unscanned) {
+    while (copying->scanned != copying->unscanned) {
         YogCopyingHeader* header = (YogCopyingHeader*)copying->scanned;
         ChildrenKeeper keeper = header->keeper;
         if (keeper != NULL) {
