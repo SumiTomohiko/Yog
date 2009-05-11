@@ -218,6 +218,24 @@ delete_garbage(YogEnv* env)
     }
 }
 
+static void
+post_gc(YogEnv* env)
+{
+    YogVal thread = env->vm->threads;
+    while (IS_PTR(thread)) {
+#if defined(GC_COPYING)
+#   define POST     YogCopying_post_gc
+#elif defined(GC_MARK_SWEEP)
+#   define POST     YogMarkSweep_post_gc
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   define POST     YogMarkSweepCompact_post_gc
+#endif
+        POST(env, GET_GC(thread));
+#undef POST
+        thread = PTR_AS(YogThread, thread)->next;
+    }
+}
+
 static void 
 gc(YogEnv* env) 
 {
@@ -227,6 +245,7 @@ gc(YogEnv* env)
     cheney_scan(env);
 #endif
     delete_garbage(env);
+    post_gc(env);
 }
 
 void 

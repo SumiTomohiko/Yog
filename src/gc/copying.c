@@ -197,6 +197,20 @@ YogCopying_prepare(YogEnv* env, YogCopying* copying)
     copying->scanned = copying->unscanned = to_space->items;
 }
 
+void
+YogCopying_post_gc(YogEnv* env, YogCopying* copying)
+{
+    YogCopyingHeap* from_space = copying->active_heap;
+    YogCopyingHeap* to_space = copying->inactive_heap;
+
+    size_t size = from_space->free - from_space->items;
+    destroy_memory(from_space->items, size);
+
+    to_space->free = copying->unscanned;
+
+    swap_heap(&copying->active_heap, &copying->inactive_heap);
+}
+
 void 
 YogCopying_do_gc(YogEnv* env, YogCopying* copying, ObjectKeeper obj_keeper) 
 {
@@ -226,13 +240,7 @@ YogCopying_do_gc(YogEnv* env, YogCopying* copying, ObjectKeeper obj_keeper)
     }
 
     YogCopying_delete_garbage(env, copying);
-
-    size_t size = from_space->free - from_space->items;
-    destroy_memory(from_space->items, size);
-
-    to_space->free = copying->unscanned;
-
-    swap_heap(&copying->active_heap, &copying->inactive_heap);
+    YogCopying_post_gc(env, copying);
 }
 
 #if defined(GC_COPYING)

@@ -187,7 +187,6 @@ void YogThread_config_generational(YogEnv*, YogVal, BOOL, size_t, size_t, size_t
 void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t, void*, ChildrenKeeper);
 void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t, size_t, void*, ChildrenKeeper);
 void YogThread_initialize(YogEnv*, YogVal);
-void YogThread_keep_children(YogEnv*, void*, ObjectKeeper);
 YogVal YogThread_new(YogEnv*);
 
 /* PROTOTYPE_END */

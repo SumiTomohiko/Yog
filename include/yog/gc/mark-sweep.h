@@ -34,6 +34,7 @@ void YogMarkSweep_finalize(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_gc(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_initialize(YogEnv*, YogMarkSweep*, size_t, void*, ChildrenKeeper);
 void YogMarkSweep_keep_vm(YogEnv*, YogMarkSweep*);
+void YogMarkSweep_post_gc(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_prepare(YogEnv*, YogMarkSweep*);
 
 /* PROTOTYPE_END */

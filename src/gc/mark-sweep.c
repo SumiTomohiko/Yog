@@ -112,6 +112,12 @@ YogMarkSweep_delete_garbage(YogEnv* env, YogMarkSweep* ms)
     }
 }
 
+void
+YogMarkSweep_post_gc(YogEnv* env, YogMarkSweep* ms)
+{
+    ms->allocated_size = 0;
+}
+
 void 
 YogMarkSweep_gc(YogEnv* env, YogMarkSweep* ms) 
 {
@@ -120,8 +126,7 @@ YogMarkSweep_gc(YogEnv* env, YogMarkSweep* ms)
     (*ms->root_keeper)(env, ms->root, keep_object);
 
     YogMarkSweep_delete_garbage(env, ms);
-
-    ms->allocated_size = 0;
+    YogMarkSweep_post_gc(env, ms);
 }
 
 void 

@@ -558,6 +558,12 @@ YogMarkSweepCompact_keep_vm(YogEnv* env, YogMarkSweepCompact* msc)
     YogVm_keep_children(env, env->vm, keep_object);
 }
 
+void
+YogMarkSweepCompact_post_gc(YogEnv* env, YogMarkSweepCompact* msc)
+{
+    msc->allocated_size = 0;
+}
+
 void 
 YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc) 
 {
@@ -568,8 +574,7 @@ YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc)
     YogMarkSweepCompact_delete_garbage(env, msc);
 
     compact(env, msc);
-
-    msc->allocated_size = 0;
+    YogMarkSweepCompact_post_gc(env, msc);
 }
 #endif
 
