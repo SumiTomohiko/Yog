@@ -3983,6 +3983,7 @@ struct lemon *lemp;
 
   if( lemp->tokenprefix ) prefix = lemp->tokenprefix;
   else                    prefix = "";
+#if 0
   in = file_open(lemp,".h","rb");
   if( in ){
     for(i=1; i<lemp->nterminal && fgets(line,LINESIZE,in); i++){
@@ -3995,6 +3996,7 @@ struct lemon *lemp;
       return;
     }
   }
+#endif
   out = file_open(lemp,".h","wb");
   if( out ){
     for(i=1; i<lemp->nterminal; i++){
