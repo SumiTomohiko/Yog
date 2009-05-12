@@ -32,6 +32,10 @@ initialize_memory(void* ptr, size_t size)
 static void*
 keep_object(YogEnv* env, void* ptr, void* heap)
 {
+    if (ptr == NULL) {
+        return NULL;
+    }
+
     YogMarkSweepHeader* header = (YogMarkSweepHeader*)ptr - 1;
     if (header->marked) {
         return ptr;
