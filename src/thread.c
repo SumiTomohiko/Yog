@@ -51,8 +51,9 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
             unsigned int j;
             for (j = 0; j < locals->size; j++) {
                 YogVal* val = &vals[j];
-                DEBUG(DPRINTF("val=%p", val));
+                DEBUG(YogVal old_val = *val);
                 YogGC_keep(env, val, keeper, thread_heap);
+                DEBUG(DPRINTF("val=%p, 0x%08x->0x%08x", val, old_val, *val));
             }
         }
 

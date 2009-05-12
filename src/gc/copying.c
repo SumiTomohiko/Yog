@@ -273,6 +273,16 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 #if 0
     vm->gc_stat.total_allocated_size += rounded_size;
 #endif
+#if defined(DEBUG)
+#   define PRINT_HEAP(text, heap)   do { \
+    DPRINTF("%s: %p-%p", (text), (heap)->items, (char*)(heap)->items + (heap)->size); \
+} while (0)
+#else 
+#   define PRINT_HEAP(text, heap)
+#endif
+    PRINT_HEAP("active heap", copying->active_heap);
+    PRINT_HEAP("inactive heap", copying->inactive_heap);
+#undef PRINT_HEAP
 
     YogCopyingHeap* heap = copying->active_heap;
 #define REST_SIZE(heap)     ((heap)->size - ((heap)->free - (heap)->items))
@@ -337,17 +347,6 @@ YogCopying_allocate_heap(YogEnv* env, YogCopying* copying)
     size_t heap_size = copying->heap_size;
     copying->active_heap = YogCopyingHeap_new(copying, heap_size);
     copying->inactive_heap = YogCopyingHeap_new(copying, heap_size);
-#if defined(DEBUG)
-#   define PRINT_HEAP(text, heap)   do { \
-    DPRINTF("%s: %p (%p-%p)", (text), (heap), (heap)->items, (unsigned char*)(heap)->items + (heap)->size); \
-} while (0)
-#else 
-#   define PRINT_HEAP(text, heap)
-#endif
-    PRINT_HEAP("active heap", copying->active_heap);
-    PRINT_HEAP("inactive heap", copying->inactive_heap);
-#undef PRINT_HEAP
-
 }
 
 void 

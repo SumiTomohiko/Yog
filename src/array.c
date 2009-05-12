@@ -128,7 +128,7 @@ static void
 YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogArray* array = ptr;
-    (*keeper)(env, &array->body, heap);
+    YogGC_keep(env, &array->body, keeper, heap);
 }
 
 YogVal 
