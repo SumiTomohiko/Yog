@@ -1,6 +1,11 @@
-#include <stdlib.h>
+#if !defined(GC_BDW)
+#   include <stdlib.h>
+#endif
 #if HAVE_SYS_TYPES_H
 #   include <sys/types.h>
+#endif
+#if defined(GC_BDW)
+#   include "gc.h"
 #endif
 #include "yog/gc.h"
 #if defined(GC_COPYING)
@@ -144,10 +149,8 @@ YogThread_config_generational(YogEnv* env, YogVal thread, BOOL gc_stress, size_t
 void 
 YogThread_config_bdw(YogEnv* env, YogVal thread, BOOL gc_stress) 
 {
-    YogBDW* bdw = malloc(sizeof(YogBDW));
+    YogBDW* bdw = GC_MALLOC(sizeof(YogBDW));
     YogBDW_initialize(env, bdw, gc_stress);
-    bdw->refered = TRUE;
-    YogVm_add_heap(env, env->vm, bdw);
 
     PTR_AS(YogThread, thread)->bdw = bdw;
 }
@@ -157,10 +160,12 @@ static void
 finalize(YogEnv* env, void* ptr)
 {
     YogThread* thread = ptr;
+#if !defined(GC_BDW)
     GC_TYPE* heap = thread->THREAD_GC;
     if (heap != NULL) {
         heap->refered = FALSE;
     }
+#endif
     thread->THREAD_GC = NULL;
 }
 

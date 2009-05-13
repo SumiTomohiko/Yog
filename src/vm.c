@@ -436,6 +436,7 @@ YogVm_set_main_thread(YogEnv* env, YogVm* vm, YogVal thread)
     vm->threads = thread;
 }
 
+#if !defined(GC_BDW)
 void
 YogVm_add_heap(YogEnv* env, YogVm* vm, GC_TYPE* heap)
 {
@@ -443,6 +444,7 @@ YogVm_add_heap(YogEnv* env, YogVm* vm, GC_TYPE* heap)
     ADD_TO_LIST(vm->heaps, heap);
     YogVm_release_global_interp_lock(env, vm);
 }
+#endif
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

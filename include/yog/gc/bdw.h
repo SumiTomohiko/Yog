@@ -5,10 +5,6 @@
 #include "yog/yog.h"
 
 struct YogBDW {
-    struct YogBDW* prev;
-    struct YogBDW* next;
-    BOOL refered;
-
     BOOL stress;
 };
 
