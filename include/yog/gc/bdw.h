@@ -2,10 +2,13 @@
 #define __YOG_GC_BDW_H__
 
 #include <stddef.h>
-#include "yog/vm.h"
 #include "yog/yog.h"
 
 struct YogBDW {
+    struct YogBDW* prev;
+    struct YogBDW* next;
+    BOOL refered;
+
     BOOL stress;
 };
 

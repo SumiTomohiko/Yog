@@ -819,6 +819,17 @@ YogMarkSweepCompact_finalize(YogEnv* env, YogMarkSweepCompact* msc)
     }
 }
 
+BOOL
+YogMarkSweepCompact_is_empty(YogEnv* env, YogMarkSweepCompact* msc)
+{
+    if (msc->header == NULL) {
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
+}
+
 #if defined(GC_GENERATIONAL)
 static void* 
 minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)

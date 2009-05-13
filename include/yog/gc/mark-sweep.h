@@ -2,16 +2,13 @@
 #define __YOG_MARK_SWEEP_H__
 
 #include <stddef.h>
-
-/* TODO: commonize with yog/yog.h */
-#if !defined(__YOG_YOG_H__)
-typedef struct YogEnv YogEnv;
-typedef void* (*ObjectKeeper)(YogEnv*, void*);
-typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
-typedef void (*Finalizer)(YogEnv*, void*);
-#endif
+#include "yog/yog.h"
 
 struct YogMarkSweep {
+    struct YogMarkSweep* prev;
+    struct YogMarkSweep* next;
+    BOOL refered;
+
     struct YogMarkSweepHeader* header;
     size_t threshold;
     size_t allocated_size;
@@ -33,6 +30,7 @@ void YogMarkSweep_delete_garbage(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_finalize(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_gc(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_initialize(YogEnv*, YogMarkSweep*, size_t, void*, ChildrenKeeper);
+BOOL YogMarkSweep_is_empty(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_keep_vm(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_post_gc(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_prepare(YogEnv*, YogMarkSweep*);

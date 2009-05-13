@@ -1,6 +1,9 @@
 #include <pthread.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include "yog/env.h"
+#include "yog/gc.h"
 #if defined(GC_COPYING)
 #   include "yog/gc/copying.h"
 #elif defined(GC_MARK_SWEEP)
@@ -12,6 +15,7 @@
 #elif defined(GC_BDW)
 #   include "yog/gc/bdw.h"
 #endif
+#include "yog/misc.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -158,12 +162,18 @@ perform(YogEnv* env, GC gc)
 }
 #endif
 
+#define ITERATE_HEAPS(vm, proc)     do { \
+    GC_TYPE* heap = (vm)->heaps; \
+    while (heap != NULL) { \
+        proc; \
+        heap = heap->next; \
+    }; \
+} while (0)
+
 #if defined(GC_COPYING) || defined(GC_MARK_SWEEP) || defined(GC_MARK_SWEEP_COMPACT)
 static void 
 prepare(YogEnv* env) 
 {
-    YogVal thread = env->vm->threads;
-    while (IS_PTR(thread)) {
 #if defined(GC_COPYING)
 #   define PREPARE  YogCopying_prepare
 #elif defined(GC_MARK_SWEEP)
@@ -171,11 +181,8 @@ prepare(YogEnv* env)
 #elif defined(GC_MARK_SWEEP_COMPACT)
 #   define PREPARE  YogMarkSweepCompact_prepare
 #endif
-        PREPARE(env, GET_GC(thread));
+    ITERATE_HEAPS(env->vm, PREPARE(env, heap));
 #undef PREPARE
-
-        thread = PTR_AS(YogThread, thread)->next;
-    }
 }
 
 static void 
@@ -197,19 +204,13 @@ keep_vm(YogEnv* env)
 static void 
 cheney_scan(YogEnv* env) 
 {
-    YogVal thread = env->vm->threads;
-    while (IS_PTR(thread)) {
-        YogCopying_cheney_scan(env, GET_GC(thread));
-        thread = PTR_AS(YogThread, thread)->next;
-    }
+    ITERATE_HEAPS(env->vm, YogCopying_cheney_scan(env, heap));
 }
 #endif
 
 static void
 delete_garbage(YogEnv* env)
 {
-    YogVal thread = env->vm->threads;
-    while (IS_PTR(thread)) {
 #if defined(GC_COPYING)
 #   define DELETE   YogCopying_delete_garbage
 #elif defined(GC_MARK_SWEEP)
@@ -217,17 +218,13 @@ delete_garbage(YogEnv* env)
 #elif defined(GC_MARK_SWEEP_COMPACT)
 #   define DELETE   YogMarkSweepCompact_delete_garbage
 #endif
-        DELETE(env, GET_GC(thread));
+    ITERATE_HEAPS(env->vm, DELETE(env, heap));
 #undef DELETE
-        thread = PTR_AS(YogThread, thread)->next;
-    }
 }
 
 static void
 post_gc(YogEnv* env)
 {
-    YogVal thread = env->vm->threads;
-    while (IS_PTR(thread)) {
 #if defined(GC_COPYING)
 #   define POST     YogCopying_post_gc
 #elif defined(GC_MARK_SWEEP)
@@ -235,9 +232,59 @@ post_gc(YogEnv* env)
 #elif defined(GC_MARK_SWEEP_COMPACT)
 #   define POST     YogMarkSweepCompact_post_gc
 #endif
-        POST(env, GET_GC(thread));
+    ITERATE_HEAPS(env->vm, POST(env, heap));
 #undef POST
-        thread = PTR_AS(YogThread, thread)->next;
+}
+
+static void
+destroy_memory(void* p, size_t size)
+{
+    memset(p, 0xfd, size);
+}
+
+static void
+free_memory(void* p, size_t size)
+{
+    destroy_memory(p, size);
+    free(p);
+}
+
+static void
+delete_heap(YogEnv* env, GC_TYPE* heap)
+{
+    if (heap->refered) {
+        return;
+    }
+
+#if defined(GC_COPYING)
+#   define FINALIZE     YogCopying_finalize
+#   define IS_EMPTY     YogCopying_is_empty
+#elif defined(GC_MARK_SWEEP)
+#   define FINALIZE     YogMarkSweep_finalize
+#   define IS_EMPTY     YogMarkSweep_is_empty
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   define FINALIZE     YogMarkSweepCompact_finalize
+#   define IS_EMPTY     YogMarkSweepCompact_is_empty
+#endif
+    if (!IS_EMPTY(env, heap)) {
+        return;
+    }
+
+    FINALIZE(env, heap);
+    DELETE_FROM_LIST(env->vm->heaps, heap);
+    free_memory(heap, sizeof(GC_TYPE));
+#undef IS_EMPTY
+#undef FINALIZE
+}
+
+static void
+delete_heaps(YogEnv* env)
+{
+    GC_TYPE* heap = env->vm->heaps;
+    while (heap != NULL) {
+        GC_TYPE* next = heap->next;
+        delete_heap(env, heap);
+        heap = next;
     }
 }
 
@@ -251,6 +298,7 @@ gc(YogEnv* env)
 #endif
     delete_garbage(env);
     post_gc(env);
+    delete_heaps(env);
 }
 
 void 

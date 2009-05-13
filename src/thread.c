@@ -93,6 +93,9 @@ YogThread_config_copying(YogEnv* env, YogVal thread, BOOL gc_stress, size_t init
 {
     YogCopying* copying = malloc(sizeof(YogCopying));
     YogCopying_initialize(env, copying, gc_stress, init_heap_size, root, root_keeper);
+    copying->refered = TRUE;
+    YogVm_add_heap(env, env->vm, copying);
+
     PTR_AS(YogThread, thread)->copying = copying;
 }
 #endif
@@ -103,6 +106,9 @@ YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t threshold, void* 
 {
     YogMarkSweep* mark_sweep = malloc(sizeof(YogMarkSweep));
     YogMarkSweep_initialize(env, mark_sweep, threshold, root, root_keeper);
+    mark_sweep->refered = TRUE;
+    YogVm_add_heap(env, env->vm, mark_sweep);
+
     PTR_AS(YogThread, thread)->mark_sweep = mark_sweep;
 }
 #endif
@@ -114,6 +120,9 @@ YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_siz
     size_t size = sizeof(YogMarkSweepCompact);
     YogMarkSweepCompact* mark_sweep_compact = malloc(size);
     YogMarkSweepCompact_initialize(env, mark_sweep_compact, chunk_size, threshold, root, root_keeper);
+    mark_sweep_compact->refered = TRUE;
+    YogVm_add_heap(env, env->vm, mark_sweep_compact);
+
     PTR_AS(YogThread, thread)->mark_sweep_compact = mark_sweep_compact;
 }
 #endif
@@ -124,6 +133,9 @@ YogThread_config_generational(YogEnv* env, YogVal thread, BOOL gc_stress, size_t
 {
     YogGenerational* generational = malloc(sizeof(YogGenerational));
     YogGenerational_initialize(env, generational, gc_stress, young_heap_size, old_chunk_size, old_threshold, tenure, root, root_keeper);
+    generational->refered = TRUE;
+    YogVm_add_heap(env, env->vm, generational);
+
     PTR_AS(YogThread, thread)->generational = generational;
 }
 #endif
@@ -134,6 +146,9 @@ YogThread_config_bdw(YogEnv* env, YogVal thread, BOOL gc_stress)
 {
     YogBDW* bdw = malloc(sizeof(YogBDW));
     YogBDW_initialize(env, bdw, gc_stress);
+    bdw->refered = TRUE;
+    YogVm_add_heap(env, env->vm, bdw);
+
     PTR_AS(YogThread, thread)->bdw = bdw;
 }
 #endif
@@ -141,26 +156,12 @@ YogThread_config_bdw(YogEnv* env, YogVal thread, BOOL gc_stress)
 static void
 finalize(YogEnv* env, void* ptr)
 {
-#if defined(GC_COPYING) || defined(GC_MARK_SWEEP) || defined(GC_MARK_SWEEP_COMPACT)
     YogThread* thread = ptr;
-#   define GET_GC(type)     thread->type
-#   if defined(GC_COPYING)
-#       define FINALIZE     YogCopying_finalize
-#       define GC           GET_GC(copying)
-#   elif defined(GC_MARK_SWEEP)
-#       define FINALIZE     YogMarkSweep_finalize
-#       define GC           GET_GC(mark_sweep)
-#   elif defined(GC_MARK_SWEEP_COMPACT)
-#       define FINALIZE     YogMarkSweepCompact_finalize
-#       define GC           GET_GC(mark_sweep_compact)
-#   endif
-    void* gc = GC;
-    FINALIZE(env, gc);
-    free(gc);
-#   undef GC
-#   undef FINALIZE
-#   undef GET_GC
-#endif
+    GC_TYPE* heap = thread->THREAD_GC;
+    if (heap != NULL) {
+        heap->refered = FALSE;
+    }
+    thread->THREAD_GC = NULL;
 }
 
 YogVal 

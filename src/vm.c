@@ -17,6 +17,7 @@
 #include "yog/int.h"
 #include "yog/klass.h"
 #include "yog/method.h"
+#include "yog/misc.h"
 #include "yog/nil.h"
 #include "yog/package.h"
 #include "yog/regexp.h"
@@ -341,6 +342,7 @@ YogVm_init(YogVm* vm)
     vm->suspend_counter = 0;
     pthread_cond_init(&vm->threads_suspend_cond, NULL);
     pthread_cond_init(&vm->gc_finish_cond, NULL);
+    vm->heaps = NULL;
 }
 
 #if 0
@@ -432,6 +434,14 @@ void
 YogVm_set_main_thread(YogEnv* env, YogVm* vm, YogVal thread) 
 {
     vm->threads = thread;
+}
+
+void
+YogVm_add_heap(YogEnv* env, YogVm* vm, GC_TYPE* heap)
+{
+    YogVm_aquire_global_interp_lock(env, vm);
+    ADD_TO_LIST(vm->heaps, heap);
+    YogVm_release_global_interp_lock(env, vm);
 }
 
 /**

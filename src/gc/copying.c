@@ -363,6 +363,18 @@ YogCopying_initialize(YogEnv* env, YogCopying* copying, BOOL stress, size_t heap
     copying->root_keeper = root_keeper;
 }
 
+BOOL
+YogCopying_is_empty(YogEnv* env, YogCopying* copying)
+{
+    YogCopyingHeap* active_heap = copying->active_heap;
+    if (active_heap->items == active_heap->free) {
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
+}
+
 #if defined(TEST_COPYING)
 #define HEAP_SIZE   (1 * 1024 * 1024)
 

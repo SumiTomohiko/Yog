@@ -23,6 +23,10 @@ typedef void (*Finalizer)(YogEnv*, void*);
 #define ERR_GEN_UNKNOWN     4
 
 struct YogGenerational {
+    struct YogGenerational* prev;
+    struct YogGenerational* next;
+    BOOL refered;
+
     unsigned int err;
     struct YogCopying copying;
     struct YogMarkSweepCompact msc;

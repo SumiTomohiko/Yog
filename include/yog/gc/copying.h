@@ -4,17 +4,7 @@
 #if HAVE_SYS_TYPES_H
 #   include <sys/types.h>
 #endif
-
-/* TODO: commonize with yog/yog.h */
-#if !defined(__YOG_YOG_H__) && !defined(__YOG_GC_MARK_SWEEP_COMPACT_H__)
-typedef int BOOL;
-#define FALSE   0
-#define TRUE    (!(FALSE))
-typedef struct YogEnv YogEnv;
-typedef void* (*ObjectKeeper)(YogEnv*, void*);
-typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
-typedef void (*Finalizer)(YogEnv*, void*);
-#endif
+#include "yog/yog.h"
 
 struct YogCopyingHeader {
 #if 0
@@ -47,6 +37,10 @@ struct YogCopyingHeap {
 typedef struct YogCopyingHeap YogCopyingHeap;
 
 struct YogCopying {
+    struct YogCopying* prev;
+    struct YogCopying* next;
+    BOOL refered;
+
     unsigned int err;
     BOOL stress;
     size_t heap_size;
@@ -76,6 +70,7 @@ void YogCopying_do_gc(YogEnv*, YogCopying*, ObjectKeeper);
 void YogCopying_finalize(YogEnv*, YogCopying*);
 void YogCopying_gc(YogEnv*, YogCopying*);
 void YogCopying_initialize(YogEnv*, YogCopying*, BOOL, size_t, void*, ChildrenKeeper);
+BOOL YogCopying_is_empty(YogEnv*, YogCopying*);
 BOOL YogCopying_is_in_active_heap(YogEnv*, YogCopying*, void*);
 BOOL YogCopying_is_in_inactive_heap(YogEnv*, YogCopying*, void*);
 void YogCopying_iterate_objects(YogEnv*, YogCopying*, void (*)(YogEnv*, YogCopyingHeader*));

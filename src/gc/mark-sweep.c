@@ -192,6 +192,17 @@ YogMarkSweep_keep_vm(YogEnv* env, YogMarkSweep* ms)
     YogVm_keep_children(env, env->vm, keep_object, ms);
 }
 
+BOOL
+YogMarkSweep_is_empty(YogEnv* env, YogMarkSweep* ms)
+{
+    if (ms->header == NULL) {
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

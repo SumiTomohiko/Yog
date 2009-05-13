@@ -8,6 +8,18 @@
 #define ALLOC_OBJ_ITEM(env, keep_children, finalizer, type, size, item_type) \
     ALLOC_OBJ_SIZE(env, keep_children, finalizer, sizeof(type) + size * sizeof(item_type))
 
+#if defined(GC_COPYING)
+#   define GC_TYPE  YogCopying
+#elif defined(GC_MARK_SWEEP)
+#   define GC_TYPE  YogMarkSweep
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   define GC_TYPE  YogMarkSweepCompact
+#elif defined(GC_GENERATIONAL)
+#   define GC_TYPE  YogGenerational
+#elif defined(GC_BDW)
+#   define GC_TYPE  YogBDW
+#endif
+
 #include <sys/types.h>
 #include "yog/yog.h"
 

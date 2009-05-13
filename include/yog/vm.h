@@ -5,6 +5,18 @@
 #if HAVE_SYS_TYPES_H
 #   include <sys/types.h>
 #endif
+#include "yog/gc.h"
+#if defined(GC_COPYING)
+#   include "yog/gc/copying.h"
+#elif defined(GC_MARK_SWEEP)
+#   include "yog/gc/mark-sweep.h"
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   include "yog/gc/mark-sweep-compact.h"
+#elif defined(GC_GENERATIONAL)
+#   include "yog/gc/generational.h"
+#elif defined(GC_BDW)
+#   include "yog/gc/bdw.h"
+#endif
 #include "yog/yog.h"
 
 #define SURVIVE_INDEX_MAX    8
@@ -57,6 +69,7 @@ struct YogVm {
     unsigned int suspend_counter;
     pthread_cond_t threads_suspend_cond;
     pthread_cond_t gc_finish_cond;
+    struct GC_TYPE* heaps;
 };
 
 typedef struct YogVm YogVm;
@@ -68,6 +81,7 @@ typedef struct YogVm YogVm;
  */
 
 /* src/vm.c */
+void YogVm_add_heap(YogEnv*, YogVm*, GC_TYPE*);
 void YogVm_add_thread(YogEnv*, YogVm*, YogVal);
 void YogVm_aquire_global_interp_lock(YogEnv*, YogVm*);
 void YogVm_boot(YogEnv*, YogVm*);

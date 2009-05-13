@@ -2,17 +2,7 @@
 #define __YOG_GC_MARK_SWEEP_COMPACT_H__
 
 #include <stddef.h>
-
-/* TODO: commonize with yog/yog.h */
-#if !defined(__YOG_YOG_H__)
-typedef int BOOL;
-#define FALSE   0
-#define TRUE    (!(FALSE))
-typedef struct YogEnv YogEnv;
-typedef void* (*ObjectKeeper)(YogEnv*, void*);
-typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
-typedef void (*Finalizer)(YogEnv*, void*);
-#endif
+#include "yog/yog.h"
 
 struct YogMarkSweepCompactHeader {
     unsigned int flags;
@@ -49,6 +39,10 @@ typedef struct YogMarkSweepCompactHeader YogMarkSweepCompactHeader;
 #endif
 
 struct YogMarkSweepCompact {
+    struct YogMarkSweepCompact* prev;
+    struct YogMarkSweepCompact* next;
+    BOOL refered;
+
     unsigned int err;
     size_t chunk_size;
     struct YogMarkSweepCompactChunk* chunks;
@@ -86,6 +80,7 @@ void YogMarkSweepCompact_gc(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_grey_page(void*);
 void YogMarkSweepCompact_initialize(YogEnv*, YogMarkSweepCompact*, size_t, size_t, void*, ChildrenKeeper);
 BOOL YogMarkSweepCompact_install_sigsegv_handler(YogEnv*);
+BOOL YogMarkSweepCompact_is_empty(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_keep_vm(YogEnv*, YogMarkSweepCompact*);
 void* YogMarkSweepCompact_mark_recursively(YogEnv*, void*, ObjectKeeper, void*);
 void YogMarkSweepCompact_post_gc(YogEnv*, YogMarkSweepCompact*);
