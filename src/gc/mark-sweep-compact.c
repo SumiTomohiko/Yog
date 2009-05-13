@@ -794,7 +794,6 @@ YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chu
 #if defined(GC_GENERATIONAL)
     msc->in_gc = FALSE;
     msc->grey_pages = NULL;
-    msc->has_young_ref = FALSE;
 #endif
 }
 
@@ -841,13 +840,13 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
         return ptr;
     }
 
-    YogVal thread = env->thread;
-    YogMarkSweepCompact* msc = &PTR_AS(YogThread, thread)->generational->msc;
-    msc->has_young_ref = TRUE;
+    YogGenerational* generational = heap;
+    generational->has_young_ref = TRUE;
+
     return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object, heap);
 }
 
-#define ITERATE_PAGES(env, msc, test_page, proc)    do { \
+#define ITERATE_PAGES(env, msc, test_page, proc, heap)  do { \
     YogMarkSweepCompactChunk* chunk = msc->all_chunks; \
     while (chunk != NULL) { \
         unsigned int page_num = msc->chunk_size / PAGE_SIZE; \
@@ -857,7 +856,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
             unsigned char* page_begin = first_page + PAGE_SIZE * i; \
             YogMarkSweepCompactPage* page = (YogMarkSweepCompactPage*)page_begin; \
             if (test_page(chunk, i, page)) { \
-                proc(env, msc, chunk, i, page); \
+                proc(env, msc, chunk, i, page, heap); \
             } \
         } \
 \
@@ -871,45 +870,46 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 #define IS_GREY_PAGE(chunk, page_index, page) \
     ((FLAGS((chunk), (page_index)) & (1 << BIT_POS((page_index)))) != 0)
 
-#define TRACE_GREY_OBJECTS(env, msc, chunk, page_index, page)   do { \
+#define TRACE_GREY_OBJECTS(env, msc, chunk, page_index, page, heap)     do { \
     size_t obj_size = page->obj_size; \
     unsigned int obj_num = object_number_of_page(obj_size); \
     unsigned int j; \
-    msc->has_young_ref = FALSE; \
+    heap->has_young_ref = FALSE; \
     for (j = 0; j < obj_num; j++) { \
         unsigned char* obj = (unsigned char*)page + sizeof(YogMarkSweepCompactPage) + obj_size * j; \
         YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)obj; \
         if (IS_OBJ_USED(header)) { \
             ChildrenKeeper keeper = header->keeper; \
             if (keeper != NULL) { \
-                (*keeper)(env, header + 1, minor_gc_keep_object, msc); \
+                (*keeper)(env, header + 1, minor_gc_keep_object, heap); \
             } \
         } \
     } \
-    if (!msc->has_young_ref) { \
+    if (!heap->has_young_ref) { \
         white_page(page); \
         protect_page(page, PROT_READ); \
     } \
 } while (0)
 
 void 
-YogMarkSweepCompact_trace_grey_children(YogEnv* env, YogMarkSweepCompact* msc) 
+YogMarkSweepCompact_trace_grey_children(YogEnv* env, YogMarkSweepCompact* msc, void* heap)
 {
-    ITERATE_PAGES(env, msc, IS_GREY_PAGE, TRACE_GREY_OBJECTS);
+    YogGenerational* generational = heap;
+    ITERATE_PAGES(env, msc, IS_GREY_PAGE, TRACE_GREY_OBJECTS, generational);
 }
 
 #undef TRACE_GREY_OBJECTS
 
 #define IS_WHITE_PAGE(chunk, page_index, page) \
     (IS_PAGE_USED((page)) && !IS_GREY_PAGE((chunk), (page_index), (page)))
-#define PROTECT_WHITE_PAGE(env, msc, chunk, page_index, page)   do { \
+#define PROTECT_WHITE_PAGE(env, msc, chunk, page_index, page, heap)     do { \
     protect_page(page, PROT_READ); \
 } while (0)
 
 void 
 YogMarkSweepCompact_protect_white_pages(YogEnv* env, YogMarkSweepCompact* msc) 
 {
-    ITERATE_PAGES(env, msc, IS_WHITE_PAGE, PROTECT_WHITE_PAGE);
+    ITERATE_PAGES(env, msc, IS_WHITE_PAGE, PROTECT_WHITE_PAGE, msc);
 }
 
 #undef PROTECT_WHITE_PAGE

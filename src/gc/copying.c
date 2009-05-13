@@ -230,6 +230,20 @@ YogCopying_do_gc(YogEnv* env, YogCopying* copying, ObjectKeeper obj_keeper)
     YogCopying_post_gc(env, copying);
 }
 
+void
+YogCopying_scan(YogEnv* env, YogCopying* copying, ObjectKeeper keeper, void* heap)
+{
+    while (copying->scanned != copying->unscanned) {
+        YogCopyingHeader* header = (YogCopyingHeader*)copying->scanned;
+        ChildrenKeeper children_keeper = header->keeper;
+        if (children_keeper != NULL) {
+            (*children_keeper)(env, header + 1, keeper, heap);
+        }
+
+        copying->scanned += header->size;
+    }
+}
+
 #if defined(GC_COPYING)
 static void*
 keep_object(YogEnv* env, void* ptr, void* heap)
@@ -246,15 +260,7 @@ YogCopying_keep_vm(YogEnv* env, YogCopying* copying)
 void
 YogCopying_cheney_scan(YogEnv* env, YogCopying* copying)
 {
-    while (copying->scanned != copying->unscanned) {
-        YogCopyingHeader* header = (YogCopyingHeader*)copying->scanned;
-        ChildrenKeeper keeper = header->keeper;
-        if (keeper != NULL) {
-            (*keeper)(env, header + 1, keep_object, copying);
-        }
-
-        copying->scanned += header->size;
-    }
+    YogCopying_scan(env, copying, keep_object, copying);
 }
 
 void 

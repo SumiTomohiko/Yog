@@ -100,17 +100,20 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
     }
 }
 
+#define ITERATE_THREAD(vm, f)   do { \
+    YogVal thread = (vm)->threads; \
+    while (IS_PTR(thread)) { \
+        f; \
+        thread = PTR_AS(YogThread, thread)->next; \
+    } \
+} while (0)
+
 #if !defined(GC_BDW)
 static unsigned int 
 count_threads(YogEnv* env, YogVm* vm) 
 {
     unsigned int n = 0;
-    YogVal thread = vm->threads;
-    while (IS_PTR(thread)) {
-        n++;
-        thread = PTR_AS(YogThread, thread)->next;
-    }
-
+    ITERATE_THREAD(env->vm, n++);
     return n;
 }
 
@@ -159,6 +162,63 @@ perform(YogEnv* env, GC gc)
         wakeup_suspend_threads(env);
     }
     YogVm_release_global_interp_lock(env, vm);
+}
+#endif
+
+#if !defined(GC_BDW)
+static void
+destroy_memory(void* p, size_t size)
+{
+    memset(p, 0xfd, size);
+}
+
+static void
+free_memory(void* p, size_t size)
+{
+    destroy_memory(p, size);
+    free(p);
+}
+
+static void
+delete_heap(YogEnv* env, GC_TYPE* heap)
+{
+    if (heap->refered) {
+        return;
+    }
+
+#if defined(GC_COPYING)
+#   define FINALIZE     YogCopying_finalize
+#   define IS_EMPTY     YogCopying_is_empty
+#elif defined(GC_MARK_SWEEP)
+#   define FINALIZE     YogMarkSweep_finalize
+#   define IS_EMPTY     YogMarkSweep_is_empty
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   define FINALIZE     YogMarkSweepCompact_finalize
+#   define IS_EMPTY     YogMarkSweepCompact_is_empty
+#elif defined(GC_GENERATIONAL)
+#   define FINALIZE     YogGenerational_finalize
+#   define IS_EMPTY     YogGenerational_is_empty
+#endif
+    if (!IS_EMPTY(env, heap)) {
+        return;
+    }
+
+    FINALIZE(env, heap);
+    DELETE_FROM_LIST(env->vm->heaps, heap);
+    free_memory(heap, sizeof(GC_TYPE));
+#undef IS_EMPTY
+#undef FINALIZE
+}
+
+static void
+delete_heaps(YogEnv* env)
+{
+    GC_TYPE* heap = env->vm->heaps;
+    while (heap != NULL) {
+        GC_TYPE* next = heap->next;
+        delete_heap(env, heap);
+        heap = next;
+    }
 }
 #endif
 
@@ -236,58 +296,6 @@ post_gc(YogEnv* env)
 #undef POST
 }
 
-static void
-destroy_memory(void* p, size_t size)
-{
-    memset(p, 0xfd, size);
-}
-
-static void
-free_memory(void* p, size_t size)
-{
-    destroy_memory(p, size);
-    free(p);
-}
-
-static void
-delete_heap(YogEnv* env, GC_TYPE* heap)
-{
-    if (heap->refered) {
-        return;
-    }
-
-#if defined(GC_COPYING)
-#   define FINALIZE     YogCopying_finalize
-#   define IS_EMPTY     YogCopying_is_empty
-#elif defined(GC_MARK_SWEEP)
-#   define FINALIZE     YogMarkSweep_finalize
-#   define IS_EMPTY     YogMarkSweep_is_empty
-#elif defined(GC_MARK_SWEEP_COMPACT)
-#   define FINALIZE     YogMarkSweepCompact_finalize
-#   define IS_EMPTY     YogMarkSweepCompact_is_empty
-#endif
-    if (!IS_EMPTY(env, heap)) {
-        return;
-    }
-
-    FINALIZE(env, heap);
-    DELETE_FROM_LIST(env->vm->heaps, heap);
-    free_memory(heap, sizeof(GC_TYPE));
-#undef IS_EMPTY
-#undef FINALIZE
-}
-
-static void
-delete_heaps(YogEnv* env)
-{
-    GC_TYPE* heap = env->vm->heaps;
-    while (heap != NULL) {
-        GC_TYPE* next = heap->next;
-        delete_heap(env, heap);
-        heap = next;
-    }
-}
-
 static void 
 gc(YogEnv* env) 
 {
@@ -309,13 +317,54 @@ YogGC_perform(YogEnv* env)
 #endif
 
 #if defined(GC_GENERATIONAL)
-#   define GET_GEN(thread)  PTR_AS(YogThread, (thread))->generational
+#   define GET_GEN(thread)  PTR_AS(YogThread, (thread))->THREAD_GC
+static void
+minor_prepare(YogEnv* env)
+{
+    ITERATE_HEAPS(env->vm, YogGenerational_minor_prepare(env, heap));
+}
+
+static void
+minor_keep_vm(YogEnv* env)
+{
+    YogVal main_thread = MAIN_THREAD(env->vm);
+    YogGenerational_minor_keep_vm(env, GET_GEN(main_thread));
+}
+
+static void
+minor_cheney_scan(YogEnv* env)
+{
+    ITERATE_HEAPS(env->vm, YogGenerational_minor_cheney_scan(env, heap));
+}
+
+static void
+trace_grey(YogEnv* env)
+{
+    ITERATE_HEAPS(env->vm, YogGenerational_trace_grey(env, heap));
+}
+
+static void
+minor_delete_garbage(YogEnv* env)
+{
+    ITERATE_HEAPS(env->vm, YogGenerational_minor_delete_garbage(env, heap));
+}
+
+static void
+minor_post_gc(YogEnv* env)
+{
+    ITERATE_HEAPS(env->vm, YogGenerational_minor_post_gc(env, heap));
+}
+
 static void 
 minor_gc(YogEnv* env) 
 {
-    YogVal main_thread = MAIN_THREAD(env->vm);
-    YogGenerational* gen = GET_GEN(main_thread);
-    YogGenerational_minor_gc(env, gen);
+    minor_prepare(env);
+    minor_keep_vm(env);
+    trace_grey(env);
+    minor_cheney_scan(env);
+    minor_delete_garbage(env);
+    minor_post_gc(env);
+    delete_heaps(env);
 }
 
 static void 

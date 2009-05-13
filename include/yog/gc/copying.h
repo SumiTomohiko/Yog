@@ -77,6 +77,7 @@ void YogCopying_iterate_objects(YogEnv*, YogCopying*, void (*)(YogEnv*, YogCopyi
 void YogCopying_keep_vm(YogEnv*, YogCopying*);
 void YogCopying_post_gc(YogEnv*, YogCopying*);
 void YogCopying_prepare(YogEnv*, YogCopying*);
+void YogCopying_scan(YogEnv*, YogCopying*, ObjectKeeper, void*);
 
 /* PROTOTYPE_END */
 
