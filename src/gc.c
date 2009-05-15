@@ -319,9 +319,9 @@ YogGC_perform(YogEnv* env)
 #if defined(GC_GENERATIONAL)
 #   define GET_GEN(thread)  PTR_AS(YogThread, (thread))->THREAD_GC
 static void
-minor_prepare(YogEnv* env)
+prepare(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_minor_prepare(env, heap));
+    ITERATE_HEAPS(env->vm, YogGenerational_prepare(env, heap));
 }
 
 static void
@@ -358,7 +358,7 @@ minor_post_gc(YogEnv* env)
 static void 
 minor_gc(YogEnv* env) 
 {
-    minor_prepare(env);
+    prepare(env);
     minor_keep_vm(env);
     trace_grey(env);
     minor_cheney_scan(env);
@@ -367,12 +367,40 @@ minor_gc(YogEnv* env)
     delete_heaps(env);
 }
 
+static void
+major_keep_vm(YogEnv* env)
+{
+    YogVal main_thread = MAIN_THREAD(env->vm);
+    YogGenerational_major_keep_vm(env, GET_GEN(main_thread));
+}
+
+static void
+major_cheney_scan(YogEnv* env)
+{
+    ITERATE_HEAPS(env->vm, YogGenerational_major_cheney_scan(env, heap));
+}
+
+static void
+major_delete_garbage(YogEnv* env)
+{
+    ITERATE_HEAPS(env->vm, YogGenerational_major_delete_garbage(env, heap));
+}
+
+static void
+major_post_gc(YogEnv* env)
+{
+    ITERATE_HEAPS(env->vm, YogGenerational_major_post_gc(env, heap));
+}
+
 static void 
 major_gc(YogEnv* env) 
 {
-    YogVal main_thread = MAIN_THREAD(env->vm);
-    YogGenerational* gen = GET_GEN(main_thread);
-    YogGenerational_major_gc(env, gen);
+    prepare(env);
+    major_keep_vm(env);
+    major_cheney_scan(env);
+    major_delete_garbage(env);
+    major_post_gc(env);
+    delete_heaps(env);
 }
 #   undef GET_GEN
 

@@ -14,7 +14,9 @@
 #include "yog/yog.h"
 
 #if 0
-#   define DEBUG
+#   define DEBUG(x)     x
+#else
+#   define DEBUG(x)
 #endif
 
 #define IS_IN_HEAP(ptr, heap)   do { \
@@ -72,11 +74,8 @@ round_size(size_t size)
 void* 
 YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr) 
 {
-#if defined(DEBUG)
-#   define PRINT(...)   DPRINTF("copy: " __VA_ARGS__)
-#else
-#   define PRINT(...)
-#endif
+    DEBUG(DPRINTF("YogCopying_copy(env=%p, copying=%p, ptr=%p)", env, copying, ptr));
+#define PRINT(...)  DEBUG(DPRINTF("copy: " __VA_ARGS__))
     if (ptr == NULL) {
 #if 0
         PRINT("exec_num=0x%08x, NULL->NULL", ENV_VM(env)->gc_stat.exec_num);
@@ -107,6 +106,7 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
     header->forwarding_addr = dest;
 
     copying->unscanned += size;
+    DEBUG(DPRINTF("unscanned: %p->%p (0x%02x)", dest, copying->unscanned, size));
 
 #if 0
     PRINT("exec_num=0x%08x, id=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (YogCopyingHeader*)dest + 1);
@@ -160,9 +160,8 @@ static void
 delete_garbage_each(YogEnv* env, YogCopyingHeader* header) 
 {
     if (header->forwarding_addr == NULL) {
-#if defined(DEBUG)
-        DPRINTF("finalize: %p", header);
-#endif
+        DEBUG(DPRINTF("finalize: %p", header));
+        DEBUG(DPRINTF("header->finalizer=%p", header->finalizer));
         if (header->finalizer != NULL) {
             (*header->finalizer)(env, header + 1);
         }
@@ -193,8 +192,10 @@ swap_heap(YogCopyingHeap** a, YogCopyingHeap** b)
 void 
 YogCopying_prepare(YogEnv* env, YogCopying* copying) 
 {
+    DEBUG(DPRINTF("YogCopying_prepare(env=%p, copying=%p)", env, copying));
     YogCopyingHeap* to_space = copying->inactive_heap;
     copying->scanned = copying->unscanned = to_space->items;
+    DEBUG(DPRINTF("unscanned=%p", copying->unscanned));
 }
 
 void
@@ -279,13 +280,9 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 #if 0
     vm->gc_stat.total_allocated_size += rounded_size;
 #endif
-#if defined(DEBUG)
-#   define PRINT_HEAP(text, heap)   do { \
-    DPRINTF("%s: %p-%p", (text), (heap)->items, (char*)(heap)->items + (heap)->size); \
+#define PRINT_HEAP(text, heap)   do { \
+    DEBUG(DPRINTF("%s: %p-%p", (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
 } while (0)
-#else 
-#   define PRINT_HEAP(text, heap)
-#endif
     PRINT_HEAP("active heap", copying->active_heap);
     PRINT_HEAP("inactive heap", copying->inactive_heap);
 #undef PRINT_HEAP

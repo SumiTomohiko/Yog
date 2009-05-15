@@ -55,14 +55,17 @@ void* YogGenerational_copy_young_object(YogEnv*, void*, ObjectKeeper, void*);
 void YogGenerational_finalize(YogEnv*, YogGenerational*);
 void YogGenerational_initialize(YogEnv*, YogGenerational*, BOOL, size_t, size_t, size_t, unsigned int, void*, ChildrenKeeper);
 BOOL YogGenerational_is_empty(YogEnv*, YogGenerational*);
+void YogGenerational_major_cheney_scan(YogEnv*, YogGenerational*);
+void YogGenerational_major_delete_garbage(YogEnv*, YogGenerational*);
 void YogGenerational_major_gc(YogEnv*, YogGenerational*);
+void YogGenerational_major_keep_vm(YogEnv*, YogGenerational*);
+void YogGenerational_major_post_gc(YogEnv*, YogGenerational*);
 void YogGenerational_minor_cheney_scan(YogEnv*, YogGenerational*);
 void YogGenerational_minor_delete_garbage(YogEnv*, YogGenerational*);
-void YogGenerational_minor_gc(YogEnv*, YogGenerational*);
 void YogGenerational_minor_keep_vm(YogEnv*, YogGenerational*);
 void YogGenerational_minor_post_gc(YogEnv*, YogGenerational*);
-void YogGenerational_minor_prepare(YogEnv*, YogGenerational*);
 void YogGenerational_oldify_all(YogEnv*, YogGenerational*);
+void YogGenerational_prepare(YogEnv*, YogGenerational*);
 void YogGenerational_trace_grey(YogEnv*, YogGenerational*);
 
 /* PROTOTYPE_END */

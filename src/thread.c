@@ -43,27 +43,6 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cur_frame);
     KEEP(jmp_val);
 #undef KEEP
-
-    YogLocals* locals = thread->locals;
-    while (locals != NULL) {
-        unsigned int i;
-        for (i = 0; i < locals->num_vals; i++) {
-            YogVal* vals = locals->vals[i];
-            if (vals == NULL) {
-                continue;
-            }
-
-            unsigned int j;
-            for (j = 0; j < locals->size; j++) {
-                YogVal* val = &vals[j];
-                DEBUG(YogVal old_val = *val);
-                YogGC_keep(env, val, keeper, thread_heap);
-                DEBUG(DPRINTF("val=%p, 0x%08x->0x%08x", val, old_val, *val));
-            }
-        }
-
-        locals = locals->next;
-    }
 }
 
 void 

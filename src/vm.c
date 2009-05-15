@@ -260,12 +260,60 @@ YogVm_boot(YogEnv* env, YogVm* vm)
     setup_encodings(env, vm);
 }
 
+#if defined(GC_GENERATIONAL)
+#   include "yog/gc/copying.h"
+#endif
+
+static void
+keep_local_vals(YogEnv* env, YogVal* vals, unsigned int size, ObjectKeeper keeper, void* heap)
+{
+    if (vals == NULL) {
+        return;
+    }
+
+    unsigned int i;
+    for (i = 0; i < size; i++) {
+        YogVal* val = &vals[i];
+        DEBUG(YogVal old_val = *val);
+        YogGC_keep(env, val, keeper, heap);
+        DEBUG(DPRINTF("thread=%p, val=%p, 0x%08x->0x%08x", thread, val, old_val, *val));
+    }
+}
+
+static void
+keep_locals(YogEnv* env, YogLocals* locals, ObjectKeeper keeper, void* heap)
+{
+    unsigned int i;
+    for (i = 0; i < locals->num_vals; i++) {
+        keep_local_vals(env, locals->vals[i], locals->size, keeper, heap);
+    }
+}
+
+static void
+keep_thread_locals(YogEnv* env, YogVal thread, ObjectKeeper keeper, void* heap)
+{
+    YogLocals* locals = PTR_AS(YogThread, thread)->locals;
+    while (locals != NULL) {
+        keep_locals(env, locals, keeper, heap);
+        locals = locals->next;
+    }
+}
+
 void 
 YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogVm* vm = ptr;
 
-#define KEEP(member)    YogGC_keep(env, &vm->member, keeper, heap)
+    YogVal thread = vm->threads;
+    while (IS_PTR(thread)) {
+        void* thread_heap = PTR_AS(YogThread, thread)->THREAD_GC;
+        keep_thread_locals(env, thread, keeper, thread_heap);
+        thread = PTR_AS(YogThread, thread)->next;
+    }
+
+#define KEEP(member)    do { \
+    YogGC_keep(env, &vm->member, keeper, heap); \
+} while (0)
     KEEP(id2name);
     KEEP(name2id);
 

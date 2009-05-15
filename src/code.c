@@ -211,7 +211,7 @@ YogCode_new(YogEnv* env)
     YogVal code = YUNDEF;
     PUSH_LOCAL(env, code);
 
-    code = PTR2VAL(ALLOC_OBJ(env, keep_children, NULL, YogCode));
+    code = ALLOC_OBJ(env, keep_children, NULL, YogCode);
     CODE(code)->arg_info = YUNDEF;
     CODE(code)->stack_size = 0;
     CODE(code)->local_vars_count = 0;
