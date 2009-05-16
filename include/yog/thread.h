@@ -13,6 +13,7 @@
 #elif defined(GC_BDW)
 #   include "yog/gc/bdw.h"
 #endif
+#include "yog/object.h"
 #include "yog/yog.h"
 
 struct YogJmpBuf {
@@ -143,6 +144,8 @@ do { \
 } while (0)
 
 struct YogThread {
+    YOGBASICOBJ_HEAD;
+
     YogVal prev;
     YogVal next;
 
@@ -198,7 +201,8 @@ void YogThread_config_copying(YogEnv*, YogVal, BOOL, size_t, void*, ChildrenKeep
 void YogThread_config_generational(YogEnv*, YogVal, BOOL, size_t, size_t, size_t, unsigned int, void*, ChildrenKeeper);
 void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t, void*, ChildrenKeeper);
 void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t, size_t, void*, ChildrenKeeper);
-void YogThread_initialize(YogEnv*, YogVal);
+void YogThread_initialize(YogEnv*, YogVal, YogVal);
+YogVal YogThread_klass_new(YogEnv*);
 YogVal YogThread_new(YogEnv*);
 
 /* PROTOTYPE_END */

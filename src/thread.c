@@ -19,6 +19,7 @@
 #elif defined(GC_BDW)
 #   include "yog/gc/bdw.h"
 #endif
+#include "yog/klass.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -31,6 +32,8 @@
 static void 
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
     YogThread* thread = ptr;
 
 #define KEEP(member)    YogGC_keep(env, &thread->member, keeper, heap)
@@ -46,8 +49,10 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 void 
-YogThread_initialize(YogEnv* env, YogVal thread)
+YogThread_initialize(YogEnv* env, YogVal thread, YogVal klass)
 {
+    YogBasicObj_init(env, thread, 0, klass);
+
     PTR_AS(YogThread, thread)->prev = YUNDEF;
     PTR_AS(YogThread, thread)->next = YUNDEF;
 
@@ -148,13 +153,35 @@ finalize(YogEnv* env, void* ptr)
     thread->THREAD_GC = NULL;
 }
 
+static YogVal 
+allocate(YogEnv* env, YogVal klass) 
+{
+    SAVE_ARG(env, klass);
+
+    YogVal thread = ALLOC_OBJ(env, keep_children, finalize, YogThread);
+    YogThread_initialize(env, thread, klass);
+
+    RETURN(env, thread);
+}
+
 YogVal 
 YogThread_new(YogEnv* env) 
 {
-    YogVal thread = ALLOC_OBJ(env, keep_children, finalize, YogThread);
-    YogThread_initialize(env, thread);
+    return allocate(env, env->vm->cThread);
+}
 
-    return thread;
+YogVal
+YogThread_klass_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = YogKlass_new(env, "Thread", env->vm->cObject);
+    YogKlass_define_allocator(env, klass, allocate);
+
+    RETURN(env, klass);
 }
 
 /**

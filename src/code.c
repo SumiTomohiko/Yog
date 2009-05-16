@@ -143,6 +143,12 @@ YogCode_dump(YogEnv* env, YogVal code)
                 printf(" %d", varkwargc);
             }
             break;
+        case OP(LOAD_GLOBAL):
+            {
+                ID id = OPERAND(ID, 0);
+                printf(" :%s", YogVm_id2name(env, env->vm, id));
+            }
+            break;
         case OP(CALL_COMMAND):
         case OP(CALL_METHOD):
             {

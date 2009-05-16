@@ -131,7 +131,7 @@ main(int argc, char* argv[])
 
     YogThread dummy_thread_body;
     YogVal dummy_thread = PTR2VAL(&dummy_thread_body);
-    YogThread_initialize(&env, dummy_thread);
+    YogThread_initialize(&env, dummy_thread, YUNDEF);
 #if defined(GC_BDW)
     GC_INIT();
     YogThread_config_bdw(&env, dummy_thread, gc_stress);

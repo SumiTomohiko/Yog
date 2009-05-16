@@ -213,6 +213,7 @@ setup_klasses(YogEnv* env, YogVm* vm)
     vm->cPackageBlock = YogPackageBlock_klass_new(env);
     vm->cNil = YogNil_klass_new(env);
     vm->cFloat = YogFloat_klass_new(env);
+    vm->cThread = YogThread_klass_new(env);
 }
 
 static void 
@@ -245,12 +246,20 @@ setup_exceptions(YogEnv* env, YogVm* vm)
 #undef EXCEPTION_NEW
 }
 
+static void
+set_main_thread_klass(YogEnv* env, YogVm* vm)
+{
+    YogVal main_thread = vm->threads;
+    PTR_AS(YogBasicObj, main_thread)->klass = vm->cThread;
+}
+
 void 
 YogVm_boot(YogEnv* env, YogVm* vm) 
 {
     setup_symbol_tables(env, vm);
     setup_basic_klass(env, vm);
     setup_klasses(env, vm);
+    set_main_thread_klass(env, vm);
     setup_exceptions(env, vm);
 
     vm->pkgs = YogTable_new_symbol_table(env);
@@ -331,6 +340,8 @@ YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cUnboundMethod);
     KEEP(cPackageBlock);
     KEEP(cNil);
+    KEEP(cFloat);
+    KEEP(cThread);
 
     KEEP(eException);
     KEEP(eBugException);
@@ -372,6 +383,8 @@ YogVm_init(YogVm* vm)
     vm->cUnboundMethod = YUNDEF;
     vm->cPackageBlock = YUNDEF;
     vm->cNil = YUNDEF;
+    vm->cFloat = YUNDEF;
+    vm->cThread = YUNDEF;
 
     vm->eException = YUNDEF;
     vm->eBugException = YUNDEF;
@@ -461,12 +474,11 @@ YogVm_release_global_interp_lock(YogEnv* env, YogVm* vm)
     pthread_mutex_unlock(&vm->global_interp_lock);
 }
 
-#if 0
 void 
 YogVm_add_thread(YogEnv* env, YogVm* vm, YogVal thread) 
 {
     YogVm_aquire_global_interp_lock(env, vm);
-    if (vm->waiting_suspend) {
+    while (vm->waiting_suspend) {
         YogGC_suspend(env);
     }
 
@@ -476,7 +488,6 @@ YogVm_add_thread(YogEnv* env, YogVm* vm, YogVal thread)
 
     YogVm_release_global_interp_lock(env, vm);
 }
-#endif
 
 void 
 YogVm_set_main_thread(YogEnv* env, YogVm* vm, YogVal thread) 

@@ -19,6 +19,7 @@
 #else
 #   define DEBUG(x)
 #endif
+#define DUMP_CODE(code)  YogCode_dump(env, code)
 
 #define CUR_FRAME   PTR_AS(YogThread, env->thread)->cur_frame
 
@@ -369,6 +370,7 @@ call_method(YogEnv* env, YogVal unbound_self, YogVal callee, uint8_t posargc, Yo
     else if (IS_OBJ_OF(cBoundMethod, callee)) {
         YogVal self = PTR_AS(YogBoundMethod, callee)->self;
         YogVal code = PTR_AS(YogScriptMethod, callee)->code;
+        DEBUG(DUMP_CODE(code));
         call_code(env, self, code, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
     }
     else if (IS_OBJ_OF(cBuiltinUnboundMethod, callee)) {
@@ -450,12 +452,7 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
 {
     SAVE_ARGS2(env, frame, code);
 
-#if 0
-#   define DUMP_CODE    YogCode_dump(env, code)
-#else
-#   define DUMP_CODE
-#endif
-    DUMP_CODE;
+    DEBUG(DUMP_CODE(code));
 
     PUSH_FRAME(frame);
 

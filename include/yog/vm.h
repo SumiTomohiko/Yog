@@ -51,6 +51,7 @@ struct YogVm {
     YogVal cPackageBlock;
     YogVal cNil;
     YogVal cFloat;
+    YogVal cThread;
 
     YogVal eException;
     YogVal eBugException;
