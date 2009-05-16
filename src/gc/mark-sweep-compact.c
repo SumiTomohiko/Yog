@@ -41,6 +41,7 @@
 #define PAGE_SIZE       4096
 
 #define IS_SMALL_OBJ(size)  ((size) < MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE - 1)
+#define ADDR2HEADER(addr)   ((YogMarkSweepCompactHeader*)(addr) - 1)
 
 struct YogMarkSweepCompactFreeList {
     struct YogMarkSweepCompactFreeList* next;
@@ -412,8 +413,9 @@ set_forward_address(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweep
         compactor->cur_index[index] = obj_index;
     }
 
-    unsigned int header_size = sizeof(YogMarkSweepCompactPage);
-    void* to = (unsigned char*)page + header_size + rounded_size * obj_index;
+    size_t page_header_size = sizeof(YogMarkSweepCompactPage);
+    size_t obj_header_size = sizeof(YogMarkSweepCompactHeader);
+    void* to = (char*)page + page_header_size + rounded_size * obj_index + obj_header_size;
     header->forwarding_addr = to;
 }
 
@@ -421,8 +423,9 @@ static void
 copy_object(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactHeader* header)
 {
     size_t size = header->size;
-    DEBUG(DPRINTF("move: %p->%p", header, header->forwarding_addr));
-    memcpy(header->forwarding_addr, header, size);
+    YogMarkSweepCompactHeader* dest_header = (YogMarkSweepCompactHeader*)header->forwarding_addr - 1;
+    DEBUG(DPRINTF("move: %p->%p", header, dest_header));
+    memcpy(dest_header, header, size);
 
     YogMarkSweepCompactPage* page = ptr2page(header->forwarding_addr);
     unsigned int index = msc->size2index[size];
@@ -470,15 +473,14 @@ YogMarkSweepCompact_update_pointer(YogEnv* env, void* ptr, ObjectKeeper keeper, 
         }
 
         if (header->prev != NULL) {
-            header->prev = header->prev->forwarding_addr;
+            header->prev = ADDR2HEADER(header->prev->forwarding_addr);
         }
         if (header->next != NULL) {
-            header->next = header->next->forwarding_addr;
+            header->next = ADDR2HEADER(header->next->forwarding_addr);
         }
     }
 
-    void* to = header->forwarding_addr + 1;
-    return to;
+    return header->forwarding_addr;
 }
 
 static void* 
@@ -499,7 +501,7 @@ YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectK
     (*msc->root_keeper)(env, msc->root, update_pointer, msc);
     YogMarkSweepCompactHeader** front = &msc->header;
     if (*front != NULL) {
-        *front = (*front)->forwarding_addr;
+        *front = ADDR2HEADER((*front)->forwarding_addr);
     }
 
     Compactor_initialize(&compactor);

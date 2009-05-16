@@ -86,11 +86,8 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
 
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
     if (header->forwarding_addr != NULL) {
-#if 0
-        PRINT("exec_num=0x%08x, id=0x%08x, %p->(%p)", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (YogCopyingHeader*)header->forwarding_addr + 1);
-#endif
-        PRINT("%p->(%p)", header, header->forwarding_addr);
-        return (YogCopyingHeader*)header->forwarding_addr + 1;
+        PRINT("%p->(%p)", ptr, header->forwarding_addr);
+        return header->forwarding_addr;
     }
 
 #if 0
@@ -103,7 +100,7 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
     size_t size = header->size;
     memcpy(dest, header, size);
 
-    header->forwarding_addr = dest;
+    header->forwarding_addr = (YogCopyingHeader*)dest + 1;
 
     copying->unscanned += size;
     DEBUG(DPRINTF("unscanned: %p->%p (0x%02x)", dest, copying->unscanned, size));
