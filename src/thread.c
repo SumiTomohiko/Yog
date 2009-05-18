@@ -1,12 +1,15 @@
-#if !defined(GC_BDW)
-#   include <stdlib.h>
-#endif
+#include <stdlib.h>
+#include <string.h>
 #if HAVE_SYS_TYPES_H
 #   include <sys/types.h>
 #endif
 #if defined(GC_BDW)
 #   include "gc.h"
 #endif
+#include "yog/array.h"
+#include "yog/error.h"
+#include "yog/eval.h"
+#include "yog/frame.h"
 #include "yog/gc.h"
 #if defined(GC_COPYING)
 #   include "yog/gc/copying.h"
@@ -45,6 +48,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #define KEEP(member)    YogGC_keep(env, &thread->member, keeper, thread_heap)
     KEEP(cur_frame);
     KEEP(jmp_val);
+    KEEP(block);
 #undef KEEP
 }
 
@@ -74,6 +78,9 @@ YogThread_initialize(YogEnv* env, YogVal thread, YogVal klass)
     PTR_AS(YogThread, thread)->jmp_buf_list = NULL;
     PTR_AS(YogThread, thread)->jmp_val = YUNDEF;
     PTR_AS(YogThread, thread)->locals = NULL;
+
+    PTR_AS(YogThread, thread)->block = YUNDEF;
+    PTR_AS(YogThread, thread)->pthread = NULL;
 }
 
 #if defined(GC_COPYING)
@@ -81,6 +88,7 @@ void
 YogThread_config_copying(YogEnv* env, YogVal thread, BOOL gc_stress, size_t init_heap_size, void* root, ChildrenKeeper root_keeper) 
 {
     YogCopying* copying = malloc(sizeof(YogCopying));
+    YOG_ASSERT(env, copying != NULL, "Can't allocate YogCopying");
     YogCopying_initialize(env, copying, gc_stress, init_heap_size, root, root_keeper);
     copying->refered = TRUE;
     YogVm_add_heap(env, env->vm, copying);
@@ -94,6 +102,7 @@ void
 YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t threshold, void* root, ChildrenKeeper root_keeper) 
 {
     YogMarkSweep* mark_sweep = malloc(sizeof(YogMarkSweep));
+    YOG_ASSERT(env, mark_sweep != NULL, "Can't allocate YogMarkSweep");
     YogMarkSweep_initialize(env, mark_sweep, threshold, root, root_keeper);
     mark_sweep->refered = TRUE;
     YogVm_add_heap(env, env->vm, mark_sweep);
@@ -108,6 +117,7 @@ YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_siz
 {
     size_t size = sizeof(YogMarkSweepCompact);
     YogMarkSweepCompact* mark_sweep_compact = malloc(size);
+    YOG_ASSERT(env, mark_sweep_compact != NULL, "Can't allocate YogMarkSweepCompact");
     YogMarkSweepCompact_initialize(env, mark_sweep_compact, chunk_size, threshold, root, root_keeper);
     mark_sweep_compact->refered = TRUE;
     YogVm_add_heap(env, env->vm, mark_sweep_compact);
@@ -121,6 +131,7 @@ void
 YogThread_config_generational(YogEnv* env, YogVal thread, BOOL gc_stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure, void* root, ChildrenKeeper root_keeper) 
 {
     YogGenerational* generational = malloc(sizeof(YogGenerational));
+    YOG_ASSERT(env, generational != NULL, "Can't allocate YogGenerational");
     YogGenerational_initialize(env, generational, gc_stress, young_heap_size, old_chunk_size, old_threshold, tenure, root, root_keeper);
     generational->refered = TRUE;
     YogVm_add_heap(env, env->vm, generational);
@@ -170,6 +181,103 @@ YogThread_new(YogEnv* env)
     return allocate(env, env->vm->cThread);
 }
 
+struct ThreadArg {
+    struct YogVm* vm;
+    YogVal thread;
+    YogVal vararg;
+};
+
+typedef struct ThreadArg ThreadArg;
+
+static void
+ThreadArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    ThreadArg* arg = ptr;
+#define KEEP(member)    YogGC_keep(env, &arg->member, keeper, heap)
+    KEEP(thread);
+    KEEP(vararg);
+#undef KEEP
+}
+
+static YogVal
+ThreadArg_new(YogEnv* env)
+{
+    YogVal arg = ALLOC_OBJ(env, ThreadArg_keep_children, NULL, ThreadArg);
+    PTR_AS(ThreadArg, arg)->vm = NULL;
+    PTR_AS(ThreadArg, arg)->thread = YUNDEF;
+    PTR_AS(ThreadArg, arg)->vararg = YUNDEF;
+    return arg;
+}
+
+static void*
+run_of_new_thread(void* arg)
+{
+    ThreadArg* thread_arg = arg;
+    YogVal thread = thread_arg->thread;
+    YogEnv env;
+    env.vm = thread_arg->vm;
+    env.thread = thread;
+    SAVE_LOCALS(&env);
+    YogLocals locals0;
+    locals0.num_vals = 1;
+    locals0.size = 1;
+    locals0.vals[0] = &env.thread;
+    locals0.vals[1] = NULL;
+    locals0.vals[2] = NULL;
+    locals0.vals[3] = NULL;
+    locals0.vals[4] = NULL;
+    PUSH_LOCAL_TABLE(&env, locals0);
+
+    unsigned int size = YogArray_size(&env, thread_arg->vararg);
+    YogVal args[size];
+    YogVal body = PTR_AS(YogArray, thread_arg->vararg)->body;
+    memcpy(args, PTR_AS(YogValArray, body)->items, size);
+    PUSH_LOCALSX(&env, size, args);
+
+    YogVal block = PTR_AS(YogThread, thread)->block;
+    YogVal retval = YogEval_call_block(&env, block, size, args);
+
+    YogVm_remove_thread(&env, env.vm, thread);
+
+    RETURN(&env, (void*)retval);
+}
+
+static YogVal
+run(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+
+    YogVal self = SELF(env);
+    YogVal vararg = ARG(env, 0);
+    YogVal arg = YUNDEF;
+    PUSH_LOCALS3(env, self, vararg, arg);
+
+    pthread_t* pthread = malloc(sizeof(pthread_t));
+    YOG_ASSERT(env, pthread != NULL, "Can't allocate pthread_t");
+    PTR_AS(YogThread, self)->pthread = pthread;
+
+    arg = ThreadArg_new(env);
+    PTR_AS(ThreadArg, arg)->vm = env->vm;
+    PTR_AS(ThreadArg, arg)->thread = self;
+    PTR_AS(ThreadArg, arg)->vararg = vararg;
+
+    YogVm_add_thread(env, env->vm, self);
+    if (pthread_create(pthread, NULL, run_of_new_thread, (void*)arg) != 0) {
+        YOG_BUG(env, "Can't create new thread");
+    }
+
+    RETURN(env, self);
+}
+
+static YogVal
+initialize(YogEnv* env)
+{
+    YogVal self = SELF(env);
+    YogVal block = ARG(env, 0);
+    PTR_AS(YogThread, self)->block = block;
+    return self;
+}
+
 YogVal
 YogThread_klass_new(YogEnv* env)
 {
@@ -180,6 +288,8 @@ YogThread_klass_new(YogEnv* env)
 
     klass = YogKlass_new(env, "Thread", env->vm->cObject);
     YogKlass_define_allocator(env, klass, allocate);
+    YogKlass_define_method(env, klass, "initialize", initialize, 1, 0, 0, 0, "block", NULL);
+    YogKlass_define_method(env, klass, "run", run, 0, 1, 0, 0, NULL);
 
     RETURN(env, klass);
 }

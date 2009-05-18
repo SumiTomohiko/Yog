@@ -495,6 +495,29 @@ YogVm_set_main_thread(YogEnv* env, YogVm* vm, YogVal thread)
     vm->threads = thread;
 }
 
+void
+YogVm_remove_thread(YogEnv* env, YogVm* vm, YogVal thread)
+{
+    YogVm_aquire_global_interp_lock(env, vm);
+    while (vm->waiting_suspend) {
+        YogGC_suspend(env);
+    }
+
+    YogVal prev = PTR_AS(YogThread, thread)->prev;
+    YogVal next = PTR_AS(YogThread, thread)->next;
+    if (IS_PTR(prev)) {
+        PTR_AS(YogThread, prev)->next = next;
+    }
+    else {
+        vm->threads = next;
+    }
+    if (IS_PTR(next)) {
+        PTR_AS(YogThread, next)->prev = prev;
+    }
+
+    YogVm_release_global_interp_lock(env, vm);
+}
+
 #if !defined(GC_BDW)
 void
 YogVm_add_heap(YogEnv* env, YogVm* vm, GC_TYPE* heap)

@@ -781,7 +781,14 @@ YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, unsigned int arg
         retval = eval_code(env, code, self, argc, args);
     }
     else if (IS_OBJ_OF(cBuiltinUnboundMethod, attr)) {
-        retval = call_builtin_unbound_method(env, receiver, attr, argc, args, undef, 0, NULL, undef, undef);
+        YogVal blockarg = YUNDEF;
+        YogVal f = PTR_AS(YogBuiltinUnboundMethod, attr)->f;
+        YogVal arg_info = PTR_AS(YogBuiltinFunction, f)->arg_info;
+        if (0 < PTR_AS(YogArgInfo, arg_info)->blockargc) {
+            blockarg = args[argc - 1];
+            argc--;
+        }
+        retval = call_builtin_unbound_method(env, receiver, attr, argc, args, blockarg, 0, NULL, undef, undef);
     }
     else if (IS_OBJ_OF(cUnboundMethod, attr)) {
         YogUnboundMethod* method = PTR_AS(YogUnboundMethod, attr);

@@ -170,6 +170,9 @@ struct YogThread {
     YogVal** ref_tbl_ptr;
     YogVal** ref_tbl_limit;
 #endif
+
+    YogVal block;
+    pthread_t* pthread;
 };
 
 typedef struct YogThread YogThread;
