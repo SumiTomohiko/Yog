@@ -100,24 +100,22 @@ new_(YogEnv* env)
     }
 
     obj = (*allocator)(env, self);
-    unsigned int size = YogArray_size(env, vararg);
-    unsigned int argc = size;
-    if (IS_PTR(blockarg)) {
-        argc++;
-    }
+    unsigned int argc = YogArray_size(env, vararg);
     YogVal body = PTR_AS(YogArray, vararg)->body;
     YogVal* items = PTR_AS(YogValArray, body)->items;
     /* TODO: dirty hack */
     YogVal args[argc];
     unsigned int i;
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < argc; i++) {
         args[i] = items[i];
     }
-    if (IS_PTR(blockarg)) {
-        args[argc - 1] = blockarg;
-    }
     PUSH_LOCALSX(env, argc, args);
-    YogEval_call_method(env, obj, "initialize", argc, args);
+    if (IS_PTR(blockarg)) {
+        YogEval_call_method2(env, obj, "initialize", argc, args, blockarg);
+    }
+    else {
+        YogEval_call_method(env, obj, "initialize", argc, args);
+    }
 
     POP_LOCALS(env);
     return obj;

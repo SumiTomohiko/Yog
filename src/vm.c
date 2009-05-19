@@ -284,8 +284,9 @@ keep_local_vals(YogEnv* env, YogVal* vals, unsigned int size, ObjectKeeper keepe
     for (i = 0; i < size; i++) {
         YogVal* val = &vals[i];
         DEBUG(YogVal old_val = *val);
+        DEBUG(DPRINTF("val=%p", val));
         YogGC_keep(env, val, keeper, heap);
-        DEBUG(DPRINTF("thread=%p, val=%p, 0x%08x->0x%08x", thread, val, old_val, *val));
+        DEBUG(DPRINTF("val=%p, 0x%08x->0x%08x", val, old_val, *val));
     }
 }
 

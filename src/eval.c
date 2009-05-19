@@ -46,6 +46,17 @@ YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, unsigned i
     RETURN(env, retval);
 }
 
+YogVal 
+YogEval_call_method2(YogEnv* env, YogVal receiver, const char* method, unsigned int argc, YogVal* args, YogVal blockarg)
+{
+    SAVE_ARGS2(env, receiver, blockarg);
+
+    ID id = YogVm_intern(env, env->vm, method);
+    YogVal retval = YogEval_call_method_id2(env, receiver, id, argc, args, blockarg);
+
+    RETURN(env, retval);
+}
+
 static void 
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, unsigned int argc, YogVal args, unsigned int args_offset) 
 {
@@ -672,6 +683,19 @@ eval_code(YogEnv* env, YogVal code, YogVal receiver, unsigned int argc, YogVal a
     RETURN(env, retval);
 }
 
+static YogVal
+eval_code2(YogEnv* env, YogVal code, YogVal receiver, unsigned int argc, YogVal args[], YogVal blockarg)
+{
+    SAVE_ARGS3(env, code, receiver, blockarg);
+
+    YogVal undef = YUNDEF;
+    call_code(env, receiver, code, argc, args, blockarg, 0, NULL, undef, undef);
+
+    YogVal retval = mainloop(env, CUR_FRAME, code);
+
+    RETURN(env, retval);
+}
+
 YogVal 
 YogEval_call_block(YogEnv* env, YogVal block, unsigned int argc, YogVal* args) 
 {
@@ -781,19 +805,46 @@ YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, unsigned int arg
         retval = eval_code(env, code, self, argc, args);
     }
     else if (IS_OBJ_OF(cBuiltinUnboundMethod, attr)) {
-        YogVal blockarg = YUNDEF;
-        YogVal f = PTR_AS(YogBuiltinUnboundMethod, attr)->f;
-        YogVal arg_info = PTR_AS(YogBuiltinFunction, f)->arg_info;
-        if (0 < PTR_AS(YogArgInfo, arg_info)->blockargc) {
-            blockarg = args[argc - 1];
-            argc--;
-        }
-        retval = call_builtin_unbound_method(env, receiver, attr, argc, args, blockarg, 0, NULL, undef, undef);
+        retval = call_builtin_unbound_method(env, receiver, attr, argc, args, YUNDEF, 0, NULL, undef, undef);
     }
     else if (IS_OBJ_OF(cUnboundMethod, attr)) {
         YogUnboundMethod* method = PTR_AS(YogUnboundMethod, attr);
         YogVal code = ((YogScriptMethod*)method)->code;
         retval = eval_code(env, code, receiver, argc, args);
+    }
+    else {
+        YOG_ASSERT(env, FALSE, "Callee is not callable.");
+    }
+
+    RETURN(env, retval);
+}
+
+YogVal 
+YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, unsigned int argc, YogVal* args, YogVal blockarg)
+{
+    SAVE_ARGS2(env, receiver, blockarg);
+
+    YogVal attr = YogVal_get_attr(env, receiver, method);
+    YOG_ASSERT(env, IS_PTR(attr), "Attribute isn't object.");
+
+    YogVal retval = YUNDEF;
+    YogVal undef = YUNDEF;
+    if (IS_OBJ_OF(cBuiltinBoundMethod, attr)) {
+        retval = call_builtin_bound_method(env, attr, argc, args, blockarg, 0, NULL, undef, undef);
+    }
+    else if (IS_OBJ_OF(cBoundMethod, attr)) {
+        YogBoundMethod* method = PTR_AS(YogBoundMethod, attr);
+        YogVal self = method->self;
+        YogVal code = ((YogScriptMethod*)method)->code;
+        retval = eval_code2(env, code, self, argc, args, blockarg);
+    }
+    else if (IS_OBJ_OF(cBuiltinUnboundMethod, attr)) {
+        retval = call_builtin_unbound_method(env, receiver, attr, argc, args, blockarg, 0, NULL, YUNDEF, YUNDEF);
+    }
+    else if (IS_OBJ_OF(cUnboundMethod, attr)) {
+        YogUnboundMethod* method = PTR_AS(YogUnboundMethod, attr);
+        YogVal code = ((YogScriptMethod*)method)->code;
+        retval = eval_code2(env, code, receiver, argc, args, blockarg);
     }
     else {
         YOG_ASSERT(env, FALSE, "Callee is not callable.");
