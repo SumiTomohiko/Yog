@@ -498,7 +498,7 @@ YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectK
     iterate_objects(msc, &compactor, set_forward_address);
     YogMarkSweepCompactPage* first_free_page = compactor.next_page;
 
-    (*msc->root_keeper)(env, msc->root, update_pointer, msc);
+    YogVm_keep_children(env, env->vm, update_pointer, msc);
     YogMarkSweepCompactHeader** front = &msc->header;
     if (*front != NULL) {
         *front = ADDR2HEADER((*front)->forwarding_addr);
@@ -564,19 +564,6 @@ void
 YogMarkSweepCompact_post_gc(YogEnv* env, YogMarkSweepCompact* msc)
 {
     msc->allocated_size = 0;
-}
-
-void 
-YogMarkSweepCompact_gc(YogEnv* env, YogMarkSweepCompact* msc) 
-{
-    YogMarkSweepCompact_prepare(env, msc);
-
-    (*msc->root_keeper)(env, msc->root, keep_object, msc);
-
-    YogMarkSweepCompact_delete_garbage(env, msc);
-
-    compact(env, msc);
-    YogMarkSweepCompact_post_gc(env, msc);
 }
 #endif
 
@@ -765,7 +752,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 }
 
 void 
-YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chunk_size, size_t threshold, void* root, ChildrenKeeper root_keeper) 
+YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chunk_size, size_t threshold)
 {
     msc->err = ERR_MSC_NONE;
     msc->chunk_size = chunk_size;
@@ -791,8 +778,6 @@ YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chu
     msc->header = NULL;
     msc->threshold = threshold;
     msc->allocated_size = 0;
-    msc->root = root;
-    msc->root_keeper = root_keeper;
 #if defined(GC_GENERATIONAL)
     msc->in_gc = FALSE;
     msc->grey_pages = NULL;

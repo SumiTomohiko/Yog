@@ -27,7 +27,7 @@ initialize_memory(void* ptr, size_t size)
 void* 
 YogBDW_alloc(YogEnv* env, YogBDW* bdw, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    if (bdw->stress) {
+    if (env->vm->gc_stress) {
         GC_gcollect();
     }
 
@@ -45,9 +45,8 @@ YogBDW_alloc(YogEnv* env, YogBDW* bdw, ChildrenKeeper keeper, Finalizer finalize
 }
 
 void
-YogBDW_initialize(YogEnv* env, YogBDW* bdw, BOOL stress) 
+YogBDW_initialize(YogEnv* env, YogBDW* bdw)
 {
-    bdw->stress = stress;
 }
 
 /**

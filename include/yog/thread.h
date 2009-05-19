@@ -199,11 +199,11 @@ typedef struct YogThread YogThread;
  */
 
 /* src/thread.c */
-void YogThread_config_bdw(YogEnv*, YogVal, BOOL);
-void YogThread_config_copying(YogEnv*, YogVal, BOOL, size_t, void*, ChildrenKeeper);
-void YogThread_config_generational(YogEnv*, YogVal, BOOL, size_t, size_t, size_t, unsigned int, void*, ChildrenKeeper);
-void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t, void*, ChildrenKeeper);
-void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t, size_t, void*, ChildrenKeeper);
+void YogThread_config_bdw(YogEnv*, YogVal);
+void YogThread_config_copying(YogEnv*, YogVal, size_t);
+void YogThread_config_generational(YogEnv*, YogVal, size_t, size_t, size_t, unsigned int);
+void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t);
+void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t, size_t);
 void YogThread_initialize(YogEnv*, YogVal, YogVal);
 YogVal YogThread_klass_new(YogEnv*);
 YogVal YogThread_new(YogEnv*);

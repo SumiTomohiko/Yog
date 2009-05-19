@@ -358,6 +358,8 @@ YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 void 
 YogVm_init(YogVm* vm) 
 {
+    vm->gc_stress = FALSE;
+
     vm->gc_stat.print = FALSE;
     vm->gc_stat.duration_total = 0;
     reset_living_object_count(vm);

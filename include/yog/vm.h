@@ -22,6 +22,8 @@
 #define SURVIVE_INDEX_MAX    8
 
 struct YogVm {
+    BOOL gc_stress;
+
     struct {
         BOOL print;
         unsigned int duration_total;

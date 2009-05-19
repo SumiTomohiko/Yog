@@ -42,14 +42,11 @@ struct YogCopying {
     BOOL refered;
 
     unsigned int err;
-    BOOL stress;
     size_t heap_size;
     struct YogCopyingHeap* active_heap;
     struct YogCopyingHeap* inactive_heap;
     unsigned char* scanned;
     unsigned char* unscanned;
-    void* root;
-    ChildrenKeeper root_keeper;
 };
 
 typedef struct YogCopying YogCopying;
@@ -69,7 +66,7 @@ void YogCopying_delete_garbage(YogEnv*, YogCopying*);
 void YogCopying_do_gc(YogEnv*, YogCopying*, ObjectKeeper);
 void YogCopying_finalize(YogEnv*, YogCopying*);
 void YogCopying_gc(YogEnv*, YogCopying*);
-void YogCopying_initialize(YogEnv*, YogCopying*, BOOL, size_t, void*, ChildrenKeeper);
+void YogCopying_initialize(YogEnv*, YogCopying*, size_t);
 BOOL YogCopying_is_empty(YogEnv*, YogCopying*);
 BOOL YogCopying_is_in_active_heap(YogEnv*, YogCopying*, void*);
 BOOL YogCopying_is_in_inactive_heap(YogEnv*, YogCopying*, void*);

@@ -127,6 +127,7 @@ main(int argc, char* argv[])
 
     YogVm vm;
     YogVm_init(&vm);
+    vm.gc_stress = gc_stress;
     env.vm = &vm;
 
     YogThread dummy_thread_body;
@@ -134,21 +135,21 @@ main(int argc, char* argv[])
     YogThread_initialize(&env, dummy_thread, YUNDEF);
 #if defined(GC_BDW)
     GC_INIT();
-    YogThread_config_bdw(&env, dummy_thread, gc_stress);
+    YogThread_config_bdw(&env, dummy_thread);
 #elif defined(GC_COPYING)
-    YogThread_config_copying(&env, dummy_thread, gc_stress, init_heap_size, &vm, YogVm_keep_children);
+    YogThread_config_copying(&env, dummy_thread, init_heap_size);
     YogCopying_allocate_heap(&env, PTR_AS(YogThread, dummy_thread)->copying);
 #elif defined(GC_MARK_SWEEP)
     if (gc_stress) {
         threshold = 0;
     }
-    YogThread_config_mark_sweep(&env, dummy_thread, threshold, &vm, YogVm_keep_children);
+    YogThread_config_mark_sweep(&env, dummy_thread, threshold);
 #elif defined(GC_MARK_SWEEP_COMPACT)
     if (gc_stress) {
         threshold = 0;
     }
 #   define CHUNK_SIZE  (16 * 1024 * 1024)
-    YogThread_config_mark_sweep_compact(&env, dummy_thread, CHUNK_SIZE, threshold, &vm, YogVm_keep_children);
+    YogThread_config_mark_sweep_compact(&env, dummy_thread, CHUNK_SIZE, threshold);
 #   undef CHUNK_SIZE
 #elif defined(GC_GENERATIONAL)
 #   define CHUNK_SIZE  (16 * 1024 * 1024)
@@ -156,7 +157,7 @@ main(int argc, char* argv[])
     if (!YogMarkSweepCompact_install_sigsegv_handler(&env)) {
         ERROR("failed installing SIGSEGV handler");
     }
-    YogThread_config_generational(&env, dummy_thread, gc_stress, init_heap_size, CHUNK_SIZE, threshold, TENURE, &vm, YogVm_keep_children);
+    YogThread_config_generational(&env, dummy_thread, init_heap_size, CHUNK_SIZE, threshold, TENURE);
     YogGenerational_allocate_heap(&env, PTR_AS(YogThread, dummy_thread)->generational);
 #   undef TENURE
 #   undef CHUNK_SIZE

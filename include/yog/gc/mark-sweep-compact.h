@@ -78,7 +78,7 @@ void YogMarkSweepCompact_do_compaction(YogEnv*, YogMarkSweepCompact*, ObjectKeep
 void YogMarkSweepCompact_finalize(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_gc(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_grey_page(void*);
-void YogMarkSweepCompact_initialize(YogEnv*, YogMarkSweepCompact*, size_t, size_t, void*, ChildrenKeeper);
+void YogMarkSweepCompact_initialize(YogEnv*, YogMarkSweepCompact*, size_t, size_t);
 BOOL YogMarkSweepCompact_install_sigsegv_handler(YogEnv*);
 BOOL YogMarkSweepCompact_is_empty(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_keep_vm(YogEnv*, YogMarkSweepCompact*);

@@ -118,24 +118,11 @@ YogMarkSweep_post_gc(YogEnv* env, YogMarkSweep* ms)
 }
 
 void 
-YogMarkSweep_gc(YogEnv* env, YogMarkSweep* ms) 
-{
-    YogMarkSweep_prepare(env, ms);
-
-    (*ms->root_keeper)(env, ms->root, keep_object, ms);
-
-    YogMarkSweep_delete_garbage(env, ms);
-    YogMarkSweep_post_gc(env, ms);
-}
-
-void 
-YogMarkSweep_initialize(YogEnv* env, YogMarkSweep* ms, size_t threshold, void* root, ChildrenKeeper root_keeper) 
+YogMarkSweep_initialize(YogEnv* env, YogMarkSweep* ms, size_t threshold)
 {
     ms->header = NULL;
     ms->threshold = threshold;
     ms->allocated_size = 0;
-    ms->root = root;
-    ms->root_keeper = root_keeper;
 }
 
 void 

@@ -158,15 +158,15 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 }
 
 void 
-YogGenerational_initialize(YogEnv* env, YogGenerational* generational, BOOL stress, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure, void* root, ChildrenKeeper root_keeper) 
+YogGenerational_initialize(YogEnv* env, YogGenerational* generational, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure)
 {
     generational->err = ERR_GEN_NONE;
 
     YogCopying* copying = &generational->copying;
-    YogCopying_initialize(env, copying, stress, young_heap_size, root, root_keeper);
+    YogCopying_initialize(env, copying, young_heap_size);
 
     YogMarkSweepCompact* msc = &generational->msc;
-    YogMarkSweepCompact_initialize(env, msc, old_chunk_size, old_threshold, root, root_keeper);
+    YogMarkSweepCompact_initialize(env, msc, old_chunk_size, old_threshold);
 
     generational->tenure = tenure;
     generational->has_young_ref = FALSE;

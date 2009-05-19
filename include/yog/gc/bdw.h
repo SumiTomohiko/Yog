@@ -5,7 +5,6 @@
 #include "yog/yog.h"
 
 struct YogBDW {
-    BOOL stress;
 };
 
 typedef struct YogBDW YogBDW;
@@ -18,7 +17,7 @@ typedef struct YogBDW YogBDW;
 
 /* src/gc/bdw.c */
 void* YogBDW_alloc(YogEnv*, YogBDW*, ChildrenKeeper, Finalizer, size_t);
-void YogBDW_initialize(YogEnv*, YogBDW*, BOOL);
+void YogBDW_initialize(YogEnv*, YogBDW*);
 
 /* PROTOTYPE_END */
 
