@@ -167,9 +167,10 @@ finalize(YogEnv* env, void* ptr)
 static YogVal
 allocate_object(YogEnv* env, YogVal klass)
 {
+    SAVE_ARG(env, klass);
     YogVal thread = ALLOC_OBJ(env, keep_children, finalize, YogThread);
     YogThread_initialize(env, thread, klass);
-    return thread;
+    RETURN(env, thread);
 }
 
 static YogVal 
