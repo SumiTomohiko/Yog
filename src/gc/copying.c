@@ -74,7 +74,6 @@ round_size(size_t size)
 void* 
 YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr) 
 {
-    DEBUG(DPRINTF("YogCopying_copy(env=%p, copying=%p, ptr=%p)", env, copying, ptr));
 #define PRINT(...)  DEBUG(DPRINTF("copy: " __VA_ARGS__))
     if (ptr == NULL) {
 #if 0
@@ -108,7 +107,7 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
 #if 0
     PRINT("exec_num=0x%08x, id=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (YogCopyingHeader*)dest + 1);
 #endif
-    PRINT("%p->%p", header, dest);
+    PRINT("%p->%p", ptr, (YogCopyingHeader*)dest + 1);
     return (YogCopyingHeader*)dest + 1;
 #undef PRINT
 }
@@ -189,10 +188,8 @@ swap_heap(YogCopyingHeap** a, YogCopyingHeap** b)
 void 
 YogCopying_prepare(YogEnv* env, YogCopying* copying) 
 {
-    DEBUG(DPRINTF("YogCopying_prepare(env=%p, copying=%p)", env, copying));
     YogCopyingHeap* to_space = copying->inactive_heap;
     copying->scanned = copying->unscanned = to_space->items;
-    DEBUG(DPRINTF("unscanned=%p", copying->unscanned));
 }
 
 void

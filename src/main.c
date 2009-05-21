@@ -206,11 +206,14 @@ main(int argc, char* argv[])
         POP_LOCALS(&env);
     } while (0);
 
+    YogVm_remove_thread(&env, env.vm, main_thread);
+
     if (vm.gc_stat.print) {
         printf("GC duration total: %u[usec]\n", vm.gc_stat.duration_total);
         printf("allocation #: %u\n", vm.gc_stat.num_alloc);
     }
 
+    YogVm_wait_finish(&env, env.vm);
     YogVm_delete(&env, env.vm);
 
     return 0;

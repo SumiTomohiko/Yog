@@ -64,7 +64,8 @@ struct YogVm {
 
     YogVal encodings;
 
-    YogVal threads;
+    YogVal main_thread;
+    YogVal running_threads;
 
     pthread_mutex_t global_interp_lock;
     BOOL running_gc;
@@ -73,6 +74,9 @@ struct YogVm {
     pthread_cond_t threads_suspend_cond;
     pthread_cond_t gc_finish_cond;
     struct GC_TYPE* heaps;
+    struct GC_TYPE* last_heap;
+    pthread_cond_t vm_finish_cond;
+    unsigned int gc_id;
 };
 
 typedef struct YogVm YogVm;
@@ -88,6 +92,7 @@ void YogVm_add_heap(YogEnv*, YogVm*, GC_TYPE*);
 void YogVm_add_thread(YogEnv*, YogVm*, YogVal);
 void YogVm_aquire_global_interp_lock(YogEnv*, YogVm*);
 void YogVm_boot(YogEnv*, YogVm*);
+unsigned int YogVm_count_running_threads(YogEnv*, YogVm*);
 void YogVm_delete(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
@@ -98,6 +103,7 @@ void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
 void YogVm_release_global_interp_lock(YogEnv*, YogVm*);
 void YogVm_remove_thread(YogEnv*, YogVm*, YogVal);
 void YogVm_set_main_thread(YogEnv*, YogVm*, YogVal);
+void YogVm_wait_finish(YogEnv*, YogVm*);
 
 /* PROTOTYPE_END */
 

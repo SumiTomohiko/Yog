@@ -431,7 +431,7 @@
             val = POP();
 #line 257 "insts.def"
             POP_FRAME();
-            if (PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_C) {
+            if (!IS_PTR(CUR_FRAME) || PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_C) {
                 return val;
             }
         

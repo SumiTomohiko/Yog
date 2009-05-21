@@ -764,6 +764,7 @@ YogEval_call_block(YogEnv* env, YogVal block, unsigned int argc, YogVal* args)
         YogVal code = YUNDEF;
         PUSH_LOCALS2(env, frame, code);
 
+        code = PTR_AS(YogBasicBlock, block)->code;
         frame = PTR2VAL(YogMethodFrame_new(env));
         code = PTR_AS(YogBasicBlock, block)->code;
         setup_script_frame(env, frame, code);

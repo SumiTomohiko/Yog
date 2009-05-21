@@ -20,7 +20,7 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#define MAIN_THREAD(vm)     (vm)->threads
+#define MAIN_THREAD(vm)     (vm)->main_thread
 
 #define GC_OF(thread, type)     PTR_AS(YogThread, (thread))->type
 #if defined(GC_COPYING)
@@ -48,7 +48,8 @@ static void
 wait_gc_finish(YogEnv* env) 
 {
     YogVm* vm = env->vm;
-    while (vm->running_gc) {
+    unsigned int id = vm->gc_id;
+    while (vm->running_gc && (vm->gc_id == id)) {
         pthread_cond_wait(&vm->gc_finish_cond, &vm->global_interp_lock);
     }
 }
@@ -100,23 +101,7 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
     }
 }
 
-#define ITERATE_THREAD(vm, f)   do { \
-    YogVal thread = (vm)->threads; \
-    while (IS_PTR(thread)) { \
-        f; \
-        thread = PTR_AS(YogThread, thread)->next; \
-    } \
-} while (0)
-
 #if !defined(GC_BDW)
-static unsigned int 
-count_threads(YogEnv* env, YogVm* vm) 
-{
-    unsigned int n = 0;
-    ITERATE_THREAD(env->vm, n++);
-    return n;
-}
-
 static void 
 wakeup_suspend_threads(YogEnv* env) 
 {
@@ -137,7 +122,7 @@ static void
 run_gc(YogEnv* env, GC gc)
 {
     YogVm* vm = env->vm;
-    unsigned int threads_num = count_threads(env, vm);
+    unsigned int threads_num = YogVm_count_running_threads(env, vm);
     if (0 < threads_num) {
         vm->suspend_counter = threads_num - 1;
         vm->waiting_suspend = TRUE;
@@ -160,6 +145,7 @@ perform(YogEnv* env, GC gc)
         run_gc(env, gc);
         vm->running_gc = FALSE;
         wakeup_suspend_threads(env);
+        vm->gc_id++;
     }
     YogVm_release_global_interp_lock(env, vm);
 }
@@ -204,7 +190,13 @@ delete_heap(YogEnv* env, GC_TYPE* heap)
     }
 
     FINALIZE(env, heap);
+
+    YogVm* vm = env->vm;
+    if (vm->last_heap == heap) {
+        vm->last_heap = heap->prev;
+    }
     DELETE_FROM_LIST(env->vm->heaps, heap);
+
     free_memory(heap, sizeof(GC_TYPE));
 #undef IS_EMPTY
 #undef FINALIZE

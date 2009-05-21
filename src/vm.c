@@ -249,8 +249,7 @@ setup_exceptions(YogEnv* env, YogVm* vm)
 static void
 set_main_thread_klass(YogEnv* env, YogVm* vm)
 {
-    YogVal main_thread = vm->threads;
-    PTR_AS(YogBasicObj, main_thread)->klass = vm->cThread;
+    PTR_AS(YogBasicObj, vm->main_thread)->klass = vm->cThread;
 }
 
 void 
@@ -314,7 +313,7 @@ YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogVm* vm = ptr;
 
-    YogVal thread = vm->threads;
+    YogVal thread = vm->running_threads;
     while (IS_PTR(thread)) {
         void* thread_heap = PTR_AS(YogThread, thread)->THREAD_GC;
         keep_thread_locals(env, thread, keeper, thread_heap);
@@ -351,7 +350,8 @@ YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     KEEP(pkgs);
     KEEP(encodings);
-    KEEP(threads);
+    KEEP(main_thread);
+    KEEP(running_threads);
 #undef KEEP
 }
 
@@ -398,7 +398,7 @@ YogVm_init(YogVm* vm)
 
     vm->encodings = PTR2VAL(NULL);
 
-    vm->threads = YUNDEF;
+    vm->running_threads = YUNDEF;
 
     pthread_mutex_init(&vm->global_interp_lock, NULL);
     vm->running_gc = FALSE;
@@ -406,7 +406,9 @@ YogVm_init(YogVm* vm)
     vm->suspend_counter = 0;
     pthread_cond_init(&vm->threads_suspend_cond, NULL);
     pthread_cond_init(&vm->gc_finish_cond, NULL);
-    vm->heaps = NULL;
+    pthread_cond_init(&vm->vm_finish_cond, NULL);
+    vm->heaps = vm->last_heap = NULL;
+    vm->gc_id = 0;
 }
 
 #if 0
@@ -477,17 +479,23 @@ YogVm_release_global_interp_lock(YogEnv* env, YogVm* vm)
     pthread_mutex_unlock(&vm->global_interp_lock);
 }
 
+static void
+gc(YogEnv* env, YogVm* vm)
+{
+    while (vm->waiting_suspend) {
+        YogGC_suspend(env);
+    }
+}
+
 void 
 YogVm_add_thread(YogEnv* env, YogVm* vm, YogVal thread) 
 {
     YogVm_aquire_global_interp_lock(env, vm);
-    while (vm->waiting_suspend) {
-        YogGC_suspend(env);
-    }
+    gc(env, vm);
 
-    PTR_AS(YogThread, vm->threads)->prev = thread;
-    PTR_AS(YogThread, thread)->next = vm->threads;
-    vm->threads = thread;
+    PTR_AS(YogThread, vm->running_threads)->prev = thread;
+    PTR_AS(YogThread, thread)->next = vm->running_threads;
+    vm->running_threads = thread;
 
     YogVm_release_global_interp_lock(env, vm);
 }
@@ -495,16 +503,23 @@ YogVm_add_thread(YogEnv* env, YogVm* vm, YogVal thread)
 void 
 YogVm_set_main_thread(YogEnv* env, YogVm* vm, YogVal thread) 
 {
-    vm->threads = thread;
+    vm->main_thread = vm->running_threads = thread;
 }
 
 void
 YogVm_remove_thread(YogEnv* env, YogVm* vm, YogVal thread)
 {
+    SAVE_ARG(env, thread);
+
     YogVm_aquire_global_interp_lock(env, vm);
-    while (vm->waiting_suspend) {
-        YogGC_suspend(env);
-    }
+    gc(env, vm);
+
+    do {
+        YogVal thread = vm->running_threads;
+        while (IS_PTR(thread)) {
+            thread = PTR_AS(YogThread, thread)->next;
+        }
+    } while (0);
 
     YogVal prev = PTR_AS(YogThread, thread)->prev;
     YogVal next = PTR_AS(YogThread, thread)->next;
@@ -512,13 +527,19 @@ YogVm_remove_thread(YogEnv* env, YogVm* vm, YogVal thread)
         PTR_AS(YogThread, prev)->next = next;
     }
     else {
-        vm->threads = next;
+        vm->running_threads = next;
     }
     if (IS_PTR(next)) {
         PTR_AS(YogThread, next)->prev = prev;
     }
 
+    if (!IS_PTR(vm->running_threads)) {
+        pthread_cond_signal(&vm->vm_finish_cond);
+    }
+
     YogVm_release_global_interp_lock(env, vm);
+
+    RETURN_VOID(env);
 }
 
 #if !defined(GC_BDW)
@@ -526,10 +547,43 @@ void
 YogVm_add_heap(YogEnv* env, YogVm* vm, GC_TYPE* heap)
 {
     YogVm_aquire_global_interp_lock(env, vm);
-    ADD_TO_LIST(vm->heaps, heap);
+    if (vm->last_heap != NULL) {
+        vm->last_heap->next = heap;
+        heap->prev = vm->last_heap;
+        vm->last_heap = heap;
+    }
+    else {
+        vm->heaps = vm->last_heap = heap;
+    }
     YogVm_release_global_interp_lock(env, vm);
 }
 #endif
+
+unsigned int
+YogVm_count_running_threads(YogEnv* env, YogVm* vm)
+{
+    unsigned int n = 0;
+    YogVal thread = vm->running_threads;
+    while (IS_PTR(thread)) {
+        thread = PTR_AS(YogThread, thread)->next;
+        n++;
+    }
+
+    return n;
+}
+
+void
+YogVm_wait_finish(YogEnv* env, YogVm* vm)
+{
+    YogVm_aquire_global_interp_lock(env, vm);
+    gc(env, vm);
+
+    while (0 < YogVm_count_running_threads(env, vm)) {
+        pthread_cond_wait(&vm->vm_finish_cond, &vm->global_interp_lock);
+    }
+
+    YogVm_release_global_interp_lock(env, vm);
+}
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

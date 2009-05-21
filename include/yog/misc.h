@@ -1,6 +1,7 @@
 #if !defined(__YOG_MISC_H__)
 #define __YOG_MISC_H__
 
+#if 0
 #define ADD_TO_LIST(list, elem)     do { \
     (elem)->prev = NULL; \
     (elem)->next = (list); \
@@ -9,6 +10,7 @@
     } \
     (list) = (elem); \
 } while (0)
+#endif
 
 #define DELETE_FROM_LIST(list, elem)    do { \
     if ((elem)->prev != NULL) { \
