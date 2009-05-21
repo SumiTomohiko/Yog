@@ -514,13 +514,6 @@ YogVm_remove_thread(YogEnv* env, YogVm* vm, YogVal thread)
     YogVm_aquire_global_interp_lock(env, vm);
     gc(env, vm);
 
-    do {
-        YogVal thread = vm->running_threads;
-        while (IS_PTR(thread)) {
-            thread = PTR_AS(YogThread, thread)->next;
-        }
-    } while (0);
-
     YogVal prev = PTR_AS(YogThread, thread)->prev;
     YogVal next = PTR_AS(YogThread, thread)->next;
     if (IS_PTR(prev)) {

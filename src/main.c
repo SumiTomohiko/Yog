@@ -206,7 +206,7 @@ main(int argc, char* argv[])
         POP_LOCALS(&env);
     } while (0);
 
-    YogVm_remove_thread(&env, env.vm, main_thread);
+    YogVm_remove_thread(&env, env.vm, env.thread);
 
     if (vm.gc_stat.print) {
         printf("GC duration total: %u[usec]\n", vm.gc_stat.duration_total);
