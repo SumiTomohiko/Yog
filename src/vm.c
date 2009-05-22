@@ -548,6 +548,7 @@ YogVm_add_heap(YogEnv* env, YogVm* vm, GC_TYPE* heap)
     else {
         vm->heaps = vm->last_heap = heap;
     }
+    heap->next = NULL;
     YogVm_release_global_interp_lock(env, vm);
 }
 #endif
