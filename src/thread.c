@@ -279,7 +279,7 @@ run_of_new_thread(void* arg)
     YogVal block = PTR_AS(YogThread, thread)->block;
     YogVal retval = YogEval_call_block(&env, block, size, args);
 
-    YogVm_remove_thread(&env, env.vm, thread);
+    YogVm_remove_thread(&env, env.vm, env.thread);
 
     RETURN(&env, (void*)retval);
 }
