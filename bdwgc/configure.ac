@@ -51,7 +51,7 @@ AC_ARG_ENABLE(threads,
   [ AC_MSG_CHECKING([for thread model used by GCC])
     THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
     if test -z "$THREADS"; then
-      THREADS=no
+      THREADS=posix
     fi
     AC_MSG_RESULT([$THREADS]) ])
 

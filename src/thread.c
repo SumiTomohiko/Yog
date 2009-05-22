@@ -5,6 +5,7 @@
 #endif
 #if defined(GC_BDW)
 #   include "gc.h"
+#   include "gc_pthread_redirects.h"
 #endif
 #include "yog/array.h"
 #include "yog/error.h"
@@ -303,9 +304,15 @@ run(YogEnv* env)
     PTR_AS(ThreadArg, arg)->vararg = vararg;
 
     YogVm_add_thread(env, env->vm, self);
-    if (pthread_create(pthread, NULL, run_of_new_thread, (void*)arg) != 0) {
+#if !defined(GC_BDW)
+#   define CREATE_THREAD    pthread_create
+#else 
+#   define CREATE_THREAD    GC_pthread_create
+#endif
+    if (CREATE_THREAD(pthread, NULL, run_of_new_thread, (void*)arg) != 0) {
         YOG_BUG(env, "Can't create new thread");
     }
+#undef CREATE_THREAD
 
     RETURN(env, self);
 }
