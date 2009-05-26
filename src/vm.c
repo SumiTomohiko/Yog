@@ -1,5 +1,4 @@
 #include <pthread.h>
-#include <semaphore.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -357,7 +356,7 @@ YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 void 
-YogVm_init(YogEnv* env, YogVm* vm) 
+YogVm_init(YogVm* vm) 
 {
     vm->gc_stress = FALSE;
 
@@ -399,14 +398,17 @@ YogVm_init(YogEnv* env, YogVm* vm)
 
     vm->encodings = PTR2VAL(NULL);
 
-    vm->main_thread = YUNDEF;
     vm->running_threads = YUNDEF;
 
     pthread_mutex_init(&vm->global_interp_lock, NULL);
+    vm->running_gc = FALSE;
+    vm->waiting_suspend = FALSE;
+    vm->suspend_counter = 0;
+    pthread_cond_init(&vm->threads_suspend_cond, NULL);
+    pthread_cond_init(&vm->gc_finish_cond, NULL);
+    pthread_cond_init(&vm->vm_finish_cond, NULL);
     vm->heaps = vm->last_heap = NULL;
-    if (sem_init(&vm->suspend_sem, 0, 0) != 0) {
-        YOG_BUG(env, "sem_init failed");
-    }
+    vm->gc_id = 0;
 }
 
 #if 0
@@ -477,10 +479,19 @@ YogVm_release_global_interp_lock(YogEnv* env, YogVm* vm)
     pthread_mutex_unlock(&vm->global_interp_lock);
 }
 
+static void
+gc(YogEnv* env, YogVm* vm)
+{
+    while (vm->waiting_suspend) {
+        YogGC_suspend(env);
+    }
+}
+
 void 
 YogVm_add_thread(YogEnv* env, YogVm* vm, YogVal thread) 
 {
     YogVm_aquire_global_interp_lock(env, vm);
+    gc(env, vm);
 
     PTR_AS(YogThread, vm->running_threads)->prev = thread;
     PTR_AS(YogThread, thread)->next = vm->running_threads;
@@ -501,6 +512,7 @@ YogVm_remove_thread(YogEnv* env, YogVm* vm, YogVal thread)
     SAVE_ARG(env, thread);
 
     YogVm_aquire_global_interp_lock(env, vm);
+    gc(env, vm);
 
     YogVal prev = PTR_AS(YogThread, thread)->prev;
     YogVal next = PTR_AS(YogThread, thread)->next;
@@ -558,6 +570,7 @@ void
 YogVm_wait_finish(YogEnv* env, YogVm* vm)
 {
     YogVm_aquire_global_interp_lock(env, vm);
+    gc(env, vm);
 
     while (0 < YogVm_count_running_threads(env, vm)) {
         pthread_cond_wait(&vm->vm_finish_cond, &vm->global_interp_lock);
