@@ -81,7 +81,6 @@ YogThread_initialize(YogEnv* env, YogVal thread, YogVal klass)
     PTR_AS(YogThread, thread)->locals = NULL;
 
     PTR_AS(YogThread, thread)->block = YUNDEF;
-    PTR_AS(YogThread, thread)->pthread = NULL;
 }
 
 #if defined(GC_COPYING)
@@ -294,10 +293,6 @@ run(YogEnv* env)
     YogVal arg = YUNDEF;
     PUSH_LOCALS3(env, self, vararg, arg);
 
-    pthread_t* pthread = malloc(sizeof(pthread_t));
-    YOG_ASSERT(env, pthread != NULL, "Can't allocate pthread_t");
-    PTR_AS(YogThread, self)->pthread = pthread;
-
     arg = ThreadArg_new(env);
     PTR_AS(ThreadArg, arg)->vm = env->vm;
     PTR_AS(ThreadArg, arg)->thread = self;
@@ -309,6 +304,7 @@ run(YogEnv* env)
 #else 
 #   define CREATE_THREAD    GC_pthread_create
 #endif
+    pthread_t* pthread = &PTR_AS(YogThread, self)->pthread;
     if (CREATE_THREAD(pthread, NULL, run_of_new_thread, (void*)arg) != 0) {
         YOG_BUG(env, "Can't create new thread");
     }
