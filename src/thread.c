@@ -284,19 +284,6 @@ run_of_new_thread(void* arg)
 }
 
 static YogVal
-join(YogEnv* env)
-{
-    YogVal self = SELF(env);
-
-    void* retval = NULL;
-    if (pthread_join(PTR_AS(YogThread, self)->pthread, &retval) != 0) {
-        YOG_BUG(env, "pthread_join failed");
-    }
-
-    return PTR2VAL(retval);
-}
-
-static YogVal
 run(YogEnv* env)
 {
     SAVE_LOCALS(env);
@@ -347,7 +334,6 @@ YogThread_klass_new(YogEnv* env)
     YogKlass_define_allocator(env, klass, allocate);
     YogKlass_define_method(env, klass, "initialize", initialize, 1, 0, 0, 0, "block", NULL);
     YogKlass_define_method(env, klass, "run", run, 0, 1, 0, 0, NULL);
-    YogKlass_define_method(env, klass, "join", join, 0, 0, 0, 0, NULL);
 
     RETURN(env, klass);
 }
