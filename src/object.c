@@ -87,7 +87,10 @@ YogObj_allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
-    YogVal obj = ALLOC_OBJ(env, YogObj_keep_children, NULL, YogObj);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
+
+    ALLOC_OBJ(env, obj, YogObj_keep_children, NULL, YogObj);
     YogObj_init(env, obj, 0, klass);
 
     RETURN(env, obj);

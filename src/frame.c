@@ -156,10 +156,15 @@ YogNameFrame_init(YogVal frame)
 YogVal 
 YogNameFrame_new(YogEnv* env) 
 {
-    YogVal frame = ALLOC_OBJ(env, YogNameFrame_keep_children, NULL, YogNameFrame);
+    SAVE_LOCALS(env);
+
+    YogVal frame = YUNDEF;
+    PUSH_LOCAL(env, frame);
+
+    ALLOC_OBJ(env, frame, YogNameFrame_keep_children, NULL, YogNameFrame);
     YogNameFrame_init(frame);
 
-    return frame;
+    RETURN(env, frame);
 }
 
 static void 
@@ -172,10 +177,15 @@ YogMethodFrame_init(YogVal frame)
 YogVal 
 YogMethodFrame_new(YogEnv* env) 
 {
-    YogVal frame = ALLOC_OBJ(env, YogMethodFrame_keep_children, NULL, YogMethodFrame);
+    SAVE_LOCALS(env);
+
+    YogVal frame = YUNDEF;
+    PUSH_LOCAL(env, frame);
+
+    ALLOC_OBJ(env, frame, YogMethodFrame_keep_children, NULL, YogMethodFrame);
     YogMethodFrame_init(frame);
 
-    return frame;
+    RETURN(env, frame);
 }
 
 static void 
@@ -191,10 +201,15 @@ YogCFrame_init(YogEnv* env, YogVal frame)
 YogVal 
 YogCFrame_new(YogEnv* env) 
 {
-    YogVal frame = ALLOC_OBJ(env, YogCFrame_keep_children, NULL, YogCFrame);
+    SAVE_LOCALS(env);
+
+    YogVal frame = YUNDEF;
+    PUSH_LOCAL(env, frame);
+
+    ALLOC_OBJ(env, frame, YogCFrame_keep_children, NULL, YogCFrame);
     YogCFrame_init(env, frame);
 
-    return frame;
+    RETURN(env, frame);
 }
 
 static void 
@@ -212,14 +227,19 @@ YogOuterVars_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* he
 YogVal 
 YogOuterVars_new(YogEnv* env, unsigned int size) 
 {
-    YogVal vars = ALLOC_OBJ_ITEM(env, YogOuterVars_keep_children, NULL, YogOuterVars, size, YogVal);
+    SAVE_LOCALS(env);
+
+    YogVal vars = YUNDEF;
+    PUSH_LOCAL(env, vars);
+
+    ALLOC_OBJ_ITEM(env, vars, YogOuterVars_keep_children, NULL, YogOuterVars, size, YogVal);
     PTR_AS(YogOuterVars, vars)->size = size;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
         PTR_AS(YogOuterVars, vars)->items[i] = YUNDEF;
     }
 
-    return vars;
+    RETURN(env, vars);
 }
 
 /**

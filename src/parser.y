@@ -123,11 +123,16 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static YogVal 
 YogNode_new(YogEnv* env, YogNodeType type, unsigned int lineno) 
 {
-    YogVal node = ALLOC_OBJ(env, YogNode_keep_children, NULL, YogNode);
+    SAVE_LOCALS(env);
+
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    ALLOC_OBJ(env, node, YogNode_keep_children, NULL, YogNode);
     PTR_AS(YogNode, node)->lineno = lineno;
     PTR_AS(YogNode, node)->type = type;
 
-    return node;
+    RETURN(env, node);
 }
 
 #define NODE_NEW(type, lineno)  YogNode_new(env, (type), (lineno))

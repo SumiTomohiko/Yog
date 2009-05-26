@@ -49,14 +49,19 @@ YogValArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 YogVal 
 YogValArray_new(YogEnv* env, unsigned int size) 
 {
-    YogVal array = ALLOC_OBJ_ITEM(env, YogValArray_keep_children, NULL, YogValArray, size, YogVal);
+    SAVE_LOCALS(env);
+
+    YogVal array = YUNDEF;
+    PUSH_LOCAL(env, array);
+
+    ALLOC_OBJ_ITEM(env, array, YogValArray_keep_children, NULL, YogValArray, size, YogVal);
     PTR_AS(YogValArray, array)->size = size;
     unsigned int i = 0;
     for (i = 0; i < size; i++) {
         PTR_AS(YogValArray, array)->items[i] = YUNDEF;
     }
 
-    return array;
+    RETURN(env, array);
 }
 
 static void 
@@ -136,12 +141,15 @@ YogArray_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
 
-#define INIT_SIZE   (1)
-    YogVal body = YogValArray_new(env, INIT_SIZE);
-#undef INIT_SIZE
-    PUSH_LOCAL(env, body);
+    YogVal body = YUNDEF;
+    YogVal array = YUNDEF;
+    PUSH_LOCALS2(env, body, array);
 
-    YogVal array = ALLOC_OBJ(env, YogArray_keep_children, NULL, YogArray);
+#define INIT_SIZE   (1)
+    body = YogValArray_new(env, INIT_SIZE);
+#undef INIT_SIZE
+
+    ALLOC_OBJ(env, array, YogArray_keep_children, NULL, YogArray);
     PTR_AS(YogArray, array)->size = 0;
     MODIFY(env, PTR_AS(YogArray, array)->body, body);
 

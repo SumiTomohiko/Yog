@@ -48,7 +48,7 @@ YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsign
     argnames = PTR2VAL(NULL);
     ID blockargname = 0;
     if (0 < argc) {
-        argnames = PTR2VAL(ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * argc));
+        ALLOC_OBJ_SIZE(env, argnames, NULL, NULL, sizeof(ID) * argc);
         unsigned int i = 0;
         for (i = 0; i < argc; i++) {
             const char* s = NEXT_STR(aq);
@@ -63,7 +63,7 @@ YogBuiltinFunction_new(YogEnv* env, void* f, ID klass_name, ID func_name, unsign
 
 #undef NEXT_STR
 
-    builtin_f = ALLOC_OBJ(env, keep_children, NULL, YogBuiltinFunction);
+    ALLOC_OBJ(env, builtin_f, keep_children, NULL, YogBuiltinFunction);
     BUILTIN_FUNCTION(builtin_f)->arg_info = YUNDEF;
     BUILTIN_FUNCTION(builtin_f)->f = f;
     BUILTIN_FUNCTION(builtin_f)->klass_name = klass_name;

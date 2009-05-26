@@ -44,10 +44,15 @@ YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void*
 static YogVal 
 YogPackageBlock_allocate(YogEnv* env, YogVal klass) 
 {
-    YogVal block = ALLOC_OBJ(env, YogPackageBlock_keep_children, NULL, YogPackageBlock);
+    SAVE_LOCALS(env);
+
+    YogVal block = YUNDEF;
+    PUSH_LOCAL(env, block);
+
+    ALLOC_OBJ(env, block, YogPackageBlock_keep_children, NULL, YogPackageBlock);
     YogPackageBlock_init(env, block);
 
-    return block;
+    RETURN(env, block);
 }
 
 YogVal 
@@ -82,10 +87,15 @@ YogBlock_init(YogEnv* env, YogVal block)
 YogVal 
 YogBlock_new(YogEnv* env) 
 {
-    YogVal block = ALLOC_OBJ(env, YogBlock_keep_children, NULL, YogBlock);
+    SAVE_LOCALS(env);
+
+    YogVal block = YUNDEF;
+    PUSH_LOCAL(env, block);
+
+    ALLOC_OBJ(env, block, YogBlock_keep_children, NULL, YogBlock);
     YogBlock_init(env, block);
 
-    return block;
+    RETURN(env, block);
 }
 
 YogVal 

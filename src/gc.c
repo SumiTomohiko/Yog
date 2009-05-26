@@ -45,9 +45,14 @@ typedef void (*GC)(YogEnv*);
 static pthread_mutex_t global_gc_lock;
 static YogVm* gc_vm;
 
-YogVal 
-YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
+void
+YogGC_allocate(YogEnv* env, YogVal* val, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
 {
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGSUSPEND);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
+
     YogVal thread = env->thread;
 #if defined(GC_COPYING)
 #   define ALLOC    YogCopying_alloc
@@ -62,13 +67,14 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
 #endif
     void* ptr = ALLOC(env, GET_GC(thread), keeper, finalizer, size);
 #undef ALLOC
-
     if (ptr != NULL) {
-        return PTR2VAL(ptr);
+        *val = PTR2VAL(ptr);
     }
     else {
-        return YNIL;
+        *val = YNIL;
     }
+
+    pthread_sigmask(SIG_UNBLOCK, &set, NULL);
 }
 
 #if !defined(GC_BDW)

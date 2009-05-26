@@ -35,7 +35,10 @@ YogMatch_new(YogEnv* env, YogVal str, YogVal regexp, OnigRegion* onig_region)
 {
     SAVE_ARGS2(env, str, regexp);
 
-    YogVal match = ALLOC_OBJ(env, YogMatch_keep_children, YogMatch_finalize, YogMatch);
+    YogVal match = YUNDEF;
+    PUSH_LOCAL(env, match);
+
+    ALLOC_OBJ(env, match, YogMatch_keep_children, YogMatch_finalize, YogMatch);
     YogBasicObj_init(env, match, 0, env->vm->cMatch);
     MODIFY(env, PTR_AS(YogMatch, match)->str, str);
     MODIFY(env, PTR_AS(YogMatch, match)->regexp, regexp);
@@ -55,6 +58,11 @@ YogRegexp_finalize(YogEnv* env, void* ptr)
 YogVal 
 YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option) 
 {
+    SAVE_LOCALS(env);
+
+    YogVal regexp = YUNDEF;
+    PUSH_LOCAL(env, regexp);
+
     OnigRegex onig_regexp = NULL;
     YogVal body = PTR_AS(YogString, pattern)->body;
     OnigUChar* pattern_begin = (OnigUChar*)PTR_AS(YogCharArray, body)->items;
@@ -67,14 +75,14 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
     OnigEncoding onig = PTR_AS(YogEncoding, enc)->onig_enc;
     int r = onig_new(&onig_regexp, pattern_begin, pattern_end, option, onig, syntax, &einfo);
     if (r != ONIG_NORMAL) {
-        return YNIL;
+        RETURN(env, YNIL);
     }
 
-    YogVal regexp = ALLOC_OBJ(env, NULL, YogRegexp_finalize, YogRegexp);
+    ALLOC_OBJ(env, regexp, NULL, YogRegexp_finalize, YogRegexp);
     YogBasicObj_init(env, regexp, 0, env->vm->cRegexp);
     PTR_AS(YogRegexp, regexp)->onig_regexp = onig_regexp;
 
-    return regexp;
+    RETURN(env, regexp);
 }
 
 YogVal 

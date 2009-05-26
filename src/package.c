@@ -60,8 +60,10 @@ allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
-    YogVal pkg = ALLOC_OBJ(env, YogPackage_keep_children, NULL, YogPackage);
+    YogVal pkg = YUNDEF;
     PUSH_LOCAL(env, pkg);
+
+    ALLOC_OBJ(env, pkg, YogPackage_keep_children, NULL, YogPackage);
     YogPackage_init(env, pkg);
 
     RETURN(env, pkg);

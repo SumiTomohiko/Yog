@@ -54,7 +54,12 @@ keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static YogVal 
 alloc_bins(YogEnv* env, int size) 
 {
-    YogVal array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogVal);
+    SAVE_LOCALS(env);
+
+    YogVal array = YUNDEF;
+    PUSH_LOCAL(env, array);
+
+    ALLOC_OBJ_ITEM(env, array, keep_bins_children, NULL, YogTableEntryArray, size, YogVal);
 
     PTR_AS(YogTableEntryArray, array)->size = size;
     unsigned int i = 0;
@@ -62,7 +67,7 @@ alloc_bins(YogEnv* env, int size)
         PTR_AS(YogTableEntryArray, array)->items[i] = YNIL;
     }
 
-    return array;
+    RETURN(env, array);
 }
 
 /*
@@ -186,13 +191,18 @@ keep_table_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static YogVal 
 alloc_table(YogEnv* env) 
 {
-    YogVal tbl = ALLOC_OBJ(env, keep_table_children, NULL, YogTable);
+    SAVE_LOCALS(env);
+
+    YogVal tbl = YUNDEF;
+    PUSH_LOCAL(env, tbl);
+
+    ALLOC_OBJ(env, tbl, keep_table_children, NULL, YogTable);
     PTR_AS(YogTable, tbl)->type = NULL;
     PTR_AS(YogTable, tbl)->num_bins = 0;
     PTR_AS(YogTable, tbl)->num_entries = 0;
     PTR_AS(YogTable, tbl)->bins = YNIL;
 
-    return tbl;
+    RETURN(env, tbl);
 }
 
 static YogVal 
@@ -285,13 +295,18 @@ keep_entry_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static YogVal 
 alloc_entry(YogEnv* env)
 {
-    YogVal entry = ALLOC_OBJ(env, keep_entry_children, NULL, YogTableEntry);
+    SAVE_LOCALS(env);
+
+    YogVal entry = YUNDEF;
+    PUSH_LOCAL(env, entry);
+
+    ALLOC_OBJ(env, entry, keep_entry_children, NULL, YogTableEntry);
     PTR_AS(YogTableEntry, entry)->hash = 0;
     PTR_AS(YogTableEntry, entry)->key = YUNDEF;
     PTR_AS(YogTableEntry, entry)->record = YUNDEF;
     PTR_AS(YogTableEntry, entry)->next = YUNDEF;
 
-    return entry;
+    RETURN(env, entry);
 }
 
 static void 

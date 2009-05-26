@@ -1,12 +1,12 @@
 #if !defined(__YOG_GC_H__)
 #define __YOG_GC_H__
 
-#define ALLOC_OBJ_SIZE(env, keep_children, finalizer, size) \
-    YogGC_allocate(env, keep_children, finalizer, size)
-#define ALLOC_OBJ(env, keep_children, finalizer, type) \
-    ALLOC_OBJ_SIZE(env, keep_children, finalizer, sizeof(type))
-#define ALLOC_OBJ_ITEM(env, keep_children, finalizer, type, size, item_type) \
-    ALLOC_OBJ_SIZE(env, keep_children, finalizer, sizeof(type) + size * sizeof(item_type))
+#define ALLOC_OBJ_SIZE(env, val, keep_children, finalizer, size) \
+    YogGC_allocate(env, &val, keep_children, finalizer, size)
+#define ALLOC_OBJ(env, val, keep_children, finalizer, type) \
+    ALLOC_OBJ_SIZE(env, val, keep_children, finalizer, sizeof(type))
+#define ALLOC_OBJ_ITEM(env, val, keep_children, finalizer, type, size, item_type) \
+    ALLOC_OBJ_SIZE(env, val, keep_children, finalizer, sizeof(type) + size * sizeof(item_type))
 
 #if defined(GC_COPYING)
 #   define GC_TYPE  YogCopying
@@ -30,13 +30,12 @@
  */
 
 /* src/gc.c */
-YogVal YogGC_allocate(YogEnv*, ChildrenKeeper, Finalizer, size_t);
+void YogGC_allocate(YogEnv*, YogVal*, ChildrenKeeper, Finalizer, size_t);
 void YogGC_initialize(YogEnv*);
 void YogGC_keep(YogEnv*, YogVal*, ObjectKeeper, void*);
 void YogGC_perform(YogEnv*);
 void YogGC_perform_major(YogEnv*);
 void YogGC_perform_minor(YogEnv*);
-void YogGC_suspend(YogEnv*);
 
 /* PROTOTYPE_END */
 

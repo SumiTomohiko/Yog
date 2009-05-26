@@ -35,12 +35,17 @@ YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static YogVal 
 YogToken_new(YogEnv* env) 
 {
-    YogVal token = ALLOC_OBJ(env, YogToken_keep_children, NULL, YogToken);
+    SAVE_LOCALS(env);
+
+    YogVal token = YUNDEF;
+    PUSH_LOCAL(env, token);
+
+    ALLOC_OBJ(env, token, YogToken_keep_children, NULL, YogToken);
     PTR_AS(YogToken, token)->type = 0;
     PTR_AS(YogToken, token)->u.val = YUNDEF;
     PTR_AS(YogToken, token)->lineno = 0;
 
-    return token;
+    RETURN(env, token);
 }
 
 static YogVal 
@@ -637,14 +642,16 @@ YogLexer_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
 
-    YogVal lexer = ALLOC_OBJ(env, keep_children, NULL, YogLexer);
+    YogVal lexer = YUNDEF;
+    PUSH_LOCAL(env, lexer);
+
+    ALLOC_OBJ(env, lexer, keep_children, NULL, YogLexer);
     PTR_AS(YogLexer, lexer)->state = LS_EXPR;
     PTR_AS(YogLexer, lexer)->fp = NULL;
     PTR_AS(YogLexer, lexer)->line = YUNDEF;
     PTR_AS(YogLexer, lexer)->next_index = 0;
     PTR_AS(YogLexer, lexer)->buffer = YUNDEF;
     PTR_AS(YogLexer, lexer)->lineno = 0;
-    PUSH_LOCAL(env, lexer);
 
     YogVal line = YogString_new(env);
     MODIFY(env, PTR_AS(YogLexer, lexer)->line, line);

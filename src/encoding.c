@@ -4,6 +4,7 @@
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/st.h"
+#include "yog/thread.h"
 #include "yog/yog.h"
 
 char* 
@@ -57,10 +58,15 @@ YogEncoding_normalize_name(YogEnv* env, YogVal name)
 YogVal 
 YogEncoding_new(YogEnv* env, OnigEncoding onig_enc) 
 {
-    YogVal enc = ALLOC_OBJ(env, NULL, NULL, YogEncoding);
+    SAVE_LOCALS(env);
+
+    YogVal enc = YUNDEF;
+    PUSH_LOCAL(env, enc);
+
+    ALLOC_OBJ(env, enc, NULL, NULL, YogEncoding);
     PTR_AS(YogEncoding, enc)->onig_enc = onig_enc;
 
-    return enc;
+    RETURN(env, enc);
 }
 
 /**
