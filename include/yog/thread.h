@@ -172,7 +172,7 @@ struct YogThread {
 #endif
 
     YogVal block;
-    pthread_t pthread;
+    pthread_t* pthread;
 };
 
 typedef struct YogThread YogThread;

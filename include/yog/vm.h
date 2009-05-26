@@ -2,7 +2,6 @@
 #define __YOG_VM_H__
 
 #include <pthread.h>
-#include <semaphore.h>
 #if HAVE_SYS_TYPES_H
 #   include <sys/types.h>
 #endif
@@ -69,10 +68,15 @@ struct YogVm {
     YogVal running_threads;
 
     pthread_mutex_t global_interp_lock;
+    BOOL running_gc;
+    BOOL waiting_suspend;
+    unsigned int suspend_counter;
+    pthread_cond_t threads_suspend_cond;
+    pthread_cond_t gc_finish_cond;
     struct GC_TYPE* heaps;
     struct GC_TYPE* last_heap;
     pthread_cond_t vm_finish_cond;
-    sem_t suspend_sem;
+    unsigned int gc_id;
 };
 
 typedef struct YogVm YogVm;
@@ -92,7 +96,7 @@ unsigned int YogVm_count_running_threads(YogEnv*, YogVm*);
 void YogVm_delete(YogEnv*, YogVm*);
 void YogVm_gc(YogEnv*, YogVm*);
 const char* YogVm_id2name(YogEnv*, YogVm*, ID);
-void YogVm_init(YogEnv*, YogVm*);
+void YogVm_init(YogVm*);
 ID YogVm_intern(YogEnv*, YogVm*, const char*);
 void YogVm_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
