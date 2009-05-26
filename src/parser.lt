@@ -290,12 +290,7 @@ LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 static YogVal 
 LemonParser_new(YogEnv* env) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal pParser = YUNDEF;
-    PUSH_LOCAL(env, pParser);
-
-    ALLOC_OBJ(env, pParser, LemonParser_keep_children, NULL, yyParser);
+    YogVal pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
   if (IS_PTR(pParser)) {
     PTR_AS(yyParser, pParser)->yyidx = -1;
 #if defined(YYTRACKMAXSTACKDEPTH)
@@ -312,8 +307,7 @@ LemonParser_new(YogEnv* env)
     }
 #endif
   }
-
-  RETURN(env, pParser);
+  return pParser;
 }
 
 /* The following function deletes the value associated with a

@@ -35,16 +35,11 @@ YogCharArray_clear(YogEnv* env, YogVal array)
 YogVal 
 YogCharArray_new(YogEnv* env, unsigned int capacity) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal array = YUNDEF;
-    PUSH_LOCAL(env, array);
-
-    ALLOC_OBJ_ITEM(env, array, NULL, NULL, YogCharArray, capacity, char);
+    YogVal array = ALLOC_OBJ_ITEM(env, NULL, NULL, YogCharArray, capacity, char);
     PTR_AS(YogCharArray, array)->capacity = capacity;
     YogCharArray_clear(env, array);
 
-    RETURN(env, array);
+    return array;
 }
 
 YogVal 
@@ -167,10 +162,7 @@ allocate(YogEnv* env, YogVal klass)
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, klass);
 
-    YogVal obj = YUNDEF;
-    PUSH_LOCAL(env, obj);
-
-    ALLOC_OBJ(env, obj, YogString_keep_children, NULL, YogString);
+    YogVal obj = ALLOC_OBJ(env, YogString_keep_children, NULL, YogString);
     YogBasicObj_init(env, obj, 0, klass);
 
     PTR_AS(YogString, obj)->encoding = YUNDEF;
@@ -586,17 +578,11 @@ YogString_klass_new(YogEnv* env)
 char* 
 YogString_dup(YogEnv* env, const char* s) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal t = YUNDEF;
-    PUSH_LOCAL(env, t);
-
     size_t size = strlen(s) + 1;
-    ALLOC_OBJ_SIZE(env, t, NULL, NULL, size);
-    char* p = PTR_AS(char, t);
+    char* p = PTR_AS(char, ALLOC_OBJ_SIZE(env, NULL, NULL, size));
     memcpy(p, s, size);
 
-    RETURN(env, p);
+    return p;
 }
 
 /**

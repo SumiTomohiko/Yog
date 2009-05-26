@@ -206,18 +206,13 @@ YogInst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static YogVal 
 YogInst_new(YogEnv* env, InstType type, unsigned int lineno) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal inst = YUNDEF;
-    PUSH_LOCAL(env, inst);
-
-    ALLOC_OBJ(env, inst, YogInst_keep_children, NULL, YogInst);
+    YogVal inst = ALLOC_OBJ(env, YogInst_keep_children, NULL, YogInst);
     PTR_AS(YogInst, inst)->type = type;
     PTR_AS(YogInst, inst)->next = YUNDEF;
     PTR_AS(YogInst, inst)->lineno = lineno;
     PTR_AS(YogInst, inst)->pc = 0;
 
-    RETURN(env, inst);
+    return inst;
 }
 
 static YogVal 
@@ -261,17 +256,12 @@ TryListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* he
 static YogVal 
 TryListEntry_new(YogEnv* env) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal entry = YUNDEF;
-    PUSH_LOCAL(env, entry);
-
-    ALLOC_OBJ(env, entry, TryListEntry_keep_children, NULL, TryListEntry);
+    YogVal entry = ALLOC_OBJ(env, TryListEntry_keep_children, NULL, TryListEntry);
     PTR_AS(TryListEntry, entry)->prev = YUNDEF;
     PTR_AS(TryListEntry, entry)->node = YUNDEF;
     PTR_AS(TryListEntry, entry)->exc_tbl = YUNDEF;
 
-    RETURN(env, entry);
+    return entry;
 }
 
 static void 
@@ -440,16 +430,11 @@ scan_var_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data
 static YogVal 
 ScanVarEntry_new(YogEnv* env, unsigned int index, int flags) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal ent = YUNDEF;
-    PUSH_LOCAL(env, ent);
-
-    ALLOC_OBJ(env, ent, NULL, NULL, ScanVarEntry);
+    YogVal ent = ALLOC_OBJ(env, NULL, NULL, ScanVarEntry);
     PTR_AS(ScanVarEntry, ent)->index = index;
     PTR_AS(ScanVarEntry, ent)->flags = flags;
 
-    RETURN(env, ent);
+    return ent;
 }
 
 static void 
@@ -710,15 +695,10 @@ ScanVarData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 static YogVal 
 ScanVarData_new(YogEnv* env) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal data = YUNDEF;
-    PUSH_LOCAL(env, data);
-
-    ALLOC_OBJ(env, data, ScanVarData_keep_children, NULL, ScanVarData);
+    YogVal data = ALLOC_OBJ(env, ScanVarData_keep_children, NULL, ScanVarData);
     PTR_AS(ScanVarData, data)->var_tbl = YUNDEF;
 
-    RETURN(env, data);
+    return data;
 }
 
 static YogVal
@@ -1019,8 +999,7 @@ make_exception_table(YogEnv* env, YogVal code, YogVal data)
     }
 
     if (0 < size) {
-        YogVal exc_tbl = YUNDEF;
-        ALLOC_OBJ_ITEM(env, exc_tbl, NULL, NULL, YogExceptionTable, size, YogExceptionTableEntry);
+        YogVal exc_tbl = ALLOC_OBJ_ITEM(env, NULL, NULL, YogExceptionTable, size, YogExceptionTableEntry);
 
         unsigned int i = 0;
         entry = COMPILE_DATA(data)->exc_tbl;
@@ -1071,8 +1050,7 @@ make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
         inst = INST(inst)->next;
     }
 
-    YogVal tbl = YUNDEF;
-    ALLOC_OBJ_SIZE(env, tbl, NULL, NULL, sizeof(YogLinenoTableEntry) * size);
+    YogVal tbl = PTR2VAL(ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(YogLinenoTableEntry) * size));
     if (0 < size) {
         inst = anchor;
         int i = -1;
@@ -1119,18 +1097,13 @@ ExceptionTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, v
 static YogVal 
 ExceptionTableEntry_new(YogEnv* env) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal entry = YUNDEF;
-    PUSH_LOCAL(env, entry);
-
-    ALLOC_OBJ(env, entry, ExceptionTableEntry_keep_children, NULL, ExceptionTableEntry);
+    YogVal entry = ALLOC_OBJ(env, ExceptionTableEntry_keep_children, NULL, ExceptionTableEntry);
     PTR_AS(ExceptionTableEntry, entry)->next = YUNDEF;
     PTR_AS(ExceptionTableEntry, entry)->from = YUNDEF;
     PTR_AS(ExceptionTableEntry, entry)->to = YUNDEF;
     PTR_AS(ExceptionTableEntry, entry)->target = YUNDEF;
 
-    RETURN(env, entry);
+    return entry;
 }
 
 static void 
@@ -1223,10 +1196,7 @@ CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc
 {
     SAVE_ARGS4(env, vars, anchor, exc_tbl_ent, filename);
 
-    YogVal data = YUNDEF;
-    PUSH_LOCAL(env, data);
-
-    ALLOC_OBJ(env, data, CompileData_keep_children, NULL, CompileData);
+    YogVal data = ALLOC_OBJ(env, CompileData_keep_children, NULL, CompileData);
     COMPILE_DATA(data)->ctx = ctx;
     MODIFY(env, COMPILE_DATA(data)->vars, vars);
     COMPILE_DATA(data)->const2index = YUNDEF;
@@ -1302,10 +1272,7 @@ AllocLocalVarsTableArg_new(YogEnv* env, YogVal names, unsigned int count)
 {
     SAVE_ARG(env, names);
 
-    YogVal arg = YUNDEF;
-    PUSH_LOCAL(env, arg);
-
-    ALLOC_OBJ(env, arg, AllocLocalVarsTableArg_keep_children, NULL, AllocLocalVarsTableArg);
+    YogVal arg = ALLOC_OBJ(env, AllocLocalVarsTableArg_keep_children, NULL, AllocLocalVarsTableArg);
     MODIFY(env, PTR_AS(AllocLocalVarsTableArg, arg)->names, names);
     PTR_AS(AllocLocalVarsTableArg, arg)->count = count;
 
@@ -1321,7 +1288,7 @@ alloc_local_vars_table(YogEnv* env, YogVal vars, unsigned int count)
     YogVal arg = YUNDEF;
     PUSH_LOCALS2(env, names, arg);
 
-    ALLOC_OBJ_SIZE(env, names, NULL, NULL, sizeof(ID) * count);
+    names = PTR2VAL(ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * count));
     arg = AllocLocalVarsTableArg_new(env, names, count);
 
     YogTable_foreach(env, vars, alloc_local_vars_table_callback, &arg);
@@ -1482,9 +1449,9 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
     YogVal argnames = YNIL;
     YogVal arg_index = YNIL;
     if (0 < argc) {
-        ALLOC_OBJ_SIZE(env, argnames, NULL, NULL, sizeof(ID) * argc);
+        argnames = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * argc);
         PUSH_LOCAL(env, argnames);
-        ALLOC_OBJ_SIZE(env, arg_index, NULL, NULL, sizeof(uint8_t) * argc);
+        arg_index = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(uint8_t) * argc);
         PUSH_LOCAL(env, arg_index);
         for (i = 0; i < argc; i++) {
             YogVal node = YogArray_at(env, params, i);
@@ -1603,14 +1570,7 @@ find_outer_var(YogEnv* env, ID name, YogVal outer, unsigned int* plevel, unsigne
 static YogVal 
 Var_new(YogEnv* env) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal var = YUNDEF;
-    PUSH_LOCAL(env, var);
-
-    ALLOC_OBJ(env, var, NULL, NULL, Var);
-
-    RETURN(env, var);
+    return ALLOC_OBJ(env, NULL, NULL, Var);
 }
 
 static YogVal 
@@ -1682,16 +1642,11 @@ Flags2TypeArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* h
 static YogVal 
 Flags2TypeArg_new(YogEnv* env) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal arg = YUNDEF;
-    PUSH_LOCAL(env, arg);
-
-    ALLOC_OBJ(env, arg, Flags2TypeArg_keep_children, NULL, Flags2TypeArg);
+    YogVal arg = ALLOC_OBJ(env, Flags2TypeArg_keep_children, NULL, Flags2TypeArg);
     PTR_AS(Flags2TypeArg, arg)->vars = YUNDEF;
     PTR_AS(Flags2TypeArg, arg)->outer = YUNDEF;
 
-    RETURN(env, arg);
+    return PTR2VAL(arg);
 }
 
 static YogVal 
@@ -1887,16 +1842,11 @@ FinallyListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void
 static YogVal 
 FinallyListEntry_new(YogEnv* env) 
 {
-    SAVE_LOCALS(env);
-
-    YogVal ent = YUNDEF;
-    PUSH_LOCAL(env, ent);
-
-    ALLOC_OBJ(env, ent, FinallyListEntry_keep_children, NULL, FinallyListEntry);
+    YogVal ent = ALLOC_OBJ(env, FinallyListEntry_keep_children, NULL, FinallyListEntry);
     PTR_AS(FinallyListEntry, ent)->prev = YUNDEF;
     PTR_AS(FinallyListEntry, ent)->node = YUNDEF;
 
-    RETURN(env, ent);
+    return ent;
 }
 
 static void 

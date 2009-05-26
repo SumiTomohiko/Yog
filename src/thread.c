@@ -168,13 +168,8 @@ static YogVal
 allocate_object(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
-
-    YogVal thread = YUNDEF;
-    PUSH_LOCAL(env, thread);
-
-    ALLOC_OBJ(env, thread, keep_children, finalize, YogThread);
+    YogVal thread = ALLOC_OBJ(env, keep_children, finalize, YogThread);
     YogThread_initialize(env, thread, klass);
-
     RETURN(env, thread);
 }
 
@@ -248,17 +243,11 @@ ThreadArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static YogVal
 ThreadArg_new(YogEnv* env)
 {
-    SAVE_LOCALS(env);
-
-    YogVal arg = YUNDEF;
-    PUSH_LOCAL(env, arg);
-
-    ALLOC_OBJ(env, arg, ThreadArg_keep_children, NULL, ThreadArg);
+    YogVal arg = ALLOC_OBJ(env, ThreadArg_keep_children, NULL, ThreadArg);
     PTR_AS(ThreadArg, arg)->vm = NULL;
     PTR_AS(ThreadArg, arg)->thread = YUNDEF;
     PTR_AS(ThreadArg, arg)->vararg = YUNDEF;
-
-    RETURN(env, arg);
+    return arg;
 }
 
 static void*

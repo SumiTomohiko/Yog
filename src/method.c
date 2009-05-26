@@ -25,10 +25,7 @@ YogBuiltinBoundMethod_allocate(YogEnv* env, YogVal klass)
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, klass);
 
-    YogVal method = YUNDEF;
-    PUSH_LOCAL(env, method);
-
-    ALLOC_OBJ(env, method, YogBuiltinBoundMethod_keep_children, NULL, YogBuiltinBoundMethod);
+    YogVal method = ALLOC_OBJ(env, YogBuiltinBoundMethod_keep_children, NULL, YogBuiltinBoundMethod);
     PTR_AS(YogBuiltinBoundMethod, method)->self = YUNDEF;
     PTR_AS(YogBuiltinBoundMethod, method)->f = YUNDEF;
     YogBasicObj_init(env, method, 0, klass);
@@ -73,10 +70,7 @@ YogBoundMethod_allocate(YogEnv* env, YogVal klass)
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, klass);
 
-    YogVal method = YUNDEF;
-    PUSH_LOCAL(env, method);
-
-    ALLOC_OBJ(env, method, YogBoundMethod_keep_children, NULL, YogBoundMethod);
+    YogVal method = ALLOC_OBJ(env, YogBoundMethod_keep_children, NULL, YogBoundMethod);
     YogScriptMethod_init(env, method, klass);
 
     PTR_AS(YogBoundMethod, method)->self = YUNDEF;
@@ -99,10 +93,7 @@ YogBuiltinUnboundMethod_allocate(YogEnv* env, YogVal klass)
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, klass);
 
-    YogVal method = YUNDEF;
-    PUSH_LOCAL(env, method);
-
-    ALLOC_OBJ(env, method, YogBuiltinUnboundMethod_keep_chldren, NULL, YogBuiltinUnboundMethod);
+    YogVal method = ALLOC_OBJ(env, YogBuiltinUnboundMethod_keep_chldren, NULL, YogBuiltinUnboundMethod);
     PTR_AS(YogBuiltinUnboundMethod, method)->f = YUNDEF;
     YogBasicObj_init(env, method, 0, klass);
 
@@ -121,10 +112,7 @@ YogUnboundMethod_allocate(YogEnv* env, YogVal klass)
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, klass);
 
-    YogVal method = YUNDEF;
-    PUSH_LOCAL(env, method);
-
-    ALLOC_OBJ(env, method, YogUnboundMethod_keep_children, NULL, YogUnboundMethod);
+    YogVal method = ALLOC_OBJ(env, YogUnboundMethod_keep_children, NULL, YogUnboundMethod);
     YogScriptMethod_init(env, method, klass);
 
     RETURN(env, method);

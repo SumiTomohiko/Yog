@@ -10,10 +10,7 @@ allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
-    YogVal f = YUNDEF;
-    PUSH_LOCAL(env, f);
-
-    ALLOC_OBJ(env, f, NULL, NULL, YogFloat);
+    YogVal f = ALLOC_OBJ(env, NULL, NULL, YogFloat);
     YogBasicObj_init(env, f, 0, klass);
     PTR_AS(YogFloat, f)->val = 0;
 
