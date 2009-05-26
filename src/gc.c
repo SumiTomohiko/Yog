@@ -1,10 +1,8 @@
 #include <pthread.h>
-#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include "yog/env.h"
-#include "yog/error.h"
 #include "yog/gc.h"
 #if defined(GC_COPYING)
 #   include "yog/gc/copying.h"
@@ -37,17 +35,55 @@
 #   define GET_GC(thread)       GC_OF(thread, bdw)
 #endif
 
-#define SIGSUSPEND  SIGUSR1
-#define SIGRESTART  SIGUSR2
-
 typedef void (*GC)(YogEnv*);
 
-static pthread_mutex_t global_gc_lock;
-static YogVm* gc_vm;
+static void 
+wakeup_gc_thread(YogEnv* env) 
+{
+    YogVm* vm = env->vm;
+    pthread_cond_signal(&vm->threads_suspend_cond);
+}
+
+static void 
+wait_gc_finish(YogEnv* env) 
+{
+    YogVm* vm = env->vm;
+    unsigned int id = vm->gc_id;
+    while (vm->running_gc && (vm->gc_id == id)) {
+        pthread_cond_wait(&vm->gc_finish_cond, &vm->global_interp_lock);
+    }
+}
+
+static void
+decrement_suspend_counter(YogEnv* env)
+{
+    YogVm* vm = env->vm;
+    vm->suspend_counter--;
+    if (vm->suspend_counter == 0) {
+        wakeup_gc_thread(env);
+    }
+}
+
+/**
+ * This function assumes that caller holds global interpreter lock.
+ */
+void 
+YogGC_suspend(YogEnv* env) 
+{
+    decrement_suspend_counter(env);
+    wait_gc_finish(env);
+}
 
 YogVal 
 YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
 {
+    YogVm* vm = env->vm;
+    if (vm->waiting_suspend) {
+        YogVm_aquire_global_interp_lock(env, vm);
+        YogGC_suspend(env);
+        YogVm_release_global_interp_lock(env, vm);
+    }
+
     YogVal thread = env->thread;
 #if defined(GC_COPYING)
 #   define ALLOC    YogCopying_alloc
@@ -72,94 +108,71 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
 }
 
 #if !defined(GC_BDW)
-static void
-aquire_global_gc_lock(YogEnv* env)
+static void 
+wakeup_suspend_threads(YogEnv* env) 
 {
-    if (pthread_mutex_lock(&global_gc_lock) != 0) {
-        YOG_BUG(env, "pthread_mutex_lock failed");
+    YogVm* vm = env->vm;
+    pthread_cond_signal(&vm->gc_finish_cond);
+}
+
+static void 
+wait_suspend(YogEnv* env) 
+{
+    YogVm* vm = env->vm;
+    while (vm->suspend_counter != 0) {
+        pthread_cond_wait(&vm->threads_suspend_cond, &vm->global_interp_lock);
     }
 }
 
-static void
-release_global_gc_lock(YogEnv* env)
+static unsigned int
+count_running_threads(YogEnv* env, YogVm* vm)
 {
-    if (pthread_mutex_unlock(&global_gc_lock) != 0) {
-        YOG_BUG(env, "pthread_mutex_unlock failed");
-    }
-}
-
-static void
-set_gc_vm(YogEnv* env, YogVm* vm)
-{
-    gc_vm = vm;
-}
-
-static void
-send_signal(YogEnv* env, YogVal thread, int signum)
-{
-    pthread_t target = PTR_AS(YogThread, thread)->pthread;
-    pthread_t self = PTR_AS(YogThread, env->thread)->pthread;
-    if (pthread_equal(self, target)) {
-        return;
-    }
-    if (pthread_kill(target, signum) != 0) {
-        YOG_BUG(env, "pthread_kill failed");
-    }
-}
-
-static void
-send_signal_all(YogEnv* env, int signum)
-{
-    YogVal thread = env->vm->running_threads;
+    unsigned int n = 0;
+    YogVal thread = vm->running_threads;
     while (IS_PTR(thread)) {
-        send_signal(env, thread, signum);
+        n += PTR_AS(YogThread, thread)->gc_bound ? 1 : 0;
         thread = PTR_AS(YogThread, thread)->next;
     }
+
+    return n;
 }
 
-static void
-suspend_all(YogEnv* env)
+static void 
+run_gc(YogEnv* env, GC gc)
 {
-    send_signal_all(env, SIGSUSPEND);
-}
-
-static void
-wait(YogEnv* env, YogVal thread)
-{
-    pthread_t target = PTR_AS(YogThread, thread)->pthread;
-    pthread_t self = PTR_AS(YogThread, env->thread)->pthread;
-    if (pthread_equal(self, target)) {
-        return;
-    }
-    if (sem_wait(&env->vm->suspend_sem) != 0) {
-        YOG_BUG(env, "sem_wait failed");
+    YogVm* vm = env->vm;
+    unsigned int threads_num = count_running_threads(env, vm);
+    if (0 < threads_num) {
+        vm->suspend_counter = threads_num - 1;
+        vm->waiting_suspend = TRUE;
+        wait_suspend(env);
+        (*gc)(env);
+        vm->waiting_suspend = FALSE;
     }
 }
 
-static void
-wait_all(YogEnv* env)
+void
+YogGC_free_from_gc(YogEnv* env)
 {
-    YogVal thread = env->vm->running_threads;
-    while (IS_PTR(thread)) {
-        wait(env, thread);
-        thread = PTR_AS(YogThread, thread)->next;
+    YogVm* vm = env->vm;
+    YogVm_aquire_global_interp_lock(env, vm);
+    while (vm->waiting_suspend) {
+        YogGC_suspend(env);
     }
+    PTR_AS(YogThread, env->thread)->gc_bound = FALSE;
+    YogVm_release_global_interp_lock(env, vm);
 }
 
-static void
-stop_world(YogEnv* env)
+void
+YogGC_bind_to_gc(YogEnv* env)
 {
-    aquire_global_gc_lock(env);
-    set_gc_vm(env, env->vm);
-    suspend_all(env);
-    wait_all(env);
-    release_global_gc_lock(env);
-}
-
-static void
-restart_world(YogEnv* env)
-{
-    send_signal_all(env, SIGRESTART);
+    YogVm* vm = env->vm;
+    YogVm_aquire_global_interp_lock(env, vm);
+    while (vm->waiting_suspend) {
+        wait_gc_finish(env);
+    }
+    PTR_AS(YogThread, env->thread)->gc_bound = TRUE;
+    YogVm_release_global_interp_lock(env, vm);
 }
 
 static void 
@@ -167,11 +180,16 @@ perform(YogEnv* env, GC gc)
 {
     YogVm* vm = env->vm;
     YogVm_aquire_global_interp_lock(env, vm);
-
-    stop_world(env);
-    (*gc)(env);
-    restart_world(env);
-
+    if (vm->waiting_suspend) {
+        YogGC_suspend(env);
+    }
+    else {
+        vm->running_gc = TRUE;
+        run_gc(env, gc);
+        vm->running_gc = FALSE;
+        wakeup_suspend_threads(env);
+        vm->gc_id++;
+    }
     YogVm_release_global_interp_lock(env, vm);
 }
 #endif
@@ -266,9 +284,6 @@ static void
 keep_vm(YogEnv* env) 
 {
     YogVal main_thread = MAIN_THREAD(env->vm);
-    if (!IS_PTR(main_thread)) {
-        return;
-    }
 #if defined(GC_COPYING)
 #   define KEEP     YogCopying_keep_vm
 #elif defined(GC_MARK_SWEEP)
@@ -348,9 +363,6 @@ static void
 minor_keep_vm(YogEnv* env)
 {
     YogVal main_thread = MAIN_THREAD(env->vm);
-    if (!IS_PTR(main_thread)) {
-        return;
-    }
     YogGenerational_minor_keep_vm(env, GET_GEN(main_thread));
 }
 
@@ -394,9 +406,6 @@ static void
 major_keep_vm(YogEnv* env)
 {
     YogVal main_thread = MAIN_THREAD(env->vm);
-    if (!IS_PTR(main_thread)) {
-        return;
-    }
     YogGenerational_major_keep_vm(env, GET_GEN(main_thread));
 }
 
@@ -451,59 +460,6 @@ YogGC_keep(YogEnv* env, YogVal* val, ObjectKeeper keeper, void* heap)
     }
 
     *val = PTR2VAL((*keeper)(env, VAL2PTR(*val), heap));
-}
-
-static void
-make_signal_set(sigset_t* set)
-{
-    sigfillset(set);
-#define DELETE_SIGNAL(signum)   sigdelset(set, signum)
-    DELETE_SIGNAL(SIGINT);
-    DELETE_SIGNAL(SIGQUIT);
-    DELETE_SIGNAL(SIGABRT);
-    DELETE_SIGNAL(SIGTERM);
-#undef DELETE_SIGNAL
-}
-
-static void
-sigsuspend_handler(int sig, siginfo_t* si, void* unused)
-{
-    sem_post(&gc_vm->suspend_sem);
-
-    sigset_t set;
-    make_signal_set(&set);
-    sigdelset(&set, SIGRESTART);
-    sigsuspend(&set);
-}
-
-static void
-sigrestart_handler(int sig, siginfo_t* si, void* unused)
-{
-    /* do nothing */
-}
-
-void
-YogGC_initialize(YogEnv* env)
-{
-    sigset_t set;
-    make_signal_set(&set);
-
-    struct sigaction act;
-    act.sa_mask = set;
-    act.sa_flags = SA_SIGINFO;
-#define SIGACTION(signum, handler)  do { \
-    act.sa_sigaction = handler; \
-    if (sigaction(signum, &act, NULL) != 0) { \
-        YOG_BUG(env, "sigaction failed"); \
-    } \
-} while (0)
-    SIGACTION(SIGSUSPEND, sigsuspend_handler);
-    SIGACTION(SIGRESTART, sigrestart_handler);
-#undef SIGACTION
-
-    pthread_mutex_init(&global_gc_lock, NULL);
-
-    gc_vm = NULL;
 }
 
 /**

@@ -81,6 +81,7 @@ YogThread_initialize(YogEnv* env, YogVal thread, YogVal klass)
     PTR_AS(YogThread, thread)->locals = NULL;
 
     PTR_AS(YogThread, thread)->block = YUNDEF;
+    PTR_AS(YogThread, thread)->gc_bound = TRUE;
 }
 
 #if defined(GC_COPYING)
@@ -286,14 +287,21 @@ run_of_new_thread(void* arg)
 static YogVal
 join(YogEnv* env)
 {
+    SAVE_LOCALS(env);
+
     YogVal self = SELF(env);
+    PUSH_LOCAL(env, self);
 
     void* retval = NULL;
+    FREE_FROM_GC(env);
     if (pthread_join(PTR_AS(YogThread, self)->pthread, &retval) != 0) {
+        BIND_TO_GC(env);
         YOG_BUG(env, "pthread_join failed");
+        /* NOTREACHED */
     }
+    BIND_TO_GC(env);
 
-    return PTR2VAL(retval);
+    RETURN(env, PTR2VAL(retval));
 }
 
 static YogVal
@@ -317,8 +325,8 @@ run(YogEnv* env)
 #else 
 #   define CREATE_THREAD    GC_pthread_create
 #endif
-    pthread_t* pthread = &PTR_AS(YogThread, self)->pthread;
-    if (CREATE_THREAD(pthread, NULL, run_of_new_thread, (void*)arg) != 0) {
+    pthread_t* pt = &PTR_AS(YogThread, self)->pthread;
+    if (CREATE_THREAD(pt, NULL, run_of_new_thread, (void*)arg) != 0) {
         YOG_BUG(env, "Can't create new thread");
     }
 #undef CREATE_THREAD

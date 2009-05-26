@@ -1,6 +1,5 @@
 #include <ctype.h>
 #include <getopt.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -126,10 +125,8 @@ main(int argc, char* argv[])
     env.vm = NULL;
     env.thread = YUNDEF;
 
-    YogGC_initialize(&env);
-
     YogVm vm;
-    YogVm_init(&env, &vm);
+    YogVm_init(&vm);
     vm.gc_stress = gc_stress;
     env.vm = &vm;
 
@@ -170,7 +167,6 @@ main(int argc, char* argv[])
     memcpy(VAL2PTR(main_thread), VAL2PTR(dummy_thread), sizeof(YogThread));
     env.thread = main_thread;
     YogVm_set_main_thread(&env, &vm, main_thread);
-    PTR_AS(YogThread, main_thread)->pthread = pthread_self();
 
 #define GUARD_ENV(env) \
     YogLocals env_guard; \

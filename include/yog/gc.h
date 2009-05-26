@@ -20,6 +20,14 @@
 #   define GC_TYPE  YogBDW
 #endif
 
+#if defined(GC_BDW)
+#   define FREE_FROM_GC(env)
+#   define BIND_TO_GC(env)
+#else
+#   define FREE_FROM_GC(env)    YogGC_free_from_gc(env)
+#   define BIND_TO_GC(env)      YogGC_bind_to_gc(env)
+#endif
+
 #include <sys/types.h>
 #include "yog/yog.h"
 
@@ -31,7 +39,8 @@
 
 /* src/gc.c */
 YogVal YogGC_allocate(YogEnv*, ChildrenKeeper, Finalizer, size_t);
-void YogGC_initialize(YogEnv*);
+void YogGC_bind_to_gc(YogEnv*);
+void YogGC_free_from_gc(YogEnv*);
 void YogGC_keep(YogEnv*, YogVal*, ObjectKeeper, void*);
 void YogGC_perform(YogEnv*);
 void YogGC_perform_major(YogEnv*);

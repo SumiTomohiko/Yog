@@ -173,6 +173,7 @@ struct YogThread {
 
     YogVal block;
     pthread_t pthread;
+    BOOL gc_bound;
 };
 
 typedef struct YogThread YogThread;
