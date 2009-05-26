@@ -11,6 +11,7 @@ def main()
     puts 42
   end
   thread.run()
+  thread.join()
 end
 
 main()""", """42
