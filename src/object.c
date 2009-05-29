@@ -46,7 +46,7 @@ YogObj_set_attr(YogEnv* env, YogVal obj, const char* name, YogVal val)
 {
     SAVE_ARGS2(env, obj, val);
 
-    ID id = YogVm_intern(env, env->vm, name);
+    ID id = YogVM_intern(env, env->vm, name);
     YogObj_set_attr_id(env, obj, id, val);
 
     RETURN_VOID(env);

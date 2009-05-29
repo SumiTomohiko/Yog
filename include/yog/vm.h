@@ -21,7 +21,7 @@
 
 #define SURVIVE_INDEX_MAX    8
 
-struct YogVm {
+struct YogVM {
     BOOL gc_stress;
 
     struct {
@@ -79,7 +79,7 @@ struct YogVm {
     unsigned int gc_id;
 };
 
-typedef struct YogVm YogVm;
+typedef struct YogVM YogVM;
 
 /* PROTOTYPE_START */
 
@@ -88,28 +88,27 @@ typedef struct YogVm YogVm;
  */
 
 /* src/vm.c */
-void YogVm_add_heap(YogEnv*, YogVm*, GC_TYPE*);
-void YogVm_add_thread(YogEnv*, YogVm*, YogVal);
-void YogVm_aquire_global_interp_lock(YogEnv*, YogVm*);
-void YogVm_boot(YogEnv*, YogVm*);
-unsigned int YogVm_count_running_threads(YogEnv*, YogVm*);
-void YogVm_delete(YogEnv*, YogVm*);
-void YogVm_gc(YogEnv*, YogVm*);
-const char* YogVm_id2name(YogEnv*, YogVm*, ID);
-void YogVm_init(YogVm*);
-ID YogVm_intern(YogEnv*, YogVm*, const char*);
-void YogVm_keep_children(YogEnv*, void*, ObjectKeeper, void*);
-void YogVm_register_package(YogEnv*, YogVm*, const char*, YogVal);
-void YogVm_release_global_interp_lock(YogEnv*, YogVm*);
-void YogVm_remove_thread(YogEnv*, YogVm*, YogVal);
-void YogVm_set_main_thread(YogEnv*, YogVm*, YogVal);
-void YogVm_wait_finish(YogEnv*, YogVm*);
+void YogVM_add_heap(YogEnv*, YogVM*, GC_TYPE*);
+void YogVM_add_thread(YogEnv*, YogVM*, YogVal);
+void YogVM_aquire_global_interp_lock(YogEnv*, YogVM*);
+void YogVM_boot(YogEnv*, YogVM*);
+void YogVM_delete(YogEnv*, YogVM*);
+void YogVM_gc(YogEnv*, YogVM*);
+const char* YogVM_id2name(YogEnv*, YogVM*, ID);
+void YogVM_init(YogVM*);
+ID YogVM_intern(YogEnv*, YogVM*, const char*);
+void YogVM_keep_children(YogEnv*, void*, ObjectKeeper, void*);
+void YogVM_register_package(YogEnv*, YogVM*, const char*, YogVal);
+void YogVM_release_global_interp_lock(YogEnv*, YogVM*);
+void YogVM_remove_thread(YogEnv*, YogVM*, YogVal);
+void YogVM_set_main_thread(YogEnv*, YogVM*, YogVal);
+void YogVM_wait_finish(YogEnv*, YogVM*);
 
 /* PROTOTYPE_END */
 
 #include "yog/env.h"
 
-#define INTERN(s)   YogVm_intern(env, env->vm, s)
+#define INTERN(s)   YogVM_intern(env, env->vm, s)
 #define BUILTINS    "builtins"
 
 #endif

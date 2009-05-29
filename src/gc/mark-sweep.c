@@ -176,7 +176,7 @@ YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finaliz
 void 
 YogMarkSweep_keep_vm(YogEnv* env, YogMarkSweep* ms) 
 {
-    YogVm_keep_children(env, env->vm, keep_object, ms);
+    YogVM_keep_children(env, env->vm, keep_object, ms);
 }
 
 BOOL

@@ -36,7 +36,7 @@ print_val(YogEnv* env, YogVal val)
         printf("nil");
     }
     else if (IS_SYMBOL(val)) {
-        printf(" :%s", YogVm_id2name(env, env->vm, VAL2ID(val)));
+        printf(" :%s", YogVM_id2name(env, env->vm, VAL2ID(val)));
     }
     else {
         YOG_ASSERT(env, FALSE, "Unknown value type.");
@@ -146,7 +146,7 @@ YogCode_dump(YogEnv* env, YogVal code)
         case OP(LOAD_GLOBAL):
             {
                 ID id = OPERAND(ID, 0);
-                printf(" :%s", YogVm_id2name(env, env->vm, id));
+                printf(" :%s", YogVM_id2name(env, env->vm, id));
             }
             break;
         case OP(CALL_COMMAND):
@@ -154,7 +154,7 @@ YogCode_dump(YogEnv* env, YogVal code)
             {
                 unsigned int offset = 0;
                 ID id = OPERAND(ID, offset);
-                printf(" :%s", YogVm_id2name(env, env->vm, id));
+                printf(" :%s", YogVM_id2name(env, env->vm, id));
                 offset += sizeof(ID);
                 uint8_t argc = OPERAND(uint8_t, offset);
                 printf(" %d", argc);

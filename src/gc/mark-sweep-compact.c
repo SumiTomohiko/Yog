@@ -498,7 +498,7 @@ YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectK
     iterate_objects(msc, &compactor, set_forward_address);
     YogMarkSweepCompactPage* first_free_page = compactor.next_page;
 
-    YogVm_keep_children(env, env->vm, update_pointer, msc);
+    YogVM_keep_children(env, env->vm, update_pointer, msc);
     YogMarkSweepCompactHeader** front = &msc->header;
     if (*front != NULL) {
         *front = ADDR2HEADER((*front)->forwarding_addr);
@@ -557,7 +557,7 @@ keep_object(YogEnv* env, void* ptr, void* heap)
 void 
 YogMarkSweepCompact_keep_vm(YogEnv* env, YogMarkSweepCompact* msc)
 {
-    YogVm_keep_children(env, env->vm, keep_object, msc);
+    YogVM_keep_children(env, env->vm, keep_object, msc);
 }
 
 void

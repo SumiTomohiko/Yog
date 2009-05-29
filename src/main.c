@@ -125,8 +125,8 @@ main(int argc, char* argv[])
     env.vm = NULL;
     env.thread = YUNDEF;
 
-    YogVm vm;
-    YogVm_init(&vm);
+    YogVM vm;
+    YogVM_init(&vm);
     vm.gc_stress = gc_stress;
     env.vm = &vm;
 
@@ -166,7 +166,7 @@ main(int argc, char* argv[])
     YogVal main_thread = YogThread_new(&env);
     memcpy(VAL2PTR(main_thread), VAL2PTR(dummy_thread), sizeof(YogThread));
     env.thread = main_thread;
-    YogVm_set_main_thread(&env, &vm, main_thread);
+    YogVM_set_main_thread(&env, &vm, main_thread);
 
 #define GUARD_ENV(env) \
     YogLocals env_guard; \
@@ -189,7 +189,7 @@ main(int argc, char* argv[])
         YogVal pkg = YUNDEF;
         PUSH_LOCALS3(&env, stmts, code, pkg);
 
-        YogVm_boot(&env, env.vm);
+        YogVM_boot(&env, env.vm);
 
         const char* filename = NULL;
         if (optind < argc) {
@@ -200,21 +200,21 @@ main(int argc, char* argv[])
 
         pkg = YogPackage_new(&env);
         MODIFY(&env, PTR_AS(YogPackage, pkg)->code, code);
-        YogVm_register_package(&env, env.vm, "__main__", pkg);
+        YogVM_register_package(&env, env.vm, "__main__", pkg);
         YogEval_eval_package(&env, pkg);
 
         POP_LOCALS(&env);
     } while (0);
 
-    YogVm_remove_thread(&env, env.vm, env.thread);
+    YogVM_remove_thread(&env, env.vm, env.thread);
 
     if (vm.gc_stat.print) {
         printf("GC duration total: %u[usec]\n", vm.gc_stat.duration_total);
         printf("allocation #: %u\n", vm.gc_stat.num_alloc);
     }
 
-    YogVm_wait_finish(&env, env.vm);
-    YogVm_delete(&env, env.vm);
+    YogVM_wait_finish(&env, env.vm);
+    YogVM_delete(&env, env.vm);
 
     return 0;
 #undef ERROR

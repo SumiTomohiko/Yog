@@ -230,7 +230,7 @@ keep_object(YogEnv* env, void* ptr, void* heap)
 void 
 YogCopying_keep_vm(YogEnv* env, YogCopying* copying) 
 {
-    YogVm_keep_children(env, env->vm, keep_object, copying);
+    YogVM_keep_children(env, env->vm, keep_object, copying);
 }
 
 void
@@ -351,7 +351,7 @@ YogCopying_is_empty(YogEnv* env, YogCopying* copying)
     static void \
     name() \
     { \
-        YogVm vm; \
+        YogVM vm; \
         YogEnv env; \
         env.vm = &vm; \
         YogCopying_initialize(&env, &vm.gc.copying, FALSE, HEAP_SIZE, root, root_keeper); \

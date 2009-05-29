@@ -692,7 +692,7 @@ print_val(YogEnv* env, YogVal val)
     else if (IS_SYMBOL(val)) {
         printf(" 0x%08x", VAL2ID(val));
 #if 0
-        printf(" :%s", YogVm_id2name(env, env->vm, VAL2ID(val)));
+        printf(" :%s", YogVM_id2name(env, env->vm, VAL2ID(val)));
 #endif
     }
     else {

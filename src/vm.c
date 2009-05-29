@@ -54,13 +54,13 @@ GcObjectStat_increment_survive_num(GcObjectStat* stat)
 #endif
 
 static void 
-reset_total_object_count(YogVm* vm) 
+reset_total_object_count(YogVM* vm) 
 {
     vm->gc_stat.total_obj_num = 0;
 }
 
 static void 
-reset_living_object_count(YogVm* vm)
+reset_living_object_count(YogVM* vm)
 {
     int i;
     for (i = 0; i < SURVIVE_INDEX_MAX; i++) {
@@ -70,13 +70,13 @@ reset_living_object_count(YogVm* vm)
 
 #if 0
 static void 
-increment_total_object_number(YogVm* vm) 
+increment_total_object_number(YogVM* vm) 
 {
     vm->gc_stat.total_obj_num++;
 }
 
 static void 
-increment_living_object_number(YogVm* vm, unsigned int survive_num) 
+increment_living_object_number(YogVM* vm, unsigned int survive_num) 
 {
     int index = survive_num / SURVIVE_NUM_UNIT;
     if (SURVIVE_INDEX_MAX  - 1 < index) {
@@ -87,12 +87,12 @@ increment_living_object_number(YogVm* vm, unsigned int survive_num)
 #endif
 
 void 
-YogVm_register_package(YogEnv* env, YogVm* vm, const char* name, YogVal pkg) 
+YogVM_register_package(YogEnv* env, YogVM* vm, const char* name, YogVal pkg) 
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, pkg);
 
-    ID id = YogVm_intern(env, vm, name);
+    ID id = YogVM_intern(env, vm, name);
     YogVal key = ID2VAL(id);
 
     YogTable_add_direct(env, vm->pkgs, key, pkg);
@@ -101,7 +101,7 @@ YogVm_register_package(YogEnv* env, YogVm* vm, const char* name, YogVal pkg)
 }
 
 const char* 
-YogVm_id2name(YogEnv* env, YogVm* vm, ID id) 
+YogVM_id2name(YogEnv* env, YogVM* vm, ID id) 
 {
     YogVal sym = ID2VAL(id);
     YogVal val = YUNDEF;
@@ -117,7 +117,7 @@ YogVm_id2name(YogEnv* env, YogVm* vm, ID id)
 }
 
 ID
-YogVm_intern(YogEnv* env, YogVm* vm, const char* name)
+YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
 {
     SAVE_LOCALS(env);
 
@@ -158,21 +158,21 @@ GcObjectStat_initialize(GcObjectStat* stat)
 #endif
 
 static void 
-setup_builtins(YogEnv* env, YogVm* vm) 
+setup_builtins(YogEnv* env, YogVM* vm) 
 {
     YogVal builtins = YogBuiltins_new(env);
-    YogVm_register_package(env, vm, BUILTINS, builtins);
+    YogVM_register_package(env, vm, BUILTINS, builtins);
 }
 
 static void 
-setup_symbol_tables(YogEnv* env, YogVm* vm) 
+setup_symbol_tables(YogEnv* env, YogVM* vm) 
 {
     vm->id2name = YogTable_new_symbol_table(env);
     vm->name2id = YogTable_new_string_table(env);
 }
 
 static void 
-setup_basic_klass(YogEnv* env, YogVm* vm) 
+setup_basic_klass(YogEnv* env, YogVM* vm) 
 {
     YogVal cObject = YUNDEF;
     YogVal cKlass = YUNDEF;
@@ -194,7 +194,7 @@ setup_basic_klass(YogEnv* env, YogVm* vm)
 }
 
 static void 
-setup_klasses(YogEnv* env, YogVm* vm) 
+setup_klasses(YogEnv* env, YogVM* vm) 
 {
     vm->cBuiltinBoundMethod = YogBuiltinBoundMethod_klass_new(env);
     vm->cBoundMethod = YogBoundMethod_klass_new(env);
@@ -217,7 +217,7 @@ setup_klasses(YogEnv* env, YogVm* vm)
 }
 
 static void 
-setup_encodings(YogEnv* env, YogVm* vm) 
+setup_encodings(YogEnv* env, YogVM* vm) 
 {
     /* TODO: changed not to use macro */
 #define REGISTER_ENCODING(name, onig)   do { \
@@ -234,7 +234,7 @@ setup_encodings(YogEnv* env, YogVm* vm)
 }
 
 static void 
-setup_exceptions(YogEnv* env, YogVm* vm) 
+setup_exceptions(YogEnv* env, YogVM* vm) 
 {
     vm->eException = YogException_klass_new(env);
 #define EXCEPTION_NEW(member, name)  do { \
@@ -247,13 +247,13 @@ setup_exceptions(YogEnv* env, YogVm* vm)
 }
 
 static void
-set_main_thread_klass(YogEnv* env, YogVm* vm)
+set_main_thread_klass(YogEnv* env, YogVM* vm)
 {
     PTR_AS(YogBasicObj, vm->main_thread)->klass = vm->cThread;
 }
 
 void 
-YogVm_boot(YogEnv* env, YogVm* vm) 
+YogVM_boot(YogEnv* env, YogVM* vm) 
 {
     setup_symbol_tables(env, vm);
     setup_basic_klass(env, vm);
@@ -309,9 +309,9 @@ keep_thread_locals(YogEnv* env, YogVal thread, ObjectKeeper keeper, void* heap)
 }
 
 void 
-YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogVm* vm = ptr;
+    YogVM* vm = ptr;
 
     YogVal thread = vm->running_threads;
     while (IS_PTR(thread)) {
@@ -356,7 +356,7 @@ YogVm_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 void 
-YogVm_init(YogVm* vm) 
+YogVM_init(YogVM* vm) 
 {
     vm->gc_stress = FALSE;
 
@@ -413,7 +413,7 @@ YogVm_init(YogVm* vm)
 
 #if 0
 static void 
-print_gc_statistics(YogVm* vm, unsigned int duration) 
+print_gc_statistics(YogVM* vm, unsigned int duration) 
 {
     printf("--- GC infomation ---\n");
     printf("Duration[usec] %d\n", duration);
@@ -434,7 +434,7 @@ print_gc_statistics(YogVm* vm, unsigned int duration)
 
 #if 0
 void 
-YogVm_gc(YogEnv* env, YogVm* vm) 
+YogVM_gc(YogEnv* env, YogVM* vm) 
 {
     reset_living_object_count(vm);
     reset_total_object_count(vm);
@@ -458,7 +458,7 @@ YogVm_gc(YogEnv* env, YogVm* vm)
 #endif
 
 void 
-YogVm_delete(YogEnv* env, YogVm* vm) 
+YogVM_delete(YogEnv* env, YogVM* vm) 
 {
 #if 0
     if (vm->free_mem != NULL) {
@@ -468,19 +468,19 @@ YogVm_delete(YogEnv* env, YogVm* vm)
 }
 
 void 
-YogVm_aquire_global_interp_lock(YogEnv* env, YogVm* vm)
+YogVM_aquire_global_interp_lock(YogEnv* env, YogVM* vm)
 {
     pthread_mutex_lock(&vm->global_interp_lock);
 }
 
 void 
-YogVm_release_global_interp_lock(YogEnv* env, YogVm* vm) 
+YogVM_release_global_interp_lock(YogEnv* env, YogVM* vm) 
 {
     pthread_mutex_unlock(&vm->global_interp_lock);
 }
 
 static void
-gc(YogEnv* env, YogVm* vm)
+gc(YogEnv* env, YogVM* vm)
 {
     while (vm->waiting_suspend) {
         YogGC_suspend(env);
@@ -488,30 +488,30 @@ gc(YogEnv* env, YogVm* vm)
 }
 
 void 
-YogVm_add_thread(YogEnv* env, YogVm* vm, YogVal thread) 
+YogVM_add_thread(YogEnv* env, YogVM* vm, YogVal thread) 
 {
-    YogVm_aquire_global_interp_lock(env, vm);
+    YogVM_aquire_global_interp_lock(env, vm);
     gc(env, vm);
 
     PTR_AS(YogThread, vm->running_threads)->prev = thread;
     PTR_AS(YogThread, thread)->next = vm->running_threads;
     vm->running_threads = thread;
 
-    YogVm_release_global_interp_lock(env, vm);
+    YogVM_release_global_interp_lock(env, vm);
 }
 
 void 
-YogVm_set_main_thread(YogEnv* env, YogVm* vm, YogVal thread) 
+YogVM_set_main_thread(YogEnv* env, YogVM* vm, YogVal thread) 
 {
     vm->main_thread = vm->running_threads = thread;
 }
 
 void
-YogVm_remove_thread(YogEnv* env, YogVm* vm, YogVal thread)
+YogVM_remove_thread(YogEnv* env, YogVM* vm, YogVal thread)
 {
     SAVE_ARG(env, thread);
 
-    YogVm_aquire_global_interp_lock(env, vm);
+    YogVM_aquire_global_interp_lock(env, vm);
     gc(env, vm);
 
     YogVal prev = PTR_AS(YogThread, thread)->prev;
@@ -530,16 +530,16 @@ YogVm_remove_thread(YogEnv* env, YogVm* vm, YogVal thread)
         pthread_cond_signal(&vm->vm_finish_cond);
     }
 
-    YogVm_release_global_interp_lock(env, vm);
+    YogVM_release_global_interp_lock(env, vm);
 
     RETURN_VOID(env);
 }
 
 #if !defined(GC_BDW)
 void
-YogVm_add_heap(YogEnv* env, YogVm* vm, GC_TYPE* heap)
+YogVM_add_heap(YogEnv* env, YogVM* vm, GC_TYPE* heap)
 {
-    YogVm_aquire_global_interp_lock(env, vm);
+    YogVM_aquire_global_interp_lock(env, vm);
     if (vm->last_heap != NULL) {
         vm->last_heap->next = heap;
         heap->prev = vm->last_heap;
@@ -549,12 +549,12 @@ YogVm_add_heap(YogEnv* env, YogVm* vm, GC_TYPE* heap)
         vm->heaps = vm->last_heap = heap;
     }
     heap->next = NULL;
-    YogVm_release_global_interp_lock(env, vm);
+    YogVM_release_global_interp_lock(env, vm);
 }
 #endif
 
 static unsigned int
-count_running_threads(YogEnv* env, YogVm* vm)
+count_running_threads(YogEnv* env, YogVM* vm)
 {
     unsigned int n = 0;
     YogVal thread = vm->running_threads;
@@ -567,16 +567,16 @@ count_running_threads(YogEnv* env, YogVm* vm)
 }
 
 void
-YogVm_wait_finish(YogEnv* env, YogVm* vm)
+YogVM_wait_finish(YogEnv* env, YogVM* vm)
 {
-    YogVm_aquire_global_interp_lock(env, vm);
+    YogVM_aquire_global_interp_lock(env, vm);
     gc(env, vm);
 
     while (0 < count_running_threads(env, vm)) {
         pthread_cond_wait(&vm->vm_finish_cond, &vm->global_interp_lock);
     }
 
-    YogVm_release_global_interp_lock(env, vm);
+    YogVM_release_global_interp_lock(env, vm);
 }
 
 /**

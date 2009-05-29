@@ -4,7 +4,7 @@
 #include "yog/vm.h"
 
 struct YogEnv {
-    struct YogVm* vm;
+    struct YogVM* vm;
     YogVal thread;
 };
 

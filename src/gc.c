@@ -40,14 +40,14 @@ typedef void (*GC)(YogEnv*);
 static void 
 wakeup_gc_thread(YogEnv* env) 
 {
-    YogVm* vm = env->vm;
+    YogVM* vm = env->vm;
     pthread_cond_signal(&vm->threads_suspend_cond);
 }
 
 static void 
 wait_gc_finish(YogEnv* env) 
 {
-    YogVm* vm = env->vm;
+    YogVM* vm = env->vm;
     unsigned int id = vm->gc_id;
     while (vm->running_gc && (vm->gc_id == id)) {
         pthread_cond_wait(&vm->gc_finish_cond, &vm->global_interp_lock);
@@ -57,7 +57,7 @@ wait_gc_finish(YogEnv* env)
 static void
 decrement_suspend_counter(YogEnv* env)
 {
-    YogVm* vm = env->vm;
+    YogVM* vm = env->vm;
     vm->suspend_counter--;
     if (vm->suspend_counter == 0) {
         wakeup_gc_thread(env);
@@ -77,11 +77,11 @@ YogGC_suspend(YogEnv* env)
 YogVal 
 YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
 {
-    YogVm* vm = env->vm;
+    YogVM* vm = env->vm;
     if (vm->waiting_suspend) {
-        YogVm_aquire_global_interp_lock(env, vm);
+        YogVM_aquire_global_interp_lock(env, vm);
         YogGC_suspend(env);
-        YogVm_release_global_interp_lock(env, vm);
+        YogVM_release_global_interp_lock(env, vm);
     }
 
     YogVal thread = env->thread;
@@ -111,21 +111,21 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
 static void 
 wakeup_suspend_threads(YogEnv* env) 
 {
-    YogVm* vm = env->vm;
+    YogVM* vm = env->vm;
     pthread_cond_signal(&vm->gc_finish_cond);
 }
 
 static void 
 wait_suspend(YogEnv* env) 
 {
-    YogVm* vm = env->vm;
+    YogVM* vm = env->vm;
     while (vm->suspend_counter != 0) {
         pthread_cond_wait(&vm->threads_suspend_cond, &vm->global_interp_lock);
     }
 }
 
 static unsigned int
-count_running_threads(YogEnv* env, YogVm* vm)
+count_running_threads(YogEnv* env, YogVM* vm)
 {
     unsigned int n = 0;
     YogVal thread = vm->running_threads;
@@ -140,7 +140,7 @@ count_running_threads(YogEnv* env, YogVm* vm)
 static void 
 run_gc(YogEnv* env, GC gc)
 {
-    YogVm* vm = env->vm;
+    YogVM* vm = env->vm;
     unsigned int threads_num = count_running_threads(env, vm);
     if (0 < threads_num) {
         vm->suspend_counter = threads_num - 1;
@@ -154,32 +154,32 @@ run_gc(YogEnv* env, GC gc)
 void
 YogGC_free_from_gc(YogEnv* env)
 {
-    YogVm* vm = env->vm;
-    YogVm_aquire_global_interp_lock(env, vm);
+    YogVM* vm = env->vm;
+    YogVM_aquire_global_interp_lock(env, vm);
     while (vm->waiting_suspend) {
         YogGC_suspend(env);
     }
     PTR_AS(YogThread, env->thread)->gc_bound = FALSE;
-    YogVm_release_global_interp_lock(env, vm);
+    YogVM_release_global_interp_lock(env, vm);
 }
 
 void
 YogGC_bind_to_gc(YogEnv* env)
 {
-    YogVm* vm = env->vm;
-    YogVm_aquire_global_interp_lock(env, vm);
+    YogVM* vm = env->vm;
+    YogVM_aquire_global_interp_lock(env, vm);
     while (vm->waiting_suspend) {
         wait_gc_finish(env);
     }
     PTR_AS(YogThread, env->thread)->gc_bound = TRUE;
-    YogVm_release_global_interp_lock(env, vm);
+    YogVM_release_global_interp_lock(env, vm);
 }
 
 static void 
 perform(YogEnv* env, GC gc) 
 {
-    YogVm* vm = env->vm;
-    YogVm_aquire_global_interp_lock(env, vm);
+    YogVM* vm = env->vm;
+    YogVM_aquire_global_interp_lock(env, vm);
     if (vm->waiting_suspend) {
         YogGC_suspend(env);
     }
@@ -190,7 +190,7 @@ perform(YogEnv* env, GC gc)
         wakeup_suspend_threads(env);
         vm->gc_id++;
     }
-    YogVm_release_global_interp_lock(env, vm);
+    YogVM_release_global_interp_lock(env, vm);
 }
 #endif
 
@@ -234,7 +234,7 @@ delete_heap(YogEnv* env, GC_TYPE* heap)
 
     FINALIZE(env, heap);
 
-    YogVm* vm = env->vm;
+    YogVM* vm = env->vm;
     if (vm->last_heap == heap) {
         vm->last_heap = heap->prev;
     }

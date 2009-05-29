@@ -92,7 +92,7 @@ YogThread_config_copying(YogEnv* env, YogVal thread, size_t init_heap_size)
     YOG_ASSERT(env, copying != NULL, "Can't allocate YogCopying");
     YogCopying_initialize(env, copying, init_heap_size);
     copying->refered = TRUE;
-    YogVm_add_heap(env, env->vm, copying);
+    YogVM_add_heap(env, env->vm, copying);
 
     PTR_AS(YogThread, thread)->copying = copying;
 }
@@ -106,7 +106,7 @@ YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t threshold)
     YOG_ASSERT(env, mark_sweep != NULL, "Can't allocate YogMarkSweep");
     YogMarkSweep_initialize(env, mark_sweep, threshold);
     mark_sweep->refered = TRUE;
-    YogVm_add_heap(env, env->vm, mark_sweep);
+    YogVM_add_heap(env, env->vm, mark_sweep);
 
     PTR_AS(YogThread, thread)->mark_sweep = mark_sweep;
 }
@@ -121,7 +121,7 @@ YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_siz
     YOG_ASSERT(env, mark_sweep_compact != NULL, "Can't allocate YogMarkSweepCompact");
     YogMarkSweepCompact_initialize(env, mark_sweep_compact, chunk_size, threshold);
     mark_sweep_compact->refered = TRUE;
-    YogVm_add_heap(env, env->vm, mark_sweep_compact);
+    YogVM_add_heap(env, env->vm, mark_sweep_compact);
 
     PTR_AS(YogThread, thread)->mark_sweep_compact = mark_sweep_compact;
 }
@@ -135,7 +135,7 @@ YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size
     YOG_ASSERT(env, generational != NULL, "Can't allocate YogGenerational");
     YogGenerational_initialize(env, generational, young_heap_size, old_chunk_size, old_threshold, tenure);
     generational->refered = TRUE;
-    YogVm_add_heap(env, env->vm, generational);
+    YogVM_add_heap(env, env->vm, generational);
 
     PTR_AS(YogThread, thread)->generational = generational;
 }
@@ -224,7 +224,7 @@ YogThread_new(YogEnv* env)
 }
 
 struct ThreadArg {
-    struct YogVm* vm;
+    struct YogVM* vm;
     YogVal thread;
     YogVal vararg;
 };
@@ -279,7 +279,7 @@ run_of_new_thread(void* arg)
     YogVal block = PTR_AS(YogThread, thread)->block;
     YogVal retval = YogEval_call_block(&env, block, size, args);
 
-    YogVm_remove_thread(&env, env.vm, env.thread);
+    YogVM_remove_thread(&env, env.vm, env.thread);
 
     RETURN(&env, (void*)retval);
 }
@@ -319,7 +319,7 @@ run(YogEnv* env)
     PTR_AS(ThreadArg, arg)->thread = self;
     PTR_AS(ThreadArg, arg)->vararg = vararg;
 
-    YogVm_add_thread(env, env->vm, self);
+    YogVM_add_thread(env, env->vm, self);
 #if !defined(GC_BDW)
 #   define CREATE_THREAD    pthread_create
 #else 

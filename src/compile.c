@@ -741,7 +741,7 @@ append_store(YogEnv* env, YogVal data, unsigned int lineno, ID name)
         {
             YogVal var = lookup_var(env, COMPILE_DATA(data)->vars, name);
             if (!IS_PTR(var)) {
-                const char* s = YogVm_id2name(env, env->vm, name);
+                const char* s = YogVM_id2name(env, env->vm, name);
                 YOG_BUG(env, "variable not found (%s)", s);
             }
             switch (VAR(var)->type) {

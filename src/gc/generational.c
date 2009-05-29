@@ -233,7 +233,7 @@ YogGenerational_prepare(YogEnv* env, YogGenerational* generational)
 void
 YogGenerational_minor_keep_vm(YogEnv* env, YogGenerational* generational)
 {
-    YogVm_keep_children(env, env->vm, minor_gc_keep_object, generational);
+    YogVM_keep_children(env, env->vm, minor_gc_keep_object, generational);
 }
 
 void
@@ -285,7 +285,7 @@ YogGenerational_allocate_heap(YogEnv* env, YogGenerational* generational)
 void
 YogGenerational_major_keep_vm(YogEnv* env, YogGenerational* generational)
 {
-    YogVm_keep_children(env, env->vm, major_gc_keep_object, generational);
+    YogVM_keep_children(env, env->vm, major_gc_keep_object, generational);
 }
 
 void
@@ -324,7 +324,7 @@ YogGenerational_major_post_gc(YogEnv* env, YogGenerational* generational)
         YogThread thread; \
         YogVal pthread = PTR2VAL(&thread); \
         YogThread_initialize(NULL, pthread); \
-        YogVm vm; \
+        YogVM vm; \
         vm.thread = &thread; \
         YogEnv env; \
         env.vm = &vm; \

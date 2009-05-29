@@ -40,7 +40,7 @@ YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, unsigned i
     PUSH_LOCALSX(env, argc, args);
 #endif
 
-    ID id = YogVm_intern(env, env->vm, method);
+    ID id = YogVM_intern(env, env->vm, method);
     YogVal retval = YogEval_call_method_id(env, receiver, id, argc, args);
 
     RETURN(env, retval);
@@ -51,7 +51,7 @@ YogEval_call_method2(YogEnv* env, YogVal receiver, const char* method, unsigned 
 {
     SAVE_ARGS2(env, receiver, blockarg);
 
-    ID id = YogVm_intern(env, env->vm, method);
+    ID id = YogVM_intern(env, env->vm, method);
     YogVal retval = YogEval_call_method_id2(env, receiver, id, argc, args, blockarg);
 
     RETURN(env, retval);
@@ -443,7 +443,7 @@ lookup_builtins(YogEnv* env, ID name)
 {
     YogVal builtins_name = ID2VAL(INTERN(BUILTINS));
     YogVal builtins = YUNDEF;
-    YogVm* vm = env->vm;
+    YogVM* vm = env->vm;
     if (!YogTable_lookup(env, vm->pkgs, builtins_name, &builtins)) {
         YOG_ASSERT(env, FALSE, "Can't find builtins package.");
     }
@@ -509,7 +509,7 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
             YogVal jmp_val = PTR_AS(YogThread, env->thread)->jmp_val;
             YogException* exc = PTR_AS(YogException, jmp_val);
             YogVal st = exc->stack_trace;
-#define ID2NAME(id)     YogVm_id2name(env, env->vm, id)
+#define ID2NAME(id)     YogVM_id2name(env, env->vm, id)
             while (IS_PTR(st)) {
                 PRINT("  File ");
                 YogVal filename = PTR_AS(YogStackTraceEntry, st)->filename;
