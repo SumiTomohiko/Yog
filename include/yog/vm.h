@@ -61,6 +61,7 @@ struct YogVM {
     YogVal eIndexError;
 
     YogVal pkgs;
+    pthread_rwlock_t pkgs_lock;
 
     YogVal encodings;
 

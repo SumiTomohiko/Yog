@@ -355,6 +355,16 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
+static void
+initialize_packages_lock(pthread_rwlock_t* lock)
+{
+    pthread_rwlockattr_t attr;
+    pthread_rwlockattr_init(&attr);
+    pthread_rwlockattr_setkind_np(&attr, PTHREAD_RWLOCK_PREFER_WRITER_NP);
+    pthread_rwlock_init(lock, &attr);
+    pthread_rwlockattr_destroy(&attr);
+}
+
 void 
 YogVM_init(YogVM* vm) 
 {
@@ -395,6 +405,7 @@ YogVM_init(YogVM* vm)
     vm->eIndexError = YUNDEF;
 
     vm->pkgs = PTR2VAL(NULL);
+    initialize_packages_lock(&vm->pkgs_lock);
 
     vm->encodings = PTR2VAL(NULL);
 
@@ -465,6 +476,7 @@ YogVM_delete(YogEnv* env, YogVM* vm)
         (*vm->free_mem)(env, vm);
     }
 #endif
+    pthread_rwlock_destroy(&vm->pkgs_lock);
 }
 
 void 
