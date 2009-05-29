@@ -10,23 +10,38 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-void 
-YogError_bug(YogEnv* env, const char* filename, unsigned int lineno, const char* fmt, ...) 
+static void
+print_error(YogEnv* env, const char* type, const char* filename, unsigned int lineno, const char* fmt, va_list ap)
 {
     FILE* stream = stderr;
 
-    fprintf(stream, "[BUG]\n");
+    fprintf(stream, "[%s]\n", type);
     fprintf(stream, "at %s:%d\n", filename, lineno);
-
-    va_list ap;
-    va_start(ap, fmt);
     vfprintf(stream, fmt, ap);
-    va_end(ap);
-
     fprintf(stream, "\n");
+}
 
+#define PRINT_ERROR(env, type, filename, lineno, fmt)   do { \
+    va_list ap; \
+    va_start(ap, fmt); \
+    print_error(env, type, filename, lineno, fmt, ap); \
+    va_end(ap); \
+} while (0)
+
+void 
+YogError_bug(YogEnv* env, const char* filename, unsigned int lineno, const char* fmt, ...) 
+{
+    PRINT_ERROR(env, "BUG", filename, lineno, fmt);
     abort();
 }
+
+void
+YogError_warn(YogEnv* env, const char* filename, unsigned int lineno, const char* fmt, ...)
+{
+    PRINT_ERROR(env, "WARN", filename, lineno, fmt);
+}
+
+#undef PRINT_ERROR
 
 void 
 YogError_raise(YogEnv* env, YogVal exc) 

@@ -4,11 +4,12 @@
 #include "yog/yog.h"
 
 struct YogBasicObj {
-    unsigned int flags;
+    flags_t flags;
     YogVal klass;
 };
 
-#define HAS_ATTRS   (1)
+#define HAS_ATTRS       (1 << 0)
+#define IMPORTING_PKG   (1 << 1)
 
 #define YOGBASICOBJ_HEAD    struct YogBasicObj base
 #define YOGBASICOBJ(obj)    ((struct YogBasicObj*)obj)

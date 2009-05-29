@@ -9,6 +9,10 @@
 
 #define JMP_RAISE   (1)
 
+#define YOG_WARN(env, ...)  do { \
+    YogError_warn(env, __FILE__, __LINE__, __VA_ARGS__); \
+} while (0)
+
 #define YOG_BUG(env, ...)    do { \
     YogError_bug(env, __FILE__, __LINE__, __VA_ARGS__); \
 } while (0)
@@ -30,6 +34,7 @@ void YogError_bug(YogEnv*, const char*, unsigned int, const char*, ...);
 void YogError_raise(YogEnv*, YogVal);
 void YogError_raise_index_error(YogEnv*, const char*);
 void YogError_raise_type_error(YogEnv*, const char*);
+void YogError_warn(YogEnv*, const char*, unsigned int, const char*, ...);
 
 /* PROTOTYPE_END */
 

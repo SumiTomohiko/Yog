@@ -88,6 +88,8 @@ typedef void (*Finalizer)(YogEnv*, void*);
 
 typedef struct YogBasicObj YogBasicObj;
 
+typedef unsigned int flags_t;
+
 /* PROTOTYPE_START */
 
 /**

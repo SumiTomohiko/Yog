@@ -95,6 +95,7 @@ void YogVM_aquire_global_interp_lock(YogEnv*, YogVM*);
 void YogVM_boot(YogEnv*, YogVM*);
 void YogVM_delete(YogEnv*, YogVM*);
 void YogVM_gc(YogEnv*, YogVM*);
+YogVal YogVM_get_package(YogEnv*, YogVM*, ID);
 const char* YogVM_id2name(YogEnv*, YogVM*, ID);
 void YogVM_init(YogVM*);
 ID YogVM_intern(YogEnv*, YogVM*, const char*);

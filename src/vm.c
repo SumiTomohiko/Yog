@@ -591,6 +591,152 @@ YogVM_wait_finish(YogEnv* env, YogVM* vm)
     YogVM_release_global_interp_lock(env, vm);
 }
 
+static void
+acquire_packages_read_lock(YogEnv* env, YogVM* vm)
+{
+    FREE_FROM_GC(env);
+    pthread_rwlock_rdlock(&vm->pkgs_lock);
+    BIND_TO_GC(env);
+}
+
+static void
+acquire_packages_write_lock(YogEnv* env, YogVM* vm)
+{
+    FREE_FROM_GC(env);
+    pthread_rwlock_wrlock(&vm->pkgs_lock);
+    BIND_TO_GC(env);
+}
+
+static void
+release_packages_lock(YogEnv* env, YogVM* vm)
+{
+    pthread_rwlock_unlock(&vm->pkgs_lock);
+}
+
+struct ImportingPackage {
+    flags_t flags;
+    pthread_mutex_t lock;
+    pthread_cond_t cond;
+    YogVal pkg;
+};
+
+typedef struct ImportingPackage ImportingPackage;
+
+static void
+ImportingPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    ImportingPackage* pkg = ptr;
+    YogGC_keep(env, &pkg->pkg, keeper, heap);
+}
+
+static void
+ImportingPackage_finalize(YogEnv* env, void* ptr)
+{
+    ImportingPackage* pkg = ptr;
+    if (pthread_mutex_destroy(&pkg->lock) != 0) {
+        YOG_WARN(env, "pthread_mutex_destroy failed");
+    }
+    if (pthread_cond_destroy(&pkg->cond) != 0) {
+        YOG_WARN(env, "pthread_cond_destroy failed");
+    }
+}
+
+static YogVal
+ImportingPackage_new(YogEnv* env)
+{
+    YogVal pkg = ALLOC_OBJ(env, ImportingPackage_keep_children, ImportingPackage_finalize, ImportingPackage);
+    PTR_AS(ImportingPackage, pkg)->flags = IMPORTING_PKG;
+    pthread_mutex_init(&PTR_AS(ImportingPackage, pkg)->lock, NULL);
+    pthread_cond_init(&PTR_AS(ImportingPackage, pkg)->cond, NULL);
+    PTR_AS(ImportingPackage, pkg)->pkg = YUNDEF;
+    return pkg;
+}
+
+static void
+ImportingPackage_lock(YogEnv* env, YogVal pkg)
+{
+    pthread_mutex_t* lock = &PTR_AS(ImportingPackage, pkg)->lock;
+    if (pthread_mutex_lock(lock) != 0) {
+        YOG_BUG(env, "pthread_mutex_lock failed");
+    }
+}
+
+static void
+ImportingPackage_unlock(YogEnv* env, YogVal pkg)
+{
+    pthread_mutex_t* lock = &PTR_AS(ImportingPackage, pkg)->lock;
+    if (pthread_mutex_unlock(lock) != 0) {
+        YOG_BUG(env, "pthread_mutex_unlock failed");
+    }
+}
+
+static void
+wait_package(YogEnv* env, YogVal pkg)
+{
+    pthread_cond_t* cond = &PTR_AS(ImportingPackage, pkg)->cond;
+    pthread_mutex_t* lock = &PTR_AS(ImportingPackage, pkg)->lock;
+    while (!IS_PTR(PTR_AS(ImportingPackage, pkg)->pkg)) {
+        FREE_FROM_GC(env);
+        pthread_cond_wait(cond, lock);
+        BIND_TO_GC(env);
+    }
+}
+
+static YogVal
+get_package(YogEnv* env, YogVM* vm, YogVal pkg)
+{
+    if (PTR_AS(YogBasicObj, pkg)->flags & IMPORTING_PKG) {
+        ImportingPackage_lock(env, pkg);
+        release_packages_lock(env, vm);
+        wait_package(env, pkg);
+        ImportingPackage_unlock(env, pkg);
+        return PTR_AS(ImportingPackage, pkg)->pkg;
+    }
+    else {
+        release_packages_lock(env, vm);
+        return pkg;
+    }
+}
+
+YogVal
+YogVM_get_package(YogEnv* env, YogVM* vm, ID name)
+{
+    SAVE_LOCALS(env);
+
+    YogVal pkg = YUNDEF;
+    PUSH_LOCAL(env, pkg);
+
+    acquire_packages_read_lock(env, vm);
+#define FIND_PKG    do { \
+    if (YogTable_lookup(env, vm->pkgs, name, &pkg)) { \
+        return get_package(env, vm, pkg); \
+    } \
+} while (0)
+    FIND_PKG;
+    release_packages_lock(env, vm);
+
+    acquire_packages_write_lock(env, vm);
+    FIND_PKG;
+#undef FIND_PKG
+    pkg = ImportingPackage_new(env);
+    YogTable_add_direct(env, vm->pkgs, ID2VAL(name), pkg);
+    release_packages_lock(env, vm);
+
+    /* TODO */
+
+    acquire_packages_write_lock(env, vm);
+    YogVal key = ID2VAL(name);
+    if (!YogTable_delete(env, vm->pkgs, &key, NULL)) {
+        YOG_BUG(env, "Can't delete importing package");
+    }
+    YogVal imported_pkg = PTR_AS(ImportingPackage, pkg)->pkg;
+    YogTable_add_direct(env, vm->pkgs, ID2VAL(name), imported_pkg);
+    pthread_cond_broadcast(&PTR_AS(ImportingPackage, pkg)->cond);
+    release_packages_lock(env, vm);
+
+    RETURN(env, pkg);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
