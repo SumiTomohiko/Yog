@@ -35,7 +35,7 @@ class TestCase(object):
             finally:
                 f.close()
 
-            cmd = [join("src", cmd_name)]
+            cmd = [join("..", "src", cmd_name)]
             cmd.extend(options)
             cmd.append(file)
 

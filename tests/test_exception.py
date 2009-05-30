@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from re import match
-from tests import TestCase
+from testcase import TestCase
 
 class TestException(TestCase):
 

@@ -5,10 +5,12 @@ from os.path import exists, join, splitext
 from re import compile
 from shutil import copy, move
 
+exts = [".h", ".c", ".y", ".lt", ".py"]
+
 def replace_for_dir(dirname):
     for name in listdir(dirname):
         ext = splitext(name)[1]
-        if ext in (".h", ".c", ".y", ".lt"):
+        if ext in exts:
             path = join(dirname, name)
             orig = path + ".orig"
             if not exists(orig):
@@ -18,11 +20,11 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        out.write(line.replace("YogVm", "YogVM"))
+                        out.write(line.replace("from tests", "from testcase"))
             move(tmp, path)
 
 def main():
-    for dir in ["src", "src/gc", "include/yog"]:
+    for dir in ["src", "src/gc", "include/yog", "tests", "tests/encoding"]:
         replace_for_dir(dir)
 
 if __name__ == "__main__":

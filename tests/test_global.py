@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from tests import TestCase
+from testcase import TestCase
 
 class TestGlobal(TestCase):
 

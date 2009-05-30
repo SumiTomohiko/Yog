@@ -38,23 +38,8 @@ maintainer-clean:
 proto: 
 	python tools/update_prototype.py
 
-TEST_CMD = py.test
-TEST_TARGETS = @TEST_TARGETS@
-
-test: 
-	@for target in $(TEST_TARGETS); do \
-		$(MAKE) $${target}; \
-	done
-test-copying: 
-	GC=copying $(TEST_CMD)
-test-mark-sweep: 
-	GC=mark-sweep $(TEST_CMD)
-test-mark-sweep-compact: 
-	GC=mark-sweep-compact $(TEST_CMD)
-test-bdw:
-	GC=bdw $(TEST_CMD)
-test-generational:
-	GC=generational $(TEST_CMD)
+test test-copying test-mark-sweep test-mark-sweep-compact test-bdw test-generational: 
+	cd tests && $(MAKE) $@
 
 am--refresh:
 	@:

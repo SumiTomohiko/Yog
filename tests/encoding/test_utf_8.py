@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from tests.encoding import TestEncoding
+from encoding import TestEncoding
 
 class TestUtf8(TestEncoding):
 

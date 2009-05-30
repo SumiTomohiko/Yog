@@ -57,7 +57,7 @@ if test "${enable_google_perftools}" = "yes"; then
     LDFLAGS="-lprofiler ${LDFLAGS}"
 fi
 
-AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile])
 if test "${with_cunit}" = "yes"; then
     AC_CONFIG_FILES([tests/copying/Makefile 
                      tests/mark-sweep-compact/Makefile

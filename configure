@@ -23574,7 +23574,7 @@ if test "${enable_google_perftools}" = "yes"; then
     LDFLAGS="-lprofiler ${LDFLAGS}"
 fi
 
-ac_config_files="$ac_config_files Makefile src/Makefile tools/lemon/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile tools/lemon/Makefile tests/Makefile"
 
 if test "${with_cunit}" = "yes"; then
     ac_config_files="$ac_config_files tests/copying/Makefile tests/mark-sweep-compact/Makefile tests/generational/Makefile"
@@ -24275,6 +24275,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "tools/lemon/Makefile") CONFIG_FILES="$CONFIG_FILES tools/lemon/Makefile" ;;
+    "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
     "tests/copying/Makefile") CONFIG_FILES="$CONFIG_FILES tests/copying/Makefile" ;;
     "tests/mark-sweep-compact/Makefile") CONFIG_FILES="$CONFIG_FILES tests/mark-sweep-compact/Makefile" ;;
     "tests/generational/Makefile") CONFIG_FILES="$CONFIG_FILES tests/generational/Makefile" ;;

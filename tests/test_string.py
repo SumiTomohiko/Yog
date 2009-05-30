@@ -2,7 +2,7 @@
 
 from re import match
 
-from tests import TestCase
+from testcase import TestCase
 
 class TestString(TestCase):
 
