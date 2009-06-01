@@ -28,6 +28,7 @@ enum YogNodeType {
     NODE_FUNC_CALL, 
     NODE_FUNC_DEF, 
     NODE_IF, 
+    NODE_IMPORT, 
     NODE_KLASS, 
     NODE_KW_PARAM, 
     NODE_LITERAL, 
@@ -97,6 +98,9 @@ struct YogNode {
             YogVal stmts;
             YogVal tail;
         } if_;
+        struct {
+            YogVal names;
+        } import;
         struct {
             ID name;
             YogVal super;

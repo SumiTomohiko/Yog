@@ -23,6 +23,7 @@ except, TK_EXCEPT
 false, TK_FALSE
 finally, TK_FINALLY
 if, TK_IF
+import, TK_IMPORT
 next, TK_NEXT
 nonlocal, TK_NONLOCAL
 return, TK_RETURN

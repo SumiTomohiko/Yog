@@ -205,7 +205,7 @@ Array_new(YogEnv* env, YogVal elem)
     YogVal array = YUNDEF;
     PUSH_LOCAL(env, array);
 
-    if (IS_PTR(elem)) {
+    if (IS_PTR(elem) || IS_SYMBOL(elem)) {
         array = YogArray_new(env);
         YogArray_push(env, array, elem);
     }
@@ -507,6 +507,17 @@ Nonlocal_new(YogEnv* env, unsigned int lineno, YogVal names)
     RETURN(env, node);
 }
 
+static YogVal
+Import_new(YogEnv* env, unsigned int lineno, YogVal names)
+{
+    SAVE_ARG(env, names);
+
+    YogVal node = YogNode_new(env, NODE_IMPORT, lineno);
+    MODIFY(env, NODE(node)->u.import.names, names);
+
+    RETURN(env, node);
+}
+
 YogVal 
 YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
 {
@@ -548,6 +559,25 @@ YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
     }
 
     RETURN(env, ast);
+}
+
+static YogVal
+id2array(YogEnv* env, ID id)
+{
+    return Array_new(env, ID2VAL(id));
+}
+
+static YogVal
+id_token2array(YogEnv* env, YogVal token)
+{
+    return id2array(env, PTR_AS(YogToken, token)->u.id);
+}
+
+static YogVal
+Array_push_token_id(YogEnv* env, YogVal array, YogVal token)
+{
+    ID id = PTR_AS(YogToken, token)->u.id;
+    return Array_push(env, array, ID2VAL(id));
 }
 
 #define TOKEN_LINENO(token)     PTR_AS(YogToken, (token))->lineno
@@ -646,16 +676,30 @@ stmt(A) ::= NONLOCAL(B) names(C). {
     unsigned int lineno = TOKEN_LINENO(B);
     A = Nonlocal_new(env, lineno, C);
 }
+stmt(A) ::= IMPORT(B) dotted_names(C). {
+    unsigned int lineno = TOKEN_LINENO(B);
+    A = Import_new(env, lineno, C);
+}
+
+dotted_names(A) ::= dotted_name(B). {
+    A = Array_new(env, B);
+}
+dotted_names(A) ::= dotted_names(B) COMMA dotted_name(C). {
+    A = Array_push(env, B, C);
+}
+
+dotted_name(A) ::= NAME(B). {
+    A = id_token2array(env, B);
+}
+dotted_name(A) ::= dotted_name(B) DOT NAME(C). {
+    A = Array_push_token_id(env, B, C);
+}
 
 names(A) ::= NAME(B). {
-    A = YogArray_new(env);
-    ID id = PTR_AS(YogToken, B)->u.id;
-    YogArray_push(env, A, ID2VAL(id));
+    A = id_token2array(env, B);
 }
 names(A) ::= names(B) COMMA NAME(C). {
-    ID id = PTR_AS(YogToken, C)->u.id;
-    YogArray_push(env, B, ID2VAL(id));
-    A = B;
+    A = Array_push_token_id(env, B, C);
 }
 
 super_opt(A) ::= /* empty */. {

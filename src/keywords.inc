@@ -38,12 +38,12 @@ typedef struct KeywordTableEntry KeywordTableEntry;
 #line 10 "keywords"
 struct KeywordTableEntry { const char* name; unsigned int type; };
 
-#define TOTAL_KEYWORDS 19
+#define TOTAL_KEYWORDS 20
 #define MIN_WORD_LENGTH 2
 #define MAX_WORD_LENGTH 8
 #define MIN_HASH_VALUE 2
-#define MAX_HASH_VALUE 25
-/* maximum key range = 24, duplicates = 0 */
+#define MAX_HASH_VALUE 26
+/* maximum key range = 25, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -57,32 +57,32 @@ hash (register const char *str, register unsigned int len)
 {
   static const unsigned char asso_values[] =
     {
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 10, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26,  5, 26, 15, 10,  0,
-       0, 10,  0, 26, 26, 10, 26, 26,  0, 26,
-       0, 26, 26, 26,  5,  5, 10,  0, 26,  0,
-       0,  5, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 10, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27,  5, 27, 15, 10,  0,
+       0, 10,  0, 27, 27, 10, 27, 27,  0, 27,
+       0, 27, 10, 27,  5,  5, 10,  0, 27,  0,
+       0,  5, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27
     };
   register int hval = len;
 
@@ -115,35 +115,35 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
       {"do", TK_DO},
 #line 17 "keywords"
       {"def", TK_DEF},
-#line 26 "keywords"
+#line 27 "keywords"
       {"next", TK_NEXT},
 #line 23 "keywords"
       {"false", TK_FALSE},
       {""},
 #line 24 "keywords"
       {"finally", TK_FINALLY},
-#line 27 "keywords"
+#line 28 "keywords"
       {"nonlocal", TK_NONLOCAL},
       {""}, {""}, {""},
 #line 25 "keywords"
       {"if", TK_IF},
 #line 21 "keywords"
       {"end", TK_END},
-#line 29 "keywords"
+#line 30 "keywords"
       {"true", TK_TRUE},
-#line 31 "keywords"
+#line 32 "keywords"
       {"while", TK_WHILE},
 #line 22 "keywords"
       {"except", TK_EXCEPT},
 #line 14 "keywords"
       {"as", TK_AS},
-#line 30 "keywords"
+#line 31 "keywords"
       {"try", TK_TRY},
 #line 20 "keywords"
       {"else", TK_ELSE},
 #line 16 "keywords"
       {"class", TK_CLASS},
-#line 28 "keywords"
+#line 29 "keywords"
       {"return", TK_RETURN},
       {""},
 #line 13 "keywords"
@@ -151,7 +151,9 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
 #line 19 "keywords"
       {"elif", TK_ELIF},
 #line 15 "keywords"
-      {"break", TK_BREAK}
+      {"break", TK_BREAK},
+#line 26 "keywords"
+      {"import", TK_IMPORT}
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
@@ -168,7 +170,7 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
     }
   return 0;
 }
-#line 32 "keywords"
+#line 33 "keywords"
 
 /**
  * vim: filetype=c
