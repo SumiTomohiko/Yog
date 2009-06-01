@@ -1,5 +1,6 @@
 #include <limits.h>
 #include <stdint.h>
+#include <string.h>
 #include "yog/arg.h"
 #include "yog/array.h"
 #include "yog/binary.h"
@@ -31,6 +32,7 @@ struct AstVisitor {
     VisitNode visit_func_call;
     VisitNode visit_func_def;
     VisitNode visit_if;
+    VisitNode visit_import;
     VisitNode visit_klass;
     VisitNode visit_literal;
     VisitNode visit_method_call;
@@ -313,6 +315,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_IF:
         VISIT(visit_if);
         break;
+    case NODE_IMPORT:
+        VISIT(visit_import);
+        break;
     case NODE_BREAK:
         VISIT(visit_break);
         break;
@@ -555,6 +560,23 @@ scan_var_visit_if(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
+static void
+scan_var_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+
+    YogVal names = NODE(node)->u.import.names;
+    unsigned int size = YogArray_size(env, names);
+    unsigned int i;
+    for (i = 0; i < size; i++) {
+        YogVal pkg_name = YogArray_at(env, names, i);
+        YogVal id = YogArray_at(env, pkg_name, 0);
+        scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, id, VAR_ASSIGNED);
+    }
+
+    RETURN_VOID(env);
+}
+
 static void 
 scan_var_visit_break(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
@@ -672,6 +694,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_func_call = scan_var_visit_func_call;
     visitor->visit_func_def = scan_var_visit_func_def;
     visitor->visit_if = scan_var_visit_if;
+    visitor->visit_import = scan_var_visit_import;
     visitor->visit_klass = scan_var_visit_klass;
     visitor->visit_literal = NULL;
     visitor->visit_method_call = scan_var_visit_method_call;
@@ -2330,6 +2353,72 @@ compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     RETURN_VOID(env);
 }
 
+static ID
+join_package_names(YogEnv* env, YogVal pkg_name)
+{
+    SAVE_ARG(env, pkg_name);
+
+    size_t len = 0;
+    unsigned int size = YogArray_size(env, pkg_name);
+    unsigned int i;
+    for (i = 0; i < size; i++) {
+        YogVal name = YogArray_at(env, pkg_name, i);
+        const char* s = YogVM_id2name(env, env->vm, VAL2ID(name));
+        len += strlen(s);
+    }
+    len += size - 1;
+    char pkg[len + 1];
+    char* pc = pkg;
+    for (i = 0; i < size; i++) {
+        YogVal name = YogArray_at(env, pkg_name, i);
+        const char* s = YogVM_id2name(env, env->vm, VAL2ID(name));
+        strcpy(pc, s);
+        size_t l = strlen(s);
+        pc += l;
+        *pc = '.';
+    }
+    *pc = '\0';
+
+    RETURN(env, YogVM_intern(env, env->vm, pkg));
+}
+
+static void
+compile_import(YogEnv* env, YogVal pkg_name, YogVal data, unsigned int lineno)
+{
+    SAVE_ARGS2(env, pkg_name, data);
+
+    ID pkg = join_package_names(env, pkg_name);
+    unsigned int c = register_const(env, data, ID2VAL(pkg));
+    CompileData_add_push_const(env, data, lineno, c);
+
+    ID import_package = YogVM_intern(env, env->vm, "import_package");
+    CompileData_add_load_global(env, data, lineno, import_package);
+
+    CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
+
+    ID var_name = YogArray_at(env, pkg_name, 0);
+    append_store(env, data, lineno, var_name);
+
+    RETURN_VOID(env);
+}
+
+static void
+compile_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+
+    unsigned int lineno = NODE(node)->lineno;
+    YogVal names = NODE(node)->u.import.names;
+    unsigned int size = YogArray_size(env, names);
+    unsigned int i;
+    for (i = 0; i < size; i++) {
+        YogVal pkg_name = YogArray_at(env, names, i);
+        compile_import(env, pkg_name, data, lineno);
+    }
+
+    RETURN_VOID(env);
+}
+
 static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
@@ -2343,6 +2432,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_func_call = compile_visit_func_call;
     visitor->visit_func_def = compile_visit_func_def;
     visitor->visit_if = compile_visit_if;
+    visitor->visit_import = compile_visit_import;
     visitor->visit_klass = compile_visit_klass;
     visitor->visit_literal = compile_visit_literal;
     visitor->visit_method_call = compile_visit_method_call;
