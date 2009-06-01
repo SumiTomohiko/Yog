@@ -142,7 +142,7 @@ YogVal_get_klass(YogEnv* env, YogVal val)
         return env->vm->cNil;
     }
     else {
-        YOG_ASSERT(env, FALSE, "Uknown value type.");
+        YOG_BUG(env, "Uknown type of value (0x%08x)", val);
     }
 
     /* NOTREACHED */

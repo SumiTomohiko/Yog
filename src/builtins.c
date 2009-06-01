@@ -71,54 +71,7 @@ puts_(YogEnv* env)
 static YogVal
 import_package(YogEnv* env)
 {
-    SAVE_LOCALS(env);
-
-    YogVal top = YUNDEF;
-    YogVal parent = YUNDEF;
-    PUSH_LOCALS2(env, top, parent);
-
-    YogVM* vm = env->vm;
-
-    YogVal name = ARG(env, 0);
-    const char* s = YogVM_id2name(env, env->vm, VAL2ID(name));
-    size_t len = strlen(s);
-    char t[len + 1];
-    strcpy(t, s);
-    const char* begin = t;
-    const char* pc = begin;
-    while (1) {
-        const char* end = strchr(pc, '.');
-        if (end == NULL) {
-            end = begin + len;
-        }
-        unsigned int size = end - begin;
-        char s[size + 1];
-        strncpy(s, begin, size);
-        s[size] = '\0';
-
-        ID id = YogVM_intern(env, vm, s);
-        YogVal pkg = YogVM_import_package(env, vm, id);
-        if (IS_PTR(parent)) {
-            unsigned int size = end - pc;
-            char attr[size + 1];
-            strncpy(attr, pc, size);
-            attr[size] = '\0';
-            ID id = YogVM_intern(env, vm, attr);
-            YogObj_set_attr_id(env, parent, id, pkg);
-        }
-        if (!IS_PTR(top)) {
-            top = pkg;
-        }
-
-        if (end == begin + len) {
-            break;
-        }
-
-        parent = pkg;
-        pc = end + 1;
-    }
-
-    RETURN(env, top);
+    return YogVM_import_package(env, env->vm, VAL2ID(ARG(env, 0)));
 }
 
 YogVal 

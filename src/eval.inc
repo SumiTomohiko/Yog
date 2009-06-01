@@ -497,6 +497,24 @@
             POP_LOCALS(ENV);
             break;
         }
+#line 475 "../src/eval.inc"
+    case OP(LOAD_ATTR):
+        {
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            ID name = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
+            PC += sizeof(ID);
+            YogVal val = YUNDEF;
+            YogVal retval = YUNDEF;
+            PUSH_LOCALS2(ENV, val, retval);
+            val = POP();
+#line 295 "insts.def"
+            retval = YogVal_get_attr(ENV, val, name);
+
+#line 487 "../src/eval.inc"
+            PUSH(retval);
+            POP_LOCALS(ENV);
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

@@ -33,6 +33,7 @@ YogCode_get_op_name(OpCode op)
         "STORE_NONLOCAL", 
         "LOAD_NONLOCAL", 
         "STORE_GLOBAL", 
+        "LOAD_ATTR", 
     };
 
     return op_names[op];

@@ -36,6 +36,7 @@ enum OpCode {
     OP(STORE_NONLOCAL) = 22, 
     OP(LOAD_NONLOCAL) = 23, 
     OP(STORE_GLOBAL) = 24, 
+    OP(LOAD_ATTR) = 25, 
 
 };
 

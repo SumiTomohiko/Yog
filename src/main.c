@@ -4,12 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "yog/code.h"
-#include "yog/compile.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/package.h"
-#include "yog/parser.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -184,26 +182,13 @@ main(int argc, char* argv[])
     vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
 
     do {
-        YogVal stmts = YUNDEF;
-        YogVal code = YUNDEF;
-        YogVal pkg = YUNDEF;
-        PUSH_LOCALS3(&env, stmts, code, pkg);
-
         YogVM_boot(&env, env.vm);
 
         const char* filename = NULL;
         if (optind < argc) {
             filename = argv[optind];
         }
-        stmts = YogParser_parse_file(&env, filename, debug_parser != 0);
-        code = YogCompiler_compile_module(&env, filename, stmts);
-
-        pkg = YogPackage_new(&env);
-        MODIFY(&env, PTR_AS(YogPackage, pkg)->code, code);
-        YogVM_register_package(&env, env.vm, "__main__", pkg);
-        YogEval_eval_package(&env, pkg);
-
-        POP_LOCALS(&env);
+        YogEval_eval_file(&env, filename, "__main__");
     } while (0);
 
     YogVM_remove_thread(&env, env.vm, env.thread);

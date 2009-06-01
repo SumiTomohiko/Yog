@@ -82,6 +82,9 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(if_.stmts);
         KEEP(if_.tail);
         break;
+    case NODE_IMPORT:
+        KEEP(import.names);
+        break;
     case NODE_KLASS:
         KEEP(klass.super);
         KEEP(klass.stmts);
@@ -518,6 +521,21 @@ Import_new(YogEnv* env, unsigned int lineno, YogVal names)
     RETURN(env, node);
 }
 
+FILE*
+open(const char* filename)
+{
+    if (filename == NULL) {
+        return stdin;
+    }
+
+    FILE* fp = fopen(filename, "r");
+    if (fp == NULL) {
+        return NULL;
+    }
+
+    return fp;
+}
+
 YogVal 
 YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
 {
@@ -529,13 +547,9 @@ YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
     YogVal token = YUNDEF;
     PUSH_LOCALS4(env, lexer, ast, lemon_parser, token);
 
-    FILE* fp;
-    if (filename != NULL) {
-        fp = fopen(filename, "r");
-        YOG_ASSERT(env, fp != NULL, "Can't open %s", filename);
-    }
-    else {
-        fp = stdin;
+    FILE* fp = open(filename);
+    if (fp == NULL) {
+        RETURN(env, YNIL);
     }
 
     lexer = YogLexer_new(env);

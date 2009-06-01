@@ -3,6 +3,7 @@
 #include "yog/binary.h"
 #include "yog/block.h"
 #include "yog/code.h"
+#include "yog/compile.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
@@ -10,6 +11,7 @@
 #include "yog/function.h"
 #include "yog/method.h"
 #include "yog/package.h"
+#include "yog/parser.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -854,8 +856,8 @@ YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, unsigned int ar
     RETURN(env, retval);
 }
 
-void 
-YogEval_eval_package(YogEnv* env, YogVal pkg) 
+static void
+eval_package(YogEnv* env, YogVal pkg) 
 {
     SAVE_ARG(env, pkg);
 
@@ -875,6 +877,30 @@ YogEval_eval_package(YogEnv* env, YogVal pkg)
     mainloop(env, frame, code);
 
     RETURN_VOID(env);
+}
+
+YogVal
+YogEval_eval_file(YogEnv* env, const char* filename, const char* pkg_name)
+{
+    SAVE_LOCALS(env);
+
+    YogVal stmts = YUNDEF;
+    YogVal code = YUNDEF;
+    YogVal pkg = YUNDEF;
+    PUSH_LOCALS3(env, stmts, code, pkg);
+
+    stmts = YogParser_parse_file(env, filename, FALSE);
+    if (!IS_PTR(stmts)) {
+        RETURN(env, YNIL);
+    }
+    code = YogCompiler_compile_module(env, filename, stmts);
+
+    pkg = YogPackage_new(env);
+    PTR_AS(YogPackage, pkg)->code = code;
+    YogVM_register_package(env, env->vm, pkg_name, pkg);
+    eval_package(env, pkg);
+
+    RETURN(env, pkg);
 }
 
 /**

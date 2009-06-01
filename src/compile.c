@@ -23,6 +23,7 @@ typedef void (*VisitArray)(YogEnv*, AstVisitor*, YogVal, YogVal);
 struct AstVisitor {
     VisitArray visit_stmts;
     VisitNode visit_assign;
+    VisitNode visit_attr;
     VisitNode visit_block;
     VisitNode visit_break;
     VisitNode visit_command_call;
@@ -282,6 +283,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_ASSIGN: 
         VISIT(visit_assign);
         break;
+    case NODE_ATTR:
+        VISIT(visit_attr);
+        break;
     case NODE_VARIABLE:
         VISIT(visit_variable);
         break;
@@ -340,7 +344,7 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
         VISIT(visit_subscript);
         break;
     default:
-        YOG_ASSERT(env, FALSE, "Unknown node type.");
+        YOG_BUG(env, "Unknown node type (0x%08x)", NODE(node)->type);
         break;
     }
 #undef VISIT
@@ -681,10 +685,17 @@ scan_var_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, id, VAR_USED);
 }
 
+static void
+scan_var_visit_attr(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    visit_node(env, visitor, NODE(node)->u.attr.obj, data);
+}
+
 static void 
 scan_var_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_assign = scan_var_visit_assign;
+    visitor->visit_attr = scan_var_visit_attr;
     visitor->visit_block = scan_var_visit_block;
     visitor->visit_break = scan_var_visit_break;
     visitor->visit_command_call = scan_var_visit_command_call;
@@ -2397,8 +2408,8 @@ compile_import(YogEnv* env, YogVal pkg_name, YogVal data, unsigned int lineno)
 
     CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
 
-    ID var_name = YogArray_at(env, pkg_name, 0);
-    append_store(env, data, lineno, var_name);
+    YogVal var_name = YogArray_at(env, pkg_name, 0);
+    append_store(env, data, lineno, VAL2ID(var_name));
 
     RETURN_VOID(env);
 }
@@ -2420,10 +2431,25 @@ compile_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
+static void
+compile_visit_attr(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+
+    visit_node(env, visitor, NODE(node)->u.attr.obj, data);
+
+    unsigned int lineno = NODE(node)->lineno;
+    ID name = NODE(node)->u.attr.name;
+    CompileData_add_load_attr(env, data, lineno, name);
+
+    RETURN_VOID(env);
+}
+
 static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_assign = compile_visit_assign;
+    visitor->visit_attr = compile_visit_attr;
     visitor->visit_block = compile_visit_block;
     visitor->visit_break = compile_visit_break;
     visitor->visit_command_call = compile_visit_command_call;

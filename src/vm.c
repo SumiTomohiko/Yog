@@ -10,6 +10,7 @@
 #include "yog/builtins.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/exception.h"
 #include "yog/float.h"
 #include "yog/gc.h"
@@ -282,8 +283,8 @@ keep_local_vals(YogEnv* env, YogVal* vals, unsigned int size, ObjectKeeper keepe
     unsigned int i;
     for (i = 0; i < size; i++) {
         YogVal* val = &vals[i];
-        DEBUG(YogVal old_val = *val);
         DEBUG(DPRINTF("val=%p", val));
+        DEBUG(YogVal old_val = *val);
         YogGC_keep(env, val, keeper, heap);
         DEBUG(DPRINTF("val=%p, 0x%08x->0x%08x", val, old_val, *val));
     }
@@ -698,17 +699,35 @@ get_package(YogEnv* env, YogVM* vm, YogVal pkg)
     }
 }
 
-YogVal
-YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
+static void
+package2path(char* name)
+{
+    char* pc = name;
+    while (*pc != '\0') {
+        if (*pc == '.') {
+#define SEPARATOR   '/'
+            *pc = SEPARATOR;
+#undef SEPARATOR
+        }
+        pc++;
+    }
+    strcpy(pc, ".yg");
+}
+
+static YogVal
+import_package(YogEnv* env, YogVM* vm, const char* name)
 {
     SAVE_LOCALS(env);
 
     YogVal pkg = YUNDEF;
-    PUSH_LOCAL(env, pkg);
+    YogVal tmp_pkg = YUNDEF;
+    PUSH_LOCALS2(env, pkg, tmp_pkg);
+
+    ID id = YogVM_intern(env, vm, name);
 
     acquire_packages_read_lock(env, vm);
 #define FIND_PKG    do { \
-    if (YogTable_lookup(env, vm->pkgs, name, &pkg)) { \
+    if (YogTable_lookup(env, vm->pkgs, ID2VAL(id), &pkg)) { \
         return get_package(env, vm, pkg); \
     } \
 } while (0)
@@ -718,23 +737,83 @@ YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
     acquire_packages_write_lock(env, vm);
     FIND_PKG;
 #undef FIND_PKG
-    pkg = ImportingPackage_new(env);
-    YogTable_add_direct(env, vm->pkgs, ID2VAL(name), pkg);
+    tmp_pkg = ImportingPackage_new(env);
+    YogTable_add_direct(env, vm->pkgs, ID2VAL(id), tmp_pkg);
     release_packages_lock(env, vm);
 
-    /* TODO */
+    size_t len = strlen(name);
+    char s[len + 3 + 1];    /* name + ".yg" + '\0' */
+    strcpy(s, name);
+    package2path(s);
+
+    pkg = YogEval_eval_file(env, s, name);
+    if (!IS_PTR(pkg)) {
+        pkg = YogPackage_new(env);
+    }
+    PTR_AS(ImportingPackage, tmp_pkg)->pkg = pkg;
 
     acquire_packages_write_lock(env, vm);
-    YogVal key = ID2VAL(name);
+    YogVal key = ID2VAL(id);
     if (!YogTable_delete(env, vm->pkgs, &key, NULL)) {
         YOG_BUG(env, "Can't delete importing package");
     }
-    YogVal imported_pkg = PTR_AS(ImportingPackage, pkg)->pkg;
-    YogTable_add_direct(env, vm->pkgs, ID2VAL(name), imported_pkg);
-    pthread_cond_broadcast(&PTR_AS(ImportingPackage, pkg)->cond);
+    YogVal imported_pkg = PTR_AS(ImportingPackage, tmp_pkg)->pkg;
+    YogTable_add_direct(env, vm->pkgs, ID2VAL(id), imported_pkg);
+    YogVM_register_package(env, vm, name, imported_pkg);
+    pthread_cond_broadcast(&PTR_AS(ImportingPackage, tmp_pkg)->cond);
     release_packages_lock(env, vm);
 
     RETURN(env, imported_pkg);
+}
+
+YogVal
+YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
+{
+    SAVE_LOCALS(env);
+
+    YogVal top = YUNDEF;
+    YogVal parent = YUNDEF;
+    YogVal pkg = YUNDEF;
+    PUSH_LOCALS3(env, top, parent, pkg);
+
+    const char* s = YogVM_id2name(env, env->vm, name);
+    size_t len = strlen(s);
+    char t[len + 1];
+    strcpy(t, s);
+    const char* begin = t;
+    const char* pc = begin;
+    while (1) {
+        const char* end = strchr(pc, '.');
+        if (end == NULL) {
+            end = begin + len;
+        }
+        unsigned int size = end - begin;
+        char s[size + 1];
+        strncpy(s, begin, size);
+        s[size] = '\0';
+
+        pkg = import_package(env, vm, s);
+        if (IS_PTR(parent)) {
+            unsigned int size = end - pc;
+            char attr[size + 1];
+            strncpy(attr, pc, size);
+            attr[size] = '\0';
+            ID id = YogVM_intern(env, vm, attr);
+            YogObj_set_attr_id(env, parent, id, pkg);
+        }
+        if (!IS_PTR(top)) {
+            top = pkg;
+        }
+
+        if (end == begin + len) {
+            break;
+        }
+
+        parent = pkg;
+        pc = end + 1;
+    }
+
+    RETURN(env, top);
 }
 
 /**

@@ -111,7 +111,8 @@ YogCode_dump(YogEnv* env, YogVal code)
         case OP(LOAD_NAME):
             {
                 ID id = OPERAND(ID, 0);
-                printf(" %d", id);
+                const char* name = YogVM_id2name(env, env->vm, id);
+                printf(" %d (:%s)", id, name);
             }
             break;
         case OP(PUSH_CONST):

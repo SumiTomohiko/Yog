@@ -287,6 +287,14 @@ inst store_global
     YogTable_insert(ENV, globals, ID2VAL(name), val);
 }
 
+inst load_attr
+(ID name)
+(val)
+(retval)
+{
+    retval = YogVal_get_attr(ENV, val, name);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */
