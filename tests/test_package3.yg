@@ -1,0 +1,6 @@
+
+def foo()
+  puts 42
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
