@@ -699,7 +699,7 @@ get_package(YogEnv* env, YogVM* vm, YogVal pkg)
 }
 
 YogVal
-YogVM_get_package(YogEnv* env, YogVM* vm, ID name)
+YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
 {
     SAVE_LOCALS(env);
 
@@ -734,7 +734,7 @@ YogVM_get_package(YogEnv* env, YogVM* vm, ID name)
     pthread_cond_broadcast(&PTR_AS(ImportingPackage, pkg)->cond);
     release_packages_lock(env, vm);
 
-    RETURN(env, pkg);
+    RETURN(env, imported_pkg);
 }
 
 /**

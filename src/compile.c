@@ -2368,10 +2368,11 @@ join_package_names(YogEnv* env, YogVal pkg_name)
     }
     len += size - 1;
     char pkg[len + 1];
-    char* pc = pkg;
+    char* pc = pkg - 1;
     for (i = 0; i < size; i++) {
         YogVal name = YogArray_at(env, pkg_name, i);
         const char* s = YogVM_id2name(env, env->vm, VAL2ID(name));
+        pc++;
         strcpy(pc, s);
         size_t l = strlen(s);
         pc += l;
@@ -2387,12 +2388,12 @@ compile_import(YogEnv* env, YogVal pkg_name, YogVal data, unsigned int lineno)
 {
     SAVE_ARGS2(env, pkg_name, data);
 
+    ID import_package = YogVM_intern(env, env->vm, "import_package");
+    CompileData_add_load_global(env, data, lineno, import_package);
+
     ID pkg = join_package_names(env, pkg_name);
     unsigned int c = register_const(env, data, ID2VAL(pkg));
     CompileData_add_push_const(env, data, lineno, c);
-
-    ID import_package = YogVM_intern(env, env->vm, "import_package");
-    CompileData_add_load_global(env, data, lineno, import_package);
 
     CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
 

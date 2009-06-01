@@ -221,7 +221,7 @@ Array_push(YogEnv* env, YogVal array, YogVal elem)
 {
     SAVE_ARGS2(env, array, elem);
 
-    if (IS_PTR(elem)) {
+    if (IS_PTR(elem) || IS_SYMBOL(elem)) {
         if (!IS_PTR(array)) {
             array = YogArray_new(env);
         }
@@ -576,8 +576,11 @@ id_token2array(YogEnv* env, YogVal token)
 static YogVal
 Array_push_token_id(YogEnv* env, YogVal array, YogVal token)
 {
+    SAVE_ARGS2(env, array, token);
     ID id = PTR_AS(YogToken, token)->u.id;
-    return Array_push(env, array, ID2VAL(id));
+    YogVal retval = Array_push(env, array, ID2VAL(id));
+
+    RETURN(env, retval);
 }
 
 #define TOKEN_LINENO(token)     PTR_AS(YogToken, (token))->lineno
