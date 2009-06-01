@@ -674,6 +674,8 @@ ImportingPackage_unlock(YogEnv* env, YogVal pkg)
 static void
 wait_package(YogEnv* env, YogVal pkg)
 {
+    SAVE_ARG(env, pkg);
+
     pthread_cond_t* cond = &PTR_AS(ImportingPackage, pkg)->cond;
     pthread_mutex_t* lock = &PTR_AS(ImportingPackage, pkg)->lock;
     while (!IS_PTR(PTR_AS(ImportingPackage, pkg)->pkg)) {
@@ -681,6 +683,8 @@ wait_package(YogEnv* env, YogVal pkg)
         pthread_cond_wait(cond, lock);
         BIND_TO_GC(env);
     }
+
+    RETURN_VOID(env);
 }
 
 static YogVal
@@ -721,14 +725,15 @@ import_package(YogEnv* env, YogVM* vm, const char* name)
 
     YogVal pkg = YUNDEF;
     YogVal tmp_pkg = YUNDEF;
-    PUSH_LOCALS2(env, pkg, tmp_pkg);
+    YogVal imported_pkg = YUNDEF;
+    PUSH_LOCALS3(env, pkg, tmp_pkg, imported_pkg);
 
     ID id = YogVM_intern(env, vm, name);
 
     acquire_packages_read_lock(env, vm);
 #define FIND_PKG    do { \
     if (YogTable_lookup(env, vm->pkgs, ID2VAL(id), &pkg)) { \
-        return get_package(env, vm, pkg); \
+        RETURN(env, get_package(env, vm, pkg)); \
     } \
 } while (0)
     FIND_PKG;
@@ -757,7 +762,7 @@ import_package(YogEnv* env, YogVM* vm, const char* name)
     if (!YogTable_delete(env, vm->pkgs, &key, NULL)) {
         YOG_BUG(env, "Can't delete importing package");
     }
-    YogVal imported_pkg = PTR_AS(ImportingPackage, tmp_pkg)->pkg;
+    imported_pkg = PTR_AS(ImportingPackage, tmp_pkg)->pkg;
     YogTable_add_direct(env, vm->pkgs, ID2VAL(id), imported_pkg);
     YogVM_register_package(env, vm, name, imported_pkg);
     pthread_cond_broadcast(&PTR_AS(ImportingPackage, tmp_pkg)->cond);
