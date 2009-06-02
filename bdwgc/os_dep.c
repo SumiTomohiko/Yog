@@ -129,6 +129,8 @@
 # include "mm/PCR_MM.h"
 #endif
 
+#include <string.h>
+
 #if !defined(NO_EXECUTE_PERMISSION)
 # define OPT_PROT_EXEC PROT_EXEC
 #else
@@ -1057,8 +1059,20 @@ ptr_t GC_get_main_stack_base(void)
 #	endif
       }
 #   endif
+#if 0
     f = open("/proc/self/stat", O_RDONLY);
     if (f < 0 || STAT_READ(f, stat_buf, STAT_BUF_SIZE) < 2 * STAT_SKIP) {
+	ABORT("Couldn't read /proc/self/stat");
+    }
+#endif
+    FILE* fp = fopen("/proc/self/stat", "r");
+    if (fp == NULL) {
+	ABORT("Couldn't open /proc/self/stat");
+    }
+    fgets(stat_buf, STAT_BUF_SIZE, fp);
+    fclose(fp);
+    size_t len = strlen(stat_buf);
+    if (len < 2 * STAT_SKIP) {
 	ABORT("Couldn't read /proc/self/stat");
     }
     c = stat_buf[buf_offset++];
@@ -1074,7 +1088,9 @@ ptr_t GC_get_main_stack_base(void)
       result += c - '0';
       c = stat_buf[buf_offset++];
     }
+#if 0
     close(f);
+#endif
     if (result < 0x10000000) ABORT("Absurd stack bottom value");
     return (ptr_t)result;
   }
