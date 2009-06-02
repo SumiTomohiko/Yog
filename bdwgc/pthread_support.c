@@ -67,6 +67,8 @@
 # include <sys/stat.h>
 # include <fcntl.h>
 # include <signal.h>
+# include <string.h>
+# include <stdio.h>
 
 # include "gc_inline.h"
 
@@ -568,8 +570,22 @@ int GC_get_nprocs(void)
 	/* uniprocessors.					*/
     size_t i, len = 0;
 
+#if 0
     f = open("/proc/stat", O_RDONLY);
     if (f < 0 || (len = STAT_READ(f, stat_buf, STAT_BUF_SIZE)) < 100) {
+	WARN("Couldn't read /proc/stat\n", 0);
+	return -1;
+    }
+#endif
+    FILE* fp = fopen("/proc/stat", "r");
+    if (fp == NULL) {
+	WARN("Couldn't open /proc/stat\n", 0);
+	return -1;
+    }
+    fgets(stat_buf, STAT_BUF_SIZE, fp);
+    fclose(fp);
+    len = strlen(stat_buf);
+    if (len < 100) {
 	WARN("Couldn't read /proc/stat\n", 0);
 	return -1;
     }
@@ -580,7 +596,9 @@ int GC_get_nprocs(void)
 	    if (cpu_no >= result) result = cpu_no + 1;
 	}
     }
+#if 0
     close(f);
+#endif
     return result;
 }
 #endif /* GC_LINUX_THREADS */

@@ -9,6 +9,15 @@ from time import time
 
 class TestCase(object):
 
+    def remove_gc_warings(self, out):
+        s = out.split("\n")
+        t = []
+        for line in out.split("\n"):
+            if line.startswith("GC Warning:"):
+                continue
+            t.append(line)
+        return "\n".join(t)
+
     def _test(self, src, stdout="", stderr="", status=0, options=[], timeout=120, remove_tmpfile=True):
         try:
             env_gc = environ["GC"]
@@ -49,7 +58,7 @@ class TestCase(object):
                     assert False, "time is out."
 
             if stderr is not None:
-                err = proc.stderr.read()
+                err = self.remove_gc_warings(proc.stderr.read())
                 if callable(stderr):
                     stderr(err)
                 else:
