@@ -1,3 +1,4 @@
+#include <dlfcn.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -751,7 +752,7 @@ get_package(YogEnv* env, YogVM* vm, YogVal pkg)
 }
 
 static void
-package2path(char* name)
+package_name2path_head(char* name)
 {
     char* pc = name;
     while (*pc != '\0') {
@@ -762,7 +763,82 @@ package2path(char* name)
         }
         pc++;
     }
-    strcpy(pc, ".yg");
+}
+
+static YogVal
+import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
+{
+    SAVE_LOCALS(env);
+
+    YogVal pkg = YUNDEF;
+    PUSH_LOCAL(env, pkg);
+
+    char path[strlen(filename) + 2];     /* 2 is for "./" */
+    if (strchr(filename, '/') != NULL) {
+        strcpy(path, filename);
+    }
+    else {
+        strcpy(path, "./");
+        strcat(path, filename);
+    }
+
+#define CLEAR_ERROR     dlerror()
+    CLEAR_ERROR;
+    void* handle = dlopen(path, RTLD_LAZY);
+    if (handle == NULL) {
+        RETURN(env, YUNDEF);
+    }
+
+#define INIT_NAME_HEAD  "YogInit_"
+    char init_name[strlen(INIT_NAME_HEAD) + strlen(pkg_name) + 1];
+    strcpy(init_name, INIT_NAME_HEAD);
+#undef INIT_NAME_HEAD
+    const char* pc = strrchr(pkg_name, '.');
+    if (pc != NULL) {
+        pc++;
+    }
+    else {
+        pc = pkg_name;
+    }
+    strcat(init_name, pc);
+
+    CLEAR_ERROR;
+    void (*init)(YogEnv*, YogVal) = dlsym(handle, init_name);
+    if (init == NULL) {
+        RETURN(env, YUNDEF);
+    }
+#undef CLEAR_ERROR
+
+    pkg = YogPackage_new(env);
+    (*init)(env, pkg);
+
+    RETURN(env, pkg);
+}
+
+static YogVal
+import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
+{
+    YogVal pkg = YUNDEF;
+
+    size_t len = strlen(path_head);
+#define HEAD2PATH(var, ext) \
+    char var[len + strlen(ext) + 1]; \
+    strcpy(var, path_head); \
+    strcat(var, ext)
+    HEAD2PATH(yg, ".yg");
+    pkg = YogEval_eval_file(env, yg, pkg_name);
+    if (IS_PTR(pkg)) {
+        return pkg;
+    }
+
+    HEAD2PATH(so, ".so");
+#undef HEAD2PATH
+    pkg = import_so(env, vm, so, pkg_name);
+    if (IS_PTR(pkg)) {
+        return pkg;
+    }
+
+    return YUNDEF;
 }
 
 static YogVal
@@ -794,11 +870,11 @@ import_package(YogEnv* env, YogVM* vm, const char* name)
     release_packages_lock(env, vm);
 
     size_t len = strlen(name);
-    char s[len + 3 + 1];    /* name + ".yg" + '\0' */
-    strcpy(s, name);
-    package2path(s);
+    char head[len + 1];
+    strcpy(head, name);
+    package_name2path_head(head);
 
-    pkg = YogEval_eval_file(env, s, name);
+    pkg = import(env, vm, head, name);
     if (!IS_PTR(pkg)) {
         pkg = YogPackage_new(env);
     }
