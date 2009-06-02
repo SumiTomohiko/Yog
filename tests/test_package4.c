@@ -1,9 +1,10 @@
+#include <stdio.h>
 #include "yog/yog.h"
 
-YogVal
-foo(YogEnv* env)
+void
+YogInit_test_package4(YogEnv* env, YogVal pkg)
 {
-    return YNIL;
+    printf("42\n");
 }
 
 /**
