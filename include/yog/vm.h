@@ -37,6 +37,7 @@ struct YogVM {
     ID next_id;
     YogVal id2name;
     YogVal name2id;
+    pthread_rwlock_t sym_lock;
 
     YogVal cObject;
     YogVal cKlass;

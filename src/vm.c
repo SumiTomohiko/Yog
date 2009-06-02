@@ -101,9 +101,45 @@ YogVM_register_package(YogEnv* env, YogVM* vm, const char* name, YogVal pkg)
     RETURN_VOID(env);
 }
 
+static void
+acquire_read_lock(YogEnv* env, pthread_rwlock_t* lock)
+{
+    FREE_FROM_GC(env);
+    pthread_rwlock_rdlock(lock);
+    BIND_TO_GC(env);
+}
+
+static void
+acquire_write_lock(YogEnv* env, pthread_rwlock_t* lock)
+{
+    FREE_FROM_GC(env);
+    pthread_rwlock_wrlock(lock);
+    BIND_TO_GC(env);
+}
+
+static void
+acquire_symbols_read_lock(YogEnv* env, YogVM* vm)
+{
+    acquire_read_lock(env, &vm->sym_lock);
+}
+
+static void
+acquire_symbols_write_lock(YogEnv* env, YogVM* vm)
+{
+    acquire_write_lock(env, &vm->sym_lock);
+}
+
+static void
+release_symbols_lock(YogEnv* env, YogVM* vm)
+{
+    pthread_rwlock_unlock(&vm->sym_lock);
+}
+
 const char* 
 YogVM_id2name(YogEnv* env, YogVM* vm, ID id) 
 {
+    acquire_symbols_read_lock(env, vm);
+
     YogVal sym = ID2VAL(id);
     YogVal val = YUNDEF;
     if (!YogTable_lookup(env, env->vm->id2name, sym, &val)) {
@@ -111,6 +147,8 @@ YogVM_id2name(YogEnv* env, YogVM* vm, ID id)
     }
 
     YogCharArray* ptr = VAL2PTR(val);
+
+    release_symbols_lock(env, vm);
     return ptr->items;
 #if 0
     return VAL2STR(val);
@@ -123,9 +161,20 @@ YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
     SAVE_LOCALS(env);
 
     YogVal value = YUNDEF;
-    if (YogTable_lookup_str(env, vm->name2id, name, &value)) {
-        return VAL2ID(value);
-    }
+
+#define FIND_SYM    do { \
+    if (YogTable_lookup_str(env, vm->name2id, name, &value)) { \
+        release_symbols_lock(env, vm); \
+        return VAL2ID(value); \
+    } \
+} while (0)
+    acquire_symbols_read_lock(env, vm);
+    FIND_SYM;
+    release_symbols_lock(env, vm);
+
+    acquire_symbols_write_lock(env, vm);
+    FIND_SYM;
+#undef FIND_SYM
 
 #if 0
     const char* s = YogString_dup(env, name);
@@ -147,6 +196,7 @@ YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
 
     vm->next_id++;
 
+    release_symbols_lock(env, vm);
     RETURN(env, id);
 }
 
@@ -357,7 +407,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 static void
-initialize_packages_lock(pthread_rwlock_t* lock)
+initialize_read_write_lock(pthread_rwlock_t* lock)
 {
     pthread_rwlockattr_t attr;
     pthread_rwlockattr_init(&attr);
@@ -382,6 +432,7 @@ YogVM_init(YogVM* vm)
     vm->next_id = 0;
     vm->id2name = YUNDEF;
     vm->name2id = YUNDEF;
+    initialize_read_write_lock(&vm->sym_lock);
 
     vm->cObject = YUNDEF;
     vm->cKlass = YUNDEF;
@@ -406,7 +457,7 @@ YogVM_init(YogVM* vm)
     vm->eIndexError = YUNDEF;
 
     vm->pkgs = PTR2VAL(NULL);
-    initialize_packages_lock(&vm->pkgs_lock);
+    initialize_read_write_lock(&vm->pkgs_lock);
 
     vm->encodings = PTR2VAL(NULL);
 
@@ -595,17 +646,13 @@ YogVM_wait_finish(YogEnv* env, YogVM* vm)
 static void
 acquire_packages_read_lock(YogEnv* env, YogVM* vm)
 {
-    FREE_FROM_GC(env);
-    pthread_rwlock_rdlock(&vm->pkgs_lock);
-    BIND_TO_GC(env);
+    acquire_read_lock(env, &vm->pkgs_lock);
 }
 
 static void
 acquire_packages_write_lock(YogEnv* env, YogVM* vm)
 {
-    FREE_FROM_GC(env);
-    pthread_rwlock_wrlock(&vm->pkgs_lock);
-    BIND_TO_GC(env);
+    acquire_write_lock(env, &vm->pkgs_lock);
 }
 
 static void
