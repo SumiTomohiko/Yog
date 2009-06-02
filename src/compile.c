@@ -569,7 +569,10 @@ scan_var_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 {
     SAVE_ARGS2(env, node, data);
 
-    YogVal names = NODE(node)->u.import.names;
+    YogVal names = YUNDEF;
+    PUSH_LOCAL(env, names);
+
+    names = NODE(node)->u.import.names;
     unsigned int size = YogArray_size(env, names);
     unsigned int i;
     for (i = 0; i < size; i++) {
@@ -2419,8 +2422,11 @@ compile_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
+    YogVal names = YUNDEF;
+    PUSH_LOCAL(env, names);
+
     unsigned int lineno = NODE(node)->lineno;
-    YogVal names = NODE(node)->u.import.names;
+    names = NODE(node)->u.import.names;
     unsigned int size = YogArray_size(env, names);
     unsigned int i;
     for (i = 0; i < size; i++) {
