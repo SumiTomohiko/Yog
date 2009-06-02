@@ -1,4 +1,13 @@
 
+LIBS = test_package4.so test_package5.so
+LIBS_OPT = -shared -O2 -I../include
+
+test_package4.so: test_package4.c
+	$(CC) -o $@ $(LIBS_OPT) $<
+
+test_package5.so: test_package5.c
+	$(CC) -o $@ $(LIBS_OPT) $<
+
 TEST_CMD = py.test
 TEST_TARGETS = @TEST_TARGETS@
 
@@ -6,15 +15,15 @@ test:
 	@for target in $(TEST_TARGETS); do \
 		$(MAKE) $${target}; \
 	done
-test-copying: 
+test-copying: $(LIBS)
 	GC=copying $(TEST_CMD)
-test-mark-sweep: 
+test-mark-sweep: $(LIBS)
 	GC=mark-sweep $(TEST_CMD)
-test-mark-sweep-compact: 
+test-mark-sweep-compact: $(LIBS)
 	GC=mark-sweep-compact $(TEST_CMD)
-test-bdw:
+test-bdw: $(LIBS)
 	GC=bdw $(TEST_CMD)
-test-generational:
+test-generational: $(LIBS)
 	GC=generational $(TEST_CMD)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab
