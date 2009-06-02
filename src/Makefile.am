@@ -43,7 +43,7 @@ COMMON_SOURCES = arg.c \
 	value.c \
 	vm.c
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
-LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl
+LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -export-dynamic
 
 EXTRA_PROGRAMS = yog-bdw yog-copying yog-mark-sweep yog-mark-swee-compact \
 		 yog-mark-sweep-compact yog-generational

@@ -386,7 +386,7 @@ COMMON_SOURCES = arg.c \
 	vm.c
 
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
-LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl
+LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -export-dynamic
 bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
 yog_copying_CFLAGS = $(CFLAGS_COMMON) -DGC_COPYING
