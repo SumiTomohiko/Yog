@@ -17,4 +17,14 @@ import test_package3
 test_package3.foo()""", """42
 """)
 
+    def test_dl1(self):
+        self._test("import test_package4", "42\n")
+
+    def test_dl2(self):
+        self._test("""
+import test_package5
+
+test_package5.foo()""", """42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
