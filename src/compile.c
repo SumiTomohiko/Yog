@@ -1289,7 +1289,7 @@ alloc_local_vars_table_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg
 {
     if (VAR(val)->type == VT_LOCAL) {
         unsigned int index = VAR(val)->u.local.index;
-        YOG_ASSERT(env, index < ALLOC_LOCAL_VARS_TABLE_ARG(*arg)->count, "local var index over count");
+        YOG_ASSERT(env, index < ALLOC_LOCAL_VARS_TABLE_ARG(*arg)->count, "local var index over count", index, ALLOC_LOCAL_VARS_TABLE_ARG(*arg)->count);
         YogVal names = ALLOC_LOCAL_VARS_TABLE_ARG(*arg)->names;
         PTR_AS(ID, names)[index] = VAL2ID(key);
     }
