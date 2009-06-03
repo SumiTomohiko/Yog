@@ -183,6 +183,7 @@ main(int argc, char* argv[])
 
     do {
         YogVM_boot(&env, env.vm);
+        YogVM_configure_search_path(&env, env.vm, argv[0]);
 
         const char* filename = NULL;
         if (optind < argc) {

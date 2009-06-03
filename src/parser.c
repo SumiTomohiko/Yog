@@ -526,7 +526,7 @@ Import_new(YogEnv* env, unsigned int lineno, YogVal names)
     RETURN(env, node);
 }
 
-FILE*
+static FILE*
 open(const char* filename)
 {
     if (filename == NULL) {

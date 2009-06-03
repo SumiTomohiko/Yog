@@ -4,8 +4,12 @@
 #include <string.h>
 #include <strings.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <time.h>
+#include <unistd.h>
+#include "yog/array.h"
 #include "yog/block.h"
 #include "yog/bool.h"
 #include "yog/builtins.h"
@@ -36,6 +40,8 @@
 
 #define PAGE_SIZE       4096
 #define PTR2PAGE(p)     ((YogMarkSweepCompactPage*)((uintptr_t)p & ~(PAGE_SIZE - 1)))
+
+#define SEPARATOR       '/'
 
 #if 0
 struct GcObjectStat {
@@ -401,6 +407,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eIndexError);
 
     KEEP(pkgs);
+    KEEP(search_path);
     KEEP(encodings);
     KEEP(main_thread);
     KEEP(running_threads);
@@ -459,6 +466,7 @@ YogVM_init(YogVM* vm)
 
     vm->pkgs = PTR2VAL(NULL);
     initialize_read_write_lock(&vm->pkgs_lock);
+    vm->search_path = YUNDEF;
 
     vm->encodings = PTR2VAL(NULL);
 
@@ -602,18 +610,18 @@ YogVM_remove_thread(YogEnv* env, YogVM* vm, YogVal thread)
 
 #if !defined(GC_BDW)
 void
-YogVM_add_heap(YogEnv* env, YogVM* vm, GC_TYPE* heap)
+YogVM_add_heap(YogEnv* env, YogVM* vm, void* heap)
 {
     YogVM_aquire_global_interp_lock(env, vm);
     if (vm->last_heap != NULL) {
-        vm->last_heap->next = heap;
-        heap->prev = vm->last_heap;
+        ((GC_TYPE*)vm->last_heap)->next = heap;
+        ((GC_TYPE*)heap)->prev = vm->last_heap;
         vm->last_heap = heap;
     }
     else {
         vm->heaps = vm->last_heap = heap;
     }
-    heap->next = NULL;
+    ((GC_TYPE*)heap)->next = NULL;
     YogVM_release_global_interp_lock(env, vm);
 }
 #endif
@@ -757,9 +765,7 @@ package_name2path_head(char* name)
     char* pc = name;
     while (*pc != '\0') {
         if (*pc == '.') {
-#define SEPARATOR   '/'
             *pc = SEPARATOR;
-#undef SEPARATOR
         }
         pc++;
     }
@@ -815,30 +821,54 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     RETURN(env, pkg);
 }
 
+static void
+join_path(char* dest, const char* head, const char* tail)
+{
+    strcpy(dest, head);
+
+    size_t len = strlen(dest);
+    dest[len] = SEPARATOR;
+
+    strcpy(dest + len + 1, tail);
+}
+
 static YogVal
 import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
 {
+    SAVE_LOCALS(env);
+
     YogVal pkg = YUNDEF;
+    YogVal dir = YUNDEF;
+    YogVal body = YUNDEF;
+    PUSH_LOCALS3(env, pkg, dir, body);
 
-    size_t len = strlen(path_head);
+    unsigned int size = YogArray_size(env, vm->search_path);
+    unsigned int i;
+    for (i = 0; i < size; i++) {
+        dir = YogArray_at(env, vm->search_path, i);
+        body = PTR_AS(YogString, dir)->body;
+        size_t dir_len = strlen(PTR_AS(YogCharArray, body)->items);
+
+        size_t len = strlen(path_head);
 #define HEAD2PATH(var, ext) \
-    char var[len + strlen(ext) + 1]; \
-    strcpy(var, path_head); \
-    strcat(var, ext)
-    HEAD2PATH(yg, ".yg");
-    pkg = YogEval_eval_file(env, yg, pkg_name);
-    if (IS_PTR(pkg)) {
-        return pkg;
-    }
+        char var[dir_len + 1 + len + strlen(ext) + 1]; \
+        join_path(var, PTR_AS(YogCharArray, body)->items, path_head); \
+        strcat(var, ext)
+        HEAD2PATH(yg, ".yg");
+        pkg = YogEval_eval_file(env, yg, pkg_name);
+        if (IS_PTR(pkg)) {
+            RETURN(env, pkg);
+        }
 
-    HEAD2PATH(so, ".so");
+        HEAD2PATH(so, ".so");
 #undef HEAD2PATH
-    pkg = import_so(env, vm, so, pkg_name);
-    if (IS_PTR(pkg)) {
-        return pkg;
+        pkg = import_so(env, vm, so, pkg_name);
+        if (IS_PTR(pkg)) {
+            RETURN(env, pkg);
+        }
     }
 
-    return YUNDEF;
+    RETURN(env, YUNDEF);
 }
 
 static YogVal
@@ -942,6 +972,149 @@ YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
     }
 
     RETURN(env, top);
+}
+
+static void
+split_path(char* delim)
+{
+    if (delim == NULL) {
+        return;
+    }
+    *delim = '\0';
+}
+
+static BOOL
+is_directory(const char* filename)
+{
+    struct stat buf;
+    if (stat(filename, &buf) != 0) {
+        return FALSE;
+    }
+    if (!S_ISDIR(buf.st_mode)) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+static BOOL
+is_executable_file(const char* filename)
+{
+    struct stat buf;
+    if (stat(filename, &buf) != 0) {
+        return FALSE;
+    }
+    if (!S_ISREG(buf.st_mode)) {
+        return FALSE;
+    }
+    if ((buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) == 0) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+static BOOL
+search_program(char* dest, const char* path, const char* prog)
+{
+    char s[strlen(path) + 1];
+    strcpy(s, path);
+
+    char* pc = s;
+    while (1) {
+        char* delim = strchr(pc, ':');
+        split_path(delim);
+        join_path(dest, pc, prog);
+        if (is_executable_file(dest)) {
+            return TRUE;
+        }
+
+        if (delim != NULL) {
+            pc = delim + 1;
+        }
+        else {
+            return FALSE;
+        }
+    }
+}
+
+static void
+dirname(YogEnv* env, YogVal filename)
+{
+    YogVal body = PTR_AS(YogString, filename)->body;
+    char* s = PTR_AS(YogCharArray, body)->items;
+    char* pc = strrchr(s, SEPARATOR);
+    YOG_ASSERT(env, pc != NULL, "%s doesn't include directory name", filename);
+    *pc = '\0';
+}
+
+static void
+add_current_directory(YogEnv* env, YogVal search_path)
+{
+    SAVE_ARG(env, search_path);
+
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    s = YogString_new_str(env, ".");
+    YogArray_push(env, search_path, s);
+
+    RETURN_VOID(env);
+}
+
+void
+YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
+{
+    SAVE_LOCALS(env);
+
+    YogVal prog = YUNDEF;
+    YogVal prog_dir = YUNDEF;
+    YogVal search_path = YUNDEF;
+    YogVal body = YUNDEF;
+    YogVal s = YUNDEF;
+    PUSH_LOCALS5(env, prog, prog_dir, search_path, body, s);
+
+    if (strchr(argv0, SEPARATOR) == NULL) {
+        char* path = getenv("PATH");
+        YOG_ASSERT(env, path != NULL, "PATH is empty");
+        /* 1 of middle is for '/' */
+        char s[strlen(path) + 1 + strlen(argv0) + 1];
+        if (!search_program(s, path, argv0)) {
+            YOG_BUG(env, "Can't find %s in %s", argv0, path);
+        }
+        prog = YogString_new_str(env, s);
+    }
+    else {
+        prog = YogString_new_str(env, argv0);
+    }
+
+    search_path = YogArray_new(env);
+    add_current_directory(env, search_path);
+
+    dirname(env, prog);
+    unsigned int len = YogString_size(env, prog);
+#define LIB_DIR     "../lib"
+    /* 1 of middle is for '/' */
+    char libpath[len +  1 + strlen(LIB_DIR) + 1];
+    body = PTR_AS(YogString, prog)->body;
+    join_path(libpath, PTR_AS(YogCharArray, body)->items, LIB_DIR);
+    if (is_directory(libpath)) {
+        s = YogString_new_str(env, libpath);
+        YogArray_push(env, search_path, s);
+
+#define EXT_DIR     "../ext"
+        char extpath[len + 1 + strlen(EXT_DIR) + 1];
+        join_path(extpath, PTR_AS(YogCharArray, body)->items, EXT_DIR);
+#undef EXT_DIR
+        s = YogString_new_str(env, extpath);
+        YogArray_push(env, search_path, s);
+    }
+    else {
+        s = YogString_new_str(env, "/usr/local/lib/yog/0.9.0");
+        YogArray_push(env, search_path, s);
+    }
+#undef LIB_DIR
+    vm->search_path = search_path;
+
+    RETURN_VOID(env);
 }
 
 /**

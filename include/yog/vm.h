@@ -63,6 +63,7 @@ struct YogVM {
 
     YogVal pkgs;
     pthread_rwlock_t pkgs_lock;
+    YogVal search_path;
 
     YogVal encodings;
 
@@ -75,8 +76,8 @@ struct YogVM {
     unsigned int suspend_counter;
     pthread_cond_t threads_suspend_cond;
     pthread_cond_t gc_finish_cond;
-    struct GC_TYPE* heaps;
-    struct GC_TYPE* last_heap;
+    void* heaps;
+    void* last_heap;
     pthread_cond_t vm_finish_cond;
     unsigned int gc_id;
 };
@@ -90,10 +91,11 @@ typedef struct YogVM YogVM;
  */
 
 /* src/vm.c */
-void YogVM_add_heap(YogEnv*, YogVM*, GC_TYPE*);
+void YogVM_add_heap(YogEnv*, YogVM*, void*);
 void YogVM_add_thread(YogEnv*, YogVM*, YogVal);
 void YogVM_aquire_global_interp_lock(YogEnv*, YogVM*);
 void YogVM_boot(YogEnv*, YogVM*);
+void YogVM_configure_search_path(YogEnv*, YogVM*, const char*);
 void YogVM_delete(YogEnv*, YogVM*);
 void YogVM_gc(YogEnv*, YogVM*);
 const char* YogVM_id2name(YogEnv*, YogVM*, ID);

@@ -1,0 +1,5 @@
+
+all: concurrent.so
+
+concurrent.so: concurrent.c
+	$(CC) -I../include -shared -O2 -Wall -o $@ $<

@@ -57,7 +57,8 @@ if test "${enable_google_perftools}" = "yes"; then
     LDFLAGS="-lprofiler ${LDFLAGS}"
 fi
 
-AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
+                 ext/Makefile])
 if test "${with_cunit}" = "yes"; then
     AC_CONFIG_FILES([tests/copying/Makefile 
                      tests/mark-sweep-compact/Makefile
@@ -78,7 +79,7 @@ case "${host}" in
     BIN_PROGRAMS="yog-bdw"
     ;;
 esac
-DIRS="${DIRS} onig sigsegv src"
+DIRS="${DIRS} onig sigsegv src ext"
 TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
 BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact yog-generational"
 
