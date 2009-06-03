@@ -6,8 +6,10 @@ class TestThread(TestCase):
 
     def test_thread1(self):
         self._test("""
+import concurrent
+
 def main()
-  thread = Thread.new() do
+  thread = concurrent.Thread.new() do
     puts 42
   end
   thread.run()
@@ -18,8 +20,10 @@ main()""", """42
 
     def test_join1(self):
         self._test("""
+import concurrent
+
 def main()
-  thread = Thread.new() do
+  thread = concurrent.Thread.new() do
     puts 42
   end
   thread.run()
