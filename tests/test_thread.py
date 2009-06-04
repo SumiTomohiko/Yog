@@ -38,11 +38,12 @@ main()""", """42
 import concurrent
 
 def main()
+  thread_count = 32
   int = concurrent.AtomicInt.new()
-  barrier = concurrent.Barrier.new()
+  barrier = concurrent.Barrier.new(thread_count)
 
   i = 0
-  while i < 32
+  while i < thread_count
     thread = concurrent.Thread.new() do
       barrier.wait!()
 
