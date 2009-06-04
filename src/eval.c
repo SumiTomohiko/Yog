@@ -63,6 +63,9 @@ static void
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, unsigned int argc, YogVal args, unsigned int args_offset) 
 {
     SAVE_ARGS5(env, arg_info, blockarg, vararg, varkwarg, args);
+
+    YogVal array = YUNDEF;
+    PUSH_LOCAL(env, array);
 #if 0
     PUSH_LOCALSX(env, posargc, posargs);
     PUSH_LOCALSX(env, 2 * kwargc, kwargs);
@@ -86,7 +89,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         unsigned int argc = ARG_INFO(arg_info)->argc;
         unsigned int blockargc = ARG_INFO(arg_info)->blockargc;
         unsigned int index = argc + blockargc;
-        YogVal array = PTR_AS(YogValArray, args)->items[args_offset + index];
+        array = PTR_AS(YogValArray, args)->items[args_offset + index];
         for (i = ARG_INFO(arg_info)->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }

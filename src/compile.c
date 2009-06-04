@@ -578,7 +578,7 @@ scan_var_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     for (i = 0; i < size; i++) {
         YogVal pkg_name = YogArray_at(env, names, i);
         YogVal id = YogArray_at(env, pkg_name, 0);
-        scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, id, VAR_ASSIGNED);
+        scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, VAL2ID(id), VAR_ASSIGNED);
     }
 
     RETURN_VOID(env);
@@ -1627,6 +1627,7 @@ var_table_new(YogEnv* env)
 struct Flags2TypeArg {
     YogVal vars;
     YogVal outer;
+    unsigned int next_local_index;
 };
 
 typedef struct Flags2TypeArg Flags2TypeArg;
@@ -1658,7 +1659,15 @@ vars_flags2type_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
     }
     else {
         VAR(var)->type = VT_LOCAL;
-        VAR(var)->u.local.index = SCAN_VAR_ENTRY(val)->index;
+        unsigned int index;
+        if (name != YogVM_intern(env, env->vm, "self")) {
+            index = FLAGS2TYPE_ARG(*arg)->next_local_index;
+            FLAGS2TYPE_ARG(*arg)->next_local_index++;
+        }
+        else {
+            index = 0;
+        }
+        VAR(var)->u.local.index = index;
     }
 
     YogTable_add_direct(env, FLAGS2TYPE_ARG(*arg)->vars, key, var);
@@ -1682,6 +1691,7 @@ Flags2TypeArg_new(YogEnv* env)
     YogVal arg = ALLOC_OBJ(env, Flags2TypeArg_keep_children, NULL, Flags2TypeArg);
     PTR_AS(Flags2TypeArg, arg)->vars = YUNDEF;
     PTR_AS(Flags2TypeArg, arg)->outer = YUNDEF;
+    PTR_AS(Flags2TypeArg, arg)->next_local_index = 0;
 
     return PTR2VAL(arg);
 }
@@ -1698,6 +1708,10 @@ vars_flags2type(YogEnv* env, YogVal var_tbl, YogVal outer)
     vars = YogTable_new_symbol_table(env);
 
     arg = Flags2TypeArg_new(env);
+    ID self = YogVM_intern(env, env->vm, "self");
+    if (YogTable_lookup(env, var_tbl, ID2VAL(self), NULL)) {
+        PTR_AS(Flags2TypeArg, arg)->next_local_index = 1;
+    }
     MODIFY(env, FLAGS2TYPE_ARG(arg)->vars, vars);
     MODIFY(env, FLAGS2TYPE_ARG(arg)->outer, outer);
 
@@ -1927,12 +1941,17 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 
     stmts = NODE(node)->u.finally.body;
     visitor->visit_stmts(env, visitor, stmts, data);
-    unsigned int lineno = get_last_lineno(env, stmts);
+    unsigned int lineno;
+    if (IS_PTR(stmts)) {
+        lineno = get_last_lineno(env, stmts);
+    }
+    else {
+        lineno = NODE(node)->lineno;
+    }
     CompileData_add_jump(env, data, lineno, label_finally_end);
 
     add_inst(env, data, label_finally_error_start);
     visitor->visit_stmts(env, visitor, stmts, data);
-    lineno = get_last_lineno(env, stmts);
     RERAISE();
 
     add_inst(env, data, label_finally_end);
@@ -2024,7 +2043,12 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
         stmts = NODE(node)->u.except_body.stmts;
         visitor->visit_stmts(env, visitor, stmts, data);
-        lineno = get_last_lineno(env, stmts);
+        if (IS_PTR(stmts)) {
+            lineno = get_last_lineno(env, stmts);
+        }
+        else {
+            lineno = NODE(node)->lineno;
+        }
         CompileData_add_jump(env, data, lineno, label_else_end);
 
         add_inst(env, data, label_body_end);
@@ -2072,7 +2096,13 @@ compile_visit_while(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     YogVal stmts = NODE(node)->u.while_.stmts;
     PUSH_LOCAL(env, stmts);
     visitor->visit_stmts(env, visitor, stmts, data);
-    unsigned int lineno = get_last_lineno(env, stmts);
+    unsigned int lineno;
+    if (IS_PTR(stmts)) {
+        lineno = get_last_lineno(env, stmts);
+    }
+    else {
+        lineno = NODE(node)->lineno;
+    }
     CompileData_add_jump(env, data, lineno, while_start);
     add_inst(env, data, while_end);
 
@@ -2270,7 +2300,7 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static YogVal 
-compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, YogVal data) 
+compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, unsigned int first_lineno, YogVal data) 
 {
     SAVE_ARGS2(env, stmts, data);
 
@@ -2283,7 +2313,13 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, Yog
     var_tbl = make_var_table(env, stmts, YUNDEF);
     vars = vars_flags2type(env, var_tbl, COMPILE_DATA(data)->outer);
 
-    unsigned int lineno = get_last_lineno(env, stmts);
+    unsigned int lineno;
+    if (IS_PTR(stmts)) {
+        lineno = get_last_lineno(env, stmts);
+    }
+    else {
+        lineno = first_lineno;
+    }
 
     ret = Inst_new(env, lineno);
     INST(ret)->next = YNIL;
@@ -2323,8 +2359,8 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     }
 
     stmts = NODE(node)->u.klass.stmts;
-    code = compile_klass(env, visitor, name, stmts, data);
     unsigned int lineno = NODE(node)->lineno;
+    code = compile_klass(env, visitor, name, stmts, lineno, data);
     add_push_const(env, data, code, lineno);
 
     CompileData_add_make_klass(env, data, lineno);

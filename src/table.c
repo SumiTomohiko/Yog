@@ -143,7 +143,7 @@ rehash(YogEnv* env, YogVal table)
     int i = 0;
     for(i = 0; i < old_num_bins; i++) {
         YogVal ptr = TABLE_ENTRY_TOP(table, i);
-        while (VAL2PTR(ptr) != NULL) {
+        while (IS_PTR(ptr)) {
             YogVal next = PTR_AS(YogTableEntry, ptr)->next;
             unsigned int hash_val = PTR_AS(YogTableEntry, ptr)->hash % new_num_bins;
             MODIFY(env, PTR_AS(YogTableEntry, ptr)->next, PTR_AS(YogTableEntryArray, new_bins)->items[hash_val]);

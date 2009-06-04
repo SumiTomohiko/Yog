@@ -49,12 +49,12 @@ def main()
       j = 0
       while j < 2048
         int.inc!()
-        j += 1
+        j = j + 1
       end
     end
     thread.start()
 
-    i += 1
+    i = i + 1
   end
 
   puts int.get()
