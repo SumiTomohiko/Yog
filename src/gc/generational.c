@@ -27,7 +27,7 @@ oldify(YogEnv* env, YogGenerational* gen, void* ptr)
 static void 
 oldify_all_callback(YogEnv* env, YogCopyingHeader* header) 
 {
-    YogGenerational* gen = PTR_AS(YogThread, env->thread)->generational;
+    YogGenerational* gen = PTR_AS(YogThread, env->thread)->heap;
     oldify(env, gen, header + 1);
 }
 

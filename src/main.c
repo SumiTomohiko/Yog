@@ -136,7 +136,7 @@ main(int argc, char* argv[])
     YogThread_config_bdw(&env, dummy_thread);
 #elif defined(GC_COPYING)
     YogThread_config_copying(&env, dummy_thread, init_heap_size);
-    YogCopying_allocate_heap(&env, PTR_AS(YogThread, dummy_thread)->copying);
+    YogCopying_allocate_heap(&env, PTR_AS(YogThread, dummy_thread)->heap);
 #elif defined(GC_MARK_SWEEP)
     if (gc_stress) {
         threshold = 0;
@@ -156,7 +156,7 @@ main(int argc, char* argv[])
         ERROR("failed installing SIGSEGV handler");
     }
     YogThread_config_generational(&env, dummy_thread, init_heap_size, CHUNK_SIZE, threshold, TENURE);
-    YogGenerational_allocate_heap(&env, PTR_AS(YogThread, dummy_thread)->generational);
+    YogGenerational_allocate_heap(&env, PTR_AS(YogThread, dummy_thread)->heap);
 #   undef TENURE
 #   undef CHUNK_SIZE
 #endif

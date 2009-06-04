@@ -44,7 +44,7 @@ def main()
   i = 0
   while i < 32
     thread = concurrent.Thread.new() do
-      barrier.wait()
+      barrier.wait!()
 
       j = 0
       while j < 2048

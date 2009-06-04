@@ -22,19 +22,6 @@
 
 #define MAIN_THREAD(vm)     (vm)->main_thread
 
-#define GC_OF(thread, type)     PTR_AS(YogThread, (thread))->type
-#if defined(GC_COPYING)
-#   define GET_GC(thread)       GC_OF(thread, copying)
-#elif defined(GC_MARK_SWEEP)
-#   define GET_GC(thread)       GC_OF(thread, mark_sweep)
-#elif defined(GC_MARK_SWEEP_COMPACT)
-#   define GET_GC(thread)       GC_OF(thread, mark_sweep_compact)
-#elif defined(GC_GENERATIONAL)
-#   define GET_GC(thread)       GC_OF(thread, generational)
-#elif defined(GC_BDW)
-#   define GET_GC(thread)       GC_OF(thread, bdw)
-#endif
-
 typedef void (*GC)(YogEnv*);
 
 static void 
@@ -96,7 +83,7 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
 #elif defined(GC_BDW)
 #   define ALLOC    YogBDW_alloc
 #endif
-    void* ptr = ALLOC(env, GET_GC(thread), keeper, finalizer, size);
+    void* ptr = ALLOC(env, THREAD_HEAP(thread), keeper, finalizer, size);
 #undef ALLOC
 
     if (ptr != NULL) {
@@ -291,7 +278,7 @@ keep_vm(YogEnv* env)
 #elif defined(GC_MARK_SWEEP_COMPACT)
 #   define KEEP     YogMarkSweepCompact_keep_vm
 #endif
-    KEEP(env, GET_GC(main_thread));
+    KEEP(env, THREAD_HEAP(main_thread));
 #undef KEEP
 }
 
@@ -352,7 +339,6 @@ YogGC_perform(YogEnv* env)
 #endif
 
 #if defined(GC_GENERATIONAL)
-#   define GET_GEN(thread)  PTR_AS(YogThread, (thread))->THREAD_GC
 static void
 prepare(YogEnv* env)
 {
@@ -363,7 +349,7 @@ static void
 minor_keep_vm(YogEnv* env)
 {
     YogVal main_thread = MAIN_THREAD(env->vm);
-    YogGenerational_minor_keep_vm(env, GET_GEN(main_thread));
+    YogGenerational_minor_keep_vm(env, THREAD_HEAP(main_thread));
 }
 
 static void
@@ -406,7 +392,7 @@ static void
 major_keep_vm(YogEnv* env)
 {
     YogVal main_thread = MAIN_THREAD(env->vm);
-    YogGenerational_major_keep_vm(env, GET_GEN(main_thread));
+    YogGenerational_major_keep_vm(env, THREAD_HEAP(main_thread));
 }
 
 static void
@@ -437,7 +423,6 @@ major_gc(YogEnv* env)
     major_post_gc(env);
     delete_heaps(env);
 }
-#   undef GET_GEN
 
 void 
 YogGC_perform_minor(YogEnv* env) 

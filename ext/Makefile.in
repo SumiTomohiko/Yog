@@ -1,5 +1,18 @@
 
-all: concurrent.so
+SO_EXT = .so
 
-concurrent.so: concurrent.c
-	$(CC) -I../include -shared -O2 -Wall -o $@ $<
+all: concurrent$(SO_EXT)
+
+concurrent$(SO_EXT): concurrent.c
+	$(CC) -I../include -shared -O2 -Wall -lpthread -o $@ $<
+
+clean: 
+	rm -f *$(SO_EXT)
+
+distclean: 
+	rm -f *$(SO_EXT)
+	rm -f Makefile
+
+maintainer-clean: 
+	rm -f *$(SO_EXT)
+	rm -f Makefile

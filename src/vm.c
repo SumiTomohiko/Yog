@@ -373,8 +373,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     YogVal thread = vm->running_threads;
     while (IS_PTR(thread)) {
-        void* thread_heap = PTR_AS(YogThread, thread)->THREAD_GC;
-        keep_thread_locals(env, thread, keeper, thread_heap);
+        keep_thread_locals(env, thread, keeper, THREAD_HEAP(thread));
         thread = PTR_AS(YogThread, thread)->next;
     }
 

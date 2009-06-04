@@ -149,17 +149,7 @@ struct YogThread {
     YogVal prev;
     YogVal next;
 
-#if defined(GC_COPYING)
-    YogCopying* copying;
-#elif defined(GC_MARK_SWEEP)
-    YogMarkSweep* mark_sweep;
-#elif defined(GC_MARK_SWEEP_COMPACT)
-    YogMarkSweepCompact* mark_sweep_compact;
-#elif defined(GC_GENERATIONAL)
-    YogGenerational* generational;
-#elif defined(GC_BDW)
-    YogBDW* bdw;
-#endif
+    void* heap;
 
     YogVal cur_frame;
     struct YogJmpBuf* jmp_buf_list;
@@ -181,16 +171,17 @@ typedef struct YogThread YogThread;
 #define ADD_REF(env, ptr)
 #define MODIFY(env, fp, val)     (fp) = (val)
 
+#define __THREAD_HEAP__(type, thread)   ((type*)PTR_AS(YogThread, (thread))->heap)
 #if defined(GC_COPYING)
-#   define THREAD_GC    copying
+#   define THREAD_HEAP(thread)  __THREAD_HEAP__(YogCopying, thread)
 #elif defined(GC_MARK_SWEEP)
-#   define THREAD_GC    mark_sweep
+#   define THREAD_HEAP(thread)  __THREAD_HEAP__(YogMarkSweep, thread)
 #elif defined(GC_MARK_SWEEP_COMPACT)
-#   define THREAD_GC    mark_sweep_compact
+#   define THREAD_HEAP(thread)  __THREAD_HEAP__(YogMarkSweepCompact, thread)
 #elif defined(GC_GENERATIONAL)
-#   define THREAD_GC    generational
+#   define THREAD_HEAP(thread)  __THREAD_HEAP__(YogGenerational, thread)
 #elif defined(GC_BDW)
-#   define THREAD_GC    bdw
+#   define THREAD_HEAP(thread)  __THREAD_HEAP__(YogBDW, thread)
 #endif
 
 /* PROTOTYPE_START */
