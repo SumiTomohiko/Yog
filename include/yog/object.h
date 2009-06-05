@@ -14,6 +14,8 @@ struct YogBasicObj {
 #define YOGBASICOBJ_HEAD    struct YogBasicObj base
 #define YOGBASICOBJ(obj)    ((struct YogBasicObj*)obj)
 
+typedef struct YogBasicObj YogBasicObj;
+
 struct YogObj {
     YOGBASICOBJ_HEAD;
     YogVal attrs;

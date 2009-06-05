@@ -86,8 +86,6 @@ typedef void* (*ObjectKeeper)(YogEnv*, void*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper, void*);
 typedef void (*Finalizer)(YogEnv*, void*);
 
-typedef struct YogBasicObj YogBasicObj;
-
 typedef unsigned int flags_t;
 
 /* PROTOTYPE_START */
