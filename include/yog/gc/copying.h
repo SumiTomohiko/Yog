@@ -11,7 +11,6 @@ struct YogCopyingHeader {
     Finalizer finalizer;
     void* forwarding_addr;
     size_t size;
-    unsigned int id;
 #if defined(GC_GENERATIONAL)
     unsigned int survive_num;
     BOOL updated;

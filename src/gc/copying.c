@@ -283,8 +283,6 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
     header->finalizer = finalizer;
     header->forwarding_addr = NULL;
     header->size = rounded_size;
-    static unsigned int id = 0;
-    header->id = id++;
 #if defined(GC_GENERATIONAL)
     header->survive_num = 0;
     header->updated = FALSE;
