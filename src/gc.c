@@ -99,7 +99,7 @@ static void
 wakeup_suspend_threads(YogEnv* env) 
 {
     YogVM* vm = env->vm;
-    pthread_cond_signal(&vm->gc_finish_cond);
+    pthread_cond_broadcast(&vm->gc_finish_cond);
 }
 
 static void 
