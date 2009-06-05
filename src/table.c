@@ -522,11 +522,6 @@ compare_string(YogEnv* env, YogVal a, YogVal b)
 #define GET_STR(val)    (((YogCharArray*)VAL2PTR(a))->items)
     return strcmp(GET_STR(a), GET_STR(b));
 #undef GET_STR
-#if 0
-    const char* s = VAL2STR(a);
-    const char* t = VAL2STR(b);
-    return strcmp(s, t);
-#endif
 }
 
 static int
@@ -572,10 +567,6 @@ hash_string(YogEnv* env, YogVal key)
 {
     YogCharArray* array = VAL2PTR(key);
     return strhash(array->items);
-#if 0
-    const char* s = VAL2STR(key);
-    return strhash(s);
-#endif
 }
 
 static YogHashType type_string = {

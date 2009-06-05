@@ -106,9 +106,6 @@ YogVM_id2name(YogEnv* env, YogVM* vm, ID id)
 
     release_symbols_lock(env, vm);
     return ptr->items;
-#if 0
-    return VAL2STR(val);
-#endif
 }
 
 ID
