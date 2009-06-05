@@ -66,7 +66,7 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
 {
     YogVM* vm = env->vm;
     if (vm->waiting_suspend) {
-        YogVM_aquire_global_interp_lock(env, vm);
+        YogVM_acquire_global_interp_lock(env, vm);
         YogGC_suspend(env);
         YogVM_release_global_interp_lock(env, vm);
     }
@@ -142,7 +142,7 @@ static void
 perform(YogEnv* env, GC gc) 
 {
     YogVM* vm = env->vm;
-    YogVM_aquire_global_interp_lock(env, vm);
+    YogVM_acquire_global_interp_lock(env, vm);
     if (vm->waiting_suspend) {
         YogGC_suspend(env);
     }
@@ -428,7 +428,7 @@ YogGC_free_from_gc(YogEnv* env)
 {
 #if !defined(GC_BDW)
     YogVM* vm = env->vm;
-    YogVM_aquire_global_interp_lock(env, vm);
+    YogVM_acquire_global_interp_lock(env, vm);
     while (vm->waiting_suspend) {
         YogGC_suspend(env);
     }
@@ -442,7 +442,7 @@ YogGC_bind_to_gc(YogEnv* env)
 {
 #if !defined(GC_BDW)
     YogVM* vm = env->vm;
-    YogVM_aquire_global_interp_lock(env, vm);
+    YogVM_acquire_global_interp_lock(env, vm);
     while (vm->waiting_suspend) {
         wait_gc_finish(env);
     }

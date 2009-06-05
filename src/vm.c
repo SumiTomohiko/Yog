@@ -540,7 +540,7 @@ YogVM_delete(YogEnv* env, YogVM* vm)
 }
 
 void 
-YogVM_aquire_global_interp_lock(YogEnv* env, YogVM* vm)
+YogVM_acquire_global_interp_lock(YogEnv* env, YogVM* vm)
 {
     pthread_mutex_lock(&vm->global_interp_lock);
 }
@@ -562,7 +562,7 @@ gc(YogEnv* env, YogVM* vm)
 void 
 YogVM_add_thread(YogEnv* env, YogVM* vm, YogVal thread) 
 {
-    YogVM_aquire_global_interp_lock(env, vm);
+    YogVM_acquire_global_interp_lock(env, vm);
     gc(env, vm);
 
     PTR_AS(YogThread, vm->running_threads)->prev = thread;
@@ -583,7 +583,7 @@ YogVM_remove_thread(YogEnv* env, YogVM* vm, YogVal thread)
 {
     SAVE_ARG(env, thread);
 
-    YogVM_aquire_global_interp_lock(env, vm);
+    YogVM_acquire_global_interp_lock(env, vm);
     gc(env, vm);
 
     YogVal prev = PTR_AS(YogThread, thread)->prev;
@@ -611,7 +611,7 @@ YogVM_remove_thread(YogEnv* env, YogVM* vm, YogVal thread)
 void
 YogVM_add_heap(YogEnv* env, YogVM* vm, void* heap)
 {
-    YogVM_aquire_global_interp_lock(env, vm);
+    YogVM_acquire_global_interp_lock(env, vm);
     if (vm->last_heap != NULL) {
         ((GC_TYPE*)vm->last_heap)->next = heap;
         ((GC_TYPE*)heap)->prev = vm->last_heap;
@@ -641,7 +641,7 @@ count_running_threads(YogEnv* env, YogVM* vm)
 void
 YogVM_wait_finish(YogEnv* env, YogVM* vm)
 {
-    YogVM_aquire_global_interp_lock(env, vm);
+    YogVM_acquire_global_interp_lock(env, vm);
     gc(env, vm);
 
     while (0 < count_running_threads(env, vm)) {
