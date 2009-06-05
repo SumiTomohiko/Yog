@@ -423,6 +423,15 @@ YogVM_delete(YogEnv* env, YogVM* vm)
         (*vm->free_mem)(env, vm);
     }
 #endif
+    if (pthread_cond_destroy(&vm->vm_finish_cond) != 0) {
+        YOG_WARN(env, "pthread_cond_destroy failed");
+    }
+    if (pthread_cond_destroy(&vm->gc_finish_cond) != 0) {
+        YOG_WARN(env, "pthread_cond_destroy failed");
+    }
+    if (pthread_cond_destroy(&vm->threads_suspend_cond) != 0) {
+        YOG_WARN(env, "pthread_cond_destroy failed");
+    }
     if (pthread_mutex_destroy(&vm->global_interp_lock) != 0) {
         YOG_WARN(env, "pthread_mutex_destroy failed");
     }
