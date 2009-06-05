@@ -76,9 +76,6 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
 {
 #define PRINT(...)  DEBUG(DPRINTF("copy: " __VA_ARGS__))
     if (ptr == NULL) {
-#if 0
-        PRINT("exec_num=0x%08x, NULL->NULL", ENV_VM(env)->gc_stat.exec_num);
-#endif
         PRINT("NULL->NULL");
         return NULL;
     }
@@ -104,9 +101,6 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
     copying->unscanned += size;
     DEBUG(DPRINTF("unscanned: %p->%p (0x%02x)", dest, copying->unscanned, size));
 
-#if 0
-    PRINT("exec_num=0x%08x, id=0x%08x, %p->%p", ENV_VM(env)->gc_stat.exec_num, header->id, ptr, (YogCopyingHeader*)dest + 1);
-#endif
     PRINT("%p->%p", ptr, (YogCopyingHeader*)dest + 1);
     return (YogCopyingHeader*)dest + 1;
 #undef PRINT
@@ -245,9 +239,6 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 {
     size_t needed_size = size + sizeof(YogCopyingHeader);
     size_t rounded_size = round_size(needed_size);
-#if 0
-    vm->gc_stat.total_allocated_size += rounded_size;
-#endif
 #define PRINT_HEAP(text, heap)   do { \
     DEBUG(DPRINTF("%s: %p-%p", (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
 } while (0)

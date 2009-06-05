@@ -24,16 +24,6 @@
 struct YogVM {
     BOOL gc_stress;
 
-    struct {
-        BOOL print;
-        unsigned int duration_total;
-        unsigned int living_obj_num[SURVIVE_INDEX_MAX];
-        unsigned int total_obj_num;
-        unsigned int num_alloc;
-        size_t total_allocated_size;
-        unsigned int exec_num;
-    } gc_stat;
-
     ID next_id;
     YogVal id2name;
     YogVal name2id;

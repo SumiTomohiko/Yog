@@ -75,13 +75,11 @@ main(int argc, char* argv[])
 #define DEFAULT_THRESHOLD   (1 * 1024 * 1024)
     size_t threshold = DEFAULT_THRESHOLD;
 #undef DEFAULT_THRESHOLD
-    int print_gc_stat = 0;
     struct option options[] = {
         { "debug-parser", no_argument, &debug_parser, 1 }, 
         { "gc-stress", no_argument, &gc_stress, 1 }, 
         { "help", no_argument, &help, 1 }, 
         { "init-heap-size", required_argument, NULL, 'i' }, 
-        { "print-gc-stat", no_argument, &print_gc_stat, 1 }, 
         { "threshold", required_argument, NULL, 't' }, 
         { 0, 0, 0, 0 }, 
     };
@@ -179,8 +177,6 @@ main(int argc, char* argv[])
     GUARD_ENV(env);
 #undef GUARD_ENV
 
-    vm.gc_stat.print = print_gc_stat ? TRUE : FALSE;
-
     do {
         YogVM_boot(&env, env.vm);
         YogVM_configure_search_path(&env, env.vm, argv[0]);
@@ -193,11 +189,6 @@ main(int argc, char* argv[])
     } while (0);
 
     YogVM_remove_thread(&env, env.vm, env.thread);
-
-    if (vm.gc_stat.print) {
-        printf("GC duration total: %u[usec]\n", vm.gc_stat.duration_total);
-        printf("allocation #: %u\n", vm.gc_stat.num_alloc);
-    }
 
     YogVM_wait_finish(&env, env.vm);
     YogVM_delete(&env, env.vm);

@@ -43,57 +43,6 @@
 
 #define SEPARATOR       '/'
 
-#if 0
-struct GcObjectStat {
-    unsigned int survive_num;
-};
-
-typedef struct GcObjectStat GcObjectStat;
-#endif
-
-#define SURVIVE_NUM_UNIT    8
-
-#if 0
-static void 
-GcObjectStat_increment_survive_num(GcObjectStat* stat) 
-{
-    stat->survive_num++;
-}
-#endif
-
-static void 
-reset_total_object_count(YogVM* vm) 
-{
-    vm->gc_stat.total_obj_num = 0;
-}
-
-static void 
-reset_living_object_count(YogVM* vm)
-{
-    int i;
-    for (i = 0; i < SURVIVE_INDEX_MAX; i++) {
-        vm->gc_stat.living_obj_num[i] = 0;
-    }
-}
-
-#if 0
-static void 
-increment_total_object_number(YogVM* vm) 
-{
-    vm->gc_stat.total_obj_num++;
-}
-
-static void 
-increment_living_object_number(YogVM* vm, unsigned int survive_num) 
-{
-    int index = survive_num / SURVIVE_NUM_UNIT;
-    if (SURVIVE_INDEX_MAX  - 1 < index) {
-        index = SURVIVE_INDEX_MAX - 1;
-    }
-    vm->gc_stat.living_obj_num[index]++;
-}
-#endif
-
 void 
 YogVM_register_package(YogEnv* env, YogVM* vm, const char* name, YogVal pkg) 
 {
@@ -428,14 +377,6 @@ YogVM_init(YogVM* vm)
 {
     vm->gc_stress = FALSE;
 
-    vm->gc_stat.print = FALSE;
-    vm->gc_stat.duration_total = 0;
-    reset_living_object_count(vm);
-    reset_total_object_count(vm);
-    vm->gc_stat.num_alloc = 0;
-    vm->gc_stat.total_allocated_size = 0;
-    vm->gc_stat.exec_num = 0;
-
     vm->next_id = 0;
     vm->id2name = YUNDEF;
     vm->name2id = YUNDEF;
@@ -481,52 +422,6 @@ YogVM_init(YogVM* vm)
     vm->heaps = vm->last_heap = NULL;
     vm->gc_id = 0;
 }
-
-#if 0
-static void 
-print_gc_statistics(YogVM* vm, unsigned int duration) 
-{
-    printf("--- GC infomation ---\n");
-    printf("Duration[usec] %d\n", duration);
-
-    printf("Servive #");
-    int i;
-    for (i = 0; i < SURVIVE_INDEX_MAX - 1; i++) {
-        printf(" %2d-%2d", SURVIVE_NUM_UNIT * i + 1, SURVIVE_NUM_UNIT * (i + 1));
-    }
-    printf(" %d+\n", SURVIVE_NUM_UNIT * (SURVIVE_INDEX_MAX - 1) + 1);
-    printf("Objects #");
-    for (i = 0; i < SURVIVE_INDEX_MAX; i++) {
-        printf(" %5d", vm->gc_stat.living_obj_num[i]);
-    }
-    printf("\n");
-}
-#endif
-
-#if 0
-void 
-YogVM_gc(YogEnv* env, YogVM* vm) 
-{
-    reset_living_object_count(vm);
-    reset_total_object_count(vm);
-
-    struct timeval begin;
-    gettimeofday(&begin, NULL);
-
-    (*vm->exec_gc)(env, vm);
-
-    struct timeval end;
-    gettimeofday(&end, NULL);
-    unsigned int duration = 1000000 * (end.tv_sec - begin.tv_sec) + (end.tv_usec - begin.tv_usec);
-
-    vm->gc_stat.duration_total += duration;
-    vm->gc_stat.exec_num++;
-
-    if (vm->gc_stat.print) {
-        print_gc_statistics(vm, duration);
-    }
-}
-#endif
 
 void 
 YogVM_delete(YogEnv* env, YogVM* vm) 
