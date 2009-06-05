@@ -656,7 +656,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 bzero(chunk->grey_page_flags, flags_size);
 #endif
 
-                chunk->next = NULL;
+                chunk->next = chunk->all_chunks_next = NULL;
                 msc->chunks = chunk;
                 if (msc->all_chunks != NULL) {
                     msc->all_chunks_last->all_chunks_next = chunk;
