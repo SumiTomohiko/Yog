@@ -156,14 +156,6 @@ YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
     RETURN(env, id);
 }
 
-#if 0
-static void 
-GcObjectStat_initialize(GcObjectStat* stat) 
-{
-    stat->survive_num = 0;
-}
-#endif
-
 static void 
 setup_builtins(YogEnv* env, YogVM* vm) 
 {

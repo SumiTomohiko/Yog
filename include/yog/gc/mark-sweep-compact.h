@@ -6,9 +6,6 @@
 
 struct YogMarkSweepCompactHeader {
     unsigned int flags;
-#if 0
-    struct GcObjectStat stat;
-#endif
     struct YogMarkSweepCompactHeader* forwarding_addr;
     struct YogMarkSweepCompactHeader* prev;
     struct YogMarkSweepCompactHeader* next;

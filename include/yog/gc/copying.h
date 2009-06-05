@@ -7,9 +7,6 @@
 #include "yog/yog.h"
 
 struct YogCopyingHeader {
-#if 0
-    struct GcObjectStat stat;
-#endif
     ChildrenKeeper keeper;
     Finalizer finalizer;
     void* forwarding_addr;

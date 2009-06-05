@@ -10,9 +10,6 @@
 #define TRUE    (!FALSE)
 
 struct YogMarkSweepHeader {
-#if 0
-    struct GcObjectStat stat;
-#endif
     struct YogMarkSweepHeader* prev;
     struct YogMarkSweepHeader* next;
     size_t size;
