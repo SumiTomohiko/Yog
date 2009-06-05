@@ -9,15 +9,18 @@ include ./$(DEPDIR)/concurrent.Po
 all: concurrent$(SO_EXT)
 
 concurrent$(SO_EXT): concurrent.c
-	$(CC) -I../include -shared -O2 -Wall -lpthread -o $@ $<
+	$(CC) -I../include -shared -O2 -Wall -lpthread -MT concurrent$(SO_EXT) -MD -MP -MF $(DEPDIR)/concurrent.Tpo -o $@ $<
+	mv -f $(DEPDIR)/concurrent.Tpo $(DEPDIR)/concurrent.Po
 
 clean: 
 	rm -f *$(SO_EXT)
 
 distclean: 
+	rm -rf ./$(DEPDIR)
 	rm -f *$(SO_EXT)
 	rm -f Makefile
 
 maintainer-clean: 
+	rm -rf ./$(DEPDIR)
 	rm -f *$(SO_EXT)
 	rm -f Makefile
