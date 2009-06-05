@@ -9,17 +9,19 @@
 YogVal 
 YogObj_get_attr(YogEnv* env, YogVal obj, ID name) 
 {
+    SAVE_ARG(env, obj);
+
     if (!IS_PTR(PTR_AS(YogObj, obj)->attrs)) {
-        return YUNDEF;
+        RETURN(env, YUNDEF);
     }
 
     YogVal key = ID2VAL(name);
     YogVal attr = YNIL;
     if (YogTable_lookup(env, PTR_AS(YogObj, obj)->attrs, key, &attr)) {
-        return attr;
+        RETURN(env, attr);
     }
     else {
-        return YUNDEF;
+        RETURN(env, YUNDEF);
     }
 }
 

@@ -20,13 +20,8 @@
 #   define GC_TYPE  YogBDW
 #endif
 
-#if defined(GC_BDW)
-#   define FREE_FROM_GC(env)
-#   define BIND_TO_GC(env)
-#else
-#   define FREE_FROM_GC(env)    YogGC_free_from_gc(env)
-#   define BIND_TO_GC(env)      YogGC_bind_to_gc(env)
-#endif
+#define FREE_FROM_GC(env)   YogGC_free_from_gc(env)
+#define BIND_TO_GC(env)     YogGC_bind_to_gc(env)
 
 #include <sys/types.h>
 #include "yog/yog.h"

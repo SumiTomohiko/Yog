@@ -624,7 +624,7 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
 
 #if 0
         do {
-            printf("------------------------------ dump of stack ------------------------------\n");
+            printf("------------------------------ dump of stack for %p ------------------------------\n", env);
             YogVal stack = SCRIPT_FRAME(CUR_FRAME)->stack;
             unsigned int stack_size = SCRIPT_FRAME(CUR_FRAME)->stack_size;
             if (0 < stack_size) {

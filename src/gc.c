@@ -138,30 +138,6 @@ run_gc(YogEnv* env, GC gc)
     }
 }
 
-void
-YogGC_free_from_gc(YogEnv* env)
-{
-    YogVM* vm = env->vm;
-    YogVM_aquire_global_interp_lock(env, vm);
-    while (vm->waiting_suspend) {
-        YogGC_suspend(env);
-    }
-    PTR_AS(YogThread, env->thread)->gc_bound = FALSE;
-    YogVM_release_global_interp_lock(env, vm);
-}
-
-void
-YogGC_bind_to_gc(YogEnv* env)
-{
-    YogVM* vm = env->vm;
-    YogVM_aquire_global_interp_lock(env, vm);
-    while (vm->waiting_suspend) {
-        wait_gc_finish(env);
-    }
-    PTR_AS(YogThread, env->thread)->gc_bound = TRUE;
-    YogVM_release_global_interp_lock(env, vm);
-}
-
 static void 
 perform(YogEnv* env, GC gc) 
 {
@@ -445,6 +421,34 @@ YogGC_keep(YogEnv* env, YogVal* val, ObjectKeeper keeper, void* heap)
     }
 
     *val = PTR2VAL((*keeper)(env, VAL2PTR(*val), heap));
+}
+
+void
+YogGC_free_from_gc(YogEnv* env)
+{
+#if !defined(GC_BDW)
+    YogVM* vm = env->vm;
+    YogVM_aquire_global_interp_lock(env, vm);
+    while (vm->waiting_suspend) {
+        YogGC_suspend(env);
+    }
+    PTR_AS(YogThread, env->thread)->gc_bound = FALSE;
+    YogVM_release_global_interp_lock(env, vm);
+#endif
+}
+
+void
+YogGC_bind_to_gc(YogEnv* env)
+{
+#if !defined(GC_BDW)
+    YogVM* vm = env->vm;
+    YogVM_aquire_global_interp_lock(env, vm);
+    while (vm->waiting_suspend) {
+        wait_gc_finish(env);
+    }
+    PTR_AS(YogThread, env->thread)->gc_bound = TRUE;
+    YogVM_release_global_interp_lock(env, vm);
+#endif
 }
 
 /**

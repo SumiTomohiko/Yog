@@ -38,22 +38,17 @@ main()""", """42
 import concurrent
 
 def main()
-  thread_count = 32
-  int = concurrent.AtomicInt.new()
+  thread_count = 256
+  int = concurrent.AtomicInt.new(0)
   barrier = concurrent.Barrier.new(thread_count)
 
   i = 0
   while i < thread_count
     thread = concurrent.Thread.new() do
       barrier.wait!()
-
-      j = 0
-      while j < 2048
-        int.inc!()
-        j = j + 1
-      end
+      int.inc!()
     end
-    thread.start()
+    thread.run()
 
     i = i + 1
   end
@@ -61,7 +56,7 @@ def main()
   puts int.get()
 end
 
-main()""", """65536
+main()""", """256
 """)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

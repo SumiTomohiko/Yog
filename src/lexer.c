@@ -492,7 +492,24 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
                     c = NEXTC();
                 }
             } while (is_name_char(c));
-            PUSHBACK(c);
+
+            if (c == '!') {
+                ADD_TOKEN_CHAR(c);
+
+                c = NEXTC();
+                if (c == '?') {
+                    ADD_TOKEN_CHAR(c);
+                }
+                else {
+                    PUSHBACK(c);
+                }
+            }
+            else if (c == '?') {
+                ADD_TOKEN_CHAR(c);
+            }
+            else {
+                PUSHBACK(c);
+            }
 
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
             YogVal body = PTR_AS(YogString, buffer)->body;
