@@ -21,7 +21,7 @@ static void
 oldify(YogEnv* env, YogGenerational* gen, void* ptr) 
 {
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
-    header->servive_num = gen->tenure - 1;
+    header->survive_num = gen->tenure - 1;
 }
 
 static void 
@@ -49,8 +49,8 @@ YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keepe
         return header->forwarding_addr;
     }
 
-    header->servive_num++;
-    if (header->servive_num < gen->tenure) {
+    header->survive_num++;
+    if (header->survive_num < gen->tenure) {
         void* dest = YogCopying_copy(env, &gen->copying, ptr);
         DEBUG(DPRINTF("copied: %p->%p", ptr, dest));
         return dest;

@@ -286,7 +286,7 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
     static unsigned int id = 0;
     header->id = id++;
 #if defined(GC_GENERATIONAL)
-    header->servive_num = 0;
+    header->survive_num = 0;
     header->updated = FALSE;
     header->gen = GEN_YOUNG;
 #endif

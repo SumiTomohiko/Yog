@@ -16,7 +16,7 @@ struct YogCopyingHeader {
     size_t size;
     unsigned int id;
 #if defined(GC_GENERATIONAL)
-    unsigned int servive_num;
+    unsigned int survive_num;
     BOOL updated;
     unsigned int gen;
 #endif
