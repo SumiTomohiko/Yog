@@ -2,7 +2,7 @@
 #include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/object.h"
-#include "yog/st.h"
+#include "yog/table.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 

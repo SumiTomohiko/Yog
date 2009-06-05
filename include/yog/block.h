@@ -2,7 +2,7 @@
 #define __YOG_BLOCK_H__
 
 #include "yog/object.h"
-#include "yog/st.h"
+#include "yog/table.h"
 #include "yog/yog.h"
 
 struct YogBasicBlock {

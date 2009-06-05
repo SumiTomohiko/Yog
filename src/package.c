@@ -4,7 +4,7 @@
 #include "yog/gc.h"
 #include "yog/method.h"
 #include "yog/package.h"
-#include "yog/st.h"
+#include "yog/table.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 

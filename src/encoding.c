@@ -3,7 +3,7 @@
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/gc.h"
-#include "yog/st.h"
+#include "yog/table.h"
 #include "yog/yog.h"
 
 char* 

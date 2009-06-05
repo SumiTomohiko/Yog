@@ -27,7 +27,7 @@
 #include "yog/nil.h"
 #include "yog/package.h"
 #include "yog/regexp.h"
-#include "yog/st.h"
+#include "yog/table.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"

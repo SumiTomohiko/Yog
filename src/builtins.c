@@ -66,8 +66,6 @@ puts_(YogEnv* env)
     return YNIL;
 }
 
-#include "yog/st.h"
-
 static YogVal
 import_package(YogEnv* env)
 {

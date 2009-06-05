@@ -10,8 +10,8 @@
 #include "yog/inst.h"
 #include "yog/opcodes.h"
 #include "yog/parser.h"
-#include "yog/st.h"
 #include "yog/string.h"
+#include "yog/table.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 

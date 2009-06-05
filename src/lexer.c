@@ -11,7 +11,7 @@
 #include "yog/gc.h"
 #include "yog/parser.h"
 #include "yog/regexp.h"
-#include "yog/st.h"
+#include "yog/table.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
