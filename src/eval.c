@@ -62,6 +62,10 @@ YogEval_call_method2(YogEnv* env, YogVal receiver, const char* method, unsigned 
 static void 
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, unsigned int argc, YogVal args, unsigned int args_offset) 
 {
+    if (!IS_PTR(arg_info)) {
+        return;
+    }
+
     SAVE_ARGS5(env, arg_info, blockarg, vararg, varkwarg, args);
 
     YogVal array = YUNDEF;

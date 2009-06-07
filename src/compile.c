@@ -1419,9 +1419,10 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
         return;
     }
 
-    SAVE_ARGS2(env, vars, params);
+    SAVE_ARGS3(env, vars, params, code);
 
-    YogVal arg_info = PTR_AS(YogCode, code)->arg_info;
+    YogVal arg_info = YogArgInfo_new(env);
+    CODE(code)->arg_info = arg_info;
     PUSH_LOCAL(env, arg_info);
 
     unsigned int size = YogArray_size(env, params);

@@ -234,9 +234,6 @@ YogCode_new(YogEnv* env)
     CODE(code)->klass_name = INVALID_ID;
     CODE(code)->func_name = INVALID_ID;
 
-    YogVal arg_info = YogArgInfo_new(env);
-    MODIFY(env, CODE(code)->arg_info, arg_info);
-
     POP_LOCALS(env);
     return code;
 }
