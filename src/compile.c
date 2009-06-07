@@ -2242,31 +2242,82 @@ compile_visit_next(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     compile_while_jump(env, visitor, node, data, label_while_start);
 }
 
+static int 
+register_upper_vars_callback(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
+{
+    SAVE_ARGS2(env, key, value);
+
+    switch (VAR(value)->type) {
+    case VT_GLOBAL:
+        scan_var_register(env, *arg, VAL2ID(key), VAR_PARAM);
+        break;
+    case VT_LOCAL:
+        if (VAL2ID(key) == YogVM_intern(env, env->vm, "self")) {
+            scan_var_register(env, *arg, VAL2ID(key), VAR_PARAM);
+        }
+        else {
+            scan_var_register(env, *arg, VAL2ID(key), VAR_NONLOCAL);
+        }
+        break;
+    case VT_NONLOCAL:
+        scan_var_register(env, *arg, VAL2ID(key), VAR_NONLOCAL);
+        break;
+    default:
+        break;
+    }
+
+    RETURN(env, ST_CONTINUE);
+}
+
+static void
+register_upper_vars(YogEnv* env, YogVal var_tbl, YogVal upper_vars)
+{
+    SAVE_ARGS2(env, var_tbl, upper_vars);
+    YogTable_foreach(env, var_tbl, register_upper_vars_callback, &var_tbl);
+    RETURN_VOID(env);
+}
+
+static YogVal
+make_vars_table_of_block(YogEnv* env, YogVal node, YogVal upper_data)
+{
+    SAVE_ARGS2(env, node, upper_data);
+
+    YogVal var_tbl = YUNDEF;
+    PUSH_LOCAL(env, var_tbl);
+
+    var_tbl = var_table_new(env);
+
+    YogVal params = NODE(node)->u.blockarg.params;
+    register_params_var_table(env, params, var_tbl);
+
+    register_upper_vars(env, var_tbl, COMPILE_DATA(upper_data)->vars);
+
+    YogVal stmts = NODE(node)->u.blockarg.stmts;
+    make_var_table(env, stmts, var_tbl);
+    YogVal vars = vars_flags2type(env, var_tbl, upper_data);
+
+    RETURN(env, vars);
+}
+
 static YogVal 
 compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
 {
     SAVE_ARGS2(env, node, data);
 
-    YogVal params = YUNDEF;
     YogVal vars = YUNDEF;
-    YogVal stmts = YUNDEF;
     YogVal code = YUNDEF;
     YogVal filename = YUNDEF;
-    PUSH_LOCALS5(env, params, vars, stmts, code, filename);
+    PUSH_LOCALS3(env, vars, code, filename);
 
-    params = NODE(node)->u.blockarg.params;
-    vars = COMPILE_DATA(data)->vars;
-#if 0
-    register_block_params_var_table(env, params, var_tbl);
-    YogTable* vars = vars_flags2type(env, var_tbl, data->upper);
-#endif
+    vars = make_vars_table_of_block(env, node, data);
 
     filename = COMPILE_DATA(data)->filename;
     ID klass_name = INVALID_ID;
     ID func_name = INTERN("<block>");
-    stmts = NODE(node)->u.blockarg.stmts;
-    code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, COMPILE_DATA(data)->ctx, YNIL);
+    YogVal stmts = NODE(node)->u.blockarg.stmts;
+    code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL);
 
+    YogVal params = NODE(node)->u.blockarg.params;
     setup_params(env, vars, params, code);
 
     RETURN(env, code);
