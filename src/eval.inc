@@ -321,45 +321,25 @@
             break;
         }
 #line 307 "../src/eval.inc"
-    case OP(MAKE_PACKAGE_BLOCK):
-        {
-            YogVal code = YUNDEF;
-            YogVal block = YUNDEF;
-            PUSH_LOCALS2(ENV, code, block);
-            code = POP();
-#line 189 "insts.def"
-            block = YogPackageBlock_new(env);
-            MODIFY(env, PTR_AS(YogBasicBlock, block)->code, code);
-            YogVal self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
-            MODIFY(env, PTR_AS(YogPackageBlock, block)->self, self);
-            YogVal vars = PTR_AS(YogNameFrame, CUR_FRAME)->vars;
-            MODIFY(env, PTR_AS(YogPackageBlock, block)->vars, vars);
-
-#line 321 "../src/eval.inc"
-            PUSH(block);
-            POP_LOCALS(ENV);
-            break;
-        }
-#line 326 "../src/eval.inc"
     case OP(MAKE_BLOCK):
         {
             YogVal code = YUNDEF;
             YogVal block = YUNDEF;
             PUSH_LOCALS2(ENV, code, block);
             code = POP();
-#line 202 "insts.def"
+#line 189 "insts.def"
             block = YogBlock_new(ENV);
             MODIFY(env, PTR_AS(YogBasicBlock, block)->code, code);
             MODIFY(env, PTR_AS(YogBlock, block)->locals, PTR_AS(YogMethodFrame, CUR_FRAME)->vars);
             MODIFY(env, PTR_AS(YogBlock, block)->outer_vars, SCRIPT_FRAME(CUR_FRAME)->outer_vars);
             MODIFY(env, PTR_AS(YogBlock, block)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
 
-#line 339 "../src/eval.inc"
+#line 320 "../src/eval.inc"
             PUSH(block);
             POP_LOCALS(ENV);
             break;
         }
-#line 344 "../src/eval.inc"
+#line 325 "../src/eval.inc"
     case OP(MAKE_KLASS):
         {
             YogVal code = YUNDEF;
@@ -369,7 +349,7 @@
             code = POP();
             super = POP();
             name = POP();
-#line 214 "insts.def"
+#line 201 "insts.def"
             YogVal kls = YUNDEF;
             YogVal frame = YUNDEF;
             YogVal attrs = YUNDEF;
@@ -390,46 +370,46 @@
         
             POP_LOCALS(ENV);
 
-#line 374 "../src/eval.inc"
+#line 355 "../src/eval.inc"
             POP_LOCALS(ENV);
             break;
         }
-#line 378 "../src/eval.inc"
+#line 359 "../src/eval.inc"
     case OP(MAKE_METHOD):
         {
             YogVal code = YUNDEF;
             YogVal method = YUNDEF;
             PUSH_LOCALS2(ENV, code, method);
             code = POP();
-#line 240 "insts.def"
+#line 227 "insts.def"
             method = YogUnboundMethod_new(ENV);
             setup_script_method(ENV, method, code);
 
-#line 388 "../src/eval.inc"
+#line 369 "../src/eval.inc"
             PUSH(method);
             POP_LOCALS(ENV);
             break;
         }
-#line 393 "../src/eval.inc"
+#line 374 "../src/eval.inc"
     case OP(PUSH_SELF_NAME):
         {
             YogVal self = YUNDEF;
             PUSH_LOCAL(ENV, self);
-#line 249 "insts.def"
+#line 236 "insts.def"
             self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
 
-#line 400 "../src/eval.inc"
+#line 381 "../src/eval.inc"
             PUSH(self);
             POP_LOCALS(ENV);
             break;
         }
-#line 405 "../src/eval.inc"
+#line 386 "../src/eval.inc"
     case OP(RET):
         {
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
             val = POP();
-#line 257 "insts.def"
+#line 244 "insts.def"
             POP_FRAME();
             if (!IS_PTR(CUR_FRAME) || PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_C) {
                 return val;
@@ -437,12 +417,12 @@
         
             PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 
-#line 418 "../src/eval.inc"
+#line 399 "../src/eval.inc"
             PUSH(val);
             POP_LOCALS(ENV);
             break;
         }
-#line 423 "../src/eval.inc"
+#line 404 "../src/eval.inc"
     case OP(STORE_NONLOCAL):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -453,15 +433,15 @@
             PC += sizeof(uint8_t);
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
-#line 270 "insts.def"
+#line 257 "insts.def"
             /* TODO */
 
-#line 436 "../src/eval.inc"
+#line 417 "../src/eval.inc"
             PUSH(val);
             POP_LOCALS(ENV);
             break;
         }
-#line 441 "../src/eval.inc"
+#line 422 "../src/eval.inc"
     case OP(LOAD_NONLOCAL):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -473,14 +453,14 @@
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
             val = POP();
-#line 278 "insts.def"
+#line 265 "insts.def"
             /* TODO */
 
-#line 455 "../src/eval.inc"
+#line 436 "../src/eval.inc"
             POP_LOCALS(ENV);
             break;
         }
-#line 459 "../src/eval.inc"
+#line 440 "../src/eval.inc"
     case OP(STORE_GLOBAL):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -489,15 +469,15 @@
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
             val = POP();
-#line 286 "insts.def"
+#line 273 "insts.def"
             YogVal globals = SCRIPT_FRAME(CUR_FRAME)->globals;
             YogTable_insert(ENV, globals, ID2VAL(name), val);
 
-#line 471 "../src/eval.inc"
+#line 452 "../src/eval.inc"
             POP_LOCALS(ENV);
             break;
         }
-#line 475 "../src/eval.inc"
+#line 456 "../src/eval.inc"
     case OP(LOAD_ATTR):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -507,10 +487,10 @@
             YogVal retval = YUNDEF;
             PUSH_LOCALS2(ENV, val, retval);
             val = POP();
-#line 295 "insts.def"
+#line 282 "insts.def"
             retval = YogVal_get_attr(ENV, val, name);
 
-#line 487 "../src/eval.inc"
+#line 468 "../src/eval.inc"
             PUSH(retval);
             POP_LOCALS(ENV);
             break;

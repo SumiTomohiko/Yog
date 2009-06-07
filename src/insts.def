@@ -181,19 +181,6 @@ inst dup
 {
 }
 
-inst make_package_block
-()
-(code)
-(block)
-{
-    block = YogPackageBlock_new(env);
-    MODIFY(env, PTR_AS(YogBasicBlock, block)->code, code);
-    YogVal self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
-    MODIFY(env, PTR_AS(YogPackageBlock, block)->self, self);
-    YogVal vars = PTR_AS(YogNameFrame, CUR_FRAME)->vars;
-    MODIFY(env, PTR_AS(YogPackageBlock, block)->vars, vars);
-}
-
 inst make_block
 ()
 (code)

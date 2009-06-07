@@ -612,32 +612,6 @@ scan_var_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 }
 
 static void 
-scan_var_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
-{
-    SAVE_ARGS2(env, node, data);
-
-    YogVal params = YUNDEF;
-    YogVal param = YUNDEF;
-    PUSH_LOCALS2(env, params, param);
-
-    params = NODE(node)->u.blockarg.params;
-    if (IS_PTR(params)) {
-        unsigned int size = YogArray_size(env, params);
-        unsigned int i;
-        for (i = 0; i < size; i++) {
-            param = YogArray_at(env, params, i);
-            ID name = NODE(param)->u.param.name;
-            scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, name, VAR_PARAM);
-            visit_node(env, visitor, NODE(param)->u.param.default_, data);
-        }
-    }
-
-    visitor->visit_stmts(env, visitor, NODE(node)->u.blockarg.stmts, data);
-
-    RETURN_VOID(env);
-}
-
-static void 
 scan_var_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -699,7 +673,7 @@ scan_var_init_visitor(AstVisitor* visitor)
 {
     visitor->visit_assign = scan_var_visit_assign;
     visitor->visit_attr = scan_var_visit_attr;
-    visitor->visit_block = scan_var_visit_block;
+    visitor->visit_block = NULL;
     visitor->visit_break = scan_var_visit_break;
     visitor->visit_command_call = scan_var_visit_command_call;
     visitor->visit_except = scan_var_visit_except;
@@ -1425,28 +1399,6 @@ register_params_var_table(YogEnv* env, YogVal params, YogVal var_tbl)
 
     RETURN_VOID(env);
 }
-
-#if 0
-static void 
-register_block_params_var_table(YogEnv* env, YogArray* params, YogTable* var_tbl) 
-{
-    if (params == NULL) {
-        return;
-    }
-
-    unsigned int size = YogArray_size(env, params);
-    unsigned int i = 0;
-    for (i = 0; i < size; i++) {
-        YogVal param = YogArray_at(env, params, i);
-        YogNode* node = VAL2PTR(param);
-        ID id = node->u.param.name;
-        YogVal name = ID2VAL(id);
-        if (!YogTable_lookup(env, var_tbl, name, NULL)) {
-            scan_var_register(env, var_tbl, id, VAR_ASSIGNED);
-        }
-    }
-}
-#endif
 
 static unsigned int 
 lookup_local_var_index(YogEnv* env, YogVal vars, ID name) 
@@ -2242,27 +2194,45 @@ compile_visit_next(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     compile_while_jump(env, visitor, node, data, label_while_start);
 }
 
+static BOOL
+is_param(YogEnv* env, YogVal var_tbl, ID name)
+{
+    YogVal entry = YUNDEF;
+    if (!YogTable_lookup(env, var_tbl, ID2VAL(name), &entry)) {
+        return FALSE;
+    }
+    unsigned int flags = SCAN_VAR_ENTRY(entry)->flags;
+    if (IS_PARAM(flags)) {
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
+}
+
 static int 
 register_upper_vars_callback(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
 {
     SAVE_ARGS2(env, key, value);
 
+    if (VAL2ID(key) == YogVM_intern(env, env->vm, "self")) {
+        scan_var_register(env, *arg, VAL2ID(key), VAR_PARAM);
+        RETURN(env, ST_CONTINUE);
+    }
+    if (is_param(env, *arg, VAL2ID(key))) {
+        RETURN(env, ST_CONTINUE);
+    }
+
     switch (VAR(value)->type) {
     case VT_GLOBAL:
-        scan_var_register(env, *arg, VAL2ID(key), VAR_PARAM);
+        scan_var_register(env, *arg, VAL2ID(key), VAR_USED);
         break;
     case VT_LOCAL:
-        if (VAL2ID(key) == YogVM_intern(env, env->vm, "self")) {
-            scan_var_register(env, *arg, VAL2ID(key), VAR_PARAM);
-        }
-        else {
-            scan_var_register(env, *arg, VAL2ID(key), VAR_NONLOCAL);
-        }
-        break;
     case VT_NONLOCAL:
         scan_var_register(env, *arg, VAL2ID(key), VAR_NONLOCAL);
         break;
     default:
+        YOG_BUG(env, "invalid variable type (0x%02x)", VAR(value)->type);
         break;
     }
 
@@ -2332,20 +2302,7 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
     unsigned int lineno = NODE(node)->lineno;
     add_push_const(env, data, code, lineno);
-    switch (COMPILE_DATA(data)->ctx) {
-    case CTX_FUNC:
-        CompileData_add_make_block(env, data, lineno);
-        break;
-    case CTX_KLASS:
-        YOG_BUG(env, "not implemented");
-        break;
-    case CTX_PKG:
-        CompileData_add_make_package_block(env, data, lineno);
-        break;
-    default:
-        YOG_ASSERT(env, FALSE, "Unknown context.");
-        break;
-    }
+    CompileData_add_make_block(env, data, lineno);
 
     RETURN_VOID(env);
 }

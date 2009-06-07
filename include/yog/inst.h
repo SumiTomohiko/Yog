@@ -83,8 +83,6 @@ struct YogInst {
         struct {
         } dup;
         struct {
-        } make_package_block;
-        struct {
         } make_block;
         struct {
         } make_klass;
