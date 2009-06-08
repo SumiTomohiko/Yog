@@ -2224,18 +2224,7 @@ register_upper_vars_callback(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
         RETURN(env, ST_CONTINUE);
     }
 
-    switch (VAR(value)->type) {
-    case VT_GLOBAL:
-        scan_var_register(env, *arg, VAL2ID(key), VAR_USED);
-        break;
-    case VT_LOCAL:
-    case VT_NONLOCAL:
-        scan_var_register(env, *arg, VAL2ID(key), VAR_NONLOCAL);
-        break;
-    default:
-        YOG_BUG(env, "invalid variable type (0x%02x)", VAR(value)->type);
-        break;
-    }
+    scan_var_register(env, *arg, VAL2ID(key), VAR_NONLOCAL);
 
     RETURN(env, ST_CONTINUE);
 }
