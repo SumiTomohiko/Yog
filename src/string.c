@@ -487,10 +487,12 @@ each_line(YogEnv* env)
         YogVal line = YogString_new_range(env, enc, start, end);
         YogVal block = ARG(env, 0);
         YogVal args[] = { line, };
+        PUSH_LOCALSX(env, array_sizeof(args), args);
 
         unsigned int size = PTR_AS(YogCharArray, PTR_AS(YogString, SELF(env))->body)->size;
 
         YogEval_call_block(env, block, sizeof(args) / sizeof(args[0]), args);
+        POP_LOCALS(env);
 
         if (size - 1 < i) {
             break;
@@ -541,10 +543,12 @@ each_char(YogEnv* env)
         YogVal c = YogString_new_range(env, enc, start, end);
         YogVal block = ARG(env, 0);
         YogVal args[] = { c, };
+        PUSH_LOCALSX(env, array_sizeof(args), args);
 
         unsigned int size = PTR_AS(YogCharArray, PTR_AS(YogString, SELF(env))->body)->size;
 
         YogEval_call_block(env, block, sizeof(args) / sizeof(args[0]), args);
+        POP_LOCALS(env);
 
         if (size - 1 < i + 1) {
             break;
