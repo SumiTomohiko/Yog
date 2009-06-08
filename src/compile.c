@@ -668,12 +668,19 @@ scan_var_visit_attr(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     visit_node(env, visitor, NODE(node)->u.attr.obj, data);
 }
 
+static void
+scan_var_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    YogVal stmts = NODE(node)->u.blockarg.stmts;
+    (*visitor->visit_stmts)(env, visitor, stmts, data);
+}
+
 static void 
 scan_var_init_visitor(AstVisitor* visitor) 
 {
     visitor->visit_assign = scan_var_visit_assign;
     visitor->visit_attr = scan_var_visit_attr;
-    visitor->visit_block = NULL;
+    visitor->visit_block = scan_var_visit_block;
     visitor->visit_break = scan_var_visit_break;
     visitor->visit_command_call = scan_var_visit_command_call;
     visitor->visit_except = scan_var_visit_except;
