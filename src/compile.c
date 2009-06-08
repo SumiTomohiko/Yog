@@ -1523,7 +1523,7 @@ find_outer_var(YogEnv* env, ID name, YogVal outer, unsigned int* plevel, unsigne
     YogVal key = ID2VAL(name);
 
     int level = 0;
-    while (IS_PTR(outer)) {
+    while (IS_PTR(outer) && IS_PTR(COMPILE_DATA(outer)->outer)) {
         YogVal val = YUNDEF;
         if (YogTable_lookup(env, COMPILE_DATA(outer)->vars, key, &val)) {
             switch (VAR(val)->type) {
