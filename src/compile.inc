@@ -750,14 +750,14 @@ count_stack_size(YogEnv* env, YogVal inst)
                     }
                 case OP(STORE_NONLOCAL):
                     {
-                        pop_size = 0;
-                        push_size = 1;
+                        pop_size = 1;
+                        push_size = 0;
                         break;
                     }
                 case OP(LOAD_NONLOCAL):
                     {
-                        pop_size = 1;
-                        push_size = 0;
+                        pop_size = 0;
+                        push_size = 1;
                         break;
                     }
                 case OP(STORE_GLOBAL):

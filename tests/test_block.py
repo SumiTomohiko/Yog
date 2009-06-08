@@ -20,26 +20,6 @@ class TestBlock(TestCase):
         self._test("1.times() do puts 42 end", """42
 """)
 
-    def test_block5(self):
-        self._test("""
-1.times() do [n]
-  m = n
-end
-
-puts m""", """0
-""")
-
-    def test_block6(self):
-        self._test("""
-1.times() do [n]
-  1.times() do [m]
-    l = m
-  end
-end
-
-puts l""", """0
-""")
-
     def test_block7(self):
         self._test("""
 n = 42
@@ -49,34 +29,6 @@ end
 
 puts n""", """0
 42
-""")
-
-    def test_block8(self):
-        self._test("""
-def main()
-  1.times() do [n]
-    m = n
-  end
-
-  puts m
-end
-
-main()""", """0
-""")
-
-    def test_block9(self):
-        self._test("""
-def main()
-  1.times() do [n]
-    1.times() do [m]
-      l = m
-    end
-  end
-
-  puts l
-end
-
-main()""", """0
 """)
 
     def test_block10(self):
@@ -91,30 +43,6 @@ end
 
 main()""", """0
 42
-""")
-
-    def test_block11(self):
-        self._test("""
-class Foo
-  1.times() do [n]
-    m = n
-  end
-  puts m
-end
-""", """0
-""")
-
-    def test_block12(self):
-        self._test("""
-class Foo
-  1.times() do [n]
-    1.times() do [m]
-      l = m
-    end
-  end
-  puts l
-end
-""", """0
 """)
 
     def test_block13(self):

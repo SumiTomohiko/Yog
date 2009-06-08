@@ -101,6 +101,14 @@ YogCode_dump(YogEnv* env, YogVal code)
 #define OPERAND(type, offset) \
         (*((type*)&PTR_AS(YogByteArray, insts)->items[n + (offset)]))
         switch (op) {
+        case OP(LOAD_NONLOCAL):
+        case OP(STORE_NONLOCAL):
+            {
+                uint8_t level = OPERAND(uint8_t, 0);
+                uint8_t index = OPERAND(uint8_t, 1);
+                printf(" %d %d", level, index);
+            }
+            break;
         case OP(LOAD_LOCAL):
             {
                 uint8_t index = OPERAND(uint8_t, 0);

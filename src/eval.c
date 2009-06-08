@@ -34,6 +34,19 @@
     CUR_FRAME = PTR_AS(YogFrame, CUR_FRAME)->prev; \
 } while (0)
 
+static YogVal*
+get_outer_vars_ptr(YogEnv* env, unsigned int level, unsigned int index)
+{
+    YogVal outer_vars = PTR_AS(YogScriptFrame, CUR_FRAME)->outer_vars;
+    YOG_ASSERT(env, IS_PTR(outer_vars), "no outer variables");
+    unsigned int depth = PTR_AS(YogOuterVars, outer_vars)->size;
+    YOG_ASSERT(env, level <= depth, "invalid level");
+    YogVal vars = PTR_AS(YogOuterVars, outer_vars)->items[level - 1];
+    unsigned int size = YogValArray_size(env, vars);
+    YOG_ASSERT(env, index < size, "invalid index");
+    return &PTR_AS(YogValArray, vars)->items[index];
+}
+
 YogVal 
 YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, unsigned int argc, YogVal* args) 
 {
@@ -288,6 +301,26 @@ call_builtin_bound_method(YogEnv* env, YogVal method, uint8_t posargc, YogVal po
 
 #undef DECL_ARGS
 
+static YogVal
+make_outer_vars(YogEnv* env, unsigned int depth)
+{
+    YogVal outer_vars = YogOuterVars_new(env, depth);
+
+    YogVal frame = CUR_FRAME;
+    unsigned int i;
+    for (i = 0; i < depth; i++) {
+        YOG_ASSERT(env, IS_PTR(frame), "frame is not object");
+        YOG_ASSERT(env, PTR_AS(YogFrame, frame)->type == FRAME_METHOD, "frame type isn't FRAME_METHOD");
+
+        YogVal* items = PTR_AS(YogOuterVars, outer_vars)->items;
+        items[i] = PTR_AS(YogMethodFrame, frame)->vars;
+
+        frame = PTR_AS(YogFrame, frame)->prev;
+    }
+
+    return outer_vars;
+}
+
 static void 
 setup_script_method(YogEnv* env, YogVal method, YogVal code) 
 {
@@ -297,19 +330,7 @@ setup_script_method(YogEnv* env, YogVal method, YogVal code)
     MODIFY(env, PTR_AS(YogScriptMethod, method)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
 
     unsigned int outer_size = PTR_AS(YogCode, code)->outer_size;
-    YogVal outer_vars = YogOuterVars_new(env, outer_size);
-
-    YogVal frame = PTR_AS(YogFrame, CUR_FRAME)->prev;
-    unsigned int i = 0;
-    for (i = 0; i < outer_size; i++) {
-        YOG_ASSERT(env, IS_PTR(frame), "frame is not object");
-        YOG_ASSERT(env, PTR_AS(YogFrame, frame)->type == FRAME_METHOD, "frame type isn't FRAME_METHOD");
-
-        YogVal* items = PTR_AS(YogOuterVars, outer_vars)->items;
-        MODIFY(env, items[i], LOCAL_VARS(frame));
-
-        frame = PTR_AS(YogFrame, frame)->prev;
-    }
+    YogVal outer_vars = make_outer_vars(env, outer_size);
 
     MODIFY(env, PTR_AS(YogScriptMethod, method)->outer_vars, outer_vars);
 

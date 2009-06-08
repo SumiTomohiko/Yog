@@ -189,7 +189,10 @@ inst make_block
     block = YogBlock_new(ENV);
     MODIFY(env, PTR_AS(YogBasicBlock, block)->code, code);
     MODIFY(env, PTR_AS(YogBlock, block)->locals, PTR_AS(YogMethodFrame, CUR_FRAME)->vars);
-    MODIFY(env, PTR_AS(YogBlock, block)->outer_vars, SCRIPT_FRAME(CUR_FRAME)->outer_vars);
+
+    unsigned int outer_depth = PTR_AS(YogCode, code)->outer_size;
+    YogVal outer_vars = make_outer_vars(env, outer_depth);
+    PTR_AS(YogBlock, block)->outer_vars = outer_vars;
     MODIFY(env, PTR_AS(YogBlock, block)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
 }
 
@@ -251,18 +254,20 @@ inst ret
 
 inst store_nonlocal
 (uint8_t level, uint8_t index) 
-()
-(val) 
+(val)
+() 
 {
-    /* TODO */
+    YogVal* ptr = get_outer_vars_ptr(ENV, level, index);
+    *ptr = val;
 }
 
 inst load_nonlocal 
 (uint8_t level, uint8_t index) 
-(val)
 ()
+(val)
 {
-    /* TODO */
+    YogVal* ptr = get_outer_vars_ptr(ENV, level, index);
+    val = *ptr;
 }
 
 inst store_global 
