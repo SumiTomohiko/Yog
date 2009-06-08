@@ -45,16 +45,4 @@ main()""", """0
 42
 """)
 
-    def test_block13(self):
-        self._test("""
-class Foo
-  n = 42
-  1.times() [n]
-    puts n
-  end
-  puts n
-end""", """0
-42
-""")
-
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
