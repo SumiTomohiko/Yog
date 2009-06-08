@@ -773,15 +773,16 @@ YogEval_call_block(YogEnv* env, YogVal block, unsigned int argc, YogVal* args)
         YogVal code = YUNDEF;
         PUSH_LOCALS2(env, frame, code);
 
-        code = PTR_AS(YogBasicBlock, block)->code;
         frame = PTR2VAL(YogMethodFrame_new(env));
         code = PTR_AS(YogBasicBlock, block)->code;
+        DEBUG(DUMP_CODE(code));
         setup_script_frame(env, frame, code);
         MODIFY(env, SCRIPT_FRAME(frame)->globals, PTR_AS(YogBlock, block)->globals);
         MODIFY(env, SCRIPT_FRAME(frame)->outer_vars, PTR_AS(YogBlock, block)->outer_vars);
-        MODIFY(env, PTR_AS(YogMethodFrame, frame)->vars, PTR_AS(YogBlock, block)->locals);
+        unsigned int local_vars_count = PTR_AS(YogCode, code)->local_vars_count;
+        YogVal vars = YogValArray_new(env, local_vars_count);
+        PTR_AS(YogMethodFrame, frame)->vars = vars;
 
-        YogVal vars = PTR_AS(YogMethodFrame, frame)->vars;
         fill_args(env, PTR_AS(YogCode, code)->arg_info, argc, args, YUNDEF, 0, NULL, YUNDEF, YUNDEF, PTR_AS(YogValArray, vars)->size, vars, 1);
 
         retval = mainloop(env, frame, code);
