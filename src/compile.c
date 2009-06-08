@@ -2244,7 +2244,7 @@ static void
 register_upper_vars(YogEnv* env, YogVal var_tbl, YogVal upper_vars)
 {
     SAVE_ARGS2(env, var_tbl, upper_vars);
-    YogTable_foreach(env, var_tbl, register_upper_vars_callback, &var_tbl);
+    YogTable_foreach(env, upper_vars, register_upper_vars_callback, &var_tbl);
     RETURN_VOID(env);
 }
 
