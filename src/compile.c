@@ -1687,6 +1687,7 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, Y
 
     stmts = NODE(node)->u.funcdef.stmts;
     var_tbl = make_var_table(env, stmts, YUNDEF);
+
     vars = vars_flags2type(env, var_tbl, upper);
 
     ID func_name = NODE(node)->u.funcdef.name;
@@ -2203,8 +2204,17 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     YogVal var_tbl = YUNDEF;
     PUSH_LOCALS5(env, vars, code, filename, stmts, var_tbl);
 
+    YogVal params = YUNDEF;
+    PUSH_LOCAL(env, params);
+
+    var_tbl = var_table_new(env);
+
+    params = NODE(node)->u.blockarg.params;
+    register_params_var_table(env, params, var_tbl);
+
     stmts = NODE(node)->u.blockarg.stmts;
-    var_tbl = make_var_table(env, stmts, YUNDEF);
+    var_tbl = make_var_table(env, stmts, var_tbl);
+
     vars = vars_flags2type(env, var_tbl, data);
 
     filename = COMPILE_DATA(data)->filename;
@@ -2212,7 +2222,6 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     ID func_name = INTERN("<block>");
     code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL, data);
 
-    YogVal params = NODE(node)->u.blockarg.params;
     setup_params(env, vars, params, code);
 
     RETURN(env, code);
