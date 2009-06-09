@@ -1203,9 +1203,9 @@ CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 }
 
 static YogVal 
-CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID klass_name) 
+CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID klass_name, YogVal upper_data)
 {
-    SAVE_ARGS4(env, vars, anchor, exc_tbl_ent, filename);
+    SAVE_ARGS5(env, vars, anchor, exc_tbl_ent, filename, upper_data);
 
     YogVal data = ALLOC_OBJ(env, CompileData_keep_children, NULL, CompileData);
     COMPILE_DATA(data)->ctx = ctx;
@@ -1221,7 +1221,7 @@ CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc
     MODIFY(env, COMPILE_DATA(data)->exc_tbl_last, exc_tbl_ent);
     MODIFY(env, COMPILE_DATA(data)->filename, filename);
     COMPILE_DATA(data)->klass_name = klass_name;
-    COMPILE_DATA(data)->outer = YUNDEF;
+    COMPILE_DATA(data)->outer = upper_data;
 
     RETURN(env, data);
 }
@@ -1308,9 +1308,9 @@ alloc_local_vars_table(YogEnv* env, YogVal vars, unsigned int count)
 }
 
 static YogVal 
-compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, ID func_name, YogVal stmts, YogVal vars, Context ctx, YogVal tail) 
+compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, ID func_name, YogVal stmts, YogVal vars, Context ctx, YogVal tail, YogVal upper_data)
 {
-    SAVE_ARGS4(env, filename, stmts, vars, tail);
+    SAVE_ARGS5(env, filename, stmts, vars, tail, upper_data);
 
     YogVal anchor = YUNDEF;
     YogVal exc_tbl_ent = YUNDEF;
@@ -1319,7 +1319,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, 
 
     anchor = Anchor_new(env);
     exc_tbl_ent = ExceptionTableEntry_new(env);
-    data = CompileData_new(env, ctx, vars, anchor, exc_tbl_ent, filename, klass_name);
+    data = CompileData_new(env, ctx, vars, anchor, exc_tbl_ent, filename, klass_name, upper_data);
 
     visitor->visit_stmts(env, visitor, stmts, data);
     if (IS_PTR(tail)) {
@@ -1686,12 +1686,12 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, Y
     register_params_var_table(env, params, var_tbl);
 
     stmts = NODE(node)->u.funcdef.stmts;
-    make_var_table(env, stmts, var_tbl);
+    var_tbl = make_var_table(env, stmts, YUNDEF);
     vars = vars_flags2type(env, var_tbl, upper);
 
     ID func_name = NODE(node)->u.funcdef.name;
 
-    YogVal code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL);
+    YogVal code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL, upper);
     PUSH_LOCAL(env, code);
     setup_params(env, vars, params, code);
 
@@ -2191,70 +2191,6 @@ compile_visit_next(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     compile_while_jump(env, visitor, node, data, label_while_start);
 }
 
-static BOOL
-is_param(YogEnv* env, YogVal var_tbl, ID name)
-{
-    YogVal entry = YUNDEF;
-    if (!YogTable_lookup(env, var_tbl, ID2VAL(name), &entry)) {
-        return FALSE;
-    }
-    unsigned int flags = SCAN_VAR_ENTRY(entry)->flags;
-    if (IS_PARAM(flags)) {
-        return TRUE;
-    }
-    else {
-        return FALSE;
-    }
-}
-
-static int 
-register_upper_vars_callback(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
-{
-    SAVE_ARGS2(env, key, value);
-
-    if (VAL2ID(key) == YogVM_intern(env, env->vm, "self")) {
-        scan_var_register(env, *arg, VAL2ID(key), VAR_PARAM);
-        RETURN(env, ST_CONTINUE);
-    }
-    if (is_param(env, *arg, VAL2ID(key))) {
-        RETURN(env, ST_CONTINUE);
-    }
-
-    scan_var_register(env, *arg, VAL2ID(key), VAR_NONLOCAL);
-
-    RETURN(env, ST_CONTINUE);
-}
-
-static void
-register_upper_vars(YogEnv* env, YogVal var_tbl, YogVal upper_vars)
-{
-    SAVE_ARGS2(env, var_tbl, upper_vars);
-    YogTable_foreach(env, upper_vars, register_upper_vars_callback, &var_tbl);
-    RETURN_VOID(env);
-}
-
-static YogVal
-make_vars_table_of_block(YogEnv* env, YogVal node, YogVal upper_data)
-{
-    SAVE_ARGS2(env, node, upper_data);
-
-    YogVal var_tbl = YUNDEF;
-    PUSH_LOCAL(env, var_tbl);
-
-    var_tbl = var_table_new(env);
-
-    YogVal params = NODE(node)->u.blockarg.params;
-    register_params_var_table(env, params, var_tbl);
-
-    register_upper_vars(env, var_tbl, COMPILE_DATA(upper_data)->vars);
-
-    YogVal stmts = NODE(node)->u.blockarg.stmts;
-    make_var_table(env, stmts, var_tbl);
-    YogVal vars = vars_flags2type(env, var_tbl, upper_data);
-
-    RETURN(env, vars);
-}
-
 static YogVal 
 compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
 {
@@ -2263,15 +2199,18 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     YogVal vars = YUNDEF;
     YogVal code = YUNDEF;
     YogVal filename = YUNDEF;
-    PUSH_LOCALS3(env, vars, code, filename);
+    YogVal stmts = YUNDEF;
+    YogVal var_tbl = YUNDEF;
+    PUSH_LOCALS5(env, vars, code, filename, stmts, var_tbl);
 
-    vars = make_vars_table_of_block(env, node, data);
+    stmts = NODE(node)->u.blockarg.stmts;
+    var_tbl = make_var_table(env, stmts, YUNDEF);
+    vars = vars_flags2type(env, var_tbl, data);
 
     filename = COMPILE_DATA(data)->filename;
     ID klass_name = INVALID_ID;
     ID func_name = INTERN("<block>");
-    YogVal stmts = NODE(node)->u.blockarg.stmts;
-    code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL);
+    code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL, data);
 
     YogVal params = NODE(node)->u.blockarg.params;
     setup_params(env, vars, params, code);
@@ -2325,7 +2264,7 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, uns
     YogVal filename = COMPILE_DATA(data)->filename;
     ID func_name = INVALID_ID;
 
-    YogVal code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_KLASS, push_self_name);
+    YogVal code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_KLASS, push_self_name, COMPILE_DATA(data)->outer);
 
     RETURN(env, code);
 }
@@ -2533,7 +2472,7 @@ YogCompiler_compile_module(YogEnv* env, const char* filename, YogVal stmts)
     ID klass_name = INVALID_ID;
     ID func_name = INTERN("<module>");
 
-    YogVal code = compile_stmts(env, &visitor, name, klass_name, func_name, stmts, vars, CTX_PKG, YNIL);
+    YogVal code = compile_stmts(env, &visitor, name, klass_name, func_name, stmts, vars, CTX_PKG, YNIL, YUNDEF);
 
     RETURN(env, code);
 }
