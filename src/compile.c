@@ -1686,7 +1686,7 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, Y
     register_params_var_table(env, params, var_tbl);
 
     stmts = NODE(node)->u.funcdef.stmts;
-    var_tbl = make_var_table(env, stmts, YUNDEF);
+    var_tbl = make_var_table(env, stmts, var_tbl);
 
     vars = vars_flags2type(env, var_tbl, upper);
 
