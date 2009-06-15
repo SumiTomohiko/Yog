@@ -74,15 +74,21 @@ round_size(size_t size)
 void* 
 YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr) 
 {
-#define PRINT(...)  DEBUG(DPRINTF("copy: " __VA_ARGS__))
+#define PRINT_HEAP(text, heap)   do { \
+    DEBUG(DPRINTF("%p: %s: %p-%p", env, (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
+} while (0)
+    PRINT_HEAP("active heap", copying->active_heap);
+    PRINT_HEAP("inactive heap", copying->inactive_heap);
+#undef PRINT_HEAP
+
     if (ptr == NULL) {
-        PRINT("NULL->NULL");
+        DEBUG(DPRINTF("%p: copy: NULL->NULL", env));
         return NULL;
     }
 
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
     if (header->forwarding_addr != NULL) {
-        PRINT("%p->(%p)", ptr, header->forwarding_addr);
+        DEBUG(DPRINTF("%p: forward: %p->(%p)", env, ptr, header->forwarding_addr));
         return header->forwarding_addr;
     }
 
@@ -99,11 +105,10 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
     header->forwarding_addr = (YogCopyingHeader*)dest + 1;
 
     copying->unscanned += size;
-    DEBUG(DPRINTF("unscanned: %p->%p (0x%02x)", dest, copying->unscanned, size));
+    DEBUG(DPRINTF("%p: unscanned: %p->%p (0x%02x)", env, dest, copying->unscanned, size));
+    DEBUG(DPRINTF("%p: copy: %p->%p", env, ptr, (YogCopyingHeader*)dest + 1));
 
-    PRINT("%p->%p", ptr, (YogCopyingHeader*)dest + 1);
     return (YogCopyingHeader*)dest + 1;
-#undef PRINT
 }
 
 static void 
@@ -150,8 +155,8 @@ static void
 delete_garbage_each(YogEnv* env, YogCopyingHeader* header) 
 {
     if (header->forwarding_addr == NULL) {
-        DEBUG(DPRINTF("finalize: %p", header));
-        DEBUG(DPRINTF("header->finalizer=%p", header->finalizer));
+        DEBUG(DPRINTF("%p: finalize: %p", env, header));
+        DEBUG(DPRINTF("%p: header->finalizer=%p", env, header->finalizer));
         if (header->finalizer != NULL) {
             (*header->finalizer)(env, header + 1);
         }
@@ -207,6 +212,7 @@ YogCopying_scan(YogEnv* env, YogCopying* copying, ObjectKeeper keeper, void* hea
         YogCopyingHeader* header = (YogCopyingHeader*)copying->scanned;
         ChildrenKeeper children_keeper = header->keeper;
         if (children_keeper != NULL) {
+            DEBUG(DPRINTF("children_keeper=%p", children_keeper));
             (*children_keeper)(env, header + 1, keeper, heap);
         }
 
@@ -240,7 +246,7 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
     size_t needed_size = size + sizeof(YogCopyingHeader);
     size_t rounded_size = round_size(needed_size);
 #define PRINT_HEAP(text, heap)   do { \
-    DEBUG(DPRINTF("%s: %p-%p", (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
+    DEBUG(DPRINTF("%p: %s: %p-%p", env, (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
 } while (0)
     PRINT_HEAP("active heap", copying->active_heap);
     PRINT_HEAP("inactive heap", copying->inactive_heap);

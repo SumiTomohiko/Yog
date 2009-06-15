@@ -12,7 +12,7 @@
 #endif
 
 #if 0
-#   define DEBUG(x) x
+#   define DEBUG(x)     x
 #else
 #   define DEBUG(x)
 #endif
@@ -41,6 +41,7 @@ void*
 YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper, void* heap)
 {
     DEBUG(DPRINTF("YogGenerational_copy_young_object(env=%p, ptr=%p, obj_keeper=%p, heap=%p)", env, ptr, obj_keeper, heap));
+
     YogGenerational* gen = heap;
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
     DEBUG(DPRINTF("alive: %p (%p)", header, ptr));
@@ -151,6 +152,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
         return NULL;
     }
     if (!IS_YOUNG(ptr)) {
+        DEBUG(DPRINTF("%p: %p is in old generation.", env, ptr));
         return ptr;
     }
 
