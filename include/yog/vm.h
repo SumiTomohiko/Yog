@@ -103,7 +103,6 @@ void YogVM_wait_finish(YogEnv*, YogVM*);
 #include "yog/env.h"
 
 #define INTERN(s)   YogVM_intern(env, env->vm, s)
-#define BUILTINS    "builtins"
 
 #endif
 /**

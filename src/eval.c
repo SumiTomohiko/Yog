@@ -471,7 +471,7 @@ lookup_frame_vars(YogEnv* env, YogVal frame, ID name, YogVal* val)
 static YogVal 
 lookup_builtins(YogEnv* env, ID name) 
 {
-    YogVal builtins_name = ID2VAL(INTERN(BUILTINS));
+    YogVal builtins_name = ID2VAL(INTERN("builtins"));
     YogVal builtins = YUNDEF;
     YogVM* vm = env->vm;
     if (!YogTable_lookup(env, vm->pkgs, builtins_name, &builtins)) {

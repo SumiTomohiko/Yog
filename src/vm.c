@@ -157,7 +157,7 @@ static void
 setup_builtins(YogEnv* env, YogVM* vm) 
 {
     YogVal builtins = YogBuiltins_new(env);
-    YogVM_register_package(env, vm, BUILTINS, builtins);
+    YogVM_register_package(env, vm, "builtins", builtins);
 }
 
 static void 
