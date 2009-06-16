@@ -82,13 +82,7 @@ YogPackage_klass_new(YogEnv* env)
 YogVal 
 YogPackage_new(YogEnv* env) 
 {
-    YogVal pkg = allocate(env, env->vm->cPackage);
-    PUSH_LOCAL(env, pkg);
-
-    YogPackage_init(env, pkg);
-
-    POP_LOCALS(env);
-    return pkg;
+    return allocate(env, env->vm->cPackage);
 }
 
 /**
