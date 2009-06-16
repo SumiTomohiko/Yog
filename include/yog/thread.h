@@ -155,11 +155,6 @@ struct YogThread {
     struct YogJmpBuf* jmp_buf_list;
     YogVal jmp_val;
     struct YogLocals* locals;
-#if defined(GC_GENERATIONAL)
-    YogVal** ref_tbl;
-    YogVal** ref_tbl_ptr;
-    YogVal** ref_tbl_limit;
-#endif
 
     YogVal block;
     pthread_t pthread;
