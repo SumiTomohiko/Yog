@@ -21,13 +21,6 @@
 #   include <CUnit/CUnit.h>
 #endif
 
-/* TODO: commonize with yog/yog.h */
-#if defined(__YOG_YOG_H__)
-#   define BOOL    int
-#   define FALSE   (0)
-#   define TRUE    (!FALSE)
-#endif
-
 #if 0
 #   define DEBUG(x)     x
 #else
