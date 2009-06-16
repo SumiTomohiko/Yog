@@ -415,11 +415,6 @@ YogVM_init(YogVM* vm)
 void 
 YogVM_delete(YogEnv* env, YogVM* vm) 
 {
-#if 0
-    if (vm->free_mem != NULL) {
-        (*vm->free_mem)(env, vm);
-    }
-#endif
     if (pthread_cond_destroy(&vm->vm_finish_cond) != 0) {
         YOG_WARN(env, "pthread_cond_destroy failed");
     }
@@ -433,6 +428,10 @@ YogVM_delete(YogEnv* env, YogVM* vm)
         YOG_WARN(env, "pthread_mutex_destroy failed");
     }
     pthread_rwlock_destroy(&vm->pkgs_lock);
+
+#if !defined(GC_BDW)
+    YogGC_delete(env);
+#endif
 }
 
 void 

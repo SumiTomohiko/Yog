@@ -338,6 +338,15 @@ YogGC_perform(YogEnv* env)
 {
     perform(env, gc);
 }
+
+void
+YogGC_delete(YogEnv* env)
+{
+    prepare(env);
+    delete_garbage(env);
+    post_gc(env);
+    delete_heaps(env);
+}
 #endif
 
 #if defined(GC_GENERATIONAL)
@@ -428,6 +437,15 @@ major_gc(YogEnv* env)
     major_post_gc(env);
     delete_heaps(env);
     DEBUG(DPRINTF("%p: exit major_gc", env));
+}
+
+void
+YogGC_delete(YogEnv* env)
+{
+    prepare(env);
+    major_delete_garbage(env);
+    major_post_gc(env);
+    delete_heaps(env);
 }
 
 void 
