@@ -153,6 +153,7 @@ struct CompileData {
     ID klass_name;
 
     YogVal outer;
+    unsigned int max_outer_depth;
 };
 
 typedef struct CompileData CompileData;
@@ -1222,6 +1223,7 @@ CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc
     MODIFY(env, COMPILE_DATA(data)->filename, filename);
     COMPILE_DATA(data)->klass_name = klass_name;
     COMPILE_DATA(data)->outer = upper_data;
+    COMPILE_DATA(data)->max_outer_depth = 0;
 
     RETURN(env, data);
 }
@@ -1307,6 +1309,17 @@ alloc_local_vars_table(YogEnv* env, YogVal vars, unsigned int count)
     RETURN(env, PTR_AS(ID, names));
 }
 
+static void
+update_max_outer_depth(YogVal data, unsigned int depth)
+{
+    if (!IS_PTR(data)) {
+        return;
+    }
+    if (COMPILE_DATA(data)->max_outer_depth + 1 < depth) {
+        COMPILE_DATA(data)->max_outer_depth = depth - 1;
+    }
+}
+
 static YogVal 
 compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, ID func_name, YogVal stmts, YogVal vars, Context ctx, YogVal tail, YogVal upper_data)
 {
@@ -1360,7 +1373,12 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, 
     YogVal consts = table2array(env, COMPILE_DATA(data)->const2index);
     MODIFY(env, CODE(code)->consts, consts);
     MODIFY(env, CODE(code)->insts, PTR_AS(YogBinary, bin)->body);
-    CODE(code)->outer_size = get_max_outer_level(env, vars);
+    unsigned int outer_depth = get_max_outer_level(env, vars);
+    if (outer_depth < COMPILE_DATA(data)->max_outer_depth) {
+        outer_depth = COMPILE_DATA(data)->max_outer_depth;
+    }
+    CODE(code)->outer_size = outer_depth;
+    update_max_outer_depth(upper_data, outer_depth);
 
     make_exception_table(env, code, data);
     make_lineno_table(env, code, anchor);
