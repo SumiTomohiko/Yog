@@ -51,9 +51,6 @@ YogVal
 YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, unsigned int argc, YogVal* args) 
 {
     SAVE_ARG(env, receiver);
-#if 0
-    PUSH_LOCALSX(env, argc, args);
-#endif
 
     ID id = YogVM_intern(env, env->vm, method);
     YogVal retval = YogEval_call_method_id(env, receiver, id, argc, args);
@@ -83,10 +80,6 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
 
     YogVal array = YUNDEF;
     PUSH_LOCAL(env, array);
-#if 0
-    PUSH_LOCALSX(env, posargc, posargs);
-    PUSH_LOCALSX(env, 2 * kwargc, kwargs);
-#endif
 
     unsigned int i = 0;
     unsigned int arg_argc = ARG_INFO(arg_info)->argc;
@@ -158,10 +151,6 @@ static void
 fill_builtin_function_args(YogEnv* env, YogVal f, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal args)
 {
     SAVE_ARGS5(env, f, blockarg, vararg, varkwarg, args);
-#if 0
-    PUSH_LOCALSX(env, posargc, posargs);
-    PUSH_LOCALSX(env, 2 * kwargc, kwargs);
-#endif
 
     unsigned int argc = YogValArray_size(env, args);
 
@@ -224,10 +213,6 @@ static YogVal
 call_builtin_unbound_method(YogEnv* env, YogVal receiver, YogVal method, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg) 
 {
     SAVE_ARGS5(env, receiver, method, blockarg, vararg, varkwarg);
-#if 0
-    PUSH_LOCALSX(env, posargc, posargs);
-    PUSH_LOCALSX(env, 2 * kwargc, kwargs);
-#endif
 
     YogVal args = YUNDEF;
     YogVal f = YUNDEF;
@@ -263,10 +248,6 @@ static YogVal
 call_builtin_bound_method(YogEnv* env, YogVal method, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg) 
 {
     SAVE_ARGS4(env, method, blockarg, vararg, varkwarg);
-#if 0
-    PUSH_LOCALSX(env, posargc, posargs);
-    PUSH_LOCALSX(env, 2 * kwargc, kwargs);
-#endif
 
     YogVal args = YUNDEF;
     YogVal f = YUNDEF;
@@ -372,10 +353,6 @@ call_code(YogEnv* env, YogVal self, YogVal code, YogVal outer_vars, uint8_t posa
 {
     SAVE_ARGS5(env, self, code, blockarg, vararg, varkwarg);
     PUSH_LOCAL(env, outer_vars);
-#if 0
-    PUSH_LOCALSX(env, posargc, posargs);
-    PUSH_LOCALSX(env, 2 * kwargc, kwargs);
-#endif
 
     YogVal vars = YUNDEF;
     YogVal frame = YUNDEF;
@@ -410,10 +387,6 @@ static void
 call_method(YogEnv* env, YogVal unbound_self, YogVal callee, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
     SAVE_ARGS5(env, unbound_self, callee, blockarg, vararg, varkwarg);
-#if 0
-    PUSH_LOCALSX(env, posargc, posargs);
-    PUSH_LOCALSX(env, 2 * kwargc, kwargs);
-#endif
 
     YOG_ASSERT(env, IS_PTR(callee), "Callee is not object.");
     if (IS_OBJ_OF(cBuiltinBoundMethod, callee)) {
@@ -715,9 +688,6 @@ static YogVal
 eval_code(YogEnv* env, YogVal code, YogVal receiver, YogVal outer_vars, unsigned int argc, YogVal args[]) 
 {
     SAVE_ARGS3(env, code, receiver, outer_vars);
-#if 0
-    PUSH_LOCALSX(env, argc, args);
-#endif
 
     YogVal undef = YUNDEF;
     call_code(env, receiver, code, outer_vars, argc, args, undef, 0, NULL, undef, undef);
@@ -744,9 +714,6 @@ YogVal
 YogEval_call_block(YogEnv* env, YogVal block, unsigned int argc, YogVal* args) 
 {
     SAVE_ARG(env, block);
-#if 0
-    PUSH_LOCALSX(env, argc, args);
-#endif
 
     YogVal retval = YUNDEF;
     if (IS_OBJ_OF(cPackageBlock, block)) {
@@ -832,9 +799,6 @@ YogVal
 YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, unsigned int argc, YogVal* args) 
 {
     SAVE_ARG(env, receiver);
-#if 0
-    PUSH_LOCALSX(env, argc, args);
-#endif
 
     YogVal attr = YogVal_get_attr(env, receiver, method);
     YOG_ASSERT(env, IS_PTR(attr), "Attribute isn't object.");
