@@ -181,6 +181,7 @@ static void
 delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header) 
 {
     size_t size = header->size;
+    DEBUG(DPRINTF("delete: %p", header + 1));
     destroy_memory(header, size);
 
     if (IS_SMALL_OBJ(size)) {
@@ -861,10 +862,15 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
     for (j = 0; j < obj_num; j++) { \
         unsigned char* obj = (unsigned char*)page + sizeof(YogMarkSweepCompactPage) + obj_size * j; \
         YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)obj; \
-        if (IS_OBJ_USED(header) && !header->marked) { \
-            ChildrenKeeper keeper = header->keeper; \
-            if (keeper != NULL) { \
-                (*keeper)(env, header + 1, minor_gc_keep_object, heap); \
+        if (IS_OBJ_USED(header)) { \
+            if (header->marked) { \
+                heap->has_young_ref = TRUE; \
+            } \
+            else { \
+                ChildrenKeeper keeper = header->keeper; \
+                if (keeper != NULL) { \
+                    (*keeper)(env, header + 1, minor_gc_keep_object, heap); \
+                } \
             } \
         } \
     } \
