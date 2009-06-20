@@ -265,11 +265,13 @@ run_of_new_thread(void* arg)
     PUSH_LOCALSX(&env, size, args);
 
     YogVal block = PTR_AS(YogThread, thread)->block;
-    YogVal retval = YogEval_call_block(&env, block, size, args);
+    YogEval_call_block(&env, block, size, args);
+
+    RESTORE_LOCALS(&env);
 
     YogVM_remove_thread(&env, env.vm, env.thread);
 
-    RETURN(&env, (void*)retval);
+    return NULL;
 }
 
 static YogVal

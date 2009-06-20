@@ -497,9 +497,9 @@ YogVM_remove_thread(YogEnv* env, YogVM* vm, YogVal thread)
         pthread_cond_signal(&vm->vm_finish_cond);
     }
 
-    YogVM_release_global_interp_lock(env, vm);
+    RESTORE_LOCALS(env);
 
-    RETURN_VOID(env);
+    YogVM_release_global_interp_lock(env, vm);
 }
 
 #if !defined(GC_BDW)
