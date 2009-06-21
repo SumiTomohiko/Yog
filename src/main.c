@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if defined(HAVE_CONFIG_H)
+#   include "config.h"
+#endif
 #include "yog/code.h"
 #include "yog/env.h"
 #include "yog/error.h"
@@ -15,17 +18,36 @@
 #   include "gc.h"
 #endif
 
+static void
+print_version()
+{
+#if defined(GC_COPYING)
+#   define GC_NAME  "copying"
+#elif defined(GC_MARK_SWEEP)
+#   define GC_NAME  "mark-sweep"
+#elif defined(GC_MARK_SWEEP_COMPACT)
+#   define GC_NAME  "mark-sweep-compact"
+#elif defined(GC_GENERATIONAL)
+#   define GC_NAME  "generational"
+#elif defined(GC_BDW)
+#   define GC_NAME  "BDW"
+#endif
+    printf("yog version %s %s GC\n", PACKAGE_VERSION, GC_NAME);
+#undef GC_NAME
+}
+
 static void 
 usage()
 {
-    printf("yog [options] [file]\n");
-    printf("options:\n");
-    printf("  --debug-parser: \n");
-    printf("  --gc-stress: \n");
-    printf("  --help: \n");
-    printf("  --init-heap-size=size: \n");
-    printf("  --print-gc-stat: \n");
-    printf("  --threshold=size: \n");
+    puts("yog [options] [file]");
+    puts("options:");
+    puts("  --debug-parser: ");
+    puts("  --gc-stress: ");
+    puts("  --help: ");
+    puts("  --init-heap-size=size: ");
+    puts("  --print-gc-stat: ");
+    puts("  --threshold=size: ");
+    puts("  --version");
 }
 
 static size_t 
@@ -81,6 +103,7 @@ main(int argc, char* argv[])
         { "help", no_argument, &help, 1 }, 
         { "init-heap-size", required_argument, NULL, 'i' }, 
         { "threshold", required_argument, NULL, 't' }, 
+        { "version", no_argument, NULL, 'v' }, 
         { 0, 0, 0, 0 }, 
     };
 #define USAGE       usage()
@@ -99,6 +122,10 @@ main(int argc, char* argv[])
             break;
         case 't':
             threshold = parse_size(optarg);
+            break;
+        case 'v':
+            print_version();
+            exit(0);
             break;
         default:
             ERROR("Unknown option.");
