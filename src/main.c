@@ -32,7 +32,7 @@ print_version()
 #elif defined(GC_BDW)
 #   define GC_NAME  "BDW"
 #endif
-    printf("yog version %s %s GC\n", PACKAGE_VERSION, GC_NAME);
+    printf("yog %s %s GC\n", PACKAGE_VERSION, GC_NAME);
 #undef GC_NAME
 }
 
