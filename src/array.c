@@ -1,7 +1,10 @@
 #include <string.h>
 #include "yog/array.h"
 #include "yog/error.h"
+#include "yog/frame.h"
 #include "yog/gc.h"
+#include "yog/klass.h"
+#include "yog/object.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -127,14 +130,16 @@ YogArray_extend(YogEnv* env, YogVal array, YogVal a)
 static void 
 YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
     YogArray* array = ptr;
     YogGC_keep(env, &array->body, keeper, heap);
 }
 
-YogVal
-YogArray_of_size(YogEnv* env, unsigned int size)
+static YogVal
+allocate_object(YogEnv* env, YogVal klass, unsigned int size)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, klass);
 
     YogVal body = YUNDEF;
     YogVal array = YUNDEF;
@@ -142,8 +147,30 @@ YogArray_of_size(YogEnv* env, unsigned int size)
 
     body = YogValArray_new(env, size);
     array = ALLOC_OBJ(env, YogArray_keep_children, NULL, YogArray);
+    YogBasicObj_init(env, array, 0, klass);
     PTR_AS(YogArray, array)->size = 0;
     PTR_AS(YogArray, array)->body = body;
+
+    RETURN(env, array);
+}
+
+YogVal
+YogArray_of_size(YogEnv* env, unsigned int size)
+{
+    return allocate_object(env, env->vm->cArray, size);
+}
+
+static YogVal 
+allocate(YogEnv* env, YogVal klass) 
+{
+    SAVE_ARG(env, klass);
+
+    YogVal array = YUNDEF;
+    PUSH_LOCAL(env, array);
+
+#define INIT_SIZE   1
+    array = allocate_object(env, klass, INIT_SIZE);
+#undef INIT_SIZE
 
     RETURN(env, array);
 }
@@ -154,6 +181,50 @@ YogArray_new(YogEnv* env)
 #define INIT_SIZE   (1)
     return YogArray_of_size(env, INIT_SIZE);
 #undef INIT_SIZE
+}
+
+static YogVal
+lshift(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+
+    YogVal self = SELF(env);
+    YogVal elem = ARG(env, 0);
+    PUSH_LOCALS2(env, self, elem);
+
+    YogArray_push(env, self, elem);
+
+    RETURN(env, self);
+}
+
+static YogVal
+subscript(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+
+    YogVal self = SELF(env);
+    YogVal n = ARG(env, 0);
+    PUSH_LOCAL(env, self);
+
+    YogVal v = YogArray_at(env, self, VAL2INT(n));
+
+    RETURN(env, v);
+}
+
+YogVal
+YogArray_klass_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = YogKlass_new(env, "Array", env->vm->cObject);
+    YogKlass_define_allocator(env, klass, allocate);
+    YogKlass_define_method(env, klass, "<<", lshift, 0, 0, 0, 0, "elem", NULL);
+    YogKlass_define_method(env, klass, "[]", subscript, 0, 0, 0, 0, "n", NULL);
+
+    RETURN(env, klass);
 }
 
 /**

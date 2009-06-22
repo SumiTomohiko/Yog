@@ -45,6 +45,7 @@ struct YogVM {
     YogVal cNil;
     YogVal cFloat;
     YogVal cThread;
+    YogVal cArray;
 
     YogVal eException;
     YogVal eBugException;

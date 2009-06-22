@@ -515,8 +515,9 @@
                 YogVal body = PTR_AS(YogArray, array)->body;
                 PTR_AS(YogValArray, body)->items[size - i - 1] = POP();
             }
+            PTR_AS(YogArray, array)->size = size;
 
-#line 493 "../src/eval.inc"
+#line 494 "../src/eval.inc"
             PUSH(array);
             POP_LOCALS(ENV);
             break;

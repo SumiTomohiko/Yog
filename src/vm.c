@@ -210,6 +210,7 @@ setup_klasses(YogEnv* env, YogVM* vm)
     vm->cNil = YogNil_klass_new(env);
     vm->cFloat = YogFloat_klass_new(env);
     vm->cThread = YogThread_klass_new(env);
+    vm->cArray = YogArray_klass_new(env);
 }
 
 static void 
@@ -337,6 +338,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cNil);
     KEEP(cFloat);
     KEEP(cThread);
+    KEEP(cArray);
 
     KEEP(eException);
     KEEP(eBugException);
@@ -387,6 +389,7 @@ YogVM_init(YogVM* vm)
     vm->cNil = YUNDEF;
     vm->cFloat = YUNDEF;
     vm->cThread = YUNDEF;
+    vm->cArray = YUNDEF;
 
     vm->eException = YUNDEF;
     vm->eBugException = YUNDEF;

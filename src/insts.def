@@ -298,6 +298,7 @@ inst make_array
         YogVal body = PTR_AS(YogArray, array)->body;
         PTR_AS(YogValArray, body)->items[size - i - 1] = POP();
     }
+    PTR_AS(YogArray, array)->size = size;
 }
 
 /**
