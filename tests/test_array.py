@@ -31,4 +31,31 @@ puts(a[0])
 """, """42
 """)
 
+    def test_each1(self):
+        self._test("""
+a = []
+a.each() [n]
+  puts(n)
+end
+""", "")
+
+    def test_each2(self):
+        self._test("""
+a = [42]
+a.each() [n]
+  puts(n)
+end
+""", """42
+""")
+
+    def test_each3(self):
+        self._test("""
+a = [42, 26]
+a.each() [n]
+  puts(n)
+end
+""", """42
+26
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
