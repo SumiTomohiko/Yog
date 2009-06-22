@@ -34,7 +34,7 @@ puts(a[0])
     def test_each1(self):
         self._test("""
 a = []
-a.each() [n]
+a.each() do [n]
   puts(n)
 end
 """, "")
@@ -42,7 +42,7 @@ end
     def test_each2(self):
         self._test("""
 a = [42]
-a.each() [n]
+a.each() do [n]
   puts(n)
 end
 """, """42
@@ -51,7 +51,7 @@ end
     def test_each3(self):
         self._test("""
 a = [42, 26]
-a.each() [n]
+a.each() do [n]
   puts(n)
 end
 """, """42

@@ -1,6 +1,7 @@
 #include <string.h>
 #include "yog/array.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
@@ -227,6 +228,28 @@ subscript(YogEnv* env)
     RETURN(env, v);
 }
 
+static YogVal
+each(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+
+    YogVal self = SELF(env);
+    YogVal block = ARG(env, 0);
+    PUSH_LOCALS2(env, self, block);
+
+    YogVal args[] = { YUNDEF, };
+    PUSH_LOCALSX(env, 1, args);
+
+    unsigned int size = YogArray_size(env, self);
+    unsigned int i;
+    for (i = 0; i < size; i++) {
+        args[0] = YogArray_at(env, self, i);
+        YogEval_call_block(env, block, array_sizeof(args), args);
+    }
+
+    RETURN(env, self);
+}
+
 YogVal
 YogArray_klass_new(YogEnv* env)
 {
@@ -239,6 +262,7 @@ YogArray_klass_new(YogEnv* env)
     YogKlass_define_allocator(env, klass, allocate);
     YogKlass_define_method(env, klass, "<<", lshift, 0, 0, 0, 0, "elem", NULL);
     YogKlass_define_method(env, klass, "[]", subscript, 0, 0, 0, 0, "n", NULL);
+    YogKlass_define_method(env, klass, "each", each, 1, 0, 0, 0, "block", NULL);
 
     RETURN(env, klass);
 }
