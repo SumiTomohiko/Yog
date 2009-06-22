@@ -9,7 +9,7 @@ class TestUtf8(TestEncoding):
     def test_vi_comment(self):
         self._test_encoding(u"""
 日本語 = 42
-puts 日本語
+puts(日本語)
 
 # vim: fileencoding=utf-8
 """, """42
@@ -19,7 +19,7 @@ puts 日本語
         self._test_encoding(u"""# -*- coding: utf-8 -*-
 
 日本語 = 42
-puts 日本語
+puts(日本語)
 """, """42
 """)
 
@@ -28,7 +28,7 @@ puts 日本語
 # -*- coding: utf-8 -*-
 
 日本語 = 42
-puts 日本語
+puts(日本語)
 """, """42
 """)
 

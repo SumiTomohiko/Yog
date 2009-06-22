@@ -8,87 +8,101 @@ class TestString(TestCase):
 
     def test_literal1(self):
         self._test("""
-puts \"foo\"""", """foo
+puts(\"foo\")
+""", """foo
 """)
 
     def test_literal2(self):
         self._test("""
-puts \"\"""", """
+puts(\"\")
+""", """
 """)
 
     def test_literal3(self):
         self._test("""
-puts \"'\"""", """'
+puts(\"'\")
+""", """'
 """)
 
     def test_literal4(self):
         self._test("""
-puts 'foo'""", """foo
+puts('foo')
+""", """foo
 """)
 
     def test_literal5(self):
         self._test("""
-puts ''""", """
+puts('')
+""", """
 """)
 
     def test_literal6(self):
         self._test("""
-puts '\"'""", """\"
+puts('\"')
+""", """\"
 """)
 
     def test_literal7(self):
         self._test("""
-puts \"\\n\"""", """
+puts(\"\\n\")
+""", """
 
 """)
 
     def test_escape1(self):
         self._test("""
-puts \"\\\"\"""", """\"
+puts(\"\\\"\")
+""", """\"
 """)
 
     def test_escape2(self):
         self._test("""
-puts \"\\\\\"""", """\\
+puts(\"\\\\\")""", """\\
 """)
 
     def test_escape3(self):
         self._test("""
-puts '\\''""", """'
+puts('\\'')
+""", """'
 """)
 
     def test_escape4(self):
         self._test("""
-puts '\\\\'""", """\\
+puts('\\\\')
+""", """\\
 """)
 
     def test_escape5(self):
         self._test("""
-puts \"\\w\"""", """w
+puts(\"\\w\")
+""", """w
 """)
 
     def test_add(self):
         self._test("""
-puts \"foo\" + \"bar\"""", """foobar
+puts(\"foo\" + \"bar\")
+""", """foobar
 """)
 
     def test_lshift1(self):
         self._test("""
 s = \"foo\"
-puts s << \"bar\"""", """foobar
+puts(s << \"bar\")
+""", """foobar
 """)
 
     def test_lshift2(self):
         self._test("""
 s = \"foo\"
 s << \"bar\"
-puts s""", """foobar
+puts(s)
+""", """foobar
 """)
 
     def test_each_char1(self):
         self._test("""
 \"foo\".each_char() do [c]
-  puts c
+  puts(c)
 end""", """f
 o
 o
@@ -97,7 +111,7 @@ o
     def test_each_char2(self):
         self._test("""
 \"日本語\".each_char() do [c]
-  puts c
+  puts(c)
 end""", """日
 本
 語
@@ -106,7 +120,7 @@ end""", """日
     def test_each_byte1(self):
         self._test("""
 \"foo\".each_byte() do [b]
-  puts b
+  puts(b)
 end""", """102
 111
 111
@@ -115,7 +129,7 @@ end""", """102
     def test_each_byte2(self):
         self._test("""
 \"日本語\".each_byte() do [b]
-  puts b
+  puts(b)
 end""", """230
 151
 165
@@ -130,14 +144,14 @@ end""", """230
     def test_each_line1(self):
         self._test("""
 \"foo\".each_line() do [l]
-  puts l
+  puts(l)
 end""", """foo
 """)
 
     def test_each_line2(self):
         self._test("""
 \"foo\\nbar\".each_line() do [l]
-  puts l
+  puts(l)
 end""", """foo
 bar
 """)
@@ -146,7 +160,7 @@ bar
         self._test("""
 s = \"foo\"
 s[0] = \"b\"
-puts s
+puts(s)
 """, """boo
 """)
 
@@ -154,32 +168,37 @@ puts s
         self._test("""
 s = \"foo\"
 s[0] = \"燦\"
-puts s""", """燦oo
+puts(s)
+""", """燦oo
 """)
 
     def test_assign_subscript2(self):
         self._test("""
 s = \"燦oo\"
 s[0] = \"f\"
-puts s""", """foo
+puts(s)
+""", """foo
 """)
 
     def test_subscript1(self):
         self._test("""
 s = \"foo\"
-puts s[0]""", """f
+puts(s[0])
+""", """f
 """)
 
     def test_subscript2(self):
         self._test("""
 s = \"燦oo\"
-puts s[0]""", """燦
+puts(s[0])
+""", """燦
 """)
 
     def test_subscript3(self):
         self._test("""
 s = \"f燦o\"
-puts s[1]""", """燦
+puts(s[1])
+""", """燦
 """)
 
     def test_subscript_error1(self):
@@ -193,7 +212,8 @@ IndexError: string index out of range
 
         self._test("""
 s = \"\"
-puts s[0]""", stderr=test_stderr)
+puts(s[0])
+""", stderr=test_stderr)
 
     def test_subscript_error2(self):
         def test_stderr(stderr):
@@ -206,7 +226,8 @@ IndexError: string index out of range
 
         self._test("""
 s = \"\"
-puts s[1]""", stderr=test_stderr)
+puts(s[1])
+""", stderr=test_stderr)
 
     def test_subscript_error3(self):
         def test_stderr(stderr):
@@ -219,7 +240,8 @@ TypeError: string index must be integer
 
         self._test("""
 s = \"\"
-puts s[\"\"]""", stderr=test_stderr)
+puts(s[\"\"])
+""", stderr=test_stderr)
 
     def test_assign_subscript_error1(self):
         def test_stderr(stderr):

@@ -10,7 +10,7 @@ import concurrent
 
 def main()
   thread = concurrent.Thread.new() do
-    puts 42
+    puts(42)
   end
   thread.run()
 end
@@ -24,7 +24,7 @@ import concurrent
 
 def main()
   thread = concurrent.Thread.new() do
-    puts 42
+    puts(42)
   end
   thread.run()
   thread.join()
@@ -53,7 +53,7 @@ def main()
     i = i + 1
   end
 
-  puts int.get()
+  puts(int.get())
 end
 
 main()""", """256

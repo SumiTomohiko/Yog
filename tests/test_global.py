@@ -7,7 +7,7 @@ class TestGlobal(TestCase):
     def test_global1(self):
         self._test("""
 def foo()
-  puts 42
+  puts(42)
 end
 
 def bar()
@@ -22,7 +22,7 @@ bar()""", """42
 foo = 42
 
 def bar()
-  puts foo
+  puts(foo)
 end
 
 bar()""", """42
@@ -39,7 +39,8 @@ end
 
 bar()
 
-puts foo""", """43
+puts(foo)
+""", """43
 """)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

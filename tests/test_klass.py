@@ -9,7 +9,7 @@ class TestKlass(TestCase):
 class Foo
 
     def bar()
-        puts 42
+        puts(42)
     end
 end
 

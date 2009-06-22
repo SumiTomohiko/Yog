@@ -13,7 +13,7 @@ Exception: nil
 """, stderr)
             assert m is not None
 
-        self._test("raise Exception.new()", stderr=test_stderr)
+        self._test("raise(Exception.new())", stderr=test_stderr)
 
     def test_traceback2(self):
         def test_stderr(stderr):
@@ -26,7 +26,7 @@ Exception: nil
 
         self._test("""
 def foo()
-  raise Exception.new()
+  raise(Exception.new())
 end
 
 foo()""", stderr=test_stderr)
@@ -43,7 +43,7 @@ Exception: nil
         self._test("""
 class Foo
   def bar()
-    raise Exception.new()
+    raise(Exception.new())
   end
 end
 
@@ -62,7 +62,7 @@ Exception: nil
 
         self._test("""
 1.times() do [n]
-  raise Exception.new()
+  raise(Exception.new())
 end""", stderr=test_stderr)
 
     def test_traceback_block2(self):
@@ -79,7 +79,7 @@ Exception: nil
         self._test("""
 def foo()
   1.times() do [n]
-    raise Exception.new()
+    raise(Exception.new())
   end
 end
 
@@ -100,7 +100,7 @@ Exception: nil
 class Foo
   def bar()
     1.times() do [n]
-      raise Exception.new()
+      raise(Exception.new())
     end
   end
 end
@@ -119,7 +119,7 @@ Exception: nil
 
         self._test("""
 class Foo
-  raise Exception.new()
+  raise(Exception.new())
 end""", stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

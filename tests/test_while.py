@@ -8,7 +8,7 @@ class TestWhile(TestCase):
         self._test("""
 i = 0
 while i < 1
-    puts i
+    puts(i)
     i = i + 1
 end""", """0
 """)
@@ -17,7 +17,7 @@ end""", """0
         self._test("""
 i = 0
 while i < 2
-    puts i
+    puts(i)
     i = i + 1
 end""", """0
 1
@@ -27,7 +27,7 @@ end""", """0
         self._test("""
 i = 0
 while i < 0
-    puts i
+    puts(i)
     i = i + 1
 end""", "")
 
@@ -44,10 +44,11 @@ while i < 100
     if 10 < i
         break
     end
-    puts i
+    puts(i)
     i = i + 1
 end
-puts 42""", """0
+puts(42)
+""", """0
 1
 2
 3
@@ -69,9 +70,10 @@ while i < 10
     if i < 5
         next
     end
-    puts i
+    puts(i)
 end
-puts 42""", """5
+puts(42)
+""", """5
 6
 7
 8

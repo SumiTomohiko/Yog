@@ -7,7 +7,7 @@ class TestFunction(TestCase):
     def test_func(self):
         self._test("""
 def foo()
-    puts 42
+    puts(42)
 end
 
 foo()
@@ -16,7 +16,7 @@ foo()
     def test_param(self):
         self._test("""
 def foo(a)
-    puts a
+    puts(a)
 end
 
 foo(42)
@@ -27,7 +27,7 @@ foo(42)
 def foo()
 end
 
-puts foo()
+puts(foo())
 """, """nil
 """)
 

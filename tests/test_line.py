@@ -5,13 +5,13 @@ from testcase import TestCase
 class TestLine(TestCase):
 
     def test_line1(self):
-        self._test("puts __LINE__", """1
+        self._test("puts(__LINE__)", """1
 """)
 
     def test_line2(self):
         self._test("""
 # comment
-puts __LINE__
+puts(__LINE__)
 """, """3
 """)
 

@@ -9,7 +9,7 @@ class TestTry(TestCase):
 try
     raise 0
 except
-    puts 42
+    puts(42)
 end""", "42\n", "")
 
     def test_except2(self):
@@ -22,12 +22,12 @@ while i < 10
         try
             break
         except
-            puts 100
+            puts(100)
         finally
             raise 0
         end
     except
-        puts 42
+        puts(42)
     end
 end""", """42
 42
@@ -50,7 +50,7 @@ while i < 10
     try
         break
     finally
-        puts 42
+        puts(42)
     end
 end
 """, """42
@@ -66,10 +66,10 @@ while i < 10
         try
             break
         finally
-            puts 42
+            puts(42)
         end
     finally
-        puts 43
+        puts(43)
     end
 end
 """, """42
@@ -85,7 +85,7 @@ while i < 10
     try
         next
     finally
-        puts 42
+        puts(42)
     end
 end
 """, """42
@@ -110,10 +110,10 @@ while i < 10
         try
             next
         finally
-            puts 42
+            puts(42)
         end
     finally
-        puts 43
+        puts(43)
     end
 end
 """, """42
@@ -142,7 +142,7 @@ end
         self._test("""
 try
 except
-  puts 42
+  puts(42)
 end""")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

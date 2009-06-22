@@ -10,7 +10,7 @@ def foo()
   return 42
 end
 
-puts foo()
+puts(foo())
 """, """42
 """)
 
@@ -20,8 +20,8 @@ def foo()
   return 42
 end
 
-puts foo()
-puts 43
+puts(foo())
+puts(43)
 """, """42
 43
 """)
@@ -32,7 +32,7 @@ def foo()
   return
 end
 
-puts foo()
+puts(foo())
 """, """nil
 """)
 
@@ -47,7 +47,8 @@ def foo()
   end
 end
 
-puts foo()""", """42
+puts(foo())
+""", """42
 """)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

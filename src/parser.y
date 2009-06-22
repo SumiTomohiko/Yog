@@ -31,6 +31,9 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
 #define KEEP(member)    YogGC_keep(env, &node->u.member, keeper, heap)
     switch (node->type) {
+    case NODE_ARRAY:
+        KEEP(array.elems);
+        break;
     case NODE_ASSIGN:
         KEEP(assign.left);
         KEEP(assign.right);
@@ -201,7 +204,7 @@ CommandCall_new(YogEnv* env, unsigned int lineno, ID name, YogVal args, YogVal b
 }
 
 static YogVal 
-Array_new(YogEnv* env, YogVal elem) 
+make_array_with(YogEnv* env, YogVal elem) 
 {
     SAVE_ARG(env, elem);
 
@@ -232,6 +235,17 @@ Array_push(YogEnv* env, YogVal array, YogVal elem)
     }
 
     RETURN(env, array);
+}
+
+static YogVal
+Array_new(YogEnv* env, unsigned int lineno, YogVal elems)
+{
+    SAVE_ARG(env, elems);
+
+    YogVal node = YogNode_new(env, NODE_ARRAY, lineno);
+    NODE(node)->u.array.elems = elems;
+
+    RETURN(env, node);
 }
 
 static YogVal 
@@ -342,7 +356,7 @@ ExceptFinally_new(YogEnv* env, unsigned int lineno, YogVal stmts, YogVal excepts
 
     YogVal node;
     if (IS_PTR(finally)) {
-        YogVal array = Array_new(env, except);
+        YogVal array = make_array_with(env, except);
         node = Finally_new(env, lineno, array, finally);
     }
     else {
@@ -578,7 +592,7 @@ YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
 static YogVal
 id2array(YogEnv* env, ID id)
 {
-    return Array_new(env, ID2VAL(id));
+    return make_array_with(env, ID2VAL(id));
 }
 
 static YogVal
@@ -606,7 +620,7 @@ module ::= stmts(A). {
 }
 
 stmts(A) ::= stmt(B). {
-    A = Array_new(env, B);
+    A = make_array_with(env, B);
 }
 stmts(A) ::= stmts(B) NEWLINE stmt(C). {
     A = Array_push(env, B, C);
@@ -628,18 +642,6 @@ stmt(A) ::= expr(B). {
         A = B;
     }
 }
-stmt(A) ::= NAME(B) args(C). {
-    unsigned int lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, B)->u.id;
-    A = CommandCall_new(env, lineno, id, C, YNIL);
-}
-        /*
-        | NAME args DO LPAR params RPAR stmts END {
-            YogNode* blockarg = NULL;
-            BLOCK_ARG_NEW(blockarg, $5, $7);
-            COMMAND_CALL_NEW($$, $1, $2, blockarg);
-        }
-        */
 stmt(A) ::= TRY(B) stmts(C) excepts(D) ELSE stmts(E) finally_opt(F) END. {
     unsigned int lineno = TOKEN_LINENO(B);
     A = ExceptFinally_new(env, lineno, C, D, E, F);
@@ -652,7 +654,7 @@ stmt(A) ::= TRY(B) stmts(C) FINALLY stmts(D) END. {
     unsigned int lineno = TOKEN_LINENO(B);
     A = Finally_new(env, lineno, C, D);
 }
-stmt(A) ::= WHILE(B) expr(C) stmts(D) END. {
+stmt(A) ::= WHILE(B) expr(C) NEWLINE stmts(D) END. {
     unsigned int lineno = TOKEN_LINENO(B);
     A = While_new(env, lineno, C, D);
 }
@@ -680,11 +682,11 @@ stmt(A) ::= RETURN(B) expr(C). {
     unsigned int lineno = TOKEN_LINENO(B);
     A = Return_new(env, lineno, C);
 }
-stmt(A) ::= IF(B) expr(C) stmts(D) if_tail(E) END. {
+stmt(A) ::= IF(B) expr(C) NEWLINE stmts(D) if_tail(E) END. {
     unsigned int lineno = TOKEN_LINENO(B);
     A = If_new(env, lineno, C, D, E);
 }
-stmt(A) ::= CLASS(B) NAME(C) super_opt(D) stmts(E) END. {
+stmt(A) ::= CLASS(B) NAME(C) super_opt(D) NEWLINE stmts(E) END. {
     unsigned int lineno = TOKEN_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
     A = Klass_new(env, lineno, id, D, E);
@@ -699,7 +701,7 @@ stmt(A) ::= IMPORT(B) dotted_names(C). {
 }
 
 dotted_names(A) ::= dotted_name(B). {
-    A = Array_new(env, B);
+    A = make_array_with(env, B);
 }
 dotted_names(A) ::= dotted_names(B) COMMA dotted_name(C). {
     A = Array_push(env, B, C);
@@ -729,10 +731,10 @@ super_opt(A) ::= GREATER expr(B). {
 if_tail(A) ::= else_opt(B). {
     A = B;
 }
-if_tail(A) ::= ELIF(B) expr(C) stmts(D) if_tail(E). {
+if_tail(A) ::= ELIF(B) expr(C) NEWLINE stmts(D) if_tail(E). {
     unsigned int lineno = TOKEN_LINENO(B);
     YogVal node = If_new(env, lineno, C, D, E);
-    A = Array_new(env, node);
+    A = make_array_with(env, node);
 }
 
 else_opt(A) ::= /* empty */. {
@@ -888,7 +890,7 @@ params_without_default(A) ::= params_without_default(B) COMMA NAME(C). {
 }
 
 params_with_default(A) ::= param_with_default(B). {
-    A = Array_new(env, B);
+    A = make_array_with(env, B);
 }
 params_with_default(A) ::= params_with_default(B) COMMA param_with_default(C). {
     A = Array_push(env, B, C);
@@ -901,7 +903,7 @@ param_with_default(A) ::= NAME(B) param_default(C). {
 }
 
 args(A) ::= expr(B). {
-    A = Array_new(env, B);
+    A = make_array_with(env, B);
 }
 args(A) ::= args(B) COMMA expr(C). {
     A = Array_push(env, B, C);
@@ -959,7 +961,7 @@ and_expr(A) ::= shift_expr(B). {
 shift_expr(A) ::= match_expr(B). {
     A = B;
 }
-shift_expr(A) ::= shift_expr(B) LSHIFT(C) arith_expr(D). {
+shift_expr(A) ::= shift_expr(B) LSHIFT(C) match_expr(D). {
     unsigned int lineno = NODE_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
     A = MethodCall1_new(env, lineno, B, id, D);
@@ -1052,6 +1054,10 @@ atom(A) ::= LINE(B). {
     YogVal val = INT2VAL(lineno);
     A = Literal_new(env, lineno, val);
 }
+atom(A) ::= LBRACKET(B) args_opt(C) RBRACKET. {
+    unsigned int lineno = NODE_LINENO(B);
+    A = Array_new(env, lineno, C);
+}
 
 args_opt(A) ::= /* empty */. {
     A = YNIL;
@@ -1063,11 +1069,11 @@ args_opt(A) ::= args(B). {
 blockarg_opt(A) ::= /* empty */. {
     A = YNIL;
 }
-blockarg_opt(A) ::= DO(B) blockarg_params_opt(C) stmts(D) END. {
+blockarg_opt(A) ::= DO(B) blockarg_params_opt(C) NEWLINE stmts(D) END. {
     unsigned int lineno = TOKEN_LINENO(B);
     A = BlockArg_new(env, lineno, C, D);
 }
-blockarg_opt(A) ::= LBRACE(B) blockarg_params_opt(C) stmts(D) RBRACE. {
+blockarg_opt(A) ::= LBRACE(B) blockarg_params_opt(C) NEWLINE stmts(D) RBRACE. {
     unsigned int lineno = TOKEN_LINENO(B);
     A = BlockArg_new(env, lineno, C, D);
 }
@@ -1080,7 +1086,7 @@ blockarg_params_opt(A) ::= LBRACKET params(B) RBRACKET. {
 }
 
 excepts(A) ::= except(B). {
-    A = Array_new(env, B);
+    A = make_array_with(env, B);
 }
 excepts(A) ::= excepts(B) except(C). {
     A = Array_push(env, B, C);
