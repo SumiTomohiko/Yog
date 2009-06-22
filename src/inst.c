@@ -35,6 +35,7 @@ Yog_get_inst_size(OpCode op)
         sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* load_nonlocal */
         sizeof(uint8_t) + sizeof(ID), /* store_global */
         sizeof(uint8_t) + sizeof(ID), /* load_attr */
+        sizeof(uint8_t) + sizeof(uint8_t), /* make_array */
 
     };
 

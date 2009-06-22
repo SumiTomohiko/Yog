@@ -106,6 +106,9 @@ struct YogInst {
         struct {
             ID name;
         } load_attr;
+        struct {
+            uint8_t size;
+        } make_array;
     } u;
 
     unsigned int lineno;
@@ -148,6 +151,7 @@ struct YogInst {
 #define LOAD_NONLOCAL_INDEX(inst) (INST(inst)->u.load_nonlocal.index)
 #define STORE_GLOBAL_NAME(inst) (INST(inst)->u.store_global.name)
 #define LOAD_ATTR_NAME(inst) (INST(inst)->u.load_attr.name)
+#define MAKE_ARRAY_SIZE(inst) (INST(inst)->u.make_array.size)
 
 typedef struct YogInst YogInst;
 

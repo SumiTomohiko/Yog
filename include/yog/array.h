@@ -29,6 +29,7 @@ typedef struct YogArray YogArray;
 YogVal YogArray_at(YogEnv*, YogVal, unsigned int);
 void YogArray_extend(YogEnv*, YogVal, YogVal);
 YogVal YogArray_new(YogEnv*);
+YogVal YogArray_of_size(YogEnv*, unsigned int);
 void YogArray_push(YogEnv*, YogVal, YogVal);
 unsigned int YogArray_size(YogEnv*, YogVal);
 YogVal YogValArray_at(YogEnv*, YogVal, unsigned int);

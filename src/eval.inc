@@ -500,6 +500,27 @@
             POP_LOCALS(ENV);
             break;
         }
+#line 478 "../src/eval.inc"
+    case OP(MAKE_ARRAY):
+        {
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t size = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
+            PC += sizeof(uint8_t);
+            YogVal array = YUNDEF;
+            PUSH_LOCAL(ENV, array);
+#line 295 "insts.def"
+            array = YogArray_of_size(ENV, size);
+            unsigned int i;
+            for (i = 0; i < size; i++) {
+                YogVal body = PTR_AS(YogArray, array)->body;
+                PTR_AS(YogValArray, body)->items[size - i - 1] = POP();
+            }
+
+#line 493 "../src/eval.inc"
+            PUSH(array);
+            POP_LOCALS(ENV);
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

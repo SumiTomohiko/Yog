@@ -412,6 +412,22 @@ CompileData_add_load_attr(YogEnv* env, YogVal data, unsigned int lineno, ID name
     RETURN_VOID(env);
 }
 
+static void 
+CompileData_add_make_array(YogEnv* env, YogVal data, unsigned int lineno, uint8_t size)
+{
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(MAKE_ARRAY);
+
+    MAKE_ARRAY_SIZE(inst) = size;
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
 
 static YogVal 
 insts2bin(YogEnv* env, YogVal inst) 
@@ -585,6 +601,12 @@ insts2bin(YogEnv* env, YogVal inst)
                     {
                         YogBinary_push_uint8(env, code, OP(LOAD_ATTR));
                         YogBinary_push_id(env, code, LOAD_ATTR_NAME(inst));
+                        break;
+                    }
+                case OP(MAKE_ARRAY):
+                    {
+                        YogBinary_push_uint8(env, code, OP(MAKE_ARRAY));
+                        YogBinary_push_uint8(env, code, MAKE_ARRAY_SIZE(inst));
                         break;
                     }
                 default:
@@ -769,6 +791,12 @@ count_stack_size(YogEnv* env, YogVal inst)
                 case OP(LOAD_ATTR):
                     {
                         pop_size = 1;
+                        push_size = 1;
+                        break;
+                    }
+                case OP(MAKE_ARRAY):
+                    {
+                        pop_size = MAKE_ARRAY_SIZE(inst);
                         push_size = 1;
                         break;
                     }

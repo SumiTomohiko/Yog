@@ -22,6 +22,7 @@ typedef void (*VisitArray)(YogEnv*, AstVisitor*, YogVal, YogVal);
 
 struct AstVisitor {
     VisitArray visit_stmts;
+    VisitNode visit_array;
     VisitNode visit_assign;
     VisitNode visit_attr;
     VisitNode visit_block;
@@ -276,73 +277,76 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     }
 
 #define VISIT(f)    do { \
-    if (visitor->f != NULL) { \
-        visitor->f(env, visitor, node, arg); \
+    if (visitor->visit_##f != NULL) { \
+        (*visitor->visit_##f)(env, visitor, node, arg); \
     } \
 } while (0)
     switch (NODE(node)->type) {
+    case NODE_ARRAY:
+        VISIT(array);
+        break;
     case NODE_ASSIGN: 
-        VISIT(visit_assign);
+        VISIT(assign);
         break;
     case NODE_ATTR:
-        VISIT(visit_attr);
+        VISIT(attr);
         break;
     case NODE_VARIABLE:
-        VISIT(visit_variable);
+        VISIT(variable);
         break;
     case NODE_LITERAL:
-        VISIT(visit_literal);
+        VISIT(literal);
         break;
     case NODE_METHOD_CALL:
-        VISIT(visit_method_call);
+        VISIT(method_call);
         break;
     case NODE_COMMAND_CALL:
-        VISIT(visit_command_call);
+        VISIT(command_call);
         break;
     case NODE_FUNC_DEF:
-        VISIT(visit_func_def);
+        VISIT(func_def);
         break;
     case NODE_FUNC_CALL:
-        VISIT(visit_func_call);
+        VISIT(func_call);
         break;
     case NODE_FINALLY:
-        VISIT(visit_finally);
+        VISIT(finally);
         break;
     case NODE_EXCEPT:
-        VISIT(visit_except);
+        VISIT(except);
         break;
     case NODE_EXCEPT_BODY:
-        VISIT(visit_except_body);
+        VISIT(except_body);
         break;
     case NODE_WHILE:
-        VISIT(visit_while);
+        VISIT(while);
         break;
     case NODE_IF:
-        VISIT(visit_if);
+        VISIT(if);
         break;
     case NODE_IMPORT:
-        VISIT(visit_import);
+        VISIT(import);
         break;
     case NODE_BREAK:
-        VISIT(visit_break);
+        VISIT(break);
         break;
     case NODE_NEXT:
-        VISIT(visit_next);
+        VISIT(next);
         break;
     case NODE_NONLOCAL:
-        VISIT(visit_nonlocal);
+        VISIT(nonlocal);
         break;
     case NODE_RETURN:
-        VISIT(visit_return);
+        VISIT(return);
         break;
     case NODE_BLOCK_ARG:
-        VISIT(visit_block);
+        VISIT(block);
         break;
     case NODE_KLASS:
-        VISIT(visit_klass);
+        VISIT(klass);
         break;
     case NODE_SUBSCRIPT:
-        VISIT(visit_subscript);
+        VISIT(subscript);
         break;
     default:
         YOG_BUG(env, "Unknown node type (0x%08x)", NODE(node)->type);
@@ -669,9 +673,29 @@ scan_var_visit_attr(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     visit_node(env, visitor, NODE(node)->u.attr.obj, data);
 }
 
+static void
+scan_var_visit_array(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+
+    YogVal elems = YUNDEF;
+    PUSH_LOCAL(env, elems);
+
+    elems = NODE(node)->u.array.elems;
+    unsigned int size = YogArray_size(env, elems);
+    unsigned int i;
+    for (i = 0; i < size; i++) {
+        YogVal elem = YogArray_at(env, elems, i);
+        visit_node(env, visitor, elem, data);
+    }
+
+    RETURN_VOID(env);
+}
+
 static void 
 scan_var_init_visitor(AstVisitor* visitor) 
 {
+    visitor->visit_array = scan_var_visit_array;
     visitor->visit_assign = scan_var_visit_assign;
     visitor->visit_attr = scan_var_visit_attr;
     visitor->visit_block = NULL;
@@ -2447,9 +2471,33 @@ compile_visit_attr(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
+static void
+compile_visit_array(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+
+    YogVal elems = YUNDEF;
+    PUSH_LOCAL(env, elems);
+
+    elems = NODE(node)->u.array.elems;
+    unsigned int size = YogArray_size(env, elems);
+    YOG_ASSERT(env, size < 256, "max array size if 255");
+    unsigned int i;
+    for (i = 0; i < size; i++) {
+        YogVal elem = YogArray_at(env, elems, i);
+        visit_node(env, visitor, elem, data);
+    }
+
+    unsigned int lineno = NODE(node)->lineno;
+    CompileData_add_make_array(env, data, lineno, size);
+
+    RETURN_VOID(env);
+}
+
 static void 
 compile_init_visitor(AstVisitor* visitor) 
 {
+    visitor->visit_array = compile_visit_array;
     visitor->visit_assign = compile_visit_assign;
     visitor->visit_attr = compile_visit_attr;
     visitor->visit_block = compile_visit_block;

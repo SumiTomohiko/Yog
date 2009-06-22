@@ -131,21 +131,29 @@ YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogGC_keep(env, &array->body, keeper, heap);
 }
 
-YogVal 
-YogArray_new(YogEnv* env)
+YogVal
+YogArray_of_size(YogEnv* env, unsigned int size)
 {
     SAVE_LOCALS(env);
 
-#define INIT_SIZE   (1)
-    YogVal body = YogValArray_new(env, INIT_SIZE);
-#undef INIT_SIZE
-    PUSH_LOCAL(env, body);
+    YogVal body = YUNDEF;
+    YogVal array = YUNDEF;
+    PUSH_LOCALS2(env, body, array);
 
-    YogVal array = ALLOC_OBJ(env, YogArray_keep_children, NULL, YogArray);
+    body = YogValArray_new(env, size);
+    array = ALLOC_OBJ(env, YogArray_keep_children, NULL, YogArray);
     PTR_AS(YogArray, array)->size = 0;
-    MODIFY(env, PTR_AS(YogArray, array)->body, body);
+    PTR_AS(YogArray, array)->body = body;
 
     RETURN(env, array);
+}
+
+YogVal 
+YogArray_new(YogEnv* env)
+{
+#define INIT_SIZE   (1)
+    return YogArray_of_size(env, INIT_SIZE);
+#undef INIT_SIZE
 }
 
 /**

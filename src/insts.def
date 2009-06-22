@@ -287,6 +287,19 @@ inst load_attr
     retval = YogVal_get_attr(ENV, val, name);
 }
 
+inst make_array
+(uint8_t size)
+(...) depth: size
+(array)
+{
+    array = YogArray_of_size(ENV, size);
+    unsigned int i;
+    for (i = 0; i < size; i++) {
+        YogVal body = PTR_AS(YogArray, array)->body;
+        PTR_AS(YogValArray, body)->items[size - i - 1] = POP();
+    }
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */
