@@ -62,6 +62,25 @@ YogValArray_new(YogEnv* env, unsigned int size)
     return array;
 }
 
+static unsigned int
+multiple_size(unsigned int min_size, unsigned int cur_size, unsigned int ratio)
+{
+    while (cur_size < min_size) {
+        cur_size *= ratio;
+    }
+    return cur_size;
+}
+
+static unsigned int
+get_next_size(unsigned int min_size, unsigned int cur_size, unsigned int ratio)
+{
+    if (cur_size == 0) {
+        return 1;
+    }
+
+    return multiple_size(min_size, cur_size, ratio);
+}
+
 static void 
 ensure_body_size(YogEnv* env, YogVal array, unsigned int size) 
 {
@@ -73,12 +92,9 @@ ensure_body_size(YogEnv* env, YogVal array, unsigned int size)
     YogVal body = PTR_AS(YogArray, array)->body;
     if (PTR_AS(YogValArray, body)->size < size) {
         old_body = body;
-#define INCREASE_RATIO  (2)
         size_t old_size = PTR_AS(YogValArray, old_body)->size;
-        unsigned int new_size = INCREASE_RATIO * old_size;
-        while (new_size < size) {
-            new_size *= INCREASE_RATIO;
-        }
+#define INCREASE_RATIO  (2)
+        unsigned int new_size = get_next_size(size, old_size, INCREASE_RATIO);
 #undef INCREASE_RATIO
         YogVal new_body = YogValArray_new(env, new_size);
         size_t cur_size = PTR_AS(YogArray, array)->size;

@@ -674,15 +674,12 @@ scan_var_visit_attr(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
-scan_var_visit_array(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+visit_array_elements(YogEnv* env, AstVisitor* visitor, YogVal elems, YogVal data)
 {
-    SAVE_ARGS2(env, node, data);
+    SAVE_ARGS2(env, elems, data);
 
-    YogVal elems = YUNDEF;
-    PUSH_LOCAL(env, elems);
-
-    elems = NODE(node)->u.array.elems;
     unsigned int size = YogArray_size(env, elems);
+    YOG_ASSERT(env, size < 256, "max array size is 255");
     unsigned int i;
     for (i = 0; i < size; i++) {
         YogVal elem = YogArray_at(env, elems, i);
@@ -690,6 +687,17 @@ scan_var_visit_array(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     }
 
     RETURN_VOID(env);
+}
+
+static void
+scan_var_visit_array(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    YogVal elems = NODE(node)->u.array.elems;
+    if (!IS_PTR(elems)) {
+        return;
+    }
+
+    visit_array_elements(env, visitor, elems, data);
 }
 
 static void 
@@ -2480,15 +2488,14 @@ compile_visit_array(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     PUSH_LOCAL(env, elems);
 
     elems = NODE(node)->u.array.elems;
-    unsigned int size = YogArray_size(env, elems);
-    YOG_ASSERT(env, size < 256, "max array size if 255");
-    unsigned int i;
-    for (i = 0; i < size; i++) {
-        YogVal elem = YogArray_at(env, elems, i);
-        visit_node(env, visitor, elem, data);
+    unsigned int lineno = NODE(node)->lineno;
+    if (!IS_PTR(elems)) {
+        CompileData_add_make_array(env, data, lineno, 0);
+        RETURN_VOID(env);
     }
 
-    unsigned int lineno = NODE(node)->lineno;
+    visit_array_elements(env, visitor, elems, data);
+    unsigned int size = YogArray_size(env, elems);
     CompileData_add_make_array(env, data, lineno, size);
 
     RETURN_VOID(env);
