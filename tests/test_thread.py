@@ -38,25 +38,34 @@ main()""", """42
 import concurrent
 
 def main()
-  thread_count = 256
+  thread_count = 32
   int = concurrent.AtomicInt.new(0)
   barrier = concurrent.Barrier.new(thread_count)
+  threads = []
 
   i = 0
   while i < thread_count
     thread = concurrent.Thread.new() do
       barrier.wait!()
-      int.inc!()
+      4096.times() do
+          int.inc!()
+      end
     end
     thread.run()
+    threads << thread
 
     i = i + 1
+  end
+
+  threads.each() do [thread]
+    thread.join()
   end
 
   puts(int.get())
 end
 
-main()""", """256
+main()
+""", """131072
 """)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
