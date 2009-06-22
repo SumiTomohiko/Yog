@@ -102,6 +102,23 @@ compile.inc: compile.inc.tmpl $(INSTS_DEF) $(INST_PY)
 $(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
+VERSION_H = $(ROOT_DIR)/include/yog/version.h
+VERSION_H_M4 = $(VERSION_H).m4
+VERSION_H_NEW = $(VERSION_H).new
+
+update-version:
+	if [ -d "$(ROOT_DIR)/.hg" ]; then \
+		m4 -DREVISION="`hg parent --template='{rev} {node|short}'`" $(VERSION_H_M4) > $(VERSION_H_NEW); \
+		if [ -f $(VERSION_H) ]; then \
+			cmp $(VERSION_H) $(VERSION_H_NEW); \
+			if [ $$? != 0 ]; then \
+				mv -f $(VERSION_H_NEW) $(VERSION_H); \
+			fi \
+		else \
+			mv -f $(VERSION_H_NEW) $(VERSION_H); \
+		fi \
+	fi
+
 Makefile.am: Makefile.am.tmpl
 	$(GEN_AM_CMD)
 

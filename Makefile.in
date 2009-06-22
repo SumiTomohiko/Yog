@@ -43,3 +43,6 @@ test test-copying test-mark-sweep test-mark-sweep-compact test-bdw test-generati
 
 am--refresh:
 	@:
+
+update-version:
+	cd src && $(MAKE) $@
