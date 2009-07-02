@@ -66,6 +66,6 @@ end
 
 main()
 """, """131072
-""")
+""", timeout=1200)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
