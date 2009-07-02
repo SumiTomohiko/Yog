@@ -71,6 +71,10 @@ struct YogVM {
     void* last_heap;
     pthread_cond_t vm_finish_cond;
     unsigned int gc_id;
+#if defined(GC_GENERATIONAL)
+    /* TODO: dirty hack. remove this */
+    BOOL has_young_ref;
+#endif
 };
 
 typedef struct YogVM YogVM;

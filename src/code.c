@@ -110,6 +110,7 @@ YogCode_dump(YogEnv* env, YogVal code)
             }
             break;
         case OP(LOAD_LOCAL):
+        case OP(STORE_LOCAL):
             {
                 uint8_t index = OPERAND(uint8_t, 0);
                 printf(" %d", index);

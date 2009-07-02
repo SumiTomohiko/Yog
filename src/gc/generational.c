@@ -258,11 +258,19 @@ YogGenerational_trace_grey(YogEnv* env, YogGenerational* generational)
     YogMarkSweepCompact_trace_grey_children(env, major_heap, generational);
 }
 
+static void
+post_gc(YogEnv* env, YogGenerational* generational)
+{
+    YogMarkSweepCompact* msc = &generational->msc;
+    YogMarkSweepCompact_protect_white_pages(env, msc);
+    msc->in_gc = FALSE;
+    YogCopying_post_gc(env, &generational->copying);
+}
+
 void
 YogGenerational_minor_post_gc(YogEnv* env, YogGenerational* generational)
 {
-    generational->msc.in_gc = FALSE;
-    YogCopying_post_gc(env, &generational->copying);
+    post_gc(env, generational);
 }
 
 BOOL
@@ -307,10 +315,7 @@ YogGenerational_major_delete_garbage(YogEnv* env, YogGenerational* generational)
 void
 YogGenerational_major_post_gc(YogEnv* env, YogGenerational* generational)
 {
-    YogMarkSweepCompact* msc = &generational->msc;
-    YogMarkSweepCompact_protect_white_pages(env, msc);
-    msc->in_gc = FALSE;
-    YogCopying_post_gc(env, &generational->copying);
+    post_gc(env, generational);
 }
 
 #if defined(TEST_GENERATIONAL)

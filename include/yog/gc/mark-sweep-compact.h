@@ -56,7 +56,6 @@ struct YogMarkSweepCompact {
 #if defined(GC_GENERATIONAL)
     BOOL in_gc;
     unsigned char* grey_pages;
-    BOOL has_young_ref;
 #endif
 };
 

@@ -120,6 +120,7 @@ YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper obj_ke
 
         ChildrenKeeper keeper = header->keeper;
         if (keeper != NULL) {
+            DEBUG(DPRINTF("%p: keeper=%p", env, keeper));
             (*keeper)(env, ptr, obj_keeper, heap);
         }
     }
@@ -569,10 +570,11 @@ initialize_memory(void* ptr, size_t size)
 }
 
 #if defined(GC_GENERATIONAL)
+
 static int 
 protect_page(void* page, int prot) 
 {
-    DEBUG(DPRINTF("protect page: page=%p, PROT_READ=%d, PROT_WRITE=%d", page, prot & PROT_READ ? 1 : 0, prot & PROT_WRITE ? 1 : 0));
+    DEBUG(DPRINTF("protect page: page=%p-%p, PROT_READ=%d, PROT_WRITE=%d", page, (char*)page + PAGE_SIZE, prot & PROT_READ ? 1 : 0, prot & PROT_WRITE ? 1 : 0));
     return mprotect(page, PAGE_SIZE, prot);
 }
 #endif
@@ -740,6 +742,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
     header->gen = GEN_OLD;
 
     if (msc->in_gc) {
+        /* XXX: only when running major GC? */
         YogMarkSweepCompact_grey_page(header);
     }
 #endif
@@ -824,8 +827,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
         return ptr;
     }
 
-    YogGenerational* generational = heap;
-    generational->has_young_ref = TRUE;
+    env->vm->has_young_ref = TRUE;
 
     return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object, heap);
 }
@@ -858,23 +860,26 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
     size_t obj_size = page->obj_size; \
     unsigned int obj_num = object_number_of_page(obj_size); \
     unsigned int j; \
-    heap->has_young_ref = FALSE; \
+    env->vm->has_young_ref = FALSE; \
     for (j = 0; j < obj_num; j++) { \
         unsigned char* obj = (unsigned char*)page + sizeof(YogMarkSweepCompactPage) + obj_size * j; \
         YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)obj; \
         if (IS_OBJ_USED(header)) { \
             if (header->marked) { \
-                heap->has_young_ref = TRUE; \
+                DEBUG(DPRINTF("grey object marked: %p", header + 1)); \
+                env->vm->has_young_ref = TRUE; \
             } \
             else { \
+                DEBUG(DPRINTF("grey object kept: %p", header + 1)); \
                 ChildrenKeeper keeper = header->keeper; \
                 if (keeper != NULL) { \
+                    DEBUG(DPRINTF("grey object keeper: %p", keeper)); \
                     (*keeper)(env, header + 1, minor_gc_keep_object, heap); \
                 } \
             } \
         } \
     } \
-    if (!heap->has_young_ref) { \
+    if (!env->vm->has_young_ref) { \
         white_page(page); \
         protect_page(page, PROT_READ); \
     } \

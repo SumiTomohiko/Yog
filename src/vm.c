@@ -413,6 +413,9 @@ YogVM_init(YogVM* vm)
     pthread_cond_init(&vm->vm_finish_cond, NULL);
     vm->heaps = vm->last_heap = NULL;
     vm->gc_id = 0;
+#if defined(GC_GENERATIONAL)
+    vm->has_young_ref = FALSE;
+#endif
 }
 
 void 
@@ -460,6 +463,8 @@ gc(YogEnv* env, YogVM* vm)
 void 
 YogVM_add_thread(YogEnv* env, YogVM* vm, YogVal thread) 
 {
+    SAVE_ARG(env, thread);
+
     YogVM_acquire_global_interp_lock(env, vm);
     gc(env, vm);
 
@@ -468,6 +473,8 @@ YogVM_add_thread(YogEnv* env, YogVM* vm, YogVal thread)
     vm->running_threads = thread;
 
     YogVM_release_global_interp_lock(env, vm);
+
+    RETURN_VOID(env);
 }
 
 void 

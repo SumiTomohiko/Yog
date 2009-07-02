@@ -409,6 +409,7 @@ call_method(YogEnv* env, YogVal unbound_self, YogVal callee, uint8_t posargc, Yo
         YogVal self = unbound_self;
         YogVal code = PTR_AS(YogScriptMethod, callee)->code;
         YogVal outer_vars = PTR_AS(YogScriptMethod, callee)->outer_vars;
+        DEBUG(DUMP_CODE(code));
         call_code(env, self, code, outer_vars, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
     }
     else {
