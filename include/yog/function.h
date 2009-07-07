@@ -1,23 +1,37 @@
 #if !defined(__YOG_FUNCTION_H__)
 #define __YOG_FUNCTION_H__
 
-#include <stdarg.h>
-#include "yog/arg.h"
+#include <stdint.h>
+#include "yog/object.h"
 #include "yog/yog.h"
 
-struct YogBuiltinFunction {
-    YogVal arg_info;
-    int required_argc;
+struct YogCallable {
+    struct YogBasicObj base;
 
-    YogVal (*f)();
-
-    ID klass_name;
-    ID func_name;
+    void (*exec)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, YogVal*, YogVal, YogVal);
+    YogVal (*call)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, YogVal*, YogVal, YogVal);
 };
 
-typedef struct YogBuiltinFunction YogBuiltinFunction;
+typedef struct YogCallable YogCallable;
 
-#define BUILTIN_FUNCTION(v)     PTR_AS(YogBuiltinFunction, (v))
+struct YogNativeFunction {
+    struct YogCallable base;
+
+    ID name;
+    void* f;
+};
+
+typedef struct YogNativeFunction YogNativeFunction;
+
+struct YogFunction {
+    struct YogCallable base;
+
+    YogVal code;
+    YogVal globals;
+    YogVal outer_vars;
+};
+
+typedef struct YogFunction YogFunction;
 
 /* PROTOTYPE_START */
 
@@ -26,7 +40,9 @@ typedef struct YogBuiltinFunction YogBuiltinFunction;
  */
 
 /* src/function.c */
-YogVal YogBuiltinFunction_new(YogEnv*, void*, ID, ID, unsigned int, unsigned int, unsigned int, int, va_list);
+YogVal YogFunction_klass_new(YogEnv*);
+YogVal YogFunction_new(YogEnv*);
+YogVal YogNativeFunction_new(YogEnv*, const char*, void*);
 
 /* PROTOTYPE_END */
 

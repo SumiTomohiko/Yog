@@ -31,16 +31,6 @@ struct YogCFrame {
 
 typedef struct YogCFrame YogCFrame;
 
-#include "yog/array.h"
-#include "yog/env.h"
-#include "yog/thread.h"
-
-#define C_FRAME(frame)      ((YogCFrame*)(frame))
-#define CUR_C_FRAME(env) \
-    PTR_AS(YogCFrame, PTR_AS(YogThread, (env)->thread)->cur_frame)
-#define SELF(env)           (CUR_C_FRAME(env)->self)
-#define ARG(env, i)         (PTR_AS(YogValArray, CUR_C_FRAME(env)->args)->items[i])
-
 struct YogOuterVars {
     unsigned int size;
     YogVal items[0];

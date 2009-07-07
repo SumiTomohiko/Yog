@@ -19,7 +19,7 @@ enum OpCode {
     OP(STORE_NAME) = 5, 
     OP(STORE_LOCAL) = 6, 
     OP(CALL_COMMAND) = 7, 
-    OP(MAKE_PACKAGE_METHOD) = 8, 
+    OP(MAKE_FUNCTION) = 8, 
     OP(CALL_FUNCTION) = 9, 
     OP(LOAD_GLOBAL) = 10, 
     OP(LOAD_NAME) = 11, 

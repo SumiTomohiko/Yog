@@ -9,10 +9,12 @@
 #include "yog/exception.h"
 #include "yog/frame.h"
 #include "yog/function.h"
+#include "yog/function.h"
 #include "yog/method.h"
 #include "yog/package.h"
 #include "yog/parser.h"
 #include "yog/string.h"
+#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -50,11 +52,13 @@ get_outer_vars_ptr(YogEnv* env, unsigned int level, unsigned int index)
 YogVal 
 YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, unsigned int argc, YogVal* args) 
 {
+    DPRINTF("YogEval_call_method");
     SAVE_ARG(env, receiver);
 
     ID id = YogVM_intern(env, env->vm, method);
     YogVal retval = YogEval_call_method_id(env, receiver, id, argc, args);
 
+    DPRINTF("retval=0x%08x", retval);
     RETURN(env, retval);
 }
 
@@ -69,6 +73,7 @@ YogEval_call_method2(YogEnv* env, YogVal receiver, const char* method, unsigned 
     RETURN(env, retval);
 }
 
+#if 0
 static void 
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, unsigned int argc, YogVal args, unsigned int args_offset) 
 {
@@ -281,6 +286,7 @@ call_builtin_bound_method(YogEnv* env, YogVal method, uint8_t posargc, YogVal po
 }
 
 #undef DECL_ARGS
+#endif
 
 static YogVal
 make_outer_vars(YogEnv* env, unsigned int depth)
@@ -310,6 +316,21 @@ make_outer_vars(YogEnv* env, unsigned int depth)
     memcpy(dest, src, unit * (depth - 1));
 
     RETURN(env, outer_vars);
+}
+
+static void 
+setup_script_function(YogEnv* env, YogVal f, YogVal code) 
+{
+    SAVE_ARGS2(env, f, code);
+
+    PTR_AS(YogFunction, f)->code = code;
+    PTR_AS(YogFunction, f)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
+
+    unsigned int outer_size = PTR_AS(YogCode, code)->outer_size;
+    YogVal outer_vars = make_outer_vars(env, outer_size);
+    PTR_AS(YogFunction, f)->outer_vars = outer_vars;
+
+    RETURN_VOID(env);
 }
 
 static void 
@@ -348,6 +369,7 @@ setup_script_frame(YogEnv* env, YogVal frame, YogVal code)
     RETURN_VOID(env);
 }
 
+#if 0
 static void 
 call_code(YogEnv* env, YogVal self, YogVal code, YogVal outer_vars, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
@@ -380,12 +402,14 @@ call_code(YogEnv* env, YogVal self, YogVal code, YogVal outer_vars, uint8_t posa
 
     RETURN_VOID(env);
 }
+#endif
 
 #define PUSH(val)   YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), val)
 
 static void 
 call_method(YogEnv* env, YogVal unbound_self, YogVal callee, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
+#if 0
     SAVE_ARGS5(env, unbound_self, callee, blockarg, vararg, varkwarg);
 
     YOG_ASSERT(env, IS_PTR(callee), "Callee is not object.");
@@ -417,6 +441,8 @@ call_method(YogEnv* env, YogVal unbound_self, YogVal callee, uint8_t posargc, Yo
     }
 
     RETURN_VOID(env);
+#endif
+    PUSH(YUNDEF);
 }
 
 static BOOL
@@ -477,14 +503,10 @@ lookup_builtins(YogEnv* env, ID name)
     return val;
 }
 
-static YogVal
-mainloop(YogEnv* env, YogVal frame, YogVal code) 
+YogVal
+YogEval_mainloop(YogEnv* env)
 {
-    SAVE_ARGS2(env, frame, code);
-
-    DEBUG(DUMP_CODE(code));
-
-    PUSH_FRAME(frame);
+    SAVE_LOCALS(env);
 
 #define POP_BUF()   do { \
     YogJmpBuf* prev = PTR_AS(YogThread, env->thread)->jmp_buf_list->prev; \
@@ -680,11 +702,10 @@ mainloop(YogEnv* env, YogVal frame, YogVal code)
 #undef PC
 #undef POP_BUF
 
-    POP_FRAME();
-
     RETURN(env, YUNDEF);
 }
 
+#if 0
 static YogVal 
 eval_code(YogEnv* env, YogVal code, YogVal receiver, YogVal outer_vars, unsigned int argc, YogVal args[]) 
 {
@@ -710,10 +731,12 @@ eval_code2(YogEnv* env, YogVal code, YogVal receiver, YogVal outer_vars, unsigne
 
     RETURN(env, retval);
 }
+#endif
 
 YogVal 
 YogEval_call_block(YogEnv* env, YogVal block, unsigned int argc, YogVal* args) 
 {
+#if 0
     SAVE_ARG(env, block);
 
     YogVal retval = YUNDEF;
@@ -794,6 +817,8 @@ YogEval_call_block(YogEnv* env, YogVal block, unsigned int argc, YogVal* args)
     }
 
     RETURN(env, retval);
+#endif
+    return YUNDEF;
 }
 
 YogVal 
@@ -804,6 +829,7 @@ YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, unsigned int arg
     YogVal attr = YogVal_get_attr(env, receiver, method);
     YOG_ASSERT(env, IS_PTR(attr), "Attribute isn't object.");
 
+#if 0
     YogVal retval = YUNDEF;
     YogVal undef = YUNDEF;
     if (IS_OBJ_OF(cBuiltinBoundMethod, attr)) {
@@ -828,13 +854,16 @@ YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, unsigned int arg
     else {
         YOG_ASSERT(env, FALSE, "Callee is not callable.");
     }
+#endif
 
+    YogVal retval = YUNDEF;
     RETURN(env, retval);
 }
 
 YogVal 
 YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, unsigned int argc, YogVal* args, YogVal blockarg)
 {
+#if 0
     SAVE_ARGS2(env, receiver, blockarg);
 
     YogVal attr = YogVal_get_attr(env, receiver, method);
@@ -866,6 +895,8 @@ YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, unsigned int ar
     }
 
     RETURN(env, retval);
+#endif
+    return YUNDEF;
 }
 
 static void
@@ -885,8 +916,9 @@ eval_package(YogEnv* env, YogVal pkg)
     attrs = PTR_AS(YogObj, pkg)->attrs;
     MODIFY(env, PTR_AS(YogNameFrame, frame)->vars, attrs);
     MODIFY(env, SCRIPT_FRAME(frame)->globals, PTR_AS(YogNameFrame, frame)->vars);
+    PUSH_FRAME(frame);
 
-    mainloop(env, frame, code);
+    YogEval_mainloop(env);
 
     RETURN_VOID(env);
 }

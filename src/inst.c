@@ -18,7 +18,7 @@ Yog_get_inst_size(OpCode op)
         sizeof(uint8_t) + sizeof(ID), /* store_name */
         sizeof(uint8_t) + sizeof(uint8_t), /* store_local */
         sizeof(uint8_t) + sizeof(ID) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* call_command */
-        sizeof(uint8_t), /* make_package_method */
+        sizeof(uint8_t), /* make_function */
         sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* call_function */
         sizeof(uint8_t) + sizeof(ID), /* load_global */
         sizeof(uint8_t) + sizeof(ID), /* load_name */

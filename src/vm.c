@@ -18,6 +18,7 @@
 #include "yog/eval.h"
 #include "yog/exception.h"
 #include "yog/float.h"
+#include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/gc/bdw.h"
 #include "yog/int.h"
@@ -192,6 +193,7 @@ setup_basic_klass(YogEnv* env, YogVM* vm)
 static void 
 setup_klasses(YogEnv* env, YogVM* vm) 
 {
+    vm->cFunction = YogFunction_klass_new(env);
     vm->cBuiltinBoundMethod = YogBuiltinBoundMethod_klass_new(env);
     vm->cBoundMethod = YogBoundMethod_klass_new(env);
     vm->cBuiltinUnboundMethod = YogBuiltinUnboundMethod_klass_new(env);
@@ -330,6 +332,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cMatch);
     KEEP(cPackage);
     KEEP(cBool);
+    KEEP(cFunction);
     KEEP(cBuiltinBoundMethod);
     KEEP(cBoundMethod);
     KEEP(cBuiltinUnboundMethod);

@@ -142,13 +142,13 @@ CompileData_add_call_command(YogEnv* env, YogVal data, unsigned int lineno, ID c
 }
 
 static void 
-CompileData_add_make_package_method(YogEnv* env, YogVal data, unsigned int lineno)
+CompileData_add_make_function(YogEnv* env, YogVal data, unsigned int lineno)
 {
     SAVE_ARG(env, data);
 
     YogVal inst = Inst_new(env, lineno);
     INST(inst)->type = INST_OP;
-    INST_OPCODE(inst) = OP(MAKE_PACKAGE_METHOD);
+    INST_OPCODE(inst) = OP(MAKE_FUNCTION);
 
 
     add_inst(env, data, inst);
@@ -502,9 +502,9 @@ insts2bin(YogEnv* env, YogVal inst)
                         YogBinary_push_uint8(env, code, CALL_COMMAND_VARKWARGC(inst));
                         break;
                     }
-                case OP(MAKE_PACKAGE_METHOD):
+                case OP(MAKE_FUNCTION):
                     {
-                        YogBinary_push_uint8(env, code, OP(MAKE_PACKAGE_METHOD));
+                        YogBinary_push_uint8(env, code, OP(MAKE_FUNCTION));
                         break;
                     }
                 case OP(CALL_FUNCTION):
@@ -692,7 +692,7 @@ count_stack_size(YogEnv* env, YogVal inst)
                         push_size = 1;
                         break;
                     }
-                case OP(MAKE_PACKAGE_METHOD):
+                case OP(MAKE_FUNCTION):
                     {
                         pop_size = 1;
                         push_size = 1;

@@ -37,6 +37,7 @@ struct YogVM {
     YogVal cMatch;
     YogVal cPackage;
     YogVal cBool;
+    YogVal cFunction;
     YogVal cBuiltinBoundMethod;
     YogVal cBoundMethod;
     YogVal cBuiltinUnboundMethod;

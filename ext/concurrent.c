@@ -1,10 +1,12 @@
 #include <pthread.h>
+#include "yog/array.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/object.h"
+#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -18,10 +20,9 @@ struct Barrier {
 typedef struct Barrier Barrier;
 
 static YogVal
-Barrier_initialize(YogEnv* env)
+Barrier_initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    SAVE_ARG(env, self);
+    SAVE_ARGS4(env, self, args, kw, block);
 
     if (pthread_mutex_init(&PTR_AS(Barrier, self)->mutex, NULL) != 0) {
         YOG_BUG(env, "pthread_mutex_init failed");
@@ -30,7 +31,7 @@ Barrier_initialize(YogEnv* env)
         YOG_BUG(env, "pthread_cond_init failed");
     }
 
-    YogVal count = ARG(env, 0);
+    YogVal count = YogArray_at(env, args, 0);
     /* TODO: check type */
     PTR_AS(Barrier, self)->counter = count;
 
@@ -38,10 +39,9 @@ Barrier_initialize(YogEnv* env)
 }
 
 static YogVal
-Barrier_wait(YogEnv* env)
+Barrier_wait(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    SAVE_ARG(env, self);
+    SAVE_ARGS4(env, self, args, kw, block);
 
     pthread_mutex_t* mutex = &PTR_AS(Barrier, self)->mutex;
     if (pthread_mutex_lock(mutex) != 0) {
@@ -123,12 +123,11 @@ AtomicInt_alloc(YogEnv* env, YogVal klass)
 }
 
 static YogVal
-AtomicInt_initialize(YogEnv* env)
+AtomicInt_initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    SAVE_ARG(env, self);
+    SAVE_ARGS4(env, self, args, kw, block);
 
-    YogVal value = ARG(env, 0);
+    YogVal value = YogArray_at(env, args, 0);
     /* TODO: check type */
     PTR_AS(AtomicInt, self)->value = VAL2INT(value);
 
@@ -136,20 +135,17 @@ AtomicInt_initialize(YogEnv* env)
 }
 
 static YogVal
-AtomicInt_inc(YogEnv* env)
+AtomicInt_inc(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    SAVE_ARG(env, self);
-
+    SAVE_ARGS4(env, self, args, kw, block);
     __asm__ __volatile__("lock incl %0": "+m" (PTR_AS(AtomicInt, self)->value));
-
     RETURN(env, self);
 }
 
 static YogVal
-AtomicInt_get(YogEnv* env)
+AtomicInt_get(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    return INT2VAL(PTR_AS(AtomicInt, SELF(env))->value);
+    return INT2VAL(PTR_AS(AtomicInt, self)->value);
 }
 
 void

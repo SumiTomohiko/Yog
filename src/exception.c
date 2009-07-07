@@ -1,3 +1,4 @@
+#include "yog/array.h"
 #include "yog/code.h"
 #include "yog/env.h"
 #include "yog/error.h"
@@ -7,6 +8,7 @@
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
+#include "yog/thread.h"
 #include "yog/yog.h"
 
 static void 
@@ -45,7 +47,7 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
     case FRAME_C:
         {
             YogVal f = PTR_AS(YogCFrame, frame)->f;
-            if (PTR_AS(YogBuiltinFunction, f)->func_name == name) {
+            if (PTR_AS(YogNativeFunction, f)->name == name) {
                 RETURN(env, PTR_AS(YogFrame, frame)->prev);
             }
             break;
@@ -68,10 +70,11 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
 }
 
 static YogVal 
-initialize(YogEnv* env)
+initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    YogVal message = ARG(env, 0);
+    SAVE_ARGS4(env, self, args, kw, block);
+
+    YogVal message = YogArray_at(env, args, 0);
     YogVal frame = YUNDEF;
     YogVal st = YUNDEF;
     PUSH_LOCALS4(env, self, message, frame, st);
@@ -88,12 +91,16 @@ initialize(YogEnv* env)
         case FRAME_C:
             {
                 YogVal f = PTR_AS(YogCFrame, frame)->f;
+#if 0
                 ID klass_name = PTR_AS(YogBuiltinFunction, f)->klass_name;
-                ID func_name = PTR_AS(YogBuiltinFunction, f)->func_name;
+#endif
+                ID name = PTR_AS(YogNativeFunction, f)->name;
                 PTR_AS(YogStackTraceEntry, entry)->lineno = 0;
                 PTR_AS(YogStackTraceEntry, entry)->filename = YNIL;
+#if 0
                 PTR_AS(YogStackTraceEntry, entry)->klass_name = klass_name;
-                PTR_AS(YogStackTraceEntry, entry)->func_name = func_name;
+#endif
+                PTR_AS(YogStackTraceEntry, entry)->func_name = name;
                 break;
             }
         case FRAME_METHOD:
@@ -138,19 +145,19 @@ initialize(YogEnv* env)
     }
     MODIFY(env, PTR_AS(YogException, self)->message, message);
 
-    return YNIL;
+    RETURN(env, YNIL);
 }
 
 static YogVal 
-to_s(YogEnv* env)
+to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
+    SAVE_ARGS4(env, self, args, kw, block);
 
     YogException* exc = PTR_AS(YogException, self);
     YogVal msg = exc->message;
     YogVal retval = YogEval_call_method(env, msg, "to_s", 0, NULL);
 
-    return retval;
+    RETURN(env, retval);
 }
 
 YogVal 

@@ -9,13 +9,15 @@
 #include "yog/object.h"
 #include "yog/package.h"
 #include "yog/string.h"
+#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
 static YogVal 
-raise(YogEnv* env)
+raise(YogEnv* env, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal exc = ARG(env, 0);
+    SAVE_ARGS3(env, args, kw, block);
+    YogVal exc = YogArray_at(env, args, 0);
 
     if (!YogVal_is_subklass_of(env, exc, env->vm->eException)) {
         YogVal receiver = env->vm->eException;
@@ -32,21 +34,20 @@ raise(YogEnv* env)
     YogError_raise(env, exc);
 
     /* NOTREACHED */
-    return YNIL;
+    RETURN(env, YNIL);
 }
 
 static YogVal 
-puts_(YogEnv* env)
+puts_(YogEnv* env, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal vararg = ARG(env, 0);
-    PUSH_LOCAL(env, vararg);
+    SAVE_ARGS3(env, args, kw, block);
 
-    unsigned int size = YogArray_size(env, vararg);
+    unsigned int size = YogArray_size(env, args);
     if (0 < size) {
         unsigned int i = 0;
         for (i = 0; i < size; i++) {
             YogString* s = NULL;
-            YogVal arg = YogArray_at(env, vararg, i);
+            YogVal arg = YogArray_at(env, args, i);
             if (IS_OBJ_OF(cString, arg)) {
                 s = PTR_AS(YogString, arg);
             }
@@ -62,14 +63,14 @@ puts_(YogEnv* env)
         printf("\n");
     }
 
-    POP_LOCALS(env);
-    return YNIL;
+    RETURN(env, YNIL);
 }
 
 static YogVal
-import_package(YogEnv* env)
+import_package(YogEnv* env, YogVal args, YogVal kw, YogVal block)
 {
-    return YogVM_import_package(env, env->vm, VAL2ID(ARG(env, 0)));
+    YogVal name = YogArray_at(env, args, 0);
+    return YogVM_import_package(env, env->vm, VAL2ID(name));
 }
 
 YogVal 

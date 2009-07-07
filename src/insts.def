@@ -96,15 +96,13 @@ inst call_command
     POP_LOCALS(ENV);
 }
 
-inst make_package_method
+inst make_function
 ()
 (code)
-(method)
+(f)
 {
-    method = YogBoundMethod_new(ENV);
-    setup_script_method(ENV, method, code);
-    YogVal self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
-    MODIFY(env, PTR_AS(YogBoundMethod, method)->self, self);
+    f = YogFunction_new(ENV);
+    setup_script_function(ENV, f, code);
 }
 
 inst call_function
@@ -113,10 +111,9 @@ inst call_function
 (...) depth: 1
 {
     POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
-
     YogVal callee = POP();
-    YogVal unbound_self = YUNDEF;
-    call_method(ENV, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+
+    (*PTR_AS(YogCallable, callee)->exec)(env, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
     POP_LOCALS(ENV);
     POP_LOCALS(ENV);

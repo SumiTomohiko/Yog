@@ -1777,7 +1777,7 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
                 CompileData_add_make_method(env, data, lineno);
                 break;
             case CTX_PKG:
-                CompileData_add_make_package_method(env, data, lineno);
+                CompileData_add_make_function(env, data, lineno);
                 break;
             default:
                 YOG_ASSERT(env, FALSE, "Invalid context type.");

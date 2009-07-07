@@ -201,50 +201,36 @@ YogArray_new(YogEnv* env)
 }
 
 static YogVal
-lshift(YogEnv* env)
+lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_LOCALS(env);
-
-    YogVal self = SELF(env);
-    YogVal elem = ARG(env, 0);
-    PUSH_LOCALS2(env, self, elem);
-
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal elem = YogArray_at(env, args, 0);
     YogArray_push(env, self, elem);
-
     RETURN(env, self);
 }
 
 static YogVal
-subscript(YogEnv* env)
+subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_LOCALS(env);
-
-    YogVal self = SELF(env);
-    YogVal n = ARG(env, 0);
-    PUSH_LOCAL(env, self);
-
-    YogVal v = YogArray_at(env, self, VAL2INT(n));
-
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal index = YogArray_at(env, args, 0);
+    YogVal v = YogArray_at(env, self, VAL2INT(index));
     RETURN(env, v);
 }
 
 static YogVal
-each(YogEnv* env)
+each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARGS4(env, self, args, kw, block);
 
-    YogVal self = SELF(env);
-    YogVal block = ARG(env, 0);
-    PUSH_LOCALS2(env, self, block);
-
-    YogVal args[] = { YUNDEF, };
-    PUSH_LOCALSX(env, 1, args);
+    YogVal arg[] = { YUNDEF };
+    PUSH_LOCALSX(env, 1, arg);
 
     unsigned int size = YogArray_size(env, self);
     unsigned int i;
     for (i = 0; i < size; i++) {
-        args[0] = YogArray_at(env, self, i);
-        YogEval_call_block(env, block, array_sizeof(args), args);
+        arg[0] = YogArray_at(env, self, i);
+        YogEval_call_block(env, block, array_sizeof(arg), arg);
     }
 
     RETURN(env, self);

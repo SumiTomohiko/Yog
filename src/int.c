@@ -1,9 +1,11 @@
+#include "yog/array.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/klass.h"
 #include "yog/string.h"
+#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -17,48 +19,52 @@
 } while (0)
 
 static YogVal 
-to_s(YogEnv* env)
+to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-
+    DPRINTF("to_s");
+    SAVE_ARGS4(env, self, args, kw, block);
     CHECK_TYPE(self);
-
-    return YogString_new_format(env, "%d", VAL2INT(self));
+    DPRINTF("self=0x%08x", self);
+    YogVal retval = YogString_new_format(env, "%d", VAL2INT(self));
+    DPRINTF("retval=0x%08x", retval);
+    RETURN(env, retval);
 }
 
 static YogVal 
-add(YogEnv* env)
+add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    YogVal n = ARG(env, 0);
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal n = YogArray_at(env, args, 0);
 
     CHECK_ARGS(self, n);
 
     int result = VAL2INT(self) + VAL2INT(n);
 
-    return INT2VAL(result);
+    RETURN(env, INT2VAL(result));
 }
 
 static YogVal 
-less(YogEnv* env)
+less(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    YogVal n = ARG(env, 0);
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal n = YogArray_at(env, args, 0);
 
     CHECK_ARGS(self, n);
 
+    YogVal retval;
     if (VAL2INT(self) < VAL2INT(n)) {
-        return YTRUE;
+        retval = YTRUE;
     }
     else {
-        return YFALSE;
+        retval = YFALSE;
     }
+    RETURN(env, retval);
 }
 
 static YogVal 
-times(YogEnv* env)
+times(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
+    SAVE_ARGS4(env, self, args, kw, block);
     int n = VAL2INT(self);
 
     unsigned int i = 0;
@@ -66,13 +72,10 @@ times(YogEnv* env)
     for (i = 0; i < n; i++) {
         YogVal args[argc];
         args[0] = INT2VAL(i);
-
-        YogVal block = ARG(env, 0);
-
         YogEval_call_block(env, block, argc, args);
     }
 
-    return YNIL;
+    RETURN(env, YNIL);
 }
 
 YogVal 

@@ -16,7 +16,7 @@ YogCode_get_op_name(OpCode op)
         "STORE_NAME", 
         "STORE_LOCAL", 
         "CALL_COMMAND", 
-        "MAKE_PACKAGE_METHOD", 
+        "MAKE_FUNCTION", 
         "CALL_FUNCTION", 
         "LOAD_GLOBAL", 
         "LOAD_NAME", 

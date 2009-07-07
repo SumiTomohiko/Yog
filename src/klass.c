@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include "yog/array.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -7,27 +8,20 @@
 #include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/method.h"
+#include "yog/thread.h"
 #include "yog/yog.h"
 
+/* TODO: change this signature */
 void 
 YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, ...)
 {
-    SAVE_LOCALS(env);
-    PUSH_LOCAL(env, klass);
+    SAVE_ARG(env, klass);
 
-    ID func_name = INTERN(name);
+    YogVal func = YUNDEF;
+    PUSH_LOCAL(env, func);
 
-    va_list ap;
-    va_start(ap, required_argc);
-    YogVal builtin_f = YogBuiltinFunction_new(env, f, PTR_AS(YogKlass, klass)->name, func_name, blockargc, varargc, kwargc, required_argc, ap);
-    va_end(ap);
-    PUSH_LOCAL(env, builtin_f);
-
-    YogVal method = YogBuiltinUnboundMethod_new(env);
-    MODIFY(env, PTR_AS(YogBuiltinUnboundMethod, method)->f, builtin_f);
-    PUSH_LOCAL(env, method);
-
-    YogObj_set_attr_id(env, klass, func_name, method);
+    func = YogNativeFunction_new(env, name, f);
+    YogObj_set_attr(env, klass, name, func);
 
     RETURN_VOID(env);
 }
@@ -81,13 +75,11 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
 }
 
 static YogVal 
-new_(YogEnv* env)
+new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    YogVal blockarg = ARG(env, 0);
-    YogVal vararg = ARG(env, 1);
+    SAVE_ARGS4(env, self, args, kw, block);
     YogVal obj = YUNDEF;
-    PUSH_LOCALS4(env, self, blockarg, vararg, obj);
+    PUSH_LOCAL(env, obj);
 
     Allocator allocator = PTR_AS(YogKlass, self)->allocator;
     YogVal klass = self;
@@ -100,25 +92,24 @@ new_(YogEnv* env)
     }
 
     obj = (*allocator)(env, self);
-    unsigned int argc = YogArray_size(env, vararg);
-    YogVal body = PTR_AS(YogArray, vararg)->body;
+    unsigned int argc = YogArray_size(env, args);
+    YogVal body = PTR_AS(YogArray, args)->body;
     YogVal* items = PTR_AS(YogValArray, body)->items;
     /* TODO: dirty hack */
-    YogVal args[argc];
+    YogVal arg[argc];
     unsigned int i;
     for (i = 0; i < argc; i++) {
-        args[i] = items[i];
+        arg[i] = items[i];
     }
-    PUSH_LOCALSX(env, argc, args);
-    if (IS_PTR(blockarg)) {
-        YogEval_call_method2(env, obj, "initialize", argc, args, blockarg);
+    PUSH_LOCALSX(env, argc, arg);
+    if (IS_PTR(block)) {
+        YogEval_call_method2(env, obj, "initialize", argc, arg, block);
     }
     else {
-        YogEval_call_method(env, obj, "initialize", argc, args);
+        YogEval_call_method(env, obj, "initialize", argc, arg);
     }
 
-    POP_LOCALS(env);
-    return obj;
+    RETURN(env, obj);
 }
 
 void 

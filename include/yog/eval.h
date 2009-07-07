@@ -16,6 +16,7 @@ YogVal YogEval_call_method2(YogEnv*, YogVal, const char*, unsigned int, YogVal*,
 YogVal YogEval_call_method_id(YogEnv*, YogVal, ID, unsigned int, YogVal*);
 YogVal YogEval_call_method_id2(YogEnv*, YogVal, ID, unsigned int, YogVal*, YogVal);
 YogVal YogEval_eval_file(YogEnv*, const char*, const char*);
+YogVal YogEval_mainloop(YogEnv*);
 
 /* PROTOTYPE_END */
 

@@ -1,5 +1,6 @@
 #include <string.h>
 #include "oniguruma.h"
+#include "yog/array.h"
 #include "yog/encoding.h"
 #include "yog/env.h"
 #include "yog/error.h"
@@ -112,10 +113,10 @@ group2index(YogEnv* env, YogMatch* match, YogVal arg)
 }
 
 static YogVal 
-group(YogEnv* env) 
+group(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    YogVal arg = ARG(env, 0);
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal arg = YogArray_at(env, args, 0);
 
     YogMatch* match = PTR_AS(YogMatch, self);
     int index = group2index(env, match, arg);
@@ -128,7 +129,7 @@ group(YogEnv* env)
     int end = region->end[index];
     int size = end - begin;
     YogVal s = YogString_new_size(env, size + 1);
-    YogVal str = PTR_AS(YogMatch, SELF(env))->str;
+    YogVal str = PTR_AS(YogMatch, self)->str;
     YogVal to_body = PTR_AS(YogString, s)->body;
     char* p = PTR_AS(YogCharArray, to_body)->items;
     YogVal from_body = PTR_AS(YogString, str)->body;
@@ -136,7 +137,7 @@ group(YogEnv* env)
     memcpy(p, q, size);
     PTR_AS(YogCharArray, to_body)->items[size] = '\0';
 
-    return s;
+    RETURN(env, s);
 }
 
 static int 
@@ -155,10 +156,10 @@ ptr2index(YogEnv* env, YogString* s, const char* ptr)
 }
 
 static YogVal 
-start(YogEnv* env) 
+start(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    YogVal arg = ARG(env, 0);
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal arg = YogArray_at(env, args, 0);
 
     YogMatch* match = PTR_AS(YogMatch, self);
     int index = group2index(env, match, arg);
@@ -171,14 +172,14 @@ start(YogEnv* env)
     const char* start = PTR_AS(YogCharArray, body)->items + region->beg[index];
     int n = ptr2index(env, s, start);
 
-    return INT2VAL(n);
+    RETURN(env, INT2VAL(n));
 }
 
 static YogVal 
-end(YogEnv* env) 
+end(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    YogVal arg = ARG(env, 0);
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal arg = YogArray_at(env, args, 0);
 
     YogMatch* match = PTR_AS(YogMatch, self);
     int index = group2index(env, match, arg);
@@ -192,7 +193,7 @@ end(YogEnv* env)
     const char* end = p + region->end[index] - 1;
     int n = ptr2index(env, s, end) + 1;
 
-    return INT2VAL(n);
+    RETURN(env, INT2VAL(n));
 }
 
 YogVal 

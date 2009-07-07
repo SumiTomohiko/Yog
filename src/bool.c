@@ -2,6 +2,7 @@
 #include "yog/frame.h"
 #include "yog/klass.h"
 #include "yog/string.h"
+#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -10,9 +11,8 @@
 } while (0)
 
 static YogVal 
-to_s(YogEnv* env)
+to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
     CHECK_TYPE(self);
 
     const char* s = NULL;
@@ -29,13 +29,14 @@ to_s(YogEnv* env)
 YogVal 
 YogBool_klass_new(YogEnv* env) 
 {
-    YogVal klass = YogKlass_new(env, "Bool", env->vm->cObject);
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
+    klass = YogKlass_new(env, "Bool", env->vm->cObject);
     YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
 
-    POP_LOCALS(env);
-    return klass;
+    RETURN(env, klass);
 }
 
 /**

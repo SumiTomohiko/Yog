@@ -8,25 +8,17 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
+/* TODO: change this signature */
 void 
 YogPackage_define_method(YogEnv* env, YogVal pkg, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, unsigned int required_argc, ...)
 {
     SAVE_ARG(env, pkg);
 
-    ID func_name = INTERN(name);
+    YogVal func = YUNDEF;
+    PUSH_LOCAL(env, func);
 
-    va_list ap;
-    va_start(ap, required_argc);
-    YogVal builtin_f = YogBuiltinFunction_new(env, f, INVALID_ID, func_name, blockargc, varargc, kwargc, required_argc, ap);
-    va_end(ap);
-    PUSH_LOCAL(env, builtin_f);
-
-    YogVal method = YogBuiltinBoundMethod_new(env);
-    MODIFY(env, PTR_AS(YogBuiltinBoundMethod, method)->self, pkg);
-    MODIFY(env, PTR_AS(YogBuiltinBoundMethod, method)->f, builtin_f);
-    PUSH_LOCAL(env, method);
-
-    YogObj_set_attr_id(env, pkg, func_name, method);
+    func = YogNativeFunction_new(env, name, f);
+    YogObj_set_attr(env, pkg, name, func);
 
     RETURN_VOID(env);
 }

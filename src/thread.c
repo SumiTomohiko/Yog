@@ -275,12 +275,9 @@ run_of_new_thread(void* arg)
 }
 
 static YogVal
-join(YogEnv* env)
+join(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_LOCALS(env);
-
-    YogVal self = SELF(env);
-    PUSH_LOCAL(env, self);
 
     void* retval = NULL;
     FREE_FROM_GC(env);
@@ -295,14 +292,13 @@ join(YogEnv* env)
 }
 
 static YogVal
-run(YogEnv* env)
+run(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARGS4(env, self, args, kw, block);
 
-    YogVal self = SELF(env);
-    YogVal vararg = ARG(env, 0);
+    YogVal vararg = YogArray_at(env, args, 0);
     YogVal arg = YUNDEF;
-    PUSH_LOCALS3(env, self, vararg, arg);
+    PUSH_LOCALS2(env, vararg, arg);
 
     arg = ThreadArg_new(env);
     PTR_AS(ThreadArg, arg)->vm = env->vm;
@@ -325,10 +321,8 @@ run(YogEnv* env)
 }
 
 static YogVal
-initialize(YogEnv* env)
+initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal self = SELF(env);
-    YogVal block = ARG(env, 0);
     PTR_AS(YogThread, self)->block = block;
     return self;
 }

@@ -57,7 +57,7 @@ struct YogInst {
             uint8_t varkwargc;
         } call_command;
         struct {
-        } make_package_method;
+        } make_function;
         struct {
             uint8_t argc;
             uint8_t kwargc;
