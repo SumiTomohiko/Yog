@@ -14,9 +14,9 @@
 #include "yog/yog.h"
 
 static YogVal 
-raise(YogEnv* env, YogVal args, YogVal kw, YogVal block)
+raise(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS3(env, args, kw, block);
+    SAVE_ARGS4(env, self, args, kw, block);
     YogVal exc = YogArray_at(env, args, 0);
 
     if (!YogVal_is_subklass_of(env, exc, env->vm->eException)) {
@@ -38,9 +38,9 @@ raise(YogEnv* env, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal 
-puts_(YogEnv* env, YogVal args, YogVal kw, YogVal block)
+puts_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS3(env, args, kw, block);
+    SAVE_ARGS4(env, self, args, kw, block);
 
     unsigned int size = YogArray_size(env, args);
     if (0 < size) {
@@ -67,7 +67,7 @@ puts_(YogEnv* env, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-import_package(YogEnv* env, YogVal args, YogVal kw, YogVal block)
+import_package(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     YogVal name = YogArray_at(env, args, 0);
     return YogVM_import_package(env, env->vm, VAL2ID(name));

@@ -33,6 +33,15 @@ struct YogFunction {
 
 typedef struct YogFunction YogFunction;
 
+struct YogInstanceMethod {
+    struct YogCallable base;
+
+    YogVal self;
+    YogVal f;
+};
+
+typedef struct YogInstanceMethod YogInstanceMethod;
+
 /* PROTOTYPE_START */
 
 /**
@@ -42,6 +51,7 @@ typedef struct YogFunction YogFunction;
 /* src/function.c */
 YogVal YogFunction_klass_new(YogEnv*);
 YogVal YogFunction_new(YogEnv*);
+YogVal YogInstanceMethod_klass_new(YogEnv*);
 YogVal YogNativeFunction_new(YogEnv*, const char*, void*);
 
 /* PROTOTYPE_END */
