@@ -194,6 +194,7 @@ static void
 setup_klasses(YogEnv* env, YogVM* vm) 
 {
     vm->cFunction = YogFunction_klass_new(env);
+    vm->cNativeFunction = YogNativeFunction_klass_new(env);
     vm->cInstanceMethod = YogInstanceMethod_klass_new(env);
     vm->cBuiltinBoundMethod = YogBuiltinBoundMethod_klass_new(env);
     vm->cBoundMethod = YogBoundMethod_klass_new(env);
@@ -334,6 +335,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cPackage);
     KEEP(cBool);
     KEEP(cFunction);
+    KEEP(cNativeFunction);
     KEEP(cInstanceMethod);
     KEEP(cBuiltinBoundMethod);
     KEEP(cBoundMethod);
@@ -387,6 +389,7 @@ YogVM_init(YogVM* vm)
     vm->cPackage = YUNDEF;
     vm->cBool = YUNDEF;
     vm->cFunction = YUNDEF;
+    vm->cNativeFunction = YUNDEF;
     vm->cInstanceMethod = YUNDEF;
     vm->cBuiltinBoundMethod = YUNDEF;
     vm->cBoundMethod = YUNDEF;

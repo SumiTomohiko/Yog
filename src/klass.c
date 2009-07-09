@@ -71,6 +71,8 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
         PTR_AS(YogKlass, klass)->name = id;
     }
     MODIFY(env, PTR_AS(YogKlass, klass)->super, super);
+    PTR_AS(YogKlass, klass)->get_attr = NULL;
+    PTR_AS(YogKlass, klass)->get_descr = NULL;
     RETURN(env, klass);
 }
 
@@ -116,6 +118,32 @@ void
 YogKlass_klass_init(YogEnv* env, YogVal cKlass) 
 {
     YogKlass_define_method(env, cKlass, "new", new_, 1, 1, 0, 0, "block", NULL);
+}
+
+YogVal
+YogKlass_get_attr(YogEnv* env, YogVal self, ID name)
+{
+    SAVE_ARG(env, self);
+    YogVal attr = YUNDEF;
+    YogVal klass = YUNDEF;
+    PUSH_LOCALS2(env, attr, klass);
+
+    klass = self;
+    do {
+        attr = YogObj_get_attr(env, klass, name);
+        if (!IS_UNDEF(attr)) {
+            RETURN(env, attr);
+        }
+        klass = PTR_AS(YogKlass, klass)->super;
+    } while (IS_PTR(klass));
+
+    RETURN(env, YUNDEF);
+}
+
+void
+YogKlass_define_descr_getter(YogEnv* env, YogVal self, void* getter)
+{
+    PTR_AS(YogKlass, self)->get_descr = getter;
 }
 
 /**

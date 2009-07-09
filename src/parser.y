@@ -400,41 +400,31 @@ Return_new(YogEnv* env, unsigned int lineno, YogVal expr)
 }
 
 static YogVal 
-MethodCall_new(YogEnv* env, unsigned int lineno, YogVal recv, ID name, YogVal args, YogVal blockarg) 
+Attr_new(YogEnv* env, unsigned int lineno, YogVal obj, ID name) 
 {
-    SAVE_ARGS3(env, recv, args, blockarg);
+    SAVE_ARG(env, obj);
 
-    YogVal node = NODE_NEW(NODE_METHOD_CALL, lineno);
-    MODIFY(env, NODE(node)->u.method_call.recv, recv);
-    NODE(node)->u.method_call.name = name;
-    MODIFY(env, NODE(node)->u.method_call.args, args);
-    MODIFY(env, NODE(node)->u.method_call.blockarg, blockarg);
+    YogVal node = YogNode_new(env, NODE_ATTR, lineno);
+    MODIFY(env, NODE(node)->u.attr.obj, obj);
+    NODE(node)->u.attr.name = name;
 
     RETURN(env, node);
 }
 
-#if 0
-#define METHOD_CALL_NEW(node, lineno, recv_, name_, args_, blockarg_) do { \
-    node = NODE_NEW(NODE_METHOD_CALL, lineno); \
-    NODE(node)->u.method_call.recv = recv_; \
-    NODE(node)->u.method_call.name = name_; \
-    NODE(node)->u.method_call.args = args_; \
-    NODE(node)->u.method_call.blockarg = blockarg_; \
-} while (0)
-#endif
-
 static YogVal 
-MethodCall1_new(YogEnv* env, unsigned int lineno, YogVal recv, ID name, YogVal arg) 
+FuncCall_new2(YogEnv* env, unsigned int lineno, YogVal recv, ID name, YogVal arg) 
 {
     SAVE_ARGS2(env, recv, arg);
-
+    YogVal postfix = YUNDEF;
     YogVal args = YUNDEF;
-    PUSH_LOCAL(env, args);
-   
+    PUSH_LOCALS2(env, postfix, args);
+
+    postfix = Attr_new(env, lineno, recv, name);
+
     args = YogArray_new(env);
     YogArray_push(env, args, arg);
-   
-    YogVal node = MethodCall_new(env, lineno, recv, name, args, YNIL);
+
+    YogVal node = FuncCall_new(env, lineno, postfix, args, YNIL);
 
     RETURN(env, node);
 }
@@ -497,18 +487,6 @@ Subscript_new(YogEnv* env, unsigned int lineno, YogVal prefix, YogVal index)
     YogVal node = YogNode_new(env, NODE_SUBSCRIPT, lineno);
     MODIFY(env, NODE(node)->u.subscript.prefix, prefix);
     MODIFY(env, NODE(node)->u.subscript.index, index);
-
-    RETURN(env, node);
-}
-
-static YogVal 
-Attr_new(YogEnv* env, unsigned int lineno, YogVal obj, ID name) 
-{
-    SAVE_ARG(env, obj);
-
-    YogVal node = YogNode_new(env, NODE_ATTR, lineno);
-    MODIFY(env, NODE(node)->u.attr.obj, obj);
-    NODE(node)->u.attr.name = name;
 
     RETURN(env, node);
 }
@@ -939,7 +917,7 @@ comparison(A) ::= xor_expr(B). {
 comparison(A) ::= xor_expr(B) comp_op(C) xor_expr(D). {
     unsigned int lineno = NODE_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
-    A = MethodCall1_new(env, lineno, B, id, D);
+    A = FuncCall_new2(env, lineno, B, id, D);
 }
 
 comp_op(A) ::= LESS(B). {
@@ -964,7 +942,7 @@ shift_expr(A) ::= match_expr(B). {
 shift_expr(A) ::= shift_expr(B) LSHIFT(C) match_expr(D). {
     unsigned int lineno = NODE_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
-    A = MethodCall1_new(env, lineno, B, id, D);
+    A = FuncCall_new2(env, lineno, B, id, D);
 }
 
 match_expr(A) ::= arith_expr(B). {
@@ -973,7 +951,7 @@ match_expr(A) ::= arith_expr(B). {
 match_expr(A) ::= match_expr(B) EQUAL_TILDA(C) arith_expr(D). {
     unsigned int lineno = NODE_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
-    A = MethodCall1_new(env, lineno, B, id, D);
+    A = FuncCall_new2(env, lineno, B, id, D);
 }
 
 arith_expr(A) ::= term(B). {
@@ -982,7 +960,7 @@ arith_expr(A) ::= term(B). {
 arith_expr(A) ::= arith_expr(B) PLUS(C) term(D). {
     unsigned int lineno = NODE_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
-    A = MethodCall1_new(env, lineno, B, id, D);
+    A = FuncCall_new2(env, lineno, B, id, D);
 }
 
 term(A) ::= factor(B). {
@@ -1001,15 +979,7 @@ postfix_expr(A) ::= atom(B). {
     A = B;
 }
 postfix_expr(A) ::= postfix_expr(B) LPAR args_opt(C) RPAR blockarg_opt(D). {
-    unsigned int lineno = NODE_LINENO(B);
-    if (NODE(B)->type == NODE_ATTR) {
-        YogVal recv = NODE(B)->u.attr.obj;
-        ID name = NODE(B)->u.attr.name;
-        A = MethodCall_new(env, lineno, recv, name, C, D);
-    }
-    else {
-        A = FuncCall_new(env, lineno, B, C, D);
-    }
+    A = FuncCall_new(env, NODE_LINENO(B), B, C, D);
 }
 postfix_expr(A) ::= postfix_expr(B) LBRACKET expr(C) RBRACKET. {
     unsigned int lineno = NODE_LINENO(B);

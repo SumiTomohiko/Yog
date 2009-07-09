@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "yog/error.h"
 #include "yog/klass.h"
+#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -149,35 +150,67 @@ YogVal_get_klass(YogEnv* env, YogVal val)
     return YUNDEF;
 }
 
+static YogVal
+get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+{
+    SAVE_ARGS3(env, attr, obj, klass);
+    YogVal c = YUNDEF;
+    YogVal v = YUNDEF;
+    PUSH_LOCALS2(env, c, v);
+
+    c = YogVal_get_klass(env, attr);
+    if (PTR_AS(YogKlass, c)->get_descr == NULL) {
+        RETURN(env, attr);
+    }
+    v = (*PTR_AS(YogKlass, c)->get_descr)(env, attr, obj, klass);
+
+    RETURN(env, v);
+}
+
+static YogVal
+get_attr_default(YogEnv* env, YogVal self, ID name)
+{
+    SAVE_ARG(env, self);
+    YogVal klass = YUNDEF;
+    YogVal attr = YUNDEF;
+    PUSH_LOCALS2(env, klass, attr);
+
+#if 0
+    /* TODO: test here */
+    if (IS_PTR(self) && (PTR_AS(YogBasicObj, self)->flags & HAS_ATTRS)) {
+        attr = YogObj_get_attr(env, self, name);
+        if (!IS_UNDEF(attr)) {
+            RETURN(env, attr);
+        }
+    }
+#endif
+
+    klass = YogVal_get_klass(env, self);
+    attr = YogKlass_get_attr(env, klass, name);
+    if (!IS_UNDEF(attr)) {
+        attr = get_descr(env, attr, self, klass);
+        RETURN(env, attr);
+    }
+
+    RETURN(env, YUNDEF);
+}
+
 YogVal 
 YogVal_get_attr(YogEnv* env, YogVal val, ID name) 
 {
-#define RET_ATTR(obj)   do { \
-    YogVal attr = YogObj_get_attr(env, obj, name); \
-    if (!IS_UNDEF(attr)) { \
-        return attr; \
-    } \
-} while (0)
-    if (IS_PTR(val)) {
-        if (PTR_AS(YogBasicObj, val)->flags & HAS_ATTRS) {
-            RET_ATTR(val);
-        }
-        else {
-            /* TODO: generic attribute */
-        }
+    SAVE_ARG(env, val);
+    YogVal klass = YUNDEF;
+    YogVal attr = YUNDEF;
+    PUSH_LOCALS2(env, klass, attr);
+
+    klass = YogVal_get_klass(env, val);
+    AttrGetter getter = PTR_AS(YogKlass, klass)->get_attr;
+    if (getter == NULL) {
+        getter = get_attr_default;
     }
+    attr = (*getter)(env, val, name);
 
-    YogVal klass = YogVal_get_klass(env, val);
-    do {
-        RET_ATTR(klass);
-        klass = PTR_AS(YogKlass, klass)->super;
-    } while (IS_PTR(klass));
-#undef RET_ATTR
-
-    YOG_ASSERT(env, FALSE, "Can't get attribute.");
-
-    /* NOTREACHED */
-    return YNIL;
+    RETURN(env, attr);
 }
 
 BOOL 

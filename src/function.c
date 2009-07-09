@@ -207,6 +207,20 @@ YogFunction_allocate(YogEnv* env, YogVal klass)
     RETURN(env, f);
 }
 
+static YogVal
+YogFunction_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal klass)
+{
+    SAVE_ARGS3(env, self, obj, klass);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    val = YogInstanceMethod_new(env);
+    PTR_AS(YogInstanceMethod, val)->self = obj;
+    PTR_AS(YogInstanceMethod, val)->f = self;
+
+    RETURN(env, val);
+}
+
 YogVal
 YogFunction_klass_new(YogEnv* env)
 {
@@ -217,6 +231,7 @@ YogFunction_klass_new(YogEnv* env)
 
     klass = YogKlass_new(env, "Function", env->vm->cObject);
     YogKlass_define_allocator(env, klass, YogFunction_allocate);
+    YogKlass_define_descr_getter(env, klass, YogFunction_get_descr);
 
     RETURN(env, klass);
 }
@@ -279,15 +294,13 @@ YogNativeFunction_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posar
 }
 
 static void
-YogNativeFunction_initialize(YogEnv* env, YogVal self, const char* name, void* f)
+YogNativeFunction_initialize(YogEnv* env, YogVal self, YogVal klass)
 {
     SAVE_ARG(env, self);
 
-    ID id = YogVM_intern(env, env->vm, name);
-
-    YogCallable_initialize(env, self, env->vm->cFunction, YogNativeFunction_exec, YogNativeFunction_call);
-    PTR_AS(YogNativeFunction, self)->name = id;
-    PTR_AS(YogNativeFunction, self)->f = f;
+    YogCallable_initialize(env, self, klass, YogNativeFunction_exec, YogNativeFunction_call);
+    PTR_AS(YogNativeFunction, self)->name = INVALID_ID;
+    PTR_AS(YogNativeFunction, self)->f = NULL;
 
     RETURN_VOID(env);
 }
@@ -304,18 +317,29 @@ YogNativeFunction_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, voi
     YogCallable_keep_children(env, ptr, keeper, heap);
 }
 
-YogVal
-YogNativeFunction_new(YogEnv* env, const char* name, void* f)
+static YogVal
+YogNativeFunction_allocate(YogEnv* env, YogVal klass)
 {
-    SAVE_LOCALS(env);
-
+    SAVE_ARG(env, klass);
     YogVal func = YUNDEF;
     PUSH_LOCAL(env, func);
 
     func = ALLOC_OBJ(env, YogNativeFunction_keep_children, NULL, YogNativeFunction);
-    YogNativeFunction_initialize(env, func, name, f);
+    YogNativeFunction_initialize(env, func, klass);
 
     RETURN(env, func);
+}
+
+YogVal
+YogNativeFunction_new(YogEnv* env, const char* name, void* f)
+{
+    ID id = YogVM_intern(env, env->vm, name);
+
+    YogVal func = YogNativeFunction_allocate(env, env->vm->cNativeFunction);
+    PTR_AS(YogNativeFunction, func)->name = id;
+    PTR_AS(YogNativeFunction, func)->f = f;
+
+    return func;
 }
 
 static void
@@ -444,6 +468,46 @@ YogVal
 YogNativeInstanceMethod_new(YogEnv* env)
 {
     return create_instance_method(env, env->vm->cInstanceMethod, YogNativeInstanceMethod_exec, YogNativeInstanceMethod_call);
+}
+
+static YogVal
+YogNativeFunction_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal klass)
+{
+    SAVE_ARGS3(env, self, obj, klass);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    val = YogNativeInstanceMethod_new(env);
+    PTR_AS(YogInstanceMethod, val)->self = obj;
+    PTR_AS(YogInstanceMethod, val)->f = self;
+
+    RETURN(env, val);
+}
+
+YogVal
+YogNativeFunction_klass_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = YogKlass_new(env, "NativeFunction", env->vm->cObject);
+    YogKlass_define_allocator(env, klass, YogNativeFunction_allocate);
+    YogKlass_define_descr_getter(env, klass, YogNativeFunction_get_descr);
+
+    RETURN(env, klass);
+}
+
+YogVal
+YogCallable_call(YogEnv* env, YogVal self, unsigned int argc, YogVal* args)
+{
+    return (*PTR_AS(YogCallable, self)->call)(env, self, argc, args, YNIL, 0, NULL, YNIL, YNIL);
+}
+
+YogVal
+YogCallable_call2(YogEnv* env, YogVal self, unsigned int argc, YogVal* args, YogVal block)
+{
+    return (*PTR_AS(YogCallable, self)->call)(env, self, argc, args, block, 0, NULL, YNIL, YNIL);
 }
 
 /**

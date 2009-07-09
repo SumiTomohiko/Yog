@@ -21,12 +21,9 @@
 static YogVal 
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    DPRINTF("to_s");
     SAVE_ARGS4(env, self, args, kw, block);
     CHECK_TYPE(self);
-    DPRINTF("self=0x%08x", self);
     YogVal retval = YogString_new_format(env, "%d", VAL2INT(self));
-    DPRINTF("retval=0x%08x", retval);
     RETURN(env, retval);
 }
 

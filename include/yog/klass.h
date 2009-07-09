@@ -4,11 +4,15 @@
 #include "yog/object.h"
 #include "yog/yog.h"
 
+typedef YogVal (*AttrGetter)(YogEnv*, YogVal, ID);
+
 struct YogKlass {
     YOGOBJ_HEAD;
     Allocator allocator;
     ID name;
     YogVal super;
+    AttrGetter get_attr;
+    YogVal (*get_descr)(YogEnv*, YogVal, YogVal, YogVal);
 };
 
 typedef struct YogKlass YogKlass;
@@ -22,7 +26,9 @@ typedef struct YogKlass YogKlass;
 /* src/klass.c */
 YogVal YogKlass_allocate(YogEnv*, YogVal);
 void YogKlass_define_allocator(YogEnv*, YogVal, Allocator);
+void YogKlass_define_descr_getter(YogEnv*, YogVal, void*);
 void YogKlass_define_method(YogEnv*, YogVal, const char*, void*, unsigned int, unsigned int, unsigned int, int, ...);
+YogVal YogKlass_get_attr(YogEnv*, YogVal, ID);
 void YogKlass_klass_init(YogEnv*, YogVal);
 YogVal YogKlass_new(YogEnv*, const char*, YogVal);
 
