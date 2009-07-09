@@ -1,8 +1,8 @@
 #include <string.h>
 #include "yog/array.h"
 #include "yog/error.h"
-#include "yog/eval.h"
 #include "yog/frame.h"
+#include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/object.h"
@@ -230,7 +230,7 @@ each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     unsigned int i;
     for (i = 0; i < size; i++) {
         arg[0] = YogArray_at(env, self, i);
-        YogEval_call_block(env, block, array_sizeof(arg), arg);
+        YogCallable_call(env, block, array_sizeof(arg), arg);
     }
 
     RETURN(env, self);

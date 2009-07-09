@@ -52,7 +52,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         }
     }
 
-    if (!IS_UNDEF(blockarg)) {
+    if (IS_PTR(blockarg)) {
         YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->blockargc == 1, "Can't accept block argument.");
         YogVal* items = PTR_AS(YogValArray, args)->items;
         unsigned int index = PTR_AS(YogArgInfo, arg_info)->argc;
@@ -156,7 +156,7 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
     frame = YogMethodFrame_new(env);
     setup_script_frame(env, frame, code);
     PTR_AS(YogMethodFrame, frame)->vars = vars;
-    PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogScriptFrame, PTR_AS(YogThread, env->thread)->cur_frame)->globals;
+    PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogFunction, callee)->globals;
     PTR_AS(YogScriptFrame, frame)->outer_vars = outer_vars;
 
     PTR_AS(YogFrame, frame)->prev = PTR_AS(YogThread, env->thread)->cur_frame;

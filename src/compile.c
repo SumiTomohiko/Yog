@@ -2286,7 +2286,7 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
     unsigned int lineno = NODE(node)->lineno;
     add_push_const(env, data, code, lineno);
-    CompileData_add_make_block(env, data, lineno);
+    CompileData_add_make_function(env, data, lineno);
 
     RETURN_VOID(env);
 }

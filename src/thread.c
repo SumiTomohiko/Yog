@@ -11,6 +11,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
+#include "yog/function.h"
 #include "yog/gc.h"
 #if defined(GC_COPYING)
 #   include "yog/gc/copying.h"
@@ -265,7 +266,7 @@ run_of_new_thread(void* arg)
     PUSH_LOCALSX(&env, size, args);
 
     YogVal block = PTR_AS(YogThread, thread)->block;
-    YogEval_call_block(&env, block, size, args);
+    YogCallable_call(&env, block, size, args);
 
     RESTORE_LOCALS(&env);
 

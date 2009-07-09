@@ -3,6 +3,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
+#include "yog/function.h"
 #include "yog/klass.h"
 #include "yog/string.h"
 #include "yog/thread.h"
@@ -69,7 +70,7 @@ times(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     for (i = 0; i < n; i++) {
         YogVal args[argc];
         args[0] = INT2VAL(i);
-        YogEval_call_block(env, block, argc, args);
+        YogCallable_call(env, block, argc, args);
     }
 
     RETURN(env, YNIL);

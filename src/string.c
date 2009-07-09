@@ -8,6 +8,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
+#include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/regexp.h"
@@ -490,7 +491,7 @@ each_line(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
         unsigned int size = PTR_AS(YogCharArray, PTR_AS(YogString, self)->body)->size;
 
-        YogEval_call_block(env, block, array_sizeof(arg), arg);
+        YogCallable_call(env, block, array_sizeof(arg), arg);
 
         if (size - 1 < i) {
             break;
@@ -517,7 +518,7 @@ each_byte(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         i++;
         unsigned int size = PTR_AS(YogCharArray, body)->size;
 
-        YogEval_call_block(env, block, array_sizeof(arg), arg);
+        YogCallable_call(env, block, array_sizeof(arg), arg);
 
         if (size - 1 < i + 1) {
             break;
@@ -547,7 +548,7 @@ each_char(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
         unsigned int size = PTR_AS(YogCharArray, PTR_AS(YogString, self)->body)->size;
 
-        YogEval_call_block(env, block, array_sizeof(arg), arg);
+        YogCallable_call(env, block, array_sizeof(arg), arg);
 
         if (size - 1 < i + 1) {
             break;
