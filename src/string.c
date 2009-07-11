@@ -316,7 +316,10 @@ static YogVal
 lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal arg = YogArray_at(env, args, 0);
+    YogVal arg = YUNDEF;
+    PUSH_LOCAL(env, arg);
+
+    arg = YogArray_at(env, args, 0);
 
     unsigned int size1 = YogString_size(env, self);
     unsigned int size2 = YogString_size(env, arg);
