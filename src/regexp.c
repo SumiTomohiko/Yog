@@ -116,10 +116,17 @@ static YogVal
 group(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal arg = YogArray_at(env, args, 0);
+    YogVal arg0 = YUNDEF;
+    PUSH_LOCAL(env, arg0);
+    if (0 < YogArray_size(env, args)) {
+        arg0 = YogArray_at(env, args, 0);
+    }
+    else {
+        arg0 = YNIL;
+    }
 
     YogMatch* match = PTR_AS(YogMatch, self);
-    int index = group2index(env, match, arg);
+    int index = group2index(env, match, arg0);
 
     OnigRegion* region = match->onig_region;
     if ((index < 0) || (region->num_regs <= index)) {
