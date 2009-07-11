@@ -74,10 +74,17 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
 
-    YogVal message = YogArray_at(env, args, 0);
+    YogVal message = YUNDEF;
     YogVal frame = YUNDEF;
     YogVal st = YUNDEF;
-    PUSH_LOCALS4(env, self, message, frame, st);
+    PUSH_LOCALS3(env, message, frame, st);
+
+    if (0 < YogArray_size(env, args)) {
+        message = YogArray_at(env, args, 0);
+    }
+    else {
+        message = YNIL;
+    }
 
     frame = PTR_AS(YogThread, env->thread)->cur_frame;
     frame = skip_frame(env, frame, "initialize");
