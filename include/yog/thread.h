@@ -44,6 +44,7 @@ typedef struct YogLocals YogLocals;
 #   define PUSH_LOCAL_TABLE(env, tbl) \
 do { \
     unsigned int i; \
+    DPRINTF("tbl=%p", &tbl); \
     for (i = 0; i < tbl.num_vals; i++) { \
         DPRINTF("tbl.vals[%d]=%p", i, tbl.vals[i]); \
     } \
