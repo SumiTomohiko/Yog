@@ -12,10 +12,6 @@
 static void 
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, unsigned int argc, YogVal args, unsigned int args_offset) 
 {
-    if (!IS_PTR(arg_info)) {
-        return;
-    }
-
     SAVE_ARGS5(env, arg_info, blockarg, vararg, varkwarg, args);
 
     YogVal array = YUNDEF;
@@ -146,12 +142,14 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
     PTR_AS(YogValArray, vars)->items[0] = self;
 
     YogVal arg_info = PTR_AS(YogCode, code)->arg_info;
-    unsigned int code_argc = PTR_AS(YogArgInfo, arg_info)->argc;
-    unsigned int code_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
-    unsigned int code_varargc = PTR_AS(YogArgInfo, arg_info)->varargc;
-    unsigned int code_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
-    unsigned int argc = code_argc + code_blockargc + code_varargc + code_kwargc;
-    fill_args(env, arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, vars, 1);
+    if (IS_PTR(arg_info)) {
+        unsigned int code_argc = PTR_AS(YogArgInfo, arg_info)->argc;
+        unsigned int code_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
+        unsigned int code_varargc = PTR_AS(YogArgInfo, arg_info)->varargc;
+        unsigned int code_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
+        unsigned int argc = code_argc + code_blockargc + code_varargc + code_kwargc;
+        fill_args(env, arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, vars, 1);
+    }
 
     frame = YogMethodFrame_new(env);
     setup_script_frame(env, frame, code);
