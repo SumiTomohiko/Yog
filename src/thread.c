@@ -284,7 +284,7 @@ run_of_new_thread(void* arg)
 static YogVal
 join(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARGS4(env, self, args, kw, block);
 
     void* retval = NULL;
     FREE_FROM_GC(env);
