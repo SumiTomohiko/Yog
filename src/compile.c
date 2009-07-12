@@ -844,11 +844,16 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     case NODE_SUBSCRIPT:
         {
             visit_node(env, visitor, NODE(left)->u.subscript.prefix, data);
+
+            unsigned int lineno = NODE(left)->lineno;
+            ID attr = YogVM_intern(env, env->vm, "[]=");
+            CompileData_add_load_attr(env, data, lineno, attr);
+
             visit_node(env, visitor, NODE(left)->u.subscript.index, data);
             visit_node(env, visitor, NODE(node)->u.assign.right, data);
-            CompileData_add_call_method(env, data, lineno, INTERN("[]="), 2, 0, 0, 0, 0);
+
+            CompileData_add_call_function(env, data, lineno, 2, 0, 0, 0, 0);
             break;
-#undef UPDATE_LEFT
         }
     default:
         YOG_ASSERT(env, FALSE, "invalid node type.");
@@ -2375,10 +2380,14 @@ compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     SAVE_ARGS2(env, node, data);
 
     visit_node(env, visitor, NODE(node)->u.subscript.prefix, data);
+
+    unsigned int lineno = NODE(node)->lineno;
+    ID attr = YogVM_intern(env, env->vm, "[]");
+    CompileData_add_load_attr(env, data, lineno, attr);
+
     visit_node(env, visitor, NODE(node)->u.subscript.index, data);
 
-    ID method = INTERN("[]");
-    CompileData_add_call_method(env, data, NODE(node)->lineno, method, 1, 0, 0, 0, 0);
+    CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
 
     RETURN_VOID(env);
 }

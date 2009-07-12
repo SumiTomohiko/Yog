@@ -486,8 +486,9 @@ Subscript_new(YogEnv* env, unsigned int lineno, YogVal prefix, YogVal index)
     YogVal node = YUNDEF;
     PUSH_LOCAL(env, node);
 
-    ID id = YogVM_intern(env, env->vm, "[]");
-    node = FuncCall_new2(env, lineno, prefix, id, index);
+    node = NODE_NEW(NODE_SUBSCRIPT, lineno);
+    NODE(node)->u.subscript.prefix = prefix;
+    NODE(node)->u.subscript.index = index;
 
     RETURN(env, node);
 }
