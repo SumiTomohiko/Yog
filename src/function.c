@@ -297,7 +297,7 @@ YogNativeFunction_initialize(YogEnv* env, YogVal self, YogVal klass)
     SAVE_ARG(env, self);
 
     YogCallable_initialize(env, self, klass, YogNativeFunction_exec, YogNativeFunction_call);
-    PTR_AS(YogNativeFunction, self)->name = INVALID_ID;
+    PTR_AS(YogNativeFunction, self)->func_name = INVALID_ID;
     PTR_AS(YogNativeFunction, self)->f = NULL;
 
     RETURN_VOID(env);
@@ -329,12 +329,13 @@ YogNativeFunction_allocate(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogNativeFunction_new(YogEnv* env, const char* name, void* f)
+YogNativeFunction_new(YogEnv* env, ID klass_name, const char* func_name, void* f)
 {
-    ID id = YogVM_intern(env, env->vm, name);
+    ID func_id = YogVM_intern(env, env->vm, func_name);
 
     YogVal func = YogNativeFunction_allocate(env, env->vm->cNativeFunction);
-    PTR_AS(YogNativeFunction, func)->name = id;
+    PTR_AS(YogNativeFunction, func)->klass_name = klass_name;
+    PTR_AS(YogNativeFunction, func)->func_name = func_id;
     PTR_AS(YogNativeFunction, func)->f = f;
 
     return func;

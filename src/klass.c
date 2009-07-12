@@ -20,7 +20,8 @@ YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f, uns
     YogVal func = YUNDEF;
     PUSH_LOCAL(env, func);
 
-    func = YogNativeFunction_new(env, name, f);
+    YogVal klass_name = PTR_AS(YogKlass, klass)->name;
+    func = YogNativeFunction_new(env, klass_name, name, f);
     YogObj_set_attr(env, klass, name, func);
 
     RETURN_VOID(env);

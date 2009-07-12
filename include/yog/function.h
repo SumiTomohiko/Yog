@@ -17,7 +17,8 @@ typedef struct YogCallable YogCallable;
 struct YogNativeFunction {
     struct YogCallable base;
 
-    ID name;
+    ID func_name;
+    ID klass_name;
     void* f;
 };
 
@@ -56,7 +57,7 @@ YogVal YogFunction_new(YogEnv*);
 YogVal YogInstanceMethod_klass_new(YogEnv*);
 YogVal YogInstanceMethod_new(YogEnv*);
 YogVal YogNativeFunction_klass_new(YogEnv*);
-YogVal YogNativeFunction_new(YogEnv*, const char*, void*);
+YogVal YogNativeFunction_new(YogEnv*, ID, const char*, void*);
 YogVal YogNativeInstanceMethod_new(YogEnv*);
 
 /* PROTOTYPE_END */

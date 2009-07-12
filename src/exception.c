@@ -47,7 +47,7 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
     case FRAME_C:
         {
             YogVal f = PTR_AS(YogCFrame, frame)->f;
-            if (PTR_AS(YogNativeFunction, f)->name == name) {
+            if (PTR_AS(YogNativeFunction, f)->func_name == name) {
                 RETURN(env, PTR_AS(YogFrame, frame)->prev);
             }
             break;
@@ -98,16 +98,12 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         case FRAME_C:
             {
                 YogVal f = PTR_AS(YogCFrame, frame)->f;
-#if 0
-                ID klass_name = PTR_AS(YogBuiltinFunction, f)->klass_name;
-#endif
-                ID name = PTR_AS(YogNativeFunction, f)->name;
+                ID klass_name = PTR_AS(YogNativeFunction, f)->klass_name;
+                ID func_name = PTR_AS(YogNativeFunction, f)->func_name;
                 PTR_AS(YogStackTraceEntry, entry)->lineno = 0;
                 PTR_AS(YogStackTraceEntry, entry)->filename = YNIL;
-#if 0
                 PTR_AS(YogStackTraceEntry, entry)->klass_name = klass_name;
-#endif
-                PTR_AS(YogStackTraceEntry, entry)->func_name = name;
+                PTR_AS(YogStackTraceEntry, entry)->func_name = func_name;
                 break;
             }
         case FRAME_METHOD:
