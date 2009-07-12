@@ -7,7 +7,7 @@ class TestTry(TestCase):
     def test_except1(self):
         self._test("""
 try
-    raise 0
+    raise(0)
 except
     puts(42)
 end""", "42\n", "")
@@ -24,7 +24,7 @@ while i < 10
         except
             puts(100)
         finally
-            raise 0
+            raise(0)
         end
     except
         puts(42)
