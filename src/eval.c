@@ -604,6 +604,10 @@ YogEval_mainloop(YogEnv* env)
         }
     }
 
+#if 0
+    YogCode_dump(env, (YogVal)(CODE));
+#endif
+
     while (PC < PTR_AS(YogByteArray, CODE->insts)->size) {
 #define ENV             (env)
 #define VM              (ENV_VM(ENV))
@@ -699,6 +703,8 @@ YogEval_mainloop(YogEnv* env)
 #undef CODE
 #undef PC
 #undef POP_BUF
+
+    POP_FRAME();
 
     RETURN(env, YUNDEF);
 }

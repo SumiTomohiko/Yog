@@ -46,6 +46,7 @@ print_val(YogEnv* env, YogVal val)
 void 
 YogCode_dump(YogEnv* env, YogVal code)
 {
+    printf("stack size: %u\n", PTR_AS(YogCode, code)->stack_size);
     printf("=== Constants ===\n");
     printf("index value\n");
 
