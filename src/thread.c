@@ -259,14 +259,20 @@ run_of_new_thread(void* arg)
     locals0.vals[4] = NULL;
     PUSH_LOCAL_TABLE(&env, locals0);
 
-    unsigned int size = YogArray_size(&env, thread_arg->vararg);
-    YogVal args[size];
-    YogVal body = PTR_AS(YogArray, thread_arg->vararg)->body;
-    memcpy(args, PTR_AS(YogValArray, body)->items, size);
-    PUSH_LOCALSX(&env, size, args);
-
+    YogVal vararg = thread_arg->vararg;
     YogVal block = PTR_AS(YogThread, thread)->block;
-    YogCallable_call(&env, block, size, args);
+    if (IS_PTR(vararg)) {
+        unsigned int size = YogArray_size(&env, vararg);
+        YogVal args[size];
+        YogVal body = PTR_AS(YogArray, vararg)->body;
+        memcpy(args, PTR_AS(YogValArray, body)->items, size);
+        PUSH_LOCALSX(&env, size, args);
+
+        YogCallable_call(&env, block, size, args);
+    }
+    else {
+        YogCallable_call(&env, block, 0, NULL);
+    }
 
     RESTORE_LOCALS(&env);
 
@@ -296,10 +302,16 @@ static YogVal
 run(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-
-    YogVal vararg = YogArray_at(env, args, 0);
+    YogVal vararg = YUNDEF;
     YogVal arg = YUNDEF;
     PUSH_LOCALS2(env, vararg, arg);
+
+    if (0 < YogArray_size(env, args)) {
+        vararg = YogArray_at(env, args, 0);
+    }
+    else {
+        vararg = YNIL;
+    }
 
     arg = ThreadArg_new(env);
     PTR_AS(ThreadArg, arg)->vm = env->vm;

@@ -843,7 +843,7 @@ YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, unsigned int arg
 YogVal 
 YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, unsigned int argc, YogVal* args, YogVal blockarg)
 {
-    SAVE_ARG(env, receiver);
+    SAVE_ARGS2(env, receiver, blockarg);
     YogVal attr = YUNDEF;
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, attr, retval);
