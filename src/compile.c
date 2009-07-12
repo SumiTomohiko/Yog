@@ -1771,21 +1771,9 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
         break;
     case CTX_KLASS:
     case CTX_PKG:
-        {
-            switch (COMPILE_DATA(data)->ctx) {
-            case CTX_KLASS:
-                CompileData_add_make_method(env, data, lineno);
-                break;
-            case CTX_PKG:
-                CompileData_add_make_function(env, data, lineno);
-                break;
-            default:
-                YOG_ASSERT(env, FALSE, "Invalid context type.");
-                break;
-            }
-            CompileData_add_store_name(env, data, lineno, id);
-            break;
-        }
+        CompileData_add_make_function(env, data, lineno);
+        CompileData_add_store_name(env, data, lineno, id);
+        break;
     default:
         YOG_ASSERT(env, FALSE, "Unknown context.");
         break;

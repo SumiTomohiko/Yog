@@ -312,6 +312,7 @@
             setup_script_frame(ENV, frame, code);
             MODIFY(env, PTR_AS(YogNameFrame, frame)->self, kls);
             MODIFY(env, PTR_AS(YogNameFrame, frame)->vars, attrs);
+            PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
         
             PUSH_FRAME(frame);
         
