@@ -150,8 +150,8 @@ YogVal_get_klass(YogEnv* env, YogVal val)
     return YUNDEF;
 }
 
-static YogVal
-get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+YogVal
+YogVal_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
 {
     SAVE_ARGS3(env, attr, obj, klass);
     YogVal c = YUNDEF;
@@ -188,7 +188,7 @@ get_attr_default(YogEnv* env, YogVal self, ID name)
     klass = YogVal_get_klass(env, self);
     attr = YogKlass_get_attr(env, klass, name);
     if (!IS_UNDEF(attr)) {
-        attr = get_descr(env, attr, self, klass);
+        attr = YogVal_get_descr(env, attr, self, klass);
         RETURN(env, attr);
     }
 

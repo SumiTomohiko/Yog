@@ -147,6 +147,12 @@ YogKlass_define_descr_getter(YogEnv* env, YogVal self, void* getter)
     PTR_AS(YogKlass, self)->get_descr = getter;
 }
 
+void
+YogKlass_define_attr_getter(YogEnv* env, YogVal self, AttrGetter getter)
+{
+    PTR_AS(YogKlass, self)->get_attr = getter;
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

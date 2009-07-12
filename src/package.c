@@ -59,6 +59,29 @@ allocate(YogEnv* env, YogVal klass)
     RETURN(env, pkg);
 }
 
+static YogVal
+get_attr(YogEnv* env, YogVal self, ID name)
+{
+    SAVE_ARG(env, self);
+    YogVal klass = YUNDEF;
+    YogVal attr = YUNDEF;
+    PUSH_LOCALS2(env, klass, attr);
+
+    attr = YogObj_get_attr(env, self, name);
+    if (!IS_UNDEF(attr)) {
+        RETURN(env, attr);
+    }
+
+    klass = YogVal_get_klass(env, self);
+    attr = YogKlass_get_attr(env, klass, name);
+    if (!IS_UNDEF(attr)) {
+        attr = YogVal_get_descr(env, attr, self, klass);
+        RETURN(env, attr);
+    }
+
+    RETURN(env, YUNDEF);
+}
+
 YogVal 
 YogPackage_klass_new(YogEnv* env) 
 {
@@ -66,6 +89,7 @@ YogPackage_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_allocator(env, klass, allocate);
+    YogKlass_define_attr_getter(env, klass, get_attr);
 
     POP_LOCALS(env);
     return klass;

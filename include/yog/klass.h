@@ -26,6 +26,7 @@ typedef struct YogKlass YogKlass;
 /* src/klass.c */
 YogVal YogKlass_allocate(YogEnv*, YogVal);
 void YogKlass_define_allocator(YogEnv*, YogVal, Allocator);
+void YogKlass_define_attr_getter(YogEnv*, YogVal, AttrGetter);
 void YogKlass_define_descr_getter(YogEnv*, YogVal, void*);
 void YogKlass_define_method(YogEnv*, YogVal, const char*, void*, unsigned int, unsigned int, unsigned int, int, ...);
 YogVal YogKlass_get_attr(YogEnv*, YogVal, ID);

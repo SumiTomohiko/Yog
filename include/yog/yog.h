@@ -97,6 +97,7 @@ typedef unsigned int flags_t;
 /* src/value.c */
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
 YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
+YogVal YogVal_get_descr(YogEnv*, YogVal, YogVal, YogVal);
 YogVal YogVal_get_klass(YogEnv*, YogVal);
 int YogVal_hash(YogEnv*, YogVal);
 BOOL YogVal_is_subklass_of(YogEnv*, YogVal, YogVal);
