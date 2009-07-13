@@ -73,13 +73,13 @@ raise_error(YogEnv* env, YogVal klass, const char* msg)
 }
 
 void 
-YogError_raise_type_error(YogEnv* env, const char* msg) 
+YogError_raise_TypeError(YogEnv* env, const char* msg) 
 {
     raise_error(env, env->vm->eTypeError, msg);
 }
 
 void 
-YogError_raise_index_error(YogEnv* env, const char* msg) 
+YogError_raise_IndexError(YogEnv* env, const char* msg) 
 {
     raise_error(env, env->vm->eIndexError, msg);
 }

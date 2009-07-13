@@ -32,8 +32,8 @@
 /* src/error.c */
 void YogError_bug(YogEnv*, const char*, unsigned int, const char*, ...);
 void YogError_raise(YogEnv*, YogVal);
-void YogError_raise_index_error(YogEnv*, const char*);
-void YogError_raise_type_error(YogEnv*, const char*);
+void YogError_raise_IndexError(YogEnv*, const char*);
+void YogError_raise_TypeError(YogEnv*, const char*);
 void YogError_warn(YogEnv*, const char*, unsigned int, const char*, ...);
 
 /* PROTOTYPE_END */

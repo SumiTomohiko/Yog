@@ -16,7 +16,7 @@ YogPackage_define_method(YogEnv* env, YogVal pkg, const char* name, void* f, uns
     YogVal func = YUNDEF;
     PUSH_LOCAL(env, func);
 
-    func = YogNativeFunction_new(env, NULL, name, f);
+    func = YogNativeFunction_new(env, INVALID_ID, name, f);
     YogObj_set_attr(env, pkg, name, func);
 
     RETURN_VOID(env);

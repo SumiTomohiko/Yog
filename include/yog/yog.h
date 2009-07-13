@@ -74,12 +74,6 @@ typedef unsigned long long pc_t;
 #define IS_NIL(v)       ((v) == 0x06)
 #define IS_SYMBOL(v)    (((v) & 0x0f) == 0x0e)
 
-#define CHECK_INT(v, msg)   do { \
-    if (!IS_INT(v)) { \
-        YogError_raise_type_error(env, msg); \
-    } \
-} while (0)
-
 typedef struct YogEnv YogEnv;
 
 typedef void* (*ObjectKeeper)(YogEnv*, void*, void*);

@@ -19,7 +19,6 @@ class DeclarationInserter(object):
             "include/yog/klass.h": [ "src/klass.c", ], 
             "include/yog/nil.h": [ "src/nil.c", ], 
             "include/yog/function.h": [ "src/function.c", ], 
-            "include/yog/method.h": [ "src/method.c", ], 
             "include/yog/binary.h": [ "src/binary.c", ], 
             "include/yog/package.h": [ "src/package.c", ], 
             "include/yog/code.h": [ "src/code.c", "src/code.inc", ], 

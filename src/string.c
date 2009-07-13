@@ -15,6 +15,12 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
+#define CHECK_INT(v, msg)   do { \
+    if (!IS_INT(v)) { \
+        YogError_raise_TypeError(env, msg); \
+    } \
+} while (0)
+
 ID 
 YogString_intern(YogEnv* env, YogVal s) 
 {
@@ -347,7 +353,7 @@ index2ptr(YogEnv* env, YogString* s, unsigned int index)
         unsigned int size = YogEncoding_mbc_size(env, enc, p);
         p += size;
         if (end <= p) {
-            YogError_raise_index_error(env, "string index out of range");
+            YogError_raise_IndexError(env, "string index out of range");
         }
     }
 
@@ -375,7 +381,7 @@ subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     unsigned int mbc_size = YogEncoding_mbc_size(env, s->encoding, p);
     unsigned int size = PTR_AS(YogCharArray, body)->size;
     if ((size - 1) - offset < mbc_size) {
-        YogError_raise_index_error(env, "string index out of range");
+        YogError_raise_IndexError(env, "string index out of range");
     }
     unsigned int i;
     for (i = 0; i < mbc_size; i++) {
