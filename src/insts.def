@@ -41,22 +41,6 @@ inst make_string
     val = YogString_clone(ENV, c);
 }
 
-inst call_method
-(ID method, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
-(...) depth: argc + 2 * kwargc + blockargc + varargc + varkwargc
-(...) depth: 1
-{
-    POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
-
-    YogVal receiver = POP();
-    YogVal attr = YogVal_get_attr(ENV, receiver, method);
-    call_method(ENV, receiver, attr, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
-
-    POP_LOCALS(ENV);
-    POP_LOCALS(ENV);
-    POP_LOCALS(ENV);
-}
-
 inst store_name
 (ID id) 
 (val) 
@@ -74,26 +58,6 @@ inst store_local
 {
     YogVal vars = LOCAL_VARS(CUR_FRAME);
     MODIFY(ENV, PTR_AS(YogValArray, vars)->items[index], val);
-}
-
-inst call_command 
-(ID command, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
-(...) depth: argc + 2 * kwargc + blockargc + varargc + varkwargc
-(...) depth: 1
-{
-    POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
-
-    YogVal callee = YUNDEF;
-    if (!lookup_frame_vars(ENV, CUR_FRAME, command, &callee)) {
-        callee = lookup_builtins(ENV, command);
-    }
-
-    YogVal unbound_self = YUNDEF;
-    call_method(ENV, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
-
-    POP_LOCALS(ENV);
-    POP_LOCALS(ENV);
-    POP_LOCALS(ENV);
 }
 
 inst make_function
@@ -178,21 +142,6 @@ inst dup
 {
 }
 
-inst make_block
-()
-(code)
-(block) 
-{
-    block = YogBlock_new(ENV);
-    MODIFY(env, PTR_AS(YogBasicBlock, block)->code, code);
-    MODIFY(env, PTR_AS(YogBlock, block)->locals, PTR_AS(YogMethodFrame, CUR_FRAME)->vars);
-
-    unsigned int outer_depth = PTR_AS(YogCode, code)->outer_size;
-    YogVal outer_vars = make_outer_vars(env, outer_depth);
-    PTR_AS(YogBlock, block)->outer_vars = outer_vars;
-    MODIFY(env, PTR_AS(YogBlock, block)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
-}
-
 inst make_klass
 ()
 (code, super, name)
@@ -218,15 +167,6 @@ inst make_klass
     PUSH_FRAME(frame);
 
     POP_LOCALS(ENV);
-}
-
-inst make_method
-()
-(code)
-(method)
-{
-    method = YogUnboundMethod_new(ENV);
-    setup_script_method(ENV, method, code);
 }
 
 inst push_self_name

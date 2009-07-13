@@ -68,27 +68,6 @@ CompileData_add_make_string(YogEnv* env, YogVal data, unsigned int lineno, uint8
 }
 
 static void 
-CompileData_add_call_method(YogEnv* env, YogVal data, unsigned int lineno, ID method, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
-{
-    SAVE_ARG(env, data);
-
-    YogVal inst = Inst_new(env, lineno);
-    INST(inst)->type = INST_OP;
-    INST_OPCODE(inst) = OP(CALL_METHOD);
-
-    CALL_METHOD_METHOD(inst) = method;
-    CALL_METHOD_ARGC(inst) = argc;
-    CALL_METHOD_KWARGC(inst) = kwargc;
-    CALL_METHOD_BLOCKARGC(inst) = blockargc;
-    CALL_METHOD_VARARGC(inst) = varargc;
-    CALL_METHOD_VARKWARGC(inst) = varkwargc;
-
-    add_inst(env, data, inst);
-
-    RETURN_VOID(env);
-}
-
-static void 
 CompileData_add_store_name(YogEnv* env, YogVal data, unsigned int lineno, ID id)
 {
     SAVE_ARG(env, data);
@@ -114,27 +93,6 @@ CompileData_add_store_local(YogEnv* env, YogVal data, unsigned int lineno, uint8
     INST_OPCODE(inst) = OP(STORE_LOCAL);
 
     STORE_LOCAL_INDEX(inst) = index;
-
-    add_inst(env, data, inst);
-
-    RETURN_VOID(env);
-}
-
-static void 
-CompileData_add_call_command(YogEnv* env, YogVal data, unsigned int lineno, ID command, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
-{
-    SAVE_ARG(env, data);
-
-    YogVal inst = Inst_new(env, lineno);
-    INST(inst)->type = INST_OP;
-    INST_OPCODE(inst) = OP(CALL_COMMAND);
-
-    CALL_COMMAND_COMMAND(inst) = command;
-    CALL_COMMAND_ARGC(inst) = argc;
-    CALL_COMMAND_KWARGC(inst) = kwargc;
-    CALL_COMMAND_BLOCKARGC(inst) = blockargc;
-    CALL_COMMAND_VARARGC(inst) = varargc;
-    CALL_COMMAND_VARKWARGC(inst) = varkwargc;
 
     add_inst(env, data, inst);
 
@@ -272,21 +230,6 @@ CompileData_add_dup(YogEnv* env, YogVal data, unsigned int lineno)
 }
 
 static void 
-CompileData_add_make_block(YogEnv* env, YogVal data, unsigned int lineno)
-{
-    SAVE_ARG(env, data);
-
-    YogVal inst = Inst_new(env, lineno);
-    INST(inst)->type = INST_OP;
-    INST_OPCODE(inst) = OP(MAKE_BLOCK);
-
-
-    add_inst(env, data, inst);
-
-    RETURN_VOID(env);
-}
-
-static void 
 CompileData_add_make_klass(YogEnv* env, YogVal data, unsigned int lineno)
 {
     SAVE_ARG(env, data);
@@ -294,21 +237,6 @@ CompileData_add_make_klass(YogEnv* env, YogVal data, unsigned int lineno)
     YogVal inst = Inst_new(env, lineno);
     INST(inst)->type = INST_OP;
     INST_OPCODE(inst) = OP(MAKE_KLASS);
-
-
-    add_inst(env, data, inst);
-
-    RETURN_VOID(env);
-}
-
-static void 
-CompileData_add_make_method(YogEnv* env, YogVal data, unsigned int lineno)
-{
-    SAVE_ARG(env, data);
-
-    YogVal inst = Inst_new(env, lineno);
-    INST(inst)->type = INST_OP;
-    INST_OPCODE(inst) = OP(MAKE_METHOD);
 
 
     add_inst(env, data, inst);
@@ -468,17 +396,6 @@ insts2bin(YogEnv* env, YogVal inst)
                         YogBinary_push_uint8(env, code, MAKE_STRING_INDEX(inst));
                         break;
                     }
-                case OP(CALL_METHOD):
-                    {
-                        YogBinary_push_uint8(env, code, OP(CALL_METHOD));
-                        YogBinary_push_id(env, code, CALL_METHOD_METHOD(inst));
-                        YogBinary_push_uint8(env, code, CALL_METHOD_ARGC(inst));
-                        YogBinary_push_uint8(env, code, CALL_METHOD_KWARGC(inst));
-                        YogBinary_push_uint8(env, code, CALL_METHOD_BLOCKARGC(inst));
-                        YogBinary_push_uint8(env, code, CALL_METHOD_VARARGC(inst));
-                        YogBinary_push_uint8(env, code, CALL_METHOD_VARKWARGC(inst));
-                        break;
-                    }
                 case OP(STORE_NAME):
                     {
                         YogBinary_push_uint8(env, code, OP(STORE_NAME));
@@ -489,17 +406,6 @@ insts2bin(YogEnv* env, YogVal inst)
                     {
                         YogBinary_push_uint8(env, code, OP(STORE_LOCAL));
                         YogBinary_push_uint8(env, code, STORE_LOCAL_INDEX(inst));
-                        break;
-                    }
-                case OP(CALL_COMMAND):
-                    {
-                        YogBinary_push_uint8(env, code, OP(CALL_COMMAND));
-                        YogBinary_push_id(env, code, CALL_COMMAND_COMMAND(inst));
-                        YogBinary_push_uint8(env, code, CALL_COMMAND_ARGC(inst));
-                        YogBinary_push_uint8(env, code, CALL_COMMAND_KWARGC(inst));
-                        YogBinary_push_uint8(env, code, CALL_COMMAND_BLOCKARGC(inst));
-                        YogBinary_push_uint8(env, code, CALL_COMMAND_VARARGC(inst));
-                        YogBinary_push_uint8(env, code, CALL_COMMAND_VARKWARGC(inst));
                         break;
                     }
                 case OP(MAKE_FUNCTION):
@@ -552,19 +458,9 @@ insts2bin(YogEnv* env, YogVal inst)
                         YogBinary_push_uint8(env, code, OP(DUP));
                         break;
                     }
-                case OP(MAKE_BLOCK):
-                    {
-                        YogBinary_push_uint8(env, code, OP(MAKE_BLOCK));
-                        break;
-                    }
                 case OP(MAKE_KLASS):
                     {
                         YogBinary_push_uint8(env, code, OP(MAKE_KLASS));
-                        break;
-                    }
-                case OP(MAKE_METHOD):
-                    {
-                        YogBinary_push_uint8(env, code, OP(MAKE_METHOD));
                         break;
                     }
                 case OP(PUSH_SELF_NAME):
@@ -668,12 +564,6 @@ count_stack_size(YogEnv* env, YogVal inst)
                         push_size = 1;
                         break;
                     }
-                case OP(CALL_METHOD):
-                    {
-                        pop_size = CALL_METHOD_ARGC(inst) + 2 * CALL_METHOD_KWARGC(inst) + CALL_METHOD_BLOCKARGC(inst) + CALL_METHOD_VARARGC(inst) + CALL_METHOD_VARKWARGC(inst);
-                        push_size = 1;
-                        break;
-                    }
                 case OP(STORE_NAME):
                     {
                         pop_size = 1;
@@ -684,12 +574,6 @@ count_stack_size(YogEnv* env, YogVal inst)
                     {
                         pop_size = 1;
                         push_size = 0;
-                        break;
-                    }
-                case OP(CALL_COMMAND):
-                    {
-                        pop_size = CALL_COMMAND_ARGC(inst) + 2 * CALL_COMMAND_KWARGC(inst) + CALL_COMMAND_BLOCKARGC(inst) + CALL_COMMAND_VARARGC(inst) + CALL_COMMAND_VARKWARGC(inst);
-                        push_size = 1;
                         break;
                     }
                 case OP(MAKE_FUNCTION):
@@ -740,21 +624,9 @@ count_stack_size(YogEnv* env, YogVal inst)
                         push_size = 2;
                         break;
                     }
-                case OP(MAKE_BLOCK):
-                    {
-                        pop_size = 1;
-                        push_size = 1;
-                        break;
-                    }
                 case OP(MAKE_KLASS):
                     {
                         pop_size = 3;
-                        push_size = 1;
-                        break;
-                    }
-                case OP(MAKE_METHOD):
-                    {
-                        pop_size = 1;
                         push_size = 1;
                         break;
                     }

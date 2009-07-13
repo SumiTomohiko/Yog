@@ -30,7 +30,6 @@ COMMON_SOURCES = arg.c \
 	klass.c \
 	lexer.c \
 	main.c \
-	method.c \
 	nil.c \
 	object.c \
 	package.c \

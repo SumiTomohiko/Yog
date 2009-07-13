@@ -40,10 +40,6 @@ struct YogVM {
     YogVal cFunction;
     YogVal cNativeFunction;
     YogVal cInstanceMethod;
-    YogVal cBuiltinBoundMethod;
-    YogVal cBoundMethod;
-    YogVal cBuiltinUnboundMethod;
-    YogVal cUnboundMethod;
     YogVal cPackageBlock;
     YogVal cNil;
     YogVal cFloat;

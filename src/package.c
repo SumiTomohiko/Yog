@@ -2,7 +2,6 @@
 #include "yog/env.h"
 #include "yog/function.h"
 #include "yog/gc.h"
-#include "yog/method.h"
 #include "yog/package.h"
 #include "yog/table.h"
 #include "yog/thread.h"

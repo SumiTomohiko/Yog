@@ -7,7 +7,6 @@
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
-#include "yog/method.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 

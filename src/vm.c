@@ -23,7 +23,6 @@
 #include "yog/gc/bdw.h"
 #include "yog/int.h"
 #include "yog/klass.h"
-#include "yog/method.h"
 #include "yog/misc.h"
 #include "yog/nil.h"
 #include "yog/package.h"
@@ -196,10 +195,6 @@ setup_klasses(YogEnv* env, YogVM* vm)
     vm->cFunction = YogFunction_klass_new(env);
     vm->cNativeFunction = YogNativeFunction_klass_new(env);
     vm->cInstanceMethod = YogInstanceMethod_klass_new(env);
-    vm->cBuiltinBoundMethod = YogBuiltinBoundMethod_klass_new(env);
-    vm->cBoundMethod = YogBoundMethod_klass_new(env);
-    vm->cBuiltinUnboundMethod = YogBuiltinUnboundMethod_klass_new(env);
-    vm->cUnboundMethod = YogUnboundMethod_klass_new(env);
 
     YogObj_klass_init(env, vm->cObject);
     YogKlass_klass_init(env, vm->cKlass);
@@ -337,10 +332,6 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cFunction);
     KEEP(cNativeFunction);
     KEEP(cInstanceMethod);
-    KEEP(cBuiltinBoundMethod);
-    KEEP(cBoundMethod);
-    KEEP(cBuiltinUnboundMethod);
-    KEEP(cUnboundMethod);
     KEEP(cPackageBlock);
     KEEP(cNil);
     KEEP(cFloat);
@@ -391,10 +382,6 @@ YogVM_init(YogVM* vm)
     vm->cFunction = YUNDEF;
     vm->cNativeFunction = YUNDEF;
     vm->cInstanceMethod = YUNDEF;
-    vm->cBuiltinBoundMethod = YUNDEF;
-    vm->cBoundMethod = YUNDEF;
-    vm->cBuiltinUnboundMethod = YUNDEF;
-    vm->cUnboundMethod = YUNDEF;
     vm->cPackageBlock = YUNDEF;
     vm->cNil = YUNDEF;
     vm->cFloat = YUNDEF;

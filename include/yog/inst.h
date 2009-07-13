@@ -35,27 +35,11 @@ struct YogInst {
             uint8_t index;
         } make_string;
         struct {
-            ID method;
-            uint8_t argc;
-            uint8_t kwargc;
-            uint8_t blockargc;
-            uint8_t varargc;
-            uint8_t varkwargc;
-        } call_method;
-        struct {
             ID id;
         } store_name;
         struct {
             uint8_t index;
         } store_local;
-        struct {
-            ID command;
-            uint8_t argc;
-            uint8_t kwargc;
-            uint8_t blockargc;
-            uint8_t varargc;
-            uint8_t varkwargc;
-        } call_command;
         struct {
         } make_function;
         struct {
@@ -83,11 +67,7 @@ struct YogInst {
         struct {
         } dup;
         struct {
-        } make_block;
-        struct {
         } make_klass;
-        struct {
-        } make_method;
         struct {
         } push_self_name;
         struct {
@@ -121,20 +101,8 @@ struct YogInst {
 #define LOAD_SPECIAL_ID(inst) (INST(inst)->u.load_special.id)
 #define PUSH_CONST_INDEX(inst) (INST(inst)->u.push_const.index)
 #define MAKE_STRING_INDEX(inst) (INST(inst)->u.make_string.index)
-#define CALL_METHOD_METHOD(inst) (INST(inst)->u.call_method.method)
-#define CALL_METHOD_ARGC(inst) (INST(inst)->u.call_method.argc)
-#define CALL_METHOD_KWARGC(inst) (INST(inst)->u.call_method.kwargc)
-#define CALL_METHOD_BLOCKARGC(inst) (INST(inst)->u.call_method.blockargc)
-#define CALL_METHOD_VARARGC(inst) (INST(inst)->u.call_method.varargc)
-#define CALL_METHOD_VARKWARGC(inst) (INST(inst)->u.call_method.varkwargc)
 #define STORE_NAME_ID(inst) (INST(inst)->u.store_name.id)
 #define STORE_LOCAL_INDEX(inst) (INST(inst)->u.store_local.index)
-#define CALL_COMMAND_COMMAND(inst) (INST(inst)->u.call_command.command)
-#define CALL_COMMAND_ARGC(inst) (INST(inst)->u.call_command.argc)
-#define CALL_COMMAND_KWARGC(inst) (INST(inst)->u.call_command.kwargc)
-#define CALL_COMMAND_BLOCKARGC(inst) (INST(inst)->u.call_command.blockargc)
-#define CALL_COMMAND_VARARGC(inst) (INST(inst)->u.call_command.varargc)
-#define CALL_COMMAND_VARKWARGC(inst) (INST(inst)->u.call_command.varkwargc)
 #define CALL_FUNCTION_ARGC(inst) (INST(inst)->u.call_function.argc)
 #define CALL_FUNCTION_KWARGC(inst) (INST(inst)->u.call_function.kwargc)
 #define CALL_FUNCTION_BLOCKARGC(inst) (INST(inst)->u.call_function.blockargc)

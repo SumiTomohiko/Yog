@@ -48,38 +48,6 @@
             POP_LOCALS(ENV);
             break;
         }
-    case OP(CALL_METHOD):
-        {
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            ID method = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(ID);
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t argc = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(uint8_t);
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t kwargc = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(uint8_t);
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t blockargc = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(uint8_t);
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t varargc = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(uint8_t);
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t varkwargc = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(uint8_t);
-            POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
-        
-            YogVal receiver = POP();
-            YogVal attr = YogVal_get_attr(ENV, receiver, method);
-            call_method(ENV, receiver, attr, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
-        
-            POP_LOCALS(ENV);
-            POP_LOCALS(ENV);
-            POP_LOCALS(ENV);
-
-            break;
-        }
     case OP(STORE_NAME):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -107,42 +75,6 @@
             MODIFY(ENV, PTR_AS(YogValArray, vars)->items[index], val);
 
             POP_LOCALS(ENV);
-            break;
-        }
-    case OP(CALL_COMMAND):
-        {
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            ID command = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(ID);
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t argc = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(uint8_t);
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t kwargc = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(uint8_t);
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t blockargc = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(uint8_t);
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t varargc = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(uint8_t);
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            uint8_t varkwargc = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(uint8_t);
-            POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
-        
-            YogVal callee = YUNDEF;
-            if (!lookup_frame_vars(ENV, CUR_FRAME, command, &callee)) {
-                callee = lookup_builtins(ENV, command);
-            }
-        
-            YogVal unbound_self = YUNDEF;
-            call_method(ENV, unbound_self, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
-        
-            POP_LOCALS(ENV);
-            POP_LOCALS(ENV);
-            POP_LOCALS(ENV);
-
             break;
         }
     case OP(MAKE_FUNCTION):
@@ -269,25 +201,6 @@
             POP_LOCALS(ENV);
             break;
         }
-    case OP(MAKE_BLOCK):
-        {
-            YogVal code = YUNDEF;
-            YogVal block = YUNDEF;
-            PUSH_LOCALS2(ENV, code, block);
-            code = POP();
-            block = YogBlock_new(ENV);
-            MODIFY(env, PTR_AS(YogBasicBlock, block)->code, code);
-            MODIFY(env, PTR_AS(YogBlock, block)->locals, PTR_AS(YogMethodFrame, CUR_FRAME)->vars);
-        
-            unsigned int outer_depth = PTR_AS(YogCode, code)->outer_size;
-            YogVal outer_vars = make_outer_vars(env, outer_depth);
-            PTR_AS(YogBlock, block)->outer_vars = outer_vars;
-            MODIFY(env, PTR_AS(YogBlock, block)->globals, SCRIPT_FRAME(CUR_FRAME)->globals);
-
-            PUSH(block);
-            POP_LOCALS(ENV);
-            break;
-        }
     case OP(MAKE_KLASS):
         {
             YogVal code = YUNDEF;
@@ -318,19 +231,6 @@
         
             POP_LOCALS(ENV);
 
-            POP_LOCALS(ENV);
-            break;
-        }
-    case OP(MAKE_METHOD):
-        {
-            YogVal code = YUNDEF;
-            YogVal method = YUNDEF;
-            PUSH_LOCALS2(ENV, code, method);
-            code = POP();
-            method = YogUnboundMethod_new(ENV);
-            setup_script_method(ENV, method, code);
-
-            PUSH(method);
             POP_LOCALS(ENV);
             break;
         }

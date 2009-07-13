@@ -27,7 +27,6 @@ struct AstVisitor {
     VisitNode visit_attr;
     VisitNode visit_block;
     VisitNode visit_break;
-    VisitNode visit_command_call;
     VisitNode visit_except;
     VisitNode visit_except_body;
     VisitNode visit_finally;
@@ -37,7 +36,6 @@ struct AstVisitor {
     VisitNode visit_import;
     VisitNode visit_klass;
     VisitNode visit_literal;
-    VisitNode visit_method_call;
     VisitNode visit_next;
     VisitNode visit_nonlocal;
     VisitNode visit_return;
@@ -161,9 +159,11 @@ typedef struct CompileData CompileData;
 
 #define COMPILE_DATA(v)     PTR_AS(CompileData, (v))
 
-#define RAISE   INTERN("raise")
-#define RERAISE() \
-    CompileData_add_call_command(env, data, lineno, RAISE, 0, 0, 0, 0, 0)
+#define RERAISE(env)    do { \
+    ID id = YogVM_intern(env, env->vm, "raise"); \
+    CompileData_add_load_global(env, data, lineno, id); \
+    CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0); \
+} while (0)
 
 #define PUSH_TRY()  do { \
     YogVal try_list_entry = TryListEntry_new(env); \
@@ -297,12 +297,6 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_LITERAL:
         VISIT(literal);
         break;
-    case NODE_METHOD_CALL:
-        VISIT(method_call);
-        break;
-    case NODE_COMMAND_CALL:
-        VISIT(command_call);
-        break;
     case NODE_FUNC_DEF:
         VISIT(func_def);
         break;
@@ -371,17 +365,6 @@ visit_each_args(YogEnv* env, AstVisitor* visitor, YogVal args, YogVal blockarg, 
     if (IS_PTR(blockarg)) {
         visit_node(env, visitor, blockarg, arg);
     }
-
-    RETURN_VOID(env);
-}
-
-static void 
-scan_var_visit_method_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
-{
-    SAVE_ARGS2(env, node, data);
-
-    visit_node(env, visitor, NODE(node)->u.method_call.recv, data);
-    visit_each_args(env, visitor, NODE(node)->u.method_call.args, NODE(node)->u.method_call.blockarg, data);
 
     RETURN_VOID(env);
 }
@@ -487,14 +470,6 @@ scan_var_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     visit_node(env, visitor, NODE(node)->u.assign.right, data);
 
     RETURN_VOID(env);
-}
-
-static void 
-scan_var_visit_command_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
-{
-    YogVal args = NODE(node)->u.command_call.args;
-    YogVal blockarg = NODE(node)->u.command_call.blockarg;
-    visit_each_args(env, visitor, args, blockarg, data);
 }
 
 static void 
@@ -708,7 +683,6 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_attr = scan_var_visit_attr;
     visitor->visit_block = NULL;
     visitor->visit_break = scan_var_visit_break;
-    visitor->visit_command_call = scan_var_visit_command_call;
     visitor->visit_except = scan_var_visit_except;
     visitor->visit_except_body = scan_var_visit_except_body;
     visitor->visit_finally = scan_var_visit_finally;
@@ -718,7 +692,6 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_import = scan_var_visit_import;
     visitor->visit_klass = scan_var_visit_klass;
     visitor->visit_literal = NULL;
-    visitor->visit_method_call = scan_var_visit_method_call;
     visitor->visit_next = scan_var_visit_break;
     visitor->visit_nonlocal = scan_var_visit_nonlocal;
     visitor->visit_return = scan_var_visit_break;
@@ -863,39 +836,6 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
-compile_visit_method_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
-{
-    SAVE_ARGS2(env, node, data);
-
-    YogVal args = YUNDEF;
-    YogVal blockarg = YUNDEF;
-    PUSH_LOCALS2(env, args, blockarg);
-
-    visit_node(env, visitor, NODE(node)->u.method_call.recv, data);
-
-    args = NODE(node)->u.method_call.args;
-    blockarg = NODE(node)->u.method_call.blockarg;
-    visit_each_args(env, visitor, args, blockarg, data);
-
-    unsigned int argc = 0;
-    if (IS_PTR(args)) {
-        argc = YogArray_size(env, args);
-        YOG_ASSERT(env, argc < UINT8_MAX + 1, "Too many arguments for method call.");
-    }
-
-    uint8_t blockargc = 0;
-    if (IS_PTR(blockarg)) {
-        blockargc = 1;
-    }
-
-    unsigned int lineno = NODE(node)->lineno;
-    ID name = NODE(node)->u.method_call.name;
-    CompileData_add_call_method(env, data, lineno, name, argc, 0, blockargc, 0, 0);
-
-    RETURN_VOID(env);
-}
-
 static int
 register_const(YogEnv* env, YogVal data, YogVal const_) 
 {
@@ -951,37 +891,6 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     else {
         add_push_const(env, data, val, lineno);
     }
-
-    RETURN_VOID(env);
-}
-
-static void 
-compile_visit_command_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
-{
-    SAVE_ARGS2(env, node, data);
-
-    YogVal args = YUNDEF;
-    YogVal blockarg = YUNDEF;
-    PUSH_LOCALS2(env, args, blockarg);
-
-    args = NODE(node)->u.command_call.args;
-    blockarg = NODE(node)->u.command_call.blockarg;
-    visit_each_args(env, visitor, args, blockarg, data);
-
-    unsigned int argc = 0;
-    if (IS_PTR(args)) {
-        argc = YogArray_size(env, args);
-        YOG_ASSERT(env, argc < UINT8_MAX + 1, "Too many arguments for command call.");
-    }
-
-    uint8_t blockargc = 0;
-    if (IS_PTR(blockarg)) {
-        blockargc = 1;
-    }
-
-    unsigned int lineno = NODE(node)->lineno;
-    ID name = NODE(node)->u.command_call.name;
-    CompileData_add_call_command(env, data, lineno, name, argc, 0, blockargc, 0, 0);
 
     RETURN_VOID(env);
 }
@@ -1945,7 +1854,7 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 
     add_inst(env, data, label_finally_error_start);
     visitor->visit_stmts(env, visitor, stmts, data);
-    RERAISE();
+    RERAISE(env);
 
     add_inst(env, data, label_finally_end);
 
@@ -2020,10 +1929,12 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
         node_type = NODE(node)->u.except_body.type;
         if (IS_PTR(node_type)) {
             visit_node(env, visitor, node_type, data);
+            ID attr = YogVM_intern(env, env->vm, "===");
+            CompileData_add_load_attr(env, data, lineno, attr);
 #define LOAD_EXC()  CompileData_add_load_special(env, data, lineno, INTERN("$!"))
             lineno = NODE(node_type)->lineno;
             LOAD_EXC();
-            CompileData_add_call_method(env, data, lineno, INTERN("==="), 1, 0, 0, 0, 0);
+            CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
             CompileData_add_jump_if_false(env, data, lineno, label_body_end);
 
             ID id = NODE(node)->u.except_body.var;
@@ -2048,7 +1959,7 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
         POP_LOCALS(env);
     }
-    RERAISE();
+    RERAISE(env);
 
     add_inst(env, data, label_else_start);
     visitor->visit_stmts(env, visitor, NODE(node)->u.except.else_, data);
@@ -2506,7 +2417,6 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_attr = compile_visit_attr;
     visitor->visit_block = compile_visit_block;
     visitor->visit_break = compile_visit_break;
-    visitor->visit_command_call = compile_visit_command_call;
     visitor->visit_except = compile_visit_except;
     visitor->visit_except_body = NULL;
     visitor->visit_finally = compile_visit_finally;
@@ -2516,7 +2426,6 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_import = compile_visit_import;
     visitor->visit_klass = compile_visit_klass;
     visitor->visit_literal = compile_visit_literal;
-    visitor->visit_method_call = compile_visit_method_call;
     visitor->visit_next = compile_visit_next;
     visitor->visit_nonlocal = NULL;
     visitor->visit_return = compile_visit_return;
