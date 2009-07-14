@@ -183,10 +183,6 @@ inst ret
 (val)
 {
     POP_FRAME();
-    if (!IS_PTR(CUR_FRAME) || PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_C) {
-        RETURN(ENV, val);
-    }
-
     PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 }
 
@@ -237,6 +233,15 @@ inst make_array
         PTR_AS(YogValArray, body)->items[size - i - 1] = POP();
     }
     PTR_AS(YogArray, array)->size = size;
+}
+
+inst finish
+()
+(val)
+()
+{
+    POP_FRAME();
+    RETURN(ENV, val);
 }
 
 /**

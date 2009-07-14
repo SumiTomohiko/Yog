@@ -1284,7 +1284,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, 
     if (IS_PTR(tail)) {
         CompileData_add_inst(env, data, tail);
     }
-    if (ctx == CTX_FUNC) {
+    if ((ctx == CTX_FUNC) || (ctx == CTX_PKG)) {
         if (IS_PTR(stmts)) {
             unsigned int size = YogArray_size(env, stmts);
             if (size < 1) {
@@ -2461,6 +2461,29 @@ YogCompiler_compile_module(YogEnv* env, const char* filename, YogVal stmts)
     ID func_name = INTERN("<module>");
 
     YogVal code = compile_stmts(env, &visitor, name, klass_name, func_name, stmts, vars, CTX_PKG, YNIL, YUNDEF);
+
+    RETURN(env, code);
+}
+
+YogVal
+YogCompiler_compile_finish_code(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal inst = YUNDEF;
+    YogVal bin = YUNDEF;
+    YogVal code = YUNDEF;
+    PUSH_LOCALS3(env, inst, bin, code);
+
+    inst = Inst_new(env, 0);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(FINISH);
+
+    bin = insts2bin(env, inst);
+    YogBinary_shrink(env, bin);
+
+    code = YogCode_new(env);
+    CODE(code)->stack_size = 1;
+    CODE(code)->insts = PTR_AS(YogBinary, bin)->body;
 
     RETURN(env, code);
 }

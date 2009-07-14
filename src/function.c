@@ -172,8 +172,16 @@ YogFunction_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], 
 static YogVal
 YogFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
+    SAVE_ARGS5(env, callee, self, blockarg, vararg, varkwarg);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    YogEval_push_finish_frame(env);
+
     YogFunction_exec_for_instance(env, callee, self, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
-    return YogEval_mainloop(env);
+    retval = YogEval_mainloop(env);
+
+    RETURN(env, retval);
 }
 
 static YogVal

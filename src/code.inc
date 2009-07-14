@@ -30,6 +30,7 @@ YogCode_get_op_name(OpCode op)
         "STORE_GLOBAL", 
         "LOAD_ATTR", 
         "MAKE_ARRAY", 
+        "FINISH", 
     };
 
     return op_names[op];

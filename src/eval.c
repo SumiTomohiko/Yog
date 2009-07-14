@@ -406,6 +406,8 @@ eval_package(YogEnv* env, YogVal pkg)
     YogVal attrs = YUNDEF;
     PUSH_LOCALS3(env, frame, code, attrs);
 
+    YogEval_push_finish_frame(env);
+
     frame = YogPackageFrame_new(env);
     code = PTR_AS(YogPackage, pkg)->code;
     setup_script_frame(env, frame, code);
@@ -442,6 +444,21 @@ YogEval_eval_file(YogEnv* env, const char* filename, const char* pkg_name)
     eval_package(env, pkg);
 
     RETURN(env, pkg);
+}
+
+void
+YogEval_push_finish_frame(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal frame = YUNDEF;
+    PUSH_LOCAL(env, frame);
+
+    frame = YogFinishFrame_new(env);
+    setup_script_frame(env, frame, env->vm->finish_code);
+
+    PUSH_FRAME(frame);
+
+    RETURN_VOID(env);
 }
 
 /**

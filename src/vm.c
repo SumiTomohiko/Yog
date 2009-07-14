@@ -13,6 +13,7 @@
 #include "yog/block.h"
 #include "yog/bool.h"
 #include "yog/builtins.h"
+#include "yog/compile.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -262,6 +263,8 @@ YogVM_boot(YogEnv* env, YogVM* vm)
 
     vm->encodings = YogTable_new_symbol_table(env);
     setup_encodings(env, vm);
+
+    vm->finish_code = YogCompiler_compile_finish_code(env);
 }
 
 #if defined(GC_GENERATIONAL)
@@ -346,6 +349,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(pkgs);
     KEEP(search_path);
     KEEP(encodings);
+    KEEP(finish_code);
     KEEP(main_thread);
     KEEP(running_threads);
 #undef KEEP
@@ -398,6 +402,8 @@ YogVM_init(YogVM* vm)
     vm->search_path = YUNDEF;
 
     vm->encodings = PTR2VAL(NULL);
+
+    vm->finish_code = YUNDEF;
 
     vm->running_threads = YUNDEF;
 

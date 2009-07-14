@@ -89,6 +89,8 @@ struct YogInst {
         struct {
             uint8_t size;
         } make_array;
+        struct {
+        } finish;
     } u;
 
     unsigned int lineno;

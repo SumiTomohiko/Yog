@@ -7,6 +7,7 @@ enum YogFrameType {
     FRAME_C, 
     FRAME_METHOD, 
     FRAME_NAME, 
+    FRAME_FINISH,
 };
 
 typedef enum YogFrameType YogFrameType;
@@ -50,6 +51,16 @@ struct YogScriptFrame {
 
 typedef struct YogScriptFrame YogScriptFrame;
 
+struct YogFinishFrame {
+    struct YogFrame base;
+    pc_t pc;
+    YogVal code;
+    unsigned int stack_size;
+    YogVal stack;
+};
+
+typedef struct YogFinishFrame YogFinishFrame;
+
 #define SCRIPT_FRAME(v)     PTR_AS(YogScriptFrame, (v))
 
 struct YogNameFrame {
@@ -87,6 +98,7 @@ typedef struct YogMethodFrame YogMethodFrame;
 
 /* src/frame.c */
 YogVal YogCFrame_new(YogEnv*);
+YogVal YogFinishFrame_new(YogEnv*);
 void YogFrame_add_locals(YogEnv*, YogCFrame*, unsigned int, ...);
 YogVal YogMethodFrame_new(YogEnv*);
 YogVal YogNameFrame_new(YogEnv*);

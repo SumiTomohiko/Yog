@@ -33,6 +33,7 @@ enum OpCode {
     OP(STORE_GLOBAL) = 19, 
     OP(LOAD_ATTR) = 20, 
     OP(MAKE_ARRAY) = 21, 
+    OP(FINISH) = 22, 
 
 };
 

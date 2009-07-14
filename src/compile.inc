@@ -356,6 +356,21 @@ CompileData_add_make_array(YogEnv* env, YogVal data, unsigned int lineno, uint8_
     RETURN_VOID(env);
 }
 
+static void 
+CompileData_add_finish(YogEnv* env, YogVal data, unsigned int lineno)
+{
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(FINISH);
+
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
 
 static YogVal 
 insts2bin(YogEnv* env, YogVal inst) 
@@ -503,6 +518,11 @@ insts2bin(YogEnv* env, YogVal inst)
                     {
                         YogBinary_push_uint8(env, code, OP(MAKE_ARRAY));
                         YogBinary_push_uint8(env, code, MAKE_ARRAY_SIZE(inst));
+                        break;
+                    }
+                case OP(FINISH):
+                    {
+                        YogBinary_push_uint8(env, code, OP(FINISH));
                         break;
                     }
                 default:
@@ -670,6 +690,12 @@ count_stack_size(YogEnv* env, YogVal inst)
                     {
                         pop_size = MAKE_ARRAY_SIZE(inst);
                         push_size = 1;
+                        break;
+                    }
+                case OP(FINISH):
+                    {
+                        pop_size = 1;
+                        push_size = 0;
                         break;
                     }
                 default:

@@ -92,6 +92,11 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     st = YNIL;
     while (IS_PTR(frame)) {
+        if (PTR_AS(YogFrame, frame)->type == FRAME_FINISH) {
+            frame = PTR_AS(YogFrame, frame)->prev;
+            continue;
+        }
+
         YogVal entry = YogStackTraceEntry_new(env);
 
         switch (PTR_AS(YogFrame, frame)->type) {
@@ -131,8 +136,9 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
                 PTR_AS(YogStackTraceEntry, entry)->func_name = func_name;
                 break;
             }
+        case FRAME_FINISH:
         default:
-            YOG_ASSERT(env, FALSE, "Unkown frame type.");
+            YOG_ASSERT(env, FALSE, "invalid frame type (0x%x)", PTR_AS(YogFrame, frame)->type);
             break;
         }
 

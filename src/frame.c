@@ -78,6 +78,16 @@ YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* 
     KEEP(outer_vars);
 }
 
+static void
+YogFinishFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    YogFrame_keep_children(env, ptr, keeper, heap);
+
+    YogFinishFrame* frame = ptr;
+    KEEP(code);
+    KEEP(stack);
+}
+
 static void 
 YogNameFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
@@ -109,6 +119,7 @@ YogFrame_init(YogVal frame, YogFrameType type)
 void 
 YogScriptFrame_push_stack(YogEnv* env, YogScriptFrame* frame, YogVal val) 
 {
+    YOG_ASSERT(env, PTR_AS(YogFrame, frame)->type != FRAME_C, "invalid frame type (0x%x)", PTR_AS(YogFrame, frame)->type);
     YogVal stack = frame->stack;
     unsigned int capacity = YogValArray_size(env, stack);
     YOG_ASSERT(env, frame->stack_size < capacity, "Stack is full.");
@@ -220,6 +231,26 @@ YogOuterVars_new(YogEnv* env, unsigned int size)
     }
 
     return vars;
+}
+
+static void
+YogFinishFrame_init(YogEnv* env, YogVal self)
+{
+    YogFrame_init(self, FRAME_FINISH);
+
+    PTR_AS(YogFinishFrame, self)->pc = 0;
+    PTR_AS(YogFinishFrame, self)->code = YUNDEF;
+    PTR_AS(YogFinishFrame, self)->stack_size = 0;
+    PTR_AS(YogFinishFrame, self)->stack = YUNDEF;
+}
+
+YogVal
+YogFinishFrame_new(YogEnv* env)
+{
+    YogVal frame = ALLOC_OBJ(env, YogFinishFrame_keep_children, NULL, YogFinishFrame);
+    YogFinishFrame_init(env, frame);
+
+    return frame;
 }
 
 /**

@@ -250,10 +250,6 @@
             PUSH_LOCAL(ENV, val);
             val = POP();
             POP_FRAME();
-            if (!IS_PTR(CUR_FRAME) || PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_C) {
-                RETURN(ENV, val);
-            }
-        
             PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 
             PUSH(val);
@@ -339,6 +335,17 @@
             PTR_AS(YogArray, array)->size = size;
 
             PUSH(array);
+            POP_LOCALS(ENV);
+            break;
+        }
+    case OP(FINISH):
+        {
+            YogVal val = YUNDEF;
+            PUSH_LOCAL(ENV, val);
+            val = POP();
+            POP_FRAME();
+            RETURN(ENV, val);
+
             POP_LOCALS(ENV);
             break;
         }

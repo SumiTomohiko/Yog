@@ -57,6 +57,8 @@ struct YogVM {
 
     YogVal encodings;
 
+    YogVal finish_code;
+
     YogVal main_thread;
     YogVal running_threads;
 
