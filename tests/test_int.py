@@ -42,4 +42,16 @@ end
 9
 """)
 
+    def test_bignum_literal1(self):
+        self._test("""
+puts(1073741824)
+""" """1073741824
+""")
+
+    def test_bignum_literal2(self):
+        self._test("""
+puts(4611686018427387904)
+""" """4611686018427387904
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
