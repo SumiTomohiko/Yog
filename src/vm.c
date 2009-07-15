@@ -10,6 +10,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "yog/array.h"
+#include "yog/bignum.h"
 #include "yog/block.h"
 #include "yog/bool.h"
 #include "yog/builtins.h"
