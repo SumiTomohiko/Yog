@@ -201,6 +201,7 @@ setup_klasses(YogEnv* env, YogVM* vm)
     YogKlass_klass_init(env, vm->cKlass);
 
     vm->cInt = YogInt_klass_new(env);
+    vm->cBignum = YogBignum_klass_new(env);
     vm->cString = YogString_klass_new(env);
     vm->cRegexp = YogRegexp_klass_new(env);
     vm->cMatch = YogMatch_klass_new(env);
@@ -328,6 +329,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cObject);
     KEEP(cKlass);
     KEEP(cInt);
+    KEEP(cBignum);
     KEEP(cString);
     KEEP(cRegexp);
     KEEP(cMatch);
@@ -380,6 +382,7 @@ YogVM_init(YogVM* vm)
     vm->cObject = YUNDEF;
     vm->cKlass = YUNDEF;
     vm->cInt = YUNDEF;
+    vm->cBignum = YUNDEF;
     vm->cString = YUNDEF;
     vm->cRegexp = YUNDEF;
     vm->cMatch = YUNDEF;

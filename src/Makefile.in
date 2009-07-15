@@ -49,21 +49,22 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am__objects_1 = yog_bdw-arg.$(OBJEXT) yog_bdw-array.$(OBJEXT) \
-	yog_bdw-binary.$(OBJEXT) yog_bdw-block.$(OBJEXT) \
-	yog_bdw-bool.$(OBJEXT) yog_bdw-builtins.$(OBJEXT) \
-	yog_bdw-code.$(OBJEXT) yog_bdw-compile.$(OBJEXT) \
-	yog_bdw-encoding.$(OBJEXT) yog_bdw-error.$(OBJEXT) \
-	yog_bdw-eval.$(OBJEXT) yog_bdw-exception.$(OBJEXT) \
-	yog_bdw-float.$(OBJEXT) yog_bdw-frame.$(OBJEXT) \
-	yog_bdw-function.$(OBJEXT) yog_bdw-gc.$(OBJEXT) \
-	yog_bdw-inst.$(OBJEXT) yog_bdw-int.$(OBJEXT) \
-	yog_bdw-klass.$(OBJEXT) yog_bdw-lexer.$(OBJEXT) \
-	yog_bdw-main.$(OBJEXT) yog_bdw-nil.$(OBJEXT) \
-	yog_bdw-object.$(OBJEXT) yog_bdw-package.$(OBJEXT) \
-	yog_bdw-parser.$(OBJEXT) yog_bdw-regexp.$(OBJEXT) \
-	yog_bdw-stacktrace.$(OBJEXT) yog_bdw-string.$(OBJEXT) \
-	yog_bdw-table.$(OBJEXT) yog_bdw-thread.$(OBJEXT) \
-	yog_bdw-value.$(OBJEXT) yog_bdw-vm.$(OBJEXT)
+	yog_bdw-bignum.$(OBJEXT) yog_bdw-binary.$(OBJEXT) \
+	yog_bdw-block.$(OBJEXT) yog_bdw-bool.$(OBJEXT) \
+	yog_bdw-builtins.$(OBJEXT) yog_bdw-code.$(OBJEXT) \
+	yog_bdw-compile.$(OBJEXT) yog_bdw-encoding.$(OBJEXT) \
+	yog_bdw-error.$(OBJEXT) yog_bdw-eval.$(OBJEXT) \
+	yog_bdw-exception.$(OBJEXT) yog_bdw-float.$(OBJEXT) \
+	yog_bdw-frame.$(OBJEXT) yog_bdw-function.$(OBJEXT) \
+	yog_bdw-gc.$(OBJEXT) yog_bdw-inst.$(OBJEXT) \
+	yog_bdw-int.$(OBJEXT) yog_bdw-klass.$(OBJEXT) \
+	yog_bdw-lexer.$(OBJEXT) yog_bdw-main.$(OBJEXT) \
+	yog_bdw-nil.$(OBJEXT) yog_bdw-object.$(OBJEXT) \
+	yog_bdw-package.$(OBJEXT) yog_bdw-parser.$(OBJEXT) \
+	yog_bdw-regexp.$(OBJEXT) yog_bdw-stacktrace.$(OBJEXT) \
+	yog_bdw-string.$(OBJEXT) yog_bdw-table.$(OBJEXT) \
+	yog_bdw-thread.$(OBJEXT) yog_bdw-value.$(OBJEXT) \
+	yog_bdw-vm.$(OBJEXT)
 am_yog_bdw_OBJECTS = $(am__objects_1) yog_bdw-bdw.$(OBJEXT)
 yog_bdw_OBJECTS = $(am_yog_bdw_OBJECTS)
 yog_bdw_LDADD = $(LDADD)
@@ -71,21 +72,22 @@ yog_bdw_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(yog_bdw_CFLAGS) $(CFLAGS) \
 	$(yog_bdw_LDFLAGS) $(LDFLAGS) -o $@
 am__objects_2 = yog_copying-arg.$(OBJEXT) yog_copying-array.$(OBJEXT) \
-	yog_copying-binary.$(OBJEXT) yog_copying-block.$(OBJEXT) \
-	yog_copying-bool.$(OBJEXT) yog_copying-builtins.$(OBJEXT) \
-	yog_copying-code.$(OBJEXT) yog_copying-compile.$(OBJEXT) \
-	yog_copying-encoding.$(OBJEXT) yog_copying-error.$(OBJEXT) \
-	yog_copying-eval.$(OBJEXT) yog_copying-exception.$(OBJEXT) \
-	yog_copying-float.$(OBJEXT) yog_copying-frame.$(OBJEXT) \
-	yog_copying-function.$(OBJEXT) yog_copying-gc.$(OBJEXT) \
-	yog_copying-inst.$(OBJEXT) yog_copying-int.$(OBJEXT) \
-	yog_copying-klass.$(OBJEXT) yog_copying-lexer.$(OBJEXT) \
-	yog_copying-main.$(OBJEXT) yog_copying-nil.$(OBJEXT) \
-	yog_copying-object.$(OBJEXT) yog_copying-package.$(OBJEXT) \
-	yog_copying-parser.$(OBJEXT) yog_copying-regexp.$(OBJEXT) \
-	yog_copying-stacktrace.$(OBJEXT) yog_copying-string.$(OBJEXT) \
-	yog_copying-table.$(OBJEXT) yog_copying-thread.$(OBJEXT) \
-	yog_copying-value.$(OBJEXT) yog_copying-vm.$(OBJEXT)
+	yog_copying-bignum.$(OBJEXT) yog_copying-binary.$(OBJEXT) \
+	yog_copying-block.$(OBJEXT) yog_copying-bool.$(OBJEXT) \
+	yog_copying-builtins.$(OBJEXT) yog_copying-code.$(OBJEXT) \
+	yog_copying-compile.$(OBJEXT) yog_copying-encoding.$(OBJEXT) \
+	yog_copying-error.$(OBJEXT) yog_copying-eval.$(OBJEXT) \
+	yog_copying-exception.$(OBJEXT) yog_copying-float.$(OBJEXT) \
+	yog_copying-frame.$(OBJEXT) yog_copying-function.$(OBJEXT) \
+	yog_copying-gc.$(OBJEXT) yog_copying-inst.$(OBJEXT) \
+	yog_copying-int.$(OBJEXT) yog_copying-klass.$(OBJEXT) \
+	yog_copying-lexer.$(OBJEXT) yog_copying-main.$(OBJEXT) \
+	yog_copying-nil.$(OBJEXT) yog_copying-object.$(OBJEXT) \
+	yog_copying-package.$(OBJEXT) yog_copying-parser.$(OBJEXT) \
+	yog_copying-regexp.$(OBJEXT) yog_copying-stacktrace.$(OBJEXT) \
+	yog_copying-string.$(OBJEXT) yog_copying-table.$(OBJEXT) \
+	yog_copying-thread.$(OBJEXT) yog_copying-value.$(OBJEXT) \
+	yog_copying-vm.$(OBJEXT)
 am_yog_copying_OBJECTS = $(am__objects_2) \
 	yog_copying-copying.$(OBJEXT)
 yog_copying_OBJECTS = $(am_yog_copying_OBJECTS)
@@ -95,6 +97,7 @@ yog_copying_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(CFLAGS) $(yog_copying_LDFLAGS) $(LDFLAGS) -o $@
 am__objects_3 = yog_generational-arg.$(OBJEXT) \
 	yog_generational-array.$(OBJEXT) \
+	yog_generational-bignum.$(OBJEXT) \
 	yog_generational-binary.$(OBJEXT) \
 	yog_generational-block.$(OBJEXT) \
 	yog_generational-bool.$(OBJEXT) \
@@ -135,8 +138,9 @@ yog_mark_swee_compact_SOURCES = yog-mark-swee-compact.c
 yog_mark_swee_compact_OBJECTS = yog-mark-swee-compact.$(OBJEXT)
 yog_mark_swee_compact_LDADD = $(LDADD)
 am__objects_4 = yog_mark_sweep-arg.$(OBJEXT) \
-	yog_mark_sweep-array.$(OBJEXT) yog_mark_sweep-binary.$(OBJEXT) \
-	yog_mark_sweep-block.$(OBJEXT) yog_mark_sweep-bool.$(OBJEXT) \
+	yog_mark_sweep-array.$(OBJEXT) yog_mark_sweep-bignum.$(OBJEXT) \
+	yog_mark_sweep-binary.$(OBJEXT) yog_mark_sweep-block.$(OBJEXT) \
+	yog_mark_sweep-bool.$(OBJEXT) \
 	yog_mark_sweep-builtins.$(OBJEXT) \
 	yog_mark_sweep-code.$(OBJEXT) yog_mark_sweep-compile.$(OBJEXT) \
 	yog_mark_sweep-encoding.$(OBJEXT) \
@@ -164,6 +168,7 @@ yog_mark_sweep_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(CFLAGS) $(yog_mark_sweep_LDFLAGS) $(LDFLAGS) -o $@
 am__objects_5 = yog_mark_sweep_compact-arg.$(OBJEXT) \
 	yog_mark_sweep_compact-array.$(OBJEXT) \
+	yog_mark_sweep_compact-bignum.$(OBJEXT) \
 	yog_mark_sweep_compact-binary.$(OBJEXT) \
 	yog_mark_sweep_compact-block.$(OBJEXT) \
 	yog_mark_sweep_compact-bool.$(OBJEXT) \
@@ -348,6 +353,7 @@ YACC = $(LEMON)
 BUILT_SOURCES = parser.h keywords.inc
 COMMON_SOURCES = arg.c \
 	array.c \
+	bignum.c \
 	binary.c \
 	block.c \
 	bool.c \
@@ -502,6 +508,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-arg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-bdw.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-bignum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-binary.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-bool.Po@am__quote@
@@ -534,6 +541,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-vm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-arg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-array.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-bignum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-binary.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-bool.Po@am__quote@
@@ -567,6 +575,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-vm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-arg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-array.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-bignum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-binary.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-bool.Po@am__quote@
@@ -602,6 +611,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-vm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-arg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-array.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-bignum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-binary.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-bool.Po@am__quote@
@@ -635,6 +645,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-vm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-arg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-array.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-bignum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-binary.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-bool.Po@am__quote@
@@ -715,6 +726,20 @@ yog_bdw-array.obj: array.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='array.c' object='yog_bdw-array.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-array.obj `if test -f 'array.c'; then $(CYGPATH_W) 'array.c'; else $(CYGPATH_W) '$(srcdir)/array.c'; fi`
+
+yog_bdw-bignum.o: bignum.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-bignum.o -MD -MP -MF $(DEPDIR)/yog_bdw-bignum.Tpo -c -o yog_bdw-bignum.o `test -f 'bignum.c' || echo '$(srcdir)/'`bignum.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-bignum.Tpo $(DEPDIR)/yog_bdw-bignum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bignum.c' object='yog_bdw-bignum.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-bignum.o `test -f 'bignum.c' || echo '$(srcdir)/'`bignum.c
+
+yog_bdw-bignum.obj: bignum.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-bignum.obj -MD -MP -MF $(DEPDIR)/yog_bdw-bignum.Tpo -c -o yog_bdw-bignum.obj `if test -f 'bignum.c'; then $(CYGPATH_W) 'bignum.c'; else $(CYGPATH_W) '$(srcdir)/bignum.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-bignum.Tpo $(DEPDIR)/yog_bdw-bignum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bignum.c' object='yog_bdw-bignum.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-bignum.obj `if test -f 'bignum.c'; then $(CYGPATH_W) 'bignum.c'; else $(CYGPATH_W) '$(srcdir)/bignum.c'; fi`
 
 yog_bdw-binary.o: binary.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-binary.o -MD -MP -MF $(DEPDIR)/yog_bdw-binary.Tpo -c -o yog_bdw-binary.o `test -f 'binary.c' || echo '$(srcdir)/'`binary.c
@@ -1178,6 +1203,20 @@ yog_copying-array.obj: array.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-array.obj `if test -f 'array.c'; then $(CYGPATH_W) 'array.c'; else $(CYGPATH_W) '$(srcdir)/array.c'; fi`
 
+yog_copying-bignum.o: bignum.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-bignum.o -MD -MP -MF $(DEPDIR)/yog_copying-bignum.Tpo -c -o yog_copying-bignum.o `test -f 'bignum.c' || echo '$(srcdir)/'`bignum.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-bignum.Tpo $(DEPDIR)/yog_copying-bignum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bignum.c' object='yog_copying-bignum.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-bignum.o `test -f 'bignum.c' || echo '$(srcdir)/'`bignum.c
+
+yog_copying-bignum.obj: bignum.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-bignum.obj -MD -MP -MF $(DEPDIR)/yog_copying-bignum.Tpo -c -o yog_copying-bignum.obj `if test -f 'bignum.c'; then $(CYGPATH_W) 'bignum.c'; else $(CYGPATH_W) '$(srcdir)/bignum.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-bignum.Tpo $(DEPDIR)/yog_copying-bignum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bignum.c' object='yog_copying-bignum.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-bignum.obj `if test -f 'bignum.c'; then $(CYGPATH_W) 'bignum.c'; else $(CYGPATH_W) '$(srcdir)/bignum.c'; fi`
+
 yog_copying-binary.o: binary.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-binary.o -MD -MP -MF $(DEPDIR)/yog_copying-binary.Tpo -c -o yog_copying-binary.o `test -f 'binary.c' || echo '$(srcdir)/'`binary.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-binary.Tpo $(DEPDIR)/yog_copying-binary.Po
@@ -1639,6 +1678,20 @@ yog_generational-array.obj: array.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='array.c' object='yog_generational-array.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-array.obj `if test -f 'array.c'; then $(CYGPATH_W) 'array.c'; else $(CYGPATH_W) '$(srcdir)/array.c'; fi`
+
+yog_generational-bignum.o: bignum.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-bignum.o -MD -MP -MF $(DEPDIR)/yog_generational-bignum.Tpo -c -o yog_generational-bignum.o `test -f 'bignum.c' || echo '$(srcdir)/'`bignum.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-bignum.Tpo $(DEPDIR)/yog_generational-bignum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bignum.c' object='yog_generational-bignum.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-bignum.o `test -f 'bignum.c' || echo '$(srcdir)/'`bignum.c
+
+yog_generational-bignum.obj: bignum.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-bignum.obj -MD -MP -MF $(DEPDIR)/yog_generational-bignum.Tpo -c -o yog_generational-bignum.obj `if test -f 'bignum.c'; then $(CYGPATH_W) 'bignum.c'; else $(CYGPATH_W) '$(srcdir)/bignum.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-bignum.Tpo $(DEPDIR)/yog_generational-bignum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bignum.c' object='yog_generational-bignum.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-bignum.obj `if test -f 'bignum.c'; then $(CYGPATH_W) 'bignum.c'; else $(CYGPATH_W) '$(srcdir)/bignum.c'; fi`
 
 yog_generational-binary.o: binary.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-binary.o -MD -MP -MF $(DEPDIR)/yog_generational-binary.Tpo -c -o yog_generational-binary.o `test -f 'binary.c' || echo '$(srcdir)/'`binary.c
@@ -2130,6 +2183,20 @@ yog_mark_sweep-array.obj: array.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-array.obj `if test -f 'array.c'; then $(CYGPATH_W) 'array.c'; else $(CYGPATH_W) '$(srcdir)/array.c'; fi`
 
+yog_mark_sweep-bignum.o: bignum.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-bignum.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-bignum.Tpo -c -o yog_mark_sweep-bignum.o `test -f 'bignum.c' || echo '$(srcdir)/'`bignum.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-bignum.Tpo $(DEPDIR)/yog_mark_sweep-bignum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bignum.c' object='yog_mark_sweep-bignum.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-bignum.o `test -f 'bignum.c' || echo '$(srcdir)/'`bignum.c
+
+yog_mark_sweep-bignum.obj: bignum.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-bignum.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep-bignum.Tpo -c -o yog_mark_sweep-bignum.obj `if test -f 'bignum.c'; then $(CYGPATH_W) 'bignum.c'; else $(CYGPATH_W) '$(srcdir)/bignum.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-bignum.Tpo $(DEPDIR)/yog_mark_sweep-bignum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bignum.c' object='yog_mark_sweep-bignum.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-bignum.obj `if test -f 'bignum.c'; then $(CYGPATH_W) 'bignum.c'; else $(CYGPATH_W) '$(srcdir)/bignum.c'; fi`
+
 yog_mark_sweep-binary.o: binary.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-binary.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-binary.Tpo -c -o yog_mark_sweep-binary.o `test -f 'binary.c' || echo '$(srcdir)/'`binary.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-binary.Tpo $(DEPDIR)/yog_mark_sweep-binary.Po
@@ -2591,6 +2658,20 @@ yog_mark_sweep_compact-array.obj: array.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='array.c' object='yog_mark_sweep_compact-array.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-array.obj `if test -f 'array.c'; then $(CYGPATH_W) 'array.c'; else $(CYGPATH_W) '$(srcdir)/array.c'; fi`
+
+yog_mark_sweep_compact-bignum.o: bignum.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-bignum.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-bignum.Tpo -c -o yog_mark_sweep_compact-bignum.o `test -f 'bignum.c' || echo '$(srcdir)/'`bignum.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-bignum.Tpo $(DEPDIR)/yog_mark_sweep_compact-bignum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bignum.c' object='yog_mark_sweep_compact-bignum.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-bignum.o `test -f 'bignum.c' || echo '$(srcdir)/'`bignum.c
+
+yog_mark_sweep_compact-bignum.obj: bignum.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-bignum.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-bignum.Tpo -c -o yog_mark_sweep_compact-bignum.obj `if test -f 'bignum.c'; then $(CYGPATH_W) 'bignum.c'; else $(CYGPATH_W) '$(srcdir)/bignum.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-bignum.Tpo $(DEPDIR)/yog_mark_sweep_compact-bignum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bignum.c' object='yog_mark_sweep_compact-bignum.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-bignum.obj `if test -f 'bignum.c'; then $(CYGPATH_W) 'bignum.c'; else $(CYGPATH_W) '$(srcdir)/bignum.c'; fi`
 
 yog_mark_sweep_compact-binary.o: binary.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-binary.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-binary.Tpo -c -o yog_mark_sweep_compact-binary.o `test -f 'binary.c' || echo '$(srcdir)/'`binary.c

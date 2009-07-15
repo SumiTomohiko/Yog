@@ -32,6 +32,7 @@ struct YogVM {
     YogVal cObject;
     YogVal cKlass;
     YogVal cInt;
+    YogVal cBignum;
     YogVal cString;
     YogVal cRegexp;
     YogVal cMatch;
