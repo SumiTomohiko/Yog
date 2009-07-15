@@ -1,5 +1,6 @@
 
 DIRS = @DIRS@
+prefix = @prefix@
 
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 			 configure.lineno config.status.lineno
@@ -46,3 +47,6 @@ am--refresh:
 
 update-version:
 	cd src && $(MAKE) $@
+
+install-vim:
+	cp yog.vim $(prefix)/share/vim/vim71/syntax
