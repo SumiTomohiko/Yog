@@ -318,7 +318,7 @@ YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, unsigned int arg
     PUSH_LOCALS2(env, attr, retval);
 
     attr = YogVal_get_attr(env, receiver, method);
-    YOG_ASSERT(env, IS_PTR(attr), "Attribute isn't object.");
+    YOG_ASSERT(env, IS_PTR(attr), "attribute isn't object (0x%08x)", attr);
     retval = YogCallable_call(env, attr, argc, args);
 
     RETURN(env, retval);

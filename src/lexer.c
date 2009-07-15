@@ -265,11 +265,9 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 
 #define RETURN_INT  do { \
     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer; \
-    YogVal body = PTR_AS(YogString, buffer)->body; \
-    int n = atoi(PTR_AS(YogCharArray, body)->items); \
-    YogVal val = INT2VAL(n); \
+    YogVal num = YogString_to_i(env, buffer); \
     SET_STATE(LS_OP); \
-    RETURN_VAL_TOKEN(TK_NUMBER, val); \
+    RETURN_VAL_TOKEN(TK_NUMBER, num); \
 } while (0)
             if (c == '.') {
                 int c2 = NEXTC();

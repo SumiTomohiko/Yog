@@ -227,6 +227,15 @@ YogVal_is_subklass_of(YogEnv* env, YogVal val, YogVal klass)
     return FALSE;
 }
 
+YogVal
+YogVal_from_int(YogEnv* env, int n)
+{
+    if ((n < YINT_MIN) || (YINT_MAX < n)) {
+        return YogBignum_from_int(env, n);
+    }
+    return INT2VAL(n);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

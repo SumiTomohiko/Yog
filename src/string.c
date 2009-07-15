@@ -1,8 +1,11 @@
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "oniguruma.h"
 #include "yog/array.h"
+#include "yog/bignum.h"
 #include "yog/encoding.h"
 #include "yog/env.h"
 #include "yog/error.h"
@@ -596,6 +599,41 @@ YogString_dup(YogEnv* env, const char* s)
     memcpy(p, s, size);
 
     return p;
+}
+
+YogVal
+YogString_to_i(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal body = YUNDEF;
+    PUSH_LOCAL(env, body);
+
+    body = PTR_AS(YogString, self)->body;
+    char* endptr = NULL;
+    int base = 10;
+    long n = strtol(PTR_AS(YogCharArray, body)->items, &endptr, base); 
+#define RAISE_VALUE_ERROR   do { \
+    const char* s = PTR_AS(YogCharArray, body)->items; \
+    YogError_raise_ValueError(env, "invalid literal: %s", s); \
+    RETURN(env, INT2VAL(0)); \
+} while (0)
+    if (*endptr != '\0') {
+        RAISE_VALUE_ERROR;
+    }
+    if (errno == 0) {
+        YogVal v = YogVal_from_int(env, n);
+        RETURN(env, v);
+    }
+    else if (errno == ERANGE) {
+        YogVal v = YogBignum_from_str(env, self);
+        RETURN(env, v);
+    }
+
+    RAISE_VALUE_ERROR;
+#undef RAISE_VALUE_ERROR
+
+    /* NOTREACHED */
+    RETURN(env, self);
 }
 
 /**

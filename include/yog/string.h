@@ -44,6 +44,7 @@ YogVal YogString_new_size(YogEnv*, unsigned int);
 YogVal YogString_new_str(YogEnv*, const char*);
 void YogString_push(YogEnv*, YogVal, char);
 unsigned int YogString_size(YogEnv*, YogVal);
+YogVal YogString_to_i(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

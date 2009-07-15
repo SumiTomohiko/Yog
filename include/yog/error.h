@@ -36,6 +36,7 @@ void YogError_raise(YogEnv*, YogVal);
 void YogError_raise_IndexError(YogEnv*, const char*);
 void YogError_raise_SyntaxError(YogEnv*, const char*);
 void YogError_raise_TypeError(YogEnv*, const char*);
+void YogError_raise_ValueError(YogEnv*, const char*, ...);
 void YogError_warn(YogEnv*, const char*, unsigned int, const char*, ...);
 
 /* PROTOTYPE_END */

@@ -241,6 +241,7 @@ setup_exceptions(YogEnv* env, YogVM* vm)
 } while (0)
     EXCEPTION_NEW(eBugException, "BugException");
     EXCEPTION_NEW(eTypeError, "TypeError");
+    EXCEPTION_NEW(eValueError, "ValueError");
     EXCEPTION_NEW(eIndexError, "IndexError");
     EXCEPTION_NEW(eSyntaxError, "SyntaxError");
 #undef EXCEPTION_NEW
@@ -348,6 +349,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eException);
     KEEP(eBugException);
     KEEP(eTypeError);
+    KEEP(eValueError);
     KEEP(eIndexError);
     KEEP(eSyntaxError);
 
@@ -401,6 +403,7 @@ YogVM_init(YogVM* vm)
     vm->eException = YUNDEF;
     vm->eBugException = YUNDEF;
     vm->eTypeError = YUNDEF;
+    vm->eValueError = YUNDEF;
     vm->eIndexError = YUNDEF;
     vm->eSyntaxError = YUNDEF;
 

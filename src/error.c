@@ -94,6 +94,17 @@ YogError_raise_SyntaxError(YogEnv* env, const char* msg)
 }
 
 void
+YogError_raise_ValueError(YogEnv* env, const char* fmt, ...)
+{
+    char buffer[4096];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(buffer, array_sizeof(buffer), fmt, ap);
+    va_end(ap);
+    raise_error(env, env->vm->eValueError, buffer);
+}
+
+void
 YogError_print_stacktrace(YogEnv* env)
 {
 #define PRINT(...)  fprintf(stderr, __VA_ARGS__)

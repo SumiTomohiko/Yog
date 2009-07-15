@@ -74,6 +74,9 @@ typedef unsigned long long pc_t;
 #define IS_NIL(v)       ((v) == 0x06)
 #define IS_SYMBOL(v)    (((v) & 0x0f) == 0x0e)
 
+#define YINT_MAX    VAL2INT(INT_MAX)
+#define YINT_MIN    VAL2INT(INT_MIN)
+
 typedef struct YogEnv YogEnv;
 
 typedef void* (*ObjectKeeper)(YogEnv*, void*, void*);
@@ -90,6 +93,7 @@ typedef unsigned int flags_t;
 
 /* src/value.c */
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
+YogVal YogVal_from_int(YogEnv*, int);
 YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
 YogVal YogVal_get_descr(YogEnv*, YogVal, YogVal, YogVal);
 YogVal YogVal_get_klass(YogEnv*, YogVal);
