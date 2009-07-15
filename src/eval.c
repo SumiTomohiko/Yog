@@ -171,8 +171,7 @@ YogEval_mainloop(YogEnv* env)
     YogJmpBuf jmpbuf;
     int status = 0;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
-        jmpbuf.prev = PTR_AS(YogThread, env->thread)->jmp_buf_list;
-        PTR_AS(YogThread, env->thread)->jmp_buf_list = &jmpbuf;
+        PUSH_JMPBUF(env->thread, jmpbuf);
     }
     else {
         RESTORE_LOCALS(env);
@@ -197,63 +196,7 @@ YogEval_mainloop(YogEnv* env)
                 longjmp(list->buf, status);
             }
 
-#define PRINT(...)  fprintf(stderr, __VA_ARGS__)
-            PRINT("Traceback (most recent call last):\n");
-
-            YogVal jmp_val = PTR_AS(YogThread, env->thread)->jmp_val;
-            YogException* exc = PTR_AS(YogException, jmp_val);
-            YogVal st = exc->stack_trace;
-#define ID2NAME(id)     YogVM_id2name(env, env->vm, id)
-            while (IS_PTR(st)) {
-                PRINT("  File ");
-                YogVal filename = PTR_AS(YogStackTraceEntry, st)->filename;
-                if (IS_PTR(filename)) {
-                    const char* name = PTR_AS(YogCharArray, filename)->items;
-                    PRINT("\"%s\"", name);
-                }
-                else {
-                    PRINT("builtin");
-                }
-
-                unsigned int lineno = PTR_AS(YogStackTraceEntry, st)->lineno;
-                if (0 < lineno) {
-                    PRINT(", line %d", lineno);
-                }
-
-                PRINT(", in ");
-                ID klass_name = PTR_AS(YogStackTraceEntry, st)->klass_name;
-                ID func_name = PTR_AS(YogStackTraceEntry, st)->func_name;
-                if (klass_name != INVALID_ID) {
-                    if (func_name != INVALID_ID) {
-                        const char* s = ID2NAME(klass_name);
-                        const char* t = ID2NAME(func_name);
-                        PRINT("%s#%s", s, t);
-                    }
-                    else {
-                        const char* name = ID2NAME(klass_name);
-                        PRINT("<class %s>", name);
-                    }
-                }
-                else {
-                    const char* name = ID2NAME(func_name);
-                    PRINT("%s", name);
-                }
-                PRINT("\n");
-
-                st = PTR_AS(YogStackTraceEntry, st)->lower;
-            }
-
-            YogVal klass = YOGBASICOBJ(exc)->klass;
-            const char* name = ID2NAME(PTR_AS(YogKlass, klass)->name);
-            /* dirty hack */
-            size_t len = strlen(name);
-            char s[len + 1];
-            strcpy(s, name);
-#undef ID2NAME
-            YogVal val = YogEval_call_method(env, exc->message, "to_s", 0, NULL);
-            YogString* msg = PTR_AS(YogString, val);
-            PRINT("%s: %s\n", s, PTR_AS(YogCharArray, msg->body)->items);
-#undef PRINT
+            YogError_print_stacktrace(env);
 
             RETURN(env, INT2VAL(-1));
         }

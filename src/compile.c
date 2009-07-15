@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
 #include "yog/arg.h"
@@ -186,6 +187,31 @@ typedef struct CompileData CompileData;
 } while (0)
 
 #define NODE(p)     PTR_AS(YogNode, (p))
+
+static void
+raise_error(YogEnv* env, YogVal filename, unsigned int lineno, const char* fmt, ...)
+{
+    SAVE_ARG(env, filename);
+
+#define BUFFER_SIZE     4096
+    char head[BUFFER_SIZE];
+    snprintf(head, array_sizeof(head), "file \"%s\", line %u: ", PTR_AS(YogCharArray, filename)->items, lineno);
+
+    char s[BUFFER_SIZE];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(s, array_sizeof(s), fmt, ap);
+    va_end(ap);
+
+    char msg[BUFFER_SIZE];
+    snprintf(msg, array_sizeof(msg), "%s%s", head, s);
+#undef BUFFER_SIZE
+
+    YogError_raise_SyntaxError(env, msg);
+
+    /* NOTREACHED */
+    RETURN_VOID(env);
+}
 
 static void 
 YogInst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
@@ -1341,13 +1367,13 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, 
 }
 
 static void 
-register_params_var_table(YogEnv* env, YogVal params, YogVal var_tbl) 
+register_params_var_table(YogEnv* env, YogVal params, YogVal var_tbl, YogVal filename)
 {
     if (!IS_PTR(params)) {
         return;
     }
 
-    SAVE_ARGS2(env, params, var_tbl);
+    SAVE_ARGS3(env, params, var_tbl, filename);
 
     unsigned int size = YogArray_size(env, params);
     unsigned int i = 0;
@@ -1356,7 +1382,7 @@ register_params_var_table(YogEnv* env, YogVal params, YogVal var_tbl)
         ID id = NODE(node)->u.param.name;
         YogVal name = ID2VAL(id);
         if (YogTable_lookup(env, var_tbl, name, NULL)) {
-            YOG_ASSERT(env, FALSE, "duplicated argument name in function definition");
+            raise_error(env, filename, NODE(node)->lineno, "duplicated argument name in function definition");
         }
         scan_var_register(env, var_tbl, id, VAR_PARAM);
     }
@@ -1647,7 +1673,7 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, Y
     var_tbl = var_table_new(env);
 
     params = NODE(node)->u.funcdef.params;
-    register_params_var_table(env, params, var_tbl);
+    register_params_var_table(env, params, var_tbl, filename);
 
     stmts = NODE(node)->u.funcdef.stmts;
     var_tbl = make_var_table(env, stmts, var_tbl);
@@ -2164,14 +2190,14 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     var_tbl = var_table_new(env);
 
     params = NODE(node)->u.blockarg.params;
-    register_params_var_table(env, params, var_tbl);
+    filename = COMPILE_DATA(data)->filename;
+    register_params_var_table(env, params, var_tbl, filename);
 
     stmts = NODE(node)->u.blockarg.stmts;
     var_tbl = make_var_table(env, stmts, var_tbl);
 
     vars = vars_flags2type(env, var_tbl, data);
 
-    filename = COMPILE_DATA(data)->filename;
     ID klass_name = INVALID_ID;
     ID func_name = INTERN("<block>");
     code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL, data);

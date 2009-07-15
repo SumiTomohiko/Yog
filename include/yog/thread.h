@@ -180,6 +180,11 @@ typedef struct YogThread YogThread;
 #   define THREAD_HEAP(thread)  __THREAD_HEAP__(YogBDW, thread)
 #endif
 
+#define PUSH_JMPBUF(thread, jmpbuf)     do { \
+    jmpbuf.prev = PTR_AS(YogThread, (thread))->jmp_buf_list; \
+    PTR_AS(YogThread, (thread))->jmp_buf_list = &jmpbuf; \
+} while (0)
+
 /* PROTOTYPE_START */
 
 /**

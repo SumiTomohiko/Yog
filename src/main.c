@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <getopt.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -204,17 +205,28 @@ main(int argc, char* argv[])
     PUSH_LOCAL_TABLE(&env, env_guard);
     GUARD_ENV(env);
 #undef GUARD_ENV
+    SAVE_LOCALS(&env);
 
-    do {
-        YogVM_boot(&env, env.vm);
-        YogVM_configure_search_path(&env, env.vm, argv[0]);
+    YogJmpBuf jmpbuf;
+    int status = 0;
+    if ((status = setjmp(jmpbuf.buf)) == 0) {
+        PUSH_JMPBUF(main_thread, jmpbuf);
 
-        const char* filename = NULL;
-        if (optind < argc) {
-            filename = argv[optind];
-        }
-        YogEval_eval_file(&env, filename, "__main__");
-    } while (0);
+        do {
+            YogVM_boot(&env, env.vm);
+            YogVM_configure_search_path(&env, env.vm, argv[0]);
+
+            const char* filename = NULL;
+            if (optind < argc) {
+                filename = argv[optind];
+            }
+            YogEval_eval_file(&env, filename, "__main__");
+        } while (0);
+    }
+    else {
+        RESTORE_LOCALS(&env);
+        YogError_print_stacktrace(&env);
+    }
 
     YogVM_remove_thread(&env, env.vm, env.thread);
 

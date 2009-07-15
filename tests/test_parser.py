@@ -7,7 +7,7 @@ class TestParser(TestCase):
 
     def test_duplicate_argument_name(self):
         def test_stderr(stderr):
-            m = match(r"SyntaxError: file \"[^\"]\", line 2: duplicated argument name in function definition", stderr)
+            m = match("SyntaxError: file \"[^\"]+\", line 2: duplicated argument name in function definition\n", stderr)
             assert m is not None
 
         self._test("""
