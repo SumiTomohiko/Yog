@@ -54,4 +54,32 @@ puts(4611686018427387904)
 """, """4611686018427387904
 """)
 
+    def test_binary_literal1(self):
+        self._test("""
+puts(0b101010)
+""", """42
+""")
+
+    def test_binary_literal2(self):
+        self._test("""
+puts(0b0_0_1_0_1_0_1_0)
+""", """42
+""")
+
+    def test_binary_literal3(self):
+        self._test("""
+puts(0b0010__1010)
+""", stderr="""puts(0b0010__1010)
+            ^
+SyntaxError: trailing `_' in number
+""")
+
+    def test_binary_literal4(self):
+        self._test("""
+puts(0b_)
+""", stderr="""puts(0b_)
+       ^
+SyntaxError: numeric literal without digits
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
