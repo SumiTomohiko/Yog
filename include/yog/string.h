@@ -20,6 +20,8 @@ struct YogString {
 
 typedef struct YogString YogString;
 
+#define STRING_CSTR(s)  PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->items
+
 #include "yog/encoding.h"
 
 /* PROTOTYPE_START */

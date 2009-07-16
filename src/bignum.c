@@ -8,6 +8,21 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
+static YogVal
+to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    size_t size = mpz_sizeinbase(PTR_AS(YogBignum, self)->num, 10) + 2;
+    s = YogString_new_size(env, size);
+    mpz_get_str(STRING_CSTR(s), 10, PTR_AS(YogBignum, self)->num);
+    PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->size = size;
+
+    RETURN(env, s);
+}
+
 YogVal
 YogBignum_klass_new(YogEnv* env)
 {
@@ -16,6 +31,7 @@ YogBignum_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_new(env, "Bignum", env->vm->cObject);
+    YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
 
     RETURN(env, klass);
 }
