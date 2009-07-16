@@ -79,7 +79,7 @@ case "${host}" in
     BIN_PROGRAMS="yog-bdw"
     ;;
 esac
-DIRS="${DIRS} onig sigsegv src ext"
+DIRS="${DIRS} onig sigsegv gmp src ext"
 TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
 BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact yog-generational"
 
@@ -88,7 +88,8 @@ AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
 
 AC_CONFIG_SUBDIRS([onig
-                   sigsegv])
+                   sigsegv
+                   gmp])
 AC_OUTPUT
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

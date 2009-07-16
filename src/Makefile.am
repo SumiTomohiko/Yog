@@ -3,6 +3,7 @@ ROOT_DIR = ..
 ONIG_DIR = $(ROOT_DIR)/onig
 BDWGC_DIR = $(ROOT_DIR)/bdwgc
 SIGSEGV_DIR = $(ROOT_DIR)/sigsegv
+GMP_DIR = $(ROOT_DIR)/gmp
 
 LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
@@ -43,7 +44,8 @@ COMMON_SOURCES = arg.c \
 	value.c \
 	vm.c
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
-LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -export-dynamic
+LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -export-dynamic \
+		 $(GMP_DIR)/.libs/libgmp.a
 
 EXTRA_PROGRAMS = yog-bdw yog-copying yog-mark-sweep yog-mark-swee-compact \
 		 yog-mark-sweep-compact yog-generational
