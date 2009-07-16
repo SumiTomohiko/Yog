@@ -82,4 +82,20 @@ puts(0b_)
 SyntaxError: numeric literal without digits
 """)
 
+    def test_binary_literal5(self):
+        self._test("""
+puts(0b_)
+""", stderr="""puts(0b2)
+       ^
+SyntaxError: numeric literal without digits
+""")
+
+    def test_binary_literal6(self):
+        self._test("""
+puts(0b_)
+""", stderr="""puts(0b1_2)
+         ^
+SyntaxError: numeric literal without digits
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
