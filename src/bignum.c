@@ -1,9 +1,4 @@
-#if defined(HAVE_CONFIG_H)
-#   include "config.h"
-#endif
-#if defined(HAVE_LIMITS_H)
-#   include <limits.h>
-#endif
+#include "gmp.h"
 #include "yog/bignum.h"
 #include "yog/error.h"
 #include "yog/gc.h"
@@ -25,21 +20,29 @@ YogBignum_klass_new(YogEnv* env)
     RETURN(env, klass);
 }
 
+static void
+YogBignum_initialize(YogEnv* env, YogVal self)
+{
+    YogBasicObj_init(env, self, 0, env->vm->cBignum);
+    mpz_init(PTR_AS(YogBignum, self)->num);
+}
+
+static void
+YogBignum_finalize(YogEnv* env, void* ptr)
+{
+    YogBignum* bignum = ptr;
+    mpz_clear(bignum->num);
+}
+
 static YogVal
-YogBignum_new(YogEnv* env, unsigned int size)
+YogBignum_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal bignum = YUNDEF;
     PUSH_LOCAL(env, bignum);
 
-    bignum = ALLOC_OBJ_ITEM(env, YogBasicObj_keep_children, NULL, YogBignum, size, unsigned int);
-    YogBasicObj_init(env, bignum, 0, env->vm->cBignum);
-    PTR_AS(YogBignum, bignum)->sign = 1;
-    PTR_AS(YogBignum, bignum)->size = size;
-    unsigned int i;
-    for (i = 0; i < size; i++) {
-        PTR_AS(YogBignum, bignum)->items[i] = 0;
-    }
+    bignum = ALLOC_OBJ(env, YogBasicObj_keep_children, YogBignum_finalize, YogBignum);
+    YogBignum_initialize(env, bignum);
 
     RETURN(env, bignum);
 }
@@ -51,18 +54,8 @@ YogBignum_from_int(YogEnv* env, int n)
     YogVal bignum = YUNDEF;
     PUSH_LOCAL(env, bignum);
 
-    bignum = YogBignum_new(env, 1);
-    if (n == INT_MIN) {
-        PTR_AS(YogBignum, bignum)->sign = -1;
-        PTR_AS(YogBignum, bignum)->items[0] = (BIGNUM_DIGIT)INT_MAX + 1;
-    }
-    else if (n < 0) {
-        PTR_AS(YogBignum, bignum)->sign = -1;
-        PTR_AS(YogBignum, bignum)->items[0] = - n;
-    }
-    else {
-        PTR_AS(YogBignum, bignum)->items[0] = n;
-    }
+    bignum = YogBignum_new(env);
+    mpz_set_si(PTR_AS(YogBignum, bignum)->num, n);
 
     RETURN(env, bignum);
 }
@@ -76,34 +69,8 @@ YogBignum_from_str(YogEnv* env, YogVal s)
     PUSH_LOCALS2(env, bignum, body);
 
     body = PTR_AS(YogString, s)->body;
-    unsigned int size = PTR_AS(YogCharArray, body)->size;
-    YOG_ASSERT(env, 0 < size, "string is empty");
-    unsigned int bits_per_digit = sizeof(BIGNUM_DIGIT) * CHAR_BIT;
-    /* 4 is bits number needed for 10 */
-    unsigned int max_size = 4 * size / bits_per_digit + 1;
-    bignum = YogBignum_new(env, max_size);
-    unsigned int digits_size = 1;
-    unsigned int i;
-    for (i = 0; i < size; i++) {
-        char c = PTR_AS(YogCharArray, body)->items[i];
-        BIGNUM_DIGIT_DOUBLE num = c - '0';
-        unsigned int j = 0;
-        while (1) {
-            while (j < digits_size) {
-                BIGNUM_DIGIT_DOUBLE digit = PTR_AS(YogBignum, bignum)->items[j];
-                num += 10 * digit;
-                BIGNUM_DIGIT lower = num & (bits_per_digit - 1);
-                PTR_AS(YogBignum, bignum)->items[j] = lower;
-                num >>= bits_per_digit;
-                j++;
-            }
-            if (num != 0) {
-                digits_size++;
-                continue;
-            }
-            break;
-        }
-    }
+    bignum = YogBignum_new(env);
+    mpz_set_str(PTR_AS(YogBignum, bignum)->num, PTR_AS(YogCharArray, body)->items, 10);
 
     RETURN(env, bignum);
 }

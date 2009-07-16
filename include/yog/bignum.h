@@ -1,39 +1,12 @@
 #if !defined(__YOG_BIGNUM_H__)
 #define __YOG_BIGNUM_H__
 
-#if defined(HAVE_CONFIG_H)
-#   include "config.h"
-#endif
+#include "gmp.h"
 #include "yog/object.h"
-
-#if 2 * SIZEOF_INT <= SIZEOF_LONG_LONG
-#   define BIGNUM_DIGIT         unsigned int
-#   define SIZEOF_BIGNUM_DIGIT  SIZEOF_INT
-#   define BIGNUM_DIGIT_DOUBLE  unsigned long long
-#   define BIGNUM_DIGIT_SIGNED  long long
-#elif 2 * SIZEOF_INT <= SIZEOF_LONG
-#   define BIGNUM_DIGIT         unsigned int
-#   define SIZEOF_BIGNUM_DIGIT  SIZEOF_INT
-#   define BIGNUM_DIGIT_DOUBLE  unsigned long
-#   define BIGNUM_DIGIT_SIGNED  long
-#elif SIZEOF_SHORT*2 <= SIZEOF_LONG
-#   define BIGNUM_DIGIT         unsigned short
-#   define SIZEOF_BIGNUM_DIGIT  SIZEOF_SHORT
-#   define BIGNUM_DIGIT_DOUBLE  unsigned long
-#   define BIGNUM_DIGIT_SIGNED  long
-#else
-#   define BIGNUM_DIGIT         unsigned short
-#   define SIZEOF_BIGNUM_DIGIT  (SIZEOF_LONG / 2)
-#   define BIGNUM_DIGIT_DOUBLE  unsigned long
-#   define BIGNUM_DIGIT_SIGNED  long
-#endif
 
 struct YogBignum {
     YOGBASICOBJ_HEAD;
-
-    int sign;   /* 1 or -1 */
-    unsigned int size;
-    BIGNUM_DIGIT items[0];
+    mpz_t num;
 };
 
 typedef struct YogBignum YogBignum;

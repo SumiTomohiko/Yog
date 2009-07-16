@@ -43,7 +43,8 @@ COMMON_SOURCES = arg.c \
 	thread.c \
 	value.c \
 	vm.c
-CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include -Wall
+CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
+		-I$(GMP_DIR) -Wall
 LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -export-dynamic \
 		 $(GMP_DIR)/.libs/libgmp.a
 
