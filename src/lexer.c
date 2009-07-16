@@ -254,21 +254,58 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
     snprintf(buffer, sizeof(buffer), "%c", (c)); \
     RETURN_ID_TOKEN((type), buffer); \
 } while (0)
-    switch (c) {
-    case '0': case '1': case '2': case '3': case '4':
-    case '5': case '6': case '7': case '8': case '9':
-        {
-            do {
-                ADD_TOKEN_CHAR(c);
-                c = NEXTC();
-            } while (isdigit(c));
-
 #define RETURN_INT  do { \
     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer; \
     YogVal num = YogString_to_i(env, buffer); \
     SET_STATE(LS_OP); \
     RETURN_VAL_TOKEN(TK_NUMBER, num); \
 } while (0)
+    switch (c) {
+    case '0':
+        {
+            int c2 = NEXTC();
+            if ((c2 == 'b') || (c2 == 'B')) {
+                ADD_TOKEN_CHAR(c);
+                ADD_TOKEN_CHAR(c2);
+
+                c = NEXTC();
+                if ((c != '0') && (c != '1')) {
+                    YogError_raise_SyntaxError(env, "numeric literal without digits");
+                }
+                ADD_TOKEN_CHAR(c);
+
+                while (1) {
+                    c = NEXTC();
+                    if ((c == '0') || (c == '1')) {
+                        ADD_TOKEN_CHAR(c);
+                    }
+                    else if (c == '_') {
+                        ADD_TOKEN_CHAR(c);
+
+                        c = NEXTC();
+                        if ((c != '0') && (c != '1')) {
+                            YogError_raise_SyntaxError(env, "numeric literal without digits");
+                        }
+                        ADD_TOKEN_CHAR(c);
+                    }
+                    else {
+                        PUSHBACK(c);
+                        RETURN_INT;
+                    }
+                }
+            }
+
+            PUSHBACK(c2);
+        }
+        /* FALLTHRU */
+    case '1': case '2': case '3': case '4': case '5':
+    case '6': case '7': case '8': case '9':
+        {
+            do {
+                ADD_TOKEN_CHAR(c);
+                c = NEXTC();
+            } while (isdigit(c));
+
             if (c == '.') {
                 int c2 = NEXTC();
                 if (isdigit(c2)) {
@@ -297,7 +334,6 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
                 PUSHBACK(c);
                 RETURN_INT;
             }
-#undef RETURN_INT
             break;
         }
     case '\"':
@@ -534,7 +570,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             break;
         }
     }
-#undef RETURN_NAME1
+#undef RETURN_INT
 #undef BUFSIZE
 #undef RETURN_NAME
 #undef RETURN_VAL

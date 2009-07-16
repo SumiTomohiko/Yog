@@ -54,19 +54,25 @@ puts(4611686018427387904)
 """, """4611686018427387904
 """)
 
-    def test_binary_literal1(self):
+    def test_binary_literal0(self):
         self._test("""
 puts(0b101010)
 """, """42
 """)
 
-    def test_binary_literal2(self):
+    def test_binary_literal10(self):
+        self._test("""
+puts(0B101010)
+""", """42
+""")
+
+    def test_binary_literal20(self):
         self._test("""
 puts(0b0_0_1_0_1_0_1_0)
 """, """42
 """)
 
-    def test_binary_literal3(self):
+    def test_binary_literal30(self):
         self._test("""
 puts(0b0010__1010)
 """, stderr="""puts(0b0010__1010)
@@ -74,7 +80,7 @@ puts(0b0010__1010)
 SyntaxError: trailing `_' in number
 """)
 
-    def test_binary_literal4(self):
+    def test_binary_literal40(self):
         self._test("""
 puts(0b_)
 """, stderr="""puts(0b_)
@@ -82,7 +88,7 @@ puts(0b_)
 SyntaxError: numeric literal without digits
 """)
 
-    def test_binary_literal5(self):
+    def test_binary_literal50(self):
         self._test("""
 puts(0b_)
 """, stderr="""puts(0b2)
@@ -90,7 +96,7 @@ puts(0b_)
 SyntaxError: numeric literal without digits
 """)
 
-    def test_binary_literal6(self):
+    def test_binary_literal60(self):
         self._test("""
 puts(0b_)
 """, stderr="""puts(0b1_2)
