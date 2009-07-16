@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "yog/bignum.h"
 #include "yog/error.h"
 #include "yog/klass.h"
 #include "yog/thread.h"

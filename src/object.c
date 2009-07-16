@@ -110,7 +110,7 @@ initialize(YogEnv* env)
 void 
 YogObj_klass_init(YogEnv* env, YogVal klass) 
 {
-    YogKlass_define_method(env, klass, "initialize", initialize, 1, 1, 0, 0, "block", NULL);
+    YogKlass_define_method(env, klass, "initialize", initialize);
 }
 
 /**

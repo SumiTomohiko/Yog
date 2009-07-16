@@ -17,7 +17,7 @@ YogNil_klass_new(YogEnv* env)
     YogVal klass = YogKlass_new(env, "Nil", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
-    YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
+    YogKlass_define_method(env, klass, "to_s", to_s);
 
     POP_LOCALS(env);
     return klass;

@@ -10,9 +10,8 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-/* TODO: change this signature */
 void 
-YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f, unsigned int blockargc, unsigned int varargc, unsigned int kwargc, int required_argc, ...)
+YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f)
 {
     SAVE_ARG(env, klass);
 
@@ -117,7 +116,7 @@ new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 void 
 YogKlass_klass_init(YogEnv* env, YogVal cKlass) 
 {
-    YogKlass_define_method(env, cKlass, "new", new_, 1, 1, 0, 0, "block", NULL);
+    YogKlass_define_method(env, cKlass, "new", new_);
 }
 
 YogVal

@@ -28,7 +28,7 @@ YogVal YogKlass_allocate(YogEnv*, YogVal);
 void YogKlass_define_allocator(YogEnv*, YogVal, Allocator);
 void YogKlass_define_attr_getter(YogEnv*, YogVal, AttrGetter);
 void YogKlass_define_descr_getter(YogEnv*, YogVal, void*);
-void YogKlass_define_method(YogEnv*, YogVal, const char*, void*, unsigned int, unsigned int, unsigned int, int, ...);
+void YogKlass_define_method(YogEnv*, YogVal, const char*, void*);
 YogVal YogKlass_get_attr(YogEnv*, YogVal, ID);
 void YogKlass_klass_init(YogEnv*, YogVal);
 YogVal YogKlass_new(YogEnv*, const char*, YogVal);

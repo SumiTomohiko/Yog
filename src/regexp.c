@@ -223,9 +223,9 @@ YogMatch_klass_new(YogEnv* env)
     YogVal klass = YogKlass_new(env, "Match", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
-    YogKlass_define_method(env, klass, "group", group, 0, 0, 0, 0, "group", NULL);
-    YogKlass_define_method(env, klass, "start", start, 0, 0, 0, 0, "group", NULL);
-    YogKlass_define_method(env, klass, "end", end, 0, 0, 0, 0, "group", NULL);
+    YogKlass_define_method(env, klass, "group", group);
+    YogKlass_define_method(env, klass, "start", start);
+    YogKlass_define_method(env, klass, "end", end);
 
     POP_LOCALS(env);
     return klass;

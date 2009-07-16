@@ -350,9 +350,9 @@ YogThread_klass_new(YogEnv* env)
 
     klass = YogKlass_new(env, "Thread", env->vm->cObject);
     YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_method(env, klass, "initialize", initialize, 1, 0, 0, 0, "block", NULL);
-    YogKlass_define_method(env, klass, "run", run, 0, 1, 0, 0, NULL);
-    YogKlass_define_method(env, klass, "join", join, 0, 0, 0, 0, NULL);
+    YogKlass_define_method(env, klass, "initialize", initialize);
+    YogKlass_define_method(env, klass, "run", run);
+    YogKlass_define_method(env, klass, "join", join);
 
     RETURN(env, klass);
 }

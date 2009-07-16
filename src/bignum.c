@@ -31,7 +31,7 @@ YogBignum_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_new(env, "Bignum", env->vm->cObject);
-    YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
+    YogKlass_define_method(env, klass, "to_s", to_s);
 
     RETURN(env, klass);
 }

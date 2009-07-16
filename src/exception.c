@@ -176,8 +176,8 @@ YogException_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_method(env, klass, "initialize", initialize, 0, 0, 0, 0, "message", NULL);
-    YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
+    YogKlass_define_method(env, klass, "initialize", initialize);
+    YogKlass_define_method(env, klass, "to_s", to_s);
 
     POP_LOCALS(env);
     return klass;

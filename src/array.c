@@ -246,9 +246,9 @@ YogArray_klass_new(YogEnv* env)
 
     klass = YogKlass_new(env, "Array", env->vm->cObject);
     YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_method(env, klass, "<<", lshift, 0, 0, 0, 0, "elem", NULL);
-    YogKlass_define_method(env, klass, "[]", subscript, 0, 0, 0, 0, "n", NULL);
-    YogKlass_define_method(env, klass, "each", each, 1, 0, 0, 0, "block", NULL);
+    YogKlass_define_method(env, klass, "<<", lshift);
+    YogKlass_define_method(env, klass, "[]", subscript);
+    YogKlass_define_method(env, klass, "each", each);
 
     RETURN(env, klass);
 }

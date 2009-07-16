@@ -577,15 +577,15 @@ YogString_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_method(env, klass, "to_s", to_s, 0, 0, 0, 0, NULL);
-    YogKlass_define_method(env, klass, "+", add, 0, 0, 0, 0, "s", NULL);
-    YogKlass_define_method(env, klass, "<<", lshift, 0, 0, 0, 0, "s", NULL);
-    YogKlass_define_method(env, klass, "[]", subscript, 0, 0, 0, 0, "n", NULL);
-    YogKlass_define_method(env, klass, "[]=", assign_subscript, 0, 0, 0, 0, "n", "s", NULL);
-    YogKlass_define_method(env, klass, "=~", match, 0, 0, 0, 1, "regexp", NULL);
-    YogKlass_define_method(env, klass, "each_line", each_line, 1, 0, 0, 1, "block", NULL);
-    YogKlass_define_method(env, klass, "each_byte", each_byte, 1, 0, 0, 1, "block", NULL);
-    YogKlass_define_method(env, klass, "each_char", each_char, 1, 0, 0, 1, "block", NULL);
+    YogKlass_define_method(env, klass, "to_s", to_s);
+    YogKlass_define_method(env, klass, "+", add);
+    YogKlass_define_method(env, klass, "<<", lshift);
+    YogKlass_define_method(env, klass, "[]", subscript);
+    YogKlass_define_method(env, klass, "[]=", assign_subscript);
+    YogKlass_define_method(env, klass, "=~", match);
+    YogKlass_define_method(env, klass, "each_line", each_line);
+    YogKlass_define_method(env, klass, "each_byte", each_byte);
+    YogKlass_define_method(env, klass, "each_char", each_char);
 
     POP_LOCALS(env);
     return klass;
