@@ -6,7 +6,6 @@
 
 struct YogCharArray {
     unsigned int size;
-    unsigned int capacity;
     char items[0];
 };
 
@@ -15,13 +14,14 @@ typedef struct YogCharArray YogCharArray;
 struct YogString {
     YOGBASICOBJ_HEAD;
     YogVal encoding;
+    unsigned int size;
     YogVal body;
 };
 
 typedef struct YogString YogString;
 
 #define STRING_CSTR(s)  PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->items
-#define STRING_SIZE(s)  PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->size
+#define STRING_SIZE(s)  PTR_AS(YogString, s)->size
 
 #include "yog/encoding.h"
 
@@ -32,7 +32,6 @@ typedef struct YogString YogString;
  */
 
 /* src/string.c */
-YogVal YogCharArray_new(YogEnv*, unsigned int);
 YogVal YogCharArray_new_str(YogEnv*, const char*);
 char YogString_at(YogEnv*, YogVal, unsigned int);
 void YogString_clear(YogEnv*, YogVal);

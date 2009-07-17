@@ -59,7 +59,7 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
     OnigRegex onig_regexp = NULL;
     YogVal body = PTR_AS(YogString, pattern)->body;
     OnigUChar* pattern_begin = (OnigUChar*)PTR_AS(YogCharArray, body)->items;
-    unsigned int size = PTR_AS(YogCharArray, body)->size;
+    unsigned int size = STRING_SIZE(pattern);
     OnigUChar* pattern_end = pattern_begin + size - 1;
     OnigSyntaxType* syntax = ONIG_SYNTAX_DEFAULT;
     OnigErrorInfo einfo;
@@ -93,7 +93,7 @@ group2index(YogEnv* env, YogMatch* match, YogVal arg)
         OnigRegex onig_regexp = PTR_AS(YogRegexp, match->regexp)->onig_regexp;
         YogVal body = s->body;
         OnigUChar* name_begin = (OnigUChar*)PTR_AS(YogCharArray, body)->items;
-        OnigUChar* name_end = name_begin + PTR_AS(YogCharArray, body)->size - 1;
+        OnigUChar* name_end = name_begin + STRING_SIZE(arg) - 1;
         int* num_list = NULL;
         int r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, &num_list);
         YOG_ASSERT(env, r == 1, "TODO: index error?");
