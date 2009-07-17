@@ -77,16 +77,17 @@ YogBignum_from_int(YogEnv* env, int n)
 }
 
 YogVal
-YogBignum_from_str(YogEnv* env, YogVal s)
+YogBignum_from_str(YogEnv* env, YogVal s, int base)
 {
     SAVE_ARG(env, s);
     YogVal bignum = YUNDEF;
-    YogVal body = YUNDEF;
-    PUSH_LOCALS2(env, bignum, body);
+    PUSH_LOCAL(env, bignum);
 
-    body = PTR_AS(YogString, s)->body;
     bignum = YogBignum_new(env);
-    mpz_set_str(PTR_AS(YogBignum, bignum)->num, PTR_AS(YogCharArray, body)->items, 10);
+    const char* str = STRING_CSTR(s);
+    if (mpz_set_str(PTR_AS(YogBignum, bignum)->num, str, base) != 0) {
+        YOG_BUG(env, "mpz_set_str failed");
+    }
 
     RETURN(env, bignum);
 }

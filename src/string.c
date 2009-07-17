@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -601,22 +602,146 @@ YogString_dup(YogEnv* env, const char* s)
     return p;
 }
 
-YogVal
-YogString_to_i(YogEnv* env, YogVal self)
+static BOOL
+normalize_as_number(YogEnv* env, YogVal self, YogVal* normalized, int* base)
 {
+    YOG_ASSERT(env, normalized != NULL, "normalized is NULL");
+    YOG_ASSERT(env, base != NULL, "base is NULL");
+
     SAVE_ARG(env, self);
     YogVal body = YUNDEF;
     PUSH_LOCAL(env, body);
 
     body = PTR_AS(YogString, self)->body;
-    char* endptr = NULL;
-    int base = 10;
-    long n = strtol(PTR_AS(YogCharArray, body)->items, &endptr, base); 
+    unsigned int size = PTR_AS(YogCharArray, body)->size;
+    *normalized = YogString_new_size(env, size + 2);
+    if (size == 0) {
+        RETURN(env, FALSE);
+    }
+
+    unsigned int next_index = 0;
+#define NEXTC   PTR_AS(YogCharArray, body)->items[next_index]
+    char c = NEXTC;
+    if (c == '\0') {
+        RETURN(env, FALSE);
+    }
+
+    if (c == '+') {
+        next_index++;
+    }
+    else if (c == '-') {
+        YogString_push(env, *normalized, c);
+        next_index++;
+    }
+
+    c = NEXTC;
+    if (c == '\0') {
+        RETURN(env, FALSE);
+    }
+
+    char c1 = c;
+    char c2 = PTR_AS(YogCharArray, body)->items[next_index + 1];
+    if (c1 == '0') {
+        if ((c2 == 'b') || (c2 == 'B')) {
+            *base = 2;
+            next_index += 2;
+
+            c = NEXTC;
+            if ((c == '_') || (c == '\0')) {
+                RETURN(env, FALSE);
+            }
+        }
+        else if ((c2 == 'o') || (c2 == 'O')) {
+            *base = 8;
+            next_index += 2;
+
+            c = NEXTC;
+            if ((c == '_') || (c == '\0')) {
+                RETURN(env, FALSE);
+            }
+        }
+        else if ((c2 == 'd') || (c2 == 'D')) {
+            *base = 10;
+            next_index += 2;
+
+            c = NEXTC;
+            if ((c == '_') || (c == '\0')) {
+                RETURN(env, FALSE);
+            }
+        }
+        else if ((c2 == 'x') || (c2 == 'X')) {
+            *base = 16;
+            next_index += 2;
+
+            c = NEXTC;
+            if ((c == '_') || (c == '\0')) {
+                RETURN(env, FALSE);
+            }
+        }
+        else {
+            YogString_push(env, *normalized, c1);
+            *base = 10;
+            next_index += 1;
+        }
+    }
+    else {
+        YogString_push(env, *normalized, c1);
+        *base = 10;
+        next_index += 1;
+    }
+
+    c = NEXTC;
+    if (c == '\0') {
+        RETURN(env, TRUE);
+    }
+
+    do {
+        if (isalpha(c)) {
+            YogString_push(env, *normalized, tolower(c));
+            next_index++;
+            c = NEXTC;
+        }
+        else if (c == '_') {
+            next_index++;
+            c = NEXTC;
+            if (!isalpha(c) && !isdigit(c)) {
+                RETURN(env, FALSE);
+            }
+        }
+        else {
+            YogString_push(env, *normalized, c);
+            next_index++;
+            c = NEXTC;
+        }
+    } while (c != '\0');
+
+#undef NEXTC
+
+    RETURN(env, TRUE);
+}
+
+YogVal
+YogString_to_i(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal normalized = YUNDEF;
+    YogVal body = YUNDEF;
+    YogVal bignum = YUNDEF;
+    YogVal v = YUNDEF;
+    PUSH_LOCALS4(env, normalized, body, bignum, v);
+
 #define RAISE_VALUE_ERROR   do { \
     const char* s = PTR_AS(YogCharArray, body)->items; \
     YogError_raise_ValueError(env, "invalid literal: %s", s); \
     RETURN(env, INT2VAL(0)); \
 } while (0)
+    int base;
+    if (!normalize_as_number(env, self, &normalized, &base)) {
+        RAISE_VALUE_ERROR;
+    }
+    body = PTR_AS(YogString, normalized)->body;
+    char* endptr = NULL;
+    long n = strtol(PTR_AS(YogCharArray, body)->items, &endptr, base); 
     if (*endptr != '\0') {
         RAISE_VALUE_ERROR;
     }
@@ -625,8 +750,8 @@ YogString_to_i(YogEnv* env, YogVal self)
         RETURN(env, v);
     }
     else if (errno == ERANGE) {
-        YogVal v = YogBignum_from_str(env, self);
-        RETURN(env, v);
+        bignum = YogBignum_from_str(env, normalized, base);
+        RETURN(env, bignum);
     }
 
     RAISE_VALUE_ERROR;

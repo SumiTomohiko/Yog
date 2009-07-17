@@ -19,7 +19,7 @@ typedef struct YogBignum YogBignum;
 
 /* src/bignum.c */
 YogVal YogBignum_from_int(YogEnv*, int);
-YogVal YogBignum_from_str(YogEnv*, YogVal);
+YogVal YogBignum_from_str(YogEnv*, YogVal, int);
 YogVal YogBignum_klass_new(YogEnv*);
 
 /* PROTOTYPE_END */
