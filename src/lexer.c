@@ -200,6 +200,31 @@ push_multibyte_char(YogEnv* env, YogVal lexer)
     RETURN_VOID(env);
 }
 
+static void
+print_current_position(YogEnv* env, YogVal lexer)
+{
+    YogVal line = PTR_AS(YogLexer, lexer)->line;
+    unsigned int size = STRING_SIZE(line);
+    YOG_ASSERT(env, 0 < size, "invalid size (%u)", size);
+    char s[size];
+    memcpy(s, STRING_CSTR(line), size);
+    char* pc = s + size - 1;
+    while ((*pc == '\0') || (*pc == '\r') || (*pc == '\n')) {
+        *pc = '\0';
+        pc--;
+    }
+
+    FILE* out = stderr;
+    fprintf(out, "%s\n", s);
+
+    unsigned int pos = PTR_AS(YogLexer, lexer)->next_index - 1;
+    unsigned int i;
+    for (i = 0; i < pos; i++) {
+        fprintf(out, " ");
+    }
+    fprintf(out, "^\n");
+}
+
 BOOL 
 YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 {
@@ -270,6 +295,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 
                 c = NEXTC();
                 if ((c != '0') && (c != '1')) {
+                    print_current_position(env, lexer);
                     YogError_raise_SyntaxError(env, "numeric literal without digits");
                 }
                 ADD_TOKEN_CHAR(c);
@@ -283,7 +309,12 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
                         ADD_TOKEN_CHAR(c);
 
                         c = NEXTC();
-                        if ((c != '0') && (c != '1')) {
+                        if (c == '_') {
+                            print_current_position(env, lexer);
+                            YogError_raise_SyntaxError(env, "trailing `_' in number");
+                        }
+                        else if ((c != '0') && (c != '1')) {
+                            print_current_position(env, lexer);
                             YogError_raise_SyntaxError(env, "numeric literal without digits");
                         }
                         ADD_TOKEN_CHAR(c);

@@ -90,7 +90,7 @@ SyntaxError: numeric literal without digits
 
     def test_binary_literal50(self):
         self._test("""
-puts(0b_)
+puts(0b2)
 """, stderr="""puts(0b2)
        ^
 SyntaxError: numeric literal without digits
@@ -98,7 +98,7 @@ SyntaxError: numeric literal without digits
 
     def test_binary_literal60(self):
         self._test("""
-puts(0b_)
+puts(0b1_2)
 """, stderr="""puts(0b1_2)
          ^
 SyntaxError: numeric literal without digits

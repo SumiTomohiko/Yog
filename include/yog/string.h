@@ -21,6 +21,7 @@ struct YogString {
 typedef struct YogString YogString;
 
 #define STRING_CSTR(s)  PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->items
+#define STRING_SIZE(s)  PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->size
 
 #include "yog/encoding.h"
 
