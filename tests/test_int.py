@@ -104,4 +104,38 @@ puts(0b1_2)
 SyntaxError: numeric literal without digits
 """)
 
+    def test_add0(self):
+        self._test("""
+puts(42 + 26)
+""", """68
+""")
+
+    def test_add10(self):
+        self._test("""
+# int plus int (32bit)
+puts(1 + 1073741823)
+""", """1073741824
+""")
+
+    def test_add20(self):
+        self._test("""
+# int plus int (64bit)
+puts(1 + 4611686018427387903)
+""", """4611686018427387904
+""")
+
+    def test_add30(self):
+        self._test("""
+# int plus Bignum (32bit)
+puts(1 + 1073741824)
+""", """1073741825
+""")
+
+    def test_add40(self):
+        self._test("""
+# int plus Bignum (64bit)
+puts(1 + 4611686018427387904)
+""", """4611686018427387905
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
