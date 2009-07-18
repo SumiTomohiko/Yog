@@ -973,10 +973,17 @@ match_expr(A) ::= match_expr(B) EQUAL_TILDA(C) arith_expr(D). {
 arith_expr(A) ::= term(B). {
     A = B;
 }
-arith_expr(A) ::= arith_expr(B) PLUS(C) term(D). {
+arith_expr(A) ::= arith_expr(B) arith_op(C) term(D). {
     unsigned int lineno = NODE_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
     A = FuncCall_new2(env, lineno, B, id, D);
+}
+
+arith_op(A) ::= PLUS(B). {
+    A = B;
+}
+arith_op(A) ::= MINUS(B). {
+    A = B;
 }
 
 term(A) ::= factor(B). {
