@@ -48,7 +48,7 @@ puts_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         for (i = 0; i < size; i++) {
             YogString* s = NULL;
             YogVal arg = YogArray_at(env, args, i);
-            if (IS_OBJ_OF(cString, arg)) {
+            if (IS_OBJ_OF(env, arg, cString)) {
                 s = PTR_AS(YogString, arg);
             }
             else {

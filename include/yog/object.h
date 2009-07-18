@@ -28,8 +28,8 @@ typedef struct YogObj YogObj;
 
 typedef YogVal (*Allocator)(struct YogEnv*, YogVal);
 
-#define KLASS_OF(v)     (PTR_AS(YogBasicObj, v)->klass)
-#define IS_OBJ_OF(k, v) (IS_PTR(v) && (KLASS_OF(v) == env->vm->k))
+#define KLASS_OF(v)             (PTR_AS(YogBasicObj, v)->klass)
+#define IS_OBJ_OF(env, v, k)    (IS_PTR((v)) && (KLASS_OF((v)) == (env)->vm->k))
 
 /* PROTOTYPE_START */
 

@@ -11,6 +11,8 @@ struct YogBignum {
 
 typedef struct YogBignum YogBignum;
 
+#define BIGNUM_NUM(bignum)  PTR_AS(YogBignum, (bignum))->num
+
 /* PROTOTYPE_START */
 
 /**

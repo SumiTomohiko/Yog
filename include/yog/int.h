@@ -8,6 +8,7 @@
  */
 
 /* src/int.c */
+YogVal YogInt_add_bignum(YogEnv*, YogVal, YogVal);
 YogVal YogInt_klass_new(YogEnv*);
 
 /* PROTOTYPE_END */

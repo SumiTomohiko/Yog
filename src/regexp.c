@@ -88,7 +88,7 @@ static int
 group2index(YogEnv* env, YogMatch* match, YogVal arg)
 {
     int index = 0;
-    if (IS_OBJ_OF(cString, arg)) {
+    if (IS_OBJ_OF(env, arg, cString)) {
         YogString* s = PTR_AS(YogString, arg);
         OnigRegex onig_regexp = PTR_AS(YogRegexp, match->regexp)->onig_regexp;
         YogVal body = s->body;

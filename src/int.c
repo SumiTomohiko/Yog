@@ -1,7 +1,10 @@
+#include <gmp.h>
 #include "yog/array.h"
+#include "yog/bignum.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
+#include "yog/float.h"
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/klass.h"
@@ -28,17 +31,42 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
+YogVal
+YogInt_add_bignum(YogEnv* env, YogVal self, YogVal bignum)
+{
+    SAVE_ARGS2(env, self, bignum);
+    YogVal left_and_result = YUNDEF;
+    PUSH_LOCAL(env, left_and_result);
+
+    left_and_result = YogBignum_from_int(env, VAL2INT(self));
+    mpz_add(BIGNUM_NUM(left_and_result), BIGNUM_NUM(left_and_result), BIGNUM_NUM(bignum));
+
+    RETURN(env, left_and_result);
+}
+
 static YogVal 
 add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal n = YogArray_at(env, args, 0);
+    YogVal right = YogArray_at(env, args, 0);
 
-    CHECK_ARGS(self, n);
+    if (IS_INT(right)) {
+        YogVal result = YogVal_from_int(env, VAL2INT(self) + VAL2INT(right));
+        RETURN(env, result);
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        double result = (double)VAL2INT(self) + PTR_AS(YogFloat, right)->val;
+        RETURN(env, PTR2VAL(result));
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        YogVal result = YogInt_add_bignum(env, self, right);
+        RETURN(env, result);
+    }
 
-    int result = VAL2INT(self) + VAL2INT(n);
+    YOG_BUG(env, "Int#+ failed");
 
-    RETURN(env, INT2VAL(result));
+    /* NOTREACHED */
+    RETURN(env, INT2VAL(0));
 }
 
 static YogVal 
