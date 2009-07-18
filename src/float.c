@@ -2,6 +2,8 @@
 #include "yog/float.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
+#include "yog/object.h"
+#include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -10,7 +12,7 @@ allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
-    YogVal f = ALLOC_OBJ(env, NULL, NULL, YogFloat);
+    YogVal f = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, YogFloat);
     YogBasicObj_init(env, f, 0, klass);
     PTR_AS(YogFloat, f)->val = 0;
 
@@ -25,6 +27,18 @@ YogFloat_new(YogEnv* env)
     return f;
 }
 
+static YogVal
+to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    s = YogString_new_format(env, "%g", PTR_AS(YogFloat, self)->val);
+
+    RETURN(env, s);
+}
+
 YogVal 
 YogFloat_klass_new(YogEnv* env) 
 {
@@ -35,6 +49,7 @@ YogFloat_klass_new(YogEnv* env)
 
     klass = YogKlass_new(env, "Float", env->vm->cObject);
     YogKlass_define_allocator(env, klass, allocate);
+    YogKlass_define_method(env, klass, "to_s", to_s);
 
     RETURN(env, klass);
 }
