@@ -144,4 +144,46 @@ puts(- 42)
 """, """-42
 """)
 
+    def test_sub0(self):
+        self._test("""
+# int minus int = int
+puts(42 - 26)
+""", """-16
+""")
+
+    def test_sub10(self):
+        self._test("""
+# int minus int = Bignum (32bit)
+puts(- 1 - 1073741823)
+""", """-1073741824
+""")
+
+    def test_sub20(self):
+        self._test("""
+# int minus int = Bignum (64bit)
+puts(- 1 - 4611686018427387903)
+""", """-4611686018427387904
+""")
+
+    def test_sub30(self):
+        self._test("""
+# int minus Bignum (32bit)
+puts(- 1 - 1073741824)
+""", """-1073741825
+""")
+
+    def test_sub40(self):
+        self._test("""
+# int minus Bignum (64bit)
+puts(- 1 - 4611686018427387904)
+""", """-4611686018427387905
+""")
+
+    def test_sub50(self):
+        self._test("""
+# int minus float
+puts(- 42 - 3.141592)
+""", """-45.1416
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
