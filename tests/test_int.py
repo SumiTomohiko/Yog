@@ -112,14 +112,14 @@ puts(42 + 26)
 
     def test_add10(self):
         self._test("""
-# int plus int (32bit)
+# int plus int = Bignum (32bit)
 puts(1 + 1073741823)
 """, """1073741824
 """)
 
     def test_add20(self):
         self._test("""
-# int plus int (64bit)
+# int plus int = Bignum (64bit)
 puts(1 + 4611686018427387903)
 """, """4611686018427387904
 """)
@@ -136,6 +136,12 @@ puts(1 + 1073741824)
 # int plus Bignum (64bit)
 puts(1 + 4611686018427387904)
 """, """4611686018427387905
+""")
+
+    def test_negative0(self):
+        self._test("""
+puts(- 42)
+""", """-42
 """)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
