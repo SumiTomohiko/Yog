@@ -2,6 +2,7 @@
 #define __YOG_FLOAT_H__
 
 #include "yog/object.h"
+#include "yog/yog.h"
 
 struct YogFloat {
     YOGBASICOBJ_HEAD;
@@ -9,6 +10,8 @@ struct YogFloat {
 };
 
 typedef struct YogFloat YogFloat;
+
+#define FLOAT_NUM(f)    PTR_AS(YogFloat, (f))->val
 
 /* PROTOTYPE_START */
 

@@ -39,6 +39,19 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, s);
 }
 
+static YogVal
+negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal f = YUNDEF;
+    PUSH_LOCAL(env, f);
+
+    f = YogFloat_new(env);
+    FLOAT_NUM(f) = - FLOAT_NUM(self);
+
+    RETURN(env, f);
+}
+
 YogVal 
 YogFloat_klass_new(YogEnv* env) 
 {
@@ -49,6 +62,7 @@ YogFloat_klass_new(YogEnv* env)
 
     klass = YogKlass_new(env, "Float", env->vm->cObject);
     YogKlass_define_allocator(env, klass, allocate);
+    YogKlass_define_method(env, klass, "-self", negative);
     YogKlass_define_method(env, klass, "to_s", to_s);
 
     RETURN(env, klass);

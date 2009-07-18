@@ -23,17 +23,11 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, s);
 }
 
-YogVal
-YogBignum_klass_new(YogEnv* env)
+static void
+YogBignum_finalize(YogEnv* env, void* ptr)
 {
-    SAVE_LOCALS(env);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
-
-    klass = YogKlass_new(env, "Bignum", env->vm->cObject);
-    YogKlass_define_method(env, klass, "to_s", to_s);
-
-    RETURN(env, klass);
+    YogBignum* bignum = ptr;
+    mpz_clear(bignum->num);
 }
 
 static void
@@ -41,13 +35,6 @@ YogBignum_initialize(YogEnv* env, YogVal self)
 {
     YogBasicObj_init(env, self, 0, env->vm->cBignum);
     mpz_init(PTR_AS(YogBignum, self)->num);
-}
-
-static void
-YogBignum_finalize(YogEnv* env, void* ptr)
-{
-    YogBignum* bignum = ptr;
-    mpz_clear(bignum->num);
 }
 
 static YogVal
@@ -61,6 +48,33 @@ YogBignum_new(YogEnv* env)
     YogBignum_initialize(env, bignum);
 
     RETURN(env, bignum);
+}
+
+static YogVal
+negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal bignum = YUNDEF;
+    PUSH_LOCAL(env, bignum);
+
+    bignum = YogBignum_new(env);
+    mpz_neg(BIGNUM_NUM(bignum), BIGNUM_NUM(self));
+
+    RETURN(env, bignum);
+}
+
+YogVal
+YogBignum_klass_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = YogKlass_new(env, "Bignum", env->vm->cObject);
+    YogKlass_define_method(env, klass, "-self", negative);
+    YogKlass_define_method(env, klass, "to_s", to_s);
+
+    RETURN(env, klass);
 }
 
 YogVal

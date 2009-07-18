@@ -104,6 +104,14 @@ times(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YNIL);
 }
 
+static YogVal
+negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal n = INT2VAL(- VAL2INT(self));
+    RETURN(env, n);
+}
+
 YogVal 
 YogInt_klass_new(YogEnv* env) 
 {
@@ -113,6 +121,7 @@ YogInt_klass_new(YogEnv* env)
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("<", less);
 #undef DEFINE_METHOD
+    YogKlass_define_method(env, klass, "-self", negative);
     YogKlass_define_method(env, klass, "to_s", to_s);
     YogKlass_define_method(env, klass, "times", times);
 

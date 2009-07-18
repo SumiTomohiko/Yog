@@ -58,7 +58,7 @@ typedef unsigned long long pc_t;
 #define INT2VAL(n)      (((n) << 1) + 1)
 #define PTR2VAL(ptr)    ((YogVal)(ptr))
 #define ID2VAL(id)      (((id) << 4) | 0x0e)
-#define VAL2INT(v)      ((SIGNED_TYPE)(v) / 2)
+#define VAL2INT(v)      ((SIGNED_TYPE)(v) >> 1)
 #define VAL2ID(v)       ((v) >> 4)
 #define VAL2PTR(v)      ((void*)(v))
 #define VAL2BOOL(v)     ((v) >> 4)

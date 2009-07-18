@@ -430,6 +430,20 @@ FuncCall_new2(YogEnv* env, unsigned int lineno, YogVal recv, ID name, YogVal arg
 }
 
 static YogVal 
+FuncCall_new3(YogEnv* env, unsigned int lineno, YogVal recv, ID name)
+{
+    SAVE_ARG(env, recv);
+    YogVal postfix = YUNDEF;
+    PUSH_LOCAL(env, postfix);
+
+    postfix = Attr_new(env, lineno, recv, name);
+
+    YogVal node = FuncCall_new(env, lineno, postfix, YNIL, YNIL);
+
+    RETURN(env, node);
+}
+
+static YogVal 
 If_new(YogEnv* env, unsigned int lineno, YogVal test, YogVal stmts, YogVal tail)
 {
     SAVE_ARGS3(env, test, stmts, tail);
@@ -969,6 +983,11 @@ term(A) ::= factor(B). {
     A = B;
 }
 
+factor(A) ::= MINUS(B) factor(C). {
+    unsigned int lineno = NODE_LINENO(B);
+    ID id = YogVM_intern(env, env->vm, "-self");
+    A = FuncCall_new3(env, lineno, C, id);
+}
 factor(A) ::= power(B). {
     A = B;
 }
