@@ -975,19 +975,26 @@ arith_expr(A) ::= term(B). {
 }
 arith_expr(A) ::= arith_expr(B) arith_op(C) term(D). {
     unsigned int lineno = NODE_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = FuncCall_new2(env, lineno, B, id, D);
+    A = FuncCall_new2(env, lineno, B, VAL2ID(C), D);
 }
 
 arith_op(A) ::= PLUS(B). {
-    A = B;
+    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
 }
 arith_op(A) ::= MINUS(B). {
+    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+}
+
+term(A) ::= term(B) term_op(C) factor(D). {
+    unsigned int lineno = NODE_LINENO(B);
+    A = FuncCall_new2(env, lineno, B, VAL2ID(C), D);
+}
+term(A) ::= factor(B). {
     A = B;
 }
 
-term(A) ::= factor(B). {
-    A = B;
+term_op(A) ::= STAR(B). {
+    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
 }
 
 factor(A) ::= MINUS(B) factor(C). {

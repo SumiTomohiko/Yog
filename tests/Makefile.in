@@ -8,7 +8,7 @@ test_package4.so: test_package4.c
 test_package5.so: test_package5.c
 	$(CC) -o $@ $(LIBS_OPT) $<
 
-TEST_CMD = py.test --showlocals --fulltrace
+TEST_CMD = py.test --showlocals
 TEST_TARGETS = @TEST_TARGETS@
 
 test: 

@@ -106,6 +106,67 @@ sub(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, INT2VAL(0));
 }
 
+static YogVal
+mul_int(YogEnv* env, YogVal self, YogVal right)
+{
+    YOG_ASSERT(env, IS_INT(self), "self must be integer");
+    YOG_ASSERT(env, IS_INT(right), "right must be integer");
+
+    SAVE_ARGS2(env, self, right);
+    YogVal bignum1 = YUNDEF;
+    YogVal bignum2 = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS3(env, bignum1, bignum2, result);
+
+    int n = VAL2INT(self);
+    int m = VAL2INT(right);
+    int l = n * m;
+    if ((l / n == m) && FIXABLE(l)) {
+        RETURN(env, INT2VAL(l));
+    }
+
+    bignum1 = YogBignum_from_int(env, n);
+    bignum2 = YogBignum_from_int(env, m);
+    result = YogBignum_mul(env, bignum1, bignum2);
+
+    RETURN(env, result);
+}
+
+static YogVal 
+mul(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal result = YUNDEF;
+    YogVal bignum = YUNDEF;
+    YogVal right = YUNDEF;
+    PUSH_LOCALS3(env, result, bignum, right);
+
+    right = YogArray_at(env, args, 0);
+
+    if (IS_INT(right)) {
+        result = mul_int(env, self, right);
+        RETURN(env, result);
+    }
+    else if (IS_BOOL(right) || IS_NIL(right) || IS_SYMBOL(right)) {
+        YogError_raise_binop_type_error(env, self, right, "*");
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        result = YogFloat_new(env);
+        FLOAT_NUM(result) = (double)VAL2INT(self) * FLOAT_NUM(right);
+        RETURN(env, result);
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        bignum = YogBignum_from_int(env, VAL2INT(self));
+        result = YogBignum_mul(env, bignum, right);
+        RETURN(env, result);
+    }
+
+    YOG_BUG(env, "Int#* failed");
+
+    /* NOTREACHED */
+    RETURN(env, INT2VAL(0));
+}
+
 static YogVal 
 less(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -157,6 +218,7 @@ YogInt_klass_new(YogEnv* env)
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("-", sub);
+    DEFINE_METHOD("*", mul);
     DEFINE_METHOD("<", less);
 #undef DEFINE_METHOD
     YogKlass_define_method(env, klass, "-self", negative);

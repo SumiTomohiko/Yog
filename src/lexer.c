@@ -451,6 +451,12 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             RETURN_ID_TOKEN1(TK_MINUS, c);
             break;
         }
+    case '*':
+        {
+            SET_STATE(LS_EXPR);
+            RETURN_ID_TOKEN1(TK_STAR, c);
+            break;
+        }
     case '/':
         if (PTR_AS(YogLexer, lexer)->state == LS_OP) {
             YOG_ASSERT(env, FALSE, "not supported");

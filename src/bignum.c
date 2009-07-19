@@ -126,6 +126,19 @@ YogBignum_sub(YogEnv* env, YogVal self, YogVal bignum)
     RETURN(env, result);
 }
 
+YogVal
+YogBignum_mul(YogEnv* env, YogVal self, YogVal bignum)
+{
+    SAVE_ARGS2(env, self, bignum);
+    YogVal result = YUNDEF;
+    PUSH_LOCAL(env, result);
+
+    result = YogBignum_new(env);
+    mpz_mul(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
+
+    RETURN(env, result);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

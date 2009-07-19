@@ -75,10 +75,21 @@ raise_error(YogEnv* env, YogVal klass, const char* msg)
     YogError_raise(env, val);
 }
 
-void 
-YogError_raise_TypeError(YogEnv* env, const char* msg) 
+static void
+raise_format(YogEnv* env, YogVal klass, const char* fmt, va_list ap)
 {
-    raise_error(env, env->vm->eTypeError, msg);
+    char buffer[4096];
+    vsnprintf(buffer, array_sizeof(buffer), fmt, ap);
+    raise_error(env, klass, buffer);
+}
+
+void 
+YogError_raise_TypeError(YogEnv* env, const char* fmt, ...) 
+{
+    va_list ap;
+    va_start(ap, fmt);
+    raise_format(env, env->vm->eTypeError, fmt, ap);
+    va_end(ap);
 }
 
 void 
@@ -96,12 +107,10 @@ YogError_raise_SyntaxError(YogEnv* env, const char* msg)
 void
 YogError_raise_ValueError(YogEnv* env, const char* fmt, ...)
 {
-    char buffer[4096];
     va_list ap;
     va_start(ap, fmt);
-    vsnprintf(buffer, array_sizeof(buffer), fmt, ap);
+    raise_format(env, env->vm->eValueError, fmt, ap);
     va_end(ap);
-    raise_error(env, env->vm->eValueError, buffer);
 }
 
 void
@@ -164,6 +173,24 @@ YogError_print_stacktrace(YogEnv* env)
     YogString* msg = PTR_AS(YogString, val);
     PRINT("%s: %s\n", s, PTR_AS(YogCharArray, msg->body)->items);
 #undef PRINT
+}
+
+void
+YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const char* opname)
+{
+    SAVE_ARGS2(env, left, right);
+    YogVal left_klass = YUNDEF;
+    YogVal right_klass = YUNDEF;
+    PUSH_LOCALS2(env, left_klass, right_klass);
+
+    left_klass = YogVal_get_klass(env, left);
+    right_klass = YogVal_get_klass(env, right);
+    const char* left_name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, left_klass)->name);
+    const char* right_name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, right_klass)->name);
+
+    YogError_raise_TypeError(env, "unsupported operand type(s) for %s: '%s' and '%s'", opname, left_name, right_name);
+
+    RETURN_VOID(env);
 }
 
 /**

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from re import match
 from testcase import TestCase
 
 class TestInt(TestCase):
@@ -211,28 +212,42 @@ puts(2 * 2305843009213693952)
         self._test("""
 # int * Bignum = Bignum
 puts(2 * 4611686018427387904)
-""" """9223372036854775808
+""", """9223372036854775808
 """)
 
     def test_mul40(self):
         self._test("""
 # int * float = float
 puts(2 * 3.1415926535)
-""", """6.28318
+""", """6.28319
 """)
 
     def test_mul50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#\*
+TypeError: unsupported operand type\(s\) for \*: 'Int' and 'Bool'
+""", stderr)
+            assert m is not None
+
         self._test("""
 # int * bool (TypeError)
 puts(42 * true)
-""", stderr="""TypeError: unsupported operand type(s) for *: 'Int' and 'Bool'
-""")
+""", stderr=test_stderr)
 
     def test_mul60(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#\*
+TypeError: unsupported operand type\(s\) for \*: 'Int' and 'Nil'
+""", stderr)
+            assert m is not None
+
         self._test("""
 # int * nil (TypeError)
 puts(42 * nil)
-""", stderr="""TypeError: unsupported operand type(s) for *: 'Int' and 'Nil'
-""")
+""", stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
