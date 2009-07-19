@@ -309,6 +309,34 @@ TypeError: unsupported operand type\(s\) for /: 'Int' and 'Nil'
 puts(42 / nil)
 """, stderr=test_stderr)
 
+    def test_divide60(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#/
+ZeroDivisionError: int division or modulo by zero
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# int / zero (ZeroDivisionError)
+puts(42 / 0)
+""", stderr=test_stderr)
+
+    def test_divide70(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#/
+ZeroDivisionError: float division
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# int / 0.0 (ZeroDivisionError)
+puts(42 / 0.0)
+""", stderr=test_stderr)
+
     def test_floor_divide0(self):
         self._test("""
 # int // int
@@ -366,6 +394,34 @@ TypeError: unsupported operand type\(s\) for //: 'Int' and 'Nil'
         self._test("""
 # int // nil (TypeError)
 puts(42 // nil)
+""", stderr=test_stderr)
+
+    def test_floor_divide60(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#//
+ZeroDivisionError: int division or modulo by zero
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# int // zero (ZeroDivisionError)
+puts(42 // 0)
+""", stderr=test_stderr)
+
+    def test_floor_divide70(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#//
+ZeroDivisionError: float division
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# int // 0.0 (ZeroDivisionError)
+puts(42 // 0.0)
 """, stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

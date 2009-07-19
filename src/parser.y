@@ -999,6 +999,9 @@ term_op(A) ::= STAR(B). {
 term_op(A) ::= DIV(B). {
     A = ID2VAL(PTR_AS(YogToken, B)->u.id);
 }
+term_op(A) ::= DIV_DIV(B). {
+    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+}
 
 factor(A) ::= MINUS(B) factor(C). {
     unsigned int lineno = NODE_LINENO(B);

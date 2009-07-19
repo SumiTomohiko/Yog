@@ -460,7 +460,15 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
     case '/':
         if (PTR_AS(YogLexer, lexer)->state == LS_OP) {
             SET_STATE(LS_EXPR);
-            RETURN_ID_TOKEN1(TK_DIV, c);
+
+            char c2 = NEXTC();
+            if (c2 == '/') {
+                RETURN_ID_TOKEN(TK_DIV_DIV, "//");
+            }
+            else {
+                PUSHBACK(c2);
+                RETURN_ID_TOKEN1(TK_DIV, c);
+            }
         }
         else {
             char delimitor = c;

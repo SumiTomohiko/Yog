@@ -198,6 +198,36 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal 
+floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal result = YUNDEF;
+    YogVal bignum = YUNDEF;
+    YogVal right = YUNDEF;
+    PUSH_LOCALS3(env, result, bignum, right);
+
+    right = YogArray_at(env, args, 0);
+
+    if (IS_BOOL(right) || IS_NIL(right) || IS_SYMBOL(right)) {
+        YogError_raise_binop_type_error(env, self, right, "//");
+    }
+
+    if (IS_INT(right)) {
+        result = INT2VAL(VAL2INT(self) / VAL2INT(right));
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        result = YogFloat_new(env);
+        FLOAT_NUM(result) = VAL2INT(self) / FLOAT_NUM(right);
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        result = YogBignum_from_int(env, VAL2INT(self));
+        mpz_fdiv_q(BIGNUM_NUM(result), BIGNUM_NUM(result), BIGNUM_NUM(right));
+    }
+
+    RETURN(env, result);
+}
+
+static YogVal 
 less(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -250,6 +280,7 @@ YogInt_klass_new(YogEnv* env)
     DEFINE_METHOD("-", subtract);
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("/", divide);
+    DEFINE_METHOD("//", floor_divide);
     DEFINE_METHOD("<", less);
 #undef DEFINE_METHOD
     YogKlass_define_method(env, klass, "-self", negative);
