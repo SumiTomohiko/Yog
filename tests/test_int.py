@@ -148,7 +148,7 @@ puts(- 42)
         self._test("""
 # int minus int = int
 puts(42 - 26)
-""", """-16
+""", """16
 """)
 
     def test_sub10(self):

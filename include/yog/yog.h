@@ -76,6 +76,7 @@ typedef unsigned long long pc_t;
 
 #define YINT_MAX    VAL2INT(INT_MAX)
 #define YINT_MIN    VAL2INT(INT_MIN)
+#define FIXABLE(n)  ((YINT_MIN <= (n)) && ((n) <= YINT_MAX))
 
 typedef struct YogEnv YogEnv;
 

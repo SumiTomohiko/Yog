@@ -231,7 +231,7 @@ YogVal_is_subklass_of(YogEnv* env, YogVal val, YogVal klass)
 YogVal
 YogVal_from_int(YogEnv* env, int n)
 {
-    if ((n < YINT_MIN) || (YINT_MAX < n)) {
+    if (!FIXABLE(n)) {
         return YogBignum_from_int(env, n);
     }
     return INT2VAL(n);

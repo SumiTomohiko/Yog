@@ -48,22 +48,59 @@ static YogVal
 add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal right = YogArray_at(env, args, 0);
+    YogVal right = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS2(env, right, result);
+
+    right = YogArray_at(env, args, 0);
 
     if (IS_INT(right)) {
-        YogVal result = YogVal_from_int(env, VAL2INT(self) + VAL2INT(right));
+        result = YogVal_from_int(env, VAL2INT(self) + VAL2INT(right));
         RETURN(env, result);
     }
     else if (IS_OBJ_OF(env, right, cFloat)) {
-        double result = (double)VAL2INT(self) + PTR_AS(YogFloat, right)->val;
-        RETURN(env, PTR2VAL(result));
+        result = YogFloat_new(env);
+        FLOAT_NUM(result) = (double)VAL2INT(self) + FLOAT_NUM(right);
+        RETURN(env, result);
     }
     else if (IS_OBJ_OF(env, right, cBignum)) {
-        YogVal result = YogInt_add_bignum(env, self, right);
+        result = YogInt_add_bignum(env, self, right);
         RETURN(env, result);
     }
 
     YOG_BUG(env, "Int#+ failed");
+
+    /* NOTREACHED */
+    RETURN(env, INT2VAL(0));
+}
+
+static YogVal 
+sub(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal result = YUNDEF;
+    YogVal bignum = YUNDEF;
+    YogVal right = YUNDEF;
+    PUSH_LOCALS3(env, result, bignum, right);
+
+    right = YogArray_at(env, args, 0);
+
+    if (IS_INT(right)) {
+        result = YogVal_from_int(env, VAL2INT(self) - VAL2INT(right));
+        RETURN(env, result);
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        result = YogFloat_new(env);
+        FLOAT_NUM(result) = (double)VAL2INT(self) - FLOAT_NUM(right);
+        RETURN(env, result);
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        bignum = YogBignum_from_int(env, VAL2INT(self));
+        result = YogBignum_sub(env, bignum, right);
+        RETURN(env, result);
+    }
+
+    YOG_BUG(env, "Int#- failed");
 
     /* NOTREACHED */
     RETURN(env, INT2VAL(0));
@@ -119,6 +156,7 @@ YogInt_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
     DEFINE_METHOD("+", add);
+    DEFINE_METHOD("-", sub);
     DEFINE_METHOD("<", less);
 #undef DEFINE_METHOD
     YogKlass_define_method(env, klass, "-self", negative);

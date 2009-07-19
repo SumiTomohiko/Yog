@@ -106,6 +106,26 @@ YogBignum_from_str(YogEnv* env, YogVal s, int base)
     RETURN(env, bignum);
 }
 
+YogVal
+YogBignum_sub(YogEnv* env, YogVal self, YogVal bignum)
+{
+    SAVE_ARGS2(env, self, bignum);
+    YogVal result = YUNDEF;
+    PUSH_LOCAL(env, result);
+
+    result = YogBignum_new(env);
+    mpz_sub(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
+    if (!mpz_fits_sint_p(BIGNUM_NUM(result))) {
+        RETURN(env, result);
+    }
+    int n = mpz_get_si(BIGNUM_NUM(result));
+    if (FIXABLE(n)) {
+        RETURN(env, INT2VAL(n));
+    }
+
+    RETURN(env, result);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

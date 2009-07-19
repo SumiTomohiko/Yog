@@ -746,8 +746,10 @@ YogString_to_i(YogEnv* env, YogVal self)
     if (!normalize_as_number(env, self, &normalized, &base)) {
         RAISE_VALUE_ERROR;
     }
+
     body = PTR_AS(YogString, normalized)->body;
     char* endptr = NULL;
+    errno = 0;
     long n = strtol(PTR_AS(YogCharArray, body)->items, &endptr, base); 
     if (*endptr != '\0') {
         RAISE_VALUE_ERROR;
