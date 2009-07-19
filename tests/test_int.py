@@ -309,4 +309,63 @@ TypeError: unsupported operand type\(s\) for /: 'Int' and 'Nil'
 puts(42 / nil)
 """, stderr=test_stderr)
 
+    def test_floor_divide0(self):
+        self._test("""
+# int // int
+puts(42 // 26)
+""", """1
+""")
+
+    def test_floor_divide10(self):
+        self._test("""
+# int // float
+puts(42 // 3.1415926535)
+""", """13.369
+""")
+
+    def test_floor_divide20(self):
+        self._test("""
+# int // Bignum (32bit)
+puts(536870912 // 1073741824)
+""", """0
+""")
+
+    def test_floor_divide30(self):
+        # TODO: enable this test
+        return
+
+        self._test("""
+# int // Bignum (64bit)
+puts(2305843009213693952 // 4611686018427387904)
+""", """0
+""")
+
+    def test_floor_divide40(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#//
+TypeError: unsupported operand type\(s\) for //: 'Int' and 'Bool'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# int // bool (TypeError)
+puts(42 // true)
+""", stderr=test_stderr)
+
+    def test_floor_divide50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#//
+TypeError: unsupported operand type\(s\) for //: 'Int' and 'Nil'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# int // nil (TypeError)
+puts(42 // nil)
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
