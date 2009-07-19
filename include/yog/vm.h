@@ -53,6 +53,7 @@ struct YogVM {
     YogVal eValueError;
     YogVal eIndexError;
     YogVal eSyntaxError;
+    YogVal eZeroDivisionError;
 
     YogVal pkgs;
     pthread_rwlock_t pkgs_lock;

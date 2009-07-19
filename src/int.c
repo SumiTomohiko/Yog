@@ -167,6 +167,24 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, INT2VAL(0));
 }
 
+static double
+divide_int(YogEnv* env, YogVal left, YogVal right)
+{
+    if (VAL2INT(right) == 0) {
+        YogError_raise_ZeroDivisionError(env, "int division by zero");
+    }
+    return (double)VAL2INT(left) / VAL2INT(right);
+}
+
+static double
+divide_float(YogEnv* env, YogVal left, YogVal right)
+{
+    if (FLOAT_NUM(right) == 0.0) {
+        YogError_raise_ZeroDivisionError(env, "float division");
+    }
+    return VAL2INT(left) / FLOAT_NUM(right);
+}
+
 static YogVal 
 divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -185,16 +203,34 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     result = YogFloat_new(env);
 
     if (IS_INT(right)) {
-        FLOAT_NUM(result) = (double)VAL2INT(self) / VAL2INT(right);
+        FLOAT_NUM(result) = divide_int(env, self, right);
     }
     else if (IS_OBJ_OF(env, right, cFloat)) {
-        FLOAT_NUM(result) = VAL2INT(self) / FLOAT_NUM(right);
+        FLOAT_NUM(result) = divide_float(env, self, right);
     }
     else if (IS_OBJ_OF(env, right, cBignum)) {
         FLOAT_NUM(result) = VAL2INT(self) / mpz_get_d(BIGNUM_NUM(right));
     }
 
     RETURN(env, result);
+}
+
+static int
+floor_divide_int(YogEnv* env, YogVal left, YogVal right)
+{
+    if (VAL2INT(right) == 0) {
+        YogError_raise_ZeroDivisionError(env, "int division by zero");
+    }
+    return VAL2INT(left) / VAL2INT(right);
+}
+
+static double
+floor_divide_float(YogEnv* env, YogVal left, YogVal right)
+{
+    if (FLOAT_NUM(right) == 0.0) {
+        YogError_raise_ZeroDivisionError(env, "float division");
+    }
+    return VAL2INT(left) / FLOAT_NUM(right);
 }
 
 static YogVal 
@@ -213,11 +249,11 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
 
     if (IS_INT(right)) {
-        result = INT2VAL(VAL2INT(self) / VAL2INT(right));
+        result = INT2VAL(floor_divide_int(env, self, right));
     }
     else if (IS_OBJ_OF(env, right, cFloat)) {
         result = YogFloat_new(env);
-        FLOAT_NUM(result) = VAL2INT(self) / FLOAT_NUM(right);
+        FLOAT_NUM(result) = floor_divide_float(env, self, right);
     }
     else if (IS_OBJ_OF(env, right, cBignum)) {
         result = YogBignum_from_int(env, VAL2INT(self));

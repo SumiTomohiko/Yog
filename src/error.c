@@ -193,6 +193,12 @@ YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const ch
     RETURN_VOID(env);
 }
 
+void
+YogError_raise_ZeroDivisionError(YogEnv* env, const char* msg)
+{
+    raise_error(env, env->vm->eZeroDivisionError, msg);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

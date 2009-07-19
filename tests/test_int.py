@@ -314,7 +314,7 @@ puts(42 / nil)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
   File builtin, in Int#/
-ZeroDivisionError: int division or modulo by zero
+ZeroDivisionError: int division by zero
 """, stderr)
             assert m is not None
 
@@ -401,7 +401,7 @@ puts(42 // nil)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
   File builtin, in Int#//
-ZeroDivisionError: int division or modulo by zero
+ZeroDivisionError: int division by zero
 """, stderr)
             assert m is not None
 

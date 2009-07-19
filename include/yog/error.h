@@ -37,6 +37,7 @@ void YogError_raise_IndexError(YogEnv*, const char*);
 void YogError_raise_SyntaxError(YogEnv*, const char*);
 void YogError_raise_TypeError(YogEnv*, const char*, ...);
 void YogError_raise_ValueError(YogEnv*, const char*, ...);
+void YogError_raise_ZeroDivisionError(YogEnv*, const char*);
 void YogError_raise_binop_type_error(YogEnv*, YogVal, YogVal, const char*);
 void YogError_warn(YogEnv*, const char*, unsigned int, const char*, ...);
 
