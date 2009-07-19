@@ -1046,6 +1046,10 @@ atom(A) ::= STRING(B). {
     YogVal val = PTR_AS(YogToken, B)->u.val;
     A = Literal_new(env, lineno, val);
 }
+atom(A) ::= NIL(B). {
+    unsigned int lineno = TOKEN_LINENO(B);
+    A = Literal_new(env, lineno, YNIL);
+}
 atom(A) ::= TRUE(B). {
     unsigned int lineno = TOKEN_LINENO(B);
     A = Literal_new(env, lineno, YTRUE);
