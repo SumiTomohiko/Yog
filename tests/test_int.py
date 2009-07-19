@@ -112,28 +112,28 @@ puts(42 + 26)
 
     def test_add10(self):
         self._test("""
-# int plus int = Bignum (32bit)
+# int + int = Bignum (32bit)
 puts(1 + 1073741823)
 """, """1073741824
 """)
 
     def test_add20(self):
         self._test("""
-# int plus int = Bignum (64bit)
+# int + int = Bignum (64bit)
 puts(1 + 4611686018427387903)
 """, """4611686018427387904
 """)
 
     def test_add30(self):
         self._test("""
-# int plus Bignum (32bit)
+# int + Bignum (32bit)
 puts(1 + 1073741824)
 """, """1073741825
 """)
 
     def test_add40(self):
         self._test("""
-# int plus Bignum (64bit)
+# int + Bignum (64bit)
 puts(1 + 4611686018427387904)
 """, """4611686018427387905
 """)
@@ -146,44 +146,93 @@ puts(- 42)
 
     def test_sub0(self):
         self._test("""
-# int minus int = int
+# int - int = int
 puts(42 - 26)
 """, """16
 """)
 
     def test_sub10(self):
         self._test("""
-# int minus int = Bignum (32bit)
+# int - int = Bignum (32bit)
 puts(- 1 - 1073741823)
 """, """-1073741824
 """)
 
     def test_sub20(self):
         self._test("""
-# int minus int = Bignum (64bit)
+# int - int = Bignum (64bit)
 puts(- 1 - 4611686018427387903)
 """, """-4611686018427387904
 """)
 
     def test_sub30(self):
         self._test("""
-# int minus Bignum (32bit)
+# int - Bignum (32bit)
 puts(- 1 - 1073741824)
 """, """-1073741825
 """)
 
     def test_sub40(self):
         self._test("""
-# int minus Bignum (64bit)
+# int - Bignum (64bit)
 puts(- 1 - 4611686018427387904)
 """, """-4611686018427387905
 """)
 
     def test_sub50(self):
         self._test("""
-# int minus float
+# int - float
 puts(- 42 - 3.141592)
 """, """-45.1416
+""")
+
+    def test_mul0(self):
+        self._test("""
+# int * int = int
+puts(26 * 42)
+""", """1092
+""")
+
+    def test_mul10(self):
+        self._test("""
+# int * int = Bignum (32bit)
+puts(2 * 536870912)
+""", """1073741824
+""")
+
+    def test_mul20(self):
+        self._test("""
+# int * int = Bignum (64bit)
+puts(2 * 2305843009213693952)
+""", """4611686018427387904
+""")
+
+    def test_mul30(self):
+        self._test("""
+# int * Bignum = Bignum
+puts(2 * 4611686018427387904)
+""" """9223372036854775808
+""")
+
+    def test_mul40(self):
+        self._test("""
+# int * float = float
+puts(2 * 3.1415926535)
+""", """6.28318
+""")
+
+    def test_mul50(self):
+        self._test("""
+# int * bool (TypeError)
+puts(42 * true)
+""", stderr="""TypeError: unsupported operand type(s) for *: 'Int' and 'Bool'
+""")
+
+    def test_mul60(self):
+        self._test("""
+# int * nil (TypeError)
+puts(42 * nil)
+""", stderr="""TypeError: unsupported operand type(s) for *: 'Int' and 'Nil'
 """)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
