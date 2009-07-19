@@ -459,10 +459,8 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
         }
     case '/':
         if (PTR_AS(YogLexer, lexer)->state == LS_OP) {
-            YOG_ASSERT(env, FALSE, "not supported");
-#if 0
-            RETURN_TOKEN(TK_DIV);
-#endif
+            SET_STATE(LS_EXPR);
+            RETURN_ID_TOKEN1(TK_DIV, c);
         }
         else {
             char delimitor = c;

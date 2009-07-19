@@ -145,84 +145,84 @@ puts(- 42)
 """, """-42
 """)
 
-    def test_sub0(self):
+    def test_subtract0(self):
         self._test("""
 # int - int = int
 puts(42 - 26)
 """, """16
 """)
 
-    def test_sub10(self):
+    def test_subtract10(self):
         self._test("""
 # int - int = Bignum (32bit)
 puts(- 1 - 1073741823)
 """, """-1073741824
 """)
 
-    def test_sub20(self):
+    def test_subtract20(self):
         self._test("""
 # int - int = Bignum (64bit)
 puts(- 1 - 4611686018427387903)
 """, """-4611686018427387904
 """)
 
-    def test_sub30(self):
+    def test_subtract30(self):
         self._test("""
 # int - Bignum (32bit)
 puts(- 1 - 1073741824)
 """, """-1073741825
 """)
 
-    def test_sub40(self):
+    def test_subtract40(self):
         self._test("""
 # int - Bignum (64bit)
 puts(- 1 - 4611686018427387904)
 """, """-4611686018427387905
 """)
 
-    def test_sub50(self):
+    def test_subtract50(self):
         self._test("""
 # int - float
 puts(- 42 - 3.141592)
 """, """-45.1416
 """)
 
-    def test_mul0(self):
+    def test_multiply0(self):
         self._test("""
 # int * int = int
 puts(26 * 42)
 """, """1092
 """)
 
-    def test_mul10(self):
+    def test_multiply10(self):
         self._test("""
 # int * int = Bignum (32bit)
 puts(2 * 536870912)
 """, """1073741824
 """)
 
-    def test_mul20(self):
+    def test_multiply20(self):
         self._test("""
 # int * int = Bignum (64bit)
 puts(2 * 2305843009213693952)
 """, """4611686018427387904
 """)
 
-    def test_mul30(self):
+    def test_multiply30(self):
         self._test("""
 # int * Bignum = Bignum
 puts(2 * 4611686018427387904)
 """, """9223372036854775808
 """)
 
-    def test_mul40(self):
+    def test_multiply40(self):
         self._test("""
 # int * float = float
 puts(2 * 3.1415926535)
 """, """6.28319
 """)
 
-    def test_mul50(self):
+    def test_multiply50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
@@ -236,7 +236,7 @@ TypeError: unsupported operand type\(s\) for \*: 'Int' and 'Bool'
 puts(42 * true)
 """, stderr=test_stderr)
 
-    def test_mul60(self):
+    def test_multiply60(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
@@ -248,6 +248,65 @@ TypeError: unsupported operand type\(s\) for \*: 'Int' and 'Nil'
         self._test("""
 # int * nil (TypeError)
 puts(42 * nil)
+""", stderr=test_stderr)
+
+    def test_divide0(self):
+        self._test("""
+# int / int
+puts(42 / 26)
+""", """1.61538
+""")
+
+    def test_divide10(self):
+        self._test("""
+# int / float
+puts(42 / 3.1415926535)
+""", """13.369
+""")
+
+    def test_divide20(self):
+        self._test("""
+# int / Bignum (32bit)
+puts(536870912 / 1073741824)
+""", """0.5
+""")
+
+    def test_divide30(self):
+        # TODO: enable this test
+        return
+
+        self._test("""
+# int / Bignum (64bit)
+puts(2305843009213693952 / 4611686018427387904)
+""", """0.5
+""")
+
+    def test_divide40(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#/
+TypeError: unsupported operand type\(s\) for /: 'Int' and 'Bool'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# int / bool (TypeError)
+puts(42 / true)
+""", stderr=test_stderr)
+
+    def test_divide50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#/
+TypeError: unsupported operand type\(s\) for /: 'Int' and 'Nil'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# int / nil (TypeError)
+puts(42 / nil)
 """, stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

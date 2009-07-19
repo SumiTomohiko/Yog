@@ -127,7 +127,7 @@ YogBignum_sub(YogEnv* env, YogVal self, YogVal bignum)
 }
 
 YogVal
-YogBignum_mul(YogEnv* env, YogVal self, YogVal bignum)
+YogBignum_multiply(YogEnv* env, YogVal self, YogVal bignum)
 {
     SAVE_ARGS2(env, self, bignum);
     YogVal result = YUNDEF;

@@ -75,7 +75,7 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal 
-sub(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal result = YUNDEF;
@@ -107,7 +107,7 @@ sub(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-mul_int(YogEnv* env, YogVal self, YogVal right)
+multiply_int(YogEnv* env, YogVal self, YogVal right)
 {
     YOG_ASSERT(env, IS_INT(self), "self must be integer");
     YOG_ASSERT(env, IS_INT(right), "right must be integer");
@@ -127,13 +127,13 @@ mul_int(YogEnv* env, YogVal self, YogVal right)
 
     bignum1 = YogBignum_from_int(env, n);
     bignum2 = YogBignum_from_int(env, m);
-    result = YogBignum_mul(env, bignum1, bignum2);
+    result = YogBignum_multiply(env, bignum1, bignum2);
 
     RETURN(env, result);
 }
 
 static YogVal 
-mul(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal result = YUNDEF;
@@ -144,7 +144,7 @@ mul(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     right = YogArray_at(env, args, 0);
 
     if (IS_INT(right)) {
-        result = mul_int(env, self, right);
+        result = multiply_int(env, self, right);
         RETURN(env, result);
     }
     else if (IS_BOOL(right) || IS_NIL(right) || IS_SYMBOL(right)) {
@@ -157,7 +157,7 @@ mul(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_OBJ_OF(env, right, cBignum)) {
         bignum = YogBignum_from_int(env, VAL2INT(self));
-        result = YogBignum_mul(env, bignum, right);
+        result = YogBignum_multiply(env, bignum, right);
         RETURN(env, result);
     }
 
@@ -165,6 +165,36 @@ mul(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     /* NOTREACHED */
     RETURN(env, INT2VAL(0));
+}
+
+static YogVal 
+divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal result = YUNDEF;
+    YogVal bignum = YUNDEF;
+    YogVal right = YUNDEF;
+    PUSH_LOCALS3(env, result, bignum, right);
+
+    right = YogArray_at(env, args, 0);
+
+    if (IS_BOOL(right) || IS_NIL(right) || IS_SYMBOL(right)) {
+        YogError_raise_binop_type_error(env, self, right, "/");
+    }
+
+    result = YogFloat_new(env);
+
+    if (IS_INT(right)) {
+        FLOAT_NUM(result) = (double)VAL2INT(self) / VAL2INT(right);
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        FLOAT_NUM(result) = VAL2INT(self) / FLOAT_NUM(right);
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        FLOAT_NUM(result) = VAL2INT(self) / mpz_get_d(BIGNUM_NUM(right));
+    }
+
+    RETURN(env, result);
 }
 
 static YogVal 
@@ -217,8 +247,9 @@ YogInt_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
     DEFINE_METHOD("+", add);
-    DEFINE_METHOD("-", sub);
-    DEFINE_METHOD("*", mul);
+    DEFINE_METHOD("-", subtract);
+    DEFINE_METHOD("*", multiply);
+    DEFINE_METHOD("/", divide);
     DEFINE_METHOD("<", less);
 #undef DEFINE_METHOD
     YogKlass_define_method(env, klass, "-self", negative);
