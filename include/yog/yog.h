@@ -112,6 +112,7 @@ void YogVal_print(YogEnv*, YogVal);
 } while (0)
 
 #define array_sizeof(a)     (sizeof(a) / sizeof(a[0]))
+#define MAIN_MODULE_NAME    "__main__"
 
 #endif
 /**

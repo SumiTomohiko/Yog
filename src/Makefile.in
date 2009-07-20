@@ -61,10 +61,10 @@ am__objects_1 = yog_bdw-arg.$(OBJEXT) yog_bdw-array.$(OBJEXT) \
 	yog_bdw-lexer.$(OBJEXT) yog_bdw-main.$(OBJEXT) \
 	yog_bdw-nil.$(OBJEXT) yog_bdw-object.$(OBJEXT) \
 	yog_bdw-package.$(OBJEXT) yog_bdw-parser.$(OBJEXT) \
-	yog_bdw-regexp.$(OBJEXT) yog_bdw-stacktrace.$(OBJEXT) \
-	yog_bdw-string.$(OBJEXT) yog_bdw-table.$(OBJEXT) \
-	yog_bdw-thread.$(OBJEXT) yog_bdw-value.$(OBJEXT) \
-	yog_bdw-vm.$(OBJEXT)
+	yog_bdw-regexp.$(OBJEXT) yog_bdw-repl.$(OBJEXT) \
+	yog_bdw-stacktrace.$(OBJEXT) yog_bdw-string.$(OBJEXT) \
+	yog_bdw-table.$(OBJEXT) yog_bdw-thread.$(OBJEXT) \
+	yog_bdw-value.$(OBJEXT) yog_bdw-vm.$(OBJEXT)
 am_yog_bdw_OBJECTS = $(am__objects_1) yog_bdw-bdw.$(OBJEXT)
 yog_bdw_OBJECTS = $(am_yog_bdw_OBJECTS)
 yog_bdw_LDADD = $(LDADD)
@@ -84,10 +84,10 @@ am__objects_2 = yog_copying-arg.$(OBJEXT) yog_copying-array.$(OBJEXT) \
 	yog_copying-lexer.$(OBJEXT) yog_copying-main.$(OBJEXT) \
 	yog_copying-nil.$(OBJEXT) yog_copying-object.$(OBJEXT) \
 	yog_copying-package.$(OBJEXT) yog_copying-parser.$(OBJEXT) \
-	yog_copying-regexp.$(OBJEXT) yog_copying-stacktrace.$(OBJEXT) \
-	yog_copying-string.$(OBJEXT) yog_copying-table.$(OBJEXT) \
-	yog_copying-thread.$(OBJEXT) yog_copying-value.$(OBJEXT) \
-	yog_copying-vm.$(OBJEXT)
+	yog_copying-regexp.$(OBJEXT) yog_copying-repl.$(OBJEXT) \
+	yog_copying-stacktrace.$(OBJEXT) yog_copying-string.$(OBJEXT) \
+	yog_copying-table.$(OBJEXT) yog_copying-thread.$(OBJEXT) \
+	yog_copying-value.$(OBJEXT) yog_copying-vm.$(OBJEXT)
 am_yog_copying_OBJECTS = $(am__objects_2) \
 	yog_copying-copying.$(OBJEXT)
 yog_copying_OBJECTS = $(am_yog_copying_OBJECTS)
@@ -120,6 +120,7 @@ am__objects_3 = yog_generational-arg.$(OBJEXT) \
 	yog_generational-package.$(OBJEXT) \
 	yog_generational-parser.$(OBJEXT) \
 	yog_generational-regexp.$(OBJEXT) \
+	yog_generational-repl.$(OBJEXT) \
 	yog_generational-stacktrace.$(OBJEXT) \
 	yog_generational-string.$(OBJEXT) \
 	yog_generational-table.$(OBJEXT) \
@@ -154,7 +155,7 @@ am__objects_4 = yog_mark_sweep-arg.$(OBJEXT) \
 	yog_mark_sweep-object.$(OBJEXT) \
 	yog_mark_sweep-package.$(OBJEXT) \
 	yog_mark_sweep-parser.$(OBJEXT) \
-	yog_mark_sweep-regexp.$(OBJEXT) \
+	yog_mark_sweep-regexp.$(OBJEXT) yog_mark_sweep-repl.$(OBJEXT) \
 	yog_mark_sweep-stacktrace.$(OBJEXT) \
 	yog_mark_sweep-string.$(OBJEXT) yog_mark_sweep-table.$(OBJEXT) \
 	yog_mark_sweep-thread.$(OBJEXT) yog_mark_sweep-value.$(OBJEXT) \
@@ -193,6 +194,7 @@ am__objects_5 = yog_mark_sweep_compact-arg.$(OBJEXT) \
 	yog_mark_sweep_compact-package.$(OBJEXT) \
 	yog_mark_sweep_compact-parser.$(OBJEXT) \
 	yog_mark_sweep_compact-regexp.$(OBJEXT) \
+	yog_mark_sweep_compact-repl.$(OBJEXT) \
 	yog_mark_sweep_compact-stacktrace.$(OBJEXT) \
 	yog_mark_sweep_compact-string.$(OBJEXT) \
 	yog_mark_sweep_compact-table.$(OBJEXT) \
@@ -379,6 +381,7 @@ COMMON_SOURCES = arg.c \
 	package.c \
 	parser.y \
 	regexp.c \
+	repl.c \
 	stacktrace.c \
 	string.c \
 	table.c \
@@ -538,6 +541,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-package.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-regexp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-repl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-string.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-table.Po@am__quote@
@@ -572,6 +576,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-package.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-regexp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-repl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-string.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-table.Po@am__quote@
@@ -608,6 +613,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-package.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-regexp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-repl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-string.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-table.Po@am__quote@
@@ -642,6 +648,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-package.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-regexp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-repl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-string.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-table.Po@am__quote@
@@ -676,6 +683,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-package.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-regexp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-repl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-string.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-table.Po@am__quote@
@@ -1081,6 +1089,20 @@ yog_bdw-regexp.obj: regexp.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='regexp.c' object='yog_bdw-regexp.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-regexp.obj `if test -f 'regexp.c'; then $(CYGPATH_W) 'regexp.c'; else $(CYGPATH_W) '$(srcdir)/regexp.c'; fi`
+
+yog_bdw-repl.o: repl.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-repl.o -MD -MP -MF $(DEPDIR)/yog_bdw-repl.Tpo -c -o yog_bdw-repl.o `test -f 'repl.c' || echo '$(srcdir)/'`repl.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-repl.Tpo $(DEPDIR)/yog_bdw-repl.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='repl.c' object='yog_bdw-repl.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-repl.o `test -f 'repl.c' || echo '$(srcdir)/'`repl.c
+
+yog_bdw-repl.obj: repl.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-repl.obj -MD -MP -MF $(DEPDIR)/yog_bdw-repl.Tpo -c -o yog_bdw-repl.obj `if test -f 'repl.c'; then $(CYGPATH_W) 'repl.c'; else $(CYGPATH_W) '$(srcdir)/repl.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-repl.Tpo $(DEPDIR)/yog_bdw-repl.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='repl.c' object='yog_bdw-repl.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-repl.obj `if test -f 'repl.c'; then $(CYGPATH_W) 'repl.c'; else $(CYGPATH_W) '$(srcdir)/repl.c'; fi`
 
 yog_bdw-stacktrace.o: stacktrace.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-stacktrace.o -MD -MP -MF $(DEPDIR)/yog_bdw-stacktrace.Tpo -c -o yog_bdw-stacktrace.o `test -f 'stacktrace.c' || echo '$(srcdir)/'`stacktrace.c
@@ -1558,6 +1580,20 @@ yog_copying-regexp.obj: regexp.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-regexp.obj `if test -f 'regexp.c'; then $(CYGPATH_W) 'regexp.c'; else $(CYGPATH_W) '$(srcdir)/regexp.c'; fi`
 
+yog_copying-repl.o: repl.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-repl.o -MD -MP -MF $(DEPDIR)/yog_copying-repl.Tpo -c -o yog_copying-repl.o `test -f 'repl.c' || echo '$(srcdir)/'`repl.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-repl.Tpo $(DEPDIR)/yog_copying-repl.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='repl.c' object='yog_copying-repl.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-repl.o `test -f 'repl.c' || echo '$(srcdir)/'`repl.c
+
+yog_copying-repl.obj: repl.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-repl.obj -MD -MP -MF $(DEPDIR)/yog_copying-repl.Tpo -c -o yog_copying-repl.obj `if test -f 'repl.c'; then $(CYGPATH_W) 'repl.c'; else $(CYGPATH_W) '$(srcdir)/repl.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-repl.Tpo $(DEPDIR)/yog_copying-repl.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='repl.c' object='yog_copying-repl.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-repl.obj `if test -f 'repl.c'; then $(CYGPATH_W) 'repl.c'; else $(CYGPATH_W) '$(srcdir)/repl.c'; fi`
+
 yog_copying-stacktrace.o: stacktrace.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-stacktrace.o -MD -MP -MF $(DEPDIR)/yog_copying-stacktrace.Tpo -c -o yog_copying-stacktrace.o `test -f 'stacktrace.c' || echo '$(srcdir)/'`stacktrace.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-stacktrace.Tpo $(DEPDIR)/yog_copying-stacktrace.Po
@@ -2033,6 +2069,20 @@ yog_generational-regexp.obj: regexp.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='regexp.c' object='yog_generational-regexp.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-regexp.obj `if test -f 'regexp.c'; then $(CYGPATH_W) 'regexp.c'; else $(CYGPATH_W) '$(srcdir)/regexp.c'; fi`
+
+yog_generational-repl.o: repl.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-repl.o -MD -MP -MF $(DEPDIR)/yog_generational-repl.Tpo -c -o yog_generational-repl.o `test -f 'repl.c' || echo '$(srcdir)/'`repl.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-repl.Tpo $(DEPDIR)/yog_generational-repl.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='repl.c' object='yog_generational-repl.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-repl.o `test -f 'repl.c' || echo '$(srcdir)/'`repl.c
+
+yog_generational-repl.obj: repl.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-repl.obj -MD -MP -MF $(DEPDIR)/yog_generational-repl.Tpo -c -o yog_generational-repl.obj `if test -f 'repl.c'; then $(CYGPATH_W) 'repl.c'; else $(CYGPATH_W) '$(srcdir)/repl.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-repl.Tpo $(DEPDIR)/yog_generational-repl.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='repl.c' object='yog_generational-repl.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-repl.obj `if test -f 'repl.c'; then $(CYGPATH_W) 'repl.c'; else $(CYGPATH_W) '$(srcdir)/repl.c'; fi`
 
 yog_generational-stacktrace.o: stacktrace.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-stacktrace.o -MD -MP -MF $(DEPDIR)/yog_generational-stacktrace.Tpo -c -o yog_generational-stacktrace.o `test -f 'stacktrace.c' || echo '$(srcdir)/'`stacktrace.c
@@ -2538,6 +2588,20 @@ yog_mark_sweep-regexp.obj: regexp.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-regexp.obj `if test -f 'regexp.c'; then $(CYGPATH_W) 'regexp.c'; else $(CYGPATH_W) '$(srcdir)/regexp.c'; fi`
 
+yog_mark_sweep-repl.o: repl.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-repl.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-repl.Tpo -c -o yog_mark_sweep-repl.o `test -f 'repl.c' || echo '$(srcdir)/'`repl.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-repl.Tpo $(DEPDIR)/yog_mark_sweep-repl.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='repl.c' object='yog_mark_sweep-repl.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-repl.o `test -f 'repl.c' || echo '$(srcdir)/'`repl.c
+
+yog_mark_sweep-repl.obj: repl.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-repl.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep-repl.Tpo -c -o yog_mark_sweep-repl.obj `if test -f 'repl.c'; then $(CYGPATH_W) 'repl.c'; else $(CYGPATH_W) '$(srcdir)/repl.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-repl.Tpo $(DEPDIR)/yog_mark_sweep-repl.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='repl.c' object='yog_mark_sweep-repl.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-repl.obj `if test -f 'repl.c'; then $(CYGPATH_W) 'repl.c'; else $(CYGPATH_W) '$(srcdir)/repl.c'; fi`
+
 yog_mark_sweep-stacktrace.o: stacktrace.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-stacktrace.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-stacktrace.Tpo -c -o yog_mark_sweep-stacktrace.o `test -f 'stacktrace.c' || echo '$(srcdir)/'`stacktrace.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-stacktrace.Tpo $(DEPDIR)/yog_mark_sweep-stacktrace.Po
@@ -3013,6 +3077,20 @@ yog_mark_sweep_compact-regexp.obj: regexp.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='regexp.c' object='yog_mark_sweep_compact-regexp.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-regexp.obj `if test -f 'regexp.c'; then $(CYGPATH_W) 'regexp.c'; else $(CYGPATH_W) '$(srcdir)/regexp.c'; fi`
+
+yog_mark_sweep_compact-repl.o: repl.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-repl.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-repl.Tpo -c -o yog_mark_sweep_compact-repl.o `test -f 'repl.c' || echo '$(srcdir)/'`repl.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-repl.Tpo $(DEPDIR)/yog_mark_sweep_compact-repl.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='repl.c' object='yog_mark_sweep_compact-repl.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-repl.o `test -f 'repl.c' || echo '$(srcdir)/'`repl.c
+
+yog_mark_sweep_compact-repl.obj: repl.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-repl.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-repl.Tpo -c -o yog_mark_sweep_compact-repl.obj `if test -f 'repl.c'; then $(CYGPATH_W) 'repl.c'; else $(CYGPATH_W) '$(srcdir)/repl.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-repl.Tpo $(DEPDIR)/yog_mark_sweep_compact-repl.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='repl.c' object='yog_mark_sweep_compact-repl.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-repl.obj `if test -f 'repl.c'; then $(CYGPATH_W) 'repl.c'; else $(CYGPATH_W) '$(srcdir)/repl.c'; fi`
 
 yog_mark_sweep_compact-stacktrace.o: stacktrace.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-stacktrace.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-stacktrace.Tpo -c -o yog_mark_sweep_compact-stacktrace.o `test -f 'stacktrace.c' || echo '$(srcdir)/'`stacktrace.c

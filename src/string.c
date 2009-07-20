@@ -770,6 +770,28 @@ YogString_to_i(YogEnv* env, YogVal self)
     RETURN(env, self);
 }
 
+void
+YogString_add(YogEnv* env, YogVal self, const char* s)
+{
+    SAVE_ARG(env, self);
+    YogVal body = YUNDEF;
+    PUSH_LOCAL(env, body);
+
+    unsigned int size1 = YogString_size(env, self);
+    unsigned int size2 = strlen(s);
+    unsigned int size = size1 + size2;
+    YOG_ASSERT(env, size1 <= size, "maybe overflow (%u + %u = %u)", size1, size2, size);
+    body = YogCharArray_new(env, size);
+    char* top = PTR_AS(YogCharArray, body)->items;
+    memcpy(top, STRING_CSTR(self), size1);
+    memcpy(top + size1 - 1, s, size2);
+    top[size1 + size2 - 1] = '\0';
+    PTR_AS(YogString, self)->body = body;
+    PTR_AS(YogString, self)->size = size;
+
+    RETURN_VOID(env);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

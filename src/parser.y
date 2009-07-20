@@ -15,6 +15,7 @@
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/parser.h"
+#include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -529,42 +530,14 @@ Import_new(YogEnv* env, unsigned int lineno, YogVal names)
     RETURN(env, node);
 }
 
-static FILE*
-open(const char* filename)
+static YogVal
+parse(YogEnv* env, YogVal lexer, BOOL debug)
 {
-    if (filename == NULL) {
-        return stdin;
-    }
-
-    FILE* fp = fopen(filename, "r");
-    if (fp == NULL) {
-        return NULL;
-    }
-
-    return fp;
-}
-
-YogVal 
-YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
-{
-    SAVE_LOCALS(env);
-
-    YogVal lexer = YUNDEF;
+    SAVE_ARG(env, lexer);
     YogVal ast = YUNDEF;
     YogVal lemon_parser = YUNDEF;
     YogVal token = YUNDEF;
-    PUSH_LOCALS4(env, lexer, ast, lemon_parser, token);
-
-    FILE* fp = open(filename);
-    if (fp == NULL) {
-        RETURN(env, YNIL);
-    }
-
-    lexer = YogLexer_new(env);
-    PTR_AS(YogLexer, lexer)->fp = fp;
-    if (filename != NULL) {
-        YogLexer_read_encoding(env, lexer);
-    }
+    PUSH_LOCALS3(env, ast, lemon_parser, token);
 
     lemon_parser = LemonParser_new(env);
     if (debug) {
@@ -576,9 +549,48 @@ YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
     }
     Parse(env, lemon_parser, 0, YNIL, &ast);
 
-    if (filename != NULL) {
-        fclose(fp);
+    RETURN(env, ast);
+}
+
+YogVal
+YogParser_parse(YogEnv* env, YogVal src)
+{
+    SAVE_ARG(env, src);
+    YogVal lexer = YUNDEF;
+    YogVal ast = YUNDEF;
+    PUSH_LOCALS2(env, lexer, ast);
+
+    lexer = YogLexer_new(env);
+    PTR_AS(YogLexer, lexer)->line = src;
+    YogLexer_set_encoding(env, lexer, PTR_AS(YogString, src)->encoding);
+
+    ast = parse(env, lexer, FALSE);
+
+    RETURN(env, ast);
+}
+
+YogVal 
+YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
+{
+    YOG_ASSERT(env, filename != NULL, "filene is NULL");
+
+    SAVE_LOCALS(env);
+    YogVal lexer = YUNDEF;
+    YogVal ast = YUNDEF;
+    PUSH_LOCALS2(env, lexer, ast);
+
+    FILE* fp = fopen(filename, "r");
+    if (fp == NULL) {
+        RETURN(env, YNIL);
     }
+
+    lexer = YogLexer_new(env);
+    PTR_AS(YogLexer, lexer)->fp = fp;
+    YogLexer_read_encoding(env, lexer);
+
+    ast = parse(env, lexer, debug);
+
+    fclose(fp);
 
     RETURN(env, ast);
 }

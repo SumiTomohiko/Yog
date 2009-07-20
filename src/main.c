@@ -12,6 +12,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/package.h"
+#include "yog/repl.h"
 #include "yog/thread.h"
 #include "yog/version.h"
 #include "yog/vm.h"
@@ -85,6 +86,17 @@ parse_size(const char* s)
     total_size += size;
 
     return total_size;
+}
+
+static void
+yog_main(YogEnv* env, int argc, char* argv[])
+{
+    if (0 < argc) {
+        YogEval_eval_file(env, argv[0], MAIN_MODULE_NAME);
+    }
+    else {
+        YogRepl_do(env);
+    }
 }
 
 int 
@@ -212,16 +224,10 @@ main(int argc, char* argv[])
     if ((status = setjmp(jmpbuf.buf)) == 0) {
         PUSH_JMPBUF(main_thread, jmpbuf);
 
-        do {
-            YogVM_boot(&env, env.vm);
-            YogVM_configure_search_path(&env, env.vm, argv[0]);
+        YogVM_boot(&env, env.vm);
+        YogVM_configure_search_path(&env, env.vm, argv[0]);
 
-            const char* filename = NULL;
-            if (optind < argc) {
-                filename = argv[optind];
-            }
-            YogEval_eval_file(&env, filename, "__main__");
-        } while (0);
+        yog_main(&env, argc - optind, &argv[optind]);
     }
     else {
         RESTORE_LOCALS(&env);

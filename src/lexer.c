@@ -70,6 +70,10 @@ IDToken_new(YogEnv* env, unsigned int type, ID id, unsigned int lineno)
 static BOOL
 readline(YogEnv* env, YogVal lexer, FILE* fp) 
 {
+    if (fp == NULL) {
+        return FALSE;
+    }
+
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, lexer);
 
@@ -705,6 +709,15 @@ reset_lexer(YogEnv* env, YogVal lexer)
     PTR_AS(YogLexer, lexer)->lineno = 0;
 }
 
+void
+YogLexer_set_encoding(YogEnv* env, YogVal lexer, YogVal encoding)
+{
+    YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
+    PTR_AS(YogString, buffer)->encoding = encoding;
+    YogVal line = PTR_AS(YogLexer, lexer)->line;
+    PTR_AS(YogString, line)->encoding = encoding;
+}
+
 void 
 YogLexer_read_encoding(YogEnv* env, YogVal lexer) 
 {
@@ -715,8 +728,7 @@ YogLexer_read_encoding(YogEnv* env, YogVal lexer)
     if (!IS_PTR(enc)) {
         enc = YogEncoding_get_default(env);
     }
-    YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-    MODIFY(env, PTR_AS(YogString, buffer)->encoding, enc);
+    YogLexer_set_encoding(env, lexer, enc);
     reset_lexer(env, lexer);
 
     RETURN_VOID(env);

@@ -179,8 +179,10 @@ typedef struct YogLexer YogLexer;
 YogVal YogLexer_new(YogEnv*);
 BOOL YogLexer_next_token(YogEnv*, YogVal, YogVal*);
 void YogLexer_read_encoding(YogEnv*, YogVal);
+void YogLexer_set_encoding(YogEnv*, YogVal, YogVal);
 
 /* src/parser.y */
+YogVal YogParser_parse(YogEnv*, YogVal);
 YogVal YogParser_parse_file(YogEnv*, const char*, BOOL);
 
 /* PROTOTYPE_END */

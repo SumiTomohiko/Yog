@@ -339,8 +339,8 @@ YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, unsigned int ar
     RETURN(env, retval);
 }
 
-static void
-eval_package(YogEnv* env, YogVal pkg) 
+void
+YogEval_eval_package(YogEnv* env, YogVal pkg) 
 {
     SAVE_ARG(env, pkg);
 
@@ -384,7 +384,7 @@ YogEval_eval_file(YogEnv* env, const char* filename, const char* pkg_name)
     pkg = YogPackage_new(env);
     PTR_AS(YogPackage, pkg)->code = code;
     YogVM_register_package(env, env->vm, pkg_name, pkg);
-    eval_package(env, pkg);
+    YogEval_eval_package(env, pkg);
 
     RETURN(env, pkg);
 }
