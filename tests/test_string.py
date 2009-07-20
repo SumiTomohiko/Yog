@@ -256,4 +256,75 @@ TypeError: string index must be integer
 s = \"\"
 s[\"foo\"] = \"bar\"""", stderr=test_stderr)
 
+    def test_add0(self):
+        self._test("""
+puts("foo" + "bar")
+""", """foobar
+""")
+
+    def test_add10(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\+
+TypeError: can't convert 'Int' object to string implicitly
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" + 42)
+""", stderr=test_stderr)
+
+    def test_add20(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\+
+TypeError: can't convert 'Bool' object to string implicitly
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" + true)
+""", stderr=test_stderr)
+
+    def test_add30(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\+
+TypeError: can't convert 'Symbol' object to string implicitly
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" + :bar)
+""", stderr=test_stderr)
+
+    def test_add40(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\+
+TypeError: can't convert 'Nil' object to string implicitly
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" + nil)
+""", stderr=test_stderr)
+
+    def test_add50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\+
+TypeError: can't convert 'Float' object to string implicitly
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" + 3.1415926535)
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
