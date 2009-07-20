@@ -63,8 +63,9 @@ am__objects_1 = yog_bdw-arg.$(OBJEXT) yog_bdw-array.$(OBJEXT) \
 	yog_bdw-package.$(OBJEXT) yog_bdw-parser.$(OBJEXT) \
 	yog_bdw-regexp.$(OBJEXT) yog_bdw-repl.$(OBJEXT) \
 	yog_bdw-stacktrace.$(OBJEXT) yog_bdw-string.$(OBJEXT) \
-	yog_bdw-table.$(OBJEXT) yog_bdw-thread.$(OBJEXT) \
-	yog_bdw-value.$(OBJEXT) yog_bdw-vm.$(OBJEXT)
+	yog_bdw-symbol.$(OBJEXT) yog_bdw-table.$(OBJEXT) \
+	yog_bdw-thread.$(OBJEXT) yog_bdw-value.$(OBJEXT) \
+	yog_bdw-vm.$(OBJEXT)
 am_yog_bdw_OBJECTS = $(am__objects_1) yog_bdw-bdw.$(OBJEXT)
 yog_bdw_OBJECTS = $(am_yog_bdw_OBJECTS)
 yog_bdw_LDADD = $(LDADD)
@@ -86,8 +87,9 @@ am__objects_2 = yog_copying-arg.$(OBJEXT) yog_copying-array.$(OBJEXT) \
 	yog_copying-package.$(OBJEXT) yog_copying-parser.$(OBJEXT) \
 	yog_copying-regexp.$(OBJEXT) yog_copying-repl.$(OBJEXT) \
 	yog_copying-stacktrace.$(OBJEXT) yog_copying-string.$(OBJEXT) \
-	yog_copying-table.$(OBJEXT) yog_copying-thread.$(OBJEXT) \
-	yog_copying-value.$(OBJEXT) yog_copying-vm.$(OBJEXT)
+	yog_copying-symbol.$(OBJEXT) yog_copying-table.$(OBJEXT) \
+	yog_copying-thread.$(OBJEXT) yog_copying-value.$(OBJEXT) \
+	yog_copying-vm.$(OBJEXT)
 am_yog_copying_OBJECTS = $(am__objects_2) \
 	yog_copying-copying.$(OBJEXT)
 yog_copying_OBJECTS = $(am_yog_copying_OBJECTS)
@@ -123,6 +125,7 @@ am__objects_3 = yog_generational-arg.$(OBJEXT) \
 	yog_generational-repl.$(OBJEXT) \
 	yog_generational-stacktrace.$(OBJEXT) \
 	yog_generational-string.$(OBJEXT) \
+	yog_generational-symbol.$(OBJEXT) \
 	yog_generational-table.$(OBJEXT) \
 	yog_generational-thread.$(OBJEXT) \
 	yog_generational-value.$(OBJEXT) yog_generational-vm.$(OBJEXT)
@@ -157,7 +160,8 @@ am__objects_4 = yog_mark_sweep-arg.$(OBJEXT) \
 	yog_mark_sweep-parser.$(OBJEXT) \
 	yog_mark_sweep-regexp.$(OBJEXT) yog_mark_sweep-repl.$(OBJEXT) \
 	yog_mark_sweep-stacktrace.$(OBJEXT) \
-	yog_mark_sweep-string.$(OBJEXT) yog_mark_sweep-table.$(OBJEXT) \
+	yog_mark_sweep-string.$(OBJEXT) \
+	yog_mark_sweep-symbol.$(OBJEXT) yog_mark_sweep-table.$(OBJEXT) \
 	yog_mark_sweep-thread.$(OBJEXT) yog_mark_sweep-value.$(OBJEXT) \
 	yog_mark_sweep-vm.$(OBJEXT)
 am_yog_mark_sweep_OBJECTS = $(am__objects_4) \
@@ -197,6 +201,7 @@ am__objects_5 = yog_mark_sweep_compact-arg.$(OBJEXT) \
 	yog_mark_sweep_compact-repl.$(OBJEXT) \
 	yog_mark_sweep_compact-stacktrace.$(OBJEXT) \
 	yog_mark_sweep_compact-string.$(OBJEXT) \
+	yog_mark_sweep_compact-symbol.$(OBJEXT) \
 	yog_mark_sweep_compact-table.$(OBJEXT) \
 	yog_mark_sweep_compact-thread.$(OBJEXT) \
 	yog_mark_sweep_compact-value.$(OBJEXT) \
@@ -384,6 +389,7 @@ COMMON_SOURCES = arg.c \
 	repl.c \
 	stacktrace.c \
 	string.c \
+	symbol.c \
 	table.c \
 	thread.c \
 	value.c \
@@ -544,6 +550,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-repl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-string.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-symbol.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-table.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-value.Po@am__quote@
@@ -579,6 +586,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-repl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-string.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-symbol.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-table.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-value.Po@am__quote@
@@ -616,6 +624,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-repl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-string.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-symbol.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-table.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-value.Po@am__quote@
@@ -651,6 +660,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-repl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-string.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-symbol.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-table.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-value.Po@am__quote@
@@ -686,6 +696,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-repl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-string.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-symbol.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-table.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-value.Po@am__quote@
@@ -1131,6 +1142,20 @@ yog_bdw-string.obj: string.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='string.c' object='yog_bdw-string.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-string.obj `if test -f 'string.c'; then $(CYGPATH_W) 'string.c'; else $(CYGPATH_W) '$(srcdir)/string.c'; fi`
+
+yog_bdw-symbol.o: symbol.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-symbol.o -MD -MP -MF $(DEPDIR)/yog_bdw-symbol.Tpo -c -o yog_bdw-symbol.o `test -f 'symbol.c' || echo '$(srcdir)/'`symbol.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-symbol.Tpo $(DEPDIR)/yog_bdw-symbol.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='symbol.c' object='yog_bdw-symbol.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-symbol.o `test -f 'symbol.c' || echo '$(srcdir)/'`symbol.c
+
+yog_bdw-symbol.obj: symbol.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-symbol.obj -MD -MP -MF $(DEPDIR)/yog_bdw-symbol.Tpo -c -o yog_bdw-symbol.obj `if test -f 'symbol.c'; then $(CYGPATH_W) 'symbol.c'; else $(CYGPATH_W) '$(srcdir)/symbol.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-symbol.Tpo $(DEPDIR)/yog_bdw-symbol.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='symbol.c' object='yog_bdw-symbol.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-symbol.obj `if test -f 'symbol.c'; then $(CYGPATH_W) 'symbol.c'; else $(CYGPATH_W) '$(srcdir)/symbol.c'; fi`
 
 yog_bdw-table.o: table.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-table.o -MD -MP -MF $(DEPDIR)/yog_bdw-table.Tpo -c -o yog_bdw-table.o `test -f 'table.c' || echo '$(srcdir)/'`table.c
@@ -1622,6 +1647,20 @@ yog_copying-string.obj: string.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-string.obj `if test -f 'string.c'; then $(CYGPATH_W) 'string.c'; else $(CYGPATH_W) '$(srcdir)/string.c'; fi`
 
+yog_copying-symbol.o: symbol.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-symbol.o -MD -MP -MF $(DEPDIR)/yog_copying-symbol.Tpo -c -o yog_copying-symbol.o `test -f 'symbol.c' || echo '$(srcdir)/'`symbol.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-symbol.Tpo $(DEPDIR)/yog_copying-symbol.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='symbol.c' object='yog_copying-symbol.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-symbol.o `test -f 'symbol.c' || echo '$(srcdir)/'`symbol.c
+
+yog_copying-symbol.obj: symbol.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-symbol.obj -MD -MP -MF $(DEPDIR)/yog_copying-symbol.Tpo -c -o yog_copying-symbol.obj `if test -f 'symbol.c'; then $(CYGPATH_W) 'symbol.c'; else $(CYGPATH_W) '$(srcdir)/symbol.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-symbol.Tpo $(DEPDIR)/yog_copying-symbol.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='symbol.c' object='yog_copying-symbol.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-symbol.obj `if test -f 'symbol.c'; then $(CYGPATH_W) 'symbol.c'; else $(CYGPATH_W) '$(srcdir)/symbol.c'; fi`
+
 yog_copying-table.o: table.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-table.o -MD -MP -MF $(DEPDIR)/yog_copying-table.Tpo -c -o yog_copying-table.o `test -f 'table.c' || echo '$(srcdir)/'`table.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-table.Tpo $(DEPDIR)/yog_copying-table.Po
@@ -2111,6 +2150,20 @@ yog_generational-string.obj: string.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='string.c' object='yog_generational-string.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-string.obj `if test -f 'string.c'; then $(CYGPATH_W) 'string.c'; else $(CYGPATH_W) '$(srcdir)/string.c'; fi`
+
+yog_generational-symbol.o: symbol.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-symbol.o -MD -MP -MF $(DEPDIR)/yog_generational-symbol.Tpo -c -o yog_generational-symbol.o `test -f 'symbol.c' || echo '$(srcdir)/'`symbol.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-symbol.Tpo $(DEPDIR)/yog_generational-symbol.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='symbol.c' object='yog_generational-symbol.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-symbol.o `test -f 'symbol.c' || echo '$(srcdir)/'`symbol.c
+
+yog_generational-symbol.obj: symbol.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-symbol.obj -MD -MP -MF $(DEPDIR)/yog_generational-symbol.Tpo -c -o yog_generational-symbol.obj `if test -f 'symbol.c'; then $(CYGPATH_W) 'symbol.c'; else $(CYGPATH_W) '$(srcdir)/symbol.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-symbol.Tpo $(DEPDIR)/yog_generational-symbol.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='symbol.c' object='yog_generational-symbol.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-symbol.obj `if test -f 'symbol.c'; then $(CYGPATH_W) 'symbol.c'; else $(CYGPATH_W) '$(srcdir)/symbol.c'; fi`
 
 yog_generational-table.o: table.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-table.o -MD -MP -MF $(DEPDIR)/yog_generational-table.Tpo -c -o yog_generational-table.o `test -f 'table.c' || echo '$(srcdir)/'`table.c
@@ -2630,6 +2683,20 @@ yog_mark_sweep-string.obj: string.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-string.obj `if test -f 'string.c'; then $(CYGPATH_W) 'string.c'; else $(CYGPATH_W) '$(srcdir)/string.c'; fi`
 
+yog_mark_sweep-symbol.o: symbol.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-symbol.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-symbol.Tpo -c -o yog_mark_sweep-symbol.o `test -f 'symbol.c' || echo '$(srcdir)/'`symbol.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-symbol.Tpo $(DEPDIR)/yog_mark_sweep-symbol.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='symbol.c' object='yog_mark_sweep-symbol.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-symbol.o `test -f 'symbol.c' || echo '$(srcdir)/'`symbol.c
+
+yog_mark_sweep-symbol.obj: symbol.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-symbol.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep-symbol.Tpo -c -o yog_mark_sweep-symbol.obj `if test -f 'symbol.c'; then $(CYGPATH_W) 'symbol.c'; else $(CYGPATH_W) '$(srcdir)/symbol.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-symbol.Tpo $(DEPDIR)/yog_mark_sweep-symbol.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='symbol.c' object='yog_mark_sweep-symbol.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-symbol.obj `if test -f 'symbol.c'; then $(CYGPATH_W) 'symbol.c'; else $(CYGPATH_W) '$(srcdir)/symbol.c'; fi`
+
 yog_mark_sweep-table.o: table.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-table.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-table.Tpo -c -o yog_mark_sweep-table.o `test -f 'table.c' || echo '$(srcdir)/'`table.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-table.Tpo $(DEPDIR)/yog_mark_sweep-table.Po
@@ -3119,6 +3186,20 @@ yog_mark_sweep_compact-string.obj: string.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='string.c' object='yog_mark_sweep_compact-string.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-string.obj `if test -f 'string.c'; then $(CYGPATH_W) 'string.c'; else $(CYGPATH_W) '$(srcdir)/string.c'; fi`
+
+yog_mark_sweep_compact-symbol.o: symbol.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-symbol.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-symbol.Tpo -c -o yog_mark_sweep_compact-symbol.o `test -f 'symbol.c' || echo '$(srcdir)/'`symbol.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-symbol.Tpo $(DEPDIR)/yog_mark_sweep_compact-symbol.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='symbol.c' object='yog_mark_sweep_compact-symbol.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-symbol.o `test -f 'symbol.c' || echo '$(srcdir)/'`symbol.c
+
+yog_mark_sweep_compact-symbol.obj: symbol.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-symbol.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-symbol.Tpo -c -o yog_mark_sweep_compact-symbol.obj `if test -f 'symbol.c'; then $(CYGPATH_W) 'symbol.c'; else $(CYGPATH_W) '$(srcdir)/symbol.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-symbol.Tpo $(DEPDIR)/yog_mark_sweep_compact-symbol.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='symbol.c' object='yog_mark_sweep_compact-symbol.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-symbol.obj `if test -f 'symbol.c'; then $(CYGPATH_W) 'symbol.c'; else $(CYGPATH_W) '$(srcdir)/symbol.c'; fi`
 
 yog_mark_sweep_compact-table.o: table.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-table.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-table.Tpo -c -o yog_mark_sweep_compact-table.o `test -f 'table.c' || echo '$(srcdir)/'`table.c

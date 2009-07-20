@@ -566,6 +566,20 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             RETURN_TOKEN(TK_NEWLINE);
             break;
         }
+    case ':':
+        {
+            c = NEXTC();
+            YOG_ASSERT(env, isalpha(c), "invalid symbol");
+            do {
+                ADD_TOKEN_CHAR(c);
+                c = NEXTC();
+            } while (isalpha(c) || (c == '_'));
+            PUSHBACK(c);
+
+            ID id = YogString_intern(env, PTR_AS(YogLexer, lexer)->buffer);
+            RETURN_VAL_TOKEN(TK_SYMBOL, ID2VAL(id));
+        }
+        break;
     default:
         {
             do {

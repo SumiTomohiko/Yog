@@ -40,6 +40,7 @@ COMMON_SOURCES = arg.c \
 	repl.c \
 	stacktrace.c \
 	string.c \
+	symbol.c \
 	table.c \
 	thread.c \
 	value.c \

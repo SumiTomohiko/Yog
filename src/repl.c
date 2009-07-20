@@ -51,6 +51,8 @@ YogRepl_do(YogEnv* env)
         YogString_clear(env, src);
         print_prompt();
     }
+
+    RETURN_VOID(env);
 }
 
 /**
