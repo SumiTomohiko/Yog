@@ -160,6 +160,10 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         result = YogBignum_multiply(env, bignum, right);
         RETURN(env, result);
     }
+    else if (IS_OBJ_OF(env, right, cString)) {
+        result = YogString_multiply(env, right, VAL2INT(self));
+        RETURN(env, result);
+    }
 
     YOG_BUG(env, "Int#* failed");
 

@@ -336,6 +336,32 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, s);
 }
 
+YogVal
+YogString_multiply(YogEnv* env, YogVal self, int num)
+{
+    SAVE_ARG(env, self);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    unsigned int size = YogString_size(env, self) - 1;
+    if (num < 0) {
+        YogError_raise_ArgumentError(env, "negative argument");
+    }
+    unsigned int needed_size = size * num;
+    if ((num != 0) && (needed_size / num != size)) {
+        YOG_BUG(env, "overflow (%u * %d = %u)", size, num, needed_size);
+    }
+    s = YogString_new_size(env, needed_size + 1);
+    unsigned int i;
+    for (i = 0; i < num; i++) {
+        memcpy(STRING_CSTR(s) + i * size, STRING_CSTR(self), size);
+    }
+    STRING_CSTR(s)[needed_size] = '\0';
+    PTR_AS(YogString, s)->size = needed_size + 1;
+
+    RETURN(env, s);
+}
+
 static YogVal 
 multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -351,22 +377,7 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         YogError_raise_TypeError(env, "can't multiply string by non-int of type '%s'", name);
     }
 
-    unsigned int size = YogString_size(env, self) - 1;
-    int num = VAL2INT(arg);
-    if (num < 0) {
-        YogError_raise_ArgumentError(env, "negative argument");
-    }
-    unsigned int needed_size = size * num;
-    if ((num != 0) && (needed_size / num != size)) {
-        YOG_BUG(env, "overflow (%u * %d = %u)", size, num, needed_size);
-    }
-    s = YogString_new_size(env, needed_size + 1);
-    unsigned int i;
-    for (i = 0; i < num; i++) {
-        memcpy(STRING_CSTR(s) + i * size, STRING_CSTR(self), size);
-    }
-    STRING_CSTR(s)[needed_size] = '\0';
-    PTR_AS(YogString, s)->size = needed_size + 1;
+    s = YogString_multiply(env, self, VAL2INT(arg));
 
     RETURN(env, s);
 }
