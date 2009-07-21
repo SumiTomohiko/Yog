@@ -310,6 +310,12 @@ negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, n);
 }
 
+static YogVal
+positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    return self;
+}
+
 YogVal 
 YogInt_klass_new(YogEnv* env) 
 {
@@ -323,6 +329,7 @@ YogInt_klass_new(YogEnv* env)
     DEFINE_METHOD("//", floor_divide);
     DEFINE_METHOD("<", less);
 #undef DEFINE_METHOD
+    YogKlass_define_method(env, klass, "+self", positive);
     YogKlass_define_method(env, klass, "-self", negative);
     YogKlass_define_method(env, klass, "to_s", to_s);
     YogKlass_define_method(env, klass, "times", times);

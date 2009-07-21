@@ -1015,6 +1015,11 @@ term_op(A) ::= DIV_DIV(B). {
     A = ID2VAL(PTR_AS(YogToken, B)->u.id);
 }
 
+factor(A) ::= PLUS(B) factor(C). {
+    unsigned int lineno = NODE_LINENO(B);
+    ID id = YogVM_intern(env, env->vm, "+self");
+    A = FuncCall_new3(env, lineno, C, id);
+}
 factor(A) ::= MINUS(B) factor(C). {
     unsigned int lineno = NODE_LINENO(B);
     ID id = YogVM_intern(env, env->vm, "-self");
