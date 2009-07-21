@@ -332,6 +332,7 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal arg_body = PTR_AS(YogString, arg)->body;
     const char* v = PTR_AS(YogCharArray, arg_body)->items;
     memcpy(u, v, size2);
+    PTR_AS(YogString, s)->size = size;
 
     RETURN(env, s);
 }
