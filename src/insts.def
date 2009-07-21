@@ -240,6 +240,7 @@ inst finish
 (val)
 ()
 {
+    POP_BUF();
     POP_FRAME();
     RETURN(ENV, val);
 }

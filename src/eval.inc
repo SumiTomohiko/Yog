@@ -343,6 +343,7 @@
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
             val = POP();
+            POP_BUF();
             POP_FRAME();
             RETURN(ENV, val);
 
