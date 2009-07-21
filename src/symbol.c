@@ -24,7 +24,7 @@ YogSymbol_klass_new(YogEnv* env)
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "String", env->vm->cObject);
+    klass = YogKlass_new(env, "Symbol", env->vm->cObject);
     YogKlass_define_method(env, klass, "to_s", to_s);
 
     RETURN(env, klass);

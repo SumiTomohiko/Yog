@@ -310,7 +310,14 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal arg = YogArray_at(env, args, 0);
-    PUSH_LOCAL(env, arg);
+    YogVal klass = YUNDEF;
+    PUSH_LOCALS2(env, arg, klass);
+
+    if (!IS_PTR(arg) || !IS_OBJ_OF(env, arg, cString)) {
+        klass = YogVal_get_klass(env, arg);
+        const char* name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, klass)->name);
+        YogError_raise_TypeError(env, "can't convert '%s' object to string implicitly", name);
+    }
 
     unsigned int size1 = YogString_size(env, self);
     unsigned int size2 = YogString_size(env, arg);
