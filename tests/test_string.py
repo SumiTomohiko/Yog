@@ -332,7 +332,7 @@ puts("foo" + 3.1415926535)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\*
-TypeError: can't multiply sequence by non-int of type 'String'
+TypeError: can't multiply string by non-int of type 'String'
 """, stderr)
             assert m is not None
 
@@ -351,7 +351,7 @@ puts("foo" * 2)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\*
-TypeError: can't multiply sequence by non-int of type 'Bool'
+TypeError: can't multiply string by non-int of type 'Bool'
 """, stderr)
             assert m is not None
 
@@ -364,7 +364,7 @@ puts("foo" * true)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\*
-TypeError: can't multiply sequence by non-int of type 'Symbol'
+TypeError: can't multiply string by non-int of type 'Symbol'
 """, stderr)
             assert m is not None
 
@@ -377,7 +377,7 @@ puts("foo" * :bar)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\*
-TypeError: can't multiply sequence by non-int of type 'Nil'
+TypeError: can't multiply string by non-int of type 'Nil'
 """, stderr)
             assert m is not None
 
@@ -390,7 +390,7 @@ puts("foo" * nil)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\*
-TypeError: can't multiply sequence by non-int of type 'Float'
+TypeError: can't multiply string by non-int of type 'Float'
 """, stderr)
             assert m is not None
 

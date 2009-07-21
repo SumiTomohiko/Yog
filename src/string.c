@@ -337,6 +337,38 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal 
+multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal arg = YogArray_at(env, args, 0);
+    YogVal klass = YUNDEF;
+    YogVal s = YUNDEF;
+    PUSH_LOCALS3(env, arg, klass, s);
+
+    if (!IS_INT(arg)) {
+        klass = YogVal_get_klass(env, arg);
+        const char* name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, klass)->name);
+        YogError_raise_TypeError(env, "can't multiply string by non-int of type '%s'", name);
+    }
+
+    unsigned int size = YogString_size(env, self) - 1;
+    int num = VAL2INT(arg);
+    unsigned int needed_size = size * num;
+    if ((num != 0) && (needed_size / num != size)) {
+        YOG_BUG(env, "overflow (%u * %d = %u)", size, num, needed_size);
+    }
+    s = YogString_new_size(env, needed_size + 1);
+    unsigned int i;
+    for (i = 0; i < num; i++) {
+        memcpy(STRING_CSTR(s) + i * size, STRING_CSTR(self), size);
+    }
+    STRING_CSTR(s)[needed_size] = '\0';
+    PTR_AS(YogString, s)->size = needed_size + 1;
+
+    RETURN(env, s);
+}
+
+static YogVal 
 lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -594,6 +626,7 @@ YogString_klass_new(YogEnv* env)
     YogKlass_define_allocator(env, klass, allocate);
     YogKlass_define_method(env, klass, "to_s", to_s);
     YogKlass_define_method(env, klass, "+", add);
+    YogKlass_define_method(env, klass, "*", multiply);
     YogKlass_define_method(env, klass, "<<", lshift);
     YogKlass_define_method(env, klass, "[]", subscript);
     YogKlass_define_method(env, klass, "[]=", assign_subscript);
