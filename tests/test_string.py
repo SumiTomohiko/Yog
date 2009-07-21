@@ -327,4 +327,75 @@ TypeError: can't convert 'Float' object to string implicitly
 puts("foo" + 3.1415926535)
 """, stderr=test_stderr)
 
+    def test_multiply0(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\*
+TypeError: can't multiply sequence by non-int of type 'String'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" * "bar")
+""", stderr=test_stderr)
+
+    def test_multiply10(self):
+        self._test("""
+puts("foo" * 2)
+""", """foofoo
+""")
+
+    def test_multiply20(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\*
+TypeError: can't multiply sequence by non-int of type 'Bool'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" * true)
+""", stderr=test_stderr)
+
+    def test_multiply30(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\*
+TypeError: can't multiply sequence by non-int of type 'Symbol'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" * :bar)
+""", stderr=test_stderr)
+
+    def test_multiply40(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\*
+TypeError: can't multiply sequence by non-int of type 'Nil'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" * nil)
+""", stderr=test_stderr)
+
+    def test_multiply50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\*
+TypeError: can't multiply sequence by non-int of type 'Float'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" * 3.1415926535)
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
