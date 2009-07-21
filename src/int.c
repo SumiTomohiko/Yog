@@ -132,6 +132,20 @@ multiply_int(YogEnv* env, YogVal self, YogVal right)
     RETURN(env, result);
 }
 
+YogVal
+YogInt_multiply(YogEnv* env, YogVal self, YogVal right)
+{
+    SAVE_ARGS2(env, self, right);
+    YogVal result = YUNDEF;
+    YogVal bignum = YUNDEF;
+    PUSH_LOCALS2(env, result, bignum);
+
+    bignum = YogBignum_from_int(env, VAL2INT(self));
+    result = YogBignum_multiply(env, bignum, right);
+
+    RETURN(env, result);
+}
+
 static YogVal 
 multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -156,8 +170,7 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         RETURN(env, result);
     }
     else if (IS_OBJ_OF(env, right, cBignum)) {
-        bignum = YogBignum_from_int(env, VAL2INT(self));
-        result = YogBignum_multiply(env, bignum, right);
+        result = YogInt_multiply(env, self, right);
         RETURN(env, result);
     }
     else if (IS_OBJ_OF(env, right, cString)) {

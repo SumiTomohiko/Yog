@@ -4,6 +4,7 @@
 #include "yog/error.h"
 #include "yog/float.h"
 #include "yog/gc.h"
+#include "yog/int.h"
 #include "yog/klass.h"
 #include "yog/object.h"
 #include "yog/string.h"
@@ -165,6 +166,39 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YUNDEF);
 }
 
+static YogVal
+multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal right = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS2(env, right, result);
+
+    right = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    if (IS_INT(right)) {
+        result = YogInt_multiply(env, right, self);
+        RETURN(env, result);
+    }
+    else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        result = YogFloat_new(env);
+        FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(self)) * FLOAT_NUM(right);
+        RETURN(env, result);
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        result = YogBignum_new(env);
+        mpz_mul(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(right));
+        RETURN(env, result);
+    }
+
+    YogError_raise_binop_type_error(env, self, right, "*");
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
 YogVal
 YogBignum_klass_new(YogEnv* env)
 {
@@ -177,6 +211,7 @@ YogBignum_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "to_s", to_s);
     YogKlass_define_method(env, klass, "+", add);
     YogKlass_define_method(env, klass, "-", subtract);
+    YogKlass_define_method(env, klass, "*", multiply);
 
     RETURN(env, klass);
 }
