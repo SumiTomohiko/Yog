@@ -221,4 +221,81 @@ TypeError: unsupported operand type\(s\) for \*: 'Bignum' and 'Symbol'
 puts(4611686018427387904 * :foo)
 """, stderr=test_stderr)
 
+    def test_divide0(self):
+        self._test("""
+# Bignum / int
+puts(4611686018427387904 / 42)
+""", """1.09802e+17
+""")
+
+    def test_divide10(self):
+        self._test("""
+# Bignum / Float
+puts(4611686018427387904 / 3.1415926535)
+""", """1.46795e+18
+""")
+
+    def test_divide20(self):
+        self._test("""
+# Bignum / Bignum
+puts(4611686018427387904 / 9223372036854775808)
+""", """0.5
+""")
+
+    def test_divide40(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Bignum#/
+TypeError: unsupported operand type\(s\) for /: 'Bignum' and 'Bool'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Bignum / Bool (TypeError)
+puts(4611686018427387904 / true)
+""", stderr=test_stderr)
+
+    def test_divide50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Bignum#/
+TypeError: unsupported operand type\(s\) for /: 'Bignum' and 'Nil'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Bignum / nil (TypeError)
+puts(4611686018427387904 / nil)
+""", stderr=test_stderr)
+
+    def test_divide60(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Bignum#/
+ZeroDivisionError: Bignum division by zero
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Bignum / zero (ZeroDivisionError)
+puts(4611686018427387904 / 0)
+""", stderr=test_stderr)
+
+    def test_divide70(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Bignum#/
+ZeroDivisionError: float division
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Bignum / 0.0 (ZeroDivisionError)
+puts(4611686018427387904 / 0.0)
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
