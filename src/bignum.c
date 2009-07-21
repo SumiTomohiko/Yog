@@ -96,7 +96,73 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogError_raise_binop_type_error(env, self, right, "+");
 
     /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
+YogVal
+YogBignum_subtract(YogEnv* env, YogVal self, YogVal bignum)
+{
+    SAVE_ARGS2(env, self, bignum);
+    YogVal result = YUNDEF;
+    PUSH_LOCAL(env, result);
+
+    result = YogBignum_new(env);
+    mpz_sub(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
+    if (!mpz_fits_sint_p(BIGNUM_NUM(result))) {
+        RETURN(env, result);
+    }
+    int n = mpz_get_si(BIGNUM_NUM(result));
+    if (FIXABLE(n)) {
+        RETURN(env, INT2VAL(n));
+    }
+
     RETURN(env, result);
+}
+
+static YogVal
+subtract_int(YogEnv* env, YogVal self, int right)
+{
+    SAVE_ARG(env, self);
+    YogVal result = YUNDEF;
+    YogVal bignum = YUNDEF;
+    PUSH_LOCALS2(env, result, bignum);
+
+    bignum = YogBignum_from_int(env, right);
+    result = YogBignum_subtract(env, self, bignum);
+
+    RETURN(env, result);
+}
+
+static YogVal
+subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal right = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS2(env, right, result);
+
+    right = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    if (IS_INT(right)) {
+        result = subtract_int(env, self, VAL2INT(right));
+        RETURN(env, result);
+    }
+    else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        result = YogFloat_new(env);
+        FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(self)) - FLOAT_NUM(right);
+        RETURN(env, result);
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        result = YogBignum_subtract(env, self, right);
+        RETURN(env, result);
+    }
+
+    YogError_raise_binop_type_error(env, self, right, "-");
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
 }
 
 YogVal
@@ -110,6 +176,7 @@ YogBignum_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "-self", negative);
     YogKlass_define_method(env, klass, "to_s", to_s);
     YogKlass_define_method(env, klass, "+", add);
+    YogKlass_define_method(env, klass, "-", subtract);
 
     RETURN(env, klass);
 }
@@ -141,26 +208,6 @@ YogBignum_from_str(YogEnv* env, YogVal s, int base)
     }
 
     RETURN(env, bignum);
-}
-
-YogVal
-YogBignum_sub(YogEnv* env, YogVal self, YogVal bignum)
-{
-    SAVE_ARGS2(env, self, bignum);
-    YogVal result = YUNDEF;
-    PUSH_LOCAL(env, result);
-
-    result = YogBignum_new(env);
-    mpz_sub(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
-    if (!mpz_fits_sint_p(BIGNUM_NUM(result))) {
-        RETURN(env, result);
-    }
-    int n = mpz_get_si(BIGNUM_NUM(result));
-    if (FIXABLE(n)) {
-        RETURN(env, INT2VAL(n));
-    }
-
-    RETURN(env, result);
 }
 
 YogVal

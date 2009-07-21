@@ -96,7 +96,7 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_OBJ_OF(env, right, cBignum)) {
         bignum = YogBignum_from_int(env, VAL2INT(self));
-        result = YogBignum_sub(env, bignum, right);
+        result = YogBignum_subtract(env, bignum, right);
         RETURN(env, result);
     }
 

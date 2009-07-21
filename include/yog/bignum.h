@@ -24,7 +24,7 @@ YogVal YogBignum_from_int(YogEnv*, int);
 YogVal YogBignum_from_str(YogEnv*, YogVal, int);
 YogVal YogBignum_klass_new(YogEnv*);
 YogVal YogBignum_multiply(YogEnv*, YogVal, YogVal);
-YogVal YogBignum_sub(YogEnv*, YogVal, YogVal);
+YogVal YogBignum_subtract(YogEnv*, YogVal, YogVal);
 
 /* PROTOTYPE_END */
 
