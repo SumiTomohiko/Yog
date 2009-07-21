@@ -398,4 +398,17 @@ TypeError: can't multiply string by non-int of type 'Float'
 puts("foo" * 3.1415926535)
 """, stderr=test_stderr)
 
+    def test_multiply60(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in String#\*
+ArgumentError: negative argument
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" * (-1))
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
