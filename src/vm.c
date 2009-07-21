@@ -247,6 +247,7 @@ setup_exceptions(YogEnv* env, YogVM* vm)
     EXCEPTION_NEW(eIndexError, "IndexError");
     EXCEPTION_NEW(eSyntaxError, "SyntaxError");
     EXCEPTION_NEW(eZeroDivisionError, "ZeroDivisionError");
+    EXCEPTION_NEW(eArgumentError, "ArgumentError");
 #undef EXCEPTION_NEW
 }
 
@@ -357,6 +358,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eIndexError);
     KEEP(eSyntaxError);
     KEEP(eZeroDivisionError);
+    KEEP(eArgumentError);
 
     KEEP(pkgs);
     KEEP(search_path);
@@ -413,6 +415,7 @@ YogVM_init(YogVM* vm)
     vm->eIndexError = YUNDEF;
     vm->eSyntaxError = YUNDEF;
     vm->eZeroDivisionError = YUNDEF;
+    vm->eArgumentError = YUNDEF;
 
     vm->pkgs = PTR2VAL(NULL);
     initialize_read_write_lock(&vm->pkgs_lock);

@@ -353,6 +353,9 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     unsigned int size = YogString_size(env, self) - 1;
     int num = VAL2INT(arg);
+    if (num < 0) {
+        YogError_raise_ArgumentError(env, "negative argument");
+    }
     unsigned int needed_size = size * num;
     if ((num != 0) && (needed_size / num != size)) {
         YOG_BUG(env, "overflow (%u * %d = %u)", size, num, needed_size);

@@ -199,6 +199,12 @@ YogError_raise_ZeroDivisionError(YogEnv* env, const char* msg)
     raise_error(env, env->vm->eZeroDivisionError, msg);
 }
 
+void 
+YogError_raise_ArgumentError(YogEnv* env, const char* msg)
+{
+    raise_error(env, env->vm->eArgumentError, msg);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
