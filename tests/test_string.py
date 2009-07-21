@@ -262,6 +262,12 @@ puts("foo" + "bar")
 """, """foobar
 """)
 
+    def test_add5(self):
+        self._test("""
+puts("foo" + "bar" + "baz")
+""", """foobarbaz
+""")
+
     def test_add10(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
