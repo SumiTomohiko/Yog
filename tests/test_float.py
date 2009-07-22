@@ -43,7 +43,7 @@ puts(3.141592 + 2.71828183)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
   File builtin, in Float#\+
-TypeError: unsupported operand type\(s\) for \+: 'FLoat' and 'Bool'
+TypeError: unsupported operand type\(s\) for \+: 'Float' and 'Bool'
 """, stderr)
             assert m is not None
 
