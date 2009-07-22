@@ -275,6 +275,20 @@ puts(4611686018427387904 / nil)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
   File builtin, in Bignum#/
+TypeError: unsupported operand type\(s\) for /: 'Bignum' and 'Symbol'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Bignum / Symbol (TypeError)
+puts(4611686018427387904 / :foo)
+""", stderr=test_stderr)
+
+    def test_divide70(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Bignum#/
 ZeroDivisionError: Bignum division by zero
 """, stderr)
             assert m is not None
@@ -284,7 +298,7 @@ ZeroDivisionError: Bignum division by zero
 puts(4611686018427387904 / 0)
 """, stderr=test_stderr)
 
-    def test_divide70(self):
+    def test_divide80(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
@@ -296,6 +310,111 @@ ZeroDivisionError: float division
         self._test("""
 # Bignum / 0.0 (ZeroDivisionError)
 puts(4611686018427387904 / 0.0)
+""", stderr=test_stderr)
+
+    def test_floor_divide0(self):
+        self._test("""
+# Bignum // int = int (32bit)
+puts(1073741824 // 1073741823)
+""", """1
+""")
+
+    def test_floor_divide10(self):
+        self._test("""
+# Bignum // int = int (64bit)
+puts(4611686018427387904 // 4611686018427387903)
+""", """1
+""")
+
+    def test_floor_divide20(self):
+        self._test("""
+# Bignum // Float = Float
+puts(4611686018427387904 // 3.1415926535)
+""", """1.46795e+18
+""")
+
+    def test_floor_divide30(self):
+        self._test("""
+# Bignum // Bignum = int
+puts(9223372036854775808 // 4611686018427387904)
+""", """2
+""")
+
+    def test_floor_divide40(self):
+        self._test("""
+# Bignum // Bignum = Bignum
+puts(21267647932558653966460912964485513216 // 4611686018427387904)
+""", """4611686018427387904
+""")
+
+    def test_floor_divide50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Bignum#//
+TypeError: unsupported operand type\(s\) for //: 'Bignum' and 'Bool'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Bignum // Bool (TypeError)
+puts(4611686018427387904 // true)
+""", stderr=test_stderr)
+
+    def test_floor_divide60(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Bignum#//
+TypeError: unsupported operand type\(s\) for //: 'Bignum' and 'Nil'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Bignum // nil (TypeError)
+puts(4611686018427387904 // nil)
+""", stderr=test_stderr)
+
+    def test_floor_divide70(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Bignum#//
+TypeError: unsupported operand type\(s\) for //: 'Bignum' and 'Symbol'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Bignum // Symbol (TypeError)
+puts(4611686018427387904 // :foo)
+""", stderr=test_stderr)
+
+    def test_floor_divide80(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Bignum#//
+ZeroDivisionError: Bignum division by zero
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Bignum // zero (ZeroDivisionError)
+puts(4611686018427387904 // 0)
+""", stderr=test_stderr)
+
+    def test_floor_divide90(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Bignum#//
+ZeroDivisionError: float division
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Bignum // 0.0 (ZeroDivisionError)
+puts(4611686018427387904 // 0.0)
 """, stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
