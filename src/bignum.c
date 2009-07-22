@@ -11,6 +11,8 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
+#define BIGNUM2FLOAT(bignum)    mpz_get_d(BIGNUM_NUM(bignum))
+
 static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -199,6 +201,88 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YUNDEF);
 }
 
+static YogVal
+divide_int(YogEnv* env, YogVal self, int right)
+{
+    SAVE_ARG(env, self);
+    YogVal result = YUNDEF;
+    PUSH_LOCAL(env, result);
+
+    if (right == 0) {
+        YogError_raise_ZeroDivisionError(env, "Bignum division by zero");
+    }
+
+    result = YogFloat_new(env);
+    FLOAT_NUM(result) = BIGNUM2FLOAT(self) / right;
+
+    RETURN(env, result);
+}
+
+static YogVal
+divide_float(YogEnv* env, YogVal self, double right)
+{
+    SAVE_ARG(env, self);
+    YogVal result = YUNDEF;
+    PUSH_LOCAL(env, result);
+
+    if (right == 0.0) {
+        YogError_raise_ZeroDivisionError(env, "float division");
+    }
+
+    result = YogFloat_new(env);
+    FLOAT_NUM(result) = BIGNUM2FLOAT(self) / right;
+
+    RETURN(env, result);
+}
+
+static YogVal
+divide_bignum(YogEnv* env, YogVal self, YogVal bignum)
+{
+    SAVE_ARGS2(env, self, bignum);
+    YogVal result = YUNDEF;
+    PUSH_LOCAL(env, result);
+
+    if (mpz_fits_sint_p(BIGNUM_NUM(bignum))) {
+        result = divide_int(env, self, mpz_get_si(BIGNUM_NUM(bignum)));
+    }
+
+    result = YogFloat_new(env);
+    FLOAT_NUM(result) = BIGNUM2FLOAT(self) / BIGNUM2FLOAT(bignum);
+
+    RETURN(env, result);
+}
+
+static YogVal
+divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal right = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS2(env, right, result);
+
+    right = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    if (IS_INT(right)) {
+        result = divide_int(env, self, VAL2INT(right));
+        RETURN(env, result);
+    }
+    else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        result = divide_float(env, self, FLOAT_NUM(right));
+        RETURN(env, result);
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        result = divide_bignum(env, self, right);
+        RETURN(env, result);
+    }
+
+    YogError_raise_binop_type_error(env, self, right, "/");
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
 YogVal
 YogBignum_klass_new(YogEnv* env)
 {
@@ -212,6 +296,7 @@ YogBignum_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "+", add);
     YogKlass_define_method(env, klass, "-", subtract);
     YogKlass_define_method(env, klass, "*", multiply);
+    YogKlass_define_method(env, klass, "/", divide);
 
     RETURN(env, klass);
 }
