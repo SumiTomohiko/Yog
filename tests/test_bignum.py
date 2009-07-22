@@ -417,4 +417,10 @@ ZeroDivisionError: float division
 puts(4611686018427387904 // 0.0)
 """, stderr=test_stderr)
 
+    def test_positive0(self):
+        self._test("""
+puts(+ 4611686018427387904)
+""", """4611686018427387904
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

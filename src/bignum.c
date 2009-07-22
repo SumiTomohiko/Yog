@@ -382,6 +382,12 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YUNDEF);
 }
 
+static YogVal
+positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    return self;
+}
+
 YogVal
 YogBignum_klass_new(YogEnv* env)
 {
@@ -397,6 +403,7 @@ YogBignum_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "*", multiply);
     YogKlass_define_method(env, klass, "/", divide);
     YogKlass_define_method(env, klass, "//", floor_divide);
+    YogKlass_define_method(env, klass, "+self", positive);
 
     RETURN(env, klass);
 }
