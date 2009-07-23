@@ -57,6 +57,12 @@ negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
+positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    return self;
+}
+
+static YogVal
 add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -216,6 +222,7 @@ YogFloat_klass_new(YogEnv* env)
     klass = YogKlass_new(env, "Float", env->vm->cObject);
     YogKlass_define_allocator(env, klass, allocate);
     YogKlass_define_method(env, klass, "-self", negative);
+    YogKlass_define_method(env, klass, "+self", positive);
     YogKlass_define_method(env, klass, "to_s", to_s);
     YogKlass_define_method(env, klass, "+", add);
     YogKlass_define_method(env, klass, "-", subtract);
