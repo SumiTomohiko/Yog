@@ -1095,6 +1095,9 @@ atom(A) ::= LBRACKET(B) args_opt(C) RBRACKET. {
     unsigned int lineno = NODE_LINENO(B);
     A = Array_new(env, lineno, C);
 }
+atom(A) ::= LPAR expr(B) RPAR. {
+    A = B;
+}
 
 args_opt(A) ::= /* empty */. {
     A = YNIL;
