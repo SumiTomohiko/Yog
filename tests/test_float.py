@@ -17,6 +17,12 @@ puts(- 3.1415926535)
 """, """-3.14159
 """)
 
+    def test_positive0(self):
+        self._test("""
+puts(+ 3.1415926535)
+""", """3.14159
+""")
+
     def test_add0(self):
         self._test("""
 # Float + int
