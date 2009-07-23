@@ -159,15 +159,14 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+div(YogEnv* env, YogVal self, YogVal right, const char* opname)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal result = YUNDEF;
-    PUSH_LOCALS2(env, right, result);
-
-    right = YogArray_at(env, args, 0);
     YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+
+    SAVE_ARGS2(env, self, right);
+    YogVal result = YUNDEF;
+    PUSH_LOCAL(env, result);
+
     if (IS_INT(right)) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) / VAL2INT(right);
@@ -186,10 +185,24 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         RETURN(env, result);
     }
 
-    YogError_raise_binop_type_error(env, self, right, "/");
+    YogError_raise_binop_type_error(env, self, right, opname);
 
     /* NOTREACHED */
     RETURN(env, YUNDEF);
+}
+
+static YogVal
+divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    YogVal right = YogArray_at(env, args, 0);
+    return div(env, self, right, "/");
+}
+
+static YogVal
+floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    YogVal right = YogArray_at(env, args, 0);
+    return div(env, self, right, "//");
 }
 
 YogVal 
@@ -208,6 +221,7 @@ YogFloat_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "-", subtract);
     YogKlass_define_method(env, klass, "*", multiply);
     YogKlass_define_method(env, klass, "/", divide);
+    YogKlass_define_method(env, klass, "//", floor_divide);
 
     RETURN(env, klass);
 }
