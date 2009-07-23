@@ -357,6 +357,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
                     sscanf(PTR_AS(YogCharArray, body)->items, "%f", &f);
                     YogVal val = YogFloat_new(env);
                     PTR_AS(YogFloat, val)->val = f;
+                    SET_STATE(LS_OP);
                     RETURN_VAL_TOKEN(TK_NUMBER, val);
                 }
                 else {

@@ -158,6 +158,40 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YUNDEF);
 }
 
+static YogVal
+divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal right = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS2(env, right, result);
+
+    right = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    if (IS_INT(right)) {
+        result = YogFloat_new(env);
+        FLOAT_NUM(result) = FLOAT_NUM(self) / VAL2INT(right);
+        RETURN(env, result);
+    }
+    else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        result = YogFloat_new(env);
+        FLOAT_NUM(result) = FLOAT_NUM(self) / mpz_get_d(BIGNUM_NUM(right));
+        RETURN(env, result);
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        result = YogFloat_new(env);
+        FLOAT_NUM(result) = FLOAT_NUM(self) / FLOAT_NUM(right);
+        RETURN(env, result);
+    }
+
+    YogError_raise_binop_type_error(env, self, right, "/");
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
 YogVal 
 YogFloat_klass_new(YogEnv* env) 
 {
@@ -173,6 +207,7 @@ YogFloat_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "+", add);
     YogKlass_define_method(env, klass, "-", subtract);
     YogKlass_define_method(env, klass, "*", multiply);
+    YogKlass_define_method(env, klass, "/", divide);
 
     RETURN(env, klass);
 }
