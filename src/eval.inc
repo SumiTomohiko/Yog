@@ -350,6 +350,18 @@
             POP_LOCALS(ENV);
             break;
         }
+    case OP(PRINT_TOP):
+        {
+            YogVal val = YUNDEF;
+            PUSH_LOCAL(ENV, val);
+            val = POP();
+            YogVal s = YogEval_call_method(ENV, val, "to_s", 0, NULL);
+            YOG_ASSERT(ENV, IS_OBJ_OF(ENV, s, cString), "object isn't string");
+            printf("=> %s\n", STRING_CSTR(s));
+
+            POP_LOCALS(ENV);
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

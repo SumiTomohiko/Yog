@@ -31,6 +31,7 @@ YogCode_get_op_name(OpCode op)
         "LOAD_ATTR", 
         "MAKE_ARRAY", 
         "FINISH", 
+        "PRINT_TOP", 
     };
 
     return op_names[op];

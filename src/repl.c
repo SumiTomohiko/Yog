@@ -37,7 +37,7 @@ eval(YogEnv* env, YogVal pkg, YogVal src)
         if (!IS_PTR(stmts)) {
             RETURN_VOID(env);
         }
-        code = YogCompiler_compile_module(env, MAIN_MODULE_NAME, stmts);
+        code = YogCompiler_compile_interactive(env, stmts);
 
         PTR_AS(YogPackage, pkg)->code = code;
         YogEval_eval_package(env, pkg);

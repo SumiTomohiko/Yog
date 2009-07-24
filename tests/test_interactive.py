@@ -21,6 +21,7 @@ puts(26)
 
     def test_interactive20(self):
         self._test(stdout=""">>> foobar
+=> nil
 >>> >>> """, stderr="""Traceback (most recent call last):
   File \"__main__\", in <module>
   File builtin, in String#+

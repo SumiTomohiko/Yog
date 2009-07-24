@@ -91,6 +91,8 @@ struct YogInst {
         } make_array;
         struct {
         } finish;
+        struct {
+        } print_top;
     } u;
 
     unsigned int lineno;
