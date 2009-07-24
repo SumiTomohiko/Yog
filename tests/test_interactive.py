@@ -6,12 +6,15 @@ class TestInteractive(TestCase):
 
     def test_interactive0(self):
         self._test(stdout=""">>> 42
+=> nil
 >>> """, stdin="""puts(42)
 """)
 
     def test_interactive10(self):
         self._test(stdout=""">>> 42
+=> nil
 >>> 26
+=> nil
 >>> """, stdin="""puts(42)
 puts(26)
 """)
@@ -37,6 +40,16 @@ Traceback (most recent call last):
 TypeError: can't convert 'Int' object to string implicitly
 """, stdin="""puts(\"foo\" + 42)
 puts(\"foo\" + 42)
+""")
+
+    def test_interactive40(self):
+        self._test(stdout=""">>> => 42
+>>> """, stdin="""42
+""")
+
+    def test_interactive50(self):
+        self._test(stdout=""">>> => 68
+>>> """, stdin="""42 + 26
 """)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
