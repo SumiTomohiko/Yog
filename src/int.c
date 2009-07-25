@@ -162,7 +162,6 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         RETURN(env, result);
     }
     else if (IS_BOOL(right) || IS_NIL(right) || IS_SYMBOL(right)) {
-        YogError_raise_binop_type_error(env, self, right, "*");
     }
     else if (IS_OBJ_OF(env, right, cFloat)) {
         result = YogFloat_new(env);
@@ -178,7 +177,7 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         RETURN(env, result);
     }
 
-    YOG_BUG(env, "Int#* failed");
+    YogError_raise_binop_type_error(env, self, right, "*");
 
     /* NOTREACHED */
     RETURN(env, INT2VAL(0));
