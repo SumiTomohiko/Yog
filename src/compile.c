@@ -1060,6 +1060,7 @@ make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
                     entry->lineno = lineno;
                 }
                 else {
+                    YOG_ASSERT(env, i != -1, "invalid line number");
                     YogLinenoTableEntry* entry = &PTR_AS(YogLinenoTableEntry, tbl)[i];
                     entry->pc_to = INST(inst)->pc + INST(inst)->size;
                 }

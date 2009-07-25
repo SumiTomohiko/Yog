@@ -562,6 +562,7 @@ YogParser_parse(YogEnv* env, YogVal src)
 
     lexer = YogLexer_new(env);
     PTR_AS(YogLexer, lexer)->line = src;
+    PTR_AS(YogLexer, lexer)->lineno++;
     YogLexer_set_encoding(env, lexer, PTR_AS(YogString, src)->encoding);
 
     ast = parse(env, lexer, FALSE);
