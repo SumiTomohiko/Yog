@@ -250,6 +250,20 @@ TypeError: unsupported operand type\(s\) for \*: 'Int' and 'Nil'
 puts(42 * nil)
 """, stderr=test_stderr)
 
+    def test_multiply70(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Int#\*
+TypeError: unsupported operand type\(s\) for \*: 'Int' and 'Object'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# int * Object (TypeError)
+puts(42 * Object.new())
+""", stderr=test_stderr)
+
     def test_divide0(self):
         self._test("""
 # int / int
