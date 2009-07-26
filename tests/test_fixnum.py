@@ -139,6 +139,62 @@ puts(1 + 4611686018427387904)
 """, """4611686018427387905
 """)
 
+    def test_add60(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Fixnum#\+
+TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Object'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Fixnum + Object (TypeError)
+puts(42 + Object.new())
+""", stderr=test_stderr)
+
+    def test_add70(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Fixnum#\+
+TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Nil'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Fixnum + Nil (TypeError)
+puts(42 + nil)
+""", stderr=test_stderr)
+
+    def test_add80(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Fixnum#\+
+TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Bool'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Fixnum + Bool (TypeError)
+puts(42 + true)
+""", stderr=test_stderr)
+
+    def test_add90(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Fixnum#\+
+TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Symbol'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Fixnum + Symbol (TypeError)
+puts(42 + :foo)
+""", stderr=test_stderr)
+
     def test_negative0(self):
         self._test("""
 puts(- 42)
