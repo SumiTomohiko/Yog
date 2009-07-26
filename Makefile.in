@@ -11,14 +11,14 @@ all:
 	done
 
 clean: 
-	@for subdir in $(DIRS); do \
+	@for subdir in $(DIRS) tests; do \
 		(cd $${subdir}; $(MAKE) clean); \
 	done
 	find tests -name "*.pyc" -print0 | xargs --null rm -f
 	rm -f core*
 
 distclean: 
-	@for subdir in $(DIRS); do \
+	@for subdir in $(DIRS) tests; do \
 		(cd $${subdir}; $(MAKE) distclean); \
 	done
 	find tests -name "*.pyc" -print0 | xargs --null rm -f
@@ -27,7 +27,7 @@ distclean:
 	rm -f Makefile
 
 maintainer-clean: 
-	@for subdir in $(DIRS); do \
+	@for subdir in $(DIRS) tests; do \
 		(cd $${subdir}; $(MAKE) maintainer-clean); \
 	done
 	find tests -name "*.pyc" -print0 | xargs --null rm -f

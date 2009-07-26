@@ -26,4 +26,16 @@ test-bdw: $(LIBS)
 test-generational: $(LIBS)
 	GC=generational $(TEST_CMD)
 
+clean:
+	find . -name "core*" -print0 | xargs --null rm -f
+	find . -name "*.pyc" -print0 | xargs --null rm -f
+	find . -name "*.so" -print0 | xargs --null rm -f
+
+distclean:
+	$(MAKE) clean
+	rm -f Makefile
+
+maintainer-clean:
+	$(MAKE) distclean
+
 # vim: tabstop=8 shiftwidth=8 noexpandtab
