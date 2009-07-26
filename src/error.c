@@ -13,6 +13,13 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+void
+YogError_out_of_memory(YogEnv* env)
+{
+    fprintf(stderr, "[ERROR]\nout of memory\n");
+    abort();
+}
+
 static void
 print_error(YogEnv* env, const char* type, const char* filename, unsigned int lineno, const char* fmt, va_list ap)
 {

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include "yog/env.h"
+#include "yog/error.h"
 #include "yog/gc.h"
 #if defined(GC_COPYING)
 #   include "yog/gc/copying.h"
@@ -102,12 +103,11 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
 #undef ALLOC
 
     DEBUG(DPRINTF("%p: exit YogGC_allocate", env));
-    if (ptr != NULL) {
-        return PTR2VAL(ptr);
+    if (ptr == NULL) {
+        YogError_out_of_memory(env);
     }
-    else {
-        return YNIL;
-    }
+
+    return PTR2VAL(ptr);
 }
 
 #if !defined(GC_BDW)

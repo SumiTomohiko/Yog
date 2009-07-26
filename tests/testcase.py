@@ -65,11 +65,12 @@ class TestCase(object):
             else:
                 assert stdout == out
 
-        returncode = proc.returncode
-        if callable(status):
-            status(returncode)
-        else:
-            assert status == returncode
+        if status is not None:
+            returncode = proc.returncode
+            if callable(status):
+                status(returncode)
+            else:
+                assert status == returncode
 
     def write_source(self, path, src):
         f = open(path, "w")

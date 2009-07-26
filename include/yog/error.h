@@ -31,6 +31,7 @@
 
 /* src/error.c */
 void YogError_bug(YogEnv*, const char*, unsigned int, const char*, ...);
+void YogError_out_of_memory(YogEnv*);
 void YogError_print_stacktrace(YogEnv*);
 void YogError_raise(YogEnv*, YogVal);
 void YogError_raise_ArgumentError(YogEnv*, const char*);
