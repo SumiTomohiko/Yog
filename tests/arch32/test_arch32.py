@@ -11,14 +11,14 @@ class TestArch32(TestCase):
     def test_string_multiply0(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 2, in <module>
   File builtin, in String#\*
 ArgumentError: argument too big
 """, stderr)
             assert m is not None
 
         self._test("""
-puts("xx" * 536870912)
+puts("xxxxxxxx" * 536870912)
 """, stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

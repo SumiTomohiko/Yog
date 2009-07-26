@@ -350,7 +350,7 @@ YogString_multiply(YogEnv* env, YogVal self, int num)
     }
     unsigned int needed_size = size * num;
     if ((num != 0) && (needed_size / num != size)) {
-        YOG_BUG(env, "overflow (%u * %d = %u)", size, num, needed_size);
+        YogError_raise_ArgumentError(env, "argument too big");
     }
     s = YogString_new_size(env, needed_size + 1);
     unsigned int i;
