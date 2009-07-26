@@ -187,6 +187,20 @@ puts(- 42 - 3.141592)
 """, """-45.1416
 """)
 
+    def test_subtract60(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Fixnum#-
+TypeError: unsupported operand type\(s\) for -: 'Fixnum' and 'Object'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Fixnum - Object (TypeError)
+puts(42 - Object.new())
+""", stderr=test_stderr)
+
     def test_multiply0(self):
         self._test("""
 # Fixnum * Fixnum = Fixnum
