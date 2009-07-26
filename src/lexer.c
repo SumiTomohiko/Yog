@@ -211,6 +211,12 @@ is_binary_char(char c)
 }
 
 static BOOL
+is_octet_char(char c)
+{
+    return ('0' <= c) && (c <= '7');
+}
+
+static BOOL
 is_digit_char(char c)
 {
     return ('0' <= c) && (c <= '9');
@@ -354,6 +360,12 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
                 ADD_TOKEN_CHAR(c);
                 ADD_TOKEN_CHAR(c2);
                 read_number(env, lexer, is_digit_char);
+                RETURN_INT;
+            }
+            else if ((c2 == 'o') || (c2 == 'O')) {
+                ADD_TOKEN_CHAR(c);
+                ADD_TOKEN_CHAR(c2);
+                read_number(env, lexer, is_octet_char);
                 RETURN_INT;
             }
 

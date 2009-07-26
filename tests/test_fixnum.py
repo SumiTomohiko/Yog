@@ -169,7 +169,7 @@ puts(0O42)
 
     def test_octet_literal20(self):
         self._test("""
-puts(0o4_2
+puts(0o4_2)
 """, """34
 """)
 
@@ -191,16 +191,16 @@ SyntaxError: numeric literal without digits
 
     def test_octet_literal50(self):
         self._test("""
-puts(0o9)
-""", stderr="""puts(0o9)
+puts(0o8)
+""", stderr="""puts(0o8)
        ^
 SyntaxError: numeric literal without digits
 """)
 
     def test_octet_literal60(self):
         self._test("""
-puts(0o4_2)
-""", stderr="""puts(0o4_2)
+puts(0o4_8)
+""", stderr="""puts(0o4_8)
          ^
 SyntaxError: numeric literal without digits
 """)
