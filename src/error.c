@@ -90,13 +90,17 @@ raise_format(YogEnv* env, YogVal klass, const char* fmt, va_list ap)
     raise_error(env, klass, buffer);
 }
 
+#define RAISE_FORMAT(env, type, fmt)  do { \
+    va_list ap; \
+    va_start(ap, fmt); \
+    raise_format((env), (env)->vm->type, (fmt), ap); \
+    va_end(ap); \
+} while (0)
+
 void 
 YogError_raise_TypeError(YogEnv* env, const char* fmt, ...) 
 {
-    va_list ap;
-    va_start(ap, fmt);
-    raise_format(env, env->vm->eTypeError, fmt, ap);
-    va_end(ap);
+    RAISE_FORMAT(env, eTypeError, fmt);
 }
 
 void 
@@ -114,10 +118,7 @@ YogError_raise_SyntaxError(YogEnv* env, const char* msg)
 void
 YogError_raise_ValueError(YogEnv* env, const char* fmt, ...)
 {
-    va_list ap;
-    va_start(ap, fmt);
-    raise_format(env, env->vm->eValueError, fmt, ap);
-    va_end(ap);
+    RAISE_FORMAT(env, eValueError, fmt);
 }
 
 void

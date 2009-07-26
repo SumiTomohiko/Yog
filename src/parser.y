@@ -571,27 +571,20 @@ YogParser_parse(YogEnv* env, YogVal src)
 }
 
 YogVal 
-YogParser_parse_file(YogEnv* env, const char* filename, BOOL debug)
+YogParser_parse_file(YogEnv* env, FILE* fp, BOOL debug)
 {
-    YOG_ASSERT(env, filename != NULL, "filene is NULL");
+    YOG_ASSERT(env, fp != NULL, "file pointer is NULL");
 
     SAVE_LOCALS(env);
     YogVal lexer = YUNDEF;
     YogVal ast = YUNDEF;
     PUSH_LOCALS2(env, lexer, ast);
 
-    FILE* fp = fopen(filename, "r");
-    if (fp == NULL) {
-        RETURN(env, YNIL);
-    }
-
     lexer = YogLexer_new(env);
     PTR_AS(YogLexer, lexer)->fp = fp;
     YogLexer_read_encoding(env, lexer);
 
     ast = parse(env, lexer, debug);
-
-    fclose(fp);
 
     RETURN(env, ast);
 }

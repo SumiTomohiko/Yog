@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <errno.h>
 #include <getopt.h>
 #include <setjmp.h>
 #include <stdio.h>
@@ -91,12 +92,20 @@ parse_size(const char* s)
 static void
 yog_main(YogEnv* env, int argc, char* argv[])
 {
-    if (0 < argc) {
-        YogEval_eval_file(env, argv[0], MAIN_MODULE_NAME);
-    }
-    else {
+    if (argc == 0) {
         YogRepl_do(env);
+        return;
     }
+
+    const char* filename = argv[0];
+    FILE* fp = fopen(filename, "r");
+    if (fp == NULL) {
+        const char* errmsg = strerror(errno);
+        fprintf(stderr, "can't open file \"%s\": %s\n", filename, errmsg);
+        return;
+    }
+    YogEval_eval_file(env, fp, filename, MAIN_MODULE_NAME);
+    fclose(fp);
 }
 
 int 

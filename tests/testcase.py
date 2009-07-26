@@ -35,10 +35,12 @@ class TestCase(object):
             cmd_name = "yog-generational"
         return cmd_name
 
-    def do(self, stdout, stderr, stdin, status, args, timeout):
+    def run_command(self, args):
         cmd = [join("..", "src", self.get_command())] + args
+        return Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
-        proc = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    def do(self, stdout, stderr, stdin, status, args, timeout):
+        proc = self.run_command(args)
         if stdin is not None:
             proc.stdin.write(stdin)
         proc.stdin.close()

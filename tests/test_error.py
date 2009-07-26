@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import environ
-from re import search
+from re import match, search
 from testcase import TestCase
 
 class TestError(TestCase):
@@ -16,5 +16,11 @@ class TestError(TestCase):
         self._test("""
 puts("xx" * 536870912)
 """, stderr=test_stderr, status=None)
+
+    def test_open0(self):
+        proc = self.run_command(["foo"])
+        stderr = proc.stderr.read()
+        m = match("can't open file \"foo\"", stderr)
+        assert m is not None
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -760,6 +760,25 @@ join_path(char* dest, const char* head, const char* tail)
 }
 
 static YogVal
+import_yg(YogEnv* env, const char* yg, const char* pkg_name)
+{
+    SAVE_LOCALS(env);
+    YogVal pkg = YUNDEF;
+    PUSH_LOCAL(env, pkg);
+
+    FILE* fp = fopen(yg, "r");
+    if (fp == NULL) {
+        RETURN(env, YNIL);
+    }
+
+    pkg = YogEval_eval_file(env, fp, yg, pkg_name);
+
+    fclose(fp);
+
+    RETURN(env, pkg);
+}
+
+static YogVal
 import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
 {
     SAVE_LOCALS(env);
@@ -782,7 +801,7 @@ import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
         join_path(var, PTR_AS(YogCharArray, body)->items, path_head); \
         strcat(var, ext)
         HEAD2PATH(yg, ".yg");
-        pkg = YogEval_eval_file(env, yg, pkg_name);
+        pkg = import_yg(env, yg, pkg_name);
         if (IS_PTR(pkg)) {
             RETURN(env, pkg);
         }
