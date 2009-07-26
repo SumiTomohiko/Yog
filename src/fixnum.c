@@ -58,6 +58,8 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         result = YogVal_from_int(env, VAL2INT(self) + VAL2INT(right));
         RETURN(env, result);
     }
+    else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
+    }
     else if (IS_OBJ_OF(env, right, cFloat)) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = (double)VAL2INT(self) + FLOAT_NUM(right);
@@ -68,10 +70,10 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         RETURN(env, result);
     }
 
-    YOG_BUG(env, "Fixnum#+ failed");
+    YogError_raise_binop_type_error(env, self, right, "+");
 
     /* NOTREACHED */
-    RETURN(env, INT2VAL(0));
+    RETURN(env, YUNDEF);
 }
 
 static YogVal 
@@ -105,7 +107,7 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogError_raise_binop_type_error(env, self, right, "-");
 
     /* NOTREACHED */
-    RETURN(env, INT2VAL(0));
+    RETURN(env, YUNDEF);
 }
 
 static YogVal
@@ -182,7 +184,7 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogError_raise_binop_type_error(env, self, right, "*");
 
     /* NOTREACHED */
-    RETURN(env, INT2VAL(0));
+    RETURN(env, YUNDEF);
 }
 
 static double
