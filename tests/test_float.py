@@ -25,7 +25,7 @@ puts(+ 3.1415926535)
 
     def test_add0(self):
         self._test("""
-# Float + int
+# Float + Fixnum
 puts(3.141592 + 42)
 """, """45.1416
 """)
@@ -88,7 +88,7 @@ puts(3.1415926535 + :foo)
 
     def test_subtract0(self):
         self._test("""
-# Float - int
+# Float - Fixnum
 puts(3.141592 - 42)
 """, """-38.8584
 """)
@@ -151,7 +151,7 @@ puts(3.1415926535 - :foo)
 
     def test_multiply0(self):
         self._test("""
-# Float * int
+# Float * Fixnum
 puts(3.141592 * 42)
 """, """131.947
 """)
@@ -214,7 +214,7 @@ puts(3.1415926535 * :foo)
 
     def test_divide0(self):
         self._test("""
-# Float / int
+# Float / Fixnum
 puts(3.141592 / 42)
 """, """0.0747998
 """)
@@ -277,7 +277,7 @@ puts(3.1415926535 / :foo)
 
     def test_floor_divide0(self):
         self._test("""
-# Float // int
+# Float // Fixnum
 puts(3.141592 // 42)
 """, """0.0747998
 """)

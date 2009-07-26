@@ -3,7 +3,7 @@
 from re import match
 from testcase import TestCase
 
-class TestInt(TestCase):
+class TestFixnum(TestCase):
 
     def test_plus_one(self):
         self._test("""
@@ -113,28 +113,28 @@ puts(42 + 26)
 
     def test_add10(self):
         self._test("""
-# int + int = Bignum (32bit)
+# Fixnum + Fixnum = Bignum (32bit)
 puts(1 + 1073741823)
 """, """1073741824
 """)
 
     def test_add20(self):
         self._test("""
-# int + int = Bignum (64bit)
+# Fixnum + Fixnum = Bignum (64bit)
 puts(1 + 4611686018427387903)
 """, """4611686018427387904
 """)
 
     def test_add30(self):
         self._test("""
-# int + Bignum (32bit)
+# Fixnum + Bignum (32bit)
 puts(1 + 1073741824)
 """, """1073741825
 """)
 
     def test_add40(self):
         self._test("""
-# int + Bignum (64bit)
+# Fixnum + Bignum (64bit)
 puts(1 + 4611686018427387904)
 """, """4611686018427387905
 """)
@@ -147,77 +147,77 @@ puts(- 42)
 
     def test_subtract0(self):
         self._test("""
-# int - int = int
+# Fixnum - Fixnum = Fixnum
 puts(42 - 26)
 """, """16
 """)
 
     def test_subtract10(self):
         self._test("""
-# int - int = Bignum (32bit)
+# Fixnum - Fixnum = Bignum (32bit)
 puts(- 1 - 1073741823)
 """, """-1073741824
 """)
 
     def test_subtract20(self):
         self._test("""
-# int - int = Bignum (64bit)
+# Fixnum - Fixnum = Bignum (64bit)
 puts(- 1 - 4611686018427387903)
 """, """-4611686018427387904
 """)
 
     def test_subtract30(self):
         self._test("""
-# int - Bignum (32bit)
+# Fixnum - Bignum (32bit)
 puts(- 1 - 1073741824)
 """, """-1073741825
 """)
 
     def test_subtract40(self):
         self._test("""
-# int - Bignum (64bit)
+# Fixnum - Bignum (64bit)
 puts(- 1 - 4611686018427387904)
 """, """-4611686018427387905
 """)
 
     def test_subtract50(self):
         self._test("""
-# int - float
+# Fixnum - float
 puts(- 42 - 3.141592)
 """, """-45.1416
 """)
 
     def test_multiply0(self):
         self._test("""
-# int * int = int
+# Fixnum * Fixnum = Fixnum
 puts(26 * 42)
 """, """1092
 """)
 
     def test_multiply10(self):
         self._test("""
-# int * int = Bignum (32bit)
+# Fixnum * Fixnum = Bignum (32bit)
 puts(2 * 536870912)
 """, """1073741824
 """)
 
     def test_multiply20(self):
         self._test("""
-# int * int = Bignum (64bit)
+# Fixnum * Fixnum = Bignum (64bit)
 puts(2 * 2305843009213693952)
 """, """4611686018427387904
 """)
 
     def test_multiply30(self):
         self._test("""
-# int * Bignum = Bignum
+# Fixnum * Bignum = Bignum
 puts(2 * 4611686018427387904)
 """, """9223372036854775808
 """)
 
     def test_multiply40(self):
         self._test("""
-# int * float = float
+# Fixnum * float = float
 puts(2 * 3.1415926535)
 """, """6.28319
 """)
@@ -226,13 +226,13 @@ puts(2 * 3.1415926535)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#\*
-TypeError: unsupported operand type\(s\) for \*: 'Int' and 'Bool'
+  File builtin, in Fixnum#\*
+TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Bool'
 """, stderr)
             assert m is not None
 
         self._test("""
-# int * bool (TypeError)
+# Fixnum * bool (TypeError)
 puts(42 * true)
 """, stderr=test_stderr)
 
@@ -240,13 +240,13 @@ puts(42 * true)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#\*
-TypeError: unsupported operand type\(s\) for \*: 'Int' and 'Nil'
+  File builtin, in Fixnum#\*
+TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Nil'
 """, stderr)
             assert m is not None
 
         self._test("""
-# int * nil (TypeError)
+# Fixnum * nil (TypeError)
 puts(42 * nil)
 """, stderr=test_stderr)
 
@@ -254,33 +254,33 @@ puts(42 * nil)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#\*
-TypeError: unsupported operand type\(s\) for \*: 'Int' and 'Object'
+  File builtin, in Fixnum#\*
+TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Object'
 """, stderr)
             assert m is not None
 
         self._test("""
-# int * Object (TypeError)
+# Fixnum * Object (TypeError)
 puts(42 * Object.new())
 """, stderr=test_stderr)
 
     def test_divide0(self):
         self._test("""
-# int / int
+# Fixnum / Fixnum
 puts(42 / 26)
 """, """1.61538
 """)
 
     def test_divide10(self):
         self._test("""
-# int / float
+# Fixnum / float
 puts(42 / 3.1415926535)
 """, """13.369
 """)
 
     def test_divide20(self):
         self._test("""
-# int / Bignum (32bit)
+# Fixnum / Bignum (32bit)
 puts(536870912 / 1073741824)
 """, """0.5
 """)
@@ -290,7 +290,7 @@ puts(536870912 / 1073741824)
         return
 
         self._test("""
-# int / Bignum (64bit)
+# Fixnum / Bignum (64bit)
 puts(2305843009213693952 / 4611686018427387904)
 """, """0.5
 """)
@@ -299,13 +299,13 @@ puts(2305843009213693952 / 4611686018427387904)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#/
-TypeError: unsupported operand type\(s\) for /: 'Int' and 'Bool'
+  File builtin, in Fixnum#/
+TypeError: unsupported operand type\(s\) for /: 'Fixnum' and 'Bool'
 """, stderr)
             assert m is not None
 
         self._test("""
-# int / bool (TypeError)
+# Fixnum / bool (TypeError)
 puts(42 / true)
 """, stderr=test_stderr)
 
@@ -313,13 +313,13 @@ puts(42 / true)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#/
-TypeError: unsupported operand type\(s\) for /: 'Int' and 'Nil'
+  File builtin, in Fixnum#/
+TypeError: unsupported operand type\(s\) for /: 'Fixnum' and 'Nil'
 """, stderr)
             assert m is not None
 
         self._test("""
-# int / nil (TypeError)
+# Fixnum / nil (TypeError)
 puts(42 / nil)
 """, stderr=test_stderr)
 
@@ -327,13 +327,13 @@ puts(42 / nil)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#/
-ZeroDivisionError: int division by zero
+  File builtin, in Fixnum#/
+ZeroDivisionError: Fixnum division by zero
 """, stderr)
             assert m is not None
 
         self._test("""
-# int / zero (ZeroDivisionError)
+# Fixnum / zero (ZeroDivisionError)
 puts(42 / 0)
 """, stderr=test_stderr)
 
@@ -341,33 +341,33 @@ puts(42 / 0)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#/
+  File builtin, in Fixnum#/
 ZeroDivisionError: float division
 """, stderr)
             assert m is not None
 
         self._test("""
-# int / 0.0 (ZeroDivisionError)
+# Fixnum / 0.0 (ZeroDivisionError)
 puts(42 / 0.0)
 """, stderr=test_stderr)
 
     def test_floor_divide0(self):
         self._test("""
-# int // int
+# Fixnum // Fixnum
 puts(42 // 26)
 """, """1
 """)
 
     def test_floor_divide10(self):
         self._test("""
-# int // float
+# Fixnum // float
 puts(42 // 3.1415926535)
 """, """13.369
 """)
 
     def test_floor_divide20(self):
         self._test("""
-# int // Bignum (32bit)
+# Fixnum // Bignum (32bit)
 puts(536870912 // 1073741824)
 """, """0
 """)
@@ -377,7 +377,7 @@ puts(536870912 // 1073741824)
         return
 
         self._test("""
-# int // Bignum (64bit)
+# Fixnum // Bignum (64bit)
 puts(2305843009213693952 // 4611686018427387904)
 """, """0
 """)
@@ -386,13 +386,13 @@ puts(2305843009213693952 // 4611686018427387904)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#//
-TypeError: unsupported operand type\(s\) for //: 'Int' and 'Bool'
+  File builtin, in Fixnum#//
+TypeError: unsupported operand type\(s\) for //: 'Fixnum' and 'Bool'
 """, stderr)
             assert m is not None
 
         self._test("""
-# int // bool (TypeError)
+# Fixnum // bool (TypeError)
 puts(42 // true)
 """, stderr=test_stderr)
 
@@ -400,13 +400,13 @@ puts(42 // true)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#//
-TypeError: unsupported operand type\(s\) for //: 'Int' and 'Nil'
+  File builtin, in Fixnum#//
+TypeError: unsupported operand type\(s\) for //: 'Fixnum' and 'Nil'
 """, stderr)
             assert m is not None
 
         self._test("""
-# int // nil (TypeError)
+# Fixnum // nil (TypeError)
 puts(42 // nil)
 """, stderr=test_stderr)
 
@@ -414,13 +414,13 @@ puts(42 // nil)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#//
-ZeroDivisionError: int division by zero
+  File builtin, in Fixnum#//
+ZeroDivisionError: Fixnum division by zero
 """, stderr)
             assert m is not None
 
         self._test("""
-# int // zero (ZeroDivisionError)
+# Fixnum // zero (ZeroDivisionError)
 puts(42 // 0)
 """, stderr=test_stderr)
 
@@ -428,13 +428,13 @@ puts(42 // 0)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
-  File builtin, in Int#//
+  File builtin, in Fixnum#//
 ZeroDivisionError: float division
 """, stderr)
             assert m is not None
 
         self._test("""
-# int // 0.0 (ZeroDivisionError)
+# Fixnum // 0.0 (ZeroDivisionError)
 puts(42 // 0.0)
 """, stderr=test_stderr)
 

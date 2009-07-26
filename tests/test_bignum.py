@@ -13,7 +13,7 @@ puts(- 4611686018427387905)
 
     def test_add0(self):
         self._test("""
-# Bignum + int
+# Bignum + Fixnum
 puts(4611686018427387904 + 1)
 """, """4611686018427387905
 """)
@@ -76,28 +76,28 @@ puts(4611686018427387904 + :foo)
 
     def test_subtract0(self):
         self._test("""
-# Bignum - int = Bignum
+# Bignum - Fixnum = Bignum
 puts(4611686018427387905 - 1)
 """, """4611686018427387904
 """)
 
     def test_subtract10(self):
         self._test("""
-# Bignum - int = int (64bit) 
+# Bignum - Fixnum = Fixnum (64bit) 
 puts(4611686018427387904 - 1)
 """, """4611686018427387903
 """)
 
     def test_subtract20(self):
         self._test("""
-# Bignum - int = int (32bit) 
+# Bignum - Fixnum = Fixnum (32bit) 
 puts(1073741824 - 1)
 """, """1073741823
 """)
 
     def test_subtract30(self):
         self._test("""
-# Bignum - Bignum = int
+# Bignum - Bignum = Fixnum
 puts(4611686018427387905 - 4611686018427387904)
 """, """1
 """)
@@ -160,7 +160,7 @@ puts(4611686018427387904 - :foo)
 
     def test_multiply0(self):
         self._test("""
-# Bignum * int
+# Bignum * Fixnum
 puts(4611686018427387904 * 42)
 """, """193690812773950291968
 """)
@@ -223,7 +223,7 @@ puts(4611686018427387904 * :foo)
 
     def test_divide0(self):
         self._test("""
-# Bignum / int
+# Bignum / Fixnum
 puts(4611686018427387904 / 42)
 """, """1.09802e+17
 """)
@@ -314,14 +314,14 @@ puts(4611686018427387904 / 0.0)
 
     def test_floor_divide0(self):
         self._test("""
-# Bignum // int = int (32bit)
+# Bignum // Fixnum = Fixnum (32bit)
 puts(1073741824 // 1073741823)
 """, """1
 """)
 
     def test_floor_divide10(self):
         self._test("""
-# Bignum // int = int (64bit)
+# Bignum // Fixnum = Fixnum (64bit)
 puts(4611686018427387904 // 4611686018427387903)
 """, """1
 """)
@@ -335,7 +335,7 @@ puts(4611686018427387904 // 3.1415926535)
 
     def test_floor_divide30(self):
         self._test("""
-# Bignum // Bignum = int
+# Bignum // Bignum = Fixnum
 puts(9223372036854775808 // 4611686018427387904)
 """, """2
 """)

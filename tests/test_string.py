@@ -234,7 +234,7 @@ puts(s[1])
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
   File builtin, in String#\[\]
-TypeError: string index must be integer
+TypeError: string index must be Fixnumeger
 """, stderr)
             assert m is not None
 
@@ -248,7 +248,7 @@ puts(s[\"\"])
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
   File builtin, in String#\[\]=
-TypeError: string index must be integer
+TypeError: string index must be Fixnumeger
 """, stderr)
             assert m is not None
 
@@ -273,7 +273,7 @@ puts("foo" + "bar" + "baz")
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\+
-TypeError: can't convert 'Int' object to string implicitly
+TypeError: can't convert 'Fixnum' object to string implicitly
 """, stderr)
             assert m is not None
 
@@ -338,7 +338,7 @@ puts("foo" + 3.1415926535)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\*
-TypeError: can't multiply string by non-int of type 'String'
+TypeError: can't multiply string by non-Fixnum of type 'String'
 """, stderr)
             assert m is not None
 
@@ -357,7 +357,7 @@ puts("foo" * 2)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\*
-TypeError: can't multiply string by non-int of type 'Bool'
+TypeError: can't multiply string by non-Fixnum of type 'Bool'
 """, stderr)
             assert m is not None
 
@@ -370,7 +370,7 @@ puts("foo" * true)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\*
-TypeError: can't multiply string by non-int of type 'Symbol'
+TypeError: can't multiply string by non-Fixnum of type 'Symbol'
 """, stderr)
             assert m is not None
 
@@ -383,7 +383,7 @@ puts("foo" * :bar)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\*
-TypeError: can't multiply string by non-int of type 'Nil'
+TypeError: can't multiply string by non-Fixnum of type 'Nil'
 """, stderr)
             assert m is not None
 
@@ -396,7 +396,7 @@ puts("foo" * nil)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in String#\*
-TypeError: can't multiply string by non-int of type 'Float'
+TypeError: can't multiply string by non-Fixnum of type 'Float'
 """, stderr)
             assert m is not None
 
