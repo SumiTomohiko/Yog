@@ -72,7 +72,7 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
     YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) + VAL2INT(right);
         RETURN(env, result);
@@ -106,7 +106,7 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
     YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) - VAL2INT(right);
         RETURN(env, result);
@@ -140,7 +140,7 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
     YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) * VAL2INT(right);
         RETURN(env, result);
@@ -173,7 +173,7 @@ div(YogEnv* env, YogVal self, YogVal right, const char* opname)
     YogVal result = YUNDEF;
     PUSH_LOCAL(env, result);
 
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) / VAL2INT(right);
         RETURN(env, result);

@@ -67,7 +67,7 @@ typedef unsigned long long pc_t;
 
 #define IS_UNDEF(v)     ((v) == 0x02)
 #define IS_PTR(v)       (((v) & 0x03) == 0)
-#define IS_INT(v)       (((v) & 0x01) == 0x01)
+#define IS_FIXNUM(v)    (((v) & 0x01) == 0x01)
 #define IS_BOOL(v)      (((v) & 0x0f) == 0x0a)
 #define IS_TRUE(v)      ((v) == YTRUE)
 #define IS_FALSE(v)     ((v) == YFALSE)

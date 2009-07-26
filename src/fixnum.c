@@ -14,7 +14,7 @@
 #include "yog/yog.h"
 
 #define CHECK_TYPE(v) do { \
-    YOG_ASSERT(env, IS_INT(v), "Value isn't int."); \
+    YOG_ASSERT(env, IS_FIXNUM(v), "Value isn't Fixnum"); \
 } while (0)
 
 #define CHECK_ARGS(self, v) do { \
@@ -32,7 +32,7 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogInt_add_bignum(YogEnv* env, YogVal self, YogVal bignum)
+YogFixnum_add_bignum(YogEnv* env, YogVal self, YogVal bignum)
 {
     SAVE_ARGS2(env, self, bignum);
     YogVal left_and_result = YUNDEF;
@@ -54,7 +54,7 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
 
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = YogVal_from_int(env, VAL2INT(self) + VAL2INT(right));
         RETURN(env, result);
     }
@@ -64,11 +64,11 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         RETURN(env, result);
     }
     else if (IS_OBJ_OF(env, right, cBignum)) {
-        result = YogInt_add_bignum(env, self, right);
+        result = YogFixnum_add_bignum(env, self, right);
         RETURN(env, result);
     }
 
-    YOG_BUG(env, "Int#+ failed");
+    YOG_BUG(env, "Fixnum#+ failed");
 
     /* NOTREACHED */
     RETURN(env, INT2VAL(0));
@@ -85,7 +85,7 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
 
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = YogVal_from_int(env, VAL2INT(self) - VAL2INT(right));
         RETURN(env, result);
     }
@@ -100,7 +100,7 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         RETURN(env, result);
     }
 
-    YOG_BUG(env, "Int#- failed");
+    YOG_BUG(env, "Fixnum#- failed");
 
     /* NOTREACHED */
     RETURN(env, INT2VAL(0));
@@ -109,8 +109,8 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 static YogVal
 multiply_int(YogEnv* env, YogVal self, YogVal right)
 {
-    YOG_ASSERT(env, IS_INT(self), "self must be integer");
-    YOG_ASSERT(env, IS_INT(right), "right must be integer");
+    YOG_ASSERT(env, IS_FIXNUM(self), "self must be Fixnum");
+    YOG_ASSERT(env, IS_FIXNUM(right), "right must be Fixnum");
 
     SAVE_ARGS2(env, self, right);
     YogVal bignum1 = YUNDEF;
@@ -133,7 +133,7 @@ multiply_int(YogEnv* env, YogVal self, YogVal right)
 }
 
 YogVal
-YogInt_multiply(YogEnv* env, YogVal self, YogVal right)
+YogFixnum_multiply(YogEnv* env, YogVal self, YogVal right)
 {
     SAVE_ARGS2(env, self, right);
     YogVal result = YUNDEF;
@@ -157,7 +157,7 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
 
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = multiply_int(env, self, right);
         RETURN(env, result);
     }
@@ -169,7 +169,7 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         RETURN(env, result);
     }
     else if (IS_OBJ_OF(env, right, cBignum)) {
-        result = YogInt_multiply(env, self, right);
+        result = YogFixnum_multiply(env, self, right);
         RETURN(env, result);
     }
     else if (IS_OBJ_OF(env, right, cString)) {
@@ -187,7 +187,7 @@ static double
 divide_int(YogEnv* env, YogVal left, YogVal right)
 {
     if (VAL2INT(right) == 0) {
-        YogError_raise_ZeroDivisionError(env, "int division by zero");
+        YogError_raise_ZeroDivisionError(env, "Fixnum division by zero");
     }
     return (double)VAL2INT(left) / VAL2INT(right);
 }
@@ -218,7 +218,7 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     result = YogFloat_new(env);
 
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         FLOAT_NUM(result) = divide_int(env, self, right);
     }
     else if (IS_OBJ_OF(env, right, cFloat)) {
@@ -235,7 +235,7 @@ static int
 floor_divide_int(YogEnv* env, YogVal left, YogVal right)
 {
     if (VAL2INT(right) == 0) {
-        YogError_raise_ZeroDivisionError(env, "int division by zero");
+        YogError_raise_ZeroDivisionError(env, "Fixnum division by zero");
     }
     return VAL2INT(left) / VAL2INT(right);
 }
@@ -264,7 +264,7 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         YogError_raise_binop_type_error(env, self, right, "//");
     }
 
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = INT2VAL(floor_divide_int(env, self, right));
     }
     else if (IS_OBJ_OF(env, right, cFloat)) {
@@ -329,9 +329,9 @@ positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal 
-YogInt_klass_new(YogEnv* env) 
+YogFixnum_klass_new(YogEnv* env) 
 {
-    YogVal klass = YogKlass_new(env, "Int", env->vm->cObject);
+    YogVal klass = YogKlass_new(env, "Fixnum", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
     DEFINE_METHOD("+", add);

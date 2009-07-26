@@ -15,7 +15,7 @@ class DeclarationInserter(object):
             "include/yog/builtins.h": [ "src/builtins.c", ], 
             "include/yog/error.h": [ "src/error.c", ], 
             "include/yog/bool.h": [ "src/bool.c", ], 
-            "include/yog/int.h": [ "src/int.c", ], 
+            "include/yog/fixnum.h": [ "src/fixnum.c", ], 
             "include/yog/arg.h": [ "src/arg.c", ], 
             "include/yog/block.h": [ "src/block.c", ], 
             "include/yog/klass.h": [ "src/klass.c", ], 

@@ -19,11 +19,11 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
+#include "yog/fixnum.h"
 #include "yog/float.h"
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/gc/bdw.h"
-#include "yog/int.h"
 #include "yog/klass.h"
 #include "yog/misc.h"
 #include "yog/nil.h"
@@ -202,7 +202,7 @@ setup_klasses(YogEnv* env, YogVM* vm)
     YogObj_klass_init(env, vm->cObject);
     YogKlass_klass_init(env, vm->cKlass);
 
-    vm->cInt = YogInt_klass_new(env);
+    vm->cFixnum = YogFixnum_klass_new(env);
     vm->cBignum = YogBignum_klass_new(env);
     vm->cSymbol = YogSymbol_klass_new(env);
     vm->cString = YogString_klass_new(env);
@@ -334,7 +334,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     KEEP(cObject);
     KEEP(cKlass);
-    KEEP(cInt);
+    KEEP(cFixnum);
     KEEP(cBignum);
     KEEP(cSymbol);
     KEEP(cString);
@@ -391,7 +391,7 @@ YogVM_init(YogVM* vm)
 
     vm->cObject = YUNDEF;
     vm->cKlass = YUNDEF;
-    vm->cInt = YUNDEF;
+    vm->cFixnum = YUNDEF;
     vm->cBignum = YUNDEF;
     vm->cSymbol = YUNDEF;
     vm->cString = YUNDEF;

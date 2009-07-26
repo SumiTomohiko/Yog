@@ -234,7 +234,7 @@ puts(s[1])
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
   File builtin, in String#\[\]
-TypeError: string index must be Fixnumeger
+TypeError: string index must be Fixnum
 """, stderr)
             assert m is not None
 
@@ -248,7 +248,7 @@ puts(s[\"\"])
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <module>
   File builtin, in String#\[\]=
-TypeError: string index must be Fixnumeger
+TypeError: string index must be Fixnum
 """, stderr)
             assert m is not None
 

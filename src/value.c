@@ -12,7 +12,7 @@ YogVal_print(YogEnv* env, YogVal val)
     if (IS_UNDEF(val)) {
         printf("<undef>\n");
     }
-    else if (IS_INT(val)) {
+    else if (IS_FIXNUM(val)) {
         printf("<int: %d>\n", VAL2INT(val));
     }
     else if (IS_PTR(val)) {
@@ -40,7 +40,7 @@ YogVal_print(YogEnv* env, YogVal val)
 int 
 YogVal_hash(YogEnv* env, YogVal val) 
 {
-    if (IS_INT(val)) {
+    if (IS_FIXNUM(val)) {
         return VAL2INT(val);
     }
     else if (IS_PTR(val)) {
@@ -74,8 +74,8 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
 #define RET(f, a, b) do {            \
     return f(a) == f(b) ? TRUE : FALSE; \
 } while (0)
-    if (IS_INT(a)) {
-        if (!IS_INT(b)) {
+    if (IS_FIXNUM(a)) {
+        if (!IS_FIXNUM(b)) {
             return FALSE;
         }
         RET(VAL2INT, a, b);
@@ -131,8 +131,8 @@ YogVal_equals_exact(YogEnv* env, YogVal a, YogVal b)
 YogVal 
 YogVal_get_klass(YogEnv* env, YogVal val) 
 {
-    if (IS_INT(val)) {
-        return env->vm->cInt;
+    if (IS_FIXNUM(val)) {
+        return env->vm->cFixnum;
     }
     else if (IS_PTR(val)) {
         return PTR_AS(YogBasicObj, val)->klass;

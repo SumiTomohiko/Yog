@@ -20,7 +20,7 @@
 #include "yog/yog.h"
 
 #define CHECK_INT(v, msg)   do { \
-    if (!IS_INT(v)) { \
+    if (!IS_FIXNUM(v)) { \
         YogError_raise_TypeError(env, msg); \
     } \
 } while (0)
@@ -372,10 +372,10 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal s = YUNDEF;
     PUSH_LOCALS3(env, arg, klass, s);
 
-    if (!IS_INT(arg)) {
+    if (!IS_FIXNUM(arg)) {
         klass = YogVal_get_klass(env, arg);
         const char* name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, klass)->name);
-        YogError_raise_TypeError(env, "can't multiply string by non-int of type '%s'", name);
+        YogError_raise_TypeError(env, "can't multiply string by non-Fixnum of type '%s'", name);
     }
 
     s = YogString_multiply(env, self, VAL2INT(arg));
@@ -433,7 +433,7 @@ subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     YogVal body = YUNDEF;
     PUSH_LOCALS3(env, arg, retval, body);
-    CHECK_INT(arg, "string index must be integer");
+    CHECK_INT(arg, "string index must be Fixnum");
 
     retval = YogString_new(env);
     YogString* s = PTR_AS(YogString, self);
@@ -465,7 +465,7 @@ assign_subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal arg0 = YogArray_at(env, args, 0);
     YogVal arg1 = YogArray_at(env, args, 1);
     PUSH_LOCALS2(env, arg0, arg1);
-    CHECK_INT(arg0, "string index must be integer");
+    CHECK_INT(arg0, "string index must be Fixnum");
 
     YogString* s = PTR_AS(YogString, self);
     int index = VAL2INT(arg0);

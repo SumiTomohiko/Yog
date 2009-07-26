@@ -31,7 +31,7 @@ struct YogVM {
 
     YogVal cObject;
     YogVal cKlass;
-    YogVal cInt;
+    YogVal cFixnum;
     YogVal cBignum;
     YogVal cSymbol;
     YogVal cString;

@@ -99,7 +99,7 @@ group2index(YogEnv* env, YogMatch* match, YogVal arg)
         YOG_ASSERT(env, r == 1, "TODO: index error?");
         index = num_list[0];
     }
-    else if (IS_INT(arg)) {
+    else if (IS_FIXNUM(arg)) {
         index = VAL2INT(arg);
     }
     else if (IS_NIL(arg)) {

@@ -2,9 +2,9 @@
 #include "yog/array.h"
 #include "yog/bignum.h"
 #include "yog/error.h"
+#include "yog/fixnum.h"
 #include "yog/float.h"
 #include "yog/gc.h"
-#include "yog/int.h"
 #include "yog/klass.h"
 #include "yog/object.h"
 #include "yog/string.h"
@@ -78,7 +78,7 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
     YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = YogBignum_from_int(env, VAL2INT(right));
         mpz_add(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(result));
         RETURN(env, result);
@@ -146,7 +146,7 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
     YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = subtract_int(env, self, VAL2INT(right));
         RETURN(env, result);
     }
@@ -178,8 +178,8 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
     YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
-    if (IS_INT(right)) {
-        result = YogInt_multiply(env, right, self);
+    if (IS_FIXNUM(right)) {
+        result = YogFixnum_multiply(env, right, self);
         RETURN(env, result);
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
@@ -262,7 +262,7 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
     YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = divide_int(env, self, VAL2INT(right));
         RETURN(env, result);
     }
@@ -361,7 +361,7 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     right = YogArray_at(env, args, 0);
     YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
-    if (IS_INT(right)) {
+    if (IS_FIXNUM(right)) {
         result = floor_divide_int(env, self, VAL2INT(right));
         RETURN(env, result);
     }

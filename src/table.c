@@ -666,7 +666,7 @@ print_val(YogEnv* env, YogVal val)
     else if (IS_PTR(val)) {
         printf("%p", VAL2PTR(val));
     }
-    else if (IS_INT(val)) {
+    else if (IS_FIXNUM(val)) {
         printf("%d", VAL2INT(val));
     }
     else if (IS_BOOL(val)) {

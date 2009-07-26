@@ -54,7 +54,7 @@ foo.bar()""", stderr=test_stderr)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
-  File builtin, in Int#times
+  File builtin, in Fixnum#times
   File "[^"]+", line 3, in <block>
 Exception: nil
 """, stderr)
@@ -70,7 +70,7 @@ end""", stderr=test_stderr)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 8, in <module>
   File "[^"]+", line 3, in foo
-  File builtin, in Int#times
+  File builtin, in Fixnum#times
   File "[^"]+", line 4, in <block>
 Exception: nil
 """, stderr)
@@ -90,7 +90,7 @@ foo()""", stderr=test_stderr)
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 11, in <module>
   File "[^"]+", line 4, in Foo#bar
-  File builtin, in Int#times
+  File builtin, in Fixnum#times
   File "[^"]+", line 5, in <block>
 Exception: nil
 """, stderr)
