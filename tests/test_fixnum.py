@@ -105,6 +105,56 @@ puts(0b1_2)
 SyntaxError: numeric literal without digits
 """)
 
+    def test_digit_literal0(self):
+        self._test("""
+puts(0d42)
+""", """42
+""")
+
+    def test_digit_literal10(self):
+        self._test("""
+puts(0D42)
+""", """42
+""")
+
+    def test_digit_literal20(self):
+        self._test("""
+puts(0d4_2)
+""", """42
+""")
+
+    def test_digit_literal30(self):
+        self._test("""
+puts(0d4__2)
+""", stderr="""puts(0d4__2)
+         ^
+SyntaxError: trailing `_' in number
+""")
+
+    def test_digit_literal40(self):
+        self._test("""
+puts(0d_)
+""", stderr="""puts(0d_)
+       ^
+SyntaxError: numeric literal without digits
+""")
+
+    def test_digit_literal50(self):
+        self._test("""
+puts(0da)
+""", stderr="""puts(0da)
+       ^
+SyntaxError: numeric literal without digits
+""")
+
+    def test_digit_literal60(self):
+        self._test("""
+puts(0d4_a)
+""", stderr="""puts(0d4_a)
+         ^
+SyntaxError: numeric literal without digits
+""")
+
     def test_add0(self):
         self._test("""
 puts(42 + 26)
