@@ -155,6 +155,56 @@ puts(0d4_a)
 SyntaxError: numeric literal without digits
 """)
 
+    def test_octet_literal0(self):
+        self._test("""
+puts(0o42)
+""", """34
+""")
+
+    def test_octet_literal10(self):
+        self._test("""
+puts(0O42)
+""", """34
+""")
+
+    def test_octet_literal20(self):
+        self._test("""
+puts(0o4_2
+""", """34
+""")
+
+    def test_octet_literal30(self):
+        self._test("""
+puts(0o4__2)
+""", stderr="""puts(0o4__2)
+         ^
+SyntaxError: trailing `_' in number
+""")
+
+    def test_octet_literal40(self):
+        self._test("""
+puts(0o_)
+""", stderr="""puts(0o_)
+       ^
+SyntaxError: numeric literal without digits
+""")
+
+    def test_octet_literal50(self):
+        self._test("""
+puts(0o9)
+""", stderr="""puts(0o9)
+       ^
+SyntaxError: numeric literal without digits
+""")
+
+    def test_octet_literal60(self):
+        self._test("""
+puts(0o4_2)
+""", stderr="""puts(0o4_2)
+         ^
+SyntaxError: numeric literal without digits
+""")
+
     def test_add0(self):
         self._test("""
 puts(42 + 26)
