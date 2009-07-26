@@ -204,6 +204,18 @@ push_multibyte_char(YogEnv* env, YogVal lexer)
     RETURN_VOID(env);
 }
 
+static BOOL
+is_binary_char(char c)
+{
+    return (c == '0') || (c == '1');
+}
+
+static BOOL
+is_digit_char(char c)
+{
+    return ('0' <= c) && (c <= '9');
+}
+
 static void
 print_current_position(YogEnv* env, YogVal lexer)
 {
@@ -229,6 +241,48 @@ print_current_position(YogEnv* env, YogVal lexer)
     fprintf(out, "^\n");
 }
 
+#define NEXTC()             nextc(lexer)
+#define PUSHBACK(c)         pushback(lexer, c)
+#define ADD_TOKEN_CHAR(c)   add_token_char(env, lexer, c)
+
+static void
+read_number(YogEnv* env, YogVal lexer, BOOL (*is_valid_char)(char))
+{
+    SAVE_ARG(env, lexer);
+
+    char c = NEXTC();
+    if (!is_valid_char(c)) {
+        print_current_position(env, lexer);
+        YogError_raise_SyntaxError(env, "numeric literal without digits");
+    }
+    ADD_TOKEN_CHAR(c);
+
+    while (1) {
+        c = NEXTC();
+        if (is_valid_char(c)) {
+            ADD_TOKEN_CHAR(c);
+        }
+        else if (c == '_') {
+            ADD_TOKEN_CHAR(c);
+
+            c = NEXTC();
+            if (c == '_') {
+                print_current_position(env, lexer);
+                YogError_raise_SyntaxError(env, "trailing `_' in number");
+            }
+            else if (!is_valid_char(c)) {
+                print_current_position(env, lexer);
+                YogError_raise_SyntaxError(env, "numeric literal without digits");
+            }
+            ADD_TOKEN_CHAR(c);
+        }
+        else {
+            PUSHBACK(c);
+            RETURN_VOID(env);
+        }
+    }
+}
+
 BOOL 
 YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 {
@@ -237,8 +291,6 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
     clear_buffer(env, lexer);
 
 #define SET_STATE(stat)     PTR_AS(YogLexer, lexer)->state = stat
-#define NEXTC()             nextc(lexer)
-#define PUSHBACK(c)         pushback(lexer, c)
     char c = 0;
     do {
         unsigned int next_index = PTR_AS(YogLexer, lexer)->next_index;
@@ -264,7 +316,6 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
         }
     } while (1);
 
-#define ADD_TOKEN_CHAR(c)                   add_token_char(env, lexer, c)
 #define RETURN_VAL_TOKEN(type, val)         do { \
     *token = ValToken_new(env, type, val, PTR_AS(YogLexer, lexer)->lineno); \
     RETURN(env, TRUE); \
@@ -296,38 +347,14 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             if ((c2 == 'b') || (c2 == 'B')) {
                 ADD_TOKEN_CHAR(c);
                 ADD_TOKEN_CHAR(c2);
-
-                c = NEXTC();
-                if ((c != '0') && (c != '1')) {
-                    print_current_position(env, lexer);
-                    YogError_raise_SyntaxError(env, "numeric literal without digits");
-                }
+                read_number(env, lexer, is_binary_char);
+                RETURN_INT;
+            }
+            else if ((c2 == 'd') || (c2 == 'D')) {
                 ADD_TOKEN_CHAR(c);
-
-                while (1) {
-                    c = NEXTC();
-                    if ((c == '0') || (c == '1')) {
-                        ADD_TOKEN_CHAR(c);
-                    }
-                    else if (c == '_') {
-                        ADD_TOKEN_CHAR(c);
-
-                        c = NEXTC();
-                        if (c == '_') {
-                            print_current_position(env, lexer);
-                            YogError_raise_SyntaxError(env, "trailing `_' in number");
-                        }
-                        else if ((c != '0') && (c != '1')) {
-                            print_current_position(env, lexer);
-                            YogError_raise_SyntaxError(env, "numeric literal without digits");
-                        }
-                        ADD_TOKEN_CHAR(c);
-                    }
-                    else {
-                        PUSHBACK(c);
-                        RETURN_INT;
-                    }
-                }
+                ADD_TOKEN_CHAR(c2);
+                read_number(env, lexer, is_digit_char);
+                RETURN_INT;
             }
 
             PUSHBACK(c2);
@@ -642,13 +669,14 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 #undef BUFSIZE
 #undef RETURN_NAME
 #undef RETURN_VAL
-#undef ADD_TOKEN_CHAR
-#undef PUSHBACK
-#undef NEXTC
 #undef SET_STATE
 
     RETURN(env, 0);
 }
+
+#undef ADD_TOKEN_CHAR
+#undef PUSHBACK
+#undef NEXTC
 
 static BOOL 
 is_coding_char(char c) 
