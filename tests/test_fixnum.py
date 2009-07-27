@@ -117,6 +117,18 @@ puts(0D42)
 """, """42
 """)
 
+    def test_digit_literal13(self):
+        self._test("""
+puts(0d0)
+""", """0
+""")
+
+    def test_digit_literal16(self):
+        self._test("""
+puts(0d9)
+""", """9
+""")
+
     def test_digit_literal20(self):
         self._test("""
 puts(0d4_2)
@@ -167,6 +179,18 @@ puts(0O42)
 """, """34
 """)
 
+    def test_octet_literal13(self):
+        self._test("""
+puts(0o0)
+""", """0
+""")
+
+    def test_octet_literal16(self):
+        self._test("""
+puts(0o7)
+""", """7
+""")
+
     def test_octet_literal20(self):
         self._test("""
 puts(0o4_2)
@@ -201,6 +225,108 @@ SyntaxError: numeric literal without digits
         self._test("""
 puts(0o4_8)
 """, stderr="""puts(0o4_8)
+         ^
+SyntaxError: numeric literal without digits
+""")
+
+    def test_hex_literal0(self):
+        self._test("""
+puts(0x42)
+""", """66
+""")
+
+    def test_hex_literal10(self):
+        self._test("""
+puts(0X42)
+""", """66
+""")
+
+    def test_hex_literal20(self):
+        self._test("""
+puts(0x0)
+""", """0
+""")
+
+    def test_hex_literal30(self):
+        self._test("""
+puts(0x9)
+""", """9
+""")
+
+    def test_hex_literal40(self):
+        self._test("""
+puts(0xa)
+""", """10
+""")
+
+    def test_hex_literal50(self):
+        self._test("""
+puts(0xf)
+""", """15
+""")
+
+    def test_hex_literal60(self):
+        self._test("""
+puts(0xA)
+""", """10
+""")
+
+    def test_hex_literal70(self):
+        self._test("""
+puts(0xF)
+""", """15
+""")
+
+    def test_hex_literal80(self):
+        self._test("""
+puts(0x4_2)
+""", """66
+""")
+
+    def test_hex_literal90(self):
+        self._test("""
+puts(0x4__2)
+""", stderr="""puts(0x4__2)
+         ^
+SyntaxError: trailing `_' in number
+""")
+
+    def test_hex_literal100(self):
+        self._test("""
+puts(0x_)
+""", stderr="""puts(0x_)
+       ^
+SyntaxError: numeric literal without digits
+""")
+
+    def test_hex_literal110(self):
+        self._test("""
+puts(0xg)
+""", stderr="""puts(0xg)
+       ^
+SyntaxError: numeric literal without digits
+""")
+
+    def test_hex_literal120(self):
+        self._test("""
+puts(0xG)
+""", stderr="""puts(0xG)
+       ^
+SyntaxError: numeric literal without digits
+""")
+
+    def test_hex_literal130(self):
+        self._test("""
+puts(0x4_g)
+""", stderr="""puts(0x4_g)
+         ^
+SyntaxError: numeric literal without digits
+""")
+
+    def test_hex_literal140(self):
+        self._test("""
+puts(0x4_G)
+""", stderr="""puts(0x4_G)
          ^
 SyntaxError: numeric literal without digits
 """)
