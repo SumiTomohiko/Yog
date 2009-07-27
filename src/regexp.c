@@ -179,7 +179,7 @@ start(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     int index = group2index(env, match, arg0);
     OnigRegion* region = match->onig_region;
     if ((index < 0) || (region->num_regs <= index)) {
-        YOG_ASSERT(env, FALSE, "TODO: index error");
+        YogError_raise_IndexError(env, "no such group");
     }
     YogString* s = PTR_AS(YogString, match->str);
     YogVal body = s->body;
