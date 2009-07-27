@@ -544,7 +544,9 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
                 if (isascii(c)) {
                     if (c == '\\') {
                         int rest_size = get_rest_size(env, lexer);
-                        YOG_ASSERT(env, 0 < rest_size, "invalid escape");
+                        if (rest_size < 1) {
+                            YogError_raise_SyntaxError(env, "EOL while scanning regexp literal");
+                        }
                         c = NEXTC();
                         switch (c) {
                         case 'n':
