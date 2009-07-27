@@ -193,7 +193,7 @@ push_multibyte_char(YogEnv* env, YogVal lexer)
     int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
     int rest_size = get_rest_size(env, lexer);
     if (rest_size < mbc_size) {
-        YOG_ASSERT(env, FALSE, "Invalid multibyte character.");
+        YogError_raise_SyntaxError(env, "invalid multibyte char");
     }
     int i = 0;
     for (i = 0; i < mbc_size; i++) {
