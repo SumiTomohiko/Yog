@@ -130,7 +130,7 @@ group(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     OnigRegion* region = match->onig_region;
     if ((index < 0) || (region->num_regs <= index)) {
-        YOG_ASSERT(env, FALSE, "TODO: index error");
+        YogError_raise_IndexError(env, "no such group");
     }
     int begin = region->beg[index];
     int end = region->end[index];
