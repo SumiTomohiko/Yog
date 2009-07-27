@@ -1,0 +1,17 @@
+# -*- coding: utf-8 -*-
+
+from re import match
+from testcase import TestCase
+
+class TestLexer(TestCase):
+
+    def test_regexp0(self):
+        def test_stderr(stderr):
+            m = match(r"""SyntaxError: EOL while scanning regexp literal
+""", stderr)
+            assert m is not None
+
+        self._test("""
+/\\""", stderr=test_stderr)
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
