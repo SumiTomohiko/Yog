@@ -192,19 +192,6 @@ Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_defaul
 }
 
 static YogVal 
-CommandCall_new(YogEnv* env, unsigned int lineno, ID name, YogVal args, YogVal blockarg) 
-{
-    SAVE_ARGS2(env, args, blockarg);
-
-    YogVal node = YogNode_new(env, NODE_COMMAND_CALL, lineno);
-    NODE(node)->u.command_call.name = name;
-    MODIFY(env, NODE(node)->u.command_call.args, args);
-    MODIFY(env, NODE(node)->u.command_call.blockarg, blockarg);
-
-    RETURN(env, node);
-}
-
-static YogVal 
 make_array_with(YogEnv* env, YogVal elem) 
 {
     SAVE_ARG(env, elem);
@@ -633,14 +620,7 @@ stmt(A) ::= func_def(B). {
     A = B;
 }
 stmt(A) ::= expr(B). {
-    if (PTR_AS(YogNode, B)->type == NODE_VARIABLE) {
-        unsigned int lineno = NODE_LINENO(B);
-        ID id = PTR_AS(YogNode, B)->u.variable.id;
-        A = CommandCall_new(env, lineno, id, YNIL, YNIL);
-    }
-    else {
-        A = B;
-    }
+    A = B;
 }
 stmt(A) ::= TRY(B) stmts(C) excepts(D) ELSE stmts(E) finally_opt(F) END. {
     unsigned int lineno = TOKEN_LINENO(B);

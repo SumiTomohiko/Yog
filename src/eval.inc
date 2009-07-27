@@ -129,7 +129,10 @@
             if (!YogTable_lookup(ENV, globals, ID2VAL(id), &val)) {
                 val = lookup_builtins(ENV, id);
             }
-            YOG_ASSERT(ENV, !IS_UNDEF(val), "can't find global variable");
+            if (IS_UNDEF(val)) {
+                const char* name = YogVM_id2name(ENV, ENV->vm, id);
+                YogError_raise_NameError(env, "name '%s' is not defined", name);
+            }
 
             PUSH(val);
             POP_LOCALS(ENV);
@@ -145,7 +148,10 @@
             YogVal key = ID2VAL(id);
             if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME), key, &val)) {
                 val = lookup_builtins(ENV, id);
-                YOG_ASSERT(ENV, !IS_UNDEF(val), "Can't find package var.");
+            }
+            if (IS_UNDEF(val)) {
+                const char* name = YogVM_id2name(ENV, ENV->vm, id);
+                YogError_raise_NameError(env, "name '%s' is not defined", name);
             }
 
             PUSH(val);

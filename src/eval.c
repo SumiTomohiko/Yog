@@ -149,8 +149,7 @@ lookup_builtins(YogEnv* env, ID name)
     YogVal key = ID2VAL(name);
     YogVal val = YUNDEF;
     if (!YogTable_lookup(env, YOGOBJ(pkg)->attrs, key, &val)) {
-        const char* name = YogVM_id2name(env, vm, VAL2ID(key));
-        YOG_BUG(env, "Can't find builtins attribute \"%s\".", name);
+        return YUNDEF;
     }
 
     return val;

@@ -197,19 +197,6 @@ Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_defaul
 }
 
 static YogVal 
-CommandCall_new(YogEnv* env, unsigned int lineno, ID name, YogVal args, YogVal blockarg) 
-{
-    SAVE_ARGS2(env, args, blockarg);
-
-    YogVal node = YogNode_new(env, NODE_COMMAND_CALL, lineno);
-    NODE(node)->u.command_call.name = name;
-    MODIFY(env, NODE(node)->u.command_call.args, args);
-    MODIFY(env, NODE(node)->u.command_call.blockarg, blockarg);
-
-    RETURN(env, node);
-}
-
-static YogVal 
 make_array_with(YogEnv* env, YogVal elem) 
 {
     SAVE_ARG(env, elem);
@@ -618,7 +605,7 @@ Array_push_token_id(YogEnv* env, YogVal array, YogVal token)
 
 #define TOKEN_LINENO(token)     PTR_AS(YogToken, (token))->lineno
 #define NODE_LINENO(node)       PTR_AS(YogNode, (node))->lineno
-#line 622 "parser.c"
+#line 609 "parser.c"
 /* Next is all token values, in a form suitable for use by makeheaders.
 ** This section will be null unless lemon is run with the -m switch.
 */
@@ -1857,32 +1844,32 @@ static void yy_reduce(
   **     break;
   */
       case 0: /* module ::= stmts */
-#line 618 "parser.y"
+#line 605 "parser.y"
 {
     *pval = yymsp[0].minor.yy77;
 }
-#line 1865 "parser.c"
+#line 1852 "parser.c"
         break;
       case 1: /* stmts ::= stmt */
       case 20: /* dotted_names ::= dotted_name */
       case 73: /* params_with_default ::= param_with_default */
       case 76: /* args ::= expr */
       case 129: /* excepts ::= except */
-#line 622 "parser.y"
+#line 609 "parser.y"
 {
     yygotominor.yy77 = make_array_with(env, yymsp[0].minor.yy77);
 }
-#line 1876 "parser.c"
+#line 1863 "parser.c"
         break;
       case 2: /* stmts ::= stmts NEWLINE stmt */
       case 21: /* dotted_names ::= dotted_names COMMA dotted_name */
       case 74: /* params_with_default ::= params_with_default COMMA param_with_default */
       case 77: /* args ::= args COMMA expr */
-#line 625 "parser.y"
+#line 612 "parser.y"
 {
     yygotominor.yy77 = Array_push(env, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 1886 "parser.c"
+#line 1873 "parser.c"
         break;
       case 3: /* stmt ::= */
       case 26: /* super_opt ::= */
@@ -1892,13 +1879,14 @@ static void yy_reduce(
       case 124: /* blockarg_opt ::= */
       case 127: /* blockarg_params_opt ::= */
       case 134: /* finally_opt ::= */
-#line 629 "parser.y"
+#line 616 "parser.y"
 {
     yygotominor.yy77 = YNIL;
 }
-#line 1900 "parser.c"
+#line 1887 "parser.c"
         break;
       case 4: /* stmt ::= func_def */
+      case 5: /* stmt ::= expr */
       case 27: /* super_opt ::= GREATER expr */
       case 28: /* if_tail ::= else_opt */
       case 31: /* else_opt ::= ELSE stmts */
@@ -1922,660 +1910,646 @@ static void yy_reduce(
       case 107: /* postfix_expr ::= atom */
       case 123: /* args_opt ::= args */
       case 135: /* finally_opt ::= FINALLY stmts */
-#line 632 "parser.y"
+#line 619 "parser.y"
 {
     yygotominor.yy77 = yymsp[0].minor.yy77;
 }
-#line 1930 "parser.c"
-        break;
-      case 5: /* stmt ::= expr */
-#line 635 "parser.y"
-{
-    if (PTR_AS(YogNode, yymsp[0].minor.yy77)->type == NODE_VARIABLE) {
-        unsigned int lineno = NODE_LINENO(yymsp[0].minor.yy77);
-        ID id = PTR_AS(YogNode, yymsp[0].minor.yy77)->u.variable.id;
-        yygotominor.yy77 = CommandCall_new(env, lineno, id, YNIL, YNIL);
-    }
-    else {
-        yygotominor.yy77 = yymsp[0].minor.yy77;
-    }
-}
-#line 1944 "parser.c"
+#line 1918 "parser.c"
         break;
       case 6: /* stmt ::= TRY stmts excepts ELSE stmts finally_opt END */
-#line 645 "parser.y"
+#line 625 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-6].minor.yy0);
     yygotominor.yy77 = ExceptFinally_new(env, lineno, yymsp[-5].minor.yy77, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, yymsp[-1].minor.yy77);
 }
-#line 1952 "parser.c"
+#line 1926 "parser.c"
         break;
       case 7: /* stmt ::= TRY stmts excepts finally_opt END */
-#line 649 "parser.y"
+#line 629 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-4].minor.yy0);
     yygotominor.yy77 = ExceptFinally_new(env, lineno, yymsp[-3].minor.yy77, yymsp[-2].minor.yy77, YNIL, yymsp[-1].minor.yy77);
 }
-#line 1960 "parser.c"
+#line 1934 "parser.c"
         break;
       case 8: /* stmt ::= TRY stmts FINALLY stmts END */
-#line 653 "parser.y"
+#line 633 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-4].minor.yy0);
     yygotominor.yy77 = Finally_new(env, lineno, yymsp[-3].minor.yy77, yymsp[-1].minor.yy77);
 }
-#line 1968 "parser.c"
+#line 1942 "parser.c"
         break;
       case 9: /* stmt ::= WHILE expr NEWLINE stmts END */
-#line 657 "parser.y"
+#line 637 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-4].minor.yy0);
     yygotominor.yy77 = While_new(env, lineno, yymsp[-3].minor.yy77, yymsp[-1].minor.yy77);
 }
-#line 1976 "parser.c"
+#line 1950 "parser.c"
         break;
       case 10: /* stmt ::= BREAK */
-#line 661 "parser.y"
+#line 641 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[0].minor.yy0);
     yygotominor.yy77 = Break_new(env, lineno, YNIL);
 }
-#line 1984 "parser.c"
+#line 1958 "parser.c"
         break;
       case 11: /* stmt ::= BREAK expr */
-#line 665 "parser.y"
+#line 645 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-1].minor.yy0);
     yygotominor.yy77 = Break_new(env, lineno, yymsp[0].minor.yy77);
 }
-#line 1992 "parser.c"
+#line 1966 "parser.c"
         break;
       case 12: /* stmt ::= NEXT */
-#line 669 "parser.y"
+#line 649 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[0].minor.yy0);
     yygotominor.yy77 = Next_new(env, lineno, YNIL);
 }
-#line 2000 "parser.c"
+#line 1974 "parser.c"
         break;
       case 13: /* stmt ::= NEXT expr */
-#line 673 "parser.y"
+#line 653 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-1].minor.yy0);
     yygotominor.yy77 = Next_new(env, lineno, yymsp[0].minor.yy77);
 }
-#line 2008 "parser.c"
+#line 1982 "parser.c"
         break;
       case 14: /* stmt ::= RETURN */
-#line 677 "parser.y"
+#line 657 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[0].minor.yy0);
     yygotominor.yy77 = Return_new(env, lineno, YNIL);
 }
-#line 2016 "parser.c"
+#line 1990 "parser.c"
         break;
       case 15: /* stmt ::= RETURN expr */
-#line 681 "parser.y"
+#line 661 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-1].minor.yy0);
     yygotominor.yy77 = Return_new(env, lineno, yymsp[0].minor.yy77);
 }
-#line 2024 "parser.c"
+#line 1998 "parser.c"
         break;
       case 16: /* stmt ::= IF expr NEWLINE stmts if_tail END */
-#line 685 "parser.y"
+#line 665 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-5].minor.yy0);
     yygotominor.yy77 = If_new(env, lineno, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, yymsp[-1].minor.yy77);
 }
-#line 2032 "parser.c"
+#line 2006 "parser.c"
         break;
       case 17: /* stmt ::= CLASS NAME super_opt NEWLINE stmts END */
-#line 689 "parser.y"
+#line 669 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-5].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[-4].minor.yy0)->u.id;
     yygotominor.yy77 = Klass_new(env, lineno, id, yymsp[-3].minor.yy77, yymsp[-1].minor.yy77);
 }
-#line 2041 "parser.c"
+#line 2015 "parser.c"
         break;
       case 18: /* stmt ::= NONLOCAL names */
-#line 694 "parser.y"
+#line 674 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-1].minor.yy0);
     yygotominor.yy77 = Nonlocal_new(env, lineno, yymsp[0].minor.yy77);
 }
-#line 2049 "parser.c"
+#line 2023 "parser.c"
         break;
       case 19: /* stmt ::= IMPORT dotted_names */
-#line 698 "parser.y"
+#line 678 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-1].minor.yy0);
     yygotominor.yy77 = Import_new(env, lineno, yymsp[0].minor.yy77);
 }
-#line 2057 "parser.c"
+#line 2031 "parser.c"
         break;
       case 22: /* dotted_name ::= NAME */
       case 24: /* names ::= NAME */
-#line 710 "parser.y"
+#line 690 "parser.y"
 {
     yygotominor.yy77 = id_token2array(env, yymsp[0].minor.yy0);
 }
-#line 2065 "parser.c"
+#line 2039 "parser.c"
         break;
       case 23: /* dotted_name ::= dotted_name DOT NAME */
       case 25: /* names ::= names COMMA NAME */
-#line 713 "parser.y"
+#line 693 "parser.y"
 {
     yygotominor.yy77 = Array_push_token_id(env, yymsp[-2].minor.yy77, yymsp[0].minor.yy0);
 }
-#line 2073 "parser.c"
+#line 2047 "parser.c"
         break;
       case 29: /* if_tail ::= ELIF expr NEWLINE stmts if_tail */
-#line 734 "parser.y"
+#line 714 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-4].minor.yy0);
     YogVal node = If_new(env, lineno, yymsp[-3].minor.yy77, yymsp[-1].minor.yy77, yymsp[0].minor.yy77);
     yygotominor.yy77 = make_array_with(env, node);
 }
-#line 2082 "parser.c"
+#line 2056 "parser.c"
         break;
       case 32: /* func_def ::= DEF NAME LPAR params RPAR stmts END */
-#line 747 "parser.y"
+#line 727 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-6].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[-5].minor.yy0)->u.id;
     yygotominor.yy77 = FuncDef_new(env, lineno, id, yymsp[-3].minor.yy77, yymsp[-1].minor.yy77);
 }
-#line 2091 "parser.c"
+#line 2065 "parser.c"
         break;
       case 33: /* params ::= params_without_default COMMA params_with_default COMMA block_param COMMA var_param COMMA kw_param */
-#line 753 "parser.y"
+#line 733 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-8].minor.yy77, yymsp[-6].minor.yy77, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2098 "parser.c"
+#line 2072 "parser.c"
         break;
       case 34: /* params ::= params_without_default COMMA params_with_default COMMA block_param COMMA var_param */
-#line 756 "parser.y"
+#line 736 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-6].minor.yy77, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, yymsp[0].minor.yy77, YNIL);
 }
-#line 2105 "parser.c"
+#line 2079 "parser.c"
         break;
       case 35: /* params ::= params_without_default COMMA params_with_default COMMA block_param COMMA kw_param */
-#line 759 "parser.y"
+#line 739 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-6].minor.yy77, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, YNIL, yymsp[0].minor.yy77);
 }
-#line 2112 "parser.c"
+#line 2086 "parser.c"
         break;
       case 36: /* params ::= params_without_default COMMA params_with_default COMMA block_param */
-#line 762 "parser.y"
+#line 742 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, yymsp[0].minor.yy77, YNIL, YNIL);
 }
-#line 2119 "parser.c"
+#line 2093 "parser.c"
         break;
       case 37: /* params ::= params_without_default COMMA params_with_default COMMA var_param COMMA kw_param */
-#line 765 "parser.y"
+#line 745 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-6].minor.yy77, yymsp[-4].minor.yy77, YNIL, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2126 "parser.c"
+#line 2100 "parser.c"
         break;
       case 38: /* params ::= params_without_default COMMA params_with_default COMMA var_param */
-#line 768 "parser.y"
+#line 748 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, YNIL, yymsp[0].minor.yy77, YNIL);
 }
-#line 2133 "parser.c"
+#line 2107 "parser.c"
         break;
       case 39: /* params ::= params_without_default COMMA params_with_default COMMA kw_param */
-#line 771 "parser.y"
+#line 751 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, YNIL, YNIL, yymsp[0].minor.yy77);
 }
-#line 2140 "parser.c"
+#line 2114 "parser.c"
         break;
       case 40: /* params ::= params_without_default COMMA params_with_default */
-#line 774 "parser.y"
+#line 754 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-2].minor.yy77, yymsp[0].minor.yy77, YNIL, YNIL, YNIL);
 }
-#line 2147 "parser.c"
+#line 2121 "parser.c"
         break;
       case 41: /* params ::= params_without_default COMMA block_param COMMA var_param COMMA kw_param */
-#line 777 "parser.y"
+#line 757 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-6].minor.yy77, YNIL, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2154 "parser.c"
+#line 2128 "parser.c"
         break;
       case 42: /* params ::= params_without_default COMMA block_param COMMA var_param */
-#line 780 "parser.y"
+#line 760 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-4].minor.yy77, YNIL, yymsp[-2].minor.yy77, yymsp[0].minor.yy77, YNIL);
 }
-#line 2161 "parser.c"
+#line 2135 "parser.c"
         break;
       case 43: /* params ::= params_without_default COMMA block_param COMMA kw_param */
-#line 783 "parser.y"
+#line 763 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-4].minor.yy77, YNIL, yymsp[-2].minor.yy77, YNIL, yymsp[0].minor.yy77);
 }
-#line 2168 "parser.c"
+#line 2142 "parser.c"
         break;
       case 44: /* params ::= params_without_default COMMA block_param */
-#line 786 "parser.y"
+#line 766 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-2].minor.yy77, YNIL, yymsp[0].minor.yy77, YNIL, YNIL);
 }
-#line 2175 "parser.c"
+#line 2149 "parser.c"
         break;
       case 45: /* params ::= params_without_default COMMA var_param COMMA kw_param */
-#line 789 "parser.y"
+#line 769 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-4].minor.yy77, YNIL, YNIL, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2182 "parser.c"
+#line 2156 "parser.c"
         break;
       case 46: /* params ::= params_without_default COMMA var_param */
-#line 792 "parser.y"
+#line 772 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-2].minor.yy77, YNIL, YNIL, yymsp[0].minor.yy77, YNIL);
 }
-#line 2189 "parser.c"
+#line 2163 "parser.c"
         break;
       case 47: /* params ::= params_without_default COMMA kw_param */
-#line 795 "parser.y"
+#line 775 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[-2].minor.yy77, YNIL, YNIL, YNIL, yymsp[0].minor.yy77);
 }
-#line 2196 "parser.c"
+#line 2170 "parser.c"
         break;
       case 48: /* params ::= params_without_default */
-#line 798 "parser.y"
+#line 778 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, yymsp[0].minor.yy77, YNIL, YNIL, YNIL, YNIL);
 }
-#line 2203 "parser.c"
+#line 2177 "parser.c"
         break;
       case 49: /* params ::= params_with_default COMMA block_param COMMA var_param COMMA kw_param */
-#line 801 "parser.y"
+#line 781 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, yymsp[-6].minor.yy77, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2210 "parser.c"
+#line 2184 "parser.c"
         break;
       case 50: /* params ::= params_with_default COMMA block_param COMMA var_param */
-#line 804 "parser.y"
+#line 784 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, yymsp[0].minor.yy77, YNIL);
 }
-#line 2217 "parser.c"
+#line 2191 "parser.c"
         break;
       case 51: /* params ::= params_with_default COMMA block_param COMMA kw_param */
-#line 807 "parser.y"
+#line 787 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, YNIL, yymsp[0].minor.yy77);
 }
-#line 2224 "parser.c"
+#line 2198 "parser.c"
         break;
       case 52: /* params ::= params_with_default COMMA block_param */
-#line 810 "parser.y"
+#line 790 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, yymsp[-2].minor.yy77, yymsp[0].minor.yy77, YNIL, YNIL);
 }
-#line 2231 "parser.c"
+#line 2205 "parser.c"
         break;
       case 53: /* params ::= params_with_default COMMA var_param COMMA kw_param */
-#line 813 "parser.y"
+#line 793 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, yymsp[-4].minor.yy77, YNIL, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2238 "parser.c"
+#line 2212 "parser.c"
         break;
       case 54: /* params ::= params_with_default COMMA var_param */
-#line 816 "parser.y"
+#line 796 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, yymsp[-2].minor.yy77, YNIL, yymsp[0].minor.yy77, YNIL);
 }
-#line 2245 "parser.c"
+#line 2219 "parser.c"
         break;
       case 55: /* params ::= params_with_default COMMA kw_param */
-#line 819 "parser.y"
+#line 799 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, yymsp[-2].minor.yy77, YNIL, YNIL, yymsp[0].minor.yy77);
 }
-#line 2252 "parser.c"
+#line 2226 "parser.c"
         break;
       case 56: /* params ::= params_with_default */
-#line 822 "parser.y"
+#line 802 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, yymsp[0].minor.yy77, YNIL, YNIL, YNIL);
 }
-#line 2259 "parser.c"
+#line 2233 "parser.c"
         break;
       case 57: /* params ::= block_param COMMA var_param COMMA kw_param */
-#line 825 "parser.y"
+#line 805 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, YNIL, yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2266 "parser.c"
+#line 2240 "parser.c"
         break;
       case 58: /* params ::= block_param COMMA var_param */
-#line 828 "parser.y"
+#line 808 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, YNIL, yymsp[-2].minor.yy77, yymsp[0].minor.yy77, YNIL);
 }
-#line 2273 "parser.c"
+#line 2247 "parser.c"
         break;
       case 59: /* params ::= block_param COMMA kw_param */
-#line 831 "parser.y"
+#line 811 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, YNIL, yymsp[-2].minor.yy77, YNIL, yymsp[0].minor.yy77);
 }
-#line 2280 "parser.c"
+#line 2254 "parser.c"
         break;
       case 60: /* params ::= block_param */
-#line 834 "parser.y"
+#line 814 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, YNIL, yymsp[0].minor.yy77, YNIL, YNIL);
 }
-#line 2287 "parser.c"
+#line 2261 "parser.c"
         break;
       case 61: /* params ::= var_param COMMA kw_param */
-#line 837 "parser.y"
+#line 817 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, YNIL, YNIL, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2294 "parser.c"
+#line 2268 "parser.c"
         break;
       case 62: /* params ::= var_param */
-#line 840 "parser.y"
+#line 820 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, YNIL, YNIL, yymsp[0].minor.yy77, YNIL);
 }
-#line 2301 "parser.c"
+#line 2275 "parser.c"
         break;
       case 63: /* params ::= kw_param */
-#line 843 "parser.y"
+#line 823 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, YNIL, YNIL, YNIL, yymsp[0].minor.yy77);
 }
-#line 2308 "parser.c"
+#line 2282 "parser.c"
         break;
       case 64: /* params ::= */
-#line 846 "parser.y"
+#line 826 "parser.y"
 {
     yygotominor.yy77 = Params_new(env, YNIL, YNIL, YNIL, YNIL, YNIL);
 }
-#line 2315 "parser.c"
+#line 2289 "parser.c"
         break;
       case 65: /* kw_param ::= DOUBLE_STAR NAME */
-#line 850 "parser.y"
+#line 830 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-1].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[0].minor.yy0)->u.id;
     yygotominor.yy77 = Param_new(env, NODE_KW_PARAM, lineno, id, YNIL);
 }
-#line 2324 "parser.c"
+#line 2298 "parser.c"
         break;
       case 66: /* var_param ::= STAR NAME */
-#line 856 "parser.y"
+#line 836 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-1].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[0].minor.yy0)->u.id;
     yygotominor.yy77 = Param_new(env, NODE_VAR_PARAM, lineno, id, YNIL);
 }
-#line 2333 "parser.c"
+#line 2307 "parser.c"
         break;
       case 67: /* block_param ::= AMPER NAME param_default_opt */
-#line 862 "parser.y"
+#line 842 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-2].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[-1].minor.yy0)->u.id;
     yygotominor.yy77 = Param_new(env, NODE_BLOCK_PARAM, lineno, id, yymsp[0].minor.yy77);
 }
-#line 2342 "parser.c"
+#line 2316 "parser.c"
         break;
       case 71: /* params_without_default ::= NAME */
-#line 879 "parser.y"
+#line 859 "parser.y"
 {
     yygotominor.yy77 = YogArray_new(env);
     unsigned int lineno = TOKEN_LINENO(yymsp[0].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[0].minor.yy0)->u.id;
     ParamArray_push(env, yygotominor.yy77, lineno, id, YNIL);
 }
-#line 2352 "parser.c"
+#line 2326 "parser.c"
         break;
       case 72: /* params_without_default ::= params_without_default COMMA NAME */
-#line 885 "parser.y"
+#line 865 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[0].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[0].minor.yy0)->u.id;
     ParamArray_push(env, yymsp[-2].minor.yy77, lineno, id, YNIL);
     yygotominor.yy77 = yymsp[-2].minor.yy77;
 }
-#line 2362 "parser.c"
+#line 2336 "parser.c"
         break;
       case 75: /* param_with_default ::= NAME param_default */
-#line 899 "parser.y"
+#line 879 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-1].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[-1].minor.yy0)->u.id;
     yygotominor.yy77 = Param_new(env, NODE_PARAM, lineno, id, yymsp[0].minor.yy77);
 }
-#line 2371 "parser.c"
+#line 2345 "parser.c"
         break;
       case 79: /* assign_expr ::= postfix_expr EQUAL logical_or_expr */
-#line 916 "parser.y"
+#line 896 "parser.y"
 {
     unsigned int lineno = NODE_LINENO(yymsp[-2].minor.yy77);
     yygotominor.yy77 = Assign_new(env, lineno, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2379 "parser.c"
+#line 2353 "parser.c"
         break;
       case 85: /* comparison ::= xor_expr comp_op xor_expr */
-#line 939 "parser.y"
+#line 919 "parser.y"
 {
     unsigned int lineno = NODE_LINENO(yymsp[-2].minor.yy77);
     ID id = PTR_AS(YogToken, yymsp[-1].minor.yy77)->u.id;
     yygotominor.yy77 = FuncCall_new2(env, lineno, yymsp[-2].minor.yy77, id, yymsp[0].minor.yy77);
 }
-#line 2388 "parser.c"
+#line 2362 "parser.c"
         break;
       case 86: /* comp_op ::= LESS */
-#line 945 "parser.y"
+#line 925 "parser.y"
 {
     yygotominor.yy77 = yymsp[0].minor.yy0;
 }
-#line 2395 "parser.c"
+#line 2369 "parser.c"
         break;
       case 91: /* shift_expr ::= shift_expr LSHIFT match_expr */
       case 93: /* match_expr ::= match_expr EQUAL_TILDA arith_expr */
-#line 964 "parser.y"
+#line 944 "parser.y"
 {
     unsigned int lineno = NODE_LINENO(yymsp[-2].minor.yy77);
     ID id = PTR_AS(YogToken, yymsp[-1].minor.yy0)->u.id;
     yygotominor.yy77 = FuncCall_new2(env, lineno, yymsp[-2].minor.yy77, id, yymsp[0].minor.yy77);
 }
-#line 2405 "parser.c"
+#line 2379 "parser.c"
         break;
       case 95: /* arith_expr ::= arith_expr arith_op term */
       case 98: /* term ::= term term_op factor */
-#line 982 "parser.y"
+#line 962 "parser.y"
 {
     unsigned int lineno = NODE_LINENO(yymsp[-2].minor.yy77);
     yygotominor.yy77 = FuncCall_new2(env, lineno, yymsp[-2].minor.yy77, VAL2ID(yymsp[-1].minor.yy77), yymsp[0].minor.yy77);
 }
-#line 2414 "parser.c"
+#line 2388 "parser.c"
         break;
       case 96: /* arith_op ::= PLUS */
       case 97: /* arith_op ::= MINUS */
       case 100: /* term_op ::= STAR */
       case 101: /* term_op ::= DIV */
       case 102: /* term_op ::= DIV_DIV */
-#line 987 "parser.y"
+#line 967 "parser.y"
 {
     yygotominor.yy77 = ID2VAL(PTR_AS(YogToken, yymsp[0].minor.yy0)->u.id);
 }
-#line 2425 "parser.c"
+#line 2399 "parser.c"
         break;
       case 103: /* factor ::= PLUS factor */
-#line 1012 "parser.y"
+#line 992 "parser.y"
 {
     unsigned int lineno = NODE_LINENO(yymsp[-1].minor.yy0);
     ID id = YogVM_intern(env, env->vm, "+self");
     yygotominor.yy77 = FuncCall_new3(env, lineno, yymsp[0].minor.yy77, id);
 }
-#line 2434 "parser.c"
+#line 2408 "parser.c"
         break;
       case 104: /* factor ::= MINUS factor */
-#line 1017 "parser.y"
+#line 997 "parser.y"
 {
     unsigned int lineno = NODE_LINENO(yymsp[-1].minor.yy0);
     ID id = YogVM_intern(env, env->vm, "-self");
     yygotominor.yy77 = FuncCall_new3(env, lineno, yymsp[0].minor.yy77, id);
 }
-#line 2443 "parser.c"
+#line 2417 "parser.c"
         break;
       case 108: /* postfix_expr ::= postfix_expr LPAR args_opt RPAR blockarg_opt */
-#line 1033 "parser.y"
+#line 1013 "parser.y"
 {
     yygotominor.yy77 = FuncCall_new(env, NODE_LINENO(yymsp[-4].minor.yy77), yymsp[-4].minor.yy77, yymsp[-2].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2450 "parser.c"
+#line 2424 "parser.c"
         break;
       case 109: /* postfix_expr ::= postfix_expr LBRACKET expr RBRACKET */
-#line 1036 "parser.y"
+#line 1016 "parser.y"
 {
     unsigned int lineno = NODE_LINENO(yymsp[-3].minor.yy77);
     yygotominor.yy77 = Subscript_new(env, lineno, yymsp[-3].minor.yy77, yymsp[-1].minor.yy77);
 }
-#line 2458 "parser.c"
+#line 2432 "parser.c"
         break;
       case 110: /* postfix_expr ::= postfix_expr DOT NAME */
-#line 1040 "parser.y"
+#line 1020 "parser.y"
 {
     unsigned int lineno = NODE_LINENO(yymsp[-2].minor.yy77);
     ID id = PTR_AS(YogToken, yymsp[0].minor.yy0)->u.id;
     yygotominor.yy77 = Attr_new(env, lineno, yymsp[-2].minor.yy77, id);
 }
-#line 2467 "parser.c"
+#line 2441 "parser.c"
         break;
       case 111: /* atom ::= NAME */
-#line 1046 "parser.y"
+#line 1026 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[0].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[0].minor.yy0)->u.id;
     yygotominor.yy77 = Variable_new(env, lineno, id);
 }
-#line 2476 "parser.c"
+#line 2450 "parser.c"
         break;
       case 112: /* atom ::= NUMBER */
       case 113: /* atom ::= REGEXP */
       case 114: /* atom ::= STRING */
       case 115: /* atom ::= SYMBOL */
-#line 1051 "parser.y"
+#line 1031 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[0].minor.yy0);
     YogVal val = PTR_AS(YogToken, yymsp[0].minor.yy0)->u.val;
     yygotominor.yy77 = Literal_new(env, lineno, val);
 }
-#line 2488 "parser.c"
+#line 2462 "parser.c"
         break;
       case 116: /* atom ::= NIL */
-#line 1071 "parser.y"
+#line 1051 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[0].minor.yy0);
     yygotominor.yy77 = Literal_new(env, lineno, YNIL);
 }
-#line 2496 "parser.c"
+#line 2470 "parser.c"
         break;
       case 117: /* atom ::= TRUE */
-#line 1075 "parser.y"
+#line 1055 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[0].minor.yy0);
     yygotominor.yy77 = Literal_new(env, lineno, YTRUE);
 }
-#line 2504 "parser.c"
+#line 2478 "parser.c"
         break;
       case 118: /* atom ::= FALSE */
-#line 1079 "parser.y"
+#line 1059 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[0].minor.yy0);
     yygotominor.yy77 = Literal_new(env, lineno, YFALSE);
 }
-#line 2512 "parser.c"
+#line 2486 "parser.c"
         break;
       case 119: /* atom ::= LINE */
-#line 1083 "parser.y"
+#line 1063 "parser.y"
 {
     unsigned int lineno = PTR_AS(YogToken, yymsp[0].minor.yy0)->lineno;
     YogVal val = INT2VAL(lineno);
     yygotominor.yy77 = Literal_new(env, lineno, val);
 }
-#line 2521 "parser.c"
+#line 2495 "parser.c"
         break;
       case 120: /* atom ::= LBRACKET args_opt RBRACKET */
-#line 1088 "parser.y"
+#line 1068 "parser.y"
 {
     unsigned int lineno = NODE_LINENO(yymsp[-2].minor.yy0);
     yygotominor.yy77 = Array_new(env, lineno, yymsp[-1].minor.yy77);
 }
-#line 2529 "parser.c"
+#line 2503 "parser.c"
         break;
       case 121: /* atom ::= LPAR expr RPAR */
       case 128: /* blockarg_params_opt ::= LBRACKET params RBRACKET */
-#line 1092 "parser.y"
+#line 1072 "parser.y"
 {
     yygotominor.yy77 = yymsp[-1].minor.yy77;
 }
-#line 2537 "parser.c"
+#line 2511 "parser.c"
         break;
       case 125: /* blockarg_opt ::= DO blockarg_params_opt NEWLINE stmts END */
       case 126: /* blockarg_opt ::= LBRACE blockarg_params_opt NEWLINE stmts RBRACE */
-#line 1106 "parser.y"
+#line 1086 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-4].minor.yy0);
     yygotominor.yy77 = BlockArg_new(env, lineno, yymsp[-3].minor.yy77, yymsp[-1].minor.yy77);
 }
-#line 2546 "parser.c"
+#line 2520 "parser.c"
         break;
       case 130: /* excepts ::= excepts except */
-#line 1125 "parser.y"
+#line 1105 "parser.y"
 {
     yygotominor.yy77 = Array_push(env, yymsp[-1].minor.yy77, yymsp[0].minor.yy77);
 }
-#line 2553 "parser.c"
+#line 2527 "parser.c"
         break;
       case 131: /* except ::= EXCEPT expr AS NAME NEWLINE stmts */
-#line 1129 "parser.y"
+#line 1109 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-5].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[-2].minor.yy0)->u.id;
     YOG_ASSERT(env, id != NO_EXC_VAR, "Too many variables.");
     yygotominor.yy77 = ExceptBody_new(env, lineno, yymsp[-4].minor.yy77, id, yymsp[0].minor.yy77);
 }
-#line 2563 "parser.c"
+#line 2537 "parser.c"
         break;
       case 132: /* except ::= EXCEPT expr NEWLINE stmts */
-#line 1135 "parser.y"
+#line 1115 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-3].minor.yy0);
     yygotominor.yy77 = ExceptBody_new(env, lineno, yymsp[-2].minor.yy77, NO_EXC_VAR, yymsp[0].minor.yy77);
 }
-#line 2571 "parser.c"
+#line 2545 "parser.c"
         break;
       case 133: /* except ::= EXCEPT NEWLINE stmts */
-#line 1139 "parser.y"
+#line 1119 "parser.y"
 {
     unsigned int lineno = TOKEN_LINENO(yymsp[-2].minor.yy0);
     yygotominor.yy77 = ExceptBody_new(env, lineno, YNIL, NO_EXC_VAR, yymsp[0].minor.yy77);
 }
-#line 2579 "parser.c"
+#line 2553 "parser.c"
         break;
   };
   yygoto = yyRuleInfo[yyruleno].lhs;

@@ -213,6 +213,12 @@ YogError_raise_ArgumentError(YogEnv* env, const char* fmt, ...)
     RAISE_FORMAT(env, eArgumentError, fmt);
 }
 
+void
+YogError_raise_NameError(YogEnv* env, const char* fmt, ...)
+{
+    RAISE_FORMAT(env, eNameError, fmt);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
