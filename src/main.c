@@ -90,7 +90,7 @@ parse_size(const char* s)
 }
 
 static void
-yog_main(YogEnv* env, int argc, char* argv[])
+yog_main(YogEnv* env, int_t argc, char* argv[])
 {
     if (argc == 0) {
         YogRepl_do(env);
@@ -108,12 +108,12 @@ yog_main(YogEnv* env, int argc, char* argv[])
     fclose(fp);
 }
 
-int 
-main(int argc, char* argv[]) 
+int_t 
+main(int_t argc, char* argv[]) 
 {
-    int debug_parser = 0;
-    int gc_stress = 0;
-    int help = 0;
+    int_t debug_parser = 0;
+    int_t gc_stress = 0;
+    int_t help = 0;
 #define DEFAULT_INIT_HEAP_SIZE  (1 * 1024 * 1024)
     size_t init_heap_size = DEFAULT_INIT_HEAP_SIZE;
 #undef DEFAULT_INIT_HEAP_SIZE
@@ -229,7 +229,7 @@ main(int argc, char* argv[])
     SAVE_LOCALS(&env);
 
     YogJmpBuf jmpbuf;
-    int status = 0;
+    int_t status = 0;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
         PUSH_JMPBUF(main_thread, jmpbuf);
 

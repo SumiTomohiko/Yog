@@ -5,7 +5,7 @@
 #include "yog/vm.h"
 
 /* TODO: commonize with yog/yog.h */
-#define BOOL    int
+#define BOOL    int_t
 #define FALSE   (0)
 #define TRUE    (!FALSE)
 

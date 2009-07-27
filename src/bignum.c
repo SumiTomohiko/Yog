@@ -114,7 +114,7 @@ YogBignum_subtract(YogEnv* env, YogVal self, YogVal bignum)
     if (!mpz_fits_sint_p(BIGNUM_NUM(result))) {
         RETURN(env, result);
     }
-    int n = mpz_get_si(BIGNUM_NUM(result));
+    int_t n = mpz_get_si(BIGNUM_NUM(result));
     if (FIXABLE(n)) {
         RETURN(env, INT2VAL(n));
     }
@@ -123,7 +123,7 @@ YogBignum_subtract(YogEnv* env, YogVal self, YogVal bignum)
 }
 
 static YogVal
-subtract_int(YogEnv* env, YogVal self, int right)
+subtract_int(YogEnv* env, YogVal self, int_t right)
 {
     SAVE_ARG(env, self);
     YogVal result = YUNDEF;
@@ -202,7 +202,7 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-divide_int(YogEnv* env, YogVal self, int right)
+divide_int(YogEnv* env, YogVal self, int_t right)
 {
     SAVE_ARG(env, self);
     YogVal result = YUNDEF;
@@ -292,7 +292,7 @@ bignum2val(YogEnv* env, YogVal bignum)
         RETURN(env, bignum);
     }
 
-    int result = mpz_get_si(BIGNUM_NUM(bignum));
+    int_t result = mpz_get_si(BIGNUM_NUM(bignum));
     if (!FIXABLE(result)) {
         RETURN(env, bignum);
     }
@@ -301,7 +301,7 @@ bignum2val(YogEnv* env, YogVal bignum)
 }
 
 static YogVal
-floor_divide_int(YogEnv* env, YogVal self, int right)
+floor_divide_int(YogEnv* env, YogVal self, int_t right)
 {
     SAVE_ARG(env, self);
     YogVal bignum = YUNDEF;
@@ -409,7 +409,7 @@ YogBignum_klass_new(YogEnv* env)
 }
 
 YogVal
-YogBignum_from_int(YogEnv* env, int n)
+YogBignum_from_int(YogEnv* env, int_t n)
 {
     SAVE_LOCALS(env);
     YogVal bignum = YUNDEF;
@@ -422,7 +422,7 @@ YogBignum_from_int(YogEnv* env, int n)
 }
 
 YogVal
-YogBignum_from_str(YogEnv* env, YogVal s, int base)
+YogBignum_from_str(YogEnv* env, YogVal s, int_t base)
 {
     SAVE_ARG(env, s);
     YogVal bignum = YUNDEF;

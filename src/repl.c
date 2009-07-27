@@ -29,7 +29,7 @@ eval(YogEnv* env, YogVal pkg, YogVal src)
     cur_frame = PTR_AS(YogThread, env->thread)->cur_frame;
 
     YogJmpBuf jmpbuf;
-    int status = 0;
+    int_t status = 0;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
         PUSH_JMPBUF(env->thread, jmpbuf);
 

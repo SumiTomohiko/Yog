@@ -26,7 +26,7 @@
 
 typedef struct ParserState ParserState;
 
-static void Parse(struct YogEnv*, YogVal, int, YogVal, YogVal*);
+static void Parse(struct YogEnv*, YogVal, int_t, YogVal, YogVal*);
 static YogVal LemonParser_new(YogEnv*);
 static void ParseTrace(FILE*, char*);
 
@@ -1419,7 +1419,7 @@ static void yy_destructor(
 */
 static int yy_pop_parser_stack(YogVal parser) {
   YYCODETYPE yymajor;
-  uint_t yyidx = PTR_AS(yyParser, parser)->yyidx;
+  unsigned int yyidx = PTR_AS(yyParser, parser)->yyidx;
   yyStackEntry *yytos = &PTR_AS(yyParser, parser)->yystack[yyidx];
 
   if (PTR_AS(yyParser, parser)->yyidx < 0) return 0;

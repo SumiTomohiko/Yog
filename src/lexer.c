@@ -81,7 +81,7 @@ readline(YogEnv* env, YogVal lexer, FILE* fp)
     PUSH_LOCAL(env, line);
     YogString_clear(env, line);
 
-    int c = 0;
+    int_t c = 0;
     do {
         c = fgetc(fp);
         if (c == EOF) {
@@ -170,7 +170,7 @@ add_token_char(YogEnv* env, YogVal lexer, char c)
 
 #include "keywords.inc"
 
-static int 
+static int_t 
 get_rest_size(YogEnv* env, YogVal lexer) 
 {
     YogVal line = PTR_AS(YogLexer, lexer)->line;
@@ -190,12 +190,12 @@ push_multibyte_char(YogEnv* env, YogVal lexer)
     uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
     YogVal body = PTR_AS(YogString, line)->body;
     const char* ptr = &PTR_AS(YogCharArray, body)->items[next_index];
-    int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
-    int rest_size = get_rest_size(env, lexer);
+    int_t mbc_size = YogEncoding_mbc_size(env, enc, ptr);
+    int_t rest_size = get_rest_size(env, lexer);
     if (rest_size < mbc_size) {
         YogError_raise_SyntaxError(env, "invalid multibyte char");
     }
-    int i = 0;
+    int_t i = 0;
     for (i = 0; i < mbc_size; i++) {
         char c = nextc(lexer);
         add_token_char(env, lexer, c);
@@ -365,7 +365,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
     switch (c) {
     case '0':
         {
-            int c2 = NEXTC();
+            int_t c2 = NEXTC();
             if ((c2 == 'b') || (c2 == 'B')) {
                 ADD_TOKEN_CHAR(c);
                 ADD_TOKEN_CHAR(c2);
@@ -403,7 +403,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             } while (isdigit(c));
 
             if (c == '.') {
-                int c2 = NEXTC();
+                int_t c2 = NEXTC();
                 if (isdigit(c2)) {
                     ADD_TOKEN_CHAR(c);
                     do {
@@ -442,7 +442,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             while (c != quote) {
                 if (isascii(c)) {
                     if (c == '\\') {
-                        int rest_size = get_rest_size(env, lexer);
+                        int_t rest_size = get_rest_size(env, lexer);
                         if (rest_size < 1) {
                             YogError_raise_SyntaxError(env, "EOL while scanning string literal");
                         }
@@ -545,7 +545,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             while (c != delimitor) {
                 if (isascii(c)) {
                     if (c == '\\') {
-                        int rest_size = get_rest_size(env, lexer);
+                        int_t rest_size = get_rest_size(env, lexer);
                         if (rest_size < 1) {
                             YogError_raise_SyntaxError(env, "EOL while scanning regexp literal");
                         }
@@ -734,7 +734,7 @@ read_encoding(YogEnv* env, YogVal lexer)
         PTR_AS(YogLexer, lexer)->next_index = 0;
 
         skip_whitespace(lexer);
-        int c = nextc(lexer);
+        int_t c = nextc(lexer);
         if (c != '#') {
             continue;
         }

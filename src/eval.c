@@ -168,7 +168,7 @@ YogEval_mainloop(YogEnv* env)
 #undef CODE
 #define CODE        PTR_AS(YogCode, SCRIPT_FRAME(CUR_FRAME)->code)
     YogJmpBuf jmpbuf;
-    int status = 0;
+    int_t status = 0;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
         PUSH_JMPBUF(env->thread, jmpbuf);
     }

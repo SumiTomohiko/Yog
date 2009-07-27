@@ -25,7 +25,7 @@ YogEncoding_get_default(YogEnv* env)
     return val;
 }
 
-int 
+int_t 
 YogEncoding_mbc_size(YogEnv* env, YogVal enc, const char* p) 
 {
     OnigEncoding onig = PTR_AS(YogEncoding, enc)->onig_enc;

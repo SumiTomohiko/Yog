@@ -9,7 +9,7 @@
 #endif
 #include <stdio.h>
 
-#define BOOL    int
+#define BOOL    int_t
 #define FALSE   (0)
 #define TRUE    (!FALSE)
 
@@ -54,6 +54,7 @@ typedef unsigned long long pc_t;
 #endif
 
 typedef UNSIGNED_TYPE uint_t;
+typedef SIGNED_TYPE int_t;
 
 #define YUNDEF          0x02
 #define YNIL            0x06
@@ -99,11 +100,11 @@ typedef uint_t flags_t;
 
 /* src/value.c */
 BOOL YogVal_equals_exact(YogEnv*, YogVal, YogVal);
-YogVal YogVal_from_int(YogEnv*, int);
+YogVal YogVal_from_int(YogEnv*, int_t);
 YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
 YogVal YogVal_get_descr(YogEnv*, YogVal, YogVal, YogVal);
 YogVal YogVal_get_klass(YogEnv*, YogVal);
-int YogVal_hash(YogEnv*, YogVal);
+int_t YogVal_hash(YogEnv*, YogVal);
 BOOL YogVal_is_subklass_of(YogEnv*, YogVal, YogVal);
 void YogVal_print(YogEnv*, YogVal);
 

@@ -122,9 +122,9 @@ multiply_int(YogEnv* env, YogVal self, YogVal right)
     YogVal result = YUNDEF;
     PUSH_LOCALS3(env, bignum1, bignum2, result);
 
-    int n = VAL2INT(self);
-    int m = VAL2INT(right);
-    int l = n * m;
+    int_t n = VAL2INT(self);
+    int_t m = VAL2INT(right);
+    int_t l = n * m;
     if ((l / n == m) && FIXABLE(l)) {
         RETURN(env, INT2VAL(l));
     }
@@ -235,7 +235,7 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, result);
 }
 
-static int
+static int_t
 floor_divide_int(YogEnv* env, YogVal left, YogVal right)
 {
     if (VAL2INT(right) == 0) {
@@ -305,7 +305,7 @@ static YogVal
 times(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    int n = VAL2INT(self);
+    int_t n = VAL2INT(self);
 
     uint_t i = 0;
     uint_t argc = 1;

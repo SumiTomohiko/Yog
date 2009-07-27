@@ -391,8 +391,8 @@ CREATE_TEST(gc1, NULL, gc1_keep_children);
 
 #define PRIVATE
 
-PRIVATE int 
-main(int argc, const char* argv[]) 
+PRIVATE int_t 
+main(int_t argc, const char* argv[]) 
 {
 #define ERROR(...)  do { \
     fprintf(stderr, __VA_ARGS__); \

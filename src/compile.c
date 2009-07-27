@@ -56,7 +56,7 @@ typedef struct ScanVarData ScanVarData;
 
 struct ScanVarEntry {
     uint_t index;
-    int flags;
+    int_t flags;
 };
 
 #define VAR_ASSIGNED        (0x01)
@@ -460,7 +460,7 @@ scan_var_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data
 }
 
 static YogVal 
-ScanVarEntry_new(YogEnv* env, uint_t index, int flags) 
+ScanVarEntry_new(YogEnv* env, uint_t index, int_t flags) 
 {
     YogVal ent = ALLOC_OBJ(env, NULL, NULL, ScanVarEntry);
     PTR_AS(ScanVarEntry, ent)->index = index;
@@ -470,14 +470,14 @@ ScanVarEntry_new(YogEnv* env, uint_t index, int flags)
 }
 
 static void 
-scan_var_register(YogEnv* env, YogVal var_tbl, ID var, int flags)
+scan_var_register(YogEnv* env, YogVal var_tbl, ID var, int_t flags)
 {
     SAVE_ARG(env, var_tbl);
 
     YogVal key = ID2VAL(var);
     YogVal val = YUNDEF;
     if (!YogTable_lookup(env, var_tbl, key, &val)) {
-        int index = YogTable_size(env, var_tbl);
+        int_t index = YogTable_size(env, var_tbl);
         YogVal ent = ScanVarEntry_new(env, index, flags);
         YogTable_add_direct(env, var_tbl, key, ent);
     }
@@ -871,7 +871,7 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static int
+static int_t
 register_const(YogEnv* env, YogVal data, YogVal const_) 
 {
     SAVE_ARGS2(env, data, const_);
@@ -884,9 +884,9 @@ register_const(YogEnv* env, YogVal data, YogVal const_)
     }
 
     YogVal index = YUNDEF;
-    int retval = 0;
+    int_t retval = 0;
     if (!YogTable_lookup(env, const2index, const_, &index)) {
-        int size = YogTable_size(env, const2index);
+        int_t size = YogTable_size(env, const2index);
         index = INT2VAL(size);
         YogTable_add_direct(env, const2index, const_, index);
         retval = size;
@@ -930,7 +930,7 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     RETURN_VOID(env);
 }
 
-static int 
+static int_t 
 table2array_count_index(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
 {
     if (VAL2INT(*arg) < VAL2INT(value)) {
@@ -940,10 +940,10 @@ table2array_count_index(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
     return ST_CONTINUE;
 }
 
-static int 
+static int_t 
 table2array_fill_array(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
 {
-    int index = VAL2INT(value);
+    int_t index = VAL2INT(value);
     MODIFY(env, PTR_AS(YogValArray, *arg)->items[index], key);
 
     return ST_CONTINUE;
@@ -960,7 +960,7 @@ table2array(YogEnv* env, YogVal table)
 
     YogVal max_index = INT2VAL(INT_MIN);
     YogTable_foreach(env, table, table2array_count_index, &max_index);
-    int index = VAL2INT(max_index);
+    int_t index = VAL2INT(max_index);
     YogVal retval = YNIL;
     if (0 <= index) {
         uint_t size = index + 1;
@@ -1046,7 +1046,7 @@ make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
     YogVal tbl = PTR2VAL(ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(YogLinenoTableEntry) * size));
     if (0 < size) {
         inst = anchor;
-        int i = -1;
+        int_t i = -1;
         lineno = 0;
         while (IS_PTR(inst)) {
             if (INST(inst)->type == INST_OP) {
@@ -1146,18 +1146,18 @@ CompileData_add_ret_nil(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static int 
+static int_t 
 count_locals_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
 {
     if (VAR(val)->type == VT_LOCAL) {
-        int nlocals = VAL2INT(*arg);
+        int_t nlocals = VAL2INT(*arg);
         *arg = INT2VAL(nlocals + 1);
     }
 
     return ST_CONTINUE;
 }
 
-static int 
+static int_t 
 count_locals(YogEnv* env, YogVal vars)
 {
     YogVal val = INT2VAL(0);
@@ -1211,12 +1211,12 @@ CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc
     RETURN(env, data);
 }
 
-static int 
+static int_t 
 get_max_outer_level_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
 {
     if (VAR(val)->type == VT_NONLOCAL) {
-        int max_level = VAL2INT(*arg);
-        int level = VAR(val)->u.nonlocal.level;
+        int_t max_level = VAL2INT(*arg);
+        int_t level = VAR(val)->u.nonlocal.level;
         if (max_level < level) {
             *arg = INT2VAL(level);
         }
@@ -1243,7 +1243,7 @@ typedef struct AllocLocalVarsTableArg AllocLocalVarsTableArg;
 
 #define ALLOC_LOCAL_VARS_TABLE_ARG(v)   PTR_AS(AllocLocalVarsTableArg, (v))
 
-static int 
+static int_t 
 alloc_local_vars_table_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
 {
     if (VAR(val)->type == VT_LOCAL) {
@@ -1523,7 +1523,7 @@ find_outer_var(YogEnv* env, ID name, YogVal outer, uint_t* plevel, uint_t* pinde
 
     YogVal key = ID2VAL(name);
 
-    int level = 0;
+    int_t level = 0;
     while (IS_PTR(outer) && IS_PTR(COMPILE_DATA(outer)->outer)) {
         YogVal val = YUNDEF;
         if (YogTable_lookup(env, COMPILE_DATA(outer)->vars, key, &val)) {
@@ -1584,7 +1584,7 @@ typedef struct Flags2TypeArg Flags2TypeArg;
 
 #define FLAGS2TYPE_ARG(v)   PTR_AS(Flags2TypeArg, (v))
 
-static int 
+static int_t 
 vars_flags2type_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
 {
     SAVE_ARGS2(env, key, val);
@@ -1593,7 +1593,7 @@ vars_flags2type_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
     PUSH_LOCAL(env, var);
 
     ID name = VAL2ID(key);
-    int flags = SCAN_VAR_ENTRY(val)->flags;
+    int_t flags = SCAN_VAR_ENTRY(val)->flags;
     var = Var_new(env);
     if (IS_NONLOCAL(flags) || (!IS_ASSIGNED(flags) && !IS_PARAM(flags))) {
         uint_t level = 0;

@@ -66,7 +66,7 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
 
     YogVal enc = PTR_AS(YogString, pattern)->encoding;
     OnigEncoding onig = PTR_AS(YogEncoding, enc)->onig_enc;
-    int r = onig_new(&onig_regexp, pattern_begin, pattern_end, option, onig, syntax, &einfo);
+    int_t r = onig_new(&onig_regexp, pattern_begin, pattern_end, option, onig, syntax, &einfo);
     if (r != ONIG_NORMAL) {
         return YNIL;
     }
@@ -84,18 +84,18 @@ YogRegexp_klass_new(YogEnv* env)
     return YogKlass_new(env, "Regexp", env->vm->cObject);
 }
 
-static int 
+static int_t 
 group2index(YogEnv* env, YogMatch* match, YogVal arg)
 {
-    int index = 0;
+    int_t index = 0;
     if (IS_PTR(arg) && IS_OBJ_OF(env, arg, cString)) {
         YogString* s = PTR_AS(YogString, arg);
         OnigRegex onig_regexp = PTR_AS(YogRegexp, match->regexp)->onig_regexp;
         YogVal body = s->body;
         OnigUChar* name_begin = (OnigUChar*)PTR_AS(YogCharArray, body)->items;
         OnigUChar* name_end = name_begin + STRING_SIZE(arg) - 1;
-        int* num_list = NULL;
-        int r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, &num_list);
+        int_t* num_list = NULL;
+        int_t r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, &num_list);
         YOG_ASSERT(env, r == 1, "TODO: index error?");
         index = num_list[0];
     }
@@ -126,15 +126,15 @@ group(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
 
     YogMatch* match = PTR_AS(YogMatch, self);
-    int index = group2index(env, match, arg0);
+    int_t index = group2index(env, match, arg0);
 
     OnigRegion* region = match->onig_region;
     if ((index < 0) || (region->num_regs <= index)) {
         YogError_raise_IndexError(env, "no such group");
     }
-    int begin = region->beg[index];
-    int end = region->end[index];
-    int size = end - begin;
+    int_t begin = region->beg[index];
+    int_t end = region->end[index];
+    int_t size = end - begin;
     YogVal s = YogString_new_size(env, size + 1);
     YogVal str = PTR_AS(YogMatch, self)->str;
     YogVal to_body = PTR_AS(YogString, s)->body;
@@ -147,7 +147,7 @@ group(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, s);
 }
 
-static int 
+static int_t 
 ptr2index(YogEnv* env, YogString* s, const char* ptr) 
 {
     uint_t index = 0;
@@ -176,7 +176,7 @@ start(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
 
     YogMatch* match = PTR_AS(YogMatch, self);
-    int index = group2index(env, match, arg0);
+    int_t index = group2index(env, match, arg0);
     OnigRegion* region = match->onig_region;
     if ((index < 0) || (region->num_regs <= index)) {
         YogError_raise_IndexError(env, "no such group");
@@ -184,7 +184,7 @@ start(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogString* s = PTR_AS(YogString, match->str);
     YogVal body = s->body;
     const char* start = PTR_AS(YogCharArray, body)->items + region->beg[index];
-    int n = ptr2index(env, s, start);
+    int_t n = ptr2index(env, s, start);
 
     RETURN(env, INT2VAL(n));
 }
@@ -203,7 +203,7 @@ end(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
 
     YogMatch* match = PTR_AS(YogMatch, self);
-    int index = group2index(env, match, arg0);
+    int_t index = group2index(env, match, arg0);
     OnigRegion* region = match->onig_region;
     if ((index < 0) || (region->num_regs <= index)) {
         YogError_raise_IndexError(env, "no such group");
@@ -212,7 +212,7 @@ end(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal body = s->body;
     const char* p = PTR_AS(YogCharArray, body)->items;
     const char* end = p + region->end[index] - 1;
-    int n = ptr2index(env, s, end) + 1;
+    int_t n = ptr2index(env, s, end) + 1;
 
     RETURN(env, INT2VAL(n));
 }

@@ -8,8 +8,8 @@
 #include "yog/yog.h"
 
 struct YogHashType {
-    int (*compare)(YogEnv*, YogVal, YogVal);
-    int (*hash)(YogEnv*, YogVal);
+    int_t (*compare)(YogEnv*, YogVal, YogVal);
+    int_t (*hash)(YogEnv*, YogVal);
 };
 
 typedef struct YogHashType YogHashType;
@@ -32,8 +32,8 @@ typedef struct YogTableEntryArray YogTableEntryArray;
 
 struct YogTable {
     struct YogHashType* type;
-    int num_bins;
-    int num_entries;
+    int_t num_bins;
+    int_t num_entries;
     YogVal bins;
 };
 
@@ -58,7 +58,7 @@ void YogTable_cleanup_safe(YogEnv*, YogVal, YogVal*);
 BOOL YogTable_delete(YogEnv*, YogVal, YogVal*, YogVal*);
 BOOL YogTable_delete_safe(YogEnv*, YogVal, YogVal*, YogVal*, YogVal);
 void YogTable_dump(YogEnv*, YogVal);
-BOOL YogTable_foreach(YogEnv*, YogVal, int (*)(YogEnv*, YogVal, YogVal, YogVal*), YogVal*);
+BOOL YogTable_foreach(YogEnv*, YogVal, int_t (*)(YogEnv*, YogVal, YogVal, YogVal*), YogVal*);
 BOOL YogTable_insert(YogEnv*, YogVal, YogVal, YogVal);
 BOOL YogTable_lookup(YogEnv*, YogVal, YogVal, YogVal*);
 BOOL YogTable_lookup_str(YogEnv*, YogVal, const char*, YogVal*);
@@ -66,7 +66,7 @@ YogVal YogTable_new_string_table(YogEnv*);
 YogVal YogTable_new_symbol_table(YogEnv*);
 YogVal YogTable_new_val_table(YogEnv*);
 void YogTable_raw_dump(YogEnv*, YogVal);
-int YogTable_size(YogEnv*, YogVal);
+int_t YogTable_size(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

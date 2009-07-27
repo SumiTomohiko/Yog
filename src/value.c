@@ -13,7 +13,7 @@ YogVal_print(YogEnv* env, YogVal val)
         printf("<undef>\n");
     }
     else if (IS_FIXNUM(val)) {
-        printf("<int: %d>\n", VAL2INT(val));
+        printf("<int_t: %d>\n", VAL2INT(val));
     }
     else if (IS_PTR(val)) {
         printf("<ptr: %p>\n", VAL2PTR(val));
@@ -37,14 +37,14 @@ YogVal_print(YogEnv* env, YogVal val)
     }
 }
 
-int 
+int_t 
 YogVal_hash(YogEnv* env, YogVal val) 
 {
     if (IS_FIXNUM(val)) {
         return VAL2INT(val);
     }
     else if (IS_PTR(val)) {
-        return (int)VAL2PTR(val);
+        return (int_t)VAL2PTR(val);
     }
     else if (IS_BOOL(val)) {
         if (VAL2BOOL(val)) {
@@ -232,7 +232,7 @@ YogVal_is_subklass_of(YogEnv* env, YogVal val, YogVal klass)
 }
 
 YogVal
-YogVal_from_int(YogEnv* env, int n)
+YogVal_from_int(YogEnv* env, int_t n)
 {
     if (!FIXABLE(n)) {
         return YogBignum_from_int(env, n);

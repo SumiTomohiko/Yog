@@ -338,7 +338,7 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogString_multiply(YogEnv* env, YogVal self, int num)
+YogString_multiply(YogEnv* env, YogVal self, int_t num)
 {
     SAVE_ARG(env, self);
     YogVal s = YUNDEF;
@@ -437,7 +437,7 @@ subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     retval = YogString_new(env);
     YogString* s = PTR_AS(YogString, self);
-    int index = VAL2INT(arg);
+    int_t index = VAL2INT(arg);
     const char* p = index2ptr(env, s, index);
     body = s->body;
     const char* q = PTR_AS(YogCharArray, body)->items;
@@ -468,7 +468,7 @@ assign_subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     CHECK_INT(arg0, "string index must be Fixnum");
 
     YogString* s = PTR_AS(YogString, self);
-    int index = VAL2INT(arg0);
+    int_t index = VAL2INT(arg0);
     char* p = index2ptr(env, s, index);
     uint_t size_orig = YogEncoding_mbc_size(env, s->encoding, p);
     YogVal body0 = s->body;
@@ -529,7 +529,7 @@ match(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     OnigUChar* begin = (OnigUChar*)PTR_AS(YogCharArray, s->body)->items;
     OnigUChar* end = begin + s->size - 1;
     OnigRegion* region = onig_region_new();
-    int r = onig_search(regexp->onig_regexp, begin, end, begin, end, region, ONIG_OPTION_NONE);
+    int_t r = onig_search(regexp->onig_regexp, begin, end, begin, end, region, ONIG_OPTION_NONE);
     if (r == ONIG_MISMATCH) {
         RETURN(env, YNIL);
     }
@@ -665,7 +665,7 @@ YogString_dup(YogEnv* env, const char* s)
 }
 
 static BOOL
-normalize_as_number(YogEnv* env, YogVal self, YogVal* normalized, int* base)
+normalize_as_number(YogEnv* env, YogVal self, YogVal* normalized, int_t* base)
 {
     YOG_ASSERT(env, normalized != NULL, "normalized is NULL");
     YOG_ASSERT(env, base != NULL, "base is NULL");
@@ -797,7 +797,7 @@ YogString_to_i(YogEnv* env, YogVal self)
     YogError_raise_ValueError(env, "invalid literal: %s", s); \
     RETURN(env, INT2VAL(0)); \
 } while (0)
-    int base;
+    int_t base;
     if (!normalize_as_number(env, self, &normalized, &base)) {
         RAISE_VALUE_ERROR;
     }

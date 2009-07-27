@@ -571,8 +571,8 @@ initialize_memory(void* ptr, size_t size)
 
 #if defined(GC_GENERATIONAL)
 
-static int 
-protect_page(void* page, int prot) 
+static int_t 
+protect_page(void* page, int_t prot) 
 {
     DEBUG(DPRINTF("protect page: page=%p-%p, PROT_READ=%d, PROT_WRITE=%d", page, (char*)page + PAGE_SIZE, prot & PROT_READ ? 1 : 0, prot & PROT_WRITE ? 1 : 0));
     return mprotect(page, PAGE_SIZE, prot);
@@ -613,15 +613,15 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 
                 size_t chunk_size = msc->chunk_size;
                 size_t mmap_size = chunk_size + PAGE_SIZE;
-                int proto = PROT_READ | PROT_WRITE;
-                int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+                int_t proto = PROT_READ | PROT_WRITE;
+                int_t flags = MAP_PRIVATE | MAP_ANONYMOUS;
                 unsigned char* mmap_begin = mmap(NULL, mmap_size, proto, flags, -1, 0);
                 if (mmap_begin == MAP_FAILED) {
                     ERROR(ERR_MSC_MMAP);
                 }
                 unsigned char* chunk_begin = (unsigned char*)(((uintptr_t)mmap_begin + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1));
                 if (mmap_begin != chunk_begin) {
-                    int retval = munmap(mmap_begin, chunk_begin - mmap_begin);
+                    int_t retval = munmap(mmap_begin, chunk_begin - mmap_begin);
                     if (retval != 0) {
                         ERROR(ERR_MSC_MUNMAP);
                     }
@@ -629,7 +629,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 unsigned char* mmap_end = mmap_begin + mmap_size;
                 unsigned char* chunk_end = chunk_begin + chunk_size;
                 if (mmap_end != chunk_end) {
-                    int retval = munmap(chunk_end, mmap_end - chunk_end);
+                    int_t retval = munmap(chunk_end, mmap_end - chunk_end);
                     if (retval != 0) {
                         ERROR(ERR_MSC_MUNMAP);
                     }
@@ -713,8 +713,8 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 #endif
     }
     else {
-        int prot = PROT_READ | PROT_WRITE;
-        int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+        int_t prot = PROT_READ | PROT_WRITE;
+        int_t flags = MAP_PRIVATE | MAP_ANONYMOUS;
         void* ptr = mmap(NULL, total_size, prot, flags, -1, 0);
         if (ptr == MAP_FAILED) {
             ERROR(ERR_MSC_MMAP);
@@ -912,8 +912,8 @@ YogMarkSweepCompact_protect_white_pages(YogEnv* env, YogMarkSweepCompact* msc)
 #undef BIT_POS
 #undef FLAGS
 
-static int
-sigsegv_handler(void* fault_address, int serious) 
+static int_t
+sigsegv_handler(void* fault_address, int_t serious) 
 {
     DEBUG(DPRINTF("sigsegv_handler(fault_address=%p, serious=%d)", fault_address, serious));
     if (fault_address == NULL) {
@@ -949,7 +949,7 @@ YogMarkSweepCompact_unprotect_all_pages(YogEnv* env, YogMarkSweepCompact* msc)
 {
     YogMarkSweepCompactChunk* chunk = msc->all_chunks;
     while (chunk != NULL) {
-        int prot = PROT_READ | PROT_WRITE;
+        int_t prot = PROT_READ | PROT_WRITE;
         if (mprotect(chunk->first_page, msc->chunk_size, prot) != 0) {
             YOG_BUG(env, "mprotect failed");
         }
@@ -1276,8 +1276,8 @@ CREATE_TEST(compact1, NULL, compact1_keep_children);
 
 #define PRIVATE
 
-PRIVATE int 
-main(int argc, const char* argv[]) 
+PRIVATE int_t 
+main(int_t argc, const char* argv[]) 
 {
 #define ERROR(...)  do { \
     fprintf(stderr, __VA_ARGS__); \

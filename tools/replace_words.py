@@ -20,8 +20,8 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        #line = sub(r"puts (.*)", r"puts(\1)", line)
-                        line = line.replace("unsigned int", "uint_t")
+                        line = sub(r"\bint\b", "int_t", line)
+                        #line = line.replace("unsigned int", "uint_t")
                         out.write(line)
             move(tmp, path)
 

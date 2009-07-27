@@ -40,7 +40,7 @@ YogVal YogString_clone(YogEnv*, YogVal);
 char* YogString_dup(YogEnv*, const char*);
 ID YogString_intern(YogEnv*, YogVal);
 YogVal YogString_klass_new(YogEnv*);
-YogVal YogString_multiply(YogEnv*, YogVal, int);
+YogVal YogString_multiply(YogEnv*, YogVal, int_t);
 YogVal YogString_new(YogEnv*);
 YogVal YogString_new_format(YogEnv*, const char*, ...);
 YogVal YogString_new_range(YogEnv*, YogVal, const char*, const char*);

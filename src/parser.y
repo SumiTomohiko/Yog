@@ -21,7 +21,7 @@
 
 typedef struct ParserState ParserState;
 
-static void Parse(struct YogEnv*, YogVal, int, YogVal, YogVal*);
+static void Parse(struct YogEnv*, YogVal, int_t, YogVal, YogVal*);
 static YogVal LemonParser_new(YogEnv*);
 static void ParseTrace(FILE*, char*);
 
