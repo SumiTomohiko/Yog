@@ -222,6 +222,22 @@ is_digit_char(char c)
     return ('0' <= c) && (c <= '9');
 }
 
+static BOOL
+is_hex_char(char c)
+{
+    if (is_digit_char(c)) {
+        return TRUE;
+    }
+    if (('a' <= c) && (c <= 'f')) {
+        return TRUE;
+    }
+    if (('A' <= c) && (c <= 'F')) {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 static void
 print_current_position(YogEnv* env, YogVal lexer)
 {
@@ -366,6 +382,12 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
                 ADD_TOKEN_CHAR(c);
                 ADD_TOKEN_CHAR(c2);
                 read_number(env, lexer, is_octet_char);
+                RETURN_INT;
+            }
+            else if ((c2 == 'x') || (c2 == 'X')) {
+                ADD_TOKEN_CHAR(c);
+                ADD_TOKEN_CHAR(c2);
+                read_number(env, lexer, is_hex_char);
                 RETURN_INT;
             }
 
