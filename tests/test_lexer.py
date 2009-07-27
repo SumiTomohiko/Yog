@@ -14,4 +14,13 @@ class TestLexer(TestCase):
         self._test("""
 /\\""", stderr=test_stderr)
 
+    def test_string0(self):
+        def test_stderr(stderr):
+            m = match(r"""SyntaxError: EOL while scanning string literal
+""", stderr)
+            assert m is not None
+
+        self._test("""
+\"\\""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
