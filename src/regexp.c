@@ -59,7 +59,7 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
     OnigRegex onig_regexp = NULL;
     YogVal body = PTR_AS(YogString, pattern)->body;
     OnigUChar* pattern_begin = (OnigUChar*)PTR_AS(YogCharArray, body)->items;
-    unsigned int size = STRING_SIZE(pattern);
+    uint_t size = STRING_SIZE(pattern);
     OnigUChar* pattern_end = pattern_begin + size - 1;
     OnigSyntaxType* syntax = ONIG_SYNTAX_DEFAULT;
     OnigErrorInfo einfo;
@@ -150,7 +150,7 @@ group(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 static int 
 ptr2index(YogEnv* env, YogString* s, const char* ptr) 
 {
-    unsigned int index = 0;
+    uint_t index = 0;
     YogVal enc = s->encoding;
     YogVal body = s->body;
     const char* p = PTR_AS(YogCharArray, body)->items;

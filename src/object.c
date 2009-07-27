@@ -55,14 +55,14 @@ YogObj_set_attr(YogEnv* env, YogVal obj, const char* name, YogVal val)
 }
 
 void 
-YogBasicObj_init(YogEnv* env, YogVal obj, unsigned int flags, YogVal klass) 
+YogBasicObj_init(YogEnv* env, YogVal obj, uint_t flags, YogVal klass) 
 {
     PTR_AS(YogBasicObj, obj)->flags = flags;
     MODIFY(env, PTR_AS(YogBasicObj, obj)->klass, klass);
 }
 
 void 
-YogObj_init(YogEnv* env, YogVal obj, unsigned int flags, YogVal klass) 
+YogObj_init(YogEnv* env, YogVal obj, uint_t flags, YogVal klass) 
 {
     PTR_AS(YogObj, obj)->attrs = YUNDEF;
     YogBasicObj_init(env, obj, flags | HAS_ATTRS, klass);

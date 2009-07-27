@@ -9,14 +9,14 @@
 
 #if 0
 static void 
-extend_locals(YogEnv* env, YogCFrame* frame, unsigned int n) 
+extend_locals(YogEnv* env, YogCFrame* frame, uint_t n) 
 {
     YogValArray* old_locals = frame->locals;
-    unsigned int capacity = (old_locals != NULL ? old_locals->size : 0) + n;
+    uint_t capacity = (old_locals != NULL ? old_locals->size : 0) + n;
 
     YogVal new_locals = YogValArray_new(env, capacity);
     if (old_locals != NULL) {
-        unsigned int size = frame->locals_size;
+        uint_t size = frame->locals_size;
         YogVal* dest = PTR_AS(YogValArray, new_locals)->items;
         memcpy(dest, old_locals->items, sizeof(YogVal) * size);
     }
@@ -24,16 +24,16 @@ extend_locals(YogEnv* env, YogCFrame* frame, unsigned int n)
 }
 
 void 
-YogFrame_add_locals(YogEnv* env, YogCFrame* frame, unsigned int n, ...)
+YogFrame_add_locals(YogEnv* env, YogCFrame* frame, uint_t n, ...)
 {
     extend_locals(env, frame, n);
 
     YogValArray* locals = frame->locals;
-    unsigned int locals_size = frame->locals_size;
+    uint_t locals_size = frame->locals_size;
 
     va_list ap;
     va_start(ap, n);
-    unsigned int i = 0;
+    uint_t i = 0;
     for (i = 0; i < n; i++) {
         locals->items[locals_size + i] = va_arg(ap, YogVal);
     }
@@ -121,10 +121,10 @@ YogScriptFrame_push_stack(YogEnv* env, YogScriptFrame* frame, YogVal val)
 {
     YOG_ASSERT(env, PTR_AS(YogFrame, frame)->type != FRAME_C, "invalid frame type (0x%x)", PTR_AS(YogFrame, frame)->type);
     YogVal stack = frame->stack;
-    unsigned int capacity = YogValArray_size(env, stack);
+    uint_t capacity = YogValArray_size(env, stack);
     YOG_ASSERT(env, frame->stack_size < capacity, "Stack is full.");
 
-    unsigned int n = frame->stack_size;
+    uint_t n = frame->stack_size;
     MODIFY(env, PTR_AS(YogValArray, stack)->items[n], val);
     frame->stack_size++;
 }
@@ -135,7 +135,7 @@ YogScriptFrame_pop_stack(YogEnv* env, YogScriptFrame* frame)
     YOG_ASSERT(env, 0 < frame->stack_size, "Stack is empty.");
 
     YogVal stack = frame->stack;
-    unsigned int index = frame->stack_size - 1;
+    uint_t index = frame->stack_size - 1;
     YogVal retval = YogValArray_at(env, stack, index);
 
     PTR_AS(YogValArray, stack)->items[index] = YUNDEF;
@@ -213,19 +213,19 @@ YogOuterVars_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* he
 {
     YogOuterVars* vars = ptr;
 
-    unsigned int size = vars->size;
-    unsigned int i = 0;
+    uint_t size = vars->size;
+    uint_t i = 0;
     for (i = 0; i < size; i++) {
         YogGC_keep(env, &vars->items[i], keeper, heap);
     }
 }
 
 YogVal 
-YogOuterVars_new(YogEnv* env, unsigned int size) 
+YogOuterVars_new(YogEnv* env, uint_t size) 
 {
     YogVal vars = ALLOC_OBJ_ITEM(env, YogOuterVars_keep_children, NULL, YogOuterVars, size, YogVal);
     PTR_AS(YogOuterVars, vars)->size = size;
-    unsigned int i = 0;
+    uint_t i = 0;
     for (i = 0; i < size; i++) {
         PTR_AS(YogOuterVars, vars)->items[i] = YUNDEF;
     }

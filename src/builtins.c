@@ -42,9 +42,9 @@ puts_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
 
-    unsigned int size = YogArray_size(env, args);
+    uint_t size = YogArray_size(env, args);
     if (0 < size) {
-        unsigned int i = 0;
+        uint_t i = 0;
         for (i = 0; i < size; i++) {
             YogString* s = NULL;
             YogVal arg = YogArray_at(env, args, i);

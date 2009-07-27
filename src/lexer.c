@@ -44,7 +44,7 @@ YogToken_new(YogEnv* env)
 }
 
 static YogVal 
-ValToken_new(YogEnv* env, unsigned int type, YogVal val, unsigned int lineno) 
+ValToken_new(YogEnv* env, uint_t type, YogVal val, uint_t lineno) 
 {
     SAVE_ARG(env, val);
 
@@ -57,7 +57,7 @@ ValToken_new(YogEnv* env, unsigned int type, YogVal val, unsigned int lineno)
 }
 
 static YogVal 
-IDToken_new(YogEnv* env, unsigned int type, ID id, unsigned int lineno) 
+IDToken_new(YogEnv* env, uint_t type, ID id, uint_t lineno) 
 {
     YogVal token = YogToken_new(env);
     PTR_AS(YogToken, token)->type = type;
@@ -114,7 +114,7 @@ static char
 nextc(YogVal lexer) 
 {
     YogVal line = PTR_AS(YogLexer, lexer)->line;
-    unsigned int next_index = PTR_AS(YogLexer, lexer)->next_index;
+    uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
     YogVal body = PTR_AS(YogString, line)->body;
     char c = PTR_AS(YogCharArray, body)->items[next_index];
     PTR_AS(YogLexer, lexer)->next_index++;
@@ -174,7 +174,7 @@ static int
 get_rest_size(YogEnv* env, YogVal lexer) 
 {
     YogVal line = PTR_AS(YogLexer, lexer)->line;
-    unsigned int next_index = PTR_AS(YogLexer, lexer)->next_index;
+    uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
     return (YogString_size(env, line) - 1) - next_index;
 }
 
@@ -187,7 +187,7 @@ push_multibyte_char(YogEnv* env, YogVal lexer)
     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
     YogVal enc = PTR_AS(YogString, buffer)->encoding;
     YogVal line = PTR_AS(YogLexer, lexer)->line;
-    unsigned int next_index = PTR_AS(YogLexer, lexer)->next_index;
+    uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
     YogVal body = PTR_AS(YogString, line)->body;
     const char* ptr = &PTR_AS(YogCharArray, body)->items[next_index];
     int mbc_size = YogEncoding_mbc_size(env, enc, ptr);
@@ -242,7 +242,7 @@ static void
 print_current_position(YogEnv* env, YogVal lexer)
 {
     YogVal line = PTR_AS(YogLexer, lexer)->line;
-    unsigned int size = STRING_SIZE(line);
+    uint_t size = STRING_SIZE(line);
     YOG_ASSERT(env, 0 < size, "invalid size (%u)", size);
     char s[size];
     memcpy(s, STRING_CSTR(line), size);
@@ -255,8 +255,8 @@ print_current_position(YogEnv* env, YogVal lexer)
     FILE* out = stderr;
     fprintf(out, "%s\n", s);
 
-    unsigned int pos = PTR_AS(YogLexer, lexer)->next_index - 1;
-    unsigned int i;
+    uint_t pos = PTR_AS(YogLexer, lexer)->next_index - 1;
+    uint_t i;
     for (i = 0; i < pos; i++) {
         fprintf(out, " ");
     }
@@ -315,7 +315,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 #define SET_STATE(stat)     PTR_AS(YogLexer, lexer)->state = stat
     char c = 0;
     do {
-        unsigned int next_index = PTR_AS(YogLexer, lexer)->next_index;
+        uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
         YogVal line = PTR_AS(YogLexer, lexer)->line;
         if (next_index < YogString_size(env, line) - 1) {
             c = NEXTC();
@@ -683,18 +683,18 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             const char* name = PTR_AS(YogCharArray, body)->items;
             if (PTR_AS(YogLexer, lexer)->state == LS_NAME) {
                 ID id = INTERN(name);
-                unsigned int lineno = PTR_AS(YogLexer, lexer)->lineno;
+                uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                 *token = IDToken_new(env, TK_NAME, id, lineno);
             }
             else {
                 const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
                 if (entry != NULL) {
-                    unsigned int lineno = PTR_AS(YogLexer, lexer)->lineno;
+                    uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                     *token = ValToken_new(env, entry->type, YUNDEF, lineno);
                 }
                 else {
                     ID id = INTERN(name);
-                    unsigned int lineno = PTR_AS(YogLexer, lexer)->lineno;
+                    uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                     *token = IDToken_new(env, TK_NAME, id, lineno);
                 }
             }
@@ -740,7 +740,7 @@ read_encoding(YogEnv* env, YogVal lexer)
         }
 
         YogVal line = PTR_AS(YogLexer, lexer)->line;
-        unsigned int next_index = PTR_AS(YogLexer, lexer)->next_index;
+        uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
         YogVal body = PTR_AS(YogString, line)->body;
         const char* s = &PTR_AS(YogCharArray, body)->items[next_index];
 #define KEY     "coding"

@@ -9,22 +9,22 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-unsigned int 
+uint_t 
 YogValArray_size(YogEnv* env, YogVal array) 
 {
     return PTR_AS(YogValArray, array)->size;
 }
 
 YogVal 
-YogValArray_at(YogEnv* env, YogVal array, unsigned int n) 
+YogValArray_at(YogEnv* env, YogVal array, uint_t n) 
 {
-    unsigned int size = PTR_AS(YogValArray, array)->size;
+    uint_t size = PTR_AS(YogValArray, array)->size;
     YOG_ASSERT(env, n < size, "Index exceed array body size.");
     return PTR_AS(YogValArray, array)->items[n];
 }
 
 YogVal 
-YogArray_at(YogEnv* env, YogVal array, unsigned int n) 
+YogArray_at(YogEnv* env, YogVal array, uint_t n) 
 {
     size_t size = PTR_AS(YogArray, array)->size;
     YOG_ASSERT(env, n < size, "Index exceed array size.");
@@ -32,7 +32,7 @@ YogArray_at(YogEnv* env, YogVal array, unsigned int n)
     return YogValArray_at(env, PTR_AS(YogArray, array)->body, n);
 }
 
-unsigned int 
+uint_t 
 YogArray_size(YogEnv* env, YogVal array) 
 {
     return PTR_AS(YogArray, array)->size;
@@ -43,19 +43,19 @@ YogValArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 {
     YogValArray* array = ptr;
 
-    unsigned int size = array->size;
-    unsigned int i = 0;
+    uint_t size = array->size;
+    uint_t i = 0;
     for (i = 0; i < size; i++) {
         YogGC_keep(env, &array->items[i], keeper, heap);
     }
 }
 
 YogVal 
-YogValArray_new(YogEnv* env, unsigned int size) 
+YogValArray_new(YogEnv* env, uint_t size) 
 {
     YogVal array = ALLOC_OBJ_ITEM(env, YogValArray_keep_children, NULL, YogValArray, size, YogVal);
     PTR_AS(YogValArray, array)->size = size;
-    unsigned int i = 0;
+    uint_t i = 0;
     for (i = 0; i < size; i++) {
         PTR_AS(YogValArray, array)->items[i] = YUNDEF;
     }
@@ -63,8 +63,8 @@ YogValArray_new(YogEnv* env, unsigned int size)
     return array;
 }
 
-static unsigned int
-multiple_size(unsigned int min_size, unsigned int cur_size, unsigned int ratio)
+static uint_t
+multiple_size(uint_t min_size, uint_t cur_size, uint_t ratio)
 {
     while (cur_size < min_size) {
         cur_size *= ratio;
@@ -72,8 +72,8 @@ multiple_size(unsigned int min_size, unsigned int cur_size, unsigned int ratio)
     return cur_size;
 }
 
-static unsigned int
-get_next_size(unsigned int min_size, unsigned int cur_size, unsigned int ratio)
+static uint_t
+get_next_size(uint_t min_size, uint_t cur_size, uint_t ratio)
 {
     if (cur_size == 0) {
         return 1;
@@ -83,7 +83,7 @@ get_next_size(unsigned int min_size, unsigned int cur_size, unsigned int ratio)
 }
 
 static void 
-ensure_body_size(YogEnv* env, YogVal array, unsigned int size) 
+ensure_body_size(YogEnv* env, YogVal array, uint_t size) 
 {
     SAVE_ARG(env, array);
 
@@ -95,7 +95,7 @@ ensure_body_size(YogEnv* env, YogVal array, unsigned int size)
         old_body = body;
         size_t old_size = PTR_AS(YogValArray, old_body)->size;
 #define INCREASE_RATIO  (2)
-        unsigned int new_size = get_next_size(size, old_size, INCREASE_RATIO);
+        uint_t new_size = get_next_size(size, old_size, INCREASE_RATIO);
 #undef INCREASE_RATIO
         YogVal new_body = YogValArray_new(env, new_size);
         size_t cur_size = PTR_AS(YogArray, array)->size;
@@ -129,8 +129,8 @@ YogArray_extend(YogEnv* env, YogVal array, YogVal a)
 {
     SAVE_ARGS2(env, array, a);
 
-    unsigned int old_size = YogArray_size(env, array);
-    unsigned int new_size = old_size + YogArray_size(env, a);
+    uint_t old_size = YogArray_size(env, array);
+    uint_t new_size = old_size + YogArray_size(env, a);
     ensure_body_size(env, array, new_size);
 
     YogVal to = PTR_AS(YogArray, array)->body;
@@ -154,7 +154,7 @@ YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 static YogVal
-allocate_object(YogEnv* env, YogVal klass, unsigned int size)
+allocate_object(YogEnv* env, YogVal klass, uint_t size)
 {
     SAVE_ARG(env, klass);
 
@@ -172,7 +172,7 @@ allocate_object(YogEnv* env, YogVal klass, unsigned int size)
 }
 
 YogVal
-YogArray_of_size(YogEnv* env, unsigned int size)
+YogArray_of_size(YogEnv* env, uint_t size)
 {
     return allocate_object(env, env->vm->cArray, size);
 }
@@ -226,8 +226,8 @@ each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal arg[] = { YUNDEF };
     PUSH_LOCALSX(env, 1, arg);
 
-    unsigned int size = YogArray_size(env, self);
-    unsigned int i;
+    uint_t size = YogArray_size(env, self);
+    uint_t i;
     for (i = 0; i < size; i++) {
         arg[0] = YogArray_at(env, self, i);
         YogCallable_call(env, block, array_sizeof(arg), arg);

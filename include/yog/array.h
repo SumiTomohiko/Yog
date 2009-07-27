@@ -5,7 +5,7 @@
 #include "yog/yog.h"
 
 struct YogValArray {
-    unsigned int size;
+    uint_t size;
     YogVal items[0];
 };
 
@@ -13,7 +13,7 @@ typedef struct YogValArray YogValArray;
 
 struct YogArray {
     YOGBASICOBJ_HEAD;
-    unsigned int size;
+    uint_t size;
     YogVal body; 
 };
 
@@ -26,16 +26,16 @@ typedef struct YogArray YogArray;
  */
 
 /* src/array.c */
-YogVal YogArray_at(YogEnv*, YogVal, unsigned int);
+YogVal YogArray_at(YogEnv*, YogVal, uint_t);
 void YogArray_extend(YogEnv*, YogVal, YogVal);
 YogVal YogArray_klass_new(YogEnv*);
 YogVal YogArray_new(YogEnv*);
-YogVal YogArray_of_size(YogEnv*, unsigned int);
+YogVal YogArray_of_size(YogEnv*, uint_t);
 void YogArray_push(YogEnv*, YogVal, YogVal);
-unsigned int YogArray_size(YogEnv*, YogVal);
-YogVal YogValArray_at(YogEnv*, YogVal, unsigned int);
-YogVal YogValArray_new(YogEnv*, unsigned int);
-unsigned int YogValArray_size(YogEnv*, YogVal);
+uint_t YogArray_size(YogEnv*, YogVal);
+YogVal YogValArray_at(YogEnv*, YogVal, uint_t);
+YogVal YogValArray_new(YogEnv*, uint_t);
+uint_t YogValArray_size(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

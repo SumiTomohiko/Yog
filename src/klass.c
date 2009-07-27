@@ -93,12 +93,12 @@ new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
 
     obj = (*allocator)(env, self);
-    unsigned int argc = YogArray_size(env, args);
+    uint_t argc = YogArray_size(env, args);
     YogVal body = PTR_AS(YogArray, args)->body;
     YogVal* items = PTR_AS(YogValArray, body)->items;
     /* TODO: dirty hack */
     YogVal arg[argc];
-    unsigned int i;
+    uint_t i;
     for (i = 0; i < argc; i++) {
         arg[i] = items[i];
     }

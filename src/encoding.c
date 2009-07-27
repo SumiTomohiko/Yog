@@ -36,8 +36,8 @@ YogVal
 YogEncoding_normalize_name(YogEnv* env, YogVal name) 
 {
     YogVal s = YogString_clone(env, name);
-    unsigned int size = YogString_size(env, s) - 1;
-    unsigned int i = 0;
+    uint_t size = YogString_size(env, s) - 1;
+    uint_t i = 0;
     for (i = 0; i < size; i++) {
         char c = YogString_at(env, s, i);
         char c2 = 0;

@@ -31,7 +31,7 @@ YogBDW_alloc(YogEnv* env, YogBDW* bdw, ChildrenKeeper keeper, Finalizer finalize
         GC_gcollect();
     }
 
-    unsigned int total_size = size + sizeof(BDWHeader);
+    uint_t total_size = size + sizeof(BDWHeader);
     BDWHeader* header = GC_MALLOC(total_size);
     initialize_memory(header, total_size);
 

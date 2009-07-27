@@ -160,7 +160,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 }
 
 void 
-YogGenerational_initialize(YogEnv* env, YogGenerational* generational, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure)
+YogGenerational_initialize(YogEnv* env, YogGenerational* generational, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, uint_t tenure)
 {
     generational->err = ERR_GEN_NONE;
 
@@ -201,7 +201,7 @@ YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper
         return ptr;
     }
 
-    unsigned int err;
+    uint_t err;
     switch (msc->err) {
     case ERR_MSC_MMAP:
         err = ERR_GEN_MMAP;

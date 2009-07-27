@@ -5,12 +5,12 @@
 #include "yog/yog.h"
 
 struct YogToken {
-    unsigned int type;
+    uint_t type;
     union {
         ID id;
         YogVal val;
     } u;
-    unsigned int lineno;
+    uint_t lineno;
 };
 
 typedef struct YogToken YogToken;
@@ -48,7 +48,7 @@ typedef enum YogNodeType YogNodeType;
 
 struct YogNode {
     YogNodeType type;
-    unsigned int lineno;
+    uint_t lineno;
     union {
         struct {
             YogVal elems;
@@ -162,9 +162,9 @@ struct YogLexer {
     enum YogLexerState state;
     FILE* fp;
     YogVal line;
-    unsigned int next_index;
+    uint_t next_index;
     YogVal buffer;
-    unsigned int lineno;
+    uint_t lineno;
 };
 
 typedef struct YogLexer YogLexer;

@@ -50,12 +50,12 @@ YogCode_dump(YogEnv* env, YogVal code)
     printf("=== Constants ===\n");
     printf("index value\n");
 
-    unsigned int consts_size = 0;
+    uint_t consts_size = 0;
     YogVal consts = PTR_AS(YogCode, code)->consts;
     if (IS_PTR(consts)) {
         consts_size = PTR_AS(YogValArray, consts)->size;
     }
-    unsigned int i = 0;
+    uint_t i = 0;
     for (i = 0; i < consts_size; i++) {
         printf("%05d ", i);
 
@@ -68,7 +68,7 @@ YogCode_dump(YogEnv* env, YogVal code)
     printf("=== Exception Table ===\n");
     printf("From To Target\n");
 
-    unsigned int exc_tbl_size = PTR_AS(YogCode, code)->exc_tbl_size;
+    uint_t exc_tbl_size = PTR_AS(YogCode, code)->exc_tbl_size;
     for (i = 0; i < exc_tbl_size; i++) {
         YogExceptionTableEntry* entry = &PTR_AS(YogExceptionTable, PTR_AS(YogCode, code)->exc_tbl)->items[i];
         printf("%04d %04d %04d\n", entry->from, entry->to, entry->target);
@@ -82,7 +82,7 @@ YogCode_dump(YogEnv* env, YogVal code)
     while (pc < PTR_AS(YogByteArray, insts)->size) {
         printf("%04d", pc);
 
-        unsigned int size = PTR_AS(YogCode, code)->lineno_tbl_size;
+        uint_t size = PTR_AS(YogCode, code)->lineno_tbl_size;
         for (i = 0; i < size; i++) {
             YogVal lineno_tbl = PTR_AS(YogCode, code)->lineno_tbl;
             YogLinenoTableEntry* entry = &PTR_AS(YogLinenoTableEntry, lineno_tbl)[i];
@@ -98,7 +98,7 @@ YogCode_dump(YogEnv* env, YogVal code)
         OpCode op = PTR_AS(YogByteArray, insts)->items[pc];
         printf(" %s", YogCode_get_op_name(op));
 
-        unsigned int n = pc + sizeof(uint8_t);
+        uint_t n = pc + sizeof(uint8_t);
 #define OPERAND(type, offset) \
         (*((type*)&PTR_AS(YogByteArray, insts)->items[n + (offset)]))
         switch (op) {
@@ -137,7 +137,7 @@ YogCode_dump(YogEnv* env, YogVal code)
             break;
         case OP(CALL_FUNCTION):
             {
-                unsigned int offset = 0;
+                uint_t offset = 0;
                 uint8_t argc = OPERAND(uint8_t, offset);
                 printf(" %d", argc);
                 offset += sizeof(uint8_t);
@@ -164,7 +164,7 @@ YogCode_dump(YogEnv* env, YogVal code)
         case OP(JUMP_IF_FALSE):
         case OP(JUMP):
             {
-                unsigned int to = OPERAND(unsigned int, 0);
+                uint_t to = OPERAND(uint_t, 0);
                 printf(" %d", to);
             }
             break;

@@ -5,7 +5,7 @@
 #include "yog/yog.h"
 
 struct YogCharArray {
-    unsigned int size;
+    uint_t size;
     char items[0];
 };
 
@@ -14,7 +14,7 @@ typedef struct YogCharArray YogCharArray;
 struct YogString {
     YOGBASICOBJ_HEAD;
     YogVal encoding;
-    unsigned int size;
+    uint_t size;
     YogVal body;
 };
 
@@ -34,7 +34,7 @@ typedef struct YogString YogString;
 /* src/string.c */
 YogVal YogCharArray_new_str(YogEnv*, const char*);
 void YogString_add(YogEnv*, YogVal, const char*);
-char YogString_at(YogEnv*, YogVal, unsigned int);
+char YogString_at(YogEnv*, YogVal, uint_t);
 void YogString_clear(YogEnv*, YogVal);
 YogVal YogString_clone(YogEnv*, YogVal);
 char* YogString_dup(YogEnv*, const char*);
@@ -44,10 +44,10 @@ YogVal YogString_multiply(YogEnv*, YogVal, int);
 YogVal YogString_new(YogEnv*);
 YogVal YogString_new_format(YogEnv*, const char*, ...);
 YogVal YogString_new_range(YogEnv*, YogVal, const char*, const char*);
-YogVal YogString_new_size(YogEnv*, unsigned int);
+YogVal YogString_new_size(YogEnv*, uint_t);
 YogVal YogString_new_str(YogEnv*, const char*);
 void YogString_push(YogEnv*, YogVal, char);
-unsigned int YogString_size(YogEnv*, YogVal);
+uint_t YogString_size(YogEnv*, YogVal);
 YogVal YogString_to_i(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */

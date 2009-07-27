@@ -6,7 +6,7 @@
 #include "yog/yog.h"
 
 struct YogByteArray {
-    unsigned int size;
+    uint_t size;
     uint8_t items[0];
 };
 
@@ -14,7 +14,7 @@ typedef struct YogByteArray YogByteArray;
 
 struct YogBinary {
     YOGBASICOBJ_HEAD;
-    unsigned int size;
+    uint_t size;
     YogVal body;
 };
 
@@ -27,17 +27,17 @@ typedef struct YogBinary YogBinary;
  */
 
 /* src/binary.c */
-YogVal YogBinary_new(YogEnv*, unsigned int);
+YogVal YogBinary_new(YogEnv*, uint_t);
 void YogBinary_push_id(YogEnv*, YogVal, ID);
 void YogBinary_push_pc(YogEnv*, YogVal, pc_t);
 void YogBinary_push_uint8(YogEnv*, YogVal, uint8_t);
-void YogBinary_push_unsigned_int(YogEnv*, YogVal, unsigned int);
+void YogBinary_push_unsigned_int(YogEnv*, YogVal, uint_t);
 void YogBinary_shrink(YogEnv*, YogVal);
-unsigned int YogBinary_size(YogEnv*, YogVal);
-uint8_t YogByteArray_at(YogEnv*, YogByteArray*, unsigned int);
-YogVal YogByteArray_new(YogEnv*, unsigned int);
+uint_t YogBinary_size(YogEnv*, YogVal);
+uint8_t YogByteArray_at(YogEnv*, YogByteArray*, uint_t);
+YogVal YogByteArray_new(YogEnv*, uint_t);
 void YogByteArray_print(YogEnv*, YogByteArray*);
-unsigned int YogByteArray_size(YogEnv*, YogVal);
+uint_t YogByteArray_size(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

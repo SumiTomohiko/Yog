@@ -45,7 +45,7 @@ wait_gc_finish(YogEnv* env)
 {
     DEBUG(DPRINTF("%p: enter wait_gc_finish", env));
     YogVM* vm = env->vm;
-    unsigned int id = vm->gc_id;
+    uint_t id = vm->gc_id;
     while (vm->running_gc && (vm->gc_id == id)) {
         pthread_cond_wait(&vm->gc_finish_cond, &vm->global_interp_lock);
     }
@@ -131,11 +131,11 @@ wait_suspend(YogEnv* env)
     DEBUG(DPRINTF("%p: exit wait_suspend", env));
 }
 
-static unsigned int
+static uint_t
 count_running_threads(YogEnv* env, YogVM* vm)
 {
     DEBUG(DPRINTF("%p: enter count_running_threads: vm=%p", env, vm));
-    unsigned int n = 0;
+    uint_t n = 0;
     YogVal thread = vm->running_threads;
     while (IS_PTR(thread)) {
         n += PTR_AS(YogThread, thread)->gc_bound ? 1 : 0;
@@ -151,7 +151,7 @@ run_gc(YogEnv* env, GC gc)
 {
     DEBUG(DPRINTF("%p: enter run_gc: gc=%p", env, gc));
     YogVM* vm = env->vm;
-    unsigned int threads_num = count_running_threads(env, vm);
+    uint_t threads_num = count_running_threads(env, vm);
     if (0 < threads_num) {
         vm->suspend_counter = threads_num - 1;
         vm->waiting_suspend = TRUE;

@@ -15,7 +15,7 @@ struct YogHashType {
 typedef struct YogHashType YogHashType;
 
 struct YogTableEntry {
-    unsigned int hash;
+    uint_t hash;
     YogVal key;
     YogVal record;
     YogVal next;
@@ -24,7 +24,7 @@ struct YogTableEntry {
 typedef struct YogTableEntry YogTableEntry;
 
 struct YogTableEntryArray {
-    unsigned int size;
+    uint_t size;
     YogVal items[0];
 };
 

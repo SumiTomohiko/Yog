@@ -21,7 +21,7 @@ typedef struct YogExceptionTable YogExceptionTable;
 struct YogLinenoTableEntry {
     pc_t pc_from;
     pc_t pc_to;
-    unsigned int lineno;
+    uint_t lineno;
 };
 
 typedef struct YogLinenoTableEntry YogLinenoTableEntry;
@@ -29,17 +29,17 @@ typedef struct YogLinenoTableEntry YogLinenoTableEntry;
 struct YogCode {
     YogVal arg_info;
 
-    unsigned int stack_size;
-    unsigned int local_vars_count;
+    uint_t stack_size;
+    uint_t local_vars_count;
     ID* local_vars_names;
     YogVal consts;
     YogVal insts;
-    unsigned int outer_size;
+    uint_t outer_size;
 
-    unsigned int exc_tbl_size;
+    uint_t exc_tbl_size;
     YogVal exc_tbl;
 
-    unsigned int lineno_tbl_size;
+    uint_t lineno_tbl_size;
     YogVal lineno_tbl;
 
     YogVal filename;

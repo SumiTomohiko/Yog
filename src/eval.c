@@ -36,20 +36,20 @@
 } while (0)
 
 static YogVal*
-get_outer_vars_ptr(YogEnv* env, unsigned int level, unsigned int index)
+get_outer_vars_ptr(YogEnv* env, uint_t level, uint_t index)
 {
     YogVal outer_vars = PTR_AS(YogScriptFrame, CUR_FRAME)->outer_vars;
     YOG_ASSERT(env, IS_PTR(outer_vars), "no outer variables");
-    unsigned int depth = PTR_AS(YogOuterVars, outer_vars)->size;
+    uint_t depth = PTR_AS(YogOuterVars, outer_vars)->size;
     YOG_ASSERT(env, level <= depth, "invalid level");
     YogVal vars = PTR_AS(YogOuterVars, outer_vars)->items[level - 1];
-    unsigned int size = YogValArray_size(env, vars);
+    uint_t size = YogValArray_size(env, vars);
     YOG_ASSERT(env, index < size, "invalid index");
     return &PTR_AS(YogValArray, vars)->items[index];
 }
 
 YogVal 
-YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, unsigned int argc, YogVal* args) 
+YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, uint_t argc, YogVal* args) 
 {
     SAVE_ARG(env, receiver);
 
@@ -60,7 +60,7 @@ YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, unsigned i
 }
 
 YogVal 
-YogEval_call_method2(YogEnv* env, YogVal receiver, const char* method, unsigned int argc, YogVal* args, YogVal blockarg)
+YogEval_call_method2(YogEnv* env, YogVal receiver, const char* method, uint_t argc, YogVal* args, YogVal blockarg)
 {
     SAVE_ARGS2(env, receiver, blockarg);
 
@@ -71,7 +71,7 @@ YogEval_call_method2(YogEnv* env, YogVal receiver, const char* method, unsigned 
 }
 
 static YogVal
-make_outer_vars(YogEnv* env, unsigned int depth)
+make_outer_vars(YogEnv* env, uint_t depth)
 {
     if (depth == 0) {
         return YNIL;
@@ -108,7 +108,7 @@ setup_script_function(YogEnv* env, YogVal f, YogVal code)
     PTR_AS(YogFunction, f)->code = code;
     PTR_AS(YogFunction, f)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
 
-    unsigned int outer_size = PTR_AS(YogCode, code)->outer_size;
+    uint_t outer_size = PTR_AS(YogCode, code)->outer_size;
     YogVal outer_vars = make_outer_vars(env, outer_size);
     PTR_AS(YogFunction, f)->outer_vars = outer_vars;
 
@@ -125,7 +125,7 @@ setup_script_frame(YogEnv* env, YogVal frame, YogVal code)
     YogCode_dump(env, code);
 #endif
 
-    unsigned int stack_size = PTR_AS(YogCode, code)->stack_size;
+    uint_t stack_size = PTR_AS(YogCode, code)->stack_size;
     YogVal stack = YogValArray_new(env, stack_size);
 
     SCRIPT_FRAME(frame)->pc = 0;
@@ -175,7 +175,7 @@ YogEval_mainloop(YogEnv* env)
     else {
         RESTORE_LOCALS(env);
 
-        unsigned int i = 0;
+        uint_t i = 0;
         BOOL found = FALSE;
         if (PTR_AS(YogFrame, CUR_FRAME)->type != FRAME_C) {
             for (i = 0; i < CODE->exc_tbl_size; i++) {
@@ -219,7 +219,7 @@ YogEval_mainloop(YogEnv* env)
     YogVal kwargs[2 * (kwargc)]; \
     YogVal args[(argc)]; \
     do { \
-        unsigned int i = 0; \
+        uint_t i = 0; \
         for (i = 0; i < 2 * (kwargc); i++) { \
             kwargs[i] = YUNDEF; \
         } \
@@ -244,7 +244,7 @@ YogEval_mainloop(YogEnv* env)
     } \
 \
     do { \
-        unsigned int i; \
+        uint_t i; \
         for (i = kwargc; 0 < i; i--) { \
             kwargs[2 * i - 1] = POP(); \
             kwargs[2 * i - 2] = POP(); \
@@ -261,9 +261,9 @@ YogEval_mainloop(YogEnv* env)
         do {
             printf("%p: ---------------- dump of stack ----------------\n", env);
             YogVal stack = SCRIPT_FRAME(CUR_FRAME)->stack;
-            unsigned int stack_size = SCRIPT_FRAME(CUR_FRAME)->stack_size;
+            uint_t stack_size = SCRIPT_FRAME(CUR_FRAME)->stack_size;
             if (0 < stack_size) {
-                unsigned int i;
+                uint_t i;
                 for (i = stack_size; 0 < i; i--) {
                     YogVal_print(env, PTR_AS(YogValArray, stack)->items[i - 1]);
                 }
@@ -309,7 +309,7 @@ YogEval_mainloop(YogEnv* env)
 }
 
 YogVal 
-YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, unsigned int argc, YogVal* args) 
+YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, uint_t argc, YogVal* args) 
 {
     SAVE_ARG(env, receiver);
     YogVal attr = YUNDEF;
@@ -324,7 +324,7 @@ YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, unsigned int arg
 }
 
 YogVal 
-YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, unsigned int argc, YogVal* args, YogVal blockarg)
+YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, uint_t argc, YogVal* args, YogVal blockarg)
 {
     SAVE_ARGS2(env, receiver, blockarg);
     YogVal attr = YUNDEF;

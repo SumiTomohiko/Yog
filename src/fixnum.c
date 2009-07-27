@@ -307,8 +307,8 @@ times(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     int n = VAL2INT(self);
 
-    unsigned int i = 0;
-    unsigned int argc = 1;
+    uint_t i = 0;
+    uint_t argc = 1;
     for (i = 0; i < n; i++) {
         YogVal args[argc];
         args[0] = INT2VAL(i);

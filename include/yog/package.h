@@ -20,7 +20,7 @@ typedef struct YogPackage YogPackage;
  */
 
 /* src/package.c */
-void YogPackage_define_method(YogEnv*, YogVal, const char*, void*, unsigned int, unsigned int, unsigned int, unsigned int, ...);
+void YogPackage_define_method(YogEnv*, YogVal, const char*, void*, uint_t, uint_t, uint_t, uint_t, ...);
 YogVal YogPackage_klass_new(YogEnv*);
 YogVal YogPackage_new(YogEnv*);
 

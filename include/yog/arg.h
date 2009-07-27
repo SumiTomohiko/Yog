@@ -5,18 +5,18 @@
 #include "yog/yog.h"
 
 struct YogArgInfo {
-    unsigned int argc;
+    uint_t argc;
     YogVal argnames;
     YogVal arg_index;
 
-    unsigned int blockargc;
+    uint_t blockargc;
     ID blockargname;
     uint8_t blockarg_index;
 
-    unsigned int varargc;
+    uint_t varargc;
     uint8_t vararg_index;
 
-    unsigned int kwargc;
+    uint_t kwargc;
     uint8_t kwarg_index;
 };
 

@@ -6,10 +6,10 @@
 #include "yog/opcodes.h"
 #include "yog/yog.h"
 
-unsigned int 
+uint_t 
 Yog_get_inst_size(OpCode op)
 {
-    unsigned int inst2size[] = {
+    uint_t inst2size[] = {
         sizeof(uint8_t) + sizeof(ID), /* load_special */
         sizeof(uint8_t), /* pop */
         sizeof(uint8_t) + sizeof(uint8_t), /* push_const */

@@ -55,11 +55,11 @@ struct YogMarkSweepCompactChunk {
 typedef struct YogMarkSweepCompactChunk YogMarkSweepCompactChunk;
 
 struct YogMarkSweepCompactPage {
-    unsigned int flags;
+    uint_t flags;
     struct YogMarkSweepCompactPage* next;
     size_t obj_size;
-    unsigned int num_obj;
-    unsigned int num_obj_avail;
+    uint_t num_obj;
+    uint_t num_obj_avail;
     struct YogMarkSweepCompactFreeList* freelist;
     struct YogMarkSweepCompactChunk* chunk;
 };
@@ -73,15 +73,15 @@ struct Compactor {
     struct YogMarkSweepCompactChunk* cur_chunk;
     struct YogMarkSweepCompactPage* next_page;
     struct YogMarkSweepCompactPage* cur_page[MARK_SWEEP_COMPACT_NUM_SIZE];
-    unsigned int cur_index[MARK_SWEEP_COMPACT_NUM_SIZE];
+    uint_t cur_index[MARK_SWEEP_COMPACT_NUM_SIZE];
 };
 
 typedef struct Compactor Compactor;
 
 typedef void (*Callback)(struct YogMarkSweepCompact*, struct Compactor*, struct YogMarkSweepCompactHeader*);
 
-typedef void (*IteratePagesCallback)(YogEnv*, YogMarkSweepCompact*, YogMarkSweepCompactChunk*, unsigned int, YogMarkSweepCompactPage*); 
-typedef BOOL (*PageSelector)(YogMarkSweepCompactChunk*, unsigned int, YogMarkSweepCompactPage*); 
+typedef void (*IteratePagesCallback)(YogEnv*, YogMarkSweepCompact*, YogMarkSweepCompactChunk*, uint_t, YogMarkSweepCompactPage*); 
+typedef BOOL (*PageSelector)(YogMarkSweepCompactChunk*, uint_t, YogMarkSweepCompactPage*); 
 
 void 
 YogMarkSweepCompact_prepare(YogEnv* env, YogMarkSweepCompact* msc) 
@@ -145,12 +145,12 @@ destroy_memory(void* ptr, size_t size)
 
 #if defined(GC_GENERATIONAL)
 static void 
-get_index_of_page_table(YogMarkSweepCompactPage* page, unsigned int* flag_index, unsigned int* bit_index) 
+get_index_of_page_table(YogMarkSweepCompactPage* page, uint_t* flag_index, uint_t* bit_index) 
 {
     YogMarkSweepCompactChunk* chunk = page->chunk;
     YogMarkSweepCompactPage* first_page = chunk->first_page;
-    unsigned int page_offset = (uintptr_t)page - (uintptr_t)first_page;
-    unsigned int page_index = page_offset / PAGE_SIZE;
+    uint_t page_offset = (uintptr_t)page - (uintptr_t)first_page;
+    uint_t page_index = page_offset / PAGE_SIZE;
     *flag_index = page_index / BITS_PER_BYTE;
     *bit_index = page_index % BITS_PER_BYTE;
 }
@@ -160,8 +160,8 @@ white_page(void* ptr)
 {
     YogMarkSweepCompactPage* page = ptr2page(ptr);
     DEBUG(DPRINTF("white page: %p-%p", page, (unsigned char*)page + PAGE_SIZE));
-    unsigned int flag_index = 0;
-    unsigned int bit_index = 0;
+    uint_t flag_index = 0;
+    uint_t bit_index = 0;
     get_index_of_page_table(page, &flag_index, &bit_index);
     page->chunk->grey_page_flags[flag_index] &= ~(1 << bit_index);
 }
@@ -171,8 +171,8 @@ YogMarkSweepCompact_grey_page(void* ptr)
 {
     YogMarkSweepCompactPage* page = ptr2page(ptr);
     DEBUG(DPRINTF("grey page: %p-%p", page, (unsigned char*)page + PAGE_SIZE));
-    unsigned int flag_index = 0;
-    unsigned int bit_index = 0;
+    uint_t flag_index = 0;
+    uint_t bit_index = 0;
     get_index_of_page_table(page, &flag_index, &bit_index);
     page->chunk->grey_page_flags[flag_index] |= 1 << bit_index;
 }
@@ -188,7 +188,7 @@ delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header)
     if (IS_SMALL_OBJ(size)) {
         YogMarkSweepCompactPage* page = ptr2page(header);
         page->num_obj_avail++;
-        unsigned int index = msc->size2index[size];
+        uint_t index = msc->size2index[size];
         if (page->num_obj_avail == page->num_obj) {
             DEBUG(DPRINTF("page %p is empty", page));
             YogMarkSweepCompactPage* pages = msc->pages[index];
@@ -234,14 +234,14 @@ Compactor_initialize(Compactor* compactor)
 {
     compactor->cur_chunk = NULL;
     compactor->next_page = NULL;
-    unsigned int i;
+    uint_t i;
     for (i = 0; i < MARK_SWEEP_COMPACT_NUM_SIZE; i++) {
         compactor->cur_page[i] = NULL;
         compactor->cur_page[i] = 0;
     }
 }
 
-static unsigned int 
+static uint_t 
 object_number_of_page(size_t obj_size) 
 {
     return (PAGE_SIZE - sizeof(YogMarkSweepCompactPage)) / obj_size;
@@ -258,8 +258,8 @@ iterate_objects(YogMarkSweepCompact* msc, Compactor* compactor, Callback callbac
             if (IS_PAGE_USED(page)) {
                 unsigned char* obj = (unsigned char*)(page + 1);
                 size_t obj_size = page->obj_size;
-                unsigned int num_obj = object_number_of_page(obj_size);
-                unsigned int i;
+                uint_t num_obj = object_number_of_page(obj_size);
+                uint_t i;
                 for (i = 0; i < num_obj; i++) {
                     YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)obj;
                     if (IS_OBJ_USED(header)) {
@@ -306,11 +306,11 @@ free_chunks(YogMarkSweepCompact* msc, Compactor* compactor)
 static void 
 remake_freelist(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactPage* first_free_page) 
 {
-    unsigned int i;
+    uint_t i;
     for (i = 0; i < MARK_SWEEP_COMPACT_NUM_SIZE; i++) {
         YogMarkSweepCompactPage* page = compactor->cur_page[i];
         if ((page != NULL) && (0 < page->num_obj_avail)) {
-            unsigned int num_obj_used = page->num_obj - page->num_obj_avail;
+            uint_t num_obj_used = page->num_obj - page->num_obj_avail;
             size_t obj_size = msc->freelist_size[i];
             unsigned char* obj = (unsigned char*)page + sizeof(YogMarkSweepCompactPage) + num_obj_used * obj_size;
             page->freelist = (YogMarkSweepCompactFreeList*)obj;
@@ -373,10 +373,10 @@ static void
 set_forward_address(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactHeader* header) 
 {
     size_t size = header->size;
-    unsigned int index = msc->size2index[size];
+    uint_t index = msc->size2index[size];
     size_t rounded_size = msc->freelist_size[index];
     YogMarkSweepCompactPage* page = compactor->cur_page[index];
-    unsigned int obj_index;
+    uint_t obj_index;
     if (page == NULL) {
         page = compactor->next_page;
 
@@ -397,7 +397,7 @@ set_forward_address(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweep
     else {
         obj_index = compactor->cur_index[index] + 1;
 
-        unsigned int max_obj_index = object_number_of_page(rounded_size) - 1;
+        uint_t max_obj_index = object_number_of_page(rounded_size) - 1;
         if (max_obj_index < obj_index) {
             compactor->cur_page[index] = page = compactor->next_page;
 
@@ -424,7 +424,7 @@ copy_object(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactH
     memcpy(dest_header, header, size);
 
     YogMarkSweepCompactPage* page = ptr2page(header->forwarding_addr);
-    unsigned int index = msc->size2index[size];
+    uint_t index = msc->size2index[size];
     if (page != compactor->cur_page[index]) {
         YogMarkSweepCompactChunk* chunk = compactor->cur_chunk;
         if (chunk == NULL) {
@@ -601,7 +601,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
     return NULL; \
 } while (0)
     if (IS_SMALL_OBJ(total_size)) {
-        unsigned int index = msc->size2index[total_size];
+        uint_t index = msc->size2index[total_size];
         YogMarkSweepCompactPage* page = msc->pages[index];
         if (page == NULL) {
             YogMarkSweepCompactChunk* chunk = msc->chunks;
@@ -637,8 +637,8 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 DEBUG(DPRINTF("%p: heap: %p-%p", env, chunk_begin, chunk_end));
 
                 YogMarkSweepCompactFreeList* pages = (YogMarkSweepCompactFreeList*)mmap_begin;
-                unsigned int num_pages = chunk_size / PAGE_SIZE;
-                unsigned int i;
+                uint_t num_pages = chunk_size / PAGE_SIZE;
+                uint_t i;
                 for (i = 0; i < num_pages - 1; i++) {
                     pages->next = (YogMarkSweepCompactFreeList*)((unsigned char*)pages + PAGE_SIZE);
                     pages = pages->next;
@@ -673,11 +673,11 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
             msc->pages[index] = page;
             DEBUG(DPRINTF("%p: assign page: %p", env, page));
 
-            unsigned int size = msc->freelist_size[index];
-            unsigned int num_obj = object_number_of_page(size);
+            uint_t size = msc->freelist_size[index];
+            uint_t num_obj = object_number_of_page(size);
             YogMarkSweepCompactFreeList* obj = (YogMarkSweepCompactFreeList*)(page + 1);
             page->freelist = obj;
-            unsigned int i;
+            uint_t i;
             for (i = 0; i < num_obj - 1; i++) {
                 obj->next = (YogMarkSweepCompactFreeList*)((unsigned char*)obj + size);
                 DEBUG(DPRINTF("%p: *(void**)(obj=%p)=%p", env, obj, *(void**)obj));
@@ -758,13 +758,13 @@ YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chu
     msc->chunks = NULL;
     msc->all_chunks = NULL;
     msc->all_chunks_last = NULL;
-    unsigned int i;
+    uint_t i;
     for (i = 0; i < MARK_SWEEP_COMPACT_NUM_SIZE; i++) {
         msc->pages[i] = NULL;
     }
-    unsigned int sizes[] = { /* 8, 16, 32,*/ 64, 128, 256, 512, 1024, 2048, };
-    unsigned int index = 0;
-    unsigned int size;
+    uint_t sizes[] = { /* 8, 16, 32,*/ 64, 128, 256, 512, 1024, 2048, };
+    uint_t index = 0;
+    uint_t size;
     for (size = 0; size < MARK_SWEEP_COMPACT_SIZE2INDEX_SIZE; size++) {
         if (sizes[index] < size) {
             index++;
@@ -835,8 +835,8 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 #define ITERATE_PAGES(env, msc, test_page, proc, heap)  do { \
     YogMarkSweepCompactChunk* chunk = msc->all_chunks; \
     while (chunk != NULL) { \
-        unsigned int page_num = msc->chunk_size / PAGE_SIZE; \
-        unsigned int i; \
+        uint_t page_num = msc->chunk_size / PAGE_SIZE; \
+        uint_t i; \
         for (i = 0; i < page_num; i++) { \
             unsigned char* first_page = (unsigned char*)chunk->first_page; \
             unsigned char* page_begin = first_page + PAGE_SIZE * i; \
@@ -858,8 +858,8 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 
 #define TRACE_GREY_OBJECTS(env, msc, chunk, page_index, page, heap)     do { \
     size_t obj_size = page->obj_size; \
-    unsigned int obj_num = object_number_of_page(obj_size); \
-    unsigned int j; \
+    uint_t obj_num = object_number_of_page(obj_size); \
+    uint_t j; \
     env->vm->has_young_ref = FALSE; \
     for (j = 0; j < obj_num; j++) { \
         unsigned char* obj = (unsigned char*)page + sizeof(YogMarkSweepCompactPage) + obj_size * j; \
@@ -1006,8 +1006,8 @@ static void
 test_use_up_page1(YogMarkSweepCompact* msc) 
 {
     size_t size = msc->freelist_size[0];
-    unsigned int obj_num = object_number_of_page(size);
-    unsigned int i;
+    uint_t obj_num = object_number_of_page(size);
+    uint_t i;
     for (i = 0; i < obj_num; i++) {
         YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
     }
@@ -1085,14 +1085,14 @@ static void
 test_page_freelist2(YogMarkSweepCompact* msc) 
 {
     size_t size = msc->freelist_size[0];
-    unsigned int obj_num = object_number_of_page(size);
-    unsigned int i;
+    uint_t obj_num = object_number_of_page(size);
+    uint_t i;
     for (i = 0; i < obj_num; i++) {
         YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
     }
     YogMarkSweepCompact_gc(NULL, msc);
 
-    unsigned int page_num = msc->chunk_size / PAGE_SIZE;
+    uint_t page_num = msc->chunk_size / PAGE_SIZE;
     unsigned char* page = (unsigned char*)msc->chunks->first_page;
     for (i = 0; i < page_num - 1; i++) {
         unsigned char* page_begin = page + PAGE_SIZE * i;
@@ -1109,14 +1109,14 @@ static void
 test_page_freelist3(YogMarkSweepCompact* msc) 
 {
     size_t size = msc->freelist_size[0];
-    unsigned int obj_num = object_number_of_page(size);
-    unsigned int i;
+    uint_t obj_num = object_number_of_page(size);
+    uint_t i;
     for (i = 0; i < obj_num; i++) {
         YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
     }
     YogMarkSweepCompact_gc(NULL, msc);
 
-    unsigned int page_num = msc->chunk_size / PAGE_SIZE;
+    uint_t page_num = msc->chunk_size / PAGE_SIZE;
     unsigned char* page = (unsigned char*)msc->chunks->first_page;
     for (i = 0; i < page_num - 1; i++) {
         unsigned char* page_begin = page + PAGE_SIZE * i;
@@ -1141,8 +1141,8 @@ static void
 test_page_freelist4(YogMarkSweepCompact* msc) 
 {
     size_t size = msc->freelist_size[0];
-    unsigned int obj_num = object_number_of_page(size) + 1;
-    unsigned int i;
+    uint_t obj_num = object_number_of_page(size) + 1;
+    uint_t i;
     for (i = 1; i < obj_num; i++) {
         YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
     }
@@ -1150,7 +1150,7 @@ test_page_freelist4(YogMarkSweepCompact* msc)
 
     YogMarkSweepCompact_gc(NULL, msc);
 
-    unsigned int page_num = msc->chunk_size / PAGE_SIZE - 1;
+    uint_t page_num = msc->chunk_size / PAGE_SIZE - 1;
     unsigned char* page = (unsigned char*)msc->chunks->first_page;
     for (i = 0; i < page_num - 1; i++) {
         unsigned char* page_begin = page + PAGE_SIZE * (i + 1);
@@ -1175,8 +1175,8 @@ static void
 test_page_freelist5(YogMarkSweepCompact* msc) 
 {
     size_t size = msc->freelist_size[0];
-    unsigned int obj_num = object_number_of_page(size) + 1;
-    unsigned int i;
+    uint_t obj_num = object_number_of_page(size) + 1;
+    uint_t i;
     for (i = 1; i < obj_num; i++) {
         YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
     }
@@ -1194,10 +1194,10 @@ CREATE_TEST(page_freelist5, NULL, page_freelist5_keep_children);
 static void 
 test_page1(YogMarkSweepCompact* msc) 
 {
-    unsigned int index = 0;
+    uint_t index = 0;
     size_t size = msc->freelist_size[index];
-    unsigned int obj_num = object_number_of_page(size) + 1;
-    unsigned int i;
+    uint_t obj_num = object_number_of_page(size) + 1;
+    uint_t i;
     for (i = 0; i < obj_num - 1; i++) {
         YogMarkSweepCompact_alloc(NULL, msc, NULL, NULL, 0);
     }

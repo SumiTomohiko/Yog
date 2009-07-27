@@ -115,9 +115,9 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         case FRAME_NAME:
             {
                 YogVal code = PTR_AS(YogScriptFrame, frame)->code;
-                unsigned int lineno = 0;
+                uint_t lineno = 0;
                 pc_t pc = PTR_AS(YogScriptFrame, frame)->pc - 1;
-                unsigned int i = 0;
+                uint_t i = 0;
                 for (i = 0; i < PTR_AS(YogCode, code)->lineno_tbl_size; i++) {
                     YogVal lineno_tbl = PTR_AS(YogCode, code)->lineno_tbl;
                     YogLinenoTableEntry* entry = &PTR_AS(YogLinenoTableEntry, lineno_tbl)[i];

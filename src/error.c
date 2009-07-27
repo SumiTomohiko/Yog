@@ -28,7 +28,7 @@ YogError_out_of_memory(YogEnv* env)
 }
 
 static void
-print_error(YogEnv* env, const char* type, const char* filename, unsigned int lineno, const char* fmt, va_list ap)
+print_error(YogEnv* env, const char* type, const char* filename, uint_t lineno, const char* fmt, va_list ap)
 {
     FILE* stream = stderr;
 
@@ -46,14 +46,14 @@ print_error(YogEnv* env, const char* type, const char* filename, unsigned int li
 } while (0)
 
 void 
-YogError_bug(YogEnv* env, const char* filename, unsigned int lineno, const char* fmt, ...) 
+YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...) 
 {
     PRINT_ERROR(env, "BUG", filename, lineno, fmt);
     abort();
 }
 
 void
-YogError_warn(YogEnv* env, const char* filename, unsigned int lineno, const char* fmt, ...)
+YogError_warn(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...)
 {
     PRINT_ERROR(env, "WARN", filename, lineno, fmt);
 }
@@ -142,7 +142,7 @@ YogError_print_stacktrace(YogEnv* env)
             PRINT("builtin");
         }
 
-        unsigned int lineno = PTR_AS(YogStackTraceEntry, st)->lineno;
+        uint_t lineno = PTR_AS(YogStackTraceEntry, st)->lineno;
         if (0 < lineno) {
             PRINT(", line %d", lineno);
         }

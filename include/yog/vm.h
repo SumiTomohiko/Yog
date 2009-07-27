@@ -72,13 +72,13 @@ struct YogVM {
     pthread_mutex_t global_interp_lock;
     BOOL running_gc;
     BOOL waiting_suspend;
-    unsigned int suspend_counter;
+    uint_t suspend_counter;
     pthread_cond_t threads_suspend_cond;
     pthread_cond_t gc_finish_cond;
     void* heaps;
     void* last_heap;
     pthread_cond_t vm_finish_cond;
-    unsigned int gc_id;
+    uint_t gc_id;
 #if defined(GC_GENERATIONAL)
     /* TODO: dirty hack. remove this */
     BOOL has_young_ref;

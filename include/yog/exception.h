@@ -6,7 +6,7 @@
 
 struct YogStackTraceEntry {
     YogVal lower;
-    unsigned int lineno;
+    uint_t lineno;
     YogVal filename;
     ID klass_name;
     ID func_name;

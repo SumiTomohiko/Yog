@@ -50,8 +50,8 @@ typedef struct YogInstanceMethod YogInstanceMethod;
  */
 
 /* src/function.c */
-YogVal YogCallable_call(YogEnv*, YogVal, unsigned int, YogVal*);
-YogVal YogCallable_call2(YogEnv*, YogVal, unsigned int, YogVal*, YogVal);
+YogVal YogCallable_call(YogEnv*, YogVal, uint_t, YogVal*);
+YogVal YogCallable_call2(YogEnv*, YogVal, uint_t, YogVal*, YogVal);
 YogVal YogFunction_klass_new(YogEnv*);
 YogVal YogFunction_new(YogEnv*);
 YogVal YogInstanceMethod_klass_new(YogEnv*);

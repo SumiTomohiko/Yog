@@ -95,9 +95,9 @@ struct YogInst {
         } print_top;
     } u;
 
-    unsigned int lineno;
+    uint_t lineno;
     pc_t pc;
-    unsigned int size;
+    uint_t size;
 };
 
 #define INST_OPCODE(v)  (INST(v)->opcode)
@@ -136,7 +136,7 @@ typedef struct YogInst YogInst;
  */
 
 /* src/inst.c */
-unsigned int Yog_get_inst_size(OpCode);
+uint_t Yog_get_inst_size(OpCode);
 
 /* PROTOTYPE_END */
 

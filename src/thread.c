@@ -118,7 +118,7 @@ YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_siz
 
 #if defined(GC_GENERATIONAL)
 void 
-YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, unsigned int tenure)
+YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, uint_t tenure)
 {
     YogGenerational* generational = malloc(sizeof(YogGenerational));
     YOG_ASSERT(env, generational != NULL, "Can't allocate YogGenerational");
@@ -262,7 +262,7 @@ run_of_new_thread(void* arg)
     YogVal vararg = thread_arg->vararg;
     YogVal block = PTR_AS(YogThread, thread)->block;
     if (IS_PTR(vararg)) {
-        unsigned int size = YogArray_size(&env, vararg);
+        uint_t size = YogArray_size(&env, vararg);
         YogVal args[size];
         YogVal body = PTR_AS(YogArray, vararg)->body;
         memcpy(args, PTR_AS(YogValArray, body)->items, size);

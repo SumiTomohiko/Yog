@@ -27,8 +27,8 @@ typedef struct YogJmpBuf YogJmpBuf;
 
 struct YogLocals {
     struct YogLocals* next;
-    unsigned int num_vals;
-    unsigned int size;
+    uint_t num_vals;
+    uint_t size;
     YogVal* vals[NUM_VALS];
 };
 
@@ -43,7 +43,7 @@ typedef struct YogLocals YogLocals;
 #if 0
 #   define PUSH_LOCAL_TABLE(env, tbl) \
 do { \
-    unsigned int i; \
+    uint_t i; \
     DPRINTF("tbl=%p", &tbl); \
     for (i = 0; i < tbl.num_vals; i++) { \
         DPRINTF("tbl.vals[%d]=%p", i, tbl.vals[i]); \
@@ -194,7 +194,7 @@ typedef struct YogThread YogThread;
 /* src/thread.c */
 void YogThread_config_bdw(YogEnv*, YogVal);
 void YogThread_config_copying(YogEnv*, YogVal, size_t);
-void YogThread_config_generational(YogEnv*, YogVal, size_t, size_t, size_t, unsigned int);
+void YogThread_config_generational(YogEnv*, YogVal, size_t, size_t, size_t, uint_t);
 void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t);
 void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t, size_t);
 void YogThread_initialize(YogEnv*, YogVal, YogVal);

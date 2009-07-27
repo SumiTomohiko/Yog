@@ -281,13 +281,13 @@ YogVM_boot(YogEnv* env, YogVM* vm)
 #endif
 
 static void
-keep_local_vals(YogEnv* env, YogVal* vals, unsigned int size, ObjectKeeper keeper, void* heap)
+keep_local_vals(YogEnv* env, YogVal* vals, uint_t size, ObjectKeeper keeper, void* heap)
 {
     if (vals == NULL) {
         return;
     }
 
-    unsigned int i;
+    uint_t i;
     for (i = 0; i < size; i++) {
         YogVal* val = &vals[i];
         DEBUG(DPRINTF("val=%p", val));
@@ -300,7 +300,7 @@ keep_local_vals(YogEnv* env, YogVal* vals, unsigned int size, ObjectKeeper keepe
 static void
 keep_locals(YogEnv* env, YogLocals* locals, ObjectKeeper keeper, void* heap)
 {
-    unsigned int i;
+    uint_t i;
     for (i = 0; i < locals->num_vals; i++) {
         keep_local_vals(env, locals->vals[i], locals->size, keeper, heap);
     }
@@ -556,10 +556,10 @@ YogVM_add_heap(YogEnv* env, YogVM* vm, void* heap)
 }
 #endif
 
-static unsigned int
+static uint_t
 count_running_threads(YogEnv* env, YogVM* vm)
 {
-    unsigned int n = 0;
+    uint_t n = 0;
     YogVal thread = vm->running_threads;
     while (IS_PTR(thread)) {
         n++;
@@ -791,8 +791,8 @@ import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
     YogVal body = YUNDEF;
     PUSH_LOCALS3(env, pkg, dir, body);
 
-    unsigned int size = YogArray_size(env, vm->search_path);
-    unsigned int i;
+    uint_t size = YogArray_size(env, vm->search_path);
+    uint_t i;
     for (i = 0; i < size; i++) {
         dir = YogArray_at(env, vm->search_path, i);
         body = PTR_AS(YogString, dir)->body;
@@ -894,14 +894,14 @@ YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
         if (end == NULL) {
             end = begin + len;
         }
-        unsigned int size = end - begin;
+        uint_t size = end - begin;
         char s[size + 1];
         strncpy(s, begin, size);
         s[size] = '\0';
 
         pkg = import_package(env, vm, s);
         if (IS_PTR(parent)) {
-            unsigned int size = end - pc;
+            uint_t size = end - pc;
             char attr[size + 1];
             strncpy(attr, pc, size);
             attr[size] = '\0';
@@ -1039,7 +1039,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
     add_current_directory(env, search_path);
 
     dirname(env, prog);
-    unsigned int len = YogString_size(env, prog);
+    uint_t len = YogString_size(env, prog);
 #define EXT_DIR     "../ext"
     /* 1 of middle is for '/' */
     char extpath[len +  1 + strlen(EXT_DIR) + 1];

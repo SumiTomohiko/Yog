@@ -31,24 +31,29 @@
 #if SIZEOF_VOIDP == SIZEOF_INT
 typedef unsigned int YogVal;
 typedef unsigned int ID;
-#   define INVALID_ID   VAL2ID(UINT_MAX & (~1))
+#   define INVALID_ID       VAL2ID(UINT_MAX & (~1))
 typedef unsigned int pc_t;
-#   define SIGNED_TYPE  int
+#   define SIGNED_TYPE      int
+#   define UNSIGNED_TYPE    unsigned int
 #elif SIZEOF_VOIDP == SIZEOF_LONG
 typedef unsigned long YogVal;
 typedef unsigned long ID;
-#   define INVALID_ID   VAL2ID(ULONG_MAX & (~1))
+#   define INVALID_ID       VAL2ID(ULONG_MAX & (~1))
 typedef unsigned long pc_t;
-#   define SIGNED_TYPE  long
+#   define SIGNED_TYPE      long
+#   define UNSIGNED_TYPE    unsigned long
 #elif SIZEOF_VOIDP == SIZEOF_LONG_LONG
 typedef unsigned long long YogVal;
 typedef unsigned long long ID;
-#   define INVALID_ID   VAL2ID(ULLONG_MAX & (~1))
+#   define INVALID_ID       VAL2ID(ULLONG_MAX & (~1))
 typedef unsigned long long pc_t;
-#   define SIGNED_TYPE  long long
+#   define SIGNED_TYPE      long long
+#   define UNSIGNED_TYPE    unsigned long long
 #else
 #   error "No integer type available to represent pointers"
 #endif
+
+typedef UNSIGNED_TYPE uint_t;
 
 #define YUNDEF          0x02
 #define YNIL            0x06
@@ -84,7 +89,7 @@ typedef void* (*ObjectKeeper)(YogEnv*, void*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper, void*);
 typedef void (*Finalizer)(YogEnv*, void*);
 
-typedef unsigned int flags_t;
+typedef uint_t flags_t;
 
 /* PROTOTYPE_START */
 

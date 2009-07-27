@@ -10,17 +10,17 @@
 #include "yog/yog.h"
 
 static void 
-fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, unsigned int argc, YogVal args, unsigned int args_offset) 
+fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, uint_t argc, YogVal args, uint_t args_offset) 
 {
     SAVE_ARGS5(env, arg_info, blockarg, vararg, varkwarg, args);
 
     YogVal array = YUNDEF;
     PUSH_LOCAL(env, array);
 
-    unsigned int i = 0;
-    unsigned int arg_argc = PTR_AS(YogArgInfo, arg_info)->argc;
-    unsigned int arg_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
-    unsigned int size = arg_argc + arg_blockargc;
+    uint_t i = 0;
+    uint_t arg_argc = PTR_AS(YogArgInfo, arg_info)->argc;
+    uint_t arg_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
+    uint_t size = arg_argc + arg_blockargc;
     for (i = 0; i < size; i++) {
         PTR_AS(YogValArray, args)->items[args_offset + i] = YUNDEF;
     }
@@ -32,9 +32,9 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             MODIFY(env, items[args_offset + i], arg);
         }
         YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->varargc == 1, "Too many arguments.");
-        unsigned int argc = PTR_AS(YogArgInfo, arg_info)->argc;
-        unsigned int blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
-        unsigned int index = argc + blockargc;
+        uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
+        uint_t blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
+        uint_t index = argc + blockargc;
         array = PTR_AS(YogValArray, args)->items[args_offset + index];
         for (i = PTR_AS(YogArgInfo, arg_info)->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
@@ -51,14 +51,14 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     if (IS_PTR(blockarg)) {
         YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->blockargc == 1, "Can't accept block argument.");
         YogVal* items = PTR_AS(YogValArray, args)->items;
-        unsigned int index = PTR_AS(YogArgInfo, arg_info)->argc;
+        uint_t index = PTR_AS(YogArgInfo, arg_info)->argc;
         MODIFY(env, items[args_offset + index], blockarg);
     }
 
     for (i = 0; i < kwargc; i++) {
         YogVal name = kwargs[2 * i];
         ID id = VAL2ID(name);
-        unsigned int j = 0;
+        uint_t j = 0;
         for (j = 0; j < PTR_AS(YogArgInfo, arg_info)->argc; j++) {
             YogVal argnames = PTR_AS(YogArgInfo, arg_info)->argnames;
             ID argname = PTR_AS(ID, argnames)[j];
@@ -93,7 +93,7 @@ setup_script_frame(YogEnv* env, YogVal frame, YogVal code)
     YogCode_dump(env, code);
 #endif
 
-    unsigned int stack_size = PTR_AS(YogCode, code)->stack_size;
+    uint_t stack_size = PTR_AS(YogCode, code)->stack_size;
     YogVal stack = YogValArray_new(env, stack_size);
 
     PTR_AS(YogScriptFrame, frame)->pc = 0;
@@ -137,17 +137,17 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
     code = PTR_AS(YogFunction, callee)->code;
     outer_vars = PTR_AS(YogFunction, callee)->outer_vars;
 
-    unsigned int local_vars_count = PTR_AS(YogCode, code)->local_vars_count;
+    uint_t local_vars_count = PTR_AS(YogCode, code)->local_vars_count;
     vars = YogValArray_new(env, local_vars_count);
     PTR_AS(YogValArray, vars)->items[0] = self;
 
     YogVal arg_info = PTR_AS(YogCode, code)->arg_info;
     if (IS_PTR(arg_info)) {
-        unsigned int code_argc = PTR_AS(YogArgInfo, arg_info)->argc;
-        unsigned int code_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
-        unsigned int code_varargc = PTR_AS(YogArgInfo, arg_info)->varargc;
-        unsigned int code_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
-        unsigned int argc = code_argc + code_blockargc + code_varargc + code_kwargc;
+        uint_t code_argc = PTR_AS(YogArgInfo, arg_info)->argc;
+        uint_t code_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
+        uint_t code_varargc = PTR_AS(YogArgInfo, arg_info)->varargc;
+        uint_t code_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
+        uint_t argc = code_argc + code_blockargc + code_varargc + code_kwargc;
         fill_args(env, arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, vars, 1);
     }
 
@@ -258,7 +258,7 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
     PUSH_LOCALS3(env, args, retval, frame);
 
     args = YogArray_new(env);
-    unsigned int i;
+    uint_t i;
     for (i = 0; i < posargc; i++) {
         YogArray_push(env, args, posargs[i]);
     }
@@ -506,13 +506,13 @@ YogNativeFunction_klass_new(YogEnv* env)
 }
 
 YogVal
-YogCallable_call(YogEnv* env, YogVal self, unsigned int argc, YogVal* args)
+YogCallable_call(YogEnv* env, YogVal self, uint_t argc, YogVal* args)
 {
     return (*PTR_AS(YogCallable, self)->call)(env, self, argc, args, YNIL, 0, NULL, YNIL, YNIL);
 }
 
 YogVal
-YogCallable_call2(YogEnv* env, YogVal self, unsigned int argc, YogVal* args, YogVal block)
+YogCallable_call2(YogEnv* env, YogVal self, uint_t argc, YogVal* args, YogVal block)
 {
     return (*PTR_AS(YogCallable, self)->call)(env, self, argc, args, block, 0, NULL, YNIL, YNIL);
 }

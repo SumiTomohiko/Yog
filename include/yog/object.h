@@ -38,11 +38,11 @@ typedef YogVal (*Allocator)(struct YogEnv*, YogVal);
  */
 
 /* src/object.c */
-void YogBasicObj_init(YogEnv*, YogVal, unsigned int, YogVal);
+void YogBasicObj_init(YogEnv*, YogVal, uint_t, YogVal);
 void YogBasicObj_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 YogVal YogObj_allocate(YogEnv*, YogVal);
 YogVal YogObj_get_attr(YogEnv*, YogVal, ID);
-void YogObj_init(YogEnv*, YogVal, unsigned int, YogVal);
+void YogObj_init(YogEnv*, YogVal, uint_t, YogVal);
 void YogObj_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 void YogObj_klass_init(YogEnv*, YogVal);
 YogVal YogObj_new(YogEnv*, YogVal);

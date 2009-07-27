@@ -5,7 +5,7 @@ from os.path import exists, join, splitext
 from re import compile, sub
 from shutil import copy, move
 
-exts = [".c", ".h"]
+exts = [".c", ".h", ".y", ".def", ]
 
 def replace_for_dir(dirname):
     for name in listdir(dirname):
@@ -21,7 +21,7 @@ def replace_for_dir(dirname):
                 with open(tmp, "w") as out:
                     for line in in_:
                         #line = sub(r"puts (.*)", r"puts(\1)", line)
-                        line = line.replace("_fixnum", "_int")
+                        line = line.replace("unsigned int", "uint_t")
                         out.write(line)
             move(tmp, path)
 
