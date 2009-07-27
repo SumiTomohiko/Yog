@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from re import match
 from testcase import TestCase
 
 class TestRegexp(TestCase):
@@ -177,5 +178,19 @@ m = \"foobarbazquux\" =~ /foo(?<name>bar)baz/
 puts(m.end(\"name\"))
 """, """6
 """)
+
+    def test_match_end50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Match#end
+IndexError: no such group
+""", stderr)
+            assert m is not None
+
+        self._test("""
+m = \"foo\" = /foo/
+puts(m.end(42))
+""", stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
