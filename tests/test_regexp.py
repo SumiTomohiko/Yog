@@ -137,6 +137,20 @@ puts(m.start(\"name\"))
 """, """3
 """)
 
+    def test_match_start50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <module>
+  File builtin, in Match#start
+IndexError: no such group
+""", stderr)
+            assert m is not None
+
+        self._test("""
+m = \"foo\" =~ /foo/
+puts(m.start(42))
+""", stderr=test_stderr)
+
     def test_match_end05(self):
         self._test("""
 m = \"foo\" =~ /foo/
