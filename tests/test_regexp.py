@@ -189,7 +189,7 @@ IndexError: no such group
             assert m is not None
 
         self._test("""
-m = \"foo\" = /foo/
+m = \"foo\" =~ /foo/
 puts(m.end(42))
 """, stderr=test_stderr)
 

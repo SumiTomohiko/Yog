@@ -13,6 +13,13 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+#define RAISE_FORMAT(env, type, fmt)  do { \
+    va_list ap; \
+    va_start(ap, fmt); \
+    raise_format((env), (env)->vm->type, (fmt), ap); \
+    va_end(ap); \
+} while (0)
+
 void
 YogError_out_of_memory(YogEnv* env)
 {
@@ -90,13 +97,6 @@ raise_format(YogEnv* env, YogVal klass, const char* fmt, va_list ap)
     raise_error(env, klass, buffer);
 }
 
-#define RAISE_FORMAT(env, type, fmt)  do { \
-    va_list ap; \
-    va_start(ap, fmt); \
-    raise_format((env), (env)->vm->type, (fmt), ap); \
-    va_end(ap); \
-} while (0)
-
 void 
 YogError_raise_TypeError(YogEnv* env, const char* fmt, ...) 
 {
@@ -104,15 +104,15 @@ YogError_raise_TypeError(YogEnv* env, const char* fmt, ...)
 }
 
 void 
-YogError_raise_IndexError(YogEnv* env, const char* msg) 
+YogError_raise_IndexError(YogEnv* env, const char* fmt, ...)
 {
-    raise_error(env, env->vm->eIndexError, msg);
+    RAISE_FORMAT(env, eIndexError, fmt);
 }
 
 void
-YogError_raise_SyntaxError(YogEnv* env, const char* msg)
+YogError_raise_SyntaxError(YogEnv* env, const char* fmt, ...)
 {
-    raise_error(env, env->vm->eSyntaxError, msg);
+    RAISE_FORMAT(env, eSyntaxError, fmt);
 }
 
 void
@@ -202,15 +202,15 @@ YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const ch
 }
 
 void
-YogError_raise_ZeroDivisionError(YogEnv* env, const char* msg)
+YogError_raise_ZeroDivisionError(YogEnv* env, const char* fmt, ...)
 {
-    raise_error(env, env->vm->eZeroDivisionError, msg);
+    RAISE_FORMAT(env, eZeroDivisionError, fmt);
 }
 
 void 
-YogError_raise_ArgumentError(YogEnv* env, const char* msg)
+YogError_raise_ArgumentError(YogEnv* env, const char* fmt, ...)
 {
-    raise_error(env, env->vm->eArgumentError, msg);
+    RAISE_FORMAT(env, eArgumentError, fmt);
 }
 
 /**
