@@ -2,10 +2,10 @@
 LIBS = test_package4.so test_package5.so
 LIBS_OPT = -shared -O2 -I../include -Wall
 
-test_package4.so: test_package4.c
+test_package4.so: test_package4.c Makefile
 	$(CC) -o $@ $(LIBS_OPT) $<
 
-test_package5.so: test_package5.c
+test_package5.so: test_package5.c Makefile
 	$(CC) -o $@ $(LIBS_OPT) $<
 
 TEST_CMD = py.test --showlocals
