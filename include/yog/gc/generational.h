@@ -53,7 +53,7 @@ void* YogGenerational_alloc(YogEnv*, YogGenerational*, ChildrenKeeper, Finalizer
 void YogGenerational_allocate_heap(YogEnv*, YogGenerational*);
 void* YogGenerational_copy_young_object(YogEnv*, void*, ObjectKeeper, void*);
 void YogGenerational_finalize(YogEnv*, YogGenerational*);
-void YogGenerational_initialize(YogEnv*, YogGenerational*, size_t, size_t, size_t, unsigned int);
+void YogGenerational_initialize(YogEnv*, YogGenerational*, size_t, size_t, size_t, uint_t);
 BOOL YogGenerational_is_empty(YogEnv*, YogGenerational*);
 void YogGenerational_major_cheney_scan(YogEnv*, YogGenerational*);
 void YogGenerational_major_delete_garbage(YogEnv*, YogGenerational*);

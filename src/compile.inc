@@ -5,7 +5,7 @@
 
 
 static void 
-CompileData_add_load_special(YogEnv* env, YogVal data, unsigned int lineno, ID id)
+CompileData_add_load_special(YogEnv* env, YogVal data, uint_t lineno, ID id)
 {
     SAVE_ARG(env, data);
 
@@ -21,7 +21,7 @@ CompileData_add_load_special(YogEnv* env, YogVal data, unsigned int lineno, ID i
 }
 
 static void 
-CompileData_add_pop(YogEnv* env, YogVal data, unsigned int lineno)
+CompileData_add_pop(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
 
@@ -36,7 +36,7 @@ CompileData_add_pop(YogEnv* env, YogVal data, unsigned int lineno)
 }
 
 static void 
-CompileData_add_push_const(YogEnv* env, YogVal data, unsigned int lineno, uint8_t index)
+CompileData_add_push_const(YogEnv* env, YogVal data, uint_t lineno, uint8_t index)
 {
     SAVE_ARG(env, data);
 
@@ -52,7 +52,7 @@ CompileData_add_push_const(YogEnv* env, YogVal data, unsigned int lineno, uint8_
 }
 
 static void 
-CompileData_add_make_string(YogEnv* env, YogVal data, unsigned int lineno, uint8_t index)
+CompileData_add_make_string(YogEnv* env, YogVal data, uint_t lineno, uint8_t index)
 {
     SAVE_ARG(env, data);
 
@@ -68,7 +68,7 @@ CompileData_add_make_string(YogEnv* env, YogVal data, unsigned int lineno, uint8
 }
 
 static void 
-CompileData_add_store_name(YogEnv* env, YogVal data, unsigned int lineno, ID id)
+CompileData_add_store_name(YogEnv* env, YogVal data, uint_t lineno, ID id)
 {
     SAVE_ARG(env, data);
 
@@ -84,7 +84,7 @@ CompileData_add_store_name(YogEnv* env, YogVal data, unsigned int lineno, ID id)
 }
 
 static void 
-CompileData_add_store_local(YogEnv* env, YogVal data, unsigned int lineno, uint8_t index)
+CompileData_add_store_local(YogEnv* env, YogVal data, uint_t lineno, uint8_t index)
 {
     SAVE_ARG(env, data);
 
@@ -100,7 +100,7 @@ CompileData_add_store_local(YogEnv* env, YogVal data, unsigned int lineno, uint8
 }
 
 static void 
-CompileData_add_make_function(YogEnv* env, YogVal data, unsigned int lineno)
+CompileData_add_make_function(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
 
@@ -115,7 +115,7 @@ CompileData_add_make_function(YogEnv* env, YogVal data, unsigned int lineno)
 }
 
 static void 
-CompileData_add_call_function(YogEnv* env, YogVal data, unsigned int lineno, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
+CompileData_add_call_function(YogEnv* env, YogVal data, uint_t lineno, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
     SAVE_ARG(env, data);
 
@@ -135,7 +135,7 @@ CompileData_add_call_function(YogEnv* env, YogVal data, unsigned int lineno, uin
 }
 
 static void 
-CompileData_add_load_global(YogEnv* env, YogVal data, unsigned int lineno, ID id)
+CompileData_add_load_global(YogEnv* env, YogVal data, uint_t lineno, ID id)
 {
     SAVE_ARG(env, data);
 
@@ -151,7 +151,7 @@ CompileData_add_load_global(YogEnv* env, YogVal data, unsigned int lineno, ID id
 }
 
 static void 
-CompileData_add_load_name(YogEnv* env, YogVal data, unsigned int lineno, ID id)
+CompileData_add_load_name(YogEnv* env, YogVal data, uint_t lineno, ID id)
 {
     SAVE_ARG(env, data);
 
@@ -167,7 +167,7 @@ CompileData_add_load_name(YogEnv* env, YogVal data, unsigned int lineno, ID id)
 }
 
 static void 
-CompileData_add_load_local(YogEnv* env, YogVal data, unsigned int lineno, uint8_t index)
+CompileData_add_load_local(YogEnv* env, YogVal data, uint_t lineno, uint8_t index)
 {
     SAVE_ARG(env, data);
 
@@ -183,7 +183,7 @@ CompileData_add_load_local(YogEnv* env, YogVal data, unsigned int lineno, uint8_
 }
 
 static void 
-CompileData_add_jump(YogEnv* env, YogVal data, unsigned int lineno, YogVal dest)
+CompileData_add_jump(YogEnv* env, YogVal data, uint_t lineno, YogVal dest)
 {
     SAVE_ARGS2(env, data, dest);
 
@@ -199,7 +199,7 @@ CompileData_add_jump(YogEnv* env, YogVal data, unsigned int lineno, YogVal dest)
 }
 
 static void 
-CompileData_add_jump_if_false(YogEnv* env, YogVal data, unsigned int lineno, YogVal dest)
+CompileData_add_jump_if_false(YogEnv* env, YogVal data, uint_t lineno, YogVal dest)
 {
     SAVE_ARGS2(env, data, dest);
 
@@ -215,7 +215,7 @@ CompileData_add_jump_if_false(YogEnv* env, YogVal data, unsigned int lineno, Yog
 }
 
 static void 
-CompileData_add_dup(YogEnv* env, YogVal data, unsigned int lineno)
+CompileData_add_dup(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
 
@@ -230,7 +230,7 @@ CompileData_add_dup(YogEnv* env, YogVal data, unsigned int lineno)
 }
 
 static void 
-CompileData_add_make_klass(YogEnv* env, YogVal data, unsigned int lineno)
+CompileData_add_make_klass(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
 
@@ -245,7 +245,7 @@ CompileData_add_make_klass(YogEnv* env, YogVal data, unsigned int lineno)
 }
 
 static void 
-CompileData_add_push_self_name(YogEnv* env, YogVal data, unsigned int lineno)
+CompileData_add_push_self_name(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
 
@@ -260,7 +260,7 @@ CompileData_add_push_self_name(YogEnv* env, YogVal data, unsigned int lineno)
 }
 
 static void 
-CompileData_add_ret(YogEnv* env, YogVal data, unsigned int lineno)
+CompileData_add_ret(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
 
@@ -275,7 +275,7 @@ CompileData_add_ret(YogEnv* env, YogVal data, unsigned int lineno)
 }
 
 static void 
-CompileData_add_store_nonlocal(YogEnv* env, YogVal data, unsigned int lineno, uint8_t level, uint8_t index)
+CompileData_add_store_nonlocal(YogEnv* env, YogVal data, uint_t lineno, uint8_t level, uint8_t index)
 {
     SAVE_ARG(env, data);
 
@@ -292,7 +292,7 @@ CompileData_add_store_nonlocal(YogEnv* env, YogVal data, unsigned int lineno, ui
 }
 
 static void 
-CompileData_add_load_nonlocal(YogEnv* env, YogVal data, unsigned int lineno, uint8_t level, uint8_t index)
+CompileData_add_load_nonlocal(YogEnv* env, YogVal data, uint_t lineno, uint8_t level, uint8_t index)
 {
     SAVE_ARG(env, data);
 
@@ -309,7 +309,7 @@ CompileData_add_load_nonlocal(YogEnv* env, YogVal data, unsigned int lineno, uin
 }
 
 static void 
-CompileData_add_store_global(YogEnv* env, YogVal data, unsigned int lineno, ID name)
+CompileData_add_store_global(YogEnv* env, YogVal data, uint_t lineno, ID name)
 {
     SAVE_ARG(env, data);
 
@@ -325,7 +325,7 @@ CompileData_add_store_global(YogEnv* env, YogVal data, unsigned int lineno, ID n
 }
 
 static void 
-CompileData_add_load_attr(YogEnv* env, YogVal data, unsigned int lineno, ID name)
+CompileData_add_load_attr(YogEnv* env, YogVal data, uint_t lineno, ID name)
 {
     SAVE_ARG(env, data);
 
@@ -341,7 +341,7 @@ CompileData_add_load_attr(YogEnv* env, YogVal data, unsigned int lineno, ID name
 }
 
 static void 
-CompileData_add_make_array(YogEnv* env, YogVal data, unsigned int lineno, uint8_t size)
+CompileData_add_make_array(YogEnv* env, YogVal data, uint_t lineno, uint8_t size)
 {
     SAVE_ARG(env, data);
 
@@ -357,7 +357,7 @@ CompileData_add_make_array(YogEnv* env, YogVal data, unsigned int lineno, uint8_
 }
 
 static void 
-CompileData_add_finish(YogEnv* env, YogVal data, unsigned int lineno)
+CompileData_add_finish(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
 
@@ -372,7 +372,7 @@ CompileData_add_finish(YogEnv* env, YogVal data, unsigned int lineno)
 }
 
 static void 
-CompileData_add_print_top(YogEnv* env, YogVal data, unsigned int lineno)
+CompileData_add_print_top(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
 
@@ -566,18 +566,18 @@ insts2bin(YogEnv* env, YogVal inst)
     RETURN(env, code);
 }
 
-static int
+static int_t
 count_stack_size(YogEnv* env, YogVal inst) 
 {
-    int max = 0;
-    int size = 0;
+    int_t max = 0;
+    int_t size = 0;
 
     while (IS_PTR(inst)) {
         switch (INST(inst)->type) {
         case INST_OP:
             {
-                int pop_size = 0;
-                int push_size = 0;
+                int_t pop_size = 0;
+                int_t push_size = 0;
                 switch (INST_OPCODE(inst)) {
 
                 case OP(LOAD_SPECIAL):

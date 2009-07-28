@@ -333,7 +333,7 @@
             YogVal array = YUNDEF;
             PUSH_LOCAL(ENV, array);
             array = YogArray_of_size(ENV, size);
-            unsigned int i;
+            uint_t i;
             for (i = 0; i < size; i++) {
                 YogVal body = PTR_AS(YogArray, array)->body;
                 PTR_AS(YogValArray, body)->items[size - i - 1] = POP();

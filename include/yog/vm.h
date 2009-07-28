@@ -49,7 +49,6 @@ struct YogVM {
     YogVal cArray;
 
     YogVal eException;
-    YogVal eBugException;
     YogVal eTypeError;
     YogVal eValueError;
     YogVal eIndexError;

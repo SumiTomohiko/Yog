@@ -38,18 +38,18 @@ ${insts2bin}
     RETURN(env, code);
 }
 
-static int
+static int_t
 count_stack_size(YogEnv* env, YogVal inst) 
 {
-    int max = 0;
-    int size = 0;
+    int_t max = 0;
+    int_t size = 0;
 
     while (IS_PTR(inst)) {
         switch (INST(inst)->type) {
         case INST_OP:
             {
-                int pop_size = 0;
-                int push_size = 0;
+                int_t pop_size = 0;
+                int_t push_size = 0;
                 switch (INST_OPCODE(inst)) {
 ${count_stack_size}
                 default:

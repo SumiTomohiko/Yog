@@ -184,13 +184,6 @@ YogException_klass_new(YogEnv* env)
 #undef UPDATE_PTR
 }
 
-YogVal 
-YogBugException_new(YogEnv* env) 
-{
-    YogVal self = env->vm->eBugException;
-    return YogEval_call_method(env, self, "new", 0, NULL);
-}
-
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

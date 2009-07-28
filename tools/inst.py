@@ -374,7 +374,7 @@ class CodeGenerator(object):
         for inst in self.insts:
             compile_data.write("""
 static void 
-CompileData_add_%(inst)s(YogEnv* env, YogVal data, unsigned int lineno""" % { "inst": inst.name })
+CompileData_add_%(inst)s(YogEnv* env, YogVal data, uint_t lineno""" % { "inst": inst.name })
             for operand in inst.operands:
                 compile_data.write(", %(type)s %(name)s" % { "type": self.type_name2data_type(operand.type), "name": operand.name })
             pc_operands = self.get_pc_operands(inst)

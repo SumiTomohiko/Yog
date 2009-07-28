@@ -6,7 +6,7 @@
 #include "yog/opcodes.h"
 #include "yog/yog.h"
 
-uint_t 
+uint_t
 Yog_get_inst_size(OpCode op)
 {
     uint_t inst2size[] = {
