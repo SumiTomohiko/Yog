@@ -669,39 +669,6 @@ static void yy_reduce(
 }
 
 /*
-** The following code executes when the parse fails
-*/
-static void yy_parse_failed(
-    YogVal parser
-){
-  ParseARG_FETCH;
-#if !defined(NDEBUG)
-  if( yyTraceFILE ){
-    fprintf(yyTraceFILE,"%sFail!\n",yyTracePrompt);
-  }
-#endif
-  while (0 <= PTR_AS(yyParser, parser)->yyidx) yy_pop_parser_stack(parser);
-  /* Here code is inserted which will be executed whenever the
-  ** parser fails */
-%%
-  ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
-}
-
-/*
-** The following code executes when a syntax error first occurs.
-*/
-static void yy_syntax_error(
-  YogVal parser, 
-  int yymajor,                   /* The major type of the error token */
-  YYMINORTYPE yyminor            /* The minor type of the error token */
-){
-  ParseARG_FETCH;
-#define TOKEN (yyminor.yy0)
-%%
-  ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
-}
-
-/*
 ** The following is executed when the parser accepts
 */
 static void yy_accept(
@@ -735,11 +702,8 @@ static void yy_accept(
 ** <li> The minor token number.
 ** <li> An option argument of a grammar-specified type.
 ** </ul>
-**
-** Outputs:
-** None.
 */
-static void Parse(
+static BOOL Parse(
   YogEnv* env, 
   YogVal parser, 
   int yymajor,                 /* The major token code number */
@@ -772,7 +736,7 @@ static void Parse(
       /*memset(&yyminorunion, 0, sizeof(yyminorunion));*/
       yyminorunion = yyzerominor;
       yyStackOverflow(parser, &yyminorunion);
-      RETURN_VOID(env);
+      RETURN(env, FALSE);
     }
 #endif
     PTR_AS(yyParser, parser)->yyidx = 0;
@@ -802,94 +766,11 @@ static void Parse(
       yy_reduce(env, parser, yyact-YYNSTATE);
     }else{
       assert( yyact == YY_ERROR_ACTION );
-#if defined(YYERRORSYMBOL)
-      int yymx;
-#endif
-#if !defined(NDEBUG)
-      if( yyTraceFILE ){
-        fprintf(yyTraceFILE,"%sSyntax Error!\n",yyTracePrompt);
-      }
-#endif
-#if defined(YYERRORSYMBOL)
-      /* A syntax error has occurred.
-      ** The response to an error depends upon whether or not the
-      ** grammar defines an error token "ERROR".  
-      **
-      ** This is what we do if the grammar does define ERROR:
-      **
-      **  * Call the %syntax_error function.
-      **
-      **  * Begin popping the stack until we enter a state where
-      **    it is legal to shift the error symbol, then shift
-      **    the error symbol.
-      **
-      **  * Set the error count to three.
-      **
-      **  * Begin accepting and shifting new tokens.  No new error
-      **    processing will occur until three tokens have been
-      **    shifted successfully.
-      **
-      */
-      if (PTR_AS(yyParser, parser)->yyerrcnt < 0) {
-        yy_syntax_error(parser, yymajor, yyminorunion);
-      }
-      int yyidx = PTR_AS(yyParser, parser)->yyidx;
-      yymx = PTR_AS(yyParser, parser)->yystack[yyidx].major;
-      if( yymx==YYERRORSYMBOL || yyerrorhit ){
-#if !defined(NDEBUG)
-        if( yyTraceFILE ){
-          fprintf(yyTraceFILE,"%sDiscard input token %s\n",
-             yyTracePrompt,yyTokenName[yymajor]);
-        }
-#endif
-        yy_destructor(parser, (YYCODETYPE)yymajor,&yyminorunion);
-        yymajor = YYNOCODE;
-      }else{
-         while(
-          (0 <= PTR_AS(yyParser, parser)->yyidx) &&
-          yymx != YYERRORSYMBOL &&
-          (yyact = yy_find_reduce_action(
-                        PTR_AS(yyParser, parser)->yystack[PTR_AS(yyParser, parser)->yyidx].stateno,
-                        YYERRORSYMBOL)) >= YYNSTATE
-        ){
-          yy_pop_parser_stack(parser);
-        }
-        if ((PTR_AS(yyParser, parser)->yyidx < 0) || (yymajor == 0)) {
-          yy_destructor(parser, (YYCODETYPE)yymajor, &yyminorunion);
-          yy_parse_failed(parser);
-          yymajor = YYNOCODE;
-        }else if( yymx!=YYERRORSYMBOL ){
-          YYMINORTYPE u2;
-          u2.YYERRSYMDT = 0;
-          yy_shift(env, parser, yyact, YYERRORSYMBOL, &u2);
-        }
-      }
-      PTR_AS(yyParser, parser)->yyerrcnt = 3;
-      yyerrorhit = 1;
-#else  /* YYERRORSYMBOL is not defined */
-      /* This is what we do if the grammar does not define ERROR:
-      **
-      **  * Report an error message, and throw away the input token.
-      **
-      **  * If the input token is $, then fail the parse.
-      **
-      ** As before, subsequent error messages are suppressed until
-      ** three input tokens have been successfully shifted.
-      */
-      if (PTR_AS(yyParser, parser)->yyerrcnt <= 0) {
-        yy_syntax_error(parser, yymajor, yyminorunion);
-      }
-      PTR_AS(yyParser, parser)->yyerrcnt = 3;
-      yy_destructor(parser, (YYCODETYPE)yymajor, &yyminorunion);
-      if( yyendofinput ){
-        yy_parse_failed(parser);
-      }
-      yymajor = YYNOCODE;
-#endif
+      RETURN(env, FALSE);
     }
   }while( yymajor!=YYNOCODE && PTR_AS(yyParser, parser)->yyidx>=0 );
 
-  RETURN_VOID(env);
+  RETURN(env, TRUE);
 }
 
 /**

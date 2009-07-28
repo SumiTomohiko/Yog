@@ -53,4 +53,9 @@ puts(\"foo\" + 42)
 >>> """, stdin="""42 + 26
 """)
 
+    def test_SyntaxError0(self):
+        self._test(stdout=">>> >>> ", stderr="""SyntaxError: file "<stdin>", line 1: invalid syntax
+""", stdin="""def def
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

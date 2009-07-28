@@ -376,7 +376,7 @@ YogEval_eval_file(YogEnv* env, FILE* fp, const char* filename, const char* pkg_n
     YogVal pkg = YUNDEF;
     PUSH_LOCALS3(env, stmts, code, pkg);
 
-    stmts = YogParser_parse_file(env, fp, FALSE);
+    stmts = YogParser_parse_file(env, fp, filename, FALSE);
     if (!IS_PTR(stmts)) {
         RETURN(env, YNIL);
     }

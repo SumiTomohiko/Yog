@@ -183,7 +183,7 @@ void YogLexer_set_encoding(YogEnv*, YogVal, YogVal);
 
 /* src/parser.y */
 YogVal YogParser_parse(YogEnv*, YogVal);
-YogVal YogParser_parse_file(YogEnv*, FILE*, BOOL);
+YogVal YogParser_parse_file(YogEnv*, FILE*, const char*, BOOL);
 
 /* PROTOTYPE_END */
 

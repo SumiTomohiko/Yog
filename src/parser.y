@@ -21,7 +21,7 @@
 
 typedef struct ParserState ParserState;
 
-static void Parse(struct YogEnv*, YogVal, int_t, YogVal, YogVal*);
+static BOOL Parse(struct YogEnv*, YogVal, int_t, YogVal, YogVal*);
 static YogVal LemonParser_new(YogEnv*);
 static void ParseTrace(FILE*, char*);
 
@@ -517,8 +517,24 @@ Import_new(YogEnv* env, uint_t lineno, YogVal names)
     RETURN(env, node);
 }
 
+static void
+push_token(YogEnv* env, YogVal parser, YogVal lexer, YogVal token, const char* filename, YogVal* ast)
+{
+    SAVE_ARGS3(env, parser, lexer, token);
+
+    uint_t type = PTR_AS(YogToken, token)->type;
+    if (Parse(env, parser, type, token, ast)) {
+        RETURN_VOID(env);
+    }
+
+    YogError_raise_SyntaxError(env, "file \"%s\", line %u: invalid syntax", filename, PTR_AS(YogLexer, lexer)->lineno);
+
+    /* NOTREACHED */
+    RETURN_VOID(env);
+}
+
 static YogVal
-parse(YogEnv* env, YogVal lexer, BOOL debug)
+parse(YogEnv* env, YogVal lexer, const char* filename, BOOL debug)
 {
     SAVE_ARG(env, lexer);
     YogVal ast = YUNDEF;
@@ -531,8 +547,7 @@ parse(YogEnv* env, YogVal lexer, BOOL debug)
         ParseTrace(stdout, "parser> ");
     }
     while (YogLexer_next_token(env, lexer, &token)) {
-        uint_t type = PTR_AS(YogToken, token)->type;
-        Parse(env, lemon_parser, type, token, &ast);
+        push_token(env, lemon_parser, lexer, token, filename, &ast);
     }
     Parse(env, lemon_parser, 0, YNIL, &ast);
 
@@ -552,13 +567,13 @@ YogParser_parse(YogEnv* env, YogVal src)
     PTR_AS(YogLexer, lexer)->lineno++;
     YogLexer_set_encoding(env, lexer, PTR_AS(YogString, src)->encoding);
 
-    ast = parse(env, lexer, FALSE);
+    ast = parse(env, lexer, "<stdin>", FALSE);
 
     RETURN(env, ast);
 }
 
 YogVal 
-YogParser_parse_file(YogEnv* env, FILE* fp, BOOL debug)
+YogParser_parse_file(YogEnv* env, FILE* fp, const char* filename, BOOL debug)
 {
     YOG_ASSERT(env, fp != NULL, "file pointer is NULL");
 
@@ -571,7 +586,7 @@ YogParser_parse_file(YogEnv* env, FILE* fp, BOOL debug)
     PTR_AS(YogLexer, lexer)->fp = fp;
     YogLexer_read_encoding(env, lexer);
 
-    ast = parse(env, lexer, debug);
+    ast = parse(env, lexer, filename, debug);
 
     RETURN(env, ast);
 }
