@@ -1058,7 +1058,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
         YogArray_push(env, search_path, s);
     }
     else {
-        s = YogString_new_str(env, "/usr/local/lib/yog/0.9.0");
+        s = YogString_new_str(env, PREFIX "/lib/yog/" VERSION);
         YogArray_push(env, search_path, s);
     }
     vm->search_path = search_path;
