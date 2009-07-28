@@ -343,7 +343,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
     RETURN(env, TRUE); \
 } while (0)
 #define RETURN_ID_TOKEN(type, s)            do { \
-    ID id = INTERN(s); \
+    ID id = YogVM_intern(env, env->vm, s); \
     *token = IDToken_new(env, type, id, PTR_AS(YogLexer, lexer)->lineno); \
     RETURN(env, TRUE); \
 } while (0)
@@ -682,7 +682,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             YogVal body = PTR_AS(YogString, buffer)->body;
             const char* name = PTR_AS(YogCharArray, body)->items;
             if (PTR_AS(YogLexer, lexer)->state == LS_NAME) {
-                ID id = INTERN(name);
+                ID id = YogVM_intern(env, env->vm, name);
                 uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                 *token = IDToken_new(env, TK_NAME, id, lineno);
             }
@@ -693,7 +693,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
                     *token = ValToken_new(env, entry->type, YUNDEF, lineno);
                 }
                 else {
-                    ID id = INTERN(name);
+                    ID id = YogVM_intern(env, env->vm, name);
                     uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                     *token = IDToken_new(env, TK_NAME, id, lineno);
                 }

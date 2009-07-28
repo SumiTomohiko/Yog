@@ -222,7 +222,7 @@ setup_encodings(YogEnv* env, YogVM* vm)
 {
     /* TODO: changed not to use macro */
 #define REGISTER_ENCODING(name, onig)   do { \
-    ID id = INTERN(name); \
+    ID id = YogVM_intern(env, env->vm, name); \
     YogVal key = ID2VAL(id); \
     YogVal enc = YogEncoding_new(env, onig); \
     YogTable_add_direct(env, vm->encodings, key, enc); \

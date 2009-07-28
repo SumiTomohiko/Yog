@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "yog/env.h"
 #include "yog/gc.h"
 #include "yog/gc/mark-sweep.h"
 #include "yog/vm.h"

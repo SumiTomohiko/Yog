@@ -1510,7 +1510,7 @@ register_self(YogEnv* env, YogVal var_tbl)
 {
     SAVE_ARG(env, var_tbl);
 
-    ID name = INTERN("self");
+    ID name = YogVM_intern(env, env->vm, "self");
     scan_var_register(env, var_tbl, name, VAR_PARAM);
 
     RETURN_VOID(env);
@@ -1968,7 +1968,10 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
             visit_node(env, visitor, node_type, data);
             ID attr = YogVM_intern(env, env->vm, "===");
             CompileData_add_load_attr(env, data, lineno, attr);
-#define LOAD_EXC()  CompileData_add_load_special(env, data, lineno, INTERN("$!"))
+#define LOAD_EXC()  do { \
+    ID name = YogVM_intern(env, env->vm, "$!"); \
+    CompileData_add_load_special(env, data, lineno, name); \
+} while (0)
             lineno = NODE(node_type)->lineno;
             LOAD_EXC();
             CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
@@ -2210,7 +2213,7 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     vars = vars_flags2type(env, var_tbl, data);
 
     ID klass_name = INVALID_ID;
-    ID func_name = INTERN("<block>");
+    ID func_name = YogVM_intern(env, env->vm, "<block>");
     code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL, data, FALSE);
 
     setup_params(env, vars, params, code);
@@ -2495,7 +2498,7 @@ compile_module(YogEnv* env, const char* filename, YogVal stmts, BOOL interactive
     name = YogCharArray_new_str(env, filename);
 
     ID klass_name = INVALID_ID;
-    ID func_name = INTERN("<module>");
+    ID func_name = YogVM_intern(env, env->vm, "<module>");
 
     YogVal code = compile_stmts(env, &visitor, name, klass_name, func_name, stmts, vars, CTX_PKG, YNIL, YUNDEF, interactive);
 

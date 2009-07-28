@@ -28,9 +28,7 @@
 ID 
 YogString_intern(YogEnv* env, YogVal s) 
 {
-    YogVal body = PTR_AS(YogString, s)->body;
-    const char* p = PTR_AS(YogCharArray, body)->items;
-    return INTERN(p);
+    return YogVM_intern(env, env->vm, STRING_CSTR(s));
 }
 
 static void 

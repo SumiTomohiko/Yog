@@ -16,7 +16,7 @@ YogEncoding_left_adjust_char_head(YogEnv* env, YogVal enc, const char* start, co
 YogVal 
 YogEncoding_get_default(YogEnv* env) 
 {
-    ID name = INTERN("utf-8");
+    ID name = YogVM_intern(env, env->vm, "utf-8");
     YogVal key = ID2VAL(name);
     YogVal val = YUNDEF;
     if (!YogTable_lookup(env, env->vm->encodings, key, &val)) {

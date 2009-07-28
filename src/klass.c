@@ -66,7 +66,7 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
 
     PTR_AS(YogKlass, klass)->allocator = NULL;
     if (name != NULL) {
-        ID id = INTERN(name);
+        ID id = YogVM_intern(env, env->vm, name);
         PTR_AS(YogKlass, klass)->name = id;
     }
     PTR_AS(YogKlass, klass)->super = super;

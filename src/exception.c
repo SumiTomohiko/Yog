@@ -41,7 +41,7 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
 {
     SAVE_ARG(env, frame);
 
-    ID name = INTERN(func_name);
+    ID name = YogVM_intern(env, env->vm, func_name);
 
     switch (PTR_AS(YogFrame, frame)->type) {
     case FRAME_C:

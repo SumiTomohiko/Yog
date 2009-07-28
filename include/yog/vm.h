@@ -112,10 +112,6 @@ void YogVM_wait_finish(YogEnv*, YogVM*);
 
 /* PROTOTYPE_END */
 
-#include "yog/env.h"
-
-#define INTERN(s)   YogVM_intern(env, env->vm, s)
-
 #endif
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
