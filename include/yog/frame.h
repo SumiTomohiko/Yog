@@ -75,7 +75,6 @@ typedef struct YogNameFrame YogNameFrame;
 #define NAME_VARS(v)    (NAME_FRAME(v)->vars)
 
 #define YogKlassFrame       YogNameFrame
-#define YogPackageFrame     YogNameFrame
 
 struct YogMethodFrame {
     struct YogScriptFrame base;
@@ -88,7 +87,6 @@ typedef struct YogMethodFrame YogMethodFrame;
 #define LOCAL_VARS(f)       (METHOD_FRAME(f)->vars)
 
 #define YogKlassFrame_new       YogNameFrame_new
-#define YogPackageFrame_new     YogNameFrame_new
 
 /* PROTOTYPE_START */
 

@@ -350,7 +350,7 @@ YogEval_eval_package(YogEnv* env, YogVal pkg)
 
     YogEval_push_finish_frame(env);
 
-    frame = YogPackageFrame_new(env);
+    frame = YogNameFrame_new(env);
     code = PTR_AS(YogPackage, pkg)->code;
     setup_script_frame(env, frame, code);
     MODIFY(env, PTR_AS(YogNameFrame, frame)->self, pkg);
