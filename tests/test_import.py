@@ -33,7 +33,7 @@ test_package5.foo()""", """42
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in import_package
-ImportError: no module named 'foo'
+ImportError: no package named 'foo'
 """, stderr)
             assert m is not None
 
@@ -46,7 +46,7 @@ import foo
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in import_package
-ImportError: dynamic module does not define init function (YogInit_test_package6)",
+ImportError: dynamic package does not define init function (YogInit_test_package6)",
 """, stderr)
             assert m is not None
 

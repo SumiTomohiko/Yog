@@ -248,6 +248,7 @@ setup_exceptions(YogEnv* env, YogVM* vm)
     EXCEPTION_NEW(eZeroDivisionError, "ZeroDivisionError");
     EXCEPTION_NEW(eArgumentError, "ArgumentError");
     EXCEPTION_NEW(eNameError, "NameError");
+    EXCEPTION_NEW(eImportError, "ImportError");
 #undef EXCEPTION_NEW
 }
 
@@ -359,6 +360,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eZeroDivisionError);
     KEEP(eArgumentError);
     KEEP(eNameError);
+    KEEP(eImportError);
 
     KEEP(pkgs);
     KEEP(search_path);
@@ -416,6 +418,7 @@ YogVM_init(YogVM* vm)
     vm->eZeroDivisionError = YUNDEF;
     vm->eArgumentError = YUNDEF;
     vm->eNameError = YUNDEF;
+    vm->eImportError = YUNDEF;
 
     vm->pkgs = PTR2VAL(NULL);
     initialize_read_write_lock(&vm->pkgs_lock);
@@ -814,6 +817,9 @@ import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
         }
     }
 
+    YogError_raise_ImportError(env, "no package named '%s'", pkg_name);
+
+    /* NOTREACHED */
     RETURN(env, YUNDEF);
 }
 
@@ -851,9 +857,6 @@ import_package(YogEnv* env, YogVM* vm, const char* name)
     package_name2path_head(head);
 
     pkg = import(env, vm, head, name);
-    if (!IS_PTR(pkg)) {
-        pkg = YogPackage_new(env);
-    }
     PTR_AS(ImportingPackage, tmp_pkg)->pkg = pkg;
 
     acquire_packages_write_lock(env, vm);
