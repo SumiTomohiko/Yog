@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from re import match
 from testcase import TestCase
 
 class TestImport(TestCase):
@@ -26,5 +27,31 @@ import test_package5
 
 test_package5.foo()""", """42
 """)
+
+    def test_ImportError0(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in import_package
+ImportError: no module named 'foo'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+import foo
+""", stderr=test_stderr)
+
+    def test_ImportError10(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in import_package
+ImportError: dynamic module does not define init function (YogInit_test_package6)",
+""", stderr)
+            assert m is not None
+
+        self._test("""
+import test_package6
+""", stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

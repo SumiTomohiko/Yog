@@ -59,11 +59,6 @@ fi
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile])
-if test "${with_cunit}" = "yes"; then
-    AC_CONFIG_FILES([tests/copying/Makefile 
-                     tests/mark-sweep-compact/Makefile
-                     tests/generational/Makefile])
-fi
 
 AC_CANONICAL_HOST
 case "${host}" in
