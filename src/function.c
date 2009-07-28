@@ -29,7 +29,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         for (i = 0; i < PTR_AS(YogArgInfo, arg_info)->argc; i++) {
             YogVal* items = PTR_AS(YogValArray, args)->items;
             YogVal arg = posargs[i];
-            MODIFY(env, items[args_offset + i], arg);
+            items[args_offset + i] = arg;
         }
         YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->varargc == 1, "Too many arguments.");
         uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
@@ -44,7 +44,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         for (i = 0; i < posargc; i++) {
             YogVal* items = PTR_AS(YogValArray, args)->items;
             YogVal arg = posargs[i];
-            MODIFY(env, items[args_offset + i], arg);
+            items[args_offset + i] = arg;
         }
     }
 
@@ -52,7 +52,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->blockargc == 1, "Can't accept block argument.");
         YogVal* items = PTR_AS(YogValArray, args)->items;
         uint_t index = PTR_AS(YogArgInfo, arg_info)->argc;
-        MODIFY(env, items[args_offset + index], blockarg);
+        items[args_offset + index] = blockarg;
     }
 
     for (i = 0; i < kwargc; i++) {
@@ -66,7 +66,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
                 YOG_ASSERT(env, !IS_UNDEF(PTR_AS(YogValArray, args)->items[j]), "Argument specified twice.");
                 YogVal* items = PTR_AS(YogValArray, args)->items;
                 YogVal val = kwargs[2 * i + 1];
-                MODIFY(env, items[args_offset + j], val);
+                items[args_offset + j] = val;
                 break;
             }
         }
@@ -75,7 +75,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             if (argname == id) {
                 YOG_ASSERT(env, !IS_UNDEF(PTR_AS(YogValArray, args)->items[args_offset + j]), "Argument specified twice.");
                 YogVal* items = PTR_AS(YogValArray, args)->items;
-                MODIFY(env, items[args_offset + argc - 1], blockarg);
+                items[args_offset + argc - 1] = blockarg;
             }
         }
     }

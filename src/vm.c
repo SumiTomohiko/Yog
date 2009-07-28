@@ -183,8 +183,8 @@ setup_basic_klass(YogEnv* env, YogVM* vm)
     cKlass = YogKlass_new(env, "Class", cObject);
     YogKlass_define_allocator(env, cKlass, YogKlass_allocate);
 
-    MODIFY(env, PTR_AS(YogBasicObj, cObject)->klass, cKlass);
-    MODIFY(env, PTR_AS(YogBasicObj, cKlass)->klass, cKlass);
+    PTR_AS(YogBasicObj, cObject)->klass = cKlass;
+    PTR_AS(YogBasicObj, cKlass)->klass = cKlass;
 
     vm->cObject = cObject;
     vm->cKlass = cKlass;

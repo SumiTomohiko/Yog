@@ -840,10 +840,10 @@ YogLexer_new(YogEnv* env)
     PUSH_LOCAL(env, lexer);
 
     YogVal line = YogString_new(env);
-    MODIFY(env, PTR_AS(YogLexer, lexer)->line, line);
+    PTR_AS(YogLexer, lexer)->line = line;
 
     YogVal buffer = YogString_new(env);
-    MODIFY(env, PTR_AS(YogLexer, lexer)->buffer, buffer);
+    PTR_AS(YogLexer, lexer)->buffer = buffer;
 
     RETURN(env, lexer);
 }

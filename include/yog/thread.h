@@ -164,9 +164,6 @@ struct YogThread {
 
 typedef struct YogThread YogThread;
 
-#define ADD_REF(env, ptr)
-#define MODIFY(env, fp, val)     (fp) = (val)
-
 #define __THREAD_HEAP__(type, thread)   ((type*)PTR_AS(YogThread, (thread))->heap)
 #if defined(GC_COPYING)
 #   define THREAD_HEAP(thread)  __THREAD_HEAP__(YogCopying, thread)

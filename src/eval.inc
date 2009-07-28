@@ -72,7 +72,7 @@
             PUSH_LOCAL(ENV, val);
             val = POP();
             YogVal vars = LOCAL_VARS(CUR_FRAME);
-            MODIFY(ENV, PTR_AS(YogValArray, vars)->items[index], val);
+            PTR_AS(YogValArray, vars)->items[index] = val;
 
             POP_LOCALS(ENV);
             break;
@@ -225,12 +225,12 @@
             PTR_AS(YogKlass, kls)->name = VAL2ID(name);
             PTR_AS(YogObj, kls)->attrs = YUNDEF;
             attrs = YogTable_new_symbol_table(ENV);
-            MODIFY(env, PTR_AS(YogObj, kls)->attrs, attrs);
+            PTR_AS(YogObj, kls)->attrs = attrs;
         
             frame = YogKlassFrame_new(ENV);
             setup_script_frame(ENV, frame, code);
-            MODIFY(env, PTR_AS(YogNameFrame, frame)->self, kls);
-            MODIFY(env, PTR_AS(YogNameFrame, frame)->vars, attrs);
+            PTR_AS(YogNameFrame, frame)->self = kls;
+            PTR_AS(YogNameFrame, frame)->vars = attrs;
             PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
         
             PUSH_FRAME(frame);

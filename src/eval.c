@@ -129,8 +129,8 @@ setup_script_frame(YogEnv* env, YogVal frame, YogVal code)
     YogVal stack = YogValArray_new(env, stack_size);
 
     SCRIPT_FRAME(frame)->pc = 0;
-    MODIFY(env, SCRIPT_FRAME(frame)->code, code);
-    MODIFY(env, SCRIPT_FRAME(frame)->stack, stack);
+    SCRIPT_FRAME(frame)->code = code;
+    SCRIPT_FRAME(frame)->stack = stack;
 
     RETURN_VOID(env);
 }
@@ -353,10 +353,10 @@ YogEval_eval_package(YogEnv* env, YogVal pkg)
     frame = YogNameFrame_new(env);
     code = PTR_AS(YogPackage, pkg)->code;
     setup_script_frame(env, frame, code);
-    MODIFY(env, PTR_AS(YogNameFrame, frame)->self, pkg);
+    PTR_AS(YogNameFrame, frame)->self = pkg;
     attrs = PTR_AS(YogObj, pkg)->attrs;
-    MODIFY(env, PTR_AS(YogNameFrame, frame)->vars, attrs);
-    MODIFY(env, SCRIPT_FRAME(frame)->globals, PTR_AS(YogNameFrame, frame)->vars);
+    PTR_AS(YogNameFrame, frame)->vars = attrs;
+    SCRIPT_FRAME(frame)->globals = PTR_AS(YogNameFrame, frame)->vars;
     PUSH_FRAME(frame);
 
     YogEval_mainloop(env);

@@ -62,14 +62,14 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
     klass = YogKlass_allocate(env, env->vm->cKlass);
     PTR_AS(YogKlass, klass)->allocator = NULL;
     PTR_AS(YogKlass, klass)->name = INVALID_ID;
-    MODIFY(env, PTR_AS(YogKlass, klass)->super, PTR2VAL(NULL));
+    PTR_AS(YogKlass, klass)->super = PTR2VAL(NULL);
 
     PTR_AS(YogKlass, klass)->allocator = NULL;
     if (name != NULL) {
         ID id = INTERN(name);
         PTR_AS(YogKlass, klass)->name = id;
     }
-    MODIFY(env, PTR_AS(YogKlass, klass)->super, super);
+    PTR_AS(YogKlass, klass)->super = super;
     PTR_AS(YogKlass, klass)->get_attr = NULL;
     PTR_AS(YogKlass, klass)->get_descr = NULL;
     RETURN(env, klass);

@@ -131,7 +131,7 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
                 ID klass_name = PTR_AS(YogCode, code)->klass_name;
                 ID func_name = PTR_AS(YogCode, code)->func_name;
                 PTR_AS(YogStackTraceEntry, entry)->lineno = lineno;
-                MODIFY(env, PTR_AS(YogStackTraceEntry, entry)->filename, filename);
+                PTR_AS(YogStackTraceEntry, entry)->filename = filename;
                 PTR_AS(YogStackTraceEntry, entry)->klass_name = klass_name;
                 PTR_AS(YogStackTraceEntry, entry)->func_name = func_name;
                 break;
@@ -142,17 +142,17 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
             break;
         }
 
-        MODIFY(env, PTR_AS(YogStackTraceEntry, entry)->lower, st);
+        PTR_AS(YogStackTraceEntry, entry)->lower = st;
         st = entry;
 
         frame = PTR_AS(YogFrame, frame)->prev;
     }
 
-    MODIFY(env, PTR_AS(YogException, self)->stack_trace, st);
+    PTR_AS(YogException, self)->stack_trace = st;
     if (IS_UNDEF(message)) {
         message = YNIL;
     }
-    MODIFY(env, PTR_AS(YogException, self)->message, message);
+    PTR_AS(YogException, self)->message = message;
 
     RETURN(env, YNIL);
 }

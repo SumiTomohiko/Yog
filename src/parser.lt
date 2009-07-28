@@ -545,7 +545,6 @@ static void yy_shift(
   yytos->stateno = (YYACTIONTYPE)yyNewState;
   yytos->major = (YYCODETYPE)yyMajor;
   yytos->minor = *yypMinor;
-  ADD_REF(env, yytos->minor.yy0);
 #if !defined(NDEBUG)
   if( yyTraceFILE && PTR_AS(yyParser, parser)->yyidx>0 ){
     int i;

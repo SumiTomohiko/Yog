@@ -24,7 +24,7 @@ YogBinary_shrink(YogEnv* env, YogVal binary)
     YogVal old_body = PTR_AS(YogBinary, binary)->body;
     uint8_t* from = PTR_AS(YogByteArray, old_body)->items;
     memcpy(to, from, size);
-    MODIFY(env, PTR_AS(YogBinary, binary)->body, new_body);
+    PTR_AS(YogBinary, binary)->body = new_body;
 
     RETURN_VOID(env);
 }
@@ -95,7 +95,7 @@ ensure_body_size(YogEnv* env, YogVal binary, uint_t needed_size)
         unsigned char* to = PTR_AS(YogByteArray, new_body)->items;
         unsigned char* from = PTR_AS(YogByteArray, body)->items;
         memcpy(to, from, cur_size);
-        MODIFY(env, PTR_AS(YogBinary, binary)->body, new_body);
+        PTR_AS(YogBinary, binary)->body = new_body;
     }
 
     RETURN_VOID(env);
@@ -157,7 +157,7 @@ YogBinary_new(YogEnv* env, uint_t size)
     PUSH_LOCAL(env, binary);
 
     YogVal body = YogByteArray_new(env, size);
-    MODIFY(env, PTR_AS(YogBinary, binary)->body, body);
+    PTR_AS(YogBinary, binary)->body = body;
 
     POP_LOCALS(env);
 

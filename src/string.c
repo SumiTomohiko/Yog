@@ -89,7 +89,7 @@ ensure_body(YogEnv* env, YogVal string)
 #define CAPACITY    (1)
         YogVal body = YogCharArray_new(env, CAPACITY);
 #undef CAPACITY
-        MODIFY(env, PTR_AS(YogString, string)->body, body);
+        PTR_AS(YogString, string)->body = body;
     }
 
     RETURN_VOID(env);
@@ -120,7 +120,7 @@ ensure_size(YogEnv* env, YogVal string, uint_t size)
         uint_t size = PTR_AS(YogString, string)->size;
         memcpy(p, q, size);
 
-        MODIFY(env, PTR_AS(YogString, string)->body, new_body);
+        PTR_AS(YogString, string)->body = new_body;
     }
 
     RETURN_VOID(env);
@@ -215,9 +215,9 @@ YogString_new_range(YogEnv* env, YogVal enc, const char* start, const char* end)
     PUSH_LOCAL(env, body);
 
     YogVal s = YogString_new(env);
-    MODIFY(env, PTR_AS(YogString, s)->encoding, enc);
+    PTR_AS(YogString, s)->encoding = enc;
     PTR_AS(YogString, s)->size = size + 1;
-    MODIFY(env, PTR_AS(YogString, s)->body, body);
+    PTR_AS(YogString, s)->body = body;
 
     RETURN(env, s);
 }
@@ -238,7 +238,7 @@ YogString_new_size(YogEnv* env, uint_t size)
 
     PTR_AS(YogString, string)->encoding = YNIL;
     PTR_AS(YogString, string)->size = 1;
-    MODIFY(env, PTR_AS(YogString, string)->body, body);
+    PTR_AS(YogString, string)->body = body;
 
     RETURN(env, string);
 }
@@ -287,7 +287,7 @@ YogString_clone(YogEnv* env, YogVal string)
 
     YogVal body = PTR_AS(YogString, string)->body;
     YogVal s = YogString_new_str(env, PTR_AS(YogCharArray, body)->items);
-    MODIFY(env, PTR_AS(YogString, s)->encoding, PTR_AS(YogString, string)->encoding);
+    PTR_AS(YogString, s)->encoding = PTR_AS(YogString, string)->encoding;
 
     RETURN(env, s);
 }

@@ -125,7 +125,7 @@ YogScriptFrame_push_stack(YogEnv* env, YogScriptFrame* frame, YogVal val)
     YOG_ASSERT(env, frame->stack_size < capacity, "Stack is full.");
 
     uint_t n = frame->stack_size;
-    MODIFY(env, PTR_AS(YogValArray, stack)->items[n], val);
+    PTR_AS(YogValArray, stack)->items[n] = val;
     frame->stack_size++;
 }
 

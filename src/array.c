@@ -103,7 +103,7 @@ ensure_body_size(YogEnv* env, YogVal array, uint_t size)
         YogVal* from = PTR_AS(YogValArray, old_body)->items;
         memcpy(to, from, sizeof(YogVal) * cur_size);
 
-        MODIFY(env, PTR_AS(YogArray, array)->body, new_body);
+        PTR_AS(YogArray, array)->body = new_body;
     }
 
     RETURN_VOID(env);
@@ -118,7 +118,7 @@ YogArray_push(YogEnv* env, YogVal array, YogVal val)
 
     YogVal body = PTR_AS(YogArray, array)->body;
     size_t size = PTR_AS(YogArray, array)->size;
-    MODIFY(env, PTR_AS(YogValArray, body)->items[size], val);
+    PTR_AS(YogValArray, body)->items[size] = val;
     PTR_AS(YogArray, array)->size++;
 
     RETURN_VOID(env);
