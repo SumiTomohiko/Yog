@@ -741,7 +741,7 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     CLEAR_ERROR;
     void (*init)(YogEnv*, YogVal) = dlsym(handle, init_name);
     if (init == NULL) {
-        RETURN(env, YUNDEF);
+        YogError_raise_ImportError(env, "dynamic package does not define init function (%s)", init_name);
     }
 #undef CLEAR_ERROR
 

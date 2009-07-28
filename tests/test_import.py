@@ -46,7 +46,7 @@ import foo
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
   File builtin, in import_package
-ImportError: dynamic package does not define init function (YogInit_test_package6)",
+ImportError: dynamic package does not define init function \(YogInit_test_package6\)
 """, stderr)
             assert m is not None
 
