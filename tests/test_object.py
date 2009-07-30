@@ -15,4 +15,16 @@ class TestObject(TestCase):
 puts(Object.new())
 """, stdout=test_stdout)
 
+    def test_constructor0(self):
+        self._test("""
+class Foo
+  def initialize()
+    puts(42)
+  end
+end
+
+foo = Foo.new()
+""", """42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
