@@ -107,6 +107,7 @@ YogVal YogVal_get_klass(YogEnv*, YogVal);
 int_t YogVal_hash(YogEnv*, YogVal);
 BOOL YogVal_is_subklass_of(YogEnv*, YogVal, YogVal);
 void YogVal_print(YogEnv*, YogVal);
+void YogVal_set_attr(YogEnv*, YogVal, ID, YogVal);
 
 /* PROTOTYPE_END */
 

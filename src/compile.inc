@@ -386,6 +386,22 @@ CompileData_add_print_top(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
+static void 
+CompileData_add_store_attr(YogEnv* env, YogVal data, uint_t lineno, ID name)
+{
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(STORE_ATTR);
+
+    STORE_ATTR_NAME(inst) = name;
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
 
 static YogVal 
 insts2bin(YogEnv* env, YogVal inst) 
@@ -543,6 +559,12 @@ insts2bin(YogEnv* env, YogVal inst)
                 case OP(PRINT_TOP):
                     {
                         YogBinary_push_uint8(env, code, OP(PRINT_TOP));
+                        break;
+                    }
+                case OP(STORE_ATTR):
+                    {
+                        YogBinary_push_uint8(env, code, OP(STORE_ATTR));
+                        YogBinary_push_id(env, code, STORE_ATTR_NAME(inst));
                         break;
                     }
                 default:
@@ -721,6 +743,12 @@ count_stack_size(YogEnv* env, YogVal inst)
                 case OP(PRINT_TOP):
                     {
                         pop_size = 1;
+                        push_size = 0;
+                        break;
+                    }
+                case OP(STORE_ATTR):
+                    {
+                        pop_size = 2;
                         push_size = 0;
                         break;
                     }

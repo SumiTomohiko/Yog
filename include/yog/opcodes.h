@@ -35,6 +35,7 @@ enum OpCode {
     OP(MAKE_ARRAY) = 21, 
     OP(FINISH) = 22, 
     OP(PRINT_TOP) = 23, 
+    OP(STORE_ATTR) = 24, 
 
 };
 

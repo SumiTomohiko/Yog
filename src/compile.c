@@ -863,8 +863,18 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
             CompileData_add_call_function(env, data, lineno, 2, 0, 0, 0, 0);
             break;
         }
+    case NODE_ATTR:
+        {
+            visit_node(env, visitor, NODE(node)->u.assign.right, data);
+            CompileData_add_dup(env, data, lineno);
+
+            visit_node(env, visitor, NODE(left)->u.attr.obj, data);
+            ID name = NODE(left)->u.attr.name;
+            CompileData_add_store_attr(env, data, lineno, name);
+        }
+        break;
     default:
-        YOG_ASSERT(env, FALSE, "invalid node type.");
+        YOG_ASSERT(env, FALSE, "invalid node type (0x%08x)", NODE(left)->type);
         break;
     }
 

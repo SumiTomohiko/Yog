@@ -57,6 +57,7 @@ struct YogVM {
     YogVal eArgumentError;
     YogVal eNameError;
     YogVal eImportError;
+    YogVal eAttributeError;
 
     YogVal pkgs;
     pthread_rwlock_t pkgs_lock;

@@ -368,6 +368,21 @@
             POP_LOCALS(ENV);
             break;
         }
+    case OP(STORE_ATTR):
+        {
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            ID name = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
+            PC += sizeof(ID);
+            YogVal obj = YUNDEF;
+            YogVal val = YUNDEF;
+            PUSH_LOCALS2(ENV, obj, val);
+            obj = POP();
+            val = POP();
+            YogVal_set_attr(ENV, obj, name, val);
+
+            POP_LOCALS(ENV);
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

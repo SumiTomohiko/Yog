@@ -93,6 +93,9 @@ struct YogInst {
         } finish;
         struct {
         } print_top;
+        struct {
+            ID name;
+        } store_attr;
     } u;
 
     uint_t lineno;
@@ -124,6 +127,7 @@ struct YogInst {
 #define STORE_GLOBAL_NAME(inst) (INST(inst)->u.store_global.name)
 #define LOAD_ATTR_NAME(inst) (INST(inst)->u.load_attr.name)
 #define MAKE_ARRAY_SIZE(inst) (INST(inst)->u.make_array.size)
+#define STORE_ATTR_NAME(inst) (INST(inst)->u.store_attr.name)
 
 typedef struct YogInst YogInst;
 

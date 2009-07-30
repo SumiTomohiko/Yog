@@ -261,6 +261,14 @@ inst print_top
     printf("=> %s\n", STRING_CSTR(s));
 }
 
+inst store_attr
+(ID name)
+(obj, val)
+()
+{
+    YogVal_set_attr(ENV, obj, name, val);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

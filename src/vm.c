@@ -249,6 +249,7 @@ setup_exceptions(YogEnv* env, YogVM* vm)
     EXCEPTION_NEW(eArgumentError, "ArgumentError");
     EXCEPTION_NEW(eNameError, "NameError");
     EXCEPTION_NEW(eImportError, "ImportError");
+    EXCEPTION_NEW(eAttributeError, "AttributeError");
 #undef EXCEPTION_NEW
 }
 
@@ -362,6 +363,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eArgumentError);
     KEEP(eNameError);
     KEEP(eImportError);
+    KEEP(eAttributeError);
 
     KEEP(pkgs);
     KEEP(search_path);
@@ -420,6 +422,7 @@ YogVM_init(YogVM* vm)
     vm->eArgumentError = YUNDEF;
     vm->eNameError = YUNDEF;
     vm->eImportError = YUNDEF;
+    vm->eAttributeError = YUNDEF;
 
     vm->pkgs = PTR2VAL(NULL);
     initialize_read_write_lock(&vm->pkgs_lock);

@@ -179,15 +179,12 @@ get_attr_default(YogEnv* env, YogVal self, ID name)
     YogVal attr = YUNDEF;
     PUSH_LOCALS2(env, klass, attr);
 
-#if 0
-    /* TODO: test here */
     if (IS_PTR(self) && (PTR_AS(YogBasicObj, self)->flags & HAS_ATTRS)) {
         attr = YogObj_get_attr(env, self, name);
         if (!IS_UNDEF(attr)) {
             RETURN(env, attr);
         }
     }
-#endif
 
     klass = YogVal_get_klass(env, self);
     attr = YogKlass_get_attr(env, klass, name);
@@ -238,6 +235,18 @@ YogVal_from_int(YogEnv* env, int_t n)
         return YogBignum_from_int(env, n);
     }
     return INT2VAL(n);
+}
+
+void
+YogVal_set_attr(YogEnv* env, YogVal obj, ID name, YogVal val)
+{
+    if ((PTR_AS(YogBasicObj, obj)->flags & HAS_ATTRS) == 0) {
+        YogVal klass = PTR_AS(YogBasicObj, obj)->klass;
+        ID id = PTR_AS(YogKlass, klass)->name;
+        YogError_raise_AttributeError(env, "%s object has no attribute '%s'", YogVM_id2name(env, env->vm, id), YogVM_id2name(env, env->vm, name));
+    }
+
+    YogObj_set_attr_id(env, obj, name, val);
 }
 
 /**
