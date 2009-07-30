@@ -27,4 +27,12 @@ foo = Foo.new()
 """, """42
 """)
 
+    def test_set_attribute0(self):
+        self._test("""
+o = Object.new()
+o.foo = 42
+puts(o.foo)
+""", """42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
