@@ -150,6 +150,9 @@ struct YogThread {
     YogVal prev;
     YogVal next;
 
+    uint_t thread_id;
+    uint_t next_obj_id;
+
     void* heap;
 
     YogVal cur_frame;
@@ -195,6 +198,7 @@ void YogThread_config_generational(YogEnv*, YogVal, size_t, size_t, size_t, uint
 void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t);
 void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t, size_t);
 void YogThread_initialize(YogEnv*, YogVal, YogVal);
+void YogThread_issue_object_id(YogEnv*, YogVal, YogVal);
 YogVal YogThread_klass_new(YogEnv*);
 YogVal YogThread_new(YogEnv*);
 

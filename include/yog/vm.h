@@ -68,6 +68,8 @@ struct YogVM {
 
     YogVal main_thread;
     YogVal running_threads;
+    uint_t next_thread_id;
+    pthread_mutex_t next_thread_id_lock;
 
     pthread_mutex_t global_interp_lock;
     BOOL running_gc;
@@ -104,6 +106,7 @@ const char* YogVM_id2name(YogEnv*, YogVM*, ID);
 YogVal YogVM_import_package(YogEnv*, YogVM*, ID);
 void YogVM_init(YogVM*);
 ID YogVM_intern(YogEnv*, YogVM*, const char*);
+uint_t YogVM_issue_thread_id(YogEnv*, YogVM*);
 void YogVM_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 void YogVM_register_package(YogEnv*, YogVM*, const char*, YogVal);
 void YogVM_release_global_interp_lock(YogEnv*, YogVM*);

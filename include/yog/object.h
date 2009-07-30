@@ -4,6 +4,8 @@
 #include "yog/yog.h"
 
 struct YogBasicObj {
+    uint_t id_upper;
+    uint_t id_lower;
     flags_t flags;
     YogVal klass;
 };
@@ -48,6 +50,7 @@ void YogObj_klass_init(YogEnv*, YogVal);
 YogVal YogObj_new(YogEnv*, YogVal);
 void YogObj_set_attr(YogEnv*, YogVal, const char*, YogVal);
 void YogObj_set_attr_id(YogEnv*, YogVal, ID, YogVal);
+void YogObject_boot(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

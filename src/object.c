@@ -2,6 +2,7 @@
 #include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/object.h"
+#include "yog/string.h"
 #include "yog/table.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
@@ -57,6 +58,7 @@ YogObj_set_attr(YogEnv* env, YogVal obj, const char* name, YogVal val)
 void 
 YogBasicObj_init(YogEnv* env, YogVal obj, uint_t flags, YogVal klass) 
 {
+    YogThread_issue_object_id(env, env->thread, obj);
     PTR_AS(YogBasicObj, obj)->flags = flags;
     PTR_AS(YogBasicObj, obj)->klass = klass;
 }
@@ -84,7 +86,7 @@ YogObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogGC_keep(env, &obj->attrs, keeper, heap);
 }
 
-YogVal 
+YogVal
 YogObj_allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
@@ -111,6 +113,31 @@ void
 YogObj_klass_init(YogEnv* env, YogVal klass) 
 {
     YogKlass_define_method(env, klass, "initialize", initialize);
+}
+
+static YogVal
+to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal klass = YUNDEF;
+    YogVal s = YUNDEF;
+    PUSH_LOCALS2(env, klass, s);
+
+    klass = PTR_AS(YogBasicObj, self)->klass;
+    ID name = PTR_AS(YogKlass, klass)->name;
+    s = YogString_new_format(env, "<%s %08x%08x>", YogVM_id2name(env, env->vm, name), PTR_AS(YogBasicObj, self)->id_upper, PTR_AS(YogBasicObj, self)->id_lower);
+
+    RETURN(env, s);
+}
+
+void
+YogObject_boot(YogEnv* env, YogVal cObject)
+{
+    SAVE_ARG(env, cObject);
+
+    YogKlass_define_method(env, cObject, "to_s", to_s);
+
+    RETURN_VOID(env);
 }
 
 /**

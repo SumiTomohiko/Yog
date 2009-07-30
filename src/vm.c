@@ -266,6 +266,7 @@ YogVM_boot(YogEnv* env, YogVM* vm)
     setup_klasses(env, vm);
     set_main_thread_klass(env, vm);
     setup_exceptions(env, vm);
+    YogObject_boot(env, vm->cObject);
 
     vm->pkgs = YogTable_new_symbol_table(env);
     setup_builtins(env, vm);
@@ -429,6 +430,8 @@ YogVM_init(YogVM* vm)
     vm->finish_code = YUNDEF;
 
     vm->running_threads = YUNDEF;
+    vm->next_thread_id = 0;
+    pthread_mutex_init(&vm->next_thread_id_lock, NULL);
 
     pthread_mutex_init(&vm->global_interp_lock, NULL);
     vm->running_gc = FALSE;
@@ -459,6 +462,9 @@ YogVM_delete(YogEnv* env, YogVM* vm)
     if (pthread_mutex_destroy(&vm->global_interp_lock) != 0) {
         YOG_WARN(env, "pthread_mutex_destroy failed");
     }
+    if (pthread_mutex_destroy(&vm->next_thread_id_lock) != 0) {
+        YOG_WARN(env, "pthread_mutex_destroy failed");
+    }
     pthread_rwlock_destroy(&vm->pkgs_lock);
 
 #if !defined(GC_BDW)
@@ -466,16 +472,32 @@ YogVM_delete(YogEnv* env, YogVM* vm)
 #endif
 }
 
+static void
+acquire_lock(YogEnv* env, pthread_mutex_t* lock)
+{
+    if (pthread_mutex_lock(lock) != 0) {
+        YOG_BUG(env, "pthread_mutex_lock failed");
+    }
+}
+
+static void
+release_lock(YogEnv* env, pthread_mutex_t* lock)
+{
+    if (pthread_mutex_unlock(lock) != 0) {
+        YOG_BUG(env, "pthread_mutex_unlock failed");
+    }
+}
+
 void 
 YogVM_acquire_global_interp_lock(YogEnv* env, YogVM* vm)
 {
-    pthread_mutex_lock(&vm->global_interp_lock);
+    acquire_lock(env, &vm->global_interp_lock);
 }
 
 void 
 YogVM_release_global_interp_lock(YogEnv* env, YogVM* vm) 
 {
-    pthread_mutex_unlock(&vm->global_interp_lock);
+    release_lock(env, &vm->global_interp_lock);
 }
 
 static void
@@ -642,19 +664,13 @@ ImportingPackage_new(YogEnv* env)
 static void
 ImportingPackage_lock(YogEnv* env, YogVal pkg)
 {
-    pthread_mutex_t* lock = &PTR_AS(ImportingPackage, pkg)->lock;
-    if (pthread_mutex_lock(lock) != 0) {
-        YOG_BUG(env, "pthread_mutex_lock failed");
-    }
+    acquire_lock(env, &PTR_AS(ImportingPackage, pkg)->lock);
 }
 
 static void
 ImportingPackage_unlock(YogEnv* env, YogVal pkg)
 {
-    pthread_mutex_t* lock = &PTR_AS(ImportingPackage, pkg)->lock;
-    if (pthread_mutex_unlock(lock) != 0) {
-        YOG_BUG(env, "pthread_mutex_unlock failed");
-    }
+    release_lock(env, &PTR_AS(ImportingPackage, pkg)->lock);
 }
 
 static void
@@ -1064,6 +1080,18 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
     vm->search_path = search_path;
 
     RETURN_VOID(env);
+}
+
+uint_t
+YogVM_issue_thread_id(YogEnv* env, YogVM* vm)
+{
+    pthread_mutex_t* lock = &vm->next_thread_id_lock;
+    acquire_lock(env, lock);
+    uint_t id = vm->next_thread_id;
+    vm->next_thread_id++;
+    YOG_ASSERT(env, vm->next_thread_id != 0, "thread id overflow");
+    release_lock(env, lock);
+    return id;
 }
 
 /**

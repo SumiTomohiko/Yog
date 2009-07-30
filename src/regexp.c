@@ -71,7 +71,7 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
         return YNIL;
     }
 
-    YogVal regexp = ALLOC_OBJ(env, NULL, YogRegexp_finalize, YogRegexp);
+    YogVal regexp = ALLOC_OBJ(env, YogBasicObj_keep_children, YogRegexp_finalize, YogRegexp);
     YogBasicObj_init(env, regexp, 0, env->vm->cRegexp);
     PTR_AS(YogRegexp, regexp)->onig_regexp = onig_regexp;
 

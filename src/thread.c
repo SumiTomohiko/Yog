@@ -57,10 +57,13 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 void 
 YogThread_initialize(YogEnv* env, YogVal thread, YogVal klass)
 {
-    YogBasicObj_init(env, thread, 0, klass);
-
     PTR_AS(YogThread, thread)->prev = YUNDEF;
     PTR_AS(YogThread, thread)->next = YUNDEF;
+
+    PTR_AS(YogThread, thread)->thread_id = YogVM_issue_thread_id(env, env->vm);
+    PTR_AS(YogThread, thread)->next_obj_id = 0;
+
+    YogBasicObj_init(env, thread, 0, klass);
 
     PTR_AS(YogThread, thread)->heap = NULL;
 
@@ -355,6 +358,15 @@ YogThread_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "join", join);
 
     RETURN(env, klass);
+}
+
+void
+YogThread_issue_object_id(YogEnv* env, YogVal self, YogVal obj)
+{
+    PTR_AS(YogBasicObj, obj)->id_upper = PTR_AS(YogThread, self)->thread_id;
+    PTR_AS(YogBasicObj, obj)->id_lower = PTR_AS(YogThread, self)->next_obj_id;
+    PTR_AS(YogThread, self)->next_obj_id++;
+    YOG_ASSERT(env, PTR_AS(YogThread, self)->next_obj_id != 0, "object id overflow");
 }
 
 /**
