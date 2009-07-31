@@ -110,7 +110,9 @@
             POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
             YogVal callee = POP();
         
-            (*PTR_AS(YogCallable, callee)->exec)(env, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+            YogVal klass = YogVal_get_klass(env, callee);
+            YOG_ASSERT(env, PTR_AS(YogKlass, klass)->exec, "uncallable");
+            PTR_AS(YogKlass, klass)->exec(env, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
         
             POP_LOCALS(ENV);
             POP_LOCALS(ENV);

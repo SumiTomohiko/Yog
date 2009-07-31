@@ -5,17 +5,8 @@
 #include "yog/object.h"
 #include "yog/yog.h"
 
-struct YogCallable {
-    struct YogBasicObj base;
-
-    void (*exec)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, YogVal*, YogVal, YogVal);
-    YogVal (*call)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, YogVal*, YogVal, YogVal);
-};
-
-typedef struct YogCallable YogCallable;
-
 struct YogNativeFunction {
-    struct YogCallable base;
+    struct YogBasicObj base;
 
     ID func_name;
     ID klass_name;
@@ -25,7 +16,7 @@ struct YogNativeFunction {
 typedef struct YogNativeFunction YogNativeFunction;
 
 struct YogFunction {
-    struct YogCallable base;
+    struct YogBasicObj base;
 
     YogVal code;
     YogVal globals;
@@ -35,7 +26,7 @@ struct YogFunction {
 typedef struct YogFunction YogFunction;
 
 struct YogInstanceMethod {
-    struct YogCallable base;
+    struct YogBasicObj base;
 
     YogVal self;
     YogVal f;
@@ -58,6 +49,7 @@ YogVal YogInstanceMethod_klass_new(YogEnv*);
 YogVal YogInstanceMethod_new(YogEnv*);
 YogVal YogNativeFunction_klass_new(YogEnv*);
 YogVal YogNativeFunction_new(YogEnv*, ID, const char*, void*);
+YogVal YogNativeInstanceMethod_klass_new(YogEnv*);
 YogVal YogNativeInstanceMethod_new(YogEnv*);
 
 /* PROTOTYPE_END */
