@@ -75,6 +75,7 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
     PTR_AS(YogKlass, klass)->get_attr = NULL;
     PTR_AS(YogKlass, klass)->exec_get_descr = NULL;
     PTR_AS(YogKlass, klass)->call_get_descr = NULL;
+    PTR_AS(YogKlass, klass)->exec_set_descr = NULL;
     PTR_AS(YogKlass, klass)->call = NULL;
     PTR_AS(YogKlass, klass)->exec = NULL;
     RETURN(env, klass);
@@ -154,6 +155,12 @@ void
 YogKlass_define_descr_get_caller(YogEnv* env, YogVal self, YogVal (*getter)(YogEnv*, YogVal, YogVal, YogVal))
 {
     PTR_AS(YogKlass, self)->call_get_descr = getter;
+}
+
+void
+YogKlass_define_descr_set_executor(YogEnv* env, YogVal self, void (*setter)(YogEnv*, YogVal, YogVal, YogVal))
+{
+    PTR_AS(YogKlass, self)->exec_set_descr = setter;
 }
 
 void

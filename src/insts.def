@@ -297,7 +297,51 @@ inst store_attr
 (obj, val)
 ()
 {
-    YogVal_set_attr(ENV, obj, name, val);
+    YogVal attr = YUNDEF;
+    YogVal klass_of_obj = YUNDEF;
+    YogVal klass_of_attr = YUNDEF;
+    PUSH_LOCALS3(env, attr, klass_of_obj, klass_of_attr);
+
+    klass_of_obj = YogVal_get_klass(env, obj);
+    BOOL has_attrs;
+    if (IS_PTR(obj) && ((PTR_AS(YogBasicObj, obj)->flags & HAS_ATTRS) != 0)) {
+        has_attrs = TRUE;
+    }
+    else {
+        has_attrs = FALSE;
+    }
+
+    if (has_attrs) {
+        attr = YogObj_get_attr(env, obj, name);
+    }
+    if (IS_UNDEF(attr)) {
+        attr = YogObj_get_attr(env, klass_of_obj, name);
+    }
+    if (!IS_UNDEF(attr)) {
+        klass_of_attr = YogVal_get_klass(env, attr);
+        void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogKlass, klass_of_attr)->exec_set_descr;
+        if (exec != NULL) {
+            exec(ENV, attr, obj, val);
+        }
+        else if (has_attrs) {
+            YogObj_set_attr_id(env, obj, name, val);
+        }
+        else {
+            ID id = PTR_AS(YogKlass, klass_of_obj)->name;
+            const char* klass_name = YogVM_id2name(env, env->vm, id);
+            YogError_raise_AttributeError(env, "can't set attribute to '%s' object", klass_name);
+        }
+    }
+    else if (has_attrs) {
+        YogObj_set_attr_id(env, obj, name, val);
+    }
+    else {
+        ID id = PTR_AS(YogKlass, klass_of_obj)->name;
+        const char* klass_name = YogVM_id2name(env, env->vm, id);
+        YogError_raise_AttributeError(env, "can't set attribute to '%s' object", klass_name);
+    }
+
+    POP_LOCALS(env);
 }
 
 /**

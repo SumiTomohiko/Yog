@@ -17,6 +17,7 @@ struct YogKlass {
     AttrGetter get_attr;
     void (*exec_get_descr)(YogEnv*, YogVal, YogVal, YogVal);
     YogVal (*call_get_descr)(YogEnv*, YogVal, YogVal, YogVal);
+    void (*exec_set_descr)(YogEnv*, YogVal, YogVal, YogVal);
     Executor exec;
     Caller call;
 };
@@ -36,6 +37,7 @@ void YogKlass_define_attr_getter(YogEnv*, YogVal, AttrGetter);
 void YogKlass_define_caller(YogEnv*, YogVal, Caller);
 void YogKlass_define_descr_get_caller(YogEnv*, YogVal, YogVal (*)(YogEnv*, YogVal, YogVal, YogVal));
 void YogKlass_define_descr_get_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
+void YogKlass_define_descr_set_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
 void YogKlass_define_executor(YogEnv*, YogVal, Executor);
 void YogKlass_define_method(YogEnv*, YogVal, const char*, void*);
 void YogKlass_define_property(YogEnv*, YogVal, const char*, void*, void*);

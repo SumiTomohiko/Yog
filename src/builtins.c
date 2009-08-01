@@ -8,6 +8,7 @@
 #include "yog/klass.h"
 #include "yog/object.h"
 #include "yog/package.h"
+#include "yog/property.h"
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
@@ -73,6 +74,25 @@ import_package(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return YogVM_import_package(env, env->vm, VAL2ID(name));
 }
 
+static YogVal
+property(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal getter = YUNDEF;
+    YogVal setter = YUNDEF;
+    YogVal prop = YUNDEF;
+    PUSH_LOCALS3(env, getter, setter, prop);
+
+    getter = YogArray_at(env, args, 0);
+    setter = YogArray_at(env, args, 1);
+
+    prop = YogProperty_new(env);
+    PTR_AS(YogProperty, prop)->getter = getter;
+    PTR_AS(YogProperty, prop)->setter = setter;
+
+    RETURN(env, prop);
+}
+
 YogVal 
 YogBuiltins_new(YogEnv* env) 
 {
@@ -82,6 +102,7 @@ YogBuiltins_new(YogEnv* env)
     YogPackage_define_method(env, bltins, "puts", puts_, 0, 1, 0, 0, NULL);
     YogPackage_define_method(env, bltins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
     YogPackage_define_method(env, bltins, "import_package", import_package, 0, 0, 0, 0, "package", NULL);
+    YogPackage_define_method(env, bltins, "property", property, 0, 0, 0, 0, NULL);
 
 #define REGISTER_KLASS(c)   do { \
     YogVal klass = env->vm->c; \
