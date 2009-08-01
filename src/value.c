@@ -163,10 +163,10 @@ YogVal_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     PUSH_LOCALS2(env, c, v);
 
     c = YogVal_get_klass(env, attr);
-    if (PTR_AS(YogKlass, c)->get_descr == NULL) {
+    if (PTR_AS(YogKlass, c)->call_get_descr == NULL) {
         RETURN(env, attr);
     }
-    v = (*PTR_AS(YogKlass, c)->get_descr)(env, attr, obj, klass);
+    v = PTR_AS(YogKlass, c)->call_get_descr(env, attr, obj, klass);
 
     RETURN(env, v);
 }

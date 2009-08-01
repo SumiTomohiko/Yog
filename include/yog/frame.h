@@ -106,6 +106,11 @@ void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
 
 /* PROTOTYPE_END */
 
+#define FRAME_PUSH(env, val)    do { \
+    YogVal cur_frame = PTR_AS(YogThread, (env)->thread)->cur_frame; \
+    YogScriptFrame_push_stack((env), PTR_AS(YogScriptFrame, cur_frame), (val)); \
+} while (0)
+
 #endif
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

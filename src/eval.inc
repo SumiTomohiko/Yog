@@ -317,13 +317,39 @@
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
             ID name = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(ID);
-            YogVal val = YUNDEF;
-            YogVal retval = YUNDEF;
-            PUSH_LOCALS2(ENV, val, retval);
-            val = POP();
-            retval = YogVal_get_attr(ENV, val, name);
+            YogVal obj = YUNDEF;
+            PUSH_LOCAL(ENV, obj);
+            obj = POP();
+            YogVal attr = YUNDEF;
+            YogVal klass_of_obj = YUNDEF;
+            YogVal klass_of_attr = YUNDEF;
+            PUSH_LOCALS3(env, attr, klass_of_obj, klass_of_attr);
+        
+            klass_of_obj = YogVal_get_klass(env, obj);
+        
+            if (IS_PTR(obj) && ((PTR_AS(YogBasicObj, obj)->flags & HAS_ATTRS) != 0)) {
+                attr = YogObj_get_attr(env, obj, name);
+            }
+            if (IS_UNDEF(attr)) {
+                attr = YogObj_get_attr(env, klass_of_obj, name);
+            }
+            if (IS_UNDEF(attr)) {
+                YogVM* vm = env->vm;
+                const char* klass_name = YogVM_id2name(env, vm, klass_of_obj);
+                const char* attr_name = YogVM_id2name(env, vm, name);
+                YogError_raise_AttributeError(env, "'%s' object has no attribute '%s'", klass_name, attr_name);
+            }
+            klass_of_attr = YogVal_get_klass(env, attr);
+            void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogKlass, klass_of_attr)->exec_get_descr;
+            if (exec == NULL) {
+                PUSH(attr);
+            }
+            else {
+                exec(ENV, attr, obj, klass_of_obj);
+            }
+        
+            POP_LOCALS(env);
 
-            PUSH(retval);
             POP_LOCALS(ENV);
             break;
         }
