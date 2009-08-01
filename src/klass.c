@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <string.h>
 #include "yog/array.h"
 #include "yog/env.h"
 #include "yog/error.h"
@@ -7,6 +8,7 @@
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
+#include "yog/property.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -170,6 +172,42 @@ void
 YogKlass_define_executor(YogEnv* env, YogVal self, Executor exec)
 {
     PTR_AS(YogKlass, self)->exec = exec;
+}
+
+void
+YogKlass_define_property(YogEnv* env, YogVal self, const char* name, void* get, void* set)
+{
+    SAVE_ARG(env, self);
+    YogVal getter = YUNDEF;
+    YogVal setter = YUNDEF;
+    YogVal prop = YUNDEF;
+    PUSH_LOCALS3(env, getter, setter, prop);
+
+    ID klass_name = PTR_AS(YogKlass, self)->name;
+
+    if (get != NULL) {
+#define GETTER_HEAD     "get_"
+        char getter_name[strlen(GETTER_HEAD) + strlen(name) + 1];
+        sprintf(getter_name, GETTER_HEAD "%s", name);
+        getter = YogNativeFunction_new(env, klass_name, getter_name, get);
+#undef GETTER_HEAD
+    }
+
+    if (set != NULL) {
+#define SETTER_HEAD     "set_"
+        char setter_name[strlen(SETTER_HEAD) + strlen(name) + 1];
+        sprintf(setter_name, SETTER_HEAD "%s", name);
+        setter = YogNativeFunction_new(env, klass_name, setter_name, set);
+#undef setter_HEAD
+    }
+
+    prop = YogProperty_new(env);
+    PTR_AS(YogProperty, prop)->getter = getter;
+    PTR_AS(YogProperty, prop)->setter = setter;
+
+    YogObj_set_attr(env, self, name, prop);
+
+    RETURN_VOID(env);
 }
 
 /**

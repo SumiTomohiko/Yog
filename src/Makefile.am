@@ -36,6 +36,7 @@ COMMON_SOURCES = arg.c \
 	object.c \
 	package.c \
 	parser.y \
+	property.c \
 	regexp.c \
 	repl.c \
 	stacktrace.c \

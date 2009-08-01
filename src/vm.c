@@ -28,6 +28,7 @@
 #include "yog/misc.h"
 #include "yog/nil.h"
 #include "yog/package.h"
+#include "yog/property.h"
 #include "yog/regexp.h"
 #include "yog/symbol.h"
 #include "yog/table.h"
@@ -216,6 +217,7 @@ setup_klasses(YogEnv* env, YogVM* vm)
     vm->cFloat = YogFloat_klass_new(env);
     vm->cThread = YogThread_klass_new(env);
     vm->cArray = YogArray_klass_new(env);
+    vm->cProperty = YogProperty_klass_new(env);
 }
 
 static void 
@@ -355,6 +357,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cFloat);
     KEEP(cThread);
     KEEP(cArray);
+    KEEP(cProperty);
 
     KEEP(eException);
     KEEP(eTypeError);
@@ -415,6 +418,7 @@ YogVM_init(YogVM* vm)
     vm->cFloat = YUNDEF;
     vm->cThread = YUNDEF;
     vm->cArray = YUNDEF;
+    vm->cProperty = YUNDEF;
 
     vm->eException = YUNDEF;
     vm->eTypeError = YUNDEF;

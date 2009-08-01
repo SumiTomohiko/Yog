@@ -9,6 +9,7 @@ class DeclarationInserter(object):
     start = "/* PROTOTYPE_START */"
     end = "/* PROTOTYPE_END */"
     files = { 
+            "include/yog/property.h": [ "src/property.c", ], 
             "include/yog/symbol.h": [ "src/symbol.c", ], 
             "include/yog/repl.h": [ "src/repl.c", ], 
             "include/yog/yog.h": [ "src/value.c", ], 

@@ -335,7 +335,8 @@
             }
             if (IS_UNDEF(attr)) {
                 YogVM* vm = env->vm;
-                const char* klass_name = YogVM_id2name(env, vm, klass_of_obj);
+                ID id = PTR_AS(YogKlass, klass_of_obj)->name;
+                const char* klass_name = YogVM_id2name(env, vm, id);
                 const char* attr_name = YogVM_id2name(env, vm, name);
                 YogError_raise_AttributeError(env, "'%s' object has no attribute '%s'", klass_name, attr_name);
             }

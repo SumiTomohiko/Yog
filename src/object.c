@@ -130,12 +130,25 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, s);
 }
 
+static YogVal
+get_klass(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = PTR_AS(YogBasicObj, self)->klass;
+
+    RETURN(env, klass);
+}
+
 void
 YogObject_boot(YogEnv* env, YogVal cObject)
 {
     SAVE_ARG(env, cObject);
 
     YogKlass_define_method(env, cObject, "to_s", to_s);
+    YogKlass_define_property(env, cObject, "class", get_klass, NULL);
 
     RETURN_VOID(env);
 }

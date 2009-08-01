@@ -177,16 +177,19 @@ get_attr_default(YogEnv* env, YogVal self, ID name)
     SAVE_ARG(env, self);
     YogVal klass = YUNDEF;
     YogVal attr = YUNDEF;
-    PUSH_LOCALS2(env, klass, attr);
+    YogVal val = YUNDEF;
+    PUSH_LOCALS3(env, klass, attr, val);
+
+    klass = YogVal_get_klass(env, self);
 
     if (IS_PTR(self) && (PTR_AS(YogBasicObj, self)->flags & HAS_ATTRS)) {
         attr = YogObj_get_attr(env, self, name);
         if (!IS_UNDEF(attr)) {
-            RETURN(env, attr);
+            val = YogVal_get_descr(env, attr, self, klass);
+            RETURN(env, val);
         }
     }
 
-    klass = YogVal_get_klass(env, self);
     attr = YogKlass_get_attr(env, klass, name);
     if (!IS_UNDEF(attr)) {
         attr = YogVal_get_descr(env, attr, self, klass);
