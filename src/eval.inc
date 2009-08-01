@@ -447,8 +447,10 @@
             }
             else {
                 ID id = PTR_AS(YogKlass, klass_of_obj)->name;
-                const char* klass_name = YogVM_id2name(env, env->vm, id);
-                YogError_raise_AttributeError(env, "can't set attribute to '%s' object", klass_name);
+                YogVM* vm = env->vm;
+                const char* klass_name = YogVM_id2name(env, vm, id);
+                const char* attr_name = YogVM_id2name(env, vm, name);
+                YogError_raise_AttributeError(env, "%s object has no attribute '%s'", klass_name, attr_name);
             }
         
             POP_LOCALS(env);

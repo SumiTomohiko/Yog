@@ -27,7 +27,7 @@ class Foo
 end
 
 foo = Foo.new()
-puts(foo.bar)
+foo.bar
 """, """42
 """)
 
@@ -64,11 +64,15 @@ foo.bar = 26
     def test_property40(self):
         self._test("""
 class Foo
-  def set_bar(bar)
-    self.bar = bar
+  def set_bar(baz)
+    self.baz = baz
   end
 
-  bar = property(nil, set_bar)
+  def get_bar()
+    return self.baz
+  end
+
+  bar = property(get_bar, set_bar)
 end
 
 foo = Foo.new()

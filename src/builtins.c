@@ -84,7 +84,9 @@ property(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     PUSH_LOCALS3(env, getter, setter, prop);
 
     getter = YogArray_at(env, args, 0);
-    setter = YogArray_at(env, args, 1);
+    if (1 < YogArray_size(env, args)) {
+        setter = YogArray_at(env, args, 1);
+    }
 
     prop = YogProperty_new(env);
     PTR_AS(YogProperty, prop)->getter = getter;
