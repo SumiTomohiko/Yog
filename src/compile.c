@@ -417,6 +417,7 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data)
 
         switch (NODE(node)->type) {
         case NODE_ASSIGN:
+        case NODE_ATTR:
         case NODE_COMMAND_CALL:
         case NODE_FUNC_CALL:
         case NODE_LITERAL:
