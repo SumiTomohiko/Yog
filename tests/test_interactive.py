@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from re import match
 from testcase import TestCase
 
 class TestInteractive(TestCase):
@@ -51,6 +52,19 @@ puts(\"foo\" + 42)
     def test_interactive50(self):
         self._test(stdout=""">>> => 68
 >>> """, stdin="""42 + 26
+""")
+
+    def test_interactive60(self):
+        def test_stdout(stdout):
+            m = match(r""">>> => <Object [0-9a-fA-F]+>
+>>> => 42
+>>> => 42
+""", stdout)
+            assert m is not None
+
+        self._test(stdout=test_stdout, stdin="""o = Object.new()
+o.foo = 42
+o.foo
 """)
 
     def test_SyntaxError0(self):
