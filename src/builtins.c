@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "yog/array.h"
+#include "yog/classmethod.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -95,6 +96,22 @@ property(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, prop);
 }
 
+static YogVal
+classmethod(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal f = YUNDEF;
+    YogVal method = YUNDEF;
+    PUSH_LOCALS2(env, f, method);
+
+    f = YogArray_at(env, args, 0);
+
+    method = YogClassMethod_new(env);
+    PTR_AS(YogClassMethod, method)->f = f;
+
+    RETURN(env, method);
+}
+
 YogVal 
 YogBuiltins_new(YogEnv* env) 
 {
@@ -105,6 +122,7 @@ YogBuiltins_new(YogEnv* env)
     YogPackage_define_method(env, bltins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
     YogPackage_define_method(env, bltins, "import_package", import_package, 0, 0, 0, 0, "package", NULL);
     YogPackage_define_method(env, bltins, "property", property, 0, 0, 0, 0, NULL);
+    YogPackage_define_method(env, bltins, "classmethod", classmethod, 0, 0, 0, 0, NULL);
 
 #define REGISTER_KLASS(c)   do { \
     YogVal klass = env->vm->c; \

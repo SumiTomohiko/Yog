@@ -17,6 +17,7 @@ COMMON_SOURCES = arg.c \
 	block.c \
 	bool.c \
 	builtins.c \
+	classmethod.c \
 	code.c \
 	compile.c \
 	encoding.c \

@@ -51,21 +51,22 @@ PROGRAMS = $(bin_PROGRAMS)
 am__objects_1 = yog_bdw-arg.$(OBJEXT) yog_bdw-array.$(OBJEXT) \
 	yog_bdw-bignum.$(OBJEXT) yog_bdw-binary.$(OBJEXT) \
 	yog_bdw-block.$(OBJEXT) yog_bdw-bool.$(OBJEXT) \
-	yog_bdw-builtins.$(OBJEXT) yog_bdw-code.$(OBJEXT) \
-	yog_bdw-compile.$(OBJEXT) yog_bdw-encoding.$(OBJEXT) \
-	yog_bdw-error.$(OBJEXT) yog_bdw-eval.$(OBJEXT) \
-	yog_bdw-exception.$(OBJEXT) yog_bdw-fixnum.$(OBJEXT) \
-	yog_bdw-float.$(OBJEXT) yog_bdw-frame.$(OBJEXT) \
-	yog_bdw-function.$(OBJEXT) yog_bdw-gc.$(OBJEXT) \
-	yog_bdw-inst.$(OBJEXT) yog_bdw-klass.$(OBJEXT) \
-	yog_bdw-lexer.$(OBJEXT) yog_bdw-main.$(OBJEXT) \
-	yog_bdw-nil.$(OBJEXT) yog_bdw-object.$(OBJEXT) \
-	yog_bdw-package.$(OBJEXT) yog_bdw-parser.$(OBJEXT) \
-	yog_bdw-property.$(OBJEXT) yog_bdw-regexp.$(OBJEXT) \
-	yog_bdw-repl.$(OBJEXT) yog_bdw-stacktrace.$(OBJEXT) \
-	yog_bdw-string.$(OBJEXT) yog_bdw-symbol.$(OBJEXT) \
-	yog_bdw-table.$(OBJEXT) yog_bdw-thread.$(OBJEXT) \
-	yog_bdw-value.$(OBJEXT) yog_bdw-vm.$(OBJEXT)
+	yog_bdw-builtins.$(OBJEXT) yog_bdw-classmethod.$(OBJEXT) \
+	yog_bdw-code.$(OBJEXT) yog_bdw-compile.$(OBJEXT) \
+	yog_bdw-encoding.$(OBJEXT) yog_bdw-error.$(OBJEXT) \
+	yog_bdw-eval.$(OBJEXT) yog_bdw-exception.$(OBJEXT) \
+	yog_bdw-fixnum.$(OBJEXT) yog_bdw-float.$(OBJEXT) \
+	yog_bdw-frame.$(OBJEXT) yog_bdw-function.$(OBJEXT) \
+	yog_bdw-gc.$(OBJEXT) yog_bdw-inst.$(OBJEXT) \
+	yog_bdw-klass.$(OBJEXT) yog_bdw-lexer.$(OBJEXT) \
+	yog_bdw-main.$(OBJEXT) yog_bdw-nil.$(OBJEXT) \
+	yog_bdw-object.$(OBJEXT) yog_bdw-package.$(OBJEXT) \
+	yog_bdw-parser.$(OBJEXT) yog_bdw-property.$(OBJEXT) \
+	yog_bdw-regexp.$(OBJEXT) yog_bdw-repl.$(OBJEXT) \
+	yog_bdw-stacktrace.$(OBJEXT) yog_bdw-string.$(OBJEXT) \
+	yog_bdw-symbol.$(OBJEXT) yog_bdw-table.$(OBJEXT) \
+	yog_bdw-thread.$(OBJEXT) yog_bdw-value.$(OBJEXT) \
+	yog_bdw-vm.$(OBJEXT)
 am_yog_bdw_OBJECTS = $(am__objects_1) yog_bdw-bdw.$(OBJEXT)
 yog_bdw_OBJECTS = $(am_yog_bdw_OBJECTS)
 yog_bdw_LDADD = $(LDADD)
@@ -75,7 +76,8 @@ yog_bdw_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 am__objects_2 = yog_copying-arg.$(OBJEXT) yog_copying-array.$(OBJEXT) \
 	yog_copying-bignum.$(OBJEXT) yog_copying-binary.$(OBJEXT) \
 	yog_copying-block.$(OBJEXT) yog_copying-bool.$(OBJEXT) \
-	yog_copying-builtins.$(OBJEXT) yog_copying-code.$(OBJEXT) \
+	yog_copying-builtins.$(OBJEXT) \
+	yog_copying-classmethod.$(OBJEXT) yog_copying-code.$(OBJEXT) \
 	yog_copying-compile.$(OBJEXT) yog_copying-encoding.$(OBJEXT) \
 	yog_copying-error.$(OBJEXT) yog_copying-eval.$(OBJEXT) \
 	yog_copying-exception.$(OBJEXT) yog_copying-fixnum.$(OBJEXT) \
@@ -104,6 +106,7 @@ am__objects_3 = yog_generational-arg.$(OBJEXT) \
 	yog_generational-block.$(OBJEXT) \
 	yog_generational-bool.$(OBJEXT) \
 	yog_generational-builtins.$(OBJEXT) \
+	yog_generational-classmethod.$(OBJEXT) \
 	yog_generational-code.$(OBJEXT) \
 	yog_generational-compile.$(OBJEXT) \
 	yog_generational-encoding.$(OBJEXT) \
@@ -147,6 +150,7 @@ am__objects_4 = yog_mark_sweep-arg.$(OBJEXT) \
 	yog_mark_sweep-binary.$(OBJEXT) yog_mark_sweep-block.$(OBJEXT) \
 	yog_mark_sweep-bool.$(OBJEXT) \
 	yog_mark_sweep-builtins.$(OBJEXT) \
+	yog_mark_sweep-classmethod.$(OBJEXT) \
 	yog_mark_sweep-code.$(OBJEXT) yog_mark_sweep-compile.$(OBJEXT) \
 	yog_mark_sweep-encoding.$(OBJEXT) \
 	yog_mark_sweep-error.$(OBJEXT) yog_mark_sweep-eval.$(OBJEXT) \
@@ -180,6 +184,7 @@ am__objects_5 = yog_mark_sweep_compact-arg.$(OBJEXT) \
 	yog_mark_sweep_compact-block.$(OBJEXT) \
 	yog_mark_sweep_compact-bool.$(OBJEXT) \
 	yog_mark_sweep_compact-builtins.$(OBJEXT) \
+	yog_mark_sweep_compact-classmethod.$(OBJEXT) \
 	yog_mark_sweep_compact-code.$(OBJEXT) \
 	yog_mark_sweep_compact-compile.$(OBJEXT) \
 	yog_mark_sweep_compact-encoding.$(OBJEXT) \
@@ -369,6 +374,7 @@ COMMON_SOURCES = arg.c \
 	block.c \
 	bool.c \
 	builtins.c \
+	classmethod.c \
 	code.c \
 	compile.c \
 	encoding.c \
@@ -531,6 +537,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-bool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-builtins.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-classmethod.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-compile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-encoding.Po@am__quote@
@@ -567,6 +574,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-bool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-builtins.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-classmethod.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-compile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-copying.Po@am__quote@
@@ -604,6 +612,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-bool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-builtins.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-classmethod.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-compile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-copying.Po@am__quote@
@@ -643,6 +652,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-bool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-builtins.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-classmethod.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-compile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-encoding.Po@am__quote@
@@ -680,6 +690,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-bool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-builtins.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-classmethod.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-compile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-encoding.Po@am__quote@
@@ -829,6 +840,20 @@ yog_bdw-builtins.obj: builtins.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='builtins.c' object='yog_bdw-builtins.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-builtins.obj `if test -f 'builtins.c'; then $(CYGPATH_W) 'builtins.c'; else $(CYGPATH_W) '$(srcdir)/builtins.c'; fi`
+
+yog_bdw-classmethod.o: classmethod.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-classmethod.o -MD -MP -MF $(DEPDIR)/yog_bdw-classmethod.Tpo -c -o yog_bdw-classmethod.o `test -f 'classmethod.c' || echo '$(srcdir)/'`classmethod.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-classmethod.Tpo $(DEPDIR)/yog_bdw-classmethod.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classmethod.c' object='yog_bdw-classmethod.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-classmethod.o `test -f 'classmethod.c' || echo '$(srcdir)/'`classmethod.c
+
+yog_bdw-classmethod.obj: classmethod.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-classmethod.obj -MD -MP -MF $(DEPDIR)/yog_bdw-classmethod.Tpo -c -o yog_bdw-classmethod.obj `if test -f 'classmethod.c'; then $(CYGPATH_W) 'classmethod.c'; else $(CYGPATH_W) '$(srcdir)/classmethod.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-classmethod.Tpo $(DEPDIR)/yog_bdw-classmethod.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classmethod.c' object='yog_bdw-classmethod.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-classmethod.obj `if test -f 'classmethod.c'; then $(CYGPATH_W) 'classmethod.c'; else $(CYGPATH_W) '$(srcdir)/classmethod.c'; fi`
 
 yog_bdw-code.o: code.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-code.o -MD -MP -MF $(DEPDIR)/yog_bdw-code.Tpo -c -o yog_bdw-code.o `test -f 'code.c' || echo '$(srcdir)/'`code.c
@@ -1348,6 +1373,20 @@ yog_copying-builtins.obj: builtins.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-builtins.obj `if test -f 'builtins.c'; then $(CYGPATH_W) 'builtins.c'; else $(CYGPATH_W) '$(srcdir)/builtins.c'; fi`
 
+yog_copying-classmethod.o: classmethod.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-classmethod.o -MD -MP -MF $(DEPDIR)/yog_copying-classmethod.Tpo -c -o yog_copying-classmethod.o `test -f 'classmethod.c' || echo '$(srcdir)/'`classmethod.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-classmethod.Tpo $(DEPDIR)/yog_copying-classmethod.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classmethod.c' object='yog_copying-classmethod.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-classmethod.o `test -f 'classmethod.c' || echo '$(srcdir)/'`classmethod.c
+
+yog_copying-classmethod.obj: classmethod.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-classmethod.obj -MD -MP -MF $(DEPDIR)/yog_copying-classmethod.Tpo -c -o yog_copying-classmethod.obj `if test -f 'classmethod.c'; then $(CYGPATH_W) 'classmethod.c'; else $(CYGPATH_W) '$(srcdir)/classmethod.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-classmethod.Tpo $(DEPDIR)/yog_copying-classmethod.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classmethod.c' object='yog_copying-classmethod.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-classmethod.obj `if test -f 'classmethod.c'; then $(CYGPATH_W) 'classmethod.c'; else $(CYGPATH_W) '$(srcdir)/classmethod.c'; fi`
+
 yog_copying-code.o: code.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-code.o -MD -MP -MF $(DEPDIR)/yog_copying-code.Tpo -c -o yog_copying-code.o `test -f 'code.c' || echo '$(srcdir)/'`code.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-code.Tpo $(DEPDIR)/yog_copying-code.Po
@@ -1865,6 +1904,20 @@ yog_generational-builtins.obj: builtins.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='builtins.c' object='yog_generational-builtins.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-builtins.obj `if test -f 'builtins.c'; then $(CYGPATH_W) 'builtins.c'; else $(CYGPATH_W) '$(srcdir)/builtins.c'; fi`
+
+yog_generational-classmethod.o: classmethod.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-classmethod.o -MD -MP -MF $(DEPDIR)/yog_generational-classmethod.Tpo -c -o yog_generational-classmethod.o `test -f 'classmethod.c' || echo '$(srcdir)/'`classmethod.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-classmethod.Tpo $(DEPDIR)/yog_generational-classmethod.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classmethod.c' object='yog_generational-classmethod.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-classmethod.o `test -f 'classmethod.c' || echo '$(srcdir)/'`classmethod.c
+
+yog_generational-classmethod.obj: classmethod.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-classmethod.obj -MD -MP -MF $(DEPDIR)/yog_generational-classmethod.Tpo -c -o yog_generational-classmethod.obj `if test -f 'classmethod.c'; then $(CYGPATH_W) 'classmethod.c'; else $(CYGPATH_W) '$(srcdir)/classmethod.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-classmethod.Tpo $(DEPDIR)/yog_generational-classmethod.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classmethod.c' object='yog_generational-classmethod.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-classmethod.obj `if test -f 'classmethod.c'; then $(CYGPATH_W) 'classmethod.c'; else $(CYGPATH_W) '$(srcdir)/classmethod.c'; fi`
 
 yog_generational-code.o: code.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-code.o -MD -MP -MF $(DEPDIR)/yog_generational-code.Tpo -c -o yog_generational-code.o `test -f 'code.c' || echo '$(srcdir)/'`code.c
@@ -2412,6 +2465,20 @@ yog_mark_sweep-builtins.obj: builtins.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-builtins.obj `if test -f 'builtins.c'; then $(CYGPATH_W) 'builtins.c'; else $(CYGPATH_W) '$(srcdir)/builtins.c'; fi`
 
+yog_mark_sweep-classmethod.o: classmethod.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-classmethod.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-classmethod.Tpo -c -o yog_mark_sweep-classmethod.o `test -f 'classmethod.c' || echo '$(srcdir)/'`classmethod.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-classmethod.Tpo $(DEPDIR)/yog_mark_sweep-classmethod.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classmethod.c' object='yog_mark_sweep-classmethod.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-classmethod.o `test -f 'classmethod.c' || echo '$(srcdir)/'`classmethod.c
+
+yog_mark_sweep-classmethod.obj: classmethod.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-classmethod.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep-classmethod.Tpo -c -o yog_mark_sweep-classmethod.obj `if test -f 'classmethod.c'; then $(CYGPATH_W) 'classmethod.c'; else $(CYGPATH_W) '$(srcdir)/classmethod.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-classmethod.Tpo $(DEPDIR)/yog_mark_sweep-classmethod.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classmethod.c' object='yog_mark_sweep-classmethod.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-classmethod.obj `if test -f 'classmethod.c'; then $(CYGPATH_W) 'classmethod.c'; else $(CYGPATH_W) '$(srcdir)/classmethod.c'; fi`
+
 yog_mark_sweep-code.o: code.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-code.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-code.Tpo -c -o yog_mark_sweep-code.o `test -f 'code.c' || echo '$(srcdir)/'`code.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-code.Tpo $(DEPDIR)/yog_mark_sweep-code.Po
@@ -2929,6 +2996,20 @@ yog_mark_sweep_compact-builtins.obj: builtins.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='builtins.c' object='yog_mark_sweep_compact-builtins.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-builtins.obj `if test -f 'builtins.c'; then $(CYGPATH_W) 'builtins.c'; else $(CYGPATH_W) '$(srcdir)/builtins.c'; fi`
+
+yog_mark_sweep_compact-classmethod.o: classmethod.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-classmethod.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-classmethod.Tpo -c -o yog_mark_sweep_compact-classmethod.o `test -f 'classmethod.c' || echo '$(srcdir)/'`classmethod.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-classmethod.Tpo $(DEPDIR)/yog_mark_sweep_compact-classmethod.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classmethod.c' object='yog_mark_sweep_compact-classmethod.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-classmethod.o `test -f 'classmethod.c' || echo '$(srcdir)/'`classmethod.c
+
+yog_mark_sweep_compact-classmethod.obj: classmethod.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-classmethod.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-classmethod.Tpo -c -o yog_mark_sweep_compact-classmethod.obj `if test -f 'classmethod.c'; then $(CYGPATH_W) 'classmethod.c'; else $(CYGPATH_W) '$(srcdir)/classmethod.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-classmethod.Tpo $(DEPDIR)/yog_mark_sweep_compact-classmethod.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classmethod.c' object='yog_mark_sweep_compact-classmethod.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-classmethod.obj `if test -f 'classmethod.c'; then $(CYGPATH_W) 'classmethod.c'; else $(CYGPATH_W) '$(srcdir)/classmethod.c'; fi`
 
 yog_mark_sweep_compact-code.o: code.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-code.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-code.Tpo -c -o yog_mark_sweep_compact-code.o `test -f 'code.c' || echo '$(srcdir)/'`code.c
