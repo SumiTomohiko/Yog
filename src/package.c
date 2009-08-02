@@ -1,5 +1,7 @@
 #include <stdarg.h>
 #include "yog/env.h"
+#include "yog/error.h"
+#include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/package.h"
@@ -59,7 +61,7 @@ allocate(YogEnv* env, YogVal klass)
 }
 
 static YogVal
-get_attr(YogEnv* env, YogVal self, ID name)
+call_get_attr(YogEnv* env, YogVal self, ID name)
 {
     SAVE_ARG(env, self);
     YogVal klass = YUNDEF;
@@ -81,6 +83,33 @@ get_attr(YogEnv* env, YogVal self, ID name)
     RETURN(env, YUNDEF);
 }
 
+static void
+exec_get_attr(YogEnv* env, YogVal self, ID name)
+{
+    SAVE_ARG(env, self);
+    YogVal klass = YUNDEF;
+    YogVal attr = YUNDEF;
+    PUSH_LOCALS2(env, klass, attr);
+
+    attr = YogObj_get_attr(env, self, name);
+    if (!IS_UNDEF(attr)) {
+        FRAME_PUSH(env, attr);
+        RETURN_VOID(env);
+    }
+
+    klass = YogVal_get_klass(env, self);
+    attr = YogKlass_get_attr(env, klass, name);
+    if (!IS_UNDEF(attr)) {
+        attr = YogVal_get_descr(env, attr, self, klass);
+        FRAME_PUSH(env, attr);
+        RETURN_VOID(env);
+    }
+
+    YOG_BUG(env, "attribute not found");
+
+    /* NOTREACHED */
+}
+
 YogVal 
 YogPackage_klass_new(YogEnv* env) 
 {
@@ -88,7 +117,8 @@ YogPackage_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_attr_getter(env, klass, get_attr);
+    YogKlass_define_get_attr_caller(env, klass, call_get_attr);
+    YogKlass_define_get_attr_executor(env, klass, exec_get_attr);
 
     POP_LOCALS(env);
     return klass;

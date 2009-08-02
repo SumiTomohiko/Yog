@@ -14,6 +14,7 @@
 #include "yog/block.h"
 #include "yog/bool.h"
 #include "yog/builtins.h"
+#include "yog/classmethod.h"
 #include "yog/compile.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
@@ -272,6 +273,7 @@ YogVM_boot(YogEnv* env, YogVM* vm)
     set_main_thread_klass(env, vm);
     setup_exceptions(env, vm);
     YogObject_boot(env, vm->cObject);
+    YogKlass_boot(env, vm->cKlass);
 
     vm->pkgs = YogTable_new_symbol_table(env);
     setup_builtins(env, vm);

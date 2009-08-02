@@ -208,7 +208,7 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
     PUSH_LOCALS2(env, klass, attr);
 
     klass = YogVal_get_klass(env, val);
-    AttrGetter getter = PTR_AS(YogKlass, klass)->get_attr;
+    GetAttrCaller getter = PTR_AS(YogKlass, klass)->call_get_attr;
     if (getter == NULL) {
         getter = get_attr_default;
     }

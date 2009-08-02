@@ -320,34 +320,16 @@
             YogVal obj = YUNDEF;
             PUSH_LOCAL(ENV, obj);
             obj = POP();
-            YogVal attr = YUNDEF;
-            YogVal klass_of_obj = YUNDEF;
-            YogVal klass_of_attr = YUNDEF;
-            PUSH_LOCALS3(env, attr, klass_of_obj, klass_of_attr);
+            YogVal klass = YUNDEF;
+            PUSH_LOCAL(env, klass);
         
-            klass_of_obj = YogVal_get_klass(env, obj);
-        
-            if (IS_PTR(obj) && ((PTR_AS(YogBasicObj, obj)->flags & HAS_ATTRS) != 0)) {
-                attr = YogObj_get_attr(env, obj, name);
-            }
-            if (IS_UNDEF(attr)) {
-                attr = YogObj_get_attr(env, klass_of_obj, name);
-            }
-            if (IS_UNDEF(attr)) {
-                YogVM* vm = env->vm;
-                ID id = PTR_AS(YogKlass, klass_of_obj)->name;
-                const char* klass_name = YogVM_id2name(env, vm, id);
-                const char* attr_name = YogVM_id2name(env, vm, name);
-                YogError_raise_AttributeError(env, "'%s' object has no attribute '%s'", klass_name, attr_name);
-            }
-            klass_of_attr = YogVal_get_klass(env, attr);
-            void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogKlass, klass_of_attr)->exec_get_descr;
+            klass = YogVal_get_klass(env, obj);
+            GetAttrExecutor exec = PTR_AS(YogKlass, klass)->exec_get_attr;
             if (exec == NULL) {
-                PUSH(attr);
+                exec = exec_get_attr;
             }
-            else {
-                exec(ENV, attr, obj, klass_of_obj);
-            }
+        
+            exec(env, obj, name);
         
             POP_LOCALS(env);
 

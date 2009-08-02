@@ -5,7 +5,8 @@
 #include "yog/object.h"
 #include "yog/yog.h"
 
-typedef YogVal (*AttrGetter)(YogEnv*, YogVal, ID);
+typedef void (*GetAttrExecutor)(YogEnv*, YogVal, ID);
+typedef YogVal (*GetAttrCaller)(YogEnv*, YogVal, ID);
 typedef void (*Executor)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, YogVal*, YogVal, YogVal);
 typedef YogVal (*Caller)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, YogVal*, YogVal, YogVal);
 
@@ -14,7 +15,8 @@ struct YogKlass {
     Allocator allocator;
     ID name;
     YogVal super;
-    AttrGetter get_attr;
+    GetAttrExecutor exec_get_attr;
+    GetAttrCaller call_get_attr;
     void (*exec_get_descr)(YogEnv*, YogVal, YogVal, YogVal);
     YogVal (*call_get_descr)(YogEnv*, YogVal, YogVal, YogVal);
     void (*exec_set_descr)(YogEnv*, YogVal, YogVal, YogVal);
@@ -32,13 +34,15 @@ typedef struct YogKlass YogKlass;
 
 /* src/klass.c */
 YogVal YogKlass_allocate(YogEnv*, YogVal);
+void YogKlass_boot(YogEnv*, YogVal);
 void YogKlass_define_allocator(YogEnv*, YogVal, Allocator);
-void YogKlass_define_attr_getter(YogEnv*, YogVal, AttrGetter);
 void YogKlass_define_caller(YogEnv*, YogVal, Caller);
 void YogKlass_define_descr_get_caller(YogEnv*, YogVal, YogVal (*)(YogEnv*, YogVal, YogVal, YogVal));
 void YogKlass_define_descr_get_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
 void YogKlass_define_descr_set_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
 void YogKlass_define_executor(YogEnv*, YogVal, Executor);
+void YogKlass_define_get_attr_caller(YogEnv*, YogVal, GetAttrCaller);
+void YogKlass_define_get_attr_executor(YogEnv*, YogVal, GetAttrExecutor);
 void YogKlass_define_method(YogEnv*, YogVal, const char*, void*);
 void YogKlass_define_property(YogEnv*, YogVal, const char*, void*, void*);
 YogVal YogKlass_get_attr(YogEnv*, YogVal, ID);

@@ -1,4 +1,6 @@
 #include "yog/env.h"
+#include "yog/error.h"
+#include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/object.h"

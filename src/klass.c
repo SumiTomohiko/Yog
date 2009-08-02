@@ -12,6 +12,65 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
+static YogVal
+call_get_attr(YogEnv* env, YogVal self, ID name)
+{
+    SAVE_ARG(env, self);
+    YogVal klass = YUNDEF;
+    YogVal attr = YUNDEF;
+    PUSH_LOCALS2(env, klass, attr);
+
+    if (self != env->vm->cObject) {
+        attr = YogObj_get_attr(env, self, name);
+        if (!IS_UNDEF(attr)) {
+            attr = YogVal_get_descr(env, attr, YNIL, self);
+            RETURN(env, attr);
+        }
+    }
+
+    klass = YogVal_get_klass(env, self);
+    attr = YogKlass_get_attr(env, klass, name);
+    if (!IS_UNDEF(attr)) {
+        attr = YogVal_get_descr(env, attr, self, klass);
+        RETURN(env, attr);
+    }
+
+    RETURN(env, YUNDEF);
+}
+
+#include "yog/vm.h"
+
+static void
+exec_get_attr(YogEnv* env, YogVal self, ID name)
+{
+    SAVE_ARG(env, self);
+    YogVal klass = YUNDEF;
+    YogVal attr = YUNDEF;
+    PUSH_LOCALS2(env, klass, attr);
+
+    if (self != env->vm->cObject) {
+        attr = YogObj_get_attr(env, self, name);
+        if (!IS_UNDEF(attr)) {
+            attr = YogVal_get_descr(env, attr, YNIL, self);
+            FRAME_PUSH(env, attr);
+            RETURN_VOID(env);
+        }
+    }
+
+    klass = YogVal_get_klass(env, self);
+    attr = YogKlass_get_attr(env, klass, name);
+    if (!IS_UNDEF(attr)) {
+        attr = YogVal_get_descr(env, attr, self, klass);
+        FRAME_PUSH(env, attr);
+        RETURN_VOID(env);
+    }
+
+    YOG_BUG(env, "attribute not found");
+
+    /* NOTREACHED */
+    RETURN_VOID(env);
+}
+
 void 
 YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f)
 {
@@ -72,7 +131,8 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
         PTR_AS(YogKlass, klass)->name = id;
     }
     PTR_AS(YogKlass, klass)->super = super;
-    PTR_AS(YogKlass, klass)->get_attr = NULL;
+    PTR_AS(YogKlass, klass)->exec_get_attr = NULL;
+    PTR_AS(YogKlass, klass)->call_get_attr = NULL;
     PTR_AS(YogKlass, klass)->exec_get_descr = NULL;
     PTR_AS(YogKlass, klass)->call_get_descr = NULL;
     PTR_AS(YogKlass, klass)->exec_set_descr = NULL;
@@ -164,9 +224,15 @@ YogKlass_define_descr_set_executor(YogEnv* env, YogVal self, void (*setter)(YogE
 }
 
 void
-YogKlass_define_attr_getter(YogEnv* env, YogVal self, AttrGetter getter)
+YogKlass_define_get_attr_caller(YogEnv* env, YogVal self, GetAttrCaller getter)
 {
-    PTR_AS(YogKlass, self)->get_attr = getter;
+    PTR_AS(YogKlass, self)->call_get_attr = getter;
+}
+
+void
+YogKlass_define_get_attr_executor(YogEnv* env, YogVal self, GetAttrExecutor getter)
+{
+    PTR_AS(YogKlass, self)->exec_get_attr = getter;
 }
 
 void
@@ -213,6 +279,17 @@ YogKlass_define_property(YogEnv* env, YogVal self, const char* name, void* get, 
     PTR_AS(YogProperty, prop)->setter = setter;
 
     YogObj_set_attr(env, self, name, prop);
+
+    RETURN_VOID(env);
+}
+
+void
+YogKlass_boot(YogEnv* env, YogVal cKlass)
+{
+    SAVE_ARG(env, cKlass);
+
+    YogKlass_define_get_attr_caller(env, cKlass, call_get_attr);
+    YogKlass_define_get_attr_executor(env, cKlass, exec_get_attr);
 
     RETURN_VOID(env);
 }
