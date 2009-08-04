@@ -484,4 +484,51 @@ TypeError: unsupported operand type\(s\) for <<: 'Bignum' and 'String'
 puts(4611686018427387904 << "foo")
 """, stderr=test_stderr)
 
+    def test_right_shift0(self):
+        self._test("""
+puts(4611686018427387904 >> 0)
+""", """4611686018427387904
+""")
+
+    def test_right_shift10(self):
+        self._test("""
+# Bignum >> Fixnum = Fixnum
+puts(4611686018427387904 >> 62)
+""", """1
+""")
+
+    def test_right_shift20(self):
+        self._test("""
+# Bignum >> Fixnum = Bignum
+puts(9223372036854775808 >> 1)
+""", """4611686018427387904
+""")
+
+    def test_right_shift30(self):
+        self._test("""
+# Bignum (negative, odd number) >> Fixnum = Bignum
+puts((- 9223372036854775809) >> 1)
+""", """-4611686018427387905
+""")
+
+    def test_right_shift40(self):
+        self._test("""
+# Bignum >> Fixnum (negative) = Bignum
+puts(4611686018427387902 >> (- 1))
+""", """9223372036854775804
+""")
+
+    def test_right_shift50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in Bignum#>>
+TypeError: unsupported operand type\(s\) for >>: 'Bignum' and 'String'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts(4611686018427387904 >> "foo")
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
