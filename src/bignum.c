@@ -389,6 +389,59 @@ positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
+YogBignum_lshift(YogEnv* env, YogVal self, int_t width)
+{
+    YOG_ASSERT(env, 0 <= width, "negative width (%d)", width);
+
+    SAVE_ARG(env, self);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogBignum_new(env);
+    mpz_mul_2exp(BIGNUM_NUM(retval), BIGNUM_NUM(self), width);
+
+    RETURN(env, retval);
+}
+
+static YogVal
+YogBignum_rshift(YogEnv* env, YogVal self, int_t width)
+{
+    YOG_ASSERT(env, 0 <= width, "negative width (%d)", width);
+
+    SAVE_ARG(env, self);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogBignum_new(env);
+    mpz_fdiv_q_2exp(BIGNUM_NUM(retval), BIGNUM_NUM(self), width);
+
+    RETURN(env, retval);
+}
+
+static YogVal
+lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    YogVal right = YUNDEF;
+    PUSH_LOCALS2(env, retval, right);
+
+    right = YogArray_at(env, args, 0);
+    if (!IS_FIXNUM(right)) {
+        YogError_raise_binop_type_error(env, self, right, "<<");
+    }
+    int_t n = VAL2INT(right);
+    if (0 < n) {
+        retval = YogBignum_lshift(env, self, n);
+    }
+    else {
+        retval = YogBignum_rshift(env, self, - n);
+    }
+
+    RETURN(env, retval);
+}
+
+YogVal
 YogBignum_klass_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
@@ -404,6 +457,7 @@ YogBignum_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "/", divide);
     YogKlass_define_method(env, klass, "//", floor_divide);
     YogKlass_define_method(env, klass, "+self", positive);
+    YogKlass_define_method(env, klass, "<<", lshift);
 
     RETURN(env, klass);
 }
@@ -448,21 +502,6 @@ YogBignum_multiply(YogEnv* env, YogVal self, YogVal bignum)
     mpz_mul(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
 
     RETURN(env, result);
-}
-
-YogVal
-YogBignum_lshift(YogEnv* env, YogVal self, int_t width)
-{
-    YOG_ASSERT(env, 0 <= width, "negative width (%d)", width);
-
-    SAVE_ARG(env, self);
-    YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
-
-    retval = YogBignum_new(env);
-    mpz_mul_2exp(BIGNUM_NUM(retval), BIGNUM_NUM(self), width);
-
-    RETURN(env, retval);
 }
 
 /**

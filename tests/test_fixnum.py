@@ -838,6 +838,13 @@ puts(42 << (- 1))
 """)
 
     def test_left_shift60(self):
+        self._test("""
+# Fixnum (negative, odd number) << Fixnum (negative) = Fixnum
+puts((- 3) << (- 1))
+""", """-2
+""")
+
+    def test_left_shift70(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
