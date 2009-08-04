@@ -558,4 +558,45 @@ TypeError: unsupported operand type\(s\) for \|: 'Bignum' and 'String'
 puts(4611686018427387904 | "foo")
 """, stderr=test_stderr)
 
+    def test_bitwise_and0(self):
+        self._test("""
+# Bignum & Fixnum
+puts(4611686018427387904 & 42)
+""", """0
+""")
+
+    def test_bitwise_and10(self):
+        self._test("""
+# Bignum & Bignum = Fixnum
+puts(4611686018427387904 & 9223372036854775808)
+""", """0
+""")
+
+    def test_bitwise_and20(self):
+        self._test("""
+# Bignum & Bignum = Bignum
+puts(4611686019501129728 & 1073741824)
+""", """1073741824
+""")
+
+    def test_bitwise_and30(self):
+        self._test("""
+# Bignum & Bignum = Bignum
+puts(4611686018427387904 & 4611686018427387904)
+""", """4611686018427387904
+""")
+
+    def test_bitwise_and40(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in Bignum#&
+TypeError: unsupported operand type\(s\) for &: 'Bignum' and 'String'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts(4611686018427387904 & "foo")
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
