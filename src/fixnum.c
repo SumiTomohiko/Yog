@@ -323,9 +323,11 @@ do_lshift(YogEnv* env, int_t val, int_t width)
     YogVal bignum = YUNDEF;
     PUSH_LOCALS2(env, retval, bignum);
 
-    int_t result = val << width;
-    if ((result >> width == val) && FIXABLE(result)) {
-        RETURN(env, INT2VAL(result));
+    if (width < sizeof(int_t) * CHAR_BIT) {
+        int_t result = val << width;
+        if ((result >> width == val) && FIXABLE(result)) {
+            RETURN(env, INT2VAL(result));
+        }
     }
 
     bignum = YogBignum_from_int(env, val);
