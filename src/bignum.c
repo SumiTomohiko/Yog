@@ -507,7 +507,7 @@ YogBignum_multiply(YogEnv* env, YogVal self, YogVal bignum)
 }
 
 YogVal
-YogBignum_bor(YogEnv* env, YogVal self, YogVal n)
+YogBignum_or(YogEnv* env, YogVal self, YogVal n)
 {
     SAVE_ARGS2(env, self, n);
     YogVal retval = YUNDEF;
@@ -532,15 +532,48 @@ YogBignum_bor(YogEnv* env, YogVal self, YogVal n)
 }
 
 static YogVal
-bor(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+or(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
 
-    retval = YogBignum_bor(env, self, YogArray_at(env, args, 0));
+    retval = YogBignum_or(env, self, YogArray_at(env, args, 0));
 
     RETURN(env, retval);
+}
+
+YogVal
+YogBignum_and(YogEnv* env, YogVal self, YogVal n)
+{
+    YOG_ASSERT(env, !IS_UNDEF(n), "undefined value");
+
+    SAVE_ARGS2(env, self, n);
+    YogVal bignum = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS2(env, bignum, result);
+
+    if (IS_FIXNUM(n)) {
+        bignum = YogBignum_from_int(env, VAL2INT(n));
+    }
+    else if (IS_PTR(n) && IS_OBJ_OF(env, n, cBignum)) {
+        bignum = n;
+    }
+    if (IS_UNDEF(bignum)) {
+        YogError_raise_binop_type_error(env, self, n, "&");
+    }
+
+    result = YogBignum_new(env);
+    mpz_and(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
+    if (!mpz_fits_sint_p(BIGNUM_NUM(result))) {
+        RETURN(env, result);
+    }
+    int_t m = mpz_get_si(BIGNUM_NUM(result));
+    if (!FIXABLE(m)) {
+        RETURN(env, result);
+    }
+
+    RETURN(env, INT2VAL(m));
 }
 
 YogVal
@@ -561,7 +594,7 @@ YogBignum_klass_new(YogEnv* env)
     DEFINE_METHOD("//", floor_divide);
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD(">>", rshift);
-    DEFINE_METHOD("|", bor);
+    DEFINE_METHOD("|", or);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
 

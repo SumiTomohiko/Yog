@@ -960,6 +960,9 @@ or_expr(A) ::= or_expr(B) BAR(C) and_expr(D). {
 and_expr(A) ::= shift_expr(B). {
     A = B;
 }
+and_expr(A) ::= and_expr(B) AND(C) shift_expr(D). {
+    A = FuncCall_new2(env, NODE_LINENO(B), B, TOKEN_ID(C), D);
+}
 
 shift_expr(A) ::= match_expr(B). {
     A = B;
