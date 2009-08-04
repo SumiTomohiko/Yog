@@ -337,6 +337,29 @@ do_lshift(YogEnv* env, int_t val, int_t width)
 }
 
 static YogVal
+rshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal right = YUNDEF;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, right, retval);
+
+    right = YogArray_at(env, args, 0);
+    if (!IS_FIXNUM(right)) {
+        YogError_raise_binop_type_error(env, self, right, ">>");
+    }
+    int_t n = VAL2INT(right);
+    if (0 < n) {
+        retval = do_rshift(env, VAL2INT(self), n);
+    }
+    else {
+        retval = do_lshift(env, VAL2INT(self), - n);
+    }
+
+    RETURN(env, retval);
+}
+
+static YogVal
 lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -403,6 +426,7 @@ YogFixnum_klass_new(YogEnv* env)
     DEFINE_METHOD("//", floor_divide);
     DEFINE_METHOD("<", less);
     DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD(">>", rshift);
 #undef DEFINE_METHOD
     YogKlass_define_method(env, klass, "+self", positive);
     YogKlass_define_method(env, klass, "-self", negative);

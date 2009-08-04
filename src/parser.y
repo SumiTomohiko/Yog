@@ -940,6 +940,9 @@ comparison(A) ::= xor_expr(B) comp_op(C) xor_expr(D). {
 comp_op(A) ::= LESS(B). {
     A = B;
 }
+comp_op(A) ::= GREATER(B). {
+    A = B;
+}
 
 xor_expr(A) ::= or_expr(B). {
     A = B;
@@ -956,10 +959,16 @@ and_expr(A) ::= shift_expr(B). {
 shift_expr(A) ::= match_expr(B). {
     A = B;
 }
-shift_expr(A) ::= shift_expr(B) LSHIFT(C) match_expr(D). {
+shift_expr(A) ::= shift_expr(B) shift_op(C) match_expr(D). {
     uint_t lineno = NODE_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = FuncCall_new2(env, lineno, B, id, D);
+    A = FuncCall_new2(env, lineno, B, VAL2ID(C), D);
+}
+
+shift_op(A) ::= LSHIFT(B). {
+    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+}
+shift_op(A) ::= RSHIFT(B). {
+    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
 }
 
 match_expr(A) ::= arith_expr(B). {
