@@ -613,7 +613,9 @@ Array_push_token_id(YogEnv* env, YogVal array, YogVal token)
     RETURN(env, retval);
 }
 
-#define TOKEN_LINENO(token)     PTR_AS(YogToken, (token))->lineno
+#define TOKEN(token)            PTR_AS(YogToken, (token))
+#define TOKEN_ID(token)         TOKEN((token))->u.id
+#define TOKEN_LINENO(token)     TOKEN((token))->lineno
 #define NODE_LINENO(node)       PTR_AS(YogNode, (node))->lineno
 }   // end of %include
 
@@ -950,6 +952,9 @@ xor_expr(A) ::= or_expr(B). {
 
 or_expr(A) ::= and_expr(B). {
     A = B;
+}
+or_expr(A) ::= or_expr(B) BAR(C) and_expr(D). {
+    A = FuncCall_new2(env, NODE_LINENO(B), B, TOKEN_ID(C), D);
 }
 
 and_expr(A) ::= shift_expr(B). {

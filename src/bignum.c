@@ -528,6 +528,28 @@ YogBignum_multiply(YogEnv* env, YogVal self, YogVal bignum)
     RETURN(env, result);
 }
 
+YogVal
+YogBignum_bor(YogEnv* env, YogVal self, YogVal n)
+{
+    SAVE_ARGS2(env, self, n);
+    YogVal retval = YUNDEF;
+    YogVal bignum = YUNDEF;
+    PUSH_LOCALS2(env, retval, bignum);
+
+    YOG_ASSERT(env, IS_FIXNUM(n) || (IS_PTR(n) && IS_OBJ_OF(env, n, cBignum)), "invalid type");
+
+    if (IS_FIXNUM(n)) {
+        bignum = YogBignum_from_int(env, VAL2INT(n));
+    }
+    else {
+        bignum = n;
+    }
+    retval = YogBignum_new(env);
+    mpz_ior(BIGNUM_NUM(retval), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
+
+    RETURN(env, retval);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
