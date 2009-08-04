@@ -465,28 +465,6 @@ lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogBignum_klass_new(YogEnv* env)
-{
-    SAVE_LOCALS(env);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
-
-    klass = YogKlass_new(env, "Bignum", env->vm->cObject);
-    YogKlass_define_method(env, klass, "-self", negative);
-    YogKlass_define_method(env, klass, "to_s", to_s);
-    YogKlass_define_method(env, klass, "+", add);
-    YogKlass_define_method(env, klass, "-", subtract);
-    YogKlass_define_method(env, klass, "*", multiply);
-    YogKlass_define_method(env, klass, "/", divide);
-    YogKlass_define_method(env, klass, "//", floor_divide);
-    YogKlass_define_method(env, klass, "+self", positive);
-    YogKlass_define_method(env, klass, "<<", lshift);
-    YogKlass_define_method(env, klass, ">>", rshift);
-
-    RETURN(env, klass);
-}
-
-YogVal
 YogBignum_from_int(YogEnv* env, int_t n)
 {
     SAVE_LOCALS(env);
@@ -536,7 +514,10 @@ YogBignum_bor(YogEnv* env, YogVal self, YogVal n)
     YogVal bignum = YUNDEF;
     PUSH_LOCALS2(env, retval, bignum);
 
-    YOG_ASSERT(env, IS_FIXNUM(n) || (IS_PTR(n) && IS_OBJ_OF(env, n, cBignum)), "invalid type");
+    YOG_ASSERT(env, !IS_UNDEF(n), "undefined value");
+    if (!IS_FIXNUM(n) && !(IS_PTR(n) && IS_OBJ_OF(env, n, cBignum))) {
+        YogError_raise_binop_type_error(env, self, n, "|");
+    }
 
     if (IS_FIXNUM(n)) {
         bignum = YogBignum_from_int(env, VAL2INT(n));
@@ -548,6 +529,43 @@ YogBignum_bor(YogEnv* env, YogVal self, YogVal n)
     mpz_ior(BIGNUM_NUM(retval), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
 
     RETURN(env, retval);
+}
+
+static YogVal
+bor(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogBignum_bor(env, self, YogArray_at(env, args, 0));
+
+    RETURN(env, retval);
+}
+
+YogVal
+YogBignum_klass_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = YogKlass_new(env, "Bignum", env->vm->cObject);
+#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, (name), (f))
+    DEFINE_METHOD("-self", negative);
+    DEFINE_METHOD("+self", positive);
+    DEFINE_METHOD("+", add);
+    DEFINE_METHOD("-", subtract);
+    DEFINE_METHOD("*", multiply);
+    DEFINE_METHOD("/", divide);
+    DEFINE_METHOD("//", floor_divide);
+    DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD(">>", rshift);
+    DEFINE_METHOD("|", bor);
+    DEFINE_METHOD("to_s", to_s);
+#undef DEFINE_METHOD
+
+    RETURN(env, klass);
 }
 
 /**
