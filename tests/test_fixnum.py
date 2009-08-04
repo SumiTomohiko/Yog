@@ -857,4 +857,79 @@ TypeError: unsupported operand type\(s\) for <<: 'Fixnum' and 'String'
 puts(42 << "foo")
 """, stderr=test_stderr)
 
+    def test_right_shift0(self):
+        self._test("""
+puts(42 >> 0)
+""", """42
+""")
+
+    def test_right_shift10(self):
+        self._test("""
+# Fixnum >> Fixnum = Fixnum
+puts(1073741823 >> 1)
+""", """536870911
+""")
+
+    def test_right_shift20(self):
+        self._test("""
+# Fixnum >> Fixnum = zero (32bit)
+puts(1 >> 32)
+""", """0
+""")
+
+    def test_right_shift30(self):
+        self._test("""
+# Fixnum >> Fixnum = zero (64bit)
+puts(1 >> 64)
+""", """0
+""")
+
+    def test_right_shift40(self):
+        self._test("""
+# Fixnum >> Fixnum (negative) = Fixnum (32bit)
+puts(536870911 >> (- 1))
+""", """1073741822
+""")
+
+    def test_right_shift50(self):
+        self._test("""
+# Fixnum >> Fixnum (negative) = Fixnum (64bit)
+puts(2305843009213693951 >> (- 1))
+""", """4611686018427387902
+""")
+
+    def test_right_shift60(self):
+        self._test("""
+# Fixnum >> Fixnum (negative) = Bignum (32bit)
+puts(536870912 >> (- 1))
+""", """1073741824
+""")
+
+    def test_right_shift70(self):
+        self._test("""
+# Fixnum >> Fixnum (negative) = Bignum (64bit)
+puts(2305843009213693952 >> (- 1))
+""", """4611686018427387904
+""")
+
+    def test_right_shift80(self):
+        self._test("""
+# Fixnum (negative, odd number) >> Fixnum = Fixnum
+puts((- 3) >> 1)
+""", """-2
+""")
+
+    def test_right_shift90(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in Fixnum#>>
+TypeError: unsupported operand type\(s\) for >>: 'Fixnum' and 'String'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts(42 >> "foo")
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
