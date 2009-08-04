@@ -796,4 +796,45 @@ puts(+ 42)
 """, """42
 """)
 
+    def test_left_shift0(self):
+        self._test("""
+puts(42 << 0)
+""", """42
+""")
+
+    def test_left_shift10(self):
+        self._test("""
+# Fixnum << Fixnum = Fixnum (32bit)
+puts(536870911 << 1)
+""", """1073741822
+""")
+
+    def test_left_shift20(self):
+        self._test("""
+# Fixnum << Fixnum = Fixnum (64bit)
+puts(2305843009213693951 << 1)
+""", """4611686018427387902
+""")
+
+    def test_left_shift30(self):
+        self._test("""
+# Fixnum << Fixnum = Bignum (32bit)
+puts(536870912 << 1)
+""", """1073741824
+""")
+
+    def test_left_shift40(self):
+        self._test("""
+# Fixnum << Fixnum = Bignum (64bit)
+puts(2305843009213693952 << 1)
+""", """4611686018427387904
+""")
+
+    def test_left_shift50(self):
+        self._test("""
+# Fixnum << Fixnum (negative) = Fixnum
+puts(42 << (- 1))
+""", """21
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
