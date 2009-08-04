@@ -576,6 +576,18 @@ YogBignum_and(YogEnv* env, YogVal self, YogVal n)
     RETURN(env, INT2VAL(m));
 }
 
+static YogVal
+and(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogBignum_and(env, self, YogArray_at(env, args, 0));
+
+    RETURN(env, retval);
+}
+
 YogVal
 YogBignum_klass_new(YogEnv* env)
 {
@@ -595,6 +607,7 @@ YogBignum_klass_new(YogEnv* env)
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD(">>", rshift);
     DEFINE_METHOD("|", or);
+    DEFINE_METHOD("&", and);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
 
