@@ -932,4 +932,18 @@ TypeError: unsupported operand type\(s\) for >>: 'Fixnum' and 'String'
 puts(42 >> "foo")
 """, stderr=test_stderr)
 
+    def test_bit_or0(self):
+        self._test("""
+# Fixnum | Fixnum
+puts(42 | 26)
+""", """58
+""")
+
+    def test_bit_or10(self):
+        self._test("""
+# Fixnum | Bignum
+puts(42 | 4611686018427387904)
+""", """4611686018427387946
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
