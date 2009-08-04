@@ -837,4 +837,17 @@ puts(42 << (- 1))
 """, """21
 """)
 
+    def test_left_shift60(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in Fixnum#<<
+TypeError: unsupported operand type\(s\) for <<: 'Fixnum' and 'String'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts(42 << "foo")
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

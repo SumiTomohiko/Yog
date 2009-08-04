@@ -4,7 +4,7 @@ from re import match
 from testcase import TestCase
 from utils import is_32bit
 
-class TestArch32(TestCase):
+class TestString(TestCase):
 
     disabled = is_32bit() is not True
 

@@ -23,6 +23,7 @@ typedef struct YogBignum YogBignum;
 YogVal YogBignum_from_int(YogEnv*, int_t);
 YogVal YogBignum_from_str(YogEnv*, YogVal, int_t);
 YogVal YogBignum_klass_new(YogEnv*);
+YogVal YogBignum_lshift(YogEnv*, YogVal, int_t);
 YogVal YogBignum_multiply(YogEnv*, YogVal, YogVal);
 YogVal YogBignum_subtract(YogEnv*, YogVal, YogVal);
 

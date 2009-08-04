@@ -450,6 +450,21 @@ YogBignum_multiply(YogEnv* env, YogVal self, YogVal bignum)
     RETURN(env, result);
 }
 
+YogVal
+YogBignum_lshift(YogEnv* env, YogVal self, int_t width)
+{
+    YOG_ASSERT(env, 0 <= width, "negative width (%d)", width);
+
+    SAVE_ARG(env, self);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogBignum_new(env);
+    mpz_mul_2exp(BIGNUM_NUM(retval), BIGNUM_NUM(self), width);
+
+    RETURN(env, retval);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
