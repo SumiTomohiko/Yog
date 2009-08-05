@@ -344,6 +344,52 @@ floor_divide_bignum(YogEnv* env, YogVal self, YogVal right)
     RETURN(env, result);
 }
 
+YogVal
+YogBignum_modulo(YogEnv* env, YogVal self, YogVal n)
+{
+    SAVE_ARGS2(env, self, n);
+    YogVal bignum = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS2(env, bignum, result);
+
+    if (IS_FIXNUM(n)) {
+        bignum = YogBignum_from_int(env, VAL2INT(n));
+    }
+    else if (IS_PTR(n) && IS_OBJ_OF(env, n, cBignum)) {
+        bignum = n;
+    }
+    if (IS_UNDEF(bignum)) {
+        YogError_raise_binop_type_error(env, self, n, "%");
+    }
+
+    result = YogBignum_new(env);
+    mpz_mod(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
+    result = normalize(env, result);
+
+    RETURN(env, result);
+}
+
+static YogVal
+modulo(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal right = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS2(env, right, result);
+
+    right = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    if (IS_FIXNUM(right) || (IS_PTR(right) && IS_OBJ_OF(env, right, cBignum))) {
+        result = YogBignum_modulo(env, self, right);
+        RETURN(env, result);
+    }
+
+    YogError_raise_binop_type_error(env, self, right, "%");
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
 static YogVal
 floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -537,31 +583,6 @@ or(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogBignum_modulo(YogEnv* env, YogVal self, YogVal n)
-{
-    SAVE_ARGS2(env, self, n);
-    YogVal bignum = YUNDEF;
-    YogVal result = YUNDEF;
-    PUSH_LOCALS2(env, bignum, result);
-
-    if (IS_FIXNUM(n)) {
-        bignum = YogBignum_from_int(env, VAL2INT(n));
-    }
-    else if (IS_PTR(n) && IS_OBJ_OF(env, n, cBignum)) {
-        bignum = n;
-    }
-    if (IS_UNDEF(bignum)) {
-        YogError_raise_binop_type_error(env, self, n, "%");
-    }
-
-    result = YogBignum_new(env);
-    mpz_mod(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
-    result = normalize(env, result);
-
-    RETURN(env, result);
-}
-
-YogVal
 YogBignum_xor(YogEnv* env, YogVal self, YogVal n)
 {
     YOG_ASSERT(env, !IS_UNDEF(n), "undefined value");
@@ -655,6 +676,7 @@ YogBignum_klass_new(YogEnv* env)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
+    DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD(">>", rshift);
     DEFINE_METHOD("|", or);
