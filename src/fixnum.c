@@ -14,7 +14,7 @@
 #include "yog/yog.h"
 
 #define CHECK_TYPE(v) do { \
-    YOG_ASSERT(env, IS_FIXNUM(v), "Value isn't Fixnum"); \
+    YOG_ASSERT(env, IS_FIXNUM((v)), "Value isn't Fixnum (0x%08x)", (v)); \
 } while (0)
 
 #define CHECK_ARGS(self, v) do { \

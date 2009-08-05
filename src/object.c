@@ -139,7 +139,7 @@ get_klass(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = PTR_AS(YogBasicObj, self)->klass;
+    klass = YogVal_get_klass(env, self);
 
     RETURN(env, klass);
 }

@@ -50,7 +50,7 @@ exec_get_attr(YogEnv* env, YogVal obj, ID name)
         attr = YogObj_get_attr(env, obj, name);
     }
     if (IS_UNDEF(attr)) {
-        attr = YogObj_get_attr(env, klass_of_obj, name);
+        attr = YogKlass_get_attr(env, klass_of_obj, name);
     }
     if (IS_UNDEF(attr)) {
         YogVM* vm = env->vm;
