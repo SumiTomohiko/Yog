@@ -1023,6 +1023,9 @@ term_op(A) ::= DIV(B). {
 term_op(A) ::= DIV_DIV(B). {
     A = ID2VAL(PTR_AS(YogToken, B)->u.id);
 }
+term_op(A) ::= PERCENT(B). {
+    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+}
 
 factor(A) ::= PLUS(B) factor(C). {
     uint_t lineno = NODE_LINENO(B);

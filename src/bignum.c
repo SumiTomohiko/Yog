@@ -537,6 +537,31 @@ or(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
+YogBignum_modulo(YogEnv* env, YogVal self, YogVal n)
+{
+    SAVE_ARGS2(env, self, n);
+    YogVal bignum = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS2(env, bignum, result);
+
+    if (IS_FIXNUM(n)) {
+        bignum = YogBignum_from_int(env, VAL2INT(n));
+    }
+    else if (IS_PTR(n) && IS_OBJ_OF(env, n, cBignum)) {
+        bignum = n;
+    }
+    if (IS_UNDEF(bignum)) {
+        YogError_raise_binop_type_error(env, self, n, "%");
+    }
+
+    result = YogBignum_new(env);
+    mpz_mod(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
+    result = normalize(env, result);
+
+    RETURN(env, result);
+}
+
+YogVal
 YogBignum_xor(YogEnv* env, YogVal self, YogVal n)
 {
     YOG_ASSERT(env, !IS_UNDEF(n), "undefined value");

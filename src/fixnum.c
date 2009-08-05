@@ -254,6 +254,35 @@ floor_divide_float(YogEnv* env, YogVal left, YogVal right)
 }
 
 static YogVal 
+mod(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    YOG_ASSERT(env, IS_FIXNUM(self), "self is not Fixnum");
+
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal result = YUNDEF;
+    YogVal bignum = YUNDEF;
+    YogVal right = YUNDEF;
+    PUSH_LOCALS3(env, result, bignum, right);
+
+    right = YogArray_at(env, args, 0);
+
+    if (IS_FIXNUM(right)) {
+        result = INT2VAL(VAL2INT(self) % VAL2INT(right));
+        RETURN(env, result);
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        bignum = YogBignum_from_int(env, VAL2INT(self));
+        result = YogBignum_modulo(env, bignum, right);
+        RETURN(env, result);
+    }
+
+    YogError_raise_binop_type_error(env, self, right, "%");
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
+static YogVal 
 floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -507,6 +536,7 @@ YogFixnum_klass_new(YogEnv* env)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
+    DEFINE_METHOD("%", mod);
     DEFINE_METHOD("<", less);
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD(">>", rshift);

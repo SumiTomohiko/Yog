@@ -593,6 +593,10 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             break;
         }
         break;
+    case '%':
+        SET_STATE(LS_EXPR);
+        RETURN_ID_TOKEN1(TK_PERCENT, c);
+        break;
     case '=':
         SET_STATE(LS_EXPR);
 
