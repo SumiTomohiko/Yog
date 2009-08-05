@@ -633,4 +633,38 @@ TypeError: unsupported operand type\(s\) for \^: 'Bignum' and 'String'
 puts(4611686018427387904 ^ "foo")
 """, stderr=test_stderr)
 
+    def test_modulo0(self):
+        self._test("""
+# Bignum % Fixnum = Fixnum (always)
+puts(4611686018427387904 % 536870912)
+""", """0
+""")
+
+    def test_modulo10(self):
+        self._test("""
+# Bignum % Bignum = Fixnum
+puts(4611686018427387904 % 4611686018427387904)
+""", """0
+""")
+
+    def test_modulo20(self):
+        self._test("""
+# Bignum % Bignum = Bignum
+puts(4611686018427387904 % 4611686018427387905)
+""", """4611686018427387904
+""")
+
+    def test_modulo30(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in Bignum#%
+TypeError: unsupported operand type\(s\) for %: 'Bignum' and 'String'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts(4611686018427387904 % "foo")
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
