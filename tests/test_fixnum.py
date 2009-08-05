@@ -986,4 +986,29 @@ TypeError: unsupported operand type\(s\) for &: 'Fixnum' and 'String'
 puts(42 & "foo")
 """, stderr=test_stderr)
 
+    def test_xor0(self):
+        self._test("""
+puts(42 ^ 26)
+""", """48
+""")
+
+    def test_xor10(self):
+        self._test("""
+puts(42 ^ 1073741824)
+""", """1073741866
+""")
+
+    def test_xor20(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in Fixnum#^
+TypeError: unsupported operand type\(s\) for ^: 'Fixnum' and 'String'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts(42 ^ "foo")
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
