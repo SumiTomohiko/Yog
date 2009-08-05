@@ -1037,6 +1037,11 @@ factor(A) ::= MINUS(B) factor(C). {
     ID id = YogVM_intern(env, env->vm, "-self");
     A = FuncCall_new3(env, lineno, C, id);
 }
+factor(A) ::= TILDA(B) factor(C). {
+    uint_t lineno = NODE_LINENO(B);
+    ID id = YogVM_intern(env, env->vm, "~self");
+    A = FuncCall_new3(env, lineno, C, id);
+}
 factor(A) ::= power(B). {
     A = B;
 }

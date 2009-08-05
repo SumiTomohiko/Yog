@@ -525,6 +525,14 @@ positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return self;
 }
 
+static YogVal
+not(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal n = INT2VAL(~ VAL2INT(self));
+    RETURN(env, n);
+}
+
 YogVal 
 YogFixnum_klass_new(YogEnv* env) 
 {
@@ -545,6 +553,7 @@ YogFixnum_klass_new(YogEnv* env)
     DEFINE_METHOD("^", xor);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
+    DEFINE_METHOD("~self", not);
     DEFINE_METHOD("to_s", to_s);
     DEFINE_METHOD("times", times);
 #undef DEFINE_METHOD

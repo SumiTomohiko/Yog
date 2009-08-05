@@ -648,6 +648,10 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
         SET_STATE(LS_EXPR);
         RETURN_ID_TOKEN(TK_XOR, "^");
         break;
+    case '~':
+        SET_STATE(LS_EXPR);
+        RETURN_ID_TOKEN(TK_TILDA, "~");
+        break;
     case '\r':
         {
             c = NEXTC();
