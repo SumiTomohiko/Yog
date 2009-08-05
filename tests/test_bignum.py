@@ -667,4 +667,11 @@ TypeError: unsupported operand type\(s\) for %: 'Bignum' and 'String'
 puts(4611686018427387904 % "foo")
 """, stderr=test_stderr)
 
+    def test_not0(self):
+        self._test("""
+# ~ Bignum = Bignum
+puts(~ 4611686018427387904)
+""", """-4611686018427387905
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
