@@ -1002,8 +1002,8 @@ puts(42 ^ 1073741824)
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <module>
-  File builtin, in Fixnum#^
-TypeError: unsupported operand type\(s\) for ^: 'Fixnum' and 'String'
+  File builtin, in Fixnum#\^
+TypeError: unsupported operand type\(s\) for \^: 'Fixnum' and 'String'
 """, stderr)
             assert m is not None
 

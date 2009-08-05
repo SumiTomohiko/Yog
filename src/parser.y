@@ -949,6 +949,9 @@ comp_op(A) ::= GREATER(B). {
 xor_expr(A) ::= or_expr(B). {
     A = B;
 }
+xor_expr(A) ::= xor_expr(B) XOR(C) or_expr(D). {
+    A = FuncCall_new2(env, NODE_LINENO(B), B, TOKEN_ID(C), D);
+}
 
 or_expr(A) ::= and_expr(B). {
     A = B;

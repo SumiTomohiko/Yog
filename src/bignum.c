@@ -102,6 +102,22 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YUNDEF);
 }
 
+static YogVal
+normalize(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+
+    if (!mpz_fits_sint_p(BIGNUM_NUM(self))) {
+        RETURN(env, self);
+    }
+    int_t n = mpz_get_si(BIGNUM_NUM(self));
+    if (!FIXABLE(n)) {
+        RETURN(env, self);
+    }
+
+    RETURN(env, INT2VAL(n));
+}
+
 YogVal
 YogBignum_subtract(YogEnv* env, YogVal self, YogVal bignum)
 {
@@ -111,13 +127,7 @@ YogBignum_subtract(YogEnv* env, YogVal self, YogVal bignum)
 
     result = YogBignum_new(env);
     mpz_sub(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
-    if (!mpz_fits_sint_p(BIGNUM_NUM(result))) {
-        RETURN(env, result);
-    }
-    int_t n = mpz_get_si(BIGNUM_NUM(result));
-    if (FIXABLE(n)) {
-        RETURN(env, INT2VAL(n));
-    }
+    result = normalize(env, result);
 
     RETURN(env, result);
 }
@@ -284,23 +294,6 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-bignum2val(YogEnv* env, YogVal bignum)
-{
-    SAVE_ARG(env, bignum);
-
-    if (!mpz_fits_sint_p(BIGNUM_NUM(bignum))) {
-        RETURN(env, bignum);
-    }
-
-    int_t result = mpz_get_si(BIGNUM_NUM(bignum));
-    if (!FIXABLE(result)) {
-        RETURN(env, bignum);
-    }
-
-    RETURN(env, INT2VAL(result));
-}
-
-static YogVal
 floor_divide_int(YogEnv* env, YogVal self, int_t right)
 {
     SAVE_ARG(env, self);
@@ -314,7 +307,7 @@ floor_divide_int(YogEnv* env, YogVal self, int_t right)
 
     bignum = YogBignum_from_int(env, right);
     mpz_fdiv_q(BIGNUM_NUM(bignum), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
-    result = bignum2val(env, bignum);
+    result = normalize(env, bignum);
 
     RETURN(env, result);
 }
@@ -346,7 +339,7 @@ floor_divide_bignum(YogEnv* env, YogVal self, YogVal right)
 
     bignum = YogBignum_new(env);
     mpz_fdiv_q(BIGNUM_NUM(bignum), BIGNUM_NUM(self), BIGNUM_NUM(right));
-    result = bignum2val(env, bignum);
+    result = normalize(env, bignum);
 
     RETURN(env, result);
 }
@@ -544,6 +537,33 @@ or(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
+YogBignum_xor(YogEnv* env, YogVal self, YogVal n)
+{
+    YOG_ASSERT(env, !IS_UNDEF(n), "undefined value");
+
+    SAVE_ARGS2(env, self, n);
+    YogVal bignum = YUNDEF;
+    YogVal result = YUNDEF;
+    PUSH_LOCALS2(env, bignum, result);
+
+    if (IS_FIXNUM(n)) {
+        bignum = YogBignum_from_int(env, VAL2INT(n));
+    }
+    else if (IS_PTR(n) && IS_OBJ_OF(env, n, cBignum)) {
+        bignum = n;
+    }
+    if (IS_UNDEF(bignum)) {
+        YogError_raise_binop_type_error(env, self, n, "^");
+    }
+
+    result = YogBignum_new(env);
+    mpz_xor(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
+    result = normalize(env, result);
+
+    RETURN(env, result);
+}
+
+YogVal
 YogBignum_and(YogEnv* env, YogVal self, YogVal n)
 {
     YOG_ASSERT(env, !IS_UNDEF(n), "undefined value");
@@ -565,15 +585,9 @@ YogBignum_and(YogEnv* env, YogVal self, YogVal n)
 
     result = YogBignum_new(env);
     mpz_and(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
-    if (!mpz_fits_sint_p(BIGNUM_NUM(result))) {
-        RETURN(env, result);
-    }
-    int_t m = mpz_get_si(BIGNUM_NUM(result));
-    if (!FIXABLE(m)) {
-        RETURN(env, result);
-    }
+    result = normalize(env, result);
 
-    RETURN(env, INT2VAL(m));
+    RETURN(env, result);
 }
 
 static YogVal

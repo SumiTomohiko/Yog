@@ -337,6 +337,35 @@ do_lshift(YogEnv* env, int_t val, int_t width)
 }
 
 static YogVal
+xor(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    YOG_ASSERT(env, IS_FIXNUM(self), "self is not Fixnum");
+
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal right = YUNDEF;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, right, retval);
+
+    right = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    if (IS_FIXNUM(right)) {
+        retval = INT2VAL(VAL2INT(self) ^ VAL2INT(right));
+        RETURN(env, retval);
+    }
+    else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
+    }
+    else if (IS_OBJ_OF(env, right, cBignum)) {
+        retval = YogBignum_xor(env, right, self);
+        RETURN(env, retval);
+    }
+
+    YogError_raise_binop_type_error(env, self, right, "^");
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
+static YogVal
 and(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -483,6 +512,7 @@ YogFixnum_klass_new(YogEnv* env)
     DEFINE_METHOD(">>", rshift);
     DEFINE_METHOD("|", or);
     DEFINE_METHOD("&", and);
+    DEFINE_METHOD("^", xor);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("to_s", to_s);
