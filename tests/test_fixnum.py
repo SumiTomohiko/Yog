@@ -1038,4 +1038,10 @@ TypeError: unsupported operand type\(s\) for %: 'Fixnum' and 'String'
 puts(42 % "foo")
 """, stderr=test_stderr)
 
+    def test_not0(self):
+        self._test("""
+puts(~ 42)
+""", """-43
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
