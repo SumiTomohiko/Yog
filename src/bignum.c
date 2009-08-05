@@ -427,6 +427,19 @@ positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return self;
 }
 
+static YogVal
+not(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogBignum_new(env);
+    mpz_com(BIGNUM_NUM(retval), BIGNUM_NUM(self));
+
+    RETURN(env, retval);
+}
+
 YogVal
 YogBignum_lshift(YogEnv* env, YogVal self, int_t width)
 {
@@ -671,6 +684,7 @@ YogBignum_klass_new(YogEnv* env)
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, (name), (f))
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("+self", positive);
+    DEFINE_METHOD("~self", not);
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("-", subtract);
     DEFINE_METHOD("*", multiply);
