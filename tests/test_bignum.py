@@ -599,4 +599,38 @@ TypeError: unsupported operand type\(s\) for &: 'Bignum' and 'String'
 puts(4611686018427387904 & "foo")
 """, stderr=test_stderr)
 
+    def test_xor0(self):
+        self._test("""
+# Bignum ^ Fixnum = Bignum (always)
+puts(4611686018427387904 ^ 42)
+""", """4611686018427387946
+""")
+
+    def test_xor10(self):
+        self._test("""
+# Bignum ^ Bignum = Fixnum
+puts(4611686018427387904 ^ 4611686018427387904)
+""", """0
+""")
+
+    def test_xor20(self):
+        self._test("""
+# Bignum ^ Bignum = Bignum
+puts(4611686018427387904 ^ 9223372036854775808)
+""", """13835058055282163712
+""")
+
+    def test_xor30(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in Bignum#\^
+TypeError: unsupported operand type\(s\) for \^: 'Bignum' and 'String'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts(4611686018427387904 ^ "foo")
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
