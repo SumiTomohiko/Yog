@@ -96,6 +96,10 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_LITERAL:
         KEEP(literal.val);
         break;
+    case NODE_LOGICAL_AND:
+        KEEP(logical_and.left);
+        KEEP(logical_and.right);
+        break;
     case NODE_METHOD_CALL:
         KEEP(method_call.recv);
         KEEP(method_call.args);
@@ -924,6 +928,11 @@ logical_or_expr(A) ::= logical_and_expr(B). {
 
 logical_and_expr(A) ::= not_expr(B). {
     A = B;
+}
+logical_and_expr(A) ::= logical_and_expr(B) AND_AND not_expr(C). {
+    A = YogNode_new(env, NODE_LOGICAL_AND, NODE_LINENO(B));
+    NODE(A)->u.logical_and.left = B;
+    NODE(A)->u.logical_and.right = C;
 }
 
 not_expr(A) ::= comparison(B). {

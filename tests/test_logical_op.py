@@ -30,7 +30,7 @@ def bar()
   return true
 end
 
-puts(foo() && bar())
+foo() && bar()
 """, """42
 """)
 
