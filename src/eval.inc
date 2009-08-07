@@ -183,6 +183,21 @@
 
             break;
         }
+    case OP(JUMP_IF_TRUE):
+        {
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            pc_t dest = *((pc_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
+            PC += sizeof(pc_t);
+            YogVal val = YUNDEF;
+            PUSH_LOCAL(ENV, val);
+            val = POP();
+            if (YOG_TEST(val)) {
+                JUMP(dest);
+            }
+
+            POP_LOCALS(ENV);
+            break;
+        }
     case OP(JUMP_IF_FALSE):
         {
             YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
@@ -191,7 +206,7 @@
             YogVal val = YUNDEF;
             PUSH_LOCAL(ENV, val);
             val = POP();
-            if (IS_NIL(val) || IS_FALSE(val)) {
+            if (!YOG_TEST(val)) {
                 JUMP(dest);
             }
 

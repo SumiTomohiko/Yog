@@ -133,12 +133,22 @@ inst jump
     JUMP(dest);
 }
 
+inst jump_if_true
+(pc_t dest)
+(val)
+()
+{
+    if (YOG_TEST(val)) {
+        JUMP(dest);
+    }
+}
+
 inst jump_if_false
 (pc_t dest)
 (val)
 ()
 {
-    if (IS_NIL(val) || IS_FALSE(val)) {
+    if (!YOG_TEST(val)) {
         JUMP(dest);
     }
 }

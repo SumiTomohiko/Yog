@@ -38,6 +38,7 @@ struct AstVisitor {
     VisitNode visit_klass;
     VisitNode visit_literal;
     VisitNode visit_logical_and;
+    VisitNode visit_logical_or;
     VisitNode visit_next;
     VisitNode visit_nonlocal;
     VisitNode visit_return;
@@ -228,6 +229,9 @@ YogInst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         case OP(JUMP):
             YogGC_keep(env, &JUMP_DEST(inst), keeper, heap);
             break;
+        case OP(JUMP_IF_TRUE):
+            YogGC_keep(env, &JUMP_IF_TRUE_DEST(inst), keeper, heap);
+            break;
         case OP(JUMP_IF_FALSE):
             YogGC_keep(env, &JUMP_IF_FALSE_DEST(inst), keeper, heap);
             break;
@@ -355,6 +359,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
         break;
     case NODE_LOGICAL_AND:
         VISIT(logical_and);
+        break;
+    case NODE_LOGICAL_OR:
+        VISIT(logical_or);
         break;
     case NODE_NEXT:
         VISIT(next);
@@ -722,6 +729,13 @@ scan_var_visit_logical_and(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal
     visit_node(env, visitor, NODE(node)->u.logical_and.right, data);
 }
 
+static void
+scan_var_visit_logical_or(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    visit_node(env, visitor, NODE(node)->u.logical_or.left, data);
+    visit_node(env, visitor, NODE(node)->u.logical_or.right, data);
+}
+
 static void 
 scan_var_init_visitor(AstVisitor* visitor) 
 {
@@ -740,6 +754,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_klass = scan_var_visit_klass;
     visitor->visit_literal = NULL;
     visitor->visit_logical_and = scan_var_visit_logical_and;
+    visitor->visit_logical_or = scan_var_visit_logical_or;
     visitor->visit_next = scan_var_visit_break;
     visitor->visit_nonlocal = scan_var_visit_nonlocal;
     visitor->visit_return = scan_var_visit_break;
@@ -928,6 +943,29 @@ add_push_const(YogEnv* env, YogVal data, YogVal val, uint_t lineno)
 
     uint_t index = register_const(env, data, val);
     CompileData_add_push_const(env, data, lineno, index);
+
+    RETURN_VOID(env);
+}
+
+static void
+compile_visit_logical_or(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal label = YUNDEF;
+    PUSH_LOCAL(env, label);
+
+    visit_node(env, visitor, NODE(node)->u.logical_or.left, data);
+
+    label = Label_new(env);
+
+    uint_t lineno = NODE(node)->lineno;
+    CompileData_add_dup(env, data, lineno);
+    CompileData_add_jump_if_true(env, data, lineno, label);
+
+    CompileData_add_pop(env, data, lineno);
+    visit_node(env, visitor, NODE(node)->u.logical_or.right, data);
+
+    add_inst(env, data, label);
 
     RETURN_VOID(env);
 }
@@ -2513,6 +2551,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_klass = compile_visit_klass;
     visitor->visit_literal = compile_visit_literal;
     visitor->visit_logical_and = compile_visit_logical_and;
+    visitor->visit_logical_or = compile_visit_logical_or;
     visitor->visit_next = compile_visit_next;
     visitor->visit_nonlocal = NULL;
     visitor->visit_return = compile_visit_return;

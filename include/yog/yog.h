@@ -80,6 +80,8 @@ typedef SIGNED_TYPE int_t;
 #define IS_NIL(v)       ((v) == 0x06)
 #define IS_SYMBOL(v)    (((v) & 0x0f) == 0x0e)
 
+#define YOG_TEST(v)     (!IS_NIL((v)) && !IS_FALSE((v)))
+
 #define YINT_MAX    VAL2INT(INT_MAX)
 #define YINT_MIN    VAL2INT(INT_MIN)
 #define FIXABLE(n)  ((YINT_MIN <= (n)) && ((n) <= YINT_MAX))

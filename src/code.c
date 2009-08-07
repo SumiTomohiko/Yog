@@ -161,6 +161,7 @@ YogCode_dump(YogEnv* env, YogVal code)
                 printf(" :%s", YogVM_id2name(env, env->vm, id));
             }
             break;
+        case OP(JUMP_IF_TRUE):
         case OP(JUMP_IF_FALSE):
         case OP(JUMP):
             {

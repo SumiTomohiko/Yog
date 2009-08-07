@@ -20,6 +20,7 @@ YogCode_get_op_name(OpCode op)
         "LOAD_NAME", 
         "LOAD_LOCAL", 
         "JUMP", 
+        "JUMP_IF_TRUE", 
         "JUMP_IF_FALSE", 
         "DUP", 
         "MAKE_KLASS", 

@@ -637,8 +637,18 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
         }
         break;
     case '|':
-        SET_STATE(LS_EXPR);
-        RETURN_ID_TOKEN(TK_BAR, "|");
+        {
+            SET_STATE(LS_EXPR);
+
+            char c2 = NEXTC();
+            if (c2 == '|') {
+                RETURN_TOKEN(TK_BAR_BAR);
+            }
+            else {
+                PUSHBACK(c2);
+                RETURN_ID_TOKEN(TK_BAR, "|");
+            }
+        }
         break;
     case '&':
         {

@@ -199,6 +199,22 @@ CompileData_add_jump(YogEnv* env, YogVal data, uint_t lineno, YogVal dest)
 }
 
 static void 
+CompileData_add_jump_if_true(YogEnv* env, YogVal data, uint_t lineno, YogVal dest)
+{
+    SAVE_ARGS2(env, data, dest);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(JUMP_IF_TRUE);
+
+    JUMP_IF_TRUE_DEST(inst) = dest;
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
+static void 
 CompileData_add_jump_if_false(YogEnv* env, YogVal data, uint_t lineno, YogVal dest)
 {
     SAVE_ARGS2(env, data, dest);
@@ -493,6 +509,12 @@ insts2bin(YogEnv* env, YogVal inst)
                         YogBinary_push_pc(env, code, INST(JUMP_DEST(inst))->pc);
                         break;
                     }
+                case OP(JUMP_IF_TRUE):
+                    {
+                        YogBinary_push_uint8(env, code, OP(JUMP_IF_TRUE));
+                        YogBinary_push_pc(env, code, INST(JUMP_IF_TRUE_DEST(inst))->pc);
+                        break;
+                    }
                 case OP(JUMP_IF_FALSE):
                     {
                         YogBinary_push_uint8(env, code, OP(JUMP_IF_FALSE));
@@ -671,6 +693,12 @@ count_stack_size(YogEnv* env, YogVal inst)
                 case OP(JUMP):
                     {
                         pop_size = 0;
+                        push_size = 0;
+                        break;
+                    }
+                case OP(JUMP_IF_TRUE):
+                    {
+                        pop_size = 1;
                         push_size = 0;
                         break;
                     }

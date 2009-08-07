@@ -63,6 +63,9 @@ struct YogInst {
         } jump;
         struct {
             YogVal dest;
+        } jump_if_true;
+        struct {
+            YogVal dest;
         } jump_if_false;
         struct {
         } dup;
@@ -119,6 +122,7 @@ struct YogInst {
 #define LOAD_NAME_ID(inst) (INST(inst)->u.load_name.id)
 #define LOAD_LOCAL_INDEX(inst) (INST(inst)->u.load_local.index)
 #define JUMP_DEST(inst) (INST(inst)->u.jump.dest)
+#define JUMP_IF_TRUE_DEST(inst) (INST(inst)->u.jump_if_true.dest)
 #define JUMP_IF_FALSE_DEST(inst) (INST(inst)->u.jump_if_false.dest)
 #define STORE_NONLOCAL_LEVEL(inst) (INST(inst)->u.store_nonlocal.level)
 #define STORE_NONLOCAL_INDEX(inst) (INST(inst)->u.store_nonlocal.index)

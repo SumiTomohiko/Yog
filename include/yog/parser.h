@@ -34,6 +34,7 @@ enum YogNodeType {
     NODE_KW_PARAM, 
     NODE_LITERAL, 
     NODE_LOGICAL_AND,
+    NODE_LOGICAL_OR,
     NODE_METHOD_CALL, 
     NODE_NEXT, 
     NODE_NONLOCAL, 
@@ -118,6 +119,10 @@ struct YogNode {
             YogVal left;
             YogVal right;
         } logical_and;
+        struct {
+            YogVal left;
+            YogVal right;
+        } logical_or;
         struct {
             YogVal recv;
             ID name;
