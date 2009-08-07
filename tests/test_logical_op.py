@@ -64,4 +64,10 @@ foo() || bar()
 """, """42
 """)
 
+    def test_not0(self):
+        self._test("""
+puts(!42)
+""", """false
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
