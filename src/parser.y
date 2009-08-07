@@ -115,6 +115,9 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_NONLOCAL:
         KEEP(nonlocal.names);
         break;
+    case NODE_NOT:
+        KEEP(not.expr);
+        break;
     case NODE_RETURN:
         KEEP(return_.expr);
         break;
@@ -946,6 +949,10 @@ logical_and_expr(A) ::= logical_and_expr(B) AND_AND not_expr(C). {
 
 not_expr(A) ::= comparison(B). {
     A = B;
+}
+not_expr(A) ::= NOT(B) not_expr(C). {
+    A = YogNode_new(env, NODE_NOT, NODE_LINENO(B));
+    NODE(A)->u.not.expr = C;
 }
 
 comparison(A) ::= xor_expr(B). {

@@ -70,4 +70,10 @@ puts(!42)
 """, """false
 """)
 
+    def test_not10(self):
+        self._test("""
+puts(!nil)
+""", """true
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

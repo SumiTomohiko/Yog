@@ -455,6 +455,23 @@
             POP_LOCALS(ENV);
             break;
         }
+    case OP(NOT):
+        {
+            YogVal val = YUNDEF;
+            YogVal b = YUNDEF;
+            PUSH_LOCALS2(ENV, val, b);
+            val = POP();
+            if (YOG_TEST(val)) {
+                b = YFALSE;
+            }
+            else {
+                b = YTRUE;
+            }
+
+            PUSH(b);
+            POP_LOCALS(ENV);
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

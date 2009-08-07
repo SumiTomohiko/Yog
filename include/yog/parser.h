@@ -38,6 +38,7 @@ enum YogNodeType {
     NODE_METHOD_CALL, 
     NODE_NEXT, 
     NODE_NONLOCAL, 
+    NODE_NOT,
     NODE_PARAM, 
     NODE_RETURN, 
     NODE_SUBSCRIPT, 
@@ -135,6 +136,9 @@ struct YogNode {
         struct {
             YogVal names;
         } nonlocal;
+        struct {
+            YogVal expr;
+        } not;
         struct {
             ID name;
             YogVal default_;

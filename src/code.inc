@@ -34,6 +34,7 @@ YogCode_get_op_name(OpCode op)
         "FINISH", 
         "PRINT_TOP", 
         "STORE_ATTR", 
+        "NOT", 
     };
 
     return op_names[op];

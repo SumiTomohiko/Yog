@@ -37,6 +37,7 @@ enum OpCode {
     OP(FINISH) = 23, 
     OP(PRINT_TOP) = 24, 
     OP(STORE_ATTR) = 25, 
+    OP(NOT) = 26, 
 
 };
 

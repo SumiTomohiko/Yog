@@ -99,6 +99,8 @@ struct YogInst {
         struct {
             ID name;
         } store_attr;
+        struct {
+        } not;
     } u;
 
     uint_t lineno;

@@ -338,6 +338,19 @@ inst store_attr
     POP_LOCALS(env);
 }
 
+inst not
+()
+(val)
+(b)
+{
+    if (YOG_TEST(val)) {
+        b = YFALSE;
+    }
+    else {
+        b = YTRUE;
+    }
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */
