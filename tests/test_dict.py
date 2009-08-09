@@ -5,6 +5,34 @@ from testcase import TestCase
 
 class TestDict(TestCase):
 
+    def test_literal0(self):
+        self._test("""
+d = { 42 => 26 }
+puts(d[42])
+""", """26
+""")
+
+    def test_literal10(self):
+        self._test("""
+d = { 42 => 26, }
+puts(d[42])
+""", """26
+""")
+
+    def test_literal20(self):
+        self._test("""
+d = { 42 => 26, "foo" => "bar" }
+puts(d[42])
+""", """26
+""")
+
+    def test_literal30(self):
+        self._test("""
+d = { foo: "bar" }
+puts(d[:foo])
+""", """bar
+""")
+
     def test_dict0(self):
         self._test("""
 def foo(d)
