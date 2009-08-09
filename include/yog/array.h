@@ -14,7 +14,7 @@ typedef struct YogValArray YogValArray;
 struct YogArray {
     YOGBASICOBJ_HEAD;
     uint_t size;
-    YogVal body; 
+    YogVal body;
 };
 
 typedef struct YogArray YogArray;

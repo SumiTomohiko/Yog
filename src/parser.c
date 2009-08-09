@@ -30,7 +30,7 @@ static BOOL Parse(struct YogEnv*, YogVal, int_t, YogVal, YogVal*);
 static YogVal LemonParser_new(YogEnv*);
 static void ParseTrace(FILE*, char*);
 
-static void 
+static void
 YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogNode* node = ptr;
@@ -143,8 +143,8 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-static YogVal 
-YogNode_new(YogEnv* env, YogNodeType type, uint_t lineno) 
+static YogVal
+YogNode_new(YogEnv* env, YogNodeType type, uint_t lineno)
 {
     YogVal node = ALLOC_OBJ(env, YogNode_keep_children, NULL, YogNode);
     PTR_AS(YogNode, node)->lineno = lineno;
@@ -156,8 +156,8 @@ YogNode_new(YogEnv* env, YogNodeType type, uint_t lineno)
 #define NODE_NEW(type, lineno)  YogNode_new(env, (type), (lineno))
 #define NODE(v)                 PTR_AS(YogNode, (v))
 
-static YogVal 
-Literal_new(YogEnv* env, uint_t lineno, YogVal val) 
+static YogVal
+Literal_new(YogEnv* env, uint_t lineno, YogVal val)
 {
     SAVE_ARG(env, val);
 
@@ -167,8 +167,8 @@ Literal_new(YogEnv* env, uint_t lineno, YogVal val)
     RETURN(env, node);
 }
 
-static YogVal 
-BlockArg_new(YogEnv* env, uint_t lineno, YogVal params, YogVal stmts) 
+static YogVal
+BlockArg_new(YogEnv* env, uint_t lineno, YogVal params, YogVal stmts)
 {
     SAVE_ARGS2(env, params, stmts);
 
@@ -179,8 +179,8 @@ BlockArg_new(YogEnv* env, uint_t lineno, YogVal params, YogVal stmts)
     RETURN(env, node);
 }
 
-static YogVal 
-Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_default, YogVal block_param, YogVal var_param, YogVal kw_param) 
+static YogVal
+Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_default, YogVal block_param, YogVal var_param, YogVal kw_param)
 {
     SAVE_ARGS5(env, params_without_default, params_with_default, block_param, var_param, kw_param);
 
@@ -207,8 +207,8 @@ Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_defaul
     RETURN(env, array);
 }
 
-static YogVal 
-make_array_with(YogEnv* env, YogVal elem) 
+static YogVal
+make_array_with(YogEnv* env, YogVal elem)
 {
     SAVE_ARG(env, elem);
 
@@ -226,8 +226,8 @@ make_array_with(YogEnv* env, YogVal elem)
     RETURN(env, array);
 }
 
-static YogVal 
-Array_push(YogEnv* env, YogVal array, YogVal elem) 
+static YogVal
+Array_push(YogEnv* env, YogVal array, YogVal elem)
 {
     SAVE_ARGS2(env, array, elem);
 
@@ -252,8 +252,8 @@ Array_new(YogEnv* env, uint_t lineno, YogVal elems)
     RETURN(env, node);
 }
 
-static YogVal 
-Param_new(YogEnv* env, YogNodeType type, uint_t lineno, ID id, YogVal default_) 
+static YogVal
+Param_new(YogEnv* env, YogNodeType type, uint_t lineno, ID id, YogVal default_)
 {
     SAVE_ARG(env, default_);
 
@@ -264,8 +264,8 @@ Param_new(YogEnv* env, YogNodeType type, uint_t lineno, ID id, YogVal default_)
     RETURN(env, node);
 }
 
-static void 
-ParamArray_push(YogEnv* env, YogVal array, uint_t lineno, ID id, YogVal default_) 
+static void
+ParamArray_push(YogEnv* env, YogVal array, uint_t lineno, ID id, YogVal default_)
 {
     SAVE_ARGS2(env, array, default_);
 
@@ -275,8 +275,8 @@ ParamArray_push(YogEnv* env, YogVal array, uint_t lineno, ID id, YogVal default_
     RETURN_VOID(env);
 }
 
-static YogVal 
-FuncDef_new(YogEnv* env, uint_t lineno, ID name, YogVal params, YogVal stmts) 
+static YogVal
+FuncDef_new(YogEnv* env, uint_t lineno, ID name, YogVal params, YogVal stmts)
 {
     SAVE_ARGS2(env, params, stmts);
 
@@ -288,8 +288,8 @@ FuncDef_new(YogEnv* env, uint_t lineno, ID name, YogVal params, YogVal stmts)
     RETURN(env, node);
 }
 
-static YogVal 
-FuncCall_new(YogEnv* env, uint_t lineno, YogVal callee, YogVal args, YogVal blockarg) 
+static YogVal
+FuncCall_new(YogEnv* env, uint_t lineno, YogVal callee, YogVal args, YogVal blockarg)
 {
     SAVE_ARGS3(env, callee, args, blockarg);
 
@@ -301,8 +301,8 @@ FuncCall_new(YogEnv* env, uint_t lineno, YogVal callee, YogVal args, YogVal bloc
     RETURN(env, node);
 }
 
-static YogVal 
-Variable_new(YogEnv* env, uint_t lineno, ID id) 
+static YogVal
+Variable_new(YogEnv* env, uint_t lineno, ID id)
 {
     YogVal node = NODE_NEW(NODE_VARIABLE, lineno);
     NODE(node)->u.variable.id = id;
@@ -310,8 +310,8 @@ Variable_new(YogEnv* env, uint_t lineno, ID id)
     return node;
 }
 
-static YogVal 
-ExceptBody_new(YogEnv* env, uint_t lineno, YogVal type, ID var, YogVal stmts) 
+static YogVal
+ExceptBody_new(YogEnv* env, uint_t lineno, YogVal type, ID var, YogVal stmts)
 {
     SAVE_ARGS2(env, type, stmts);
 
@@ -323,8 +323,8 @@ ExceptBody_new(YogEnv* env, uint_t lineno, YogVal type, ID var, YogVal stmts)
     RETURN(env, node);
 }
 
-static YogVal 
-Except_new(YogEnv* env, uint_t lineno, YogVal head, YogVal excepts, YogVal else_) 
+static YogVal
+Except_new(YogEnv* env, uint_t lineno, YogVal head, YogVal excepts, YogVal else_)
 {
     SAVE_ARGS3(env, head, excepts, else_);
 
@@ -336,8 +336,8 @@ Except_new(YogEnv* env, uint_t lineno, YogVal head, YogVal excepts, YogVal else_
     RETURN(env, node);
 }
 
-static YogVal 
-Finally_new(YogEnv* env, uint_t lineno, YogVal head, YogVal body) 
+static YogVal
+Finally_new(YogEnv* env, uint_t lineno, YogVal head, YogVal body)
 {
     SAVE_ARGS2(env, head, body);
 
@@ -348,8 +348,8 @@ Finally_new(YogEnv* env, uint_t lineno, YogVal head, YogVal body)
     RETURN(env, node);
 }
 
-static YogVal 
-ExceptFinally_new(YogEnv* env, uint_t lineno, YogVal stmts, YogVal excepts, YogVal else_, YogVal finally) 
+static YogVal
+ExceptFinally_new(YogEnv* env, uint_t lineno, YogVal stmts, YogVal excepts, YogVal else_, YogVal finally)
 {
     SAVE_ARGS4(env, stmts, excepts, else_, finally);
 
@@ -370,8 +370,8 @@ ExceptFinally_new(YogEnv* env, uint_t lineno, YogVal stmts, YogVal excepts, YogV
     RETURN(env, node);
 }
 
-static YogVal 
-Break_new(YogEnv* env, uint_t lineno, YogVal expr) 
+static YogVal
+Break_new(YogEnv* env, uint_t lineno, YogVal expr)
 {
     SAVE_ARG(env, expr);
 
@@ -381,8 +381,8 @@ Break_new(YogEnv* env, uint_t lineno, YogVal expr)
     RETURN(env, node);
 }
 
-static YogVal 
-Next_new(YogEnv* env, uint_t lineno, YogVal expr) 
+static YogVal
+Next_new(YogEnv* env, uint_t lineno, YogVal expr)
 {
     SAVE_ARG(env, expr);
 
@@ -392,8 +392,8 @@ Next_new(YogEnv* env, uint_t lineno, YogVal expr)
     RETURN(env, node);
 }
 
-static YogVal 
-Return_new(YogEnv* env, uint_t lineno, YogVal expr) 
+static YogVal
+Return_new(YogEnv* env, uint_t lineno, YogVal expr)
 {
     SAVE_ARG(env, expr);
 
@@ -403,8 +403,8 @@ Return_new(YogEnv* env, uint_t lineno, YogVal expr)
     RETURN(env, node);
 }
 
-static YogVal 
-Attr_new(YogEnv* env, uint_t lineno, YogVal obj, ID name) 
+static YogVal
+Attr_new(YogEnv* env, uint_t lineno, YogVal obj, ID name)
 {
     SAVE_ARG(env, obj);
 
@@ -415,8 +415,8 @@ Attr_new(YogEnv* env, uint_t lineno, YogVal obj, ID name)
     RETURN(env, node);
 }
 
-static YogVal 
-FuncCall_new2(YogEnv* env, uint_t lineno, YogVal recv, ID name, YogVal arg) 
+static YogVal
+FuncCall_new2(YogEnv* env, uint_t lineno, YogVal recv, ID name, YogVal arg)
 {
     SAVE_ARGS2(env, recv, arg);
     YogVal postfix = YUNDEF;
@@ -433,7 +433,7 @@ FuncCall_new2(YogEnv* env, uint_t lineno, YogVal recv, ID name, YogVal arg)
     RETURN(env, node);
 }
 
-static YogVal 
+static YogVal
 FuncCall_new3(YogEnv* env, uint_t lineno, YogVal recv, ID name)
 {
     SAVE_ARG(env, recv);
@@ -447,7 +447,7 @@ FuncCall_new3(YogEnv* env, uint_t lineno, YogVal recv, ID name)
     RETURN(env, node);
 }
 
-static YogVal 
+static YogVal
 If_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts, YogVal tail)
 {
     SAVE_ARGS3(env, test, stmts, tail);
@@ -460,8 +460,8 @@ If_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts, YogVal tail)
     RETURN(env, node);
 }
 
-static YogVal 
-While_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts) 
+static YogVal
+While_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts)
 {
     SAVE_ARGS2(env, test, stmts);
 
@@ -472,7 +472,7 @@ While_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts)
     RETURN(env, node);
 }
 
-static YogVal 
+static YogVal
 Klass_new(YogEnv* env, uint_t lineno, ID name, YogVal super, YogVal stmts)
 {
     SAVE_ARGS2(env, super, stmts);
@@ -485,8 +485,8 @@ Klass_new(YogEnv* env, uint_t lineno, ID name, YogVal super, YogVal stmts)
     RETURN(env, node);
 }
 
-static YogVal 
-Assign_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right) 
+static YogVal
+Assign_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
 {
     SAVE_ARGS2(env, left, right);
 
@@ -497,8 +497,8 @@ Assign_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
     RETURN(env, node);
 }
 
-static YogVal 
-Subscript_new(YogEnv* env, uint_t lineno, YogVal prefix, YogVal index) 
+static YogVal
+Subscript_new(YogEnv* env, uint_t lineno, YogVal prefix, YogVal index)
 {
     SAVE_ARGS2(env, prefix, index);
     YogVal node = YUNDEF;
@@ -511,8 +511,8 @@ Subscript_new(YogEnv* env, uint_t lineno, YogVal prefix, YogVal index)
     RETURN(env, node);
 }
 
-static YogVal 
-Nonlocal_new(YogEnv* env, uint_t lineno, YogVal names) 
+static YogVal
+Nonlocal_new(YogEnv* env, uint_t lineno, YogVal names)
 {
     SAVE_ARG(env, names);
 
@@ -588,7 +588,7 @@ YogParser_parse(YogEnv* env, YogVal src)
     RETURN(env, ast);
 }
 
-YogVal 
+YogVal
 YogParser_parse_file(YogEnv* env, FILE* fp, const char* filename, BOOL debug)
 {
     YOG_ASSERT(env, fp != NULL, "file pointer is NULL");
@@ -637,10 +637,10 @@ Array_push_token_id(YogEnv* env, YogVal array, YogVal token)
 /* Next is all token values, in a form suitable for use by makeheaders.
 ** This section will be null unless lemon is run with the -m switch.
 */
-/* 
+/*
 ** These constants (all generated automatically by the parser generator)
 ** specify the various kinds of tokens (terminals) that the parser
-** understands. 
+** understands.
 **
 ** Each symbol here is a terminal symbol in the grammar.
 */
@@ -657,7 +657,7 @@ Array_push_token_id(YogEnv* env, YogVal array, YogVal token)
 **                       and nonterminals.  "int" is used otherwise.
 **    YYNOCODE           is a number of type YYCODETYPE which corresponds
 **                       to no legal terminal or nonterminal number.  This
-**                       number is used to fill in empty slots of the hash 
+**                       number is used to fill in empty slots of the hash
 **                       table.
 **    YYFALLBACK         If defined, this indicates that one or more tokens
 **                       have fall-back values which should be used if the
@@ -666,7 +666,7 @@ Array_push_token_id(YogEnv* env, YogVal array, YogVal token)
 **                       and nonterminal numbers.  "unsigned char" is
 **                       used if there are fewer than 250 rules and
 **                       states combined.  "int" is used otherwise.
-**    ParseTOKENTYPE     is the data type used for minor tokens given 
+**    ParseTOKENTYPE     is the data type used for minor tokens given
 **                       directly to the parser from the tokenizer.
 **    YYMINORTYPE        is the data type used for all minor tokens.
 **                       This is typically a union of many types, one of
@@ -686,7 +686,7 @@ Array_push_token_id(YogEnv* env, YogVal array, YogVal token)
 #define YYCODETYPE unsigned char
 #define YYNOCODE 106
 #define YYACTIONTYPE unsigned short int
-#define ParseTOKENTYPE  YogVal 
+#define ParseTOKENTYPE  YogVal
 typedef union {
   int yyinit;
   ParseTOKENTYPE yy0;
@@ -696,9 +696,9 @@ typedef union {
 #define YYSTACKDEPTH 100
 #endif
 #define ParseARG_SDECL  YogVal* pval ;
-#define ParseARG_PDECL , YogVal* pval 
-#define ParseARG_FETCH  YogVal* pval  = PTR_AS(yyParser, parser)->pval 
-#define ParseARG_STORE PTR_AS(yyParser, parser)->pval  = pval 
+#define ParseARG_PDECL , YogVal* pval
+#define ParseARG_FETCH  YogVal* pval  = PTR_AS(yyParser, parser)->pval
+#define ParseARG_STORE PTR_AS(yyParser, parser)->pval  = pval
 #define YYNSTATE 246
 #define YYNRULE 147
 #define YY_NO_ACTION      (YYNSTATE+YYNRULE+2)
@@ -713,7 +713,7 @@ static const YYMINORTYPE yyzerominor = { 0 };
 /* Next are the tables used to determine what action to take based on the
 ** current state and lookahead token.  These tables are used to implement
 ** functions that take a state number and lookahead value and return an
-** action integer.  
+** action integer.
 **
 ** Suppose the action integer is N.  Then the action is determined as
 ** follows
@@ -738,7 +738,7 @@ static const YYMINORTYPE yyzerominor = { 0 };
 ** If the index value yy_shift_ofst[S]+X is out of range or if the value
 ** yy_lookahead[yy_shift_ofst[S]+X] is not equal to X or if yy_shift_ofst[S]
 ** is equal to YY_SHIFT_USE_DFLT, it means that the action is not in the table
-** and that yy_default[S] should be used instead.  
+** and that yy_default[S] should be used instead.
 **
 ** The formula above is for computing the action when the lookahead is
 ** a terminal symbol.  If the lookahead is a non-terminal (as occurs after
@@ -1093,7 +1093,7 @@ static const YYACTIONTYPE yy_default[] = {
 
 /* The next table maps tokens into fallback tokens.  If a construct
 ** like the following:
-** 
+**
 **      %fallback ID X Y Z.
 **
 ** appears in the grammar, then ID becomes a fallback token for X, Y,
@@ -1146,8 +1146,8 @@ struct yyParser {
 typedef struct yyParser yyParser;
 
 #if 0
-static void 
-dump_parser_stack(YogEnv* env, YogVal parser) 
+static void
+dump_parser_stack(YogEnv* env, YogVal parser)
 {
     DPRINTF("-------------------- dump of stack --------------------");
     int i;
@@ -1169,10 +1169,10 @@ static char *yyTracePrompt = 0;
 #endif /* NDEBUG */
 
 #if !defined(NDEBUG)
-/* 
+/*
 ** Turn parser tracing on by giving a stream to which to write the trace
 ** and a prompt to preface each trace message.  Tracing is turned off
-** by making either argument NULL 
+** by making either argument NULL
 **
 ** Inputs:
 ** <ul>
@@ -1197,34 +1197,34 @@ static void ParseTrace(FILE *TraceFILE, char *zTracePrompt){
 #if !defined(NDEBUG)
 /* For tracing shifts, the names of all terminals and nonterminals
 ** are required.  The following table supplies these names */
-static const char *const yyTokenName[] = { 
-  "$",             "NEWLINE",       "TRY",           "ELSE",        
-  "END",           "FINALLY",       "WHILE",         "BREAK",       
-  "NEXT",          "RETURN",        "IF",            "CLASS",       
-  "NAME",          "NONLOCAL",      "IMPORT",        "COMMA",       
-  "DOT",           "GREATER",       "ELIF",          "DEF",         
-  "LPAR",          "RPAR",          "DOUBLE_STAR",   "STAR",        
-  "AMPER",         "EQUAL",         "BAR_BAR",       "AND_AND",     
-  "NOT",           "LESS",          "XOR",           "BAR",         
-  "AND",           "LSHIFT",        "RSHIFT",        "EQUAL_TILDA", 
-  "PLUS",          "MINUS",         "DIV",           "DIV_DIV",     
-  "PERCENT",       "TILDA",         "LBRACKET",      "RBRACKET",    
-  "NUMBER",        "REGEXP",        "STRING",        "SYMBOL",      
-  "NIL",           "TRUE",          "FALSE",         "LINE",        
-  "DO",            "LBRACE",        "RBRACE",        "EXCEPT",      
-  "AS",            "error",         "module",        "stmts",       
-  "stmt",          "func_def",      "expr",          "excepts",     
-  "finally_opt",   "if_tail",       "super_opt",     "names",       
-  "dotted_names",  "dotted_name",   "else_opt",      "params",      
-  "params_without_default",  "params_with_default",  "block_param",   "var_param",   
+static const char *const yyTokenName[] = {
+  "$",             "NEWLINE",       "TRY",           "ELSE",
+  "END",           "FINALLY",       "WHILE",         "BREAK",
+  "NEXT",          "RETURN",        "IF",            "CLASS",
+  "NAME",          "NONLOCAL",      "IMPORT",        "COMMA",
+  "DOT",           "GREATER",       "ELIF",          "DEF",
+  "LPAR",          "RPAR",          "DOUBLE_STAR",   "STAR",
+  "AMPER",         "EQUAL",         "BAR_BAR",       "AND_AND",
+  "NOT",           "LESS",          "XOR",           "BAR",
+  "AND",           "LSHIFT",        "RSHIFT",        "EQUAL_TILDA",
+  "PLUS",          "MINUS",         "DIV",           "DIV_DIV",
+  "PERCENT",       "TILDA",         "LBRACKET",      "RBRACKET",
+  "NUMBER",        "REGEXP",        "STRING",        "SYMBOL",
+  "NIL",           "TRUE",          "FALSE",         "LINE",
+  "DO",            "LBRACE",        "RBRACE",        "EXCEPT",
+  "AS",            "error",         "module",        "stmts",
+  "stmt",          "func_def",      "expr",          "excepts",
+  "finally_opt",   "if_tail",       "super_opt",     "names",
+  "dotted_names",  "dotted_name",   "else_opt",      "params",
+  "params_without_default",  "params_with_default",  "block_param",   "var_param",
   "kw_param",      "param_default_opt",  "param_default",  "param_with_default",
   "args",          "assign_expr",   "postfix_expr",  "logical_or_expr",
-  "logical_and_expr",  "not_expr",      "comparison",    "xor_expr",    
-  "comp_op",       "or_expr",       "and_expr",      "shift_expr",  
-  "match_expr",    "shift_op",      "arith_expr",    "term",        
-  "arith_op",      "term_op",       "factor",        "power",       
+  "logical_and_expr",  "not_expr",      "comparison",    "xor_expr",
+  "comp_op",       "or_expr",       "and_expr",      "shift_expr",
+  "match_expr",    "shift_op",      "arith_expr",    "term",
+  "arith_op",      "term_op",       "factor",        "power",
   "atom",          "args_opt",      "blockarg_opt",  "blockarg_params_opt",
-  "except",      
+  "except",
 };
 #endif /* NDEBUG */
 
@@ -1406,7 +1406,7 @@ static void yyGrowStack(YogVal p){
 }
 #endif
 
-static void 
+static void
 LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     yyParser* pParser = ptr;
@@ -1416,7 +1416,7 @@ LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
     }
 }
 
-/* 
+/*
 ** This function allocates a new parser.
 ** The only argument is a pointer to a function which works like
 ** malloc.
@@ -1428,8 +1428,8 @@ LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 ** A pointer to a parser.  This pointer is used in subsequent calls
 ** to Parse and ParseFree.
 */
-static YogVal 
-LemonParser_new(YogEnv* env) 
+static YogVal
+LemonParser_new(YogEnv* env)
 {
     YogVal pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
   if (IS_PTR(pParser)) {
@@ -1457,7 +1457,7 @@ LemonParser_new(YogEnv* env)
 ** the value.
 */
 static void yy_destructor(
-  YogVal parser, 
+  YogVal parser,
   YYCODETYPE yymajor,     /* Type code for object to destroy */
   YYMINORTYPE *yypminor   /* The object to be destroyed */
 ){
@@ -1466,7 +1466,7 @@ static void yy_destructor(
     /* Here is inserted the actions which take place when a
     ** terminal or non-terminal is destroyed.  This can happen
     ** when the symbol is popped from the stack during a
-    ** reduce or during error processing or when a parser is 
+    ** reduce or during error processing or when a parser is
     ** being destroyed before it is finished parsing.
     **
     ** Note: during a reduce, the only symbols destroyed are those
@@ -1505,7 +1505,7 @@ static int yy_pop_parser_stack(YogVal parser) {
 }
 
 #if 0
-/* 
+/*
 ** Deallocate and destroy a parser.  Destructors are all called for
 ** all stack elements before shutting the parser down.
 **
@@ -1549,13 +1549,13 @@ static int ParseStackPeak(YogVal parser) {
 ** return YY_NO_ACTION.
 */
 static int yy_find_shift_action(
-  YogVal parser, 
+  YogVal parser,
   YYCODETYPE iLookAhead     /* The look-ahead token */
 ){
   int i;
   int yyidx = PTR_AS(yyParser, parser)->yyidx;
   int stateno = PTR_AS(yyParser, parser)->yystack[yyidx].stateno;
- 
+
   if( stateno>YY_SHIFT_MAX || (i = yy_shift_ofst[stateno])==YY_SHIFT_USE_DFLT ){
     return yy_default[stateno];
   }
@@ -1653,8 +1653,8 @@ static void yyStackOverflow(YogVal parser, YYMINORTYPE *yypMinor){
 ** Perform a shift action.
 */
 static void yy_shift(
-  YogEnv* env, 
-  YogVal parser, 
+  YogEnv* env,
+  YogVal parser,
   int yyNewState,               /* The new state to shift in */
   int yyMajor,                  /* The major token to shift in */
   YYMINORTYPE *yypMinor         /* Pointer to the minor token to shift in */
@@ -1666,7 +1666,7 @@ static void yy_shift(
     PTR_AS(yyParser, parser)->yyidxMax = PTR_AS(yyParser, parser)->yyidx;
   }
 #endif
-#if YYSTACKDEPTH>0 
+#if YYSTACKDEPTH>0
   if( PTR_AS(yyParser, parser)->yyidx>=YYSTACKDEPTH ){
     yyStackOverflow(parser, yypMinor);
     return;
@@ -1861,8 +1861,8 @@ static void yy_accept(YogVal);  /* Forward Declaration */
 ** follow the reduce.
 */
 static void yy_reduce(
-  YogEnv* env, 
-  YogVal parser, 
+  YogEnv* env,
+  YogVal parser,
   int yyruleno                 /* Number of the rule by which to reduce */
 ){
   SAVE_LOCALS(env);
@@ -1888,7 +1888,7 @@ static void yy_reduce(
 
   ParseARG_FETCH;
 #if !defined(NDEBUG)
-  if( yyTraceFILE && yyruleno>=0 
+  if( yyTraceFILE && yyruleno>=0
         && yyruleno<(int)(sizeof(yyRuleName)/sizeof(yyRuleName[0])) ){
     fprintf(yyTraceFILE, "%sReduce [%s].\n", yyTracePrompt,
       yyRuleName[yyruleno]);
@@ -1901,7 +1901,7 @@ static void yy_reduce(
   ** not set the value of its left-hand side nonterminal.  Leaving the
   ** value of the nonterminal uninitialized is utterly harmless as long
   ** as the value is never used.  So really the only thing this code
-  ** accomplishes is to quieten purify.  
+  ** accomplishes is to quieten purify.
   **
   ** 2007-01-16:  The wireshark project (www.wireshark.org) reports that
   ** without this code, their parser segfaults.  I'm not sure what there
@@ -2742,8 +2742,8 @@ static void yy_accept(
 ** </ul>
 */
 static BOOL Parse(
-  YogEnv* env, 
-  YogVal parser, 
+  YogEnv* env,
+  YogVal parser,
   int yymajor,                 /* The major token code number */
   ParseTOKENTYPE yyminor       /* The value for the token */
   ParseARG_PDECL               /* Optional %extra_argument parameter */

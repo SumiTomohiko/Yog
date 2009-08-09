@@ -50,8 +50,8 @@
 
 #define SEPARATOR       '/'
 
-void 
-YogVM_register_package(YogEnv* env, YogVM* vm, const char* name, YogVal pkg) 
+void
+YogVM_register_package(YogEnv* env, YogVM* vm, const char* name, YogVal pkg)
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, pkg);
@@ -98,8 +98,8 @@ release_symbols_lock(YogEnv* env, YogVM* vm)
     pthread_rwlock_unlock(&vm->sym_lock);
 }
 
-const char* 
-YogVM_id2name(YogEnv* env, YogVM* vm, ID id) 
+const char*
+YogVM_id2name(YogEnv* env, YogVM* vm, ID id)
 {
     acquire_symbols_read_lock(env, vm);
 
@@ -160,22 +160,22 @@ YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
     RETURN(env, id);
 }
 
-static void 
-setup_builtins(YogEnv* env, YogVM* vm) 
+static void
+setup_builtins(YogEnv* env, YogVM* vm)
 {
     YogVal builtins = YogBuiltins_new(env);
     YogVM_register_package(env, vm, "builtins", builtins);
 }
 
-static void 
-setup_symbol_tables(YogEnv* env, YogVM* vm) 
+static void
+setup_symbol_tables(YogEnv* env, YogVM* vm)
 {
     vm->id2name = YogTable_new_symbol_table(env);
     vm->name2id = YogTable_new_string_table(env);
 }
 
-static void 
-setup_basic_klass(YogEnv* env, YogVM* vm) 
+static void
+setup_basic_klass(YogEnv* env, YogVM* vm)
 {
     YogVal cObject = YUNDEF;
     YogVal cKlass = YUNDEF;
@@ -196,8 +196,8 @@ setup_basic_klass(YogEnv* env, YogVM* vm)
     POP_LOCALS(env);
 }
 
-static void 
-setup_klasses(YogEnv* env, YogVM* vm) 
+static void
+setup_klasses(YogEnv* env, YogVM* vm)
 {
     vm->cFunction = YogFunction_klass_new(env);
     vm->cNativeFunction = YogNativeFunction_klass_new(env);
@@ -226,8 +226,8 @@ setup_klasses(YogEnv* env, YogVM* vm)
     vm->cCode = YogCode_klass_new(env);
 }
 
-static void 
-setup_encodings(YogEnv* env, YogVM* vm) 
+static void
+setup_encodings(YogEnv* env, YogVM* vm)
 {
     /* TODO: changed not to use macro */
 #define REGISTER_ENCODING(name, onig)   do { \
@@ -243,8 +243,8 @@ setup_encodings(YogEnv* env, YogVM* vm)
 #undef REGISTER_ENCODING
 }
 
-static void 
-setup_exceptions(YogEnv* env, YogVM* vm) 
+static void
+setup_exceptions(YogEnv* env, YogVM* vm)
 {
     vm->eException = YogException_klass_new(env);
 #define EXCEPTION_NEW(member, name)  do { \
@@ -269,8 +269,8 @@ set_main_thread_klass(YogEnv* env, YogVM* vm)
     PTR_AS(YogBasicObj, vm->main_thread)->klass = vm->cThread;
 }
 
-void 
-YogVM_boot(YogEnv* env, YogVM* vm) 
+void
+YogVM_boot(YogEnv* env, YogVM* vm)
 {
     setup_symbol_tables(env, vm);
     setup_basic_klass(env, vm);
@@ -329,7 +329,7 @@ keep_thread_locals(YogEnv* env, YogVal thread, ObjectKeeper keeper, void* heap)
     }
 }
 
-void 
+void
 YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogVM* vm = ptr;
@@ -401,8 +401,8 @@ initialize_read_write_lock(pthread_rwlock_t* lock)
     pthread_rwlockattr_destroy(&attr);
 }
 
-void 
-YogVM_init(YogVM* vm) 
+void
+YogVM_init(YogVM* vm)
 {
     vm->gc_stress = FALSE;
 
@@ -475,8 +475,8 @@ YogVM_init(YogVM* vm)
 #endif
 }
 
-void 
-YogVM_delete(YogEnv* env, YogVM* vm) 
+void
+YogVM_delete(YogEnv* env, YogVM* vm)
 {
     if (pthread_cond_destroy(&vm->vm_finish_cond) != 0) {
         YOG_WARN(env, "pthread_cond_destroy failed");
@@ -516,14 +516,14 @@ release_lock(YogEnv* env, pthread_mutex_t* lock)
     }
 }
 
-void 
+void
 YogVM_acquire_global_interp_lock(YogEnv* env, YogVM* vm)
 {
     acquire_lock(env, &vm->global_interp_lock);
 }
 
-void 
-YogVM_release_global_interp_lock(YogEnv* env, YogVM* vm) 
+void
+YogVM_release_global_interp_lock(YogEnv* env, YogVM* vm)
 {
     release_lock(env, &vm->global_interp_lock);
 }
@@ -536,8 +536,8 @@ gc(YogEnv* env, YogVM* vm)
     }
 }
 
-void 
-YogVM_add_thread(YogEnv* env, YogVM* vm, YogVal thread) 
+void
+YogVM_add_thread(YogEnv* env, YogVM* vm, YogVal thread)
 {
     SAVE_ARG(env, thread);
 
@@ -553,8 +553,8 @@ YogVM_add_thread(YogEnv* env, YogVM* vm, YogVal thread)
     RETURN_VOID(env);
 }
 
-void 
-YogVM_set_main_thread(YogEnv* env, YogVM* vm, YogVal thread) 
+void
+YogVM_set_main_thread(YogEnv* env, YogVM* vm, YogVal thread)
 {
     vm->main_thread = vm->running_threads = thread;
 }

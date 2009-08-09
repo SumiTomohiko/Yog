@@ -11,7 +11,7 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-static void 
+static void
 YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
@@ -23,8 +23,8 @@ YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-static void 
-YogMatch_finalize(YogEnv* env, void* ptr) 
+static void
+YogMatch_finalize(YogEnv* env, void* ptr)
 {
     YogMatch* match = ptr;
     onig_region_free(match->onig_region, 1);
@@ -32,7 +32,7 @@ YogMatch_finalize(YogEnv* env, void* ptr)
 }
 
 YogVal
-YogMatch_new(YogEnv* env, YogVal str, YogVal regexp, OnigRegion* onig_region) 
+YogMatch_new(YogEnv* env, YogVal str, YogVal regexp, OnigRegion* onig_region)
 {
     SAVE_ARGS2(env, str, regexp);
 
@@ -45,16 +45,16 @@ YogMatch_new(YogEnv* env, YogVal str, YogVal regexp, OnigRegion* onig_region)
     RETURN(env, match);
 }
 
-static void 
-YogRegexp_finalize(YogEnv* env, void* ptr) 
+static void
+YogRegexp_finalize(YogEnv* env, void* ptr)
 {
     YogRegexp* regexp = ptr;
     onig_free(regexp->onig_regexp);
     regexp->onig_regexp = NULL;
 }
 
-YogVal 
-YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option) 
+YogVal
+YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
 {
     OnigRegex onig_regexp = NULL;
     YogVal body = PTR_AS(YogString, pattern)->body;
@@ -78,13 +78,13 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
     return regexp;
 }
 
-YogVal 
-YogRegexp_klass_new(YogEnv* env) 
+YogVal
+YogRegexp_klass_new(YogEnv* env)
 {
     return YogKlass_new(env, "Regexp", env->vm->cObject);
 }
 
-static int_t 
+static int_t
 group2index(YogEnv* env, YogMatch* match, YogVal arg)
 {
     int_t index = 0;
@@ -112,7 +112,7 @@ group2index(YogEnv* env, YogMatch* match, YogVal arg)
     return index;
 }
 
-static YogVal 
+static YogVal
 group(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -147,8 +147,8 @@ group(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, s);
 }
 
-static int_t 
-ptr2index(YogEnv* env, YogString* s, const char* ptr) 
+static int_t
+ptr2index(YogEnv* env, YogString* s, const char* ptr)
 {
     uint_t index = 0;
     YogVal enc = s->encoding;
@@ -162,7 +162,7 @@ ptr2index(YogEnv* env, YogString* s, const char* ptr)
     return index;
 }
 
-static YogVal 
+static YogVal
 start(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -189,7 +189,7 @@ start(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, INT2VAL(n));
 }
 
-static YogVal 
+static YogVal
 end(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -217,8 +217,8 @@ end(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, INT2VAL(n));
 }
 
-YogVal 
-YogMatch_klass_new(YogEnv* env) 
+YogVal
+YogMatch_klass_new(YogEnv* env)
 {
     YogVal klass = YogKlass_new(env, "Match", env->vm->cObject);
     PUSH_LOCAL(env, klass);

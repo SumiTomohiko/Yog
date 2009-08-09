@@ -6,8 +6,8 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-void 
-YogVal_print(YogEnv* env, YogVal val) 
+void
+YogVal_print(YogEnv* env, YogVal val)
 {
     if (IS_UNDEF(val)) {
         printf("<undef>\n");
@@ -37,8 +37,8 @@ YogVal_print(YogEnv* env, YogVal val)
     }
 }
 
-YogVal 
-YogVal_get_klass(YogEnv* env, YogVal val) 
+YogVal
+YogVal_get_klass(YogEnv* env, YogVal val)
 {
     if (IS_FIXNUM(val)) {
         return env->vm->cFixnum;
@@ -108,8 +108,8 @@ get_attr_default(YogEnv* env, YogVal self, ID name)
     RETURN(env, YUNDEF);
 }
 
-YogVal 
-YogVal_get_attr(YogEnv* env, YogVal val, ID name) 
+YogVal
+YogVal_get_attr(YogEnv* env, YogVal val, ID name)
 {
     SAVE_ARG(env, val);
     YogVal klass = YUNDEF;
@@ -126,8 +126,8 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
     RETURN(env, attr);
 }
 
-BOOL 
-YogVal_is_subklass_of(YogEnv* env, YogVal val, YogVal klass) 
+BOOL
+YogVal_is_subklass_of(YogEnv* env, YogVal val, YogVal klass)
 {
     YogVal valklass = YogVal_get_klass(env, val);
     while (!IS_NIL(valklass)) {

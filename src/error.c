@@ -45,8 +45,8 @@ print_error(YogEnv* env, const char* type, const char* filename, uint_t lineno, 
     va_end(ap); \
 } while (0)
 
-void 
-YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...) 
+void
+YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...)
 {
     PRINT_ERROR(env, "BUG", filename, lineno, fmt);
     abort();
@@ -60,8 +60,8 @@ YogError_warn(YogEnv* env, const char* filename, uint_t lineno, const char* fmt,
 
 #undef PRINT_ERROR
 
-void 
-YogError_raise(YogEnv* env, YogVal exc) 
+void
+YogError_raise(YogEnv* env, YogVal exc)
 {
     YogVal thread = env->thread;
     YogVal jmp_val = YUNDEF;
@@ -77,8 +77,8 @@ YogError_raise(YogEnv* env, YogVal exc)
     longjmp(PTR_AS(YogThread, thread)->jmp_buf_list->buf, JMP_RAISE);
 }
 
-static void 
-raise_error(YogEnv* env, YogVal klass, const char* msg) 
+static void
+raise_error(YogEnv* env, YogVal klass, const char* msg)
 {
     SAVE_ARG(env, klass);
 
@@ -97,13 +97,13 @@ raise_format(YogEnv* env, YogVal klass, const char* fmt, va_list ap)
     raise_error(env, klass, buffer);
 }
 
-void 
-YogError_raise_TypeError(YogEnv* env, const char* fmt, ...) 
+void
+YogError_raise_TypeError(YogEnv* env, const char* fmt, ...)
 {
     RAISE_FORMAT(env, eTypeError, fmt);
 }
 
-void 
+void
 YogError_raise_IndexError(YogEnv* env, const char* fmt, ...)
 {
     RAISE_FORMAT(env, eIndexError, fmt);
@@ -207,7 +207,7 @@ YogError_raise_ZeroDivisionError(YogEnv* env, const char* fmt, ...)
     RAISE_FORMAT(env, eZeroDivisionError, fmt);
 }
 
-void 
+void
 YogError_raise_ArgumentError(YogEnv* env, const char* fmt, ...)
 {
     RAISE_FORMAT(env, eArgumentError, fmt);

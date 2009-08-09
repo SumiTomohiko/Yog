@@ -4,15 +4,15 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-static void 
-YogBasicBlock_init(YogEnv* env, YogVal block, YogVal klass) 
+static void
+YogBasicBlock_init(YogEnv* env, YogVal block, YogVal klass)
 {
     YogBasicObj_init(env, block, 0, klass);
     PTR_AS(YogBasicBlock, block)->code = YUNDEF;
 }
 
-static void 
-YogPackageBlock_init(YogEnv* env, YogVal block) 
+static void
+YogPackageBlock_init(YogEnv* env, YogVal block)
 {
     YogBasicBlock_init(env, block, env->vm->cPackageBlock);
 
@@ -20,8 +20,8 @@ YogPackageBlock_init(YogEnv* env, YogVal block)
     PTR_AS(YogPackageBlock, block)->vars = YUNDEF;
 }
 
-static void 
-YogBasicBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap) 
+static void
+YogBasicBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
@@ -29,8 +29,8 @@ YogBasicBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* h
     YogGC_keep(env, &block->code, keeper, heap);
 }
 
-static void 
-YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap) 
+static void
+YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicBlock_keep_children(env, ptr, keeper, heap);
 
@@ -41,8 +41,8 @@ YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void*
 #undef KEEP
 }
 
-static YogVal 
-YogPackageBlock_allocate(YogEnv* env, YogVal klass) 
+static YogVal
+YogPackageBlock_allocate(YogEnv* env, YogVal klass)
 {
     YogVal block = ALLOC_OBJ(env, YogPackageBlock_keep_children, NULL, YogPackageBlock);
     YogPackageBlock_init(env, block);
@@ -50,14 +50,14 @@ YogPackageBlock_allocate(YogEnv* env, YogVal klass)
     return block;
 }
 
-YogVal 
-YogPackageBlock_new(YogEnv* env) 
+YogVal
+YogPackageBlock_new(YogEnv* env)
 {
     return YogPackageBlock_allocate(env, env->vm->cPackageBlock);
 }
 
-static void 
-YogBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap) 
+static void
+YogBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicBlock_keep_children(env, ptr, keeper, heap);
 
@@ -69,7 +69,7 @@ YogBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-static void 
+static void
 YogBlock_init(YogEnv* env, YogVal block)
 {
     YogBasicBlock_init(env, block, YNIL);
@@ -79,8 +79,8 @@ YogBlock_init(YogEnv* env, YogVal block)
     PTR_AS(YogBlock, block)->globals = YUNDEF;
 }
 
-YogVal 
-YogBlock_new(YogEnv* env) 
+YogVal
+YogBlock_new(YogEnv* env)
 {
     YogVal block = ALLOC_OBJ(env, YogBlock_keep_children, NULL, YogBlock);
     YogBlock_init(env, block);
@@ -88,8 +88,8 @@ YogBlock_new(YogEnv* env)
     return block;
 }
 
-YogVal 
-YogPackageBlock_klass_new(YogEnv* env) 
+YogVal
+YogPackageBlock_klass_new(YogEnv* env)
 {
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);

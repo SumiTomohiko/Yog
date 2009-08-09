@@ -10,7 +10,7 @@
     YOG_ASSERT(env, IS_BOOL(v), "value isn't bool."); \
 } while (0)
 
-static YogVal 
+static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     CHECK_TYPE(self);
@@ -26,7 +26,7 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return YogString_new_str(env, s);
 }
 
-static YogVal 
+static YogVal
 hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     int_t n;
@@ -40,8 +40,8 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return INT2VAL(n);
 }
 
-YogVal 
-YogBool_klass_new(YogEnv* env) 
+YogVal
+YogBool_klass_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;

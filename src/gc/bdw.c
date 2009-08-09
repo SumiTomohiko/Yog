@@ -10,7 +10,7 @@ struct BDWHeader {
 
 typedef struct BDWHeader BDWHeader;
 
-static void 
+static void
 bdw_finalizer(void* obj, void* client_data)
 {
     BDWHeader* header = obj;
@@ -18,13 +18,13 @@ bdw_finalizer(void* obj, void* client_data)
     (*header->finalizer)(env, header + 1);
 }
 
-static void 
-initialize_memory(void* ptr, size_t size) 
+static void
+initialize_memory(void* ptr, size_t size)
 {
     memset(ptr, 0xcb, size);
 }
 
-void* 
+void*
 YogBDW_alloc(YogEnv* env, YogBDW* bdw, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     if (env->vm->gc_stress) {

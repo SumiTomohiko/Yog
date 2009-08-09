@@ -4,9 +4,9 @@
 #include "yog/yog.h"
 
 enum YogFrameType {
-    FRAME_C, 
-    FRAME_METHOD, 
-    FRAME_NAME, 
+    FRAME_C,
+    FRAME_METHOD,
+    FRAME_NAME,
     FRAME_FINISH,
 };
 

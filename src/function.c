@@ -9,8 +9,8 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-static void 
-fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, uint_t argc, YogVal args, uint_t args_offset) 
+static void
+fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, uint_t argc, YogVal args, uint_t args_offset)
 {
     SAVE_ARGS5(env, arg_info, blockarg, vararg, varkwarg, args);
 
@@ -83,8 +83,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     RETURN_VOID(env);
 }
 
-static void 
-setup_script_frame(YogEnv* env, YogVal frame, YogVal code) 
+static void
+setup_script_frame(YogEnv* env, YogVal frame, YogVal code)
 {
     SAVE_ARGS2(env, frame, code);
 

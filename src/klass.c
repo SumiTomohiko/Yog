@@ -67,7 +67,7 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
     RETURN_VOID(env);
 }
 
-void 
+void
 YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f)
 {
     SAVE_ARG(env, klass);
@@ -82,7 +82,7 @@ YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogObj_keep_children(env, ptr, keeper, heap);
@@ -91,7 +91,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogGC_keep(env, &klass->super, keeper, heap);
 }
 
-YogVal 
+YogVal
 YogKlass_allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
@@ -102,14 +102,14 @@ YogKlass_allocate(YogEnv* env, YogVal klass)
     RETURN(env, obj);
 }
 
-void 
-YogKlass_define_allocator(YogEnv* env, YogVal klass, Allocator allocator) 
+void
+YogKlass_define_allocator(YogEnv* env, YogVal klass, Allocator allocator)
 {
     PTR_AS(YogKlass, klass)->allocator = allocator;
 }
 
-YogVal 
-YogKlass_new(YogEnv* env, const char* name, YogVal super) 
+YogVal
+YogKlass_new(YogEnv* env, const char* name, YogVal super)
 {
     SAVE_ARG(env, super);
 
@@ -137,7 +137,7 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
     RETURN(env, klass);
 }
 
-static YogVal 
+static YogVal
 new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -175,8 +175,8 @@ new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, obj);
 }
 
-void 
-YogKlass_klass_init(YogEnv* env, YogVal cKlass) 
+void
+YogKlass_klass_init(YogEnv* env, YogVal cKlass)
 {
     YogKlass_define_method(env, cKlass, "new", new_);
 }

@@ -51,7 +51,7 @@ init(YogEnv* env, YogVal self, YogVal klass)
     PUSH_LOCAL(env, tbl);
 
     YogBasicObj_init(env, self, 0, klass);
-    tbl = YogTable_new_val_table(env); 
+    tbl = YogTable_new_val_table(env);
     PTR_AS(YogDict, self)->tbl = tbl;
 
     RETURN_VOID(env);

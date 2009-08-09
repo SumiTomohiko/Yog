@@ -14,8 +14,8 @@
 
 #include "src/code.inc"
 
-static void 
-print_val(YogEnv* env, YogVal val) 
+static void
+print_val(YogEnv* env, YogVal val)
 {
     if (IS_UNDEF(val)) {
         printf("undef");
@@ -45,7 +45,7 @@ print_val(YogEnv* env, YogVal val)
     }
 }
 
-void 
+void
 YogCode_dump(YogEnv* env, YogVal code)
 {
     printf("stack size: %u\n", PTR_AS(YogCode, code)->stack_size);
@@ -181,7 +181,7 @@ YogCode_dump(YogEnv* env, YogVal code)
     }
 }
 
-static void 
+static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
@@ -217,8 +217,8 @@ YogCode_klass_new(YogEnv* env)
     RETURN(env, klass);
 }
 
-YogVal 
-YogCode_new(YogEnv* env) 
+YogVal
+YogCode_new(YogEnv* env)
 {
     YogVal code = YUNDEF;
     PUSH_LOCAL(env, code);

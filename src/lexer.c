@@ -17,7 +17,7 @@
 
 #include "parser.h"
 
-static void 
+static void
 YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogToken* token = ptr;
@@ -32,8 +32,8 @@ YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     }
 }
 
-static YogVal 
-YogToken_new(YogEnv* env) 
+static YogVal
+YogToken_new(YogEnv* env)
 {
     YogVal token = ALLOC_OBJ(env, YogToken_keep_children, NULL, YogToken);
     PTR_AS(YogToken, token)->type = 0;
@@ -43,8 +43,8 @@ YogToken_new(YogEnv* env)
     return token;
 }
 
-static YogVal 
-ValToken_new(YogEnv* env, uint_t type, YogVal val, uint_t lineno) 
+static YogVal
+ValToken_new(YogEnv* env, uint_t type, YogVal val, uint_t lineno)
 {
     SAVE_ARG(env, val);
 
@@ -56,8 +56,8 @@ ValToken_new(YogEnv* env, uint_t type, YogVal val, uint_t lineno)
     RETURN(env, token);
 }
 
-static YogVal 
-IDToken_new(YogEnv* env, uint_t type, ID id, uint_t lineno) 
+static YogVal
+IDToken_new(YogEnv* env, uint_t type, ID id, uint_t lineno)
 {
     YogVal token = YogToken_new(env);
     PTR_AS(YogToken, token)->type = type;
@@ -68,7 +68,7 @@ IDToken_new(YogEnv* env, uint_t type, ID id, uint_t lineno)
 }
 
 static BOOL
-readline(YogEnv* env, YogVal lexer, FILE* fp) 
+readline(YogEnv* env, YogVal lexer, FILE* fp)
 {
     if (fp == NULL) {
         return FALSE;
@@ -111,7 +111,7 @@ readline(YogEnv* env, YogVal lexer, FILE* fp)
 }
 
 static char
-nextc(YogVal lexer) 
+nextc(YogVal lexer)
 {
     YogVal line = PTR_AS(YogLexer, lexer)->line;
     uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
@@ -122,20 +122,20 @@ nextc(YogVal lexer)
     return c;
 }
 
-static void 
-pushback(YogVal lexer, char c) 
+static void
+pushback(YogVal lexer, char c)
 {
     PTR_AS(YogLexer, lexer)->next_index--;
 }
 
-static BOOL 
-is_whitespace(char c) 
+static BOOL
+is_whitespace(char c)
 {
     return (c == ' ') || (c == '\t');
 }
 
-static void 
-skip_whitespace(YogVal lexer) 
+static void
+skip_whitespace(YogVal lexer)
 {
     char c = 0;
     do {
@@ -145,8 +145,8 @@ skip_whitespace(YogVal lexer)
     pushback(lexer, c);
 }
 
-static BOOL 
-is_name_char(char c) 
+static BOOL
+is_name_char(char c)
 {
     if (isascii(c)) {
         return isalnum(c) || (c == '_');
@@ -156,30 +156,30 @@ is_name_char(char c)
     }
 }
 
-static void 
+static void
 clear_buffer(YogEnv* env, YogVal lexer)
 {
     YogString_clear(env, PTR_AS(YogLexer, lexer)->buffer);
 }
 
-static void 
-add_token_char(YogEnv* env, YogVal lexer, char c) 
+static void
+add_token_char(YogEnv* env, YogVal lexer, char c)
 {
     YogString_push(env, PTR_AS(YogLexer, lexer)->buffer, c);
 }
 
 #include "keywords.inc"
 
-static int_t 
-get_rest_size(YogEnv* env, YogVal lexer) 
+static int_t
+get_rest_size(YogEnv* env, YogVal lexer)
 {
     YogVal line = PTR_AS(YogLexer, lexer)->line;
     uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
     return (YogString_size(env, line) - 1) - next_index;
 }
 
-static void 
-push_multibyte_char(YogEnv* env, YogVal lexer) 
+static void
+push_multibyte_char(YogEnv* env, YogVal lexer)
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, lexer);
@@ -305,7 +305,7 @@ read_number(YogEnv* env, YogVal lexer, BOOL (*is_valid_char)(char))
     }
 }
 
-BOOL 
+BOOL
 YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 {
     SAVE_ARG(env, lexer);
@@ -774,14 +774,14 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
 #undef PUSHBACK
 #undef NEXTC
 
-static BOOL 
-is_coding_char(char c) 
+static BOOL
+is_coding_char(char c)
 {
     return isalnum(c) || (c == '_') || (c == '-');
 }
 
-static YogVal 
-read_encoding(YogEnv* env, YogVal lexer) 
+static YogVal
+read_encoding(YogEnv* env, YogVal lexer)
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, lexer);
@@ -839,8 +839,8 @@ read_encoding(YogEnv* env, YogVal lexer)
     RETURN(env, encoding);
 }
 
-static void 
-reset_lexer(YogEnv* env, YogVal lexer) 
+static void
+reset_lexer(YogEnv* env, YogVal lexer)
 {
     fseek(PTR_AS(YogLexer, lexer)->fp, 0, SEEK_SET);
     YogString_clear(env, PTR_AS(YogLexer, lexer)->line);
@@ -857,8 +857,8 @@ YogLexer_set_encoding(YogEnv* env, YogVal lexer, YogVal encoding)
     PTR_AS(YogString, line)->encoding = encoding;
 }
 
-void 
-YogLexer_read_encoding(YogEnv* env, YogVal lexer) 
+void
+YogLexer_read_encoding(YogEnv* env, YogVal lexer)
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, lexer);
@@ -873,7 +873,7 @@ YogLexer_read_encoding(YogEnv* env, YogVal lexer)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogLexer* lexer = ptr;
@@ -883,8 +883,8 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-YogVal 
-YogLexer_new(YogEnv* env) 
+YogVal
+YogLexer_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
 

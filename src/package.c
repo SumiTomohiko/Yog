@@ -10,7 +10,7 @@
 #include "yog/yog.h"
 
 /* TODO: change this signature */
-void 
+void
 YogPackage_define_method(YogEnv* env, YogVal pkg, const char* name, void* f, uint_t blockargc, uint_t varargc, uint_t kwargc, uint_t required_argc, ...)
 {
     SAVE_ARG(env, pkg);
@@ -24,7 +24,7 @@ YogPackage_define_method(YogEnv* env, YogVal pkg, const char* name, void* f, uin
     RETURN_VOID(env);
 }
 
-static void 
+static void
 YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogObj_keep_children(env, ptr, keeper, heap);
@@ -33,8 +33,8 @@ YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap
     YogGC_keep(env, &pkg->code, keeper, heap);
 }
 
-static void 
-YogPackage_init(YogEnv* env, YogVal pkg) 
+static void
+YogPackage_init(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
 
@@ -48,8 +48,8 @@ YogPackage_init(YogEnv* env, YogVal pkg)
     RETURN_VOID(env);
 }
 
-static YogVal 
-allocate(YogEnv* env, YogVal klass) 
+static YogVal
+allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
@@ -110,8 +110,8 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
     /* NOTREACHED */
 }
 
-YogVal 
-YogPackage_klass_new(YogEnv* env) 
+YogVal
+YogPackage_klass_new(YogEnv* env)
 {
     YogVal klass = YogKlass_new(env, "Package", env->vm->cObject);
     PUSH_LOCAL(env, klass);
@@ -124,8 +124,8 @@ YogPackage_klass_new(YogEnv* env)
     return klass;
 }
 
-YogVal 
-YogPackage_new(YogEnv* env) 
+YogVal
+YogPackage_new(YogEnv* env)
 {
     return allocate(env, env->vm->cPackage);
 }

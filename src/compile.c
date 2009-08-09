@@ -76,9 +76,9 @@ typedef struct ScanVarEntry ScanVarEntry;
 #define SCAN_VAR_ENTRY(v)   PTR_AS(ScanVarEntry, (v))
 
 enum VarType {
-    VT_GLOBAL, 
-    VT_LOCAL, 
-    VT_NONLOCAL, 
+    VT_GLOBAL,
+    VT_LOCAL,
+    VT_NONLOCAL,
 };
 
 typedef enum VarType VarType;
@@ -101,9 +101,9 @@ typedef struct Var Var;
 #define VAR(v)  PTR_AS(Var, (v))
 
 enum Context {
-    CTX_FUNC, 
-    CTX_KLASS, 
-    CTX_PKG, 
+    CTX_FUNC,
+    CTX_KLASS,
+    CTX_PKG,
 };
 
 typedef enum Context Context;
@@ -218,7 +218,7 @@ raise_error(YogEnv* env, YogVal filename, uint_t lineno, const char* fmt, ...)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 YogInst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogVal inst = PTR2VAL(ptr);
@@ -242,8 +242,8 @@ YogInst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     }
 }
 
-static YogVal 
-YogInst_new(YogEnv* env, InstType type, uint_t lineno) 
+static YogVal
+YogInst_new(YogEnv* env, InstType type, uint_t lineno)
 {
     YogVal inst = ALLOC_OBJ(env, YogInst_keep_children, NULL, YogInst);
     PTR_AS(YogInst, inst)->type = type;
@@ -254,26 +254,26 @@ YogInst_new(YogEnv* env, InstType type, uint_t lineno)
     return inst;
 }
 
-static YogVal 
-Inst_new(YogEnv* env, uint_t lineno) 
+static YogVal
+Inst_new(YogEnv* env, uint_t lineno)
 {
     return YogInst_new(env, INST_OP, lineno);
 }
 
-static YogVal 
+static YogVal
 Label_new(YogEnv* env)
 {
     return YogInst_new(env, INST_LABEL, 0);
 }
 
-static YogVal 
-Anchor_new(YogEnv* env) 
+static YogVal
+Anchor_new(YogEnv* env)
 {
     return YogInst_new(env, INST_ANCHOR, 0);
 }
 
-static void 
-add_inst(YogEnv* env, YogVal data, YogVal inst) 
+static void
+add_inst(YogEnv* env, YogVal data, YogVal inst)
 {
     INST(COMPILE_DATA(data)->last_inst)->next = inst;
     COMPILE_DATA(data)->last_inst = inst;
@@ -281,7 +281,7 @@ add_inst(YogEnv* env, YogVal data, YogVal inst)
 
 #include "src/compile.inc"
 
-static void 
+static void
 TryListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     TryListEntry* entry = ptr;
@@ -292,8 +292,8 @@ TryListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* he
 #undef KEEP
 }
 
-static YogVal 
-TryListEntry_new(YogEnv* env) 
+static YogVal
+TryListEntry_new(YogEnv* env)
 {
     YogVal entry = ALLOC_OBJ(env, TryListEntry_keep_children, NULL, TryListEntry);
     PTR_AS(TryListEntry, entry)->prev = YUNDEF;
@@ -303,8 +303,8 @@ TryListEntry_new(YogEnv* env)
     return entry;
 }
 
-static void 
-visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg) 
+static void
+visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
 {
     if (!IS_PTR(node)) {
         return;
@@ -319,7 +319,7 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_ARRAY:
         VISIT(array);
         break;
-    case NODE_ASSIGN: 
+    case NODE_ASSIGN:
         VISIT(assign);
         break;
     case NODE_ATTR:
@@ -392,8 +392,8 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
 #undef VISIT
 }
 
-static void 
-visit_each_args(YogEnv* env, AstVisitor* visitor, YogVal args, YogVal blockarg, YogVal arg) 
+static void
+visit_each_args(YogEnv* env, AstVisitor* visitor, YogVal args, YogVal blockarg, YogVal arg)
 {
     SAVE_ARGS3(env, args, blockarg, arg);
 
@@ -412,7 +412,7 @@ visit_each_args(YogEnv* env, AstVisitor* visitor, YogVal args, YogVal blockarg, 
     RETURN_VOID(env);
 }
 
-static void 
+static void
 compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data)
 {
     if (!IS_PTR(stmts)) {
@@ -456,8 +456,8 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
-scan_var_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data) 
+static void
+scan_var_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data)
 {
     if (!IS_PTR(stmts)) {
         return;
@@ -475,8 +475,8 @@ scan_var_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data
     RETURN_VOID(env);
 }
 
-static YogVal 
-ScanVarEntry_new(YogEnv* env, uint_t index, int_t flags) 
+static YogVal
+ScanVarEntry_new(YogEnv* env, uint_t index, int_t flags)
 {
     YogVal ent = ALLOC_OBJ(env, NULL, NULL, ScanVarEntry);
     PTR_AS(ScanVarEntry, ent)->index = index;
@@ -485,7 +485,7 @@ ScanVarEntry_new(YogEnv* env, uint_t index, int_t flags)
     return ent;
 }
 
-static void 
+static void
 scan_var_register(YogEnv* env, YogVal var_tbl, ID var, int_t flags)
 {
     SAVE_ARG(env, var_tbl);
@@ -504,7 +504,7 @@ scan_var_register(YogEnv* env, YogVal var_tbl, ID var, int_t flags)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 scan_var_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -523,15 +523,15 @@ scan_var_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     RETURN_VOID(env);
 }
 
-static void 
-scan_var_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+scan_var_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     ID id = NODE(node)->u.funcdef.name;
     scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, id, VAR_ASSIGNED);
 }
 
-static void 
-scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -545,7 +545,7 @@ scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal d
     RETURN_VOID(env);
 }
 
-static void 
+static void
 scan_var_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -556,8 +556,8 @@ scan_var_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     RETURN_VOID(env);
 }
 
-static void 
-scan_var_visit_except_body(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+scan_var_visit_except_body(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -572,7 +572,7 @@ scan_var_visit_except_body(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal
     RETURN_VOID(env);
 }
 
-static void 
+static void
 scan_var_visit_while(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -583,8 +583,8 @@ scan_var_visit_while(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
-scan_var_visit_if(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+scan_var_visit_if(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -615,13 +615,13 @@ scan_var_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     RETURN_VOID(env);
 }
 
-static void 
+static void
 scan_var_visit_break(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     visit_node(env, visitor, NODE(node)->u.break_.expr, data);
 }
 
-static void 
+static void
 scan_var_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -642,7 +642,7 @@ scan_var_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     RETURN_VOID(env);
 }
 
-static void 
+static void
 scan_var_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -656,8 +656,8 @@ scan_var_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
-scan_var_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+scan_var_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -667,8 +667,8 @@ scan_var_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal d
     RETURN_VOID(env);
 }
 
-static void 
-scan_var_visit_nonlocal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+scan_var_visit_nonlocal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -686,8 +686,8 @@ scan_var_visit_nonlocal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     RETURN_VOID(env);
 }
 
-static void 
-scan_var_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+scan_var_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     ID id = NODE(node)->u.variable.id;
     scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, id, VAR_USED);
@@ -746,8 +746,8 @@ scan_var_visit_not(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     visit_node(env, visitor, NODE(node)->u.not.expr, data);
 }
 
-static void 
-scan_var_init_visitor(AstVisitor* visitor) 
+static void
+scan_var_init_visitor(AstVisitor* visitor)
 {
     visitor->visit_array = scan_var_visit_array;
     visitor->visit_assign = scan_var_visit_assign;
@@ -776,15 +776,15 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_while = scan_var_visit_while;
 }
 
-static void 
-ScanVarData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap) 
+static void
+ScanVarData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     ScanVarData* data = ptr;
     YogGC_keep(env, &data->var_tbl, keeper, heap);
 }
 
-static YogVal 
-ScanVarData_new(YogEnv* env) 
+static YogVal
+ScanVarData_new(YogEnv* env)
 {
     YogVal data = ALLOC_OBJ(env, ScanVarData_keep_children, NULL, ScanVarData);
     PTR_AS(ScanVarData, data)->var_tbl = YUNDEF;
@@ -811,8 +811,8 @@ make_var_table(YogEnv* env, YogVal stmts, YogVal var_tbl)
     RETURN(env, var_tbl);
 }
 
-static YogVal 
-lookup_var(YogEnv* env, YogVal vars, ID name) 
+static YogVal
+lookup_var(YogEnv* env, YogVal vars, ID name)
 {
     YogVal key = ID2VAL(name);
     YogVal val = YUNDEF;
@@ -824,8 +824,8 @@ lookup_var(YogEnv* env, YogVal vars, ID name)
     }
 }
 
-static void 
-append_store(YogEnv* env, YogVal data, uint_t lineno, ID name) 
+static void
+append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
 {
     switch (COMPILE_DATA(data)->ctx) {
     case CTX_FUNC:
@@ -868,7 +868,7 @@ append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
     }
 }
 
-static void 
+static void
 compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -921,7 +921,7 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static int_t
-register_const(YogEnv* env, YogVal data, YogVal const_) 
+register_const(YogEnv* env, YogVal data, YogVal const_)
 {
     SAVE_ARGS2(env, data, const_);
     YogVal const2index = YUNDEF;
@@ -949,8 +949,8 @@ register_const(YogEnv* env, YogVal data, YogVal const_)
     RETURN(env, retval);
 }
 
-static void 
-add_push_const(YogEnv* env, YogVal data, YogVal val, uint_t lineno) 
+static void
+add_push_const(YogEnv* env, YogVal data, YogVal val, uint_t lineno)
 {
     SAVE_ARGS2(env, data, val);
 
@@ -1006,8 +1006,8 @@ compile_visit_logical_and(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal 
     RETURN_VOID(env);
 }
 
-static void 
-compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -1027,8 +1027,8 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     RETURN_VOID(env);
 }
 
-static int_t 
-table2array_count_index(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
+static int_t
+table2array_count_index(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
 {
     if (VAL2INT(*arg) < VAL2INT(value)) {
         *arg = value;
@@ -1037,8 +1037,8 @@ table2array_count_index(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
     return ST_CONTINUE;
 }
 
-static int_t 
-table2array_fill_array(YogEnv* env, YogVal key, YogVal value, YogVal* arg) 
+static int_t
+table2array_fill_array(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
 {
     int_t index = VAL2INT(value);
     PTR_AS(YogValArray, *arg)->items[index] = key;
@@ -1046,8 +1046,8 @@ table2array_fill_array(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
     return ST_CONTINUE;
 }
 
-static YogVal 
-table2array(YogEnv* env, YogVal table) 
+static YogVal
+table2array(YogEnv* env, YogVal table)
 {
     if (!IS_PTR(table)) {
         return YNIL;
@@ -1069,8 +1069,8 @@ table2array(YogEnv* env, YogVal table)
     RETURN(env, retval);
 }
 
-static void 
-make_exception_table(YogEnv* env, YogVal code, YogVal data) 
+static void
+make_exception_table(YogEnv* env, YogVal code, YogVal data)
 {
     SAVE_ARGS2(env, code, data);
 
@@ -1121,8 +1121,8 @@ make_exception_table(YogEnv* env, YogVal code, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
-make_lineno_table(YogEnv* env, YogVal code, YogVal anchor) 
+static void
+make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
 {
     SAVE_ARGS2(env, code, anchor);
 
@@ -1173,7 +1173,7 @@ make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 ExceptionTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     ExceptionTableEntry* entry = ptr;
@@ -1185,8 +1185,8 @@ ExceptionTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, v
 #undef KEEP
 }
 
-static YogVal 
-ExceptionTableEntry_new(YogEnv* env) 
+static YogVal
+ExceptionTableEntry_new(YogEnv* env)
 {
     YogVal entry = ALLOC_OBJ(env, ExceptionTableEntry_keep_children, NULL, ExceptionTableEntry);
     PTR_AS(ExceptionTableEntry, entry)->next = YUNDEF;
@@ -1197,8 +1197,8 @@ ExceptionTableEntry_new(YogEnv* env)
     return entry;
 }
 
-static void 
-CompileData_add_inst(YogEnv* env, YogVal data, YogVal inst) 
+static void
+CompileData_add_inst(YogEnv* env, YogVal data, YogVal inst)
 {
     INST(COMPILE_DATA(data)->last_inst)->next = inst;
 
@@ -1208,8 +1208,8 @@ CompileData_add_inst(YogEnv* env, YogVal data, YogVal inst)
     COMPILE_DATA(data)->last_inst = inst;
 }
 
-static void 
-calc_pc(YogVal inst) 
+static void
+calc_pc(YogVal inst)
 {
     pc_t pc = 0;
     while (IS_PTR(inst)) {
@@ -1232,8 +1232,8 @@ calc_pc(YogVal inst)
     }
 }
 
-static void 
-CompileData_add_ret_nil(YogEnv* env, YogVal data, uint_t lineno) 
+static void
+CompileData_add_ret_nil(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
 
@@ -1243,8 +1243,8 @@ CompileData_add_ret_nil(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static int_t 
-count_locals_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
+static int_t
+count_locals_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
 {
     if (VAR(val)->type == VT_LOCAL) {
         int_t nlocals = VAL2INT(*arg);
@@ -1254,7 +1254,7 @@ count_locals_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
     return ST_CONTINUE;
 }
 
-static int_t 
+static int_t
 count_locals(YogEnv* env, YogVal vars)
 {
     YogVal val = INT2VAL(0);
@@ -1263,7 +1263,7 @@ count_locals(YogEnv* env, YogVal vars)
     return VAL2INT(val);
 }
 
-static void 
+static void
 CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     CompileData* data = ptr;
@@ -1282,7 +1282,7 @@ CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 #undef KEEP
 }
 
-static YogVal 
+static YogVal
 CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID klass_name, YogVal upper_data, BOOL interactive)
 {
     SAVE_ARGS5(env, vars, anchor, exc_tbl_ent, filename, upper_data);
@@ -1308,8 +1308,8 @@ CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc
     RETURN(env, data);
 }
 
-static int_t 
-get_max_outer_level_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
+static int_t
+get_max_outer_level_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
 {
     if (VAR(val)->type == VT_NONLOCAL) {
         int_t max_level = VAL2INT(*arg);
@@ -1322,8 +1322,8 @@ get_max_outer_level_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
     return ST_CONTINUE;
 }
 
-static uint_t 
-get_max_outer_level(YogEnv* env, YogVal vars) 
+static uint_t
+get_max_outer_level(YogEnv* env, YogVal vars)
 {
     YogVal arg = INT2VAL(0);
     YogTable_foreach(env, vars, get_max_outer_level_callback, &arg);
@@ -1340,8 +1340,8 @@ typedef struct AllocLocalVarsTableArg AllocLocalVarsTableArg;
 
 #define ALLOC_LOCAL_VARS_TABLE_ARG(v)   PTR_AS(AllocLocalVarsTableArg, (v))
 
-static int_t 
-alloc_local_vars_table_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
+static int_t
+alloc_local_vars_table_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
 {
     if (VAR(val)->type == VT_LOCAL) {
         uint_t index = VAR(val)->u.local.index;
@@ -1353,15 +1353,15 @@ alloc_local_vars_table_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg
     return ST_CONTINUE;
 }
 
-static void 
+static void
 AllocLocalVarsTableArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     AllocLocalVarsTableArg* arg = ptr;
     YogGC_keep(env, &arg->names, keeper, heap);
 }
 
-static YogVal 
-AllocLocalVarsTableArg_new(YogEnv* env, YogVal names, uint_t count) 
+static YogVal
+AllocLocalVarsTableArg_new(YogEnv* env, YogVal names, uint_t count)
 {
     SAVE_ARG(env, names);
 
@@ -1372,8 +1372,8 @@ AllocLocalVarsTableArg_new(YogEnv* env, YogVal names, uint_t count)
     RETURN(env, PTR2VAL(arg));
 }
 
-static ID* 
-alloc_local_vars_table(YogEnv* env, YogVal vars, uint_t count) 
+static ID*
+alloc_local_vars_table(YogEnv* env, YogVal vars, uint_t count)
 {
     SAVE_ARG(env, vars);
 
@@ -1400,7 +1400,7 @@ update_max_outer_depth(YogVal data, uint_t depth)
     }
 }
 
-static YogVal 
+static YogVal
 compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, ID func_name, YogVal stmts, YogVal vars, Context ctx, YogVal tail, YogVal upper_data, BOOL interactive)
 {
     SAVE_ARGS5(env, filename, stmts, vars, tail, upper_data);
@@ -1474,7 +1474,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, 
     RETURN(env, code);
 }
 
-static void 
+static void
 register_params_var_table(YogEnv* env, YogVal params, YogVal var_tbl, YogVal filename)
 {
     if (!IS_PTR(params)) {
@@ -1498,8 +1498,8 @@ register_params_var_table(YogEnv* env, YogVal params, YogVal var_tbl, YogVal fil
     RETURN_VOID(env);
 }
 
-static uint_t 
-lookup_local_var_index(YogEnv* env, YogVal vars, ID name) 
+static uint_t
+lookup_local_var_index(YogEnv* env, YogVal vars, ID name)
 {
     YogVal var = lookup_var(env, vars, name);
     if (VAR(var)->type == VT_LOCAL) {
@@ -1510,7 +1510,7 @@ lookup_local_var_index(YogEnv* env, YogVal vars, ID name)
     }
 }
 
-static void 
+static void
 setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
 {
     if (!IS_PTR(params)) {
@@ -1602,8 +1602,8 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
     RETURN_VOID(env);
 }
 
-static void 
-register_self(YogEnv* env, YogVal var_tbl) 
+static void
+register_self(YogEnv* env, YogVal var_tbl)
 {
     SAVE_ARG(env, var_tbl);
 
@@ -1614,7 +1614,7 @@ register_self(YogEnv* env, YogVal var_tbl)
 }
 
 static BOOL
-find_outer_var(YogEnv* env, ID name, YogVal outer, uint_t* plevel, uint_t* pindex) 
+find_outer_var(YogEnv* env, ID name, YogVal outer, uint_t* plevel, uint_t* pindex)
 {
     SAVE_ARG(env, outer);
 
@@ -1651,14 +1651,14 @@ find_outer_var(YogEnv* env, ID name, YogVal outer, uint_t* plevel, uint_t* pinde
     RETURN(env, FALSE);
 }
 
-static YogVal 
-Var_new(YogEnv* env) 
+static YogVal
+Var_new(YogEnv* env)
 {
     return ALLOC_OBJ(env, NULL, NULL, Var);
 }
 
-static YogVal 
-var_table_new(YogEnv* env) 
+static YogVal
+var_table_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
 
@@ -1681,8 +1681,8 @@ typedef struct Flags2TypeArg Flags2TypeArg;
 
 #define FLAGS2TYPE_ARG(v)   PTR_AS(Flags2TypeArg, (v))
 
-static int_t 
-vars_flags2type_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg) 
+static int_t
+vars_flags2type_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
 {
     SAVE_ARGS2(env, key, val);
 
@@ -1722,7 +1722,7 @@ vars_flags2type_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
     RETURN(env, ST_CONTINUE);
 }
 
-static void 
+static void
 Flags2TypeArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     Flags2TypeArg* arg = ptr;
@@ -1732,8 +1732,8 @@ Flags2TypeArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* h
 #undef KEEP
 }
 
-static YogVal 
-Flags2TypeArg_new(YogEnv* env) 
+static YogVal
+Flags2TypeArg_new(YogEnv* env)
 {
     YogVal arg = ALLOC_OBJ(env, Flags2TypeArg_keep_children, NULL, Flags2TypeArg);
     PTR_AS(Flags2TypeArg, arg)->vars = YUNDEF;
@@ -1743,8 +1743,8 @@ Flags2TypeArg_new(YogEnv* env)
     return PTR2VAL(arg);
 }
 
-static YogVal 
-vars_flags2type(YogEnv* env, YogVal var_tbl, YogVal outer) 
+static YogVal
+vars_flags2type(YogEnv* env, YogVal var_tbl, YogVal outer)
 {
     SAVE_ARGS2(env, var_tbl, outer);
 
@@ -1767,8 +1767,8 @@ vars_flags2type(YogEnv* env, YogVal var_tbl, YogVal outer)
     RETURN(env, vars);
 }
 
-static YogVal 
-compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, YogVal node, YogVal upper) 
+static YogVal
+compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, YogVal node, YogVal upper)
 {
     SAVE_ARGS3(env, filename, node, upper);
 
@@ -1797,8 +1797,8 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, Y
     RETURN(env, code);
 }
 
-static void 
-compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -1830,8 +1830,8 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     RETURN_VOID(env);
 }
 
-static void 
-compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -1861,8 +1861,8 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     RETURN_VOID(env);
 }
 
-static void 
-compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -1908,15 +1908,15 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     RETURN_VOID(env);
 }
 
-static uint_t 
-get_last_lineno(YogEnv* env, YogVal stmts) 
+static uint_t
+get_last_lineno(YogEnv* env, YogVal stmts)
 {
     uint_t size = YogArray_size(env, stmts);
     YogVal node = YogArray_at(env, stmts, size - 1);
     return NODE(node)->lineno;
 }
 
-static void 
+static void
 FinallyListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     FinallyListEntry* ent = ptr;
@@ -1926,8 +1926,8 @@ FinallyListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void
 #undef KEEP
 }
 
-static YogVal 
-FinallyListEntry_new(YogEnv* env) 
+static YogVal
+FinallyListEntry_new(YogEnv* env)
 {
     YogVal ent = ALLOC_OBJ(env, FinallyListEntry_keep_children, NULL, FinallyListEntry);
     PTR_AS(FinallyListEntry, ent)->prev = YUNDEF;
@@ -1936,8 +1936,8 @@ FinallyListEntry_new(YogEnv* env)
     return ent;
 }
 
-static void 
-compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -2001,7 +2001,7 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     RETURN_VOID(env);
 }
 
-static void 
+static void
 compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -2109,7 +2109,7 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 compile_visit_while(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -2153,8 +2153,8 @@ compile_visit_while(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
-compile_visit_if(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+compile_visit_if(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -2194,7 +2194,7 @@ compile_visit_if(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 split_exception_table(YogEnv* env, YogVal exc_tbl_entry, YogVal label_from, YogVal label_to)
 {
     SAVE_ARGS3(env, exc_tbl_entry, label_from, label_to);
@@ -2218,8 +2218,8 @@ split_exception_table(YogEnv* env, YogVal exc_tbl_entry, YogVal label_from, YogV
     RETURN_VOID(env);
 }
 
-static void 
-compile_while_jump(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, YogVal jump_to) 
+static void
+compile_while_jump(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, YogVal jump_to)
 {
     SAVE_ARGS3(env, node, data, jump_to);
 
@@ -2269,22 +2269,22 @@ compile_while_jump(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, Y
     RETURN_VOID(env);
 }
 
-static void 
+static void
 compile_visit_break(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     YogVal label_while_end = COMPILE_DATA(data)->label_while_end;
     compile_while_jump(env, visitor, node, data, label_while_end);
 }
 
-static void 
-compile_visit_next(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+compile_visit_next(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     YogVal label_while_start = COMPILE_DATA(data)->label_while_start;
     compile_while_jump(env, visitor, node, data, label_while_start);
 }
 
-static YogVal 
-compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static YogVal
+compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -2318,8 +2318,8 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN(env, code);
 }
 
-static void 
-compile_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+compile_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -2332,8 +2332,8 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static YogVal 
-compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, uint_t first_lineno, YogVal data) 
+static YogVal
+compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, uint_t first_lineno, YogVal data)
 {
     SAVE_ARGS2(env, stmts, data);
 
@@ -2369,8 +2369,8 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, uin
     RETURN(env, code);
 }
 
-static void 
-compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -2403,7 +2403,7 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 compile_visit_return(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -2422,8 +2422,8 @@ compile_visit_return(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
-compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data) 
+static void
+compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -2555,8 +2555,8 @@ compile_visit_not(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     RETURN_VOID(env);
 }
 
-static void 
-compile_init_visitor(AstVisitor* visitor) 
+static void
+compile_init_visitor(AstVisitor* visitor)
 {
     visitor->visit_array = compile_visit_array;
     visitor->visit_assign = compile_visit_assign;
@@ -2614,8 +2614,8 @@ compile_module(YogEnv* env, const char* filename, YogVal stmts, BOOL interactive
     RETURN(env, code);
 }
 
-YogVal 
-YogCompiler_compile_module(YogEnv* env, const char* filename, YogVal stmts) 
+YogVal
+YogCompiler_compile_module(YogEnv* env, const char* filename, YogVal stmts)
 {
     return compile_module(env, filename, stmts, FALSE);
 }

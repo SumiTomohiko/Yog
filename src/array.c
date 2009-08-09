@@ -9,22 +9,22 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-uint_t 
-YogValArray_size(YogEnv* env, YogVal array) 
+uint_t
+YogValArray_size(YogEnv* env, YogVal array)
 {
     return PTR_AS(YogValArray, array)->size;
 }
 
-YogVal 
-YogValArray_at(YogEnv* env, YogVal array, uint_t n) 
+YogVal
+YogValArray_at(YogEnv* env, YogVal array, uint_t n)
 {
     uint_t size = PTR_AS(YogValArray, array)->size;
     YOG_ASSERT(env, n < size, "Index exceed array body size.");
     return PTR_AS(YogValArray, array)->items[n];
 }
 
-YogVal 
-YogArray_at(YogEnv* env, YogVal array, uint_t n) 
+YogVal
+YogArray_at(YogEnv* env, YogVal array, uint_t n)
 {
     size_t size = PTR_AS(YogArray, array)->size;
     YOG_ASSERT(env, n < size, "Index exceed array size.");
@@ -32,13 +32,13 @@ YogArray_at(YogEnv* env, YogVal array, uint_t n)
     return YogValArray_at(env, PTR_AS(YogArray, array)->body, n);
 }
 
-uint_t 
-YogArray_size(YogEnv* env, YogVal array) 
+uint_t
+YogArray_size(YogEnv* env, YogVal array)
 {
     return PTR_AS(YogArray, array)->size;
 }
 
-static void 
+static void
 YogValArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogValArray* array = ptr;
@@ -50,8 +50,8 @@ YogValArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
     }
 }
 
-YogVal 
-YogValArray_new(YogEnv* env, uint_t size) 
+YogVal
+YogValArray_new(YogEnv* env, uint_t size)
 {
     YogVal array = ALLOC_OBJ_ITEM(env, YogValArray_keep_children, NULL, YogValArray, size, YogVal);
     PTR_AS(YogValArray, array)->size = size;
@@ -82,8 +82,8 @@ get_next_size(uint_t min_size, uint_t cur_size, uint_t ratio)
     return multiple_size(min_size, cur_size, ratio);
 }
 
-static void 
-ensure_body_size(YogEnv* env, YogVal array, uint_t size) 
+static void
+ensure_body_size(YogEnv* env, YogVal array, uint_t size)
 {
     SAVE_ARG(env, array);
 
@@ -109,8 +109,8 @@ ensure_body_size(YogEnv* env, YogVal array, uint_t size)
     RETURN_VOID(env);
 }
 
-void 
-YogArray_push(YogEnv* env, YogVal array, YogVal val) 
+void
+YogArray_push(YogEnv* env, YogVal array, YogVal val)
 {
     SAVE_ARGS2(env, array, val);
 
@@ -124,8 +124,8 @@ YogArray_push(YogEnv* env, YogVal array, YogVal val)
     RETURN_VOID(env);
 }
 
-void 
-YogArray_extend(YogEnv* env, YogVal array, YogVal a) 
+void
+YogArray_extend(YogEnv* env, YogVal array, YogVal a)
 {
     SAVE_ARGS2(env, array, a);
 
@@ -144,7 +144,7 @@ YogArray_extend(YogEnv* env, YogVal array, YogVal a)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
@@ -177,8 +177,8 @@ YogArray_of_size(YogEnv* env, uint_t size)
     return allocate_object(env, env->vm->cArray, size);
 }
 
-static YogVal 
-allocate(YogEnv* env, YogVal klass) 
+static YogVal
+allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
@@ -192,7 +192,7 @@ allocate(YogEnv* env, YogVal klass)
     RETURN(env, array);
 }
 
-YogVal 
+YogVal
 YogArray_new(YogEnv* env)
 {
 #define INIT_SIZE   (1)

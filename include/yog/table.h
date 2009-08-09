@@ -40,9 +40,9 @@ struct YogTable {
 typedef struct YogTable YogTable;
 
 enum st_retval {
-    ST_CONTINUE, 
-    ST_STOP, 
-    ST_DELETE, 
+    ST_CONTINUE,
+    ST_STOP,
+    ST_DELETE,
     ST_CHECK
 };
 

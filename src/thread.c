@@ -34,7 +34,7 @@
 #   define DEBUG(x)
 #endif
 
-static void 
+static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
@@ -54,7 +54,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-void 
+void
 YogThread_initialize(YogEnv* env, YogVal thread, YogVal klass)
 {
     PTR_AS(YogThread, thread)->prev = YUNDEF;
@@ -77,7 +77,7 @@ YogThread_initialize(YogEnv* env, YogVal thread, YogVal klass)
 }
 
 #if defined(GC_COPYING)
-void 
+void
 YogThread_config_copying(YogEnv* env, YogVal thread, size_t init_heap_size)
 {
     YogCopying* copying = malloc(sizeof(YogCopying));
@@ -91,7 +91,7 @@ YogThread_config_copying(YogEnv* env, YogVal thread, size_t init_heap_size)
 #endif
 
 #if defined(GC_MARK_SWEEP)
-void 
+void
 YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t threshold)
 {
     YogMarkSweep* mark_sweep = malloc(sizeof(YogMarkSweep));
@@ -105,7 +105,7 @@ YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t threshold)
 #endif
 
 #if defined(GC_MARK_SWEEP_COMPACT)
-void 
+void
 YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_size, size_t threshold)
 {
     size_t size = sizeof(YogMarkSweepCompact);
@@ -120,7 +120,7 @@ YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_siz
 #endif
 
 #if defined(GC_GENERATIONAL)
-void 
+void
 YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, uint_t tenure)
 {
     YogGenerational* generational = malloc(sizeof(YogGenerational));
@@ -134,7 +134,7 @@ YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size
 #endif
 
 #if defined(GC_BDW)
-void 
+void
 YogThread_config_bdw(YogEnv* env, YogVal thread)
 {
     YogBDW* bdw = GC_MALLOC(sizeof(YogBDW));
@@ -166,8 +166,8 @@ allocate_object(YogEnv* env, YogVal klass)
     RETURN(env, thread);
 }
 
-static YogVal 
-allocate(YogEnv* env, YogVal klass) 
+static YogVal
+allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
@@ -209,8 +209,8 @@ allocate(YogEnv* env, YogVal klass)
     RETURN(env, thread);
 }
 
-YogVal 
-YogThread_new(YogEnv* env) 
+YogVal
+YogThread_new(YogEnv* env)
 {
     return allocate_object(env, env->vm->cThread);
 }
@@ -324,7 +324,7 @@ run(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVM_add_thread(env, env->vm, self);
 #if !defined(GC_BDW)
 #   define CREATE_THREAD    pthread_create
-#else 
+#else
 #   define CREATE_THREAD    GC_pthread_create
 #endif
     pthread_t* pt = &PTR_AS(YogThread, self)->pthread;

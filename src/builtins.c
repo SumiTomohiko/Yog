@@ -15,7 +15,7 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-static YogVal 
+static YogVal
 raise(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -39,7 +39,7 @@ raise(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YNIL);
 }
 
-static YogVal 
+static YogVal
 puts_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -112,8 +112,8 @@ classmethod(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, method);
 }
 
-YogVal 
-YogBuiltins_new(YogEnv* env) 
+YogVal
+YogBuiltins_new(YogEnv* env)
 {
     YogVal bltins = YogPackage_new(env);
     PUSH_LOCAL(env, bltins);

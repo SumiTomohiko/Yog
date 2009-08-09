@@ -84,8 +84,8 @@ get_outer_vars_ptr(YogEnv* env, uint_t level, uint_t index)
     return &PTR_AS(YogValArray, vars)->items[index];
 }
 
-YogVal 
-YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, uint_t argc, YogVal* args) 
+YogVal
+YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, uint_t argc, YogVal* args)
 {
     SAVE_ARG(env, receiver);
 
@@ -121,7 +121,7 @@ YogEval_call_method0(YogEnv* env, YogVal receiver, const char* method)
     RETURN(env, retval);
 }
 
-YogVal 
+YogVal
 YogEval_call_method2(YogEnv* env, YogVal receiver, const char* method, uint_t argc, YogVal* args, YogVal blockarg)
 {
     SAVE_ARGS2(env, receiver, blockarg);
@@ -162,8 +162,8 @@ make_outer_vars(YogEnv* env, uint_t depth)
     RETURN(env, outer_vars);
 }
 
-static void 
-setup_script_function(YogEnv* env, YogVal f, YogVal code) 
+static void
+setup_script_function(YogEnv* env, YogVal f, YogVal code)
 {
     SAVE_ARGS2(env, f, code);
 
@@ -177,8 +177,8 @@ setup_script_function(YogEnv* env, YogVal f, YogVal code)
     RETURN_VOID(env);
 }
 
-static void 
-setup_script_frame(YogEnv* env, YogVal frame, YogVal code) 
+static void
+setup_script_frame(YogEnv* env, YogVal frame, YogVal code)
 {
     SAVE_ARGS2(env, frame, code);
 
@@ -197,8 +197,8 @@ setup_script_frame(YogEnv* env, YogVal frame, YogVal code)
     RETURN_VOID(env);
 }
 
-static YogVal 
-lookup_builtins(YogEnv* env, ID name) 
+static YogVal
+lookup_builtins(YogEnv* env, ID name)
 {
     YogVal builtins_name = ID2VAL(YogVM_intern(env, env->vm, "builtins"));
     YogVal builtins = YUNDEF;
@@ -370,8 +370,8 @@ YogEval_mainloop(YogEnv* env)
     RETURN(env, YUNDEF);
 }
 
-YogVal 
-YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, uint_t argc, YogVal* args) 
+YogVal
+YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, uint_t argc, YogVal* args)
 {
     SAVE_ARG(env, receiver);
     YogVal attr = YUNDEF;
@@ -385,7 +385,7 @@ YogEval_call_method_id(YogEnv* env, YogVal receiver, ID method, uint_t argc, Yog
     RETURN(env, retval);
 }
 
-YogVal 
+YogVal
 YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, uint_t argc, YogVal* args, YogVal blockarg)
 {
     SAVE_ARGS2(env, receiver, blockarg);
@@ -401,7 +401,7 @@ YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, uint_t argc, Yo
 }
 
 void
-YogEval_eval_package(YogEnv* env, YogVal pkg) 
+YogEval_eval_package(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
 

@@ -2,7 +2,7 @@
 #include "yog/gc.h"
 #include "yog/yog.h"
 
-static void 
+static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogStackTraceEntry* entry = ptr;
@@ -12,8 +12,8 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP_MEMBER
 }
 
-YogVal 
-YogStackTraceEntry_new(YogEnv* env) 
+YogVal
+YogStackTraceEntry_new(YogEnv* env)
 {
     YogVal entry = ALLOC_OBJ(env, keep_children, NULL, YogStackTraceEntry);
     PTR_AS(YogStackTraceEntry, entry)->lower = YUNDEF;

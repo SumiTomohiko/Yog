@@ -31,8 +31,8 @@
 
 typedef void (*GC)(YogEnv*);
 
-static void 
-wakeup_gc_thread(YogEnv* env) 
+static void
+wakeup_gc_thread(YogEnv* env)
 {
     DEBUG(DPRINTF("%p: enter wakeup_gc_thread", env));
     YogVM* vm = env->vm;
@@ -40,8 +40,8 @@ wakeup_gc_thread(YogEnv* env)
     DEBUG(DPRINTF("%p: exit wakeup_gc_thread", env));
 }
 
-static void 
-wait_gc_finish(YogEnv* env) 
+static void
+wait_gc_finish(YogEnv* env)
 {
     DEBUG(DPRINTF("%p: enter wait_gc_finish", env));
     YogVM* vm = env->vm;
@@ -67,8 +67,8 @@ decrement_suspend_counter(YogEnv* env)
 /**
  * This function assumes that caller holds global interpreter lock.
  */
-void 
-YogGC_suspend(YogEnv* env) 
+void
+YogGC_suspend(YogEnv* env)
 {
     DEBUG(DPRINTF("%p: enter YogGC_suspend", env));
     decrement_suspend_counter(env);
@@ -76,8 +76,8 @@ YogGC_suspend(YogEnv* env)
     DEBUG(DPRINTF("%p: exit YogGC_suspend", env));
 }
 
-YogVal 
-YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size) 
+YogVal
+YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     DEBUG(DPRINTF("%p: enter YogGC_allocate: keeper=%p, finalizer=%p, size=%u", env, keeper, finalizer, size));
     YogVM* vm = env->vm;
@@ -111,8 +111,8 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
 }
 
 #if !defined(GC_BDW)
-static void 
-wakeup_suspend_threads(YogEnv* env) 
+static void
+wakeup_suspend_threads(YogEnv* env)
 {
     DEBUG(DPRINTF("%p: enter wakeup_suspend_threads", env));
     YogVM* vm = env->vm;
@@ -120,8 +120,8 @@ wakeup_suspend_threads(YogEnv* env)
     DEBUG(DPRINTF("%p: exit wakeup_suspend_threads", env));
 }
 
-static void 
-wait_suspend(YogEnv* env) 
+static void
+wait_suspend(YogEnv* env)
 {
     DEBUG(DPRINTF("%p: enter wait_suspend", env));
     YogVM* vm = env->vm;
@@ -146,7 +146,7 @@ count_running_threads(YogEnv* env, YogVM* vm)
     return n;
 }
 
-static void 
+static void
 run_gc(YogEnv* env, GC gc)
 {
     DEBUG(DPRINTF("%p: enter run_gc: gc=%p", env, gc));
@@ -162,8 +162,8 @@ run_gc(YogEnv* env, GC gc)
     DEBUG(DPRINTF("%p: exit run_gc", env));
 }
 
-static void 
-perform(YogEnv* env, GC gc) 
+static void
+perform(YogEnv* env, GC gc)
 {
     DEBUG(DPRINTF("%p: enter perform: gc=%p", env, gc));
     YogVM* vm = env->vm;
@@ -255,8 +255,8 @@ delete_heaps(YogEnv* env)
 } while (0)
 
 #if defined(GC_COPYING) || defined(GC_MARK_SWEEP) || defined(GC_MARK_SWEEP_COMPACT)
-static void 
-prepare(YogEnv* env) 
+static void
+prepare(YogEnv* env)
 {
 #if defined(GC_COPYING)
 #   define PREPARE  YogCopying_prepare
@@ -269,8 +269,8 @@ prepare(YogEnv* env)
 #undef PREPARE
 }
 
-static void 
-keep_vm(YogEnv* env) 
+static void
+keep_vm(YogEnv* env)
 {
     YogVal main_thread = MAIN_THREAD(env->vm);
 #if defined(GC_COPYING)
@@ -285,8 +285,8 @@ keep_vm(YogEnv* env)
 }
 
 #if defined(GC_COPYING)
-static void 
-cheney_scan(YogEnv* env) 
+static void
+cheney_scan(YogEnv* env)
 {
     ITERATE_HEAPS(env->vm, YogCopying_cheney_scan(env, heap));
 }
@@ -320,8 +320,8 @@ post_gc(YogEnv* env)
 #undef POST
 }
 
-static void 
-gc(YogEnv* env) 
+static void
+gc(YogEnv* env)
 {
     prepare(env);
     keep_vm(env);
@@ -333,8 +333,8 @@ gc(YogEnv* env)
     delete_heaps(env);
 }
 
-void 
-YogGC_perform(YogEnv* env) 
+void
+YogGC_perform(YogEnv* env)
 {
     perform(env, gc);
 }
@@ -387,8 +387,8 @@ minor_post_gc(YogEnv* env)
     ITERATE_HEAPS(env->vm, YogGenerational_minor_post_gc(env, heap));
 }
 
-static void 
-minor_gc(YogEnv* env) 
+static void
+minor_gc(YogEnv* env)
 {
     DEBUG(DPRINTF("%p: enter minor_gc", env));
     prepare(env);
@@ -426,8 +426,8 @@ major_post_gc(YogEnv* env)
     ITERATE_HEAPS(env->vm, YogGenerational_major_post_gc(env, heap));
 }
 
-static void 
-major_gc(YogEnv* env) 
+static void
+major_gc(YogEnv* env)
 {
     DEBUG(DPRINTF("%p: enter major_gc", env));
     prepare(env);
@@ -448,16 +448,16 @@ YogGC_delete(YogEnv* env)
     delete_heaps(env);
 }
 
-void 
-YogGC_perform_minor(YogEnv* env) 
+void
+YogGC_perform_minor(YogEnv* env)
 {
     DEBUG(DPRINTF("%p: enter YogGC_perform_minor", env));
     perform(env, minor_gc);
     DEBUG(DPRINTF("%p: exit YogGC_perform_minor", env));
 }
 
-void 
-YogGC_perform_major(YogEnv* env) 
+void
+YogGC_perform_major(YogEnv* env)
 {
     DEBUG(DPRINTF("%p: enter YogGC_perform_major", env));
     perform(env, major_gc);
@@ -465,8 +465,8 @@ YogGC_perform_major(YogEnv* env)
 }
 #endif
 
-void 
-YogGC_keep(YogEnv* env, YogVal* val, ObjectKeeper keeper, void* heap) 
+void
+YogGC_keep(YogEnv* env, YogVal* val, ObjectKeeper keeper, void* heap)
 {
     if (!IS_PTR(*val)) {
         return;

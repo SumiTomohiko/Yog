@@ -25,7 +25,7 @@ static BOOL Parse(struct YogEnv*, YogVal, int_t, YogVal, YogVal*);
 static YogVal LemonParser_new(YogEnv*);
 static void ParseTrace(FILE*, char*);
 
-static void 
+static void
 YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogNode* node = ptr;
@@ -138,8 +138,8 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-static YogVal 
-YogNode_new(YogEnv* env, YogNodeType type, uint_t lineno) 
+static YogVal
+YogNode_new(YogEnv* env, YogNodeType type, uint_t lineno)
 {
     YogVal node = ALLOC_OBJ(env, YogNode_keep_children, NULL, YogNode);
     PTR_AS(YogNode, node)->lineno = lineno;
@@ -151,8 +151,8 @@ YogNode_new(YogEnv* env, YogNodeType type, uint_t lineno)
 #define NODE_NEW(type, lineno)  YogNode_new(env, (type), (lineno))
 #define NODE(v)                 PTR_AS(YogNode, (v))
 
-static YogVal 
-Literal_new(YogEnv* env, uint_t lineno, YogVal val) 
+static YogVal
+Literal_new(YogEnv* env, uint_t lineno, YogVal val)
 {
     SAVE_ARG(env, val);
 
@@ -162,8 +162,8 @@ Literal_new(YogEnv* env, uint_t lineno, YogVal val)
     RETURN(env, node);
 }
 
-static YogVal 
-BlockArg_new(YogEnv* env, uint_t lineno, YogVal params, YogVal stmts) 
+static YogVal
+BlockArg_new(YogEnv* env, uint_t lineno, YogVal params, YogVal stmts)
 {
     SAVE_ARGS2(env, params, stmts);
 
@@ -174,8 +174,8 @@ BlockArg_new(YogEnv* env, uint_t lineno, YogVal params, YogVal stmts)
     RETURN(env, node);
 }
 
-static YogVal 
-Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_default, YogVal block_param, YogVal var_param, YogVal kw_param) 
+static YogVal
+Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_default, YogVal block_param, YogVal var_param, YogVal kw_param)
 {
     SAVE_ARGS5(env, params_without_default, params_with_default, block_param, var_param, kw_param);
 
@@ -202,8 +202,8 @@ Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_defaul
     RETURN(env, array);
 }
 
-static YogVal 
-make_array_with(YogEnv* env, YogVal elem) 
+static YogVal
+make_array_with(YogEnv* env, YogVal elem)
 {
     SAVE_ARG(env, elem);
 
@@ -221,8 +221,8 @@ make_array_with(YogEnv* env, YogVal elem)
     RETURN(env, array);
 }
 
-static YogVal 
-Array_push(YogEnv* env, YogVal array, YogVal elem) 
+static YogVal
+Array_push(YogEnv* env, YogVal array, YogVal elem)
 {
     SAVE_ARGS2(env, array, elem);
 
@@ -247,8 +247,8 @@ Array_new(YogEnv* env, uint_t lineno, YogVal elems)
     RETURN(env, node);
 }
 
-static YogVal 
-Param_new(YogEnv* env, YogNodeType type, uint_t lineno, ID id, YogVal default_) 
+static YogVal
+Param_new(YogEnv* env, YogNodeType type, uint_t lineno, ID id, YogVal default_)
 {
     SAVE_ARG(env, default_);
 
@@ -259,8 +259,8 @@ Param_new(YogEnv* env, YogNodeType type, uint_t lineno, ID id, YogVal default_)
     RETURN(env, node);
 }
 
-static void 
-ParamArray_push(YogEnv* env, YogVal array, uint_t lineno, ID id, YogVal default_) 
+static void
+ParamArray_push(YogEnv* env, YogVal array, uint_t lineno, ID id, YogVal default_)
 {
     SAVE_ARGS2(env, array, default_);
 
@@ -270,8 +270,8 @@ ParamArray_push(YogEnv* env, YogVal array, uint_t lineno, ID id, YogVal default_
     RETURN_VOID(env);
 }
 
-static YogVal 
-FuncDef_new(YogEnv* env, uint_t lineno, ID name, YogVal params, YogVal stmts) 
+static YogVal
+FuncDef_new(YogEnv* env, uint_t lineno, ID name, YogVal params, YogVal stmts)
 {
     SAVE_ARGS2(env, params, stmts);
 
@@ -283,8 +283,8 @@ FuncDef_new(YogEnv* env, uint_t lineno, ID name, YogVal params, YogVal stmts)
     RETURN(env, node);
 }
 
-static YogVal 
-FuncCall_new(YogEnv* env, uint_t lineno, YogVal callee, YogVal args, YogVal blockarg) 
+static YogVal
+FuncCall_new(YogEnv* env, uint_t lineno, YogVal callee, YogVal args, YogVal blockarg)
 {
     SAVE_ARGS3(env, callee, args, blockarg);
 
@@ -296,8 +296,8 @@ FuncCall_new(YogEnv* env, uint_t lineno, YogVal callee, YogVal args, YogVal bloc
     RETURN(env, node);
 }
 
-static YogVal 
-Variable_new(YogEnv* env, uint_t lineno, ID id) 
+static YogVal
+Variable_new(YogEnv* env, uint_t lineno, ID id)
 {
     YogVal node = NODE_NEW(NODE_VARIABLE, lineno);
     NODE(node)->u.variable.id = id;
@@ -305,8 +305,8 @@ Variable_new(YogEnv* env, uint_t lineno, ID id)
     return node;
 }
 
-static YogVal 
-ExceptBody_new(YogEnv* env, uint_t lineno, YogVal type, ID var, YogVal stmts) 
+static YogVal
+ExceptBody_new(YogEnv* env, uint_t lineno, YogVal type, ID var, YogVal stmts)
 {
     SAVE_ARGS2(env, type, stmts);
 
@@ -318,8 +318,8 @@ ExceptBody_new(YogEnv* env, uint_t lineno, YogVal type, ID var, YogVal stmts)
     RETURN(env, node);
 }
 
-static YogVal 
-Except_new(YogEnv* env, uint_t lineno, YogVal head, YogVal excepts, YogVal else_) 
+static YogVal
+Except_new(YogEnv* env, uint_t lineno, YogVal head, YogVal excepts, YogVal else_)
 {
     SAVE_ARGS3(env, head, excepts, else_);
 
@@ -331,8 +331,8 @@ Except_new(YogEnv* env, uint_t lineno, YogVal head, YogVal excepts, YogVal else_
     RETURN(env, node);
 }
 
-static YogVal 
-Finally_new(YogEnv* env, uint_t lineno, YogVal head, YogVal body) 
+static YogVal
+Finally_new(YogEnv* env, uint_t lineno, YogVal head, YogVal body)
 {
     SAVE_ARGS2(env, head, body);
 
@@ -343,8 +343,8 @@ Finally_new(YogEnv* env, uint_t lineno, YogVal head, YogVal body)
     RETURN(env, node);
 }
 
-static YogVal 
-ExceptFinally_new(YogEnv* env, uint_t lineno, YogVal stmts, YogVal excepts, YogVal else_, YogVal finally) 
+static YogVal
+ExceptFinally_new(YogEnv* env, uint_t lineno, YogVal stmts, YogVal excepts, YogVal else_, YogVal finally)
 {
     SAVE_ARGS4(env, stmts, excepts, else_, finally);
 
@@ -365,8 +365,8 @@ ExceptFinally_new(YogEnv* env, uint_t lineno, YogVal stmts, YogVal excepts, YogV
     RETURN(env, node);
 }
 
-static YogVal 
-Break_new(YogEnv* env, uint_t lineno, YogVal expr) 
+static YogVal
+Break_new(YogEnv* env, uint_t lineno, YogVal expr)
 {
     SAVE_ARG(env, expr);
 
@@ -376,8 +376,8 @@ Break_new(YogEnv* env, uint_t lineno, YogVal expr)
     RETURN(env, node);
 }
 
-static YogVal 
-Next_new(YogEnv* env, uint_t lineno, YogVal expr) 
+static YogVal
+Next_new(YogEnv* env, uint_t lineno, YogVal expr)
 {
     SAVE_ARG(env, expr);
 
@@ -387,8 +387,8 @@ Next_new(YogEnv* env, uint_t lineno, YogVal expr)
     RETURN(env, node);
 }
 
-static YogVal 
-Return_new(YogEnv* env, uint_t lineno, YogVal expr) 
+static YogVal
+Return_new(YogEnv* env, uint_t lineno, YogVal expr)
 {
     SAVE_ARG(env, expr);
 
@@ -398,8 +398,8 @@ Return_new(YogEnv* env, uint_t lineno, YogVal expr)
     RETURN(env, node);
 }
 
-static YogVal 
-Attr_new(YogEnv* env, uint_t lineno, YogVal obj, ID name) 
+static YogVal
+Attr_new(YogEnv* env, uint_t lineno, YogVal obj, ID name)
 {
     SAVE_ARG(env, obj);
 
@@ -410,8 +410,8 @@ Attr_new(YogEnv* env, uint_t lineno, YogVal obj, ID name)
     RETURN(env, node);
 }
 
-static YogVal 
-FuncCall_new2(YogEnv* env, uint_t lineno, YogVal recv, ID name, YogVal arg) 
+static YogVal
+FuncCall_new2(YogEnv* env, uint_t lineno, YogVal recv, ID name, YogVal arg)
 {
     SAVE_ARGS2(env, recv, arg);
     YogVal postfix = YUNDEF;
@@ -428,7 +428,7 @@ FuncCall_new2(YogEnv* env, uint_t lineno, YogVal recv, ID name, YogVal arg)
     RETURN(env, node);
 }
 
-static YogVal 
+static YogVal
 FuncCall_new3(YogEnv* env, uint_t lineno, YogVal recv, ID name)
 {
     SAVE_ARG(env, recv);
@@ -442,7 +442,7 @@ FuncCall_new3(YogEnv* env, uint_t lineno, YogVal recv, ID name)
     RETURN(env, node);
 }
 
-static YogVal 
+static YogVal
 If_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts, YogVal tail)
 {
     SAVE_ARGS3(env, test, stmts, tail);
@@ -455,8 +455,8 @@ If_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts, YogVal tail)
     RETURN(env, node);
 }
 
-static YogVal 
-While_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts) 
+static YogVal
+While_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts)
 {
     SAVE_ARGS2(env, test, stmts);
 
@@ -467,7 +467,7 @@ While_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts)
     RETURN(env, node);
 }
 
-static YogVal 
+static YogVal
 Klass_new(YogEnv* env, uint_t lineno, ID name, YogVal super, YogVal stmts)
 {
     SAVE_ARGS2(env, super, stmts);
@@ -480,8 +480,8 @@ Klass_new(YogEnv* env, uint_t lineno, ID name, YogVal super, YogVal stmts)
     RETURN(env, node);
 }
 
-static YogVal 
-Assign_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right) 
+static YogVal
+Assign_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
 {
     SAVE_ARGS2(env, left, right);
 
@@ -492,8 +492,8 @@ Assign_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
     RETURN(env, node);
 }
 
-static YogVal 
-Subscript_new(YogEnv* env, uint_t lineno, YogVal prefix, YogVal index) 
+static YogVal
+Subscript_new(YogEnv* env, uint_t lineno, YogVal prefix, YogVal index)
 {
     SAVE_ARGS2(env, prefix, index);
     YogVal node = YUNDEF;
@@ -506,8 +506,8 @@ Subscript_new(YogEnv* env, uint_t lineno, YogVal prefix, YogVal index)
     RETURN(env, node);
 }
 
-static YogVal 
-Nonlocal_new(YogEnv* env, uint_t lineno, YogVal names) 
+static YogVal
+Nonlocal_new(YogEnv* env, uint_t lineno, YogVal names)
 {
     SAVE_ARG(env, names);
 
@@ -583,7 +583,7 @@ YogParser_parse(YogEnv* env, YogVal src)
     RETURN(env, ast);
 }
 
-YogVal 
+YogVal
 YogParser_parse_file(YogEnv* env, FILE* fp, const char* filename, BOOL debug)
 {
     YOG_ASSERT(env, fp != NULL, "file pointer is NULL");
@@ -1191,7 +1191,7 @@ except(A) ::= EXCEPT(B) NEWLINE stmts(C). {
 
 finally_opt(A) ::= /* empty */. {
     A = YNIL;
-} 
+}
 finally_opt(A) ::= FINALLY stmts(B). {
     A = B;
 }
@@ -1295,7 +1295,7 @@ dictorsetmaker: ( (test ':' test (comp_for | (',' test ':' test)* [','])) |
 classdef: 'class' NAME ['(' [arglist] ')'] ':' suite
 
 arglist: (argument ',')* (argument [',']
-                         |'*' test (',' argument)* [',' '**' test] 
+                         |'*' test (',' argument)* [',' '**' test]
                          |'**' test)
 argument: test [comp_for] | test '=' test  # Really [keyword '='] test
 

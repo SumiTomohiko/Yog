@@ -11,9 +11,9 @@
  */
 
 inst load_special
-(ID id) 
+(ID id)
 ()
-(val) 
+(val)
 {
 }
 
@@ -32,18 +32,18 @@ inst push_const
     val = CONSTS(index);
 }
 
-inst make_string 
+inst make_string
 (uint8_t index)
 ()
-(val) 
+(val)
 {
     YogVal c = CONSTS(index);
     val = YogString_clone(ENV, c);
 }
 
 inst store_name
-(ID id) 
-(val) 
+(ID id)
+(val)
 ()
 {
     YogVal key = ID2VAL(id);
@@ -89,7 +89,7 @@ inst call_function
 inst load_global
 (ID id)
 ()
-(val) 
+(val)
 {
     YogVal globals = SCRIPT_FRAME(CUR_FRAME)->globals;
     if (!YogTable_lookup(ENV, globals, ID2VAL(id), &val)) {
@@ -102,7 +102,7 @@ inst load_global
 }
 
 inst load_name
-(ID id) 
+(ID id)
 ()
 (val)
 {
@@ -117,7 +117,7 @@ inst load_name
 }
 
 inst load_local
-(uint8_t index) 
+(uint8_t index)
 ()
 (val)
 {
@@ -153,7 +153,7 @@ inst jump_if_false
     }
 }
 
-inst dup 
+inst dup
 ()
 (val)
 (val, val)
@@ -205,16 +205,16 @@ inst ret
 }
 
 inst store_nonlocal
-(uint8_t level, uint8_t index) 
+(uint8_t level, uint8_t index)
 (val)
-() 
+()
 {
     YogVal* ptr = get_outer_vars_ptr(ENV, level, index);
     *ptr = val;
 }
 
-inst load_nonlocal 
-(uint8_t level, uint8_t index) 
+inst load_nonlocal
+(uint8_t level, uint8_t index)
 ()
 (val)
 {
@@ -222,9 +222,9 @@ inst load_nonlocal
     val = *ptr;
 }
 
-inst store_global 
-(ID name) 
-(val) 
+inst store_global
+(ID name)
+(val)
 ()
 {
     YogVal globals = SCRIPT_FRAME(CUR_FRAME)->globals;

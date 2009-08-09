@@ -40,7 +40,7 @@ print_version()
 #undef GC_NAME
 }
 
-static void 
+static void
 usage()
 {
     puts("yog [options] [file]");
@@ -54,8 +54,8 @@ usage()
     puts("  --version");
 }
 
-static size_t 
-parse_size(const char* s) 
+static size_t
+parse_size(const char* s)
 {
     size_t total_size = 0;
 
@@ -108,8 +108,8 @@ yog_main(YogEnv* env, int_t argc, char* argv[])
     fclose(fp);
 }
 
-int_t 
-main(int_t argc, char* argv[]) 
+int_t
+main(int_t argc, char* argv[])
 {
     int_t debug_parser = 0;
     int_t gc_stress = 0;
@@ -121,13 +121,13 @@ main(int_t argc, char* argv[])
     size_t threshold = DEFAULT_THRESHOLD;
 #undef DEFAULT_THRESHOLD
     struct option options[] = {
-        { "debug-parser", no_argument, &debug_parser, 1 }, 
-        { "gc-stress", no_argument, &gc_stress, 1 }, 
-        { "help", no_argument, &help, 1 }, 
-        { "init-heap-size", required_argument, NULL, 'i' }, 
-        { "threshold", required_argument, NULL, 't' }, 
-        { "version", no_argument, NULL, 'v' }, 
-        { 0, 0, 0, 0 }, 
+        { "debug-parser", no_argument, &debug_parser, 1 },
+        { "gc-stress", no_argument, &gc_stress, 1 },
+        { "help", no_argument, &help, 1 },
+        { "init-heap-size", required_argument, NULL, 'i' },
+        { "threshold", required_argument, NULL, 't' },
+        { "version", no_argument, NULL, 'v' },
+        { 0, 0, 0, 0 },
     };
 #define USAGE       usage()
 #define ERROR(msg)  do { \

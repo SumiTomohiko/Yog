@@ -25,15 +25,15 @@
     return (from <= ptr) && (ptr < to); \
 } while (0)
 
-BOOL 
-YogCopying_is_in_active_heap(YogEnv* env, YogCopying* copying, void* ptr) 
+BOOL
+YogCopying_is_in_active_heap(YogEnv* env, YogCopying* copying, void* ptr)
 {
     YogCopyingHeap* heap = copying->active_heap;
     IS_IN_HEAP(ptr, heap);
 }
 
-BOOL 
-YogCopying_is_in_inactive_heap(YogEnv* env, YogCopying* copying, void* ptr) 
+BOOL
+YogCopying_is_in_inactive_heap(YogEnv* env, YogCopying* copying, void* ptr)
 {
     YogCopyingHeap* heap = copying->inactive_heap;
     IS_IN_HEAP(ptr, heap);
@@ -42,13 +42,13 @@ YogCopying_is_in_inactive_heap(YogEnv* env, YogCopying* copying, void* ptr)
 #undef IS_IN_HEAP
 
 /* TODO: commonize with the other GC */
-static void 
-initialize_memory(void* ptr, size_t size) 
+static void
+initialize_memory(void* ptr, size_t size)
 {
     memset(ptr, 0xcb, size);
 }
 
-static YogCopyingHeap* 
+static YogCopyingHeap*
 YogCopyingHeap_new(YogCopying* copying, size_t size)
 {
     YogCopyingHeap* heap = malloc(sizeof(YogCopyingHeap) + size);
@@ -65,14 +65,14 @@ YogCopyingHeap_new(YogCopying* copying, size_t size)
 }
 
 static size_t
-round_size(size_t size) 
+round_size(size_t size)
 {
     size_t unit = sizeof(void*);
     return (size + unit - 1) & ~(unit - 1);
 }
 
-void* 
-YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr) 
+void*
+YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
 {
 #define PRINT_HEAP(text, heap)   do { \
     DEBUG(DPRINTF("%p: %s: %p-%p", env, (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
@@ -111,21 +111,21 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
     return (YogCopyingHeader*)dest + 1;
 }
 
-static void 
-destroy_memory(void* ptr, size_t size) 
+static void
+destroy_memory(void* ptr, size_t size)
 {
     memset(ptr, 0xfd, size);
 }
 
-static void 
-free_heap_internal(YogCopyingHeap* heap) 
+static void
+free_heap_internal(YogCopyingHeap* heap)
 {
     destroy_memory(heap->items, heap->size);
     free(heap);
 }
 
-static void 
-free_heap(YogCopying* copying) 
+static void
+free_heap(YogCopying* copying)
 {
 #define FREE_HEAP(heap)     do { \
     free_heap_internal((heap)); \
@@ -136,7 +136,7 @@ free_heap(YogCopying* copying)
 #undef FREE_HEAP
 }
 
-void 
+void
 YogCopying_iterate_objects(YogEnv* env, YogCopying* copying, void (*callback)(YogEnv*, YogCopyingHeader*))
 {
     YogCopyingHeap* heap = copying->active_heap;
@@ -151,8 +151,8 @@ YogCopying_iterate_objects(YogEnv* env, YogCopying* copying, void (*callback)(Yo
     }
 }
 
-static void 
-delete_garbage_each(YogEnv* env, YogCopyingHeader* header) 
+static void
+delete_garbage_each(YogEnv* env, YogCopyingHeader* header)
 {
     if (header->forwarding_addr == NULL) {
         DEBUG(DPRINTF("%p: finalize: %p", env, header));
@@ -163,29 +163,29 @@ delete_garbage_each(YogEnv* env, YogCopyingHeader* header)
     }
 }
 
-void 
-YogCopying_delete_garbage(YogEnv* env, YogCopying* copying) 
+void
+YogCopying_delete_garbage(YogEnv* env, YogCopying* copying)
 {
     YogCopying_iterate_objects(env, copying, delete_garbage_each);
 }
 
-void 
-YogCopying_finalize(YogEnv* env, YogCopying* copying) 
+void
+YogCopying_finalize(YogEnv* env, YogCopying* copying)
 {
     YogCopying_delete_garbage(env, copying);
     free_heap(copying);
 }
 
-static void 
-swap_heap(YogCopyingHeap** a, YogCopyingHeap** b) 
+static void
+swap_heap(YogCopyingHeap** a, YogCopyingHeap** b)
 {
     YogCopyingHeap* tmp = *a;
     *a = *b;
     *b = tmp;
 }
 
-void 
-YogCopying_prepare(YogEnv* env, YogCopying* copying) 
+void
+YogCopying_prepare(YogEnv* env, YogCopying* copying)
 {
     YogCopyingHeap* to_space = copying->inactive_heap;
     copying->scanned = copying->unscanned = to_space->items;
@@ -227,8 +227,8 @@ keep_object(YogEnv* env, void* ptr, void* heap)
     return YogCopying_copy(env, heap, ptr);
 }
 
-void 
-YogCopying_keep_vm(YogEnv* env, YogCopying* copying) 
+void
+YogCopying_keep_vm(YogEnv* env, YogCopying* copying)
 {
     YogVM_keep_children(env, env->vm, keep_object, copying);
 }
@@ -240,7 +240,7 @@ YogCopying_cheney_scan(YogEnv* env, YogCopying* copying)
 }
 #endif
 
-void* 
+void*
 YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     size_t needed_size = size + sizeof(YogCopyingHeader);
@@ -304,8 +304,8 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
     return header + 1;
 }
 
-void 
-YogCopying_allocate_heap(YogEnv* env, YogCopying* copying) 
+void
+YogCopying_allocate_heap(YogEnv* env, YogCopying* copying)
 {
     if (copying->active_heap) {
         return;
@@ -316,7 +316,7 @@ YogCopying_allocate_heap(YogEnv* env, YogCopying* copying)
     copying->inactive_heap = YogCopyingHeap_new(copying, heap_size);
 }
 
-void 
+void
 YogCopying_initialize(YogEnv* env, YogCopying* copying, size_t heap_size)
 {
     copying->err = ERR_COPYING_NONE;

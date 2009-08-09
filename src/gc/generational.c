@@ -17,27 +17,27 @@
 #   define DEBUG(x)
 #endif
 
-static void 
-oldify(YogEnv* env, YogGenerational* gen, void* ptr) 
+static void
+oldify(YogEnv* env, YogGenerational* gen, void* ptr)
 {
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
     header->survive_num = gen->tenure - 1;
 }
 
-static void 
-oldify_all_callback(YogEnv* env, YogCopyingHeader* header) 
+static void
+oldify_all_callback(YogEnv* env, YogCopyingHeader* header)
 {
     YogGenerational* gen = PTR_AS(YogThread, env->thread)->heap;
     oldify(env, gen, header + 1);
 }
 
-void 
-YogGenerational_oldify_all(YogEnv* env, YogGenerational* gen) 
+void
+YogGenerational_oldify_all(YogEnv* env, YogGenerational* gen)
 {
     YogCopying_iterate_objects(env, &gen->copying, oldify_all_callback);
 }
 
-void* 
+void*
 YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper, void* heap)
 {
     DEBUG(DPRINTF("YogGenerational_copy_young_object(env=%p, ptr=%p, obj_keeper=%p, heap=%p)", env, ptr, obj_keeper, heap));
@@ -87,8 +87,8 @@ major_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 }
 
 #if 0
-static void* 
-update_pointer(YogEnv* env, void* ptr) 
+static void*
+update_pointer(YogEnv* env, void* ptr)
 {
     DEBUG(DPRINTF("updating: %p", ptr));
     if (ptr == NULL) {
@@ -112,20 +112,20 @@ update_pointer(YogEnv* env, void* ptr)
     }
 }
 
-static void 
-initialize_young_updated_callback(YogEnv* env, YogCopyingHeader* header) 
+static void
+initialize_young_updated_callback(YogEnv* env, YogCopyingHeader* header)
 {
     header->updated = FALSE;
 }
 
-static void 
-initialize_young_updated(YogEnv* env, YogGenerational* generational) 
+static void
+initialize_young_updated(YogEnv* env, YogGenerational* generational)
 {
     YogCopying_iterate_objects(env, &generational->copying, initialize_young_updated_callback);
 }
 
-void 
-YogGenerational_major_gc(YogEnv* env, YogGenerational* generational) 
+void
+YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
 {
     DEBUG(DPRINTF("major GC..."));
     YogMarkSweepCompact* msc = &generational->msc;
@@ -159,7 +159,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
     return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object, heap);
 }
 
-void 
+void
 YogGenerational_initialize(YogEnv* env, YogGenerational* generational, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, uint_t tenure)
 {
     generational->err = ERR_GEN_NONE;
@@ -174,8 +174,8 @@ YogGenerational_initialize(YogEnv* env, YogGenerational* generational, size_t yo
     generational->has_young_ref = FALSE;
 }
 
-void 
-YogGenerational_finalize(YogEnv* env, YogGenerational* generational) 
+void
+YogGenerational_finalize(YogEnv* env, YogGenerational* generational)
 {
     generational->err = ERR_GEN_NONE;
 
@@ -186,7 +186,7 @@ YogGenerational_finalize(YogEnv* env, YogGenerational* generational)
     YogCopying_finalize(env, copying);
 }
 
-void* 
+void*
 YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     YogCopying* copying = &generational->copying;
@@ -206,10 +206,10 @@ YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper
     case ERR_MSC_MMAP:
         err = ERR_GEN_MMAP;
         break;
-    case ERR_MSC_MUNMAP: 
+    case ERR_MSC_MUNMAP:
         err = ERR_GEN_MUNMAP;
         break;
-    case ERR_MSC_MALLOC: 
+    case ERR_MSC_MALLOC:
         err = ERR_GEN_MALLOC;
         break;
     default:

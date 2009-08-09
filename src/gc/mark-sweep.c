@@ -21,8 +21,8 @@ struct YogMarkSweepHeader {
 
 typedef struct YogMarkSweepHeader YogMarkSweepHeader;
 
-static void 
-initialize_memory(void* ptr, size_t size) 
+static void
+initialize_memory(void* ptr, size_t size)
 {
     memset(ptr, 0xcb, size);
 }
@@ -51,29 +51,29 @@ keep_object(YogEnv* env, void* ptr, void* heap)
     return ptr;
 }
 
-static void 
-finalize(YogEnv* env, YogMarkSweepHeader* header) 
+static void
+finalize(YogEnv* env, YogMarkSweepHeader* header)
 {
     if (header->finalizer != NULL) {
         (*header->finalizer)(env, header + 1);
     }
 }
 
-static void 
-destroy_memory(void* ptr, size_t size) 
+static void
+destroy_memory(void* ptr, size_t size)
 {
     memset(ptr, 0xfd, size);
 }
 
-static void 
-delete(YogMarkSweepHeader* header) 
+static void
+delete(YogMarkSweepHeader* header)
 {
     destroy_memory(header, header->size);
     free(header);
 }
 
-void 
-YogMarkSweep_prepare(YogEnv* env, YogMarkSweep* ms) 
+void
+YogMarkSweep_prepare(YogEnv* env, YogMarkSweep* ms)
 {
     YogMarkSweepHeader* header = ms->header;
     while (header != NULL) {
@@ -115,7 +115,7 @@ YogMarkSweep_post_gc(YogEnv* env, YogMarkSweep* ms)
     ms->allocated_size = 0;
 }
 
-void 
+void
 YogMarkSweep_initialize(YogEnv* env, YogMarkSweep* ms, size_t threshold)
 {
     ms->header = NULL;
@@ -123,8 +123,8 @@ YogMarkSweep_initialize(YogEnv* env, YogMarkSweep* ms, size_t threshold)
     ms->allocated_size = 0;
 }
 
-void 
-YogMarkSweep_finalize(YogEnv* env, YogMarkSweep* ms) 
+void
+YogMarkSweep_finalize(YogEnv* env, YogMarkSweep* ms)
 {
     YogMarkSweepHeader* header = ms->header;
     while (header != NULL) {
@@ -137,7 +137,7 @@ YogMarkSweep_finalize(YogEnv* env, YogMarkSweep* ms)
     }
 }
 
-void* 
+void*
 YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     if (ms->threshold <= ms->allocated_size) {
@@ -171,8 +171,8 @@ YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finaliz
     return header + 1;
 }
 
-void 
-YogMarkSweep_keep_vm(YogEnv* env, YogMarkSweep* ms) 
+void
+YogMarkSweep_keep_vm(YogEnv* env, YogMarkSweep* ms)
 {
     YogVM_keep_children(env, env->vm, keep_object, ms);
 }

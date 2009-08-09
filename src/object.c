@@ -10,8 +10,8 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-YogVal 
-YogObj_get_attr(YogEnv* env, YogVal obj, ID name) 
+YogVal
+YogObj_get_attr(YogEnv* env, YogVal obj, ID name)
 {
     SAVE_ARG(env, obj);
 
@@ -29,8 +29,8 @@ YogObj_get_attr(YogEnv* env, YogVal obj, ID name)
     }
 }
 
-void 
-YogObj_set_attr_id(YogEnv* env, YogVal obj, ID name, YogVal val) 
+void
+YogObj_set_attr_id(YogEnv* env, YogVal obj, ID name, YogVal val)
 {
     SAVE_LOCALS(env);
     PUSH_LOCALS2(env, obj, val);
@@ -47,8 +47,8 @@ YogObj_set_attr_id(YogEnv* env, YogVal obj, ID name, YogVal val)
     RETURN_VOID(env);
 }
 
-void 
-YogObj_set_attr(YogEnv* env, YogVal obj, const char* name, YogVal val) 
+void
+YogObj_set_attr(YogEnv* env, YogVal obj, const char* name, YogVal val)
 {
     SAVE_ARGS2(env, obj, val);
 
@@ -58,29 +58,29 @@ YogObj_set_attr(YogEnv* env, YogVal obj, const char* name, YogVal val)
     RETURN_VOID(env);
 }
 
-void 
-YogBasicObj_init(YogEnv* env, YogVal obj, uint_t flags, YogVal klass) 
+void
+YogBasicObj_init(YogEnv* env, YogVal obj, uint_t flags, YogVal klass)
 {
     YogThread_issue_object_id(env, env->thread, obj);
     PTR_AS(YogBasicObj, obj)->flags = flags;
     PTR_AS(YogBasicObj, obj)->klass = klass;
 }
 
-void 
-YogObj_init(YogEnv* env, YogVal obj, uint_t flags, YogVal klass) 
+void
+YogObj_init(YogEnv* env, YogVal obj, uint_t flags, YogVal klass)
 {
     PTR_AS(YogObj, obj)->attrs = YUNDEF;
     YogBasicObj_init(env, obj, flags | HAS_ATTRS, klass);
 }
 
-void 
-YogBasicObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap) 
+void
+YogBasicObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj* obj = ptr;
     YogGC_keep(env, &obj->klass, keeper, heap);
 }
 
-void 
+void
 YogObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
@@ -100,20 +100,20 @@ YogObj_allocate(YogEnv* env, YogVal klass)
     RETURN(env, obj);
 }
 
-YogVal 
+YogVal
 YogObj_new(YogEnv* env, YogVal klass)
 {
     return YogObj_allocate(env, klass);
 }
 
-static YogVal 
+static YogVal
 initialize(YogEnv* env)
 {
     return YNIL;
 }
 
-void 
-YogObj_klass_init(YogEnv* env, YogVal klass) 
+void
+YogObj_klass_init(YogEnv* env, YogVal klass)
 {
     YogKlass_define_method(env, klass, "initialize", initialize);
 }

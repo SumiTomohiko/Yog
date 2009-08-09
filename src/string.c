@@ -25,13 +25,13 @@
     } \
 } while (0)
 
-ID 
-YogString_intern(YogEnv* env, YogVal s) 
+ID
+YogString_intern(YogEnv* env, YogVal s)
 {
     return YogVM_intern(env, env->vm, STRING_CSTR(s));
 }
 
-static void 
+static void
 YogCharArray_clear(YogEnv* env, YogVal array)
 {
     if (0 < PTR_AS(YogCharArray, array)->size) {
@@ -39,8 +39,8 @@ YogCharArray_clear(YogEnv* env, YogVal array)
     }
 }
 
-static YogVal 
-YogCharArray_new(YogEnv* env, uint_t size) 
+static YogVal
+YogCharArray_new(YogEnv* env, uint_t size)
 {
     YogVal array = ALLOC_OBJ_ITEM(env, NULL, NULL, YogCharArray, size, char);
     PTR_AS(YogCharArray, array)->size = size;
@@ -49,8 +49,8 @@ YogCharArray_new(YogEnv* env, uint_t size)
     return array;
 }
 
-YogVal 
-YogCharArray_new_str(YogEnv* env, const char* s) 
+YogVal
+YogCharArray_new_str(YogEnv* env, const char* s)
 {
     size_t size = strlen(s) + 1;
     YogVal array = YogCharArray_new(env, size);
@@ -60,7 +60,7 @@ YogCharArray_new_str(YogEnv* env, const char* s)
     return array;
 }
 
-static void 
+static void
 YogString_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
@@ -72,14 +72,14 @@ YogString_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-uint_t 
-YogString_size(YogEnv* env, YogVal string) 
+uint_t
+YogString_size(YogEnv* env, YogVal string)
 {
     return PTR_AS(YogString, string)->size;
 }
 
-static void 
-ensure_body(YogEnv* env, YogVal string) 
+static void
+ensure_body(YogEnv* env, YogVal string)
 {
     SAVE_ARG(env, string);
 
@@ -93,8 +93,8 @@ ensure_body(YogEnv* env, YogVal string)
     RETURN_VOID(env);
 }
 
-static void 
-ensure_size(YogEnv* env, YogVal string, uint_t size) 
+static void
+ensure_size(YogEnv* env, YogVal string, uint_t size)
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, string);
@@ -124,8 +124,8 @@ ensure_size(YogEnv* env, YogVal string, uint_t size)
     RETURN_VOID(env);
 }
 
-void 
-YogString_push(YogEnv* env, YogVal string, char c) 
+void
+YogString_push(YogEnv* env, YogVal string, char c)
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, string);
@@ -147,8 +147,8 @@ YogString_push(YogEnv* env, YogVal string, char c)
     RETURN_VOID(env);
 }
 
-void 
-YogString_clear(YogEnv* env, YogVal string) 
+void
+YogString_clear(YogEnv* env, YogVal string)
 {
     if (IS_PTR(PTR_AS(YogString, string)->body)) {
         YogCharArray_clear(env, PTR_AS(YogString, string)->body);
@@ -159,8 +159,8 @@ YogString_clear(YogEnv* env, YogVal string)
     }
 }
 
-static YogVal 
-allocate(YogEnv* env, YogVal klass) 
+static YogVal
+allocate(YogEnv* env, YogVal klass)
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, klass);
@@ -175,8 +175,8 @@ allocate(YogEnv* env, YogVal klass)
     RETURN(env, obj);
 }
 
-YogVal 
-YogString_new(YogEnv* env) 
+YogVal
+YogString_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal self = YUNDEF;
@@ -193,7 +193,7 @@ YogString_new(YogEnv* env)
     RETURN(env, self);
 }
 
-YogVal 
+YogVal
 YogString_new_range(YogEnv* env, YogVal enc, const char* start, const char* end)
 {
     SAVE_ARG(env, enc);
@@ -220,8 +220,8 @@ YogString_new_range(YogEnv* env, YogVal enc, const char* start, const char* end)
     RETURN(env, s);
 }
 
-YogVal 
-YogString_new_size(YogEnv* env, uint_t size) 
+YogVal
+YogString_new_size(YogEnv* env, uint_t size)
 {
     SAVE_LOCALS(env);
     YogVal string = YUNDEF;
@@ -257,14 +257,14 @@ YogString_new_size(YogEnv* env, uint_t size)
     return string; \
 } while (0)
 
-YogVal 
-YogString_new_str(YogEnv* env, const char* s) 
+YogVal
+YogString_new_str(YogEnv* env, const char* s)
 {
     RETURN_STR(s);
 }
 
-YogVal 
-YogString_new_format(YogEnv* env, const char* fmt, ...) 
+YogVal
+YogString_new_format(YogEnv* env, const char* fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
@@ -278,8 +278,8 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
 
 #undef RETURN_STR
 
-YogVal 
-YogString_clone(YogEnv* env, YogVal string) 
+YogVal
+YogString_clone(YogEnv* env, YogVal string)
 {
     SAVE_ARG(env, string);
 
@@ -290,20 +290,20 @@ YogString_clone(YogEnv* env, YogVal string)
     RETURN(env, s);
 }
 
-char 
-YogString_at(YogEnv* env, YogVal s, uint_t n) 
+char
+YogString_at(YogEnv* env, YogVal s, uint_t n)
 {
     YogVal body = PTR_AS(YogString, s)->body;
     return PTR_AS(YogCharArray, body)->items[n];
 }
 
-static YogVal 
+static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     return self;
 }
 
-static YogVal 
+static YogVal
 add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -361,7 +361,7 @@ YogString_multiply(YogEnv* env, YogVal self, int_t num)
     RETURN(env, s);
 }
 
-static YogVal 
+static YogVal
 multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -381,7 +381,7 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, s);
 }
 
-static YogVal 
+static YogVal
 lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -403,7 +403,7 @@ lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, self);
 }
 
-static char* 
+static char*
 index2ptr(YogEnv* env, YogString* s, uint_t index)
 {
     YogVal enc = s->encoding;
@@ -423,7 +423,7 @@ index2ptr(YogEnv* env, YogString* s, uint_t index)
     return p;
 }
 
-static YogVal 
+static YogVal
 subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -456,7 +456,7 @@ subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
-static YogVal 
+static YogVal
 assign_subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -516,7 +516,7 @@ assign_subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, arg1);
 }
 
-static YogVal 
+static YogVal
 match(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -536,7 +536,7 @@ match(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
-static YogVal 
+static YogVal
 each_line(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -573,7 +573,7 @@ each_line(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YNIL);
 }
 
-static YogVal 
+static YogVal
 each_byte(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -600,7 +600,7 @@ each_byte(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YNIL);
 }
 
-static YogVal 
+static YogVal
 each_char(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -679,8 +679,8 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
-YogVal 
-YogString_klass_new(YogEnv* env) 
+YogVal
+YogString_klass_new(YogEnv* env)
 {
     YogVal klass = YogKlass_new(env, "String", env->vm->cObject);
     PUSH_LOCAL(env, klass);
@@ -705,8 +705,8 @@ YogString_klass_new(YogEnv* env)
     return klass;
 }
 
-char* 
-YogString_dup(YogEnv* env, const char* s) 
+char*
+YogString_dup(YogEnv* env, const char* s)
 {
     size_t size = strlen(s) + 1;
     char* p = PTR_AS(char, ALLOC_OBJ_SIZE(env, NULL, NULL, size));
@@ -856,7 +856,7 @@ YogString_to_i(YogEnv* env, YogVal self)
     body = PTR_AS(YogString, normalized)->body;
     char* endptr = NULL;
     errno = 0;
-    long n = strtol(PTR_AS(YogCharArray, body)->items, &endptr, base); 
+    long n = strtol(PTR_AS(YogCharArray, body)->items, &endptr, base);
     if (*endptr != '\0') {
         RAISE_VALUE_ERROR;
     }

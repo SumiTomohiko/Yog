@@ -22,7 +22,7 @@
     CHECK_TYPE(v); \
 } while (0)
 
-static YogVal 
+static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -44,7 +44,7 @@ YogFixnum_add_bignum(YogEnv* env, YogVal self, YogVal bignum)
     RETURN(env, left_and_result);
 }
 
-static YogVal 
+static YogVal
 add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -76,7 +76,7 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YUNDEF);
 }
 
-static YogVal 
+static YogVal
 subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -150,7 +150,7 @@ YogFixnum_multiply(YogEnv* env, YogVal self, YogVal right)
     RETURN(env, result);
 }
 
-static YogVal 
+static YogVal
 multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -205,7 +205,7 @@ divide_float(YogEnv* env, YogVal left, YogVal right)
     return VAL2INT(left) / FLOAT_NUM(right);
 }
 
-static YogVal 
+static YogVal
 divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -253,7 +253,7 @@ floor_divide_float(YogEnv* env, YogVal left, YogVal right)
     return VAL2INT(left) / FLOAT_NUM(right);
 }
 
-static YogVal 
+static YogVal
 modulo(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     YOG_ASSERT(env, IS_FIXNUM(self), "self is not Fixnum");
@@ -282,7 +282,7 @@ modulo(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YUNDEF);
 }
 
-static YogVal 
+static YogVal
 floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -312,7 +312,7 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, result);
 }
 
-static YogVal 
+static YogVal
 less(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -494,7 +494,7 @@ lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
-static YogVal 
+static YogVal
 times(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -554,8 +554,8 @@ equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YTRUE);
 }
 
-YogVal 
-YogFixnum_klass_new(YogEnv* env) 
+YogVal
+YogFixnum_klass_new(YogEnv* env)
 {
     YogVal klass = YogKlass_new(env, "Fixnum", env->vm->cObject);
     PUSH_LOCAL(env, klass);

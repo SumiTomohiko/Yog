@@ -11,8 +11,8 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-static YogVal 
-allocate(YogEnv* env, YogVal klass) 
+static YogVal
+allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
@@ -23,8 +23,8 @@ allocate(YogEnv* env, YogVal klass)
     RETURN(env, f);
 }
 
-YogVal 
-YogFloat_new(YogEnv* env) 
+YogVal
+YogFloat_new(YogEnv* env)
 {
     YogVal f = allocate(env, env->vm->cFloat);
     PTR_AS(YogFloat, f)->val = 0;
@@ -211,8 +211,8 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return div(env, self, right, "//");
 }
 
-YogVal 
-YogFloat_klass_new(YogEnv* env) 
+YogVal
+YogFloat_klass_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
 

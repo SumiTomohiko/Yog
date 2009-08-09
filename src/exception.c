@@ -11,7 +11,7 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-static void 
+static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
@@ -23,8 +23,8 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-static YogVal 
-allocate(YogEnv* env, YogVal klass) 
+static YogVal
+allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
@@ -36,8 +36,8 @@ allocate(YogEnv* env, YogVal klass)
     RETURN(env, exc);
 }
 
-static YogVal 
-skip_frame(YogEnv* env, YogVal frame, const char* func_name) 
+static YogVal
+skip_frame(YogEnv* env, YogVal frame, const char* func_name)
 {
     SAVE_ARG(env, frame);
 
@@ -69,7 +69,7 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
     RETURN(env, frame);
 }
 
-static YogVal 
+static YogVal
 initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -157,7 +157,7 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YNIL);
 }
 
-static YogVal 
+static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -169,8 +169,8 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
-YogVal 
-YogException_klass_new(YogEnv* env) 
+YogVal
+YogException_klass_new(YogEnv* env)
 {
     YogVal klass = YogKlass_new(env, "Exception", env->vm->cObject);
     PUSH_LOCAL(env, klass);

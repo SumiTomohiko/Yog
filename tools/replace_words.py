@@ -51,13 +51,7 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        if line.find("MODIFY") < 0:
-                            out.write(line)
-                        else:
-                            indent = get_indent(line)
-                            args = parse_args(line)
-                            print "%s, %d, \"%s\"" % (line, len(indent), args[1])
-                            out.write("%s%s = %s;\n" % (indent, args[1].strip(), args[2].strip()))
+                        out.write(line.rstrip() + "\n")
             move(tmp, path)
 
 def main():

@@ -7,15 +7,15 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-char* 
-YogEncoding_left_adjust_char_head(YogEnv* env, YogVal enc, const char* start, const char* p) 
+char*
+YogEncoding_left_adjust_char_head(YogEnv* env, YogVal enc, const char* start, const char* p)
 {
     OnigEncoding onig = PTR_AS(YogEncoding, enc)->onig_enc;
     return (char*)(*onig->left_adjust_char_head)((OnigUChar*)start, (OnigUChar*)p);
 }
 
-YogVal 
-YogEncoding_get_default(YogEnv* env) 
+YogVal
+YogEncoding_get_default(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal val = YUNDEF;
@@ -30,15 +30,15 @@ YogEncoding_get_default(YogEnv* env)
     RETURN(env, val);
 }
 
-int_t 
-YogEncoding_mbc_size(YogEnv* env, YogVal enc, const char* p) 
+int_t
+YogEncoding_mbc_size(YogEnv* env, YogVal enc, const char* p)
 {
     OnigEncoding onig = PTR_AS(YogEncoding, enc)->onig_enc;
     return (*onig->mbc_enc_len)((const unsigned char*)p);
 }
 
-YogVal 
-YogEncoding_normalize_name(YogEnv* env, YogVal name) 
+YogVal
+YogEncoding_normalize_name(YogEnv* env, YogVal name)
 {
     YogVal s = YogString_clone(env, name);
     uint_t size = YogString_size(env, s) - 1;
@@ -59,8 +59,8 @@ YogEncoding_normalize_name(YogEnv* env, YogVal name)
     return s;
 }
 
-YogVal 
-YogEncoding_new(YogEnv* env, OnigEncoding onig_enc) 
+YogVal
+YogEncoding_new(YogEnv* env, OnigEncoding onig_enc)
 {
     YogVal enc = ALLOC_OBJ(env, NULL, NULL, YogEncoding);
     PTR_AS(YogEncoding, enc)->onig_enc = onig_enc;

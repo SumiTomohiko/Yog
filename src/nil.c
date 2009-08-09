@@ -6,7 +6,7 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-static YogVal 
+static YogVal
 to_s(YogEnv* env)
 {
     return YogString_new_str(env, "nil");
@@ -37,8 +37,8 @@ equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
-YogVal 
-YogNil_klass_new(YogEnv* env) 
+YogVal
+YogNil_klass_new(YogEnv* env)
 {
     YogVal klass = YogKlass_new(env, "Nil", env->vm->cObject);
     PUSH_LOCAL(env, klass);

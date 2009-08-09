@@ -2,7 +2,7 @@
 #include "yog/gc.h"
 #include "yog/yog.h"
 
-static void 
+static void
 YogArgInfo_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogArgInfo* arg_info = ptr;
@@ -12,8 +12,8 @@ YogArgInfo_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap
 #undef KEEP
 }
 
-YogVal 
-YogArgInfo_new(YogEnv* env) 
+YogVal
+YogArgInfo_new(YogEnv* env)
 {
     YogVal arg_info = ALLOC_OBJ(env, YogArgInfo_keep_children, NULL, YogArgInfo);
     PTR_AS(YogArgInfo, arg_info)->argc = 0;
