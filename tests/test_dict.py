@@ -1,0 +1,43 @@
+# -*- coding: utf-8 -*-
+
+from testcase import TestCase
+
+class TestDict(TestCase):
+
+    def test_dict0(self):
+        self._test("""
+def foo(d)
+  puts(d[42])
+end
+
+d = Dict.new()
+d[42] = 26
+foo(d)
+""", """26
+""")
+
+    def test_dict10(self):
+        self._test("""
+def foo(d)
+  puts(d[4611686018427387904])
+end
+
+d = Dict.new()
+d[4611686018427387904] = 42
+foo(d)
+""", """42
+""")
+
+    def test_dict20(self):
+        self._test("""
+def foo(d)
+  puts(d["foo"])
+end
+
+d = Dict.new()
+d["foo"] = 42
+foo(d)
+""", """42
+""")
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
