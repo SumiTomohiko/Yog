@@ -236,6 +236,20 @@ each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, self);
 }
 
+static YogVal
+get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    uint_t size = YogArray_size(env, self);
+    /* TODO: cast causes overflow */
+    retval = INT2VAL(size);
+
+    RETURN(env, retval);
+}
+
 YogVal
 YogArray_klass_new(YogEnv* env)
 {
@@ -246,9 +260,12 @@ YogArray_klass_new(YogEnv* env)
 
     klass = YogKlass_new(env, "Array", env->vm->cObject);
     YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_method(env, klass, "<<", lshift);
-    YogKlass_define_method(env, klass, "[]", subscript);
-    YogKlass_define_method(env, klass, "each", each);
+#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD("[]", subscript);
+    DEFINE_METHOD("each", each);
+#undef DEFINE_METHOD
+    YogKlass_define_property(env, klass, "size", get_size, NULL);
 
     RETURN(env, klass);
 }

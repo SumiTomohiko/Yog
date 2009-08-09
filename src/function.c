@@ -13,11 +13,10 @@ static void
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, uint_t argc, YogVal args, uint_t args_offset)
 {
     SAVE_ARGS5(env, arg_info, blockarg, vararg, varkwarg, args);
-
     YogVal array = YUNDEF;
     PUSH_LOCAL(env, array);
 
-    uint_t i = 0;
+    uint_t i;
     uint_t arg_argc = PTR_AS(YogArgInfo, arg_info)->argc;
     uint_t arg_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
     uint_t size = arg_argc + arg_blockargc;
@@ -25,7 +24,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         PTR_AS(YogValArray, args)->items[args_offset + i] = YUNDEF;
     }
 
-    if (PTR_AS(YogArgInfo, arg_info)->argc < posargc) {
+    if (arg_argc < posargc) {
         for (i = 0; i < PTR_AS(YogArgInfo, arg_info)->argc; i++) {
             YogVal* items = PTR_AS(YogValArray, args)->items;
             YogVal arg = posargs[i];
@@ -35,7 +34,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
         uint_t blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
         uint_t index = argc + blockargc;
-        array = PTR_AS(YogValArray, args)->items[args_offset + index];
+        array = YogArray_new(env);
+        PTR_AS(YogValArray, args)->items[args_offset + index] = array;
         for (i = PTR_AS(YogArgInfo, arg_info)->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }
@@ -43,8 +43,12 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     else {
         for (i = 0; i < posargc; i++) {
             YogVal* items = PTR_AS(YogValArray, args)->items;
-            YogVal arg = posargs[i];
-            items[args_offset + i] = arg;
+            items[args_offset + i] = posargs[i];
+        }
+        if (0 < PTR_AS(YogArgInfo, arg_info)->varargc) {
+            YogVal vararg = YogArray_new(env);
+            YogVal* items = PTR_AS(YogValArray, args)->items;
+            items[args_offset + posargc] = vararg;
         }
     }
 
