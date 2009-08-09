@@ -533,6 +533,27 @@ not(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, n);
 }
 
+static YogVal
+hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    return self;
+}
+
+static YogVal
+equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
+
+    obj = YogArray_at(env, args, 0);
+    if (!IS_FIXNUM(obj) || (VAL2INT(self) != VAL2INT(obj))) {
+        RETURN(env, YFALSE);
+    }
+
+    RETURN(env, YTRUE);
+}
+
 YogVal 
 YogFixnum_klass_new(YogEnv* env) 
 {
@@ -556,6 +577,8 @@ YogFixnum_klass_new(YogEnv* env)
     DEFINE_METHOD("~self", not);
     DEFINE_METHOD("to_s", to_s);
     DEFINE_METHOD("times", times);
+    DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("equal?", equal);
 #undef DEFINE_METHOD
 
     POP_LOCALS(env);

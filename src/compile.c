@@ -924,8 +924,10 @@ static int_t
 register_const(YogEnv* env, YogVal data, YogVal const_) 
 {
     SAVE_ARGS2(env, data, const_);
+    YogVal const2index = YUNDEF;
+    PUSH_LOCAL(env, const2index);
 
-    YogVal const2index = COMPILE_DATA(data)->const2index;
+    const2index = COMPILE_DATA(data)->const2index;
 
     if (!IS_PTR(const2index)) {
         const2index = YogTable_new_val_table(env);

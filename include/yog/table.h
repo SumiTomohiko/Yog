@@ -8,7 +8,7 @@
 #include "yog/yog.h"
 
 struct YogHashType {
-    int_t (*compare)(YogEnv*, YogVal, YogVal);
+    BOOL (*compare)(YogEnv*, YogVal, YogVal);
     int_t (*hash)(YogEnv*, YogVal);
 };
 
@@ -54,9 +54,7 @@ enum st_retval {
 
 /* src/table.c */
 void YogTable_add_direct(YogEnv*, YogVal, YogVal, YogVal);
-void YogTable_cleanup_safe(YogEnv*, YogVal, YogVal*);
 BOOL YogTable_delete(YogEnv*, YogVal, YogVal*, YogVal*);
-BOOL YogTable_delete_safe(YogEnv*, YogVal, YogVal*, YogVal*, YogVal);
 void YogTable_dump(YogEnv*, YogVal);
 BOOL YogTable_foreach(YogEnv*, YogVal, int_t (*)(YogEnv*, YogVal, YogVal, YogVal*), YogVal*);
 BOOL YogTable_insert(YogEnv*, YogVal, YogVal, YogVal);

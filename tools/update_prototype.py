@@ -37,7 +37,7 @@ class DeclarationInserter(object):
             "include/yog/exception.h": [ 
                     "src/exception.c", "src/stacktrace.c", ], 
             "include/yog/inst.h.tmpl": [ "src/inst.c", ], 
-            "include/yog/st.h": [ "src/table.c", ], 
+            "include/yog/table.h": [ "src/table.c", ], 
             "include/yog/gc/mark-sweep-compact.h": [ 
                 "src/gc/mark-sweep-compact.c", ], 
             "include/yog/gc/copying.h": [ "src/gc/copying.c", ], 

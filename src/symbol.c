@@ -17,6 +17,12 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, s);
 }
 
+static YogVal
+hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    return INT2VAL(VAL2ID(self));
+}
+
 YogVal
 YogSymbol_klass_new(YogEnv* env)
 {
@@ -25,6 +31,7 @@ YogSymbol_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_new(env, "Symbol", env->vm->cObject);
+    YogKlass_define_method(env, klass, "hash", hash);
     YogKlass_define_method(env, klass, "to_s", to_s);
 
     RETURN(env, klass);

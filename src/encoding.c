@@ -4,6 +4,7 @@
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/table.h"
+#include "yog/thread.h"
 #include "yog/yog.h"
 
 char* 
@@ -16,13 +17,17 @@ YogEncoding_left_adjust_char_head(YogEnv* env, YogVal enc, const char* start, co
 YogVal 
 YogEncoding_get_default(YogEnv* env) 
 {
-    ID name = YogVM_intern(env, env->vm, "utf-8");
-    YogVal key = ID2VAL(name);
+    SAVE_LOCALS(env);
     YogVal val = YUNDEF;
-    if (!YogTable_lookup(env, env->vm->encodings, key, &val)) {
-        YOG_ASSERT(env, FALSE, "Can't find default encoding.");
+    PUSH_LOCAL(env, val);
+
+#define DEFAULT_ENCODING_NAME   "utf-8"
+    ID name = YogVM_intern(env, env->vm, DEFAULT_ENCODING_NAME);
+    if (!YogTable_lookup(env, env->vm->encodings, ID2VAL(name), &val)) {
+        YOG_BUG(env, "can't find default encoding: %s (%u)", DEFAULT_ENCODING_NAME, name);
     }
-    return val;
+#undef DEFAULT_ENCODING_NAME
+    RETURN(env, val);
 }
 
 int_t 

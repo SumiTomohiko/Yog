@@ -50,6 +50,7 @@ struct YogVM {
     YogVal cArray;
     YogVal cProperty;
     YogVal cClassMethod;
+    YogVal cCode;
 
     YogVal eException;
     YogVal eTypeError;

@@ -6,6 +6,8 @@
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/inst.h"
+#include "yog/klass.h"
+#include "yog/object.h"
 #include "yog/opcodes.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
@@ -182,6 +184,8 @@ YogCode_dump(YogEnv* env, YogVal code)
 static void 
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
     YogCode* code = ptr;
 
     YogGC_keep(env, &code->arg_info, keeper, heap);
@@ -201,6 +205,18 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
+YogVal
+YogCode_klass_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = YogKlass_new(env, "Code", env->vm->cObject);
+
+    RETURN(env, klass);
+}
+
 YogVal 
 YogCode_new(YogEnv* env) 
 {
@@ -208,6 +224,7 @@ YogCode_new(YogEnv* env)
     PUSH_LOCAL(env, code);
 
     code = ALLOC_OBJ(env, keep_children, NULL, YogCode);
+    YogBasicObj_init(env, code, 0, env->vm->cCode);
     CODE(code)->arg_info = YUNDEF;
     CODE(code)->stack_size = 0;
     CODE(code)->local_vars_count = 0;

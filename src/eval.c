@@ -95,6 +95,32 @@ YogEval_call_method(YogEnv* env, YogVal receiver, const char* method, uint_t arg
     RETURN(env, retval);
 }
 
+YogVal
+YogEval_call_method1(YogEnv* env, YogVal receiver, const char* method, YogVal arg)
+{
+    SAVE_ARG(env, receiver);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+    YogVal args[] = { arg };
+    PUSH_LOCALSX(env, 1, args);
+
+    retval = YogEval_call_method(env, receiver, method, 1, args);
+
+    RETURN(env, retval);
+}
+
+YogVal
+YogEval_call_method0(YogEnv* env, YogVal receiver, const char* method)
+{
+    SAVE_ARG(env, receiver);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogEval_call_method(env, receiver, method, 0, NULL);
+
+    RETURN(env, retval);
+}
+
 YogVal 
 YogEval_call_method2(YogEnv* env, YogVal receiver, const char* method, uint_t argc, YogVal* args, YogVal blockarg)
 {

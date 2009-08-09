@@ -2,6 +2,7 @@
 #define __YOG_CODE_H__
 
 #include "yog/arg.h"
+#include "yog/object.h"
 #include "yog/yog.h"
 
 struct YogExceptionTableEntry {
@@ -27,6 +28,8 @@ struct YogLinenoTableEntry {
 typedef struct YogLinenoTableEntry YogLinenoTableEntry;
 
 struct YogCode {
+    struct YogBasicObj base;
+
     YogVal arg_info;
 
     uint_t stack_size;
@@ -61,6 +64,7 @@ typedef struct YogCode YogCode;
 
 /* src/code.c */
 void YogCode_dump(YogEnv*, YogVal);
+YogVal YogCode_klass_new(YogEnv*);
 YogVal YogCode_new(YogEnv*);
 
 /* src/code.inc */

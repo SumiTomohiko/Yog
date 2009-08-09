@@ -117,13 +117,13 @@ ID
 YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
 {
     SAVE_LOCALS(env);
-
     YogVal value = YUNDEF;
+    PUSH_LOCAL(env, value);
 
 #define FIND_SYM    do { \
     if (YogTable_lookup_str(env, vm->name2id, name, &value)) { \
         release_symbols_lock(env, vm); \
-        return VAL2ID(value); \
+        RETURN(env, VAL2ID(value)); \
     } \
 } while (0)
     acquire_symbols_read_lock(env, vm);
@@ -220,6 +220,7 @@ setup_klasses(YogEnv* env, YogVM* vm)
     vm->cArray = YogArray_klass_new(env);
     vm->cProperty = YogProperty_klass_new(env);
     vm->cClassMethod = YogClassMethod_klass_new(env);
+    vm->cCode = YogCode_klass_new(env);
 }
 
 static void 
@@ -362,6 +363,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cArray);
     KEEP(cProperty);
     KEEP(cClassMethod);
+    KEEP(cCode);
 
     KEEP(eException);
     KEEP(eTypeError);
@@ -424,6 +426,7 @@ YogVM_init(YogVM* vm)
     vm->cArray = YUNDEF;
     vm->cProperty = YUNDEF;
     vm->cClassMethod = YUNDEF;
+    vm->cCode = YUNDEF;
 
     vm->eException = YUNDEF;
     vm->eTypeError = YUNDEF;

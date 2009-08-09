@@ -1,3 +1,4 @@
+#include "yog/array.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/frame.h"
@@ -144,11 +145,49 @@ get_klass(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, klass);
 }
 
+static YogVal
+hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    YOG_ASSERT(env, IS_PTR(self), "self is not pointer (0x%08x)", self);
+
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = INT2VAL(PTR_AS(YogBasicObj, self)->id_upper + PTR_AS(YogBasicObj, self)->id_lower);
+
+    RETURN(env, retval);
+}
+
+static YogVal
+equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    YOG_ASSERT(env, IS_PTR(self), "self is not pointer (0x%08x)", self);
+
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    YogVal obj = YUNDEF;
+    PUSH_LOCALS2(env, retval, obj);
+
+    obj = YogArray_at(env, args, 0);
+
+    if ((PTR_AS(YogBasicObj, self)->id_upper == PTR_AS(YogBasicObj, obj)->id_upper) && (PTR_AS(YogBasicObj, self)->id_lower == PTR_AS(YogBasicObj, obj)->id_lower)) {
+        retval = YTRUE;
+    }
+    else {
+        retval = YFALSE;
+    }
+
+    RETURN(env, retval);
+}
+
 void
 YogObject_boot(YogEnv* env, YogVal cObject)
 {
     SAVE_ARG(env, cObject);
 
+    YogKlass_define_method(env, cObject, "equal?", equal);
+    YogKlass_define_method(env, cObject, "hash", hash);
     YogKlass_define_method(env, cObject, "to_s", to_s);
     YogKlass_define_property(env, cObject, "class", get_klass, NULL);
 

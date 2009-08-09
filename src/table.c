@@ -13,6 +13,7 @@
 #include <string.h>
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/gc.h"
 #include "yog/string.h"
 #include "yog/table.h"
@@ -45,7 +46,7 @@ keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogTableEntryArray* array = ptr;
     uint_t size = array->size;
-    uint_t i = 0;
+    uint_t i;
     for (i = 0; i < size; i++) {
         YogGC_keep(env, &array->items[i], keeper, heap);
     }
@@ -57,7 +58,7 @@ alloc_bins(YogEnv* env, int_t size)
     YogVal array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogVal);
 
     PTR_AS(YogTableEntryArray, array)->size = size;
-    uint_t i = 0;
+    uint_t i;
     for (i = 0; i < size; i++) {
         PTR_AS(YogTableEntryArray, array)->items[i] = YNIL;
     }
@@ -133,18 +134,21 @@ new_size(int_t size)
 static void
 rehash(YogEnv* env, YogVal table)
 {
-    SAVE_LOCALS(env);
-    PUSH_LOCAL(env, table);
+    SAVE_ARG(env, table);
+    YogVal new_bins = YUNDEF;
+    YogVal ptr = YUNDEF;
+    YogVal next = YUNDEF;
+    PUSH_LOCALS3(env, new_bins, ptr, next);
 
     int_t old_num_bins = PTR_AS(YogTable, table)->num_bins;
     int_t new_num_bins = new_size(old_num_bins + 1);
-    YogVal new_bins = alloc_bins(env, new_num_bins);
+    new_bins = alloc_bins(env, new_num_bins);
 
-    int_t i = 0;
+    int_t i;
     for(i = 0; i < old_num_bins; i++) {
-        YogVal ptr = TABLE_ENTRY_TOP(table, i);
+        ptr = TABLE_ENTRY_TOP(table, i);
         while (IS_PTR(ptr)) {
-            YogVal next = PTR_AS(YogTableEntry, ptr)->next;
+            next = PTR_AS(YogTableEntry, ptr)->next;
             uint_t hash_val = PTR_AS(YogTableEntry, ptr)->hash % new_num_bins;
             PTR_AS(YogTableEntry, ptr)->next = PTR_AS(YogTableEntryArray, new_bins)->items[hash_val];
             PTR_AS(YogTableEntryArray, new_bins)->items[hash_val] = ptr;
@@ -158,9 +162,10 @@ rehash(YogEnv* env, YogVal table)
     RETURN_VOID(env);
 }
 
-#define EQUAL(env, table, x, y) ((*PTR_AS(YogTable, table)->type->compare)((env), (x), (y)) == 0)
+#define EQUAL(env, table, x, y) \
+    PTR_AS(YogTable, table)->type->compare((env), (x), (y))
 
-#define do_hash(env, table, key) (uint_t)(*PTR_AS(YogTable, table)->type->hash)((env), (key))
+#define do_hash(env, table, key) (uint_t)(*PTR_AS(YogTable, (table))->type->hash)((env), (key))
 #define do_hash_bin(env, table, key) (do_hash(env, table, key) % PTR_AS(YogTable, table)->num_bins)
 
 #if defined(HASH_LOG)
@@ -199,9 +204,9 @@ static YogVal
 st_init_table_with_size(YogEnv* env, YogHashType* type, int_t size)
 {
     SAVE_LOCALS(env);
-
     YogVal tbl = YUNDEF;
-    PUSH_LOCAL(env, tbl);
+    YogVal bins = YUNDEF;
+    PUSH_LOCALS2(env, tbl, bins);
 
 #if defined(HASH_LOG)
     if (init_st == 0) {
@@ -216,7 +221,7 @@ st_init_table_with_size(YogEnv* env, YogHashType* type, int_t size)
     PTR_AS(YogTable, tbl)->type = type;
     PTR_AS(YogTable, tbl)->num_entries = 0;
     PTR_AS(YogTable, tbl)->num_bins = size;
-    YogVal bins = alloc_bins(env, size);
+    bins = alloc_bins(env, size);
     PTR_AS(YogTable, tbl)->bins = bins;
 
     RETURN(env, tbl);
@@ -240,6 +245,8 @@ st_init_table(YogEnv* env, YogHashType* type)
 inline static void 
 find_entry(YogEnv* env, YogVal table, YogVal* ptr, uint_t hash_val, uint_t* bin_pos, YogVal key) 
 {
+    SAVE_ARGS2(env, table, key);
+
     *bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
     *ptr = TABLE_ENTRY_TOP(table, *bin_pos);
     if (PTR_NOT_EQUAL(env, table, *ptr, hash_val, key)) {
@@ -249,25 +256,30 @@ find_entry(YogEnv* env, YogVal table, YogVal* ptr, uint_t hash_val, uint_t* bin_
         }
         *ptr = PTR_AS(YogTableEntry, (*ptr))->next;
     }
+
+    RETURN_VOID(env);
 }
 
 BOOL
 YogTable_lookup(YogEnv* env, YogVal table, YogVal key, YogVal* value) 
 {
+    SAVE_ARGS2(env, table, key);
+    YogVal ptr = YNIL;
+    PUSH_LOCAL(env, ptr);
+
     uint_t hash_val = do_hash(env, table, key);
 
     uint_t bin_pos = 0;
-    YogVal ptr = YNIL;
     find_entry(env, table, &ptr, hash_val, &bin_pos, key);
 
     if (!IS_PTR(ptr)) {
-        return FALSE;
+        RETURN(env, FALSE);
     }
     else {
         if (value != NULL) {
             *value = PTR_AS(YogTableEntry, ptr)->record;
         }
-        return TRUE;
+        RETURN(env, TRUE);
     }
 }
 
@@ -297,15 +309,16 @@ alloc_entry(YogEnv* env)
 static void 
 add_direct(YogEnv* env, YogVal table, YogVal key, YogVal value, uint_t hash_val, uint_t bin_pos) 
 {
-    SAVE_LOCALS(env);
-    PUSH_LOCALS3(env, table, key, value);
+    SAVE_ARGS3(env, table, key, value);
+    YogVal entry = YUNDEF;
+    PUSH_LOCAL(env, entry);
 
     if (ST_DEFAULT_MAX_DENSITY < PTR_AS(YogTable, table)->num_entries / (PTR_AS(YogTable, table)->num_bins)) {
         rehash(env, table);
         bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
     }
 
-    YogVal entry = alloc_entry(env);
+    entry = alloc_entry(env);
 
     PTR_AS(YogTableEntry, entry)->hash = hash_val;
     PTR_AS(YogTableEntry, entry)->key = key;
@@ -321,27 +334,29 @@ add_direct(YogEnv* env, YogVal table, YogVal key, YogVal value, uint_t hash_val,
 BOOL
 YogTable_insert(YogEnv* env, YogVal table, YogVal key, YogVal value) 
 {
+    SAVE_ARGS3(env, table, key, value);
+    YogVal ptr = YNIL;
+    PUSH_LOCAL(env, ptr);
+
     uint_t hash_val = do_hash(env, table, key);
 
     uint_t bin_pos = 0;
-    YogVal ptr = YNIL;
     find_entry(env, table, &ptr, hash_val, &bin_pos, key);
 
     if (!IS_PTR(ptr)) {
         add_direct(env, table, key, value, hash_val, bin_pos);
-        return FALSE;
+        RETURN(env, FALSE);
     }
     else {
         PTR_AS(YogTableEntry, ptr)->record = value;
-        return TRUE;
+        RETURN(env, TRUE);
     }
 }
 
 void
 YogTable_add_direct(YogEnv* env, YogVal table, YogVal key, YogVal value) 
 {
-    SAVE_LOCALS(env);
-    PUSH_LOCALS3(env, table, key, value);
+    SAVE_ARGS3(env, table, key, value);
 
     uint_t hash_val = do_hash(env, table, key);
     uint_t bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
@@ -353,14 +368,20 @@ YogTable_add_direct(YogEnv* env, YogVal table, YogVal key, YogVal value)
 BOOL
 YogTable_delete(YogEnv* env, YogVal table, YogVal* key, YogVal* value) 
 {
+    SAVE_ARG(env, table);
+    YogVal ptr = YUNDEF;
+    YogVal next = YUNDEF;
+    YogVal tmp = YUNDEF;
+    PUSH_LOCALS3(env, ptr, next, tmp);
+
     uint_t hash_val = do_hash_bin(env, table, *key);
-    YogVal ptr = TABLE_ENTRY_TOP(table, hash_val);
+    ptr = TABLE_ENTRY_TOP(table, hash_val);
 
     if (!IS_PTR(ptr)) {
         if (value != NULL) {
             *value = YNIL;
         }
-        return FALSE;
+        RETURN(env, FALSE);
     }
 
     if (EQUAL(env, table, *key, PTR_AS(YogTableEntry, ptr)->key)) {
@@ -370,77 +391,36 @@ YogTable_delete(YogEnv* env, YogVal table, YogVal* key, YogVal* value)
             *value = PTR_AS(YogTableEntry, ptr)->record;
         }
         *key = PTR_AS(YogTableEntry, ptr)->key;
-        return TRUE;
+        RETURN(env, TRUE);
     }
 
     for(; IS_PTR(PTR_AS(YogTableEntry, ptr)->next); ptr = PTR_AS(YogTableEntry, ptr)->next) {
-        YogVal next = PTR_AS(YogTableEntry, ptr)->next;
+        next = PTR_AS(YogTableEntry, ptr)->next;
         if (EQUAL(env, table, PTR_AS(YogTableEntry, next)->key, *key)) {
-            YogVal tmp = next;
+            tmp = next;
             PTR_AS(YogTableEntry, ptr)->next = PTR_AS(YogTableEntry, next)->next;
             PTR_AS(YogTable, table)->num_entries--;
             if (value != NULL) {
                 *value = PTR_AS(YogTableEntry, tmp)->record;
             }
             *key = PTR_AS(YogTableEntry, tmp)->key;
-            return TRUE;
+            RETURN(env, TRUE);
         }
     }
 
-    return FALSE;
-}
-
-BOOL
-YogTable_delete_safe(YogEnv* env, YogVal table, YogVal* key, YogVal* value, YogVal never)
-{
-    uint_t hash_val = do_hash_bin(env, table, *key);
-    YogVal ptr = TABLE_ENTRY_TOP(table, hash_val);
-
-    if (!IS_PTR(ptr)) {
-        if (value != NULL) {
-            *value = YNIL;
-        }
-        return FALSE;
-    }
-
-    for(; IS_PTR(ptr); ptr = PTR_AS(YogTableEntry, ptr)->next) {
-        YogVal ptr_key = PTR_AS(YogTableEntry, ptr)->key;
-        if (!YogVal_equals_exact(env, ptr_key, never) && EQUAL(env, table, ptr_key, *key)) {
-            PTR_AS(YogTable, table)->num_entries--;
-            *key = ptr_key;
-            if (value != NULL) {
-                *value = PTR_AS(YogTableEntry, ptr)->record;
-            }
-            PTR_AS(YogTableEntry, ptr)->key = PTR_AS(YogTableEntry, ptr)->record = never;
-            return TRUE;
-        }
-    }
-
-    return FALSE;
-}
-
-static int_t
-delete_never(YogEnv* env, YogVal key, YogVal value, YogVal* never)
-{
-    if (YogVal_equals_exact(env, value, *never)) {
-        return ST_DELETE;
-    }
-    else {
-        return ST_CONTINUE;
-    }
+    RETURN(env, FALSE);
 }
 
 BOOL
 YogTable_foreach(YogEnv* env, YogVal table, int_t (*func)(YogEnv*, YogVal, YogVal, YogVal*), YogVal* arg)
 {
     SAVE_ARG(env, table);
-
     YogVal last = YUNDEF;
     YogVal ptr = YUNDEF;
     YogVal tmp = YUNDEF;
     PUSH_LOCALS3(env, last, ptr, tmp);
 
-    int_t i = 0;
+    int_t i;
     for (i = 0; i < PTR_AS(YogTable, table)->num_bins; i++) {
         for (ptr = TABLE_ENTRY_TOP(table, i); IS_PTR(ptr);) {
             enum st_retval retval = (*func)(env, PTR_AS(YogTableEntry, ptr)->key, PTR_AS(YogTableEntry, ptr)->record, arg);
@@ -484,19 +464,15 @@ YogTable_foreach(YogEnv* env, YogVal table, int_t (*func)(YogEnv*, YogVal, YogVa
     RETURN(env, TRUE);
 }
 
-void
-YogTable_cleanup_safe(YogEnv* env, YogVal table, YogVal* never)
-{
-    int_t num_entries = PTR_AS(YogTable, table)->num_entries;
-
-    YogTable_foreach(env, table, delete_never, never);
-    PTR_AS(YogTable, table)->num_entries = num_entries;
-}
-
-static int_t 
+static BOOL
 compare_symbol(YogEnv* env, YogVal a, YogVal b) 
 {
-    return VAL2ID(a) - VAL2ID(b);
+    if (a == b) {
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
 }
 
 static int_t 
@@ -516,11 +492,16 @@ YogTable_new_symbol_table(YogEnv* env)
     return st_init_table(env, &type_symbol);
 }
 
-static int_t 
+static BOOL
 compare_string(YogEnv* env, YogVal a, YogVal b) 
 {
 #define GET_STR(val)    (((YogCharArray*)VAL2PTR(a))->items)
-    return strcmp(GET_STR(a), GET_STR(b));
+    if (strcmp(GET_STR(a), GET_STR(b)) == 0) {
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
 #undef GET_STR
 }
 
@@ -600,11 +581,15 @@ is_not_equal_entry(YogEnv* env, YogVal table, YogVal entry, const char* key, uin
 BOOL
 YogTable_lookup_str(YogEnv* env, YogVal table, const char* key, YogVal* value) 
 {
+    SAVE_ARG(env, table);
+    YogVal entry = YUNDEF;
+    PUSH_LOCAL(env, entry);
+
     YOG_ASSERT(env, PTR_AS(YogTable, table)->type == &type_string, "Table type must be type_string.");
 
     uint_t hash_val = strhash(key);
     uint_t bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
-    YogVal entry = TABLE_ENTRY_TOP(table, bin_pos);
+    entry = TABLE_ENTRY_TOP(table, bin_pos);
 
     if (is_not_equal_entry(env, table, entry, key, hash_val)) {
         COLLISION;
@@ -617,6 +602,18 @@ YogTable_lookup_str(YogEnv* env, YogVal table, const char* key, YogVal* value)
         if (value != NULL) {
             *value = PTR_AS(YogTableEntry, entry)->record;
         }
+        RETURN(env, TRUE);
+    }
+    else {
+        RETURN(env, FALSE);
+    }
+}
+
+static BOOL
+compare_val(YogEnv* env, YogVal a, YogVal b) 
+{
+    YogVal val = YogEval_call_method1(env, a, "equal?", b);
+    if (YOG_TEST(val)) {
         return TRUE;
     }
     else {
@@ -625,15 +622,10 @@ YogTable_lookup_str(YogEnv* env, YogVal table, const char* key, YogVal* value)
 }
 
 static int_t 
-compare_val(YogEnv* env, YogVal a, YogVal b) 
-{
-    return YogVal_equals_exact(env, a, b) ? 0 : 1;
-}
-
-static int_t 
 hash_val(YogEnv* env, YogVal val) 
 {
-    return YogVal_hash(env, val);
+    YogVal retval = YogEval_call_method0(env, val, "hash");
+    return VAL2INT(retval);
 }
 
 static YogHashType type_val = {

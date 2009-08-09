@@ -26,6 +26,20 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return YogString_new_str(env, s);
 }
 
+static YogVal 
+hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    int_t n;
+    if (IS_TRUE(self)) {
+        n = 1;
+    }
+    else {
+        n = 0;
+    }
+
+    return INT2VAL(n);
+}
+
 YogVal 
 YogBool_klass_new(YogEnv* env) 
 {
@@ -34,6 +48,7 @@ YogBool_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_new(env, "Bool", env->vm->cObject);
+    YogKlass_define_method(env, klass, "hash", hash);
     YogKlass_define_method(env, klass, "to_s", to_s);
 
     RETURN(env, klass);
