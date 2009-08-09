@@ -373,6 +373,22 @@ CompileData_add_make_array(YogEnv* env, YogVal data, uint_t lineno, uint8_t size
 }
 
 static void 
+CompileData_add_make_dict(YogEnv* env, YogVal data, uint_t lineno, uint8_t size)
+{
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(MAKE_DICT);
+
+    MAKE_DICT_SIZE(inst) = size;
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
+static void 
 CompileData_add_finish(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -588,6 +604,12 @@ insts2bin(YogEnv* env, YogVal inst)
                         YogBinary_push_uint8(env, code, MAKE_ARRAY_SIZE(inst));
                         break;
                     }
+                case OP(MAKE_DICT):
+                    {
+                        YogBinary_push_uint8(env, code, OP(MAKE_DICT));
+                        YogBinary_push_uint8(env, code, MAKE_DICT_SIZE(inst));
+                        break;
+                    }
                 case OP(FINISH):
                     {
                         YogBinary_push_uint8(env, code, OP(FINISH));
@@ -779,6 +801,12 @@ count_stack_size(YogEnv* env, YogVal inst)
                 case OP(MAKE_ARRAY):
                     {
                         pop_size = MAKE_ARRAY_SIZE(inst);
+                        push_size = 1;
+                        break;
+                    }
+                case OP(MAKE_DICT):
+                    {
+                        pop_size = 2 * MAKE_DICT_SIZE(inst);
                         push_size = 1;
                         break;
                     }

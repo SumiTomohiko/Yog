@@ -59,6 +59,13 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(command_call.args);
         KEEP(command_call.blockarg);
         break;
+    case NODE_DICT:
+        KEEP(dict.elems);
+        break;
+    case NODE_DICT_ELEM:
+        KEEP(dict_elem.key);
+        KEEP(dict_elem.value);
+        break;
     case NODE_EXCEPT:
         KEEP(except.head);
         KEEP(except.excepts);
@@ -226,12 +233,14 @@ Array_push(YogEnv* env, YogVal array, YogVal elem)
 {
     SAVE_ARGS2(env, array, elem);
 
-    if (IS_PTR(elem) || IS_SYMBOL(elem)) {
-        if (!IS_PTR(array)) {
-            array = YogArray_new(env);
-        }
-        YogArray_push(env, array, elem);
+    if (!IS_PTR(elem) && !IS_SYMBOL(elem)) {
+        RETURN(env, array);
     }
+
+    if (!IS_PTR(array)) {
+        array = YogArray_new(env);
+    }
+    YogArray_push(env, array, elem);
 
     RETURN(env, array);
 }
@@ -622,6 +631,33 @@ Array_push_token_id(YogEnv* env, YogVal array, YogVal token)
     YogVal retval = Array_push(env, array, ID2VAL(id));
 
     RETURN(env, retval);
+}
+
+static YogVal
+DictElem_new(YogEnv* env, uint_t lineno, YogVal key, YogVal value)
+{
+    SAVE_ARGS2(env, key, value);
+    YogVal elem = YUNDEF;
+    PUSH_LOCAL(env, elem);
+
+    elem = YogNode_new(env, NODE_DICT_ELEM, lineno);
+    PTR_AS(YogNode, elem)->u.dict_elem.key = key;
+    PTR_AS(YogNode, elem)->u.dict_elem.value = value;
+
+    RETURN(env, elem);
+}
+
+static YogVal
+Dict_new(YogEnv* env, uint_t lineno, YogVal elems)
+{
+    SAVE_ARG(env, elems);
+    YogVal dict = YUNDEF;
+    PUSH_LOCAL(env, dict);
+
+    dict = YogNode_new(env, NODE_DICT, lineno);
+    PTR_AS(YogNode, dict)->u.dict.elems = elems;
+
+    RETURN(env, dict);
 }
 
 #define TOKEN(token)            PTR_AS(YogToken, (token))
@@ -1137,14 +1173,44 @@ atom(A) ::= LBRACKET(B) args_opt(C) RBRACKET. {
     uint_t lineno = NODE_LINENO(B);
     A = Array_new(env, lineno, C);
 }
+atom(A) ::= LBRACE(B) RBRACE . {
+    A = Dict_new(env, NODE_LINENO(B), YNIL);
+}
+atom(A) ::= LBRACE(B) dict_elems(C) comma_opt RBRACE. {
+    A = Dict_new(env, NODE_LINENO(B), C);
+}
 atom(A) ::= LPAR expr(B) RPAR. {
     A = B;
+}
+
+dict_elems(A) ::= dict_elem(B). {
+    A = Array_push(env, A, B);
+}
+dict_elems(A) ::= dict_elems(B) COMMA dict_elem(C). {
+    YogArray_push(env, B, C);
+    A = B;
+}
+dict_elem(A) ::= expr(B) EQUAL_GREATER expr(C). {
+    A = DictElem_new(env, NODE_LINENO(B), B, C);
+}
+dict_elem(A) ::= NAME(B) COLON expr(C). {
+    uint_t lineno = TOKEN_LINENO(B);
+    ID id = PTR_AS(YogToken, B)->u.id;
+    YogVal var = Literal_new(env, lineno, ID2VAL(id));
+    A = DictElem_new(env, lineno, var, C);
 }
 
 args_opt(A) ::= /* empty */. {
     A = YNIL;
 }
 args_opt(A) ::= args(B). {
+    A = B;
+}
+
+comma_opt(A) ::= /* empty */. {
+    A = YNIL;
+}
+comma_opt(A) ::= COMMA(B). {
     A = B;
 }
 

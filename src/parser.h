@@ -49,8 +49,10 @@
 #define TK_TRUE                           49
 #define TK_FALSE                          50
 #define TK_LINE                           51
-#define TK_DO                             52
-#define TK_LBRACE                         53
-#define TK_RBRACE                         54
-#define TK_EXCEPT                         55
-#define TK_AS                             56
+#define TK_LBRACE                         52
+#define TK_RBRACE                         53
+#define TK_EQUAL_GREATER                  54
+#define TK_COLON                          55
+#define TK_DO                             56
+#define TK_EXCEPT                         57
+#define TK_AS                             58

@@ -370,6 +370,31 @@
             POP_LOCALS(ENV);
             break;
         }
+    case OP(MAKE_DICT):
+        {
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t size = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
+            PC += sizeof(uint8_t);
+            YogVal dict = YUNDEF;
+            PUSH_LOCAL(ENV, dict);
+            YogVal key = YUNDEF;
+            YogVal value = YUNDEF;
+            PUSH_LOCALS2(env, key, value);
+        
+            dict = YogDict_new(env);
+            uint_t i;
+            for (i = 0; i < size; i++) {
+                value = POP();
+                key = POP();
+                YogDict_set(ENV, dict, key, value);
+            }
+        
+            POP_LOCALS(env);
+
+            PUSH(dict);
+            POP_LOCALS(ENV);
+            break;
+        }
     case OP(FINISH):
         {
             YogVal val = YUNDEF;

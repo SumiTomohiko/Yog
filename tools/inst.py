@@ -165,7 +165,7 @@ class CodeGenerator(object):
     def gen_opcodes_h(self, opcodes_h, opcodes_h_tmpl):
         opcodes = StringIO()
         for i, inst in enumerate(self.insts):
-            s = "    OP(%(name)s) = %(i)d, \n" \
+            s = "    OP(%(name)s) = %(i)d,\n" \
                     % { "name": inst.name.upper(), "i": i }
             opcodes.write(s)
         kw = { "opcodes": opcodes.getvalue() }
@@ -450,7 +450,7 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, uint_t lineno""" % { "inst": 
         op_names = StringIO()
         for inst in self.insts:
             op_names.write("""
-        "%(name)s", """ % { "name": inst.name.upper() })
+        "%(name)s",""" % { "name": inst.name.upper() })
         kw = { "op_names": op_names.getvalue() }
         self.tmpl2file(code_inc_tmpl, kw, code_inc)
 

@@ -7,6 +7,13 @@ class TestDict(TestCase):
 
     def test_literal0(self):
         self._test("""
+d = {}
+puts(d.size)
+""", """0
+""")
+
+    def test_literal5(self):
+        self._test("""
 d = { 42 => 26 }
 puts(d[42])
 """, """26

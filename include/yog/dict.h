@@ -19,6 +19,8 @@ typedef struct YogDict YogDict;
 
 /* src/dict.c */
 YogVal YogDict_klass_new(YogEnv*);
+YogVal YogDict_new(YogEnv*);
+void YogDict_set(YogEnv*, YogVal, YogVal, YogVal);
 
 /* PROTOTYPE_END */
 

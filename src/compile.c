@@ -28,6 +28,7 @@ struct AstVisitor {
     VisitNode visit_attr;
     VisitNode visit_block;
     VisitNode visit_break;
+    VisitNode visit_dict;
     VisitNode visit_except;
     VisitNode visit_except_body;
     VisitNode visit_finally;
@@ -385,11 +386,65 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_NOT:
         VISIT(not);
         break;
+    case NODE_DICT:
+        VISIT(dict);
+        break;
     default:
         YOG_BUG(env, "Unknown node type (0x%08x)", NODE(node)->type);
         break;
     }
 #undef VISIT
+}
+
+static void
+visit_each_dict_elem(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal elems = YUNDEF;
+    YogVal elem = YUNDEF;
+    PUSH_LOCALS2(env, elems, elem);
+
+    elems = NODE(node)->u.dict.elems;
+    if (!IS_PTR(elems)) {
+        RETURN_VOID(env);
+    }
+    uint_t size = YogArray_size(env, elems);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        elem = YogArray_at(env, elems, i);
+        YOG_ASSERT(env, NODE(elem)->type == NODE_DICT_ELEM, "invalid type (0x%08x)", NODE(elem)->type);
+        visit_node(env, visitor, NODE(elem)->u.dict_elem.key, data);
+        visit_node(env, visitor, NODE(elem)->u.dict_elem.value, data);
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
+scan_var_visit_dict(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    visit_each_dict_elem(env, visitor, node, data);
+}
+
+static void
+compile_visit_dict(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+
+    visit_each_dict_elem(env, visitor, node, data);
+
+    uint_t lineno = NODE(node)->lineno;
+    uint_t elems = NODE(node)->u.dict.elems;
+    uint_t size;
+    if (IS_PTR(elems)) {
+        size = YogArray_size(env, NODE(node)->u.dict.elems);
+    }
+    else {
+        size = 0;
+    }
+    CompileData_add_make_dict(env, data, lineno, size);
+
+    RETURN_VOID(env);
 }
 
 static void
@@ -754,6 +809,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_attr = scan_var_visit_attr;
     visitor->visit_block = NULL;
     visitor->visit_break = scan_var_visit_break;
+    visitor->visit_dict = scan_var_visit_dict;
     visitor->visit_except = scan_var_visit_except;
     visitor->visit_except_body = scan_var_visit_except_body;
     visitor->visit_finally = scan_var_visit_finally;
@@ -2563,6 +2619,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_attr = compile_visit_attr;
     visitor->visit_block = compile_visit_block;
     visitor->visit_break = compile_visit_break;
+    visitor->visit_dict = compile_visit_dict;
     visitor->visit_except = compile_visit_except;
     visitor->visit_except_body = NULL;
     visitor->visit_finally = compile_visit_finally;

@@ -604,6 +604,9 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
         if (c == '~') {
             RETURN_ID_TOKEN(TK_EQUAL_TILDA, "=~");
         }
+        else if (c == '>') {
+            RETURN_TOKEN(TK_EQUAL_GREATER);
+        }
         else {
             RETURN_TOKEN(TK_EQUAL);
         }
@@ -693,7 +696,11 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
     case ':':
         {
             c = NEXTC();
-            YOG_ASSERT(env, isalpha(c), "invalid symbol");
+            if (!isalpha(c)) {
+                PUSHBACK(c);
+                RETURN_TOKEN(TK_COLON);
+            }
+
             do {
                 ADD_TOKEN_CHAR(c);
                 c = NEXTC();

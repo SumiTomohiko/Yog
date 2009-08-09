@@ -23,6 +23,8 @@ enum YogNodeType {
     NODE_BLOCK_PARAM,
     NODE_BREAK,
     NODE_COMMAND_CALL,
+    NODE_DICT,
+    NODE_DICT_ELEM,
     NODE_EXCEPT,
     NODE_EXCEPT_BODY,
     NODE_FINALLY,
@@ -76,6 +78,13 @@ struct YogNode {
             YogVal args;
             YogVal blockarg;
         } command_call;
+        struct {
+            YogVal elems;
+        } dict;
+        struct {
+            YogVal key;
+            YogVal value;
+        } dict_elem;
         struct {
             YogVal head;
             YogVal excepts;

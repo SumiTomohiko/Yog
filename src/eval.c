@@ -4,6 +4,7 @@
 #include "yog/block.h"
 #include "yog/code.h"
 #include "yog/compile.h"
+#include "yog/dict.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"

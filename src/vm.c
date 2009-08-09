@@ -206,6 +206,7 @@ setup_klasses(YogEnv* env, YogVM* vm)
 
     YogObj_klass_init(env, vm->cObject);
     YogKlass_klass_init(env, vm->cKlass);
+    vm->cProperty = YogProperty_klass_new(env);
 
     vm->cFixnum = YogFixnum_klass_new(env);
     vm->cBignum = YogBignum_klass_new(env);
@@ -221,7 +222,6 @@ setup_klasses(YogEnv* env, YogVM* vm)
     vm->cThread = YogThread_klass_new(env);
     vm->cArray = YogArray_klass_new(env);
     vm->cDict = YogDict_klass_new(env);
-    vm->cProperty = YogProperty_klass_new(env);
     vm->cClassMethod = YogClassMethod_klass_new(env);
     vm->cCode = YogCode_klass_new(env);
 }

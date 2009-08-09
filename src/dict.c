@@ -26,19 +26,30 @@ subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YUNDEF);
 }
 
+void
+YogDict_set(YogEnv* env, YogVal self, YogVal key, YogVal value)
+{
+    SAVE_ARGS3(env, self, key, value);
+    YogVal tbl = YUNDEF;
+    PUSH_LOCAL(env, tbl);
+
+    tbl = PTR_AS(YogDict, self)->tbl;
+    YogTable_insert(env, tbl, key, value);
+
+    RETURN_VOID(env);
+}
+
 static YogVal
 subscript_assign(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal key = YUNDEF;
     YogVal value = YUNDEF;
-    YogVal tbl = YUNDEF;
-    PUSH_LOCALS3(env, key, value, tbl);
+    PUSH_LOCALS2(env, key, value);
 
-    tbl = PTR_AS(YogDict, self)->tbl;
     key = YogArray_at(env, args, 0);
     value = YogArray_at(env, args, 1);
-    YogTable_insert(env, tbl, key, value);
+    YogDict_set(env, self, key, value);
 
     RETURN(env, self);
 }
@@ -82,6 +93,27 @@ allocate(YogEnv* env, YogVal klass)
 }
 
 YogVal
+YogDict_new(YogEnv* env)
+{
+    return allocate(env, env->vm->cDict);
+}
+
+static YogVal
+get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    YogVal tbl = YUNDEF;
+    PUSH_LOCALS2(env, retval, tbl);
+
+    tbl = PTR_AS(YogDict, self)->tbl;
+    int_t size = YogTable_size(env, tbl);
+    retval = YogVal_from_int(env, size);
+
+    RETURN(env, retval);
+}
+
+YogVal
 YogDict_klass_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
@@ -94,6 +126,7 @@ YogDict_klass_new(YogEnv* env)
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", subscript_assign);
 #undef DEFINE_METHOD
+    YogKlass_define_property(env, klass, "size", get_size, NULL);
 
     RETURN(env, klass);
 }

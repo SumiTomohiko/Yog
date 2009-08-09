@@ -1,3 +1,4 @@
+#include "yog/array.h"
 #include "yog/klass.h"
 #include "yog/string.h"
 #include "yog/thread.h"
@@ -23,6 +24,25 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return INT2VAL(VAL2ID(self));
 }
 
+static YogVal
+equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    YogVal obj = YUNDEF;
+    PUSH_LOCALS2(env, retval, obj);
+
+    obj = YogArray_at(env, args, 0);
+    if (IS_SYMBOL(obj) && (self == obj)) {
+        retval = YTRUE;
+    }
+    else {
+        retval = YFALSE;
+    }
+
+    RETURN(env, retval);
+}
+
 YogVal
 YogSymbol_klass_new(YogEnv* env)
 {
@@ -31,6 +51,7 @@ YogSymbol_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_new(env, "Symbol", env->vm->cObject);
+    YogKlass_define_method(env, klass, "equal?", equal);
     YogKlass_define_method(env, klass, "hash", hash);
     YogKlass_define_method(env, klass, "to_s", to_s);
 
