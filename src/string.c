@@ -630,6 +630,55 @@ each_char(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YNIL);
 }
 
+int_t
+YogString_hash(YogEnv* env, YogVal self)
+{
+    const char* s = STRING_CSTR(self);
+
+    /* This code came from strhash in src/table.c */
+    int_t val = 0;
+    char c;
+    while ((c = *s++) != '\0') {
+        val = val * 997 + c;
+    }
+
+    return val + (val >> 5);
+}
+
+static YogVal
+equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal obj = YUNDEF;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, obj, retval);
+
+    obj = YogArray_at(env, args, 0);
+    if (STRING_ENCODING(self) != STRING_ENCODING(obj)) {
+        RETURN(env, YFALSE);
+    }
+
+    const char* s1 = STRING_CSTR(self);
+    const char* s2 = STRING_CSTR(obj);
+    if (strcmp(s1, s2) != 0) {
+        RETURN(env, YFALSE);
+    }
+
+    RETURN(env, YTRUE);
+}
+
+static YogVal
+hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = INT2VAL(YogString_hash(env, self));
+
+    RETURN(env, retval);
+}
+
 YogVal 
 YogString_klass_new(YogEnv* env) 
 {
@@ -637,16 +686,20 @@ YogString_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_method(env, klass, "to_s", to_s);
-    YogKlass_define_method(env, klass, "+", add);
-    YogKlass_define_method(env, klass, "*", multiply);
-    YogKlass_define_method(env, klass, "<<", lshift);
-    YogKlass_define_method(env, klass, "[]", subscript);
-    YogKlass_define_method(env, klass, "[]=", assign_subscript);
-    YogKlass_define_method(env, klass, "=~", match);
-    YogKlass_define_method(env, klass, "each_line", each_line);
-    YogKlass_define_method(env, klass, "each_byte", each_byte);
-    YogKlass_define_method(env, klass, "each_char", each_char);
+#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    DEFINE_METHOD("*", multiply);
+    DEFINE_METHOD("+", add);
+    DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD("=~", match);
+    DEFINE_METHOD("[]", subscript);
+    DEFINE_METHOD("[]=", assign_subscript);
+    DEFINE_METHOD("each_byte", each_byte);
+    DEFINE_METHOD("each_char", each_char);
+    DEFINE_METHOD("each_line", each_line);
+    DEFINE_METHOD("equal?", equal);
+    DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("to_s", to_s);
+#undef DEFINE_METHOD
 
     POP_LOCALS(env);
     return klass;

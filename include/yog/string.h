@@ -20,8 +20,9 @@ struct YogString {
 
 typedef struct YogString YogString;
 
-#define STRING_CSTR(s)  PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->items
-#define STRING_SIZE(s)  PTR_AS(YogString, s)->size
+#define STRING_CSTR(s)      PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->items
+#define STRING_SIZE(s)      PTR_AS(YogString, s)->size
+#define STRING_ENCODING(s)  PTR_AS(YogString, s)->encoding
 
 #include "yog/encoding.h"
 
@@ -38,6 +39,7 @@ char YogString_at(YogEnv*, YogVal, uint_t);
 void YogString_clear(YogEnv*, YogVal);
 YogVal YogString_clone(YogEnv*, YogVal);
 char* YogString_dup(YogEnv*, const char*);
+int_t YogString_hash(YogEnv*, YogVal);
 ID YogString_intern(YogEnv*, YogVal);
 YogVal YogString_klass_new(YogEnv*);
 YogVal YogString_multiply(YogEnv*, YogVal, int_t);

@@ -14,16 +14,30 @@
 #define BIGNUM2FLOAT(bignum)    mpz_get_d(BIGNUM_NUM(bignum))
 
 static YogVal
+YogBignum_to_s(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+#define BASE    10
+    size_t size = mpz_sizeinbase(PTR_AS(YogBignum, self)->num, BASE) + 2;
+    s = YogString_new_size(env, size);
+    mpz_get_str(STRING_CSTR(s), BASE, PTR_AS(YogBignum, self)->num);
+    PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->size = size;
+#undef BASE
+
+    RETURN(env, s);
+}
+
+static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
-    size_t size = mpz_sizeinbase(PTR_AS(YogBignum, self)->num, 10) + 2;
-    s = YogString_new_size(env, size);
-    mpz_get_str(STRING_CSTR(s), 10, PTR_AS(YogBignum, self)->num);
-    PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->size = size;
+    s = YogBignum_to_s(env, self);
 
     RETURN(env, s);
 }
@@ -673,6 +687,42 @@ xor(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
+static YogVal
+hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal s = YUNDEF;
+    YogVal h = YUNDEF;
+    PUSH_LOCALS2(env, s, h);
+
+    s = YogBignum_to_s(env, self);
+    h = INT2VAL(YogString_hash(env, s));
+
+    RETURN(env, h);
+}
+
+static YogVal
+equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    YogVal obj = YUNDEF;
+    PUSH_LOCALS2(env, retval, obj);
+
+    obj = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, IS_PTR(obj), "argument is not pointer");
+    YOG_ASSERT(env, IS_OBJ_OF(env, obj, cBignum), "object is not Bignum");
+
+    if (mpz_cmp(BIGNUM_NUM(self), BIGNUM_NUM(obj)) == 0) {
+        retval = YTRUE;
+    }
+    else {
+        retval = YFALSE;
+    }
+
+    RETURN(env, retval);
+}
+
 YogVal
 YogBignum_klass_new(YogEnv* env)
 {
@@ -682,21 +732,23 @@ YogBignum_klass_new(YogEnv* env)
 
     klass = YogKlass_new(env, "Bignum", env->vm->cObject);
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, (name), (f))
-    DEFINE_METHOD("-self", negative);
-    DEFINE_METHOD("+self", positive);
-    DEFINE_METHOD("~self", not);
-    DEFINE_METHOD("+", add);
-    DEFINE_METHOD("-", subtract);
+    DEFINE_METHOD("%", modulo);
+    DEFINE_METHOD("&", and);
     DEFINE_METHOD("*", multiply);
+    DEFINE_METHOD("+", add);
+    DEFINE_METHOD("+self", positive);
+    DEFINE_METHOD("-", subtract);
+    DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
-    DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD(">>", rshift);
-    DEFINE_METHOD("|", or);
-    DEFINE_METHOD("&", and);
     DEFINE_METHOD("^", xor);
+    DEFINE_METHOD("equal?", equal);
+    DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
+    DEFINE_METHOD("|", or);
+    DEFINE_METHOD("~self", not);
 #undef DEFINE_METHOD
 
     RETURN(env, klass);

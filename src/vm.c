@@ -15,7 +15,9 @@
 #include "yog/bool.h"
 #include "yog/builtins.h"
 #include "yog/classmethod.h"
+#include "yog/code.h"
 #include "yog/compile.h"
+#include "yog/dict.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -218,6 +220,7 @@ setup_klasses(YogEnv* env, YogVM* vm)
     vm->cFloat = YogFloat_klass_new(env);
     vm->cThread = YogThread_klass_new(env);
     vm->cArray = YogArray_klass_new(env);
+    vm->cDict = YogDict_klass_new(env);
     vm->cProperty = YogProperty_klass_new(env);
     vm->cClassMethod = YogClassMethod_klass_new(env);
     vm->cCode = YogCode_klass_new(env);
@@ -247,15 +250,16 @@ setup_exceptions(YogEnv* env, YogVM* vm)
 #define EXCEPTION_NEW(member, name)  do { \
     vm->member = YogKlass_new(env, name, vm->eException); \
 } while (0)
+    EXCEPTION_NEW(eArgumentError, "ArgumentError");
+    EXCEPTION_NEW(eAttributeError, "AttributeError");
+    EXCEPTION_NEW(eImportError, "ImportError");
+    EXCEPTION_NEW(eIndexError, "IndexError");
+    EXCEPTION_NEW(eKeyError, "KeyError");
+    EXCEPTION_NEW(eNameError, "NameError");
+    EXCEPTION_NEW(eSyntaxError, "SyntaxError");
     EXCEPTION_NEW(eTypeError, "TypeError");
     EXCEPTION_NEW(eValueError, "ValueError");
-    EXCEPTION_NEW(eIndexError, "IndexError");
-    EXCEPTION_NEW(eSyntaxError, "SyntaxError");
     EXCEPTION_NEW(eZeroDivisionError, "ZeroDivisionError");
-    EXCEPTION_NEW(eArgumentError, "ArgumentError");
-    EXCEPTION_NEW(eNameError, "NameError");
-    EXCEPTION_NEW(eImportError, "ImportError");
-    EXCEPTION_NEW(eAttributeError, "AttributeError");
 #undef EXCEPTION_NEW
 }
 
@@ -361,20 +365,22 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cFloat);
     KEEP(cThread);
     KEEP(cArray);
+    KEEP(cDict);
     KEEP(cProperty);
     KEEP(cClassMethod);
     KEEP(cCode);
 
+    KEEP(eArgumentError);
+    KEEP(eAttributeError);
     KEEP(eException);
+    KEEP(eImportError);
+    KEEP(eIndexError);
+    KEEP(eKeyError);
+    KEEP(eNameError);
+    KEEP(eSyntaxError);
     KEEP(eTypeError);
     KEEP(eValueError);
-    KEEP(eIndexError);
-    KEEP(eSyntaxError);
     KEEP(eZeroDivisionError);
-    KEEP(eArgumentError);
-    KEEP(eNameError);
-    KEEP(eImportError);
-    KEEP(eAttributeError);
 
     KEEP(pkgs);
     KEEP(search_path);
@@ -400,56 +406,60 @@ YogVM_init(YogVM* vm)
 {
     vm->gc_stress = FALSE;
 
+#define INIT(member)    vm->member = YUNDEF
     vm->next_id = 0;
-    vm->id2name = YUNDEF;
-    vm->name2id = YUNDEF;
+    INIT(id2name);
+    INIT(name2id);
     initialize_read_write_lock(&vm->sym_lock);
 
-    vm->cObject = YUNDEF;
-    vm->cKlass = YUNDEF;
-    vm->cFixnum = YUNDEF;
-    vm->cBignum = YUNDEF;
-    vm->cSymbol = YUNDEF;
-    vm->cString = YUNDEF;
-    vm->cRegexp = YUNDEF;
-    vm->cMatch = YUNDEF;
-    vm->cPackage = YUNDEF;
-    vm->cBool = YUNDEF;
-    vm->cFunction = YUNDEF;
-    vm->cNativeFunction = YUNDEF;
-    vm->cInstanceMethod = YUNDEF;
-    vm->cNativeInstanceMethod = YUNDEF;
-    vm->cPackageBlock = YUNDEF;
-    vm->cNil = YUNDEF;
-    vm->cFloat = YUNDEF;
-    vm->cThread = YUNDEF;
-    vm->cArray = YUNDEF;
-    vm->cProperty = YUNDEF;
-    vm->cClassMethod = YUNDEF;
-    vm->cCode = YUNDEF;
+    INIT(cObject);
+    INIT(cKlass);
+    INIT(cFixnum);
+    INIT(cBignum);
+    INIT(cSymbol);
+    INIT(cString);
+    INIT(cRegexp);
+    INIT(cMatch);
+    INIT(cPackage);
+    INIT(cBool);
+    INIT(cFunction);
+    INIT(cNativeFunction);
+    INIT(cInstanceMethod);
+    INIT(cNativeInstanceMethod);
+    INIT(cPackageBlock);
+    INIT(cNil);
+    INIT(cFloat);
+    INIT(cThread);
+    INIT(cArray);
+    INIT(cDict);
+    INIT(cProperty);
+    INIT(cClassMethod);
+    INIT(cCode);
 
-    vm->eException = YUNDEF;
-    vm->eTypeError = YUNDEF;
-    vm->eValueError = YUNDEF;
-    vm->eIndexError = YUNDEF;
-    vm->eSyntaxError = YUNDEF;
-    vm->eZeroDivisionError = YUNDEF;
-    vm->eArgumentError = YUNDEF;
-    vm->eNameError = YUNDEF;
-    vm->eImportError = YUNDEF;
-    vm->eAttributeError = YUNDEF;
+    INIT(eArgumentError);
+    INIT(eAttributeError);
+    INIT(eException);
+    INIT(eImportError);
+    INIT(eIndexError);
+    INIT(eKeyError);
+    INIT(eNameError);
+    INIT(eSyntaxError);
+    INIT(eTypeError);
+    INIT(eValueError);
+    INIT(eZeroDivisionError);
 
     vm->pkgs = PTR2VAL(NULL);
     initialize_read_write_lock(&vm->pkgs_lock);
-    vm->search_path = YUNDEF;
+    INIT(search_path);
 
     vm->encodings = PTR2VAL(NULL);
 
-    vm->finish_code = YUNDEF;
+    INIT(finish_code);
 
-    vm->running_threads = YUNDEF;
+    INIT(running_threads);
     vm->next_thread_id = 0;
     pthread_mutex_init(&vm->next_thread_id_lock, NULL);
+#undef INIT
 
     pthread_mutex_init(&vm->global_interp_lock, NULL);
     vm->running_gc = FALSE;

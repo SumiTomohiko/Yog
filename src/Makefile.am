@@ -20,6 +20,7 @@ COMMON_SOURCES = arg.c \
 	classmethod.c \
 	code.c \
 	compile.c \
+	dict.c \
 	encoding.c \
 	error.c \
 	eval.c \

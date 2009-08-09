@@ -53,20 +53,20 @@ am__objects_1 = yog_bdw-arg.$(OBJEXT) yog_bdw-array.$(OBJEXT) \
 	yog_bdw-block.$(OBJEXT) yog_bdw-bool.$(OBJEXT) \
 	yog_bdw-builtins.$(OBJEXT) yog_bdw-classmethod.$(OBJEXT) \
 	yog_bdw-code.$(OBJEXT) yog_bdw-compile.$(OBJEXT) \
-	yog_bdw-encoding.$(OBJEXT) yog_bdw-error.$(OBJEXT) \
-	yog_bdw-eval.$(OBJEXT) yog_bdw-exception.$(OBJEXT) \
-	yog_bdw-fixnum.$(OBJEXT) yog_bdw-float.$(OBJEXT) \
-	yog_bdw-frame.$(OBJEXT) yog_bdw-function.$(OBJEXT) \
-	yog_bdw-gc.$(OBJEXT) yog_bdw-inst.$(OBJEXT) \
-	yog_bdw-klass.$(OBJEXT) yog_bdw-lexer.$(OBJEXT) \
-	yog_bdw-main.$(OBJEXT) yog_bdw-nil.$(OBJEXT) \
-	yog_bdw-object.$(OBJEXT) yog_bdw-package.$(OBJEXT) \
-	yog_bdw-parser.$(OBJEXT) yog_bdw-property.$(OBJEXT) \
-	yog_bdw-regexp.$(OBJEXT) yog_bdw-repl.$(OBJEXT) \
-	yog_bdw-stacktrace.$(OBJEXT) yog_bdw-string.$(OBJEXT) \
-	yog_bdw-symbol.$(OBJEXT) yog_bdw-table.$(OBJEXT) \
-	yog_bdw-thread.$(OBJEXT) yog_bdw-value.$(OBJEXT) \
-	yog_bdw-vm.$(OBJEXT)
+	yog_bdw-dict.$(OBJEXT) yog_bdw-encoding.$(OBJEXT) \
+	yog_bdw-error.$(OBJEXT) yog_bdw-eval.$(OBJEXT) \
+	yog_bdw-exception.$(OBJEXT) yog_bdw-fixnum.$(OBJEXT) \
+	yog_bdw-float.$(OBJEXT) yog_bdw-frame.$(OBJEXT) \
+	yog_bdw-function.$(OBJEXT) yog_bdw-gc.$(OBJEXT) \
+	yog_bdw-inst.$(OBJEXT) yog_bdw-klass.$(OBJEXT) \
+	yog_bdw-lexer.$(OBJEXT) yog_bdw-main.$(OBJEXT) \
+	yog_bdw-nil.$(OBJEXT) yog_bdw-object.$(OBJEXT) \
+	yog_bdw-package.$(OBJEXT) yog_bdw-parser.$(OBJEXT) \
+	yog_bdw-property.$(OBJEXT) yog_bdw-regexp.$(OBJEXT) \
+	yog_bdw-repl.$(OBJEXT) yog_bdw-stacktrace.$(OBJEXT) \
+	yog_bdw-string.$(OBJEXT) yog_bdw-symbol.$(OBJEXT) \
+	yog_bdw-table.$(OBJEXT) yog_bdw-thread.$(OBJEXT) \
+	yog_bdw-value.$(OBJEXT) yog_bdw-vm.$(OBJEXT)
 am_yog_bdw_OBJECTS = $(am__objects_1) yog_bdw-bdw.$(OBJEXT)
 yog_bdw_OBJECTS = $(am_yog_bdw_OBJECTS)
 yog_bdw_LDADD = $(LDADD)
@@ -78,20 +78,21 @@ am__objects_2 = yog_copying-arg.$(OBJEXT) yog_copying-array.$(OBJEXT) \
 	yog_copying-block.$(OBJEXT) yog_copying-bool.$(OBJEXT) \
 	yog_copying-builtins.$(OBJEXT) \
 	yog_copying-classmethod.$(OBJEXT) yog_copying-code.$(OBJEXT) \
-	yog_copying-compile.$(OBJEXT) yog_copying-encoding.$(OBJEXT) \
-	yog_copying-error.$(OBJEXT) yog_copying-eval.$(OBJEXT) \
-	yog_copying-exception.$(OBJEXT) yog_copying-fixnum.$(OBJEXT) \
-	yog_copying-float.$(OBJEXT) yog_copying-frame.$(OBJEXT) \
-	yog_copying-function.$(OBJEXT) yog_copying-gc.$(OBJEXT) \
-	yog_copying-inst.$(OBJEXT) yog_copying-klass.$(OBJEXT) \
-	yog_copying-lexer.$(OBJEXT) yog_copying-main.$(OBJEXT) \
-	yog_copying-nil.$(OBJEXT) yog_copying-object.$(OBJEXT) \
-	yog_copying-package.$(OBJEXT) yog_copying-parser.$(OBJEXT) \
-	yog_copying-property.$(OBJEXT) yog_copying-regexp.$(OBJEXT) \
-	yog_copying-repl.$(OBJEXT) yog_copying-stacktrace.$(OBJEXT) \
-	yog_copying-string.$(OBJEXT) yog_copying-symbol.$(OBJEXT) \
-	yog_copying-table.$(OBJEXT) yog_copying-thread.$(OBJEXT) \
-	yog_copying-value.$(OBJEXT) yog_copying-vm.$(OBJEXT)
+	yog_copying-compile.$(OBJEXT) yog_copying-dict.$(OBJEXT) \
+	yog_copying-encoding.$(OBJEXT) yog_copying-error.$(OBJEXT) \
+	yog_copying-eval.$(OBJEXT) yog_copying-exception.$(OBJEXT) \
+	yog_copying-fixnum.$(OBJEXT) yog_copying-float.$(OBJEXT) \
+	yog_copying-frame.$(OBJEXT) yog_copying-function.$(OBJEXT) \
+	yog_copying-gc.$(OBJEXT) yog_copying-inst.$(OBJEXT) \
+	yog_copying-klass.$(OBJEXT) yog_copying-lexer.$(OBJEXT) \
+	yog_copying-main.$(OBJEXT) yog_copying-nil.$(OBJEXT) \
+	yog_copying-object.$(OBJEXT) yog_copying-package.$(OBJEXT) \
+	yog_copying-parser.$(OBJEXT) yog_copying-property.$(OBJEXT) \
+	yog_copying-regexp.$(OBJEXT) yog_copying-repl.$(OBJEXT) \
+	yog_copying-stacktrace.$(OBJEXT) yog_copying-string.$(OBJEXT) \
+	yog_copying-symbol.$(OBJEXT) yog_copying-table.$(OBJEXT) \
+	yog_copying-thread.$(OBJEXT) yog_copying-value.$(OBJEXT) \
+	yog_copying-vm.$(OBJEXT)
 am_yog_copying_OBJECTS = $(am__objects_2) \
 	yog_copying-copying.$(OBJEXT)
 yog_copying_OBJECTS = $(am_yog_copying_OBJECTS)
@@ -109,6 +110,7 @@ am__objects_3 = yog_generational-arg.$(OBJEXT) \
 	yog_generational-classmethod.$(OBJEXT) \
 	yog_generational-code.$(OBJEXT) \
 	yog_generational-compile.$(OBJEXT) \
+	yog_generational-dict.$(OBJEXT) \
 	yog_generational-encoding.$(OBJEXT) \
 	yog_generational-error.$(OBJEXT) \
 	yog_generational-eval.$(OBJEXT) \
@@ -152,6 +154,7 @@ am__objects_4 = yog_mark_sweep-arg.$(OBJEXT) \
 	yog_mark_sweep-builtins.$(OBJEXT) \
 	yog_mark_sweep-classmethod.$(OBJEXT) \
 	yog_mark_sweep-code.$(OBJEXT) yog_mark_sweep-compile.$(OBJEXT) \
+	yog_mark_sweep-dict.$(OBJEXT) \
 	yog_mark_sweep-encoding.$(OBJEXT) \
 	yog_mark_sweep-error.$(OBJEXT) yog_mark_sweep-eval.$(OBJEXT) \
 	yog_mark_sweep-exception.$(OBJEXT) \
@@ -187,6 +190,7 @@ am__objects_5 = yog_mark_sweep_compact-arg.$(OBJEXT) \
 	yog_mark_sweep_compact-classmethod.$(OBJEXT) \
 	yog_mark_sweep_compact-code.$(OBJEXT) \
 	yog_mark_sweep_compact-compile.$(OBJEXT) \
+	yog_mark_sweep_compact-dict.$(OBJEXT) \
 	yog_mark_sweep_compact-encoding.$(OBJEXT) \
 	yog_mark_sweep_compact-error.$(OBJEXT) \
 	yog_mark_sweep_compact-eval.$(OBJEXT) \
@@ -377,6 +381,7 @@ COMMON_SOURCES = arg.c \
 	classmethod.c \
 	code.c \
 	compile.c \
+	dict.c \
 	encoding.c \
 	error.c \
 	eval.c \
@@ -540,6 +545,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-classmethod.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-compile.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-dict.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-encoding.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-eval.Po@am__quote@
@@ -578,6 +584,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-compile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-copying.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-dict.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-encoding.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-eval.Po@am__quote@
@@ -616,6 +623,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-compile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-copying.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-dict.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-encoding.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-eval.Po@am__quote@
@@ -655,6 +663,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-classmethod.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-compile.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-dict.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-encoding.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-eval.Po@am__quote@
@@ -693,6 +702,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-classmethod.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-compile.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-dict.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-encoding.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-eval.Po@am__quote@
@@ -882,6 +892,20 @@ yog_bdw-compile.obj: compile.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='compile.c' object='yog_bdw-compile.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-compile.obj `if test -f 'compile.c'; then $(CYGPATH_W) 'compile.c'; else $(CYGPATH_W) '$(srcdir)/compile.c'; fi`
+
+yog_bdw-dict.o: dict.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-dict.o -MD -MP -MF $(DEPDIR)/yog_bdw-dict.Tpo -c -o yog_bdw-dict.o `test -f 'dict.c' || echo '$(srcdir)/'`dict.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-dict.Tpo $(DEPDIR)/yog_bdw-dict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dict.c' object='yog_bdw-dict.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-dict.o `test -f 'dict.c' || echo '$(srcdir)/'`dict.c
+
+yog_bdw-dict.obj: dict.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-dict.obj -MD -MP -MF $(DEPDIR)/yog_bdw-dict.Tpo -c -o yog_bdw-dict.obj `if test -f 'dict.c'; then $(CYGPATH_W) 'dict.c'; else $(CYGPATH_W) '$(srcdir)/dict.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-dict.Tpo $(DEPDIR)/yog_bdw-dict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dict.c' object='yog_bdw-dict.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-dict.obj `if test -f 'dict.c'; then $(CYGPATH_W) 'dict.c'; else $(CYGPATH_W) '$(srcdir)/dict.c'; fi`
 
 yog_bdw-encoding.o: encoding.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-encoding.o -MD -MP -MF $(DEPDIR)/yog_bdw-encoding.Tpo -c -o yog_bdw-encoding.o `test -f 'encoding.c' || echo '$(srcdir)/'`encoding.c
@@ -1415,6 +1439,20 @@ yog_copying-compile.obj: compile.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-compile.obj `if test -f 'compile.c'; then $(CYGPATH_W) 'compile.c'; else $(CYGPATH_W) '$(srcdir)/compile.c'; fi`
 
+yog_copying-dict.o: dict.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-dict.o -MD -MP -MF $(DEPDIR)/yog_copying-dict.Tpo -c -o yog_copying-dict.o `test -f 'dict.c' || echo '$(srcdir)/'`dict.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-dict.Tpo $(DEPDIR)/yog_copying-dict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dict.c' object='yog_copying-dict.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-dict.o `test -f 'dict.c' || echo '$(srcdir)/'`dict.c
+
+yog_copying-dict.obj: dict.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-dict.obj -MD -MP -MF $(DEPDIR)/yog_copying-dict.Tpo -c -o yog_copying-dict.obj `if test -f 'dict.c'; then $(CYGPATH_W) 'dict.c'; else $(CYGPATH_W) '$(srcdir)/dict.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-dict.Tpo $(DEPDIR)/yog_copying-dict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dict.c' object='yog_copying-dict.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-dict.obj `if test -f 'dict.c'; then $(CYGPATH_W) 'dict.c'; else $(CYGPATH_W) '$(srcdir)/dict.c'; fi`
+
 yog_copying-encoding.o: encoding.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-encoding.o -MD -MP -MF $(DEPDIR)/yog_copying-encoding.Tpo -c -o yog_copying-encoding.o `test -f 'encoding.c' || echo '$(srcdir)/'`encoding.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-encoding.Tpo $(DEPDIR)/yog_copying-encoding.Po
@@ -1946,6 +1984,20 @@ yog_generational-compile.obj: compile.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='compile.c' object='yog_generational-compile.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-compile.obj `if test -f 'compile.c'; then $(CYGPATH_W) 'compile.c'; else $(CYGPATH_W) '$(srcdir)/compile.c'; fi`
+
+yog_generational-dict.o: dict.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-dict.o -MD -MP -MF $(DEPDIR)/yog_generational-dict.Tpo -c -o yog_generational-dict.o `test -f 'dict.c' || echo '$(srcdir)/'`dict.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-dict.Tpo $(DEPDIR)/yog_generational-dict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dict.c' object='yog_generational-dict.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-dict.o `test -f 'dict.c' || echo '$(srcdir)/'`dict.c
+
+yog_generational-dict.obj: dict.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-dict.obj -MD -MP -MF $(DEPDIR)/yog_generational-dict.Tpo -c -o yog_generational-dict.obj `if test -f 'dict.c'; then $(CYGPATH_W) 'dict.c'; else $(CYGPATH_W) '$(srcdir)/dict.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-dict.Tpo $(DEPDIR)/yog_generational-dict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dict.c' object='yog_generational-dict.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-dict.obj `if test -f 'dict.c'; then $(CYGPATH_W) 'dict.c'; else $(CYGPATH_W) '$(srcdir)/dict.c'; fi`
 
 yog_generational-encoding.o: encoding.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-encoding.o -MD -MP -MF $(DEPDIR)/yog_generational-encoding.Tpo -c -o yog_generational-encoding.o `test -f 'encoding.c' || echo '$(srcdir)/'`encoding.c
@@ -2507,6 +2559,20 @@ yog_mark_sweep-compile.obj: compile.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-compile.obj `if test -f 'compile.c'; then $(CYGPATH_W) 'compile.c'; else $(CYGPATH_W) '$(srcdir)/compile.c'; fi`
 
+yog_mark_sweep-dict.o: dict.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-dict.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-dict.Tpo -c -o yog_mark_sweep-dict.o `test -f 'dict.c' || echo '$(srcdir)/'`dict.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-dict.Tpo $(DEPDIR)/yog_mark_sweep-dict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dict.c' object='yog_mark_sweep-dict.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-dict.o `test -f 'dict.c' || echo '$(srcdir)/'`dict.c
+
+yog_mark_sweep-dict.obj: dict.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-dict.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep-dict.Tpo -c -o yog_mark_sweep-dict.obj `if test -f 'dict.c'; then $(CYGPATH_W) 'dict.c'; else $(CYGPATH_W) '$(srcdir)/dict.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-dict.Tpo $(DEPDIR)/yog_mark_sweep-dict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dict.c' object='yog_mark_sweep-dict.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-dict.obj `if test -f 'dict.c'; then $(CYGPATH_W) 'dict.c'; else $(CYGPATH_W) '$(srcdir)/dict.c'; fi`
+
 yog_mark_sweep-encoding.o: encoding.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-encoding.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-encoding.Tpo -c -o yog_mark_sweep-encoding.o `test -f 'encoding.c' || echo '$(srcdir)/'`encoding.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-encoding.Tpo $(DEPDIR)/yog_mark_sweep-encoding.Po
@@ -3038,6 +3104,20 @@ yog_mark_sweep_compact-compile.obj: compile.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='compile.c' object='yog_mark_sweep_compact-compile.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-compile.obj `if test -f 'compile.c'; then $(CYGPATH_W) 'compile.c'; else $(CYGPATH_W) '$(srcdir)/compile.c'; fi`
+
+yog_mark_sweep_compact-dict.o: dict.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-dict.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-dict.Tpo -c -o yog_mark_sweep_compact-dict.o `test -f 'dict.c' || echo '$(srcdir)/'`dict.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-dict.Tpo $(DEPDIR)/yog_mark_sweep_compact-dict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dict.c' object='yog_mark_sweep_compact-dict.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-dict.o `test -f 'dict.c' || echo '$(srcdir)/'`dict.c
+
+yog_mark_sweep_compact-dict.obj: dict.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-dict.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-dict.Tpo -c -o yog_mark_sweep_compact-dict.obj `if test -f 'dict.c'; then $(CYGPATH_W) 'dict.c'; else $(CYGPATH_W) '$(srcdir)/dict.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-dict.Tpo $(DEPDIR)/yog_mark_sweep_compact-dict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dict.c' object='yog_mark_sweep_compact-dict.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-dict.obj `if test -f 'dict.c'; then $(CYGPATH_W) 'dict.c'; else $(CYGPATH_W) '$(srcdir)/dict.c'; fi`
 
 yog_mark_sweep_compact-encoding.o: encoding.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-encoding.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-encoding.Tpo -c -o yog_mark_sweep_compact-encoding.o `test -f 'encoding.c' || echo '$(srcdir)/'`encoding.c

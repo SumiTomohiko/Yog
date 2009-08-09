@@ -48,20 +48,22 @@ struct YogVM {
     YogVal cFloat;
     YogVal cThread;
     YogVal cArray;
+    YogVal cDict;
     YogVal cProperty;
     YogVal cClassMethod;
     YogVal cCode;
 
+    YogVal eArgumentError;
+    YogVal eAttributeError;
     YogVal eException;
+    YogVal eImportError;
+    YogVal eIndexError;
+    YogVal eKeyError;
+    YogVal eNameError;
+    YogVal eSyntaxError;
     YogVal eTypeError;
     YogVal eValueError;
-    YogVal eIndexError;
-    YogVal eSyntaxError;
     YogVal eZeroDivisionError;
-    YogVal eArgumentError;
-    YogVal eNameError;
-    YogVal eImportError;
-    YogVal eAttributeError;
 
     YogVal pkgs;
     pthread_rwlock_t pkgs_lock;
