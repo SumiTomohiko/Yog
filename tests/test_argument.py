@@ -94,13 +94,33 @@ foo(42, 26)
 """, """26
 """)
 
-    def test_variable_keyword_argument0(self):
+    def test_keyword_argument0(self):
         self._test("""
 def foo(bar)
   puts(bar)
 end
 
 foo(bar: 42)
+""", """42
+""")
+
+    def test_variable_keyword_argument0(self):
+        self._test("""
+def foo(**bar)
+  puts(bar.size)
+end
+
+foo()
+""", """0
+""")
+
+    def test_variable_keyword_argument10(self):
+        self._test("""
+def foo(**bar)
+  puts(bar[:baz])
+end
+
+foo(baz: 42)
 """, """42
 """)
 
