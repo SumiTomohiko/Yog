@@ -16,6 +16,7 @@ struct YogToken {
 typedef struct YogToken YogToken;
 
 enum YogNodeType {
+    NODE_ARGS,
     NODE_ARRAY,
     NODE_ASSIGN,
     NODE_ATTR,
@@ -33,6 +34,7 @@ enum YogNodeType {
     NODE_IF,
     NODE_IMPORT,
     NODE_KLASS,
+    NODE_KW_ARG,
     NODE_KW_PARAM,
     NODE_LITERAL,
     NODE_LOGICAL_AND,
@@ -55,6 +57,10 @@ struct YogNode {
     YogNodeType type;
     uint_t lineno;
     union {
+        struct {
+            YogVal posargs;
+            YogVal kwargs;
+        } args;
         struct {
             YogVal elems;
         } array;
@@ -122,6 +128,10 @@ struct YogNode {
             YogVal super;
             YogVal stmts;
         } klass;
+        struct {
+            ID name;
+            YogVal value;
+        } kwarg;
         struct {
             YogVal val;
         } literal;

@@ -32,6 +32,10 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
 #define KEEP(member)    YogGC_keep(env, &node->u.member, keeper, heap)
     switch (node->type) {
+    case NODE_ARGS:
+        KEEP(args.posargs);
+        KEEP(args.kwargs);
+        break;
     case NODE_ARRAY:
         KEEP(array.elems);
         break;
@@ -99,6 +103,9 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_KLASS:
         KEEP(klass.super);
         KEEP(klass.stmts);
+        break;
+    case NODE_KW_ARG:
+        KEEP(kwarg.value);
         break;
     case NODE_LITERAL:
         KEEP(literal.val);
@@ -210,25 +217,6 @@ Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_defaul
 }
 
 static YogVal
-make_array_with(YogEnv* env, YogVal elem)
-{
-    SAVE_ARG(env, elem);
-
-    YogVal array = YUNDEF;
-    PUSH_LOCAL(env, array);
-
-    if (IS_PTR(elem) || IS_SYMBOL(elem)) {
-        array = YogArray_new(env);
-        YogArray_push(env, array, elem);
-    }
-    else {
-        array = YNIL;
-    }
-
-    RETURN(env, array);
-}
-
-static YogVal
 Array_push(YogEnv* env, YogVal array, YogVal elem)
 {
     SAVE_ARGS2(env, array, elem);
@@ -243,6 +231,12 @@ Array_push(YogEnv* env, YogVal array, YogVal elem)
     YogArray_push(env, array, elem);
 
     RETURN(env, array);
+}
+
+static YogVal
+make_array_with(YogEnv* env, YogVal elem)
+{
+    return Array_push(env, YNIL, elem);
 }
 
 static YogVal
@@ -420,17 +414,34 @@ Attr_new(YogEnv* env, uint_t lineno, YogVal obj, ID name)
 }
 
 static YogVal
+Args_new(YogEnv* env, uint_t lineno, YogVal posargs, YogVal kwargs)
+{
+    SAVE_ARGS2(env, posargs, kwargs);
+    YogVal args = YUNDEF;
+    PUSH_LOCAL(env, args);
+
+    args = YogNode_new(env, NODE_ARGS, lineno);
+    PTR_AS(YogNode, args)->u.args.posargs = posargs;
+    PTR_AS(YogNode, args)->u.args.kwargs = kwargs;
+
+    RETURN(env, args);
+}
+
+static YogVal
 FuncCall_new2(YogEnv* env, uint_t lineno, YogVal recv, ID name, YogVal arg)
 {
     SAVE_ARGS2(env, recv, arg);
     YogVal postfix = YUNDEF;
+    YogVal posargs = YUNDEF;
     YogVal args = YUNDEF;
     PUSH_LOCALS2(env, postfix, args);
 
     postfix = Attr_new(env, lineno, recv, name);
 
-    args = YogArray_new(env);
-    YogArray_push(env, args, arg);
+    posargs = YogArray_new(env);
+    YogArray_push(env, posargs, arg);
+
+    args = Args_new(env, lineno, posargs, YNIL);
 
     YogVal node = FuncCall_new(env, lineno, postfix, args, YNIL);
 
@@ -946,11 +957,42 @@ param_with_default(A) ::= NAME(B) param_default(C). {
     A = Param_new(env, NODE_PARAM, lineno, id, C);
 }
 
-args(A) ::= expr(B). {
+args(A) ::= /* empty */. {
+    A = YNIL;
+}
+args(A) ::= posargs(B). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, YNIL);
+}
+args(A) ::= posargs(B) COMMA kwargs(C). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, C);
+}
+args(A) ::= kwargs(B). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, YNIL, B);
+}
+
+posargs(A) ::= expr(B). {
     A = make_array_with(env, B);
 }
-args(A) ::= args(B) COMMA expr(C). {
-    A = Array_push(env, B, C);
+posargs(A) ::= posargs(B) COMMA expr(C). {
+    YogArray_push(env, B, C);
+    A = B;
+}
+
+kwargs(A) ::= kwarg(B). {
+    A = make_array_with(env, B);
+}
+kwargs(A) ::= kwargs(B) COMMA kwarg(C). {
+    YogArray_push(env, B, C);
+    A = B;
+}
+
+kwarg(A) ::= NAME(B) COLON expr(C). {
+    A = YogNode_new(env, NODE_KW_ARG, TOKEN_LINENO(B));
+    PTR_AS(YogNode, A)->u.kwarg.name = PTR_AS(YogToken, B)->u.id;
+    PTR_AS(YogNode, A)->u.kwarg.value = C;
 }
 
 expr(A) ::= assign_expr(B). {
@@ -1114,7 +1156,7 @@ power(A) ::= postfix_expr(B). {
 postfix_expr(A) ::= atom(B). {
     A = B;
 }
-postfix_expr(A) ::= postfix_expr(B) LPAR args_opt(C) RPAR blockarg_opt(D). {
+postfix_expr(A) ::= postfix_expr(B) LPAR args(C) RPAR blockarg_opt(D). {
     A = FuncCall_new(env, NODE_LINENO(B), B, C, D);
 }
 postfix_expr(A) ::= postfix_expr(B) LBRACKET expr(C) RBRACKET. {
@@ -1169,9 +1211,11 @@ atom(A) ::= LINE(B). {
     YogVal val = INT2VAL(lineno);
     A = Literal_new(env, lineno, val);
 }
-atom(A) ::= LBRACKET(B) args_opt(C) RBRACKET. {
-    uint_t lineno = NODE_LINENO(B);
-    A = Array_new(env, lineno, C);
+atom(A) ::= LBRACKET(B) exprs(C) RBRACKET. {
+    A = Array_new(env, NODE_LINENO(B), C);
+}
+atom(A) ::= LBRACKET(B) RBRACKET. {
+    A = Array_new(env, NODE_LINENO(B), YNIL);
 }
 atom(A) ::= LBRACE(B) RBRACE . {
     A = Dict_new(env, NODE_LINENO(B), YNIL);
@@ -1183,8 +1227,16 @@ atom(A) ::= LPAR expr(B) RPAR. {
     A = B;
 }
 
+exprs(A) ::= expr(B). {
+    A = make_array_with(env, B);
+}
+exprs(A) ::= exprs(B) COMMA expr(C). {
+    YogArray_push(env, B, C);
+    A = B;
+}
+
 dict_elems(A) ::= dict_elem(B). {
-    A = Array_push(env, A, B);
+    A = make_array_with(env, B);
 }
 dict_elems(A) ::= dict_elems(B) COMMA dict_elem(C). {
     YogArray_push(env, B, C);
@@ -1198,13 +1250,6 @@ dict_elem(A) ::= NAME(B) COLON expr(C). {
     ID id = PTR_AS(YogToken, B)->u.id;
     YogVal var = Literal_new(env, lineno, ID2VAL(id));
     A = DictElem_new(env, lineno, var, C);
-}
-
-args_opt(A) ::= /* empty */. {
-    A = YNIL;
-}
-args_opt(A) ::= args(B). {
-    A = B;
 }
 
 comma_opt(A) ::= /* empty */. {

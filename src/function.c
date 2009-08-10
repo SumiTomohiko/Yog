@@ -62,12 +62,12 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     for (i = 0; i < kwargc; i++) {
         YogVal name = kwargs[2 * i];
         ID id = VAL2ID(name);
-        uint_t j = 0;
+        uint_t j;
         for (j = 0; j < PTR_AS(YogArgInfo, arg_info)->argc; j++) {
             YogVal argnames = PTR_AS(YogArgInfo, arg_info)->argnames;
             ID argname = PTR_AS(ID, argnames)[j];
             if (argname == id) {
-                YOG_ASSERT(env, !IS_UNDEF(PTR_AS(YogValArray, args)->items[j]), "Argument specified twice.");
+                YOG_ASSERT(env, IS_UNDEF(PTR_AS(YogValArray, args)->items[j]), "Argument specified twice.");
                 YogVal* items = PTR_AS(YogValArray, args)->items;
                 YogVal val = kwargs[2 * i + 1];
                 items[args_offset + j] = val;
