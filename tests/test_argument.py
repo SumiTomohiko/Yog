@@ -94,4 +94,14 @@ foo(42, 26)
 """, """26
 """)
 
+    def test_variable_keyword_argument0(self):
+        self._test("""
+def foo(bar)
+  puts(bar)
+end
+
+foo(bar: 42)
+""", """42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
