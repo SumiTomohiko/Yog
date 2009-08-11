@@ -1897,7 +1897,8 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     uint_t lineno = NODE(node)->lineno;
     switch (COMPILE_DATA(data)->ctx) {
     case CTX_FUNC:
-        YOG_ASSERT(env, FALSE, "TODO: NOT IMPLEMENTED");
+        CompileData_add_make_function(env, data, lineno);
+        CompileData_add_store_local(env, data, lineno, id);
         break;
     case CTX_KLASS:
     case CTX_PKG:
@@ -1905,7 +1906,7 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
         CompileData_add_store_name(env, data, lineno, id);
         break;
     default:
-        YOG_ASSERT(env, FALSE, "Unknown context.");
+        YOG_BUG(env, "unnknown context (0x%08x)", COMPILE_DATA(data)->ctx);
         break;
     }
 
