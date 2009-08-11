@@ -53,10 +53,14 @@ enum st_retval {
  */
 
 /* src/table.c */
+YogVal YogTableIterator_current_key(YogEnv*, YogVal);
+YogVal YogTableIterator_current_value(YogEnv*, YogVal);
+BOOL YogTableIterator_next(YogEnv*, YogVal);
 void YogTable_add_direct(YogEnv*, YogVal, YogVal, YogVal);
 BOOL YogTable_delete(YogEnv*, YogVal, YogVal*, YogVal*);
 void YogTable_dump(YogEnv*, YogVal);
 BOOL YogTable_foreach(YogEnv*, YogVal, int_t (*)(YogEnv*, YogVal, YogVal, YogVal*), YogVal*);
+YogVal YogTable_get_iterator(YogEnv*, YogVal);
 BOOL YogTable_insert(YogEnv*, YogVal, YogVal, YogVal);
 BOOL YogTable_lookup(YogEnv*, YogVal, YogVal, YogVal*);
 BOOL YogTable_lookup_str(YogEnv*, YogVal, const char*, YogVal*);

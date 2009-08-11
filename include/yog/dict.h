@@ -18,6 +18,10 @@ typedef struct YogDict YogDict;
  */
 
 /* src/dict.c */
+YogVal YogDictIterator_current_key(YogEnv*, YogVal);
+YogVal YogDictIterator_current_value(YogEnv*, YogVal);
+BOOL YogDictIterator_next(YogEnv*, YogVal);
+YogVal YogDict_get_iterator(YogEnv*, YogVal);
 YogVal YogDict_klass_new(YogEnv*);
 YogVal YogDict_new(YogEnv*);
 void YogDict_set(YogEnv*, YogVal, YogVal, YogVal);

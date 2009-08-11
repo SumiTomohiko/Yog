@@ -7,6 +7,12 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
+struct DictIterator {
+    YogVal tbl_iter;
+};
+
+typedef struct DictIterator DictIterator;
+
 static YogVal
 subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -129,6 +135,72 @@ YogDict_klass_new(YogEnv* env)
     YogKlass_define_property(env, klass, "size", get_size, NULL);
 
     RETURN(env, klass);
+}
+
+static void
+DictIterator_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    DictIterator* iter = ptr;
+#define KEEP(member)    YogGC_keep(env, &iter->member, keeper, heap)
+    KEEP(tbl_iter);
+#undef KEEP
+}
+
+YogVal
+YogDictIterator_current_value(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal tbl_iter = YUNDEF;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, tbl_iter, retval);
+
+    tbl_iter = PTR_AS(DictIterator, self)->tbl_iter;
+    retval = YogTableIterator_current_value(env, tbl_iter);
+
+    RETURN(env, retval);
+}
+
+YogVal
+YogDictIterator_current_key(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal tbl_iter = YUNDEF;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, tbl_iter, retval);
+
+    tbl_iter = PTR_AS(DictIterator, self)->tbl_iter;
+    retval = YogTableIterator_current_key(env, tbl_iter);
+
+    RETURN(env, retval);
+}
+
+BOOL
+YogDictIterator_next(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal tbl_iter = YUNDEF;
+    PUSH_LOCAL(env, tbl_iter);
+
+    tbl_iter = PTR_AS(DictIterator, self)->tbl_iter;
+    BOOL retval = YogTableIterator_next(env, tbl_iter);
+
+    RETURN(env, retval);
+}
+
+YogVal
+YogDict_get_iterator(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal iter = YUNDEF;
+    YogVal tbl_iter = YUNDEF;
+    PUSH_LOCALS2(env, iter, tbl_iter);
+
+    tbl_iter = YogTable_get_iterator(env, PTR_AS(YogDict, self)->tbl);
+
+    iter = ALLOC_OBJ(env, DictIterator_keep_children, NULL, DictIterator);
+    PTR_AS(DictIterator, iter)->tbl_iter = tbl_iter;
+
+    RETURN(env, iter);
 }
 
 /**

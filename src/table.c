@@ -746,6 +746,107 @@ YogTable_raw_dump(YogEnv* env, YogVal table)
     printf("}");
 }
 
+struct TableIterator {
+    YogVal tbl;
+    uint_t bins_index;
+    YogVal entry;
+};
+
+typedef struct TableIterator TableIterator;
+
+static void
+TableIterator_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    TableIterator* iter = ptr;
+#define KEEP(member)    YogGC_keep(env, &iter->member, keeper, heap)
+    KEEP(tbl);
+    KEEP(entry);
+#undef KEEP
+}
+
+YogVal
+YogTableIterator_current_value(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal value = YUNDEF;
+    YogVal entry = YUNDEF;
+    PUSH_LOCALS2(env, value, entry);
+
+    entry = PTR_AS(TableIterator, self)->entry;
+    value = PTR_AS(YogTableEntry, entry)->record;
+
+    RETURN(env, value);
+}
+
+YogVal
+YogTableIterator_current_key(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal key = YUNDEF;
+    YogVal entry = YUNDEF;
+    PUSH_LOCALS2(env, key, entry);
+
+    entry = PTR_AS(TableIterator, self)->entry;
+    key = PTR_AS(YogTableEntry, entry)->key;
+
+    RETURN(env, key);
+}
+
+BOOL
+YogTableIterator_next(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal current_entry = YUNDEF;
+    YogVal entry = YUNDEF;
+    YogVal next = YUNDEF;
+    PUSH_LOCALS3(env, current_entry, entry, next);
+
+    current_entry = PTR_AS(TableIterator, self)->entry;
+    if (IS_PTR(current_entry)) {
+        next = PTR_AS(YogTableEntry, current_entry)->next;
+        if (IS_PTR(next)) {
+            PTR_AS(TableIterator, self)->entry = next;
+            RETURN(env, TRUE);
+        }
+    }
+
+    uint_t i = PTR_AS(TableIterator, self)->bins_index;
+    YogVal tbl = PTR_AS(TableIterator, self)->tbl;
+    uint_t num_bins = PTR_AS(YogTable, tbl)->num_bins;
+    while (i < num_bins) {
+        entry = PTR_AS(YogVal, PTR_AS(YogTable, tbl)->bins)[i];
+        if (IS_PTR(entry)) {
+            break;
+        }
+
+        i++;
+    }
+    if (i < num_bins) {
+        PTR_AS(TableIterator, self)->bins_index = i + 1;
+        PTR_AS(TableIterator, self)->entry = entry;
+        RETURN(env, TRUE);
+    }
+
+    PTR_AS(TableIterator, self)->bins_index = i;
+
+    RETURN(env, FALSE);
+}
+
+YogVal
+YogTable_get_iterator(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal iter = YUNDEF;
+    PUSH_LOCAL(env, iter);
+
+    iter = ALLOC_OBJ(env, TableIterator_keep_children, NULL, TableIterator);
+    PTR_AS(TableIterator, iter)->tbl = self;
+    PTR_AS(TableIterator, iter)->bins_index = 0;
+    PTR_AS(TableIterator, iter)->entry = YUNDEF;
+
+    RETURN(env, iter);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

@@ -190,17 +190,17 @@ foo(26, *quux)
 """, """42
 """)
 
-    def test_keyword_variable_parameter0(self):
+    def test_variable_keyword_parameter0(self):
         self._test("""
 def foo()
   puts(42)
 end
 
-foo({})
+foo(**{})
 """, """42
 """)
 
-    def test_keyword_variable_parameter10(self):
+    def test_variable_keyword_parameter10(self):
         self._test("""
 def foo(bar)
   puts(bar)
@@ -210,7 +210,7 @@ foo(**{ bar: 42 })
 """, """42
 """)
 
-    def test_keyword_variable_parameter20(self):
+    def test_variable_keyword_parameter20(self):
         self._test("""
 def foo(bar, **baz)
   puts(bar)
@@ -220,7 +220,7 @@ foo(**{ bar: 42, quux: 26})
 """, """42
 """)
 
-    def test_keyword_variable_parameter30(self):
+    def test_variable_keyword_parameter30(self):
         self._test("""
 def foo(bar, **baz)
   puts(baz[:quux])

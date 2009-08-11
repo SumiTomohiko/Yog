@@ -577,7 +577,8 @@ scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal d
     PUSH_LOCALS5(env, posargs, kwargs, callee, args, blockarg);
     YogVal child_node = YUNDEF;
     YogVal vararg = YUNDEF;
-    PUSH_LOCALS2(env, child_node, vararg);
+    YogVal varkwarg = YUNDEF;
+    PUSH_LOCALS3(env, child_node, vararg, varkwarg);
 
     callee = NODE(node)->u.func_call.callee;
     visit_node(env, visitor, callee, data);
@@ -609,6 +610,11 @@ scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal d
         vararg = PTR_AS(YogNode, args)->u.args.vararg;
         if (IS_PTR(vararg)) {
             visit_node(env, visitor, vararg, data);
+        }
+
+        varkwarg = PTR_AS(YogNode, args)->u.args.varkwarg;
+        if (IS_PTR(varkwarg)) {
+            visit_node(env, visitor, varkwarg, data);
         }
     }
 
@@ -1917,7 +1923,8 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     YogVal child_node = YUNDEF;
     PUSH_LOCALS5(env, posargs, kwargs, args, blockarg, child_node);
     YogVal vararg = YUNDEF;
-    PUSH_LOCAL(env, vararg);
+    YogVal varkwarg = YUNDEF;
+    PUSH_LOCALS2(env, vararg, varkwarg);
 
     visit_node(env, visitor, NODE(node)->u.func_call.callee, data);
 
@@ -1954,6 +1961,11 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
         if (IS_PTR(vararg)) {
             visit_node(env, visitor, vararg, data);
         }
+
+        varkwarg = PTR_AS(YogNode, args)->u.args.varkwarg;
+        if (IS_PTR(varkwarg)) {
+            visit_node(env, visitor, varkwarg, data);
+        }
     }
 
     blockarg = NODE(node)->u.func_call.blockarg;
@@ -1974,8 +1986,16 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
         varargc = 0;
     }
 
+    uint8_t varkwargc;
+    if (IS_PTR(varkwarg)) {
+        varkwargc = 1;
+    }
+    else {
+        varkwargc = 0;
+    }
+
     uint_t lineno = NODE(node)->lineno;
-    CompileData_add_call_function(env, data, lineno, posargc, kwargc, blockargc, varargc, 0);
+    CompileData_add_call_function(env, data, lineno, posargc, kwargc, blockargc, varargc, varkwargc);
 
     RETURN_VOID(env);
 }

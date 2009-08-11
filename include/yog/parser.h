@@ -61,6 +61,7 @@ struct YogNode {
             YogVal posargs;
             YogVal kwargs;
             YogVal vararg;
+            YogVal varkwarg;
         } args;
         struct {
             YogVal elems;
