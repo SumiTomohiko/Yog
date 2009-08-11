@@ -576,7 +576,8 @@ scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal d
     YogVal blockarg = YUNDEF;
     PUSH_LOCALS5(env, posargs, kwargs, callee, args, blockarg);
     YogVal child_node = YUNDEF;
-    PUSH_LOCAL(env, child_node);
+    YogVal vararg = YUNDEF;
+    PUSH_LOCALS2(env, child_node, vararg);
 
     callee = NODE(node)->u.func_call.callee;
     visit_node(env, visitor, callee, data);
@@ -593,6 +594,7 @@ scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal d
                 visit_node(env, visitor, child_node, data);
             }
         }
+
         kwargs = PTR_AS(YogNode, args)->u.args.kwargs;
         if (IS_PTR(kwargs)) {
             uint_t argc = YogArray_size(env, kwargs);
@@ -602,6 +604,11 @@ scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal d
                 YOG_ASSERT(env, NODE(child_node)->type == NODE_KW_ARG, "invalid node (0x%02x)", NODE(node)->type);
                 visit_node(env, visitor, NODE(child_node)->u.kwarg.value, data);
             }
+        }
+
+        vararg = PTR_AS(YogNode, args)->u.args.vararg;
+        if (IS_PTR(vararg)) {
+            visit_node(env, visitor, vararg, data);
         }
     }
 
@@ -1909,6 +1916,8 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     YogVal blockarg = YUNDEF;
     YogVal child_node = YUNDEF;
     PUSH_LOCALS5(env, posargs, kwargs, args, blockarg, child_node);
+    YogVal vararg = YUNDEF;
+    PUSH_LOCAL(env, vararg);
 
     visit_node(env, visitor, NODE(node)->u.func_call.callee, data);
 
@@ -1926,6 +1935,7 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
                 visit_node(env, visitor, child_node, data);
             }
         }
+
         kwargs = PTR_AS(YogNode, args)->u.args.kwargs;
         if (IS_PTR(kwargs)) {
             kwargc = YogArray_size(env, kwargs);
@@ -1939,6 +1949,11 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
                 visit_node(env, visitor, NODE(child_node)->u.kwarg.value, data);
             }
         }
+
+        vararg = PTR_AS(YogNode, args)->u.args.vararg;
+        if (IS_PTR(vararg)) {
+            visit_node(env, visitor, vararg, data);
+        }
     }
 
     blockarg = NODE(node)->u.func_call.blockarg;
@@ -1951,8 +1966,16 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
         blockargc = 1;
     }
 
+    uint8_t varargc;
+    if (IS_PTR(vararg)) {
+        varargc = 1;
+    }
+    else {
+        varargc = 0;
+    }
+
     uint_t lineno = NODE(node)->lineno;
-    CompileData_add_call_function(env, data, lineno, posargc, kwargc, blockargc, 0, 0);
+    CompileData_add_call_function(env, data, lineno, posargc, kwargc, blockargc, varargc, 0);
 
     RETURN_VOID(env);
 }

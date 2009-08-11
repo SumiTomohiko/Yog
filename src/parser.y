@@ -35,6 +35,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_ARGS:
         KEEP(args.posargs);
         KEEP(args.kwargs);
+        KEEP(args.vararg);
         break;
     case NODE_ARRAY:
         KEEP(array.elems);
@@ -414,15 +415,16 @@ Attr_new(YogEnv* env, uint_t lineno, YogVal obj, ID name)
 }
 
 static YogVal
-Args_new(YogEnv* env, uint_t lineno, YogVal posargs, YogVal kwargs)
+Args_new(YogEnv* env, uint_t lineno, YogVal posargs, YogVal kwargs, YogVal vararg)
 {
-    SAVE_ARGS2(env, posargs, kwargs);
+    SAVE_ARGS3(env, posargs, kwargs, vararg);
     YogVal args = YUNDEF;
     PUSH_LOCAL(env, args);
 
     args = YogNode_new(env, NODE_ARGS, lineno);
-    PTR_AS(YogNode, args)->u.args.posargs = posargs;
-    PTR_AS(YogNode, args)->u.args.kwargs = kwargs;
+    NODE(args)->u.args.posargs = posargs;
+    NODE(args)->u.args.kwargs = kwargs;
+    NODE(args)->u.args.vararg = vararg;
 
     RETURN(env, args);
 }
@@ -441,7 +443,7 @@ FuncCall_new2(YogEnv* env, uint_t lineno, YogVal recv, ID name, YogVal arg)
     posargs = YogArray_new(env);
     YogArray_push(env, posargs, arg);
 
-    args = Args_new(env, lineno, posargs, YNIL);
+    args = Args_new(env, lineno, posargs, YNIL, YNIL);
 
     YogVal node = FuncCall_new(env, lineno, postfix, args, YNIL);
 
@@ -962,15 +964,35 @@ args(A) ::= /* empty */. {
 }
 args(A) ::= posargs(B). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, B, YNIL);
+    A = Args_new(env, lineno, B, YNIL, YNIL);
 }
 args(A) ::= posargs(B) COMMA kwargs(C). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, B, C);
+    A = Args_new(env, lineno, B, C, YNIL);
+}
+args(A) ::= posargs(B) COMMA kwargs(C) COMMA vararg(D). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, C, D);
+}
+args(A) ::= posargs(B) COMMA vararg(C). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, YNIL, C);
 }
 args(A) ::= kwargs(B). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, YNIL, B);
+    A = Args_new(env, lineno, YNIL, B, YNIL);
+}
+args(A) ::= kwargs(B) COMMA vararg(C). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, YNIL, B, C);
+}
+args(A) ::= vararg(B). {
+    uint_t lineno = NODE_LINENO(B);
+    A = Args_new(env, lineno, YNIL, YNIL, B);
+}
+
+vararg(A) ::= STAR expr(B). {
+    A = B;
 }
 
 posargs(A) ::= expr(B). {
