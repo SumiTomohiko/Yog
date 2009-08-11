@@ -190,4 +190,44 @@ foo(26, *quux)
 """, """42
 """)
 
+    def test_keyword_variable_parameter0(self):
+        self._test("""
+def foo()
+  puts(42)
+end
+
+foo({})
+""", """42
+""")
+
+    def test_keyword_variable_parameter10(self):
+        self._test("""
+def foo(bar)
+  puts(bar)
+end
+
+foo(**{ bar: 42 })
+""", """42
+""")
+
+    def test_keyword_variable_parameter20(self):
+        self._test("""
+def foo(bar, **baz)
+  puts(bar)
+end
+
+foo(**{ bar: 42, quux: 26})
+""", """42
+""")
+
+    def test_keyword_variable_parameter30(self):
+        self._test("""
+def foo(bar, **baz)
+  puts(baz[:quux])
+end
+
+foo(**{ bar: 42, quux: 26})
+""", """26
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
