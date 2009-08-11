@@ -902,7 +902,7 @@ params(A) ::= /* empty */. {
     A = Params_new(env, YNIL, YNIL, YNIL, YNIL, YNIL);
 }
 
-kw_param(A) ::= DOUBLE_STAR(B) NAME(C). {
+kw_param(A) ::= STAR_STAR(B) NAME(C). {
     uint_t lineno = TOKEN_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
     A = Param_new(env, NODE_KW_PARAM, lineno, id, YNIL);

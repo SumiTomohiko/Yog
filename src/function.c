@@ -1,6 +1,7 @@
 #include "yog/arg.h"
 #include "yog/array.h"
 #include "yog/code.h"
+#include "yog/dict.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
@@ -14,7 +15,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
 {
     SAVE_ARGS5(env, arg_info, blockarg, vararg, varkwarg, args);
     YogVal array = YUNDEF;
-    PUSH_LOCAL(env, array);
+    YogVal kw = YUNDEF;
+    PUSH_LOCALS2(env, array, kw);
 
     uint_t i;
     uint_t arg_argc = PTR_AS(YogArgInfo, arg_info)->argc;
@@ -22,6 +24,21 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     uint_t size = arg_argc + arg_blockargc;
     for (i = 0; i < size; i++) {
         PTR_AS(YogValArray, args)->items[args_offset + i] = YUNDEF;
+    }
+    uint_t arg_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
+    if (0 < arg_kwargc) {
+        uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
+        uint_t index = argc;
+        uint_t blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
+        if (0 < blockargc) {
+            index++;
+        }
+        uint_t varargc = PTR_AS(YogArgInfo, arg_info)->varargc;
+        if (0 < varargc) {
+            index++;
+        }
+        kw = YogDict_new(env);
+        PTR_AS(YogValArray, args)->items[args_offset + index] = kw;
     }
 
     if (arg_argc < posargc) {
@@ -74,14 +91,17 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
                 break;
             }
         }
-        if (j == PTR_AS(YogArgInfo, arg_info)->argc) {
-            ID argname = PTR_AS(YogArgInfo, arg_info)->blockargname;
-            if (argname == id) {
-                YOG_ASSERT(env, !IS_UNDEF(PTR_AS(YogValArray, args)->items[args_offset + j]), "Argument specified twice.");
-                YogVal* items = PTR_AS(YogValArray, args)->items;
-                items[args_offset + argc - 1] = blockarg;
-            }
+        if (j != PTR_AS(YogArgInfo, arg_info)->argc) {
+            continue;
         }
+        ID argname = PTR_AS(YogArgInfo, arg_info)->blockargname;
+        if (argname == id) {
+            YOG_ASSERT(env, !IS_UNDEF(PTR_AS(YogValArray, args)->items[args_offset + j]), "Argument specified twice.");
+            YogVal* items = PTR_AS(YogValArray, args)->items;
+            items[args_offset + argc - 1] = blockarg;
+            continue;
+        }
+        YogDict_set(env, kw, name, kwargs[2 * i + 1]);
     }
 
     RETURN_VOID(env);

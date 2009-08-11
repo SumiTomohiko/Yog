@@ -19,7 +19,7 @@
 #define TK_DEF                            19
 #define TK_LPAR                           20
 #define TK_RPAR                           21
-#define TK_DOUBLE_STAR                    22
+#define TK_STAR_STAR                      22
 #define TK_STAR                           23
 #define TK_AMPER                          24
 #define TK_EQUAL                          25

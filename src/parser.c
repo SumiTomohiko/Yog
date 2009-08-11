@@ -1266,7 +1266,7 @@ static const char *const yyTokenName[] = {
   "NEXT",          "RETURN",        "IF",            "CLASS",       
   "NAME",          "NONLOCAL",      "IMPORT",        "COMMA",       
   "DOT",           "GREATER",       "ELIF",          "DEF",         
-  "LPAR",          "RPAR",          "DOUBLE_STAR",   "STAR",        
+  "LPAR",          "RPAR",          "STAR_STAR",     "STAR",        
   "AMPER",         "EQUAL",         "COLON",         "BAR_BAR",     
   "AND_AND",       "NOT",           "LESS",          "XOR",         
   "BAR",           "AND",           "LSHIFT",        "RSHIFT",      
@@ -1362,7 +1362,7 @@ static const char *const yyRuleName[] = {
  /*  62 */ "params ::= var_param",
  /*  63 */ "params ::= kw_param",
  /*  64 */ "params ::=",
- /*  65 */ "kw_param ::= DOUBLE_STAR NAME",
+ /*  65 */ "kw_param ::= STAR_STAR NAME",
  /*  66 */ "var_param ::= STAR NAME",
  /*  67 */ "block_param ::= AMPER NAME param_default_opt",
  /*  68 */ "param_default_opt ::=",
@@ -2464,7 +2464,7 @@ static void yy_reduce(
 }
 #line 2466 "parser.c"
         break;
-      case 65: /* kw_param ::= DOUBLE_STAR NAME */
+      case 65: /* kw_param ::= STAR_STAR NAME */
 #line 905 "parser.y"
 {
     uint_t lineno = TOKEN_LINENO(yymsp[-1].minor.yy0);

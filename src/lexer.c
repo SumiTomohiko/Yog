@@ -521,10 +521,17 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
         }
     case '*':
         {
-            SET_STATE(LS_EXPR);
-            RETURN_ID_TOKEN1(TK_STAR, c);
-            break;
+            char c2 = NEXTC();
+            if (c2 == '*') {
+                RETURN_TOKEN(TK_STAR_STAR);
+            }
+            else {
+                PUSHBACK(c2);
+                SET_STATE(LS_EXPR);
+                RETURN_ID_TOKEN1(TK_STAR, c);
+            }
         }
+        break;
     case '/':
         if (PTR_AS(YogLexer, lexer)->state == LS_OP) {
             SET_STATE(LS_EXPR);
