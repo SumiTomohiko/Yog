@@ -145,4 +145,17 @@ except
   puts(42)
 end""")
 
+    def test_longjmp_from_native_function0(self):
+        self._test("""
+# http://bitbucket.org/SumiTomohiko/yog/issue/2/
+File.open("foo.txt", "r") do [f]
+  try
+    while true
+      line = f.readline()
+    end
+  except
+  end
+end
+""", "")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

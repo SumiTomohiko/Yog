@@ -321,6 +321,10 @@ YogEval_mainloop(YogEnv* env)
         OpCode op = PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
 #if 0
+        const char* opname = YogCode_get_op_name(op);
+        DPRINTF("%p: PC=%u, op=%s", env, PC, opname);
+#endif
+#if 0
         do {
             printf("%p: ---------------- dump of stack ----------------\n", env);
             YogVal stack = SCRIPT_FRAME(CUR_FRAME)->stack;
