@@ -35,6 +35,7 @@ typedef unsigned int ID;
 typedef unsigned int pc_t;
 #   define SIGNED_TYPE      int
 #   define UNSIGNED_TYPE    unsigned int
+#   define UNSIGNED_MAX     UINT_MAX
 #elif SIZEOF_VOIDP == SIZEOF_LONG
 typedef unsigned long YogVal;
 typedef unsigned long ID;
@@ -42,6 +43,7 @@ typedef unsigned long ID;
 typedef unsigned long pc_t;
 #   define SIGNED_TYPE      long
 #   define UNSIGNED_TYPE    unsigned long
+#   define UNSIGNED_MAX     ULONG_MAX
 #elif SIZEOF_VOIDP == SIZEOF_LONG_LONG
 typedef unsigned long long YogVal;
 typedef unsigned long long ID;
@@ -49,6 +51,7 @@ typedef unsigned long long ID;
 typedef unsigned long long pc_t;
 #   define SIGNED_TYPE      long long
 #   define UNSIGNED_TYPE    unsigned long long
+#   define UNSIGNED_MAX     ULLONG_MAX
 #else
 #   error "No integer type available to represent pointers"
 #endif

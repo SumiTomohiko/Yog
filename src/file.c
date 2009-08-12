@@ -52,7 +52,7 @@ read(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         char buffer[4096];
         uint_t size = fread(buffer, sizeof(char), array_sizeof(buffer) - 1, fp);
         buffer[size] = '\0';
-        YogString_add(env, s, buffer);
+        YogString_add_cstr(env, s, buffer);
     } while (!feof(fp));
 
     RETURN(env, s);
@@ -93,7 +93,7 @@ readline(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         if (FGETS == NULL) {
             break;
         }
-        YogString_add(env, line, buffer);
+        YogString_add_cstr(env, line, buffer);
     }
 #undef FGETS
 

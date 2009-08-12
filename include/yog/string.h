@@ -34,7 +34,7 @@ typedef struct YogString YogString;
 
 /* src/string.c */
 YogVal YogCharArray_new_str(YogEnv*, const char*);
-void YogString_add(YogEnv*, YogVal, const char*);
+void YogString_add_cstr(YogEnv*, YogVal, const char*);
 char YogString_at(YogEnv*, YogVal, uint_t);
 void YogString_clear(YogEnv*, YogVal);
 YogVal YogString_clone(YogEnv*, YogVal);

@@ -93,6 +93,10 @@ ensure_body(YogEnv* env, YogVal string)
     RETURN_VOID(env);
 }
 
+/**
+ * ensure_size
+ * "size" includes null terminator '\0'.
+ */
 static void
 ensure_size(YogEnv* env, YogVal string, uint_t size)
 {
@@ -295,6 +299,88 @@ YogString_at(YogEnv* env, YogVal s, uint_t n)
 {
     YogVal body = PTR_AS(YogString, s)->body;
     return PTR_AS(YogCharArray, body)->items[n];
+}
+
+static uint_t
+find(YogEnv* env, YogVal self, YogVal substr, uint_t from)
+{
+    SAVE_ARGS2(env, self, substr);
+
+    uint_t self_size = YogString_size(env, self) - 1;
+    uint_t substr_size = YogString_size(env, substr) - 1;
+    uint_t end_pos = self_size - substr_size;
+    if (self_size < end_pos) {
+        RETURN(env, UNSIGNED_MAX);
+    }
+
+    uint_t i;
+    for (i = from; i <= end_pos; i++) {
+        uint_t j;
+        for (j = 0; j < substr_size; j++) {
+            char c1 = YogString_at(env, self, i + j);
+            char c2 = YogString_at(env, substr, j);
+            if (c1 != c2) {
+                break;
+            }
+        }
+        if (j == substr_size) {
+            RETURN(env, i);
+        }
+    }
+
+    RETURN(env, UNSIGNED_MAX);
+}
+
+static void
+YogString_add(YogEnv* env, YogVal self, YogVal s)
+{
+    SAVE_ARGS2(env, self, s);
+
+    uint_t self_size = YogString_size(env, self);
+    uint_t s_size = YogString_size(env, s);
+    uint_t size = self_size + s_size - 1;
+    ensure_size(env, self, size);
+    memcpy(STRING_CSTR(self) + self_size - 1, STRING_CSTR(s), s_size);
+    PTR_AS(YogString, self)->size = size;
+
+    RETURN_VOID(env);
+}
+
+static YogVal
+gsub(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal substr = YUNDEF;
+    YogVal s = YUNDEF;
+    YogVal to = YUNDEF;
+    PUSH_LOCALS3(env, substr, s, to);
+
+    substr = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, IS_PTR(substr), "invalid substring");
+    YOG_ASSERT(env, IS_OBJ_OF(env, substr, cString), "invalid substring class");
+    to = YogArray_at(env, args, 1);
+    YOG_ASSERT(env, IS_PTR(to), "invalid string");
+    YOG_ASSERT(env, IS_OBJ_OF(env, to, cString), "invalid string class");
+
+#define ADD_STR(to)    do { \
+    uint_t size = to - from; \
+    char t[size + 1]; \
+    memcpy(t, STRING_CSTR(self) + from, size); \
+    t[size] = '\0'; \
+    YogString_add_cstr(env, s, t); \
+} while (0)
+    s = YogString_new(env);
+    uint_t from = 0;
+    uint_t index;
+    while ((index = find(env, self, substr, from)) != UNSIGNED_MAX) {
+        ADD_STR(index);
+        YogString_add(env, s, to);
+        from = index + YogString_size(env, substr) - 1;
+    }
+    ADD_STR(YogString_size(env, self));
+#undef ADD_STR
+
+    RETURN(env, s);
 }
 
 static YogVal
@@ -679,32 +765,6 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
-YogVal
-YogString_klass_new(YogEnv* env)
-{
-    YogVal klass = YogKlass_new(env, "String", env->vm->cObject);
-    PUSH_LOCAL(env, klass);
-
-    YogKlass_define_allocator(env, klass, allocate);
-#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
-    DEFINE_METHOD("*", multiply);
-    DEFINE_METHOD("+", add);
-    DEFINE_METHOD("<<", lshift);
-    DEFINE_METHOD("=~", match);
-    DEFINE_METHOD("[]", subscript);
-    DEFINE_METHOD("[]=", assign_subscript);
-    DEFINE_METHOD("each_byte", each_byte);
-    DEFINE_METHOD("each_char", each_char);
-    DEFINE_METHOD("each_line", each_line);
-    DEFINE_METHOD("equal?", equal);
-    DEFINE_METHOD("hash", hash);
-    DEFINE_METHOD("to_s", to_s);
-#undef DEFINE_METHOD
-
-    POP_LOCALS(env);
-    return klass;
-}
-
 char*
 YogString_dup(YogEnv* env, const char* s)
 {
@@ -877,7 +937,7 @@ YogString_to_i(YogEnv* env, YogVal self)
 }
 
 void
-YogString_add(YogEnv* env, YogVal self, const char* s)
+YogString_add_cstr(YogEnv* env, YogVal self, const char* s)
 {
     SAVE_ARG(env, self);
     YogVal body = YUNDEF;
@@ -896,6 +956,35 @@ YogString_add(YogEnv* env, YogVal self, const char* s)
     PTR_AS(YogString, self)->size = size;
 
     RETURN_VOID(env);
+}
+
+YogVal
+YogString_klass_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = YogKlass_new(env, "String", env->vm->cObject);
+
+    YogKlass_define_allocator(env, klass, allocate);
+#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    DEFINE_METHOD("*", multiply);
+    DEFINE_METHOD("+", add);
+    DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD("=~", match);
+    DEFINE_METHOD("[]", subscript);
+    DEFINE_METHOD("[]=", assign_subscript);
+    DEFINE_METHOD("each_byte", each_byte);
+    DEFINE_METHOD("each_char", each_char);
+    DEFINE_METHOD("each_line", each_line);
+    DEFINE_METHOD("equal?", equal);
+    DEFINE_METHOD("gsub", gsub);
+    DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("to_s", to_s);
+#undef DEFINE_METHOD
+
+    RETURN(env, klass);
 }
 
 /**

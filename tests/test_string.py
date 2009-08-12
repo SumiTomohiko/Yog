@@ -417,9 +417,9 @@ ArgumentError: negative argument
 puts("foo" * (-1))
 """, stderr=test_stderr)
 
-    def test_replace0(self):
+    def test_gsub0(self):
         self._test("""
-print("foo".replace("o", "bar"))
+print("foo".gsub("o", "bar"))
 """, "fbarbar")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
