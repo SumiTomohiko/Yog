@@ -42,29 +42,60 @@ raise(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YNIL);
 }
 
+static void
+print_object(YogEnv* env, YogVal obj)
+{
+    SAVE_ARG(env, obj);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    if (IS_PTR(obj) && IS_OBJ_OF(env, obj, cString)) {
+        s = obj;
+    }
+    else {
+        s = YogEval_call_method(env, obj, "to_s", 0, NULL);
+        YOG_ASSERT(env, IS_PTR(s), "invalid string");
+        YOG_ASSERT(env, IS_OBJ_OF(env, s, cString), "invalid object");
+    }
+    printf("%s", STRING_CSTR(s));
+
+    RETURN_VOID(env);
+}
+
+static YogVal
+print(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
+
+    uint_t size = YogArray_size(env, args);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        obj = YogArray_at(env, args, i);
+        print_object(env, obj);
+    }
+
+    RETURN(env, YNIL);
+}
+
 static YogVal
 puts_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
 
     uint_t size = YogArray_size(env, args);
-    if (0 < size) {
-        uint_t i = 0;
-        for (i = 0; i < size; i++) {
-            YogString* s = NULL;
-            YogVal arg = YogArray_at(env, args, i);
-            if (IS_PTR(arg) && IS_OBJ_OF(env, arg, cString)) {
-                s = PTR_AS(YogString, arg);
-            }
-            else {
-                YogVal val = YogEval_call_method(env, arg, "to_s", 0, NULL);
-                s = VAL2PTR(val);
-            }
-            printf("%s", PTR_AS(YogCharArray, s->body)->items);
-            printf("\n");
-        }
+    if (size == 0) {
+        printf("\n");
+        RETURN(env, YNIL);
     }
-    else {
+
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        obj = YogArray_at(env, args, i);
+        print_object(env, obj);
         printf("\n");
     }
 
@@ -132,6 +163,7 @@ YogBuiltins_new(YogEnv* env)
     bltins = YogPackage_new(env);
 
     YogPackage_define_method(env, bltins, "puts", puts_, 0, 1, 0, 0, NULL);
+    YogPackage_define_method(env, bltins, "print", print, 0, 1, 0, 0, NULL);
     YogPackage_define_method(env, bltins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
     YogPackage_define_method(env, bltins, "import_package", import_package, 0, 0, 0, 0, "package", NULL);
     YogPackage_define_method(env, bltins, "property", property, 0, 0, 0, 0, NULL);
