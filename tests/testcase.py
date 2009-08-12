@@ -81,11 +81,14 @@ class TestCase(object):
         finally:
             f.close()
 
-    def _test_source(self, src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile=True):
-        file = mkstemp(prefix="yog", suffix=".yg")[1]
+    def _test_source(self, src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile=True, tmpfile=None, yog_option=[]):
+        if tmpfile is None:
+            file = mkstemp(prefix="yog", suffix=".yg")[1]
+        else:
+            file = tmpfile
         try:
             self.write_source(file, src)
-            args = options + [file]
+            args = options + [file] + yog_option
             self.do(stdout, stderr, stdin, status, args, timeout)
         finally:
             if remove_tmpfile:
@@ -94,11 +97,11 @@ class TestCase(object):
     def _test_interactive(self, stdout, stderr, stdin, status, options, timeout):
         self.do(stdout, stderr, stdin, status, options, timeout)
 
-    def _test(self, src=None, stdout="", stderr="", stdin=None, status=0, options=[], timeout=120, remove_tmpfile=True):
+    def _test(self, src=None, stdout="", stderr="", stdin=None, status=0, options=[], timeout=120, remove_tmpfile=True, tmpfile=None, yog_option=[]):
         options = options or ["--gc-stress"]
 
         if src is not None:
-            self._test_source(src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile)
+            self._test_source(src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile, tmpfile, yog_option)
         else:
             self._test_interactive(stdout, stderr, stdin, status, options, timeout)
 
