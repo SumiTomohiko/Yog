@@ -185,13 +185,12 @@ typedef struct YogThread YogThread;
     PTR_AS(YogThread, (thread))->jmp_buf_list = &jmpbuf; \
 } while (0)
 
-#define STORE_CURRENT_STAT(env, name)   \
+#define SAVE_CURRENT_STAT(env, name)    \
     YogVal name##_cur_frame = PTR_AS(YogThread, env->thread)->cur_frame; \
     PUSH_LOCAL(env, name##_cur_frame); \
     YogLocals* name##_locals = PTR_AS(YogThread, env->thread)->locals; \
     YogJmpBuf* name##_jmpbuf = PTR_AS(YogThread, env->thread)->jmp_buf_list
-
-#define LOAD_STAT(env, name)    \
+#define RESTORE_STAT(env, name) \
     PTR_AS(YogThread, env->thread)->jmp_buf_list = name##_jmpbuf; \
     PTR_AS(YogThread, env->thread)->locals = name##_locals; \
     PTR_AS(YogThread, env->thread)->cur_frame = name##_cur_frame

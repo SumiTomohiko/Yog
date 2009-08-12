@@ -127,17 +127,17 @@ open(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         RETURN(env, file);
     }
 
-    STORE_CURRENT_STAT(env, open);
-
     YogJmpBuf jmpbuf;
+    PUSH_JMPBUF(env->thread, jmpbuf);
+    SAVE_CURRENT_STAT(env, open);
+
     int_t status;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
-        PUSH_JMPBUF(env->thread, jmpbuf);
         retval = YogCallable_call1(env, block, file);
         do_close(env, file);
     }
     else {
-        LOAD_STAT(env, open);
+        RESTORE_STAT(env, open);
 
         do_close(env, file);
 

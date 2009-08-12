@@ -230,7 +230,7 @@ main(int_t argc, char* argv[])
     SAVE_LOCALS(&env);
 
     YogJmpBuf jmpbuf;
-    int_t status = 0;
+    int_t status;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
         PUSH_JMPBUF(main_thread, jmpbuf);
 

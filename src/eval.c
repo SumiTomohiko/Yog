@@ -231,16 +231,18 @@ YogEval_mainloop(YogEnv* env)
 #undef CODE
 #define CODE        PTR_AS(YogCode, SCRIPT_FRAME(CUR_FRAME)->code)
     YogJmpBuf jmpbuf;
-    int_t status = 0;
+    PUSH_JMPBUF(env->thread, jmpbuf);
+    SAVE_CURRENT_STAT(env, mainloop);
+
+    int_t status;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
-        PUSH_JMPBUF(env->thread, jmpbuf);
     }
     else {
-        RESTORE_LOCALS(env);
+        RESTORE_STAT(env, mainloop);
 
-        uint_t i = 0;
         BOOL found = FALSE;
         if (PTR_AS(YogFrame, CUR_FRAME)->type != FRAME_C) {
+            uint_t i;
             for (i = 0; i < CODE->exc_tbl_size; i++) {
                 YogVal exc_tbl = CODE->exc_tbl;
                 YogExceptionTableEntry* entry = &PTR_AS(YogExceptionTable, exc_tbl)->items[i];
