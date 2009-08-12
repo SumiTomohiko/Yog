@@ -50,3 +50,4 @@ update-version:
 
 install-vim:
 	cp yog.vim $(prefix)/share/vim/vim71/syntax
+	@grep "NOTICE" yog.vim | sed -e 's/" NOTICE: //'

@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	Yog
 " Maintainer:	SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-" write following lines in @PREFIX@/share/vim/vim71/filetype.vim
-" "Yog
-" au BufNewFile,BufRead *.yg 			setf yog
+" NOTICE: write following lines in @PREFIX@/share/vim/vim71/filetype.vim
+" NOTICE: "Yog
+" NOTICE: au BufNewFile,BufRead *.yg 			setf yog
 
 if version < 600
   syntax clear
@@ -11,7 +11,7 @@ elseif exists("b:current_syntax")
   finish
 endif
 
-syn keyword   yogStatement    break continue end except finally return try 
+syn keyword   yogStatement    break continue do end except finally return try 
 syn keyword   yogStatement    global def class nextgroup=yogFunction skipwhite
 syn match     yogFunction	    "[a-zA-Z_][a-zA-Z0-9_]*" contained
 syn keyword   yogRepeat       while
