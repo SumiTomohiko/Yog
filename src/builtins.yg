@@ -1,0 +1,10 @@
+
+def partial(f, *args, **kw)
+  def g(*v, **k)
+    return f(*(args + v), **(kw + k))
+  end
+
+  return g
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

@@ -17,7 +17,7 @@ YogVal YogEval_call_method2(YogEnv*, YogVal, const char*, uint_t, YogVal*, YogVa
 YogVal YogEval_call_method_id(YogEnv*, YogVal, ID, uint_t, YogVal*);
 YogVal YogEval_call_method_id2(YogEnv*, YogVal, ID, uint_t, YogVal*, YogVal);
 YogVal YogEval_eval_file(YogEnv*, FILE*, const char*, const char*);
-void YogEval_eval_package(YogEnv*, YogVal);
+void YogEval_eval_package(YogEnv*, YogVal, YogVal);
 YogVal YogEval_mainloop(YogEnv*);
 void YogEval_push_finish_frame(YogEnv*);
 

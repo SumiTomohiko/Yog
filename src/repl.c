@@ -39,8 +39,7 @@ eval(YogEnv* env, YogVal pkg, YogVal src)
         }
         code = YogCompiler_compile_interactive(env, stmts);
 
-        PTR_AS(YogPackage, pkg)->code = code;
-        YogEval_eval_package(env, pkg);
+        YogEval_eval_package(env, pkg, code);
     }
     else {
         PTR_AS(YogThread, env->thread)->locals = locals;

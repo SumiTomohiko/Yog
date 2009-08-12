@@ -2,13 +2,16 @@
 #include <string.h>
 #include "yog/array.h"
 #include "yog/classmethod.h"
+#include "yog/compile.h"
 #include "yog/env.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/klass.h"
 #include "yog/object.h"
 #include "yog/package.h"
+#include "yog/parser.h"
 #include "yog/property.h"
 #include "yog/string.h"
 #include "yog/thread.h"
@@ -112,11 +115,21 @@ classmethod(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, method);
 }
 
+static char* builtins_src = 
+#include "builtins.inc"
+;
+
 YogVal
 YogBuiltins_new(YogEnv* env)
 {
-    YogVal bltins = YogPackage_new(env);
-    PUSH_LOCAL(env, bltins);
+    SAVE_LOCALS(env);
+    YogVal bltins = YUNDEF;
+    YogVal src = YUNDEF;
+    YogVal code = YUNDEF;
+    YogVal stmts = YUNDEF;
+    PUSH_LOCALS4(env, bltins, src, code, stmts);
+
+    bltins = YogPackage_new(env);
 
     YogPackage_define_method(env, bltins, "puts", puts_, 0, 1, 0, 0, NULL);
     YogPackage_define_method(env, bltins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
@@ -134,8 +147,14 @@ YogBuiltins_new(YogEnv* env)
     REGISTER_KLASS(eException);
 #undef REGISTER_KLASS
 
-    POP_LOCALS(env);
-    return bltins;
+#if !defined(MINIYOG)
+    src = YogString_new_str(env, builtins_src);
+    stmts = YogParser_parse(env, src);
+    code = YogCompiler_compile_module(env, "builtin", stmts);
+    YogEval_eval_package(env, bltins, code);
+#endif
+
+    RETURN(env, bltins);
 }
 
 /**

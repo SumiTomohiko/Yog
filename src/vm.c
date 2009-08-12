@@ -281,12 +281,13 @@ YogVM_boot(YogEnv* env, YogVM* vm)
     YogKlass_boot(env, vm->cKlass);
 
     vm->pkgs = YogTable_new_symbol_table(env);
-    setup_builtins(env, vm);
 
     vm->encodings = YogTable_new_symbol_table(env);
     setup_encodings(env, vm);
 
     vm->finish_code = YogCompiler_compile_finish_code(env);
+
+    setup_builtins(env, vm);
 }
 
 #if defined(GC_GENERATIONAL)

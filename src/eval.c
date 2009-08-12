@@ -402,19 +402,16 @@ YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, uint_t argc, Yo
 }
 
 void
-YogEval_eval_package(YogEnv* env, YogVal pkg)
+YogEval_eval_package(YogEnv* env, YogVal pkg, YogVal code)
 {
-    SAVE_ARG(env, pkg);
-
+    SAVE_ARGS2(env, pkg, code);
     YogVal frame = YUNDEF;
-    YogVal code = YUNDEF;
     YogVal attrs = YUNDEF;
-    PUSH_LOCALS3(env, frame, code, attrs);
+    PUSH_LOCALS2(env, frame, attrs);
 
     YogEval_push_finish_frame(env);
 
     frame = YogNameFrame_new(env);
-    code = PTR_AS(YogPackage, pkg)->code;
     setup_script_frame(env, frame, code);
     PTR_AS(YogNameFrame, frame)->self = pkg;
     attrs = PTR_AS(YogObj, pkg)->attrs;
@@ -446,9 +443,8 @@ YogEval_eval_file(YogEnv* env, FILE* fp, const char* filename, const char* pkg_n
     code = YogCompiler_compile_module(env, filename, stmts);
 
     pkg = YogPackage_new(env);
-    PTR_AS(YogPackage, pkg)->code = code;
     YogVM_register_package(env, env->vm, pkg_name, pkg);
-    YogEval_eval_package(env, pkg);
+    YogEval_eval_package(env, pkg, code);
 
     RETURN(env, pkg);
 }

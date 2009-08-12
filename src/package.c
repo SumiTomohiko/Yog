@@ -28,9 +28,6 @@ static void
 YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogObj_keep_children(env, ptr, keeper, heap);
-
-    YogPackage* pkg = ptr;
-    YogGC_keep(env, &pkg->code, keeper, heap);
 }
 
 static void
@@ -40,7 +37,6 @@ YogPackage_init(YogEnv* env, YogVal pkg)
 
     YogObj_init(env, pkg, 0, env->vm->cPackage);
     PTR_AS(YogObj, pkg)->attrs = YUNDEF;
-    PTR_AS(YogPackage, pkg)->code = YUNDEF;
 
     YogVal attrs = YogTable_new_symbol_table(env);
     PTR_AS(YogObj, pkg)->attrs = attrs;

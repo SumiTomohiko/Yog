@@ -501,7 +501,7 @@ scan_var_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data
     SAVE_ARGS2(env, stmts, data);
 
     uint_t size = YogArray_size(env, stmts);
-    uint_t i = 0;
+    uint_t i;
     for (i = 0; i < size; i++) {
         YogVal node = YogArray_at(env, stmts, i);
         visitor->visit_stmt(env, visitor, node, data);
