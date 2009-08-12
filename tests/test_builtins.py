@@ -9,4 +9,14 @@ class TestPuts(TestCase):
 puts(42)
 """, "42\n")
 
+    def test_print0(self):
+        self._test("""
+print()
+""", "")
+
+    def test_print10(self):
+        self._test("""
+print("foo")
+""", "foo")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
