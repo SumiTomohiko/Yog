@@ -237,6 +237,12 @@ YogError_raise_KeyError(YogEnv* env, const char* fmt, ...)
     RAISE_FORMAT(env, eKeyError, fmt);
 }
 
+void
+YogError_raise_EOFError(YogEnv* env, const char* fmt, ...)
+{
+    RAISE_FORMAT(env, eEOFError, fmt);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

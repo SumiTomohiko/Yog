@@ -56,6 +56,7 @@ struct YogVM {
 
     YogVal eArgumentError;
     YogVal eAttributeError;
+    YogVal eEOFError;
     YogVal eException;
     YogVal eImportError;
     YogVal eIndexError;

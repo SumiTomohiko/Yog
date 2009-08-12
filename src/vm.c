@@ -254,6 +254,7 @@ setup_exceptions(YogEnv* env, YogVM* vm)
 } while (0)
     EXCEPTION_NEW(eArgumentError, "ArgumentError");
     EXCEPTION_NEW(eAttributeError, "AttributeError");
+    EXCEPTION_NEW(eEOFError, "EOFError");
     EXCEPTION_NEW(eImportError, "ImportError");
     EXCEPTION_NEW(eIndexError, "IndexError");
     EXCEPTION_NEW(eKeyError, "KeyError");
@@ -376,6 +377,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     KEEP(eArgumentError);
     KEEP(eAttributeError);
+    KEEP(eEOFError);
     KEEP(eException);
     KEEP(eImportError);
     KEEP(eIndexError);
@@ -443,6 +445,7 @@ YogVM_init(YogVM* vm)
 
     INIT(eArgumentError);
     INIT(eAttributeError);
+    INIT(eEOFError);
     INIT(eException);
     INIT(eImportError);
     INIT(eIndexError);

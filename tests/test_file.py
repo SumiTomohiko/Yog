@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from re import match
 from testcase import TestCase
 
 class TestFile(TestCase):
@@ -30,5 +31,40 @@ file = File.open("%(filename)s", "r")
 print(file.read())
 file.close()
 """ % { "filename": filename }, stdout=foo)
+
+    def test_readline0(self):
+        filename = "foo.txt"
+
+        fp = open(filename)
+        try:
+            line = fp.readline()
+        finally:
+            fp.close()
+
+        self._test("""
+File.open("%(filename)s", "r") do [f]
+  print(f.readline())
+end
+""" % { "filename": filename }, stdout=line)
+
+    def test_readline10(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <module>
+  File builtin, in File#open
+  File "[^"]+", line 4, in <block>
+  File builtin, in File#readline
+EOFError: end of file reached
+""", stderr)
+            assert m is not None
+
+        filename = "foo.txt"
+        self._test("""
+File.open("%(filename)s", "r") do [f]
+  while true
+    f.readline()
+  end
+end
+""" % { "filename": filename }, stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

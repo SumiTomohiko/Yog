@@ -1,11 +1,13 @@
 #include <setjmp.h>
 #include <stdio.h>
+#include <string.h>
 #include "yog/array.h"
 #include "yog/error.h"
 #include "yog/file.h"
 #include "yog/function.h"
 #include "yog/klass.h"
 #include "yog/object.h"
+#include "yog/string.h"
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
@@ -73,6 +75,32 @@ close(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
+readline(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal line = YUNDEF;
+    PUSH_LOCAL(env, line);
+
+    FILE* fp = PTR_AS(YogFile, self)->fp;
+    char buffer[4096];
+#define FGETS   fgets(buffer, array_sizeof(buffer), fp)
+    if (FGETS == NULL) {
+        YogError_raise_EOFError(env, "end of file reached");
+    }
+    line = YogString_new_str(env, buffer);
+
+    while (buffer[strlen(buffer) - 1] != '\n') {
+        if (FGETS == NULL) {
+            break;
+        }
+        YogString_add(env, line, buffer);
+    }
+#undef FGETS
+
+    RETURN(env, line);
+}
+
+static YogVal
 open(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -133,6 +161,7 @@ YogFile_klass_new(YogEnv* env)
     YogKlass_define_class_method(env, klass, "open", open);
     YogKlass_define_method(env, klass, "close", close);
     YogKlass_define_method(env, klass, "read", read);
+    YogKlass_define_method(env, klass, "readline", readline);
 
     RETURN(env, klass);
 }
