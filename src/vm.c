@@ -162,10 +162,12 @@ YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
 }
 
 static void
-setup_builtins(YogEnv* env, YogVM* vm)
+setup_builtins(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
 {
-    YogVal builtins = YogBuiltins_new(env);
+    SAVE_LOCALS(env);
+    YogVal builtins = YogBuiltins_new(env, argc, argv);
     YogVM_register_package(env, vm, "builtins", builtins);
+    RETURN_VOID(env);
 }
 
 static void
@@ -273,8 +275,10 @@ set_main_thread_klass(YogEnv* env, YogVM* vm)
 }
 
 void
-YogVM_boot(YogEnv* env, YogVM* vm)
+YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
 {
+    SAVE_LOCALS(env);
+
     setup_symbol_tables(env, vm);
     setup_basic_klass(env, vm);
     setup_klasses(env, vm);
@@ -290,7 +294,9 @@ YogVM_boot(YogEnv* env, YogVM* vm)
 
     vm->finish_code = YogCompiler_compile_finish_code(env);
 
-    setup_builtins(env, vm);
+    setup_builtins(env, vm, argc, argv);
+
+    RETURN_VOID(env);
 }
 
 #if defined(GC_GENERATIONAL)

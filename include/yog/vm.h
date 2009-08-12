@@ -108,7 +108,7 @@ typedef struct YogVM YogVM;
 void YogVM_acquire_global_interp_lock(YogEnv*, YogVM*);
 void YogVM_add_heap(YogEnv*, YogVM*, void*);
 void YogVM_add_thread(YogEnv*, YogVM*, YogVal);
-void YogVM_boot(YogEnv*, YogVM*);
+void YogVM_boot(YogEnv*, YogVM*, uint_t, char**);
 void YogVM_configure_search_path(YogEnv*, YogVM*, const char*);
 void YogVM_delete(YogEnv*, YogVM*);
 const char* YogVM_id2name(YogEnv*, YogVM*, ID);

@@ -8,12 +8,14 @@
 #if defined(HAVE_CONFIG_H)
 #   include "config.h"
 #endif
+#include "yog/array.h"
 #include "yog/code.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/package.h"
 #include "yog/repl.h"
+#include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/version.h"
 #include "yog/vm.h"
@@ -234,10 +236,13 @@ main(int_t argc, char* argv[])
     if ((status = setjmp(jmpbuf.buf)) == 0) {
         PUSH_JMPBUF(main_thread, jmpbuf);
 
-        YogVM_boot(&env, env.vm);
+        uint_t yog_argc = argc - optind;
+        char** yog_argv = &argv[optind];
+
+        YogVM_boot(&env, env.vm, yog_argc, yog_argv);
         YogVM_configure_search_path(&env, env.vm, argv[0]);
 
-        yog_main(&env, argc - optind, &argv[optind]);
+        yog_main(&env, yog_argc, yog_argv);
     }
     else {
         RESTORE_LOCALS(&env);

@@ -150,15 +150,34 @@ static char* builtins_src =
 #include "builtins.inc"
 ;
 
+static YogVal
+argv2args(YogEnv* env, uint_t argc, const char* argv[])
+{
+    SAVE_LOCALS(env);
+    YogVal args = YUNDEF;
+    YogVal s = YUNDEF;
+    PUSH_LOCALS2(env, args, s);
+
+    args = YogArray_new(env);
+    uint_t i;
+    for (i = 0; i < argc; i++) {
+        s = YogString_new_str(env, argv[i]);
+        YogArray_push(env, args, s);
+    }
+
+    RETURN(env, args);
+}
+
 YogVal
-YogBuiltins_new(YogEnv* env)
+YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
 {
     SAVE_LOCALS(env);
     YogVal bltins = YUNDEF;
     YogVal src = YUNDEF;
     YogVal code = YUNDEF;
     YogVal stmts = YUNDEF;
-    PUSH_LOCALS4(env, bltins, src, code, stmts);
+    YogVal args = YUNDEF;
+    PUSH_LOCALS5(env, bltins, src, code, stmts, args);
 
     bltins = YogPackage_new(env);
 
@@ -179,6 +198,9 @@ YogBuiltins_new(YogEnv* env)
     REGISTER_KLASS(cThread);
     REGISTER_KLASS(eException);
 #undef REGISTER_KLASS
+
+    args = argv2args(env, argc, argv);
+    YogObj_set_attr(env, bltins, "ARGV",  args);
 
 #if !defined(MINIYOG)
     src = YogString_new_str(env, builtins_src);
