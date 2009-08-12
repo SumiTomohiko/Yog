@@ -5,8 +5,11 @@ from testcase import TestCase
 class TestFile(TestCase):
 
     def read_file(self, filename):
-        with open(filename) as fp:
+        fp = open(filename)
+        try:
             return fp.read()
+        finally:
+            fp.close()
 
     def test_open0(self):
         filename = "foo.txt"

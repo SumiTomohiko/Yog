@@ -37,6 +37,7 @@ YogVal YogKlass_allocate(YogEnv*, YogVal);
 void YogKlass_boot(YogEnv*, YogVal);
 void YogKlass_define_allocator(YogEnv*, YogVal, Allocator);
 void YogKlass_define_caller(YogEnv*, YogVal, Caller);
+void YogKlass_define_class_method(YogEnv*, YogVal, const char*, void*);
 void YogKlass_define_descr_get_caller(YogEnv*, YogVal, YogVal (*)(YogEnv*, YogVal, YogVal, YogVal));
 void YogKlass_define_descr_get_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
 void YogKlass_define_descr_set_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));

@@ -22,6 +22,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
+#include "yog/file.h"
 #include "yog/fixnum.h"
 #include "yog/float.h"
 #include "yog/function.h"
@@ -224,6 +225,7 @@ setup_klasses(YogEnv* env, YogVM* vm)
     vm->cDict = YogDict_klass_new(env);
     vm->cClassMethod = YogClassMethod_klass_new(env);
     vm->cCode = YogCode_klass_new(env);
+    vm->cFile = YogFile_klass_new(env);
 }
 
 static void
@@ -347,29 +349,30 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(id2name);
     KEEP(name2id);
 
-    KEEP(cObject);
-    KEEP(cKlass);
-    KEEP(cFixnum);
-    KEEP(cBignum);
-    KEEP(cSymbol);
-    KEEP(cString);
-    KEEP(cRegexp);
-    KEEP(cMatch);
-    KEEP(cPackage);
-    KEEP(cBool);
-    KEEP(cFunction);
-    KEEP(cNativeFunction);
-    KEEP(cInstanceMethod);
-    KEEP(cNativeInstanceMethod);
-    KEEP(cPackageBlock);
-    KEEP(cNil);
-    KEEP(cFloat);
-    KEEP(cThread);
     KEEP(cArray);
-    KEEP(cDict);
-    KEEP(cProperty);
+    KEEP(cBignum);
+    KEEP(cBool);
     KEEP(cClassMethod);
     KEEP(cCode);
+    KEEP(cDict);
+    KEEP(cFile);
+    KEEP(cFixnum);
+    KEEP(cFloat);
+    KEEP(cFunction);
+    KEEP(cInstanceMethod);
+    KEEP(cKlass);
+    KEEP(cMatch);
+    KEEP(cNativeFunction);
+    KEEP(cNativeInstanceMethod);
+    KEEP(cNil);
+    KEEP(cObject);
+    KEEP(cPackage);
+    KEEP(cPackageBlock);
+    KEEP(cProperty);
+    KEEP(cRegexp);
+    KEEP(cString);
+    KEEP(cSymbol);
+    KEEP(cThread);
 
     KEEP(eArgumentError);
     KEEP(eAttributeError);
@@ -413,29 +416,30 @@ YogVM_init(YogVM* vm)
     INIT(name2id);
     initialize_read_write_lock(&vm->sym_lock);
 
-    INIT(cObject);
-    INIT(cKlass);
-    INIT(cFixnum);
-    INIT(cBignum);
-    INIT(cSymbol);
-    INIT(cString);
-    INIT(cRegexp);
-    INIT(cMatch);
-    INIT(cPackage);
-    INIT(cBool);
-    INIT(cFunction);
-    INIT(cNativeFunction);
-    INIT(cInstanceMethod);
-    INIT(cNativeInstanceMethod);
-    INIT(cPackageBlock);
-    INIT(cNil);
-    INIT(cFloat);
-    INIT(cThread);
     INIT(cArray);
-    INIT(cDict);
-    INIT(cProperty);
+    INIT(cBignum);
+    INIT(cBool);
     INIT(cClassMethod);
     INIT(cCode);
+    INIT(cDict);
+    INIT(cFile);
+    INIT(cFixnum);
+    INIT(cFloat);
+    INIT(cFunction);
+    INIT(cInstanceMethod);
+    INIT(cKlass);
+    INIT(cMatch);
+    INIT(cNativeFunction);
+    INIT(cNativeInstanceMethod);
+    INIT(cNil);
+    INIT(cObject);
+    INIT(cPackage);
+    INIT(cPackageBlock);
+    INIT(cProperty);
+    INIT(cRegexp);
+    INIT(cString);
+    INIT(cSymbol);
+    INIT(cThread);
 
     INIT(eArgumentError);
     INIT(eAttributeError);

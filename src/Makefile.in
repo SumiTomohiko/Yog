@@ -55,18 +55,19 @@ am__objects_1 = yog_bdw-arg.$(OBJEXT) yog_bdw-array.$(OBJEXT) \
 	yog_bdw-code.$(OBJEXT) yog_bdw-compile.$(OBJEXT) \
 	yog_bdw-dict.$(OBJEXT) yog_bdw-encoding.$(OBJEXT) \
 	yog_bdw-error.$(OBJEXT) yog_bdw-eval.$(OBJEXT) \
-	yog_bdw-exception.$(OBJEXT) yog_bdw-fixnum.$(OBJEXT) \
-	yog_bdw-float.$(OBJEXT) yog_bdw-frame.$(OBJEXT) \
-	yog_bdw-function.$(OBJEXT) yog_bdw-gc.$(OBJEXT) \
-	yog_bdw-inst.$(OBJEXT) yog_bdw-klass.$(OBJEXT) \
-	yog_bdw-lexer.$(OBJEXT) yog_bdw-main.$(OBJEXT) \
-	yog_bdw-nil.$(OBJEXT) yog_bdw-object.$(OBJEXT) \
-	yog_bdw-package.$(OBJEXT) yog_bdw-parser.$(OBJEXT) \
-	yog_bdw-property.$(OBJEXT) yog_bdw-regexp.$(OBJEXT) \
-	yog_bdw-repl.$(OBJEXT) yog_bdw-stacktrace.$(OBJEXT) \
-	yog_bdw-string.$(OBJEXT) yog_bdw-symbol.$(OBJEXT) \
-	yog_bdw-table.$(OBJEXT) yog_bdw-thread.$(OBJEXT) \
-	yog_bdw-value.$(OBJEXT) yog_bdw-vm.$(OBJEXT)
+	yog_bdw-exception.$(OBJEXT) yog_bdw-file.$(OBJEXT) \
+	yog_bdw-fixnum.$(OBJEXT) yog_bdw-float.$(OBJEXT) \
+	yog_bdw-frame.$(OBJEXT) yog_bdw-function.$(OBJEXT) \
+	yog_bdw-gc.$(OBJEXT) yog_bdw-inst.$(OBJEXT) \
+	yog_bdw-klass.$(OBJEXT) yog_bdw-lexer.$(OBJEXT) \
+	yog_bdw-main.$(OBJEXT) yog_bdw-nil.$(OBJEXT) \
+	yog_bdw-object.$(OBJEXT) yog_bdw-package.$(OBJEXT) \
+	yog_bdw-parser.$(OBJEXT) yog_bdw-property.$(OBJEXT) \
+	yog_bdw-regexp.$(OBJEXT) yog_bdw-repl.$(OBJEXT) \
+	yog_bdw-stacktrace.$(OBJEXT) yog_bdw-string.$(OBJEXT) \
+	yog_bdw-symbol.$(OBJEXT) yog_bdw-table.$(OBJEXT) \
+	yog_bdw-thread.$(OBJEXT) yog_bdw-value.$(OBJEXT) \
+	yog_bdw-vm.$(OBJEXT)
 am_yog_bdw_OBJECTS = $(am__objects_1) yog_bdw-bdw.$(OBJEXT)
 yog_bdw_OBJECTS = $(am_yog_bdw_OBJECTS)
 yog_bdw_LDADD = $(LDADD)
@@ -81,18 +82,18 @@ am__objects_2 = yog_copying-arg.$(OBJEXT) yog_copying-array.$(OBJEXT) \
 	yog_copying-compile.$(OBJEXT) yog_copying-dict.$(OBJEXT) \
 	yog_copying-encoding.$(OBJEXT) yog_copying-error.$(OBJEXT) \
 	yog_copying-eval.$(OBJEXT) yog_copying-exception.$(OBJEXT) \
-	yog_copying-fixnum.$(OBJEXT) yog_copying-float.$(OBJEXT) \
-	yog_copying-frame.$(OBJEXT) yog_copying-function.$(OBJEXT) \
-	yog_copying-gc.$(OBJEXT) yog_copying-inst.$(OBJEXT) \
-	yog_copying-klass.$(OBJEXT) yog_copying-lexer.$(OBJEXT) \
-	yog_copying-main.$(OBJEXT) yog_copying-nil.$(OBJEXT) \
-	yog_copying-object.$(OBJEXT) yog_copying-package.$(OBJEXT) \
-	yog_copying-parser.$(OBJEXT) yog_copying-property.$(OBJEXT) \
-	yog_copying-regexp.$(OBJEXT) yog_copying-repl.$(OBJEXT) \
-	yog_copying-stacktrace.$(OBJEXT) yog_copying-string.$(OBJEXT) \
-	yog_copying-symbol.$(OBJEXT) yog_copying-table.$(OBJEXT) \
-	yog_copying-thread.$(OBJEXT) yog_copying-value.$(OBJEXT) \
-	yog_copying-vm.$(OBJEXT)
+	yog_copying-file.$(OBJEXT) yog_copying-fixnum.$(OBJEXT) \
+	yog_copying-float.$(OBJEXT) yog_copying-frame.$(OBJEXT) \
+	yog_copying-function.$(OBJEXT) yog_copying-gc.$(OBJEXT) \
+	yog_copying-inst.$(OBJEXT) yog_copying-klass.$(OBJEXT) \
+	yog_copying-lexer.$(OBJEXT) yog_copying-main.$(OBJEXT) \
+	yog_copying-nil.$(OBJEXT) yog_copying-object.$(OBJEXT) \
+	yog_copying-package.$(OBJEXT) yog_copying-parser.$(OBJEXT) \
+	yog_copying-property.$(OBJEXT) yog_copying-regexp.$(OBJEXT) \
+	yog_copying-repl.$(OBJEXT) yog_copying-stacktrace.$(OBJEXT) \
+	yog_copying-string.$(OBJEXT) yog_copying-symbol.$(OBJEXT) \
+	yog_copying-table.$(OBJEXT) yog_copying-thread.$(OBJEXT) \
+	yog_copying-value.$(OBJEXT) yog_copying-vm.$(OBJEXT)
 am_yog_copying_OBJECTS = $(am__objects_2) \
 	yog_copying-copying.$(OBJEXT)
 yog_copying_OBJECTS = $(am_yog_copying_OBJECTS)
@@ -115,6 +116,7 @@ am__objects_3 = yog_generational-arg.$(OBJEXT) \
 	yog_generational-error.$(OBJEXT) \
 	yog_generational-eval.$(OBJEXT) \
 	yog_generational-exception.$(OBJEXT) \
+	yog_generational-file.$(OBJEXT) \
 	yog_generational-fixnum.$(OBJEXT) \
 	yog_generational-float.$(OBJEXT) \
 	yog_generational-frame.$(OBJEXT) \
@@ -158,8 +160,8 @@ am__objects_4 = yog_mark_sweep-arg.$(OBJEXT) \
 	yog_mark_sweep-encoding.$(OBJEXT) \
 	yog_mark_sweep-error.$(OBJEXT) yog_mark_sweep-eval.$(OBJEXT) \
 	yog_mark_sweep-exception.$(OBJEXT) \
-	yog_mark_sweep-fixnum.$(OBJEXT) yog_mark_sweep-float.$(OBJEXT) \
-	yog_mark_sweep-frame.$(OBJEXT) \
+	yog_mark_sweep-file.$(OBJEXT) yog_mark_sweep-fixnum.$(OBJEXT) \
+	yog_mark_sweep-float.$(OBJEXT) yog_mark_sweep-frame.$(OBJEXT) \
 	yog_mark_sweep-function.$(OBJEXT) yog_mark_sweep-gc.$(OBJEXT) \
 	yog_mark_sweep-inst.$(OBJEXT) yog_mark_sweep-klass.$(OBJEXT) \
 	yog_mark_sweep-lexer.$(OBJEXT) yog_mark_sweep-main.$(OBJEXT) \
@@ -195,6 +197,7 @@ am__objects_5 = yog_mark_sweep_compact-arg.$(OBJEXT) \
 	yog_mark_sweep_compact-error.$(OBJEXT) \
 	yog_mark_sweep_compact-eval.$(OBJEXT) \
 	yog_mark_sweep_compact-exception.$(OBJEXT) \
+	yog_mark_sweep_compact-file.$(OBJEXT) \
 	yog_mark_sweep_compact-fixnum.$(OBJEXT) \
 	yog_mark_sweep_compact-float.$(OBJEXT) \
 	yog_mark_sweep_compact-frame.$(OBJEXT) \
@@ -386,6 +389,7 @@ COMMON_SOURCES = arg.c \
 	error.c \
 	eval.c \
 	exception.c \
+	file.c \
 	fixnum.c \
 	float.c \
 	frame.c \
@@ -550,6 +554,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-eval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-exception.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-fixnum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-float.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-frame.Po@am__quote@
@@ -589,6 +594,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-eval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-exception.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-fixnum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-float.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-frame.Po@am__quote@
@@ -628,6 +634,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-eval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-exception.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-fixnum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-float.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-frame.Po@am__quote@
@@ -668,6 +675,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-eval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-exception.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-fixnum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-float.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-frame.Po@am__quote@
@@ -707,6 +715,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-eval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-exception.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-fixnum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-float.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-frame.Po@am__quote@
@@ -962,6 +971,20 @@ yog_bdw-exception.obj: exception.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='exception.c' object='yog_bdw-exception.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-exception.obj `if test -f 'exception.c'; then $(CYGPATH_W) 'exception.c'; else $(CYGPATH_W) '$(srcdir)/exception.c'; fi`
+
+yog_bdw-file.o: file.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-file.o -MD -MP -MF $(DEPDIR)/yog_bdw-file.Tpo -c -o yog_bdw-file.o `test -f 'file.c' || echo '$(srcdir)/'`file.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-file.Tpo $(DEPDIR)/yog_bdw-file.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file.c' object='yog_bdw-file.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-file.o `test -f 'file.c' || echo '$(srcdir)/'`file.c
+
+yog_bdw-file.obj: file.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-file.obj -MD -MP -MF $(DEPDIR)/yog_bdw-file.Tpo -c -o yog_bdw-file.obj `if test -f 'file.c'; then $(CYGPATH_W) 'file.c'; else $(CYGPATH_W) '$(srcdir)/file.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-file.Tpo $(DEPDIR)/yog_bdw-file.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file.c' object='yog_bdw-file.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-file.obj `if test -f 'file.c'; then $(CYGPATH_W) 'file.c'; else $(CYGPATH_W) '$(srcdir)/file.c'; fi`
 
 yog_bdw-fixnum.o: fixnum.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-fixnum.o -MD -MP -MF $(DEPDIR)/yog_bdw-fixnum.Tpo -c -o yog_bdw-fixnum.o `test -f 'fixnum.c' || echo '$(srcdir)/'`fixnum.c
@@ -1509,6 +1532,20 @@ yog_copying-exception.obj: exception.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-exception.obj `if test -f 'exception.c'; then $(CYGPATH_W) 'exception.c'; else $(CYGPATH_W) '$(srcdir)/exception.c'; fi`
 
+yog_copying-file.o: file.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-file.o -MD -MP -MF $(DEPDIR)/yog_copying-file.Tpo -c -o yog_copying-file.o `test -f 'file.c' || echo '$(srcdir)/'`file.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-file.Tpo $(DEPDIR)/yog_copying-file.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file.c' object='yog_copying-file.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-file.o `test -f 'file.c' || echo '$(srcdir)/'`file.c
+
+yog_copying-file.obj: file.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-file.obj -MD -MP -MF $(DEPDIR)/yog_copying-file.Tpo -c -o yog_copying-file.obj `if test -f 'file.c'; then $(CYGPATH_W) 'file.c'; else $(CYGPATH_W) '$(srcdir)/file.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-file.Tpo $(DEPDIR)/yog_copying-file.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file.c' object='yog_copying-file.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-file.obj `if test -f 'file.c'; then $(CYGPATH_W) 'file.c'; else $(CYGPATH_W) '$(srcdir)/file.c'; fi`
+
 yog_copying-fixnum.o: fixnum.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-fixnum.o -MD -MP -MF $(DEPDIR)/yog_copying-fixnum.Tpo -c -o yog_copying-fixnum.o `test -f 'fixnum.c' || echo '$(srcdir)/'`fixnum.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-fixnum.Tpo $(DEPDIR)/yog_copying-fixnum.Po
@@ -2054,6 +2091,20 @@ yog_generational-exception.obj: exception.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='exception.c' object='yog_generational-exception.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-exception.obj `if test -f 'exception.c'; then $(CYGPATH_W) 'exception.c'; else $(CYGPATH_W) '$(srcdir)/exception.c'; fi`
+
+yog_generational-file.o: file.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-file.o -MD -MP -MF $(DEPDIR)/yog_generational-file.Tpo -c -o yog_generational-file.o `test -f 'file.c' || echo '$(srcdir)/'`file.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-file.Tpo $(DEPDIR)/yog_generational-file.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file.c' object='yog_generational-file.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-file.o `test -f 'file.c' || echo '$(srcdir)/'`file.c
+
+yog_generational-file.obj: file.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-file.obj -MD -MP -MF $(DEPDIR)/yog_generational-file.Tpo -c -o yog_generational-file.obj `if test -f 'file.c'; then $(CYGPATH_W) 'file.c'; else $(CYGPATH_W) '$(srcdir)/file.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-file.Tpo $(DEPDIR)/yog_generational-file.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file.c' object='yog_generational-file.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-file.obj `if test -f 'file.c'; then $(CYGPATH_W) 'file.c'; else $(CYGPATH_W) '$(srcdir)/file.c'; fi`
 
 yog_generational-fixnum.o: fixnum.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-fixnum.o -MD -MP -MF $(DEPDIR)/yog_generational-fixnum.Tpo -c -o yog_generational-fixnum.o `test -f 'fixnum.c' || echo '$(srcdir)/'`fixnum.c
@@ -2629,6 +2680,20 @@ yog_mark_sweep-exception.obj: exception.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-exception.obj `if test -f 'exception.c'; then $(CYGPATH_W) 'exception.c'; else $(CYGPATH_W) '$(srcdir)/exception.c'; fi`
 
+yog_mark_sweep-file.o: file.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-file.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-file.Tpo -c -o yog_mark_sweep-file.o `test -f 'file.c' || echo '$(srcdir)/'`file.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-file.Tpo $(DEPDIR)/yog_mark_sweep-file.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file.c' object='yog_mark_sweep-file.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-file.o `test -f 'file.c' || echo '$(srcdir)/'`file.c
+
+yog_mark_sweep-file.obj: file.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-file.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep-file.Tpo -c -o yog_mark_sweep-file.obj `if test -f 'file.c'; then $(CYGPATH_W) 'file.c'; else $(CYGPATH_W) '$(srcdir)/file.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-file.Tpo $(DEPDIR)/yog_mark_sweep-file.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file.c' object='yog_mark_sweep-file.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-file.obj `if test -f 'file.c'; then $(CYGPATH_W) 'file.c'; else $(CYGPATH_W) '$(srcdir)/file.c'; fi`
+
 yog_mark_sweep-fixnum.o: fixnum.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-fixnum.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-fixnum.Tpo -c -o yog_mark_sweep-fixnum.o `test -f 'fixnum.c' || echo '$(srcdir)/'`fixnum.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-fixnum.Tpo $(DEPDIR)/yog_mark_sweep-fixnum.Po
@@ -3174,6 +3239,20 @@ yog_mark_sweep_compact-exception.obj: exception.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='exception.c' object='yog_mark_sweep_compact-exception.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-exception.obj `if test -f 'exception.c'; then $(CYGPATH_W) 'exception.c'; else $(CYGPATH_W) '$(srcdir)/exception.c'; fi`
+
+yog_mark_sweep_compact-file.o: file.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-file.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-file.Tpo -c -o yog_mark_sweep_compact-file.o `test -f 'file.c' || echo '$(srcdir)/'`file.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-file.Tpo $(DEPDIR)/yog_mark_sweep_compact-file.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file.c' object='yog_mark_sweep_compact-file.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-file.o `test -f 'file.c' || echo '$(srcdir)/'`file.c
+
+yog_mark_sweep_compact-file.obj: file.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-file.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-file.Tpo -c -o yog_mark_sweep_compact-file.obj `if test -f 'file.c'; then $(CYGPATH_W) 'file.c'; else $(CYGPATH_W) '$(srcdir)/file.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-file.Tpo $(DEPDIR)/yog_mark_sweep_compact-file.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file.c' object='yog_mark_sweep_compact-file.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-file.obj `if test -f 'file.c'; then $(CYGPATH_W) 'file.c'; else $(CYGPATH_W) '$(srcdir)/file.c'; fi`
 
 yog_mark_sweep_compact-fixnum.o: fixnum.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-fixnum.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-fixnum.Tpo -c -o yog_mark_sweep_compact-fixnum.o `test -f 'fixnum.c' || echo '$(srcdir)/'`fixnum.c

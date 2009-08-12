@@ -25,11 +25,11 @@ eval(YogEnv* env, YogVal pkg, YogVal src)
     YogVal code = YUNDEF;
     YogVal cur_frame = YUNDEF;
     PUSH_LOCALS3(env, stmts, code, cur_frame);
-    YogLocals* locals = PTR_AS(YogThread, env->thread)->locals;
-    cur_frame = PTR_AS(YogThread, env->thread)->cur_frame;
+
+    STORE_CURRENT_STAT(env, repl);
 
     YogJmpBuf jmpbuf;
-    int_t status = 0;
+    int_t status;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
         PUSH_JMPBUF(env->thread, jmpbuf);
 
@@ -42,8 +42,7 @@ eval(YogEnv* env, YogVal pkg, YogVal src)
         YogEval_eval_package(env, pkg, code);
     }
     else {
-        PTR_AS(YogThread, env->thread)->locals = locals;
-        PTR_AS(YogThread, env->thread)->cur_frame = cur_frame;
+        LOAD_STAT(env, repl);
         YogError_print_stacktrace(env);
     }
 

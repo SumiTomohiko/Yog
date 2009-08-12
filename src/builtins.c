@@ -174,6 +174,7 @@ YogBuiltins_new(YogEnv* env)
     YogObj_set_attr_id(env, bltins, PTR_AS(YogKlass, klass)->name, klass); \
 } while (0)
     REGISTER_KLASS(cDict);
+    REGISTER_KLASS(cFile);
     REGISTER_KLASS(cObject);
     REGISTER_KLASS(cThread);
     REGISTER_KLASS(eException);

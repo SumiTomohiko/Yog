@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "yog/array.h"
+#include "yog/classmethod.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -64,6 +65,24 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
     YOG_BUG(env, "attribute not found");
 
     /* NOTREACHED */
+    RETURN_VOID(env);
+}
+
+void
+YogKlass_define_class_method(YogEnv* env, YogVal self, const char* name, void* f)
+{
+    SAVE_ARG(env, self);
+    YogVal func = YUNDEF;
+    YogVal method = YUNDEF;
+    PUSH_LOCALS2(env, func, method);
+
+    YogVal klass_name = PTR_AS(YogKlass, self)->name;
+    func = YogNativeFunction_new(env, klass_name, name, f);
+    method = YogClassMethod_new(env);
+    PTR_AS(YogClassMethod, method)->f = func;
+
+    YogObj_set_attr(env, self, name, method);
+
     RETURN_VOID(env);
 }
 

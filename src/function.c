@@ -604,6 +604,20 @@ YogCallable_call(YogEnv* env, YogVal self, uint_t argc, YogVal* args)
 }
 
 YogVal
+YogCallable_call1(YogEnv* env, YogVal self, YogVal arg0)
+{
+    SAVE_ARGS2(env, self, arg0);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+    YogVal args[] = { arg0 };
+    PUSH_LOCALSX(env, array_sizeof(args), args);
+
+    retval = YogCallable_call(env, self, array_sizeof(args), args);
+
+    RETURN(env, retval);
+}
+
+YogVal
 YogCallable_call2(YogEnv* env, YogVal self, uint_t argc, YogVal* args, YogVal block)
 {
     SAVE_ARGS2(env, self, block);
