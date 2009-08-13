@@ -63,6 +63,7 @@ do_close(YogEnv* env, YogVal self)
 {
     SAVE_ARG(env, self);
     fclose(PTR_AS(YogFile, self)->fp);
+    PTR_AS(YogFile, self)->fp = NULL;
     RETURN_VOID(env);
 }
 
@@ -127,12 +128,12 @@ open(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         RETURN(env, file);
     }
 
-    YogJmpBuf jmpbuf;
-    PUSH_JMPBUF(env->thread, jmpbuf);
     SAVE_CURRENT_STAT(env, open);
 
+    YogJmpBuf jmpbuf;
     int_t status;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
+        PUSH_JMPBUF(env->thread, jmpbuf);
         retval = YogCallable_call1(env, block, file);
         do_close(env, file);
     }

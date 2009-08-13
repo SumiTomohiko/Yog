@@ -83,4 +83,5 @@ sigsegv/tests/sigsegv1
 sigsegv/tests/sigsegv2
 sigsegv/tests/sigsegv3
 stamp-h1
+tests/test_write0.tmp
 yog

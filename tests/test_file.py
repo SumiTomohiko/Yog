@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from os import unlink
 from re import match
 from testcase import TestCase
 
@@ -66,5 +67,25 @@ File.open("%(filename)s", "r") do [f]
   end
 end
 """ % { "filename": filename }, stderr=test_stderr)
+
+    def test_write0(self):
+        filename = "test_write0.tmp"
+
+        def test_stdout(ignored):
+            fp = open(filename)
+            try:
+                assert fp.read() == "foobarbazquux"
+            finally:
+                fp.close()
+
+        try:
+            unlink(filename)
+        except OSError:
+            pass
+        self._test("""
+File.open("%(filename)s", "w") do [f]
+  f.write("foobarbazquux")
+end
+""" % { "filename": filename }, stdout=test_stdout)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
