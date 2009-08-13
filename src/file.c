@@ -39,6 +39,21 @@ YogFile_new(YogEnv* env)
 }
 
 static YogVal
+write(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    s = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, IS_PTR(s), "argument is not pointer");
+    YOG_ASSERT(env, IS_OBJ_OF(env, s, cString), "argument is not String");
+    fputs(STRING_CSTR(s), PTR_AS(YogFile, self)->fp);
+
+    RETURN(env, self);
+}
+
+static YogVal
 read(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -163,6 +178,7 @@ YogFile_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "close", close);
     YogKlass_define_method(env, klass, "read", read);
     YogKlass_define_method(env, klass, "readline", readline);
+    YogKlass_define_method(env, klass, "write", write);
 
     RETURN(env, klass);
 }
