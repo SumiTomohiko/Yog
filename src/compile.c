@@ -1427,7 +1427,7 @@ alloc_local_vars_table_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg
 {
     if (VAR(val)->type == VT_LOCAL) {
         uint_t index = VAR(val)->u.local.index;
-        YOG_ASSERT(env, index < ALLOC_LOCAL_VARS_TABLE_ARG(*arg)->count, "local var index over count", index, ALLOC_LOCAL_VARS_TABLE_ARG(*arg)->count);
+        YOG_ASSERT(env, index < ALLOC_LOCAL_VARS_TABLE_ARG(*arg)->count, "local var index over count (%u, %u)", index, ALLOC_LOCAL_VARS_TABLE_ARG(*arg)->count);
         YogVal names = ALLOC_LOCAL_VARS_TABLE_ARG(*arg)->names;
         PTR_AS(ID, names)[index] = VAL2ID(key);
     }
@@ -1753,98 +1753,67 @@ var_table_new(YogEnv* env)
     RETURN(env, var_tbl);
 }
 
-struct Flags2TypeArg {
-    YogVal vars;
-    YogVal outer;
-    uint_t next_local_index;
-};
-
-typedef struct Flags2TypeArg Flags2TypeArg;
-
-#define FLAGS2TYPE_ARG(v)   PTR_AS(Flags2TypeArg, (v))
-
-static int_t
-vars_flags2type_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
-{
-    SAVE_ARGS2(env, key, val);
-
-    YogVal var = YUNDEF;
-    PUSH_LOCAL(env, var);
-
-    ID name = VAL2ID(key);
-    int_t flags = SCAN_VAR_ENTRY(val)->flags;
-    var = Var_new(env);
-    if (IS_NONLOCAL(flags) || (!IS_ASSIGNED(flags) && !IS_PARAM(flags))) {
-        uint_t level = 0;
-        uint_t index = 0;
-        if (find_outer_var(env, name, FLAGS2TYPE_ARG(*arg)->outer, &level, &index)) {
-            VAR(var)->type = VT_NONLOCAL;
-            VAR(var)->u.nonlocal.level = level;
-            VAR(var)->u.nonlocal.index = index;
-        }
-        else {
-            VAR(var)->type = VT_GLOBAL;
-        }
-    }
-    else {
-        VAR(var)->type = VT_LOCAL;
-        uint_t index;
-        if (name != YogVM_intern(env, env->vm, "self")) {
-            index = FLAGS2TYPE_ARG(*arg)->next_local_index;
-            FLAGS2TYPE_ARG(*arg)->next_local_index++;
-        }
-        else {
-            index = 0;
-        }
-        VAR(var)->u.local.index = index;
-    }
-
-    YogTable_add_direct(env, FLAGS2TYPE_ARG(*arg)->vars, key, var);
-
-    RETURN(env, ST_CONTINUE);
-}
-
-static void
-Flags2TypeArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
-{
-    Flags2TypeArg* arg = ptr;
-#define KEEP(member)    YogGC_keep(env, &arg->member, keeper, heap)
-    KEEP(vars);
-    KEEP(outer);
-#undef KEEP
-}
-
-static YogVal
-Flags2TypeArg_new(YogEnv* env)
-{
-    YogVal arg = ALLOC_OBJ(env, Flags2TypeArg_keep_children, NULL, Flags2TypeArg);
-    PTR_AS(Flags2TypeArg, arg)->vars = YUNDEF;
-    PTR_AS(Flags2TypeArg, arg)->outer = YUNDEF;
-    PTR_AS(Flags2TypeArg, arg)->next_local_index = 0;
-
-    return PTR2VAL(arg);
-}
-
 static YogVal
 vars_flags2type(YogEnv* env, YogVal var_tbl, YogVal outer)
 {
     SAVE_ARGS2(env, var_tbl, outer);
-
     YogVal vars = YUNDEF;
-    YogVal arg = YUNDEF;
-    PUSH_LOCALS2(env, vars, arg);
+    YogVal iter = YUNDEF;
+    YogVal entry = YUNDEF;
+    YogVal var = YUNDEF;
+    PUSH_LOCALS4(env, vars, iter, entry, var);
 
     vars = YogTable_new_symbol_table(env);
 
-    arg = Flags2TypeArg_new(env);
-    ID self = YogVM_intern(env, env->vm, "self");
-    if (YogTable_lookup(env, var_tbl, ID2VAL(self), NULL)) {
-        PTR_AS(Flags2TypeArg, arg)->next_local_index = 1;
-    }
-    FLAGS2TYPE_ARG(arg)->vars = vars;
-    FLAGS2TYPE_ARG(arg)->outer = outer;
+    uint_t params_num = 0;
+    iter = YogTable_get_iterator(env, var_tbl);
+    while (YogTableIterator_next(env, iter)) {
+        ID name = VAL2ID(YogTableIterator_current_key(env, iter));
+        entry = YogTableIterator_current_value(env, iter);
+        int_t flags = SCAN_VAR_ENTRY(entry)->flags;
+        if (!IS_PARAM(flags)) {
+            continue;
+        }
 
-    YogTable_foreach(env, var_tbl, vars_flags2type_callback, &arg);
+        var = Var_new(env);
+        VAR(var)->type = VT_LOCAL;
+        VAR(var)->u.local.index = SCAN_VAR_ENTRY(entry)->index;
+        YogTable_add_direct(env, vars, ID2VAL(name), var);
+
+        params_num++;
+    }
+
+    uint_t locals_num = 0;
+    iter = YogTable_get_iterator(env, var_tbl);
+    while (YogTableIterator_next(env, iter)) {
+        ID name = VAL2ID(YogTableIterator_current_key(env, iter));
+        entry = YogTableIterator_current_value(env, iter);
+        int_t flags = SCAN_VAR_ENTRY(entry)->flags;
+        if (IS_PARAM(flags)) {
+            continue;
+        }
+
+        var = Var_new(env);
+        if (IS_NONLOCAL(flags) || !IS_ASSIGNED(flags)) {
+            uint_t level = 0;
+            uint_t index = 0;
+            if (find_outer_var(env, name, outer, &level, &index)) {
+                VAR(var)->type = VT_NONLOCAL;
+                VAR(var)->u.nonlocal.level = level;
+                VAR(var)->u.nonlocal.index = index;
+            }
+            else {
+                VAR(var)->type = VT_GLOBAL;
+            }
+        }
+        else {
+            VAR(var)->type = VT_LOCAL;
+            VAR(var)->u.local.index = params_num + locals_num;
+            locals_num++;
+        }
+
+        YogTable_add_direct(env, vars, ID2VAL(name), var);
+    }
 
     RETURN(env, vars);
 }
@@ -2012,7 +1981,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     case CTX_FUNC:
         {
             YogVal var = lookup_var(env, COMPILE_DATA(data)->vars, id);
-            YOG_ASSERT(env, IS_PTR(var), "can't find variable");
+            YOG_ASSERT(env, IS_PTR(var), "can't find variable (%s)", YogVM_id2name(env, env->vm, id));
             switch (VAR(var)->type) {
             case VT_GLOBAL:
                 CompileData_add_load_global(env, data, lineno, id);

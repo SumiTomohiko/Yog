@@ -799,7 +799,8 @@ YogTableIterator_next(YogEnv* env, YogVal self)
     YogVal current_entry = YUNDEF;
     YogVal entry = YUNDEF;
     YogVal next = YUNDEF;
-    PUSH_LOCALS3(env, current_entry, entry, next);
+    YogVal bins = YUNDEF;
+    PUSH_LOCALS4(env, current_entry, entry, next, bins);
 
     current_entry = PTR_AS(TableIterator, self)->entry;
     if (IS_PTR(current_entry)) {
@@ -814,7 +815,8 @@ YogTableIterator_next(YogEnv* env, YogVal self)
     YogVal tbl = PTR_AS(TableIterator, self)->tbl;
     uint_t num_bins = PTR_AS(YogTable, tbl)->num_bins;
     while (i < num_bins) {
-        entry = PTR_AS(YogVal, PTR_AS(YogTable, tbl)->bins)[i];
+        bins = PTR_AS(YogTable, tbl)->bins;
+        entry = PTR_AS(YogTableEntryArray, bins)->items[i];
         if (IS_PTR(entry)) {
             break;
         }

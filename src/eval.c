@@ -323,8 +323,24 @@ YogEval_mainloop(YogEnv* env)
         OpCode op = PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
 #if 0
-        const char* opname = YogCode_get_op_name(op);
-        DPRINTF("%p: PC=%u, op=%s", env, PC, opname);
+        do {
+            DPRINTF("---------------- dump of variables ----------------");
+            YogVal cur_frame = PTR_AS(YogThread, env->thread)->cur_frame;
+            if (PTR_AS(YogFrame, cur_frame)->type == FRAME_METHOD) {
+                YogVal code = PTR_AS(YogScriptFrame, cur_frame)->code;
+                ID* names = PTR_AS(YogCode, code)->local_vars_names;
+                YogVal vars = PTR_AS(YogMethodFrame, cur_frame)->vars;
+                uint_t size = PTR_AS(YogValArray, vars)->size;
+                uint_t i;
+                for (i = 0; i < size; i++) {
+                    const char* s = YogVM_id2name(env, env->vm, names[i]);
+                    DPRINTF("%u: %s:", i, s);
+                    YogVal_print(env, PTR_AS(YogValArray, vars)->items[i]);
+                }
+            }
+            const char* opname = YogCode_get_op_name(op);
+            DPRINTF("%p: PC=%u, op=%s", env, PC, opname);
+        } while (0);
 #endif
 #if 0
         do {
@@ -341,9 +357,8 @@ YogEval_mainloop(YogEnv* env)
                 printf("%p: stack is empty.\n", env);
             }
 
-            DPRINTF("%p: PC=%u", env, PC);
             const char* opname = YogCode_get_op_name(op);
-            DPRINTF("%p: op=%s", env, opname);
+            DPRINTF("%p: PC=%u, op=%s", env, PC, opname);
             printf("%p: ---------------- end of stack ----------------\n", env);
             fflush(stdout);
         } while (0);

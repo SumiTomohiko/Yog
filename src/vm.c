@@ -313,7 +313,7 @@ keep_local_vals(YogEnv* env, YogVal* vals, uint_t size, ObjectKeeper keeper, voi
     uint_t i;
     for (i = 0; i < size; i++) {
         YogVal* val = &vals[i];
-        DEBUG(DPRINTF("val=%p", val));
+        DEBUG(DPRINTF("val=%p, *val=0x%08x", val, *val));
         DEBUG(YogVal old_val = *val);
         YogGC_keep(env, val, keeper, heap);
         DEBUG(DPRINTF("val=%p, 0x%08x->0x%08x", val, old_val, *val));

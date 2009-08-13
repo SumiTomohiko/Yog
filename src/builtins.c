@@ -147,11 +147,15 @@ classmethod(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static char* builtins_src = 
-#include "builtins.inc"
+#if !defined(MINIYOG)
+#   include "builtins.inc"
+#else
+""
+#endif
 ;
 
 static YogVal
-argv2args(YogEnv* env, uint_t argc, const char* argv[])
+argv2args(YogEnv* env, uint_t argc, char** argv)
 {
     SAVE_LOCALS(env);
     YogVal args = YUNDEF;
@@ -172,25 +176,25 @@ YogVal
 YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
 {
     SAVE_LOCALS(env);
-    YogVal bltins = YUNDEF;
+    YogVal builtins = YUNDEF;
     YogVal src = YUNDEF;
-    YogVal code = YUNDEF;
     YogVal stmts = YUNDEF;
+    YogVal code = YUNDEF;
     YogVal args = YUNDEF;
-    PUSH_LOCALS5(env, bltins, src, code, stmts, args);
+    PUSH_LOCALS5(env, builtins, src, code, stmts, args);
 
-    bltins = YogPackage_new(env);
+    builtins = YogPackage_new(env);
 
-    YogPackage_define_method(env, bltins, "puts", puts_, 0, 1, 0, 0, NULL);
-    YogPackage_define_method(env, bltins, "print", print, 0, 1, 0, 0, NULL);
-    YogPackage_define_method(env, bltins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
-    YogPackage_define_method(env, bltins, "import_package", import_package, 0, 0, 0, 0, "package", NULL);
-    YogPackage_define_method(env, bltins, "property", property, 0, 0, 0, 0, NULL);
-    YogPackage_define_method(env, bltins, "classmethod", classmethod, 0, 0, 0, 0, NULL);
+    YogPackage_define_method(env, builtins, "puts", puts_, 0, 1, 0, 0, NULL);
+    YogPackage_define_method(env, builtins, "print", print, 0, 1, 0, 0, NULL);
+    YogPackage_define_method(env, builtins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
+    YogPackage_define_method(env, builtins, "import_package", import_package, 0, 0, 0, 0, "package", NULL);
+    YogPackage_define_method(env, builtins, "property", property, 0, 0, 0, 0, NULL);
+    YogPackage_define_method(env, builtins, "classmethod", classmethod, 0, 0, 0, 0, NULL);
 
 #define REGISTER_KLASS(c)   do { \
     YogVal klass = env->vm->c; \
-    YogObj_set_attr_id(env, bltins, PTR_AS(YogKlass, klass)->name, klass); \
+    YogObj_set_attr_id(env, builtins, PTR_AS(YogKlass, klass)->name, klass); \
 } while (0)
     REGISTER_KLASS(cDict);
     REGISTER_KLASS(cFile);
@@ -200,16 +204,16 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
 #undef REGISTER_KLASS
 
     args = argv2args(env, argc, argv);
-    YogObj_set_attr(env, bltins, "ARGV",  args);
+    YogObj_set_attr(env, builtins, "ARGV",  args);
 
 #if !defined(MINIYOG)
     src = YogString_new_str(env, builtins_src);
     stmts = YogParser_parse(env, src);
     code = YogCompiler_compile_module(env, "builtin", stmts);
-    YogEval_eval_package(env, bltins, code);
+    YogEval_eval_package(env, builtins, code);
 #endif
 
-    RETURN(env, bltins);
+    RETURN(env, builtins);
 }
 
 /**
