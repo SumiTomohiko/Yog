@@ -58,4 +58,24 @@ end
 26
 """)
 
+    def test_add0(self):
+        self._test("""
+print(([] + []).size)
+""", "0")
+
+    def test_add10(self):
+        self._test("""
+print(([42] + [26]).size)
+""", "2")
+
+    def test_add20(self):
+        self._test("""
+print(([42] + [26])[0])
+""", "42")
+
+    def test_add30(self):
+        self._test("""
+print(([42] + [26])[1])
+""", "26")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
