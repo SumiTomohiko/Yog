@@ -146,13 +146,11 @@ classmethod(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, method);
 }
 
-static char* builtins_src = 
 #if !defined(MINIYOG)
+static char* builtins_src = 
 #   include "builtins.inc"
-#else
-""
-#endif
 ;
+#endif
 
 static YogVal
 argv2args(YogEnv* env, uint_t argc, char** argv)
