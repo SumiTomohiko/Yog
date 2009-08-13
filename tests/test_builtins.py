@@ -34,4 +34,10 @@ print(ARGV[1])
 print(ARGV[2])
 """, "bar", yog_option=["foo", "bar"])
 
+    def test_partial0(self):
+        self._test("""
+f = partial(print, 42)
+f()
+""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

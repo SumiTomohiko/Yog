@@ -1852,6 +1852,8 @@ static void
 compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
+    YogVal var = YUNDEF;
+    PUSH_LOCAL(env, var);
 
     ID klass_name = INVALID_ID;
     if (COMPILE_DATA(data)->ctx == CTX_KLASS) {
@@ -1862,17 +1864,22 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
 
     add_push_const(env, data, code, NODE(node)->lineno);
 
-    ID id = NODE(node)->u.funcdef.name;
+    ID name = NODE(node)->u.funcdef.name;
     uint_t lineno = NODE(node)->lineno;
     switch (COMPILE_DATA(data)->ctx) {
     case CTX_FUNC:
-        CompileData_add_make_function(env, data, lineno);
-        CompileData_add_store_local(env, data, lineno, id);
+        {
+            var = lookup_var(env, COMPILE_DATA(data)->vars, name);
+            YOG_ASSERT(env, VAR(var)->type == VT_LOCAL, "function isn't local");
+            ID id = VAR(var)->u.local.index;
+            CompileData_add_make_function(env, data, lineno);
+            CompileData_add_store_local(env, data, lineno, id);
+        }
         break;
     case CTX_KLASS:
     case CTX_PKG:
         CompileData_add_make_function(env, data, lineno);
-        CompileData_add_store_name(env, data, lineno, id);
+        CompileData_add_store_name(env, data, lineno, name);
         break;
     default:
         YOG_BUG(env, "unnknown context (0x%08x)", COMPILE_DATA(data)->ctx);
