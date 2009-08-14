@@ -2,6 +2,7 @@
 *.lo
 *.log
 *.o
+*.pyc
 *.so
 Makefile
 autom4te.cache
