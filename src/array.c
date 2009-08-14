@@ -201,6 +201,38 @@ YogArray_new(YogEnv* env)
 }
 
 static YogVal
+add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal array = YUNDEF;
+    YogVal right = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS3(env, array, right, val);
+
+    right = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, IS_PTR(right), "operand is not Array");
+    YOG_ASSERT(env, IS_OBJ_OF(env, right, cArray), "operand is not Array");
+
+    uint_t size1 = YogArray_size(env, self);
+    uint_t size2 = YogArray_size(env, right);
+    uint_t size = size1 + size2;
+    YOG_ASSERT(env, (size1 <= size) && (size2 <= size), "size overflow");
+
+    array = YogArray_new(env);
+    uint_t i;
+    for (i = 0; i < size1; i++) {
+        val = YogArray_at(env, self, i);
+        YogArray_push(env, array, val);
+    }
+    for (i = 0; i < size2; i++) {
+        val = YogArray_at(env, right, i);
+        YogArray_push(env, array, val);
+    }
+
+    RETURN(env, array);
+}
+
+static YogVal
 lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -261,6 +293,7 @@ YogArray_klass_new(YogEnv* env)
     klass = YogKlass_new(env, "Array", env->vm->cObject);
     YogKlass_define_allocator(env, klass, allocate);
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    DEFINE_METHOD("+", add);
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("each", each);
