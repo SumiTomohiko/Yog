@@ -25,4 +25,18 @@ end
 def def
 """, stderr=test_stderr)
 
+    def test_regexp_after_if0(self):
+        self._test("""
+if //
+  print(42)
+end
+""", "42")
+
+    def test_regexp_after_if10(self):
+        self._test("""
+if /foo/
+  print(42)
+end
+""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
