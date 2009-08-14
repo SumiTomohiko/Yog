@@ -90,4 +90,24 @@ d = Dict.new()
 puts(d["foo"])
 """, stderr=test_stderr)
 
+    def test_add0(self):
+        self._test("""
+print(({} + {}).size)
+""", "0")
+
+    def test_add10(self):
+        self._test("""
+print(({ foo: 42 } + { bar: 26 }).size)
+""", "2")
+
+    def test_add20(self):
+        self._test("""
+print(({ foo: 42 } + { bar: 26 })[:foo])
+""", "42")
+
+    def test_add30(self):
+        self._test("""
+print(({ foo: 42 } + { bar: 26 })[:bar])
+""", "26")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
