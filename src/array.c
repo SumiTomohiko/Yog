@@ -219,15 +219,17 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YOG_ASSERT(env, (size1 <= size) && (size2 <= size), "size overflow");
 
     array = YogArray_new(env);
-    uint_t i;
-    for (i = 0; i < size1; i++) {
-        val = YogArray_at(env, self, i);
-        YogArray_push(env, array, val);
-    }
-    for (i = 0; i < size2; i++) {
-        val = YogArray_at(env, right, i);
-        YogArray_push(env, array, val);
-    }
+
+#define ADD(from)   do { \
+    uint_t i; \
+    for (i = 0; i < size1; i++) { \
+        val = YogArray_at(env, from, i); \
+        YogArray_push(env, array, val); \
+    } \
+} while (0)
+    ADD(self);
+    ADD(right);
+#undef ADD
 
     RETURN(env, array);
 }

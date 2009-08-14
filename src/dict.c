@@ -14,6 +14,38 @@ struct DictIterator {
 typedef struct DictIterator DictIterator;
 
 static YogVal
+add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal right = YUNDEF;
+    YogVal key = YUNDEF;
+    YogVal value = YUNDEF;
+    YogVal iter = YUNDEF;
+    YogVal dict = YUNDEF;
+    PUSH_LOCALS5(env, right, key, value, iter, dict);
+
+    right = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, IS_PTR(right), "invalid operand");
+    YOG_ASSERT(env, IS_OBJ_OF(env, right, cDict), "invalid operand");
+
+    dict = YogDict_new(env);
+
+#define ADD(from)   do { \
+    iter = YogDict_get_iterator(env, from); \
+    while (YogDictIterator_next(env, iter)) { \
+        key = YogDictIterator_current_key(env, iter); \
+        value = YogDictIterator_current_value(env, iter); \
+        YogDict_set(env, dict, key, value); \
+    } \
+} while (0)
+    ADD(self);
+    ADD(right);
+#undef ADD
+
+    RETURN(env, dict);
+}
+
+static YogVal
 subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -119,24 +151,6 @@ get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
-YogVal
-YogDict_klass_new(YogEnv* env)
-{
-    SAVE_LOCALS(env);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
-
-    klass = YogKlass_new(env, "Dict", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, allocate);
-#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
-    DEFINE_METHOD("[]", subscript);
-    DEFINE_METHOD("[]=", subscript_assign);
-#undef DEFINE_METHOD
-    YogKlass_define_property(env, klass, "size", get_size, NULL);
-
-    RETURN(env, klass);
-}
-
 static void
 DictIterator_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
@@ -201,6 +215,25 @@ YogDict_get_iterator(YogEnv* env, YogVal self)
     PTR_AS(DictIterator, iter)->tbl_iter = tbl_iter;
 
     RETURN(env, iter);
+}
+
+YogVal
+YogDict_klass_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = YogKlass_new(env, "Dict", env->vm->cObject);
+    YogKlass_define_allocator(env, klass, allocate);
+#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    DEFINE_METHOD("+", add);
+    DEFINE_METHOD("[]", subscript);
+    DEFINE_METHOD("[]=", subscript_assign);
+#undef DEFINE_METHOD
+    YogKlass_define_property(env, klass, "size", get_size, NULL);
+
+    RETURN(env, klass);
 }
 
 /**
