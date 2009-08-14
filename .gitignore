@@ -1,0 +1,14 @@
+Makefile
+autom4te.cache
+*.log
+config.h
+config.log
+config.status
+config.status.log
+configure.log
+configure.scan
+core
+core.*
+libtool
+stamp-h1
+vgcore.*
