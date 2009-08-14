@@ -13,34 +13,40 @@ struct DictIterator {
 
 typedef struct DictIterator DictIterator;
 
+YogVal
+YogDict_add(YogEnv* env, YogVal self, YogVal dict)
+{
+    SAVE_ARGS2(env, self, dict);
+    YogVal iter = YUNDEF;
+    YogVal key = YUNDEF;
+    YogVal value = YUNDEF;
+    PUSH_LOCALS3(env, iter, key, value);
+
+    iter = YogDict_get_iterator(env, dict);
+    while (YogDictIterator_next(env, iter)) {
+        key = YogDictIterator_current_key(env, iter);
+        value = YogDictIterator_current_value(env, iter);
+        YogDict_set(env, self, key, value);
+    }
+
+    RETURN(env, self);
+}
+
 static YogVal
 add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal right = YUNDEF;
-    YogVal key = YUNDEF;
-    YogVal value = YUNDEF;
-    YogVal iter = YUNDEF;
     YogVal dict = YUNDEF;
-    PUSH_LOCALS5(env, right, key, value, iter, dict);
+    PUSH_LOCALS2(env, right, dict);
 
     right = YogArray_at(env, args, 0);
     YOG_ASSERT(env, IS_PTR(right), "invalid operand");
     YOG_ASSERT(env, IS_OBJ_OF(env, right, cDict), "invalid operand");
 
     dict = YogDict_new(env);
-
-#define ADD(from)   do { \
-    iter = YogDict_get_iterator(env, from); \
-    while (YogDictIterator_next(env, iter)) { \
-        key = YogDictIterator_current_key(env, iter); \
-        value = YogDictIterator_current_value(env, iter); \
-        YogDict_set(env, dict, key, value); \
-    } \
-} while (0)
-    ADD(self);
-    ADD(right);
-#undef ADD
+    YogDict_add(env, dict, self);
+    YogDict_add(env, dict, right);
 
     RETURN(env, dict);
 }

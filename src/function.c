@@ -327,19 +327,52 @@ YogFunction_new(YogEnv* env)
 }
 
 static YogVal
+create_keyword_argument(YogEnv* env, uint8_t kwargc, YogVal kwargs[], YogVal varkwarg)
+{
+    SAVE_ARG(env, varkwarg);
+    YogVal kw = YUNDEF;
+    YogVal key = YUNDEF;
+    YogVal value = YUNDEF;
+    PUSH_LOCALS3(env, kw, key, value);
+
+    if ((kwargc == 0) && !IS_PTR(varkwarg)) {
+        RETURN(env, YUNDEF);
+    }
+
+    kw = YogDict_new(env);
+    uint_t i;
+    for (i = 0; i < kwargc; i += 2) {
+        key = kwargs[i];
+        value = kwargs[i + 1];
+        YogDict_set(env, kw, key, value);
+    }
+    if (IS_PTR(varkwarg)) {
+        YogDict_add(env, kw, varkwarg);
+    }
+
+    RETURN(env, kw);
+}
+
+static YogVal
 YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
     SAVE_ARGS5(env, callee, self, blockarg, vararg, varkwarg);
     YogVal args = YUNDEF;
     YogVal retval = YUNDEF;
     YogVal frame = YUNDEF;
-    PUSH_LOCALS3(env, args, retval, frame);
+    YogVal kw = YUNDEF;
+    PUSH_LOCALS4(env, args, retval, frame, kw);
 
     args = YogArray_new(env);
     uint_t i;
     for (i = 0; i < posargc; i++) {
         YogArray_push(env, args, posargs[i]);
     }
+    if (IS_PTR(vararg) && IS_OBJ_OF(env, vararg, cArray)) {
+        YogArray_add(env, args, vararg);
+    }
+
+    kw = create_keyword_argument(env, kwargc, kwargs, varkwarg);
 
     frame = YogCFrame_new(env);
     PTR_AS(YogCFrame, frame)->f = callee;
@@ -347,7 +380,7 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
     PTR_AS(YogThread, env->thread)->cur_frame = frame;
 
     YogVal (*f)(YogEnv*, YogVal, YogVal, YogVal, YogVal) = PTR_AS(YogNativeFunction, callee)->f;
-    retval = (*f)(env, self, args, YUNDEF, blockarg);
+    retval = (*f)(env, self, args, kw, blockarg);
 
     PTR_AS(YogThread, env->thread)->cur_frame = PTR_AS(YogFrame, PTR_AS(YogThread, env->thread)->cur_frame)->prev;
 

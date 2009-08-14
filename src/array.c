@@ -200,6 +200,23 @@ YogArray_new(YogEnv* env)
 #undef INIT_SIZE
 }
 
+YogVal
+YogArray_add(YogEnv* env, YogVal self, YogVal array)
+{
+    SAVE_ARGS2(env, self, array);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    uint_t size = YogArray_size(env, array);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        val = YogArray_at(env, array, i);
+        YogArray_push(env, self, val);
+    }
+
+    RETURN(env, self);
+}
+
 static YogVal
 add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -213,23 +230,9 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YOG_ASSERT(env, IS_PTR(right), "operand is not Array");
     YOG_ASSERT(env, IS_OBJ_OF(env, right, cArray), "operand is not Array");
 
-    uint_t size1 = YogArray_size(env, self);
-    uint_t size2 = YogArray_size(env, right);
-    uint_t size = size1 + size2;
-    YOG_ASSERT(env, (size1 <= size) && (size2 <= size), "size overflow");
-
     array = YogArray_new(env);
-
-#define ADD(from)   do { \
-    uint_t i; \
-    for (i = 0; i < size1; i++) { \
-        val = YogArray_at(env, from, i); \
-        YogArray_push(env, array, val); \
-    } \
-} while (0)
-    ADD(self);
-    ADD(right);
-#undef ADD
+    YogArray_add(env, array, self);
+    YogArray_add(env, array, right);
 
     RETURN(env, array);
 }
