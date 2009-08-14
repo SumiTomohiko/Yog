@@ -1,6 +1,10 @@
+*.la
+*.lo
+*.log
+*.o
+*.so
 Makefile
 autom4te.cache
-*.log
 config.h
 config.log
 config.status
