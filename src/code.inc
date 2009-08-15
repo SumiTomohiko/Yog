@@ -23,6 +23,7 @@ YogCode_get_op_name(OpCode op)
         "JUMP_IF_TRUE",
         "JUMP_IF_FALSE",
         "DUP",
+        "MAKE_MODULE",
         "MAKE_KLASS",
         "PUSH_SELF_NAME",
         "RET",

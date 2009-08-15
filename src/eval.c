@@ -11,6 +11,7 @@
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/function.h"
+#include "yog/module.h"
 #include "yog/package.h"
 #include "yog/parser.h"
 #include "yog/string.h"
@@ -271,8 +272,6 @@ YogEval_mainloop(YogEnv* env)
 #endif
 
     while (PC < PTR_AS(YogByteArray, CODE->insts)->size) {
-#define ENV             (env)
-#define VM              (ENV_VM(ENV))
 #define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME)))
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define THREAD          (env->thread)
@@ -292,9 +291,9 @@ YogEval_mainloop(YogEnv* env)
             args[i] = YUNDEF; \
         } \
     } while (0); \
-    PUSH_LOCALS3(ENV, varkwarg, vararg, blockarg); \
-    PUSH_LOCALSX(ENV, 2 * (kwargc), kwargs); \
-    PUSH_LOCALSX(ENV, (argc), args); \
+    PUSH_LOCALS3(env, varkwarg, vararg, blockarg); \
+    PUSH_LOCALSX(env, 2 * (kwargc), kwargs); \
+    PUSH_LOCALSX(env, (argc), args); \
 \
     if (varkwargc == 1) { \
         varkwarg = POP(); \
@@ -322,6 +321,12 @@ YogEval_mainloop(YogEnv* env)
 #define PUSH(val)   YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), val)
         OpCode op = PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
+#if 0
+        do {
+            const char* opname = YogCode_get_op_name(op);
+            DPRINTF("%p: PC=%u, op=%s", env, PC, opname);
+        } while (0);
+#endif
 #if 0
         do {
             DPRINTF("---------------- dump of variables ----------------");
@@ -377,9 +382,6 @@ YogEval_mainloop(YogEnv* env)
 #undef THREAD
 #undef CONSTS
 #undef POP
-
-#undef VM
-#undef ENV
     }
 
     POP_BUF();
@@ -461,7 +463,7 @@ YogEval_eval_file(YogEnv* env, FILE* fp, const char* filename, const char* pkg_n
     if (!IS_PTR(stmts)) {
         RETURN(env, YNIL);
     }
-    code = YogCompiler_compile_module(env, filename, stmts);
+    code = YogCompiler_compile_package(env, filename, stmts);
 
     pkg = YogPackage_new(env);
     YogVM_register_package(env, env->vm, pkg_name, pkg);

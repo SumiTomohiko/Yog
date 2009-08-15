@@ -38,7 +38,7 @@ typedef struct KeywordTableEntry KeywordTableEntry;
 #line 10 "keywords"
 struct KeywordTableEntry { const char* name; unsigned int type; };
 
-#define TOTAL_KEYWORDS 21
+#define TOTAL_KEYWORDS 22
 #define MIN_WORD_LENGTH 2
 #define MAX_WORD_LENGTH 8
 #define MIN_HASH_VALUE 2
@@ -67,7 +67,7 @@ hash (register const char *str, register unsigned int len)
       29, 29, 29, 29, 29, 29, 10, 29, 29, 29,
       29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
       29, 29, 29, 29, 29, 10, 29, 15,  5,  0,
-      10,  5,  0, 29, 29,  0, 29, 29,  0, 29,
+      10,  5,  0, 29, 29,  0, 29, 29,  0,  5,
        0, 29,  0, 29,  0, 10, 10,  0, 29,  5,
        0, 10, 29, 29, 29, 29, 29, 29, 29, 29,
       29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
@@ -113,9 +113,9 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
       {""}, {""},
 #line 25 "keywords"
       {"if", TK_IF},
-#line 28 "keywords"
+#line 29 "keywords"
       {"nil", TK_NIL},
-#line 27 "keywords"
+#line 28 "keywords"
       {"next", TK_NEXT},
 #line 23 "keywords"
       {"false", TK_FALSE},
@@ -123,11 +123,11 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
       {"import", TK_IMPORT},
 #line 24 "keywords"
       {"finally", TK_FINALLY},
-#line 29 "keywords"
+#line 30 "keywords"
       {"nonlocal", TK_NONLOCAL},
 #line 19 "keywords"
       {"elif", TK_ELIF},
-#line 33 "keywords"
+#line 34 "keywords"
       {"while", TK_WHILE},
 #line 22 "keywords"
       {"except", TK_EXCEPT},
@@ -135,11 +135,11 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
       {"do", TK_DO},
 #line 17 "keywords"
       {"def", TK_DEF},
-#line 31 "keywords"
+#line 32 "keywords"
       {"true", TK_TRUE},
 #line 15 "keywords"
       {"break", TK_BREAK},
-#line 30 "keywords"
+#line 31 "keywords"
       {"return", TK_RETURN},
 #line 14 "keywords"
       {"as", TK_AS},
@@ -149,8 +149,10 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
       {"else", TK_ELSE},
 #line 16 "keywords"
       {"class", TK_CLASS},
-      {""}, {""},
-#line 32 "keywords"
+#line 27 "keywords"
+      {"module", TK_MODULE},
+      {""},
+#line 33 "keywords"
       {"try", TK_TRY},
       {""}, {""}, {""}, {""},
 #line 13 "keywords"
@@ -171,7 +173,7 @@ __Yog_lookup_keyword__ (register const char *str, register unsigned int len)
     }
   return 0;
 }
-#line 34 "keywords"
+#line 35 "keywords"
 
 /**
  * vim: filetype=c

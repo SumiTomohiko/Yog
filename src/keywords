@@ -24,6 +24,7 @@ false, TK_FALSE
 finally, TK_FINALLY
 if, TK_IF
 import, TK_IMPORT
+module, TK_MODULE
 next, TK_NEXT
 nil, TK_NIL
 nonlocal, TK_NONLOCAL

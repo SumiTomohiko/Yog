@@ -40,6 +40,7 @@ enum YogNodeType {
     NODE_LOGICAL_AND,
     NODE_LOGICAL_OR,
     NODE_METHOD_CALL,
+    NODE_MODULE,
     NODE_NEXT,
     NODE_NONLOCAL,
     NODE_NOT,
@@ -151,6 +152,10 @@ struct YogNode {
             YogVal args;
             YogVal blockarg;
         } method_call;
+        struct {
+            ID name;
+            YogVal stmts;
+        } module;
         struct {
             YogVal expr;
         } next;

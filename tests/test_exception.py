@@ -8,7 +8,7 @@ class TestException(TestCase):
     def test_traceback1(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 1, in <module>
+  File "[^"]+", line 1, in <package>
 Exception: nil
 """, stderr)
             assert m is not None
@@ -18,7 +18,7 @@ Exception: nil
     def test_traceback2(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 6, in <module>
+  File "[^"]+", line 6, in <package>
   File "[^"]+", line 3, in foo
 Exception: nil
 """, stderr)
@@ -34,7 +34,7 @@ foo()""", stderr=test_stderr)
     def test_traceback3(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 9, in <module>
+  File "[^"]+", line 9, in <package>
   File "[^"]+", line 4, in Foo#bar
 Exception: nil
 """, stderr)
@@ -53,7 +53,7 @@ foo.bar()""", stderr=test_stderr)
     def test_traceback_block1(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#times
   File "[^"]+", line 3, in <block>
 Exception: nil
@@ -68,7 +68,7 @@ end""", stderr=test_stderr)
     def test_traceback_block2(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 8, in <module>
+  File "[^"]+", line 8, in <package>
   File "[^"]+", line 3, in foo
   File builtin, in Fixnum#times
   File "[^"]+", line 4, in <block>
@@ -88,7 +88,7 @@ foo()""", stderr=test_stderr)
     def test_traceback_block3(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 11, in <module>
+  File "[^"]+", line 11, in <package>
   File "[^"]+", line 4, in Foo#bar
   File builtin, in Fixnum#times
   File "[^"]+", line 5, in <block>
@@ -111,7 +111,7 @@ foo.bar()""", stderr=test_stderr)
     def test_traceback_klass(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File "[^"]+", line 3, in <class Foo>
 Exception: nil
 """, stderr)

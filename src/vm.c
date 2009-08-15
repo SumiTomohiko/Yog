@@ -30,6 +30,7 @@
 #include "yog/gc/bdw.h"
 #include "yog/klass.h"
 #include "yog/misc.h"
+#include "yog/module.h"
 #include "yog/nil.h"
 #include "yog/package.h"
 #include "yog/property.h"
@@ -217,6 +218,7 @@ setup_klasses(YogEnv* env, YogVM* vm)
     vm->cString = YogString_klass_new(env);
     vm->cRegexp = YogRegexp_klass_new(env);
     vm->cMatch = YogMatch_klass_new(env);
+    vm->cModule = YogModule_klass_new(env);
     vm->cPackage = YogPackage_klass_new(env);
     vm->cBool = YogBool_klass_new(env);
     vm->cPackageBlock = YogPackageBlock_klass_new(env);
@@ -369,6 +371,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cInstanceMethod);
     KEEP(cKlass);
     KEEP(cMatch);
+    KEEP(cModule);
     KEEP(cNativeFunction);
     KEEP(cNativeInstanceMethod);
     KEEP(cNil);
@@ -437,6 +440,7 @@ YogVM_init(YogVM* vm)
     INIT(cInstanceMethod);
     INIT(cKlass);
     INIT(cMatch);
+    INIT(cModule);
     INIT(cNativeFunction);
     INIT(cNativeInstanceMethod);
     INIT(cNil);

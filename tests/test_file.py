@@ -51,7 +51,7 @@ end
     def test_readline10(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in File#open
   File "[^"]+", line 4, in <block>
   File builtin, in File#readline

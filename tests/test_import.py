@@ -31,7 +31,7 @@ test_package5.foo()""", """42
     def test_ImportError0(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in import_package
 ImportError: no package named 'foo'
 """, stderr)
@@ -44,7 +44,7 @@ import foo
     def test_ImportError10(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in import_package
 ImportError: dynamic package does not define init function \(YogInit_test_package6\)
 """, stderr)

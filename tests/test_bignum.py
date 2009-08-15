@@ -35,7 +35,7 @@ puts(4611686018427387904 + 3.1415926535)
     def test_add30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\+
 TypeError: unsupported operand type\(s\) for \+: 'Bignum' and 'Bool'
 """, stderr)
@@ -49,7 +49,7 @@ puts(4611686018427387904 + true)
     def test_add40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\+
 TypeError: unsupported operand type\(s\) for \+: 'Bignum' and 'Nil'
 """, stderr)
@@ -63,7 +63,7 @@ puts(4611686018427387904 + nil)
     def test_add50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\+
 TypeError: unsupported operand type\(s\) for \+: 'Bignum' and 'Symbol'
 """, stderr)
@@ -119,7 +119,7 @@ puts(4611686018427387904 - 3.1415926535)
     def test_subtract60(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#-
 TypeError: unsupported operand type\(s\) for -: 'Bignum' and 'Bool'
 """, stderr)
@@ -133,7 +133,7 @@ puts(4611686018427387904 - true)
     def test_subtract70(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#-
 TypeError: unsupported operand type\(s\) for -: 'Bignum' and 'Nil'
 """, stderr)
@@ -147,7 +147,7 @@ puts(4611686018427387904 - nil)
     def test_subtract80(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#-
 TypeError: unsupported operand type\(s\) for -: 'Bignum' and 'Symbol'
 """, stderr)
@@ -182,7 +182,7 @@ puts(4611686018427387904 * 3.1415926535)
     def test_multiply30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\*
 TypeError: unsupported operand type\(s\) for \*: 'Bignum' and 'Bool'
 """, stderr)
@@ -196,7 +196,7 @@ puts(4611686018427387904 * true)
     def test_multiply40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\*
 TypeError: unsupported operand type\(s\) for \*: 'Bignum' and 'Nil'
 """, stderr)
@@ -210,7 +210,7 @@ puts(4611686018427387904 * nil)
     def test_multiply50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\*
 TypeError: unsupported operand type\(s\) for \*: 'Bignum' and 'Symbol'
 """, stderr)
@@ -245,7 +245,7 @@ puts(4611686018427387904 / 9223372036854775808)
     def test_divide40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#/
 TypeError: unsupported operand type\(s\) for /: 'Bignum' and 'Bool'
 """, stderr)
@@ -259,7 +259,7 @@ puts(4611686018427387904 / true)
     def test_divide50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#/
 TypeError: unsupported operand type\(s\) for /: 'Bignum' and 'Nil'
 """, stderr)
@@ -273,7 +273,7 @@ puts(4611686018427387904 / nil)
     def test_divide60(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#/
 TypeError: unsupported operand type\(s\) for /: 'Bignum' and 'Symbol'
 """, stderr)
@@ -287,7 +287,7 @@ puts(4611686018427387904 / :foo)
     def test_divide70(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#/
 ZeroDivisionError: Bignum division by zero
 """, stderr)
@@ -301,7 +301,7 @@ puts(4611686018427387904 / 0)
     def test_divide80(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#/
 ZeroDivisionError: float division
 """, stderr)
@@ -350,7 +350,7 @@ puts(21267647932558653966460912964485513216 // 4611686018427387904)
     def test_floor_divide50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#//
 TypeError: unsupported operand type\(s\) for //: 'Bignum' and 'Bool'
 """, stderr)
@@ -364,7 +364,7 @@ puts(4611686018427387904 // true)
     def test_floor_divide60(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#//
 TypeError: unsupported operand type\(s\) for //: 'Bignum' and 'Nil'
 """, stderr)
@@ -378,7 +378,7 @@ puts(4611686018427387904 // nil)
     def test_floor_divide70(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#//
 TypeError: unsupported operand type\(s\) for //: 'Bignum' and 'Symbol'
 """, stderr)
@@ -392,7 +392,7 @@ puts(4611686018427387904 // :foo)
     def test_floor_divide80(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#//
 ZeroDivisionError: Bignum division by zero
 """, stderr)
@@ -406,7 +406,7 @@ puts(4611686018427387904 // 0)
     def test_floor_divide90(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Bignum#//
 ZeroDivisionError: float division
 """, stderr)
@@ -474,7 +474,7 @@ puts((- 9223372036854775809) << (- 1))
     def test_left_shift70(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in Bignum#<<
 TypeError: unsupported operand type\(s\) for <<: 'Bignum' and 'String'
 """, stderr)
@@ -521,7 +521,7 @@ puts(4611686018427387902 >> (- 1))
     def test_right_shift50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in Bignum#>>
 TypeError: unsupported operand type\(s\) for >>: 'Bignum' and 'String'
 """, stderr)
@@ -548,7 +548,7 @@ puts(4611686018427387904 | 4611686018427387904)
     def test_bitwise_or20(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in Bignum#\|
 TypeError: unsupported operand type\(s\) for \|: 'Bignum' and 'String'
 """, stderr)
@@ -589,7 +589,7 @@ puts(4611686018427387904 & 4611686018427387904)
     def test_bitwise_and40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in Bignum#&
 TypeError: unsupported operand type\(s\) for &: 'Bignum' and 'String'
 """, stderr)
@@ -623,7 +623,7 @@ puts(4611686018427387904 ^ 9223372036854775808)
     def test_xor30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in Bignum#\^
 TypeError: unsupported operand type\(s\) for \^: 'Bignum' and 'String'
 """, stderr)
@@ -657,7 +657,7 @@ puts(4611686018427387904 % 4611686018427387905)
     def test_modulo30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in Bignum#%
 TypeError: unsupported operand type\(s\) for %: 'Bignum' and 'String'
 """, stderr)

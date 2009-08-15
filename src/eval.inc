@@ -9,10 +9,10 @@
             ID id = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(ID);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
 
             PUSH(val);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(POP):
@@ -27,11 +27,11 @@
             uint8_t index = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(uint8_t);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = CONSTS(index);
 
             PUSH(val);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(MAKE_STRING):
@@ -40,12 +40,12 @@
             uint8_t index = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(uint8_t);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             YogVal c = CONSTS(index);
-            val = YogString_clone(ENV, c);
+            val = YogString_clone(env, c);
 
             PUSH(val);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(STORE_NAME):
@@ -54,13 +54,13 @@
             ID id = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(ID);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = POP();
             YogVal key = ID2VAL(id);
             YogVal vars = NAME_VARS(CUR_FRAME);
-            YogTable_insert(ENV, vars, key, val);
+            YogTable_insert(env, vars, key, val);
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(STORE_LOCAL):
@@ -69,25 +69,25 @@
             uint8_t index = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(uint8_t);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = POP();
             YogVal vars = LOCAL_VARS(CUR_FRAME);
             PTR_AS(YogValArray, vars)->items[index] = val;
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(MAKE_FUNCTION):
         {
             YogVal code = YUNDEF;
             YogVal f = YUNDEF;
-            PUSH_LOCALS2(ENV, code, f);
+            PUSH_LOCALS2(env, code, f);
             code = POP();
-            f = YogFunction_new(ENV);
-            setup_script_function(ENV, f, code);
+            f = YogFunction_new(env);
+            setup_script_function(env, f, code);
 
             PUSH(f);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(CALL_FUNCTION):
@@ -114,9 +114,9 @@
             YOG_ASSERT(env, PTR_AS(YogKlass, klass)->exec, "uncallable");
             PTR_AS(YogKlass, klass)->exec(env, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
         
-            POP_LOCALS(ENV);
-            POP_LOCALS(ENV);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
+            POP_LOCALS(env);
+            POP_LOCALS(env);
 
             break;
         }
@@ -126,18 +126,18 @@
             ID id = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(ID);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             YogVal globals = SCRIPT_FRAME(CUR_FRAME)->globals;
-            if (!YogTable_lookup(ENV, globals, ID2VAL(id), &val)) {
-                val = lookup_builtins(ENV, id);
+            if (!YogTable_lookup(env, globals, ID2VAL(id), &val)) {
+                val = lookup_builtins(env, id);
             }
             if (IS_UNDEF(val)) {
-                const char* name = YogVM_id2name(ENV, ENV->vm, id);
+                const char* name = YogVM_id2name(env, env->vm, id);
                 YogError_raise_NameError(env, "name '%s' is not defined", name);
             }
 
             PUSH(val);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(LOAD_NAME):
@@ -146,18 +146,18 @@
             ID id = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(ID);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             YogVal key = ID2VAL(id);
-            if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME), key, &val)) {
-                val = lookup_builtins(ENV, id);
+            if (!YogTable_lookup(env, NAME_VARS(CUR_FRAME), key, &val)) {
+                val = lookup_builtins(env, id);
             }
             if (IS_UNDEF(val)) {
-                const char* name = YogVM_id2name(ENV, ENV->vm, id);
+                const char* name = YogVM_id2name(env, env->vm, id);
                 YogError_raise_NameError(env, "name '%s' is not defined", name);
             }
 
             PUSH(val);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(LOAD_LOCAL):
@@ -166,12 +166,12 @@
             uint8_t index = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(uint8_t);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             YogVal vars = LOCAL_VARS(CUR_FRAME);
             val = PTR_AS(YogValArray, vars)->items[index];
 
             PUSH(val);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(JUMP):
@@ -189,13 +189,13 @@
             pc_t dest = *((pc_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(pc_t);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = POP();
             if (YOG_TEST(val)) {
                 JUMP(dest);
             }
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(JUMP_IF_FALSE):
@@ -204,24 +204,52 @@
             pc_t dest = *((pc_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(pc_t);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = POP();
             if (!YOG_TEST(val)) {
                 JUMP(dest);
             }
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(DUP):
         {
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = POP();
 
             PUSH(val);
             PUSH(val);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
+            break;
+        }
+    case OP(MAKE_MODULE):
+        {
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            ID name = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
+            PC += sizeof(ID);
+            YogVal code = YUNDEF;
+            PUSH_LOCAL(env, code);
+            code = POP();
+            YogVal module = YUNDEF;
+            YogVal frame = YUNDEF;
+            PUSH_LOCALS2(env, module, frame);
+        
+            module = YogModule_new(env);
+            PTR_AS(YogModule, module)->name = name;
+            PUSH(module);
+        
+            frame = YogNameFrame_new(env);
+            setup_script_frame(env, frame, code);
+            PTR_AS(YogNameFrame, frame)->vars = PTR_AS(YogObj, module)->attrs;
+            PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
+        
+            PUSH_FRAME(frame);
+        
+            POP_LOCALS(env);
+
+            POP_LOCALS(env);
             break;
         }
     case OP(MAKE_KLASS):
@@ -229,54 +257,54 @@
             YogVal code = YUNDEF;
             YogVal super = YUNDEF;
             YogVal name = YUNDEF;
-            PUSH_LOCALS3(ENV, code, super, name);
+            PUSH_LOCALS3(env, code, super, name);
             code = POP();
             super = POP();
             name = POP();
             YogVal kls = YUNDEF;
             YogVal frame = YUNDEF;
             YogVal attrs = YUNDEF;
-            PUSH_LOCALS3(ENV, kls, frame, attrs);
+            PUSH_LOCALS3(env, kls, frame, attrs);
         
-            kls = YogKlass_new(ENV, NULL, super);
+            kls = YogKlass_new(env, NULL, super);
             PTR_AS(YogKlass, kls)->name = VAL2ID(name);
             PTR_AS(YogObj, kls)->attrs = YUNDEF;
-            attrs = YogTable_new_symbol_table(ENV);
+            attrs = YogTable_new_symbol_table(env);
             PTR_AS(YogObj, kls)->attrs = attrs;
         
-            frame = YogKlassFrame_new(ENV);
-            setup_script_frame(ENV, frame, code);
+            frame = YogKlassFrame_new(env);
+            setup_script_frame(env, frame, code);
             PTR_AS(YogNameFrame, frame)->self = kls;
             PTR_AS(YogNameFrame, frame)->vars = attrs;
             PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
         
             PUSH_FRAME(frame);
         
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(PUSH_SELF_NAME):
         {
             YogVal self = YUNDEF;
-            PUSH_LOCAL(ENV, self);
+            PUSH_LOCAL(env, self);
             self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
 
             PUSH(self);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(RET):
         {
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = POP();
             POP_FRAME();
             PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 
             PUSH(val);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(STORE_NONLOCAL):
@@ -288,12 +316,12 @@
             uint8_t index = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(uint8_t);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = POP();
-            YogVal* ptr = get_outer_vars_ptr(ENV, level, index);
+            YogVal* ptr = get_outer_vars_ptr(env, level, index);
             *ptr = val;
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(LOAD_NONLOCAL):
@@ -305,12 +333,12 @@
             uint8_t index = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(uint8_t);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
-            YogVal* ptr = get_outer_vars_ptr(ENV, level, index);
+            PUSH_LOCAL(env, val);
+            YogVal* ptr = get_outer_vars_ptr(env, level, index);
             val = *ptr;
 
             PUSH(val);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(STORE_GLOBAL):
@@ -319,12 +347,12 @@
             ID name = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(ID);
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = POP();
             YogVal globals = SCRIPT_FRAME(CUR_FRAME)->globals;
-            YogTable_insert(ENV, globals, ID2VAL(name), val);
+            YogTable_insert(env, globals, ID2VAL(name), val);
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(LOAD_ATTR):
@@ -333,7 +361,7 @@
             ID name = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(ID);
             YogVal obj = YUNDEF;
-            PUSH_LOCAL(ENV, obj);
+            PUSH_LOCAL(env, obj);
             obj = POP();
             YogVal klass = YUNDEF;
             PUSH_LOCAL(env, klass);
@@ -348,7 +376,7 @@
         
             POP_LOCALS(env);
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(MAKE_ARRAY):
@@ -357,8 +385,8 @@
             uint8_t size = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(uint8_t);
             YogVal array = YUNDEF;
-            PUSH_LOCAL(ENV, array);
-            array = YogArray_of_size(ENV, size);
+            PUSH_LOCAL(env, array);
+            array = YogArray_of_size(env, size);
             uint_t i;
             for (i = 0; i < size; i++) {
                 YogVal body = PTR_AS(YogArray, array)->body;
@@ -367,7 +395,7 @@
             PTR_AS(YogArray, array)->size = size;
 
             PUSH(array);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(MAKE_DICT):
@@ -376,7 +404,7 @@
             uint8_t size = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
             PC += sizeof(uint8_t);
             YogVal dict = YUNDEF;
-            PUSH_LOCAL(ENV, dict);
+            PUSH_LOCAL(env, dict);
             YogVal key = YUNDEF;
             YogVal value = YUNDEF;
             PUSH_LOCALS2(env, key, value);
@@ -386,37 +414,37 @@
             for (i = 0; i < size; i++) {
                 value = POP();
                 key = POP();
-                YogDict_set(ENV, dict, key, value);
+                YogDict_set(env, dict, key, value);
             }
         
             POP_LOCALS(env);
 
             PUSH(dict);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(FINISH):
         {
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = POP();
             POP_BUF();
             POP_FRAME();
-            RETURN(ENV, val);
+            RETURN(env, val);
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(PRINT_TOP):
         {
             YogVal val = YUNDEF;
-            PUSH_LOCAL(ENV, val);
+            PUSH_LOCAL(env, val);
             val = POP();
-            YogVal s = YogEval_call_method(ENV, val, "to_s", 0, NULL);
-            YOG_ASSERT(ENV, IS_OBJ_OF(ENV, s, cString), "object isn't string");
+            YogVal s = YogEval_call_method(env, val, "to_s", 0, NULL);
+            YOG_ASSERT(env, IS_OBJ_OF(env, s, cString), "object isn't string");
             printf("=> %s\n", STRING_CSTR(s));
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(STORE_ATTR):
@@ -426,7 +454,7 @@
             PC += sizeof(ID);
             YogVal obj = YUNDEF;
             YogVal val = YUNDEF;
-            PUSH_LOCALS2(ENV, obj, val);
+            PUSH_LOCALS2(env, obj, val);
             obj = POP();
             val = POP();
             YogVal attr = YUNDEF;
@@ -453,7 +481,7 @@
                 klass_of_attr = YogVal_get_klass(env, attr);
                 void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogKlass, klass_of_attr)->exec_set_descr;
                 if (exec != NULL) {
-                    exec(ENV, attr, obj, val);
+                    exec(env, attr, obj, val);
                 }
                 else if (has_attrs) {
                     YogObj_set_attr_id(env, obj, name, val);
@@ -477,14 +505,14 @@
         
             POP_LOCALS(env);
 
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
     case OP(NOT):
         {
             YogVal val = YUNDEF;
             YogVal b = YUNDEF;
-            PUSH_LOCALS2(ENV, val, b);
+            PUSH_LOCALS2(env, val, b);
             val = POP();
             if (YOG_TEST(val)) {
                 b = YFALSE;
@@ -494,7 +522,7 @@
             }
 
             PUSH(b);
-            POP_LOCALS(ENV);
+            POP_LOCALS(env);
             break;
         }
 /**

@@ -47,7 +47,7 @@ puts(3.141592 + 2.71828183)
     def test_add30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#\+
 TypeError: unsupported operand type\(s\) for \+: 'Float' and 'Bool'
 """, stderr)
@@ -61,7 +61,7 @@ puts(3.1415926535 + true)
     def test_add40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#\+
 TypeError: unsupported operand type\(s\) for \+: 'Float' and 'Nil'
 """, stderr)
@@ -75,7 +75,7 @@ puts(3.1415926535 + nil)
     def test_add50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#\+
 TypeError: unsupported operand type\(s\) for \+: 'Float' and 'Symbol'
 """, stderr)
@@ -110,7 +110,7 @@ puts(3.141592 - 2.71828183)
     def test_subtract30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#-
 TypeError: unsupported operand type\(s\) for -: 'Float' and 'Bool'
 """, stderr)
@@ -124,7 +124,7 @@ puts(3.1415926535 - true)
     def test_subtract40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#-
 TypeError: unsupported operand type\(s\) for -: 'Float' and 'Nil'
 """, stderr)
@@ -138,7 +138,7 @@ puts(3.1415926535 - nil)
     def test_subtract50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#-
 TypeError: unsupported operand type\(s\) for -: 'Float' and 'Symbol'
 """, stderr)
@@ -173,7 +173,7 @@ puts(3.141592 * 2.71828183)
     def test_multiply30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#\*
 TypeError: unsupported operand type\(s\) for \*: 'Float' and 'Bool'
 """, stderr)
@@ -187,7 +187,7 @@ puts(3.1415926535 * true)
     def test_multiply40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#\*
 TypeError: unsupported operand type\(s\) for \*: 'Float' and 'Nil'
 """, stderr)
@@ -201,7 +201,7 @@ puts(3.1415926535 * nil)
     def test_multiply50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#\*
 TypeError: unsupported operand type\(s\) for \*: 'Float' and 'Symbol'
 """, stderr)
@@ -236,7 +236,7 @@ puts(3.141592 / 2.71828183)
     def test_divide30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#/
 TypeError: unsupported operand type\(s\) for /: 'Float' and 'Bool'
 """, stderr)
@@ -250,7 +250,7 @@ puts(3.1415926535 / true)
     def test_divide40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#/
 TypeError: unsupported operand type\(s\) for /: 'Float' and 'Nil'
 """, stderr)
@@ -264,7 +264,7 @@ puts(3.1415926535 / nil)
     def test_divide50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#/
 TypeError: unsupported operand type\(s\) for /: 'Float' and 'Symbol'
 """, stderr)
@@ -299,7 +299,7 @@ puts(3.141592 // 2.71828183)
     def test_floor_divide30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#//
 TypeError: unsupported operand type\(s\) for //: 'Float' and 'Bool'
 """, stderr)
@@ -313,7 +313,7 @@ puts(3.1415926535 // true)
     def test_floor_divide40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#//
 TypeError: unsupported operand type\(s\) for //: 'Float' and 'Nil'
 """, stderr)
@@ -327,7 +327,7 @@ puts(3.1415926535 // nil)
     def test_floor_divide50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Float#//
 TypeError: unsupported operand type\(s\) for //: 'Float' and 'Symbol'
 """, stderr)

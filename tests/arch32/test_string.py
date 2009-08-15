@@ -11,7 +11,7 @@ class TestString(TestCase):
     def test_string_multiply0(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 ArgumentError: argument too big
 """, stderr)

@@ -40,6 +40,7 @@ struct AstVisitor {
     VisitNode visit_literal;
     VisitNode visit_logical_and;
     VisitNode visit_logical_or;
+    VisitNode visit_module;
     VisitNode visit_next;
     VisitNode visit_nonlocal;
     VisitNode visit_not;
@@ -104,6 +105,7 @@ typedef struct Var Var;
 enum Context {
     CTX_FUNC,
     CTX_KLASS,
+    CTX_MODULE,
     CTX_PKG,
 };
 
@@ -388,6 +390,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
         break;
     case NODE_DICT:
         VISIT(dict);
+        break;
+    case NODE_MODULE:
+        VISIT(module);
         break;
     default:
         YOG_BUG(env, "Unknown node type (0x%08x)", NODE(node)->type);
@@ -724,6 +729,17 @@ scan_var_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 }
 
 static void
+scan_var_visit_module(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+
+    ID name = NODE(node)->u.module.name;
+    scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, name, VAR_ASSIGNED);
+
+    RETURN_VOID(env);
+}
+
+static void
 scan_var_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -847,6 +863,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_literal = NULL;
     visitor->visit_logical_and = scan_var_visit_logical_and;
     visitor->visit_logical_or = scan_var_visit_logical_or;
+    visitor->visit_module = scan_var_visit_module;
     visitor->visit_next = scan_var_visit_break;
     visitor->visit_nonlocal = scan_var_visit_nonlocal;
     visitor->visit_not = scan_var_visit_not;
@@ -941,6 +958,7 @@ append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
             break;
         }
     case CTX_KLASS:
+    case CTX_MODULE:
     case CTX_PKG:
         CompileData_add_store_name(env, data, lineno, name);
         break;
@@ -1500,7 +1518,10 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, 
     if (IS_PTR(tail)) {
         CompileData_add_inst(env, data, tail);
     }
-    if ((ctx == CTX_FUNC) || (ctx == CTX_PKG)) {
+    switch (ctx) {
+    case CTX_FUNC:
+    case CTX_MODULE:
+    case CTX_PKG:
         if (IS_PTR(stmts)) {
             uint_t size = YogArray_size(env, stmts);
             if (size < 1) {
@@ -1516,6 +1537,10 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, 
         else {
             CompileData_add_ret_nil(env, data, 0);
         }
+        break;
+    case CTX_KLASS:
+    default:
+        break;
     }
 
     YogVal bin = YUNDEF;
@@ -1877,6 +1902,7 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
         }
         break;
     case CTX_KLASS:
+    case CTX_MODULE:
     case CTX_PKG:
         CompileData_add_make_function(env, data, lineno);
         CompileData_add_store_name(env, data, lineno, name);
@@ -2013,6 +2039,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
             break;
         }
     case CTX_KLASS:
+    case CTX_MODULE:
     case CTX_PKG:
         CompileData_add_load_name(env, data, lineno, id);
         break;
@@ -2485,6 +2512,51 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, uin
     RETURN(env, code);
 }
 
+static YogVal
+compile_module(YogEnv* env, AstVisitor* visitor, ID name, YogVal stmts, uint_t lineno, YogVal data)
+{
+    SAVE_ARGS2(env, stmts, data);
+    YogVal var_tbl = YUNDEF;
+    YogVal vars = YUNDEF;
+    YogVal code = YUNDEF;
+    YogVal filename = YUNDEF;
+    PUSH_LOCALS4(env, var_tbl, vars, code, filename);
+
+    var_tbl = make_var_table(env, stmts, YUNDEF);
+    vars = vars_flags2type(env, var_tbl, COMPILE_DATA(data)->outer);
+
+    filename = COMPILE_DATA(data)->filename;
+    ID klass_name = name;
+    ID func_name = YogVM_intern(env, env->vm, "<module>");
+
+    code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_MODULE, YUNDEF, COMPILE_DATA(data)->outer, FALSE);
+
+    RETURN(env, code);
+}
+
+static void
+compile_visit_module(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal stmts = YUNDEF;
+    YogVal code = YUNDEF;
+    PUSH_LOCALS2(env, stmts, code);
+
+    ID name = NODE(node)->u.module.name;
+
+    stmts = NODE(node)->u.module.stmts;
+    uint_t lineno = NODE(node)->lineno;
+    code = compile_module(env, visitor, name, stmts, lineno, data);
+    add_push_const(env, data, code, lineno);
+
+    CompileData_add_make_module(env, data, lineno, name);
+    CompileData_add_pop(env, data, lineno);
+
+    append_store(env, data, lineno, name);
+
+    RETURN_VOID(env);
+}
+
 static void
 compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
@@ -2691,6 +2763,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_literal = compile_visit_literal;
     visitor->visit_logical_and = compile_visit_logical_and;
     visitor->visit_logical_or = compile_visit_logical_or;
+    visitor->visit_module = compile_visit_module;
     visitor->visit_next = compile_visit_next;
     visitor->visit_nonlocal = NULL;
     visitor->visit_not = compile_visit_not;
@@ -2703,7 +2776,7 @@ compile_init_visitor(AstVisitor* visitor)
 }
 
 static YogVal
-compile_module(YogEnv* env, const char* filename, YogVal stmts, BOOL interactive)
+compile_package(YogEnv* env, const char* filename, YogVal stmts, BOOL interactive)
 {
     SAVE_ARG(env, stmts);
 
@@ -2724,7 +2797,7 @@ compile_module(YogEnv* env, const char* filename, YogVal stmts, BOOL interactive
     name = YogCharArray_new_str(env, filename);
 
     ID klass_name = INVALID_ID;
-    ID func_name = YogVM_intern(env, env->vm, "<module>");
+    ID func_name = YogVM_intern(env, env->vm, "<package>");
 
     YogVal code = compile_stmts(env, &visitor, name, klass_name, func_name, stmts, vars, CTX_PKG, YNIL, YUNDEF, interactive);
 
@@ -2732,15 +2805,15 @@ compile_module(YogEnv* env, const char* filename, YogVal stmts, BOOL interactive
 }
 
 YogVal
-YogCompiler_compile_module(YogEnv* env, const char* filename, YogVal stmts)
+YogCompiler_compile_package(YogEnv* env, const char* filename, YogVal stmts)
 {
-    return compile_module(env, filename, stmts, FALSE);
+    return compile_package(env, filename, stmts, FALSE);
 }
 
 YogVal
 YogCompiler_compile_interactive(YogEnv* env, YogVal stmts)
 {
-    return compile_module(env, MAIN_MODULE_NAME, stmts, TRUE);
+    return compile_package(env, MAIN_MODULE_NAME, stmts, TRUE);
 }
 
 YogVal

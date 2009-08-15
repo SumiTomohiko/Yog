@@ -25,6 +25,7 @@ Yog_get_inst_size(OpCode op)
         sizeof(uint8_t) + sizeof(pc_t), /* jump_if_true */
         sizeof(uint8_t) + sizeof(pc_t), /* jump_if_false */
         sizeof(uint8_t), /* dup */
+        sizeof(uint8_t) + sizeof(ID), /* make_module */
         sizeof(uint8_t), /* make_klass */
         sizeof(uint8_t), /* push_self_name */
         sizeof(uint8_t), /* ret */

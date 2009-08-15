@@ -125,6 +125,9 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(method_call.args);
         KEEP(method_call.blockarg);
         break;
+    case NODE_MODULE:
+        KEEP(module.stmts);
+        break;
     case NODE_NEXT:
         KEEP(next.expr);
         break;
@@ -166,6 +169,20 @@ YogNode_new(YogEnv* env, YogNodeType type, uint_t lineno)
 
 #define NODE_NEW(type, lineno)  YogNode_new(env, (type), (lineno))
 #define NODE(v)                 PTR_AS(YogNode, (v))
+
+static YogVal
+Module_new(YogEnv* env, uint_t lineno, ID name, YogVal stmts)
+{
+    SAVE_ARG(env, stmts);
+    YogVal module = YUNDEF;
+    PUSH_LOCAL(env, module);
+
+    module = YogNode_new(env, NODE_MODULE, lineno);
+    PTR_AS(YogNode, module)->u.module.name = name;
+    PTR_AS(YogNode, module)->u.module.stmts = stmts;
+
+    RETURN(env, module);
+}
 
 static YogVal
 Literal_new(YogEnv* env, uint_t lineno, YogVal val)
@@ -749,6 +766,11 @@ stmt(A) ::= CLASS(B) NAME(C) super_opt(D) NEWLINE stmts(E) END. {
     uint_t lineno = TOKEN_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
     A = Klass_new(env, lineno, id, D, E);
+}
+stmt(A) ::= MODULE(B) NAME(C) stmts(D) END. {
+    uint_t lineno = TOKEN_LINENO(B);
+    ID id = PTR_AS(YogToken, C)->u.id;
+    A = Module_new(env, lineno, id, D);
 }
 stmt(A) ::= NONLOCAL(B) names(C). {
     uint_t lineno = TOKEN_LINENO(B);

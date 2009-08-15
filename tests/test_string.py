@@ -204,7 +204,7 @@ puts(s[1])
     def test_subscript_error1(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]
 IndexError: string index out of range
 """, stderr)
@@ -218,7 +218,7 @@ puts(s[0])
     def test_subscript_error2(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]
 IndexError: string index out of range
 """, stderr)
@@ -232,7 +232,7 @@ puts(s[1])
     def test_subscript_error3(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]
 TypeError: string index must be Fixnum
 """, stderr)
@@ -246,7 +246,7 @@ puts(s[\"\"])
     def test_assign_subscript_error1(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]=
 TypeError: string index must be Fixnum
 """, stderr)
@@ -271,7 +271,7 @@ puts("foo" + "bar" + "baz")
     def test_add10(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\+
 TypeError: can't convert 'Fixnum' object to string implicitly
 """, stderr)
@@ -284,7 +284,7 @@ puts("foo" + 42)
     def test_add20(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\+
 TypeError: can't convert 'Bool' object to string implicitly
 """, stderr)
@@ -297,7 +297,7 @@ puts("foo" + true)
     def test_add30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\+
 TypeError: can't convert 'Symbol' object to string implicitly
 """, stderr)
@@ -310,7 +310,7 @@ puts("foo" + :bar)
     def test_add40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\+
 TypeError: can't convert 'Nil' object to string implicitly
 """, stderr)
@@ -323,7 +323,7 @@ puts("foo" + nil)
     def test_add50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\+
 TypeError: can't convert 'Float' object to string implicitly
 """, stderr)
@@ -336,7 +336,7 @@ puts("foo" + 3.1415926535)
     def test_multiply0(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 TypeError: can't multiply string by non-Fixnum of type 'String'
 """, stderr)
@@ -355,7 +355,7 @@ puts("foo" * 2)
     def test_multiply20(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 TypeError: can't multiply string by non-Fixnum of type 'Bool'
 """, stderr)
@@ -368,7 +368,7 @@ puts("foo" * true)
     def test_multiply30(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 TypeError: can't multiply string by non-Fixnum of type 'Symbol'
 """, stderr)
@@ -381,7 +381,7 @@ puts("foo" * :bar)
     def test_multiply40(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 TypeError: can't multiply string by non-Fixnum of type 'Nil'
 """, stderr)
@@ -394,7 +394,7 @@ puts("foo" * nil)
     def test_multiply50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 TypeError: can't multiply string by non-Fixnum of type 'Float'
 """, stderr)
@@ -407,7 +407,7 @@ puts("foo" * 3.1415926535)
     def test_multiply60(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 ArgumentError: negative argument
 """, stderr)

@@ -38,7 +38,7 @@ puts(o.foo)
     def test_set_attribute10(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <module>
+  File "[^"]+", line 2, in <package>
 AttributeError: String object has no attribute 'bar'
 """, stderr)
             assert m is not None

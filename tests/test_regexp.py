@@ -98,7 +98,7 @@ puts(m.group(\"name\"))
     def test_match_group50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Match#group
 IndexError: no such group
 """, stderr)
@@ -154,7 +154,7 @@ puts(m.start(\"name\"))
     def test_match_start50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Match#start
 IndexError: no such group
 """, stderr)
@@ -210,7 +210,7 @@ puts(m.end(\"name\"))
     def test_match_end50(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Match#end
 IndexError: no such group
 """, stderr)

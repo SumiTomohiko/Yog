@@ -79,7 +79,7 @@ foo(d)
     def test_KeyError0(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 3, in <module>
+  File "[^"]+", line 3, in <package>
   File builtin, in Dict#\[\]
 KeyError: .*
 """, stderr)

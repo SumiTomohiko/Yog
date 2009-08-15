@@ -298,6 +298,58 @@ YogKlass_define_property(YogEnv* env, YogVal self, const char* name, void* get, 
     RETURN_VOID(env);
 }
 
+struct ModuleKlass {
+    struct YogObj base;
+    YogVal super;
+    Allocator allocator;
+};
+
+typedef struct ModuleKlass ModuleKlass;
+
+static void
+ModukeKlass_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    YogObj_keep_children(env, ptr, keeper, heap);
+
+    ModuleKlass* klass = ptr;
+#define KEEP(member)   YogGC_keep(env, &klass->member, keeper, heap)
+    KEEP(super);
+#undef KEEP
+}
+
+static YogVal
+ModuleKlass_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = ALLOC_OBJ(env, ModukeKlass_keep_children, NULL, ModuleKlass);
+    YogObj_init(env, klass, 0, YUNDEF);
+    PTR_AS(ModuleKlass, klass)->super = YUNDEF;
+    PTR_AS(ModuleKlass, klass)->allocator = NULL;
+
+    RETURN(env, klass);
+}
+
+void
+YogKlass_include_module(YogEnv* env, YogVal self, YogVal module)
+{
+    YOG_ASSERT(env, IS_PTR(self), "self is not pointer");
+    YOG_ASSERT(env, IS_OBJ_OF(env, self, cKlass), "self is not Class");
+
+    SAVE_ARGS2(env, self, module);
+    YogVal module_klass = YUNDEF;
+    PUSH_LOCAL(env, module_klass);
+
+    module_klass = ModuleKlass_new(env);
+    PTR_AS(YogObj, module_klass)->attrs = PTR_AS(YogObj, module)->attrs;
+    PTR_AS(ModuleKlass, module_klass)->super = PTR_AS(YogKlass, self)->super;
+    PTR_AS(YogKlass, self)->super = module_klass;
+
+    RETURN_VOID(env);
+}
+
 void
 YogKlass_boot(YogEnv* env, YogVal cKlass)
 {

@@ -42,6 +42,7 @@ struct YogVM {
     YogVal cInstanceMethod;
     YogVal cKlass;
     YogVal cMatch;
+    YogVal cModule;
     YogVal cNativeFunction;
     YogVal cNativeInstanceMethod;
     YogVal cNil;

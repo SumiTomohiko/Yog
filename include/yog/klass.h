@@ -12,9 +12,9 @@ typedef YogVal (*Caller)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, Yog
 
 struct YogKlass {
     YOGOBJ_HEAD;
+    YogVal super;
     Allocator allocator;
     ID name;
-    YogVal super;
     GetAttrExecutor exec_get_attr;
     GetAttrCaller call_get_attr;
     void (*exec_get_descr)(YogEnv*, YogVal, YogVal, YogVal);
@@ -47,6 +47,7 @@ void YogKlass_define_get_attr_executor(YogEnv*, YogVal, GetAttrExecutor);
 void YogKlass_define_method(YogEnv*, YogVal, const char*, void*);
 void YogKlass_define_property(YogEnv*, YogVal, const char*, void*, void*);
 YogVal YogKlass_get_attr(YogEnv*, YogVal, ID);
+void YogKlass_include_module(YogEnv*, YogVal, YogVal);
 void YogKlass_klass_init(YogEnv*, YogVal);
 YogVal YogKlass_new(YogEnv*, const char*, YogVal);
 

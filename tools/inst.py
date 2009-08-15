@@ -260,7 +260,7 @@ class CodeGenerator(object):
                     else:
                         macro = "PUSH_LOCALS%(index)d" % { "index": index }
                     s = """
-            %(macro)s(ENV, %(vars)s);""" % { "macro": macro, "vars": ", ".join(child) }
+            %(macro)s(env, %(vars)s);""" % { "macro": macro, "vars": ", ".join(child) }
                     lineno += len(s.split("\n")) - 1
                     inc.write(s)
             for pop_value in inst.pop_values:
@@ -307,7 +307,7 @@ class CodeGenerator(object):
 
             if (0 < num_stack_vals) and ((0 < len(inst.codes)) or (0 < len(inst.push_values))):
                 s = """
-            POP_LOCALS(ENV);"""
+            POP_LOCALS(env);"""
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
 

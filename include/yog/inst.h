@@ -70,6 +70,9 @@ struct YogInst {
         struct {
         } dup;
         struct {
+            ID name;
+        } make_module;
+        struct {
         } make_klass;
         struct {
         } push_self_name;
@@ -129,6 +132,7 @@ struct YogInst {
 #define JUMP_DEST(inst) (INST(inst)->u.jump.dest)
 #define JUMP_IF_TRUE_DEST(inst) (INST(inst)->u.jump_if_true.dest)
 #define JUMP_IF_FALSE_DEST(inst) (INST(inst)->u.jump_if_false.dest)
+#define MAKE_MODULE_NAME(inst) (INST(inst)->u.make_module.name)
 #define STORE_NONLOCAL_LEVEL(inst) (INST(inst)->u.store_nonlocal.level)
 #define STORE_NONLOCAL_INDEX(inst) (INST(inst)->u.store_nonlocal.index)
 #define LOAD_NONLOCAL_LEVEL(inst) (INST(inst)->u.load_nonlocal.level)

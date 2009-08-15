@@ -38,7 +38,7 @@ inst make_string
 (val)
 {
     YogVal c = CONSTS(index);
-    val = YogString_clone(ENV, c);
+    val = YogString_clone(env, c);
 }
 
 inst store_name
@@ -48,7 +48,7 @@ inst store_name
 {
     YogVal key = ID2VAL(id);
     YogVal vars = NAME_VARS(CUR_FRAME);
-    YogTable_insert(ENV, vars, key, val);
+    YogTable_insert(env, vars, key, val);
 }
 
 inst store_local
@@ -65,8 +65,8 @@ inst make_function
 (code)
 (f)
 {
-    f = YogFunction_new(ENV);
-    setup_script_function(ENV, f, code);
+    f = YogFunction_new(env);
+    setup_script_function(env, f, code);
 }
 
 inst call_function
@@ -81,9 +81,9 @@ inst call_function
     YOG_ASSERT(env, PTR_AS(YogKlass, klass)->exec, "uncallable");
     PTR_AS(YogKlass, klass)->exec(env, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
-    POP_LOCALS(ENV);
-    POP_LOCALS(ENV);
-    POP_LOCALS(ENV);
+    POP_LOCALS(env);
+    POP_LOCALS(env);
+    POP_LOCALS(env);
 }
 
 inst load_global
@@ -92,11 +92,11 @@ inst load_global
 (val)
 {
     YogVal globals = SCRIPT_FRAME(CUR_FRAME)->globals;
-    if (!YogTable_lookup(ENV, globals, ID2VAL(id), &val)) {
-        val = lookup_builtins(ENV, id);
+    if (!YogTable_lookup(env, globals, ID2VAL(id), &val)) {
+        val = lookup_builtins(env, id);
     }
     if (IS_UNDEF(val)) {
-        const char* name = YogVM_id2name(ENV, ENV->vm, id);
+        const char* name = YogVM_id2name(env, env->vm, id);
         YogError_raise_NameError(env, "name '%s' is not defined", name);
     }
 }
@@ -107,11 +107,11 @@ inst load_name
 (val)
 {
     YogVal key = ID2VAL(id);
-    if (!YogTable_lookup(ENV, NAME_VARS(CUR_FRAME), key, &val)) {
-        val = lookup_builtins(ENV, id);
+    if (!YogTable_lookup(env, NAME_VARS(CUR_FRAME), key, &val)) {
+        val = lookup_builtins(env, id);
     }
     if (IS_UNDEF(val)) {
-        const char* name = YogVM_id2name(ENV, ENV->vm, id);
+        const char* name = YogVM_id2name(env, env->vm, id);
         YogError_raise_NameError(env, "name '%s' is not defined", name);
     }
 }
@@ -160,6 +160,29 @@ inst dup
 {
 }
 
+inst make_module
+(ID name)
+(code)
+(...) depth: 2
+{
+    YogVal module = YUNDEF;
+    YogVal frame = YUNDEF;
+    PUSH_LOCALS2(env, module, frame);
+
+    module = YogModule_new(env);
+    PTR_AS(YogModule, module)->name = name;
+    PUSH(module);
+
+    frame = YogNameFrame_new(env);
+    setup_script_frame(env, frame, code);
+    PTR_AS(YogNameFrame, frame)->vars = PTR_AS(YogObj, module)->attrs;
+    PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
+
+    PUSH_FRAME(frame);
+
+    POP_LOCALS(env);
+}
+
 inst make_klass
 ()
 (code, super, name)
@@ -168,23 +191,23 @@ inst make_klass
     YogVal kls = YUNDEF;
     YogVal frame = YUNDEF;
     YogVal attrs = YUNDEF;
-    PUSH_LOCALS3(ENV, kls, frame, attrs);
+    PUSH_LOCALS3(env, kls, frame, attrs);
 
-    kls = YogKlass_new(ENV, NULL, super);
+    kls = YogKlass_new(env, NULL, super);
     PTR_AS(YogKlass, kls)->name = VAL2ID(name);
     PTR_AS(YogObj, kls)->attrs = YUNDEF;
-    attrs = YogTable_new_symbol_table(ENV);
+    attrs = YogTable_new_symbol_table(env);
     PTR_AS(YogObj, kls)->attrs = attrs;
 
-    frame = YogKlassFrame_new(ENV);
-    setup_script_frame(ENV, frame, code);
+    frame = YogKlassFrame_new(env);
+    setup_script_frame(env, frame, code);
     PTR_AS(YogNameFrame, frame)->self = kls;
     PTR_AS(YogNameFrame, frame)->vars = attrs;
     PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
 
     PUSH_FRAME(frame);
 
-    POP_LOCALS(ENV);
+    POP_LOCALS(env);
 }
 
 inst push_self_name
@@ -209,7 +232,7 @@ inst store_nonlocal
 (val)
 ()
 {
-    YogVal* ptr = get_outer_vars_ptr(ENV, level, index);
+    YogVal* ptr = get_outer_vars_ptr(env, level, index);
     *ptr = val;
 }
 
@@ -218,7 +241,7 @@ inst load_nonlocal
 ()
 (val)
 {
-    YogVal* ptr = get_outer_vars_ptr(ENV, level, index);
+    YogVal* ptr = get_outer_vars_ptr(env, level, index);
     val = *ptr;
 }
 
@@ -228,7 +251,7 @@ inst store_global
 ()
 {
     YogVal globals = SCRIPT_FRAME(CUR_FRAME)->globals;
-    YogTable_insert(ENV, globals, ID2VAL(name), val);
+    YogTable_insert(env, globals, ID2VAL(name), val);
 }
 
 inst load_attr
@@ -255,7 +278,7 @@ inst make_array
 (...) depth: size
 (array)
 {
-    array = YogArray_of_size(ENV, size);
+    array = YogArray_of_size(env, size);
     uint_t i;
     for (i = 0; i < size; i++) {
         YogVal body = PTR_AS(YogArray, array)->body;
@@ -278,7 +301,7 @@ inst make_dict
     for (i = 0; i < size; i++) {
         value = POP();
         key = POP();
-        YogDict_set(ENV, dict, key, value);
+        YogDict_set(env, dict, key, value);
     }
 
     POP_LOCALS(env);
@@ -291,7 +314,7 @@ inst finish
 {
     POP_BUF();
     POP_FRAME();
-    RETURN(ENV, val);
+    RETURN(env, val);
 }
 
 inst print_top
@@ -299,8 +322,8 @@ inst print_top
 (val)
 ()
 {
-    YogVal s = YogEval_call_method(ENV, val, "to_s", 0, NULL);
-    YOG_ASSERT(ENV, IS_OBJ_OF(ENV, s, cString), "object isn't string");
+    YogVal s = YogEval_call_method(env, val, "to_s", 0, NULL);
+    YOG_ASSERT(env, IS_OBJ_OF(env, s, cString), "object isn't string");
     printf("=> %s\n", STRING_CSTR(s));
 }
 
@@ -333,7 +356,7 @@ inst store_attr
         klass_of_attr = YogVal_get_klass(env, attr);
         void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogKlass, klass_of_attr)->exec_set_descr;
         if (exec != NULL) {
-            exec(ENV, attr, obj, val);
+            exec(env, attr, obj, val);
         }
         else if (has_attrs) {
             YogObj_set_attr_id(env, obj, name, val);

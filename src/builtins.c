@@ -170,6 +170,21 @@ argv2args(YogEnv* env, uint_t argc, char** argv)
     RETURN(env, args);
 }
 
+static YogVal
+include_module(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal klass = YUNDEF;
+    YogVal module = YUNDEF;
+    PUSH_LOCALS2(env, klass, module);
+
+    klass = YogArray_at(env, args, 0);
+    module = YogArray_at(env, args, 1);
+    YogKlass_include_module(env, klass, module);
+
+    RETURN(env, klass);
+}
+
 YogVal
 YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
 {
@@ -183,12 +198,13 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
 
     builtins = YogPackage_new(env);
 
-    YogPackage_define_method(env, builtins, "puts", puts_, 0, 1, 0, 0, NULL);
-    YogPackage_define_method(env, builtins, "print", print, 0, 1, 0, 0, NULL);
-    YogPackage_define_method(env, builtins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
-    YogPackage_define_method(env, builtins, "import_package", import_package, 0, 0, 0, 0, "package", NULL);
-    YogPackage_define_method(env, builtins, "property", property, 0, 0, 0, 0, NULL);
     YogPackage_define_method(env, builtins, "classmethod", classmethod, 0, 0, 0, 0, NULL);
+    YogPackage_define_method(env, builtins, "import_package", import_package, 0, 0, 0, 0, "package", NULL);
+    YogPackage_define_method(env, builtins, "include_module", include_module, 0, 0, 0, 0, NULL);
+    YogPackage_define_method(env, builtins, "print", print, 0, 1, 0, 0, NULL);
+    YogPackage_define_method(env, builtins, "property", property, 0, 0, 0, 0, NULL);
+    YogPackage_define_method(env, builtins, "puts", puts_, 0, 1, 0, 0, NULL);
+    YogPackage_define_method(env, builtins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
 
 #define REGISTER_KLASS(c)   do { \
     YogVal klass = env->vm->c; \
@@ -207,7 +223,7 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
 #if !defined(MINIYOG)
     src = YogString_new_str(env, builtins_src);
     stmts = YogParser_parse(env, src);
-    code = YogCompiler_compile_module(env, "builtin", stmts);
+    code = YogCompiler_compile_package(env, "builtin", stmts);
     YogEval_eval_package(env, builtins, code);
 #endif
 
