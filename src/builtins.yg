@@ -15,4 +15,12 @@ def include(mod)
   return f
 end
 
+def bind(obj)
+  def f(g)
+    return g.descr_get(obj)
+  end
+
+  return f
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

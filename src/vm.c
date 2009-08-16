@@ -203,8 +203,8 @@ setup_basic_klass(YogEnv* env, YogVM* vm)
 static void
 setup_klasses(YogEnv* env, YogVM* vm)
 {
-    vm->cFunction = YogFunction_klass_new(env);
     vm->cNativeFunction = YogNativeFunction_klass_new(env);
+    vm->cFunction = YogFunction_klass_new(env);
     vm->cInstanceMethod = YogInstanceMethod_klass_new(env);
     vm->cNativeInstanceMethod = YogNativeInstanceMethod_klass_new(env);
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from re import match
 from testcase import TestCase
 
 class TestPuts(TestCase):
@@ -39,5 +40,27 @@ print(ARGV[2])
 f = partial(print, 42)
 f()
 """, "42")
+
+    def test_bind0(self):
+        def test_stdout(stdout):
+            m = match(r"<Foo [0-9A-Za-z]+", stdout)
+            assert m is not None
+
+        self._test("""
+class Foo
+  def bar()
+    @bind(self)
+    def baz()
+      print(self)
+    end
+
+    return baz
+  end
+end
+
+foo = Foo.new()
+bar = foo.bar()
+bar()
+""", stdout=test_stdout)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

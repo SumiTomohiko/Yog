@@ -302,11 +302,30 @@ YogFunction_exec_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal klass)
     RETURN_VOID(env);
 }
 
+static YogVal
+descr_get(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal obj = YUNDEF;
+    YogVal self_klass = YUNDEF;
+    YogVal retval = YUNDEF;
+    YogVal klass = YUNDEF;
+    PUSH_LOCALS4(env, obj, self_klass, retval, klass);
+
+    obj = YogArray_at(env, args, 0);
+    klass = YogVal_get_klass(env, obj);
+
+    self_klass = YogVal_get_klass(env, self);
+    YogVal (*f)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogKlass, self_klass)->call_get_descr;
+    retval = f(env, self, obj, klass);
+
+    RETURN(env, retval);
+}
+
 YogVal
 YogFunction_klass_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
-
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
@@ -316,6 +335,7 @@ YogFunction_klass_new(YogEnv* env)
     YogKlass_define_descr_get_caller(env, klass, YogFunction_call_get_descr);
     YogKlass_define_caller(env, klass, YogFunction_call);
     YogKlass_define_executor(env, klass, YogFunction_exec);
+    YogKlass_define_method(env, klass, "descr_get", descr_get);
 
     RETURN(env, klass);
 }
@@ -615,6 +635,7 @@ YogNativeFunction_klass_new(YogEnv* env)
     YogKlass_define_descr_get_caller(env, klass, YogNativeFunction_call_get_descr);
     YogKlass_define_caller(env, klass, YogNativeFunction_call);
     YogKlass_define_executor(env, klass, YogNativeFunction_exec);
+    YogKlass_define_method(env, klass, "descr_get", descr_get);
 
     RETURN(env, klass);
 }
