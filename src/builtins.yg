@@ -7,4 +7,12 @@ def partial(f, *args, **kw)
   return g
 end
 
+def include(mod)
+  def f(clazz)
+    return include_module(clazz, mod)
+  end
+
+  return f
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

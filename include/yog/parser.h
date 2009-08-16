@@ -114,6 +114,7 @@ struct YogNode {
             YogVal blockarg;
         } func_call;
         struct {
+            YogVal decorators;
             ID name;
             YogVal params;
             YogVal stmts;
@@ -127,6 +128,7 @@ struct YogNode {
             YogVal names;
         } import;
         struct {
+            YogVal decorators;
             ID name;
             YogVal super;
             YogVal stmts;

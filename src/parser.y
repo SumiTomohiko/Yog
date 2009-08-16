@@ -91,6 +91,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(func_call.blockarg);
         break;
     case NODE_FUNC_DEF:
+        KEEP(funcdef.decorators);
         KEEP(funcdef.params);
         KEEP(funcdef.stmts);
         break;
@@ -103,6 +104,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(import.names);
         break;
     case NODE_KLASS:
+        KEEP(klass.decorators);
         KEEP(klass.super);
         KEEP(klass.stmts);
         break;
@@ -293,11 +295,12 @@ ParamArray_push(YogEnv* env, YogVal array, uint_t lineno, ID id, YogVal default_
 }
 
 static YogVal
-FuncDef_new(YogEnv* env, uint_t lineno, ID name, YogVal params, YogVal stmts)
+FuncDef_new(YogEnv* env, uint_t lineno, YogVal decorators, ID name, YogVal params, YogVal stmts)
 {
-    SAVE_ARGS2(env, params, stmts);
+    SAVE_ARGS3(env, decorators, params, stmts);
 
     YogVal node = YogNode_new(env, NODE_FUNC_DEF, lineno);
+    NODE(node)->u.funcdef.decorators = decorators;
     NODE(node)->u.funcdef.name = name;
     NODE(node)->u.funcdef.params = params;
     NODE(node)->u.funcdef.stmts = stmts;
@@ -509,11 +512,12 @@ While_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts)
 }
 
 static YogVal
-Klass_new(YogEnv* env, uint_t lineno, ID name, YogVal super, YogVal stmts)
+Klass_new(YogEnv* env, uint_t lineno, YogVal decorators, ID name, YogVal super, YogVal stmts)
 {
-    SAVE_ARGS2(env, super, stmts);
+    SAVE_ARGS3(env, decorators, super, stmts);
 
     YogVal node = YogNode_new(env, NODE_KLASS, lineno);
+    NODE(node)->u.klass.decorators = decorators;
     NODE(node)->u.klass.name = name;
     NODE(node)->u.klass.super = super;
     NODE(node)->u.klass.stmts = stmts;
@@ -762,10 +766,10 @@ stmt(A) ::= IF(B) expr(C) NEWLINE stmts(D) if_tail(E) END. {
     uint_t lineno = TOKEN_LINENO(B);
     A = If_new(env, lineno, C, D, E);
 }
-stmt(A) ::= CLASS(B) NAME(C) super_opt(D) NEWLINE stmts(E) END. {
+stmt(A) ::= decorators_opt(F) CLASS(B) NAME(C) super_opt(D) NEWLINE stmts(E) END. {
     uint_t lineno = TOKEN_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
-    A = Klass_new(env, lineno, id, D, E);
+    A = Klass_new(env, lineno, F, id, D, E);
 }
 stmt(A) ::= MODULE(B) NAME(C) stmts(D) END. {
     uint_t lineno = TOKEN_LINENO(B);
@@ -825,10 +829,28 @@ else_opt(A) ::= ELSE stmts(B). {
     A = B;
 }
 
-func_def(A) ::= DEF(B) NAME(C) LPAR params(D) RPAR stmts(E) END. {
+func_def(A) ::= decorators_opt(F) DEF(B) NAME(C) LPAR params(D) RPAR stmts(E) END. {
     uint_t lineno = TOKEN_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
-    A = FuncDef_new(env, lineno, id, D, E);
+    A = FuncDef_new(env, lineno, F, id, D, E);
+}
+
+decorators_opt(A) ::= /* empty */. {
+    A = YNIL;
+}
+decorators_opt(A) ::= decorators(B). {
+    A = B;
+}
+
+decorators(A) ::= decorator(B). {
+    A = make_array_with(env, B);
+}
+decorators(A) ::= decorators(B) decorator(C). {
+    A = Array_push(env, B, C);
+}
+
+decorator(A) ::= AT expr(B) NEWLINE. {
+    A = B;
 }
 
 params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA block_param(D) COMMA var_param(E) COMMA kw_param(F). {

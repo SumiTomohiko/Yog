@@ -2561,11 +2561,22 @@ static void
 compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
-
     YogVal super = YUNDEF;
     YogVal stmts = YUNDEF;
     YogVal code = YUNDEF;
-    PUSH_LOCALS3(env, super, stmts, code);
+    YogVal decorator = YUNDEF;
+    YogVal decorators = YUNDEF;
+    PUSH_LOCALS5(env, super, stmts, code, decorator, decorators);
+
+    decorators = NODE(node)->u.klass.decorators;
+    if (IS_PTR(decorators)) {
+        uint_t size = YogArray_size(env, decorators);
+        uint_t i;
+        for (i = 0; i < size; i++) {
+            decorator = YogArray_at(env, decorators, i);
+            visit_node(env, visitor, decorator, data);
+        }
+    }
 
     ID name = NODE(node)->u.klass.name;
     add_push_const(env, data, ID2VAL(name), NODE(node)->lineno);
@@ -2585,6 +2596,16 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     add_push_const(env, data, code, lineno);
 
     CompileData_add_make_klass(env, data, lineno);
+
+    if (IS_PTR(decorators)) {
+        uint_t size = YogArray_size(env, decorators);
+        uint_t i;
+        for (i = 0; i < size; i++) {
+            decorator = YogArray_at(env, decorators, i);
+            uint_t lineno = NODE(decorator)->lineno;
+            CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
+        }
+    }
 
     append_store(env, data, lineno, name);
 

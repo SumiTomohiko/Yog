@@ -718,6 +718,9 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             RETURN_VAL_TOKEN(TK_SYMBOL, ID2VAL(id));
         }
         break;
+    case '@':
+        RETURN_TOKEN(TK_AT);
+        break;
     default:
         {
             do {
