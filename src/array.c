@@ -288,6 +288,33 @@ get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
+YogArray_shift(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal retval = YUNDEF;
+    YogVal body = YUNDEF;
+    YogVal elem = YUNDEF;
+    PUSH_LOCALS3(env, retval, body, elem);
+
+    uint_t size = YogArray_size(env, self);
+    YOG_ASSERT(env, 0 < size, "array is empty");
+
+    retval = YogArray_at(env, self, 0);
+
+    body = PTR_AS(YogArray, self)->body;
+    uint_t i;
+    for (i = 1; i < size; i++) {
+        elem = YogArray_at(env, self, i);
+        PTR_AS(YogValArray, body)->items[i - 1] = elem;
+    }
+    PTR_AS(YogValArray, body)->items[size - 1] = YUNDEF;
+
+    PTR_AS(YogArray, self)->size--;
+
+    RETURN(env, retval);
+}
+
+YogVal
 YogArray_klass_new(YogEnv* env)
 {
     SAVE_LOCALS(env);

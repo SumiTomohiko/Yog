@@ -23,13 +23,11 @@ struct YogJmpBuf {
 
 typedef struct YogJmpBuf YogJmpBuf;
 
-#define NUM_VALS    5
-
 struct YogLocals {
     struct YogLocals* next;
     uint_t num_vals;
     uint_t size;
-    YogVal* vals[NUM_VALS];
+    YogVal* vals[4];
 };
 
 typedef struct YogLocals YogLocals;
@@ -66,7 +64,6 @@ do { \
     __locals_##x##__.vals[1] = NULL; \
     __locals_##x##__.vals[2] = NULL; \
     __locals_##x##__.vals[3] = NULL; \
-    __locals_##x##__.vals[4] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##__);
 #define PUSH_LOCALS2(env, x, y) \
     YogLocals __locals_##x##_##y##__; \
@@ -76,7 +73,6 @@ do { \
     __locals_##x##_##y##__.vals[1] = &(y); \
     __locals_##x##_##y##__.vals[2] = NULL; \
     __locals_##x##_##y##__.vals[3] = NULL; \
-    __locals_##x##_##y##__.vals[4] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##_##y##__);
 #define PUSH_LOCALS3(env, x, y, z) \
     YogLocals __locals_##x##_##y##_##z##__; \
@@ -86,7 +82,6 @@ do { \
     __locals_##x##_##y##_##z##__.vals[1] = &(y); \
     __locals_##x##_##y##_##z##__.vals[2] = &(z); \
     __locals_##x##_##y##_##z##__.vals[3] = NULL; \
-    __locals_##x##_##y##_##z##__.vals[4] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##__);
 #define PUSH_LOCALS4(env, x, y, z, t) \
     YogLocals __locals_##x##_##y##_##z##_##t##__; \
@@ -96,18 +91,13 @@ do { \
     __locals_##x##_##y##_##z##_##t##__.vals[1] = &(y); \
     __locals_##x##_##y##_##z##_##t##__.vals[2] = &(z); \
     __locals_##x##_##y##_##z##_##t##__.vals[3] = &(t); \
-    __locals_##x##_##y##_##z##_##t##__.vals[4] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##_##t##__);
 #define PUSH_LOCALS5(env, x, y, z, t, u) \
-    YogLocals __locals_##x##_##y##_##z##_##t##_##u##__; \
-    __locals_##x##_##y##_##z##_##t##_##u##__.num_vals = 5; \
-    __locals_##x##_##y##_##z##_##t##_##u##__.size = 1; \
-    __locals_##x##_##y##_##z##_##t##_##u##__.vals[0] = &(x); \
-    __locals_##x##_##y##_##z##_##t##_##u##__.vals[1] = &(y); \
-    __locals_##x##_##y##_##z##_##t##_##u##__.vals[2] = &(z); \
-    __locals_##x##_##y##_##z##_##t##_##u##__.vals[3] = &(t); \
-    __locals_##x##_##y##_##z##_##t##_##u##__.vals[4] = &(u); \
-    PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##_##t##_##u##__);
+    PUSH_LOCALS4(env, x, y, z, t); \
+    PUSH_LOCAL(env, u)
+#define PUSH_LOCALS6(env, x, y, z, t, u, v) \
+    PUSH_LOCALS4(env, x, y, z, t); \
+    PUSH_LOCALS2(env, u, v)
 #define PUSH_LOCALSX(env, num, x) \
     YogLocals __locals_##x##__; \
     __locals_##x##__.num_vals = 1; \
@@ -116,7 +106,6 @@ do { \
     __locals_##x##__.vals[1] = NULL; \
     __locals_##x##__.vals[2] = NULL; \
     __locals_##x##__.vals[3] = NULL; \
-    __locals_##x##__.vals[4] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##__);
 #define SAVE_ARG(env, x)        SAVE_LOCALS((env)); \
                                 PUSH_LOCAL((env), x)

@@ -331,7 +331,7 @@ find(YogEnv* env, YogVal self, YogVal substr, uint_t from)
     RETURN(env, UNSIGNED_MAX);
 }
 
-static void
+void
 YogString_add(YogEnv* env, YogVal self, YogVal s)
 {
     SAVE_ARGS2(env, self, s);

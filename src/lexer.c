@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "oniguruma.h"
+#include "yog/array.h"
 #include "yog/encoding.h"
 #include "yog/env.h"
 #include "yog/error.h"
@@ -14,7 +15,6 @@
 #include "yog/table.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
-
 #include "parser.h"
 
 static void
@@ -305,10 +305,67 @@ read_number(YogEnv* env, YogVal lexer, BOOL (*is_valid_char)(char))
     }
 }
 
+static void
+enqueue_heredoc(YogEnv* env, YogVal lexer, YogVal heredoc)
+{
+    SAVE_ARGS2(env, lexer, heredoc);
+    YogVal queue = YUNDEF;
+    PUSH_LOCAL(env, queue);
+
+    queue = PTR_AS(YogLexer, lexer)->heredoc_queue;
+    if (!IS_PTR(queue)) {
+        queue = YogArray_new(env);
+        PTR_AS(YogLexer, lexer)->heredoc_queue = queue;
+    }
+    YogArray_push(env, queue, heredoc);
+
+    RETURN_VOID(env);
+}
+
+struct HereDoc {
+    YogVal str;
+    YogVal end;
+    uint_t lineno;
+};
+
+typedef struct HereDoc HereDoc;
+
+static void
+HereDoc_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    HereDoc* heredoc = ptr;
+#define KEEP(member)    YogGC_keep(env, &heredoc->member, keeper, heap)
+    KEEP(str);
+    KEEP(end);
+#undef KEEP
+}
+
+static YogVal
+HereDoc_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal heredoc = YUNDEF;
+    PUSH_LOCAL(env, heredoc);
+
+    heredoc = ALLOC_OBJ(env, HereDoc_keep_children, NULL, HereDoc);
+    PTR_AS(HereDoc, heredoc)->str = YUNDEF;
+    PTR_AS(HereDoc, heredoc)->end = YUNDEF;
+    PTR_AS(HereDoc, heredoc)->lineno = 0;
+
+    RETURN(env, heredoc);
+}
+
 BOOL
-YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
+YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* token)
 {
     SAVE_ARG(env, lexer);
+    YogVal heredoc_end = YUNDEF;
+    YogVal str = YUNDEF;
+    YogVal heredoc = YUNDEF;
+    YogVal queue = YUNDEF;
+    YogVal end = YUNDEF;
+    YogVal line = YUNDEF;
+    PUSH_LOCALS6(env, heredoc_end, str, heredoc, queue, end, line);
 
     clear_buffer(env, lexer);
 
@@ -331,6 +388,30 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
             break;
         }
         else {
+            while (1) {
+                queue = PTR_AS(YogLexer, lexer)->heredoc_queue;
+                if (!IS_PTR(queue) || (YogArray_size(env, queue) < 1)) {
+                    break;
+                }
+                heredoc = YogArray_shift(env, queue);
+                while (1) {
+                    if (!readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
+                        YogError_raise_SyntaxError(env, "file \"%s\", line %u: EOF while scanning heredoc", filename, PTR_AS(HereDoc, heredoc)->lineno);
+                    }
+                    end = PTR_AS(HereDoc, heredoc)->end;
+                    uint_t size = YogString_size(env, end) - 1;
+                    line = PTR_AS(YogLexer, lexer)->line;
+                    if (strncmp(STRING_CSTR(end), STRING_CSTR(line), size) == 0) {
+                        if ((STRING_CSTR(line)[size] == '\r') || (STRING_CSTR(line)[size] == '\n')) {
+                            break;
+                        }
+                    }
+
+                    str = PTR_AS(HereDoc, heredoc)->str;
+                    YogString_add(env, str, line);
+                }
+            }
+
             if (!readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
                 RETURN(env, FALSE);
             }
@@ -620,13 +701,40 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogVal* token)
         break;
     case '<':
         {
-            SET_STATE(LS_EXPR);
-
             char c2 = NEXTC();
             if (c2 == '<') {
-                RETURN_ID_TOKEN(TK_LSHIFT, "<<");
+                if (PTR_AS(YogLexer, lexer)->state == LS_EXPR) {
+                    char c3 = NEXTC();
+                    if (!isalpha(c3) && (c3 != '_')) {
+                        PUSHBACK(c3);
+                        RETURN_ID_TOKEN(TK_LSHIFT, "<<");
+                    }
+
+                    heredoc_end = YogString_new(env);
+                    do {
+                        YogString_push(env, heredoc_end, c3);
+                        c3 = NEXTC();
+                    } while (isalnum(c3) || (c3 == '_'));
+                    PUSHBACK(c3);
+
+                    str = YogString_new(env);
+                    uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
+                    heredoc = HereDoc_new(env);
+                    PTR_AS(HereDoc, heredoc)->str = str;
+                    PTR_AS(HereDoc, heredoc)->end = heredoc_end;
+                    PTR_AS(HereDoc, heredoc)->lineno = lineno;
+                    enqueue_heredoc(env, lexer, heredoc);
+
+                    SET_STATE(LS_OP);
+                    RETURN_VAL_TOKEN(TK_STRING, str);
+                }
+                else {
+                    SET_STATE(LS_EXPR);
+                    RETURN_ID_TOKEN(TK_LSHIFT, "<<");
+                }
             }
             else {
+                SET_STATE(LS_EXPR);
                 PUSHBACK(c2);
                 RETURN_ID_TOKEN1(TK_LESS, c);
             }
@@ -899,6 +1007,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #define KEEP(member)    YogGC_keep(env, &lexer->member, keeper, heap)
     KEEP(line);
     KEEP(buffer);
+    KEEP(heredoc_queue);
 #undef KEEP
 }
 
@@ -906,21 +1015,26 @@ YogVal
 YogLexer_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
+    YogVal lexer = YUNDEF;
+    YogVal line = YUNDEF;
+    YogVal buffer = YUNDEF;
+    PUSH_LOCALS3(env, lexer, line, buffer);
 
-    YogVal lexer = ALLOC_OBJ(env, keep_children, NULL, YogLexer);
+    lexer = ALLOC_OBJ(env, keep_children, NULL, YogLexer);
     PTR_AS(YogLexer, lexer)->state = LS_EXPR;
     PTR_AS(YogLexer, lexer)->fp = NULL;
     PTR_AS(YogLexer, lexer)->line = YUNDEF;
     PTR_AS(YogLexer, lexer)->next_index = 0;
     PTR_AS(YogLexer, lexer)->buffer = YUNDEF;
     PTR_AS(YogLexer, lexer)->lineno = 0;
-    PUSH_LOCAL(env, lexer);
+    PTR_AS(YogLexer, lexer)->heredoc_queue = YUNDEF;
 
-    YogVal line = YogString_new(env);
+    line = YogString_new(env);
     PTR_AS(YogLexer, lexer)->line = line;
 
-    YogVal buffer = YogString_new(env);
+    buffer = YogString_new(env);
     PTR_AS(YogLexer, lexer)->buffer = buffer;
+
 
     RETURN(env, lexer);
 }

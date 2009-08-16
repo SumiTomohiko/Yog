@@ -207,6 +207,7 @@ struct YogLexer {
     uint_t next_index;
     YogVal buffer;
     uint_t lineno;
+    YogVal heredoc_queue;
 };
 
 typedef struct YogLexer YogLexer;
@@ -219,7 +220,7 @@ typedef struct YogLexer YogLexer;
 
 /* src/lexer.c */
 YogVal YogLexer_new(YogEnv*);
-BOOL YogLexer_next_token(YogEnv*, YogVal, YogVal*);
+BOOL YogLexer_next_token(YogEnv*, YogVal, const char*, YogVal*);
 void YogLexer_read_encoding(YogEnv*, YogVal);
 void YogLexer_set_encoding(YogEnv*, YogVal, YogVal);
 

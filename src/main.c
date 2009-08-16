@@ -225,7 +225,6 @@ main(int_t argc, char* argv[])
     env_guard.vals[1] = NULL; \
     env_guard.vals[2] = NULL; \
     env_guard.vals[3] = NULL; \
-    env_guard.vals[4] = NULL; \
     PUSH_LOCAL_TABLE(&env, env_guard);
     GUARD_ENV(env);
 #undef GUARD_ENV

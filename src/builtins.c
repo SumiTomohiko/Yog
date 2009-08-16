@@ -190,11 +190,8 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
 {
     SAVE_LOCALS(env);
     YogVal builtins = YUNDEF;
-    YogVal src = YUNDEF;
-    YogVal stmts = YUNDEF;
-    YogVal code = YUNDEF;
     YogVal args = YUNDEF;
-    PUSH_LOCALS5(env, builtins, src, code, stmts, args);
+    PUSH_LOCALS2(env, builtins, args);
 
     builtins = YogPackage_new(env);
 
@@ -221,6 +218,11 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
     YogObj_set_attr(env, builtins, "ARGV",  args);
 
 #if !defined(MINIYOG)
+    YogVal src = YUNDEF;
+    YogVal stmts = YUNDEF;
+    YogVal code = YUNDEF;
+    PUSH_LOCALS3(env, src, stmts, code);
+
     src = YogString_new_str(env, builtins_src);
     stmts = YogParser_parse(env, src);
     code = YogCompiler_compile_package(env, "builtin", stmts);

@@ -95,7 +95,7 @@ builtins.inc: miniyog builtins.yg conv_builtins.yg
 	./miniyog conv_builtins.yg builtins.yg $@
 
 miniyog: $(yog_copying_SOURCES)
-	gcc -o $@ -lpthread -DMINIYOG -DHAVE_CONFIG_H -I.. -I. $(yog_copying_CFLAGS) arg.c array.c bignum.c binary.c block.c bool.c builtins.c classmethod.c code.c compile.c dict.c encoding.c error.c eval.c exception.c file.c fixnum.c float.c frame.c function.c gc.c inst.c klass.c lexer.c main.c nil.c object.c package.c parser.c property.c regexp.c repl.c stacktrace.c string.c symbol.c table.c thread.c value.c vm.c gc/copying.c module.c $(LDFLAGS_COMMON)
+	gcc -o $@ -g -O2 -lpthread -DMINIYOG -DHAVE_CONFIG_H -I.. -I. $(yog_copying_CFLAGS) arg.c array.c bignum.c binary.c block.c bool.c builtins.c classmethod.c code.c compile.c dict.c encoding.c error.c eval.c exception.c file.c fixnum.c float.c frame.c function.c gc.c inst.c klass.c lexer.c main.c nil.c object.c package.c parser.c property.c regexp.c repl.c stacktrace.c string.c symbol.c table.c thread.c value.c vm.c gc/copying.c module.c $(LDFLAGS_COMMON)
 
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))

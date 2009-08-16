@@ -598,7 +598,6 @@ static void yy_reduce(
   locals.vals[1] = &yygotominor.yy0;
   locals.vals[2] = NULL;
   locals.vals[3] = NULL;
-  locals.vals[4] = NULL;
   PUSH_LOCAL_TABLE(env, locals);
 
   ParseARG_FETCH;
@@ -719,7 +718,6 @@ static BOOL Parse(
   locals.vals[1] = &yyminor;
   locals.vals[2] = &yyminorunion.yy0;
   locals.vals[3] = NULL;
-  locals.vals[4] = NULL;
   PUSH_LOCAL_TABLE(env, locals);
 
   int yyact;            /* The parser action. */

@@ -33,6 +33,7 @@ YogVal YogArray_klass_new(YogEnv*);
 YogVal YogArray_new(YogEnv*);
 YogVal YogArray_of_size(YogEnv*, uint_t);
 void YogArray_push(YogEnv*, YogVal, YogVal);
+YogVal YogArray_shift(YogEnv*, YogVal);
 uint_t YogArray_size(YogEnv*, YogVal);
 YogVal YogValArray_at(YogEnv*, YogVal, uint_t);
 YogVal YogValArray_new(YogEnv*, uint_t);

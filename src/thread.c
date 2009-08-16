@@ -259,7 +259,6 @@ run_of_new_thread(void* arg)
     locals0.vals[1] = NULL;
     locals0.vals[2] = NULL;
     locals0.vals[3] = NULL;
-    locals0.vals[4] = NULL;
     PUSH_LOCAL_TABLE(&env, locals0);
 
     YogVal vararg = thread_arg->vararg;

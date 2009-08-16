@@ -602,7 +602,7 @@ parse(YogEnv* env, YogVal lexer, const char* filename, BOOL debug)
     if (debug) {
         ParseTrace(stdout, "parser> ");
     }
-    while (YogLexer_next_token(env, lexer, &token)) {
+    while (YogLexer_next_token(env, lexer, filename, &token)) {
         push_token(env, lemon_parser, lexer, token, filename, &ast);
     }
     Parse(env, lemon_parser, 0, YNIL, &ast);

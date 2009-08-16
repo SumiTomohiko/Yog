@@ -13,6 +13,14 @@ EOF
 """, """42
 """)
 
+    def test_one_heredoc10(self):
+        self._test("""
+print(<<EOF)
+EOFfoo
+EOF
+""", """EOFfoo
+""")
+
     def test_two_heredoc0(self):
         self._test("""
 print(<<EOF1, <<EOF2)
@@ -22,15 +30,6 @@ EOF1
 EOF2
 """, """42
 26
-""")
-
-    def test_heredoc_position0(self):
-        self._test("""
-print(<<EOF
-42
-EOF
-)
-""", """42
 """)
 
     def test_error0(self):
