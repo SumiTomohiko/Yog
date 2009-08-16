@@ -68,7 +68,7 @@ yog_mark_sweep_compact_SOURCES = $(COMMON_SOURCES) gc/mark-sweep-compact.c
 yog_mark_sweep_compact_CFLAGS = $(CFLAGS_COMMON) -DGC_MARK_SWEEP_COMPACT
 yog_mark_sweep_compact_LDFLAGS = $(LDFLAGS_COMMON)
 yog_bdw_SOURCES = $(COMMON_SOURCES) gc/bdw.c
-yog_bdw_CFLAGS = $(CFLAGS_COMMON) -DGC_BDW
+yog_bdw_CFLAGS = $(CFLAGS_COMMON) -DGC_BDW -DGC_PTHREADS
 yog_bdw_LDFLAGS = $(LDFLAGS_COMMON) $(BDWGC_DIR)/.libs/libgc.a -lpthread
 yog_generational_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
 			   gc/mark-sweep-compact.c
