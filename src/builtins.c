@@ -198,13 +198,13 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
 
     builtins = YogPackage_new(env);
 
-    YogPackage_define_method(env, builtins, "classmethod", classmethod, 0, 0, 0, 0, NULL);
-    YogPackage_define_method(env, builtins, "import_package", import_package, 0, 0, 0, 0, "package", NULL);
-    YogPackage_define_method(env, builtins, "include_module", include_module, 0, 0, 0, 0, NULL);
-    YogPackage_define_method(env, builtins, "print", print, 0, 1, 0, 0, NULL);
-    YogPackage_define_method(env, builtins, "property", property, 0, 0, 0, 0, NULL);
-    YogPackage_define_method(env, builtins, "puts", puts_, 0, 1, 0, 0, NULL);
-    YogPackage_define_method(env, builtins, "raise", raise, 0, 0, 0, 0, "exc", NULL);
+    YogPackage_define_function(env, builtins, "classmethod", classmethod);
+    YogPackage_define_function(env, builtins, "import_package", import_package);
+    YogPackage_define_function(env, builtins, "include_module", include_module);
+    YogPackage_define_function(env, builtins, "print", print);
+    YogPackage_define_function(env, builtins, "property", property);
+    YogPackage_define_function(env, builtins, "puts", puts_);
+    YogPackage_define_function(env, builtins, "raise", raise);
 
 #define REGISTER_KLASS(c)   do { \
     YogVal klass = env->vm->c; \

@@ -12,7 +12,7 @@ foo(YogEnv* env)
 void
 YogInit_test_package5(YogEnv* env, YogVal pkg)
 {
-    YogPackage_define_method(env, pkg, "foo", foo, 0, 0, 0, 0, NULL);
+    YogPackage_define_function(env, pkg, "foo", foo);
 }
 
 /**

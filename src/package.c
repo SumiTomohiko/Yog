@@ -9,9 +9,8 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-/* TODO: change this signature */
 void
-YogPackage_define_method(YogEnv* env, YogVal pkg, const char* name, void* f, uint_t blockargc, uint_t varargc, uint_t kwargc, uint_t required_argc, ...)
+YogPackage_define_function(YogEnv* env, YogVal pkg, const char* name, void* f)
 {
     SAVE_ARG(env, pkg);
 
