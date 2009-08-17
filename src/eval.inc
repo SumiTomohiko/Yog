@@ -423,6 +423,29 @@
             POP_LOCALS(env);
             break;
         }
+    case OP(MAKE_SET):
+        {
+            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
+            uint8_t size = *((uint8_t*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
+            PC += sizeof(uint8_t);
+            YogVal set = YUNDEF;
+            PUSH_LOCAL(env, set);
+            YogVal elem = YUNDEF;
+            PUSH_LOCAL(env, elem);
+        
+            set = YogSet_new(env);
+            uint_t i;
+            for (i = 0; i < size; i++) {
+                elem = POP();
+                YogSet_add(env, set, elem);
+            }
+        
+            POP_LOCALS(env);
+
+            PUSH(set);
+            POP_LOCALS(env);
+            break;
+        }
     case OP(FINISH):
         {
             YogVal val = YUNDEF;

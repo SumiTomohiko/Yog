@@ -8,7 +8,7 @@ class TestSset(TestCase):
         self._test("""
 s = { 42 }
 print(s.include?(42))
-""", "42")
+""", "true")
 
     def test_literal10(self):
         self._test("""
@@ -38,6 +38,6 @@ print(Set.new().size)
 s = Set.new()
 s.add(42)
 print(s.include?(42))
-""", "42")
+""", "true")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

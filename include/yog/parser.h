@@ -46,6 +46,7 @@ enum YogNodeType {
     NODE_NOT,
     NODE_PARAM,
     NODE_RETURN,
+    NODE_SET,
     NODE_SUBSCRIPT,
     NODE_VARIABLE,
     NODE_VAR_PARAM,
@@ -174,6 +175,9 @@ struct YogNode {
         struct {
             YogVal expr;
         } return_;
+        struct {
+            YogVal elems;
+        } set;
         struct {
             YogVal prefix;
             YogVal index;

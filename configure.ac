@@ -76,7 +76,7 @@ case "${host}" in
 esac
 DIRS="${DIRS} onig sigsegv gmp src ext"
 TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
-BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact yog-generational"
+BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact yog-generational miniyog"
 
 AC_SUBST(DIRS)
 AC_SUBST(TEST_TARGETS)

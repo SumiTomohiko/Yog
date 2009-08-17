@@ -17,7 +17,7 @@ LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -export-dynamic \
 		 $(GMP_DIR)/.libs/libgmp.a
 
 EXTRA_PROGRAMS = yog-bdw yog-copying yog-mark-sweep yog-mark-swee-compact \
-		 yog-mark-sweep-compact yog-generational
+		 yog-mark-sweep-compact yog-generational miniyog
 bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
 yog_copying_CFLAGS = $(CFLAGS_COMMON) -DGC_COPYING
@@ -37,6 +37,9 @@ yog_generational_CFLAGS = $(CFLAGS_COMMON) -DGC_GENERATIONAL \
 			  -I$(SIGSEGV_DIR)/src
 yog_generational_LDFLAGS = $(LDFLAGS_COMMON) \
 			   $(SIGSEGV_DIR)/src/.libs/libsigsegv.a
+miniyog_SOURCES = $(yog_copying_SOURCES)
+miniyog_CFLAGS = $(yog_copying_CFLAGS) -DMINIYOG
+miniyog_LDFLAGS = $(yog_copying_LDFLAGS)
 
 INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
@@ -53,10 +56,8 @@ am:
 	$(GEN_AM_CMD)
 
 builtins.inc: miniyog builtins.yg conv_builtins.yg
+	$(MAKE) miniyog
 	./miniyog conv_builtins.yg builtins.yg $@
-
-miniyog: $(yog_copying_SOURCES)
-	gcc -o $@ -g -O2 -lpthread -DMINIYOG -DHAVE_CONFIG_H -I.. -I. $(yog_copying_CFLAGS) arg.c array.c bignum.c binary.c block.c bool.c builtins.c classmethod.c code.c compile.c dict.c encoding.c error.c eval.c exception.c file.c fixnum.c float.c frame.c function.c gc.c inst.c klass.c lexer.c main.c nil.c object.c package.c parser.c property.c regexp.c repl.c stacktrace.c string.c symbol.c table.c thread.c value.c vm.c gc/copying.c module.c $(LDFLAGS_COMMON)
 
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))

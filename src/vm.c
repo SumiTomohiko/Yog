@@ -35,6 +35,7 @@
 #include "yog/package.h"
 #include "yog/property.h"
 #include "yog/regexp.h"
+#include "yog/set.h"
 #include "yog/symbol.h"
 #include "yog/table.h"
 #include "yog/thread.h"
@@ -212,24 +213,25 @@ setup_klasses(YogEnv* env, YogVM* vm)
     YogKlass_klass_init(env, vm->cKlass);
     vm->cProperty = YogProperty_klass_new(env);
 
-    vm->cFixnum = YogFixnum_klass_new(env);
-    vm->cBignum = YogBignum_klass_new(env);
-    vm->cSymbol = YogSymbol_klass_new(env);
-    vm->cString = YogString_klass_new(env);
-    vm->cRegexp = YogRegexp_klass_new(env);
-    vm->cMatch = YogMatch_klass_new(env);
-    vm->cModule = YogModule_klass_new(env);
-    vm->cPackage = YogPackage_klass_new(env);
-    vm->cBool = YogBool_klass_new(env);
-    vm->cPackageBlock = YogPackageBlock_klass_new(env);
-    vm->cNil = YogNil_klass_new(env);
-    vm->cFloat = YogFloat_klass_new(env);
-    vm->cThread = YogThread_klass_new(env);
     vm->cArray = YogArray_klass_new(env);
-    vm->cDict = YogDict_klass_new(env);
+    vm->cBignum = YogBignum_klass_new(env);
+    vm->cBool = YogBool_klass_new(env);
     vm->cClassMethod = YogClassMethod_klass_new(env);
     vm->cCode = YogCode_klass_new(env);
+    vm->cDict = YogDict_klass_new(env);
     vm->cFile = YogFile_klass_new(env);
+    vm->cFixnum = YogFixnum_klass_new(env);
+    vm->cFloat = YogFloat_klass_new(env);
+    vm->cMatch = YogMatch_klass_new(env);
+    vm->cModule = YogModule_klass_new(env);
+    vm->cNil = YogNil_klass_new(env);
+    vm->cPackage = YogPackage_klass_new(env);
+    vm->cPackageBlock = YogPackageBlock_klass_new(env);
+    vm->cRegexp = YogRegexp_klass_new(env);
+    vm->cSet = YogSet_klass_new(env);
+    vm->cString = YogString_klass_new(env);
+    vm->cSymbol = YogSymbol_klass_new(env);
+    vm->cThread = YogThread_klass_new(env);
 }
 
 static void
@@ -380,6 +382,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cPackageBlock);
     KEEP(cProperty);
     KEEP(cRegexp);
+    KEEP(cSet);
     KEEP(cString);
     KEEP(cSymbol);
     KEEP(cThread);
@@ -449,6 +452,7 @@ YogVM_init(YogVM* vm)
     INIT(cPackageBlock);
     INIT(cProperty);
     INIT(cRegexp);
+    INIT(cSet);
     INIT(cString);
     INIT(cSymbol);
     INIT(cThread);

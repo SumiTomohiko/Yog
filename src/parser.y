@@ -142,6 +142,9 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_RETURN:
         KEEP(return_.expr);
         break;
+    case NODE_SET:
+        KEEP(set.elems);
+        break;
     case NODE_SUBSCRIPT:
         KEEP(subscript.prefix);
         KEEP(subscript.index);
@@ -694,6 +697,19 @@ Dict_new(YogEnv* env, uint_t lineno, YogVal elems)
     PTR_AS(YogNode, dict)->u.dict.elems = elems;
 
     RETURN(env, dict);
+}
+
+static YogVal
+Set_new(YogEnv* env, uint_t lineno, YogVal elems)
+{
+    SAVE_ARG(env, elems);
+    YogVal set = YUNDEF;
+    PUSH_LOCAL(env, set);
+
+    set = YogNode_new(env, NODE_SET, lineno);
+    PTR_AS(YogNode, set)->u.set.elems = elems;
+
+    RETURN(env, set);
 }
 
 #define TOKEN(token)            PTR_AS(YogToken, (token))
@@ -1322,6 +1338,9 @@ atom(A) ::= LBRACE(B) RBRACE . {
 }
 atom(A) ::= LBRACE(B) dict_elems(C) comma_opt RBRACE. {
     A = Dict_new(env, NODE_LINENO(B), C);
+}
+atom(A) ::= LBRACE(B) exprs(C) RBRACE. {
+    A = Set_new(env, NODE_LINENO(B), C);
 }
 atom(A) ::= LPAR expr(B) RPAR. {
     A = B;

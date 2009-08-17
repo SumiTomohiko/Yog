@@ -51,6 +51,18 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, dict);
 }
 
+BOOL
+YogDict_include(YogEnv* env, YogVal self, YogVal key)
+{
+    SAVE_ARGS2(env, self, key);
+
+    if (YogTable_lookup(env, PTR_AS(YogDict, self)->tbl, key, NULL)) {
+        RETURN(env, TRUE);
+    }
+
+    RETURN(env, FALSE);
+}
+
 static YogVal
 subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -123,8 +135,8 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-static YogVal
-allocate(YogEnv* env, YogVal klass)
+YogVal
+YogDict_allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal d = YUNDEF;
@@ -139,13 +151,13 @@ allocate(YogEnv* env, YogVal klass)
 YogVal
 YogDict_new(YogEnv* env)
 {
-    return allocate(env, env->vm->cDict);
+    return YogDict_allocate(env, env->vm->cDict);
 }
 
-static YogVal
-get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogDict_get_size(YogEnv* env, YogVal self)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARG(env, self);
     YogVal retval = YUNDEF;
     YogVal tbl = YUNDEF;
     PUSH_LOCALS2(env, retval, tbl);
@@ -153,6 +165,18 @@ get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     tbl = PTR_AS(YogDict, self)->tbl;
     int_t size = YogTable_size(env, tbl);
     retval = YogVal_from_int(env, size);
+
+    RETURN(env, retval);
+}
+
+static YogVal
+get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogDict_get_size(env, self);
 
     RETURN(env, retval);
 }
@@ -231,7 +255,7 @@ YogDict_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_new(env, "Dict", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, allocate);
+    YogKlass_define_allocator(env, klass, YogDict_allocate);
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("[]", subscript);

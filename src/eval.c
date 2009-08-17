@@ -14,6 +14,7 @@
 #include "yog/module.h"
 #include "yog/package.h"
 #include "yog/parser.h"
+#include "yog/set.h"
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/vm.h"

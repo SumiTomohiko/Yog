@@ -99,6 +99,9 @@ struct YogInst {
             uint8_t size;
         } make_dict;
         struct {
+            uint8_t size;
+        } make_set;
+        struct {
         } finish;
         struct {
         } print_top;
@@ -141,6 +144,7 @@ struct YogInst {
 #define LOAD_ATTR_NAME(inst) (INST(inst)->u.load_attr.name)
 #define MAKE_ARRAY_SIZE(inst) (INST(inst)->u.make_array.size)
 #define MAKE_DICT_SIZE(inst) (INST(inst)->u.make_dict.size)
+#define MAKE_SET_SIZE(inst) (INST(inst)->u.make_set.size)
 #define STORE_ATTR_NAME(inst) (INST(inst)->u.store_attr.name)
 
 typedef struct YogInst YogInst;

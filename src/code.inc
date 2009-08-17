@@ -33,6 +33,7 @@ YogCode_get_op_name(OpCode op)
         "LOAD_ATTR",
         "MAKE_ARRAY",
         "MAKE_DICT",
+        "MAKE_SET",
         "FINISH",
         "PRINT_TOP",
         "STORE_ATTR",

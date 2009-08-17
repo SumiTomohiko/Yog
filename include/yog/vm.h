@@ -51,6 +51,7 @@ struct YogVM {
     YogVal cPackageBlock;
     YogVal cProperty;
     YogVal cRegexp;
+    YogVal cSet;
     YogVal cString;
     YogVal cSymbol;
     YogVal cThread;

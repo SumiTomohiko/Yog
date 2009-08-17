@@ -307,6 +307,24 @@ inst make_dict
     POP_LOCALS(env);
 }
 
+inst make_set
+(uint8_t size)
+(...) depth: size
+(set)
+{
+    YogVal elem = YUNDEF;
+    PUSH_LOCAL(env, elem);
+
+    set = YogSet_new(env);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        elem = POP();
+        YogSet_add(env, set, elem);
+    }
+
+    POP_LOCALS(env);
+}
+
 inst finish
 ()
 (val)

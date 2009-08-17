@@ -210,6 +210,7 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
     REGISTER_KLASS(cDict);
     REGISTER_KLASS(cFile);
     REGISTER_KLASS(cObject);
+    REGISTER_KLASS(cSet);
     REGISTER_KLASS(cThread);
     REGISTER_KLASS(eException);
 #undef REGISTER_KLASS

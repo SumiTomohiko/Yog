@@ -36,10 +36,11 @@ enum OpCode {
     OP(LOAD_ATTR) = 22,
     OP(MAKE_ARRAY) = 23,
     OP(MAKE_DICT) = 24,
-    OP(FINISH) = 25,
-    OP(PRINT_TOP) = 26,
-    OP(STORE_ATTR) = 27,
-    OP(NOT) = 28,
+    OP(MAKE_SET) = 25,
+    OP(FINISH) = 26,
+    OP(PRINT_TOP) = 27,
+    OP(STORE_ATTR) = 28,
+    OP(NOT) = 29,
 
 };
 

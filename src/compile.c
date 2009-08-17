@@ -45,6 +45,7 @@ struct AstVisitor {
     VisitNode visit_nonlocal;
     VisitNode visit_not;
     VisitNode visit_return;
+    VisitNode visit_set;
     VisitNode visit_stmt;
     VisitNode visit_subscript;
     VisitNode visit_variable;
@@ -390,6 +391,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
         break;
     case NODE_DICT:
         VISIT(dict);
+        break;
+    case NODE_SET:
+        VISIT(set);
         break;
     case NODE_MODULE:
         VISIT(module);
@@ -873,6 +877,33 @@ scan_var_visit_not(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
+visit_each_set_elem(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal elems = YUNDEF;
+    YogVal elem = YUNDEF;
+    PUSH_LOCALS2(env, elems, elem);
+
+    elems = NODE(node)->u.set.elems;
+    uint_t size = YogArray_size(env, elems);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        elem = YogArray_at(env, elems, i);
+        visit_node(env, visitor, elem, data);
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
+scan_var_visit_set(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    visit_each_set_elem(env, visitor, node, data);
+    RETURN_VOID(env);
+}
+
+static void
 scan_var_init_visitor(AstVisitor* visitor)
 {
     visitor->visit_array = scan_var_visit_array;
@@ -897,6 +928,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_nonlocal = scan_var_visit_nonlocal;
     visitor->visit_not = scan_var_visit_not;
     visitor->visit_return = scan_var_visit_break;
+    visitor->visit_set = scan_var_visit_set;
     visitor->visit_stmt = visit_node;
     visitor->visit_stmts = scan_var_visit_stmts;
     visitor->visit_subscript = scan_var_visit_subscript;
@@ -2787,6 +2819,23 @@ compile_visit_not(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
+compile_visit_set(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal elems = YUNDEF;
+    PUSH_LOCAL(env, elems);
+
+    visit_each_set_elem(env, visitor, node, data);
+
+    uint_t lineno = NODE(node)->lineno;
+    elems = NODE(node)->u.set.elems;
+    uint_t size = YogArray_size(env, elems);
+    CompileData_add_make_set(env, data, lineno, size);
+
+    RETURN_VOID(env);
+}
+
+static void
 compile_init_visitor(AstVisitor* visitor)
 {
     visitor->visit_array = compile_visit_array;
@@ -2811,6 +2860,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_nonlocal = NULL;
     visitor->visit_not = compile_visit_not;
     visitor->visit_return = compile_visit_return;
+    visitor->visit_set = compile_visit_set;
     visitor->visit_stmt = visit_node;
     visitor->visit_stmts = compile_visit_stmts;
     visitor->visit_subscript = compile_visit_subscript;
