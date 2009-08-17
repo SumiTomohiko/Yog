@@ -338,4 +338,43 @@ TypeError: unsupported operand type\(s\) for //: 'Float' and 'Symbol'
 puts(3.1415926535 // :foo)
 """, stderr=test_stderr)
 
+    def test_power0(self):
+        self._test("""
+# Float ** Fixnum
+print(3.1415926535 ** 42)
+""", "7.59092e+20")
+
+    def test_power10(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+  File builtin, in Float#\*\*
+ZeroDivisionError: 0.0 cannot be raised to a negative power
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Float ** Fixnum
+print(0.0 ** (- 42))
+""", stderr=test_stderr)
+
+    def test_power20(self):
+        self._test("""
+print(3.1415926535 ** 2.71828183)
+""", "22.4592")
+
+    def test_power30(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+  File builtin, in Float#\*\*
+ZeroDivisionError: 0.0 cannot be raised to a negative power
+""", stderr)
+            assert m is not None
+
+        self._test("""
+# Float ** Float
+print(0.0 ** (- 3.1415926535))
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
