@@ -1079,4 +1079,14 @@ print(42 ** (- 26))
 print(42 ** 26)
 """, "1601332619247764283850260201342556799238144")
 
+    def test_power70(self):
+        self._test("""
+print(1 ** 4611686018427387904)
+""", "1")
+
+    def test_power80(self):
+        self._test("""
+print(42 ** 3.1415926535)
+""", "125773")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
