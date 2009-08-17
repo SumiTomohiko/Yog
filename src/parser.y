@@ -1268,6 +1268,11 @@ factor(A) ::= power(B). {
 power(A) ::= postfix_expr(B). {
     A = B;
 }
+power(A) ::= postfix_expr(B) STAR_STAR factor(C). {
+    uint_t lineno = NODE_LINENO(B);
+    ID id = YogVM_intern(env, env->vm, "**");
+    A = FuncCall_new2(env, lineno, B, id, C);
+}
 
 postfix_expr(A) ::= atom(B). {
     A = B;
