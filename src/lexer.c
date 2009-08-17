@@ -493,10 +493,8 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                     } while (isdigit(c2));
                     PUSHBACK(c2);
 
-                    float f = 0;
                     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-                    YogVal body = PTR_AS(YogString, buffer)->body;
-                    sscanf(PTR_AS(YogCharArray, body)->items, "%f", &f);
+                    double f = strtod(STRING_CSTR(buffer), NULL);
                     YogVal val = YogFloat_new(env);
                     PTR_AS(YogFloat, val)->val = f;
                     SET_STATE(LS_OP);

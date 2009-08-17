@@ -1,3 +1,4 @@
+#include <math.h>
 #include "gmp.h"
 #include "yog/array.h"
 #include "yog/bignum.h"
@@ -10,8 +11,6 @@
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
-
-#define BIGNUM2FLOAT(bignum)    mpz_get_d(BIGNUM_NUM(bignum))
 
 static YogVal
 YogBignum_to_s(YogEnv* env, YogVal self)
@@ -237,7 +236,7 @@ divide_int(YogEnv* env, YogVal self, int_t right)
     }
 
     result = YogFloat_new(env);
-    FLOAT_NUM(result) = BIGNUM2FLOAT(self) / right;
+    FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(self)) / right;
 
     RETURN(env, result);
 }
@@ -254,7 +253,7 @@ divide_float(YogEnv* env, YogVal self, double right)
     }
 
     result = YogFloat_new(env);
-    FLOAT_NUM(result) = BIGNUM2FLOAT(self) / right;
+    FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(self)) / right;
 
     RETURN(env, result);
 }
@@ -271,7 +270,9 @@ divide_bignum(YogEnv* env, YogVal self, YogVal bignum)
     }
 
     result = YogFloat_new(env);
+#define BIGNUM2FLOAT(bignum)    mpz_get_d(BIGNUM_NUM(bignum))
     FLOAT_NUM(result) = BIGNUM2FLOAT(self) / BIGNUM2FLOAT(bignum);
+#undef BIGNUM2FLOAT
 
     RETURN(env, result);
 }
@@ -782,13 +783,30 @@ YogBignum_power(YogEnv* env, YogVal self, YogVal right)
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (IS_OBJ_OF(env, right, cFloat)) {
-        /* TODO */
+        double f = mpz_get_d(BIGNUM_NUM(self));
+        retval = YogFloat_new(env);
+        FLOAT_NUM(retval) = pow(f, FLOAT_NUM(right));
+        RETURN(env, retval);
     }
 
     YogError_raise_binop_type_error(env, self, right, "**");
 
     /* NOTREACHED */
     RETURN(env, YUNDEF);
+}
+
+static YogVal
+power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal right = YUNDEF;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, right, retval);
+
+    right = YogArray_at(env, args, 0);
+    retval = YogBignum_power(env, self, right);
+
+    RETURN(env, retval);
 }
 
 YogVal
@@ -803,6 +821,7 @@ YogBignum_klass_new(YogEnv* env)
     DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("&", and);
     DEFINE_METHOD("*", multiply);
+    DEFINE_METHOD("**", power);
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-", subtract);
