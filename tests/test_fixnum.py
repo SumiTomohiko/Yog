@@ -1044,4 +1044,39 @@ puts(~ 42)
 """, """-43
 """)
 
+    def test_power0(self):
+        self._test("""
+print(2 ** 3)
+""", "8")
+
+    def test_power10(self):
+        self._test("""
+print(0 ** 42)
+""", "0")
+
+    def test_power20(self):
+        self._test("""
+print(1 ** 42)
+""", "1")
+
+    def test_power30(self):
+        self._test("""
+print((- 1) ** 42)
+""", "1")
+
+    def test_power40(self):
+        self._test("""
+print((- 1) ** 3)
+""", "-1")
+
+    def test_power50(self):
+        self._test("""
+print(42 ** (- 26))
+""", "6.2448e-43")
+
+    def test_power60(self):
+        self._test("""
+print(42 ** 26)
+""", "1601332619247764283850260201342556799238144")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
