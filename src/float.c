@@ -217,12 +217,33 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return div(env, self, right, "//");
 }
 
-YogVal
-YogFloat_power(YogEnv* env, YogVal self, int_t exp)
+static YogVal
+power_float(YogEnv* env, YogVal self, double exp)
 {
     SAVE_ARG(env, self);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
+
+    if (FLOAT_NUM(self) == 0.0) {
+        YogError_raise_ZeroDivisionError(env, "0.0 cannot be raised to a negative power");
+    }
+
+    retval = YogFloat_new(env);
+    FLOAT_NUM(retval) = pow(FLOAT_NUM(self), exp);
+
+    RETURN(env, retval);
+}
+
+static YogVal
+power_int(YogEnv* env, YogVal self, int_t exp)
+{
+    SAVE_ARG(env, self);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    if (FLOAT_NUM(self) == 0.0) {
+        YogError_raise_ZeroDivisionError(env, "0.0 cannot be raised to a negative power");
+    }
 
     retval = YogFloat_new(env);
     FLOAT_NUM(retval) = pow(FLOAT_NUM(self), (double)exp);
@@ -231,23 +252,57 @@ YogFloat_power(YogEnv* env, YogVal self, int_t exp)
 }
 
 YogVal
+YogFloat_power(YogEnv* env, YogVal self, int_t exp)
+{
+    return power_int(env, self, exp);
+}
+
+static YogVal
+power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    YogVal right = YUNDEF;
+    PUSH_LOCALS2(env, retval, right);
+
+    right = YogArray_at(env, args, 0);
+    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+
+    if (IS_FIXNUM(right)) {
+        retval = power_int(env, self, VAL2INT(right));
+        RETURN(env, retval);
+    }
+    else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        retval = power_float(env, self, FLOAT_NUM(right));
+        RETURN(env, retval);
+    }
+
+    YogError_raise_binop_type_error(env, self, right, "**");
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
+YogVal
 YogFloat_klass_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
-
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_new(env, "Float", env->vm->cObject);
     YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_method(env, klass, "-self", negative);
-    YogKlass_define_method(env, klass, "+self", positive);
-    YogKlass_define_method(env, klass, "to_s", to_s);
-    YogKlass_define_method(env, klass, "+", add);
-    YogKlass_define_method(env, klass, "-", subtract);
     YogKlass_define_method(env, klass, "*", multiply);
+    YogKlass_define_method(env, klass, "**", power);
+    YogKlass_define_method(env, klass, "+", add);
+    YogKlass_define_method(env, klass, "+self", positive);
+    YogKlass_define_method(env, klass, "-", subtract);
+    YogKlass_define_method(env, klass, "-self", negative);
     YogKlass_define_method(env, klass, "/", divide);
     YogKlass_define_method(env, klass, "//", floor_divide);
+    YogKlass_define_method(env, klass, "to_s", to_s);
 
     RETURN(env, klass);
 }
