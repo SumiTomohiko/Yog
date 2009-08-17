@@ -1,3 +1,4 @@
+#include <math.h>
 #include <gmp.h>
 #include "yog/array.h"
 #include "yog/bignum.h"
@@ -38,7 +39,12 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
-    s = YogString_new_format(env, "%g", PTR_AS(YogFloat, self)->val);
+    if (isnan(FLOAT_NUM(self))) {
+        s = YogString_new_str(env, "NaN");
+    }
+    else {
+        s = YogString_new_format(env, "%g", PTR_AS(YogFloat, self)->val);
+    }
 
     RETURN(env, s);
 }
@@ -209,6 +215,19 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     YogVal right = YogArray_at(env, args, 0);
     return div(env, self, right, "//");
+}
+
+YogVal
+YogFloat_power(YogEnv* env, YogVal self, int_t exp)
+{
+    SAVE_ARG(env, self);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogFloat_new(env);
+    FLOAT_NUM(retval) = pow(FLOAT_NUM(self), (double)exp);
+
+    RETURN(env, retval);
 }
 
 YogVal

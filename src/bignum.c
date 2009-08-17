@@ -723,6 +723,74 @@ equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
+static YogVal
+YogBignum_clone(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogBignum_new(env);
+    mpz_set(BIGNUM_NUM(retval), BIGNUM_NUM(self));
+
+    RETURN(env, retval);
+}
+
+static YogVal
+power_int(YogEnv* env, YogVal self, int_t exp)
+{
+    SAVE_ARG(env, self);
+    YogVal f = YUNDEF;
+    YogVal bignum = YUNDEF;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS3(env, f, bignum, retval);
+
+    if (exp < 0) {
+        f = YogFloat_new(env);
+        FLOAT_NUM(f) = 1 / mpz_get_d(BIGNUM_NUM(self));
+        retval = YogFloat_power(env, f, - exp);
+        RETURN(env, retval);
+    }
+    else if (exp == 0) {
+        RETURN(env, INT2VAL(1));
+    }
+
+    bignum = YogBignum_clone(env, self);
+    int_t n = exp;
+    while (1 < n) {
+        mpz_mul(BIGNUM_NUM(bignum), BIGNUM_NUM(bignum), BIGNUM_NUM(self));
+        n--;
+    }
+
+    RETURN(env, bignum);
+}
+
+YogVal
+YogBignum_power(YogEnv* env, YogVal self, YogVal right)
+{
+    SAVE_ARGS2(env, self, right);
+    YogVal retval = YUNDEF;
+    YogVal f = YUNDEF;
+    YogVal bignum = YUNDEF;
+    YogVal mod = YUNDEF;
+    PUSH_LOCALS4(env, retval, f, bignum, mod);
+
+    if (IS_FIXNUM(right)) {
+        retval = power_int(env, self, VAL2INT(right));
+        RETURN(env, retval);
+    }
+    else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        /* TODO */
+    }
+
+    YogError_raise_binop_type_error(env, self, right, "**");
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
 YogVal
 YogBignum_klass_new(YogEnv* env)
 {

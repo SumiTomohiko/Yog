@@ -53,7 +53,7 @@ COMMON_SOURCES = arg.c \
 	vm.c
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\"
-LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -export-dynamic \
+LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -lm -export-dynamic \
 		 $(GMP_DIR)/.libs/libgmp.a
 
 EXTRA_PROGRAMS = yog-bdw yog-copying yog-mark-sweep yog-mark-swee-compact \

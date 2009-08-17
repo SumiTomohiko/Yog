@@ -28,6 +28,7 @@ YogVal YogBignum_lshift(YogEnv*, YogVal, int_t);
 YogVal YogBignum_modulo(YogEnv*, YogVal, YogVal);
 YogVal YogBignum_multiply(YogEnv*, YogVal, YogVal);
 YogVal YogBignum_or(YogEnv*, YogVal, YogVal);
+YogVal YogBignum_power(YogEnv*, YogVal, YogVal);
 YogVal YogBignum_subtract(YogEnv*, YogVal, YogVal);
 YogVal YogBignum_xor(YogEnv*, YogVal, YogVal);
 

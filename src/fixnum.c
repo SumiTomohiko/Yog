@@ -1,3 +1,4 @@
+#include <math.h>
 #include <gmp.h>
 #include "yog/array.h"
 #include "yog/bignum.h"
@@ -554,31 +555,106 @@ equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YTRUE);
 }
 
+static YogVal
+power_int(YogEnv* env, int_t base, int_t exp)
+{
+    SAVE_LOCALS(env);
+    YogVal retval = YUNDEF;
+    YogVal f = YUNDEF;
+    YogVal bignum = YUNDEF;
+    PUSH_LOCALS3(env, retval, f, bignum);
+
+    if (exp < 0) {
+        if (base == 0) {
+            YogError_raise_ZeroDivisionError(env, "0.0 cannot be raised to a negative power");
+        }
+
+        f = YogFloat_new(env);
+        FLOAT_NUM(f) = 1 / (double)base;
+        retval = YogFloat_power(env, f, - exp);
+        RETURN(env, retval);
+    }
+    else if (exp == 0) {
+        RETURN(env, INT2VAL(1));
+    }
+
+    int_t x = base;
+    int_t y = exp;
+    while (1 < y) {
+        int_t x2 = x * base;
+        if (!FIXABLE(x2) || ((x != 0) && (x2 / x != base))) {
+            bignum = YogBignum_from_int(env, base);
+            retval = YogBignum_power(env, bignum, INT2VAL(exp));
+            RETURN(env, retval);
+        }
+
+        x = x2;
+        y--;
+    }
+
+    RETURN(env, INT2VAL(x));
+}
+
+static YogVal
+power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    YogVal f = YUNDEF;
+    YogVal bignum = YUNDEF;
+    YogVal right = YUNDEF;
+    PUSH_LOCALS4(env, retval, f, bignum, right);
+
+    YOG_ASSERT(env, IS_FIXNUM(self), "self is not Fixnum");
+
+    right = YogArray_at(env, args, 0);
+
+    if (IS_FIXNUM(right)) {
+        retval = power_int(env, VAL2INT(self), VAL2INT(right));
+        RETURN(env, retval);
+    }
+    else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
+    }
+    else if (IS_OBJ_OF(env, right, cFloat)) {
+        double base = (double)VAL2INT(self);
+        double exp = FLOAT_NUM(right);
+        f = YogFloat_new(env);
+        FLOAT_NUM(f) = pow(base, exp);
+        RETURN(env, f);
+    }
+
+    YogError_raise_binop_type_error(env, self, right, "**");
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
 YogVal
 YogFixnum_klass_new(YogEnv* env)
 {
     YogVal klass = YogKlass_new(env, "Fixnum", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
-    DEFINE_METHOD("+", add);
-    DEFINE_METHOD("-", subtract);
+    DEFINE_METHOD("%", modulo);
+    DEFINE_METHOD("&", and);
     DEFINE_METHOD("*", multiply);
+    DEFINE_METHOD("**", power);
+    DEFINE_METHOD("+", add);
+    DEFINE_METHOD("+self", positive);
+    DEFINE_METHOD("-", subtract);
+    DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
-    DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("<", less);
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD(">>", rshift);
-    DEFINE_METHOD("|", or);
-    DEFINE_METHOD("&", and);
     DEFINE_METHOD("^", xor);
-    DEFINE_METHOD("+self", positive);
-    DEFINE_METHOD("-self", negative);
-    DEFINE_METHOD("~self", not);
-    DEFINE_METHOD("to_s", to_s);
-    DEFINE_METHOD("times", times);
-    DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("equal?", equal);
+    DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("times", times);
+    DEFINE_METHOD("to_s", to_s);
+    DEFINE_METHOD("|", or);
+    DEFINE_METHOD("~self", not);
 #undef DEFINE_METHOD
 
     POP_LOCALS(env);

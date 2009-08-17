@@ -22,6 +22,7 @@ typedef struct YogFloat YogFloat;
 /* src/float.c */
 YogVal YogFloat_klass_new(YogEnv*);
 YogVal YogFloat_new(YogEnv*);
+YogVal YogFloat_power(YogEnv*, YogVal, int_t);
 
 /* PROTOTYPE_END */
 
