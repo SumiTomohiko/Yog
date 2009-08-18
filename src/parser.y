@@ -726,6 +726,34 @@ AugmentedAssign_new(YogEnv* env, uint_t lineno, YogVal left, ID name, YogVal rig
     RETURN(env, assign);
 }
 
+static YogVal
+LogicalOr_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
+{
+    SAVE_ARGS2(env, left, right);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    node = YogNode_new(env, NODE_LOGICAL_OR, lineno);
+    NODE(node)->u.logical_or.left = left;
+    NODE(node)->u.logical_or.right = right;
+
+    RETURN(env, node);
+}
+
+static YogVal
+LogicalAnd_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
+{
+    SAVE_ARGS2(env, left, right);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    node = YogNode_new(env, NODE_LOGICAL_AND, lineno);
+    NODE(node)->u.logical_and.left = left;
+    NODE(node)->u.logical_and.right = right;
+
+    RETURN(env, node);
+}
+
 #define TOKEN(token)            PTR_AS(YogToken, (token))
 #define TOKEN_ID(token)         TOKEN((token))->u.id
 #define TOKEN_LINENO(token)     TOKEN((token))->lineno
@@ -1136,6 +1164,32 @@ assign_expr(A) ::= postfix_expr(B) EQUAL logical_or_expr(C). {
 assign_expr(A) ::= postfix_expr(B) augmented_assign_op(C) logical_or_expr(D). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), B, VAL2ID(C), D);
 }
+assign_expr(A) ::= postfix_expr(B) AND_AND_EQUAL logical_or_expr(C). {
+    YogVal expr = YUNDEF;
+    YogVal assign = YUNDEF;
+    PUSH_LOCALS2(env, expr, assign);
+
+    uint_t lineno = NODE_LINENO(B);
+    expr = LogicalAnd_new(env, lineno, B, C);
+    assign = Assign_new(env, lineno, B, expr);
+
+    POP_LOCALS(env);
+
+    A = assign;
+}
+assign_expr(A) ::= postfix_expr(B) BAR_BAR_EQUAL logical_or_expr(C). {
+    YogVal expr = YUNDEF;
+    YogVal assign = YUNDEF;
+    PUSH_LOCALS2(env, expr, assign);
+
+    uint_t lineno = NODE_LINENO(B);
+    expr = LogicalOr_new(env, lineno, B, C);
+    assign = Assign_new(env, lineno, B, expr);
+
+    POP_LOCALS(env);
+
+    A = assign;
+}
 assign_expr(A) ::= logical_or_expr(B). {
     A = B;
 }
@@ -1181,18 +1235,14 @@ logical_or_expr(A) ::= logical_and_expr(B). {
     A = B;
 }
 logical_or_expr(A) ::= logical_or_expr(B) BAR_BAR logical_and_expr(C). {
-    A = YogNode_new(env, NODE_LOGICAL_OR, NODE_LINENO(B));
-    NODE(A)->u.logical_or.left = B;
-    NODE(A)->u.logical_or.right = C;
+    A = LogicalOr_new(env, NODE_LINENO(B), B, C);
 }
 
 logical_and_expr(A) ::= not_expr(B). {
     A = B;
 }
 logical_and_expr(A) ::= logical_and_expr(B) AND_AND not_expr(C). {
-    A = YogNode_new(env, NODE_LOGICAL_AND, NODE_LINENO(B));
-    NODE(A)->u.logical_and.left = B;
-    NODE(A)->u.logical_and.right = C;
+    A = LogicalAnd_new(env, NODE_LINENO(B), B, C);
 }
 
 not_expr(A) ::= comparison(B). {
