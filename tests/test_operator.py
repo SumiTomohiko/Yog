@@ -212,4 +212,14 @@ foo ||= 42
 print(foo)
 """, "true")
 
+    def test_not_equal0(self):
+        self._test("""
+print(42 != 26)
+""", "true")
+
+    def test_not_equal10(self):
+        self._test("""
+print(42 != 42)
+""", "false")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
