@@ -829,9 +829,9 @@ YogBignum_klass_new(YogEnv* env)
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
     DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD("==", equal);
     DEFINE_METHOD(">>", rshift);
     DEFINE_METHOD("^", xor);
-    DEFINE_METHOD("equal?", equal);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
     DEFINE_METHOD("|", or);

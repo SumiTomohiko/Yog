@@ -1262,6 +1262,9 @@ comparison(A) ::= xor_expr(B) comp_op(C) xor_expr(D). {
     A = FuncCall_new2(env, lineno, B, id, D);
 }
 
+comp_op(A) ::= EQUAL_EQUAL(B). {
+    A = B;
+}
 comp_op(A) ::= LESS(B). {
     A = B;
 }

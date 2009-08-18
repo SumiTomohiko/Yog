@@ -10,17 +10,27 @@ class TestFixnum(TestCase):
 puts(42 + 1)
 """, "43\n")
 
-    def test_compare0(self):
+    def test_equal0(self):
+        self._test("""
+print(42 == 26)
+""", "false")
+
+    def test_equal10(self):
+        self._test("""
+print(42 == 42)
+""", "true")
+
+    def test_less0(self):
         self._test("""
 puts(0 < 42)
 """, "true\n")
 
-    def test_compare10(self):
+    def test_less10(self):
         self._test("""
 puts(42 < 0)
 """, "false\n")
 
-    def test_compare20(self):
+    def test_less20(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>

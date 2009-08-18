@@ -51,9 +51,11 @@ YogSymbol_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_new(env, "Symbol", env->vm->cObject);
-    YogKlass_define_method(env, klass, "equal?", equal);
-    YogKlass_define_method(env, klass, "hash", hash);
-    YogKlass_define_method(env, klass, "to_s", to_s);
+#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    DEFINE_METHOD("==", equal);
+    DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("to_s", to_s);
+#undef DEFINE_METHOD
 
     RETURN(env, klass);
 }

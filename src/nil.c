@@ -40,15 +40,19 @@ equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 YogVal
 YogNil_klass_new(YogEnv* env)
 {
-    YogVal klass = YogKlass_new(env, "Nil", env->vm->cObject);
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    YogKlass_define_method(env, klass, "equal?", equal);
-    YogKlass_define_method(env, klass, "hash", hash);
-    YogKlass_define_method(env, klass, "to_s", to_s);
+    klass = YogKlass_new(env, "Nil", env->vm->cObject);
 
-    POP_LOCALS(env);
-    return klass;
+#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    DEFINE_METHOD("==", equal);
+    DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("to_s", to_s);
+#undef DEFINE_METHOD
+
+    RETURN(env, klass);
 }
 
 /**

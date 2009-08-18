@@ -731,17 +731,25 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         }
         break;
     case '=':
-        SET_STATE(LS_EXPR);
+        {
+            SET_STATE(LS_EXPR);
 
-        c = NEXTC();
-        if (c == '~') {
-            RETURN_ID_TOKEN(TK_EQUAL_TILDA, "=~");
-        }
-        else if (c == '>') {
-            RETURN_TOKEN(TK_EQUAL_GREATER);
-        }
-        else {
-            RETURN_TOKEN(TK_EQUAL);
+            char c2 = NEXTC();
+            switch (c2) {
+            case '~':
+                RETURN_ID_TOKEN(TK_EQUAL_TILDA, "=~");
+                break;
+            case '=':
+                RETURN_ID_TOKEN(TK_EQUAL_EQUAL, "==");
+                break;
+            case '>':
+                RETURN_TOKEN(TK_EQUAL_GREATER);
+                break;
+            default:
+                PUSHBACK(c2);
+                RETURN_TOKEN(TK_EQUAL);
+                break;
+            }
         }
         break;
     case '<':

@@ -186,9 +186,11 @@ YogObject_boot(YogEnv* env, YogVal cObject)
 {
     SAVE_ARG(env, cObject);
 
-    YogKlass_define_method(env, cObject, "equal?", equal);
-    YogKlass_define_method(env, cObject, "hash", hash);
-    YogKlass_define_method(env, cObject, "to_s", to_s);
+#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, cObject, name, f)
+    DEFINE_METHOD("==", equal);
+    DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("to_s", to_s);
+#undef DEFINE_METHOD
     YogKlass_define_property(env, cObject, "class", get_klass, NULL);
 
     RETURN_VOID(env);

@@ -972,13 +972,13 @@ YogString_klass_new(YogEnv* env)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD("==", equal);
     DEFINE_METHOD("=~", match);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", assign_subscript);
     DEFINE_METHOD("each_byte", each_byte);
     DEFINE_METHOD("each_char", each_char);
     DEFINE_METHOD("each_line", each_line);
-    DEFINE_METHOD("equal?", equal);
     DEFINE_METHOD("gsub", gsub);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);

@@ -612,7 +612,7 @@ YogTable_lookup_str(YogEnv* env, YogVal table, const char* key, YogVal* value)
 static BOOL
 compare_val(YogEnv* env, YogVal a, YogVal b)
 {
-    YogVal val = YogEval_call_method1(env, a, "equal?", b);
+    YogVal val = YogEval_call_method1(env, a, "==", b);
     if (YOG_TEST(val)) {
         return TRUE;
     }
