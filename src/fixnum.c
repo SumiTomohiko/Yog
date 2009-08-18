@@ -317,9 +317,11 @@ static YogVal
 less(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal n = YogArray_at(env, args, 0);
 
-    CHECK_ARGS(self, n);
+    YogVal n = YogArray_at(env, args, 0);
+    if (!IS_FIXNUM(n)) {
+        YogError_raise_binop_type_error(env, self, n, "<");
+    }
 
     YogVal retval;
     if (VAL2INT(self) < VAL2INT(n)) {

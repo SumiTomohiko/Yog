@@ -10,15 +10,28 @@ class TestFixnum(TestCase):
 puts(42 + 1)
 """, "43\n")
 
-    def test_compare1(self):
+    def test_compare0(self):
         self._test("""
 puts(0 < 42)
 """, "true\n")
 
-    def test_compare2(self):
+    def test_compare10(self):
         self._test("""
 puts(42 < 0)
 """, "false\n")
+
+    def test_compare20(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in Fixnum#<
+TypeError: unsupported operand type\(s\) for <: 'Fixnum' and 'Nil'
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts(42 < nil)
+""", stderr=test_stderr)
 
     def test_to_s(self):
         self._test("""
