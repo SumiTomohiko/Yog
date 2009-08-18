@@ -589,24 +589,51 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
     case '+':
         {
             SET_STATE(LS_EXPR);
-            RETURN_ID_TOKEN1(TK_PLUS, c);
-            break;
-        }
-    case '-':
-        {
-            SET_STATE(LS_EXPR);
-            RETURN_ID_TOKEN1(TK_MINUS, c);
-            break;
-        }
-    case '*':
-        {
+
             char c2 = NEXTC();
-            if (c2 == '*') {
-                RETURN_TOKEN(TK_STAR_STAR);
+            if (c2 == '=') {
+                RETURN_TOKEN(TK_PLUS_EQUAL);
             }
             else {
                 PUSHBACK(c2);
-                SET_STATE(LS_EXPR);
+                RETURN_ID_TOKEN1(TK_PLUS, c);
+            }
+        }
+        break;
+    case '-':
+        {
+            SET_STATE(LS_EXPR);
+
+            char c2 = NEXTC();
+            if (c2 == '=') {
+                RETURN_TOKEN(TK_MINUS_EQUAL);
+            }
+            else {
+                PUSHBACK(c2);
+                RETURN_ID_TOKEN1(TK_MINUS, c);
+            }
+        }
+        break;
+    case '*':
+        {
+            SET_STATE(LS_EXPR);
+
+            char c2 = NEXTC();
+            if (c2 == '=') {
+                RETURN_TOKEN(TK_STAR_EQUAL);
+            }
+            else if (c2 == '*') {
+                char c3 = NEXTC();
+                if (c3 == '=') {
+                    RETURN_TOKEN(TK_STAR_STAR_EQUAL);
+                }
+                else {
+                    PUSHBACK(c3);
+                    RETURN_TOKEN(TK_STAR_STAR);
+                }
+            }
+            else {
+                PUSHBACK(c2);
                 RETURN_ID_TOKEN1(TK_STAR, c);
             }
         }
@@ -616,8 +643,18 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             SET_STATE(LS_EXPR);
 
             char c2 = NEXTC();
-            if (c2 == '/') {
-                RETURN_ID_TOKEN(TK_DIV_DIV, "//");
+            if (c2 == '=') {
+                RETURN_TOKEN(TK_DIV_EQUAL);
+            }
+            else if (c2 == '/') {
+                char c3 = NEXTC();
+                if (c3 == '=') {
+                    RETURN_TOKEN(TK_DIV_DIV_EQUAL);
+                }
+                else {
+                    PUSHBACK(c3);
+                    RETURN_ID_TOKEN(TK_DIV_DIV, "//");
+                }
             }
             else {
                 PUSHBACK(c2);
@@ -680,8 +717,18 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         }
         break;
     case '%':
-        SET_STATE(LS_EXPR);
-        RETURN_ID_TOKEN1(TK_PERCENT, c);
+        {
+            SET_STATE(LS_EXPR);
+
+            char c2 = NEXTC();
+            if (c2 == '=') {
+                RETURN_TOKEN(TK_PERCENT_EQUAL);
+            }
+            else {
+                PUSHBACK(c2);
+                RETURN_ID_TOKEN1(TK_PERCENT, c);
+            }
+        }
         break;
     case '=':
         SET_STATE(LS_EXPR);
@@ -728,7 +775,15 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                 }
                 else {
                     SET_STATE(LS_EXPR);
-                    RETURN_ID_TOKEN(TK_LSHIFT, "<<");
+
+                    char c3 = NEXTC();
+                    if (c3 == '=') {
+                        RETURN_TOKEN(TK_LSHIFT_EQUAL);
+                    }
+                    else {
+                        PUSHBACK(c3);
+                        RETURN_ID_TOKEN(TK_LSHIFT, "<<");
+                    }
                 }
             }
             else {
@@ -744,7 +799,14 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
 
             char c2 = NEXTC();
             if (c2 == '>') {
-                RETURN_ID_TOKEN(TK_RSHIFT, ">>");
+                char c3 = NEXTC();
+                if (c3 == '=') {
+                    RETURN_TOKEN(TK_RSHIFT_EQUAL);
+                }
+                else {
+                    PUSHBACK(c3);
+                    RETURN_ID_TOKEN(TK_RSHIFT, ">>");
+                }
             }
             else {
                 PUSHBACK(c2);
@@ -757,7 +819,10 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             SET_STATE(LS_EXPR);
 
             char c2 = NEXTC();
-            if (c2 == '|') {
+            if (c2 == '=') {
+                RETURN_TOKEN(TK_BAR_EQUAL);
+            }
+            else if (c2 == '|') {
                 RETURN_TOKEN(TK_BAR_BAR);
             }
             else {
@@ -771,7 +836,10 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             SET_STATE(LS_EXPR);
 
             char c2 = NEXTC();
-            if (c2 == '&') {
+            if (c2 == '=') {
+                RETURN_TOKEN(TK_AND_EQUAL);
+            }
+            else if (c2 == '&') {
                 RETURN_TOKEN(TK_AND_AND);
             }
             else {
@@ -785,8 +853,18 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         RETURN_TOKEN(TK_NOT);
         break;
     case '^':
-        SET_STATE(LS_EXPR);
-        RETURN_ID_TOKEN(TK_XOR, "^");
+        {
+            SET_STATE(LS_EXPR);
+
+            char c2 = NEXTC();
+            if (c2 == '=') {
+                RETURN_TOKEN(TK_XOR_EQUAL);
+            }
+            else {
+                PUSHBACK(c2);
+                RETURN_ID_TOKEN(TK_XOR, "^");
+            }
+        }
         break;
     case '~':
         SET_STATE(LS_EXPR);

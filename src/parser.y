@@ -712,6 +712,20 @@ Set_new(YogEnv* env, uint_t lineno, YogVal elems)
     RETURN(env, set);
 }
 
+static YogVal
+AugmentedAssign_new(YogEnv* env, uint_t lineno, YogVal left, ID name, YogVal right)
+{
+    SAVE_ARGS2(env, left, right);
+    YogVal expr = YUNDEF;
+    YogVal assign = YUNDEF;
+    PUSH_LOCALS2(env, expr, assign);
+
+    expr = FuncCall_new2(env, lineno, left, name, right);
+    assign = Assign_new(env, lineno, left, expr);
+
+    RETURN(env, assign);
+}
+
 #define TOKEN(token)            PTR_AS(YogToken, (token))
 #define TOKEN_ID(token)         TOKEN((token))->u.id
 #define TOKEN_LINENO(token)     TOKEN((token))->lineno
@@ -1119,8 +1133,48 @@ assign_expr(A) ::= postfix_expr(B) EQUAL logical_or_expr(C). {
     uint_t lineno = NODE_LINENO(B);
     A = Assign_new(env, lineno, B, C);
 }
+assign_expr(A) ::= postfix_expr(B) augmented_assign_op(C) logical_or_expr(D). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), B, VAL2ID(C), D);
+}
 assign_expr(A) ::= logical_or_expr(B). {
     A = B;
+}
+
+augmented_assign_op(A) ::= PLUS_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "+"));
+}
+augmented_assign_op(A) ::= MINUS_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "-"));
+}
+augmented_assign_op(A) ::= STAR_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "*"));
+}
+augmented_assign_op(A) ::= DIV_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "/"));
+}
+augmented_assign_op(A) ::= DIV_DIV_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "//"));
+}
+augmented_assign_op(A) ::= PERCENT_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "%"));
+}
+augmented_assign_op(A) ::= BAR_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "|"));
+}
+augmented_assign_op(A) ::= AND_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "&"));
+}
+augmented_assign_op(A) ::= XOR_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "^"));
+}
+augmented_assign_op(A) ::= STAR_STAR_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "**"));
+}
+augmented_assign_op(A) ::= LSHIFT_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "<<"));
+}
+augmented_assign_op(A) ::= RSHIFT_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, ">>"));
 }
 
 logical_or_expr(A) ::= logical_and_expr(B). {

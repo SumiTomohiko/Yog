@@ -111,14 +111,53 @@ print(foo)
     def test_assign160(self):
         self._test("""
 foo = 42
-print(foo *= 26)
+print(foo **= 26)
 """, "1601332619247764283850260201342556799238144")
 
     def test_assign170(self):
         self._test("""
 foo = 42
-foo *= 26
+foo **= 26
 print(foo)
 """, "1601332619247764283850260201342556799238144")
+
+    def test_assign180(self):
+        self._test("""
+foo = 42
+print(foo %= 26)
+""", "16")
+
+    def test_assign190(self):
+        self._test("""
+foo = 42
+foo %= 26
+print(foo)
+""", "16")
+
+    def test_assign200(self):
+        self._test("""
+foo = 42
+print(foo <<= 26)
+""", "2818572288")
+
+    def test_assign210(self):
+        self._test("""
+foo = 42
+foo <<= 26
+print(foo)
+""", "2818572288")
+
+    def test_assign210(self):
+        self._test("""
+foo = 42
+print(foo >>= 26)
+""", "0")
+
+    def test_assign220(self):
+        self._test("""
+foo = 42
+foo >>= 26
+print(foo)
+""", "0")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
