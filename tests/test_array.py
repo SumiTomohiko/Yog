@@ -78,4 +78,49 @@ print(([42] + [26])[0])
 print(([42] + [26])[1])
 """, "26")
 
+    def test_to_s0(self):
+        self._test("""
+print([].to_s())
+""", "[]")
+
+    def test_to_s10(self):
+        self._test("""
+print([42].to_s())
+""", "[42]")
+
+    def test_to_s20(self):
+        self._test("""
+print([42, 26].to_s())
+""", "[42, 26]")
+
+    def test_to_s30(self):
+        self._test("""
+foo = []
+foo.push(foo)
+print(foo.to_s())
+""", "[...]")
+
+    def test_to_s40(self):
+        self._test("""
+foo = [42]
+foo.push(foo)
+print(foo.to_s())
+""", "[42, ...]")
+
+    def test_to_s50(self):
+        self._test("""
+foo = []
+foo.push(foo)
+foo.push(42)
+print(foo.to_s())
+""", "[..., 42]")
+
+    def test_to_s60(self):
+        self._test("""
+foo = []
+bar = { :baz => foo }
+foo.push(bar)
+print(foo.to_s())
+""", "[{ :baz => [...] }]")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
