@@ -1,11 +1,13 @@
 #include <string.h>
 #include "yog/array.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/object.h"
+#include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -314,6 +316,37 @@ YogArray_shift(YogEnv* env, YogVal self)
     RETURN(env, retval);
 }
 
+static YogVal
+to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal stack = YUNDEF;
+    YogVal s = YUNDEF;
+    YogVal t = YUNDEF;
+    YogVal elem = YUNDEF;
+    PUSH_LOCALS4(env, stack, s, t, elem);
+
+    stack = YogArray_new(env);
+    YogArray_push(env, stack, self);
+
+    s = YogString_new_str(env, "[");
+
+    uint_t size = YogArray_size(env, self);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        elem = YogArray_at(env, self, i);
+        t = YogEval_call_method0(env, elem, "to_s");
+        YogString_add(env, s, t);
+        if (i < size - 1) {
+            YogString_add_cstr(env, s, ", ");
+        }
+    }
+
+    YogString_add_cstr(env, s, "]");
+
+    RETURN(env, s);
+}
+
 YogVal
 YogArray_klass_new(YogEnv* env)
 {
@@ -329,6 +362,7 @@ YogArray_klass_new(YogEnv* env)
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("each", each);
+    DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
     YogKlass_define_property(env, klass, "size", get_size, NULL);
 
