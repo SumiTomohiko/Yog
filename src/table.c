@@ -612,13 +612,29 @@ YogTable_lookup_str(YogEnv* env, YogVal table, const char* key, YogVal* value)
 static BOOL
 compare_val(YogEnv* env, YogVal a, YogVal b)
 {
-    YogVal val = YogEval_call_method1(env, a, "==", b);
-    if (YOG_TEST(val)) {
-        return TRUE;
+    SAVE_ARGS2(env, a, b);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    SAVE_CURRENT_STAT(env, compare);
+
+    YogJmpBuf jmpbuf;
+    int_t status;
+    if ((status = setjmp(jmpbuf.buf)) == 0) {
+        PUSH_JMPBUF(env->thread, jmpbuf);
+        val = YogEval_call_method1(env, a, "==", b);
+        POP_JMPBUF(env);
     }
     else {
-        return FALSE;
+        RESTORE_STAT(env, compare);
+        RETURN(env, FALSE);
     }
+
+    if (YOG_TEST(val)) {
+        RETURN(env, TRUE);
+    }
+
+    RETURN(env, FALSE);
 }
 
 static int_t

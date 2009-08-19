@@ -732,28 +732,6 @@ YogString_hash(YogEnv* env, YogVal self)
 }
 
 static YogVal
-equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS4(env, self, args, kw, block);
-    YogVal obj = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, obj, retval);
-
-    obj = YogArray_at(env, args, 0);
-    if (STRING_ENCODING(self) != STRING_ENCODING(obj)) {
-        RETURN(env, YFALSE);
-    }
-
-    const char* s1 = STRING_CSTR(self);
-    const char* s2 = STRING_CSTR(obj);
-    if (strcmp(s1, s2) != 0) {
-        RETURN(env, YFALSE);
-    }
-
-    RETURN(env, YTRUE);
-}
-
-static YogVal
 hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -958,6 +936,30 @@ YogString_add_cstr(YogEnv* env, YogVal self, const char* s)
     RETURN_VOID(env);
 }
 
+static YogVal
+compare(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal obj = YUNDEF;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, obj, retval);
+
+    obj = YogArray_at(env, args, 0);
+    if (!IS_PTR(obj) || !IS_OBJ_OF(env, obj, cString)) {
+        YogError_raise_comparison_type_error(env, self, obj);
+    }
+
+    int_t n = strcmp(STRING_CSTR(self), STRING_CSTR(obj));
+    if (n < 0) {
+        RETURN(env, INT2VAL(-1));
+    }
+    else if (n == 0) {
+        RETURN(env, INT2VAL(n));
+    }
+
+    RETURN(env, INT2VAL(1));
+}
+
 YogVal
 YogString_klass_new(YogEnv* env)
 {
@@ -968,11 +970,12 @@ YogString_klass_new(YogEnv* env)
     klass = YogKlass_new(env, "String", env->vm->cObject);
 
     YogKlass_define_allocator(env, klass, allocate);
+    YogKlass_include_module(env, klass, env->vm->mComparable);
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("<<", lshift);
-    DEFINE_METHOD("==", equal);
+    DEFINE_METHOD("<=>", compare);
     DEFINE_METHOD("=~", match);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", assign_subscript);

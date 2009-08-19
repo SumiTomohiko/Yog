@@ -183,8 +183,8 @@ YogError_print_stacktrace(YogEnv* env)
 #undef PRINT
 }
 
-void
-YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const char* opname)
+static void
+raise_TypeError(YogEnv* env, const char* msg, YogVal left, YogVal right)
 {
     SAVE_ARGS2(env, left, right);
     YogVal left_klass = YUNDEF;
@@ -196,9 +196,17 @@ YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const ch
     const char* left_name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, left_klass)->name);
     const char* right_name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, right_klass)->name);
 
-    YogError_raise_TypeError(env, "unsupported operand type(s) for %s: '%s' and '%s'", opname, left_name, right_name);
+    YogError_raise_TypeError(env, msg, left_name, right_name);
 
     RETURN_VOID(env);
+}
+
+void
+YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const char* opname)
+{
+    char buffer[4096];
+    snprintf(buffer, array_sizeof(buffer), "unsupported operand type(s) for %s: '%%s' and '%%s'", opname);
+    raise_TypeError(env, buffer, left, right);
 }
 
 void
@@ -241,6 +249,12 @@ void
 YogError_raise_EOFError(YogEnv* env, const char* fmt, ...)
 {
     RAISE_FORMAT(env, eEOFError, fmt);
+}
+
+void
+YogError_raise_comparison_type_error(YogEnv* env, YogVal left, YogVal right)
+{
+    raise_TypeError(env, "comparison of %s with %s failed", left, right);
 }
 
 /**

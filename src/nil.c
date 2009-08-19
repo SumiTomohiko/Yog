@@ -18,25 +18,6 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return INT2VAL(2);
 }
 
-static YogVal
-equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS4(env, self, args, kw, block);
-    YogVal retval = YUNDEF;
-    YogVal obj = YUNDEF;
-    PUSH_LOCALS2(env, retval, obj);
-
-    obj = YogArray_at(env, args, 0);
-    if (IS_NIL(obj)) {
-        retval = YTRUE;
-    }
-    else {
-        retval = YFALSE;
-    }
-
-    RETURN(env, retval);
-}
-
 YogVal
 YogNil_klass_new(YogEnv* env)
 {
@@ -45,9 +26,7 @@ YogNil_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_new(env, "Nil", env->vm->cObject);
-
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
-    DEFINE_METHOD("==", equal);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD

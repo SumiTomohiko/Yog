@@ -703,25 +703,22 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+compare(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal retval = YUNDEF;
     YogVal obj = YUNDEF;
-    PUSH_LOCALS2(env, retval, obj);
+    PUSH_LOCAL(env, obj);
 
     obj = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, IS_PTR(obj), "argument is not pointer");
-    YOG_ASSERT(env, IS_OBJ_OF(env, obj, cBignum), "object is not Bignum");
-
-    if (mpz_cmp(BIGNUM_NUM(self), BIGNUM_NUM(obj)) == 0) {
-        retval = YTRUE;
+    int_t n = mpz_cmp(BIGNUM_NUM(self), BIGNUM_NUM(obj));
+    if (n < 0) {
+        RETURN(env, INT2VAL(-1));
     }
-    else {
-        retval = YFALSE;
+    else if (n == 0) {
+        RETURN(env, INT2VAL(n));
     }
 
-    RETURN(env, retval);
+    RETURN(env, INT2VAL(1));
 }
 
 static YogVal
@@ -817,6 +814,7 @@ YogBignum_klass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     klass = YogKlass_new(env, "Bignum", env->vm->cObject);
+    YogKlass_include_module(env, klass, env->vm->mComparable);
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, (name), (f))
     DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("&", and);
@@ -829,7 +827,7 @@ YogBignum_klass_new(YogEnv* env)
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
     DEFINE_METHOD("<<", lshift);
-    DEFINE_METHOD("==", equal);
+    DEFINE_METHOD("<=>", compare);
     DEFINE_METHOD(">>", rshift);
     DEFINE_METHOD("^", xor);
     DEFINE_METHOD("hash", hash);

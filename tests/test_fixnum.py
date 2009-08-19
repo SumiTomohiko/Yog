@@ -30,12 +30,53 @@ puts(0 < 42)
 puts(42 < 0)
 """, "false\n")
 
+    def test_less_equal0(self):
+        self._test("""
+print(42 <= 26)
+""", "false")
+
+    def test_less_equal10(self):
+        self._test("""
+print(26 <= 42)
+""", "true")
+
+    def test_less_equal20(self):
+        self._test("""
+print(42 <= 42)
+""", "true")
+
+    def test_greater0(self):
+        self._test("""
+print(42 > 26)
+""", "true")
+
+    def test_greater10(self):
+        self._test("""
+print(26 > 42)
+""", "false")
+
+    def test_greater_equal0(self):
+        self._test("""
+print(26 >= 42)
+""", "false")
+
+    def test_greater_equal10(self):
+        self._test("""
+print(42 >= 26)
+""", "true")
+
+    def test_greater_equal20(self):
+        self._test("""
+print(42 >= 42)
+""", "true")
+
     def test_less20(self):
         def test_stderr(stderr):
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Fixnum#<
-TypeError: unsupported operand type\(s\) for <: 'Fixnum' and 'Nil'
+  File builtin, in <
+  File builtin, in Fixnum#<=>
+TypeError: comparison of Fixnum with Nil failed
 """, stderr)
             assert m is not None
 

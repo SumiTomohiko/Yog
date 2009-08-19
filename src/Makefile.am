@@ -19,6 +19,7 @@ COMMON_SOURCES = arg.c \
 	builtins.c \
 	classmethod.c \
 	code.c \
+	comparable.c \
 	compile.c \
 	dict.c \
 	encoding.c \

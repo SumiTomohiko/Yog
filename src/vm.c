@@ -16,6 +16,7 @@
 #include "yog/builtins.h"
 #include "yog/classmethod.h"
 #include "yog/code.h"
+#include "yog/comparable.h"
 #include "yog/compile.h"
 #include "yog/dict.h"
 #include "yog/encoding.h"
@@ -213,6 +214,8 @@ setup_klasses(YogEnv* env, YogVM* vm)
     YogKlass_klass_init(env, vm->cKlass);
     vm->cProperty = YogProperty_klass_new(env);
 
+    vm->mComparable = YogComparable_new(env);
+
     vm->cArray = YogArray_klass_new(env);
     vm->cBignum = YogBignum_klass_new(env);
     vm->cBool = YogBool_klass_new(env);
@@ -400,6 +403,8 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eValueError);
     KEEP(eZeroDivisionError);
 
+    KEEP(mComparable);
+
     KEEP(pkgs);
     KEEP(search_path);
     KEEP(encodings);
@@ -469,6 +474,8 @@ YogVM_init(YogVM* vm)
     INIT(eTypeError);
     INIT(eValueError);
     INIT(eZeroDivisionError);
+
+    INIT(mComparable);
 
     vm->pkgs = PTR2VAL(NULL);
     initialize_read_write_lock(&vm->pkgs_lock);

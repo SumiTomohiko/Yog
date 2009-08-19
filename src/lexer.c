@@ -740,7 +740,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                 RETURN_ID_TOKEN(TK_EQUAL_TILDA, "=~");
                 break;
             case '=':
-                RETURN_ID_TOKEN(TK_EQUAL_EQUAL, "==");
+                RETURN_TOKEN(TK_EQUAL_EQUAL);
                 break;
             case '>':
                 RETURN_TOKEN(TK_EQUAL_GREATER);
@@ -755,7 +755,8 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
     case '<':
         {
             char c2 = NEXTC();
-            if (c2 == '<') {
+            switch (c2) {
+            case '<':
                 if (PTR_AS(YogLexer, lexer)->state == LS_EXPR) {
                     char c3 = NEXTC();
                     if (!isalpha(c3) && (c3 != '_')) {
@@ -793,11 +794,15 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                         RETURN_ID_TOKEN(TK_LSHIFT, "<<");
                     }
                 }
-            }
-            else {
+                break;
+            case '=':
                 SET_STATE(LS_EXPR);
+                RETURN_TOKEN(TK_LESS_EQUAL);
+                break;
+            default:
                 PUSHBACK(c2);
-                RETURN_ID_TOKEN1(TK_LESS, c);
+                RETURN_TOKEN(TK_LESS);
+                break;
             }
         }
         break;
@@ -806,19 +811,28 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             SET_STATE(LS_EXPR);
 
             char c2 = NEXTC();
-            if (c2 == '>') {
-                char c3 = NEXTC();
-                if (c3 == '=') {
-                    RETURN_TOKEN(TK_RSHIFT_EQUAL);
+            switch (c2) {
+            case '>':
+                {
+                    char c3 = NEXTC();
+                    switch (c3) {
+                    case '=':
+                        RETURN_TOKEN(TK_RSHIFT_EQUAL);
+                        break;
+                    default:
+                        PUSHBACK(c3);
+                        RETURN_ID_TOKEN(TK_RSHIFT, ">>");
+                        break;
+                    }
                 }
-                else {
-                    PUSHBACK(c3);
-                    RETURN_ID_TOKEN(TK_RSHIFT, ">>");
-                }
-            }
-            else {
+                break;
+            case '=':
+                RETURN_TOKEN(TK_GREATER_EQUAL);
+                break;
+            default:
                 PUSHBACK(c2);
-                RETURN_ID_TOKEN1(TK_GREATER, c);
+                RETURN_TOKEN(TK_GREATER);
+                break;
             }
         }
         break;
@@ -871,8 +885,18 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         }
         break;
     case '!':
-        SET_STATE(LS_EXPR);
-        RETURN_TOKEN(TK_NOT);
+        {
+            SET_STATE(LS_EXPR);
+
+            char c2 = NEXTC();
+            if (c2 == '=') {
+                RETURN_TOKEN(TK_NOT_EQUAL);
+            }
+            else {
+                PUSHBACK(c2);
+                RETURN_TOKEN(TK_NOT);
+            }
+        }
         break;
     case '^':
         {

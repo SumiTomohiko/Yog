@@ -69,6 +69,8 @@ struct YogVM {
     YogVal eValueError;
     YogVal eZeroDivisionError;
 
+    YogVal mComparable;
+
     YogVal pkgs;
     pthread_rwlock_t pkgs_lock;
     YogVal search_path;

@@ -314,26 +314,6 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-less(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS4(env, self, args, kw, block);
-
-    YogVal n = YogArray_at(env, args, 0);
-    if (!IS_FIXNUM(n)) {
-        YogError_raise_binop_type_error(env, self, n, "<");
-    }
-
-    YogVal retval;
-    if (VAL2INT(self) < VAL2INT(n)) {
-        retval = YTRUE;
-    }
-    else {
-        retval = YFALSE;
-    }
-    RETURN(env, retval);
-}
-
-static YogVal
 do_rshift(YogEnv* env, int_t val, int_t width)
 {
     YOG_ASSERT(env, 0 <= width, "negative width (%d)", width);
@@ -543,21 +523,6 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS4(env, self, args, kw, block);
-    YogVal obj = YUNDEF;
-    PUSH_LOCAL(env, obj);
-
-    obj = YogArray_at(env, args, 0);
-    if (!IS_FIXNUM(obj) || (VAL2INT(self) != VAL2INT(obj))) {
-        RETURN(env, YFALSE);
-    }
-
-    RETURN(env, YTRUE);
-}
-
-static YogVal
 power_int(YogEnv* env, int_t base, int_t exp)
 {
     SAVE_LOCALS(env);
@@ -631,11 +596,39 @@ power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YUNDEF);
 }
 
+static YogVal
+compare(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal obj = YUNDEF;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, obj, retval);
+
+    obj = YogArray_at(env, args, 0);
+    if (!IS_FIXNUM(obj)) {
+        YogError_raise_comparison_type_error(env, self, obj);
+    }
+
+    int_t n = VAL2INT(self) - VAL2INT(obj);
+    if (n < 0) {
+        RETURN(env, INT2VAL(-1));
+    }
+    else if (n == 0) {
+        RETURN(env, INT2VAL(n));
+    }
+
+    RETURN(env, INT2VAL(1));
+}
+
 YogVal
 YogFixnum_klass_new(YogEnv* env)
 {
-    YogVal klass = YogKlass_new(env, "Fixnum", env->vm->cObject);
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
+
+    klass = YogKlass_new(env, "Fixnum", env->vm->cObject);
+    YogKlass_include_module(env, klass, env->vm->mComparable);
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
     DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("&", and);
@@ -647,9 +640,8 @@ YogFixnum_klass_new(YogEnv* env)
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
-    DEFINE_METHOD("<", less);
     DEFINE_METHOD("<<", lshift);
-    DEFINE_METHOD("==", equal);
+    DEFINE_METHOD("<=>", compare);
     DEFINE_METHOD(">>", rshift);
     DEFINE_METHOD("^", xor);
     DEFINE_METHOD("hash", hash);
@@ -659,8 +651,7 @@ YogFixnum_klass_new(YogEnv* env)
     DEFINE_METHOD("~self", not);
 #undef DEFINE_METHOD
 
-    POP_LOCALS(env);
-    return klass;
+    RETURN(env, klass);
 }
 
 /**

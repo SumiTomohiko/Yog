@@ -330,7 +330,7 @@ inst finish
 (val)
 ()
 {
-    POP_BUF();
+    POP_JMPBUF(env);
     POP_FRAME();
     RETURN(env, val);
 }

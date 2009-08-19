@@ -151,6 +151,7 @@ open(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         PUSH_JMPBUF(env->thread, jmpbuf);
         retval = YogCallable_call1(env, block, file);
         do_close(env, file);
+        POP_JMPBUF(env);
     }
     else {
         RESTORE_STAT(env, open);

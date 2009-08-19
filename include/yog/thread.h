@@ -173,6 +173,10 @@ typedef struct YogThread YogThread;
     jmpbuf.prev = PTR_AS(YogThread, (thread))->jmp_buf_list; \
     PTR_AS(YogThread, (thread))->jmp_buf_list = &jmpbuf; \
 } while (0)
+#define POP_JMPBUF(env)     do { \
+    YogJmpBuf* prev = PTR_AS(YogThread, env->thread)->jmp_buf_list->prev; \
+    PTR_AS(YogThread, env->thread)->jmp_buf_list = prev; \
+} while (0)
 
 #define SAVE_CURRENT_STAT(env, name)    \
     YogVal name##_cur_frame = PTR_AS(YogThread, env->thread)->cur_frame; \

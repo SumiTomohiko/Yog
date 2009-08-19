@@ -131,7 +131,6 @@ YogVal
 YogKlass_new(YogEnv* env, const char* name, YogVal super)
 {
     SAVE_ARG(env, super);
-
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
@@ -153,6 +152,7 @@ YogKlass_new(YogEnv* env, const char* name, YogVal super)
     PTR_AS(YogKlass, klass)->exec_set_descr = NULL;
     PTR_AS(YogKlass, klass)->call = NULL;
     PTR_AS(YogKlass, klass)->exec = NULL;
+
     RETURN(env, klass);
 }
 

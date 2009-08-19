@@ -18,6 +18,7 @@ typedef struct YogModule YogModule;
  */
 
 /* src/module.c */
+void YogModule_define_function(YogEnv*, YogVal, const char*, void*);
 YogVal YogModule_klass_new(YogEnv*);
 YogVal YogModule_new(YogEnv*);
 

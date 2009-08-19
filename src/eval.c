@@ -11,6 +11,7 @@
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/function.h"
+#include "yog/misc.h"
 #include "yog/module.h"
 #include "yog/package.h"
 #include "yog/parser.h"
@@ -225,10 +226,6 @@ YogEval_mainloop(YogEnv* env)
 {
     SAVE_LOCALS(env);
 
-#define POP_BUF()   do { \
-    YogJmpBuf* prev = PTR_AS(YogThread, env->thread)->jmp_buf_list->prev; \
-    PTR_AS(YogThread, env->thread)->jmp_buf_list = prev; \
-} while (0)
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
 #undef CODE
 #define CODE        PTR_AS(YogCode, SCRIPT_FRAME(CUR_FRAME)->code)
@@ -256,7 +253,7 @@ YogEval_mainloop(YogEnv* env)
             }
         }
         if (!found) {
-            POP_BUF();
+            POP_JMPBUF(env);
             YogJmpBuf* list = PTR_AS(YogThread, env->thread)->jmp_buf_list;
             if (list != NULL) {
                 longjmp(list->buf, status);
@@ -385,10 +382,9 @@ YogEval_mainloop(YogEnv* env)
 #undef POP
     }
 
-    POP_BUF();
+    POP_JMPBUF(env);
 #undef CODE
 #undef PC
-#undef POP_BUF
 
     POP_FRAME();
 

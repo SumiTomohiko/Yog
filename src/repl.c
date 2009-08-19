@@ -26,19 +26,21 @@ eval(YogEnv* env, YogVal pkg, YogVal src)
     YogVal cur_frame = YUNDEF;
     PUSH_LOCALS3(env, stmts, code, cur_frame);
 
-    YogJmpBuf jmpbuf;
-    PUSH_JMPBUF(env->thread, jmpbuf);
     SAVE_CURRENT_STAT(env, repl);
 
+    YogJmpBuf jmpbuf;
     int_t status;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
+        PUSH_JMPBUF(env->thread, jmpbuf);
+
         stmts = YogParser_parse(env, src);
         if (!IS_PTR(stmts)) {
             RETURN_VOID(env);
         }
         code = YogCompiler_compile_interactive(env, stmts);
-
         YogEval_eval_package(env, pkg, code);
+
+        POP_JMPBUF(env);
     }
     else {
         RESTORE_STAT(env, repl);

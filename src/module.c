@@ -1,3 +1,4 @@
+#include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
 #include "yog/module.h"
@@ -34,6 +35,19 @@ YogModule_new(YogEnv* env)
     PTR_AS(YogObj, module)->attrs = attrs;
 
     RETURN(env, module);
+}
+
+void
+YogModule_define_function(YogEnv* env, YogVal self, const char* name, void* f)
+{
+    SAVE_ARG(env, self);
+    YogVal func = YUNDEF;
+    PUSH_LOCAL(env, func);
+
+    func = YogNativeFunction_new(env, INVALID_ID, name, f);
+    YogObj_set_attr(env, self, name, func);
+
+    RETURN_VOID(env);
 }
 
 YogVal

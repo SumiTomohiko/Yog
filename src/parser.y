@@ -172,7 +172,6 @@ YogNode_new(YogEnv* env, YogNodeType type, uint_t lineno)
     return node;
 }
 
-#define NODE_NEW(type, lineno)  YogNode_new(env, (type), (lineno))
 #define NODE(v)                 PTR_AS(YogNode, (v))
 
 static YogVal
@@ -316,7 +315,7 @@ FuncCall_new(YogEnv* env, uint_t lineno, YogVal callee, YogVal args, YogVal bloc
 {
     SAVE_ARGS3(env, callee, args, blockarg);
 
-    YogVal node = NODE_NEW(NODE_FUNC_CALL, lineno);
+    YogVal node = YogNode_new(env, NODE_FUNC_CALL, lineno);
     NODE(node)->u.func_call.callee = callee;
     NODE(node)->u.func_call.args = args;
     NODE(node)->u.func_call.blockarg = blockarg;
@@ -327,7 +326,7 @@ FuncCall_new(YogEnv* env, uint_t lineno, YogVal callee, YogVal args, YogVal bloc
 static YogVal
 Variable_new(YogEnv* env, uint_t lineno, ID id)
 {
-    YogVal node = NODE_NEW(NODE_VARIABLE, lineno);
+    YogVal node = YogNode_new(env, NODE_VARIABLE, lineno);
     NODE(node)->u.variable.id = id;
 
     return node;
@@ -338,7 +337,7 @@ ExceptBody_new(YogEnv* env, uint_t lineno, YogVal type, ID var, YogVal stmts)
 {
     SAVE_ARGS2(env, type, stmts);
 
-    YogVal node = NODE_NEW(NODE_EXCEPT_BODY, lineno);
+    YogVal node = YogNode_new(env, NODE_EXCEPT_BODY, lineno);
     NODE(node)->u.except_body.type = type;
     NODE(node)->u.except_body.var = var;
     NODE(node)->u.except_body.stmts = stmts;
@@ -351,7 +350,7 @@ Except_new(YogEnv* env, uint_t lineno, YogVal head, YogVal excepts, YogVal else_
 {
     SAVE_ARGS3(env, head, excepts, else_);
 
-    YogVal node = NODE_NEW(NODE_EXCEPT, lineno);
+    YogVal node = YogNode_new(env, NODE_EXCEPT, lineno);
     NODE(node)->u.except.head = head;
     NODE(node)->u.except.excepts = excepts;
     NODE(node)->u.except.else_ = else_;
@@ -364,7 +363,7 @@ Finally_new(YogEnv* env, uint_t lineno, YogVal head, YogVal body)
 {
     SAVE_ARGS2(env, head, body);
 
-    YogVal node = NODE_NEW(NODE_FINALLY, lineno);
+    YogVal node = YogNode_new(env, NODE_FINALLY, lineno);
     NODE(node)->u.finally.head = head;
     NODE(node)->u.finally.body = body;
 
@@ -409,7 +408,7 @@ Next_new(YogEnv* env, uint_t lineno, YogVal expr)
 {
     SAVE_ARG(env, expr);
 
-    YogVal node = NODE_NEW(NODE_NEXT, lineno);
+    YogVal node = YogNode_new(env, NODE_NEXT, lineno);
     NODE(node)->u.next.expr = expr;
 
     RETURN(env, node);
@@ -420,7 +419,7 @@ Return_new(YogEnv* env, uint_t lineno, YogVal expr)
 {
     SAVE_ARG(env, expr);
 
-    YogVal node = NODE_NEW(NODE_RETURN, lineno);
+    YogVal node = YogNode_new(env, NODE_RETURN, lineno);
     NODE(node)->u.return_.expr = expr;
 
     RETURN(env, node);
@@ -533,7 +532,7 @@ Assign_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
 {
     SAVE_ARGS2(env, left, right);
 
-    YogVal node = NODE_NEW(NODE_ASSIGN, lineno);
+    YogVal node = YogNode_new(env, NODE_ASSIGN, lineno);
     NODE(node)->u.assign.left = left;
     NODE(node)->u.assign.right = right;
 
@@ -547,7 +546,7 @@ Subscript_new(YogEnv* env, uint_t lineno, YogVal prefix, YogVal index)
     YogVal node = YUNDEF;
     PUSH_LOCAL(env, node);
 
-    node = NODE_NEW(NODE_SUBSCRIPT, lineno);
+    node = YogNode_new(env, NODE_SUBSCRIPT, lineno);
     NODE(node)->u.subscript.prefix = prefix;
     NODE(node)->u.subscript.index = index;
 
@@ -1257,19 +1256,26 @@ comparison(A) ::= xor_expr(B). {
     A = B;
 }
 comparison(A) ::= xor_expr(B) comp_op(C) xor_expr(D). {
-    uint_t lineno = NODE_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = FuncCall_new2(env, lineno, B, id, D);
+    A = FuncCall_new2(env, NODE_LINENO(B), B, VAL2ID(C), D);
 }
 
-comp_op(A) ::= EQUAL_EQUAL(B). {
-    A = B;
+comp_op(A) ::= EQUAL_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "=="));
 }
-comp_op(A) ::= LESS(B). {
-    A = B;
+comp_op(A) ::= NOT_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "!="));
 }
-comp_op(A) ::= GREATER(B). {
-    A = B;
+comp_op(A) ::= LESS. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "<"));
+}
+comp_op(A) ::= LESS_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "<="));
+}
+comp_op(A) ::= GREATER. {
+    A = ID2VAL(YogVM_intern(env, env->vm, ">"));
+}
+comp_op(A) ::= GREATER_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, ">="));
 }
 
 xor_expr(A) ::= or_expr(B). {
@@ -1391,10 +1397,31 @@ postfix_expr(A) ::= postfix_expr(B) LBRACKET expr(C) RBRACKET. {
     uint_t lineno = NODE_LINENO(B);
     A = Subscript_new(env, lineno, B, C);
 }
-postfix_expr(A) ::= postfix_expr(B) DOT NAME(C). {
+postfix_expr(A) ::= postfix_expr(B) DOT name(C). {
     uint_t lineno = NODE_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = Attr_new(env, lineno, B, id);
+    A = Attr_new(env, lineno, B, VAL2ID(C));
+}
+
+name(A) ::= NAME(B). {
+    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+}
+name(A) ::= EQUAL_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "=="));
+}
+name(A) ::= NOT_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "!="));
+}
+name(A) ::= LESS. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "<"));
+}
+name(A) ::= LESS_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, "<="));
+}
+name(A) ::= GREATER. {
+    A = ID2VAL(YogVM_intern(env, env->vm, ">"));
+}
+name(A) ::= GREATER_EQUAL. {
+    A = ID2VAL(YogVM_intern(env, env->vm, ">="));
 }
 
 atom(A) ::= NAME(B). {
