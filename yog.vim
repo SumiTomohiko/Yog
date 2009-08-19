@@ -14,7 +14,7 @@ endif
 syn keyword   yogStatement    break continue do end except finally return try 
 syn keyword   yogStatement    global def class nextgroup=yogFunction skipwhite
 syn keyword   yogStatement    module nextgroup=yogFunction
-syn match     yogFunction	    "[a-zA-Z_][a-zA-Z0-9_]*" contained
+syn match     yogFunction	    "[a-zA-Z_][a-zA-Z0-9_]*?\?!\?" contained
 syn keyword   yogRepeat       while
 syn keyword   yogConditional  if elif else
 syn keyword   yogOperator	    && \|\| !
@@ -41,7 +41,7 @@ syn match     yogNumber	      "\.\d\+\([eE][+-]\=\d\+\)\=[jJ]\=\>"
 syn match     yogNumber	      "\<\d\+\.\([eE][+-]\=\d\+\)\=[jJ]\=\>"
 syn match     yogNumber	      "\<\d\+\.\d\+\([eE][+-]\=\d\+\)\=[jJ]\=\>"
 
-syn keyword   yogBuiltin	    true false nil
+syn keyword   yogBuiltin	    true false nil self
 
 "syn keyword yogException	ArithmeticError AssertionError AttributeError
 
