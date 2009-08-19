@@ -13,6 +13,7 @@ endif
 
 syn keyword   yogStatement    break continue do end except finally return try 
 syn keyword   yogStatement    global def class nextgroup=yogFunction skipwhite
+syn keyword   yogStatement    module nextgroup=yogFunction
 syn match     yogFunction	    "[a-zA-Z_][a-zA-Z0-9_]*" contained
 syn keyword   yogRepeat       while
 syn keyword   yogConditional  if elif else
@@ -40,7 +41,7 @@ syn match     yogNumber	      "\.\d\+\([eE][+-]\=\d\+\)\=[jJ]\=\>"
 syn match     yogNumber	      "\<\d\+\.\([eE][+-]\=\d\+\)\=[jJ]\=\>"
 syn match     yogNumber	      "\<\d\+\.\d\+\([eE][+-]\=\d\+\)\=[jJ]\=\>"
 
-syn keyword   yogBuiltin	    true false nil puts
+syn keyword   yogBuiltin	    true false nil
 
 "syn keyword yogException	ArithmeticError AssertionError AttributeError
 
@@ -68,30 +69,22 @@ if version >= 508 || !exists("did_yog_syn_inits")
   endif
 
   " The default methods for highlighting.  Can be overridden later
-  HiLink yogStatement	Statement
-  HiLink yogFunction		Function
-  HiLink yogConditional	Conditional
-  HiLink yogRepeat		Repeat
-  HiLink yogString		String
-  HiLink yogRawString	String
-  HiLink yogEscape		Special
-  HiLink yogOperator		Operator
-  HiLink yogPreCondit	PreCondit
-  HiLink yogComment		Comment
-  HiLink yogTodo		Todo
-  HiLink yogDecorator	Define
-  if exists("yog_highlight_numbers")
-    HiLink yogNumber	Number
-  endif
-  if exists("yog_highlight_builtins")
-    HiLink yogBuiltin	Function
-  endif
-  if exists("yog_highlight_exceptions")
-    HiLink yogException	Exception
-  endif
-  if exists("yog_highlight_space_errors")
-    HiLink yogSpaceError	Error
-  endif
+  HiLink yogStatement     Statement
+  HiLink yogFunction      Function
+  HiLink yogConditional   Conditional
+  HiLink yogRepeat        Repeat
+  HiLink yogString        String
+  HiLink yogRawString     String
+  HiLink yogEscape        Special
+  HiLink yogOperator      Operator
+  HiLink yogPreCondit     PreCondit
+  HiLink yogComment       Comment
+  HiLink yogTodo          Todo
+  HiLink yogDecorator     Define
+  HiLink yogNumber        Number
+  HiLink yogBuiltin       Number
+  HiLink yogException     Exception
+  HiLink yogSpaceError    Error
 
   delcommand HiLink
 endif
