@@ -40,20 +40,20 @@ YogGenerational_oldify_all(YogEnv* env, YogGenerational* gen)
 void*
 YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper, void* heap)
 {
-    DEBUG(DPRINTF("YogGenerational_copy_young_object(env=%p, ptr=%p, obj_keeper=%p, heap=%p)", env, ptr, obj_keeper, heap));
+    DEBUG(TRACE("YogGenerational_copy_young_object(env=%p, ptr=%p, obj_keeper=%p, heap=%p)", env, ptr, obj_keeper, heap));
 
     YogGenerational* gen = heap;
     YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
-    DEBUG(DPRINTF("alive: %p (%p)", header, ptr));
+    DEBUG(TRACE("alive: %p (%p)", header, ptr));
     if (header->forwarding_addr != NULL) {
-        DEBUG(DPRINTF("moved: %p->%p", ptr, header->forwarding_addr));
+        DEBUG(TRACE("moved: %p->%p", ptr, header->forwarding_addr));
         return header->forwarding_addr;
     }
 
     header->survive_num++;
     if (header->survive_num < gen->tenure) {
         void* dest = YogCopying_copy(env, &gen->copying, ptr);
-        DEBUG(DPRINTF("copied: %p->%p", ptr, dest));
+        DEBUG(TRACE("copied: %p->%p", ptr, dest));
         return dest;
     }
     else {
@@ -62,7 +62,7 @@ YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keepe
         Finalizer finalizer = header->finalizer;
         size_t size = header->size - sizeof(YogCopyingHeader);
         void* p = YogMarkSweepCompact_alloc(env, msc, keeper, finalizer, size);
-        DEBUG(DPRINTF("tenure: %p-%p (%p)->%p-%p (%p)", header, (unsigned char*)header + header->size, ptr, (YogMarkSweepCompactHeader*)p - 1, (unsigned char*)((YogMarkSweepCompactHeader*)p) + header->size, p));
+        DEBUG(TRACE("tenure: %p-%p (%p)->%p-%p (%p)", header, (unsigned char*)header + header->size, ptr, (YogMarkSweepCompactHeader*)p - 1, (unsigned char*)((YogMarkSweepCompactHeader*)p) + header->size, p));
         memcpy(p, ptr, size);
         header->forwarding_addr = p;
         YogMarkSweepCompact_mark_recursively(env, p, obj_keeper, heap);
@@ -73,7 +73,7 @@ YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keepe
 static void*
 major_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 {
-    DEBUG(DPRINTF("major_gc_keep_object(env=%p, ptr=%p, heap=%p)", env, ptr, heap));
+    DEBUG(TRACE("major_gc_keep_object(env=%p, ptr=%p, heap=%p)", env, ptr, heap));
     if (ptr == NULL) {
         return NULL;
     }
@@ -90,7 +90,7 @@ major_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 static void*
 update_pointer(YogEnv* env, void* ptr)
 {
-    DEBUG(DPRINTF("updating: %p", ptr));
+    DEBUG(TRACE("updating: %p", ptr));
     if (ptr == NULL) {
         return NULL;
     }
@@ -101,7 +101,7 @@ update_pointer(YogEnv* env, void* ptr)
             header->updated = TRUE;
             ChildrenKeeper keeper = header->keeper;
             if (keeper != NULL) {
-                DEBUG(DPRINTF("ptr=%p, keeper=%p", ptr, keeper));
+                DEBUG(TRACE("ptr=%p, keeper=%p", ptr, keeper));
                 (*keeper)(env, ptr, update_pointer);
             }
         }
@@ -127,7 +127,7 @@ initialize_young_updated(YogEnv* env, YogGenerational* generational)
 void
 YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
 {
-    DEBUG(DPRINTF("major GC..."));
+    DEBUG(TRACE("major GC..."));
     YogMarkSweepCompact* msc = &generational->msc;
     msc->in_gc = TRUE;
     YogMarkSweepCompact_unprotect_all_pages(env, msc);
@@ -140,19 +140,19 @@ YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
     initialize_young_updated(env, generational);
     YogMarkSweepCompact_protect_white_pages(env, msc);
     msc->in_gc = FALSE;
-    DEBUG(DPRINTF("major GC done"));
+    DEBUG(TRACE("major GC done"));
 }
 #endif
 
 static void*
 minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 {
-    DEBUG(DPRINTF("minor_gc_keep_object(env=%p, ptr=%p, heap=%p)", env, ptr, heap));
+    DEBUG(TRACE("minor_gc_keep_object(env=%p, ptr=%p, heap=%p)", env, ptr, heap));
     if (ptr == NULL) {
         return NULL;
     }
     if (!IS_YOUNG(ptr)) {
-        DEBUG(DPRINTF("%p: %p is in old generation.", env, ptr));
+        DEBUG(TRACE("%p: %p is in old generation.", env, ptr));
         return ptr;
     }
 

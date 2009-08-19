@@ -5,8 +5,8 @@ from os.path import exists, join, splitext
 from re import compile, sub
 from shutil import copy, move
 
-#exts = [".c", ".h", ".y", ".def", ]
-exts = [".py"]
+exts = [".c", ".h", ".y", ".def", ]
+#exts = [".py"]
 
 def get_indent(line):
     s = []
@@ -52,7 +52,7 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        out.write(line.replace("<module>", "<package>"))
+                        out.write(line.replace("DPRINTF", "TRACE"))
             move(tmp, path)
 
 def main():

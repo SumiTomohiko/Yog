@@ -114,7 +114,7 @@ void YogVal_set_attr(YogEnv*, YogVal, ID, YogVal);
 
 /* PROTOTYPE_END */
 
-#define DPRINTF(...)    do { \
+#define TRACE(...)    do { \
     printf("%s:%d ", __FILE__, __LINE__); \
     printf(__VA_ARGS__); \
     printf("\n"); \

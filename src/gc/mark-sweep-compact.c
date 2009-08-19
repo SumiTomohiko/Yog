@@ -86,10 +86,10 @@ typedef BOOL (*PageSelector)(YogMarkSweepCompactChunk*, uint_t, YogMarkSweepComp
 void
 YogMarkSweepCompact_prepare(YogEnv* env, YogMarkSweepCompact* msc)
 {
-    DEBUG(DPRINTF("%p: unmark all", env));
+    DEBUG(TRACE("%p: unmark all", env));
     YogMarkSweepCompactHeader* header = msc->header;
     while (header != NULL) {
-        DEBUG(DPRINTF("%p: header=%p", env, header));
+        DEBUG(TRACE("%p: header=%p", env, header));
         header->updated = header->marked = FALSE;
         header = header->next;
     }
@@ -110,7 +110,7 @@ YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper obj_ke
 
     YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)ptr - 1;
     if (!header->marked) {
-        DEBUG(DPRINTF("%p: mark: %p", env, ptr));
+        DEBUG(TRACE("%p: mark: %p", env, ptr));
 #if 0
         GcObjectStat_increment_survive_num(&header->stat);
         increment_living_object_number(ENV_VM(env), header->stat.survive_num);
@@ -120,7 +120,7 @@ YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper obj_ke
 
         ChildrenKeeper keeper = header->keeper;
         if (keeper != NULL) {
-            DEBUG(DPRINTF("%p: keeper=%p", env, keeper));
+            DEBUG(TRACE("%p: keeper=%p", env, keeper));
             (*keeper)(env, ptr, obj_keeper, heap);
         }
     }
@@ -131,7 +131,7 @@ YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper obj_ke
 static void
 finalize(YogEnv* env, YogMarkSweepCompactHeader* header)
 {
-    DEBUG(DPRINTF("%p: finalize: %p", env, header));
+    DEBUG(TRACE("%p: finalize: %p", env, header));
     if (header->finalizer != NULL) {
         (*header->finalizer)(env, header + 1);
     }
@@ -159,7 +159,7 @@ static void
 white_page(void* ptr)
 {
     YogMarkSweepCompactPage* page = ptr2page(ptr);
-    DEBUG(DPRINTF("white page: %p-%p", page, (unsigned char*)page + PAGE_SIZE));
+    DEBUG(TRACE("white page: %p-%p", page, (unsigned char*)page + PAGE_SIZE));
     uint_t flag_index = 0;
     uint_t bit_index = 0;
     get_index_of_page_table(page, &flag_index, &bit_index);
@@ -170,7 +170,7 @@ void
 YogMarkSweepCompact_grey_page(void* ptr)
 {
     YogMarkSweepCompactPage* page = ptr2page(ptr);
-    DEBUG(DPRINTF("grey page: %p-%p", page, (unsigned char*)page + PAGE_SIZE));
+    DEBUG(TRACE("grey page: %p-%p", page, (unsigned char*)page + PAGE_SIZE));
     uint_t flag_index = 0;
     uint_t bit_index = 0;
     get_index_of_page_table(page, &flag_index, &bit_index);
@@ -182,7 +182,7 @@ static void
 delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header)
 {
     size_t size = header->size;
-    DEBUG(DPRINTF("delete: %p", header + 1));
+    DEBUG(TRACE("delete: %p", header + 1));
     destroy_memory(header, size);
 
     if (IS_SMALL_OBJ(size)) {
@@ -190,7 +190,7 @@ delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header)
         page->num_obj_avail++;
         uint_t index = msc->size2index[size];
         if (page->num_obj_avail == page->num_obj) {
-            DEBUG(DPRINTF("page %p is empty", page));
+            DEBUG(TRACE("page %p is empty", page));
             YogMarkSweepCompactPage* pages = msc->pages[index];
             if (pages == page) {
                 msc->pages[index] = pages->next;
@@ -214,13 +214,13 @@ delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header)
 #endif
         }
         else {
-            DEBUG(DPRINTF("page %p is not empty", page));
+            DEBUG(TRACE("page %p is not empty", page));
             if (page->num_obj_avail == 1) {
                 page->next = msc->pages[index];
                 msc->pages[index] = page;
             }
             ((YogMarkSweepCompactFreeList*)header)->next = page->freelist;
-            DEBUG(DPRINTF("*(void**)header(%p)=%p", header, *(void**)header));
+            DEBUG(TRACE("*(void**)header(%p)=%p", header, *(void**)header));
             page->freelist = (YogMarkSweepCompactFreeList*)header;
         }
     }
@@ -420,7 +420,7 @@ copy_object(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactH
 {
     size_t size = header->size;
     YogMarkSweepCompactHeader* dest_header = (YogMarkSweepCompactHeader*)header->forwarding_addr - 1;
-    DEBUG(DPRINTF("move: %p->%p", header, dest_header));
+    DEBUG(TRACE("move: %p->%p", header, dest_header));
     memcpy(dest_header, header, size);
 
     YogMarkSweepCompactPage* page = ptr2page(header->forwarding_addr);
@@ -488,7 +488,7 @@ update_pointer(YogEnv* env, void* ptr, void* heap)
 void
 YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectKeeper update_pointer)
 {
-    DEBUG(DPRINTF("%p: compaction", env));
+    DEBUG(TRACE("%p: compaction", env));
     Compactor compactor;
     Compactor_initialize(&compactor);
     iterate_objects(msc, &compactor, set_forward_address);
@@ -521,7 +521,7 @@ YogMarkSweepCompact_delete_garbage(YogEnv* env, YogMarkSweepCompact* msc)
     YogMarkSweepCompactHeader* header = msc->header;
     while (header != NULL) {
         YogMarkSweepCompactHeader* next = header->next;
-        DEBUG(DPRINTF("%p: header=%p", env, header));
+        DEBUG(TRACE("%p: header=%p", env, header));
 
         if (!header->marked) {
             finalize(env, header);
@@ -574,7 +574,7 @@ initialize_memory(void* ptr, size_t size)
 static int_t
 protect_page(void* page, int_t prot)
 {
-    DEBUG(DPRINTF("protect page: page=%p-%p, PROT_READ=%d, PROT_WRITE=%d", page, (char*)page + PAGE_SIZE, prot & PROT_READ ? 1 : 0, prot & PROT_WRITE ? 1 : 0));
+    DEBUG(TRACE("protect page: page=%p-%p, PROT_READ=%d, PROT_WRITE=%d", page, (char*)page + PAGE_SIZE, prot & PROT_READ ? 1 : 0, prot & PROT_WRITE ? 1 : 0));
     return mprotect(page, PAGE_SIZE, prot);
 }
 #endif
@@ -634,7 +634,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                         ERROR(ERR_MSC_MUNMAP);
                     }
                 }
-                DEBUG(DPRINTF("%p: heap: %p-%p", env, chunk_begin, chunk_end));
+                DEBUG(TRACE("%p: heap: %p-%p", env, chunk_begin, chunk_end));
 
                 YogMarkSweepCompactFreeList* pages = (YogMarkSweepCompactFreeList*)mmap_begin;
                 uint_t num_pages = chunk_size / PAGE_SIZE;
@@ -671,7 +671,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 msc->chunks = chunk->next;
             }
             msc->pages[index] = page;
-            DEBUG(DPRINTF("%p: assign page: %p", env, page));
+            DEBUG(TRACE("%p: assign page: %p", env, page));
 
             uint_t size = msc->freelist_size[index];
             uint_t num_obj = object_number_of_page(size);
@@ -680,11 +680,11 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
             uint_t i;
             for (i = 0; i < num_obj - 1; i++) {
                 obj->next = (YogMarkSweepCompactFreeList*)((unsigned char*)obj + size);
-                DEBUG(DPRINTF("%p: *(void**)(obj=%p)=%p", env, obj, *(void**)obj));
+                DEBUG(TRACE("%p: *(void**)(obj=%p)=%p", env, obj, *(void**)obj));
                 obj = obj->next;
             }
             obj->next = NULL;
-            DEBUG(DPRINTF("%p: *(void**)(obj=%p)=%p", env, obj, *(void**)obj));
+            DEBUG(TRACE("%p: *(void**)(obj=%p)=%p", env, obj, *(void**)obj));
 
             page->flags = PAGE_USED;
             page->next = NULL;
@@ -823,7 +823,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
         return NULL;
     }
     if (!IS_YOUNG(ptr)) {
-        DEBUG(DPRINTF("%p: %p is in old generation.", env, ptr));
+        DEBUG(TRACE("%p: %p is in old generation.", env, ptr));
         return ptr;
     }
 
@@ -866,14 +866,14 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
         YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)obj; \
         if (IS_OBJ_USED(header)) { \
             if (header->marked) { \
-                DEBUG(DPRINTF("grey object marked: %p", header + 1)); \
+                DEBUG(TRACE("grey object marked: %p", header + 1)); \
                 env->vm->has_young_ref = TRUE; \
             } \
             else { \
-                DEBUG(DPRINTF("grey object kept: %p", header + 1)); \
+                DEBUG(TRACE("grey object kept: %p", header + 1)); \
                 ChildrenKeeper keeper = header->keeper; \
                 if (keeper != NULL) { \
-                    DEBUG(DPRINTF("grey object keeper: %p", keeper)); \
+                    DEBUG(TRACE("grey object keeper: %p", keeper)); \
                     (*keeper)(env, header + 1, minor_gc_keep_object, heap); \
                 } \
             } \
@@ -915,7 +915,7 @@ YogMarkSweepCompact_protect_white_pages(YogEnv* env, YogMarkSweepCompact* msc)
 static int_t
 sigsegv_handler(void* fault_address, int_t serious)
 {
-    DEBUG(DPRINTF("sigsegv_handler(fault_address=%p, serious=%d)", fault_address, serious));
+    DEBUG(TRACE("sigsegv_handler(fault_address=%p, serious=%d)", fault_address, serious));
     if (fault_address == NULL) {
         return 0;
     }
@@ -924,7 +924,7 @@ sigsegv_handler(void* fault_address, int_t serious)
     }
 
     YogMarkSweepCompactPage* page = ptr2page(fault_address);
-    DEBUG(DPRINTF("page=%p", page));
+    DEBUG(TRACE("page=%p", page));
     if (protect_page(page, PROT_READ | PROT_WRITE) != 0) {
         return 0;
     }
