@@ -123,4 +123,11 @@ foo.push(bar)
 print(foo.to_s())
 """, "[{ :baz => [...] }]")
 
+    def test_push0(self):
+        self._test("""
+foo = []
+foo.push(42)
+print(foo)
+""", "[42]")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

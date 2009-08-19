@@ -317,6 +317,19 @@ YogArray_shift(YogEnv* env, YogVal self)
 }
 
 static YogVal
+push(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
+
+    obj = YogArray_at(env, args, 0);
+    YogArray_push(env, self, obj);
+
+    RETURN(env, self);
+}
+
+static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -362,6 +375,7 @@ YogArray_klass_new(YogEnv* env)
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("each", each);
+    DEFINE_METHOD("push", push);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
     YogKlass_define_property(env, klass, "size", get_size, NULL);
