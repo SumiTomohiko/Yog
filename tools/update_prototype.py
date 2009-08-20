@@ -149,11 +149,19 @@ class DeclarationInserter(object):
         finally:
             fp.close()
 
+        comment = 0
+
         while True:
             try:
                 line = lines.pop(0).strip()
             except IndexError:
                 break
+            if line == "#if 0":
+                comment += 1
+            elif (line == "#endif") and (0 < comment):
+                comment -= 1
+            if 0 < comment:
+                continue
             if self.re_type.search(line):
                 return_type = line
 

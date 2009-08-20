@@ -51,6 +51,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cur_frame);
     KEEP(jmp_val);
     KEEP(block);
+    KEEP(recursive_stack);
 #undef KEEP
 }
 
@@ -74,6 +75,8 @@ YogThread_initialize(YogEnv* env, YogVal thread, YogVal klass)
 
     PTR_AS(YogThread, thread)->block = YUNDEF;
     PTR_AS(YogThread, thread)->gc_bound = TRUE;
+
+    PTR_AS(YogThread, thread)->recursive_stack = YUNDEF;
 }
 
 #if defined(GC_COPYING)
@@ -261,6 +264,14 @@ run_of_new_thread(void* arg)
     locals0.vals[3] = NULL;
     PUSH_LOCAL_TABLE(&env, locals0);
 
+    if (!IS_PTR(PTR_AS(YogThread, thread)->recursive_stack)) {
+        YogVal stack = YUNDEF;
+        PUSH_LOCALS2(&env, thread, stack);
+        stack = YogArray_new(&env);
+        PTR_AS(YogThread, thread)->recursive_stack = stack;
+        POP_LOCALS(&env);
+    }
+
     YogVal vararg = thread_arg->vararg;
     YogVal block = PTR_AS(YogThread, thread)->block;
     if (IS_PTR(vararg)) {
@@ -342,6 +353,15 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     return self;
 }
 
+void
+YogThread_issue_object_id(YogEnv* env, YogVal self, YogVal obj)
+{
+    PTR_AS(YogBasicObj, obj)->id_upper = PTR_AS(YogThread, self)->thread_id;
+    PTR_AS(YogBasicObj, obj)->id_lower = PTR_AS(YogThread, self)->next_obj_id;
+    PTR_AS(YogThread, self)->next_obj_id++;
+    YOG_ASSERT(env, PTR_AS(YogThread, self)->next_obj_id != 0, "object id overflow");
+}
+
 YogVal
 YogThread_klass_new(YogEnv* env)
 {
@@ -357,15 +377,6 @@ YogThread_klass_new(YogEnv* env)
     YogKlass_define_method(env, klass, "join", join);
 
     RETURN(env, klass);
-}
-
-void
-YogThread_issue_object_id(YogEnv* env, YogVal self, YogVal obj)
-{
-    PTR_AS(YogBasicObj, obj)->id_upper = PTR_AS(YogThread, self)->thread_id;
-    PTR_AS(YogBasicObj, obj)->id_lower = PTR_AS(YogThread, self)->next_obj_id;
-    PTR_AS(YogThread, self)->next_obj_id++;
-    YOG_ASSERT(env, PTR_AS(YogThread, self)->next_obj_id != 0, "object id overflow");
 }
 
 /**

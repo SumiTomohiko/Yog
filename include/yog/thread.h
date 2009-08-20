@@ -152,6 +152,8 @@ struct YogThread {
     YogVal block;
     pthread_t pthread;
     BOOL gc_bound;
+
+    YogVal recursive_stack;
 };
 
 typedef struct YogThread YogThread;
@@ -176,6 +178,11 @@ typedef struct YogThread YogThread;
 #define POP_JMPBUF(env)     do { \
     YogJmpBuf* prev = PTR_AS(YogThread, env->thread)->jmp_buf_list->prev; \
     PTR_AS(YogThread, env->thread)->jmp_buf_list = prev; \
+} while (0)
+#define LONGJMP(env, status)    do { \
+    YogJmpBuf* list = PTR_AS(YogThread, env->thread)->jmp_buf_list; \
+    YOG_ASSERT(env, list != NULL, "no longjmp destination"); \
+    longjmp(list->buf, status); \
 } while (0)
 
 #define SAVE_CURRENT_STAT(env, name)    \

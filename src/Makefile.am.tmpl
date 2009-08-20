@@ -55,9 +55,9 @@ insts:
 am:
 	$(GEN_AM_CMD)
 
-builtins.inc: miniyog builtins.yg conv_builtins.yg
+builtins.inc: miniyog builtins.yg yg2inc.yg
 	$(MAKE) miniyog
-	./miniyog conv_builtins.yg builtins.yg $@
+	./miniyog yg2inc.yg builtins.yg $@
 
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))

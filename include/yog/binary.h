@@ -34,9 +34,7 @@ void YogBinary_push_uint8(YogEnv*, YogVal, uint8_t);
 void YogBinary_push_unsigned_int(YogEnv*, YogVal, uint_t);
 void YogBinary_shrink(YogEnv*, YogVal);
 uint_t YogBinary_size(YogEnv*, YogVal);
-uint8_t YogByteArray_at(YogEnv*, YogByteArray*, uint_t);
 YogVal YogByteArray_new(YogEnv*, uint_t);
-void YogByteArray_print(YogEnv*, YogByteArray*);
 uint_t YogByteArray_size(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */

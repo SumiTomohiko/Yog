@@ -97,7 +97,6 @@ typedef struct YogMethodFrame YogMethodFrame;
 /* src/frame.c */
 YogVal YogCFrame_new(YogEnv*);
 YogVal YogFinishFrame_new(YogEnv*);
-void YogFrame_add_locals(YogEnv*, YogCFrame*, uint_t, ...);
 YogVal YogMethodFrame_new(YogEnv*);
 YogVal YogNameFrame_new(YogEnv*);
 YogVal YogOuterVars_new(YogEnv*, uint_t);

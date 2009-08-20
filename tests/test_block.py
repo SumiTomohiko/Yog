@@ -62,4 +62,15 @@ main()""", """0
 42
 """)
 
+    def test_return0(self):
+        self._test("""
+def foo()
+  [42].each() do
+    return 26
+  end
+nnd
+
+print(foo())
+""", "26")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

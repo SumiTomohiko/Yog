@@ -155,12 +155,8 @@ open(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else {
         RESTORE_STAT(env, open);
-
         do_close(env, file);
-
-        YogJmpBuf* list = PTR_AS(YogThread, env->thread)->jmp_buf_list;
-        YOG_ASSERT(env, list != NULL, "no longjmp destination");
-        longjmp(list->buf, status);
+        LONGJMP(env, status);
     }
 
     RETURN(env, retval);

@@ -1,0 +1,19 @@
+
+File.open(ARGV[1], "r") do [in]
+  File.open(ARGV[2], "w") do [out]
+    while true
+      try
+        line = in.readline()
+      except
+        break
+      end
+      if line =~ /\A# vim:/
+        continue
+      end
+      line = line.gsub("\n", "\\n")
+      out.write("\"" + line + "\"\n")
+    end
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

@@ -13,7 +13,7 @@ endif
 
 syn keyword   yogStatement    break continue do end except finally return try 
 syn keyword   yogStatement    global def class nextgroup=yogFunction skipwhite
-syn keyword   yogStatement    module nextgroup=yogFunction
+syn keyword   yogStatement    module nextgroup=yogFunction nonlocal
 syn match     yogFunction	    "[a-zA-Z_][a-zA-Z0-9_]*?\?!\?" contained
 syn keyword   yogRepeat       while
 syn keyword   yogConditional  if elif else
