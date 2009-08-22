@@ -24,9 +24,6 @@ struct YogInst {
     union {
 
         struct {
-            ID id;
-        } load_special;
-        struct {
         } pop;
         struct {
             uint8_t index;
@@ -40,6 +37,10 @@ struct YogInst {
         struct {
             uint8_t index;
         } store_local;
+        struct {
+        } make_block;
+        struct {
+        } make_block2;
         struct {
         } make_function;
         struct {
@@ -110,6 +111,10 @@ struct YogInst {
         } store_attr;
         struct {
         } not;
+        struct {
+        } long_return;
+        struct {
+        } long_break;
     } u;
 
     uint_t lineno;
@@ -119,7 +124,6 @@ struct YogInst {
 
 #define INST_OPCODE(v)  (INST(v)->opcode)
 
-#define LOAD_SPECIAL_ID(inst) (INST(inst)->u.load_special.id)
 #define PUSH_CONST_INDEX(inst) (INST(inst)->u.push_const.index)
 #define MAKE_STRING_INDEX(inst) (INST(inst)->u.make_string.index)
 #define STORE_NAME_ID(inst) (INST(inst)->u.store_name.id)

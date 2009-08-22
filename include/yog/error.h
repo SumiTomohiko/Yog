@@ -1,22 +1,14 @@
 #if !defined(__YOG_ERROR_H__)
 #define __YOG_ERROR_H__
 
-#if 0
-#include "yog/exception.h"
-#include "yog/string.h"
-#endif
 #include "yog/yog.h"
-
-#define JMP_RAISE   (1)
 
 #define YOG_WARN(env, ...)  do { \
     YogError_warn(env, __FILE__, __LINE__, __VA_ARGS__); \
 } while (0)
-
 #define YOG_BUG(env, ...)    do { \
     YogError_bug(env, __FILE__, __LINE__, __VA_ARGS__); \
 } while (0)
-
 #define YOG_ASSERT(env, test, ...)  do { \
     if (!(test)) { \
         YOG_BUG(env, __VA_ARGS__); \
@@ -40,6 +32,7 @@ void YogError_raise_EOFError(YogEnv*, const char*, ...);
 void YogError_raise_ImportError(YogEnv*, const char*, ...);
 void YogError_raise_IndexError(YogEnv*, const char*, ...);
 void YogError_raise_KeyError(YogEnv*, const char*, ...);
+void YogError_raise_LocalJumpError(YogEnv*, const char*, ...);
 void YogError_raise_NameError(YogEnv*, const char*, ...);
 void YogError_raise_SyntaxError(YogEnv*, const char*, ...);
 void YogError_raise_TypeError(YogEnv*, const char*, ...);

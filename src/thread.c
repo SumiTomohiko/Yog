@@ -50,6 +50,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #define KEEP(member)    YogGC_keep(env, &thread->member, keeper, thread_heap)
     KEEP(cur_frame);
     KEEP(jmp_val);
+    KEEP(frame_to_long_jump);
     KEEP(block);
     KEEP(recursive_stack);
 #undef KEEP
@@ -71,6 +72,7 @@ YogThread_initialize(YogEnv* env, YogVal thread, YogVal klass)
     PTR_AS(YogThread, thread)->cur_frame = YNIL;
     PTR_AS(YogThread, thread)->jmp_buf_list = NULL;
     PTR_AS(YogThread, thread)->jmp_val = YUNDEF;
+    PTR_AS(YogThread, thread)->frame_to_long_jump = YUNDEF;
     PTR_AS(YogThread, thread)->locals = NULL;
 
     PTR_AS(YogThread, thread)->block = YUNDEF;
@@ -249,17 +251,17 @@ ThreadArg_new(YogEnv* env)
 static void*
 run_of_new_thread(void* arg)
 {
-    ThreadArg* thread_arg = arg;
-    YogVal thread = thread_arg->thread;
+    YogVal thread_arg = (YogVal)arg;
+    YogVal thread = PTR_AS(ThreadArg, thread_arg)->thread;
     YogEnv env;
-    env.vm = thread_arg->vm;
+    env.vm = PTR_AS(ThreadArg, thread_arg)->vm;
     env.thread = thread;
     SAVE_LOCALS(&env);
     YogLocals locals0;
-    locals0.num_vals = 1;
+    locals0.num_vals = 2;
     locals0.size = 1;
     locals0.vals[0] = &env.thread;
-    locals0.vals[1] = NULL;
+    locals0.vals[1] = &thread_arg;
     locals0.vals[2] = NULL;
     locals0.vals[3] = NULL;
     PUSH_LOCAL_TABLE(&env, locals0);
@@ -272,7 +274,7 @@ run_of_new_thread(void* arg)
         POP_LOCALS(&env);
     }
 
-    YogVal vararg = thread_arg->vararg;
+    YogVal vararg = PTR_AS(ThreadArg, thread_arg)->vararg;
     YogVal block = PTR_AS(YogThread, thread)->block;
     if (IS_PTR(vararg)) {
         uint_t size = YogArray_size(&env, vararg);

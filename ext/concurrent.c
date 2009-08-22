@@ -152,7 +152,6 @@ void
 YogInit_concurrent(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-
     YogVal cBarrier = YUNDEF;
     YogVal cAtomicInt = YUNDEF;
     PUSH_LOCALS2(env, cBarrier, cAtomicInt);

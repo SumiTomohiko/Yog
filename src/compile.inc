@@ -5,22 +5,6 @@
 
 
 static void 
-CompileData_add_load_special(YogEnv* env, YogVal data, uint_t lineno, ID id)
-{
-    SAVE_ARG(env, data);
-
-    YogVal inst = Inst_new(env, lineno);
-    INST(inst)->type = INST_OP;
-    INST_OPCODE(inst) = OP(LOAD_SPECIAL);
-
-    LOAD_SPECIAL_ID(inst) = id;
-
-    add_inst(env, data, inst);
-
-    RETURN_VOID(env);
-}
-
-static void 
 CompileData_add_pop(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -93,6 +77,36 @@ CompileData_add_store_local(YogEnv* env, YogVal data, uint_t lineno, uint8_t ind
     INST_OPCODE(inst) = OP(STORE_LOCAL);
 
     STORE_LOCAL_INDEX(inst) = index;
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
+static void 
+CompileData_add_make_block(YogEnv* env, YogVal data, uint_t lineno)
+{
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(MAKE_BLOCK);
+
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
+static void 
+CompileData_add_make_block2(YogEnv* env, YogVal data, uint_t lineno)
+{
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(MAKE_BLOCK2);
+
 
     add_inst(env, data, inst);
 
@@ -421,21 +435,6 @@ CompileData_add_make_set(YogEnv* env, YogVal data, uint_t lineno, uint8_t size)
 }
 
 static void 
-CompileData_add_finish(YogEnv* env, YogVal data, uint_t lineno)
-{
-    SAVE_ARG(env, data);
-
-    YogVal inst = Inst_new(env, lineno);
-    INST(inst)->type = INST_OP;
-    INST_OPCODE(inst) = OP(FINISH);
-
-
-    add_inst(env, data, inst);
-
-    RETURN_VOID(env);
-}
-
-static void 
 CompileData_add_print_top(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -481,6 +480,36 @@ CompileData_add_not(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
+static void 
+CompileData_add_long_return(YogEnv* env, YogVal data, uint_t lineno)
+{
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(LONG_RETURN);
+
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
+static void 
+CompileData_add_long_break(YogEnv* env, YogVal data, uint_t lineno)
+{
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(LONG_BREAK);
+
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
 
 static YogVal 
 insts2bin(YogEnv* env, YogVal inst) 
@@ -498,12 +527,6 @@ insts2bin(YogEnv* env, YogVal inst)
             {
                 switch (INST_OPCODE(inst)) {
 
-                case OP(LOAD_SPECIAL):
-                    {
-                        YogBinary_push_uint8(env, code, OP(LOAD_SPECIAL));
-                        YogBinary_push_id(env, code, LOAD_SPECIAL_ID(inst));
-                        break;
-                    }
                 case OP(POP):
                     {
                         YogBinary_push_uint8(env, code, OP(POP));
@@ -531,6 +554,16 @@ insts2bin(YogEnv* env, YogVal inst)
                     {
                         YogBinary_push_uint8(env, code, OP(STORE_LOCAL));
                         YogBinary_push_uint8(env, code, STORE_LOCAL_INDEX(inst));
+                        break;
+                    }
+                case OP(MAKE_BLOCK):
+                    {
+                        YogBinary_push_uint8(env, code, OP(MAKE_BLOCK));
+                        break;
+                    }
+                case OP(MAKE_BLOCK2):
+                    {
+                        YogBinary_push_uint8(env, code, OP(MAKE_BLOCK2));
                         break;
                     }
                 case OP(MAKE_FUNCTION):
@@ -675,6 +708,16 @@ insts2bin(YogEnv* env, YogVal inst)
                         YogBinary_push_uint8(env, code, OP(NOT));
                         break;
                     }
+                case OP(LONG_RETURN):
+                    {
+                        YogBinary_push_uint8(env, code, OP(LONG_RETURN));
+                        break;
+                    }
+                case OP(LONG_BREAK):
+                    {
+                        YogBinary_push_uint8(env, code, OP(LONG_BREAK));
+                        break;
+                    }
                 default:
                     {
                         YOG_ASSERT(env, FALSE, "Unkown instruction.");
@@ -710,12 +753,6 @@ count_stack_size(YogEnv* env, YogVal inst)
                 int_t push_size = 0;
                 switch (INST_OPCODE(inst)) {
 
-                case OP(LOAD_SPECIAL):
-                    {
-                        pop_size = 0;
-                        push_size = 1;
-                        break;
-                    }
                 case OP(POP):
                     {
                         pop_size = 1;
@@ -744,6 +781,18 @@ count_stack_size(YogEnv* env, YogVal inst)
                     {
                         pop_size = 1;
                         push_size = 0;
+                        break;
+                    }
+                case OP(MAKE_BLOCK):
+                    {
+                        pop_size = 1;
+                        push_size = 1;
+                        break;
+                    }
+                case OP(MAKE_BLOCK2):
+                    {
+                        pop_size = 1;
+                        push_size = 1;
                         break;
                     }
                 case OP(MAKE_FUNCTION):
@@ -888,6 +937,18 @@ count_stack_size(YogEnv* env, YogVal inst)
                     {
                         pop_size = 1;
                         push_size = 1;
+                        break;
+                    }
+                case OP(LONG_RETURN):
+                    {
+                        pop_size = 1;
+                        push_size = 0;
+                        break;
+                    }
+                case OP(LONG_BREAK):
+                    {
+                        pop_size = 1;
+                        push_size = 0;
                         break;
                     }
                 default:

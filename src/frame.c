@@ -7,42 +7,6 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-#if 0
-static void
-extend_locals(YogEnv* env, YogCFrame* frame, uint_t n)
-{
-    YogValArray* old_locals = frame->locals;
-    uint_t capacity = (old_locals != NULL ? old_locals->size : 0) + n;
-
-    YogVal new_locals = YogValArray_new(env, capacity);
-    if (old_locals != NULL) {
-        uint_t size = frame->locals_size;
-        YogVal* dest = PTR_AS(YogValArray, new_locals)->items;
-        memcpy(dest, old_locals->items, sizeof(YogVal) * size);
-    }
-    frame->locals = new_locals;
-}
-
-void
-YogFrame_add_locals(YogEnv* env, YogCFrame* frame, uint_t n, ...)
-{
-    extend_locals(env, frame, n);
-
-    YogValArray* locals = frame->locals;
-    uint_t locals_size = frame->locals_size;
-
-    va_list ap;
-    va_start(ap, n);
-    uint_t i = 0;
-    for (i = 0; i < n; i++) {
-        locals->items[locals_size + i] = va_arg(ap, YogVal);
-    }
-    va_end(ap);
-
-    frame->locals_size = locals_size + n;
-}
-#endif
-
 static void
 YogFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
@@ -76,6 +40,8 @@ YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* 
     KEEP(stack);
     KEEP(globals);
     KEEP(outer_vars);
+    KEEP(frame_to_long_return);
+    KEEP(frame_to_long_break);
 }
 
 static void
@@ -154,6 +120,8 @@ YogScriptFrame_init(YogVal frame, YogFrameType type)
     PTR_AS(YogScriptFrame, frame)->stack = YUNDEF;
     PTR_AS(YogScriptFrame, frame)->globals = YUNDEF;
     PTR_AS(YogScriptFrame, frame)->outer_vars = YUNDEF;
+    PTR_AS(YogScriptFrame, frame)->frame_to_long_return = YUNDEF;
+    PTR_AS(YogScriptFrame, frame)->frame_to_long_break = YUNDEF;
 }
 
 static void

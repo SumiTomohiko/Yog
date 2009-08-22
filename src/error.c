@@ -257,6 +257,12 @@ YogError_raise_comparison_type_error(YogEnv* env, YogVal left, YogVal right)
     raise_TypeError(env, "comparison of %s with %s failed", left, right);
 }
 
+void
+YogError_raise_LocalJumpError(YogEnv* env, const char* fmt, ...)
+{
+    RAISE_FORMAT(env, eLocalJumpError, fmt);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

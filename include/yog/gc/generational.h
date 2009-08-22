@@ -57,7 +57,6 @@ void YogGenerational_initialize(YogEnv*, YogGenerational*, size_t, size_t, size_
 BOOL YogGenerational_is_empty(YogEnv*, YogGenerational*);
 void YogGenerational_major_cheney_scan(YogEnv*, YogGenerational*);
 void YogGenerational_major_delete_garbage(YogEnv*, YogGenerational*);
-void YogGenerational_major_gc(YogEnv*, YogGenerational*);
 void YogGenerational_major_keep_vm(YogEnv*, YogGenerational*);
 void YogGenerational_major_post_gc(YogEnv*, YogGenerational*);
 void YogGenerational_minor_cheney_scan(YogEnv*, YogGenerational*);

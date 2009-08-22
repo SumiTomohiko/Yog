@@ -63,6 +63,7 @@ struct YogVM {
     YogVal eImportError;
     YogVal eIndexError;
     YogVal eKeyError;
+    YogVal eLocalJumpError;
     YogVal eNameError;
     YogVal eSyntaxError;
     YogVal eTypeError;

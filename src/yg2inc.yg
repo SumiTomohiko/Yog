@@ -8,7 +8,7 @@ File.open(ARGV[1], "r") do [in]
         break
       end
       if line =~ /\A# vim:/
-        continue
+        next
       end
       line = line.gsub("\n", "\\n")
       out.write("\"" + line + "\"\n")

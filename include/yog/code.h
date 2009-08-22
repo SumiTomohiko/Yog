@@ -3,12 +3,14 @@
 
 #include "yog/arg.h"
 #include "yog/object.h"
+#include "yog/thread.h"
 #include "yog/yog.h"
 
 struct YogExceptionTableEntry {
     pc_t from;
     pc_t to;
     pc_t target;
+    YogJmpStatus status;
 };
 
 typedef struct YogExceptionTableEntry YogExceptionTableEntry;

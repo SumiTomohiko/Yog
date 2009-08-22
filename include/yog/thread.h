@@ -16,6 +16,14 @@
 #include "yog/object.h"
 #include "yog/yog.h"
 
+enum YogJmpStatus {
+    JMP_RAISE = 1,
+    JMP_RETURN = 2,
+    JMP_BREAK = 3,
+};
+
+typedef enum YogJmpStatus YogJmpStatus;
+
 struct YogJmpBuf {
     jmp_buf buf;
     struct YogJmpBuf* prev;
@@ -98,6 +106,12 @@ do { \
 #define PUSH_LOCALS6(env, x, y, z, t, u, v) \
     PUSH_LOCALS4(env, x, y, z, t); \
     PUSH_LOCALS2(env, u, v)
+#define PUSH_LOCALS7(env, x, y, z, t, u, v, w) \
+    PUSH_LOCALS4(env, x, y, z, t); \
+    PUSH_LOCALS3(env, u, v, w)
+#define PUSH_LOCALS8(env, x, y, z, t, u, v, w, p) \
+    PUSH_LOCALS4(env, x, y, z, t); \
+    PUSH_LOCALS4(env, u, v, w, p)
 #define PUSH_LOCALSX(env, num, x) \
     YogLocals __locals_##x##__; \
     __locals_##x##__.num_vals = 1; \
@@ -134,7 +148,7 @@ do { \
 } while (0)
 
 struct YogThread {
-    YOGBASICOBJ_HEAD;
+    struct YogBasicObj base;
 
     YogVal prev;
     YogVal next;
@@ -143,15 +157,18 @@ struct YogThread {
     uint_t next_obj_id;
 
     void* heap;
+    struct YogLocals* locals;
+    BOOL gc_bound;
 
     YogVal cur_frame;
+
     struct YogJmpBuf* jmp_buf_list;
     YogVal jmp_val;
-    struct YogLocals* locals;
+    YogVal frame_to_long_jump;
 
     YogVal block;
+
     pthread_t pthread;
-    BOOL gc_bound;
 
     YogVal recursive_stack;
 };

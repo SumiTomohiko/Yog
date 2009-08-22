@@ -3,18 +3,6 @@
  * DO NOT TOUCH!!
  */
 
-    case OP(LOAD_SPECIAL):
-        {
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            ID id = *((ID*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(ID);
-            YogVal val = YUNDEF;
-            PUSH_LOCAL(env, val);
-
-            PUSH(val);
-            POP_LOCALS(env);
-            break;
-        }
     case OP(POP):
         {
             POP();
@@ -74,6 +62,36 @@
             YogVal vars = LOCAL_VARS(CUR_FRAME);
             PTR_AS(YogValArray, vars)->items[index] = val;
 
+            POP_LOCALS(env);
+            break;
+        }
+    case OP(MAKE_BLOCK):
+        {
+            YogVal code = YUNDEF;
+            YogVal f = YUNDEF;
+            PUSH_LOCALS2(env, code, f);
+            code = POP();
+            f = YogFunction_new(env);
+            setup_script_function(env, f, code);
+            PTR_AS(YogFunction, f)->frame_to_long_return = CUR_FRAME;
+            PTR_AS(YogFunction, f)->frame_to_long_break = CUR_FRAME;
+
+            PUSH(f);
+            POP_LOCALS(env);
+            break;
+        }
+    case OP(MAKE_BLOCK2):
+        {
+            YogVal code = YUNDEF;
+            YogVal f = YUNDEF;
+            PUSH_LOCALS2(env, code, f);
+            code = POP();
+            f = YogFunction_new(env);
+            setup_script_function(env, f, code);
+            PTR_AS(YogFunction, f)->frame_to_long_return = PTR_AS(YogScriptFrame, CUR_FRAME)->frame_to_long_return;
+            PTR_AS(YogFunction, f)->frame_to_long_break = CUR_FRAME;
+
+            PUSH(f);
             POP_LOCALS(env);
             break;
         }
@@ -545,6 +563,30 @@
             }
 
             PUSH(b);
+            POP_LOCALS(env);
+            break;
+        }
+    case OP(LONG_RETURN):
+        {
+            YogVal val = YUNDEF;
+            PUSH_LOCAL(env, val);
+            val = POP();
+            YogVal frame = PTR_AS(YogThread, env->thread)->cur_frame;
+            YogVal target_frame = PTR_AS(YogScriptFrame, frame)->frame_to_long_return;
+            long_jump(env, val, JMP_RETURN, target_frame);
+
+            POP_LOCALS(env);
+            break;
+        }
+    case OP(LONG_BREAK):
+        {
+            YogVal val = YUNDEF;
+            PUSH_LOCAL(env, val);
+            val = POP();
+            YogVal frame = PTR_AS(YogThread, env->thread)->cur_frame;
+            YogVal target_frame = PTR_AS(YogScriptFrame, frame)->frame_to_long_break;
+            long_jump(env, val, JMP_BREAK, target_frame);
+
             POP_LOCALS(env);
             break;
         }

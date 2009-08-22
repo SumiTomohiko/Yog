@@ -10,12 +10,13 @@ uint_t
 Yog_get_inst_size(OpCode op)
 {
     uint_t inst2size[] = {
-        sizeof(uint8_t) + sizeof(ID), /* load_special */
         sizeof(uint8_t), /* pop */
         sizeof(uint8_t) + sizeof(uint8_t), /* push_const */
         sizeof(uint8_t) + sizeof(uint8_t), /* make_string */
         sizeof(uint8_t) + sizeof(ID), /* store_name */
         sizeof(uint8_t) + sizeof(uint8_t), /* store_local */
+        sizeof(uint8_t), /* make_block */
+        sizeof(uint8_t), /* make_block2 */
         sizeof(uint8_t), /* make_function */
         sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t), /* call_function */
         sizeof(uint8_t) + sizeof(ID), /* load_global */
@@ -40,6 +41,8 @@ Yog_get_inst_size(OpCode op)
         sizeof(uint8_t), /* print_top */
         sizeof(uint8_t) + sizeof(ID), /* store_attr */
         sizeof(uint8_t), /* not */
+        sizeof(uint8_t), /* long_return */
+        sizeof(uint8_t), /* long_break */
 
     };
 

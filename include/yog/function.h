@@ -21,6 +21,8 @@ struct YogFunction {
     YogVal code;
     YogVal globals;
     YogVal outer_vars;
+    YogVal frame_to_long_return;
+    YogVal frame_to_long_break;
 };
 
 typedef struct YogFunction YogFunction;

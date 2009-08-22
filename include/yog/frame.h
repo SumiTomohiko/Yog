@@ -24,10 +24,6 @@ struct YogCFrame {
     YogVal self;
     YogVal args;
     YogVal f;
-#if 0
-    struct YogVal locals;
-    uint_t locals_size;
-#endif
 };
 
 typedef struct YogCFrame YogCFrame;
@@ -47,6 +43,8 @@ struct YogScriptFrame {
     YogVal stack;
     YogVal globals;
     YogVal outer_vars;
+    YogVal frame_to_long_return;
+    YogVal frame_to_long_break;
 };
 
 typedef struct YogScriptFrame YogScriptFrame;

@@ -372,6 +372,9 @@ class CodeGenerator(object):
     def gen_compile_inc(self, compile_inc, compile_inc_tmpl):
         compile_data = StringIO()
         for inst in self.insts:
+            if inst.name == "finish":
+                continue
+
             compile_data.write("""
 static void 
 CompileData_add_%(inst)s(YogEnv* env, YogVal data, uint_t lineno""" % { "inst": inst.name })

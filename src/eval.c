@@ -221,6 +221,151 @@ lookup_builtins(YogEnv* env, ID name)
     return val;
 }
 
+static BOOL
+find_exception_table_entry(YogEnv* env, YogVal code, int status, uint_t pc, uint_t* target)
+{
+    uint_t i;
+    for (i = 0; i < PTR_AS(YogCode, code)->exc_tbl_size; i++) {
+        YogVal exc_tbl = PTR_AS(YogCode, code)->exc_tbl;
+        YogExceptionTableEntry* entry = &PTR_AS(YogExceptionTable, exc_tbl)->items[i];
+        if ((entry->from < pc) && (pc <= entry->to) && (entry->status == status)) {
+            if (target != NULL) {
+                *target = entry->target;
+            }
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+static void
+detect_orphan(YogEnv* env, int status, YogVal target_frame)
+{
+    YogVal thread = env->thread;
+    YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
+    while (IS_PTR(frame = PTR_AS(YogFrame, frame)->prev)) {
+        YogFrameType type = PTR_AS(YogFrame, frame)->type;
+        switch (type) {
+        case FRAME_METHOD:
+        case FRAME_NAME:
+            if (frame != target_frame) {
+                continue;
+            }
+            if (find_exception_table_entry(env, PTR_AS(YogScriptFrame, frame)->code, status, PTR_AS(YogScriptFrame, frame)->pc, NULL)) {
+                return;
+            }
+            break;
+        case FRAME_C:
+        case FRAME_FINISH:
+            break;
+        default:
+            YOG_BUG(env, "invalid frame type (0x%x)", type);
+            break;
+        }
+    }
+    const char* stmt = NULL;
+    switch (status) {
+    case JMP_RETURN:
+        stmt = "return";
+        break;
+    case JMP_BREAK:
+        stmt = "break";
+        break;
+    case JMP_RAISE:
+    default:
+        YOG_BUG(env, "invalid status (0x%x)", status);
+        break;
+    }
+    YogError_raise_LocalJumpError(env, "frame to %s is lost", stmt);
+}
+
+#if 0
+static void
+dump_frame(YogEnv* env)
+{
+    TRACE("----------------");
+    YogVal thread = env->thread;
+    YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
+    while (IS_PTR(frame)) {
+        const char* type;
+        switch (PTR_AS(YogFrame, frame)->type) {
+        case FRAME_METHOD:
+            type = "FRAME_METHOD";
+            break;
+        case FRAME_NAME:
+            type = "FRAME_NAME";
+            break;
+        case FRAME_C:
+            type = "FRAME_C";
+            break;
+        case FRAME_FINISH:
+            type = "FRAME_FINISH";
+            break;
+        default:
+            type = "unknown";
+            break;
+        }
+        TRACE("frame=0x%08x, type=%s", frame, type);
+        frame = PTR_AS(YogFrame, frame)->prev;
+    }
+    TRACE("----------------");
+}
+#endif
+
+static void
+long_jump_current_frame(YogEnv* env)
+{
+    YogVal thread = env->thread;
+    YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
+    while (IS_PTR(frame = PTR_AS(YogFrame, frame)->prev)) {
+        YogFrameType type = PTR_AS(YogFrame, frame)->type;
+        switch (type) {
+        case FRAME_METHOD:
+        case FRAME_NAME:
+            break;
+        case FRAME_C:
+            PTR_AS(YogThread, thread)->cur_frame = frame;
+            return;
+            break;
+        case FRAME_FINISH:
+            PTR_AS(YogThread, thread)->cur_frame = PTR_AS(YogFrame, frame)->prev;
+            return;
+            break;
+        default:
+            YOG_BUG(env, "invalid frame type (0x%x)", type);
+            break;
+        }
+    }
+
+    YOG_BUG(env, "can't long jump current frame");
+}
+
+static void
+long_jump(YogEnv* env, YogVal jmp_val, int_t status, YogVal target_frame)
+{
+    detect_orphan(env, status, target_frame);
+
+    YogVal thread = env->thread;
+    PTR_AS(YogThread, thread)->jmp_val = jmp_val;
+    PTR_AS(YogThread, thread)->frame_to_long_jump = target_frame;
+    longjmp(PTR_AS(YogThread, thread)->jmp_buf_list->buf, status);
+
+    /* NOTREACHED */
+}
+
+static void
+jump_to_prev_buf(YogEnv* env, int status)
+{
+    long_jump_current_frame(env);
+
+    POP_JMPBUF(env);
+    YogJmpBuf* list = PTR_AS(YogThread, env->thread)->jmp_buf_list;
+    if (list != NULL) {
+        longjmp(list->buf, status);
+    }
+}
+
 YogVal
 YogEval_mainloop(YogEnv* env)
 {
@@ -233,35 +378,101 @@ YogEval_mainloop(YogEnv* env)
     PUSH_JMPBUF(env->thread, jmpbuf);
     SAVE_CURRENT_STAT(env, mainloop);
 
+#define PUSH(val)   YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), val)
     int_t status;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
     }
     else {
-        RESTORE_STAT(env, mainloop);
+        YogVal thread = env->thread;
+        PTR_AS(YogThread, thread)->jmp_buf_list = mainloop_jmpbuf;
+        PTR_AS(YogThread, thread)->locals = mainloop_locals;
+        YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
+        if (PTR_AS(YogFrame, frame)->type == FRAME_C) {
+            do {
+                frame = PTR_AS(YogFrame, frame)->prev;
+            } while (PTR_AS(YogFrame, frame)->type == FRAME_C);
+            PTR_AS(YogThread, thread)->cur_frame = frame;
+        }
 
-        BOOL found = FALSE;
-        if (PTR_AS(YogFrame, CUR_FRAME)->type != FRAME_C) {
-            uint_t i;
-            for (i = 0; i < CODE->exc_tbl_size; i++) {
-                YogVal exc_tbl = CODE->exc_tbl;
-                YogExceptionTableEntry* entry = &PTR_AS(YogExceptionTable, exc_tbl)->items[i];
-                if ((entry->from <= PC) && (PC < entry->to)) {
-                    PC = entry->target;
-                    found = TRUE;
-                    break;
+        switch (status) {
+        case JMP_RAISE:
+            {
+                BOOL found = FALSE;
+                if (PTR_AS(YogFrame, CUR_FRAME)->type != FRAME_C) {
+                    uint_t target = 0;
+                    found = find_exception_table_entry(env, (YogVal)CODE, status, PC, &target);
+                    if (found) {
+                        PC = target;
+                    }
+                }
+                if (!found) {
+                    jump_to_prev_buf(env, status);
+                    YogError_print_stacktrace(env);
+                    RETURN(env, INT2VAL(-1));
                 }
             }
-        }
-        if (!found) {
-            POP_JMPBUF(env);
-            YogJmpBuf* list = PTR_AS(YogThread, env->thread)->jmp_buf_list;
-            if (list != NULL) {
-                longjmp(list->buf, status);
+            break;
+        case JMP_RETURN:
+        case JMP_BREAK:
+            {
+                YogVal thread = env->thread;
+                YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
+                while (IS_PTR(frame)) {
+                    BOOL found = FALSE;
+                    YogFrameType type = PTR_AS(YogFrame, frame)->type;
+                    switch (type) {
+                    case FRAME_C:
+                        jump_to_prev_buf(env, status);
+                        YOG_BUG(env, "no destination to longjmp");
+                        break;
+                    case FRAME_METHOD:
+                    case FRAME_NAME:
+                        {
+                            if (frame == PTR_AS(YogThread, thread)->frame_to_long_jump) {
+                                uint_t target = 0;
+                                if (!find_exception_table_entry(env, PTR_AS(YogScriptFrame, frame)->code, status, PTR_AS(YogScriptFrame, frame)->pc, &target)) {
+                                    YOG_BUG(env, "can't find exception table entry");
+                                }
+                                CUR_FRAME = frame;
+                                PC = target;
+                                PUSH(PTR_AS(YogThread, env->thread)->jmp_val);
+                                found = TRUE;
+                            }
+                        }
+                        break;
+                    case FRAME_FINISH:
+                        break;
+                    default:
+                        YOG_BUG(env, "invalid frame type (0x%x)", type);
+                        break;
+                    }
+                    if (found) {
+                        break;
+                    }
+
+                    frame = PTR_AS(YogFrame, frame)->prev;
+                }
+                if (!IS_PTR(frame)) {
+                    const char* stmt = NULL;
+                    switch (status) {
+                    case JMP_RETURN:
+                        stmt = "return";
+                        break;
+                    case JMP_BREAK:
+                        stmt = "break";
+                        break;
+                    case JMP_RAISE:
+                    default:
+                        YOG_BUG(env, "invalid status (0x%x)", status);
+                        break;
+                    }
+                    YogError_raise_LocalJumpError(env, "frame to %s is lost", stmt);
+                }
             }
-
-            YogError_print_stacktrace(env);
-
-            RETURN(env, INT2VAL(-1));
+            break;
+        default:
+            YOG_BUG(env, "invalid status (0x%x)", status);
+            break;
         }
     }
 
@@ -316,7 +527,6 @@ YogEval_mainloop(YogEnv* env)
             args[i - 1] = POP(); \
         } \
     } while (0)
-#define PUSH(val)   YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), val)
         OpCode op = PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
 #if 0
@@ -374,7 +584,6 @@ YogEval_mainloop(YogEnv* env)
             YOG_ASSERT(env, FALSE, "Unknown instruction.");
             break;
         }
-#undef PUSH
 #undef POP_ARGS
 #undef JUMP
 #undef THREAD
@@ -383,6 +592,7 @@ YogEval_mainloop(YogEnv* env)
     }
 
     POP_JMPBUF(env);
+#undef PUSH
 #undef CODE
 #undef PC
 

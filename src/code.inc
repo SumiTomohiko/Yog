@@ -8,12 +8,13 @@ YogCode_get_op_name(OpCode op)
 {
     const char* op_names[] = {
 
-        "LOAD_SPECIAL",
         "POP",
         "PUSH_CONST",
         "MAKE_STRING",
         "STORE_NAME",
         "STORE_LOCAL",
+        "MAKE_BLOCK",
+        "MAKE_BLOCK2",
         "MAKE_FUNCTION",
         "CALL_FUNCTION",
         "LOAD_GLOBAL",
@@ -38,6 +39,8 @@ YogCode_get_op_name(OpCode op)
         "PRINT_TOP",
         "STORE_ATTR",
         "NOT",
+        "LONG_RETURN",
+        "LONG_BREAK",
     };
 
     return op_names[op];
