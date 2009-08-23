@@ -17,7 +17,7 @@
 #include "yog/yog.h"
 #include "parser.h"
 
-#define COMMENT_CHAR    ':'
+#define COMMENT_CHAR    '$'
 
 static void
 YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)

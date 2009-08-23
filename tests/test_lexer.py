@@ -34,20 +34,20 @@ class TestLexer(TestCase):
 
     def test_comment0(self):
         self._test("""
-(: print(42 :)
+($ print(42 $)
 print(26)
 """, "26")
 
     def test_comment10(self):
         self._test("""
-print (: print(42 :) (26)
+print ($ print(42 $) (26)
 """, "26")
 
     def test_comment20(self):
         self._test("""
-(:
- : print(42)
- :)
+($
+ $ print(42)
+ $)
 print(26)
 """, "26")
 
