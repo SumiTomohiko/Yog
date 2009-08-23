@@ -17,6 +17,8 @@
 #include "yog/yog.h"
 #include "parser.h"
 
+#define COMMENT_CHAR    ':'
+
 static void
 YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
@@ -309,15 +311,15 @@ static void
 enqueue_heredoc(YogEnv* env, YogVal lexer, YogVal heredoc)
 {
     SAVE_ARGS2(env, lexer, heredoc);
-    YogVal queue = YUNDEF;
-    PUSH_LOCAL(env, queue);
+    YogVal heredoc_queue = YUNDEF;
+    PUSH_LOCAL(env, heredoc_queue);
 
-    queue = PTR_AS(YogLexer, lexer)->heredoc_queue;
-    if (!IS_PTR(queue)) {
-        queue = YogArray_new(env);
-        PTR_AS(YogLexer, lexer)->heredoc_queue = queue;
+    heredoc_queue = PTR_AS(YogLexer, lexer)->heredoc_queue;
+    if (!IS_PTR(heredoc_queue)) {
+        heredoc_queue = YogArray_new(env);
+        PTR_AS(YogLexer, lexer)->heredoc_queue = heredoc_queue;
     }
-    YogArray_push(env, queue, heredoc);
+    YogArray_push(env, heredoc_queue, heredoc);
 
     RETURN_VOID(env);
 }
@@ -355,6 +357,39 @@ HereDoc_new(YogEnv* env)
     RETURN(env, heredoc);
 }
 
+static void
+skip_comment(YogEnv* env, YogVal lexer)
+{
+    SAVE_ARG(env, lexer);
+
+    do {
+        uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
+        YogVal line = PTR_AS(YogLexer, lexer)->line;
+        uint_t size = YogString_size(env, line) - 1;
+        if ((2 <= size) && (next_index < size - 1)) {
+            char c = NEXTC();
+            if (c != COMMENT_CHAR) {
+                continue;
+            }
+            char c2 = NEXTC();
+            if (c2 != ')') {
+                PUSHBACK(c2);
+                continue;
+            }
+            RETURN_VOID(env);
+        }
+
+        if (!readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
+            YogError_raise_SyntaxError(env, "EOF while scanning comment");
+        }
+
+        PTR_AS(YogLexer, lexer)->next_index = 0;
+    } while (1);
+
+    /* NOTREACHED */
+    RETURN_VOID(env);
+}
+
 BOOL
 YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* token)
 {
@@ -362,10 +397,10 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
     YogVal heredoc_end = YUNDEF;
     YogVal str = YUNDEF;
     YogVal heredoc = YUNDEF;
-    YogVal queue = YUNDEF;
+    YogVal heredoc_queue = YUNDEF;
     YogVal end = YUNDEF;
     YogVal line = YUNDEF;
-    PUSH_LOCALS6(env, heredoc_end, str, heredoc, queue, end, line);
+    PUSH_LOCALS6(env, heredoc_end, str, heredoc, heredoc_queue, end, line);
 
     clear_buffer(env, lexer);
 
@@ -389,11 +424,11 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         }
         else {
             while (1) {
-                queue = PTR_AS(YogLexer, lexer)->heredoc_queue;
-                if (!IS_PTR(queue) || (YogArray_size(env, queue) < 1)) {
+                heredoc_queue = PTR_AS(YogLexer, lexer)->heredoc_queue;
+                if (!IS_PTR(heredoc_queue) || (YogArray_size(env, heredoc_queue) < 1)) {
                     break;
                 }
-                heredoc = YogArray_shift(env, queue);
+                heredoc = YogArray_shift(env, heredoc_queue);
                 while (1) {
                     if (!readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
                         YogError_raise_SyntaxError(env, "file \"%s\", line %u: EOF while scanning heredoc", filename, PTR_AS(HereDoc, heredoc)->lineno);
@@ -563,8 +598,18 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         RETURN_TOKEN(TK_RBRACE);
         break;
     case '(':
-        SET_STATE(LS_EXPR);
-        RETURN_TOKEN(TK_LPAR);
+        {
+            char c2 = NEXTC();
+            if (c2 == COMMENT_CHAR) {
+                skip_comment(env, lexer);
+                RETURN(env, YogLexer_next_token(env, lexer, filename, token));
+            }
+            else {
+                PUSHBACK(c2);
+                SET_STATE(LS_EXPR);
+                RETURN_TOKEN(TK_LPAR);
+            }
+        }
         break;
     case ')':
         SET_STATE(LS_OP);
