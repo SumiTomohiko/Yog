@@ -23,4 +23,20 @@ def bind(obj)
   return f
 end
 
+def __recurse__(obj, f, g)
+  stack = get_current_thread().__recursive_stack__
+  if stack.include?(obj)
+    return f(obj)
+  end
+
+  stack.push(obj)
+  try
+    retval = g(obj)
+  finally
+    stack.pop()
+  end
+
+  return retval
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

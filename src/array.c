@@ -318,6 +318,36 @@ YogArray_shift(YogEnv* env, YogVal self)
 }
 
 static YogVal
+YogArray_pop(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    uint_t size = YogArray_size(env, self);
+    if (size < 1) {
+        YogError_raise_IndexError(env, "pop from empty list");
+    }
+
+    retval = YogArray_at(env, self, size - 1);
+    PTR_AS(YogArray, self)->size--;
+
+    RETURN(env, retval);
+}
+
+static YogVal
+pop(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
+
+    obj = YogArray_pop(env, self);
+
+    RETURN(env, obj);
+}
+
+static YogVal
 push(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -345,6 +375,7 @@ YogArray_klass_new(YogEnv* env)
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("each", each);
+    DEFINE_METHOD("pop", pop);
     DEFINE_METHOD("push", push);
 #undef DEFINE_METHOD
     YogKlass_define_property(env, klass, "size", get_size, NULL);
@@ -356,9 +387,9 @@ void
 YogArray_eval_builtin_script(YogEnv* env, YogVal cArray)
 {
 #if !defined(MINIYOG)
-const char* src =
+    const char* src =
 #   include "array.inc"
-;
+    ;
     YogMisc_eval_source(env, cArray, src);
 #endif
 }

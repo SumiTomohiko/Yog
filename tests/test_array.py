@@ -98,14 +98,14 @@ print([42, 26].to_s())
 foo = []
 foo.push(foo)
 print(foo.to_s())
-""", "[...]")
+""", "[[...]]")
 
     def test_to_s40(self):
         self._test("""
 foo = [42]
 foo.push(foo)
 print(foo.to_s())
-""", "[42, ...]")
+""", "[42, [...]]")
 
     def test_to_s50(self):
         self._test("""
@@ -113,7 +113,7 @@ foo = []
 foo.push(foo)
 foo.push(42)
 print(foo.to_s())
-""", "[..., 42]")
+""", "[[...], 42]")
 
     def test_to_s60(self):
         self._test("""

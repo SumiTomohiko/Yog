@@ -266,14 +266,6 @@ run_of_new_thread(void* arg)
     locals0.vals[3] = NULL;
     PUSH_LOCAL_TABLE(&env, locals0);
 
-    if (!IS_PTR(PTR_AS(YogThread, thread)->recursive_stack)) {
-        YogVal stack = YUNDEF;
-        PUSH_LOCALS2(&env, thread, stack);
-        stack = YogArray_new(&env);
-        PTR_AS(YogThread, thread)->recursive_stack = stack;
-        POP_LOCALS(&env);
-    }
-
     YogVal vararg = PTR_AS(ThreadArg, thread_arg)->vararg;
     YogVal block = PTR_AS(YogThread, thread)->block;
     if (IS_PTR(vararg)) {
@@ -364,6 +356,36 @@ YogThread_issue_object_id(YogEnv* env, YogVal self, YogVal obj)
     YOG_ASSERT(env, PTR_AS(YogThread, self)->next_obj_id != 0, "object id overflow");
 }
 
+static void
+ensure_recursive_stack(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal stack = YUNDEF;
+    PUSH_LOCAL(env, stack);
+
+    if (IS_PTR(PTR_AS(YogThread, self)->recursive_stack)) {
+        RETURN_VOID(env);
+    }
+
+    stack = YogArray_new(env);
+    PTR_AS(YogThread, self)->recursive_stack = stack;
+
+    RETURN_VOID(env);
+}
+
+static YogVal
+get_recursive_stack(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal stack = YUNDEF;
+    PUSH_LOCAL(env, stack);
+
+    ensure_recursive_stack(env, self);
+    stack = PTR_AS(YogThread, self)->recursive_stack;
+
+    RETURN(env, stack);
+}
+
 YogVal
 YogThread_klass_new(YogEnv* env)
 {
@@ -374,9 +396,12 @@ YogThread_klass_new(YogEnv* env)
 
     klass = YogKlass_new(env, "Thread", env->vm->cObject);
     YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_method(env, klass, "initialize", initialize);
-    YogKlass_define_method(env, klass, "run", run);
-    YogKlass_define_method(env, klass, "join", join);
+#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    DEFINE_METHOD("initialize", initialize);
+    DEFINE_METHOD("run", run);
+    DEFINE_METHOD("join", join);
+#undef DEFINE_METHOD
+    YogKlass_define_property(env, klass, "__recursive_stack__", get_recursive_stack, NULL);
 
     RETURN(env, klass);
 }

@@ -147,12 +147,6 @@ classmethod(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, method);
 }
 
-#if !defined(MINIYOG)
-static char* builtins_src = 
-#   include "builtins.inc"
-;
-#endif
-
 static YogVal
 argv2args(YogEnv* env, uint_t argc, char** argv)
 {
@@ -186,6 +180,12 @@ include_module(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, klass);
 }
 
+static YogVal
+get_current_thread(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    return env->thread;
+}
+
 YogVal
 YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
 {
@@ -196,13 +196,18 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
 
     builtins = YogPackage_new(env);
 
-    YogPackage_define_function(env, builtins, "classmethod", classmethod);
-    YogPackage_define_function(env, builtins, "import_package", import_package);
-    YogPackage_define_function(env, builtins, "include_module", include_module);
-    YogPackage_define_function(env, builtins, "print", print);
-    YogPackage_define_function(env, builtins, "property", property);
-    YogPackage_define_function(env, builtins, "puts", puts_);
-    YogPackage_define_function(env, builtins, "raise", raise);
+#define DEFINE_FUNCTION(name, f)    do { \
+    YogPackage_define_function(env, builtins, name, f); \
+} while (0)
+    DEFINE_FUNCTION("classmethod", classmethod);
+    DEFINE_FUNCTION("get_current_thread", get_current_thread);
+    DEFINE_FUNCTION("import_package", import_package);
+    DEFINE_FUNCTION("include_module", include_module);
+    DEFINE_FUNCTION("print", print);
+    DEFINE_FUNCTION("property", property);
+    DEFINE_FUNCTION("puts", puts_);
+    DEFINE_FUNCTION("raise", raise);
+#undef DEFINE_FUNCTION
 
 #define REGISTER_KLASS(c)   do { \
     YogVal klass = env->vm->c; \
@@ -220,7 +225,10 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
     YogObj_set_attr(env, builtins, "ARGV",  args);
 
 #if !defined(MINIYOG)
-    YogMisc_eval_source(env, builtins, builtins_src);
+    const char* src = 
+#   include "builtins.inc"
+    ;
+    YogMisc_eval_source(env, builtins, src);
 #endif
 
     RETURN(env, builtins);

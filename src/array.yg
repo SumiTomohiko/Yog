@@ -24,4 +24,20 @@ def include?(obj)
   return false
 end
 
+def to_s()
+  def f(obj)
+    return "[...]"
+  end
+
+  def g(obj)
+    a = []
+    obj.each() do [elem]
+      a.push(elem.to_s())
+    end
+    return "[" + a.join(", ") + "]"
+  end
+
+  return __recurse__(self, f, g)
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
