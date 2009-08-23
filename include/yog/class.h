@@ -1,5 +1,5 @@
-#if !defined(__YOG_KLASS_H__)
-#define __YOG_KLASS_H__
+#if !defined(__YOG_CLASS_H__)
+#define __YOG_CLASS_H__
 
 #include <stdint.h>
 #include "yog/object.h"
@@ -10,7 +10,7 @@ typedef YogVal (*GetAttrCaller)(YogEnv*, YogVal, ID);
 typedef void (*Executor)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, YogVal*, YogVal, YogVal);
 typedef YogVal (*Caller)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, YogVal*, YogVal, YogVal);
 
-struct YogKlass {
+struct YogClass {
     YOGOBJ_HEAD;
     YogVal super;
     Allocator allocator;
@@ -24,7 +24,7 @@ struct YogKlass {
     Caller call;
 };
 
-typedef struct YogKlass YogKlass;
+typedef struct YogClass YogClass;
 
 /* PROTOTYPE_START */
 
@@ -33,23 +33,23 @@ typedef struct YogKlass YogKlass;
  */
 
 /* src/klass.c */
-YogVal YogKlass_allocate(YogEnv*, YogVal);
-void YogKlass_boot(YogEnv*, YogVal);
-void YogKlass_define_allocator(YogEnv*, YogVal, Allocator);
-void YogKlass_define_caller(YogEnv*, YogVal, Caller);
-void YogKlass_define_class_method(YogEnv*, YogVal, const char*, void*);
-void YogKlass_define_descr_get_caller(YogEnv*, YogVal, YogVal (*)(YogEnv*, YogVal, YogVal, YogVal));
-void YogKlass_define_descr_get_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
-void YogKlass_define_descr_set_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
-void YogKlass_define_executor(YogEnv*, YogVal, Executor);
-void YogKlass_define_get_attr_caller(YogEnv*, YogVal, GetAttrCaller);
-void YogKlass_define_get_attr_executor(YogEnv*, YogVal, GetAttrExecutor);
-void YogKlass_define_method(YogEnv*, YogVal, const char*, void*);
-void YogKlass_define_property(YogEnv*, YogVal, const char*, void*, void*);
-YogVal YogKlass_get_attr(YogEnv*, YogVal, ID);
-void YogKlass_include_module(YogEnv*, YogVal, YogVal);
-void YogKlass_klass_init(YogEnv*, YogVal);
-YogVal YogKlass_new(YogEnv*, const char*, YogVal);
+YogVal YogClass_allocate(YogEnv*, YogVal);
+void YogClass_boot(YogEnv*, YogVal);
+void YogClass_define_allocator(YogEnv*, YogVal, Allocator);
+void YogClass_define_caller(YogEnv*, YogVal, Caller);
+void YogClass_define_class_method(YogEnv*, YogVal, const char*, void*);
+void YogClass_define_descr_get_caller(YogEnv*, YogVal, YogVal (*)(YogEnv*, YogVal, YogVal, YogVal));
+void YogClass_define_descr_get_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
+void YogClass_define_descr_set_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
+void YogClass_define_executor(YogEnv*, YogVal, Executor);
+void YogClass_define_get_attr_caller(YogEnv*, YogVal, GetAttrCaller);
+void YogClass_define_get_attr_executor(YogEnv*, YogVal, GetAttrExecutor);
+void YogClass_define_method(YogEnv*, YogVal, const char*, void*);
+void YogClass_define_property(YogEnv*, YogVal, const char*, void*, void*);
+YogVal YogClass_get_attr(YogEnv*, YogVal, ID);
+void YogClass_include_module(YogEnv*, YogVal, YogVal);
+void YogClass_class_init(YogEnv*, YogVal);
+YogVal YogClass_new(YogEnv*, const char*, YogVal);
 
 /* PROTOTYPE_END */
 

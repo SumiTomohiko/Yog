@@ -19,7 +19,7 @@ YogStackTraceEntry_new(YogEnv* env)
     PTR_AS(YogStackTraceEntry, entry)->lower = YUNDEF;
     PTR_AS(YogStackTraceEntry, entry)->lineno = 0;
     PTR_AS(YogStackTraceEntry, entry)->filename = YUNDEF;
-    PTR_AS(YogStackTraceEntry, entry)->klass_name = INVALID_ID;
+    PTR_AS(YogStackTraceEntry, entry)->class_name = INVALID_ID;
     PTR_AS(YogStackTraceEntry, entry)->func_name = INVALID_ID;
 
     return entry;

@@ -48,7 +48,7 @@ struct YogCode {
     YogVal lineno_tbl;
 
     YogVal filename;
-    ID klass_name;
+    ID class_name;
     ID func_name;
 };
 
@@ -66,7 +66,7 @@ typedef struct YogCode YogCode;
 
 /* src/code.c */
 void YogCode_dump(YogEnv*, YogVal);
-YogVal YogCode_klass_new(YogEnv*);
+YogVal YogCode_define_class(YogEnv*);
 YogVal YogCode_new(YogEnv*);
 
 /* src/code.inc */

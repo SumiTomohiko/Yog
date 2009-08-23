@@ -276,13 +276,13 @@ CompileData_add_make_module(YogEnv* env, YogVal data, uint_t lineno, ID name)
 }
 
 static void 
-CompileData_add_make_klass(YogEnv* env, YogVal data, uint_t lineno)
+CompileData_add_make_class(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
 
     YogVal inst = Inst_new(env, lineno);
     INST(inst)->type = INST_OP;
-    INST_OPCODE(inst) = OP(MAKE_KLASS);
+    INST_OPCODE(inst) = OP(MAKE_CLASS);
 
 
     add_inst(env, data, inst);
@@ -628,9 +628,9 @@ insts2bin(YogEnv* env, YogVal inst)
                         YogBinary_push_id(env, code, MAKE_MODULE_NAME(inst));
                         break;
                     }
-                case OP(MAKE_KLASS):
+                case OP(MAKE_CLASS):
                     {
-                        YogBinary_push_uint8(env, code, OP(MAKE_KLASS));
+                        YogBinary_push_uint8(env, code, OP(MAKE_CLASS));
                         break;
                     }
                 case OP(PUSH_SELF_NAME):
@@ -855,7 +855,7 @@ count_stack_size(YogEnv* env, YogVal inst)
                         push_size = 2;
                         break;
                     }
-                case OP(MAKE_KLASS):
+                case OP(MAKE_CLASS):
                     {
                         pop_size = 3;
                         push_size = 1;

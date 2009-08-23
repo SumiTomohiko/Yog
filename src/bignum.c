@@ -6,7 +6,7 @@
 #include "yog/fixnum.h"
 #include "yog/float.h"
 #include "yog/gc.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/thread.h"
@@ -807,15 +807,15 @@ power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogBignum_klass_new(YogEnv* env)
+YogBignum_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "Bignum", env->vm->cObject);
-    YogKlass_include_module(env, klass, env->vm->mComparable);
-#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, (name), (f))
+    klass = YogClass_new(env, "Bignum", env->vm->cObject);
+    YogClass_include_module(env, klass, env->vm->mComparable);
+#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, (name), (f))
     DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("&", and);
     DEFINE_METHOD("*", multiply);

@@ -1,6 +1,6 @@
 #include "yog/array.h"
 #include "yog/env.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
@@ -19,14 +19,14 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogNil_klass_new(YogEnv* env)
+YogNil_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "Nil", env->vm->cObject);
-#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    klass = YogClass_new(env, "Nil", env->vm->cObject);
+#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, name, f)
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD

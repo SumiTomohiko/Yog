@@ -108,7 +108,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_IMPORT:
         KEEP(import.names);
         break;
-    case NODE_KLASS:
+    case NODE_CLASS:
         KEEP(klass.decorators);
         KEEP(klass.super);
         KEEP(klass.stmts);
@@ -519,11 +519,11 @@ While_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts)
 }
 
 static YogVal
-Klass_new(YogEnv* env, uint_t lineno, YogVal decorators, ID name, YogVal super, YogVal stmts)
+Class_new(YogEnv* env, uint_t lineno, YogVal decorators, ID name, YogVal super, YogVal stmts)
 {
     SAVE_ARGS3(env, decorators, super, stmts);
 
-    YogVal node = YogNode_new(env, NODE_KLASS, lineno);
+    YogVal node = YogNode_new(env, NODE_CLASS, lineno);
     NODE(node)->u.klass.decorators = decorators;
     NODE(node)->u.klass.name = name;
     NODE(node)->u.klass.super = super;
@@ -2511,7 +2511,7 @@ static void yy_reduce(
 {
     uint_t lineno = TOKEN_LINENO(yymsp[-5].minor.yy0);
     ID id = PTR_AS(YogToken, yymsp[-4].minor.yy0)->u.id;
-    yygotominor.yy247 = Klass_new(env, lineno, yymsp[-6].minor.yy247, id, yymsp[-3].minor.yy247, yymsp[-1].minor.yy247);
+    yygotominor.yy247 = Class_new(env, lineno, yymsp[-6].minor.yy247, id, yymsp[-3].minor.yy247, yymsp[-1].minor.yy247);
 }
 #line 2517 "parser.c"
         break;

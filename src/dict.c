@@ -2,7 +2,7 @@
 #include "yog/dict.h"
 #include "yog/error.h"
 #include "yog/function.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/table.h"
@@ -280,21 +280,21 @@ YogDict_eval_builtin_script(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogDict_klass_new(YogEnv* env)
+YogDict_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "Dict", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, YogDict_allocate);
-#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    klass = YogClass_new(env, "Dict", env->vm->cObject);
+    YogClass_define_allocator(env, klass, YogDict_allocate);
+#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, name, f)
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", subscript_assign);
     DEFINE_METHOD("each", each);
 #undef DEFINE_METHOD
-    YogKlass_define_property(env, klass, "size", get_size, NULL);
+    YogClass_define_property(env, klass, "size", get_size, NULL);
 
     RETURN(env, klass);
 }

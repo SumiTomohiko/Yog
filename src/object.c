@@ -4,7 +4,7 @@
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/gc.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/string.h"
@@ -115,9 +115,9 @@ initialize(YogEnv* env)
 }
 
 void
-YogObj_klass_init(YogEnv* env, YogVal klass)
+YogObj_class_init(YogEnv* env, YogVal klass)
 {
-    YogKlass_define_method(env, klass, "initialize", initialize);
+    YogClass_define_method(env, klass, "initialize", initialize);
 }
 
 static YogVal
@@ -129,20 +129,20 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     PUSH_LOCALS2(env, klass, s);
 
     klass = PTR_AS(YogBasicObj, self)->klass;
-    ID name = PTR_AS(YogKlass, klass)->name;
+    ID name = PTR_AS(YogClass, klass)->name;
     s = YogString_new_format(env, "<%s %08x%08x>", YogVM_id2name(env, env->vm, name), PTR_AS(YogBasicObj, self)->id_upper, PTR_AS(YogBasicObj, self)->id_lower);
 
     RETURN(env, s);
 }
 
 static YogVal
-get_klass(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+get_class(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogVal_get_klass(env, self);
+    klass = YogVal_get_class(env, self);
 
     RETURN(env, klass);
 }
@@ -213,13 +213,13 @@ YogObject_boot(YogEnv* env, YogVal cObject)
 {
     SAVE_ARG(env, cObject);
 
-#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, cObject, name, f)
+#define DEFINE_METHOD(name, f)  YogClass_define_method(env, cObject, name, f)
     DEFINE_METHOD("!=", not_equal);
     DEFINE_METHOD("==", equal);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
-    YogKlass_define_property(env, cObject, "class", get_klass, NULL);
+    YogClass_define_property(env, cObject, "klass", get_class, NULL);
 
     RETURN_VOID(env);
 }

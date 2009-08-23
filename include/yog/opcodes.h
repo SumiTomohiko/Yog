@@ -28,7 +28,7 @@ enum OpCode {
     OP(JUMP_IF_FALSE) = 14,
     OP(DUP) = 15,
     OP(MAKE_MODULE) = 16,
-    OP(MAKE_KLASS) = 17,
+    OP(MAKE_CLASS) = 17,
     OP(PUSH_SELF_NAME) = 18,
     OP(RET) = 19,
     OP(STORE_NONLOCAL) = 20,

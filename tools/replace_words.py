@@ -2,7 +2,7 @@
 
 from os import listdir
 from os.path import exists, join, splitext
-from re import compile, sub
+from re import compile, search, sub
 from shutil import copy, move
 
 exts = [".c", ".h", ".y", ".def", ]
@@ -52,7 +52,8 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        out.write(line.replace("DPRINTF", "TRACE"))
+                        line = line.replace("_class_new", "_define_class")
+                        out.write(line)
             move(tmp, path)
 
 def main():

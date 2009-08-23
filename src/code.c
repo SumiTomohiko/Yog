@@ -6,7 +6,7 @@
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/inst.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/object.h"
 #include "yog/opcodes.h"
 #include "yog/thread.h"
@@ -221,13 +221,13 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 YogVal
-YogCode_klass_new(YogEnv* env)
+YogCode_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "Code", env->vm->cObject);
+    klass = YogClass_new(env, "Code", env->vm->cObject);
 
     RETURN(env, klass);
 }
@@ -252,7 +252,7 @@ YogCode_new(YogEnv* env)
     CODE(code)->lineno_tbl_size = 0;
     CODE(code)->lineno_tbl = YUNDEF;
     CODE(code)->filename = YUNDEF;
-    CODE(code)->klass_name = INVALID_ID;
+    CODE(code)->class_name = INVALID_ID;
     CODE(code)->func_name = INVALID_ID;
 
     POP_LOCALS(env);

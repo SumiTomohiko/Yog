@@ -8,7 +8,7 @@
 #include "yog/eval.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/package.h"
@@ -25,7 +25,7 @@ raise(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal exc = YogArray_at(env, args, 0);
 
-    if (!YogVal_is_subklass_of(env, exc, env->vm->eException)) {
+    if (!YogVal_is_subclass_of(env, exc, env->vm->eException)) {
         YogVal receiver = env->vm->eException;
         YogVal args[] = { exc };
         PUSH_LOCALSX(env, array_sizeof(args), args);
@@ -175,7 +175,7 @@ include_module(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     klass = YogArray_at(env, args, 0);
     module = YogArray_at(env, args, 1);
-    YogKlass_include_module(env, klass, module);
+    YogClass_include_module(env, klass, module);
 
     RETURN(env, klass);
 }
@@ -209,17 +209,17 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
     DEFINE_FUNCTION("raise", raise);
 #undef DEFINE_FUNCTION
 
-#define REGISTER_KLASS(c)   do { \
+#define REGISTER_CLASS(c)   do { \
     YogVal klass = env->vm->c; \
-    YogObj_set_attr_id(env, builtins, PTR_AS(YogKlass, klass)->name, klass); \
+    YogObj_set_attr_id(env, builtins, PTR_AS(YogClass, klass)->name, klass); \
 } while (0)
-    REGISTER_KLASS(cDict);
-    REGISTER_KLASS(cFile);
-    REGISTER_KLASS(cObject);
-    REGISTER_KLASS(cSet);
-    REGISTER_KLASS(cThread);
-    REGISTER_KLASS(eException);
-#undef REGISTER_KLASS
+    REGISTER_CLASS(cDict);
+    REGISTER_CLASS(cFile);
+    REGISTER_CLASS(cObject);
+    REGISTER_CLASS(cSet);
+    REGISTER_CLASS(cThread);
+    REGISTER_CLASS(eException);
+#undef REGISTER_CLASS
 
     args = argv2args(env, argc, argv);
     YogObj_set_attr(env, builtins, "ARGV",  args);

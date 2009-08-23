@@ -28,9 +28,9 @@ typedef struct YogMatch YogMatch;
  */
 
 /* src/regexp.c */
-YogVal YogMatch_klass_new(YogEnv*);
+YogVal YogMatch_define_class(YogEnv*);
 YogVal YogMatch_new(YogEnv*, YogVal, YogVal, OnigRegion*);
-YogVal YogRegexp_klass_new(YogEnv*);
+YogVal YogRegexp_define_class(YogEnv*);
 YogVal YogRegexp_new(YogEnv*, YogVal, OnigOptionType);
 
 /* PROTOTYPE_END */

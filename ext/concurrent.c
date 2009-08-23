@@ -1,10 +1,10 @@
 #include <pthread.h>
 #include "yog/array.h"
+#include "yog/class.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/frame.h"
 #include "yog/gc.h"
-#include "yog/klass.h"
 #include "yog/object.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
@@ -157,17 +157,17 @@ YogInit_concurrent(YogEnv* env, YogVal pkg)
     PUSH_LOCALS2(env, cBarrier, cAtomicInt);
 
     YogVM* vm = env->vm;
-    cBarrier = YogKlass_new(env, "Barrier", vm->cObject);
-    YogKlass_define_allocator(env, cBarrier, Barrier_alloc);
-    YogKlass_define_method(env, cBarrier, "initialize", Barrier_initialize);
-    YogKlass_define_method(env, cBarrier, "wait!", Barrier_wait);
+    cBarrier = YogClass_new(env, "Barrier", vm->cObject);
+    YogClass_define_allocator(env, cBarrier, Barrier_alloc);
+    YogClass_define_method(env, cBarrier, "initialize", Barrier_initialize);
+    YogClass_define_method(env, cBarrier, "wait!", Barrier_wait);
     YogObj_set_attr(env, pkg, "Barrier", cBarrier);
 
-    cAtomicInt = YogKlass_new(env, "AtomicInt", vm->cObject);
-    YogKlass_define_allocator(env, cAtomicInt, AtomicInt_alloc);
-    YogKlass_define_method(env, cAtomicInt, "initialize", AtomicInt_initialize);
-    YogKlass_define_method(env, cAtomicInt, "inc!", AtomicInt_inc);
-    YogKlass_define_method(env, cAtomicInt, "get", AtomicInt_get);
+    cAtomicInt = YogClass_new(env, "AtomicInt", vm->cObject);
+    YogClass_define_allocator(env, cAtomicInt, AtomicInt_alloc);
+    YogClass_define_method(env, cAtomicInt, "initialize", AtomicInt_initialize);
+    YogClass_define_method(env, cAtomicInt, "inc!", AtomicInt_inc);
+    YogClass_define_method(env, cAtomicInt, "get", AtomicInt_get);
     YogObj_set_attr(env, pkg, "AtomicInt", cAtomicInt);
 
     YogObj_set_attr(env, pkg, "Thread", vm->cThread);

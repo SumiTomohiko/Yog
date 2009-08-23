@@ -10,7 +10,7 @@ struct YogPackage {
 
 typedef struct YogPackage YogPackage;
 
-#include "yog/klass.h"
+#include "yog/class.h"
 
 /* PROTOTYPE_START */
 
@@ -20,7 +20,7 @@ typedef struct YogPackage YogPackage;
 
 /* src/package.c */
 void YogPackage_define_function(YogEnv*, YogVal, const char*, void*);
-YogVal YogPackage_klass_new(YogEnv*);
+YogVal YogPackage_define_class(YogEnv*);
 YogVal YogPackage_new(YogEnv*);
 
 /* PROTOTYPE_END */

@@ -128,9 +128,9 @@
             POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
             YogVal callee = POP();
         
-            YogVal klass = YogVal_get_klass(env, callee);
-            YOG_ASSERT(env, PTR_AS(YogKlass, klass)->exec, "uncallable");
-            PTR_AS(YogKlass, klass)->exec(env, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+            YogVal klass = YogVal_get_class(env, callee);
+            YOG_ASSERT(env, PTR_AS(YogClass, klass)->exec, "uncallable");
+            PTR_AS(YogClass, klass)->exec(env, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
         
             POP_LOCALS(env);
             POP_LOCALS(env);
@@ -270,7 +270,7 @@
             POP_LOCALS(env);
             break;
         }
-    case OP(MAKE_KLASS):
+    case OP(MAKE_CLASS):
         {
             YogVal code = YUNDEF;
             YogVal super = YUNDEF;
@@ -284,13 +284,13 @@
             YogVal attrs = YUNDEF;
             PUSH_LOCALS3(env, kls, frame, attrs);
         
-            kls = YogKlass_new(env, NULL, super);
-            PTR_AS(YogKlass, kls)->name = VAL2ID(name);
+            kls = YogClass_new(env, NULL, super);
+            PTR_AS(YogClass, kls)->name = VAL2ID(name);
             PTR_AS(YogObj, kls)->attrs = YUNDEF;
             attrs = YogTable_new_symbol_table(env);
             PTR_AS(YogObj, kls)->attrs = attrs;
         
-            frame = YogKlassFrame_new(env);
+            frame = YogClassFrame_new(env);
             setup_script_frame(env, frame, code);
             PTR_AS(YogNameFrame, frame)->self = kls;
             PTR_AS(YogNameFrame, frame)->vars = attrs;
@@ -384,8 +384,8 @@
             YogVal klass = YUNDEF;
             PUSH_LOCAL(env, klass);
         
-            klass = YogVal_get_klass(env, obj);
-            GetAttrExecutor exec = PTR_AS(YogKlass, klass)->exec_get_attr;
+            klass = YogVal_get_class(env, obj);
+            GetAttrExecutor exec = PTR_AS(YogClass, klass)->exec_get_attr;
             if (exec == NULL) {
                 exec = exec_get_attr;
             }
@@ -499,11 +499,11 @@
             obj = POP();
             val = POP();
             YogVal attr = YUNDEF;
-            YogVal klass_of_obj = YUNDEF;
-            YogVal klass_of_attr = YUNDEF;
-            PUSH_LOCALS3(env, attr, klass_of_obj, klass_of_attr);
+            YogVal class_of_obj = YUNDEF;
+            YogVal class_of_attr = YUNDEF;
+            PUSH_LOCALS3(env, attr, class_of_obj, class_of_attr);
         
-            klass_of_obj = YogVal_get_klass(env, obj);
+            class_of_obj = YogVal_get_class(env, obj);
             BOOL has_attrs;
             if (IS_PTR(obj) && ((PTR_AS(YogBasicObj, obj)->flags & HAS_ATTRS) != 0)) {
                 has_attrs = TRUE;
@@ -516,11 +516,11 @@
                 attr = YogObj_get_attr(env, obj, name);
             }
             if (IS_UNDEF(attr)) {
-                attr = YogObj_get_attr(env, klass_of_obj, name);
+                attr = YogObj_get_attr(env, class_of_obj, name);
             }
             if (!IS_UNDEF(attr)) {
-                klass_of_attr = YogVal_get_klass(env, attr);
-                void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogKlass, klass_of_attr)->exec_set_descr;
+                class_of_attr = YogVal_get_class(env, attr);
+                void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogClass, class_of_attr)->exec_set_descr;
                 if (exec != NULL) {
                     exec(env, attr, obj, val);
                 }
@@ -528,20 +528,20 @@
                     YogObj_set_attr_id(env, obj, name, val);
                 }
                 else {
-                    ID id = PTR_AS(YogKlass, klass_of_obj)->name;
-                    const char* klass_name = YogVM_id2name(env, env->vm, id);
-                    YogError_raise_AttributeError(env, "can't set attribute to '%s' object", klass_name);
+                    ID id = PTR_AS(YogClass, class_of_obj)->name;
+                    const char* class_name = YogVM_id2name(env, env->vm, id);
+                    YogError_raise_AttributeError(env, "can't set attribute to '%s' object", class_name);
                 }
             }
             else if (has_attrs) {
                 YogObj_set_attr_id(env, obj, name, val);
             }
             else {
-                ID id = PTR_AS(YogKlass, klass_of_obj)->name;
+                ID id = PTR_AS(YogClass, class_of_obj)->name;
                 YogVM* vm = env->vm;
-                const char* klass_name = YogVM_id2name(env, vm, id);
+                const char* class_name = YogVM_id2name(env, vm, id);
                 const char* attr_name = YogVM_id2name(env, vm, name);
-                YogError_raise_AttributeError(env, "%s object has no attribute '%s'", klass_name, attr_name);
+                YogError_raise_AttributeError(env, "%s object has no attribute '%s'", class_name, attr_name);
             }
         
             POP_LOCALS(env);

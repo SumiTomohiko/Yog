@@ -33,7 +33,7 @@ enum YogNodeType {
     NODE_FUNC_DEF,
     NODE_IF,
     NODE_IMPORT,
-    NODE_KLASS,
+    NODE_CLASS,
     NODE_KW_ARG,
     NODE_KW_PARAM,
     NODE_LITERAL,

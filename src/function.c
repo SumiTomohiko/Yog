@@ -6,7 +6,7 @@
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/function.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -313,35 +313,35 @@ descr_get(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal obj = YUNDEF;
-    YogVal self_klass = YUNDEF;
+    YogVal self_class = YUNDEF;
     YogVal retval = YUNDEF;
     YogVal klass = YUNDEF;
-    PUSH_LOCALS4(env, obj, self_klass, retval, klass);
+    PUSH_LOCALS4(env, obj, self_class, retval, klass);
 
     obj = YogArray_at(env, args, 0);
-    klass = YogVal_get_klass(env, obj);
+    klass = YogVal_get_class(env, obj);
 
-    self_klass = YogVal_get_klass(env, self);
-    YogVal (*f)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogKlass, self_klass)->call_get_descr;
+    self_class = YogVal_get_class(env, self);
+    YogVal (*f)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogClass, self_class)->call_get_descr;
     retval = f(env, self, obj, klass);
 
     RETURN(env, retval);
 }
 
 YogVal
-YogFunction_klass_new(YogEnv* env)
+YogFunction_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "Function", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, YogFunction_allocate);
-    YogKlass_define_descr_get_executor(env, klass, YogFunction_exec_get_descr);
-    YogKlass_define_descr_get_caller(env, klass, YogFunction_call_get_descr);
-    YogKlass_define_caller(env, klass, YogFunction_call);
-    YogKlass_define_executor(env, klass, YogFunction_exec);
-    YogKlass_define_method(env, klass, "descr_get", descr_get);
+    klass = YogClass_new(env, "Function", env->vm->cObject);
+    YogClass_define_allocator(env, klass, YogFunction_allocate);
+    YogClass_define_descr_get_executor(env, klass, YogFunction_exec_get_descr);
+    YogClass_define_descr_get_caller(env, klass, YogFunction_call_get_descr);
+    YogClass_define_caller(env, klass, YogFunction_call);
+    YogClass_define_executor(env, klass, YogFunction_exec);
+    YogClass_define_method(env, klass, "descr_get", descr_get);
 
     RETURN(env, klass);
 }
@@ -465,12 +465,12 @@ YogNativeFunction_allocate(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogNativeFunction_new(YogEnv* env, ID klass_name, const char* func_name, void* f)
+YogNativeFunction_new(YogEnv* env, ID class_name, const char* func_name, void* f)
 {
     ID func_id = YogVM_intern(env, env->vm, func_name);
 
     YogVal func = YogNativeFunction_allocate(env, env->vm->cNativeFunction);
-    PTR_AS(YogNativeFunction, func)->klass_name = klass_name;
+    PTR_AS(YogNativeFunction, func)->class_name = class_name;
     PTR_AS(YogNativeFunction, func)->func_name = func_id;
     PTR_AS(YogNativeFunction, func)->f = f;
 
@@ -543,17 +543,17 @@ create_instance_method(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogInstanceMethod_klass_new(YogEnv* env)
+YogInstanceMethod_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
 
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "InstanceMethod", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, create_instance_method);
-    YogKlass_define_caller(env, klass, YogInstanceMethod_call);
-    YogKlass_define_executor(env, klass, YogInstanceMethod_exec);
+    klass = YogClass_new(env, "InstanceMethod", env->vm->cObject);
+    YogClass_define_allocator(env, klass, create_instance_method);
+    YogClass_define_caller(env, klass, YogInstanceMethod_call);
+    YogClass_define_executor(env, klass, YogInstanceMethod_exec);
 
     RETURN(env, klass);
 }
@@ -629,19 +629,19 @@ YogNativeFunction_exec_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal kl
 }
 
 YogVal
-YogNativeFunction_klass_new(YogEnv* env)
+YogNativeFunction_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "NativeFunction", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, YogNativeFunction_allocate);
-    YogKlass_define_descr_get_executor(env, klass, YogNativeFunction_exec_get_descr);
-    YogKlass_define_descr_get_caller(env, klass, YogNativeFunction_call_get_descr);
-    YogKlass_define_caller(env, klass, YogNativeFunction_call);
-    YogKlass_define_executor(env, klass, YogNativeFunction_exec);
-    YogKlass_define_method(env, klass, "descr_get", descr_get);
+    klass = YogClass_new(env, "NativeFunction", env->vm->cObject);
+    YogClass_define_allocator(env, klass, YogNativeFunction_allocate);
+    YogClass_define_descr_get_executor(env, klass, YogNativeFunction_exec_get_descr);
+    YogClass_define_descr_get_caller(env, klass, YogNativeFunction_call_get_descr);
+    YogClass_define_caller(env, klass, YogNativeFunction_call);
+    YogClass_define_executor(env, klass, YogNativeFunction_exec);
+    YogClass_define_method(env, klass, "descr_get", descr_get);
 
     RETURN(env, klass);
 }
@@ -654,8 +654,8 @@ YogCallable_call(YogEnv* env, YogVal self, uint_t argc, YogVal* args)
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, klass, retval);
 
-    klass = YogVal_get_klass(env, self);
-    Caller call = PTR_AS(YogKlass, klass)->call;
+    klass = YogVal_get_class(env, self);
+    Caller call = PTR_AS(YogClass, klass)->call;
     YOG_ASSERT(env, call != NULL, "uncallable");
 
     retval = call(env, self, argc, args, YNIL, 0, NULL, YNIL, YNIL);
@@ -685,8 +685,8 @@ YogCallable_call2(YogEnv* env, YogVal self, uint_t argc, YogVal* args, YogVal bl
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, klass, retval);
 
-    klass = YogVal_get_klass(env, self);
-    Caller call = PTR_AS(YogKlass, klass)->call;
+    klass = YogVal_get_class(env, self);
+    Caller call = PTR_AS(YogClass, klass)->call;
     YOG_ASSERT(env, call != NULL, "uncallable");
 
     retval = call(env, self, argc, args, block, 0, NULL, YNIL, YNIL);
@@ -695,16 +695,16 @@ YogCallable_call2(YogEnv* env, YogVal self, uint_t argc, YogVal* args, YogVal bl
 }
 
 YogVal
-YogNativeInstanceMethod_klass_new(YogEnv* env)
+YogNativeInstanceMethod_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "NativeInstanceMethod", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, create_instance_method);
-    YogKlass_define_caller(env, klass, YogNativeInstanceMethod_call);
-    YogKlass_define_executor(env, klass, YogNativeInstanceMethod_exec);
+    klass = YogClass_new(env, "NativeInstanceMethod", env->vm->cObject);
+    YogClass_define_allocator(env, klass, create_instance_method);
+    YogClass_define_caller(env, klass, YogNativeInstanceMethod_call);
+    YogClass_define_executor(env, klass, YogNativeInstanceMethod_exec);
 
     RETURN(env, klass);
 }

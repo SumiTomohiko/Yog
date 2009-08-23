@@ -6,7 +6,7 @@
 #include "yog/error.h"
 #include "yog/float.h"
 #include "yog/gc.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/thread.h"
@@ -286,23 +286,23 @@ power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogFloat_klass_new(YogEnv* env)
+YogFloat_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "Float", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_method(env, klass, "*", multiply);
-    YogKlass_define_method(env, klass, "**", power);
-    YogKlass_define_method(env, klass, "+", add);
-    YogKlass_define_method(env, klass, "+self", positive);
-    YogKlass_define_method(env, klass, "-", subtract);
-    YogKlass_define_method(env, klass, "-self", negative);
-    YogKlass_define_method(env, klass, "/", divide);
-    YogKlass_define_method(env, klass, "//", floor_divide);
-    YogKlass_define_method(env, klass, "to_s", to_s);
+    klass = YogClass_new(env, "Float", env->vm->cObject);
+    YogClass_define_allocator(env, klass, allocate);
+    YogClass_define_method(env, klass, "*", multiply);
+    YogClass_define_method(env, klass, "**", power);
+    YogClass_define_method(env, klass, "+", add);
+    YogClass_define_method(env, klass, "+self", positive);
+    YogClass_define_method(env, klass, "-", subtract);
+    YogClass_define_method(env, klass, "-self", negative);
+    YogClass_define_method(env, klass, "/", divide);
+    YogClass_define_method(env, klass, "//", floor_divide);
+    YogClass_define_method(env, klass, "to_s", to_s);
 
     RETURN(env, klass);
 }

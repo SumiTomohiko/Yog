@@ -19,7 +19,7 @@ typedef struct YogFile YogFile;
  */
 
 /* src/file.c */
-YogVal YogFile_klass_new(YogEnv*);
+YogVal YogFile_define_class(YogEnv*);
 
 /* PROTOTYPE_END */
 

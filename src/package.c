@@ -68,8 +68,8 @@ call_get_attr(YogEnv* env, YogVal self, ID name)
         RETURN(env, attr);
     }
 
-    klass = YogVal_get_klass(env, self);
-    attr = YogKlass_get_attr(env, klass, name);
+    klass = YogVal_get_class(env, self);
+    attr = YogClass_get_attr(env, klass, name);
     if (!IS_UNDEF(attr)) {
         attr = YogVal_get_descr(env, attr, self, klass);
         RETURN(env, attr);
@@ -92,8 +92,8 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
         RETURN_VOID(env);
     }
 
-    klass = YogVal_get_klass(env, self);
-    attr = YogKlass_get_attr(env, klass, name);
+    klass = YogVal_get_class(env, self);
+    attr = YogClass_get_attr(env, klass, name);
     if (!IS_UNDEF(attr)) {
         attr = YogVal_get_descr(env, attr, self, klass);
         FRAME_PUSH(env, attr);
@@ -106,14 +106,14 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
 }
 
 YogVal
-YogPackage_klass_new(YogEnv* env)
+YogPackage_define_class(YogEnv* env)
 {
-    YogVal klass = YogKlass_new(env, "Package", env->vm->cObject);
+    YogVal klass = YogClass_new(env, "Package", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
-    YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_get_attr_caller(env, klass, call_get_attr);
-    YogKlass_define_get_attr_executor(env, klass, exec_get_attr);
+    YogClass_define_allocator(env, klass, allocate);
+    YogClass_define_get_attr_caller(env, klass, call_get_attr);
+    YogClass_define_get_attr_executor(env, klass, exec_get_attr);
 
     POP_LOCALS(env);
     return klass;

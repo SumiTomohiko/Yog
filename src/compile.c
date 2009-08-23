@@ -36,7 +36,7 @@ struct AstVisitor {
     VisitNode visit_func_def;
     VisitNode visit_if;
     VisitNode visit_import;
-    VisitNode visit_klass;
+    VisitNode visit_class;
     VisitNode visit_literal;
     VisitNode visit_logical_and;
     VisitNode visit_logical_or;
@@ -106,7 +106,7 @@ typedef struct Var Var;
 enum Context {
     CTX_BLOCK,
     CTX_FUNC,
-    CTX_KLASS,
+    CTX_CLASS,
     CTX_MODULE,
     CTX_PKG,
 };
@@ -160,7 +160,7 @@ struct CompileData {
     YogVal label_last_ret;
 
     YogVal filename;
-    ID klass_name;
+    ID class_name;
 
     YogVal outer;
     uint_t max_outer_depth;
@@ -385,8 +385,8 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_BLOCK_ARG:
         VISIT(block);
         break;
-    case NODE_KLASS:
-        VISIT(klass);
+    case NODE_CLASS:
+        VISIT(class);
         break;
     case NODE_SUBSCRIPT:
         VISIT(subscript);
@@ -776,7 +776,7 @@ scan_var_visit_module(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 }
 
 static void
-scan_var_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+scan_var_visit_class(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
@@ -924,7 +924,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_func_def = scan_var_visit_func_def;
     visitor->visit_if = scan_var_visit_if;
     visitor->visit_import = scan_var_visit_import;
-    visitor->visit_klass = scan_var_visit_klass;
+    visitor->visit_class = scan_var_visit_class;
     visitor->visit_literal = NULL;
     visitor->visit_logical_and = scan_var_visit_logical_and;
     visitor->visit_logical_or = scan_var_visit_logical_or;
@@ -1024,7 +1024,7 @@ append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
             }
             break;
         }
-    case CTX_KLASS:
+    case CTX_CLASS:
     case CTX_MODULE:
     case CTX_PKG:
         CompileData_add_store_name(env, data, lineno, name);
@@ -1183,7 +1183,7 @@ compile_visit_literal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 
     val = NODE(node)->u.literal.val;
     uint_t lineno = NODE(node)->lineno;
-    if (VAL2PTR(YogVal_get_klass(env, val)) == VAL2PTR(env->vm->cString)) {
+    if (VAL2PTR(YogVal_get_class(env, val)) == VAL2PTR(env->vm->cString)) {
         uint_t index = register_const(env, data, val);
         CompileData_add_make_string(env, data, lineno, index);
     }
@@ -1453,7 +1453,7 @@ CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 }
 
 static YogVal
-CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID klass_name, YogVal upper_data, BOOL interactive)
+CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID class_name, YogVal upper_data, BOOL interactive)
 {
     SAVE_ARGS5(env, vars, anchor, exc_tbl_ent, filename, upper_data);
     YogVal label_last_ret = YUNDEF;
@@ -1470,12 +1470,12 @@ CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc
     COMPILE_DATA(data)->finally_list = YUNDEF;
     COMPILE_DATA(data)->try_list = YUNDEF;
     COMPILE_DATA(data)->label_last_ret = label_last_ret;
-    COMPILE_DATA(data)->klass_name = INVALID_ID;
+    COMPILE_DATA(data)->class_name = INVALID_ID;
     COMPILE_DATA(data)->last_inst = anchor;
     COMPILE_DATA(data)->exc_tbl = exc_tbl_ent;
     COMPILE_DATA(data)->exc_tbl_last = exc_tbl_ent;
     COMPILE_DATA(data)->filename = filename;
-    COMPILE_DATA(data)->klass_name = klass_name;
+    COMPILE_DATA(data)->class_name = class_name;
     COMPILE_DATA(data)->outer = upper_data;
     COMPILE_DATA(data)->max_outer_depth = 0;
     COMPILE_DATA(data)->interactive = interactive;
@@ -1594,7 +1594,7 @@ insert_inst_before_last_return(YogEnv* env, YogVal anchor, YogVal last, YogVal i
 }
 
 static YogVal
-compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, ID func_name, YogVal stmts, YogVal vars, Context ctx, YogVal tail, YogVal upper_data, BOOL interactive)
+compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, ID func_name, YogVal stmts, YogVal vars, Context ctx, YogVal tail, YogVal upper_data, BOOL interactive)
 {
     SAVE_ARGS5(env, filename, stmts, vars, tail, upper_data);
     YogVal anchor = YUNDEF;
@@ -1607,7 +1607,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, 
 
     anchor = Anchor_new(env);
     exc_tbl_ent = ExceptionTableEntry_new(env);
-    data = CompileData_new(env, ctx, vars, anchor, exc_tbl_ent, filename, klass_name, upper_data, interactive);
+    data = CompileData_new(env, ctx, vars, anchor, exc_tbl_ent, filename, class_name, upper_data, interactive);
 
     label_return_start = Label_new(env);
     add_inst(env, data, label_return_start);
@@ -1629,7 +1629,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, 
             }
         }
         break;
-    case CTX_KLASS:
+    case CTX_CLASS:
     default:
         break;
     }
@@ -1672,7 +1672,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, 
     make_lineno_table(env, code, anchor);
 
     CODE(code)->filename = filename;
-    CODE(code)->klass_name = klass_name;
+    CODE(code)->class_name = class_name;
     CODE(code)->func_name = func_name;
 
 #if 0
@@ -1945,7 +1945,7 @@ vars_flags2type(YogEnv* env, YogVal var_tbl, YogVal outer)
 }
 
 static YogVal
-compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, YogVal node, YogVal upper)
+compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, YogVal node, YogVal upper)
 {
     SAVE_ARGS3(env, filename, node, upper);
     YogVal var_tbl = YUNDEF;
@@ -1966,7 +1966,7 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID klass_name, Y
 
     ID func_name = NODE(node)->u.funcdef.name;
 
-    YogVal code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_FUNC, YNIL, upper, FALSE);
+    YogVal code = compile_stmts(env, visitor, filename, class_name, func_name, stmts, vars, CTX_FUNC, YNIL, upper, FALSE);
     PUSH_LOCAL(env, code);
     setup_params(env, vars, params, code);
 
@@ -2007,12 +2007,12 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     decorators = NODE(node)->u.funcdef.decorators;
     visit_decorators(env, visitor, decorators, data);
 
-    ID klass_name = INVALID_ID;
-    if (COMPILE_DATA(data)->ctx == CTX_KLASS) {
-        klass_name = COMPILE_DATA(data)->klass_name;
+    ID class_name = INVALID_ID;
+    if (COMPILE_DATA(data)->ctx == CTX_CLASS) {
+        class_name = COMPILE_DATA(data)->class_name;
     }
 
-    code = compile_func(env, visitor, COMPILE_DATA(data)->filename, klass_name, node, data);
+    code = compile_func(env, visitor, COMPILE_DATA(data)->filename, class_name, node, data);
 
     uint_t lineno = NODE(node)->lineno;
     add_push_const(env, data, code, lineno);
@@ -2164,7 +2164,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
             }
             break;
         }
-    case CTX_KLASS:
+    case CTX_CLASS:
     case CTX_MODULE:
     case CTX_PKG:
         CompileData_add_load_name(env, data, lineno, id);
@@ -2618,9 +2618,9 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
     vars = vars_flags2type(env, var_tbl, data);
 
-    ID klass_name = INVALID_ID;
+    ID class_name = INVALID_ID;
     ID func_name = YogVM_intern(env, env->vm, "<block>");
-    code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_BLOCK, YNIL, data, FALSE);
+    code = compile_stmts(env, visitor, filename, class_name, func_name, stmts, vars, CTX_BLOCK, YNIL, data, FALSE);
 
     setup_params(env, vars, params, code);
 
@@ -2637,7 +2637,7 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     uint_t lineno = NODE(node)->lineno;
     add_push_const(env, data, code, lineno);
     switch (COMPILE_DATA(data)->ctx) {
-    case CTX_KLASS:
+    case CTX_CLASS:
     case CTX_MODULE:
     case CTX_PKG:
     case CTX_FUNC:
@@ -2655,7 +2655,7 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static YogVal
-compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, uint_t first_lineno, YogVal data)
+compile_class(YogEnv* env, AstVisitor* visitor, ID class_name, YogVal stmts, uint_t first_lineno, YogVal data)
 {
     SAVE_ARGS2(env, stmts, data);
 
@@ -2686,7 +2686,7 @@ compile_klass(YogEnv* env, AstVisitor* visitor, ID klass_name, YogVal stmts, uin
     YogVal filename = COMPILE_DATA(data)->filename;
     ID func_name = INVALID_ID;
 
-    YogVal code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_KLASS, push_self_name, COMPILE_DATA(data)->outer, FALSE);
+    YogVal code = compile_stmts(env, visitor, filename, class_name, func_name, stmts, vars, CTX_CLASS, push_self_name, COMPILE_DATA(data)->outer, FALSE);
 
     RETURN(env, code);
 }
@@ -2705,10 +2705,10 @@ compile_module(YogEnv* env, AstVisitor* visitor, ID name, YogVal stmts, uint_t l
     vars = vars_flags2type(env, var_tbl, COMPILE_DATA(data)->outer);
 
     filename = COMPILE_DATA(data)->filename;
-    ID klass_name = name;
+    ID class_name = name;
     ID func_name = YogVM_intern(env, env->vm, "<module>");
 
-    code = compile_stmts(env, visitor, filename, klass_name, func_name, stmts, vars, CTX_MODULE, YUNDEF, COMPILE_DATA(data)->outer, FALSE);
+    code = compile_stmts(env, visitor, filename, class_name, func_name, stmts, vars, CTX_MODULE, YUNDEF, COMPILE_DATA(data)->outer, FALSE);
 
     RETURN(env, code);
 }
@@ -2737,7 +2737,7 @@ compile_visit_module(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
-compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+compile_visit_class(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
     YogVal super = YUNDEF;
@@ -2763,10 +2763,10 @@ compile_visit_klass(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
     stmts = NODE(node)->u.klass.stmts;
     uint_t lineno = NODE(node)->lineno;
-    code = compile_klass(env, visitor, name, stmts, lineno, data);
+    code = compile_class(env, visitor, name, stmts, lineno, data);
     add_push_const(env, data, code, lineno);
 
-    CompileData_add_make_klass(env, data, lineno);
+    CompileData_add_make_class(env, data, lineno);
     compile_decorators_call(env, visitor, decorators, data);
     append_store(env, data, lineno, name);
 
@@ -2963,7 +2963,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_func_def = compile_visit_func_def;
     visitor->visit_if = compile_visit_if;
     visitor->visit_import = compile_visit_import;
-    visitor->visit_klass = compile_visit_klass;
+    visitor->visit_class = compile_visit_class;
     visitor->visit_literal = compile_visit_literal;
     visitor->visit_logical_and = compile_visit_logical_and;
     visitor->visit_logical_or = compile_visit_logical_or;
@@ -3001,10 +3001,10 @@ compile_package(YogEnv* env, const char* filename, YogVal stmts, BOOL interactiv
     }
     name = YogCharArray_new_str(env, filename);
 
-    ID klass_name = INVALID_ID;
+    ID class_name = INVALID_ID;
     ID func_name = YogVM_intern(env, env->vm, "<package>");
 
-    YogVal code = compile_stmts(env, &visitor, name, klass_name, func_name, stmts, vars, CTX_PKG, YNIL, YUNDEF, interactive);
+    YogVal code = compile_stmts(env, &visitor, name, class_name, func_name, stmts, vars, CTX_PKG, YNIL, YUNDEF, interactive);
 
     RETURN(env, code);
 }

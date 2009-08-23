@@ -8,7 +8,7 @@ struct YogStackTraceEntry {
     YogVal lower;
     uint_t lineno;
     YogVal filename;
-    ID klass_name;
+    ID class_name;
     ID func_name;
 };
 
@@ -29,7 +29,7 @@ typedef struct YogException YogException;
  */
 
 /* src/exception.c */
-YogVal YogException_klass_new(YogEnv*);
+YogVal YogException_define_class(YogEnv*);
 
 /* src/stacktrace.c */
 YogVal YogStackTraceEntry_new(YogEnv*);

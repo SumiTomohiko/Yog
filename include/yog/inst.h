@@ -74,7 +74,7 @@ struct YogInst {
             ID name;
         } make_module;
         struct {
-        } make_klass;
+        } make_class;
         struct {
         } push_self_name;
         struct {

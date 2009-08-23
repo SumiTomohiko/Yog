@@ -6,7 +6,7 @@
 #include "yog/error.h"
 #include "yog/frame.h"
 #include "yog/gc.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/regexp.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
@@ -79,9 +79,9 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
 }
 
 YogVal
-YogRegexp_klass_new(YogEnv* env)
+YogRegexp_define_class(YogEnv* env)
 {
-    return YogKlass_new(env, "Regexp", env->vm->cObject);
+    return YogClass_new(env, "Regexp", env->vm->cObject);
 }
 
 static int_t
@@ -218,14 +218,14 @@ end(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogMatch_klass_new(YogEnv* env)
+YogMatch_define_class(YogEnv* env)
 {
-    YogVal klass = YogKlass_new(env, "Match", env->vm->cObject);
+    YogVal klass = YogClass_new(env, "Match", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
-    YogKlass_define_method(env, klass, "group", group);
-    YogKlass_define_method(env, klass, "start", start);
-    YogKlass_define_method(env, klass, "end", end);
+    YogClass_define_method(env, klass, "group", group);
+    YogClass_define_method(env, klass, "start", start);
+    YogClass_define_method(env, klass, "end", end);
 
     POP_LOCALS(env);
     return klass;

@@ -103,7 +103,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_IMPORT:
         KEEP(import.names);
         break;
-    case NODE_KLASS:
+    case NODE_CLASS:
         KEEP(klass.decorators);
         KEEP(klass.super);
         KEEP(klass.stmts);
@@ -514,11 +514,11 @@ While_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts)
 }
 
 static YogVal
-Klass_new(YogEnv* env, uint_t lineno, YogVal decorators, ID name, YogVal super, YogVal stmts)
+Class_new(YogEnv* env, uint_t lineno, YogVal decorators, ID name, YogVal super, YogVal stmts)
 {
     SAVE_ARGS3(env, decorators, super, stmts);
 
-    YogVal node = YogNode_new(env, NODE_KLASS, lineno);
+    YogVal node = YogNode_new(env, NODE_CLASS, lineno);
     NODE(node)->u.klass.decorators = decorators;
     NODE(node)->u.klass.name = name;
     NODE(node)->u.klass.super = super;
@@ -826,7 +826,7 @@ stmt(A) ::= IF(B) expr(C) NEWLINE stmts(D) if_tail(E) END. {
 stmt(A) ::= decorators_opt(F) CLASS(B) NAME(C) super_opt(D) NEWLINE stmts(E) END. {
     uint_t lineno = TOKEN_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
-    A = Klass_new(env, lineno, F, id, D, E);
+    A = Class_new(env, lineno, F, id, D, E);
 }
 stmt(A) ::= MODULE(B) NAME(C) stmts(D) END. {
     uint_t lineno = TOKEN_LINENO(B);
@@ -1661,7 +1661,7 @@ testlist: test (',' test)* [',']
 dictorsetmaker: ( (test ':' test (comp_for | (',' test ':' test)* [','])) |
                   (test (comp_for | (',' test)* [','])) )
 
-classdef: 'class' NAME ['(' [arglist] ')'] ':' suite
+classdef: 'klass' NAME ['(' [arglist] ')'] ':' suite
 
 arglist: (argument ',')* (argument [',']
                          |'*' test (',' argument)* [',' '**' test]

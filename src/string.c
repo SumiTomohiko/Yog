@@ -14,7 +14,7 @@
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/gc.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/misc.h"
 #include "yog/regexp.h"
 #include "yog/thread.h"
@@ -358,10 +358,10 @@ gsub(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     substr = YogArray_at(env, args, 0);
     YOG_ASSERT(env, IS_PTR(substr), "invalid substring");
-    YOG_ASSERT(env, IS_OBJ_OF(env, substr, cString), "invalid substring class");
+    YOG_ASSERT(env, IS_OBJ_OF(env, substr, cString), "invalid substring klass");
     to = YogArray_at(env, args, 1);
     YOG_ASSERT(env, IS_PTR(to), "invalid string");
-    YOG_ASSERT(env, IS_OBJ_OF(env, to, cString), "invalid string class");
+    YOG_ASSERT(env, IS_OBJ_OF(env, to, cString), "invalid string klass");
 
 #define ADD_STR(to)    do { \
     uint_t size = to - from; \
@@ -399,8 +399,8 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     PUSH_LOCALS2(env, arg, klass);
 
     if (!IS_PTR(arg) || !IS_OBJ_OF(env, arg, cString)) {
-        klass = YogVal_get_klass(env, arg);
-        const char* name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, klass)->name);
+        klass = YogVal_get_class(env, arg);
+        const char* name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
         YogError_raise_TypeError(env, "can't convert '%s' object to string implicitly", name);
     }
 
@@ -458,8 +458,8 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     PUSH_LOCALS3(env, arg, klass, s);
 
     if (!IS_FIXNUM(arg)) {
-        klass = YogVal_get_klass(env, arg);
-        const char* name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, klass)->name);
+        klass = YogVal_get_class(env, arg);
+        const char* name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
         YogError_raise_TypeError(env, "can't multiply string by non-Fixnum of type '%s'", name);
     }
 
@@ -974,17 +974,17 @@ YogString_eval_builtin_script(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogString_klass_new(YogEnv* env)
+YogString_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "String", env->vm->cObject);
+    klass = YogClass_new(env, "String", env->vm->cObject);
 
-    YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_include_module(env, klass, env->vm->mComparable);
-#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    YogClass_define_allocator(env, klass, allocate);
+    YogClass_include_module(env, klass, env->vm->mComparable);
+#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, name, f)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("<<", lshift);

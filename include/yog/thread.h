@@ -226,7 +226,7 @@ void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t);
 void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t, size_t);
 void YogThread_initialize(YogEnv*, YogVal, YogVal);
 void YogThread_issue_object_id(YogEnv*, YogVal, YogVal);
-YogVal YogThread_klass_new(YogEnv*);
+YogVal YogThread_define_class(YogEnv*);
 YogVal YogThread_new(YogEnv*);
 
 /* PROTOTYPE_END */

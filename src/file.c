@@ -5,7 +5,7 @@
 #include "yog/error.h"
 #include "yog/file.h"
 #include "yog/function.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/string.h"
@@ -163,19 +163,19 @@ open(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogFile_klass_new(YogEnv* env)
+YogFile_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "File", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_class_method(env, klass, "open", open);
-    YogKlass_define_method(env, klass, "close", close);
-    YogKlass_define_method(env, klass, "read", read);
-    YogKlass_define_method(env, klass, "readline", readline);
-    YogKlass_define_method(env, klass, "write", write);
+    klass = YogClass_new(env, "File", env->vm->cObject);
+    YogClass_define_allocator(env, klass, allocate);
+    YogClass_define_class_method(env, klass, "open", open);
+    YogClass_define_method(env, klass, "close", close);
+    YogClass_define_method(env, klass, "read", read);
+    YogClass_define_method(env, klass, "readline", readline);
+    YogClass_define_method(env, klass, "write", write);
 
     RETURN(env, klass);
 }

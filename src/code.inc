@@ -25,7 +25,7 @@ YogCode_get_op_name(OpCode op)
         "JUMP_IF_FALSE",
         "DUP",
         "MAKE_MODULE",
-        "MAKE_KLASS",
+        "MAKE_CLASS",
         "PUSH_SELF_NAME",
         "RET",
         "STORE_NONLOCAL",

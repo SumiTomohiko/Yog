@@ -9,7 +9,7 @@ struct YogNativeFunction {
     struct YogBasicObj base;
 
     ID func_name;
-    ID klass_name;
+    ID class_name;
     void* f;
 };
 
@@ -46,13 +46,13 @@ typedef struct YogInstanceMethod YogInstanceMethod;
 YogVal YogCallable_call(YogEnv*, YogVal, uint_t, YogVal*);
 YogVal YogCallable_call1(YogEnv*, YogVal, YogVal);
 YogVal YogCallable_call2(YogEnv*, YogVal, uint_t, YogVal*, YogVal);
-YogVal YogFunction_klass_new(YogEnv*);
+YogVal YogFunction_define_class(YogEnv*);
 YogVal YogFunction_new(YogEnv*);
-YogVal YogInstanceMethod_klass_new(YogEnv*);
+YogVal YogInstanceMethod_define_class(YogEnv*);
 YogVal YogInstanceMethod_new(YogEnv*);
-YogVal YogNativeFunction_klass_new(YogEnv*);
+YogVal YogNativeFunction_define_class(YogEnv*);
 YogVal YogNativeFunction_new(YogEnv*, ID, const char*, void*);
-YogVal YogNativeInstanceMethod_klass_new(YogEnv*);
+YogVal YogNativeInstanceMethod_define_class(YogEnv*);
 YogVal YogNativeInstanceMethod_new(YogEnv*);
 
 /* PROTOTYPE_END */

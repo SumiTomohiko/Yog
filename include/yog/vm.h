@@ -40,7 +40,7 @@ struct YogVM {
     YogVal cFloat;
     YogVal cFunction;
     YogVal cInstanceMethod;
-    YogVal cKlass;
+    YogVal cClass;
     YogVal cMatch;
     YogVal cModule;
     YogVal cNativeFunction;

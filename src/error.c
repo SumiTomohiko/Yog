@@ -7,7 +7,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
@@ -148,17 +148,17 @@ YogError_print_stacktrace(YogEnv* env)
         }
 
         PRINT(", in ");
-        ID klass_name = PTR_AS(YogStackTraceEntry, st)->klass_name;
+        ID class_name = PTR_AS(YogStackTraceEntry, st)->class_name;
         ID func_name = PTR_AS(YogStackTraceEntry, st)->func_name;
-        if (klass_name != INVALID_ID) {
+        if (class_name != INVALID_ID) {
             if (func_name != INVALID_ID) {
-                const char* s = ID2NAME(klass_name);
+                const char* s = ID2NAME(class_name);
                 const char* t = ID2NAME(func_name);
                 PRINT("%s#%s", s, t);
             }
             else {
-                const char* name = ID2NAME(klass_name);
-                PRINT("<class %s>", name);
+                const char* name = ID2NAME(class_name);
+                PRINT("<klass %s>", name);
             }
         }
         else {
@@ -171,7 +171,7 @@ YogError_print_stacktrace(YogEnv* env)
     }
 
     YogVal klass = YOGBASICOBJ(exc)->klass;
-    const char* name = ID2NAME(PTR_AS(YogKlass, klass)->name);
+    const char* name = ID2NAME(PTR_AS(YogClass, klass)->name);
     /* dirty hack */
     size_t len = strlen(name);
     char s[len + 1];
@@ -187,14 +187,14 @@ static void
 raise_TypeError(YogEnv* env, const char* msg, YogVal left, YogVal right)
 {
     SAVE_ARGS2(env, left, right);
-    YogVal left_klass = YUNDEF;
-    YogVal right_klass = YUNDEF;
-    PUSH_LOCALS2(env, left_klass, right_klass);
+    YogVal left_class = YUNDEF;
+    YogVal right_class = YUNDEF;
+    PUSH_LOCALS2(env, left_class, right_class);
 
-    left_klass = YogVal_get_klass(env, left);
-    right_klass = YogVal_get_klass(env, right);
-    const char* left_name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, left_klass)->name);
-    const char* right_name = YogVM_id2name(env, env->vm, PTR_AS(YogKlass, right_klass)->name);
+    left_class = YogVal_get_class(env, left);
+    right_class = YogVal_get_class(env, right);
+    const char* left_name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, left_class)->name);
+    const char* right_name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, right_class)->name);
 
     YogError_raise_TypeError(env, msg, left_name, right_name);
 

@@ -9,7 +9,7 @@
 
 /* src/set.c */
 void YogSet_add(YogEnv*, YogVal, YogVal);
-YogVal YogSet_klass_new(YogEnv*);
+YogVal YogSet_define_class(YogEnv*);
 YogVal YogSet_new(YogEnv*);
 
 /* PROTOTYPE_END */

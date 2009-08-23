@@ -8,7 +8,7 @@
 #include "yog/float.h"
 #include "yog/frame.h"
 #include "yog/function.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
@@ -621,15 +621,15 @@ compare(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogFixnum_klass_new(YogEnv* env)
+YogFixnum_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "Fixnum", env->vm->cObject);
-    YogKlass_include_module(env, klass, env->vm->mComparable);
-#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    klass = YogClass_new(env, "Fixnum", env->vm->cObject);
+    YogClass_include_module(env, klass, env->vm->mComparable);
+#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, name, f)
     DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("&", and);
     DEFINE_METHOD("*", multiply);

@@ -18,7 +18,7 @@ typedef struct YogClassMethod YogClassMethod;
  */
 
 /* src/classmethod.c */
-YogVal YogClassMethod_klass_new(YogEnv*);
+YogVal YogClassMethod_define_class(YogEnv*);
 YogVal YogClassMethod_new(YogEnv*);
 
 /* PROTOTYPE_END */

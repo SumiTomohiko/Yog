@@ -1,6 +1,6 @@
 #include "yog/block.h"
 #include "yog/gc.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -89,14 +89,14 @@ YogBlock_new(YogEnv* env)
 }
 
 YogVal
-YogPackageBlock_klass_new(YogEnv* env)
+YogPackageBlock_define_class(YogEnv* env)
 {
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "PackageBlock", env->vm->cObject);
+    klass = YogClass_new(env, "PackageBlock", env->vm->cObject);
 
-    YogKlass_define_allocator(env, klass, YogPackageBlock_allocate);
+    YogClass_define_allocator(env, klass, YogPackageBlock_allocate);
 
     POP_LOCALS(env);
     return klass;

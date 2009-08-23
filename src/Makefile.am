@@ -17,6 +17,7 @@ COMMON_SOURCES = arg.c \
 	block.c \
 	bool.c \
 	builtins.c \
+	class.c \
 	classmethod.c \
 	code.c \
 	comparable.c \
@@ -33,7 +34,6 @@ COMMON_SOURCES = arg.c \
 	function.c \
 	gc.c \
 	inst.c \
-	klass.c \
 	lexer.c \
 	main.c \
 	misc.c \

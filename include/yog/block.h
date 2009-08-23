@@ -43,7 +43,7 @@ typedef struct YogPackageBlock YogPackageBlock;
 
 /* src/block.c */
 YogVal YogBlock_new(YogEnv*);
-YogVal YogPackageBlock_klass_new(YogEnv*);
+YogVal YogPackageBlock_define_class(YogEnv*);
 YogVal YogPackageBlock_new(YogEnv*);
 
 /* PROTOTYPE_END */

@@ -24,7 +24,7 @@
 #elif defined(GC_BDW)
 #   include "yog/gc/bdw.h"
 #endif
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -387,21 +387,21 @@ get_recursive_stack(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal blo
 }
 
 YogVal
-YogThread_klass_new(YogEnv* env)
+YogThread_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
 
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "Thread", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, allocate);
-#define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
+    klass = YogClass_new(env, "Thread", env->vm->cObject);
+    YogClass_define_allocator(env, klass, allocate);
+#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, name, f)
     DEFINE_METHOD("initialize", initialize);
     DEFINE_METHOD("run", run);
     DEFINE_METHOD("join", join);
 #undef DEFINE_METHOD
-    YogKlass_define_property(env, klass, "__recursive_stack__", get_recursive_stack, NULL);
+    YogClass_define_property(env, klass, "__recursive_stack__", get_recursive_stack, NULL);
 
     RETURN(env, klass);
 }

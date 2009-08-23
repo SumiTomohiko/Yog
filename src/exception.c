@@ -7,7 +7,7 @@
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/gc.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -103,11 +103,11 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         case FRAME_C:
             {
                 YogVal f = PTR_AS(YogCFrame, frame)->f;
-                ID klass_name = PTR_AS(YogNativeFunction, f)->klass_name;
+                ID class_name = PTR_AS(YogNativeFunction, f)->class_name;
                 ID func_name = PTR_AS(YogNativeFunction, f)->func_name;
                 PTR_AS(YogStackTraceEntry, entry)->lineno = 0;
                 PTR_AS(YogStackTraceEntry, entry)->filename = YNIL;
-                PTR_AS(YogStackTraceEntry, entry)->klass_name = klass_name;
+                PTR_AS(YogStackTraceEntry, entry)->class_name = class_name;
                 PTR_AS(YogStackTraceEntry, entry)->func_name = func_name;
                 break;
             }
@@ -128,11 +128,11 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
                 }
 
                 YogVal filename = PTR_AS(YogCode, code)->filename;
-                ID klass_name = PTR_AS(YogCode, code)->klass_name;
+                ID class_name = PTR_AS(YogCode, code)->class_name;
                 ID func_name = PTR_AS(YogCode, code)->func_name;
                 PTR_AS(YogStackTraceEntry, entry)->lineno = lineno;
                 PTR_AS(YogStackTraceEntry, entry)->filename = filename;
-                PTR_AS(YogStackTraceEntry, entry)->klass_name = klass_name;
+                PTR_AS(YogStackTraceEntry, entry)->class_name = class_name;
                 PTR_AS(YogStackTraceEntry, entry)->func_name = func_name;
                 break;
             }
@@ -170,14 +170,14 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogException_klass_new(YogEnv* env)
+YogException_define_class(YogEnv* env)
 {
-    YogVal klass = YogKlass_new(env, "Exception", env->vm->cObject);
+    YogVal klass = YogClass_new(env, "Exception", env->vm->cObject);
     PUSH_LOCAL(env, klass);
 
-    YogKlass_define_allocator(env, klass, allocate);
-    YogKlass_define_method(env, klass, "initialize", initialize);
-    YogKlass_define_method(env, klass, "to_s", to_s);
+    YogClass_define_allocator(env, klass, allocate);
+    YogClass_define_method(env, klass, "initialize", initialize);
+    YogClass_define_method(env, klass, "to_s", to_s);
 
     POP_LOCALS(env);
     return klass;

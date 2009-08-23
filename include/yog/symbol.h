@@ -10,7 +10,7 @@
  */
 
 /* src/symbol.c */
-YogVal YogSymbol_klass_new(YogEnv*);
+YogVal YogSymbol_define_class(YogEnv*);
 
 /* PROTOTYPE_END */
 

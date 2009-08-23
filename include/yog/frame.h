@@ -72,7 +72,7 @@ typedef struct YogNameFrame YogNameFrame;
 #define NAME_FRAME(v)   PTR_AS(YogNameFrame, (v))
 #define NAME_VARS(v)    (NAME_FRAME(v)->vars)
 
-#define YogKlassFrame       YogNameFrame
+#define YogClassFrame       YogNameFrame
 
 struct YogMethodFrame {
     struct YogScriptFrame base;
@@ -84,7 +84,7 @@ typedef struct YogMethodFrame YogMethodFrame;
 #define METHOD_FRAME(v)     PTR_AS(YogMethodFrame, (v))
 #define LOCAL_VARS(f)       (METHOD_FRAME(f)->vars)
 
-#define YogKlassFrame_new       YogNameFrame_new
+#define YogClassFrame_new       YogNameFrame_new
 
 /* PROTOTYPE_START */
 

@@ -43,7 +43,7 @@ char* YogString_dup(YogEnv*, const char*);
 void YogString_eval_builtin_script(YogEnv*, YogVal);
 int_t YogString_hash(YogEnv*, YogVal);
 ID YogString_intern(YogEnv*, YogVal);
-YogVal YogString_klass_new(YogEnv*);
+YogVal YogString_define_class(YogEnv*);
 YogVal YogString_multiply(YogEnv*, YogVal, int_t);
 YogVal YogString_new(YogEnv*);
 YogVal YogString_new_format(YogEnv*, const char*, ...);

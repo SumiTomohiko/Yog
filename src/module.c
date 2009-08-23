@@ -1,6 +1,6 @@
 #include "yog/function.h"
 #include "yog/gc.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/module.h"
 #include "yog/object.h"
 #include "yog/table.h"
@@ -51,13 +51,13 @@ YogModule_define_function(YogEnv* env, YogVal self, const char* name, void* f)
 }
 
 YogVal
-YogModule_klass_new(YogEnv* env)
+YogModule_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "Module", env->vm->cObject);
+    klass = YogClass_new(env, "Module", env->vm->cObject);
 
     RETURN(env, klass);
 }

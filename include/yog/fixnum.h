@@ -9,7 +9,7 @@
 
 /* src/fixnum.c */
 YogVal YogFixnum_add_bignum(YogEnv*, YogVal, YogVal);
-YogVal YogFixnum_klass_new(YogEnv*);
+YogVal YogFixnum_define_class(YogEnv*);
 YogVal YogFixnum_multiply(YogEnv*, YogVal, YogVal);
 
 /* PROTOTYPE_END */

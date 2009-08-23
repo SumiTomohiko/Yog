@@ -29,7 +29,7 @@
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/gc/bdw.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/misc.h"
 #include "yog/module.h"
 #include "yog/nil.h"
@@ -181,60 +181,60 @@ setup_symbol_tables(YogEnv* env, YogVM* vm)
 }
 
 static void
-setup_basic_klass(YogEnv* env, YogVM* vm)
+setup_basic_class(YogEnv* env, YogVM* vm)
 {
     YogVal cObject = YUNDEF;
-    YogVal cKlass = YUNDEF;
-    PUSH_LOCALS2(env, cObject, cKlass);
+    YogVal cClass = YUNDEF;
+    PUSH_LOCALS2(env, cObject, cClass);
 
-    cObject = YogKlass_new(env, "Object", YNIL);
-    YogKlass_define_allocator(env, cObject, YogObj_allocate);
+    cObject = YogClass_new(env, "Object", YNIL);
+    YogClass_define_allocator(env, cObject, YogObj_allocate);
 
-    cKlass = YogKlass_new(env, "Class", cObject);
-    YogKlass_define_allocator(env, cKlass, YogKlass_allocate);
+    cClass = YogClass_new(env, "Class", cObject);
+    YogClass_define_allocator(env, cClass, YogClass_allocate);
 
-    PTR_AS(YogBasicObj, cObject)->klass = cKlass;
-    PTR_AS(YogBasicObj, cKlass)->klass = cKlass;
+    PTR_AS(YogBasicObj, cObject)->klass = cClass;
+    PTR_AS(YogBasicObj, cClass)->klass = cClass;
 
     vm->cObject = cObject;
-    vm->cKlass = cKlass;
+    vm->cClass = cClass;
 
     POP_LOCALS(env);
 }
 
 static void
-setup_klasses(YogEnv* env, YogVM* vm)
+setup_classes(YogEnv* env, YogVM* vm)
 {
-    vm->cNativeFunction = YogNativeFunction_klass_new(env);
-    vm->cFunction = YogFunction_klass_new(env);
-    vm->cInstanceMethod = YogInstanceMethod_klass_new(env);
-    vm->cNativeInstanceMethod = YogNativeInstanceMethod_klass_new(env);
+    vm->cNativeFunction = YogNativeFunction_define_class(env);
+    vm->cFunction = YogFunction_define_class(env);
+    vm->cInstanceMethod = YogInstanceMethod_define_class(env);
+    vm->cNativeInstanceMethod = YogNativeInstanceMethod_define_class(env);
 
-    YogObj_klass_init(env, vm->cObject);
-    YogKlass_klass_init(env, vm->cKlass);
-    vm->cProperty = YogProperty_klass_new(env);
+    YogObj_class_init(env, vm->cObject);
+    YogClass_class_init(env, vm->cClass);
+    vm->cProperty = YogProperty_define_class(env);
 
     vm->mComparable = YogComparable_new(env);
 
-    vm->cArray = YogArray_klass_new(env);
-    vm->cBignum = YogBignum_klass_new(env);
-    vm->cBool = YogBool_klass_new(env);
-    vm->cClassMethod = YogClassMethod_klass_new(env);
-    vm->cCode = YogCode_klass_new(env);
-    vm->cDict = YogDict_klass_new(env);
-    vm->cFile = YogFile_klass_new(env);
-    vm->cFixnum = YogFixnum_klass_new(env);
-    vm->cFloat = YogFloat_klass_new(env);
-    vm->cMatch = YogMatch_klass_new(env);
-    vm->cModule = YogModule_klass_new(env);
-    vm->cNil = YogNil_klass_new(env);
-    vm->cPackage = YogPackage_klass_new(env);
-    vm->cPackageBlock = YogPackageBlock_klass_new(env);
-    vm->cRegexp = YogRegexp_klass_new(env);
-    vm->cSet = YogSet_klass_new(env);
-    vm->cString = YogString_klass_new(env);
-    vm->cSymbol = YogSymbol_klass_new(env);
-    vm->cThread = YogThread_klass_new(env);
+    vm->cArray = YogArray_define_class(env);
+    vm->cBignum = YogBignum_define_class(env);
+    vm->cBool = YogBool_define_class(env);
+    vm->cClassMethod = YogClassMethod_define_class(env);
+    vm->cCode = YogCode_define_class(env);
+    vm->cDict = YogDict_define_class(env);
+    vm->cFile = YogFile_define_class(env);
+    vm->cFixnum = YogFixnum_define_class(env);
+    vm->cFloat = YogFloat_define_class(env);
+    vm->cMatch = YogMatch_define_class(env);
+    vm->cModule = YogModule_define_class(env);
+    vm->cNil = YogNil_define_class(env);
+    vm->cPackage = YogPackage_define_class(env);
+    vm->cPackageBlock = YogPackageBlock_define_class(env);
+    vm->cRegexp = YogRegexp_define_class(env);
+    vm->cSet = YogSet_define_class(env);
+    vm->cString = YogString_define_class(env);
+    vm->cSymbol = YogSymbol_define_class(env);
+    vm->cThread = YogThread_define_class(env);
 }
 
 static void
@@ -257,9 +257,9 @@ setup_encodings(YogEnv* env, YogVM* vm)
 static void
 setup_exceptions(YogEnv* env, YogVM* vm)
 {
-    vm->eException = YogException_klass_new(env);
+    vm->eException = YogException_define_class(env);
 #define EXCEPTION_NEW(member, name)  do { \
-    vm->member = YogKlass_new(env, name, vm->eException); \
+    vm->member = YogClass_new(env, name, vm->eException); \
 } while (0)
     EXCEPTION_NEW(eArgumentError, "ArgumentError");
     EXCEPTION_NEW(eAttributeError, "AttributeError");
@@ -277,7 +277,7 @@ setup_exceptions(YogEnv* env, YogVM* vm)
 }
 
 static void
-set_main_thread_klass(YogEnv* env, YogVM* vm)
+set_main_thread_class(YogEnv* env, YogVM* vm)
 {
     PTR_AS(YogBasicObj, vm->main_thread)->klass = vm->cThread;
 }
@@ -288,12 +288,12 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
     SAVE_LOCALS(env);
 
     setup_symbol_tables(env, vm);
-    setup_basic_klass(env, vm);
-    setup_klasses(env, vm);
-    set_main_thread_klass(env, vm);
+    setup_basic_class(env, vm);
+    setup_classes(env, vm);
+    set_main_thread_class(env, vm);
     setup_exceptions(env, vm);
     YogObject_boot(env, vm->cObject);
-    YogKlass_boot(env, vm->cKlass);
+    YogClass_boot(env, vm->cClass);
 
     vm->pkgs = YogTable_new_symbol_table(env);
 
@@ -379,7 +379,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cFloat);
     KEEP(cFunction);
     KEEP(cInstanceMethod);
-    KEEP(cKlass);
+    KEEP(cClass);
     KEEP(cMatch);
     KEEP(cModule);
     KEEP(cNativeFunction);
@@ -452,7 +452,7 @@ YogVM_init(YogVM* vm)
     INIT(cFloat);
     INIT(cFunction);
     INIT(cInstanceMethod);
-    INIT(cKlass);
+    INIT(cClass);
     INIT(cMatch);
     INIT(cModule);
     INIT(cNativeFunction);

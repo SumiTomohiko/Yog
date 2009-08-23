@@ -1,6 +1,6 @@
 #include "yog/array.h"
 #include "yog/dict.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -69,17 +69,17 @@ YogSet_new(YogEnv* env)
 }
 
 YogVal
-YogSet_klass_new(YogEnv* env)
+YogSet_define_class(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_new(env, "Set", env->vm->cObject);
-    YogKlass_define_allocator(env, klass, YogDict_allocate);
-    YogKlass_define_method(env, klass, "add", add);
-    YogKlass_define_method(env, klass, "include?", include);
-    YogKlass_define_property(env, klass, "size", get_size, NULL);
+    klass = YogClass_new(env, "Set", env->vm->cObject);
+    YogClass_define_allocator(env, klass, YogDict_allocate);
+    YogClass_define_method(env, klass, "add", add);
+    YogClass_define_method(env, klass, "include?", include);
+    YogClass_define_property(env, klass, "size", get_size, NULL);
 
     RETURN(env, klass);
 }

@@ -20,7 +20,7 @@ typedef struct YogProperty YogProperty;
  */
 
 /* src/property.c */
-YogVal YogProperty_klass_new(YogEnv*);
+YogVal YogProperty_define_class(YogEnv*);
 YogVal YogProperty_new(YogEnv*);
 
 /* PROTOTYPE_END */

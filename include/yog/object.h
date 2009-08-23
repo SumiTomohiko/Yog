@@ -30,8 +30,8 @@ typedef struct YogObj YogObj;
 
 typedef YogVal (*Allocator)(struct YogEnv*, YogVal);
 
-#define KLASS_OF(v)             (PTR_AS(YogBasicObj, v)->klass)
-#define IS_OBJ_OF(env, v, k)    (KLASS_OF((v)) == (env)->vm->k)
+#define CLASS_OF(v)             (PTR_AS(YogBasicObj, v)->klass)
+#define IS_OBJ_OF(env, v, k)    (CLASS_OF((v)) == (env)->vm->k)
 
 /* PROTOTYPE_START */
 
@@ -46,7 +46,7 @@ YogVal YogObj_allocate(YogEnv*, YogVal);
 YogVal YogObj_get_attr(YogEnv*, YogVal, ID);
 void YogObj_init(YogEnv*, YogVal, uint_t, YogVal);
 void YogObj_keep_children(YogEnv*, void*, ObjectKeeper, void*);
-void YogObj_klass_init(YogEnv*, YogVal);
+void YogObj_class_init(YogEnv*, YogVal);
 YogVal YogObj_new(YogEnv*, YogVal);
 void YogObj_set_attr(YogEnv*, YogVal, const char*, YogVal);
 void YogObj_set_attr_id(YogEnv*, YogVal, ID, YogVal);

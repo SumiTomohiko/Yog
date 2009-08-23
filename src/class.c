@@ -8,7 +8,7 @@
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/gc.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/property.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
@@ -21,8 +21,8 @@ call_get_attr(YogEnv* env, YogVal self, ID name)
     YogVal attr = YUNDEF;
     PUSH_LOCALS2(env, klass, attr);
 
-    klass = YogVal_get_klass(env, self);
-    attr = YogKlass_get_attr(env, klass, name);
+    klass = YogVal_get_class(env, self);
+    attr = YogClass_get_attr(env, klass, name);
     if (!IS_UNDEF(attr)) {
         attr = YogVal_get_descr(env, attr, self, klass);
         RETURN(env, attr);
@@ -47,8 +47,8 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
     YogVal attr = YUNDEF;
     PUSH_LOCALS2(env, klass, attr);
 
-    klass = YogVal_get_klass(env, self);
-    attr = YogKlass_get_attr(env, klass, name);
+    klass = YogVal_get_class(env, self);
+    attr = YogClass_get_attr(env, klass, name);
     if (!IS_UNDEF(attr)) {
         attr = YogVal_get_descr(env, attr, self, klass);
         FRAME_PUSH(env, attr);
@@ -69,15 +69,15 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
 }
 
 void
-YogKlass_define_class_method(YogEnv* env, YogVal self, const char* name, void* f)
+YogClass_define_class_method(YogEnv* env, YogVal self, const char* name, void* f)
 {
     SAVE_ARG(env, self);
     YogVal func = YUNDEF;
     YogVal method = YUNDEF;
     PUSH_LOCALS2(env, func, method);
 
-    YogVal klass_name = PTR_AS(YogKlass, self)->name;
-    func = YogNativeFunction_new(env, klass_name, name, f);
+    YogVal class_name = PTR_AS(YogClass, self)->name;
+    func = YogNativeFunction_new(env, class_name, name, f);
     method = YogClassMethod_new(env);
     PTR_AS(YogClassMethod, method)->f = func;
 
@@ -87,15 +87,15 @@ YogKlass_define_class_method(YogEnv* env, YogVal self, const char* name, void* f
 }
 
 void
-YogKlass_define_method(YogEnv* env, YogVal klass, const char* name, void* f)
+YogClass_define_method(YogEnv* env, YogVal klass, const char* name, void* f)
 {
     SAVE_ARG(env, klass);
 
     YogVal func = YUNDEF;
     PUSH_LOCAL(env, func);
 
-    YogVal klass_name = PTR_AS(YogKlass, klass)->name;
-    func = YogNativeFunction_new(env, klass_name, name, f);
+    YogVal class_name = PTR_AS(YogClass, klass)->name;
+    func = YogNativeFunction_new(env, class_name, name, f);
     YogObj_set_attr(env, klass, name, func);
 
     RETURN_VOID(env);
@@ -106,52 +106,52 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogObj_keep_children(env, ptr, keeper, heap);
 
-    YogKlass* klass = ptr;
+    YogClass* klass = ptr;
     YogGC_keep(env, &klass->super, keeper, heap);
 }
 
 YogVal
-YogKlass_allocate(YogEnv* env, YogVal klass)
+YogClass_allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
-    YogVal obj = ALLOC_OBJ(env, keep_children, NULL, YogKlass);
+    YogVal obj = ALLOC_OBJ(env, keep_children, NULL, YogClass);
     YogObj_init(env, obj, 0, klass);
 
     RETURN(env, obj);
 }
 
 void
-YogKlass_define_allocator(YogEnv* env, YogVal klass, Allocator allocator)
+YogClass_define_allocator(YogEnv* env, YogVal klass, Allocator allocator)
 {
-    PTR_AS(YogKlass, klass)->allocator = allocator;
+    PTR_AS(YogClass, klass)->allocator = allocator;
 }
 
 YogVal
-YogKlass_new(YogEnv* env, const char* name, YogVal super)
+YogClass_new(YogEnv* env, const char* name, YogVal super)
 {
     SAVE_ARG(env, super);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogKlass_allocate(env, env->vm->cKlass);
-    PTR_AS(YogKlass, klass)->allocator = NULL;
-    PTR_AS(YogKlass, klass)->name = INVALID_ID;
-    PTR_AS(YogKlass, klass)->super = PTR2VAL(NULL);
+    klass = YogClass_allocate(env, env->vm->cClass);
+    PTR_AS(YogClass, klass)->allocator = NULL;
+    PTR_AS(YogClass, klass)->name = INVALID_ID;
+    PTR_AS(YogClass, klass)->super = PTR2VAL(NULL);
 
-    PTR_AS(YogKlass, klass)->allocator = NULL;
+    PTR_AS(YogClass, klass)->allocator = NULL;
     if (name != NULL) {
         ID id = YogVM_intern(env, env->vm, name);
-        PTR_AS(YogKlass, klass)->name = id;
+        PTR_AS(YogClass, klass)->name = id;
     }
-    PTR_AS(YogKlass, klass)->super = super;
-    PTR_AS(YogKlass, klass)->exec_get_attr = NULL;
-    PTR_AS(YogKlass, klass)->call_get_attr = NULL;
-    PTR_AS(YogKlass, klass)->exec_get_descr = NULL;
-    PTR_AS(YogKlass, klass)->call_get_descr = NULL;
-    PTR_AS(YogKlass, klass)->exec_set_descr = NULL;
-    PTR_AS(YogKlass, klass)->call = NULL;
-    PTR_AS(YogKlass, klass)->exec = NULL;
+    PTR_AS(YogClass, klass)->super = super;
+    PTR_AS(YogClass, klass)->exec_get_attr = NULL;
+    PTR_AS(YogClass, klass)->call_get_attr = NULL;
+    PTR_AS(YogClass, klass)->exec_get_descr = NULL;
+    PTR_AS(YogClass, klass)->call_get_descr = NULL;
+    PTR_AS(YogClass, klass)->exec_set_descr = NULL;
+    PTR_AS(YogClass, klass)->call = NULL;
+    PTR_AS(YogClass, klass)->exec = NULL;
 
     RETURN(env, klass);
 }
@@ -163,14 +163,14 @@ new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
-    Allocator allocator = PTR_AS(YogKlass, self)->allocator;
+    Allocator allocator = PTR_AS(YogClass, self)->allocator;
     YogVal klass = self;
     while (allocator == NULL) {
-        klass = PTR_AS(YogKlass, klass)->super;
+        klass = PTR_AS(YogClass, klass)->super;
         if (VAL2PTR(klass) == NULL) {
             YOG_ASSERT(env, FALSE, "Can't allocate object.");
         }
-        allocator = PTR_AS(YogKlass, klass)->allocator;
+        allocator = PTR_AS(YogClass, klass)->allocator;
     }
 
     obj = (*allocator)(env, self);
@@ -195,13 +195,13 @@ new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 void
-YogKlass_klass_init(YogEnv* env, YogVal cKlass)
+YogClass_class_init(YogEnv* env, YogVal cClass)
 {
-    YogKlass_define_method(env, cKlass, "new", new_);
+    YogClass_define_method(env, cClass, "new", new_);
 }
 
 YogVal
-YogKlass_get_attr(YogEnv* env, YogVal self, ID name)
+YogClass_get_attr(YogEnv* env, YogVal self, ID name)
 {
     SAVE_ARG(env, self);
     YogVal attr = YUNDEF;
@@ -214,56 +214,56 @@ YogKlass_get_attr(YogEnv* env, YogVal self, ID name)
         if (!IS_UNDEF(attr)) {
             RETURN(env, attr);
         }
-        klass = PTR_AS(YogKlass, klass)->super;
+        klass = PTR_AS(YogClass, klass)->super;
     } while (IS_PTR(klass));
 
     RETURN(env, YUNDEF);
 }
 
 void
-YogKlass_define_descr_get_executor(YogEnv* env, YogVal self, void (*getter)(YogEnv*, YogVal, YogVal, YogVal))
+YogClass_define_descr_get_executor(YogEnv* env, YogVal self, void (*getter)(YogEnv*, YogVal, YogVal, YogVal))
 {
-    PTR_AS(YogKlass, self)->exec_get_descr = getter;
+    PTR_AS(YogClass, self)->exec_get_descr = getter;
 }
 
 void
-YogKlass_define_descr_get_caller(YogEnv* env, YogVal self, YogVal (*getter)(YogEnv*, YogVal, YogVal, YogVal))
+YogClass_define_descr_get_caller(YogEnv* env, YogVal self, YogVal (*getter)(YogEnv*, YogVal, YogVal, YogVal))
 {
-    PTR_AS(YogKlass, self)->call_get_descr = getter;
+    PTR_AS(YogClass, self)->call_get_descr = getter;
 }
 
 void
-YogKlass_define_descr_set_executor(YogEnv* env, YogVal self, void (*setter)(YogEnv*, YogVal, YogVal, YogVal))
+YogClass_define_descr_set_executor(YogEnv* env, YogVal self, void (*setter)(YogEnv*, YogVal, YogVal, YogVal))
 {
-    PTR_AS(YogKlass, self)->exec_set_descr = setter;
+    PTR_AS(YogClass, self)->exec_set_descr = setter;
 }
 
 void
-YogKlass_define_get_attr_caller(YogEnv* env, YogVal self, GetAttrCaller getter)
+YogClass_define_get_attr_caller(YogEnv* env, YogVal self, GetAttrCaller getter)
 {
-    PTR_AS(YogKlass, self)->call_get_attr = getter;
+    PTR_AS(YogClass, self)->call_get_attr = getter;
 }
 
 void
-YogKlass_define_get_attr_executor(YogEnv* env, YogVal self, GetAttrExecutor getter)
+YogClass_define_get_attr_executor(YogEnv* env, YogVal self, GetAttrExecutor getter)
 {
-    PTR_AS(YogKlass, self)->exec_get_attr = getter;
+    PTR_AS(YogClass, self)->exec_get_attr = getter;
 }
 
 void
-YogKlass_define_caller(YogEnv* env, YogVal self, Caller call)
+YogClass_define_caller(YogEnv* env, YogVal self, Caller call)
 {
-    PTR_AS(YogKlass, self)->call = call;
+    PTR_AS(YogClass, self)->call = call;
 }
 
 void
-YogKlass_define_executor(YogEnv* env, YogVal self, Executor exec)
+YogClass_define_executor(YogEnv* env, YogVal self, Executor exec)
 {
-    PTR_AS(YogKlass, self)->exec = exec;
+    PTR_AS(YogClass, self)->exec = exec;
 }
 
 void
-YogKlass_define_property(YogEnv* env, YogVal self, const char* name, void* get, void* set)
+YogClass_define_property(YogEnv* env, YogVal self, const char* name, void* get, void* set)
 {
     SAVE_ARG(env, self);
     YogVal getter = YUNDEF;
@@ -271,13 +271,13 @@ YogKlass_define_property(YogEnv* env, YogVal self, const char* name, void* get, 
     YogVal prop = YUNDEF;
     PUSH_LOCALS3(env, getter, setter, prop);
 
-    ID klass_name = PTR_AS(YogKlass, self)->name;
+    ID class_name = PTR_AS(YogClass, self)->name;
 
     if (get != NULL) {
 #define GETTER_HEAD     "get_"
         char getter_name[strlen(GETTER_HEAD) + strlen(name) + 1];
         sprintf(getter_name, GETTER_HEAD "%s", name);
-        getter = YogNativeFunction_new(env, klass_name, getter_name, get);
+        getter = YogNativeFunction_new(env, class_name, getter_name, get);
 #undef GETTER_HEAD
     }
 
@@ -285,7 +285,7 @@ YogKlass_define_property(YogEnv* env, YogVal self, const char* name, void* get, 
 #define SETTER_HEAD     "set_"
         char setter_name[strlen(SETTER_HEAD) + strlen(name) + 1];
         sprintf(setter_name, SETTER_HEAD "%s", name);
-        setter = YogNativeFunction_new(env, klass_name, setter_name, set);
+        setter = YogNativeFunction_new(env, class_name, setter_name, set);
 #undef setter_HEAD
     }
 
@@ -298,65 +298,65 @@ YogKlass_define_property(YogEnv* env, YogVal self, const char* name, void* get, 
     RETURN_VOID(env);
 }
 
-struct ModuleKlass {
+struct ModuleClass {
     struct YogObj base;
     YogVal super;
     Allocator allocator;
 };
 
-typedef struct ModuleKlass ModuleKlass;
+typedef struct ModuleClass ModuleClass;
 
 static void
-ModukeKlass_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+ModukeClass_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogObj_keep_children(env, ptr, keeper, heap);
 
-    ModuleKlass* klass = ptr;
+    ModuleClass* klass = ptr;
 #define KEEP(member)   YogGC_keep(env, &klass->member, keeper, heap)
     KEEP(super);
 #undef KEEP
 }
 
 static YogVal
-ModuleKlass_new(YogEnv* env)
+ModuleClass_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = ALLOC_OBJ(env, ModukeKlass_keep_children, NULL, ModuleKlass);
+    klass = ALLOC_OBJ(env, ModukeClass_keep_children, NULL, ModuleClass);
     YogObj_init(env, klass, 0, YUNDEF);
-    PTR_AS(ModuleKlass, klass)->super = YUNDEF;
-    PTR_AS(ModuleKlass, klass)->allocator = NULL;
+    PTR_AS(ModuleClass, klass)->super = YUNDEF;
+    PTR_AS(ModuleClass, klass)->allocator = NULL;
 
     RETURN(env, klass);
 }
 
 void
-YogKlass_include_module(YogEnv* env, YogVal self, YogVal module)
+YogClass_include_module(YogEnv* env, YogVal self, YogVal module)
 {
     YOG_ASSERT(env, IS_PTR(self), "self is not pointer");
-    YOG_ASSERT(env, IS_OBJ_OF(env, self, cKlass), "self is not Class");
+    YOG_ASSERT(env, IS_OBJ_OF(env, self, cClass), "self is not Class");
 
     SAVE_ARGS2(env, self, module);
-    YogVal module_klass = YUNDEF;
-    PUSH_LOCAL(env, module_klass);
+    YogVal module_class = YUNDEF;
+    PUSH_LOCAL(env, module_class);
 
-    module_klass = ModuleKlass_new(env);
-    PTR_AS(YogObj, module_klass)->attrs = PTR_AS(YogObj, module)->attrs;
-    PTR_AS(ModuleKlass, module_klass)->super = PTR_AS(YogKlass, self)->super;
-    PTR_AS(YogKlass, self)->super = module_klass;
+    module_class = ModuleClass_new(env);
+    PTR_AS(YogObj, module_class)->attrs = PTR_AS(YogObj, module)->attrs;
+    PTR_AS(ModuleClass, module_class)->super = PTR_AS(YogClass, self)->super;
+    PTR_AS(YogClass, self)->super = module_class;
 
     RETURN_VOID(env);
 }
 
 void
-YogKlass_boot(YogEnv* env, YogVal cKlass)
+YogClass_boot(YogEnv* env, YogVal cClass)
 {
-    SAVE_ARG(env, cKlass);
+    SAVE_ARG(env, cClass);
 
-    YogKlass_define_get_attr_caller(env, cKlass, call_get_attr);
-    YogKlass_define_get_attr_executor(env, cKlass, exec_get_attr);
+    YogClass_define_get_attr_caller(env, cClass, call_get_attr);
+    YogClass_define_get_attr_executor(env, cClass, exec_get_attr);
 
     RETURN_VOID(env);
 }

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "yog/bignum.h"
 #include "yog/error.h"
-#include "yog/klass.h"
+#include "yog/class.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -38,7 +38,7 @@ YogVal_print(YogEnv* env, YogVal val)
 }
 
 YogVal
-YogVal_get_klass(YogEnv* env, YogVal val)
+YogVal_get_class(YogEnv* env, YogVal val)
 {
     if (IS_FIXNUM(val)) {
         return env->vm->cFixnum;
@@ -71,11 +71,11 @@ YogVal_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     YogVal v = YUNDEF;
     PUSH_LOCALS2(env, c, v);
 
-    c = YogVal_get_klass(env, attr);
-    if (PTR_AS(YogKlass, c)->call_get_descr == NULL) {
+    c = YogVal_get_class(env, attr);
+    if (PTR_AS(YogClass, c)->call_get_descr == NULL) {
         RETURN(env, attr);
     }
-    v = PTR_AS(YogKlass, c)->call_get_descr(env, attr, obj, klass);
+    v = PTR_AS(YogClass, c)->call_get_descr(env, attr, obj, klass);
 
     RETURN(env, v);
 }
@@ -89,7 +89,7 @@ get_attr_default(YogEnv* env, YogVal self, ID name)
     YogVal val = YUNDEF;
     PUSH_LOCALS3(env, klass, attr, val);
 
-    klass = YogVal_get_klass(env, self);
+    klass = YogVal_get_class(env, self);
 
     if (IS_PTR(self) && (PTR_AS(YogBasicObj, self)->flags & HAS_ATTRS)) {
         attr = YogObj_get_attr(env, self, name);
@@ -99,7 +99,7 @@ get_attr_default(YogEnv* env, YogVal self, ID name)
         }
     }
 
-    attr = YogKlass_get_attr(env, klass, name);
+    attr = YogClass_get_attr(env, klass, name);
     if (!IS_UNDEF(attr)) {
         attr = YogVal_get_descr(env, attr, self, klass);
         RETURN(env, attr);
@@ -116,8 +116,8 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
     YogVal attr = YUNDEF;
     PUSH_LOCALS2(env, klass, attr);
 
-    klass = YogVal_get_klass(env, val);
-    GetAttrCaller getter = PTR_AS(YogKlass, klass)->call_get_attr;
+    klass = YogVal_get_class(env, val);
+    GetAttrCaller getter = PTR_AS(YogClass, klass)->call_get_attr;
     if (getter == NULL) {
         getter = get_attr_default;
     }
@@ -127,14 +127,14 @@ YogVal_get_attr(YogEnv* env, YogVal val, ID name)
 }
 
 BOOL
-YogVal_is_subklass_of(YogEnv* env, YogVal val, YogVal klass)
+YogVal_is_subclass_of(YogEnv* env, YogVal val, YogVal klass)
 {
-    YogVal valklass = YogVal_get_klass(env, val);
-    while (!IS_NIL(valklass)) {
-        if (PTR_AS(YogKlass, valklass) == PTR_AS(YogKlass, klass)) {
+    YogVal valclass = YogVal_get_class(env, val);
+    while (!IS_NIL(valclass)) {
+        if (PTR_AS(YogClass, valclass) == PTR_AS(YogClass, klass)) {
             return TRUE;
         }
-        valklass = PTR_AS(YogKlass, valklass)->super;
+        valclass = PTR_AS(YogClass, valclass)->super;
     }
 
     return FALSE;
@@ -154,7 +154,7 @@ YogVal_set_attr(YogEnv* env, YogVal obj, ID name, YogVal val)
 {
     if ((PTR_AS(YogBasicObj, obj)->flags & HAS_ATTRS) == 0) {
         YogVal klass = PTR_AS(YogBasicObj, obj)->klass;
-        ID id = PTR_AS(YogKlass, klass)->name;
+        ID id = PTR_AS(YogClass, klass)->name;
         YogError_raise_AttributeError(env, "%s object has no attribute '%s'", YogVM_id2name(env, env->vm, id), YogVM_id2name(env, env->vm, name));
     }
 
