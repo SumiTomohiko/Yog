@@ -6,6 +6,23 @@
 #include "yog/yog.h"
 
 static YogVal
+inspect(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    s = YogString_new_str(env, ":");
+    const char* t = YogVM_id2name(env, env->vm, VAL2ID(self));
+    /* TODO: dirty hack */
+    char buffer[4096];
+    strncpy(buffer, t, array_sizeof(buffer));
+    YogString_add_cstr(env, s, buffer);
+
+    RETURN(env, s);
+}
+
+static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -54,6 +71,7 @@ YogSymbol_klass_new(YogEnv* env)
 #define DEFINE_METHOD(name, f)  YogKlass_define_method(env, klass, name, f)
     DEFINE_METHOD("==", equal);
     DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("inspect", inspect);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
 

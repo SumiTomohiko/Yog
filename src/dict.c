@@ -1,7 +1,9 @@
 #include "yog/array.h"
 #include "yog/dict.h"
 #include "yog/error.h"
+#include "yog/function.h"
 #include "yog/klass.h"
+#include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/table.h"
 #include "yog/thread.h"
@@ -27,6 +29,25 @@ YogDict_add(YogEnv* env, YogVal self, YogVal dict)
         key = YogDictIterator_current_key(env, iter);
         value = YogDictIterator_current_value(env, iter);
         YogDict_set(env, self, key, value);
+    }
+
+    RETURN(env, self);
+}
+
+static YogVal
+each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal iter = YUNDEF;
+    PUSH_LOCAL(env, iter);
+    YogVal params[] = { YUNDEF, YUNDEF };
+    PUSH_LOCALSX(env, array_sizeof(params), params);
+
+    iter = YogDict_get_iterator(env, self);
+    while (YogDictIterator_next(env, iter)) {
+        params[0] = YogDictIterator_current_key(env, iter);
+        params[1] = YogDictIterator_current_value(env, iter);
+        YogCallable_call(env, block, array_sizeof(params), params);
     }
 
     RETURN(env, self);
@@ -247,6 +268,17 @@ YogDict_get_iterator(YogEnv* env, YogVal self)
     RETURN(env, iter);
 }
 
+void
+YogDict_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+#if !defined(MINIYOG)
+    const char* src =
+#   include "dict.inc"
+    ;
+    YogMisc_eval_source(env, klass, src);
+#endif
+}
+
 YogVal
 YogDict_klass_new(YogEnv* env)
 {
@@ -260,6 +292,7 @@ YogDict_klass_new(YogEnv* env)
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", subscript_assign);
+    DEFINE_METHOD("each", each);
 #undef DEFINE_METHOD
     YogKlass_define_property(env, klass, "size", get_size, NULL);
 

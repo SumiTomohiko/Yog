@@ -304,6 +304,9 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
 
     setup_builtins(env, vm, argc, argv);
     YogArray_eval_builtin_script(env, vm->cArray);
+    YogDict_eval_builtin_script(env, vm->cDict);
+    YogObject_eval_builtin_script(env, vm->cObject);
+    YogString_eval_builtin_script(env, vm->cString);
 
     RETURN_VOID(env);
 }

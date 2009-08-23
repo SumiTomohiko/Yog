@@ -10,6 +10,7 @@ File.open(ARGV[1], "r") do [in]
       if line =~ /\A# vim:/
         next
       end
+      line = line.gsub("\\", "\\\\")
       line = line.gsub("\n", "\\n")
       line = line.gsub("\"", "\\\"")
       out.write("\"" + line + "\"\n")

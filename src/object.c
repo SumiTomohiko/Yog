@@ -5,6 +5,7 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
+#include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/table.h"
@@ -194,6 +195,17 @@ equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
 
     RETURN(env, YFALSE);
+}
+
+void
+YogObject_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+#if !defined(MINIYOG)
+    const char* src =
+#   include "object.inc"
+    ;
+    YogMisc_eval_source(env, klass, src);
+#endif
 }
 
 void

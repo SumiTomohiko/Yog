@@ -110,4 +110,20 @@ print(({ foo: 42 } + { bar: 26 })[:foo])
 print(({ foo: 42 } + { bar: 26 })[:bar])
 """, "26")
 
+    def test_each0(self):
+        self._test("""
+d = { :foo => :bar }
+d.each() do [key, value]
+  print(key.inspect())
+end
+""", ":foo")
+
+    def test_each10(self):
+        self._test("""
+d = { :foo => :bar }
+d.each() do [key, value]
+  print(value.inspect())
+end
+""", ":bar")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

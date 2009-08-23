@@ -123,6 +123,12 @@ foo.push(bar)
 print(foo.to_s())
 """, "[{ :baz => [...] }]")
 
+    def test_to_s70(self):
+        self._test("""
+foo = [:bar]
+print(foo.to_s())
+""", "[:bar]")
+
     def test_push0(self):
         self._test("""
 foo = []

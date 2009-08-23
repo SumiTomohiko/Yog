@@ -15,6 +15,7 @@
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
+#include "yog/misc.h"
 #include "yog/regexp.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
@@ -959,6 +960,17 @@ compare(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
 
     RETURN(env, INT2VAL(1));
+}
+
+void
+YogString_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+#if !defined(MINIYOG)
+    const char* src =
+#   include "string.inc"
+    ;
+    YogMisc_eval_source(env, klass, src);
+#endif
 }
 
 YogVal

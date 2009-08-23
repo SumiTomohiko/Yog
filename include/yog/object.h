@@ -51,6 +51,7 @@ YogVal YogObj_new(YogEnv*, YogVal);
 void YogObj_set_attr(YogEnv*, YogVal, const char*, YogVal);
 void YogObj_set_attr_id(YogEnv*, YogVal, ID, YogVal);
 void YogObject_boot(YogEnv*, YogVal);
+void YogObject_eval_builtin_script(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

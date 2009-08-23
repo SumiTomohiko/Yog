@@ -32,7 +32,7 @@
 "  def g(obj)\n"
 "    a = []\n"
 "    obj.each() do [elem]\n"
-"      a.push(elem.to_s())\n"
+"      a.push(elem.inspect())\n"
 "    end\n"
 "    return \"[\" + a.join(\", \") + \"]\"\n"
 "  end\n"

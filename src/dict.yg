@@ -1,0 +1,18 @@
+
+def to_s()
+  def f(obj)
+    return "{...}"
+  end
+
+  def g(obj)
+    a = []
+    obj.each() do [key, value]
+      a.push(key.inspect() + " => " + value.inspect())
+    end
+    return "{ " + a.join(", ") + " }"
+  end
+
+  return __recurse__(self, f, g)
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

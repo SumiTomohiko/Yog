@@ -63,6 +63,18 @@ array.inc: miniyog array.yg yg2inc.yg
 	$(MAKE) miniyog
 	./miniyog yg2inc.yg array.yg $@
 
+object.inc: miniyog object.yg yg2inc.yg
+	$(MAKE) miniyog
+	./miniyog yg2inc.yg object.yg $@
+
+string.inc: miniyog string.yg yg2inc.yg
+	$(MAKE) miniyog
+	./miniyog yg2inc.yg string.yg $@
+
+dict.inc: miniyog dict.yg yg2inc.yg
+	$(MAKE) miniyog
+	./miniyog yg2inc.yg dict.yg $@
+
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
 	$(LEMON) parser.y

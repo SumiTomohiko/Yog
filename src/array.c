@@ -264,7 +264,7 @@ each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
 
     YogVal arg[] = { YUNDEF };
-    PUSH_LOCALSX(env, 1, arg);
+    PUSH_LOCALSX(env, array_sizeof(arg), arg);
 
     uint_t size = YogArray_size(env, self);
     uint_t i;
@@ -360,6 +360,17 @@ push(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, self);
 }
 
+void
+YogArray_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+#if !defined(MINIYOG)
+    const char* src =
+#   include "array.inc"
+    ;
+    YogMisc_eval_source(env, klass, src);
+#endif
+}
+
 YogVal
 YogArray_klass_new(YogEnv* env)
 {
@@ -381,17 +392,6 @@ YogArray_klass_new(YogEnv* env)
     YogKlass_define_property(env, klass, "size", get_size, NULL);
 
     RETURN(env, klass);
-}
-
-void
-YogArray_eval_builtin_script(YogEnv* env, YogVal cArray)
-{
-#if !defined(MINIYOG)
-    const char* src =
-#   include "array.inc"
-    ;
-    YogMisc_eval_source(env, cArray, src);
-#endif
 }
 
 /**

@@ -32,7 +32,7 @@ def to_s()
   def g(obj)
     a = []
     obj.each() do [elem]
-      a.push(elem.to_s())
+      a.push(elem.inspect())
     end
     return "[" + a.join(", ") + "]"
   end

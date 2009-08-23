@@ -1,0 +1,6 @@
+
+def inspect()
+  return "\"" + self.gsub("\\", "\\\\").gsub("\"", "\\\"") + "\""
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
