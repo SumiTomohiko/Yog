@@ -180,16 +180,16 @@ typedef struct yyParser yyParser;
 static void 
 dump_parser_stack(YogEnv* env, YogVal parser) 
 {
-    DPRINTF("-------------------- dump of stack --------------------");
+    TRACE("-------------------- dump of stack --------------------");
     int i;
     for (i = 0; i < PTR_AS(yyParser, parser)->yyidx; i++) {
         YogVal val = PTR_AS(yyParser, parser)->yystack[i + 1].minor.yy0;
-        DPRINTF("PTR_AS(yyParser, parser)->yyidx=%d, i=%d, val=%p", PTR_AS(yyParser, parser)->yyidx, i, VAL2PTR(val));
+        TRACE("PTR_AS(yyParser, parser)->yyidx=%d, i=%d, val=%p", PTR_AS(yyParser, parser)->yyidx, i, VAL2PTR(val));
 #if 0
         YogVal_print(env, val);
 #endif
     }
-    DPRINTF("-------------------- end of stack --------------------");
+    TRACE("-------------------- end of stack --------------------");
 }
 #endif
 

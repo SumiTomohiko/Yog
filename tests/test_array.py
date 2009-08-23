@@ -161,4 +161,11 @@ print([].join(":"))
 print(["foo", "bar"].join(":"))
 """, "foo:bar")
 
+    def test_assign_subscript0(self):
+        self._test("""
+foo = [42]
+foo[0] = 26
+print(foo[0])
+""", "26")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

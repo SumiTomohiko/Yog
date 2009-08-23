@@ -250,6 +250,28 @@ lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
+assign_subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal val = YUNDEF;
+    YogVal body = YUNDEF;
+    PUSH_LOCALS2(env, val, body);
+
+    uint_t index = VAL2INT(YogArray_at(env, args, 0));
+    uint_t size = YogArray_size(env, self);
+    if (size <= index) {
+        YogError_raise_IndexError(env, "array assignment index out of range");
+    }
+
+    val = YogArray_at(env, args, 1);
+
+    body = PTR_AS(YogArray, self)->body;
+    PTR_AS(YogValArray, body)->items[index] = val;
+
+    RETURN(env, self);
+}
+
+static YogVal
 subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
@@ -385,6 +407,7 @@ YogArray_klass_new(YogEnv* env)
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD("[]", subscript);
+    DEFINE_METHOD("[]=", assign_subscript);
     DEFINE_METHOD("each", each);
     DEFINE_METHOD("pop", pop);
     DEFINE_METHOD("push", push);
