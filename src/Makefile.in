@@ -62,14 +62,15 @@ am__objects_1 = miniyog-arg.$(OBJEXT) miniyog-array.$(OBJEXT) \
 	miniyog-function.$(OBJEXT) miniyog-gc.$(OBJEXT) \
 	miniyog-inst.$(OBJEXT) miniyog-klass.$(OBJEXT) \
 	miniyog-lexer.$(OBJEXT) miniyog-main.$(OBJEXT) \
-	miniyog-module.$(OBJEXT) miniyog-nil.$(OBJEXT) \
-	miniyog-object.$(OBJEXT) miniyog-package.$(OBJEXT) \
-	miniyog-parser.$(OBJEXT) miniyog-property.$(OBJEXT) \
-	miniyog-regexp.$(OBJEXT) miniyog-repl.$(OBJEXT) \
-	miniyog-set.$(OBJEXT) miniyog-stacktrace.$(OBJEXT) \
-	miniyog-string.$(OBJEXT) miniyog-symbol.$(OBJEXT) \
-	miniyog-table.$(OBJEXT) miniyog-thread.$(OBJEXT) \
-	miniyog-value.$(OBJEXT) miniyog-vm.$(OBJEXT)
+	miniyog-misc.$(OBJEXT) miniyog-module.$(OBJEXT) \
+	miniyog-nil.$(OBJEXT) miniyog-object.$(OBJEXT) \
+	miniyog-package.$(OBJEXT) miniyog-parser.$(OBJEXT) \
+	miniyog-property.$(OBJEXT) miniyog-regexp.$(OBJEXT) \
+	miniyog-repl.$(OBJEXT) miniyog-set.$(OBJEXT) \
+	miniyog-stacktrace.$(OBJEXT) miniyog-string.$(OBJEXT) \
+	miniyog-symbol.$(OBJEXT) miniyog-table.$(OBJEXT) \
+	miniyog-thread.$(OBJEXT) miniyog-value.$(OBJEXT) \
+	miniyog-vm.$(OBJEXT)
 am__objects_2 = $(am__objects_1) miniyog-copying.$(OBJEXT)
 am_miniyog_OBJECTS = $(am__objects_2)
 miniyog_OBJECTS = $(am_miniyog_OBJECTS)
@@ -90,14 +91,15 @@ am__objects_3 = yog_bdw-arg.$(OBJEXT) yog_bdw-array.$(OBJEXT) \
 	yog_bdw-function.$(OBJEXT) yog_bdw-gc.$(OBJEXT) \
 	yog_bdw-inst.$(OBJEXT) yog_bdw-klass.$(OBJEXT) \
 	yog_bdw-lexer.$(OBJEXT) yog_bdw-main.$(OBJEXT) \
-	yog_bdw-module.$(OBJEXT) yog_bdw-nil.$(OBJEXT) \
-	yog_bdw-object.$(OBJEXT) yog_bdw-package.$(OBJEXT) \
-	yog_bdw-parser.$(OBJEXT) yog_bdw-property.$(OBJEXT) \
-	yog_bdw-regexp.$(OBJEXT) yog_bdw-repl.$(OBJEXT) \
-	yog_bdw-set.$(OBJEXT) yog_bdw-stacktrace.$(OBJEXT) \
-	yog_bdw-string.$(OBJEXT) yog_bdw-symbol.$(OBJEXT) \
-	yog_bdw-table.$(OBJEXT) yog_bdw-thread.$(OBJEXT) \
-	yog_bdw-value.$(OBJEXT) yog_bdw-vm.$(OBJEXT)
+	yog_bdw-misc.$(OBJEXT) yog_bdw-module.$(OBJEXT) \
+	yog_bdw-nil.$(OBJEXT) yog_bdw-object.$(OBJEXT) \
+	yog_bdw-package.$(OBJEXT) yog_bdw-parser.$(OBJEXT) \
+	yog_bdw-property.$(OBJEXT) yog_bdw-regexp.$(OBJEXT) \
+	yog_bdw-repl.$(OBJEXT) yog_bdw-set.$(OBJEXT) \
+	yog_bdw-stacktrace.$(OBJEXT) yog_bdw-string.$(OBJEXT) \
+	yog_bdw-symbol.$(OBJEXT) yog_bdw-table.$(OBJEXT) \
+	yog_bdw-thread.$(OBJEXT) yog_bdw-value.$(OBJEXT) \
+	yog_bdw-vm.$(OBJEXT)
 am_yog_bdw_OBJECTS = $(am__objects_3) yog_bdw-bdw.$(OBJEXT)
 yog_bdw_OBJECTS = $(am_yog_bdw_OBJECTS)
 yog_bdw_LDADD = $(LDADD)
@@ -117,15 +119,15 @@ am__objects_4 = yog_copying-arg.$(OBJEXT) yog_copying-array.$(OBJEXT) \
 	yog_copying-frame.$(OBJEXT) yog_copying-function.$(OBJEXT) \
 	yog_copying-gc.$(OBJEXT) yog_copying-inst.$(OBJEXT) \
 	yog_copying-klass.$(OBJEXT) yog_copying-lexer.$(OBJEXT) \
-	yog_copying-main.$(OBJEXT) yog_copying-module.$(OBJEXT) \
-	yog_copying-nil.$(OBJEXT) yog_copying-object.$(OBJEXT) \
-	yog_copying-package.$(OBJEXT) yog_copying-parser.$(OBJEXT) \
-	yog_copying-property.$(OBJEXT) yog_copying-regexp.$(OBJEXT) \
-	yog_copying-repl.$(OBJEXT) yog_copying-set.$(OBJEXT) \
-	yog_copying-stacktrace.$(OBJEXT) yog_copying-string.$(OBJEXT) \
-	yog_copying-symbol.$(OBJEXT) yog_copying-table.$(OBJEXT) \
-	yog_copying-thread.$(OBJEXT) yog_copying-value.$(OBJEXT) \
-	yog_copying-vm.$(OBJEXT)
+	yog_copying-main.$(OBJEXT) yog_copying-misc.$(OBJEXT) \
+	yog_copying-module.$(OBJEXT) yog_copying-nil.$(OBJEXT) \
+	yog_copying-object.$(OBJEXT) yog_copying-package.$(OBJEXT) \
+	yog_copying-parser.$(OBJEXT) yog_copying-property.$(OBJEXT) \
+	yog_copying-regexp.$(OBJEXT) yog_copying-repl.$(OBJEXT) \
+	yog_copying-set.$(OBJEXT) yog_copying-stacktrace.$(OBJEXT) \
+	yog_copying-string.$(OBJEXT) yog_copying-symbol.$(OBJEXT) \
+	yog_copying-table.$(OBJEXT) yog_copying-thread.$(OBJEXT) \
+	yog_copying-value.$(OBJEXT) yog_copying-vm.$(OBJEXT)
 am_yog_copying_OBJECTS = $(am__objects_4) \
 	yog_copying-copying.$(OBJEXT)
 yog_copying_OBJECTS = $(am_yog_copying_OBJECTS)
@@ -158,6 +160,7 @@ am__objects_5 = yog_generational-arg.$(OBJEXT) \
 	yog_generational-klass.$(OBJEXT) \
 	yog_generational-lexer.$(OBJEXT) \
 	yog_generational-main.$(OBJEXT) \
+	yog_generational-misc.$(OBJEXT) \
 	yog_generational-module.$(OBJEXT) \
 	yog_generational-nil.$(OBJEXT) \
 	yog_generational-object.$(OBJEXT) \
@@ -201,8 +204,8 @@ am__objects_6 = yog_mark_sweep-arg.$(OBJEXT) \
 	yog_mark_sweep-function.$(OBJEXT) yog_mark_sweep-gc.$(OBJEXT) \
 	yog_mark_sweep-inst.$(OBJEXT) yog_mark_sweep-klass.$(OBJEXT) \
 	yog_mark_sweep-lexer.$(OBJEXT) yog_mark_sweep-main.$(OBJEXT) \
-	yog_mark_sweep-module.$(OBJEXT) yog_mark_sweep-nil.$(OBJEXT) \
-	yog_mark_sweep-object.$(OBJEXT) \
+	yog_mark_sweep-misc.$(OBJEXT) yog_mark_sweep-module.$(OBJEXT) \
+	yog_mark_sweep-nil.$(OBJEXT) yog_mark_sweep-object.$(OBJEXT) \
 	yog_mark_sweep-package.$(OBJEXT) \
 	yog_mark_sweep-parser.$(OBJEXT) \
 	yog_mark_sweep-property.$(OBJEXT) \
@@ -246,6 +249,7 @@ am__objects_7 = yog_mark_sweep_compact-arg.$(OBJEXT) \
 	yog_mark_sweep_compact-klass.$(OBJEXT) \
 	yog_mark_sweep_compact-lexer.$(OBJEXT) \
 	yog_mark_sweep_compact-main.$(OBJEXT) \
+	yog_mark_sweep_compact-misc.$(OBJEXT) \
 	yog_mark_sweep_compact-module.$(OBJEXT) \
 	yog_mark_sweep_compact-nil.$(OBJEXT) \
 	yog_mark_sweep_compact-object.$(OBJEXT) \
@@ -442,6 +446,7 @@ COMMON_SOURCES = arg.c \
 	klass.c \
 	lexer.c \
 	main.c \
+	misc.c \
 	module.c \
 	nil.c \
 	object.c \
@@ -615,6 +620,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miniyog-klass.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miniyog-lexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miniyog-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miniyog-misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miniyog-module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miniyog-nil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miniyog-object.Po@am__quote@
@@ -659,6 +665,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-klass.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-lexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-nil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-object.Po@am__quote@
@@ -702,6 +709,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-klass.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-lexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-nil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_copying-object.Po@am__quote@
@@ -747,6 +755,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-lexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-mark-sweep-compact.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-nil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_generational-object.Po@am__quote@
@@ -790,6 +799,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-lexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-mark-sweep.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-nil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep-object.Po@am__quote@
@@ -833,6 +843,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-lexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-mark-sweep-compact.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-nil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_mark_sweep_compact-object.Po@am__quote@
@@ -1234,6 +1245,20 @@ miniyog-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='miniyog-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(miniyog_CFLAGS) $(CFLAGS) -c -o miniyog-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+
+miniyog-misc.o: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(miniyog_CFLAGS) $(CFLAGS) -MT miniyog-misc.o -MD -MP -MF $(DEPDIR)/miniyog-misc.Tpo -c -o miniyog-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/miniyog-misc.Tpo $(DEPDIR)/miniyog-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='miniyog-misc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(miniyog_CFLAGS) $(CFLAGS) -c -o miniyog-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+
+miniyog-misc.obj: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(miniyog_CFLAGS) $(CFLAGS) -MT miniyog-misc.obj -MD -MP -MF $(DEPDIR)/miniyog-misc.Tpo -c -o miniyog-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/miniyog-misc.Tpo $(DEPDIR)/miniyog-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='miniyog-misc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(miniyog_CFLAGS) $(CFLAGS) -c -o miniyog-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
 
 miniyog-module.o: module.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(miniyog_CFLAGS) $(CFLAGS) -MT miniyog-module.o -MD -MP -MF $(DEPDIR)/miniyog-module.Tpo -c -o miniyog-module.o `test -f 'module.c' || echo '$(srcdir)/'`module.c
@@ -1837,6 +1862,20 @@ yog_bdw-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
+yog_bdw-misc.o: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-misc.o -MD -MP -MF $(DEPDIR)/yog_bdw-misc.Tpo -c -o yog_bdw-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-misc.Tpo $(DEPDIR)/yog_bdw-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='yog_bdw-misc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+
+yog_bdw-misc.obj: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-misc.obj -MD -MP -MF $(DEPDIR)/yog_bdw-misc.Tpo -c -o yog_bdw-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-misc.Tpo $(DEPDIR)/yog_bdw-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='yog_bdw-misc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -c -o yog_bdw-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+
 yog_bdw-module.o: module.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_bdw_CFLAGS) $(CFLAGS) -MT yog_bdw-module.o -MD -MP -MF $(DEPDIR)/yog_bdw-module.Tpo -c -o yog_bdw-module.o `test -f 'module.c' || echo '$(srcdir)/'`module.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_bdw-module.Tpo $(DEPDIR)/yog_bdw-module.Po
@@ -2439,6 +2478,20 @@ yog_copying-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
+yog_copying-misc.o: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-misc.o -MD -MP -MF $(DEPDIR)/yog_copying-misc.Tpo -c -o yog_copying-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-misc.Tpo $(DEPDIR)/yog_copying-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='yog_copying-misc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+
+yog_copying-misc.obj: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-misc.obj -MD -MP -MF $(DEPDIR)/yog_copying-misc.Tpo -c -o yog_copying-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-misc.Tpo $(DEPDIR)/yog_copying-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='yog_copying-misc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -c -o yog_copying-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+
 yog_copying-module.o: module.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_copying_CFLAGS) $(CFLAGS) -MT yog_copying-module.o -MD -MP -MF $(DEPDIR)/yog_copying-module.Tpo -c -o yog_copying-module.o `test -f 'module.c' || echo '$(srcdir)/'`module.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_copying-module.Tpo $(DEPDIR)/yog_copying-module.Po
@@ -3040,6 +3093,20 @@ yog_generational-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='yog_generational-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+
+yog_generational-misc.o: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-misc.o -MD -MP -MF $(DEPDIR)/yog_generational-misc.Tpo -c -o yog_generational-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-misc.Tpo $(DEPDIR)/yog_generational-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='yog_generational-misc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+
+yog_generational-misc.obj: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-misc.obj -MD -MP -MF $(DEPDIR)/yog_generational-misc.Tpo -c -o yog_generational-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_generational-misc.Tpo $(DEPDIR)/yog_generational-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='yog_generational-misc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -c -o yog_generational-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
 
 yog_generational-module.o: module.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_generational_CFLAGS) $(CFLAGS) -MT yog_generational-module.o -MD -MP -MF $(DEPDIR)/yog_generational-module.Tpo -c -o yog_generational-module.o `test -f 'module.c' || echo '$(srcdir)/'`module.c
@@ -3671,6 +3738,20 @@ yog_mark_sweep-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
+yog_mark_sweep-misc.o: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-misc.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-misc.Tpo -c -o yog_mark_sweep-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-misc.Tpo $(DEPDIR)/yog_mark_sweep-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='yog_mark_sweep-misc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+
+yog_mark_sweep-misc.obj: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-misc.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep-misc.Tpo -c -o yog_mark_sweep-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-misc.Tpo $(DEPDIR)/yog_mark_sweep-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='yog_mark_sweep-misc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+
 yog_mark_sweep-module.o: module.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_CFLAGS) $(CFLAGS) -MT yog_mark_sweep-module.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep-module.Tpo -c -o yog_mark_sweep-module.o `test -f 'module.c' || echo '$(srcdir)/'`module.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep-module.Tpo $(DEPDIR)/yog_mark_sweep-module.Po
@@ -4273,6 +4354,20 @@ yog_mark_sweep_compact-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
+yog_mark_sweep_compact-misc.o: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-misc.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-misc.Tpo -c -o yog_mark_sweep_compact-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-misc.Tpo $(DEPDIR)/yog_mark_sweep_compact-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='yog_mark_sweep_compact-misc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
+
+yog_mark_sweep_compact-misc.obj: misc.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-misc.obj -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-misc.Tpo -c -o yog_mark_sweep_compact-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-misc.Tpo $(DEPDIR)/yog_mark_sweep_compact-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='misc.c' object='yog_mark_sweep_compact-misc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -c -o yog_mark_sweep_compact-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+
 yog_mark_sweep_compact-module.o: module.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(yog_mark_sweep_compact_CFLAGS) $(CFLAGS) -MT yog_mark_sweep_compact-module.o -MD -MP -MF $(DEPDIR)/yog_mark_sweep_compact-module.Tpo -c -o yog_mark_sweep_compact-module.o `test -f 'module.c' || echo '$(srcdir)/'`module.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/yog_mark_sweep_compact-module.Tpo $(DEPDIR)/yog_mark_sweep_compact-module.Po
@@ -4712,6 +4807,10 @@ am:
 builtins.inc: miniyog builtins.yg yg2inc.yg
 	$(MAKE) miniyog
 	./miniyog yg2inc.yg builtins.yg $@
+
+array.inc: miniyog array.yg yg2inc.yg
+	$(MAKE) miniyog
+	./miniyog yg2inc.yg array.yg $@
 
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))

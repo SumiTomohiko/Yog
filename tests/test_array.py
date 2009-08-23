@@ -130,4 +130,29 @@ foo.push(42)
 print(foo)
 """, "[42]")
 
+    def test_include0(self):
+        self._test("""
+print([42, 26].include?(42))
+""", "true")
+
+    def test_include10(self):
+        self._test("""
+print([42, 26].include?("foo"))
+""", "false")
+
+    def test_join0(self):
+        self._test("""
+print(["foo"].join(":"))
+""", "foo")
+
+    def test_join10(self):
+        self._test("""
+print([].join(":"))
+""", "")
+
+    def test_join20(self):
+        self._test("""
+print(["foo", "bar"].join(":"))
+""", "foo:bar")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

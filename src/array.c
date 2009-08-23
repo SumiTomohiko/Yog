@@ -6,6 +6,7 @@
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/klass.h"
+#include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/thread.h"
@@ -349,6 +350,17 @@ YogArray_klass_new(YogEnv* env)
     YogKlass_define_property(env, klass, "size", get_size, NULL);
 
     RETURN(env, klass);
+}
+
+void
+YogArray_eval_builtin_script(YogEnv* env, YogVal cArray)
+{
+#if !defined(MINIYOG)
+const char* src =
+#   include "array.inc"
+;
+    YogMisc_eval_source(env, cArray, src);
+#endif
 }
 
 /**

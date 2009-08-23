@@ -303,6 +303,7 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
     vm->finish_code = YogCompiler_compile_finish_code(env);
 
     setup_builtins(env, vm, argc, argv);
+    YogArray_eval_builtin_script(env, vm->cArray);
 
     RETURN_VOID(env);
 }

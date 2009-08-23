@@ -36,6 +36,7 @@ COMMON_SOURCES = arg.c \
 	klass.c \
 	lexer.c \
 	main.c \
+	misc.c \
 	module.c \
 	nil.c \
 	object.c \
@@ -99,6 +100,10 @@ am:
 builtins.inc: miniyog builtins.yg yg2inc.yg
 	$(MAKE) miniyog
 	./miniyog yg2inc.yg builtins.yg $@
+
+array.inc: miniyog array.yg yg2inc.yg
+	$(MAKE) miniyog
+	./miniyog yg2inc.yg array.yg $@
 
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))

@@ -1,0 +1,27 @@
+
+def join(sep)
+  s = ""
+  i = 0
+  self.each() do [elem]
+    nonlocal i
+    if 0 < i
+      s << sep
+    end
+    s << elem
+    i += 1
+  end
+
+  return s
+end
+
+def include?(obj)
+  self.each() do [elem]
+    if (elem.class == obj.class) && (elem == obj)
+      return true
+    end
+  end
+
+  return false
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

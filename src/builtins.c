@@ -9,6 +9,7 @@
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/klass.h"
+#include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/package.h"
 #include "yog/parser.h"
@@ -219,15 +220,7 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
     YogObj_set_attr(env, builtins, "ARGV",  args);
 
 #if !defined(MINIYOG)
-    YogVal src = YUNDEF;
-    YogVal stmts = YUNDEF;
-    YogVal code = YUNDEF;
-    PUSH_LOCALS3(env, src, stmts, code);
-
-    src = YogString_new_str(env, builtins_src);
-    stmts = YogParser_parse(env, src);
-    code = YogCompiler_compile_package(env, "builtin", stmts);
-    YogEval_eval_package(env, builtins, code);
+    YogMisc_eval_source(env, builtins, builtins_src);
 #endif
 
     RETURN(env, builtins);

@@ -485,6 +485,7 @@ lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal arg_body = PTR_AS(YogString, arg)->body;
     const char* q = PTR_AS(YogCharArray, arg_body)->items;
     memcpy(p, q, size2);
+    PTR_AS(YogString, self)->size = size;
 
     RETURN(env, self);
 }

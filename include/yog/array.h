@@ -28,6 +28,7 @@ typedef struct YogArray YogArray;
 /* src/array.c */
 YogVal YogArray_add(YogEnv*, YogVal, YogVal);
 YogVal YogArray_at(YogEnv*, YogVal, uint_t);
+void YogArray_eval_builtin_script(YogEnv*, YogVal);
 void YogArray_extend(YogEnv*, YogVal, YogVal);
 YogVal YogArray_klass_new(YogEnv*);
 YogVal YogArray_new(YogEnv*);

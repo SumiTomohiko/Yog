@@ -99,6 +99,24 @@ puts(s)
 """, """foobar
 """)
 
+    def test_lshift30(self):
+        self._test("""
+s = \"\"
+s << \"foo\"
+s << \"bar\"
+puts(s)
+""", """foobar
+""")
+
+    def test_lshift40(self):
+        self._test("""
+s = \"foo\"
+s << \"bar\"
+s << \"baz\"
+puts(s)
+""", """foobarbaz
+""")
+
     def test_each_char1(self):
         self._test("""
 \"foo\".each_char() do [c]
