@@ -18,6 +18,12 @@ print_prompt()
 }
 
 static void
+print_prompt2()
+{
+    printf("... ");
+}
+
+static BOOL
 eval(YogEnv* env, YogVal pkg, YogVal src)
 {
     SAVE_ARGS2(env, pkg, src);
@@ -35,7 +41,7 @@ eval(YogEnv* env, YogVal pkg, YogVal src)
 
         stmts = YogParser_parse(env, src);
         if (!IS_PTR(stmts)) {
-            RETURN_VOID(env);
+            RETURN(env, FALSE);
         }
         code = YogCompiler_compile_interactive(env, stmts);
         YogEval_eval_package(env, pkg, code);
@@ -47,10 +53,7 @@ eval(YogEnv* env, YogVal pkg, YogVal src)
         YogError_print_stacktrace(env);
     }
 
-    YogString_clear(env, src);
-    print_prompt();
-
-    RETURN_VOID(env);
+    RETURN(env, TRUE);
 }
 
 void
@@ -74,7 +77,12 @@ YogRepl_do(YogEnv* env)
     char buffer[4096];
     while (fgets(buffer, array_sizeof(buffer), stdin) != NULL) {
         YogString_add_cstr(env, src, buffer);
-        eval(env, pkg, src);
+        if (eval(env, pkg, src)) {
+            YogString_clear(env, src);
+            print_prompt();
+            continue;
+        }
+        print_prompt2();
     }
 
     RETURN_VOID(env);
