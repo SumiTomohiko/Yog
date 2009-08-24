@@ -11,13 +11,10 @@ struct YogArgInfo {
 
     uint_t blockargc;
     ID blockargname;
-    uint8_t blockarg_index;
 
     uint_t varargc;
-    uint8_t vararg_index;
 
     uint_t kwargc;
-    uint8_t kwarg_index;
 };
 
 typedef struct YogArgInfo YogArgInfo;

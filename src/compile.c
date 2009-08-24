@@ -1778,8 +1778,6 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
 
         ID name = NODE(node)->u.param.name;
         ARG_INFO(arg_info)->blockargname = name;
-        uint_t blockarg_index = lookup_local_var_index(env, vars, name);
-        ARG_INFO(arg_info)->blockarg_index = blockarg_index;
 
         n++;
         if (size == n) {
@@ -1790,11 +1788,6 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
 
     if (NODE(node)->type == NODE_VAR_PARAM) {
         ARG_INFO(arg_info)->varargc = 1;
-
-        ID name = NODE(node)->u.param.name;
-        uint_t vararg_index = lookup_local_var_index(env, vars, name);
-        ARG_INFO(arg_info)->vararg_index = vararg_index;
-
         n++;
         if (size == n) {
             RETURN_VOID(env);
@@ -1804,10 +1797,6 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
 
     YOG_ASSERT(env, NODE(node)->type == NODE_KW_PARAM, "Node must be NODE_KW_PARAM.");
     ARG_INFO(arg_info)->kwargc = 1;
-
-    ID name = NODE(node)->u.param.name;
-    uint_t kwarg_index = lookup_local_var_index(env, vars, name);
-    ARG_INFO(arg_info)->kwarg_index = kwarg_index;
 
     n++;
     YOG_ASSERT(env, size == n, "Parameters count is unmatched.");
