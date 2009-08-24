@@ -150,8 +150,8 @@
                 val = lookup_builtins(env, id);
             }
             if (IS_UNDEF(val)) {
-                const char* name = YogVM_id2name(env, env->vm, id);
-                YogError_raise_NameError(env, "name '%s' is not defined", name);
+                YogVal name = YogVM_id2name(env, env->vm, id);
+                YogError_raise_NameError(env, "name '%s' is not defined", STRING_CSTR(name));
             }
 
             PUSH(val);
@@ -170,8 +170,8 @@
                 val = lookup_builtins(env, id);
             }
             if (IS_UNDEF(val)) {
-                const char* name = YogVM_id2name(env, env->vm, id);
-                YogError_raise_NameError(env, "name '%s' is not defined", name);
+                YogVal name = YogVM_id2name(env, env->vm, id);
+                YogError_raise_NameError(env, "name '%s' is not defined", STRING_CSTR(name));
             }
 
             PUSH(val);
@@ -529,19 +529,25 @@
                 }
                 else {
                     ID id = PTR_AS(YogClass, class_of_obj)->name;
-                    const char* class_name = YogVM_id2name(env, env->vm, id);
-                    YogError_raise_AttributeError(env, "can't set attribute to '%s' object", class_name);
+                    YogVal class_name = YogVM_id2name(env, env->vm, id);
+                    YogError_raise_AttributeError(env, "can't set attribute to '%s' object", STRING_CSTR(class_name));
                 }
             }
             else if (has_attrs) {
                 YogObj_set_attr_id(env, obj, name, val);
             }
             else {
+                YogVal class_name = YUNDEF;
+                YogVal attr_name = YUNDEF;
+                PUSH_LOCALS2(env, class_name, attr_name);
+        
                 ID id = PTR_AS(YogClass, class_of_obj)->name;
                 YogVM* vm = env->vm;
-                const char* class_name = YogVM_id2name(env, vm, id);
-                const char* attr_name = YogVM_id2name(env, vm, name);
-                YogError_raise_AttributeError(env, "%s object has no attribute '%s'", class_name, attr_name);
+                class_name = YogVM_id2name(env, vm, id);
+                attr_name = YogVM_id2name(env, vm, name);
+                YogError_raise_AttributeError(env, "%s object has no attribute '%s'", STRING_CSTR(class_name), STRING_CSTR(attr_name));
+        
+                POP_LOCALS(env);
             }
         
             POP_LOCALS(env);

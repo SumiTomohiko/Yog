@@ -65,8 +65,8 @@ typedef struct YogCode YogCode;
  */
 
 /* src/code.c */
-void YogCode_dump(YogEnv*, YogVal);
 YogVal YogCode_define_class(YogEnv*);
+void YogCode_dump(YogEnv*, YogVal);
 YogVal YogCode_new(YogEnv*);
 
 /* src/code.inc */

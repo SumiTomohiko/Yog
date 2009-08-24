@@ -92,6 +92,9 @@ raise_error(YogEnv* env, YogVal klass, const char* msg)
 static void
 raise_format(YogEnv* env, YogVal klass, const char* fmt, va_list ap)
 {
+    /**
+     * Don't GC before making error message. Some arguments in ap are GC object.
+     */
     char buffer[4096];
     vsnprintf(buffer, array_sizeof(buffer), fmt, ap);
     raise_error(env, klass, buffer);
@@ -124,16 +127,27 @@ YogError_raise_ValueError(YogEnv* env, const char* fmt, ...)
 void
 YogError_print_stacktrace(YogEnv* env)
 {
+    SAVE_LOCALS(env);
+    YogVal s = YUNDEF;
+    YogVal t = YUNDEF;
+    YogVal name = YUNDEF;
+    YogVal exc = YUNDEF;
+    YogVal st = YUNDEF;
+    YogVal filename = YUNDEF;
+    YogVal klass = YUNDEF;
+    YogVal msg = YUNDEF;
+    PUSH_LOCALS8(env, s, t, name, exc, st, filename, klass, msg);
+
 #define PRINT(...)  fprintf(stderr, __VA_ARGS__)
-    YogVal exc = PTR_AS(YogThread, env->thread)->jmp_val;
-    YogVal st = PTR_AS(YogException, exc)->stack_trace;
+    exc = PTR_AS(YogThread, env->thread)->jmp_val;
+    st = PTR_AS(YogException, exc)->stack_trace;
     if (IS_PTR(st)) {
         PRINT("Traceback (most recent call last):\n");
     }
 #define ID2NAME(id)     YogVM_id2name(env, env->vm, id)
     while (IS_PTR(st)) {
         PRINT("  File ");
-        YogVal filename = PTR_AS(YogStackTraceEntry, st)->filename;
+        filename = PTR_AS(YogStackTraceEntry, st)->filename;
         if (IS_PTR(filename)) {
             const char* name = PTR_AS(YogCharArray, filename)->items;
             PRINT("\"%s\"", name);
@@ -152,35 +166,33 @@ YogError_print_stacktrace(YogEnv* env)
         ID func_name = PTR_AS(YogStackTraceEntry, st)->func_name;
         if (class_name != INVALID_ID) {
             if (func_name != INVALID_ID) {
-                const char* s = ID2NAME(class_name);
-                const char* t = ID2NAME(func_name);
-                PRINT("%s#%s", s, t);
+                s = ID2NAME(class_name);
+                t = ID2NAME(func_name);
+                PRINT("%s#%s", STRING_CSTR(s), STRING_CSTR(t));
             }
             else {
-                const char* name = ID2NAME(class_name);
-                PRINT("<klass %s>", name);
+                name = ID2NAME(class_name);
+                PRINT("<class %s>", STRING_CSTR(name));
             }
         }
         else {
-            const char* name = ID2NAME(func_name);
-            PRINT("%s", name);
+            name = ID2NAME(func_name);
+            PRINT("%s", STRING_CSTR(name));
         }
         PRINT("\n");
 
         st = PTR_AS(YogStackTraceEntry, st)->lower;
     }
 
-    YogVal klass = YOGBASICOBJ(exc)->klass;
-    const char* name = ID2NAME(PTR_AS(YogClass, klass)->name);
-    /* dirty hack */
-    size_t len = strlen(name);
-    char s[len + 1];
-    strcpy(s, name);
+    klass = YOGBASICOBJ(exc)->klass;
+    ID id = PTR_AS(YogClass, klass)->name;
+    name = ID2NAME(id);
 #undef ID2NAME
-    YogVal val = YogEval_call_method(env, PTR_AS(YogException, exc)->message, "to_s", 0, NULL);
-    YogString* msg = PTR_AS(YogString, val);
-    PRINT("%s: %s\n", s, PTR_AS(YogCharArray, msg->body)->items);
+    msg = YogEval_call_method(env, PTR_AS(YogException, exc)->message, "to_s", 0, NULL);
+    PRINT("%s: %s\n", STRING_CSTR(name), STRING_CSTR(msg));
 #undef PRINT
+
+    RETURN_VOID(env);
 }
 
 static void
@@ -189,14 +201,16 @@ raise_TypeError(YogEnv* env, const char* msg, YogVal left, YogVal right)
     SAVE_ARGS2(env, left, right);
     YogVal left_class = YUNDEF;
     YogVal right_class = YUNDEF;
-    PUSH_LOCALS2(env, left_class, right_class);
+    YogVal left_name = YUNDEF;
+    YogVal right_name = YUNDEF;
+    PUSH_LOCALS4(env, left_class, right_class, left_name, right_name);
 
     left_class = YogVal_get_class(env, left);
     right_class = YogVal_get_class(env, right);
-    const char* left_name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, left_class)->name);
-    const char* right_name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, right_class)->name);
+    left_name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, left_class)->name);
+    right_name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, right_class)->name);
 
-    YogError_raise_TypeError(env, msg, left_name, right_name);
+    YogError_raise_TypeError(env, msg, STRING_CSTR(left_name), STRING_CSTR(right_name));
 
     RETURN_VOID(env);
 }

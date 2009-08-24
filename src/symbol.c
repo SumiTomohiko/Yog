@@ -11,14 +11,12 @@ inspect(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
+    YogVal sym = YUNDEF;
+    PUSH_LOCALS2(env, s, sym);
 
     s = YogString_new_str(env, ":");
-    const char* t = YogVM_id2name(env, env->vm, VAL2ID(self));
-    /* TODO: dirty hack */
-    char buffer[4096];
-    strncpy(buffer, t, array_sizeof(buffer));
-    YogString_add_cstr(env, s, buffer);
+    sym = YogVM_id2name(env, env->vm, VAL2ID(self));
+    YogString_add(env, s, sym);
 
     RETURN(env, s);
 }
@@ -30,8 +28,7 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
-    const char* t = YogVM_id2name(env, env->vm, VAL2ID(self));
-    s = YogString_new_str(env, t);
+    s = YogVM_id2name(env, env->vm, VAL2ID(self));
 
     RETURN(env, s);
 }

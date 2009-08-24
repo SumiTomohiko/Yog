@@ -12,6 +12,7 @@
 #include "yog/opcodes.h"
 #include "yog/parser.h"
 #include "yog/string.h"
+#include "yog/string.h"
 #include "yog/table.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
@@ -864,15 +865,19 @@ scan_var_visit_array(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 static void
 scan_var_visit_logical_and(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
+    SAVE_ARGS2(env, node, data);
     visit_node(env, visitor, NODE(node)->u.logical_and.left, data);
     visit_node(env, visitor, NODE(node)->u.logical_and.right, data);
+    RETURN_VOID(env);
 }
 
 static void
 scan_var_visit_logical_or(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
+    SAVE_ARGS2(env, node, data);
     visit_node(env, visitor, NODE(node)->u.logical_or.left, data);
     visit_node(env, visitor, NODE(node)->u.logical_or.right, data);
+    RETURN_VOID(env);
 }
 
 static void
@@ -998,8 +1003,8 @@ append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
         {
             YogVal var = lookup_var(env, COMPILE_DATA(data)->vars, name);
             if (!IS_PTR(var)) {
-                const char* s = YogVM_id2name(env, env->vm, name);
-                YOG_BUG(env, "variable not found (%s)", s);
+                YogVal s = YogVM_id2name(env, env->vm, name);
+                YOG_BUG(env, "variable not found (%s)", STRING_CSTR(s));
             }
             switch (VAR(var)->type) {
             case VT_GLOBAL:
@@ -2132,6 +2137,8 @@ static void
 compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
+    YogVal var = YUNDEF;
+    PUSH_LOCAL(env, var);
 
     ID id = NODE(node)->u.variable.id;
     uint_t lineno = NODE(node)->lineno;
@@ -2139,8 +2146,9 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     case CTX_BLOCK:
     case CTX_FUNC:
         {
-            YogVal var = lookup_var(env, COMPILE_DATA(data)->vars, id);
-            YOG_ASSERT(env, IS_PTR(var), "can't find variable (%s)", YogVM_id2name(env, env->vm, id));
+            var = lookup_var(env, COMPILE_DATA(data)->vars, id);
+            YogVal name = YogVM_id2name(env, env->vm, id);
+            YOG_ASSERT(env, IS_PTR(var), "can't find variable (%s)", STRING_CSTR(name));
             switch (VAR(var)->type) {
             case VT_GLOBAL:
                 CompileData_add_load_global(env, data, lineno, id);
@@ -2159,7 +2167,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
                 }
                 break;
             default:
-                YOG_BUG(env, "unknown variable type (%d)", VAR(var)->type);
+                YOG_BUG(env, "unknown variable type (0x%x)", VAR(var)->type);
                 break;
             }
             break;
@@ -2816,28 +2824,30 @@ compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
 }
 
 static ID
-join_package_names(YogEnv* env, YogVal pkg_name)
+join_package_names(YogEnv* env, YogVal pkg_names)
 {
-    SAVE_ARG(env, pkg_name);
+    SAVE_ARG(env, pkg_names);
+    YogVal name = YUNDEF;
+    YogVal s = YUNDEF;
+    PUSH_LOCALS2(env, name, s);
 
     size_t len = 0;
-    uint_t size = YogArray_size(env, pkg_name);
+    uint_t size = YogArray_size(env, pkg_names);
     uint_t i;
     for (i = 0; i < size; i++) {
-        YogVal name = YogArray_at(env, pkg_name, i);
-        const char* s = YogVM_id2name(env, env->vm, VAL2ID(name));
-        len += strlen(s);
+        name = YogArray_at(env, pkg_names, i);
+        s = YogVM_id2name(env, env->vm, VAL2ID(name));
+        len += YogString_size(env, s) - 1;
     }
     len += size - 1;
     char pkg[len + 1];
     char* pc = pkg - 1;
     for (i = 0; i < size; i++) {
-        YogVal name = YogArray_at(env, pkg_name, i);
-        const char* s = YogVM_id2name(env, env->vm, VAL2ID(name));
+        name = YogArray_at(env, pkg_names, i);
+        s = YogVM_id2name(env, env->vm, VAL2ID(name));
         pc++;
-        strcpy(pc, s);
-        size_t l = strlen(s);
-        pc += l;
+        strcpy(pc, STRING_CSTR(s));
+        pc += YogString_size(env, s) - 1;
         *pc = '.';
     }
     *pc = '\0';
@@ -2846,20 +2856,20 @@ join_package_names(YogEnv* env, YogVal pkg_name)
 }
 
 static void
-compile_import(YogEnv* env, YogVal pkg_name, YogVal data, uint_t lineno)
+compile_import(YogEnv* env, YogVal pkg_names, YogVal data, uint_t lineno)
 {
-    SAVE_ARGS2(env, pkg_name, data);
+    SAVE_ARGS2(env, pkg_names, data);
 
     ID import_package = YogVM_intern(env, env->vm, "import_package");
     CompileData_add_load_global(env, data, lineno, import_package);
 
-    ID pkg = join_package_names(env, pkg_name);
+    ID pkg = join_package_names(env, pkg_names);
     uint_t c = register_const(env, data, ID2VAL(pkg));
     CompileData_add_push_const(env, data, lineno, c);
 
     CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
 
-    YogVal var_name = YogArray_at(env, pkg_name, 0);
+    YogVal var_name = YogArray_at(env, pkg_names, 0);
     append_store(env, data, lineno, VAL2ID(var_name));
 
     RETURN_VOID(env);
@@ -2878,8 +2888,8 @@ compile_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     uint_t size = YogArray_size(env, names);
     uint_t i;
     for (i = 0; i < size; i++) {
-        YogVal pkg_name = YogArray_at(env, names, i);
-        compile_import(env, pkg_name, data, lineno);
+        YogVal pkg_names = YogArray_at(env, names, i);
+        compile_import(env, pkg_names, data, lineno);
     }
 
     RETURN_VOID(env);
@@ -2984,7 +2994,6 @@ static YogVal
 compile_package(YogEnv* env, const char* filename, YogVal stmts, BOOL interactive)
 {
     SAVE_ARG(env, stmts);
-
     YogVal var_tbl = YUNDEF;
     YogVal vars = YUNDEF;
     YogVal name = YUNDEF;

@@ -102,21 +102,30 @@ release_symbols_lock(YogEnv* env, YogVM* vm)
     pthread_rwlock_unlock(&vm->sym_lock);
 }
 
-const char*
+YogVal
 YogVM_id2name(YogEnv* env, YogVM* vm, ID id)
 {
+    SAVE_LOCALS(env);
+    YogVal s = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS2(env, s, val);
+
     acquire_symbols_read_lock(env, vm);
 
     YogVal sym = ID2VAL(id);
-    YogVal val = YUNDEF;
+    val = YUNDEF;
     if (!YogTable_lookup(env, env->vm->id2name, sym, &val)) {
         YOG_BUG(env, "can't find symbol (0x%x)", id);
     }
 
-    YogCharArray* ptr = VAL2PTR(val);
+    uint_t size = PTR_AS(YogCharArray, val)->size;
+    s = YogString_new_size(env, size);
+    strcpy(STRING_CSTR(s), PTR_AS(YogCharArray, val)->items);
+    STRING_SIZE(s) = size;
 
     release_symbols_lock(env, vm);
-    return ptr->items;
+
+    RETURN(env, s);
 }
 
 ID
@@ -957,33 +966,30 @@ YogVal
 YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
 {
     SAVE_LOCALS(env);
-
     YogVal top = YUNDEF;
     YogVal parent = YUNDEF;
     YogVal pkg = YUNDEF;
-    PUSH_LOCALS3(env, top, parent, pkg);
+    YogVal s = YUNDEF;
+    PUSH_LOCALS4(env, top, parent, pkg, s);
 
-    const char* s = YogVM_id2name(env, env->vm, name);
-    size_t len = strlen(s);
-    char t[len + 1];
-    strcpy(t, s);
-    const char* begin = t;
-    const char* pc = begin;
+    s = YogVM_id2name(env, env->vm, name);
+    uint_t n = 0;
     while (1) {
-        const char* end = strchr(pc, '.');
+        const char* begin = STRING_CSTR(s);
+        const char* end = strchr(begin + n, '.');
         if (end == NULL) {
-            end = begin + len;
+            end = begin + STRING_SIZE(s) - 1;
         }
-        uint_t size = end - begin;
-        char s[size + 1];
-        strncpy(s, begin, size);
-        s[size] = '\0';
+        uint_t endpos = end - begin;
+        char str[endpos + 1];
+        strncpy(str, begin, endpos);
+        str[endpos] = '\0';
 
-        pkg = import_package(env, vm, s);
+        pkg = import_package(env, vm, str);
         if (IS_PTR(parent)) {
-            uint_t size = end - pc;
+            uint_t size = endpos - n;
             char attr[size + 1];
-            strncpy(attr, pc, size);
+            strncpy(attr, STRING_CSTR(s) + n, size);
             attr[size] = '\0';
             ID id = YogVM_intern(env, vm, attr);
             YogObj_set_attr_id(env, parent, id, pkg);
@@ -992,12 +998,12 @@ YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
             top = pkg;
         }
 
-        if (end == begin + len) {
+        if (endpos == STRING_SIZE(s) - 1) {
             break;
         }
 
         parent = pkg;
-        pc = end + 1;
+        n = endpos + 1;
     }
 
     RETURN(env, top);

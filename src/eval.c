@@ -46,7 +46,9 @@ exec_get_attr(YogEnv* env, YogVal obj, ID name)
     YogVal attr = YUNDEF;
     YogVal class_of_obj = YUNDEF;
     YogVal class_of_attr = YUNDEF;
-    PUSH_LOCALS3(env, attr, class_of_obj, class_of_attr);
+    YogVal class_name = YUNDEF;
+    YogVal attr_name = YUNDEF;
+    PUSH_LOCALS5(env, attr, class_of_obj, class_of_attr, class_name, attr_name);
 
     class_of_obj = YogVal_get_class(env, obj);
 
@@ -59,9 +61,9 @@ exec_get_attr(YogEnv* env, YogVal obj, ID name)
     if (IS_UNDEF(attr)) {
         YogVM* vm = env->vm;
         ID id = PTR_AS(YogClass, class_of_obj)->name;
-        const char* class_name = YogVM_id2name(env, vm, id);
-        const char* attr_name = YogVM_id2name(env, vm, name);
-        YogError_raise_AttributeError(env, "'%s' object has no attribute '%s'", class_name, attr_name);
+        class_name = YogVM_id2name(env, vm, id);
+        attr_name = YogVM_id2name(env, vm, name);
+        YogError_raise_AttributeError(env, "'%s' object has no attribute '%s'", STRING_CSTR(class_name), STRING_CSTR(attr_name));
     }
     class_of_attr = YogVal_get_class(env, attr);
     void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogClass, class_of_attr)->exec_get_descr;
@@ -546,8 +548,10 @@ YogEval_mainloop(YogEnv* env)
                 uint_t size = PTR_AS(YogValArray, vars)->size;
                 uint_t i;
                 for (i = 0; i < size; i++) {
-                    const char* s = YogVM_id2name(env, env->vm, names[i]);
-                    TRACE("%u: %s:", i, s);
+                    YogVal s = YogVM_id2name(env, env->vm, names[i]);
+                    TRACE("%u: %s:", i, STRING_CSTR(s));
+                    YogVal cur_frame = PTR_AS(YogThread, env->thread)->cur_frame;
+                    YogVal vars = PTR_AS(YogMethodFrame, cur_frame)->vars;
                     YogVal_print(env, PTR_AS(YogValArray, vars)->items[i]);
                 }
             }

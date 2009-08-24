@@ -106,8 +106,8 @@ typedef uint_t flags_t;
 /* src/value.c */
 YogVal YogVal_from_int(YogEnv*, int_t);
 YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
-YogVal YogVal_get_descr(YogEnv*, YogVal, YogVal, YogVal);
 YogVal YogVal_get_class(YogEnv*, YogVal);
+YogVal YogVal_get_descr(YogEnv*, YogVal, YogVal, YogVal);
 BOOL YogVal_is_subclass_of(YogEnv*, YogVal, YogVal);
 void YogVal_print(YogEnv*, YogVal);
 void YogVal_set_attr(YogEnv*, YogVal, ID, YogVal);

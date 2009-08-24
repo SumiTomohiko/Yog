@@ -2,13 +2,14 @@
 #include "yog/arg.h"
 #include "yog/array.h"
 #include "yog/binary.h"
+#include "yog/class.h"
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/inst.h"
-#include "yog/class.h"
 #include "yog/object.h"
 #include "yog/opcodes.h"
+#include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
 
@@ -38,7 +39,8 @@ print_val(YogEnv* env, YogVal val)
         printf("nil");
     }
     else if (IS_SYMBOL(val)) {
-        printf(" :%s", YogVM_id2name(env, env->vm, VAL2ID(val)));
+        YogVal s = YogVM_id2name(env, env->vm, VAL2ID(val));
+        printf(" :%s", STRING_CSTR(s));
     }
     else {
         YOG_ASSERT(env, FALSE, "Unknown value type.");
@@ -138,8 +140,8 @@ YogCode_dump(YogEnv* env, YogVal code)
         case OP(LOAD_NAME):
             {
                 ID id = OPERAND(ID, 0);
-                const char* name = YogVM_id2name(env, env->vm, id);
-                printf(" %d (:%s)", id, name);
+                YogVal name = YogVM_id2name(env, env->vm, id);
+                printf(" %d (:%s)", id, STRING_CSTR(name));
             }
             break;
         case OP(PUSH_CONST):
@@ -175,7 +177,8 @@ YogCode_dump(YogEnv* env, YogVal code)
         case OP(LOAD_ATTR):
             {
                 ID id = OPERAND(ID, 0);
-                printf(" :%s", YogVM_id2name(env, env->vm, id));
+                YogVal name = YogVM_id2name(env, env->vm, id);
+                printf(" :%s", STRING_CSTR(name));
             }
             break;
         case OP(JUMP_IF_TRUE):

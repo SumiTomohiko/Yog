@@ -8,56 +8,56 @@ class DeclarationInserter(object):
 
     start = "/* PROTOTYPE_START */"
     end = "/* PROTOTYPE_END */"
-    files = { 
+    files = {
             "include/yog/misc.h": [ "src/misc.c", ],
-            "include/yog/comparable.h": [ "src/comparable.c", ], 
-            "include/yog/set.h": [ "src/set.c", ], 
-            "include/yog/module.h": [ "src/module.c", ], 
-            "include/yog/file.h": [ "src/file.c", ], 
-            "include/yog/dict.h": [ "src/dict.c", ], 
-            "include/yog/classmethod.h": [ "src/classmethod.c", ], 
-            "include/yog/property.h": [ "src/property.c", ], 
-            "include/yog/symbol.h": [ "src/symbol.c", ], 
-            "include/yog/repl.h": [ "src/repl.c", ], 
-            "include/yog/yog.h": [ "src/value.c", ], 
-            "include/yog/builtins.h": [ "src/builtins.c", ], 
-            "include/yog/error.h": [ "src/error.c", ], 
-            "include/yog/bool.h": [ "src/bool.c", ], 
-            "include/yog/fixnum.h": [ "src/fixnum.c", ], 
-            "include/yog/arg.h": [ "src/arg.c", ], 
-            "include/yog/block.h": [ "src/block.c", ], 
-            "include/yog/klass.h": [ "src/klass.c", ], 
-            "include/yog/nil.h": [ "src/nil.c", ], 
-            "include/yog/function.h": [ "src/function.c", ], 
-            "include/yog/binary.h": [ "src/binary.c", ], 
-            "include/yog/package.h": [ "src/package.c", ], 
-            "include/yog/code.h": [ "src/code.c", "src/code.inc", ], 
-            "include/yog/compile.h": [ "src/compile.c", ], 
-            "include/yog/array.h": [ "src/array.c", ], 
+            "include/yog/comparable.h": [ "src/comparable.c", ],
+            "include/yog/set.h": [ "src/set.c", ],
+            "include/yog/module.h": [ "src/module.c", ],
+            "include/yog/file.h": [ "src/file.c", ],
+            "include/yog/dict.h": [ "src/dict.c", ],
+            "include/yog/classmethod.h": [ "src/classmethod.c", ],
+            "include/yog/property.h": [ "src/property.c", ],
+            "include/yog/symbol.h": [ "src/symbol.c", ],
+            "include/yog/repl.h": [ "src/repl.c", ],
+            "include/yog/yog.h": [ "src/value.c", ],
+            "include/yog/builtins.h": [ "src/builtins.c", ],
+            "include/yog/error.h": [ "src/error.c", ],
+            "include/yog/bool.h": [ "src/bool.c", ],
+            "include/yog/fixnum.h": [ "src/fixnum.c", ],
+            "include/yog/arg.h": [ "src/arg.c", ],
+            "include/yog/block.h": [ "src/block.c", ],
+            "include/yog/class.h": [ "src/class.c", ],
+            "include/yog/nil.h": [ "src/nil.c", ],
+            "include/yog/function.h": [ "src/function.c", ],
+            "include/yog/binary.h": [ "src/binary.c", ],
+            "include/yog/package.h": [ "src/package.c", ],
+            "include/yog/code.h": [ "src/code.c", "src/code.inc", ],
+            "include/yog/compile.h": [ "src/compile.c", ],
+            "include/yog/array.h": [ "src/array.c", ],
             "include/yog/parser.h": [
-                    "src/lexer.c", "src/parser.y", 
-                    ], 
-            "include/yog/regexp.h": [ "src/regexp.c", ], 
-            "include/yog/string.h": [ "src/string.c", ], 
-            "include/yog/encoding.h": [ "src/encoding.c", ], 
-            "include/yog/exception.h": [ 
-                    "src/exception.c", "src/stacktrace.c", ], 
-            "include/yog/inst.h.tmpl": [ "src/inst.c", ], 
-            "include/yog/table.h": [ "src/table.c", ], 
-            "include/yog/gc/mark-sweep-compact.h": [ 
-                "src/gc/mark-sweep-compact.c", ], 
-            "include/yog/gc/copying.h": [ "src/gc/copying.c", ], 
-            "include/yog/gc/mark-sweep.h": [ "src/gc/mark-sweep.c", ], 
-            "include/yog/gc/bdw.h": [ "src/gc/bdw.c", ], 
-            "include/yog/gc/generational.h": [ "src/gc/generational.c", ], 
-            "include/yog/thread.h": [ "src/thread.c", ], 
-            "include/yog/vm.h": [ "src/vm.c", ], 
-            "include/yog/object.h": [ "src/object.c", ], 
-            "include/yog/frame.h": [ "src/frame.c", ], 
-            "include/yog/float.h": [ "src/float.c", ], 
-            "include/yog/eval.h": [ "src/eval.c", ], 
-            "include/yog/gc.h": [ "src/gc.c", ], 
-            "include/yog/bignum.h": [ "src/bignum.c", ], 
+                    "src/lexer.c", "src/parser.y",
+                    ],
+            "include/yog/regexp.h": [ "src/regexp.c", ],
+            "include/yog/string.h": [ "src/string.c", ],
+            "include/yog/encoding.h": [ "src/encoding.c", ],
+            "include/yog/exception.h": [
+                    "src/exception.c", "src/stacktrace.c", ],
+            "include/yog/inst.h.tmpl": [ "src/inst.c", ],
+            "include/yog/table.h": [ "src/table.c", ],
+            "include/yog/gc/mark-sweep-compact.h": [
+                "src/gc/mark-sweep-compact.c", ],
+            "include/yog/gc/copying.h": [ "src/gc/copying.c", ],
+            "include/yog/gc/mark-sweep.h": [ "src/gc/mark-sweep.c", ],
+            "include/yog/gc/bdw.h": [ "src/gc/bdw.c", ],
+            "include/yog/gc/generational.h": [ "src/gc/generational.c", ],
+            "include/yog/thread.h": [ "src/thread.c", ],
+            "include/yog/vm.h": [ "src/vm.c", ],
+            "include/yog/object.h": [ "src/object.c", ],
+            "include/yog/frame.h": [ "src/frame.c", ],
+            "include/yog/float.h": [ "src/float.c", ],
+            "include/yog/eval.h": [ "src/eval.c", ],
+            "include/yog/gc.h": [ "src/gc.c", ],
+            "include/yog/bignum.h": [ "src/bignum.c", ],
             }
 
     def _find(self, lines, s, start):
@@ -204,8 +204,8 @@ class DeclarationInserter(object):
                             args.append(type_)
 
                     declarations[name] = \
-                            "%(return_type)s %(name)s(%(args)s);" % { 
-                                    "return_type": return_type, "name": name, 
+                            "%(return_type)s %(name)s(%(args)s);" % {
+                                    "return_type": return_type, "name": name,
                                     "args": ", ".join(args) }
 
         retval = []

@@ -126,11 +126,13 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal klass = YUNDEF;
     YogVal s = YUNDEF;
-    PUSH_LOCALS2(env, klass, s);
+    YogVal name_str = YUNDEF;
+    PUSH_LOCALS3(env, klass, s, name_str);
 
     klass = PTR_AS(YogBasicObj, self)->klass;
     ID name = PTR_AS(YogClass, klass)->name;
-    s = YogString_new_format(env, "<%s %08x%08x>", YogVM_id2name(env, env->vm, name), PTR_AS(YogBasicObj, self)->id_upper, PTR_AS(YogBasicObj, self)->id_lower);
+    name_str = YogVM_id2name(env, env->vm, name);
+    s = YogString_new_format(env, "<%s %08x%08x>", STRING_CSTR(name_str), PTR_AS(YogBasicObj, self)->id_upper, PTR_AS(YogBasicObj, self)->id_lower);
 
     RETURN(env, s);
 }
@@ -219,7 +221,7 @@ YogObject_boot(YogEnv* env, YogVal cObject)
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
-    YogClass_define_property(env, cObject, "klass", get_class, NULL);
+    YogClass_define_property(env, cObject, "class", get_class, NULL);
 
     RETURN_VOID(env);
 }

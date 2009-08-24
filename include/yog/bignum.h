@@ -21,9 +21,9 @@ typedef struct YogBignum YogBignum;
 
 /* src/bignum.c */
 YogVal YogBignum_and(YogEnv*, YogVal, YogVal);
+YogVal YogBignum_define_class(YogEnv*);
 YogVal YogBignum_from_int(YogEnv*, int_t);
 YogVal YogBignum_from_str(YogEnv*, YogVal, int_t);
-YogVal YogBignum_define_class(YogEnv*);
 YogVal YogBignum_lshift(YogEnv*, YogVal, int_t);
 YogVal YogBignum_modulo(YogEnv*, YogVal, YogVal);
 YogVal YogBignum_multiply(YogEnv*, YogVal, YogVal);

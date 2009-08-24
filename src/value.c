@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include "yog/bignum.h"
-#include "yog/error.h"
 #include "yog/class.h"
+#include "yog/error.h"
+#include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -152,13 +153,22 @@ YogVal_from_int(YogEnv* env, int_t n)
 void
 YogVal_set_attr(YogEnv* env, YogVal obj, ID name, YogVal val)
 {
+    SAVE_ARGS2(env, obj, val);
+    YogVal s1 = YUNDEF;
+    YogVal s2 = YUNDEF;
+    PUSH_LOCALS2(env, s1, s2);
+
     if ((PTR_AS(YogBasicObj, obj)->flags & HAS_ATTRS) == 0) {
         YogVal klass = PTR_AS(YogBasicObj, obj)->klass;
         ID id = PTR_AS(YogClass, klass)->name;
-        YogError_raise_AttributeError(env, "%s object has no attribute '%s'", YogVM_id2name(env, env->vm, id), YogVM_id2name(env, env->vm, name));
+        s1 = YogVM_id2name(env, env->vm, id);
+        s2 = YogVM_id2name(env, env->vm, name);
+        YogError_raise_AttributeError(env, "%s object has no attribute '%s'", STRING_CSTR(s1), STRING_CSTR(s2));
     }
 
     YogObj_set_attr_id(env, obj, name, val);
+
+    RETURN_VOID(env);
 }
 
 /**

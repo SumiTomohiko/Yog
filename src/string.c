@@ -400,8 +400,8 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     if (!IS_PTR(arg) || !IS_OBJ_OF(env, arg, cString)) {
         klass = YogVal_get_class(env, arg);
-        const char* name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
-        YogError_raise_TypeError(env, "can't convert '%s' object to string implicitly", name);
+        YogVal name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
+        YogError_raise_TypeError(env, "can't convert '%s' object to string implicitly", STRING_CSTR(name));
     }
 
     uint_t size1 = YogString_size(env, self);
@@ -459,8 +459,8 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     if (!IS_FIXNUM(arg)) {
         klass = YogVal_get_class(env, arg);
-        const char* name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
-        YogError_raise_TypeError(env, "can't multiply string by non-Fixnum of type '%s'", name);
+        YogVal name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
+        YogError_raise_TypeError(env, "can't multiply string by non-Fixnum of type '%s'", STRING_CSTR(name));
     }
 
     s = YogString_multiply(env, self, VAL2INT(arg));

@@ -116,7 +116,7 @@ void YogVM_add_thread(YogEnv*, YogVM*, YogVal);
 void YogVM_boot(YogEnv*, YogVM*, uint_t, char**);
 void YogVM_configure_search_path(YogEnv*, YogVM*, const char*);
 void YogVM_delete(YogEnv*, YogVM*);
-const char* YogVM_id2name(YogEnv*, YogVM*, ID);
+YogVal YogVM_id2name(YogEnv*, YogVM*, ID);
 YogVal YogVM_import_package(YogEnv*, YogVM*, ID);
 void YogVM_init(YogVM*);
 ID YogVM_intern(YogEnv*, YogVM*, const char*);
