@@ -1,0 +1,1 @@
+When "end" becomes "nnd", SyntaxError doesn't occur.
