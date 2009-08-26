@@ -1,9 +1,0 @@
-def foo()
-  ["bar"].each() do
-    ["baz"].each() do
-      return 42
-    end
-  end
-end
-
-print(foo())

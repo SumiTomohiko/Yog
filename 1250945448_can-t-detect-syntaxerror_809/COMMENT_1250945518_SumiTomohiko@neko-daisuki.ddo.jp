@@ -1,8 +1,0 @@
-
-["bar"].each() do
-  ["baz"].each() do
-    return 42
-  end
-nnd
-
-print(foo())
