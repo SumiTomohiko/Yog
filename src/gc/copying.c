@@ -1,11 +1,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined(TEST_COPYING)
-#   include <stdio.h>
-#   include <CUnit/Basic.h>
-#   include <CUnit/CUnit.h>
-#endif
 #include "yog/env.h"
 #include "yog/gc.h"
 #include "yog/gc/copying.h"

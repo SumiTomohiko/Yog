@@ -4,12 +4,6 @@
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
-#if defined(TEST_GENERATIONAL)
-#   include <stdio.h>
-#   include <stdlib.h>
-#   include <CUnit/Basic.h>
-#   include <CUnit/CUnit.h>
-#endif
 
 #if 0
 #   define DEBUG(x)     x

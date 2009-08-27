@@ -2,7 +2,6 @@
 ROOT_DIR = ..
 ONIG_DIR = $(ROOT_DIR)/onig
 BDWGC_DIR = $(ROOT_DIR)/bdwgc
-SIGSEGV_DIR = $(ROOT_DIR)/sigsegv
 GMP_DIR = $(ROOT_DIR)/gmp
 
 LEMON_DIR = $(ROOT_DIR)/tools/lemon
@@ -75,10 +74,8 @@ yog_bdw_CFLAGS = $(CFLAGS_COMMON) -DGC_BDW -DGC_PTHREADS
 yog_bdw_LDFLAGS = $(LDFLAGS_COMMON) $(BDWGC_DIR)/.libs/libgc.a -lpthread
 yog_generational_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
 			   gc/mark-sweep-compact.c
-yog_generational_CFLAGS = $(CFLAGS_COMMON) -DGC_GENERATIONAL \
-			  -I$(SIGSEGV_DIR)/src
-yog_generational_LDFLAGS = $(LDFLAGS_COMMON) \
-			   $(SIGSEGV_DIR)/src/.libs/libsigsegv.a
+yog_generational_CFLAGS = $(CFLAGS_COMMON) -DGC_GENERATIONAL
+yog_generational_LDFLAGS = $(LDFLAGS_COMMON)
 miniyog_SOURCES = $(yog_copying_SOURCES)
 miniyog_CFLAGS = $(yog_copying_CFLAGS) -DMINIYOG
 miniyog_LDFLAGS = $(yog_copying_LDFLAGS)

@@ -74,7 +74,7 @@ case "${host}" in
     BIN_PROGRAMS="yog-bdw"
     ;;
 esac
-DIRS="${DIRS} onig sigsegv gmp src ext"
+DIRS="${DIRS} onig gmp src ext"
 TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
 BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact yog-generational miniyog"
 
@@ -83,7 +83,6 @@ AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
 
 AC_CONFIG_SUBDIRS([onig
-                   sigsegv
                    gmp])
 AC_OUTPUT
 

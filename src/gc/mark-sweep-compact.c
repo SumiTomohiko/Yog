@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <signal.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,13 +13,7 @@
 #include "yog/gc.h"
 #include "yog/gc/mark-sweep-compact.h"
 #if defined(GC_GENERATIONAL)
-#   include "sigsegv.h"
 #   include "yog/gc/generational.h"
-#endif
-#if defined(TEST_MARK_SWEEP_COMPACT)
-#   include <stdio.h>
-#   include <CUnit/Basic.h>
-#   include <CUnit/CUnit.h>
 #endif
 
 #if 0
@@ -912,33 +907,32 @@ YogMarkSweepCompact_protect_white_pages(YogEnv* env, YogMarkSweepCompact* msc)
 #undef BIT_POS
 #undef FLAGS
 
-static int_t
-sigsegv_handler(void* fault_address, int_t serious)
+static void
+sigsegv_handler(int sig, siginfo_t* sip, void* scp)
 {
-    DEBUG(TRACE("sigsegv_handler(fault_address=%p, serious=%d)", fault_address, serious));
+    void* fault_address = sip->si_addr;
     if (fault_address == NULL) {
-        return 0;
-    }
-    if (serious != 0) {
-        return 0;
+        return;
     }
 
     YogMarkSweepCompactPage* page = ptr2page(fault_address);
     DEBUG(TRACE("page=%p", page));
     if (protect_page(page, PROT_READ | PROT_WRITE) != 0) {
-        return 0;
+        YOG_BUG(NULL, "protect_page failed");
     }
 
     YogMarkSweepCompact_grey_page(fault_address);
-
-    return 1;
 }
 
 BOOL
 YogMarkSweepCompact_install_sigsegv_handler(YogEnv* env)
 {
-    if (sigsegv_install_handler(sigsegv_handler) != 0) {
-        return FALSE;
+    struct sigaction action;
+    action.sa_sigaction = sigsegv_handler;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = SA_SIGINFO;
+    if (sigaction(SIGSEGV, &action, NULL) != 0) {
+        YOG_BUG(env, "sigaction failed");
     }
 
     return TRUE;
