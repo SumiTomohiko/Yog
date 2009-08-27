@@ -5,19 +5,20 @@ prefix = @prefix@
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 			 configure.lineno config.status.lineno
 
-all: 
+all:
 	@for subdir in $(DIRS); do \
 		(cd $${subdir}; $(MAKE)); \
 	done
+	cp -f src/yog-copying src/yog
 
-clean: 
+clean:
 	@for subdir in $(DIRS) tests; do \
 		(cd $${subdir}; $(MAKE) clean); \
 	done
 	find tests -name "*.pyc" -print0 | xargs --null rm -f
 	rm -f core*
 
-distclean: 
+distclean:
 	@for subdir in $(DIRS) tests; do \
 		(cd $${subdir}; $(MAKE) distclean); \
 	done
@@ -26,7 +27,7 @@ distclean:
 	rm -f $(CONFIG_DISTCLEAN_FILES)
 	rm -f Makefile
 
-maintainer-clean: 
+maintainer-clean:
 	@for subdir in $(DIRS) tests; do \
 		(cd $${subdir}; $(MAKE) maintainer-clean); \
 	done
@@ -36,10 +37,10 @@ maintainer-clean:
 	rm -rf autom4te.cache
 	rm -f Makefile
 
-proto: 
+proto:
 	python tools/update_prototype.py
 
-test test-copying test-mark-sweep test-mark-sweep-compact test-bdw test-generational: 
+test test-copying test-mark-sweep test-mark-sweep-compact test-bdw test-generational:
 	cd tests && $(MAKE) $@
 
 am--refresh:
