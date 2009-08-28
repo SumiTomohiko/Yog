@@ -47,8 +47,11 @@ class TestCase(object):
         return m
 
     def read(self, path):
-        with open(path) as fp:
+        fp = open(path)
+        try:
             return fp.read()
+        finally:
+            fp.close()
 
     def wait_proc(self, proc, timeout=5 * 60):
         time_begin = time()
