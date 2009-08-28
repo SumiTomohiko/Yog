@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from filecmp import cmp
-from os import unlink
-from os.path import join
+from os import makedirs, unlink
+from os.path import dirname, join
 from shutil import rmtree
 from tempfile import mkdtemp
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -20,6 +20,20 @@ import zip
     def escape(self, s):
         return s.replace("\\", "\\\\")
 
+    def extrace_all(self, dirpath, zip):
+        for name in zip.namelist():
+            path = join(dirpath, name)
+            try:
+                makedirs(dirname(path))
+            except OSError:
+                pass
+
+            fp = open(path, "w")
+            try:
+                fp.write(zip.read(name))
+            finally:
+                fp.close()
+
     def do_compress_test(self, *args):
         zipfile = "actual.zip"
         try:
@@ -36,7 +50,7 @@ zip.compress(\"%(zipfile)s\", %(targets)s)
         try:
             zf = ZipFile(zipfile)
             try:
-                zf.extractall(dirpath)
+                self.extrace_all(dirpath, zf)
             finally:
                 zf.close()
             for file in args:
