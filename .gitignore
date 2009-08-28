@@ -4,6 +4,7 @@
 *.o
 *.pyc
 *.so
+.ditz-config
 Makefile
 autom4te.cache
 bdwgc/.deps/
