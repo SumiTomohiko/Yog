@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: raise TypeError for argument error
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-28 11:24:49.696881 Z
+references: []
+
+id: 712a83b21b8196e0aa9769e4a09b1d61f44007d7
+log_events: 
+- - 2009-08-28 11:24:50.919032 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

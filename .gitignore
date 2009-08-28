@@ -178,6 +178,7 @@ sigsegv/tests/stackoverflow2
 src/.deps/
 src/miniyog
 src/parser.out
+src/yog
 src/yog-bdw
 src/yog-copying
 src/yog-generational

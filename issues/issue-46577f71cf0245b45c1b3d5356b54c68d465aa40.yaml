@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Implement from ... import ... statement
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-28 11:24:05.192267 Z
+references: []
+
+id: 46577f71cf0245b45c1b3d5356b54c68d465aa40
+log_events: 
+- - 2009-08-28 11:24:06.031318 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

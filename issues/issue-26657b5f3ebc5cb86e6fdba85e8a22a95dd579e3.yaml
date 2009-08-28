@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Implement default parameter
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-28 11:27:31.544067 Z
+references: []
+
+id: 26657b5f3ebc5cb86e6fdba85e8a22a95dd579e3
+log_events: 
+- - 2009-08-28 11:27:32.231310 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

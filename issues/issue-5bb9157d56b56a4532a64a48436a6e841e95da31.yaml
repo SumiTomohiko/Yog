@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove Makefile.am.tmpl and update_automake.py
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-28 11:26:36.267308 Z
+references: []
+
+id: 5bb9157d56b56a4532a64a48436a6e841e95da31
+log_events: 
+- - 2009-08-28 11:26:37.300798 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

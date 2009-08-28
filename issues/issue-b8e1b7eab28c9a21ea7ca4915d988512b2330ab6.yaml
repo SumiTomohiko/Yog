@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Raise error when uncallable object is called
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-28 11:26:21.711093 Z
+references: []
+
+id: b8e1b7eab28c9a21ea7ca4915d988512b2330ab6
+log_events: 
+- - 2009-08-28 11:26:22.170040 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

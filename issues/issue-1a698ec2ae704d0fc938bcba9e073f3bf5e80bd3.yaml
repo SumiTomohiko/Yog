@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rename PUSH_LOCAL etc.
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-28 11:23:16.601131 Z
+references: []
+
+id: 1a698ec2ae704d0fc938bcba9e073f3bf5e80bd3
+log_events: 
+- - 2009-08-28 11:23:17.403173 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

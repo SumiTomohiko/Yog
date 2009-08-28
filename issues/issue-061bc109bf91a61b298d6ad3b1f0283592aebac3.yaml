@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Change function.[ch] to callable.[ch]
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-28 11:24:19.064207 Z
+references: []
+
+id: 061bc109bf91a61b298d6ad3b1f0283592aebac3
+log_events: 
+- - 2009-08-28 11:24:19.831344 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
