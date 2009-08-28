@@ -33,17 +33,38 @@ Using Yog Interpreter
 Invoke Interpreter
 ==================
 
-Usually Yog is installed as ``/usr/local/bin/yog``. If ``/usr/local/bin`` is in your ``PATH`` environment variable, you can invoke Yog interpreter for::
+Usually Yog is installed as ``/usr/local/bin/yog``.
+If ``/usr/local/bin`` is in your ``PATH`` environment variable, you can invoke Yog interpreter for::
 
   $ yog
 
-This command invoke Yog in interactive mode (see below). To exit interactive mode, type end of file ``Ctrl+D``.
+This command invokes Yog in interactive mode (see below).
+To exit interactive mode, type end of file ``Ctrl+D``.
 
-Argument Passing
-================
+If you want to execute a script, provide script's file name to ``yog`` as an argument::
+
+  $ yog filename
 
 Interactive Mode
 ================
+
+When you invoke the interpreter without script file name, the interpreter works in *interactive mode*.
+In this mode, the interpreter waits a statement with primary prompt ``>>>``.
+You can give a statement to see the result immediately.
+If a statement is incomplete, the interpreter prompts continuation lines with secondary prompt ``...``::
+
+  $ yog
+  >>> if true
+  ...   puts(42)
+  ... end
+  42
+
+When the statement is an expression, the interpreter displays the return value of that expression with leading ``=>``::
+
+  $ yog
+  >>> puts(42)
+  42
+  => nil
 
 ***********************************
 The Interpreter and Its Environment
@@ -52,8 +73,30 @@ The Interpreter and Its Environment
 Executable Yog Scripts
 ======================
 
+You can make scripts directly executable by putting the following line at the head of the file,::
+
+  #!/usr/local/bin/yog
+
+and add execute mode to the file by ``chmod`` command.::
+
+  $ chmod +x filename
+
 Source Code Encoding
 ====================
+
+By default, the Yog interpreter assumes that source code is written in UTF-8.
+When you use any other encodings, you need to tell that code to the interpreter.
+This is done by putting the special comment like::
+
+  # coding: EUC-JP
+
+The interpreter accepts the encoding of ``EUC-JP``, ``Shift-JIS`` and ``UTF-8``.
+Leading charactors and trailing charactors are allowed in this comment.
+And you can use "``=``" in place of "``:``".
+So the folowing two examples are valid::
+
+  # vim: fileencoding=EUC-JP
+  # -*- coding: EUC-JP -*-
 
 *******************************
 An Informal Introduction to Yog
@@ -193,3 +236,6 @@ Inheritance
 
 Mix-in
 ======
+
+::
+  vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
