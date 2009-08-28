@@ -105,8 +105,77 @@ An Informal Introduction to Yog
 Using Yog as a Calculator
 =========================
 
+Let's try simple script.
+This section show you some examples in interactive mode.
+
 Numbers
 -------
+
+Numbers like ``42`` are evaluated as be seen::
+
+  >>> 42
+  => 42
+
+Numbers starts with ``0b`` are evaluated as binary::
+
+  >>> 0x101010
+  => 42
+
+Samely, numbers which starts with ``0o`` are octal, and ``0x`` are hex::
+
+  >>> 0o52
+  => 42
+  >>> 0x2a
+  => 42
+
+You can split a number by ``_``::
+
+  >>> 0x10_1010
+  => 42
+
+The interpreter accepts floating point number::
+
+  >>> 3.1415926535
+  => 3.14159
+
+The operators for numbers of ``+``, ``-`` and ``*`` are normally defined::
+
+  >>> 42 + 26
+  => 68
+  >>> 42 - 26
+  => 16
+  >>> 42 * 26
+  => 1092
+
+Division
+~~~~~~~~
+
+Yog has two division operators, one is ``/``, the other is ``//``.
+In almost programming language like C, ``3 / 2`` gives 1 (not 1.5).
+In Yog, the operator to work this way is ``//``.
+The normal ``/`` operator gives always floating point number, so ``3 / 2`` gives 1.5.::
+
+  >>> 3 // 2
+  => 1
+  >>> 3 / 2
+  => 1.5
+
+The symbol ``=`` is used to assign a value to a variable.
+You can use assigned variables in continuation script.::
+
+  >>> foo = 42
+  => 42
+  >>> bar = 26
+  => 26
+  >>> foo * bar
+  => 1092
+
+When unassigned variable is used, an error will occur.::
+
+  >>> baz
+  Traceback (most recent call last):
+    File "__main__", line 1, in <package>
+    NameError: name 'baz' is not defined
 
 Strings
 -------
