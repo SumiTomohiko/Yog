@@ -24,6 +24,7 @@ configure.log
 configure.scan
 core
 core.*
+doc/_build
 ext/.deps/
 gmp/.libs/
 gmp/config.m4
