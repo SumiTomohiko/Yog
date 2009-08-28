@@ -17,7 +17,6 @@ AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
-AC_CHECK_LIB([cunit], [CU_initialize_registry], with_cunit="yes", with_cunit="no")
 AC_CHECK_LIB([pthread], [pthread_create])
 
 # Checks for header files.
@@ -74,7 +73,7 @@ case "${host}" in
     BIN_PROGRAMS="yog-bdw"
     ;;
 esac
-DIRS="${DIRS} onig gmp src ext"
+DIRS="${DIRS} onig gmp src ext doc"
 TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
 BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact yog-generational miniyog"
 
