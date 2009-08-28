@@ -15,7 +15,7 @@ class TestSocket(TestCase):
         try:
             callback(port)
         finally:
-            proc.kill()
+            self.kill_proc(proc)
 
     def test_TcpSocket0(self):
         def test(port):
