@@ -160,6 +160,9 @@ The normal ``/`` operator gives always floating point number, so ``3 / 2`` gives
   >>> 3 / 2
   => 1.5
 
+Assignment
+~~~~~~~~~~
+
 The symbol ``=`` is used to assign a value to a variable.
 You can use assigned variables in continuation script.::
 
@@ -175,7 +178,7 @@ When unassigned variable is used, an error will occur.::
   >>> baz
   Traceback (most recent call last):
     File "__main__", line 1, in <package>
-    NameError: name 'baz' is not defined
+  NameError: name 'baz' is not defined
 
 Strings
 -------
