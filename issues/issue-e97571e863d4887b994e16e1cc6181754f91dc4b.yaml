@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Indexing an array doen't display a result.
+desc: |-
+  >>> a = [42, "foo", 3.1415926545]
+  a[0]
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-29 05:21:53.741970 Z
+references: []
+
+id: e97571e863d4887b994e16e1cc6181754f91dc4b
+log_events: 
+- - 2009-08-29 05:21:54.467877 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

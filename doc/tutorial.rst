@@ -18,7 +18,7 @@ Installing Yog
 
 You can download Yog's source code from http://github.com/SumiTomohiko/Yog/downloads.
 
-The following commands will extract source code, build and install Yog::
+The following commands will extract source code, build and install You::
 
   $ tar xf Yog-0.0.1.tar.gz
   $ cd Yog-0.0.1
@@ -51,7 +51,7 @@ Interactive Mode
 When you invoke the interpreter without script file name, the interpreter works in *interactive mode*.
 In this mode, the interpreter waits a statement with primary prompt ``>>>``.
 You can give a statement to see the result immediately.
-If a statement is incomplete, the interpreter prompts continuation lines with secondary prompt ``...``::
+If a statement is incomplete, the interpreter prompts continuation lines with secondary prompt ``...`::
 
   $ yog
   >>> if true
@@ -73,11 +73,11 @@ The Interpreter and Its Environment
 Executable Yog Scripts
 ======================
 
-You can make scripts directly executable by putting the following line at the head of the file,::
+You can make scripts directly executable by putting the following line at the head of the file::
 
   #!/usr/local/bin/yog
 
-and add execute mode to the file by ``chmod`` command.::
+and add execute mode to the file by ``chmod`` command::
 
   $ chmod +x filename
 
@@ -93,7 +93,7 @@ This is done by putting the special comment like::
 The interpreter accepts the encoding of ``EUC-JP``, ``Shift-JIS`` and ``UTF-8``.
 Leading charactors and trailing charactors are allowed in this comment.
 And you can use "``=``" in place of "``:``".
-So the folowing two examples are valid::
+So the folowing two examples are llegal::
 
   # vim: fileencoding=EUC-JP
   # -*- coding: EUC-JP -*-
@@ -153,7 +153,7 @@ Division
 Yog has two division operators, one is ``/``, the other is ``//``.
 In almost programming language like C, ``3 / 2`` gives 1 (not 1.5).
 In Yog, the operator to work this way is ``//``.
-The normal ``/`` operator gives always floating point number, so ``3 / 2`` gives 1.5.::
+The normal ``/`` operator gives always floating point number, so ``3 / 2`` gives 1.5::
 
   >>> 3 // 2
   => 1
@@ -164,7 +164,7 @@ Assignment
 ~~~~~~~~~~
 
 The symbol ``=`` is used to assign a value to a variable.
-You can use assigned variables in continuation script.::
+You can use assigned variables in continuation script::
 
   >>> foo = 42
   => 42
@@ -173,7 +173,7 @@ You can use assigned variables in continuation script.::
   >>> foo * bar
   => 1092
 
-When unassigned variable is used, an error will occur.::
+When unassigned variable is used, an error will occur::
 
   >>> baz
   Traceback (most recent call last):
@@ -183,8 +183,72 @@ When unassigned variable is used, an error will occur.::
 Strings
 -------
 
+String can be enclosed in double quotes::
+
+  >>> "Cthulhu ftgn! ftgn!"
+  => Cthulhu ftgn! ftgn!
+  >>> "\"You, fool, Warren is DEAD!\""
+  => "You, fool, Warren is DEAD!"
+
+The operator ``+`` concatenates two strings::
+
+  >>> baz = "foo" + "bar"
+  => foobar
+
+Strings can be indexed.
+Indexing strings accesses each charactors, not bytes::
+
+  >>> baz[0]
+  => f
+  >>> quux = "九頭龍"
+  => 九頭龍
+  >>> quux[0]
+  => 九
+
+Unlike strings in some script languages, Yog's strings are mutable.
+You can overwrite a charactor by assigning to a indexed string::
+
+  >>> hoge = "piyo"
+  => piyo
+  >>> hoge[0] = "P"
+  => P
+  >>> hoge
+  => Piyo
+
 Arrays
 ------
+
+Yog supports most basic data scructure, arrays.
+Enclosing comma separated elements by brackets makes an array::
+
+  >>> a = [42, "foo", 3.1415926545]
+  => [42, "foo", 3.14159]
+
+Indexing an array reads/writes each elements::
+
+  >>> a[0]
+  => [42]
+  >>> a[1] = "bar"
+  => [42, "bar", 3.14159]
+
+Arrays have ``size`` property, it is number of elements in the array::
+
+  >>> a.size
+  => 3
+
+Like strings, arrays can be concatenated by the operator ``+``::
+
+  >>> b = [26, "baz"]
+  => [26, "baz"]
+  >>> c = a + b
+  => [42, "bar", 3.14159, 26, "baz"]
+
+You can remove/append the last element of arrays by ``pop``/``push`` method::
+
+  >>> c.pop()
+  => baz
+  >>> c.push("quux")
+  => [42, "bar", 3.14159, 26, "quux"]
 
 First Steps Towrards Programming
 ================================
@@ -309,5 +373,4 @@ Inheritance
 Mix-in
 ======
 
-::
-  vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+.. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

@@ -1,0 +1,19 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Can't index multibyte string.
+desc: "quux = \"\xE4\xB9\x9D\xE9\xA0\xAD\xE9\xBE\x8D\"\n\
+  quux[0]"
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-29 05:06:49.260118 Z
+references: []
+
+id: 2957cdc6d73c406d151781390f0ac1af5be06a25
+log_events: 
+- - 2009-08-29 05:06:50.281043 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Escape sequence doesn't work.
+desc: |-
+  >>> "\"You, fool, Warren is DEAD!\""
+  You, fool, Warren is DEAD!"
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-29 04:48:17.315703 Z
+references: []
+
+id: f1b6e02b0c0effdae2c383299be02f85f952c0fc
+log_events: 
+- - 2009-08-29 04:48:18.614522 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
