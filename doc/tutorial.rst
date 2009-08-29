@@ -395,6 +395,22 @@ The ``each`` method sets the each array's element to this parameter when calling
 Defining Functions
 ==================
 
+Defining functions in Yog are like this::
+
+  >>> def fib(n)
+  ...   if (n == 0) || (n == 1)
+  ...     return 1
+  ...   else
+  ...     return fib(n - 1) + fib(n - 2)
+  ...   end
+  ... end
+  >>> fib(16)
+  => 1597
+
+Defining a function starts from the ``def`` keyword.
+The function name and the parenthesized formal parameters follows the ``def`` keyword.
+The function body starts at the next line, and the function must end with keyword ``end``.
+
 More on Defining Functions
 ==========================
 
