@@ -219,10 +219,10 @@ Yog can append a string with the ``<<`` operator::
 
   >>> s = "Creep!"
   => Creep!
-  >>> s << " Nyalathotep girl"
-  => Creep! Nyalathotep girl
+  >>> s << " Nyalathotep Girl"
+  => Creep! Nyalathotep Girl
   >>> s
-  => Creep! Nyalathotep girl
+  => Creep! Nyalathotep Girl
 
 Regular Expressions
 -------------------
@@ -313,23 +313,84 @@ You can also append an element with the ``<<`` operator::
   >>> c
   => [42, "bar", 3.14159, 26, "quux", "hoge"]
 
-First Steps Towrards Programming
-================================
+******************
+Control Flow Tools
+******************
 
-.. TODO
-
-***********************
-More Control Flow Tools
-***********************
+Yog has set of control structure.
+``if`` is for conditional, ``while`` is for iteration.
 
 ``if`` Statements
 =================
 
-no ``for`` Statements
-=====================
+One example of ``if`` statement is::
+
+  >>> n = 42
+  => 42
+  >>> if 0 < n
+  ...   puts("positive")
+  ... elif n == 0
+  ...   puts("zero")
+  ... else
+  ...   puts("negative")
+  ... end
+  positive
+
+Yog uses the ``elif`` keyword to place the condition sequence.
+
+There can be zero or more ``elif`` parts.
+The ``else`` part is optional.
+
+``while`` Statements
+====================
+
+One example of ``while`` statement is::
+
+  >>> n = 0
+  => 0
+  >>> while n < 42
+  ...   print("Yeh")
+  ...   n += 1
+  ... end
+  YehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYeh
 
 ``break`` and ``next`` Statements
 =================================
+
+The ``break`` statement ends most internal ``while`` loop.
+
+The ``next`` statement starts next iteration of the loop.
+
+no ``for`` Statements
+=====================
+
+Many languages have the ``for`` statement to iterate,  but Yog DOESN'T HAVE THE ``for`` STATEMENT.
+
+Yog's objects have methods to iterate, so Yog doesn't need the ``for`` statement.
+
+To iterate for some times, you can use ``times`` method of integer::
+
+  >>> 42.times() do
+  ...   print("Yeh")
+  ... end
+  YehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYeh=> nil
+
+The sequence of statements enclosed between ``do`` and ``end`` is one object for ``times`` method, so called *block*.
+``times`` method calls this block for each times in the iteration.
+
+To do something for all elements in an array, you can use ``each`` method::
+
+  >>> [42, 26].each() do [n]
+  ...   puts(n)
+  ... end
+  42
+  26
+  => [42, 26]
+
+Blocks can have formal parameters.
+When declaring formal parameters, enclose variables by brackets ``[`` and ``]``.
+In this case, ``n`` is the formal parameter.
+The ``each`` method sets the each array's element to this parameter when calling block.
 
 Defining Functions
 ==================
