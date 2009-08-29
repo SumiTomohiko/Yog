@@ -18,7 +18,7 @@ Installing Yog
 
 You can download Yog's source code from http://github.com/SumiTomohiko/Yog/downloads.
 
-The following commands will extract source code, build and install You::
+The following commands will extract source code, build and install Yog::
 
   $ tar xf Yog-0.0.1.tar.gz
   $ cd Yog-0.0.1
