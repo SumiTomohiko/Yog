@@ -91,7 +91,7 @@ This is done by putting the special comment like::
   # coding: EUC-JP
 
 The interpreter accepts the encoding of ``EUC-JP``, ``Shift-JIS`` and ``UTF-8``.
-Leading charactors and trailing charactors are allowed in this comment.
+Leading characters and trailing characters are allowed in this comment.
 And you can use "``=``" in place of "``:``".
 So the folowing two examples are llegal::
 
@@ -192,28 +192,84 @@ String can be enclosed in double quotes::
 
 The operator ``+`` concatenates two strings::
 
-  >>> baz = "foo" + "bar"
-  => foobar
+  >>> foo = "Yog" + "Sothoth"
+  => YogSothoth
 
 Strings can be indexed.
-Indexing strings accesses each charactors, not bytes::
+Indexing a string reads each characters, not bytes::
 
-  >>> baz[0]
-  => f
-  >>> quux = "九頭龍"
+  >>> foo[0]
+  => Y
+  >>> bar = "九頭龍"
   => 九頭龍
-  >>> quux[0]
+  >>> bar[0]
   => 九
 
 Unlike strings in some script languages, Yog's strings are mutable.
-You can overwrite a charactor by assigning to a indexed string::
+You can overwrite a character by assigning to a indexed string::
 
-  >>> hoge = "piyo"
-  => piyo
-  >>> hoge[0] = "P"
-  => P
-  >>> hoge
-  => Piyo
+  >>> baz = "dagon"
+  => dagon
+  >>> baz[0] = "D"
+  => D
+  >>> baz
+  => Dagon
+
+Yog can append a string with the ``<<`` operator::
+
+  >>> s = "Creep!"
+  => Creep!
+  >>> s << " Nyalathotep girl"
+  => Creep! Nyalathotep girl
+  >>> s
+  => Creep! Nyalathotep girl
+
+Regular Expressions
+-------------------
+
+As same as Perl and Ruby, Yog supports regular expressions' literal.
+Regular expressions are enclosed in ``/``.
+For example, ``/Innsmouth/`` is a regular expression.
+In regular expressions, backslash ``\`` doen't escape characters excepting ``\n`` (it is a newline) and ``\\`` (it is a backslash itself).
+For instance, ``/H\.P\.Lovecraft/`` matches ``"H.P.Lovecraft"``.
+
+To test if a string matches a regular expression, use the ``=~`` operator.
+This operator returns a ``Match`` object when the string matches, or returns ``nil`` when doesn't match.
+
+``Match`` objects have ``group`` method.
+When ``group`` method is called without arguments, it returns a matched part of the string::
+
+  >>> m = ("carter@example.com" =~ /([a-z]+)@([a-z.]+)/)
+  => <Match 0000000000000289>
+  >>> m.group()
+  => carter@example.com
+
+When ``group`` method is called with an integer argument, it returns a part of the string corresponding to the group in the regular expression. The first group's index is one::
+
+  >>> m.group(1)
+  => carter
+  >>> m.group(2)
+  => example.com
+
+``Match`` objects have ``start`` method and ``end`` method. ``start`` method returns a start position of a matched part in the string, ``end`` method returns a end position.
+Calling ``start`` method and ``end`` method with argument ``0`` is same as calling without arguments::
+
+  >>> m.start()
+  => 0
+  >>> m.start(0)
+  => 0
+  >>> m.start(1)
+  => 0
+  >>> m.start(2)
+  => 7
+  >>> m.end()
+  => 18
+  >>> m.end(0)
+  => 18
+  >>> m.end(1)
+  => 6
+  >>> m.end(2)
+  => 18
 
 Arrays
 ------
@@ -249,6 +305,13 @@ You can remove/append the last element of arrays by ``pop``/``push`` method::
   => baz
   >>> c.push("quux")
   => [42, "bar", 3.14159, 26, "quux"]
+
+You can also append an element with the ``<<`` operator::
+
+  >>> c << "hoge"
+  => [42, "bar", 3.14159, 26, "quux", "hoge"]
+  >>> c
+  => [42, "bar", 3.14159, 26, "quux", "hoge"]
 
 First Steps Towrards Programming
 ================================
