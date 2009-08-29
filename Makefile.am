@@ -20,27 +20,27 @@ test:
 
 test-installed:
 	export YOG=$(prefix)/bin/yog-generational$(EXEEXT); \
-	cd tests && $(MAKE)
+	./run_tests
 
 test-copying:
 	export YOG=`pwd`/src/yog-copying$(EXEEXT); \
-	cd tests && $(MAKE)
+	./run_tests
 
 test-mark-sweep:
 	export YOG=`pwd`/src/yog-mark-sweep$(EXEEXT); \
-	cd tests && $(MAKE)
+	./run_tests
 
 test-mark-sweep-compact:
 	export YOG=`pwd`/src/yog-mark-sweep-compact$(EXEEXT); \
-	cd tests && $(MAKE)
+	./run_tests
 
 test-bdw:
 	export YOG=`pwd`/src/yog-bdw$(EXEEXT); \
-	cd tests && $(MAKE)
+	./run_tests
 
 test-generational:
 	export YOG=`pwd`/src/yog-generational$(EXEEXT); \
-	cd tests && $(MAKE)
+	./run_tests
 
 install-vim:
 	mkdir -p $(SYNTAX_DIR)
