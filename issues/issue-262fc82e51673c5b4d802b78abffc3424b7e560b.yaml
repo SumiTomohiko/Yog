@@ -1,0 +1,30 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Can't pass keyword argument.
+desc: |-
+  def markup(text, bold, italic)
+    s = text
+    if bold
+      s = "<b>" + s + "</b>"
+    end
+    if italic
+      s = "<em>" + s + "</em>"
+    end
+    return s
+  end
+  
+  print(markup("foo", bold: true, italic: false))
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-30 11:13:36.005459 Z
+references: []
+
+id: 262fc82e51673c5b4d802b78abffc3424b7e560b
+log_events: 
+- - 2009-08-30 11:13:37.644985 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

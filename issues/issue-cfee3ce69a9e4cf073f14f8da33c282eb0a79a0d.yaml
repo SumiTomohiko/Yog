@@ -1,0 +1,27 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Calling with keyword arguments causes segmentation fault.
+desc: |-
+  >>> def foo(*kw)
+  ...   kw.each() do [key, value]
+  ...     print(key)
+  ...     print(":")
+  ...     print(value)
+  ...     print("\n")
+  ...   end
+  ... end
+  >>> foo(bar: 42, baz: 26)
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-30 12:37:29.738518 Z
+references: []
+
+id: cfee3ce69a9e4cf073f14f8da33c282eb0a79a0d
+log_events: 
+- - 2009-08-30 12:37:30.846644 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

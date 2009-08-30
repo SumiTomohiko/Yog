@@ -51,7 +51,7 @@ Interactive Mode
 When you invoke the interpreter without script file name, the interpreter works in *interactive mode*.
 In this mode, the interpreter waits a statement with primary prompt ``>>>``.
 You can give a statement to see the result immediately.
-If a statement is incomplete, the interpreter prompts continuation lines with secondary prompt ``...`::
+If a statement is incomplete, the interpreter prompts continuation lines with secondary prompt ``...``::
 
   $ yog
   >>> if true
@@ -365,7 +365,6 @@ no ``for`` Statements
 =====================
 
 Many languages have the ``for`` statement to iterate,  but Yog DOESN'T HAVE THE ``for`` STATEMENT.
-
 Yog's objects have methods to iterate, so Yog doesn't need the ``for`` statement.
 
 To iterate for some times, you can use ``times`` method of integer::
@@ -417,8 +416,68 @@ More on Defining Functions
 Keyword Arguments
 =================
 
+You can pass arguments to functions in the form of ``name: value``.
+For instance, assume this function::
+
+  def markup(text, bold, italic)
+    s = text
+    if bold
+      s = "<b>" + s + "</b>"
+    end
+    if italic
+      s = "<em>" + s + "</em>"
+    end
+    return s
+  end
+
+You can pass ``"Randolph Cartar`` for the argument ``text``, ``false`` for ``bold`` and ``true`` for ``italic`` to this function in the following ways::
+
+  markup("Randolph Carter", false, true)
+  markup("Randolph Carter", false, italic: true)
+  markup("Randolph Carter", italic: true, bold: false)
+  markup(italic: true, text: "Randolph Carter", bold: false)
+
+Keyword arguments must be placed after the positional arguments.
+
 Arbitrary Argument Arrays
 =========================
+
+One of the useful functions is an arbitrary number of arguments.
+If you put the argument ``*args`` (``args`` can be the name which you like), this becomes the variable argument.
+``args`` is an array.
+When you define the following function::
+
+  >>> def foo(*args)
+  ...   args.each() do [n]
+  ...     puts(n)
+  ...   end
+  ... end
+
+You can call this function with an arbitrary number of arguments::
+
+  >>> foo(42, 26)
+  42
+  26
+  => nil
+
+If actual parameters are specified by name, these are stored to the argument ``**kw`` (``kw`` can be the name you like).
+``kw`` is a dictionary.
+When you define the following function::
+
+  >>> def foo(*kw)
+  ...   kw.each() do [key, value]
+  ...     print(key)
+  ...     print(":")
+  ...     print(value)
+  ...     print("\n")
+  ...   end
+  ... end
+
+You can call this function with an arbitrary number of keyword arguments::
+
+  >>> foo(bar: 42, baz: 26)
+  bar:42
+  baz:26
 
 Unpacking Argument Arrays
 =========================
@@ -429,12 +488,6 @@ Data Structures
 
 More on Arrays
 ==============
-
-Using Arrays as Stacks
-======================
-
-Using Arrays as Queues
-======================
 
 Sets
 ====
