@@ -586,17 +586,31 @@ Assume that you want to use the ``fib`` function in ``fib.yg`` from the script `
   import fib
   printf(fib(43))
 
-More on Packages
-================
-
-Executing packages as scripts
------------------------------
-
 The Package Search Path
------------------------
+=======================
+
+When do ``import foo``, Yog searches ``foo.yg`` in the following directories.
+
+# current directory
+# ``PREFIX/lib/yog/0.0.1`` (``PREFIX`` is usually ``/usr/local``)
 
 Package Hierarchy
 =================
+
+Packages are placed in the packages' tree.
+
+Assume that you want to make a package ``foo.bar``.
+In this case, first of all, you should make ``foo.yg``.
+At next, make a directory named ``foo``.
+At the end, create a script ``foo/bar.yg``.
+Finally, the directory structure becomes the following::
+
+  +- foo.yg
+  +- foo
+      ~+- bar.yg
+
+When do ``import foo.bar``, Yog executes ``foo.yg`` at first.
+After this, Yog executes ``foo/bar.yg``.
 
 ****************
 Input and Output
