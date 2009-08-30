@@ -1,0 +1,28 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Keyword arguments causes segmentation fault in interactive mode.
+desc: |-
+  >>> def add(n, m)
+  ...   return n + m
+  ... end
+  >>> d = { n: 42, m: 26 }
+  => { :n => 42, :m => 26 }
+  >>> add(**d)
+  [BUG]
+  at function.c:139
+  argument specified twice.
+  zsh: abort (core dumped)  src/yog
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-30 12:52:52.006331 Z
+references: []
+
+id: ce53ae726f73bc5aab5d191084bcff87ba6d2de9
+log_events: 
+- - 2009-08-30 12:52:52.999567 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

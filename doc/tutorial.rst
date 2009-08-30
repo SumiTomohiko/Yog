@@ -482,6 +482,26 @@ You can call this function with an arbitrary number of keyword arguments::
 Unpacking Argument Arrays
 =========================
 
+If you have an array ``args`` in which arguments are stored, you can use ``*args`` to unpack this array::
+
+  >>> def add(n, m)
+  ...   return n + m
+  ... end
+  >>> a = [42, 26]
+  => [42, 26]
+  >>> add(*a)
+  => 68
+
+If you have a dictionary ``kw`` in which arguments are stored, you can use ``**kw`` to unpack this dictionary to keyword arguments::
+
+  >>> def add(n, m)
+  ...   return n + m
+  ... end
+  >>> d = { n: 42, m: 26 }
+  => { :n => 42, :m => 26 }
+  >>> add(**d)
+  => 68
+
 ***************
 Data Structures
 ***************
