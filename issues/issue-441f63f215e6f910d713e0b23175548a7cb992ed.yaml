@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add section number to doc/tutorial.rst
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-08-30 03:11:03.327441 Z
+references: []
+
+id: 441f63f215e6f910d713e0b23175548a7cb992ed
+log_events: 
+- - 2009-08-30 03:11:04.245103 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
