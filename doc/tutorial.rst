@@ -506,14 +506,49 @@ If you have a dictionary ``kw`` in which arguments are stored, you can use ``**k
 Data Structures
 ***************
 
-More on Arrays
-==============
-
 Sets
 ====
 
+A *set* is a data structure including objects with no duplicate elements.
+When declaring a set, enclose elements with braces ``{`` and ``}``::
+
+  >>> s = { 42, "foo", 3.141592 }
+  => <Set 000000000000028c>
+  >>> s.include?(42)
+  => true
+  >>> s.include?("bar")
+  => false
+
+If you make an empty set, use ``Set.new()``.
+``{}`` becomes an empty dictionary (below)::
+
+  >>> s = Set.new()
+  => <Set 000000000000027d>
+  >>> s.size
+  => 0
+
 Dictionaries
 ============
+
+A dictionary is a data structure which is called in other languages as "hashes", "maps" or "associative array".
+Dictionaries are indexed by any type's object to get a corresponding value.
+When make a dictionary, enclosing key-value pairs in the form of ``key => value`` in braces ``{`` and ``}``.
+A few examples are following::
+
+  >>> dict = { 42 => 26, "foo" => "bar" }
+  => { "foo" => "bar", 42 => 26 }
+  >>> dict[42]
+  => 26
+  >>> dict["foo"]
+  => bar
+  >>> dict.each() do [key, value]
+  ...   puts(key, value)
+  ... end
+  foo
+  bar
+  42
+  26
+  => { "foo" => "bar", 42 => 26 }
 
 ********
 Packages
