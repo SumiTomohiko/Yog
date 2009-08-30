@@ -554,6 +554,38 @@ A few examples are following::
 Packages
 ********
 
+When you write programs for some time, you may want to reuse some useful codes.
+*Packages* resolve this issue.
+You can use codes in packages from external scripts.
+
+All of Yog's scripts are packages.
+If a script's file name is ``foo.yg``, its package name is ``foo``.
+First of all, packages must be *imported*.
+To import a package, use ``import`` statement::
+
+  import foo
+
+The imported package has its internal definitions as its attributes.
+When the function ``bar`` is defined in the package ``foo``, ``foo.bar`` after importing the package is the ``bar`` function, so you can call this in the way of ``foo.bar()``.
+
+Show you one example.
+Suppose the package ``fib``.
+This package's file name is ``fib.yg``, and ``fib.yg`` is the following::
+
+  def fib(n)
+    if (n == 0) || (n == 1)
+      return 1
+    else
+      return fib(n - 1) + fib(n - 2)
+    end
+  end
+
+Assume that you want to use the ``fib`` function in ``fib.yg`` from the script ``foo.yg``.
+``foo.yg`` is following::
+
+  import fib
+  printf(fib(43))
+
 More on Packages
 ================
 
