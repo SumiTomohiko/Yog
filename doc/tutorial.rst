@@ -591,8 +591,8 @@ The Package Search Path
 
 When do ``import foo``, Yog searches ``foo.yg`` in the following directories.
 
-# current directory
-# ``PREFIX/lib/yog/0.0.1`` (``PREFIX`` is usually ``/usr/local``)
+1. current directory
+2. ``PREFIX/lib/yog/0.0.1`` (``PREFIX`` is usually ``/usr/local``)
 
 Package Hierarchy
 =================
@@ -607,7 +607,7 @@ Finally, the directory structure becomes the following::
 
   +- foo.yg
   +- foo
-      ~+- bar.yg
+      `+- bar.yg
 
 When do ``import foo.bar``, Yog executes ``foo.yg`` at first.
 After this, Yog executes ``foo/bar.yg``.
@@ -619,8 +619,49 @@ Input and Output
 Reading and Writing Files
 =========================
 
+Reading a file is realized in the following way::
+
+  File.open(filename, "r") do [fp]
+    # do something with fp
+  end
+
+The ``File.open`` is a class method of the ``File`` class.
+When you pass a block to this method, the ``File.open`` method calls the block with argument.
+This argument (``fp`` in the above example) is a ``File`` object.
+
+The ``File.open`` method also closes the file.
+
+The way to write file is similar to the above code::
+
+  File.open(filename, "w") do [fp]
+    # do something with fp
+  end
+
 Methods of File Objects
 =======================
+
+``read()``
+----------
+
+The ``read`` method reads from current position to the end of the file.
+This method returns a read string.
+
+``readline()``
+--------------
+
+The ``readline`` method reads one line from current position.
+This method returns a read string including a trailing newline.
+This method raises ``EOFError`` when there is nothing to read.
+
+``write(s)``
+------------
+
+The ``write`` method writes a string to a file.
+
+``close()``
+-----------
+
+The ``close`` method closes the file.
 
 *********************
 Errors and Exceptions
