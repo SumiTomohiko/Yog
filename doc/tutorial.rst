@@ -777,6 +777,16 @@ A First Look at Classes
 Class Definition Syntax
 -----------------------
 
+One example::
+
+  class Foo
+    bar = 42
+
+    def baz()
+      return self.quux
+    end
+  end
+
 Class Objects
 -------------
 
@@ -789,7 +799,27 @@ Method Objects
 Inheritance
 ===========
 
+One example::
+
+  class Foo > Bar
+  end
+
 Mix-in
 ======
+
+One example::
+
+  module Foo
+    def bar()
+      puts("bar")
+    end
+  end
+
+  @include(Foo)
+  class Baz
+  end
+
+  baz = Baz.new()
+  baz.bar()
 
 .. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
