@@ -667,23 +667,105 @@ The ``close`` method closes the file.
 Errors and Exceptions
 *********************
 
-Syntax Errors
-=============
-
 Exceptions
 ==========
+
+When the interpreter can not continue the process, an exception occurs.
+If the exception is not handled (for the exception handling, see below), the interpreter prints the information about the exception::
+
+  >>> 1 / 0
+  Traceback (most recent call last):
+    File "__main__", line 1, in <package>
+    File builtin, in Fixnum#/
+  ZeroDivisionError: Fixnum division by zero
+
+This information consists of three parts; a traceback, an exception type and an message.
+A traceback shows you where the exception occurs.
+Most recent call is at last.
+An exception type tells the exception's class.
+A last message describes what happen.
 
 Handling Exceptions
 ===================
 
+You can handle exceptions.
+To do this, ``try`` statements are avalilable::
+
+  >>> def div(n)
+  ...   try
+  ...     return 1 / n
+  ...   except ZeroDivisionError
+  ...     return nil
+  ...   end
+  ... end
+
+``try`` statements can have more than one ``except`` clauses.
+
+If no exception occurs, ``except`` clauses are ignored.
+
+When an exception ocrrurs, the interpreter skips the remaind of the ``try`` clause, and starts from the first line of ``except`` clause.
+
+You can omit a type name in ``exept`` clause::
+
+  try
+    # do something...
+  except
+    # handle exceptions
+  end
+
+In this case, all types of exceptions are targets of ``except`` clause.
+
+``except`` clause can have one or more type names::
+
+  except ZeroDivisionError, NameError
+
+Theses types share one common exception handler.
+
+You can specify a variable name in ``except`` clause following keyword ``as``::
+
+  except ZeroDivisionError as e
+
+You can use this variable (``e`` in this example) in the exception handler.
+
+``try`` statements can have one ``else`` clause after ``except`` clauses::
+
+  try
+    # do something
+  except
+    # exception handler
+  else
+    # do something
+  end
+
+This ``else`` clause is excecuted when ``try`` clause finishes and no exception occurs.
+
 Raising Exceptions
 ==================
+
+You can use ``raise`` statements for exceptions to occur.
 
 User-defined Exceptions
 =======================
 
+Programmers can define custom exceptions.
+All exceptions is a child class of ``Exception``.
+
 Defining Clean-up Actions
 =========================
+
+``try`` statements can have one ``finally`` clause::
+
+  >>> def div(n)
+  ...   try
+  ...     m = 1 / n
+  ...   except ZeroDivisionError
+  ...     m = nil
+  ...   finally
+  ...     print(m)
+  ...   end
+  ... end
+
+``finally`` clause is always executed before leaving the ``try`` statement, whether an exception has occured or not.
 
 *******
 Classes
