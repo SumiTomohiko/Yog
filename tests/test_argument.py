@@ -210,6 +210,15 @@ foo(**{ bar: 42 })
 """, """42
 """)
 
+    def test_variable_keyword_parameter15(self):
+        self._test("""
+def foo(n, m)
+  print(n + m)
+end
+
+foo(**{ n: 42, m: 26 })
+""", "68")
+
     def test_variable_keyword_parameter20(self):
         self._test("""
 def foo(bar, **baz)
