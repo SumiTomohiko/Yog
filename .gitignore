@@ -5,6 +5,7 @@
 *.pyc
 *.so
 .ditz-config
+.ditz-plugins
 Makefile
 autom4te.cache
 bdwgc/.deps/
@@ -156,6 +157,7 @@ gmp/mpz/fac_ui.h
 gmp/printf/.libs/
 gmp/scanf/.libs/
 gmp/tune/sqr_basecase.c
+html
 onig/.deps/
 onig/.libs/
 onig/onig-config
