@@ -103,8 +103,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             YogVal argnames = PTR_AS(YogArgInfo, arg_info)->argnames;
             ID argname = PTR_AS(ID, argnames)[j];
             if (argname == id) {
-                YOG_ASSERT(env, IS_UNDEF(PTR_AS(YogValArray, args)->items[j]), "Argument specified twice.");
                 YogVal* items = PTR_AS(YogValArray, args)->items;
+                YOG_ASSERT(env, IS_UNDEF(items[args_offset + j]), "Argument specified twice.");
                 YogVal val = kwargs[2 * i + 1];
                 items[args_offset + j] = val;
                 break;
@@ -115,8 +115,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         }
         ID argname = PTR_AS(YogArgInfo, arg_info)->blockargname;
         if (argname == id) {
-            YOG_ASSERT(env, !IS_UNDEF(PTR_AS(YogValArray, args)->items[args_offset + j]), "Argument specified twice.");
             YogVal* items = PTR_AS(YogValArray, args)->items;
+            YOG_ASSERT(env, IS_UNDEF(items[args_offset + j]), "Argument specified twice.");
             items[args_offset + argc - 1] = blockarg;
             continue;
         }
@@ -136,8 +136,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
                 YogVal argnames = PTR_AS(YogArgInfo, arg_info)->argnames;
                 ID argname = PTR_AS(ID, argnames)[i];
                 if (argname == name) {
-                    YOG_ASSERT(env, IS_UNDEF(PTR_AS(YogValArray, args)->items[i]), "argument specified twice.");
                     YogVal* items = PTR_AS(YogValArray, args)->items;
+                    YOG_ASSERT(env, IS_UNDEF(items[args_offset + i]), "argument specified twice.");
                     items[args_offset + i] = value;
                     break;
                 }
