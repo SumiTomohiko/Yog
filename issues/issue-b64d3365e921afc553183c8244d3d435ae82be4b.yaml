@@ -1,0 +1,29 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Interactive mode can't handle multibyte characters.
+desc: ">>> quux = \"\xE4\xB9\x9D\xE9\xA0\xAD\xE9\xBE\x8D\"\n\
+  => \xE9\xA0\xAD\xE9\xBE\x8D\n\
+  >>> quux[0]\n\
+  => \xE9\xA0\xAD"
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :closed
+disposition: :wontfix
+creation_time: 2009-09-02 07:10:29.468353 Z
+references: []
+
+id: b64d3365e921afc553183c8244d3d435ae82be4b
+log_events: 
+- - 2009-09-02 07:10:30.478478 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2009-09-02 07:12:10.787136 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - commented
+  - It seems own to backspace.
+- - 2009-09-02 07:12:29.650625 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition wontfix
+  - ""
