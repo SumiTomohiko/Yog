@@ -1,13 +1,15 @@
 #include "yog/arg.h"
 #include "yog/array.h"
+#include "yog/class.h"
 #include "yog/code.h"
 #include "yog/dict.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/function.h"
-#include "yog/class.h"
+#include "yog/string.h"
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 static void
@@ -119,6 +121,10 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             YOG_ASSERT(env, IS_UNDEF(items[args_offset + j]), "Argument specified twice.");
             items[args_offset + argc - 1] = blockarg;
             continue;
+        }
+        if (!IS_PTR(kw)) {
+            YogVal name = YogVM_id2name(env, env->vm, id);
+            YogError_raise_TypeError(env, "an unexpected keyword argument '%s'", STRING_CSTR(name));
         }
         YogDict_set(env, kw, name, kwargs[2 * i + 1]);
     }

@@ -14,8 +14,8 @@ type: :bugfix
 component: Yog
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2009-08-30 12:37:29.738518 Z
 references: []
 
@@ -112,3 +112,11 @@ log_events:
     #4  0x08064407 in YogEval_eval_file (env=0xbfea308c, fp=0x80cb030,
         filename=0xbfea4596 "foo.yg", pkg_name=0x80a5c43 "__main__") at eval.c:681
     #5  0x0806d72e in main (argc=3, argv=0xbfea3334) at main.c:109
+- - 2009-09-01 12:56:03.779299 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2009-09-02 06:42:38.005384 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
+  - ""
