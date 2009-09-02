@@ -165,8 +165,6 @@ struct CompileData {
 
     YogVal outer;
     uint_t max_outer_depth;
-
-    BOOL interactive;
 };
 
 typedef struct CompileData CompileData;
@@ -199,7 +197,8 @@ typedef struct CompileData CompileData;
     COMPILE_DATA(data)->exc_tbl_last = (entry); \
 } while (0)
 
-#define NODE(p)     PTR_AS(YogNode, (p))
+#define NODE(p)             PTR_AS(YogNode, (p))
+#define NODE_LINENO(node)   NODE((node))->lineno
 
 static void
 raise_error(YogEnv* env, YogVal filename, uint_t lineno, const char* fmt, ...)
@@ -463,7 +462,7 @@ compile_visit_dict(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
-compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data)
+compile_visit_stmts_interactive(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data)
 {
     if (!IS_PTR(stmts)) {
         return;
@@ -474,7 +473,7 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data)
     PUSH_LOCAL(env, node);
 
     uint_t size = YogArray_size(env, stmts);
-    uint_t i = 0;
+    uint_t i;
     for (i = 0; i < size; i++) {
         node = YogArray_at(env, stmts, i);
 
@@ -489,15 +488,44 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data)
         case NODE_METHOD_CALL:
         case NODE_SUBSCRIPT:
         case NODE_VARIABLE:
-            {
-                uint_t lineno = NODE(node)->lineno;
-                if (COMPILE_DATA(data)->interactive) {
-                    CompileData_add_print_top(env, data, lineno);
-                }
-                else {
-                    CompileData_add_pop(env, data, lineno);
-                }
-            }
+            CompileData_add_print_top(env, data, NODE_LINENO(node));
+            break;
+        default:
+            break;
+        }
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
+compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data)
+{
+    if (!IS_PTR(stmts)) {
+        return;
+    }
+
+    SAVE_ARGS2(env, stmts, data);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    uint_t size = YogArray_size(env, stmts);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        node = YogArray_at(env, stmts, i);
+
+        visitor->visit_stmt(env, visitor, node, data);
+
+        switch (NODE(node)->type) {
+        case NODE_ASSIGN:
+        case NODE_ATTR:
+        case NODE_COMMAND_CALL:
+        case NODE_FUNC_CALL:
+        case NODE_LITERAL:
+        case NODE_METHOD_CALL:
+        case NODE_SUBSCRIPT:
+        case NODE_VARIABLE:
+            CompileData_add_pop(env, data, NODE_LINENO(node));
             break;
         default:
             break;
@@ -1459,7 +1487,7 @@ CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 }
 
 static YogVal
-CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID class_name, YogVal upper_data, BOOL interactive)
+CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID class_name, YogVal upper_data)
 {
     SAVE_ARGS5(env, vars, anchor, exc_tbl_ent, filename, upper_data);
     YogVal label_last_ret = YUNDEF;
@@ -1484,7 +1512,6 @@ CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc
     COMPILE_DATA(data)->class_name = class_name;
     COMPILE_DATA(data)->outer = upper_data;
     COMPILE_DATA(data)->max_outer_depth = 0;
-    COMPILE_DATA(data)->interactive = interactive;
 
     RETURN(env, data);
 }
@@ -1613,12 +1640,17 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, 
 
     anchor = Anchor_new(env);
     exc_tbl_ent = ExceptionTableEntry_new(env);
-    data = CompileData_new(env, ctx, vars, anchor, exc_tbl_ent, filename, class_name, upper_data, interactive);
+    data = CompileData_new(env, ctx, vars, anchor, exc_tbl_ent, filename, class_name, upper_data);
 
     label_return_start = Label_new(env);
     add_inst(env, data, label_return_start);
 
-    visitor->visit_stmts(env, visitor, stmts, data);
+    if (interactive) {
+        compile_visit_stmts_interactive(env, visitor, stmts, data);
+    }
+    else {
+        visitor->visit_stmts(env, visitor, stmts, data);
+    }
     if (IS_PTR(tail)) {
         CompileData_add_inst(env, data, tail);
     }
