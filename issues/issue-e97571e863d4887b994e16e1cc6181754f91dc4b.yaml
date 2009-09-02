@@ -7,8 +7,8 @@ type: :bugfix
 component: Yog
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2009-08-29 05:21:53.741970 Z
 references: []
 
@@ -17,4 +17,8 @@ log_events:
 - - 2009-08-29 05:21:54.467877 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2009-09-02 07:06:13.665868 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
   - ""
