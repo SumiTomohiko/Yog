@@ -2,8 +2,8 @@
 title: Design icon
 desc: ""
 type: :task
-component: Yog
-release: 
+component: document
+release: 0.0.1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,12 @@ log_events:
 - - 2009-08-28 11:21:35.226623 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2009-09-02 18:05:26.291877 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to component document from Yog
+  - ""
+- - 2009-09-02 18:05:53.934933 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.1 from unassigned
   - ""

@@ -3,7 +3,7 @@ title: Change raise function to statement.
 desc: ""
 type: :task
 component: Yog
-release: 
+release: 0.0.1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,16 @@ log_events:
 - - 2009-08-28 12:16:54.286926 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2009-09-02 18:07:16.124225 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.1 from unassigned
+  - ""
+- - 2009-09-02 18:08:01.950186 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to component document from Yog
+  - ""
+- - 2009-09-02 18:11:55.011402 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to component Yog from document
   - ""

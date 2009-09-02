@@ -2,8 +2,8 @@
 title: Add section number to doc/tutorial.rst
 desc: ""
 type: :task
-component: Yog
-release: 
+component: document
+release: 0.0.1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,12 @@ log_events:
 - - 2009-08-30 03:11:04.245103 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2009-09-02 18:08:48.847989 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to component document from Yog
+  - ""
+- - 2009-09-02 18:09:09.419251 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.1 from unassigned
   - ""

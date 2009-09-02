@@ -3,7 +3,7 @@ title: make install
 desc: ""
 type: :task
 component: Yog
-release: 
+release: 0.0.1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,16 @@ log_events:
 - - 2009-08-28 13:32:34.259395 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2009-09-02 18:07:20.640695 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.1 from unassigned
+  - ""
+- - 2009-09-02 18:07:46.961761 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to component document from Yog
+  - ""
+- - 2009-09-02 18:12:22.093691 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to component Yog from document
   - ""

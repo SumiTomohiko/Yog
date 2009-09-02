@@ -2,8 +2,8 @@
 title: Improve keyword highlight in doc/tutorial.rst
 desc: ""
 type: :task
-component: Yog
-release: 
+component: document
+release: 0.0.1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,12 @@ log_events:
 - - 2009-08-30 03:11:37.442148 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2009-09-02 18:09:24.851236 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to component document from Yog
+  - ""
+- - 2009-09-02 18:09:46.314336 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.1 from unassigned
   - ""
