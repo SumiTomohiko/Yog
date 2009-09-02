@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from re import match
-
 from testcase import TestCase
 
 class TestString(TestCase):
@@ -78,11 +77,93 @@ puts(\"\\w\")
 """, """w
 """)
 
-    def test_add(self):
+    def test_add0(self):
         self._test("""
 puts(\"foo\" + \"bar\")
 """, """foobar
 """)
+
+    def test_add3(self):
+        self._test("""
+puts("foo" + "bar")
+""", """foobar
+""")
+
+    def test_add5(self):
+        self._test("""
+puts("foo" + "bar" + "baz")
+""", """foobarbaz
+""")
+
+    def test_add10(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in String#\+
+TypeError: can't convert 'Fixnum' object to string implicitly
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" + 42)
+""", stderr=test_stderr)
+
+    def test_add20(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in String#\+
+TypeError: can't convert 'Bool' object to string implicitly
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" + true)
+""", stderr=test_stderr)
+
+    def test_add30(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in String#\+
+TypeError: can't convert 'Symbol' object to string implicitly
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" + :bar)
+""", stderr=test_stderr)
+
+    def test_add40(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in String#\+
+TypeError: can't convert 'Nil' object to string implicitly
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" + nil)
+""", stderr=test_stderr)
+
+    def test_add50(self):
+        def test_stderr(stderr):
+            m = match(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in String#\+
+TypeError: can't convert 'Float' object to string implicitly
+""", stderr)
+            assert m is not None
+
+        self._test("""
+puts("foo" + 3.1415926535)
+""", stderr=test_stderr)
+
+    def test_add60(self):
+        self._test(u"""
+print((\"九\" + \"頭龍\")[0])
+""", u"九")
 
     def test_lshift1(self):
         self._test("""
@@ -273,83 +354,6 @@ TypeError: string index must be Fixnum
         self._test("""
 s = \"\"
 s[\"foo\"] = \"bar\"""", stderr=test_stderr)
-
-    def test_add0(self):
-        self._test("""
-puts("foo" + "bar")
-""", """foobar
-""")
-
-    def test_add5(self):
-        self._test("""
-puts("foo" + "bar" + "baz")
-""", """foobarbaz
-""")
-
-    def test_add10(self):
-        def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <package>
-  File builtin, in String#\+
-TypeError: can't convert 'Fixnum' object to string implicitly
-""", stderr)
-            assert m is not None
-
-        self._test("""
-puts("foo" + 42)
-""", stderr=test_stderr)
-
-    def test_add20(self):
-        def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <package>
-  File builtin, in String#\+
-TypeError: can't convert 'Bool' object to string implicitly
-""", stderr)
-            assert m is not None
-
-        self._test("""
-puts("foo" + true)
-""", stderr=test_stderr)
-
-    def test_add30(self):
-        def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <package>
-  File builtin, in String#\+
-TypeError: can't convert 'Symbol' object to string implicitly
-""", stderr)
-            assert m is not None
-
-        self._test("""
-puts("foo" + :bar)
-""", stderr=test_stderr)
-
-    def test_add40(self):
-        def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <package>
-  File builtin, in String#\+
-TypeError: can't convert 'Nil' object to string implicitly
-""", stderr)
-            assert m is not None
-
-        self._test("""
-puts("foo" + nil)
-""", stderr=test_stderr)
-
-    def test_add50(self):
-        def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <package>
-  File builtin, in String#\+
-TypeError: can't convert 'Float' object to string implicitly
-""", stderr)
-            assert m is not None
-
-        self._test("""
-puts("foo" + 3.1415926535)
-""", stderr=test_stderr)
 
     def test_multiply0(self):
         def test_stderr(stderr):

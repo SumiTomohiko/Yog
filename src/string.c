@@ -418,6 +418,7 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     const char* v = PTR_AS(YogCharArray, arg_body)->items;
     memcpy(u, v, size2);
     PTR_AS(YogString, s)->size = size;
+    PTR_AS(YogString, s)->encoding = STRING_ENCODING(self);
 
     RETURN(env, s);
 }
@@ -444,6 +445,7 @@ YogString_multiply(YogEnv* env, YogVal self, int_t num)
     }
     STRING_CSTR(s)[needed_size] = '\0';
     PTR_AS(YogString, s)->size = needed_size + 1;
+    PTR_AS(YogString, s)->encoding = STRING_ENCODING(self);
 
     RETURN(env, s);
 }
