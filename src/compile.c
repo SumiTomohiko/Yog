@@ -487,6 +487,7 @@ compile_visit_stmts(YogEnv* env, AstVisitor* visitor, YogVal stmts, YogVal data)
         case NODE_FUNC_CALL:
         case NODE_LITERAL:
         case NODE_METHOD_CALL:
+        case NODE_SUBSCRIPT:
         case NODE_VARIABLE:
             {
                 uint_t lineno = NODE(node)->lineno;

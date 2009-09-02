@@ -72,4 +72,11 @@ o.foo
 """, stdin="""def def
 """)
 
+    def test_array_indexing0(self):
+        self._test(stdout=""">>> => [42]
+>>> => 42
+>>> """, stdin="""a = [42]
+a[0]
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

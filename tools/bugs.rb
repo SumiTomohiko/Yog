@@ -13,7 +13,7 @@ module Ditz
     operation :bugs, "List bugs"
     def bugs project, config
       issues = project.issues.select do |i|
-        next i.bug?
+        next i.bug? && i.open?
       end
 
       print_todo_list_by_release_for project, issues
