@@ -45,6 +45,7 @@ struct AstVisitor {
     VisitNode visit_next;
     VisitNode visit_nonlocal;
     VisitNode visit_not;
+    VisitNode visit_raise;
     VisitNode visit_return;
     VisitNode visit_set;
     VisitNode visit_stmt;
@@ -402,6 +403,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
         break;
     case NODE_MODULE:
         VISIT(module);
+        break;
+    case NODE_RAISE:
+        VISIT(raise);
         break;
     default:
         YOG_BUG(env, "Unknown node type (0x%08x)", NODE(node)->type);
@@ -943,6 +947,12 @@ scan_var_visit_set(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
+scan_var_visit_raise(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    visit_node(env, visitor, NODE(node)->u.raise.expr, data);
+}
+
+static void
 scan_var_init_visitor(AstVisitor* visitor)
 {
     visitor->visit_array = scan_var_visit_array;
@@ -966,6 +976,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_next = scan_var_visit_break;
     visitor->visit_nonlocal = scan_var_visit_nonlocal;
     visitor->visit_not = scan_var_visit_not;
+    visitor->visit_raise = scan_var_visit_raise;
     visitor->visit_return = scan_var_visit_break;
     visitor->visit_set = scan_var_visit_set;
     visitor->visit_stmt = visit_node;
@@ -2963,6 +2974,20 @@ compile_visit_not(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
+compile_visit_raise(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+
+    uint_t lineno = NODE_LINENO(node);
+    ID func = YogVM_intern(env, env->vm, "raise_exception");
+    CompileData_add_load_global(env, data, lineno, func);
+    visit_node(env, visitor, NODE(node)->u.raise.expr, data);
+    CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
+
+    RETURN_VOID(env);
+}
+
+static void
 compile_visit_set(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -3003,6 +3028,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_next = compile_visit_next;
     visitor->visit_nonlocal = NULL;
     visitor->visit_not = compile_visit_not;
+    visitor->visit_raise = compile_visit_raise;
     visitor->visit_return = compile_visit_return;
     visitor->visit_set = compile_visit_set;
     visitor->visit_stmt = visit_node;

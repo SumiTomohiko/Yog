@@ -139,6 +139,9 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_NOT:
         KEEP(not.expr);
         break;
+    case NODE_RAISE:
+        KEEP(raise.expr);
+        break;
     case NODE_RETURN:
         KEEP(return_.expr);
         break;
@@ -575,6 +578,19 @@ Import_new(YogEnv* env, uint_t lineno, YogVal names)
     RETURN(env, node);
 }
 
+static YogVal
+Raise_new(YogEnv* env, uint_t lineno, YogVal expr)
+{
+    SAVE_ARG(env, expr);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    node = YogNode_new(env, NODE_RAISE, lineno);
+    NODE(node)->u.raise.expr = expr;
+
+    RETURN(env, node);
+}
+
 static void
 push_token(YogEnv* env, YogVal parser, YogVal lexer, YogVal token, const char* filename, YogVal* ast)
 {
@@ -840,6 +856,10 @@ stmt(A) ::= NONLOCAL(B) names(C). {
 stmt(A) ::= IMPORT(B) dotted_names(C). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Import_new(env, lineno, C);
+}
+stmt(A) ::= RAISE(B) expr(C). {
+    uint_t lineno = TOKEN_LINENO(B);
+    A = Raise_new(env, lineno, C);
 }
 
 dotted_names(A) ::= dotted_name(B). {

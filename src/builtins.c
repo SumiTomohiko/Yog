@@ -20,7 +20,7 @@
 #include "yog/yog.h"
 
 static YogVal
-raise(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+raise_exception(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal exc = YogArray_at(env, args, 0);
@@ -206,7 +206,7 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
     DEFINE_FUNCTION("print", print);
     DEFINE_FUNCTION("property", property);
     DEFINE_FUNCTION("puts", puts_);
-    DEFINE_FUNCTION("raise", raise);
+    DEFINE_FUNCTION("raise_exception", raise_exception);
 #undef DEFINE_FUNCTION
 
 #define REGISTER_CLASS(c)   do { \

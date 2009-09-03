@@ -23,6 +23,7 @@ enum YogNodeType {
     NODE_BLOCK_ARG,
     NODE_BLOCK_PARAM,
     NODE_BREAK,
+    NODE_CLASS,
     NODE_COMMAND_CALL,
     NODE_DICT,
     NODE_DICT_ELEM,
@@ -33,7 +34,6 @@ enum YogNodeType {
     NODE_FUNC_DEF,
     NODE_IF,
     NODE_IMPORT,
-    NODE_CLASS,
     NODE_KW_ARG,
     NODE_KW_PARAM,
     NODE_LITERAL,
@@ -45,6 +45,7 @@ enum YogNodeType {
     NODE_NONLOCAL,
     NODE_NOT,
     NODE_PARAM,
+    NODE_RAISE,
     NODE_RETURN,
     NODE_SET,
     NODE_SUBSCRIPT,
@@ -172,6 +173,9 @@ struct YogNode {
             ID name;
             YogVal default_;
         } param;
+        struct {
+            YogVal expr;
+        } raise;
         struct {
             YogVal expr;
         } return_;
