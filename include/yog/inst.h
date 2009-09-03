@@ -115,6 +115,10 @@ struct YogInst {
         } long_return;
         struct {
         } long_break;
+        struct {
+        } load_exception;
+        struct {
+        } match_exception;
     } u;
 
     uint_t lineno;

@@ -102,7 +102,7 @@ struct YogNode {
             YogVal else_;
         } except;
         struct {
-            YogVal type;
+            YogVal types;
             ID var;
             YogVal stmts;
         } except_body;

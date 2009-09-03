@@ -43,6 +43,8 @@ Yog_get_inst_size(OpCode op)
         sizeof(uint8_t), /* not */
         sizeof(uint8_t), /* long_return */
         sizeof(uint8_t), /* long_break */
+        sizeof(uint8_t), /* load_exception */
+        sizeof(uint8_t), /* match_exception */
 
     };
 

@@ -4,7 +4,7 @@
  */
 
 
-static void 
+static void
 CompileData_add_pop(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -19,7 +19,7 @@ CompileData_add_pop(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_push_const(YogEnv* env, YogVal data, uint_t lineno, uint8_t index)
 {
     SAVE_ARG(env, data);
@@ -35,7 +35,7 @@ CompileData_add_push_const(YogEnv* env, YogVal data, uint_t lineno, uint8_t inde
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_make_string(YogEnv* env, YogVal data, uint_t lineno, uint8_t index)
 {
     SAVE_ARG(env, data);
@@ -51,7 +51,7 @@ CompileData_add_make_string(YogEnv* env, YogVal data, uint_t lineno, uint8_t ind
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_store_name(YogEnv* env, YogVal data, uint_t lineno, ID id)
 {
     SAVE_ARG(env, data);
@@ -67,7 +67,7 @@ CompileData_add_store_name(YogEnv* env, YogVal data, uint_t lineno, ID id)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_store_local(YogEnv* env, YogVal data, uint_t lineno, uint8_t index)
 {
     SAVE_ARG(env, data);
@@ -83,7 +83,7 @@ CompileData_add_store_local(YogEnv* env, YogVal data, uint_t lineno, uint8_t ind
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_make_block(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -98,7 +98,7 @@ CompileData_add_make_block(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_make_block2(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -113,7 +113,7 @@ CompileData_add_make_block2(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_make_function(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -128,7 +128,7 @@ CompileData_add_make_function(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_call_function(YogEnv* env, YogVal data, uint_t lineno, uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
 {
     SAVE_ARG(env, data);
@@ -148,7 +148,7 @@ CompileData_add_call_function(YogEnv* env, YogVal data, uint_t lineno, uint8_t a
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_load_global(YogEnv* env, YogVal data, uint_t lineno, ID id)
 {
     SAVE_ARG(env, data);
@@ -164,7 +164,7 @@ CompileData_add_load_global(YogEnv* env, YogVal data, uint_t lineno, ID id)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_load_name(YogEnv* env, YogVal data, uint_t lineno, ID id)
 {
     SAVE_ARG(env, data);
@@ -180,7 +180,7 @@ CompileData_add_load_name(YogEnv* env, YogVal data, uint_t lineno, ID id)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_load_local(YogEnv* env, YogVal data, uint_t lineno, uint8_t index)
 {
     SAVE_ARG(env, data);
@@ -196,7 +196,7 @@ CompileData_add_load_local(YogEnv* env, YogVal data, uint_t lineno, uint8_t inde
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_jump(YogEnv* env, YogVal data, uint_t lineno, YogVal dest)
 {
     SAVE_ARGS2(env, data, dest);
@@ -212,7 +212,7 @@ CompileData_add_jump(YogEnv* env, YogVal data, uint_t lineno, YogVal dest)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_jump_if_true(YogEnv* env, YogVal data, uint_t lineno, YogVal dest)
 {
     SAVE_ARGS2(env, data, dest);
@@ -228,7 +228,7 @@ CompileData_add_jump_if_true(YogEnv* env, YogVal data, uint_t lineno, YogVal des
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_jump_if_false(YogEnv* env, YogVal data, uint_t lineno, YogVal dest)
 {
     SAVE_ARGS2(env, data, dest);
@@ -244,7 +244,7 @@ CompileData_add_jump_if_false(YogEnv* env, YogVal data, uint_t lineno, YogVal de
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_dup(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -259,7 +259,7 @@ CompileData_add_dup(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_make_module(YogEnv* env, YogVal data, uint_t lineno, ID name)
 {
     SAVE_ARG(env, data);
@@ -275,7 +275,7 @@ CompileData_add_make_module(YogEnv* env, YogVal data, uint_t lineno, ID name)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_make_class(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -290,7 +290,7 @@ CompileData_add_make_class(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_push_self_name(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -305,7 +305,7 @@ CompileData_add_push_self_name(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_ret(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -320,7 +320,7 @@ CompileData_add_ret(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_store_nonlocal(YogEnv* env, YogVal data, uint_t lineno, uint8_t level, uint8_t index)
 {
     SAVE_ARG(env, data);
@@ -337,7 +337,7 @@ CompileData_add_store_nonlocal(YogEnv* env, YogVal data, uint_t lineno, uint8_t 
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_load_nonlocal(YogEnv* env, YogVal data, uint_t lineno, uint8_t level, uint8_t index)
 {
     SAVE_ARG(env, data);
@@ -354,7 +354,7 @@ CompileData_add_load_nonlocal(YogEnv* env, YogVal data, uint_t lineno, uint8_t l
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_store_global(YogEnv* env, YogVal data, uint_t lineno, ID name)
 {
     SAVE_ARG(env, data);
@@ -370,7 +370,7 @@ CompileData_add_store_global(YogEnv* env, YogVal data, uint_t lineno, ID name)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_load_attr(YogEnv* env, YogVal data, uint_t lineno, ID name)
 {
     SAVE_ARG(env, data);
@@ -386,7 +386,7 @@ CompileData_add_load_attr(YogEnv* env, YogVal data, uint_t lineno, ID name)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_make_array(YogEnv* env, YogVal data, uint_t lineno, uint8_t size)
 {
     SAVE_ARG(env, data);
@@ -402,7 +402,7 @@ CompileData_add_make_array(YogEnv* env, YogVal data, uint_t lineno, uint8_t size
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_make_dict(YogEnv* env, YogVal data, uint_t lineno, uint8_t size)
 {
     SAVE_ARG(env, data);
@@ -418,7 +418,7 @@ CompileData_add_make_dict(YogEnv* env, YogVal data, uint_t lineno, uint8_t size)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_make_set(YogEnv* env, YogVal data, uint_t lineno, uint8_t size)
 {
     SAVE_ARG(env, data);
@@ -434,7 +434,7 @@ CompileData_add_make_set(YogEnv* env, YogVal data, uint_t lineno, uint8_t size)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_print_top(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -449,7 +449,7 @@ CompileData_add_print_top(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_store_attr(YogEnv* env, YogVal data, uint_t lineno, ID name)
 {
     SAVE_ARG(env, data);
@@ -465,7 +465,7 @@ CompileData_add_store_attr(YogEnv* env, YogVal data, uint_t lineno, ID name)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_not(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -480,7 +480,7 @@ CompileData_add_not(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_long_return(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -495,7 +495,7 @@ CompileData_add_long_return(YogEnv* env, YogVal data, uint_t lineno)
     RETURN_VOID(env);
 }
 
-static void 
+static void
 CompileData_add_long_break(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
@@ -503,6 +503,36 @@ CompileData_add_long_break(YogEnv* env, YogVal data, uint_t lineno)
     YogVal inst = Inst_new(env, lineno);
     INST(inst)->type = INST_OP;
     INST_OPCODE(inst) = OP(LONG_BREAK);
+
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
+static void
+CompileData_add_load_exception(YogEnv* env, YogVal data, uint_t lineno)
+{
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(LOAD_EXCEPTION);
+
+
+    add_inst(env, data, inst);
+
+    RETURN_VOID(env);
+}
+
+static void
+CompileData_add_match_exception(YogEnv* env, YogVal data, uint_t lineno)
+{
+    SAVE_ARG(env, data);
+
+    YogVal inst = Inst_new(env, lineno);
+    INST(inst)->type = INST_OP;
+    INST_OPCODE(inst) = OP(MATCH_EXCEPTION);
 
 
     add_inst(env, data, inst);
@@ -716,6 +746,16 @@ insts2bin(YogEnv* env, YogVal inst)
                 case OP(LONG_BREAK):
                     {
                         YogBinary_push_uint8(env, code, OP(LONG_BREAK));
+                        break;
+                    }
+                case OP(LOAD_EXCEPTION):
+                    {
+                        YogBinary_push_uint8(env, code, OP(LOAD_EXCEPTION));
+                        break;
+                    }
+                case OP(MATCH_EXCEPTION):
+                    {
+                        YogBinary_push_uint8(env, code, OP(MATCH_EXCEPTION));
                         break;
                     }
                 default:
@@ -949,6 +989,18 @@ count_stack_size(YogEnv* env, YogVal inst)
                     {
                         pop_size = 1;
                         push_size = 0;
+                        break;
+                    }
+                case OP(LOAD_EXCEPTION):
+                    {
+                        pop_size = 0;
+                        push_size = 1;
+                        break;
+                    }
+                case OP(MATCH_EXCEPTION):
+                    {
+                        pop_size = 2;
+                        push_size = 1;
                         break;
                     }
                 default:

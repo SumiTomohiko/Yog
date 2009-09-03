@@ -596,6 +596,35 @@
             POP_LOCALS(env);
             break;
         }
+    case OP(LOAD_EXCEPTION):
+        {
+            YogVal exc = YUNDEF;
+            PUSH_LOCAL(env, exc);
+            exc = PTR_AS(YogThread, env->thread)->jmp_val;
+
+            PUSH(exc);
+            POP_LOCALS(env);
+            break;
+        }
+    case OP(MATCH_EXCEPTION):
+        {
+            YogVal klass = YUNDEF;
+            YogVal exc = YUNDEF;
+            YogVal b = YUNDEF;
+            PUSH_LOCALS3(env, klass, exc, b);
+            klass = POP();
+            exc = POP();
+            if (YogVal_is_subclass_of(env, exc, klass)) {
+                b = YTRUE;
+            }
+            else {
+                b = YFALSE;
+            }
+
+            PUSH(b);
+            POP_LOCALS(env);
+            break;
+        }
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

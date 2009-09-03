@@ -41,6 +41,8 @@ YogCode_get_op_name(OpCode op)
         "NOT",
         "LONG_RETURN",
         "LONG_BREAK",
+        "LOAD_EXCEPTION",
+        "MATCH_EXCEPTION",
     };
 
     return op_names[op];

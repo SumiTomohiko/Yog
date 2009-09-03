@@ -44,6 +44,8 @@ enum OpCode {
     OP(NOT) = 30,
     OP(LONG_RETURN) = 31,
     OP(LONG_BREAK) = 32,
+    OP(LOAD_EXCEPTION) = 33,
+    OP(MATCH_EXCEPTION) = 34,
 
 };
 

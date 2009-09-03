@@ -78,7 +78,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(except.else_);
         break;
     case NODE_EXCEPT_BODY:
-        KEEP(except_body.type);
+        KEEP(except_body.types);
         KEEP(except_body.stmts);
         break;
     case NODE_FINALLY:
@@ -336,12 +336,12 @@ Variable_new(YogEnv* env, uint_t lineno, ID id)
 }
 
 static YogVal
-ExceptBody_new(YogEnv* env, uint_t lineno, YogVal type, ID var, YogVal stmts)
+ExceptBody_new(YogEnv* env, uint_t lineno, YogVal types, ID var, YogVal stmts)
 {
-    SAVE_ARGS2(env, type, stmts);
+    SAVE_ARGS2(env, types, stmts);
 
     YogVal node = YogNode_new(env, NODE_EXCEPT_BODY, lineno);
-    NODE(node)->u.except_body.type = type;
+    NODE(node)->u.except_body.types = types;
     NODE(node)->u.except_body.var = var;
     NODE(node)->u.except_body.stmts = stmts;
 
@@ -1563,13 +1563,13 @@ excepts(A) ::= excepts(B) except(C). {
     A = Array_push(env, B, C);
 }
 
-except(A) ::= EXCEPT(B) expr(C) AS NAME(D) NEWLINE stmts(E). {
+except(A) ::= EXCEPT(B) exprs(C) AS NAME(D) NEWLINE stmts(E). {
     uint_t lineno = TOKEN_LINENO(B);
     ID id = PTR_AS(YogToken, D)->u.id;
     YOG_ASSERT(env, id != NO_EXC_VAR, "Too many variables.");
     A = ExceptBody_new(env, lineno, C, id, E);
 }
-except(A) ::= EXCEPT(B) expr(C) NEWLINE stmts(E). {
+except(A) ::= EXCEPT(B) exprs(C) NEWLINE stmts(E). {
     uint_t lineno = TOKEN_LINENO(B);
     A = ExceptBody_new(env, lineno, C, NO_EXC_VAR, E);
 }

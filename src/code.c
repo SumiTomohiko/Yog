@@ -50,16 +50,22 @@ print_val(YogEnv* env, YogVal val)
 void
 YogCode_dump(YogEnv* env, YogVal code)
 {
+    SAVE_ARG(env, code);
+    YogVal insts = YUNDEF;
+    YogVal consts = YUNDEF;
+    YogVal lineno_tbl = YUNDEF;
+    PUSH_LOCALS3(env, insts, consts, lineno_tbl);
+
     printf("stack size: %u\n", PTR_AS(YogCode, code)->stack_size);
     printf("=== Constants ===\n");
     printf("index value\n");
 
     uint_t consts_size = 0;
-    YogVal consts = PTR_AS(YogCode, code)->consts;
+    consts = PTR_AS(YogCode, code)->consts;
     if (IS_PTR(consts)) {
         consts_size = PTR_AS(YogValArray, consts)->size;
     }
-    uint_t i = 0;
+    uint_t i;
     for (i = 0; i < consts_size; i++) {
         printf("%05d ", i);
 
@@ -90,20 +96,20 @@ YogCode_dump(YogEnv* env, YogVal code)
             YOG_BUG(env, "unknown status (0x%x)", status);
             break;
         }
-        printf("%s %04d %04d %04d\n", status, entry->from, entry->to, entry->target);
+        printf("%-6s %04d %04d %04d\n", status, entry->from, entry->to, entry->target);
     }
 
     printf("=== Code ===\n");
     printf("PC Lineno Instruction\n");
 
     pc_t pc = 0;
-    YogVal insts = PTR_AS(YogCode, code)->insts;
+    insts = PTR_AS(YogCode, code)->insts;
     while (pc < PTR_AS(YogByteArray, insts)->size) {
         printf("%04d", pc);
 
         uint_t size = PTR_AS(YogCode, code)->lineno_tbl_size;
         for (i = 0; i < size; i++) {
-            YogVal lineno_tbl = PTR_AS(YogCode, code)->lineno_tbl;
+            lineno_tbl = PTR_AS(YogCode, code)->lineno_tbl;
             YogLinenoTableEntry* entry = &PTR_AS(YogLinenoTableEntry, lineno_tbl)[i];
             if ((entry->pc_from <= pc) && (pc <= entry->pc_to)) {
                 printf(" %05d", entry->lineno);
@@ -197,6 +203,8 @@ YogCode_dump(YogEnv* env, YogVal code)
         printf("\n");
         pc += Yog_get_inst_size(op);
     }
+
+    RETURN_VOID(env);
 }
 
 static void

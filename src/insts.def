@@ -459,6 +459,27 @@ inst long_break
     long_jump(env, val, JMP_BREAK, target_frame);
 }
 
+inst load_exception
+()
+()
+(exc)
+{
+    exc = PTR_AS(YogThread, env->thread)->jmp_val;
+}
+
+inst match_exception
+()
+(klass, exc)
+(b)
+{
+    if (YogVal_is_subclass_of(env, exc, klass)) {
+        b = YTRUE;
+    }
+    else {
+        b = YFALSE;
+    }
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

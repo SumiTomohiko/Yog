@@ -169,19 +169,32 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
+static YogVal
+get_message(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal message = YUNDEF;
+    PUSH_LOCAL(env, message);
+
+    message = PTR_AS(YogException, self)->message;
+
+    RETURN(env, message);
+}
+
 YogVal
 YogException_define_class(YogEnv* env)
 {
-    YogVal klass = YogClass_new(env, "Exception", env->vm->cObject);
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
+    klass = YogClass_new(env, "Exception", env->vm->cObject);
     YogClass_define_allocator(env, klass, allocate);
     YogClass_define_method(env, klass, "initialize", initialize);
     YogClass_define_method(env, klass, "to_s", to_s);
+    YogClass_define_property(env, klass, "message", get_message, NULL);
 
-    POP_LOCALS(env);
-    return klass;
-#undef UPDATE_PTR
+    RETURN(env, klass);
 }
 
 /**

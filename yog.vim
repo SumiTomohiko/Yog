@@ -12,7 +12,7 @@ elseif exists("b:current_syntax")
 endif
 
 syn keyword   yogStatement    break next do end except finally return try global
-syn keyword   yogStatement    def class nextgroup=yogFunction skipwhite
+syn keyword   yogStatement    def class nextgroup=yogFunction skipwhite raise
 syn keyword   yogStatement    module nextgroup=yogFunction nonlocal
 syn match     yogFunction	    "[a-zA-Z_][a-zA-Z0-9_]*?\?!\?" contained
 syn keyword   yogRepeat       while
