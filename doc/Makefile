@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build -W
+SPHINXBUILD   = sphinx-build -W -a
 PAPER         =
 
 # Internal variables.
@@ -31,6 +31,7 @@ help:
 
 distclean maintainer-clean clean:
 	-rm -rf _build/*
+	rm /tmp/sphinx-err-*.log
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) _build/html

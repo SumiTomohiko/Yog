@@ -18,6 +18,9 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.append(os.path.abspath('.'))
 
+from pygments.lexers._mapping import LEXERS
+LEXERS["YogLexer"] = ("yog", "Yog", ("yog", ), ("*.yg", ), ("application/x-yog", ));
+
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
@@ -86,6 +89,7 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
+highlight_language = "yog"
 
 # -- Options for HTML output ---------------------------------------------------
 
