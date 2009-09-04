@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from pygments.lexer import RegexLexer
-from pygments.token import Keyword, Literal
+from pygments.token import Comment, Generic, Keyword, Literal, Text
 
 __all__ = ["YogLexer"]
 
 class YogLexer(RegexLexer):
     name = "Yog"
     tokens = { "root": [
+        (r"#.*$", Comment),
+        (">>>", Generic.Prompt),
+        (r"\.\.\.", Generic.Prompt),
         ("as", Keyword),
         ("break", Keyword),
         ("class", Keyword),
@@ -31,6 +34,6 @@ class YogLexer(RegexLexer):
         ("false", Literal),
         ("nil", Literal),
         ("true", Literal),
-        (".", Literal)]}
+        (".", Text)]}
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
