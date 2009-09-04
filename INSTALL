@@ -1,3 +1,10 @@
-    ./configure
-    make
-    sudo make install
+Installation
+============
+
+Do the following commands::
+
+  $ ./configure
+  $ make
+  $ sudo make install
+
+.. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
