@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Prepare online document.
+desc: ""
+type: :task
+component: document
+release: 0.0.1
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-09-07 05:26:22.200578 Z
+references: []
+
+id: 45c3565d6190a4e6353f1cb934c2fe2927907112
+log_events: 
+- - 2009-09-07 05:26:23.536629 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
