@@ -684,7 +684,7 @@ Numbers like ``42`` are evaluated as be seen::
 
 Numbers starts with ``0b`` are evaluated as binary::
 
-  >>> 0x101010
+  >>> 0b101010
   => 42
 
 Samely, numbers which starts with ``0o`` are octal, and ``0x`` are hex::
@@ -696,7 +696,7 @@ Samely, numbers which starts with ``0o`` are octal, and ``0x`` are hex::
 
 You can split a number by ``_``::
 
-  >>> 0x10_1010
+  >>> 0b10_1010
   => 42
 
 Yog has no limits on the range of integers::
