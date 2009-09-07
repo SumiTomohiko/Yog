@@ -39,6 +39,7 @@ class YogLexer(RegexLexer):
             (r"false\b", Literal),
             (r"nil\b", Literal),
             (r"true\b", Literal),
+            (r"self\b", Literal),
             (r"0[bB][0-1_]+", Number.Integer),
             (r"0[oO][0-8_]+", Number.Oct),
             (r"0[xX][0-9a-fA-F_]+", Number.Hex),

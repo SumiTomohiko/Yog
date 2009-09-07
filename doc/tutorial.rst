@@ -516,13 +516,13 @@ The ``close`` method closes the file.
 Classes
 *******
 
-A First Look at Classes
-=======================
+Yog supports object oriented programming.
+This section describes about classes.
 
 Class Definition Syntax
------------------------
+=======================
 
-One example::
+The following code is a simple example of class::
 
   class Foo
     bar = 42
@@ -532,27 +532,83 @@ One example::
     end
   end
 
-Class Objects
--------------
+Definitions of classes starts with the keyword ``class`` followed a class name.
+Definitions of classes ends with the keyword ``end``.
+Any statements are allowed in ``class`` statements.
+Even ``if`` statements can be placed there.
 
-Instance Objects
-----------------
+Variables assigned in ``class`` statements becomes class variables.
+Functions defined in ``class`` statements becomes methods.
 
-Method Objects
---------------
+Instance Variables
+==================
+
+Objects have indivisual variables set -- instance variables.
+When you want to access an instance variable ``name`` of an object ``obj``, you can write ``obj.name``.
+
+In methods, you can refer a called object with the keyword ``self``.
+So you can use ``self.foo`` to access the instance variable named ``foo`` of the called object.
+
+Instantiation
+=============
+
+You can use the ``new`` method of classes for instantiation::
+
+  foo = Foo.new()
+
+Constructors
+============
+
+Some objects have initial states.
+Constructors role to configure objects initially.
+Constructors' name is ``init``.
+These methods are called after generating objects::
+
+  class Foo
+    def init()
+      self.bar = 42
+    end
+  end
+
+  foo = Foo.new()
+  print(foo.bar)
+
+The above code prints ``42``.
 
 Inheritance
 ===========
 
-One example::
+Yog's classes can inherit any other class.
+When the ``Devided`` class inherits the ``Base`` class::
 
-  class Foo > Bar
+  class Devided > Base
+    # something
   end
 
 Mix-in
 ======
 
-One example::
+Yog doesn't support multiple inheritance.
+But Yog provides features of modules and mix-in like Ruby.
+
+Modules
+-------
+
+Modules are sets of methods.
+The following code show you one example of modules::
+
+  module Foo
+    def bar()
+      puts("bar")
+    end
+  end
+
+The module ``Foo`` has one method of ``bar``.
+
+``@include`` class decorators
+-----------------------------
+
+When you want to mix the module ``Foo`` to the class ``Baz``, you can use ``@include`` class decorators::
 
   module Foo
     def bar()
@@ -564,8 +620,52 @@ One example::
   class Baz
   end
 
+The class ``Baz`` doesn't have the method of ``bar``, but the mixed module ``Foo`` has.
+So you can call the ``bar`` method in the ``Baz`` instance objects::
+
   baz = Baz.new()
   baz.bar()
+
+The above code prints ``bar``.
+
+Class Methods
+=============
+
+When you want to call methods without instance objects, you can use ``@classmethod`` decorators::
+
+  class Foo
+    @classmethod
+    def bar()
+      # do something
+    end
+  end
+
+For the above class, you can call ``Foo.bar()``.
+In class methods, ``self`` is the class itself.
+
+Properties
+==========
+
+Properties allow you to call methods with the same syntax as instance variables::
+
+  class Foo
+    def init()
+      self.bar = 42
+    end
+
+    def get_baz()
+      return self.bar
+    end
+
+    def set_baz(baz)
+      self.bar = baz
+    end
+
+    baz = property(get_baz, set_baz)
+  end
+
+If ``foo`` is the object of the class ``Foo``, the reading ``foo.baz`` calls ``foo.get_baz()``.
+The writing ``foo.baz`` calls ``foo.set_baz()``.
 
 ***********
 Basic Types
@@ -573,6 +673,9 @@ Basic Types
 
 Numbers
 =======
+
+Integers
+--------
 
 Numbers like ``42`` are evaluated as be seen::
 
@@ -596,10 +699,10 @@ You can split a number by ``_``::
   >>> 0x10_1010
   => 42
 
-The interpreter accepts floating point number::
+Yog has no limits on the range of integers::
 
-  >>> 3.1415926535
-  => 3.14159
+  >>> 4611686018427387905
+  => 4611686018427387905
 
 The operators for numbers of ``+``, ``-`` and ``*`` are normally defined::
 
@@ -609,6 +712,14 @@ The operators for numbers of ``+``, ``-`` and ``*`` are normally defined::
   => 16
   >>> 42 * 26
   => 1092
+
+Floating Point Numbers
+----------------------
+
+The interpreter accepts floating point number::
+
+  >>> 3.1415926535
+  => 3.14159
 
 Strings
 =======
@@ -876,7 +987,7 @@ Assume that you want to use the ``fib`` function in ``fib.yg`` from the script `
 ``foo.yg`` is following::
 
   import fib
-  printf(fib(43))
+  printf(fib.fib(43))
 
 The Package Search Path
 =======================

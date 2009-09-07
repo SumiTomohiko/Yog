@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Change constructors' name to "init".
+desc: ""
+type: :task
+component: Yog
+release: 0.0.1
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-09-07 03:41:03.223953 Z
+references: []
+
+id: 4cccf3d4ab3abb5b78da8af485d4bbd235b3a243
+log_events: 
+- - 2009-09-07 03:41:04.446441 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
