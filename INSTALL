@@ -7,4 +7,13 @@ Do the following commands::
   $ make
   $ sudo make install
 
+Then you will get ``/usr/local/bin/yog``.
+
+If you want to install another directory, you can use the ``--prefix`` option to the configure.
+If you do::
+
+  $ ./configure --prefix=PREFIX
+
+you will get ``PREFIX/bin/yog``.
+
 .. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
