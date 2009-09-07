@@ -713,6 +713,19 @@ The operators for numbers of ``+``, ``-`` and ``*`` are normally defined::
   >>> 42 * 26
   => 1092
 
+Division
+~~~~~~~~
+
+Yog has two division operators, one is ``/``, the other is ``//``.
+In almost programming language like C, ``3 / 2`` gives 1 (not 1.5).
+In Yog, the operator to work this way is ``//``.
+The normal ``/`` operator gives always floating point number, so ``3 / 2`` gives 1.5::
+
+  >>> 3 // 2
+  => 1
+  >>> 3 / 2
+  => 1.5
+
 Floating Point Numbers
 ----------------------
 
@@ -811,43 +824,6 @@ Calling ``start`` method and ``end`` method with argument ``0`` is same as calli
   => 6
   >>> m.end(2)
   => 18
-
-*********
-Operators
-*********
-
-Division
-========
-
-Yog has two division operators, one is ``/``, the other is ``//``.
-In almost programming language like C, ``3 / 2`` gives 1 (not 1.5).
-In Yog, the operator to work this way is ``//``.
-The normal ``/`` operator gives always floating point number, so ``3 / 2`` gives 1.5::
-
-  >>> 3 // 2
-  => 1
-  >>> 3 / 2
-  => 1.5
-
-Assignment
-==========
-
-The symbol ``=`` is used to assign a value to a variable.
-You can use assigned variables in continuation script::
-
-  >>> foo = 42
-  => 42
-  >>> bar = 26
-  => 26
-  >>> foo * bar
-  => 1092
-
-When unassigned variable is used, an error will occur::
-
-  >>> baz
-  Traceback (most recent call last):
-    File "__main__", line 1, in <package>
-  NameError: name 'baz' is not defined
 
 **********
 Exceptions
