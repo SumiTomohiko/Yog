@@ -16,4 +16,4 @@ If you do::
 
 you will get ``PREFIX/bin/yog``.
 
-.. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+.. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=rst

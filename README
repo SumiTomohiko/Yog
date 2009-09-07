@@ -22,9 +22,23 @@ See INSTALL.
 Documentation
 -------------
 
-See HTML documents in doc/html.
+See HTML documents in doc/html directory.
+
+You need Sphinx (http://sphinx.pocoo.org/) to make documents.
+For generating documents, do::
+
+  $ make doc
+
+at the top of the source tree.
+
+Issue Tracking System
+---------------------
+
+Original data of issues are in the ``issues`` dicretory of the source tree.
 
 Author
 ------
 
 * SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+
+.. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=rst
