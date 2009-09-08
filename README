@@ -22,6 +22,7 @@ See INSTALL.
 Documentation
 -------------
 
+Online document is at http://neko-daisuki.ddo.jp/~SumiTomohiko/yog/0.0.1/index.html.
 See HTML documents in doc/html directory.
 
 You need Sphinx (http://sphinx.pocoo.org/) to make documents.
