@@ -1,4 +1,4 @@
-# Ditz bug plugin
+# Ditz bugs plugin
 #
 # This plugin adds the "bugs" command to ditz. This command shows a list of
 # bugs.
