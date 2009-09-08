@@ -70,7 +70,7 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
 }
 
 static YogVal
-initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
 
@@ -87,7 +87,7 @@ initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
 
     frame = PTR_AS(YogThread, env->thread)->cur_frame;
-    frame = skip_frame(env, frame, "initialize");
+    frame = skip_frame(env, frame, "init");
     frame = skip_frame(env, frame, "new");
 
     st = YNIL;
@@ -190,7 +190,7 @@ YogException_define_class(YogEnv* env)
 
     klass = YogClass_new(env, "Exception", env->vm->cObject);
     YogClass_define_allocator(env, klass, allocate);
-    YogClass_define_method(env, klass, "initialize", initialize);
+    YogClass_define_method(env, klass, "init", init);
     YogClass_define_method(env, klass, "to_s", to_s);
     YogClass_define_property(env, klass, "message", get_message, NULL);
 

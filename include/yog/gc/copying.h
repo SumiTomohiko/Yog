@@ -60,7 +60,7 @@ void YogCopying_cheney_scan(YogEnv*, YogCopying*);
 void* YogCopying_copy(YogEnv*, YogCopying*, void*);
 void YogCopying_delete_garbage(YogEnv*, YogCopying*);
 void YogCopying_finalize(YogEnv*, YogCopying*);
-void YogCopying_initialize(YogEnv*, YogCopying*, size_t);
+void YogCopying_init(YogEnv*, YogCopying*, size_t);
 BOOL YogCopying_is_empty(YogEnv*, YogCopying*);
 BOOL YogCopying_is_in_active_heap(YogEnv*, YogCopying*, void*);
 BOOL YogCopying_is_in_inactive_heap(YogEnv*, YogCopying*, void*);

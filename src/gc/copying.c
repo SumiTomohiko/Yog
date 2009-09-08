@@ -38,7 +38,7 @@ YogCopying_is_in_inactive_heap(YogEnv* env, YogCopying* copying, void* ptr)
 
 /* TODO: commonize with the other GC */
 static void
-initialize_memory(void* ptr, size_t size)
+init_memory(void* ptr, size_t size)
 {
     memset(ptr, 0xcb, size);
 }
@@ -54,7 +54,7 @@ YogCopyingHeap_new(YogCopying* copying, size_t size)
 
     heap->size = size;
     heap->free = heap->items;
-    initialize_memory(heap->items, size);
+    init_memory(heap->items, size);
 
     return heap;
 }
@@ -278,7 +278,7 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 
     YogCopyingHeader* header = (YogCopyingHeader*)heap->free;
 #if 0
-    GcObjectStat_initialize(&header->stat);
+    GcObjectStat_init(&header->stat);
 #endif
     header->keeper = keeper;
     header->finalizer = finalizer;
@@ -312,7 +312,7 @@ YogCopying_allocate_heap(YogEnv* env, YogCopying* copying)
 }
 
 void
-YogCopying_initialize(YogEnv* env, YogCopying* copying, size_t heap_size)
+YogCopying_init(YogEnv* env, YogCopying* copying, size_t heap_size)
 {
     copying->err = ERR_COPYING_NONE;
     copying->heap_size = heap_size;

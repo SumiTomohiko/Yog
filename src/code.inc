@@ -3,8 +3,8 @@
  * DO NOT TOUCH!!
  */
 
-const char* 
-YogCode_get_op_name(OpCode op) 
+const char*
+YogCode_get_op_name(OpCode op)
 {
     const char* op_names[] = {
 

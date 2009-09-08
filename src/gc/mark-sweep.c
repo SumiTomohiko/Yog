@@ -22,7 +22,7 @@ struct YogMarkSweepHeader {
 typedef struct YogMarkSweepHeader YogMarkSweepHeader;
 
 static void
-initialize_memory(void* ptr, size_t size)
+init_memory(void* ptr, size_t size)
 {
     memset(ptr, 0xcb, size);
 }
@@ -116,7 +116,7 @@ YogMarkSweep_post_gc(YogEnv* env, YogMarkSweep* ms)
 }
 
 void
-YogMarkSweep_initialize(YogEnv* env, YogMarkSweep* ms, size_t threshold)
+YogMarkSweep_init(YogEnv* env, YogMarkSweep* ms, size_t threshold)
 {
     ms->header = NULL;
     ms->threshold = threshold;
@@ -146,9 +146,9 @@ YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finaliz
 
     size_t total_size = size + sizeof(YogMarkSweepHeader);
     YogMarkSweepHeader* header = malloc(total_size);
-    initialize_memory(header, total_size);
+    init_memory(header, total_size);
 #if 0
-    GcObjectStat_initialize(&header->stat);
+    GcObjectStat_init(&header->stat);
 #endif
 
     header->prev = NULL;

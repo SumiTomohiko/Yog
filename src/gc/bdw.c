@@ -19,7 +19,7 @@ bdw_finalizer(void* obj, void* client_data)
 }
 
 static void
-initialize_memory(void* ptr, size_t size)
+init_memory(void* ptr, size_t size)
 {
     memset(ptr, 0xcb, size);
 }
@@ -33,7 +33,7 @@ YogBDW_alloc(YogEnv* env, YogBDW* bdw, ChildrenKeeper keeper, Finalizer finalize
 
     uint_t total_size = size + sizeof(BDWHeader);
     BDWHeader* header = GC_MALLOC(total_size);
-    initialize_memory(header, total_size);
+    init_memory(header, total_size);
 
     header->finalizer = finalizer;
 
@@ -45,7 +45,7 @@ YogBDW_alloc(YogEnv* env, YogBDW* bdw, ChildrenKeeper keeper, Finalizer finalize
 }
 
 void
-YogBDW_initialize(YogEnv* env, YogBDW* bdw)
+YogBDW_init(YogEnv* env, YogBDW* bdw)
 {
 }
 

@@ -18,7 +18,7 @@ puts(Object.new())
     def test_constructor0(self):
         self._test("""
 class Foo
-  def initialize()
+  def init()
     puts(42)
   end
 end

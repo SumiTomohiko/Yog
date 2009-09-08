@@ -107,15 +107,15 @@ update_pointer(YogEnv* env, void* ptr)
 }
 
 static void
-initialize_young_updated_callback(YogEnv* env, YogCopyingHeader* header)
+init_young_updated_callback(YogEnv* env, YogCopyingHeader* header)
 {
     header->updated = FALSE;
 }
 
 static void
-initialize_young_updated(YogEnv* env, YogGenerational* generational)
+init_young_updated(YogEnv* env, YogGenerational* generational)
 {
-    YogCopying_iterate_objects(env, &generational->copying, initialize_young_updated_callback);
+    YogCopying_iterate_objects(env, &generational->copying, init_young_updated_callback);
 }
 
 void
@@ -131,7 +131,7 @@ YogGenerational_major_gc(YogEnv* env, YogGenerational* generational)
     YogCopying_do_gc(env, &generational->copying, major_gc_keep_object);
     YogMarkSweepCompact_delete_garbage(env, msc);
 
-    initialize_young_updated(env, generational);
+    init_young_updated(env, generational);
     YogMarkSweepCompact_protect_white_pages(env, msc);
     msc->in_gc = FALSE;
     DEBUG(TRACE("major GC done"));
@@ -154,15 +154,15 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 }
 
 void
-YogGenerational_initialize(YogEnv* env, YogGenerational* generational, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, uint_t tenure)
+YogGenerational_init(YogEnv* env, YogGenerational* generational, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, uint_t tenure)
 {
     generational->err = ERR_GEN_NONE;
 
     YogCopying* copying = &generational->copying;
-    YogCopying_initialize(env, copying, young_heap_size);
+    YogCopying_init(env, copying, young_heap_size);
 
     YogMarkSweepCompact* msc = &generational->msc;
-    YogMarkSweepCompact_initialize(env, msc, old_chunk_size, old_threshold);
+    YogMarkSweepCompact_init(env, msc, old_chunk_size, old_threshold);
 
     generational->tenure = tenure;
     generational->has_young_ref = FALSE;

@@ -263,7 +263,7 @@ YogFunction_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], 
 }
 
 static void
-YogFunction_initialize(YogEnv* env, YogVal self, YogVal klass)
+YogFunction_init(YogEnv* env, YogVal self, YogVal klass)
 {
     YogBasicObj_init(env, self, 0, klass);
 
@@ -282,7 +282,7 @@ YogFunction_allocate(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, f);
 
     f = ALLOC_OBJ(env, YogFunction_keep_children, NULL, YogFunction);
-    YogFunction_initialize(env, f, klass);
+    YogFunction_init(env, f, klass);
 
     RETURN(env, f);
 }
@@ -443,7 +443,7 @@ YogNativeFunction_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posar
 }
 
 static void
-YogNativeFunction_initialize(YogEnv* env, YogVal self, YogVal klass)
+YogNativeFunction_init(YogEnv* env, YogVal self, YogVal klass)
 {
     YogBasicObj_init(env, self, 0, klass);
 
@@ -465,7 +465,7 @@ YogNativeFunction_allocate(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, func);
 
     func = ALLOC_OBJ(env, YogNativeFunction_keep_children, NULL, YogNativeFunction);
-    YogNativeFunction_initialize(env, func, klass);
+    YogNativeFunction_init(env, func, klass);
 
     RETURN(env, func);
 }
@@ -527,7 +527,7 @@ YogInstanceMethod_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posar
 }
 
 static void
-YogInstanceMethod_initialize(YogEnv* env, YogVal self, YogVal klass)
+YogInstanceMethod_init(YogEnv* env, YogVal self, YogVal klass)
 {
     YogBasicObj_init(env, self, 0, klass);
 
@@ -543,7 +543,7 @@ create_instance_method(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, method);
 
     method = ALLOC_OBJ(env, YogInstanceMethod_keep_children, NULL, YogInstanceMethod);
-    YogInstanceMethod_initialize(env, method, klass);
+    YogInstanceMethod_init(env, method, klass);
 
     RETURN(env, method);
 }

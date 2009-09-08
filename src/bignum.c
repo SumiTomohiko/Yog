@@ -49,7 +49,7 @@ YogBignum_finalize(YogEnv* env, void* ptr)
 }
 
 static void
-YogBignum_initialize(YogEnv* env, YogVal self)
+YogBignum_init(YogEnv* env, YogVal self)
 {
     YogBasicObj_init(env, self, 0, env->vm->cBignum);
     mpz_init(PTR_AS(YogBignum, self)->num);
@@ -63,7 +63,7 @@ YogBignum_new(YogEnv* env)
     PUSH_LOCAL(env, bignum);
 
     bignum = ALLOC_OBJ(env, YogBasicObj_keep_children, YogBignum_finalize, YogBignum);
-    YogBignum_initialize(env, bignum);
+    YogBignum_init(env, bignum);
 
     RETURN(env, bignum);
 }

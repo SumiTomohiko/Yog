@@ -20,7 +20,7 @@ struct Barrier {
 typedef struct Barrier Barrier;
 
 static YogVal
-Barrier_initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+Barrier_init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
 
@@ -123,7 +123,7 @@ AtomicInt_alloc(YogEnv* env, YogVal klass)
 }
 
 static YogVal
-AtomicInt_initialize(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+AtomicInt_init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
 
@@ -159,13 +159,13 @@ YogInit_concurrent(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
     cBarrier = YogClass_new(env, "Barrier", vm->cObject);
     YogClass_define_allocator(env, cBarrier, Barrier_alloc);
-    YogClass_define_method(env, cBarrier, "initialize", Barrier_initialize);
+    YogClass_define_method(env, cBarrier, "init", Barrier_init);
     YogClass_define_method(env, cBarrier, "wait!", Barrier_wait);
     YogObj_set_attr(env, pkg, "Barrier", cBarrier);
 
     cAtomicInt = YogClass_new(env, "AtomicInt", vm->cObject);
     YogClass_define_allocator(env, cAtomicInt, AtomicInt_alloc);
-    YogClass_define_method(env, cAtomicInt, "initialize", AtomicInt_initialize);
+    YogClass_define_method(env, cAtomicInt, "init", AtomicInt_init);
     YogClass_define_method(env, cAtomicInt, "inc!", AtomicInt_inc);
     YogClass_define_method(env, cAtomicInt, "get", AtomicInt_get);
     YogObj_set_attr(env, pkg, "AtomicInt", cAtomicInt);

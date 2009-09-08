@@ -109,7 +109,7 @@ YogObj_new(YogEnv* env, YogVal klass)
 }
 
 static YogVal
-initialize(YogEnv* env)
+init(YogEnv* env)
 {
     return YNIL;
 }
@@ -117,7 +117,7 @@ initialize(YogEnv* env)
 void
 YogObj_class_init(YogEnv* env, YogVal klass)
 {
-    YogClass_define_method(env, klass, "initialize", initialize);
+    YogClass_define_method(env, klass, "init", init);
 }
 
 static YogVal

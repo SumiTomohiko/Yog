@@ -225,7 +225,7 @@ delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header)
 }
 
 static void
-Compactor_initialize(Compactor* compactor)
+Compactor_init(Compactor* compactor)
 {
     compactor->cur_chunk = NULL;
     compactor->next_page = NULL;
@@ -485,7 +485,7 @@ YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectK
 {
     DEBUG(TRACE("%p: compaction", env));
     Compactor compactor;
-    Compactor_initialize(&compactor);
+    Compactor_init(&compactor);
     iterate_objects(msc, &compactor, set_forward_address);
     YogMarkSweepCompactPage* first_free_page = compactor.next_page;
 
@@ -495,7 +495,7 @@ YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectK
         *front = ADDR2HEADER((*front)->forwarding_addr);
     }
 
-    Compactor_initialize(&compactor);
+    Compactor_init(&compactor);
     iterate_objects(msc, &compactor, copy_object);
 
     free_chunks(msc, &compactor);
@@ -559,7 +559,7 @@ YogMarkSweepCompact_post_gc(YogEnv* env, YogMarkSweepCompact* msc)
 #endif
 
 static void
-initialize_memory(void* ptr, size_t size)
+init_memory(void* ptr, size_t size)
 {
     memset(ptr, 0xcb, size);
 }
@@ -704,7 +704,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
             msc->pages[index] = page->next;
         }
 #if 0
-        GcObjectStat_initialize(&header->stat);
+        GcObjectStat_init(&header->stat);
 #endif
     }
     else {
@@ -718,7 +718,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
     }
 #undef ERROR
 
-    initialize_memory(header, total_size);
+    init_memory(header, total_size);
 
     header->prev = NULL;
     header->next = msc->header;
@@ -746,7 +746,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 }
 
 void
-YogMarkSweepCompact_initialize(YogEnv* env, YogMarkSweepCompact* msc, size_t chunk_size, size_t threshold)
+YogMarkSweepCompact_init(YogEnv* env, YogMarkSweepCompact* msc, size_t chunk_size, size_t threshold)
 {
     msc->err = ERR_MSC_NONE;
     msc->chunk_size = chunk_size;

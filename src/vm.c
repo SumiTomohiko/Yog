@@ -430,7 +430,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 static void
-initialize_read_write_lock(pthread_rwlock_t* lock)
+init_read_write_lock(pthread_rwlock_t* lock)
 {
     pthread_rwlockattr_t attr;
     pthread_rwlockattr_init(&attr);
@@ -448,7 +448,7 @@ YogVM_init(YogVM* vm)
     vm->next_id = 0;
     INIT(id2name);
     INIT(name2id);
-    initialize_read_write_lock(&vm->sym_lock);
+    init_read_write_lock(&vm->sym_lock);
 
     INIT(cArray);
     INIT(cBignum);
@@ -494,7 +494,7 @@ YogVM_init(YogVM* vm)
     INIT(mComparable);
 
     vm->pkgs = PTR2VAL(NULL);
-    initialize_read_write_lock(&vm->pkgs_lock);
+    init_read_write_lock(&vm->pkgs_lock);
     INIT(search_path);
 
     vm->encodings = PTR2VAL(NULL);

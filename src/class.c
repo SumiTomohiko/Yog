@@ -185,10 +185,10 @@ new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     PUSH_LOCALSX(env, argc, arg);
     if (IS_PTR(block)) {
-        YogEval_call_method2(env, obj, "initialize", argc, arg, block);
+        YogEval_call_method2(env, obj, "init", argc, arg, block);
     }
     else {
-        YogEval_call_method(env, obj, "initialize", argc, arg);
+        YogEval_call_method(env, obj, "init", argc, arg);
     }
 
     RETURN(env, obj);

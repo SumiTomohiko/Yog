@@ -28,7 +28,7 @@ typedef struct YogMarkSweep YogMarkSweep;
 void* YogMarkSweep_alloc(YogEnv*, YogMarkSweep*, ChildrenKeeper, Finalizer, size_t);
 void YogMarkSweep_delete_garbage(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_finalize(YogEnv*, YogMarkSweep*);
-void YogMarkSweep_initialize(YogEnv*, YogMarkSweep*, size_t);
+void YogMarkSweep_init(YogEnv*, YogMarkSweep*, size_t);
 BOOL YogMarkSweep_is_empty(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_keep_vm(YogEnv*, YogMarkSweep*);
 void YogMarkSweep_post_gc(YogEnv*, YogMarkSweep*);
