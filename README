@@ -3,6 +3,13 @@ This is Yog vesrion 0.0.1
 
 Yog is a dynamic programming language designed as an intermediate between Python and Ruby.
 
+Features
+--------
+
+* Syntax like Python and Ruby
+* Object Oriented
+* Garbage Collection
+
 Requirement
 -----------
 
@@ -52,6 +59,11 @@ by version 0.0.2
 * Port to FreeBSD.
 * Improve GC.
 
+by version 0.0.3
+~~~~~~~~~~~~~~~~
+
+* Performance tuning.
+
 by version 1.0.0
 ~~~~~~~~~~~~~~~~
 
@@ -60,6 +72,6 @@ by version 1.0.0
 Author
 ------
 
-* SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+See ``AUTHORS``.
 
 .. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=rst
