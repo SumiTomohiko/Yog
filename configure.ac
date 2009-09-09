@@ -80,6 +80,7 @@ BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact 
 AC_SUBST(DIRS)
 AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
+AC_SUBST(PACKAGE_VERSION)
 
 AC_CONFIG_SUBDIRS([onig
                    gmp])

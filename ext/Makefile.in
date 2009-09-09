@@ -3,8 +3,13 @@
 DEPDIR = .deps
 SO_EXT = .so
 am__include = include
+prefix = @prefix@
+VERSION = @PACKAGE_VERSION@
+DIR = $(prefix)/lib/yog/$(VERSION)
 
 include ./$(DEPDIR)/concurrent.Po
+
+.PHONY: all clean distclean maintainer-clean install
 
 all: concurrent$(SO_EXT)
 
@@ -24,3 +29,9 @@ maintainer-clean:
 	rm -rf ./$(DEPDIR)
 	rm -f *$(SO_EXT)
 	rm -f Makefile
+
+install:
+	mkdir -p $(DIR)
+	install concurrent$(SO_EXT) $(DIR)
+
+# vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

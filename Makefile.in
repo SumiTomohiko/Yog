@@ -5,7 +5,7 @@ prefix = @prefix@
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 			 configure.lineno config.status.lineno
 
-.PHONY: all clean distclean maintainer-clean doc proto test test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational update-version install-vim
+.PHONY: all clean distclean maintainer-clean doc proto test test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational update-version install-vim install
 
 all:
 	@for subdir in $(DIRS); do \
@@ -57,3 +57,9 @@ update-version:
 install-vim:
 	cp yog.vim $(prefix)/share/vim/vim71/syntax
 	@grep "NOTICE" yog.vim | sed -e 's/" NOTICE: //'
+
+install:
+	install src/yog $(prefix)/bin
+	cd ext && $(MAKE) $@
+
+# vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
