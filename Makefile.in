@@ -45,7 +45,7 @@ doc:
 proto:
 	python tools/update_prototype.py
 
-test test-copying test-mark-sweep test-mark-sweep-compact test-bdw test-generational:
+test test-installed test-copying test-mark-sweep test-mark-sweep-compact test-bdw test-generational:
 	cd tests && $(MAKE) $@
 
 am--refresh:

@@ -5,8 +5,8 @@ type: :task
 component: Yog
 release: 0.0.1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2009-08-28 11:25:09.041879 Z
 references: []
 
@@ -19,4 +19,8 @@ log_events:
 - - 2009-09-02 18:06:31.030854 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - assigned to release 0.0.1 from unassigned
+  - ""
+- - 2009-09-09 05:43:43.262011 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
   - ""

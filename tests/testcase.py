@@ -20,23 +20,22 @@ class TestCase(object):
 
     def get_command(self):
         try:
-            env_gc = environ["GC"]
+            return environ["YOG"]
         except KeyError:
-            env_gc = "copying"
-        if env_gc == "copying":
-            cmd_name = "yog-copying"
-        elif env_gc == "mark-sweep":
-            cmd_name = "yog-mark-sweep"
-        elif env_gc == "mark-sweep-compact":
-            cmd_name = "yog-mark-sweep-compact"
-        elif env_gc == "bdw":
-            cmd_name = "yog-bdw"
-        elif env_gc == "generational":
-            cmd_name = "yog-generational"
-        return cmd_name
+            try:
+                env_gc = environ["GC"]
+            except KeyError:
+                env_gc = "copying"
+            env2cmd = {
+                    "copying": "yog-copying",
+                    "mark-sweep": "yog-mark-sweep",
+                    "mark-sweep-compact": "yog-mark-sweep-compact",
+                    "bdw": "yog-bdw",
+                    "generational": "yog-generational" }
+            return join("..", "src", env2cmd[env_gc])
 
     def run_command(self, args):
-        cmd = [join("..", "src", self.get_command())] + args
+        cmd = [self.get_command()] + args
         return Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
     def do(self, stdout, stderr, stdin, status, args, timeout):

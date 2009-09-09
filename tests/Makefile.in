@@ -1,4 +1,6 @@
 
+prefix = @prefix@
+
 LIBS = test_package4.so test_package5.so test_package6.so
 LIBS_OPT = -shared -O2 -I../include -Wall
 
@@ -28,6 +30,8 @@ test-bdw: $(LIBS)
 	GC=bdw $(TEST_CMD)
 test-generational: $(LIBS)
 	GC=generational $(TEST_CMD)
+test-installed:
+	YOG=$(prefix)/bin/yog $(TEST_CMD)
 
 clean:
 	find . -name "core*" -print0 | xargs --null rm -f
