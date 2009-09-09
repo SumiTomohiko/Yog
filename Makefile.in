@@ -1,11 +1,13 @@
 
 DIRS = @DIRS@
 prefix = @prefix@
+VERSION = @PACKAGE_VERSION@
+ARCHIVE = Yog-$(VERSION)
 
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 			 configure.lineno config.status.lineno
 
-.PHONY: all clean distclean maintainer-clean doc proto test test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational update-version install-vim install
+.PHONY: all clean distclean maintainer-clean doc proto test test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational update-version install-vim install dist distcheck
 
 all:
 	@for subdir in $(DIRS); do \
@@ -14,14 +16,14 @@ all:
 	cp -f src/yog-copying src/yog
 
 clean:
-	@for subdir in $(DIRS) tests; do \
+	@for subdir in $(DIRS) tests doc; do \
 		(cd $${subdir}; $(MAKE) clean); \
 	done
 	find tests -name "*.pyc" -print0 | xargs --null rm -f
 	rm -f core*
 
 distclean:
-	@for subdir in $(DIRS) tests; do \
+	@for subdir in $(DIRS) tests doc; do \
 		(cd $${subdir}; $(MAKE) distclean); \
 	done
 	find tests -name "*.pyc" -print0 | xargs --null rm -f
@@ -30,7 +32,7 @@ distclean:
 	rm -f Makefile
 
 maintainer-clean:
-	@for subdir in $(DIRS) tests; do \
+	@for subdir in $(DIRS) tests doc; do \
 		(cd $${subdir}; $(MAKE) maintainer-clean); \
 	done
 	find tests -name "*.pyc" -print0 | xargs --null rm -f
@@ -61,5 +63,30 @@ install-vim:
 install:
 	install src/yog $(prefix)/bin
 	cd ext && $(MAKE) $@
+
+dist:
+	rm -rf $(ARCHIVE)
+	git archive --prefix=$(ARCHIVE)/ HEAD | tar xf -
+	cp -r doc/html $(ARCHIVE)/doc
+	tar czf $(ARCHIVE).tar.gz $(ARCHIVE)
+	tar cjf $(ARCHIVE).tar.bz2 $(ARCHIVE)
+	tar c $(ARCHIVE) | xz --compress > $(ARCHIVE).tar.xz
+	zip -r $(ARCHIVE).zip $(ARCHIVE)
+	rm -rf $(ARCHIVE)
+
+distcheck:
+	rm -rf $(ARCHIVE)
+	tar xf $(ARCHIVE).tar.gz
+	(cd $(ARCHIVE) && ./configure && make)
+	rm -rf $(ARCHIVE)
+	tar xf $(ARCHIVE).tar.bz2
+	(cd $(ARCHIVE) && ./configure && make)
+	rm -rf $(ARCHIVE)
+	xzcat $(ARCHIVE).tar.xz | tar x
+	(cd $(ARCHIVE) && ./configure && make)
+	rm -rf $(ARCHIVE) $(ARCHIVE).zip
+	unzip $(ARCHIVE).zip
+	(cd $(ARCHIVE) && ./configure && make)
+	rm -rf $(ARCHIVE)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

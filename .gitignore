@@ -4,6 +4,11 @@
 *.o
 *.pyc
 *.so
+*.tar
+*.tar.bz2
+*.tar.gz
+*.tar.xz
+*.zip
 .ditz-config
 .ditz-plugins
 Makefile

@@ -73,7 +73,7 @@ case "${host}" in
     BIN_PROGRAMS="yog-bdw"
     ;;
 esac
-DIRS="${DIRS} onig gmp src ext doc"
+DIRS="${DIRS} onig gmp src ext"
 TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
 BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact yog-generational miniyog"
 
