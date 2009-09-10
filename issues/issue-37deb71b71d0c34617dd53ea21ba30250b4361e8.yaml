@@ -3,7 +3,7 @@ title: Port to FreeBSD
 desc: ""
 type: :task
 component: Yog
-release: 
+release: 0.0.2
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -23,4 +23,8 @@ log_events:
 - - 2009-09-02 18:05:02.099429 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - assigned to component Yog from document
+  - ""
+- - 2009-09-10 11:23:45.695895 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.2 from unassigned
   - ""

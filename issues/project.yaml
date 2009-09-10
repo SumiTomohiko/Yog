@@ -20,3 +20,12 @@ releases:
     - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
     - released
     - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: 0.0.2
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2009-09-10 11:22:55.991304 Z
+    - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+    - created
+    - ""

@@ -71,6 +71,7 @@ dist:
 	tar czf $(ARCHIVE).tar.gz $(ARCHIVE)
 	tar cjf $(ARCHIVE).tar.bz2 $(ARCHIVE)
 	tar c $(ARCHIVE) | xz --compress > $(ARCHIVE).tar.xz
+	rm -f $(ARCHIVE).zip
 	zip -r $(ARCHIVE).zip $(ARCHIVE)
 	rm -rf $(ARCHIVE)
 
@@ -84,7 +85,7 @@ distcheck:
 	rm -rf $(ARCHIVE)
 	xzcat $(ARCHIVE).tar.xz | tar x
 	(cd $(ARCHIVE) && ./configure && make)
-	rm -rf $(ARCHIVE) $(ARCHIVE).zip
+	rm -rf $(ARCHIVE)
 	unzip $(ARCHIVE).zip
 	(cd $(ARCHIVE) && ./configure && make)
 	rm -rf $(ARCHIVE)

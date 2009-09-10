@@ -3,7 +3,7 @@ title: Port to Windows 2000
 desc: ""
 type: :task
 component: Yog
-release: 
+release: 0.0.2
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2009-08-28 11:22:20.086489 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2009-09-10 11:23:38.369851 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.2 from unassigned
   - ""
