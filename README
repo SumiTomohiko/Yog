@@ -9,9 +9,10 @@ Features
 * Syntax like Python and Ruby
 * Object Oriented
 * Garbage Collection
+* The MIT License
 
-Requirement
------------
+Requirements
+------------
 
 * Intel x86
 * Ubuntu Linux 8.04
