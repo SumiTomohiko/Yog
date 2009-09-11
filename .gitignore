@@ -186,6 +186,7 @@ sigsegv/tests/stackoverflow1
 sigsegv/tests/stackoverflow2
 src/.deps/
 src/miniyog
+src/parser.c
 src/parser.out
 src/yog
 src/yog-bdw
