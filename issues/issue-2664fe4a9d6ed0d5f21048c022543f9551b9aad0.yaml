@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove PUSH_SELF_NAME instruction.
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-09-12 16:08:24.118789 Z
+references: []
+
+id: 2664fe4a9d6ed0d5f21048c022543f9551b9aad0
+log_events: 
+- - 2009-09-12 16:08:25.035106 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
