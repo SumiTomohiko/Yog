@@ -34,7 +34,7 @@ extern int access();
 #define MAXRHS 1000
 #endif
 
-static char *msort(char*,char**,int(*)(const char*,const char*));
+static char *msort(char*, void*, int(*)(const char*,const char*));
 
 /*
 ** Compilers are getting increasingly pedantic about type conversions
@@ -376,7 +376,7 @@ static int actioncmp(
 static struct action *Action_sort(
   struct action *ap
 ){
-  ap = (struct action *)msort((char *)ap,(char **)&ap->next,
+  ap = (struct action *)msort((char *)ap, &ap->next,
                               (int(*)(const char*,const char*))actioncmp);
   return ap;
 }
@@ -1233,14 +1233,14 @@ struct lemon *lemp;
 
 /* Sort the configuration list */
 void Configlist_sort(){
-  current = (struct config *)msort((char *)current,(char **)&(current->next),Configcmp);
+  current = (struct config *)msort((char *)current, &(current->next),Configcmp);
   currentend = 0;
   return;
 }
 
 /* Sort the basis configuration list */
 void Configlist_sortbasis(){
-  basis = (struct config *)msort((char *)current,(char **)&(current->bp),Configcmp);
+  basis = (struct config *)msort((char *)current, &(current->bp),Configcmp);
   basisend = 0;
   return;
 }
@@ -1619,7 +1619,7 @@ static char *merge(
 #define LISTSIZE 30
 static char *msort(
   char *list,
-  char **next,
+  void* next,
   int (*cmp)(const char*,const char*)
 ){
   unsigned long offset;
@@ -3975,10 +3975,8 @@ int mhflag;     /* Output in makeheaders format if true */
 void ReportHeader(lemp)
 struct lemon *lemp;
 {
-  FILE *out, *in;
+  FILE *out;
   char *prefix;
-  char line[LINESIZE];
-  char pattern[LINESIZE];
   int i;
 
   if( lemp->tokenprefix ) prefix = lemp->tokenprefix;
@@ -4876,3 +4874,7 @@ int(*f)(/* struct config * */);
   x4a->count = 0;
   return;
 }
+
+/**
+ * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
+ */

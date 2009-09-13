@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove libtool from repository.
+desc: ""
+type: :task
+component: Yog
+release: 0.0.2
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-09-11 09:39:10.887033 Z
+references: []
+
+id: af63dc7fe88ca77af2c4f4eedcd08df473f6adb8
+log_events: 
+- - 2009-09-11 09:39:11.720935 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
