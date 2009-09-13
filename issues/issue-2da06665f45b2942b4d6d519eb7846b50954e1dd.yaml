@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Change .exe icon for Windows.
+desc: ""
+type: :task
+component: Yog
+release: 0.0.2
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-09-13 07:25:15.613500 Z
+references: []
+
+id: 2da06665f45b2942b4d6d519eb7846b50954e1dd
+log_events: 
+- - 2009-09-13 07:25:16.606248 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
