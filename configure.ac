@@ -18,6 +18,7 @@ AC_PROG_LIBTOOL
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_LIB([dl], [dlopen])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -40,7 +41,8 @@ AC_FUNC_MMAP
 AC_FUNC_REALLOC
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([atexit gettimeofday isascii memchr memmove memset munmap strchr strrchr strstr strtol])
+AC_CHECK_FUNCS([atexit gettimeofday isascii memchr memmove memset munmap strchr strrchr strstr strtol dlopen])
+AC_CHECK_HEADERS([dlfcn.h sys/mman.h windows.h])
 
 AC_ARG_ENABLE(profile, 
               AC_HELP_STRING([--enable-profile], 
@@ -61,26 +63,39 @@ AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
 
 AC_CANONICAL_HOST
 case "${host}" in
-*-*-openbsd*)
-    DIRS=""
-    TEST_TARGETS=""
-    BIN_PROGRAMS=""
+*-openbsd*)
+    TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
+    EXTS="concurrent\$(SOEXT)"
+    SOEXT=".so"
+    ;;
+*-mingw32)
+    PTHREADS_W32_DIR="`pwd`/pthreads-w32"
+    CFLAGS="${CFLAGS} -I${PTHREADS_W32_DIR}"
+    LDFLAGS_COMMON="${LDFLAGS_COMMON} ${PTHREADS_W32_DIR}/libpthreadGC2.a -lwsock32"
+    TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) miniyog\$(EXEEXT)"
+    SOEXT=".dll"
     ;;
 *)
     AC_CONFIG_SUBDIRS([bdwgc])
-    DIRS="bdwgc"
-    TEST_TARGETS="test-bdw"
-    BIN_PROGRAMS="yog-bdw"
+    DIRS="${DIRS} bdwgc"
+    TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
+    EXTS="concurrent\$(SOEXT)"
+    SOEXT=".so"
     ;;
 esac
 DIRS="${DIRS} onig gmp src ext"
-TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
-BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying yog-mark-sweep yog-mark-sweep-compact yog-generational miniyog"
 
 AC_SUBST(DIRS)
+AC_SUBST(PTHREADS_W32_DIR)
 AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
 AC_SUBST(PACKAGE_VERSION)
+AC_SUBST(LDFLAGS_COMMON)
+AC_SUBST(EXTS)
+AC_SUBST(SOEXT)
 
 AC_CONFIG_SUBDIRS([onig
                    gmp])

@@ -1,16 +1,23 @@
 
 prefix = @prefix@
+CC = @CC@
+SOEXT = @SOEXT@
+os = $(shell uname -o)
 
-LIBS = test_package4.so test_package5.so test_package6.so
+ifeq ($(os), Msys)
+LIBS =
+else
+LIBS = test_package4$(SOEXT) test_package5$(SOEXT) test_package6$(SOEXT)
+endif
 LIBS_OPT = -shared -O2 -I../include -Wall
 
-test_package4.so: test_package4.c Makefile
+test_package4$(SOEXT): test_package4.c Makefile
 	$(CC) -o $@ $(LIBS_OPT) $<
 
-test_package5.so: test_package5.c Makefile
+test_package5$(SOEXT): test_package5.c Makefile
 	$(CC) -o $@ $(LIBS_OPT) $<
 
-test_package6.so: test_package6.c Makefile
+test_package6$(SOEXT): test_package6.c Makefile
 	$(CC) -o $@ $(LIBS_OPT) $<
 
 TEST_CMD = py.test --showlocals

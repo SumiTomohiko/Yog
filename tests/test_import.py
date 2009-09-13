@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from re import match
-from os import environ
+from os import environ, name
 
 from testcase import TestCase
 
 class TestImport(TestCase):
 
-    disabled = "YOG" in environ
+    disabled = ("YOG" in environ) or (name == "nt")
 
     def test_import1(self):
         self._test("import test_package1", "42\n")

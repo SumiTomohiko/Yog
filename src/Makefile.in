@@ -32,10 +32,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) \
-	yog-mark-sweep$(EXEEXT) yog-mark-swee-compact$(EXEEXT) \
-	yog-mark-sweep-compact$(EXEEXT) yog-generational$(EXEEXT) \
-	miniyog$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in parser.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -184,9 +180,6 @@ yog_generational_LDADD = $(LDADD)
 yog_generational_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(yog_generational_CFLAGS) \
 	$(CFLAGS) $(yog_generational_LDFLAGS) $(LDFLAGS) -o $@
-yog_mark_swee_compact_SOURCES = yog-mark-swee-compact.c
-yog_mark_swee_compact_OBJECTS = yog-mark-swee-compact.$(OBJEXT)
-yog_mark_swee_compact_LDADD = $(LDADD)
 am__objects_6 = yog_mark_sweep-arg.$(OBJEXT) \
 	yog_mark_sweep-array.$(OBJEXT) yog_mark_sweep-bignum.$(OBJEXT) \
 	yog_mark_sweep-binary.$(OBJEXT) yog_mark_sweep-block.$(OBJEXT) \
@@ -292,12 +285,11 @@ LTYACCCOMPILE = $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(YACC) $(YFLAGS) $(AM_YFLAGS)
 YLWRAP = $(top_srcdir)/ylwrap
 SOURCES = $(miniyog_SOURCES) $(yog_bdw_SOURCES) $(yog_copying_SOURCES) \
-	$(yog_generational_SOURCES) yog-mark-swee-compact.c \
-	$(yog_mark_sweep_SOURCES) $(yog_mark_sweep_compact_SOURCES)
+	$(yog_generational_SOURCES) $(yog_mark_sweep_SOURCES) \
+	$(yog_mark_sweep_compact_SOURCES)
 DIST_SOURCES = $(miniyog_SOURCES) $(yog_bdw_SOURCES) \
 	$(yog_copying_SOURCES) $(yog_generational_SOURCES) \
-	yog-mark-swee-compact.c $(yog_mark_sweep_SOURCES) \
-	$(yog_mark_sweep_compact_SOURCES)
+	$(yog_mark_sweep_SOURCES) $(yog_mark_sweep_compact_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -337,6 +329,9 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
+LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -lm -export-dynamic \
+		 $(GMP_DIR)/.libs/libgmp.a @LDFLAGS_COMMON@
+
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -353,6 +348,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 POW_LIB = @POW_LIB@
+PTHREADS_W32_DIR = @PTHREADS_W32_DIR@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -467,8 +463,9 @@ COMMON_SOURCES = arg.c \
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\"
 
-LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -lm -export-dynamic \
-		 $(GMP_DIR)/.libs/libgmp.a
+EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
+		 yog-mark-sweep-compact$(EXEEXT) \
+		 yog-generational$(EXEEXT) miniyog$(EXEEXT)
 
 bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
@@ -573,9 +570,6 @@ yog-copying$(EXEEXT): $(yog_copying_OBJECTS) $(yog_copying_DEPENDENCIES)
 yog-generational$(EXEEXT): $(yog_generational_OBJECTS) $(yog_generational_DEPENDENCIES) 
 	@rm -f yog-generational$(EXEEXT)
 	$(yog_generational_LINK) $(yog_generational_OBJECTS) $(yog_generational_LDADD) $(LIBS)
-yog-mark-swee-compact$(EXEEXT): $(yog_mark_swee_compact_OBJECTS) $(yog_mark_swee_compact_DEPENDENCIES) 
-	@rm -f yog-mark-swee-compact$(EXEEXT)
-	$(LINK) $(yog_mark_swee_compact_OBJECTS) $(yog_mark_swee_compact_LDADD) $(LIBS)
 yog-mark-sweep$(EXEEXT): $(yog_mark_sweep_OBJECTS) $(yog_mark_sweep_DEPENDENCIES) 
 	@rm -f yog-mark-sweep$(EXEEXT)
 	$(yog_mark_sweep_LINK) $(yog_mark_sweep_OBJECTS) $(yog_mark_sweep_LDADD) $(LIBS)
@@ -633,7 +627,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miniyog-thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miniyog-value.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miniyog-vm.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog-mark-swee-compact.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-arg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yog_bdw-bdw.Po@am__quote@
@@ -4800,25 +4793,25 @@ insts:
 am:
 	$(GEN_AM_CMD)
 
-builtins.inc: miniyog builtins.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg builtins.yg $@
+builtins.inc: miniyog$(EXEEXT) builtins.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg builtins.yg $@
 
-array.inc: miniyog array.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg array.yg $@
+array.inc: miniyog$(EXEEXT) array.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg array.yg $@
 
-object.inc: miniyog object.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg object.yg $@
+object.inc: miniyog$(EXEEXT) object.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg object.yg $@
 
-string.inc: miniyog string.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg string.yg $@
+string.inc: miniyog$(EXEEXT) string.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg string.yg $@
 
-dict.inc: miniyog dict.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg dict.yg $@
+dict.inc: miniyog$(EXEEXT) dict.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg dict.yg $@
 
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))

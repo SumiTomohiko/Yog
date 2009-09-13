@@ -1,5 +1,0 @@
-"\n"
-"def inspect()\n"
-"  return self.to_s()\n"
-"end\n"
-"\n"

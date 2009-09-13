@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #if HAVE_SYS_TYPES_H
@@ -251,6 +252,12 @@ ThreadArg_new(YogEnv* env)
 static void*
 run_of_new_thread(void* arg)
 {
+#if defined(__MINGW32__)
+    if (!pthread_win32_thread_attach_np()) {
+        YOG_BUG(NULL, "pthread_win32_thread_attach_np failed");
+    }
+#endif
+
     YogVal thread_arg = (YogVal)arg;
     YogVal thread = PTR_AS(ThreadArg, thread_arg)->thread;
     YogEnv env;
@@ -284,6 +291,10 @@ run_of_new_thread(void* arg)
     RESTORE_LOCALS(&env);
 
     YogVM_remove_thread(&env, env.vm, env.thread);
+
+#if defined(__MINGW32__)
+    pthread_win32_thread_detach_np();
+#endif
 
     return NULL;
 }

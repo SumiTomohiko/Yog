@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from signal import SIGKILL
-from os import environ, kill, unlink
+from os import environ, unlink
 from os.path import join
 from subprocess import PIPE, Popen
 from tempfile import mkstemp
@@ -38,6 +37,23 @@ class TestCase(object):
         cmd = [self.get_command()] + args
         return Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
+    def terminate_process(self, pid):
+        from signal import SIGKILL
+        from os import kill
+        kill(pid, SIGKILL)
+
+    def conv_newline(self, s):
+        t = []
+        for line in s.split("\n"):
+            t.append(line)
+
+        from os import name
+        if name == "nt":
+            newline = "\r\n"
+        else:
+            newline = "\n"
+        return newline.join(t)
+
     def do(self, stdout, stderr, stdin, status, args, timeout):
         proc = self.run_command(args)
         if stdin is not None:
@@ -49,7 +65,7 @@ class TestCase(object):
             if proc.poll() is not None:
                 break
             if timeout < time() - time_begin:
-                kill(proc.pid, SIGKILL)
+                self.terminate_process(proc.pid)
                 assert False, "time is out."
 
         if stderr is not None:
@@ -57,6 +73,7 @@ class TestCase(object):
             if callable(stderr):
                 stderr(err)
             else:
+                stderr = self.conv_newline(stderr)
                 assert stderr == err
 
         if stdout is not None:
@@ -64,6 +81,7 @@ class TestCase(object):
             if callable(stdout):
                 stdout(out)
             else:
+                stdout = self.conv_newline(stdout)
                 assert stdout == out
 
         if status is not None:
@@ -91,7 +109,10 @@ class TestCase(object):
             self.do(stdout, stderr, stdin, status, args, timeout)
         finally:
             if remove_tmpfile:
-                unlink(file)
+                try:
+                    unlink(file)
+                except:
+                    pass
 
     def _test_interactive(self, stdout, stderr, stdin, status, options, timeout):
         self.do(stdout, stderr, stdin, status, options, timeout)

@@ -3,6 +3,7 @@ ROOT_DIR = ..
 ONIG_DIR = $(ROOT_DIR)/onig
 BDWGC_DIR = $(ROOT_DIR)/bdwgc
 GMP_DIR = $(ROOT_DIR)/gmp
+PTHREADS_W32_DIR = @PTHREADS_W32_DIR@
 
 LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
@@ -12,11 +13,12 @@ BUILT_SOURCES = parser.h keywords.inc
 COMMON_SOURCES = @SOURCES@
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\"
-LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -lm -export-dynamic \
-		 $(GMP_DIR)/.libs/libgmp.a
+LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -lm -export-dynamic \
+		 $(GMP_DIR)/.libs/libgmp.a @LDFLAGS_COMMON@
 
-EXTRA_PROGRAMS = yog-bdw yog-copying yog-mark-sweep yog-mark-swee-compact \
-		 yog-mark-sweep-compact yog-generational miniyog
+EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
+		 yog-mark-sweep-compact$(EXEEXT) yog-generational$(EXEEXT) \
+		 miniyog$(EXEEXT)
 bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
 yog_copying_CFLAGS = $(CFLAGS_COMMON) -DGC_COPYING
@@ -52,25 +54,25 @@ insts:
 am:
 	$(GEN_AM_CMD)
 
-builtins.inc: miniyog builtins.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg builtins.yg $@
+builtins.inc: miniyog$(EXEEXT) builtins.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg builtins.yg $@
 
-array.inc: miniyog array.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg array.yg $@
+array.inc: miniyog$(EXEEXT) array.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg array.yg $@
 
-object.inc: miniyog object.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg object.yg $@
+object.inc: miniyog$(EXEEXT) object.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg object.yg $@
 
-string.inc: miniyog string.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg string.yg $@
+string.inc: miniyog$(EXEEXT) string.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg string.yg $@
 
-dict.inc: miniyog dict.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg dict.yg $@
+dict.inc: miniyog$(EXEEXT) dict.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg dict.yg $@
 
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
