@@ -19,9 +19,17 @@ class AutomakeUpdater(object):
 
             path = join(dirpath, filename)
             if isfile(path):
-                ext = splitext(filename)[1]
+                head, ext = splitext(filename)
                 if ext in self.exts:
-                    retval.append(join(dirname, filename))
+                    path = join(dirname, filename)
+                    if path not in retval:
+                        retval.append(path)
+                elif ext == ".tmpl":
+                    ext2 = splitext(head)[1]
+                    if ext2 in self.exts:
+                        path = join(dirname, head)
+                        if path not in retval:
+                            retval.append(join(dirname, head))
         return retval
 
     def do(self, dirpath):

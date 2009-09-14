@@ -135,10 +135,10 @@ code.inc: code.inc.tmpl $(INSTS_DEF) $(INST_PY)
 compile.inc: compile.inc.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
-$(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
+inst.c: inst.c.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
-inst.c: $(INSTS_DEF) $(INST_PY)
+$(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
 VERSION_H = $(ROOT_DIR)/include/yog/version.h
