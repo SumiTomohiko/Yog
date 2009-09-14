@@ -29,7 +29,7 @@ class TestLexer(TestCase):
 """, stderr)
             assert m is not None
 
-        self._test("""
+        self._test(u"""
 \"\xe7""", stderr=test_stderr)
 
     def test_comment0(self):

@@ -208,10 +208,10 @@ o
 """)
 
     def test_each_char2(self):
-        self._test("""
+        self._test(u"""
 \"日本語\".each_char() do [c]
   puts(c)
-end""", """日
+end""", u"""日
 本
 語
 """)
@@ -226,7 +226,7 @@ end""", """102
 """)
 
     def test_each_byte2(self):
-        self._test("""
+        self._test(u"""
 \"日本語\".each_byte() do [b]
   puts(b)
 end""", """230
@@ -264,15 +264,15 @@ puts(s)
 """)
 
     def test_assign_subscript2(self):
-        self._test("""
+        self._test(u"""
 s = \"foo\"
 s[0] = \"燦\"
 puts(s)
-""", """燦oo
+""", u"""燦oo
 """)
 
     def test_assign_subscript2(self):
-        self._test("""
+        self._test(u"""
 s = \"燦oo\"
 s[0] = \"f\"
 puts(s)
@@ -287,17 +287,17 @@ puts(s[0])
 """)
 
     def test_subscript2(self):
-        self._test("""
+        self._test(u"""
 s = \"燦oo\"
 puts(s[0])
-""", """燦
+""", u"""燦
 """)
 
     def test_subscript3(self):
-        self._test("""
+        self._test(u"""
 s = \"f燦o\"
 puts(s[1])
-""", """燦
+""", u"""燦
 """)
 
     def test_subscript_error1(self):

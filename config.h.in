@@ -55,6 +55,15 @@
 /* Define to 1 if you have the `munmap' function. */
 #undef HAVE_MUNMAP
 
+/* Define to 1 if you have the `pthread_rwlockattr_destroy' function. */
+#undef HAVE_PTHREAD_RWLOCKATTR_DESTROY
+
+/* Define to 1 if you have the `pthread_rwlockattr_init' function. */
+#undef HAVE_PTHREAD_RWLOCKATTR_INIT
+
+/* Define to 1 if you have the `pthread_rwlockattr_setkind_np' function. */
+#undef HAVE_PTHREAD_RWLOCKATTR_SETKIND_NP
+
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
 #undef HAVE_REALLOC

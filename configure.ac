@@ -41,7 +41,7 @@ AC_FUNC_MMAP
 AC_FUNC_REALLOC
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([atexit gettimeofday isascii memchr memmove memset munmap strchr strrchr strstr strtol dlopen])
+AC_CHECK_FUNCS([atexit gettimeofday isascii memchr memmove memset munmap strchr strrchr strstr strtol dlopen pthread_rwlockattr_setkind_np pthread_rwlockattr_init pthread_rwlockattr_destroy])
 AC_CHECK_HEADERS([dlfcn.h sys/mman.h windows.h])
 
 AC_ARG_ENABLE(profile, 

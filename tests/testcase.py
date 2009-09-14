@@ -54,7 +54,10 @@ class TestCase(object):
             newline = "\n"
         return newline.join(t)
 
-    def do(self, stdout, stderr, stdin, status, args, timeout):
+    def do(self, stdout, stderr, stdin, status, args, timeout, encoding=None):
+        if encoding is None:
+            encoding = "UTF-8"
+
         proc = self.run_command(args)
         if stdin is not None:
             proc.stdin.write(stdin)
@@ -70,6 +73,8 @@ class TestCase(object):
 
         if stderr is not None:
             err = self.remove_gc_warings(proc.stderr.read())
+            if encoding is not None:
+                err = err.decode(encoding)
             if callable(stderr):
                 stderr(err)
             else:
@@ -78,6 +83,8 @@ class TestCase(object):
 
         if stdout is not None:
             out = proc.stdout.read()
+            if encoding is not None:
+                out = out.decode(encoding)
             if callable(stdout):
                 stdout(out)
             else:
@@ -91,22 +98,26 @@ class TestCase(object):
             else:
                 assert status == returncode
 
-    def write_source(self, path, src):
-        f = open(path, "w")
+    def write_source(self, path, src, encoding):
+        if encoding is None:
+            encoding = "UTF-8"
+
+        from codecs import open
+        f = open(path, "w", encoding)
         try:
             f.write(src)
         finally:
             f.close()
 
-    def _test_source(self, src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile=True, tmpfile=None, yog_option=[]):
+    def _test_source(self, src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile=True, tmpfile=None, yog_option=[], encoding=None):
         if tmpfile is None:
             file = mkstemp(prefix="yog", suffix=".yg")[1]
         else:
             file = tmpfile
         try:
-            self.write_source(file, src)
+            self.write_source(file, src, encoding)
             args = options + [file] + yog_option
-            self.do(stdout, stderr, stdin, status, args, timeout)
+            self.do(stdout, stderr, stdin, status, args, timeout, encoding)
         finally:
             if remove_tmpfile:
                 try:
@@ -117,11 +128,11 @@ class TestCase(object):
     def _test_interactive(self, stdout, stderr, stdin, status, options, timeout):
         self.do(stdout, stderr, stdin, status, options, timeout)
 
-    def _test(self, src=None, stdout="", stderr="", stdin=None, status=0, options=[], timeout=120, remove_tmpfile=True, tmpfile=None, yog_option=[]):
+    def _test(self, src=None, stdout="", stderr="", stdin=None, status=0, options=[], timeout=120, remove_tmpfile=True, tmpfile=None, yog_option=[], encoding=None):
         options = options or ["--gc-stress"]
 
         if src is not None:
-            self._test_source(src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile, tmpfile, yog_option)
+            self._test_source(src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile, tmpfile, yog_option, encoding)
         else:
             self._test_interactive(stdout, stderr, stdin, status, options, timeout)
 

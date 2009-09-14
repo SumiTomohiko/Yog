@@ -4,6 +4,7 @@ ONIG_DIR = $(ROOT_DIR)/onig
 BDWGC_DIR = $(ROOT_DIR)/bdwgc
 GMP_DIR = $(ROOT_DIR)/gmp
 PTHREADS_W32_DIR = @PTHREADS_W32_DIR@
+PYTHON = python2.6
 
 LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
@@ -86,12 +87,12 @@ INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
 INST_CMD = make insts
 
-GEN_AM_CMD = python $(ROOT_DIR)/tools/update_automake.py .
+GEN_AM_CMD = $(PYTHON) $(ROOT_DIR)/tools/update_automake.py .
 
 TEST_CMD = py.test
 
 insts:
-	python $(ROOT_DIR)/tools/inst.py insts.def ..
+	$(PYTHON) $(ROOT_DIR)/tools/inst.py insts.def ..
 
 am:
 	$(GEN_AM_CMD)
@@ -135,6 +136,9 @@ compile.inc: compile.inc.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
 $(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
+	$(INST_CMD)
+
+inst.c: $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
 VERSION_H = $(ROOT_DIR)/include/yog/version.h

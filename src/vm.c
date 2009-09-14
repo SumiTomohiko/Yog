@@ -446,19 +446,20 @@ static void
 init_read_write_lock(pthread_rwlock_t* lock)
 {
     pthread_rwlockattr_t* pattr;
-#if defined(__MINGW32__)
-    pattr = NULL;
-#else
+#if defined(HAVE_PTHREAD_RWLOCKATTR_INIT)
     pthread_rwlockattr_t attr;
     pthread_rwlockattr_init(&attr);
-    /* TODO: PTHREAD_RWLOCK_DEFAULT_NP? */
+#   if defined(HAVE_PTHREAD_RWLOCKATTR_SETKIND_NP)
     pthread_rwlockattr_setkind_np(&attr, PTHREAD_RWLOCK_PREFER_WRITER_NP);
+#   endif
     pattr = &attr;
+#else
+    pattr = NULL;
 #endif
     if (pthread_rwlock_init(lock, pattr) != 0) {
         YOG_BUG(NULL, "pthread_rwlock_init failed");
     }
-#if !defined(__MINGW32__)
+#if defined(HAVE_PTHREAD_RWLOCKATTR_INIT) && defined(HAVE_PTHREAD_RWLOCKATTR_DESTROY)
     pthread_rwlockattr_destroy(&attr);
 #endif
 }
