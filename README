@@ -58,11 +58,16 @@ by version 0.0.2
 * Port to Windows 2000.
 * Port to OpenBSD.
 * Port to FreeBSD.
-* Improve GC.
 
 by version 0.0.3
 ~~~~~~~~~~~~~~~~
 
+* Coroutine.
+
+by version 0.0.4
+~~~~~~~~~~~~~~~~
+
+* Improve GC.
 * Performance tuning.
 
 by version 1.0.0
