@@ -167,6 +167,7 @@ gmp/printf/.libs/
 gmp/scanf/.libs/
 gmp/tune/sqr_basecase.c
 html
+libtool
 onig/.deps/
 onig/.libs/
 onig/onig-config
