@@ -167,6 +167,8 @@ gmp/printf/.libs/
 gmp/scanf/.libs/
 gmp/tune/sqr_basecase.c
 html
+include/yog/inst.h
+include/yog/opcodes.h
 onig/.deps/
 onig/.libs/
 onig/onig-config
@@ -190,9 +192,18 @@ sigsegv/tests/sigsegv3
 sigsegv/tests/stackoverflow1
 sigsegv/tests/stackoverflow2
 src/.deps/
+src/array.inc
+src/builtins.inc
+src/code.inc
+src/compile.inc
+src/dict.inc
+src/eval.inc
+src/inst.c
 src/miniyog
+src/object.inc
 src/parser.c
 src/parser.out
+src/string.inc
 src/yog
 src/yog-bdw
 src/yog-copying
