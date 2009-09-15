@@ -1,8 +1,10 @@
 
 DIRS = @DIRS@
+PTHREADS_W32_DIR = @PTHREADS_W32_DIR@
 prefix = @prefix@
 VERSION = @PACKAGE_VERSION@
 ARCHIVE = Yog-$(VERSION)
+PYTHON = python2.6
 
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 			 configure.lineno config.status.lineno
@@ -10,21 +12,30 @@ CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 .PHONY: all clean distclean maintainer-clean doc proto test test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational update-version install-vim install dist distcheck
 
 all:
+	@for subdir in $(PTHREADS_W32_DIR); do \
+		(cd $${subdir} && $(MAKE) GC-static); \
+	done
 	@for subdir in $(DIRS); do \
-		(cd $${subdir}; $(MAKE)); \
+		(cd $${subdir} && $(MAKE)); \
 	done
 	cp -f src/yog-copying src/yog
 
 clean:
+	@for subdir in $(PTHREADS_W32_DIR); do \
+		(cd $${subdir} && $(MAKE) clean); \
+	done
 	@for subdir in $(DIRS) tests doc; do \
-		(cd $${subdir}; $(MAKE) clean); \
+		(cd $${subdir} && $(MAKE) clean); \
 	done
 	find tests -name "*.pyc" -print0 | xargs --null rm -f
 	rm -f core*
 
 distclean:
+	@for subdir in $(PTHREADS_W32_DIR); do \
+		(cd $${subdir} && $(MAKE) clean); \
+	done
 	@for subdir in $(DIRS) tests doc; do \
-		(cd $${subdir}; $(MAKE) distclean); \
+		(cd $${subdir} && $(MAKE) distclean); \
 	done
 	find tests -name "*.pyc" -print0 | xargs --null rm -f
 	rm -f core*
@@ -32,6 +43,9 @@ distclean:
 	rm -f Makefile
 
 maintainer-clean:
+	@for subdir in $(PTHREADS_W32_DIR); do \
+		(cd $${subdir} && $(MAKE) clean); \
+	done
 	@for subdir in $(DIRS) tests doc; do \
 		(cd $${subdir}; $(MAKE) maintainer-clean); \
 	done
@@ -45,7 +59,7 @@ doc:
 	(cd doc && make)
 
 proto:
-	python tools/update_prototype.py
+	$(PYTHON) tools/update_prototype.py
 
 test test-installed test-copying test-mark-sweep test-mark-sweep-compact test-bdw test-generational:
 	cd tests && $(MAKE) $@

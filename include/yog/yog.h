@@ -10,8 +10,13 @@
 #include <stdio.h>
 
 #define BOOL    int_t
-#define FALSE   (0)
-#define TRUE    (!FALSE)
+/* windef.h defines FALSE and TRUE. */
+#if !defined(FALSE)
+#   define FALSE   0
+#endif
+#if !defined(TRUE)
+#   define TRUE    (!FALSE)
+#endif
 
 /**
  * tagged pointer

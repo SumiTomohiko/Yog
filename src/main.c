@@ -2,6 +2,9 @@
 #include <errno.h>
 #include <getopt.h>
 #include <setjmp.h>
+#if defined(__MINGW32__)
+#   include <pthread.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -165,6 +168,12 @@ main(int_t argc, char* argv[])
 #undef ERROR
 #undef USAGE
 
+#if defined(__MINGW32__)
+    if (!pthread_win32_process_attach_np()) {
+        YOG_BUG(NULL, "pthread_win32_process_attach_np failed");
+    }
+#endif
+
 #define ERROR(msg)  do { \
     fprintf(stderr, "%s\n", msg); \
     return -2; \
@@ -252,6 +261,10 @@ main(int_t argc, char* argv[])
 
     YogVM_wait_finish(&env, env.vm);
     YogVM_delete(&env, env.vm);
+
+#if defined(__MINGW32__)
+    pthread_win32_process_detach_np();
+#endif
 
     return 0;
 #undef ERROR

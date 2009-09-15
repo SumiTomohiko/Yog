@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from os import name
 from testcase import TestCase
 
 class TestThread(TestCase):
+
+    disabled = name == "nt"
 
     def test_thread1(self):
         self._test("""

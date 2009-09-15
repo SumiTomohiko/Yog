@@ -1,14 +1,23 @@
-#include <dlfcn.h>
+#include "config.h"
+#if defined(HAVE_DLFCN_H)
+#   include <dlfcn.h>
+#endif
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <sys/mman.h>
+#if defined(HAVE_SYS_MMAN_H)
+#   include <sys/mman.h>
+#endif
+/* Linux and Windows both have <sys/stat.h>. */
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#if defined(HAVE_WINDOWS_H)
+#   include <windows.h>
+#endif
 #include "yog/array.h"
 #include "yog/bignum.h"
 #include "yog/block.h"
@@ -52,7 +61,11 @@
 #define PAGE_SIZE       4096
 #define PTR2PAGE(p)     ((YogMarkSweepCompactPage*)((uintptr_t)p & ~(PAGE_SIZE - 1)))
 
-#define SEPARATOR       '/'
+#if defined(__MINGW32__)
+#   define SEPARATOR    '\\'
+#else
+#   define SEPARATOR    '/'
+#endif
 
 void
 YogVM_register_package(YogEnv* env, YogVM* vm, const char* name, YogVal pkg)
@@ -432,11 +445,23 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static void
 init_read_write_lock(pthread_rwlock_t* lock)
 {
+    pthread_rwlockattr_t* pattr;
+#if defined(HAVE_PTHREAD_RWLOCKATTR_INIT)
     pthread_rwlockattr_t attr;
     pthread_rwlockattr_init(&attr);
+#   if defined(HAVE_PTHREAD_RWLOCKATTR_SETKIND_NP)
     pthread_rwlockattr_setkind_np(&attr, PTHREAD_RWLOCK_PREFER_WRITER_NP);
-    pthread_rwlock_init(lock, &attr);
+#   endif
+    pattr = &attr;
+#else
+    pattr = NULL;
+#endif
+    if (pthread_rwlock_init(lock, pattr) != 0) {
+        YOG_BUG(NULL, "pthread_rwlock_init failed");
+    }
+#if defined(HAVE_PTHREAD_RWLOCKATTR_INIT) && defined(HAVE_PTHREAD_RWLOCKATTR_DESTROY)
     pthread_rwlockattr_destroy(&attr);
+#endif
 }
 
 void
@@ -790,26 +815,57 @@ package_name2path_head(char* name)
     }
 }
 
+#if defined(__MINGW32__)
+#   define LIB_HANDLE   HINSTANCE
+#else
+#   define LIB_HANDLE   void*
+#endif
+
+static LIB_HANDLE
+open_library(YogEnv* env, const char* path)
+{
+#if defined(__MINGW32__)
+    return LoadLibrary(path);
+#else
+    return dlopen(path, RTLD_LAZY);
+#endif
+}
+
+static void*
+get_proc(YogEnv* env, LIB_HANDLE handle, const char* name)
+{
+#if defined(__MINGW32__)
+    return GetProcAddress(handle, name);
+#else
+    return dlsym(handle, name);
+#endif
+}
+
 static YogVal
 import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
 {
     SAVE_LOCALS(env);
-
     YogVal pkg = YUNDEF;
     PUSH_LOCAL(env, pkg);
 
     char path[strlen(filename) + 2];     /* 2 is for "./" */
-    if (strchr(filename, '/') != NULL) {
+    if (strchr(filename, SEPARATOR) != NULL) {
         strcpy(path, filename);
     }
     else {
-        strcpy(path, "./");
+        char cur_dir[3];
+        snprintf(cur_dir, sizeof(cur_dir), ".%c", SEPARATOR);
+        strcpy(path, cur_dir);
         strcat(path, filename);
     }
 
-#define CLEAR_ERROR     dlerror()
+#if defined(__MINGW32__)
+#   define CLEAR_ERROR
+#else
+#   define CLEAR_ERROR     dlerror()
+#endif
     CLEAR_ERROR;
-    void* handle = dlopen(path, RTLD_LAZY);
+    LIB_HANDLE handle = open_library(env, path);
     if (handle == NULL) {
         RETURN(env, YUNDEF);
     }
@@ -828,7 +884,7 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     strcat(init_name, pc);
 
     CLEAR_ERROR;
-    void (*init)(YogEnv*, YogVal) = dlsym(handle, init_name);
+    void (*init)(YogEnv*, YogVal) = get_proc(env, handle, init_name);
     if (init == NULL) {
         YogError_raise_ImportError(env, "dynamic package does not define init function (%s)", init_name);
     }
@@ -839,6 +895,8 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
 
     RETURN(env, pkg);
 }
+
+#undef LIB_HANDLE
 
 static void
 join_path(char* dest, const char* head, const char* tail)
@@ -874,7 +932,6 @@ static YogVal
 import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
 {
     SAVE_LOCALS(env);
-
     YogVal pkg = YUNDEF;
     YogVal dir = YUNDEF;
     YogVal body = YUNDEF;
@@ -898,7 +955,13 @@ import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
             RETURN(env, pkg);
         }
 
-        HEAD2PATH(so, ".so");
+#if defined(__MINGW32__)
+#   define SOEXT   ".dll"
+#else
+#   define SOEXT   ".so"
+#endif
+        HEAD2PATH(so, SOEXT);
+#undef SOEXT
 #undef HEAD2PATH
         pkg = import_so(env, vm, so, pkg_name);
         if (IS_PTR(pkg)) {
@@ -1041,7 +1104,13 @@ is_executable_file(const char* filename)
     if (!S_ISREG(buf.st_mode)) {
         return FALSE;
     }
-    if ((buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) == 0) {
+    uint_t mode;
+#if defined(__MINGW32__)
+    mode = S_IEXEC;
+#else
+    mode = S_IXUSR | S_IXGRP | S_IXOTH;
+#endif
+    if ((buf.st_mode & mode) == 0) {
         return FALSE;
     }
     return TRUE;

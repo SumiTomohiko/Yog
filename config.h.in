@@ -6,6 +6,9 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* Define to 1 if you have the `dlopen' function. */
+#undef HAVE_DLOPEN
+
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
 
@@ -20,6 +23,9 @@
 
 /* Define to 1 if you have the `isascii' function. */
 #undef HAVE_ISASCII
+
+/* Define to 1 if you have the `dl' library (-ldl). */
+#undef HAVE_LIBDL
 
 /* Define to 1 if you have the `pthread' library (-lpthread). */
 #undef HAVE_LIBPTHREAD
@@ -48,6 +54,15 @@
 
 /* Define to 1 if you have the `munmap' function. */
 #undef HAVE_MUNMAP
+
+/* Define to 1 if you have the `pthread_rwlockattr_destroy' function. */
+#undef HAVE_PTHREAD_RWLOCKATTR_DESTROY
+
+/* Define to 1 if you have the `pthread_rwlockattr_init' function. */
+#undef HAVE_PTHREAD_RWLOCKATTR_INIT
+
+/* Define to 1 if you have the `pthread_rwlockattr_setkind_np' function. */
+#undef HAVE_PTHREAD_RWLOCKATTR_SETKIND_NP
 
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
@@ -80,6 +95,9 @@
 /* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL
 
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#undef HAVE_SYS_MMAN_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
@@ -94,6 +112,9 @@
 
 /* Define to 1 if you have the `vprintf' function. */
 #undef HAVE_VPRINTF
+
+/* Define to 1 if you have the <windows.h> header file. */
+#undef HAVE_WINDOWS_H
 
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 #undef NO_MINUS_C_MINUS_O

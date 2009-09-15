@@ -3,6 +3,8 @@ ROOT_DIR = ..
 ONIG_DIR = $(ROOT_DIR)/onig
 BDWGC_DIR = $(ROOT_DIR)/bdwgc
 GMP_DIR = $(ROOT_DIR)/gmp
+PTHREADS_W32_DIR = @PTHREADS_W32_DIR@
+PYTHON = python2.6
 
 LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
@@ -54,11 +56,12 @@ COMMON_SOURCES = arg.c \
 	vm.c
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\"
-LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -ldl -lm -export-dynamic \
-		 $(GMP_DIR)/.libs/libgmp.a
+LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -lm -export-dynamic \
+		 $(GMP_DIR)/.libs/libgmp.a @LDFLAGS_COMMON@
 
-EXTRA_PROGRAMS = yog-bdw yog-copying yog-mark-sweep yog-mark-swee-compact \
-		 yog-mark-sweep-compact yog-generational miniyog
+EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
+		 yog-mark-sweep-compact$(EXEEXT) yog-generational$(EXEEXT) \
+		 miniyog$(EXEEXT)
 bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
 yog_copying_CFLAGS = $(CFLAGS_COMMON) -DGC_COPYING
@@ -84,35 +87,35 @@ INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
 INST_CMD = make insts
 
-GEN_AM_CMD = python $(ROOT_DIR)/tools/update_automake.py .
+GEN_AM_CMD = $(PYTHON) $(ROOT_DIR)/tools/update_automake.py .
 
 TEST_CMD = py.test
 
 insts:
-	python $(ROOT_DIR)/tools/inst.py insts.def ..
+	$(PYTHON) $(ROOT_DIR)/tools/inst.py insts.def ..
 
 am:
 	$(GEN_AM_CMD)
 
-builtins.inc: miniyog builtins.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg builtins.yg $@
+builtins.inc: miniyog$(EXEEXT) builtins.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg builtins.yg $@
 
-array.inc: miniyog array.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg array.yg $@
+array.inc: miniyog$(EXEEXT) array.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg array.yg $@
 
-object.inc: miniyog object.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg object.yg $@
+object.inc: miniyog$(EXEEXT) object.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg object.yg $@
 
-string.inc: miniyog string.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg string.yg $@
+string.inc: miniyog$(EXEEXT) string.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg string.yg $@
 
-dict.inc: miniyog dict.yg yg2inc.yg
-	$(MAKE) miniyog
-	./miniyog yg2inc.yg dict.yg $@
+dict.inc: miniyog$(EXEEXT) dict.yg yg2inc.yg
+	$(MAKE) miniyog$(EXEEXT)
+	./miniyog$(EXEEXT) yg2inc.yg dict.yg $@
 
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
@@ -130,6 +133,9 @@ code.inc: code.inc.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
 compile.inc: compile.inc.tmpl $(INSTS_DEF) $(INST_PY)
+	$(INST_CMD)
+
+inst.c: inst.c.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
 $(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)

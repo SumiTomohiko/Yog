@@ -4,11 +4,7 @@
 #include "yog/gc.h"
 #include "yog/gc/mark-sweep.h"
 #include "yog/vm.h"
-
-/* TODO: commonize with yog/yog.h */
-#define BOOL    int_t
-#define FALSE   (0)
-#define TRUE    (!FALSE)
+#include "yog/yog.h"
 
 struct YogMarkSweepHeader {
     struct YogMarkSweepHeader* prev;

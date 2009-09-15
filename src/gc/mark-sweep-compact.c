@@ -609,6 +609,11 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
                 size_t chunk_size = msc->chunk_size;
                 size_t mmap_size = chunk_size + PAGE_SIZE;
                 int_t proto = PROT_READ | PROT_WRITE;
+#if !defined(MAP_ANONYMOUS)
+#   if defined(MAP_ANON)
+#       define MAP_ANONYMOUS MAP_ANON
+#   endif
+#endif
                 int_t flags = MAP_PRIVATE | MAP_ANONYMOUS;
                 unsigned char* mmap_begin = mmap(NULL, mmap_size, proto, flags, -1, 0);
                 if (mmap_begin == MAP_FAILED) {

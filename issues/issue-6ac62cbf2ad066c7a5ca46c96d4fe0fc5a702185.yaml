@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove changeset ID from --version output.
+desc: ""
+type: :task
+component: Yog
+release: 0.0.2
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-09-13 04:36:14.699225 Z
+references: []
+
+id: 6ac62cbf2ad066c7a5ca46c96d4fe0fc5a702185
+log_events: 
+- - 2009-09-13 04:36:15.537694 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

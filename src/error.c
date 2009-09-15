@@ -218,8 +218,16 @@ raise_TypeError(YogEnv* env, const char* msg, YogVal left, YogVal right)
 void
 YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const char* opname)
 {
+    const char* escaped_opname;
+    if (strcmp("%", opname) == 0) {
+        escaped_opname = "%%";
+    }
+    else {
+        escaped_opname = opname;
+    }
+
     char buffer[4096];
-    snprintf(buffer, array_sizeof(buffer), "unsupported operand type(s) for %s: '%%s' and '%%s'", opname);
+    snprintf(buffer, array_sizeof(buffer), "unsupported operand type(s) for %s: '%%s' and '%%s'", escaped_opname);
     raise_TypeError(env, buffer, left, right);
 }
 
