@@ -4840,9 +4840,6 @@ inst.c: inst.c.tmpl $(INSTS_DEF) $(INST_PY)
 $(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
-inst.c: $(INSTS_DEF) $(INST_PY)
-	$(INST_CMD)
-
 update-version:
 	if [ -d "$(ROOT_DIR)/.hg" ]; then \
 		m4 -DREVISION="`hg parent --template='{rev} {node|short}'`" $(VERSION_H_M4) > $(VERSION_H_NEW); \

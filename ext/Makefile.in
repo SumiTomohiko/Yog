@@ -5,8 +5,8 @@ am__include = include
 prefix = @prefix@
 VERSION = @PACKAGE_VERSION@
 DIR = $(prefix)/lib/yog/$(VERSION)
-exts = @EXTS@
 SOEXT = @SOEXT@
+exts = @EXTS@
 CC = @CC@
 
 include ./$(DEPDIR)/concurrent.Po
@@ -16,7 +16,7 @@ include ./$(DEPDIR)/concurrent.Po
 all: $(exts)
 
 concurrent$(SOEXT): concurrent.c
-	$(CC) -I../include -shared -O2 -Wall -lpthread -MT concurrent$(SOEXT) -MD -MP -MF $(DEPDIR)/concurrent.Tpo -o $@ $<
+	$(CC) -I../include -shared -O2 -Wall -lpthread -MT concurrent$(SOEXT) -MD -MP -MF $(DEPDIR)/concurrent.Tpo -o $@ concurrent.c
 	mv -f $(DEPDIR)/concurrent.Tpo $(DEPDIR)/concurrent.Po
 
 clean: 
