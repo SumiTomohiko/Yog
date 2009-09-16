@@ -5,8 +5,8 @@ type: :task
 component: Yog
 release: 0.0.2
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :in_progress
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2009-08-28 11:22:37.103434 Z
 references: []
 
@@ -31,4 +31,8 @@ log_events:
 - - 2009-09-10 15:15:55.799884 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - changed status from unstarted to in_progress
+  - ""
+- - 2009-09-16 05:27:25.311631 Z
+  - SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
   - ""
