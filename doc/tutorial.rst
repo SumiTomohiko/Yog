@@ -423,7 +423,7 @@ If actual parameters are specified by name, these are stored to the argument ``*
 ``kw`` is a dictionary.
 When you define the following function::
 
-  >>> def foo(*kw)
+  >>> def foo(**kw)
   ...   kw.each() do [key, value]
   ...     print(key)
   ...     print(":")
