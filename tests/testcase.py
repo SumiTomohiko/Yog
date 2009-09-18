@@ -58,9 +58,6 @@ class TestCase(object):
         return strftime("%x %X", sec)
 
     def do(self, stdout, stderr, stdin, status, args, timeout, encoding=None):
-        if encoding is None:
-            encoding = "UTF-8"
-
         proc = self.run_command(args)
         if stdin is not None:
             proc.stdin.write(stdin)
@@ -103,11 +100,11 @@ class TestCase(object):
                 assert status == returncode
 
     def write_source(self, path, src, encoding):
-        if encoding is None:
-            encoding = "UTF-8"
-
-        from codecs import open
-        f = open(path, "w", encoding)
+        if encoding is not None:
+            import codecs
+            f = codecs.open(path, "w", encoding)
+        else:
+            f = open(path, "w")
         try:
             f.write(src)
         finally:
@@ -134,7 +131,7 @@ class TestCase(object):
     def _test_interactive(self, stdout, stderr, stdin, status, options, timeout):
         self.do(stdout, stderr, stdin, status, options, timeout)
 
-    def _test(self, src=None, stdout="", stderr="", stdin=None, status=0, options=[], timeout=5 * 60, remove_tmpfile=True, tmpfile=None, yog_option=[], encoding=None):
+    def _test(self, src=None, stdout="", stderr="", stdin=None, status=0, options=[], timeout=5 * 60, remove_tmpfile=True, tmpfile=None, yog_option=[], encoding="UTF-8"):
         options = options or ["--gc-stress"]
 
         if src is not None:
