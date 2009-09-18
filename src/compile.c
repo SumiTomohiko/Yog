@@ -9,6 +9,7 @@
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/inst.h"
+#include "yog/misc.h"
 #include "yog/opcodes.h"
 #include "yog/parser.h"
 #include "yog/string.h"
@@ -2895,7 +2896,7 @@ join_package_names(YogEnv* env, YogVal pkg_names)
         name = YogArray_at(env, pkg_names, i);
         s = YogVM_id2name(env, env->vm, VAL2ID(name));
         pc++;
-        strcpy(pc, STRING_CSTR(s));
+        strlcpy(pc, STRING_CSTR(s), len - (pc - pkg) + 1);
         pc += YogString_size(env, s) - 1;
         *pc = '.';
     }

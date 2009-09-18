@@ -275,16 +275,18 @@ YogClass_define_property(YogEnv* env, YogVal self, const char* name, void* get, 
 
     if (get != NULL) {
 #define GETTER_HEAD     "get_"
-        char getter_name[strlen(GETTER_HEAD) + strlen(name) + 1];
-        sprintf(getter_name, GETTER_HEAD "%s", name);
+        uint_t size = strlen(GETTER_HEAD) + strlen(name) + 1;
+        char getter_name[size];
+        snprintf(getter_name, size, GETTER_HEAD "%s", name);
         getter = YogNativeFunction_new(env, class_name, getter_name, get);
 #undef GETTER_HEAD
     }
 
     if (set != NULL) {
 #define SETTER_HEAD     "set_"
-        char setter_name[strlen(SETTER_HEAD) + strlen(name) + 1];
-        sprintf(setter_name, SETTER_HEAD "%s", name);
+        uint_t size = strlen(SETTER_HEAD) + strlen(name) + 1;
+        char setter_name[size];
+        snprintf(setter_name, size, SETTER_HEAD "%s", name);
         setter = YogNativeFunction_new(env, class_name, setter_name, set);
 #undef setter_HEAD
     }

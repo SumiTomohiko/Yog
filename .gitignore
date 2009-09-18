@@ -40,6 +40,8 @@ ext/.deps/
 gmp/.libs/
 gmp/config.m4
 gmp/demos/calc/calc-config.h
+gmp/demos/calc/calc.c
+gmp/demos/calc/calc.h
 gmp/demos/pexpr-config.h
 gmp/doc/gmp.info-1
 gmp/doc/gmp.info-2

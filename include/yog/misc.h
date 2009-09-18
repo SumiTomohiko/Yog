@@ -24,6 +24,13 @@
     } \
 } while (0)
 
+#if !defined(HAVE_STRLCPY)
+#   define strlcpy(dst, src, size)  strcpy(dst, src)
+#endif
+#if !defined(HAVE_STRLCAT)
+#   define strlcat(dst, src, size)  strcat(dst, src)
+#endif
+
 /* PROTOTYPE_START */
 
 /**

@@ -5,6 +5,7 @@ prefix = @prefix@
 VERSION = @PACKAGE_VERSION@
 ARCHIVE = Yog-$(VERSION)
 PYTHON = python2.6
+SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
 
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 			 configure.lineno config.status.lineno
@@ -71,7 +72,8 @@ update-version:
 	cd src && $(MAKE) $@
 
 install-vim:
-	cp yog.vim $(prefix)/share/vim/vim71/syntax
+	mkdir -p $(SYNTAX_DIR)
+	cp yog.vim $(SYNTAX_DIR)
 	@grep "NOTICE" yog.vim | sed -e 's/" NOTICE: //'
 
 install:

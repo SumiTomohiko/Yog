@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from os import environ, unlink
+from os import close, environ, unlink
 from os.path import join
 from subprocess import PIPE, Popen
 from tempfile import mkstemp
-from time import time
+from time import localtime, strftime, time
 
 class TestCase(object):
 
@@ -54,6 +54,9 @@ class TestCase(object):
             newline = "\n"
         return newline.join(t)
 
+    def format_time(self, sec):
+        return strftime("%x %X", sec)
+
     def do(self, stdout, stderr, stdin, status, args, timeout, encoding=None):
         if encoding is None:
             encoding = "UTF-8"
@@ -67,9 +70,10 @@ class TestCase(object):
         while True:
             if proc.poll() is not None:
                 break
-            if timeout < time() - time_begin:
+            now = time()
+            if timeout < now - time_begin:
                 self.terminate_process(proc.pid)
-                assert False, "time is out."
+                assert False, "time is out (starting at %s, now is %s)" % (self.format_time(time_begin), self.format_time(now))
 
         if stderr is not None:
             err = self.remove_gc_warings(proc.stderr.read())
@@ -109,11 +113,13 @@ class TestCase(object):
         finally:
             f.close()
 
+    def make_temp_file(self):
+        fd, path = mkstemp(prefix="yog", suffix=".yg")
+        close(fd)
+        return path
+
     def _test_source(self, src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile=True, tmpfile=None, yog_option=[], encoding=None):
-        if tmpfile is None:
-            file = mkstemp(prefix="yog", suffix=".yg")[1]
-        else:
-            file = tmpfile
+        file = tmpfile or self.make_temp_file()
         try:
             self.write_source(file, src, encoding)
             args = options + [file] + yog_option
@@ -128,7 +134,7 @@ class TestCase(object):
     def _test_interactive(self, stdout, stderr, stdin, status, options, timeout):
         self.do(stdout, stderr, stdin, status, options, timeout)
 
-    def _test(self, src=None, stdout="", stderr="", stdin=None, status=0, options=[], timeout=120, remove_tmpfile=True, tmpfile=None, yog_option=[], encoding=None):
+    def _test(self, src=None, stdout="", stderr="", stdin=None, status=0, options=[], timeout=5 * 60, remove_tmpfile=True, tmpfile=None, yog_option=[], encoding=None):
         options = options or ["--gc-stress"]
 
         if src is not None:

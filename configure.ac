@@ -41,18 +41,21 @@ AC_FUNC_MMAP
 AC_FUNC_REALLOC
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([atexit gettimeofday isascii memchr memmove memset munmap strchr strrchr strstr strtol dlopen pthread_rwlockattr_setkind_np pthread_rwlockattr_init pthread_rwlockattr_destroy])
+AC_CHECK_FUNCS([atexit gettimeofday isascii memchr memmove memset munmap \
+                strchr strrchr strstr strtol dlopen \
+                pthread_rwlockattr_setkind_np pthread_rwlockattr_init \
+                pthread_rwlockattr_destroy strlcpy strlcat])
 AC_CHECK_HEADERS([dlfcn.h sys/mman.h windows.h])
 
-AC_ARG_ENABLE(profile, 
-              AC_HELP_STRING([--enable-profile], 
+AC_ARG_ENABLE(profile,
+              AC_HELP_STRING([--enable-profile],
                              [enable gprof profiling [[default=no]]]))
 if test "${enable_profile}" = "yes"; then
     CFLAGS="-pg ${CFLAGS}"
     LDFLAGS="-pg ${LDFLAGS}"
 fi
-AC_ARG_ENABLE(google-perftools, 
-              AC_HELP_STRING([--enable-google-perftools], 
+AC_ARG_ENABLE(google-perftools,
+              AC_HELP_STRING([--enable-google-perftools],
                              [enable google-perftools [[default=no]]]))
 if test "${enable_google_perftools}" = "yes"; then
     LDFLAGS="-lprofiler ${LDFLAGS}"

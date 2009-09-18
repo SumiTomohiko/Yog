@@ -99,6 +99,9 @@ inst.c: inst.c.tmpl $(INSTS_DEF) $(INST_PY)
 $(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
+$(ROOT_DIR)/include/yog/opcodes.h: $(ROOT_DIR)/include/yog/opcodes.h.tmpl $(INSTS_DEF) $(INST_PY)
+	$(INST_CMD)
+
 VERSION_H = $(ROOT_DIR)/include/yog/version.h
 VERSION_H_M4 = $(VERSION_H).m4
 VERSION_H_NEW = $(VERSION_H).new

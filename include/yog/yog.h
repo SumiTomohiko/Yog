@@ -32,6 +32,9 @@
  * xxxx xxxx xxxx xxxx xxxx xxxx xxxx 1110 Symbol
  * xxxx xxxx xxxx xxxx xxxx xxxx xxxx xx00 pointer
  */
+#if defined(SIZEOF_VOID_)
+#   define SIZEOF_VOIDP     SIZEOF_VOID_
+#endif
 
 #if SIZEOF_VOIDP == SIZEOF_INT
 typedef unsigned int YogVal;

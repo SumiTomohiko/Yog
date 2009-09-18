@@ -249,7 +249,7 @@ YogString_new_size(YogEnv* env, uint_t size)
 #define RETURN_STR(s)   do { \
     size_t len = strlen(s); \
     char buffer[len + 1]; \
-    strcpy(buffer, s); \
+    strlcpy(buffer, s, len + 1); \
     YogVal body = YogCharArray_new_str(env, buffer); \
     PUSH_LOCAL(env, body); \
     \

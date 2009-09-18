@@ -86,6 +86,12 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
+/* Define to 1 if you have the `strlcat' function. */
+#undef HAVE_STRLCAT
+
+/* Define to 1 if you have the `strlcpy' function. */
+#undef HAVE_STRLCPY
+
 /* Define to 1 if you have the `strrchr' function. */
 #undef HAVE_STRRCHR
 
@@ -147,7 +153,7 @@
 #undef SIZEOF_LONG_LONG
 
 /* The size of `void*', as computed by sizeof. */
-#undef SIZEOF_VOIDP
+#undef SIZEOF_VOID_
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
