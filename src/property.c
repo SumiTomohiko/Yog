@@ -11,7 +11,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogProperty* prop = ptr;
+    YogProperty* prop = PTR_AS(YogProperty, ptr);
 #define KEEP(member)    YogGC_keep(env, &prop->member, keeper, heap)
     KEEP(getter);
     KEEP(setter);

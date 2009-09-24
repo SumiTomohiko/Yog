@@ -5,7 +5,7 @@
 static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogStackTraceEntry* entry = ptr;
+    YogStackTraceEntry* entry = PTR_AS(YogStackTraceEntry, ptr);
 #define KEEP(member)    YogGC_keep(env, &entry->member, keeper, heap)
     KEEP(lower);
     KEEP(filename);

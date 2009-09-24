@@ -44,7 +44,7 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 static void
 YogBignum_finalize(YogEnv* env, void* ptr)
 {
-    YogBignum* bignum = ptr;
+    YogBignum* bignum = PTR_AS(YogBignum, ptr);
     mpz_clear(bignum->num);
 }
 

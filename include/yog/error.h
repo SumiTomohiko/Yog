@@ -3,18 +3,6 @@
 
 #include "yog/yog.h"
 
-#define YOG_WARN(env, ...)  do { \
-    YogError_warn(env, __FILE__, __LINE__, __VA_ARGS__); \
-} while (0)
-#define YOG_BUG(env, ...)    do { \
-    YogError_bug(env, __FILE__, __LINE__, __VA_ARGS__); \
-} while (0)
-#define YOG_ASSERT(env, test, ...)  do { \
-    if (!(test)) { \
-        YOG_BUG(env, __VA_ARGS__); \
-    } \
-} while (0)
-
 /* PROTOTYPE_START */
 
 /**
@@ -43,6 +31,40 @@ void YogError_raise_comparison_type_error(YogEnv*, YogVal, YogVal);
 void YogError_warn(YogEnv*, const char*, uint_t, const char*, ...);
 
 /* PROTOTYPE_END */
+
+#if defined(__GNUC__)
+#   define YOG_WARN(env, ...)  do { \
+    YogError_warn(env, __FILE__, __LINE__, __VA_ARGS__); \
+} while (0)
+#   define YOG_BUG(env, ...)    do { \
+    YogError_bug(env, __FILE__, __LINE__, __VA_ARGS__); \
+} while (0)
+#   define YOG_ASSERT(env, test, ...)  do { \
+    if (!(test)) { \
+        YOG_BUG(env, __VA_ARGS__); \
+    } \
+} while (0)
+#else
+#   include <stdarg.h>
+#   include <stdio.h>
+static void
+YOG_WARN(YogEnv* env, const char* fmt, ...)
+{
+    /* TODO */
+}
+
+static void
+YOG_BUG(YogEnv* env, const char* fmt, ...)
+{
+    /* TODO */
+}
+
+static void
+YOG_ASSERT(YogEnv* env, BOOL test, const char* fmt, ...)
+{
+    /* TODO */
+}
+#endif
 
 #endif
 /**

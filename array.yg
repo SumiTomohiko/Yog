@@ -1,0 +1,43 @@
+
+def join(sep)
+  s = ""
+  i = 0
+  self.each() do [elem]
+    nonlocal i
+    if 0 < i
+      s << sep
+    end
+    s << elem
+    i += 1
+  end
+
+  return s
+end
+
+def include?(obj)
+  self.each() do [elem]
+    if (elem.class == obj.class) && (elem == obj)
+      return true
+    end
+  end
+
+  return false
+end
+
+def to_s()
+  def f(obj)
+    return "[...]"
+  end
+
+  def g(obj)
+    a = []
+    obj.each() do [elem]
+      a.push(elem.inspect())
+    end
+    return "[" + a.join(", ") + "]"
+  end
+
+  return __recurse__(self, f, g)
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

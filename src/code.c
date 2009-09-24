@@ -13,7 +13,7 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-#include "src/code.inc"
+#include "code.inc"
 
 static void
 print_val(YogEnv* env, YogVal val)
@@ -120,7 +120,7 @@ YogCode_dump(YogEnv* env, YogVal code)
             printf("      ");
         }
 
-        OpCode op = PTR_AS(YogByteArray, insts)->items[pc];
+        OpCode op = (OpCode)PTR_AS(YogByteArray, insts)->items[pc];
         printf(" %s", YogCode_get_op_name(op));
 
         uint_t n = pc + sizeof(uint8_t);
@@ -212,12 +212,12 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogCode* code = ptr;
+    YogCode* code = PTR_AS(YogCode, ptr);
 
     YogGC_keep(env, &code->arg_info, keeper, heap);
 
 #define KEEP_MEMBER(member)     do { \
-    code->member = (*keeper)(env, (void*)code->member, heap); \
+    code->member = PTR_AS(ID, (*keeper)(env, (void*)code->member, heap)); \
 } while (0)
     KEEP_MEMBER(local_vars_names);
 #undef KEEP_MEMBER

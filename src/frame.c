@@ -10,7 +10,7 @@
 static void
 YogFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogFrame* frame = ptr;
+    YogFrame* frame = PTR_AS(YogFrame, ptr);
     YogGC_keep(env, &frame->prev, keeper, heap);
 }
 
@@ -21,7 +21,7 @@ YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogFrame_keep_children(env, ptr, keeper, heap);
 
-    YogCFrame* frame = ptr;
+    YogCFrame* frame = PTR_AS(YogCFrame, ptr);
     KEEP(self);
     KEEP(f);
     KEEP(args);
@@ -35,7 +35,7 @@ YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* 
 {
     YogFrame_keep_children(env, ptr, keeper, heap);
 
-    YogScriptFrame* frame = ptr;
+    YogScriptFrame* frame = PTR_AS(YogScriptFrame, ptr);
     KEEP(code);
     KEEP(stack);
     KEEP(globals);
@@ -49,7 +49,7 @@ YogFinishFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* 
 {
     YogFrame_keep_children(env, ptr, keeper, heap);
 
-    YogFinishFrame* frame = ptr;
+    YogFinishFrame* frame = PTR_AS(YogFinishFrame, ptr);
     KEEP(code);
     KEEP(stack);
 }
@@ -59,7 +59,7 @@ YogNameFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* he
 {
     YogScriptFrame_keep_children(env, ptr, keeper, heap);
 
-    YogNameFrame* frame = ptr;
+    YogNameFrame* frame = PTR_AS(YogNameFrame, ptr);
     KEEP(self);
     KEEP(vars);
 }
@@ -69,7 +69,7 @@ YogMethodFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* 
 {
     YogScriptFrame_keep_children(env, ptr, keeper, heap);
 
-    YogMethodFrame* frame = ptr;
+    YogMethodFrame* frame = PTR_AS(YogMethodFrame, ptr);
     KEEP(vars);
 }
 
@@ -179,7 +179,7 @@ YogCFrame_new(YogEnv* env)
 static void
 YogOuterVars_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogOuterVars* vars = ptr;
+    YogOuterVars* vars = PTR_AS(YogOuterVars, ptr);
 
     uint_t size = vars->size;
     uint_t i = 0;

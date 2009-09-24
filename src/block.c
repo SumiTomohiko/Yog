@@ -25,7 +25,7 @@ YogBasicBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* h
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogBasicBlock* block = ptr;
+    YogBasicBlock* block = PTR_AS(YogBasicBlock, ptr);
     YogGC_keep(env, &block->code, keeper, heap);
 }
 
@@ -34,7 +34,7 @@ YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void*
 {
     YogBasicBlock_keep_children(env, ptr, keeper, heap);
 
-    YogPackageBlock* block = ptr;
+    YogPackageBlock* block = PTR_AS(YogPackageBlock, ptr);
 #define KEEP(member)    YogGC_keep(env, &block->member, keeper, heap)
     KEEP(self);
     KEEP(vars);
@@ -61,7 +61,7 @@ YogBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicBlock_keep_children(env, ptr, keeper, heap);
 
-    YogBlock* block = ptr;
+    YogBlock* block = PTR_AS(YogBlock, ptr);
 #define KEEP(member)    YogGC_keep(env, &block->member, keeper, heap)
     KEEP(locals);
     KEEP(outer_vars);

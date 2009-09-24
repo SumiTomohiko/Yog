@@ -1,3 +1,10 @@
+#include "config.h"
+#if defined(HAVE_ALLOCA_H)
+#   include <alloca.h>
+#endif
+#if defined(HAVE_MALLOC_H)
+#   include <malloc.h>
+#endif
 #include <math.h>
 #include <gmp.h>
 #include "yog/array.h"
@@ -486,7 +493,7 @@ times(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     uint_t i = 0;
     uint_t argc = 1;
     for (i = 0; i < n; i++) {
-        YogVal args[argc];
+        YogVal* args = (YogVal*)alloca(sizeof(YogVal) * argc);
         args[0] = INT2VAL(i);
         YogCallable_call(env, block, argc, args);
     }

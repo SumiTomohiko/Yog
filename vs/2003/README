@@ -1,0 +1,3 @@
+This directory contains the files for Microsoft Visual Studio .NET 2003.
+
+gmp\gmp.lib and gmp\gmp.h is from http://www.cs.nyu.edu/exact/core/gmp/.

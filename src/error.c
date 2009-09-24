@@ -96,6 +96,9 @@ raise_format(YogEnv* env, YogVal klass, const char* fmt, va_list ap)
      * Don't GC before making error message. Some arguments in ap are GC object.
      */
     char buffer[4096];
+#if defined(_MSC_VER)
+#   define vsnprintf(buffer, size, fmt, ap)     vsprintf(buffer, fmt, ap)
+#endif
     vsnprintf(buffer, array_sizeof(buffer), fmt, ap);
     raise_error(env, klass, buffer);
 }
@@ -138,48 +141,47 @@ YogError_print_stacktrace(YogEnv* env)
     YogVal msg = YUNDEF;
     PUSH_LOCALS8(env, s, t, name, exc, st, filename, klass, msg);
 
-#define PRINT(...)  fprintf(stderr, __VA_ARGS__)
     exc = PTR_AS(YogThread, env->thread)->jmp_val;
     st = PTR_AS(YogException, exc)->stack_trace;
     if (IS_PTR(st)) {
-        PRINT("Traceback (most recent call last):\n");
+        fprintf(stderr, "Traceback (most recent call last):\n");
     }
 #define ID2NAME(id)     YogVM_id2name(env, env->vm, id)
     while (IS_PTR(st)) {
-        PRINT("  File ");
+        fprintf(stderr, "  File ");
         filename = PTR_AS(YogStackTraceEntry, st)->filename;
         if (IS_PTR(filename)) {
             const char* name = PTR_AS(YogCharArray, filename)->items;
-            PRINT("\"%s\"", name);
+            fprintf(stderr, "\"%s\"", name);
         }
         else {
-            PRINT("builtin");
+            fprintf(stderr, "builtin");
         }
 
         uint_t lineno = PTR_AS(YogStackTraceEntry, st)->lineno;
         if (0 < lineno) {
-            PRINT(", line %d", lineno);
+            fprintf(stderr, ", line %d", lineno);
         }
 
-        PRINT(", in ");
+        fprintf(stderr, ", in ");
         ID class_name = PTR_AS(YogStackTraceEntry, st)->class_name;
         ID func_name = PTR_AS(YogStackTraceEntry, st)->func_name;
         if (class_name != INVALID_ID) {
             if (func_name != INVALID_ID) {
                 s = ID2NAME(class_name);
                 t = ID2NAME(func_name);
-                PRINT("%s#%s", STRING_CSTR(s), STRING_CSTR(t));
+                fprintf(stderr, "%s#%s", STRING_CSTR(s), STRING_CSTR(t));
             }
             else {
                 name = ID2NAME(class_name);
-                PRINT("<class %s>", STRING_CSTR(name));
+                fprintf(stderr, "<class %s>", STRING_CSTR(name));
             }
         }
         else {
             name = ID2NAME(func_name);
-            PRINT("%s", STRING_CSTR(name));
+            fprintf(stderr, "%s", STRING_CSTR(name));
         }
-        PRINT("\n");
+        fprintf(stderr, "\n");
 
         st = PTR_AS(YogStackTraceEntry, st)->lower;
     }
@@ -189,8 +191,7 @@ YogError_print_stacktrace(YogEnv* env)
     name = ID2NAME(id);
 #undef ID2NAME
     msg = YogEval_call_method(env, PTR_AS(YogException, exc)->message, "to_s", 0, NULL);
-    PRINT("%s: %s\n", STRING_CSTR(name), STRING_CSTR(msg));
-#undef PRINT
+    fprintf(stderr, "%s: %s\n", STRING_CSTR(name), STRING_CSTR(msg));
 
     RETURN_VOID(env);
 }
@@ -227,6 +228,9 @@ YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const ch
     }
 
     char buffer[4096];
+#if defined(_MSC_VER)
+#   define snprintf(buffer, size, fmt, arg)    sprintf(buffer, fmt, arg)
+#endif
     snprintf(buffer, array_sizeof(buffer), "unsupported operand type(s) for %s: '%%s' and '%%s'", escaped_opname);
     raise_TypeError(env, buffer, left, right);
 }

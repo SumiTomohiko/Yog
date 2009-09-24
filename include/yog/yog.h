@@ -1,9 +1,7 @@
 #if !defined(__YOG_YOG_H__)
 #define __YOG_YOG_H__
 
-#if defined(HAVE_CONFIG_H)
-#   include "config.h"
-#endif
+#include "config.h"
 #if defined(HAVE_LIMITS_H)
 #   include <limits.h>
 #endif
@@ -122,15 +120,32 @@ void YogVal_set_attr(YogEnv*, YogVal, ID, YogVal);
 
 /* PROTOTYPE_END */
 
-#define TRACE(...)    do { \
+#if defined(__GNUC__)
+#   define TRACE(...)    do { \
     printf("%s:%d ", __FILE__, __LINE__); \
     printf(__VA_ARGS__); \
     printf("\n"); \
     fflush(stdout); \
 } while (0)
+#else
+#   include <stdarg.h>
+#   include <stdio.h>
+static void
+TRACE(const char* fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+}
+#endif
 
 #define array_sizeof(a)     (sizeof(a) / sizeof(a[0]))
 #define MAIN_MODULE_NAME    "__main__"
+
+#if !defined(HAVE_STDINT_H)
+typedef unsigned char uint8_t;
+#endif
 
 #endif
 /**

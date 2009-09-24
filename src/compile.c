@@ -1,6 +1,16 @@
+#include "config.h"
+#if defined(HAVE_ALLOCA_H)
+#   include <alloca.h>
+#endif
 #include <limits.h>
+#if defined(HAVE_MALLOC_H)
+#   include <malloc.h>
+#endif
 #include <stdarg.h>
-#include <stdint.h>
+#if defined(HAVE_STDINT_H)
+#   include <stdint.h>
+#endif
+#include <stdio.h>
 #include <string.h>
 #include "yog/arg.h"
 #include "yog/array.h"
@@ -203,11 +213,17 @@ raise_error(YogEnv* env, YogVal filename, uint_t lineno, const char* fmt, ...)
 
 #define BUFFER_SIZE     4096
     char head[BUFFER_SIZE];
+#if defined(_MSC_VER)
+#   define snprintf     _snprintf
+#endif
     snprintf(head, array_sizeof(head), "file \"%s\", line %u: ", PTR_AS(YogCharArray, filename)->items, lineno);
 
     char s[BUFFER_SIZE];
     va_list ap;
     va_start(ap, fmt);
+#if defined(_MSC_VER)
+#   define vsnprintf(s, size, fmt, ap)  vsprintf(s, fmt, ap)
+#endif
     vsnprintf(s, array_sizeof(s), fmt, ap);
     va_end(ap);
 
@@ -284,12 +300,12 @@ add_inst(YogEnv* env, YogVal data, YogVal inst)
     COMPILE_DATA(data)->last_inst = inst;
 }
 
-#include "src/compile.inc"
+#include "compile.inc"
 
 static void
 TryListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    TryListEntry* entry = ptr;
+    TryListEntry* entry = PTR_AS(TryListEntry, ptr);
 #define KEEP(member)    YogGC_keep(env, &entry->member, keeper, heap)
     KEEP(prev);
     KEEP(node);
@@ -993,7 +1009,7 @@ scan_var_init_visitor(AstVisitor* visitor)
 static void
 ScanVarData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    ScanVarData* data = ptr;
+    ScanVarData* data = PTR_AS(ScanVarData, ptr);
     YogGC_keep(env, &data->var_tbl, keeper, heap);
 }
 
@@ -1393,7 +1409,7 @@ make_lineno_table(YogEnv* env, YogVal code, YogVal anchor)
 static void
 ExceptionTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    ExceptionTableEntry* entry = ptr;
+    ExceptionTableEntry* entry = PTR_AS(ExceptionTableEntry, ptr);
 #define KEEP(member)    YogGC_keep(env, &entry->member, keeper, heap)
     KEEP(next);
     KEEP(from);
@@ -1484,7 +1500,7 @@ count_locals(YogEnv* env, YogVal vars)
 static void
 CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    CompileData* data = ptr;
+    CompileData* data = PTR_AS(CompileData, ptr);
 #define KEEP(member)    YogGC_keep(env, &data->member, keeper, heap)
     KEEP(vars);
     KEEP(const2index);
@@ -1579,7 +1595,7 @@ alloc_local_vars_table_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg
 static void
 AllocLocalVarsTableArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    AllocLocalVarsTableArg* arg = ptr;
+    AllocLocalVarsTableArg* arg = PTR_AS(AllocLocalVarsTableArg, ptr);
     YogGC_keep(env, &arg->names, keeper, heap);
 }
 
@@ -2234,7 +2250,7 @@ get_last_lineno(YogEnv* env, YogVal stmts)
 static void
 FinallyListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    FinallyListEntry* ent = ptr;
+    FinallyListEntry* ent = PTR_AS(FinallyListEntry, ptr);
 #define KEEP(member)    YogGC_keep(env, &ent->member, keeper, heap)
     KEEP(prev);
     KEEP(node);
@@ -2890,7 +2906,10 @@ join_package_names(YogEnv* env, YogVal pkg_names)
         len += YogString_size(env, s) - 1;
     }
     len += size - 1;
-    char pkg[len + 1];
+#if defined(_alloca) && !defined(alloca)
+#   define alloca   _alloca
+#endif
+    char* pkg = (char*)alloca(sizeof(char) * (len + 1));
     char* pc = pkg - 1;
     for (i = 0; i < size; i++) {
         name = YogArray_at(env, pkg_names, i);

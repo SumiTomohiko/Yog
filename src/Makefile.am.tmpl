@@ -4,7 +4,6 @@ ONIG_DIR = $(ROOT_DIR)/onig
 BDWGC_DIR = $(ROOT_DIR)/bdwgc
 GMP_DIR = $(ROOT_DIR)/gmp
 PTHREADS_W32_DIR = @PTHREADS_W32_DIR@
-PYTHON = python2.6
 
 LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon

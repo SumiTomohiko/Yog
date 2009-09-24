@@ -46,7 +46,7 @@ init_memory(void* ptr, size_t size)
 static YogCopyingHeap*
 YogCopyingHeap_new(YogCopying* copying, size_t size)
 {
-    YogCopyingHeap* heap = malloc(sizeof(YogCopyingHeap) + size);
+    YogCopyingHeap* heap = (YogCopyingHeap*)malloc(sizeof(YogCopyingHeap) + size);
     if (heap == NULL) {
         copying->err = ERR_COPYING_MALLOC;
         return NULL;
@@ -219,7 +219,7 @@ YogCopying_scan(YogEnv* env, YogCopying* copying, ObjectKeeper keeper, void* hea
 static void*
 keep_object(YogEnv* env, void* ptr, void* heap)
 {
-    return YogCopying_copy(env, heap, ptr);
+    return YogCopying_copy(env, (YogCopying*)heap, ptr);
 }
 
 void

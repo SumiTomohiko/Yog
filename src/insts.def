@@ -99,7 +99,7 @@ inst call_function
     YogVal callee = POP();
 
     YogVal klass = YogVal_get_class(env, callee);
-    YOG_ASSERT(env, PTR_AS(YogClass, klass)->exec, "uncallable");
+    YOG_ASSERT(env, PTR_AS(YogClass, klass)->exec != NULL, "uncallable");
     PTR_AS(YogClass, klass)->exec(env, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
 
     POP_LOCALS(env);

@@ -237,7 +237,7 @@ delete_heap(YogEnv* env, GC_TYPE* heap)
 static void
 delete_heaps(YogEnv* env)
 {
-    GC_TYPE* heap = env->vm->heaps;
+    GC_TYPE* heap = (GC_TYPE*)env->vm->heaps;
     while (heap != NULL) {
         GC_TYPE* next = heap->next;
         delete_heap(env, heap);
@@ -247,7 +247,7 @@ delete_heaps(YogEnv* env)
 #endif
 
 #define ITERATE_HEAPS(vm, proc)     do { \
-    GC_TYPE* heap = (vm)->heaps; \
+    GC_TYPE* heap = (GC_TYPE*)(vm)->heaps; \
     while (heap != NULL) { \
         proc; \
         heap = heap->next; \

@@ -44,7 +44,7 @@
 static void
 keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogTableEntryArray* array = ptr;
+    YogTableEntryArray* array = PTR_AS(YogTableEntryArray, ptr);
     uint_t size = array->size;
     uint_t i;
     for (i = 0; i < size; i++) {
@@ -58,7 +58,7 @@ alloc_bins(YogEnv* env, int_t size)
     YogVal array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogVal);
 
     PTR_AS(YogTableEntryArray, array)->size = size;
-    uint_t i;
+    int_t i;
     for (i = 0; i < size; i++) {
         PTR_AS(YogTableEntryArray, array)->items[i] = YNIL;
     }
@@ -182,16 +182,16 @@ stat_col()
 #endif
 
 static void
-keep_table_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+YogTable_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogTable* tbl = ptr;
+    YogTable* tbl = PTR_AS(YogTable, ptr);
     YogGC_keep(env, &tbl->bins, keeper, heap);
 }
 
 static YogVal
 alloc_table(YogEnv* env)
 {
-    YogVal tbl = ALLOC_OBJ(env, keep_table_children, NULL, YogTable);
+    YogVal tbl = ALLOC_OBJ(env, YogTable_keep_children, NULL, YogTable);
     PTR_AS(YogTable, tbl)->type = NULL;
     PTR_AS(YogTable, tbl)->num_bins = 0;
     PTR_AS(YogTable, tbl)->num_entries = 0;
@@ -284,9 +284,9 @@ YogTable_lookup(YogEnv* env, YogVal table, YogVal key, YogVal* value)
 }
 
 static void
-keep_entry_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+YogTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogTableEntry* entry = ptr;
+    YogTableEntry* entry = PTR_AS(YogTableEntry, ptr);
 #define KEEP(member)    YogGC_keep(env, &entry->member, keeper, heap)
     KEEP(key);
     KEEP(record);
@@ -297,7 +297,7 @@ keep_entry_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static YogVal
 alloc_entry(YogEnv* env)
 {
-    YogVal entry = ALLOC_OBJ(env, keep_entry_children, NULL, YogTableEntry);
+    YogVal entry = ALLOC_OBJ(env, YogTableEntry_keep_children, NULL, YogTableEntry);
     PTR_AS(YogTableEntry, entry)->hash = 0;
     PTR_AS(YogTableEntry, entry)->key = YUNDEF;
     PTR_AS(YogTableEntry, entry)->record = YUNDEF;
@@ -423,7 +423,7 @@ YogTable_foreach(YogEnv* env, YogVal table, int_t (*func)(YogEnv*, YogVal, YogVa
     int_t i;
     for (i = 0; i < PTR_AS(YogTable, table)->num_bins; i++) {
         for (ptr = TABLE_ENTRY_TOP(table, i); IS_PTR(ptr);) {
-            enum st_retval retval = (*func)(env, PTR_AS(YogTableEntry, ptr)->key, PTR_AS(YogTableEntry, ptr)->record, arg);
+            enum st_retval retval = (enum st_retval)func(env, PTR_AS(YogTableEntry, ptr)->key, PTR_AS(YogTableEntry, ptr)->record, arg);
             switch (retval) {
                 case ST_CHECK:        /* check if hash is modified during iteration */
                     tmp = PTR2VAL(NULL);
@@ -546,8 +546,7 @@ strhash(const char* string)
 static int_t
 hash_string(YogEnv* env, YogVal key)
 {
-    YogCharArray* array = VAL2PTR(key);
-    return strhash(array->items);
+    return strhash(PTR_AS(YogCharArray, key)->items);
 }
 
 static YogHashType type_string = {
@@ -773,7 +772,7 @@ typedef struct TableIterator TableIterator;
 static void
 TableIterator_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    TableIterator* iter = ptr;
+    TableIterator* iter = PTR_AS(TableIterator, ptr);
 #define KEEP(member)    YogGC_keep(env, &iter->member, keeper, heap)
     KEEP(tbl);
     KEEP(entry);

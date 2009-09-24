@@ -1,16 +1,16 @@
+#include "config.h"
 #include <ctype.h>
 #include <errno.h>
-#include <getopt.h>
+#if defined(HAVE_GETOPT_H)
+#   include <getopt.h>
+#endif
 #include <setjmp.h>
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #   include <pthread.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined(HAVE_CONFIG_H)
-#   include "config.h"
-#endif
 #include "yog/array.h"
 #include "yog/code.h"
 #include "yog/env.h"
@@ -125,6 +125,7 @@ main(int_t argc, char* argv[])
 #define DEFAULT_THRESHOLD   (1 * 1024 * 1024)
     size_t threshold = DEFAULT_THRESHOLD;
 #undef DEFAULT_THRESHOLD
+#if defined(HAVE_GETOPT_LONG)
     struct option options[] = {
         { "debug-parser", no_argument, &debug_parser, 1 },
         { "gc-stress", no_argument, &gc_stress, 1 },
@@ -134,8 +135,8 @@ main(int_t argc, char* argv[])
         { "version", no_argument, NULL, 'v' },
         { 0, 0, 0, 0 },
     };
-#define USAGE       usage()
-#define ERROR(msg)  do { \
+#   define USAGE       usage()
+#   define ERROR(msg)  do { \
     fprintf(stderr, "%s\n", msg); \
     USAGE; \
     return -1; \
@@ -165,10 +166,13 @@ main(int_t argc, char* argv[])
         USAGE;
         return 0;
     }
-#undef ERROR
-#undef USAGE
+#   undef ERROR
+#   undef USAGE
+#else
+    uint_t optind = 1;
+#endif
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
     if (!pthread_win32_process_attach_np()) {
         YOG_BUG(NULL, "pthread_win32_process_attach_np failed");
     }
@@ -196,7 +200,7 @@ main(int_t argc, char* argv[])
     YogThread_config_bdw(&env, dummy_thread);
 #elif defined(GC_COPYING)
     YogThread_config_copying(&env, dummy_thread, init_heap_size);
-    YogCopying_allocate_heap(&env, PTR_AS(YogThread, dummy_thread)->heap);
+    YogCopying_allocate_heap(&env, (YogCopying*)PTR_AS(YogThread, dummy_thread)->heap);
 #elif defined(GC_MARK_SWEEP)
     if (gc_stress) {
         threshold = 0;
@@ -262,7 +266,7 @@ main(int_t argc, char* argv[])
     YogVM_wait_finish(&env, env.vm);
     YogVM_delete(&env, env.vm);
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
     pthread_win32_process_detach_np();
 #endif
 

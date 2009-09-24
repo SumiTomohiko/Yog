@@ -1,7 +1,10 @@
 #if !defined(__YOG_CLASS_H__)
 #define __YOG_CLASS_H__
 
-#include <stdint.h>
+#include "config.h"
+#if defined(HAVE_STDINT_H)
+#   include <stdint.h>
+#endif
 #include "yog/object.h"
 #include "yog/yog.h"
 

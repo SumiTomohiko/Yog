@@ -1,0 +1,6 @@
+
+CC = gcc
+
+all:
+	$(CC) -shared -o gmp.dll .libs/libgmp.a -Wl,--output-def,gmp.def,--out-implib,libgmp.a
+	lib /machine:i386 /def:gmp.def

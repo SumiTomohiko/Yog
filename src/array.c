@@ -44,7 +44,7 @@ YogArray_size(YogEnv* env, YogVal array)
 static void
 YogValArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogValArray* array = ptr;
+    YogValArray* array = PTR_AS(YogValArray, ptr);
 
     uint_t size = array->size;
     uint_t i = 0;
@@ -58,7 +58,7 @@ YogValArray_new(YogEnv* env, uint_t size)
 {
     YogVal array = ALLOC_OBJ_ITEM(env, YogValArray_keep_children, NULL, YogValArray, size, YogVal);
     PTR_AS(YogValArray, array)->size = size;
-    uint_t i = 0;
+	uint_t i;
     for (i = 0; i < size; i++) {
         PTR_AS(YogValArray, array)->items[i] = YUNDEF;
     }
@@ -152,7 +152,7 @@ YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogArray* array = ptr;
+    YogArray* array = PTR_AS(YogArray, ptr);
     YogGC_keep(env, &array->body, keeper, heap);
 }
 

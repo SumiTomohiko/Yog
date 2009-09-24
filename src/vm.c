@@ -1,20 +1,32 @@
 #include "config.h"
+#if defined(HAVE_ALLOCA_H)
+#   include <alloca.h>
+#endif
 #if defined(HAVE_DLFCN_H)
 #   include <dlfcn.h>
+#endif
+#if defined(HAVE_MALLOC_H)
+#   include <malloc.h>
 #endif
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
+#if defined(HAVE_STRINGS_H)
+#   include <strings.h>
+#endif
 #if defined(HAVE_SYS_MMAN_H)
 #   include <sys/mman.h>
 #endif
 /* Linux and Windows both have <sys/stat.h>. */
 #include <sys/stat.h>
-#include <sys/time.h>
+#if defined(HAVE_SYS_TIME_H)
+#   include <sys/time.h>
+#endif
 #include <sys/types.h>
 #include <time.h>
-#include <unistd.h>
+#if defined(HAVE_UNISTD_H)
+#   include <unistd.h>
+#endif
 #if defined(HAVE_WINDOWS_H)
 #   include <windows.h>
 #endif
@@ -61,7 +73,7 @@
 #define PAGE_SIZE       4096
 #define PTR2PAGE(p)     ((YogMarkSweepCompactPage*)((uintptr_t)p & ~(PAGE_SIZE - 1)))
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #   define SEPARATOR    '\\'
 #else
 #   define SEPARATOR    '/'
@@ -168,7 +180,10 @@ YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
 #endif
     /* TODO: dirty hack */
     uint_t size = strlen(name) + 1;
-    char buffer[size];
+#if !defined(alloca) && defined(_alloca)
+#   define alloca   _alloca
+#endif
+    char* buffer = (char*)alloca(sizeof(char) * size);
     strlcpy(buffer, name, size);
 
     YogVal s = YogCharArray_new_str(env, buffer);
@@ -376,7 +391,7 @@ keep_thread_locals(YogEnv* env, YogVal thread, ObjectKeeper keeper, void* heap)
 void
 YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogVM* vm = ptr;
+    YogVM* vm = PTR_AS(YogVM, ptr);
 
     YogVal thread = vm->running_threads;
     while (IS_PTR(thread)) {
@@ -664,12 +679,12 @@ YogVM_add_heap(YogEnv* env, YogVM* vm, void* heap)
 {
     YogVM_acquire_global_interp_lock(env, vm);
     if (vm->last_heap != NULL) {
-        ((GC_TYPE*)vm->last_heap)->next = heap;
-        ((GC_TYPE*)heap)->prev = vm->last_heap;
-        vm->last_heap = heap;
+        ((GC_TYPE*)vm->last_heap)->next = (GC_TYPE*)heap;
+        ((GC_TYPE*)heap)->prev = (GC_TYPE*)vm->last_heap;
+        vm->last_heap = (GC_TYPE*)heap;
     }
     else {
-        vm->heaps = vm->last_heap = heap;
+        vm->heaps = vm->last_heap = (GC_TYPE*)heap;
     }
     ((GC_TYPE*)heap)->next = NULL;
     YogVM_release_global_interp_lock(env, vm);
@@ -732,14 +747,14 @@ typedef struct ImportingPackage ImportingPackage;
 static void
 ImportingPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    ImportingPackage* pkg = ptr;
+    ImportingPackage* pkg = PTR_AS(ImportingPackage, ptr);
     YogGC_keep(env, &pkg->pkg, keeper, heap);
 }
 
 static void
 ImportingPackage_finalize(YogEnv* env, void* ptr)
 {
-    ImportingPackage* pkg = ptr;
+    ImportingPackage* pkg = PTR_AS(ImportingPackage, ptr);
     if (pthread_mutex_destroy(&pkg->lock) != 0) {
         YOG_WARN(env, "pthread_mutex_destroy failed");
     }
@@ -815,7 +830,7 @@ package_name2path_head(char* name)
     }
 }
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #   define LIB_HANDLE   HINSTANCE
 #else
 #   define LIB_HANDLE   void*
@@ -824,7 +839,7 @@ package_name2path_head(char* name)
 static LIB_HANDLE
 open_library(YogEnv* env, const char* path)
 {
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
     return LoadLibrary(path);
 #else
     return dlopen(path, RTLD_LAZY);
@@ -834,7 +849,7 @@ open_library(YogEnv* env, const char* path)
 static void*
 get_proc(YogEnv* env, LIB_HANDLE handle, const char* name)
 {
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
     return GetProcAddress(handle, name);
 #else
     return dlsym(handle, name);
@@ -850,20 +865,23 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
 
     /* 3 is for "./" and '\0'. */
     size_t size = strlen(filename) + 3;
-    char path[size];
+    char* path = (char*)alloca(sizeof(char) * size);
     if (strchr(filename, SEPARATOR) != NULL) {
         strlcpy(path, filename, size);
     }
     else {
 #define CUR_DIR_SIZE    3
         char cur_dir[CUR_DIR_SIZE];
+#if defined(_MSC_VER)
+#   define snprintf   _snprintf
+#endif
         snprintf(cur_dir, CUR_DIR_SIZE, ".%c", SEPARATOR);
         strlcpy(path, cur_dir, size);
         strlcat(path, filename, size);
 #undef CUR_DIR_SIZE
     }
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #   define CLEAR_ERROR
 #else
 #   define CLEAR_ERROR     dlerror()
@@ -876,7 +894,7 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
 
 #define INIT_NAME_HEAD  "YogInit_"
     size_t init_name_size = strlen(INIT_NAME_HEAD) + strlen(pkg_name) + 1;
-    char init_name[init_name_size];
+    char* init_name = (char*)alloca(sizeof(char) * init_name_size);
     strlcpy(init_name, INIT_NAME_HEAD, init_name_size);
 #undef INIT_NAME_HEAD
     const char* pc = strrchr(pkg_name, '.');
@@ -889,7 +907,8 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     strlcat(init_name, pc, init_name_size);
 
     CLEAR_ERROR;
-    void (*init)(YogEnv*, YogVal) = get_proc(env, handle, init_name);
+    typedef void (*Initializer)(YogEnv*, YogVal);
+    Initializer init = (Initializer)get_proc(env, handle, init_name);
     if (init == NULL) {
         YogError_raise_ImportError(env, "dynamic package does not define init function (%s)", init_name);
     }
@@ -954,7 +973,7 @@ import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
 #define HEAD2PATH(var, ext) \
     /* directory + separactor + head + extention + '\0' */ \
     size_t size_##var = dir_len + 1 + len + strlen(ext) + 1; \
-    char var[size_##var]; \
+    char* var = (char*)alloca(sizeof(char) * size_##var); \
     join_path(var, PTR_AS(YogCharArray, body)->items, path_head, size_##var); \
     strlcat(var, ext, size_##var)
         HEAD2PATH(yg, ".yg");
@@ -963,7 +982,7 @@ import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
             RETURN(env, pkg);
         }
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #   define SOEXT   ".dll"
 #else
 #   define SOEXT   ".so"
@@ -1012,7 +1031,7 @@ import_package(YogEnv* env, YogVM* vm, const char* name)
     release_packages_lock(env, vm);
 
     uint_t len = strlen(name) + 1;
-    char head[len];
+    char* head = (char*)alloca(sizeof(char) * len);
     strlcpy(head, name, len);
     package_name2path_head(head);
 
@@ -1052,14 +1071,14 @@ YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
             end = begin + STRING_SIZE(s) - 1;
         }
         uint_t endpos = end - begin;
-        char str[endpos + 1];
+        char* str = (char*)alloca(sizeof(char) * (endpos + 1));
         strncpy(str, begin, endpos);
         str[endpos] = '\0';
 
         pkg = import_package(env, vm, str);
         if (IS_PTR(parent)) {
             uint_t size = endpos - n;
-            char attr[size + 1];
+            char* attr = (char*)alloca(sizeof(char) * (size + 1));
             strncpy(attr, STRING_CSTR(s) + n, size);
             attr[size] = '\0';
             ID id = YogVM_intern(env, vm, attr);
@@ -1092,6 +1111,10 @@ split_path(char* delim)
 static BOOL
 is_directory(const char* filename)
 {
+#if defined(_MSC_VER)
+    uint_t attr = GetFileAttributes(filename);
+    return attr & FILE_ATTRIBUTE_DIRECTORY;
+#else
     struct stat buf;
     if (stat(filename, &buf) != 0) {
         return FALSE;
@@ -1100,11 +1123,16 @@ is_directory(const char* filename)
         return FALSE;
     }
     return TRUE;
+#endif
 }
 
 static BOOL
 is_executable_file(const char* filename)
 {
+#if defined(_MSC_VER)
+    uint_t attrs = GetFileAttributes(filename);
+    return attrs & FILE_ATTRIBUTE_NORMAL;
+#else
     struct stat buf;
     if (stat(filename, &buf) != 0) {
         return FALSE;
@@ -1122,13 +1150,14 @@ is_executable_file(const char* filename)
         return FALSE;
     }
     return TRUE;
+#endif
 }
 
 static BOOL
 search_program(char* dest, const char* path, const char* prog, size_t size)
 {
     size_t len = strlen(path) + 1;
-    char s[len];
+    char* s = (char*)alloca(sizeof(char) * len);
     strlcpy(s, path, len);
 
     char* pc = s;
@@ -1190,7 +1219,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
         YOG_ASSERT(env, path != NULL, "PATH is empty");
         /* 1 of middle is for '/' */
         size_t size = strlen(path) + 1 + strlen(argv0) + 1;
-        char s[size];
+        char* s = (char*)alloca(sizeof(char) * size);
         if (!search_program(s, path, argv0, size)) {
             YOG_BUG(env, "Can't find %s in %s", argv0, path);
         }
@@ -1208,7 +1237,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
 #define EXT_DIR     "../ext"
     /* 1 of middle is for '/' */
     size_t size = len + 1 + strlen(EXT_DIR) + 1;
-    char extpath[size];
+    char* extpath = (char*)alloca(sizeof(char) * size);
     body = PTR_AS(YogString, prog)->body;
     join_path(extpath, PTR_AS(YogCharArray, body)->items, EXT_DIR, size);
 #undef EXT_DIR
@@ -1218,15 +1247,17 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
 
 #define LIB_DIR     "../lib"
         size_t size = len + 1 + strlen(LIB_DIR) + 1;
-        char libpath[size];
+        char* libpath = (char*)alloca(sizeof(char) * size);
         join_path(libpath, PTR_AS(YogCharArray, body)->items, LIB_DIR, size);
 #undef LIB_DIR
         s = YogString_new_str(env, libpath);
         YogArray_push(env, search_path, s);
     }
     else {
+#if !defined(_MSC_VER)
         s = YogString_new_str(env, PREFIX "/lib/yog/" VERSION);
         YogArray_push(env, search_path, s);
+#endif
     }
     vm->search_path = search_path;
 

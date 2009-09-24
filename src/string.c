@@ -1,5 +1,12 @@
+#include "config.h"
+#if defined(HAVE_ALLOCA_H)
+#   include <alloca.h>
+#endif
 #include <ctype.h>
 #include <errno.h>
+#if defined(HAVE_MALLOC_H)
+#   include <malloc.h>
+#endif
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +26,10 @@
 #include "yog/regexp.h"
 #include "yog/thread.h"
 #include "yog/yog.h"
+
+#if defined(_alloca) && !defined(alloca)
+#   define alloca   _alloca
+#endif
 
 #define CHECK_INT(v, msg)   do { \
     if (!IS_FIXNUM(v)) { \
@@ -66,7 +77,7 @@ YogString_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogString* s = ptr;
+    YogString* s = PTR_AS(YogString, ptr);
 #define KEEP(member)    YogGC_keep(env, &s->member, keeper, heap)
     KEEP(body);
     KEEP(encoding);
@@ -209,7 +220,7 @@ YogString_new_range(YogEnv* env, YogVal enc, const char* start, const char* end)
     }
 
     /* FIXME: dirty hack */
-    char escaped_from_gc[size];
+    char* escaped_from_gc = (char*)alloca(sizeof(char) * size);
     strncpy(escaped_from_gc, start, size);
 
     YogVal body = YogCharArray_new(env, size + 1);
@@ -248,7 +259,7 @@ YogString_new_size(YogEnv* env, uint_t size)
 
 #define RETURN_STR(s)   do { \
     size_t len = strlen(s); \
-    char buffer[len + 1]; \
+    char* buffer = (char*)alloca(sizeof(char) * (len + 1)); \
     strlcpy(buffer, s, len + 1); \
     YogVal body = YogCharArray_new_str(env, buffer); \
     PUSH_LOCAL(env, body); \
@@ -275,7 +286,11 @@ YogString_new_format(YogEnv* env, const char* fmt, ...)
     va_start(ap, fmt);
 #define BUFSIZE (1024)
     char buf[BUFSIZE];
+#if defined(HAVE_VSNPRINTF)
     vsnprintf(buf, BUFSIZE, fmt, ap);
+#else
+    vsprintf(buf, fmt, ap);
+#endif
 #undef BUFSIZE
     va_end(ap);
     RETURN_STR(buf);
@@ -365,7 +380,7 @@ gsub(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
 #define ADD_STR(to)    do { \
     uint_t size = to - from; \
-    char t[size + 1]; \
+    char* t = (char*)alloca(sizeof(char) * (size + 1)); \
     memcpy(t, STRING_CSTR(self) + from, size); \
     t[size] = '\0'; \
     YogString_add_cstr(env, s, t); \
@@ -439,7 +454,7 @@ YogString_multiply(YogEnv* env, YogVal self, int_t num)
         YogError_raise_ArgumentError(env, "argument too big");
     }
     s = YogString_new_size(env, needed_size + 1);
-    uint_t i;
+    int_t i;
     for (i = 0; i < num; i++) {
         memcpy(STRING_CSTR(s) + i * size, STRING_CSTR(self), size);
     }
@@ -640,7 +655,7 @@ each_line(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         const char* base = PTR_AS(YogCharArray, body)->items;
         const char* start = base + i;
         uint_t self_size = s->size;
-        const char* p = memchr(start, '\n', self_size - i - 1);
+        const char* p = (const char*)memchr(start, '\n', self_size - i - 1);
         if (p == NULL) {
             p = base + self_size - 1;
         }

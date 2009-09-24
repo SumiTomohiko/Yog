@@ -12,6 +12,8 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+typedef YogVal (*Body)(YogEnv*, YogVal, YogVal, YogVal, YogVal);
+
 static void
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, uint_t argc, YogVal args, uint_t args_offset)
 {
@@ -184,7 +186,7 @@ YogFunction_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogFunction* f = ptr;
+    YogFunction* f = PTR_AS(YogFunction, ptr);
 #define KEEP(member)    YogGC_keep(env, &f->member, keeper, heap)
     KEEP(code);
     KEEP(globals);
@@ -411,7 +413,7 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
     PTR_AS(YogFrame, frame)->prev = PTR_AS(YogThread, env->thread)->cur_frame;
     PTR_AS(YogThread, env->thread)->cur_frame = frame;
 
-    YogVal (*f)(YogEnv*, YogVal, YogVal, YogVal, YogVal) = PTR_AS(YogNativeFunction, callee)->f;
+    Body f = (Body)PTR_AS(YogNativeFunction, callee)->f;
     retval = (*f)(env, self, args, kw, blockarg);
 
     PTR_AS(YogThread, env->thread)->cur_frame = PTR_AS(YogFrame, PTR_AS(YogThread, env->thread)->cur_frame)->prev;
@@ -478,7 +480,7 @@ YogNativeFunction_new(YogEnv* env, ID class_name, const char* func_name, void* f
     YogVal func = YogNativeFunction_allocate(env, env->vm->cNativeFunction);
     PTR_AS(YogNativeFunction, func)->class_name = class_name;
     PTR_AS(YogNativeFunction, func)->func_name = func_id;
-    PTR_AS(YogNativeFunction, func)->f = f;
+    PTR_AS(YogNativeFunction, func)->f = (Body)f;
 
     return func;
 }
@@ -488,7 +490,7 @@ YogInstanceMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, voi
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogInstanceMethod* method = ptr;
+    YogInstanceMethod* method = PTR_AS(YogInstanceMethod, ptr);
 #define KEEP(member)    YogGC_keep(env, &method->member, keeper, heap)
     KEEP(self);
     KEEP(f);

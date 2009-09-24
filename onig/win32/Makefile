@@ -3,7 +3,7 @@
 product_name = oniguruma
 
 CPPFLAGS = 
-CFLAGS = -O2 -nologo /W3
+CFLAGS = -O2 -nologo /W3 /MT
 LDFLAGS =
 LOADLIBES =
 ARLIB = lib
@@ -86,7 +86,7 @@ setup:
 	$(CP) win32\testc.c  testc.c
 
 
-all: $(libname) $(dllname) 
+all: $(libname) $(dllname)
 
 $(libname): $(libobjs) $(encobjs)
 	$(ARLIB) $(ARLIB_FLAGS) -out:$@ $(libobjs) $(encobjs)

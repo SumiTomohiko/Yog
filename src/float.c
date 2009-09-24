@@ -1,3 +1,4 @@
+#include "config.h"
 #include <math.h>
 #include <gmp.h>
 #include "yog/array.h"
@@ -39,13 +40,14 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
+#if defined(HAVE_ISNAN)
     if (isnan(FLOAT_NUM(self))) {
         s = YogString_new_str(env, "NaN");
+        RETURN(env, s);
     }
-    else {
-        s = YogString_new_format(env, "%g", PTR_AS(YogFloat, self)->val);
-    }
+#endif
 
+    s = YogString_new_format(env, "%g", PTR_AS(YogFloat, self)->val);
     RETURN(env, s);
 }
 

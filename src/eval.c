@@ -1,3 +1,10 @@
+#include "config.h"
+#if defined(HAVE_ALLOCA_H)
+#   include <alloca.h>
+#endif
+#if defined(HAVE_MALLOC_H)
+#   include <malloc.h>
+#endif
 #include <setjmp.h>
 #include <string.h>
 #include "yog/binary.h"
@@ -483,6 +490,10 @@ YogEval_mainloop(YogEnv* env)
 #endif
 
     while (PC < PTR_AS(YogByteArray, CODE->insts)->size) {
+#if defined(_alloca) && !defined(alloca)
+#   define alloca   _alloca
+#endif
+
 #define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME)))
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define THREAD          (env->thread)
@@ -491,8 +502,8 @@ YogEval_mainloop(YogEnv* env)
     YogVal varkwarg = YUNDEF; \
     YogVal vararg = YUNDEF; \
     YogVal blockarg = YUNDEF; \
-    YogVal kwargs[2 * (kwargc)]; \
-    YogVal args[(argc)]; \
+    YogVal* kwargs = (YogVal*)alloca(sizeof(YogVal) * 2 * (kwargc)); \
+    YogVal* args = (YogVal*)alloca(sizeof(YogVal) * argc); \
     do { \
         uint_t i = 0; \
         for (i = 0; i < 2 * (kwargc); i++) { \
@@ -529,7 +540,7 @@ YogEval_mainloop(YogEnv* env)
             args[i - 1] = POP(); \
         } \
     } while (0)
-        OpCode op = PTR_AS(YogByteArray, CODE->insts)->items[PC];
+        OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
 #if 0
         do {
@@ -583,7 +594,7 @@ YogEval_mainloop(YogEnv* env)
 
         PC += sizeof(uint8_t);
         switch (op) {
-#include "src/eval.inc"
+#include "eval.inc"
         default:
             YOG_ASSERT(env, FALSE, "Unknown instruction.");
             break;

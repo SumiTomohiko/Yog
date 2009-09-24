@@ -1,7 +1,6 @@
 #if !defined(__YOG_ARG_H__)
 #define __YOG_ARG_H__
 
-#include <stdint.h>
 #include "yog/yog.h"
 
 struct YogArgInfo {

@@ -1,4 +1,7 @@
-#include <stdint.h>
+#include "config.h"
+#if defined(HAVE_STDINT_H)
+#   include <stdint.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include "yog/binary.h"
@@ -144,7 +147,7 @@ YogBinary_push_pc(YogEnv* env, YogVal binary, pc_t pc)
 static void
 YogBinary_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogBinary* bin = ptr;
+    YogBinary* bin = PTR_AS(YogBinary, ptr);
     YogGC_keep(env, &bin->body, keeper, heap);
 }
 

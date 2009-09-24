@@ -1,3 +1,10 @@
+#include "config.h"
+#if defined(HAVE_ALLOCA_H)
+#   include <alloca.h>
+#endif
+#if defined(HAVE_MALLOC_H)
+#   include <malloc.h>
+#endif
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,7 +47,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogThread* thread = ptr;
+    YogThread* thread = PTR_AS(YogThread, ptr);
 
 #define KEEP(member)    YogGC_keep(env, &thread->member, keeper, heap)
     KEEP(prev);
@@ -86,7 +93,7 @@ YogThread_init(YogEnv* env, YogVal thread, YogVal klass)
 void
 YogThread_config_copying(YogEnv* env, YogVal thread, size_t init_heap_size)
 {
-    YogCopying* copying = malloc(sizeof(YogCopying));
+    YogCopying* copying = (YogCopying*)malloc(sizeof(YogCopying));
     YOG_ASSERT(env, copying != NULL, "Can't allocate YogCopying");
     YogCopying_init(env, copying, init_heap_size);
     copying->refered = TRUE;
@@ -153,9 +160,9 @@ YogThread_config_bdw(YogEnv* env, YogVal thread)
 static void
 finalize(YogEnv* env, void* ptr)
 {
-    YogThread* thread = ptr;
+    YogThread* thread = PTR_AS(YogThread, ptr);
 #if !defined(GC_BDW)
-    GC_TYPE* heap = thread->heap;
+    GC_TYPE* heap = (GC_TYPE*)thread->heap;
     if (heap != NULL) {
         heap->refered = FALSE;
     }
@@ -183,7 +190,7 @@ allocate(YogEnv* env, YogVal klass)
 #elif defined(GC_COPYING)
 #   define HEAP_SIZE    (1 * 1024 * 1024)
     YogThread_config_copying(env, thread, HEAP_SIZE);
-    YogCopying_allocate_heap(env, PTR_AS(YogThread, thread)->heap);
+    YogCopying_allocate_heap(env, (YogCopying*)PTR_AS(YogThread, thread)->heap);
 #   undef HEAP_SIZE
 #elif defined(GC_MARK_SWEEP)
     size_t threshold = 1 * 1024 * 1024;
@@ -232,7 +239,7 @@ typedef struct ThreadArg ThreadArg;
 static void
 ThreadArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    ThreadArg* arg = ptr;
+    ThreadArg* arg = PTR_AS(ThreadArg, ptr);
 #define KEEP(member)    YogGC_keep(env, &arg->member, keeper, heap)
     KEEP(thread);
     KEEP(vararg);
@@ -252,7 +259,7 @@ ThreadArg_new(YogEnv* env)
 static void*
 run_of_new_thread(void* arg)
 {
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
     if (!pthread_win32_thread_attach_np()) {
         YOG_BUG(NULL, "pthread_win32_thread_attach_np failed");
     }
@@ -277,7 +284,10 @@ run_of_new_thread(void* arg)
     YogVal block = PTR_AS(YogThread, thread)->block;
     if (IS_PTR(vararg)) {
         uint_t size = YogArray_size(&env, vararg);
-        YogVal args[size];
+#if !defined(alloca) && deined(_alloca)
+#   define alloca   _alloca
+#endif
+        YogVal* args = (YogVal*)alloca(sizeof(YogVal) * size);
         YogVal body = PTR_AS(YogArray, vararg)->body;
         memcpy(args, PTR_AS(YogValArray, body)->items, size);
         PUSH_LOCALSX(&env, size, args);
@@ -292,7 +302,7 @@ run_of_new_thread(void* arg)
 
     YogVM_remove_thread(&env, env.vm, env.thread);
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
     pthread_win32_thread_detach_np();
 #endif
 

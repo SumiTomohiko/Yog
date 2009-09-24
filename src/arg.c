@@ -5,7 +5,7 @@
 static void
 YogArgInfo_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogArgInfo* arg_info = ptr;
+    YogArgInfo* arg_info = PTR_AS(YogArgInfo, ptr);
 #define KEEP(member)    YogGC_keep(env, &arg_info->member, keeper, heap)
     KEEP(argnames);
     KEEP(arg_index);

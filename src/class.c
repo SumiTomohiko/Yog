@@ -1,4 +1,12 @@
+#include "config.h"
+#if defined(HAVE_ALLOCA_H)
+#   include <alloca.h>
+#endif
+#if defined(HAVE_MALLOC_H)
+#   include <malloc.h>
+#endif
 #include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 #include "yog/array.h"
 #include "yog/classmethod.h"
@@ -106,7 +114,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogObj_keep_children(env, ptr, keeper, heap);
 
-    YogClass* klass = ptr;
+    YogClass* klass = PTR_AS(YogClass, ptr);
     YogGC_keep(env, &klass->super, keeper, heap);
 }
 
@@ -178,7 +186,10 @@ new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal body = PTR_AS(YogArray, args)->body;
     YogVal* items = PTR_AS(YogValArray, body)->items;
     /* TODO: dirty hack */
-    YogVal arg[argc];
+#if defined(_alloca) && !defined(alloca)
+#   define alloca   _alloca
+#endif
+    YogVal* arg = (YogVal*)alloca(sizeof(YogVal) * argc);
     uint_t i;
     for (i = 0; i < argc; i++) {
         arg[i] = items[i];
@@ -276,7 +287,10 @@ YogClass_define_property(YogEnv* env, YogVal self, const char* name, void* get, 
     if (get != NULL) {
 #define GETTER_HEAD     "get_"
         uint_t size = strlen(GETTER_HEAD) + strlen(name) + 1;
-        char getter_name[size];
+        char* getter_name = (char*)alloca(sizeof(char) * size);
+#if defined(_MSC_VER)
+#   define snprintf     _snprintf
+#endif
         snprintf(getter_name, size, GETTER_HEAD "%s", name);
         getter = YogNativeFunction_new(env, class_name, getter_name, get);
 #undef GETTER_HEAD
@@ -285,7 +299,7 @@ YogClass_define_property(YogEnv* env, YogVal self, const char* name, void* get, 
     if (set != NULL) {
 #define SETTER_HEAD     "set_"
         uint_t size = strlen(SETTER_HEAD) + strlen(name) + 1;
-        char setter_name[size];
+        char* setter_name = (char*)alloca(sizeof(char) * size);
         snprintf(setter_name, size, SETTER_HEAD "%s", name);
         setter = YogNativeFunction_new(env, class_name, setter_name, set);
 #undef setter_HEAD
@@ -309,11 +323,11 @@ struct ModuleClass {
 typedef struct ModuleClass ModuleClass;
 
 static void
-ModukeClass_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+ModuleClass_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogObj_keep_children(env, ptr, keeper, heap);
 
-    ModuleClass* klass = ptr;
+    ModuleClass* klass = PTR_AS(ModuleClass, ptr);
 #define KEEP(member)   YogGC_keep(env, &klass->member, keeper, heap)
     KEEP(super);
 #undef KEEP
@@ -326,7 +340,7 @@ ModuleClass_new(YogEnv* env)
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = ALLOC_OBJ(env, ModukeClass_keep_children, NULL, ModuleClass);
+    klass = ALLOC_OBJ(env, ModuleClass_keep_children, NULL, ModuleClass);
     YogObj_init(env, klass, 0, YUNDEF);
     PTR_AS(ModuleClass, klass)->super = YUNDEF;
     PTR_AS(ModuleClass, klass)->allocator = NULL;

@@ -1,8 +1,17 @@
 #include <ctype.h>
+#include "config.h"
+#if defined(HAVE_ALLOCA_H)
+#   include <alloca.h>
+#endif
+#if defined(HAVE_MALLOC_H)
+#   include <malloc.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#if defined(HAVE_UNISTD_H)
+#   include <unistd.h>
+#endif
 #include "oniguruma.h"
 #include "yog/array.h"
 #include "yog/encoding.h"
@@ -19,10 +28,14 @@
 
 #define COMMENT_CHAR    '$'
 
+#if defined(_MSC_VER)
+#   define snprintf _snprintf
+#endif
+
 static void
 YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogToken* token = ptr;
+    YogToken* token = PTR_AS(YogToken, ptr);
     switch (token->type) {
     case TK_NUMBER: /* FALLTHRU */
     case TK_REGEXP: /* FALLTHRU */
@@ -246,7 +259,10 @@ print_current_position(YogEnv* env, YogVal lexer)
     YogVal line = PTR_AS(YogLexer, lexer)->line;
     uint_t size = STRING_SIZE(line);
     YOG_ASSERT(env, 0 < size, "invalid size (%u)", size);
-    char s[size];
+#if defined(_alloca) && !defined(alloca)
+#   define alloca   _alloca
+#endif
+    char* s = (char*)alloca(sizeof(char) * size);
     memcpy(s, STRING_CSTR(line), size);
     char* pc = s + size - 1;
     while ((*pc == '\0') || (*pc == '\r') || (*pc == '\n')) {
@@ -335,7 +351,7 @@ typedef struct HereDoc HereDoc;
 static void
 HereDoc_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    HereDoc* heredoc = ptr;
+    HereDoc* heredoc = PTR_AS(HereDoc, ptr);
 #define KEEP(member)    YogGC_keep(env, &heredoc->member, keeper, heap)
     KEEP(str);
     KEEP(end);
@@ -1170,7 +1186,7 @@ YogLexer_read_encoding(YogEnv* env, YogVal lexer)
 static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogLexer* lexer = ptr;
+    YogLexer* lexer = PTR_AS(YogLexer, ptr);
 #define KEEP(member)    YogGC_keep(env, &lexer->member, keeper, heap)
     KEEP(line);
     KEEP(buffer);

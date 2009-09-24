@@ -16,7 +16,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogException* exc = ptr;
+    YogException* exc = PTR_AS(YogException, ptr);
 #define KEEP(member)    YogGC_keep(env, &exc->member, keeper, heap)
     KEEP(stack_trace);
     KEEP(message);

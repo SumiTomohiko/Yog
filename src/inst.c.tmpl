@@ -1,6 +1,13 @@
-#include <stdint.h>
+#include "config.h"
+#if defined(HAVE_STDINT_H)
+#   include <stdint.h>
+#endif
 #include "yog/opcodes.h"
 #include "yog/yog.h"
+
+#if !defined(uint8_t)
+typedef unsigned char   uint8_t;
+#endif
 
 uint_t
 Yog_get_inst_size(OpCode op)

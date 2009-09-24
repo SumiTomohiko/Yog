@@ -16,7 +16,7 @@ YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogMatch* match = ptr;
+    YogMatch* match = PTR_AS(YogMatch, ptr);
 #define KEEP(member)    YogGC_keep(env, &match->member, keeper, heap)
     KEEP(str);
     KEEP(regexp);
@@ -26,7 +26,7 @@ YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static void
 YogMatch_finalize(YogEnv* env, void* ptr)
 {
-    YogMatch* match = ptr;
+    YogMatch* match = PTR_AS(YogMatch, ptr);
     onig_region_free(match->onig_region, 1);
     match->onig_region = NULL;
 }
@@ -48,7 +48,7 @@ YogMatch_new(YogEnv* env, YogVal str, YogVal regexp, OnigRegion* onig_region)
 static void
 YogRegexp_finalize(YogEnv* env, void* ptr)
 {
-    YogRegexp* regexp = ptr;
+    YogRegexp* regexp = PTR_AS(YogRegexp, ptr);
     onig_free(regexp->onig_regexp);
     regexp->onig_regexp = NULL;
 }
