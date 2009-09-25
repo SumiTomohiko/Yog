@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if defined(HAVE_WINDOWS_H)
+#   include <windows.h>
+#endif
 #include "yog/array.h"
 #include "yog/code.h"
 #include "yog/env.h"
@@ -273,6 +276,14 @@ main(int_t argc, char* argv[])
     return 0;
 #undef ERROR
 }
+
+#if defined(_MSC_VER)
+int
+WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
+{
+    return main(__argc, __argv);
+}
+#endif
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

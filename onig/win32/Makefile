@@ -3,7 +3,7 @@
 product_name = oniguruma
 
 CPPFLAGS = 
-CFLAGS = -O2 -nologo /W3 /MT
+CFLAGS = -O2 -nologo /W3 /MT /Zi
 LDFLAGS =
 LOADLIBES =
 ARLIB = lib

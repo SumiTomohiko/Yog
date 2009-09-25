@@ -3,7 +3,7 @@ DIR = ..\..\..\pthreads-w32
 
 all:
 	cd $(DIR)
-	$(MAKE) /$(MAKEFLAGS) /NOLOGO VC-static
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO VC-static-debug
 
 clean:
 	cd $(DIR)

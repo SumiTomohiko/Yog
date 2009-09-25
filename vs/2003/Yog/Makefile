@@ -13,10 +13,9 @@ MINIYOG_CFLAGS = $(COMMON_CFLAGS) /DMINIYOG /DGC_COPYING
 YOG_CFLAGS = $(COMMON_CFLAGS) /DGC_COPYING
 
 LINK = link.exe
-LDFLAGS = $(LDFLAGS) /DEBUG /NOLOGO /ENTRY:main /SUBSYSTEM:WINDOWS \
-	/INCREMENTAL:no
+LDFLAGS = $(LDFLAGS) /DEBUG /NOLOGO /SUBSYSTEM:WINDOWS /INCREMENTAL:no
 LIBS = ..\gmp\gmp.lib $(ROOT_DIR)\onig\onig_s.lib \
-       $(ROOT_DIR)\pthreads-w32\pthreadVC2.lib ws2_32.lib
+       $(ROOT_DIR)\pthreads-w32\pthreadVC2d.lib ws2_32.lib
 
 PYTHON = python
 
