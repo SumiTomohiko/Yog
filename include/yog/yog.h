@@ -128,16 +128,7 @@ void YogVal_set_attr(YogEnv*, YogVal, ID, YogVal);
     fflush(stdout); \
 } while (0)
 #else
-#   include <stdarg.h>
-#   include <stdio.h>
-static void
-TRACE(const char* fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    vprintf(fmt, ap);
-    va_end(ap);
-}
+#   define TRACE    printf("%s:%d ", __FILE__, __LINE__); printf
 #endif
 
 #define array_sizeof(a)     (sizeof(a) / sizeof(a[0]))

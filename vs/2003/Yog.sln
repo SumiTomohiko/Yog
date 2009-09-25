@@ -13,6 +13,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "onig", "onig\onig.vcproj", 
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miniyog", "miniyog\miniyog.vcproj", "{E5089FCE-5D6B-46AA-A8DD-4FBFAE8910DA}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -31,6 +35,9 @@ Global
 		{93AD3780-5753-4FB5-83FC-FBBD3CC0B809}.Debug.Build.0 = Release|Win32
 		{93AD3780-5753-4FB5-83FC-FBBD3CC0B809}.Release.ActiveCfg = Release|Win32
 		{93AD3780-5753-4FB5-83FC-FBBD3CC0B809}.Release.Build.0 = Release|Win32
+		{E5089FCE-5D6B-46AA-A8DD-4FBFAE8910DA}.Debug.ActiveCfg = Release|Win32
+		{E5089FCE-5D6B-46AA-A8DD-4FBFAE8910DA}.Release.ActiveCfg = Release|Win32
+		{E5089FCE-5D6B-46AA-A8DD-4FBFAE8910DA}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
