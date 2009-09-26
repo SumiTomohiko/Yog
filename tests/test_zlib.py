@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from sys import platform
 from zlib import compress
 from testcase import TestLib
 
 class TestZlib(TestLib):
 
+    disabled = 0 <= platform.find("openbsd")
     options = []
 
     def test_gc0(self):
