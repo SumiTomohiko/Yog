@@ -74,8 +74,12 @@ $(YOG): $(YOG_OBJS)
 $(SRC_DIR)\yog-arg.obj: $(SRC_DIR)\arg.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\yog-array.obj: $(SRC_DIR)\array.c
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+$(SRC_DIR)\yog-array.obj: $(SRC_DIR)\array.c $(SRC_DIR)\array.inc
+	$(CC) $(YOG_CFLAGS) /Fo$@ $(SRC_DIR)\array.c
+
+$(SRC_DIR)\array.inc: $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\array.yg
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\array.yg $@
 
 $(SRC_DIR)\yog-bignum.obj: $(SRC_DIR)\bignum.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
@@ -89,8 +93,12 @@ $(SRC_DIR)\yog-block.obj: $(SRC_DIR)\block.c
 $(SRC_DIR)\yog-bool.obj: $(SRC_DIR)\bool.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\yog-builtins.obj: $(SRC_DIR)\builtins.c
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+$(SRC_DIR)\yog-builtins.obj: $(SRC_DIR)\builtins.c $(SRC_DIR)\builtins.inc
+	$(CC) $(YOG_CFLAGS) /Fo$@ $(SRC_DIR)\builtins.c
+
+$(SRC_DIR)\builtins.inc: $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\builtins.yg
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\builtins.yg $@
 
 $(SRC_DIR)\yog-class.obj: $(SRC_DIR)\class.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
@@ -108,11 +116,11 @@ $(SRC_DIR)\yog-compile.obj: $(SRC_DIR)\compile.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
 $(SRC_DIR)\yog-dict.obj: $(SRC_DIR)\dict.c $(SRC_DIR)\dict.inc
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+	$(CC) $(YOG_CFLAGS) /Fo$@ $(SRC_DIR)\dict.c
 
-$(SRC_DIR)\dict.inc: $(SRC_DIR)\dict.yg
+$(SRC_DIR)\dict.inc: $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\dict.yg
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
-	$(MINIYOG) $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\dict.yg $(SRC_DIR)\dict.inc
+	$(MINIYOG) $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\dict.yg $@
 
 $(SRC_DIR)\yog-encoding.obj: $(SRC_DIR)\encoding.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
@@ -162,8 +170,12 @@ $(SRC_DIR)\yog-module.obj: $(SRC_DIR)\module.c
 $(SRC_DIR)\yog-nil.obj: $(SRC_DIR)\nil.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\yog-object.obj: $(SRC_DIR)\object.c
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+$(SRC_DIR)\yog-object.obj: $(SRC_DIR)\object.c $(SRC_DIR)\object.inc
+	$(CC) $(YOG_CFLAGS) /Fo$@ $(SRC_DIR)\object.c
+
+$(SRC_DIR)\object.inc: $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\object.yg
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\object.yg $@
 
 $(SRC_DIR)\yog-package.obj: $(SRC_DIR)\package.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
@@ -186,8 +198,12 @@ $(SRC_DIR)\yog-set.obj: $(SRC_DIR)\set.c
 $(SRC_DIR)\yog-stacktrace.obj: $(SRC_DIR)\stacktrace.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\yog-string.obj: $(SRC_DIR)\string.c
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+$(SRC_DIR)\yog-string.obj: $(SRC_DIR)\string.c $(SRC_DIR)\string.inc
+	$(CC) $(YOG_CFLAGS) /Fo$@ $(SRC_DIR)\string.c
+
+$(SRC_DIR)\string.inc: $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\string.yg
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\string.yg $@
 
 $(SRC_DIR)\yog-symbol.obj: $(SRC_DIR)\symbol.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
