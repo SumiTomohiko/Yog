@@ -18,14 +18,14 @@ $(SO): concurrent.c
 	$(CC) $(CFLAGS) -I$(top_srcdir)/include -shared -O2 -Wall -lpthread -o $@ concurrent.c @LIBS@
 
 clean: 
-	rm -f *.$(SOEXT)
+	rm -f $(SO)
 
 distclean: 
-	rm -f *.$(SOEXT)
+	rm -f $(SO)
 	rm -f Makefile
 
 maintainer-clean: 
-	rm -f *.$(SOEXT)
+	rm -f $(SO)
 	rm -f Makefile
 
 install:
