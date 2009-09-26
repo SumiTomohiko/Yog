@@ -40,7 +40,7 @@ YOG_OBJS = $(SRC_DIR)\yog-arg.obj $(SRC_DIR)\yog-array.obj \
 	   $(SRC_DIR)\yog-stacktrace.obj $(SRC_DIR)\yog-string.obj \
 	   $(SRC_DIR)\yog-symbol.obj $(SRC_DIR)\yog-table.obj \
 	   $(SRC_DIR)\yog-thread.obj $(SRC_DIR)\yog-value.obj \
-	   $(SRC_DIR)\yog-vm.obj $(SRC_DIR)\gc\yog-copying.obj
+	   $(SRC_DIR)\yog-vm.obj $(SRC_DIR)\gc\yog-copying.obj icon.RES
 
 MINIYOG_OBJS = $(SRC_DIR)\miniyog-arg.obj $(SRC_DIR)\miniyog-array.obj \
 	       $(SRC_DIR)\miniyog-bignum.obj $(SRC_DIR)\miniyog-binary.obj \
@@ -64,7 +64,7 @@ MINIYOG_OBJS = $(SRC_DIR)\miniyog-arg.obj $(SRC_DIR)\miniyog-array.obj \
 	       $(SRC_DIR)\miniyog-string.obj $(SRC_DIR)\miniyog-symbol.obj \
 	       $(SRC_DIR)\miniyog-table.obj $(SRC_DIR)\miniyog-thread.obj \
 	       $(SRC_DIR)\miniyog-value.obj $(SRC_DIR)\miniyog-vm.obj \
-	       $(SRC_DIR)\gc\miniyog-copying.obj
+	       $(SRC_DIR)\gc\miniyog-copying.obj icon.RES
 
 all: $(YOG)
 
@@ -369,6 +369,9 @@ $(SRC_DIR)\miniyog-vm.obj: $(SRC_DIR)\vm.c
 
 $(SRC_DIR)\gc\miniyog-copying.obj: $(SRC_DIR)\gc\copying.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
+
+icon.RES: icon.rc
+	rc $?
 
 clean:
 	del $(YOG_OBJS) $(MINIYOG_OBJS) $(YOG) $(MINIYOG)
