@@ -11,7 +11,7 @@ cleanup()
 
 do_test()
 {
-  (cd "${archive}" && mkdir $$ && ./configure --prefix=`pwd`/$$ && make && make install)
+  (cd "${archive}" && mkdir $$ && ./configure --prefix=`pwd`/$$ CFLAGS=-I${HOME}/include LDFLAGS=-L${HOME}/lib && make && make install)
   if [ $? != 0 ]; then
     echo "can't make"
     exit 2
