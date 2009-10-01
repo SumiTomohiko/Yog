@@ -27,7 +27,7 @@ fi
 cleanup
 zcat "${archive}.tar.gz" | cpio -i
 if [ $? != 0 ]; then
-  echo "can't extrace ${archive}.tar.gz"
+  echo "can't extract ${archive}.tar.gz"
   exit 2
 fi
 do_test
@@ -35,7 +35,7 @@ do_test
 cleanup
 bzcat "${archive}.tar.bz2" | cpio -i
 if [ $? != 0 ]; then
-  echo "can't extrace ${archive}.tar.bz2"
+  echo "can't extract ${archive}.tar.bz2"
   exit 2
 fi
 do_test
@@ -45,7 +45,7 @@ if [ $? = 0 ]; then
   cleanup
   xzcat "${archive}.tar.xz" | cpio -i
   if [ $? != 0 ]; then
-    echo "can't extrace ${archive}.tar.xz"
+    echo "can't extract ${archive}.tar.xz"
     exit 2
   fi
   do_test
@@ -54,7 +54,7 @@ fi
 cleanup
 unzip -q "${archive}.zip"
 if [ $? != 0 ]; then
-  echo "can't extrace ${archive}.zip"
+  echo "can't extract ${archive}.zip"
   exit 2
 fi
 do_test
