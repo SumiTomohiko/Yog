@@ -27,4 +27,9 @@ clean:
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO clean
 	cd ..
 
+test:
+	set "YOG=%CD%\Yog\yog.exe"
+	cd ..\..\tests
+	py.test --showlocals
+
 # vim: tabstop=8 shiftwidth=8 noexpandtab

@@ -198,5 +198,5 @@
 /* #undef HAVE_ISNAN */
 /* #undef HAVE_ALLOCA */
 #define HAVE__ALLOCA
-/* #undef HAVE_GETOPT_LONG */
 /* #undef HAVE_VSNPRINTF */
+#define HAVE_GETOPT_H 1

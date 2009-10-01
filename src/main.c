@@ -128,7 +128,6 @@ main(int_t argc, char* argv[])
 #define DEFAULT_THRESHOLD   (1 * 1024 * 1024)
     size_t threshold = DEFAULT_THRESHOLD;
 #undef DEFAULT_THRESHOLD
-#if defined(HAVE_GETOPT_LONG)
     struct option options[] = {
         { "debug-parser", no_argument, &debug_parser, 1 },
         { "gc-stress", no_argument, &gc_stress, 1 },
@@ -138,8 +137,8 @@ main(int_t argc, char* argv[])
         { "version", no_argument, NULL, 'v' },
         { 0, 0, 0, 0 },
     };
-#   define USAGE       usage()
-#   define ERROR(msg)  do { \
+#define USAGE       usage()
+#define ERROR(msg)  do { \
     fprintf(stderr, "%s\n", msg); \
     USAGE; \
     return -1; \
@@ -169,11 +168,8 @@ main(int_t argc, char* argv[])
         USAGE;
         return 0;
     }
-#   undef ERROR
-#   undef USAGE
-#else
-    uint_t optind = 1;
-#endif
+#undef ERROR
+#undef USAGE
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
     if (!pthread_win32_process_attach_np()) {
