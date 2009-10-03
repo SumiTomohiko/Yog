@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestTry(TestCase):
@@ -238,11 +237,10 @@ end
 
     def test_except_type60(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 6, in <package>
 Exception: 42
 """, stderr)
-            assert m is not None
 
         self._test("""
 class FooException > Exception

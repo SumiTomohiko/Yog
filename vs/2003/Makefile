@@ -28,7 +28,6 @@ clean:
 	cd ..
 
 test:
-	set "YOG=%CD%\Yog\yog.exe"
 	cd ..\..\tests
 	py.test --showlocals
 

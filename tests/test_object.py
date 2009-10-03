@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestObject(TestCase):
 
     def test_to_s0(self):
         def test_stdout(stdout):
-            m = match(r"""<Object [0-9a-zA-Z]+>
+            self._test_regexp(r"""<Object [0-9a-zA-Z]+>
 """, stdout)
-            assert m is not None
 
         self._test("""
 puts(Object.new())
@@ -37,11 +35,10 @@ puts(o.foo)
 
     def test_set_attribute10(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
 AttributeError: String object has no attribute 'bar'
 """, stderr)
-            assert m is not None
 
         self._test("""
 "foo".bar = 42

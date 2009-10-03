@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from re import match
 from os import close, environ, unlink
 from os.path import join
 from subprocess import PIPE, Popen
 from tempfile import mkstemp
 from time import localtime, strftime, time
+import os
 
 class TestCase(object):
 
@@ -18,6 +20,8 @@ class TestCase(object):
         return "\n".join(t)
 
     def get_command(self):
+        if os.name == "nt":
+            return join("..", "vs", "2003", "Yog", "yog.exe")
         try:
             return environ["YOG"]
         except KeyError:
@@ -47,8 +51,7 @@ class TestCase(object):
         for line in s.split("\n"):
             t.append(line)
 
-        from os import name
-        if name == "nt":
+        if os.name == "nt":
             newline = "\r\n"
         else:
             newline = "\n"
@@ -56,6 +59,11 @@ class TestCase(object):
 
     def format_time(self, sec):
         return strftime("%x %X", sec)
+
+    def _test_regexp(self, regexp, s):
+        m = match(self.conv_newline(regexp), s)
+        assert m is not None
+        return m
 
     def do(self, stdout, stderr, stdin, status, args, timeout, encoding=None):
         proc = self.run_command(args)

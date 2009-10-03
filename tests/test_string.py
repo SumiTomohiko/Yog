@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestString(TestCase):
@@ -97,12 +96,11 @@ puts("foo" + "bar" + "baz")
 
     def test_add10(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\+
 TypeError: can't convert 'Fixnum' object to string implicitly
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" + 42)
@@ -110,12 +108,11 @@ puts("foo" + 42)
 
     def test_add20(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\+
 TypeError: can't convert 'Bool' object to string implicitly
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" + true)
@@ -123,12 +120,11 @@ puts("foo" + true)
 
     def test_add30(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\+
 TypeError: can't convert 'Symbol' object to string implicitly
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" + :bar)
@@ -136,12 +132,11 @@ puts("foo" + :bar)
 
     def test_add40(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\+
 TypeError: can't convert 'Nil' object to string implicitly
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" + nil)
@@ -149,12 +144,11 @@ puts("foo" + nil)
 
     def test_add50(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\+
 TypeError: can't convert 'Float' object to string implicitly
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" + 3.1415926535)
@@ -302,12 +296,11 @@ puts(s[1])
 
     def test_subscript_error1(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]
 IndexError: string index out of range
 """, stderr)
-            assert m is not None
 
         self._test("""
 s = \"\"
@@ -316,12 +309,11 @@ puts(s[0])
 
     def test_subscript_error2(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]
 IndexError: string index out of range
 """, stderr)
-            assert m is not None
 
         self._test("""
 s = \"\"
@@ -330,12 +322,11 @@ puts(s[1])
 
     def test_subscript_error3(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]
 TypeError: string index must be Fixnum
 """, stderr)
-            assert m is not None
 
         self._test("""
 s = \"\"
@@ -344,12 +335,11 @@ puts(s[\"\"])
 
     def test_assign_subscript_error1(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]=
 TypeError: string index must be Fixnum
 """, stderr)
-            assert m is not None
 
         self._test("""
 s = \"\"
@@ -357,12 +347,11 @@ s[\"foo\"] = \"bar\"""", stderr=test_stderr)
 
     def test_multiply0(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 TypeError: can't multiply string by non-Fixnum of type 'String'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" * "bar")
@@ -376,12 +365,11 @@ puts("foo" * 2)
 
     def test_multiply20(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 TypeError: can't multiply string by non-Fixnum of type 'Bool'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" * true)
@@ -389,12 +377,11 @@ puts("foo" * true)
 
     def test_multiply30(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 TypeError: can't multiply string by non-Fixnum of type 'Symbol'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" * :bar)
@@ -402,12 +389,11 @@ puts("foo" * :bar)
 
     def test_multiply40(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 TypeError: can't multiply string by non-Fixnum of type 'Nil'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" * nil)
@@ -415,12 +401,11 @@ puts("foo" * nil)
 
     def test_multiply50(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 TypeError: can't multiply string by non-Fixnum of type 'Float'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" * 3.1415926535)
@@ -428,12 +413,11 @@ puts("foo" * 3.1415926535)
 
     def test_multiply60(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 ArgumentError: negative argument
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("foo" * (-1))

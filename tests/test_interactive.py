@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestInteractive(TestCase):
@@ -56,11 +55,10 @@ puts(\"foo\" + 42)
 
     def test_interactive60(self):
         def test_stdout(stdout):
-            m = match(r""">>> => <Object [0-9a-fA-F]+>
+            self._test_regexp(r""">>> => <Object [0-9a-fA-F]+>
 >>> => 42
 >>> => 42
 """, stdout)
-            assert m is not None
 
         self._test(stdout=test_stdout, stdin="""o = Object.new()
 o.foo = 42

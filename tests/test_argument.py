@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestArgument(TestCase):
@@ -107,11 +106,10 @@ foo(bar: 42)
 
     def test_keyword_argument10(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 5, in <package>
 TypeError: an unexpected keyword argument 'bar'
 """, stderr)
-            assert m is not None
 
         self._test("""
 def foo(*args)

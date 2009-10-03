@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestHereDoc(TestCase):
@@ -34,8 +33,7 @@ EOF2
 
     def test_error0(self):
         def test_stderr(stderr):
-            m = match("SyntaxError: file \"[^\"]+\", line 2: EOF while scanning heredoc\n", stderr)
-            assert m is not None
+            self._test_regexp("SyntaxError: file \"[^\"]+\", line 2: EOF while scanning heredoc\n", stderr)
 
         self._test("""
 print(<<EOF)

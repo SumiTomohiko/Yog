@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from os import unlink
-from re import match
 from testcase import TestCase
 
 class TestFile(TestCase):
@@ -50,14 +49,13 @@ end
 
     def test_readline10(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in File#open
   File "[^"]+", line 4, in <block>
   File builtin, in File#readline
 EOFError: end of file reached
 """, stderr)
-            assert m is not None
 
         filename = "foo.txt"
         self._test("""

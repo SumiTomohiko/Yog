@@ -23,7 +23,9 @@
 void
 YogError_out_of_memory(YogEnv* env)
 {
-    fprintf(stderr, "[ERROR]\nout of memory\n");
+    FILE* out = stderr;
+    fprintf(out, "[ERROR]\nout of memory\n");
+    fflush(out);
     abort();
 }
 
@@ -49,6 +51,7 @@ void
 YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...)
 {
     PRINT_ERROR(env, "BUG", filename, lineno, fmt);
+    fflush(stderr);
     abort();
 }
 

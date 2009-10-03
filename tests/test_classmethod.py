@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestClassMethod(TestCase):
@@ -35,9 +34,8 @@ Foo.new().bar()
 
     def test_classmethod20(self):
         def test_stdout(stdout):
-            m = match(r"""<Class [0-9a-fA-Z]+>
+            self._test_regexp(r"""<Class [0-9a-fA-Z]+>
 """, stdout)
-            assert m is not None
 
         self._test("""
 class Foo
@@ -53,9 +51,8 @@ Foo.bar()
 
     def test_classmethod30(self):
         def test_stdout(stdout):
-            m = match(r"""<Class [0-9a-fA-Z]+>
+            self._test_regexp(r"""<Class [0-9a-fA-Z]+>
 """, stdout)
-            assert m is not None
 
         self._test("""
 class Foo

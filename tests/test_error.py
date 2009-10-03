@@ -25,11 +25,10 @@ puts("xx" * 536870912)
 
     def test_NameError0(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
 NameError: name 'foo' is not defined
 """, stderr)
-            assert m is not None
 
         self._test("""
 foo
@@ -37,12 +36,11 @@ foo
 
     def test_NameError10(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 6, in <package>
   File "[^"]+", line 3, in foo
 NameError: name 'bar' is not defined
 """, stderr)
-            assert m is not None
 
         self._test("""
 def foo()

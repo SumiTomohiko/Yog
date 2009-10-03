@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestDict(TestCase):
@@ -78,12 +77,11 @@ foo(d)
 
     def test_KeyError0(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Dict#\[\]
 KeyError: .*
 """, stderr)
-            assert m is not None
 
         self._test("""
 d = Dict.new()

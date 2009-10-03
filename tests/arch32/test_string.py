@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 from utils import is_32bit
 
@@ -10,12 +9,11 @@ class TestString(TestCase):
 
     def test_string_multiply0(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
 ArgumentError: argument too big
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts("xxxxxxxx" * 536870912)

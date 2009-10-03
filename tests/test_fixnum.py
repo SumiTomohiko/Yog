@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestFixnum(TestCase):
@@ -72,13 +71,12 @@ print(42 >= 42)
 
     def test_less20(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in <
   File builtin, in Fixnum#<=>
 TypeError: comparison of Fixnum with Nil failed
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts(42 < nil)
@@ -431,12 +429,11 @@ puts(1 + 4611686018427387904)
 
     def test_add60(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\+
 TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Object'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum + Object (TypeError)
@@ -445,12 +442,11 @@ puts(42 + Object.new())
 
     def test_add70(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\+
 TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Nil'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum + Nil (TypeError)
@@ -459,12 +455,11 @@ puts(42 + nil)
 
     def test_add80(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\+
 TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Bool'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum + Bool (TypeError)
@@ -473,12 +468,11 @@ puts(42 + true)
 
     def test_add90(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\+
 TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Symbol'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum + Symbol (TypeError)
@@ -535,12 +529,11 @@ puts(- 42 - 3.141592)
 
     def test_subtract60(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#-
 TypeError: unsupported operand type\(s\) for -: 'Fixnum' and 'Object'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum - Object (TypeError)
@@ -549,12 +542,11 @@ puts(42 - Object.new())
 
     def test_subtract70(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#-
 TypeError: unsupported operand type\(s\) for -: 'Fixnum' and 'Nil'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum - Nil (TypeError)
@@ -563,12 +555,11 @@ puts(42 - nil)
 
     def test_subtract80(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#-
 TypeError: unsupported operand type\(s\) for -: 'Fixnum' and 'Bool'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum - Bool (TypeError)
@@ -577,12 +568,11 @@ puts(42 - true)
 
     def test_subtract90(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#-
 TypeError: unsupported operand type\(s\) for -: 'Fixnum' and 'Symbol'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum - Symbol (TypeError)
@@ -626,12 +616,11 @@ puts(2 * 3.1415926535)
 
     def test_multiply50(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\*
 TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Bool'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum * bool (TypeError)
@@ -640,12 +629,11 @@ puts(42 * true)
 
     def test_multiply60(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\*
 TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Nil'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum * nil (TypeError)
@@ -654,12 +642,11 @@ puts(42 * nil)
 
     def test_multiply70(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\*
 TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Object'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum * Object (TypeError)
@@ -668,12 +655,11 @@ puts(42 * Object.new())
 
     def test_multiply80(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\*
 TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Symbol'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum * Symbol (TypeError)
@@ -713,12 +699,11 @@ puts(2305843009213693952 / 4611686018427387904)
 
     def test_divide40(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#/
 TypeError: unsupported operand type\(s\) for /: 'Fixnum' and 'Bool'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum / bool (TypeError)
@@ -727,12 +712,11 @@ puts(42 / true)
 
     def test_divide50(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#/
 TypeError: unsupported operand type\(s\) for /: 'Fixnum' and 'Nil'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum / nil (TypeError)
@@ -741,12 +725,11 @@ puts(42 / nil)
 
     def test_divide60(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#/
 ZeroDivisionError: Fixnum division by zero
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum / zero (ZeroDivisionError)
@@ -755,12 +738,11 @@ puts(42 / 0)
 
     def test_divide70(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#/
 ZeroDivisionError: float division
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum / 0.0 (ZeroDivisionError)
@@ -800,12 +782,11 @@ puts(2305843009213693952 // 4611686018427387904)
 
     def test_floor_divide40(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#//
 TypeError: unsupported operand type\(s\) for //: 'Fixnum' and 'Bool'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum // bool (TypeError)
@@ -814,12 +795,11 @@ puts(42 // true)
 
     def test_floor_divide50(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#//
 TypeError: unsupported operand type\(s\) for //: 'Fixnum' and 'Nil'
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum // nil (TypeError)
@@ -828,12 +808,11 @@ puts(42 // nil)
 
     def test_floor_divide60(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#//
 ZeroDivisionError: Fixnum division by zero
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum // zero (ZeroDivisionError)
@@ -842,12 +821,11 @@ puts(42 // 0)
 
     def test_floor_divide70(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#//
 ZeroDivisionError: float division
 """, stderr)
-            assert m is not None
 
         self._test("""
 # Fixnum // 0.0 (ZeroDivisionError)
@@ -910,12 +888,11 @@ puts((- 3) << (- 1))
 
     def test_left_shift70(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#<<
 TypeError: unsupported operand type\(s\) for <<: 'Fixnum' and 'String'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts(42 << "foo")
@@ -985,12 +962,11 @@ puts((- 3) >> 1)
 
     def test_right_shift90(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#>>
 TypeError: unsupported operand type\(s\) for >>: 'Fixnum' and 'String'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts(42 >> "foo")
@@ -1012,12 +988,11 @@ puts(42 | 4611686018427387904)
 
     def test_bitwise_or20(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#\|
 TypeError: unsupported operand type\(s\) for \|: 'Fixnum' and 'String'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts(42 | "foo")
@@ -1039,12 +1014,11 @@ puts(42 & 4611686018427387904)
 
     def test_bitwise_and20(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#&
 TypeError: unsupported operand type\(s\) for &: 'Fixnum' and 'String'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts(42 & "foo")
@@ -1064,12 +1038,11 @@ puts(42 ^ 1073741824)
 
     def test_xor20(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#\^
 TypeError: unsupported operand type\(s\) for \^: 'Fixnum' and 'String'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts(42 ^ "foo")
@@ -1091,12 +1064,11 @@ puts(42 % 4611686018427387904)
 
     def test_modulo20(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#%
 TypeError: unsupported operand type\(s\) for %: 'Fixnum' and 'String'
 """, stderr)
-            assert m is not None
 
         self._test("""
 puts(42 % "foo")
@@ -1200,12 +1172,11 @@ print(42 ** 0.0)
 
     def test_power150(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#\*\*
 ZeroDivisionError: 0.0 cannot be raised to a negative power
 """, stderr)
-            assert m is not None
 
         self._test("""
 print(0 ** (- 1))
@@ -1213,12 +1184,11 @@ print(0 ** (- 1))
 
     def test_power160(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#\*\*
 TypeError: unsupported operand type\(s\) for \*\*: 'Fixnum' and 'Bool'
 """, stderr)
-            assert m is not None
 
         self._test("""
 print(42 ** false)

@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestParser(TestCase):
 
     def test_duplicate_argument_name(self):
         def test_stderr(stderr):
-            m = match("SyntaxError: file \"[^\"]+\", line 2: duplicated argument name in function definition\n", stderr)
-            assert m is not None
+            self._test_regexp("SyntaxError: file \"[^\"]+\", line 2: duplicated argument name in function definition\n", stderr)
 
         self._test("""
 def foo(bar, bar)
@@ -17,9 +15,8 @@ end
 
     def test_SyntaxError0(self):
         def test_stderr(stderr):
-            m = match(r"""SyntaxError: file "[^"]+", line 2: invalid syntax
+            self._test_regexp(r"""SyntaxError: file "[^"]+", line 2: invalid syntax
 """, stderr)
-            assert m is not None
 
         self._test("""
 def def

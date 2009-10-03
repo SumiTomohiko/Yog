@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestRegexp(TestCase):
@@ -97,12 +96,11 @@ puts(m.group(\"name\"))
 
     def test_match_group50(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Match#group
 IndexError: no such group
 """, stderr)
-            assert m is not None
 
         self._test("""
 m = \"foo\" =~ /foo/
@@ -153,12 +151,11 @@ puts(m.start(\"name\"))
 
     def test_match_start50(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Match#start
 IndexError: no such group
 """, stderr)
-            assert m is not None
 
         self._test("""
 m = \"foo\" =~ /foo/
@@ -209,12 +206,11 @@ puts(m.end(\"name\"))
 
     def test_match_end50(self):
         def test_stderr(stderr):
-            m = match(r"""Traceback \(most recent call last\):
+            self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Match#end
 IndexError: no such group
 """, stderr)
-            assert m is not None
 
         self._test("""
 m = \"foo\" =~ /foo/

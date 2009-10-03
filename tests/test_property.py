@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from re import match
 from testcase import TestCase
 
 class TestProperty(TestCase):
 
     def test_property0(self):
         def test_stdout(stdout):
-            m = match(r"""<Class [0-9a-fA-Z]+>
+            self._test_regexp(r"""<Class [0-9a-fA-Z]+>
 """, stdout)
-            assert m is not None
 
         self._test("""
 o = Object.new()
