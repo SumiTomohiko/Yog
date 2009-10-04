@@ -29,6 +29,6 @@ clean:
 
 test:
 	cd ..\..\tests
-	py.test --showlocals
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO /FMakefile.vs
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab
