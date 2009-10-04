@@ -3,7 +3,7 @@ title: Remove changeset ID from --version output.
 desc: ""
 type: :task
 component: Yog
-release: 0.0.2
+release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2009-09-13 04:36:15.537694 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2009-10-04 12:52:29.281170 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - unassigned from release 0.0.2
   - ""

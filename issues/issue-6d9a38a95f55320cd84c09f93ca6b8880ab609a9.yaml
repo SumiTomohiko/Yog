@@ -5,8 +5,8 @@ type: :task
 component: Yog
 release: 0.0.2
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :in_progress
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2009-08-28 11:22:19.017127 Z
 references: []
 
@@ -24,3 +24,7 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - changed status from unstarted to in_progress
   - ""
+- - 2009-10-04 12:51:12.957783 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
+  - Importing DLL is cancelled.
