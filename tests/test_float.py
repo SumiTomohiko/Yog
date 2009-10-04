@@ -7,40 +7,42 @@ class TestFloat(TestCase):
     def test_float0(self):
         self._test("""
 puts(3.1415926535)
-""", """3.14159
+""", """3.1415926535
 """)
 
     def test_negative0(self):
         self._test("""
 puts(- 3.1415926535)
-""", """-3.14159
+""", """-3.1415926535
 """)
 
     def test_positive0(self):
         self._test("""
 puts(+ 3.1415926535)
-""", """3.14159
+""", """3.1415926535
 """)
 
     def test_add0(self):
         self._test("""
 # Float + Fixnum
 puts(3.141592 + 42)
-""", """45.1416
+""", """45.141592
 """)
 
     def test_add10(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"4\.61168601843e\+0*18", stdout)
+
         self._test("""
 # Float + Bignum
-puts(3.141592 + 4611686018427387904)
-""", """4.61169e+18
-""")
+print(3.141592 + 4611686018427387904)
+""", stdout=test_stdout)
 
     def test_add20(self):
         self._test("""
 # Float + Float
 puts(3.141592 + 2.71828183)
-""", """5.85987
+""", """5.85987383
 """)
 
     def test_add30(self):
@@ -86,21 +88,23 @@ puts(3.1415926535 + :foo)
         self._test("""
 # Float - Fixnum
 puts(3.141592 - 42)
-""", """-38.8584
+""", """-38.858408
 """)
 
     def test_subtract10(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"-4\.61168601843e\+0*18", stdout)
+
         self._test("""
 # Float - Bignum
-puts(3.141592 - 4611686018427387904)
-""", """-4.61169e+18
-""")
+print(3.141592 - 4611686018427387904)
+""", stdout=test_stdout)
 
     def test_subtract20(self):
         self._test("""
 # Float - Float
 puts(3.141592 - 2.71828183)
-""", """0.42331
+""", """0.42331017
 """)
 
     def test_subtract30(self):
@@ -143,24 +147,28 @@ puts(3.1415926535 - :foo)
 """, stderr=test_stderr)
 
     def test_multiply0(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"131\.946864", stdout)
+
         self._test("""
 # Float * Fixnum
-puts(3.141592 * 42)
-""", """131.947
-""")
+print(3.141592 * 42)
+""", stdout=test_stdout)
 
     def test_multiply10(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"1\.4488035902e\+0*19", stdout)
+
         self._test("""
 # Float * Bignum
-puts(3.141592 * 4611686018427387904)
-""", """1.4488e+19
-""")
+print(3.141592 * 4611686018427387904)
+""", stdout=test_stdout)
 
     def test_multiply20(self):
         self._test("""
 # Float * Float
 puts(3.141592 * 2.71828183)
-""", """8.53973
+""", """8.53973245087
 """)
 
     def test_multiply30(self):
@@ -206,21 +214,21 @@ puts(3.1415926535 * :foo)
         self._test("""
 # Float / Fixnum
 puts(3.141592 / 42)
-""", """0.0747998
+""", """0.0747998095238
 """)
 
     def test_divide10(self):
         self._test("""
 # Float / Bignum
 puts(4611686018427387904.0 / 4611686018427387904)
-""", """1
+""", """1.0
 """)
 
     def test_divide20(self):
         self._test("""
 # Float / Float
 puts(3.141592 / 2.71828183)
-""", """1.15573
+""", """1.15572710869
 """)
 
     def test_divide30(self):
@@ -266,21 +274,21 @@ puts(3.1415926535 / :foo)
         self._test("""
 # Float // Fixnum
 puts(3.141592 // 42)
-""", """0.0747998
+""", """0.0747998095238
 """)
 
     def test_floor_divide10(self):
         self._test("""
 # Float // Bignum
 puts(4611686018427387904.0 // 4611686018427387904)
-""", """1
+""", """1.0
 """)
 
     def test_floor_divide20(self):
         self._test("""
 # Float // Float
 puts(3.141592 // 2.71828183)
-""", """1.15573
+""", """1.15572710869
 """)
 
     def test_floor_divide30(self):
@@ -323,10 +331,13 @@ puts(3.1415926535 // :foo)
 """, stderr=test_stderr)
 
     def test_power0(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"7\.59092416294e\+0*20", stdout)
+
         self._test("""
 # Float ** Fixnum
 print(3.1415926535 ** 42)
-""", "7.59092e+20")
+""", stdout=test_stdout)
 
     def test_power10(self):
         def test_stderr(stderr):
@@ -344,7 +355,7 @@ print(0.0 ** (- 42))
     def test_power20(self):
         self._test("""
 print(3.1415926535 ** 2.71828183)
-""", "22.4592")
+""", "22.4591577562")
 
     def test_power30(self):
         def test_stderr(stderr):

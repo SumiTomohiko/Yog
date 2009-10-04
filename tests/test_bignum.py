@@ -25,11 +25,13 @@ puts(4611686018427387904 + 4611686018427387904)
 """)
 
     def test_add20(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"4\.61168601843e\+0*18", stdout)
+
         self._test("""
 # Bignum + Float
-puts(4611686018427387904 + 3.1415926535)
-""", """4.61169e+18
-""")
+print(4611686018427387904 + 3.1415926535)
+""", stdout=test_stdout)
 
     def test_add30(self):
         def test_stderr(stderr):
@@ -106,11 +108,13 @@ puts(13835058055282163712 - 9223372036854775808)
 """)
 
     def test_subtract50(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"4\.61168601843e\+0*18", stdout)
+
         self._test("""
 # Bignum - Float
-puts(4611686018427387904 - 3.1415926535)
-""", """4.61169e+18
-""")
+print(4611686018427387904 - 3.1415926535)
+""", stdout=test_stdout)
 
     def test_subtract60(self):
         def test_stderr(stderr):
@@ -166,11 +170,13 @@ puts(4611686018427387904 * 4611686018427387904)
 """)
 
     def test_multiply20(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"1\.44880389157e\+0*19", stdout)
+
         self._test("""
 # Bignum * Float
-puts(4611686018427387904 * 3.1415926535)
-""", """1.4488e+19
-""")
+print(4611686018427387904 * 3.1415926535)
+""", stdout=test_stdout)
 
     def test_multiply30(self):
         def test_stderr(stderr):
@@ -212,18 +218,22 @@ puts(4611686018427387904 * :foo)
 """, stderr=test_stderr)
 
     def test_divide0(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"1\.09802048058e\+0*17", stdout)
+
         self._test("""
 # Bignum / Fixnum
-puts(4611686018427387904 / 42)
-""", """1.09802e+17
-""")
+print(4611686018427387904 / 42)
+""", stdout=test_stdout)
 
     def test_divide10(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"1\.46794525168e\+0*18", stdout)
+
         self._test("""
 # Bignum / Float
-puts(4611686018427387904 / 3.1415926535)
-""", """1.46795e+18
-""")
+print(4611686018427387904 / 3.1415926535)
+""", stdout=test_stdout)
 
     def test_divide20(self):
         self._test("""
@@ -312,11 +322,13 @@ puts(4611686018427387904 // 4611686018427387903)
 """)
 
     def test_floor_divide20(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"1\.46794525168e\+0*18", stdout)
+
         self._test("""
 # Bignum // Float = Float
-puts(4611686018427387904 // 3.1415926535)
-""", """1.46795e+18
-""")
+print(4611686018427387904 // 3.1415926535)
+""", stdout=test_stdout)
 
     def test_floor_divide30(self):
         self._test("""
@@ -652,7 +664,7 @@ puts(~ 4611686018427387904)
         self._test("""
 # Bignum ** Fixnum
 print(4611686018427387905 ** (- 42))
-""", "0")
+""", "0.0")
 
     def test_power10(self):
         self._test("""
@@ -667,22 +679,28 @@ print(4611686018427387905 ** 42)
 """, "7622697912241085246841620046099529552722704396051756980060748625481849660141335509377397501425926342965437276116797575921057386301842063414284518344299830352715211753969789318181644078678171881488504382561493020403780638603555809746562343496064301470781835101902994276826973030715852571077426796616728273390391640703614125640798204785064962564530206106925066468466703047494252916893070685754214107625005666422528680369707347168169171373994583742256363943361575646714188947293490990529023189522959276961516032479537535688083441285504164010126598649820927660003697447106852992255886191129998584217680778248308556164938574284296178420333948813114451948648920343858522817656153659924376910036649238993861298505380227591820182547652427299914828607230896109004106619977392256259918212890625")
 
     def test_power30(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"2\.32142887777e-0*59", stdout)
+
         self._test("""
 # Bignum ** Float
 print(4611686018427387905 ** (- 3.1415926535))
-""", "2.32143e-59")
+""", stdout=test_stdout)
 
     def test_power40(self):
         self._test("""
 # Bignum ** Float
 print(4611686018427387905 ** 0.0)
-""", "1")
+""", "1.0")
 
     def test_power50(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"4\.30769173923e\+0*58", stdout)
+
         self._test("""
 # Bignum ** Float
 print(4611686018427387905 ** 3.1415926535)
-""", "4.30769e+58")
+""", stdout=test_stdout)
 
     def test_power60(self):
         def test_stderr(stderr):

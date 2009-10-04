@@ -194,9 +194,11 @@
    such a type exists and the standard includes do not define it. */
 /* #undef uint8_t */
 
-#define HAVE_MALLOC_H
+#define HAVE_MALLOC_H 	1
 /* #undef HAVE_ISNAN */
-/* #undef HAVE_ALLOCA */
-#define HAVE__ALLOCA
+#define HAVE__ALLOCA 	1
 /* #undef HAVE_VSNPRINTF */
-#define HAVE_GETOPT_H 1
+#define HAVE_GETOPT_H 	1
+/* #undef HAVE_SNPRINTF */
+#define HAVE_FLOAT_H 	1
+#define HAVE__ISNAN 	1

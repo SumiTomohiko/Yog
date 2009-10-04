@@ -522,9 +522,9 @@ puts(- 1 - 4611686018427387904)
 
     def test_subtract50(self):
         self._test("""
-# Fixnum - float
+# Fixnum - Float
 puts(- 42 - 3.141592)
-""", """-45.1416
+""", """-45.141592
 """)
 
     def test_subtract60(self):
@@ -611,7 +611,7 @@ puts(2 * 4611686018427387904)
         self._test("""
 # Fixnum * float = float
 puts(2 * 3.1415926535)
-""", """6.28319
+""", """6.283185307
 """)
 
     def test_multiply50(self):
@@ -670,14 +670,14 @@ puts(42 * :foo)
         self._test("""
 # Fixnum / Fixnum
 puts(42 / 26)
-""", """1.61538
+""", """1.61538461538
 """)
 
     def test_divide10(self):
         self._test("""
 # Fixnum / float
 puts(42 / 3.1415926535)
-""", """13.369
+""", """13.3690152201
 """)
 
     def test_divide20(self):
@@ -760,7 +760,7 @@ puts(42 // 26)
         self._test("""
 # Fixnum // float
 puts(42 // 3.1415926535)
-""", """13.369
+""", """13.3690152201
 """)
 
     def test_floor_divide20(self):
@@ -1111,10 +1111,13 @@ print((- 1) ** 3)
 """, "-1")
 
     def test_power50(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"6\.24479878809e-0*43", stdout)
+
         self._test("""
 # Fixnum ** Fixnum
 print(42 ** (- 26))
-""", "6.2448e-43")
+""", stdout=test_stdout)
 
     def test_power60(self):
         self._test("""
@@ -1138,19 +1141,19 @@ print(42 ** 26)
         self._test("""
 # Fixnum ** Float
 print(42 ** 3.1415926535)
-""", "125773")
+""", "125773.181137")
 
     def test_power100(self):
         self._test("""
 # Fixnum ** Float
 print(0 ** 3.1415926535)
-""", "0")
+""", "0.0")
 
     def test_power110(self):
         self._test("""
 # Fixnum ** Float
 print(1 ** 3.1415926535)
-""", "1")
+""", "1.0")
 
     def test_power120(self):
         self._test("""
@@ -1159,16 +1162,19 @@ print((- 1) ** 3.1415926535)
 """, "NaN")
 
     def test_power130(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"7\.9508206039e-0*6", stdout)
+
         self._test("""
 # Fixnum ** Float
 print(42 ** (- 3.1415926535))
-""", "7.95082e-06")
+""", stdout=test_stdout)
 
     def test_power140(self):
         self._test("""
 # Fixnum ** Float
 print(42 ** 0.0)
-""", "1")
+""", "1.0")
 
     def test_power150(self):
         def test_stderr(stderr):

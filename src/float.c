@@ -1,5 +1,11 @@
 #include "config.h"
+#include <ctype.h>
+#if defined(HAVE_FLOAT_H)
+#   include <float.h>
+#endif
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
 #include <gmp.h>
 #include "yog/array.h"
 #include "yog/bignum.h"
@@ -33,6 +39,20 @@ YogFloat_new(YogEnv* env)
     return f;
 }
 
+static void
+remove_trailing_zero(YogEnv* env, char* buffer)
+{
+    char* pc = strchr(buffer, 'e');
+    if (pc == NULL) {
+        pc = buffer + strlen(buffer);
+    }
+    char* src = pc;
+    while ((pc[- 1] == '0') && isdigit(pc[- 2])) {
+        pc--;
+    }
+    memmove(pc, src, strlen(src) + 1);
+}
+
 static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -40,14 +60,25 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
-#if defined(HAVE_ISNAN)
+#if defined(HAVE__ISNAN)
+#   define isnan    _isnan
+#endif
     if (isnan(FLOAT_NUM(self))) {
         s = YogString_new_str(env, "NaN");
         RETURN(env, s);
     }
-#endif
 
-    s = YogString_new_format(env, "%g", PTR_AS(YogFloat, self)->val);
+    char buffer[32];
+    double val = PTR_AS(YogFloat, self)->val;
+#if defined(HAVE_SNPRINTF)
+    snprintf(buffer, array_sizeof(buffer), "%#.12g", val);
+#else
+    sprintf(buffer, "%#.12g", val);
+#endif
+    remove_trailing_zero(env, buffer);
+
+    s = YogString_new_str(env, buffer);
+
     RETURN(env, s);
 }
 

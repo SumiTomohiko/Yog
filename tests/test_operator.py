@@ -47,14 +47,14 @@ print(foo)
         self._test("""
 foo = 42
 print(foo /= 26)
-""", "1.61538")
+""", "1.61538461538")
 
     def test_argumented_assign70(self):
         self._test("""
 foo = 42
 foo /= 26
 print(foo)
-""", "1.61538")
+""", "1.61538461538")
 
     def test_argumented_assign80(self):
         self._test("""
