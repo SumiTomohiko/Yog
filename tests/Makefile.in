@@ -4,7 +4,7 @@ CC = @CC@
 SOEXT = @SOEXT@
 
 LIBS = test_package4$(SOEXT) test_package5$(SOEXT) test_package6$(SOEXT)
-LIBS_OPT = -shared -O2 -I../include -Wall
+LIBS_OPT = -shared -O2 -I.. -I../include -Wall
 
 test_package4$(SOEXT): test_package4.c Makefile
 	$(CC) -o $@ $(LIBS_OPT) test_package4.c

@@ -284,7 +284,7 @@ run_of_new_thread(void* arg)
     YogVal block = PTR_AS(YogThread, thread)->block;
     if (IS_PTR(vararg)) {
         uint_t size = YogArray_size(&env, vararg);
-#if !defined(alloca) && deined(_alloca)
+#if !defined(alloca) && defined(_alloca)
 #   define alloca   _alloca
 #endif
         YogVal* args = (YogVal*)alloca(sizeof(YogVal) * size);

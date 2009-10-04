@@ -16,7 +16,7 @@ include ./$(DEPDIR)/concurrent.Po
 all: $(exts)
 
 concurrent$(SOEXT): concurrent.c
-	$(CC) -I../include -shared -O2 -Wall -lpthread -MT concurrent$(SOEXT) -MD -MP -MF $(DEPDIR)/concurrent.Tpo -o $@ concurrent.c
+	$(CC) -I.. -I../include -shared -O2 -Wall -lpthread -MT concurrent$(SOEXT) -MD -MP -MF $(DEPDIR)/concurrent.Tpo -o $@ concurrent.c
 	mv -f $(DEPDIR)/concurrent.Tpo $(DEPDIR)/concurrent.Po
 
 clean: 

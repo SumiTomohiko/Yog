@@ -24,7 +24,9 @@ AC_CHECK_LIB([dl], [dlopen])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([inttypes.h limits.h stddef.h stdint.h stdlib.h string.h strings.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([inttypes.h limits.h stddef.h stdint.h stdlib.h string.h \
+                  strings.h sys/time.h unistd.h malloc.h getopt.h float.h \
+                  dlfcn.h sys/mman.h windows.h alloca.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -44,10 +46,9 @@ AC_FUNC_REALLOC
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit gettimeofday isascii memchr memmove memset munmap \
-                strchr strrchr strstr strtol dlopen \
+                strchr strrchr strstr strtol dlopen isnan alloca vsnprintf \
                 pthread_rwlockattr_setkind_np pthread_rwlockattr_init \
-                pthread_rwlockattr_destroy strlcpy strlcat])
-AC_CHECK_HEADERS([dlfcn.h sys/mman.h windows.h])
+                pthread_rwlockattr_destroy strlcpy strlcat snprintf _isnan])
 
 AC_ARG_ENABLE(profile,
               AC_HELP_STRING([--enable-profile],
