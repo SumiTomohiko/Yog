@@ -3,11 +3,11 @@ ROOT_DIR = ..
 ONIG_DIR = $(ROOT_DIR)/onig
 BDWGC_DIR = $(ROOT_DIR)/bdwgc
 GMP_DIR = $(ROOT_DIR)/gmp
-PTHREADS_W32_DIR = @PTHREADS_W32_DIR@
 
 LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
 YACC = $(LEMON)
+PYTHON = python2.6
 
 BUILT_SOURCES = parser.h keywords.inc
 COMMON_SOURCES = arg.c \

@@ -6,6 +6,7 @@
 #   include <malloc.h>
 #endif
 #include <setjmp.h>
+#include <stdlib.h>
 #include <string.h>
 #include "yog/binary.h"
 #include "yog/block.h"

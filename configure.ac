@@ -16,8 +16,6 @@ AC_PROG_RANLIB
 AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
 
-AM_PATH_PYTHON(2.6,,)
-
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([dl], [dlopen])
