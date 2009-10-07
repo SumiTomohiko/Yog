@@ -5,7 +5,7 @@
 #if defined(HAVE_DLFCN_H)
 #   include <dlfcn.h>
 #endif
-#if defined(HAVE_MALLOC_H)
+#if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
 #include <pthread.h>
@@ -550,9 +550,15 @@ YogVM_init(YogVM* vm)
     vm->running_gc = FALSE;
     vm->waiting_suspend = FALSE;
     vm->suspend_counter = 0;
-    pthread_cond_init(&vm->threads_suspend_cond, NULL);
-    pthread_cond_init(&vm->gc_finish_cond, NULL);
-    pthread_cond_init(&vm->vm_finish_cond, NULL);
+    if (pthread_cond_init(&vm->threads_suspend_cond, NULL) != 0) {
+        YOG_BUG(NULL, "pthread_cond_init failed");
+    }
+    if (pthread_cond_init(&vm->gc_finish_cond, NULL) != 0) {
+        YOG_BUG(NULL, "pthread_cond_init failed");
+    }
+    if (pthread_cond_init(&vm->vm_finish_cond, NULL) != 0) {
+        YOG_BUG(NULL, "pthread_cond_init failed");
+    }
     vm->heaps = vm->last_heap = NULL;
     vm->gc_id = 0;
 #if defined(GC_GENERATIONAL)

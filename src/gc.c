@@ -36,8 +36,18 @@ wakeup_gc_thread(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter wakeup_gc_thread", env));
     YogVM* vm = env->vm;
-    pthread_cond_signal(&vm->threads_suspend_cond);
+    if (pthread_cond_signal(&vm->threads_suspend_cond) != 0) {
+        YOG_BUG(env, "pthread_cond_signal failed");
+    }
     DEBUG(TRACE("%p: exit wakeup_gc_thread", env));
+}
+
+static void
+wait_condition_variable(YogEnv* env, pthread_cond_t* cond, pthread_mutex_t* mutex)
+{
+    if (pthread_cond_wait(cond, mutex) != 0) {
+        YOG_BUG(env, "pthread_cond_wait failed");
+    }
 }
 
 static void
@@ -47,7 +57,9 @@ wait_gc_finish(YogEnv* env)
     YogVM* vm = env->vm;
     uint_t id = vm->gc_id;
     while (vm->running_gc && (vm->gc_id == id)) {
-        pthread_cond_wait(&vm->gc_finish_cond, &vm->global_interp_lock);
+        pthread_cond_t* cond = &vm->gc_finish_cond;
+        pthread_mutex_t* mutex = &vm->global_interp_lock;
+        wait_condition_variable(env, cond, mutex);
     }
     DEBUG(TRACE("%p: exit wait_gc_finish", env));
 }
@@ -116,7 +128,9 @@ wakeup_suspend_threads(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter wakeup_suspend_threads", env));
     YogVM* vm = env->vm;
-    pthread_cond_broadcast(&vm->gc_finish_cond);
+    if (pthread_cond_broadcast(&vm->gc_finish_cond) != 0) {
+        YOG_BUG(env, "pthread_cond_broadcast failed");
+    }
     DEBUG(TRACE("%p: exit wakeup_suspend_threads", env));
 }
 
@@ -126,7 +140,9 @@ wait_suspend(YogEnv* env)
     DEBUG(TRACE("%p: enter wait_suspend", env));
     YogVM* vm = env->vm;
     while (vm->suspend_counter != 0) {
-        pthread_cond_wait(&vm->threads_suspend_cond, &vm->global_interp_lock);
+        pthread_cond_t* cond = &vm->threads_suspend_cond;
+        pthread_mutex_t* mutex = &vm->global_interp_lock;
+        wait_condition_variable(env, cond, mutex);
     }
     DEBUG(TRACE("%p: exit wait_suspend", env));
 }

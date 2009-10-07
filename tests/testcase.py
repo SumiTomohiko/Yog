@@ -58,7 +58,7 @@ class TestCase(object):
         return newline.join(t)
 
     def format_time(self, sec):
-        return strftime("%x %X", sec)
+        return strftime("%x %X", localtime(sec))
 
     def _test_regexp(self, regexp, s):
         m = match(self.conv_newline(regexp), s)

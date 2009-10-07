@@ -2,7 +2,7 @@
 #if defined(HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif
-#if defined(HAVE_MALLOC_H)
+#if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
 #include <stdlib.h>

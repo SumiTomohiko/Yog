@@ -36,9 +36,9 @@ test-installed:
 	YOG=$(prefix)/bin/yog $(TEST_CMD)
 
 clean:
-	find . -name "core*" -print0 | xargs --null rm -f
-	find . -name "*.pyc" -print0 | xargs --null rm -f
-	find . -name "*.so" -print0 | xargs --null rm -f
+	find . -name "core*" -print0 | xargs -0 rm -f
+	find . -name "*.pyc" -print0 | xargs -0 rm -f
+	find . -name "*.so" -print0 | xargs -0 rm -f
 
 distclean:
 	$(MAKE) clean

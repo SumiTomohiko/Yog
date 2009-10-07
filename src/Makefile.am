@@ -54,7 +54,7 @@ COMMON_SOURCES = arg.c \
 	value.c \
 	vm.c
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
-		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\"
+		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" @CFLAGS_COMMON@
 LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -lm -export-dynamic \
 		 $(GMP_DIR)/.libs/libgmp.a @LDFLAGS_COMMON@
 
@@ -73,7 +73,7 @@ yog_mark_sweep_compact_CFLAGS = $(CFLAGS_COMMON) -DGC_MARK_SWEEP_COMPACT
 yog_mark_sweep_compact_LDFLAGS = $(LDFLAGS_COMMON)
 yog_bdw_SOURCES = $(COMMON_SOURCES) gc/bdw.c
 yog_bdw_CFLAGS = $(CFLAGS_COMMON) -DGC_BDW -DGC_PTHREADS
-yog_bdw_LDFLAGS = $(LDFLAGS_COMMON) $(BDWGC_DIR)/.libs/libgc.a -lpthread
+yog_bdw_LDFLAGS = $(LDFLAGS_COMMON) $(BDWGC_DIR)/.libs/libgc.a
 yog_generational_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
 			   gc/mark-sweep-compact.c
 yog_generational_CFLAGS = $(CFLAGS_COMMON) -DGC_GENERATIONAL

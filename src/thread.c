@@ -2,7 +2,8 @@
 #if defined(HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif
-#if defined(HAVE_MALLOC_H)
+#include <errno.h>
+#if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
 #include <pthread.h>
@@ -347,16 +348,29 @@ run(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     PTR_AS(ThreadArg, arg)->vararg = vararg;
 
     YogVM_add_thread(env, env->vm, self);
+
+    pthread_attr_t attr;
+    if (pthread_attr_init(&attr) != 0) {
+        YOG_BUG(env, "pthread_attr_init failed");
+    }
+    if (pthread_attr_setstacksize(&attr, 10 * 1024 * 1024) != 0) {
+        YOG_BUG(env, "pthread_attr_setstacksize failed");
+    }
+
 #if !defined(GC_BDW)
 #   define CREATE_THREAD    pthread_create
 #else
 #   define CREATE_THREAD    GC_pthread_create
 #endif
     pthread_t* pt = &PTR_AS(YogThread, self)->pthread;
-    if (CREATE_THREAD(pt, NULL, run_of_new_thread, (void*)arg) != 0) {
-        YOG_BUG(env, "Can't create new thread");
+    if (CREATE_THREAD(pt, &attr, run_of_new_thread, (void*)arg) != 0) {
+        YOG_BUG(env, "can't create new thread: %s", strerror(errno));
     }
 #undef CREATE_THREAD
+
+    if (pthread_attr_destroy(&attr) != 0) {
+        YOG_BUG(env, "pthread_attr_destroy failed");
+    }
 
     RETURN(env, self);
 }

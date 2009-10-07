@@ -68,6 +68,8 @@ AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
 AC_CANONICAL_HOST
 case "${host}" in
 *-openbsd*)
+    CFLAGS_COMMON="${CFLAGS_COMMON} -pthread"
+    LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb"
     TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
     EXTS="concurrent\$(SOEXT)"
@@ -97,6 +99,7 @@ AC_SUBST(PTHREADS_W32_DIR)
 AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
 AC_SUBST(PACKAGE_VERSION)
+AC_SUBST(CFLAGS_COMMON)
 AC_SUBST(LDFLAGS_COMMON)
 AC_SUBST(EXTS)
 AC_SUBST(SOEXT)
