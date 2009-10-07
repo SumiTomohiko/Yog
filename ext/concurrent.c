@@ -41,7 +41,6 @@ Barrier_init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 static YogVal
 Barrier_wait(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    TRACE("Barrier_wait start");
     SAVE_ARGS4(env, self, args, kw, block);
 
     pthread_mutex_t* mutex = &PTR_AS(Barrier, self)->mutex;
@@ -59,7 +58,6 @@ Barrier_wait(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         YOG_BUG(env, "pthread_mutex_lock failed");
     }
 
-    TRACE("Barrier_wait end");
     RETURN(env, self);
 }
 

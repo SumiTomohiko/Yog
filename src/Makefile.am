@@ -55,8 +55,8 @@ COMMON_SOURCES = arg.c \
 	vm.c
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" @CFLAGS_COMMON@
-LDFLAGS_COMMON = $(ONIG_DIR)/.libs/libonig.a -lm -export-dynamic \
-		 $(GMP_DIR)/.libs/libgmp.a @LDFLAGS_COMMON@
+LDFLAGS_COMMON = -export-dynamic @LDFLAGS_COMMON@
+LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a -lm -lpthread -ldl
 
 EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
 		 yog-mark-sweep-compact$(EXEEXT) yog-generational$(EXEEXT) \
@@ -73,7 +73,8 @@ yog_mark_sweep_compact_CFLAGS = $(CFLAGS_COMMON) -DGC_MARK_SWEEP_COMPACT
 yog_mark_sweep_compact_LDFLAGS = $(LDFLAGS_COMMON)
 yog_bdw_SOURCES = $(COMMON_SOURCES) gc/bdw.c
 yog_bdw_CFLAGS = $(CFLAGS_COMMON) -DGC_BDW -DGC_PTHREADS
-yog_bdw_LDFLAGS = $(LDFLAGS_COMMON) $(BDWGC_DIR)/.libs/libgc.a
+yog_bdw_LDFLAGS = $(LDFLAGS_COMMON)
+yog_bdw_LDADD = $(BDWGC_DIR)/.libs/libgc.a
 yog_generational_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
 			   gc/mark-sweep-compact.c
 yog_generational_CFLAGS = $(CFLAGS_COMMON) -DGC_GENERATIONAL
