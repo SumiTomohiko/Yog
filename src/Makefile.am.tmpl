@@ -14,7 +14,7 @@ COMMON_SOURCES = @SOURCES@
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" @CFLAGS_COMMON@
 LDFLAGS_COMMON = -export-dynamic @LDFLAGS_COMMON@
-LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a -lm -lpthread -ldl
+LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a -lm @LIBS@
 
 EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
 		 yog-mark-sweep-compact$(EXEEXT) yog-generational$(EXEEXT) \
