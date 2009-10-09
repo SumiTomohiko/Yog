@@ -929,9 +929,9 @@ Defining Clean-up Actions
 
 ``finally`` clause is always executed before leaving the ``try`` statement, whether an exception has occured or not.
 
-********
-Packages
-********
+********************
+Packages (Unix only)
+********************
 
 When you write programs for some time, you may want to reuse some useful codes.
 *Packages* resolve this issue.
