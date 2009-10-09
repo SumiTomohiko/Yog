@@ -49,6 +49,7 @@ configure.scan
 core
 core.*
 doc/_build
+doc/conf.py
 ext/.deps/
 gmp/.libs/
 gmp/config.m4

@@ -63,7 +63,7 @@ if test "${enable_google_perftools}" = "yes"; then
 fi
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
-                 ext/Makefile])
+                 ext/Makefile doc/conf.py])
 
 AC_CANONICAL_HOST
 case "${host}" in

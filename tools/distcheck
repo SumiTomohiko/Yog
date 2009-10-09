@@ -40,13 +40,16 @@ if [ $? != 0 ]; then
 fi
 configure
 
-cleanup
-xzcat "${archive}.tar.xz" | cpio -i
-if [ $? != 0 ]; then
-  echo "can't extrace ${archive}.tar.xz"
-  exit 2
+which xzcat >/dev/null
+if [ $? = 0 ]; then
+  cleanup
+  xzcat "${archive}.tar.xz" | cpio -i
+  if [ $? != 0 ]; then
+    echo "can't extrace ${archive}.tar.xz"
+    exit 2
+  fi
+  configure
 fi
-configure
 
 cleanup
 unzip -q "${archive}.zip"
