@@ -31,4 +31,12 @@ test:
 	cd ..\..\tests
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO /FMakefile.vs
 
+installer: Yog-0.0.2.msi
+
+Yog-0.0.2.msi: Yog-0.0.2.wixobj
+	light -nologo Yog-0.0.2.wixobj
+
+Yog-0.0.2.wixobj: Yog-0.0.2.wxs
+	candle -nologo Yog-0.0.2.wxs
+
 # vim: tabstop=8 shiftwidth=8 noexpandtab
