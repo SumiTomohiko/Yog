@@ -56,14 +56,14 @@ fi
 print_done
 
 echo -n "Generate HTML document..."
-(cd "${archive_dir}/doc" && make)
+(cd doc && make)
 if [ $? != 0 ]; then
   echo "can't generate document"
   exit 2
 fi
-rm -rf "${archive_dir}/doc/_build" "${archive_dir}/doc/_static"
+cp -r doc/html "${archive_dir}/doc"
 if [ $? != 0 ]; then
-  echo "can't remove intermediate files for document"
+  echo "can't copy documents"
   exit 2
 fi
 print_done
