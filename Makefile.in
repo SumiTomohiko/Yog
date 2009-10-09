@@ -81,29 +81,9 @@ install:
 	cd ext && $(MAKE) $@
 
 dist:
-	rm -rf $(ARCHIVE)
-	git archive --prefix=$(ARCHIVE)/ HEAD | tar xf -
-	cp -r doc/html $(ARCHIVE)/doc
-	tar czf $(ARCHIVE).tar.gz $(ARCHIVE)
-	tar cjf $(ARCHIVE).tar.bz2 $(ARCHIVE)
-	tar c $(ARCHIVE) | xz --compress > $(ARCHIVE).tar.xz
-	rm -f $(ARCHIVE).zip
-	zip -r $(ARCHIVE).zip $(ARCHIVE)
-	rm -rf $(ARCHIVE)
+	tools/dist $(ARCHIVE)
 
 distcheck:
-	rm -rf $(ARCHIVE)
-	tar xf $(ARCHIVE).tar.gz
-	(cd $(ARCHIVE) && ./configure && make)
-	rm -rf $(ARCHIVE)
-	tar xf $(ARCHIVE).tar.bz2
-	(cd $(ARCHIVE) && ./configure && make)
-	rm -rf $(ARCHIVE)
-	xzcat $(ARCHIVE).tar.xz | tar x
-	(cd $(ARCHIVE) && ./configure && make)
-	rm -rf $(ARCHIVE)
-	unzip $(ARCHIVE).zip
-	(cd $(ARCHIVE) && ./configure && make)
-	rm -rf $(ARCHIVE)
+	tools/distcheck $(ARCHIVE)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

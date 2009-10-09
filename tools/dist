@@ -1,0 +1,91 @@
+#!/bin/sh
+
+yog="src/yog-copying"
+
+archive="${1}"
+if [ -z "${archive}" ]; then
+  echo "${0} head"
+  exit 1
+fi
+
+dir=$$
+
+echo "Extract source tree..."
+mkdir "${dir}"
+if [ $? != 0 ]; then
+  echo "can't make temporary directory"
+  exit 2
+fi
+git archive "--prefix=${dir}/${archive}/" HEAD | tar xf -
+if [ $? != 0 ]; then
+  echo "can't extract source tree"
+  exit 2
+fi
+
+echo "Generate configure etc..."
+(cd "${dir}/${archive}" && aclocal && autoheader && autoconf && automake)
+if [ $? != 0 ]; then
+  echo "can't generate configure etc."
+  exit 2
+fi
+rm -rf "${dir}/${archive}/autom4te.cache"
+if [ $? != 0 ]; then
+  echo "can't remove autom4te"
+  exit 2
+fi
+grep -o "./miniyog\$(EXEEXT) yg2inc.yg [[:alnum:]_]\+.yg \$@" "${dir}/${archive}/src/Makefile.am.tmpl" | while read line
+do
+  yg=`echo "${line}" | cut -d " " -f 2`
+  src=`echo "${line}" | cut -d " " -f 3`
+  dst="`echo "${src}" | cut -d "." -f 1`.inc"
+  ${yog} "${dir}/${archive}/src/${yg}" "${dir}/${archive}/src/${src}" "${dir}/${archive}/src/${dst}"
+done
+
+echo "Generate HTML document..."
+(cd "${dir}/${archive}/doc" && make)
+if [ $? != 0 ]; then
+  echo "can't generate document"
+  exit 2
+fi
+rm -rf "${dir}/${archive}/doc/_build" "${dir}/${archive}/doc/_static"
+if [ $? != 0 ]; then
+  echo "can't remove intermediate files for document"
+  exit 2
+fi
+
+echo -n "Archive .tar.gz..."
+(cd "${dir}" && tar czf "../${archive}.tar.gz" "${archive}")
+if [ $? != 0 ]; then
+  echo "can't archive .tar.gz"
+  exit 2
+fi
+echo "done"
+echo -n "Archive .tar.bz2..."
+(cd "${dir}" && tar cjf "../${archive}.tar.bz2" "${archive}")
+if [ $? != 0 ]; then
+  echo "can't archive .tar.bz2"
+  exit 2
+fi
+echo "done"
+echo -n "Archive .tar.xz..."
+(cd "${dir}" && tar c "${archive}" | xz --compress > "../${archive}.tar.xz")
+if [ $? != 0 ]; then
+  echo "can't archive .tar.xz"
+  exit 2
+fi
+echo "done"
+echo -n "Archive .zip..."
+(cd "${dir}" && zip -qr "../${archive}.zip" "${archive}")
+if [ $? != 0 ]; then
+  echo "can't archive .zip"
+  exit 2
+fi
+echo "done"
+
+rm -rf "${dir}"
+if [ $? != 0 ]; then
+  echo "can't cleanup temporary directory"
+  exit 2
+fi
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

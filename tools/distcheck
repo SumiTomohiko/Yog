@@ -1,0 +1,61 @@
+#!/bin/sh
+
+cleanup()
+{
+  rm -rf "${archive}"
+  if [ $? != 0 ]; then
+    echo "can't cleanup"
+    exit 2
+  fi
+}
+
+configure()
+{
+  (cd "${archive}" && ./configure && make)
+  if [ $? != 0 ]; then
+    echo "can't make"
+    exit 2
+  fi
+}
+
+archive="${1}"
+if [ -z "${archive}" ]; then
+  echo "${0} head"
+  exit 1
+fi
+
+cleanup
+tar xf ${archive}.tar.gz
+if [ $? != 0 ]; then
+  echo "can't extrace ${archive}.tar.gz"
+  exit 2
+fi
+configure
+
+cleanup
+tar xf ${archive}.tar.bz2
+if [ $? != 0 ]; then
+  echo "can't extrace ${archive}.tar.bz2"
+  exit 2
+fi
+configure
+
+cleanup
+xzcat ${archive}.tar.xz | tar x
+if [ $? != 0 ]; then
+  echo "can't extrace ${archive}.tar.xz"
+  exit 2
+fi
+configure
+
+cleanup
+unzip -q ${archive}.zip
+if [ $? != 0 ]; then
+  echo "can't extrace ${archive}.zip"
+  exit 2
+fi
+configure
+
+cleanup
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
