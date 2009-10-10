@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Nested comment
+desc: Change comments to be nested ($ ($ ... $) $).
+type: :feature
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-10-10 13:40:28.470198 Z
+references: []
+
+id: 81a4c99a937f86a05fe5497a6bdfac6609b1ead8
+log_events: 
+- - 2009-10-10 13:40:32.190837 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
