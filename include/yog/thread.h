@@ -1,6 +1,7 @@
 #if !defined(__YOG_THREAD_H__)
 #define __YOG_THREAD_H__
 
+#include <pthread.h>
 #include <setjmp.h>
 #if defined(GC_COPYING)
 #   include "yog/gc/copying.h"
@@ -30,122 +31,6 @@ struct YogJmpBuf {
 };
 
 typedef struct YogJmpBuf YogJmpBuf;
-
-struct YogLocals {
-    struct YogLocals* next;
-    uint_t num_vals;
-    uint_t size;
-    YogVal* vals[4];
-};
-
-typedef struct YogLocals YogLocals;
-
-#include "yog/env.h"
-
-#define SAVE_LOCALS(env) \
-    YogLocals* __cur_locals__ = PTR_AS(YogThread, (env)->thread)->locals
-#define RESTORE_LOCALS(env) \
-    PTR_AS(YogThread, (env)->thread)->locals = __cur_locals__
-#if 0
-#   define PUSH_LOCAL_TABLE(env, tbl) \
-do { \
-    uint_t i; \
-    TRACE("tbl=%p", &tbl); \
-    for (i = 0; i < tbl.num_vals; i++) { \
-        TRACE("tbl.vals[%d]=%p", i, tbl.vals[i]); \
-    } \
-    tbl.next = PTR_AS(YogThread, (env)->thread)->locals; \
-    PTR_AS(YogThread, (env)->thread)->locals = &tbl; \
-} while (0)
-#else
-#   define PUSH_LOCAL_TABLE(env, tbl) \
-do { \
-    tbl.next = PTR_AS(YogThread, (env)->thread)->locals; \
-    PTR_AS(YogThread, (env)->thread)->locals = &tbl; \
-} while (0)
-#endif
-#define PUSH_LOCAL(env, x) \
-    YogLocals __locals_##x##__; \
-    __locals_##x##__.num_vals = 1; \
-    __locals_##x##__.size = 1; \
-    __locals_##x##__.vals[0] = &(x); \
-    __locals_##x##__.vals[1] = NULL; \
-    __locals_##x##__.vals[2] = NULL; \
-    __locals_##x##__.vals[3] = NULL; \
-    PUSH_LOCAL_TABLE(env, __locals_##x##__);
-#define PUSH_LOCALS2(env, x, y) \
-    YogLocals __locals_##x##_##y##__; \
-    __locals_##x##_##y##__.num_vals = 2; \
-    __locals_##x##_##y##__.size = 1; \
-    __locals_##x##_##y##__.vals[0] = &(x); \
-    __locals_##x##_##y##__.vals[1] = &(y); \
-    __locals_##x##_##y##__.vals[2] = NULL; \
-    __locals_##x##_##y##__.vals[3] = NULL; \
-    PUSH_LOCAL_TABLE(env, __locals_##x##_##y##__);
-#define PUSH_LOCALS3(env, x, y, z) \
-    YogLocals __locals_##x##_##y##_##z##__; \
-    __locals_##x##_##y##_##z##__.num_vals = 3; \
-    __locals_##x##_##y##_##z##__.size = 1; \
-    __locals_##x##_##y##_##z##__.vals[0] = &(x); \
-    __locals_##x##_##y##_##z##__.vals[1] = &(y); \
-    __locals_##x##_##y##_##z##__.vals[2] = &(z); \
-    __locals_##x##_##y##_##z##__.vals[3] = NULL; \
-    PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##__);
-#define PUSH_LOCALS4(env, x, y, z, t) \
-    YogLocals __locals_##x##_##y##_##z##_##t##__; \
-    __locals_##x##_##y##_##z##_##t##__.num_vals = 4; \
-    __locals_##x##_##y##_##z##_##t##__.size = 1; \
-    __locals_##x##_##y##_##z##_##t##__.vals[0] = &(x); \
-    __locals_##x##_##y##_##z##_##t##__.vals[1] = &(y); \
-    __locals_##x##_##y##_##z##_##t##__.vals[2] = &(z); \
-    __locals_##x##_##y##_##z##_##t##__.vals[3] = &(t); \
-    PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##_##t##__);
-#define PUSH_LOCALS5(env, x, y, z, t, u) \
-    PUSH_LOCALS4(env, x, y, z, t); \
-    PUSH_LOCAL(env, u)
-#define PUSH_LOCALS6(env, x, y, z, t, u, v) \
-    PUSH_LOCALS4(env, x, y, z, t); \
-    PUSH_LOCALS2(env, u, v)
-#define PUSH_LOCALS7(env, x, y, z, t, u, v, w) \
-    PUSH_LOCALS4(env, x, y, z, t); \
-    PUSH_LOCALS3(env, u, v, w)
-#define PUSH_LOCALS8(env, x, y, z, t, u, v, w, p) \
-    PUSH_LOCALS4(env, x, y, z, t); \
-    PUSH_LOCALS4(env, u, v, w, p)
-#define PUSH_LOCALSX(env, num, x) \
-    YogLocals __locals_##x##__; \
-    __locals_##x##__.num_vals = 1; \
-    __locals_##x##__.size = (num); \
-    __locals_##x##__.vals[0] = (x); \
-    __locals_##x##__.vals[1] = NULL; \
-    __locals_##x##__.vals[2] = NULL; \
-    __locals_##x##__.vals[3] = NULL; \
-    PUSH_LOCAL_TABLE(env, __locals_##x##__);
-#define SAVE_ARG(env, x)        SAVE_LOCALS((env)); \
-                                PUSH_LOCAL((env), x)
-#define SAVE_ARGS2(env, x, y)   SAVE_LOCALS((env)); \
-                                PUSH_LOCALS2((env), x, y)
-#define SAVE_ARGS3(env, x, y, z)  \
-                                SAVE_LOCALS((env)); \
-                                PUSH_LOCALS3((env), x, y, z)
-#define SAVE_ARGS4(env, x, y, z, t)  \
-                                SAVE_LOCALS((env)); \
-                                PUSH_LOCALS4((env), x, y, z, t)
-#define SAVE_ARGS5(env, x, y, z, t, u)  \
-                                SAVE_LOCALS((env)); \
-                                PUSH_LOCALS5((env), x, y, z, t, u)
-#define POP_LOCALS(env) do { \
-    YogLocals* next = PTR_AS(YogThread, (env)->thread)->locals->next; \
-    PTR_AS(YogThread, (env)->thread)->locals = next; \
-} while (0)
-#define RETURN(env, val)        do { \
-    RESTORE_LOCALS(env); \
-    return val; \
-} while (0)
-#define RETURN_VOID(env)        do { \
-    RESTORE_LOCALS(env); \
-    return; \
-} while (0)
 
 struct YogThread {
     struct YogBasicObj base;

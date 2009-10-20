@@ -1,15 +1,16 @@
 #include <string.h>
 #include "yog/array.h"
+#include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/gc.h"
-#include "yog/class.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 uint_t

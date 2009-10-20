@@ -1,5 +1,4 @@
 #include <stdarg.h>
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/frame.h"
 #include "yog/function.h"
@@ -7,6 +6,7 @@
 #include "yog/package.h"
 #include "yog/table.h"
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 void

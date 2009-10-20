@@ -4,6 +4,7 @@
 #include "yog/property.h"
 #include "yog/string.h"
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 static void

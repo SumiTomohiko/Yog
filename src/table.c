@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #endif
 #include <string.h>
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/gc.h"

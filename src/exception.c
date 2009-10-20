@@ -1,6 +1,5 @@
 #include "yog/array.h"
 #include "yog/code.h"
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
@@ -9,6 +8,7 @@
 #include "yog/gc.h"
 #include "yog/class.h"
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 static void

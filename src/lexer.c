@@ -15,7 +15,6 @@
 #include "oniguruma.h"
 #include "yog/array.h"
 #include "yog/encoding.h"
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/float.h"
 #include "yog/gc.h"
@@ -23,6 +22,7 @@
 #include "yog/regexp.h"
 #include "yog/table.h"
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 #include "parser.h"
 

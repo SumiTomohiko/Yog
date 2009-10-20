@@ -10,7 +10,6 @@
 #include <gmp.h>
 #include "yog/array.h"
 #include "yog/bignum.h"
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/float.h"

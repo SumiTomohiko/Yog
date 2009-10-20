@@ -5,7 +5,6 @@
 #include <string.h>
 #include <strings.h>
 #include <sys/mman.h>
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/thread.h"
 #include "yog/vm.h"

@@ -1,10 +1,10 @@
 #include <ctype.h>
 #include "yog/encoding.h"
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/table.h"
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 char*

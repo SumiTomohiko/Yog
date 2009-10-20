@@ -11,7 +11,6 @@
 #include <string.h>
 #include "yog/array.h"
 #include "yog/classmethod.h"
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"

@@ -16,7 +16,6 @@
 #endif
 #include "yog/array.h"
 #include "yog/code.h"
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/package.h"

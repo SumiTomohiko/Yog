@@ -1,7 +1,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include "yog/env.h"
 #include "yog/gc.h"
 #include "yog/gc/copying.h"
 #include "yog/thread.h"

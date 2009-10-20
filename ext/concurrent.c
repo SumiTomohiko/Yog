@@ -1,7 +1,6 @@
 #include <pthread.h>
 #include "yog/array.h"
 #include "yog/class.h"
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/frame.h"
 #include "yog/gc.h"

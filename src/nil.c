@@ -1,5 +1,4 @@
 #include "yog/array.h"
-#include "yog/env.h"
 #include "yog/class.h"
 #include "yog/string.h"
 #include "yog/thread.h"

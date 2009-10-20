@@ -3,7 +3,6 @@
 #include "yog/array.h"
 #include "yog/classmethod.h"
 #include "yog/compile.h"
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/eval.h"

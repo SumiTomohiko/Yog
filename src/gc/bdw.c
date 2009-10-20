@@ -2,6 +2,7 @@
 #include <string.h>
 #include "gc.h"
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 struct BDWHeader {

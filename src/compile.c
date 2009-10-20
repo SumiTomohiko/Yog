@@ -27,6 +27,7 @@
 #include "yog/string.h"
 #include "yog/table.h"
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 typedef struct AstVisitor AstVisitor;

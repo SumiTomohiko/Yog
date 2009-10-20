@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/gc.h"
 #if defined(GC_COPYING)

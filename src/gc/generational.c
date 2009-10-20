@@ -1,5 +1,4 @@
 #include <string.h>
-#include "yog/env.h"
 #include "yog/gc/generational.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
