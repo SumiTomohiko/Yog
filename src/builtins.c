@@ -212,6 +212,7 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
     YogVal klass = env->vm->c; \
     YogObj_set_attr_id(env, builtins, PTR_AS(YogClass, klass)->name, klass); \
 } while (0)
+    REGISTER_CLASS(cCoroutine);
     REGISTER_CLASS(cDict);
     REGISTER_CLASS(cFile);
     REGISTER_CLASS(cObject);

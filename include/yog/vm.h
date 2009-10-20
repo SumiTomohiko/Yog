@@ -32,15 +32,16 @@ struct YogVM {
     YogVal cArray;
     YogVal cBignum;
     YogVal cBool;
+    YogVal cClass;
     YogVal cClassMethod;
     YogVal cCode;
+    YogVal cCoroutine;
     YogVal cDict;
     YogVal cFile;
     YogVal cFixnum;
     YogVal cFloat;
     YogVal cFunction;
     YogVal cInstanceMethod;
-    YogVal cClass;
     YogVal cMatch;
     YogVal cModule;
     YogVal cNativeFunction;

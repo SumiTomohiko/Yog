@@ -35,10 +35,12 @@
 #include "yog/block.h"
 #include "yog/bool.h"
 #include "yog/builtins.h"
+#include "yog/class.h"
 #include "yog/classmethod.h"
 #include "yog/code.h"
 #include "yog/comparable.h"
 #include "yog/compile.h"
+#include "yog/coroutine.h"
 #include "yog/dict.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
@@ -50,7 +52,6 @@
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/gc/bdw.h"
-#include "yog/class.h"
 #include "yog/misc.h"
 #include "yog/module.h"
 #include "yog/nil.h"
@@ -257,6 +258,7 @@ setup_classes(YogEnv* env, YogVM* vm)
     vm->cBool = YogBool_define_class(env);
     vm->cClassMethod = YogClassMethod_define_class(env);
     vm->cCode = YogCode_define_class(env);
+    vm->cCoroutine = YogCoroutine_define_class(env);
     vm->cDict = YogDict_define_class(env);
     vm->cFile = YogFile_define_class(env);
     vm->cFixnum = YogFixnum_define_class(env);
@@ -410,6 +412,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cBool);
     KEEP(cClassMethod);
     KEEP(cCode);
+    KEEP(cCoroutine);
     KEEP(cDict);
     KEEP(cFile);
     KEEP(cFixnum);
@@ -495,6 +498,7 @@ YogVM_init(YogVM* vm)
     INIT(cBool);
     INIT(cClassMethod);
     INIT(cCode);
+    INIT(cCoroutine);
     INIT(cDict);
     INIT(cFile);
     INIT(cFixnum);

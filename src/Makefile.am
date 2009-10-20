@@ -22,6 +22,7 @@ COMMON_SOURCES = arg.c \
 	code.c \
 	comparable.c \
 	compile.c \
+	coroutine.c \
 	dict.c \
 	encoding.c \
 	error.c \
