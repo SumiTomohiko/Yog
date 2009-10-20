@@ -6,7 +6,6 @@
 #include <strings.h>
 #include <sys/mman.h>
 #include "yog/error.h"
-#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 #include "yog/gc.h"

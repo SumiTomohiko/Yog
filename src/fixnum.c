@@ -17,7 +17,6 @@
 #include "yog/function.h"
 #include "yog/class.h"
 #include "yog/string.h"
-#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 

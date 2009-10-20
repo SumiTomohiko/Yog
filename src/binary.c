@@ -7,7 +7,6 @@
 #include "yog/binary.h"
 #include "yog/error.h"
 #include "yog/gc.h"
-#include "yog/thread.h"
 #include "yog/yog.h"
 
 uint_t

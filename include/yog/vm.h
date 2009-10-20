@@ -95,6 +95,7 @@ struct YogVM {
     void* last_heap;
     pthread_cond_t vm_finish_cond;
     uint_t gc_id;
+    struct YogLocalsAnchor* locals;
 #if defined(GC_GENERATIONAL)
     /* TODO: dirty hack. remove this */
     BOOL has_young_ref;
@@ -112,6 +113,7 @@ typedef struct YogVM YogVM;
 /* src/vm.c */
 void YogVM_acquire_global_interp_lock(YogEnv*, YogVM*);
 void YogVM_add_heap(YogEnv*, YogVM*, void*);
+void YogVM_add_locals(YogEnv*, YogVM*, YogLocalsAnchor*);
 void YogVM_add_thread(YogEnv*, YogVM*, YogVal);
 void YogVM_boot(YogEnv*, YogVM*, uint_t, char**);
 void YogVM_configure_search_path(YogEnv*, YogVM*, const char*);
@@ -124,6 +126,7 @@ uint_t YogVM_issue_thread_id(YogEnv*, YogVM*);
 void YogVM_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 void YogVM_register_package(YogEnv*, YogVM*, const char*, YogVal);
 void YogVM_release_global_interp_lock(YogEnv*, YogVM*);
+void YogVM_remove_locals(YogEnv*, YogVM*, YogLocalsAnchor*);
 void YogVM_remove_thread(YogEnv*, YogVM*, YogVal);
 void YogVM_set_main_thread(YogEnv*, YogVM*, YogVal);
 void YogVM_wait_finish(YogEnv*, YogVM*);

@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
-#include "yog/class.h"
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/vm.h"

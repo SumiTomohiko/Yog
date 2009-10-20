@@ -105,10 +105,15 @@ struct YogLocals {
 typedef struct YogLocals YogLocals;
 
 struct YogLocalsAnchor {
-    struct YogLocals* locals;
+    struct YogLocalsAnchor* prev;
+    struct YogLocalsAnchor* next;
+    struct YogLocals* body;
+    void* heap;
 };
 
 typedef struct YogLocalsAnchor YogLocalsAnchor;
+
+#define LOCALS_ANCHOR_INIT  { NULL, NULL, NULL, NULL }
 
 struct YogEnv {
     struct YogVM* vm;
@@ -118,24 +123,27 @@ struct YogEnv {
 
 typedef struct YogEnv YogEnv;
 
-#define SAVE_LOCALS(env) \
-    YogLocals* __cur_locals__ = PTR_AS(YogThread, (env)->thread)->locals
-#define RESTORE_LOCALS(env) \
-    PTR_AS(YogThread, (env)->thread)->locals = __cur_locals__
-#if 0
+#define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = (env)->locals->body
+#define RESTORE_LOCALS(env)     (env)->locals->body = __cur_locals__
+#if 0 && !defined(MINIYOG)
 #   define PUSH_LOCAL_TABLE(env, tbl)   do { \
     uint_t i; \
     TRACE("tbl=%p", &tbl); \
     for (i = 0; i < tbl.num_vals; i++) { \
         TRACE("tbl.vals[%d]=%p", i, tbl.vals[i]); \
     } \
-    tbl.next = PTR_AS(YogThread, (env)->thread)->locals; \
-    PTR_AS(YogThread, (env)->thread)->locals = &tbl; \
+    tbl.next = (env)->locals->body; \
+    (env)->locals->body = &tbl; \
+    YogLocals* locals = (env)->locals->body; \
+    while (locals != NULL) { \
+        TRACE("locals=%p", locals); \
+        locals = locals->next; \
+    } \
 } while (0)
 #else
 #   define PUSH_LOCAL_TABLE(env, tbl)   do { \
-    tbl.next = PTR_AS(YogThread, (env)->thread)->locals; \
-    PTR_AS(YogThread, (env)->thread)->locals = &tbl; \
+    tbl.next = (env)->locals->body; \
+    (env)->locals->body = &tbl; \
 } while (0)
 #endif
 #define PUSH_LOCAL(env, x) \
@@ -208,10 +216,7 @@ typedef struct YogEnv YogEnv;
 #define SAVE_ARGS5(env, x, y, z, t, u)  \
                                 SAVE_LOCALS((env)); \
                                 PUSH_LOCALS5((env), x, y, z, t, u)
-#define POP_LOCALS(env) do { \
-    YogLocals* next = PTR_AS(YogThread, (env)->thread)->locals->next; \
-    PTR_AS(YogThread, (env)->thread)->locals = next; \
-} while (0)
+#define POP_LOCALS(env)         (env)->locals->body = (env)->locals->body->next
 #define RETURN(env, val)        do { \
     RESTORE_LOCALS(env); \
     return val; \

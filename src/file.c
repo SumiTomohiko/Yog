@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "yog/array.h"
+#include "yog/class.h"
 #include "yog/error.h"
 #include "yog/file.h"
 #include "yog/function.h"
-#include "yog/class.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/string.h"

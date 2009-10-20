@@ -10,13 +10,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "yog/array.h"
+#include "yog/class.h"
 #include "yog/classmethod.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/gc.h"
-#include "yog/class.h"
 #include "yog/property.h"
 #include "yog/thread.h"
 #include "yog/yog.h"

@@ -10,7 +10,6 @@
 #include "yog/object.h"
 #include "yog/opcodes.h"
 #include "yog/string.h"
-#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 

@@ -60,7 +60,6 @@
 #include "yog/set.h"
 #include "yog/symbol.h"
 #include "yog/table.h"
-#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -358,6 +357,7 @@ keep_local_vals(YogEnv* env, YogVal* vals, uint_t size, ObjectKeeper keeper, voi
     if (vals == NULL) {
         return;
     }
+    DEBUG(TRACE("vals=%p, size=0x%08x", vals, size));
 
     uint_t i;
     for (i = 0; i < size; i++) {
@@ -379,12 +379,12 @@ keep_locals(YogEnv* env, YogLocals* locals, ObjectKeeper keeper, void* heap)
 }
 
 static void
-keep_thread_locals(YogEnv* env, YogVal thread, ObjectKeeper keeper, void* heap)
+keep_locals_list(YogEnv* env, YogLocals* list, ObjectKeeper keeper, void* heap)
 {
-    YogLocals* locals = PTR_AS(YogThread, thread)->locals;
-    while (locals != NULL) {
-        keep_locals(env, locals, keeper, heap);
-        locals = locals->next;
+    while (list != NULL) {
+        DEBUG(TRACE("list=%p, list->next=%p", list, list->next));
+        keep_locals(env, list, keeper, heap);
+        list = list->next;
     }
 }
 
@@ -393,10 +393,10 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogVM* vm = PTR_AS(YogVM, ptr);
 
-    YogVal thread = vm->running_threads;
-    while (IS_PTR(thread)) {
-        keep_thread_locals(env, thread, keeper, THREAD_HEAP(thread));
-        thread = PTR_AS(YogThread, thread)->next;
+    YogLocalsAnchor* locals = vm->locals;
+    while (locals != NULL) {
+        keep_locals_list(env, locals->body, keeper, locals->heap);
+        locals = locals->next;
     }
 
 #define KEEP(member)    do { \
@@ -561,6 +561,7 @@ YogVM_init(YogVM* vm)
     }
     vm->heaps = vm->last_heap = NULL;
     vm->gc_id = 0;
+    vm->locals = NULL;
 #if defined(GC_GENERATIONAL)
     vm->has_young_ref = FALSE;
 #endif
@@ -1280,6 +1281,22 @@ YogVM_issue_thread_id(YogEnv* env, YogVM* vm)
     YOG_ASSERT(env, vm->next_thread_id != 0, "thread id overflow");
     release_lock(env, lock);
     return id;
+}
+
+void
+YogVM_add_locals(YogEnv* env, YogVM* vm, YogLocalsAnchor* locals)
+{
+    YogVM_acquire_global_interp_lock(env, vm);
+    ADD_TO_LIST(vm->locals, locals);
+    YogVM_release_global_interp_lock(env, vm);
+}
+
+void
+YogVM_remove_locals(YogEnv* env, YogVM* vm, YogLocalsAnchor* locals)
+{
+    YogVM_acquire_global_interp_lock(env, vm);
+    DELETE_FROM_LIST(vm->locals, locals);
+    YogVM_release_global_interp_lock(env, vm);
 }
 
 /**

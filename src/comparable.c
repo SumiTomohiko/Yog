@@ -3,7 +3,6 @@
 #include "yog/eval.h"
 #include "yog/misc.h"
 #include "yog/module.h"
-#include "yog/thread.h"
 #include "yog/yog.h"
 
 static int_t

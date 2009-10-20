@@ -3,7 +3,6 @@
 #include <string.h>
 #include "yog/gc.h"
 #include "yog/gc/copying.h"
-#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 

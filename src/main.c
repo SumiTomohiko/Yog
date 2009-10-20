@@ -136,12 +136,6 @@ main(int_t argc, char* argv[])
         { "version", no_argument, NULL, 'v' },
         { 0, 0, 0, 0 },
     };
-#define USAGE       usage()
-#define ERROR(msg)  do { \
-    fprintf(stderr, "%s\n", msg); \
-    USAGE; \
-    return -1; \
-} while (0)
     char c = 0;
     while ((c = getopt_long(argc, argv, "", options, NULL)) != -1) {
         switch (c) {
@@ -158,17 +152,17 @@ main(int_t argc, char* argv[])
             exit(0);
             break;
         default:
-            ERROR("Unknown option.");
+            fprintf(stderr, "Unknown option");
+            usage();
+            return -1;
             break;
         }
     }
 
     if (help) {
-        USAGE;
+        usage();
         return 0;
     }
-#undef ERROR
-#undef USAGE
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
     if (!pthread_win32_process_attach_np()) {
@@ -176,18 +170,17 @@ main(int_t argc, char* argv[])
     }
 #endif
 
-#define ERROR(msg)  do { \
-    fprintf(stderr, "%s\n", msg); \
-    return -2; \
-} while (0)
+    YogLocalsAnchor locals = LOCALS_ANCHOR_INIT;
     YogEnv env;
     env.vm = NULL;
     env.thread = YUNDEF;
+    env.locals = &locals;
 
     YogVM vm;
     YogVM_init(&vm);
     vm.gc_stress = gc_stress;
     env.vm = &vm;
+    YogVM_add_locals(&env, env.vm, &locals);
 
     YogThread dummy_thread_body;
     YogVal dummy_thread = PTR2VAL(&dummy_thread_body);
@@ -215,7 +208,8 @@ main(int_t argc, char* argv[])
 #   define CHUNK_SIZE  (16 * 1024 * 1024)
 #   define TENURE       32
     if (!YogMarkSweepCompact_install_sigsegv_handler(&env)) {
-        ERROR("failed installing SIGSEGV handler");
+        fprintf(stderr, "failed installing SIGSEGV handler");
+        return -2;
     }
     YogThread_config_generational(&env, dummy_thread, init_heap_size, CHUNK_SIZE, threshold, TENURE);
     YogGenerational_allocate_heap(&env, PTR_AS(YogThread, dummy_thread)->heap);
@@ -226,6 +220,7 @@ main(int_t argc, char* argv[])
     YogVal main_thread = YogThread_new(&env);
     memcpy(VAL2PTR(main_thread), VAL2PTR(dummy_thread), sizeof(YogThread));
     env.thread = main_thread;
+    locals.heap = PTR_AS(YogThread, main_thread)->heap;
     YogVM_set_main_thread(&env, &vm, main_thread);
 
 #define GUARD_ENV(env) \
@@ -262,6 +257,7 @@ main(int_t argc, char* argv[])
     YogVM_remove_thread(&env, env.vm, env.thread);
 
     YogVM_wait_finish(&env, env.vm);
+    YogVM_remove_locals(&env, env.vm, &locals);
     YogVM_delete(&env, env.vm);
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
@@ -269,7 +265,6 @@ main(int_t argc, char* argv[])
 #endif
 
     return 0;
-#undef ERROR
 }
 
 #if defined(_MSC_VER)

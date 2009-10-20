@@ -2,7 +2,6 @@
 #include "yog/eval.h"
 #include "yog/parser.h"
 #include "yog/string.h"
-#include "yog/thread.h"
 #include "yog/yog.h"
 
 void

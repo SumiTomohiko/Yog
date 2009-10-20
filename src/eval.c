@@ -25,7 +25,6 @@
 #include "yog/parser.h"
 #include "yog/set.h"
 #include "yog/string.h"
-#include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -395,7 +394,7 @@ YogEval_mainloop(YogEnv* env)
     else {
         YogVal thread = env->thread;
         PTR_AS(YogThread, thread)->jmp_buf_list = mainloop_jmpbuf;
-        PTR_AS(YogThread, thread)->locals = mainloop_locals;
+        env->locals->body = mainloop_locals;
         YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
         if (PTR_AS(YogFrame, frame)->type == FRAME_C) {
             do {

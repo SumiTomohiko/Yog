@@ -17,6 +17,7 @@
 #   include "gc_pthread_redirects.h"
 #endif
 #include "yog/array.h"
+#include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
@@ -33,7 +34,6 @@
 #elif defined(GC_BDW)
 #   include "yog/gc/bdw.h"
 #endif
-#include "yog/class.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -83,7 +83,6 @@ YogThread_init(YogEnv* env, YogVal thread, YogVal klass)
     PTR_AS(YogThread, thread)->jmp_buf_list = NULL;
     PTR_AS(YogThread, thread)->jmp_val = YUNDEF;
     PTR_AS(YogThread, thread)->frame_to_long_jump = YUNDEF;
-    PTR_AS(YogThread, thread)->locals = NULL;
 
     PTR_AS(YogThread, thread)->block = YUNDEF;
     PTR_AS(YogThread, thread)->gc_bound = TRUE;
@@ -268,10 +267,14 @@ run_of_new_thread(void* arg)
 #endif
 
     YogVal thread_arg = (YogVal)arg;
+    YogVM* vm = PTR_AS(ThreadArg, thread_arg)->vm;
     YogVal thread = PTR_AS(ThreadArg, thread_arg)->thread;
+    YogLocalsAnchor locals = LOCALS_ANCHOR_INIT;
+    locals.heap = PTR_AS(YogThread, thread)->heap;
     YogEnv env;
-    env.vm = PTR_AS(ThreadArg, thread_arg)->vm;
+    env.vm = vm;
     env.thread = thread;
+    env.locals = &locals;
     SAVE_LOCALS(&env);
     YogLocals locals0;
     locals0.num_vals = 2;
@@ -281,6 +284,7 @@ run_of_new_thread(void* arg)
     locals0.vals[2] = NULL;
     locals0.vals[3] = NULL;
     PUSH_LOCAL_TABLE(&env, locals0);
+    YogVM_add_locals(&env, vm, &locals);
 
     YogVal vararg = PTR_AS(ThreadArg, thread_arg)->vararg;
     YogVal block = PTR_AS(YogThread, thread)->block;
@@ -302,7 +306,8 @@ run_of_new_thread(void* arg)
 
     RESTORE_LOCALS(&env);
 
-    YogVM_remove_thread(&env, env.vm, env.thread);
+    YogVM_remove_thread(&env, vm, env.thread);
+    YogVM_remove_locals(&env, vm, &locals);
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
     pthread_win32_thread_detach_np();

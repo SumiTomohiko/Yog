@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 #include "yog/array.h"
+#include "yog/class.h"
 #include "yog/classmethod.h"
 #include "yog/compile.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
-#include "yog/class.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/package.h"
