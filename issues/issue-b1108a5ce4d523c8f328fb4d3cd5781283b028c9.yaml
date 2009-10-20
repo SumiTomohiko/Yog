@@ -1,0 +1,26 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Implement coroutine.
+desc: ""
+type: :feature
+component: Yog
+release: 0.0.3
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :in_progress
+disposition: 
+creation_time: 2009-10-20 05:32:43.928329 Z
+references: []
+
+id: b1108a5ce4d523c8f328fb4d3cd5781283b028c9
+log_events: 
+- - 2009-10-20 05:32:45.148078 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2009-10-20 05:33:11.877362 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2009-10-20 05:34:33.887430 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.3 from unassigned
+  - ""
