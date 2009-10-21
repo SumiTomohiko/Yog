@@ -2,23 +2,49 @@
 #include <stdlib.h>
 #include "yog/class.h"
 #include "yog/error.h"
+#include "yog/function.h"
 #include "yog/object.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
 struct SwitchContext {
-    void* ebp;
-    void* esp;
     void* eip;
+    void* esp;
+    void* ebp;
 };
 
 typedef struct SwitchContext SwitchContext;
 
 struct Coroutine {
     struct YogBasicObj base;
+
+    /**
+     * Coroutines' machine stack layout (x86)
+     *
+     *              stack top (lower address)
+     * +----------+ ^
+     * |          | | <- Coroutine::machine_stack
+     * +----------+ ^
+     * |          | |
+     * |          | |
+     * |          | |
+     * +----------+ |
+     * |0xdeaddead| | dummy return address <- initial stack pointer
+     * +----------+ |
+     * |          | | env
+     * +----------+ |
+     * |          | | self
+     * +----------+ |
+     * |          | |
+     * |          | | YogLocalsAnchor
+     * |          | |
+     * +----------+ v
+     *              stack bottom (higher address)
+     */
     void* machine_stack;
     uint_t machine_stack_size;
+
     YogVal bottom_frame;
     YogVal top_frame;
     struct SwitchContext ctx_to_resume;
@@ -36,11 +62,77 @@ yield(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, self);
 }
 
+static void
+switch_context(YogEnv* env, SwitchContext* to, SwitchContext* cont)
+{
+    __asm__ __volatile__(
+        "movl $1f, (%0)\n\t"
+        "movl %%esp, 4(%0)\n\t"
+        "movl %%ebp, 8(%0)\n\t"
+        "movl 8(%1), %%ebp\n\t"
+        "movl 4(%1), %%esp\n\t"
+        "jmp *(%1)\n"
+        "1:\n"
+        : : "r" (cont), "r" (to) : "eax", "ebx", "ecx", "edx"
+    );
+}
+
+static YogLocalsAnchor*
+machine_stack2locals(YogEnv* env, void* stack, uint_t size)
+{
+    return (YogLocalsAnchor*)((char*)stack + size - sizeof(YogLocalsAnchor));
+}
+
+/**
+ * main function of coroutines. This function is invoked with coroutines'
+ * machine stack (Coroutine::machine_stack). This function never return.
+ */
+static void
+coroutine_main(YogEnv* env, YogVal self)
+{
+    void* stack = PTR_AS(Coroutine, self)->machine_stack;
+    uint_t size = PTR_AS(Coroutine, self)->machine_stack_size;
+    YogEnv coroutine_env;
+    coroutine_env.vm = env->vm;
+    coroutine_env.thread = env->thread;
+    coroutine_env.locals = machine_stack2locals(env, stack, size);
+    YogLocals locals;
+    locals.num_vals = 2;
+    locals.size = 1;
+    locals.vals[0] = &coroutine_env.thread;
+    locals.vals[1] = &self;
+    locals.vals[2] = NULL;
+    locals.vals[3] = NULL;
+    PUSH_LOCAL_TABLE(&coroutine_env, locals);
+
+    YogCallable_call(&coroutine_env, PTR_AS(Coroutine, self)->block, 0, NULL);
+
+    POP_LOCALS(&coroutine_env);
+
+    SwitchContext* to = &PTR_AS(Coroutine, self)->ctx_to_yield;
+    SwitchContext* cont = &PTR_AS(Coroutine, self)->ctx_to_resume;
+    switch_context(&coroutine_env, to, cont);
+}
+
 static YogVal
 resume(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    /* TODO */
+
+    if (PTR_AS(Coroutine, self)->ctx_to_resume.eip == NULL) {
+        void* stack = PTR_AS(Coroutine, self)->machine_stack;
+        uint_t size = PTR_AS(Coroutine, self)->machine_stack_size;
+        void** locals = (void**)machine_stack2locals(env, stack, size);
+        locals[-1] = (void*)self;
+        locals[-2] = (void*)env;
+        locals[-3] = (void*)0xdeaddead;
+        PTR_AS(Coroutine, self)->ctx_to_resume.eip = coroutine_main;
+        PTR_AS(Coroutine, self)->ctx_to_resume.esp = &locals[-3];
+    }
+    SwitchContext* to = &PTR_AS(Coroutine, self)->ctx_to_resume;
+    SwitchContext* cont = &PTR_AS(Coroutine, self)->ctx_to_yield;
+    switch_context(env, to, cont);
+
     RETURN(env, self);
 }
 
@@ -48,7 +140,7 @@ static YogVal
 init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    /* TODO */
+    PTR_AS(Coroutine, self)->block = block;
     RETURN(env, self);
 }
 
@@ -65,12 +157,6 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-static YogLocalsAnchor*
-machine_stack2locals(YogEnv* env, void* stack, uint_t size)
-{
-    return (YogLocalsAnchor*)((char*)stack + size - sizeof(YogLocalsAnchor));
-}
-
 static void
 finalize(YogEnv* env, void* ptr)
 {
@@ -82,8 +168,11 @@ finalize(YogEnv* env, void* ptr)
 }
 
 static void
-coroutine_main(YogEnv* env, YogVal self)
+SwitchContext_init(YogEnv* env, SwitchContext* ctx)
 {
+    ctx->eip = NULL;
+    ctx->esp = NULL;
+    ctx->ebp = NULL;
 }
 
 static void
@@ -107,12 +196,9 @@ Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
     PTR_AS(Coroutine, self)->machine_stack_size = machine_stack_size;
     PTR_AS(Coroutine, self)->bottom_frame = YUNDEF;
     PTR_AS(Coroutine, self)->top_frame = YUNDEF;
-    PTR_AS(Coroutine, self)->ctx_to_resume.ebp = NULL;
-    PTR_AS(Coroutine, self)->ctx_to_resume.esp = NULL;
-    PTR_AS(Coroutine, self)->ctx_to_resume.eip = NULL;
-    PTR_AS(Coroutine, self)->ctx_to_yield.ebp = NULL;
-    PTR_AS(Coroutine, self)->ctx_to_yield.esp = NULL;
-    PTR_AS(Coroutine, self)->ctx_to_yield.eip = NULL;
+    SwitchContext_init(env, &PTR_AS(Coroutine, self)->ctx_to_resume);
+    SwitchContext_init(env, &PTR_AS(Coroutine, self)->ctx_to_yield);
+    PTR_AS(Coroutine, self)->block = YUNDEF;
 
     RETURN_VOID(env);
 }

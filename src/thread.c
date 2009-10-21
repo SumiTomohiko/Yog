@@ -258,7 +258,7 @@ ThreadArg_new(YogEnv* env)
 }
 
 static void*
-run_of_new_thread(void* arg)
+thread_main(void* arg)
 {
 #if defined(__MINGW32__) || defined(_MSC_VER)
     if (!pthread_win32_thread_attach_np()) {
@@ -369,7 +369,7 @@ run(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 #   define CREATE_THREAD    GC_pthread_create
 #endif
     pthread_t* pt = &PTR_AS(YogThread, self)->pthread;
-    if (CREATE_THREAD(pt, &attr, run_of_new_thread, (void*)arg) != 0) {
+    if (CREATE_THREAD(pt, &attr, thread_main, (void*)arg) != 0) {
         YOG_BUG(env, "can't create new thread: %s", strerror(errno));
     }
 #undef CREATE_THREAD
