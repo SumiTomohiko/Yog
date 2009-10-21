@@ -5,6 +5,7 @@
 #if defined(HAVE_DLFCN_H)
 #   include <dlfcn.h>
 #endif
+#include <errno.h>
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
@@ -474,8 +475,9 @@ init_read_write_lock(pthread_rwlock_t* lock)
 #else
     pattr = NULL;
 #endif
-    if (pthread_rwlock_init(lock, pattr) != 0) {
-        YOG_BUG(NULL, "pthread_rwlock_init failed");
+    int err;
+    if ((err = pthread_rwlock_init(lock, pattr)) != 0) {
+        YOG_BUG(NULL, "pthread_rwlock_init failed: %s", strerror(err));
     }
 #if defined(HAVE_PTHREAD_RWLOCKATTR_INIT) && defined(HAVE_PTHREAD_RWLOCKATTR_DESTROY)
     pthread_rwlockattr_destroy(&attr);
@@ -550,18 +552,26 @@ YogVM_init(YogVM* vm)
     pthread_mutex_init(&vm->next_thread_id_lock, NULL);
 #undef INIT
 
-    pthread_mutex_init(&vm->global_interp_lock, NULL);
+    pthread_mutexattr_t global_interp_lock_attr;
+    pthread_mutexattr_init(&global_interp_lock_attr);
+    int err;
+    if ((err = pthread_mutexattr_settype(&global_interp_lock_attr, PTHREAD_MUTEX_RECURSIVE)) != 0) {
+        YOG_BUG(NULL, "pthread_mutexattr_settype failed: %s", strerror(err));
+    }
+    pthread_mutex_init(&vm->global_interp_lock, &global_interp_lock_attr);
+    pthread_mutexattr_destroy(&global_interp_lock_attr);
+
     vm->running_gc = FALSE;
     vm->waiting_suspend = FALSE;
     vm->suspend_counter = 0;
-    if (pthread_cond_init(&vm->threads_suspend_cond, NULL) != 0) {
-        YOG_BUG(NULL, "pthread_cond_init failed");
+    if ((err = pthread_cond_init(&vm->threads_suspend_cond, NULL)) != 0) {
+        YOG_BUG(NULL, "pthread_cond_init failed: %s", strerror(err));
     }
-    if (pthread_cond_init(&vm->gc_finish_cond, NULL) != 0) {
-        YOG_BUG(NULL, "pthread_cond_init failed");
+    if ((err = pthread_cond_init(&vm->gc_finish_cond, NULL)) != 0) {
+        YOG_BUG(NULL, "pthread_cond_init failed: %s", strerror(err));
     }
-    if (pthread_cond_init(&vm->vm_finish_cond, NULL) != 0) {
-        YOG_BUG(NULL, "pthread_cond_init failed");
+    if ((err = pthread_cond_init(&vm->vm_finish_cond, NULL)) != 0) {
+        YOG_BUG(NULL, "pthread_cond_init failed: %s", strerror(err));
     }
     vm->heaps = vm->last_heap = NULL;
     vm->gc_id = 0;
@@ -574,41 +584,44 @@ YogVM_init(YogVM* vm)
 void
 YogVM_delete(YogEnv* env, YogVM* vm)
 {
-    if (pthread_cond_destroy(&vm->vm_finish_cond) != 0) {
-        YOG_WARN(env, "pthread_cond_destroy failed");
-    }
-    if (pthread_cond_destroy(&vm->gc_finish_cond) != 0) {
-        YOG_WARN(env, "pthread_cond_destroy failed");
-    }
-    if (pthread_cond_destroy(&vm->threads_suspend_cond) != 0) {
-        YOG_WARN(env, "pthread_cond_destroy failed");
-    }
-    if (pthread_mutex_destroy(&vm->global_interp_lock) != 0) {
-        YOG_WARN(env, "pthread_mutex_destroy failed");
-    }
-    if (pthread_mutex_destroy(&vm->next_thread_id_lock) != 0) {
-        YOG_WARN(env, "pthread_mutex_destroy failed");
-    }
-    pthread_rwlock_destroy(&vm->pkgs_lock);
-
 #if !defined(GC_BDW)
     YogGC_delete(env);
 #endif
+
+    int err;
+    if ((err = pthread_cond_destroy(&vm->vm_finish_cond)) != 0) {
+        YOG_WARN(env, "pthread_cond_destroy failed: %s", strerror(err));
+    }
+    if ((err = pthread_cond_destroy(&vm->gc_finish_cond)) != 0) {
+        YOG_WARN(env, "pthread_cond_destroy failed: %s", strerror(err));
+    }
+    if ((err = pthread_cond_destroy(&vm->threads_suspend_cond)) != 0) {
+        YOG_WARN(env, "pthread_cond_destroy failed: %s", strerror(err));
+    }
+    if ((err = pthread_mutex_destroy(&vm->global_interp_lock)) != 0) {
+        YOG_WARN(env, "pthread_mutex_destroy failed: %s", strerror(err));
+    }
+    if ((err = pthread_mutex_destroy(&vm->next_thread_id_lock)) != 0) {
+        YOG_WARN(env, "pthread_mutex_destroy failed: %s", strerror(err));
+    }
+    pthread_rwlock_destroy(&vm->pkgs_lock);
 }
 
 static void
 acquire_lock(YogEnv* env, pthread_mutex_t* lock)
 {
-    if (pthread_mutex_lock(lock) != 0) {
-        YOG_BUG(env, "pthread_mutex_lock failed");
+    int err;
+    if ((err = pthread_mutex_lock(lock)) != 0) {
+        YOG_BUG(env, "pthread_mutex_lock failed: %s", strerror(err));
     }
 }
 
 static void
 release_lock(YogEnv* env, pthread_mutex_t* lock)
 {
-    if (pthread_mutex_unlock(lock) != 0) {
-        YOG_BUG(env, "pthread_mutex_unlock failed");
+    int err;
+    if ((err = pthread_mutex_unlock(lock)) != 0) {
+        YOG_BUG(env, "pthread_mutex_unlock failed: %s", strerror(err));
     }
 }
 
@@ -766,11 +779,12 @@ static void
 ImportingPackage_finalize(YogEnv* env, void* ptr)
 {
     ImportingPackage* pkg = PTR_AS(ImportingPackage, ptr);
-    if (pthread_mutex_destroy(&pkg->lock) != 0) {
-        YOG_WARN(env, "pthread_mutex_destroy failed");
+    int err;
+    if ((err = pthread_mutex_destroy(&pkg->lock)) != 0) {
+        YOG_WARN(env, "pthread_mutex_destroy failed: %s", strerror(err));
     }
-    if (pthread_cond_destroy(&pkg->cond) != 0) {
-        YOG_WARN(env, "pthread_cond_destroy failed");
+    if ((err = pthread_cond_destroy(&pkg->cond)) != 0) {
+        YOG_WARN(env, "pthread_cond_destroy failed: %s", strerror(err));
     }
 }
 
