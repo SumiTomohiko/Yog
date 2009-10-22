@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "yog/class.h"
 #include "yog/error.h"
+#include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/object.h"
 #include "yog/thread.h"
@@ -27,7 +28,7 @@ struct Coroutine {
      * |          | | <- Coroutine::machine_stack
      * +----------+ ^
      * |          | |
-     * |          | |
+     * :          : |
      * |          | |
      * +----------+ |
      * |0xdeaddead| | dummy return address <- initial stack pointer
@@ -45,8 +46,24 @@ struct Coroutine {
     void* machine_stack;
     uint_t machine_stack_size;
 
-    YogVal bottom_frame;
-    YogVal top_frame;
+    /**
+     * boundary_frame is the next frame of the bottom of the coroutines.
+     *
+     *   frames   top
+     * +--------+ ^
+     * |        | | ^
+     * :        : | | coroutine
+     * |        | | v
+     * +--------+ |
+     * |        | | ^ <- boundary_frame
+     * +--------+ | |
+     * |        | | | coroutine or not coroutine
+     * :        : | |
+     * |        | | v
+     * +--------+ v
+     *            bottom
+     */
+    YogVal boundary_frame;
     struct SwitchContext ctx_to_resume;
     struct SwitchContext ctx_to_yield;
     YogVal block;
@@ -82,9 +99,23 @@ yield(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal coroutine = env->coroutine;
-    PUSH_LOCAL(env, coroutine);
+    YogVal frame = YUNDEF;
+    YogVal boundary = YUNDEF;
+    PUSH_LOCALS3(env, coroutine, frame, boundary);
+
+    boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
+    frame = env->frame;
+    while (IS_PTR(frame) && (PTR_AS(YogFrame, frame)->prev != boundary)) {
+        frame = PTR_AS(YogFrame, frame)->prev;
+    }
+    YOG_ASSERT(env, IS_PTR(frame), "boundary frame not found");
+    PTR_AS(YogFrame, frame)->prev = YUNDEF;
+    boundary = YUNDEF;  /* Kill previous frames from the machine stack */
 
     yield_coroutine(env, coroutine);
+
+    boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
+    PTR_AS(YogFrame, frame)->prev = boundary;
 
     RETURN(env, self);
 }
@@ -109,6 +140,7 @@ coroutine_main(YogEnv* env, YogVal self)
     coroutine_env.thread = env->thread;
     coroutine_env.locals = machine_stack2locals(env, stack, size);
     coroutine_env.coroutine = self;
+    coroutine_env.frame = PTR_AS(Coroutine, self)->boundary_frame;
     YogLocals locals;
     locals.num_vals = 4;
     locals.size = 1;
@@ -139,6 +171,9 @@ resume(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         PTR_AS(Coroutine, self)->ctx_to_resume.eip = coroutine_main;
         PTR_AS(Coroutine, self)->ctx_to_resume.esp = &locals[-3];
     }
+
+    PTR_AS(Coroutine, self)->boundary_frame = env->frame;
+
     SwitchContext* to = &PTR_AS(Coroutine, self)->ctx_to_resume;
     SwitchContext* cont = &PTR_AS(Coroutine, self)->ctx_to_yield;
     switch_context(env, to, cont);
@@ -161,8 +196,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     Coroutine* coro = (Coroutine*)ptr;
 #define KEEP(member)    YogGC_keep(env, &coro->member, keeper, heap)
-    KEEP(bottom_frame);
-    KEEP(top_frame);
+    KEEP(boundary_frame);
     KEEP(block);
 #undef KEEP
 }
@@ -204,10 +238,9 @@ Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
 
     PTR_AS(Coroutine, self)->machine_stack = machine_stack;
     PTR_AS(Coroutine, self)->machine_stack_size = machine_stack_size;
-    PTR_AS(Coroutine, self)->bottom_frame = YUNDEF;
-    PTR_AS(Coroutine, self)->top_frame = YUNDEF;
     SwitchContext_init(env, &PTR_AS(Coroutine, self)->ctx_to_resume);
     SwitchContext_init(env, &PTR_AS(Coroutine, self)->ctx_to_yield);
+    PTR_AS(Coroutine, self)->boundary_frame = YUNDEF;
     PTR_AS(Coroutine, self)->block = YUNDEF;
 
     RETURN_VOID(env);
