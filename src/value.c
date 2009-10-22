@@ -44,6 +44,7 @@ YogVal_get_class(YogEnv* env, YogVal val)
         return env->vm->cFixnum;
     }
     else if (IS_PTR(val)) {
+        DEBUG(TRACE("val=0x%08x, klass=0x%08x", val, PTR_AS(YogBasicObj, val)->klass));
         return PTR_AS(YogBasicObj, val)->klass;
     }
     else if (IS_BOOL(val)) {

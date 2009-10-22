@@ -19,12 +19,6 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
-#if 0
-#   define DEBUG(x)     x
-#else
-#   define DEBUG(x)
-#endif
-
 #define ST_DEFAULT_MAX_DENSITY 5
 #define ST_DEFAULT_INIT_TABLE_SIZE 11
 

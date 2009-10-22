@@ -221,17 +221,14 @@ main(int_t argc, char* argv[])
     locals.heap = PTR_AS(YogThread, main_thread)->heap;
     YogVM_set_main_thread(&env, &vm, main_thread);
 
-#define GUARD_ENV(env) \
-    YogLocals env_guard; \
-    env_guard.num_vals = 1; \
-    env_guard.size = 1; \
-    env_guard.vals[0] = &((env).thread); \
-    env_guard.vals[1] = NULL; \
-    env_guard.vals[2] = NULL; \
-    env_guard.vals[3] = NULL; \
+    YogLocals env_guard;
+    env_guard.num_vals = 2;
+    env_guard.size = 1;
+    env_guard.vals[0] = &env.thread;
+    env_guard.vals[1] = &env.frame;
+    env_guard.vals[2] = NULL;
+    env_guard.vals[3] = NULL;
     PUSH_LOCAL_TABLE(&env, env_guard);
-    GUARD_ENV(env);
-#undef GUARD_ENV
     SAVE_LOCALS(&env);
 
     YogJmpBuf jmpbuf;

@@ -28,14 +28,9 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#if 0
-#   define DEBUG(x)     x
-#else
-#   define DEBUG(x)
-#endif
 #define DUMP_CODE(code)  YogCode_dump(env, code)
 
-#define CUR_FRAME   PTR_AS(YogThread, env->thread)->cur_frame
+#define CUR_FRAME   env->frame
 
 #define PUSH_FRAME(f)   do { \
     PTR_AS(YogFrame, (f))->prev = CUR_FRAME; \
@@ -251,8 +246,7 @@ find_exception_table_entry(YogEnv* env, YogVal code, int status, uint_t pc, uint
 static void
 detect_orphan(YogEnv* env, int status, YogVal target_frame)
 {
-    YogVal thread = env->thread;
-    YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
+    YogVal frame = env->frame;
     while (IS_PTR(frame = PTR_AS(YogFrame, frame)->prev)) {
         YogFrameType type = PTR_AS(YogFrame, frame)->type;
         switch (type) {
@@ -325,8 +319,7 @@ dump_frame(YogEnv* env)
 static void
 long_jump_current_frame(YogEnv* env)
 {
-    YogVal thread = env->thread;
-    YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
+    YogVal frame = env->frame;
     while (IS_PTR(frame = PTR_AS(YogFrame, frame)->prev)) {
         YogFrameType type = PTR_AS(YogFrame, frame)->type;
         switch (type) {
@@ -334,11 +327,11 @@ long_jump_current_frame(YogEnv* env)
         case FRAME_NAME:
             break;
         case FRAME_C:
-            PTR_AS(YogThread, thread)->cur_frame = frame;
+            env->frame = frame;
             return;
             break;
         case FRAME_FINISH:
-            PTR_AS(YogThread, thread)->cur_frame = PTR_AS(YogFrame, frame)->prev;
+            env->frame = PTR_AS(YogFrame, frame)->prev;
             return;
             break;
         default:
@@ -395,12 +388,12 @@ YogEval_mainloop(YogEnv* env)
         YogVal thread = env->thread;
         PTR_AS(YogThread, thread)->jmp_buf_list = mainloop_jmpbuf;
         env->locals->body = mainloop_locals;
-        YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
+        YogVal frame = env->frame;
         if (PTR_AS(YogFrame, frame)->type == FRAME_C) {
             do {
                 frame = PTR_AS(YogFrame, frame)->prev;
             } while (PTR_AS(YogFrame, frame)->type == FRAME_C);
-            PTR_AS(YogThread, thread)->cur_frame = frame;
+            env->frame = frame;
         }
 
         switch (status) {
@@ -424,8 +417,7 @@ YogEval_mainloop(YogEnv* env)
         case JMP_RETURN:
         case JMP_BREAK:
             {
-                YogVal thread = env->thread;
-                YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
+                YogVal frame = env->frame;
                 while (IS_PTR(frame)) {
                     BOOL found = FALSE;
                     YogFrameType type = PTR_AS(YogFrame, frame)->type;
@@ -437,6 +429,7 @@ YogEval_mainloop(YogEnv* env)
                     case FRAME_METHOD:
                     case FRAME_NAME:
                         {
+                            YogVal thread = env->thread;
                             if (frame == PTR_AS(YogThread, thread)->frame_to_long_jump) {
                                 uint_t target = 0;
                                 if (!find_exception_table_entry(env, PTR_AS(YogScriptFrame, frame)->code, status, PTR_AS(YogScriptFrame, frame)->pc, &target)) {

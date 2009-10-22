@@ -120,11 +120,12 @@ struct YogEnv {
     YogVal thread;
     struct YogLocalsAnchor* locals;
     YogVal coroutine;
+    YogVal frame;
 };
 
 typedef struct YogEnv YogEnv;
 
-#define ENV_INIT    { NULL, YUNDEF, NULL, YUNDEF }
+#define ENV_INIT    { NULL, YUNDEF, NULL, YUNDEF, YUNDEF }
 
 #define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = (env)->locals->body
 #define RESTORE_LOCALS(env)     (env)->locals->body = __cur_locals__
@@ -261,6 +262,11 @@ void YogVal_set_attr(YogEnv*, YogVal, ID, YogVal);
 } while (0)
 #else
 #   define TRACE    printf("%s:%d ", __FILE__, __LINE__); printf
+#endif
+#if 0 && !defined(MINIYOG)
+#   define DEBUG(x)     x
+#else
+#   define DEBUG(x)
 #endif
 
 #define array_sizeof(a)     (sizeof(a) / sizeof(a[0]))

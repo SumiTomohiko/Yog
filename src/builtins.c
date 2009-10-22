@@ -32,9 +32,7 @@ raise_exception(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         POP_LOCALS(env);
     }
 
-    YogVal cur_frame = PTR_AS(YogThread, env->thread)->cur_frame;
-    YogVal prev_frame = PTR_AS(YogFrame, cur_frame)->prev;
-    PTR_AS(YogThread, env->thread)->cur_frame = prev_frame;
+    env->frame = PTR_AS(YogFrame, env->frame)->prev;
 
     YogError_raise(env, exc);
 

@@ -4,12 +4,6 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#if 0
-#   define DEBUG(x)     x
-#else
-#   define DEBUG(x)
-#endif
-
 static void
 oldify(YogEnv* env, YogGenerational* gen, void* ptr)
 {

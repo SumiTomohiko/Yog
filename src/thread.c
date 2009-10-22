@@ -38,12 +38,6 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#if 0
-#   define DEBUG(x)     x
-#else
-#   define DEBUG(x)
-#endif
-
 static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
@@ -58,7 +52,6 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     void* thread_heap = THREAD_HEAP(thread);
 #define KEEP(member)    YogGC_keep(env, &thread->member, keeper, thread_heap)
-    KEEP(cur_frame);
     KEEP(jmp_val);
     KEEP(frame_to_long_jump);
     KEEP(block);
@@ -79,7 +72,6 @@ YogThread_init(YogEnv* env, YogVal thread, YogVal klass)
 
     PTR_AS(YogThread, thread)->heap = NULL;
 
-    PTR_AS(YogThread, thread)->cur_frame = YNIL;
     PTR_AS(YogThread, thread)->jmp_buf_list = NULL;
     PTR_AS(YogThread, thread)->jmp_val = YUNDEF;
     PTR_AS(YogThread, thread)->frame_to_long_jump = YUNDEF;
@@ -277,11 +269,11 @@ thread_main(void* arg)
     env.locals = &locals;
     SAVE_LOCALS(&env);
     YogLocals locals0;
-    locals0.num_vals = 2;
+    locals0.num_vals = 3;
     locals0.size = 1;
     locals0.vals[0] = &env.thread;
     locals0.vals[1] = &thread_arg;
-    locals0.vals[2] = NULL;
+    locals0.vals[2] = &env.frame;
     locals0.vals[3] = NULL;
     PUSH_LOCAL_TABLE(&env, locals0);
     YogVM_add_locals(&env, vm, &locals);

@@ -6,12 +6,6 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#if 0 && !defined(MINIYOG)
-#   define DEBUG(x)     x
-#else
-#   define DEBUG(x)
-#endif
-
 #define IS_IN_HEAP(ptr, heap)   do { \
     void* from = heap->items; \
     void* to = heap->items + heap->size; \
@@ -67,13 +61,6 @@ round_size(size_t size)
 void*
 YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
 {
-#define PRINT_HEAP(text, heap)   do { \
-    DEBUG(TRACE("%p: %s: %p-%p", env, (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
-} while (0)
-    PRINT_HEAP("active heap", copying->active_heap);
-    PRINT_HEAP("inactive heap", copying->inactive_heap);
-#undef PRINT_HEAP
-
     if (ptr == NULL) {
         DEBUG(TRACE("%p: copy: NULL->NULL", env));
         return NULL;
@@ -182,6 +169,12 @@ YogCopying_prepare(YogEnv* env, YogCopying* copying)
 {
     YogCopyingHeap* to_space = copying->inactive_heap;
     copying->scanned = copying->unscanned = to_space->items;
+#define PRINT_HEAP(text, heap)   do { \
+    DEBUG(TRACE("%p: %s: %p-%p", env, (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
+} while (0)
+    PRINT_HEAP("active heap", copying->active_heap);
+    PRINT_HEAP("inactive heap", copying->inactive_heap);
+#undef PRINT_HEAP
 }
 
 void

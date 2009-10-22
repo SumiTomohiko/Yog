@@ -104,7 +104,7 @@ void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
 /* PROTOTYPE_END */
 
 #define FRAME_PUSH(env, val)    do { \
-    YogVal cur_frame = PTR_AS(YogThread, (env)->thread)->cur_frame; \
+    YogVal cur_frame = env->frame; \
     YogScriptFrame_push_stack((env), PTR_AS(YogScriptFrame, cur_frame), (val)); \
 } while (0)
 

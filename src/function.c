@@ -230,8 +230,8 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
     PTR_AS(YogScriptFrame, frame)->frame_to_long_return = PTR_AS(YogFunction, callee)->frame_to_long_return;
     PTR_AS(YogScriptFrame, frame)->frame_to_long_break = PTR_AS(YogFunction, callee)->frame_to_long_break;
 
-    PTR_AS(YogFrame, frame)->prev = PTR_AS(YogThread, env->thread)->cur_frame;
-    PTR_AS(YogThread, env->thread)->cur_frame = frame;
+    PTR_AS(YogFrame, frame)->prev = env->frame;
+    env->frame = frame;
 
     RETURN_VOID(env);
 }
@@ -409,13 +409,13 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
 
     frame = YogCFrame_new(env);
     PTR_AS(YogCFrame, frame)->f = callee;
-    PTR_AS(YogFrame, frame)->prev = PTR_AS(YogThread, env->thread)->cur_frame;
-    PTR_AS(YogThread, env->thread)->cur_frame = frame;
+    PTR_AS(YogFrame, frame)->prev = env->frame;
+    env->frame = frame;
 
     Body f = (Body)PTR_AS(YogNativeFunction, callee)->f;
     retval = (*f)(env, self, args, kw, blockarg);
 
-    PTR_AS(YogThread, env->thread)->cur_frame = PTR_AS(YogFrame, PTR_AS(YogThread, env->thread)->cur_frame)->prev;
+    env->frame = PTR_AS(YogFrame, env->frame)->prev;
 
     RETURN(env, retval);
 }
@@ -432,7 +432,7 @@ YogNativeFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
     SAVE_ARGS5(env, callee, self, blockarg, vararg, varkwarg);
 
     YogVal retval = YogNativeFunction_call_for_instance(env, callee, self, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg);
-    YogScriptFrame_push_stack(env, PTR_AS(YogScriptFrame, PTR_AS(YogThread, env->thread)->cur_frame), retval);
+    YogScriptFrame_push_stack(env, PTR_AS(YogScriptFrame, env->frame), retval);
 
     RETURN_VOID(env);
 }

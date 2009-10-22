@@ -14,12 +14,6 @@
 #   include "yog/gc/generational.h"
 #endif
 
-#if 0
-#   define DEBUG(x)     x
-#else
-#   define DEBUG(x)
-#endif
-
 #define BITS_PER_BYTE   8
 
 #define SURVIVE_INDEX_MAX    8

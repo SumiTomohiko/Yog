@@ -44,8 +44,6 @@ struct YogThread {
     void* heap;
     BOOL gc_bound;
 
-    YogVal cur_frame;
-
     struct YogJmpBuf* jmp_buf_list;
     YogVal jmp_val;
     YogVal frame_to_long_jump;
@@ -87,14 +85,14 @@ typedef struct YogThread YogThread;
 } while (0)
 
 #define SAVE_CURRENT_STAT(env, name)    \
-    YogVal name##_cur_frame = PTR_AS(YogThread, (env)->thread)->cur_frame; \
+    YogVal name##_cur_frame = env->frame; \
     PUSH_LOCAL((env), name##_cur_frame); \
     YogLocals* name##_locals = (env)->locals->body; \
     YogJmpBuf* name##_jmpbuf = PTR_AS(YogThread, (env)->thread)->jmp_buf_list
 #define RESTORE_STAT(env, name) \
     PTR_AS(YogThread, (env)->thread)->jmp_buf_list = name##_jmpbuf; \
     (env)->locals->body = name##_locals; \
-    PTR_AS(YogThread, (env)->thread)->cur_frame = name##_cur_frame
+    env->frame = name##_cur_frame
 
 /* PROTOTYPE_START */
 

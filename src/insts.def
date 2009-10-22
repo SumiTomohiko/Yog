@@ -444,7 +444,7 @@ inst long_return
 (val)
 ()
 {
-    YogVal frame = PTR_AS(YogThread, env->thread)->cur_frame;
+    YogVal frame = env->frame;
     YogVal target_frame = PTR_AS(YogScriptFrame, frame)->frame_to_long_return;
     long_jump(env, val, JMP_RETURN, target_frame);
 }
@@ -454,7 +454,7 @@ inst long_break
 (val)
 ()
 {
-    YogVal frame = PTR_AS(YogThread, env->thread)->cur_frame;
+    YogVal frame = env->frame;
     YogVal target_frame = PTR_AS(YogScriptFrame, frame)->frame_to_long_break;
     long_jump(env, val, JMP_BREAK, target_frame);
 }

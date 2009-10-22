@@ -65,12 +65,6 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#if 0
-#   define DEBUG(x)     x
-#else
-#   define DEBUG(x)
-#endif
-
 #define PAGE_SIZE       4096
 #define PTR2PAGE(p)     ((YogMarkSweepCompactPage*)((uintptr_t)p & ~(PAGE_SIZE - 1)))
 

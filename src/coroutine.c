@@ -110,12 +110,12 @@ coroutine_main(YogEnv* env, YogVal self)
     coroutine_env.locals = machine_stack2locals(env, stack, size);
     coroutine_env.coroutine = self;
     YogLocals locals;
-    locals.num_vals = 3;
+    locals.num_vals = 4;
     locals.size = 1;
-    locals.vals[0] = &coroutine_env.thread;
-    locals.vals[1] = &self;
+    locals.vals[0] = &self;
+    locals.vals[1] = &coroutine_env.thread;
     locals.vals[2] = &coroutine_env.coroutine;
-    locals.vals[3] = NULL;
+    locals.vals[3] = &coroutine_env.frame;
     PUSH_LOCAL_TABLE(&coroutine_env, locals);
 
     YogCallable_call(&coroutine_env, PTR_AS(Coroutine, self)->block, 0, NULL);

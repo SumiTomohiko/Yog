@@ -85,7 +85,7 @@ init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         message = YNIL;
     }
 
-    frame = PTR_AS(YogThread, env->thread)->cur_frame;
+    frame = env->frame;
     frame = skip_frame(env, frame, "init");
     frame = skip_frame(env, frame, "new");
 
