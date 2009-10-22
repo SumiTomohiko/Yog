@@ -25,4 +25,18 @@ co.resume()
 print(45)
 """, "42434445")
 
+    def test_yield10(self):
+        self._test("""
+co = Coroutine.new() do
+  2.times() do [n]
+    print(n)
+    Coroutine.yield()
+  end
+end
+
+2.times() do
+  co.resume()
+end
+""", "01")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
