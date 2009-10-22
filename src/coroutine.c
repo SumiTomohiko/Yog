@@ -225,7 +225,7 @@ Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
     SAVE_ARGS2(env, self, klass);
     YogBasicObj_init(env, self, 0, klass);
 
-#define PAGE_SIZE   4096
+#define PAGE_SIZE   (256 * 4096)
     uint_t machine_stack_size = PAGE_SIZE;
 #undef PAGE_SIZE
     void* machine_stack = malloc(machine_stack_size);

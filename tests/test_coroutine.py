@@ -28,15 +28,15 @@ print(45)
     def test_yield10(self):
         self._test("""
 co = Coroutine.new() do
-  2.times() do [n]
-    print(n)
+  26.times() do
+    print(42)
     Coroutine.yield()
   end
 end
 
-2.times() do
+26.times() do
   co.resume()
 end
-""", "01")
+""", "4242424242424242424242424242424242424242424242424242")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
