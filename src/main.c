@@ -171,9 +171,7 @@ main(int_t argc, char* argv[])
 #endif
 
     YogLocalsAnchor locals = LOCALS_ANCHOR_INIT;
-    YogEnv env;
-    env.vm = NULL;
-    env.thread = YUNDEF;
+    YogEnv env = ENV_INIT;
     env.locals = &locals;
 
     YogVM vm;

@@ -119,9 +119,12 @@ struct YogEnv {
     struct YogVM* vm;
     YogVal thread;
     struct YogLocalsAnchor* locals;
+    YogVal coroutine;
 };
 
 typedef struct YogEnv YogEnv;
+
+#define ENV_INIT    { NULL, YUNDEF, NULL, YUNDEF }
 
 #define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = (env)->locals->body
 #define RESTORE_LOCALS(env)     (env)->locals->body = __cur_locals__

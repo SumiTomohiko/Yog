@@ -54,14 +54,6 @@ struct Coroutine {
 
 typedef struct Coroutine Coroutine;
 
-static YogVal
-yield(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS4(env, self, args, kw, block);
-    /* TODO */
-    RETURN(env, self);
-}
-
 static void
 switch_context(YogEnv* env, SwitchContext* to, SwitchContext* cont)
 {
@@ -75,6 +67,26 @@ switch_context(YogEnv* env, SwitchContext* to, SwitchContext* cont)
         "1:\n"
         : : "r" (cont), "r" (to) : "eax", "ebx", "ecx", "edx"
     );
+}
+
+static void
+yield_coroutine(YogEnv* env, YogVal self)
+{
+    SwitchContext* to = &PTR_AS(Coroutine, self)->ctx_to_yield;
+    SwitchContext* cont = &PTR_AS(Coroutine, self)->ctx_to_resume;
+    switch_context(env, to, cont);
+}
+
+static YogVal
+yield(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal coroutine = env->coroutine;
+    PUSH_LOCAL(env, coroutine);
+
+    yield_coroutine(env, coroutine);
+
+    RETURN(env, self);
 }
 
 static YogLocalsAnchor*
@@ -92,26 +104,24 @@ coroutine_main(YogEnv* env, YogVal self)
 {
     void* stack = PTR_AS(Coroutine, self)->machine_stack;
     uint_t size = PTR_AS(Coroutine, self)->machine_stack_size;
-    YogEnv coroutine_env;
+    YogEnv coroutine_env = ENV_INIT;
     coroutine_env.vm = env->vm;
     coroutine_env.thread = env->thread;
     coroutine_env.locals = machine_stack2locals(env, stack, size);
+    coroutine_env.coroutine = self;
     YogLocals locals;
-    locals.num_vals = 2;
+    locals.num_vals = 3;
     locals.size = 1;
     locals.vals[0] = &coroutine_env.thread;
     locals.vals[1] = &self;
-    locals.vals[2] = NULL;
+    locals.vals[2] = &coroutine_env.coroutine;
     locals.vals[3] = NULL;
     PUSH_LOCAL_TABLE(&coroutine_env, locals);
 
     YogCallable_call(&coroutine_env, PTR_AS(Coroutine, self)->block, 0, NULL);
 
     POP_LOCALS(&coroutine_env);
-
-    SwitchContext* to = &PTR_AS(Coroutine, self)->ctx_to_yield;
-    SwitchContext* cont = &PTR_AS(Coroutine, self)->ctx_to_resume;
-    switch_context(&coroutine_env, to, cont);
+    yield_coroutine(&coroutine_env, self);
 }
 
 static YogVal

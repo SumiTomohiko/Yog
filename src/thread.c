@@ -271,7 +271,7 @@ thread_main(void* arg)
     YogVal thread = PTR_AS(ThreadArg, thread_arg)->thread;
     YogLocalsAnchor locals = LOCALS_ANCHOR_INIT;
     locals.heap = PTR_AS(YogThread, thread)->heap;
-    YogEnv env;
+    YogEnv env = ENV_INIT;
     env.vm = vm;
     env.thread = thread;
     env.locals = &locals;
