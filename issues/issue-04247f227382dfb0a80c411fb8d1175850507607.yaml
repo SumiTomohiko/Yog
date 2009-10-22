@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove warings on compiling lemon.
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-10-22 18:08:16.377348 Z
+references: []
+
+id: 04247f227382dfb0a80c411fb8d1175850507607
+log_events: 
+- - 2009-10-22 18:08:17.141668 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
