@@ -1,4 +1,3 @@
-#include <malloc.h>
 #include <stdlib.h>
 #include "yog/class.h"
 #include "yog/error.h"
