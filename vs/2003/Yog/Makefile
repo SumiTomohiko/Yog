@@ -9,7 +9,7 @@ YOG = yog.exe
 COMMON_CFLAGS = $(CFLAGS) /c /I. /I$(ROOT_DIR)\include /I$(ROOT_DIR)\src \
 		/I$(ROOT_DIR)\onig /I..\gmp /I$(ROOT_DIR)\pthreads-w32 /nologo \
 		/O2 /QI0f /Wall /Z7 /TP /DPTW32_STATIC_LIB \
-		/DONIG_EXTERN=extern /MT
+		/DONIG_EXTERN=extern /MT /D_WIN32_WINNT=0x0400
 MINIYOG_CFLAGS = $(COMMON_CFLAGS) /DMINIYOG /DGC_COPYING
 YOG_CFLAGS = $(COMMON_CFLAGS) /DGC_COPYING
 
@@ -42,7 +42,7 @@ YOG_OBJS = $(SRC_DIR)\yog-arg.obj $(SRC_DIR)\yog-array.obj \
 	   $(SRC_DIR)\yog-symbol.obj $(SRC_DIR)\yog-table.obj \
 	   $(SRC_DIR)\yog-thread.obj $(SRC_DIR)\yog-value.obj \
 	   $(SRC_DIR)\yog-vm.obj $(SRC_DIR)\gc\yog-copying.obj icon.RES \
-	   yog-getopt.obj
+	   yog-getopt.obj $(SRC_DIR)\yog-coroutine.obj
 
 MINIYOG_OBJS = $(SRC_DIR)\miniyog-arg.obj $(SRC_DIR)\miniyog-array.obj \
 	       $(SRC_DIR)\miniyog-bignum.obj $(SRC_DIR)\miniyog-binary.obj \
@@ -66,7 +66,8 @@ MINIYOG_OBJS = $(SRC_DIR)\miniyog-arg.obj $(SRC_DIR)\miniyog-array.obj \
 	       $(SRC_DIR)\miniyog-string.obj $(SRC_DIR)\miniyog-symbol.obj \
 	       $(SRC_DIR)\miniyog-table.obj $(SRC_DIR)\miniyog-thread.obj \
 	       $(SRC_DIR)\miniyog-value.obj $(SRC_DIR)\miniyog-vm.obj \
-	       $(SRC_DIR)\gc\miniyog-copying.obj icon.RES miniyog-getopt.obj
+	       $(SRC_DIR)\gc\miniyog-copying.obj icon.RES miniyog-getopt.obj \
+	       $(SRC_DIR)\miniyog-coroutine.obj
 
 all: $(YOG)
 
@@ -225,6 +226,9 @@ $(SRC_DIR)\yog-vm.obj: $(SRC_DIR)\vm.c
 $(SRC_DIR)\gc\yog-copying.obj: $(SRC_DIR)\gc\copying.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
+$(SRC_DIR)\yog-coroutine.obj: $(SRC_DIR)\coroutine.c
+	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+
 yog-getopt.obj: getopt.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
@@ -373,6 +377,9 @@ $(SRC_DIR)\miniyog-vm.obj: $(SRC_DIR)\vm.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
 $(SRC_DIR)\gc\miniyog-copying.obj: $(SRC_DIR)\gc\copying.c
+	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
+
+$(SRC_DIR)\miniyog-coroutine.obj: $(SRC_DIR)\coroutine.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
 miniyog-getopt.obj: getopt.c
