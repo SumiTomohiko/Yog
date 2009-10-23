@@ -84,6 +84,11 @@ case "${host}" in
     SOEXT=".dll"
     ;;
 *)
+    case "${host}" in
+    *-linux*)
+        CFLAGS_COMMON="${CFLAGS_COMMON} -D_XOPEN_SOURCE=500 -D_BSD_SOURCE"
+        ;;
+    esac
     AC_CONFIG_SUBDIRS([bdwgc])
     DIRS="${DIRS} bdwgc"
     TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational"

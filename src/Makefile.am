@@ -55,8 +55,7 @@ COMMON_SOURCES = arg.c \
 	value.c \
 	vm.c
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
-		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" -D_XOPEN_SOURCE=500 \
-		-D_BSD_SOURCE @CFLAGS_COMMON@
+		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" @CFLAGS_COMMON@
 LDFLAGS_COMMON = -export-dynamic @LDFLAGS_COMMON@
 LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a -lm @LIBS@
 
