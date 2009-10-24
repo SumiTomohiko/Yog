@@ -1,4 +1,4 @@
-This is Yog vesrion 0.0.2
+This is Yog vesrion 0.0.3
 =========================
 
 Yog is a dynamic programming language designed as an intermediate between Python and Ruby.
@@ -57,7 +57,7 @@ Original data are in the ``issues`` dicretory of the source tree.
 Development progress & plans
 ----------------------------
 
-by version 0.0.2 (done)
+by version 0.0.3 (done)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 * Port to Windows 2000.

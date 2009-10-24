@@ -138,13 +138,13 @@
 #define PACKAGE_NAME "Yog"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Yog 0.0.2"
+#define PACKAGE_STRING "Yog 0.0.3"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "yog"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.0.2"
+#define PACKAGE_VERSION "0.0.3"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 4
@@ -165,7 +165,7 @@
 /* #undef TIME_WITH_SYS_TIME */
 
 /* Version number of package */
-#define VERSION "0.0.2"
+#define VERSION "0.0.3"
 
 /* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
