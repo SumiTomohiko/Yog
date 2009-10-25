@@ -991,4 +991,35 @@ Finally, the directory structure becomes the following::
 When do ``import foo.bar``, Yog executes ``foo.yg`` at first.
 After this, Yog executes ``foo/bar.yg``.
 
+**********
+Coroutines
+**********
+
+Yog offers coroutines.
+Coroutines are callable objects like functions.
+The differences are:
+
+1. ``Coroutine#resume`` is used to start coroutines.
+2. Coroutines stop execution by ``Coroutine.yield``.
+3. Coroutines restart execution by the ``Coroutine#resume`` method.
+
+Coroutines keep local variables.
+When coroutines restart, you can read previous values::
+
+  co = Coroutine.new() do
+    puts(42)
+    Coroutine.yield()
+    puts(26)
+  end
+
+  co.resume()
+  puts("foo")
+  co.resume()
+
+The above code prints::
+
+  42
+  foo
+  26
+
 .. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
