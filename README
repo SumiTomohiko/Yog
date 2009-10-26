@@ -57,15 +57,15 @@ Original data are in the ``issues`` dicretory of the source tree.
 Development progress & plans
 ----------------------------
 
-by version 0.0.3 (done)
+by version 0.0.2 (done)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 * Port to Windows 2000.
 * Port to OpenBSD.
 * Port to FreeBSD.
 
-by version 0.0.3
-~~~~~~~~~~~~~~~~
+by version 0.0.3 (done)
+~~~~~~~~~~~~~~~~~~~~~~~
 
 * Coroutine.
 
