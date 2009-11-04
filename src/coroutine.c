@@ -305,7 +305,7 @@ Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
     SAVE_ARGS2(env, self, klass);
     YogBasicObj_init(env, self, 0, klass);
 
-#define STACK_SIZE  (256 * 4096)
+#define STACK_SIZE  (2048 * 4096)
 #if defined(_WIN32)
     MainParam* param = (MainParam*)malloc(sizeof(MainParam));
     YOG_ASSERT(env, param != NULL, "can't allocate MainParam");
@@ -317,7 +317,7 @@ Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
     YOG_ASSERT(env, fiber != NULL, "CreateFiber failed");
     PTR_AS(Coroutine, self)->fiber_to_resume = fiber;
     PTR_AS(Coroutine, self)->fiber_to_yield = NULL;
-	PTR_AS(Coroutine, self)->param = param;
+    PTR_AS(Coroutine, self)->param = param;
 #else
     uint_t machine_stack_size = STACK_SIZE;
     void* machine_stack = malloc(machine_stack_size);
