@@ -46,3 +46,15 @@ releases:
     - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
     - released
     - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: 0.0.4
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2009-11-07 17:52:44.836037 Z
+    - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+    - created
+    - |-
+      Objectives:
+      1. Improve GC
+      2. Performance tuning
