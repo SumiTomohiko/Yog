@@ -495,8 +495,8 @@ YogEval_mainloop(YogEnv* env)
     YogVal varkwarg = YUNDEF; \
     YogVal vararg = YUNDEF; \
     YogVal blockarg = YUNDEF; \
-    YogVal* kwargs = (YogVal*)alloca(sizeof(YogVal) * 2 * (kwargc)); \
-    YogVal* args = (YogVal*)alloca(sizeof(YogVal) * argc); \
+    YogVal kwargs[256]; \
+    YogVal args[256]; \
     do { \
         uint_t i = 0; \
         for (i = 0; i < 2 * (kwargc); i++) { \
