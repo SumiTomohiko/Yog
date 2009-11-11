@@ -1253,7 +1253,12 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
 
     dirname(env, prog);
     uint_t len = YogString_size(env, prog);
-#define EXT_DIR     "../ext"
+#if defined(_MSC_VER)
+#   define ROOT_DIR_DEV     "..\\..\\..\\"
+#else
+#   define ROOT_DIR_DEV     "../"
+#endif
+#define EXT_DIR     ROOT_DIR_DEV "ext"
     /* 1 of middle is for '/' */
     size_t size = len + 1 + strlen(EXT_DIR) + 1;
     char* extpath = (char*)alloca(sizeof(char) * size);
@@ -1264,7 +1269,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
         s = YogString_new_str(env, extpath);
         YogArray_push(env, search_path, s);
 
-#define LIB_DIR     "../lib"
+#define LIB_DIR     ROOT_DIR_DEV "lib"
         size_t size = len + 1 + strlen(LIB_DIR) + 1;
         char* libpath = (char*)alloca(sizeof(char) * size);
         join_path(libpath, PTR_AS(YogCharArray, body)->items, LIB_DIR, size);
@@ -1273,12 +1278,17 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
         YogArray_push(env, search_path, s);
     }
     else {
-#if !defined(_MSC_VER)
-        s = YogString_new_str(env, PREFIX "/lib/yog/" VERSION);
-        YogArray_push(env, search_path, s);
+#if defined(_MSC_VER)
+#   define EXT_DIR  "..\\lib"
+#else
+#   define EXT_DIR  PREFIX "/lib/yog/" VERSION
 #endif
+        s = YogString_new_str(env, EXT_DIR);
+#undef EXT_DIR
+        YogArray_push(env, search_path, s);
     }
     vm->search_path = search_path;
+#undef ROOT_DIR_DEV
 
     RETURN_VOID(env);
 }
