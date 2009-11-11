@@ -7,7 +7,7 @@ all:
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO
 	cd ..
 	cd pthreads-w32
-	$(MAKE) /$(MAKEFLAGS) /NOLOGO
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO VC-static-debug
 	cd ..
 	cd Yog
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO

@@ -17,7 +17,7 @@
 			ConfigurationType="0">
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="nmake /NOLOGO"
+				BuildCommandLine="nmake /NOLOGO VC-static-debug"
 				CleanCommandLine="nmake /NOLOGO clean"/>
 		</Configuration>
 	</Configurations>

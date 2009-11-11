@@ -19,25 +19,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miniyog", "miniyog\miniyog.
 EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
-		Debug = Debug
 		Release = Release
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
-		{0D1F3EC7-0E8B-4E2E-BE83-B30A6629101E}.Debug.ActiveCfg = Release|Win32
-		{0D1F3EC7-0E8B-4E2E-BE83-B30A6629101E}.Debug.Build.0 = Release|Win32
 		{0D1F3EC7-0E8B-4E2E-BE83-B30A6629101E}.Release.ActiveCfg = Release|Win32
 		{0D1F3EC7-0E8B-4E2E-BE83-B30A6629101E}.Release.Build.0 = Release|Win32
-		{84E8D09B-D5D4-4C51-9BA9-28181B50AEF2}.Debug.ActiveCfg = Release|Win32
-		{84E8D09B-D5D4-4C51-9BA9-28181B50AEF2}.Debug.Build.0 = Release|Win32
 		{84E8D09B-D5D4-4C51-9BA9-28181B50AEF2}.Release.ActiveCfg = Release|Win32
 		{84E8D09B-D5D4-4C51-9BA9-28181B50AEF2}.Release.Build.0 = Release|Win32
-		{93AD3780-5753-4FB5-83FC-FBBD3CC0B809}.Debug.ActiveCfg = Release|Win32
-		{93AD3780-5753-4FB5-83FC-FBBD3CC0B809}.Debug.Build.0 = Release|Win32
 		{93AD3780-5753-4FB5-83FC-FBBD3CC0B809}.Release.ActiveCfg = Release|Win32
 		{93AD3780-5753-4FB5-83FC-FBBD3CC0B809}.Release.Build.0 = Release|Win32
-		{E5089FCE-5D6B-46AA-A8DD-4FBFAE8910DA}.Debug.ActiveCfg = Release|Win32
 		{E5089FCE-5D6B-46AA-A8DD-4FBFAE8910DA}.Release.ActiveCfg = Release|Win32
-		{E5089FCE-5D6B-46AA-A8DD-4FBFAE8910DA}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

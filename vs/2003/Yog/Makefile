@@ -7,16 +7,16 @@ MINIYOG = miniyog.exe
 YOG = yog.exe
 
 COMMON_CFLAGS = $(CFLAGS) /c /I. /I$(ROOT_DIR)\include /I$(ROOT_DIR)\src \
-		/I$(ROOT_DIR)\onig /I..\gmp /I$(ROOT_DIR)\pthreads-w32 /nologo \
-		/O2 /QI0f /Wall /Z7 /TP /DPTW32_STATIC_LIB \
-		/DONIG_EXTERN=extern /MT /D_WIN32_WINNT=0x0400
+		/I$(ROOT_DIR)\onig /I..\gmp /I..\pthreads-w32 /nologo /O2 \
+		/QI0f /Wall /Z7 /TP /DPTW32_STATIC_LIB /DONIG_EXTERN=extern \
+		/MT /D_WIN32_WINNT=0x0400
 MINIYOG_CFLAGS = $(COMMON_CFLAGS) /DMINIYOG /DGC_COPYING
 YOG_CFLAGS = $(COMMON_CFLAGS) /DGC_COPYING
 
 LINK = link.exe
 LDFLAGS = $(LDFLAGS) /DEBUG /NOLOGO /SUBSYSTEM:CONSOLE /INCREMENTAL:no
 LIBS = ..\gmp\gmp.lib $(ROOT_DIR)\onig\onig_s.lib \
-       $(ROOT_DIR)\pthreads-w32\pthreadVC2d.lib ws2_32.lib
+       ..\pthreads-w32\pthreadVC2d.lib ws2_32.lib
 
 PYTHON = python
 
