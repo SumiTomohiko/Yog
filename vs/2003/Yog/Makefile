@@ -385,8 +385,8 @@ $(SRC_DIR)\miniyog-coroutine.obj: $(SRC_DIR)\coroutine.c
 miniyog-getopt.obj: getopt.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-icon.RES: icon.rc
-	rc $?
+icon.RES: icon.rc yog.ico
+	rc icon.rc
 
 clean:
 	del $(YOG_OBJS) $(MINIYOG_OBJS) $(YOG) $(MINIYOG)
