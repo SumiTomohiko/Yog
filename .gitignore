@@ -54,6 +54,7 @@ core.*
 doc/_build
 doc/conf.py
 ext/.deps/
+gmon.out
 gmp/.libs/
 gmp/config.m4
 gmp/demos/calc/calc-config.h
@@ -239,4 +240,8 @@ stamp-h1
 tests/test_write0.tmp
 tools/lemon/.deps/
 tools/lemon/lemon
+tools/swig/CCache/ccache-swig
+tools/swig/Lib/swigwarn.swg
+tools/swig/Source/eswig
+tools/swig/swig
 vgcore.*
