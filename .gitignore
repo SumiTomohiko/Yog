@@ -25,6 +25,7 @@
 *.wixpdb
 *.zip
 *~
+.deps
 .ditz-config
 .ditz-plugins
 Debug
