@@ -1,9 +1,13 @@
 #include "swigmod.h"
 
+static String *module = 0;
+
 class YOG: public Language {
 protected:
     File* f_begin;
     File* f_runtime;
+    File* f_init;
+    File* f_header;
 
 public:
     YOG() {
@@ -22,17 +26,28 @@ public:
             SWIG_exit(EXIT_FAILURE);
         }
         f_runtime = NewString("");
+        f_init = NewString("");
+        f_header = NewString("");
 
         Swig_register_filebyname("begin", f_begin);
         Swig_register_filebyname("runtime", f_runtime);
+        Swig_register_filebyname("init", f_init);
+        Swig_register_filebyname("header", f_header);
 
         Swig_banner(f_begin);
+
+        module = Copy(Getattr(n, "name"));
+        Printf(f_header, "#define SWIG_init YogInit_%s\n", module);
 
         Language::top(n);
 
         Dump(f_runtime, f_begin);
+        Dump(f_header, f_begin);
+        Wrapper_pretty_print(f_init, f_begin);
 
+        Delete(f_header);
         Delete(f_runtime);
+        Delete(f_init);
         Close(f_begin);
         Delete(f_begin);
 
