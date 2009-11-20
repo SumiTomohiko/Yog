@@ -13,9 +13,21 @@ private:
     File* f_init;
     File* f_header;
     File* f_wrappers;
+    String* f_shadow;
 
     void add_function(String* name) {
         Printf(this->methods, "    { \"%s\", %s },\n", name, Swig_name_wrapper(name));
+    }
+
+    String* funcCall(String* name) {
+        String *str = NewString("");
+        Printv(str, this->module, ".", name, "(*args, **kw)", NIL);
+        return str;
+    }
+
+    void emitFunctionShadowHelper(Node* n, File* f_dest, String* name) {
+        Printv(f_dest, "\ndef ", name, "(*args, **kw)\n", NIL);
+        Printv(f_dest, "    return ", funcCall(name), "\nend\n", NIL);
     }
 
 public:
@@ -136,6 +148,8 @@ public:
         Append(f->code, "    RETURN(env, resultobj);\n}\n");
         Wrapper_print(f, this->f_wrappers);
 
+        this->emitFunctionShadowHelper(n, f_shadow, iname);
+
         DelWrapper(f);
 
         return SWIG_OK;
@@ -148,29 +162,40 @@ public:
             FileErrorDisplay(outfile);
             SWIG_exit(EXIT_FAILURE);
         }
-        f_runtime = NewString("");
-        f_init = NewString("");
-        f_header = NewString("");
-        f_wrappers = NewString("");
+        this->f_runtime = NewString("");
+        this->f_init = NewString("");
+        this->f_header = NewString("");
+        this->f_wrappers = NewString("");
 
-        Swig_register_filebyname("header", f_header);
-        Swig_register_filebyname("wrapper", f_wrappers);
-        Swig_register_filebyname("begin", f_begin);
-        Swig_register_filebyname("runtime", f_runtime);
-        Swig_register_filebyname("init", f_init);
+        Swig_register_filebyname("header", this->f_header);
+        Swig_register_filebyname("wrapper", this->f_wrappers);
+        Swig_register_filebyname("begin", this->f_begin);
+        Swig_register_filebyname("runtime", this->f_runtime);
+        Swig_register_filebyname("init", this->f_init);
 
         this->methods = NewString("");
 
         Swig_banner(f_begin);
 
-        module = Copy(Getattr(n, "name"));
-        Insert(module, 0, "_");
-        Printf(f_header, "#define SWIG_init YogInit_%s\n", module);
+        this->module = Copy(Getattr(n, "name"));
+        String *filen = NewStringf("%s%s.yg", SWIG_output_directory(), Char(this->module));
+        String* f_shadow_yg;
+        if ((f_shadow_yg = NewFile(filen, "w", SWIG_output_files())) == 0) {
+            FileErrorDisplay(filen);
+            SWIG_exit(EXIT_FAILURE);
+        }
+
+        Insert(this->module, 0, "_");
+        Printf(f_header, "#define SWIG_init YogInit_%s\n", this->module);
 
         Printf(f_wrappers, "#ifdef __cplusplus\n");
         Printf(f_wrappers, "extern \"C\" {\n");
         Printf(f_wrappers, "#endif\n");
         Append(this->methods, "static WrapperDef functions[] = { \n");
+
+        this->f_shadow = NewString("");
+        Swig_banner_target_lang(this->f_shadow, "#");
+        Printf(this->f_shadow, "import %s\n", this->module);
 
         Language::top(n);
 
@@ -186,6 +211,10 @@ public:
         Dump(f_header, f_begin);
         Dump(f_wrappers, f_begin);
         Wrapper_pretty_print(f_init, f_begin);
+
+        Printv(f_shadow_yg, this->f_shadow, "\n", NIL);
+        Close(f_shadow_yg);
+        Delete(f_shadow_yg);
 
         Delete(f_header);
         Delete(f_wrappers);
