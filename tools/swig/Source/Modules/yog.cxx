@@ -15,6 +15,9 @@ private:
     File* f_wrappers;
     String* f_shadow;
 
+    int shadow;
+    int have_constructor;
+
     void add_function(String* name) {
         Printf(this->methods, "    { \"%s\", %s },\n", name, Swig_name_wrapper(name));
     }
@@ -32,6 +35,16 @@ private:
 
 public:
     YOG() {
+        this->module = NULL;
+        this->methods = NULL;
+        this->f_begin = NULL;
+        this->f_runtime = NULL;
+        this->f_init = NULL;
+        this->f_header = NULL;
+        this->f_wrappers = NULL;
+        this->f_shadow = NULL;
+        this->shadow = 1;
+        this->have_constructor = 0;
     }
 
     virtual void main(int argc, char *argv[]) {
@@ -54,9 +67,52 @@ public:
         Printf(dest, "(env");
     }
 
+    virtual int classHandler(Node *n) {
+        if (this->shadow) {
+            this->have_constructor = 0;
+        }
+        return Language::classHandler(n);
+    }
+
+    virtual int constructorHandler(Node *n) {
+        Language::constructorHandler(n);
+
+        if (Getattr(n, "sym:nextSibling")) {
+            return SWIG_OK;
+        }
+        if (!this->shadow) {
+            return SWIG_OK;
+        }
+        int handled_as_init = 0;
+        if (!this->have_constructor) {
+            String *nname = Getattr(n, "sym:name");
+            String *sname = Getattr(getCurrentClass(), "sym:name");
+            String *cname = Swig_name_construct(sname);
+            handled_as_init = (Strcmp(nname, sname) == 0) || (Strcmp(nname, cname) == 0);
+            Delete(cname);
+        }
+
+        if (!this->have_constructor && handled_as_init) {
+            this->have_constructor = 1;
+        }
+
+        return SWIG_OK;
+    }
+
     virtual int functionWrapper(Node* n) {
         String *name = Getattr(n, "name");
         this->add_function(name);
+
+        String* nodeType = Getattr(n, "nodeType");
+        int constructor = (!Cmp(nodeType, "constructor"));
+        int handled_as_init = 0;
+        if (!this->have_constructor && (constructor || Getattr(n, "handled_as_constructor"))) {
+            String *nname = Getattr(n, "sym:name");
+            String *sname = Getattr(getCurrentClass(), "sym:name");
+            String *cname = Swig_name_construct(sname);
+            handled_as_init = (Strcmp(nname, sname) == 0) || (Strcmp(nname, cname) == 0);
+            Delete(cname);
+        }
 
         Wrapper* f = NewWrapper();
         ParmList* l = Getattr(n, "parms");
@@ -137,6 +193,15 @@ public:
         SwigType *d = Getattr(n, "type");
         if ((tm = Swig_typemap_lookup_out("out", n, "result", f, actioncode))) {
             Replaceall(tm, "$result", "resultobj");
+            if (handled_as_init) {
+                Replaceall(tm, "$owner", "SWIG_POINTER_NEW");
+            }
+            else if (GetFlag(n, "feature:new")) {
+                Replaceall(tm, "$owner", "SWIG_POINTER_OWN");
+            }
+            else {
+                Replaceall(tm, "$owner", "0");
+            }
             Printf(f->code, "%s\n", tm);
             Delete(tm);
         }
