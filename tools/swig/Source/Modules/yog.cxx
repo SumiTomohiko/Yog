@@ -5,6 +5,7 @@
 
 class YOG: public Language {
 private:
+    String* class_name;
     String* module;
     String* methods;
 
@@ -15,26 +16,192 @@ private:
     File* f_wrappers;
     String* f_shadow;
 
-    int shadow;
-    int have_constructor;
+    bool have_constructor;
+    bool shadow;
+    bool in_class;
 
     void add_function(String* name) {
         Printf(this->methods, "    { \"%s\", %s },\n", name, Swig_name_wrapper(name));
     }
 
     String* funcCall(String* name) {
+        return this->funcCall(name, "(*args, **kw)");
+    }
+
+    String* funcCall(String* name, const char* params) {
         String *str = NewString("");
-        Printv(str, this->module, ".", name, "(*args, **kw)", NIL);
+        Printv(str, module, ".", name, "(", params, ")", NIL);
         return str;
     }
 
-    void emitFunctionShadowHelper(Node* n, File* f_dest, String* name) {
-        Printv(f_dest, "\ndef ", name, "(*args, **kw)\n", NIL);
-        Printv(f_dest, "    return ", funcCall(name), "\nend\n", NIL);
+    void emitFunctionShadowHelper(File* f_dest, String* name) {
+        Printv(f_dest,
+            "\n"
+            "def ", name, "(*args, **kw)\n"
+            "    return ", this->funcCall(name), "\n"
+            "end\n",
+            NIL);
+    }
+
+    int emit_class_head(Node* n) {
+        if (!this->shadow) {
+            return SWIG_OK;
+        }
+        this->have_constructor = false;
+        this->class_name = Getattr(n, "sym:name");
+        if (!this->addSymbol(class_name, n)) {
+            return SWIG_ERROR;
+        }
+
+        String *base_class = NewString("");
+        List *baselist = Getattr(n, "baselist");
+        if (baselist && (0 < Len(baselist))) {
+            Iterator b = First(baselist);
+            while (b.item) {
+                if (Strcmp(base_class, "") != 0) {
+                    return SWIG_ERROR;
+                }
+                base_class = Getattr(b.item, "name");
+                break;
+            }
+        }
+
+        Printv(this->f_shadow, "class ", class_name, NIL);
+        if (Len(base_class)) {
+            Printf(this->f_shadow, " > %s", base_class);
+        }
+        Printf(this->f_shadow, "\n");
+
+        Printv(this->f_shadow,
+                "    def own_this(own)\n"
+                "        return self.this.own(own)\n"
+                "    end\n",
+                NIL);
+
+        return SWIG_OK;
+    }
+
+    void add_method(String* name, String* function) {
+        Printf(this->methods, "    { \"%s\", %s },\n", name, function);
+        Append(this->methods, "},\n");
+    }
+
+    int emit_class_tail(Node* n) {
+        if (!this->shadow) {
+            return SWIG_OK;
+        }
+
+        String* real_classname = Getattr(n, "name");
+        SwigType* ct = Copy(real_classname);
+        SwigType_add_pointer(ct);
+        SwigType* realct = Copy(real_classname);
+        SwigType_add_pointer(realct);
+        SwigType_remember(realct);
+        Printv(this->f_wrappers,
+            "\n"
+            "SWIGINTERN YogVal ", this->class_name, "_swigregister(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)\n"
+            "{\n"
+            "    SAVE_ARGS4(env, self, args, kw, block);\n"
+            "    YogVal obj = YUNDEF;\n"
+            "    PUSH_LOCAL(env, obj);\n"
+            "    obj = YogArray(env, args, 0);\n"
+            "    SWIG_TypeNewClientData(SWIGTYPE", SwigType_manglestr(ct), ", SWIG_NewClientData(obj));\n"
+            "    RETURN(env, YNIL);\n"
+            "}\n",
+            NIL);
+
+        String *cname = NewStringf("%s_swigregister", this->class_name);
+        this->add_method(cname, cname);
+        Delete(cname);
+        Delete(ct);
+        Delete(realct);
+
+        if (!this->have_constructor) {
+            Printv(this->f_shadow,
+                "\n"
+                "    def init(*args, **kw)\n"
+                "        raise AttributeError.new(\"No constructor defined\")\n"
+                "    end\n",
+                NIL);
+        }
+        Printv(this->f_shadow,"end\n", NIL);
+        Printf(this->f_shadow, "%s.%s_swigregister(%s)\n", module, class_name, class_name);
+
+        return SWIG_OK;
+    }
+
+    virtual int classHandler(Node* n) {
+        if (this->emit_class_head(n) != SWIG_OK) {
+            return SWIG_ERROR;
+        }
+
+        this->in_class = true;
+        Language::classHandler(n);
+        this->in_class = false;
+
+        if (this->emit_class_tail(n) != SWIG_OK) {
+            return SWIG_ERROR;
+        }
+
+        return SWIG_OK;
+    }
+
+    virtual int memberfunctionHandler(Node *n) {
+        bool oldshadow = this->shadow;
+        Language::memberfunctionHandler(n);
+        this->shadow = oldshadow;
+
+        if (Getattr(n, "sym:nextSibling")) {
+            return SWIG_OK;
+        }
+        if (!this->shadow) {
+            return SWIG_OK;
+        }
+        String *symname = Getattr(n, "sym:name");
+        if (Getattr(n, "feature:shadow")) {
+            String* code = Getattr(n, "feature:shadow");
+            String* action = NewStringf("%s.%s", module, Swig_name_member(class_name, symname));
+            Replaceall(code, "$action", action);
+            Delete(action);
+            Printv(this->f_shadow, code, "\n", NIL);
+            Delete(code);
+            return SWIG_OK;
+        }
+
+        Printv(f_shadow,
+            "\n"
+            "    def ", symname, "(*args, **kw)\n"
+            "        return ", this->funcCall(Swig_name_member(class_name, symname), "*args, **kw"), "\n"
+            "    end\n",
+            NIL);
+
+        return SWIG_OK;
+
+#if 0
+        Printv(f_shadow, tab4, "def ", symname, "(",parms , ")", returnTypeAnnotation(n), ":", NIL);
+        Printv(f_shadow, "\n", NIL);
+        if (have_docstring(n)) {
+            Printv(f_shadow, tab8, docstring(n, AUTODOC_METHOD, tab8), "\n", NIL);
+        }
+        if (have_pythonprepend(n)) {
+            Printv(f_shadow, pythonprepend(n), "\n", NIL);
+        }
+        if (have_pythonappend(n)) {
+            Printv(f_shadow, tab8, "val = ", funcCall(Swig_name_member(class_name, symname), callParms), "\n", NIL);
+            Printv(f_shadow, pythonappend(n), "\n", NIL);
+            Printv(f_shadow, tab8, "return val\n\n", NIL);
+            return SWIG_OK;
+        }
+
+        Printv(f_shadow, tab8, "return ", funcCall(Swig_name_member(class_name, symname), callParms), "\n\n", NIL);
+
+        return SWIG_OK;
+#endif
     }
 
 public:
     YOG() {
+        this->class_name = NULL;
         this->module = NULL;
         this->methods = NULL;
         this->f_begin = NULL;
@@ -43,8 +210,9 @@ public:
         this->f_header = NULL;
         this->f_wrappers = NULL;
         this->f_shadow = NULL;
-        this->shadow = 1;
-        this->have_constructor = 0;
+        this->shadow = true;
+        this->have_constructor = false;
+        this->in_class = false;
     }
 
     virtual void main(int argc, char *argv[]) {
@@ -67,13 +235,6 @@ public:
         Printf(dest, "(env");
     }
 
-    virtual int classHandler(Node *n) {
-        if (this->shadow) {
-            this->have_constructor = 0;
-        }
-        return Language::classHandler(n);
-    }
-
     virtual int constructorHandler(Node *n) {
         Language::constructorHandler(n);
 
@@ -93,7 +254,7 @@ public:
         }
 
         if (!this->have_constructor && handled_as_init) {
-            this->have_constructor = 1;
+            this->have_constructor = true;
         }
 
         return SWIG_OK;
@@ -213,7 +374,7 @@ public:
         Append(f->code, "    RETURN(env, resultobj);\n}\n");
         Wrapper_print(f, this->f_wrappers);
 
-        this->emitFunctionShadowHelper(n, f_shadow, iname);
+        this->emitFunctionShadowHelper(this->f_shadow, iname);
 
         DelWrapper(f);
 
