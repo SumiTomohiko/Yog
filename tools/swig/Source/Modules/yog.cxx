@@ -25,7 +25,7 @@ private:
     }
 
     String* funcCall(String* name) {
-        return this->funcCall(name, "(*args, **kw)");
+        return this->funcCall(name, "*args, **kw");
     }
 
     String* funcCall(String* name, const char* params) {
@@ -38,7 +38,7 @@ private:
         Printv(f_dest,
             "\n"
             "def ", name, "(*args, **kw)\n"
-            "    return ", this->funcCall(name), "\n"
+            "  return ", this->funcCall(name), "\n"
             "end\n",
             NIL);
     }
@@ -73,9 +73,13 @@ private:
         Printf(this->f_shadow, "\n");
 
         Printv(this->f_shadow,
-                "    def own_this(own)\n"
-                "        return self.this.own(own)\n"
-                "    end\n",
+                "  def own_this()\n"
+                "    return self.this.own(true)\n"
+                "  end\n"
+                "\n"
+                "  def disown_this()\n"
+                "    return self.this.own(false)\n"
+                "  end\n",
                 NIL);
 
         return SWIG_OK;
@@ -119,9 +123,9 @@ private:
         if (!this->have_constructor) {
             Printv(this->f_shadow,
                 "\n"
-                "    def init(*args, **kw)\n"
-                "        raise AttributeError.new(\"No constructor defined\")\n"
-                "    end\n",
+                "  def init(*args, **kw)\n"
+                "    raise AttributeError.new(\"No constructor defined\")\n"
+                "  end\n",
                 NIL);
         }
         Printv(this->f_shadow,"end\n", NIL);
@@ -168,11 +172,11 @@ private:
             return SWIG_OK;
         }
 
-        Printv(f_shadow,
+        Printv(this->f_shadow,
             "\n"
-            "    def ", symname, "(*args, **kw)\n"
-            "        return ", this->funcCall(Swig_name_member(class_name, symname), "*args, **kw"), "\n"
-            "    end\n",
+            "  def ", symname, "(*args, **kw)\n"
+            "    return ", this->funcCall(Swig_name_member(class_name, symname), "self.this, *args, **kw"), "\n"
+            "  end\n",
             NIL);
 
         return SWIG_OK;
@@ -235,7 +239,27 @@ public:
         Printf(dest, "(env");
     }
 
-    virtual int constructorHandler(Node *n) {
+    void emit_constructor(Node* n) {
+        String* symname = Getattr(n, "sym:name");
+        if (Getattr(n, "feature:shadow")) {
+            String* code = Getattr(n, "feature:shadow");
+            String* action = NewStringf("%s.%s", module, Swig_name_construct(symname));
+            Replaceall(code, "$action", action);
+            Delete(action);
+            Printv(this->f_shadow, code, "\n", NIL);
+            Delete(code);
+            return;
+        }
+
+        Printv(this->f_shadow,
+            "\n"
+            "  def init(*args, **kw)\n"
+            "    self.this = ", funcCall(Swig_name_construct(symname)), "\n"
+            "  end\n",
+            NIL);
+    }
+
+    virtual int constructorHandler(Node* n) {
         Language::constructorHandler(n);
 
         if (Getattr(n, "sym:nextSibling")) {
@@ -244,7 +268,7 @@ public:
         if (!this->shadow) {
             return SWIG_OK;
         }
-        int handled_as_init = 0;
+        bool handled_as_init = false;
         if (!this->have_constructor) {
             String *nname = Getattr(n, "sym:name");
             String *sname = Getattr(getCurrentClass(), "sym:name");
@@ -254,6 +278,7 @@ public:
         }
 
         if (!this->have_constructor && handled_as_init) {
+            this->emit_constructor(n);
             this->have_constructor = true;
         }
 
@@ -265,8 +290,8 @@ public:
         this->add_function(name);
 
         String* nodeType = Getattr(n, "nodeType");
-        int constructor = (!Cmp(nodeType, "constructor"));
-        int handled_as_init = 0;
+        int constructor = !Cmp(nodeType, "constructor");
+        bool handled_as_init = false;
         if (!this->have_constructor && (constructor || Getattr(n, "handled_as_constructor"))) {
             String *nname = Getattr(n, "sym:name");
             String *sname = Getattr(getCurrentClass(), "sym:name");
@@ -374,7 +399,9 @@ public:
         Append(f->code, "    RETURN(env, resultobj);\n}\n");
         Wrapper_print(f, this->f_wrappers);
 
-        this->emitFunctionShadowHelper(this->f_shadow, iname);
+        if (!this->in_class) {
+            this->emitFunctionShadowHelper(this->f_shadow, iname);
+        }
 
         DelWrapper(f);
 
