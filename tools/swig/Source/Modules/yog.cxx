@@ -20,10 +20,6 @@ private:
     bool shadow;
     bool in_class;
 
-    void add_function(String* name) {
-        Printf(this->methods, "    { \"%s\", %s },\n", name, Swig_name_wrapper(name));
-    }
-
     String* funcCall(String* name) {
         return this->funcCall(name, "*args, **kw");
     }
@@ -87,7 +83,6 @@ private:
 
     void add_method(String* name, String* function) {
         Printf(this->methods, "    { \"%s\", %s },\n", name, function);
-        Append(this->methods, "},\n");
     }
 
     int emit_class_tail(Node* n) {
@@ -286,9 +281,6 @@ public:
     }
 
     virtual int functionWrapper(Node* n) {
-        String *name = Getattr(n, "name");
-        this->add_function(name);
-
         String* nodeType = Getattr(n, "nodeType");
         int constructor = !Cmp(nodeType, "constructor");
         bool handled_as_init = false;
@@ -392,6 +384,7 @@ public:
             Delete(tm);
         }
         else {
+            String *name = Getattr(n, "name");
             Swig_warning(WARN_TYPEMAP_OUT_UNDEF, input_file, line_number, "Unable to use return type %s in function %s.\n", SwigType_str(d, 0), name);
         }
         emit_return_variable(n, d, f);
@@ -399,8 +392,11 @@ public:
         Append(f->code, "    RETURN(env, resultobj);\n}\n");
         Wrapper_print(f, this->f_wrappers);
 
-        if (!this->in_class) {
-            this->emitFunctionShadowHelper(this->f_shadow, iname);
+        if (!Getattr(n, "sym:overloaded")) {
+            this->add_method(iname, wname);
+            if (!this->in_class) {
+                this->emitFunctionShadowHelper(this->f_shadow, iname);
+            }
         }
 
         DelWrapper(f);
