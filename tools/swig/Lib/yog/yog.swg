@@ -9,8 +9,13 @@
 #include "yog/string.h"
 #include "yog/yog.h"
 
+#define SWIG_Yog_ConvertPtr(obj, pptr, type, flags) \
+    SWIG_Yog_ConvertPtrAndOwn(env, obj, pptr, type, flags, 0)
+#define SWIG_ConvertPtr(obj,pptr,type,flags,own) \
+    SWIG_Yog_ConvertPtr(obj, pptr, type, flags, own)
 #define SWIG_NewPointerObj(ptr, type, flags) \
-                                SWIG_Yog_NewPointerObj(env, ptr, type, flags)
+    SWIG_Yog_NewPointerObj(env, ptr, type, flags)
+#define SWIG_NewClientData(obj)     SwigYogClientData_New(obj)
 
 struct Wrapper {
     const char* name;
@@ -28,6 +33,126 @@ struct SwigYogObject {
 };
 
 typedef struct SwigYogObject SwigYogObject;
+
+SWIGRUNTIME SwigYogClientData*
+SwigYogClientData_New(YogVal obj)
+{
+    if (!IS_PTR(obj)) {
+        return 0;
+    }
+    SwigYogClientData* data = (SwigYogClientData*)malloc(sizeof(SwigYogClientData));
+    data->klass = obj;
+    return data;
+}
+
+SWIGRUNTIME YogVal
+SWIG_Yog_GetSwigThis(YogEnv* env, YogVal obj)
+{
+    SAVE_ARG(env, obj);
+    YogVal thiz = YUNDEF;
+    PUSH_LOCAL(env, thiz);
+
+    ID name = YogVM_intern(env, env->vm, "this");
+    thiz = YogVal_get_attr(env, obj, name);
+
+    RETURN(env, thiz);
+}
+
+SWIGRUNTIME int
+SWIG_Yog_ConvertPtrAndOwn(YogEnv* env, YogVal obj, void** ptr, swig_type_info* ty, int flags, int* own)
+{
+    SAVE_ARG(env, obj);
+    YogVal thiz = YUNDEF;
+    YogVal klass = YUNDEF;
+    YogVal impconv = YUNDEF;
+    YogVal iobj = YUNDEF;
+    PUSH_LOCALS4(env, thiz, klass, impconv, iobj);
+
+#define ASSIGN_PTR(ptr, val)    do { \
+    if ((ptr) != NULL) { \
+        *(ptr) = (val); \
+    } \
+} while (0)
+    if (!IS_PTR(obj)) {
+        RETURN(env, SWIG_ERROR);
+    }
+    if (IS_NIL(obj)) {
+        ASSIGN_PTR(ptr, NULL);
+        RETURN(env, SWIG_OK);
+    }
+
+    thiz = SWIG_Yog_GetSwigThis(env, obj);
+    ASSIGN_PTR(own, 0);
+    while (IS_PTR(thiz)) {
+        void* vptr = PTR_AS(SwigYogObject, thiz)->ptr;
+        if (ty == NULL) {
+            ASSIGN_PTR(ptr, vptr);
+            break;
+        }
+        swig_type_info* to = PTR_AS(SwigYogObject, thiz)->ty;
+        if (to == ty) {
+            ASSIGN_PTR(ptr, vptr);
+            break;
+        }
+        swig_cast_info* tc = SWIG_TypeCheck(to->name, ty);
+        if (tc == NULL) {
+            if (ptr != NULL) {
+                int newmemory = 0;
+                *ptr = SWIG_TypeCast(tc, vptr, &newmemory);
+                if (newmemory == SWIG_CAST_NEW_MEMORY) {
+                    assert(own);
+                    ASSIGN_PTR(own, *own | SWIG_CAST_NEW_MEMORY);
+                }
+            }
+            break;
+        }
+        thiz = PTR_AS(SwigYogObject, thiz)->next;
+    }
+    if (IS_PTR(thiz)) {
+        ASSIGN_PTR(own, *own | PTR_AS(SwigYogObject, thiz)->own);
+        if (flags & SWIG_POINTER_DISOWN) {
+            PTR_AS(SwigYogObject, thiz)->own = 0;
+        }
+        RETURN(env, SWIG_OK);
+    }
+    if (!(flags & SWIG_POINTER_IMPLICIT_CONV)) {
+        RETURN(env, SWIG_ERROR);
+    }
+    SwigYogClientData* data = ty != NULL ? (SwigYogClientData*)ty->clientdata : NULL;
+    if ((data == NULL) || data->implicitconv) {
+        RETURN(env, SWIG_ERROR);
+    }
+    klass = data->klass;
+    if (!IS_PTR(klass)) {
+        RETURN(env, SWIG_ERROR);
+    }
+    data->implicitconv = 1;
+    impconv = SWIG_Yog_CallFunctor(klass, obj);
+    data->implicitconv = 0;
+    if (!IS_PTR(impconv)) {
+        RETURN(env, SWIG_ERROR);
+    }
+    iobj = SWIG_Yog_GetSwigThis(env, impconv);
+    if (!IS_PTR(iobj)) {
+        RETURN(env, SWIG_ERROR);
+    }
+    void* vptr;
+    int res = SWIG_Yog_ConvertPtrAndOwn(iobj, &vptr, ty, 0, 0);
+    if (!SWIG_IsOK(res)) {
+        RETURN(env, SWIG_ERROR);
+    }
+    if (ptr != NULL) {
+        *ptr = vptr;
+        PTR_AS(SwigYogObject, iobj)->own = 0;
+        res = SWIG_AddCast(SWIG_ERROR);
+        res = SWIG_AddNewMask(res);
+    }
+    else {
+        res = SWIG_AddCast(SWIG_ERROR);
+    }
+    RETURN(env, res);
+#undef ASSIGN_PTR
+}
 
 static void
 SwigYogObject_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
@@ -69,95 +194,17 @@ struct SwigYogClientData {
 typedef struct SwigYogClientData SwigYogClientData;
 
 SWIGRUNTIME YogVal
-SWIG_Yog_NewShadowInstance(YogEnv* env, SwigYogClientData* data, YogVal swig_this)
-{
-#if (PY_VERSION_HEX >= 0x02020000)
-  PyObject *inst = 0;
-  PyObject *newraw = data->newraw;
-  if (newraw) {
-    inst = PyObject_Call(newraw, data->newargs, NULL);
-    if (inst) {
-#if !defined(SWIG_PYTHON_SLOW_GETSET_THIS)
-      PyObject **dictptr = _PyObject_GetDictPtr(inst);
-      if (dictptr != NULL) {
-	PyObject *dict = *dictptr;
-	if (dict == NULL) {
-	  dict = PyDict_New();
-	  *dictptr = dict;
-	  PyDict_SetItem(dict, SWIG_This(), swig_this);
-	}
-      }
-#else
-      PyObject *key = SWIG_This();
-      PyObject_SetAttr(inst, key, swig_this);
-#endif
-    }
-  } else {
-#if PY_VERSION_HEX >= 0x03000000
-    inst = PyBaseObject_Type.tp_new((PyTypeObject*) data->newargs, Py_None, Py_None);
-    PyObject_SetAttr(inst, SWIG_This(), swig_this);
-    Py_TYPE(inst)->tp_flags &= ~Py_TPFLAGS_VALID_VERSION_TAG;
-#else
-    PyObject *dict = PyDict_New();
-    PyDict_SetItem(dict, SWIG_This(), swig_this);
-    inst = PyInstance_NewRaw(data->newargs, dict);
-    Py_DECREF(dict);
-#endif
-  }
-  return inst;
-#else
-#if (PY_VERSION_HEX >= 0x02010000)
-  PyObject *inst;
-  PyObject *dict = PyDict_New();
-  PyDict_SetItem(dict, SWIG_This(), swig_this);
-  inst = PyInstance_NewRaw(data->newargs, dict);
-  Py_DECREF(dict);
-  return (PyObject *) inst;
-#else
-  PyInstanceObject *inst = PyObject_NEW(PyInstanceObject, &PyInstance_Type);
-  if (inst == NULL) {
-    return NULL;
-  }
-  inst->in_class = (PyClassObject *)data->newargs;
-  Py_INCREF(inst->in_class);
-  inst->in_dict = PyDict_New();
-  if (inst->in_dict == NULL) {
-    Py_DECREF(inst);
-    return NULL;
-  }
-#ifdef Py_TPFLAGS_HAVE_WEAKREFS
-  inst->in_weakreflist = NULL;
-#endif
-#ifdef Py_TPFLAGS_GC
-  PyObject_GC_Init(inst);
-#endif
-  PyDict_SetItem(inst->in_dict, SWIG_This(), swig_this);
-  return (PyObject *) inst;
-#endif
-#endif
-}
-
-SWIGRUNTIME YogVal
 SWIG_Yog_NewPointerObj(YogEnv* env, void* ptr, swig_type_info* type, int flags)
 {
     SAVE_LOCALS(env);
     YogVal robj = YUNDEF;
-    YogVal inst = YUNDEF;
-    PUSH_LOCALS2(env, robj, inst);
+    PUSH_LOCAL(env, robj);
 
     if (!ptr) {
         RETURN(env, YUNDEF);
     }
     int own = (flags & SWIG_POINTER_OWN) ? SWIG_POINTER_OWN : 0;
     robj = SwigYogObject_new(env, ptr, type, own);
-    SwigYogClientData* clientdata = type ? (SwigYogClientData*)(type->clientdata) : 0;
-    if (!clientdata || (flags & SWIG_POINTER_NOSHADOW)) {
-        RETURN(env, robj);
-    }
-    inst = SWIG_Yog_NewShadowInstance(env, clientdata, robj);
-    if (!IS_PTR(inst)) {
-        robj = inst;
-    }
     RETURN(env, robj);
 }
 
@@ -174,7 +221,7 @@ SWIG_SetConstant(YogEnv* env, YogVal dict, const char* name, YogVal obj)
     RETURN_VOID(env);
 }
 
-SWIGINTERN void 
+SWIGINTERN void
 SWIG_SetErrorObj(YogEnv* env, YogVal errtype, YogVal obj)
 {
     YogError_raise(env, obj);
@@ -211,7 +258,7 @@ SWIG_AppendOutput(YogEnv* env, YogVal result, YogVal obj)
 }
 
 %init %{
-void
+extern "C" void
 SWIG_init(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
@@ -228,10 +275,32 @@ SWIG_init(YogEnv* env, YogVal pkg)
 
 #define %set_constant(name, value)  SWIG_SetConstant(env, name, value)
 #define %raise(obj, type, desc)     SWIG_Raise(obj, type, desc); SWIG_fail
-#define %append_output(obj)     $result = SWIG_AppendOutput(env, $result, obj) 
+#define %append_output(obj)     $result = SWIG_AppendOutput(env, $result, obj)
 
 #define SWIG_Object YogVal
+%include <typemaps/swigmacros.swg>
+%include <typemaps/fragments.swg>
+
+%fragment(SWIG_AsVal_frag(long), "header") {
+SWIGINTERN int
+SWIG_AsVal_dec(long)(YogVal obj, long* val)
+{
+    if (IS_FIXNUM(obj)) {
+        if (val != NULL) {
+            *val = VAL2INT(obj);
+        }
+        return SWIG_OK;
+    }
+    return SWIG_TypeError;
+}
+}
+
+%fragment(SWIG_From_frag(long), "header") {
+    %define_as(SWIG_From_dec(long), YogVal_from_int)
+}
+
 %include <typemaps/swigtypemaps.swg>
+%runtime "swigrun.swg"
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c

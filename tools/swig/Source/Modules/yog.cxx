@@ -362,6 +362,12 @@ public:
             char s[BUF_SIZE];
             snprintf(s, BUF_SIZE, "obj%d", i);
             Replaceall(tm, "$input", s);
+            if (Getattr(p, "wrap:disown") || (Getattr(p, "tmap:in:disown"))) {
+                Replaceall(tm, "$disown", "SWIG_POINTER_DISOWN");
+            }
+            else {
+                Replaceall(tm, "$disown", "0");
+            }
             Append(f->code, tm);
         }
 
@@ -440,7 +446,7 @@ public:
         Printf(f_wrappers, "#ifdef __cplusplus\n");
         Printf(f_wrappers, "extern \"C\" {\n");
         Printf(f_wrappers, "#endif\n");
-        Append(this->methods, "static WrapperDef functions[] = { \n");
+        Append(this->methods, "static Wrapper functions[] = { \n");
 
         this->f_shadow = NewString("");
         Swig_banner_target_lang(this->f_shadow, "#");
@@ -451,6 +457,8 @@ public:
         Append(this->methods, "    { NULL, NULL }\n");
         Append(this->methods, "};\n");
         Printf(f_wrappers, "%s\n", this->methods);
+
+        SwigType_emit_type_table(this->f_runtime, this->f_wrappers);
 
         Printf(f_wrappers, "#ifdef __cplusplus\n");
         Printf(f_wrappers, "}\n");
