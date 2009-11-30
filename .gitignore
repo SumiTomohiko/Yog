@@ -238,6 +238,7 @@ src/yog-generational
 src/yog-mark-sweep
 src/yog-mark-sweep-compact
 stamp-h1
+tags
 tests/test_write0.tmp
 tools/lemon/.deps/
 tools/lemon/lemon

@@ -17,6 +17,8 @@
     SWIG_Yog_NewPointerObj(env, ptr, type, flags)
 #define SWIG_NewClientData(obj)     SwigYogClientData_New(obj)
 
+#define SWIG_POINTER_IMPLICIT_CONV  (SWIG_POINTER_DISOWN   << 1)
+
 struct Wrapper {
     const char* name;
     void* f;
@@ -63,95 +65,48 @@ SWIG_Yog_ConvertPtrAndOwn(YogEnv* env, YogVal obj, void** ptr, swig_type_info* t
 {
     SAVE_ARG(env, obj);
     YogVal thiz = YUNDEF;
-    YogVal klass = YUNDEF;
-    YogVal impconv = YUNDEF;
-    YogVal iobj = YUNDEF;
-    PUSH_LOCALS4(env, thiz, klass, impconv, iobj);
+    PUSH_LOCAL(env, thiz);
 
-#define ASSIGN_PTR(ptr, val)    do { \
+#define OUTPUT_VALUE(ptr, val)    do { \
     if ((ptr) != NULL) { \
         *(ptr) = (val); \
     } \
 } while (0)
     if (!IS_PTR(obj)) {
-        RETURN(env, SWIG_ERROR);
-    }
-    if (IS_NIL(obj)) {
-        ASSIGN_PTR(ptr, NULL);
+        OUTPUT_VALUE(ptr, NULL);
         RETURN(env, SWIG_OK);
     }
 
     thiz = SWIG_Yog_GetSwigThis(env, obj);
-    ASSIGN_PTR(own, 0);
-    while (IS_PTR(thiz)) {
-        void* vptr = PTR_AS(SwigYogObject, thiz)->ptr;
-        if (ty == NULL) {
-            ASSIGN_PTR(ptr, vptr);
-            break;
-        }
-        swig_type_info* to = PTR_AS(SwigYogObject, thiz)->ty;
-        if (to == ty) {
-            ASSIGN_PTR(ptr, vptr);
-            break;
-        }
-        swig_cast_info* tc = SWIG_TypeCheck(to->name, ty);
-        if (tc == NULL) {
-            if (ptr != NULL) {
-                int newmemory = 0;
-                *ptr = SWIG_TypeCast(tc, vptr, &newmemory);
-                if (newmemory == SWIG_CAST_NEW_MEMORY) {
-                    assert(own);
-                    ASSIGN_PTR(own, *own | SWIG_CAST_NEW_MEMORY);
-                }
-            }
-            break;
-        }
-        thiz = PTR_AS(SwigYogObject, thiz)->next;
+    void* vptr = PTR_AS(SwigYogObject, thiz)->ptr;
+    OUTPUT_VALUE(own, PTR_AS(SwigYogObject, thiz)->own);
+
+    if (flags & SWIG_POINTER_DISOWN) {
+        PTR_AS(SwigYogObject, thiz)->own = 0;
     }
-    if (IS_PTR(thiz)) {
-        ASSIGN_PTR(own, *own | PTR_AS(SwigYogObject, thiz)->own);
-        if (flags & SWIG_POINTER_DISOWN) {
-            PTR_AS(SwigYogObject, thiz)->own = 0;
-        }
+
+    if (ty == NULL) {
+        OUTPUT_VALUE(ptr, vptr);
         RETURN(env, SWIG_OK);
     }
-    if (!(flags & SWIG_POINTER_IMPLICIT_CONV)) {
+
+    if ((ty->clientdata != NULL) && YogVal_is_subclass_of(env, obj, ty->clientdata->klass)) {
+        OUTPUT_VALUE(ptr, vptr);
+        RETURN(SWIG_OK);
+    }
+
+    char* c = PTR_AS(SwigYogObject, thiz)->ty->name;
+    swig_cast_info* tc = SWIG_TypeCheck(c, ty);
+    if (tc == NULL) {
         RETURN(env, SWIG_ERROR);
     }
-    SwigYogClientData* data = ty != NULL ? (SwigYogClientData*)ty->clientdata : NULL;
-    if ((data == NULL) || data->implicitconv) {
-        RETURN(env, SWIG_ERROR);
-    }
-    klass = data->klass;
-    if (!IS_PTR(klass)) {
-        RETURN(env, SWIG_ERROR);
-    }
-    data->implicitconv = 1;
-    impconv = SWIG_Yog_CallFunctor(klass, obj);
-    data->implicitconv = 0;
-    if (!IS_PTR(impconv)) {
-        RETURN(env, SWIG_ERROR);
-    }
-    iobj = SWIG_Yog_GetSwigThis(env, impconv);
-    if (!IS_PTR(iobj)) {
-        RETURN(env, SWIG_ERROR);
-    }
-    void* vptr;
-    int res = SWIG_Yog_ConvertPtrAndOwn(iobj, &vptr, ty, 0, 0);
-    if (!SWIG_IsOK(res)) {
-        RETURN(env, SWIG_ERROR);
-    }
-    if (ptr != NULL) {
-        *ptr = vptr;
-        PTR_AS(SwigYogObject, iobj)->own = 0;
-        res = SWIG_AddCast(SWIG_ERROR);
-        res = SWIG_AddNewMask(res);
-    }
-    else {
-        res = SWIG_AddCast(SWIG_ERROR);
-    }
-    RETURN(env, res);
-#undef ASSIGN_PTR
+
+    int newmemory = 0;
+    OUTPUT_VALUE(ptr, Swig_TypeCast(tc, vptr, &newmemory));
+    assert(newmemory != 0);
+
+    RETURN(env, SWIG_OK);
+#undef OUTPUT_VALUE
 }
 
 static void
