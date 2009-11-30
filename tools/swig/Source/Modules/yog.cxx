@@ -50,16 +50,10 @@ private:
         }
 
         String *base_class = NewString("");
-        List *baselist = Getattr(n, "baselist");
-        if (baselist && (0 < Len(baselist))) {
+        List *baselist = Getattr(n, "bases");
+        if (0 < Len(baselist)) {
             Iterator b = First(baselist);
-            while (b.item) {
-                if (Strcmp(base_class, "") != 0) {
-                    return SWIG_ERROR;
-                }
-                base_class = Getattr(b.item, "name");
-                break;
-            }
+            base_class = Getattr(b.item, "name");
         }
 
         Printv(this->f_shadow, "class ", class_name, NIL);
