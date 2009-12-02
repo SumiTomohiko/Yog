@@ -97,7 +97,7 @@ private:
             "    SAVE_ARGS4(env, self, args, kw, block);\n"
             "    YogVal obj = YUNDEF;\n"
             "    PUSH_LOCAL(env, obj);\n"
-            "    obj = YogArray(env, args, 0);\n"
+            "    obj = YogArray_at(env, args, 0);\n"
             "    SWIG_TypeNewClientData(SWIGTYPE", SwigType_manglestr(ct), ", SWIG_NewClientData(obj));\n"
             "    RETURN(env, YNIL);\n"
             "}\n",
@@ -275,17 +275,6 @@ public:
     }
 
     virtual int functionWrapper(Node* n) {
-        String* nodeType = Getattr(n, "nodeType");
-        int constructor = !Cmp(nodeType, "constructor");
-        bool handled_as_init = false;
-        if (!this->have_constructor && (constructor || Getattr(n, "handled_as_constructor"))) {
-            String *nname = Getattr(n, "sym:name");
-            String *sname = Getattr(getCurrentClass(), "sym:name");
-            String *cname = Swig_name_construct(sname);
-            handled_as_init = (Strcmp(nname, sname) == 0) || (Strcmp(nname, cname) == 0);
-            Delete(cname);
-        }
-
         Wrapper* f = NewWrapper();
         ParmList* l = Getattr(n, "parms");
         emit_parameter_variables(l, f);
@@ -359,12 +348,7 @@ public:
             char s[BUF_SIZE];
             snprintf(s, BUF_SIZE, "obj%d", i);
             Replaceall(tm, "$input", s);
-            if (Getattr(p, "wrap:disown") || (Getattr(p, "tmap:in:disown"))) {
-                Replaceall(tm, "$disown", "SWIG_POINTER_DISOWN");
-            }
-            else {
-                Replaceall(tm, "$disown", "0");
-            }
+            Replaceall(tm, "$disown", "0");
             Append(f->code, tm);
 
             p = Getattr(p, "tmap:in:next");
@@ -376,10 +360,7 @@ public:
         SwigType *d = Getattr(n, "type");
         if ((tm = Swig_typemap_lookup_out("out", n, "result", f, actioncode))) {
             Replaceall(tm, "$result", "resultobj");
-            if (handled_as_init) {
-                Replaceall(tm, "$owner", "SWIG_POINTER_NEW");
-            }
-            else if (GetFlag(n, "feature:new")) {
+            if (GetFlag(n, "feature:new")) {
                 Replaceall(tm, "$owner", "SWIG_POINTER_OWN");
             }
             else {

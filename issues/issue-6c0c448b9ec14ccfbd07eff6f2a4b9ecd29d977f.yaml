@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Define SWIG_Error(code, msg)
+desc: |-
+  In Swig's Yog module, SWIG_Error(code, msg) is defined as blank.
+  This macro must be defined correctly.
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-02 17:13:36.546307 Z
+references: []
+
+id: 6c0c448b9ec14ccfbd07eff6f2a4b9ecd29d977f
+log_events: 
+- - 2009-12-02 17:13:37.726280 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

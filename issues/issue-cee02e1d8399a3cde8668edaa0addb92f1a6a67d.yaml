@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Define SWIG_fail
+desc: |-
+  In Swig's Yog module, the SWIG_fail macro is defined as blank.
+  This macro must be defined correctly.
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-02 17:11:48.868938 Z
+references: []
+
+id: cee02e1d8399a3cde8668edaa0addb92f1a6a67d
+log_events: 
+- - 2009-12-02 17:11:50.694492 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
