@@ -1,0 +1,19 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Resolve the warning on compiling.
+desc: "vm.c: In function \xE2\x80\x98join_path\xE2\x80\x99:\n\
+  vm.c:953: \xE8\xAD\xA6\xE5\x91\x8A: unused variable \xE2\x80\x98rest\xE2\x80\x99"
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-02 17:49:46.541818 Z
+references: []
+
+id: 42bea8ff40fe46889a636412d62d92791ca68188
+log_events: 
+- - 2009-12-02 17:49:48.245696 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

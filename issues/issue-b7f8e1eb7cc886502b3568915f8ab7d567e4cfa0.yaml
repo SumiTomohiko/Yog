@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Resolve dirty code in eval.c:exec_get_attr.
+desc: These code is because packages' can't hold package-specific data.
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-02 18:50:57.609906 Z
+references: []
+
+id: b7f8e1eb7cc886502b3568915f8ab7d567e4cfa0
+log_events: 
+- - 2009-12-02 18:50:58.217487 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

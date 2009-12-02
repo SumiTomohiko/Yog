@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Implement SWIG_GetModule.
+desc: SWIG_GetModule in tools/swig/Lib/yog/yog.swg is blank.
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-02 18:25:37.985342 Z
+references: []
+
+id: 34053b9548dc98006f9fabf1450acba1e608b285
+log_events: 
+- - 2009-12-02 18:25:38.638125 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

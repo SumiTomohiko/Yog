@@ -68,6 +68,15 @@ exec_get_attr(YogEnv* env, YogVal obj, ID name)
         YogError_raise_AttributeError(env, "'%s' object has no attribute '%s'", STRING_CSTR(class_name), STRING_CSTR(attr_name));
     }
     class_of_attr = YogVal_get_class(env, attr);
+    /**
+     * DIRTY HACK. THE BELOW CODE MUST BE REMOVED IN THE PRODUCT CODE.
+     * The current version can't keep Swig's shadow objects' class. These class
+     * are set as UNDEF. So here can't get shadow objects' descriptors.
+     */
+    if (!IS_PTR(class_of_attr)) {
+        FRAME_PUSH(env, attr);
+        RETURN_VOID(env);
+    }
     void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogClass, class_of_attr)->exec_get_descr;
     if (exec == NULL) {
         FRAME_PUSH(env, attr);

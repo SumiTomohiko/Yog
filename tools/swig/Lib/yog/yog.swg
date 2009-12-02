@@ -8,10 +8,27 @@
 }
 
 %init %{
+SWIGINTERN swig_module_info*
+SWIG_GetModule(void* clientdata)
+{
+    /* TODO */
+    return NULL;
+}
+
+SWIGRUNTIME void
+SWIG_SetModule(void* clientdata, swig_module_info *swig_module)
+{
+    /* TODO */
+}
+%}
+%init "swiginit.swg"
+%init %{
 extern "C" void
 SWIG_init(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
+
+    SWIG_InitializeModule(NULL);
 
     Wrapper* pf = functions;
     while (pf->name != NULL) {
@@ -132,23 +149,20 @@ SWIG_Yog_GetSwigThis(YogEnv* env, YogVal obj)
 }
 
 SWIGRUNTIME int
-SWIG_Yog_ConvertPtrAndOwn(YogEnv* env, YogVal obj, void** ptr, swig_type_info* ty, int flags, bool* own)
+SWIG_Yog_ConvertPtrAndOwn(YogEnv* env, YogVal thiz, void** ptr, swig_type_info* ty, int flags, bool* own)
 {
-    SAVE_ARG(env, obj);
-    YogVal thiz = YUNDEF;
-    PUSH_LOCAL(env, thiz);
+    SAVE_ARG(env, thiz);
 
 #define OUTPUT_VALUE(ptr, val)    do { \
     if ((ptr) != NULL) { \
         *(ptr) = (val); \
     } \
 } while (0)
-    if (!IS_PTR(obj)) {
+    if (!IS_PTR(thiz)) {
         OUTPUT_VALUE(ptr, NULL);
         RETURN(env, SWIG_OK);
     }
 
-    thiz = SWIG_Yog_GetSwigThis(env, obj);
     void* vptr = PTR_AS(SwigYogObject, thiz)->ptr;
     OUTPUT_VALUE(own, PTR_AS(SwigYogObject, thiz)->own);
 
