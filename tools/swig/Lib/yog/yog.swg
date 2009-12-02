@@ -90,10 +90,15 @@ SWIG_Yog_ConvertPtrAndOwn(YogEnv* env, YogVal obj, void** ptr, swig_type_info* t
         RETURN(env, SWIG_OK);
     }
 
+#if 0
     if ((ty->clientdata != NULL) && YogVal_is_subclass_of(env, obj, ty->clientdata->klass)) {
         OUTPUT_VALUE(ptr, vptr);
         RETURN(SWIG_OK);
     }
+#else
+    OUTPUT_VALUE(ptr, vptr);
+    RETURN(SWIG_OK);
+#endif
 
     char* c = PTR_AS(SwigYogObject, thiz)->ty->name;
     swig_cast_info* tc = SWIG_TypeCheck(c, ty);
@@ -251,7 +256,7 @@ SWIG_AsVal_dec(long)(YogVal obj, long* val)
 }
 
 %fragment(SWIG_From_frag(long), "header") {
-    %define_as(SWIG_From_dec(long), YogVal_from_int)
+    %define_as(SWIG_From_dec(long), INT2VAL)
 }
 
 %include <typemaps/swigtypemaps.swg>

@@ -343,7 +343,10 @@ public:
             char s[BUF_SIZE];
             snprintf(s, BUF_SIZE, "    obj%d = YogArray_at(env, args, %d);\n", i, i);
             Append(f->code, s);
+
+            p = Getattr(p, "tmap:in:next");
         }
+
         for (i = 0, p = l; i < num_arguments; i++) {
             while (checkAttribute(p, "tmap:in:numinputs", "0")) {
                 p = Getattr(p, "tmap:in:next");
@@ -363,6 +366,8 @@ public:
                 Replaceall(tm, "$disown", "0");
             }
             Append(f->code, tm);
+
+            p = Getattr(p, "tmap:in:next");
         }
 
         Setattr(n, "wrap:name", wname);
