@@ -908,6 +908,7 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     CLEAR_ERROR;
     LIB_HANDLE handle = open_library(env, path);
     if (handle == NULL) {
+        printf("%s\n", dlerror());
         RETURN(env, YUNDEF);
     }
 
