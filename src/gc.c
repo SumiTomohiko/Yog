@@ -192,20 +192,20 @@ perform(YogEnv* env, GC gc)
 }
 #endif
 
-#if !defined(GC_BDW)
 static void
 destroy_memory(void* p, size_t size)
 {
     memset(p, 0xfd, size);
 }
 
-static void
-free_memory(void* p, size_t size)
+void
+YogGC_free_memory(YogEnv* env, void* p, size_t size)
 {
     destroy_memory(p, size);
     free(p);
 }
 
+#if !defined(GC_BDW)
 static void
 delete_heap(YogEnv* env, GC_TYPE* heap)
 {
@@ -238,7 +238,7 @@ delete_heap(YogEnv* env, GC_TYPE* heap)
     }
     DELETE_FROM_LIST(env->vm->heaps, heap);
 
-    free_memory(heap, sizeof(GC_TYPE));
+    YogGC_free_memory(env, heap, sizeof(GC_TYPE));
 #undef IS_EMPTY
 #undef FINALIZE
 }

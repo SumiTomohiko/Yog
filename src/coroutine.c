@@ -168,23 +168,27 @@ static void CALLBACK
 coroutine_main(MAIN_PARAM)
 {
     YogEnv coroutine_env = ENV_INIT;
+    YogVal thread;
 #if defined(_WIN32)
     MainParam* param = (MainParam*)p;
+    thread = param->thread;
     coroutine_env.vm = param->vm;
-    coroutine_env.thread = param->thread;
+    coroutine_env.thread = thread;
     coroutine_env.locals = &param->locals;
     coroutine_env.coroutine = param->coroutine;
     coroutine_env.frame = PTR_AS(Coroutine, param->coroutine)->boundary_frame;
     YogVal self = param->coroutine;
 #else
+    thread = env->thread;
     coroutine_env.vm = env->vm;
-    coroutine_env.thread = env->thread;
+    coroutine_env.thread = thread;
     void* stack = PTR_AS(Coroutine, self)->machine_stack;
     uint_t size = PTR_AS(Coroutine, self)->machine_stack_size;
     coroutine_env.locals = machine_stack2locals(env, stack, size);
     coroutine_env.coroutine = self;
     coroutine_env.frame = PTR_AS(Coroutine, self)->boundary_frame;
 #endif
+    PTR_AS(YogThread, thread)->env = &coroutine_env;
     YogLocals locals;
     locals.num_vals = 4;
     locals.size = 1;

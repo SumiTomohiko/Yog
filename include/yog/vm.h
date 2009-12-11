@@ -101,6 +101,9 @@ struct YogVM {
     /* TODO: dirty hack. remove this */
     BOOL has_young_ref;
 #endif
+
+    struct YogIndirectPointer* indirect_ptr;
+    pthread_mutex_t indirect_ptr_lock;
 };
 
 typedef struct YogVM YogVM;
@@ -118,9 +121,12 @@ void YogVM_acquire_global_interp_lock(YogEnv*, YogVM*);
 void YogVM_add_heap(YogEnv*, YogVM*, void*);
 void YogVM_add_locals(YogEnv*, YogVM*, YogLocalsAnchor*);
 void YogVM_add_thread(YogEnv*, YogVM*, YogVal);
+YogIndirectPointer* YogVM_alloc_indirect_ptr(YogEnv*, YogVM*, YogVal);
 void YogVM_boot(YogEnv*, YogVM*, uint_t, char**);
 void YogVM_configure_search_path(YogEnv*, YogVM*, const char*);
 void YogVM_delete(YogEnv*, YogVM*);
+void YogVM_free_indirect_ptr(YogEnv*, YogVM*, YogIndirectPointer*);
+YogEnv* YogVM_get_env(YogVM*);
 YogVal YogVM_id2name(YogEnv*, YogVM*, ID);
 YogVal YogVM_import_package(YogEnv*, YogVM*, ID);
 void YogVM_init(YogVM*);

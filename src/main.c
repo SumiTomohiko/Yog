@@ -246,6 +246,7 @@ main(int_t argc, char* argv[])
     }
     else {
         RESTORE_LOCALS(&env);
+        PTR_AS(YogThread, main_thread)->env = &env;
         YogError_print_stacktrace(&env);
     }
 

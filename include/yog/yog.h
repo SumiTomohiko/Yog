@@ -236,6 +236,14 @@ typedef void (*Finalizer)(YogEnv*, void*);
 
 typedef uint_t flags_t;
 
+struct YogIndirectPointer {
+    struct YogIndirectPointer* prev;
+    struct YogIndirectPointer* next;
+    YogVal val;
+};
+
+typedef struct YogIndirectPointer YogIndirectPointer;
+
 /* PROTOTYPE_START */
 
 /**

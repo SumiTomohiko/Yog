@@ -80,6 +80,7 @@ YogThread_init(YogEnv* env, YogVal thread, YogVal klass)
     PTR_AS(YogThread, thread)->gc_bound = TRUE;
 
     PTR_AS(YogThread, thread)->recursive_stack = YUNDEF;
+    PTR_AS(YogThread, thread)->env = env;
 }
 
 #if defined(GC_COPYING)
@@ -268,6 +269,7 @@ thread_main(void* arg)
     env.thread = thread;
     env.locals = &locals;
     SAVE_LOCALS(&env);
+    PTR_AS(YogThread, thread)->env = &env;
     YogLocals locals0;
     locals0.num_vals = 3;
     locals0.size = 1;

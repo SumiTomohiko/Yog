@@ -390,6 +390,20 @@ public:
         return SWIG_OK;
     }
 
+    virtual int nativeWrapper(Node* n) {
+        String* name = Getattr(n, "sym:name");
+        String* wrapname = Getattr(n, "wrap:name");
+        if (!addSymbol(wrapname, n)) {
+            return SWIG_ERROR;
+        }
+
+        this->add_method(name, wrapname);
+        if (this->shadow) {
+            Printv(this->f_shadow, name, " = ", module, ".", name, "\n", NIL);
+        }
+        return SWIG_OK;
+  }
+
     virtual int top(Node *n) {
         String *outfile = Getattr(n, "outfile");
         f_begin = NewFile(outfile, "w", SWIG_output_files());

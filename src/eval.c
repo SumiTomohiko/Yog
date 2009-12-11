@@ -396,6 +396,7 @@ YogEval_mainloop(YogEnv* env)
     else {
         YogVal thread = env->thread;
         PTR_AS(YogThread, thread)->jmp_buf_list = mainloop_jmpbuf;
+        PTR_AS(YogThread, thread)->env = env;
         env->locals->body = mainloop_locals;
         YogVal frame = env->frame;
         if (PTR_AS(YogFrame, frame)->type == FRAME_C) {

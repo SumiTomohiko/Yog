@@ -53,6 +53,8 @@ struct YogThread {
     pthread_t pthread;
 
     YogVal recursive_stack;
+
+    YogEnv* env;
 };
 
 typedef struct YogThread YogThread;
@@ -91,6 +93,7 @@ typedef struct YogThread YogThread;
     YogJmpBuf* name##_jmpbuf = PTR_AS(YogThread, (env)->thread)->jmp_buf_list
 #define RESTORE_STAT(env, name) \
     PTR_AS(YogThread, (env)->thread)->jmp_buf_list = name##_jmpbuf; \
+    PTR_AS(YogThread, (env)->thread)->env = (env); \
     (env)->locals->body = name##_locals; \
     env->frame = name##_cur_frame
 

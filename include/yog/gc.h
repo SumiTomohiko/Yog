@@ -39,6 +39,7 @@ YogVal YogGC_allocate(YogEnv*, ChildrenKeeper, Finalizer, size_t);
 void YogGC_bind_to_gc(YogEnv*);
 void YogGC_delete(YogEnv*);
 void YogGC_free_from_gc(YogEnv*);
+void YogGC_free_memory(YogEnv*, void*, size_t);
 void YogGC_keep(YogEnv*, YogVal*, ObjectKeeper, void*);
 void YogGC_perform(YogEnv*);
 void YogGC_perform_major(YogEnv*);

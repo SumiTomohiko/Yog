@@ -1,8 +1,30 @@
 %module wx
 
+%native(set_client_data)    YogVal set_client_data(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block);
+
 %{
 #include "wx/wx.h"
 #include "yog/string.h"
+#include "yog/vm.h"
+#include "yog/yog.h"
+
+class ClientData: public wxClientData
+{
+private:
+    YogVM* vm;
+    YogIndirectPointer* ptr;
+public:
+    ClientData(YogVM* vm, YogIndirectPointer* ptr): vm(vm), ptr(ptr)
+    {
+    }
+
+    ~ClientData()
+    {
+        PTR_AS(SwigYogObject, this->ptr->val)->ptr = NULL;
+        YogEnv* env = YogVM_get_env(this->vm);
+        YogVM_free_indirect_ptr(env, this->vm, this->ptr);
+    }
+};
 
 void RegisterModules()
 {
@@ -12,6 +34,22 @@ void RegisterModules()
 void InitializeModules()
 {
     wxModule::InitializeModules();
+}
+
+YogVal
+set_client_data(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal shadow = YUNDEF;
+    PUSH_LOCAL(env, shadow);
+    shadow = YogArray_at(env, args, 0);
+    wxEvtHandler* handler = (wxEvtHandler*)PTR_AS(SwigYogObject, shadow)->ptr;
+
+    YogVM* vm = env->vm;
+    YogIndirectPointer* ptr = YogVM_alloc_indirect_ptr(env, vm, shadow);
+    handler->SetClientData(new ClientData(vm, ptr));
+
+    RETURN(env, YNIL);
 }
 %}
 

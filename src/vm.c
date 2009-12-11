@@ -452,6 +452,12 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(finish_code);
     KEEP(main_thread);
     KEEP(running_threads);
+
+    YogIndirectPointer* indirect_ptr = vm->indirect_ptr;
+    while (indirect_ptr != NULL) {
+        KEEP(indirect_ptr->val);
+        indirect_ptr = indirect_ptr->next;
+    }
 #undef KEEP
 }
 
@@ -573,6 +579,9 @@ YogVM_init(YogVM* vm)
 #if defined(GC_GENERATIONAL)
     vm->has_young_ref = FALSE;
 #endif
+
+    vm->indirect_ptr = NULL;
+    pthread_mutex_init(&vm->indirect_ptr_lock, NULL);
 }
 
 void
@@ -582,7 +591,17 @@ YogVM_delete(YogEnv* env, YogVM* vm)
     YogGC_delete(env);
 #endif
 
+    YogIndirectPointer* indirect_ptr = vm->indirect_ptr;
+    while (indirect_ptr != NULL) {
+        YogIndirectPointer* next = indirect_ptr->next;
+        free(indirect_ptr);
+        indirect_ptr = next;
+    }
+
     int err;
+    if ((err = pthread_mutex_destroy(&vm->indirect_ptr_lock)) != 0) {
+        YOG_WARN(env, "pthread_mutex_destroy failed: %s", strerror(err));
+    }
     if ((err = pthread_cond_destroy(&vm->vm_finish_cond)) != 0) {
         YOG_WARN(env, "pthread_cond_destroy failed: %s", strerror(err));
     }
@@ -1320,6 +1339,63 @@ YogVM_remove_locals(YogEnv* env, YogVM* vm, YogLocalsAnchor* locals)
     YogVM_acquire_global_interp_lock(env, vm);
     DELETE_FROM_LIST(vm->locals, locals);
     YogVM_release_global_interp_lock(env, vm);
+}
+
+static void
+acquire_indirect_ptr_lock(YogEnv* env, YogVM* vm)
+{
+    acquire_lock(env, &vm->indirect_ptr_lock);
+}
+
+static void
+release_indirect_ptr_lock(YogEnv* env, YogVM* vm)
+{
+    release_lock(env, &vm->global_interp_lock);
+}
+
+YogIndirectPointer*
+YogVM_alloc_indirect_ptr(YogEnv* env, YogVM* vm, YogVal val)
+{
+    acquire_indirect_ptr_lock(env, vm);
+    YogIndirectPointer* ptr = malloc(sizeof(YogIndirectPointer));
+    if (ptr == NULL) {
+        YogError_out_of_memory(env);
+    }
+    ADD_TO_LIST(vm->indirect_ptr, ptr);
+    ptr->val = val;
+    release_indirect_ptr_lock(env, vm);
+    return ptr;
+}
+
+void
+YogVM_free_indirect_ptr(YogEnv* env, YogVM* vm, YogIndirectPointer* ptr)
+{
+    acquire_indirect_ptr_lock(env, vm);
+    DELETE_FROM_LIST(vm->indirect_ptr, ptr);
+    YogGC_free_memory(env, ptr, sizeof(YogIndirectPointer));
+    release_indirect_ptr_lock(env, vm);
+}
+
+YogEnv*
+YogVM_get_env(YogVM* vm)
+{
+    YogVM_acquire_global_interp_lock(NULL, vm);
+    pthread_t self = pthread_self();
+    YogVal thread = vm->running_threads;
+    while (IS_PTR(thread)) {
+        if (pthread_equal(self, PTR_AS(YogThread, thread)->pthread)) {
+            break;
+        }
+        thread = PTR_AS(YogThread, thread)->next;
+    }
+    YogVM_release_global_interp_lock(NULL, vm);
+
+    if (IS_PTR(thread)) {
+        return PTR_AS(YogThread, thread)->env;
+    }
+    else {
+        return NULL;
+    }
 }
 
 /**
