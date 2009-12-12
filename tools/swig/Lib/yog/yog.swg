@@ -71,6 +71,24 @@ SWIG_AsVal_dec(long)(YogVal obj, long* val)
     %define_as(SWIG_From_dec(long), INT2VAL)
 }
 
+%fragment(SWIG_AsVal_frag(bool),"header") {
+SWIGINTERN int
+SWIG_AsVal_dec(bool)(YogVal obj, bool* val)
+{
+    bool b;
+    if (IS_TRUE(obj)) {
+        b = true;
+    }
+    else {
+        b = false;
+    }
+    if (val != NULL) {
+        *val = b;
+    }
+    return SWIG_OK;
+}
+}
+
 %include <typemaps/swigtypemaps.swg>
 %runtime "swigrun.swg"
 %runtime "swigerrors.swg"
