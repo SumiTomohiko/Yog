@@ -1350,7 +1350,7 @@ acquire_indirect_ptr_lock(YogEnv* env, YogVM* vm)
 static void
 release_indirect_ptr_lock(YogEnv* env, YogVM* vm)
 {
-    release_lock(env, &vm->global_interp_lock);
+    release_lock(env, &vm->indirect_ptr_lock);
 }
 
 YogIndirectPointer*

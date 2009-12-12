@@ -95,6 +95,7 @@ class wxFrameBase: public wxTopLevelWindow
 class wxFrame: public wxFrameBase
 {
 public:
+    %feature("yogappend") wxFrame "set_client_data(self.this)"
     wxFrame(wxWindow *parent, wxWindowID id, const wxString& title);
 };
 

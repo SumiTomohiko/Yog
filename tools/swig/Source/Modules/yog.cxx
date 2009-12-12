@@ -109,14 +109,6 @@ private:
         Delete(ct);
         Delete(realct);
 
-        if (!this->have_constructor) {
-            Printv(this->f_shadow,
-                "\n"
-                "  def init(*args, **kw)\n"
-                "    raise AttributeError.new(\"No constructor defined\")\n"
-                "  end\n",
-                NIL);
-        }
         Printv(this->f_shadow,"end\n", NIL);
         Printf(this->f_shadow, "%s.%s_swigregister(%s)\n", module, class_name, class_name);
 
@@ -169,27 +161,31 @@ private:
             NIL);
 
         return SWIG_OK;
+    }
 
-#if 0
-        Printv(f_shadow, tab4, "def ", symname, "(",parms , ")", returnTypeAnnotation(n), ":", NIL);
-        Printv(f_shadow, "\n", NIL);
-        if (have_docstring(n)) {
-            Printv(f_shadow, tab8, docstring(n, AUTODOC_METHOD, tab8), "\n", NIL);
+    String* get_yogappend_raw(Node* n) {
+        String* str = Getattr(n, "feature:yogappend");
+        if (str == NULL) {
+            str = Getattr(n, "feature:addtofunc");
         }
-        if (have_pythonprepend(n)) {
-            Printv(f_shadow, pythonprepend(n), "\n", NIL);
-        }
-        if (have_pythonappend(n)) {
-            Printv(f_shadow, tab8, "val = ", funcCall(Swig_name_member(class_name, symname), callParms), "\n", NIL);
-            Printv(f_shadow, pythonappend(n), "\n", NIL);
-            Printv(f_shadow, tab8, "return val\n\n", NIL);
-            return SWIG_OK;
+        return str;
+    }
+
+    bool have_yogappend(Node* n) {
+        String* str = this->get_yogappend_raw(n);
+        return (str != NULL && Len(str) > 0);
+    }
+
+    String* yogappend(Node* n) {
+        String* str = this->get_yogappend_raw(n);
+
+        char *t = Char(str);
+        if (*t == '{') {
+            Delitem(str, 0);
+            Delitem(str, DOH_END);
         }
 
-        Printv(f_shadow, tab8, "return ", funcCall(Swig_name_member(class_name, symname), callParms), "\n\n", NIL);
-
-        return SWIG_OK;
-#endif
+        return str;
     }
 
 public:
@@ -243,9 +239,12 @@ public:
         Printv(this->f_shadow,
             "\n"
             "  def init(*args, **kw)\n"
-            "    self.this = ", funcCall(Swig_name_construct(symname)), "\n"
-            "  end\n",
+            "    self.this = ", funcCall(Swig_name_construct(symname)), "\n",
             NIL);
+        if (this->have_yogappend(n)) {
+            Printv(this->f_shadow, "    ", this->yogappend(n), "\n", NIL);
+        }
+        Printv(this->f_shadow, "  end\n", NIL);
     }
 
     virtual int constructorHandler(Node* n) {
