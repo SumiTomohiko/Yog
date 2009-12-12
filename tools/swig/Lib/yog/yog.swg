@@ -7,6 +7,11 @@
     $result = INT2VAL($1);
 }
 
+%typemap(in) int& (int temp) {
+    temp = VAL2INT($input);
+    $1 = &temp;
+}
+
 %init %{
 SWIGINTERN swig_module_info*
 SWIG_GetModule(void* clientdata)
