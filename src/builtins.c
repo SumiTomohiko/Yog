@@ -217,6 +217,7 @@ YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
     REGISTER_CLASS(cSet);
     REGISTER_CLASS(cThread);
     REGISTER_CLASS(eException);
+    REGISTER_CLASS(eAttributeError);
 #undef REGISTER_CLASS
 
     args = argv2args(env, argc, argv);

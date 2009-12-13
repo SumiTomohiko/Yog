@@ -3,6 +3,7 @@
 %native(set_client_data)    YogVal set_client_data(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block);
 
 %{
+#include <alloca.h>
 #include "wx/wx.h"
 #include "yog/string.h"
 #include "yog/vm.h"
@@ -59,6 +60,29 @@ set_client_data(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 %typemap(out) wxString& {
     $result = YogString_new_str(env, $1->wx_str());
+}
+
+%typemap(in) (int& argc, wxChar** argv) (int temp) {
+    if (IS_PTR($input)) {
+        size_t size = YogArray_size(env, $input);
+        if (size == 0) {
+            temp = 0;
+            $2 = NULL;
+        }
+        else {
+            temp = size;
+            $2 = (wxChar**)alloca(sizeof(wxChar*) * size);
+            for (size_t i = 0; i < size; i++) {
+                YogVal s = YogArray_at(env, $input, i);
+                $2[i] = (wxChar*)alloca(sizeof(wxChar) * STRING_SIZE(s));
+            }
+        }
+    }
+    else {
+        temp = 0;
+        $2 = NULL;
+    }
+    $1 = &temp;
 }
 
 #define wxWindowID int
@@ -119,12 +143,28 @@ public:
 
 class wxApp: public wxAppBase
 {
+    %feature("yogappend") wxApp "\n\
+    _wx.wxEntryStart(ARGV.size, ARGV)\n \
+    try\n\
+      handler = self.get_attr(\"OnPreInit\")\n\
+    except AttributeError\n\
+    else\n\
+      handler()\n\
+    end\n\
+    try\n\
+      handler = self.get_attr(\"OnInit\")\n\
+    except AttributeError\n\
+    else\n\
+      handler()\n\
+    end\n"
 public:
     virtual bool Yield(bool onlyIfNeeded);
 };
 
 void RegisterModules();
 void InitializeModules();
+
+bool wxEntryStart(int& argc, wxChar** argv);
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=cpp

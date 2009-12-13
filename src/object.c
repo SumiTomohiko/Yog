@@ -210,6 +210,36 @@ YogObject_eval_builtin_script(YogEnv* env, YogVal klass)
 #endif
 }
 
+static YogVal
+get_attr(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal name = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS2(env, name, val);
+    name = YogArray_at(env, args, 0);
+
+    ID id;
+    if (IS_OBJ_OF(env, name, cString)) {
+        id = YogVM_intern(env, env->vm, STRING_CSTR(name));
+    }
+    else if (IS_SYMBOL(name)) {
+        id = VAL2ID(name);
+    }
+    else {
+        const char* msg = "attribute name must be stringo or symbol";
+        YogError_raise_TypeError(env, msg);
+        /* NOTREACHED */
+    }
+
+    val = YogVal_get_attr(env, self, id);
+    if (IS_UNDEF(val)) {
+        YogError_raise_AttributeError(env, "object has no attribute");
+    }
+
+    RETURN(env, val);
+}
+
 void
 YogObject_boot(YogEnv* env, YogVal cObject)
 {
@@ -218,6 +248,7 @@ YogObject_boot(YogEnv* env, YogVal cObject)
 #define DEFINE_METHOD(name, f)  YogClass_define_method(env, cObject, name, f)
     DEFINE_METHOD("!=", not_equal);
     DEFINE_METHOD("==", equal);
+    DEFINE_METHOD("get_attr", get_attr);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
