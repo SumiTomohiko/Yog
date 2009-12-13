@@ -27,16 +27,6 @@ public:
     }
 };
 
-void RegisterModules()
-{
-    wxModule::RegisterModules();
-}
-
-void InitializeModules()
-{
-    wxModule::InitializeModules();
-}
-
 YogVal
 set_client_data(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -160,9 +150,6 @@ class wxApp: public wxAppBase
 public:
     virtual bool Yield(bool onlyIfNeeded);
 };
-
-void RegisterModules();
-void InitializeModules();
 
 bool wxEntryStart(int& argc, wxChar** argv);
 
