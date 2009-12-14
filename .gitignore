@@ -28,6 +28,7 @@
 .deps
 .ditz-config
 .ditz-plugins
+.gdb_history
 Debug
 Makefile
 Release
