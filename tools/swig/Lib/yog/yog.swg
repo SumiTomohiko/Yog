@@ -112,7 +112,7 @@ SWIG_AsVal_dec(bool)(YogVal obj, bool* val)
     SWIG_Yog_ConvertPtr(obj, pptr, type, flags)
 #define SWIG_NewPointerObj(ptr, type, flags) \
     SWIG_Yog_NewPointerObj(env, ptr, type, flags)
-#define SWIG_NewClientData(obj)     SwigYogClientData_New(obj)
+#define SWIG_NewClientData(obj)     SwigYogClientData_New(env, obj)
 
 #define SWIG_POINTER_IMPLICIT_CONV  (SWIG_POINTER_DISOWN   << 1)
 
@@ -137,7 +137,7 @@ struct SwigYogObject {
 typedef struct SwigYogObject SwigYogObject;
 
 struct SwigYogClientData {
-    YogVal klass;
+    YogIndirectPointer* klass;
     YogVal newraw;
     YogVal newargs;
     YogVal destroy;
@@ -148,14 +148,22 @@ struct SwigYogClientData {
 typedef struct SwigYogClientData SwigYogClientData;
 
 SWIGRUNTIME SwigYogClientData*
-SwigYogClientData_New(YogVal obj)
+SwigYogClientData_New(YogEnv* env, YogVal obj)
 {
+    SAVE_ARG(env, obj);
+
     if (!IS_PTR(obj)) {
-        return 0;
+        RETURN(env, 0);
     }
-    SwigYogClientData* data = (SwigYogClientData*)malloc(sizeof(SwigYogClientData));
-    data->klass = obj;
-    return data;
+
+    size_t size = sizeof(SwigYogClientData);
+    SwigYogClientData* data = (SwigYogClientData*)malloc(size);
+    if (data == NULL) {
+        YogError_out_of_memory(env);
+    }
+    data->klass = YogVM_alloc_indirect_ptr(env, env->vm, obj);
+
+    RETURN(env, data);
 }
 
 SWIGRUNTIME YogVal

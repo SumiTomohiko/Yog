@@ -183,6 +183,7 @@ main(int_t argc, char* argv[])
     YogThread dummy_thread_body;
     YogVal dummy_thread = PTR2VAL(&dummy_thread_body);
     env.thread = dummy_thread;
+    PTR_AS(YogThread, dummy_thread)->pthread = pthread_self();
     YogThread_init(&env, dummy_thread, YUNDEF);
 #if defined(GC_BDW)
     GC_INIT();

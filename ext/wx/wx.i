@@ -5,6 +5,8 @@
 %{
 #include <alloca.h>
 #include "wx/wx.h"
+#include "yog/eval.h"
+#include "yog/function.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -30,6 +32,31 @@ public:
 
     void OnEvent(wxEvent& event)
     {
+        Callback* self = (Callback*)event.m_callbackUserData;
+        YogEnv* env = YogVM_get_env(self->vm);
+        YOG_ASSERT(env, env != NULL, "env not found");
+        SAVE_LOCALS(env);
+        YogVal klass = YUNDEF;
+        YogVal proxy = YUNDEF;
+        YogVal shadow = YUNDEF;
+        PUSH_LOCALS3(env, klass, proxy, shadow);
+        YogVal args[] = { YUNDEF };
+        PUSH_LOCALSX(env, 1, args);
+
+        wxString class_name = event.GetClassInfo()->GetClassName();
+        wxString swig_name(class_name);
+        swig_name.Append(wxT(" *"));
+        swig_type_info* swig_type = SWIG_TypeQuery(swig_name.mb_str());
+        YOG_ASSERT(env, swig_type != NULL, "swig_type_info (%s) not found", swig_name.mb_str());
+        SwigYogClientData* data = (SwigYogClientData*)swig_type->clientdata;
+        klass = data->klass->val;
+        proxy = YogEval_call_method(env, klass, "new", 0, NULL);
+        shadow = SWIG_NewPointerObj(&event, swig_type, 0);
+        YogObj_set_attr(env, proxy, "this", shadow);
+        args[0] = proxy;
+        YogCallable_call(env, self->func->val, array_sizeof(args), args);
+
+        RETURN_VOID(env);
     }
 };
 
@@ -184,6 +211,16 @@ class wxApp: public wxAppBase
     end\n"
 public:
     virtual bool Yield(bool onlyIfNeeded);
+};
+
+class wxEvent: public wxObject
+{
+public:
+    virtual wxEvent *Clone() const = 0;
+};
+
+class wxMouseEvent: public wxEvent
+{
 };
 
 bool wxEntryStart(int& argc, wxChar** argv);
