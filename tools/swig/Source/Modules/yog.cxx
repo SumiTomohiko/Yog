@@ -304,7 +304,7 @@ public:
                     p = Getattr(p, "tmap:in:next");
                 }
 
-                if (i % 8 == 0) {
+                if (i % 4 == 0) {
                     this->print_locals_guard(f->code, num_arguments - i);
                 }
 
@@ -312,11 +312,11 @@ public:
                 snprintf(s, BUF_SIZE, ", obj%d", i);
                 Printf(f->code, s);
 
-                if (i % 8 == 7) {
+                if (i % 4 == 3) {
                     Printf(f->code, ");\n");
                 }
             }
-            if (i % 8 != 7) {
+            if (i % 4 != 0) {
                 Printf(f->code, ");\n");
             }
         }

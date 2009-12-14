@@ -9,6 +9,30 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+class Callback: public wxObject
+{
+private:
+    YogVM* vm;
+    YogIndirectPointer* func;
+public:
+    Callback(YogEnv* env, YogVal func)
+    {
+        YogVM* vm = env->vm;
+        this->vm = vm;
+        this->func = YogVM_alloc_indirect_ptr(env, vm, func);
+    }
+
+    ~Callback()
+    {
+        YogEnv* env = YogVM_get_env(this->vm);
+        YogVM_free_indirect_ptr(env, this->vm, this->func);
+    }
+
+    void OnEvent(wxEvent& event)
+    {
+    }
+};
+
 class ClientData: public wxClientData
 {
 private:
@@ -52,6 +76,10 @@ set_client_data(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     $result = YogString_new_str(env, $1->wx_str());
 }
 
+%typemap(in) Callback* {
+    $1 = new Callback(env, $input);
+}
+
 %typemap(in) (int& argc, wxChar** argv) (int temp) {
     if (IS_PTR($input)) {
         size_t size = YogArray_size(env, $input);
@@ -83,6 +111,13 @@ class wxObject
 
 class wxEvtHandler: public wxObject
 {
+public:
+    %extend {
+        void Connect(int winid, int lastId, int eventType, Callback* callback)
+        {
+            $self->Connect(winid, lastId, eventType, (wxObjectEventFunction)&Callback::OnEvent, callback);
+        }
+    }
 };
 
 class wxWindowBase: public wxEvtHandler
