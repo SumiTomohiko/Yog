@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Extend YogPackage
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-15 10:04:41.356119 Z
+references: []
+
+id: 95b9cfa6eec0c4410f7f6ee3d060366b534390c3
+log_events: 
+- - 2009-12-15 10:04:42.227762 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
