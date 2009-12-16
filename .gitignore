@@ -56,6 +56,13 @@ core.*
 doc/_build
 doc/conf.py
 ext/.deps/
+ext/wx/wxWidgets/.pch/
+ext/wx/wxWidgets/bk-deps
+ext/wx/wxWidgets/bk-make-pch
+ext/wx/wxWidgets/configarg.cache
+ext/wx/wxWidgets/lib/wx/
+ext/wx/wxWidgets/utils/wxrc/wxrc
+ext/wx/wxWidgets/wx-config
 gmon.out
 gmp/.libs/
 gmp/config.m4
