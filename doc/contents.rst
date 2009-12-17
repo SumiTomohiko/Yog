@@ -14,3 +14,5 @@ Contents:
 
    tutorial
    contact
+   license
+   copyright
