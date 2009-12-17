@@ -48,7 +48,15 @@ copyright = u'2009, SumiTomohiko'
 # built documents.
 #
 # The short X.Y version.
-version = '@PACKAGE_VERSION@'
+def get_version():
+    from os.path import join
+    with open(join("..", "configure.ac")) as fp:
+        for line in fp:
+            if not line.startswith("AC_INIT"):
+                continue
+            return line.split(",")[1].strip()
+    assert False, "version not found"
+version = get_version()
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -197,3 +205,5 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
