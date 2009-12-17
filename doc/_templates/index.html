@@ -1,4 +1,54 @@
 {% extends "layout.html" %}
 {% set title = 'Overview' %}
 {% block body %}
+  <h1>{{ docstitle|e }}</h1>
+  <p>
+    Welcome! This is
+    {% block description %}the documentation for {{ project|e }}
+    {{ release|e }}{% if last_updated %}, last updated {{ last_updated|e }}{% endif %}{% endblock %}.
+  </p>
+
+  <p><strong>Parts of the documentation:</strong></p>
+  <table class="contentstable" align="center">
+    <tr>
+      <td width="50%">
+        <p class="biglink"><a class="biglink" href="{{ pathto("tutorial") }}">Tutorial</a></p>
+      </td>
+      <td>
+        <p class="biglink"><a class="biglink" href="{{ pathto("library/index") }}">Library Reference</a></p>
+      </td>
+    </tr>
+  </table>
+
+  <p><strong>Indices and tables:</strong></p>
+  <table class="contentstable" align="center">
+    <tr>
+      <td width="50%">
+        <p class="biglink"><a class="biglink" href="{{ pathto("search") }}">Search page</a></p>
+      </td>
+      <td>
+        <p class="biglink"><a class="biglink" href="{{ pathto("contents") }}">Complete Table of Contents</a></p>
+      </td>
+    </tr>
+  </table>
+
+  <p><strong>Meta information:</strong></p>
+  <table class="contentstable" align="center">
+    <tr>
+      <td width="50%">
+        <p class="biglink"><a class="biglink" href="{{ pathto("bugs") }}">Reporting bugs</a></p>
+      </td>
+      <td width="50%">
+        <p class="biglink"><a class="biglink" href="{{ pathto("license") }}">History and License of Yog</a></p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <p class="biglink"><a class="biglink" href="{{ pathto("copyright") }}">Copyright</a></p>
+      </td>
+    </tr>
+  </table>
 {% endblock %}
+{#
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+#}
