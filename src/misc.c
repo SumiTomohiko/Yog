@@ -17,7 +17,7 @@ convert_arg(YogEnv* env, const char* type, YogVal val, void* dest)
 }
 
 void
-YogMisc_parse_params(YogEnv* env, const char* func_name, YogCParam* params, YogVal args, YogVal kw)
+YogMisc_parse_args(YogEnv* env, const char* func_name, YogCArg* params, YogVal args, YogVal kw)
 {
     SAVE_ARGS2(env, args, kw);
     YogVal val_in_args = YUNDEF;
@@ -28,7 +28,7 @@ YogMisc_parse_params(YogEnv* env, const char* func_name, YogCParam* params, YogV
     BOOL optional = FALSE;
 
     uint_t size = YogArray_size(env, args);
-    YogCParam* param = params;
+    YogCArg* param = params;
     uint_t i = 0;
     const char* param_name = param->name;
     while (param_name != NULL) {
