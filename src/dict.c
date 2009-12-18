@@ -72,16 +72,24 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     RETURN(env, dict);
 }
 
+YogVal
+YogDict_get(YogEnv* env, YogVal self, YogVal key)
+{
+    SAVE_ARGS2(env, self, key);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    if (YogTable_lookup(env, PTR_AS(YogDict, self)->tbl, key, &val)) {
+        RETURN(env, val);
+    }
+
+    RETURN(env, YUNDEF);
+}
+
 BOOL
 YogDict_include(YogEnv* env, YogVal self, YogVal key)
 {
-    SAVE_ARGS2(env, self, key);
-
-    if (YogTable_lookup(env, PTR_AS(YogDict, self)->tbl, key, NULL)) {
-        RETURN(env, TRUE);
-    }
-
-    RETURN(env, FALSE);
+    return IS_UNDEF(YogDict_get(env, self, key)) ? FALSE : TRUE;
 }
 
 static YogVal

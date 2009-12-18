@@ -244,6 +244,14 @@ struct YogIndirectPointer {
 
 typedef struct YogIndirectPointer YogIndirectPointer;
 
+struct YogCParam {
+    const char* name;
+    const char* type;
+    void* dest;
+};
+
+typedef struct YogCParam YogCParam;
+
 /* PROTOTYPE_START */
 
 /**

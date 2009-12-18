@@ -65,12 +65,18 @@ print(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal obj = YUNDEF;
-    PUSH_LOCAL(env, obj);
+    YogVal objs = YUNDEF;
+    PUSH_LOCALS2(env, obj, objs);
 
-    uint_t size = YogArray_size(env, args);
+    YogCParam params[] = {
+        { "*", NULL, &objs },
+        { NULL, NULL, NULL }};
+    YogMisc_parse_params(env, "print", params, args, kw);
+
+    uint_t size = YogArray_size(env, objs);
     uint_t i;
     for (i = 0; i < size; i++) {
-        obj = YogArray_at(env, args, i);
+        obj = YogArray_at(env, objs, i);
         print_object(env, obj);
     }
 
