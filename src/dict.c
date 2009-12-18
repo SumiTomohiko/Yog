@@ -183,19 +183,17 @@ YogDict_new(YogEnv* env)
     return YogDict_allocate(env, env->vm->cDict);
 }
 
-YogVal
-YogDict_get_size(YogEnv* env, YogVal self)
+uint_t
+YogDict_size(YogEnv* env, YogVal self)
 {
     SAVE_ARG(env, self);
-    YogVal retval = YUNDEF;
     YogVal tbl = YUNDEF;
-    PUSH_LOCALS2(env, retval, tbl);
+    PUSH_LOCAL(env, tbl);
 
     tbl = PTR_AS(YogDict, self)->tbl;
     int_t size = YogTable_size(env, tbl);
-    retval = YogVal_from_int(env, size);
 
-    RETURN(env, retval);
+    RETURN(env, size);
 }
 
 static YogVal
@@ -205,7 +203,8 @@ get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
 
-    retval = YogDict_get_size(env, self);
+    int_t size = YogDict_size(env, self);
+    retval = YogVal_from_int(env, size);
 
     RETURN(env, retval);
 }

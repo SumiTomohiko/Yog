@@ -39,7 +39,6 @@ extern "C" {
 #endif
 /* src/misc.c */
 void YogMisc_eval_source(YogEnv*, YogVal, const char*);
-void YogMisc_parse_args(YogEnv*, const char*, YogCArg*, YogVal, YogVal);
 
 
 #if defined(__cplusplus)

@@ -8,6 +8,7 @@
 #include "yog/eval.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
+#include "yog/get_args.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/package.h"
@@ -71,7 +72,7 @@ print(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogCArg params[] = {
         { "*", NULL, &objs },
         { NULL, NULL, NULL }};
-    YogMisc_parse_args(env, "print", params, args, kw);
+    YogGetArgs_parse_args(env, "print", params, args, kw);
 
     uint_t size = YogArray_size(env, objs);
     uint_t i;
@@ -94,7 +95,7 @@ puts_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogCArg params[] = {
         { "*", NULL, &objs },
         { NULL, NULL, NULL }};
-    YogMisc_parse_args(env, "puts", params, args, kw);
+    YogGetArgs_parse_args(env, "puts", params, args, kw);
 
     uint_t size = YogArray_size(env, objs);
     if (size == 0) {

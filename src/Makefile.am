@@ -34,6 +34,7 @@ COMMON_SOURCES = arg.c \
 	frame.c \
 	function.c \
 	gc.c \
+	get_args.c \
 	inst.c \
 	lexer.c \
 	main.c \

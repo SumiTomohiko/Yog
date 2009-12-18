@@ -29,10 +29,10 @@ YogVal YogDict_define_class(YogEnv*);
 void YogDict_eval_builtin_script(YogEnv*, YogVal);
 YogVal YogDict_get(YogEnv*, YogVal, YogVal);
 YogVal YogDict_get_iterator(YogEnv*, YogVal);
-YogVal YogDict_get_size(YogEnv*, YogVal);
 BOOL YogDict_include(YogEnv*, YogVal, YogVal);
 YogVal YogDict_new(YogEnv*);
 void YogDict_set(YogEnv*, YogVal, YogVal, YogVal);
+uint_t YogDict_size(YogEnv*, YogVal);
 
 
 #if defined(__cplusplus)

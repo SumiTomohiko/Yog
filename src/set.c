@@ -11,7 +11,8 @@ get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
 
-    retval = YogDict_get_size(env, self);
+    int_t size = YogDict_size(env, self);
+    retval = YogVal_from_int(env, size);
 
     RETURN(env, retval);
 }
