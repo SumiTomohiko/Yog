@@ -189,8 +189,12 @@ include_module(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal module = YUNDEF;
     PUSH_LOCALS2(env, klass, module);
 
-    klass = YogArray_at(env, args, 0);
-    module = YogArray_at(env, args, 1);
+    YogCArg params[] = {
+        { "klass", &klass },
+        { "module", &module },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "include_module", params, args, kw);
+
     YogClass_include_module(env, klass, module);
 
     RETURN(env, klass);

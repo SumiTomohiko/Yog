@@ -29,12 +29,28 @@ Built-in Functions
 
    Return the current thread.
 
+   The Yog interpreter uses this function internally.
+
 .. function:: import_package(name)
 
    :arg name: symbol of package name
    :return: imported package
 
    Import a package.
+
+   The Yog interpreter uses this function internally.
+   If you want to import packages, use :keyword:`import` statement.
+
+.. function:: include_module(klass, module)
+
+   :arg klass: class to include *module*
+   :arg module: included module
+   :return: *klass*
+
+   Mix-in *module* to *klass*.
+
+   The Yog interpreter uses this function internally.
+   If you want to mix-in a class and modules, use :func:`include` function as a decorator.
 
 .. function:: print(\*args)
 
