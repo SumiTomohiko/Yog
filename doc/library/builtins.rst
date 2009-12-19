@@ -55,16 +55,47 @@ Built-in Functions
 .. function:: print(\*args)
 
    :arg args: objects to print standard output
-   :return: ``nil``
+   :return: :keyword:`nil`
 
    Print *args* to the standard output.
    If objects are not string, they are converted with :meth:`Object#to_s`.
    When no object are given, :func:`print` does nothing.
 
+.. function:: property(getter, setter=nil)
+
+   :arg getter: a function called on getting property
+   :arg setter: a function called on setting property
+   :return: a :class:`Property` object
+
+   When a :class:`Property` object is gotten as an attribute, *getter* is called without arguments.
+   If an attirubte to be set is a :class:`Property` object, *setter* is called with one argment.
+   The *setter*'s argument is a new value of the attribute::
+
+      class Foo
+        def init()
+          self.baz = 42
+        end
+
+        def get_bar()
+          return self.baz
+        end
+
+        def set_bar(baz)
+          self.baz = baz
+        end
+
+        bar = property(get_bar, set_bar)
+      end
+
+      foo = Foo.new()
+      foo.bar # => 42
+      foo.bar = 26
+      foo.bar # => 26
+
 .. function:: puts(\*args)
 
    :arg args: objects to print standard output
-   :return: ``nil``
+   :return: :keyword:`nil`
 
    Print *args* to the standard output with trailing newlines.
    If objects are not string, they are converted with :meth:`Object#to_s`.

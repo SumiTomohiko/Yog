@@ -78,7 +78,7 @@ set_keyword_arg(YogEnv* env, YogCArg* param, BOOL optional, YogVal kw)
     PUSH_LOCAL(env, val);
 
     ID name = YogVM_intern(env, env->vm, param->name);
-    val = YogDict_get(env, kw, ID2VAL(name));
+    val = IS_PTR(kw) ? YogDict_get(env, kw, ID2VAL(name)) : YUNDEF;
     if (!IS_UNDEF(val)) {
         *param->dest = val;
     }

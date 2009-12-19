@@ -134,9 +134,14 @@ property(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal prop = YUNDEF;
     PUSH_LOCALS3(env, getter, setter, prop);
 
-    getter = YogArray_at(env, args, 0);
-    if (1 < YogArray_size(env, args)) {
-        setter = YogArray_at(env, args, 1);
+    YogCArg params[] = {
+        { "getter", &getter },
+        { "|", NULL },
+        { "setter", &setter },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "property", params, args, kw);
+    if (IS_UNDEF(setter)) {
+        setter = YNIL;
     }
 
     prop = YogProperty_new(env);
