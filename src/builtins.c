@@ -112,8 +112,17 @@ puts_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 static YogVal
 import_package(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal name = YogArray_at(env, args, 0);
-    return YogVM_import_package(env, env->vm, VAL2ID(name));
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal pkg = YUNDEF;
+    YogVal name = YUNDEF;
+    PUSH_LOCALS2(env, pkg, name);
+
+    YogCArg params[] = { { "name", &name }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "import_package", params, args, kw);
+
+    pkg = YogVM_import_package(env, env->vm, VAL2ID(name));
+
+    RETURN(env, pkg);
 }
 
 static YogVal

@@ -25,7 +25,16 @@ Built-in Functions
 
 .. function:: get_current_thread()
 
+   :return: current thread
+
    Return the current thread.
+
+.. function:: import_package(name)
+
+   :arg name: symbol of package name
+   :return: imported package
+
+   Import a package.
 
 .. function:: print(\*args)
 
