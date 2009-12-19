@@ -8,13 +8,34 @@
 Built-in Functions
 ------------------
 
-.. function:: print(*args)
+.. function:: classmethod(function)
+
+   :arg function: function
+   :return: class method for *function*
+
+   Return a class method for *function*.
+   To declare class method, use this function in the decorator form::
+
+      class Foo
+        @classmethod
+        def bar()
+          # ...
+        end
+      end
+
+.. function:: print(\*args)
+
+   :arg args: objects to print standard output
+   :return: ``nil``
 
    Print *args* to the standard output.
    If objects are not string, they are converted with :meth:`Object#to_s`.
    When no object are given, :func:`print` does nothing.
 
-.. function:: puts(*args)
+.. function:: puts(\*args)
+
+   :arg args: objects to print standard output
+   :return: ``nil``
 
    Print *args* to the standard output with trailing newlines.
    If objects are not string, they are converted with :meth:`Object#to_s`.

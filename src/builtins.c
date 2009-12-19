@@ -69,9 +69,7 @@ print(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal objs = YUNDEF;
     PUSH_LOCALS2(env, obj, objs);
 
-    YogCArg params[] = {
-        { "*", NULL, &objs },
-        { NULL, NULL, NULL }};
+    YogCArg params[] = { { "*", &objs }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "print", params, args, kw);
 
     uint_t size = YogArray_size(env, objs);
@@ -92,9 +90,7 @@ puts_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal objs = YUNDEF;
     PUSH_LOCALS2(env, obj, objs);
 
-    YogCArg params[] = {
-        { "*", NULL, &objs },
-        { NULL, NULL, NULL }};
+    YogCArg params[] = { { "*", &objs }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "puts", params, args, kw);
 
     uint_t size = YogArray_size(env, objs);
@@ -149,7 +145,8 @@ classmethod(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal method = YUNDEF;
     PUSH_LOCALS2(env, f, method);
 
-    f = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "function", &f }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "classmethod", params, args, kw);
 
     method = YogClassMethod_new(env);
     PTR_AS(YogClassMethod, method)->f = f;

@@ -38,6 +38,10 @@ copy_dict(YogEnv* env, YogVal dest, YogVal src, YogCArg* params)
     YogVal name = YUNDEF;
     PUSH_LOCALS4(env, iter, key, val, name);
 
+    if (!IS_PTR(src)) {
+        RETURN_VOID(env);
+    }
+
     iter = YogDict_get_iterator(env, src);
     while (YogDictIterator_next(env, iter)) {
         key = YogDictIterator_current_key(env, iter);
@@ -53,31 +57,21 @@ copy_dict(YogEnv* env, YogVal dest, YogVal src, YogCArg* params)
 }
 
 static void
-convert_arg(YogEnv* env, const char* type, YogVal val, void* dest)
-{
-    /* TODO */
-    YOG_BUG(env, "unknown type \"%s\"", type);
-}
-
-static void
-convert_positional_arg(YogEnv* env, YogCArg* param, uint_t pos, YogVal args, YogVal kw)
+set_positional_arg(YogEnv* env, YogCArg* param, uint_t pos, YogVal args, YogVal kw)
 {
     SAVE_ARGS2(env, args, kw);
-    YogVal val = YUNDEF;
-    PUSH_LOCAL(env, val);
 
     ID name = YogVM_intern(env, env->vm, param->name);
-    if (YogDict_include(env, kw, ID2VAL(name))) {
+    if (IS_PTR(kw) && YogDict_include(env, kw, ID2VAL(name))) {
         YogError_raise_TypeError(env, "Argument given by name (\"%s\") and position (%u)", param->name, pos + 1);
     }
-    val = YogArray_at(env, args, pos);
-    convert_arg(env, param->type, val, param->dest);
+    *param->dest = YogArray_at(env, args, pos);
 
     RETURN_VOID(env);
 }
 
 static void
-convert_keyword_arg(YogEnv* env, YogCArg* param, BOOL optional, YogVal kw)
+set_keyword_arg(YogEnv* env, YogCArg* param, BOOL optional, YogVal kw)
 {
     SAVE_ARG(env, kw);
     YogVal val = YUNDEF;
@@ -86,7 +80,7 @@ convert_keyword_arg(YogEnv* env, YogCArg* param, BOOL optional, YogVal kw)
     ID name = YogVM_intern(env, env->vm, param->name);
     val = YogDict_get(env, kw, ID2VAL(name));
     if (!IS_UNDEF(val)) {
-        convert_arg(env, param->type, val, param->dest);
+        *param->dest = val;
     }
     else if (!optional) {
         YogError_raise_TypeError(env, "Required argument \"%s\" not found", param->name);
@@ -101,6 +95,10 @@ copy_array(YogEnv* env, YogVal dest, YogVal src, uint_t init_pos)
     SAVE_ARGS2(env, dest, src);
     YogVal val = YUNDEF;
     PUSH_LOCAL(env, val);
+
+    if (!IS_PTR(src)) {
+        RETURN_VOID(env);
+    }
 
     uint_t size = YogArray_size(env, src);
     uint_t pos = init_pos;
@@ -154,10 +152,10 @@ YogGetArgs_parse_args(YogEnv* env, const char* func_name, YogCArg* params, YogVa
     BOOL optional = FALSE;
     YogCArg* param = params;
     uint_t args_index = 0;
-    uint_t args_size = YogArray_size(env, args);
+    uint_t args_size = IS_PTR(args) ? YogArray_size(env, args) : 0;
     while (!FINISHED(param) && (args_index < args_size)) {
         ACCEPT_OPT_MARK(param);
-        convert_positional_arg(env, param, args_index, args, kw);
+        set_positional_arg(env, param, args_index, args, kw);
         args_index++;
         param++;
     }
@@ -165,7 +163,7 @@ YogGetArgs_parse_args(YogEnv* env, const char* func_name, YogCArg* params, YogVa
     uint_t kw_num = 0;
     while (!FINISHED(param)) {
         ACCEPT_OPT_MARK(param);
-        convert_keyword_arg(env, param, optional, kw);
+        set_keyword_arg(env, param, optional, kw);
         kw_num++;
         param++;
     }

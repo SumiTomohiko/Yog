@@ -387,6 +387,26 @@ create_keyword_argument(YogEnv* env, uint8_t kwargc, YogVal kwargs[], YogVal var
 }
 
 static YogVal
+create_positional_argument(YogEnv* env, uint8_t posargc, YogVal posargs[], YogVal vararg)
+{
+    SAVE_ARG(env, vararg);
+    YogVal args = YUNDEF;
+    PUSH_LOCAL(env, args);
+
+    args = YogArray_new(env);
+    uint_t i;
+    for (i = 0; i < posargc; i++) {
+        YogArray_push(env, args, posargs[i]);
+    }
+
+    if (IS_PTR(vararg) && !IS_OBJ_OF(env, vararg, cArray)) {
+        YogArray_add(env, args, vararg);
+    }
+
+    RETURN(env, args);
+}
+
+static YogVal
 YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg)
 {
     SAVE_ARGS5(env, callee, self, blockarg, vararg, varkwarg);
@@ -396,15 +416,7 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
     YogVal kw = YUNDEF;
     PUSH_LOCALS4(env, args, retval, frame, kw);
 
-    args = YogArray_new(env);
-    uint_t i;
-    for (i = 0; i < posargc; i++) {
-        YogArray_push(env, args, posargs[i]);
-    }
-    if (IS_PTR(vararg) && IS_OBJ_OF(env, vararg, cArray)) {
-        YogArray_add(env, args, vararg);
-    }
-
+    args = create_positional_argument(env, posargc, posargs, vararg);
     kw = create_keyword_argument(env, kwargc, kwargs, varkwarg);
 
     frame = YogCFrame_new(env);

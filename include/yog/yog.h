@@ -246,8 +246,7 @@ typedef struct YogIndirectPointer YogIndirectPointer;
 
 struct YogCArg {
     const char* name;
-    const char* type;
-    void* dest;
+    YogVal* dest;
 };
 
 typedef struct YogCArg YogCArg;
