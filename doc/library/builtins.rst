@@ -101,4 +101,14 @@ Built-in Functions
    If objects are not string, they are converted with :meth:`Object#to_s`.
    When no object are given, :func:`print` prints one newline.
 
+.. function:: raise_exception(e)
+
+   :arg e: an exception
+   :return: :keyword:`nil`. But this function never return!
+
+   Raise an exception.
+
+   The Yog interpreter uses this function internally.
+   If you want to raise an exception, use the :keyword:`raise` statement.
+
 .. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

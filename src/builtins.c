@@ -23,7 +23,11 @@ static YogVal
 raise_exception(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal exc = YogArray_at(env, args, 0);
+    YogVal exc = YUNDEF;
+    PUSH_LOCAL(env, exc);
+
+    YogCArg params[] = { { "e", &exc }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "raise_exception", params, args, kw);
 
     if (!YogVal_is_subclass_of(env, exc, env->vm->eException)) {
         YogVal receiver = env->vm->eException;
