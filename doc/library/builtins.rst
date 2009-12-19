@@ -8,6 +8,32 @@
 Built-in Functions
 ------------------
 
+.. function:: __recurse__(obj, f, g)
+
+   :arg obj: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
+   :arg f: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
+   :arg g: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
+   :return: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
+
+   The Yog interpreter uses this function internally.
+   `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_.
+
+.. function:: bind(obj)
+
+   :arg obj: an object to bind
+   :return: a function which accepts a function to be bound
+
+   Set :keyword:`self` in functions::
+
+      o = Object.new()
+
+      @bind(o)
+      def foo()
+        return self
+      end
+
+      foo() # => o
+
 .. function:: classmethod(function)
 
    :arg function: function
@@ -41,7 +67,26 @@ Built-in Functions
    The Yog interpreter uses this function internally.
    If you want to import packages, use :keyword:`import` statement.
 
-.. function:: include_module(klass, module)
+.. function:: include(mod)
+
+   :arg mod: module to include
+   :return: function which accepts a class to be included
+
+   :func:`include` is used to mix-in a class and modules as a decorator::
+
+      module Foo
+        def bar()
+          print(42)
+        end
+      end
+
+      @include(Foo)
+      class Baz
+      end
+
+   Calling ``Baz.new().bar()`` prints ``42``.
+
+.. function:: include_module(klass, mod)
 
    :arg klass: class to include *module*
    :arg module: included module
@@ -51,6 +96,23 @@ Built-in Functions
 
    The Yog interpreter uses this function internally.
    If you want to mix-in a class and modules, use :func:`include` function as a decorator.
+
+.. function:: partial(f, \*args, \*\*kw)
+
+   :arg f: function to call
+   :arg args: arguments to *f*
+   :arg kw: arguments to *f*
+   :return: function
+
+   :func:`partial` is a function for the partial application.
+   A returned function accepts rest of arguments for *f*.
+   This function is equivalent to this::
+
+      def g(*v, **k)
+        return f(*(args + v), **(kw + k))
+      end
+
+      return g
 
 .. function:: print(\*args)
 

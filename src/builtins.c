@@ -200,7 +200,7 @@ include_module(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = {
         { "klass", &klass },
-        { "module", &module },
+        { "mod", &module },
         { NULL, NULL } };
     YogGetArgs_parse_args(env, "include_module", params, args, kw);
 
