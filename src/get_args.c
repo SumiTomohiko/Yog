@@ -120,11 +120,15 @@ find_invalid_keyword(YogEnv* env, YogCArg* params, YogVal kw)
     YogVal name = YUNDEF;
     PUSH_LOCALS3(env, iter, key, name);
 
+    if (!IS_PTR(kw)) {
+        RETURN(env, YUNDEF);
+    }
+
     iter = YogDict_get_iterator(env, kw);
     while (YogDictIterator_next(env, iter)) {
         key = YogDictIterator_current_key(env, iter);
         YOG_ASSERT(env, IS_SYMBOL(key), "key is not symbol (0x%08x)", key);
-        name = YogVM_id2name(env, env->vm, key);
+        name = YogVM_id2name(env, env->vm, VAL2ID(key));
         if (!find_param(env, params, name)) {
             RETURN(env, key);
         }
@@ -169,11 +173,7 @@ YogGetArgs_parse_args(YogEnv* env, const char* func_name, YogCArg* params, YogVa
     }
 #undef ACCEPT_OPT_MARK
 
-    if (param->name == NULL) {
-        RETURN_VOID(env);
-    }
-
-    if (strcmp(param->name, "*") == 0) {
+    if ((param->name != NULL) && (strcmp(param->name, "*") == 0)) {
         dest = YogArray_new(env);
         copy_array(env, dest, args, args_index);
         *(YogVal*)param->dest = dest;
@@ -186,14 +186,14 @@ YogGetArgs_parse_args(YogEnv* env, const char* func_name, YogCArg* params, YogVa
         YogError_raise_TypeError(env, "%s() takes at most %u argument(s) (%u given)", func_name, args_index, args_size);
     }
 
-    if (strcmp(param->name, "**") == 0) {
+    if ((param->name != NULL) && (strcmp(param->name, "**") == 0)) {
         dest = YogDict_new(env);
         copy_dict(env, dest, kw, params);
         *(YogVal*)param->dest = dest;
         RETURN_VOID(env);
     }
 
-    uint_t kw_size = YogDict_size(env, kw);
+    uint_t kw_size = IS_PTR(kw) ? YogDict_size(env, kw) : 0;
     if (args_index + kw_num < args_size + kw_size) {
         YogError_raise_TypeError(env, "%s() takes at most %u argument(s) (%u given)", func_name, args_index + kw_num, args_size + kw_size);
     }

@@ -399,7 +399,7 @@ create_positional_argument(YogEnv* env, uint8_t posargc, YogVal posargs[], YogVa
         YogArray_push(env, args, posargs[i]);
     }
 
-    if (IS_PTR(vararg) && !IS_OBJ_OF(env, vararg, cArray)) {
+    if (IS_PTR(vararg) && IS_OBJ_OF(env, vararg, cArray)) {
         YogArray_add(env, args, vararg);
     }
 

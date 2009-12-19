@@ -190,7 +190,14 @@ include_module(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 static YogVal
 get_current_thread(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    return env->thread;
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal thread = env->thread;
+    PUSH_LOCAL(env, thread);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_current_thread", params, args, kw);
+
+    RETURN(env, thread);
 }
 
 YogVal
