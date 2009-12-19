@@ -23,6 +23,10 @@ Built-in Functions
         end
       end
 
+.. function:: get_current_thread()
+
+   Return the current thread.
+
 .. function:: print(\*args)
 
    :arg args: objects to print standard output
