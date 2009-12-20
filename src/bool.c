@@ -1,6 +1,7 @@
+#include "yog/class.h"
 #include "yog/error.h"
 #include "yog/frame.h"
-#include "yog/class.h"
+#include "yog/get_args.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -12,22 +13,35 @@
 static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
+    SAVE_ARGS4(env, self, args, kw, block);
+    YogVal t = YUNDEF;
+    PUSH_LOCAL(env, t);
+
     CHECK_TYPE(self);
 
-    const char* s = NULL;
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_s", params, args, kw);
+
+    const char* s;
     if (VAL2BOOL(self)) {
         s = "true";
     }
     else {
         s = "false";
     }
+    t = YogString_new_str(env, s);
 
-    return YogString_new_str(env, s);
+    RETURN(env, t);
 }
 
 static YogVal
 hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
+    SAVE_ARGS4(env, self, args, kw, block);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "hash", params, args, kw);
+
     int_t n;
     if (IS_TRUE(self)) {
         n = 1;
@@ -36,7 +50,7 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         n = 0;
     }
 
-    return INT2VAL(n);
+    RETURN(env, INT2VAL(n));
 }
 
 YogVal

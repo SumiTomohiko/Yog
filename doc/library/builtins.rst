@@ -38,6 +38,13 @@ Built-in Classes
 
 .. class:: Bool
 
+   The class of :keyword:`true` and :keyword:`false`.
+
+   The super class is :class:`Object`.
+
+   .. method:: hash()
+   .. method:: to_s()
+
 .. class:: Coroutine
 
 .. class:: Dict
