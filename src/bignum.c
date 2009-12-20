@@ -2,11 +2,12 @@
 #include "gmp.h"
 #include "yog/array.h"
 #include "yog/bignum.h"
+#include "yog/class.h"
 #include "yog/error.h"
 #include "yog/fixnum.h"
 #include "yog/float.h"
 #include "yog/gc.h"
-#include "yog/class.h"
+#include "yog/get_args.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/vm.h"
@@ -35,6 +36,9 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_s", params, args, kw);
 
     s = YogBignum_to_s(env, self);
 
@@ -75,6 +79,9 @@ negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal bignum = YUNDEF;
     PUSH_LOCAL(env, bignum);
 
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "-self", params, args, kw);
+
     bignum = YogBignum_new(env);
     mpz_neg(BIGNUM_NUM(bignum), BIGNUM_NUM(self));
 
@@ -89,8 +96,9 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "+", params, args, kw);
+
     if (IS_FIXNUM(right)) {
         result = YogBignum_from_int(env, VAL2INT(right));
         mpz_add(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(result));
@@ -167,8 +175,9 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "-", params, args, kw);
+
     if (IS_FIXNUM(right)) {
         result = subtract_int(env, self, VAL2INT(right));
         RETURN(env, result);
@@ -199,8 +208,9 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "*", params, args, kw);
+
     if (IS_FIXNUM(right)) {
         result = YogFixnum_multiply(env, right, self);
         RETURN(env, result);
@@ -285,8 +295,9 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "/", params, args, kw);
+
     if (IS_FIXNUM(right)) {
         result = divide_int(env, self, VAL2INT(right));
         RETURN(env, result);
@@ -392,8 +403,9 @@ modulo(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "%", params, args, kw);
+
     if (IS_FIXNUM(right) || (IS_PTR(right) && IS_OBJ_OF(env, right, cBignum))) {
         result = YogBignum_modulo(env, self, right);
         RETURN(env, result);
@@ -413,8 +425,9 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "//", params, args, kw);
+
     if (IS_FIXNUM(right)) {
         result = floor_divide_int(env, self, VAL2INT(right));
         RETURN(env, result);
@@ -439,7 +452,12 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 static YogVal
 positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    return self;
+    SAVE_ARGS4(env, self, args, kw, block);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "+self", params, args, kw);
+
+    RETURN(env, self);
 }
 
 static YogVal
@@ -448,6 +466,9 @@ not(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "~self", params, args, kw);
 
     retval = YogBignum_new(env);
     mpz_com(BIGNUM_NUM(retval), BIGNUM_NUM(self));
@@ -493,7 +514,9 @@ rshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal right = YUNDEF;
     PUSH_LOCALS2(env, retval, right);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, ">>", params, args, kw);
+
     if (!IS_FIXNUM(right)) {
         YogError_raise_binop_type_error(env, self, right, ">>");
     }
@@ -516,7 +539,9 @@ lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal right = YUNDEF;
     PUSH_LOCALS2(env, retval, right);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "<<", params, args, kw);
+
     if (!IS_FIXNUM(right)) {
         YogError_raise_binop_type_error(env, self, right, "<<");
     }
@@ -603,9 +628,13 @@ or(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
+    YogVal right = YUNDEF;
+    PUSH_LOCALS2(env, retval, right);
 
-    retval = YogBignum_or(env, self, YogArray_at(env, args, 0));
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "|", params, args, kw);
+
+    retval = YogBignum_or(env, self, right);
 
     RETURN(env, retval);
 }
@@ -668,10 +697,14 @@ static YogVal
 and(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
+    YogVal right = YUNDEF;
     YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
+    PUSH_LOCALS2(env, right, retval);
 
-    retval = YogBignum_and(env, self, YogArray_at(env, args, 0));
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "&", params, args, kw);
+
+    retval = YogBignum_and(env, self, right);
 
     RETURN(env, retval);
 }
@@ -681,9 +714,13 @@ xor(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
+    YogVal right = YUNDEF;
+    PUSH_LOCALS2(env, retval, right);
 
-    retval = YogBignum_xor(env, self, YogArray_at(env, args, 0));
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "^", params, args, kw);
+
+    retval = YogBignum_xor(env, self, right);
 
     RETURN(env, retval);
 }
@@ -696,6 +733,9 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal h = YUNDEF;
     PUSH_LOCALS2(env, s, h);
 
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "hash", params, args, kw);
+
     s = YogBignum_to_s(env, self);
     h = INT2VAL(YogString_hash(env, s));
 
@@ -706,11 +746,13 @@ static YogVal
 compare(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal obj = YUNDEF;
-    PUSH_LOCAL(env, obj);
+    YogVal right = YUNDEF;
+    PUSH_LOCAL(env, right);
 
-    obj = YogArray_at(env, args, 0);
-    int_t n = mpz_cmp(BIGNUM_NUM(self), BIGNUM_NUM(obj));
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "<=>", params, args, kw);
+
+    int_t n = mpz_cmp(BIGNUM_NUM(self), BIGNUM_NUM(right));
     if (n < 0) {
         RETURN(env, INT2VAL(-1));
     }
@@ -800,7 +842,9 @@ power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, right, retval);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "**", params, args, kw);
+
     retval = YogBignum_power(env, self, right);
 
     RETURN(env, retval);

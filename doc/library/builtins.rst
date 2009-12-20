@@ -1,9 +1,58 @@
 
 :mod:`builtins` --- Built-in module
-====================================
+===================================
 
 .. module:: builtins
    :synopsis: The module that provides the built-in namespace.
+
+Built-in Classes
+----------------
+
+.. class:: AttributeError
+
+   The exception to represent failures in getting/setting attributes.
+
+   The super class is :class:`Exception`.
+
+.. class:: Bignum
+
+   The super class is :class:`Object`.
+
+   .. method:: %(n)
+   .. method:: \*(n)
+   .. method:: \*\*(n)
+   .. method:: +(n)
+   .. method:: +self()
+   .. method:: -(n)
+   .. method:: -self()
+   .. method:: /(n)
+   .. method:: //(n)
+   .. method:: <<(n)
+   .. method:: <=>(n)
+   .. method:: >>(n)
+   .. method:: ^(n)
+   .. method:: hash()
+   .. method:: to_s()
+   .. method:: \|(n)
+   .. method:: ~self()
+
+.. class:: Bool
+
+.. class:: Coroutine
+
+.. class:: Dict
+
+.. class:: Exception
+
+.. class:: File
+
+.. class:: Fixnum
+
+.. class:: Object
+
+.. class:: Set
+
+.. class:: Thread
 
 Built-in Functions
 ------------------
