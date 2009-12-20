@@ -47,6 +47,11 @@ Built-in Classes
 
 .. class:: Coroutine
 
+   The super class is :class:`Object`.
+
+   .. classmethod:: yield()
+   .. method:: resume()
+
 .. class:: Dict
 
 .. class:: Exception
