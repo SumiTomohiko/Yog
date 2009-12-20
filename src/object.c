@@ -4,6 +4,7 @@
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/gc.h"
+#include "yog/get_args.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/string.h"
@@ -129,6 +130,9 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal name_str = YUNDEF;
     PUSH_LOCALS3(env, klass, s, name_str);
 
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_s", params, args, kw);
+
     klass = PTR_AS(YogBasicObj, self)->klass;
     ID name = PTR_AS(YogClass, klass)->name;
     name_str = YogVM_id2name(env, env->vm, name);
@@ -144,6 +148,9 @@ get_class(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_class", params, args, kw);
+
     klass = YogVal_get_class(env, self);
 
     RETURN(env, klass);
@@ -157,6 +164,9 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "hash", params, args, kw);
 
     retval = INT2VAL(PTR_AS(YogBasicObj, self)->id_upper + PTR_AS(YogBasicObj, self)->id_lower);
 
@@ -173,7 +183,9 @@ not_equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal obj = YUNDEF;
     PUSH_LOCALS2(env, b, obj);
 
-    obj = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "obj", &obj }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "!=", params, args, kw);
+
     b = YogEval_call_method1(env, self, "==", obj);
     if (YOG_TEST(b)) {
         RETURN(env, YFALSE);
@@ -190,7 +202,8 @@ equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal obj = YUNDEF;
     PUSH_LOCALS2(env, retval, obj);
 
-    obj = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "obj", &obj }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "==", params, args, kw);
 
     if (self == obj) {
         RETURN(env, YTRUE);
@@ -217,7 +230,9 @@ get_attr(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal name = YUNDEF;
     YogVal val = YUNDEF;
     PUSH_LOCALS2(env, name, val);
-    name = YogArray_at(env, args, 0);
+
+    YogCArg params[] = { { "name", &name}, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_attr", params, args, kw);
 
     ID id;
     if (IS_OBJ_OF(env, name, cString)) {

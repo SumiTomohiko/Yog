@@ -113,6 +113,14 @@ Built-in Classes
 
 .. class:: Object
 
+   .. method:: !=(obj)
+   .. method:: ==(obj)
+   .. attribute:: class
+   .. method:: get_attr(name)
+   .. method:: hash()
+   .. method:: inspect()
+   .. method:: to_s()
+
 .. class:: Set
 
 .. class:: Thread
