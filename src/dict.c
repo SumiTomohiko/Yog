@@ -1,8 +1,9 @@
 #include "yog/array.h"
+#include "yog/class.h"
 #include "yog/dict.h"
 #include "yog/error.h"
 #include "yog/function.h"
-#include "yog/class.h"
+#include "yog/get_args.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/table.h"
@@ -43,6 +44,9 @@ each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal params[] = { YUNDEF, YUNDEF };
     PUSH_LOCALSX(env, array_sizeof(params), params);
 
+    YogCArg cargs[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "each", cargs, args, kw);
+
     iter = YogDict_get_iterator(env, self);
     while (YogDictIterator_next(env, iter)) {
         params[0] = YogDictIterator_current_key(env, iter);
@@ -61,8 +65,8 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal dict = YUNDEF;
     PUSH_LOCALS2(env, right, dict);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, IS_PTR(right), "invalid operand");
+    YogCArg params[] = { { "d", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "+", params, args, kw);
     YOG_ASSERT(env, IS_OBJ_OF(env, right, cDict), "invalid operand");
 
     dict = YogDict_new(env);
@@ -100,7 +104,9 @@ subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal value = YUNDEF;
     PUSH_LOCALS2(env, key, value);
 
-    key = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "key", &key }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "[]", params, args, kw);
+
     if (YogTable_lookup(env, PTR_AS(YogDict, self)->tbl, key, &value)) {
         RETURN(env, value);
     }
@@ -132,8 +138,9 @@ subscript_assign(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal value = YUNDEF;
     PUSH_LOCALS2(env, key, value);
 
-    key = YogArray_at(env, args, 0);
-    value = YogArray_at(env, args, 1);
+    YogCArg params[] = { { "key", &key }, { "value", &value }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "[]=", params, args, kw);
+
     YogDict_set(env, self, key, value);
 
     RETURN(env, self);
@@ -202,6 +209,9 @@ get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_size", params, args, kw);
 
     int_t size = YogDict_size(env, self);
     retval = YogVal_from_int(env, size);

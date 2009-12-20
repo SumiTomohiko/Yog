@@ -54,6 +54,20 @@ Built-in Classes
 
 .. class:: Dict
 
+   The super class is :class:`Object`.
+
+   .. method:: +(d)
+   .. method:: [](key)
+   .. method:: []=(key, value)
+   .. method:: each(&block)
+
+      Callback *block* for each pairs of key and value.
+      The *block*'s signature is ``block(key, val)``.
+
+   .. attribute:: size
+
+      Number of entries in the dictionary.
+
 .. class:: Exception
 
 .. class:: File
