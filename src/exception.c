@@ -1,4 +1,5 @@
 #include "yog/array.h"
+#include "yog/class.h"
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -6,7 +7,7 @@
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/gc.h"
-#include "yog/class.h"
+#include "yog/get_args.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -72,18 +73,16 @@ static YogVal
 init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-
-    YogVal message = YUNDEF;
+    YogVal message = YNIL;
     YogVal frame = YUNDEF;
     YogVal st = YUNDEF;
     PUSH_LOCALS3(env, message, frame, st);
 
-    if (0 < YogArray_size(env, args)) {
-        message = YogArray_at(env, args, 0);
-    }
-    else {
-        message = YNIL;
-    }
+    YogCArg params[] = {
+        { "|", NULL },
+        { "message", &message },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "init", params, args, kw);
 
     frame = env->frame;
     frame = skip_frame(env, frame, "init");
@@ -160,10 +159,15 @@ static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
+    YogVal msg = YUNDEF;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, msg, retval);
 
-    YogException* exc = PTR_AS(YogException, self);
-    YogVal msg = exc->message;
-    YogVal retval = YogEval_call_method(env, msg, "to_s", 0, NULL);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_s", params, args, kw);
+
+    msg = PTR_AS(YogException, self)->message;
+    retval = YogEval_call_method(env, msg, "to_s", 0, NULL);
 
     RETURN(env, retval);
 }
@@ -174,6 +178,9 @@ get_message(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal message = YUNDEF;
     PUSH_LOCAL(env, message);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_message", params, args, kw);
 
     message = PTR_AS(YogException, self)->message;
 

@@ -49,6 +49,7 @@ Built-in Classes
 
    The super class is :class:`Object`.
 
+   .. method:: init(&block)
    .. classmethod:: yield()
    .. method:: resume()
 
@@ -70,7 +71,21 @@ Built-in Classes
 
 .. class:: Exception
 
+   The super class is :class:`Object`.
+
+   .. method:: init(message=nil)
+   .. attribute:: message
+   .. method:: to_s()
+
 .. class:: File
+
+   The super class is :class:`Object`.
+
+   .. method:: close()
+   .. classmethod:: open(path, mode)
+   .. method:: read()
+   .. method:: readline()
+   .. method:: write(s)
 
 .. class:: Fixnum
 

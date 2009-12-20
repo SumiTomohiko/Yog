@@ -7,6 +7,7 @@
 #include "yog/error.h"
 #include "yog/frame.h"
 #include "yog/function.h"
+#include "yog/get_args.h"
 #include "yog/object.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
@@ -247,6 +248,10 @@ static YogVal
 init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "init", params, args, kw);
+
     PTR_AS(Coroutine, self)->block = block;
     RETURN(env, self);
 }

@@ -6,6 +6,7 @@
 #include "yog/error.h"
 #include "yog/file.h"
 #include "yog/function.h"
+#include "yog/get_args.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/string.h"
@@ -46,9 +47,10 @@ write(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
-    s = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, IS_PTR(s), "argument is not pointer");
+    YogCArg params[] = { { "s", &s }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "write", params, args, kw);
     YOG_ASSERT(env, IS_OBJ_OF(env, s, cString), "argument is not String");
+
     fputs(STRING_CSTR(s), PTR_AS(YogFile, self)->fp);
 
     RETURN(env, self);
@@ -60,6 +62,9 @@ read(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "read", params, args, kw);
 
     s = YogString_new(env);
 
@@ -87,7 +92,12 @@ static YogVal
 close(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "close", params, args, kw);
+
     do_close(env, self);
+
     RETURN(env, self);
 }
 
@@ -97,6 +107,9 @@ readline(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal line = YUNDEF;
     PUSH_LOCAL(env, line);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "readline", params, args, kw);
 
     FILE* fp = PTR_AS(YogFile, self)->fp;
     char buffer[4096];
@@ -127,11 +140,9 @@ open(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCALS4(env, file, path, mode, retval);
 
-    path = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, IS_PTR(path), "invalid path");
+    YogCArg params[] = { { "path", &path }, { "mode", &mode }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "open", params, args, kw);
     YOG_ASSERT(env, IS_OBJ_OF(env, path, cString), "invalid path type");
-    mode = YogArray_at(env, args, 1);
-    YOG_ASSERT(env, IS_PTR(mode), "invalid mode");
     YOG_ASSERT(env, IS_OBJ_OF(env, mode, cString), "invalid mode type");
 
     file = YogFile_new(env);
