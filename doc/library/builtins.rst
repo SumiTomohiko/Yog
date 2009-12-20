@@ -8,6 +8,22 @@
 Built-in Classes
 ----------------
 
+.. class:: Array
+
+   The super class is :class:`Object`.
+
+   .. method:: +(a)
+   .. method:: <<(obj)
+   .. method:: [](index)
+   .. method:: []=(index, value)
+   .. method:: each(&block)
+   .. method:: include?(obj)
+   .. method:: join(sep)
+   .. method:: pop()
+   .. method:: push(obj)
+   .. attribute:: size
+   .. method:: to_s()
+
 .. class:: AttributeError
 
    The exception to represent failures in getting/setting attributes.
@@ -82,7 +98,13 @@ Built-in Classes
    The super class is :class:`Object`.
 
    .. method:: close()
-   .. classmethod:: open(path, mode)
+   .. classmethod:: open(path, mode, &block=nil)
+
+      Callback *block* (if given).
+      The *block*'s signature is ``block(fp)``.
+      *fp* is a :class:`File` object.
+      When *block* is given, :meth:`open` closes the file at the end.
+
    .. method:: read()
    .. method:: readline()
    .. method:: write(s)
@@ -123,7 +145,23 @@ Built-in Classes
 
 .. class:: Set
 
+   The super class of :class:`Object`.
+
+   .. method:: add(\*args)
+   .. method:: include?(obj)
+   .. attribute:: size
+
 .. class:: Thread
+
+   The super class of :class:`Object`.
+
+   .. method:: init(&block)
+   .. method:: run(arg)
+   .. method:: join()
+   .. attribute:: __recursive_stack__
+
+      The Yog interpreter uses this attribute internally.
+      `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_.
 
 Built-in Functions
 ------------------

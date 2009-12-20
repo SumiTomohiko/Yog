@@ -1,6 +1,7 @@
 #include "yog/array.h"
-#include "yog/dict.h"
 #include "yog/class.h"
+#include "yog/dict.h"
+#include "yog/get_args.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -10,6 +11,9 @@ get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_size", params, args, kw);
 
     int_t size = YogDict_size(env, self);
     retval = YogVal_from_int(env, size);
@@ -24,7 +28,9 @@ include(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal elem = YUNDEF;
     PUSH_LOCAL(env, elem);
 
-    elem = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "obj", &elem }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "include?", params, args, kw);
+
     if (YogDict_include(env, self, elem)) {
         RETURN(env, YTRUE);
     }
@@ -45,12 +51,16 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal elem = YUNDEF;
-    PUSH_LOCAL(env, elem);
+    YogVal objs = YUNDEF;
+    PUSH_LOCALS2(env, elem, objs);
 
-    uint_t size = YogArray_size(env, args);
+    YogCArg params[] = { { "*", &objs }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "add", params, args, kw);
+
+    uint_t size = YogArray_size(env, objs);
     uint_t i;
     for (i = 0; i < size; i++) {
-        elem = YogArray_at(env, args, i);
+        elem = YogArray_at(env, objs, i);
         YogSet_add(env, self, elem);
     }
 

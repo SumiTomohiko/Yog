@@ -34,6 +34,7 @@
 #elif defined(GC_BDW)
 #   include "yog/gc/bdw.h"
 #endif
+#include "yog/get_args.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -315,6 +316,9 @@ join(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
 
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "join", params, args, kw);
+
     void* retval = NULL;
     FREE_FROM_GC(env);
     if (pthread_join(PTR_AS(YogThread, self)->pthread, &retval) != 0) {
@@ -331,16 +335,12 @@ static YogVal
 run(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal vararg = YUNDEF;
+    YogVal vararg = YNIL;
     YogVal arg = YUNDEF;
     PUSH_LOCALS2(env, vararg, arg);
 
-    if (0 < YogArray_size(env, args)) {
-        vararg = YogArray_at(env, args, 0);
-    }
-    else {
-        vararg = YNIL;
-    }
+    YogCArg params[] = { { "|", NULL }, { "arg", &vararg }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "run", params, args, kw);
 
     arg = ThreadArg_new(env);
     PTR_AS(ThreadArg, arg)->vm = env->vm;
@@ -378,8 +378,14 @@ run(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 static YogVal
 init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
+    SAVE_ARGS4(env, self, args, kw, block);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "init", params, args, kw);
+
     PTR_AS(YogThread, self)->block = block;
-    return self;
+
+    RETURN(env, self);
 }
 
 void
@@ -414,6 +420,9 @@ get_recursive_stack(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal blo
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal stack = YUNDEF;
     PUSH_LOCAL(env, stack);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_recursive_stack", params, args, kw);
 
     ensure_recursive_stack(env, self);
     stack = PTR_AS(YogThread, self)->recursive_stack;

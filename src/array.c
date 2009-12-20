@@ -6,6 +6,7 @@
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/gc.h"
+#include "yog/get_args.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/string.h"
@@ -229,8 +230,8 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal val = YUNDEF;
     PUSH_LOCALS3(env, array, right, val);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, IS_PTR(right), "operand is not Array");
+    YogCArg params[] = { { "a", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "+", params, args, kw);
     YOG_ASSERT(env, IS_OBJ_OF(env, right, cArray), "operand is not Array");
 
     array = YogArray_new(env);
@@ -244,8 +245,14 @@ static YogVal
 lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal elem = YogArray_at(env, args, 0);
+    YogVal elem = YUNDEF;
+    PUSH_LOCAL(env, elem);
+
+    YogCArg params[] = { { "obj", &elem }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "<<", params, args, kw);
+
     YogArray_push(env, self, elem);
+
     RETURN(env, self);
 }
 
@@ -253,20 +260,24 @@ static YogVal
 assign_subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
+    YogVal index = YUNDEF;
     YogVal val = YUNDEF;
     YogVal body = YUNDEF;
-    PUSH_LOCALS2(env, val, body);
+    PUSH_LOCALS3(env, index, val, body);
 
-    uint_t index = VAL2INT(YogArray_at(env, args, 0));
+    YogCArg params[] = {
+        { "index", &index },
+        { "value", &val},
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "[]=", params, args, kw);
+
     uint_t size = YogArray_size(env, self);
-    if (size <= index) {
+    if (size <= VAL2INT(index)) {
         YogError_raise_IndexError(env, "array assignment index out of range");
     }
 
-    val = YogArray_at(env, args, 1);
-
     body = PTR_AS(YogArray, self)->body;
-    PTR_AS(YogValArray, body)->items[index] = val;
+    PTR_AS(YogValArray, body)->items[VAL2INT(index)] = val;
 
     RETURN(env, self);
 }
@@ -275,8 +286,15 @@ static YogVal
 subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal index = YogArray_at(env, args, 0);
-    YogVal v = YogArray_at(env, self, VAL2INT(index));
+    YogVal index = YUNDEF;
+    YogVal v = YUNDEF;
+    PUSH_LOCALS2(env, index, v);
+
+    YogCArg params[] = { { "index", &index }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "[]", params, args, kw);
+
+    v = YogArray_at(env, self, VAL2INT(index));
+
     RETURN(env, v);
 }
 
@@ -284,9 +302,11 @@ static YogVal
 each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-
     YogVal arg[] = { YUNDEF };
     PUSH_LOCALSX(env, array_sizeof(arg), arg);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "each", params, args, kw);
 
     uint_t size = YogArray_size(env, self);
     uint_t i;
@@ -304,6 +324,9 @@ get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_size", params, args, kw);
 
     uint_t size = YogArray_size(env, self);
     /* TODO: cast causes overflow */
@@ -364,6 +387,9 @@ pop(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "pop", params, args, kw);
+
     obj = YogArray_pop(env, self);
 
     RETURN(env, obj);
@@ -376,7 +402,9 @@ push(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
-    obj = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "obj", &obj}, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "push", params, args, kw);
+
     YogArray_push(env, self, obj);
 
     RETURN(env, self);
