@@ -10,12 +10,13 @@
 #include <gmp.h>
 #include "yog/array.h"
 #include "yog/bignum.h"
+#include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/float.h"
 #include "yog/frame.h"
 #include "yog/function.h"
-#include "yog/class.h"
+#include "yog/get_args.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -33,8 +34,16 @@ static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_s", params, args, kw);
+
     CHECK_TYPE(self);
-    YogVal retval = YogString_new_format(env, "%d", VAL2INT(self));
+
+    retval = YogString_new_format(env, "%d", VAL2INT(self));
+
     RETURN(env, retval);
 }
 
@@ -59,7 +68,8 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "+", params, args, kw);
 
     if (IS_FIXNUM(right)) {
         result = YogVal_from_int(env, VAL2INT(self) + VAL2INT(right));
@@ -92,7 +102,8 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal right = YUNDEF;
     PUSH_LOCALS3(env, result, bignum, right);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "-", params, args, kw);
 
     if (IS_FIXNUM(right)) {
         result = YogVal_from_int(env, VAL2INT(self) - VAL2INT(right));
@@ -166,7 +177,8 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal right = YUNDEF;
     PUSH_LOCALS3(env, result, bignum, right);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "*", params, args, kw);
 
     if (IS_FIXNUM(right)) {
         result = multiply_int(env, self, right);
@@ -221,7 +233,8 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal right = YUNDEF;
     PUSH_LOCALS3(env, result, bignum, right);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "/", params, args, kw);
 
     if (IS_BOOL(right) || IS_NIL(right) || IS_SYMBOL(right)) {
         YogError_raise_binop_type_error(env, self, right, "/");
@@ -271,7 +284,8 @@ modulo(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal right = YUNDEF;
     PUSH_LOCALS3(env, result, bignum, right);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "%", params, args, kw);
 
     if (IS_FIXNUM(right)) {
         result = INT2VAL(VAL2INT(self) % VAL2INT(right));
@@ -298,7 +312,8 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal right = YUNDEF;
     PUSH_LOCALS3(env, result, bignum, right);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "//", params, args, kw);
 
     if (IS_BOOL(right) || IS_NIL(right) || IS_SYMBOL(right)) {
         YogError_raise_binop_type_error(env, self, right, "//");
@@ -364,8 +379,9 @@ xor(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, right, retval);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "^", params, args, kw);
+
     if (IS_FIXNUM(right)) {
         retval = INT2VAL(VAL2INT(self) ^ VAL2INT(right));
         RETURN(env, retval);
@@ -391,8 +407,9 @@ and(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, right, retval);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "&", params, args, kw);
+
     if (IS_FIXNUM(right)) {
         retval = INT2VAL(VAL2INT(self) & VAL2INT(right));
         RETURN(env, retval);
@@ -418,8 +435,9 @@ or(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, right, retval);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "|", params, args, kw);
+
     if (IS_FIXNUM(right)) {
         retval = INT2VAL(VAL2INT(self) | VAL2INT(right));
         RETURN(env, retval);
@@ -445,7 +463,9 @@ rshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, right, retval);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, ">>", params, args, kw);
+
     if (!IS_FIXNUM(right)) {
         YogError_raise_binop_type_error(env, self, right, ">>");
     }
@@ -468,7 +488,9 @@ lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, right, retval);
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "<<", params, args, kw);
+
     if (!IS_FIXNUM(right)) {
         YogError_raise_binop_type_error(env, self, right, "<<");
     }
@@ -487,6 +509,10 @@ static YogVal
 times(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "times", params, args, kw);
+
     int_t n = VAL2INT(self);
 
     uint_t i = 0;
@@ -504,28 +530,52 @@ static YogVal
 negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal n = INT2VAL(- VAL2INT(self));
+    YogVal n = YUNDEF;
+    PUSH_LOCAL(env, n);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "-self", params, args, kw);
+
+    n = INT2VAL(- VAL2INT(self));
+
     RETURN(env, n);
 }
 
 static YogVal
 positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    return self;
+    SAVE_ARGS4(env, self, args, kw, block);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "+self", params, args, kw);
+
+    RETURN(env, self);
 }
 
 static YogVal
 not(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal n = INT2VAL(~ VAL2INT(self));
+    YogVal n = YUNDEF;
+    PUSH_LOCAL(env, n);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "~self", params, args, kw);
+
+    n = INT2VAL(~ VAL2INT(self));
+
     RETURN(env, n);
 }
 
 static YogVal
 hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    return self;
+    SAVE_ARGS4(env, self, args, kw, block);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "hash", params, args, kw);
+
+    RETURN(env, self);
 }
 
 static YogVal
@@ -580,7 +630,8 @@ power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YOG_ASSERT(env, IS_FIXNUM(self), "self is not Fixnum");
 
-    right = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "**", params, args, kw);
 
     if (IS_FIXNUM(right)) {
         retval = power_int(env, VAL2INT(self), VAL2INT(right));
@@ -606,16 +657,18 @@ static YogVal
 compare(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal obj = YUNDEF;
+    YogVal right = YUNDEF;
     YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, obj, retval);
+    PUSH_LOCALS2(env, right, retval);
 
-    obj = YogArray_at(env, args, 0);
-    if (!IS_FIXNUM(obj)) {
-        YogError_raise_comparison_type_error(env, self, obj);
+    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "<=>", params, args, kw);
+
+    if (!IS_FIXNUM(right)) {
+        YogError_raise_comparison_type_error(env, self, right);
     }
 
-    int_t n = VAL2INT(self) - VAL2INT(obj);
+    int_t n = VAL2INT(self) - VAL2INT(right);
     if (n < 0) {
         RETURN(env, INT2VAL(-1));
     }

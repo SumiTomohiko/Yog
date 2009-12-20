@@ -89,6 +89,28 @@ Built-in Classes
 
 .. class:: Fixnum
 
+   The super class of :class:`Object`.
+
+   .. method:: %(n)
+   .. method:: &(n)
+   .. method:: \*(n)
+   .. method:: \*\*(n)
+   .. method:: +(n)
+   .. method:: +self()
+   .. method:: -(n)
+   .. method:: -self()
+   .. method:: /(n)
+   .. method:: //(n)
+   .. method:: <<(n)
+   .. method:: <=>(n)
+   .. method:: >>(n)
+   .. method:: ^(n)
+   .. method:: hash()
+   .. method:: times(&block)
+   .. method:: to_s()
+   .. method:: \|(n)
+   .. method:: ~self()
+
 .. class:: Object
 
 .. class:: Set
