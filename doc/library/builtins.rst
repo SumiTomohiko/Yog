@@ -331,4 +331,12 @@ Built-in Functions
    The Yog interpreter uses this function internally.
    If you want to raise an exception, use the :keyword:`raise` statement.
 
+Built-in Objects
+----------------
+
+.. data:: ARGV
+
+   The :class:`Array` object containing command line parameters.
+   :data:`ARGV`\[0\] is a script file name.
+
 .. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
