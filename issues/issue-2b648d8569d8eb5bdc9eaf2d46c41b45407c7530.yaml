@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove keywords.inc
+desc: keywords.inc is automatically generated.
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-21 10:52:10.355472 Z
+references: []
+
+id: 2b648d8569d8eb5bdc9eaf2d46c41b45407c7530
+log_events: 
+- - 2009-12-21 10:52:11.138488 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

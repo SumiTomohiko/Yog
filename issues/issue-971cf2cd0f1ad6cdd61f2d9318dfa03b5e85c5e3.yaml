@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Improve POP_LOCAL
+desc: |-
+  In current implementation, PUSH_LOCALSn (4 < n) are two PUSH_LOCALSx.
+  This needs two POP_LOCALS call.
+  It is no good.
+  For any implementation of PUSH_LOCALSn, POP_LOCALS must be one.
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-21 10:55:38.635799 Z
+references: []
+
+id: 971cf2cd0f1ad6cdd61f2d9318dfa03b5e85c5e3
+log_events: 
+- - 2009-12-21 10:55:39.711982 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

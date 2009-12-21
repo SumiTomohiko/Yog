@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove parser.h
+desc: parser.h is automatically generated.
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-21 10:51:41.907031 Z
+references: []
+
+id: 1ea9450d83a3894e1898cf45d4cb0dff5dce3899
+log_events: 
+- - 2009-12-21 10:51:42.679514 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
