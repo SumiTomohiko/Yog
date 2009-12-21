@@ -53,7 +53,8 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
             break;
         }
     case FRAME_METHOD:
-    case FRAME_NAME:
+    case FRAME_PKG:
+    case FRAME_CLASS:
         {
             YogVal code = PTR_AS(YogScriptFrame, frame)->code;
             if (PTR_AS(YogCode, code)->func_name == name) {
@@ -110,7 +111,8 @@ init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
                 break;
             }
         case FRAME_METHOD:
-        case FRAME_NAME:
+        case FRAME_PKG:
+        case FRAME_CLASS:
             {
                 YogVal code = PTR_AS(YogScriptFrame, frame)->code;
                 uint_t lineno = 0;

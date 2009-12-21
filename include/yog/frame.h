@@ -6,7 +6,8 @@
 enum YogFrameType {
     FRAME_C,
     FRAME_METHOD,
-    FRAME_NAME,
+    FRAME_PKG,
+    FRAME_CLASS,
     FRAME_FINISH,
 };
 
@@ -73,18 +74,20 @@ typedef struct YogNameFrame YogNameFrame;
 #define NAME_VARS(v)    (NAME_FRAME(v)->vars)
 
 #define YogClassFrame       YogNameFrame
+#define YogPackageFrame     YogNameFrame
 
 struct YogMethodFrame {
     struct YogScriptFrame base;
     YogVal vars;
+
+    YogVal klass;   /* class defining this method */
+    ID name;
 };
 
 typedef struct YogMethodFrame YogMethodFrame;
 
 #define METHOD_FRAME(v)     PTR_AS(YogMethodFrame, (v))
 #define LOCAL_VARS(f)       (METHOD_FRAME(f)->vars)
-
-#define YogClassFrame_new       YogNameFrame_new
 
 /* PROTOTYPE_START */
 
@@ -96,10 +99,11 @@ extern "C" {
 #endif
 /* src/frame.c */
 YogVal YogCFrame_new(YogEnv*);
+YogVal YogClassFrame_new(YogEnv*);
 YogVal YogFinishFrame_new(YogEnv*);
 YogVal YogMethodFrame_new(YogEnv*);
-YogVal YogNameFrame_new(YogEnv*);
 YogVal YogOuterVars_new(YogEnv*, uint_t);
+YogVal YogPackageFrame_new(YogEnv*);
 YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);
 void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
 

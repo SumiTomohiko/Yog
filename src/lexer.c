@@ -1,8 +1,8 @@
-#include <ctype.h>
 #include "config.h"
 #if defined(HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif
+#include <ctype.h>
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif

@@ -82,12 +82,17 @@ inst make_block2
 }
 
 inst make_function
-()
+(ID name)
 (code)
 (f)
 {
     f = YogFunction_new(env);
     setup_script_function(env, f, code);
+    PTR_AS(YogFunction, f)->name = name;
+    if (PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_CLASS) {
+        YogVal klass = PTR_AS(YogNameFrame, CUR_FRAME)->self;
+        PTR_AS(YogFunction, f)->klass = klass;
+    }
 }
 
 inst call_function
@@ -146,6 +151,35 @@ inst load_local
     val = PTR_AS(YogValArray, vars)->items[index];
 }
 
+inst load_super
+()
+()
+(val)
+{
+    YogVal klass = YUNDEF;
+    YogVal super = YUNDEF;
+    YogVal attr = YUNDEF;
+    YogVal self = YUNDEF;
+    YogVal c = YUNDEF;
+    PUSH_LOCALS5(env, klass, super, attr, self, c);
+
+    if (PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_METHOD) {
+        klass = PTR_AS(YogMethodFrame, CUR_FRAME)->klass;
+        super = PTR_AS(YogClass, klass)->super;
+        ID name = PTR_AS(YogMethodFrame, CUR_FRAME)->name;
+        attr = YogClass_get_attr(env, super, name);
+        if (IS_UNDEF(attr)) {
+            YogError_raise_AttributeError(env, "super not found");
+        }
+        self = PTR_AS(YogValArray, LOCAL_VARS(CUR_FRAME))->items[0];
+        c = YogVal_get_class(env, self);
+        val = YogVal_get_descr(env, attr, self, c);
+    }
+
+    POP_LOCALS(env);
+    POP_LOCALS(env);
+}
+
 inst jump
 (pc_t dest)
 ()
@@ -194,7 +228,7 @@ inst make_module
     PTR_AS(YogModule, module)->name = name;
     PUSH(module);
 
-    frame = YogNameFrame_new(env);
+    frame = YogClassFrame_new(env);
     setup_script_frame(env, frame, code);
     PTR_AS(YogNameFrame, frame)->vars = PTR_AS(YogObj, module)->attrs;
     PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;

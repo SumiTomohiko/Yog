@@ -26,6 +26,9 @@ struct YogFunction {
     YogVal outer_vars;
     YogVal frame_to_long_return;
     YogVal frame_to_long_break;
+
+    YogVal klass;
+    ID name;
 };
 
 typedef struct YogFunction YogFunction;

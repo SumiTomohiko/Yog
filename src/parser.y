@@ -152,6 +152,8 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(subscript.prefix);
         KEEP(subscript.index);
         break;
+    case NODE_SUPER:
+        break;
     case NODE_VARIABLE:
         break;
     case NODE_WHILE:
@@ -189,6 +191,18 @@ Module_new(YogEnv* env, uint_t lineno, ID name, YogVal stmts)
     PTR_AS(YogNode, module)->u.module.stmts = stmts;
 
     RETURN(env, module);
+}
+
+static YogVal
+Super_new(YogEnv* env, uint_t lineno)
+{
+    SAVE_LOCALS(env);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    node = YogNode_new(env, NODE_SUPER, lineno);
+
+    RETURN(env, node);
 }
 
 static YogVal
@@ -1480,6 +1494,10 @@ atom(A) ::= TRUE(B). {
 atom(A) ::= FALSE(B). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Literal_new(env, lineno, YFALSE);
+}
+atom(A) ::= SUPER(B). {
+    uint_t lineno = TOKEN_LINENO(B);
+    A = Super_new(env, lineno);
 }
 atom(A) ::= LINE(B). {
     uint_t lineno = PTR_AS(YogToken, B)->lineno;

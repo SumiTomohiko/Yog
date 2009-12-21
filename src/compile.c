@@ -62,6 +62,7 @@ struct AstVisitor {
     VisitNode visit_set;
     VisitNode visit_stmt;
     VisitNode visit_subscript;
+    VisitNode visit_super;
     VisitNode visit_variable;
     VisitNode visit_while;
 };
@@ -418,6 +419,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
         break;
     case NODE_RAISE:
         VISIT(raise);
+        break;
+    case NODE_SUPER:
+        VISIT(super);
         break;
     default:
         YOG_BUG(env, "Unknown node type (0x%08x)", NODE(node)->type);
@@ -1003,6 +1007,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_stmt = visit_node;
     visitor->visit_stmts = scan_var_visit_stmts;
     visitor->visit_subscript = scan_var_visit_subscript;
+    visitor->visit_super = NULL;
     visitor->visit_variable = scan_var_visit_variable;
     visitor->visit_while = scan_var_visit_while;
 }
@@ -2077,7 +2082,8 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     uint_t lineno = NODE(node)->lineno;
     add_push_const(env, data, code, lineno);
 
-    CompileData_add_make_function(env, data, lineno);
+    ID func_name = NODE(node)->u.funcdef.name;
+    CompileData_add_make_function(env, data, lineno, func_name);
     compile_decorators_call(env, visitor, decorators, data);
 
     ID name = NODE(node)->u.funcdef.name;
@@ -2873,6 +2879,15 @@ compile_visit_return(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
+compile_visit_super(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    uint_t lineno = NODE(node)->lineno;
+    CompileData_add_load_super(env, data, lineno);
+    RETURN_VOID(env);
+}
+
+static void
 compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -3071,6 +3086,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_stmt = visit_node;
     visitor->visit_stmts = compile_visit_stmts;
     visitor->visit_subscript = compile_visit_subscript;
+    visitor->visit_super = compile_visit_super;
     visitor->visit_variable = compile_visit_variable;
     visitor->visit_while = compile_visit_while;
 }

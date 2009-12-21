@@ -49,6 +49,7 @@ enum YogNodeType {
     NODE_RETURN,
     NODE_SET,
     NODE_SUBSCRIPT,
+    NODE_SUPER,
     NODE_VARIABLE,
     NODE_VAR_PARAM,
     NODE_WHILE,

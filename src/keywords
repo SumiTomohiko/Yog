@@ -30,6 +30,7 @@ nil, TK_NIL
 nonlocal, TK_NONLOCAL
 raise, TK_RAISE
 return, TK_RETURN
+super, TK_SUPER
 true, TK_TRUE
 try, TK_TRY
 while, TK_WHILE

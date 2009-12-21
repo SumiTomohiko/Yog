@@ -70,6 +70,7 @@ YogMethodFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* 
 
     YogMethodFrame* frame = PTR_AS(YogMethodFrame, ptr);
     KEEP(vars);
+    KEEP(klass);
 }
 
 #undef KEEP
@@ -124,18 +125,27 @@ YogScriptFrame_init(YogVal frame, YogFrameType type)
 }
 
 static void
-YogNameFrame_init(YogVal frame)
+YogNameFrame_init(YogVal frame, YogFrameType type)
 {
-    YogScriptFrame_init(frame, FRAME_NAME);
+    YogScriptFrame_init(frame, type);
     PTR_AS(YogNameFrame, frame)->self = YUNDEF;
     PTR_AS(YogNameFrame, frame)->vars = YUNDEF;
 }
 
 YogVal
-YogNameFrame_new(YogEnv* env)
+YogClassFrame_new(YogEnv* env)
 {
-    YogVal frame = ALLOC_OBJ(env, YogNameFrame_keep_children, NULL, YogNameFrame);
-    YogNameFrame_init(frame);
+    YogVal frame = ALLOC_OBJ(env, YogNameFrame_keep_children, NULL, YogClassFrame);
+    YogNameFrame_init(frame, FRAME_CLASS);
+
+    return frame;
+}
+
+YogVal
+YogPackageFrame_new(YogEnv* env)
+{
+    YogVal frame = ALLOC_OBJ(env, YogNameFrame_keep_children, NULL, YogPackageFrame);
+    YogNameFrame_init(frame, FRAME_PKG);
 
     return frame;
 }
@@ -145,6 +155,7 @@ YogMethodFrame_init(YogVal frame)
 {
     YogScriptFrame_init(frame, FRAME_METHOD);
     PTR_AS(YogMethodFrame, frame)->vars = YUNDEF;
+    PTR_AS(YogMethodFrame, frame)->klass = YUNDEF;
 }
 
 YogVal

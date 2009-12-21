@@ -192,6 +192,7 @@ YogFunction_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
     KEEP(outer_vars);
     KEEP(frame_to_long_return);
     KEEP(frame_to_long_break);
+    KEEP(klass);
 #undef KEEP
 }
 
@@ -225,6 +226,8 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
     frame = YogMethodFrame_new(env);
     setup_script_frame(env, frame, code);
     PTR_AS(YogMethodFrame, frame)->vars = vars;
+    PTR_AS(YogMethodFrame, frame)->klass = PTR_AS(YogFunction, callee)->klass;
+    PTR_AS(YogMethodFrame, frame)->name = PTR_AS(YogFunction, callee)->name;
     PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogFunction, callee)->globals;
     PTR_AS(YogScriptFrame, frame)->outer_vars = outer_vars;
     PTR_AS(YogScriptFrame, frame)->frame_to_long_return = PTR_AS(YogFunction, callee)->frame_to_long_return;
@@ -273,6 +276,7 @@ YogFunction_init(YogEnv* env, YogVal self, YogVal klass)
     PTR_AS(YogFunction, self)->outer_vars = YUNDEF;
     PTR_AS(YogFunction, self)->frame_to_long_return = YUNDEF;
     PTR_AS(YogFunction, self)->frame_to_long_break = YUNDEF;
+    PTR_AS(YogFunction, self)->klass = YUNDEF;
 }
 
 static YogVal

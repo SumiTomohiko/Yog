@@ -260,7 +260,8 @@ detect_orphan(YogEnv* env, int status, YogVal target_frame)
         YogFrameType type = PTR_AS(YogFrame, frame)->type;
         switch (type) {
         case FRAME_METHOD:
-        case FRAME_NAME:
+        case FRAME_PKG:
+        case FRAME_CLASS:
             if (frame != target_frame) {
                 continue;
             }
@@ -333,7 +334,8 @@ long_jump_current_frame(YogEnv* env)
         YogFrameType type = PTR_AS(YogFrame, frame)->type;
         switch (type) {
         case FRAME_METHOD:
-        case FRAME_NAME:
+        case FRAME_PKG:
+        case FRAME_CLASS:
             break;
         case FRAME_C:
             env->frame = frame;
@@ -437,7 +439,8 @@ YogEval_mainloop(YogEnv* env)
                         YOG_BUG(env, "no destination to longjmp");
                         break;
                     case FRAME_METHOD:
-                    case FRAME_NAME:
+                    case FRAME_PKG:
+                    case FRAME_CLASS:
                         {
                             YogVal thread = env->thread;
                             if (frame == PTR_AS(YogThread, thread)->frame_to_long_jump) {
@@ -659,7 +662,7 @@ YogEval_eval_package(YogEnv* env, YogVal pkg, YogVal code)
 
     YogEval_push_finish_frame(env);
 
-    frame = YogNameFrame_new(env);
+    frame = YogPackageFrame_new(env);
     setup_script_frame(env, frame, code);
     PTR_AS(YogNameFrame, frame)->self = pkg;
     attrs = PTR_AS(YogObj, pkg)->attrs;
