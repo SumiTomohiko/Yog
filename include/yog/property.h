@@ -13,6 +13,8 @@ struct YogProperty {
 
 typedef struct YogProperty YogProperty;
 
+#define TYPE_PROPERTY   ((type_t)YogProperty_new)
+
 /* PROTOTYPE_START */
 
 /**

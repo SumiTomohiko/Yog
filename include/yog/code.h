@@ -54,6 +54,8 @@ struct YogCode {
 
 typedef struct YogCode YogCode;
 
+#define TYPE_CODE   ((type_t)YogCode_new)
+
 #define CODE(v)     PTR_AS(YogCode, (v))
 
 #include "yog/opcodes.h"

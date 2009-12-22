@@ -187,7 +187,7 @@ YogError_print_stacktrace(YogEnv* env)
         st = PTR_AS(YogStackTraceEntry, st)->lower;
     }
 
-    klass = YOGBASICOBJ(exc)->klass;
+    klass = BASIC_OBJ(exc)->klass;
     ID id = PTR_AS(YogClass, klass)->name;
     name = ID2NAME(id);
 #undef ID2NAME

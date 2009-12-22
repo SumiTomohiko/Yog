@@ -14,6 +14,12 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+#define CHECK_SELF_TYPE(env, self)  do { \
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_FILE)) { \
+        YogError_raise_TypeError((env), "self must be File"); \
+    } \
+} while (0)
+
 static YogVal
 allocate(YogEnv* env, YogVal klass)
 {
@@ -22,7 +28,7 @@ allocate(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, file);
 
     file = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, YogFile);
-    YogBasicObj_init(env, file, 0, klass);
+    YogBasicObj_init(env, file, TYPE_FILE, 0, klass);
     PTR_AS(YogFile, file)->fp = NULL;
 
     RETURN(env, file);
@@ -49,7 +55,10 @@ write(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "s", &s }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "write", params, args, kw);
-    YOG_ASSERT(env, IS_OBJ_OF(env, s, cString), "argument is not String");
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_PTR(s) || (BASIC_OBJ_TYPE(s) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "first argument must be String");
+    }
 
     fputs(STRING_CSTR(s), PTR_AS(YogFile, self)->fp);
 
@@ -65,6 +74,7 @@ read(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "read", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     s = YogString_new(env);
 
@@ -95,6 +105,7 @@ close(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "close", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     do_close(env, self);
 
@@ -110,6 +121,7 @@ readline(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "readline", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     FILE* fp = PTR_AS(YogFile, self)->fp;
     char buffer[4096];
@@ -142,8 +154,15 @@ open(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "path", &path }, { "mode", &mode }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "open", params, args, kw);
-    YOG_ASSERT(env, IS_OBJ_OF(env, path, cString), "invalid path type");
-    YOG_ASSERT(env, IS_OBJ_OF(env, mode, cString), "invalid mode type");
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_CLASS)) {
+        YogError_raise_TypeError(env, "self must be Class");
+    }
+    if (!IS_PTR(path) || (BASIC_OBJ_TYPE(path) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "path must be String");
+    }
+    if (!IS_PTR(mode) || (BASIC_OBJ_TYPE(mode) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "mode must be String");
+    }
 
     file = YogFile_new(env);
 

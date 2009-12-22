@@ -11,6 +11,8 @@ struct YogDict {
 
 typedef struct YogDict YogDict;
 
+#define TYPE_DICT   ((type_t)YogDict_new)
+
 /* PROTOTYPE_START */
 
 /**

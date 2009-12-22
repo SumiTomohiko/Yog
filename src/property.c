@@ -26,7 +26,7 @@ YogProperty_new(YogEnv* env)
     PUSH_LOCAL(env, prop);
 
     prop = ALLOC_OBJ(env, keep_children, NULL, YogProperty);
-    YogBasicObj_init(env, prop, 0, env->vm->cProperty);
+    YogBasicObj_init(env, prop, TYPE_PROPERTY, 0, env->vm->cProperty);
     PTR_AS(YogProperty, prop)->getter = YUNDEF;
     PTR_AS(YogProperty, prop)->setter = YUNDEF;
 

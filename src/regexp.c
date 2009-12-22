@@ -1,14 +1,21 @@
 #include <string.h>
 #include "oniguruma.h"
 #include "yog/array.h"
+#include "yog/class.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/frame.h"
 #include "yog/gc.h"
-#include "yog/class.h"
+#include "yog/get_args.h"
 #include "yog/regexp.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
+
+#define CHECK_SELF_TYPE(env, self)  do { \
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_MATCH)) { \
+        YogError_raise_TypeError(env, "self must be Match"); \
+    } \
+} while (0)
 
 static void
 YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
@@ -36,7 +43,7 @@ YogMatch_new(YogEnv* env, YogVal str, YogVal regexp, OnigRegion* onig_region)
     SAVE_ARGS2(env, str, regexp);
 
     YogVal match = ALLOC_OBJ(env, YogMatch_keep_children, YogMatch_finalize, YogMatch);
-    YogBasicObj_init(env, match, 0, env->vm->cMatch);
+    YogBasicObj_init(env, match, TYPE_MATCH, 0, env->vm->cMatch);
     PTR_AS(YogMatch, match)->str = str;
     PTR_AS(YogMatch, match)->regexp = regexp;
     PTR_AS(YogMatch, match)->onig_region = onig_region;
@@ -71,7 +78,7 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
     }
 
     YogVal regexp = ALLOC_OBJ(env, YogBasicObj_keep_children, YogRegexp_finalize, YogRegexp);
-    YogBasicObj_init(env, regexp, 0, env->vm->cRegexp);
+    YogBasicObj_init(env, regexp, TYPE_REGEXP, 0, env->vm->cRegexp);
     PTR_AS(YogRegexp, regexp)->onig_regexp = onig_regexp;
 
     return regexp;
@@ -87,7 +94,7 @@ static int_t
 group2index(YogEnv* env, YogMatch* match, YogVal arg)
 {
     int_t index = 0;
-    if (IS_PTR(arg) && IS_OBJ_OF(env, arg, cString)) {
+    if (IS_PTR(arg) && (BASIC_OBJ_TYPE(arg) == TYPE_STRING)) {
         YogString* s = PTR_AS(YogString, arg);
         OnigRegex onig_regexp = PTR_AS(YogRegexp, match->regexp)->onig_regexp;
         YogVal body = s->body;
@@ -115,14 +122,12 @@ static YogVal
 group(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal arg0 = YUNDEF;
+    YogVal arg0 = YNIL;
     PUSH_LOCAL(env, arg0);
-    if (0 < YogArray_size(env, args)) {
-        arg0 = YogArray_at(env, args, 0);
-    }
-    else {
-        arg0 = YNIL;
-    }
+
+    YogCArg params[] = { { "|", NULL }, { "group", &arg0 }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "group", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     YogMatch* match = PTR_AS(YogMatch, self);
     int_t index = group2index(env, match, arg0);
@@ -165,14 +170,12 @@ static YogVal
 start(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal arg0 = YUNDEF;
+    YogVal arg0 = YNIL;
     PUSH_LOCAL(env, arg0);
-    if (0 < YogArray_size(env, args)) {
-        arg0 = YogArray_at(env, args, 0);
-    }
-    else {
-        arg0 = YNIL;
-    }
+
+    YogCArg params[] = { { "|", NULL }, { "group", &arg0 }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "start", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     YogMatch* match = PTR_AS(YogMatch, self);
     int_t index = group2index(env, match, arg0);
@@ -192,14 +195,12 @@ static YogVal
 end(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal arg0 = YUNDEF;
+    YogVal arg0 = YNIL;
     PUSH_LOCAL(env, arg0);
-    if (0 < YogArray_size(env, args)) {
-        arg0 = YogArray_at(env, args, 0);
-    }
-    else {
-        arg0 = YNIL;
-    }
+
+    YogCArg params[] = { { "|", NULL }, { "group", &arg0 }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "end", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     YogMatch* match = PTR_AS(YogMatch, self);
     int_t index = group2index(env, match, arg0);

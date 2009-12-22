@@ -5,16 +5,16 @@
 #include "yog/yog.h"
 
 static void
-YogBasicBlock_init(YogEnv* env, YogVal block, YogVal klass)
+YogBasicBlock_init(YogEnv* env, YogVal block, type_t type, YogVal klass)
 {
-    YogBasicObj_init(env, block, 0, klass);
+    YogBasicObj_init(env, block, type, 0, klass);
     PTR_AS(YogBasicBlock, block)->code = YUNDEF;
 }
 
 static void
 YogPackageBlock_init(YogEnv* env, YogVal block)
 {
-    YogBasicBlock_init(env, block, env->vm->cPackageBlock);
+    YogBasicBlock_init(env, block, TYPE_PACKAGE_BLOCK, env->vm->cPackageBlock);
 
     PTR_AS(YogPackageBlock, block)->self = YUNDEF;
     PTR_AS(YogPackageBlock, block)->vars = YUNDEF;
@@ -72,7 +72,7 @@ YogBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static void
 YogBlock_init(YogEnv* env, YogVal block)
 {
-    YogBasicBlock_init(env, block, YNIL);
+    YogBasicBlock_init(env, block, TYPE_BLOCK, YNIL);
 
     PTR_AS(YogBlock, block)->locals = YUNDEF;
     PTR_AS(YogBlock, block)->outer_vars = YUNDEF;

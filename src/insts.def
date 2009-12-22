@@ -396,7 +396,7 @@ inst print_top
 ()
 {
     YogVal s = YogEval_call_method(env, val, "to_s", 0, NULL);
-    YOG_ASSERT(env, IS_OBJ_OF(env, s, cString), "object isn't string");
+    YOG_ASSERT(env, IS_PTR(s) && (BASIC_OBJ_TYPE(s) == TYPE_STRING), "object isn't string");
     printf("=> %s\n", STRING_CSTR(s));
 }
 

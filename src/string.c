@@ -14,27 +14,28 @@
 #include "oniguruma.h"
 #include "yog/array.h"
 #include "yog/bignum.h"
+#include "yog/class.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/function.h"
 #include "yog/gc.h"
-#include "yog/class.h"
+#include "yog/get_args.h"
 #include "yog/misc.h"
 #include "yog/regexp.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+#define CHECK_SELF_TYPE(env, self)  do { \
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRING)) { \
+        YogError_raise_TypeError((env), "self must be String"); \
+    } \
+} while (0)
+
 #if defined(_alloca) && !defined(alloca)
 #   define alloca   _alloca
 #endif
-
-#define CHECK_INT(v, msg)   do { \
-    if (!IS_FIXNUM(v)) { \
-        YogError_raise_TypeError(env, msg); \
-    } \
-} while (0)
 
 ID
 YogString_intern(YogEnv* env, YogVal s)
@@ -181,7 +182,7 @@ allocate(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, klass);
 
     YogVal obj = ALLOC_OBJ(env, YogString_keep_children, NULL, YogString);
-    YogBasicObj_init(env, obj, 0, klass);
+    YogBasicObj_init(env, obj, TYPE_STRING, 0, klass);
 
     PTR_AS(YogString, obj)->encoding = YUNDEF;
     PTR_AS(YogString, obj)->size = 0;
@@ -370,12 +371,15 @@ gsub(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal to = YUNDEF;
     PUSH_LOCALS3(env, substr, s, to);
 
-    substr = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, IS_PTR(substr), "invalid substring");
-    YOG_ASSERT(env, IS_OBJ_OF(env, substr, cString), "invalid substring klass");
-    to = YogArray_at(env, args, 1);
-    YOG_ASSERT(env, IS_PTR(to), "invalid string");
-    YOG_ASSERT(env, IS_OBJ_OF(env, to, cString), "invalid string klass");
+    YogCArg params[] = { { "substr", &substr }, { "to", &to }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "gsub", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_PTR(substr) || (BASIC_OBJ_TYPE(substr) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "substring must be String");
+    }
+    if (!IS_PTR(to) || (BASIC_OBJ_TYPE(to) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "replacing string must be String");
+    }
 
 #define ADD_STR(to)    do { \
     uint_t size = to - from; \
@@ -401,18 +405,27 @@ gsub(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 static YogVal
 to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    return self;
+    SAVE_ARGS4(env, self, args, kw, block);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_s", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
+    RETURN(env, self);
 }
 
 static YogVal
 add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal arg = YogArray_at(env, args, 0);
+    YogVal arg = YUNDEF;
     YogVal klass = YUNDEF;
     PUSH_LOCALS2(env, arg, klass);
 
-    if (!IS_PTR(arg) || !IS_OBJ_OF(env, arg, cString)) {
+    YogCArg params[] = { { "s", &arg }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "+", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_PTR(arg) || (BASIC_OBJ_TYPE(arg) != TYPE_STRING)) {
         klass = YogVal_get_class(env, arg);
         YogVal name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
         YogError_raise_TypeError(env, "can't convert '%s' object to string implicitly", STRING_CSTR(name));
@@ -468,10 +481,14 @@ static YogVal
 multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal arg = YogArray_at(env, args, 0);
+    YogVal arg = YUNDEF;
     YogVal klass = YUNDEF;
     YogVal s = YUNDEF;
     PUSH_LOCALS3(env, arg, klass, s);
+
+    YogCArg params[] = { { "n", &arg }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "*", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (!IS_FIXNUM(arg)) {
         klass = YogVal_get_class(env, arg);
@@ -491,7 +508,12 @@ lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal arg = YUNDEF;
     PUSH_LOCAL(env, arg);
 
-    arg = YogArray_at(env, args, 0);
+    YogCArg params[] = { { "s", &arg }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "<<", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_PTR(arg) || (BASIC_OBJ_TYPE(arg) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "operand must be String");
+    }
 
     uint_t size1 = YogString_size(env, self);
     uint_t size2 = YogString_size(env, arg);
@@ -535,7 +557,13 @@ subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     YogVal body = YUNDEF;
     PUSH_LOCALS3(env, arg, retval, body);
-    CHECK_INT(arg, "string index must be Fixnum");
+
+    YogCArg params[] = { { "index", &arg }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "[]", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_FIXNUM(arg)) {
+        YogError_raise_TypeError(env, "string index must be Fixnum");
+    }
 
     retval = YogString_new(env);
     YogString* s = PTR_AS(YogString, self);
@@ -564,10 +592,22 @@ static YogVal
 assign_subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal arg0 = YogArray_at(env, args, 0);
-    YogVal arg1 = YogArray_at(env, args, 1);
+    YogVal arg0 = YUNDEF;
+    YogVal arg1 = YUNDEF;
     PUSH_LOCALS2(env, arg0, arg1);
-    CHECK_INT(arg0, "string index must be Fixnum");
+
+    YogCArg params[] = {
+        { "index", &arg0 },
+        { "value", &arg1 },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "[]=", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_FIXNUM(arg0)) {
+        YogError_raise_TypeError(env, "string index must be Fixnum");
+    }
+    if (!IS_PTR(arg1) || (BASIC_OBJ_TYPE(arg1) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "value must be String");
+    }
 
     YogString* s = PTR_AS(YogString, self);
     int_t index = VAL2INT(arg0);
@@ -624,7 +664,15 @@ static YogVal
 match(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal arg = YogArray_at(env, args, 0);
+    YogVal arg = YUNDEF;
+    PUSH_LOCAL(env, arg);
+
+    YogCArg params[] = { { "regexp", &arg }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "=~", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_PTR(arg) || (BASIC_OBJ_TYPE(arg) != TYPE_REGEXP)) {
+        YogError_raise_TypeError(env, "operand must be Regexp");
+    }
 
     YogString* s = PTR_AS(YogString, self);
     YogRegexp* regexp = PTR_AS(YogRegexp, arg);
@@ -646,6 +694,10 @@ each_line(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal arg[] = { YUNDEF };
     PUSH_LOCALSX(env, array_sizeof(arg), arg);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "each_line", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     uint_t i = 0;
     do {
@@ -684,6 +736,10 @@ each_byte(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal arg[] = { YUNDEF };
     PUSH_LOCALSX(env, array_sizeof(arg), arg);
 
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "each_byte", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
     uint_t i = 0;
     do {
         YogString* s = PTR_AS(YogString, self);
@@ -710,6 +766,10 @@ each_char(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal arg[] = { YUNDEF };
     PUSH_LOCALSX(env, array_sizeof(arg), arg);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "each_char", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     uint_t i = 0;
     do {
@@ -753,12 +813,14 @@ static YogVal
 hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
-    YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
 
-    retval = INT2VAL(YogString_hash(env, self));
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "hash", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
-    RETURN(env, retval);
+    int_t hash = YogString_hash(env, self);
+
+    RETURN(env, INT2VAL(hash));
 }
 
 char*
@@ -962,8 +1024,10 @@ compare(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, obj, retval);
 
-    obj = YogArray_at(env, args, 0);
-    if (!IS_PTR(obj) || !IS_OBJ_OF(env, obj, cString)) {
+    YogCArg params[] = { { "s", &obj}, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "<<", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_STRING)) {
         YogError_raise_comparison_type_error(env, self, obj);
     }
 

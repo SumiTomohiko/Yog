@@ -21,6 +21,8 @@ struct YogBlock {
     YogVal globals;
 };
 
+#define TYPE_BLOCK  ((type_t)YogBlock_new)
+
 #define BLOCK(obj)  ((YogBlock*)(obj))
 
 typedef struct YogBlock YogBlock;
@@ -30,6 +32,8 @@ struct YogPackageBlock {
     YogVal self;
     YogVal vars;
 };
+
+#define TYPE_PACKAGE_BLOCK  ((type_t)YogPackageBlock_new)
 
 #define PACKAGE_BLOCK(obj)  ((YogPackageBlock*)obj)
 

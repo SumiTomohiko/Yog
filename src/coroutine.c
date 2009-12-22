@@ -93,6 +93,8 @@ struct Coroutine {
 
 typedef struct Coroutine Coroutine;
 
+#define TYPE_COROUTINE  ((type_t)Coroutine_init)
+
 #if !defined(_WIN32)
 static void
 switch_context(YogEnv* env, SwitchContext* to, SwitchContext* cont)
@@ -312,7 +314,7 @@ static void
 Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
 {
     SAVE_ARGS2(env, self, klass);
-    YogBasicObj_init(env, self, 0, klass);
+    YogBasicObj_init(env, self, TYPE_COROUTINE, 0, klass);
 
 #define STACK_SIZE  (2048 * 4096)
 #if defined(_WIN32)

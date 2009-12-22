@@ -29,7 +29,7 @@ allocate(YogEnv* env, YogVal klass)
     SAVE_ARG(env, klass);
 
     YogVal exc = ALLOC_OBJ(env, keep_children, NULL, YogException);
-    YogBasicObj_init(env, exc, 0, klass);
+    YogBasicObj_init(env, exc, TYPE_EXCEPTION, 0, klass);
     PTR_AS(YogException, exc)->stack_trace = YNIL;
     PTR_AS(YogException, exc)->message = YNIL;
 

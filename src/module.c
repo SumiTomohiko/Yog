@@ -15,7 +15,7 @@ allocate(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, module);
 
     module = ALLOC_OBJ(env, YogObj_keep_children, NULL, YogModule);
-    YogObj_init(env, module, 0, klass);
+    YogObj_init(env, module, TYPE_MODULE, 0, klass);
     PTR_AS(YogModule, module)->name = INVALID_ID;
 
     RETURN(env, module);

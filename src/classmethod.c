@@ -71,7 +71,7 @@ YogClassMethod_new(YogEnv* env)
     PUSH_LOCAL(env, classmethod);
 
     classmethod = ALLOC_OBJ(env, keep_children, NULL, YogClassMethod);
-    YogBasicObj_init(env, classmethod, 0, env->vm->cClassMethod);
+    YogBasicObj_init(env, classmethod, TYPE_CLASS_METHOD, 0, env->vm->cClassMethod);
     PTR_AS(YogClassMethod, classmethod)->f = YUNDEF;
 
     RETURN(env, classmethod);

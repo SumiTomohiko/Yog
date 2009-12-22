@@ -21,6 +21,12 @@
 #include "yog/thread.h"
 #include "yog/yog.h"
 
+#define CHECK_SELF_TYPE(env, self)  do { \
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_CLASS)) { \
+        YogError_raise_TypeError((env), "self must be Class"); \
+    } \
+} while (0)
+
 static YogVal
 call_get_attr(YogEnv* env, YogVal self, ID name)
 {
@@ -124,7 +130,7 @@ YogClass_allocate(YogEnv* env, YogVal klass)
     SAVE_ARG(env, klass);
 
     YogVal obj = ALLOC_OBJ(env, keep_children, NULL, YogClass);
-    YogObj_init(env, obj, 0, klass);
+    YogObj_init(env, obj, TYPE_CLASS, 0, klass);
 
     RETURN(env, obj);
 }
@@ -322,6 +328,8 @@ struct ModuleClass {
 
 typedef struct ModuleClass ModuleClass;
 
+#define TYPE_MODULE_CLASS   ((type_t)ModuleClass_new)
+
 static void
 ModuleClass_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
@@ -341,7 +349,7 @@ ModuleClass_new(YogEnv* env)
     PUSH_LOCAL(env, klass);
 
     klass = ALLOC_OBJ(env, ModuleClass_keep_children, NULL, ModuleClass);
-    YogObj_init(env, klass, 0, YUNDEF);
+    YogObj_init(env, klass, TYPE_MODULE_CLASS, 0, YUNDEF);
     PTR_AS(ModuleClass, klass)->super = YUNDEF;
     PTR_AS(ModuleClass, klass)->allocator = NULL;
 
@@ -351,12 +359,11 @@ ModuleClass_new(YogEnv* env)
 void
 YogClass_include_module(YogEnv* env, YogVal self, YogVal module)
 {
-    YOG_ASSERT(env, IS_PTR(self), "self is not pointer");
-    YOG_ASSERT(env, IS_OBJ_OF(env, self, cClass), "self is not Class");
-
     SAVE_ARGS2(env, self, module);
     YogVal module_class = YUNDEF;
     PUSH_LOCAL(env, module_class);
+
+    CHECK_SELF_TYPE(env, self);
 
     module_class = ModuleClass_new(env);
     PTR_AS(YogObj, module_class)->attrs = PTR_AS(YogObj, module)->attrs;

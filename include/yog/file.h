@@ -12,6 +12,8 @@ struct YogFile {
 
 typedef struct YogFile YogFile;
 
+#define TYPE_FILE   ((type_t)YogFile_define_class)
+
 /* PROTOTYPE_START */
 
 /**

@@ -250,7 +250,7 @@ YogCode_new(YogEnv* env)
     PUSH_LOCAL(env, code);
 
     code = ALLOC_OBJ(env, keep_children, NULL, YogCode);
-    YogBasicObj_init(env, code, 0, env->vm->cCode);
+    YogBasicObj_init(env, code, TYPE_CODE, 0, env->vm->cCode);
     CODE(code)->arg_info = YUNDEF;
     CODE(code)->stack_size = 0;
     CODE(code)->local_vars_count = 0;

@@ -39,6 +39,12 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+#define CHECK_SELF_TYPE(env, self)  do { \
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_THREAD)) { \
+        YogError_raise_TypeError((env), "self must be Thread"); \
+    } \
+} while (0)
+
 static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
@@ -69,7 +75,7 @@ YogThread_init(YogEnv* env, YogVal thread, YogVal klass)
     PTR_AS(YogThread, thread)->thread_id = YogVM_issue_thread_id(env, env->vm);
     PTR_AS(YogThread, thread)->next_obj_id = 0;
 
-    YogBasicObj_init(env, thread, 0, klass);
+    YogBasicObj_init(env, thread, TYPE_THREAD, 0, klass);
 
     PTR_AS(YogThread, thread)->heap = NULL;
 
@@ -318,6 +324,7 @@ join(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "join", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     void* retval = NULL;
     FREE_FROM_GC(env);
@@ -341,6 +348,7 @@ run(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "|", NULL }, { "arg", &vararg }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "run", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     arg = ThreadArg_new(env);
     PTR_AS(ThreadArg, arg)->vm = env->vm;
@@ -382,6 +390,7 @@ init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "init", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     PTR_AS(YogThread, self)->block = block;
 

@@ -10,6 +10,8 @@ struct YogPackage {
 
 typedef struct YogPackage YogPackage;
 
+#define TYPE_PACKAGE    ((type_t)YogPackage_new)
+
 #include "yog/class.h"
 
 /* PROTOTYPE_START */

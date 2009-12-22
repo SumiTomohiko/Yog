@@ -9,14 +9,21 @@
 #include <gmp.h>
 #include "yog/array.h"
 #include "yog/bignum.h"
+#include "yog/class.h"
 #include "yog/error.h"
 #include "yog/float.h"
 #include "yog/gc.h"
-#include "yog/class.h"
+#include "yog/get_args.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
+
+#define CHECK_SELF_TYPE(env, self)  do { \
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_FLOAT)) { \
+        YogError_raise_TypeError((env), "self must be Float"); \
+    } \
+} while (0)
 
 static YogVal
 allocate(YogEnv* env, YogVal klass)
@@ -24,7 +31,7 @@ allocate(YogEnv* env, YogVal klass)
     SAVE_ARG(env, klass);
 
     YogVal f = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, YogFloat);
-    YogBasicObj_init(env, f, 0, klass);
+    YogBasicObj_init(env, f, TYPE_FLOAT, 0, klass);
     PTR_AS(YogFloat, f)->val = 0;
 
     RETURN(env, f);
@@ -59,6 +66,10 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_s", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
 #if defined(HAVE__ISNAN)
 #   define isnan    _isnan
 #endif
@@ -88,6 +99,10 @@ negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal f = YUNDEF;
     PUSH_LOCAL(env, f);
 
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "-self", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
     f = YogFloat_new(env);
     FLOAT_NUM(f) = - FLOAT_NUM(self);
 
@@ -97,7 +112,13 @@ negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 static YogVal
 positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    return self;
+    SAVE_ARGS4(env, self, args, kw, block);
+
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "+self", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
+    RETURN(env, self);
 }
 
 static YogVal
@@ -108,8 +129,10 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "f", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "+", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
     if (IS_FIXNUM(right)) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) + VAL2INT(right);
@@ -117,12 +140,12 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cBignum)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) + mpz_get_d(BIGNUM_NUM(right));
         RETURN(env, result);
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) + FLOAT_NUM(right);
         RETURN(env, result);
@@ -142,8 +165,10 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "f", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "-", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
     if (IS_FIXNUM(right)) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) - VAL2INT(right);
@@ -151,12 +176,12 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cBignum)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) - mpz_get_d(BIGNUM_NUM(right));
         RETURN(env, result);
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) - FLOAT_NUM(right);
         RETURN(env, result);
@@ -176,8 +201,10 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "f", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "*", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
     if (IS_FIXNUM(right)) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) * VAL2INT(right);
@@ -185,12 +212,12 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cBignum)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) * mpz_get_d(BIGNUM_NUM(right));
         RETURN(env, result);
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) * FLOAT_NUM(right);
         RETURN(env, result);
@@ -203,13 +230,16 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-div(YogEnv* env, YogVal self, YogVal right, const char* opname)
+div(YogEnv* env, YogVal self, YogVal args, YogVal kw, const char* opname)
 {
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
-
-    SAVE_ARGS2(env, self, right);
+    SAVE_ARGS3(env, self, args, kw);
+    YogVal right = YUNDEF;
     YogVal result = YUNDEF;
-    PUSH_LOCAL(env, result);
+    PUSH_LOCALS2(env, right, result);
+
+    YogCArg params[] = { { "f", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, opname, params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (IS_FIXNUM(right)) {
         result = YogFloat_new(env);
@@ -218,12 +248,12 @@ div(YogEnv* env, YogVal self, YogVal right, const char* opname)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cBignum)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) / mpz_get_d(BIGNUM_NUM(right));
         RETURN(env, result);
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = FLOAT_NUM(self) / FLOAT_NUM(right);
         RETURN(env, result);
@@ -238,15 +268,13 @@ div(YogEnv* env, YogVal self, YogVal right, const char* opname)
 static YogVal
 divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal right = YogArray_at(env, args, 0);
-    return div(env, self, right, "/");
+    return div(env, self, args, kw, "/");
 }
 
 static YogVal
 floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
-    YogVal right = YogArray_at(env, args, 0);
-    return div(env, self, right, "//");
+    return div(env, self, args, kw, "//");
 }
 
 static YogVal
@@ -297,8 +325,9 @@ power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogVal right = YUNDEF;
     PUSH_LOCALS2(env, retval, right);
 
-    right = YogArray_at(env, args, 0);
-    YOG_ASSERT(env, !IS_UNDEF(right), "right is undef");
+    YogCArg params[] = { { "f", &right }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "**", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (IS_FIXNUM(right)) {
         retval = power_int(env, self, VAL2INT(right));
@@ -306,7 +335,7 @@ power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         retval = power_float(env, self, FLOAT_NUM(right));
         RETURN(env, retval);
     }

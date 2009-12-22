@@ -13,6 +13,12 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+#define CHECK_SELF_TYPE(env, self)  do { \
+    if (IS_PTR(self) && (BASIC_OBJ_TYPE(self) != TYPE_ARRAY)) { \
+        YogError_raise_TypeError((env), "self must be Array"); \
+    } \
+} while (0)
+
 uint_t
 YogValArray_size(YogEnv* env, YogVal array)
 {
@@ -168,7 +174,7 @@ allocate_object(YogEnv* env, YogVal klass, uint_t size)
 
     body = YogValArray_new(env, size);
     array = ALLOC_OBJ(env, YogArray_keep_children, NULL, YogArray);
-    YogBasicObj_init(env, array, 0, klass);
+    YogBasicObj_init(env, array, TYPE_ARRAY, 0, klass);
     PTR_AS(YogArray, array)->size = 0;
     PTR_AS(YogArray, array)->body = body;
 
@@ -232,7 +238,10 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "a", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "+", params, args, kw);
-    YOG_ASSERT(env, IS_OBJ_OF(env, right, cArray), "operand is not Array");
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_PTR(right) || (BASIC_OBJ_TYPE(right) != TYPE_ARRAY)) {
+        YogError_raise_TypeError(env, "operand must be Array");
+    }
 
     array = YogArray_new(env);
     YogArray_add(env, array, self);
@@ -250,6 +259,7 @@ lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "obj", &elem }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "<<", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     YogArray_push(env, self, elem);
 
@@ -270,14 +280,19 @@ assign_subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
         { "value", &val},
         { NULL, NULL } };
     YogGetArgs_parse_args(env, "[]=", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_FIXNUM(index)) {
+        YogError_raise_TypeError(env, "index must be Fixnum");
+    }
+    int_t i = VAL2INT(index);
 
     uint_t size = YogArray_size(env, self);
-    if (size <= VAL2INT(index)) {
+    if (size <= i) {
         YogError_raise_IndexError(env, "array assignment index out of range");
     }
 
     body = PTR_AS(YogArray, self)->body;
-    PTR_AS(YogValArray, body)->items[VAL2INT(index)] = val;
+    PTR_AS(YogValArray, body)->items[i] = val;
 
     RETURN(env, self);
 }
@@ -292,6 +307,10 @@ subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "index", &index }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "[]", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_FIXNUM(index)) {
+        YogError_raise_TypeError(env, "index must be Fixnum");
+    }
 
     v = YogArray_at(env, self, VAL2INT(index));
 
@@ -389,6 +408,7 @@ pop(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "pop", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     obj = YogArray_pop(env, self);
 
@@ -404,6 +424,7 @@ push(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "obj", &obj}, { NULL, NULL } };
     YogGetArgs_parse_args(env, "push", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     YogArray_push(env, self, obj);
 

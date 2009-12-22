@@ -52,13 +52,12 @@ print_object(YogEnv* env, YogVal obj)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
-    if (IS_PTR(obj) && IS_OBJ_OF(env, obj, cString)) {
+    if (IS_PTR(obj) && (BASIC_OBJ_TYPE(obj) == TYPE_STRING)) {
         s = obj;
     }
     else {
         s = YogEval_call_method(env, obj, "to_s", 0, NULL);
-        YOG_ASSERT(env, IS_PTR(s), "invalid string");
-        YOG_ASSERT(env, IS_OBJ_OF(env, s, cString), "invalid object");
+        YOG_ASSERT(env, IS_PTR(s) && (BASIC_OBJ_TYPE(s) == TYPE_STRING), "invalid string");
     }
     printf("%s", STRING_CSTR(s));
 

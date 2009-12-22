@@ -10,6 +10,12 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+#define CHECK_SELF_TYPE(env, self)  do { \
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_DICT)) { \
+        YogError_raise_TypeError((env), "self must be Dict"); \
+    } \
+} while (0)
+
 struct DictIterator {
     YogVal tbl_iter;
 };
@@ -46,6 +52,7 @@ each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg cargs[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "each", cargs, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     iter = YogDict_get_iterator(env, self);
     while (YogDictIterator_next(env, iter)) {
@@ -67,7 +74,10 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "d", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "+", params, args, kw);
-    YOG_ASSERT(env, IS_OBJ_OF(env, right, cDict), "invalid operand");
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_PTR(right) || (BASIC_OBJ_TYPE(right) != TYPE_DICT)) {
+        YogError_raise_TypeError(env, "operand must be Dict");
+    }
 
     dict = YogDict_new(env);
     YogDict_add(env, dict, self);
@@ -106,6 +116,7 @@ subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "key", &key }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "[]", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (YogTable_lookup(env, PTR_AS(YogDict, self)->tbl, key, &value)) {
         RETURN(env, value);
@@ -140,6 +151,7 @@ subscript_assign(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "key", &key }, { "value", &value }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "[]=", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     YogDict_set(env, self, key, value);
 
@@ -153,7 +165,7 @@ init(YogEnv* env, YogVal self, YogVal klass)
     YogVal tbl = YUNDEF;
     PUSH_LOCAL(env, tbl);
 
-    YogBasicObj_init(env, self, 0, klass);
+    YogBasicObj_init(env, self, TYPE_DICT, 0, klass);
     tbl = YogTable_new_val_table(env);
     PTR_AS(YogDict, self)->tbl = tbl;
 

@@ -13,6 +13,12 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+#define CHECK_SELF_TYPE(env, self)  do { \
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_BIGNUM)) { \
+        YogError_raise_TypeError((env), "self must be Bignum"); \
+    } \
+} while (0)
+
 static YogVal
 YogBignum_to_s(YogEnv* env, YogVal self)
 {
@@ -39,6 +45,7 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "to_s", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     s = YogBignum_to_s(env, self);
 
@@ -55,7 +62,7 @@ YogBignum_finalize(YogEnv* env, void* ptr)
 static void
 YogBignum_init(YogEnv* env, YogVal self)
 {
-    YogBasicObj_init(env, self, 0, env->vm->cBignum);
+    YogBasicObj_init(env, self, TYPE_BIGNUM, 0, env->vm->cBignum);
     mpz_init(PTR_AS(YogBignum, self)->num);
 }
 
@@ -81,6 +88,7 @@ negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "-self", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     bignum = YogBignum_new(env);
     mpz_neg(BIGNUM_NUM(bignum), BIGNUM_NUM(self));
@@ -98,6 +106,7 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "+", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (IS_FIXNUM(right)) {
         result = YogBignum_from_int(env, VAL2INT(right));
@@ -106,12 +115,12 @@ add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(self)) + FLOAT_NUM(right);
         RETURN(env, result);
     }
-    else if (IS_OBJ_OF(env, right, cBignum)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         result = YogBignum_new(env);
         mpz_add(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(right));
         RETURN(env, result);
@@ -177,6 +186,7 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "-", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (IS_FIXNUM(right)) {
         result = subtract_int(env, self, VAL2INT(right));
@@ -184,12 +194,12 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(self)) - FLOAT_NUM(right);
         RETURN(env, result);
     }
-    else if (IS_OBJ_OF(env, right, cBignum)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         result = YogBignum_subtract(env, self, right);
         RETURN(env, result);
     }
@@ -210,6 +220,7 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "*", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (IS_FIXNUM(right)) {
         result = YogFixnum_multiply(env, right, self);
@@ -217,12 +228,12 @@ multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         result = YogFloat_new(env);
         FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(self)) * FLOAT_NUM(right);
         RETURN(env, result);
     }
-    else if (IS_OBJ_OF(env, right, cBignum)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         result = YogBignum_new(env);
         mpz_mul(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(right));
         RETURN(env, result);
@@ -297,6 +308,7 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "/", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (IS_FIXNUM(right)) {
         result = divide_int(env, self, VAL2INT(right));
@@ -304,11 +316,11 @@ divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         result = divide_float(env, self, FLOAT_NUM(right));
         RETURN(env, result);
     }
-    else if (IS_OBJ_OF(env, right, cBignum)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         result = divide_bignum(env, self, right);
         RETURN(env, result);
     }
@@ -381,10 +393,10 @@ YogBignum_modulo(YogEnv* env, YogVal self, YogVal n)
     if (IS_FIXNUM(n)) {
         bignum = YogBignum_from_int(env, VAL2INT(n));
     }
-    else if (IS_PTR(n) && IS_OBJ_OF(env, n, cBignum)) {
+    else if (IS_PTR(n) && (BASIC_OBJ_TYPE(n) == TYPE_BIGNUM)) {
         bignum = n;
     }
-    if (IS_UNDEF(bignum)) {
+    else {
         YogError_raise_binop_type_error(env, self, n, "%");
     }
 
@@ -405,8 +417,9 @@ modulo(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "%", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
-    if (IS_FIXNUM(right) || (IS_PTR(right) && IS_OBJ_OF(env, right, cBignum))) {
+    if (IS_FIXNUM(right) || (IS_PTR(right) && (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM))) {
         result = YogBignum_modulo(env, self, right);
         RETURN(env, result);
     }
@@ -427,6 +440,7 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "//", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (IS_FIXNUM(right)) {
         result = floor_divide_int(env, self, VAL2INT(right));
@@ -434,11 +448,11 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         result = divide_float(env, self, FLOAT_NUM(right));
         RETURN(env, result);
     }
-    else if (IS_OBJ_OF(env, right, cBignum)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         result = floor_divide_bignum(env, self, right);
         RETURN(env, result);
     }
@@ -456,6 +470,7 @@ positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "+self", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     RETURN(env, self);
 }
@@ -469,6 +484,7 @@ not(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "~self", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     retval = YogBignum_new(env);
     mpz_com(BIGNUM_NUM(retval), BIGNUM_NUM(self));
@@ -516,6 +532,7 @@ rshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, ">>", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (!IS_FIXNUM(right)) {
         YogError_raise_binop_type_error(env, self, right, ">>");
@@ -541,6 +558,7 @@ lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "<<", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     if (!IS_FIXNUM(right)) {
         YogError_raise_binop_type_error(env, self, right, "<<");
@@ -607,7 +625,7 @@ YogBignum_or(YogEnv* env, YogVal self, YogVal n)
     PUSH_LOCALS2(env, retval, bignum);
 
     YOG_ASSERT(env, !IS_UNDEF(n), "undefined value");
-    if (!IS_FIXNUM(n) && !(IS_PTR(n) && IS_OBJ_OF(env, n, cBignum))) {
+    if (!IS_FIXNUM(n) && !(IS_PTR(n) && (BASIC_OBJ_TYPE(n) == TYPE_BIGNUM))) {
         YogError_raise_binop_type_error(env, self, n, "|");
     }
 
@@ -633,6 +651,7 @@ or(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "|", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     retval = YogBignum_or(env, self, right);
 
@@ -652,10 +671,10 @@ YogBignum_xor(YogEnv* env, YogVal self, YogVal n)
     if (IS_FIXNUM(n)) {
         bignum = YogBignum_from_int(env, VAL2INT(n));
     }
-    else if (IS_PTR(n) && IS_OBJ_OF(env, n, cBignum)) {
+    else if (IS_PTR(n) && (BASIC_OBJ_TYPE(n) == TYPE_BIGNUM)) {
         bignum = n;
     }
-    if (IS_UNDEF(bignum)) {
+    else {
         YogError_raise_binop_type_error(env, self, n, "^");
     }
 
@@ -679,10 +698,10 @@ YogBignum_and(YogEnv* env, YogVal self, YogVal n)
     if (IS_FIXNUM(n)) {
         bignum = YogBignum_from_int(env, VAL2INT(n));
     }
-    else if (IS_PTR(n) && IS_OBJ_OF(env, n, cBignum)) {
+    else if (IS_PTR(n) && (BASIC_OBJ_TYPE(n) == TYPE_BIGNUM)) {
         bignum = n;
     }
-    if (IS_UNDEF(bignum)) {
+    else {
         YogError_raise_binop_type_error(env, self, n, "&");
     }
 
@@ -703,6 +722,7 @@ and(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "&", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     retval = YogBignum_and(env, self, right);
 
@@ -719,6 +739,7 @@ xor(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "^", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     retval = YogBignum_xor(env, self, right);
 
@@ -730,16 +751,16 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS4(env, self, args, kw, block);
     YogVal s = YUNDEF;
-    YogVal h = YUNDEF;
-    PUSH_LOCALS2(env, s, h);
+    PUSH_LOCAL(env, s);
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "hash", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     s = YogBignum_to_s(env, self);
-    h = INT2VAL(YogString_hash(env, s));
+    int_t h = YogString_hash(env, s);
 
-    RETURN(env, h);
+    RETURN(env, INT2VAL(h));
 }
 
 static YogVal
@@ -751,6 +772,10 @@ compare(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "<=>", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    if (!IS_PTR(right) || (BASIC_OBJ_TYPE(right) != TYPE_BIGNUM)) {
+        YogError_raise_TypeError(env, "operand must be Bignum");
+    }
 
     int_t n = mpz_cmp(BIGNUM_NUM(self), BIGNUM_NUM(right));
     if (n < 0) {
@@ -821,7 +846,7 @@ YogBignum_power(YogEnv* env, YogVal self, YogVal right)
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
-    else if (IS_OBJ_OF(env, right, cFloat)) {
+    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         double f = mpz_get_d(BIGNUM_NUM(self));
         retval = YogFloat_new(env);
         FLOAT_NUM(retval) = pow(f, FLOAT_NUM(right));
@@ -844,6 +869,7 @@ power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "**", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
 
     retval = YogBignum_power(env, self, right);
 

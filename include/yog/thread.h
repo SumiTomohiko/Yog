@@ -59,6 +59,8 @@ struct YogThread {
 
 typedef struct YogThread YogThread;
 
+#define TYPE_THREAD     ((type_t)YogThread_new)
+
 #define __THREAD_HEAP__(type, thread)   ((type*)PTR_AS(YogThread, (thread))->heap)
 #if defined(GC_COPYING)
 #   define THREAD_HEAP(thread)  __THREAD_HEAP__(YogCopying, thread)

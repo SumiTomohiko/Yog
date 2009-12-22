@@ -62,18 +62,19 @@ YogObj_set_attr(YogEnv* env, YogVal obj, const char* name, YogVal val)
 }
 
 void
-YogBasicObj_init(YogEnv* env, YogVal obj, uint_t flags, YogVal klass)
+YogBasicObj_init(YogEnv* env, YogVal obj, type_t type, uint_t flags, YogVal klass)
 {
     YogThread_issue_object_id(env, env->thread, obj);
+    PTR_AS(YogBasicObj, obj)->type = type;
     PTR_AS(YogBasicObj, obj)->flags = flags;
     PTR_AS(YogBasicObj, obj)->klass = klass;
 }
 
 void
-YogObj_init(YogEnv* env, YogVal obj, uint_t flags, YogVal klass)
+YogObj_init(YogEnv* env, YogVal obj, uint_t type, uint_t flags, YogVal klass)
 {
+    YogBasicObj_init(env, obj, type, flags | HAS_ATTRS, klass);
     PTR_AS(YogObj, obj)->attrs = YUNDEF;
-    YogBasicObj_init(env, obj, flags | HAS_ATTRS, klass);
 }
 
 void
@@ -98,7 +99,7 @@ YogObj_allocate(YogEnv* env, YogVal klass)
     SAVE_ARG(env, klass);
 
     YogVal obj = ALLOC_OBJ(env, YogObj_keep_children, NULL, YogObj);
-    YogObj_init(env, obj, 0, klass);
+    YogObj_init(env, obj, TYPE_OBJ, 0, klass);
 
     RETURN(env, obj);
 }
@@ -235,7 +236,7 @@ get_attr(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     YogGetArgs_parse_args(env, "get_attr", params, args, kw);
 
     ID id;
-    if (IS_OBJ_OF(env, name, cString)) {
+    if (IS_PTR(name) && (BASIC_OBJ_TYPE(name) == TYPE_STRING)) {
         id = YogVM_intern(env, env->vm, STRING_CSTR(name));
     }
     else if (IS_SYMBOL(name)) {

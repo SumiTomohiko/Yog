@@ -19,6 +19,8 @@ struct YogArray {
 
 typedef struct YogArray YogArray;
 
+#define TYPE_ARRAY  ((type_t)YogArray_new)
+
 /* PROTOTYPE_START */
 
 /**

@@ -17,6 +17,8 @@ struct Barrier {
 
 typedef struct Barrier Barrier;
 
+#define TYPE_BARRIER    ((type_t)Barrier_alloc)
+
 static YogVal
 Barrier_init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 {
@@ -87,7 +89,7 @@ Barrier_alloc(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, barrier);
 
     barrier = ALLOC_OBJ(env, Barrier_keep_children, Barrier_finalize, Barrier);
-    YogBasicObj_init(env, barrier, 0, klass);
+    YogBasicObj_init(env, barrier, TYPE_BARRIER, 0, klass);
 
     RETURN(env, barrier);
 }
@@ -98,6 +100,8 @@ struct AtomicInt {
 };
 
 typedef struct AtomicInt AtomicInt;
+
+#define TYPE_ATOMIC_INT     ((type_t)AtomicInt_alloc)
 
 static void
 AtomicInt_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
@@ -114,7 +118,7 @@ AtomicInt_alloc(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, atomic_int);
 
     atomic_int = ALLOC_OBJ(env, AtomicInt_keep_children, NULL, AtomicInt);
-    YogBasicObj_init(env, atomic_int, 0, klass);
+    YogBasicObj_init(env, atomic_int, TYPE_ATOMIC_INT, 0, klass);
     PTR_AS(AtomicInt, atomic_int)->value = 0;
 
     RETURN(env, atomic_int);

@@ -60,7 +60,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         for (i = PTR_AS(YogArgInfo, arg_info)->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }
-        if (IS_PTR(vararg) && IS_OBJ_OF(env, vararg, cArray)) {
+        if (IS_PTR(vararg) && (BASIC_OBJ_TYPE(vararg) == TYPE_ARRAY)) {
             YogArray_extend(env, array, vararg);
         }
     }
@@ -69,7 +69,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             YogVal* items = PTR_AS(YogValArray, args)->items;
             items[args_offset + i] = posargs[i];
         }
-        if (IS_PTR(vararg) && IS_OBJ_OF(env, vararg, cArray)) {
+        if (IS_PTR(vararg) && (BASIC_OBJ_TYPE(vararg) == TYPE_ARRAY)) {
             YogVal* items = PTR_AS(YogValArray, args)->items;
             for (i = posargc; i < arg_argc; i++) {
                 YogVal val = YogArray_at(env, vararg, i - posargc);
@@ -81,7 +81,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             YogVal* items = PTR_AS(YogValArray, args)->items;
             items[args_offset + posargc] = va;
 
-            if (IS_PTR(vararg) && IS_OBJ_OF(env, vararg, cArray)) {
+            if (IS_PTR(vararg) && (BASIC_OBJ_TYPE(vararg) == TYPE_ARRAY)) {
                 uint_t size = YogArray_size(env, vararg);
                 for (i = arg_argc - posargc; i < size; i++) {
                     YogVal val = YogArray_at(env, vararg, i);
@@ -130,7 +130,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         YogDict_set(env, kw, name, kwargs[2 * i + 1]);
     }
 
-    if (IS_PTR(varkwarg) && IS_OBJ_OF(env, varkwarg, cDict)) {
+    if (IS_PTR(varkwarg) && (BASIC_OBJ_TYPE(varkwarg) == TYPE_DICT)) {
         iter = YogDict_get_iterator(env, varkwarg);
         while (YogDictIterator_next(env, iter)) {
             YogVal key = YogDictIterator_current_key(env, iter);
@@ -269,7 +269,7 @@ YogFunction_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], 
 static void
 YogFunction_init(YogEnv* env, YogVal self, YogVal klass)
 {
-    YogBasicObj_init(env, self, 0, klass);
+    YogBasicObj_init(env, self, TYPE_FUNCTION, 0, klass);
 
     PTR_AS(YogFunction, self)->code = YUNDEF;
     PTR_AS(YogFunction, self)->globals = YUNDEF;
@@ -403,7 +403,7 @@ create_positional_argument(YogEnv* env, uint8_t posargc, YogVal posargs[], YogVa
         YogArray_push(env, args, posargs[i]);
     }
 
-    if (IS_PTR(vararg) && IS_OBJ_OF(env, vararg, cArray)) {
+    if (IS_PTR(vararg) && (BASIC_OBJ_TYPE(vararg) == TYPE_ARRAY)) {
         YogArray_add(env, args, vararg);
     }
 
@@ -462,7 +462,7 @@ YogNativeFunction_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posar
 static void
 YogNativeFunction_init(YogEnv* env, YogVal self, YogVal klass)
 {
-    YogBasicObj_init(env, self, 0, klass);
+    YogBasicObj_init(env, self, TYPE_NATIVE_FUNCTION, 0, klass);
 
     PTR_AS(YogNativeFunction, self)->func_name = INVALID_ID;
     PTR_AS(YogNativeFunction, self)->f = NULL;
@@ -546,7 +546,7 @@ YogInstanceMethod_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posar
 static void
 YogInstanceMethod_init(YogEnv* env, YogVal self, YogVal klass)
 {
-    YogBasicObj_init(env, self, 0, klass);
+    YogBasicObj_init(env, self, TYPE_INSTANCE_METHOD, 0, klass);
 
     PTR_AS(YogInstanceMethod, self)->self = YUNDEF;
     PTR_AS(YogInstanceMethod, self)->f = YUNDEF;

@@ -29,6 +29,8 @@ struct YogClass {
 
 typedef struct YogClass YogClass;
 
+#define TYPE_CLASS  ((type_t)YogClass_new)
+
 /* PROTOTYPE_START */
 
 /**
