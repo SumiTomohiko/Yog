@@ -232,9 +232,9 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 YogVal
-YogCode_define_class(YogEnv* env)
+YogCode_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 

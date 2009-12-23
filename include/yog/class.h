@@ -41,19 +41,19 @@ extern "C" {
 #endif
 /* src/class.c */
 YogVal YogClass_allocate(YogEnv*, YogVal);
-void YogClass_boot(YogEnv*, YogVal);
-void YogClass_class_init(YogEnv*, YogVal);
+void YogClass_boot(YogEnv*, YogVal, YogVal);
+void YogClass_class_init(YogEnv*, YogVal, YogVal);
 void YogClass_define_allocator(YogEnv*, YogVal, Allocator);
 void YogClass_define_caller(YogEnv*, YogVal, Caller);
-void YogClass_define_class_method(YogEnv*, YogVal, const char*, void*);
+void YogClass_define_class_method(YogEnv*, YogVal, YogVal, const char*, void*);
 void YogClass_define_descr_get_caller(YogEnv*, YogVal, YogVal (*)(YogEnv*, YogVal, YogVal, YogVal));
 void YogClass_define_descr_get_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
 void YogClass_define_descr_set_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
 void YogClass_define_executor(YogEnv*, YogVal, Executor);
 void YogClass_define_get_attr_caller(YogEnv*, YogVal, GetAttrCaller);
 void YogClass_define_get_attr_executor(YogEnv*, YogVal, GetAttrExecutor);
-void YogClass_define_method(YogEnv*, YogVal, const char*, void*);
-void YogClass_define_property(YogEnv*, YogVal, const char*, void*, void*);
+void YogClass_define_method(YogEnv*, YogVal, YogVal, const char*, void*);
+void YogClass_define_property(YogEnv*, YogVal, YogVal, const char*, void*, void*);
 YogVal YogClass_get_attr(YogEnv*, YogVal, ID);
 void YogClass_include_module(YogEnv*, YogVal, YogVal);
 YogVal YogClass_new(YogEnv*, const char*, YogVal);

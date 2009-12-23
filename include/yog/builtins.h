@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 /* src/builtins.c */
-YogVal YogBuiltins_new(YogEnv*, uint_t, char**);
+void YogBuiltins_boot(YogEnv*, YogVal, uint_t, char**);
 
 
 #if defined(__cplusplus)

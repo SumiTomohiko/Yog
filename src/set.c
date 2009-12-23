@@ -80,17 +80,25 @@ YogSet_new(YogEnv* env)
 }
 
 YogVal
-YogSet_define_class(YogEnv* env)
+YogSet_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
     klass = YogClass_new(env, "Set", env->vm->cObject);
     YogClass_define_allocator(env, klass, YogDict_allocate);
-    YogClass_define_method(env, klass, "add", add);
-    YogClass_define_method(env, klass, "include?", include);
-    YogClass_define_property(env, klass, "size", get_size, NULL);
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, klass, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("add", add);
+    DEFINE_METHOD("include?", include);
+#undef DEFINE_METHOD
+#define DEFINE_PROP(name, getter, setter)   do { \
+    YogClass_define_property(env, klass, pkg, (name), (getter), (setter)); \
+} while (0)
+    DEFINE_PROP("size", get_size, NULL);
+#undef DEFINE_PROP
 
     RETURN(env, klass);
 }

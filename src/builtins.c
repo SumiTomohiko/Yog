@@ -221,15 +221,12 @@ get_current_thread(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal bloc
     RETURN(env, thread);
 }
 
-YogVal
-YogBuiltins_new(YogEnv* env, uint_t argc, char** argv)
+void
+YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
 {
-    SAVE_LOCALS(env);
-    YogVal builtins = YUNDEF;
+    SAVE_ARG(env, builtins);
     YogVal args = YUNDEF;
-    PUSH_LOCALS2(env, builtins, args);
-
-    builtins = YogPackage_new(env);
+    PUSH_LOCAL(env, args);
 
 #define DEFINE_FUNCTION(name, f)    do { \
     YogPackage_define_function(env, builtins, name, f); \

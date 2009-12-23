@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 /* src/symbol.c */
-YogVal YogSymbol_define_class(YogEnv*);
+YogVal YogSymbol_define_class(YogEnv*, YogVal);
 
 
 #if defined(__cplusplus)

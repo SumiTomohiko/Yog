@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 /* src/coroutine.c */
-YogVal YogCoroutine_define_class(YogEnv*);
+YogVal YogCoroutine_define_class(YogEnv*, YogVal);
 
 
 #if defined(__cplusplus)

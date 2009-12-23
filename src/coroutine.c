@@ -363,16 +363,22 @@ allocate(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogCoroutine_define_class(YogEnv* env)
+YogCoroutine_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
     klass = YogClass_new(env, "Coroutine", env->vm->cObject);
     YogClass_define_allocator(env, klass, allocate);
-    YogClass_define_class_method(env, klass, "yield", yield);
-#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, name, f)
+#define DEFINE_CLASS_METHOD(name, f)    do { \
+    YogClass_define_class_method(env, klass, pkg, (name), (f)); \
+} while (0)
+    DEFINE_CLASS_METHOD("yield", yield);
+#undef DEFINE_CLASS_METHOD
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, klass, pkg, (name), (f)); \
+} while (0)
     DEFINE_METHOD("init", init);
     DEFINE_METHOD("resume", resume);
 #undef DEFINE_METHOD

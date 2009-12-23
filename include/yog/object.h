@@ -16,7 +16,7 @@ struct YogBasicObj {
 #define TYPE_BASIC_OBJ  ((type_t)YogBasicObj_init)
 
 #define HAS_ATTRS       (1 << 0)
-#define IMPORTING_PKG   (1 << 1)
+#define FLAG_PKG        (1 << 1)
 
 #define YOGBASICOBJ_HEAD    struct YogBasicObj base
 #define BASIC_OBJ(v)        PTR_AS(YogBasicObj, (v))
@@ -47,17 +47,17 @@ typedef YogVal (*Allocator)(struct YogEnv*, YogVal);
 extern "C" {
 #endif
 /* src/object.c */
-void YogBasicObj_init(YogEnv*, YogVal, uint_t, uint_t, YogVal);
+void YogBasicObj_init(YogEnv*, YogVal, type_t, uint_t, YogVal);
 void YogBasicObj_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 YogVal YogObj_allocate(YogEnv*, YogVal);
-void YogObj_class_init(YogEnv*, YogVal);
+void YogObj_class_init(YogEnv*, YogVal, YogVal);
 YogVal YogObj_get_attr(YogEnv*, YogVal, ID);
 void YogObj_init(YogEnv*, YogVal, uint_t, uint_t, YogVal);
 void YogObj_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 YogVal YogObj_new(YogEnv*, YogVal);
 void YogObj_set_attr(YogEnv*, YogVal, const char*, YogVal);
 void YogObj_set_attr_id(YogEnv*, YogVal, ID, YogVal);
-void YogObject_boot(YogEnv*, YogVal);
+void YogObject_boot(YogEnv*, YogVal, YogVal);
 void YogObject_eval_builtin_script(YogEnv*, YogVal);
 
 

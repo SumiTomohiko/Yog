@@ -197,10 +197,10 @@ YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
 }
 
 static void
-setup_builtins(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
+setup_builtins(YogEnv* env, YogVM* vm, YogVal builtins, uint_t argc, char** argv)
 {
-    SAVE_LOCALS(env);
-    YogVal builtins = YogBuiltins_new(env, argc, argv);
+    SAVE_ARG(env, builtins);
+    YogBuiltins_boot(env, builtins, argc, argv);
     YogVM_register_package(env, vm, "builtins", builtins);
     RETURN_VOID(env);
 }
@@ -235,39 +235,43 @@ setup_basic_class(YogEnv* env, YogVM* vm)
 }
 
 static void
-setup_classes(YogEnv* env, YogVM* vm)
+setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
 {
-    vm->cNativeFunction = YogNativeFunction_define_class(env);
-    vm->cFunction = YogFunction_define_class(env);
-    vm->cInstanceMethod = YogInstanceMethod_define_class(env);
-    vm->cNativeInstanceMethod = YogNativeInstanceMethod_define_class(env);
+    SAVE_ARG(env, builtins);
 
-    YogObj_class_init(env, vm->cObject);
-    YogClass_class_init(env, vm->cClass);
-    vm->cProperty = YogProperty_define_class(env);
+    vm->cNativeFunction = YogNativeFunction_define_class(env, builtins);
+    vm->cFunction = YogFunction_define_class(env, builtins);
+    vm->cInstanceMethod = YogInstanceMethod_define_class(env, builtins);
+    vm->cNativeInstanceMethod = YogNativeInstanceMethod_define_class(env, builtins);
 
-    vm->mComparable = YogComparable_new(env);
+    YogObj_class_init(env, vm->cObject, builtins);
+    YogClass_class_init(env, vm->cClass, builtins);
+    vm->cProperty = YogProperty_define_class(env, builtins);
 
-    vm->cArray = YogArray_define_class(env);
-    vm->cBignum = YogBignum_define_class(env);
-    vm->cBool = YogBool_define_class(env);
-    vm->cClassMethod = YogClassMethod_define_class(env);
-    vm->cCode = YogCode_define_class(env);
-    vm->cCoroutine = YogCoroutine_define_class(env);
-    vm->cDict = YogDict_define_class(env);
-    vm->cFile = YogFile_define_class(env);
-    vm->cFixnum = YogFixnum_define_class(env);
-    vm->cFloat = YogFloat_define_class(env);
-    vm->cMatch = YogMatch_define_class(env);
-    vm->cModule = YogModule_define_class(env);
-    vm->cNil = YogNil_define_class(env);
-    vm->cPackage = YogPackage_define_class(env);
-    vm->cPackageBlock = YogPackageBlock_define_class(env);
-    vm->cRegexp = YogRegexp_define_class(env);
-    vm->cSet = YogSet_define_class(env);
-    vm->cString = YogString_define_class(env);
-    vm->cSymbol = YogSymbol_define_class(env);
-    vm->cThread = YogThread_define_class(env);
+    vm->mComparable = YogComparable_new(env, builtins);
+
+    vm->cArray = YogArray_define_class(env, builtins);
+    vm->cBignum = YogBignum_define_class(env, builtins);
+    vm->cBool = YogBool_define_class(env, builtins);
+    vm->cClassMethod = YogClassMethod_define_class(env, builtins);
+    vm->cCode = YogCode_define_class(env, builtins);
+    vm->cCoroutine = YogCoroutine_define_class(env, builtins);
+    vm->cDict = YogDict_define_class(env, builtins);
+    vm->cFile = YogFile_define_class(env, builtins);
+    vm->cFixnum = YogFixnum_define_class(env, builtins);
+    vm->cFloat = YogFloat_define_class(env, builtins);
+    vm->cMatch = YogMatch_define_class(env, builtins);
+    vm->cModule = YogModule_define_class(env, builtins);
+    vm->cNil = YogNil_define_class(env, builtins);
+    vm->cPackage = YogPackage_define_class(env, builtins);
+    vm->cPackageBlock = YogPackageBlock_define_class(env, builtins);
+    vm->cRegexp = YogRegexp_define_class(env, builtins);
+    vm->cSet = YogSet_define_class(env, builtins);
+    vm->cString = YogString_define_class(env, builtins);
+    vm->cSymbol = YogSymbol_define_class(env, builtins);
+    vm->cThread = YogThread_define_class(env, builtins);
+
+    RETURN_VOID(env);
 }
 
 static void
@@ -288,9 +292,11 @@ setup_encodings(YogEnv* env, YogVM* vm)
 }
 
 static void
-setup_exceptions(YogEnv* env, YogVM* vm)
+setup_exceptions(YogEnv* env, YogVM* vm, YogVal builtins)
 {
-    vm->eException = YogException_define_class(env);
+    SAVE_ARG(env, builtins);
+
+    vm->eException = YogException_define_class(env, builtins);
 #define EXCEPTION_NEW(member, name)  do { \
     vm->member = YogClass_new(env, name, vm->eException); \
 } while (0)
@@ -307,6 +313,8 @@ setup_exceptions(YogEnv* env, YogVM* vm)
     EXCEPTION_NEW(eValueError, "ValueError");
     EXCEPTION_NEW(eZeroDivisionError, "ZeroDivisionError");
 #undef EXCEPTION_NEW
+
+    RETURN_VOID(env);
 }
 
 static void
@@ -315,18 +323,35 @@ set_main_thread_class(YogEnv* env, YogVM* vm)
     PTR_AS(YogBasicObj, vm->main_thread)->klass = vm->cThread;
 }
 
+static YogVal
+alloc_skelton_pkg(YogEnv* env, YogVM* vm)
+{
+    SAVE_LOCALS(env);
+    YogVal pkg = YUNDEF;
+    PUSH_LOCAL(env, pkg);
+
+    pkg = ALLOC_OBJ(env, YogPackage_keep_children, NULL, YogPackage);
+    YogObj_init(env, pkg, TYPE_PACKAGE, 0, YUNDEF);
+
+    RETURN(env, pkg);
+}
+
 void
 YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
 {
     SAVE_LOCALS(env);
+    YogVal builtins = YUNDEF;
+    PUSH_LOCAL(env, builtins);
 
     setup_symbol_tables(env, vm);
     setup_basic_class(env, vm);
-    setup_classes(env, vm);
+    builtins = alloc_skelton_pkg(env, vm);
+    setup_classes(env, vm, builtins);
+    YogPackage_init(env, builtins);
     set_main_thread_class(env, vm);
-    setup_exceptions(env, vm);
-    YogObject_boot(env, vm->cObject);
-    YogClass_boot(env, vm->cClass);
+    setup_exceptions(env, vm, builtins);
+    YogObject_boot(env, vm->cObject, builtins);
+    YogClass_boot(env, vm->cClass, builtins);
 
     vm->pkgs = YogTable_new_symbol_table(env);
 
@@ -335,7 +360,7 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
 
     vm->finish_code = YogCompiler_compile_finish_code(env);
 
-    setup_builtins(env, vm, argc, argv);
+    setup_builtins(env, vm, builtins, argc, argv);
     YogArray_eval_builtin_script(env, vm->cArray);
     YogDict_eval_builtin_script(env, vm->cDict);
     YogObject_eval_builtin_script(env, vm->cObject);
@@ -773,7 +798,7 @@ release_packages_lock(YogEnv* env, YogVM* vm)
 }
 
 struct ImportingPackage {
-    flags_t flags;
+    struct YogBasicObj base;
     pthread_mutex_t lock;
     pthread_cond_t cond;
     YogVal pkg;
@@ -781,9 +806,13 @@ struct ImportingPackage {
 
 typedef struct ImportingPackage ImportingPackage;
 
+#define TYPE_IMPORTING_PKG  ((type_t)ImportingPackage_new)
+
 static void
 ImportingPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
     ImportingPackage* pkg = PTR_AS(ImportingPackage, ptr);
     YogGC_keep(env, &pkg->pkg, keeper, heap);
 }
@@ -804,12 +833,18 @@ ImportingPackage_finalize(YogEnv* env, void* ptr)
 static YogVal
 ImportingPackage_new(YogEnv* env)
 {
-    YogVal pkg = ALLOC_OBJ(env, ImportingPackage_keep_children, ImportingPackage_finalize, ImportingPackage);
-    PTR_AS(ImportingPackage, pkg)->flags = IMPORTING_PKG;
+    SAVE_LOCALS(env);
+    YogVal pkg = YUNDEF;
+    PUSH_LOCAL(env, pkg);
+
+    pkg = ALLOC_OBJ(env, ImportingPackage_keep_children, ImportingPackage_finalize, ImportingPackage);
+    YogBasicObj_init(env, pkg, TYPE_IMPORTING_PKG, FLAG_PKG, YUNDEF);
+
     pthread_mutex_init(&PTR_AS(ImportingPackage, pkg)->lock, NULL);
     pthread_cond_init(&PTR_AS(ImportingPackage, pkg)->cond, NULL);
     PTR_AS(ImportingPackage, pkg)->pkg = YUNDEF;
-    return pkg;
+
+    RETURN(env, pkg);
 }
 
 static void
@@ -843,7 +878,8 @@ wait_package(YogEnv* env, YogVal pkg)
 static YogVal
 get_package(YogEnv* env, YogVM* vm, YogVal pkg)
 {
-    if (PTR_AS(YogBasicObj, pkg)->flags & IMPORTING_PKG) {
+    YOG_ASSERT(env, PTR_AS(YogBasicObj, pkg)->flags & FLAG_PKG, "invalid package");
+    if (BASIC_OBJ_TYPE(pkg) == TYPE_IMPORTING_PKG) {
         ImportingPackage_lock(env, pkg);
         release_packages_lock(env, vm);
         wait_package(env, pkg);

@@ -32,7 +32,7 @@ extern "C" {
 /* src/array.c */
 YogVal YogArray_add(YogEnv*, YogVal, YogVal);
 YogVal YogArray_at(YogEnv*, YogVal, uint_t);
-YogVal YogArray_define_class(YogEnv*);
+YogVal YogArray_define_class(YogEnv*, YogVal);
 void YogArray_eval_builtin_script(YogEnv*, YogVal);
 void YogArray_extend(YogEnv*, YogVal, YogVal);
 YogVal YogArray_new(YogEnv*);

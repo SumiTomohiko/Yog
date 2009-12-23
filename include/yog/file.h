@@ -23,7 +23,7 @@ typedef struct YogFile YogFile;
 extern "C" {
 #endif
 /* src/file.c */
-YogVal YogFile_define_class(YogEnv*);
+YogVal YogFile_define_class(YogEnv*, YogVal);
 
 
 #if defined(__cplusplus)

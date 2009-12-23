@@ -89,17 +89,16 @@ YogBlock_new(YogEnv* env)
 }
 
 YogVal
-YogPackageBlock_define_class(YogEnv* env)
+YogPackageBlock_define_class(YogEnv* env, YogVal pkg)
 {
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
     klass = YogClass_new(env, "PackageBlock", env->vm->cObject);
-
     YogClass_define_allocator(env, klass, YogPackageBlock_allocate);
 
-    POP_LOCALS(env);
-    return klass;
+    RETURN(env, klass);
 }
 
 /**

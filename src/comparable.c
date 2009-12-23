@@ -107,14 +107,16 @@ equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogComparable_new(YogEnv* env)
+YogComparable_new(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal mod = YUNDEF;
     PUSH_LOCAL(env, mod);
 
     mod = YogModule_new(env);
-#define DEFINE_FUNCTION(name, f)    YogModule_define_function(env, mod, name, f)
+#define DEFINE_FUNCTION(name, f)    do { \
+    YogModule_define_function(env, mod, pkg, name, f); \
+} while (0)
     DEFINE_FUNCTION("==", equal);
     DEFINE_FUNCTION("!=", not_equal);
     DEFINE_FUNCTION("<", less);

@@ -194,19 +194,27 @@ open(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogFile_define_class(YogEnv* env)
+YogFile_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
     klass = YogClass_new(env, "File", env->vm->cObject);
     YogClass_define_allocator(env, klass, allocate);
-    YogClass_define_class_method(env, klass, "open", open);
-    YogClass_define_method(env, klass, "close", close);
-    YogClass_define_method(env, klass, "read", read);
-    YogClass_define_method(env, klass, "readline", readline);
-    YogClass_define_method(env, klass, "write", write);
+#define DEFINE_CLASS_METHOD(name, f)    do { \
+    YogClass_define_class_method(env, klass, pkg, (name), (f)); \
+} while (0)
+    DEFINE_CLASS_METHOD("open", open);
+#undef DEFINE_CLASS_METHOD
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, klass, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("close", close);
+    DEFINE_METHOD("read", read);
+    DEFINE_METHOD("readline", readline);
+    DEFINE_METHOD("write", write);
+#undef DEFINE_METHOD
 
     RETURN(env, klass);
 }

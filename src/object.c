@@ -117,9 +117,11 @@ init(YogEnv* env)
 }
 
 void
-YogObj_class_init(YogEnv* env, YogVal klass)
+YogObj_class_init(YogEnv* env, YogVal klass, YogVal pkg)
 {
-    YogClass_define_method(env, klass, "init", init);
+    SAVE_ARGS2(env, klass, pkg);
+    YogClass_define_method(env, klass, pkg, "init", init);
+    RETURN_VOID(env);
 }
 
 static YogVal
@@ -257,18 +259,24 @@ get_attr(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 void
-YogObject_boot(YogEnv* env, YogVal cObject)
+YogObject_boot(YogEnv* env, YogVal cObject, YogVal pkg)
 {
-    SAVE_ARG(env, cObject);
+    SAVE_ARGS2(env, cObject, pkg);
 
-#define DEFINE_METHOD(name, f)  YogClass_define_method(env, cObject, name, f)
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, cObject, pkg, name, f); \
+} while (0)
     DEFINE_METHOD("!=", not_equal);
     DEFINE_METHOD("==", equal);
     DEFINE_METHOD("get_attr", get_attr);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
-    YogClass_define_property(env, cObject, "class", get_class, NULL);
+#define DEFINE_PROP(name, getter, setter)   do { \
+    YogClass_define_property(env, cObject, pkg, (name), (getter), (setter)); \
+} while (0)
+    DEFINE_PROP("class", get_class, NULL);
+#undef DEFINE_PROP
 
     RETURN_VOID(env);
 }

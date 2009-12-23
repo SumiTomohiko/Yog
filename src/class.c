@@ -83,15 +83,15 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
 }
 
 void
-YogClass_define_class_method(YogEnv* env, YogVal self, const char* name, void* f)
+YogClass_define_class_method(YogEnv* env, YogVal self, YogVal pkg, const char* name, void* f)
 {
-    SAVE_ARG(env, self);
+    SAVE_ARGS2(env, self, pkg);
     YogVal func = YUNDEF;
     YogVal method = YUNDEF;
     PUSH_LOCALS2(env, func, method);
 
     YogVal class_name = PTR_AS(YogClass, self)->name;
-    func = YogNativeFunction_new(env, class_name, name, f);
+    func = YogNativeFunction_new(env, class_name, pkg, name, f);
     method = YogClassMethod_new(env);
     PTR_AS(YogClassMethod, method)->f = func;
 
@@ -101,15 +101,14 @@ YogClass_define_class_method(YogEnv* env, YogVal self, const char* name, void* f
 }
 
 void
-YogClass_define_method(YogEnv* env, YogVal klass, const char* name, void* f)
+YogClass_define_method(YogEnv* env, YogVal klass, YogVal pkg, const char* name, void* f)
 {
-    SAVE_ARG(env, klass);
-
+    SAVE_ARGS2(env, klass, pkg);
     YogVal func = YUNDEF;
     PUSH_LOCAL(env, func);
 
     YogVal class_name = PTR_AS(YogClass, klass)->name;
-    func = YogNativeFunction_new(env, class_name, name, f);
+    func = YogNativeFunction_new(env, class_name, pkg, name, f);
     YogObj_set_attr(env, klass, name, func);
 
     RETURN_VOID(env);
@@ -212,9 +211,11 @@ new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 void
-YogClass_class_init(YogEnv* env, YogVal cClass)
+YogClass_class_init(YogEnv* env, YogVal cClass, YogVal pkg)
 {
-    YogClass_define_method(env, cClass, "new", new_);
+    SAVE_ARGS2(env, cClass, pkg);
+    YogClass_define_method(env, cClass, pkg, "new", new_);
+    RETURN_VOID(env);
 }
 
 YogVal
@@ -280,9 +281,9 @@ YogClass_define_executor(YogEnv* env, YogVal self, Executor exec)
 }
 
 void
-YogClass_define_property(YogEnv* env, YogVal self, const char* name, void* get, void* set)
+YogClass_define_property(YogEnv* env, YogVal self, YogVal pkg, const char* name, void* get, void* set)
 {
-    SAVE_ARG(env, self);
+    SAVE_ARGS2(env, self, pkg);
     YogVal getter = YUNDEF;
     YogVal setter = YUNDEF;
     YogVal prop = YUNDEF;
@@ -298,7 +299,7 @@ YogClass_define_property(YogEnv* env, YogVal self, const char* name, void* get, 
 #   define snprintf     _snprintf
 #endif
         snprintf(getter_name, size, GETTER_HEAD "%s", name);
-        getter = YogNativeFunction_new(env, class_name, getter_name, get);
+        getter = YogNativeFunction_new(env, class_name, pkg, getter_name, get);
 #undef GETTER_HEAD
     }
 
@@ -307,7 +308,7 @@ YogClass_define_property(YogEnv* env, YogVal self, const char* name, void* get, 
         uint_t size = strlen(SETTER_HEAD) + strlen(name) + 1;
         char* setter_name = (char*)alloca(sizeof(char) * size);
         snprintf(setter_name, size, SETTER_HEAD "%s", name);
-        setter = YogNativeFunction_new(env, class_name, setter_name, set);
+        setter = YogNativeFunction_new(env, class_name, pkg, setter_name, set);
 #undef setter_HEAD
     }
 
@@ -374,9 +375,9 @@ YogClass_include_module(YogEnv* env, YogVal self, YogVal module)
 }
 
 void
-YogClass_boot(YogEnv* env, YogVal cClass)
+YogClass_boot(YogEnv* env, YogVal cClass, YogVal pkg)
 {
-    SAVE_ARG(env, cClass);
+    SAVE_ARGS2(env, cClass, pkg);
 
     YogClass_define_get_attr_caller(env, cClass, call_get_attr);
     YogClass_define_get_attr_executor(env, cClass, exec_get_attr);

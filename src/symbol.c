@@ -58,14 +58,16 @@ equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogSymbol_define_class(YogEnv* env)
+YogSymbol_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
     klass = YogClass_new(env, "Symbol", env->vm->cObject);
-#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, name, f)
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, klass, pkg, (name), (f)); \
+} while (0)
     DEFINE_METHOD("==", equal);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("inspect", inspect);

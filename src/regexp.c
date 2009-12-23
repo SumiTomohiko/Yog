@@ -85,9 +85,15 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
 }
 
 YogVal
-YogRegexp_define_class(YogEnv* env)
+YogRegexp_define_class(YogEnv* env, YogVal pkg)
 {
-    return YogClass_new(env, "Regexp", env->vm->cObject);
+    SAVE_ARG(env, pkg);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+
+    klass = YogClass_new(env, "Regexp", env->vm->cObject);
+
+    RETURN(env, klass);
 }
 
 static int_t
@@ -218,17 +224,22 @@ end(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogMatch_define_class(YogEnv* env)
+YogMatch_define_class(YogEnv* env, YogVal pkg)
 {
-    YogVal klass = YogClass_new(env, "Match", env->vm->cObject);
+    SAVE_ARG(env, pkg);
+    YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    YogClass_define_method(env, klass, "group", group);
-    YogClass_define_method(env, klass, "start", start);
-    YogClass_define_method(env, klass, "end", end);
+    klass = YogClass_new(env, "Match", env->vm->cObject);
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, klass, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("group", group);
+    DEFINE_METHOD("start", start);
+    DEFINE_METHOD("end", end);
+#undef DEFINE_METHOD
 
-    POP_LOCALS(env);
-    return klass;
+    RETURN(env, klass);
 }
 
 /**

@@ -443,16 +443,15 @@ YogArray_eval_builtin_script(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogArray_define_class(YogEnv* env)
+YogArray_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
-
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
     klass = YogClass_new(env, "Array", env->vm->cObject);
     YogClass_define_allocator(env, klass, allocate);
-#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, name, f)
+#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, pkg, name, f)
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD("[]", subscript);
@@ -461,7 +460,11 @@ YogArray_define_class(YogEnv* env)
     DEFINE_METHOD("pop", pop);
     DEFINE_METHOD("push", push);
 #undef DEFINE_METHOD
-    YogClass_define_property(env, klass, "size", get_size, NULL);
+#define DEFINE_PROP(name, getter, setter)   do { \
+    YogClass_define_property(env, klass, pkg, (name), getter, setter); \
+} while (0)
+    DEFINE_PROP("size", get_size, NULL);
+#undef DEFINE_PROP
 
     RETURN(env, klass);
 }

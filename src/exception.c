@@ -190,17 +190,25 @@ get_message(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogException_define_class(YogEnv* env)
+YogException_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
     klass = YogClass_new(env, "Exception", env->vm->cObject);
     YogClass_define_allocator(env, klass, allocate);
-    YogClass_define_method(env, klass, "init", init);
-    YogClass_define_method(env, klass, "to_s", to_s);
-    YogClass_define_property(env, klass, "message", get_message, NULL);
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, klass, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("init", init);
+    DEFINE_METHOD("to_s", to_s);
+#undef DEFINE_METHOD
+#define DEFINE_PROP(name, getter, setter)   do { \
+    YogClass_define_property(env, klass, pkg, (name), (getter), (setter)); \
+} while (0)
+    DEFINE_PROP("message", get_message, NULL);
+#undef DEFINE_PROP
 
     RETURN(env, klass);
 }

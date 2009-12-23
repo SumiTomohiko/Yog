@@ -24,7 +24,7 @@ typedef struct YogFloat YogFloat;
 extern "C" {
 #endif
 /* src/float.c */
-YogVal YogFloat_define_class(YogEnv*);
+YogVal YogFloat_define_class(YogEnv*, YogVal);
 YogVal YogFloat_new(YogEnv*);
 YogVal YogFloat_power(YogEnv*, YogVal, int_t);
 

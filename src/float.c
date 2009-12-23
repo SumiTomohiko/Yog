@@ -347,23 +347,27 @@ power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogFloat_define_class(YogEnv* env)
+YogFloat_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
     klass = YogClass_new(env, "Float", env->vm->cObject);
     YogClass_define_allocator(env, klass, allocate);
-    YogClass_define_method(env, klass, "*", multiply);
-    YogClass_define_method(env, klass, "**", power);
-    YogClass_define_method(env, klass, "+", add);
-    YogClass_define_method(env, klass, "+self", positive);
-    YogClass_define_method(env, klass, "-", subtract);
-    YogClass_define_method(env, klass, "-self", negative);
-    YogClass_define_method(env, klass, "/", divide);
-    YogClass_define_method(env, klass, "//", floor_divide);
-    YogClass_define_method(env, klass, "to_s", to_s);
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, klass, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("*", multiply);
+    DEFINE_METHOD("**", power);
+    DEFINE_METHOD("+", add);
+    DEFINE_METHOD("+self", positive);
+    DEFINE_METHOD("-", subtract);
+    DEFINE_METHOD("-self", negative);
+    DEFINE_METHOD("/", divide);
+    DEFINE_METHOD("//", floor_divide);
+    DEFINE_METHOD("to_s", to_s);
+#undef DEFINE_METHOD
 
     RETURN(env, klass);
 }

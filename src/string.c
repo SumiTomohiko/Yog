@@ -1054,9 +1054,9 @@ YogString_eval_builtin_script(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogString_define_class(YogEnv* env)
+YogString_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
@@ -1064,7 +1064,9 @@ YogString_define_class(YogEnv* env)
 
     YogClass_define_allocator(env, klass, allocate);
     YogClass_include_module(env, klass, env->vm->mComparable);
-#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, name, f)
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, klass, pkg, (name), (f)); \
+} while (0)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("<<", lshift);

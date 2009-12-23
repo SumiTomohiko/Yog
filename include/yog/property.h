@@ -24,7 +24,7 @@ typedef struct YogProperty YogProperty;
 extern "C" {
 #endif
 /* src/property.c */
-YogVal YogProperty_define_class(YogEnv*);
+YogVal YogProperty_define_class(YogEnv*, YogVal);
 YogVal YogProperty_new(YogEnv*);
 
 

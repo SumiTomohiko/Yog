@@ -123,9 +123,9 @@ exec_set_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
 }
 
 YogVal
-YogProperty_define_class(YogEnv* env)
+YogProperty_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 

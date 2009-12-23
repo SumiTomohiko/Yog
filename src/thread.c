@@ -440,21 +440,26 @@ get_recursive_stack(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal blo
 }
 
 YogVal
-YogThread_define_class(YogEnv* env)
+YogThread_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
-
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
     klass = YogClass_new(env, "Thread", env->vm->cObject);
     YogClass_define_allocator(env, klass, allocate);
-#define DEFINE_METHOD(name, f)  YogClass_define_method(env, klass, name, f)
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, klass, pkg, (name), (f)); \
+} while (0)
     DEFINE_METHOD("init", init);
     DEFINE_METHOD("run", run);
     DEFINE_METHOD("join", join);
 #undef DEFINE_METHOD
-    YogClass_define_property(env, klass, "__recursive_stack__", get_recursive_stack, NULL);
+#define DEFINE_PROP(name, getter, setter)   do { \
+    YogClass_define_property(env, klass, pkg, (name), (getter), (setter)); \
+} while (0)
+    DEFINE_PROP("__recursive_stack__", get_recursive_stack, NULL);
+#undef DEFINE_PROP
 
     RETURN(env, klass);
 }

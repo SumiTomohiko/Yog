@@ -33,7 +33,7 @@ typedef struct YogException YogException;
 extern "C" {
 #endif
 /* src/exception.c */
-YogVal YogException_define_class(YogEnv*);
+YogVal YogException_define_class(YogEnv*, YogVal);
 
 /* src/stacktrace.c */
 YogVal YogStackTraceEntry_new(YogEnv*);

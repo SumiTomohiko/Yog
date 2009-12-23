@@ -17,27 +17,27 @@ YogPackage_define_function(YogEnv* env, YogVal pkg, const char* name, void* f)
     YogVal func = YUNDEF;
     PUSH_LOCAL(env, func);
 
-    func = YogNativeFunction_new(env, INVALID_ID, name, f);
+    func = YogNativeFunction_new(env, INVALID_ID, pkg, name, f);
     YogObj_set_attr(env, pkg, name, func);
 
     RETURN_VOID(env);
 }
 
-static void
+void
 YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogObj_keep_children(env, ptr, keeper, heap);
 }
 
-static void
+void
 YogPackage_init(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
+    YogVal attrs = YUNDEF;
+    PUSH_LOCAL(env, attrs);
 
     YogObj_init(env, pkg, TYPE_PACKAGE, 0, env->vm->cPackage);
-    PTR_AS(YogObj, pkg)->attrs = YUNDEF;
-
-    YogVal attrs = YogTable_new_symbol_table(env);
+    attrs = YogTable_new_symbol_table(env);
     PTR_AS(YogObj, pkg)->attrs = attrs;
 
     RETURN_VOID(env);
@@ -47,9 +47,10 @@ static YogVal
 allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
-
-    YogVal pkg = ALLOC_OBJ(env, YogPackage_keep_children, NULL, YogPackage);
+    YogVal pkg = YUNDEF;
     PUSH_LOCAL(env, pkg);
+
+    pkg = ALLOC_OBJ(env, YogPackage_keep_children, NULL, YogPackage);
     YogPackage_init(env, pkg);
 
     RETURN(env, pkg);
@@ -106,17 +107,18 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
 }
 
 YogVal
-YogPackage_define_class(YogEnv* env)
+YogPackage_define_class(YogEnv* env, YogVal pkg)
 {
-    YogVal klass = YogClass_new(env, "Package", env->vm->cObject);
+    SAVE_ARG(env, pkg);
+    YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
+    klass = YogClass_new(env, "Package", env->vm->cObject);
     YogClass_define_allocator(env, klass, allocate);
     YogClass_define_get_attr_caller(env, klass, call_get_attr);
     YogClass_define_get_attr_executor(env, klass, exec_get_attr);
 
-    POP_LOCALS(env);
-    return klass;
+    RETURN(env, klass);
 }
 
 YogVal

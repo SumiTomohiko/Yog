@@ -41,9 +41,9 @@ exec_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
 }
 
 YogVal
-YogClassMethod_define_class(YogEnv* env)
+YogClassMethod_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 

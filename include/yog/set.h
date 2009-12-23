@@ -11,7 +11,7 @@ extern "C" {
 #endif
 /* src/set.c */
 void YogSet_add(YogEnv*, YogVal, YogVal);
-YogVal YogSet_define_class(YogEnv*);
+YogVal YogSet_define_class(YogEnv*, YogVal);
 YogVal YogSet_new(YogEnv*);
 
 

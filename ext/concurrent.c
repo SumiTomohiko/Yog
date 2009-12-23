@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <string.h>
 #include "yog/array.h"
 #include "yog/class.h"
 #include "yog/error.h"
@@ -44,8 +45,9 @@ Barrier_wait(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS4(env, self, args, kw, block);
 
     pthread_mutex_t* mutex = &PTR_AS(Barrier, self)->mutex;
-    if (pthread_mutex_lock(mutex) != 0) {
-        YOG_BUG(env, "pthread_mutex_lock failed");
+    int err;
+    if ((err = pthread_mutex_lock(mutex)) != 0) {
+        YOG_BUG(env, "pthread_mutex_lock failed: %s", strerror(err));
     }
     PTR_AS(Barrier, self)->counter--;
     while (PTR_AS(Barrier, self)->counter == 0) {
@@ -161,15 +163,23 @@ YogInit_concurrent(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
     cBarrier = YogClass_new(env, "Barrier", vm->cObject);
     YogClass_define_allocator(env, cBarrier, Barrier_alloc);
-    YogClass_define_method(env, cBarrier, "init", Barrier_init);
-    YogClass_define_method(env, cBarrier, "wait!", Barrier_wait);
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, cBarrier, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("init", Barrier_init);
+    DEFINE_METHOD("wait!", Barrier_wait);
+#undef DEFINE_METHOD
     YogObj_set_attr(env, pkg, "Barrier", cBarrier);
 
     cAtomicInt = YogClass_new(env, "AtomicInt", vm->cObject);
     YogClass_define_allocator(env, cAtomicInt, AtomicInt_alloc);
-    YogClass_define_method(env, cAtomicInt, "init", AtomicInt_init);
-    YogClass_define_method(env, cAtomicInt, "inc!", AtomicInt_inc);
-    YogClass_define_method(env, cAtomicInt, "get", AtomicInt_get);
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, cAtomicInt, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("init", AtomicInt_init);
+    DEFINE_METHOD("inc!", AtomicInt_inc);
+    DEFINE_METHOD("get", AtomicInt_get);
+#undef DEFINE_METHOD
     YogObj_set_attr(env, pkg, "AtomicInt", cAtomicInt);
 
     YogObj_set_attr(env, pkg, "Thread", vm->cThread);

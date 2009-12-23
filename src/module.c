@@ -38,22 +38,22 @@ YogModule_new(YogEnv* env)
 }
 
 void
-YogModule_define_function(YogEnv* env, YogVal self, const char* name, void* f)
+YogModule_define_function(YogEnv* env, YogVal self, YogVal pkg, const char* name, void* f)
 {
-    SAVE_ARG(env, self);
+    SAVE_ARGS2(env, self, pkg);
     YogVal func = YUNDEF;
     PUSH_LOCAL(env, func);
 
-    func = YogNativeFunction_new(env, INVALID_ID, name, f);
+    func = YogNativeFunction_new(env, INVALID_ID, pkg, name, f);
     YogObj_set_attr(env, self, name, func);
 
     RETURN_VOID(env);
 }
 
 YogVal
-YogModule_define_class(YogEnv* env)
+YogModule_define_class(YogEnv* env, YogVal pkg)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, pkg);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 

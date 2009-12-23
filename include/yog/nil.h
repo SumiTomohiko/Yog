@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 /* src/nil.c */
-YogVal YogNil_define_class(YogEnv*);
+YogVal YogNil_define_class(YogEnv*, YogVal);
 
 
 #if defined(__cplusplus)
