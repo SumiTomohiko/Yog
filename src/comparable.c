@@ -17,9 +17,9 @@ compare(YogEnv* env, YogVal self, YogVal obj)
 }
 
 static YogVal
-greater_equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+greater_equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
@@ -32,9 +32,9 @@ greater_equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-greater(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+greater(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
@@ -47,9 +47,9 @@ greater(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-less_equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+less_equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
@@ -62,9 +62,9 @@ less_equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-less(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+less(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
@@ -77,9 +77,9 @@ less(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-not_equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+not_equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
@@ -92,9 +92,9 @@ not_equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 

@@ -11,9 +11,9 @@
 } while (0)
 
 static YogVal
-to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal t = YUNDEF;
     PUSH_LOCAL(env, t);
 
@@ -35,9 +35,9 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "hash", params, args, kw);

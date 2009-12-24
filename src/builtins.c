@@ -20,9 +20,9 @@
 #include "yog/yog.h"
 
 static YogVal
-raise_exception(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+raise_exception(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal exc = YUNDEF;
     PUSH_LOCAL(env, exc);
 
@@ -65,9 +65,9 @@ print_object(YogEnv* env, YogVal obj)
 }
 
 static YogVal
-print(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+print(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
     YogVal objs = YUNDEF;
     PUSH_LOCALS2(env, obj, objs);
@@ -86,9 +86,9 @@ print(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-puts_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+puts_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
     YogVal objs = YUNDEF;
     PUSH_LOCALS2(env, obj, objs);
@@ -113,25 +113,25 @@ puts_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-import_package(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+import_package(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
-    YogVal pkg = YUNDEF;
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal p = YUNDEF;
     YogVal name = YUNDEF;
-    PUSH_LOCALS2(env, pkg, name);
+    PUSH_LOCALS2(env, p, name);
 
     YogCArg params[] = { { "name", &name }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "import_package", params, args, kw);
 
-    pkg = YogVM_import_package(env, env->vm, VAL2ID(name));
+    p = YogVM_import_package(env, env->vm, VAL2ID(name));
 
-    RETURN(env, pkg);
+    RETURN(env, p);
 }
 
 static YogVal
-property(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+property(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal getter = YUNDEF;
     YogVal setter = YUNDEF;
     YogVal prop = YUNDEF;
@@ -155,9 +155,9 @@ property(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-classmethod(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+classmethod(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal f = YUNDEF;
     YogVal method = YUNDEF;
     PUSH_LOCALS2(env, f, method);
@@ -190,9 +190,9 @@ argv2args(YogEnv* env, uint_t argc, char** argv)
 }
 
 static YogVal
-include_module(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+include_module(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal klass = YUNDEF;
     YogVal module = YUNDEF;
     PUSH_LOCALS2(env, klass, module);
@@ -209,9 +209,9 @@ include_module(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-get_current_thread(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+get_current_thread(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal thread = env->thread;
     PUSH_LOCAL(env, thread);
 
@@ -265,7 +265,7 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     YogMisc_eval_source(env, builtins, src);
 #endif
 
-    RETURN(env, builtins);
+    RETURN_VOID(env);
 }
 
 /**

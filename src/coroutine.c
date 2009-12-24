@@ -125,9 +125,9 @@ yield_coroutine(YogEnv* env, YogVal self)
 }
 
 static YogVal
-yield(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal coroutine = env->coroutine;
     YogVal frame = YUNDEF;
     YogVal boundary = YUNDEF;
@@ -210,9 +210,9 @@ coroutine_main(MAIN_PARAM)
 #undef MAIN_PARAM
 
 static YogVal
-resume(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
 
 #if defined(_WIN32)
     void* fiber_to_yield = GetCurrentFiber();
@@ -247,9 +247,9 @@ resume(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "init", params, args, kw);

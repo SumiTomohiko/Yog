@@ -170,9 +170,9 @@ YogClass_new(YogEnv* env, const char* name, YogVal super)
 }
 
 static YogVal
-new_(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+new_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 

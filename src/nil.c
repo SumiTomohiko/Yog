@@ -11,7 +11,7 @@ to_s(YogEnv* env)
 }
 
 static YogVal
-hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     return INT2VAL(2);
 }

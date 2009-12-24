@@ -42,9 +42,9 @@ YogDict_add(YogEnv* env, YogVal self, YogVal dict)
 }
 
 static YogVal
-each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+each(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal iter = YUNDEF;
     PUSH_LOCAL(env, iter);
     YogVal params[] = { YUNDEF, YUNDEF };
@@ -65,9 +65,9 @@ each(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
     YogVal dict = YUNDEF;
     PUSH_LOCALS2(env, right, dict);
@@ -107,9 +107,9 @@ YogDict_include(YogEnv* env, YogVal self, YogVal key)
 }
 
 static YogVal
-subscript(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal key = YUNDEF;
     YogVal value = YUNDEF;
     PUSH_LOCALS2(env, key, value);
@@ -142,9 +142,9 @@ YogDict_set(YogEnv* env, YogVal self, YogVal key, YogVal value)
 }
 
 static YogVal
-subscript_assign(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+subscript_assign(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal key = YUNDEF;
     YogVal value = YUNDEF;
     PUSH_LOCALS2(env, key, value);
@@ -216,9 +216,9 @@ YogDict_size(YogEnv* env, YogVal self)
 }
 
 static YogVal
-get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
 

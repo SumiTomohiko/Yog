@@ -125,9 +125,9 @@ group2index(YogEnv* env, YogMatch* match, YogVal arg)
 }
 
 static YogVal
-group(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+group(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal arg0 = YNIL;
     PUSH_LOCAL(env, arg0);
 
@@ -173,9 +173,9 @@ ptr2index(YogEnv* env, YogString* s, const char* ptr)
 }
 
 static YogVal
-start(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+start(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal arg0 = YNIL;
     PUSH_LOCAL(env, arg0);
 
@@ -198,9 +198,9 @@ start(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-end(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+end(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal arg0 = YNIL;
     PUSH_LOCAL(env, arg0);
 

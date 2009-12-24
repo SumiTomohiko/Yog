@@ -318,9 +318,9 @@ thread_main(void* arg)
 }
 
 static YogVal
-join(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+join(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "join", params, args, kw);
@@ -339,9 +339,9 @@ join(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-run(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+run(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal vararg = YNIL;
     YogVal arg = YUNDEF;
     PUSH_LOCALS2(env, vararg, arg);
@@ -384,9 +384,9 @@ run(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "init", params, args, kw);
@@ -424,9 +424,9 @@ ensure_recursive_stack(YogEnv* env, YogVal self)
 }
 
 static YogVal
-get_recursive_stack(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+get_recursive_stack(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal stack = YUNDEF;
     PUSH_LOCAL(env, stack);
 

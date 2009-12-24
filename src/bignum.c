@@ -37,9 +37,9 @@ YogBignum_to_s(YogEnv* env, YogVal self)
 }
 
 static YogVal
-to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
@@ -80,9 +80,9 @@ YogBignum_new(YogEnv* env)
 }
 
 static YogVal
-negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+negative(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal bignum = YUNDEF;
     PUSH_LOCAL(env, bignum);
 
@@ -97,9 +97,9 @@ negative(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
@@ -177,9 +177,9 @@ subtract_int(YogEnv* env, YogVal self, int_t right)
 }
 
 static YogVal
-subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+subtract(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
@@ -211,9 +211,9 @@ subtract(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-multiply(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+multiply(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
@@ -299,9 +299,9 @@ divide_bignum(YogEnv* env, YogVal self, YogVal bignum)
 }
 
 static YogVal
-divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+divide(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
@@ -408,9 +408,9 @@ YogBignum_modulo(YogEnv* env, YogVal self, YogVal n)
 }
 
 static YogVal
-modulo(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+modulo(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
@@ -431,9 +431,9 @@ modulo(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+floor_divide(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
     YogVal result = YUNDEF;
     PUSH_LOCALS2(env, right, result);
@@ -464,9 +464,9 @@ floor_divide(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+positive(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "+self", params, args, kw);
@@ -476,9 +476,9 @@ positive(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-not(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+not(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
 
@@ -523,9 +523,9 @@ YogBignum_rshift(YogEnv* env, YogVal self, int_t width)
 }
 
 static YogVal
-rshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+rshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal retval = YUNDEF;
     YogVal right = YUNDEF;
     PUSH_LOCALS2(env, retval, right);
@@ -549,9 +549,9 @@ rshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-lshift(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+lshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal retval = YUNDEF;
     YogVal right = YUNDEF;
     PUSH_LOCALS2(env, retval, right);
@@ -642,9 +642,9 @@ YogBignum_or(YogEnv* env, YogVal self, YogVal n)
 }
 
 static YogVal
-or(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+or(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal retval = YUNDEF;
     YogVal right = YUNDEF;
     PUSH_LOCALS2(env, retval, right);
@@ -713,9 +713,9 @@ YogBignum_and(YogEnv* env, YogVal self, YogVal n)
 }
 
 static YogVal
-and(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+and(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, right, retval);
@@ -730,9 +730,9 @@ and(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-xor(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+xor(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal retval = YUNDEF;
     YogVal right = YUNDEF;
     PUSH_LOCALS2(env, retval, right);
@@ -747,9 +747,9 @@ xor(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
@@ -764,9 +764,9 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-compare(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+compare(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
     PUSH_LOCAL(env, right);
 
@@ -860,9 +860,9 @@ YogBignum_power(YogEnv* env, YogVal self, YogVal right)
 }
 
 static YogVal
-power(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+power(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, right, retval);

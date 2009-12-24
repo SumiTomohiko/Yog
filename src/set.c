@@ -6,9 +6,9 @@
 #include "yog/yog.h"
 
 static YogVal
-get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
 
@@ -22,9 +22,9 @@ get_size(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-include(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+include(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal elem = YUNDEF;
     PUSH_LOCAL(env, elem);
 
@@ -47,9 +47,9 @@ YogSet_add(YogEnv* env, YogVal self, YogVal elem)
 }
 
 static YogVal
-add(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal elem = YUNDEF;
     YogVal objs = YUNDEF;
     PUSH_LOCALS2(env, elem, objs);

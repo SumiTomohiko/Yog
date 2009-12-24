@@ -21,9 +21,9 @@ typedef struct Barrier Barrier;
 #define TYPE_BARRIER    ((type_t)Barrier_alloc)
 
 static YogVal
-Barrier_init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+Barrier_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
 
     if (pthread_mutex_init(&PTR_AS(Barrier, self)->mutex, NULL) != 0) {
         YOG_BUG(env, "pthread_mutex_init failed");
@@ -40,9 +40,9 @@ Barrier_init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-Barrier_wait(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+Barrier_wait(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
 
     pthread_mutex_t* mutex = &PTR_AS(Barrier, self)->mutex;
     int err;
@@ -127,9 +127,9 @@ AtomicInt_alloc(YogEnv* env, YogVal klass)
 }
 
 static YogVal
-AtomicInt_init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+AtomicInt_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
 
     YogVal value = YogArray_at(env, args, 0);
     /* TODO: check type */
@@ -139,15 +139,15 @@ AtomicInt_init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-AtomicInt_inc(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+AtomicInt_inc(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     __asm__ __volatile__("lock incl %0": "+m" (PTR_AS(AtomicInt, self)->value));
     RETURN(env, self);
 }
 
 static YogVal
-AtomicInt_get(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+AtomicInt_get(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     return INT2VAL(PTR_AS(AtomicInt, self)->value);
 }

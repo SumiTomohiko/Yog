@@ -71,9 +71,9 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
 }
 
 static YogVal
-init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal message = YNIL;
     YogVal frame = YUNDEF;
     YogVal st = YUNDEF;
@@ -158,9 +158,9 @@ init(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal msg = YUNDEF;
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, msg, retval);
@@ -175,9 +175,9 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-get_message(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+get_message(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal message = YUNDEF;
     PUSH_LOCAL(env, message);
 

@@ -125,9 +125,9 @@ YogObj_class_init(YogEnv* env, YogVal klass, YogVal pkg)
 }
 
 static YogVal
-to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal klass = YUNDEF;
     YogVal s = YUNDEF;
     YogVal name_str = YUNDEF;
@@ -145,9 +145,9 @@ to_s(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-get_class(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+get_class(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
@@ -160,11 +160,11 @@ get_class(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     YOG_ASSERT(env, IS_PTR(self), "self is not pointer (0x%08x)", self);
 
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal retval = YUNDEF;
     PUSH_LOCAL(env, retval);
 
@@ -177,11 +177,11 @@ hash(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-not_equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+not_equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     YOG_ASSERT(env, IS_PTR(self), "self is not pointer (0x%08x)", self);
 
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal b = YUNDEF;
     YogVal obj = YUNDEF;
     PUSH_LOCALS2(env, b, obj);
@@ -198,9 +198,9 @@ not_equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-equal(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal retval = YUNDEF;
     YogVal obj = YUNDEF;
     PUSH_LOCALS2(env, retval, obj);
@@ -227,9 +227,9 @@ YogObject_eval_builtin_script(YogEnv* env, YogVal klass)
 }
 
 static YogVal
-get_attr(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+get_attr(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal name = YUNDEF;
     YogVal val = YUNDEF;
     PUSH_LOCALS2(env, name, val);

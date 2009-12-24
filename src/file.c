@@ -47,9 +47,9 @@ YogFile_new(YogEnv* env)
 }
 
 static YogVal
-write(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+write(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
@@ -66,9 +66,9 @@ write(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-read(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
@@ -99,9 +99,9 @@ do_close(YogEnv* env, YogVal self)
 }
 
 static YogVal
-close(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+close(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
 
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "close", params, args, kw);
@@ -113,9 +113,9 @@ close(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-readline(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+readline(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal line = YUNDEF;
     PUSH_LOCAL(env, line);
 
@@ -143,9 +143,9 @@ readline(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-open(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal file = YUNDEF;
     YogVal path = YUNDEF;
     YogVal mode = YUNDEF;

@@ -11,7 +11,7 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-typedef YogVal (*Body)(YogEnv*, YogVal, YogVal, YogVal, YogVal);
+typedef YogVal (*Body)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 
 static void
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, uint_t argc, YogVal args, uint_t args_offset)
@@ -320,9 +320,9 @@ YogFunction_exec_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal klass)
 }
 
 static YogVal
-descr_get(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+descr_get(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
     YogVal self_class = YUNDEF;
     YogVal retval = YUNDEF;
@@ -422,7 +422,8 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
     YogVal retval = YUNDEF;
     YogVal frame = YUNDEF;
     YogVal kw = YUNDEF;
-    PUSH_LOCALS4(env, args, retval, frame, kw);
+    YogVal pkg = YUNDEF;
+    PUSH_LOCALS5(env, args, retval, frame, kw, pkg);
 
     args = create_positional_argument(env, posargc, posargs, vararg);
     kw = create_keyword_argument(env, kwargc, kwargs, varkwarg);
@@ -433,7 +434,8 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
     env->frame = frame;
 
     Body f = (Body)PTR_AS(YogNativeFunction, callee)->f;
-    retval = (*f)(env, self, args, kw, blockarg);
+    pkg = PTR_AS(YogNativeFunction, callee)->pkg;
+    retval = (*f)(env, self, pkg, args, kw, blockarg);
 
     env->frame = PTR_AS(YogFrame, env->frame)->prev;
 
