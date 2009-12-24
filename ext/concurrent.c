@@ -6,6 +6,7 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/object.h"
+#include "yog/package.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -152,13 +153,16 @@ AtomicInt_get(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogV
     return INT2VAL(PTR_AS(AtomicInt, self)->value);
 }
 
-void
-YogInit_concurrent(YogEnv* env, YogVal pkg)
+YogVal
+YogInit_concurrent(YogEnv* env)
 {
-    SAVE_ARG(env, pkg);
+    SAVE_LOCALS(env);
+    YogVal pkg = YUNDEF;
     YogVal cBarrier = YUNDEF;
     YogVal cAtomicInt = YUNDEF;
-    PUSH_LOCALS2(env, cBarrier, cAtomicInt);
+    PUSH_LOCALS3(env, pkg, cBarrier, cAtomicInt);
+
+    pkg = YogPackage_new(env);
 
     YogVM* vm = env->vm;
     cBarrier = YogClass_new(env, "Barrier", vm->cObject);
@@ -184,7 +188,7 @@ YogInit_concurrent(YogEnv* env, YogVal pkg)
 
     YogObj_set_attr(env, pkg, "Thread", vm->cThread);
 
-    RETURN_VOID(env);
+    RETURN(env, pkg);
 }
 
 /**

@@ -36,7 +36,7 @@ YogPackage_init(YogEnv* env, YogVal pkg)
     YogVal attrs = YUNDEF;
     PUSH_LOCAL(env, attrs);
 
-    YogObj_init(env, pkg, TYPE_PACKAGE, 0, env->vm->cPackage);
+    YogObj_init(env, pkg, TYPE_PACKAGE, FLAG_PKG, env->vm->cPackage);
     attrs = YogTable_new_symbol_table(env);
     PTR_AS(YogObj, pkg)->attrs = attrs;
 

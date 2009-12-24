@@ -981,15 +981,16 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     strlcat(init_name, pc, init_name_size);
 
     CLEAR_ERROR;
-    typedef void (*Initializer)(YogEnv*, YogVal);
+    typedef YogVal (*Initializer)(YogEnv*);
     Initializer init = (Initializer)get_proc(env, handle, init_name);
     if (init == NULL) {
         YogError_raise_ImportError(env, "dynamic package does not define init function (%s)", init_name);
     }
 #undef CLEAR_ERROR
 
-    pkg = YogPackage_new(env);
-    (*init)(env, pkg);
+    pkg = (*init)(env);
+    YOG_ASSERT(env, IS_PTR(pkg), "invalid package");
+    YOG_ASSERT(env, BASIC_OBJ(pkg)->flags & FLAG_PKG, "invalid package");
 
     RETURN(env, pkg);
 }
