@@ -96,16 +96,16 @@ inst make_function
 }
 
 inst call_function
-(uint8_t argc, uint8_t kwargc, uint8_t blockargc, uint8_t varargc, uint8_t varkwargc)
-(...) depth: argc + 2 * kwargc + blockargc + varargc + varkwargc
+(uint8_t argc, uint8_t kwargc, uint8_t varargc, uint8_t varkwargc, uint8_t blockargc)
+(...) depth: argc + 2 * kwargc + varargc + varkwargc + blockargc
 (...) depth: 1
 {
-    POP_ARGS(args, kwargs, blockarg, vararg, varkwarg);
+    POP_ARGS(args, kwargs, vararg, varkwarg, blockarg);
     YogVal callee = POP();
 
     YogVal klass = YogVal_get_class(env, callee);
     YOG_ASSERT(env, PTR_AS(YogClass, klass)->exec != NULL, "uncallable");
-    PTR_AS(YogClass, klass)->exec(env, callee, argc, args, blockarg, kwargc, kwargs, vararg, varkwarg);
+    PTR_AS(YogClass, klass)->exec(env, callee, argc, args, kwargc, kwargs, vararg, varkwarg, blockarg);
 
     POP_LOCALS(env);
     POP_LOCALS(env);

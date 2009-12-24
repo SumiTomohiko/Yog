@@ -2156,11 +2156,6 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
         visit_node(env, visitor, blockarg, data);
     }
 
-    uint8_t blockargc = 0;
-    if (IS_PTR(blockarg)) {
-        blockargc = 1;
-    }
-
     uint8_t varargc;
     if (IS_PTR(vararg)) {
         varargc = 1;
@@ -2177,10 +2172,15 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
         varkwargc = 0;
     }
 
+    uint8_t blockargc = 0;
+    if (IS_PTR(blockarg)) {
+        blockargc = 1;
+    }
+
     label_break_start = Label_new(env);
     label_break_end = Label_new(env);
     add_inst(env, data, label_break_start);
-    CompileData_add_call_function(env, data, NODE(node)->lineno, posargc, kwargc, blockargc, varargc, varkwargc);
+    CompileData_add_call_function(env, data, NODE(node)->lineno, posargc, kwargc, varargc, varkwargc, blockargc);
     add_inst(env, data, label_break_end);
 
     exc_tbl_entry = ExceptionTableEntry_new(env);

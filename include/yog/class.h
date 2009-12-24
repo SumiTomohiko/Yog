@@ -10,8 +10,8 @@
 
 typedef void (*GetAttrExecutor)(YogEnv*, YogVal, ID);
 typedef YogVal (*GetAttrCaller)(YogEnv*, YogVal, ID);
-typedef void (*Executor)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, YogVal*, YogVal, YogVal);
-typedef YogVal (*Caller)(YogEnv*, YogVal, uint8_t, YogVal*, YogVal, uint8_t, YogVal*, YogVal, YogVal);
+typedef void (*Executor)(YogEnv*, YogVal, uint8_t, YogVal*, uint8_t, YogVal*, YogVal, YogVal, YogVal);
+typedef YogVal (*Caller)(YogEnv*, YogVal, uint8_t, YogVal*, uint8_t, YogVal*, YogVal, YogVal, YogVal);
 
 struct YogClass {
     YOGOBJ_HEAD;

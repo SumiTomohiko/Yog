@@ -56,7 +56,7 @@ exec_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     class_of_method = YogVal_get_class(env, method);
     Executor exec = PTR_AS(YogClass, class_of_method)->exec;
     YOG_ASSERT(env, exec != NULL, "method isn't callable");
-    exec(env, method, 0, NULL, YNIL, 0, NULL, YNIL, YNIL);
+    exec(env, method, 0, NULL, 0, NULL, YNIL, YNIL, YNIL);
 
     RETURN_VOID(env);
 }
@@ -85,7 +85,7 @@ call_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     class_of_method = YogVal_get_class(env, method);
     Caller call = PTR_AS(YogClass, class_of_method)->call;
     YOG_ASSERT(env, call != NULL, "method isn't callable");
-    retval = call(env, method, 0, NULL, YNIL, 0, NULL, YNIL, YNIL);
+    retval = call(env, method, 0, NULL, 0, NULL, YNIL, YNIL, YNIL);
 
     RETURN(env, retval);
 }
@@ -117,7 +117,7 @@ exec_set_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     class_of_method = YogVal_get_class(env, method);
     Executor exec = PTR_AS(YogClass, class_of_method)->exec;
     YOG_ASSERT(env, exec != NULL, "method isn't callable");
-    exec(env, method, array_sizeof(args), args, YNIL, 0, NULL, YNIL, YNIL);
+    exec(env, method, array_sizeof(args), args, 0, NULL, YNIL, YNIL, YNIL);
 
     RETURN_VOID(env);
 }

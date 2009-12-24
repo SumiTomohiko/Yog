@@ -504,7 +504,7 @@ YogEval_mainloop(YogEnv* env)
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define THREAD          (env->thread)
 #define JUMP(m)         PC = m;
-#define POP_ARGS(args, kwargs, blockarg, vararg, varkwarg) \
+#define POP_ARGS(args, kwargs, vararg, varkwarg, blockarg) \
     YogVal varkwarg = YUNDEF; \
     YogVal vararg = YUNDEF; \
     YogVal blockarg = YUNDEF; \
@@ -523,16 +523,16 @@ YogEval_mainloop(YogEnv* env)
     PUSH_LOCALSX(env, 2 * (kwargc), kwargs); \
     PUSH_LOCALSX(env, (argc), args); \
 \
+    if (blockargc == 1) { \
+        blockarg = POP(); \
+    } \
+\
     if (varkwargc == 1) { \
         varkwarg = POP(); \
     } \
 \
     if (varargc == 1) { \
         vararg = POP(); \
-    } \
-\
-    if (blockargc == 1) { \
-        blockarg = POP(); \
     } \
 \
     do { \
