@@ -229,9 +229,9 @@ BlockArg_new(YogEnv* env, uint_t lineno, YogVal params, YogVal stmts)
 }
 
 static YogVal
-Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_default, YogVal block_param, YogVal var_param, YogVal kw_param)
+Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_default, YogVal var_param, YogVal kw_param, YogVal block_param)
 {
-    SAVE_ARGS5(env, params_without_default, params_with_default, block_param, var_param, kw_param);
+    SAVE_ARGS5(env, params_without_default, params_with_default, var_param, kw_param, block_param);
 
     YogVal array = YUNDEF;
     PUSH_LOCAL(env, array);
@@ -243,14 +243,14 @@ Params_new(YogEnv* env, YogVal params_without_default, YogVal params_with_defaul
     if (IS_PTR(params_with_default)) {
         YogArray_extend(env, array, params_with_default);
     }
-    if (IS_PTR(block_param)) {
-        YogArray_push(env, array, block_param);
-    }
     if (IS_PTR(var_param)) {
         YogArray_push(env, array, var_param);
     }
     if (IS_PTR(kw_param)) {
         YogArray_push(env, array, kw_param);
+    }
+    if (IS_PTR(block_param)) {
+        YogArray_push(env, array, block_param);
     }
 
     RETURN(env, array);
@@ -944,98 +944,98 @@ decorator(A) ::= AT expr(B) NEWLINE. {
     A = B;
 }
 
-params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA block_param(D) COMMA var_param(E) COMMA kw_param(F). {
+params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA var_param(D) COMMA kw_param(E) COMMA block_param(F). {
     A = Params_new(env, B, C, D, E, F);
 }
-params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA block_param(D) COMMA var_param(E). {
-    A = Params_new(env, B, C, D, E, YNIL);
-}
-params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA block_param(D) COMMA kw_param(E). {
+params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA var_param(D) COMMA block_param(E). {
     A = Params_new(env, B, C, D, YNIL, E);
 }
-params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA block_param(D). {
-    A = Params_new(env, B, C, D, YNIL, YNIL);
-}
-params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA var_param(D) COMMA kw_param(E). {
+params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA kw_param(D) COMMA block_param(E). {
     A = Params_new(env, B, C, YNIL, D, E);
 }
+params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA block_param(D). {
+    A = Params_new(env, B, C, YNIL, YNIL, D);
+}
+params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA var_param(D) COMMA kw_param(E). {
+    A = Params_new(env, B, C, D, E, YNIL);
+}
 params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA var_param(D). {
-    A = Params_new(env, B, C, YNIL, D, YNIL);
+    A = Params_new(env, B, C, D, YNIL, YNIL);
 }
 params(A) ::= params_without_default(B) COMMA params_with_default(C) COMMA kw_param(D). {
-    A = Params_new(env, B, C, YNIL, YNIL, D);
+    A = Params_new(env, B, C, YNIL, D, YNIL);
 }
 params(A) ::= params_without_default(B) COMMA params_with_default(C). {
     A = Params_new(env, B, C, YNIL, YNIL, YNIL);
 }
-params(A) ::= params_without_default(B) COMMA block_param(C) COMMA var_param(D) COMMA kw_param(E). {
+params(A) ::= params_without_default(B) COMMA var_param(C) COMMA kw_param(D) COMMA block_param(E). {
     A = Params_new(env, B, YNIL, C, D, E);
 }
-params(A) ::= params_without_default(B) COMMA block_param(C) COMMA var_param(D). {
-    A = Params_new(env, B, YNIL, C, D, YNIL);
-}
-params(A) ::= params_without_default(B) COMMA block_param(C) COMMA kw_param(D). {
+params(A) ::= params_without_default(B) COMMA var_param(C) COMMA block_param(D). {
     A = Params_new(env, B, YNIL, C, YNIL, D);
 }
-params(A) ::= params_without_default(B) COMMA block_param(C). {
-    A = Params_new(env, B, YNIL, C, YNIL, YNIL);
-}
-params(A) ::= params_without_default(B) COMMA var_param(C) COMMA kw_param(D). {
+params(A) ::= params_without_default(B) COMMA kw_param(C) COMMA block_param(D). {
     A = Params_new(env, B, YNIL, YNIL, C, D);
 }
+params(A) ::= params_without_default(B) COMMA block_param(C). {
+    A = Params_new(env, B, YNIL, YNIL, YNIL, C);
+}
+params(A) ::= params_without_default(B) COMMA var_param(C) COMMA kw_param(D). {
+    A = Params_new(env, B, YNIL, C, D, YNIL);
+}
 params(A) ::= params_without_default(B) COMMA var_param(C). {
-    A = Params_new(env, B, YNIL, YNIL, C, YNIL);
+    A = Params_new(env, B, YNIL, C, YNIL, YNIL);
 }
 params(A) ::= params_without_default(B) COMMA kw_param(C). {
-    A = Params_new(env, B, YNIL, YNIL, YNIL, C);
+    A = Params_new(env, B, YNIL, YNIL, C, YNIL);
 }
 params(A) ::= params_without_default(B). {
     A = Params_new(env, B, YNIL, YNIL, YNIL, YNIL);
 }
-params(A) ::= params_with_default(B) COMMA block_param(C) COMMA var_param(D) COMMA kw_param(E). {
+params(A) ::= params_with_default(B) COMMA var_param(C) COMMA kw_param(D) COMMA block_param(E). {
     A = Params_new(env, YNIL, B, C, D, E);
 }
-params(A) ::= params_with_default(B) COMMA block_param(C) COMMA var_param(D). {
-    A = Params_new(env, YNIL, B, C, D, YNIL);
-}
-params(A) ::= params_with_default(B) COMMA block_param(C) COMMA kw_param(D). {
+params(A) ::= params_with_default(B) COMMA var_param(C) COMMA block_param(D). {
     A = Params_new(env, YNIL, B, C, YNIL, D);
 }
-params(A) ::= params_with_default(B) COMMA block_param(C). {
-    A = Params_new(env, YNIL, B, C, YNIL, YNIL);
-}
-params(A) ::= params_with_default(B) COMMA var_param(C) COMMA kw_param(D). {
+params(A) ::= params_with_default(B) COMMA kw_param(C) COMMA block_param(D). {
     A = Params_new(env, YNIL, B, YNIL, C, D);
 }
+params(A) ::= params_with_default(B) COMMA block_param(C). {
+    A = Params_new(env, YNIL, B, YNIL, YNIL, C);
+}
+params(A) ::= params_with_default(B) COMMA var_param(C) COMMA kw_param(D). {
+    A = Params_new(env, YNIL, B, C, D, YNIL);
+}
 params(A) ::= params_with_default(B) COMMA var_param(C). {
-    A = Params_new(env, YNIL, B, YNIL, C, YNIL);
+    A = Params_new(env, YNIL, B, C, YNIL, YNIL);
 }
 params(A) ::= params_with_default(B) COMMA kw_param(C). {
-    A = Params_new(env, YNIL, B, YNIL, YNIL, C);
+    A = Params_new(env, YNIL, B, YNIL, C, YNIL);
 }
 params(A) ::= params_with_default(B). {
     A = Params_new(env, YNIL, B, YNIL, YNIL, YNIL);
 }
-params(A) ::= block_param(B) COMMA var_param(C) COMMA kw_param(D). {
+params(A) ::= var_param(B) COMMA kw_param(C) COMMA block_param(D). {
     A = Params_new(env, YNIL, YNIL, B, C, D);
 }
-params(A) ::= block_param(B) COMMA var_param(C). {
-    A = Params_new(env, YNIL, YNIL, B, C, YNIL);
-}
-params(A) ::= block_param(B) COMMA kw_param(C). {
+params(A) ::= var_param(B) COMMA block_param(C). {
     A = Params_new(env, YNIL, YNIL, B, YNIL, C);
 }
-params(A) ::= block_param(B). {
-    A = Params_new(env, YNIL, YNIL, B, YNIL, YNIL);
-}
-params(A) ::= var_param(B) COMMA kw_param(C). {
+params(A) ::= kw_param(B) COMMA block_param(C). {
     A = Params_new(env, YNIL, YNIL, YNIL, B, C);
 }
+params(A) ::= block_param(B). {
+    A = Params_new(env, YNIL, YNIL, YNIL, YNIL, B);
+}
+params(A) ::= var_param(B) COMMA kw_param(C). {
+    A = Params_new(env, YNIL, YNIL, B, C, YNIL);
+}
 params(A) ::= var_param(B). {
-    A = Params_new(env, YNIL, YNIL, YNIL, B, YNIL);
+    A = Params_new(env, YNIL, YNIL, B, YNIL, YNIL);
 }
 params(A) ::= kw_param(B). {
-    A = Params_new(env, YNIL, YNIL, YNIL, YNIL, B);
+    A = Params_new(env, YNIL, YNIL, YNIL, B, YNIL);
 }
 params(A) ::= /* empty */. {
     A = Params_new(env, YNIL, YNIL, YNIL, YNIL, YNIL);
