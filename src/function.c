@@ -91,13 +91,6 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         }
     }
 
-    if (IS_PTR(blockarg)) {
-        YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->blockargc == 1, "Can't accept block argument.");
-        YogVal* items = PTR_AS(YogValArray, args)->items;
-        uint_t index = PTR_AS(YogArgInfo, arg_info)->argc;
-        items[args_offset + index] = blockarg;
-    }
-
     for (i = 0; i < kwargc; i++) {
         YogVal name = kwargs[2 * i];
         ID id = VAL2ID(name);
@@ -114,13 +107,6 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             }
         }
         if (j != PTR_AS(YogArgInfo, arg_info)->argc) {
-            continue;
-        }
-        ID argname = PTR_AS(YogArgInfo, arg_info)->blockargname;
-        if (argname == id) {
-            YogVal* items = PTR_AS(YogValArray, args)->items;
-            YOG_ASSERT(env, IS_UNDEF(items[args_offset + j]), "Argument specified twice.");
-            items[args_offset + argc - 1] = blockarg;
             continue;
         }
         if (!IS_PTR(kw)) {
@@ -155,6 +141,13 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             YOG_ASSERT(env, IS_PTR(kw), "no keyword parameter");
             YogDict_set(env, kw, key, value);
         }
+    }
+
+    if (IS_PTR(blockarg)) {
+        YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->blockargc == 1, "Can't accept block argument.");
+        YogVal* items = PTR_AS(YogValArray, args)->items;
+        uint_t index = PTR_AS(YogArgInfo, arg_info)->argc;
+        items[args_offset + index] = blockarg;
     }
 
     RETURN_VOID(env);

@@ -253,4 +253,26 @@ foo(**{ bar: 42, quux: 26})
 """, """26
 """)
 
+    def test_block0(self):
+        self._test("""
+def foo(&block)
+  block()
+end
+
+foo() do
+  print(42)
+end
+""", "42")
+
+    def test_block10(self):
+        self._test("""
+def foo(&block)
+  block(42)
+end
+
+foo() do [n]
+  print(n)
+end
+""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

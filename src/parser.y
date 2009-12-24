@@ -1053,7 +1053,7 @@ var_param(A) ::= STAR(B) NAME(C). {
     A = Param_new(env, NODE_VAR_PARAM, lineno, id, YNIL);
 }
 
-block_param(A) ::= AMPER(B) NAME(C) param_default_opt(D). {
+block_param(A) ::= AND(B) NAME(C) param_default_opt(D). {
     uint_t lineno = TOKEN_LINENO(B);
     ID id = PTR_AS(YogToken, C)->u.id;
     A = Param_new(env, NODE_BLOCK_PARAM, lineno, id, D);

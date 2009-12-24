@@ -1844,19 +1844,6 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
 
     uint_t n = argc;
     YogVal node = YogArray_at(env, params, n);
-    if (NODE(node)->type == NODE_BLOCK_PARAM) {
-        ARG_INFO(arg_info)->blockargc = 1;
-
-        ID name = NODE(node)->u.param.name;
-        ARG_INFO(arg_info)->blockargname = name;
-
-        n++;
-        if (size == n) {
-            RETURN_VOID(env);
-        }
-        node = YogArray_at(env, params, n);
-    }
-
     if (NODE(node)->type == NODE_VAR_PARAM) {
         ARG_INFO(arg_info)->varargc = 1;
         n++;
@@ -1866,11 +1853,18 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
         node = YogArray_at(env, params, n);
     }
 
-    YOG_ASSERT(env, NODE(node)->type == NODE_KW_PARAM, "Node must be NODE_KW_PARAM.");
-    ARG_INFO(arg_info)->kwargc = 1;
+    if (NODE(node)->type == NODE_KW_PARAM) {
+        ARG_INFO(arg_info)->kwargc = 1;
+        n++;
+        if (size == n) {
+            RETURN_VOID(env);
+        }
+        node = YogArray_at(env, params, n);
+    }
 
-    n++;
-    YOG_ASSERT(env, size == n, "Parameters count is unmatched.");
+    YOG_ASSERT(env, n == size - 1, "Parameters count is unmatched.");
+    YOG_ASSERT(env, NODE(node)->type == NODE_BLOCK_PARAM, "Node must be NODE_BLOCK_PARAM.");
+    ARG_INFO(arg_info)->blockargc = 1;
 
     RETURN_VOID(env);
 }
