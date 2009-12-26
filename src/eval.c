@@ -510,42 +510,37 @@ YogEval_mainloop(YogEnv* env)
     YogVal blockarg = YUNDEF; \
     YogVal kwargs[256]; \
     YogVal args[256]; \
-    do { \
-        uint_t i = 0; \
-        for (i = 0; i < 2 * (kwargc); i++) { \
-            kwargs[i] = YUNDEF; \
-        } \
-        for (i = 0; i < (argc); i++) { \
-            args[i] = YUNDEF; \
-        } \
-    } while (0); \
+    uint_t i; \
+    for (i = 0; i < 2 * (kwargc); i++) { \
+        kwargs[i] = YUNDEF; \
+    } \
+    for (i = 0; i < (argc); i++) { \
+        args[i] = YUNDEF; \
+    } \
     PUSH_LOCALS3(env, varkwarg, vararg, blockarg); \
     PUSH_LOCALSX(env, 2 * (kwargc), kwargs); \
     PUSH_LOCALSX(env, (argc), args); \
 \
-    if (blockargc == 1) { \
-        blockarg = POP(); \
+    for (i = 0; i < argc; i++) { \
+        args[i] = POP(); \
     } \
 \
-    if (varkwargc == 1) { \
-        varkwarg = POP(); \
+    for (i = 0; i < kwargc; i++) { \
+        kwargs[2 * i] = POP(); \
+        kwargs[2 * i + 1] = POP(); \
     } \
 \
     if (varargc == 1) { \
         vararg = POP(); \
     } \
 \
-    do { \
-        uint_t i; \
-        for (i = kwargc; 0 < i; i--) { \
-            kwargs[2 * i - 1] = POP(); \
-            kwargs[2 * i - 2] = POP(); \
-        } \
+    if (varkwargc == 1) { \
+        varkwarg = POP(); \
+    } \
 \
-        for (i = argc; 0 < i; i--) { \
-            args[i - 1] = POP(); \
-        } \
-    } while (0)
+    if (blockargc == 1) { \
+        blockarg = POP(); \
+    }
         OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
 #if 0

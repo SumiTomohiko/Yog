@@ -100,8 +100,8 @@ inst call_function
 (...) depth: argc + 2 * kwargc + varargc + varkwargc + blockargc
 (...) depth: 1
 {
-    POP_ARGS(args, kwargs, vararg, varkwarg, blockarg);
     YogVal callee = POP();
+    POP_ARGS(args, kwargs, vararg, varkwarg, blockarg);
 
     YogVal klass = YogVal_get_class(env, callee);
     YOG_ASSERT(env, PTR_AS(YogClass, klass)->exec != NULL, "uncallable");

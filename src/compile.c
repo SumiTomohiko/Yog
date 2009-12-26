@@ -1128,14 +1128,13 @@ compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
         }
     case NODE_SUBSCRIPT:
         {
+            visit_node(env, visitor, NODE(node)->u.assign.right, data);
+            visit_node(env, visitor, NODE(left)->u.subscript.index, data);
             visit_node(env, visitor, NODE(left)->u.subscript.prefix, data);
 
             uint_t lineno = NODE(left)->lineno;
             ID attr = YogVM_intern(env, env->vm, "[]=");
             CompileData_add_load_attr(env, data, lineno, attr);
-
-            visit_node(env, visitor, NODE(left)->u.subscript.index, data);
-            visit_node(env, visitor, NODE(node)->u.assign.right, data);
 
             CompileData_add_call_function(env, data, lineno, 2, 0, 0, 0, 0);
             break;
@@ -2047,6 +2046,8 @@ compile_decorators_call(YogEnv* env, AstVisitor* visitor, YogVal decorators, Yog
     uint_t i;
     for (i = 0; i < size; i++) {
         decorator = YogArray_at(env, decorators, i);
+        visit_node(env, visitor, decorator, data);
+
         uint_t lineno = NODE(decorator)->lineno;
         CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
     }
@@ -2063,9 +2064,6 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     YogVal decorators = YUNDEF;
     PUSH_LOCALS3(env, var, code, decorators);
 
-    decorators = NODE(node)->u.funcdef.decorators;
-    visit_decorators(env, visitor, decorators, data);
-
     ID class_name = INVALID_ID;
     if (COMPILE_DATA(data)->ctx == CTX_CLASS) {
         class_name = COMPILE_DATA(data)->class_name;
@@ -2078,10 +2076,9 @@ compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
 
     ID func_name = NODE(node)->u.funcdef.name;
     CompileData_add_make_function(env, data, lineno, func_name);
+    decorators = NODE(node)->u.funcdef.decorators;
     compile_decorators_call(env, visitor, decorators, data);
-
-    ID name = NODE(node)->u.funcdef.name;
-    append_store(env, data, lineno, name);
+    append_store(env, data, lineno, func_name);
 
     RETURN_VOID(env);
 }
@@ -2103,35 +2100,18 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     YogVal exc_tbl_entry = YUNDEF;
     PUSH_LOCALS5(env, vararg, varkwarg, label_break_start, label_break_end, exc_tbl_entry);
 
-    visit_node(env, visitor, NODE(node)->u.func_call.callee, data);
+    blockarg = NODE(node)->u.func_call.blockarg;
+    if (IS_PTR(blockarg)) {
+        visit_node(env, visitor, blockarg, data);
+    }
 
     uint_t posargc = 0;
     uint_t kwargc = 0;
-
     args = NODE(node)->u.func_call.args;
     if (IS_PTR(args)) {
-        posargs = PTR_AS(YogNode, args)->u.args.posargs;
-        if (IS_PTR(posargs)) {
-            posargc = YogArray_size(env, posargs);
-            uint_t i;
-            for (i = 0; i < posargc; i++) {
-                child_node = YogArray_at(env, posargs, i);
-                visit_node(env, visitor, child_node, data);
-            }
-        }
-
-        kwargs = PTR_AS(YogNode, args)->u.args.kwargs;
-        if (IS_PTR(kwargs)) {
-            kwargc = YogArray_size(env, kwargs);
-            uint_t i;
-            for (i = 0; i < kwargc; i++) {
-                child_node = YogArray_at(env, kwargs, i);
-                YOG_ASSERT(env, NODE(child_node)->type == NODE_KW_ARG, "invalid node (0x%02x)", NODE(node)->type);
-                ID name = NODE(child_node)->u.kwarg.name;
-                uint_t lineno = NODE(child_node)->lineno;
-                add_push_const(env, data, ID2VAL(name), lineno);
-                visit_node(env, visitor, NODE(child_node)->u.kwarg.value, data);
-            }
+        varkwarg = PTR_AS(YogNode, args)->u.args.varkwarg;
+        if (IS_PTR(varkwarg)) {
+            visit_node(env, visitor, varkwarg, data);
         }
 
         vararg = PTR_AS(YogNode, args)->u.args.vararg;
@@ -2139,16 +2119,33 @@ compile_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
             visit_node(env, visitor, vararg, data);
         }
 
-        varkwarg = PTR_AS(YogNode, args)->u.args.varkwarg;
-        if (IS_PTR(varkwarg)) {
-            visit_node(env, visitor, varkwarg, data);
+        kwargs = PTR_AS(YogNode, args)->u.args.kwargs;
+        if (IS_PTR(kwargs)) {
+            kwargc = YogArray_size(env, kwargs);
+            uint_t i;
+            for (i = 0; i < kwargc; i++) {
+                child_node = YogArray_at(env, kwargs, kwargc - i - 1);
+                YOG_ASSERT(env, NODE(child_node)->type == NODE_KW_ARG, "invalid node (0x%02x)", NODE(node)->type);
+                visit_node(env, visitor, NODE(child_node)->u.kwarg.value, data);
+
+                ID name = NODE(child_node)->u.kwarg.name;
+                uint_t lineno = NODE(child_node)->lineno;
+                add_push_const(env, data, ID2VAL(name), lineno);
+            }
+        }
+
+        posargs = PTR_AS(YogNode, args)->u.args.posargs;
+        if (IS_PTR(posargs)) {
+            posargc = YogArray_size(env, posargs);
+            uint_t i;
+            for (i = 0; i < posargc; i++) {
+                child_node = YogArray_at(env, posargs, posargc - i - 1);
+                visit_node(env, visitor, child_node, data);
+            }
         }
     }
 
-    blockarg = NODE(node)->u.func_call.blockarg;
-    if (IS_PTR(blockarg)) {
-        visit_node(env, visitor, blockarg, data);
-    }
+    visit_node(env, visitor, NODE(node)->u.func_call.callee, data);
 
     uint8_t varargc;
     if (IS_PTR(vararg)) {
@@ -2272,9 +2269,9 @@ static void
 add_raise_last_exception(YogEnv* env, YogVal data, uint_t lineno)
 {
     SAVE_ARG(env, data);
+    CompileData_add_load_exception(env, data, lineno);
     ID id = YogVM_intern(env, env->vm, "raise_exception");
     CompileData_add_load_global(env, data, lineno, id);
-    CompileData_add_load_exception(env, data, lineno);
     CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
     RETURN_VOID(env);
 }
@@ -2821,9 +2818,6 @@ compile_visit_class(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     YogVal decorators = YUNDEF;
     PUSH_LOCALS4(env, super, stmts, code, decorators);
 
-    decorators = NODE(node)->u.klass.decorators;
-    visit_decorators(env, visitor, decorators, data);
-
     ID name = NODE(node)->u.klass.name;
     add_push_const(env, data, ID2VAL(name), NODE(node)->lineno);
 
@@ -2842,6 +2836,7 @@ compile_visit_class(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     add_push_const(env, data, code, lineno);
 
     CompileData_add_make_class(env, data, lineno);
+    decorators = NODE(node)->u.klass.decorators;
     compile_decorators_call(env, visitor, decorators, data);
     append_store(env, data, lineno, name);
 
@@ -2886,13 +2881,12 @@ compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
 {
     SAVE_ARGS2(env, node, data);
 
-    visit_node(env, visitor, NODE(node)->u.subscript.prefix, data);
+    visit_node(env, visitor, NODE(node)->u.subscript.index, data);
 
+    visit_node(env, visitor, NODE(node)->u.subscript.prefix, data);
     uint_t lineno = NODE(node)->lineno;
     ID attr = YogVM_intern(env, env->vm, "[]");
     CompileData_add_load_attr(env, data, lineno, attr);
-
-    visit_node(env, visitor, NODE(node)->u.subscript.index, data);
 
     CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
 
@@ -2939,12 +2933,12 @@ compile_import(YogEnv* env, YogVal pkg_names, YogVal data, uint_t lineno)
 {
     SAVE_ARGS2(env, pkg_names, data);
 
-    ID import_package = YogVM_intern(env, env->vm, "import_package");
-    CompileData_add_load_global(env, data, lineno, import_package);
-
     ID pkg = join_package_names(env, pkg_names);
     uint_t c = register_const(env, data, ID2VAL(pkg));
     CompileData_add_push_const(env, data, lineno, c);
+
+    ID import_package = YogVM_intern(env, env->vm, "import_package");
+    CompileData_add_load_global(env, data, lineno, import_package);
 
     CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
 
@@ -3024,10 +3018,10 @@ compile_visit_raise(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
+    visit_node(env, visitor, NODE(node)->u.raise.expr, data);
     uint_t lineno = NODE_LINENO(node);
     ID func = YogVM_intern(env, env->vm, "raise_exception");
     CompileData_add_load_global(env, data, lineno, func);
-    visit_node(env, visitor, NODE(node)->u.raise.expr, data);
     CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0);
 
     RETURN_VOID(env);
