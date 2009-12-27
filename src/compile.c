@@ -54,6 +54,8 @@ struct AstVisitor {
     VisitNode visit_logical_and;
     VisitNode visit_logical_or;
     VisitNode visit_module;
+    VisitNode visit_multi_assign;
+    VisitNode visit_multi_assign_lhs;
     VisitNode visit_next;
     VisitNode visit_nonlocal;
     VisitNode visit_not;
@@ -417,6 +419,12 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_MODULE:
         VISIT(module);
         break;
+    case NODE_MULTI_ASSIGN:
+        VISIT(multi_assign);
+        break;
+    case NODE_MULTI_ASSIGN_LHS:
+        VISIT(multi_assign_lhs);
+        break;
     case NODE_RAISE:
         VISIT(raise);
         break;
@@ -604,19 +612,109 @@ scan_var_register(YogEnv* env, YogVal var_tbl, ID var, int_t flags)
 }
 
 static void
-scan_var_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+scan_var_visit_lhs(YogEnv* env, AstVisitor* visitor, YogVal lhs, YogVal data)
 {
-    SAVE_ARGS2(env, node, data);
+    SAVE_ARGS2(env, lhs, data);
+    if (!IS_PTR(lhs)) {
+        RETURN_VOID(env);
+    }
 
-    YogVal left = NODE(node)->u.assign.left;
-    if (NODE(left)->type == NODE_VARIABLE) {
-        ID id = NODE(left)->u.variable.id;
+    if (NODE(lhs)->type == NODE_VARIABLE) {
+        ID id = NODE(lhs)->u.variable.id;
         scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, id, VAR_ASSIGNED);
     }
     else {
-        visit_node(env, visitor, left, data);
+        visit_node(env, visitor, lhs, data);
     }
 
+    RETURN_VOID(env);
+}
+
+static void
+scan_var_visit_multi_lhs(YogEnv* env, AstVisitor* visitor, YogVal lhs, YogVal data)
+{
+    SAVE_ARGS2(env, lhs, data);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+    if (!IS_PTR(lhs)) {
+        RETURN_VOID(env);
+    }
+
+    uint_t size = YogArray_size(env, lhs);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        node = YogArray_at(env, lhs, i);
+        scan_var_visit_lhs(env, visitor, node, data);
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
+scan_var_visit_multi_assign_lhs(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal left = YUNDEF;
+    YogVal middle = YUNDEF;
+    YogVal right = YUNDEF;
+    PUSH_LOCALS3(env, left, middle, right);
+
+    left = NODE(node)->u.multi_assign_lhs.left;
+    scan_var_visit_multi_lhs(env, visitor, left, data);
+
+    middle = NODE(node)->u.multi_assign_lhs.middle;
+    scan_var_visit_lhs(env, visitor, middle, data);
+
+    right = NODE(node)->u.multi_assign_lhs.right;
+    scan_var_visit_multi_lhs(env, visitor, right, data);
+
+    RETURN_VOID(env);
+}
+
+static void
+visit_array_elements(YogEnv* env, AstVisitor* visitor, YogVal elems, YogVal data)
+{
+    SAVE_ARGS2(env, elems, data);
+    YOG_ASSERT(env, IS_PTR(elems), "invalid elems (0x%08x)", elems);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(elems) == TYPE_ARRAY, "invalid elems type (0x%08x)", BASIC_OBJ_TYPE(elems));
+
+    uint_t size = YogArray_size(env, elems);
+    YOG_ASSERT(env, size < 256, "max array size is 255");
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        YogVal elem = YogArray_at(env, elems, i);
+        visit_node(env, visitor, elem, data);
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
+scan_var_visit_multi_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal lhs = YUNDEF;
+    YogVal rhs = YUNDEF;
+    PUSH_LOCALS2(env, lhs, rhs);
+
+    lhs = NODE(node)->u.multi_assign.lhs;
+    YOG_ASSERT(env, NODE(lhs)->type == NODE_MULTI_ASSIGN_LHS, "invalid lhs (0x%08x)", NODE(lhs)->type);
+    visit_node(env, visitor, lhs, data);
+
+    rhs = NODE(node)->u.multi_assign.rhs;
+    visit_array_elements(env, visitor, rhs, data);
+
+    RETURN_VOID(env);
+}
+
+static void
+scan_var_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal left = YUNDEF;
+    PUSH_LOCAL(env, left);
+
+    scan_var_visit_lhs(env, visitor, NODE(node)->u.assign.left, data);
     visit_node(env, visitor, NODE(node)->u.assign.right, data);
 
     RETURN_VOID(env);
@@ -894,22 +992,6 @@ scan_var_visit_attr(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
-visit_array_elements(YogEnv* env, AstVisitor* visitor, YogVal elems, YogVal data)
-{
-    SAVE_ARGS2(env, elems, data);
-
-    uint_t size = YogArray_size(env, elems);
-    YOG_ASSERT(env, size < 256, "max array size is 255");
-    uint_t i;
-    for (i = 0; i < size; i++) {
-        YogVal elem = YogArray_at(env, elems, i);
-        visit_node(env, visitor, elem, data);
-    }
-
-    RETURN_VOID(env);
-}
-
-static void
 scan_var_visit_array(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     YogVal elems = NODE(node)->u.array.elems;
@@ -998,6 +1080,8 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_logical_and = scan_var_visit_logical_and;
     visitor->visit_logical_or = scan_var_visit_logical_or;
     visitor->visit_module = scan_var_visit_module;
+    visitor->visit_multi_assign = scan_var_visit_multi_assign;
+    visitor->visit_multi_assign_lhs = scan_var_visit_multi_assign_lhs;
     visitor->visit_next = scan_var_visit_break;
     visitor->visit_nonlocal = scan_var_visit_nonlocal;
     visitor->visit_not = scan_var_visit_not;
@@ -1107,51 +1191,112 @@ append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
 }
 
 static void
-compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+compile_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
-    YogVal left = YUNDEF;
-    PUSH_LOCAL(env, left);
-
     uint_t lineno = NODE(node)->lineno;
-
-    left = NODE(node)->u.assign.left;
-    switch (NODE(left)->type) {
+    switch (NODE(node)->type) {
     case NODE_VARIABLE:
         {
-            visit_node(env, visitor, NODE(node)->u.assign.right, data);
-            CompileData_add_dup(env, data, lineno);
-            ID name = NODE(left)->u.variable.id;
+            ID name = NODE(node)->u.variable.id;
             append_store(env, data, lineno, name);
-            break;
         }
+        break;
     case NODE_SUBSCRIPT:
         {
-            visit_node(env, visitor, NODE(node)->u.assign.right, data);
-            visit_node(env, visitor, NODE(left)->u.subscript.index, data);
-            visit_node(env, visitor, NODE(left)->u.subscript.prefix, data);
-
-            uint_t lineno = NODE(left)->lineno;
+            visit_node(env, visitor, NODE(node)->u.subscript.index, data);
+            visit_node(env, visitor, NODE(node)->u.subscript.prefix, data);
             ID attr = YogVM_intern(env, env->vm, "[]=");
             CompileData_add_load_attr(env, data, lineno, attr);
 
             CompileData_add_call_function(env, data, lineno, 2, 0, 0, 0, 0);
-            break;
         }
+        break;
     case NODE_ATTR:
         {
-            visit_node(env, visitor, NODE(node)->u.assign.right, data);
-            CompileData_add_dup(env, data, lineno);
-
-            visit_node(env, visitor, NODE(left)->u.attr.obj, data);
-            ID name = NODE(left)->u.attr.name;
+            visit_node(env, visitor, NODE(node)->u.attr.obj, data);
+            ID name = NODE(node)->u.attr.name;
             CompileData_add_store_attr(env, data, lineno, name);
         }
         break;
     default:
-        YOG_ASSERT(env, FALSE, "invalid node type (0x%08x)", NODE(left)->type);
+        YOG_BUG(env, "invalid node type (0x%08x)", NODE(node)->type);
         break;
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
+compile_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal left = YUNDEF;
+    PUSH_LOCAL(env, left);
+
+    uint_t lineno = NODE(node)->lineno;
+    visit_node(env, visitor, NODE(node)->u.assign.right, data);
+    left = NODE(node)->u.assign.left;
+    switch (NODE(left)->type) {
+    case NODE_ATTR:
+    case NODE_VARIABLE:
+        CompileData_add_dup(env, data, lineno);
+        break;
+    default:
+        break;
+    }
+
+    compile_assign(env, visitor, left, data);
+
+    RETURN_VOID(env);
+}
+
+static void
+compile_visit_multi_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal lhs = YUNDEF;
+    YogVal left = YUNDEF;
+    YogVal right = YUNDEF;
+    YogVal rhs = YUNDEF;
+    YogVal elem = YUNDEF;
+    YogVal middle = YUNDEF;
+    PUSH_LOCALS6(env, lhs, left, right, rhs, elem, middle);
+
+    lhs = NODE(node)->u.multi_assign.lhs;
+    left = NODE(lhs)->u.multi_assign_lhs.left;
+    uint_t left_num = IS_PTR(left) ? YogArray_size(env, left) : 0;
+    right = NODE(lhs)->u.multi_assign_lhs.right;
+    uint_t right_num = IS_PTR(right) ? YogArray_size(env, right) : 0;
+    rhs = NODE(node)->u.multi_assign.rhs;
+    uint_t rhs_num = YogArray_size(env, rhs);
+    if (rhs_num < left_num + right_num) {
+        YogError_raise_SyntaxError(env, "too many values to assign");
+    }
+    uint_t n = rhs_num - right_num;
+    uint_t i;
+    for (i = 0; i < n; i++) {
+        visit_node(env, visitor, YogArray_at(env, rhs, i), data);
+    }
+    middle = NODE(lhs)->u.multi_assign_lhs.middle;
+    if (IS_PTR(middle)) {
+        uint_t lineno = NODE_LINENO(middle);
+        uint_t middle_num = n - left_num;
+        CompileData_add_make_array(env, data, lineno, middle_num);
+    }
+    for (i = n; i < rhs_num; i++) {
+        visit_node(env, visitor, YogArray_at(env, rhs, i), data);
+    }
+
+    for (i = right_num; 0 < i; i--) {
+        compile_assign(env, visitor, YogArray_at(env, right, i - 1), data);
+    }
+    if (IS_PTR(middle)) {
+        compile_assign(env, visitor, middle, data);
+    }
+    for (i = left_num; 0 < i; i--) {
+        compile_assign(env, visitor, YogArray_at(env, left, i - 1), data);
     }
 
     RETURN_VOID(env);
@@ -3065,6 +3210,8 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_logical_and = compile_visit_logical_and;
     visitor->visit_logical_or = compile_visit_logical_or;
     visitor->visit_module = compile_visit_module;
+    visitor->visit_multi_assign = compile_visit_multi_assign;
+    visitor->visit_multi_assign_lhs = NULL;
     visitor->visit_next = compile_visit_next;
     visitor->visit_nonlocal = NULL;
     visitor->visit_not = compile_visit_not;

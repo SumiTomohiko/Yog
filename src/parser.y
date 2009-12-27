@@ -130,6 +130,15 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_MODULE:
         KEEP(module.stmts);
         break;
+    case NODE_MULTI_ASSIGN:
+        KEEP(multi_assign.lhs);
+        KEEP(multi_assign.rhs);
+        break;
+    case NODE_MULTI_ASSIGN_LHS:
+        KEEP(multi_assign_lhs.left);
+        KEEP(multi_assign_lhs.middle);
+        KEEP(multi_assign_lhs.right);
+        break;
     case NODE_NEXT:
         KEEP(next.expr);
         break;
@@ -783,6 +792,35 @@ LogicalAnd_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
     RETURN(env, node);
 }
 
+static YogVal
+MultiAssign_new(YogEnv* env, uint_t lineno, YogVal lhs, YogVal rhs)
+{
+    SAVE_ARGS2(env, lhs, rhs);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    node = YogNode_new(env, NODE_MULTI_ASSIGN, lineno);
+    NODE(node)->u.multi_assign.lhs = lhs;
+    NODE(node)->u.multi_assign.rhs = rhs;
+
+    RETURN(env, node);
+}
+
+static YogVal
+MultiAssignLhs_new(YogEnv* env, uint_t lineno, YogVal left, YogVal middle, YogVal right)
+{
+    SAVE_ARGS3(env, left, middle, right);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    node = YogNode_new(env, NODE_MULTI_ASSIGN_LHS, lineno);
+    NODE(node)->u.multi_assign_lhs.left = left;
+    NODE(node)->u.multi_assign_lhs.middle = middle;
+    NODE(node)->u.multi_assign_lhs.right = right;
+
+    RETURN(env, node);
+}
+
 #define TOKEN(token)            PTR_AS(YogToken, (token))
 #define TOKEN_ID(token)         TOKEN((token))->u.id
 #define TOKEN_LINENO(token)     TOKEN((token))->lineno
@@ -808,6 +846,9 @@ stmt(A) ::= func_def(B). {
 }
 stmt(A) ::= expr(B). {
     A = B;
+}
+stmt(A) ::= multi_assign_lhs(B) EQUAL exprs(C). {
+    A = MultiAssign_new(env, TOKEN_LINENO(B), B, C);
 }
 stmt(A) ::= TRY(B) stmts(C) excepts(D) ELSE stmts(E) finally_opt(F) END. {
     uint_t lineno = TOKEN_LINENO(B);
@@ -874,6 +915,35 @@ stmt(A) ::= IMPORT(B) dotted_names(C). {
 stmt(A) ::= RAISE(B) expr(C). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Raise_new(env, lineno, C);
+}
+
+multi_assign_lhs(A) ::= postfix_exprs(B) COMMA postfix_expr(C). {
+    YogArray_push(env, B, C);
+    A = MultiAssignLhs_new(env, TOKEN_LINENO(B), B, YNIL, YNIL);
+}
+multi_assign_lhs(A) ::= postfix_exprs(B) COMMA multi_assign_lhs_middle(C). {
+    A = MultiAssignLhs_new(env, TOKEN_LINENO(B), B, C, YNIL);
+}
+multi_assign_lhs(A) ::= postfix_exprs(B) COMMA multi_assign_lhs_middle(C) COMMA postfix_exprs(D). {
+    A = MultiAssignLhs_new(env, TOKEN_LINENO(B), B, C, D);
+}
+multi_assign_lhs(A) ::= multi_assign_lhs_middle(B). {
+    A = MultiAssignLhs_new(env, TOKEN_LINENO(B), YNIL, B, YNIL);
+}
+multi_assign_lhs(A) ::= multi_assign_lhs_middle(B) COMMA postfix_exprs(C). {
+    A = MultiAssignLhs_new(env, TOKEN_LINENO(B), YNIL, B, C);
+}
+
+postfix_exprs(A) ::= postfix_expr(B). {
+    A = make_array_with(env, B);
+}
+postfix_exprs(A) ::= postfix_exprs(B) COMMA postfix_expr(C). {
+    YogArray_push(env, B, C);
+    A = B;
+}
+
+multi_assign_lhs_middle(A) ::= STAR postfix_expr(B). {
+    A = B;
 }
 
 dotted_names(A) ::= dotted_name(B). {

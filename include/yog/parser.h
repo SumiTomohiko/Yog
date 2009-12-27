@@ -41,6 +41,8 @@ enum YogNodeType {
     NODE_LOGICAL_OR,
     NODE_METHOD_CALL,
     NODE_MODULE,
+    NODE_MULTI_ASSIGN,
+    NODE_MULTI_ASSIGN_LHS,
     NODE_NEXT,
     NODE_NONLOCAL,
     NODE_NOT,
@@ -161,6 +163,15 @@ struct YogNode {
             ID name;
             YogVal stmts;
         } module;
+        struct {
+            YogVal lhs;
+            YogVal rhs;
+        } multi_assign;
+        struct {
+            YogVal left;
+            YogVal middle;
+            YogVal right;
+        } multi_assign_lhs;
         struct {
             YogVal expr;
         } next;
