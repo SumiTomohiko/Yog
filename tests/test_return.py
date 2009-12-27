@@ -51,4 +51,174 @@ puts(foo())
 """, """42
 """)
 
+    def test_multi_value0(self):
+        self._test("""
+def foo()
+  return 42, 26
+end
+
+bar, baz = foo()
+print(bar)
+""", "42")
+
+    def test_multi_value10(self):
+        self._test("""
+def foo()
+  return 42, 26
+end
+
+bar, baz = foo()
+print(baz)
+""", "26")
+
+    def test_multi_value20(self):
+        self._test("""
+def foo()
+  return 42
+end
+
+*bar = foo()
+print(bar)
+""", "[42]")
+
+    def test_multi_value30(self):
+        self._test("""
+def foo()
+  return 42
+end
+
+bar, *baz = foo()
+print(bar)
+""", "42")
+
+    def test_multi_value40(self):
+        self._test("""
+def foo()
+  return 42
+end
+
+bar, *baz = foo()
+print(baz)
+""", "[]")
+
+    def test_multi_value50(self):
+        self._test("""
+def foo()
+  return 42, 26
+end
+
+bar, *baz = foo()
+print(bar)
+""", "42")
+
+    def test_multi_value60(self):
+        self._test("""
+def foo()
+  return 42, 26
+end
+
+bar, *baz = foo()
+print(baz)
+""", "[26]")
+
+    def test_multi_value70(self):
+        self._test("""
+def foo()
+  return 42
+end
+
+*bar, baz = foo()
+print(bar)
+""", "[]")
+
+    def test_multi_value80(self):
+        self._test("""
+def foo()
+  return 42
+end
+
+*bar, baz = foo()
+print(baz)
+""", "42")
+
+    def test_multi_value90(self):
+        self._test("""
+def foo()
+  return 42, 26
+end
+
+*bar, baz = foo()
+print(bar)
+""", "[42]")
+
+    def test_multi_value100(self):
+        self._test("""
+def foo()
+  return 42, 26
+end
+
+*bar, baz = foo()
+print(baz)
+""", "26")
+
+    def test_multi_value110(self):
+        self._test("""
+def foo()
+  return 42, 26
+end
+
+bar, *baz, quux = foo()
+print(bar)
+""", "42")
+
+    def test_multi_value120(self):
+        self._test("""
+def foo()
+  return 42, 26
+end
+
+bar, *baz, quux = foo()
+print(baz)
+""", "[]")
+
+    def test_multi_value130(self):
+        self._test("""
+def foo()
+  return 42, 26
+end
+
+bar, *baz, quux = foo()
+print(quux)
+""", "26")
+
+    def test_multi_value140(self):
+        self._test("""
+def foo()
+  return 42, 26, \"foo\"
+end
+
+bar, *baz, quux = foo()
+print(baz)
+""", "42")
+
+    def test_multi_value150(self):
+        self._test("""
+def foo()
+  return 42, 26, \"foo\"
+end
+
+bar, *baz, quux = foo()
+print(baz)
+""", "[26]")
+
+    def test_multi_value160(self):
+        self._test("""
+def foo()
+  return 42, 26, \"foo\"
+end
+
+bar, *baz, quux = foo()
+print(quux)
+""", "foo")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
