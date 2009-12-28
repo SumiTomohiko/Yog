@@ -86,43 +86,6 @@ end
 print(foo())
 """, "42")
 
-    def test_break0(self):
-        self._test("""
-def foo()
-  [42].each() do
-    print(26)
-    break
-    print("bar")
-  end
-end
-
-foo()
-""", "26")
-
-    def test_break10(self):
-        self._test("""
-def foo()
-  bar = [42].each() do
-    break
-  end
-  print(bar)
-end
-
-foo()
-""", "nil")
-
-    def test_break20(self):
-        self._test("""
-def foo()
-  bar = [42].each() do
-    break 26
-  end
-  print(bar)
-end
-
-foo()
-""", "26")
-
     def test_next0(self):
         self._test("""
 def foo()
