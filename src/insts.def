@@ -63,7 +63,7 @@ inst make_block
 {
     f = YogFunction_new(env);
     setup_script_function(env, f, code);
-    PTR_AS(YogFunction, f)->frame_to_long_return = CUR_FRAME;
+    PTR_AS(YogFunction, f)->frame_to_long_return = PTR_AS(YogScriptFrame, CUR_FRAME)->frame_to_long_return;
     PTR_AS(YogFunction, f)->frame_to_long_break = CUR_FRAME;
 }
 
@@ -89,6 +89,7 @@ inst make_function
     f = YogFunction_new(env);
     setup_script_function(env, f, code);
     PTR_AS(YogFunction, f)->name = name;
+    PTR_AS(YogFunction, f)->frame_to_long_return = CUR_FRAME;
     if (PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_CLASS) {
         YogVal klass = PTR_AS(YogNameFrame, CUR_FRAME)->self;
         PTR_AS(YogFunction, f)->klass = klass;
@@ -510,13 +511,12 @@ inst not
 }
 
 inst long_return
-()
-(val)
+(uint8_t n)
+(...) depth: n
 ()
 {
-    YogVal frame = env->frame;
-    YogVal target_frame = PTR_AS(YogScriptFrame, frame)->frame_to_long_return;
-    long_jump(env, val, JMP_RETURN, target_frame);
+    YogVal target_frame = SCRIPT_FRAME(CUR_FRAME)->frame_to_long_return;
+    long_jump(env, n, JMP_RETURN, target_frame);
 }
 
 inst long_break
@@ -524,15 +524,8 @@ inst long_break
 (...) depth: n
 ()
 {
-    YogVal objs = YUNDEF;
-    YogVal target_frame = YUNDEF;
-    PUSH_LOCALS2(env, objs, target_frame);
-
-    objs = make_jmp_val(env, n);
-    target_frame = PTR_AS(YogScriptFrame, env->frame)->frame_to_long_break;
-
-    POP_LOCALS(env);
-    long_jump(env, objs, JMP_BREAK, target_frame);
+    YogVal target_frame = SCRIPT_FRAME(CUR_FRAME)->frame_to_long_break;
+    long_jump(env, n, JMP_BREAK, target_frame);
 }
 
 inst load_exception

@@ -221,4 +221,208 @@ bar, *baz, quux = foo()
 print(quux)
 """, "foo")
 
+    def test_multi_value_from_long_return0(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26
+  end
+end
+
+bar, baz = foo()
+print(bar)
+""", "42")
+
+    def test_multi_value_from_long_return10(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26
+  end
+end
+
+bar, baz = foo()
+print(baz)
+""", "26")
+
+    def test_multi_value_from_long_return20(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42
+  end
+end
+
+*bar = foo()
+print(bar)
+""", "[42]")
+
+    def test_multi_value_from_long_return30(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42
+  end
+end
+
+bar, *baz = foo()
+print(bar)
+""", "42")
+
+    def test_multi_value_from_long_return40(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42
+  end
+end
+
+bar, *baz = foo()
+print(baz)
+""", "[]")
+
+    def test_multi_value_from_long_return50(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26
+  end
+end
+
+bar, *baz = foo()
+print(bar)
+""", "42")
+
+    def test_multi_value_from_long_return60(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26
+  end
+end
+
+bar, *baz = foo()
+print(baz)
+""", "[26]")
+
+    def test_multi_value_from_long_return70(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42
+  end
+end
+
+*bar, baz = foo()
+print(bar)
+""", "[]")
+
+    def test_multi_value_from_long_return80(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42
+  end
+end
+
+*bar, baz = foo()
+print(baz)
+""", "42")
+
+    def test_multi_value_from_long_return90(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26
+  end
+end
+
+*bar, baz = foo()
+print(bar)
+""", "[42]")
+
+    def test_multi_value_from_long_return100(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26
+  end
+end
+
+*bar, baz = foo()
+print(baz)
+""", "26")
+
+    def test_multi_value_from_long_return110(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26
+  end
+end
+
+bar, *baz, quux = foo()
+print(bar)
+""", "42")
+
+    def test_multi_value_from_long_return120(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26
+  end
+end
+
+bar, *baz, quux = foo()
+print(baz)
+""", "[]")
+
+    def test_multi_value_from_long_return130(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26
+  end
+end
+
+bar, *baz, quux = foo()
+print(quux)
+""", "26")
+
+    def test_multi_value_from_long_return140(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26, \"foo\"
+  end
+end
+
+bar, *baz, quux = foo()
+print(baz)
+""", "[26]")
+
+    def test_multi_value_from_long_return150(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26, \"foo\"
+  end
+end
+
+bar, *baz, quux = foo()
+print(baz)
+""", "[26]")
+
+    def test_multi_value_from_long_return160(self):
+        self._test("""
+def foo()
+  loop() do
+    return 42, 26, \"foo\"
+  end
+end
+
+bar, *baz, quux = foo()
+print(quux)
+""", "foo")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

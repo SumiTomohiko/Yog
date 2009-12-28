@@ -3094,11 +3094,11 @@ compile_visit_return(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
     uint_t lineno = NODE_LINENO(node);
     if (COMPILE_DATA(data)->ctx == CTX_BLOCK) {
-        CompileData_add_long_return(env, data, lineno);
+        CompileData_add_long_return(env, data, lineno, n);
+        RETURN_VOID(env);
     }
-    else {
-        CompileData_add_ret(env, data, lineno, n);
-    }
+
+    CompileData_add_ret(env, data, lineno, n);
 
     RETURN_VOID(env);
 }

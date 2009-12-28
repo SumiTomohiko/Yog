@@ -1,4 +1,12 @@
 
+def loop(&block)
+  n = 0
+  while true
+    block(n)
+    n += 1
+  end
+end
+
 def partial(f, *args, **kw)
   def g(*v, **k)
     return f(*(args + v), **(kw + k))

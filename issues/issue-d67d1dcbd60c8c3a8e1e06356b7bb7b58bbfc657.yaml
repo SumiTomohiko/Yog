@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove make_block2
+desc: make_block2 instruction is same as make_block instruction.
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-28 17:38:32.450698 Z
+references: []
+
+id: d67d1dcbd60c8c3a8e1e06356b7bb7b58bbfc657
+log_events: 
+- - 2009-12-28 17:38:33.132912 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

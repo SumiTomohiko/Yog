@@ -135,7 +135,7 @@ YogEval_push_returned_value(YogEnv* env, YogVal frame, YogVal val)
         YogScriptFrame_push_stack(env, SCRIPT_FRAME(frame), middle);
     }
     else if (left_num != 1) {
-        YogError_raise_ValueError(env, "number of multiple value unmached");
+        YogError_raise_ValueError(env, "number of multiple value unmatched");
         /* NOTREACHED */
     }
     else {
@@ -170,7 +170,7 @@ move_returned_value(YogEnv* env, uint_t n)
         }
     }
     else if (left_num != n) {
-        YogError_raise_ValueError(env, "number of multiple value unmached");
+        YogError_raise_ValueError(env, "number of multiple value unmatched");
         /* NOTREACHED */
     }
     move_stack_value(env, left_num);
@@ -243,7 +243,7 @@ push_jmp_val(YogEnv* env)
         }
     }
     else if (left_num != n) {
-        YogError_raise_ValueError(env, "number of multiple value unmached");
+        YogError_raise_ValueError(env, "number of multiple value unmatched. %u value(s) requested, but apply %u value(s)", left_num, n);
         /* NOTREACHED */
     }
     push_from_array(env, vals, 0, left_num);
@@ -512,26 +512,16 @@ static void
 dump_frame(YogEnv* env)
 {
     TRACE("----------------");
-    YogVal thread = env->thread;
-    YogVal frame = PTR_AS(YogThread, thread)->cur_frame;
+    YogVal frame = env->frame;
     while (IS_PTR(frame)) {
         const char* type;
         switch (PTR_AS(YogFrame, frame)->type) {
-        case FRAME_METHOD:
-            type = "FRAME_METHOD";
-            break;
-        case FRAME_NAME:
-            type = "FRAME_NAME";
-            break;
-        case FRAME_C:
-            type = "FRAME_C";
-            break;
-        case FRAME_FINISH:
-            type = "FRAME_FINISH";
-            break;
-        default:
-            type = "unknown";
-            break;
+        case FRAME_C:       type = "FRAME_C";       break;
+        case FRAME_CLASS:   type = "FRAME_CLASS";   break;
+        case FRAME_FINISH:  type = "FRAME_FINISH";  break;
+        case FRAME_METHOD:  type = "FRAME_METHOD";  break;
+        case FRAME_PKG:     type = "FRAME_PKG";     break;
+        default:            type = "unknown";       break;
         }
         TRACE("frame=0x%08x, type=%s", frame, type);
         frame = PTR_AS(YogFrame, frame)->prev;
@@ -569,15 +559,21 @@ long_jump_current_frame(YogEnv* env)
 }
 
 static void
-long_jump(YogEnv* env, YogVal jmp_val, int_t status, YogVal target_frame)
+long_jump(YogEnv* env, uint_t depth, int_t status, YogVal target_frame)
 {
+    SAVE_ARG(env, target_frame);
+    YogVal objs = YUNDEF;
+    PUSH_LOCAL(env, objs);
+
+    objs = make_jmp_val(env, depth);
     detect_orphan(env, status, target_frame);
 
     YogVal thread = env->thread;
-    PTR_AS(YogThread, thread)->jmp_val = jmp_val;
+    PTR_AS(YogThread, thread)->jmp_val = objs;
     PTR_AS(YogThread, thread)->frame_to_long_jump = target_frame;
-    longjmp(PTR_AS(YogThread, thread)->jmp_buf_list->buf, status);
 
+    RESTORE_LOCALS(env);
+    longjmp(PTR_AS(YogThread, thread)->jmp_buf_list->buf, status);
     /* NOTREACHED */
 }
 
@@ -658,12 +654,17 @@ YogEval_mainloop(YogEnv* env)
                         {
                             YogVal thread = env->thread;
                             if (frame == PTR_AS(YogThread, thread)->frame_to_long_jump) {
+#if 0
                                 uint_t target = 0;
                                 if (!find_exception_table_entry(env, PTR_AS(YogScriptFrame, frame)->code, status, PTR_AS(YogScriptFrame, frame)->pc, &target)) {
                                     YOG_BUG(env, "can't find exception table entry");
                                 }
+#endif
                                 CUR_FRAME = frame;
+                                PC = SCRIPT_FRAME(CUR_FRAME)->pc;
+#if 0
                                 PC = target;
+#endif
                                 push_jmp_val(env);
                                 found = TRUE;
                             }
