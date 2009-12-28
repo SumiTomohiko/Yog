@@ -199,7 +199,7 @@ end
 
 bar, *baz, quux = foo()
 print(baz)
-""", "42")
+""", "[26]")
 
     def test_multi_value150(self):
         self._test("""

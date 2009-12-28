@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rmove YOG_ASSERT after fopen in file.c
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-28 04:58:37.326470 Z
+references: []
+
+id: c6c749e9e159fab13ea7d924cbae634f15e3098b
+log_events: 
+- - 2009-12-28 04:58:38.011182 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

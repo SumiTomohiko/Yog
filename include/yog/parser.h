@@ -189,7 +189,7 @@ struct YogNode {
             YogVal expr;
         } raise;
         struct {
-            YogVal expr;
+            YogVal exprs;
         } return_;
         struct {
             YogVal elems;

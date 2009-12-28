@@ -42,6 +42,125 @@
 } while (0)
 
 static void
+set_lhs_composition(YogEnv* env, uint_t left, uint_t middle, uint_t right)
+{
+    PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_left_num = left;
+    PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_middle_num = middle;
+    PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_right_num = right;
+}
+
+static void
+return_middle(YogEnv* env, uint_t n)
+{
+    SAVE_LOCALS(env);
+    YogVal prev = YUNDEF;
+    YogVal val = YUNDEF;
+    YogVal middle = YUNDEF;
+    PUSH_LOCALS3(env, prev, val, middle);
+
+    middle = YogArray_of_size(env, n);
+    uint_t i;
+    for (i = 0; i < n; i++) {
+        val = YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME));
+        YogArray_push(env, middle, val);
+    }
+
+    prev = PTR_AS(YogFrame, CUR_FRAME)->prev;
+    YogScriptFrame_push_stack(env, SCRIPT_FRAME(prev), middle);
+
+    RETURN_VOID(env);
+}
+
+static void
+move_stack_value(YogEnv* env, uint_t n)
+{
+    SAVE_LOCALS(env);
+    YogVal prev = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS2(env, prev, val);
+
+    prev = PTR_AS(YogFrame, CUR_FRAME)->prev;
+    uint_t i;
+    for (i = 0; i < n; i++) {
+        val = YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME));
+        YogScriptFrame_push_stack(env, SCRIPT_FRAME(prev), val);
+    }
+
+    RETURN_VOID(env);
+}
+
+void
+YogEval_push_returned_value(YogEnv* env, YogVal frame, YogVal val)
+{
+    SAVE_ARGS2(env, frame, val);
+    YogVal middle = YUNDEF;
+    PUSH_LOCAL(env, middle);
+
+    uint_t left_num = PTR_AS(YogScriptFrame, frame)->lhs_left_num;
+    uint_t middle_num = PTR_AS(YogScriptFrame, frame)->lhs_middle_num;
+    uint_t right_num = PTR_AS(YogScriptFrame, frame)->lhs_right_num;
+    if (left_num + middle_num + right_num == 0) {
+        RETURN_VOID(env);
+    }
+    if (0 < middle_num) {
+        if (0 < left_num + right_num) {
+            YogError_raise_ValueError(env, "too few multiple value");
+        }
+        middle = YogArray_of_size(env, 1);
+        YogArray_push(env, middle, val);
+        YogScriptFrame_push_stack(env, SCRIPT_FRAME(frame), middle);
+    }
+    else if (left_num != 1) {
+        YogError_raise_ValueError(env, "number of multiple value unmached");
+        /* NOTREACHED */
+    }
+    else {
+        YogScriptFrame_push_stack(env, SCRIPT_FRAME(frame), val);
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
+move_returned_value(YogEnv* env, uint_t n)
+{
+    SAVE_LOCALS(env);
+    YogVal prev_frame = YUNDEF;
+    YogVal val = YUNDEF;
+    YogVal middle = YUNDEF;
+    PUSH_LOCALS3(env, prev_frame, val, middle);
+
+    prev_frame = PTR_AS(YogFrame, CUR_FRAME)->prev;
+    if (n == 0) {
+        YogEval_push_returned_value(env, prev_frame, YNIL);
+        RETURN_VOID(env);
+    }
+
+    uint_t left_num = PTR_AS(YogScriptFrame, prev_frame)->lhs_left_num;
+    uint_t middle_num = PTR_AS(YogScriptFrame, prev_frame)->lhs_middle_num;
+    uint_t right_num = PTR_AS(YogScriptFrame, prev_frame)->lhs_right_num;
+    if (left_num + middle_num + right_num == 0) {
+        RETURN_VOID(env);
+    }
+    if (0 < middle_num) {
+        if (n < left_num + right_num) {
+            YogError_raise_ValueError(env, "too few multiple value");
+        }
+    }
+    else if (left_num != n) {
+        YogError_raise_ValueError(env, "number of multiple value unmached");
+        /* NOTREACHED */
+    }
+    move_stack_value(env, left_num);
+    if (0 < middle_num) {
+        return_middle(env, n - left_num - right_num);
+    }
+    move_stack_value(env, right_num);
+
+    RETURN_VOID(env);
+}
+
+static void
 exec_get_attr(YogEnv* env, YogVal obj, ID name)
 {
     SAVE_ARG(env, obj);

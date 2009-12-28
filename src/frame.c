@@ -44,16 +44,6 @@ YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* 
 }
 
 static void
-YogFinishFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
-{
-    YogFrame_keep_children(env, ptr, keeper, heap);
-
-    YogFinishFrame* frame = PTR_AS(YogFinishFrame, ptr);
-    KEEP(code);
-    KEEP(stack);
-}
-
-static void
 YogNameFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogScriptFrame_keep_children(env, ptr, keeper, heap);
@@ -114,14 +104,19 @@ static void
 YogScriptFrame_init(YogVal frame, YogFrameType type)
 {
     YogFrame_init(frame, type);
-    PTR_AS(YogScriptFrame, frame)->pc = 0;
-    PTR_AS(YogScriptFrame, frame)->code = YUNDEF;
-    PTR_AS(YogScriptFrame, frame)->stack_size = 0;
-    PTR_AS(YogScriptFrame, frame)->stack = YUNDEF;
-    PTR_AS(YogScriptFrame, frame)->globals = YUNDEF;
-    PTR_AS(YogScriptFrame, frame)->outer_vars = YUNDEF;
-    PTR_AS(YogScriptFrame, frame)->frame_to_long_return = YUNDEF;
-    PTR_AS(YogScriptFrame, frame)->frame_to_long_break = YUNDEF;
+#define INIT(member, value)     PTR_AS(YogScriptFrame, frame)->member = value
+    INIT(pc, 0);
+    INIT(code, YUNDEF);
+    INIT(stack_size, 0);
+    INIT(stack, YUNDEF);
+    INIT(globals, YUNDEF);
+    INIT(outer_vars, YUNDEF);
+    INIT(frame_to_long_return, YUNDEF);
+    INIT(frame_to_long_break, YUNDEF);
+    INIT(lhs_left_num, 0);
+    INIT(lhs_middle_num, 0);
+    INIT(lhs_right_num, 0);
+#undef INIT
 }
 
 static void
@@ -214,21 +209,21 @@ YogOuterVars_new(YogEnv* env, uint_t size)
 static void
 YogFinishFrame_init(YogEnv* env, YogVal self)
 {
-    YogFrame_init(self, FRAME_FINISH);
-
-    PTR_AS(YogFinishFrame, self)->pc = 0;
-    PTR_AS(YogFinishFrame, self)->code = YUNDEF;
-    PTR_AS(YogFinishFrame, self)->stack_size = 0;
-    PTR_AS(YogFinishFrame, self)->stack = YUNDEF;
+    YogScriptFrame_init(self, FRAME_FINISH);
+    PTR_AS(YogScriptFrame, self)->lhs_left_num = 1;
 }
 
 YogVal
 YogFinishFrame_new(YogEnv* env)
 {
-    YogVal frame = ALLOC_OBJ(env, YogFinishFrame_keep_children, NULL, YogFinishFrame);
+    SAVE_LOCALS(env);
+    YogVal frame = YUNDEF;
+    PUSH_LOCAL(env, frame);
+
+    frame = ALLOC_OBJ(env, YogScriptFrame_keep_children, NULL, YogScriptFrame);
     YogFinishFrame_init(env, frame);
 
-    return frame;
+    RETURN(env, frame);
 }
 
 /**

@@ -96,12 +96,13 @@ inst make_function
 }
 
 inst call_function
-(uint8_t argc, uint8_t kwargc, uint8_t varargc, uint8_t varkwargc, uint8_t blockargc)
+(uint8_t argc, uint8_t kwargc, uint8_t varargc, uint8_t varkwargc, uint8_t blockargc, uint8_t left, uint8_t middle, uint8_t right)
 (...) depth: argc + 2 * kwargc + varargc + varkwargc + blockargc
-(...) depth: 1
+(...) depth: left + middle + right
 {
     YogVal callee = POP();
     POP_ARGS(args, kwargs, vararg, varkwarg, blockarg);
+    set_lhs_composition(env, left, middle, right);
 
     YogVal klass = YogVal_get_class(env, callee);
     YOG_ASSERT(env, PTR_AS(YogClass, klass)->exec != NULL, "uncallable");
@@ -228,6 +229,8 @@ inst make_module
     PTR_AS(YogModule, module)->name = name;
     PUSH(module);
 
+    set_lhs_composition(env, 1, 0, 0);
+
     frame = YogClassFrame_new(env);
     setup_script_frame(env, frame, code);
     PTR_AS(YogNameFrame, frame)->vars = PTR_AS(YogObj, module)->attrs;
@@ -254,6 +257,8 @@ inst make_class
     attrs = YogTable_new_symbol_table(env);
     PTR_AS(YogObj, kls)->attrs = attrs;
 
+    set_lhs_composition(env, 1, 0, 0);
+
     frame = YogClassFrame_new(env);
     setup_script_frame(env, frame, code);
     PTR_AS(YogNameFrame, frame)->self = kls;
@@ -274,10 +279,12 @@ inst push_self_name
 }
 
 inst ret
+(uint8_t n)
+(...) depth: n
 ()
-(val)
-(val)
 {
+    move_returned_value(env, n);
+
     POP_FRAME();
     PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 }
@@ -323,6 +330,7 @@ inst load_attr
         exec = exec_get_attr;
     }
 
+    set_lhs_composition(env, 1, 0, 0);
     exec(env, obj, name);
 
     POP_LOCALS(env);
@@ -400,6 +408,33 @@ inst print_top
     printf("=> %s\n", STRING_CSTR(s));
 }
 
+inst print_top_multi_value
+()
+(val)
+()
+{
+    YogVal s = YUNDEF;
+    YogVal obj = YUNDEF;
+    PUSH_LOCALS2(env, s, obj);
+
+    printf("=>");
+
+    YOG_ASSERT(env, IS_PTR(val), "invalid operand (0x%08x)", val);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(val) == TYPE_ARRAY, "invalid operand type (0x%08x)", BASIC_OBJ_TYPE(val));
+    uint_t size = YogArray_size(env, val);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        obj = YogArray_at(env, val, i);
+        s = YogEval_call_method(env, obj, "to_s", 0, NULL);
+        YOG_ASSERT(env, IS_PTR(s), "invalid string (0x%08x)", s);
+        YOG_ASSERT(env, BASIC_OBJ_TYPE(s) == TYPE_STRING, "invalid string type (0x%08x)", BASIC_OBJ_TYPE(s));
+        printf(" %s", STRING_CSTR(s));
+    }
+    printf("\n");
+
+    POP_LOCALS(env);
+}
+
 inst store_attr
 (ID name)
 (obj, val)
@@ -429,6 +464,7 @@ inst store_attr
         class_of_attr = YogVal_get_class(env, attr);
         void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogClass, class_of_attr)->exec_set_descr;
         if (exec != NULL) {
+            set_lhs_composition(env, 0, 0, 0);
             exec(env, attr, obj, val);
         }
         else if (has_attrs) {

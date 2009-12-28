@@ -152,7 +152,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(raise.expr);
         break;
     case NODE_RETURN:
-        KEEP(return_.expr);
+        KEEP(return_.exprs);
         break;
     case NODE_SET:
         KEEP(set.elems);
@@ -441,12 +441,12 @@ Next_new(YogEnv* env, uint_t lineno, YogVal expr)
 }
 
 static YogVal
-Return_new(YogEnv* env, uint_t lineno, YogVal expr)
+Return_new(YogEnv* env, uint_t lineno, YogVal exprs)
 {
-    SAVE_ARG(env, expr);
+    SAVE_ARG(env, exprs);
 
     YogVal node = YogNode_new(env, NODE_RETURN, lineno);
-    NODE(node)->u.return_.expr = expr;
+    NODE(node)->u.return_.exprs = exprs;
 
     RETURN(env, node);
 }
@@ -886,7 +886,7 @@ stmt(A) ::= RETURN(B). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Return_new(env, lineno, YNIL);
 }
-stmt(A) ::= RETURN(B) expr(C). {
+stmt(A) ::= RETURN(B) exprs(C). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Return_new(env, lineno, C);
 }

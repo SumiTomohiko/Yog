@@ -445,9 +445,12 @@ static void
 YogNativeFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
 {
     SAVE_ARGS5(env, callee, self, vararg, varkwarg, blockarg);
+    YogVal retval = YUNDEF;
+    YogVal frame = YUNDEF;
+    PUSH_LOCALS2(env, retval, frame);
 
-    YogVal retval = YogNativeFunction_call_for_instance(env, callee, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
-    YogScriptFrame_push_stack(env, PTR_AS(YogScriptFrame, env->frame), retval);
+    retval = YogNativeFunction_call_for_instance(env, callee, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    YogEval_push_returned_value(env, env->frame, retval);
 
     RETURN_VOID(env);
 }

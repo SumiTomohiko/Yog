@@ -46,19 +46,15 @@ struct YogScriptFrame {
     YogVal outer_vars;
     YogVal frame_to_long_return;
     YogVal frame_to_long_break;
+
+    uint_t lhs_left_num;
+    uint_t lhs_middle_num;
+    uint_t lhs_right_num;
 };
 
 typedef struct YogScriptFrame YogScriptFrame;
 
-struct YogFinishFrame {
-    struct YogFrame base;
-    pc_t pc;
-    YogVal code;
-    uint_t stack_size;
-    YogVal stack;
-};
-
-typedef struct YogFinishFrame YogFinishFrame;
+#define YogFinishFrame  YogScriptFrame
 
 #define SCRIPT_FRAME(v)     PTR_AS(YogScriptFrame, (v))
 
