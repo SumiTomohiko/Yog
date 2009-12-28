@@ -758,7 +758,7 @@ YogEval_mainloop(YogEnv* env)
     }
         OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
-#if 0
+#if 0 && !defined(MINIYOG)
         do {
             const char* opname = YogCode_get_op_name(op);
             TRACE("%p: PC=%u, op=%s", env, PC, opname);

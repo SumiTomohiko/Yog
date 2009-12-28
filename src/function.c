@@ -197,7 +197,8 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
     YogVal outer_vars = YUNDEF;
     YogVal vars = YUNDEF;
     YogVal frame = YUNDEF;
-    PUSH_LOCALS4(env, code, outer_vars, vars, frame);
+    YogVal frame_to_long_return = YUNDEF;
+    PUSH_LOCALS5(env, code, outer_vars, vars, frame, frame_to_long_return);
 
     code = PTR_AS(YogFunction, callee)->code;
     outer_vars = PTR_AS(YogFunction, callee)->outer_vars;
@@ -223,8 +224,14 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
     PTR_AS(YogMethodFrame, frame)->name = PTR_AS(YogFunction, callee)->name;
     PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogFunction, callee)->globals;
     PTR_AS(YogScriptFrame, frame)->outer_vars = outer_vars;
+
+    frame_to_long_return = PTR_AS(YogFunction, callee)->frame_to_long_return;
+    PTR_AS(YogScriptFrame, frame)->frame_to_long_return = IS_PTR(frame_to_long_return) ? frame_to_long_return : env->frame;
+    PTR_AS(YogScriptFrame, frame)->frame_to_long_break = PTR_AS(YogFunction, callee)->frame_to_long_break;
+#if 0
     PTR_AS(YogScriptFrame, frame)->frame_to_long_return = PTR_AS(YogFunction, callee)->frame_to_long_return;
     PTR_AS(YogScriptFrame, frame)->frame_to_long_break = PTR_AS(YogFunction, callee)->frame_to_long_break;
+#endif
 
     PTR_AS(YogFrame, frame)->prev = env->frame;
     env->frame = frame;

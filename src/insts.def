@@ -89,7 +89,6 @@ inst make_function
     f = YogFunction_new(env);
     setup_script_function(env, f, code);
     PTR_AS(YogFunction, f)->name = name;
-    PTR_AS(YogFunction, f)->frame_to_long_return = CUR_FRAME;
     if (PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_CLASS) {
         YogVal klass = PTR_AS(YogNameFrame, CUR_FRAME)->self;
         PTR_AS(YogFunction, f)->klass = klass;
