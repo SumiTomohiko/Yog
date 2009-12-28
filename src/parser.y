@@ -59,7 +59,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(param.default_);
         break;
     case NODE_BREAK:
-        KEEP(break_.expr);
+        KEEP(break_.exprs);
         break;
     case NODE_COMMAND_CALL:
         KEEP(command_call.args);
@@ -419,12 +419,12 @@ ExceptFinally_new(YogEnv* env, uint_t lineno, YogVal stmts, YogVal excepts, YogV
 }
 
 static YogVal
-Break_new(YogEnv* env, uint_t lineno, YogVal expr)
+Break_new(YogEnv* env, uint_t lineno, YogVal exprs)
 {
-    SAVE_ARG(env, expr);
+    SAVE_ARG(env, exprs);
 
     YogVal node = YogNode_new(env, NODE_BREAK, lineno);
-    NODE(node)->u.break_.expr = expr;
+    NODE(node)->u.break_.exprs = exprs;
 
     RETURN(env, node);
 }
@@ -870,7 +870,7 @@ stmt(A) ::= BREAK(B). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Break_new(env, lineno, YNIL);
 }
-stmt(A) ::= BREAK(B) expr(C). {
+stmt(A) ::= BREAK(B) exprs(C). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Break_new(env, lineno, C);
 }

@@ -85,7 +85,7 @@ struct YogNode {
             YogVal stmts;
         } blockarg;
         struct {
-            YogVal expr;
+            YogVal exprs;
         } break_;
         struct {
             ID name;

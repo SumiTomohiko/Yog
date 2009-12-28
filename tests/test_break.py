@@ -175,6 +175,6 @@ foo, *bar, baz = [\"foo\"].each() do
   break 42, 26, \"bar\"
 end
 print(baz)
-""", "foo")
+""", "bar")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -520,13 +520,19 @@ inst long_return
 }
 
 inst long_break
-()
-(val)
+(uint8_t n)
+(...) depth: n
 ()
 {
-    YogVal frame = env->frame;
-    YogVal target_frame = PTR_AS(YogScriptFrame, frame)->frame_to_long_break;
-    long_jump(env, val, JMP_BREAK, target_frame);
+    YogVal objs = YUNDEF;
+    YogVal target_frame = YUNDEF;
+    PUSH_LOCALS2(env, objs, target_frame);
+
+    objs = make_jmp_val(env, n);
+    target_frame = PTR_AS(YogScriptFrame, env->frame)->frame_to_long_break;
+
+    POP_LOCALS(env);
+    long_jump(env, objs, JMP_BREAK, target_frame);
 }
 
 inst load_exception

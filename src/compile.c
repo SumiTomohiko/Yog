@@ -715,7 +715,9 @@ static void
 visit_array_elements(YogEnv* env, AstVisitor* visitor, YogVal elems, YogVal data)
 {
     SAVE_ARGS2(env, elems, data);
-    YOG_ASSERT(env, IS_PTR(elems), "invalid elems (0x%08x)", elems);
+    if (!IS_PTR(elems)) {
+        RETURN_VOID(env);
+    }
     YOG_ASSERT(env, BASIC_OBJ_TYPE(elems) == TYPE_ARRAY, "invalid elems type (0x%08x)", BASIC_OBJ_TYPE(elems));
 
     uint_t size = YogArray_size(env, elems);
@@ -937,24 +939,16 @@ scan_var_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 static void
 scan_var_visit_break(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
-    visit_node(env, visitor, NODE(node)->u.break_.expr, data);
+    SAVE_ARGS2(env, node, data);
+    visit_array_elements(env, visitor, NODE(node)->u.break_.exprs, data);
+    RETURN_VOID(env);
 }
 
 static void
 scan_var_visit_return(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
-    YogVal exprs = YUNDEF;
-    PUSH_LOCAL(env, exprs);
-
-    exprs = NODE(node)->u.return_.exprs;
-    if (!IS_PTR(exprs)) {
-        RETURN_VOID(env);
-    }
-
-    YOG_ASSERT(env, BASIC_OBJ_TYPE(exprs) == TYPE_ARRAY, "invalid exprs (0x%08x)", BASIC_OBJ_TYPE(exprs));
-    visit_array_elements(env, visitor, exprs, data);
-
+    visit_array_elements(env, visitor, NODE(node)->u.return_.exprs, data);
     RETURN_VOID(env);
 }
 
@@ -1052,12 +1046,9 @@ scan_var_visit_attr(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 static void
 scan_var_visit_array(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
-    YogVal elems = NODE(node)->u.array.elems;
-    if (!IS_PTR(elems)) {
-        return;
-    }
-
-    visit_array_elements(env, visitor, elems, data);
+    SAVE_ARGS2(env, node, data);
+    visit_array_elements(env, visitor, NODE(node)->u.array.elems, data);
+    RETURN_VOID(env);
 }
 
 static void
@@ -2813,48 +2804,38 @@ static void
 compile_while_jump(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, YogVal jump_to)
 {
     SAVE_ARGS3(env, node, data, jump_to);
-    YogVal expr = YUNDEF;
     YogVal finally_list_entry = YUNDEF;
     YogVal label_start = YUNDEF;
     YogVal label_end = YUNDEF;
     YogVal try_list_entry = YUNDEF;
-    PUSH_LOCALS5(env, expr, finally_list_entry, label_start, label_end, try_list_entry);
+    PUSH_LOCALS4(env, finally_list_entry, label_start, label_end, try_list_entry);
 
-    if (NODE(node)->type == NODE_BREAK) {
-        expr = NODE(node)->u.break_.expr;
-    }
-    else {
-        expr = NODE(node)->u.next.expr;
+    if (!IS_PTR(COMPILE_DATA(data)->label_while_start)) {
+        RETURN_VOID(env);
     }
 
-    if (IS_PTR(COMPILE_DATA(data)->label_while_start)) {
-        YOG_ASSERT(env, !IS_PTR(expr), "Can't return value with break/next.");
-        finally_list_entry = COMPILE_DATA(data)->finally_list;
-        while (IS_PTR(finally_list_entry)) {
-            label_start = Label_new(env);
-            label_end = Label_new(env);
+    finally_list_entry = COMPILE_DATA(data)->finally_list;
+    while (IS_PTR(finally_list_entry)) {
+        label_start = Label_new(env);
+        label_end = Label_new(env);
 
-            add_inst(env, data, label_start);
-            visitor->visit_stmts(env, visitor, NODE(FINALLY_LIST_ENTRY(finally_list_entry)->node)->u.finally.body, data);
-            add_inst(env, data, label_end);
+        add_inst(env, data, label_start);
+        visitor->visit_stmts(env, visitor, NODE(FINALLY_LIST_ENTRY(finally_list_entry)->node)->u.finally.body, data);
+        add_inst(env, data, label_end);
 
-            try_list_entry = COMPILE_DATA(data)->try_list;
-            while (TRUE) {
-                split_exception_table(env, TRY_LIST_ENTRY(try_list_entry)->exc_tbl, label_start, label_end);
-                if (VAL2PTR(TRY_LIST_ENTRY(try_list_entry)->node) == VAL2PTR(FINALLY_LIST_ENTRY(finally_list_entry)->node)) {
-                    break;
-                }
-
-                try_list_entry = TRY_LIST_ENTRY(try_list_entry)->prev;
+        try_list_entry = COMPILE_DATA(data)->try_list;
+        while (TRUE) {
+            split_exception_table(env, TRY_LIST_ENTRY(try_list_entry)->exc_tbl, label_start, label_end);
+            if (VAL2PTR(TRY_LIST_ENTRY(try_list_entry)->node) == VAL2PTR(FINALLY_LIST_ENTRY(finally_list_entry)->node)) {
+                break;
             }
 
-            finally_list_entry = FINALLY_LIST_ENTRY(finally_list_entry)->prev;
+            try_list_entry = TRY_LIST_ENTRY(try_list_entry)->prev;
         }
-        CompileData_add_jump(env, data, NODE(node)->lineno, jump_to);
+
+        finally_list_entry = FINALLY_LIST_ENTRY(finally_list_entry)->prev;
     }
-    else {
-        /* TODO */
-    }
+    CompileData_add_jump(env, data, NODE(node)->lineno, jump_to);
 
     RETURN_VOID(env);
 }
@@ -2863,8 +2844,8 @@ static void
 compile_visit_break(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
-    YogVal expr = YUNDEF;
-    PUSH_LOCAL(env, expr);
+    YogVal exprs = YUNDEF;
+    PUSH_LOCAL(env, exprs);
 
     if (IS_PTR(COMPILE_DATA(data)->label_while_start)) {
         YogVal label_while_end = COMPILE_DATA(data)->label_while_end;
@@ -2872,15 +2853,19 @@ compile_visit_break(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
         RETURN_VOID(env);
     }
 
-    expr = NODE(node)->u.break_.expr;
-    uint_t lineno = NODE(node)->lineno;
-    if (IS_PTR(expr)) {
-        visit_node(env, visitor, expr, data);
+    uint8_t n;
+    exprs = NODE(node)->u.break_.exprs;
+    if (IS_PTR(exprs)) {
+        YOG_ASSERT(env, BASIC_OBJ_TYPE(exprs) == TYPE_ARRAY, "invalid exprs (0x%08x)", BASIC_OBJ_TYPE(exprs));
+        visit_array_elements_opposite_order(env, visitor, exprs, data);
+        YOG_ASSERT(env, YogArray_size(env, exprs) <= UINT8_MAX, "too many returned values");
+        n = YogArray_size(env, exprs);
     }
     else {
-        add_push_const(env, data, YNIL, lineno);
+        n = 0;
     }
-    CompileData_add_long_break(env, data, lineno);
+
+    CompileData_add_long_break(env, data, NODE_LINENO(node), n);
 
     RETURN_VOID(env);
 }

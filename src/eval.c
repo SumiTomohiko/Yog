@@ -41,6 +41,30 @@
     CUR_FRAME = PTR_AS(YogFrame, CUR_FRAME)->prev; \
 } while (0)
 
+static YogVal
+make_jmp_val(YogEnv* env, uint_t n)
+{
+    SAVE_LOCALS(env);
+    YogVal objs = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS2(env, objs, val);
+
+    if (n == 0) {
+        objs = YogArray_of_size(env, 1);
+        YogArray_push(env, objs, YNIL);
+        RETURN(env, objs);
+    }
+
+    objs = YogArray_of_size(env, n);
+    uint_t i;
+    for (i = 0; i < n; i++) {
+        val = YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME));
+        YogArray_push(env, objs, val);
+    }
+
+    RETURN(env, objs);
+}
+
 static void
 set_lhs_composition(YogEnv* env, uint_t left, uint_t middle, uint_t right)
 {
@@ -126,9 +150,7 @@ move_returned_value(YogEnv* env, uint_t n)
 {
     SAVE_LOCALS(env);
     YogVal prev_frame = YUNDEF;
-    YogVal val = YUNDEF;
-    YogVal middle = YUNDEF;
-    PUSH_LOCALS3(env, prev_frame, val, middle);
+    PUSH_LOCAL(env, prev_frame);
 
     prev_frame = PTR_AS(YogFrame, CUR_FRAME)->prev;
     if (n == 0) {
@@ -156,6 +178,79 @@ move_returned_value(YogEnv* env, uint_t n)
         return_middle(env, n - left_num - right_num);
     }
     move_stack_value(env, right_num);
+
+    RETURN_VOID(env);
+}
+
+static void
+push_from_array(YogEnv* env, YogVal vals, uint_t from, uint_t to)
+{
+    SAVE_ARG(env, vals);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    uint_t i;
+    for (i = from; i < to; i++) {
+        val = YogArray_at(env, vals, i);
+        YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), val);
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
+push_array_from_array(YogEnv* env, YogVal vals, uint_t from, uint_t to)
+{
+    SAVE_ARG(env, vals);
+    YogVal val = YUNDEF;
+    YogVal a = YUNDEF;
+    PUSH_LOCALS2(env, val, a);
+
+    a = YogArray_of_size(env, to - from);
+    uint_t i;
+    for (i = from; i < to; i++) {
+        val = YogArray_at(env, vals, i);
+        YogArray_push(env, a, val);
+    }
+    YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), a);
+
+    RETURN_VOID(env);
+}
+
+static void
+push_jmp_val(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal vals = YUNDEF;
+    PUSH_LOCAL(env, vals);
+
+    vals = PTR_AS(YogThread, env->thread)->jmp_val;
+    YOG_ASSERT(env, IS_PTR(vals), "jmp_val must be a pointer (0x%08x)", vals);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(vals) == TYPE_ARRAY, "jmp_val must be an array (0x%08x)", BASIC_OBJ_TYPE(vals));
+    uint_t n = YogArray_size(env, vals);
+    YOG_ASSERT(env, 0 < n, "jmp_val must contain more than one values (0x%08x)", n);
+
+    uint_t left_num = PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_left_num;
+    uint_t middle_num = PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_middle_num;
+    uint_t right_num = PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_right_num;
+    if (left_num + middle_num + right_num == 0) {
+        RETURN_VOID(env);
+    }
+    if (0 < middle_num) {
+        if (n < left_num + right_num) {
+            YogError_raise_ValueError(env, "too few multiple value");
+            /* NOTREACHED */
+        }
+    }
+    else if (left_num != n) {
+        YogError_raise_ValueError(env, "number of multiple value unmached");
+        /* NOTREACHED */
+    }
+    push_from_array(env, vals, 0, left_num);
+    if (0 < middle_num) {
+        push_array_from_array(env, vals, left_num, n - right_num);
+    }
+    push_from_array(env, vals, n - right_num, n);
 
     RETURN_VOID(env);
 }
@@ -569,7 +664,7 @@ YogEval_mainloop(YogEnv* env)
                                 }
                                 CUR_FRAME = frame;
                                 PC = target;
-                                PUSH(PTR_AS(YogThread, env->thread)->jmp_val);
+                                push_jmp_val(env);
                                 found = TRUE;
                             }
                         }
