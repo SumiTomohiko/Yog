@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add Couroutine#status
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-29 03:03:52.674627 Z
+references: []
+
+id: b4d267aaf52a11e38e75e6ce88e7dc1fb7f5b40c
+log_events: 
+- - 2009-12-29 03:03:53.866881 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
