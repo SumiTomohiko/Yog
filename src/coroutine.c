@@ -1,8 +1,10 @@
 #include "config.h"
+#include <alloca.h>
 #include <stdlib.h>
 #if defined(HAVE_WINDOWS_H)
 #   include <windows.h>
 #endif
+#include "yog/array.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/frame.h"
@@ -89,6 +91,8 @@ struct Coroutine {
      */
     YogVal boundary_frame;
     YogVal block;
+
+    YogVal args;
 };
 
 typedef struct Coroutine Coroutine;
@@ -186,11 +190,12 @@ coroutine_main(MAIN_PARAM)
     coroutine_env.vm = env->vm;
     coroutine_env.thread = thread;
     void* stack = PTR_AS(Coroutine, self)->machine_stack;
-    uint_t size = PTR_AS(Coroutine, self)->machine_stack_size;
-    coroutine_env.locals = machine_stack2locals(env, stack, size);
+    uint_t stack_size = PTR_AS(Coroutine, self)->machine_stack_size;
+    coroutine_env.locals = machine_stack2locals(env, stack, stack_size);
     coroutine_env.coroutine = self;
     coroutine_env.frame = PTR_AS(Coroutine, self)->boundary_frame;
 #endif
+    SAVE_LOCALS(&coroutine_env);
     PTR_AS(YogThread, thread)->env = &coroutine_env;
     YogLocals locals;
     locals.num_vals = 4;
@@ -200,10 +205,20 @@ coroutine_main(MAIN_PARAM)
     locals.vals[2] = &coroutine_env.coroutine;
     locals.vals[3] = &coroutine_env.frame;
     PUSH_LOCAL_TABLE(&coroutine_env, locals);
+    YogVal args = YUNDEF;
+    PUSH_LOCAL(&coroutine_env, args);
 
-    YogCallable_call(&coroutine_env, PTR_AS(Coroutine, self)->block, 0, NULL);
+    args = PTR_AS(Coroutine, self)->args;
+    uint_t size = IS_PTR(args) ? YogArray_size(&coroutine_env, args) : 0;
+    YogVal* a = (YogVal*)alloca(sizeof(YogVal) * size);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        a[i] = YogArray_at(&coroutine_env, args, i);
+    }
 
-    POP_LOCALS(&coroutine_env);
+    YogCallable_call(&coroutine_env, PTR_AS(Coroutine, self)->block, size, a);
+
+    RESTORE_LOCALS(&coroutine_env);
     yield_coroutine(&coroutine_env, self);
 }
 #undef CALLBACK
@@ -213,6 +228,13 @@ static YogVal
 resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal a = YUNDEF;
+    PUSH_LOCAL(env, a);
+    YogCArg params[] = { { "*", &a }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "resume", params, args, kw);
+
+    PTR_AS(Coroutine, self)->boundary_frame = env->frame;
+    PTR_AS(Coroutine, self)->args = a;
 
 #if defined(_WIN32)
     void* fiber_to_yield = GetCurrentFiber();
@@ -222,7 +244,6 @@ resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     }
     PTR_AS(Coroutine, self)->fiber_to_yield = fiber_to_yield;
     PTR_AS(Coroutine, self)->param->thread = env->thread;
-    PTR_AS(Coroutine, self)->boundary_frame = env->frame;
     SwitchToFiber(PTR_AS(Coroutine, self)->fiber_to_resume);
 #else
     if (PTR_AS(Coroutine, self)->ctx_to_resume.eip == NULL) {
@@ -235,8 +256,6 @@ resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
         PTR_AS(Coroutine, self)->ctx_to_resume.eip = coroutine_main;
         PTR_AS(Coroutine, self)->ctx_to_resume.esp = &locals[-3];
     }
-
-    PTR_AS(Coroutine, self)->boundary_frame = env->frame;
 
     SwitchContext* to = &PTR_AS(Coroutine, self)->ctx_to_resume;
     SwitchContext* cont = &PTR_AS(Coroutine, self)->ctx_to_yield;
@@ -271,6 +290,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #endif
     KEEP(boundary_frame);
     KEEP(block);
+    KEEP(args);
 #undef KEEP
 }
 
@@ -345,6 +365,7 @@ Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
 
     PTR_AS(Coroutine, self)->boundary_frame = YUNDEF;
     PTR_AS(Coroutine, self)->block = YUNDEF;
+    PTR_AS(Coroutine, self)->args = YUNDEF;
 
     RETURN_VOID(env);
 }
