@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Change signature of YogScriptFrame_push_stack
+desc: frames are GC object.
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-29 05:43:34.864398 Z
+references: []
+
+id: f2db5e7475e1f690669c191c8dcb5453b5588efb
+log_events: 
+- - 2009-12-29 05:43:35.623662 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

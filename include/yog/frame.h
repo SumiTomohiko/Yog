@@ -25,6 +25,7 @@ struct YogCFrame {
     YogVal self;
     YogVal args;
     YogVal f;
+    YogVal multi_val;
 };
 
 typedef struct YogCFrame YogCFrame;
@@ -95,6 +96,7 @@ extern "C" {
 #endif
 /* src/frame.c */
 YogVal YogCFrame_new(YogEnv*);
+void YogCFrame_return_multi_value(YogEnv*, YogVal, YogVal);
 YogVal YogClassFrame_new(YogEnv*);
 YogVal YogFinishFrame_new(YogEnv*);
 YogVal YogMethodFrame_new(YogEnv*);

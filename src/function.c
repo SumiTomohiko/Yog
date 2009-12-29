@@ -415,7 +415,7 @@ create_positional_argument(YogEnv* env, uint8_t posargc, YogVal posargs[], YogVa
 }
 
 static YogVal
-YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg, YogVal* multi_val)
 {
     SAVE_ARGS5(env, callee, self, vararg, varkwarg, blockarg);
     YogVal args = YUNDEF;
@@ -436,16 +436,37 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
     Body f = (Body)PTR_AS(YogNativeFunction, callee)->f;
     pkg = PTR_AS(YogNativeFunction, callee)->pkg;
     retval = (*f)(env, self, pkg, args, kw, blockarg);
+    if (IS_UNDEF(retval) && (multi_val != NULL)) {
+        *multi_val = PTR_AS(YogCFrame, frame)->multi_val;
+    }
 
     env->frame = PTR_AS(YogFrame, env->frame)->prev;
 
     RETURN(env, retval);
 }
 
+static void
+error_for_multi_value(YogEnv* env, YogVal retval)
+{
+    SAVE_ARG(env, retval);
+    if (!IS_UNDEF(retval)) {
+        RETURN_VOID(env);
+    }
+    YogError_raise_ValueError(env, "multiple value are not allowed");
+    RETURN_VOID(env);
+}
+
 static YogVal
 YogNativeFunction_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
 {
-    return YogNativeFunction_call_for_instance(env, callee, YUNDEF, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);;
+    SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = YogNativeFunction_call_for_instance(env, callee, YUNDEF, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, NULL);
+    error_for_multi_value(env, retval);
+
+    RETURN(env, retval);
 }
 
 static void
@@ -453,10 +474,15 @@ YogNativeFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
 {
     SAVE_ARGS5(env, callee, self, vararg, varkwarg, blockarg);
     YogVal retval = YUNDEF;
-    YogVal frame = YUNDEF;
-    PUSH_LOCALS2(env, retval, frame);
+    YogVal multi_val = YUNDEF;
+    PUSH_LOCALS2(env, retval, multi_val);
 
-    retval = YogNativeFunction_call_for_instance(env, callee, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    retval = YogNativeFunction_call_for_instance(env, callee, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, &multi_val);
+    if (IS_UNDEF(retval)) {
+        YogEval_push_returned_multi_value(env, multi_val);
+        RETURN_VOID(env);
+    }
+
     YogEval_push_returned_value(env, env->frame, retval);
 
     RETURN_VOID(env);
@@ -633,7 +659,8 @@ YogNativeInstanceMethod_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal
 
     self = PTR_AS(YogInstanceMethod, callee)->self;
     f = PTR_AS(YogInstanceMethod, callee)->f;
-    retval = YogNativeFunction_call_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    retval = YogNativeFunction_call_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, NULL);
+    error_for_multi_value(env, retval);
 
     RETURN(env, retval);
 }

@@ -6,6 +6,14 @@
 #include "yog/gc.h"
 #include "yog/yog.h"
 
+void
+YogCFrame_return_multi_value(YogEnv* env, YogVal self, YogVal multi_val)
+{
+    SAVE_ARGS2(env, self, multi_val);
+    PTR_AS(YogCFrame, self)->multi_val = multi_val;
+    RETURN_VOID(env);
+}
+
 static void
 YogFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
@@ -24,9 +32,7 @@ YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(self);
     KEEP(f);
     KEEP(args);
-#if 0
-    KEEP(locals);
-#endif
+    KEEP(multi_val);
 }
 
 static void
@@ -170,6 +176,7 @@ YogCFrame_init(YogEnv* env, YogVal frame)
     PTR_AS(YogCFrame, frame)->self = YUNDEF;
     PTR_AS(YogCFrame, frame)->args = YUNDEF;
     PTR_AS(YogCFrame, frame)->f = YUNDEF;
+    PTR_AS(YogCFrame, frame)->multi_val = YUNDEF;
 }
 
 YogVal

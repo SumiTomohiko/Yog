@@ -217,14 +217,11 @@ push_array_from_array(YogEnv* env, YogVal vals, uint_t from, uint_t to)
     RETURN_VOID(env);
 }
 
-static void
-push_jmp_val(YogEnv* env)
+void
+YogEval_push_returned_multi_value(YogEnv* env, YogVal vals)
 {
-    SAVE_LOCALS(env);
-    YogVal vals = YUNDEF;
-    PUSH_LOCAL(env, vals);
+    SAVE_ARG(env, vals);
 
-    vals = PTR_AS(YogThread, env->thread)->jmp_val;
     YOG_ASSERT(env, IS_PTR(vals), "jmp_val must be a pointer (0x%08x)", vals);
     YOG_ASSERT(env, BASIC_OBJ_TYPE(vals) == TYPE_ARRAY, "jmp_val must be an array (0x%08x)", BASIC_OBJ_TYPE(vals));
     uint_t n = YogArray_size(env, vals);
@@ -251,6 +248,19 @@ push_jmp_val(YogEnv* env)
         push_array_from_array(env, vals, left_num, n - right_num);
     }
     push_from_array(env, vals, n - right_num, n);
+
+    RETURN_VOID(env);
+}
+
+static void
+push_jmp_val(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal vals = YUNDEF;
+    PUSH_LOCAL(env, vals);
+
+    vals = PTR_AS(YogThread, env->thread)->jmp_val;
+    YogEval_push_returned_multi_value(env, vals);
 
     RETURN_VOID(env);
 }

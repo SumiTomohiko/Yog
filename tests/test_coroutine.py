@@ -143,7 +143,7 @@ co.resume(42, 26)
         self._test("""
 co = Coroutine.new() do
   *foo, bar = Coroutine.yield()
-  print(baz)
+  print(bar)
 end
 co.resume()
 co.resume(42, 26)

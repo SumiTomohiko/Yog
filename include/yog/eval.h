@@ -22,6 +22,7 @@ YogVal YogEval_eval_file(YogEnv*, FILE*, const char*, const char*);
 void YogEval_eval_package(YogEnv*, YogVal, YogVal);
 YogVal YogEval_mainloop(YogEnv*);
 void YogEval_push_finish_frame(YogEnv*);
+void YogEval_push_returned_multi_value(YogEnv*, YogVal);
 void YogEval_push_returned_value(YogEnv*, YogVal, YogVal);
 
 

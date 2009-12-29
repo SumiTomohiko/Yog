@@ -128,6 +128,27 @@ yield_coroutine(YogEnv* env, YogVal self)
 #endif
 }
 
+static void
+return_args(YogEnv* env, YogVal args)
+{
+    SAVE_ARG(env, args);
+    YogVal a = YUNDEF;
+    PUSH_LOCAL(env, a);
+    YOG_ASSERT(env, IS_PTR(args), "args must be pointer (0x%08x)", args);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(args) == TYPE_ARRAY, "invalid args type (0x%08x)", BASIC_OBJ_TYPE(args));
+
+    if (YogArray_size(env, args) == 0) {
+        a = YogArray_of_size(env, 1);
+        YogArray_push(env, a, YNIL);
+        YogCFrame_return_multi_value(env, env->frame, a);
+        RETURN_VOID(env);
+    }
+
+    YogCFrame_return_multi_value(env, env->frame, args);
+
+    RETURN_VOID(env);
+}
+
 static YogVal
 yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -135,7 +156,12 @@ yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     YogVal coroutine = env->coroutine;
     YogVal frame = YUNDEF;
     YogVal boundary = YUNDEF;
-    PUSH_LOCALS3(env, coroutine, frame, boundary);
+    YogVal a = YUNDEF;
+    PUSH_LOCALS4(env, coroutine, frame, boundary, a);
+    YogCArg params[] = { { "*", &a }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "yield", params, args, kw);
+
+    PTR_AS(Coroutine, coroutine)->args = a;
 
     boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
     frame = env->frame;
@@ -151,7 +177,8 @@ yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
     PTR_AS(YogFrame, frame)->prev = boundary;
 
-    RETURN(env, self);
+    return_args(env, PTR_AS(Coroutine, coroutine)->args);
+    RETURN(env, YUNDEF);
 }
 
 static YogLocalsAnchor*
@@ -206,7 +233,9 @@ coroutine_main(MAIN_PARAM)
     locals.vals[3] = &coroutine_env.frame;
     PUSH_LOCAL_TABLE(&coroutine_env, locals);
     YogVal args = YUNDEF;
-    PUSH_LOCAL(&coroutine_env, args);
+    YogVal retval = YUNDEF;
+    YogVal block = YUNDEF;
+    PUSH_LOCALS3(&coroutine_env, args, retval, block);
 
     args = PTR_AS(Coroutine, self)->args;
     uint_t size = IS_PTR(args) ? YogArray_size(&coroutine_env, args) : 0;
@@ -216,7 +245,12 @@ coroutine_main(MAIN_PARAM)
         a[i] = YogArray_at(&coroutine_env, args, i);
     }
 
-    YogCallable_call(&coroutine_env, PTR_AS(Coroutine, self)->block, size, a);
+    block = PTR_AS(Coroutine, self)->block;
+    retval = YogCallable_call(&coroutine_env, block, size, a);
+
+    args = YogArray_of_size(env, 1);
+    YogArray_push(env, args, retval);
+    PTR_AS(Coroutine, self)->args = args;
 
     RESTORE_LOCALS(&coroutine_env);
     yield_coroutine(&coroutine_env, self);
@@ -262,7 +296,8 @@ resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     switch_context(env, to, cont);
 #endif
 
-    RETURN(env, self);
+    return_args(env, PTR_AS(Coroutine, self)->args);
+    RETURN(env, YUNDEF);
 }
 
 static YogVal
