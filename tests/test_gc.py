@@ -11,4 +11,7 @@ class TestGc(TestCase):
 end
 """)
 
+    def test_gc_stress0(self):
+        self._test("", options=[ "--gc-stress", "--gc-stress" ])
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -135,7 +135,7 @@ YogMarkSweep_finalize(YogEnv* env, YogMarkSweep* ms)
 void*
 YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    if (ms->threshold <= ms->allocated_size) {
+    if (env->vm->gc_stress || (ms->threshold <= ms->allocated_size)) {
         YogGC_perform(env);
     }
 

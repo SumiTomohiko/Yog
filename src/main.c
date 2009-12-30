@@ -115,11 +115,19 @@ yog_main(YogEnv* env, int_t argc, char* argv[])
     fclose(fp);
 }
 
+static void
+enable_gc_stress(YogVM* vm, uint_t gc_stress_level, uint_t level)
+{
+    if (level <= gc_stress_level) {
+        vm->gc_stress = TRUE;
+    }
+}
+
 int_t
 main(int_t argc, char* argv[])
 {
     int_t debug_parser = 0;
-    int_t gc_stress = 0;
+    uint_t gc_stress_level = 0;
     int_t help = 0;
 #define DEFAULT_INIT_HEAP_SIZE  (1 * 1024 * 1024)
     size_t init_heap_size = DEFAULT_INIT_HEAP_SIZE;
@@ -129,7 +137,7 @@ main(int_t argc, char* argv[])
 #undef DEFAULT_THRESHOLD
     struct option options[] = {
         { "debug-parser", no_argument, &debug_parser, 1 },
-        { "gc-stress", no_argument, &gc_stress, 1 },
+        { "gc-stress", no_argument, NULL, 'g' },
         { "help", no_argument, &help, 1 },
         { "init-heap-size", required_argument, NULL, 'i' },
         { "threshold", required_argument, NULL, 't' },
@@ -140,6 +148,9 @@ main(int_t argc, char* argv[])
     while ((c = getopt_long(argc, argv, "", options, NULL)) != -1) {
         switch (c) {
         case 0:
+            break;
+        case 'g':
+            gc_stress_level++;
             break;
         case 'i':
             init_heap_size = parse_size(optarg);
@@ -176,7 +187,7 @@ main(int_t argc, char* argv[])
 
     YogVM vm;
     YogVM_init(&vm);
-    vm.gc_stress = gc_stress;
+    enable_gc_stress(&vm, gc_stress_level, 2);
     env.vm = &vm;
     YogVM_add_locals(&env, env.vm, &locals);
 
@@ -192,14 +203,8 @@ main(int_t argc, char* argv[])
     YogThread_config_copying(&env, dummy_thread, init_heap_size);
     YogCopying_allocate_heap(&env, (YogCopying*)PTR_AS(YogThread, dummy_thread)->heap);
 #elif defined(GC_MARK_SWEEP)
-    if (gc_stress) {
-        threshold = 0;
-    }
     YogThread_config_mark_sweep(&env, dummy_thread, threshold);
 #elif defined(GC_MARK_SWEEP_COMPACT)
-    if (gc_stress) {
-        threshold = 0;
-    }
 #   define CHUNK_SIZE  (16 * 1024 * 1024)
     YogThread_config_mark_sweep_compact(&env, dummy_thread, CHUNK_SIZE, threshold);
 #   undef CHUNK_SIZE
@@ -239,10 +244,10 @@ main(int_t argc, char* argv[])
 
         uint_t yog_argc = argc - optind;
         char** yog_argv = &argv[optind];
-
         YogVM_boot(&env, env.vm, yog_argc, yog_argv);
         YogVM_configure_search_path(&env, env.vm, argv[0]);
 
+        enable_gc_stress(&vm, gc_stress_level, 1);
         yog_main(&env, yog_argc, yog_argv);
     }
     else {

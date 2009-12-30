@@ -570,7 +570,7 @@ void*
 YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     size_t total_size = size + sizeof(YogMarkSweepCompactHeader);
-    if (msc->threshold <= msc->allocated_size) {
+    if (env->vm->gc_stress || (msc->threshold <= msc->allocated_size)) {
 #if defined(GC_MARK_SWEEP_COMPACT)
         YogGC_perform(env);
 #elif defined(GC_GENERATIONAL)
