@@ -275,4 +275,141 @@ foo() do [n]
 end
 """, "42")
 
+    def test_default0(self):
+        self._test("""
+def foo(bar=42)
+  print(bar)
+end
+
+foo()
+""", "42")
+
+    def test_default10(self):
+        self._test("""
+def foo(bar=42)
+  print(bar)
+end
+
+foo(26)
+""", "26")
+
+    def test_default20(self):
+        self._test("""
+def foo(bar, baz=42)
+  print(bar)
+end
+
+foo(26)
+""", "26")
+
+    def test_default30(self):
+        self._test("""
+def foo(bar, baz=42)
+  print(baz)
+end
+
+foo(26)
+""", "42")
+
+    def test_default40(self):
+        self._test("""
+def foo(bar, baz=42)
+  print(baz)
+end
+
+foo(26, \"quux\")
+""", "quux")
+
+    def test_default50(self):
+        self._test("""
+def foo(bar=42, baz=26)
+  print(bar)
+end
+
+foo()
+""", "42")
+
+    def test_default60(self):
+        self._test("""
+def foo(bar=42, baz=26)
+  print(baz)
+end
+
+foo()
+""", "26")
+
+    def test_default70(self):
+        self._test("""
+def foo(bar=42, baz=26)
+  print(bar)
+end
+
+foo(\"quux\")
+""", "quux")
+
+    def test_default80(self):
+        self._test("""
+def foo(bar=42, baz=26)
+  print(baz)
+end
+
+foo(\"quux\", \"hoge\")
+""", "hoge")
+
+    def test_default90(self):
+        self._test("""
+def foo(bar=42, baz=26)
+  print(bar)
+end
+
+foo(baz: \"quux\")
+""", "42")
+
+    def test_default100(self):
+        self._test("""
+def foo(bar=42, baz=26)
+  print(baz)
+end
+
+foo(baz: \"quux\")
+""", "quux")
+
+    def test_default110(self):
+        self._test("""
+def foo(&block=nil)
+  print(block)
+end
+
+foo()
+""", "nil")
+
+    def test_default120(self):
+        self._test("""
+def foo(&block=nil)
+  block()
+end
+
+foo() do
+  print(42)
+end
+""", "42")
+
+    def test_default130(self):
+        self._test("""
+def foo(bar, &block=nil)
+  print(bar)
+end
+
+foo(42)
+""", "42")
+
+    def test_default140(self):
+        self._test("""
+def foo(bar, &block=nil)
+  print(block)
+end
+
+foo(42)
+""", "nil")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
