@@ -1,0 +1,24 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Raise an exception on lack of arguments
+desc: |-
+  (: This code causes aborting :)
+  def foo(bar)
+    print(bar)
+  end
+  
+  foo()
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-31 02:47:59.625576 Z
+references: []
+
+id: cc00fdb4cb1e409fbe4b910a942f7cdbfb8b0dcc
+log_events: 
+- - 2009-12-31 02:48:00.532425 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
