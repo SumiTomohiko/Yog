@@ -209,6 +209,22 @@ inst jump_if_false
     }
 }
 
+inst jump_if_defined
+(uint8_t index, pc_t dest)
+()
+()
+{
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    val = PTR_AS(YogValArray, LOCAL_VARS(CUR_FRAME))->items[index];
+    if (!IS_UNDEF(val)) {
+        JUMP(dest);
+    }
+
+    POP_LOCALS(env);
+}
+
 inst dup
 ()
 (val)

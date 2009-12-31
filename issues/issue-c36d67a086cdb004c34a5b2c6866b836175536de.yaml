@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove Python's parser rules from src/parser.y
+desc: unused.
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2009-12-31 05:19:16.950619 Z
+references: []
+
+id: c36d67a086cdb004c34a5b2c6866b836175536de
+log_events: 
+- - 2009-12-31 05:19:17.710967 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

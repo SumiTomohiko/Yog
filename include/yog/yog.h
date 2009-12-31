@@ -220,6 +220,9 @@ typedef struct YogEnv YogEnv;
 #define SAVE_ARGS5(env, x, y, z, t, u)  \
                                 SAVE_LOCALS((env)); \
                                 PUSH_LOCALS5((env), x, y, z, t, u)
+#define SAVE_ARGS6(env, x, y, z, t, u, v)  \
+                                SAVE_LOCALS((env)); \
+                                PUSH_LOCALS6((env), x, y, z, t, u, v)
 #define POP_LOCALS(env)         (env)->locals->body = (env)->locals->body->next
 #define RETURN(env, val)        do { \
     RESTORE_LOCALS(env); \

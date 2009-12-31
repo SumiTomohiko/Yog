@@ -451,4 +451,40 @@ end
 foo()
 """, "nil")
 
+    def test_default190(self):
+        self._test("""
+def foo(bar=baz=42)
+  print(bar)
+end
+
+foo()
+""", "42")
+
+    def test_default200(self):
+        self._test("""
+def foo(bar=baz=42)
+  print(baz)
+end
+
+foo()
+""", "42")
+
+    def test_default210(self):
+        self._test("""
+def foo(&block=bar=nil)
+  print(block)
+end
+
+foo()
+""", "nil")
+
+    def test_default220(self):
+        self._test("""
+def foo(&block=bar=nil)
+  print(bar)
+end
+
+foo()
+""", "nil")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
