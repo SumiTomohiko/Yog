@@ -1,4 +1,4 @@
-#include "config.h"
+#include "yog/config.h"
 #include <ctype.h>
 #include <errno.h>
 #if defined(HAVE_GETOPT_H)

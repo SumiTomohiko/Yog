@@ -1,4 +1,4 @@
-#include "config.h"
+#include "yog/config.h"
 #if defined(HAVE_STDINT_H)
 #   include <stdint.h>
 #endif

@@ -1,4 +1,4 @@
-#include "config.h"
+#include "yog/config.h"
 #include <alloca.h>
 #include <stdlib.h>
 #if defined(HAVE_WINDOWS_H)

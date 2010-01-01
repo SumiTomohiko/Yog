@@ -1,4 +1,4 @@
-#include "config.h"
+#include "yog/config.h"
 #include <ctype.h>
 #if defined(HAVE_FLOAT_H)
 #   include <float.h>

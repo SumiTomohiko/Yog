@@ -4,8 +4,8 @@
 AC_PREREQ(2.61)
 AC_INIT(Yog, 0.0.4, SumiTomohiko@neko-daisuki.ddo.jp)
 AM_INIT_AUTOMAKE([dist-bzip2])
-AC_CONFIG_SRCDIR([config.h.in])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_SRCDIR([include/yog/config.h.in])
+AC_CONFIG_HEADER([include/yog/config.h])
 
 # Checks for programs.
 AC_PROG_CC

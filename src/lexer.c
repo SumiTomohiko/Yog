@@ -1,4 +1,4 @@
-#include "config.h"
+#include "yog/config.h"
 #if defined(HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif

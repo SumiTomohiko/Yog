@@ -2,7 +2,7 @@
 
 /* static        char        sccsid[] = "@(#) st.c 5.1 89/12/14 Crucible"; */
 
-#include "config.h"
+#include "yog/config.h"
 #if 0
 #   include "defines.h"
 #endif
