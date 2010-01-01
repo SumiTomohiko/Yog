@@ -61,10 +61,6 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_BREAK:
         KEEP(break_.exprs);
         break;
-    case NODE_COMMAND_CALL:
-        KEEP(command_call.args);
-        KEEP(command_call.blockarg);
-        break;
     case NODE_DICT:
         KEEP(dict.elems);
         break;

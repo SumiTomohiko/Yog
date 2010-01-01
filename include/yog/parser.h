@@ -24,7 +24,6 @@ enum YogNodeType {
     NODE_BLOCK_PARAM,
     NODE_BREAK,
     NODE_CLASS,
-    NODE_COMMAND_CALL,
     NODE_DICT,
     NODE_DICT_ELEM,
     NODE_EXCEPT,
@@ -87,11 +86,6 @@ struct YogNode {
         struct {
             YogVal exprs;
         } break_;
-        struct {
-            ID name;
-            YogVal args;
-            YogVal blockarg;
-        } command_call;
         struct {
             YogVal elems;
         } dict;

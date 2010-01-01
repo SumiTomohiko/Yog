@@ -515,7 +515,6 @@ process_stack_top_interactive(YogEnv* env, YogVal node, YogVal data)
     switch (NODE(node)->type) {
     case NODE_ASSIGN:
     case NODE_ATTR:
-    case NODE_COMMAND_CALL:
     case NODE_LITERAL:
     case NODE_METHOD_CALL:
     case NODE_SUBSCRIPT:
@@ -540,7 +539,6 @@ process_stack_top_uninteractive(YogEnv* env, YogVal node, YogVal data)
     switch (NODE(node)->type) {
     case NODE_ASSIGN:
     case NODE_ATTR:
-    case NODE_COMMAND_CALL:
     case NODE_LITERAL:
     case NODE_METHOD_CALL:
     case NODE_SUBSCRIPT:
