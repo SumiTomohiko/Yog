@@ -234,6 +234,7 @@ src/compile.inc
 src/dict.inc
 src/eval.inc
 src/inst.c
+src/keywords.inc
 src/miniyog
 src/object.inc
 src/parser.c
