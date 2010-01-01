@@ -37,41 +37,6 @@ YogByteArray_size(YogEnv* env, YogVal array)
     return PTR_AS(YogByteArray, array)->size;
 }
 
-#if 0
-uint8_t
-YogByteArray_at(YogEnv* env, YogByteArray* array, uint_t n)
-{
-    YOG_ASSERT(env, n < YogByteArray_size(env, array), "");
-    return array->items[n];
-}
-
-void
-YogByteArray_print(YogEnv* env, YogByteArray* array)
-{
-    printf("   |");
-    uint_t i = 0;
-#define MAX (16)
-    for (i = 0; i < MAX; i++) {
-        printf(" %02X", i);
-    }
-
-    printf("\n---+");
-    for (i = 0; i < MAX; i++) {
-        printf("---");
-    }
-
-    for (i = 0; i < YogByteArray_size(env, array); i++) {
-        if (i % MAX == 0) {
-            printf("\n%02X |", (i / MAX) * 10);
-        }
-
-        printf(" %02X", YogByteArray_at(env, array, i));
-    }
-#undef MAX
-    printf("\n");
-}
-#endif
-
 YogVal
 YogByteArray_new(YogEnv* env, uint_t size)
 {
