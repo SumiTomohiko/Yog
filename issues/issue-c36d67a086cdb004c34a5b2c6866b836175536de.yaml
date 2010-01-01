@@ -2,7 +2,7 @@
 title: Remove Python's parser rules from src/parser.y
 desc: unused.
 type: :task
-component: Yog
+component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted

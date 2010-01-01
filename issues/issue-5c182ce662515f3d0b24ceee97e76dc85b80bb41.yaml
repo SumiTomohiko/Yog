@@ -2,7 +2,7 @@
 title: File.open causes aborting
 desc: File.open("/noexisting", "r")
 type: :bugfix
-component: Yog
+component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted

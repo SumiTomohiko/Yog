@@ -2,7 +2,7 @@
 title: YogString_size must return size excluding null terminator
 desc: ""
 type: :task
-component: Yog
+component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted

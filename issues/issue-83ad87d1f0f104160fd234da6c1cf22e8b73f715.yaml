@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: Show unknown options in the usage
+title: Change the position of config.h to include/yog/config.h
 desc: ""
 type: :task
 component: core
@@ -7,12 +7,12 @@ release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
-creation_time: 2010-01-01 12:36:10.067588 Z
+creation_time: 2010-01-01 12:32:41.891309 Z
 references: []
 
-id: 102337d05064b168ff3cebb881fc3923d5f1f668
+id: 83ad87d1f0f104160fd234da6c1cf22e8b73f715
 log_events: 
-- - 2010-01-01 12:36:10.788684 Z
+- - 2010-01-01 12:32:42.617926 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""

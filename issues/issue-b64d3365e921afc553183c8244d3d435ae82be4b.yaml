@@ -5,7 +5,7 @@ desc: ">>> quux = \"\xE4\xB9\x9D\xE9\xA0\xAD\xE9\xBE\x8D\"\n\
   >>> quux[0]\n\
   => \xE9\xA0\xAD"
 type: :bugfix
-component: Yog
+component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed

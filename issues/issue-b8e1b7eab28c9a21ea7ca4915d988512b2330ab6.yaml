@@ -2,7 +2,7 @@
 title: Raise error when uncallable object is called
 desc: ""
 type: :task
-component: Yog
+component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted

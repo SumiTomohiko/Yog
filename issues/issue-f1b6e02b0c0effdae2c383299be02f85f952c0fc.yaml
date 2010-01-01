@@ -4,7 +4,7 @@ desc: |-
   >>> "\"You, fool, Warren is DEAD!\""
   You, fool, Warren is DEAD!"
 type: :bugfix
-component: Yog
+component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed

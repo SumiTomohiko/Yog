@@ -2,7 +2,7 @@
 title: Resolve dirty code in eval.c:exec_get_attr.
 desc: These code is because packages' can't hold package-specific data.
 type: :task
-component: Yog
+component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted

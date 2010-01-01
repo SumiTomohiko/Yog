@@ -4,7 +4,7 @@ desc: |-
   >>> a = [42, "foo", 3.1415926545]
   a[0]
 type: :bugfix
-component: Yog
+component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed

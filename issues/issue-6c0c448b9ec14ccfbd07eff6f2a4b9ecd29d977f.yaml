@@ -4,7 +4,7 @@ desc: |-
   In Swig's Yog module, SWIG_Error(code, msg) is defined as blank.
   This macro must be defined correctly.
 type: :task
-component: Yog
+component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted

@@ -6,7 +6,7 @@ desc: |-
     puts(26)
   end
 type: :bugfix
-component: Yog
+component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed

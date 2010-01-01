@@ -2,7 +2,7 @@
 title: Extend YogPackage
 desc: ""
 type: :task
-component: Yog
+component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed

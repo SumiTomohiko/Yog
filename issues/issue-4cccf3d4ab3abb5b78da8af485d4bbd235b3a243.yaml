@@ -2,7 +2,7 @@
 title: Change constructors' name to "init".
 desc: ""
 type: :task
-component: Yog
+component: core
 release: 0.0.1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed

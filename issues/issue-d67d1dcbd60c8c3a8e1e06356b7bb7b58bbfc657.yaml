@@ -2,7 +2,7 @@
 title: Remove make_block2
 desc: make_block2 instruction is same as make_block instruction.
 type: :task
-component: Yog
+component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted

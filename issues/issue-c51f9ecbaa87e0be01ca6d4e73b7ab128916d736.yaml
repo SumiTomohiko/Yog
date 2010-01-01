@@ -2,7 +2,7 @@
 title: Configure coroutines' machine stack size
 desc: Add machine_stack_size paremeter to Coroutine#init.
 type: :feature
-component: Yog
+component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted

@@ -3,7 +3,7 @@ title: Resolve the warning on compiling.
 desc: "vm.c: In function \xE2\x80\x98join_path\xE2\x80\x99:\n\
   vm.c:953: \xE8\xAD\xA6\xE5\x91\x8A: unused variable \xE2\x80\x98rest\xE2\x80\x99"
 type: :task
-component: Yog
+component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted

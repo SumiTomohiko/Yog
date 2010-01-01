@@ -9,7 +9,7 @@ desc: |-
     d = { 42 => 26 }
     foo(**d)
 type: :bugfix
-component: Yog
+component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted

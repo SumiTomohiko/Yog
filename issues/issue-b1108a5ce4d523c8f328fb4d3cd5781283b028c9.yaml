@@ -2,7 +2,7 @@
 title: Implement coroutine.
 desc: ""
 type: :feature
-component: Yog
+component: core
 release: 0.0.3
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed

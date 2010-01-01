@@ -11,7 +11,7 @@ desc: |-
   ... end
   >>> foo(bar: 42, baz: 26)
 type: :bugfix
-component: Yog
+component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed

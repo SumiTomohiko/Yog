@@ -12,7 +12,7 @@ desc: |-
   argument specified twice.
   zsh: abort (core dumped)  src/yog
 type: :bugfix
-component: Yog
+component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed

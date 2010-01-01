@@ -2,7 +2,7 @@
 title: Implement default parameter
 desc: ""
 type: :task
-component: Yog
+component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed
