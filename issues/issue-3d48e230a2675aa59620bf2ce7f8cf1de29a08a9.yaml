@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Specifying argument twice by a dictionary causes aborting
+desc: |-
+  def foo(bar)
+  end
+  
+  foo(42, **{ :bar => 26 })
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:37:41.177198 Z
+references: []
+
+id: 3d48e230a2675aa59620bf2ce7f8cf1de29a08a9
+log_events: 
+- - 2010-01-01 03:37:42.200604 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

@@ -1,0 +1,25 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Keyword argument type
+desc: |-
+  The following code causes abort:
+  
+    def foo(*kw)
+    end
+  
+    d = { 42 => 26 }
+    foo(**d)
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:03:20.773177 Z
+references: []
+
+id: cf00e48603281220f19789d42ba1c07323f6575e
+log_events: 
+- - 2010-01-01 03:03:21.452759 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

@@ -1,0 +1,23 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Calling functions which doesn't accept block parameter causes aborting
+desc: |-
+  def foo()
+  end
+  
+  foo() do
+  end
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:42:52.440085 Z
+references: []
+
+id: e5c52b1658d545a29636cce484a4f7761aef8ce1
+log_events: 
+- - 2010-01-01 03:42:53.923753 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

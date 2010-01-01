@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Match#group passed invalid argument(s)
+desc: ("foo" =~ /foo/).group([])
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:19:29.288919 Z
+references: []
+
+id: 11943a36aee385cd49a1d2d289e1cf0b8e8f2717
+log_events: 
+- - 2010-01-01 03:19:29.968640 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove unused code in binary.c
+desc: ""
+type: :task
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:59:11.973541 Z
+references: []
+
+id: 5fcb092f23ec23c83932a2be9ab7fbf03a5b505c
+log_events: 
+- - 2010-01-01 03:59:12.809296 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

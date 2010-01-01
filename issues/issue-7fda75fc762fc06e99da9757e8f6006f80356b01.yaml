@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Specifying argument twice causes abort
+desc: |-
+  def foo(bar)
+  end
+  
+  foo(42, bar: 26)
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:32:12.169901 Z
+references: []
+
+id: 7fda75fc762fc06e99da9757e8f6006f80356b01
+log_events: 
+- - 2010-01-01 03:32:12.622654 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

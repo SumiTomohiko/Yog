@@ -1,0 +1,25 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: to_s() returning not String causes abort
+desc: |-
+  class Foo
+    def to_s()
+      return 42
+    end
+  end
+  
+  print(Foo.new())
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:27:52.083431 Z
+references: []
+
+id: 3d96d7777a5dc8adf4cb3028e1b80f772b4138a0
+log_events: 
+- - 2010-01-01 03:27:52.581949 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

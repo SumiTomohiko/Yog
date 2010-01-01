@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: File.open causes aborting
+desc: File.open("/noexisting", "r")
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:46:59.179657 Z
+references: []
+
+id: 5c182ce662515f3d0b24ceee97e76dc85b80bb41
+log_events: 
+- - 2010-01-01 03:47:00.164792 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

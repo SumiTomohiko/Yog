@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Match#group causes abort
+desc: |-
+  m = ("foo" =~ /(?<bar>.)(?<bar>.)/)
+  print(m.group("bar"))
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:17:57.990861 Z
+references: []
+
+id: 87e71662885a8991e6fc83f92b34d5fd2c4afed8
+log_events: 
+- - 2010-01-01 03:17:58.633405 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

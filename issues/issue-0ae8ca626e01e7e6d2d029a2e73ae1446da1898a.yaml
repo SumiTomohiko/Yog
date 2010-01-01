@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "\"no keyword parameter\" aborting"
+desc: |-
+  def foo()
+  end
+  
+  foo(**{ :bar => 42 })
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:41:27.015440 Z
+references: []
+
+id: 0ae8ca626e01e7e6d2d029a2e73ae1446da1898a
+log_events: 
+- - 2010-01-01 03:41:28.037517 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

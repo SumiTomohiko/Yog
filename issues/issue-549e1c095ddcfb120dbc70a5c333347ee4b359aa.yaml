@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Too many arguments causes abort
+desc: |-
+  def foo()
+  end
+  
+  foo(42)
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 03:30:47.483961 Z
+references: []
+
+id: 549e1c095ddcfb120dbc70a5c333347ee4b359aa
+log_events: 
+- - 2010-01-01 03:30:48.046946 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

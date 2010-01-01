@@ -1,0 +1,23 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Index accessing over size causes abort
+desc: |-
+  >>> [][0]
+  [BUG]
+  at array.c:40
+  Index exceed array size.
+  zsh: abort (core dumped)  src/yog-copying --gc-stress
+type: :bugfix
+component: Yog
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 04:01:00.749187 Z
+references: []
+
+id: 4eb4b3546eb354e0bab896d07c3c9387f984db84
+log_events: 
+- - 2010-01-01 04:01:01.316854 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
