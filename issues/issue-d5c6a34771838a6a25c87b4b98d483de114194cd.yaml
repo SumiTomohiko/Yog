@@ -1,0 +1,26 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Change comment marks to (: :)"
+desc: ""
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :closed
+disposition: :wontfix
+creation_time: 2010-01-01 13:09:38.264663 Z
+references: []
+
+id: d5c6a34771838a6a25c87b4b98d483de114194cd
+log_events: 
+- - 2010-01-01 13:09:38.948081 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2010-01-01 13:45:05.804783 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2010-01-01 13:58:55.259971 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition wontfix
+  - "(: :) comments conflicts expressions like foo(:bar)."
