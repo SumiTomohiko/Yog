@@ -237,6 +237,7 @@ src/inst.c
 src/miniyog
 src/object.inc
 src/parser.c
+src/parser.h
 src/parser.out
 src/string.inc
 src/yog
