@@ -22,7 +22,6 @@
 #include "yog/repl.h"
 #include "yog/string.h"
 #include "yog/thread.h"
-#include "yog/version.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 #if defined(GC_BDW)
@@ -43,7 +42,7 @@ print_version()
 #elif defined(GC_BDW)
 #   define GC_NAME  "BDW"
 #endif
-    printf("yog %s (revision %s) %s GC\n", PACKAGE_VERSION, PACKAGE_REVISION, GC_NAME);
+    printf("yog %s %s GC\n", PACKAGE_VERSION, GC_NAME);
 #undef GC_NAME
 }
 

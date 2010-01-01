@@ -68,9 +68,6 @@ test test-installed test-copying test-mark-sweep test-mark-sweep-compact test-bd
 am--refresh:
 	@:
 
-update-version:
-	cd src && $(MAKE) $@
-
 install-vim:
 	mkdir -p $(SYNTAX_DIR)
 	cp yog.vim $(SYNTAX_DIR)
