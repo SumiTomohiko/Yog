@@ -118,11 +118,6 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(logical_or.left);
         KEEP(logical_or.right);
         break;
-    case NODE_METHOD_CALL:
-        KEEP(method_call.recv);
-        KEEP(method_call.args);
-        KEEP(method_call.blockarg);
-        break;
     case NODE_MODULE:
         KEEP(module.stmts);
         break;

@@ -516,7 +516,6 @@ process_stack_top_interactive(YogEnv* env, YogVal node, YogVal data)
     case NODE_ASSIGN:
     case NODE_ATTR:
     case NODE_LITERAL:
-    case NODE_METHOD_CALL:
     case NODE_SUBSCRIPT:
     case NODE_VARIABLE:
         CompileData_add_print_top(env, data, NODE_LINENO(node));
@@ -540,7 +539,6 @@ process_stack_top_uninteractive(YogEnv* env, YogVal node, YogVal data)
     case NODE_ASSIGN:
     case NODE_ATTR:
     case NODE_LITERAL:
-    case NODE_METHOD_CALL:
     case NODE_SUBSCRIPT:
     case NODE_VARIABLE:
         CompileData_add_pop(env, data, NODE_LINENO(node));
