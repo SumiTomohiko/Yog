@@ -5,7 +5,7 @@ desc: |-
   This macro must be defined correctly.
 type: :task
 component: Yog
-release: 
+release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -17,4 +17,8 @@ log_events:
 - - 2009-12-02 17:13:37.726280 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2010-01-01 04:15:20.050930 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.4 from unassigned
   - ""

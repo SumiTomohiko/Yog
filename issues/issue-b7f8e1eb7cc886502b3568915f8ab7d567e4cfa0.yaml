@@ -3,7 +3,7 @@ title: Resolve dirty code in eval.c:exec_get_attr.
 desc: These code is because packages' can't hold package-specific data.
 type: :task
 component: Yog
-release: 
+release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2009-12-02 18:50:58.217487 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2010-01-01 04:15:21.436883 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.4 from unassigned
   - ""

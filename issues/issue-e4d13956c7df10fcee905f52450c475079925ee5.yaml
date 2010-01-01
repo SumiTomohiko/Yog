@@ -3,7 +3,7 @@ title: __name__ global variable
 desc: ""
 type: :task
 component: Yog
-release: 
+release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2009-08-30 16:03:43.216116 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2010-01-01 04:15:17.717581 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.4 from unassigned
   - ""

@@ -3,7 +3,7 @@ title: File.open causes aborting
 desc: File.open("/noexisting", "r")
 type: :bugfix
 component: Yog
-release: 
+release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2010-01-01 03:47:00.164792 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2010-01-01 04:15:28.951706 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.4 from unassigned
   - ""

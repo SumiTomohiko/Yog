@@ -8,7 +8,7 @@ desc: |-
   zsh: abort (core dumped)  src/yog-copying --gc-stress
 type: :bugfix
 component: Yog
-release: 
+release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -20,4 +20,8 @@ log_events:
 - - 2010-01-01 04:01:01.316854 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2010-01-01 04:11:46.083685 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.4 from unassigned
   - ""

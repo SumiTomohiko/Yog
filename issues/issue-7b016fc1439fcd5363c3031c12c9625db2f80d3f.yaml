@@ -3,7 +3,7 @@ title: Remove NODE_COMMAND_CALL
 desc: NODE_COMMAND_CALL is unused.
 type: :task
 component: Yog
-release: 
+release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2009-12-28 04:26:12.721285 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2010-01-01 04:15:22.896160 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.4 from unassigned
   - ""

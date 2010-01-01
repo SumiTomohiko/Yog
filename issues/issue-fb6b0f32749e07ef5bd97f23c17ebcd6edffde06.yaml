@@ -3,7 +3,7 @@ title: Add loop function to built-in functions of documentation
 desc: ""
 type: :task
 component: document
-release: 
+release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2009-12-28 15:47:00.404028 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - assigned to component document from Yog
+  - ""
+- - 2010-01-01 04:15:23.765715 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.4 from unassigned
   - ""
