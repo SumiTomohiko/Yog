@@ -162,7 +162,6 @@ main(int_t argc, char* argv[])
             exit(0);
             break;
         default:
-            fprintf(stderr, "Unknown option");
             usage();
             return -1;
             break;
