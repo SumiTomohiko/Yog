@@ -377,18 +377,33 @@ skip_comment(YogEnv* env, YogVal lexer)
 {
     SAVE_ARG(env, lexer);
 
+    uint_t depth = 1;
     do {
         uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
         YogVal line = PTR_AS(YogLexer, lexer)->line;
         uint_t size = YogString_size(env, line) - 1;
         if ((2 <= size) && (next_index < size - 1)) {
             char c = NEXTC();
+            if (c == '(') {
+                char c2 = NEXTC();
+                if (c2 == COMMENT_CHAR) {
+                    depth++;
+                }
+                else {
+                    PUSHBACK(c2);
+                }
+                continue;
+            }
             if (c != COMMENT_CHAR) {
                 continue;
             }
             char c2 = NEXTC();
             if (c2 != ')') {
                 PUSHBACK(c2);
+                continue;
+            }
+            depth--;
+            if (0 < depth) {
                 continue;
             }
             RETURN_VOID(env);
