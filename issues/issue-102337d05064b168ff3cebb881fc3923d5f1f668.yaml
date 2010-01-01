@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Show unknown options in the usage
+desc: ""
+type: :task
+component: Yog
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-01 12:36:10.067588 Z
+references: []
+
+id: 102337d05064b168ff3cebb881fc3923d5f1f668
+log_events: 
+- - 2010-01-01 12:36:10.788684 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
