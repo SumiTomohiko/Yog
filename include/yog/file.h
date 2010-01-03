@@ -12,7 +12,7 @@ struct YogFile {
 
 typedef struct YogFile YogFile;
 
-#define TYPE_FILE   ((type_t)YogFile_define_class)
+#define TYPE_FILE   ((type_t)YogFile_define_classes)
 
 /* PROTOTYPE_START */
 
@@ -23,7 +23,7 @@ typedef struct YogFile YogFile;
 extern "C" {
 #endif
 /* src/file.c */
-YogVal YogFile_define_class(YogEnv*, YogVal);
+void YogFile_define_classes(YogEnv*, YogVal);
 
 
 #if defined(__cplusplus)

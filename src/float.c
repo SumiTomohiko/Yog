@@ -346,17 +346,18 @@ power(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     RETURN(env, YUNDEF);
 }
 
-YogVal
-YogFloat_define_class(YogEnv* env, YogVal pkg)
+void
+YogFloat_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cFloat = YUNDEF;
+    PUSH_LOCAL(env, cFloat);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Float", env->vm->cObject);
-    YogClass_define_allocator(env, klass, allocate);
+    cFloat = YogClass_new(env, "Float", vm->cObject);
+    YogClass_define_allocator(env, cFloat, allocate);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, cFloat, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("**", power);
@@ -368,8 +369,9 @@ YogFloat_define_class(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("//", floor_divide);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
+    vm->cFloat = cFloat;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

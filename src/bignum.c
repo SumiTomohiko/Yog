@@ -876,17 +876,18 @@ power(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     RETURN(env, retval);
 }
 
-YogVal
-YogBignum_define_class(YogEnv* env, YogVal pkg)
+void
+YogBignum_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cBignum = YUNDEF;
+    PUSH_LOCAL(env, cBignum);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Bignum", env->vm->cObject);
-    YogClass_include_module(env, klass, env->vm->mComparable);
+    cBignum = YogClass_new(env, "Bignum", vm->cObject);
+    YogClass_include_module(env, cBignum, vm->mComparable);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, cBignum, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("&", and);
@@ -907,8 +908,9 @@ YogBignum_define_class(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("|", or);
     DEFINE_METHOD("~self", not);
 #undef DEFINE_METHOD
+    vm->cBignum = cBignum;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

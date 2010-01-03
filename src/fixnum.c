@@ -686,17 +686,18 @@ compare(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
     RETURN(env, INT2VAL(1));
 }
 
-YogVal
-YogFixnum_define_class(YogEnv* env, YogVal pkg)
+void
+YogFixnum_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cFixnum = YUNDEF;
+    PUSH_LOCAL(env, cFixnum);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Fixnum", env->vm->cObject);
-    YogClass_include_module(env, klass, env->vm->mComparable);
+    cFixnum = YogClass_new(env, "Fixnum", vm->cObject);
+    YogClass_include_module(env, cFixnum, vm->mComparable);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, cFixnum, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("&", and);
@@ -718,8 +719,9 @@ YogFixnum_define_class(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("|", or);
     DEFINE_METHOD("~self", not);
 #undef DEFINE_METHOD
+    vm->cFixnum = cFixnum;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

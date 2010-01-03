@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 /* src/bool.c */
-YogVal YogBool_define_class(YogEnv*, YogVal);
+void YogBool_define_classes(YogEnv*, YogVal);
 
 
 #if defined(__cplusplus)

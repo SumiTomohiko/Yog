@@ -34,9 +34,8 @@ typedef struct YogMatch YogMatch;
 extern "C" {
 #endif
 /* src/regexp.c */
-YogVal YogMatch_define_class(YogEnv*, YogVal);
 YogVal YogMatch_new(YogEnv*, YogVal, YogVal, OnigRegion*);
-YogVal YogRegexp_define_class(YogEnv*, YogVal);
+void YogRegexp_define_classes(YogEnv*, YogVal);
 YogVal YogRegexp_new(YogEnv*, YogVal, OnigOptionType);
 
 

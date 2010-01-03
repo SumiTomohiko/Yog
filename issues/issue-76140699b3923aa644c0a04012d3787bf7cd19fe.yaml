@@ -1,0 +1,34 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Resolve a warning in compiling
+desc: |-
+  ::
+  
+    gcc -I../include -I../onig -I../bdwgc/include -I../gmp -Wall -DPREFIX=\"/home/to
+    In file included from inst.c:5:
+    ../onig/config.h:74:1: warning: this is the location of the previous definition
+    In file included from ../include/yog/yog.h:4,
+                     from inst.c:10:
+    ../include/yog/config.h:172:1: warning: "PACKAGE_VERSION" redefined
+    In file included from inst.c:5:
+    ../onig/config.h:77:1: warning: this is the location of the previous definition
+    In file included from ../include/yog/yog.h:4,
+                     from inst.c:10:
+    ../include/yog/config.h:193:1: warning: "VERSION" redefined
+    In file included from inst.c:5:
+    ../onig/config.h:109:1: warning: this is the location of the previous definition
+    mv -f .deps/yog_generational-inst.Tpo .deps/yog_generational-inst.Po
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-03 09:56:53.299277 Z
+references: []
+
+id: 76140699b3923aa644c0a04012d3787bf7cd19fe
+log_events: 
+- - 2010-01-03 09:56:53.829713 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

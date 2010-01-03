@@ -1053,19 +1053,19 @@ YogString_eval_builtin_script(YogEnv* env, YogVal klass)
 #endif
 }
 
-YogVal
-YogString_define_class(YogEnv* env, YogVal pkg)
+void
+YogString_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cString = YUNDEF;
+    PUSH_LOCAL(env, cString);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "String", env->vm->cObject);
-
-    YogClass_define_allocator(env, klass, allocate);
-    YogClass_include_module(env, klass, env->vm->mComparable);
+    cString = YogClass_new(env, "String", vm->cObject);
+    YogClass_define_allocator(env, cString, allocate);
+    YogClass_include_module(env, cString, vm->mComparable);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, cString, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("+", add);
@@ -1081,8 +1081,9 @@ YogString_define_class(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
+    vm->cString = cString;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

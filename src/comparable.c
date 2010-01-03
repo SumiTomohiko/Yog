@@ -3,6 +3,7 @@
 #include "yog/eval.h"
 #include "yog/misc.h"
 #include "yog/module.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 static int_t
@@ -106,16 +107,17 @@ equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     RETURN(env, YFALSE);
 }
 
-YogVal
-YogComparable_new(YogEnv* env, YogVal pkg)
+void
+YogComparable_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal mod = YUNDEF;
-    PUSH_LOCAL(env, mod);
+    YogVal mComparable = YUNDEF;
+    PUSH_LOCAL(env, mComparable);
+    YogVM* vm = env->vm;
 
-    mod = YogModule_new(env);
+    mComparable = YogModule_new(env);
 #define DEFINE_FUNCTION(name, f)    do { \
-    YogModule_define_function(env, mod, pkg, name, f); \
+    YogModule_define_function(env, mComparable, pkg, (name), (f)); \
 } while (0)
     DEFINE_FUNCTION("==", equal);
     DEFINE_FUNCTION("!=", not_equal);
@@ -124,8 +126,9 @@ YogComparable_new(YogEnv* env, YogVal pkg)
     DEFINE_FUNCTION(">", greater);
     DEFINE_FUNCTION(">=", greater_equal);
 #undef DEFINE_FUNCTION
+    vm->mComparable = mComparable;
 
-    RETURN(env, mod);
+    RETURN_VOID(env);
 }
 
 /**

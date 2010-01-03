@@ -439,29 +439,31 @@ get_recursive_stack(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw
     RETURN(env, stack);
 }
 
-YogVal
-YogThread_define_class(YogEnv* env, YogVal pkg)
+void
+YogThread_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cThread = YUNDEF;
+    PUSH_LOCAL(env, cThread);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Thread", env->vm->cObject);
-    YogClass_define_allocator(env, klass, allocate);
+    cThread = YogClass_new(env, "Thread", vm->cObject);
+    YogClass_define_allocator(env, cThread, allocate);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, cThread, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("init", init);
     DEFINE_METHOD("run", run);
     DEFINE_METHOD("join", join);
 #undef DEFINE_METHOD
 #define DEFINE_PROP(name, getter, setter)   do { \
-    YogClass_define_property(env, klass, pkg, (name), (getter), (setter)); \
+    YogClass_define_property(env, cThread, pkg, (name), (getter), (setter)); \
 } while (0)
     DEFINE_PROP("__recursive_stack__", get_recursive_stack, NULL);
 #undef DEFINE_PROP
+    vm->cThread = cThread;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

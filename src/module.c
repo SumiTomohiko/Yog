@@ -50,16 +50,18 @@ YogModule_define_function(YogEnv* env, YogVal self, YogVal pkg, const char* name
     RETURN_VOID(env);
 }
 
-YogVal
-YogModule_define_class(YogEnv* env, YogVal pkg)
+void
+YogModule_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cModule = YUNDEF;
+    PUSH_LOCAL(env, cModule);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Module", env->vm->cObject);
+    cModule = YogClass_new(env, "Module", vm->cObject);
+    vm->cModule = cModule;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

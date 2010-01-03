@@ -308,17 +308,18 @@ YogDict_eval_builtin_script(YogEnv* env, YogVal klass)
 #endif
 }
 
-YogVal
-YogDict_define_class(YogEnv* env, YogVal pkg)
+void
+YogDict_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cDict = YUNDEF;
+    PUSH_LOCAL(env, cDict);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Dict", env->vm->cObject);
-    YogClass_define_allocator(env, klass, YogDict_allocate);
+    cDict = YogClass_new(env, "Dict", vm->cObject);
+    YogClass_define_allocator(env, cDict, YogDict_allocate);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, cDict, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("[]", subscript);
@@ -326,12 +327,13 @@ YogDict_define_class(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("each", each);
 #undef DEFINE_METHOD
 #define DEFINE_PROP(name, getter, setter)   do { \
-    YogClass_define_property(env, klass, pkg, (name), (getter), (setter)); \
+    YogClass_define_property(env, cDict, pkg, (name), (getter), (setter)); \
 } while (0)
     DEFINE_PROP("size", get_size, NULL);
 #undef DEFINE_PROP
+    vm->cDict = cDict;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

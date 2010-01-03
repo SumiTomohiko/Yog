@@ -11,7 +11,7 @@ extern "C" {
 #endif
 /* src/fixnum.c */
 YogVal YogFixnum_add_bignum(YogEnv*, YogVal, YogVal);
-YogVal YogFixnum_define_class(YogEnv*, YogVal);
+void YogFixnum_define_classes(YogEnv*, YogVal);
 YogVal YogFixnum_multiply(YogEnv*, YogVal, YogVal);
 
 

@@ -418,28 +418,30 @@ allocate(YogEnv* env, YogVal klass)
     RETURN(env, coro);
 }
 
-YogVal
-YogCoroutine_define_class(YogEnv* env, YogVal pkg)
+void
+YogCoroutine_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cCoroutine = YUNDEF;
+    PUSH_LOCAL(env, cCoroutine);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Coroutine", env->vm->cObject);
-    YogClass_define_allocator(env, klass, allocate);
+    cCoroutine = YogClass_new(env, "Coroutine", vm->cObject);
+    YogClass_define_allocator(env, cCoroutine, allocate);
 #define DEFINE_CLASS_METHOD(name, f)    do { \
-    YogClass_define_class_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_class_method(env, cCoroutine, pkg, (name), (f)); \
 } while (0)
     DEFINE_CLASS_METHOD("yield", yield);
 #undef DEFINE_CLASS_METHOD
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, cCoroutine, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("init", init);
     DEFINE_METHOD("resume", resume);
 #undef DEFINE_METHOD
+    vm->cCoroutine = cCoroutine;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

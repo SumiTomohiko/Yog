@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Check YogPackageBlock whether unused?
+desc: ""
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-03 09:34:46.993020 Z
+references: []
+
+id: 225ff7fe7f0d8ddf9c6cbd64da9e49a99dbcf011
+log_events: 
+- - 2010-01-03 09:34:47.527355 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

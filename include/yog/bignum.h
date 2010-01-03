@@ -11,7 +11,7 @@ struct YogBignum {
 
 typedef struct YogBignum YogBignum;
 
-#define TYPE_BIGNUM     ((type_t)YogBignum_define_class)
+#define TYPE_BIGNUM     ((type_t)YogBignum_define_classes)
 
 #define BIGNUM_NUM(bignum)  PTR_AS(YogBignum, (bignum))->num
 
@@ -25,7 +25,7 @@ extern "C" {
 #endif
 /* src/bignum.c */
 YogVal YogBignum_and(YogEnv*, YogVal, YogVal);
-YogVal YogBignum_define_class(YogEnv*, YogVal);
+void YogBignum_define_classes(YogEnv*, YogVal);
 YogVal YogBignum_from_int(YogEnv*, int_t);
 YogVal YogBignum_from_str(YogEnv*, YogVal, int_t);
 YogVal YogBignum_lshift(YogEnv*, YogVal, int_t);

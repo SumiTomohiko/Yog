@@ -69,7 +69,7 @@ typedef struct YogCode YogCode;
 extern "C" {
 #endif
 /* src/code.c */
-YogVal YogCode_define_class(YogEnv*, YogVal);
+void YogCode_define_classes(YogEnv*, YogVal);
 void YogCode_dump(YogEnv*, YogVal);
 YogVal YogCode_new(YogEnv*);
 

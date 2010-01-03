@@ -106,19 +106,21 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
     /* NOTREACHED */
 }
 
-YogVal
-YogPackage_define_class(YogEnv* env, YogVal pkg)
+void
+YogPackage_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cPackage = YUNDEF;
+    PUSH_LOCAL(env, cPackage);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Package", env->vm->cObject);
-    YogClass_define_allocator(env, klass, allocate);
-    YogClass_define_get_attr_caller(env, klass, call_get_attr);
-    YogClass_define_get_attr_executor(env, klass, exec_get_attr);
+    cPackage = YogClass_new(env, "Package", vm->cObject);
+    YogClass_define_allocator(env, cPackage, allocate);
+    YogClass_define_get_attr_caller(env, cPackage, call_get_attr);
+    YogClass_define_get_attr_executor(env, cPackage, exec_get_attr);
+    vm->cPackage = cPackage;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 YogVal

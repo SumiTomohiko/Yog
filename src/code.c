@@ -231,16 +231,18 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-YogVal
-YogCode_define_class(YogEnv* env, YogVal pkg)
+void
+YogCode_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cCode = YUNDEF;
+    PUSH_LOCAL(env, cCode);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Code", env->vm->cObject);
+    cCode = YogClass_new(env, "Code", vm->cObject);
+    vm->cCode = cCode;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 YogVal

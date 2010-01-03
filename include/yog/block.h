@@ -49,7 +49,7 @@ extern "C" {
 #endif
 /* src/block.c */
 YogVal YogBlock_new(YogEnv*);
-YogVal YogPackageBlock_define_class(YogEnv*, YogVal);
+void YogPackageBlock_define_classes(YogEnv*, YogVal);
 YogVal YogPackageBlock_new(YogEnv*);
 
 

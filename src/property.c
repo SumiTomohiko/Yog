@@ -122,19 +122,21 @@ exec_set_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     RETURN_VOID(env);
 }
 
-YogVal
-YogProperty_define_class(YogEnv* env, YogVal pkg)
+void
+YogProperty_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cProperty = YUNDEF;
+    PUSH_LOCAL(env, cProperty);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Property", env->vm->cObject);
-    YogClass_define_descr_get_executor(env, klass, exec_get_descr);
-    YogClass_define_descr_get_caller(env, klass, call_get_descr);
-    YogClass_define_descr_set_executor(env, klass, exec_set_descr);
+    cProperty = YogClass_new(env, "Property", vm->cObject);
+    YogClass_define_descr_get_executor(env, cProperty, exec_get_descr);
+    YogClass_define_descr_get_caller(env, cProperty, call_get_descr);
+    YogClass_define_descr_set_executor(env, cProperty, exec_set_descr);
+    vm->cProperty = cProperty;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

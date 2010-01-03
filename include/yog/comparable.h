@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 /* src/comparable.c */
-YogVal YogComparable_new(YogEnv*, YogVal);
+void YogComparable_define_classes(YogEnv*, YogVal);
 
 
 #if defined(__cplusplus)

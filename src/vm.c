@@ -239,37 +239,33 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
 {
     SAVE_ARG(env, builtins);
 
-    vm->cNativeFunction = YogNativeFunction_define_class(env, builtins);
-    vm->cFunction = YogFunction_define_class(env, builtins);
-    vm->cInstanceMethod = YogInstanceMethod_define_class(env, builtins);
-    vm->cNativeInstanceMethod = YogNativeInstanceMethod_define_class(env, builtins);
+    YogFunction_define_classes(env, builtins);
 
     YogObj_class_init(env, vm->cObject, builtins);
     YogClass_class_init(env, vm->cClass, builtins);
-    vm->cProperty = YogProperty_define_class(env, builtins);
+    YogProperty_define_classes(env, builtins);
 
-    vm->mComparable = YogComparable_new(env, builtins);
+    YogComparable_define_classes(env, builtins);
 
-    vm->cArray = YogArray_define_class(env, builtins);
-    vm->cBignum = YogBignum_define_class(env, builtins);
-    vm->cBool = YogBool_define_class(env, builtins);
-    vm->cClassMethod = YogClassMethod_define_class(env, builtins);
-    vm->cCode = YogCode_define_class(env, builtins);
-    vm->cCoroutine = YogCoroutine_define_class(env, builtins);
-    vm->cDict = YogDict_define_class(env, builtins);
-    vm->cFile = YogFile_define_class(env, builtins);
-    vm->cFixnum = YogFixnum_define_class(env, builtins);
-    vm->cFloat = YogFloat_define_class(env, builtins);
-    vm->cMatch = YogMatch_define_class(env, builtins);
-    vm->cModule = YogModule_define_class(env, builtins);
-    vm->cNil = YogNil_define_class(env, builtins);
-    vm->cPackage = YogPackage_define_class(env, builtins);
-    vm->cPackageBlock = YogPackageBlock_define_class(env, builtins);
-    vm->cRegexp = YogRegexp_define_class(env, builtins);
-    vm->cSet = YogSet_define_class(env, builtins);
-    vm->cString = YogString_define_class(env, builtins);
-    vm->cSymbol = YogSymbol_define_class(env, builtins);
-    vm->cThread = YogThread_define_class(env, builtins);
+    YogArray_define_classes(env, builtins);
+    YogBignum_define_classes(env, builtins);
+    YogBool_define_classes(env, builtins);
+    YogClassMethod_define_classes(env, builtins);
+    YogCode_define_classes(env, builtins);
+    YogCoroutine_define_classes(env, builtins);
+    YogDict_define_classes(env, builtins);
+    YogFile_define_classes(env, builtins);
+    YogFixnum_define_classes(env, builtins);
+    YogFloat_define_classes(env, builtins);
+    YogRegexp_define_classes(env, builtins);
+    YogModule_define_classes(env, builtins);
+    YogNil_define_classes(env, builtins);
+    YogPackage_define_classes(env, builtins);
+    YogPackageBlock_define_classes(env, builtins);
+    YogSet_define_classes(env, builtins);
+    YogString_define_classes(env, builtins);
+    YogSymbol_define_classes(env, builtins);
+    YogThread_define_classes(env, builtins);
 
     RETURN_VOID(env);
 }

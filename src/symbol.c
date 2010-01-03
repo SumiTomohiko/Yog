@@ -57,24 +57,26 @@ equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     RETURN(env, retval);
 }
 
-YogVal
-YogSymbol_define_class(YogEnv* env, YogVal pkg)
+void
+YogSymbol_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cSymbol = YUNDEF;
+    PUSH_LOCAL(env, cSymbol);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Symbol", env->vm->cObject);
+    cSymbol = YogClass_new(env, "Symbol", vm->cObject);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, cSymbol, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("==", equal);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("inspect", inspect);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
+    vm->cSymbol = cSymbol;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

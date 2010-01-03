@@ -23,7 +23,7 @@ typedef struct YogPackage YogPackage;
 extern "C" {
 #endif
 /* src/package.c */
-YogVal YogPackage_define_class(YogEnv*, YogVal);
+void YogPackage_define_classes(YogEnv*, YogVal);
 void YogPackage_define_function(YogEnv*, YogVal, const char*, void*);
 void YogPackage_init(YogEnv*, YogVal);
 void YogPackage_keep_children(YogEnv*, void*, ObjectKeeper, void*);

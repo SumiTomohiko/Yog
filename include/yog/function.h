@@ -61,11 +61,10 @@ extern "C" {
 YogVal YogCallable_call(YogEnv*, YogVal, uint_t, YogVal*);
 YogVal YogCallable_call1(YogEnv*, YogVal, YogVal);
 YogVal YogCallable_call2(YogEnv*, YogVal, uint_t, YogVal*, YogVal);
-YogVal YogFunction_define_class(YogEnv*, YogVal);
+void YogFunction_define_classes(YogEnv*, YogVal);
 YogVal YogFunction_new(YogEnv*);
 YogVal YogInstanceMethod_define_class(YogEnv*, YogVal);
 YogVal YogInstanceMethod_new(YogEnv*);
-YogVal YogNativeFunction_define_class(YogEnv*, YogVal);
 YogVal YogNativeFunction_new(YogEnv*, ID, YogVal, const char*, void*);
 YogVal YogNativeInstanceMethod_define_class(YogEnv*, YogVal);
 YogVal YogNativeInstanceMethod_new(YogEnv*);

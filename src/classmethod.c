@@ -40,18 +40,20 @@ exec_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     RETURN_VOID(env);
 }
 
-YogVal
-YogClassMethod_define_class(YogEnv* env, YogVal pkg)
+void
+YogClassMethod_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cClassMethod = YUNDEF;
+    PUSH_LOCAL(env, cClassMethod);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "ClassMethod", env->vm->cClassMethod);
-    YogClass_define_descr_get_executor(env, klass, exec_descr_get);
-    YogClass_define_descr_get_caller(env, klass, call_descr_get);
+    cClassMethod = YogClass_new(env, "ClassMethod", env->vm->cClassMethod);
+    YogClass_define_descr_get_executor(env, cClassMethod, exec_descr_get);
+    YogClass_define_descr_get_caller(env, cClassMethod, call_descr_get);
+    vm->cClassMethod = cClassMethod;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 static void

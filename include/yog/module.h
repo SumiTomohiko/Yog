@@ -22,7 +22,7 @@ typedef struct YogModule YogModule;
 extern "C" {
 #endif
 /* src/module.c */
-YogVal YogModule_define_class(YogEnv*, YogVal);
+void YogModule_define_classes(YogEnv*, YogVal);
 void YogModule_define_function(YogEnv*, YogVal, YogVal, const char*, void*);
 YogVal YogModule_new(YogEnv*);
 

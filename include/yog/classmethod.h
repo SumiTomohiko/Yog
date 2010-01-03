@@ -22,7 +22,7 @@ typedef struct YogClassMethod YogClassMethod;
 extern "C" {
 #endif
 /* src/classmethod.c */
-YogVal YogClassMethod_define_class(YogEnv*, YogVal);
+void YogClassMethod_define_classes(YogEnv*, YogVal);
 YogVal YogClassMethod_new(YogEnv*);
 
 

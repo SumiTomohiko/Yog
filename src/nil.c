@@ -16,22 +16,24 @@ hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     return INT2VAL(2);
 }
 
-YogVal
-YogNil_define_class(YogEnv* env, YogVal pkg)
+void
+YogNil_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cNil = YUNDEF;
+    PUSH_LOCAL(env, cNil);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Nil", env->vm->cObject);
+    cNil = YogClass_new(env, "Nil", vm->cObject);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, cNil, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
+    vm->cNil = cNil;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

@@ -53,22 +53,24 @@ hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     RETURN(env, INT2VAL(n));
 }
 
-YogVal
-YogBool_define_class(YogEnv* env, YogVal pkg)
+void
+YogBool_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal cBool = YUNDEF;
+    PUSH_LOCAL(env, cBool);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Bool", env->vm->cObject);
+    cBool = YogClass_new(env, "Bool", vm->cObject);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, cBool, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
+    vm->cBool = cBool;
 
-    RETURN(env, klass);
+    RETURN_VOID(env);
 }
 
 /**

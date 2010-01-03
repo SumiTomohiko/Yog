@@ -43,7 +43,7 @@ void YogString_add_cstr(YogEnv*, YogVal, const char*);
 char YogString_at(YogEnv*, YogVal, uint_t);
 void YogString_clear(YogEnv*, YogVal);
 YogVal YogString_clone(YogEnv*, YogVal);
-YogVal YogString_define_class(YogEnv*, YogVal);
+void YogString_define_classes(YogEnv*, YogVal);
 char* YogString_dup(YogEnv*, const char*);
 void YogString_eval_builtin_script(YogEnv*, YogVal);
 int_t YogString_hash(YogEnv*, YogVal);
