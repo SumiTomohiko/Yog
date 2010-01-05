@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Remove { foo: 42 } parser rules"
+desc: unused
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-04 03:59:22.339962 Z
+references: []
+
+id: 78f7acc2bb3e379a4c4cdb3c65a53877af49a313
+log_events: 
+- - 2010-01-04 03:59:22.983449 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

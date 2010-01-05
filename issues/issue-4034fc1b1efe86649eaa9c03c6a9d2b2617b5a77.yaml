@@ -1,0 +1,23 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Resolve warning in src/vm.c
+desc: |-
+  ::
+  
+    gcc -DHAVE_CONFIG_H -I. -I..    -I../include -I../onig -I../bdwgc/include -I../gmp -Wall -DPREFIX=\"/home/tom\"  -D_XOPEN_SOURCE=500 -D_BSD_SOURCE -DGC_COPYING -DMINIYOG -g -O2 -MT miniyog-vm.o -MD -MP -MF .deps/miniyog-vm.Tpo -c -o miniyog-vm.o `test -f 'vm.c' || echo './'`vm.c
+    vm.c: In function 'join_path':
+    vm.c:978: warning: unused variable 'rest'
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-04 04:09:19.098867 Z
+references: []
+
+id: 4034fc1b1efe86649eaa9c03c6a9d2b2617b5a77
+log_events: 
+- - 2010-01-04 04:09:19.572413 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

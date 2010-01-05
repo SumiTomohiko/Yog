@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove parser rules for block parameter of { ... }
+desc: unused
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-04 04:00:24.398861 Z
+references: []
+
+id: f149a7a34b4e857875e5eb58b0ab86474dd83e1a
+log_events: 
+- - 2010-01-04 04:00:24.822132 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

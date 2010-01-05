@@ -226,11 +226,11 @@ main(int_t argc, char* argv[])
     YogVM_set_main_thread(&env, &vm, main_thread);
 
     YogLocals env_guard;
-    env_guard.num_vals = 2;
+    env_guard.num_vals = 3;
     env_guard.size = 1;
     env_guard.vals[0] = &env.thread;
     env_guard.vals[1] = &env.frame;
-    env_guard.vals[2] = NULL;
+    env_guard.vals[2] = &main_thread;
     env_guard.vals[3] = NULL;
     PUSH_LOCAL_TABLE(&env, env_guard);
     SAVE_LOCALS(&env);

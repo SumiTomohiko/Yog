@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove unused code in src/gc/copying.c
+desc: code for GC statistics.
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-04 15:56:18.854434 Z
+references: []
+
+id: e746eb6fce2b3aab8d44b8f5afab6b400f3e9640
+log_events: 
+- - 2010-01-04 15:56:19.654647 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

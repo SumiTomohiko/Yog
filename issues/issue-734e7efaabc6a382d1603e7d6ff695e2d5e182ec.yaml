@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rename allocate to alloc
+desc: ""
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-04 04:35:33.416647 Z
+references: []
+
+id: 734e7efaabc6a382d1603e7d6ff695e2d5e182ec
+log_events: 
+- - 2010-01-04 04:35:33.909740 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
