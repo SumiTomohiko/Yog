@@ -6,8 +6,8 @@ type: :task
 component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :reorg
 creation_time: 2009-12-02 17:49:46.541818 Z
 references: []
 
@@ -21,3 +21,7 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - assigned to release 0.0.4 from unassigned
   - ""
+- - 2010-01-06 16:20:57.015942 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition reorg
+  - This is same as 4034fc1b1efe86649eaa9c03c6a9d2b2617b5a77.
