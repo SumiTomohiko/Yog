@@ -1,3 +1,5 @@
+#include <errno.h>
+#include <string.h>
 #include "yog/array.h"
 #include "yog/class.h"
 #include "yog/code.h"
@@ -8,8 +10,18 @@
 #include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
+
+struct SystemCallError {
+    struct YogException base;
+    int errno_;
+};
+
+typedef struct SystemCallError SystemCallError;
+
+#define TYPE_SYSTEM_CALL_ERROR  ((type_t)SystemCallError_allocate)
 
 static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
@@ -23,15 +35,41 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
+static void
+YogException_init(YogEnv* env, YogVal self, type_t type, YogVal klass)
+{
+    SAVE_ARGS2(env, self, klass);
+
+    YogBasicObj_init(env, self, type, 0, klass);
+    PTR_AS(YogException, self)->stack_trace = YUNDEF;
+    PTR_AS(YogException, self)->message = YUNDEF;
+
+    RETURN_VOID(env);
+}
+
 static YogVal
-allocate(YogEnv* env, YogVal klass)
+YogException_allocate(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
+    YogVal exc = YUNDEF;
+    PUSH_LOCAL(env, exc);
 
-    YogVal exc = ALLOC_OBJ(env, keep_children, NULL, YogException);
-    YogBasicObj_init(env, exc, TYPE_EXCEPTION, 0, klass);
-    PTR_AS(YogException, exc)->stack_trace = YNIL;
-    PTR_AS(YogException, exc)->message = YNIL;
+    exc = ALLOC_OBJ(env, keep_children, NULL, YogException);
+    YogException_init(env, exc, TYPE_EXCEPTION, klass);
+
+    RETURN(env, exc);
+}
+
+static YogVal
+SystemCallError_allocate(YogEnv* env, YogVal klass)
+{
+    SAVE_ARG(env, klass);
+    YogVal exc = YUNDEF;
+    PUSH_LOCAL(env, exc);
+
+    exc = ALLOC_OBJ(env, keep_children, NULL, SystemCallError);
+    YogException_init(env, exc, TYPE_SYSTEM_CALL_ERROR, klass);
+    PTR_AS(SystemCallError, exc)->errno_ = 0;
 
     RETURN(env, exc);
 }
@@ -70,20 +108,13 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
     RETURN(env, frame);
 }
 
-static YogVal
-init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+static void
+init_YogException(YogEnv* env, YogVal self, YogVal msg)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal message = YNIL;
+    SAVE_ARGS2(env, self, msg);
     YogVal frame = YUNDEF;
     YogVal st = YUNDEF;
-    PUSH_LOCALS3(env, message, frame, st);
-
-    YogCArg params[] = {
-        { "|", NULL },
-        { "message", &message },
-        { NULL, NULL } };
-    YogGetArgs_parse_args(env, "init", params, args, kw);
+    PUSH_LOCALS2(env, frame, st);
 
     frame = env->frame;
     frame = skip_frame(env, frame, "init");
@@ -149,10 +180,58 @@ init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     }
 
     PTR_AS(YogException, self)->stack_trace = st;
-    if (IS_UNDEF(message)) {
-        message = YNIL;
+    PTR_AS(YogException, self)->message = msg;
+
+    RETURN_VOID(env);
+}
+
+static YogVal
+Exception_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal msg = YNIL;
+    PUSH_LOCAL(env, msg);
+
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_EXCEPTION)) {
+        YogError_raise_TypeError(env, "self must be Exception");
     }
-    PTR_AS(YogException, self)->message = message;
+    YogCArg params[] = { { "|", NULL }, { "message", &msg }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "init", params, args, kw);
+    init_YogException(env, self, msg);
+
+    RETURN(env, YNIL);
+}
+
+static void
+init_SystemCallError(YogEnv* env, YogVal self, int errno_)
+{
+    SAVE_ARG(env, self);
+    YogVal msg = YUNDEF;
+    PUSH_LOCAL(env, msg);
+
+    msg = YogString_new_str(env, strerror(errno_));
+    init_YogException(env, self, msg);
+    PTR_AS(SystemCallError, self)->errno_ = errno_;
+
+    RETURN_VOID(env);
+}
+
+static YogVal
+SystemCallError_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal msg = YUNDEF;
+    YogVal errno_ = YUNDEF;
+    PUSH_LOCALS2(env, msg, errno_);
+
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_SYSTEM_CALL_ERROR)) {
+        YogError_raise_TypeError(env, "self must be SystemCallError");
+    }
+    YogCArg params[] = { { "errno", &errno_ }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "init", params, args, kw);
+
+    int e = YogVal_to_signed_type(env, errno_, "errno");
+    init_SystemCallError(env, self, e);
 
     RETURN(env, YNIL);
 }
@@ -189,28 +268,83 @@ get_message(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     RETURN(env, message);
 }
 
-YogVal
-YogException_define_class(YogEnv* env, YogVal pkg)
+#if !defined(MINIYOG)
+static void
+construct_sys_call_err(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block, int errno_)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "init", params, args, kw);
+
+    init_SystemCallError(env, self, errno_);
+
+    RETURN_VOID(env);
+}
+#   include "errno_cons.inc"
+#endif
+
+void
+YogException_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal eException = YUNDEF;
+    YogVal eSystemCallError = YUNDEF;
+    PUSH_LOCALS2(env, eException, eSystemCallError);
+    YogVM* vm = env->vm;
 
-    klass = YogClass_new(env, "Exception", env->vm->cObject);
-    YogClass_define_allocator(env, klass, allocate);
+    eException = YogClass_new(env, "Exception", vm->cObject);
+    YogClass_define_allocator(env, eException, YogException_allocate);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, klass, pkg, (name), (f)); \
+    YogClass_define_method(env, eException, pkg, (name), (f)); \
 } while (0)
-    DEFINE_METHOD("init", init);
+    DEFINE_METHOD("init", Exception_init);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
 #define DEFINE_PROP(name, getter, setter)   do { \
-    YogClass_define_property(env, klass, pkg, (name), (getter), (setter)); \
+    YogClass_define_property(env, eException, pkg, (name), (getter), (setter)); \
 } while (0)
     DEFINE_PROP("message", get_message, NULL);
 #undef DEFINE_PROP
+    vm->eException = eException;
 
-    RETURN(env, klass);
+#define EXCEPTION_NEW(member, name)  do { \
+    vm->member = YogClass_new(env, name, eException); \
+} while (0)
+    EXCEPTION_NEW(eArgumentError, "ArgumentError");
+    EXCEPTION_NEW(eAttributeError, "AttributeError");
+    EXCEPTION_NEW(eEOFError, "EOFError");
+    EXCEPTION_NEW(eImportError, "ImportError");
+    EXCEPTION_NEW(eIndexError, "IndexError");
+    EXCEPTION_NEW(eKeyError, "KeyError");
+    EXCEPTION_NEW(eLocalJumpError, "LocalJumpError");
+    EXCEPTION_NEW(eNameError, "NameError");
+    EXCEPTION_NEW(eSyntaxError, "SyntaxError");
+    EXCEPTION_NEW(eTypeError, "TypeError");
+    EXCEPTION_NEW(eValueError, "ValueError");
+    EXCEPTION_NEW(eZeroDivisionError, "ZeroDivisionError");
+#undef EXCEPTION_NEW
+
+    eSystemCallError = YogClass_new(env, "SystemCallError", eException);
+    YogClass_define_allocator(env, eSystemCallError, SystemCallError_allocate);
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, eSystemCallError, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("init", SystemCallError_init);
+#undef DEFINE_METHOD
+#if !defined(MINIYOG)
+#   define EXCEPTION_NEW(member, name, f)  do { \
+    YogVal member; \
+    PUSH_LOCAL(env, member); \
+    member = YogClass_new(env, name, eSystemCallError); \
+    YogClass_define_method(env, member, pkg, "init", (f)); \
+    vm->member = member; \
+    POP_LOCALS(env); \
+} while (0)
+#   include "errno_new.inc"
+#   undef EXCEPTION_NEW
+#endif
+
+    RETURN_VOID(env);
 }
 
 /**

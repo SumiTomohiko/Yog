@@ -232,6 +232,12 @@ src/builtins.inc
 src/code.inc
 src/compile.inc
 src/dict.inc
+src/errno_cons.inc
+src/errno_init.inc
+src/errno_keep.inc
+src/errno_new.inc
+src/errno_raise.inc
+src/errno_vm.inc
 src/eval.inc
 src/inst.c
 src/keywords.inc

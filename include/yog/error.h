@@ -30,6 +30,7 @@ void YogError_raise_ValueError(YogEnv*, const char*, ...);
 void YogError_raise_ZeroDivisionError(YogEnv*, const char*, ...);
 void YogError_raise_binop_type_error(YogEnv*, YogVal, YogVal, const char*);
 void YogError_raise_comparison_type_error(YogEnv*, YogVal, YogVal);
+void YogError_raise_sys_call_err(YogEnv*, int);
 void YogError_warn(YogEnv*, const char*, uint_t, const char*, ...);
 
 

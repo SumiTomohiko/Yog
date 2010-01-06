@@ -171,6 +171,22 @@ YogVal_set_attr(YogEnv* env, YogVal obj, ID name, YogVal val)
     RETURN_VOID(env);
 }
 
+SIGNED_TYPE
+YogVal_to_signed_type(YogEnv* env, YogVal self, const char* name)
+{
+    SAVE_ARG(env, self);
+
+    if (IS_FIXNUM(self)) {
+        RETURN(env, VAL2INT(self));
+    }
+    if (IS_PTR(self) && (BASIC_OBJ_TYPE(self) == TYPE_BIGNUM)) {
+        RETURN(env, YogBignum_to_signed_type(env, self, name));
+    }
+
+    YogError_raise_TypeError(env, "%s must be a Fixnum or Bignum", name);
+    /* NOTREACHED */
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

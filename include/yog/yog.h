@@ -40,6 +40,8 @@ typedef unsigned int ID;
 #   define INVALID_ID       VAL2ID(UINT_MAX & (~1))
 typedef unsigned int pc_t;
 #   define SIGNED_TYPE      int
+#   define SIGNED_MAX       INT_MAX
+#   define SIGNED_MIN       INT_MIN
 #   define UNSIGNED_TYPE    unsigned int
 #   define UNSIGNED_MAX     UINT_MAX
 #elif SIZEOF_VOIDP == SIZEOF_LONG
@@ -48,6 +50,8 @@ typedef unsigned long ID;
 #   define INVALID_ID       VAL2ID(ULONG_MAX & (~1))
 typedef unsigned long pc_t;
 #   define SIGNED_TYPE      long
+#   define SIGNED_MAX       LONG_MAX
+#   define SIGNED_MIN       LONG_MIN
 #   define UNSIGNED_TYPE    unsigned long
 #   define UNSIGNED_MAX     ULONG_MAX
 #elif SIZEOF_VOIDP == SIZEOF_LONG_LONG
@@ -56,6 +60,8 @@ typedef unsigned long long ID;
 #   define INVALID_ID       VAL2ID(ULLONG_MAX & (~1))
 typedef unsigned long long pc_t;
 #   define SIGNED_TYPE      long long
+#   define SIGNED_MAX       LLONG_MAX
+#   define SIGNED_MIN       LLONG_MIN
 #   define UNSIGNED_TYPE    unsigned long long
 #   define UNSIGNED_MAX     ULLONG_MAX
 #else
@@ -270,6 +276,7 @@ YogVal YogVal_get_descr(YogEnv*, YogVal, YogVal, YogVal);
 BOOL YogVal_is_subclass_of(YogEnv*, YogVal, YogVal);
 void YogVal_print(YogEnv*, YogVal);
 void YogVal_set_attr(YogEnv*, YogVal, ID, YogVal);
+SIGNED_TYPE YogVal_to_signed_type(YogEnv*, YogVal, const char*);
 
 
 #if defined(__cplusplus)

@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <setjmp.h>
 #include <stdio.h>
 #include <string.h>
@@ -167,7 +168,9 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     file = YogFile_new(env);
 
     FILE* fp = fopen(STRING_CSTR(path), STRING_CSTR(mode));
-    YOG_ASSERT(env, fp != NULL, "can't open file");
+    if (fp == NULL) {
+        YogError_raise_sys_call_err(env, errno);
+    }
     PTR_AS(YogFile, file)->fp = fp;
 
     if (!IS_PTR(block)) {

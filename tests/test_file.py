@@ -22,6 +22,18 @@ file = File.open("%(filename)s", "r") do [f]
 end
 """ % { "filename": filename }, stdout=foo)
 
+    def test_open10(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in File#open
+ENOENT:.*
+""", stderr)
+
+        self._test("""
+File.open(\"foo\", \"r\")
+""", stderr=test_stderr)
+
     def test_read0(self):
         filename = "foo.txt"
         foo = self.read_file(filename)

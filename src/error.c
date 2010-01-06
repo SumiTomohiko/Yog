@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -288,6 +289,42 @@ void
 YogError_raise_LocalJumpError(YogEnv* env, const char* fmt, ...)
 {
     RAISE_FORMAT(env, eLocalJumpError, fmt);
+}
+
+#if !defined(MINIYOG)
+static void
+raise_sys_call_err(YogEnv* env, YogVal klass)
+{
+    SAVE_ARG(env, klass);
+    YogVal exc = YUNDEF;
+    PUSH_LOCAL(env, exc);
+
+    exc = YogEval_call_method0(env, klass, "new");
+
+    RESTORE_LOCALS(env);
+    YogError_raise(env, exc);
+    /* NOTREACHED */
+}
+#endif
+
+void
+YogError_raise_sys_call_err(YogEnv* env, int errno_)
+{
+    SAVE_LOCALS(env);
+    YogVal klass = YUNDEF;
+    YogVal exc = YUNDEF;
+    PUSH_LOCALS2(env, klass, exc);
+
+#if !defined(MINIYOG)
+#   include "errno_raise.inc"
+#endif
+
+    klass = env->vm->eSystemCallError;
+    exc = YogEval_call_method1(env, klass, "new", INT2VAL(0));
+
+    RESTORE_LOCALS(env);
+    YogError_raise(env, exc);
+    /* NOTREACHED */
 }
 
 /**

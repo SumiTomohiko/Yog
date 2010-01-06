@@ -876,6 +876,20 @@ power(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     RETURN(env, retval);
 }
 
+SIGNED_TYPE
+YogBignum_to_signed_type(YogEnv* env, YogVal self, const char* name)
+{
+    SAVE_ARG(env, self);
+    CHECK_SELF_TYPE(env, self);
+
+    if ((mpz_cmp_si(BIGNUM_NUM(self), SIGNED_MIN) < 0) || (0 < mpz_cmp_si(BIGNUM_NUM(self), SIGNED_MAX))) {
+        YogError_raise_ValueError(env, "%s must between %d and %d", name, SIGNED_MIN, SIGNED_MAX);
+    }
+    SIGNED_TYPE si = mpz_get_si(BIGNUM_NUM(self));
+
+    RETURN(env, si);
+}
+
 void
 YogBignum_define_classes(YogEnv* env, YogVal pkg)
 {

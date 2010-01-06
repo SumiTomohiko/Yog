@@ -34,6 +34,7 @@ YogVal YogBignum_multiply(YogEnv*, YogVal, YogVal);
 YogVal YogBignum_or(YogEnv*, YogVal, YogVal);
 YogVal YogBignum_power(YogEnv*, YogVal, YogVal);
 YogVal YogBignum_subtract(YogEnv*, YogVal, YogVal);
+SIGNED_TYPE YogBignum_to_signed_type(YogEnv*, YogVal, const char*);
 YogVal YogBignum_xor(YogEnv*, YogVal, YogVal);
 
 

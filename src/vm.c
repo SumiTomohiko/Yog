@@ -288,32 +288,6 @@ setup_encodings(YogEnv* env, YogVM* vm)
 }
 
 static void
-setup_exceptions(YogEnv* env, YogVM* vm, YogVal builtins)
-{
-    SAVE_ARG(env, builtins);
-
-    vm->eException = YogException_define_class(env, builtins);
-#define EXCEPTION_NEW(member, name)  do { \
-    vm->member = YogClass_new(env, name, vm->eException); \
-} while (0)
-    EXCEPTION_NEW(eArgumentError, "ArgumentError");
-    EXCEPTION_NEW(eAttributeError, "AttributeError");
-    EXCEPTION_NEW(eEOFError, "EOFError");
-    EXCEPTION_NEW(eImportError, "ImportError");
-    EXCEPTION_NEW(eIndexError, "IndexError");
-    EXCEPTION_NEW(eKeyError, "KeyError");
-    EXCEPTION_NEW(eLocalJumpError, "LocalJumpError");
-    EXCEPTION_NEW(eNameError, "NameError");
-    EXCEPTION_NEW(eSyntaxError, "SyntaxError");
-    EXCEPTION_NEW(eTypeError, "TypeError");
-    EXCEPTION_NEW(eValueError, "ValueError");
-    EXCEPTION_NEW(eZeroDivisionError, "ZeroDivisionError");
-#undef EXCEPTION_NEW
-
-    RETURN_VOID(env);
-}
-
-static void
 set_main_thread_class(YogEnv* env, YogVM* vm)
 {
     PTR_AS(YogBasicObj, vm->main_thread)->klass = vm->cThread;
@@ -345,7 +319,7 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
     setup_classes(env, vm, builtins);
     YogPackage_init(env, builtins);
     set_main_thread_class(env, vm);
-    setup_exceptions(env, vm, builtins);
+    YogException_define_classes(env, builtins);
     YogObject_boot(env, vm->cObject, builtins);
     YogClass_boot(env, vm->cClass, builtins);
 
@@ -461,9 +435,13 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eLocalJumpError);
     KEEP(eNameError);
     KEEP(eSyntaxError);
+    KEEP(eSystemCallError);
     KEEP(eTypeError);
     KEEP(eValueError);
     KEEP(eZeroDivisionError);
+#if !defined(MINIYOG)
+#   include "errno_keep.inc"
+#endif
 
     KEEP(mComparable);
 
@@ -554,9 +532,13 @@ YogVM_init(YogVM* vm)
     INIT(eLocalJumpError);
     INIT(eNameError);
     INIT(eSyntaxError);
+    INIT(eSystemCallError);
     INIT(eTypeError);
     INIT(eValueError);
     INIT(eZeroDivisionError);
+#if !defined(MINIYOG)
+#   include "errno_init.inc"
+#endif
 
     INIT(mComparable);
 

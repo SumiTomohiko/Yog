@@ -8,6 +8,8 @@ LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
 YACC = $(LEMON)
 PYTHON = python2.6
+MINIYOG = miniyog$(EXEEXT)
+TOOLS_DIR = $(ROOT_DIR)/tools
 
 BUILT_SOURCES = parser.h keywords.inc
 COMMON_SOURCES = arg.c \
@@ -55,6 +57,7 @@ COMMON_SOURCES = arg.c \
 	thread.c \
 	value.c \
 	vm.c
+DEFAULT_INCLUDES = -I.
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" @CFLAGS_COMMON@
 LDFLAGS_COMMON = -export-dynamic @LDFLAGS_COMMON@
@@ -99,25 +102,49 @@ insts:
 am:
 	$(GEN_AM_CMD)
 
-builtins.inc: miniyog$(EXEEXT) builtins.yg yg2inc.yg
-	$(MAKE) miniyog$(EXEEXT)
-	./miniyog$(EXEEXT) yg2inc.yg builtins.yg $@
+builtins.inc: $(MINIYOG) builtins.yg yg2inc.yg
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) yg2inc.yg builtins.yg $@
 
-array.inc: miniyog$(EXEEXT) array.yg yg2inc.yg
-	$(MAKE) miniyog$(EXEEXT)
-	./miniyog$(EXEEXT) yg2inc.yg array.yg $@
+array.inc: $(MINIYOG) array.yg yg2inc.yg
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) yg2inc.yg array.yg $@
 
-object.inc: miniyog$(EXEEXT) object.yg yg2inc.yg
-	$(MAKE) miniyog$(EXEEXT)
-	./miniyog$(EXEEXT) yg2inc.yg object.yg $@
+object.inc: $(MINIYOG) object.yg yg2inc.yg
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) yg2inc.yg object.yg $@
 
-string.inc: miniyog$(EXEEXT) string.yg yg2inc.yg
-	$(MAKE) miniyog$(EXEEXT)
-	./miniyog$(EXEEXT) yg2inc.yg string.yg $@
+string.inc: $(MINIYOG) string.yg yg2inc.yg
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) yg2inc.yg string.yg $@
 
-dict.inc: miniyog$(EXEEXT) dict.yg yg2inc.yg
-	$(MAKE) miniyog$(EXEEXT)
-	./miniyog$(EXEEXT) yg2inc.yg dict.yg $@
+dict.inc: $(MINIYOG) dict.yg yg2inc.yg
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) yg2inc.yg dict.yg $@
+
+../include/yog/errno_vm.inc: $(MINIYOG) $(TOOLS_DIR)/errno2vm.yg $(TOOLS_DIR)/errno
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) $(TOOLS_DIR)/errno2vm.yg $(TOOLS_DIR)/errno $@
+
+errno_init.inc: $(MINIYOG) $(TOOLS_DIR)/errno2init.yg $(TOOLS_DIR)/errno
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) $(TOOLS_DIR)/errno2init.yg $(TOOLS_DIR)/errno $@
+
+errno_keep.inc: $(MINIYOG) $(TOOLS_DIR)/errno2keep.yg $(TOOLS_DIR)/errno
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) $(TOOLS_DIR)/errno2keep.yg $(TOOLS_DIR)/errno $@
+
+errno_new.inc: $(MINIYOG) $(TOOLS_DIR)/errno2new.yg $(TOOLS_DIR)/errno
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) $(TOOLS_DIR)/errno2new.yg $(TOOLS_DIR)/errno $@
+
+errno_cons.inc: $(MINIYOG) $(TOOLS_DIR)/errno2cons.yg $(TOOLS_DIR)/errno
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) $(TOOLS_DIR)/errno2cons.yg $(TOOLS_DIR)/errno $@
+
+errno_raise.inc: $(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno $@
 
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))

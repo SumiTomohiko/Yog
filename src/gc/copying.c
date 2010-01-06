@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/gc/copying.h"
 #include "yog/vm.h"
@@ -80,13 +81,14 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
 
     unsigned char* dest = copying->unscanned;
     size_t size = header->size;
+    YOG_ASSERT(env, 0 < size, "invalid size: header=%p, obj=%p, size=%x", header, header + 1, size);
     memcpy(dest, header, size);
 
     header->forwarding_addr = (YogCopyingHeader*)dest + 1;
 
     copying->unscanned += size;
     DEBUG(TRACE("%p: unscanned: %p->%p (0x%02x)", env, dest, copying->unscanned, size));
-    DEBUG(TRACE("%p: copy: %p->%p", env, ptr, (YogCopyingHeader*)dest + 1));
+    DEBUG(TRACE("%p: copy: %p->%p, unscanned=%p, size=%u", env, ptr, (YogCopyingHeader*)dest + 1, copying->unscanned - size, size));
 
     return (YogCopyingHeader*)dest + 1;
 }
@@ -125,6 +127,7 @@ YogCopying_iterate_objects(YogEnv* env, YogCopying* copying, void (*callback)(Yo
     unsigned char* to = heap->free;
     while (ptr < to) {
         YogCopyingHeader* header = (YogCopyingHeader*)ptr;
+        YOG_ASSERT(env, 0 < header->size, "invalid size (%x)", header->size);
         (*callback)(env, header);
 
         ptr += header->size;
@@ -231,6 +234,8 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 {
     size_t needed_size = size + sizeof(YogCopyingHeader);
     size_t rounded_size = round_size(needed_size);
+    YOG_ASSERT(env, 0 < needed_size, "invalid size (0x%08x)", needed_size);
+    YOG_ASSERT(env, 0 < rounded_size, "invalid size (0x%08x)", rounded_size);
 #define PRINT_HEAP(text, heap)   do { \
     DEBUG(TRACE("%p: %s: %p-%p", env, (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
 } while (0)
@@ -324,6 +329,22 @@ YogCopying_is_empty(YogEnv* env, YogCopying* copying)
         return FALSE;
     }
 }
+
+#if 0
+static void
+check_object(YogEnv* env, YogCopyingHeader* header)
+{
+    YOG_ASSERT(env, 0 < header->size, "invalid size (header=%p, obj=%p, size=%x)", header, (YogCopyingHeader*)header + 1, header->size);
+    YOG_ASSERT(env, header->forwarding_addr == NULL, "invalid forwarding address (header=%p, obj=%p, addr=%p)", header, (YogCopyingHeader*)header + 1, header->forwarding_addr);
+}
+
+#   define ESCAPE_PROTO
+ESCAPE_PROTO void
+YogCopying_check(YogEnv* env, YogCopying* copying)
+{
+    YogCopying_iterate_objects(env, copying, check_object);
+}
+#endif
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

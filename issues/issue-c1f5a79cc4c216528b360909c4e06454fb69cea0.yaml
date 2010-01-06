@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rename YogString_new_str to YogString_from_str etc.
+desc: ""
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-05 16:20:50.644861 Z
+references: []
+
+id: c1f5a79cc4c216528b360909c4e06454fb69cea0
+log_events: 
+- - 2010-01-05 16:20:51.214271 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

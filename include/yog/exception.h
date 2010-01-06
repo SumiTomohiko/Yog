@@ -22,7 +22,7 @@ struct YogException {
 
 typedef struct YogException YogException;
 
-#define TYPE_EXCEPTION  ((type_t)YogException_define_class)
+#define TYPE_EXCEPTION  ((type_t)YogException_define_classes)
 
 /* PROTOTYPE_START */
 
@@ -33,7 +33,7 @@ typedef struct YogException YogException;
 extern "C" {
 #endif
 /* src/exception.c */
-YogVal YogException_define_class(YogEnv*, YogVal);
+void YogException_define_classes(YogEnv*, YogVal);
 
 /* src/stacktrace.c */
 YogVal YogStackTraceEntry_new(YogEnv*);
