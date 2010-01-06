@@ -1,7 +1,6 @@
 #if !defined(__YOG_BINARY_H__)
 #define __YOG_BINARY_H__
 
-#include "config.h"
 #if defined(HAVE_STDINT_H)
 #   include <stdint.h>
 #endif

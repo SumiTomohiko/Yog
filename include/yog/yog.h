@@ -1,7 +1,7 @@
 #if !defined(__YOG_YOG_H__)
 #define __YOG_YOG_H__
 
-#include "config.h"
+#include "yog/config.h"
 #if defined(HAVE_LIMITS_H)
 #   include <limits.h>
 #endif

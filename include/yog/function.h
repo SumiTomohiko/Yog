@@ -1,7 +1,6 @@
 #if !defined(__YOG_FUNCTION_H__)
 #define __YOG_FUNCTION_H__
 
-#include "config.h"
 #if defined(HAVE_STDINT_H)
 #   include <stdint.h>
 #endif

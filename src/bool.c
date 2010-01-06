@@ -1,3 +1,4 @@
+#include "yog/config.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/frame.h"

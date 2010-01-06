@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Changed single quoted string in error messages to double quoted string
+desc: ""
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-06 08:55:11.958736 Z
+references: []
+
+id: 9288f295f45c44772faf4c62028abb8638ad97d9
+log_events: 
+- - 2010-01-06 08:55:12.451801 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
