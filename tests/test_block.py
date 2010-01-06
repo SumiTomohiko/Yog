@@ -4,22 +4,6 @@ from testcase import TestCase
 
 class TestBlock(TestCase):
 
-    def test_block1(self):
-        self._test("""
-1.times() { [n]
-    puts(n)
-}
-""", """0
-""")
-
-    def test_block2(self):
-        self._test("""
-1.times() {
-    puts(42)
-}
-""", """42
-""")
-
     def test_block3(self):
         self._test("""
 1.times() do [n]

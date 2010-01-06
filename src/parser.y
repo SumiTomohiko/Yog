@@ -1617,10 +1617,6 @@ blockarg_opt(A) ::= DO(B) blockarg_params_opt(C) NEWLINE stmts(D) END. {
     uint_t lineno = TOKEN_LINENO(B);
     A = BlockArg_new(env, lineno, C, D);
 }
-blockarg_opt(A) ::= LBRACE(B) blockarg_params_opt(C) NEWLINE stmts(D) RBRACE. {
-    uint_t lineno = TOKEN_LINENO(B);
-    A = BlockArg_new(env, lineno, C, D);
-}
 
 blockarg_params_opt(A) ::= /* empty */. {
     A = YNIL;
