@@ -34,7 +34,7 @@ puts(d[42])
 
     def test_literal30(self):
         self._test("""
-d = { foo: "bar" }
+d = { :foo => "bar" }
 puts(d[:foo])
 """, """bar
 """)
@@ -95,17 +95,17 @@ print(({} + {}).size)
 
     def test_add10(self):
         self._test("""
-print(({ foo: 42 } + { bar: 26 }).size)
+print(({ :foo => 42 } + { :bar => 26 }).size)
 """, "2")
 
     def test_add20(self):
         self._test("""
-print(({ foo: 42 } + { bar: 26 })[:foo])
+print(({ :foo => 42 } + { :bar => 26 })[:foo])
 """, "42")
 
     def test_add30(self):
         self._test("""
-print(({ foo: 42 } + { bar: 26 })[:bar])
+print(({ :foo => 42 } + { :bar => 26 })[:bar])
 """, "26")
 
     def test_each0(self):

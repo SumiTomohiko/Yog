@@ -1602,12 +1602,6 @@ dict_elems(A) ::= dict_elems(B) COMMA dict_elem(C). {
 dict_elem(A) ::= expr(B) EQUAL_GREATER expr(C). {
     A = DictElem_new(env, NODE_LINENO(B), B, C);
 }
-dict_elem(A) ::= NAME(B) COLON expr(C). {
-    uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, B)->u.id;
-    YogVal var = Literal_new(env, lineno, ID2VAL(id));
-    A = DictElem_new(env, lineno, var, C);
-}
 
 comma_opt(A) ::= /* empty */. {
     A = YNIL;

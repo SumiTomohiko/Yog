@@ -220,7 +220,7 @@ def foo(bar)
   puts(bar)
 end
 
-foo(**{ bar: 42 })
+foo(**{ :bar => 42 })
 """, """42
 """)
 
@@ -230,7 +230,7 @@ def foo(n, m)
   print(n + m)
 end
 
-foo(**{ n: 42, m: 26 })
+foo(**{ :n => 42, :m => 26 })
 """, "68")
 
     def test_variable_keyword_parameter20(self):
@@ -239,7 +239,7 @@ def foo(bar, **baz)
   puts(bar)
 end
 
-foo(**{ bar: 42, quux: 26})
+foo(**{ :bar => 42, :quux => 26})
 """, """42
 """)
 
@@ -249,7 +249,7 @@ def foo(bar, **baz)
   puts(baz[:quux])
 end
 
-foo(**{ bar: 42, quux: 26})
+foo(**{ :bar => 42, :quux => 26})
 """, """26
 """)
 
