@@ -108,7 +108,7 @@ readline(YogEnv* env, YogVal lexer, FILE* fp)
         YogString_push(env, line, c);
     } while (1);
 
-    if (YogString_size(env, line) - 1 == 0) {
+    if (YogString_size(env, line) == 0) {
         RETURN(env, FALSE);
     }
 
@@ -189,7 +189,7 @@ get_rest_size(YogEnv* env, YogVal lexer)
 {
     YogVal line = PTR_AS(YogLexer, lexer)->line;
     uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
-    return (YogString_size(env, line) - 1) - next_index;
+    return YogString_size(env, line) - next_index;
 }
 
 static void
@@ -381,7 +381,7 @@ skip_comment(YogEnv* env, YogVal lexer)
     do {
         uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
         YogVal line = PTR_AS(YogLexer, lexer)->line;
-        uint_t size = YogString_size(env, line) - 1;
+        uint_t size = YogString_size(env, line);
         if ((2 <= size) && (next_index < size - 1)) {
             char c = NEXTC();
             if (c == '(') {
@@ -439,7 +439,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
     do {
         uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
         YogVal line = PTR_AS(YogLexer, lexer)->line;
-        if (next_index < YogString_size(env, line) - 1) {
+        if (next_index < YogString_size(env, line)) {
             c = NEXTC();
             if (is_whitespace(c)) {
                 skip_whitespace(lexer);
@@ -464,7 +464,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                         YogError_raise_SyntaxError(env, "file \"%s\", line %u: EOF while scanning heredoc", filename, PTR_AS(HereDoc, heredoc)->lineno);
                     }
                     end = PTR_AS(HereDoc, heredoc)->end;
-                    uint_t size = YogString_size(env, end) - 1;
+                    uint_t size = YogString_size(env, end);
                     line = PTR_AS(YogLexer, lexer)->line;
                     if (strncmp(STRING_CSTR(end), STRING_CSTR(line), size) == 0) {
                         if ((STRING_CSTR(line)[size] == '\r') || (STRING_CSTR(line)[size] == '\n')) {
@@ -1146,7 +1146,7 @@ read_encoding(YogEnv* env, YogVal lexer)
         }
         YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
         YogVal coding = YogEncoding_normalize_name(env, buffer);
-        if (YogString_size(env, coding) - 1 < 1) {
+        if (YogString_size(env, coding) < 1) {
             continue;
         }
 

@@ -87,7 +87,7 @@ YogString_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 uint_t
 YogString_size(YogEnv* env, YogVal string)
 {
-    return PTR_AS(YogString, string)->size;
+    return PTR_AS(YogString, string)->size - 1;
 }
 
 static void
@@ -322,8 +322,8 @@ find(YogEnv* env, YogVal self, YogVal substr, uint_t from)
 {
     SAVE_ARGS2(env, self, substr);
 
-    uint_t self_size = YogString_size(env, self) - 1;
-    uint_t substr_size = YogString_size(env, substr) - 1;
+    uint_t self_size = YogString_size(env, self);
+    uint_t substr_size = YogString_size(env, substr);
     uint_t end_pos = self_size - substr_size;
     if (self_size < end_pos) {
         RETURN(env, UNSIGNED_MAX);
@@ -354,9 +354,10 @@ YogString_add(YogEnv* env, YogVal self, YogVal s)
 
     uint_t self_size = YogString_size(env, self);
     uint_t s_size = YogString_size(env, s);
-    uint_t size = self_size + s_size - 1;
+    uint_t size = self_size + s_size + 1;
     ensure_size(env, self, size);
-    memcpy(STRING_CSTR(self) + self_size - 1, STRING_CSTR(s), s_size);
+    memcpy(STRING_CSTR(self) + self_size, STRING_CSTR(s), s_size);
+    STRING_CSTR(self)[self_size + s_size] = '\0';
     PTR_AS(YogString, self)->size = size;
 
     RETURN_VOID(env);
@@ -394,7 +395,7 @@ gsub(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     while ((index = find(env, self, substr, from)) != UNSIGNED_MAX) {
         ADD_STR(index);
         YogString_add(env, s, to);
-        from = index + YogString_size(env, substr) - 1;
+        from = index + YogString_size(env, substr);
     }
     ADD_STR(YogString_size(env, self));
 #undef ADD_STR
@@ -433,17 +434,18 @@ add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 
     uint_t size1 = YogString_size(env, self);
     uint_t size2 = YogString_size(env, arg);
-    uint_t size = size1 + size2 - 1;
+    uint_t size = size1 + size2 + 1;
     YogVal s = YogString_new_size(env, size);
     YogVal body = PTR_AS(YogString, s)->body;
     char* p = PTR_AS(YogCharArray, body)->items;
     YogVal self_body = PTR_AS(YogString, self)->body;
     const char* q = PTR_AS(YogCharArray, self_body)->items;
     memcpy(p, q, size1);
-    char* u = &PTR_AS(YogCharArray, body)->items[size1 - 1];
+    char* u = &PTR_AS(YogCharArray, body)->items[size1];
     YogVal arg_body = PTR_AS(YogString, arg)->body;
     const char* v = PTR_AS(YogCharArray, arg_body)->items;
     memcpy(u, v, size2);
+    u[size2] = '\0';
     PTR_AS(YogString, s)->size = size;
     PTR_AS(YogString, s)->encoding = STRING_ENCODING(self);
 
@@ -457,7 +459,7 @@ YogString_multiply(YogEnv* env, YogVal self, int_t num)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
-    uint_t size = YogString_size(env, self) - 1;
+    uint_t size = YogString_size(env, self);
     if (num < 0) {
         YogError_raise_ArgumentError(env, "negative argument");
     }
@@ -517,13 +519,14 @@ lshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
 
     uint_t size1 = YogString_size(env, self);
     uint_t size2 = YogString_size(env, arg);
-    uint_t size = size1 + size2 - 1;
+    uint_t size = size1 + size2 + 1;
     ensure_size(env, self, size);
     YogVal self_body = PTR_AS(YogString, self)->body;
-    char* p = &PTR_AS(YogCharArray, self_body)->items[size1 - 1];
+    char* p = &PTR_AS(YogCharArray, self_body)->items[size1];
     YogVal arg_body = PTR_AS(YogString, arg)->body;
     const char* q = PTR_AS(YogCharArray, arg_body)->items;
     memcpy(p, q, size2);
+    p[size2] = '\0';
     PTR_AS(YogString, self)->size = size;
 
     RETURN(env, self);
@@ -1003,13 +1006,13 @@ YogString_add_cstr(YogEnv* env, YogVal self, const char* s)
 
     uint_t size1 = YogString_size(env, self);
     uint_t size2 = strlen(s);
-    uint_t size = size1 + size2;
+    uint_t size = size1 + size2 + 1;
     YOG_ASSERT(env, size1 <= size, "maybe overflow (%u + %u = %u)", size1, size2, size);
     body = YogCharArray_new(env, size);
     char* top = PTR_AS(YogCharArray, body)->items;
     memcpy(top, STRING_CSTR(self), size1);
-    memcpy(top + size1 - 1, s, size2);
-    top[size1 + size2 - 1] = '\0';
+    memcpy(top + size1, s, size2);
+    top[size1 + size2] = '\0';
     PTR_AS(YogString, self)->body = body;
     PTR_AS(YogString, self)->size = size;
 

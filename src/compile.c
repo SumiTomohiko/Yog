@@ -3211,7 +3211,7 @@ join_package_names(YogEnv* env, YogVal pkg_names)
     for (i = 0; i < size; i++) {
         name = YogArray_at(env, pkg_names, i);
         s = YogVM_id2name(env, env->vm, VAL2ID(name));
-        len += YogString_size(env, s) - 1;
+        len += YogString_size(env, s);
     }
     len += size - 1;
 #if defined(_alloca) && !defined(alloca)
@@ -3224,7 +3224,7 @@ join_package_names(YogEnv* env, YogVal pkg_names)
         s = YogVM_id2name(env, env->vm, VAL2ID(name));
         pc++;
         strlcpy(pc, STRING_CSTR(s), len - (pc - pkg) + 1);
-        pc += YogString_size(env, s) - 1;
+        pc += YogString_size(env, s);
         *pc = '.';
     }
     *pc = '\0';
