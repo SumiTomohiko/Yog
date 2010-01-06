@@ -983,8 +983,7 @@ join_path(char* dest, const char* head, const char* tail, size_t size)
     size_t len = strlen(dest);
     dest[len] = SEPARATOR;
 
-    size_t rest = size - (len + 1);
-    strlcpy(dest + len + 1, tail, rest);
+    strlcpy(dest + len + 1, tail, size - (len + 1));
 }
 
 static YogVal
