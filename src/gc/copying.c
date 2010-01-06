@@ -73,12 +73,6 @@ YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
         return header->forwarding_addr;
     }
 
-#if 0
-    GcObjectStat_increment_survive_num(&header->stat);
-    increment_living_object_number(ENV_VM(env), header->stat.survive_num);
-    increment_total_object_number(ENV_VM(env));
-#endif
-
     unsigned char* dest = copying->unscanned;
     size_t size = header->size;
     YOG_ASSERT(env, 0 < size, "invalid size: header=%p, obj=%p, size=%x", header, header + 1, size);
@@ -273,9 +267,6 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 #undef REST_SIZE
 
     YogCopyingHeader* header = (YogCopyingHeader*)heap->free;
-#if 0
-    GcObjectStat_init(&header->stat);
-#endif
     header->keeper = keeper;
     header->finalizer = finalizer;
     header->forwarding_addr = NULL;
@@ -287,10 +278,6 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 #endif
 
     heap->free += rounded_size;
-
-#if 0
-    increment_total_object_number(vm);
-#endif
 
     return header + 1;
 }

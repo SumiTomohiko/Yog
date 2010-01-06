@@ -98,11 +98,6 @@ YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper obj_ke
     YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)ptr - 1;
     if (!header->marked) {
         DEBUG(TRACE("%p: mark: %p", env, ptr));
-#if 0
-        GcObjectStat_increment_survive_num(&header->stat);
-        increment_living_object_number(ENV_VM(env), header->stat.survive_num);
-        increment_total_object_number(ENV_VM(env));
-#endif
         header->marked = TRUE;
 
         ChildrenKeeper keeper = header->keeper;
@@ -700,9 +695,6 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
         if (page->num_obj_avail == 0) {
             msc->pages[index] = page->next;
         }
-#if 0
-        GcObjectStat_init(&header->stat);
-#endif
     }
     else {
         int_t prot = PROT_READ | PROT_WRITE;

@@ -142,9 +142,6 @@ YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finaliz
     size_t total_size = size + sizeof(YogMarkSweepHeader);
     YogMarkSweepHeader* header = malloc(total_size);
     init_memory(header, total_size);
-#if 0
-    GcObjectStat_init(&header->stat);
-#endif
 
     header->prev = NULL;
     header->next = ms->header;
@@ -159,9 +156,6 @@ YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finaliz
     header->marked = FALSE;
 
     ms->allocated_size += total_size;
-#if 0
-    increment_total_object_number(ENV_VM(env));
-#endif
 
     return header + 1;
 }
