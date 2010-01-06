@@ -406,7 +406,7 @@ Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
 }
 
 static YogVal
-allocate(YogEnv* env, YogVal klass)
+alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal coro = YUNDEF;
@@ -427,7 +427,7 @@ YogCoroutine_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cCoroutine = YogClass_new(env, "Coroutine", vm->cObject);
-    YogClass_define_allocator(env, cCoroutine, allocate);
+    YogClass_define_allocator(env, cCoroutine, alloc);
 #define DEFINE_CLASS_METHOD(name, f)    do { \
     YogClass_define_class_method(env, cCoroutine, pkg, (name), (f)); \
 } while (0)

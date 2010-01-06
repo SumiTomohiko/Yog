@@ -82,9 +82,9 @@ YogGC_suspend(YogEnv* env)
 }
 
 YogVal
-YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+YogGC_alloc(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    DEBUG(TRACE("%p: enter YogGC_allocate: keeper=%p, finalizer=%p, size=%u", env, keeper, finalizer, size));
+    DEBUG(TRACE("%p: enter YogGC_alloc: keeper=%p, finalizer=%p, size=%u", env, keeper, finalizer, size));
     YogVM* vm = env->vm;
     if (vm->waiting_suspend) {
         YogVM_acquire_global_interp_lock(env, vm);
@@ -107,7 +107,7 @@ YogGC_allocate(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t s
     void* ptr = ALLOC(env, THREAD_HEAP(thread), keeper, finalizer, size);
 #undef ALLOC
 
-    DEBUG(TRACE("%p: exit YogGC_allocate", env));
+    DEBUG(TRACE("%p: exit YogGC_alloc", env));
     if (ptr == NULL) {
         YogError_out_of_memory(env);
     }

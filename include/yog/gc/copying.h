@@ -57,7 +57,7 @@ extern "C" {
 #endif
 /* src/gc/copying.c */
 void* YogCopying_alloc(YogEnv*, YogCopying*, ChildrenKeeper, Finalizer, size_t);
-void YogCopying_allocate_heap(YogEnv*, YogCopying*);
+void YogCopying_alloc_heap(YogEnv*, YogCopying*);
 void YogCopying_cheney_scan(YogEnv*, YogCopying*);
 void* YogCopying_copy(YogEnv*, YogCopying*, void*);
 void YogCopying_delete_garbage(YogEnv*, YogCopying*);

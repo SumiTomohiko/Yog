@@ -49,7 +49,7 @@ extern "C" {
 /* src/object.c */
 void YogBasicObj_init(YogEnv*, YogVal, type_t, uint_t, YogVal);
 void YogBasicObj_keep_children(YogEnv*, void*, ObjectKeeper, void*);
-YogVal YogObj_allocate(YogEnv*, YogVal);
+YogVal YogObj_alloc(YogEnv*, YogVal);
 void YogObj_class_init(YogEnv*, YogVal, YogVal);
 YogVal YogObj_get_attr(YogEnv*, YogVal, ID);
 void YogObj_init(YogEnv*, YogVal, uint_t, uint_t, YogVal);

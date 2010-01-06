@@ -220,10 +220,10 @@ setup_basic_class(YogEnv* env, YogVM* vm)
     PUSH_LOCALS2(env, cObject, cClass);
 
     cObject = YogClass_new(env, "Object", YNIL);
-    YogClass_define_allocator(env, cObject, YogObj_allocate);
+    YogClass_define_allocator(env, cObject, YogObj_alloc);
 
     cClass = YogClass_new(env, "Class", cObject);
-    YogClass_define_allocator(env, cClass, YogClass_allocate);
+    YogClass_define_allocator(env, cClass, YogClass_alloc);
 
     PTR_AS(YogBasicObj, cObject)->klass = cClass;
     PTR_AS(YogBasicObj, cClass)->klass = cClass;

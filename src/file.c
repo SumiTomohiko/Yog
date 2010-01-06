@@ -22,7 +22,7 @@
 } while (0)
 
 static YogVal
-allocate(YogEnv* env, YogVal klass)
+alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal file = YUNDEF;
@@ -42,7 +42,7 @@ YogFile_new(YogEnv* env)
     YogVal file = YUNDEF;
     PUSH_LOCAL(env, file);
 
-    file = allocate(env, env->vm->cFile);
+    file = alloc(env, env->vm->cFile);
 
     RETURN(env, file);
 }
@@ -205,7 +205,7 @@ YogFile_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cFile = YogClass_new(env, "File", vm->cObject);
-    YogClass_define_allocator(env, cFile, allocate);
+    YogClass_define_allocator(env, cFile, alloc);
 #define DEFINE_CLASS_METHOD(name, f)    do { \
     YogClass_define_class_method(env, cFile, pkg, (name), (f)); \
 } while (0)

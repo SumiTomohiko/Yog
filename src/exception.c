@@ -21,7 +21,7 @@ struct SystemCallError {
 
 typedef struct SystemCallError SystemCallError;
 
-#define TYPE_SYSTEM_CALL_ERROR  ((type_t)SystemCallError_allocate)
+#define TYPE_SYSTEM_CALL_ERROR  ((type_t)SystemCallError_alloc)
 
 static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
@@ -48,7 +48,7 @@ YogException_init(YogEnv* env, YogVal self, type_t type, YogVal klass)
 }
 
 static YogVal
-YogException_allocate(YogEnv* env, YogVal klass)
+YogException_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal exc = YUNDEF;
@@ -61,7 +61,7 @@ YogException_allocate(YogEnv* env, YogVal klass)
 }
 
 static YogVal
-SystemCallError_allocate(YogEnv* env, YogVal klass)
+SystemCallError_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal exc = YUNDEF;
@@ -293,7 +293,7 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     eException = YogClass_new(env, "Exception", vm->cObject);
-    YogClass_define_allocator(env, eException, YogException_allocate);
+    YogClass_define_allocator(env, eException, YogException_alloc);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, eException, pkg, (name), (f)); \
 } while (0)
@@ -325,7 +325,7 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
 #undef EXCEPTION_NEW
 
     eSystemCallError = YogClass_new(env, "SystemCallError", eException);
-    YogClass_define_allocator(env, eSystemCallError, SystemCallError_allocate);
+    YogClass_define_allocator(env, eSystemCallError, SystemCallError_alloc);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, eSystemCallError, pkg, (name), (f)); \
 } while (0)

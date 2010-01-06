@@ -26,7 +26,7 @@ YogVal YogDictIterator_current_key(YogEnv*, YogVal);
 YogVal YogDictIterator_current_value(YogEnv*, YogVal);
 BOOL YogDictIterator_next(YogEnv*, YogVal);
 YogVal YogDict_add(YogEnv*, YogVal, YogVal);
-YogVal YogDict_allocate(YogEnv*, YogVal);
+YogVal YogDict_alloc(YogEnv*, YogVal);
 void YogDict_define_classes(YogEnv*, YogVal);
 void YogDict_eval_builtin_script(YogEnv*, YogVal);
 YogVal YogDict_get(YogEnv*, YogVal, YogVal);

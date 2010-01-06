@@ -176,7 +176,7 @@ YogString_clear(YogEnv* env, YogVal string)
 }
 
 static YogVal
-allocate(YogEnv* env, YogVal klass)
+alloc(YogEnv* env, YogVal klass)
 {
     SAVE_LOCALS(env);
     PUSH_LOCAL(env, klass);
@@ -199,7 +199,7 @@ YogString_new(YogEnv* env)
     YogVal body = YUNDEF;
     PUSH_LOCALS2(env, self, body);
 
-    self = allocate(env, env->vm->cString);
+    self = alloc(env, env->vm->cString);
     body = YogCharArray_new(env, 1);
 
     PTR_AS(YogString, self)->encoding = YUNDEF;
@@ -244,7 +244,7 @@ YogString_new_size(YogEnv* env, uint_t size)
     YogVal body = YUNDEF;
     PUSH_LOCALS2(env, string, body);
 
-    string = allocate(env, env->vm->cString);
+    string = alloc(env, env->vm->cString);
     if (size == 0) {
         RETURN(env, string);
     }
@@ -264,7 +264,7 @@ YogString_new_size(YogEnv* env, uint_t size)
     YogVal body = YogCharArray_new_str(env, buffer); \
     PUSH_LOCAL(env, body); \
     \
-    YogVal string = allocate(env, env->vm->cString); \
+    YogVal string = alloc(env, env->vm->cString); \
     PTR_AS(YogString, string)->encoding = YNIL; \
     PTR_AS(YogString, string)->size = len + 1; \
     PTR_AS(YogString, string)->body = body; \
@@ -1062,7 +1062,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cString = YogClass_new(env, "String", vm->cObject);
-    YogClass_define_allocator(env, cString, allocate);
+    YogClass_define_allocator(env, cString, alloc);
     YogClass_include_module(env, cString, vm->mComparable);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cString, pkg, (name), (f)); \

@@ -42,7 +42,7 @@ YogPackageBlock_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void*
 }
 
 static YogVal
-YogPackageBlock_allocate(YogEnv* env, YogVal klass)
+YogPackageBlock_alloc(YogEnv* env, YogVal klass)
 {
     YogVal block = ALLOC_OBJ(env, YogPackageBlock_keep_children, NULL, YogPackageBlock);
     YogPackageBlock_init(env, block);
@@ -53,7 +53,7 @@ YogPackageBlock_allocate(YogEnv* env, YogVal klass)
 YogVal
 YogPackageBlock_new(YogEnv* env)
 {
-    return YogPackageBlock_allocate(env, env->vm->cPackageBlock);
+    return YogPackageBlock_alloc(env, env->vm->cPackageBlock);
 }
 
 static void
@@ -97,7 +97,7 @@ YogPackageBlock_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cPackageBlock = YogClass_new(env, "PackageBlock", vm->cObject);
-    YogClass_define_allocator(env, cPackageBlock, YogPackageBlock_allocate);
+    YogClass_define_allocator(env, cPackageBlock, YogPackageBlock_alloc);
     vm->cPackageBlock = cPackageBlock;
 
     RETURN_VOID(env);

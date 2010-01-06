@@ -184,7 +184,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 YogVal
-YogDict_allocate(YogEnv* env, YogVal klass)
+YogDict_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal d = YUNDEF;
@@ -199,7 +199,7 @@ YogDict_allocate(YogEnv* env, YogVal klass)
 YogVal
 YogDict_new(YogEnv* env)
 {
-    return YogDict_allocate(env, env->vm->cDict);
+    return YogDict_alloc(env, env->vm->cDict);
 }
 
 uint_t
@@ -317,7 +317,7 @@ YogDict_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cDict = YogClass_new(env, "Dict", vm->cObject);
-    YogClass_define_allocator(env, cDict, YogDict_allocate);
+    YogClass_define_allocator(env, cDict, YogDict_alloc);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cDict, pkg, (name), (f)); \
 } while (0)

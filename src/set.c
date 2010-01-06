@@ -74,7 +74,7 @@ YogSet_new(YogEnv* env)
     YogVal set = YUNDEF;
     PUSH_LOCAL(env, set);
 
-    set = YogDict_allocate(env, env->vm->cSet);
+    set = YogDict_alloc(env, env->vm->cSet);
 
     RETURN(env, set);
 }
@@ -88,7 +88,7 @@ YogSet_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cSet = YogClass_new(env, "Set", vm->cObject);
-    YogClass_define_allocator(env, cSet, YogDict_allocate);
+    YogClass_define_allocator(env, cSet, YogDict_alloc);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cSet, pkg, (name), (f)); \
 } while (0)

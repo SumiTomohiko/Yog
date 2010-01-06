@@ -44,7 +44,7 @@ YogPackage_init(YogEnv* env, YogVal pkg)
 }
 
 static YogVal
-allocate(YogEnv* env, YogVal klass)
+alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal pkg = YUNDEF;
@@ -115,7 +115,7 @@ YogPackage_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cPackage = YogClass_new(env, "Package", vm->cObject);
-    YogClass_define_allocator(env, cPackage, allocate);
+    YogClass_define_allocator(env, cPackage, alloc);
     YogClass_define_get_attr_caller(env, cPackage, call_get_attr);
     YogClass_define_get_attr_executor(env, cPackage, exec_get_attr);
     vm->cPackage = cPackage;
@@ -126,7 +126,7 @@ YogPackage_define_classes(YogEnv* env, YogVal pkg)
 YogVal
 YogPackage_new(YogEnv* env)
 {
-    return allocate(env, env->vm->cPackage);
+    return alloc(env, env->vm->cPackage);
 }
 
 /**

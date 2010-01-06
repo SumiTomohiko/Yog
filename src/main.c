@@ -199,7 +199,7 @@ main(int_t argc, char* argv[])
     YogThread_config_bdw(&env, dummy_thread);
 #elif defined(GC_COPYING)
     YogThread_config_copying(&env, dummy_thread, init_heap_size);
-    YogCopying_allocate_heap(&env, (YogCopying*)PTR_AS(YogThread, dummy_thread)->heap);
+    YogCopying_alloc_heap(&env, (YogCopying*)PTR_AS(YogThread, dummy_thread)->heap);
 #elif defined(GC_MARK_SWEEP)
     YogThread_config_mark_sweep(&env, dummy_thread, threshold);
 #elif defined(GC_MARK_SWEEP_COMPACT)
@@ -214,7 +214,7 @@ main(int_t argc, char* argv[])
         return -2;
     }
     YogThread_config_generational(&env, dummy_thread, init_heap_size, CHUNK_SIZE, threshold, TENURE);
-    YogGenerational_allocate_heap(&env, PTR_AS(YogThread, dummy_thread)->heap);
+    YogGenerational_alloc_heap(&env, PTR_AS(YogThread, dummy_thread)->heap);
 #   undef TENURE
 #   undef CHUNK_SIZE
 #endif

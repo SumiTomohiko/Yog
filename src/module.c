@@ -8,7 +8,7 @@
 #include "yog/yog.h"
 
 static YogVal
-allocate(YogEnv* env, YogVal klass)
+alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal module = YUNDEF;
@@ -29,7 +29,7 @@ YogModule_new(YogEnv* env)
     YogVal attrs = YUNDEF;
     PUSH_LOCALS2(env, module, attrs);
 
-    module = allocate(env, env->vm->cModule);
+    module = alloc(env, env->vm->cModule);
 
     attrs = YogTable_new_symbol_table(env);
     PTR_AS(YogObj, module)->attrs = attrs;

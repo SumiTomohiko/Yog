@@ -280,7 +280,7 @@ YogFunction_init(YogEnv* env, YogVal self, YogVal klass)
 }
 
 static YogVal
-YogFunction_allocate(YogEnv* env, YogVal klass)
+YogFunction_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal f = YUNDEF;
@@ -342,7 +342,7 @@ descr_get(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
 YogVal
 YogFunction_new(YogEnv* env)
 {
-    return YogFunction_allocate(env, env->vm->cFunction);
+    return YogFunction_alloc(env, env->vm->cFunction);
 }
 
 static YogVal
@@ -495,7 +495,7 @@ YogNativeFunction_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, voi
 }
 
 static YogVal
-YogNativeFunction_allocate(YogEnv* env, YogVal klass)
+YogNativeFunction_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal func = YUNDEF;
@@ -516,7 +516,7 @@ YogNativeFunction_new(YogEnv* env, ID class_name, YogVal pkg, const char* func_n
 
     ID func_id = YogVM_intern(env, env->vm, func_name);
 
-    func = YogNativeFunction_allocate(env, env->vm->cNativeFunction);
+    func = YogNativeFunction_alloc(env, env->vm->cNativeFunction);
     PTR_AS(YogNativeFunction, func)->class_name = class_name;
     PTR_AS(YogNativeFunction, func)->pkg = pkg;
     PTR_AS(YogNativeFunction, func)->func_name = func_id;
@@ -688,7 +688,7 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cNativeFunction = YogClass_new(env, "NativeFunction", vm->cObject);
-    YogClass_define_allocator(env, cNativeFunction, YogNativeFunction_allocate);
+    YogClass_define_allocator(env, cNativeFunction, YogNativeFunction_alloc);
     YogClass_define_descr_get_executor(env, cNativeFunction, YogNativeFunction_exec_get_descr);
     YogClass_define_descr_get_caller(env, cNativeFunction, YogNativeFunction_call_get_descr);
     YogClass_define_caller(env, cNativeFunction, YogNativeFunction_call);
@@ -701,7 +701,7 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     vm->cNativeFunction = cNativeFunction;
 
     cFunction = YogClass_new(env, "Function", vm->cObject);
-    YogClass_define_allocator(env, cFunction, YogFunction_allocate);
+    YogClass_define_allocator(env, cFunction, YogFunction_alloc);
     YogClass_define_descr_get_executor(env, cFunction, YogFunction_exec_get_descr);
     YogClass_define_descr_get_caller(env, cFunction, YogFunction_call_get_descr);
     YogClass_define_caller(env, cFunction, YogFunction_call);

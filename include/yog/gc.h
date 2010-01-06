@@ -2,7 +2,7 @@
 #define __YOG_GC_H__
 
 #define ALLOC_OBJ_SIZE(env, keep_children, finalizer, size) \
-    YogGC_allocate(env, keep_children, finalizer, size)
+    YogGC_alloc(env, keep_children, finalizer, size)
 #define ALLOC_OBJ(env, keep_children, finalizer, type) \
     ALLOC_OBJ_SIZE(env, keep_children, finalizer, sizeof(type))
 #define ALLOC_OBJ_ITEM(env, keep_children, finalizer, type, size, item_type) \
@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 /* src/gc.c */
-YogVal YogGC_allocate(YogEnv*, ChildrenKeeper, Finalizer, size_t);
+YogVal YogGC_alloc(YogEnv*, ChildrenKeeper, Finalizer, size_t);
 void YogGC_bind_to_gc(YogEnv*);
 void YogGC_delete(YogEnv*);
 void YogGC_free_from_gc(YogEnv*);

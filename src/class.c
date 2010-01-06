@@ -124,7 +124,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 YogVal
-YogClass_allocate(YogEnv* env, YogVal klass)
+YogClass_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
@@ -147,7 +147,7 @@ YogClass_new(YogEnv* env, const char* name, YogVal super)
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
-    klass = YogClass_allocate(env, env->vm->cClass);
+    klass = YogClass_alloc(env, env->vm->cClass);
     PTR_AS(YogClass, klass)->allocator = NULL;
     PTR_AS(YogClass, klass)->name = INVALID_ID;
     PTR_AS(YogClass, klass)->super = PTR2VAL(NULL);

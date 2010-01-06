@@ -164,7 +164,7 @@ YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 static YogVal
-allocate_object(YogEnv* env, YogVal klass, uint_t size)
+alloc_obj(YogEnv* env, YogVal klass, uint_t size)
 {
     SAVE_ARG(env, klass);
 
@@ -184,11 +184,11 @@ allocate_object(YogEnv* env, YogVal klass, uint_t size)
 YogVal
 YogArray_of_size(YogEnv* env, uint_t size)
 {
-    return allocate_object(env, env->vm->cArray, size);
+    return alloc_obj(env, env->vm->cArray, size);
 }
 
 static YogVal
-allocate(YogEnv* env, YogVal klass)
+alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
@@ -196,7 +196,7 @@ allocate(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, array);
 
 #define INIT_SIZE   1
-    array = allocate_object(env, klass, INIT_SIZE);
+    array = alloc_obj(env, klass, INIT_SIZE);
 #undef INIT_SIZE
 
     RETURN(env, array);
@@ -451,7 +451,7 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cArray = YogClass_new(env, "Array", vm->cObject);
-    YogClass_define_allocator(env, cArray, allocate);
+    YogClass_define_allocator(env, cArray, alloc);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cArray, pkg, (name), (f)); \
 } while (0)

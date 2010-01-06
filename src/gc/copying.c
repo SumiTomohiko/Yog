@@ -283,7 +283,7 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 }
 
 void
-YogCopying_allocate_heap(YogEnv* env, YogCopying* copying)
+YogCopying_alloc_heap(YogEnv* env, YogCopying* copying)
 {
     if (copying->active_heap) {
         return;

@@ -172,7 +172,7 @@ finalize(YogEnv* env, void* ptr)
 }
 
 static YogVal
-allocate_object(YogEnv* env, YogVal klass)
+alloc_obj(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal thread = ALLOC_OBJ(env, keep_children, finalize, YogThread);
@@ -181,17 +181,17 @@ allocate_object(YogEnv* env, YogVal klass)
 }
 
 static YogVal
-allocate(YogEnv* env, YogVal klass)
+alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
-    YogVal thread = allocate_object(env, klass);
+    YogVal thread = alloc_obj(env, klass);
 #if defined(GC_BDW)
     YogThread_config_bdw(env, thread);
 #elif defined(GC_COPYING)
 #   define HEAP_SIZE    (1 * 1024 * 1024)
     YogThread_config_copying(env, thread, HEAP_SIZE);
-    YogCopying_allocate_heap(env, (YogCopying*)PTR_AS(YogThread, thread)->heap);
+    YogCopying_alloc_heap(env, (YogCopying*)PTR_AS(YogThread, thread)->heap);
 #   undef HEAP_SIZE
 #elif defined(GC_MARK_SWEEP)
     size_t threshold = 1 * 1024 * 1024;
@@ -213,7 +213,7 @@ allocate(YogEnv* env, YogVal klass)
 #   define TENURE       32
 #   define THRESHOLD    (1 * 1024 * 1024)
     YogThread_config_generational(env, thread, HEAP_SIZE, CHUNK_SIZE, THRESHOLD, TENURE);
-    YogGenerational_allocate_heap(env, PTR_AS(YogThread, thread)->heap);
+    YogGenerational_alloc_heap(env, PTR_AS(YogThread, thread)->heap);
 #   undef THRESHOLD
 #   undef TENURE
 #   undef CHUNK_SIZE
@@ -226,7 +226,7 @@ allocate(YogEnv* env, YogVal klass)
 YogVal
 YogThread_new(YogEnv* env)
 {
-    return allocate_object(env, env->vm->cThread);
+    return alloc_obj(env, env->vm->cThread);
 }
 
 struct ThreadArg {
@@ -448,7 +448,7 @@ YogThread_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cThread = YogClass_new(env, "Thread", vm->cObject);
-    YogClass_define_allocator(env, cThread, allocate);
+    YogClass_define_allocator(env, cThread, alloc);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cThread, pkg, (name), (f)); \
 } while (0)

@@ -39,7 +39,7 @@ typedef struct YogClass YogClass;
 extern "C" {
 #endif
 /* src/class.c */
-YogVal YogClass_allocate(YogEnv*, YogVal);
+YogVal YogClass_alloc(YogEnv*, YogVal);
 void YogClass_boot(YogEnv*, YogVal, YogVal);
 void YogClass_class_init(YogEnv*, YogVal, YogVal);
 void YogClass_define_allocator(YogEnv*, YogVal, Allocator);

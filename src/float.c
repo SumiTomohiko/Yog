@@ -26,7 +26,7 @@
 } while (0)
 
 static YogVal
-allocate(YogEnv* env, YogVal klass)
+alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
@@ -40,7 +40,7 @@ allocate(YogEnv* env, YogVal klass)
 YogVal
 YogFloat_new(YogEnv* env)
 {
-    YogVal f = allocate(env, env->vm->cFloat);
+    YogVal f = alloc(env, env->vm->cFloat);
     PTR_AS(YogFloat, f)->val = 0;
     return f;
 }
@@ -355,7 +355,7 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cFloat = YogClass_new(env, "Float", vm->cObject);
-    YogClass_define_allocator(env, cFloat, allocate);
+    YogClass_define_allocator(env, cFloat, alloc);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cFloat, pkg, (name), (f)); \
 } while (0)

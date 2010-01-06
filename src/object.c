@@ -94,7 +94,7 @@ YogObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 YogVal
-YogObj_allocate(YogEnv* env, YogVal klass)
+YogObj_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
@@ -107,7 +107,7 @@ YogObj_allocate(YogEnv* env, YogVal klass)
 YogVal
 YogObj_new(YogEnv* env, YogVal klass)
 {
-    return YogObj_allocate(env, klass);
+    return YogObj_alloc(env, klass);
 }
 
 static YogVal

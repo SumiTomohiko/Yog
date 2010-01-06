@@ -52,7 +52,7 @@ extern "C" {
 #endif
 /* src/gc/generational.c */
 void* YogGenerational_alloc(YogEnv*, YogGenerational*, ChildrenKeeper, Finalizer, size_t);
-void YogGenerational_allocate_heap(YogEnv*, YogGenerational*);
+void YogGenerational_alloc_heap(YogEnv*, YogGenerational*);
 void* YogGenerational_copy_young_object(YogEnv*, void*, ObjectKeeper, void*);
 void YogGenerational_finalize(YogEnv*, YogGenerational*);
 void YogGenerational_init(YogEnv*, YogGenerational*, size_t, size_t, size_t, uint_t);

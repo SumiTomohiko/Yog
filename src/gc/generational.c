@@ -274,9 +274,9 @@ YogGenerational_is_empty(YogEnv* env, YogGenerational* generational)
 }
 
 void
-YogGenerational_allocate_heap(YogEnv* env, YogGenerational* generational)
+YogGenerational_alloc_heap(YogEnv* env, YogGenerational* generational)
 {
-    YogCopying_allocate_heap(env, &generational->copying);
+    YogCopying_alloc_heap(env, &generational->copying);
 }
 
 void
