@@ -16,7 +16,6 @@ COMMON_SOURCES = arg.c \
 	array.c \
 	bignum.c \
 	binary.c \
-	block.c \
 	bool.c \
 	builtins.c \
 	class.c \

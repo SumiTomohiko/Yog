@@ -33,7 +33,6 @@
 #endif
 #include "yog/array.h"
 #include "yog/bignum.h"
-#include "yog/block.h"
 #include "yog/bool.h"
 #include "yog/builtins.h"
 #include "yog/class.h"
@@ -261,7 +260,6 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogModule_define_classes(env, builtins);
     YogNil_define_classes(env, builtins);
     YogPackage_define_classes(env, builtins);
-    YogPackageBlock_define_classes(env, builtins);
     YogSet_define_classes(env, builtins);
     YogString_define_classes(env, builtins);
     YogSymbol_define_classes(env, builtins);
@@ -417,7 +415,6 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cNil);
     KEEP(cObject);
     KEEP(cPackage);
-    KEEP(cPackageBlock);
     KEEP(cProperty);
     KEEP(cRegexp);
     KEEP(cSet);
@@ -514,7 +511,6 @@ YogVM_init(YogVM* vm)
     INIT(cNil);
     INIT(cObject);
     INIT(cPackage);
-    INIT(cPackageBlock);
     INIT(cProperty);
     INIT(cRegexp);
     INIT(cSet);
