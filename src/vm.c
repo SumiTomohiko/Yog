@@ -139,7 +139,7 @@ YogVM_id2name(YogEnv* env, YogVM* vm, ID id)
 
     uint_t size = PTR_AS(YogCharArray, val)->size;
     s = YogString_from_size(env, size);
-    strlcpy(STRING_CSTR(s), PTR_AS(YogCharArray, val)->items, size);
+    memcpy(STRING_CSTR(s), PTR_AS(YogCharArray, val)->items, size);
     STRING_SIZE(s) = size;
 
     release_symbols_lock(env, vm);
@@ -178,7 +178,7 @@ YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
 #   define alloca   _alloca
 #endif
     char* buffer = (char*)alloca(sizeof(char) * size);
-    strlcpy(buffer, name, size);
+    memcpy(buffer, name, size);
 
     YogVal s = YogCharArray_new_str(env, buffer);
     PUSH_LOCAL(env, s);
@@ -911,21 +911,22 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     YogVal pkg = YUNDEF;
     PUSH_LOCAL(env, pkg);
 
-    /* 3 is for "./" and '\0'. */
-    size_t size = strlen(filename) + 3;
-    char* path = (char*)alloca(sizeof(char) * size);
+    size_t size = strlen(filename);
+    char* path;
     if (strchr(filename, SEPARATOR) != NULL) {
-        strlcpy(path, filename, size);
+        path = (char*)alloca(sizeof(char) * (size + 1));
+        memcpy(path, filename, size + 1);
     }
     else {
-#define CUR_DIR_SIZE    3
-        char cur_dir[CUR_DIR_SIZE];
+        /* 2 is for the string of "./" excluding null terminator */
+#define CUR_DIR_SIZE    2
+        size_t len = size + CUR_DIR_SIZE + 1;
+        path = (char*)alloca(sizeof(char) * len);
 #if defined(_MSC_VER)
 #   define snprintf   _snprintf
 #endif
-        snprintf(cur_dir, CUR_DIR_SIZE, ".%c", SEPARATOR);
-        strlcpy(path, cur_dir, size);
-        strlcat(path, filename, size);
+        snprintf(path, len, ".%c", SEPARATOR);
+        memcpy(path + CUR_DIR_SIZE, filename, size + 1);
 #undef CUR_DIR_SIZE
     }
 
@@ -941,9 +942,10 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     }
 
 #define INIT_NAME_HEAD  "YogInit_"
-    size_t init_name_size = strlen(INIT_NAME_HEAD) + strlen(pkg_name) + 1;
+    size_t head_size = strlen(INIT_NAME_HEAD);
+    size_t init_name_size = head_size + strlen(pkg_name) + 1;
     char* init_name = (char*)alloca(sizeof(char) * init_name_size);
-    strlcpy(init_name, INIT_NAME_HEAD, init_name_size);
+    memcpy(init_name, INIT_NAME_HEAD, head_size);
 #undef INIT_NAME_HEAD
     const char* pc = strrchr(pkg_name, '.');
     if (pc != NULL) {
@@ -952,7 +954,8 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     else {
         pc = pkg_name;
     }
-    strlcat(init_name, pc, init_name_size);
+    memcpy(init_name + head_size, pc, init_name_size - head_size - 1);
+    init_name[init_name_size - 1] = '\0';
 
     CLEAR_ERROR;
     typedef YogVal (*Initializer)(YogEnv*);
@@ -971,15 +974,18 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
 
 #undef LIB_HANDLE
 
-static void
-join_path(char* dest, const char* head, const char* tail, size_t size)
+static char*
+join_path(char* dest, const char* head, const char* tail)
 {
-    strlcpy(dest, head, size);
+    size_t head_size = strlen(head);
+    memcpy(dest, head, head_size);
+    dest[head_size] = SEPARATOR;
+    size_t tail_size = strlen(tail);
+    memcpy(dest + head_size + 1, tail, tail_size);
+    char* p = &dest[head_size + tail_size + 1];
+    *p = '\0';
 
-    size_t len = strlen(dest);
-    dest[len] = SEPARATOR;
-
-    strlcpy(dest + len + 1, tail, size - (len + 1));
+    return p;
 }
 
 static YogVal
@@ -1019,11 +1025,11 @@ import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
 
         size_t len = strlen(path_head);
 #define HEAD2PATH(var, ext) \
-    /* directory + separactor + head + extention + '\0' */ \
+    /* directory + separator + head + extention + '\0' */ \
     size_t size_##var = dir_len + 1 + len + strlen(ext) + 1; \
     char* var = (char*)alloca(sizeof(char) * size_##var); \
-    join_path(var, PTR_AS(YogCharArray, body)->items, path_head, size_##var); \
-    strlcat(var, ext, size_##var)
+    char* p_##var = join_path(var, PTR_AS(YogCharArray, body)->items, path_head); \
+    memcpy(p_##var, ext, strlen(ext) + 1)
         HEAD2PATH(yg, ".yg");
         pkg = import_yg(env, yg, pkg_name);
         if (IS_PTR(pkg)) {
@@ -1080,7 +1086,7 @@ import_package(YogEnv* env, YogVM* vm, const char* name)
 
     uint_t len = strlen(name) + 1;
     char* head = (char*)alloca(sizeof(char) * len);
-    strlcpy(head, name, len);
+    memcpy(head, name, len);
     package_name2path_head(head);
 
     pkg = import(env, vm, head, name);
@@ -1202,17 +1208,17 @@ is_executable_file(const char* filename)
 }
 
 static BOOL
-search_program(char* dest, const char* path, const char* prog, size_t size)
+search_program(char* dest, const char* path, const char* prog)
 {
     size_t len = strlen(path) + 1;
     char* s = (char*)alloca(sizeof(char) * len);
-    strlcpy(s, path, len);
+    memcpy(s, path, len);
 
     char* pc = s;
     while (1) {
         char* delim = strchr(pc, ':');
         split_path(delim);
-        join_path(dest, pc, prog, size);
+        join_path(dest, pc, prog);
         if (is_executable_file(dest)) {
             return TRUE;
         }
@@ -1268,7 +1274,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
         /* 1 of middle is for '/' */
         size_t size = strlen(path) + 1 + strlen(argv0) + 1;
         char* s = (char*)alloca(sizeof(char) * size);
-        if (!search_program(s, path, argv0, size)) {
+        if (!search_program(s, path, argv0)) {
             YOG_BUG(env, "Can't find %s in %s", argv0, path);
         }
         prog = YogString_from_str(env, s);
@@ -1292,7 +1298,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
     size_t size = len + 1 + strlen(EXT_DIR) + 1;
     char* extpath = (char*)alloca(sizeof(char) * size);
     body = PTR_AS(YogString, prog)->body;
-    join_path(extpath, PTR_AS(YogCharArray, body)->items, EXT_DIR, size);
+    join_path(extpath, PTR_AS(YogCharArray, body)->items, EXT_DIR);
 #undef EXT_DIR
     if (is_directory(extpath)) {
         s = YogString_from_str(env, extpath);
@@ -1301,7 +1307,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
 #define LIB_DIR     ROOT_DIR_DEV "lib"
         size_t size = len + 1 + strlen(LIB_DIR) + 1;
         char* libpath = (char*)alloca(sizeof(char) * size);
-        join_path(libpath, PTR_AS(YogCharArray, body)->items, LIB_DIR, size);
+        join_path(libpath, PTR_AS(YogCharArray, body)->items, LIB_DIR);
 #undef LIB_DIR
         s = YogString_from_str(env, libpath);
         YogArray_push(env, search_path, s);

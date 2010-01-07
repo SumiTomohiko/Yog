@@ -3223,8 +3223,9 @@ join_package_names(YogEnv* env, YogVal pkg_names)
         name = YogArray_at(env, pkg_names, i);
         s = YogVM_id2name(env, env->vm, VAL2ID(name));
         pc++;
-        strlcpy(pc, STRING_CSTR(s), len - (pc - pkg) + 1);
-        pc += YogString_size(env, s);
+        uint_t size = YogString_size(env, s);
+        memcpy(pc, STRING_CSTR(s), size);
+        pc += size;
         *pc = '.';
     }
     *pc = '\0';
