@@ -34,6 +34,16 @@ ENOENT:.*
 File.open(\"foo\", \"r\")
 """, stderr=test_stderr)
 
+    def test_open20(self):
+        filename = "foo.txt"
+        foo = self.read_file(filename)
+
+        self._test("""
+File.open(\"%(filename)s\") do [f]
+  print(f.read())
+end
+""" % { "filename": filename }, stdout=foo)
+
     def test_read0(self):
         filename = "foo.txt"
         foo = self.read_file(filename)

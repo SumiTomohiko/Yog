@@ -153,7 +153,11 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogVal retval = YUNDEF;
     PUSH_LOCALS4(env, file, path, mode, retval);
 
-    YogCArg params[] = { { "path", &path }, { "mode", &mode }, { NULL, NULL } };
+    YogCArg params[] = {
+        { "path", &path },
+        { "|", NULL },
+        { "mode", &mode },
+        { NULL, NULL } };
     YogGetArgs_parse_args(env, "open", params, args, kw);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_CLASS)) {
         YogError_raise_TypeError(env, "self must be Class");
@@ -161,13 +165,13 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     if (!IS_PTR(path) || (BASIC_OBJ_TYPE(path) != TYPE_STRING)) {
         YogError_raise_TypeError(env, "path must be String");
     }
-    if (!IS_PTR(mode) || (BASIC_OBJ_TYPE(mode) != TYPE_STRING)) {
+    if (!IS_UNDEF(mode) && (!IS_PTR(mode) || (BASIC_OBJ_TYPE(mode) != TYPE_STRING))) {
         YogError_raise_TypeError(env, "mode must be String");
     }
 
     file = YogFile_new(env);
 
-    FILE* fp = fopen(STRING_CSTR(path), STRING_CSTR(mode));
+    FILE* fp = fopen(STRING_CSTR(path), IS_UNDEF(mode) ? "r" : STRING_CSTR(mode));
     if (fp == NULL) {
         YogError_raise_sys_call_err(env, errno);
     }
