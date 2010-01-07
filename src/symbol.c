@@ -13,7 +13,7 @@ inspect(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
     YogVal sym = YUNDEF;
     PUSH_LOCALS2(env, s, sym);
 
-    s = YogString_new_str(env, ":");
+    s = YogString_from_str(env, ":");
     sym = YogVM_id2name(env, env->vm, VAL2ID(self));
     YogString_add(env, s, sym);
 

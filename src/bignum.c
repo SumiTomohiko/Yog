@@ -28,7 +28,7 @@ YogBignum_to_s(YogEnv* env, YogVal self)
 
 #define BASE    10
     size_t size = mpz_sizeinbase(PTR_AS(YogBignum, self)->num, BASE) + 2;
-    s = YogString_new_size(env, size);
+    s = YogString_from_size(env, size);
     mpz_get_str(STRING_CSTR(s), BASE, PTR_AS(YogBignum, self)->num);
     PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->size = size;
 #undef BASE

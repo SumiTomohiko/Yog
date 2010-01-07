@@ -7,7 +7,7 @@
 static YogVal
 to_s(YogEnv* env)
 {
-    return YogString_new_str(env, "nil");
+    return YogString_from_str(env, "nil");
 }
 
 static YogVal

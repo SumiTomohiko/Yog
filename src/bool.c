@@ -30,7 +30,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     else {
         s = "false";
     }
-    t = YogString_new_str(env, s);
+    t = YogString_from_str(env, s);
 
     RETURN(env, t);
 }

@@ -139,7 +139,7 @@ YogVM_id2name(YogEnv* env, YogVM* vm, ID id)
     }
 
     uint_t size = PTR_AS(YogCharArray, val)->size;
-    s = YogString_new_size(env, size);
+    s = YogString_from_size(env, size);
     strlcpy(STRING_CSTR(s), PTR_AS(YogCharArray, val)->items, size);
     STRING_SIZE(s) = size;
 
@@ -1248,7 +1248,7 @@ add_current_directory(YogEnv* env, YogVal search_path)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
-    s = YogString_new_str(env, ".");
+    s = YogString_from_str(env, ".");
     YogArray_push(env, search_path, s);
 
     RETURN_VOID(env);
@@ -1275,10 +1275,10 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
         if (!search_program(s, path, argv0, size)) {
             YOG_BUG(env, "Can't find %s in %s", argv0, path);
         }
-        prog = YogString_new_str(env, s);
+        prog = YogString_from_str(env, s);
     }
     else {
-        prog = YogString_new_str(env, argv0);
+        prog = YogString_from_str(env, argv0);
     }
 
     search_path = YogArray_new(env);
@@ -1299,7 +1299,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
     join_path(extpath, PTR_AS(YogCharArray, body)->items, EXT_DIR, size);
 #undef EXT_DIR
     if (is_directory(extpath)) {
-        s = YogString_new_str(env, extpath);
+        s = YogString_from_str(env, extpath);
         YogArray_push(env, search_path, s);
 
 #define LIB_DIR     ROOT_DIR_DEV "lib"
@@ -1307,7 +1307,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
         char* libpath = (char*)alloca(sizeof(char) * size);
         join_path(libpath, PTR_AS(YogCharArray, body)->items, LIB_DIR, size);
 #undef LIB_DIR
-        s = YogString_new_str(env, libpath);
+        s = YogString_from_str(env, libpath);
         YogArray_push(env, search_path, s);
     }
     else {
@@ -1316,7 +1316,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
 #else
 #   define EXT_DIR  PREFIX "/lib/yog/" VERSION
 #endif
-        s = YogString_new_str(env, EXT_DIR);
+        s = YogString_from_str(env, EXT_DIR);
 #undef EXT_DIR
         YogArray_push(env, search_path, s);
     }

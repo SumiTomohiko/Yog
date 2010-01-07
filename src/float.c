@@ -74,7 +74,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 #   define isnan    _isnan
 #endif
     if (isnan(FLOAT_NUM(self))) {
-        s = YogString_new_str(env, "NaN");
+        s = YogString_from_str(env, "NaN");
         RETURN(env, s);
     }
 
@@ -87,7 +87,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 #endif
     remove_trailing_zero(env, buffer);
 
-    s = YogString_new_str(env, buffer);
+    s = YogString_from_str(env, buffer);
 
     RETURN(env, s);
 }

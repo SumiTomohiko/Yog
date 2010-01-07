@@ -14,7 +14,7 @@ YogMisc_eval_source(YogEnv* env, YogVal obj, const char* src)
     YogVal code = YUNDEF;
     PUSH_LOCALS3(env, s, stmts, code);
 
-    s = YogString_new_str(env, src);
+    s = YogString_from_str(env, src);
     stmts = YogParser_parse(env, s);
     code = YogCompiler_compile_package(env, "builtin", stmts);
     YogEval_eval_package(env, obj, code);

@@ -52,8 +52,9 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        line = line.replace("(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)", "(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)")
-                        line = line.replace("SAVE_ARGS4(env, self, args, kw, block)", "SAVE_ARGS5(env, self, pkg, args, kw, block)")
+                        line = line.replace("YogString_new_size", "YogString_from_size")
+                        line = line.replace("YogString_new_range", "YogString_from_range")
+                        line = line.replace("YogString_new_str", "YogString_from_str")
                         out.write(line)
             move(tmp, path)
 

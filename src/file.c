@@ -130,7 +130,7 @@ readline(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     if (FGETS == NULL) {
         YogError_raise_EOFError(env, "end of file reached");
     }
-    line = YogString_new_str(env, buffer);
+    line = YogString_from_str(env, buffer);
 
     while (buffer[strlen(buffer) - 1] != '\n') {
         if (FGETS == NULL) {

@@ -139,7 +139,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     klass = PTR_AS(YogBasicObj, self)->klass;
     ID name = PTR_AS(YogClass, klass)->name;
     name_str = YogVM_id2name(env, env->vm, name);
-    s = YogString_new_format(env, "<%s %08x%08x>", STRING_CSTR(name_str), PTR_AS(YogBasicObj, self)->id_upper, PTR_AS(YogBasicObj, self)->id_lower);
+    s = YogString_from_format(env, "<%s %08x%08x>", STRING_CSTR(name_str), PTR_AS(YogBasicObj, self)->id_upper, PTR_AS(YogBasicObj, self)->id_lower);
 
     RETURN(env, s);
 }

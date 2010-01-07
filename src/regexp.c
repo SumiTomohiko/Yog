@@ -133,7 +133,7 @@ group(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     int_t begin = region->beg[index];
     int_t end = region->end[index];
     int_t size = end - begin;
-    YogVal s = YogString_new_size(env, size + 1);
+    YogVal s = YogString_from_size(env, size + 1);
     YogVal str = PTR_AS(YogMatch, self)->str;
     YogVal to_body = PTR_AS(YogString, s)->body;
     char* p = PTR_AS(YogCharArray, to_body)->items;

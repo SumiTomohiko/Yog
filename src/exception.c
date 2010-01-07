@@ -209,7 +209,7 @@ init_SystemCallError(YogEnv* env, YogVal self, int errno_)
     YogVal msg = YUNDEF;
     PUSH_LOCAL(env, msg);
 
-    msg = YogString_new_str(env, strerror(errno_));
+    msg = YogString_from_str(env, strerror(errno_));
     init_YogException(env, self, msg);
     PTR_AS(SystemCallError, self)->errno_ = errno_;
 

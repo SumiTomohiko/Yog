@@ -182,7 +182,7 @@ argv2args(YogEnv* env, uint_t argc, char** argv)
     args = YogArray_new(env);
     uint_t i;
     for (i = 0; i < argc; i++) {
-        s = YogString_new_str(env, argv[i]);
+        s = YogString_from_str(env, argv[i]);
         YogArray_push(env, args, s);
     }
 

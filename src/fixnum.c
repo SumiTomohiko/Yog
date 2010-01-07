@@ -38,7 +38,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogGetArgs_parse_args(env, "to_s", params, args, kw);
     CHECK_SELF_TYPE(env, self);
 
-    retval = YogString_new_format(env, "%d", VAL2INT(self));
+    retval = YogString_from_format(env, "%d", VAL2INT(self));
 
     RETURN(env, retval);
 }
