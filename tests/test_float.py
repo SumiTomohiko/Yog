@@ -50,7 +50,7 @@ puts(3.141592 + 2.71828183)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#\+
-TypeError: unsupported operand type\(s\) for \+: 'Float' and 'Bool'
+TypeError: unsupported operand type\(s\) for \+: Float and Bool
 """, stderr)
 
         self._test("""
@@ -63,7 +63,7 @@ puts(3.1415926535 + true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#\+
-TypeError: unsupported operand type\(s\) for \+: 'Float' and 'Nil'
+TypeError: unsupported operand type\(s\) for \+: Float and Nil
 """, stderr)
 
         self._test("""
@@ -76,7 +76,7 @@ puts(3.1415926535 + nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#\+
-TypeError: unsupported operand type\(s\) for \+: 'Float' and 'Symbol'
+TypeError: unsupported operand type\(s\) for \+: Float and Symbol
 """, stderr)
 
         self._test("""
@@ -112,7 +112,7 @@ puts(3.141592 - 2.71828183)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#-
-TypeError: unsupported operand type\(s\) for -: 'Float' and 'Bool'
+TypeError: unsupported operand type\(s\) for -: Float and Bool
 """, stderr)
 
         self._test("""
@@ -125,7 +125,7 @@ puts(3.1415926535 - true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#-
-TypeError: unsupported operand type\(s\) for -: 'Float' and 'Nil'
+TypeError: unsupported operand type\(s\) for -: Float and Nil
 """, stderr)
 
         self._test("""
@@ -138,7 +138,7 @@ puts(3.1415926535 - nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#-
-TypeError: unsupported operand type\(s\) for -: 'Float' and 'Symbol'
+TypeError: unsupported operand type\(s\) for -: Float and Symbol
 """, stderr)
 
         self._test("""
@@ -176,7 +176,7 @@ puts(3.141592 * 2.71828183)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#\*
-TypeError: unsupported operand type\(s\) for \*: 'Float' and 'Bool'
+TypeError: unsupported operand type\(s\) for \*: Float and Bool
 """, stderr)
 
         self._test("""
@@ -189,7 +189,7 @@ puts(3.1415926535 * true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#\*
-TypeError: unsupported operand type\(s\) for \*: 'Float' and 'Nil'
+TypeError: unsupported operand type\(s\) for \*: Float and Nil
 """, stderr)
 
         self._test("""
@@ -202,7 +202,7 @@ puts(3.1415926535 * nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#\*
-TypeError: unsupported operand type\(s\) for \*: 'Float' and 'Symbol'
+TypeError: unsupported operand type\(s\) for \*: Float and Symbol
 """, stderr)
 
         self._test("""
@@ -236,7 +236,7 @@ puts(3.141592 / 2.71828183)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#/
-TypeError: unsupported operand type\(s\) for /: 'Float' and 'Bool'
+TypeError: unsupported operand type\(s\) for /: Float and Bool
 """, stderr)
 
         self._test("""
@@ -249,7 +249,7 @@ puts(3.1415926535 / true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#/
-TypeError: unsupported operand type\(s\) for /: 'Float' and 'Nil'
+TypeError: unsupported operand type\(s\) for /: Float and Nil
 """, stderr)
 
         self._test("""
@@ -262,7 +262,7 @@ puts(3.1415926535 / nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#/
-TypeError: unsupported operand type\(s\) for /: 'Float' and 'Symbol'
+TypeError: unsupported operand type\(s\) for /: Float and Symbol
 """, stderr)
 
         self._test("""
@@ -296,7 +296,7 @@ puts(3.141592 // 2.71828183)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#//
-TypeError: unsupported operand type\(s\) for //: 'Float' and 'Bool'
+TypeError: unsupported operand type\(s\) for //: Float and Bool
 """, stderr)
 
         self._test("""
@@ -309,7 +309,7 @@ puts(3.1415926535 // true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#//
-TypeError: unsupported operand type\(s\) for //: 'Float' and 'Nil'
+TypeError: unsupported operand type\(s\) for //: Float and Nil
 """, stderr)
 
         self._test("""
@@ -322,7 +322,7 @@ puts(3.1415926535 // nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Float#//
-TypeError: unsupported operand type\(s\) for //: 'Float' and 'Symbol'
+TypeError: unsupported operand type\(s\) for //: Float and Symbol
 """, stderr)
 
         self._test("""

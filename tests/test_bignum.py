@@ -38,7 +38,7 @@ print(4611686018427387904 + 3.1415926535)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\+
-TypeError: unsupported operand type\(s\) for \+: 'Bignum' and 'Bool'
+TypeError: unsupported operand type\(s\) for \+: Bignum and Bool
 """, stderr)
 
         self._test("""
@@ -51,7 +51,7 @@ puts(4611686018427387904 + true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\+
-TypeError: unsupported operand type\(s\) for \+: 'Bignum' and 'Nil'
+TypeError: unsupported operand type\(s\) for \+: Bignum and Nil
 """, stderr)
 
         self._test("""
@@ -64,7 +64,7 @@ puts(4611686018427387904 + nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\+
-TypeError: unsupported operand type\(s\) for \+: 'Bignum' and 'Symbol'
+TypeError: unsupported operand type\(s\) for \+: Bignum and Symbol
 """, stderr)
 
         self._test("""
@@ -121,7 +121,7 @@ print(4611686018427387904 - 3.1415926535)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#-
-TypeError: unsupported operand type\(s\) for -: 'Bignum' and 'Bool'
+TypeError: unsupported operand type\(s\) for -: Bignum and Bool
 """, stderr)
 
         self._test("""
@@ -134,7 +134,7 @@ puts(4611686018427387904 - true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#-
-TypeError: unsupported operand type\(s\) for -: 'Bignum' and 'Nil'
+TypeError: unsupported operand type\(s\) for -: Bignum and Nil
 """, stderr)
 
         self._test("""
@@ -147,7 +147,7 @@ puts(4611686018427387904 - nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#-
-TypeError: unsupported operand type\(s\) for -: 'Bignum' and 'Symbol'
+TypeError: unsupported operand type\(s\) for -: Bignum and Symbol
 """, stderr)
 
         self._test("""
@@ -183,7 +183,7 @@ print(4611686018427387904 * 3.1415926535)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\*
-TypeError: unsupported operand type\(s\) for \*: 'Bignum' and 'Bool'
+TypeError: unsupported operand type\(s\) for \*: Bignum and Bool
 """, stderr)
 
         self._test("""
@@ -196,7 +196,7 @@ puts(4611686018427387904 * true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\*
-TypeError: unsupported operand type\(s\) for \*: 'Bignum' and 'Nil'
+TypeError: unsupported operand type\(s\) for \*: Bignum and Nil
 """, stderr)
 
         self._test("""
@@ -209,7 +209,7 @@ puts(4611686018427387904 * nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#\*
-TypeError: unsupported operand type\(s\) for \*: 'Bignum' and 'Symbol'
+TypeError: unsupported operand type\(s\) for \*: Bignum and Symbol
 """, stderr)
 
         self._test("""
@@ -247,7 +247,7 @@ puts(4611686018427387904 / 9223372036854775808)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#/
-TypeError: unsupported operand type\(s\) for /: 'Bignum' and 'Bool'
+TypeError: unsupported operand type\(s\) for /: Bignum and Bool
 """, stderr)
 
         self._test("""
@@ -260,7 +260,7 @@ puts(4611686018427387904 / true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#/
-TypeError: unsupported operand type\(s\) for /: 'Bignum' and 'Nil'
+TypeError: unsupported operand type\(s\) for /: Bignum and Nil
 """, stderr)
 
         self._test("""
@@ -273,7 +273,7 @@ puts(4611686018427387904 / nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#/
-TypeError: unsupported operand type\(s\) for /: 'Bignum' and 'Symbol'
+TypeError: unsupported operand type\(s\) for /: Bignum and Symbol
 """, stderr)
 
         self._test("""
@@ -349,7 +349,7 @@ puts(21267647932558653966460912964485513216 // 4611686018427387904)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#//
-TypeError: unsupported operand type\(s\) for //: 'Bignum' and 'Bool'
+TypeError: unsupported operand type\(s\) for //: Bignum and Bool
 """, stderr)
 
         self._test("""
@@ -362,7 +362,7 @@ puts(4611686018427387904 // true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#//
-TypeError: unsupported operand type\(s\) for //: 'Bignum' and 'Nil'
+TypeError: unsupported operand type\(s\) for //: Bignum and Nil
 """, stderr)
 
         self._test("""
@@ -375,7 +375,7 @@ puts(4611686018427387904 // nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Bignum#//
-TypeError: unsupported operand type\(s\) for //: 'Bignum' and 'Symbol'
+TypeError: unsupported operand type\(s\) for //: Bignum and Symbol
 """, stderr)
 
         self._test("""
@@ -468,7 +468,7 @@ puts((- 9223372036854775809) << (- 1))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Bignum#<<
-TypeError: unsupported operand type\(s\) for <<: 'Bignum' and 'String'
+TypeError: unsupported operand type\(s\) for <<: Bignum and String
 """, stderr)
 
         self._test("""
@@ -514,7 +514,7 @@ puts(4611686018427387902 >> (- 1))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Bignum#>>
-TypeError: unsupported operand type\(s\) for >>: 'Bignum' and 'String'
+TypeError: unsupported operand type\(s\) for >>: Bignum and String
 """, stderr)
 
         self._test("""
@@ -540,7 +540,7 @@ puts(4611686018427387904 | 4611686018427387904)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Bignum#\|
-TypeError: unsupported operand type\(s\) for \|: 'Bignum' and 'String'
+TypeError: unsupported operand type\(s\) for \|: Bignum and String
 """, stderr)
 
         self._test("""
@@ -580,7 +580,7 @@ puts(4611686018427387904 & 4611686018427387904)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Bignum#&
-TypeError: unsupported operand type\(s\) for &: 'Bignum' and 'String'
+TypeError: unsupported operand type\(s\) for &: Bignum and String
 """, stderr)
 
         self._test("""
@@ -613,7 +613,7 @@ puts(4611686018427387904 ^ 9223372036854775808)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Bignum#\^
-TypeError: unsupported operand type\(s\) for \^: 'Bignum' and 'String'
+TypeError: unsupported operand type\(s\) for \^: Bignum and String
 """, stderr)
 
         self._test("""
@@ -646,7 +646,7 @@ puts(4611686018427387904 % 4611686018427387905)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Bignum#%
-TypeError: unsupported operand type\(s\) for %: 'Bignum' and 'String'
+TypeError: unsupported operand type\(s\) for %: Bignum and String
 """, stderr)
 
         self._test("""
@@ -707,7 +707,7 @@ print(4611686018427387905 ** 3.1415926535)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Bignum#\*\*
-TypeError: unsupported operand type\(s\) for \*\*: 'Bignum' and 'Bool'
+TypeError: unsupported operand type\(s\) for \*\*: Bignum and Bool
 """, stderr)
 
         self._test("""

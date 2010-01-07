@@ -108,7 +108,7 @@ foo(bar: 42)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 5, in <package>
-TypeError: an unexpected keyword argument 'bar'
+TypeError: an unexpected keyword argument "bar"
 """, stderr)
 
         self._test("""

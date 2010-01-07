@@ -124,7 +124,7 @@ inst load_global
     }
     if (IS_UNDEF(val)) {
         YogVal name = YogVM_id2name(env, env->vm, id);
-        YogError_raise_NameError(env, "name '%s' is not defined", STRING_CSTR(name));
+        YogError_raise_NameError(env, "name \"%s\" is not defined", STRING_CSTR(name));
     }
 }
 
@@ -139,7 +139,7 @@ inst load_name
     }
     if (IS_UNDEF(val)) {
         YogVal name = YogVM_id2name(env, env->vm, id);
-        YogError_raise_NameError(env, "name '%s' is not defined", STRING_CSTR(name));
+        YogError_raise_NameError(env, "name \"%s\" is not defined", STRING_CSTR(name));
     }
 }
 
@@ -489,7 +489,7 @@ inst store_attr
         else {
             ID id = PTR_AS(YogClass, class_of_obj)->name;
             YogVal class_name = YogVM_id2name(env, env->vm, id);
-            YogError_raise_AttributeError(env, "can't set attribute to '%s' object", STRING_CSTR(class_name));
+            YogError_raise_AttributeError(env, "can't set attribute to %s object", STRING_CSTR(class_name));
         }
     }
     else if (has_attrs) {
@@ -504,7 +504,7 @@ inst store_attr
         YogVM* vm = env->vm;
         class_name = YogVM_id2name(env, vm, id);
         attr_name = YogVM_id2name(env, vm, name);
-        YogError_raise_AttributeError(env, "%s object has no attribute '%s'", STRING_CSTR(class_name), STRING_CSTR(attr_name));
+        YogError_raise_AttributeError(env, "%s object has no attribute \"%s\"", STRING_CSTR(class_name), STRING_CSTR(attr_name));
 
         POP_LOCALS(env);
     }

@@ -25,7 +25,7 @@ puts(26)
 >>> >>> """, stderr="""Traceback (most recent call last):
   File \"__main__\", line 1, in <package>
   File builtin, in String#+
-TypeError: can't convert 'Fixnum' object to string implicitly
+TypeError: can't convert Fixnum object to string implicitly
 """, stdin="""puts(\"foo\" + \"bar\")
 puts(\"foo\" + 42)
 """)
@@ -34,11 +34,11 @@ puts(\"foo\" + 42)
         self._test(stdout=">>> >>> >>> ", stderr="""Traceback (most recent call last):
   File \"__main__\", line 1, in <package>
   File builtin, in String#+
-TypeError: can't convert 'Fixnum' object to string implicitly
+TypeError: can't convert Fixnum object to string implicitly
 Traceback (most recent call last):
   File \"__main__\", line 1, in <package>
   File builtin, in String#+
-TypeError: can't convert 'Fixnum' object to string implicitly
+TypeError: can't convert Fixnum object to string implicitly
 """, stdin="""puts(\"foo\" + 42)
 puts(\"foo\" + 42)
 """)

@@ -234,7 +234,7 @@ YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const ch
 #if defined(_MSC_VER)
 #   define snprintf(buffer, size, fmt, arg)    sprintf(buffer, fmt, arg)
 #endif
-    snprintf(buffer, array_sizeof(buffer), "unsupported operand type(s) for %s: '%%s' and '%%s'", escaped_opname);
+    snprintf(buffer, array_sizeof(buffer), "unsupported operand type(s) for %s: %%s and %%s", escaped_opname);
     raise_TypeError(env, buffer, left, right);
 }
 

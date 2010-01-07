@@ -307,7 +307,7 @@ read_number(YogEnv* env, YogVal lexer, BOOL (*is_valid_char)(char))
             c = NEXTC();
             if (c == '_') {
                 print_current_position(env, lexer);
-                YogError_raise_SyntaxError(env, "trailing `_' in number");
+                YogError_raise_SyntaxError(env, "trailing \"_\" in number");
             }
             else if (!is_valid_char(c)) {
                 print_current_position(env, lexer);

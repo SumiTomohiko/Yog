@@ -37,7 +37,7 @@ test_package5.foo()""", """42
             m = match(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in import_package
-ImportError: no package named 'foo'
+ImportError: no package named "foo"
 """, stderr)
             assert m is not None
 

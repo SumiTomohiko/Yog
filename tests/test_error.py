@@ -27,7 +27,7 @@ puts("xx" * 536870912)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-NameError: name 'foo' is not defined
+NameError: name "foo" is not defined
 """, stderr)
 
         self._test("""
@@ -39,7 +39,7 @@ foo
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 6, in <package>
   File "[^"]+", line 3, in foo
-NameError: name 'bar' is not defined
+NameError: name "bar" is not defined
 """, stderr)
 
         self._test("""

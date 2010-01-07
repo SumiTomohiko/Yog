@@ -111,7 +111,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         }
         if (!IS_PTR(kw)) {
             YogVal name = YogVM_id2name(env, env->vm, id);
-            YogError_raise_TypeError(env, "an unexpected keyword argument '%s'", STRING_CSTR(name));
+            YogError_raise_TypeError(env, "an unexpected keyword argument \"%s\"", STRING_CSTR(name));
         }
         YogDict_set(env, kw, name, kwargs[2 * i + 1]);
     }

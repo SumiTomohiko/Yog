@@ -140,7 +140,7 @@ puts(0b0_0_1_0_1_0_1_0)
 puts(0b0010__1010)
 """, stderr="""puts(0b0010__1010)
             ^
-SyntaxError: trailing `_' in number
+SyntaxError: trailing \"_\" in number
 """)
 
     def test_binary_literal40(self):
@@ -202,7 +202,7 @@ puts(0d4_2)
 puts(0d4__2)
 """, stderr="""puts(0d4__2)
          ^
-SyntaxError: trailing `_' in number
+SyntaxError: trailing \"_\" in number
 """)
 
     def test_digit_literal40(self):
@@ -264,7 +264,7 @@ puts(0o4_2)
 puts(0o4__2)
 """, stderr="""puts(0o4__2)
          ^
-SyntaxError: trailing `_' in number
+SyntaxError: trailing \"_\" in number
 """)
 
     def test_octet_literal40(self):
@@ -350,7 +350,7 @@ puts(0x4_2)
 puts(0x4__2)
 """, stderr="""puts(0x4__2)
          ^
-SyntaxError: trailing `_' in number
+SyntaxError: trailing \"_\" in number
 """)
 
     def test_hex_literal100(self):
@@ -432,7 +432,7 @@ puts(1 + 4611686018427387904)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\+
-TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Object'
+TypeError: unsupported operand type\(s\) for \+: Fixnum and Object
 """, stderr)
 
         self._test("""
@@ -445,7 +445,7 @@ puts(42 + Object.new())
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\+
-TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Nil'
+TypeError: unsupported operand type\(s\) for \+: Fixnum and Nil
 """, stderr)
 
         self._test("""
@@ -458,7 +458,7 @@ puts(42 + nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\+
-TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Bool'
+TypeError: unsupported operand type\(s\) for \+: Fixnum and Bool
 """, stderr)
 
         self._test("""
@@ -471,7 +471,7 @@ puts(42 + true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\+
-TypeError: unsupported operand type\(s\) for \+: 'Fixnum' and 'Symbol'
+TypeError: unsupported operand type\(s\) for \+: Fixnum and Symbol
 """, stderr)
 
         self._test("""
@@ -532,7 +532,7 @@ puts(- 42 - 3.141592)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#-
-TypeError: unsupported operand type\(s\) for -: 'Fixnum' and 'Object'
+TypeError: unsupported operand type\(s\) for -: Fixnum and Object
 """, stderr)
 
         self._test("""
@@ -545,7 +545,7 @@ puts(42 - Object.new())
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#-
-TypeError: unsupported operand type\(s\) for -: 'Fixnum' and 'Nil'
+TypeError: unsupported operand type\(s\) for -: Fixnum and Nil
 """, stderr)
 
         self._test("""
@@ -558,7 +558,7 @@ puts(42 - nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#-
-TypeError: unsupported operand type\(s\) for -: 'Fixnum' and 'Bool'
+TypeError: unsupported operand type\(s\) for -: Fixnum and Bool
 """, stderr)
 
         self._test("""
@@ -571,7 +571,7 @@ puts(42 - true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#-
-TypeError: unsupported operand type\(s\) for -: 'Fixnum' and 'Symbol'
+TypeError: unsupported operand type\(s\) for -: Fixnum and Symbol
 """, stderr)
 
         self._test("""
@@ -619,7 +619,7 @@ puts(2 * 3.1415926535)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\*
-TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Bool'
+TypeError: unsupported operand type\(s\) for \*: Fixnum and Bool
 """, stderr)
 
         self._test("""
@@ -632,7 +632,7 @@ puts(42 * true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\*
-TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Nil'
+TypeError: unsupported operand type\(s\) for \*: Fixnum and Nil
 """, stderr)
 
         self._test("""
@@ -645,7 +645,7 @@ puts(42 * nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\*
-TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Object'
+TypeError: unsupported operand type\(s\) for \*: Fixnum and Object
 """, stderr)
 
         self._test("""
@@ -658,7 +658,7 @@ puts(42 * Object.new())
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#\*
-TypeError: unsupported operand type\(s\) for \*: 'Fixnum' and 'Symbol'
+TypeError: unsupported operand type\(s\) for \*: Fixnum and Symbol
 """, stderr)
 
         self._test("""
@@ -702,7 +702,7 @@ puts(2305843009213693952 / 4611686018427387904)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#/
-TypeError: unsupported operand type\(s\) for /: 'Fixnum' and 'Bool'
+TypeError: unsupported operand type\(s\) for /: Fixnum and Bool
 """, stderr)
 
         self._test("""
@@ -715,7 +715,7 @@ puts(42 / true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#/
-TypeError: unsupported operand type\(s\) for /: 'Fixnum' and 'Nil'
+TypeError: unsupported operand type\(s\) for /: Fixnum and Nil
 """, stderr)
 
         self._test("""
@@ -785,7 +785,7 @@ puts(2305843009213693952 // 4611686018427387904)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#//
-TypeError: unsupported operand type\(s\) for //: 'Fixnum' and 'Bool'
+TypeError: unsupported operand type\(s\) for //: Fixnum and Bool
 """, stderr)
 
         self._test("""
@@ -798,7 +798,7 @@ puts(42 // true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Fixnum#//
-TypeError: unsupported operand type\(s\) for //: 'Fixnum' and 'Nil'
+TypeError: unsupported operand type\(s\) for //: Fixnum and Nil
 """, stderr)
 
         self._test("""
@@ -891,7 +891,7 @@ puts((- 3) << (- 1))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#<<
-TypeError: unsupported operand type\(s\) for <<: 'Fixnum' and 'String'
+TypeError: unsupported operand type\(s\) for <<: Fixnum and String
 """, stderr)
 
         self._test("""
@@ -965,7 +965,7 @@ puts((- 3) >> 1)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#>>
-TypeError: unsupported operand type\(s\) for >>: 'Fixnum' and 'String'
+TypeError: unsupported operand type\(s\) for >>: Fixnum and String
 """, stderr)
 
         self._test("""
@@ -991,7 +991,7 @@ puts(42 | 4611686018427387904)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#\|
-TypeError: unsupported operand type\(s\) for \|: 'Fixnum' and 'String'
+TypeError: unsupported operand type\(s\) for \|: Fixnum and String
 """, stderr)
 
         self._test("""
@@ -1017,7 +1017,7 @@ puts(42 & 4611686018427387904)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#&
-TypeError: unsupported operand type\(s\) for &: 'Fixnum' and 'String'
+TypeError: unsupported operand type\(s\) for &: Fixnum and String
 """, stderr)
 
         self._test("""
@@ -1041,7 +1041,7 @@ puts(42 ^ 1073741824)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#\^
-TypeError: unsupported operand type\(s\) for \^: 'Fixnum' and 'String'
+TypeError: unsupported operand type\(s\) for \^: Fixnum and String
 """, stderr)
 
         self._test("""
@@ -1067,7 +1067,7 @@ puts(42 % 4611686018427387904)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#%
-TypeError: unsupported operand type\(s\) for %: 'Fixnum' and 'String'
+TypeError: unsupported operand type\(s\) for %: Fixnum and String
 """, stderr)
 
         self._test("""
@@ -1193,7 +1193,7 @@ print(0 ** (- 1))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in Fixnum#\*\*
-TypeError: unsupported operand type\(s\) for \*\*: 'Fixnum' and 'Bool'
+TypeError: unsupported operand type\(s\) for \*\*: Fixnum and Bool
 """, stderr)
 
         self._test("""

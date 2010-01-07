@@ -1048,7 +1048,7 @@ import(YogEnv* env, YogVM* vm, const char* path_head, const char* pkg_name)
         }
     }
 
-    YogError_raise_ImportError(env, "no package named '%s'", pkg_name);
+    YogError_raise_ImportError(env, "no package named \"%s\"", pkg_name);
 
     /* NOTREACHED */
     RETURN(env, YUNDEF);

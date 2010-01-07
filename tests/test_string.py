@@ -99,7 +99,7 @@ puts("foo" + "bar" + "baz")
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\+
-TypeError: can't convert 'Fixnum' object to string implicitly
+TypeError: can't convert Fixnum object to string implicitly
 """, stderr)
 
         self._test("""
@@ -111,7 +111,7 @@ puts("foo" + 42)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\+
-TypeError: can't convert 'Bool' object to string implicitly
+TypeError: can't convert Bool object to string implicitly
 """, stderr)
 
         self._test("""
@@ -123,7 +123,7 @@ puts("foo" + true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\+
-TypeError: can't convert 'Symbol' object to string implicitly
+TypeError: can't convert Symbol object to string implicitly
 """, stderr)
 
         self._test("""
@@ -135,7 +135,7 @@ puts("foo" + :bar)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\+
-TypeError: can't convert 'Nil' object to string implicitly
+TypeError: can't convert Nil object to string implicitly
 """, stderr)
 
         self._test("""
@@ -147,7 +147,7 @@ puts("foo" + nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\+
-TypeError: can't convert 'Float' object to string implicitly
+TypeError: can't convert Float object to string implicitly
 """, stderr)
 
         self._test("""
@@ -350,7 +350,7 @@ s[\"foo\"] = \"bar\"""", stderr=test_stderr)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
-TypeError: can't multiply string by non-Fixnum of type 'String'
+TypeError: can't multiply string by non-Fixnum of type String
 """, stderr)
 
         self._test("""
@@ -368,7 +368,7 @@ puts("foo" * 2)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
-TypeError: can't multiply string by non-Fixnum of type 'Bool'
+TypeError: can't multiply string by non-Fixnum of type Bool
 """, stderr)
 
         self._test("""
@@ -380,7 +380,7 @@ puts("foo" * true)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
-TypeError: can't multiply string by non-Fixnum of type 'Symbol'
+TypeError: can't multiply string by non-Fixnum of type Symbol
 """, stderr)
 
         self._test("""
@@ -392,7 +392,7 @@ puts("foo" * :bar)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
-TypeError: can't multiply string by non-Fixnum of type 'Nil'
+TypeError: can't multiply string by non-Fixnum of type Nil
 """, stderr)
 
         self._test("""
@@ -404,7 +404,7 @@ puts("foo" * nil)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
-TypeError: can't multiply string by non-Fixnum of type 'Float'
+TypeError: can't multiply string by non-Fixnum of type Float
 """, stderr)
 
         self._test("""

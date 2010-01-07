@@ -163,7 +163,7 @@ YogVal_set_attr(YogEnv* env, YogVal obj, ID name, YogVal val)
         ID id = PTR_AS(YogClass, klass)->name;
         s1 = YogVM_id2name(env, env->vm, id);
         s2 = YogVM_id2name(env, env->vm, name);
-        YogError_raise_AttributeError(env, "%s object has no attribute '%s'", STRING_CSTR(s1), STRING_CSTR(s2));
+        YogError_raise_AttributeError(env, "%s object has no attribute \"%s\"", STRING_CSTR(s1), STRING_CSTR(s2));
     }
 
     YogObj_set_attr_id(env, obj, name, val);

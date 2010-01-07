@@ -37,7 +37,7 @@ puts(o.foo)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-AttributeError: String object has no attribute 'bar'
+AttributeError: String object has no attribute "bar"
 """, stderr)
 
         self._test("""
