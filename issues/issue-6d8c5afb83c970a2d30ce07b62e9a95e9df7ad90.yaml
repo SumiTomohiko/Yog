@@ -1,0 +1,24 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Raise exception at passing a non-array object for variable arguments
+desc: |-
+  ::
+  
+    >>> def foo(*args)
+    ... end
+    >>> foo(*42)
+    => nil
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-08 06:15:36.098460 Z
+references: []
+
+id: 6d8c5afb83c970a2d30ce07b62e9a95e9df7ad90
+log_events: 
+- - 2010-01-08 06:15:36.516037 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

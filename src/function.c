@@ -34,10 +34,6 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     if (0 < arg_kwargc) {
         uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
         uint_t index = argc;
-        uint_t blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
-        if (0 < blockargc) {
-            index++;
-        }
         uint_t varargc = PTR_AS(YogArgInfo, arg_info)->varargc;
         if (0 < varargc) {
             index++;
@@ -53,10 +49,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         }
         YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->varargc == 1, "Too many arguments.");
         uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
-        uint_t blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
-        uint_t index = argc + blockargc;
         array = YogArray_new(env);
-        PTR_AS(YogValArray, args)->items[args_offset + index] = array;
+        PTR_AS(YogValArray, args)->items[args_offset + argc] = array;
         for (i = PTR_AS(YogArgInfo, arg_info)->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }
@@ -145,9 +139,14 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
 
     if (IS_PTR(blockarg)) {
         YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->blockargc == 1, "Can't accept block argument.");
-        YogVal* items = PTR_AS(YogValArray, args)->items;
         uint_t index = PTR_AS(YogArgInfo, arg_info)->argc;
-        items[args_offset + index] = blockarg;
+        if (0 < PTR_AS(YogArgInfo, arg_info)->varargc) {
+            index++;
+        }
+        if (0 < PTR_AS(YogArgInfo, arg_info)->kwargc) {
+            index++;
+        }
+        PTR_AS(YogValArray, args)->items[args_offset + index] = blockarg;
     }
 
     RETURN_VOID(env);

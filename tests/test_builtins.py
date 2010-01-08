@@ -35,12 +35,6 @@ print(ARGV[1])
 print(ARGV[2])
 """, "bar", yog_option=["foo", "bar"])
 
-    def test_partial0(self):
-        self._test("""
-f = partial(print, 42)
-f()
-""", "42")
-
     def test_bind0(self):
         def test_stdout(stdout):
             m = match(r"<Foo [0-9A-Za-z]+", stdout)

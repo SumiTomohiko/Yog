@@ -48,14 +48,6 @@ print_error(YogEnv* env, const char* type, const char* filename, uint_t lineno, 
 } while (0)
 
 void
-YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...)
-{
-    PRINT_ERROR(env, "BUG", filename, lineno, fmt);
-    fflush(stderr);
-    abort();
-}
-
-void
 YogError_warn(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...)
 {
     PRINT_ERROR(env, "WARN", filename, lineno, fmt);
@@ -78,6 +70,28 @@ YogError_raise(YogEnv* env, YogVal exc)
 
     PTR_AS(YogThread, thread)->jmp_val = jmp_val;
     longjmp(PTR_AS(YogThread, thread)->jmp_buf_list->buf, JMP_RAISE);
+}
+
+void
+YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...)
+{
+    SAVE_LOCALS(env);
+    YogVal msg = YUNDEF;
+    YogVal exc = YUNDEF;
+    PUSH_LOCALS2(env, msg, exc);
+
+    char buf1[4096];
+    snprintf(buf1, array_sizeof(buf1), "%s:%u: %s", filename, lineno, fmt);
+    char buf2[4096];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(buf2, array_sizeof(buf2), buf1, ap);
+    va_end(ap);
+
+    msg = YogString_from_str(env, buf2);
+    exc = YogEval_call_method1(env, env->vm->eException, "new", msg);
+    RESTORE_LOCALS(env);
+    YogError_raise(env, exc);
 }
 
 static void

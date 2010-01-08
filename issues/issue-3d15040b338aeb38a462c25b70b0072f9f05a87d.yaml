@@ -5,8 +5,8 @@ type: :task
 component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2009-08-28 11:28:57.430425 Z
 references: []
 
@@ -20,3 +20,24 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - assigned to release 0.0.4 from unassigned
   - ""
+- - 2010-01-08 07:07:43.452049 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - commented
+  - |-
+    Current layout:
+    
+      * positional arguments
+      * block argument
+      * *args
+      * **kw
+    
+    Must be:
+    
+      * positional arguments
+      * *args
+      * **kw
+      * block argument
+- - 2010-01-08 12:56:17.259056 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
+  - The patch for the issue b65be3ee762bb498323cf4ba648acb5b555e1047 fixed this.

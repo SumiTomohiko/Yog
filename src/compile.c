@@ -807,11 +807,12 @@ scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal d
     YogVal callee = YUNDEF;
     YogVal args = YUNDEF;
     YogVal blockarg = YUNDEF;
-    PUSH_LOCALS5(env, posargs, kwargs, callee, args, blockarg);
     YogVal child_node = YUNDEF;
     YogVal vararg = YUNDEF;
     YogVal varkwarg = YUNDEF;
-    PUSH_LOCALS3(env, child_node, vararg, varkwarg);
+    PUSH_LOCALS8(env, posargs, kwargs, callee, args, blockarg, child_node, vararg, varkwarg);
+    YogVal and_block = YUNDEF;
+    PUSH_LOCAL(env, and_block);
 
     callee = NODE(node)->u.func_call.callee;
     visit_node(env, visitor, callee, data);
@@ -848,6 +849,11 @@ scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal d
         varkwarg = PTR_AS(YogNode, args)->u.args.varkwarg;
         if (IS_PTR(varkwarg)) {
             visit_node(env, visitor, varkwarg, data);
+        }
+
+        and_block = PTR_AS(YogNode, args)->u.args.block;
+        if (IS_PTR(and_block)) {
+            visit_node(env, visitor, and_block, data);
         }
     }
 
@@ -1421,13 +1427,14 @@ compile_call_func(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, ui
     YogVal args = YUNDEF;
     YogVal blockarg = YUNDEF;
     YogVal child_node = YUNDEF;
-    PUSH_LOCALS5(env, posargs, kwargs, args, blockarg, child_node);
     YogVal vararg = YUNDEF;
     YogVal varkwarg = YUNDEF;
     YogVal label_break_start = YUNDEF;
+    PUSH_LOCALS8(env, posargs, kwargs, args, blockarg, child_node, vararg, varkwarg, label_break_start);
     YogVal label_break_end = YUNDEF;
     YogVal exc_tbl_entry = YUNDEF;
-    PUSH_LOCALS5(env, vararg, varkwarg, label_break_start, label_break_end, exc_tbl_entry);
+    YogVal and_block = YUNDEF;
+    PUSH_LOCALS3(env, label_break_end, exc_tbl_entry, and_block);
 
     blockarg = NODE(node)->u.func_call.blockarg;
     if (IS_PTR(blockarg)) {
@@ -1438,6 +1445,14 @@ compile_call_func(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, ui
     uint_t kwargc = 0;
     args = NODE(node)->u.func_call.args;
     if (IS_PTR(args)) {
+        and_block = PTR_AS(YogNode, args)->u.args.block;
+        if (IS_PTR(and_block)) {
+            if (IS_PTR(blockarg)) {
+                YogError_raise_SyntaxError(env, "block argument repeated");
+            }
+            visit_node(env, visitor, and_block, data);
+        }
+
         varkwarg = PTR_AS(YogNode, args)->u.args.varkwarg;
         if (IS_PTR(varkwarg)) {
             visit_node(env, visitor, varkwarg, data);
@@ -1493,7 +1508,7 @@ compile_call_func(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, ui
     }
 
     uint8_t blockargc = 0;
-    if (IS_PTR(blockarg)) {
+    if (IS_PTR(blockarg) || IS_PTR(and_block)) {
         blockargc = 1;
     }
 

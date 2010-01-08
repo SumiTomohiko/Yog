@@ -179,7 +179,7 @@ hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 static YogVal
 not_equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    YOG_ASSERT(env, IS_PTR(self), "self is not pointer (0x%08x)", self);
+    YOG_ASSERT(env, !IS_UNDEF(self), "self is not pointer (0x%08x)", self);
 
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal b = YUNDEF;

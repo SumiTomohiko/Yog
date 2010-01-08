@@ -275,6 +275,16 @@ foo() do [n]
 end
 """, "42")
 
+    def test_block20(self):
+        self._test("""
+def foo(&block)
+end
+
+foo(&nil) do
+end
+""", stderr="""SyntaxError: block argument repeated
+""")
+
     def test_default0(self):
         self._test("""
 def foo(bar=42)

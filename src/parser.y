@@ -37,6 +37,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(args.kwargs);
         KEEP(args.vararg);
         KEEP(args.varkwarg);
+        KEEP(args.block);
         break;
     case NODE_ARRAY:
         KEEP(array.elems);
@@ -455,9 +456,9 @@ Attr_new(YogEnv* env, uint_t lineno, YogVal obj, ID name)
 }
 
 static YogVal
-Args_new(YogEnv* env, uint_t lineno, YogVal posargs, YogVal kwargs, YogVal vararg, YogVal varkwarg)
+Args_new(YogEnv* env, uint_t lineno, YogVal posargs, YogVal kwargs, YogVal vararg, YogVal varkwarg, YogVal block)
 {
-    SAVE_ARGS4(env, posargs, kwargs, vararg, varkwarg);
+    SAVE_ARGS5(env, posargs, kwargs, vararg, varkwarg, block);
     YogVal args = YUNDEF;
     PUSH_LOCAL(env, args);
 
@@ -466,6 +467,7 @@ Args_new(YogEnv* env, uint_t lineno, YogVal posargs, YogVal kwargs, YogVal varar
     NODE(args)->u.args.kwargs = kwargs;
     NODE(args)->u.args.vararg = vararg;
     NODE(args)->u.args.varkwarg = varkwarg;
+    NODE(args)->u.args.block = block;
 
     RETURN(env, args);
 }
@@ -484,7 +486,7 @@ FuncCall_new2(YogEnv* env, uint_t lineno, YogVal recv, ID name, YogVal arg)
     posargs = YogArray_new(env);
     YogArray_push(env, posargs, arg);
 
-    args = Args_new(env, lineno, posargs, YNIL, YNIL, YNIL);
+    args = Args_new(env, lineno, posargs, YNIL, YNIL, YNIL, YNIL);
 
     YogVal node = FuncCall_new(env, lineno, postfix, args, YNIL);
 
@@ -1157,64 +1159,132 @@ param_with_default(A) ::= NAME(B) param_default(C). {
     A = Param_new(env, NODE_PARAM, lineno, id, C);
 }
 
-args(A) ::= /* empty */. {
-    A = YNIL;
-}
-args(A) ::= posargs(B). {
+args(A) ::= posargs(B) COMMA kwargs(C) COMMA vararg(D) COMMA varkwarg(E) COMMA and_block(F). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, B, YNIL, YNIL, YNIL);
+    A = Args_new(env, lineno, B, C, D, E, F);
 }
-args(A) ::= posargs(B) COMMA kwargs(C). {
+args(A) ::= posargs(B) COMMA kwargs(C) COMMA vararg(D) COMMA varkwarg(E). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, B, C, YNIL, YNIL);
+    A = Args_new(env, lineno, B, C, D, E, YNIL);
+}
+args(A) ::= posargs(B) COMMA kwargs(C) COMMA vararg(D) COMMA and_block(E). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, C, D, YNIL, E);
 }
 args(A) ::= posargs(B) COMMA kwargs(C) COMMA vararg(D). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, B, C, D, YNIL);
+    A = Args_new(env, lineno, B, C, D, YNIL, YNIL);
 }
-args(A) ::= posargs(B) COMMA kwargs(C) COMMA vararg(D) COMMA varkwarg (E). {
+args(A) ::= posargs(B) COMMA kwargs(C) COMMA varkwarg(D) COMMA and_block(E). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, B, C, D, E);
+    A = Args_new(env, lineno, B, C, YNIL, D, E);
 }
-args(A) ::= posargs(B) COMMA vararg(C). {
+args(A) ::= posargs(B) COMMA kwargs(C) COMMA varkwarg(D). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, B, YNIL, C, YNIL);
+    A = Args_new(env, lineno, B, C, YNIL, D, YNIL);
+}
+args(A) ::= posargs(B) COMMA kwargs(C) COMMA and_block(D). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, C, YNIL, YNIL, D);
+}
+args(A) ::= posargs(B) COMMA kwargs(C). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, C, YNIL, YNIL, YNIL);
+}
+args(A) ::= posargs(B) COMMA vararg(C) COMMA varkwarg(D) COMMA and_block(E). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, YNIL, C, D, E);
 }
 args(A) ::= posargs(B) COMMA vararg(C) COMMA varkwarg(D). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, B, YNIL, C, D);
+    A = Args_new(env, lineno, B, YNIL, C, D, YNIL);
+}
+args(A) ::= posargs(B) COMMA vararg(C) COMMA and_block(D). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, YNIL, C, YNIL, D);
+}
+args(A) ::= posargs(B) COMMA vararg(C). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, YNIL, C, YNIL, YNIL);
+}
+args(A) ::= posargs(B) COMMA varkwarg(C) COMMA and_block(D). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, B, YNIL, YNIL, C, D);
 }
 args(A) ::= posargs(B) COMMA varkwarg(C). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, B, YNIL, YNIL, C);
+    A = Args_new(env, lineno, B, YNIL, YNIL, C, YNIL);
 }
-args(A) ::= kwargs(B). {
+args(A) ::= posargs(B) COMMA and_block(C). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, YNIL, B, YNIL, YNIL);
+    A = Args_new(env, lineno, B, YNIL, YNIL, YNIL, C);
 }
-args(A) ::= kwargs(B) COMMA vararg(C). {
+args(A) ::= posargs(B). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, YNIL, B, C, YNIL);
+    A = Args_new(env, lineno, B, YNIL, YNIL, YNIL, YNIL);
+}
+args(A) ::= kwargs(B) COMMA vararg(C) COMMA varkwarg(D) COMMA and_block(E). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, YNIL, B, C, D, E);
 }
 args(A) ::= kwargs(B) COMMA vararg(C) COMMA varkwarg(D). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, YNIL, B, C, D);
+    A = Args_new(env, lineno, YNIL, B, C, D, YNIL);
+}
+args(A) ::= kwargs(B) COMMA vararg(C) COMMA and_block(D). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, YNIL, B, C, YNIL, D);
+}
+args(A) ::= kwargs(B) COMMA vararg(C). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, YNIL, B, C, YNIL, YNIL);
+}
+args(A) ::= kwargs(B) COMMA varkwarg(C) COMMA and_block(D). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, YNIL, B, YNIL, C, D);
 }
 args(A) ::= kwargs(B) COMMA varkwarg(C). {
     uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
-    A = Args_new(env, lineno, YNIL, B, YNIL, C);
+    A = Args_new(env, lineno, YNIL, B, YNIL, C, YNIL);
 }
-args(A) ::= vararg(B). {
+args(A) ::= kwargs(B) COMMA and_block(C). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, YNIL, B, YNIL, YNIL, C);
+}
+args(A) ::= kwargs(B). {
+    uint_t lineno = NODE_LINENO(YogArray_at(env, B, 0));
+    A = Args_new(env, lineno, YNIL, B, YNIL, YNIL, YNIL);
+}
+args(A) ::= vararg(B) COMMA varkwarg(C) COMMA and_block(D). {
     uint_t lineno = NODE_LINENO(B);
-    A = Args_new(env, lineno, YNIL, YNIL, B, YNIL);
+    A = Args_new(env, lineno, YNIL, YNIL, B, C, D);
 }
 args(A) ::= vararg(B) COMMA varkwarg(C). {
     uint_t lineno = NODE_LINENO(B);
-    A = Args_new(env, lineno, YNIL, YNIL, B, C);
+    A = Args_new(env, lineno, YNIL, YNIL, B, C, YNIL);
+}
+args(A) ::= vararg(B) COMMA and_block(C). {
+    uint_t lineno = NODE_LINENO(B);
+    A = Args_new(env, lineno, YNIL, YNIL, B, YNIL, C);
+}
+args(A) ::= vararg(B). {
+    uint_t lineno = NODE_LINENO(B);
+    A = Args_new(env, lineno, YNIL, YNIL, B, YNIL, YNIL);
+}
+args(A) ::= varkwarg(B) COMMA and_block(C). {
+    uint_t lineno = NODE_LINENO(B);
+    A = Args_new(env, lineno, YNIL, YNIL, YNIL, B, C);
 }
 args(A) ::= varkwarg(B). {
     uint_t lineno = NODE_LINENO(B);
-    A = Args_new(env, lineno, YNIL, YNIL, YNIL, B);
+    A = Args_new(env, lineno, YNIL, YNIL, YNIL, B, YNIL);
+}
+args(A) ::= and_block(B). {
+    uint_t lineno = NODE_LINENO(B);
+    A = Args_new(env, lineno, YNIL, YNIL, YNIL, YNIL, B);
+}
+args(A) ::= /* empty */. {
+    A = YNIL;
 }
 
 varkwarg(A) ::= STAR_STAR expr(B). {
@@ -1622,6 +1692,10 @@ blockarg_params_opt(A) ::= /* empty */. {
     A = YNIL;
 }
 blockarg_params_opt(A) ::= LBRACKET params(B) RBRACKET. {
+    A = B;
+}
+
+and_block(A) ::= AND expr(B). {
     A = B;
 }
 

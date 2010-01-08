@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove args_offset argument from fill_args in src/function.c
+desc: always 1.
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-08 07:24:29.335482 Z
+references: []
+
+id: 6a735b70466a79433b63e3a8dfe618abad34a4c2
+log_events: 
+- - 2010-01-08 07:24:29.884311 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
