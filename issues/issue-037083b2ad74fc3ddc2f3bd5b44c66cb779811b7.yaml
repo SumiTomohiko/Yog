@@ -9,8 +9,8 @@ type: :task
 component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :paused
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2010-01-03 09:30:57.513024 Z
 references: []
 
@@ -28,3 +28,11 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - changed status from in_progress to paused
   - ""
+- - 2010-01-08 13:16:19.985430 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - changed status from paused to in_progress
+  - ""
+- - 2010-01-08 15:33:48.605532 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
+  - New style comment is (^^...^^).

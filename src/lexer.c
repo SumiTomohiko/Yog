@@ -25,8 +25,6 @@
 #include "yog/yog.h"
 #include "parser.h"
 
-#define COMMENT_CHAR    '$'
-
 #if defined(_MSC_VER)
 #   define snprintf _snprintf
 #endif
@@ -379,41 +377,48 @@ skip_comment(YogEnv* env, YogVal lexer)
 
     uint_t depth = 1;
     do {
-        uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
-        YogVal line = PTR_AS(YogLexer, lexer)->line;
-        uint_t size = YogString_size(env, line);
-        if ((2 <= size) && (next_index < size - 1)) {
-            char c = NEXTC();
-            if (c == '(') {
-                char c2 = NEXTC();
-                if (c2 == COMMENT_CHAR) {
+        char c = NEXTC();
+        if (c == '^') {
+            char c2 = NEXTC();
+            if (c2 == '^') {
+                char c3 = NEXTC();
+                if (c3 == ')') {
+                    depth--;
+                    if (depth == 0) {
+                        RETURN_VOID(env);
+                    }
+                }
+                else {
+                    PUSHBACK(c3);
+                    PUSHBACK(c2);
+                }
+            }
+            else {
+                PUSHBACK(c2);
+            }
+        }
+        else if (c == '(') {
+            char c2 = NEXTC();
+            if (c2 == '^') {
+                char c3 = NEXTC();
+                if (c3 == '^') {
                     depth++;
                 }
                 else {
+                    PUSHBACK(c3);
                     PUSHBACK(c2);
                 }
-                continue;
             }
-            if (c != COMMENT_CHAR) {
-                continue;
-            }
-            char c2 = NEXTC();
-            if (c2 != ')') {
+            else {
                 PUSHBACK(c2);
-                continue;
             }
-            depth--;
-            if (0 < depth) {
-                continue;
+        }
+        else if (c == '\0') {
+            if (!readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
+                YogError_raise_SyntaxError(env, "EOF while scanning comment");
             }
-            RETURN_VOID(env);
+            PTR_AS(YogLexer, lexer)->next_index = 0;
         }
-
-        if (!readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
-            YogError_raise_SyntaxError(env, "EOF while scanning comment");
-        }
-
-        PTR_AS(YogLexer, lexer)->next_index = 0;
     } while (1);
 
     /* NOTREACHED */
@@ -630,15 +635,18 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
     case '(':
         {
             char c2 = NEXTC();
-            if (c2 == COMMENT_CHAR) {
-                skip_comment(env, lexer);
-                RETURN(env, YogLexer_next_token(env, lexer, filename, token));
+            if (c2 == '^') {
+                char c3 = NEXTC();
+                if (c3 == '^') {
+                    skip_comment(env, lexer);
+                    BOOL b = YogLexer_next_token(env, lexer, filename, token);
+                    RETURN(env, b);
+                }
+                PUSHBACK(c3);
             }
-            else {
-                PUSHBACK(c2);
-                SET_STATE(LS_EXPR);
-                RETURN_TOKEN(TK_LPAR);
-            }
+            PUSHBACK(c2);
+            SET_STATE(LS_EXPR);
+            RETURN_TOKEN(TK_LPAR);
         }
         break;
     case ')':
