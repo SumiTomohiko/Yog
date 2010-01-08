@@ -14,8 +14,9 @@
 typedef YogVal (*Body)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 
 static void
-fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, uint_t argc, YogVal args, uint_t args_offset)
+fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, uint_t argc, YogVal args)
 {
+#define POS_OFFSET  1
     SAVE_ARGS5(env, arg_info, blockarg, vararg, varkwarg, args);
     YogVal array = YUNDEF;
     YogVal kw = YUNDEF;
@@ -28,7 +29,7 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     uint_t arg_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
     uint_t size = arg_argc + arg_blockargc;
     for (i = 0; i < size; i++) {
-        PTR_AS(YogValArray, args)->items[args_offset + i] = YUNDEF;
+        PTR_AS(YogValArray, args)->items[POS_OFFSET + i] = YUNDEF;
     }
     uint_t arg_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
     if (0 < arg_kwargc) {
@@ -39,18 +40,18 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             index++;
         }
         kw = YogDict_new(env);
-        PTR_AS(YogValArray, args)->items[args_offset + index] = kw;
+        PTR_AS(YogValArray, args)->items[POS_OFFSET + index] = kw;
     }
 
     if (arg_argc < posargc) {
         for (i = 0; i < PTR_AS(YogArgInfo, arg_info)->argc; i++) {
             YogVal* items = PTR_AS(YogValArray, args)->items;
-            items[args_offset + i] = posargs[i];
+            items[POS_OFFSET + i] = posargs[i];
         }
         YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->varargc == 1, "Too many arguments.");
         uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
         array = YogArray_new(env);
-        PTR_AS(YogValArray, args)->items[args_offset + argc] = array;
+        PTR_AS(YogValArray, args)->items[POS_OFFSET + argc] = array;
         for (i = PTR_AS(YogArgInfo, arg_info)->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }
@@ -61,19 +62,19 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     else {
         for (i = 0; i < posargc; i++) {
             YogVal* items = PTR_AS(YogValArray, args)->items;
-            items[args_offset + i] = posargs[i];
+            items[POS_OFFSET + i] = posargs[i];
         }
         if (IS_PTR(vararg) && (BASIC_OBJ_TYPE(vararg) == TYPE_ARRAY)) {
             YogVal* items = PTR_AS(YogValArray, args)->items;
             for (i = posargc; i < arg_argc; i++) {
                 YogVal val = YogArray_at(env, vararg, i - posargc);
-                items[args_offset + i] = val;
+                items[POS_OFFSET + i] = val;
             }
         }
         if (0 < PTR_AS(YogArgInfo, arg_info)->varargc) {
             va = YogArray_new(env);
             YogVal* items = PTR_AS(YogValArray, args)->items;
-            items[args_offset + posargc] = va;
+            items[POS_OFFSET + posargc] = va;
 
             if (IS_PTR(vararg) && (BASIC_OBJ_TYPE(vararg) == TYPE_ARRAY)) {
                 uint_t size = YogArray_size(env, vararg);
@@ -94,9 +95,9 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             ID argname = PTR_AS(ID, argnames)[j];
             if (argname == id) {
                 YogVal* items = PTR_AS(YogValArray, args)->items;
-                YOG_ASSERT(env, IS_UNDEF(items[args_offset + j]), "Argument specified twice.");
+                YOG_ASSERT(env, IS_UNDEF(items[POS_OFFSET + j]), "Argument specified twice.");
                 YogVal val = kwargs[2 * i + 1];
-                items[args_offset + j] = val;
+                items[POS_OFFSET + j] = val;
                 break;
             }
         }
@@ -124,8 +125,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
                 ID argname = PTR_AS(ID, argnames)[i];
                 if (argname == name) {
                     YogVal* items = PTR_AS(YogValArray, args)->items;
-                    YOG_ASSERT(env, IS_UNDEF(items[args_offset + i]), "argument specified twice.");
-                    items[args_offset + i] = value;
+                    YOG_ASSERT(env, IS_UNDEF(items[POS_OFFSET + i]), "argument specified twice.");
+                    items[POS_OFFSET + i] = value;
                     break;
                 }
             }
@@ -146,10 +147,11 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         if (0 < PTR_AS(YogArgInfo, arg_info)->kwargc) {
             index++;
         }
-        PTR_AS(YogValArray, args)->items[args_offset + index] = blockarg;
+        PTR_AS(YogValArray, args)->items[POS_OFFSET + index] = blockarg;
     }
 
     RETURN_VOID(env);
+#undef POS_OFFSET
 }
 
 static void
@@ -213,7 +215,7 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
         uint_t code_varargc = PTR_AS(YogArgInfo, arg_info)->varargc;
         uint_t code_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
         uint_t argc = code_argc + code_blockargc + code_varargc + code_kwargc;
-        fill_args(env, arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, vars, 1);
+        fill_args(env, arg_info, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, argc, vars);
     }
 
     frame = YogMethodFrame_new(env);
