@@ -11,10 +11,13 @@ elseif exists("b:current_syntax")
   finish
 endif
 
+syn match     yogConstant     "\%(\%([.@$]\@<!\.\)\@<!\<\|::\)\_s*\zs\u\w*\%(\>\|::\)\@=\%(\s*(\)\@!"
 syn keyword   yogStatement    break next do end except finally return try global
-syn keyword   yogStatement    def class nextgroup=yogFunction skipwhite raise
-syn keyword   yogStatement    module nextgroup=yogFunction nonlocal
+syn keyword   yogStatement    def nextgroup=yogFunction skipwhite
+syn keyword   YogStatement    class nextgroup=yogClass skipwhite raise
+syn keyword   yogStatement    module nextgroup=yogClass nonlocal
 syn match     yogFunction	    "[a-zA-Z_][a-zA-Z0-9_]*?\?!\?" contained
+syn match     yogClass        "[^[:space:];#<]\+" contained contains=yogConstant
 syn keyword   yogRepeat       while
 syn keyword   yogConditional  if elif else
 syn keyword   yogOperator	    && \|\| !
@@ -69,22 +72,24 @@ if version >= 508 || !exists("did_yog_syn_inits")
   endif
 
   " The default methods for highlighting.  Can be overridden later
-  HiLink yogStatement     Statement
-  HiLink yogFunction      Function
+  HiLink yogBuiltin       Number
+  HiLink yogClass         Define
+  HiLink yogComment       Comment
   HiLink yogConditional   Conditional
-  HiLink yogRepeat        Repeat
-  HiLink yogString        String
-  HiLink yogRawString     String
+  HiLink yogConstant      Type
+  HiLink yogDecorator     Define
   HiLink yogEscape        Special
+  HiLink yogException     Exception
+  HiLink yogFunction      Function
+  HiLink yogNumber        Number
   HiLink yogOperator      Operator
   HiLink yogPreCondit     PreCondit
-  HiLink yogComment       Comment
-  HiLink yogTodo          Todo
-  HiLink yogDecorator     Define
-  HiLink yogNumber        Number
-  HiLink yogBuiltin       Number
-  HiLink yogException     Exception
+  HiLink yogRawString     String
+  HiLink yogRepeat        Repeat
   HiLink yogSpaceError    Error
+  HiLink yogStatement     Statement
+  HiLink yogString        String
+  HiLink yogTodo          Todo
 
   delcommand HiLink
 endif
