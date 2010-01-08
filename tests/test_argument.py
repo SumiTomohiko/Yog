@@ -204,6 +204,30 @@ foo(26, *quux)
 """, """42
 """)
 
+    def test_variable_parameter60(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+TypeError: argument after \* must be an Array, not Fixnum
+""", stderr)
+
+        self._test("""
+print(*42)
+""", stderr=test_stderr)
+
+    def test_variable_parameter70(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 4, in <package>
+TypeError: argument after \* must be an Array, not Fixnum
+""", stderr)
+
+        self._test("""
+def foo()
+end
+print(*42)
+""", stderr=test_stderr)
+
     def test_variable_keyword_parameter0(self):
         self._test("""
 def foo()
@@ -252,6 +276,30 @@ end
 foo(**{ :bar => 42, :quux => 26})
 """, """26
 """)
+
+    def test_variable_keyword_parameter40(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+TypeError: argument after \*\* must be a Dict, not Fixnum
+""", stderr)
+
+        self._test("""
+print(**42)
+""", stderr=test_stderr)
+
+    def test_variable_parameter70(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 4, in <package>
+TypeError: argument after \*\* must be a Dict, not Fixnum
+""", stderr)
+
+        self._test("""
+def foo()
+end
+print(**42)
+""", stderr=test_stderr)
 
     def test_block0(self):
         self._test("""

@@ -14,6 +14,39 @@
 typedef YogVal (*Body)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 
 static void
+raise_TypeError(YogEnv* env, const char* mark, const char* needed, YogVal actual)
+{
+    SAVE_ARG(env, actual);
+    YogVal klass = YUNDEF;
+    YogVal s = YUNDEF;
+    PUSH_LOCALS2(env, klass, s);
+
+    klass = YogVal_get_class(env, actual);
+    ID name = PTR_AS(YogClass, klass)->name;
+    s = YogVM_id2name(env, env->vm, name);
+    YogError_raise_TypeError(env, "argument after %s must be %s, not %s", mark, needed, STRING_CSTR(s));
+
+    /* NOTREACHED */
+    RETURN_VOID(env);
+}
+
+static void
+raise_TypeError_for_vararg(YogEnv* env, YogVal actual)
+{
+    SAVE_ARG(env, actual);
+    raise_TypeError(env, "*", "an Array", actual);
+    RETURN_VOID(env);
+}
+
+static void
+raise_TypeError_for_varkwarg(YogEnv* env, YogVal actual)
+{
+    SAVE_ARG(env, actual);
+    raise_TypeError(env, "**", "a Dict", actual);
+    RETURN_VOID(env);
+}
+
+static void
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, uint_t argc, YogVal args)
 {
 #define POS_OFFSET  1
@@ -55,7 +88,12 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         for (i = PTR_AS(YogArgInfo, arg_info)->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }
-        if (IS_PTR(vararg) && (BASIC_OBJ_TYPE(vararg) == TYPE_ARRAY)) {
+        if (IS_UNDEF(vararg)) {
+        }
+        else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
+            raise_TypeError_for_vararg(env, vararg);
+        }
+        else {
             YogArray_extend(env, array, vararg);
         }
     }
@@ -64,7 +102,12 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             YogVal* items = PTR_AS(YogValArray, args)->items;
             items[POS_OFFSET + i] = posargs[i];
         }
-        if (IS_PTR(vararg) && (BASIC_OBJ_TYPE(vararg) == TYPE_ARRAY)) {
+        if (IS_UNDEF(vararg)) {
+        }
+        else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
+            raise_TypeError_for_vararg(env, vararg);
+        }
+        else {
             YogVal* items = PTR_AS(YogValArray, args)->items;
             for (i = posargc; i < arg_argc; i++) {
                 YogVal val = YogArray_at(env, vararg, i - posargc);
@@ -76,7 +119,12 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
             YogVal* items = PTR_AS(YogValArray, args)->items;
             items[POS_OFFSET + posargc] = va;
 
-            if (IS_PTR(vararg) && (BASIC_OBJ_TYPE(vararg) == TYPE_ARRAY)) {
+            if (IS_UNDEF(vararg)) {
+            }
+            else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
+                raise_TypeError_for_vararg(env, vararg);
+            }
+            else {
                 uint_t size = YogArray_size(env, vararg);
                 for (i = arg_argc - posargc; i < size; i++) {
                     YogVal val = YogArray_at(env, vararg, i);
@@ -111,7 +159,12 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         YogDict_set(env, kw, name, kwargs[2 * i + 1]);
     }
 
-    if (IS_PTR(varkwarg) && (BASIC_OBJ_TYPE(varkwarg) == TYPE_DICT)) {
+    if (IS_UNDEF(varkwarg)) {
+    }
+    else if (!IS_PTR(varkwarg) || (BASIC_OBJ_TYPE(varkwarg) != TYPE_DICT)) {
+        raise_TypeError_for_varkwarg(env, varkwarg);
+    }
+    else {
         iter = YogDict_get_iterator(env, varkwarg);
         while (YogDictIterator_next(env, iter)) {
             YogVal key = YogDictIterator_current_key(env, iter);
@@ -355,7 +408,7 @@ create_keyword_argument(YogEnv* env, uint8_t kwargc, YogVal kwargs[], YogVal var
     YogVal value = YUNDEF;
     PUSH_LOCALS3(env, kw, key, value);
 
-    if ((kwargc == 0) && !IS_PTR(varkwarg)) {
+    if ((kwargc == 0) && IS_UNDEF(varkwarg)) {
         RETURN(env, YUNDEF);
     }
 
@@ -366,7 +419,12 @@ create_keyword_argument(YogEnv* env, uint8_t kwargc, YogVal kwargs[], YogVal var
         value = kwargs[i + 1];
         YogDict_set(env, kw, key, value);
     }
-    if (IS_PTR(varkwarg)) {
+    if (IS_UNDEF(varkwarg)) {
+    }
+    else if (!IS_PTR(varkwarg) || (BASIC_OBJ_TYPE(varkwarg) != TYPE_DICT)) {
+        raise_TypeError_for_varkwarg(env, varkwarg);
+    }
+    else {
         YogDict_add(env, kw, varkwarg);
     }
 
@@ -386,7 +444,12 @@ create_positional_argument(YogEnv* env, uint8_t posargc, YogVal posargs[], YogVa
         YogArray_push(env, args, posargs[i]);
     }
 
-    if (IS_PTR(vararg) && (BASIC_OBJ_TYPE(vararg) == TYPE_ARRAY)) {
+    if (IS_UNDEF(vararg)) {
+    }
+    else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
+        raise_TypeError_for_vararg(env, vararg);
+    }
+    else {
         YogArray_add(env, args, vararg);
     }
 
@@ -741,7 +804,7 @@ YogCallable_call(YogEnv* env, YogVal self, uint_t argc, YogVal* args)
     Caller call = PTR_AS(YogClass, klass)->call;
     YOG_ASSERT(env, call != NULL, "uncallable");
 
-    retval = call(env, self, argc, args, 0, NULL, YNIL, YNIL, YNIL);
+    retval = call(env, self, argc, args, 0, NULL, YUNDEF, YUNDEF, YUNDEF);
 
     RETURN(env, retval);
 }
@@ -772,7 +835,7 @@ YogCallable_call2(YogEnv* env, YogVal self, uint_t argc, YogVal* args, YogVal bl
     Caller call = PTR_AS(YogClass, klass)->call;
     YOG_ASSERT(env, call != NULL, "uncallable");
 
-    retval = call(env, self, argc, args, 0, NULL, YNIL, YNIL, block);
+    retval = call(env, self, argc, args, 0, NULL, YUNDEF, YUNDEF, block);
 
     RETURN(env, retval);
 }

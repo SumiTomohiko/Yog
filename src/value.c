@@ -184,7 +184,9 @@ YogVal_to_signed_type(YogEnv* env, YogVal self, const char* name)
     }
 
     YogError_raise_TypeError(env, "%s must be a Fixnum or Bignum", name);
+
     /* NOTREACHED */
+    RETURN(env, 0);
 }
 
 /**
