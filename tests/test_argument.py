@@ -333,6 +333,20 @@ end
 """, stderr="""SyntaxError: block argument repeated
 """)
 
+    def test_block30(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 4, in <package>
+ArgumentError: can't accept a block argument
+""", stderr)
+
+        self._test("""
+def foo()
+end
+foo() do
+end
+""", stderr=test_stderr)
+
     def test_default0(self):
         self._test("""
 def foo(bar=42)

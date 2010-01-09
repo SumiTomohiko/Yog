@@ -192,7 +192,9 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     }
 
     if (IS_PTR(blockarg)) {
-        YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->blockargc == 1, "Can't accept block argument.");
+        if (PTR_AS(YogArgInfo, arg_info)->blockargc != 1) {
+            YogError_raise_ArgumentError(env, "can't accept a block argument");
+        }
         uint_t index = PTR_AS(YogArgInfo, arg_info)->argc;
         if (0 < PTR_AS(YogArgInfo, arg_info)->varargc) {
             index++;
