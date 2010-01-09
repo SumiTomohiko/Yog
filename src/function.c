@@ -97,7 +97,8 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
     YogVal val = YUNDEF;
     YogVal code = YUNDEF;
     YogVal arg_info = YUNDEF;
-    PUSH_LOCALS7(env, array, kw, va, iter, val, code, arg_info);
+    YogVal name = YUNDEF;
+    PUSH_LOCALS8(env, array, kw, va, iter, val, code, arg_info, name);
     YOG_ASSERT(env, IS_PTR(self), "invalid self (0x%x)", self);
     YOG_ASSERT(env, BASIC_OBJ_TYPE(self) == TYPE_FUNCTION, "invalid type self (0x%x)", BASIC_OBJ_TYPE(self));
 
@@ -130,7 +131,10 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
             YogVal* items = PTR_AS(YogValArray, args)->items;
             items[POS_OFFSET + i] = posargs[i];
         }
-        YOG_ASSERT(env, PTR_AS(YogArgInfo, arg_info)->varargc == 1, "Too many arguments.");
+        if (PTR_AS(YogArgInfo, arg_info)->varargc != 1) {
+            name = YogVM_id2name(env, env->vm, PTR_AS(YogFunction, self)->name);
+            YogError_raise_ArgumentError(env, "%s() takes %u argument(s) (%u given)", STRING_CSTR(name), arg_argc, posargc);
+        }
         uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
         array = YogArray_new(env);
         PTR_AS(YogValArray, args)->items[POS_OFFSET + argc] = array;
