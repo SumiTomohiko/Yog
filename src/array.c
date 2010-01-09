@@ -29,7 +29,7 @@ YogVal
 YogValArray_at(YogEnv* env, YogVal array, uint_t n)
 {
     uint_t size = PTR_AS(YogValArray, array)->size;
-    YOG_ASSERT(env, n < size, "Index exceed array body size.");
+    YOG_ASSERT(env, n < size, "index exceed array body size (%u, %u)", n, size);
     return PTR_AS(YogValArray, array)->items[n];
 }
 
@@ -37,7 +37,9 @@ YogVal
 YogArray_at(YogEnv* env, YogVal array, uint_t n)
 {
     size_t size = PTR_AS(YogArray, array)->size;
-    YOG_ASSERT(env, n < size, "Index exceed array size.");
+    if (size <= n) {
+        YogError_raise_IndexError(env, "array index out of range");
+    }
 
     return YogValArray_at(env, PTR_AS(YogArray, array)->body, n);
 }

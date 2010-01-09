@@ -424,6 +424,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     KEEP(eArgumentError);
     KEEP(eAttributeError);
+    KEEP(eBugError);
     KEEP(eEOFError);
     KEEP(eException);
     KEEP(eImportError);
@@ -520,6 +521,7 @@ YogVM_init(YogVM* vm)
 
     INIT(eArgumentError);
     INIT(eAttributeError);
+    INIT(eBugError);
     INIT(eEOFError);
     INIT(eException);
     INIT(eImportError);

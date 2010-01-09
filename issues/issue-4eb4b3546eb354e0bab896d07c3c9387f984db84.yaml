@@ -10,8 +10,8 @@ type: :bugfix
 component: core
 release: 0.0.4
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2010-01-01 04:01:00.749187 Z
 references: []
 
@@ -24,4 +24,8 @@ log_events:
 - - 2010-01-01 04:11:46.083685 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - assigned to release 0.0.4 from unassigned
+  - ""
+- - 2010-01-09 02:38:48.023082 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
   - ""

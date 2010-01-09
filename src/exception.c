@@ -312,6 +312,7 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     EXCEPTION_NEW(eArgumentError, "ArgumentError");
     EXCEPTION_NEW(eAttributeError, "AttributeError");
+    EXCEPTION_NEW(eBugError, "BugError");
     EXCEPTION_NEW(eEOFError, "EOFError");
     EXCEPTION_NEW(eImportError, "ImportError");
     EXCEPTION_NEW(eIndexError, "IndexError");

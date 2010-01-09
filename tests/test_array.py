@@ -168,4 +168,16 @@ foo[0] = 26
 print(foo[0])
 """, "26")
 
+    def test_IndexError0(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in Array#\[\]
+IndexError: array index out of range
+""", stderr)
+
+        self._test("""
+[][0]
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

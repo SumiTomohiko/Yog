@@ -89,7 +89,7 @@ YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, 
     va_end(ap);
 
     msg = YogString_from_str(env, buf2);
-    exc = YogEval_call_method1(env, env->vm->eException, "new", msg);
+    exc = YogEval_call_method1(env, env->vm->eBugError, "new", msg);
     RESTORE_LOCALS(env);
     YogError_raise(env, exc);
 }
