@@ -119,6 +119,11 @@ TypeError: group must be a Fixnum, String or nil, not Array
 (\"foo\" =~ /foo/).group([])
 """, stderr=test_stderr)
 
+    def test_match_group70(self):
+        self._test("""
+print((\"foobar\" =~ /(?<baz>foo)(?<baz>bar)/).group(\"baz\"))
+""", "[\"foo\", \"bar\"]")
+
     def test_match_start05(self):
         self._test("""
 m = \"foo\" =~ /foo/
@@ -174,6 +179,11 @@ m = \"foo\" =~ /foo/
 puts(m.start(42))
 """, stderr=test_stderr)
 
+    def test_match_start60(self):
+        self._test("""
+print((\"foobar\" =~ /(?<baz>foo)(?<baz>bar)/).start(\"baz\"))
+""", "[0, 3]")
+
     def test_match_end05(self):
         self._test("""
 m = \"foo\" =~ /foo/
@@ -228,5 +238,10 @@ IndexError: no such group
 m = \"foo\" =~ /foo/
 puts(m.end(42))
 """, stderr=test_stderr)
+
+    def test_match_end60(self):
+        self._test("""
+print((\"foobar\" =~ /(?<baz>foo)(?<baz>bar)/).end(\"baz\"))
+""", "[3, 6]")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

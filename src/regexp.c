@@ -85,136 +85,289 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
 }
 
 static int_t
-group2index(YogEnv* env, YogMatch* match, YogVal arg)
+group2indexes(YogEnv* env, YogVal self, YogVal group, int_t** num_list)
 {
-    SAVE_ARG(env, arg);
+    YOG_ASSERT(env, IS_PTR(group), "invalid group (0x%x)", group);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(group) == TYPE_STRING, "invalid group type (0x%x)", BASIC_OBJ_TYPE(group));
+    YOG_ASSERT(env, num_list != NULL, "num_list is NULL");
+    SAVE_ARG(env, group);
+    YogVal regexp = YUNDEF;
+    PUSH_LOCAL(env, regexp);
+
+    regexp = PTR_AS(YogMatch, self)->regexp;
+    OnigRegex onig_regexp = PTR_AS(YogRegexp, regexp)->onig_regexp;
+    OnigUChar* name_begin = (OnigUChar*)STRING_CSTR(group);
+    OnigUChar* name_end = name_begin + STRING_SIZE(group) - 1;
+    int_t r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, num_list);
+    if (r < 1) {
+        YogError_raise_IndexError(env, "no such group");
+    }
+
+    RETURN(env, r);
+}
+
+static void
+raise_invalid_group(YogEnv* env, YogVal group)
+{
+    SAVE_ARG(env, group);
     YogVal klass = YUNDEF;
     YogVal name = YUNDEF;
     PUSH_LOCALS2(env, klass, name);
 
-    if (IS_PTR(arg) && (BASIC_OBJ_TYPE(arg) == TYPE_STRING)) {
-        YogString* s = PTR_AS(YogString, arg);
-        OnigRegex onig_regexp = PTR_AS(YogRegexp, match->regexp)->onig_regexp;
-        YogVal body = s->body;
-        OnigUChar* name_begin = (OnigUChar*)PTR_AS(YogCharArray, body)->items;
-        OnigUChar* name_end = name_begin + STRING_SIZE(arg) - 1;
-        int_t* num_list = NULL;
-        int_t r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, &num_list);
-        YOG_ASSERT(env, r == 1, "TODO: index error?");
-        RETURN(env, num_list[0]);
-    }
-    else if (IS_FIXNUM(arg)) {
-        RETURN(env, VAL2INT(arg));
-    }
-    else if (IS_NIL(arg)) {
-        RETURN(env, 0);
-    }
-
-    klass = YogVal_get_class(env, arg);
+    klass = YogVal_get_class(env, group);
     name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
     YogError_raise_TypeError(env, "group must be a Fixnum, String or nil, not %s", STRING_CSTR(name));
 
     /* NOTREACHED */
-    RETURN(env, SIGNED_MIN);
+    RETURN_VOID(env);
+}
+
+static YogVal
+group_num(YogEnv* env, YogVal self, int_t group)
+{
+    SAVE_ARG(env, self);
+    YogVal s = YUNDEF;
+    YogVal str = YUNDEF;
+    YogVal to_body = YUNDEF;
+    YogVal from_body = YUNDEF;
+    PUSH_LOCALS4(env, s, str, to_body, from_body);
+
+    OnigRegion* region = PTR_AS(YogMatch, self)->onig_region;
+    if ((group < 0) || (region->num_regs <= group)) {
+        YogError_raise_IndexError(env, "no such group");
+    }
+    int_t begin = region->beg[group];
+    int_t end = region->end[group];
+    int_t size = end - begin;
+    s = YogString_from_size(env, size + 1);
+    str = PTR_AS(YogMatch, self)->str;
+    memcpy(STRING_CSTR(s), &STRING_CSTR(str)[begin], size);
+    STRING_CSTR(s)[size] = '\0';
+    STRING_SIZE(s) = size + 1;
+
+    RETURN(env, s);
+}
+
+static YogVal
+group_str(YogEnv* env, YogVal self, YogVal group)
+{
+    YOG_ASSERT(env, IS_PTR(group), "invalid group (0x%x)", group);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(group) == TYPE_STRING, "invalid group type (0x%x)", group);
+    SAVE_ARGS2(env, self, group);
+    YogVal s = YUNDEF;
+    YogVal a = YUNDEF;
+    PUSH_LOCALS2(env, s, a);
+
+    int_t* num_list;
+    int_t num = group2indexes(env, self, group, &num_list);
+    if (num == 1) {
+        s = group_num(env, self, num_list[0]);
+        RETURN(env, s);
+    }
+
+    YOG_ASSERT(env, 1 < num, "invalid num (0x%x)", num);
+    a = YogArray_of_size(env, num);
+    uint_t i;
+    for (i = 0; i < num; i++) {
+        s = group_num(env, self, num_list[i]);
+        YogArray_push(env, a, s);
+    }
+
+    RETURN(env, a);
 }
 
 static YogVal
 group(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal arg0 = YNIL;
-    PUSH_LOCAL(env, arg0);
+    YogVal group = YNIL;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, group, retval);
 
-    YogCArg params[] = { { "|", NULL }, { "group", &arg0 }, { NULL, NULL } };
+    YogCArg params[] = { { "|", NULL }, { "group", &group }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "group", params, args, kw);
     CHECK_SELF_TYPE(env, self);
 
-    YogMatch* match = PTR_AS(YogMatch, self);
-    int_t index = group2index(env, match, arg0);
-
-    OnigRegion* region = match->onig_region;
-    if ((index < 0) || (region->num_regs <= index)) {
-        YogError_raise_IndexError(env, "no such group");
+    if (IS_FIXNUM(group)) {
+        retval = group_num(env, self, VAL2INT(group));
     }
-    int_t begin = region->beg[index];
-    int_t end = region->end[index];
-    int_t size = end - begin;
-    YogVal s = YogString_from_size(env, size + 1);
-    YogVal str = PTR_AS(YogMatch, self)->str;
-    YogVal to_body = PTR_AS(YogString, s)->body;
-    char* p = PTR_AS(YogCharArray, to_body)->items;
-    YogVal from_body = PTR_AS(YogString, str)->body;
-    const char* q = &PTR_AS(YogCharArray, from_body)->items[begin];
-    memcpy(p, q, size);
-    PTR_AS(YogCharArray, to_body)->items[size] = '\0';
+    else if (IS_NIL(group)) {
+        retval = group_num(env, self, 0);
+    }
+    else if (IS_PTR(group) && (BASIC_OBJ_TYPE(group) == TYPE_STRING)) {
+        retval = group_str(env, self, group);
+    }
+    else {
+        raise_invalid_group(env, group);
+    }
 
-    RETURN(env, s);
+    RETURN(env, retval);
 }
 
 static int_t
-ptr2index(YogEnv* env, YogString* s, const char* ptr)
+ptr2index(YogEnv* env, YogVal s, const char* ptr)
 {
+    SAVE_ARG(env, s);
+    YogVal enc = YUNDEF;
+    PUSH_LOCAL(env, enc);
+
     uint_t index = 0;
-    YogVal enc = s->encoding;
-    YogVal body = s->body;
-    const char* p = PTR_AS(YogCharArray, body)->items;
+    enc = PTR_AS(YogString, s)->encoding;
+    const char* p = STRING_CSTR(s);
     while (p < ptr) {
         p += YogEncoding_mbc_size(env, enc, p);
         index++;
     }
 
-    return index;
+    RETURN(env, index);
 }
 
 static YogVal
-start(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+start_num(YogEnv* env, YogVal self, int_t group)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal arg0 = YNIL;
-    PUSH_LOCAL(env, arg0);
+    SAVE_ARG(env, self);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
 
-    YogCArg params[] = { { "|", NULL }, { "group", &arg0 }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "start", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
-    YogMatch* match = PTR_AS(YogMatch, self);
-    int_t index = group2index(env, match, arg0);
-    OnigRegion* region = match->onig_region;
-    if ((index < 0) || (region->num_regs <= index)) {
+    OnigRegion* region = PTR_AS(YogMatch, self)->onig_region;
+    if ((group < 0) || (region->num_regs <= group)) {
         YogError_raise_IndexError(env, "no such group");
     }
-    YogString* s = PTR_AS(YogString, match->str);
-    YogVal body = s->body;
-    const char* start = PTR_AS(YogCharArray, body)->items + region->beg[index];
+    s = PTR_AS(YogMatch, self)->str;
+    const char* start = STRING_CSTR(s) + region->beg[group];
     int_t n = ptr2index(env, s, start);
 
     RETURN(env, INT2VAL(n));
 }
 
 static YogVal
-end(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+start_str(YogEnv* env, YogVal self, YogVal group)
+{
+    YOG_ASSERT(env, IS_PTR(group), "invalid group (0x%x)", group);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(group) == TYPE_STRING, "invalid group type (0x%0x)", BASIC_OBJ_TYPE(group));
+    SAVE_ARGS2(env, self, group);
+    YogVal n = YUNDEF;
+    YogVal a = YUNDEF;
+    PUSH_LOCALS2(env, n, a);
+
+    int_t* num_list;
+    int_t num = group2indexes(env, self, group, &num_list);
+    if (num == 1) {
+        n = start_num(env, self, num_list[0]);
+        RETURN(env, n);
+    }
+
+    YOG_ASSERT(env, 1 < num, "invalid num (0x%x)", num);
+    a = YogArray_of_size(env, num);
+    uint_t i;
+    for (i = 0; i < num; i++) {
+        n = start_num(env, self, num_list[i]);
+        YogArray_push(env, a, n);
+    }
+
+    RETURN(env, a);
+}
+
+static YogVal
+start(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal arg0 = YNIL;
-    PUSH_LOCAL(env, arg0);
+    YogVal group = YNIL;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, group, retval);
 
-    YogCArg params[] = { { "|", NULL }, { "group", &arg0 }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "end", params, args, kw);
+    YogCArg params[] = { { "|", NULL }, { "group", &group }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "start", params, args, kw);
     CHECK_SELF_TYPE(env, self);
 
-    YogMatch* match = PTR_AS(YogMatch, self);
-    int_t index = group2index(env, match, arg0);
-    OnigRegion* region = match->onig_region;
-    if ((index < 0) || (region->num_regs <= index)) {
+    if (IS_FIXNUM(group)) {
+        retval = start_num(env, self, VAL2INT(group));
+    }
+    else if (IS_NIL(group)) {
+        retval = start_num(env, self, 0);
+    }
+    else if (IS_PTR(group) && (BASIC_OBJ_TYPE(group) == TYPE_STRING)) {
+        retval = start_str(env, self, group);
+    }
+    else {
+        raise_invalid_group(env, group);
+    }
+
+    RETURN(env, retval);
+}
+
+static YogVal
+end_num(YogEnv* env, YogVal self, int_t group)
+{
+    SAVE_ARG(env, self);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    OnigRegion* region = PTR_AS(YogMatch, self)->onig_region;
+    if ((group < 0) || (region->num_regs <= group)) {
         YogError_raise_IndexError(env, "no such group");
     }
-    YogString* s = PTR_AS(YogString, match->str);
-    YogVal body = s->body;
-    const char* p = PTR_AS(YogCharArray, body)->items;
-    const char* end = p + region->end[index] - 1;
+    s = PTR_AS(YogMatch, self)->str;
+    const char* end = STRING_CSTR(s) + region->end[group] - 1;
     int_t n = ptr2index(env, s, end) + 1;
 
     RETURN(env, INT2VAL(n));
+}
+
+static YogVal
+end_str(YogEnv* env, YogVal self, YogVal group)
+{
+    YOG_ASSERT(env, IS_PTR(group), "invalid group (0x%x)", group);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(group) == TYPE_STRING, "invalid group type (0x%0x)", BASIC_OBJ_TYPE(group));
+    SAVE_ARGS2(env, self, group);
+    YogVal n = YUNDEF;
+    YogVal a = YUNDEF;
+    PUSH_LOCALS2(env, n, a);
+
+    int_t* num_list;
+    int_t num = group2indexes(env, self, group, &num_list);
+    if (num == 1) {
+        n = end_num(env, self, num_list[0]);
+        RETURN(env, n);
+    }
+
+    YOG_ASSERT(env, 1 < num, "invalid num (0x%x)", num);
+    a = YogArray_of_size(env, num);
+    uint_t i;
+    for (i = 0; i < num; i++) {
+        n = end_num(env, self, num_list[i]);
+        YogArray_push(env, a, n);
+    }
+
+    RETURN(env, a);
+}
+
+static YogVal
+end(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal group = YNIL;
+    YogVal retval = YUNDEF;
+    PUSH_LOCALS2(env, group, retval);
+
+    YogCArg params[] = { { "|", NULL }, { "group", &group }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "end", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
+    if (IS_FIXNUM(group)) {
+        retval = end_num(env, self, VAL2INT(group));
+    }
+    else if (IS_NIL(group)) {
+        retval = end_num(env, self, 0);
+    }
+    else if (IS_PTR(group) && (BASIC_OBJ_TYPE(group) == TYPE_STRING)) {
+        retval = end_str(env, self, group);
+    }
+    else {
+        raise_invalid_group(env, group);
+    }
+
+    RETURN(env, retval);
 }
 
 void

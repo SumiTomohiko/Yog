@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rename YogString_from_size to YogString_of_size
+desc: cf. YogArray_of_size
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-09 13:55:50.690932 Z
+references: []
+
+id: 81527e61cf2f0a78bd805acc49803d6385d5ada9
+log_events: 
+- - 2010-01-09 13:55:51.411872 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
