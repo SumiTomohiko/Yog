@@ -11,6 +11,8 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+#define POS_OFFSET  1
+
 typedef YogVal (*Body)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 
 static void
@@ -47,15 +49,43 @@ raise_TypeError_for_varkwarg(YogEnv* env, YogVal actual)
 }
 
 static void
+assign_keyword_arg(YogEnv* env, YogVal formal_args, YogVal args, YogVal kw, ID name, YogVal val)
+{
+    SAVE_ARGS4(env, formal_args, args, kw, val);
+    YogVal names = YUNDEF;
+    YogVal s = YUNDEF;
+    PUSH_LOCALS2(env, names, s);
+
+    uint_t argc = PTR_AS(YogArgInfo, formal_args)->argc;
+    uint_t i;
+    for (i = 0; i < argc; i++) {
+        names = PTR_AS(YogArgInfo, formal_args)->argnames;
+        if (PTR_AS(ID, names)[i] == name) {
+            YogVal* items = PTR_AS(YogValArray, args)->items;
+            YOG_ASSERT(env, IS_UNDEF(items[POS_OFFSET + i]), "Argument specified twice.");
+            items[POS_OFFSET + i] = val;
+            RETURN_VOID(env);
+        }
+    }
+    if (!IS_PTR(kw)) {
+        s = YogVM_id2name(env, env->vm, name);
+        YogError_raise_ArgumentError(env, "an unexpected keyword argument \"%s\"", STRING_CSTR(s));
+    }
+    YogDict_set(env, kw, ID2VAL(name), val);
+
+    RETURN_VOID(env);
+}
+
+static void
 fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, uint_t argc, YogVal args)
 {
-#define POS_OFFSET  1
     SAVE_ARGS5(env, arg_info, blockarg, vararg, varkwarg, args);
     YogVal array = YUNDEF;
     YogVal kw = YUNDEF;
     YogVal va = YUNDEF;
     YogVal iter = YUNDEF;
-    PUSH_LOCALS4(env, array, kw, va, iter);
+    YogVal val = YUNDEF;
+    PUSH_LOCALS5(env, array, kw, va, iter, val);
 
     uint_t i;
     uint_t arg_argc = PTR_AS(YogArgInfo, arg_info)->argc;
@@ -136,27 +166,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
 
     for (i = 0; i < kwargc; i++) {
         YogVal name = kwargs[2 * i];
-        ID id = VAL2ID(name);
-        uint_t j;
-        for (j = 0; j < PTR_AS(YogArgInfo, arg_info)->argc; j++) {
-            YogVal argnames = PTR_AS(YogArgInfo, arg_info)->argnames;
-            ID argname = PTR_AS(ID, argnames)[j];
-            if (argname == id) {
-                YogVal* items = PTR_AS(YogValArray, args)->items;
-                YOG_ASSERT(env, IS_UNDEF(items[POS_OFFSET + j]), "Argument specified twice.");
-                YogVal val = kwargs[2 * i + 1];
-                items[POS_OFFSET + j] = val;
-                break;
-            }
-        }
-        if (j != PTR_AS(YogArgInfo, arg_info)->argc) {
-            continue;
-        }
-        if (!IS_PTR(kw)) {
-            YogVal name = YogVM_id2name(env, env->vm, id);
-            YogError_raise_TypeError(env, "an unexpected keyword argument \"%s\"", STRING_CSTR(name));
-        }
-        YogDict_set(env, kw, name, kwargs[2 * i + 1]);
+        val = kwargs[2 * i + 1];
+        assign_keyword_arg(env, arg_info, args, kw, VAL2ID(name), val);
     }
 
     if (IS_UNDEF(varkwarg)) {
@@ -169,25 +180,8 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
         while (YogDictIterator_next(env, iter)) {
             YogVal key = YogDictIterator_current_key(env, iter);
             YOG_ASSERT(env, IS_SYMBOL(key), "invalid key");
-            YogVal value = YogDictIterator_current_value(env, iter);
-
-            ID name = VAL2ID(key);
-            uint_t i;
-            for (i = 0; i < PTR_AS(YogArgInfo, arg_info)->argc; i++) {
-                YogVal argnames = PTR_AS(YogArgInfo, arg_info)->argnames;
-                ID argname = PTR_AS(ID, argnames)[i];
-                if (argname == name) {
-                    YogVal* items = PTR_AS(YogValArray, args)->items;
-                    YOG_ASSERT(env, IS_UNDEF(items[POS_OFFSET + i]), "argument specified twice.");
-                    items[POS_OFFSET + i] = value;
-                    break;
-                }
-            }
-            if (i != PTR_AS(YogArgInfo, arg_info)->argc) {
-                continue;
-            }
-            YOG_ASSERT(env, IS_PTR(kw), "no keyword parameter");
-            YogDict_set(env, kw, key, value);
+            val = YogDictIterator_current_value(env, iter);
+            assign_keyword_arg(env, arg_info, args, kw, VAL2ID(key), val);
         }
     }
 
@@ -206,7 +200,6 @@ fill_args(YogEnv* env, YogVal arg_info, uint8_t posargc, YogVal posargs[], YogVa
     }
 
     RETURN_VOID(env);
-#undef POS_OFFSET
 }
 
 static void

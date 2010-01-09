@@ -108,7 +108,7 @@ foo(bar: 42)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 5, in <package>
-TypeError: an unexpected keyword argument "bar"
+ArgumentError: an unexpected keyword argument "bar"
 """, stderr)
 
         self._test("""
@@ -116,6 +116,20 @@ def foo(*args)
 end
 
 foo(bar: 42)
+""", stderr=test_stderr)
+
+    def test_keyword_argument20(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 5, in <package>
+ArgumentError: an unexpected keyword argument "bar"
+""", stderr)
+
+        self._test("""
+def foo()
+end
+
+foo(**{ :bar => 42 })
 """, stderr=test_stderr)
 
     def test_variable_keyword_argument0(self):
