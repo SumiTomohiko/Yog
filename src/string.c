@@ -237,7 +237,7 @@ YogString_from_range(YogEnv* env, YogVal enc, const char* start, const char* end
 }
 
 YogVal
-YogString_from_size(YogEnv* env, uint_t size)
+YogString_of_size(YogEnv* env, uint_t size)
 {
     SAVE_LOCALS(env);
     YogVal string = YUNDEF;
@@ -435,7 +435,7 @@ add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     uint_t size1 = YogString_size(env, self);
     uint_t size2 = YogString_size(env, arg);
     uint_t size = size1 + size2 + 1;
-    YogVal s = YogString_from_size(env, size);
+    YogVal s = YogString_of_size(env, size);
     YogVal body = PTR_AS(YogString, s)->body;
     char* p = PTR_AS(YogCharArray, body)->items;
     YogVal self_body = PTR_AS(YogString, self)->body;
@@ -467,7 +467,7 @@ YogString_multiply(YogEnv* env, YogVal self, int_t num)
     if ((num != 0) && (needed_size / num != size)) {
         YogError_raise_ArgumentError(env, "argument too big");
     }
-    s = YogString_from_size(env, needed_size + 1);
+    s = YogString_of_size(env, needed_size + 1);
     int_t i;
     for (i = 0; i < num; i++) {
         memcpy(STRING_CSTR(s) + i * size, STRING_CSTR(self), size);
@@ -847,7 +847,7 @@ normalize_as_number(YogEnv* env, YogVal self, YogVal* normalized, int_t* base)
     PUSH_LOCAL(env, body);
 
     uint_t size = PTR_AS(YogString, self)->size;
-    *normalized = YogString_from_size(env, size + 2);
+    *normalized = YogString_of_size(env, size + 2);
     if (size == 0) {
         RETURN(env, FALSE);
     }

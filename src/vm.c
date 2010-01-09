@@ -138,7 +138,7 @@ YogVM_id2name(YogEnv* env, YogVM* vm, ID id)
     }
 
     uint_t size = PTR_AS(YogCharArray, val)->size;
-    s = YogString_from_size(env, size);
+    s = YogString_of_size(env, size);
     memcpy(STRING_CSTR(s), PTR_AS(YogCharArray, val)->items, size);
     STRING_SIZE(s) = size;
 

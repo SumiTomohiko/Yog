@@ -44,7 +44,7 @@ def replace_for_dir(dirname):
         ext = splitext(name)[1]
         if ext in exts:
             path = join(dirname, name)
-            orig = path + ".orig"
+            orig = path + "~"
             if not exists(orig):
                 copy(path, orig)
 
@@ -52,9 +52,7 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        line = line.replace("YogString_new_size", "YogString_from_size")
-                        line = line.replace("YogString_new_range", "YogString_from_range")
-                        line = line.replace("YogString_new_str", "YogString_from_str")
+                        line = line.replace("YogString_from_size", "YogString_of_size")
                         out.write(line)
             move(tmp, path)
 

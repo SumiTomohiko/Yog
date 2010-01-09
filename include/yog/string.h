@@ -52,7 +52,7 @@ YogVal YogString_multiply(YogEnv*, YogVal, int_t);
 YogVal YogString_new(YogEnv*);
 YogVal YogString_from_format(YogEnv*, const char*, ...);
 YogVal YogString_from_range(YogEnv*, YogVal, const char*, const char*);
-YogVal YogString_from_size(YogEnv*, uint_t);
+YogVal YogString_of_size(YogEnv*, uint_t);
 YogVal YogString_from_str(YogEnv*, const char*);
 void YogString_push(YogEnv*, YogVal, char);
 uint_t YogString_size(YogEnv*, YogVal);

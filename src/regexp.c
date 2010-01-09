@@ -139,7 +139,7 @@ group_num(YogEnv* env, YogVal self, int_t group)
     int_t begin = region->beg[group];
     int_t end = region->end[group];
     int_t size = end - begin;
-    s = YogString_from_size(env, size + 1);
+    s = YogString_of_size(env, size + 1);
     str = PTR_AS(YogMatch, self)->str;
     memcpy(STRING_CSTR(s), &STRING_CSTR(str)[begin], size);
     STRING_CSTR(s)[size] = '\0';
