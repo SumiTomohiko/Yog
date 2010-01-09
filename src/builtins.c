@@ -45,6 +45,38 @@ raise_exception(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
     RETURN(env, YNIL);
 }
 
+static YogVal
+repr_as_str(YogEnv* env, YogVal obj)
+{
+    SAVE_ARG(env, obj);
+    YogVal s = YUNDEF;
+    YogVal klass = YUNDEF;
+    YogVal name = YUNDEF;
+    YogVal actual_klass = YUNDEF;
+    YogVal actual_name = YUNDEF;
+    PUSH_LOCALS5(env, s, klass, name, actual_name, actual_klass);
+
+    if (IS_PTR(obj) && (BASIC_OBJ_TYPE(obj) == TYPE_STRING)) {
+        RETURN(env, obj);
+    }
+
+#define METHOD_NAME     "to_s"
+    s = YogEval_call_method0(env, obj, METHOD_NAME);
+    if (IS_PTR(s) && (BASIC_OBJ_TYPE(s) == TYPE_STRING)) {
+        RETURN(env, s);
+    }
+    klass = YogVal_get_class(env, obj);
+    YogVM* vm = env->vm;
+    name = YogVM_id2name(env, vm, PTR_AS(YogClass, klass)->name);
+    actual_klass = YogVal_get_class(env, s);
+    actual_name = YogVM_id2name(env, vm, PTR_AS(YogClass, actual_klass)->name);
+    YogError_raise_TypeError(env, "%s#%s() returned non-string (%s)", STRING_CSTR(name), METHOD_NAME, STRING_CSTR(actual_name));
+#undef METHOD_NAME
+
+    /* NOTREACHED */
+    RETURN(env, YUNDEF);
+}
+
 static void
 print_object(YogEnv* env, YogVal obj)
 {
@@ -52,13 +84,7 @@ print_object(YogEnv* env, YogVal obj)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
-    if (IS_PTR(obj) && (BASIC_OBJ_TYPE(obj) == TYPE_STRING)) {
-        s = obj;
-    }
-    else {
-        s = YogEval_call_method(env, obj, "to_s", 0, NULL);
-        YOG_ASSERT(env, IS_PTR(s) && (BASIC_OBJ_TYPE(s) == TYPE_STRING), "invalid string");
-    }
+    s = repr_as_str(env, obj);
     printf("%s", STRING_CSTR(s));
 
     RETURN_VOID(env);

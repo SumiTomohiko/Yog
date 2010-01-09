@@ -20,6 +20,24 @@ print()
 print("foo")
 """, "foo")
 
+    def test_print20(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 8, in <package>
+  File builtin, in print
+TypeError: Foo#to_s\(\) returned non-string \(Fixnum\)
+""", stderr)
+
+        self._test("""
+class Foo
+  def to_s()
+    return 42
+  end
+end
+
+print(Foo.new())
+""", stderr=test_stderr)
+
     def test_ARGV0(self):
         self._test("""
 print(ARGV[0])
