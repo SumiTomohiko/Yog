@@ -27,7 +27,6 @@ class DeclarationInserter(object):
             "include/yog/bool.h": [ "src/bool.c", ],
             "include/yog/fixnum.h": [ "src/fixnum.c", ],
             "include/yog/arg.h": [ "src/arg.c", ],
-            "include/yog/block.h": [ "src/block.c", ],
             "include/yog/class.h": [ "src/class.c", ],
             "include/yog/nil.h": [ "src/nil.c", ],
             "include/yog/function.h": [ "src/function.c", ],

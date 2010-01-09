@@ -202,7 +202,10 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
         iter = YogDict_get_iterator(env, varkwarg);
         while (YogDictIterator_next(env, iter)) {
             YogVal key = YogDictIterator_current_key(env, iter);
-            YOG_ASSERT(env, IS_SYMBOL(key), "invalid key");
+            if (!IS_SYMBOL(key)) {
+                name = YogVal_get_class_name(env, key);
+                YogError_raise_TypeError(env, "keywords must be symbols, not %s", STRING_CSTR(name));
+            }
             val = YogDictIterator_current_value(env, iter);
             assign_keyword_arg(env, self, args, kw, VAL2ID(key), val);
         }

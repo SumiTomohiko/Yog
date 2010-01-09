@@ -189,6 +189,20 @@ YogVal_to_signed_type(YogEnv* env, YogVal self, const char* name)
     RETURN(env, 0);
 }
 
+YogVal
+YogVal_get_class_name(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal name = YUNDEF;
+    YogVal klass = YUNDEF;
+    PUSH_LOCALS2(env, name, klass);
+
+    klass = YogVal_get_class(env, self);
+    name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
+
+    RETURN(env, name);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

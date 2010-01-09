@@ -330,6 +330,20 @@ TypeError: argument after \*\* must be a Dict, not Fixnum
 print(**42)
 """, stderr=test_stderr)
 
+    def test_variable_keyword_parameter50(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 5, in <package>
+TypeError: keywords must be symbols, not Fixnum
+""", stderr)
+
+        self._test("""
+def foo()
+end
+
+foo(**{ 42 => 26 })
+""", stderr=test_stderr)
+
     def test_variable_parameter70(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
