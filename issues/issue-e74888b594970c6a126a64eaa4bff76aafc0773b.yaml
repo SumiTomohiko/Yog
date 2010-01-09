@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove string literal in the form of '...'
+desc: unused
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-09 04:20:17.737402 Z
+references: []
+
+id: e74888b594970c6a126a64eaa4bff76aafc0773b
+log_events: 
+- - 2010-01-09 04:20:18.764797 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

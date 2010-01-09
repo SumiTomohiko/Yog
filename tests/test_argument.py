@@ -132,6 +132,34 @@ end
 foo(**{ :bar => 42 })
 """, stderr=test_stderr)
 
+    def test_keyword_argument30(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 5, in <package>
+ArgumentError: foo\(\) got multiple values for keyword argument "bar"
+""", stderr)
+
+        self._test("""
+def foo(bar)
+end
+
+foo(26, **{ :bar => 42 })
+""", stderr=test_stderr)
+
+    def test_keyword_argument40(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 5, in <package>
+ArgumentError: foo\(\) got multiple values for keyword argument "bar"
+""", stderr)
+
+        self._test("""
+def foo(bar)
+end
+
+foo(26, bar: 42)
+""", stderr=test_stderr)
+
     def test_variable_keyword_argument0(self):
         self._test("""
 def foo(**bar)
