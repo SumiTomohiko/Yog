@@ -583,7 +583,6 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             break;
         }
     case '\"':
-    case '\'':
         {
             char quote = c;
 

@@ -22,24 +22,6 @@ puts(\"'\")
 """, """'
 """)
 
-    def test_literal4(self):
-        self._test("""
-puts('foo')
-""", """foo
-""")
-
-    def test_literal5(self):
-        self._test("""
-puts('')
-""", """
-""")
-
-    def test_literal6(self):
-        self._test("""
-puts('\"')
-""", """\"
-""")
-
     def test_literal7(self):
         self._test("""
 puts(\"\\n\")
@@ -56,18 +38,6 @@ puts(\"\\\"\")
     def test_escape2(self):
         self._test("""
 puts(\"\\\\\")""", """\\
-""")
-
-    def test_escape3(self):
-        self._test("""
-puts('\\'')
-""", """'
-""")
-
-    def test_escape4(self):
-        self._test("""
-puts('\\\\')
-""", """\\
 """)
 
     def test_escape5(self):
