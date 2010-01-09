@@ -107,6 +107,18 @@ m = \"foo\" =~ /foo/
 puts(m.group(42))
 """, stderr=test_stderr)
 
+    def test_match_group60(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in Match#group
+TypeError: group must be a Fixnum, String or nil, not Array
+""", stderr)
+
+        self._test("""
+(\"foo\" =~ /foo/).group([])
+""", stderr=test_stderr)
+
     def test_match_start05(self):
         self._test("""
 m = \"foo\" =~ /foo/

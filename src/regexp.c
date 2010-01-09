@@ -87,7 +87,11 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
 static int_t
 group2index(YogEnv* env, YogMatch* match, YogVal arg)
 {
-    int_t index = 0;
+    SAVE_ARG(env, arg);
+    YogVal klass = YUNDEF;
+    YogVal name = YUNDEF;
+    PUSH_LOCALS2(env, klass, name);
+
     if (IS_PTR(arg) && (BASIC_OBJ_TYPE(arg) == TYPE_STRING)) {
         YogString* s = PTR_AS(YogString, arg);
         OnigRegex onig_regexp = PTR_AS(YogRegexp, match->regexp)->onig_regexp;
@@ -97,19 +101,21 @@ group2index(YogEnv* env, YogMatch* match, YogVal arg)
         int_t* num_list = NULL;
         int_t r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, &num_list);
         YOG_ASSERT(env, r == 1, "TODO: index error?");
-        index = num_list[0];
+        RETURN(env, num_list[0]);
     }
     else if (IS_FIXNUM(arg)) {
-        index = VAL2INT(arg);
+        RETURN(env, VAL2INT(arg));
     }
     else if (IS_NIL(arg)) {
-        index = 0;
-    }
-    else {
-        YOG_ASSERT(env, FALSE, "TODO: type error");
+        RETURN(env, 0);
     }
 
-    return index;
+    klass = YogVal_get_class(env, arg);
+    name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
+    YogError_raise_TypeError(env, "group must be a Fixnum, String or nil, not %s", STRING_CSTR(name));
+
+    /* NOTREACHED */
+    RETURN(env, SIGNED_MIN);
 }
 
 static YogVal
