@@ -19,6 +19,7 @@
 #include "yog/gc.h"
 #include "yog/property.h"
 #include "yog/thread.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
 
 #define CHECK_SELF_TYPE(env, self)  do { \
@@ -50,8 +51,6 @@ call_get_attr(YogEnv* env, YogVal self, ID name)
 
     RETURN(env, YUNDEF);
 }
-
-#include "yog/vm.h"
 
 static void
 exec_get_attr(YogEnv* env, YogVal self, ID name)
