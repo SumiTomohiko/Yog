@@ -2183,18 +2183,6 @@ register_params_var_table(YogEnv* env, YogVal params, YogVal var_tbl, YogVal fil
     RETURN_VOID(env);
 }
 
-static uint_t
-lookup_local_var_index(YogEnv* env, YogVal vars, ID name)
-{
-    YogVal var = lookup_var(env, vars, name);
-    if (VAR(var)->type == VT_LOCAL) {
-        return VAR(var)->u.local.index;
-    }
-    else {
-        return 0;
-    }
-}
-
 static void
 setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
 {
@@ -2220,25 +2208,18 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
     }
 
     YogVal argnames = YNIL;
-    YogVal arg_index = YNIL;
     if (0 < argc) {
         argnames = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * argc);
         PUSH_LOCAL(env, argnames);
-        arg_index = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(uint8_t) * argc);
-        PUSH_LOCAL(env, arg_index);
         for (i = 0; i < argc; i++) {
             YogVal node = YogArray_at(env, params, i);
             YOG_ASSERT(env, NODE(node)->type == NODE_PARAM, "Node must be NODE_PARAM.");
-
-            ID name = NODE(node)->u.param.name;
-            PTR_AS(ID, argnames)[i] = name;
-            PTR_AS(uint8_t, arg_index)[i] = lookup_local_var_index(env, vars, name);
+            PTR_AS(ID, argnames)[i] = NODE(node)->u.param.name;
         }
     }
 
     ARG_INFO(arg_info)->argc = argc;
     ARG_INFO(arg_info)->argnames = argnames;
-    ARG_INFO(arg_info)->arg_index = arg_index;
     if (size == argc) {
         RETURN_VOID(env);
     }

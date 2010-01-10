@@ -6,14 +6,9 @@
 struct YogArgInfo {
     uint_t argc;
     YogVal argnames;
-    YogVal arg_index;
-
-    uint_t blockargc;
-    ID blockargname;
-
     uint_t varargc;
-
     uint_t kwargc;
+    uint_t blockargc;
 };
 
 typedef struct YogArgInfo YogArgInfo;
