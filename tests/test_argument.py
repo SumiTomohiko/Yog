@@ -619,7 +619,7 @@ foo()
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 5, in <package>
-ArgumentError: foo\(\) takes 0 argument\(s\) \(1 given\)
+ArgumentError: foo\(\) requires 0 positional argument\(s\) \(1 given\)
 """, stderr)
 
         self._test("""
@@ -627,6 +627,20 @@ def foo()
 end
 
 foo(42)
+""", stderr=test_stderr)
+
+    def test_wrong_number_arguments10(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 5, in <package>
+ArgumentError: foo\(\) requires 1 positional argument\(s\) \(0 given\)
+""", stderr)
+
+        self._test("""
+def foo(bar)
+end
+
+foo()
 """, stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

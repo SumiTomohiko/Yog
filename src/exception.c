@@ -108,6 +108,76 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
     RETURN(env, frame);
 }
 
+YogVal
+YogException_get_stacktrace(YogEnv* env, YogVal frame)
+{
+    SAVE_ARG(env, frame);
+    YogVal st = YNIL;
+    YogVal ent = YUNDEF;
+    YogVal code = YUNDEF;
+    PUSH_LOCALS3(env, st, ent, code);
+
+    while (IS_PTR(frame)) {
+        if (PTR_AS(YogFrame, frame)->type == FRAME_FINISH) {
+            frame = PTR_AS(YogFrame, frame)->prev;
+            continue;
+        }
+
+        ent = YogStackTraceEntry_new(env);
+
+        switch (PTR_AS(YogFrame, frame)->type) {
+        case FRAME_C:
+            {
+                YogVal f = PTR_AS(YogCFrame, frame)->f;
+                ID class_name = PTR_AS(YogNativeFunction, f)->class_name;
+                ID func_name = PTR_AS(YogNativeFunction, f)->func_name;
+                PTR_AS(YogStackTraceEntry, ent)->lineno = 0;
+                PTR_AS(YogStackTraceEntry, ent)->filename = YNIL;
+                PTR_AS(YogStackTraceEntry, ent)->class_name = class_name;
+                PTR_AS(YogStackTraceEntry, ent)->func_name = func_name;
+                break;
+            }
+        case FRAME_METHOD:
+        case FRAME_PKG:
+        case FRAME_CLASS:
+            {
+                code = PTR_AS(YogScriptFrame, frame)->code;
+                uint_t lineno = 0;
+                pc_t pc = PTR_AS(YogScriptFrame, frame)->pc - 1;
+                uint_t i = 0;
+                for (i = 0; i < PTR_AS(YogCode, code)->lineno_tbl_size; i++) {
+                    YogVal lineno_tbl = PTR_AS(YogCode, code)->lineno_tbl;
+                    YogLinenoTableEntry* e = &PTR_AS(YogLinenoTableEntry, lineno_tbl)[i];
+                    if ((e->pc_from <= pc) && (pc < e->pc_to)) {
+                        lineno = e->lineno;
+                        break;
+                    }
+                }
+
+                YogVal filename = PTR_AS(YogCode, code)->filename;
+                ID class_name = PTR_AS(YogCode, code)->class_name;
+                ID func_name = PTR_AS(YogCode, code)->func_name;
+                PTR_AS(YogStackTraceEntry, ent)->lineno = lineno;
+                PTR_AS(YogStackTraceEntry, ent)->filename = filename;
+                PTR_AS(YogStackTraceEntry, ent)->class_name = class_name;
+                PTR_AS(YogStackTraceEntry, ent)->func_name = func_name;
+                break;
+            }
+        case FRAME_FINISH:
+        default:
+            YOG_ASSERT(env, FALSE, "invalid frame type (0x%x)", PTR_AS(YogFrame, frame)->type);
+            break;
+        }
+
+        PTR_AS(YogStackTraceEntry, ent)->lower = st;
+        st = ent;
+
+        frame = PTR_AS(YogFrame, frame)->prev;
+    }
+
+    RETURN(env, st);
+}
+
 static void
 init_YogException(YogEnv* env, YogVal self, YogVal msg)
 {
@@ -119,65 +189,7 @@ init_YogException(YogEnv* env, YogVal self, YogVal msg)
     frame = env->frame;
     frame = skip_frame(env, frame, "init");
     frame = skip_frame(env, frame, "new");
-
-    st = YNIL;
-    while (IS_PTR(frame)) {
-        if (PTR_AS(YogFrame, frame)->type == FRAME_FINISH) {
-            frame = PTR_AS(YogFrame, frame)->prev;
-            continue;
-        }
-
-        YogVal entry = YogStackTraceEntry_new(env);
-
-        switch (PTR_AS(YogFrame, frame)->type) {
-        case FRAME_C:
-            {
-                YogVal f = PTR_AS(YogCFrame, frame)->f;
-                ID class_name = PTR_AS(YogNativeFunction, f)->class_name;
-                ID func_name = PTR_AS(YogNativeFunction, f)->func_name;
-                PTR_AS(YogStackTraceEntry, entry)->lineno = 0;
-                PTR_AS(YogStackTraceEntry, entry)->filename = YNIL;
-                PTR_AS(YogStackTraceEntry, entry)->class_name = class_name;
-                PTR_AS(YogStackTraceEntry, entry)->func_name = func_name;
-                break;
-            }
-        case FRAME_METHOD:
-        case FRAME_PKG:
-        case FRAME_CLASS:
-            {
-                YogVal code = PTR_AS(YogScriptFrame, frame)->code;
-                uint_t lineno = 0;
-                pc_t pc = PTR_AS(YogScriptFrame, frame)->pc - 1;
-                uint_t i = 0;
-                for (i = 0; i < PTR_AS(YogCode, code)->lineno_tbl_size; i++) {
-                    YogVal lineno_tbl = PTR_AS(YogCode, code)->lineno_tbl;
-                    YogLinenoTableEntry* entry = &PTR_AS(YogLinenoTableEntry, lineno_tbl)[i];
-                    if ((entry->pc_from <= pc) && (pc < entry->pc_to)) {
-                        lineno = entry->lineno;
-                        break;
-                    }
-                }
-
-                YogVal filename = PTR_AS(YogCode, code)->filename;
-                ID class_name = PTR_AS(YogCode, code)->class_name;
-                ID func_name = PTR_AS(YogCode, code)->func_name;
-                PTR_AS(YogStackTraceEntry, entry)->lineno = lineno;
-                PTR_AS(YogStackTraceEntry, entry)->filename = filename;
-                PTR_AS(YogStackTraceEntry, entry)->class_name = class_name;
-                PTR_AS(YogStackTraceEntry, entry)->func_name = func_name;
-                break;
-            }
-        case FRAME_FINISH:
-        default:
-            YOG_ASSERT(env, FALSE, "invalid frame type (0x%x)", PTR_AS(YogFrame, frame)->type);
-            break;
-        }
-
-        PTR_AS(YogStackTraceEntry, entry)->lower = st;
-        st = entry;
-
-        frame = PTR_AS(YogFrame, frame)->prev;
-    }
+    st = YogException_get_stacktrace(env, frame);
 
     PTR_AS(YogException, self)->stack_trace = st;
     PTR_AS(YogException, self)->message = msg;
@@ -312,7 +324,6 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     EXCEPTION_NEW(eArgumentError, "ArgumentError");
     EXCEPTION_NEW(eAttributeError, "AttributeError");
-    EXCEPTION_NEW(eBugError, "BugError");
     EXCEPTION_NEW(eEOFError, "EOFError");
     EXCEPTION_NEW(eImportError, "ImportError");
     EXCEPTION_NEW(eIndexError, "IndexError");

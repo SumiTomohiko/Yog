@@ -16,10 +16,11 @@ YogArgInfo_new(YogEnv* env)
 {
     YogVal arg_info = ALLOC_OBJ(env, YogArgInfo_keep_children, NULL, YogArgInfo);
     PTR_AS(YogArgInfo, arg_info)->argc = 0;
-    PTR_AS(YogArgInfo, arg_info)->argnames = YUNDEF;
     PTR_AS(YogArgInfo, arg_info)->varargc = 0;
     PTR_AS(YogArgInfo, arg_info)->kwargc = 0;
     PTR_AS(YogArgInfo, arg_info)->blockargc = 0;
+    PTR_AS(YogArgInfo, arg_info)->required_argc = 0;
+    PTR_AS(YogArgInfo, arg_info)->argnames = YUNDEF;
 
     return arg_info;
 }

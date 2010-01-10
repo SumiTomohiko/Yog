@@ -34,6 +34,7 @@ extern "C" {
 #endif
 /* src/exception.c */
 void YogException_define_classes(YogEnv*, YogVal);
+YogVal YogException_get_stacktrace(YogEnv*, YogVal);
 
 /* src/stacktrace.c */
 YogVal YogStackTraceEntry_new(YogEnv*);

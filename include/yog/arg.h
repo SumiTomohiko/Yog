@@ -5,10 +5,12 @@
 
 struct YogArgInfo {
     uint_t argc;
-    YogVal argnames;
     uint_t varargc;
     uint_t kwargc;
     uint_t blockargc;
+
+    uint_t required_argc;
+    YogVal argnames;
 };
 
 typedef struct YogArgInfo YogArgInfo;

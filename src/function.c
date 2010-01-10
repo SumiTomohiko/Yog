@@ -87,6 +87,35 @@ assign_keyword_arg(YogEnv* env, YogVal self, YogVal args, YogVal kw, ID name, Yo
 }
 
 static void
+raise_wrong_num_args(YogEnv* env, YogVal self, uint_t posargc)
+{
+    SAVE_ARG(env, self);
+    YogVal name = YUNDEF;
+    YogVal formal_args = YUNDEF;
+    YogVal code = YUNDEF;
+    PUSH_LOCALS3(env, name, formal_args, code);
+
+    name = YogVM_id2name(env, env->vm, PTR_AS(YogFunction, self)->name);
+    code = PTR_AS(YogFunction, self)->code;
+    formal_args = PTR_AS(YogCode, code)->arg_info;
+    uint_t formal_posargc = PTR_AS(YogArgInfo, formal_args)->argc;
+    YogError_raise_ArgumentError(env, "%s() requires %u positional argument(s) (%u given)", STRING_CSTR(name), formal_posargc, posargc);
+
+    RETURN_VOID(env);
+}
+
+static void
+check_arg_assigned(YogEnv* env, YogVal self, YogVal arg, uint_t posargc)
+{
+    SAVE_ARGS2(env, self, arg);
+    if (!IS_UNDEF(arg)) {
+        RETURN_VOID(env);
+    }
+    raise_wrong_num_args(env, self, posargc);
+    RETURN_VOID(env);
+}
+
+static void
 fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal args)
 {
     SAVE_ARGS5(env, self, blockarg, vararg, varkwarg, args);
@@ -132,8 +161,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
             items[POS_OFFSET + i] = posargs[i];
         }
         if (PTR_AS(YogArgInfo, arg_info)->varargc != 1) {
-            name = YogVM_id2name(env, env->vm, PTR_AS(YogFunction, self)->name);
-            YogError_raise_ArgumentError(env, "%s() takes %u argument(s) (%u given)", STRING_CSTR(name), arg_argc, posargc);
+            raise_wrong_num_args(env, self, posargc);
         }
         uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
         array = YogArray_new(env);
@@ -211,7 +239,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
         }
     }
 
-    if (IS_PTR(blockarg)) {
+    if (!IS_UNDEF(blockarg)) {
         if (PTR_AS(YogArgInfo, arg_info)->blockargc != 1) {
             YogError_raise_ArgumentError(env, "can't accept a block argument");
         }
@@ -223,6 +251,12 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
             index++;
         }
         PTR_AS(YogValArray, args)->items[POS_OFFSET + index] = blockarg;
+    }
+
+    uint_t required_argc = PTR_AS(YogArgInfo, arg_info)->required_argc;
+    for (i = 0; i < required_argc; i++) {
+        val = PTR_AS(YogValArray, args)->items[POS_OFFSET + i];
+        check_arg_assigned(env, self, val, posargc);
     }
 
     RETURN_VOID(env);

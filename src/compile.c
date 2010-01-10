@@ -2183,18 +2183,44 @@ register_params_var_table(YogEnv* env, YogVal params, YogVal var_tbl, YogVal fil
     RETURN_VOID(env);
 }
 
+static uint_t
+count_required_argc(YogEnv* env, YogVal params)
+{
+    SAVE_ARG(env, params);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    uint_t n = 0;
+    uint_t size = YogArray_size(env, params);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        node = YogArray_at(env, params, i);
+        if (NODE(node)->type != NODE_PARAM) {
+            break;
+        }
+        if (IS_PTR(NODE(node)->u.param.default_)) {
+            break;
+        }
+        n++;
+    }
+
+    RETURN(env, n);
+}
+
 static void
 setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
 {
     if (!IS_PTR(params)) {
         return;
     }
-
     SAVE_ARGS3(env, vars, params, code);
-
-    YogVal arg_info = YogArgInfo_new(env);
-    CODE(code)->arg_info = arg_info;
+    YogVal arg_info = YUNDEF;
     PUSH_LOCAL(env, arg_info);
+
+    arg_info = YogArgInfo_new(env);
+    CODE(code)->arg_info = arg_info;
+
+    ARG_INFO(arg_info)->required_argc = count_required_argc(env, params);
 
     uint_t size = YogArray_size(env, params);
     uint_t argc = 0;

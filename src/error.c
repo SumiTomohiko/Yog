@@ -72,26 +72,80 @@ YogError_raise(YogEnv* env, YogVal exc)
     longjmp(PTR_AS(YogThread, thread)->jmp_buf_list->buf, JMP_RAISE);
 }
 
+static void
+print_stacktrace(YogEnv* env, YogVal st)
+{
+    SAVE_ARG(env, st);
+    YogVal filename = YUNDEF;
+    YogVal s = YUNDEF;
+    YogVal t = YUNDEF;
+    YogVal name = YUNDEF;
+    PUSH_LOCALS4(env, filename, s, t, name);
+    if (!IS_PTR(st)) {
+        RETURN_VOID(env);
+    }
+
+    fprintf(stderr, "Traceback (most recent call last):\n");
+#define ID2NAME(id)     YogVM_id2name(env, env->vm, id)
+    while (IS_PTR(st)) {
+        fprintf(stderr, "  File ");
+        filename = PTR_AS(YogStackTraceEntry, st)->filename;
+        if (IS_PTR(filename)) {
+            const char* name = PTR_AS(YogCharArray, filename)->items;
+            fprintf(stderr, "\"%s\"", name);
+        }
+        else {
+            fprintf(stderr, "builtin");
+        }
+
+        uint_t lineno = PTR_AS(YogStackTraceEntry, st)->lineno;
+        if (0 < lineno) {
+            fprintf(stderr, ", line %d", lineno);
+        }
+
+        fprintf(stderr, ", in ");
+        ID class_name = PTR_AS(YogStackTraceEntry, st)->class_name;
+        ID func_name = PTR_AS(YogStackTraceEntry, st)->func_name;
+        if (class_name != INVALID_ID) {
+            if (func_name != INVALID_ID) {
+                s = ID2NAME(class_name);
+                t = ID2NAME(func_name);
+                fprintf(stderr, "%s#%s", STRING_CSTR(s), STRING_CSTR(t));
+            }
+            else {
+                name = ID2NAME(class_name);
+                fprintf(stderr, "<class %s>", STRING_CSTR(name));
+            }
+        }
+        else {
+            name = ID2NAME(func_name);
+            fprintf(stderr, "%s", STRING_CSTR(name));
+        }
+        fprintf(stderr, "\n");
+
+        st = PTR_AS(YogStackTraceEntry, st)->lower;
+    }
+
+    RETURN_VOID(env);
+}
+
 void
 YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...)
 {
     SAVE_LOCALS(env);
-    YogVal msg = YUNDEF;
-    YogVal exc = YUNDEF;
-    PUSH_LOCALS2(env, msg, exc);
+    YogVal st = YUNDEF;
+    PUSH_LOCAL(env, st);
 
-    char buf1[4096];
-    snprintf(buf1, array_sizeof(buf1), "%s:%u: %s", filename, lineno, fmt);
-    char buf2[4096];
+    st = YogException_get_stacktrace(env, env->frame);
+    print_stacktrace(env, st);
     va_list ap;
     va_start(ap, fmt);
-    vsnprintf(buf2, array_sizeof(buf2), buf1, ap);
+    print_error(env, "BUG", filename, lineno, fmt, ap);
     va_end(ap);
+    abort();
 
-    msg = YogString_from_str(env, buf2);
-    exc = YogEval_call_method1(env, env->vm->eBugError, "new", msg);
-    RESTORE_LOCALS(env);
-    YogError_raise(env, exc);
+    /* NOTREACHED */
+    RETURN_VOID(env);
 }
 
 static void
@@ -160,48 +214,7 @@ YogError_print_stacktrace(YogEnv* env)
 
     exc = PTR_AS(YogThread, env->thread)->jmp_val;
     st = PTR_AS(YogException, exc)->stack_trace;
-    if (IS_PTR(st)) {
-        fprintf(stderr, "Traceback (most recent call last):\n");
-    }
-#define ID2NAME(id)     YogVM_id2name(env, env->vm, id)
-    while (IS_PTR(st)) {
-        fprintf(stderr, "  File ");
-        filename = PTR_AS(YogStackTraceEntry, st)->filename;
-        if (IS_PTR(filename)) {
-            const char* name = PTR_AS(YogCharArray, filename)->items;
-            fprintf(stderr, "\"%s\"", name);
-        }
-        else {
-            fprintf(stderr, "builtin");
-        }
-
-        uint_t lineno = PTR_AS(YogStackTraceEntry, st)->lineno;
-        if (0 < lineno) {
-            fprintf(stderr, ", line %d", lineno);
-        }
-
-        fprintf(stderr, ", in ");
-        ID class_name = PTR_AS(YogStackTraceEntry, st)->class_name;
-        ID func_name = PTR_AS(YogStackTraceEntry, st)->func_name;
-        if (class_name != INVALID_ID) {
-            if (func_name != INVALID_ID) {
-                s = ID2NAME(class_name);
-                t = ID2NAME(func_name);
-                fprintf(stderr, "%s#%s", STRING_CSTR(s), STRING_CSTR(t));
-            }
-            else {
-                name = ID2NAME(class_name);
-                fprintf(stderr, "<class %s>", STRING_CSTR(name));
-            }
-        }
-        else {
-            name = ID2NAME(func_name);
-            fprintf(stderr, "%s", STRING_CSTR(name));
-        }
-        fprintf(stderr, "\n");
-
-        st = PTR_AS(YogStackTraceEntry, st)->lower;
-    }
+    print_stacktrace(env, st);
 
     klass = BASIC_OBJ(exc)->klass;
     ID id = PTR_AS(YogClass, klass)->name;
