@@ -12,6 +12,21 @@ end
 co.resume()
 """, "42")
 
+    def test_resume10(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 5, in <package>
+  File builtin, in Coroutine#resume
+CoroutineError: dead coroutine called
+""", stderr)
+
+        self._test("""
+co = Coroutine.new() do
+end
+co.resume()
+co.resume()
+""", stderr=test_stderr)
+
     def test_yield0(self):
         self._test("""
 co = Coroutine.new() do
@@ -369,5 +384,133 @@ co = Coroutine.new() do [foo]
 end
 co.resume(42)
 """, "42")
+
+    def test_status0(self):
+        self._test("""
+co = Coroutine.new() do
+end
+print(co.status == Coroutine.SUSPENDED)
+""", "true")
+
+    def test_status10(self):
+        self._test("""
+co = Coroutine.new() do
+  print(co.status == Coroutine.RUNNING)
+end
+co.resume()
+""", "true")
+
+    def test_status20(self):
+        self._test("""
+co = Coroutine.new() do
+  Coroutine.yield()
+end
+co.resume()
+print(co.status == Coroutine.SUSPENDED)
+""", "true")
+
+    def test_status30(self):
+        self._test("""
+co = Coroutine.new() do
+end
+co.resume()
+print(co.status == Coroutine.DEAD)
+""", "true")
+
+    def test_suspended0(self):
+        self._test("""
+co = Coroutine.new() do
+end
+print(co.suspended?)
+""", "true")
+
+    def test_suspended10(self):
+        self._test("""
+co = Coroutine.new() do
+  print(co.suspended?)
+end
+co.resume()
+""", "false")
+
+    def test_suspended20(self):
+        self._test("""
+co = Coroutine.new() do
+  Coroutine.yield()
+end
+co.resume()
+print(co.suspended?)
+""", "true")
+
+    def test_suspended30(self):
+        self._test("""
+co = Coroutine.new() do
+end
+co.resume()
+print(co.suspended?)
+""", "false")
+
+    def test_running0(self):
+        self._test("""
+co = Coroutine.new() do
+end
+print(co.running?)
+""", "false")
+
+    def test_running10(self):
+        self._test("""
+co = Coroutine.new() do
+  print(co.running?)
+end
+co.resume()
+""", "true")
+
+    def test_running20(self):
+        self._test("""
+co = Coroutine.new() do
+  Coroutine.yield()
+end
+co.resume()
+print(co.running?)
+""", "false")
+
+    def test_running30(self):
+        self._test("""
+co = Coroutine.new() do
+end
+co.resume()
+print(co.running?)
+""", "false")
+
+    def test_dead0(self):
+        self._test("""
+co = Coroutine.new() do
+end
+print(co.dead?)
+""", "false")
+
+    def test_dead10(self):
+        self._test("""
+co = Coroutine.new() do
+  print(co.dead?)
+end
+co.resume()
+""", "false")
+
+    def test_dead20(self):
+        self._test("""
+co = Coroutine.new() do
+  Coroutine.yield()
+end
+co.resume()
+print(co.dead?)
+""", "false")
+
+    def test_dead30(self):
+        self._test("""
+co = Coroutine.new() do
+end
+co.resume()
+print(co.dead?)
+""", "true")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

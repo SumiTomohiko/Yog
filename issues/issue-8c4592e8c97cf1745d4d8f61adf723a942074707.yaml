@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Remove unused #include in src/class.c"
+desc: ""
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-10 11:48:48.563559 Z
+references: []
+
+id: 8c4592e8c97cf1745d4d8f61adf723a942074707
+log_events: 
+- - 2010-01-10 11:48:49.056217 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

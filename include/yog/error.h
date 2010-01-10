@@ -18,6 +18,7 @@ void YogError_print_stacktrace(YogEnv*);
 void YogError_raise(YogEnv*, YogVal);
 void YogError_raise_ArgumentError(YogEnv*, const char*, ...);
 void YogError_raise_AttributeError(YogEnv*, const char*, ...);
+void YogError_raise_CoroutineError(YogEnv*, const char*, ...);
 void YogError_raise_EOFError(YogEnv*, const char*, ...);
 void YogError_raise_ImportError(YogEnv*, const char*, ...);
 void YogError_raise_IndexError(YogEnv*, const char*, ...);

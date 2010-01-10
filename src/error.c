@@ -308,6 +308,12 @@ YogError_raise_EOFError(YogEnv* env, const char* fmt, ...)
 }
 
 void
+YogError_raise_CoroutineError(YogEnv* env, const char* fmt, ...)
+{
+    RAISE_FORMAT(env, eCoroutineError, fmt);
+}
+
+void
 YogError_raise_comparison_type_error(YogEnv* env, YogVal left, YogVal right)
 {
     raise_TypeError(env, "comparison of %s with %s failed", left, right);
