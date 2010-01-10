@@ -90,7 +90,7 @@ return_middle(YogEnv* env, uint_t n)
     }
 
     prev = PTR_AS(YogFrame, CUR_FRAME)->prev;
-    YogScriptFrame_push_stack(env, SCRIPT_FRAME(prev), middle);
+    YogScriptFrame_push_stack(env, prev, middle);
 
     RETURN_VOID(env);
 }
@@ -107,7 +107,7 @@ move_stack_value(YogEnv* env, uint_t n)
     uint_t i;
     for (i = 0; i < n; i++) {
         val = YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME));
-        YogScriptFrame_push_stack(env, SCRIPT_FRAME(prev), val);
+        YogScriptFrame_push_stack(env, prev, val);
     }
 
     RETURN_VOID(env);
@@ -132,14 +132,14 @@ YogEval_push_returned_value(YogEnv* env, YogVal frame, YogVal val)
         }
         middle = YogArray_of_size(env, 1);
         YogArray_push(env, middle, val);
-        YogScriptFrame_push_stack(env, SCRIPT_FRAME(frame), middle);
+        YogScriptFrame_push_stack(env, frame, middle);
     }
     else if (left_num != 1) {
         YogError_raise_ValueError(env, "number of multiple value unmatched");
         /* NOTREACHED */
     }
     else {
-        YogScriptFrame_push_stack(env, SCRIPT_FRAME(frame), val);
+        YogScriptFrame_push_stack(env, frame, val);
     }
 
     RETURN_VOID(env);
@@ -192,7 +192,7 @@ push_from_array(YogEnv* env, YogVal vals, uint_t from, uint_t to)
     uint_t i;
     for (i = from; i < to; i++) {
         val = YogArray_at(env, vals, i);
-        YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), val);
+        YogScriptFrame_push_stack(env, CUR_FRAME, val);
     }
 
     RETURN_VOID(env);
@@ -212,7 +212,7 @@ push_array_from_array(YogEnv* env, YogVal vals, uint_t from, uint_t to)
         val = YogArray_at(env, vals, i);
         YogArray_push(env, a, val);
     }
-    YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), a);
+    YogScriptFrame_push_stack(env, CUR_FRAME, a);
 
     RETURN_VOID(env);
 }
@@ -611,7 +611,7 @@ YogEval_mainloop(YogEnv* env)
     PUSH_JMPBUF(env->thread, jmpbuf);
     SAVE_CURRENT_STAT(env, mainloop);
 
-#define PUSH(val)   YogScriptFrame_push_stack(env, SCRIPT_FRAME(CUR_FRAME), val)
+#define PUSH(val)   YogScriptFrame_push_stack(env, CUR_FRAME, val)
     int_t status;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
     }

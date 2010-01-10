@@ -79,16 +79,22 @@ YogFrame_init(YogVal frame, YogFrameType type)
 }
 
 void
-YogScriptFrame_push_stack(YogEnv* env, YogScriptFrame* frame, YogVal val)
+YogScriptFrame_push_stack(YogEnv* env, YogVal frame, YogVal val)
 {
     YOG_ASSERT(env, PTR_AS(YogFrame, frame)->type != FRAME_C, "invalid frame type (0x%x)", PTR_AS(YogFrame, frame)->type);
-    YogVal stack = frame->stack;
-    uint_t capacity = YogValArray_size(env, stack);
-    YOG_ASSERT(env, frame->stack_size < capacity, "Stack is full.");
+    SAVE_ARGS2(env, frame, val);
+    YogVal stack = YUNDEF;
+    PUSH_LOCAL(env, stack);
 
-    uint_t n = frame->stack_size;
+    stack = PTR_AS(YogScriptFrame, frame)->stack;
+    uint_t capacity = YogValArray_size(env, stack);
+    YOG_ASSERT(env, PTR_AS(YogScriptFrame, frame)->stack_size < capacity, "Stack is full.");
+
+    uint_t n = PTR_AS(YogScriptFrame, frame)->stack_size;
     PTR_AS(YogValArray, stack)->items[n] = val;
-    frame->stack_size++;
+    PTR_AS(YogScriptFrame, frame)->stack_size++;
+
+    RETURN_VOID(env);
 }
 
 YogVal

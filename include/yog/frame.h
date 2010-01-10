@@ -103,7 +103,7 @@ YogVal YogMethodFrame_new(YogEnv*);
 YogVal YogOuterVars_new(YogEnv*, uint_t);
 YogVal YogPackageFrame_new(YogEnv*);
 YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);
-void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
+void YogScriptFrame_push_stack(YogEnv*, YogVal, YogVal);
 
 
 #if defined(__cplusplus)
@@ -112,8 +112,7 @@ void YogScriptFrame_push_stack(YogEnv*, YogScriptFrame*, YogVal);
 /* PROTOTYPE_END */
 
 #define FRAME_PUSH(env, val)    do { \
-    YogVal cur_frame = env->frame; \
-    YogScriptFrame_push_stack((env), PTR_AS(YogScriptFrame, cur_frame), (val)); \
+    YogScriptFrame_push_stack((env), env->frame, (val)); \
 } while (0)
 
 #endif
