@@ -29,9 +29,7 @@ YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogFrame_keep_children(env, ptr, keeper, heap);
 
     YogCFrame* frame = PTR_AS(YogCFrame, ptr);
-    KEEP(self);
     KEEP(f);
-    KEEP(args);
     KEEP(multi_val);
 }
 
@@ -179,8 +177,6 @@ YogCFrame_init(YogEnv* env, YogVal frame)
 {
     YogFrame_init(frame, FRAME_C);
 
-    PTR_AS(YogCFrame, frame)->self = YUNDEF;
-    PTR_AS(YogCFrame, frame)->args = YUNDEF;
     PTR_AS(YogCFrame, frame)->f = YUNDEF;
     PTR_AS(YogCFrame, frame)->multi_val = YUNDEF;
 }

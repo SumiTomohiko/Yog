@@ -22,8 +22,6 @@ typedef struct YogFrame YogFrame;
 
 struct YogCFrame {
     struct YogFrame base;
-    YogVal self;
-    YogVal args;
     YogVal f;
     YogVal multi_val;
 };
