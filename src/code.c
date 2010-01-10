@@ -81,22 +81,7 @@ YogCode_dump(YogEnv* env, YogVal code)
     uint_t exc_tbl_size = PTR_AS(YogCode, code)->exc_tbl_size;
     for (i = 0; i < exc_tbl_size; i++) {
         YogExceptionTableEntry* entry = &PTR_AS(YogExceptionTable, PTR_AS(YogCode, code)->exc_tbl)->items[i];
-        const char* status = NULL;
-        switch (entry->status) {
-        case JMP_RAISE:
-            status = "raise";
-            break;
-        case JMP_RETURN:
-            status = "return";
-            break;
-        case JMP_BREAK:
-            status = "break";
-            break;
-        default:
-            YOG_BUG(env, "unknown status (0x%x)", status);
-            break;
-        }
-        printf("%-6s %04d %04d %04d\n", status, entry->from, entry->to, entry->target);
+        printf("%04d %04d %04d\n", entry->from, entry->to, entry->target);
     }
 
     printf("=== Code ===\n");

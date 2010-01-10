@@ -459,13 +459,13 @@ lookup_builtins(YogEnv* env, ID name)
 }
 
 static BOOL
-find_exception_table_entry(YogEnv* env, YogVal code, int status, uint_t pc, uint_t* target)
+find_exception_table_entry(YogEnv* env, YogVal code, uint_t pc, uint_t* target)
 {
     uint_t i;
     for (i = 0; i < PTR_AS(YogCode, code)->exc_tbl_size; i++) {
         YogVal exc_tbl = PTR_AS(YogCode, code)->exc_tbl;
         YogExceptionTableEntry* entry = &PTR_AS(YogExceptionTable, exc_tbl)->items[i];
-        if ((entry->from < pc) && (pc <= entry->to) && (entry->status == status)) {
+        if ((entry->from < pc) && (pc <= entry->to)) {
             if (target != NULL) {
                 *target = entry->target;
             }
@@ -486,10 +486,7 @@ detect_orphan(YogEnv* env, int status, YogVal target_frame)
         case FRAME_METHOD:
         case FRAME_PKG:
         case FRAME_CLASS:
-            if (frame != target_frame) {
-                continue;
-            }
-            if (find_exception_table_entry(env, PTR_AS(YogScriptFrame, frame)->code, status, PTR_AS(YogScriptFrame, frame)->pc, NULL)) {
+            if (frame == target_frame) {
                 return;
             }
             break;
@@ -634,7 +631,7 @@ YogEval_mainloop(YogEnv* env)
                 BOOL found = FALSE;
                 if (PTR_AS(YogFrame, CUR_FRAME)->type != FRAME_C) {
                     uint_t target = 0;
-                    found = find_exception_table_entry(env, (YogVal)CODE, status, PC, &target);
+                    found = find_exception_table_entry(env, (YogVal)CODE, PC, &target);
                     if (found) {
                         PC = target;
                     }
@@ -664,17 +661,8 @@ YogEval_mainloop(YogEnv* env)
                         {
                             YogVal thread = env->thread;
                             if (frame == PTR_AS(YogThread, thread)->frame_to_long_jump) {
-#if 0
-                                uint_t target = 0;
-                                if (!find_exception_table_entry(env, PTR_AS(YogScriptFrame, frame)->code, status, PTR_AS(YogScriptFrame, frame)->pc, &target)) {
-                                    YOG_BUG(env, "can't find exception table entry");
-                                }
-#endif
                                 CUR_FRAME = frame;
                                 PC = SCRIPT_FRAME(CUR_FRAME)->pc;
-#if 0
-                                PC = target;
-#endif
                                 push_jmp_val(env);
                                 found = TRUE;
                             }

@@ -145,7 +145,6 @@ struct ExceptionTableEntry {
     YogVal from;
     YogVal to;
     YogVal target;
-    YogJmpStatus status;
 };
 
 typedef struct ExceptionTableEntry ExceptionTableEntry;
@@ -1413,7 +1412,6 @@ ExceptionTableEntry_new(YogEnv* env)
     PTR_AS(ExceptionTableEntry, entry)->from = YUNDEF;
     PTR_AS(ExceptionTableEntry, entry)->to = YUNDEF;
     PTR_AS(ExceptionTableEntry, entry)->target = YUNDEF;
-    PTR_AS(ExceptionTableEntry, entry)->status = JMP_RAISE;
 
     return entry;
 }
@@ -1517,14 +1515,6 @@ compile_call_func(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, ui
     add_inst(env, data, label_break_start);
     CompileData_add_call_function(env, data, NODE(node)->lineno, posargc, kwargc, varargc, varkwargc, blockargc, lhs_left_num, lhs_middle_num, lhs_right_num);
     add_inst(env, data, label_break_end);
-
-    exc_tbl_entry = ExceptionTableEntry_new(env);
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->next = YUNDEF;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->from = label_break_start;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->to = label_break_end;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->target = label_break_end;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->status = JMP_BREAK;
-    PUSH_EXCEPTION_TABLE_ENTRY(data, exc_tbl_entry);
 
     RETURN_VOID(env);
 }
@@ -1722,8 +1712,6 @@ make_exception_table(YogEnv* env, YogVal code, YogVal data)
                     ent->from = from;
                     ent->to = to;
                     ent->target = INST(EXCEPTION_TABLE_ENTRY(entry)->target)->pc;
-                    ent->status = EXCEPTION_TABLE_ENTRY(entry)->status;
-
                     i++;
                 }
             }
@@ -2112,13 +2100,6 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, 
 
     label_return_end = COMPILE_DATA(data)->label_last_ret;
     insert_inst_before_last_return(env, anchor, COMPILE_DATA(data)->last_inst, label_return_end);
-    exc_tbl_entry = ExceptionTableEntry_new(env);
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->next = YUNDEF;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->from = label_return_start;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->to = label_return_end;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->target = label_return_end;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->status = JMP_RETURN;
-    PUSH_EXCEPTION_TABLE_ENTRY(data, exc_tbl_entry);
 
     YogVal bin = YUNDEF;
     YogVal code = YUNDEF;
@@ -2637,7 +2618,6 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->from = label_head_start;
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->to = label_head_end;
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->target = label_finally_error_start;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->status = JMP_RAISE;
     TRY_LIST_ENTRY(try_list_entry)->exc_tbl = exc_tbl_entry;
 
     add_inst(env, data, label_head_start);
@@ -2697,7 +2677,6 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->from = label_head_start;
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->to = label_head_end;
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->target = label_excepts_start;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->status = JMP_RAISE;
     TRY_LIST_ENTRY(try_list_entry)->exc_tbl = exc_tbl_entry;
 
     add_inst(env, data, label_head_start);
@@ -2886,7 +2865,6 @@ split_exception_table(YogEnv* env, YogVal exc_tbl_entry, YogVal label_from, YogV
     EXCEPTION_TABLE_ENTRY(new_entry)->from = label_to;
     EXCEPTION_TABLE_ENTRY(new_entry)->to = EXCEPTION_TABLE_ENTRY(entry)->to;
     EXCEPTION_TABLE_ENTRY(new_entry)->target = EXCEPTION_TABLE_ENTRY(entry)->target;
-    EXCEPTION_TABLE_ENTRY(new_entry)->status = EXCEPTION_TABLE_ENTRY(entry)->status;
     EXCEPTION_TABLE_ENTRY(entry)->to = label_from;
     EXCEPTION_TABLE_ENTRY(entry)->next = new_entry;
 

@@ -10,7 +10,6 @@ struct YogExceptionTableEntry {
     pc_t from;
     pc_t to;
     pc_t target;
-    YogJmpStatus status;
 };
 
 typedef struct YogExceptionTableEntry YogExceptionTableEntry;
