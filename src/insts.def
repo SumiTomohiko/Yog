@@ -53,24 +53,7 @@ inst store_local
     PTR_AS(YogValArray, vars)->items[index] = val;
 }
 
-/**
- * make function in function.
- */
 inst make_block
-()
-(code)
-(f)
-{
-    f = YogFunction_new(env);
-    setup_script_function(env, f, code);
-    PTR_AS(YogFunction, f)->frame_to_long_return = PTR_AS(YogScriptFrame, CUR_FRAME)->frame_to_long_return;
-    PTR_AS(YogFunction, f)->frame_to_long_break = CUR_FRAME;
-}
-
-/**
- * make function in block.
- */
-inst make_block2
 ()
 (code)
 (f)

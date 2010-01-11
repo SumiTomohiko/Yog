@@ -3005,20 +3005,7 @@ compile_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
     uint_t lineno = NODE(node)->lineno;
     add_push_const(env, data, code, lineno);
-    switch (COMPILE_DATA(data)->ctx) {
-    case CTX_CLASS:
-    case CTX_MODULE:
-    case CTX_PKG:
-    case CTX_FUNC:
-        CompileData_add_make_block(env, data, lineno);
-        break;
-    case CTX_BLOCK:
-        CompileData_add_make_block2(env, data, lineno);
-        break;
-    default:
-        YOG_BUG(env, "unknown context (0x%x)", COMPILE_DATA(data)->ctx);
-        break;
-    }
+    CompileData_add_make_block(env, data, lineno);
 
     RETURN_VOID(env);
 }
