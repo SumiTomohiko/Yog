@@ -149,7 +149,7 @@ YogClass_new(YogEnv* env, const char* name, YogVal super)
     klass = YogClass_alloc(env, env->vm->cClass);
     PTR_AS(YogClass, klass)->allocator = NULL;
     PTR_AS(YogClass, klass)->name = INVALID_ID;
-    PTR_AS(YogClass, klass)->super = PTR2VAL(NULL);
+    PTR_AS(YogClass, klass)->super = YNIL;
 
     PTR_AS(YogClass, klass)->allocator = NULL;
     if (name != NULL) {

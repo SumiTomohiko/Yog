@@ -541,11 +541,11 @@ YogVM_init(YogVM* vm)
 
     INIT(mComparable);
 
-    vm->pkgs = PTR2VAL(NULL);
+    vm->pkgs = YNIL;
     init_read_write_lock(&vm->pkgs_lock);
     INIT(search_path);
 
-    vm->encodings = PTR2VAL(NULL);
+    vm->encodings = YNIL;
 
     INIT(finish_code);
 

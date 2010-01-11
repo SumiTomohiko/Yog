@@ -419,7 +419,7 @@ YogTable_foreach(YogEnv* env, YogVal table, int_t (*func)(YogEnv*, YogVal, YogVa
             enum st_retval retval = (enum st_retval)func(env, PTR_AS(YogTableEntry, ptr)->key, PTR_AS(YogTableEntry, ptr)->record, arg);
             switch (retval) {
                 case ST_CHECK:        /* check if hash is modified during iteration */
-                    tmp = PTR2VAL(NULL);
+                    tmp = YNIL;
                     if (i < PTR_AS(YogTable, table)->num_bins) {
                         for (tmp = TABLE_ENTRY_TOP(table, i); IS_PTR(tmp); tmp = PTR_AS(YogTableEntry, tmp)->next) {
                             if (VAL2PTR(tmp) == VAL2PTR(ptr)) {

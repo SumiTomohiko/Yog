@@ -1971,24 +1971,25 @@ static YogVal
 AllocLocalVarsTableArg_new(YogEnv* env, YogVal names, uint_t count)
 {
     SAVE_ARG(env, names);
+    YogVal arg = YUNDEF;
+    PUSH_LOCAL(env, arg);
 
-    YogVal arg = ALLOC_OBJ(env, AllocLocalVarsTableArg_keep_children, NULL, AllocLocalVarsTableArg);
+    arg = ALLOC_OBJ(env, AllocLocalVarsTableArg_keep_children, NULL, AllocLocalVarsTableArg);
     PTR_AS(AllocLocalVarsTableArg, arg)->names = names;
     PTR_AS(AllocLocalVarsTableArg, arg)->count = count;
 
-    RETURN(env, PTR2VAL(arg));
+    RETURN(env, arg);
 }
 
 static ID*
 alloc_local_vars_table(YogEnv* env, YogVal vars, uint_t count)
 {
     SAVE_ARG(env, vars);
-
     YogVal names = YUNDEF;
     YogVal arg = YUNDEF;
     PUSH_LOCALS2(env, names, arg);
 
-    names = PTR2VAL(ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * count));
+    names = ALLOC_OBJ_SIZE(env, NULL, NULL, sizeof(ID) * count);
     arg = AllocLocalVarsTableArg_new(env, names, count);
 
     YogTable_foreach(env, vars, alloc_local_vars_table_callback, &arg);
