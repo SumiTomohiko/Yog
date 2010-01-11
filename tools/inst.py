@@ -214,7 +214,8 @@ class CodeGenerator(object):
 
             s = """
     case OP(%(name)s):
-        {""" % { "name": inst.name.upper() }
+        {
+            SAVE_LOCALS_TO_NAME(env, op);""" % { "name": inst.name.upper() }
             lineno += len(s.split("\n")) - 1
             inc.write(s)
 
@@ -305,13 +306,8 @@ class CodeGenerator(object):
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
 
-            if (0 < num_stack_vals) and ((0 < len(inst.codes)) or (0 < len(inst.push_values))):
-                s = """
-            POP_LOCALS(env);"""
-                lineno += len(s.split("\n")) - 1
-                inc.write(s)
-
             s = """
+            RESTORE_LOCALS_FROM_NAME(env, op);
             break;
         }"""
             lineno += len(s.split("\n")) - 1

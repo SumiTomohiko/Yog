@@ -135,6 +135,10 @@ typedef struct YogEnv YogEnv;
 
 #define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = (env)->locals->body
 #define RESTORE_LOCALS(env)     (env)->locals->body = __cur_locals__
+#define SAVE_LOCALS_TO_NAME(env, name) \
+    YogLocals* __locals_##name##__ = (env)->locals->body
+#define RESTORE_LOCALS_FROM_NAME(env, name) \
+    (env)->locals->body = __locals_##name##__
 #if 0 && !defined(MINIYOG)
 #   define PUSH_LOCAL_TABLE(env, tbl)   do { \
     uint_t i; \
@@ -229,7 +233,6 @@ typedef struct YogEnv YogEnv;
 #define SAVE_ARGS6(env, x, y, z, t, u, v)  \
                                 SAVE_LOCALS((env)); \
                                 PUSH_LOCALS6((env), x, y, z, t, u, v)
-#define POP_LOCALS(env)         (env)->locals->body = (env)->locals->body->next
 #define RETURN(env, val)        do { \
     RESTORE_LOCALS(env); \
     return val; \

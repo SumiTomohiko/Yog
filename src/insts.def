@@ -83,6 +83,8 @@ inst call_function
 (...) depth: argc + 2 * kwargc + varargc + varkwargc + blockargc
 (...) depth: left + middle + right
 {
+    SAVE_LOCALS_TO_NAME(env, call_function);
+
     YogVal callee = POP();
     POP_ARGS(args, kwargs, vararg, varkwarg, blockarg);
     set_lhs_composition(env, left, middle, right);
@@ -91,9 +93,7 @@ inst call_function
     YOG_ASSERT(env, PTR_AS(YogClass, klass)->exec != NULL, "uncallable");
     PTR_AS(YogClass, klass)->exec(env, callee, argc, args, kwargc, kwargs, vararg, varkwarg, blockarg);
 
-    POP_LOCALS(env);
-    POP_LOCALS(env);
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, call_function);
 }
 
 inst load_global
@@ -140,6 +140,7 @@ inst load_super
 ()
 (val)
 {
+    SAVE_LOCALS_TO_NAME(env, load_super);
     YogVal klass = YUNDEF;
     YogVal super = YUNDEF;
     YogVal attr = YUNDEF;
@@ -160,8 +161,7 @@ inst load_super
         val = YogVal_get_descr(env, attr, self, c);
     }
 
-    POP_LOCALS(env);
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, load_super);
 }
 
 inst jump
@@ -197,6 +197,7 @@ inst jump_if_defined
 ()
 ()
 {
+    SAVE_LOCALS_TO_NAME(env, jump_if_defined);
     YogVal val = YUNDEF;
     PUSH_LOCAL(env, val);
 
@@ -205,7 +206,7 @@ inst jump_if_defined
         JUMP(dest);
     }
 
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, jump_if_defined);
 }
 
 inst dup
@@ -220,6 +221,7 @@ inst make_module
 (code)
 (...) depth: 2
 {
+    SAVE_LOCALS_TO_NAME(env, make_module);
     YogVal module = YUNDEF;
     YogVal frame = YUNDEF;
     PUSH_LOCALS2(env, module, frame);
@@ -237,7 +239,7 @@ inst make_module
 
     PUSH_FRAME(frame);
 
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, make_module);
 }
 
 inst make_class
@@ -245,6 +247,7 @@ inst make_class
 (code, super, name)
 (...) depth: 1
 {
+    SAVE_LOCALS_TO_NAME(env, make_class);
     YogVal kls = YUNDEF;
     YogVal frame = YUNDEF;
     YogVal attrs = YUNDEF;
@@ -266,7 +269,7 @@ inst make_class
 
     PUSH_FRAME(frame);
 
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, make_class);
 }
 
 inst push_self_name
@@ -320,6 +323,7 @@ inst load_attr
 (obj)
 (...) depth: 1
 {
+    SAVE_LOCALS_TO_NAME(env, load_attr);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
 
@@ -332,7 +336,7 @@ inst load_attr
     set_lhs_composition(env, 1, 0, 0);
     exec(env, obj, name);
 
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, load_attr);
 }
 
 inst make_array
@@ -354,6 +358,7 @@ inst make_dict
 (...) depth: 2 * size
 (dict)
 {
+    SAVE_LOCALS_TO_NAME(env, make_dict);
     YogVal key = YUNDEF;
     YogVal value = YUNDEF;
     PUSH_LOCALS2(env, key, value);
@@ -366,7 +371,7 @@ inst make_dict
         YogDict_set(env, dict, key, value);
     }
 
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, make_dict);
 }
 
 inst make_set
@@ -374,6 +379,7 @@ inst make_set
 (...) depth: size
 (set)
 {
+    SAVE_LOCALS_TO_NAME(env, make_set);
     YogVal elem = YUNDEF;
     PUSH_LOCAL(env, elem);
 
@@ -384,7 +390,7 @@ inst make_set
         YogSet_add(env, set, elem);
     }
 
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, make_set);
 }
 
 inst finish
@@ -412,6 +418,7 @@ inst print_top_multi_value
 (val)
 ()
 {
+    SAVE_LOCALS_TO_NAME(env, print_top_multi_value);
     YogVal s = YUNDEF;
     YogVal obj = YUNDEF;
     PUSH_LOCALS2(env, s, obj);
@@ -431,7 +438,7 @@ inst print_top_multi_value
     }
     printf("\n");
 
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, print_top_multi_value);
 }
 
 inst store_attr
@@ -439,10 +446,13 @@ inst store_attr
 (obj, val)
 ()
 {
+    SAVE_LOCALS_TO_NAME(env, store_attr);
     YogVal attr = YUNDEF;
     YogVal class_of_obj = YUNDEF;
     YogVal class_of_attr = YUNDEF;
-    PUSH_LOCALS3(env, attr, class_of_obj, class_of_attr);
+    YogVal class_name = YUNDEF;
+    YogVal attr_name = YUNDEF;
+    PUSH_LOCALS5(env, attr, class_of_obj, class_of_attr, class_name, attr_name);
 
     class_of_obj = YogVal_get_class(env, obj);
     BOOL has_attrs;
@@ -471,7 +481,7 @@ inst store_attr
         }
         else {
             ID id = PTR_AS(YogClass, class_of_obj)->name;
-            YogVal class_name = YogVM_id2name(env, env->vm, id);
+            class_name = YogVM_id2name(env, env->vm, id);
             YogError_raise_AttributeError(env, "can't set attribute to %s object", STRING_CSTR(class_name));
         }
     }
@@ -479,20 +489,14 @@ inst store_attr
         YogObj_set_attr_id(env, obj, name, val);
     }
     else {
-        YogVal class_name = YUNDEF;
-        YogVal attr_name = YUNDEF;
-        PUSH_LOCALS2(env, class_name, attr_name);
-
         ID id = PTR_AS(YogClass, class_of_obj)->name;
         YogVM* vm = env->vm;
         class_name = YogVM_id2name(env, vm, id);
         attr_name = YogVM_id2name(env, vm, name);
         YogError_raise_AttributeError(env, "%s object has no attribute \"%s\"", STRING_CSTR(class_name), STRING_CSTR(attr_name));
-
-        POP_LOCALS(env);
     }
 
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, store_attr);
 }
 
 inst not

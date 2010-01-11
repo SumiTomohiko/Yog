@@ -1329,6 +1329,7 @@ assign_expr(A) ::= postfix_expr(B) augmented_assign_op(C) logical_or_expr(D). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), B, VAL2ID(C), D);
 }
 assign_expr(A) ::= postfix_expr(B) AND_AND_EQUAL logical_or_expr(C). {
+    SAVE_LOCALS_TO_NAME(env, assign_expr);
     YogVal expr = YUNDEF;
     YogVal assign = YUNDEF;
     PUSH_LOCALS2(env, expr, assign);
@@ -1337,11 +1338,12 @@ assign_expr(A) ::= postfix_expr(B) AND_AND_EQUAL logical_or_expr(C). {
     expr = LogicalAnd_new(env, lineno, B, C);
     assign = Assign_new(env, lineno, B, expr);
 
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, assign_expr);
 
     A = assign;
 }
 assign_expr(A) ::= postfix_expr(B) BAR_BAR_EQUAL logical_or_expr(C). {
+    SAVE_LOCALS_TO_NAME(env, assign_expr);
     YogVal expr = YUNDEF;
     YogVal assign = YUNDEF;
     PUSH_LOCALS2(env, expr, assign);
@@ -1350,7 +1352,7 @@ assign_expr(A) ::= postfix_expr(B) BAR_BAR_EQUAL logical_or_expr(C). {
     expr = LogicalOr_new(env, lineno, B, C);
     assign = Assign_new(env, lineno, B, expr);
 
-    POP_LOCALS(env);
+    RESTORE_LOCALS_FROM_NAME(env, assign_expr);
 
     A = assign;
 }
