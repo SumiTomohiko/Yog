@@ -189,20 +189,6 @@ typedef struct CompileData CompileData;
 
 #define COMPILE_DATA(v)     PTR_AS(CompileData, (v))
 
-#define PUSH_TRY(env, data, node)  do { \
-    YogVal try_list_entry = TryListEntry_new((env)); \
-    PUSH_LOCAL(env, try_list_entry); \
-    \
-    TRY_LIST_ENTRY(try_list_entry)->prev = COMPILE_DATA((data))->try_list; \
-    COMPILE_DATA((data))->try_list = try_list_entry; \
-    TRY_LIST_ENTRY(try_list_entry)->node = (node); \
-    TRY_LIST_ENTRY(try_list_entry)->exc_tbl = YNIL;
-
-#define POP_TRY(env, data) \
-    COMPILE_DATA((data))->try_list = TRY_LIST_ENTRY(try_list_entry)->prev; \
-    POP_LOCALS((env)); \
-} while (0)
-
 #define PUSH_EXCEPTION_TABLE_ENTRY(data, entry) do { \
     YogVal last = COMPILE_DATA((data))->exc_tbl_last; \
     EXCEPTION_TABLE_ENTRY(last)->next = (entry); \
@@ -326,14 +312,45 @@ TryListEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* he
 }
 
 static YogVal
-TryListEntry_new(YogEnv* env)
+TryListEntry_new(YogEnv* env, YogVal node)
 {
-    YogVal entry = ALLOC_OBJ(env, TryListEntry_keep_children, NULL, TryListEntry);
-    PTR_AS(TryListEntry, entry)->prev = YUNDEF;
-    PTR_AS(TryListEntry, entry)->node = YUNDEF;
-    PTR_AS(TryListEntry, entry)->exc_tbl = YUNDEF;
+    SAVE_ARG(env, node);
+    YogVal ent = YUNDEF;
+    PUSH_LOCAL(env, ent);
 
-    return entry;
+    ent = ALLOC_OBJ(env, TryListEntry_keep_children, NULL, TryListEntry);
+    PTR_AS(TryListEntry, ent)->prev = YUNDEF;
+    PTR_AS(TryListEntry, ent)->node = node;
+    PTR_AS(TryListEntry, ent)->exc_tbl = YUNDEF;
+
+    RETURN(env, ent);
+}
+
+static YogVal
+CompileData_push_try(YogEnv* env, YogVal data, YogVal node)
+{
+    SAVE_ARGS2(env, data, node);
+    YogVal ent = YUNDEF;
+    PUSH_LOCAL(env, ent);
+
+    ent = TryListEntry_new(env, node);
+    TRY_LIST_ENTRY(ent)->prev = COMPILE_DATA(data)->try_list;
+    COMPILE_DATA(data)->try_list = ent;
+
+    RETURN(env, ent);
+}
+
+static void
+CompileData_pop_try(YogEnv* env, YogVal data)
+{
+    SAVE_ARG(env, data);
+    YogVal ent = YUNDEF;
+    PUSH_LOCAL(env, ent);
+
+    ent = COMPILE_DATA(data)->try_list;
+    COMPILE_DATA(data)->try_list = TRY_LIST_ENTRY(ent)->prev;
+
+    RETURN_VOID(env);
 }
 
 static void
@@ -2596,12 +2613,12 @@ static void
 compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
-
     YogVal label_head_start = YUNDEF;
     YogVal label_head_end = YUNDEF;
     YogVal label_finally_error_start = YUNDEF;
     YogVal label_finally_end = YUNDEF;
-    PUSH_LOCALS4(env, label_head_start, label_head_end, label_finally_error_start, label_finally_end);
+    YogVal try_list_entry = YUNDEF;
+    PUSH_LOCALS5(env, label_head_start, label_head_end, label_finally_error_start, label_finally_end, try_list_entry);
 
     label_head_start = Label_new(env);
     label_head_end = Label_new(env);
@@ -2618,7 +2635,7 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     COMPILE_DATA(data)->finally_list = finally_list_entry;
     FINALLY_LIST_ENTRY(finally_list_entry)->node = node;
 
-    PUSH_TRY(env, data, node);
+    try_list_entry = CompileData_push_try(env, data, node);
 
     exc_tbl_entry = ExceptionTableEntry_new(env);
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->next = YNIL;
@@ -2650,7 +2667,7 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 
     PUSH_EXCEPTION_TABLE_ENTRY(data, exc_tbl_entry);
 
-    POP_TRY(env, data);
+    CompileData_pop_try(env, data);
 
     COMPILE_DATA(data)->finally_list = FINALLY_LIST_ENTRY(finally_list_entry)->prev;
 
@@ -2726,7 +2743,8 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     YogVal excepts = YUNDEF;
     PUSH_LOCALS8(env, label_head_start, label_head_end, label_excepts_start, label_else_start, label_else_end, exc_tbl_entry, stmts, excepts);
     YogVal except = YUNDEF;
-    PUSH_LOCAL(env, except);
+    YogVal try_list_entry = YUNDEF;
+    PUSH_LOCALS2(env, except, try_list_entry);
 
     label_head_start = Label_new(env);
     label_head_end = Label_new(env);
@@ -2734,7 +2752,7 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     label_else_start = Label_new(env);
     label_else_end = Label_new(env);
 
-    PUSH_TRY(env, data, node);
+    try_list_entry = CompileData_push_try(env, data, node);
 
     exc_tbl_entry = ExceptionTableEntry_new(env);
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->next = YNIL;
@@ -2772,7 +2790,7 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
     PUSH_EXCEPTION_TABLE_ENTRY(data, exc_tbl_entry);
 
-    POP_TRY(env, data);
+    CompileData_pop_try(env, data);
 
     RETURN_VOID(env);
 }
