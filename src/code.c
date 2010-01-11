@@ -233,6 +233,7 @@ YogCode_define_classes(YogEnv* env, YogVal pkg)
 YogVal
 YogCode_new(YogEnv* env)
 {
+    SAVE_LOCALS(env);
     YogVal code = YUNDEF;
     PUSH_LOCAL(env, code);
 
@@ -253,8 +254,7 @@ YogCode_new(YogEnv* env)
     CODE(code)->class_name = INVALID_ID;
     CODE(code)->func_name = INVALID_ID;
 
-    POP_LOCALS(env);
-    return code;
+    RETURN(env, code);
 }
 
 /**

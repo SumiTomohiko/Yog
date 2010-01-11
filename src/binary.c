@@ -118,17 +118,19 @@ YogBinary_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 YogVal
 YogBinary_new(YogEnv* env, uint_t size)
 {
-    YogVal binary = PTR2VAL(ALLOC_OBJ(env, YogBinary_keep_children, NULL, YogBinary));
+    SAVE_LOCALS(env);
+    YogVal binary = YUNDEF;
+    YogVal body = YUNDEF;
+    PUSH_LOCALS2(env, binary, body);
+
+    binary = ALLOC_OBJ(env, YogBinary_keep_children, NULL, YogBinary);
     PTR_AS(YogBinary, binary)->size = 0;
     PTR_AS(YogBinary, binary)->body = YUNDEF;
-    PUSH_LOCAL(env, binary);
 
-    YogVal body = YogByteArray_new(env, size);
+    body = YogByteArray_new(env, size);
     PTR_AS(YogBinary, binary)->body = body;
 
-    POP_LOCALS(env);
-
-    return binary;
+    RETURN(env, binary);
 }
 
 /**

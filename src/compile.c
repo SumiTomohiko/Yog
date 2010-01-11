@@ -2547,11 +2547,18 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
 }
 
 static uint_t
-get_last_lineno(YogEnv* env, YogVal stmts)
+get_last_lineno(YogEnv* env, YogVal array)
 {
-    uint_t size = YogArray_size(env, stmts);
-    YogVal node = YogArray_at(env, stmts, size - 1);
-    return NODE(node)->lineno;
+    SAVE_ARG(env, array);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    uint_t size = YogArray_size(env, array);
+    YOG_ASSERT(env, 0 < size, "invalid size (0x%08x)", size);
+    node = YogArray_at(env, array, size - 1);
+    uint_t lineno = NODE(node)->lineno;
+
+    RETURN(env, lineno);
 }
 
 static void
@@ -2651,6 +2658,61 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 }
 
 static void
+compile_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, YogVal label_else_end)
+{
+    SAVE_ARGS3(env, node, data, label_else_end);
+    YogVal label_body_begin = YUNDEF;
+    YogVal label_body_end = YUNDEF;
+    YogVal types = YUNDEF;
+    YogVal type = YUNDEF;
+    YogVal stmts = YUNDEF;
+    PUSH_LOCALS5(env, label_body_begin, label_body_end, types, type, stmts);
+
+    label_body_begin = Label_new(env);
+    label_body_end = Label_new(env);
+
+    types = NODE(node)->u.except_body.types;
+    if (IS_PTR(types)) {
+        uint_t size = YogArray_size(env, types);
+        uint_t j;
+        for (j = 0; j < size; j++) {
+            type = YogArray_at(env, types, j);
+            uint_t lineno = NODE_LINENO(type);
+            CompileData_add_load_exception(env, data, lineno);
+            visit_node(env, visitor, type, data);
+            CompileData_add_match_exception(env, data, lineno);
+            CompileData_add_jump_if_true(env, data, lineno, label_body_begin);
+        }
+        uint_t lineno = get_last_lineno(env, types);
+        CompileData_add_jump(env, data, lineno, label_body_end);
+    }
+
+    add_inst(env, data, label_body_begin);
+
+    ID id = NODE(node)->u.except_body.var;
+    if (id != NO_EXC_VAR) {
+        uint_t lineno = NODE_LINENO(node);
+        CompileData_add_load_exception(env, data, lineno);
+        append_store(env, data, lineno, id);
+    }
+
+    stmts = NODE(node)->u.except_body.stmts;
+    visitor->visit_stmts(env, visitor, stmts, data);
+    uint_t lineno;
+    if (IS_PTR(stmts)) {
+        lineno = get_last_lineno(env, stmts);
+    }
+    else {
+        lineno = NODE(node)->lineno;
+    }
+    CompileData_add_jump(env, data, lineno, label_else_end);
+
+    add_inst(env, data, label_body_end);
+
+    RETURN_VOID(env);
+}
+
+static void
 compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -2663,6 +2725,8 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     YogVal stmts = YUNDEF;
     YogVal excepts = YUNDEF;
     PUSH_LOCALS8(env, label_head_start, label_head_end, label_excepts_start, label_else_start, label_else_end, exc_tbl_entry, stmts, excepts);
+    YogVal except = YUNDEF;
+    PUSH_LOCAL(env, except);
 
     label_head_start = Label_new(env);
     label_head_end = Label_new(env);
@@ -2697,57 +2761,8 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     uint_t size = YogArray_size(env, excepts);
     uint_t i;
     for (i = 0; i < size; i++) {
-        YogVal label_body_begin = YUNDEF;
-        YogVal label_body_end = YUNDEF;
-        YogVal node = YUNDEF;
-        YogVal types = YUNDEF;
-        YogVal type = YUNDEF;
-        YogVal stmts = YUNDEF;
-        PUSH_LOCALS6(env, label_body_begin, label_body_end, node, types, type, stmts);
-
-        label_body_begin = Label_new(env);
-        label_body_end = Label_new(env);
-
-        node = YogArray_at(env, excepts, i);
-        types = NODE(node)->u.except_body.types;
-        if (IS_PTR(types)) {
-            uint_t size = YogArray_size(env, types);
-            uint_t j;
-            for (j = 0; j < size; j++) {
-                type = YogArray_at(env, types, j);
-                uint_t lineno = NODE_LINENO(type);
-                CompileData_add_load_exception(env, data, lineno);
-                visit_node(env, visitor, type, data);
-                CompileData_add_match_exception(env, data, lineno);
-                CompileData_add_jump_if_true(env, data, lineno, label_body_begin);
-            }
-            CompileData_add_jump(env, data, lineno, label_body_end);
-        }
-
-        add_inst(env, data, label_body_begin);
-
-        ID id = NODE(node)->u.except_body.var;
-        if (id != NO_EXC_VAR) {
-            uint_t lineno = NODE_LINENO(node);
-            CompileData_add_load_exception(env, data, lineno);
-            append_store(env, data, lineno, id);
-        }
-
-        stmts = NODE(node)->u.except_body.stmts;
-        visitor->visit_stmts(env, visitor, stmts, data);
-        if (IS_PTR(stmts)) {
-            lineno = get_last_lineno(env, stmts);
-        }
-        else {
-            lineno = NODE(node)->lineno;
-        }
-        CompileData_add_jump(env, data, lineno, label_else_end);
-
-        add_inst(env, data, label_body_end);
-
-        /* PUSH_LOCALS6 pushes *two* tables */
-        POP_LOCALS(env);
-        POP_LOCALS(env);
+        except = YogArray_at(env, excepts, i);
+        compile_except(env, visitor, except, data, label_else_end);
     }
     add_raise_last_exception(env, data, NODE_LINENO(node));
 

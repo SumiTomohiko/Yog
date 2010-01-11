@@ -301,7 +301,8 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
     SAVE_ARG(env, pkg);
     YogVal eException = YUNDEF;
     YogVal eSystemCallError = YUNDEF;
-    PUSH_LOCALS2(env, eException, eSystemCallError);
+    YogVal exc = YUNDEF;
+    PUSH_LOCALS3(env, eException, eSystemCallError, exc);
     YogVM* vm = env->vm;
 
     eException = YogClass_new(env, "Exception", vm->cObject);
@@ -346,12 +347,9 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
 #undef DEFINE_METHOD
 #if !defined(MINIYOG)
 #   define EXCEPTION_NEW(member, name, f)  do { \
-    YogVal member; \
-    PUSH_LOCAL(env, member); \
-    member = YogClass_new(env, name, eSystemCallError); \
-    YogClass_define_method(env, member, pkg, "init", (f)); \
-    vm->member = member; \
-    POP_LOCALS(env); \
+    exc = YogClass_new(env, name, eSystemCallError); \
+    YogClass_define_method(env, exc, pkg, "init", (f)); \
+    vm->member = exc; \
 } while (0)
 #   include "errno_new.inc"
 #   undef EXCEPTION_NEW

@@ -30,11 +30,7 @@ raise_exception(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
     YogGetArgs_parse_args(env, "raise_exception", params, args, kw);
 
     if (!YogVal_is_subclass_of(env, exc, env->vm->eException)) {
-        YogVal receiver = env->vm->eException;
-        YogVal args[] = { exc };
-        PUSH_LOCALSX(env, array_sizeof(args), args);
-        exc = YogEval_call_method(env, receiver, "new", 1, args);
-        POP_LOCALS(env);
+        exc = YogEval_call_method1(env, env->vm->eException, "new", exc);
     }
 
     env->frame = PTR_AS(YogFrame, env->frame)->prev;

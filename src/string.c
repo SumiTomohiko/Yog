@@ -257,31 +257,34 @@ YogString_of_size(YogEnv* env, uint_t size)
     RETURN(env, string);
 }
 
-#define RETURN_STR(s)   do { \
-    size_t len = strlen(s); \
-    char* buffer = (char*)alloca(sizeof(char) * (len + 1)); \
-    memcpy(buffer, s, len + 1); \
-    YogVal body = YogCharArray_new_str(env, buffer); \
-    PUSH_LOCAL(env, body); \
-    \
-    YogVal string = alloc(env, env->vm->cString); \
-    PTR_AS(YogString, string)->encoding = YNIL; \
-    PTR_AS(YogString, string)->size = len + 1; \
-    PTR_AS(YogString, string)->body = body; \
-    \
-    POP_LOCALS(env); \
-    return string; \
-} while (0)
-
 YogVal
 YogString_from_str(YogEnv* env, const char* s)
 {
-    RETURN_STR(s);
+    SAVE_LOCALS(env);
+    YogVal str = YUNDEF;
+    YogVal body = YUNDEF;
+    PUSH_LOCALS2(env, str, body);
+
+    size_t len = strlen(s);
+    char* buffer = (char*)alloca(sizeof(char) * (len + 1));
+    memcpy(buffer, s, len + 1);
+    body = YogCharArray_new_str(env, buffer);
+
+    str = alloc(env, env->vm->cString);
+    PTR_AS(YogString, str)->encoding = YNIL;
+    PTR_AS(YogString, str)->size = len + 1;
+    PTR_AS(YogString, str)->body = body;
+
+    RETURN(env, str);
 }
 
 YogVal
 YogString_from_format(YogEnv* env, const char* fmt, ...)
 {
+    SAVE_LOCALS(env);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
     va_list ap;
     va_start(ap, fmt);
 #define BUFSIZE (1024)
@@ -293,10 +296,10 @@ YogString_from_format(YogEnv* env, const char* fmt, ...)
 #endif
 #undef BUFSIZE
     va_end(ap);
-    RETURN_STR(buf);
-}
+    s = YogString_from_str(env, buf);
 
-#undef RETURN_STR
+    RETURN(env, s);
+}
 
 YogVal
 YogString_clone(YogEnv* env, YogVal string)

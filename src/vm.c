@@ -214,6 +214,7 @@ setup_symbol_tables(YogEnv* env, YogVM* vm)
 static void
 setup_basic_class(YogEnv* env, YogVM* vm)
 {
+    SAVE_LOCALS(env);
     YogVal cObject = YUNDEF;
     YogVal cClass = YUNDEF;
     PUSH_LOCALS2(env, cObject, cClass);
@@ -230,7 +231,7 @@ setup_basic_class(YogEnv* env, YogVM* vm)
     vm->cObject = cObject;
     vm->cClass = cClass;
 
-    POP_LOCALS(env);
+    RETURN_VOID(env);
 }
 
 static void

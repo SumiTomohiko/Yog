@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove PTR2VAL
+desc: ""
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-11 02:20:04.664315 Z
+references: []
+
+id: 7cbf88a9e9c7beba893115f449f9a4ea6e56fcf5
+log_events: 
+- - 2010-01-11 02:20:05.043895 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
