@@ -255,6 +255,14 @@ Built-in Functions
    The Yog interpreter uses this function internally.
    If you want to mix-in a class and modules, use :func:`include` function as a decorator.
 
+.. function:: loop(&block)
+
+   :arg block: block to execute
+   :return: never return
+
+   Execute *block* eternally.
+   :func:`loop` passes a loop counter to *block*.
+
 .. function:: partial(f, \*args, \*\*kw)
 
    :arg f: function to call
