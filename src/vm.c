@@ -316,7 +316,7 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
     setup_basic_class(env, vm);
     builtins = alloc_skelton_pkg(env, vm);
     setup_classes(env, vm, builtins);
-    YogPackage_init(env, builtins);
+    YogPackage_init(env, builtins, TYPE_PACKAGE);
     set_main_thread_class(env, vm);
     YogException_define_classes(env, builtins);
     YogObject_boot(env, vm->cObject, builtins);
@@ -450,13 +450,13 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(finish_code);
     KEEP(main_thread);
     KEEP(running_threads);
+#undef KEEP
 
     YogIndirectPointer* indirect_ptr = vm->indirect_ptr;
     while (indirect_ptr != NULL) {
-        KEEP(indirect_ptr->val);
+        YogGC_keep(env, &indirect_ptr->val, keeper, heap);
         indirect_ptr = indirect_ptr->next;
     }
-#undef KEEP
 }
 
 static void
@@ -907,6 +907,18 @@ get_proc(YogEnv* env, LIB_HANDLE handle, const char* name)
 #endif
 }
 
+static void
+raise_dlerror(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    const char* msg = dlerror();
+    if (msg == NULL) {
+        RETURN_VOID(env);
+    }
+    YogError_raise_ImportError(env, "%s", msg);
+    RETURN_VOID(env);
+}
+
 static YogVal
 import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
 {
@@ -941,6 +953,7 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     CLEAR_ERROR;
     LIB_HANDLE handle = open_library(env, path);
     if (handle == NULL) {
+        raise_dlerror(env);
         RETURN(env, YUNDEF);
     }
 

@@ -25,7 +25,7 @@ extern "C" {
 /* src/package.c */
 void YogPackage_define_classes(YogEnv*, YogVal);
 void YogPackage_define_function(YogEnv*, YogVal, const char*, void*);
-void YogPackage_init(YogEnv*, YogVal);
+void YogPackage_init(YogEnv*, YogVal, type_t);
 void YogPackage_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 YogVal YogPackage_new(YogEnv*);
 

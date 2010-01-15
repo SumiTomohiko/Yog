@@ -1,12 +1,13 @@
 %module wx
 
-%native(set_client_data)    YogVal set_client_data(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block);
+%native(set_client_data)    YogVal set_client_data(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block);
 
 %{
 #include <alloca.h>
 #include "wx/wx.h"
 #include "yog/eval.h"
 #include "yog/function.h"
+#include "yog/get_args.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -15,12 +16,14 @@ class Callback: public wxObject
 {
 private:
     YogVM* vm;
+    YogIndirectPointer* pkg;
     YogIndirectPointer* func;
 public:
-    Callback(YogEnv* env, YogVal func)
+    Callback(YogEnv* env, YogVal pkg, YogVal func)
     {
         YogVM* vm = env->vm;
         this->vm = vm;
+        this->pkg = YogVM_alloc_indirect_ptr(env, vm, pkg);
         this->func = YogVM_alloc_indirect_ptr(env, vm, func);
     }
 
@@ -28,6 +31,7 @@ public:
     {
         YogEnv* env = YogVM_get_env(this->vm);
         YogVM_free_indirect_ptr(env, this->vm, this->func);
+        YogVM_free_indirect_ptr(env, this->vm, this->pkg);
     }
 
     void OnEvent(wxEvent& event)
@@ -36,10 +40,9 @@ public:
         YogEnv* env = YogVM_get_env(self->vm);
         YOG_ASSERT(env, env != NULL, "env not found");
         SAVE_LOCALS(env);
-        YogVal klass = YUNDEF;
         YogVal proxy = YUNDEF;
         YogVal shadow = YUNDEF;
-        PUSH_LOCALS3(env, klass, proxy, shadow);
+        PUSH_LOCALS2(env, proxy, shadow);
         YogVal args[] = { YUNDEF };
         PUSH_LOCALSX(env, 1, args);
 
@@ -48,10 +51,9 @@ public:
         swig_name.Append(wxT(" *"));
         swig_type_info* swig_type = SWIG_TypeQuery(swig_name.mb_str());
         YOG_ASSERT(env, swig_type != NULL, "swig_type_info (%s) not found", swig_name.mb_str());
-        SwigYogClientData* data = (SwigYogClientData*)swig_type->clientdata;
-        klass = data->klass->val;
-        proxy = YogEval_call_method(env, klass, "new", 0, NULL);
-        shadow = SWIG_NewPointerObj(&event, swig_type, 0);
+        YogIndirectPointer* klass = (YogIndirectPointer*)swig_type->clientdata;
+        proxy = YogEval_call_method(env, klass->val, "new", 0, NULL);
+        shadow = Shadow_new(env, this->pkg->val, &event, swig_type, 0);
         YogObj_set_attr(env, proxy, "this", shadow);
         args[0] = proxy;
         YogCallable_call(env, self->func->val, array_sizeof(args), args);
@@ -72,20 +74,22 @@ public:
 
     ~ClientData()
     {
-        PTR_AS(SwigYogObject, this->ptr->val)->ptr = NULL;
+        PTR_AS(Shadow, this->ptr->val)->ptr = NULL;
         YogEnv* env = YogVM_get_env(this->vm);
         YogVM_free_indirect_ptr(env, this->vm, this->ptr);
     }
 };
 
 YogVal
-set_client_data(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
+set_client_data(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    SAVE_ARGS4(env, self, args, kw, block);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal shadow = YUNDEF;
     PUSH_LOCAL(env, shadow);
-    shadow = YogArray_at(env, args, 0);
-    wxEvtHandler* handler = (wxEvtHandler*)PTR_AS(SwigYogObject, shadow)->ptr;
+    YogCArg params[] = { { "shadow", &shadow }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "set_client_data", params, args, kw);
+
+    wxEvtHandler* handler = (wxEvtHandler*)PTR_AS(Shadow, shadow)->ptr;
 
     YogVM* vm = env->vm;
     YogIndirectPointer* ptr = YogVM_alloc_indirect_ptr(env, vm, shadow);
@@ -104,7 +108,7 @@ set_client_data(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)
 }
 
 %typemap(in) Callback* {
-    $1 = new Callback(env, $input);
+    $1 = new Callback(env, pkg, $input);
 }
 
 %typemap(in) (int& argc, wxChar** argv) (int temp) {
@@ -196,7 +200,7 @@ public:
 class wxApp: public wxAppBase
 {
     %feature("yogappend") wxApp "\n\
-    _wx.wxEntryStart(ARGV.size, ARGV)\n \
+    _wx.wxEntryStart(ARGV)\n \
     try\n\
       handler = self.get_attr(\"OnPreInit\")\n\
     except AttributeError\n\

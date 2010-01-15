@@ -16,22 +16,29 @@
 SWIGINTERN swig_module_info*
 SWIG_GetModule(void* clientdata)
 {
-    /* TODO */
+    /* Nothing to do? */
     return NULL;
 }
 
 SWIGRUNTIME void
 SWIG_SetModule(void* clientdata, swig_module_info *swig_module)
 {
-    /* TODO */
+    /* Nothing to do? */
 }
 %}
 %init "swiginit.swg"
 %init %{
-extern "C" void
-SWIG_init(YogEnv* env, YogVal pkg)
+extern "C" YogVal
+SWIG_init(YogEnv* env)
 {
-    SAVE_ARG(env, pkg);
+    SAVE_LOCALS(env);
+    YogVal pkg = YUNDEF;
+    YogVal cShadow = YUNDEF;
+    PUSH_LOCALS2(env, pkg, cShadow);
+
+    pkg = Package_new(env);
+    cShadow = YogClass_new(env, "Shadow", YNIL);
+    PTR_AS(Package, pkg)->cShadow = cShadow;
 
     SWIG_InitializeModule(NULL);
 
@@ -41,7 +48,7 @@ SWIG_init(YogEnv* env, YogVal pkg)
         pf++;
     }
 
-    RETURN_VOID(env);
+    RETURN(env, pkg);
 }
 %}
 
@@ -100,6 +107,7 @@ SWIG_AsVal_dec(bool)(YogVal obj, bool* val)
 #include "yog/dict.h"
 #include "yog/error.h"
 #include "yog/gc.h"
+#include "yog/get_args.h"
 #include "yog/object.h"
 #include "yog/package.h"
 #include "yog/string.h"
@@ -111,59 +119,71 @@ SWIG_AsVal_dec(bool)(YogVal obj, bool* val)
 #define SWIG_ConvertPtr(obj, pptr, type, flags) \
     SWIG_Yog_ConvertPtr(obj, pptr, type, flags)
 #define SWIG_NewPointerObj(ptr, type, flags) \
-    SWIG_Yog_NewPointerObj(env, ptr, type, flags)
-#define SWIG_NewClientData(obj)     SwigYogClientData_New(env, obj)
+    Shadow_new(env, pkg, ptr, type, flags)
 
-#define SWIG_POINTER_IMPLICIT_CONV  (SWIG_POINTER_DISOWN   << 1)
+#define SWIG_POINTER_IMPLICIT_CONV  (SWIG_POINTER_DISOWN << 1)
 
-#define SWIG_Error(code, msg)
+#define SWIG_Error(code, msg)   raise_error(env, code, msg)
 #define SWIG_fail
 
 struct Wrapper {
     const char* name;
-    YogVal (*f)(YogEnv*, YogVal, YogVal, YogVal, YogVal);
+    YogVal (*f)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 };
 
 typedef struct Wrapper Wrapper;
 
-struct SwigYogObject {
+struct Shadow {
     struct YogBasicObj base;
     void* ptr;
     swig_type_info* ty;
     bool own;
-    YogVal next;
 };
 
-typedef struct SwigYogObject SwigYogObject;
+typedef struct Shadow Shadow;
 
-struct SwigYogClientData {
-    YogIndirectPointer* klass;
-    YogVal newraw;
-    YogVal newargs;
-    YogVal destroy;
-    int delargs;
-    int implicitconv;
+#define TYPE_SHADOW     ((type_t)Shadow_new)
+
+struct Package {
+    struct YogPackage base;
+    YogVal cShadow;
 };
 
-typedef struct SwigYogClientData SwigYogClientData;
+typedef struct Package Package;
 
-SWIGRUNTIME SwigYogClientData*
-SwigYogClientData_New(YogEnv* env, YogVal obj)
+#define TYPE_PRIVATE_PACKAGE    ((type_t)Package_new)
+
+static void
+raise_error(YogEnv* env, int_t code, const char* msg)
 {
-    SAVE_ARG(env, obj);
+    YogError_raise_TypeError(env, "%d: %s", code, msg);
+}
 
-    if (!IS_PTR(obj)) {
-        RETURN(env, 0);
-    }
+static void
+Package_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    YogPackage_keep_children(env, ptr, keeper, heap);
 
-    size_t size = sizeof(SwigYogClientData);
-    SwigYogClientData* data = (SwigYogClientData*)malloc(size);
-    if (data == NULL) {
-        YogError_out_of_memory(env);
-    }
-    data->klass = YogVM_alloc_indirect_ptr(env, env->vm, obj);
+    Package* pkg = (Package*)ptr;
+#define KEEP(member)    YogGC_keep(env, &pkg->member, keeper, heap)
+    KEEP(cShadow);
+#undef KEEP
+}
 
-    RETURN(env, data);
+static YogVal
+Package_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal pkg = YUNDEF;
+    PUSH_LOCAL(env, pkg);
+
+    pkg = ALLOC_OBJ(env, Package_keep_children, NULL, Package);
+    YogObj_init(env, pkg, TYPE_PRIVATE_PACKAGE, FLAG_PKG, env->vm->cPackage);
+    PTR_AS(Package, pkg)->cShadow = YUNDEF;
+
+    YogPackage_init(env, pkg, TYPE_PRIVATE_PACKAGE);
+
+    RETURN(env, pkg);
 }
 
 SWIGRUNTIME YogVal
@@ -194,83 +214,50 @@ SWIG_Yog_ConvertPtrAndOwn(YogEnv* env, YogVal thiz, void** ptr, swig_type_info* 
         RETURN(env, SWIG_OK);
     }
 
-    void* vptr = PTR_AS(SwigYogObject, thiz)->ptr;
-    OUTPUT_VALUE(own, PTR_AS(SwigYogObject, thiz)->own);
-
     if (flags & SWIG_POINTER_DISOWN) {
-        PTR_AS(SwigYogObject, thiz)->own = false;
+        PTR_AS(Shadow, thiz)->own = false;
     }
 
+    void* vptr = PTR_AS(Shadow, thiz)->ptr;
     if (ty == NULL) {
         OUTPUT_VALUE(ptr, vptr);
         RETURN(env, SWIG_OK);
     }
 
-#if 0
-    if ((ty->clientdata != NULL) && YogVal_is_subclass_of(env, obj, ty->clientdata->klass)) {
-        OUTPUT_VALUE(ptr, vptr);
-        RETURN(SWIG_OK);
-    }
-#else
-    OUTPUT_VALUE(ptr, vptr);
-    RETURN(env, SWIG_OK);
-#endif
-
-    const char* c = PTR_AS(SwigYogObject, thiz)->ty->name;
-    swig_cast_info* tc = SWIG_TypeCheck(c, ty);
+    swig_cast_info* tc = SWIG_TypeCheckStruct(PTR_AS(Shadow, thiz)->ty, ty);
     if (tc == NULL) {
         RETURN(env, SWIG_ERROR);
     }
 
-    int newmemory = 0;
+    int newmemory;
     OUTPUT_VALUE(ptr, SWIG_TypeCast(tc, vptr, &newmemory));
-    assert(newmemory != 0);
-
     RETURN(env, SWIG_OK);
 #undef OUTPUT_VALUE
 }
 
-static void
-SwigYogObject_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+static YogVal
+Shadow_new(YogEnv* env, YogVal pkg, void* ptr, swig_type_info* ty, int flags)
 {
-    YogBasicObj_keep_children(env, ptr, keeper, heap);
-
-    SwigYogObject* obj = (SwigYogObject*)ptr;
-#define KEEP(member)    YogGC_keep(env, &obj->member, keeper, heap)
-    KEEP(next);
-#undef KEEP
-}
-
-SWIGRUNTIME YogVal
-SwigYogObject_new(YogEnv* env, void* ptr, swig_type_info* ty, bool own)
-{
-    SAVE_LOCALS(env);
-    YogVal sobj = YUNDEF;
-    PUSH_LOCAL(env, sobj);
-
-    sobj = ALLOC_OBJ(env, SwigYogObject_keep_children, NULL, SwigYogObject);
-    YogBasicObj_init(env, sobj, 0, YUNDEF);
-    PTR_AS(SwigYogObject, sobj)->ptr = ptr;
-    PTR_AS(SwigYogObject, sobj)->ty = ty;
-    PTR_AS(SwigYogObject, sobj)->own = own;
-    PTR_AS(SwigYogObject, sobj)->next = YUNDEF;
-
-    RETURN(env, sobj);
-}
-
-SWIGRUNTIME YogVal
-SWIG_Yog_NewPointerObj(YogEnv* env, void* ptr, swig_type_info* type, int flags)
-{
-    SAVE_LOCALS(env);
-    YogVal robj = YUNDEF;
-    PUSH_LOCAL(env, robj);
-
-    if (!ptr) {
-        RETURN(env, YUNDEF);
+    SAVE_ARG(env, pkg);
+    YogVal shadow = YUNDEF;
+    YogVal klass = YUNDEF;
+    YogVal cShadow = YUNDEF;
+    PUSH_LOCALS3(env, shadow, klass, cShadow);
+    if (ptr == NULL) {
+        RETURN(env, YNIL);
     }
-    bool own = (flags & SWIG_POINTER_OWN) ? true : false;
-    robj = SwigYogObject_new(env, ptr, type, own);
-    RETURN(env, robj);
+    if (!IS_PTR(pkg) || (BASIC_OBJ_TYPE(pkg) != TYPE_PRIVATE_PACKAGE)) {
+        YogError_raise_TypeError(env, "invalid package");
+    }
+    cShadow = PTR_AS(Package, pkg)->cShadow;
+
+    shadow = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Shadow);
+    YogBasicObj_init(env, shadow, TYPE_SHADOW, 0, cShadow);
+    PTR_AS(Shadow, shadow)->ptr = ptr;
+    PTR_AS(Shadow, shadow)->ty = ty;
+    PTR_AS(Shadow, shadow)->own = (flags & SWIG_POINTER_OWN) ? true : false;
+
+    RETURN(env, shadow);
 }
 
 SWIGINTERN void
@@ -280,7 +267,7 @@ SWIG_SetConstant(YogEnv* env, YogVal dict, const char* name, YogVal obj)
     YogVal key = YUNDEF;
     PUSH_LOCAL(env, key);
 
-    key = YogString_new_str(env, name);
+    key = YogString_from_str(env, name);
     YogDict_set(env, dict, key, obj);
 
     RETURN_VOID(env);
@@ -302,8 +289,8 @@ SWIG_AppendOutput(YogEnv* env, YogVal result, YogVal obj)
     if (!IS_PTR(result)) {
         RETURN(env, obj);
     }
-    if (IS_OBJ_OF(env, result, cArray)) {
-        array = YogArray_new(env);
+    if (BASIC_OBJ_TYPE(result) == TYPE_ARRAY) {
+        array = YogArray_of_size(env, 2);
         YogArray_push(env, array, result);
         YogArray_push(env, array, obj);
         RETURN(env, array);

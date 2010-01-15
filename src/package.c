@@ -30,13 +30,13 @@ YogPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap
 }
 
 void
-YogPackage_init(YogEnv* env, YogVal pkg)
+YogPackage_init(YogEnv* env, YogVal pkg, type_t type)
 {
     SAVE_ARG(env, pkg);
     YogVal attrs = YUNDEF;
     PUSH_LOCAL(env, attrs);
 
-    YogObj_init(env, pkg, TYPE_PACKAGE, FLAG_PKG, env->vm->cPackage);
+    YogObj_init(env, pkg, type, FLAG_PKG, env->vm->cPackage);
     attrs = YogTable_new_symbol_table(env);
     PTR_AS(YogObj, pkg)->attrs = attrs;
 
@@ -51,7 +51,7 @@ alloc(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, pkg);
 
     pkg = ALLOC_OBJ(env, YogPackage_keep_children, NULL, YogPackage);
-    YogPackage_init(env, pkg);
+    YogPackage_init(env, pkg, TYPE_PACKAGE);
 
     RETURN(env, pkg);
 }

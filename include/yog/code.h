@@ -70,6 +70,7 @@ extern "C" {
 /* src/code.c */
 void YogCode_define_classes(YogEnv*, YogVal);
 void YogCode_dump(YogEnv*, YogVal);
+BOOL YogCode_get_lineno(YogEnv*, YogVal, uint_t, uint_t*);
 YogVal YogCode_new(YogEnv*);
 
 /* src/code.inc */

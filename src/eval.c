@@ -292,15 +292,6 @@ exec_get_attr(YogEnv* env, YogVal obj, ID name)
         YogError_raise_AttributeError(env, "%s object has no attribute \"%s\"", STRING_CSTR(class_name), STRING_CSTR(attr_name));
     }
     class_of_attr = YogVal_get_class(env, attr);
-    /**
-     * DIRTY HACK. THE BELOW CODE MUST BE REMOVED IN THE PRODUCT CODE.
-     * The current version can't keep Swig's shadow objects' class. These class
-     * are set as UNDEF. So here can't get shadow objects' descriptors.
-     */
-    if (!IS_PTR(class_of_attr)) {
-        FRAME_PUSH(env, attr);
-        RETURN_VOID(env);
-    }
     void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogClass, class_of_attr)->exec_get_descr;
     if (exec == NULL) {
         FRAME_PUSH(env, attr);
@@ -758,8 +749,15 @@ YogEval_mainloop(YogEnv* env)
 
 #if 0 && !defined(MINIYOG)
         do {
-            const char* opname = YogCode_get_op_name(op);
-            TRACE("%p: PC=%u, op=%s", env, PC, opname);
+            if (env->vm->gc_stress) {
+                uint_t lineno;
+                if (!YogCode_get_lineno(env, PTR2VAL(CODE), PC, &lineno)) {
+                    lineno = 0;
+                };
+                const char* opname = YogCode_get_op_name(op);
+                TRACE("%p: PC=%u, lineno=%u, op=%s", env, PC, lineno, opname);
+                YogCopying_check(env, THREAD_HEAP(env->thread));
+            }
         } while (0);
 #endif
 #if 0

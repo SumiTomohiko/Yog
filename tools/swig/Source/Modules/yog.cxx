@@ -2,6 +2,7 @@
 #include "swigmod.h"
 
 #define BUF_SIZE    1024
+#define LOCALS_MAX  8
 
 class YOG: public Language {
 private:
@@ -90,27 +91,32 @@ private:
         SwigType* realct = Copy(real_classname);
         SwigType_add_pointer(realct);
         SwigType_remember(realct);
-        Printv(this->f_wrappers,
+        String *cname = NewStringf("%s_swigregister", this->class_name);
+        String* type = NewStringf("SWIGTYPE%s", SwigType_manglestr(ct));
+        Printf(this->f_wrappers,
             "\n"
-            "SWIGINTERN YogVal ", this->class_name, "_swigregister(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block)\n"
+            "SWIGINTERN YogVal %s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)\n"
             "{\n"
-            "    SAVE_ARGS4(env, self, args, kw, block);\n"
-            "    YogVal obj = YUNDEF;\n"
-            "    PUSH_LOCAL(env, obj);\n"
-            "    obj = YogArray_at(env, args, 0);\n"
-            "    SWIG_TypeNewClientData(SWIGTYPE", SwigType_manglestr(ct), ", SWIG_NewClientData(obj));\n"
+            "    SAVE_ARGS5(env, self, pkg, args, kw, block);\n"
+            "    YogVal klass = YUNDEF;\n"
+            "    PUSH_LOCAL(env, klass);\n"
+            "    YogCArg params[] = {\n"
+            "        { \"klass\", &klass },\n"
+            "        { NULL, NULL } };\n"
+            "    YogGetArgs_parse_args(env, \"%s\", params, args, kw);\n"
+            "    YogIndirectPointer* ptr;\n"
+            "    ptr = YogVM_alloc_indirect_ptr(env, env->vm, klass);\n"
+            "    SWIG_TypeNewClientData(%s, ptr);\n"
             "    RETURN(env, YNIL);\n"
             "}\n",
-            NIL);
+            cname, cname, type);
 
-        String *cname = NewStringf("%s_swigregister", this->class_name);
         this->add_method(cname, cname);
-        Delete(cname);
         Delete(ct);
         Delete(realct);
 
         Printv(this->f_shadow,"end\n", NIL);
-        Printf(this->f_shadow, "%s.%s_swigregister(%s)\n", module, class_name, class_name);
+        Printf(this->f_shadow, "%s.%s(%s)\n", module, cname, class_name);
 
         return SWIG_OK;
     }
@@ -214,11 +220,8 @@ public:
         if (rest_arg_num == 1) {
             strcpy(name, "PUSH_LOCAL");
         }
-        else if (rest_arg_num <= 4) {
-            snprintf(name, BUF_SIZE, "PUSH_LOCALS%d", rest_arg_num);
-        }
         else {
-            strcpy(name, "PUSH_LOCALS4");
+            snprintf(name, BUF_SIZE, "PUSH_LOCALS%d", rest_arg_num < LOCALS_MAX ? rest_arg_num : LOCALS_MAX);
         }
         Printf(dest, name);
         Printf(dest, "(env");
@@ -282,8 +285,8 @@ public:
         String *iname = Getattr(n, "sym:name");
         String *wname = Swig_name_wrapper(iname);
         Printv(f->def,
-            "SWIGINTERN YogVal ", wname, "(YogEnv* env, YogVal self, YogVal args, YogVal kw, YogVal block) {\n",
-            "    SAVE_ARGS4(env, self, args, kw, block);\n",
+            "SWIGINTERN YogVal ", wname, "(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block) {\n",
+            "    SAVE_ARGS5(env, self, pkg, args, kw, block);\n",
             NIL);
 
         int i;
@@ -304,7 +307,7 @@ public:
                     p = Getattr(p, "tmap:in:next");
                 }
 
-                if (i % 4 == 0) {
+                if (i % LOCALS_MAX == 0) {
                     this->print_locals_guard(f->code, num_arguments - i);
                 }
 
@@ -312,28 +315,37 @@ public:
                 snprintf(s, BUF_SIZE, ", obj%d", i);
                 Printf(f->code, s);
 
-                if (i % 4 == 3) {
+                if (i % LOCALS_MAX == (LOCALS_MAX - 1)) {
                     Printf(f->code, ");\n");
                 }
             }
-            if (i % 4 != 0) {
+            if (i % LOCALS_MAX != 0) {
                 Printf(f->code, ");\n");
             }
         }
-        Append(f->code, "    YogVal resultobj = YUNDEF;\n");
+        Append(f->code, "    YogVal resultobj = YNIL;\n");
         Append(f->code, "    PUSH_LOCAL(env, resultobj);\n");
-
+        Append(f->code, "    YogCArg params[] = {\n");
         for (i = 0, p = l; i < num_arguments; i++) {
             while (checkAttribute(p, "tmap:in:numinputs", "0")) {
                 p = Getattr(p, "tmap:in:next");
             }
-
-            char s[BUF_SIZE];
-            snprintf(s, BUF_SIZE, "    obj%d = YogArray_at(env, args, %d);\n", i, i);
+            String* name = Getattr(p, "name");
+            if (Strcmp(name, "self") == 0) {
+                name = NewString("this");
+            }
+            String* s = NewString("");
+            Printf(s, "        { \"%s\", &obj%d },\n", name, i);
             Append(f->code, s);
 
             p = Getattr(p, "tmap:in:next");
         }
+        String* tmp = NewString("");
+        Printf(tmp,
+            "        { NULL, NULL } };\n"
+            "    YogGetArgs_parse_args(env, \"%s\", params, args, kw);\n",
+            iname);
+        Append(f->code, tmp);
 
         for (i = 0, p = l; i < num_arguments; i++) {
             while (checkAttribute(p, "tmap:in:numinputs", "0")) {
@@ -348,6 +360,7 @@ public:
             snprintf(s, BUF_SIZE, "obj%d", i);
             Replaceall(tm, "$input", s);
             Replaceall(tm, "$disown", "0");
+            Replaceall(tm, "$symname", iname);
             Append(f->code, tm);
 
             p = Getattr(p, "tmap:in:next");
@@ -359,12 +372,14 @@ public:
         SwigType *d = Getattr(n, "type");
         if ((tm = Swig_typemap_lookup_out("out", n, "result", f, actioncode))) {
             Replaceall(tm, "$result", "resultobj");
+            const char* own;
             if (GetFlag(n, "feature:new")) {
-                Replaceall(tm, "$owner", "SWIG_POINTER_OWN");
+                own = "SWIG_POINTER_OWN";
             }
             else {
-                Replaceall(tm, "$owner", "0");
+                own = "0";
             }
+            Replaceall(tm, "$owner", own);
             Printf(f->code, "%s\n", tm);
             Delete(tm);
         }
