@@ -513,4 +513,12 @@ co.resume()
 print(co.dead?)
 """, "true")
 
+    def test_machine_stack_size0(self):
+        self._test("""
+co = Coroutine.new(machine_stack_size: 8 * 1024 * 1024) do
+  print(42)
+end
+co.resume()
+""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
