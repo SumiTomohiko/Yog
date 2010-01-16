@@ -108,6 +108,8 @@ struct YogVM {
 
     struct YogIndirectPointer* indirect_ptr;
     pthread_mutex_t indirect_ptr_lock;
+
+    BOOL debug_import;
 };
 
 typedef struct YogVM YogVM;

@@ -10,6 +10,7 @@
 #   include <malloc.h>
 #endif
 #include <pthread.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #if defined(HAVE_STRINGS_H)
@@ -584,6 +585,8 @@ YogVM_init(YogVM* vm)
 
     vm->indirect_ptr = NULL;
     pthread_mutex_init(&vm->indirect_ptr_lock, NULL);
+
+    vm->debug_import = FALSE;
 }
 
 void
@@ -908,14 +911,17 @@ get_proc(YogEnv* env, LIB_HANDLE handle, const char* name)
 }
 
 static void
-raise_dlerror(YogEnv* env)
+print_dlopen_error(YogEnv* env)
 {
     SAVE_LOCALS(env);
+    if (!env->vm->debug_import) {
+        RETURN_VOID(env);
+    }
     const char* msg = dlerror();
     if (msg == NULL) {
         RETURN_VOID(env);
     }
-    YogError_raise_ImportError(env, "%s", msg);
+    fprintf(stderr, "%s\n", msg);
     RETURN_VOID(env);
 }
 
@@ -953,7 +959,7 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
     CLEAR_ERROR;
     LIB_HANDLE handle = open_library(env, path);
     if (handle == NULL) {
-        raise_dlerror(env);
+        print_dlopen_error(env);
         RETURN(env, YUNDEF);
     }
 

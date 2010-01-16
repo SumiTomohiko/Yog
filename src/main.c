@@ -51,13 +51,12 @@ usage()
 {
     puts("yog [options] [file]");
     puts("options:");
-    puts("  --debug-parser: ");
-    puts("  --gc-stress: ");
-    puts("  --help: ");
-    puts("  --init-heap-size=size: ");
-    puts("  --print-gc-stat: ");
-    puts("  --threshold=size: ");
-    puts("  --version");
+    puts("  --debug-import: print importing log");
+    puts("  --gc-stress:");
+    puts("  --help: show this message");
+    puts("  --init-heap-size=size:");
+    puts("  --threshold=size:");
+    puts("  --version: print version");
 }
 
 static size_t
@@ -125,7 +124,7 @@ enable_gc_stress(YogVM* vm, uint_t gc_stress_level, uint_t level)
 int_t
 main(int_t argc, char* argv[])
 {
-    int_t debug_parser = 0;
+    uint_t debug_import = 0;
     uint_t gc_stress_level = 0;
     int_t help = 0;
 #define DEFAULT_INIT_HEAP_SIZE  (1 * 1024 * 1024)
@@ -135,13 +134,13 @@ main(int_t argc, char* argv[])
     size_t threshold = DEFAULT_THRESHOLD;
 #undef DEFAULT_THRESHOLD
     struct option options[] = {
-        { "debug-parser", no_argument, &debug_parser, 1 },
+        { "debug-import", no_argument, &debug_import, 1 },
         { "gc-stress", no_argument, NULL, 'g' },
         { "help", no_argument, &help, 1 },
         { "init-heap-size", required_argument, NULL, 'i' },
         { "threshold", required_argument, NULL, 't' },
         { "version", no_argument, NULL, 'v' },
-        { 0, 0, 0, 0 },
+        { NULL, 0, NULL, 0 },
     };
     char c = 0;
     while ((c = getopt_long(argc, argv, "", options, NULL)) != -1) {
@@ -186,6 +185,7 @@ main(int_t argc, char* argv[])
     YogVM vm;
     YogVM_init(&vm);
     enable_gc_stress(&vm, gc_stress_level, 2);
+    vm.debug_import = debug_import != 0 ? TRUE : FALSE;
     env.vm = &vm;
     YogVM_add_locals(&env, env.vm, &locals);
 
