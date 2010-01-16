@@ -44,7 +44,7 @@ SWIG_init(YogEnv* env)
 
     Wrapper* pf = functions;
     while (pf->name != NULL) {
-        YogPackage_define_function(env, pkg, pf->name, (void*)pf->f);
+        YogPackage_define_function(env, pkg, pf->name, pf->f);
         pf++;
     }
 
@@ -128,7 +128,7 @@ SWIG_AsVal_dec(bool)(YogVal obj, bool* val)
 
 struct Wrapper {
     const char* name;
-    YogVal (*f)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
+    YogAPI f;
 };
 
 typedef struct Wrapper Wrapper;

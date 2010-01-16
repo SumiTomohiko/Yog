@@ -111,7 +111,7 @@ YogObj_new(YogEnv* env, YogVal klass)
 }
 
 static YogVal
-init(YogEnv* env)
+init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     return YNIL;
 }

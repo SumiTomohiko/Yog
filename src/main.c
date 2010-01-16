@@ -124,7 +124,7 @@ enable_gc_stress(YogVM* vm, uint_t gc_stress_level, uint_t level)
 int_t
 main(int_t argc, char* argv[])
 {
-    uint_t debug_import = 0;
+    int_t debug_import = 0;
     uint_t gc_stress_level = 0;
     int_t help = 0;
 #define DEFAULT_INIT_HEAP_SIZE  (1 * 1024 * 1024)

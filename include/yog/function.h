@@ -13,7 +13,7 @@ struct YogNativeFunction {
     ID class_name;
     YogVal pkg;
     ID func_name;
-    void* f;
+    YogAPI f;
 };
 
 typedef struct YogNativeFunction YogNativeFunction;
@@ -64,7 +64,7 @@ void YogFunction_define_classes(YogEnv*, YogVal);
 YogVal YogFunction_new(YogEnv*);
 YogVal YogInstanceMethod_define_class(YogEnv*, YogVal);
 YogVal YogInstanceMethod_new(YogEnv*);
-YogVal YogNativeFunction_new(YogEnv*, ID, YogVal, const char*, void*);
+YogVal YogNativeFunction_new(YogEnv*, ID, YogVal, const char*, YogAPI);
 YogVal YogNativeInstanceMethod_define_class(YogEnv*, YogVal);
 YogVal YogNativeInstanceMethod_new(YogEnv*);
 

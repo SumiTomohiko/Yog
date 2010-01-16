@@ -100,7 +100,7 @@ YogClass_define_class_method(YogEnv* env, YogVal self, YogVal pkg, const char* n
 }
 
 void
-YogClass_define_method(YogEnv* env, YogVal klass, YogVal pkg, const char* name, void* f)
+YogClass_define_method(YogEnv* env, YogVal klass, YogVal pkg, const char* name, YogAPI f)
 {
     SAVE_ARGS2(env, klass, pkg);
     YogVal func = YUNDEF;
@@ -280,7 +280,7 @@ YogClass_define_executor(YogEnv* env, YogVal self, Executor exec)
 }
 
 void
-YogClass_define_property(YogEnv* env, YogVal self, YogVal pkg, const char* name, void* get, void* set)
+YogClass_define_property(YogEnv* env, YogVal self, YogVal pkg, const char* name, YogAPI get, YogAPI set)
 {
     SAVE_ARGS2(env, self, pkg);
     YogVal getter = YUNDEF;

@@ -263,6 +263,8 @@ struct YogCArg {
 
 typedef struct YogCArg YogCArg;
 
+typedef YogVal (*YogAPI)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
+
 /* PROTOTYPE_START */
 
 /**

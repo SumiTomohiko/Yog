@@ -619,7 +619,7 @@ YogNativeFunction_alloc(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogNativeFunction_new(YogEnv* env, ID class_name, YogVal pkg, const char* func_name, void* f)
+YogNativeFunction_new(YogEnv* env, ID class_name, YogVal pkg, const char* func_name, YogAPI f)
 {
     SAVE_ARG(env, pkg);
     YogVal func = YUNDEF;

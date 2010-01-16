@@ -10,7 +10,7 @@
 #include "yog/yog.h"
 
 void
-YogPackage_define_function(YogEnv* env, YogVal pkg, const char* name, void* f)
+YogPackage_define_function(YogEnv* env, YogVal pkg, const char* name, YogAPI f)
 {
     SAVE_ARG(env, pkg);
 

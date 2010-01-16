@@ -51,8 +51,8 @@ void YogClass_define_descr_set_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVa
 void YogClass_define_executor(YogEnv*, YogVal, Executor);
 void YogClass_define_get_attr_caller(YogEnv*, YogVal, GetAttrCaller);
 void YogClass_define_get_attr_executor(YogEnv*, YogVal, GetAttrExecutor);
-void YogClass_define_method(YogEnv*, YogVal, YogVal, const char*, void*);
-void YogClass_define_property(YogEnv*, YogVal, YogVal, const char*, void*, void*);
+void YogClass_define_method(YogEnv*, YogVal, YogVal, const char*, YogAPI);
+void YogClass_define_property(YogEnv*, YogVal, YogVal, const char*, YogAPI, YogAPI);
 YogVal YogClass_get_attr(YogEnv*, YogVal, ID);
 void YogClass_include_module(YogEnv*, YogVal, YogVal);
 YogVal YogClass_new(YogEnv*, const char*, YogVal);
