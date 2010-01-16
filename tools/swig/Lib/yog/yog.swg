@@ -115,7 +115,7 @@ SWIG_AsVal_dec(bool)(YogVal obj, bool* val)
 #include "yog/yog.h"
 
 #define SWIG_Yog_ConvertPtr(obj, pptr, type, flags) \
-    SWIG_Yog_ConvertPtrAndOwn(env, obj, pptr, type, flags, 0)
+    convert_ptr(env, obj, pptr, type, flags, 0)
 #define SWIG_ConvertPtr(obj, pptr, type, flags) \
     SWIG_Yog_ConvertPtr(obj, pptr, type, flags)
 #define SWIG_NewPointerObj(ptr, type, flags) \
@@ -199,42 +199,6 @@ SWIG_Yog_GetSwigThis(YogEnv* env, YogVal obj)
     RETURN(env, thiz);
 }
 
-SWIGRUNTIME int
-SWIG_Yog_ConvertPtrAndOwn(YogEnv* env, YogVal thiz, void** ptr, swig_type_info* ty, int flags, bool* own)
-{
-    SAVE_ARG(env, thiz);
-
-#define OUTPUT_VALUE(ptr, val)    do { \
-    if ((ptr) != NULL) { \
-        *(ptr) = (val); \
-    } \
-} while (0)
-    if (!IS_PTR(thiz)) {
-        OUTPUT_VALUE(ptr, NULL);
-        RETURN(env, SWIG_OK);
-    }
-
-    if (flags & SWIG_POINTER_DISOWN) {
-        PTR_AS(Shadow, thiz)->own = false;
-    }
-
-    void* vptr = PTR_AS(Shadow, thiz)->ptr;
-    if (ty == NULL) {
-        OUTPUT_VALUE(ptr, vptr);
-        RETURN(env, SWIG_OK);
-    }
-
-    swig_cast_info* tc = SWIG_TypeCheckStruct(PTR_AS(Shadow, thiz)->ty, ty);
-    if (tc == NULL) {
-        RETURN(env, SWIG_ERROR);
-    }
-
-    int newmemory;
-    OUTPUT_VALUE(ptr, SWIG_TypeCast(tc, vptr, &newmemory));
-    RETURN(env, SWIG_OK);
-#undef OUTPUT_VALUE
-}
-
 static YogVal
 Shadow_new(YogEnv* env, YogVal pkg, void* ptr, swig_type_info* ty, int flags)
 {
@@ -258,6 +222,50 @@ Shadow_new(YogEnv* env, YogVal pkg, void* ptr, swig_type_info* ty, int flags)
     PTR_AS(Shadow, shadow)->own = (flags & SWIG_POINTER_OWN) ? true : false;
 
     RETURN(env, shadow);
+}
+
+SWIGRUNTIME int
+convert_ptr(YogEnv* env, YogVal thiz, void** ptr, swig_type_info* ty, int flags, bool* own)
+{
+    SAVE_ARG(env, thiz);
+    YogVal shadow = YUNDEF;
+    PUSH_LOCAL(env, shadow);
+#define OUTPUT_VALUE(ptr, val)    do { \
+    if ((ptr) != NULL) { \
+        *(ptr) = (val); \
+    } \
+} while (0)
+    if (!IS_PTR(thiz)) {
+        OUTPUT_VALUE(ptr, NULL);
+        RETURN(env, SWIG_OK);
+    }
+
+    ID name = YogVM_intern(env, env->vm, "this");
+    shadow = YogVal_get_attr(env, thiz, name);
+    if (IS_UNDEF(shadow)) {
+        YogError_raise_AttributeError(env, "attribute \"this\" not found");
+    }
+    if (!IS_PTR(shadow) || (BASIC_OBJ_TYPE(shadow) != TYPE_SHADOW)) {
+        YogError_raise_TypeError(env, "invalid shadow object");
+    }
+
+    if (flags & SWIG_POINTER_DISOWN) {
+        PTR_AS(Shadow, shadow)->own = false;
+    }
+
+    void* vptr = PTR_AS(Shadow, shadow)->ptr;
+    if (ty == NULL) {
+        OUTPUT_VALUE(ptr, vptr);
+        RETURN(env, SWIG_OK);
+    }
+    swig_cast_info* tc = SWIG_TypeCheckStruct(PTR_AS(Shadow, shadow)->ty, ty);
+    if (tc == NULL) {
+        RETURN(env, SWIG_ERROR);
+    }
+    int newmemory;
+    OUTPUT_VALUE(ptr, SWIG_TypeCast(tc, vptr, &newmemory));
+    RETURN(env, SWIG_OK);
+#undef OUTPUT_VALUE
 }
 
 SWIGINTERN void

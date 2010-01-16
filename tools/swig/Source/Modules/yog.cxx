@@ -162,7 +162,7 @@ private:
         Printv(this->f_shadow,
             "\n"
             "  def ", symname, "(*args, **kw)\n"
-            "    return ", this->funcCall(Swig_name_member(class_name, symname), "self.this, *args, **kw"), "\n"
+            "    return ", this->funcCall(Swig_name_member(class_name, symname), "self, *args, **kw"), "\n"
             "  end\n",
             NIL);
 
