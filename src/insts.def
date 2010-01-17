@@ -245,7 +245,7 @@ inst make_module
 inst make_class
 ()
 (code, super, name)
-(...) depth: 1
+(...) depth: 2
 {
     SAVE_LOCALS_TO_NAME(env, make_class);
     YogVal kls = YUNDEF;
@@ -258,6 +258,7 @@ inst make_class
     PTR_AS(YogObj, kls)->attrs = YUNDEF;
     attrs = YogTable_new_symbol_table(env);
     PTR_AS(YogObj, kls)->attrs = attrs;
+    PUSH(kls);
 
     set_lhs_composition(env, 1, 0, 0);
 
@@ -270,14 +271,6 @@ inst make_class
     PUSH_FRAME(frame);
 
     RESTORE_LOCALS_FROM_NAME(env, make_class);
-}
-
-inst push_self_name
-()
-()
-(self)
-{
-    self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
 }
 
 inst ret
