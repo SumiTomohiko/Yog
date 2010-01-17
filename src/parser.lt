@@ -169,6 +169,7 @@ struct yyParser {
 #else
   yyStackEntry yystack[YYSTACKDEPTH];  /* The parser's stack */
 #endif
+  YogVal filename;
 };
 typedef struct yyParser yyParser;
 
@@ -269,6 +270,7 @@ LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
     for (i = 0; i < pParser->yyidx; i++) {
         YogGC_keep(env, &pParser->yystack[i + 1].minor.yy0, keeper, heap);
     }
+    YogGC_keep(env, &pParser->filename, keeper, heap);
 }
 
 /* 
@@ -284,10 +286,13 @@ LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 ** to Parse and ParseFree.
 */
 static YogVal 
-LemonParser_new(YogEnv* env) 
+LemonParser_new(YogEnv* env, YogVal filename)
 {
-    YogVal pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
-  if (IS_PTR(pParser)) {
+    SAVE_ARG(env, filename);
+    YogVal pParser = YUNDEF;
+    PUSH_LOCAL(env, pParser);
+
+    pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
     PTR_AS(yyParser, pParser)->yyidx = -1;
 #if defined(YYTRACKMAXSTACKDEPTH)
     PTR_AS(yyParser, pParser)->yyidxMax = 0;
@@ -302,8 +307,9 @@ LemonParser_new(YogEnv* env)
         PTR_AS(yyParser, pParser)->yystack[i].minor.yy0 = YUNDEF;
     }
 #endif
-  }
-  return pParser;
+    PTR_AS(yyParser, pParser)->filename = filename;
+
+    RETURN(env, pParser);
 }
 
 /* The following function deletes the value associated with a

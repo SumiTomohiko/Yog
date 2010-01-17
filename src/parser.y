@@ -22,7 +22,7 @@
 typedef struct ParserState ParserState;
 
 static BOOL Parse(struct YogEnv*, YogVal, int_t, YogVal, YogVal*);
-static YogVal LemonParser_new(YogEnv*);
+static YogVal LemonParser_new(YogEnv*, YogVal);
 static void ParseTrace(FILE*, char*);
 
 static void
@@ -630,9 +630,11 @@ parse(YogEnv* env, YogVal lexer, const char* filename, BOOL debug)
     YogVal ast = YUNDEF;
     YogVal lemon_parser = YUNDEF;
     YogVal token = YUNDEF;
-    PUSH_LOCALS3(env, ast, lemon_parser, token);
+    YogVal s = YUNDEF;
+    PUSH_LOCALS4(env, ast, lemon_parser, token, s);
 
-    lemon_parser = LemonParser_new(env);
+    s = YogString_from_str(env, filename);
+    lemon_parser = LemonParser_new(env, s);
     if (debug) {
         ParseTrace(stdout, "parser> ");
     }
@@ -1631,6 +1633,11 @@ atom(A) ::= FALSE(B). {
 atom(A) ::= SUPER(B). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Super_new(env, lineno);
+}
+atom(A) ::= FILE(B). {
+    uint_t lineno = PTR_AS(YogToken, B)->lineno;
+    YogVal filename = PTR_AS(yyParser, parser)->filename;
+    A = Literal_new(env, lineno, filename);
 }
 atom(A) ::= LINE(B). {
     uint_t lineno = PTR_AS(YogToken, B)->lineno;

@@ -10,7 +10,8 @@ typedef struct KeywordTableEntry KeywordTableEntry;
 struct KeywordTableEntry { const char* name; unsigned int type; };
 %readonly-tables
 %%
-__LINE__, TK_LINE 
+__FILE__, TK_FILE
+__LINE__, TK_LINE
 as, TK_AS
 break, TK_BREAK
 class, TK_CLASS
