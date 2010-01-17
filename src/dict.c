@@ -122,7 +122,7 @@ subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         RETURN(env, value);
     }
 
-    YogError_raise_KeyError(env, "%s", "");
+    YogError_raise_KeyError(env, "not found");
 
     /* NOTREACHED */
     RETURN(env, YUNDEF);

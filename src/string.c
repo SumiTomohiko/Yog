@@ -1031,7 +1031,7 @@ compare(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
     PUSH_LOCALS2(env, obj, retval);
 
     YogCArg params[] = { { "s", &obj}, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "<<", params, args, kw);
+    YogGetArgs_parse_args(env, "<=>", params, args, kw);
     CHECK_SELF_TYPE(env, self);
     if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_STRING)) {
         YogError_raise_comparison_type_error(env, self, obj);

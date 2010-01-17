@@ -370,4 +370,42 @@ ZeroDivisionError: 0.0 cannot be raised to a negative power
 print(0.0 ** (- 3.1415926535))
 """, stderr=test_stderr)
 
+    def test_hash0(self):
+        self._test("""
+f = 3.1415926535
+d = {}
+d[f] = 42
+print(d[f])
+""", "42")
+
+    def test_compare0(self):
+        self._test("""
+print(2.71828183 < 3.1415926535)
+""", "true")
+
+    def test_compare10(self):
+        self._test("""
+print(3.1415926535 < 2.71828183)
+""", "false")
+
+    def test_compare20(self):
+        self._test("""
+print(3.1415926535 == 3.1415926535)
+""", "true")
+
+    def test_compare30(self):
+        self._test("""
+print(2.71828183 == 3.1415926535)
+""", "false")
+
+    def test_compare40(self):
+        self._test("""
+print(3.1415926535 != 3.1415926535)
+""", "false")
+
+    def test_compare50(self):
+        self._test("""
+print(2.71828183 != 3.1415926535)
+""", "true")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

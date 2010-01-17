@@ -60,6 +60,49 @@ remove_trailing_zero(YogEnv* env, char* buffer)
 }
 
 static YogVal
+cmp(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    CHECK_SELF_TYPE(env, self);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal f = YUNDEF;
+    PUSH_LOCAL(env, f);
+    YogCArg params[] = { { "f", &f }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "<=>", params, args, kw);
+    if (!IS_PTR(f) || (BASIC_OBJ_TYPE(f) != TYPE_FLOAT)) {
+        YogError_raise_comparison_type_error(env, self, f);
+    }
+
+    if (FLOAT_NUM(self) < FLOAT_NUM(f)) {
+        RETURN(env, INT2VAL(-1));
+    }
+    else if (FLOAT_NUM(self) == FLOAT_NUM(f)) {
+        RETURN(env, INT2VAL(0));
+    }
+
+    RETURN(env, INT2VAL(1));
+}
+
+static YogVal
+hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    CHECK_SELF_TYPE(env, self);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal n = YUNDEF;
+    PUSH_LOCAL(env, n);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "hash", params, args, kw);
+
+    /**
+     * Here came from Gauche-0.9. The Gauche's author doesn't know it is good
+     * hash.
+     */
+    int_t h = (int_t)(FLOAT_NUM(self) * 2654435761UL);
+    n = YogVal_from_int(env, h);
+
+    RETURN(env, n);
+}
+
+static YogVal
 to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -356,6 +399,7 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
 
     cFloat = YogClass_new(env, "Float", vm->cObject);
     YogClass_define_allocator(env, cFloat, alloc);
+    YogClass_include_module(env, cFloat, vm->mComparable);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cFloat, pkg, (name), (f)); \
 } while (0)
@@ -367,6 +411,8 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
+    DEFINE_METHOD("<=>", cmp);
+    DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
     vm->cFloat = cFloat;

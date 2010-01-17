@@ -632,8 +632,14 @@ compare_val(YogEnv* env, YogVal a, YogVal b)
 static int_t
 hash_val(YogEnv* env, YogVal val)
 {
-    YogVal retval = YogEval_call_method0(env, val, "hash");
-    return VAL2INT(retval);
+    SAVE_ARG(env, val);
+    YogVal hash = YUNDEF;
+    PUSH_LOCAL(env, hash);
+
+    hash = YogEval_call_method0(env, val, "hash");
+    int_t h = YogVal_to_signed_type(env, hash, "hash");
+
+    RETURN(env, h);
 }
 
 static YogHashType type_val = {
