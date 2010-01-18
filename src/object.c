@@ -7,6 +7,7 @@
 #include "yog/get_args.h"
 #include "yog/misc.h"
 #include "yog/object.h"
+#include "yog/sprintf.h"
 #include "yog/string.h"
 #include "yog/table.h"
 #include "yog/thread.h"
@@ -128,18 +129,16 @@ static YogVal
 to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal klass = YUNDEF;
     YogVal s = YUNDEF;
-    YogVal name_str = YUNDEF;
-    PUSH_LOCALS3(env, klass, s, name_str);
-
+    PUSH_LOCAL(env, s);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "to_s", params, args, kw);
 
-    klass = PTR_AS(YogBasicObj, self)->klass;
-    ID name = PTR_AS(YogClass, klass)->name;
-    name_str = YogVM_id2name(env, env->vm, name);
-    s = YogString_from_format(env, "<%s %08x%08x>", STRING_CSTR(name_str), PTR_AS(YogBasicObj, self)->id_upper, PTR_AS(YogBasicObj, self)->id_lower);
+    char id_upper[9];
+    snprintf(id_upper, array_sizeof(id_upper), "%08x", BASIC_OBJ(self)->id_upper);
+    char id_lower[9];
+    snprintf(id_lower, array_sizeof(id_lower), "%08x", BASIC_OBJ(self)->id_lower);
+    s = YogSprintf_sprintf(env, "<%C %s%s>", self, id_upper, id_lower);
 
     RETURN(env, s);
 }

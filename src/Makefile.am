@@ -49,6 +49,7 @@ COMMON_SOURCES = arg.c \
 	regexp.c \
 	repl.c \
 	set.c \
+	sprintf.c \
 	stacktrace.c \
 	string.c \
 	symbol.c \

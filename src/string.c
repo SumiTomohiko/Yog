@@ -7,7 +7,6 @@
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -279,29 +278,6 @@ YogString_from_str(YogEnv* env, const char* s)
 }
 
 YogVal
-YogString_from_format(YogEnv* env, const char* fmt, ...)
-{
-    SAVE_LOCALS(env);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
-
-    va_list ap;
-    va_start(ap, fmt);
-#define BUFSIZE (1024)
-    char buf[BUFSIZE];
-#if defined(HAVE_VSNPRINTF)
-    vsnprintf(buf, BUFSIZE, fmt, ap);
-#else
-    vsprintf(buf, fmt, ap);
-#endif
-#undef BUFSIZE
-    va_end(ap);
-    s = YogString_from_str(env, buf);
-
-    RETURN(env, s);
-}
-
-YogVal
 YogString_clone(YogEnv* env, YogVal string)
 {
     SAVE_ARG(env, string);
@@ -348,6 +324,20 @@ find(YogEnv* env, YogVal self, YogVal substr, uint_t from)
     }
 
     RETURN(env, UNSIGNED_MAX);
+}
+
+void
+YogString_add_char(YogEnv* env, YogVal self, char c)
+{
+    SAVE_ARG(env, self);
+
+    uint_t size = YogString_size(env, self);
+    ensure_size(env, self, size + 2);
+    STRING_CSTR(self)[size] = c;
+    STRING_CSTR(self)[size + 1] = '\0';
+    STRING_SIZE(self)++;
+
+    RETURN_VOID(env);
 }
 
 void
