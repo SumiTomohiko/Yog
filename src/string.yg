@@ -3,4 +3,44 @@ def inspect()
   return "\"" + self.gsub("\\", "\\\\").gsub("\"", "\\\"") + "\""
 end
 
+def format(*args, **kw)
+  s = ""
+  i = 0
+  while i < self.size
+    c1 = self[i]
+    if (c1 == "}")
+      i += 1
+      c2 = self[i]
+      if (c2 == "}")
+        i += 1
+        s << c2
+        next
+      end
+      raise ValueError.new("Single \"}\" encountered in format string")
+    end
+    if (c1 != "{")
+      s << c1
+      i += 1
+      next
+    end
+    i += 1
+    c2 = self[i]
+    if (c2 == "{")
+      s << c2
+      i += 1
+      next
+    end
+    t = c2
+    i += 1
+    while self[i] != "}"
+      t << self[i]
+      i += 1
+    end
+    s << args[t.to_i()].to_s()
+    i += 1
+  end
+
+  return s
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

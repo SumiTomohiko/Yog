@@ -398,4 +398,29 @@ puts("foo" * (-1))
 print("foo".gsub("o", "bar"))
 """, "fbarbar")
 
+    def test_format0(self):
+        self._test("""
+print(\"{0}\".format(42))
+""", "42")
+
+    def test_format10(self):
+        self._test("""
+print(\"{0} and {1}\".format(42, 26))
+""", "42 and 26")
+
+    def test_format20(self):
+        self._test("""
+print(\"{0} and {0}\".format(42))
+""", "42 and 42")
+
+    def test_format30(self):
+        self._test("""
+print(\"{{\".format())
+""", "{")
+
+    def test_format40(self):
+        self._test("""
+print(\"}}\".format())
+""", "}")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

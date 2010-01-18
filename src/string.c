@@ -397,6 +397,44 @@ gsub(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
+get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    CHECK_SELF_TYPE(env, self);
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal enc = YUNDEF;
+    PUSH_LOCAL(env, enc);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_size", params, args, kw);
+
+    int_t n = 0;
+    char* begin = STRING_CSTR(self);
+    char* end = begin + YogString_size(env, self);
+    char* pc = begin;
+    enc = STRING_ENCODING(self);
+    while (pc < end) {
+        pc += YogEncoding_mbc_size(env, enc, pc);
+        n++;
+    }
+
+    RETURN(env, INT2VAL(n));
+}
+
+static YogVal
+to_i(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal n = YUNDEF;
+    PUSH_LOCAL(env, n);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_i", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
+    n = YogString_to_i(env, self);
+
+    RETURN(env, n);
+}
+
+static YogVal
 to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -1068,8 +1106,10 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("each_line", each_line);
     DEFINE_METHOD("gsub", gsub);
     DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("to_i", to_i);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
+    YogClass_define_property(env, cString, pkg, "size", get_size, NULL);
     vm->cString = cString;
 
     RETURN_VOID(env);
