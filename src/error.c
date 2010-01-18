@@ -8,6 +8,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
+#include "yog/sprintf.h"
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
@@ -149,29 +150,29 @@ YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, 
 }
 
 static void
-raise_error(YogEnv* env, YogVal klass, const char* msg)
+raise_error(YogEnv* env, YogVal klass, YogVal msg)
 {
-    SAVE_ARG(env, klass);
+    SAVE_ARGS2(env, klass, msg);
+    YogVal exc = YUNDEF;
+    PUSH_LOCAL(env, exc);
 
-    YogVal args[] = { YogString_from_str(env, msg), };
-    PUSH_LOCALSX(env, 1, args);
-    YogVal val = YogEval_call_method(env, klass, "new", 1, args);
+    exc = YogEval_call_method1(env, klass, "new", msg);
+
     RESTORE_LOCALS(env);
-    YogError_raise(env, val);
+    YogError_raise(env, exc);
 }
 
 static void
 raise_format(YogEnv* env, YogVal klass, const char* fmt, va_list ap)
 {
-    /**
-     * Don't GC before making error message. Some arguments in ap are GC object.
-     */
-    char buffer[4096];
-#if defined(_MSC_VER)
-#   define vsnprintf(buffer, size, fmt, ap)     vsprintf(buffer, fmt, ap)
-#endif
-    vsnprintf(buffer, array_sizeof(buffer), fmt, ap);
-    raise_error(env, klass, buffer);
+    SAVE_ARG(env, klass);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    s = YogSprintf_vsprintf(env, fmt, ap);
+    raise_error(env, klass, s);
+
+    RETURN_VOID(env);
 }
 
 void
@@ -226,26 +227,6 @@ YogError_print_stacktrace(YogEnv* env)
     RETURN_VOID(env);
 }
 
-static void
-raise_TypeError(YogEnv* env, const char* msg, YogVal left, YogVal right)
-{
-    SAVE_ARGS2(env, left, right);
-    YogVal left_class = YUNDEF;
-    YogVal right_class = YUNDEF;
-    YogVal left_name = YUNDEF;
-    YogVal right_name = YUNDEF;
-    PUSH_LOCALS4(env, left_class, right_class, left_name, right_name);
-
-    left_class = YogVal_get_class(env, left);
-    right_class = YogVal_get_class(env, right);
-    left_name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, left_class)->name);
-    right_name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, right_class)->name);
-
-    YogError_raise_TypeError(env, msg, STRING_CSTR(left_name), STRING_CSTR(right_name));
-
-    RETURN_VOID(env);
-}
-
 void
 YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const char* opname)
 {
@@ -261,8 +242,8 @@ YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const ch
 #if defined(_MSC_VER)
 #   define snprintf(buffer, size, fmt, arg)    sprintf(buffer, fmt, arg)
 #endif
-    snprintf(buffer, array_sizeof(buffer), "unsupported operand type(s) for %s: %%s and %%s", escaped_opname);
-    raise_TypeError(env, buffer, left, right);
+    snprintf(buffer, array_sizeof(buffer), "unsupported operand type(s) for %s: %%C and %%C", escaped_opname);
+    YogError_raise_TypeError(env, buffer, left, right);
 }
 
 void
@@ -316,7 +297,7 @@ YogError_raise_CoroutineError(YogEnv* env, const char* fmt, ...)
 void
 YogError_raise_comparison_type_error(YogEnv* env, YogVal left, YogVal right)
 {
-    raise_TypeError(env, "comparison of %s with %s failed", left, right);
+    YogError_raise_TypeError(env, "comparison of %C with %C failed", left, right);
 }
 
 void

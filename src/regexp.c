@@ -110,14 +110,7 @@ static void
 raise_invalid_group(YogEnv* env, YogVal group)
 {
     SAVE_ARG(env, group);
-    YogVal klass = YUNDEF;
-    YogVal name = YUNDEF;
-    PUSH_LOCALS2(env, klass, name);
-
-    klass = YogVal_get_class(env, group);
-    name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
-    YogError_raise_TypeError(env, "group must be a Fixnum, String or nil, not %s", STRING_CSTR(name));
-
+    YogError_raise_TypeError(env, "group must be a Fixnum, String or nil, not %C", group);
     /* NOTREACHED */
     RETURN_VOID(env);
 }

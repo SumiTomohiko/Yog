@@ -107,7 +107,7 @@ inst load_global
     }
     if (IS_UNDEF(val)) {
         YogVal name = YogVM_id2name(env, env->vm, id);
-        YogError_raise_NameError(env, "name \"%s\" is not defined", STRING_CSTR(name));
+        YogError_raise_NameError(env, "name \"%S\" is not defined", name);
     }
 }
 
@@ -122,7 +122,7 @@ inst load_name
     }
     if (IS_UNDEF(val)) {
         YogVal name = YogVM_id2name(env, env->vm, id);
-        YogError_raise_NameError(env, "name \"%s\" is not defined", STRING_CSTR(name));
+        YogError_raise_NameError(env, "name \"%S\" is not defined", name);
     }
 }
 
@@ -443,9 +443,8 @@ inst store_attr
     YogVal attr = YUNDEF;
     YogVal class_of_obj = YUNDEF;
     YogVal class_of_attr = YUNDEF;
-    YogVal class_name = YUNDEF;
     YogVal attr_name = YUNDEF;
-    PUSH_LOCALS5(env, attr, class_of_obj, class_of_attr, class_name, attr_name);
+    PUSH_LOCALS4(env, attr, class_of_obj, class_of_attr, attr_name);
 
     class_of_obj = YogVal_get_class(env, obj);
     BOOL has_attrs;
@@ -473,20 +472,15 @@ inst store_attr
             YogObj_set_attr_id(env, obj, name, val);
         }
         else {
-            ID id = PTR_AS(YogClass, class_of_obj)->name;
-            class_name = YogVM_id2name(env, env->vm, id);
-            YogError_raise_AttributeError(env, "can't set attribute to %s object", STRING_CSTR(class_name));
+            YogError_raise_AttributeError(env, "can't set attribute to %C object", obj);
         }
     }
     else if (has_attrs) {
         YogObj_set_attr_id(env, obj, name, val);
     }
     else {
-        ID id = PTR_AS(YogClass, class_of_obj)->name;
-        YogVM* vm = env->vm;
-        class_name = YogVM_id2name(env, vm, id);
-        attr_name = YogVM_id2name(env, vm, name);
-        YogError_raise_AttributeError(env, "%s object has no attribute \"%s\"", STRING_CSTR(class_name), STRING_CSTR(attr_name));
+        attr_name = YogVM_id2name(env, env->vm, name);
+        YogError_raise_AttributeError(env, "%C object has no attribute \"%S\"", obj, attr_name);
     }
 
     RESTORE_LOCALS_FROM_NAME(env, store_attr);

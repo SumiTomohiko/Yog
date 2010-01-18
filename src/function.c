@@ -19,15 +19,7 @@ static void
 raise_TypeError(YogEnv* env, const char* mark, const char* needed, YogVal actual)
 {
     SAVE_ARG(env, actual);
-    YogVal klass = YUNDEF;
-    YogVal s = YUNDEF;
-    PUSH_LOCALS2(env, klass, s);
-
-    klass = YogVal_get_class(env, actual);
-    ID name = PTR_AS(YogClass, klass)->name;
-    s = YogVM_id2name(env, env->vm, name);
-    YogError_raise_TypeError(env, "argument after %s must be %s, not %s", mark, needed, STRING_CSTR(s));
-
+    YogError_raise_TypeError(env, "argument after %s must be %s, not %C", mark, needed, actual);
     /* NOTREACHED */
     RETURN_VOID(env);
 }
@@ -71,7 +63,7 @@ assign_keyword_arg(YogEnv* env, YogVal self, YogVal args, YogVal kw, ID name, Yo
                 YogVM* vm = env->vm;
                 s = YogVM_id2name(env, vm, PTR_AS(YogFunction, self)->name);
                 t = YogVM_id2name(env, vm, name);
-                YogError_raise_ArgumentError(env, "%s() got multiple values for keyword argument \"%s\"", STRING_CSTR(s), STRING_CSTR(t));
+                YogError_raise_ArgumentError(env, "%S() got multiple values for keyword argument \"%S\"", s, t);
             }
             items[POS_OFFSET + i] = val;
             RETURN_VOID(env);
@@ -79,7 +71,7 @@ assign_keyword_arg(YogEnv* env, YogVal self, YogVal args, YogVal kw, ID name, Yo
     }
     if (!IS_PTR(kw)) {
         s = YogVM_id2name(env, env->vm, name);
-        YogError_raise_ArgumentError(env, "an unexpected keyword argument \"%s\"", STRING_CSTR(s));
+        YogError_raise_ArgumentError(env, "an unexpected keyword argument \"%S\"", s);
     }
     YogDict_set(env, kw, ID2VAL(name), val);
 
@@ -99,7 +91,7 @@ raise_wrong_num_args(YogEnv* env, YogVal self, uint_t posargc)
     code = PTR_AS(YogFunction, self)->code;
     formal_args = PTR_AS(YogCode, code)->arg_info;
     uint_t formal_posargc = PTR_AS(YogArgInfo, formal_args)->argc;
-    YogError_raise_ArgumentError(env, "%s() requires %u positional argument(s) (%u given)", STRING_CSTR(name), formal_posargc, posargc);
+    YogError_raise_ArgumentError(env, "%S() requires %u positional argument(s) (%u given)", name, formal_posargc, posargc);
 
     RETURN_VOID(env);
 }
@@ -126,8 +118,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
     YogVal val = YUNDEF;
     YogVal code = YUNDEF;
     YogVal arg_info = YUNDEF;
-    YogVal name = YUNDEF;
-    PUSH_LOCALS8(env, array, kw, va, iter, val, code, arg_info, name);
+    PUSH_LOCALS7(env, array, kw, va, iter, val, code, arg_info);
     YOG_ASSERT(env, IS_PTR(self), "invalid self (0x%x)", self);
     YOG_ASSERT(env, BASIC_OBJ_TYPE(self) == TYPE_FUNCTION, "invalid type self (0x%x)", BASIC_OBJ_TYPE(self));
 
@@ -231,8 +222,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
         while (YogDictIterator_next(env, iter)) {
             YogVal key = YogDictIterator_current_key(env, iter);
             if (!IS_SYMBOL(key)) {
-                name = YogVal_get_class_name(env, key);
-                YogError_raise_TypeError(env, "keywords must be symbols, not %s", STRING_CSTR(name));
+                YogError_raise_TypeError(env, "keywords must be symbols, not %C", key);
             }
             val = YogDictIterator_current_value(env, iter);
             assign_keyword_arg(env, self, args, kw, VAL2ID(key), val);

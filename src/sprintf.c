@@ -23,8 +23,10 @@ count_objects(YogEnv* env, const char* fmt)
         case 'S':
             n++;
             break;
+        case '%':
         case 'd':
         case 's':
+        case 'u':
             break;
         default:
             YOG_BUG(env, "invalid format charactor '%c'", *pc);
@@ -55,11 +57,16 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
             dest[n] = va_arg(aq, YogVal);
             n++;
             break;
+        case '%':
+            break;
         case 'd':
             va_arg(aq, int);
             break;
         case 's':
             va_arg(aq, char*);
+            break;
+        case 'u':
+            va_arg(aq, unsigned int);
             break;
         default:
             YOG_BUG(env, "invalid format charactor '%c'", *pc);
@@ -114,6 +121,9 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             YogString_add(env, s, pv[obj_index]);
             obj_index++;
             break;
+        case '%':
+            YogString_add_char(env, s, *pc);
+            break;
         case 'd':
             {
                 int n = va_arg(ap, int);
@@ -129,6 +139,14 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
                 YogString_add_cstr(env, s, p);
             }
             break;
+        case 'u':
+            {
+                unsigned int n = va_arg(ap, unsigned int);
+                char buf[20];
+                snprintf(buf, array_sizeof(buf), "%u", n);
+                YogString_add_cstr(env, s, buf);
+            }
+            break;
         default:
             YOG_BUG(env, "invalid format charactor '%c'", *pc);
             break;
@@ -138,7 +156,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
     RETURN(env, s);
 }
 
-static YogVal
+YogVal
 YogSprintf_vsprintf(YogEnv* env, const char* fmt, va_list ap)
 {
     SAVE_LOCALS(env);
@@ -160,12 +178,12 @@ YogSprintf_vsprintf(YogEnv* env, const char* fmt, va_list ap)
 }
 
 /**
- * YogSprintf_sprintf
  *   fmt: ascii string. This function can't handle multibyte strings.
- *   %d decimal
- *   %s C string
- *   %S Yog String object
  *   %C Yog object (class's name)
+ *   %S Yog String object
+ *   %d integer
+ *   %s C string
+ *   %u unsigned integer
  */
 YogVal
 YogSprintf_sprintf(YogEnv* env, const char* fmt, ...)

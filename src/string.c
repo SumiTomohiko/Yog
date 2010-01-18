@@ -413,16 +413,13 @@ add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal arg = YUNDEF;
-    YogVal klass = YUNDEF;
-    PUSH_LOCALS2(env, arg, klass);
+    PUSH_LOCAL(env, arg);
 
     YogCArg params[] = { { "s", &arg }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "+", params, args, kw);
     CHECK_SELF_TYPE(env, self);
     if (!IS_PTR(arg) || (BASIC_OBJ_TYPE(arg) != TYPE_STRING)) {
-        klass = YogVal_get_class(env, arg);
-        YogVal name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
-        YogError_raise_TypeError(env, "can't convert %s object to string implicitly", STRING_CSTR(name));
+        YogError_raise_TypeError(env, "can't convert %C object to string implicitly", arg);
     }
 
     uint_t size1 = YogString_size(env, self);
@@ -477,18 +474,15 @@ multiply(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal arg = YUNDEF;
-    YogVal klass = YUNDEF;
     YogVal s = YUNDEF;
-    PUSH_LOCALS3(env, arg, klass, s);
+    PUSH_LOCALS2(env, arg, s);
 
     YogCArg params[] = { { "n", &arg }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "*", params, args, kw);
     CHECK_SELF_TYPE(env, self);
 
     if (!IS_FIXNUM(arg)) {
-        klass = YogVal_get_class(env, arg);
-        YogVal name = YogVM_id2name(env, env->vm, PTR_AS(YogClass, klass)->name);
-        YogError_raise_TypeError(env, "can't multiply string by non-Fixnum of type %s", STRING_CSTR(name));
+        YogError_raise_TypeError(env, "can't multiply string by non-Fixnum of type %C", arg);
     }
 
     s = YogString_multiply(env, self, VAL2INT(arg));
@@ -958,8 +952,7 @@ YogString_to_i(YogEnv* env, YogVal self)
     PUSH_LOCALS4(env, normalized, body, bignum, v);
 
 #define RAISE_VALUE_ERROR   do { \
-    const char* s = PTR_AS(YogCharArray, body)->items; \
-    YogError_raise_ValueError(env, "invalid literal: %s", s); \
+    YogError_raise_ValueError(env, "invalid literal: %S", self); \
     RETURN(env, INT2VAL(0)); \
 } while (0)
     int_t base;

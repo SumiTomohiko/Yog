@@ -11,6 +11,7 @@ extern "C" {
 #endif
 /* src/sprintf.c */
 YogVal YogSprintf_sprintf(YogEnv*, const char*, ...);
+YogVal YogSprintf_vsprintf(YogEnv*, const char*, va_list);
 
 
 #if defined(__cplusplus)

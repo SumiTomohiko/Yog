@@ -200,7 +200,7 @@ YogGetArgs_parse_args(YogEnv* env, const char* func_name, YogCArg* params, YogVa
     invalid_key = find_invalid_keyword(env, params, kw);
     if (IS_SYMBOL(invalid_key)) {
         name = YogVM_id2name(env, env->vm, VAL2ID(invalid_key));
-        YogError_raise_TypeError(env, "\"%s\" is an invalid keyword argument for this function", STRING_CSTR(name));
+        YogError_raise_TypeError(env, "\"%S\" is an invalid keyword argument for this function", name);
     }
 
     RETURN_VOID(env);

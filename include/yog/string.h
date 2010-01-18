@@ -47,7 +47,6 @@ YogVal YogString_clone(YogEnv*, YogVal);
 void YogString_define_classes(YogEnv*, YogVal);
 char* YogString_dup(YogEnv*, const char*);
 void YogString_eval_builtin_script(YogEnv*, YogVal);
-YogVal YogString_from_format(YogEnv*, const char*, ...);
 YogVal YogString_from_range(YogEnv*, YogVal, const char*, const char*);
 YogVal YogString_from_str(YogEnv*, const char*);
 int_t YogString_hash(YogEnv*, YogVal);
