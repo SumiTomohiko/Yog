@@ -24,6 +24,7 @@ count_objects(YogEnv* env, const char* fmt)
             n++;
             break;
         case '%':
+        case 'I':
         case 'd':
         case 's':
         case 'u':
@@ -58,6 +59,9 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
             n++;
             break;
         case '%':
+            break;
+        case 'I':
+            va_arg(aq, ID);
             break;
         case 'd':
             va_arg(aq, int);
@@ -99,7 +103,8 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
 {
     SAVE_LOCALS(env);
     YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
+    YogVal name = YUNDEF;
+    PUSH_LOCALS2(env, s, name);
     s = YogString_new(env);
 
     uint_t obj_index = 0;
@@ -115,6 +120,10 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             va_arg(ap, YogVal);
             add_class_name(env, s, pv[obj_index]);
             obj_index++;
+            break;
+        case 'I':
+            name = YogVM_id2name(env, env->vm, va_arg(ap, ID));
+            YogString_add(env, s, name);
             break;
         case 'S':
             va_arg(ap, YogVal);
@@ -178,12 +187,13 @@ YogSprintf_vsprintf(YogEnv* env, const char* fmt, va_list ap)
 }
 
 /**
- *   fmt: ascii string. This function can't handle multibyte strings.
- *   %C Yog object (class's name)
- *   %S Yog String object
- *   %d integer
- *   %s C string
- *   %u unsigned integer
+ * fmt: ascii string. This function can't handle multibyte strings.
+ * %C Yog object (class's name)
+ * %I ID
+ * %S Yog String object
+ * %d integer
+ * %s C string
+ * %u unsigned integer
  */
 YogVal
 YogSprintf_sprintf(YogEnv* env, const char* fmt, ...)

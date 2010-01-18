@@ -144,8 +144,7 @@ YogGetArgs_parse_args(YogEnv* env, const char* func_name, YogCArg* params, YogVa
     YogVal val = YUNDEF;
     YogVal dest = YUNDEF;
     YogVal invalid_key = YUNDEF;
-    YogVal name = YUNDEF;
-    PUSH_LOCALS4(env, val, dest, invalid_key, name);
+    PUSH_LOCALS3(env, val, dest, invalid_key);
 
 #define ACCEPT_OPT_MARK(param)  do { \
     if (strcmp((param)->name, "|") == 0) { \
@@ -199,8 +198,7 @@ YogGetArgs_parse_args(YogEnv* env, const char* func_name, YogCArg* params, YogVa
     }
     invalid_key = find_invalid_keyword(env, params, kw);
     if (IS_SYMBOL(invalid_key)) {
-        name = YogVM_id2name(env, env->vm, VAL2ID(invalid_key));
-        YogError_raise_TypeError(env, "\"%S\" is an invalid keyword argument for this function", name);
+        YogError_raise_TypeError(env, "\"%I\" is an invalid keyword argument for this function", invalid_key);
     }
 
     RETURN_VOID(env);

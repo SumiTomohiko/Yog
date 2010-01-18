@@ -285,9 +285,7 @@ exec_get_attr(YogEnv* env, YogVal obj, ID name)
         attr = YogClass_get_attr(env, class_of_obj, name);
     }
     if (IS_UNDEF(attr)) {
-        YogVM* vm = env->vm;
-        attr_name = YogVM_id2name(env, vm, name);
-        YogError_raise_AttributeError(env, "%C object has no attribute \"%S\"", obj, attr_name);
+        YogError_raise_AttributeError(env, "%C object has no attribute \"%I\"", obj, name);
     }
     class_of_attr = YogVal_get_class(env, attr);
     void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogClass, class_of_attr)->exec_get_descr;

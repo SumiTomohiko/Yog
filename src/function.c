@@ -45,11 +45,9 @@ assign_keyword_arg(YogEnv* env, YogVal self, YogVal args, YogVal kw, ID name, Yo
 {
     SAVE_ARGS4(env, self, args, kw, val);
     YogVal names = YUNDEF;
-    YogVal s = YUNDEF;
     YogVal code = YUNDEF;
     YogVal formal_args = YUNDEF;
-    YogVal t = YUNDEF;
-    PUSH_LOCALS5(env, names, s, code, formal_args, t);
+    PUSH_LOCALS3(env, names, code, formal_args);
 
     code = PTR_AS(YogFunction, self)->code;
     formal_args = PTR_AS(YogCode, code)->arg_info;
@@ -60,18 +58,14 @@ assign_keyword_arg(YogEnv* env, YogVal self, YogVal args, YogVal kw, ID name, Yo
         if (PTR_AS(ID, names)[i] == name) {
             YogVal* items = PTR_AS(YogValArray, args)->items;
             if (!IS_UNDEF(items[POS_OFFSET + i])) {
-                YogVM* vm = env->vm;
-                s = YogVM_id2name(env, vm, PTR_AS(YogFunction, self)->name);
-                t = YogVM_id2name(env, vm, name);
-                YogError_raise_ArgumentError(env, "%S() got multiple values for keyword argument \"%S\"", s, t);
+                YogError_raise_ArgumentError(env, "%I() got multiple values for keyword argument \"%I\"", PTR_AS(YogFunction, self)->name, name);
             }
             items[POS_OFFSET + i] = val;
             RETURN_VOID(env);
         }
     }
     if (!IS_PTR(kw)) {
-        s = YogVM_id2name(env, env->vm, name);
-        YogError_raise_ArgumentError(env, "an unexpected keyword argument \"%S\"", s);
+        YogError_raise_ArgumentError(env, "an unexpected keyword argument \"%I\"", name);
     }
     YogDict_set(env, kw, ID2VAL(name), val);
 
@@ -82,16 +76,14 @@ static void
 raise_wrong_num_args(YogEnv* env, YogVal self, uint_t posargc)
 {
     SAVE_ARG(env, self);
-    YogVal name = YUNDEF;
     YogVal formal_args = YUNDEF;
     YogVal code = YUNDEF;
-    PUSH_LOCALS3(env, name, formal_args, code);
+    PUSH_LOCALS2(env, formal_args, code);
 
-    name = YogVM_id2name(env, env->vm, PTR_AS(YogFunction, self)->name);
     code = PTR_AS(YogFunction, self)->code;
     formal_args = PTR_AS(YogCode, code)->arg_info;
     uint_t formal_posargc = PTR_AS(YogArgInfo, formal_args)->argc;
-    YogError_raise_ArgumentError(env, "%S() requires %u positional argument(s) (%u given)", name, formal_posargc, posargc);
+    YogError_raise_ArgumentError(env, "%I() requires %u positional argument(s) (%u given)", PTR_AS(YogFunction, self)->name, formal_posargc, posargc);
 
     RETURN_VOID(env);
 }

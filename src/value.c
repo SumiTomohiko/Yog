@@ -158,8 +158,7 @@ YogVal_set_attr(YogEnv* env, YogVal obj, ID name, YogVal val)
     PUSH_LOCAL(env, s);
 
     if ((PTR_AS(YogBasicObj, obj)->flags & HAS_ATTRS) == 0) {
-        s = YogVM_id2name(env, env->vm, name);
-        YogError_raise_AttributeError(env, "%C object has no attribute \"%S\"", obj, s);
+        YogError_raise_AttributeError(env, "%C object has no attribute \"%I\"", obj, name);
     }
 
     YogObj_set_attr_id(env, obj, name, val);

@@ -48,8 +48,7 @@ exec_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     class_of_getter = YogVal_get_class(env, getter);
     if (!IS_PTR(getter)) {
         ID id = PTR_AS(YogClass, class_of_getter)->name;
-        YogVal name = YogVM_id2name(env, env->vm, id);
-        YogError_raise_TypeError(env, "\"%S\" object is not callable", name);
+        YogError_raise_TypeError(env, "\"%I\" object is not callable", id);
     }
     YOG_ASSERT(env, PTR_AS(YogClass, class_of_getter)->call_get_descr != NULL, "can't make instance method");
     method = PTR_AS(YogClass, class_of_getter)->call_get_descr(env, getter, obj, klass);
@@ -77,8 +76,7 @@ call_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     class_of_getter = YogVal_get_class(env, getter);
     if (!IS_PTR(getter)) {
         ID id = PTR_AS(YogClass, class_of_getter)->name;
-        YogVal name = YogVM_id2name(env, env->vm, id);
-        YogError_raise_TypeError(env, "\"%S\" object is not callable", name);
+        YogError_raise_TypeError(env, "\"%I\" object is not callable", id);
     }
     YOG_ASSERT(env, PTR_AS(YogClass, class_of_getter)->call_get_descr != NULL, "can't make instance method");
     method = PTR_AS(YogClass, class_of_getter)->call_get_descr(env, getter, obj, klass);
@@ -108,8 +106,7 @@ exec_set_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     class_of_setter = YogVal_get_class(env, setter);
     if (!IS_PTR(setter)) {
         ID id = PTR_AS(YogClass, class_of_setter)->name;
-        YogVal name = YogVM_id2name(env, env->vm, id);
-        YogError_raise_TypeError(env, "\"%S\" object is not callable", name);
+        YogError_raise_TypeError(env, "\"%I\" object is not callable", id);
     }
     class_of_obj = YogVal_get_class(env, obj);
     YOG_ASSERT(env, PTR_AS(YogClass, class_of_setter)->call_get_descr != NULL, "can't make instance method");
