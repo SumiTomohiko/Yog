@@ -12,51 +12,13 @@ MINIYOG = miniyog$(EXEEXT)
 TOOLS_DIR = $(ROOT_DIR)/tools
 
 BUILT_SOURCES = parser.h keywords.inc
-COMMON_SOURCES = arg.c \
-	array.c \
-	bignum.c \
-	binary.c \
-	bool.c \
-	builtins.c \
-	class.c \
-	classmethod.c \
-	code.c \
-	comparable.c \
-	compile.c \
-	coroutine.c \
-	dict.c \
-	encoding.c \
-	error.c \
-	eval.c \
-	exception.c \
-	file.c \
-	fixnum.c \
-	float.c \
-	frame.c \
-	function.c \
-	gc.c \
-	get_args.c \
-	inst.c \
-	lexer.c \
-	main.c \
-	misc.c \
-	module.c \
-	nil.c \
-	object.c \
-	package.c \
-	parser.y \
-	property.c \
-	regexp.c \
-	repl.c \
-	set.c \
-	sprintf.c \
-	stacktrace.c \
-	string.c \
-	symbol.c \
-	table.c \
-	thread.c \
-	value.c \
-	vm.c
+COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
+		 classmethod.c code.c comparable.c compile.c coroutine.c \
+		 dict.c encoding.c error.c eval.c exception.c file.c fixnum.c \
+		 float.c frame.c function.c gc.c get_args.c inst.c lexer.c \
+		 main.c misc.c module.c nil.c object.c package.c parser.y \
+		 property.c regexp.c repl.c set.c sprintf.c stacktrace.c \
+		 string.c symbol.c table.c thread.c value.c vm.c
 DEFAULT_INCLUDES = -I.
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" @CFLAGS_COMMON@
@@ -172,8 +134,5 @@ $(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF)
 
 $(ROOT_DIR)/include/yog/opcodes.h: $(ROOT_DIR)/include/yog/opcodes.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
-
-Makefile.am: Makefile.am.tmpl
-	$(GEN_AM_CMD)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
