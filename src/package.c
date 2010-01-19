@@ -1,7 +1,7 @@
 #include <stdarg.h>
+#include "yog/callable.h"
 #include "yog/error.h"
 #include "yog/frame.h"
-#include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/package.h"
 #include "yog/table.h"

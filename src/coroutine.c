@@ -5,10 +5,10 @@
 #   include <windows.h>
 #endif
 #include "yog/array.h"
+#include "yog/callable.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/frame.h"
-#include "yog/function.h"
 #include "yog/get_args.h"
 #include "yog/object.h"
 #include "yog/thread.h"

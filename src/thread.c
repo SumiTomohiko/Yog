@@ -17,11 +17,11 @@
 #   include "gc_pthread_redirects.h"
 #endif
 #include "yog/array.h"
+#include "yog/callable.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
-#include "yog/function.h"
 #include "yog/gc.h"
 #if defined(GC_COPYING)
 #   include "yog/gc/copying.h"

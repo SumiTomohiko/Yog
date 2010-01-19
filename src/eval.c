@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "yog/binary.h"
+#include "yog/callable.h"
 #include "yog/code.h"
 #include "yog/compile.h"
 #include "yog/dict.h"
@@ -16,8 +17,6 @@
 #include "yog/eval.h"
 #include "yog/exception.h"
 #include "yog/frame.h"
-#include "yog/function.h"
-#include "yog/function.h"
 #include "yog/misc.h"
 #include "yog/module.h"
 #include "yog/package.h"

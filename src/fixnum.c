@@ -10,12 +10,12 @@
 #include <gmp.h>
 #include "yog/array.h"
 #include "yog/bignum.h"
+#include "yog/callable.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/float.h"
 #include "yog/frame.h"
-#include "yog/function.h"
 #include "yog/get_args.h"
 #include "yog/sprintf.h"
 #include "yog/string.h"

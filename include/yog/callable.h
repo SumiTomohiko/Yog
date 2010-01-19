@@ -1,5 +1,5 @@
-#if !defined(__YOG_FUNCTION_H__)
-#define __YOG_FUNCTION_H__
+#if !defined(__YOG_CALLABLE_H__)
+#define __YOG_CALLABLE_H__
 
 #if defined(HAVE_STDINT_H)
 #   include <stdint.h>
@@ -56,7 +56,7 @@ typedef struct YogInstanceMethod YogInstanceMethod;
 #if defined(__cplusplus)
 extern "C" {
 #endif
-/* src/function.c */
+/* src/callable.c */
 YogVal YogCallable_call(YogEnv*, YogVal, uint_t, YogVal*);
 YogVal YogCallable_call1(YogEnv*, YogVal, YogVal);
 YogVal YogCallable_call2(YogEnv*, YogVal, uint_t, YogVal*, YogVal);

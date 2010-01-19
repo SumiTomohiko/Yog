@@ -15,7 +15,7 @@ BUILT_SOURCES = parser.h keywords.inc
 COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 classmethod.c code.c comparable.c compile.c coroutine.c \
 		 dict.c encoding.c error.c eval.c exception.c file.c fixnum.c \
-		 float.c frame.c function.c gc.c get_args.c inst.c lexer.c \
+		 float.c frame.c callable.c gc.c get_args.c inst.c lexer.c \
 		 main.c misc.c module.c nil.c object.c package.c parser.y \
 		 property.c regexp.c repl.c set.c sprintf.c stacktrace.c \
 		 string.c symbol.c table.c thread.c value.c vm.c

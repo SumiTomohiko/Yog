@@ -30,7 +30,7 @@ class DeclarationInserter(object):
             "include/yog/arg.h": [ "src/arg.c", ],
             "include/yog/class.h": [ "src/class.c", ],
             "include/yog/nil.h": [ "src/nil.c", ],
-            "include/yog/function.h": [ "src/function.c", ],
+            "include/yog/callable.h": [ "src/callable.c", ],
             "include/yog/binary.h": [ "src/binary.c", ],
             "include/yog/package.h": [ "src/package.c", ],
             "include/yog/code.h": [ "src/code.c", "src/code.inc", ],

@@ -1,13 +1,13 @@
 #include <errno.h>
 #include <string.h>
 #include "yog/array.h"
+#include "yog/callable.h"
 #include "yog/class.h"
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
 #include "yog/frame.h"
-#include "yog/function.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
 #include "yog/string.h"

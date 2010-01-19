@@ -1,6 +1,6 @@
-#include "yog/function.h"
-#include "yog/gc.h"
+#include "yog/callable.h"
 #include "yog/class.h"
+#include "yog/gc.h"
 #include "yog/module.h"
 #include "yog/object.h"
 #include "yog/table.h"

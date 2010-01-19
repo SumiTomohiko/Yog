@@ -52,7 +52,7 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        line = line.replace("YogString_from_size", "YogString_of_size")
+                        line = line.replace("#include \"yog/function.h\"", "#include \"yog/callable.h\"")
                         out.write(line)
             move(tmp, path)
 
