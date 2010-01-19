@@ -205,11 +205,11 @@ class CodeGenerator(object):
         return retval
 
     def gen_eval_inc(self, def_, eval_inc):
-        lineno = len(self.make_attention().split("\n")) - 1
+        lineno = len(self.make_attention().split("\n"))
         inc = StringIO()
         for inst in self.insts:
-#           inc.write("""
-##line %(lineno)d \"%(inc)s\"""" % { "lineno": lineno + 2, "inc": eval_inc })
+            inc.write("""
+#line %(lineno)d \"%(inc)s\"""" % { "lineno": lineno + 2, "inc": eval_inc })
             lineno += 1
 
             s = """
@@ -274,12 +274,12 @@ class CodeGenerator(object):
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
 
-#            s = """
-##line %(lineno)d \"%(def)s\"""" % { "lineno": inst.lineno + 6, "def": def_ }
-            s = ""
+            s = """
+#line %(lineno)d \"%(def)s\"""" % { "lineno": inst.lineno + 6, "def": def_ }
             lineno += len(s.split("\n")) - 1
             inc.write(s)
 
+            lineno += 1
             inc.write("\n")
             in_macro = False
             for line in [s.rstrip() for s in inst.codes]:
@@ -296,8 +296,8 @@ class CodeGenerator(object):
                 lineno += 1
                 inc.write("\n")
 
-#            inc.write("""
-##line %(lineno)d \"%(inc)s\"""" % { "lineno": lineno + 2, "inc": eval_inc })
+            inc.write("""
+#line %(lineno)d \"%(inc)s\"""" % { "lineno": lineno + 2, "inc": eval_inc })
             lineno += 1
 
             for push_value in inst.push_values:
