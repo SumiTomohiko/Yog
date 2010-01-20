@@ -131,11 +131,13 @@ import_package(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yog
     YogVal p = YUNDEF;
     YogVal name = YUNDEF;
     PUSH_LOCALS2(env, p, name);
-
     YogCArg params[] = { { "name", &name }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "import_package", params, args, kw);
+    if (!IS_PTR(name) || (BASIC_OBJ_TYPE(name) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "package name must be String");
+    }
 
-    p = YogVM_import_package(env, env->vm, VAL2ID(name));
+    p = YogVM_import_package(env, env->vm, name);
 
     RETURN(env, p);
 }

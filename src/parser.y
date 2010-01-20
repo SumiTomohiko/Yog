@@ -19,7 +19,10 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-typedef struct ParserState ParserState;
+#define TOKEN(token)            PTR_AS(YogToken, (token))
+#define TOKEN_ID(token)         TOKEN(token)->u.id
+#define TOKEN_LINENO(token)     TOKEN(token)->lineno
+#define NODE_LINENO(node)       PTR_AS(YogNode, (node))->lineno
 
 static BOOL Parse(struct YogEnv*, YogVal, int_t, YogVal, YogVal*);
 static YogVal LemonParser_new(YogEnv*, YogVal);
@@ -62,6 +65,11 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_BREAK:
         KEEP(break_.exprs);
         break;
+    case NODE_CLASS:
+        KEEP(klass.decorators);
+        KEEP(klass.super);
+        KEEP(klass.stmts);
+        break;
     case NODE_DICT:
         KEEP(dict.elems);
         break;
@@ -82,6 +90,10 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(finally.head);
         KEEP(finally.body);
         break;
+    case NODE_FROM:
+        KEEP(from.pkg);
+        KEEP(from.attrs);
+        break;
     case NODE_FUNC_CALL:
         KEEP(func_call.callee);
         KEEP(func_call.args);
@@ -98,12 +110,11 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(if_.tail);
         break;
     case NODE_IMPORT:
-        KEEP(import.names);
+        KEEP(import.name);
+        KEEP(import.as);
         break;
-    case NODE_CLASS:
-        KEEP(klass.decorators);
-        KEEP(klass.super);
-        KEEP(klass.stmts);
+    case NODE_IMPORTED_ATTR:
+        KEEP(imported_attr.as);
         break;
     case NODE_KW_ARG:
         KEEP(kwarg.value);
@@ -584,12 +595,43 @@ Nonlocal_new(YogEnv* env, uint_t lineno, YogVal names)
 }
 
 static YogVal
-Import_new(YogEnv* env, uint_t lineno, YogVal names)
+Import_new(YogEnv* env, uint_t lineno, YogVal name, YogVal as)
 {
-    SAVE_ARG(env, names);
+    SAVE_ARGS2(env, name, as);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
 
-    YogVal node = YogNode_new(env, NODE_IMPORT, lineno);
-    NODE(node)->u.import.names = names;
+    node = YogNode_new(env, NODE_IMPORT, lineno);
+    NODE(node)->u.import.name = name;
+    NODE(node)->u.import.as = as;
+
+    RETURN(env, node);
+}
+
+static YogVal
+ImportedAttr_new(YogEnv* env, uint_t lineno, ID name, YogVal as)
+{
+    SAVE_ARG(env, as);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    node = YogNode_new(env, NODE_IMPORTED_ATTR, lineno);
+    NODE(node)->u.imported_attr.name = name;
+    NODE(node)->u.imported_attr.as = as;
+
+    RETURN(env, node);
+}
+
+static YogVal
+From_new(YogEnv* env, uint_t lineno, YogVal pkg, YogVal attrs)
+{
+    SAVE_ARGS2(env, pkg, attrs);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    node = YogNode_new(env, NODE_FROM, lineno);
+    NODE(node)->u.from.pkg = pkg;
+    NODE(node)->u.from.attrs = attrs;
 
     RETURN(env, node);
 }
@@ -692,17 +734,13 @@ id2array(YogEnv* env, ID id)
 static YogVal
 id_token2array(YogEnv* env, YogVal token)
 {
-    return id2array(env, PTR_AS(YogToken, token)->u.id);
+    return id2array(env, TOKEN_ID(token));
 }
 
 static YogVal
 Array_push_token_id(YogEnv* env, YogVal array, YogVal token)
 {
-    SAVE_ARGS2(env, array, token);
-    ID id = PTR_AS(YogToken, token)->u.id;
-    YogVal retval = Array_push(env, array, ID2VAL(id));
-
-    RETURN(env, retval);
+    return Array_push(env, array, ID2VAL(TOKEN_ID(token)));
 }
 
 static YogVal
@@ -815,11 +853,6 @@ MultiAssignLhs_new(YogEnv* env, uint_t lineno, YogVal left, YogVal middle, YogVa
 
     RETURN(env, node);
 }
-
-#define TOKEN(token)            PTR_AS(YogToken, (token))
-#define TOKEN_ID(token)         TOKEN((token))->u.id
-#define TOKEN_LINENO(token)     TOKEN((token))->lineno
-#define NODE_LINENO(node)       PTR_AS(YogNode, (node))->lineno
 }   // end of %include
 
 module ::= stmts(A). {
@@ -891,25 +924,45 @@ stmt(A) ::= IF(B) expr(C) NEWLINE stmts(D) if_tail(E) END. {
 }
 stmt(A) ::= decorators_opt(F) CLASS(B) NAME(C) super_opt(D) NEWLINE stmts(E) END. {
     uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = Class_new(env, lineno, F, id, D, E);
+    A = Class_new(env, lineno, F, TOKEN_ID(C), D, E);
 }
 stmt(A) ::= MODULE(B) NAME(C) stmts(D) END. {
     uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = Module_new(env, lineno, id, D);
+    A = Module_new(env, lineno, TOKEN_ID(C), D);
 }
 stmt(A) ::= NONLOCAL(B) names(C). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Nonlocal_new(env, lineno, C);
 }
-stmt(A) ::= IMPORT(B) dotted_names(C). {
+stmt(A) ::= IMPORT(B) dotted_name(C) as_opt(D). {
     uint_t lineno = TOKEN_LINENO(B);
-    A = Import_new(env, lineno, C);
+    A = Import_new(env, lineno, C, D);
+}
+stmt(A) ::= FROM(B) dotted_name(C) IMPORT imported_attrs(D). {
+    uint_t lineno = TOKEN_LINENO(B);
+    A = From_new(env, lineno, C, D);
 }
 stmt(A) ::= RAISE(B) expr(C). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Raise_new(env, lineno, C);
+}
+
+imported_attrs(A) ::= imported_attr(B). {
+    A = make_array_with(env, B);
+}
+imported_attrs(A) ::= imported_attrs(B) COMMA imported_attr(C). {
+    A = Array_push(env, B, C);
+}
+
+imported_attr(A) ::= NAME(B) as_opt(C). {
+    A = ImportedAttr_new(env, TOKEN_LINENO(B), TOKEN_ID(B), C);
+}
+
+as_opt(A) ::= /* empty */. {
+    A = YNIL;
+}
+as_opt(A) ::= AS NAME(B). {
+    A = ID2VAL(TOKEN_ID(B));
 }
 
 multi_assign_lhs(A) ::= postfix_exprs(B) COMMA postfix_expr(C). {
@@ -939,13 +992,6 @@ postfix_exprs(A) ::= postfix_exprs(B) COMMA postfix_expr(C). {
 
 multi_assign_lhs_middle(A) ::= STAR postfix_expr(B). {
     A = B;
-}
-
-dotted_names(A) ::= dotted_name(B). {
-    A = make_array_with(env, B);
-}
-dotted_names(A) ::= dotted_names(B) COMMA dotted_name(C). {
-    A = Array_push(env, B, C);
 }
 
 dotted_name(A) ::= NAME(B). {
@@ -987,8 +1033,7 @@ else_opt(A) ::= ELSE stmts(B). {
 
 func_def(A) ::= decorators_opt(F) DEF(B) NAME(C) LPAR params(D) RPAR stmts(E) END. {
     uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = FuncDef_new(env, lineno, F, id, D, E);
+    A = FuncDef_new(env, lineno, F, TOKEN_ID(C), D, E);
 }
 
 decorators_opt(A) ::= /* empty */. {
@@ -1108,20 +1153,17 @@ params(A) ::= /* empty */. {
 
 kw_param(A) ::= STAR_STAR(B) NAME(C). {
     uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = Param_new(env, NODE_KW_PARAM, lineno, id, YNIL);
+    A = Param_new(env, NODE_KW_PARAM, lineno, TOKEN_ID(C), YNIL);
 }
 
 var_param(A) ::= STAR(B) NAME(C). {
     uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = Param_new(env, NODE_VAR_PARAM, lineno, id, YNIL);
+    A = Param_new(env, NODE_VAR_PARAM, lineno, TOKEN_ID(C), YNIL);
 }
 
 block_param(A) ::= AND(B) NAME(C) param_default_opt(D). {
     uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = Param_new(env, NODE_BLOCK_PARAM, lineno, id, D);
+    A = Param_new(env, NODE_BLOCK_PARAM, lineno, TOKEN_ID(C), D);
 }
 
 param_default_opt(A) ::= /* empty */. {
@@ -1138,13 +1180,11 @@ param_default(A) ::= EQUAL expr(B). {
 params_without_default(A) ::= NAME(B). {
     A = YogArray_new(env);
     uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, B)->u.id;
-    ParamArray_push(env, A, lineno, id, YNIL);
+    ParamArray_push(env, A, lineno, TOKEN_ID(B), YNIL);
 }
 params_without_default(A) ::= params_without_default(B) COMMA NAME(C). {
     uint_t lineno = TOKEN_LINENO(C);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    ParamArray_push(env, B, lineno, id, YNIL);
+    ParamArray_push(env, B, lineno, TOKEN_ID(C), YNIL);
     A = B;
 }
 
@@ -1157,8 +1197,7 @@ params_with_default(A) ::= params_with_default(B) COMMA param_with_default(C). {
 
 param_with_default(A) ::= NAME(B) param_default(C). {
     uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, B)->u.id;
-    A = Param_new(env, NODE_PARAM, lineno, id, C);
+    A = Param_new(env, NODE_PARAM, lineno, TOKEN_ID(B), C);
 }
 
 args(A) ::= posargs(B) COMMA kwargs(C) COMMA vararg(D) COMMA varkwarg(E) COMMA and_block(F). {
@@ -1315,7 +1354,7 @@ kwargs(A) ::= kwargs(B) COMMA kwarg(C). {
 
 kwarg(A) ::= NAME(B) COLON expr(C). {
     A = YogNode_new(env, NODE_KW_ARG, TOKEN_LINENO(B));
-    PTR_AS(YogNode, A)->u.kwarg.name = PTR_AS(YogToken, B)->u.id;
+    PTR_AS(YogNode, A)->u.kwarg.name = TOKEN_ID(B);
     PTR_AS(YogNode, A)->u.kwarg.value = C;
 }
 
@@ -1477,10 +1516,10 @@ shift_expr(A) ::= shift_expr(B) shift_op(C) match_expr(D). {
 }
 
 shift_op(A) ::= LSHIFT(B). {
-    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+    A = ID2VAL(TOKEN_ID(B));
 }
 shift_op(A) ::= RSHIFT(B). {
-    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+    A = ID2VAL(TOKEN_ID(B));
 }
 
 match_expr(A) ::= arith_expr(B). {
@@ -1488,8 +1527,7 @@ match_expr(A) ::= arith_expr(B). {
 }
 match_expr(A) ::= match_expr(B) EQUAL_TILDA(C) arith_expr(D). {
     uint_t lineno = NODE_LINENO(B);
-    ID id = PTR_AS(YogToken, C)->u.id;
-    A = FuncCall_new2(env, lineno, B, id, D);
+    A = FuncCall_new2(env, lineno, B, TOKEN_ID(C), D);
 }
 
 arith_expr(A) ::= term(B). {
@@ -1501,10 +1539,10 @@ arith_expr(A) ::= arith_expr(B) arith_op(C) term(D). {
 }
 
 arith_op(A) ::= PLUS(B). {
-    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+    A = ID2VAL(TOKEN_ID(B));
 }
 arith_op(A) ::= MINUS(B). {
-    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+    A = ID2VAL(TOKEN_ID(B));
 }
 
 term(A) ::= term(B) term_op(C) factor(D). {
@@ -1516,16 +1554,16 @@ term(A) ::= factor(B). {
 }
 
 term_op(A) ::= STAR(B). {
-    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+    A = ID2VAL(TOKEN_ID(B));
 }
 term_op(A) ::= DIV(B). {
-    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+    A = ID2VAL(TOKEN_ID(B));
 }
 term_op(A) ::= DIV_DIV(B). {
-    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+    A = ID2VAL(TOKEN_ID(B));
 }
 term_op(A) ::= PERCENT(B). {
-    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+    A = ID2VAL(TOKEN_ID(B));
 }
 
 factor(A) ::= PLUS(B) factor(C). {
@@ -1572,7 +1610,7 @@ postfix_expr(A) ::= postfix_expr(B) DOT name(C). {
 }
 
 name(A) ::= NAME(B). {
-    A = ID2VAL(PTR_AS(YogToken, B)->u.id);
+    A = ID2VAL(TOKEN_ID(B));
 }
 name(A) ::= EQUAL_EQUAL. {
     A = ID2VAL(YogVM_intern(env, env->vm, "=="));
@@ -1595,8 +1633,7 @@ name(A) ::= GREATER_EQUAL. {
 
 atom(A) ::= NAME(B). {
     uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, B)->u.id;
-    A = Variable_new(env, lineno, id);
+    A = Variable_new(env, lineno, TOKEN_ID(B));
 }
 atom(A) ::= NUMBER(B). {
     uint_t lineno = TOKEN_LINENO(B);
@@ -1717,7 +1754,7 @@ excepts(A) ::= excepts(B) except(C). {
 
 except(A) ::= EXCEPT(B) exprs(C) AS NAME(D) NEWLINE stmts(E). {
     uint_t lineno = TOKEN_LINENO(B);
-    ID id = PTR_AS(YogToken, D)->u.id;
+    ID id = TOKEN_ID(D);
     YOG_ASSERT(env, id != NO_EXC_VAR, "Too many variables.");
     A = ExceptBody_new(env, lineno, C, id, E);
 }

@@ -41,15 +41,17 @@ struct AstVisitor {
     VisitNode visit_attr;
     VisitNode visit_block;
     VisitNode visit_break;
+    VisitNode visit_class;
     VisitNode visit_dict;
     VisitNode visit_except;
     VisitNode visit_except_body;
     VisitNode visit_finally;
+    VisitNode visit_from;
     VisitNode visit_func_call;
     VisitNode visit_func_def;
     VisitNode visit_if;
     VisitNode visit_import;
-    VisitNode visit_class;
+    VisitNode visit_imported_attr;
     VisitNode visit_literal;
     VisitNode visit_logical_and;
     VisitNode visit_logical_or;
@@ -375,53 +377,8 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_ATTR:
         VISIT(attr);
         break;
-    case NODE_VARIABLE:
-        VISIT(variable);
-        break;
-    case NODE_LITERAL:
-        VISIT(literal);
-        break;
-    case NODE_FUNC_DEF:
-        VISIT(func_def);
-        break;
-    case NODE_FUNC_CALL:
-        VISIT(func_call);
-        break;
-    case NODE_FINALLY:
-        VISIT(finally);
-        break;
-    case NODE_EXCEPT:
-        VISIT(except);
-        break;
-    case NODE_EXCEPT_BODY:
-        VISIT(except_body);
-        break;
-    case NODE_WHILE:
-        VISIT(while);
-        break;
-    case NODE_IF:
-        VISIT(if);
-        break;
-    case NODE_IMPORT:
-        VISIT(import);
-        break;
     case NODE_BREAK:
         VISIT(break);
-        break;
-    case NODE_LOGICAL_AND:
-        VISIT(logical_and);
-        break;
-    case NODE_LOGICAL_OR:
-        VISIT(logical_or);
-        break;
-    case NODE_NEXT:
-        VISIT(next);
-        break;
-    case NODE_NONLOCAL:
-        VISIT(nonlocal);
-        break;
-    case NODE_RETURN:
-        VISIT(return);
         break;
     case NODE_BLOCK_ARG:
         VISIT(block);
@@ -429,17 +386,44 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_CLASS:
         VISIT(class);
         break;
-    case NODE_SUBSCRIPT:
-        VISIT(subscript);
-        break;
-    case NODE_NOT:
-        VISIT(not);
-        break;
     case NODE_DICT:
         VISIT(dict);
         break;
-    case NODE_SET:
-        VISIT(set);
+    case NODE_EXCEPT:
+        VISIT(except);
+        break;
+    case NODE_EXCEPT_BODY:
+        VISIT(except_body);
+        break;
+    case NODE_FINALLY:
+        VISIT(finally);
+        break;
+    case NODE_FROM:
+        VISIT(from);
+        break;
+    case NODE_FUNC_CALL:
+        VISIT(func_call);
+        break;
+    case NODE_FUNC_DEF:
+        VISIT(func_def);
+        break;
+    case NODE_IF:
+        VISIT(if);
+        break;
+    case NODE_IMPORT:
+        VISIT(import);
+        break;
+    case NODE_IMPORTED_ATTR:
+        VISIT(imported_attr);
+        break;
+    case NODE_LITERAL:
+        VISIT(literal);
+        break;
+    case NODE_LOGICAL_AND:
+        VISIT(logical_and);
+        break;
+    case NODE_LOGICAL_OR:
+        VISIT(logical_or);
         break;
     case NODE_MODULE:
         VISIT(module);
@@ -450,11 +434,35 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_MULTI_ASSIGN_LHS:
         VISIT(multi_assign_lhs);
         break;
+    case NODE_NEXT:
+        VISIT(next);
+        break;
+    case NODE_NONLOCAL:
+        VISIT(nonlocal);
+        break;
+    case NODE_NOT:
+        VISIT(not);
+        break;
     case NODE_RAISE:
         VISIT(raise);
         break;
+    case NODE_RETURN:
+        VISIT(return);
+        break;
+    case NODE_SET:
+        VISIT(set);
+        break;
+    case NODE_SUBSCRIPT:
+        VISIT(subscript);
+        break;
     case NODE_SUPER:
         VISIT(super);
+        break;
+    case NODE_VARIABLE:
+        VISIT(variable);
+        break;
+    case NODE_WHILE:
+        VISIT(while);
         break;
     default:
         YOG_BUG(env, "Unknown node type (0x%08x)", NODE(node)->type);
@@ -882,6 +890,46 @@ scan_var_visit_func_call(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal d
 }
 
 static void
+scan_var_visit_imported_attr(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal as = YUNDEF;
+    YogVal tbl = YUNDEF;
+    PUSH_LOCALS2(env, as, tbl);
+
+    tbl = SCAN_VAR_DATA(data)->var_tbl;
+    as = NODE(node)->u.imported_attr.as;
+    if (IS_NIL(as)) {
+        ID attr = NODE(node)->u.imported_attr.name;
+        scan_var_register(env, tbl, attr, VAR_ASSIGNED);
+        RETURN_VOID(env);
+    }
+
+    YOG_ASSERT(env, IS_SYMBOL(as), "invalid \"as\" (0x%08x)", as);
+    scan_var_register(env, tbl, VAL2ID(as), VAR_ASSIGNED);
+    RETURN_VOID(env);
+}
+
+static void
+scan_var_visit_from(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal attrs = YUNDEF;
+    YogVal attr = YUNDEF;
+    PUSH_LOCALS2(env, attrs, attr);
+
+    attrs = NODE(node)->u.from.attrs;
+    uint_t size = YogArray_size(env, attrs);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        attr = YogArray_at(env, attrs, i);
+        visit_node(env, visitor, attr, data);
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
 scan_var_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -944,18 +992,19 @@ static void
 scan_var_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
+    YogVal name = YUNDEF;
+    YogVal as = YUNDEF;
+    PUSH_LOCALS2(env, name, as);
 
-    YogVal names = YUNDEF;
-    PUSH_LOCAL(env, names);
-
-    names = NODE(node)->u.import.names;
-    uint_t size = YogArray_size(env, names);
-    uint_t i;
-    for (i = 0; i < size; i++) {
-        YogVal pkg_name = YogArray_at(env, names, i);
-        YogVal id = YogArray_at(env, pkg_name, 0);
-        scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, VAL2ID(id), VAR_ASSIGNED);
+    as = NODE(node)->u.import.as;
+    if (IS_SYMBOL(as)) {
+        name = as;
     }
+    else {
+        YOG_ASSERT(env, IS_NIL(as), "invalid \"as\" (0x%08x)", as);
+        name = YogArray_at(env, NODE(node)->u.import.name, 0);
+    }
+    scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, name, VAR_ASSIGNED);
 
     RETURN_VOID(env);
 }
@@ -1140,15 +1189,17 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_attr = scan_var_visit_attr;
     visitor->visit_block = NULL;
     visitor->visit_break = scan_var_visit_break;
+    visitor->visit_class = scan_var_visit_class;
     visitor->visit_dict = scan_var_visit_dict;
     visitor->visit_except = scan_var_visit_except;
     visitor->visit_except_body = scan_var_visit_except_body;
     visitor->visit_finally = scan_var_visit_finally;
+    visitor->visit_from = scan_var_visit_from;
     visitor->visit_func_call = scan_var_visit_func_call;
     visitor->visit_func_def = scan_var_visit_func_def;
     visitor->visit_if = scan_var_visit_if;
     visitor->visit_import = scan_var_visit_import;
-    visitor->visit_class = scan_var_visit_class;
+    visitor->visit_imported_attr = scan_var_visit_imported_attr;
     visitor->visit_literal = NULL;
     visitor->visit_logical_and = scan_var_visit_logical_and;
     visitor->visit_logical_or = scan_var_visit_logical_or;
@@ -3216,25 +3267,88 @@ join_package_names(YogEnv* env, YogVal pkg_names)
     }
     *pc = '\0';
 
-    RETURN(env, YogVM_intern(env, env->vm, pkg));
+    RETURN(env, YogString_from_str(env, pkg));
 }
 
 static void
-compile_import(YogEnv* env, YogVal pkg_names, YogVal data, uint_t lineno)
+compile_import(YogEnv* env, YogVal data, uint_t lineno, YogVal name)
 {
-    SAVE_ARGS2(env, pkg_names, data);
+    SAVE_ARGS2(env, name, data);
+    YogVal pkg = YUNDEF;
+    PUSH_LOCAL(env, pkg);
 
-    ID pkg = join_package_names(env, pkg_names);
-    uint_t c = register_const(env, data, ID2VAL(pkg));
+    pkg = join_package_names(env, name);
+    uint_t c = register_const(env, data, pkg);
     CompileData_add_push_const(env, data, lineno, c);
 
     ID import_package = YogVM_intern(env, env->vm, "import_package");
     CompileData_add_load_global(env, data, lineno, import_package);
-
     CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0, 1, 0, 0);
 
-    YogVal var_name = YogArray_at(env, pkg_names, 0);
-    append_store(env, data, lineno, VAL2ID(var_name));
+    RETURN_VOID(env);
+}
+
+static void
+compile_load_pkg_attr(YogEnv* env, YogVal data, uint_t lineno, YogVal name)
+{
+    SAVE_ARGS2(env, name, data);
+    YogVal attr = YUNDEF;
+    PUSH_LOCAL(env, attr);
+
+    uint_t size = YogArray_size(env, name);
+    uint_t i;
+    for (i = 1; i < size; i++) {
+        attr = YogArray_at(env, name, i);
+        CompileData_add_load_attr(env, data, lineno, VAL2ID(attr));
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
+compile_store_pkg_attr(YogEnv* env, YogVal data, uint_t lineno, YogVal attrs, uint_t index)
+{
+    SAVE_ARGS2(env, attrs, data);
+    YogVal attr = YUNDEF;
+    YogVal as = YUNDEF;
+    PUSH_LOCALS2(env, attr, as);
+
+    attr = YogArray_at(env, attrs, index);
+    YOG_ASSERT(env, NODE(attr)->type == NODE_IMPORTED_ATTR, "invalid node type (0x%x)", NODE(attr)->type);
+    ID name = NODE(attr)->u.imported_attr.name;
+    CompileData_add_load_attr(env, data, lineno, name);
+    as = NODE(attr)->u.imported_attr.as;
+    if (IS_NIL(as)) {
+        append_store(env, data, lineno, name);
+        RETURN_VOID(env);
+    }
+
+    YOG_ASSERT(env, IS_SYMBOL(as), "invalid \"as\" (0x%08x)", as);
+    append_store(env, data, lineno, VAL2ID(as));
+    RETURN_VOID(env);
+}
+
+static void
+compile_visit_from(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal pkg = YUNDEF;
+    YogVal attrs = YUNDEF;
+    PUSH_LOCALS2(env, pkg, attrs);
+
+    uint_t lineno = NODE_LINENO(node);
+    pkg = NODE(node)->u.from.pkg;
+    compile_import(env, data, lineno, pkg);
+    compile_load_pkg_attr(env, data, lineno, pkg);
+
+    attrs = NODE(node)->u.from.attrs;
+    uint_t size = YogArray_size(env, attrs);
+    uint_t i;
+    for (i = 0; i < size - 1; i++) {
+        CompileData_add_dup(env, data, lineno);
+        compile_store_pkg_attr(env, data, lineno, attrs, i);
+    }
+    compile_store_pkg_attr(env, data, lineno, attrs, size - 1);
 
     RETURN_VOID(env);
 }
@@ -3243,18 +3357,26 @@ static void
 compile_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
+    YogVal name = YUNDEF;
+    YogVal as = YUNDEF;
+    YogVal var = YUNDEF;
+    YogVal attr = YUNDEF;
+    PUSH_LOCALS4(env, name, as, var, attr);
 
-    YogVal names = YUNDEF;
-    PUSH_LOCAL(env, names);
+    uint_t lineno = NODE_LINENO(node);
+    name = NODE(node)->u.import.name;
+    compile_import(env, data, lineno, name);
 
-    uint_t lineno = NODE(node)->lineno;
-    names = NODE(node)->u.import.names;
-    uint_t size = YogArray_size(env, names);
-    uint_t i;
-    for (i = 0; i < size; i++) {
-        YogVal pkg_names = YogArray_at(env, names, i);
-        compile_import(env, pkg_names, data, lineno);
+    as = NODE(node)->u.import.as;
+    if (IS_NIL(as)) {
+        var = YogArray_at(env, name, 0);
+        append_store(env, data, lineno, VAL2ID(var));
+        RETURN_VOID(env);
     }
+
+    YOG_ASSERT(env, IS_SYMBOL(as), "invalid \"as\" (0x%08x)", as);
+    compile_load_pkg_attr(env, data, lineno, name);
+    append_store(env, data, lineno, VAL2ID(as));
 
     RETURN_VOID(env);
 }
@@ -3343,15 +3465,17 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_attr = compile_visit_attr;
     visitor->visit_block = compile_visit_block;
     visitor->visit_break = compile_visit_break;
+    visitor->visit_class = compile_visit_class;
     visitor->visit_dict = compile_visit_dict;
     visitor->visit_except = compile_visit_except;
     visitor->visit_except_body = NULL;
     visitor->visit_finally = compile_visit_finally;
+    visitor->visit_from = compile_visit_from;
     visitor->visit_func_call = compile_visit_func_call;
     visitor->visit_func_def = compile_visit_func_def;
     visitor->visit_if = compile_visit_if;
     visitor->visit_import = compile_visit_import;
-    visitor->visit_class = compile_visit_class;
+    visitor->visit_imported_attr = NULL;
     visitor->visit_literal = compile_visit_literal;
     visitor->visit_logical_and = compile_visit_logical_and;
     visitor->visit_logical_or = compile_visit_logical_or;

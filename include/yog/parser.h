@@ -29,10 +29,12 @@ enum YogNodeType {
     NODE_EXCEPT,
     NODE_EXCEPT_BODY,
     NODE_FINALLY,
+    NODE_FROM,
     NODE_FUNC_CALL,
     NODE_FUNC_DEF,
     NODE_IF,
     NODE_IMPORT,
+    NODE_IMPORTED_ATTR,
     NODE_KW_ARG,
     NODE_KW_PARAM,
     NODE_LITERAL,
@@ -108,6 +110,10 @@ struct YogNode {
             YogVal body;
         } finally;
         struct {
+            YogVal pkg;
+            YogVal attrs;
+        } from;
+        struct {
             YogVal callee;
             YogVal args;
             YogVal blockarg;
@@ -124,8 +130,13 @@ struct YogNode {
             YogVal tail;
         } if_;
         struct {
-            YogVal names;
+            YogVal name;
+            YogVal as;
         } import;
+        struct {
+            ID name;
+            YogVal as;
+        } imported_attr;
         struct {
             YogVal decorators;
             ID name;

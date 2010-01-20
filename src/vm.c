@@ -1129,22 +1129,20 @@ import_package(YogEnv* env, YogVM* vm, const char* name)
 }
 
 YogVal
-YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
+YogVM_import_package(YogEnv* env, YogVM* vm, YogVal name)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, name);
     YogVal top = YUNDEF;
     YogVal parent = YUNDEF;
     YogVal pkg = YUNDEF;
-    YogVal s = YUNDEF;
-    PUSH_LOCALS4(env, top, parent, pkg, s);
+    PUSH_LOCALS3(env, top, parent, pkg);
 
-    s = YogVM_id2name(env, env->vm, name);
     uint_t n = 0;
     while (1) {
-        const char* begin = STRING_CSTR(s);
+        const char* begin = STRING_CSTR(name);
         const char* end = strchr(begin + n, '.');
         if (end == NULL) {
-            end = begin + STRING_SIZE(s) - 1;
+            end = begin + STRING_SIZE(name) - 1;
         }
         uint_t endpos = end - begin;
         char* str = (char*)alloca(sizeof(char) * (endpos + 1));
@@ -1155,7 +1153,7 @@ YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
         if (IS_PTR(parent)) {
             uint_t size = endpos - n;
             char* attr = (char*)alloca(sizeof(char) * (size + 1));
-            strncpy(attr, STRING_CSTR(s) + n, size);
+            strncpy(attr, STRING_CSTR(name) + n, size);
             attr[size] = '\0';
             ID id = YogVM_intern(env, vm, attr);
             YogObj_set_attr_id(env, parent, id, pkg);
@@ -1164,7 +1162,7 @@ YogVM_import_package(YogEnv* env, YogVM* vm, ID name)
             top = pkg;
         }
 
-        if (endpos == STRING_SIZE(s) - 1) {
+        if (endpos == STRING_SIZE(name) - 1) {
             break;
         }
 

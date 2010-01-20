@@ -23,6 +23,7 @@ end, TK_END
 except, TK_EXCEPT
 false, TK_FALSE
 finally, TK_FINALLY
+from, TK_FROM
 if, TK_IF
 import, TK_IMPORT
 module, TK_MODULE

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove YogString_add_char
+desc: It is same as YogString_push.
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-20 09:49:14.984625 Z
+references: []
+
+id: 9e5cb7ce31265bbabd70fba8cb53374b6b1e77ee
+log_events: 
+- - 2010-01-20 09:49:15.445870 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
