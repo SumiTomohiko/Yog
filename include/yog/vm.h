@@ -134,7 +134,7 @@ void YogVM_delete(YogEnv*, YogVM*);
 void YogVM_free_indirect_ptr(YogEnv*, YogVM*, YogIndirectPointer*);
 YogEnv* YogVM_get_env(YogVM*);
 YogVal YogVM_id2name(YogEnv*, YogVM*, ID);
-YogVal YogVM_import_package(YogEnv*, YogVM*, ID);
+YogVal YogVM_import_package(YogEnv*, YogVM*, YogVal);
 void YogVM_init(YogVM*);
 ID YogVM_intern(YogEnv*, YogVM*, const char*);
 uint_t YogVM_issue_thread_id(YogEnv*, YogVM*);

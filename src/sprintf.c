@@ -111,7 +111,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
     const char* pc;
     for (pc = fmt; *pc != '\0'; pc++) {
         if (*pc != '%') {
-            YogString_add_char(env, s, *pc);
+            YogString_push(env, s, *pc);
             continue;
         }
         pc++;
@@ -131,7 +131,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             obj_index++;
             break;
         case '%':
-            YogString_add_char(env, s, *pc);
+            YogString_push(env, s, *pc);
             break;
         case 'd':
             {

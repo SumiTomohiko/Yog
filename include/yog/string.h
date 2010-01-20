@@ -39,7 +39,6 @@ extern "C" {
 /* src/string.c */
 YogVal YogCharArray_new_str(YogEnv*, const char*);
 void YogString_add(YogEnv*, YogVal, YogVal);
-void YogString_add_char(YogEnv*, YogVal, char);
 void YogString_add_cstr(YogEnv*, YogVal, const char*);
 char YogString_at(YogEnv*, YogVal, uint_t);
 void YogString_clear(YogEnv*, YogVal);

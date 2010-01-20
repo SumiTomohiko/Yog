@@ -327,20 +327,6 @@ find(YogEnv* env, YogVal self, YogVal substr, uint_t from)
 }
 
 void
-YogString_add_char(YogEnv* env, YogVal self, char c)
-{
-    SAVE_ARG(env, self);
-
-    uint_t size = YogString_size(env, self);
-    ensure_size(env, self, size + 2);
-    STRING_CSTR(self)[size] = c;
-    STRING_CSTR(self)[size + 1] = '\0';
-    STRING_SIZE(self)++;
-
-    RETURN_VOID(env);
-}
-
-void
 YogString_add(YogEnv* env, YogVal self, YogVal s)
 {
     SAVE_ARGS2(env, self, s);
