@@ -1,3 +1,4 @@
+#include <alloca.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -329,6 +330,56 @@ post_gc(YogEnv* env)
 #undef POST
 }
 
+#if defined(GC_MARK_SWEEP_COMPACT)
+static uint_t
+count_heaps(YogEnv* env)
+{
+    uint_t n = 0;
+    ITERATE_HEAPS(env->vm, n++);
+    return n;
+}
+
+static void
+init_compactors(YogEnv* env, uint_t size, YogCompactor* compactors)
+{
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        YogCompactor_init(env, &compactors[i]);
+    }
+}
+
+static void
+do_compaction(YogEnv* env)
+{
+    uint_t heaps = count_heaps(env);
+    YogCompactor* compactors = (YogCompactor*)alloca(sizeof(YogCompactor) * heaps);
+    init_compactors(env, heaps, compactors);
+#define EACH_HEAP(proc)     do { \
+    GC_TYPE* heap = (GC_TYPE*)env->vm->heaps; \
+    uint_t i = 0; \
+    while (heap != NULL) { \
+        proc; \
+        heap = heap->next; \
+        i++; \
+    } \
+} while (0)
+    EACH_HEAP(YogMarkSweepCompact_alloc_virtually(env, heap, &compactors[i]));
+    YogMarkSweepCompactPage** first_free_pages = (YogMarkSweepCompactPage**)alloca(sizeof(YogMarkSweepCompactPage*) * heaps);
+    EACH_HEAP(first_free_pages[i] = compactors[i].next_page);
+
+    YogVM* vm = env->vm;
+    ITERATE_HEAPS(vm, YogMarkSweepCompact_prepare(env, heap));
+    YogVM_keep_children(env, vm, YogMarkSweepCompact_update_ptr, THREAD_HEAP(MAIN_THREAD(vm)));
+    ITERATE_HEAPS(vm, YogMarkSweepCompact_update_front_header(env, heap));
+
+    init_compactors(env, heaps, compactors);
+    EACH_HEAP(YogMarkSweepCompact_move_objs(env, heap, &compactors[i]));
+
+    EACH_HEAP(YogMarkSweepCompact_shrink(env, heap, &compactors[i], first_free_pages[i]));
+#undef EACH_HEAP
+}
+#endif
+
 static void
 gc(YogEnv* env)
 {
@@ -340,6 +391,9 @@ gc(YogEnv* env)
     delete_garbage(env);
     post_gc(env);
     delete_heaps(env);
+#if defined(GC_MARK_SWEEP_COMPACT)
+    do_compaction(env);
+#endif
 }
 
 void

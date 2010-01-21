@@ -41,31 +41,7 @@ struct YogMarkSweepCompactChunk {
 
 typedef struct YogMarkSweepCompactChunk YogMarkSweepCompactChunk;
 
-struct YogMarkSweepCompactPage {
-    uint_t flags;
-    struct YogMarkSweepCompactPage* next;
-    size_t obj_size;
-    uint_t num_obj;
-    uint_t num_obj_avail;
-    struct YogMarkSweepCompactFreeList* freelist;
-    struct YogMarkSweepCompactChunk* chunk;
-};
-
-#define PAGE_USED           0x01
-#define IS_PAGE_USED(p)     ((p)->flags & PAGE_USED)
-
-typedef struct YogMarkSweepCompactPage YogMarkSweepCompactPage;
-
-struct Compactor {
-    struct YogMarkSweepCompactChunk* cur_chunk;
-    struct YogMarkSweepCompactPage* next_page;
-    struct YogMarkSweepCompactPage* cur_page[MARK_SWEEP_COMPACT_NUM_SIZE];
-    uint_t cur_index[MARK_SWEEP_COMPACT_NUM_SIZE];
-};
-
-typedef struct Compactor Compactor;
-
-typedef void (*Callback)(struct YogMarkSweepCompact*, struct Compactor*, struct YogMarkSweepCompactHeader*);
+typedef void (*Callback)(struct YogMarkSweepCompact*, struct YogCompactor*, struct YogMarkSweepCompactHeader*);
 
 typedef void (*IteratePagesCallback)(YogEnv*, YogMarkSweepCompact*, YogMarkSweepCompactChunk*, uint_t, YogMarkSweepCompactPage*);
 typedef BOOL (*PageSelector)(YogMarkSweepCompactChunk*, uint_t, YogMarkSweepCompactPage*);
@@ -211,8 +187,8 @@ delete(YogMarkSweepCompact* msc, YogMarkSweepCompactHeader* header)
     }
 }
 
-static void
-Compactor_init(Compactor* compactor)
+void
+YogCompactor_init(YogEnv* env, YogCompactor* compactor)
 {
     compactor->cur_chunk = NULL;
     compactor->next_page = NULL;
@@ -230,7 +206,7 @@ object_number_of_page(size_t obj_size)
 }
 
 static void
-iterate_objects(YogMarkSweepCompact* msc, Compactor* compactor, Callback callback)
+iterate_objects(YogMarkSweepCompact* msc, YogCompactor* compactor, Callback callback)
 {
     YogMarkSweepCompactChunk* chunk = msc->all_chunks;
     while (chunk != NULL) {
@@ -270,7 +246,7 @@ free_chunk(YogMarkSweepCompact* msc, YogMarkSweepCompactChunk* chunk)
 }
 
 static void
-free_chunks(YogMarkSweepCompact* msc, Compactor* compactor)
+free_chunks(YogMarkSweepCompact* msc, YogCompactor* compactor)
 {
     if (compactor->cur_chunk == NULL) {
         return;
@@ -286,7 +262,7 @@ free_chunks(YogMarkSweepCompact* msc, Compactor* compactor)
 }
 
 static void
-remake_freelist(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactPage* first_free_page)
+remake_freelist(YogMarkSweepCompact* msc, YogCompactor* compactor, YogMarkSweepCompactPage* first_free_page)
 {
     uint_t i;
     for (i = 0; i < MARK_SWEEP_COMPACT_NUM_SIZE; i++) {
@@ -333,7 +309,7 @@ remake_freelist(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepComp
 }
 
 static void
-set_next_page(YogMarkSweepCompact* msc, Compactor* compactor, void* last_page)
+set_next_page(YogMarkSweepCompact* msc, YogCompactor* compactor, void* last_page)
 {
     unsigned char* page_end = (unsigned char*)last_page + PAGE_SIZE;
     YogMarkSweepCompactPage* next_page = (YogMarkSweepCompactPage*)page_end;
@@ -352,7 +328,7 @@ set_next_page(YogMarkSweepCompact* msc, Compactor* compactor, void* last_page)
 }
 
 static void
-set_forward_address(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactHeader* header)
+set_forward_address(YogMarkSweepCompact* msc, YogCompactor* compactor, YogMarkSweepCompactHeader* header)
 {
     size_t size = header->size;
     uint_t index = msc->size2index[size];
@@ -398,7 +374,7 @@ set_forward_address(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweep
 }
 
 static void
-copy_object(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactHeader* header)
+move_obj(YogMarkSweepCompact* msc, YogCompactor* compactor, YogMarkSweepCompactHeader* header)
 {
     size_t size = header->size;
     YogMarkSweepCompactHeader* dest_header = (YogMarkSweepCompactHeader*)header->forwarding_addr - 1;
@@ -435,66 +411,61 @@ copy_object(YogMarkSweepCompact* msc, Compactor* compactor, YogMarkSweepCompactH
 }
 
 void*
-YogMarkSweepCompact_update_pointer(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+YogMarkSweepCompact_update_ptr(YogEnv* env, void* ptr, void* heap)
 {
     if (ptr == NULL) {
         return NULL;
     }
 
     YogMarkSweepCompactHeader* header = (YogMarkSweepCompactHeader*)ptr - 1;
-    if (!header->updated) {
-        header->updated = TRUE;
+    if (header->updated) {
+        return header->forwarding_addr;
+    }
+    header->updated = TRUE;
 
-        ChildrenKeeper children_keeper = header->keeper;
-        if (children_keeper != NULL) {
-            (*children_keeper)(env, ptr, keeper, heap);
-        }
+    ChildrenKeeper children_keeper = header->keeper;
+    if (children_keeper != NULL) {
+        (*children_keeper)(env, ptr, YogMarkSweepCompact_update_ptr, heap);
+    }
 
-        if (header->prev != NULL) {
-            header->prev = ADDR2HEADER(header->prev->forwarding_addr);
-        }
-        if (header->next != NULL) {
-            header->next = ADDR2HEADER(header->next->forwarding_addr);
-        }
+    if (header->prev != NULL) {
+        header->prev = ADDR2HEADER(header->prev->forwarding_addr);
+    }
+    if (header->next != NULL) {
+        header->next = ADDR2HEADER(header->next->forwarding_addr);
     }
 
     return header->forwarding_addr;
 }
 
-static void*
-update_pointer(YogEnv* env, void* ptr, void* heap)
+void
+YogMarkSweepCompact_alloc_virtually(YogEnv* env, YogMarkSweepCompact* msc, YogCompactor* compactor)
 {
-    return YogMarkSweepCompact_update_pointer(env, ptr, update_pointer, heap);
+    iterate_objects(msc, compactor, set_forward_address);
 }
 
 void
-YogMarkSweepCompact_do_compaction(YogEnv* env, YogMarkSweepCompact* msc, ObjectKeeper update_pointer)
+YogMarkSweepCompact_move_objs(YogEnv* env, YogMarkSweepCompact* msc, YogCompactor* compactor)
 {
-    DEBUG(TRACE("%p: compaction", env));
-    Compactor compactor;
-    Compactor_init(&compactor);
-    iterate_objects(msc, &compactor, set_forward_address);
-    YogMarkSweepCompactPage* first_free_page = compactor.next_page;
-
-    YogVM_keep_children(env, env->vm, update_pointer, msc);
-    YogMarkSweepCompactHeader** front = &msc->header;
-    if (*front != NULL) {
-        *front = ADDR2HEADER((*front)->forwarding_addr);
-    }
-
-    Compactor_init(&compactor);
-    iterate_objects(msc, &compactor, copy_object);
-
-    free_chunks(msc, &compactor);
-    msc->all_chunks_last = compactor.cur_chunk;
-
-    remake_freelist(msc, &compactor, first_free_page);
+    iterate_objects(msc, compactor, move_obj);
 }
 
-static void
-compact(YogEnv* env, YogMarkSweepCompact* msc)
+void
+YogMarkSweepCompact_update_front_header(YogEnv* env, YogMarkSweepCompact* msc)
 {
-    YogMarkSweepCompact_do_compaction(env, msc, update_pointer);
+    YogMarkSweepCompactHeader** front = &msc->header;
+    if (*front == NULL) {
+        return;
+    }
+    *front = ADDR2HEADER((*front)->forwarding_addr);
+}
+
+void
+YogMarkSweepCompact_shrink(YogEnv* env, YogMarkSweepCompact* msc, YogCompactor* compactor, YogMarkSweepCompactPage* first_free_page)
+{
+    free_chunks(msc, compactor);
+    msc->all_chunks_last = compactor->cur_chunk;
+    remake_freelist(msc, compactor, first_free_page);
 }
 
 void

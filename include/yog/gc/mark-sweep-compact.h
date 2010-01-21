@@ -61,6 +61,30 @@ struct YogMarkSweepCompact {
 
 typedef struct YogMarkSweepCompact YogMarkSweepCompact;
 
+struct YogMarkSweepCompactPage {
+    uint_t flags;
+    struct YogMarkSweepCompactPage* next;
+    size_t obj_size;
+    uint_t num_obj;
+    uint_t num_obj_avail;
+    struct YogMarkSweepCompactFreeList* freelist;
+    struct YogMarkSweepCompactChunk* chunk;
+};
+
+#define PAGE_USED           0x01
+#define IS_PAGE_USED(p)     ((p)->flags & PAGE_USED)
+
+typedef struct YogMarkSweepCompactPage YogMarkSweepCompactPage;
+
+struct YogCompactor {
+    struct YogMarkSweepCompactChunk* cur_chunk;
+    struct YogMarkSweepCompactPage* next_page;
+    struct YogMarkSweepCompactPage* cur_page[MARK_SWEEP_COMPACT_NUM_SIZE];
+    uint_t cur_index[MARK_SWEEP_COMPACT_NUM_SIZE];
+};
+
+typedef struct YogCompactor YogCompactor;
+
 /* PROTOTYPE_START */
 
 /**
@@ -70,9 +94,10 @@ typedef struct YogMarkSweepCompact YogMarkSweepCompact;
 extern "C" {
 #endif
 /* src/gc/mark-sweep-compact.c */
+void YogCompactor_init(YogEnv*, YogCompactor*);
 void* YogMarkSweepCompact_alloc(YogEnv*, YogMarkSweepCompact*, ChildrenKeeper, Finalizer, size_t);
+void YogMarkSweepCompact_alloc_virtually(YogEnv*, YogMarkSweepCompact*, YogCompactor*);
 void YogMarkSweepCompact_delete_garbage(YogEnv*, YogMarkSweepCompact*);
-void YogMarkSweepCompact_do_compaction(YogEnv*, YogMarkSweepCompact*, ObjectKeeper);
 void YogMarkSweepCompact_finalize(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_grey_page(void*);
 void YogMarkSweepCompact_init(YogEnv*, YogMarkSweepCompact*, size_t, size_t);
@@ -80,12 +105,15 @@ BOOL YogMarkSweepCompact_install_sigsegv_handler(YogEnv*);
 BOOL YogMarkSweepCompact_is_empty(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_keep_vm(YogEnv*, YogMarkSweepCompact*);
 void* YogMarkSweepCompact_mark_recursively(YogEnv*, void*, ObjectKeeper, void*);
+void YogMarkSweepCompact_move_objs(YogEnv*, YogMarkSweepCompact*, YogCompactor*);
 void YogMarkSweepCompact_post_gc(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_prepare(YogEnv*, YogMarkSweepCompact*);
 void YogMarkSweepCompact_protect_white_pages(YogEnv*, YogMarkSweepCompact*);
+void YogMarkSweepCompact_shrink(YogEnv*, YogMarkSweepCompact*, YogCompactor*, YogMarkSweepCompactPage*);
 void YogMarkSweepCompact_trace_grey_children(YogEnv*, YogMarkSweepCompact*, void*);
 void YogMarkSweepCompact_unprotect_all_pages(YogEnv*, YogMarkSweepCompact*);
-void* YogMarkSweepCompact_update_pointer(YogEnv*, void*, ObjectKeeper, void*);
+void YogMarkSweepCompact_update_front_header(YogEnv*, YogMarkSweepCompact*);
+void* YogMarkSweepCompact_update_ptr(YogEnv*, void*, void*);
 
 
 #if defined(__cplusplus)
