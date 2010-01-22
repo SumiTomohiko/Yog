@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Move src/parser.h
+desc: New location is include/yog/token.h.
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-22 09:17:34.061193 Z
+references: []
+
+id: f830f621b4b453d1a213b11b9a67519088c7f7dc
+log_events: 
+- - 2010-01-22 09:17:34.628495 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

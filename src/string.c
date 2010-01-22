@@ -1,7 +1,4 @@
 #include "yog/config.h"
-#if defined(HAVE_ALLOCA_H)
-#   include <alloca.h>
-#endif
 #include <ctype.h>
 #include <errno.h>
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
@@ -23,6 +20,7 @@
 #include "yog/get_args.h"
 #include "yog/misc.h"
 #include "yog/regexp.h"
+#include "yog/sysdeps.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -31,10 +29,6 @@
         YogError_raise_TypeError((env), "self must be String"); \
     } \
 } while (0)
-
-#if defined(_alloca) && !defined(alloca)
-#   define alloca   _alloca
-#endif
 
 ID
 YogString_intern(YogEnv* env, YogVal s)
@@ -219,7 +213,7 @@ YogString_from_range(YogEnv* env, YogVal enc, const char* start, const char* end
     }
 
     /* FIXME: dirty hack */
-    char* escaped_from_gc = (char*)alloca(sizeof(char) * size);
+    char* escaped_from_gc = (char*)YogSysdeps_alloca(sizeof(char) * size);
     strncpy(escaped_from_gc, start, size);
 
     YogVal body = YogCharArray_new(env, size + 1);
@@ -265,7 +259,7 @@ YogString_from_str(YogEnv* env, const char* s)
     PUSH_LOCALS2(env, str, body);
 
     size_t len = strlen(s);
-    char* buffer = (char*)alloca(sizeof(char) * (len + 1));
+    char* buffer = (char*)YogSysdeps_alloca(sizeof(char) * (len + 1));
     memcpy(buffer, s, len + 1);
     body = YogCharArray_new_str(env, buffer);
 
@@ -363,7 +357,7 @@ gsub(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 
 #define ADD_STR(to)    do { \
     uint_t size = to - from; \
-    char* t = (char*)alloca(sizeof(char) * (size + 1)); \
+    char* t = (char*)YogSysdeps_alloca(sizeof(char) * (size + 1)); \
     memcpy(t, STRING_CSTR(self) + from, size); \
     t[size] = '\0'; \
     YogString_add_cstr(env, s, t); \

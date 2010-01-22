@@ -1,7 +1,4 @@
 #include "yog/config.h"
-#if defined(HAVE_ALLOCA_H)
-#   include <alloca.h>
-#endif
 #include <ctype.h>
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
@@ -20,14 +17,11 @@
 #include "yog/gc.h"
 #include "yog/parser.h"
 #include "yog/regexp.h"
+#include "yog/sysdeps.h"
 #include "yog/table.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 #include "parser.h"
-
-#if defined(_MSC_VER)
-#   define snprintf _snprintf
-#endif
 
 static void
 YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
@@ -256,10 +250,7 @@ print_current_position(YogEnv* env, YogVal lexer)
     YogVal line = PTR_AS(YogLexer, lexer)->line;
     uint_t size = STRING_SIZE(line);
     YOG_ASSERT(env, 0 < size, "invalid size (%u)", size);
-#if defined(_alloca) && !defined(alloca)
-#   define alloca   _alloca
-#endif
-    char* s = (char*)alloca(sizeof(char) * size);
+    char* s = (char*)YogSysdeps_alloca(sizeof(char) * size);
     memcpy(s, STRING_CSTR(line), size);
     char* pc = s + size - 1;
     while ((*pc == '\0') || (*pc == '\r') || (*pc == '\n')) {
@@ -504,7 +495,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
 #define BUFSIZE                             (4)
 #define RETURN_ID_TOKEN1(type, c)           do { \
     char buffer[BUFSIZE]; \
-    snprintf(buffer, sizeof(buffer), "%c", (c)); \
+    YogSysdeps_snprintf(buffer, sizeof(buffer), "%c", (c)); \
     RETURN_ID_TOKEN((type), buffer); \
 } while (0)
 #define RETURN_INT  do { \

@@ -16,6 +16,7 @@
 #include "yog/get_args.h"
 #include "yog/object.h"
 #include "yog/string.h"
+#include "yog/sysdeps.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -123,11 +124,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 
     char buffer[32];
     double val = PTR_AS(YogFloat, self)->val;
-#if defined(HAVE_SNPRINTF)
-    snprintf(buffer, array_sizeof(buffer), "%#.12g", val);
-#else
-    sprintf(buffer, "%#.12g", val);
-#endif
+    YogSysdeps_snprintf(buffer, array_sizeof(buffer), "%#.12g", val);
     remove_trailing_zero(env, buffer);
 
     s = YogString_from_str(env, buffer);

@@ -1,5 +1,4 @@
 #include "yog/config.h"
-#include <alloca.h>
 #include <stdlib.h>
 #if defined(HAVE_WINDOWS_H)
 #   include <windows.h>
@@ -11,6 +10,7 @@
 #include "yog/frame.h"
 #include "yog/get_args.h"
 #include "yog/object.h"
+#include "yog/sysdeps.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -326,7 +326,7 @@ coroutine_main(MAIN_PARAM)
 
     args = PTR_AS(Coroutine, self)->args;
     uint_t size = IS_PTR(args) ? YogArray_size(&coroutine_env, args) : 0;
-    YogVal* a = (YogVal*)alloca(sizeof(YogVal) * size);
+    YogVal* a = (YogVal*)YogSysdeps_alloca(sizeof(YogVal) * size);
     uint_t i;
     for (i = 0; i < size; i++) {
         a[i] = YogArray_at(&coroutine_env, args, i);

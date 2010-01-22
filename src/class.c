@@ -1,7 +1,4 @@
 #include "yog/config.h"
-#if defined(HAVE_ALLOCA_H)
-#   include <alloca.h>
-#endif
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
@@ -18,6 +15,7 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/property.h"
+#include "yog/sysdeps.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -190,10 +188,7 @@ new_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogVal body = PTR_AS(YogArray, args)->body;
     YogVal* items = PTR_AS(YogValArray, body)->items;
     /* TODO: dirty hack */
-#if defined(_alloca) && !defined(alloca)
-#   define alloca   _alloca
-#endif
-    YogVal* arg = (YogVal*)alloca(sizeof(YogVal) * argc);
+    YogVal* arg = (YogVal*)YogSysdeps_alloca(sizeof(YogVal) * argc);
     uint_t i;
     for (i = 0; i < argc; i++) {
         arg[i] = items[i];
@@ -293,11 +288,8 @@ YogClass_define_property(YogEnv* env, YogVal self, YogVal pkg, const char* name,
     if (get != NULL) {
 #define GETTER_HEAD     "get_"
         uint_t size = strlen(GETTER_HEAD) + strlen(name) + 1;
-        char* getter_name = (char*)alloca(sizeof(char) * size);
-#if defined(_MSC_VER)
-#   define snprintf     _snprintf
-#endif
-        snprintf(getter_name, size, GETTER_HEAD "%s", name);
+        char* getter_name = (char*)YogSysdeps_alloca(sizeof(char) * size);
+        YogSysdeps_snprintf(getter_name, size, GETTER_HEAD "%s", name);
         getter = YogNativeFunction_new(env, class_name, pkg, getter_name, get);
 #undef GETTER_HEAD
     }
@@ -305,8 +297,8 @@ YogClass_define_property(YogEnv* env, YogVal self, YogVal pkg, const char* name,
     if (set != NULL) {
 #define SETTER_HEAD     "set_"
         uint_t size = strlen(SETTER_HEAD) + strlen(name) + 1;
-        char* setter_name = (char*)alloca(sizeof(char) * size);
-        snprintf(setter_name, size, SETTER_HEAD "%s", name);
+        char* setter_name = (char*)YogSysdeps_alloca(sizeof(char) * size);
+        YogSysdeps_snprintf(setter_name, size, SETTER_HEAD "%s", name);
         setter = YogNativeFunction_new(env, class_name, pkg, setter_name, set);
 #undef setter_HEAD
     }

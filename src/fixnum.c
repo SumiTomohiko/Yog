@@ -1,7 +1,4 @@
 #include "yog/config.h"
-#if defined(HAVE_ALLOCA_H)
-#   include <alloca.h>
-#endif
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
@@ -19,6 +16,7 @@
 #include "yog/get_args.h"
 #include "yog/sprintf.h"
 #include "yog/string.h"
+#include "yog/sysdeps.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -523,7 +521,7 @@ times(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     uint_t i = 0;
     uint_t argc = 1;
     for (i = 0; i < n; i++) {
-        YogVal* args = (YogVal*)alloca(sizeof(YogVal) * argc);
+        YogVal* args = (YogVal*)YogSysdeps_alloca(sizeof(YogVal) * argc);
         args[0] = INT2VAL(i);
         YogCallable_call(env, block, argc, args);
     }

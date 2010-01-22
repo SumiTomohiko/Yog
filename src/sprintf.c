@@ -1,9 +1,9 @@
 #include "yog/config.h"
-#include <alloca.h>
 #include <stdarg.h>
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/string.h"
+#include "yog/sysdeps.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -138,7 +138,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
                 int n = va_arg(ap, int);
                 /* 64bit integer including '\0' needs at most 20 bytes */
                 char buf[20];
-                snprintf(buf, array_sizeof(buf), "%d", n);
+                YogSysdeps_snprintf(buf, array_sizeof(buf), "%d", n);
                 YogString_add_cstr(env, s, buf);
             }
             break;
@@ -152,7 +152,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             {
                 unsigned int n = va_arg(ap, unsigned int);
                 char buf[20];
-                snprintf(buf, array_sizeof(buf), "%u", n);
+                YogSysdeps_snprintf(buf, array_sizeof(buf), "%u", n);
                 YogString_add_cstr(env, s, buf);
             }
             break;
@@ -173,7 +173,7 @@ YogSprintf_vsprintf(YogEnv* env, const char* fmt, va_list ap)
     PUSH_LOCAL(env, s);
 
     uint_t n = count_objects(env, fmt);
-    YogVal* pv = (YogVal*)alloca(sizeof(YogVal) * n);
+    YogVal* pv = (YogVal*)YogSysdeps_alloca(sizeof(YogVal) * n);
     uint_t i;
     for (i = 0; i < n; i++) {
         pv[i] = YUNDEF;

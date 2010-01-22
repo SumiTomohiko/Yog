@@ -1,4 +1,3 @@
-#include <alloca.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +16,7 @@
 #   include "yog/gc/bdw.h"
 #endif
 #include "yog/misc.h"
+#include "yog/sysdeps.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -352,7 +352,7 @@ static void
 do_compaction(YogEnv* env)
 {
     uint_t heaps = count_heaps(env);
-    YogCompactor* compactors = (YogCompactor*)alloca(sizeof(YogCompactor) * heaps);
+    YogCompactor* compactors = (YogCompactor*)YogSysdeps_alloca(sizeof(YogCompactor) * heaps);
     init_compactors(env, heaps, compactors);
 #define EACH_HEAP(proc)     do { \
     GC_TYPE* heap = (GC_TYPE*)env->vm->heaps; \
@@ -364,7 +364,7 @@ do_compaction(YogEnv* env)
     } \
 } while (0)
     EACH_HEAP(YogMarkSweepCompact_alloc_virtually(env, heap, &compactors[i]));
-    YogMarkSweepCompactPage** first_free_pages = (YogMarkSweepCompactPage**)alloca(sizeof(YogMarkSweepCompactPage*) * heaps);
+    YogMarkSweepCompactPage** first_free_pages = (YogMarkSweepCompactPage**)YogSysdeps_alloca(sizeof(YogMarkSweepCompactPage*) * heaps);
     EACH_HEAP(first_free_pages[i] = compactors[i].next_page);
 
     YogVM* vm = env->vm;

@@ -1,7 +1,4 @@
 #include "yog/config.h"
-#if defined(HAVE_ALLOCA_H)
-#   include <alloca.h>
-#endif
 #include <limits.h>
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
@@ -25,6 +22,7 @@
 #include "yog/parser.h"
 #include "yog/string.h"
 #include "yog/string.h"
+#include "yog/sysdeps.h"
 #include "yog/table.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -207,22 +205,16 @@ raise_error(YogEnv* env, YogVal filename, uint_t lineno, const char* fmt, ...)
 
 #define BUFFER_SIZE     4096
     char head[BUFFER_SIZE];
-#if defined(_MSC_VER)
-#   define snprintf     _snprintf
-#endif
-    snprintf(head, array_sizeof(head), "file \"%s\", line %u: ", PTR_AS(YogCharArray, filename)->items, lineno);
+    YogSysdeps_snprintf(head, array_sizeof(head), "file \"%s\", line %u: ", PTR_AS(YogCharArray, filename)->items, lineno);
 
     char s[BUFFER_SIZE];
     va_list ap;
     va_start(ap, fmt);
-#if defined(_MSC_VER)
-#   define vsnprintf(s, size, fmt, ap)  vsprintf(s, fmt, ap)
-#endif
-    vsnprintf(s, array_sizeof(s), fmt, ap);
+    YogSysdeps_vsnprintf(s, array_sizeof(s), fmt, ap);
     va_end(ap);
 
     char msg[BUFFER_SIZE];
-    snprintf(msg, array_sizeof(msg), "%s%s", head, s);
+    YogSysdeps_snprintf(msg, array_sizeof(msg), "%s%s", head, s);
 #undef BUFFER_SIZE
 
     YogError_raise_SyntaxError(env, msg);
@@ -3251,10 +3243,7 @@ join_package_names(YogEnv* env, YogVal pkg_names)
         len += YogString_size(env, s);
     }
     len += size - 1;
-#if defined(_alloca) && !defined(alloca)
-#   define alloca   _alloca
-#endif
-    char* pkg = (char*)alloca(sizeof(char) * (len + 1));
+    char* pkg = (char*)YogSysdeps_alloca(sizeof(char) * (len + 1));
     char* pc = pkg - 1;
     for (i = 0; i < size; i++) {
         name = YogArray_at(env, pkg_names, i);

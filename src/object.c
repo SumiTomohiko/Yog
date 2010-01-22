@@ -9,6 +9,7 @@
 #include "yog/object.h"
 #include "yog/sprintf.h"
 #include "yog/string.h"
+#include "yog/sysdeps.h"
 #include "yog/table.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
@@ -135,9 +136,9 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogGetArgs_parse_args(env, "to_s", params, args, kw);
 
     char id_upper[9];
-    snprintf(id_upper, array_sizeof(id_upper), "%08x", BASIC_OBJ(self)->id_upper);
+    YogSysdeps_snprintf(id_upper, array_sizeof(id_upper), "%08x", BASIC_OBJ(self)->id_upper);
     char id_lower[9];
-    snprintf(id_lower, array_sizeof(id_lower), "%08x", BASIC_OBJ(self)->id_lower);
+    YogSysdeps_snprintf(id_lower, array_sizeof(id_lower), "%08x", BASIC_OBJ(self)->id_lower);
     s = YogSprintf_sprintf(env, "<%C %s%s>", self, id_upper, id_lower);
 
     RETURN(env, s);

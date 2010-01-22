@@ -1,7 +1,4 @@
 #include "yog/config.h"
-#if defined(HAVE_ALLOCA_H)
-#   include <alloca.h>
-#endif
 #include <errno.h>
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
@@ -35,6 +32,7 @@
 #   include "yog/gc/bdw.h"
 #endif
 #include "yog/get_args.h"
+#include "yog/sysdeps.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -291,10 +289,7 @@ thread_main(void* arg)
     YogVal block = PTR_AS(YogThread, thread)->block;
     if (IS_PTR(vararg)) {
         uint_t size = YogArray_size(&env, vararg);
-#if !defined(alloca) && defined(_alloca)
-#   define alloca   _alloca
-#endif
-        YogVal* args = (YogVal*)alloca(sizeof(YogVal) * size);
+        YogVal* args = (YogVal*)YogSysdeps_alloca(sizeof(YogVal) * size);
         YogVal body = PTR_AS(YogArray, vararg)->body;
         memcpy(args, PTR_AS(YogValArray, body)->items, size);
         PUSH_LOCALSX(&env, size, args);

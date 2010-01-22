@@ -1,7 +1,4 @@
 #include "yog/config.h"
-#if defined(HAVE_ALLOCA_H)
-#   include <alloca.h>
-#endif
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
@@ -695,10 +692,6 @@ YogEval_mainloop(YogEnv* env)
 #endif
 
     while (PC < PTR_AS(YogByteArray, CODE->insts)->size) {
-#if defined(_alloca) && !defined(alloca)
-#   define alloca   _alloca
-#endif
-
 #define POP()           (YogScriptFrame_pop_stack(env, SCRIPT_FRAME(CUR_FRAME)))
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define THREAD          (env->thread)
