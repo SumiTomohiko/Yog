@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Change comment symbols
+desc: "New comment format is (: ... :)."
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-22 08:36:12.261388 Z
+references: []
+
+id: 9d6317beebb88d7aa049e36a9ba58fd9871676d6
+log_events: 
+- - 2010-01-22 08:36:13.093479 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

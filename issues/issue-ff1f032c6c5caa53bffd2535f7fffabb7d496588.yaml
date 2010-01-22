@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Change symbol literals' format
+desc: New format is a form of 'foo.
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-22 08:35:28.151676 Z
+references: []
+
+id: ff1f032c6c5caa53bffd2535f7fffabb7d496588
+log_events: 
+- - 2010-01-22 08:35:28.813085 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
