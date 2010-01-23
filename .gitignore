@@ -256,6 +256,9 @@ src/yog-mark-sweep
 src/yog-mark-sweep-compact
 stamp-h1
 tags
+tests/test_package4.ilk
+tests/test_package5.ilk
+tests/test_package6.ilk
 tests/test_write0.tmp
 tools/lemon/.deps/
 tools/lemon/lemon

@@ -1,9 +1,10 @@
 # Makefile for Microsoft Visual Studio
 
-#LIBS = test_package4.dll test_package5.dll test_package6.dll
-LIBS =
-CFLAGS = $(CFLAGS) /MD /O2 /Wall /nologo /QI0f /Z7 /I..\include \
-	 /I..\vs\2003\Yog /link /DLL
+ROOT_DIR = ..
+VS_DIR = $(ROOT_DIR)\vs\2003
+LIBS = test_package4.dll test_package5.dll test_package6.dll
+CFLAGS = $(CFLAGS) /MD /O2 /Wall /nologo /QI0f /Z7 /I..\include /TP \
+	 /I$(VS_DIR)\Yog\include /link $(VS_DIR)\Yog\yog.lib /DLL
 
 all: $(LIBS)
 	py.test --showlocals

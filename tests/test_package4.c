@@ -2,7 +2,10 @@
 #include "yog/package.h"
 #include "yog/yog.h"
 
-YogVal
+#if defined(__cplusplus)
+extern "C"
+#endif
+YOG_EXPORT YogVal
 YogInit_test_package4(YogEnv* env)
 {
     SAVE_LOCALS(env);

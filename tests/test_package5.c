@@ -10,7 +10,10 @@ foo(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YNIL);
 }
 
-YogVal
+#if defined(__cplusplus)
+extern "C"
+#endif
+YOG_EXPORT YogVal
 YogInit_test_package5(YogEnv* env)
 {
     SAVE_LOCALS(env);

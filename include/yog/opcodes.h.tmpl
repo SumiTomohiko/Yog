@@ -1,8 +1,5 @@
 #if !defined(__YOG_INSTS_H__)
 #define __YOG_INSTS_H__
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 #define OP(name)  OP_##name
 
@@ -12,9 +9,6 @@ ${opcodes}
 
 typedef enum OpCode OpCode;
 
-#if defined(__cplusplus)
-}
-#endif
 #endif
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c

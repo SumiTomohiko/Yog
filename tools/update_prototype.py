@@ -104,7 +104,7 @@ class DeclarationInserter(object):
             functions = declarations[filename]
             header.append("/* %(filename)s */\n" % { "filename": filename })
             for function in functions:
-                header.append(function + "\n")
+                header.append("YOG_EXPORT " + function + "\n")
             header.append("\n")
         old, i = self._find(lines, self.end, i)
         header.extend(lines[i:])
