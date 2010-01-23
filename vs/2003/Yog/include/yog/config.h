@@ -194,11 +194,26 @@
    such a type exists and the standard includes do not define it. */
 /* #undef uint8_t */
 
-#define HAVE_MALLOC_H 	1
-/* #undef HAVE_ISNAN */
-#define HAVE__ALLOCA 	1
-/* #undef HAVE_VSNPRINTF */
-#define HAVE_GETOPT_H 	1
-/* #undef HAVE_SNPRINTF */
-#define HAVE_FLOAT_H 	1
-#define HAVE__ISNAN 	1
+#define HAVE_EAGAIN     1
+#define HAVE_E2BIG      1
+#define HAVE_EACCES     1
+#define HAVE_EBADF      1
+#define HAVE_ECHILD     1
+#define HAVE_EDEADLOCK  1
+#define HAVE_EDOM       1
+#define HAVE_EEXIST     1
+#define HAVE_EINVAL     1
+#define HAVE_EMFILE     1
+#define HAVE_ENOENT     1
+#define HAVE_ENOEXEC    1
+#define HAVE_ENOMEM     1
+#define HAVE_ENOSPC     1
+#define HAVE_ERANGE     1
+#define HAVE_EXDEV      1
+#define HAVE_FLOAT_H    1
+#define HAVE_GETOPT_H   1
+#define HAVE_MALLOC_H   1
+
+/**
+ * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
+ */

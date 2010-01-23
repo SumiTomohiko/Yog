@@ -80,7 +80,7 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
 }
 
 void
-YogClass_define_class_method(YogEnv* env, YogVal self, YogVal pkg, const char* name, void* f)
+YogClass_define_class_method(YogEnv* env, YogVal self, YogVal pkg, const char* name, YogAPI f)
 {
     SAVE_ARGS2(env, self, pkg);
     YogVal func = YUNDEF;

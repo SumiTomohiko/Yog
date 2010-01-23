@@ -912,10 +912,19 @@ print_dlopen_error(YogEnv* env)
     if (!env->vm->debug_import) {
         RETURN_VOID(env);
     }
-    const char* msg = dlerror();
+    const char* msg;
+#if defined(_MSC_VER)
+    TCHAR buf[1024];
+    if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buf, array_sizeof(buf), NULL) != 0) {
+        RETURN_VOID(env);
+    }
+    msg = (const char*)buf;
+#else
+    msg = dlerror();
     if (msg == NULL) {
         RETURN_VOID(env);
     }
+#endif
     fprintf(stderr, "%s\n", msg);
     RETURN_VOID(env);
 }
@@ -1384,7 +1393,8 @@ YogIndirectPointer*
 YogVM_alloc_indirect_ptr(YogEnv* env, YogVM* vm, YogVal val)
 {
     acquire_indirect_ptr_lock(env, vm);
-    YogIndirectPointer* ptr = malloc(sizeof(YogIndirectPointer));
+    size_t size = sizeof(YogIndirectPointer);
+    YogIndirectPointer* ptr = (YogIndirectPointer*)malloc(size);
     if (ptr == NULL) {
         YogError_out_of_memory(env);
     }

@@ -38,7 +38,7 @@ YogModule_new(YogEnv* env)
 }
 
 void
-YogModule_define_function(YogEnv* env, YogVal self, YogVal pkg, const char* name, void* f)
+YogModule_define_function(YogEnv* env, YogVal self, YogVal pkg, const char* name, YogAPI f)
 {
     SAVE_ARGS2(env, self, pkg);
     YogVal func = YUNDEF;

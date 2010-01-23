@@ -43,7 +43,12 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
 {
     SAVE_LOCALS(env);
     va_list aq;
+#if defined(HAVE_VA_COPY)
     va_copy(aq, ap);
+#else
+    /* probably */
+    aq = ap;
+#endif
 
     uint_t n = 0;
     const char* pc;

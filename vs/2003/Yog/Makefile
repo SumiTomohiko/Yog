@@ -1,12 +1,14 @@
 
 ROOT_DIR = ..\..\..
 SRC_DIR = $(ROOT_DIR)\src
-LEMON_DIR = $(ROOT_DIR)\tools\lemon
+TOOLS_DIR = $(ROOT_DIR)\tools
+LEMON_DIR = $(TOOLS_DIR)\lemon
+INCLUDE_DIR = $(ROOT_DIR)\include
 
 MINIYOG = miniyog.exe
 YOG = yog.exe
 
-COMMON_CFLAGS = $(CFLAGS) /c /I. /I$(ROOT_DIR)\include /I$(ROOT_DIR)\src \
+COMMON_CFLAGS = $(CFLAGS) /c /I. /Iinclude /I$(INCLUDE_DIR) /I$(ROOT_DIR)\src \
 		/I$(ROOT_DIR)\onig /I..\gmp /I..\pthreads-w32 /nologo /O2 \
 		/QI0f /Wall /Z7 /TP /DPTW32_STATIC_LIB /DONIG_EXTERN=extern \
 		/MT /D_WIN32_WINNT=0x0400
@@ -22,7 +24,7 @@ PYTHON = python
 
 YOG_OBJS = $(SRC_DIR)\yog-arg.obj $(SRC_DIR)\yog-array.obj \
 	   $(SRC_DIR)\yog-bignum.obj $(SRC_DIR)\yog-binary.obj \
-	   $(SRC_DIR)\yog-block.obj $(SRC_DIR)\yog-bool.obj \
+	   $(SRC_DIR)\yog-bool.obj $(SRC_DIR)\yog-coroutine.obj \
 	   $(SRC_DIR)\yog-builtins.obj $(SRC_DIR)\yog-class.obj \
 	   $(SRC_DIR)\yog-classmethod.obj $(SRC_DIR)\yog-code.obj \
 	   $(SRC_DIR)\yog-comparable.obj $(SRC_DIR)\yog-compile.obj \
@@ -30,7 +32,7 @@ YOG_OBJS = $(SRC_DIR)\yog-arg.obj $(SRC_DIR)\yog-array.obj \
 	   $(SRC_DIR)\yog-error.obj $(SRC_DIR)\yog-eval.obj \
 	   $(SRC_DIR)\yog-exception.obj $(SRC_DIR)\yog-file.obj \
 	   $(SRC_DIR)\yog-fixnum.obj $(SRC_DIR)\yog-float.obj \
-	   $(SRC_DIR)\yog-frame.obj $(SRC_DIR)\yog-function.obj \
+	   $(SRC_DIR)\yog-frame.obj $(SRC_DIR)\yog-callable.obj \
 	   $(SRC_DIR)\yog-gc.obj $(SRC_DIR)\yog-inst.obj \
 	   $(SRC_DIR)\yog-lexer.obj $(SRC_DIR)\yog-main.obj \
 	   $(SRC_DIR)\yog-misc.obj $(SRC_DIR)\yog-module.obj \
@@ -41,12 +43,13 @@ YOG_OBJS = $(SRC_DIR)\yog-arg.obj $(SRC_DIR)\yog-array.obj \
 	   $(SRC_DIR)\yog-stacktrace.obj $(SRC_DIR)\yog-string.obj \
 	   $(SRC_DIR)\yog-symbol.obj $(SRC_DIR)\yog-table.obj \
 	   $(SRC_DIR)\yog-thread.obj $(SRC_DIR)\yog-value.obj \
-	   $(SRC_DIR)\yog-vm.obj $(SRC_DIR)\gc\yog-copying.obj icon.RES \
-	   yog-getopt.obj $(SRC_DIR)\yog-coroutine.obj
+	   $(SRC_DIR)\yog-vm.obj $(SRC_DIR)\gc\yog-copying.obj \
+	   $(SRC_DIR)\yog-get_args.obj $(SRC_DIR)\yog-sprintf.obj icon.RES \
+	   yog-getopt.obj
 
 MINIYOG_OBJS = $(SRC_DIR)\miniyog-arg.obj $(SRC_DIR)\miniyog-array.obj \
 	       $(SRC_DIR)\miniyog-bignum.obj $(SRC_DIR)\miniyog-binary.obj \
-	       $(SRC_DIR)\miniyog-block.obj $(SRC_DIR)\miniyog-bool.obj \
+	       $(SRC_DIR)\miniyog-bool.obj $(SRC_DIR)\miniyog-coroutine.obj \
 	       $(SRC_DIR)\miniyog-builtins.obj $(SRC_DIR)\miniyog-class.obj \
 	       $(SRC_DIR)\miniyog-classmethod.obj $(SRC_DIR)\miniyog-code.obj \
 	       $(SRC_DIR)\miniyog-comparable.obj \
@@ -55,7 +58,7 @@ MINIYOG_OBJS = $(SRC_DIR)\miniyog-arg.obj $(SRC_DIR)\miniyog-array.obj \
 	       $(SRC_DIR)\miniyog-eval.obj $(SRC_DIR)\miniyog-exception.obj \
 	       $(SRC_DIR)\miniyog-file.obj $(SRC_DIR)\miniyog-fixnum.obj \
 	       $(SRC_DIR)\miniyog-float.obj $(SRC_DIR)\miniyog-frame.obj \
-	       $(SRC_DIR)\miniyog-function.obj $(SRC_DIR)\miniyog-gc.obj \
+	       $(SRC_DIR)\miniyog-callable.obj $(SRC_DIR)\miniyog-gc.obj \
 	       $(SRC_DIR)\miniyog-inst.obj $(SRC_DIR)\miniyog-lexer.obj \
 	       $(SRC_DIR)\miniyog-main.obj $(SRC_DIR)\miniyog-misc.obj \
 	       $(SRC_DIR)\miniyog-module.obj $(SRC_DIR)\miniyog-nil.obj \
@@ -66,8 +69,9 @@ MINIYOG_OBJS = $(SRC_DIR)\miniyog-arg.obj $(SRC_DIR)\miniyog-array.obj \
 	       $(SRC_DIR)\miniyog-string.obj $(SRC_DIR)\miniyog-symbol.obj \
 	       $(SRC_DIR)\miniyog-table.obj $(SRC_DIR)\miniyog-thread.obj \
 	       $(SRC_DIR)\miniyog-value.obj $(SRC_DIR)\miniyog-vm.obj \
-	       $(SRC_DIR)\gc\miniyog-copying.obj icon.RES miniyog-getopt.obj \
-	       $(SRC_DIR)\miniyog-coroutine.obj
+	       $(SRC_DIR)\gc\miniyog-copying.obj \
+	       $(SRC_DIR)\miniyog-get_args.obj $(SRC_DIR)\miniyog-sprintf.obj \
+	       icon.RES miniyog-getopt.obj
 
 all: $(YOG)
 
@@ -88,9 +92,6 @@ $(SRC_DIR)\yog-bignum.obj: $(SRC_DIR)\bignum.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
 $(SRC_DIR)\yog-binary.obj: $(SRC_DIR)\binary.c
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
-
-$(SRC_DIR)\yog-block.obj: $(SRC_DIR)\block.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
 $(SRC_DIR)\yog-bool.obj: $(SRC_DIR)\bool.c
@@ -134,6 +135,8 @@ $(SRC_DIR)\yog-error.obj: $(SRC_DIR)\error.c
 $(SRC_DIR)\yog-eval.obj: $(SRC_DIR)\eval.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
+$(SRC_DIR)\eval.c: $(SRC_DIR)\eval.inc
+
 $(SRC_DIR)\yog-exception.obj: $(SRC_DIR)\exception.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
@@ -149,7 +152,7 @@ $(SRC_DIR)\yog-float.obj: $(SRC_DIR)\float.c
 $(SRC_DIR)\yog-frame.obj: $(SRC_DIR)\frame.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\yog-function.obj: $(SRC_DIR)\function.c
+$(SRC_DIR)\yog-callable.obj: $(SRC_DIR)\callable.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
 $(SRC_DIR)\yog-gc.obj: $(SRC_DIR)\gc.c
@@ -220,8 +223,14 @@ $(SRC_DIR)\yog-thread.obj: $(SRC_DIR)\thread.c
 $(SRC_DIR)\yog-value.obj: $(SRC_DIR)\value.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\yog-vm.obj: $(SRC_DIR)\vm.c
+$(SRC_DIR)\yog-vm.obj: $(SRC_DIR)\vm.c $(INCLUDE_DIR)\yog\vm.h
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+
+$(INCLUDE_DIR)\yog\vm.h: $(INCLUDE_DIR)\yog\errno_vm.inc
+
+$(INCLUDE_DIR)\yog\errno_vm.inc: $(MINIYOG) $(TOOLS_DIR)\errno2vm.yg $(TOOLS_DIR)\errno
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(TOOLS_DIR)\errno2vm.yg $(TOOLS_DIR)\errno $@
 
 $(SRC_DIR)\gc\yog-copying.obj: $(SRC_DIR)\gc\copying.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
@@ -247,14 +256,11 @@ $(SRC_DIR)\miniyog-bignum.obj: $(SRC_DIR)\bignum.c
 $(SRC_DIR)\miniyog-binary.obj: $(SRC_DIR)\binary.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\miniyog-block.obj: $(SRC_DIR)\block.c
-	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
-
 $(SRC_DIR)\miniyog-bool.obj: $(SRC_DIR)\bool.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
 $(SRC_DIR)\miniyog-builtins.obj: $(SRC_DIR)\builtins.c
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
 $(SRC_DIR)\miniyog-class.obj: $(SRC_DIR)\class.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
@@ -280,7 +286,7 @@ $(SRC_DIR)\miniyog-encoding.obj: $(SRC_DIR)\encoding.c
 $(SRC_DIR)\miniyog-error.obj: $(SRC_DIR)\error.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\miniyog-eval.obj: $(SRC_DIR)\eval.c $(SRC_DIR)\eval.inc
+$(SRC_DIR)\miniyog-eval.obj: $(SRC_DIR)\eval.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $(SRC_DIR)\eval.c
 
 $(SRC_DIR)\eval.inc: $(SRC_DIR)\insts.def $(ROOT_DIR)\tools\inst.py
@@ -301,7 +307,7 @@ $(SRC_DIR)\miniyog-float.obj: $(SRC_DIR)\float.c
 $(SRC_DIR)\miniyog-frame.obj: $(SRC_DIR)\frame.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\miniyog-function.obj: $(SRC_DIR)\function.c
+$(SRC_DIR)\miniyog-callable.obj: $(SRC_DIR)\callable.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
 $(SRC_DIR)\miniyog-gc.obj: $(SRC_DIR)\gc.c
@@ -383,10 +389,22 @@ $(SRC_DIR)\miniyog-coroutine.obj: $(SRC_DIR)\coroutine.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
 miniyog-getopt.obj: getopt.c
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
 icon.RES: icon.rc yog.ico
 	rc icon.rc
+
+$(SRC_DIR)\yog-get_args.obj: $(SRC_DIR)\get_args.c
+	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+
+$(SRC_DIR)\miniyog-get_args.obj: $(SRC_DIR)\get_args.c
+	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
+
+$(SRC_DIR)\yog-sprintf.obj: $(SRC_DIR)\sprintf.c
+	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+
+$(SRC_DIR)\miniyog-sprintf.obj: $(SRC_DIR)\sprintf.c
+	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
 clean:
 	del $(YOG_OBJS) $(MINIYOG_OBJS) $(YOG) $(MINIYOG)

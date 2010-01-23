@@ -114,10 +114,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogGetArgs_parse_args(env, "to_s", params, args, kw);
     CHECK_SELF_TYPE(env, self);
 
-#if defined(HAVE__ISNAN)
-#   define isnan    _isnan
-#endif
-    if (isnan(FLOAT_NUM(self))) {
+    if (YogSysdeps_isnan(FLOAT_NUM(self))) {
         s = YogString_from_str(env, "NaN");
         RETURN(env, s);
     }

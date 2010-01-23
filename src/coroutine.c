@@ -136,60 +136,6 @@ SwitchContext_init(YogEnv* env, SwitchContext* ctx)
 }
 #endif
 
-static void
-alloc_machine_stack(YogEnv* env, YogVal self)
-{
-    SAVE_ARG(env, self);
-    int_t machine_stack_size = PTR_AS(Coroutine, self)->machine_stack_size;
-
-#if defined(_WIN32)
-    MainParam* param = (MainParam*)malloc(sizeof(MainParam));
-    YOG_ASSERT(env, param != NULL, "can't allocate MainParam");
-    param->vm = env->vm;
-    param->thread = YUNDEF;
-    param->coroutine = self;
-    register_locals(env, &param->locals);
-    void* fiber = CreateFiber(machine_stack_size, coroutine_main, param);
-    YOG_ASSERT(env, fiber != NULL, "CreateFiber failed");
-    PTR_AS(Coroutine, self)->fiber_to_resume = fiber;
-    PTR_AS(Coroutine, self)->fiber_to_yield = NULL;
-    PTR_AS(Coroutine, self)->param = param;
-#else
-    void* machine_stack = malloc(machine_stack_size);
-    YOG_ASSERT(env, machine_stack != NULL, "malloc failed");
-    YogLocalsAnchor* locals = machine_stack2locals(env, machine_stack, machine_stack_size);
-    register_locals(env, locals);
-    PTR_AS(Coroutine, self)->machine_stack = machine_stack;
-#endif
-
-    RETURN_VOID(env);
-}
-
-static void
-Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
-{
-    SAVE_ARGS2(env, self, klass);
-    YogBasicObj_init(env, self, TYPE_COROUTINE, 0, klass);
-
-#if defined(_WIN32)
-    PTR_AS(Coroutine, self)->fiber_to_resume = NULL;
-    PTR_AS(Coroutine, self)->fiber_to_yield = NULL;
-    PTR_AS(Coroutine, self)->param = NULL;
-#else
-    PTR_AS(Coroutine, self)->machine_stack = NULL;
-    SwitchContext_init(env, &PTR_AS(Coroutine, self)->ctx_to_resume);
-    SwitchContext_init(env, &PTR_AS(Coroutine, self)->ctx_to_yield);
-#endif
-
-    PTR_AS(Coroutine, self)->machine_stack_size = 2048 * 4096;
-    PTR_AS(Coroutine, self)->boundary_frame = YUNDEF;
-    PTR_AS(Coroutine, self)->block = YUNDEF;
-    PTR_AS(Coroutine, self)->status = STATUS_SUSPENDED;
-    PTR_AS(Coroutine, self)->args = YUNDEF;
-
-    RETURN_VOID(env);
-}
-
 #if !defined(_WIN32)
 static void
 switch_context(YogEnv* env, SwitchContext* to, SwitchContext* cont)
@@ -219,59 +165,6 @@ yield_coroutine(YogEnv* env, YogVal self, uint_t status)
     SwitchContext* cont = &PTR_AS(Coroutine, self)->ctx_to_resume;
     switch_context(env, to, cont);
 #endif
-}
-
-static void
-return_args(YogEnv* env, YogVal args)
-{
-    SAVE_ARG(env, args);
-    YogVal a = YUNDEF;
-    PUSH_LOCAL(env, a);
-    YOG_ASSERT(env, IS_PTR(args), "args must be pointer (0x%08x)", args);
-    YOG_ASSERT(env, BASIC_OBJ_TYPE(args) == TYPE_ARRAY, "invalid args type (0x%08x)", BASIC_OBJ_TYPE(args));
-
-    if (YogArray_size(env, args) == 0) {
-        a = YogArray_of_size(env, 1);
-        YogArray_push(env, a, YNIL);
-        YogCFrame_return_multi_value(env, env->frame, a);
-        RETURN_VOID(env);
-    }
-
-    YogCFrame_return_multi_value(env, env->frame, args);
-
-    RETURN_VOID(env);
-}
-
-static YogVal
-yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal coroutine = env->coroutine;
-    YogVal frame = YUNDEF;
-    YogVal boundary = YUNDEF;
-    YogVal a = YUNDEF;
-    PUSH_LOCALS4(env, coroutine, frame, boundary, a);
-    YogCArg params[] = { { "*", &a }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "yield", params, args, kw);
-
-    PTR_AS(Coroutine, coroutine)->args = a;
-
-    boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
-    frame = env->frame;
-    while (IS_PTR(frame) && (PTR_AS(YogFrame, frame)->prev != boundary)) {
-        frame = PTR_AS(YogFrame, frame)->prev;
-    }
-    YOG_ASSERT(env, IS_PTR(frame), "boundary frame not found");
-    PTR_AS(YogFrame, frame)->prev = YUNDEF;
-    boundary = YUNDEF;  /* Kill previous frames from the machine stack */
-
-    yield_coroutine(env, coroutine, STATUS_SUSPENDED);
-
-    boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
-    PTR_AS(YogFrame, frame)->prev = boundary;
-
-    return_args(env, PTR_AS(Coroutine, coroutine)->args);
-    RETURN(env, YUNDEF);
 }
 
 #if defined(_WIN32)
@@ -335,8 +228,8 @@ coroutine_main(MAIN_PARAM)
     block = PTR_AS(Coroutine, self)->block;
     retval = YogCallable_call(&coroutine_env, block, size, a);
 
-    args = YogArray_of_size(env, 1);
-    YogArray_push(env, args, retval);
+    args = YogArray_of_size(&coroutine_env, 1);
+    YogArray_push(&coroutine_env, args, retval);
     PTR_AS(Coroutine, self)->args = args;
 
     RESTORE_LOCALS(&coroutine_env);
@@ -344,6 +237,113 @@ coroutine_main(MAIN_PARAM)
 }
 #undef CALLBACK
 #undef MAIN_PARAM
+
+static void
+alloc_machine_stack(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    int_t machine_stack_size = PTR_AS(Coroutine, self)->machine_stack_size;
+
+#if defined(_WIN32)
+    MainParam* param = (MainParam*)malloc(sizeof(MainParam));
+    YOG_ASSERT(env, param != NULL, "can't allocate MainParam");
+    param->vm = env->vm;
+    param->thread = YUNDEF;
+    param->coroutine = self;
+    register_locals(env, &param->locals);
+    void* fiber = CreateFiber(machine_stack_size, coroutine_main, param);
+    YOG_ASSERT(env, fiber != NULL, "CreateFiber failed");
+    PTR_AS(Coroutine, self)->fiber_to_resume = fiber;
+    PTR_AS(Coroutine, self)->fiber_to_yield = NULL;
+    PTR_AS(Coroutine, self)->param = param;
+#else
+    void* machine_stack = malloc(machine_stack_size);
+    YOG_ASSERT(env, machine_stack != NULL, "malloc failed");
+    YogLocalsAnchor* locals = machine_stack2locals(env, machine_stack, machine_stack_size);
+    register_locals(env, locals);
+    PTR_AS(Coroutine, self)->machine_stack = machine_stack;
+#endif
+
+    RETURN_VOID(env);
+}
+
+static void
+Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
+{
+    SAVE_ARGS2(env, self, klass);
+    YogBasicObj_init(env, self, TYPE_COROUTINE, 0, klass);
+
+#if defined(_WIN32)
+    PTR_AS(Coroutine, self)->fiber_to_resume = NULL;
+    PTR_AS(Coroutine, self)->fiber_to_yield = NULL;
+    PTR_AS(Coroutine, self)->param = NULL;
+#else
+    PTR_AS(Coroutine, self)->machine_stack = NULL;
+    SwitchContext_init(env, &PTR_AS(Coroutine, self)->ctx_to_resume);
+    SwitchContext_init(env, &PTR_AS(Coroutine, self)->ctx_to_yield);
+#endif
+
+    PTR_AS(Coroutine, self)->machine_stack_size = 2048 * 4096;
+    PTR_AS(Coroutine, self)->boundary_frame = YUNDEF;
+    PTR_AS(Coroutine, self)->block = YUNDEF;
+    PTR_AS(Coroutine, self)->status = STATUS_SUSPENDED;
+    PTR_AS(Coroutine, self)->args = YUNDEF;
+
+    RETURN_VOID(env);
+}
+
+static void
+return_args(YogEnv* env, YogVal args)
+{
+    SAVE_ARG(env, args);
+    YogVal a = YUNDEF;
+    PUSH_LOCAL(env, a);
+    YOG_ASSERT(env, IS_PTR(args), "args must be pointer (0x%08x)", args);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(args) == TYPE_ARRAY, "invalid args type (0x%08x)", BASIC_OBJ_TYPE(args));
+
+    if (YogArray_size(env, args) == 0) {
+        a = YogArray_of_size(env, 1);
+        YogArray_push(env, a, YNIL);
+        YogCFrame_return_multi_value(env, env->frame, a);
+        RETURN_VOID(env);
+    }
+
+    YogCFrame_return_multi_value(env, env->frame, args);
+
+    RETURN_VOID(env);
+}
+
+static YogVal
+yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal coroutine = env->coroutine;
+    YogVal frame = YUNDEF;
+    YogVal boundary = YUNDEF;
+    YogVal a = YUNDEF;
+    PUSH_LOCALS4(env, coroutine, frame, boundary, a);
+    YogCArg params[] = { { "*", &a }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "yield", params, args, kw);
+
+    PTR_AS(Coroutine, coroutine)->args = a;
+
+    boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
+    frame = env->frame;
+    while (IS_PTR(frame) && (PTR_AS(YogFrame, frame)->prev != boundary)) {
+        frame = PTR_AS(YogFrame, frame)->prev;
+    }
+    YOG_ASSERT(env, IS_PTR(frame), "boundary frame not found");
+    PTR_AS(YogFrame, frame)->prev = YUNDEF;
+    boundary = YUNDEF;  /* Kill previous frames from the machine stack */
+
+    yield_coroutine(env, coroutine, STATUS_SUSPENDED);
+
+    boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
+    PTR_AS(YogFrame, frame)->prev = boundary;
+
+    return_args(env, PTR_AS(Coroutine, coroutine)->args);
+    RETURN(env, YUNDEF);
+}
 
 static YogVal
 resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
