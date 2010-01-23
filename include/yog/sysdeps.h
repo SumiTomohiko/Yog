@@ -7,6 +7,7 @@
 #if defined(HAVE_MALLOC_H)
 #   include <malloc.h>
 #endif
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 
