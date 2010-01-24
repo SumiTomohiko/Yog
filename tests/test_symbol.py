@@ -6,7 +6,7 @@ class TestSymbol(TestCase):
 
     def test_symbol0(self):
         self._test("""
-puts(:foo)
+puts('foo)
 """, """foo
 """)
 

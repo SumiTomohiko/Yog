@@ -476,7 +476,7 @@ TypeError: unsupported operand type\(s\) for \+: Fixnum and Symbol
 
         self._test("""
 # Fixnum + Symbol (TypeError)
-puts(42 + :foo)
+puts(42 + 'foo)
 """, stderr=test_stderr)
 
     def test_negative0(self):
@@ -576,7 +576,7 @@ TypeError: unsupported operand type\(s\) for -: Fixnum and Symbol
 
         self._test("""
 # Fixnum - Symbol (TypeError)
-puts(42 - :foo)
+puts(42 - 'foo)
 """, stderr=test_stderr)
 
     def test_multiply0(self):
@@ -663,7 +663,7 @@ TypeError: unsupported operand type\(s\) for \*: Fixnum and Symbol
 
         self._test("""
 # Fixnum * Symbol (TypeError)
-puts(42 * :foo)
+puts(42 * 'foo)
 """, stderr=test_stderr)
 
     def test_divide0(self):

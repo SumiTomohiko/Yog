@@ -129,7 +129,7 @@ ArgumentError: an unexpected keyword argument "bar"
 def foo()
 end
 
-foo(**{ :bar => 42 })
+foo(**{ 'bar => 42 })
 """, stderr=test_stderr)
 
     def test_keyword_argument30(self):
@@ -143,7 +143,7 @@ ArgumentError: foo\(\) got multiple values for keyword argument "bar"
 def foo(bar)
 end
 
-foo(26, **{ :bar => 42 })
+foo(26, **{ 'bar => 42 })
 """, stderr=test_stderr)
 
     def test_keyword_argument40(self):
@@ -173,7 +173,7 @@ foo()
     def test_variable_keyword_argument10(self):
         self._test("""
 def foo(**bar)
-  puts(bar[:baz])
+  puts(bar['baz])
 end
 
 foo(baz: 42)
@@ -286,7 +286,7 @@ def foo(bar)
   puts(bar)
 end
 
-foo(**{ :bar => 42 })
+foo(**{ 'bar => 42 })
 """, """42
 """)
 
@@ -296,7 +296,7 @@ def foo(n, m)
   print(n + m)
 end
 
-foo(**{ :n => 42, :m => 26 })
+foo(**{ 'n => 42, 'm => 26 })
 """, "68")
 
     def test_variable_keyword_parameter20(self):
@@ -305,17 +305,17 @@ def foo(bar, **baz)
   puts(bar)
 end
 
-foo(**{ :bar => 42, :quux => 26})
+foo(**{ 'bar => 42, 'quux => 26})
 """, """42
 """)
 
     def test_variable_keyword_parameter30(self):
         self._test("""
 def foo(bar, **baz)
-  puts(baz[:quux])
+  puts(baz['quux])
 end
 
-foo(**{ :bar => 42, :quux => 26})
+foo(**{ 'bar => 42, 'quux => 26})
 """, """26
 """)
 

@@ -25,7 +25,7 @@ print(s.include?(26))
     def test_literal30(self):
         self._test("""
 s = { 42, 26 }
-print(s.include?(:foo))
+print(s.include?('foo))
 """, "false")
 
     def test_new0(self):

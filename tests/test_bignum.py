@@ -69,7 +69,7 @@ TypeError: unsupported operand type\(s\) for \+: Bignum and Symbol
 
         self._test("""
 # Bignum + Symbol (TypeError)
-puts(4611686018427387904 + :foo)
+puts(4611686018427387904 + 'foo)
 """, stderr=test_stderr)
 
     def test_subtract0(self):
@@ -152,7 +152,7 @@ TypeError: unsupported operand type\(s\) for -: Bignum and Symbol
 
         self._test("""
 # Bignum - Symbol (TypeError)
-puts(4611686018427387904 - :foo)
+puts(4611686018427387904 - 'foo)
 """, stderr=test_stderr)
 
     def test_multiply0(self):
@@ -214,7 +214,7 @@ TypeError: unsupported operand type\(s\) for \*: Bignum and Symbol
 
         self._test("""
 # Bignum * Symbol (TypeError)
-puts(4611686018427387904 * :foo)
+puts(4611686018427387904 * 'foo)
 """, stderr=test_stderr)
 
     def test_divide0(self):
@@ -278,7 +278,7 @@ TypeError: unsupported operand type\(s\) for /: Bignum and Symbol
 
         self._test("""
 # Bignum / Symbol (TypeError)
-puts(4611686018427387904 / :foo)
+puts(4611686018427387904 / 'foo)
 """, stderr=test_stderr)
 
     def test_divide70(self):
@@ -380,7 +380,7 @@ TypeError: unsupported operand type\(s\) for //: Bignum and Symbol
 
         self._test("""
 # Bignum // Symbol (TypeError)
-puts(4611686018427387904 // :foo)
+puts(4611686018427387904 // 'foo)
 """, stderr=test_stderr)
 
     def test_floor_divide80(self):

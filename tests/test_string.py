@@ -97,7 +97,7 @@ TypeError: can't convert Symbol object to string implicitly
 """, stderr)
 
         self._test("""
-puts("foo" + :bar)
+puts("foo" + 'bar)
 """, stderr=test_stderr)
 
     def test_add40(self):
@@ -354,7 +354,7 @@ TypeError: can't multiply string by non-Fixnum of type Symbol
 """, stderr)
 
         self._test("""
-puts("foo" * :bar)
+puts("foo" * 'bar)
 """, stderr=test_stderr)
 
     def test_multiply40(self):

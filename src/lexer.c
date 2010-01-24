@@ -1004,17 +1004,15 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             break;
         }
     case ':':
+        RETURN_TOKEN(TK_COLON);
+        break;
+    case '\'':
         {
             c = NEXTC();
-            if (!isalpha(c)) {
-                PUSHBACK(c);
-                RETURN_TOKEN(TK_COLON);
-            }
-
-            do {
+            while (isalpha(c) || (c == '_')) {
                 ADD_TOKEN_CHAR(c);
                 c = NEXTC();
-            } while (isalpha(c) || (c == '_'));
+            }
             PUSHBACK(c);
 
             ID id = YogString_intern(env, PTR_AS(YogLexer, lexer)->buffer);

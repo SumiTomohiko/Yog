@@ -11,7 +11,7 @@ PYTHON = python2.6
 MINIYOG = miniyog$(EXEEXT)
 TOOLS_DIR = $(ROOT_DIR)/tools
 
-BUILT_SOURCES = parser.h keywords.inc
+BUILT_SOURCES = $(ROOT_DIR)/include/yog/token.h keywords.inc
 COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 classmethod.c code.c comparable.c compile.c coroutine.c \
 		 dict.c encoding.c error.c eval.c exception.c file.c fixnum.c \
@@ -108,7 +108,7 @@ errno_raise.inc: $(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno
 	$(MAKE) $(MINIYOG)
 	./$(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno $@
 
-parser.h parser.c: parser.y parser.lt $(LEMON)
+$(ROOT_DIR)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
 	$(LEMON) header=$(ROOT_DIR)/include/yog/token.h parser.y
 
