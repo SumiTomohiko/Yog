@@ -369,19 +369,12 @@ skip_comment(YogEnv* env, YogVal lexer)
     uint_t depth = 1;
     do {
         char c = NEXTC();
-        if (c == '^') {
+        if (c == ':') {
             char c2 = NEXTC();
-            if (c2 == '^') {
-                char c3 = NEXTC();
-                if (c3 == ')') {
-                    depth--;
-                    if (depth == 0) {
-                        RETURN_VOID(env);
-                    }
-                }
-                else {
-                    PUSHBACK(c3);
-                    PUSHBACK(c2);
+            if (c2 == ')') {
+                depth--;
+                if (depth == 0) {
+                    RETURN_VOID(env);
                 }
             }
             else {
@@ -390,15 +383,8 @@ skip_comment(YogEnv* env, YogVal lexer)
         }
         else if (c == '(') {
             char c2 = NEXTC();
-            if (c2 == '^') {
-                char c3 = NEXTC();
-                if (c3 == '^') {
-                    depth++;
-                }
-                else {
-                    PUSHBACK(c3);
-                    PUSHBACK(c2);
-                }
+            if (c2 == ':') {
+                depth++;
             }
             else {
                 PUSHBACK(c2);
@@ -625,14 +611,10 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
     case '(':
         {
             char c2 = NEXTC();
-            if (c2 == '^') {
-                char c3 = NEXTC();
-                if (c3 == '^') {
-                    skip_comment(env, lexer);
-                    BOOL b = YogLexer_next_token(env, lexer, filename, token);
-                    RETURN(env, b);
-                }
-                PUSHBACK(c3);
+            if (c2 == ':') {
+                skip_comment(env, lexer);
+                BOOL b = YogLexer_next_token(env, lexer, filename, token);
+                RETURN(env, b);
             }
             PUSHBACK(c2);
             SET_STATE(LS_EXPR);

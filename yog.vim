@@ -23,7 +23,7 @@ syn keyword   yogConditional  if elif else
 syn keyword   yogOperator	    && \|\| !
 syn keyword   yogPreCondit    import from as
 syn match     yogComment      "#.*$" contains=yogTodo,@Spell
-syn region    yogMultilineComment start="(^^" end="\^^)" contains=yogMultilineComment
+syn region    yogMultilineComment start="(:" end=":)" contains=yogMultilineComment
 syn keyword   yogTodo         TODO FIXME XXX contained
 
 " Decorators
