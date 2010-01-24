@@ -202,6 +202,7 @@ html
 include/yog/errno_vm.inc
 include/yog/inst.h
 include/yog/opcodes.h
+include/yog/token.h
 libtool
 onig/.deps/
 onig/.libs/
@@ -245,7 +246,6 @@ src/keywords.inc
 src/miniyog
 src/object.inc
 src/parser.c
-src/parser.h
 src/parser.out
 src/string.inc
 src/yog

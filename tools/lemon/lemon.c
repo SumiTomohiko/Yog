@@ -1403,6 +1403,7 @@ char **argv;
   static int statistics = 0;
   static int mhflag = 0;
   static int nolinenosflag = 0;
+  static char* header = NULL;
   static struct s_options options[] = {
     {OPT_FLAG, "b", (char*)&basisflag, "Print only the basis in report."},
     {OPT_FLAG, "c", (char*)&compress, "Don't compress the action table."},
@@ -1414,6 +1415,7 @@ char **argv;
     {OPT_FLAG, "s", (char*)&statistics,
                                    "Print parser stats to standard output."},
     {OPT_FLAG, "x", (char*)&version, "Print the version number."},
+    {OPT_STR, "header", (char*)&header, "Header file."},
     {OPT_FLAG,0,0,0}
   };
   int i;
@@ -1507,7 +1509,7 @@ char **argv;
     /* Produce a header file for use by the scanner.  (This step is
     ** omitted if the "-m" option is used because makeheaders will
     ** generate the file for us.) */
-    if( !mhflag ) ReportHeader(&lem);
+    if( !mhflag ) ReportHeader(&lem, header);
   }
   if( statistics ){
     printf("Parser statistics: %d terminals, %d nonterminals, %d rules\n",
@@ -3972,8 +3974,9 @@ int mhflag;     /* Output in makeheaders format if true */
 }
 
 /* Generate a header file for the parser */
-void ReportHeader(lemp)
+void ReportHeader(lemp, header)
 struct lemon *lemp;
+const char* header;
 {
   FILE *out;
   char *prefix;
@@ -3995,7 +3998,13 @@ struct lemon *lemp;
     }
   }
 #endif
-  out = file_open(lemp,".h","wb");
+  const char* mode = "wb";
+  if (header != NULL) {
+      out = fopen(header, mode);
+  }
+  else {
+      out = file_open(lemp,".h", mode);
+  }
   if( out ){
     for(i=1; i<lemp->nterminal; i++){
       fprintf(out,"#define %s%-30s %2d\n",prefix,lemp->symbols[i]->name,i);

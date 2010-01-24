@@ -19,9 +19,9 @@
 #include "yog/regexp.h"
 #include "yog/sysdeps.h"
 #include "yog/table.h"
+#include "yog/token.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
-#include "parser.h"
 
 static void
 YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)

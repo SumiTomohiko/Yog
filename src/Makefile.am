@@ -110,7 +110,7 @@ errno_raise.inc: $(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno
 
 parser.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
-	$(LEMON) parser.y
+	$(LEMON) header=$(ROOT_DIR)/include/yog/token.h parser.y
 
 keywords.inc: keywords
 	gperf $< > $@
