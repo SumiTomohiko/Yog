@@ -3,6 +3,30 @@ def inspect()
   return "\"" + self.gsub("\\", "\\\\").gsub("\"", "\\\"") + "\""
 end
 
+def find(substr)
+  NotFound = -1
+  if self.size < substr.size
+    return NotFound
+  end
+
+  i = 0
+  while i < self.size - substr.size
+    j = 0
+    while j < substr.size
+      if self[i + j] != substr[j]
+        break
+      end
+      j += 1
+    end
+    if j == substr.size
+      return i
+    end
+    i += 1
+  end
+
+  return NotFound
+end
+
 def format(*args, **kw)
   s = ""
   i = 0

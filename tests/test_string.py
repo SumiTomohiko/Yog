@@ -423,4 +423,19 @@ print(\"{{\".format())
 print(\"}}\".format())
 """, "}")
 
+    def test_find0(self):
+        self._test("""
+print(\"foo\".find(\"o\"))
+""", "1")
+
+    def test_find10(self):
+        self._test("""
+print(\"foo\".find(\"bar\"))
+""", "-1")
+
+    def test_find20(self):
+        self._test("""
+print(\"foo\".find(\"barbazquux\"))
+""", "-1")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
