@@ -207,7 +207,7 @@ main(int_t argc, char* argv[])
     YogThread_config_mark_sweep_compact(&env, dummy_thread, CHUNK_SIZE, threshold);
 #   undef CHUNK_SIZE
 #elif defined(GC_GENERATIONAL)
-#   define CHUNK_SIZE  (16 * 1024 * 1024)
+#   define CHUNK_SIZE   (16 * 1024 * 1024)
 #   define TENURE       32
     if (!YogMarkSweepCompact_install_sigsegv_handler(&env)) {
         fprintf(stderr, "failed installing SIGSEGV handler");
