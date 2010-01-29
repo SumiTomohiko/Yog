@@ -11,7 +11,6 @@ Yog Documentation contents
    :numbered:
 
    tutorial
-   library/index
    contact
    copyright
    license

@@ -1,6 +1,9 @@
 # Makefile for Sphinx documentation
 #
 
+ROOT_DIR = ..
+YOG = $(ROOT_DIR)/src/yog-copying
+
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build -W -a -E
@@ -36,6 +39,7 @@ distclean maintainer-clean clean:
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) html
+	$(YOG) makedoc.yg builtins builtins.html
 	@echo
 	@echo "Build finished. The HTML pages are in html."
 
