@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "yog/array.h"
+#include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/parser.h"
@@ -694,12 +695,14 @@ YogParser_parse(YogEnv* env, YogVal src)
     SAVE_ARG(env, src);
     YogVal lexer = YUNDEF;
     YogVal ast = YUNDEF;
-    PUSH_LOCALS2(env, lexer, ast);
+    YogVal enc = YUNDEF;
+    PUSH_LOCALS3(env, lexer, ast, enc);
 
     lexer = YogLexer_new(env);
     PTR_AS(YogLexer, lexer)->line = src;
     PTR_AS(YogLexer, lexer)->lineno++;
-    YogLexer_set_encoding(env, lexer, PTR_AS(YogString, src)->encoding);
+    enc = YogEncoding_get_default(env);
+    YogLexer_set_encoding(env, lexer, enc);
 
     ast = parse(env, lexer, "<stdin>", FALSE);
 

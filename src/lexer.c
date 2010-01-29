@@ -819,14 +819,14 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                         RETURN_ID_TOKEN(TK_LSHIFT, "<<");
                     }
 
-                    heredoc_end = YogString_new(env);
+                    heredoc_end = YogString_of_encoding(env, LEXER_ENCODING(lexer));
                     do {
                         YogString_push(env, heredoc_end, c3);
                         c3 = NEXTC();
                     } while (isalnum(c3) || (c3 == '_'));
                     PUSHBACK(c3);
 
-                    str = YogString_new(env);
+                    str = YogString_of_encoding(env, LEXER_ENCODING(lexer));
                     uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                     heredoc = HereDoc_new(env);
                     PTR_AS(HereDoc, heredoc)->str = str;

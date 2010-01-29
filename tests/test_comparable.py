@@ -74,4 +74,14 @@ print(42.>=(42))
 print(26.>=(42))
 """, "false")
 
+    def test_compare_with_nil0(self):
+        self._test("""
+print(42 == nil)
+""", "false")
+
+    def test_compare_with_nil10(self):
+        self._test("""
+print(42 != nil)
+""", "true")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

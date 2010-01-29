@@ -438,4 +438,49 @@ print(\"foo\".find(\"bar\"))
 print(\"foo\".find(\"barbazquux\"))
 """, "-1")
 
+    def test_ltrim0(self):
+        self._test("""
+print(\" foo\".ltrim())
+""", "foo")
+
+    def test_ltrim10(self):
+        self._test("""
+print(\"foo\".ltrim())
+""", "foo")
+
+    def test_ltrim20(self):
+        self._test("""
+print(\"   \".ltrim())
+""", "")
+
+    def test_rtrim0(self):
+        self._test("""
+print(\"foo \".rtrim())
+""", "foo")
+
+    def test_rtrim10(self):
+        self._test("""
+print(\"foo\".rtrim())
+""", "foo")
+
+    def test_rtrim20(self):
+        self._test("""
+print(\"   \".rtrim())
+""", "")
+
+    def test_trim0(self):
+        self._test("""
+print(\" foo \".trim())
+""", "foo")
+
+    def test_trim10(self):
+        self._test("""
+print(\"foo\".trim())
+""", "foo")
+
+    def test_dup0(self):
+        self._test("""
+print(\"foo\".dup())
+""", "foo")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

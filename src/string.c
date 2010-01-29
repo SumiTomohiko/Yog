@@ -203,6 +203,19 @@ YogString_new(YogEnv* env)
 }
 
 YogVal
+YogString_of_encoding(YogEnv* env, YogVal encoding)
+{
+    SAVE_ARG(env, encoding);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    s = YogString_new(env);
+    PTR_AS(YogString, s)->encoding = encoding;
+
+    RETURN(env, s);
+}
+
+YogVal
 YogString_from_range(YogEnv* env, YogVal enc, const char* start, const char* end)
 {
     SAVE_ARG(env, enc);
@@ -1030,12 +1043,11 @@ compare(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
     YogVal obj = YUNDEF;
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, obj, retval);
-
+    CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { "s", &obj}, { NULL, NULL } };
     YogGetArgs_parse_args(env, "<=>", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
     if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_STRING)) {
-        YogError_raise_comparison_type_error(env, self, obj);
+        RETURN(env, YNIL);
     }
 
     int_t n = strcmp(STRING_CSTR(self), STRING_CSTR(obj));

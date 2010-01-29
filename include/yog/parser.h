@@ -229,6 +229,9 @@ struct YogLexer {
     YogVal heredoc_queue;
 };
 
+#define LEXER_LINE(lexer)       PTR_AS(YogLexer, (lexer))->line
+#define LEXER_ENCODING(lexer)   PTR_AS(YogString, LEXER_LINE(lexer))->encoding
+
 typedef struct YogLexer YogLexer;
 
 /* PROTOTYPE_START */

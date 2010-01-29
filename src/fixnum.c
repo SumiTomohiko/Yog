@@ -666,12 +666,11 @@ compare(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
     YogVal right = YUNDEF;
     YogVal retval = YUNDEF;
     PUSH_LOCALS2(env, right, retval);
-
+    CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "<=>", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
     if (!IS_FIXNUM(right)) {
-        YogError_raise_comparison_type_error(env, self, right);
+        RETURN(env, YNIL);
     }
 
     int_t n = VAL2INT(self) - VAL2INT(right);

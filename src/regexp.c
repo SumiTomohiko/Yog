@@ -301,8 +301,8 @@ end_num(YogEnv* env, YogVal self, int_t group)
         YogError_raise_IndexError(env, "no such group");
     }
     s = PTR_AS(YogMatch, self)->str;
-    const char* end = STRING_CSTR(s) + region->end[group] - 1;
-    int_t n = ptr2index(env, s, end) + 1;
+    const char* end = STRING_CSTR(s) + region->end[group];
+    int_t n = ptr2index(env, s, end);
 
     RETURN(env, INT2VAL(n));
 }

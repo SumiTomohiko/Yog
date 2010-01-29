@@ -70,7 +70,7 @@ cmp(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogCArg params[] = { { "f", &f }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "<=>", params, args, kw);
     if (!IS_PTR(f) || (BASIC_OBJ_TYPE(f) != TYPE_FLOAT)) {
-        YogError_raise_comparison_type_error(env, self, f);
+        RETURN(env, YNIL);
     }
 
     if (FLOAT_NUM(self) < FLOAT_NUM(f)) {

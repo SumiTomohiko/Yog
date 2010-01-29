@@ -70,23 +70,18 @@ end
 """ % { "filename": filename }, stdout=line)
 
     def test_readline10(self):
-        def test_stderr(stderr):
-            self._test_regexp(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <package>
-  File builtin, in File#open
-  File "[^"]+", line 4, in <block>
-  File builtin, in File#readline
-EOFError: end of file reached
-""", stderr)
-
         filename = "foo.txt"
         self._test("""
 File.open("%(filename)s", "r") do [f]
-  while true
-    f.readline()
-  end
+  f.readline()
+  f.readline()
+  f.readline()
+  f.readline()
+  f.readline()
+  f.readline()
+  print(f.readline())
 end
-""" % { "filename": filename }, stderr=test_stderr)
+""" % { "filename": filename }, "nil")
 
     def test_write0(self):
         filename = "test_write0.tmp"

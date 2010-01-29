@@ -56,12 +56,25 @@ inst store_local
 inst make_block
 ()
 (code)
-(f)
+(method)
 {
+    SAVE_LOCALS_TO_NAME(env, make_block);
+    YogVal f = YUNDEF;
+    YogVal self = YUNDEF;
+    PUSH_LOCALS2(env, f, self);
+
     f = YogFunction_new(env);
     setup_script_function(env, f, code);
     PTR_AS(YogFunction, f)->frame_to_long_return = PTR_AS(YogScriptFrame, CUR_FRAME)->frame_to_long_return;
     PTR_AS(YogFunction, f)->frame_to_long_break = CUR_FRAME;
+
+    self = PTR_AS(YogValArray, LOCAL_VARS(CUR_FRAME))->items[0];
+
+    method = YogInstanceMethod_new(env);
+    PTR_AS(YogInstanceMethod, method)->self = self;
+    PTR_AS(YogInstanceMethod, method)->f = f;
+
+    RESTORE_LOCALS_FROM_NAME(env, make_block);
 }
 
 inst make_function

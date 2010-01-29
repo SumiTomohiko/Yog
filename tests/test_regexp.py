@@ -166,6 +166,18 @@ puts(m.start(\"name\"))
 """, """3
 """)
 
+    def test_match_start45(self):
+        self._test("""
+m = (\"foo\" =~ /\\A/)
+print(m.start(0))
+""", "0")
+
+    def test_match_start46(self):
+        self._test("""
+m = (\"foo\" =~ /\\Z/)
+print(m.start(0))
+""", "3")
+
     def test_match_start50(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
@@ -225,6 +237,18 @@ m = \"foobarbazquux\" =~ /foo(?<name>bar)baz/
 puts(m.end(\"name\"))
 """, """6
 """)
+
+    def test_match_end45(self):
+        self._test("""
+m = (\"foo\" =~ /\\A/)
+print(m.end(0))
+""", "0")
+
+    def test_match_end46(self):
+        self._test("""
+m = (\"foo\" =~ /\\Z/)
+print(m.end(0))
+""", "3")
 
     def test_match_end50(self):
         def test_stderr(stderr):

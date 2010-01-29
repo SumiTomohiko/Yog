@@ -150,9 +150,7 @@ end""")
 # http://bitbucket.org/SumiTomohiko/yog/issue/2/
 File.open("foo.txt", "r") do [f]
   try
-    while true
-      line = f.readline()
-    end
+    raise_exception(Exception.new())
   except
   end
 end

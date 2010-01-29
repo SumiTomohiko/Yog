@@ -4,12 +4,7 @@ File.open(ARGV[1], "r") do [in]
     out.write("/**\n")
     out.write(" * This is generated automatically by " + ARGV[0] + ". DON'T EDIT!\n")
     out.write(" */\n")
-    while true
-      try
-        line = in.readline()
-      except
-        break
-      end
+    while line = in.readline()
       exc = line.gsub("\n", "").gsub("\r", "")
       out.write("#if defined(HAVE_" + exc + ")\n")
       out.write("    KEEP(e" + exc + ");\n")

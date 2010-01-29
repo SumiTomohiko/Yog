@@ -74,7 +74,6 @@ print(42 >= 42)
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in <
-  File builtin, in Fixnum#<=>
 TypeError: comparison of Fixnum with Nil failed
 """, stderr)
 

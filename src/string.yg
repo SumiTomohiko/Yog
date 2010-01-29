@@ -3,6 +3,38 @@ def inspect()
   return "\"" + self.gsub("\\", "\\\\").gsub("\"", "\\\"") + "\""
 end
 
+def slice(pos, len=nil)
+  if self.size <= pos
+    return ""
+  end
+
+  len ||= self.size - pos
+
+  s = ""
+  len.times() do [i]
+    s << self[pos + i]
+  end
+  return s
+end
+
+def dup()
+  return self.slice(0, self.size)
+end
+
+def rtrim()
+  m = (self =~ /[ \t\n\r]*\Z/)
+  return self.slice(0, m.start(0))
+end
+
+def ltrim()
+  m = (self =~ /\A[ \t\n\r]*/)
+  return self.slice(m.end(0))
+end
+
+def trim()
+  return self.ltrim().rtrim()
+end
+
 def find(substr)
   NotFound = -1
   if self.size < substr.size

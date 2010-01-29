@@ -17,7 +17,6 @@ syn keyword   yogStatement    def nextgroup=yogFunction skipwhite
 syn keyword   YogStatement    class nextgroup=yogClass skipwhite raise
 syn keyword   yogStatement    module nextgroup=yogClass nonlocal
 syn match     yogFunction	    "[a-zA-Z_][a-zA-Z0-9_]*?\?!\?" contained
-syn match     yogClass        "[^[:space:];#<]\+" contained contains=yogConstant
 syn keyword   yogRepeat       while
 syn keyword   yogConditional  if elif else
 syn keyword   yogOperator	    && \|\| !
@@ -30,7 +29,6 @@ syn keyword   yogTodo         TODO FIXME XXX contained
 syn match     yogDecorator	  "@" display nextgroup=yogFunction skipwhite
 
 " strings
-syn region    yogString		    matchgroup=Normal start=+'+ end=+'+ skip=+\\\\\|\\'+ contains=yogEscape,@Spell
 syn region    yogString		    matchgroup=Normal start=+"+ end=+"+ skip=+\\\\\|\\"+ contains=yogEscape,@Spell
 syn match     yogEscape		    +\\[abfnrtv'"\\]+ contained
 syn match     yogEscape		    "\\\o\{1,3}" contained
@@ -81,7 +79,6 @@ if version >= 508 || !exists("did_yog_syn_inits")
   HiLink yogConstant      Type
   HiLink yogDecorator     Define
   HiLink yogEscape        Special
-  HiLink yogException     Exception
   HiLink yogFunction      Function
   HiLink yogNumber        Number
   HiLink yogOperator      Operator
