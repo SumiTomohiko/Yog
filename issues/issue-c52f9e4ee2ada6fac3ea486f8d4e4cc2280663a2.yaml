@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: The symbol table must contains String.
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-30 17:29:02.295432 Z
+references: []
+
+id: c52f9e4ee2ada6fac3ea486f8d4e4cc2280663a2
+log_events: 
+- - 2010-01-30 17:29:02.883233 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Raise exception when unsupported encodings given.
+desc: This is a problem of the lexer.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-30 17:31:40.098050 Z
+references: []
+
+id: 6aa675c9f2cd60c6050558909424bdfde97ec518
+log_events: 
+- - 2010-01-30 17:31:40.706034 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

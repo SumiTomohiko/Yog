@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove YogString_new
+desc: YogString_new doesn't set encodings.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-30 17:26:40.141270 Z
+references: []
+
+id: 8a177d082dc085b2c366a46a100de3274611e11a
+log_events: 
+- - 2010-01-30 17:26:42.041108 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
