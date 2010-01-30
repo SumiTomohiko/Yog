@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove "Quick search"
+desc: ""
+type: :task
+component: document
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :closed
+disposition: :wontfix
+creation_time: 2010-01-29 18:23:29.602812 Z
+references: []
+
+id: aa8fbe663864471e99a4f00dad0c0d750ac18c1f
+log_events: 
+- - 2010-01-29 18:23:30.286296 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2010-01-30 17:50:38.447388 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition wontfix
+  - This issue becomes invalid. New documentation format is accepted.
