@@ -137,6 +137,7 @@ group_num(YogEnv* env, YogVal self, int_t group)
     memcpy(STRING_CSTR(s), &STRING_CSTR(str)[begin], size);
     STRING_CSTR(s)[size] = '\0';
     STRING_SIZE(s) = size + 1;
+    STRING_ENCODING(s) = STRING_ENCODING(str);
 
     RETURN(env, s);
 }

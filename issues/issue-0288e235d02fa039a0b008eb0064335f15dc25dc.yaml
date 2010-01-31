@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add the objects' id type
+desc: Objects must be compared with Object#id property.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-31 13:30:31.226564 Z
+references: []
+
+id: 0288e235d02fa039a0b008eb0064335f15dc25dc
+log_events: 
+- - 2010-01-31 13:30:31.984977 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

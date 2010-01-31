@@ -375,7 +375,7 @@ gsub(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     t[size] = '\0'; \
     YogString_add_cstr(env, s, t); \
 } while (0)
-    s = YogString_new(env);
+    s = YogString_of_encoding(env, STRING_ENCODING(self));
     uint_t from = 0;
     uint_t index;
     while ((index = find(env, self, substr, from)) != UNSIGNED_MAX) {
