@@ -7,7 +7,7 @@ desc: |-
   bar # can read bar
 type: :task
 component: core
-release: 0.0.4
+release:
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
