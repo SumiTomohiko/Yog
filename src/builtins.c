@@ -265,8 +265,9 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     REGISTER_CLASS(cObject);
     REGISTER_CLASS(cSet);
     REGISTER_CLASS(cThread);
-    REGISTER_CLASS(eException);
     REGISTER_CLASS(eAttributeError);
+    REGISTER_CLASS(eException);
+    REGISTER_CLASS(eKeyError);
 #undef REGISTER_CLASS
 
     args = argv2args(env, argc, argv);

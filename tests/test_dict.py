@@ -124,4 +124,19 @@ d.each() do [key, value]
 end
 """, "'bar")
 
+    def test_get0(self):
+        self._test("""
+print({ 42 => 26 }.get(42))
+""", "26")
+
+    def test_get10(self):
+        self._test("""
+print({ 42 => 26 }.get(\"foo\"))
+""", "nil")
+
+    def test_get20(self):
+        self._test("""
+print({ 42 => 26 }.get(\"foo\", \"bar\"))
+""", "bar")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
