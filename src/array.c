@@ -340,6 +340,21 @@ each(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
+get_empty(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    CHECK_SELF_TYPE(env, self);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_empty", params, args, kw);
+
+    if (YogArray_size(env, self) < 1) {
+        RETURN(env, YTRUE);
+    }
+
+    RETURN(env, YFALSE);
+}
+
+static YogVal
 get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -468,6 +483,7 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_PROP(name, getter, setter)   do { \
     YogClass_define_property(env, cArray, pkg, (name), (getter), (setter)); \
 } while (0)
+    DEFINE_PROP("empty?", get_empty, NULL);
     DEFINE_PROP("size", get_size, NULL);
 #undef DEFINE_PROP
     vm->cArray = cArray;

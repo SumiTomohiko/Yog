@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Resolve memory leak
+desc: In current implementation, variables which is no longer used stay in frames some functions refer. This cause memory leak.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-30 18:27:25.899608 Z
+references: []
+
+id: 53dcd24abf1d586163bd472108b5defe467b6b8c
+log_events: 
+- - 2010-01-30 18:27:26.889277 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

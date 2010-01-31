@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add "nonlocal" keyword to yog.vim
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-30 18:22:57.026075 Z
+references: []
+
+id: 870a9c531e5fa720e5259b1700528c209e415d24
+log_events: 
+- - 2010-01-30 18:22:57.861606 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Make variables writable from blocks' inside.
+desc: |-
+  File.open("foo") do [fp]
+    bar = 42
+  end
+  bar # can read bar
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-30 18:25:23.146905 Z
+references: []
+
+id: 8d7cf86d104b95ff121a9ca56a15314486fc49a6
+log_events: 
+- - 2010-01-30 18:25:24.134260 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

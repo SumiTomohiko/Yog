@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Added non-destructive Array#pop
+desc: Returns multiple value containing an array and an element.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-31 04:45:04.815013 Z
+references: []
+
+id: 3d59503e4351f9024f0c6d907bba067be848b460
+log_events: 
+- - 2010-01-31 04:45:05.914093 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
