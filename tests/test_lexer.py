@@ -32,4 +32,27 @@ class TestLexer(TestCase):
         self._test("""
 \"\xe7""", stderr=test_stderr, encoding=None)
 
+    def test_parenthesis_balance0(self):
+        self._test("""
+[
+42,
+26
+]
+""", "")
+
+    def test_parenthesis_balance10(self):
+        self._test("""
+{
+42,
+26
+}
+""", "")
+
+    def test_parenthesis_balance20(self):
+        self._test("""
+(
+42
+)
+""", "")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

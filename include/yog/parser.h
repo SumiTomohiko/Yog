@@ -227,6 +227,7 @@ struct YogLexer {
     YogVal buffer;
     uint_t lineno;
     YogVal heredoc_queue;
+    uint_t paren_depth;
 };
 
 #define LEXER_LINE(lexer)       PTR_AS(YogLexer, (lexer))->line

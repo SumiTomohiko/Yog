@@ -603,9 +603,11 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             break;
         }
     case '{':
+        PTR_AS(YogLexer, lexer)->paren_depth++;
         RETURN_TOKEN(TK_LBRACE);
         break;
     case '}':
+        PTR_AS(YogLexer, lexer)->paren_depth--;
         RETURN_TOKEN(TK_RBRACE);
         break;
     case '(':
@@ -618,19 +620,23 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             }
             PUSHBACK(c2);
             SET_STATE(LS_EXPR);
+            PTR_AS(YogLexer, lexer)->paren_depth++;
             RETURN_TOKEN(TK_LPAR);
         }
         break;
     case ')':
         SET_STATE(LS_OP);
+        PTR_AS(YogLexer, lexer)->paren_depth--;
         RETURN_TOKEN(TK_RPAR);
         break;
     case '[':
         SET_STATE(LS_EXPR);
+        PTR_AS(YogLexer, lexer)->paren_depth++;
         RETURN_TOKEN(TK_LBRACKET);
         break;
     case ']':
         SET_STATE(LS_OP);
+        PTR_AS(YogLexer, lexer)->paren_depth--;
         RETURN_TOKEN(TK_RBRACKET);
         break;
     case '.':
@@ -981,6 +987,10 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         /* FALLTHRU */
     case '\n':
         {
+            if (0 < PTR_AS(YogLexer, lexer)->paren_depth) {
+                BOOL b = YogLexer_next_token(env, lexer, filename, token);
+                RETURN(env, b);
+            }
             SET_STATE(LS_EXPR);
             RETURN_TOKEN(TK_NEWLINE);
             break;
@@ -1203,6 +1213,7 @@ YogLexer_new(YogEnv* env)
     PTR_AS(YogLexer, lexer)->buffer = YUNDEF;
     PTR_AS(YogLexer, lexer)->lineno = 0;
     PTR_AS(YogLexer, lexer)->heredoc_queue = YUNDEF;
+    PTR_AS(YogLexer, lexer)->paren_depth = 0;
 
     line = YogString_new(env);
     PTR_AS(YogLexer, lexer)->line = line;
