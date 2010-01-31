@@ -1,0 +1,177 @@
+#!/usr/bin/env yog
+
+class Token
+  def init(lineno, value=nil)
+    self.lineno = lineno
+    self.value = value
+  end
+end
+
+class Indent > Token
+end
+
+class Dedent > Token
+end
+
+class Key > Token
+  def to_s()
+    return "<Key \"{0}\">".format(self.value)
+  end
+end
+
+class Colon > Token
+end
+
+class Value > Token
+  def to_s()
+    return "<Value \"{0}\">".format(self.value)
+  end
+end
+
+class Newline > Token
+end
+
+class Text > Token
+end
+
+class Lexer
+  def init(fp)
+    self.fp = fp
+    self.lineno = 0
+    self.margin_stack = [0]
+    self.text_last? = false
+    self.tokens = []
+  end
+
+  def generate_indent_tokens(line)
+    margin = (line =~ /\A\s*/).end(0)
+    if self.margin_stack[-1] < margin
+      if !self.text_last?
+        self.margin_stack.push(margin)
+        self.tokens << Indent.new(self.lineno)
+      end
+      return
+    end
+
+    while !self.margin_stack.empty?
+      if self.margin_stack[-1] <= margin
+        return
+      end
+      self.margin_stack.pop()
+      self.tokens << Dedent.new(self.lineno)
+    end
+  end
+
+  def readline()
+    comment_depth = 0
+    while line = self.fp.readline()
+      self.lineno += 1
+      if line =~ /\A\s*--/
+        comment_depth += 1
+        next
+      end
+      if line =~ /\A\s*\+\+/
+        comment_depth -= 1
+        next
+      end
+      if 0 < comment_depth
+        next
+      end
+
+      if line =~ /\A\s*#/
+        next
+      end
+      if !self.text_last? && (line =~ /\A\s*\z/)
+        next
+      end
+      break
+    end
+    return line
+  end
+
+  def split_key_value(line)
+    size = line.size
+    i = 0
+    while i < size
+      if line[i] == ":"
+        i += 1
+        if line[i] != ":"
+          key = line.slice(0, i - 1).trim()
+          value = line.slice(i).trim()
+          return key, value
+        end
+      end
+      i += 1
+    end
+
+    return nil, nil
+  end
+
+  def cut_margin(line)
+    margin = self.margin_stack[-1]
+    if line.size < margin
+      return ""
+    end
+    return line.slice(margin)
+  end
+
+  def read_tokens()
+    line = self.readline()
+    if line == nil
+      self.generate_indent_tokens("")
+      return
+    end
+    self.generate_indent_tokens(line)
+
+    key, value = self.split_key_value(line)
+    if key != nil
+      self.tokens << Key.new(self.lineno, key)
+      self.tokens << Colon.new(self.lineno)
+      self.tokens << Value.new(self.lineno, value)
+      self.tokens << Newline.new(self.lineno)
+      self.text_last? = false
+      return
+    end
+
+    self.tokens << Text.new(self.lineno, self.cut_margin(line.gsub("::", ":")))
+    self.text_last? = true
+  end
+
+  def get_next_token()
+    if self.tokens.empty?
+      self.read_tokens()
+      if self.tokens.empty?
+        return nil
+      end
+    end
+    return self.tokens.shift()
+  end
+end
+
+class Parser
+  def parse(fp)
+    # TODO
+  end
+end
+
+class HtmlGenerator
+  def write(fp, nodes)
+    # TODO
+  end
+end
+
+nodes = nil
+File.open(ARGV[1]) do [fp]
+  #nonlocal nodes
+  #nodes = Parser.new().parse(fp)
+  lexer = Lexer.new(fp)
+  while token = lexer.get_next_token()
+    puts(token)
+  end
+end
+File.open(ARGV[2], "w") do [fp]
+  HtmlGenerator.new().write(fp, nodes)
+end
+
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog
