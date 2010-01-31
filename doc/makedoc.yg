@@ -13,19 +13,40 @@ end
 class Dedent > Token
 end
 
-class Key > Token
-  def to_s()
-    return "<Key \"{0}\">".format(self.value)
-  end
+class Klass > Token
+end
+
+class Base > Token
+end
+
+class Incluing > Token
+end
+
+class Method > Token
+end
+
+class Parameters > Token
+end
+
+class Return > Token
+end
+
+class Data > Token
+end
+
+class Attribute > Token
+end
+
+class Property > Token
+end
+
+class Classmethod > Token
+end
+
+class Function > Token
 end
 
 class Colon > Token
-end
-
-class Value > Token
-  def to_s()
-    return "<Value \"{0}\">".format(self.value)
-  end
 end
 
 class Newline > Token
@@ -33,6 +54,19 @@ end
 
 class Text > Token
 end
+
+KEY2TOKEN = {
+  "class" => Klass,
+  "base" => Base,
+  "including" => Incluing,
+  "method" => Method,
+  "parameters" => Parameters,
+  "return" => Return,
+  "attribute" => Attribute,
+  "classmethod" => Classmethod,
+  "function" => Function,
+  "property" => Property,
+  "data" => Data }
 
 class Lexer
   def init(fp)
@@ -125,9 +159,9 @@ class Lexer
 
     key, value = self.split_key_value(line)
     if key != nil
-      self.tokens << Key.new(self.lineno, key)
+      self.tokens << KEY2TOKEN.get(key, Text).new(self.lineno, key)
       self.tokens << Colon.new(self.lineno)
-      self.tokens << Value.new(self.lineno, value)
+      self.tokens << Text.new(self.lineno, value)
       self.tokens << Newline.new(self.lineno)
       self.text_last? = false
       return
@@ -135,6 +169,10 @@ class Lexer
 
     self.tokens << Text.new(self.lineno, self.cut_margin(line.gsub("::", ":")))
     self.text_last? = true
+  end
+
+  def unget_token(token)
+    self.tokens.unshift(token)
   end
 
   def get_next_token()
@@ -148,9 +186,109 @@ class Lexer
   end
 end
 
+class SyntaxError > Exception
+end
+
+class Node
+end
+
+class TextNode > Node
+end
+
+class ClassNode > Node
+  def init()
+    self.name = nil
+    self.base = nil
+    self.including = nil
+    self.attrs = []
+  end
+end
+
 class Parser
+  def raise_syntax_error(lineno, msg)
+    raise SyntaxError.new("line {0}: {1}".format(lineno, msg))
+  end
+
+  def skip_colon(lexer)
+    token = lexer.get_next_token()
+    if !token.kind_of?(Colon)
+      self.raise_syntax_error(token.lineno, "token must be a colon")
+    end
+  end
+
+  def skip_newline(lexer)
+    token = lexer.get_next_token()
+    if !token.kind_of?(Newline)
+      self.raise_syntax_error(token.lineno, "token must be a newline")
+    end
+  end
+
+  def get_text_token(lexer)
+    token = lexer.get_next_token()
+    if !token.kind_of?(Text)
+      self.raise_syntax_error(token.lineno, "token must be a text")
+    end
+    return token
+  end
+
+  def parse_class(lexer)
+    node = ClassNode.new()
+    self.skip_colon(lexer)
+    node.name = self.get_text_token(lexer).value
+    self.skip_newline(lexer)
+
+    token = lexer.get_next_token()
+    if !token.kind_of?(Indent)
+      lexer.unget_token(token)
+      return node
+    end
+
+    while token = lexer.get_next_token()
+      if token.kind_of?(Base)
+        self.skip_colon(lexer)
+        node.name = self.get_text_token(lexer).value
+        self.skip_newline(lexer)
+      elif token.kind_of?(Incluing)
+        self.skip_colon(lexer)
+        node.including = self.get_text_token(lexer).value
+        self.skip_newline(lexer)
+      elif token.kind_of?(Method)
+        # TODO
+        #node.attrs << self.parse_method(lexer)
+      elif token.kind_of?(Property)
+        # TODO
+        #node.attrs << self.parse_property(lexer)
+      elif token.kind_of?(Attribute)
+        # TODO
+        #node.attrs << self.parse_attribute(lexer)
+      elif token.kind_of?(Dedent)
+        return node
+      else
+        self.raise_syntax_error(token.lineno, "invalid token in class")
+      end
+    end
+  end
+
+  def parse_top_level(lexer)
+    nodes = []
+    while token = lexer.get_next_token()
+      if token.kind_of?(Text)
+        # TODO
+      elif token.kind_of?(Klass)
+        nodes << self.parse_class(lexer)
+      elif token.kind_of?(Data)
+        # TODO
+      elif token.kind_of?(Function)
+        # TODO
+      else
+        self.raise_syntax_error(token.lineno, "token must be a text, class, data or function")
+      end
+    end
+    return nodes
+  end
+
   def parse(fp)
-    # TODO
+    return self.parse_top_level(Lexer.new(fp))
   end
 end
 
@@ -162,16 +300,11 @@ end
 
 nodes = nil
 File.open(ARGV[1]) do [fp]
-  #nonlocal nodes
-  #nodes = Parser.new().parse(fp)
-  lexer = Lexer.new(fp)
-  while token = lexer.get_next_token()
-    puts(token)
-  end
+  nonlocal nodes
+  nodes = Parser.new().parse(fp)
 end
 File.open(ARGV[2], "w") do [fp]
   HtmlGenerator.new().write(fp, nodes)
 end
-
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog
