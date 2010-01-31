@@ -36,11 +36,6 @@ YogValArray_at(YogEnv* env, YogVal array, uint_t n)
 YogVal
 YogArray_at(YogEnv* env, YogVal array, uint_t n)
 {
-    size_t size = PTR_AS(YogArray, array)->size;
-    if (size <= n) {
-        YogError_raise_IndexError(env, "array index out of range");
-    }
-
     return YogValArray_at(env, PTR_AS(YogArray, array)->body, n);
 }
 
@@ -306,7 +301,6 @@ subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     YogVal index = YUNDEF;
     YogVal v = YUNDEF;
     PUSH_LOCALS2(env, index, v);
-
     YogCArg params[] = { { "index", &index }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "[]", params, args, kw);
     CHECK_SELF_TYPE(env, self);
@@ -314,7 +308,15 @@ subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         YogError_raise_TypeError(env, "index must be Fixnum");
     }
 
-    v = YogArray_at(env, self, VAL2INT(index));
+    int_t n = VAL2INT(index);
+    uint_t size = YogArray_size(env, self);
+    if (n < 0) {
+        n += size;
+    }
+    if ((n < 0) || (size <= n)) {
+        YogError_raise_IndexError(env, "array index out of range");
+    }
+    v = YogArray_at(env, self, n);
 
     RETURN(env, v);
 }
