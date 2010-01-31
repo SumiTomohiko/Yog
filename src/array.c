@@ -435,6 +435,32 @@ pop(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
+unshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal obj = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS2(env, obj, val);
+    CHECK_SELF_TYPE(env, self);
+    YogCArg params[] = { { "obj", &obj }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "unshift", params, args, kw);
+
+    uint_t size = YogArray_size(env, self);
+    ensure_body_size(env, self, size + 1);
+
+    YogVal body = PTR_AS(YogArray, self)->body;
+    uint_t i;
+    for (i = size; 0 < i; i--) {
+        val = YogArray_at(env, self, i - 1);
+        PTR_AS(YogValArray, body)->items[i] = val;
+    }
+    PTR_AS(YogValArray, body)->items[0] = obj;
+    PTR_AS(YogArray, self)->size++;
+
+    RETURN(env, self);
+}
+
+static YogVal
 shift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -500,6 +526,7 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("pop", pop);
     DEFINE_METHOD("push", push);
     DEFINE_METHOD("shift", shift);
+    DEFINE_METHOD("unshift", unshift);
 #undef DEFINE_METHOD
 #define DEFINE_PROP(name, getter, setter)   do { \
     YogClass_define_property(env, cArray, pkg, (name), (getter), (setter)); \

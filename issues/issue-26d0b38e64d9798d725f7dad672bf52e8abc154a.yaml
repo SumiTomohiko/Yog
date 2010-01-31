@@ -1,0 +1,26 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Object.class.name causes abort
+desc: |-
+  $ src/yog-copying
+  >>> Object.class.name
+  Traceback (most recent call last):
+    File "__main__", line 1, in <package>
+    [BUG]
+    at class.c:76
+    attribute not found
+    zsh: abort (core dumped)  src/yog-copying
+type: :bugfix
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-31 15:42:15.651681 Z
+references: []
+
+id: 26d0b38e64d9798d725f7dad672bf52e8abc154a
+log_events: 
+- - 2010-01-31 15:42:16.753346 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
