@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Import packages in lib directory when not installed
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-01 16:23:51.344487 Z
+references: []
+
+id: 2e8fe41deae2d4b3fab30697f8fa0b25eb511014
+log_events: 
+- - 2010-02-01 16:23:52.105928 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
