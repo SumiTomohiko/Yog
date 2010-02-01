@@ -1,0 +1,25 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add package location to import
+desc: |-
+  When bar.yg and baz.yg are in foo directory,
+  
+  + foo
+    +- bar.yg
+    +- baz.yg
+  
+  baz package must be imported from bar.yg.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-01 15:23:43.804449 Z
+references: []
+
+id: 85377437d12a8a8b42ee0b340f888bd8d255e55c
+log_events: 
+- - 2010-02-01 15:23:44.561352 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

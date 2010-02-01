@@ -1,0 +1,10 @@
+
+prefix = @prefix@
+VERSION = @PACKAGE_VERSION@
+DIR = $(prefix)/lib/yog/$(VERSION)
+
+install:
+	mkdir -p $(DIR)
+	cp -f hq9plus.yg $(DIR)
+
+# vim: tabstop=8 shiftwidth=8 noexpandtab

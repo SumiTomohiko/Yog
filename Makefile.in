@@ -75,12 +75,22 @@ install-vim:
 
 install:
 	install src/yog $(prefix)/bin
-	cd ext && $(MAKE) $@
+	for d in lib ext; do \
+		(cd $$d && $(MAKE) $@) \
+	done
 
 dist:
 	tools/dist $(ARCHIVE)
 
 distcheck:
 	tools/distcheck $(ARCHIVE)
+
+Makefile: Makefile.in config.status
+	./config.status
+
+config.status: configure
+
+configure: configure.ac
+	autoconf
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
