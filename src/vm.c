@@ -1011,6 +1011,15 @@ join_path(char* dest, const char* head, const char* tail)
     return p;
 }
 
+static void
+print_error(YogEnv* env, const char* filename)
+{
+    if (!env->vm->debug_import) {
+        return;
+    }
+    perror(filename);
+}
+
 static YogVal
 import_yg(YogEnv* env, const char* yg, const char* pkg_name)
 {
@@ -1020,6 +1029,7 @@ import_yg(YogEnv* env, const char* yg, const char* pkg_name)
 
     FILE* fp = fopen(yg, "r");
     if (fp == NULL) {
+        print_error(env, yg);
         RETURN(env, YNIL);
     }
 
