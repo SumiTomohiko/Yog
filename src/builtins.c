@@ -263,7 +263,9 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     REGISTER_CLASS(cDict);
     REGISTER_CLASS(cFile);
     REGISTER_CLASS(cObject);
+    REGISTER_CLASS(cRegexp);
     REGISTER_CLASS(cSet);
+    REGISTER_CLASS(cString);
     REGISTER_CLASS(cThread);
     REGISTER_CLASS(eAttributeError);
     REGISTER_CLASS(eException);

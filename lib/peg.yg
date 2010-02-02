@@ -1,2 +1,88 @@
 
+class Match
+  def init(captured)
+    self.captured = captured
+  end
+end
+
+class Pattern
+  def match(x)
+    size = self.try(x)
+    if size == 0
+      return nil
+    end
+    return Match.new(x.slice(0, size))
+  end
+end
+
+class StringPattern > Pattern
+  def init(body)
+    self.body = body
+  end
+
+  def try(s)
+    len = self.body.size
+    if s.slice(0, len) != self.body
+      return 0
+    end
+    return len
+  end
+end
+
+class RegexpPattern > Pattern
+  def init(body)
+    self.body = body
+  end
+
+  def try(s)
+    m = (self.body =~ s)
+    if (m == nil) || (m.start() != 0)
+      return 0
+    end
+    return m.end()
+  end
+end
+
+class ScalarPattern > Pattern
+  def init(body)
+    self.body = body
+  end
+
+  def try(a)
+    if a[0] != self.body
+      return 0
+    end
+    return 1
+  end
+end
+
+class SerialPattern > Pattern
+  def init(e1, e2)
+    self.e1 = e1
+    self.e2 = e2
+  end
+
+  def try(x)
+    size1 = self.e1.try(x)
+    if size1 == 0
+      return 0
+    end
+    y = x.slice(0, size1)
+    size2 = self.e2.try(y)
+    if size2 == 0
+      return 0
+    end
+    return size1 + size2
+  end
+end
+
+def pattern(pat)
+  if pat.kind_of?(String)
+    return StringPattern.new(pat)
+  elif pat.kind_of?(Regexp)
+    return RegexpPattern.new(pat)
+  end
+  return ScalarPattern.new(pat)
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

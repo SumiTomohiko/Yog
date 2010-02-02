@@ -1057,14 +1057,19 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             }
             else {
                 const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
+                uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                 if (entry != NULL) {
-                    uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
-                    *token = ValToken_new(env, entry->type, YUNDEF, lineno);
-                    SET_STATE(LS_EXPR);
+                    uint_t type = entry->type;
+                    *token = ValToken_new(env, type, YUNDEF, lineno);
+                    if (type == TK_DEF) {
+                        SET_STATE(LS_NAME);
+                    }
+                    else {
+                        SET_STATE(LS_EXPR);
+                    }
                 }
                 else {
                     ID id = YogVM_intern(env, env->vm, name);
-                    uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                     *token = IDToken_new(env, TK_NAME, id, lineno);
                     SET_STATE(LS_OP);
                 }
