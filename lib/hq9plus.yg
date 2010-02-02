@@ -514,7 +514,7 @@ EOF
   end
 end
 
-if __FILE__ == ARGV[0]
+if __FILE__ == ARGV.get(0)
   eval("HQ9+")
 end
 
