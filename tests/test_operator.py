@@ -222,4 +222,521 @@ print(42 != 26)
 print(42 != 42)
 """, "false")
 
+    def test_operator0(self):
+        self._test("""
+class Foo
+  def !=(x)
+    return 42
+  end
+end
+
+print(Foo.new() != 26)
+""", "42")
+
+    def test_operator5(self):
+        self._test("""
+class Foo
+  def !=(x)
+    return x
+  end
+end
+
+print(Foo.new() != 26)
+""", "26")
+
+    def test_operator10(self):
+        self._test("""
+class Foo
+  def %(x)
+    return 42
+  end
+end
+
+print(Foo.new() % 26)
+""", "42")
+
+    def test_operator15(self):
+        self._test("""
+class Foo
+  def %(x)
+    return x
+  end
+end
+
+print(Foo.new() % 26)
+""", "26")
+
+    def test_operator20(self):
+        self._test("""
+class Foo
+  def &(x)
+    return 42
+  end
+end
+
+print(Foo.new() & 26)
+""", "42")
+
+    def test_operator25(self):
+        self._test("""
+class Foo
+  def &(x)
+    return x
+  end
+end
+
+print(Foo.new() & 26)
+""", "26")
+
+    def test_operator30(self):
+        self._test("""
+class Foo
+  def *(x)
+    return 42
+  end
+end
+
+print(Foo.new() * 26)
+""", "42")
+
+    def test_operator35(self):
+        self._test("""
+class Foo
+  def *(x)
+    return x
+  end
+end
+
+print(Foo.new() * 26)
+""", "26")
+
+    def test_operator40(self):
+        self._test("""
+class Foo
+  def **(x)
+    return 42
+  end
+end
+
+print(Foo.new() ** 26)
+""", "42")
+
+    def test_operator45(self):
+        self._test("""
+class Foo
+  def **(x)
+    return x
+  end
+end
+
+print(Foo.new() ** 26)
+""", "26")
+
+    def test_operator50(self):
+        self._test("""
+class Foo
+  def +(x)
+    return 42
+  end
+end
+
+print(Foo.new() + 26)
+""", "42")
+
+    def test_operator55(self):
+        self._test("""
+class Foo
+  def +(x)
+    return x
+  end
+end
+
+print(Foo.new() + 26)
+""", "26")
+
+    def test_operator60(self):
+        self._test("""
+class Foo
+  def -(x)
+    return 42
+  end
+end
+
+print(Foo.new() - 26)
+""", "42")
+
+    def test_operator65(self):
+        self._test("""
+class Foo
+  def -(x)
+    return x
+  end
+end
+
+print(Foo.new() - 26)
+""", "26")
+
+    def test_operator70(self):
+        self._test("""
+class Foo
+  def /(x)
+    return 42
+  end
+end
+
+print(Foo.new() / 26)
+""", "42")
+
+    def test_operator75(self):
+        self._test("""
+class Foo
+  def /(x)
+    return x
+  end
+end
+
+print(Foo.new() / 26)
+""", "26")
+
+    def test_operator80(self):
+        self._test("""
+class Foo
+  def //(x)
+    return 42
+  end
+end
+
+print(Foo.new() // 26)
+""", "42")
+
+    def test_operator85(self):
+        self._test("""
+class Foo
+  def //(x)
+    return x
+  end
+end
+
+print(Foo.new() // 26)
+""", "26")
+
+    def test_operator90(self):
+        self._test("""
+class Foo
+  def <(x)
+    return 42
+  end
+end
+
+print(Foo.new() < 26)
+""", "42")
+
+    def test_operator95(self):
+        self._test("""
+class Foo
+  def <(x)
+    return x
+  end
+end
+
+print(Foo.new() < 26)
+""", "26")
+
+    def test_operator100(self):
+        self._test("""
+class Foo
+  def <<(x)
+    return 42
+  end
+end
+
+print(Foo.new() << 26)
+""", "42")
+
+    def test_operator105(self):
+        self._test("""
+class Foo
+  def <<(x)
+    return x
+  end
+end
+
+print(Foo.new() << 26)
+""", "26")
+
+    def test_operator110(self):
+        self._test("""
+class Foo
+  def <=(x)
+    return 42
+  end
+end
+
+print(Foo.new() <= 26)
+""", "42")
+
+    def test_operator115(self):
+        self._test("""
+class Foo
+  def <=(x)
+    return x
+  end
+end
+
+print(Foo.new() <= 26)
+""", "26")
+
+    def test_operator120(self):
+        self._test("""
+class Foo
+  def <=>(x)
+    return 42
+  end
+end
+
+print(Foo.new() <=> 26)
+""", "42")
+
+    def test_operator125(self):
+        self._test("""
+class Foo
+  def <=>(x)
+    return x
+  end
+end
+
+print(Foo.new() <=> 26)
+""", "26")
+
+    def test_operator130(self):
+        self._test("""
+class Foo
+  def ==(x)
+    return 42
+  end
+end
+
+print(Foo.new() == 26)
+""", "42")
+
+    def test_operator135(self):
+        self._test("""
+class Foo
+  def ==(x)
+    return x
+  end
+end
+
+print(Foo.new() == 26)
+""", "26")
+
+    def test_operator140(self):
+        self._test("""
+class Foo
+  def =~(x)
+    return 42
+  end
+end
+
+print(Foo.new() =~ 26)
+""", "42")
+
+    def test_operator145(self):
+        self._test("""
+class Foo
+  def =~(x)
+    return x
+  end
+end
+
+print(Foo.new() =~ 26)
+""", "26")
+
+    def test_operator150(self):
+        self._test("""
+class Foo
+  def >(x)
+    return 42
+  end
+end
+
+print(Foo.new() > 26)
+""", "42")
+
+    def test_operator155(self):
+        self._test("""
+class Foo
+  def >(x)
+    return x
+  end
+end
+
+print(Foo.new() > 26)
+""", "26")
+
+    def test_operator160(self):
+        self._test("""
+class Foo
+  def >=(x)
+    return 42
+  end
+end
+
+print(Foo.new() >= 26)
+""", "42")
+
+    def test_operator165(self):
+        self._test("""
+class Foo
+  def >=(x)
+    return x
+  end
+end
+
+print(Foo.new() >= 26)
+""", "26")
+
+    def test_operator170(self):
+        self._test("""
+class Foo
+  def >>(x)
+    return 42
+  end
+end
+
+print(Foo.new() >> 26)
+""", "42")
+
+    def test_operator175(self):
+        self._test("""
+class Foo
+  def >>(x)
+    return x
+  end
+end
+
+print(Foo.new() >> 26)
+""", "26")
+
+    def test_operator180(self):
+        self._test("""
+class Foo
+  def ^(x)
+    return 42
+  end
+end
+
+print(Foo.new() ^ 26)
+""", "42")
+
+    def test_operator185(self):
+        self._test("""
+class Foo
+  def ^(x)
+    return x
+  end
+end
+
+print(Foo.new() ^ 26)
+""", "26")
+
+    def test_operator190(self):
+        self._test("""
+class Foo
+  def |(x)
+    return 42
+  end
+end
+
+print(Foo.new() | 26)
+""", "42")
+
+    def test_operator195(self):
+        self._test("""
+class Foo
+  def |(x)
+    return x
+  end
+end
+
+print(Foo.new() | 26)
+""", "26")
+
+    def test_operator200(self):
+        self._test("""
+class Foo
+  def +self()
+    return 42
+  end
+end
+
+print(+ Foo.new())
+""", "42")
+
+    def test_operator210(self):
+        self._test("""
+class Foo
+  def -self()
+    return 42
+  end
+end
+
+print(- Foo.new())
+""", "42")
+
+    def test_operator220(self):
+        self._test("""
+class Foo
+  def ~self()
+    return 42
+  end
+end
+
+print(~ Foo.new())
+""", "42")
+
+    def test_operator230(self):
+        self._test("""
+class Foo
+  def [](index)
+    return 42
+  end
+end
+
+print(Foo.new()[26])
+""", "42")
+
+    def test_operator240(self):
+        self._test("""
+class Foo
+  def [](index)
+    return index
+  end
+end
+
+print(Foo.new()[26])
+""", "26")
+
+    def test_operator250(self):
+        self._test("""
+class Foo
+  def []=(index, val)
+    return index
+  end
+end
+
+print(Foo.new()[26] = 42)
+""", "26")
+
+    def test_operator260(self):
+        self._test("""
+class Foo
+  def []=(index, val)
+    return val
+  end
+end
+
+print(Foo.new()[26] = 42)
+""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
