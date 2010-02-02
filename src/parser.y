@@ -1034,9 +1034,55 @@ else_opt(A) ::= ELSE stmts(B). {
     A = B;
 }
 
-func_def(A) ::= decorators_opt(F) DEF(B) NAME(C) LPAR params(D) RPAR stmts(E) END. {
+func_def(A) ::= decorators_opt(F) DEF(B) func_name(C) LPAR params(D) RPAR stmts(E) END. {
     uint_t lineno = TOKEN_LINENO(B);
-    A = FuncDef_new(env, lineno, F, TOKEN_ID(C), D, E);
+    A = FuncDef_new(env, lineno, F, VAL2ID(C), D, E);
+}
+
+func_name(A) ::= NAME(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= PLUS(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= MINUS(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= STAR(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= DIV(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= DIV_DIV(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= EQUAL_TILDA(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= AND(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= BAR(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= PERCENT(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= LSHIFT(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= RSHIFT(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= STAR_STAR(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= XOR(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= comp_op(B). {
+    A = B;
 }
 
 decorators_opt(A) ::= /* empty */. {
@@ -1487,6 +1533,9 @@ comp_op(A) ::= GREATER. {
 }
 comp_op(A) ::= GREATER_EQUAL. {
     A = ID2VAL(YogVM_intern(env, env->vm, ">="));
+}
+comp_op(A) ::= UFO(B). {
+    A = ID2VAL(TOKEN_ID(B));
 }
 
 xor_expr(A) ::= or_expr(B). {

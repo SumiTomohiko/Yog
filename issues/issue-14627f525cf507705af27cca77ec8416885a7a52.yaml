@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Operator names after dot.
+desc: Operator names must be used as method names (bar in foo.bar).
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-02 13:15:19.380788 Z
+references: []
+
+id: 14627f525cf507705af27cca77ec8416885a7a52
+log_events: 
+- - 2010-02-02 13:15:40.562816 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
