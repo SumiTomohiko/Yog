@@ -322,6 +322,32 @@ subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
 }
 
 static YogVal
+get(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal val = YUNDEF;
+    YogVal index = YUNDEF;
+    YogVal default_ = YNIL;
+    PUSH_LOCALS3(env, val, index, default_);
+    CHECK_SELF_TYPE(env, self);
+    YogCArg params[] = {
+        { "index", &index },
+        { "|", NULL },
+        { "default", &default_ },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get", params, args, kw);
+
+    uint_t size = YogArray_size(env, self);
+    int_t n = VAL2INT(index);
+    if ((n < 0) || (size <= n)) {
+        RETURN(env, default_);
+    }
+
+    val = YogArray_at(env, self, n);
+    RETURN(env, val);
+}
+
+static YogVal
 each(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -523,6 +549,7 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", assign_subscript);
     DEFINE_METHOD("each", each);
+    DEFINE_METHOD("get", get);
     DEFINE_METHOD("pop", pop);
     DEFINE_METHOD("push", push);
     DEFINE_METHOD("shift", shift);

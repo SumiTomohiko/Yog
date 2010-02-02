@@ -246,4 +246,19 @@ IndexError: shift from empty array
 print([42].unshift(26))
 """, "[26, 42]")
 
+    def test_get0(self):
+        self._test("""
+print([].get(0))
+""", "nil")
+
+    def test_get10(self):
+        self._test("""
+print([].get(0, 42))
+""", "42")
+
+    def test_get20(self):
+        self._test("""
+print([42].get(0))
+""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
