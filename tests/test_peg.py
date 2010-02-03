@@ -61,8 +61,8 @@ print((peg.pattern(\"foo\") ^ 0).match(\"foofoo\") != nil)
     def test_string_at_least20(self):
         self._test("""
 import peg
-print((peg.pattern(\"foo\") ^ 0).match(\"baz\"))
-""", "nil")
+print((peg.pattern(\"foo\") ^ 0).match(\"baz\") != nil)
+""", "true")
 
     def test_string_at_least25(self):
         self._test("""
@@ -109,7 +109,7 @@ print((peg.pattern(\"foo\") ^ (-1)).match(\"foofoo\") != nil)
     def test_string_at_most30(self):
         self._test("""
 import peg
-print((peg.pattern(\"foo\") ^ (-1)).match(\"bar\"))
-""", "nil")
+print((peg.pattern(\"foo\") ^ (-1)).match(\"bar\") != nil)
+""", "true")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

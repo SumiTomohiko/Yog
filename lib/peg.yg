@@ -1,19 +1,12 @@
 
 class Match
-  def init(captured=[])
-    self.captured = captured
+  def init(matched, rest)
+    self.matched = matched
+    self.rest = rest
   end
 end
 
 class Pattern
-  def match(x)
-    size = self.try(x)
-    if size == 0
-      return nil
-    end
-    return Match.new()
-  end
-
   def *(pat)
     return SerialPattern.new(self, pat)
   end
@@ -31,43 +24,42 @@ class Pattern
 end
 
 class StringPattern > Pattern
-  def init(body)
-    self.body = body
+  def init(e)
+    self.e = e
   end
 
-  def try(s)
-    len = self.body.size
-    if s.slice(0, len) != self.body
-      return 0
+  def match(s)
+    if !s.starts_with?(self.e)
+      return nil
     end
-    return len
+    return Match.new(s.slice(0, self.e.size), s.slice(self.e.size))
   end
 end
 
 class RegexpPattern > Pattern
-  def init(body)
-    self.body = body
+  def init(e)
+    self.e = e
   end
 
-  def try(s)
-    m = (self.body =~ s)
+  def match(s)
+    m = (self.e =~ s)
     if (m == nil) || (m.start() != 0)
-      return 0
+      return nil
     end
-    return m.end()
+    return Match.new(s.slice(0, m.end()), s.slice(m.end()))
   end
 end
 
 class ScalarPattern > Pattern
-  def init(body)
-    self.body = body
+  def init(e)
+    self.e = e
   end
 
-  def try(a)
-    if a[0] != self.body
-      return 0
+  def match(a)
+    if a[0] != self.e
+      return nil
     end
-    return 1
+    return Match.new(a[0], a.slice(1))
   end
 end
 
@@ -77,17 +69,29 @@ class SerialPattern > Pattern
     self.e2 = e2
   end
 
-  def try(x)
-    size1 = self.e1.try(x)
-    if size1 == 0
-      return 0
+  def match(x)
+    m = self.e1.match(x)
+    if m == nil
+      return nil
     end
-    y = x.slice(size1)
-    size2 = self.e2.try(y)
-    if size2 == 0
-      return 0
+    matched1 = m.matched
+
+    m = self.e2.match(m.rest)
+    if m == nil
+      return nil
     end
-    return size1 + size2
+    matched2 = m.matched
+
+    rest = m.rest
+    if self.e1.kind_of?(SerialPattern)
+      if self.e2.kind_of?(SerialPattern)
+        return Match.new(matched1 + matched2, rest)
+      end
+      return Match.new(matched1 + [matched2], rest)
+    elif self.e2.kind_of?(SerialPattern)
+      return Match.new([matched1] + matched2, rest)
+    end
+    return Match.new([matched1, matched2], rest)
   end
 end
 
@@ -97,14 +101,15 @@ class ChoicePattern > Pattern
     self.e2 = e2
   end
 
-  def try(x)
+  def match(x)
     [self.e1, self.e2].each() do [e]
-      size = e.try(x)
-      if 0 < size
-        return size
+      m = e.match(x)
+      if m == nil
+        next
       end
+      return Match.new(m.matched, m.rest)
     end
-    return 0
+    return nil
   end
 end
 
@@ -116,24 +121,21 @@ class AtMostPattern > Pattern
 
   def match(x)
     if x.size == 0
-      return Match.new()
+      return Match.new([], x)
     end
-    return super(x)
-  end
 
-  def try(x)
-    size = 0
-    y = x
+    matched = []
+    rest = x
     self.n.times() do
-      nonlocal size, y
-      len = self.pat.try(y)
-      if len == 0
-        return size
+      nonlocal rest
+      m = self.pat.match(rest)
+      if m == nil
+        return Match.new(matched, rest)
       end
-      size += len
-      y = y.slice(len)
+      matched << m.matched
+      rest = m.rest
     end
-    return size
+    return Match.new(matched, rest)
   end
 end
 
@@ -145,33 +147,30 @@ class AtLeastPattern > Pattern
 
   def match(x)
     if (self.n == 0) && (x.size == 0)
-      return Match.new()
+      return Match.new([], x)
     end
-    return super(x)
-  end
 
-  def try(x)
-    size = 0
-    y = x
+    matched = []
+    rest = x
     self.n.times() do
-      nonlocal size, y
-      len = self.pat.try(y)
-      if len == 0
-        return 0
+      nonlocal rest
+      m = self.pat.match(rest)
+      if m == nil
+        return nil
       end
-      size += len
-      y = y.slice(len)
+      matched << m.matched
+      rest = m.rest
     end
     loop() do
-      nonlocal size, y
-      len = self.pat.try(y)
-      if len == 0
-        return size
+      nonlocal rest
+      m = self.pat.match(rest)
+      if m == nil
+        return Match.new(matched, rest)
       end
-      size += len
-      y = y.slice(len)
+      matched << m.matched
+      rest = m.rest
     end
-    return size
+    return Match.new(matched, rest)
   end
 end
 
