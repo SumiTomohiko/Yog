@@ -63,6 +63,20 @@ class ScalarPattern > Pattern
   end
 end
 
+class CustomPattern > Pattern
+  def init(e, &block)
+    self.e = e
+    self.block = block
+  end
+
+  def match(a)
+    if (a.size == 0) || !self.block(self.e, a[0])
+      return nil
+    end
+    return Match.new(a[0], a.slice(1))
+  end
+end
+
 class SerialPattern > Pattern
   def init(e1, e2)
     self.e1 = e1
@@ -193,8 +207,10 @@ def action(pat, &block)
   return Action.new(pat, &block)
 end
 
-def pattern(pat)
-  if pat.kind_of?(String)
+def pattern(pat, &block=nil)
+  if block != nil
+    return CustomPattern.new(pat, &block)
+  elif pat.kind_of?(String)
     return StringPattern.new(pat)
   elif pat.kind_of?(Regexp)
     return RegexpPattern.new(pat)

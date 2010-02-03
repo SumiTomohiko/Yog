@@ -260,4 +260,62 @@ end
 print(pat.match([]).matched)
 """, "[]")
 
+    def test_custom_pattern0(self):
+        self._test("""
+import peg
+enable_gc_stress()
+
+class Foo
+  def init(x)
+    self.x = x
+  end
+end
+
+pat = peg.pattern(Foo.new(42)) do [pat, act]
+  next pat.x == act.x
+end
+m = pat.match([Foo.new(42)])
+print(m != nil)
+""", "true")
+
+    def test_custom_pattern10(self):
+        self._test("""
+import peg
+enable_gc_stress()
+
+class Foo
+  def init(x)
+    self.x = x
+  end
+end
+
+pat = peg.pattern(Foo.new(42)) do [pat, act]
+  next pat.x == act.x
+end
+m = pat.match([Foo.new(26)])
+print(m)
+""", "nil")
+
+    def test_custom_pattern20(self):
+        self._test("""
+import peg
+enable_gc_stress()
+pat = peg.pattern(42) do [pat, act]
+  print(pat)
+  next false
+end
+pat.match([26])
+""", "42")
+
+    def test_custom_pattern30(self):
+        self._test("""
+import peg
+enable_gc_stress()
+pat = peg.pattern(42) do [pat, act]
+  print(act)
+  next false
+end
+pat.match([26])
+""", "26")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
