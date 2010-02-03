@@ -1,4 +1,8 @@
 
+def starts_with?(s)
+  return self.slice(0, s.size) == s
+end
+
 def inspect()
   return "\"" + self.gsub("\\", "\\\\").gsub("\"", "\\\"") + "\""
 end

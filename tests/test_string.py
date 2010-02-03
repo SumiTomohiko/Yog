@@ -528,4 +528,24 @@ print(\"foo\".slice(0, 4))
 print(\"foo\".slice(0, -1))
 """, "")
 
+    def test_starts_with0(self):
+        self._test("""
+print(\"foo\".starts_with?(\"f\"))
+""", "true")
+
+    def test_starts_with10(self):
+        self._test("""
+print(\"foo\".starts_with?(\"foo\"))
+""", "true")
+
+    def test_starts_with15(self):
+        self._test("""
+print(\"foo\".starts_with?(\"fooo\"))
+""", "false")
+
+    def test_starts_with20(self):
+        self._test("""
+print(\"foo\".starts_with?(\"bar\"))
+""", "false")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
