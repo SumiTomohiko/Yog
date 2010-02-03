@@ -8,7 +8,15 @@ def slice(pos, len=nil)
     return ""
   end
 
-  len ||= self.size - pos
+  if pos < 0
+    pos = self.size + pos
+  end
+  max_len = self.size - pos
+  if (len == nil) || (max_len < len)
+    len = max_len
+  elif len < 0
+    return ""
+  end
 
   s = ""
   len.times() do [i]

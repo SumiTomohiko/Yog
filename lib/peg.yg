@@ -1,6 +1,6 @@
 
 class Match
-  def init(captured)
+  def init(captured=[])
     self.captured = captured
   end
 end
@@ -11,7 +11,22 @@ class Pattern
     if size == 0
       return nil
     end
-    return Match.new(x.slice(0, size))
+    return Match.new()
+  end
+
+  def *(pat)
+    return SerialPattern.new(self, pat)
+  end
+
+  def /(pat)
+    return ChoicePattern.new(self, pat)
+  end
+
+  def ^(n)
+    if n < 0
+      return AtMostPattern.new(self, - n)
+    end
+    return AtLeastPattern.new(self, n)
   end
 end
 
@@ -67,12 +82,96 @@ class SerialPattern > Pattern
     if size1 == 0
       return 0
     end
-    y = x.slice(0, size1)
+    y = x.slice(size1)
     size2 = self.e2.try(y)
     if size2 == 0
       return 0
     end
     return size1 + size2
+  end
+end
+
+class ChoicePattern > Pattern
+  def init(e1, e2)
+    self.e1 = e1
+    self.e2 = e2
+  end
+
+  def try(x)
+    [self.e1, self.e2].each() do [e]
+      size = e.try(x)
+      if 0 < size
+        return size
+      end
+    end
+    return 0
+  end
+end
+
+class AtMostPattern > Pattern
+  def init(pat, n)
+    self.pat = pat
+    self.n = n
+  end
+
+  def match(x)
+    if x.size == 0
+      return Match.new()
+    end
+    return super(x)
+  end
+
+  def try(x)
+    size = 0
+    y = x
+    self.n.times() do
+      nonlocal size, y
+      len = self.pat.try(y)
+      if len == 0
+        return size
+      end
+      size += len
+      y = y.slice(len)
+    end
+    return size
+  end
+end
+
+class AtLeastPattern > Pattern
+  def init(pat, n)
+    self.pat = pat
+    self.n = n
+  end
+
+  def match(x)
+    if (self.n == 0) && (x.size == 0)
+      return Match.new()
+    end
+    return super(x)
+  end
+
+  def try(x)
+    size = 0
+    y = x
+    self.n.times() do
+      nonlocal size, y
+      len = self.pat.try(y)
+      if len == 0
+        return 0
+      end
+      size += len
+      y = y.slice(len)
+    end
+    loop() do
+      nonlocal size, y
+      len = self.pat.try(y)
+      if len == 0
+        return size
+      end
+      size += len
+      y = y.slice(len)
+    end
+    return size
   end
 end
 

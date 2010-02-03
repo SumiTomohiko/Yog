@@ -483,4 +483,49 @@ print(\"foo\".trim())
 print(\"foo\".dup())
 """, "foo")
 
+    def test_slice0(self):
+        self._test("""
+print(\"foo\".slice(0))
+""", "foo")
+
+    def test_slice10(self):
+        self._test("""
+print(\"foo\".slice(1))
+""", "oo")
+
+    def test_slice20(self):
+        self._test("""
+print(\"foo\".slice(-1))
+""", "o")
+
+    def test_slice30(self):
+        self._test("""
+print(\"foo\".slice(3))
+""", "")
+
+    def test_slice40(self):
+        self._test("""
+print(\"foo\".slice(0, 0))
+""", "")
+
+    def test_slice50(self):
+        self._test("""
+print(\"foo\".slice(0, 1))
+""", "f")
+
+    def test_slice60(self):
+        self._test("""
+print(\"foo\".slice(0, 3))
+""", "foo")
+
+    def test_slice70(self):
+        self._test("""
+print(\"foo\".slice(0, 4))
+""", "foo")
+
+    def test_slice80(self):
+        self._test("""
+print(\"foo\".slice(0, -1))
+""", "")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
