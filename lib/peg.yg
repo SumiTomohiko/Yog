@@ -56,7 +56,7 @@ class ScalarPattern > Pattern
   end
 
   def match(a)
-    if a[0] != self.e
+    if (a.size == 0) || (a[0] != self.e)
       return nil
     end
     return Match.new(a[0], a.slice(1))

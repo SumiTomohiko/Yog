@@ -1,4 +1,27 @@
 
+def slice(pos, len=nil)
+  # TODO: This code is almost same as String#slice.
+  if self.size <= pos
+    return []
+  end
+
+  if pos < 0
+    pos = self.size + pos
+  end
+  max_len = self.size - pos
+  if (len == nil) || (max_len < len)
+    len = max_len
+  elif len < 0
+    return []
+  end
+
+  a = []
+  len.times() do [i]
+    a << self[pos + i]
+  end
+  return a
+end
+
 def join(sep)
   s = ""
   i = 0

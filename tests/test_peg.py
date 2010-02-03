@@ -112,4 +112,40 @@ import peg
 print((peg.pattern(\"foo\") ^ (-1)).match(\"bar\") != nil)
 """, "true")
 
+    def test_array_match0(self):
+        self._test("""
+import peg
+print(peg.pattern(42).match([42]) != nil)
+""", "true")
+
+    def test_array_match5(self):
+        self._test("""
+import peg
+print(peg.pattern(42).match([26]))
+""", "nil")
+
+    def test_array_match10(self):
+        self._test("""
+import peg
+print(peg.pattern(42).match([]))
+""", "nil")
+
+    def test_array_match20(self):
+        self._test("""
+import peg
+print((peg.pattern(42) * peg.pattern(26)).match([42, 26]) != nil)
+""", "true")
+
+    def test_array_match30(self):
+        self._test("""
+import peg
+print((peg.pattern(42) / peg.pattern(26)).match([42]) != nil)
+""", "true")
+
+    def test_array_match40(self):
+        self._test("""
+import peg
+print((peg.pattern(42) / peg.pattern(26)).match([26]) != nil)
+""", "true")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
