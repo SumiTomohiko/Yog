@@ -116,9 +116,10 @@ yog_main(YogEnv* env, int_t argc, char* argv[])
 static void
 enable_gc_stress(YogVM* vm, uint_t gc_stress_level, uint_t level)
 {
-    if (level <= gc_stress_level) {
-        vm->gc_stress = TRUE;
+    if (gc_stress_level < level) {
+        return;
     }
+    YogVM_enable_gc_stress(NULL, vm);
 }
 
 int_t

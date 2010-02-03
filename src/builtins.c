@@ -169,6 +169,26 @@ property(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 }
 
 static YogVal
+disable_gc_stress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "disable_gc_stress", params, args, kw);
+    YogVM_disable_gc_stress(env, env->vm);
+    RETURN(env, YNIL);
+}
+
+static YogVal
+enable_gc_stress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "enable_gc_stress", params, args, kw);
+    YogVM_enable_gc_stress(env, env->vm);
+    RETURN(env, YNIL);
+}
+
+static YogVal
 classmethod(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -253,6 +273,8 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     DEFINE_FUNCTION("property", property);
     DEFINE_FUNCTION("puts", puts_);
     DEFINE_FUNCTION("raise_exception", raise_exception);
+    DEFINE_FUNCTION("enable_gc_stress", enable_gc_stress);
+    DEFINE_FUNCTION("disable_gc_stress", disable_gc_stress);
 #undef DEFINE_FUNCTION
 
 #define REGISTER_CLASS(c)   do { \

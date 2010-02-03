@@ -479,6 +479,18 @@ init_read_write_lock(pthread_rwlock_t* lock)
 }
 
 void
+YogVM_disable_gc_stress(YogEnv* env, YogVM* vm)
+{
+    vm->gc_stress = FALSE;
+}
+
+void
+YogVM_enable_gc_stress(YogEnv* env, YogVM* vm)
+{
+    vm->gc_stress = TRUE;
+}
+
+void
 YogVM_init(YogVM* vm)
 {
     vm->gc_stress = FALSE;
