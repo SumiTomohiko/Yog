@@ -172,7 +172,7 @@ struct YogNode {
             YogVal right;
         } multi_assign_lhs;
         struct {
-            YogVal expr;
+            YogVal exprs;
         } next;
         struct {
             YogVal names;

@@ -148,4 +148,76 @@ import peg
 print((peg.pattern(42) / peg.pattern(26)).match([26]) != nil)
 """, "true")
 
+    def test_action0(self):
+        self._test("""
+import peg
+pat = peg.action(peg.pattern(42)) do [matched]
+  next 26
+end
+print(pat.match([42]).matched)
+""", "26")
+
+    def test_action10(self):
+        self._test("""
+import peg
+pat = peg.action(peg.pattern(42)) do [matched]
+  next 26
+end
+print(pat.match([42]).rest)
+""", "[]")
+
+    def test_action20(self):
+        self._test("""
+import peg
+pat = peg.action(peg.pattern(42)) do [matched]
+  next matched
+end
+print(pat.match([42]).matched)
+""", "42")
+
+    def test_action30(self):
+        self._test("""
+import peg
+pat = peg.action(peg.pattern(42) * peg.pattern(26)) do [elem42, elem26]
+  next elem42
+end
+print(pat.match([42, 26]).matched)
+""", "42")
+
+    def test_action40(self):
+        self._test("""
+import peg
+pat = peg.action(peg.pattern(42) ^ 0) do [elem]
+  next elem
+end
+print(pat.match([42, 42]).matched)
+""", "[42, 42]")
+
+    def test_action45(self):
+        self._test("""
+import peg
+pat = peg.action(peg.pattern(42) ^ 0) do [elem]
+  next elem
+end
+print(pat.match([]).matched)
+""", "[]")
+
+    def test_action50(self):
+        self._test("""
+import peg
+pat = peg.action(peg.pattern(42) ^ (-1)) do [elem]
+  next elem
+end
+print(pat.match([42, 42]).matched)
+""", "[42]")
+
+    def test_action60(self):
+        self._test("""
+import peg
+pat = peg.action(peg.pattern(42) ^ (-1)) do [elem]
+  next elem
+end
+print(pat.match([]).matched)
+""", "[]")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

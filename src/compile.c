@@ -173,7 +173,6 @@ struct CompileData {
     YogVal label_while_end;
     YogVal finally_list;
     YogVal try_list;
-    YogVal label_last_ret;
 
     YogVal filename;
     ID class_name;
@@ -1002,6 +1001,14 @@ scan_var_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 }
 
 static void
+scan_var_visit_next(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    visit_array_elements(env, visitor, NODE(node)->u.next.exprs, data);
+    RETURN_VOID(env);
+}
+
+static void
 scan_var_visit_break(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -1198,7 +1205,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_module = scan_var_visit_module;
     visitor->visit_multi_assign = scan_var_visit_multi_assign;
     visitor->visit_multi_assign_lhs = scan_var_visit_multi_assign_lhs;
-    visitor->visit_next = scan_var_visit_break;
+    visitor->visit_next = scan_var_visit_next;
     visitor->visit_nonlocal = scan_var_visit_nonlocal;
     visitor->visit_not = scan_var_visit_not;
     visitor->visit_raise = scan_var_visit_raise;
@@ -1908,7 +1915,6 @@ CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
     KEEP(label_while_end);
     KEEP(finally_list);
     KEEP(try_list);
-    KEEP(label_last_ret);
     KEEP(outer);
     KEEP(filename);
     KEEP(cur_stmt);
@@ -1919,10 +1925,6 @@ static YogVal
 CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID class_name, YogVal upper_data, BOOL interactive)
 {
     SAVE_ARGS5(env, vars, anchor, exc_tbl_ent, filename, upper_data);
-    YogVal label_last_ret = YUNDEF;
-    PUSH_LOCAL(env, label_last_ret);
-
-    label_last_ret = Label_new(env);
 
     YogVal data = ALLOC_OBJ(env, CompileData_keep_children, NULL, CompileData);
     COMPILE_DATA(data)->ctx = ctx;
@@ -1932,7 +1934,6 @@ CompileData_new(YogEnv* env, Context ctx, YogVal vars, YogVal anchor, YogVal exc
     COMPILE_DATA(data)->label_while_end = YUNDEF;
     COMPILE_DATA(data)->finally_list = YUNDEF;
     COMPILE_DATA(data)->try_list = YUNDEF;
-    COMPILE_DATA(data)->label_last_ret = label_last_ret;
     COMPILE_DATA(data)->class_name = INVALID_ID;
     COMPILE_DATA(data)->last_inst = anchor;
     COMPILE_DATA(data)->exc_tbl = exc_tbl_ent;
@@ -2041,24 +2042,6 @@ update_max_outer_depth(YogVal data, uint_t depth)
 }
 
 static void
-insert_inst_before_last_return(YogEnv* env, YogVal anchor, YogVal last, YogVal inst)
-{
-    SAVE_ARGS3(env, anchor, last, inst);
-    YogVal i = YUNDEF;
-    PUSH_LOCAL(env, i);
-
-    i = anchor;
-    while (PTR_AS(YogInst, i)->next != last) {
-        i = PTR_AS(YogInst, i)->next;
-    }
-
-    PTR_AS(YogInst, i)->next = inst;
-    PTR_AS(YogInst, inst)->next = last;
-
-    RETURN_VOID(env);
-}
-
-static void
 compile_default(YogEnv* env, AstVisitor* visitor, YogVal param, YogVal data)
 {
     YOG_ASSERT(env, IS_PTR(param), "invalid param (0x%08x)", param);
@@ -2133,9 +2116,6 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, 
         uint_t lineno = INST(last_inst)->lineno;
         CompileData_add_ret_nil(env, data, lineno);
     }
-
-    label_return_end = COMPILE_DATA(data)->label_last_ret;
-    insert_inst_before_last_return(env, anchor, COMPILE_DATA(data)->last_inst, label_return_end);
 
     YogVal bin = YUNDEF;
     YogVal code = YUNDEF;
@@ -2997,8 +2977,8 @@ static void
 compile_visit_next(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
-    YogVal expr = YUNDEF;
-    PUSH_LOCAL(env, expr);
+    YogVal exprs = YUNDEF;
+    PUSH_LOCAL(env, exprs);
 
     YogVal label_while_start = COMPILE_DATA(data)->label_while_start;
     if (IS_PTR(label_while_start)) {
@@ -3006,15 +2986,18 @@ compile_visit_next(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
         RETURN_VOID(env);
     }
 
+    uint_t n;
     uint_t lineno = NODE(node)->lineno;
-    expr = NODE(node)->u.next.expr;
-    if (IS_PTR(expr)) {
-        visit_node(env, visitor, expr, data);
+    exprs = NODE(node)->u.next.exprs;
+    if (IS_PTR(exprs)) {
+        visit_array_elements_opposite_order(env, visitor, exprs, data);
+        n = YogArray_size(env, exprs);
     }
     else {
         add_push_const(env, data, YNIL, lineno);
+        n = 1;
     }
-    CompileData_add_jump(env, data, lineno, COMPILE_DATA(data)->label_last_ret);
+    CompileData_add_ret(env, data, lineno, n);
 
     RETURN_VOID(env);
 }

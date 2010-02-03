@@ -144,7 +144,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(multi_assign_lhs.right);
         break;
     case NODE_NEXT:
-        KEEP(next.expr);
+        KEEP(next.exprs);
         break;
     case NODE_NONLOCAL:
         KEEP(nonlocal.names);
@@ -434,12 +434,14 @@ Break_new(YogEnv* env, uint_t lineno, YogVal exprs)
 }
 
 static YogVal
-Next_new(YogEnv* env, uint_t lineno, YogVal expr)
+Next_new(YogEnv* env, uint_t lineno, YogVal exprs)
 {
-    SAVE_ARG(env, expr);
+    SAVE_ARG(env, exprs);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
 
-    YogVal node = YogNode_new(env, NODE_NEXT, lineno);
-    NODE(node)->u.next.expr = expr;
+    node = YogNode_new(env, NODE_NEXT, lineno);
+    NODE(node)->u.next.exprs = exprs;
 
     RETURN(env, node);
 }
@@ -909,7 +911,7 @@ stmt(A) ::= NEXT(B). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Next_new(env, lineno, YNIL);
 }
-stmt(A) ::= NEXT(B) expr(C). {
+stmt(A) ::= NEXT(B) exprs(C). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Next_new(env, lineno, C);
 }
