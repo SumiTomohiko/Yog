@@ -231,6 +231,9 @@ class Action > Pattern
 
   def match(x)
     m = self.pat.match(x)
+    if m == nil
+      return nil
+    end
     if self.pat.kind_of?(SerialPattern)
       return Match.new(self.block(*m.matched), m.rest)
     end

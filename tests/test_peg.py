@@ -498,6 +498,15 @@ end
 print(pat.match([]).matched)
 """, "[]")
 
+    def test_action70(self):
+        self._test("""
+import peg
+enable_gc_stress()
+pat = peg.action(peg.pattern(\"foo\")) do [pat, act]
+end
+pat.match(\"bar\")
+""", stderr="")
+
     def test_custom_pattern0(self):
         self._test("""
 import peg
