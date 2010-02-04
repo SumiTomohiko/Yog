@@ -738,7 +738,7 @@ each_line(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         i = next - PTR_AS(YogCharArray, PTR_AS(YogString, self)->body)->items;
         arg[0] = YogString_from_range(env, enc, start, end);
 
-        uint_t size = PTR_AS(YogCharArray, PTR_AS(YogString, self)->body)->size;
+        uint_t size = STRING_SIZE(self);
 
         YogCallable_call(env, block, array_sizeof(arg), arg);
 
@@ -751,68 +751,81 @@ each_line(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
 }
 
 static YogVal
+dump(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+    CHECK_SELF_TYPE(env, self);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "dump", params, args, kw);
+
+    s = YogString_of_encoding(env, STRING_ENCODING(self));
+#define FORMAT              "0x%02x"
+#define ADD_CHAR(fmt, i)    do { \
+    char buf[6]; \
+    snprintf(buf, array_sizeof(buf), fmt, STRING_CSTR(self)[i]); \
+    YogString_add_cstr(env, s, buf); \
+} while (0)
+    ADD_CHAR(FORMAT, 0);
+    uint_t size = YogString_size(env, self) + 1;
+    uint_t i;
+    for (i = 1; i < size; i++) {
+        ADD_CHAR(" " FORMAT, i);
+    }
+#undef ADD_CHAR
+#undef FORMAT
+
+    RETURN(env, s);
+}
+
+static YogVal
 each_byte(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal arg[] = { YUNDEF };
-    PUSH_LOCALSX(env, array_sizeof(arg), arg);
-
+    YogVal a[] = { YUNDEF };
+    PUSH_LOCALSX(env, array_sizeof(a), a);
+    CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "each_byte", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
 
     uint_t i = 0;
+    uint_t size = YogString_size(env, self);
     do {
-        YogString* s = PTR_AS(YogString, self);
-        YogVal body = s->body;
-        unsigned char p = PTR_AS(YogCharArray, body)->items[i];
-        arg[0] = INT2VAL(p);
-
+        a[0] = INT2VAL((unsigned char)STRING_CSTR(self)[i]);
         i++;
-        uint_t size = s->size;
 
-        YogCallable_call(env, block, array_sizeof(arg), arg);
+        YogCallable_call(env, block, array_sizeof(a), a);
+    } while (i < size);
 
-        if (size - 1 < i + 1) {
-            break;
-        }
-    } while (1);
-
-    RETURN(env, YNIL);
+    RETURN(env, self);
 }
 
 static YogVal
 each_char(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal arg[] = { YUNDEF };
-    PUSH_LOCALSX(env, array_sizeof(arg), arg);
-
+    YogVal enc = YUNDEF;
+    PUSH_LOCAL(env, enc);
+    YogVal a[] = { YUNDEF };
+    PUSH_LOCALSX(env, array_sizeof(a), a);
+    CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "each_char", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
 
     uint_t i = 0;
+    uint_t size = YogString_size(env, self);
     do {
-        YogString* s = PTR_AS(YogString, self);
-        YogVal body = s->body;
-        const char* start = PTR_AS(YogCharArray, body)->items + i;
-        YogVal enc = s->encoding;
+        const char* start = &STRING_CSTR(self)[i];
+        enc = STRING_ENCODING(self);
         const char* next = start + YogEncoding_mbc_size(env, enc, start);
-        i = next - PTR_AS(YogCharArray, PTR_AS(YogString, self)->body)->items;
-        const char* end = next - 1;
-        arg[0] = YogString_from_range(env, enc, start, end);
+        i = next - STRING_CSTR(self);
+        a[0] = YogString_from_range(env, enc, start, next - 1);
 
-        uint_t size = PTR_AS(YogCharArray, PTR_AS(YogString, self)->body)->size;
+        YogCallable_call(env, block, array_sizeof(a), a);
+    } while (i < size);
 
-        YogCallable_call(env, block, array_sizeof(arg), arg);
-
-        if (size - 1 < i + 1) {
-            break;
-        }
-    } while (1);
-
-    RETURN(env, YNIL);
+    RETURN(env, self);
 }
 
 int_t
@@ -1093,6 +1106,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("=~", match);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", assign_subscript);
+    DEFINE_METHOD("dump", dump);
     DEFINE_METHOD("each_byte", each_byte);
     DEFINE_METHOD("each_char", each_char);
     DEFINE_METHOD("each_line", each_line);
