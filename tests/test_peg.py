@@ -556,4 +556,34 @@ end
 pat.match([26])
 """, "26")
 
+    def test_can_accept_empty_array0(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"SyntaxError: loop body may accept empty array", stderr)
+
+        self._test("""
+import peg
+enable_gc_stress()
+(peg.pattern(\"foo\") ^ 0) ^ 0
+""", stderr=test_stderr)
+
+    def test_can_accept_empty_array20(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"SyntaxError: loop body may accept empty array", stderr)
+
+        self._test("""
+import peg
+enable_gc_stress()
+(peg.pattern(\"foo\") ^ (-1)) ^ 0
+""", stderr=test_stderr)
+
+    def test_can_accept_empty_array30(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"SyntaxError: loop body may accept empty array", stderr)
+
+        self._test("""
+import peg
+enable_gc_stress()
+peg.pattern(\"\") ^ 0
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from re import match
+from re import search
 from os import close, environ, unlink
 from os.path import join
 from subprocess import PIPE, Popen
@@ -61,7 +61,7 @@ class TestCase(object):
         return strftime("%x %X", localtime(sec))
 
     def _test_regexp(self, regexp, s):
-        m = match(self.conv_newline(regexp), s)
+        m = search(self.conv_newline(regexp), s)
         assert m is not None
         return m
 

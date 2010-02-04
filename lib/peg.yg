@@ -34,9 +34,17 @@ class StringPattern > Pattern
     end
     return Match.new(s.slice(0, self.e.size), s.slice(self.e.size))
   end
+
+  def get_can_accept_empty_array()
+    return self.e.size == 0
+  end
+
+  can_accept_empty_array? = property(get_can_accept_empty_array)
 end
 
 class RegexpPattern > Pattern
+  can_accept_empty_array? = false
+
   def init(e)
     self.e = e
   end
@@ -51,6 +59,8 @@ class RegexpPattern > Pattern
 end
 
 class ScalarPattern > Pattern
+  can_accept_empty_array? = false
+
   def init(e)
     self.e = e
   end
@@ -64,6 +74,8 @@ class ScalarPattern > Pattern
 end
 
 class CustomPattern > Pattern
+  can_accept_empty_array? = false
+
   def init(e, &block)
     self.e = e
     self.block = block
@@ -107,6 +119,12 @@ class SerialPattern > Pattern
     end
     return Match.new([matched1, matched2], rest)
   end
+
+  def get_can_accept_empty_array()
+    return self.e1.can_accept_empty_array? && self.e2.can_accept_empty_array?
+  end
+
+  can_accept_empty_array? = property(get_can_accept_empty_array)
 end
 
 class ChoicePattern > Pattern
@@ -125,9 +143,17 @@ class ChoicePattern > Pattern
     end
     return nil
   end
+
+  def get_can_accept_empty_array()
+    return self.e1.can_accept_empty_array? || self.e2.can_accept_empty_array?
+  end
+
+  can_accept_empty_array? = property(get_can_accept_empty_array)
 end
 
 class AtMostPattern > Pattern
+  can_accept_empty_array? = true
+
   def init(pat, n)
     self.pat = pat
     self.n = n
@@ -155,6 +181,9 @@ end
 
 class AtLeastPattern > Pattern
   def init(pat, n)
+    if pat.can_accept_empty_array?
+      raise SyntaxError.new("loop body may accept empty array")
+    end
     self.pat = pat
     self.n = n
   end
@@ -186,9 +215,15 @@ class AtLeastPattern > Pattern
     end
     return Match.new(matched, rest)
   end
+
+  def get_can_accept_empty_array()
+    return self.pat.can_accept_empty_array? || (self.n == 0)
+  end
+
+  can_accept_empty_array? = property(get_can_accept_empty_array)
 end
 
-class Action
+class Action > Pattern
   def init(pat, &block)
     self.pat = pat
     self.block = block
@@ -201,6 +236,12 @@ class Action
     end
     return Match.new(self.block(m.matched), m.rest)
   end
+
+  def get_can_accept_empty_array()
+    return self.pat.can_accept_empty_array?
+  end
+
+  can_accept_empty_array? = property(get_can_accept_empty_array)
 end
 
 def action(pat, &block)
