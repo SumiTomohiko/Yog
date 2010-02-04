@@ -605,6 +605,9 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                         case 'n':
                             ADD_TOKEN_CHAR('\n');
                             break;
+                        case 't':
+                            ADD_TOKEN_CHAR('\t');
+                            break;
                         default:
                             ADD_TOKEN_CHAR(c);
                             break;
