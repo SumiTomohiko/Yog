@@ -4,7 +4,19 @@ def starts_with?(s)
 end
 
 def inspect()
-  return "\"" + self.gsub("\\", "\\\\").gsub("\"", "\\\"") + "\""
+  s = "\""
+  self.each_char() do [c]
+    if c == "\\"
+      s << "\\\\"
+    elif c == "\t"
+      s << "\\t"
+    elif c == "\n"
+      s << "\\n"
+    else
+      s << c
+    end
+  end
+  return s + "\""
 end
 
 def slice(pos, len=nil)

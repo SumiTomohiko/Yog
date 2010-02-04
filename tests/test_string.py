@@ -548,4 +548,24 @@ print(\"foo\".starts_with?(\"fooo\"))
 print(\"foo\".starts_with?(\"bar\"))
 """, "false")
 
+    def test_inspect0(self):
+        self._test("""
+print(\"foo\".inspect())
+""", "\"foo\"")
+
+    def test_inspect10(self):
+        self._test("""
+print(\"\\n\".inspect())
+""", "\"\\n\"")
+
+    def test_inspect20(self):
+        self._test("""
+print(\"\\t\".inspect())
+""", "\"\\t\"")
+
+    def test_inspect30(self):
+        self._test("""
+print(\"\\\\\".inspect())
+""", "\"\\\\\"")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
