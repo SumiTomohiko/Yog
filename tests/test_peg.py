@@ -19,6 +19,20 @@ enable_gc_stress()
 print(peg.pattern(\"foo\").match(\"foo\") != nil)
 """, "true")
 
+    def test_string3(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print(peg.pattern(\"foo\").match(\"foo\").matched)
+""", "foo")
+
+    def test_string6(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print(peg.pattern(\"foo\").match(\"foo\").rest)
+""", "")
+
     def test_string10(self):
         self._test("""
 import peg
@@ -32,6 +46,20 @@ import peg
 enable_gc_stress()
 print((peg.pattern(\"foo\") * peg.pattern(\"bar\")).match(\"foobar\") != nil)
 """, "true")
+
+    def test_string_serial3(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") * peg.pattern(\"bar\")).match(\"foobar\").matched)
+""", "[\"foo\", \"bar\"]")
+
+    def test_string_serial6(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") * peg.pattern(\"bar\")).match(\"foobar\").rest)
+""", "")
 
     def test_string_serial10(self):
         self._test("""
@@ -47,19 +75,26 @@ enable_gc_stress()
 print((peg.pattern(\"foo\") / peg.pattern(\"bar\")).match(\"foo\") != nil)
 """, "true")
 
+    def test_string_choice3(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") / peg.pattern(\"bar\")).match(\"foo\").matched)
+""", "foo")
+
+    def test_string_choice6(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") / peg.pattern(\"bar\")).match(\"foo\").rest)
+""", "")
+
     def test_string_choice10(self):
         self._test("""
 import peg
 enable_gc_stress()
 print((peg.pattern(\"foo\") / peg.pattern(\"bar\")).match(\"quux\"))
 """, "nil")
-
-    def test_string_at_least5(self):
-        self._test("""
-import peg
-enable_gc_stress()
-print((peg.pattern(\"foo\") ^ 0).match(\"\") != nil)
-""", "true")
 
     def test_string_at_least0(self):
         self._test("""
@@ -68,6 +103,41 @@ enable_gc_stress()
 print((peg.pattern(\"foo\") ^ 0).match(\"foo\") != nil)
 """, "true")
 
+    def test_string_at_least1(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 0).match(\"foo\").matched)
+""", "[\"foo\"]")
+
+    def test_string_at_least2(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 0).match(\"foo\").rest)
+""", "")
+
+    def test_string_at_least5(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 0).match(\"\") != nil)
+""", "true")
+
+    def test_string_at_least6(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 0).match(\"\").matched)
+""", "[]")
+
+    def test_string_at_least7(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 0).match(\"\").rest)
+""", "")
+
     def test_string_at_least10(self):
         self._test("""
 import peg
@@ -75,12 +145,40 @@ enable_gc_stress()
 print((peg.pattern(\"foo\") ^ 0).match(\"foofoo\") != nil)
 """, "true")
 
+    def test_string_at_least13(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 0).match(\"foofoo\").matched)
+""", "[\"foo\", \"foo\"]")
+
+    def test_string_at_least16(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 0).match(\"foofoo\").rest)
+""", "")
+
     def test_string_at_least20(self):
         self._test("""
 import peg
 enable_gc_stress()
 print((peg.pattern(\"foo\") ^ 0).match(\"baz\") != nil)
 """, "true")
+
+    def test_string_at_least21(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 0).match(\"baz\").matched)
+""", "[]")
+
+    def test_string_at_least22(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 0).match(\"baz\").rest)
+""", "baz")
 
     def test_string_at_least25(self):
         self._test("""
@@ -96,12 +194,40 @@ enable_gc_stress()
 print((peg.pattern(\"foo\") ^ 1).match(\"foo\") != nil)
 """, "true")
 
+    def test_string_at_least33(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 1).match(\"foo\").matched)
+""", "[\"foo\"]")
+
+    def test_string_at_least36(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 1).match(\"foo\").rest)
+""", "")
+
     def test_string_at_least40(self):
         self._test("""
 import peg
 enable_gc_stress()
 print((peg.pattern(\"foo\") ^ 1).match(\"foofoo\") != nil)
 """, "true")
+
+    def test_string_at_least43(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 1).match(\"foofoo\").matched)
+""", "[\"foo\", \"foo\"]")
+
+    def test_string_at_least46(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ 1).match(\"foofoo\").rest)
+""", "")
 
     def test_string_at_least50(self):
         self._test("""
@@ -117,12 +243,40 @@ enable_gc_stress()
 print((peg.pattern(\"foo\") ^ (-1)).match(\"\") != nil)
 """, "true")
 
+    def test_string_at_most3(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ (-1)).match(\"\").matched)
+""", "[]")
+
+    def test_string_at_most6(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ (-1)).match(\"\").rest)
+""", "")
+
     def test_string_at_most10(self):
         self._test("""
 import peg
 enable_gc_stress()
 print((peg.pattern(\"foo\") ^ (-1)).match(\"foo\") != nil)
 """, "true")
+
+    def test_string_at_most13(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ (-1)).match(\"foo\").matched)
+""", "[\"foo\"]")
+
+    def test_string_at_most16(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ (-1)).match(\"foo\").rest)
+""", "")
 
     def test_string_at_most20(self):
         self._test("""
@@ -131,6 +285,20 @@ enable_gc_stress()
 print((peg.pattern(\"foo\") ^ (-1)).match(\"foofoo\") != nil)
 """, "true")
 
+    def test_string_at_most23(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ (-1)).match(\"foofoo\").matched)
+""", "[\"foo\"]")
+
+    def test_string_at_most26(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ (-1)).match(\"foofoo\").rest)
+""", "foo")
+
     def test_string_at_most30(self):
         self._test("""
 import peg
@@ -138,12 +306,40 @@ enable_gc_stress()
 print((peg.pattern(\"foo\") ^ (-1)).match(\"bar\") != nil)
 """, "true")
 
+    def test_string_at_most33(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ (-1)).match(\"bar\").matched)
+""", "[]")
+
+    def test_string_at_most36(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(\"foo\") ^ (-1)).match(\"bar\").rest)
+""", "bar")
+
     def test_array_match0(self):
         self._test("""
 import peg
 enable_gc_stress()
 print(peg.pattern(42).match([42]) != nil)
 """, "true")
+
+    def test_array_match1(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print(peg.pattern(42).match([42]).matched)
+""", "42")
+
+    def test_array_match2(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print(peg.pattern(42).match([42]).rest)
+""", "[]")
 
     def test_array_match5(self):
         self._test("""
@@ -166,6 +362,20 @@ enable_gc_stress()
 print((peg.pattern(42) * peg.pattern(26)).match([42, 26]) != nil)
 """, "true")
 
+    def test_array_match23(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(42) * peg.pattern(26)).match([42, 26]).matched)
+""", "[42, 26]")
+
+    def test_array_match26(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(42) * peg.pattern(26)).match([42, 26]).rest)
+""", "[]")
+
     def test_array_match30(self):
         self._test("""
 import peg
@@ -173,12 +383,40 @@ enable_gc_stress()
 print((peg.pattern(42) / peg.pattern(26)).match([42]) != nil)
 """, "true")
 
+    def test_array_match33(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(42) / peg.pattern(26)).match([42]).matched)
+""", "42")
+
+    def test_array_match36(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(42) / peg.pattern(26)).match([42]).rest)
+""", "[]")
+
     def test_array_match40(self):
         self._test("""
 import peg
 enable_gc_stress()
 print((peg.pattern(42) / peg.pattern(26)).match([26]) != nil)
 """, "true")
+
+    def test_array_match43(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(42) / peg.pattern(26)).match([26]).matched)
+""", "26")
+
+    def test_array_match46(self):
+        self._test("""
+import peg
+enable_gc_stress()
+print((peg.pattern(42) / peg.pattern(26)).match([26]).rest)
+""", "[]")
 
     def test_action0(self):
         self._test("""
