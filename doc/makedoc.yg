@@ -358,6 +358,18 @@ EOF
     fp.write(self.escape_html(s))
   end
 
+  def start_list(fp)
+    fp.write("<ul>")
+  end
+
+  def end_list(fp)
+    fp.write("</ul>")
+  end
+
+  def write_list_item(fp, s)
+    fp.write("<li>{0}</li>".format(self.escape_html(s)))
+  end
+
   def write_markup(fp, s)
     lines = s.split("\n")
     i = 0
@@ -379,6 +391,40 @@ EOF
           i += 1
         end
         self.end_pretty(fp)
+        next
+      elif m = (line =~ /\A\+/)
+        margin_stack = [0]
+
+        self.start_list(fp)
+        while i < lines.size
+          line = lines[i]
+          if m = (line =~ /\A(\s*\+)/)
+            margin = m.end() - 1
+            if margin_stack[-1] < margin
+              margin_stack << margin
+              self.start_list(fp)
+            elif margin < margin_stack[-1]
+              while 0 < j
+                self.end_list(fp)
+                margin_stack.pop()
+                if margin_stack[-1] <= margin
+                  break
+                end
+              end
+            end
+            self.write_list_item(fp, line.slice(m.end()))
+          elif !(line =~ /\A[^\s]/)
+            self.write_text(fp, line.trim() + "\n")
+          else
+            break
+          end
+          i += 1
+        end
+        while 0 < margin_stack.size
+          margin_stack.pop()
+          self.end_list(fp)
+        end
+        next
       else
         self.write_text(fp, line + "\n")
       end
