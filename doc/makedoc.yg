@@ -1,5 +1,7 @@
 #!/usr/bin/env yog
 
+from peg import action, pattern
+
 class Token
   def init(lineno, value=nil)
     self.lineno = lineno
@@ -8,57 +10,105 @@ class Token
 end
 
 class Indent > Token
+  def to_s()
+    return "<Indent line {0}>".format(self.lineno)
+  end
 end
 
 class Dedent > Token
+  def to_s()
+    return "<Dedent line {0}>".format(self.lineno)
+  end
 end
 
 class Klass > Token
+  def to_s()
+    return "<Klass line {0}>".format(self.lineno)
+  end
 end
 
 class Base > Token
+  def to_s()
+    return "<Base line {0}>".format(self.lineno)
+  end
 end
 
-class Incluing > Token
+class Including > Token
+  def to_s()
+    return "<Including line {0}>".format(self.lineno)
+  end
 end
 
 class Method > Token
+  def to_s()
+    return "<Method line {0}>".format(self.lineno)
+  end
 end
 
 class Parameters > Token
+  def to_s()
+    return "<Parameters line {0}>".format(self.lineno)
+  end
 end
 
 class Return > Token
+  def to_s()
+    return "<Return line {0}>".format(self.lineno)
+  end
 end
 
 class Data > Token
+  def to_s()
+    return "<Data line {0}>".format(self.lineno)
+  end
 end
 
 class Attribute > Token
+  def to_s()
+    return "<Attribute line {0}>".format(self.lineno)
+  end
 end
 
 class Property > Token
+  def to_s()
+    return "<Property line {0}>".format(self.lineno)
+  end
 end
 
 class Classmethod > Token
+  def to_s()
+    return "<Classmethod line {0}>".format(self.lineno)
+  end
 end
 
 class Function > Token
+  def to_s()
+    return "<Function line {0}>".format(self.lineno)
+  end
 end
 
 class Colon > Token
+  def to_s()
+    return "<Colon line {0}>".format(self.lineno)
+  end
 end
 
 class Newline > Token
+  def to_s()
+    return "<Newline line {0}>".format(self.lineno)
+  end
 end
 
 class Text > Token
+  def to_s()
+    return "<Text line {1}, {0}>".format(self.value.inspect(), self.lineno)
+  end
 end
 
 KEY2TOKEN = {
   "class" => Klass,
   "base" => Base,
-  "including" => Incluing,
+  "including" => Including,
   "method" => Method,
   "parameters" => Parameters,
   "return" => Return,
@@ -74,25 +124,25 @@ class Lexer
     self.lineno = 0
     self.margin_stack = [0]
     self.text_last? = false
-    self.tokens = []
   end
 
   def generate_indent_tokens(line)
     margin = (line =~ /\A\s*/).end(0)
     if self.margin_stack[-1] < margin
-      if !self.text_last?
-        self.margin_stack.push(margin)
-        self.tokens << Indent.new(self.lineno)
+      if self.text_last?
+        return []
       end
-      return
+      self.margin_stack.push(margin)
+      return [Indent.new(self.lineno)]
     end
 
+    tokens = []
     while !self.margin_stack.empty?
       if self.margin_stack[-1] <= margin
-        return
+        return tokens
       end
       self.margin_stack.pop()
-      self.tokens << Dedent.new(self.lineno)
+      tokens << Dedent.new(self.lineno)
     end
   end
 
@@ -149,44 +199,32 @@ class Lexer
     return line.slice(margin)
   end
 
-  def read_tokens()
-    line = self.readline()
-    if line == nil
-      self.generate_indent_tokens("")
-      return
-    end
-    self.generate_indent_tokens(line)
+  def split_tokens(line)
+    tokens = self.generate_indent_tokens(line)
 
     key, value = self.split_key_value(line)
     if key != nil
-      self.tokens << KEY2TOKEN.get(key, Text).new(self.lineno, key)
-      self.tokens << Colon.new(self.lineno)
-      self.tokens << Text.new(self.lineno, value)
-      self.tokens << Newline.new(self.lineno)
+      tokens << KEY2TOKEN.get(key, Text).new(self.lineno, key)
+      tokens << Colon.new(self.lineno)
+      tokens << Text.new(self.lineno, value)
+      tokens << Newline.new(self.lineno)
       self.text_last? = false
-      return
+      return tokens
     end
 
-    self.tokens << Text.new(self.lineno, self.cut_margin(line.gsub("::", ":")))
+    tokens << Text.new(self.lineno, self.cut_margin(line.gsub("::", ":")))
     self.text_last? = true
+    return tokens
   end
 
-  def unget_token(token)
-    self.tokens.unshift(token)
-  end
-
-  def get_next_token()
-    if self.tokens.empty?
-      self.read_tokens()
-      if self.tokens.empty?
-        return nil
-      end
+  def get_tokens()
+    tokens = []
+    while line = self.readline()
+      tokens += self.split_tokens(line)
     end
-    return self.tokens.shift()
+    tokens += self.generate_indent_tokens("")
+    return tokens
   end
-end
-
-class SyntaxError > Exception
 end
 
 class Node
@@ -196,112 +234,131 @@ class TextNode > Node
 end
 
 class ClassNode > Node
-  def init()
-    self.name = nil
-    self.base = nil
-    self.including = nil
+  def init(name, base, including)
+    self.name = name
+    self.base = base
+    self.including = including
     self.attrs = []
+  end
+
+  def to_s()
+    return "<ClassNode {0}>".format(self.name)
   end
 end
 
+def token_pattern(klass)
+  return pattern(klass) do [pat, act]
+    next act.kind_of?(pat)
+  end
+end
+
+klass_token = token_pattern(Klass)
+colon_token = token_pattern(Colon)
+text_token = token_pattern(Text)
+newline_token = token_pattern(Newline)
+indent_token = token_pattern(Indent)
+dedent_token = token_pattern(Dedent)
+base_token = token_pattern(Base)
+including_token = token_pattern(Including)
+
+text = action(text_token ^ 1) do [tokens]
+  s = ""
+  tokens.each() do [token]
+    s << token.value
+  end
+  next s
+end
+base = action(base_token * colon_token * text_token * newline_token) do [ignore1, ignore2, text, ignore3]
+  next text.value
+end
+including = action(including_token * colon_token * text_token * newline_token) do [ignore1, ignore2, text, ignore3]
+  next text.value
+end
+klass_body = action(indent_token * (base ^ (-1)) * (including ^ (-1)) * (text ^ (-1)) * dedent_token) do [ignore1, base, including, text, ignore2]
+  next [base.get(0), including.get(0), text.get(0, "")]
+end
+klass_body_opt = action(klass_body ^ (-1)) do [body]
+  next body[0]
+end
+klass = action(klass_token * colon_token * text_token * newline_token * klass_body_opt) do [ignore1, ignore2, name, ignore3, body]
+  next ClassNode.new(name.value, body[0], body[1])
+end
+grammar = (text / klass) ^ 0
+
 class Parser
-  def raise_syntax_error(lineno, msg)
-    raise SyntaxError.new("line {0}: {1}".format(lineno, msg))
-  end
-
-  def skip_colon(lexer)
-    token = lexer.get_next_token()
-    if !token.kind_of?(Colon)
-      self.raise_syntax_error(token.lineno, "token must be a colon")
-    end
-  end
-
-  def skip_newline(lexer)
-    token = lexer.get_next_token()
-    if !token.kind_of?(Newline)
-      self.raise_syntax_error(token.lineno, "token must be a newline")
-    end
-  end
-
-  def get_text_token(lexer)
-    token = lexer.get_next_token()
-    if !token.kind_of?(Text)
-      self.raise_syntax_error(token.lineno, "token must be a text")
-    end
-    return token
-  end
-
-  def parse_class(lexer)
-    node = ClassNode.new()
-    self.skip_colon(lexer)
-    node.name = self.get_text_token(lexer).value
-    self.skip_newline(lexer)
-
-    token = lexer.get_next_token()
-    if !token.kind_of?(Indent)
-      lexer.unget_token(token)
-      return node
-    end
-
-    while token = lexer.get_next_token()
-      if token.kind_of?(Base)
-        self.skip_colon(lexer)
-        node.name = self.get_text_token(lexer).value
-        self.skip_newline(lexer)
-      elif token.kind_of?(Incluing)
-        self.skip_colon(lexer)
-        node.including = self.get_text_token(lexer).value
-        self.skip_newline(lexer)
-      elif token.kind_of?(Method)
-        # TODO
-        #node.attrs << self.parse_method(lexer)
-      elif token.kind_of?(Property)
-        # TODO
-        #node.attrs << self.parse_property(lexer)
-      elif token.kind_of?(Attribute)
-        # TODO
-        #node.attrs << self.parse_attribute(lexer)
-      elif token.kind_of?(Dedent)
-        return node
-      else
-        self.raise_syntax_error(token.lineno, "invalid token in class")
-      end
-    end
-  end
-
-  def parse_top_level(lexer)
-    nodes = []
-    while token = lexer.get_next_token()
-      if token.kind_of?(Text)
-        # TODO
-      elif token.kind_of?(Klass)
-        nodes << self.parse_class(lexer)
-      elif token.kind_of?(Data)
-        # TODO
-      elif token.kind_of?(Function)
-        # TODO
-      else
-        self.raise_syntax_error(token.lineno, "token must be a text, class, data or function")
-      end
-    end
-    return nodes
-  end
-
   def parse(fp)
-    return self.parse_top_level(Lexer.new(fp))
+    m = grammar.match(Lexer.new(fp).get_tokens())
+    if m == nil
+      raise SyntaxError.new("invalid tokens")
+    end
+    if !m.rest.empty?
+      msg = "line {0}: invalid token: {1}".format(next_token.lineno, next_token)
+      raise SyntaxError.new(msg)
+    end
+    return m.matched
   end
 end
 
 class HtmlGenerator
+  def write_class(fp, node)
+    fp.write(<<EOF.format(node.name, node.base, node.including))
+<dl>
+  <dt>class <tt>{0}</tt></dt>
+  <dd>
+    <table>
+      <tbody>
+        <tr>
+          <th align="left">base class</th>
+          <th align="center">:</th>
+          <td><tt>{1}</tt></td>
+        </tr>
+        <tr>
+          <th align="left">including</th>
+          <th align="center">:</th>
+          <td><tt>{2}</tt></td>
+        </tr>
+      </tbody>
+    </table>
+  </dd>
+</dl>
+EOF
+  end
+
+  def write_text(fp, s)
+    fp.write(s)
+  end
+
+  def start(fp)
+    fp.write(<<EOF)
+<html>
+<body>
+EOF
+  end
+
+  def end(fp)
+    fp.write(<<EOF)
+</body>
+</html>
+EOF
+  end
+
   def write(fp, nodes)
-    # TODO
+    self.start(fp)
+    nodes.each() do [node]
+      if node.class == ClassNode
+        self.write_class(fp, node)
+      elif node.class == String
+        self.write_text(fp, node)
+      else
+        raise Exception.new("unknown node: {0}".format(node))
+      end
+    end
+    self.end(fp)
   end
 end
 
-nodes = nil
-File.open(ARGV[1]) do [fp]
-  nonlocal nodes
-  nodes = Parser.new().parse(fp)
+nodes = File.open(ARGV[1]) do [fp]
+  next Parser.new().parse(fp)
 end
 File.open(ARGV[2], "w") do [fp]
   HtmlGenerator.new().write(fp, nodes)

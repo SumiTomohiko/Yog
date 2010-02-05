@@ -1,0 +1,375 @@
+
+= builtins -- Built-in package
+
+  def foo()
+  end
+
+class: Array
+  base: Object
+  including: Foo Bar Baz
+
+--
+  method: +(a)
+    paramters:
+      a: an array
+        anything here?
+      x: nobody cares
+    return: anything here?
+      multiple value containing the following
+      * foobarbazquuxhogepiyofuga
+      * foo
+        * bar
+
+      ::
+
+        def foo()
+        end
+    exceptions:
+      IndexError: when not found
+
+    concat two arrays.
+
+  method: <<(obj)
+    parameters:
+      obj: an object
+    return:
+      *self*
+    add *obj* to the array.
+
+  method: [](index)
+    parameters:
+      index: element's index starting zero
+    return:
+      the object in the array
+    return the object in the array.
+
+  method: []=(index, value)
+
+  method: each(&block)
+    parameters:
+      block: a callable object
+    block:
+      parameters:
+        elem: an element in the array
+      return: nobody cares
+    foobarbazquuxhogepiyofuga
+
+  method: include?(obj)
+  method: join(sep)
+  method: pop()
+    return: two multi value
+      * foo
+      * bar
+  method: push(obj)
+  property: size
+  method: to_s()
+
+class: AttributeError
+  base: Exception
+
+  The exception to represent failures in getting/setting attributes.
+
+class: Bignum
+  base: Object
+
+  method: %(n)
+  method: *(n)
+  method: **(n)
+  method: +(n)
+  method: +self()
+  method: -(n)
+  method: -self()
+  method: /(n)
+  method: //(n)
+  method: <<(n)
+  method: <=>(n)
+  method: >>(n)
+  method: ^(n)
+  method: hash()
+  method: to_s()
+  method: |(n)
+  method: ~self()
+
+class: Bool
+  base: Object
+
+  The class of :keyword:`true` and :keyword:`false`.
+
+  method: hash()
+  method: to_s()
+
+class: Coroutine
+  base: Object
+
+  method: init(&block)
+  classmethod: yield()
+  method: resume()
+
+class: Dict
+  base: Object
+
+  method: +(d)
+  method: [](key)
+  method: []=(key, value)
+  method: each(&block)
+    Callback *block* for each pairs of key and value.
+    The *block*'s signature is ``block(key, val)``.
+  attribute: size
+    Number of entries in the dictionary.
+
+class: Exception
+  base: Object
+
+  method: init(message=nil)
+  attribute: message
+  method: to_s()
+
+class: File
+  base: Object
+
+  method: close()
+  classmethod: open(path, mode, &block=nil)
+    Callback *block* (if given).
+    The *block*'s signature is ``block(fp)``.
+    *fp* is a :class:`File` object.
+    When *block* is given, :meth:`open` closes the file at the end.
+  method: read()
+  method: readline()
+  method: write(s)
+
+class: Fixnum
+  base: Object
+
+  method: %(n)
+  method: &(n)
+  method: *(n)
+  method: **(n)
+  method: +(n)
+  method: +self()
+  method: -(n)
+  method: -self()
+  method: /(n)
+  method: //(n)
+  method: <<(n)
+  method: <=>(n)
+  method: >>(n)
+  method: ^(n)
+  method: hash()
+  method: times(&block)
+  method: to_s()
+  method: |(n)
+  method: ~self()
+
+class: Object
+
+  method: !=(obj)
+  method: ==(obj)
+  attribute: class
+  method: get_attr(name)
+  method: hash()
+  method: inspect()
+  method: to_s()
+
+class: Set
+  base: Object
+
+  method: add(*args)
+  method: include?(obj)
+  attribute: size
+
+class: Thread
+  base: Object
+
+  method: init(&block)
+  method: run(arg)
+  method: join()
+  attribute: __recursive_stack__
+    The Yog interpreter uses this attribute internally.
+    `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_.
+
+--
+Built-in Functions
+------------------
+
+function: __recurse__(obj, f, g)
+  :arg obj: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
+  :arg f: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
+  :arg g: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
+  :return: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
+
+  The Yog interpreter uses this function internally.
+  `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_.
+
+function: bind(obj)
+
+  :arg obj: an object to bind
+  :return: a function which accepts a function to be bound
+
+  Set :keyword:`self` in functions:
+
+    o = Object.new()
+
+    @bind(o)
+    def foo()
+      return self
+    end
+
+    foo() # => o
+
+function: classmethod(function)
+
+  :arg function: function
+  :return: class method for *function*
+
+  Return a class method for *function*.
+  To declare class method, use this function in the decorator form:
+
+    class Foo
+      @classmethod
+      def bar()
+        # ...
+      end
+    end
+
+function: get_current_thread()
+
+  :return: current thread
+
+  Return the current thread.
+
+  The Yog interpreter uses this function internally.
+
+function: import_package(name)
+
+  :arg name: symbol of package name
+  :return: imported package
+
+  Import a package.
+
+  The Yog interpreter uses this function internally.
+  If you want to import packages, use :keyword:`import` statement.
+
+function: include(mod)
+
+  :arg mod: module to include
+  :return: function which accepts a class to be included
+
+  :func:`include` is used to mix-in a class and modules as a decorator:
+
+    module Foo
+      def bar()
+        print(42)
+      end
+    end
+
+    @include(Foo)
+    class Baz
+    end
+
+  Calling ``Baz.new().bar()`` prints ``42``.
+
+function: include_module(klass, mod)
+
+  :arg klass: class to include *module*
+  :arg module: included module
+  :return: *klass*
+
+  Mix-in *module* to *klass*.
+
+  The Yog interpreter uses this function internally.
+  If you want to mix-in a class and modules, use :func:`include` function as a decorator.
+
+function: loop(&block)
+
+  :arg block: block to execute
+  :return: never return
+
+  Execute *block* eternally.
+  :func:`loop` passes a loop counter to *block*.
+
+function: partial(f, \*args, \*\*kw)
+
+  :arg f: function to call
+  :arg args: arguments to *f*
+  :arg kw: arguments to *f*
+  :return: function
+
+  :func:`partial` is a function for the partial application.
+  A returned function accepts rest of arguments for *f*.
+  This function is equivalent to this:
+
+    def g(*v, **k)
+      return f(*(args + v), **(kw + k))
+    end
+
+    return g
+
+function: print(\*args)
+
+  :arg args: objects to print standard output
+  :return: :keyword:`nil`
+
+  Print *args* to the standard output.
+  If objects are not string, they are converted with :meth:`Object#to_s`.
+  When no object are given, :func:`print` does nothing.
+
+function: property(getter, setter=nil)
+
+  :arg getter: a function called on getting property
+  :arg setter: a function called on setting property
+  :return: a :class:`Property` object
+
+  When a :class:`Property` object is gotten as an attribute, *getter* is called without arguments.
+  If an attirubte to be set is a :class:`Property` object, *setter* is called with one argment.
+  The *setter*'s argument is a new value of the attribute:
+
+    class Foo
+      def init()
+        self.baz = 42
+      end
+
+      def get_bar()
+        return self.baz
+      end
+
+      def set_bar(baz)
+        self.baz = baz
+      end
+
+      bar = property(get_bar, set_bar)
+    end
+
+    foo = Foo.new()
+    foo.bar # => 42
+    foo.bar = 26
+    foo.bar # => 26
+
+function: puts(\*args)
+
+  :arg args: objects to print standard output
+  :return: :keyword:`nil`
+
+  Print *args* to the standard output with trailing newlines.
+  If objects are not string, they are converted with :meth:`Object#to_s`.
+  When no object are given, :func:`print` prints one newline.
+
+function: raise_exception(e)
+
+  :arg e: an exception
+  :return: :keyword:`nil`. But this function never return!
+
+  Raise an exception.
+
+  The Yog interpreter uses this function internally.
+  If you want to raise an exception, use the :keyword:`raise` statement.
+
+Built-in Objects
+----------------
+
+data: ARGV
+
+  The :class:`Array` object containing command line parameters.
+  :data:`ARGV`\[0\] is a script file name.
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
