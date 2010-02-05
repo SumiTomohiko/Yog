@@ -357,7 +357,7 @@ EOF
   end
 
   def write_text(fp, s)
-    fp.write(s)
+    fp.write(self.conv_inline_markup(s))
   end
 
   def write_title(fp, level, title)
