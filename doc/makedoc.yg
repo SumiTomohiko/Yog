@@ -325,7 +325,7 @@ class HtmlGenerator
           <td><tt>{1}</tt></td>
         </tr>
         <tr>
-          <th align="left">including</th>
+          <th align="left">including module(s)</th>
           <th align="center">:</th>
           <td><tt>{2}</tt></td>
         </tr>
@@ -338,6 +338,52 @@ EOF
 
   def write_text(fp, s)
     fp.write(s)
+  end
+
+  def write_title(fp, level, title)
+    fp.write(<<EOF.format(level + 1, self.escape_html(title)))
+<h{0}>{1}</h{0}>
+EOF
+  end
+
+  def start_pretty(fp)
+    fp.write("<pre>")
+  end
+
+  def end_pretty(fp)
+    fp.write("</pre>")
+  end
+
+  def write_pretty(fp, s)
+    fp.write(self.escape_html(s))
+  end
+
+  def write_markup(fp, s)
+    lines = s.split("\n")
+    i = 0
+    pretty? = false
+    while i < lines.size
+      line = lines[i]
+      if m = (line =~ /\A(=+)/)
+        self.write_title(fp, m.end() - 1, line.slice(m.end()).trim())
+      elif m = (line =~ /\A\s+/)
+        margin = m.end()
+
+        self.start_pretty(fp)
+        while i < lines.size
+          line = lines[i]
+          if !(line =~ /\A\s+/)
+            break
+          end
+          self.write_pretty(fp, line.slice(margin) + "\n")
+          i += 1
+        end
+        self.end_pretty(fp)
+      else
+        self.write_text(fp, line + "\n")
+      end
+      i += 1
+    end
   end
 
   def start(fp)
@@ -360,7 +406,7 @@ EOF
       if node.class == ClassNode
         self.write_class(fp, node)
       elif node.class == String
-        self.write_text(fp, node)
+        self.write_markup(fp, node)
       else
         raise Exception.new("unknown node: {0}".format(node))
       end
