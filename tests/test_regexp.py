@@ -27,6 +27,11 @@ if s =~ /foo/
 end""", """42
 """)
 
+    def test_match_expr11(self):
+        self._test("""
+print((\"\" =~ /\\A/) != nil)
+""", "true")
+
     def test_match_expr15(self):
         self._test("""
 s = \"foobarbaz\"

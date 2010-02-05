@@ -695,7 +695,8 @@ YogString_match(YogEnv* env, YogVal self, YogVal regexp, int_t pos)
 
     int_t n = normalize_index(env, self, pos);
     uint_t offset = 0;
-    if (!index2offset(env, self, n, &offset)) {
+    uint_t size = YogString_size(env, self);
+    if ((0 < size) && !index2offset(env, self, n, &offset)) {
         RETURN(env, YNIL);
     }
 
