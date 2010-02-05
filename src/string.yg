@@ -59,14 +59,21 @@ def trim()
   return self.ltrim().rtrim()
 end
 
-def find(substr)
+def find(substr, start_pos=0)
+  if start_pos < 0
+    start_pos = self.size + start_pos
+    if start_pos < 0
+      start_pos = 0
+    end
+  end
+
   NotFound = -1
   if self.size < substr.size
     return NotFound
   end
 
-  i = 0
-  while i < self.size - substr.size
+  i = start_pos
+  while i <= self.size - substr.size
     j = 0
     while j < substr.size
       if self[i + j] != substr[j]
@@ -121,6 +128,54 @@ def format(*args, **kw)
   end
 
   return s
+end
+
+def match(regexp, pos=0)
+  return regexp.match(self, pos)
+end
+
+def split(splitter=/\s+/)
+  def split_char(s)
+    a = []
+    s.each_char() do [c]
+      a << c
+    end
+    return a
+  end
+
+  if splitter.kind_of?(Regexp)
+    a = []
+    from_ = 0
+    while m = self.match(splitter, from_)
+      if m.start() == m.end()
+        return split_char(self)
+      end
+      a << self.slice(from_, m.start() - from_)
+      from_ = m.end()
+    end
+    a << self.slice(from_)
+    return a
+  end
+
+  if !splitter.kind_of?(String)
+    raise TypeError.new("splitter must be String")
+  end
+  if splitter.size == 0
+    return split_char(self)
+  end
+
+  a = []
+  from_ = 0
+  while from_ <= self.size - splitter.size
+    to = self.find(splitter, from_)
+    if to < 0
+      break
+    end
+    a << self.slice(from_, to - from_)
+    from_ = to + splitter.size
+  end
+  a << self.slice(from_)
+  return a
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

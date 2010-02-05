@@ -264,6 +264,13 @@ puts(s)
 """, """foo
 """)
 
+    def test_assign_subscript10(self):
+        self._test("""
+s = \"foo\"
+s[-1] = \"b\"
+print(s)
+""", "fob")
+
     def test_subscript1(self):
         self._test("""
 s = \"foo\"
@@ -285,7 +292,13 @@ puts(s[1])
 """, u"""燦
 """)
 
-    def test_subscript_error1(self):
+    def test_subscript10(self):
+        self._test("""
+s = \"bar\"
+print(s[-1])
+""", "r")
+
+    def test_subscript_error0(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
@@ -298,7 +311,7 @@ s = \"\"
 puts(s[0])
 """, stderr=test_stderr)
 
-    def test_subscript_error2(self):
+    def test_subscript_error10(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
@@ -311,7 +324,20 @@ s = \"\"
 puts(s[1])
 """, stderr=test_stderr)
 
-    def test_subscript_error3(self):
+    def test_subscript_error20(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+  File builtin, in String#\[\]
+IndexError: string index out of range
+""", stderr)
+
+        self._test("""
+s = \"\"
+puts(s[-1])
+""", stderr=test_stderr)
+
+    def test_subscript_error30(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
@@ -324,7 +350,46 @@ s = \"\"
 puts(s[\"\"])
 """, stderr=test_stderr)
 
-    def test_assign_subscript_error1(self):
+    def test_assign_subscript_error0(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+  File builtin, in String#\[\]=
+IndexError: string index out of range
+""", stderr)
+
+        self._test("""
+s = \"\"
+s[0] = \"\"
+""", stderr=test_stderr)
+
+    def test_assign_subscript_error10(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+  File builtin, in String#\[\]=
+IndexError: string index out of range
+""", stderr)
+
+        self._test("""
+s = \"\"
+s[1] = \"\"
+""", stderr=test_stderr)
+
+    def test_assign_subscript_error20(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+  File builtin, in String#\[\]=
+IndexError: string index out of range
+""", stderr)
+
+        self._test("""
+s = \"\"
+s[-1] = \"\"
+""", stderr=test_stderr)
+
+    def test_assign_subscript_error30(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
@@ -334,7 +399,8 @@ TypeError: string index must be Fixnum
 
         self._test("""
 s = \"\"
-s[\"foo\"] = \"bar\"""", stderr=test_stderr)
+s[\"\"] = \"\"
+""", stderr=test_stderr)
 
     def test_multiply0(self):
         def test_stderr(stderr):
@@ -458,6 +524,36 @@ print(\"foo\".find(\"bar\"))
         self._test("""
 print(\"foo\".find(\"barbazquux\"))
 """, "-1")
+
+    def test_find30(self):
+        self._test("""
+print(\"foo\".find(\"o\", 0))
+""", "1")
+
+    def test_find40(self):
+        self._test("""
+print(\"foo\".find(\"o\", 1))
+""", "1")
+
+    def test_find50(self):
+        self._test("""
+print(\"foo\".find(\"o\", 2))
+""", "2")
+
+    def test_find60(self):
+        self._test("""
+print(\"foo\".find(\"o\", 3))
+""", "-1")
+
+    def test_find70(self):
+        self._test("""
+print(\"foo\".find(\"o\", -1))
+""", "2")
+
+    def test_find80(self):
+        self._test("""
+print(\"foo\".find(\"o\", -4))
+""", "1")
 
     def test_ltrim0(self):
         self._test("""
@@ -593,5 +689,40 @@ print(\"\\\\\".inspect())
         self._test("""
 print(\"\".inspect())
 """, "\"\"")
+
+    def test_split0(self):
+        self._test("""
+print(\"foo\".split(\"o\"))
+""", "[\"f\", \"\", \"\"]")
+
+    def test_split10(self):
+        self._test("""
+print(\"foo\".split(\"\"))
+""", "[\"f\", \"o\", \"o\"]")
+
+    def test_split20(self):
+        self._test("""
+print(\"foo\\nbar\".split(\"\\n\"))
+""", "[\"foo\", \"bar\"]")
+
+    def test_split30(self):
+        self._test("""
+print(\"foo bar\".split())
+""", "[\"foo\", \"bar\"]")
+
+    def test_split40(self):
+        self._test("""
+print(\"foo\\nbar\".split())
+""", "[\"foo\", \"bar\"]")
+
+    def test_split50(self):
+        self._test("""
+print(\"foo\\tbar\".split())
+""", "[\"foo\", \"bar\"]")
+
+    def test_split60(self):
+        self._test("""
+print(\"foo\".split(//))
+""", "[\"f\", \"o\", \"o\"]")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

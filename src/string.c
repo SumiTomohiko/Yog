@@ -550,60 +550,93 @@ lshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     RETURN(env, self);
 }
 
-static char*
-index2ptr(YogEnv* env, YogString* s, uint_t index)
+static BOOL
+index2offset(YogEnv* env, YogVal self, int_t index, uint_t* offset)
 {
-    YogVal enc = s->encoding;
-    YogVal body = s->body;
-    uint_t size = s->size;
-    const char* end = &PTR_AS(YogCharArray, body)->items[size - 1];
-    char* p = PTR_AS(YogCharArray, body)->items;
-    uint_t i = 0;
-    for (i = 0; i < index; i++) {
-        uint_t size = YogEncoding_mbc_size(env, enc, p);
-        p += size;
-        if (end <= p) {
-            YogError_raise_IndexError(env, "string index out of range");
-        }
+    SAVE_ARG(env, self);
+    if (index < 0) {
+        RETURN(env, FALSE);
     }
 
-    return p;
+    uint_t size = YogString_size(env, self);
+    uint_t n = 0;
+    int_t i;
+    for (i = 0; i < index; i++) {
+        char* p = &STRING_CSTR(self)[n];
+        n += YogEncoding_mbc_size(env, STRING_ENCODING(self), p);
+        if (size <= n) {
+            RETURN(env, FALSE);
+        }
+    }
+    if (size <= n) {
+        RETURN(env, FALSE);
+    }
+    *offset = n;
+
+    RETURN(env, TRUE);
+}
+
+static int_t
+normalize_index(YogEnv* env, YogVal self, int_t index)
+{
+    SAVE_ARG(env, self);
+
+    if (0 <= index) {
+        RETURN(env, index);
+    }
+    uint_t n = 0;
+    uint_t pos = 0;
+    uint_t size = YogString_size(env, self);
+    while (pos < size) {
+        char* p = &STRING_CSTR(self)[pos];
+        pos += YogEncoding_mbc_size(env, STRING_ENCODING(self), p);
+        n++;
+    }
+
+    RETURN(env, n + index);
+}
+
+static uint_t
+unnormalized_index2offset(YogEnv* env, YogVal self, int_t index)
+{
+    SAVE_ARG(env, self);
+
+    int_t n = normalize_index(env, self, index);
+    uint_t offset = 0;
+    if (!index2offset(env, self, n, &offset)) {
+        YogError_raise_IndexError(env, "string index out of range");
+    }
+
+    RETURN(env, offset);
 }
 
 static YogVal
 subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal arg = YogArray_at(env, args, 0);
+    YogVal index = YUNDEF;
     YogVal retval = YUNDEF;
     YogVal body = YUNDEF;
-    PUSH_LOCALS3(env, arg, retval, body);
-
-    YogCArg params[] = { { "index", &arg }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "[]", params, args, kw);
+    PUSH_LOCALS3(env, index, retval, body);
     CHECK_SELF_TYPE(env, self);
-    if (!IS_FIXNUM(arg)) {
+    YogCArg params[] = { { "index", &index }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "[]", params, args, kw);
+    if (!IS_FIXNUM(index)) {
         YogError_raise_TypeError(env, "string index must be Fixnum");
     }
 
-    retval = YogString_new(env);
-    YogString* s = PTR_AS(YogString, self);
-    int_t index = VAL2INT(arg);
-    const char* p = index2ptr(env, s, index);
-    body = s->body;
-    const char* q = PTR_AS(YogCharArray, body)->items;
-    uint_t offset = p - q;
-
-    uint_t mbc_size = YogEncoding_mbc_size(env, s->encoding, p);
-    uint_t size = s->size;
-    if ((size - 1) - offset < mbc_size) {
-        YogError_raise_IndexError(env, "string index out of range");
+    uint_t offset = unnormalized_index2offset(env, self, VAL2INT(index));
+    char* p = &STRING_CSTR(self)[offset];
+    uint_t mbc_size = YogEncoding_mbc_size(env, STRING_ENCODING(self), p);
+    uint_t size = YogString_size(env, self);
+    if (size - offset < mbc_size) {
+        YogError_raise_IndexError(env, "string has not enough size");
     }
+
+    retval = YogString_new(env);
     uint_t i;
     for (i = 0; i < mbc_size; i++) {
-        p = PTR_AS(YogCharArray, body)->items + offset + i;
-        YogString_push(env, retval, *p);
-        p++;
+        YogString_push(env, retval, STRING_CSTR(self)[offset + i]);
     }
 
     RETURN(env, retval);
@@ -613,100 +646,90 @@ static YogVal
 assign_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal arg0 = YUNDEF;
-    YogVal arg1 = YUNDEF;
-    PUSH_LOCALS2(env, arg0, arg1);
-
+    YogVal index = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS2(env, index, val);
+    CHECK_SELF_TYPE(env, self);
     YogCArg params[] = {
-        { "index", &arg0 },
-        { "value", &arg1 },
+        { "index", &index },
+        { "value", &val },
         { NULL, NULL } };
     YogGetArgs_parse_args(env, "[]=", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-    if (!IS_FIXNUM(arg0)) {
+    if (!IS_FIXNUM(index)) {
         YogError_raise_TypeError(env, "string index must be Fixnum");
     }
-    if (!IS_PTR(arg1) || (BASIC_OBJ_TYPE(arg1) != TYPE_STRING)) {
+    if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_STRING)) {
         YogError_raise_TypeError(env, "value must be String");
     }
 
-    YogString* s = PTR_AS(YogString, self);
-    int_t index = VAL2INT(arg0);
-    char* p = index2ptr(env, s, index);
-    uint_t size_orig = YogEncoding_mbc_size(env, s->encoding, p);
-    YogVal body0 = s->body;
-
-    YogString* t = PTR_AS(YogString, arg1);
-    YogVal body1 = t->body;
-    const char* q = PTR_AS(YogCharArray, body1)->items;
-    uint_t mbc_size = YogEncoding_mbc_size(env, t->encoding, q);
-    if (mbc_size < size_orig) {
-        uint_t i = 0;
-        for (i = 0; i < mbc_size; i++) {
-            *p = *q;
-            p++;
-            q++;
-        }
-        uint_t size = s->size;
-        const char* r = PTR_AS(YogCharArray, body0)->items;
-        memcpy(p, p + (size_orig - mbc_size), size - (r - p));
+    uint_t offset = unnormalized_index2offset(env, self, VAL2INT(index));
+    char* p = &STRING_CSTR(self)[offset];
+    uint_t prev_size = YogEncoding_mbc_size(env, STRING_ENCODING(self), p);
+    const char* q = STRING_CSTR(val);
+    uint_t new_size = YogEncoding_mbc_size(env, STRING_ENCODING(val), q);
+    if (new_size < prev_size) {
+        memcpy(p, q, new_size);
+        uint_t n = STRING_SIZE(self) - offset - prev_size;
+        memmove(p + new_size, p + prev_size, n);
     }
-    else if (size_orig < mbc_size) {
-        const char* r = PTR_AS(YogCharArray, body0)->items;
-        uint_t n = s->size;
-        ensure_size(env, self, n - size_orig + mbc_size);
-        /* FIXME: dirty hack */
-        s = PTR_AS(YogString, self);
-        t = PTR_AS(YogString, arg1);
-        q = PTR_AS(YogCharArray, t->body)->items;
-
-        p = PTR_AS(YogCharArray, s->body)->items + (p - r);
-        memmove(p + (mbc_size - size_orig), p, s->size - (p - PTR_AS(YogCharArray, s->body)->items));
-        uint_t i = 0;
-        for (i = 0; i < mbc_size; i++) {
-            *p = *q;
-            p++;
-            q++;
-        }
+    else if (prev_size < new_size) {
+        ensure_size(env, self, STRING_SIZE(self) - prev_size + new_size);
+        char* p = &STRING_CSTR(self)[offset];
+        uint_t n = STRING_SIZE(self) - offset - prev_size;
+        memmove(p + new_size, p + prev_size, n);
+        memcpy(p, STRING_CSTR(val), new_size);
     }
     else {
-        uint_t i = 0;
-        for (i = 0; i < mbc_size; i++) {
-            *p = *q;
-            p++;
-            q++;
-        }
+        memcpy(p, q, new_size);
     }
 
-    RETURN(env, arg1);
+    RETURN(env, val);
+}
+
+YogVal
+YogString_match(YogEnv* env, YogVal self, YogVal regexp, int_t pos)
+{
+    SAVE_ARGS2(env, self, regexp);
+    YogVal m = YUNDEF;
+    PUSH_LOCAL(env, m);
+
+    int_t n = normalize_index(env, self, pos);
+    uint_t offset = 0;
+    if (!index2offset(env, self, n, &offset)) {
+        RETURN(env, YNIL);
+    }
+
+    OnigUChar* str = (OnigUChar*)STRING_CSTR(self);
+    OnigUChar* end = (OnigUChar*)&STRING_CSTR(self)[STRING_SIZE(self) - 1];
+    OnigUChar* start = (OnigUChar*)&STRING_CSTR(self)[offset];
+    OnigRegion* region = onig_region_new();
+    int_t r = onig_search(PTR_AS(YogRegexp, regexp)->onig_regexp, str, end, start, end, region, ONIG_OPTION_NONE);
+    if (r == ONIG_MISMATCH) {
+        RETURN(env, YNIL);
+    }
+
+    m = YogMatch_new(env, self, regexp, region);
+
+    RETURN(env, m);
 }
 
 static YogVal
 match(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal arg = YUNDEF;
-    PUSH_LOCAL(env, arg);
-
-    YogCArg params[] = { { "regexp", &arg }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "=~", params, args, kw);
+    YogVal m = YUNDEF;
+    YogVal regexp = YUNDEF;
+    PUSH_LOCALS2(env, m, regexp);
     CHECK_SELF_TYPE(env, self);
-    if (!IS_PTR(arg) || (BASIC_OBJ_TYPE(arg) != TYPE_REGEXP)) {
+    YogCArg params[] = { { "regexp", &regexp }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "=~", params, args, kw);
+    if (!IS_PTR(regexp) || (BASIC_OBJ_TYPE(regexp) != TYPE_REGEXP)) {
         YogError_raise_TypeError(env, "operand must be Regexp");
     }
 
-    YogString* s = PTR_AS(YogString, self);
-    YogRegexp* regexp = PTR_AS(YogRegexp, arg);
-    OnigUChar* begin = (OnigUChar*)PTR_AS(YogCharArray, s->body)->items;
-    OnigUChar* end = begin + s->size - 1;
-    OnigRegion* region = onig_region_new();
-    int_t r = onig_search(regexp->onig_regexp, begin, end, begin, end, region, ONIG_OPTION_NONE);
-    if (r == ONIG_MISMATCH) {
-        RETURN(env, YNIL);
-    }
+    m = YogString_match(env, self, regexp, 0);
 
-    YogVal retval = YogMatch_new(env, self, arg, region);
-    RETURN(env, retval);
+    RETURN(env, m);
 }
 
 static YogVal

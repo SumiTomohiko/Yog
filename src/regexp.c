@@ -11,7 +11,12 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#define CHECK_SELF_TYPE(env, self)  do { \
+#define CHECK_SELF_REGEXP(env, self)    do { \
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_REGEXP)) { \
+        YogError_raise_TypeError(env, "self must be Regexp"); \
+    } \
+} while (0)
+#define CHECK_SELF_MATCH(env, self)  do { \
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_MATCH)) { \
         YogError_raise_TypeError(env, "self must be Match"); \
     } \
@@ -180,7 +185,7 @@ group(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 
     YogCArg params[] = { { "|", NULL }, { "group", &group }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "group", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
+    CHECK_SELF_MATCH(env, self);
 
     if (IS_FIXNUM(group)) {
         retval = group_num(env, self, VAL2INT(group));
@@ -272,7 +277,7 @@ start(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 
     YogCArg params[] = { { "|", NULL }, { "group", &group }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "start", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
+    CHECK_SELF_MATCH(env, self);
 
     if (IS_FIXNUM(group)) {
         retval = start_num(env, self, VAL2INT(group));
@@ -337,6 +342,30 @@ end_str(YogEnv* env, YogVal self, YogVal group)
 }
 
 static YogVal
+match(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal m = YUNDEF;
+    YogVal pos = YUNDEF;
+    YogVal s = YUNDEF;
+    PUSH_LOCALS3(env, m, pos, s);
+    CHECK_SELF_REGEXP(env, self);
+    YogCArg params[] = {
+        { "s", &s }, { "|", NULL }, { "pos", &pos }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "match", params, args, kw);
+    if (!IS_PTR(s) || (BASIC_OBJ_TYPE(s) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "s must be String");
+    }
+    if (!IS_UNDEF(pos) && !IS_FIXNUM(pos)) {
+        YogError_raise_TypeError(env, "pos must be Fixnum");
+    }
+
+    m = YogString_match(env, s, self, IS_UNDEF(pos) ? 0 : VAL2INT(pos));
+
+    RETURN(env, m);
+}
+
+static YogVal
 end(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -346,7 +375,7 @@ end(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 
     YogCArg params[] = { { "|", NULL }, { "group", &group }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "end", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
+    CHECK_SELF_MATCH(env, self);
 
     if (IS_FIXNUM(group)) {
         retval = end_num(env, self, VAL2INT(group));
@@ -374,6 +403,11 @@ YogRegexp_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cRegexp = YogClass_new(env, "Regexp", vm->cObject);
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, cRegexp, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("match", match);
+#undef DEFINE_METHOD
     vm->cRegexp = cRegexp;
 
     cMatch = YogClass_new(env, "Match", vm->cObject);
