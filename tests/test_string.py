@@ -725,4 +725,31 @@ print(\"foo\\tbar\".split())
 print(\"foo\".split(//))
 """, "[\"f\", \"o\", \"o\"]")
 
+    def test_get0(self):
+        self._test("""
+print(\"\".get(0, \"foo\"))
+""", "foo")
+
+    def test_get10(self):
+        self._test("""
+print(\"foo\".get(0, \"bar\"))
+""", "f")
+
+    def test_get20(self):
+        self._test("""
+print(\"foo\".get(0))
+""", "f")
+
+    def test_get30(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in String#get
+IndexError: string index out of range
+""", stderr)
+
+        self._test("""
+\"\".get(0)
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

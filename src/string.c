@@ -611,6 +611,56 @@ unnormalized_index2offset(YogEnv* env, YogVal self, int_t index)
 }
 
 static YogVal
+get_at(YogEnv* env, YogVal self, int_t offset)
+{
+    SAVE_ARG(env, self);
+    YogVal c = YUNDEF;
+    PUSH_LOCAL(env, c);
+
+    char* p = &STRING_CSTR(self)[offset];
+    uint_t size = YogEncoding_mbc_size(env, STRING_ENCODING(self), p);
+
+    c = YogString_new(env);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        YogString_push(env, c, STRING_CSTR(self)[offset + i]);
+    }
+
+    RETURN(env, c);
+}
+
+static YogVal
+get(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal index = YUNDEF;
+    YogVal default_ = YUNDEF;
+    YogVal c = YUNDEF;
+    PUSH_LOCALS3(env, index, default_, c);
+    YogCArg params[] = {
+        { "index", &index },
+        { "|", NULL },
+        { "default", &default_ },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get", params, args, kw);
+    if (!IS_FIXNUM(index)) {
+        YogError_raise_TypeError(env, "string index must be Fixnum");
+    }
+
+    int_t n = normalize_index(env, self, VAL2INT(index));
+    uint_t offset = 0;
+    if (!index2offset(env, self, n, &offset)) {
+        if (!IS_UNDEF(default_)) {
+            RETURN(env, default_);
+        }
+        YogError_raise_IndexError(env, "string index out of range");
+    }
+
+    c = get_at(env, self, offset);
+    RETURN(env, c);
+}
+
+static YogVal
 subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -633,12 +683,7 @@ subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         YogError_raise_IndexError(env, "string has not enough size");
     }
 
-    retval = YogString_new(env);
-    uint_t i;
-    for (i = 0; i < mbc_size; i++) {
-        YogString_push(env, retval, STRING_CSTR(self)[offset + i]);
-    }
-
+    retval = get_at(env, self, offset);
     RETURN(env, retval);
 }
 
@@ -1129,6 +1174,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("each_byte", each_byte);
     DEFINE_METHOD("each_char", each_char);
     DEFINE_METHOD("each_line", each_line);
+    DEFINE_METHOD("get", get);
     DEFINE_METHOD("gsub", gsub);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_i", to_i);
