@@ -300,8 +300,20 @@ class Parser
 end
 
 class HtmlGenerator
+  def escape_html(s)
+    t = ""
+    s.each_char() do [c]
+      tbl = { "<" => "&lt;", ">" => "&gt;", "&" => "&amp;", "\"" => "&quot;" }
+      t << tbl.get(c, c)
+    end
+    return t
+  end
+
   def write_class(fp, node)
-    fp.write(<<EOF.format(node.name, node.base, node.including))
+    name = self.escape_html(node.name)
+    base = self.escape_html(node.base)
+    including = self.escape_html(node.including)
+    fp.write(<<EOF.format(name, base, including))
 <dl>
   <dt>class <tt>{0}</tt></dt>
   <dd>
