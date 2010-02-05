@@ -721,7 +721,8 @@ each_line(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     CHECK_SELF_TYPE(env, self);
 
     uint_t i = 0;
-    do {
+    uint_t size = YogString_size(env, self);
+    while (i < size) {
         YogString* s = PTR_AS(YogString, self);
         YogVal body = s->body;
         const char* base = PTR_AS(YogCharArray, body)->items;
@@ -738,14 +739,8 @@ each_line(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         i = next - PTR_AS(YogCharArray, PTR_AS(YogString, self)->body)->items;
         arg[0] = YogString_from_range(env, enc, start, end);
 
-        uint_t size = STRING_SIZE(self);
-
         YogCallable_call(env, block, array_sizeof(arg), arg);
-
-        if (size - 1 < i) {
-            break;
-        }
-    } while (1);
+    }
 
     RETURN(env, YNIL);
 }
@@ -791,12 +786,12 @@ each_byte(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
 
     uint_t i = 0;
     uint_t size = YogString_size(env, self);
-    do {
+    while (i < size) {
         a[0] = INT2VAL((unsigned char)STRING_CSTR(self)[i]);
         i++;
 
         YogCallable_call(env, block, array_sizeof(a), a);
-    } while (i < size);
+    }
 
     RETURN(env, self);
 }
@@ -815,7 +810,7 @@ each_char(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
 
     uint_t i = 0;
     uint_t size = YogString_size(env, self);
-    do {
+    while (i < size) {
         const char* start = &STRING_CSTR(self)[i];
         enc = STRING_ENCODING(self);
         const char* next = start + YogEncoding_mbc_size(env, enc, start);
@@ -823,7 +818,7 @@ each_char(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         a[0] = YogString_from_range(env, enc, start, next - 1);
 
         YogCallable_call(env, block, array_sizeof(a), a);
-    } while (i < size);
+    }
 
     RETURN(env, self);
 }

@@ -180,6 +180,13 @@ end""", u"""日
 語
 """)
 
+    def test_each_char3(self):
+        self._test("""
+\"\".each_char() do [c]
+  print(42)
+end
+""", "")
+
     def test_each_byte1(self):
         self._test("""
 \"foo\".each_byte() do [b]
@@ -204,6 +211,13 @@ end""", """230
 158
 """)
 
+    def test_each_byte3(self):
+        self._test("""
+\"\".each_byte() do [b]
+  print(42)
+end
+""", "")
+
     def test_each_line1(self):
         self._test("""
 \"foo\".each_line() do [l]
@@ -218,6 +232,13 @@ end""", """foo
 end""", """foo
 bar
 """)
+
+    def test_each_line3(self):
+        self._test("""
+\"\".each_line() do [line]
+  print(42)
+end
+""", "")
 
     def test_assign_subscript1(self):
         self._test("""
@@ -567,5 +588,10 @@ print(\"\\t\".inspect())
         self._test("""
 print(\"\\\\\".inspect())
 """, "\"\\\\\"")
+
+    def test_inspect40(self):
+        self._test("""
+print(\"\".inspect())
+""", "\"\"")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
