@@ -63,6 +63,9 @@ class Data > Token
   end
 end
 
+class Type > Token
+end
+
 class Attribute > Token
   def to_s()
     return "<Attribute line {0}>".format(self.lineno)
@@ -129,6 +132,7 @@ KEY2TOKEN = {
   "function" => Function,
   "property" => Property,
   "data" => Data,
+  "type" => Type,
   "return" => Return,
   "exceptions" => Exceptions }
 
@@ -317,6 +321,14 @@ class ExceptionNode > Node
   end
 end
 
+class DataNode > Node
+  def init(name, type, desc)
+    self.name = name
+    self.type = type
+    self.desc = desc
+  end
+end
+
 def token_pattern(klass)
   return pattern(klass) do [pat, act]
     next act.kind_of?(pat)
@@ -339,6 +351,8 @@ return_token = token_pattern(Return)
 exceptions_token = token_pattern(Exceptions)
 property_token = token_pattern(Property)
 attribute_token = token_pattern(Attribute)
+data_token = token_pattern(Data)
+type_token = token_pattern(Type)
 
 text = action(text_token ^ 1) do [tokens]
   s = ""
@@ -401,6 +415,15 @@ end
 prop = action(property_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, desc]
   next PropertyNode.new(name.value, desc.get(0, []).get(1, ""))
 end
+data = action(data_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * text * dedent_token) ^ (-1))) do [ignore1, ignroe2, name, ignore3, bodies]
+  body = bodies.get(0, [])
+  if body.get(3, nil) != nil
+    type = body[3].value
+  else
+    type = ""
+  end
+  next DataNode.new(name.value, type, body.get(5, ""))
+end
 attr = action(prop / method / classmethod / attribute) do [attr]
   next attr
 end
@@ -413,7 +436,7 @@ end
 klass = action(klass_token * colon_token * text_token * newline_token * klass_body_opt) do [ignore1, ignore2, name, ignore3, body]
   next ClassNode.new(name.value, body[0], body[1], body[2], body[3])
 end
-grammar = (text / klass / function) ^ 0
+grammar = (text / klass / function / data) ^ 0
 
 class Parser
   def parse(fp)
@@ -517,12 +540,16 @@ EOF
             <tr><td><tt>{0}</tt></td><td>--</td><td>{1}</td></tr>
 EOF
     end
-    fp.write(<<EOF.format(self.conv_inline_markup(meth.desc)))
+    fp.write(<<EOF)
           </tbody></table>
         </td>
       </tr>
     </tbody></table>
-    <p>{0}</p>
+    <p>
+EOF
+    self.write_markup(fp, meth.desc)
+    fp.write(<<EOF)
+    </p>
   </dd>
 </dl>
 EOF
@@ -620,6 +647,10 @@ EOF
   end
 
   def write_markup(fp, s)
+    if s == nil
+      return
+    end
+
     lines = s.split("\n")
     i = 0
     pretty? = false
@@ -641,13 +672,13 @@ EOF
         end
         self.end_pretty(fp)
         next
-      elif m = (line =~ /\A\+/)
+      elif m = (line =~ /\A\+\s+/)
         margin_stack = [0]
 
         self.start_list(fp)
         while i < lines.size
           line = lines[i]
-          if m = (line =~ /\A(\s*\+)/)
+          if m = (line =~ /\A(\s*\+)\s+/)
             margin = m.end() - 1
             if margin_stack[-1] < margin
               margin_stack << margin
@@ -695,6 +726,24 @@ EOF
 EOF
   end
 
+  def write_data(fp, node)
+    fp.write(<<EOF.format(node.name, node.type))
+<dl>
+  <dt>data <tt>{0}</tt></dt>
+  <dd>
+    <table><tbody><tr>
+      <th align="left">Type</th><th align="left">:</th><td><tt>{1}</tt></td>
+    </tr></tbody></table>
+    <p>
+EOF
+    self.write_markup(fp, node.desc)
+    fp.write(<<EOF)
+    </p>
+  </dd>
+</dl>
+EOF
+  end
+
   def write(fp, nodes)
     self.start(fp)
     nodes.each() do [node]
@@ -704,6 +753,8 @@ EOF
         self.write_markup(fp, node)
       elif node.kind_of?(FunctionNode)
         self.write_method(fp, node, "function")
+      elif node.kind_of?(DataNode)
+        self.write_data(fp, node)
       else
         raise Exception.new("unknown node: {0}".format(node))
       end

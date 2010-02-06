@@ -1,46 +1,34 @@
 
-= builtins -- Built-in package
+= +builtins+ package
 
-  def foo()
-  end
+You can use classes/functions/modules in this package without the +import+ statement.
 
 class: Array
   base: Object
-  including: Foo Bar Baz
 
---
+  +Array+ has many objects.
+
   method: +(a)
-    paramters:
-      a: an array
-        anything here?
-      x: nobody cares
-    return: anything here?
-      multiple value containing the following
-      * foobarbazquuxhogepiyofuga
-      * foo
-        * bar
-
-      ::
-
-        def foo()
-        end
+    parameters:
+      a: An array
+    return: New array
     exceptions:
-      IndexError: when not found
+      TypeError: When +a+ is not an array.
 
-    concat two arrays.
+    Concatenates two arrays.
 
   method: <<(obj)
     parameters:
       obj: an object
-    return:
-      *self*
-    add *obj* to the array.
+    return: +self+.
+
+    add +obj+ to the array.
 
   method: [](index)
     parameters:
       index: element's index starting zero
-    return:
-      the object in the array
+    return: the object in the array
+      foo
     return the object in the array.
 
   method: []=(index, value)
@@ -48,20 +36,17 @@ class: Array
   method: each(&block)
     parameters:
       block: a callable object
-    block:
-      parameters:
-        elem: an element in the array
-      return: nobody cares
     foobarbazquuxhogepiyofuga
 
   method: include?(obj)
   method: join(sep)
   method: pop()
     return: two multi value
-      * foo
-      * bar
+      + foo
+      + bar
   method: push(obj)
   property: size
+    Objects number in the array.
   method: to_s()
 
 class: AttributeError
@@ -93,7 +78,7 @@ class: Bignum
 class: Bool
   base: Object
 
-  The class of :keyword:`true` and :keyword:`false`.
+  The class of +true+ and +false+.
 
   method: hash()
   method: to_s()
@@ -131,8 +116,8 @@ class: File
   classmethod: open(path, mode, &block=nil)
     Callback *block* (if given).
     The *block*'s signature is ``block(fp)``.
-    *fp* is a :class:`File` object.
-    When *block* is given, :meth:`open` closes the file at the end.
+    *fp* is a +File+ object.
+    When *block* is given, +open+ closes the file at the end.
   method: read()
   method: readline()
   method: write(s)
@@ -185,27 +170,26 @@ class: Thread
   method: join()
   attribute: __recursive_stack__
     The Yog interpreter uses this attribute internally.
-    `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_.
+    `Nobody cares <http:://uncyclopedia.wikia.com/wiki/Nobody_cares>`_.
 
---
-Built-in Functions
-------------------
+== Built-in Functions
 
 function: __recurse__(obj, f, g)
-  :arg obj: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
-  :arg f: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
-  :arg g: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
-  :return: `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_
+  parameters:
+    obj:
+    f:
+    g:
+  return:
 
   The Yog interpreter uses this function internally.
-  `Nobody cares <http://uncyclopedia.wikia.com/wiki/Nobody_cares>`_.
+  `Nobody cares <http:://uncyclopedia.wikia.com/wiki/Nobody_cares>`_.
 
 function: bind(obj)
+  parameters:
+    obj: an object to bind
+  return: a function which accepts a function to be bound
 
-  :arg obj: an object to bind
-  :return: a function which accepts a function to be bound
-
-  Set :keyword:`self` in functions:
+  Set +self+ in functions::
 
     o = Object.new()
 
@@ -217,12 +201,12 @@ function: bind(obj)
     foo() # => o
 
 function: classmethod(function)
-
-  :arg function: function
-  :return: class method for *function*
+  parameters:
+    f: function
+  return: class method for *function*
 
   Return a class method for *function*.
-  To declare class method, use this function in the decorator form:
+  To declare class method, use this function in the decorator form::
 
     class Foo
       @classmethod
@@ -232,29 +216,28 @@ function: classmethod(function)
     end
 
 function: get_current_thread()
-
-  :return: current thread
+  return: current thread
 
   Return the current thread.
 
   The Yog interpreter uses this function internally.
 
 function: import_package(name)
-
-  :arg name: symbol of package name
-  :return: imported package
+  parameters:
+    name: symbol of package name
+  return: imported package
 
   Import a package.
 
   The Yog interpreter uses this function internally.
-  If you want to import packages, use :keyword:`import` statement.
+  If you want to import packages, use +import+ statement.
 
 function: include(mod)
+  parameters:
+    mod: module to include
+  return: which accepts a class to be included
 
-  :arg mod: module to include
-  :return: function which accepts a class to be included
-
-  :func:`include` is used to mix-in a class and modules as a decorator:
+  +include+ is used to mix-in a class and modules as a decorator::
 
     module Foo
       def bar()
@@ -269,34 +252,34 @@ function: include(mod)
   Calling ``Baz.new().bar()`` prints ``42``.
 
 function: include_module(klass, mod)
-
-  :arg klass: class to include *module*
-  :arg module: included module
-  :return: *klass*
+  parameters:
+    klass: class to include *module*
+    module: included module
+  return: +klass+
 
   Mix-in *module* to *klass*.
 
   The Yog interpreter uses this function internally.
-  If you want to mix-in a class and modules, use :func:`include` function as a decorator.
+  If you want to mix-in a class and modules, use +include+ function as a decorator.
 
 function: loop(&block)
-
-  :arg block: block to execute
-  :return: never return
+  parameters:
+    block: block to execute
+  return: never return
 
   Execute *block* eternally.
-  :func:`loop` passes a loop counter to *block*.
+  +loop+ passes a loop counter to *block*.
 
 function: partial(f, \*args, \*\*kw)
+  parameters:
+    f: function to call
+    args: arguments to *f*
+    kw: arguments to *f*
+  return: function
 
-  :arg f: function to call
-  :arg args: arguments to *f*
-  :arg kw: arguments to *f*
-  :return: function
-
-  :func:`partial` is a function for the partial application.
+  +partial+ is a function for the partial application.
   A returned function accepts rest of arguments for *f*.
-  This function is equivalent to this:
+  This function is equivalent to this::
 
     def g(*v, **k)
       return f(*(args + v), **(kw + k))
@@ -304,24 +287,24 @@ function: partial(f, \*args, \*\*kw)
 
     return g
 
-function: print(\*args)
-
-  :arg args: objects to print standard output
-  :return: :keyword:`nil`
+function: print(*args)
+  parameters:
+    args: objects to print standard output
+  return: +nil+
 
   Print *args* to the standard output.
-  If objects are not string, they are converted with :meth:`Object#to_s`.
-  When no object are given, :func:`print` does nothing.
+  If objects are not string, they are converted with +Object#to_s+.
+  When no object are given, +print+ does nothing.
 
 function: property(getter, setter=nil)
+  parameters:
+    getter: a function called on getting property
+    setter: a function called on setting property
+  return: a +Property+ object
 
-  :arg getter: a function called on getting property
-  :arg setter: a function called on setting property
-  :return: a :class:`Property` object
-
-  When a :class:`Property` object is gotten as an attribute, *getter* is called without arguments.
-  If an attirubte to be set is a :class:`Property` object, *setter* is called with one argment.
-  The *setter*'s argument is a new value of the attribute:
+  When a +Property+ object is gotten as an attribute, *getter* is called without arguments.
+  If an attirubte to be set is a +Property+ object, *setter* is called with one argment.
+  The *setter*'s argument is a new value of the attribute::
 
     class Foo
       def init()
@@ -344,32 +327,32 @@ function: property(getter, setter=nil)
     foo.bar = 26
     foo.bar # => 26
 
-function: puts(\*args)
-
-  :arg args: objects to print standard output
-  :return: :keyword:`nil`
+function: puts(*args)
+  parameters:
+    args: objects to print standard output
+  return: +nil+
 
   Print *args* to the standard output with trailing newlines.
-  If objects are not string, they are converted with :meth:`Object#to_s`.
-  When no object are given, :func:`print` prints one newline.
+  If objects are not string, they are converted with +Object#to_s+.
+  When no object are given, +print+ prints one newline.
 
 function: raise_exception(e)
-
-  :arg e: an exception
-  :return: :keyword:`nil`. But this function never return!
+  parameters:
+    e: an exception
+  return: +nil+. But this function never return!
 
   Raise an exception.
 
   The Yog interpreter uses this function internally.
-  If you want to raise an exception, use the :keyword:`raise` statement.
+  If you want to raise an exception, use the +raise+ statement.
 
-Built-in Objects
-----------------
+== Built-in Objects
 
 data: ARGV
+  type: Array
 
-  The :class:`Array` object containing command line parameters.
-  :data:`ARGV`\[0\] is a script file name.
+  The +Array+ object containing command line parameters.
+  +ARGV[0]+ is a script file name.
 
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
