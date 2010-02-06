@@ -449,7 +449,7 @@ class HtmlGenerator
 
     t = ""
     typewriter? = false
-    s.each_char() do [c]
+    s.rtrim().each_char() do [c]
       nonlocal typewriter?
       if c == "+"
         if typewriter?
