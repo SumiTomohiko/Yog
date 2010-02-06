@@ -217,7 +217,7 @@ class Lexer
   def cut_margin(line)
     margin = self.margin_stack[-1]
     if line.size < margin
-      return ""
+      return "\n"
     end
     return line.slice(margin)
   end
@@ -274,12 +274,30 @@ class ClassNode > Node
 end
 
 class MethodNode > Node
-  def init(sig)
+  def init(sig, params, return_, excs, desc)
     self.sig = sig
+    self.params = params
+    self.return_ = return_
+    self.excs = excs
+    self.desc = desc
   end
 
   def to_s()
     return "<MethodNode {0}>".format(self.sig)
+  end
+end
+
+class ParameterNode > Node
+  def init(name, desc)
+    self.name = name
+    self.desc = desc
+  end
+end
+
+class ExceptionNode > Node
+  def init(type, desc)
+    self.type = type
+    self.desc = desc
   end
 end
 
@@ -315,26 +333,39 @@ end
 including = action(including_token * colon_token * text_token * newline_token) do [ignore1, ignore2, text, ignore3]
   next text.value
 end
-exceptions_body = action(indent_token * ((text_token * colon_token * text_token) ^ 0) * dedent_token) do [ignore1, excs, ignore2]
-  # TODO
+exceptions_body = action(indent_token * ((text_token * colon_token * text_token * newline_token * (text ^ (-1))) ^ 0) * dedent_token) do [ignore1, excs, ignore2]
+  a = []
+  excs.each() do [exc]
+    a << ExceptionNode.new(exc[0].value, exc[2].value + exc[4].get(0, ""))
+  end
+  next a
 end
-exceptions = action(exceptions_token * colon_token * exceptions_body) do [ignore1, ignore2, excs]
-  # TODO
+exceptions = action(exceptions_token * colon_token * text_token * newline_token * exceptions_body) do [ignore1, ignore2, ignore3, ignore4, excs]
+  next excs
 end
-return_ = action(return_token * colon_token * text) do [ignore1, ignore2, desc]
-  next desc
+return_ = action(return_token * colon_token * text_token * newline_token * (text ^ 0)) do [ignore1, ignore2, desc, ignore, desc2]
+  s = desc.value
+  desc2.each() do [text]
+    s << text.value
+  end
+  next s
 end
-parameters_body = action(indent_token * ((text_token * colon_token * text_token) ^ 0) * dedent_token) do [ignore1, params, ignore2]
-  # TODO
+parameters_body = action(indent_token * ((text_token * colon_token * text_token * newline_token) ^ 0) * dedent_token) do [ignore1, params, ignore2]
+  a = []
+  params.each() do [param]
+    a << ParameterNode.new(param[0].value, param[2].value)
+  end
+  next a
 end
-parameters = action(parameters_token * colon_token * newline_token * (parameters_body ^ (-1))) do [ignore1, ignore2, ignore3, body]
-  # TODO
+parameters = action(parameters_token * colon_token * text_token * newline_token * (parameters_body ^ (-1))) do [ignore1, ignore2, ignore3, ignore4, body]
+  next body.get(0, [])
 end
 method_body = action(indent_token * (parameters ^ (-1)) * (return_ ^ (-1)) * (exceptions ^ (-1)) * (text ^ (-1)) * dedent_token) do [ignore1, params, return_, excs, desc, ignore2]
-  # TODO
+  next [params.get(0), return_.get(0), excs.get(0), desc.get(0)]
 end
-method = action(method_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, body]
-  return MethodNode.new(sig.value)
+method = action(method_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
+  body = bodies.get(0, [[], "", [], ""])
+  return MethodNode.new(sig.value, body[0], body[1], body[2], body[3])
 end
 klass_body = action(indent_token * (base ^ (-1)) * (including ^ (-1)) * (text ^ (-1)) * (method ^ 0) * dedent_token) do [ignore1, base, including, text, methods, ignore2]
   next [base.get(0), including.get(0), text.get(0, ""), methods]
@@ -349,7 +380,9 @@ grammar = (text / klass) ^ 0
 
 class Parser
   def parse(fp)
-    m = grammar.match(Lexer.new(fp).get_tokens())
+    tokens = Lexer.new(fp).get_tokens()
+    puts(tokens)
+    m = grammar.match(tokens)
     if m == nil
       raise SyntaxError.new("invalid tokens")
     end
@@ -396,6 +429,50 @@ class HtmlGenerator
     fp.write(<<EOF.format(meth.sig))
 <dl>
   <dt>method <tt>{0}</tt></dt>
+  <dd>
+    <table><tbody>
+      <tr>
+        <th align="left">Parameter(s)</th>
+        <th>:</th>
+        <td>
+          <table><tbody>
+EOF
+    meth.params.each() do [param]
+      name = self.escape_html(param.name)
+      desc = self.conv_inline_markup(param.desc)
+      fp.write(<<EOF.format(name, desc))
+          <tr><td><i>{0}</i></td><td>--</td><td>{1}</td></tr>
+EOF
+    end
+    fp.write(<<EOF.format(self.conv_inline_markup(meth.return_)))
+          </tbody</table>
+        </td>
+      </tr>
+      <tr>
+        <th align="left">Return</th>
+        <th>:</th>
+        <td>{0}</td>
+      </tr>
+      <tr>
+        <th align="left">Exception(s)</th>
+        <th>:</th>
+        <td>
+          <table><tbody>
+EOF
+    meth.excs.each() do [exc]
+      type = self.escape_html(exc.type)
+      desc = self.conv_inline_markup(exc.desc)
+      fp.write(<<EOF.format(type, desc))
+          <tr><td><tt>{0}</tt></td><td>--</td><td>{1}</td></tr>
+EOF
+    end
+    fp.write(<<EOF.format(self.conv_inline_markup(meth.desc)))
+          </tbody></table>
+        </td>
+      </tr>
+    </tbody></table>
+    <p>{0}</p>
+  </dd>
 </dl>
 EOF
   end
