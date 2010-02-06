@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Packages' path must be full path.
+desc: Packages' path in stacktraces are related path. Change those to full paths.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-06 13:46:39.305095 Z
+references: []
+
+id: a3e7019992567676f5cb42407e760dc9122190bb
+log_events: 
+- - 2010-02-06 13:46:40.065870 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
