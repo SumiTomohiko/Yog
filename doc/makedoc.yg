@@ -297,6 +297,9 @@ class MethodNode > Node
   end
 end
 
+class FunctionNode > MethodNode
+end
+
 class ClassmethodNode > MethodNode
 end
 
@@ -329,6 +332,7 @@ dedent_token = token_pattern(Dedent)
 base_token = token_pattern(Base)
 including_token = token_pattern(Including)
 method_token = token_pattern(Method)
+function_token = token_pattern(Function)
 classmethod_token = token_pattern(Classmethod)
 parameters_token = token_pattern(Parameters)
 return_token = token_pattern(Return)
@@ -383,6 +387,10 @@ classmethod = action(classmethod_token * colon_token * text_token * newline_toke
   body = bodies.get(0, [[], "", [], ""])
   next ClassmethodNode.new(sig.value, body[0], body[1], body[2], body[3])
 end
+function = action(function_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
+  body = bodies.get(0, [[], "", [], ""])
+  next FunctionNode.new(sig.value, body[0], body[1], body[2], body[3])
+end
 method = action(method_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
   body = bodies.get(0, [[], "", [], ""])
   next MethodNode.new(sig.value, body[0], body[1], body[2], body[3])
@@ -405,7 +413,7 @@ end
 klass = action(klass_token * colon_token * text_token * newline_token * klass_body_opt) do [ignore1, ignore2, name, ignore3, body]
   next ClassNode.new(name.value, body[0], body[1], body[2], body[3])
 end
-grammar = (text / klass) ^ 0
+grammar = (text / klass / function) ^ 0
 
 class Parser
   def parse(fp)
@@ -690,10 +698,12 @@ EOF
   def write(fp, nodes)
     self.start(fp)
     nodes.each() do [node]
-      if node.class == ClassNode
+      if node.kind_of?(ClassNode)
         self.write_class(fp, node)
-      elif node.class == String
+      elif node.kind_of?(String)
         self.write_markup(fp, node)
+      elif node.kind_of?(FunctionNode)
+        self.write_method(fp, node, "function")
       else
         raise Exception.new("unknown node: {0}".format(node))
       end
