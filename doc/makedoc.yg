@@ -260,17 +260,27 @@ class TextNode > Node
 end
 
 class ClassNode > Node
-  def init(name, base, including, desc, methods)
+  def init(name, base, including, desc, attrs)
     self.name = name
     self.base = base
     self.including = including
     self.desc = desc
-    self.methods = methods
+    self.attrs = attrs
   end
 
   def to_s()
     return "<ClassNode {0}>".format(self.name)
   end
+end
+
+class AttributeNode > Node
+  def init(name, desc)
+    self.name = name
+    self.desc = desc
+  end
+end
+
+class PropertyNode > AttributeNode
 end
 
 class MethodNode > Node
@@ -285,6 +295,9 @@ class MethodNode > Node
   def to_s()
     return "<MethodNode {0}>".format(self.sig)
   end
+end
+
+class ClassmethodNode > MethodNode
 end
 
 class ParameterNode > Node
@@ -316,9 +329,12 @@ dedent_token = token_pattern(Dedent)
 base_token = token_pattern(Base)
 including_token = token_pattern(Including)
 method_token = token_pattern(Method)
+classmethod_token = token_pattern(Classmethod)
 parameters_token = token_pattern(Parameters)
 return_token = token_pattern(Return)
 exceptions_token = token_pattern(Exceptions)
+property_token = token_pattern(Property)
+attribute_token = token_pattern(Attribute)
 
 text = action(text_token ^ 1) do [tokens]
   s = ""
@@ -333,7 +349,7 @@ end
 including = action(including_token * colon_token * text_token * newline_token) do [ignore1, ignore2, text, ignore3]
   next text.value
 end
-exceptions_body = action(indent_token * ((text_token * colon_token * text_token * newline_token * (text ^ (-1))) ^ 0) * dedent_token) do [ignore1, excs, ignore2]
+exceptions_body = action(indent_token * ((text_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) ^ 0) * dedent_token) do [ignore1, excs, ignore2]
   a = []
   excs.each() do [exc]
     a << ExceptionNode.new(exc[0].value, exc[2].value + exc[4].get(0, ""))
@@ -343,10 +359,10 @@ end
 exceptions = action(exceptions_token * colon_token * text_token * newline_token * exceptions_body) do [ignore1, ignore2, ignore3, ignore4, excs]
   next excs
 end
-return_ = action(return_token * colon_token * text_token * newline_token * (text ^ 0)) do [ignore1, ignore2, desc, ignore, desc2]
-  s = desc.value
+return_ = action(return_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) do [ignore1, ignore2, desc, ignore, desc2]
+  s = desc.value + "\n"
   desc2.each() do [text]
-    s << text.value
+    s << text[1]
   end
   next s
 end
@@ -361,14 +377,27 @@ parameters = action(parameters_token * colon_token * text_token * newline_token 
   next body.get(0, [])
 end
 method_body = action(indent_token * (parameters ^ (-1)) * (return_ ^ (-1)) * (exceptions ^ (-1)) * (text ^ (-1)) * dedent_token) do [ignore1, params, return_, excs, desc, ignore2]
-  next [params.get(0), return_.get(0), excs.get(0), desc.get(0)]
+  next [params.get(0, []), return_.get(0), excs.get(0, []), desc.get(0)]
+end
+classmethod = action(classmethod_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
+  body = bodies.get(0, [[], "", [], ""])
+  next ClassmethodNode.new(sig.value, body[0], body[1], body[2], body[3])
 end
 method = action(method_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
   body = bodies.get(0, [[], "", [], ""])
-  return MethodNode.new(sig.value, body[0], body[1], body[2], body[3])
+  next MethodNode.new(sig.value, body[0], body[1], body[2], body[3])
 end
-klass_body = action(indent_token * (base ^ (-1)) * (including ^ (-1)) * (text ^ (-1)) * (method ^ 0) * dedent_token) do [ignore1, base, including, text, methods, ignore2]
-  next [base.get(0), including.get(0), text.get(0, ""), methods]
+attribute = action(attribute_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, desc]
+  next AttributeNode.new(name.value, desc.get(0, []).get(1, ""))
+end
+prop = action(property_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, desc]
+  next PropertyNode.new(name.value, desc.get(0, []).get(1, ""))
+end
+attr = action(prop / method / classmethod / attribute) do [attr]
+  next attr
+end
+klass_body = action(indent_token * (base ^ (-1)) * (including ^ (-1)) * (text ^ (-1)) * (attr ^ 0) * dedent_token) do [ignore1, base, including, text, attrs, ignore2]
+  next [base.get(0), including.get(0), text.get(0, ""), attrs]
 end
 klass_body_opt = action(klass_body ^ (-1)) do [body]
   next body.get(0, ["", "", "", []])
@@ -406,6 +435,10 @@ class HtmlGenerator
   end
 
   def conv_inline_markup(s)
+    if s == nil
+      return ""
+    end
+
     t = ""
     typewriter? = false
     s.each_char() do [c]
@@ -418,6 +451,8 @@ class HtmlGenerator
           t << "<tt>"
           typewriter? = true
         end
+      elif c == "\n"
+        t << c << "<br/>\n"
       else
         t << self.escape_html(c)
       end
@@ -425,10 +460,18 @@ class HtmlGenerator
     return t
   end
 
-  def write_method(fp, meth)
-    fp.write(<<EOF.format(meth.sig))
+  def write_attribute(fp, attr, type)
+    name = self.escape_html(attr.name)
+    desc = self.conv_inline_markup(attr.desc)
+    fp.write(<<EOF.format(type, name, desc))
+<dl><dt>{0} <tt>{1}</tt></dt><dd><p>{2}</p></dd></dl>
+EOF
+  end
+
+  def write_method(fp, meth, type)
+    fp.write(<<EOF.format(type, meth.sig))
 <dl>
-  <dt>method <tt>{0}</tt></dt>
+  <dt>{0} <tt>{1}</tt></dt>
   <dd>
     <table><tbody>
       <tr>
@@ -441,7 +484,7 @@ EOF
       name = self.escape_html(param.name)
       desc = self.conv_inline_markup(param.desc)
       fp.write(<<EOF.format(name, desc))
-          <tr><td><i>{0}</i></td><td>--</td><td>{1}</td></tr>
+            <tr><td><i>{0}</i></td><td>--</td><td>{1}</td></tr>
 EOF
     end
     fp.write(<<EOF.format(self.conv_inline_markup(meth.return_)))
@@ -463,7 +506,7 @@ EOF
       type = self.escape_html(exc.type)
       desc = self.conv_inline_markup(exc.desc)
       fp.write(<<EOF.format(type, desc))
-          <tr><td><tt>{0}</tt></td><td>--</td><td>{1}</td></tr>
+            <tr><td><tt>{0}</tt></td><td>--</td><td>{1}</td></tr>
 EOF
     end
     fp.write(<<EOF.format(self.conv_inline_markup(meth.desc)))
@@ -515,8 +558,16 @@ EOF
     <p>{3}</p>
 EOF
 
-    node.methods.each() do [meth]
-      self.write_method(fp, meth)
+    node.attrs.each() do [attr]
+      if attr.kind_of?(ClassmethodNode)
+        self.write_method(fp, attr, "classmethod")
+      elif attr.kind_of?(MethodNode)
+        self.write_method(fp, attr, "method")
+      elif attr.kind_of?(AttributeNode)
+        self.write_attribute(fp, attr, "attribute")
+      elif attr.kind_of?(PropertyNode)
+        self.write_attribute(fp, attr, "property")
+      end
     end
 
     fp.write(<<EOF)
