@@ -18,7 +18,7 @@ COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 float.c frame.c callable.c gc.c get_args.c inst.c lexer.c \
 		 main.c misc.c module.c nil.c object.c package.c parser.y \
 		 property.c regexp.c repl.c set.c sprintf.c stacktrace.c \
-		 string.c symbol.c table.c thread.c value.c vm.c
+		 string.c symbol.c table.c thread.c value.c vm.c getopt.c
 DEFAULT_INCLUDES = -I.
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" @CFLAGS_COMMON@

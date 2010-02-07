@@ -1,9 +1,6 @@
 #include "yog/config.h"
 #include <ctype.h>
 #include <errno.h>
-#if defined(HAVE_GETOPT_H)
-#   include <getopt.h>
-#endif
 #include <setjmp.h>
 #if defined(__MINGW32__) || defined(_MSC_VER)
 #   include <pthread.h>
@@ -18,6 +15,7 @@
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/eval.h"
+#include "yog/getopt.h"
 #include "yog/package.h"
 #include "yog/repl.h"
 #include "yog/string.h"
