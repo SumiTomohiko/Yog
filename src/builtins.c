@@ -4,6 +4,7 @@
 #include "yog/class.h"
 #include "yog/classmethod.h"
 #include "yog/compile.h"
+#include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/eval.h"
@@ -211,12 +212,15 @@ argv2args(YogEnv* env, uint_t argc, char** argv)
     SAVE_LOCALS(env);
     YogVal args = YUNDEF;
     YogVal s = YUNDEF;
-    PUSH_LOCALS2(env, args, s);
+    YogVal enc = YUNDEF;
+    PUSH_LOCALS3(env, args, s, enc);
 
+    enc = YogEncoding_get_default(env);
     args = YogArray_new(env);
     uint_t i;
     for (i = 0; i < argc; i++) {
         s = YogString_from_str(env, argv[i]);
+        STRING_ENCODING(s) = enc;
         YogArray_push(env, args, s);
     }
 
