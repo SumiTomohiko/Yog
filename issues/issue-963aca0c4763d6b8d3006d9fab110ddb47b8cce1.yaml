@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add permalink to class/method/function.
+desc: ""
+type: :task
+component: doc
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-07 02:42:31.274831 Z
+references: []
+
+id: 963aca0c4763d6b8d3006d9fab110ddb47b8cce1
+log_events: 
+- - 2010-02-07 02:42:31.955485 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
