@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Incomplete blocks doesn't cause compile errors.
+desc: "[].each() do"
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-07 11:31:42.292049 Z
+references: []
+
+id: 7d4f487ffaf39ba31b9c524905413733770ce0f1
+log_events: 
+- - 2010-02-07 11:31:43.047119 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2010-02-07 15:22:20.664578 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - commented
+  - Same problem is in methods.

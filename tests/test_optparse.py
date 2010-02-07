@@ -77,6 +77,7 @@ opt.on_switch(\"x\", \"foo\") do
 end
 opt.on_switch(\"y\", \"bar\") do
   print(26)
+end
 opt.parse([\"-xy\"])
 """, "4226")
 
@@ -132,7 +133,7 @@ opt = optparse.OptionParser.new()
 opt.on_switch(\"x\", \"foo\") do
 end
 print(opt.parse([\"-x\", \"42\"]))
-""", "[42]")
+""", "[\"42\"]")
 
     def test_return10(self):
         self._test("""
@@ -142,7 +143,7 @@ opt = optparse.OptionParser.new()
 opt.on_switch(\"x\", \"foo\") do
 end
 print(opt.parse([\"42\"]))
-""", "[42]")
+""", "[\"42\"]")
 
     def test_return20(self):
         self._test("""
@@ -152,7 +153,7 @@ opt = optparse.OptionParser.new()
 opt.on_switch(\"x\", \"foo\") do
 end
 print(opt.parse([\"--\", \"42\"]))
-""", "[42]")
+""", "[\"42\"]")
 
     def test_return30(self):
         self._test("""
@@ -162,6 +163,6 @@ opt = optparse.OptionParser.new()
 opt.on_option(\"x\", \"foo\") do
 end
 print(opt.parse([\"--foo\", \"42\", \"26\"]))
-""", "[26]")
+""", "[\"26\"]")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
