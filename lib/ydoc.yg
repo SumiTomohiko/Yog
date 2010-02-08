@@ -1,4 +1,3 @@
-#!/usr/bin/env yog
 
 from peg import action, pattern
 
@@ -530,10 +529,34 @@ class HtmlGenerator
 EOF
   end
 
+  def make_param(param)
+    if (pos = param.find("=")) < 0
+      return "<i>{0}</i>".format(param)
+    end
+    name = param.slice(0, pos)
+    expr = param.slice(pos + 1)
+    return "<i>{0}</i><tt>={1}</tt>".format(name, expr)
+  end
+
+  def make_method_signature(sig)
+    m = sig.match(/\A(.*)\((.*)\)\Z/)
+    s = "<tt>{0}(</tt>".format(m.group(1))
+
+    params = m.group(2).split(/\s*,\s*/)
+    s += self.make_param(params[0])
+    params.slice(1).each() do [param]
+      nonlocal s
+      s += "<tt>,</tt> " + self.make_param(param)
+    end
+
+    s += "<tt>)</tt>"
+    return s
+  end
+
   def write_method(ydoc, fp, meth, type)
-    fp.write(<<EOF.format(type, meth.sig))
+    fp.write(<<EOF.format(type, self.make_method_signature(meth.sig)))
 <dl>
-  <dt>{0} <tt>{1}</tt></dt>
+  <dt>{0} {1}</dt>
   <dd>
     <table><tbody>
       <tr>
