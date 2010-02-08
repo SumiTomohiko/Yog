@@ -573,7 +573,7 @@ EOF
 EOF
     end
     fp.write(<<EOF.format(self.conv_inline_markup(ydoc, meth.return_)))
-          </tbody</table>
+          </tbody></table>
         </td>
       </tr>
       <tr>
