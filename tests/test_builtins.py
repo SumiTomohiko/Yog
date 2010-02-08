@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from re import match
+from os.path import join
 from testcase import TestCase
 
 class TestPuts(TestCase):
@@ -74,5 +75,10 @@ foo = Foo.new()
 bar = foo.bar()
 bar()
 """, stdout=test_stdout)
+
+    def test_join_path0(self):
+        self._test("""
+print(join_path(\"foo\", \"bar\"))
+""", join("foo", "bar"))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -78,6 +78,40 @@ print_object(YogEnv* env, YogVal obj)
 }
 
 static YogVal
+join_path(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal head = YUNDEF;
+    YogVal tail = YUNDEF;
+    YogVal path = YUNDEF;
+    PUSH_LOCALS3(env, head, tail, path);
+    YogCArg params[] = { { "head", &head }, { "tail", &tail }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "join_path", params, args, kw);
+#define CHECK_TYPE(name, s)   do { \
+    if (!IS_PTR(s) || (BASIC_OBJ_TYPE(s) != TYPE_STRING)) { \
+        YogError_raise_TypeError(env, "%s must be String", name); \
+    } \
+} while (0)
+    CHECK_TYPE("head", head);
+    CHECK_TYPE("tail", tail);
+#undef CHECK_TYPE
+
+    uint_t size = YogString_size(env, head) + YogString_size(env, tail) + 1;
+    path = YogString_of_encoding(env, STRING_ENCODING(head));
+    YogString_add(env, path, head);
+    const char* sep;
+#if defined(_MSC_VER)
+    sep = "\\";
+#else
+    sep = "/";
+#endif
+    YogString_add_cstr(env, path, sep);
+    YogString_add(env, path, tail);
+
+    RETURN(env, path);
+}
+
+static YogVal
 print(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -270,15 +304,16 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     YogPackage_define_function(env, builtins, name, f); \
 } while (0)
     DEFINE_FUNCTION("classmethod", classmethod);
+    DEFINE_FUNCTION("disable_gc_stress", disable_gc_stress);
+    DEFINE_FUNCTION("enable_gc_stress", enable_gc_stress);
     DEFINE_FUNCTION("get_current_thread", get_current_thread);
     DEFINE_FUNCTION("import_package", import_package);
     DEFINE_FUNCTION("include_module", include_module);
+    DEFINE_FUNCTION("join_path", join_path);
     DEFINE_FUNCTION("print", print);
     DEFINE_FUNCTION("property", property);
     DEFINE_FUNCTION("puts", puts_);
     DEFINE_FUNCTION("raise_exception", raise_exception);
-    DEFINE_FUNCTION("enable_gc_stress", enable_gc_stress);
-    DEFINE_FUNCTION("disable_gc_stress", disable_gc_stress);
 #undef DEFINE_FUNCTION
 
 #define REGISTER_CLASS(c)   do { \
