@@ -620,7 +620,7 @@ get_at(YogEnv* env, YogVal self, int_t offset)
     char* p = &STRING_CSTR(self)[offset];
     uint_t size = YogEncoding_mbc_size(env, STRING_ENCODING(self), p);
 
-    c = YogString_new(env);
+    c = YogString_of_encoding(env, STRING_ENCODING(self));
     uint_t i;
     for (i = 0; i < size; i++) {
         YogString_push(env, c, STRING_CSTR(self)[offset + i]);

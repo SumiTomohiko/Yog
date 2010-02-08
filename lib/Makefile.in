@@ -3,7 +3,7 @@ prefix = @prefix@
 VERSION = @PACKAGE_VERSION@
 DIR = $(prefix)/lib/yog/$(VERSION)
 
-PKGS = hq9plus.yg peg.yg
+PKGS = hq9plus.yg optparse.yg peg.yg
 
 install:
 	mkdir -p $(DIR)
