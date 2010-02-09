@@ -460,6 +460,14 @@ class Generator
   def make_link(ydoc, text, url)
   end
 
+  def conv_char(c)
+    return c
+  end
+
+  def make_newline()
+    return "\n"
+  end
+
   def conv_inline_markup(ydoc, s)
     if s == nil
       return ""
@@ -474,12 +482,12 @@ class Generator
         i += 1
         body = ""
         while s[i] != "+"
-          body << self.escape_html(s[i])
+          body << self.conv_char(s[i])
           i += 1
         end
         t << self.make_typewriter(body)
       elif s[i] == "\n"
-        t << "<br/>\n"
+        t << self.make_newline()
       elif s[i] == "{"
         i += 1
         link = ""
@@ -499,7 +507,7 @@ class Generator
         t << self.make_link(ydoc, link, url)
         link = ""
       else
-        t << self.escape_html(s[i])
+        t << self.conv_char(s[i])
       end
       i += 1
     end
@@ -674,6 +682,14 @@ class HtmlGenerator > Generator
       t << tbl.get(c, c)
     end
     return t
+  end
+
+  def conv_char(c)
+    return self.escape_html(c)
+  end
+
+  def make_newline()
+    return "<br/>\n"
   end
 
   def make_typewriter(s)
@@ -860,17 +876,7 @@ EOF
     <p>{3}</p>
 EOF
 
-    node.attrs.each() do [attr]
-      if attr.kind_of?(ClassmethodNode)
-        self.write_method(ydoc, attr, "classmethod")
-      elif attr.kind_of?(MethodNode)
-        self.write_method(ydoc, attr, "method")
-      elif attr.kind_of?(AttributeNode)
-        self.write_attribute(ydoc, attr, "attribute")
-      elif attr.kind_of?(PropertyNode)
-        self.write_attribute(ydoc, attr, "property")
-      end
-    end
+    super(ydoc, node)
 
     self.body << <<EOF
   </dd>
@@ -1080,6 +1086,7 @@ class Ydoc
       nodes = File.open(src) do [fp]
         next Parser.new().parse(fp)
       end
+      # TODO: Assume output format is only html.
       html = src.gsub(".ydoc", ".html")
       File.open(join_path(self.destdir, html), "w") do [fp]
         fp.write(HtmlGenerator.new().generate(self, nodes))

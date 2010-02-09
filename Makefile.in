@@ -57,7 +57,7 @@ maintainer-clean:
 	rm -f Makefile
 
 doc:
-	(cd doc && make)
+	cd doc && make
 
 proto:
 	$(PYTHON) tools/update_prototype.py
