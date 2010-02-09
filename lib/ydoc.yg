@@ -454,6 +454,12 @@ class Parser
 end
 
 class HtmlGenerator
+  def init()
+    self.header = ""
+    self.body = ""
+    self.title = nil
+  end
+
   def escape_html(s)
     t = ""
     s.each_char() do [c]
@@ -521,10 +527,10 @@ class HtmlGenerator
     return t
   end
 
-  def write_attribute(ydoc, fp, attr, type)
+  def write_attribute(ydoc, attr, type)
     name = self.escape_html(attr.name)
     desc = self.conv_inline_markup(ydoc, attr.desc)
-    fp.write(<<EOF.format(type, name, desc))
+    self.body << <<EOF.format(type, name, desc)
 <dl><dt>{0} <tt>{1}</tt></dt><dd><p>{2}</p></dd></dl>
 EOF
   end
@@ -553,8 +559,8 @@ EOF
     return s
   end
 
-  def write_method(ydoc, fp, meth, type)
-    fp.write(<<EOF.format(type, self.make_method_signature(meth.sig)))
+  def write_method(ydoc, meth, type)
+    self.body << <<EOF.format(type, self.make_method_signature(meth.sig))
 <dl>
   <dt>{0} {1}</dt>
   <dd>
@@ -568,11 +574,11 @@ EOF
     meth.params.each() do [param]
       name = self.escape_html(param.name)
       desc = self.conv_inline_markup(ydoc, param.desc)
-      fp.write(<<EOF.format(name, desc))
+      self.body << <<EOF.format(name, desc)
             <tr><td><i>{0}</i></td><td>--</td><td>{1}</td></tr>
 EOF
     end
-    fp.write(<<EOF.format(self.conv_inline_markup(ydoc, meth.return_)))
+    self.body << <<EOF.format(self.conv_inline_markup(ydoc, meth.return_))
           </tbody></table>
         </td>
       </tr>
@@ -590,26 +596,26 @@ EOF
     meth.excs.each() do [exc]
       type = self.escape_html(exc.type)
       desc = self.conv_inline_markup(ydoc, exc.desc)
-      fp.write(<<EOF.format(type, desc))
+      self.body << <<EOF.format(type, desc)
             <tr><td><tt>{0}</tt></td><td>--</td><td>{1}</td></tr>
 EOF
     end
-    fp.write(<<EOF)
+    self.body << <<EOF
           </tbody></table>
         </td>
       </tr>
     </tbody></table>
     <p>
 EOF
-    self.write_markup(ydoc, fp, meth.desc)
-    fp.write(<<EOF)
+    self.write_markup(ydoc, meth.desc)
+    self.body << <<EOF
     </p>
   </dd>
 </dl>
 EOF
   end
 
-  def write_class(ydoc, fp, node)
+  def write_class(ydoc, node)
     name = self.conv_inline_markup(ydoc, node.name)
     base = self.conv_inline_markup(ydoc, node.base)
 
@@ -630,7 +636,7 @@ EOF
       including = ""
     end
 
-    fp.write(<<EOF.format(name, base, including, self.conv_inline_markup(ydoc, node.desc)))
+    self.body << <<EOF.format(name, base, including, self.conv_inline_markup(ydoc, node.desc))
 <dl>
   <dt>class <tt>{0}</tt></dt>
   <dd>
@@ -649,58 +655,79 @@ EOF
 
     node.attrs.each() do [attr]
       if attr.kind_of?(ClassmethodNode)
-        self.write_method(ydoc, fp, attr, "classmethod")
+        self.write_method(ydoc, attr, "classmethod")
       elif attr.kind_of?(MethodNode)
-        self.write_method(ydoc, fp, attr, "method")
+        self.write_method(ydoc, attr, "method")
       elif attr.kind_of?(AttributeNode)
-        self.write_attribute(ydoc, fp, attr, "attribute")
+        self.write_attribute(ydoc, attr, "attribute")
       elif attr.kind_of?(PropertyNode)
-        self.write_attribute(ydoc, fp, attr, "property")
+        self.write_attribute(ydoc, attr, "property")
       end
     end
 
-    fp.write(<<EOF)
+    self.body << <<EOF
   </dd>
 </dl>
 EOF
 
   end
 
-  def write_text(ydoc, fp, s)
-    fp.write(self.conv_inline_markup(ydoc, s))
+  def write_text(ydoc, s)
+    self.body << self.conv_inline_markup(ydoc, s)
   end
 
-  def write_title(ydoc, fp, level, title)
-    fp.write(<<EOF.format(level + 1, self.conv_inline_markup(ydoc, title)))
+  def conv_inline_markup_to_plain_text(ydoc, s)
+    t = ""
+    i = 0
+    while i < s.size
+      if s[i] == "+"
+      else
+        t << s[i]
+      end
+      i += 1
+    end
+    return t
+  end
+
+  def write_title(ydoc, level, title)
+    self.body << <<EOF.format(level + 1, self.conv_inline_markup(ydoc, title))
 <h{0}>{1}</h{0}>
 EOF
+
+    if self.title != nil
+      return
+    end
+    self.header << <<EOF.format(self.conv_inline_markup_to_plain_text(ydoc, title))
+<title>{0}</title>
+EOF
+    self.title = title
   end
 
-  def start_pretty(fp)
-    fp.write("<pre>")
+  def start_pretty()
+    self.body << "<pre>"
   end
 
-  def end_pretty(fp)
-    fp.write("</pre>")
+  def end_pretty()
+    self.body << "</pre>"
   end
 
-  def write_pretty(fp, s)
-    fp.write(self.escape_html(s))
+  def write_pretty(s)
+    self.body << self.escape_html(s)
   end
 
-  def start_list(fp)
-    fp.write("<ul>")
+  def start_list()
+    self.body << "<ul>"
   end
 
-  def end_list(fp)
-    fp.write("</ul>")
+  def end_list()
+    self.body << "</ul>"
   end
 
-  def write_list_item(ydoc, fp, s)
-    fp.write("<li>{0}</li>".format(self.conv_inline_markup(ydoc, s)))
+  def write_list_item(ydoc, s)
+    self.body << "<li>{0}</li>".format(self.conv_inline_markup(ydoc, s))
   end
 
-  def write_markup(ydoc, fp, s)
+  def write_markup(ydoc, s)
     if s == nil
       return
     end
@@ -710,44 +737,44 @@ EOF
     while i < lines.size
       line = lines[i]
       if m = (line =~ /\A(=+)/)
-        self.write_title(ydoc, fp, m.end() - 1, line.slice(m.end()).trim())
+        self.write_title(ydoc, m.end() - 1, line.slice(m.end()).trim())
       elif m = (line =~ /\A\s+/)
         margin = m.end()
 
-        self.start_pretty(fp)
+        self.start_pretty()
         while i < lines.size
           line = lines[i]
           if !(line =~ /\A\s+/)
             break
           end
-          self.write_pretty(fp, line.slice(margin) + "\n")
+          self.write_pretty(line.slice(margin) + "\n")
           i += 1
         end
-        self.end_pretty(fp)
+        self.end_pretty()
         next
       elif m = (line =~ /\A\+\s+/)
         margin_stack = [0]
 
-        self.start_list(fp)
+        self.start_list()
         while i < lines.size
           line = lines[i]
           if m = (line =~ /\A(\s*\+)\s+/)
             margin = m.end() - 1
             if margin_stack[-1] < margin
               margin_stack << margin
-              self.start_list(fp)
+              self.start_list()
             elif margin < margin_stack[-1]
               while 0 < j
-                self.end_list(fp)
+                self.end_list()
                 margin_stack.pop()
                 if margin_stack[-1] <= margin
                   break
                 end
               end
             end
-            self.write_list_item(ydoc, fp, line.slice(m.end()))
+            self.write_list_item(ydoc, line.slice(m.end()))
           elif !(line =~ /\A[^\s]/)
-            self.write_text(ydoc, fp, line.trim() + "\n")
+            self.write_text(ydoc, line.trim() + "\n")
           else
             break
           end
@@ -755,32 +782,22 @@ EOF
         end
         while 0 < margin_stack.size
           margin_stack.pop()
-          self.end_list(fp)
+          self.end_list()
         end
         next
       else
-        self.write_text(ydoc, fp, line + "\n")
+        self.write_text(ydoc, line + "\n")
       end
       i += 1
     end
   end
 
-  def start(fp)
-    fp.write(<<EOF)
-<html>
-<body>
-EOF
+  def end()
+    return "<html><head>" + self.header + "</head><body>" + self.body + "</body>"
   end
 
-  def end(fp)
-    fp.write(<<EOF)
-</body>
-</html>
-EOF
-  end
-
-  def write_data(ydoc, fp, node)
-    fp.write(<<EOF.format(node.name, node.type))
+  def write_data(ydoc, node)
+    self.body << <<EOF.format(node.name, node.type)
 <dl>
   <dt>data <tt>{0}</tt></dt>
   <dd>
@@ -789,30 +806,33 @@ EOF
     </tr></tbody></table>
     <p>
 EOF
-    self.write_markup(ydoc, fp, node.desc)
-    fp.write(<<EOF)
+    self.write_markup(ydoc, node.desc)
+    self.body << <<EOF
     </p>
   </dd>
 </dl>
 EOF
   end
 
-  def write(ydoc, fp, nodes)
-    self.start(fp)
+  def start()
+  end
+
+  def generate(ydoc, nodes)
+    self.start()
     nodes.each() do [node]
       if node.kind_of?(ClassNode)
-        self.write_class(ydoc, fp, node)
+        self.write_class(ydoc, node)
       elif node.kind_of?(String)
-        self.write_markup(ydoc, fp, node)
+        self.write_markup(ydoc, node)
       elif node.kind_of?(FunctionNode)
-        self.write_method(ydoc, fp, node, "function")
+        self.write_method(ydoc, node, "function")
       elif node.kind_of?(DataNode)
-        self.write_data(ydoc, fp, node)
+        self.write_data(ydoc, node)
       else
         raise Exception.new("unknown node: {0}".format(node))
       end
     end
-    self.end(fp)
+    return self.end()
   end
 end
 
@@ -851,7 +871,7 @@ class Ydoc
       end
       html = src.gsub(".ydoc", ".html")
       File.open(join_path(self.destdir, html), "w") do [fp]
-        HtmlGenerator.new().write(self, fp, nodes)
+        fp.write(HtmlGenerator.new().generate(self, nodes))
       end
     end
   end
