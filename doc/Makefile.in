@@ -2,11 +2,12 @@
 ROOT_DIR = ..
 YOG = $(ROOT_DIR)/src/yog
 DEST_DIR = html
+VERSION = @VERSION@
 
 .PHONY: all
 
 all:
-	$(YOG) makedoc.yg --destdir=$(DEST_DIR) index.ydoc
+	$(YOG) makedoc.yg --title="Yog ver.$(VERSION) documentation" --destdir=$(DEST_DIR) index.ydoc
 
 clean:
 	rm -rf $(DEST_DIR)

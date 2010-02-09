@@ -453,7 +453,214 @@ class Parser
   end
 end
 
-class HtmlGenerator
+class Generator
+  def make_typewriter(s)
+  end
+
+  def make_link(ydoc, text, url)
+  end
+
+  def conv_inline_markup(ydoc, s)
+    if s == nil
+      return ""
+    end
+    s = s.rtrim()
+
+    i = 0
+    t = ""
+    link = ""
+    while i < s.size
+      if s[i] == "+"
+        i += 1
+        body = ""
+        while s[i] != "+"
+          body << self.escape_html(s[i])
+          i += 1
+        end
+        t << self.make_typewriter(body)
+      elif s[i] == "\n"
+        t << "<br/>\n"
+      elif s[i] == "{"
+        i += 1
+        link = ""
+        while s[i] != "}"
+          link << s[i]
+          i += 1
+        end
+        i += 1
+      elif s[i] == "["
+        i += 1
+        url = ""
+        while s[i] != "]"
+          url << s[i]
+          i += 1
+        end
+        i += 1
+        t << self.make_link(ydoc, link, url)
+        link = ""
+      else
+        t << self.escape_html(s[i])
+      end
+      i += 1
+    end
+
+    return t
+  end
+
+  def write_attribute(ydoc, attr, type)
+  end
+
+  def make_param(param)
+  end
+
+  def write_method(ydoc, meth, type)
+  end
+
+  def write_class(ydoc, node)
+    node.attrs.each() do [attr]
+      if attr.kind_of?(ClassmethodNode)
+        self.write_method(ydoc, attr, "classmethod")
+      elif attr.kind_of?(MethodNode)
+        self.write_method(ydoc, attr, "method")
+      elif attr.kind_of?(AttributeNode)
+        self.write_attribute(ydoc, attr, "attribute")
+      elif attr.kind_of?(PropertyNode)
+        self.write_attribute(ydoc, attr, "property")
+      end
+    end
+  end
+
+  def write_text(ydoc, s)
+  end
+
+  def conv_inline_markup_to_plain_text(ydoc, s)
+    t = ""
+    i = 0
+    while i < s.size
+      if s[i] == "+"
+      else
+        t << s[i]
+      end
+      i += 1
+    end
+    return t
+  end
+
+  def write_title(ydoc, level, title)
+  end
+
+  def start_pretty()
+  end
+
+  def end_pretty()
+  end
+
+  def write_pretty(s)
+  end
+
+  def start_list()
+  end
+
+  def end_list()
+  end
+
+  def write_list_item(ydoc, s)
+  end
+
+  def write_markup(ydoc, s)
+    if s == nil
+      return
+    end
+
+    lines = s.split("\n")
+    i = 0
+    while i < lines.size
+      line = lines[i]
+      if m = (line =~ /\A(=+)/)
+        self.write_title(ydoc, m.end() - 1, line.slice(m.end()).trim())
+      elif m = (line =~ /\A\s+/)
+        margin = m.end()
+
+        self.start_pretty()
+        while i < lines.size
+          line = lines[i]
+          if !(line =~ /\A\s+/)
+            break
+          end
+          self.write_pretty(line.slice(margin) + "\n")
+          i += 1
+        end
+        self.end_pretty()
+        next
+      elif m = (line =~ /\A\+\s+/)
+        margin_stack = [0]
+
+        self.start_list()
+        while i < lines.size
+          line = lines[i]
+          if m = (line =~ /\A(\s*\+)\s+/)
+            margin = m.end() - 1
+            if margin_stack[-1] < margin
+              margin_stack << margin
+              self.start_list()
+            elif margin < margin_stack[-1]
+              while 0 < j
+                self.end_list()
+                margin_stack.pop()
+                if margin_stack[-1] <= margin
+                  break
+                end
+              end
+            end
+            self.write_list_item(ydoc, line.slice(m.end()))
+          elif !(line =~ /\A[^\s]/)
+            self.write_text(ydoc, line.trim() + "\n")
+          else
+            break
+          end
+          i += 1
+        end
+        while 0 < margin_stack.size
+          margin_stack.pop()
+          self.end_list()
+        end
+        next
+      else
+        self.write_text(ydoc, line + "\n")
+      end
+      i += 1
+    end
+  end
+
+  def end()
+  end
+
+  def write_data(ydoc, node)
+  end
+
+  def start()
+  end
+
+  def generate(ydoc, nodes)
+    self.start()
+    nodes.each() do [node]
+      if node.kind_of?(ClassNode)
+        self.write_class(ydoc, node)
+      elif node.kind_of?(String)
+        self.write_markup(ydoc, node)
+      elif node.kind_of?(FunctionNode)
+        self.write_method(ydoc, node, "function")
+      elif node.kind_of?(DataNode)
+        self.write_data(ydoc, node)
+      else
+        raise Exception.new("unknown node: {0}".format(node))
+      end
+    end
+    return self.end()
+  end
+end
+
+class HtmlGenerator > Generator
   def init()
     self.header = ""
     self.body = ""
@@ -469,11 +676,11 @@ class HtmlGenerator
     return t
   end
 
-  def conv_typewriter(s)
+  def make_typewriter(s)
     return "<tt>" + self.escape_html(s) + "</tt>"
   end
 
-  def conv_link(ydoc, text, url)
+  def make_link(ydoc, text, url)
     if text == ""
       text = ydoc.get_doc_title(url)
     end
@@ -497,7 +704,7 @@ class HtmlGenerator
           body << self.escape_html(s[i])
           i += 1
         end
-        t << self.conv_typewriter(body)
+        t << self.make_typewriter(body)
       elif s[i] == "\n"
         t << "<br/>\n"
       elif s[i] == "{"
@@ -516,7 +723,7 @@ class HtmlGenerator
           i += 1
         end
         i += 1
-        t << self.conv_link(ydoc, link, url)
+        t << self.make_link(ydoc, link, url)
         link = ""
       else
         t << self.escape_html(s[i])
@@ -569,7 +776,7 @@ EOF
         <th align="left">Parameter(s)</th>
         <th>:</th>
         <td>
-          <table><tbody>
+          <table border="0"><tbody>
 EOF
     meth.params.each() do [param]
       name = self.escape_html(param.name)
@@ -697,8 +904,8 @@ EOF
     if self.title != nil
       return
     end
-    self.header << <<EOF.format(self.conv_inline_markup_to_plain_text(ydoc, title))
-<title>{0}</title>
+    self.header << <<EOF.format(ydoc.title, self.conv_inline_markup_to_plain_text(ydoc, title))
+<title>{0}&nbsp;-&nbsp;{1}</title>
 EOF
     self.title = title
   end
@@ -840,7 +1047,8 @@ EOF
 end
 
 class Ydoc
-  def init(destdir, src)
+  def init(title, destdir, src)
+    self.title = title
     self.destdir = destdir
     self.path2title = {}
     self.srcs = [src]
@@ -880,8 +1088,8 @@ class Ydoc
   end
 end
 
-def run(destdir, src)
-  Ydoc.new(destdir, src).run()
+def run(title, destdir, src)
+  Ydoc.new(title, destdir, src).run()
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog
