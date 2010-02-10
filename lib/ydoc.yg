@@ -950,7 +950,7 @@ class Ydoc
     return path
   end
 
-  def run(ext)
+  def run(ext, generator)
     while !self.srcs.empty?
       src = self.srcs.shift()
       nodes = File.open(src) do [fp]
@@ -958,14 +958,14 @@ class Ydoc
       end
       dest = src.gsub(".ydoc", ext)
       File.open(join_path(self.destdir, dest), "w") do [fp]
-        fp.write(HtmlGenerator.new().generate(self, nodes))
+        fp.write(generator.new().generate(self, nodes))
       end
     end
   end
 end
 
-def run(title, destdir, src, ext=".html")
-  Ydoc.new(title, destdir, src).run(ext)
+def run(title, destdir, src, ext=".html", generator=HtmlGenerator)
+  Ydoc.new(title, destdir, src).run(ext, generator)
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog
