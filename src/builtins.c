@@ -96,16 +96,9 @@ join_path(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     CHECK_TYPE("tail", tail);
 #undef CHECK_TYPE
 
-    uint_t size = YogString_size(env, head) + YogString_size(env, tail) + 1;
     path = YogString_of_encoding(env, STRING_ENCODING(head));
     YogString_add(env, path, head);
-    const char* sep;
-#if defined(_MSC_VER)
-    sep = "\\";
-#else
-    sep = "/";
-#endif
-    YogString_add_cstr(env, path, sep);
+    YogString_add(env, path, env->vm->path_separator);
     YogString_add(env, path, tail);
 
     RETURN(env, path);
@@ -293,6 +286,30 @@ get_current_thread(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw,
     RETURN(env, thread);
 }
 
+static void
+set_path_separator(YogEnv* env, YogVal builtins)
+{
+    SAVE_ARG(env, builtins);
+    YogVal s = YUNDEF;
+    YogVal enc = YUNDEF;
+    PUSH_LOCALS2(env, s, enc);
+
+    const char* sep;
+#if defined(_WIN32)
+    sep = "\\";
+#else
+    sep = "/";
+#endif
+    s = YogString_from_str(env, sep);
+    enc = YogEncoding_get_default(env);
+    STRING_ENCODING(s) = enc;
+
+    YogObj_set_attr(env, builtins, "PATH_SEPARATOR", s);
+    env->vm->path_separator = s;
+
+    RETURN_VOID(env);
+}
+
 void
 YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
 {
@@ -338,6 +355,8 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
 
     args = argv2args(env, argc, argv);
     YogObj_set_attr(env, builtins, "ARGV",  args);
+
+    set_path_separator(env, builtins);
 
 #if !defined(MINIYOG)
     const char* src = 

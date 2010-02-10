@@ -446,6 +446,8 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(finish_code);
     KEEP(main_thread);
     KEEP(running_threads);
+
+    KEEP(path_separator);
 #undef KEEP
 
     YogIndirectPointer* indirect_ptr = vm->indirect_ptr;
@@ -560,7 +562,6 @@ YogVM_init(YogVM* vm)
     INIT(running_threads);
     vm->next_thread_id = 0;
     pthread_mutex_init(&vm->next_thread_id_lock, NULL);
-#undef INIT
 
     pthread_mutexattr_t global_interp_lock_attr;
     pthread_mutexattr_init(&global_interp_lock_attr);
@@ -594,6 +595,8 @@ YogVM_init(YogVM* vm)
     pthread_mutex_init(&vm->indirect_ptr_lock, NULL);
 
     vm->debug_import = FALSE;
+    INIT(path_separator);
+#undef INIT
 }
 
 void

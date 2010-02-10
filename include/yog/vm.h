@@ -110,6 +110,7 @@ struct YogVM {
     pthread_mutex_t indirect_ptr_lock;
 
     BOOL debug_import;
+    YogVal path_separator;
 };
 
 typedef struct YogVM YogVM;

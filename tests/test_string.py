@@ -752,4 +752,49 @@ IndexError: string index out of range
 \"\".get(0)
 """, stderr=test_stderr)
 
+    def test_rfind0(self):
+        self._test("""
+print(\"foo\".rfind(\"o\"))
+""", "2")
+
+    def test_rfind10(self):
+        self._test("""
+print(\"foo\".rfind(\"bar\"))
+""", "-1")
+
+    def test_rfind20(self):
+        self._test("""
+print(\"foo\".rfind(\"barbazquux\"))
+""", "-1")
+
+    def test_rfind30(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", 0))
+""", "-1")
+
+    def test_rfind40(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", 1))
+""", "1")
+
+    def test_rfind50(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", 2))
+""", "2")
+
+    def test_rfind60(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", 3))
+""", "2")
+
+    def test_rfind70(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", -1))
+""", "2")
+
+    def test_rfind80(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", -4))
+""", "-1")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

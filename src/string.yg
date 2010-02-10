@@ -59,6 +59,30 @@ def trim()
   return self.ltrim().rtrim()
 end
 
+def rfind(substr, start_pos=-1)
+  NOT_FOUND = -1
+
+  if start_pos < - self.size
+    return self.rfind(substr, 0)
+  end
+  if start_pos < 0
+    return self.rfind(substr, self.size + start_pos)
+  end
+  if start_pos < substr.size
+    return NOT_FOUND
+  end
+
+  i = start_pos - substr.size + 1
+  while 0 < i
+    if self.slice(i, substr.size) == substr
+      return i
+    end
+    i -= 1
+  end
+
+  return NOT_FOUND
+end
+
 def find(substr, start_pos=0)
   if start_pos < 0
     start_pos = self.size + start_pos
@@ -67,9 +91,9 @@ def find(substr, start_pos=0)
     end
   end
 
-  NotFound = -1
+  NOT_FOUND = -1
   if self.size < substr.size
-    return NotFound
+    return NOT_FOUND
   end
 
   i = start_pos
@@ -84,10 +108,11 @@ def find(substr, start_pos=0)
     if j == substr.size
       return i
     end
+
     i += 1
   end
 
-  return NotFound
+  return NOT_FOUND
 end
 
 def format(*args, **kw)
