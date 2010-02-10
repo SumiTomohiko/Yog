@@ -1,0 +1,111 @@
+
+import ydoc
+
+class Generator > ydoc.Generator
+  def make_typewriter(s)
+    return "+{0}+".format(s)
+  end
+
+  def make_link(ydoc, text, url)
+    return "{{{0}}}[{1}]".format(text, url)
+  end
+
+  def make_newline()
+    return "\n"
+  end
+
+  def write_attribute(ydoc, attr, type)
+    self.s << <<EOF.format(attr.name, type, attr.desc)
+attribute: {0}
+  type: {1}
+  {2}
+EOF
+  end
+
+  def make_param(param)
+    return param
+  end
+
+  def write_method(ydoc, meth, type)
+    self.s << <<EOF.format(meth.name)
+  method: {0}
+    parameters:
+EOF
+    meth.params.each() do [param]
+      self.s << <<EOF.format(param.name, param.desc)
+      {0}: {1}
+EOF
+    end
+    self.s << <<EOF.format(meth.return_)
+    return: {0}
+    exceptions:
+EOF
+    meth.excs.each() do [exc]
+      self.s << <<EOF.format(exc.type, exc.desc)
+      {0}: {1}
+EOF
+    end
+    self.s << meth.desc
+  end
+
+  def write_class(ydoc, node)
+    self.s << <<EOF.format(node.name, node.base, node.including, node.desc)
+class: {0}
+  base: {1}
+  including: {2}
+  {3}
+EOF
+    super(ydoc, node)
+  end
+
+  def write_text(ydoc, s)
+    self.s << s
+  end
+
+  def write_title(ydoc, level, title)
+    self.s << "{0} {1}".format("=" * level, title)
+  end
+
+  def start_pretty()
+  end
+
+  def end_pretty()
+  end
+
+  def write_pretty(s)
+    self.s << s
+  end
+
+  def start_list()
+    self.list_level += 1
+  end
+
+  def end_list()
+    self.list_level -= 1
+  end
+
+  def write_list_item(ydoc, s)
+    self.s << <<EOF.format("  " * self.list_level, s)
+{0}* {1}
+EOF
+  end
+
+  def end()
+    return self.s
+  end
+
+  def write_data(ydoc, node)
+    self.s << <<EOF.format(node.name, node.type, node.desc)
+data: {0}
+  type: {1}
+  {2}
+EOF
+  end
+
+  def start()
+    self.s = ""
+    self.list_level = 0
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
