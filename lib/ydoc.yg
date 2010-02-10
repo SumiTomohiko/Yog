@@ -703,53 +703,6 @@ class HtmlGenerator > Generator
     return "<a href=\"{0}\">{1}</a>".format(url.gsub(".ydoc", ".html"), self.conv_inline_markup(ydoc, text))
   end
 
-  def conv_inline_markup(ydoc, s)
-    if s == nil
-      return ""
-    end
-    s = s.rtrim()
-
-    i = 0
-    t = ""
-    link = ""
-    while i < s.size
-      if s[i] == "+"
-        i += 1
-        body = ""
-        while s[i] != "+"
-          body << self.escape_html(s[i])
-          i += 1
-        end
-        t << self.make_typewriter(body)
-      elif s[i] == "\n"
-        t << "<br/>\n"
-      elif s[i] == "{"
-        i += 1
-        link = ""
-        while s[i] != "}"
-          link << s[i]
-          i += 1
-        end
-        i += 1
-      elif s[i] == "["
-        i += 1
-        url = ""
-        while s[i] != "]"
-          url << s[i]
-          i += 1
-        end
-        i += 1
-        t << self.make_link(ydoc, link, url)
-        link = ""
-      else
-        t << self.escape_html(s[i])
-      end
-      i += 1
-    end
-
-    return t
-  end
-
   def write_attribute(ydoc, attr, type)
     name = self.escape_html(attr.name)
     desc = self.conv_inline_markup(ydoc, attr.desc)
@@ -940,71 +893,6 @@ EOF
     self.body << "<li>{0}</li>".format(self.conv_inline_markup(ydoc, s))
   end
 
-  def write_markup(ydoc, s)
-    if s == nil
-      return
-    end
-
-    lines = s.split("\n")
-    i = 0
-    while i < lines.size
-      line = lines[i]
-      if m = (line =~ /\A(=+)/)
-        self.write_title(ydoc, m.end() - 1, line.slice(m.end()).trim())
-      elif m = (line =~ /\A\s+/)
-        margin = m.end()
-
-        self.start_pretty()
-        while i < lines.size
-          line = lines[i]
-          if !(line =~ /\A\s+/)
-            break
-          end
-          self.write_pretty(line.slice(margin) + "\n")
-          i += 1
-        end
-        self.end_pretty()
-        next
-      elif m = (line =~ /\A\+\s+/)
-        margin_stack = [0]
-
-        self.start_list()
-        while i < lines.size
-          line = lines[i]
-          if m = (line =~ /\A(\s*\+)\s+/)
-            margin = m.end() - 1
-            if margin_stack[-1] < margin
-              margin_stack << margin
-              self.start_list()
-            elif margin < margin_stack[-1]
-              while 0 < j
-                self.end_list()
-                margin_stack.pop()
-                if margin_stack[-1] <= margin
-                  break
-                end
-              end
-            end
-            self.write_list_item(ydoc, line.slice(m.end()))
-          elif !(line =~ /\A[^\s]/)
-            self.write_text(ydoc, line.trim() + "\n")
-          else
-            break
-          end
-          i += 1
-        end
-        while 0 < margin_stack.size
-          margin_stack.pop()
-          self.end_list()
-        end
-        next
-      else
-        self.write_text(ydoc, line + "\n")
-      end
-      i += 1
-    end
-  end
-
   def end()
     return "<html><head>" + self.header + "</head><body>" + self.body + "</body>"
   end
@@ -1031,24 +919,6 @@ EOF
     self.header << <<EOF
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 EOF
-  end
-
-  def generate(ydoc, nodes)
-    self.start()
-    nodes.each() do [node]
-      if node.kind_of?(ClassNode)
-        self.write_class(ydoc, node)
-      elif node.kind_of?(String)
-        self.write_markup(ydoc, node)
-      elif node.kind_of?(FunctionNode)
-        self.write_method(ydoc, node, "function")
-      elif node.kind_of?(DataNode)
-        self.write_data(ydoc, node)
-      else
-        raise Exception.new("unknown node: {0}".format(node))
-      end
-    end
-    return self.end()
   end
 end
 
