@@ -928,6 +928,7 @@ class Ydoc
     self.destdir = destdir
     self.path2title = {}
     self.srcs = [src]
+    self.srcdir = dirname(src)
   end
 
   def get_doc_title(path)
@@ -957,6 +958,9 @@ class Ydoc
         next Parser.new().parse(fp)
       end
       dest = src.gsub(".ydoc", ext)
+      if dest.starts_with?("/")
+        dest = dest.slice(self.srcdir.size)
+      end
       File.open(join_path(self.destdir, dest), "w") do [fp]
         fp.write(generator.new().generate(self, nodes))
       end

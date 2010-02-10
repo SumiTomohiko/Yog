@@ -63,7 +63,7 @@ EOF
   end
 
   def write_title(ydoc, level, title)
-    self.s << "{0} {1}".format("=" * level, title)
+    self.s << "{0} {1}".format("=" * (level + 1), title)
   end
 
   def start_pretty()
