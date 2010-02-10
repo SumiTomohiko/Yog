@@ -950,23 +950,22 @@ class Ydoc
     return path
   end
 
-  def run()
+  def run(ext)
     while !self.srcs.empty?
       src = self.srcs.shift()
       nodes = File.open(src) do [fp]
         next Parser.new().parse(fp)
       end
-      # TODO: Assume output format is only html.
-      html = src.gsub(".ydoc", ".html")
-      File.open(join_path(self.destdir, html), "w") do [fp]
+      dest = src.gsub(".ydoc", ext)
+      File.open(join_path(self.destdir, dest), "w") do [fp]
         fp.write(HtmlGenerator.new().generate(self, nodes))
       end
     end
   end
 end
 
-def run(title, destdir, src)
-  Ydoc.new(title, destdir, src).run()
+def run(title, destdir, src, ext=".html")
+  Ydoc.new(title, destdir, src).run(ext)
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog
