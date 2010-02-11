@@ -588,6 +588,9 @@ class Generator
   def write_list_item(ydoc, s)
   end
 
+  def write_ordered_list_item(ydoc, s)
+  end
+
   def write_markup(ydoc, s)
     if s == nil
       return
@@ -626,8 +629,8 @@ class Generator
           line = lines[i]
           if m = (line =~ /\A(\s*)(\+|\*)\s+/)
             margin = m.end(1)
+            type = m.group(2)
             if list_stack[-1].margin < margin
-              type = m.group(2)
               list_stack << List.new(margin, type)
               if type == "*"
                 self.start_list()
@@ -644,7 +647,12 @@ class Generator
                 end
               end
             end
-            self.write_list_item(ydoc, line.slice(m.end()))
+            s = line.slice(m.end())
+            if type == "*"
+              self.write_list_item(ydoc, s)
+            else
+              self.write_ordered_list_item(ydoc, s)
+            end
           elif !(line =~ /\A[^\s]/)
             self.write_text(ydoc, line.rtrim() + "\n")
           else

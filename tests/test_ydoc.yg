@@ -98,6 +98,12 @@ EOF
 EOF
   end
 
+  def write_ordered_list_item(ydoc, s)
+    self.s << <<EOF.format("  " * (self.list_level - 1), s)
+{0}+ {1}
+EOF
+  end
+
   def end()
     return self.s
   end
