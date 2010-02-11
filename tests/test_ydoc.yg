@@ -84,8 +84,16 @@ EOF
     self.list_level -= 1
   end
 
+  def start_ordered_list()
+    self.list_level += 1
+  end
+
+  def end_ordered_list()
+    self.list_level -= 1
+  end
+
   def write_list_item(ydoc, s)
-    self.s << <<EOF.format("  " * self.list_level, s)
+    self.s << <<EOF.format("  " * (self.list_level - 1), s)
 {0}* {1}
 EOF
   end
