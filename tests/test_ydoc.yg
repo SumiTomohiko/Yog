@@ -27,8 +27,8 @@ EOF
   end
 
   def write_method(ydoc, meth, type)
-    self.s << <<EOF.format(meth.sig)
-  method: {0}
+    self.s << <<EOF.format(type, meth.sig)
+  {0}: {1}
     parameters:
 EOF
     meth.params.each() do [param]
