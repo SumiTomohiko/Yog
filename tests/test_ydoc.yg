@@ -27,7 +27,7 @@ EOF
   end
 
   def write_method(ydoc, meth, type)
-    self.s << <<EOF.format(meth.name)
+    self.s << <<EOF.format(meth.sig)
   method: {0}
     parameters:
 EOF
@@ -48,8 +48,19 @@ EOF
     self.s << meth.desc
   end
 
+  def conv_str(s)
+    if s == nil
+      return ""
+    end
+    return s
+  end
+
   def write_class(ydoc, node)
-    self.s << <<EOF.format(node.name, node.base, node.including, node.desc)
+    name = self.conv_str(node.name)
+    base = self.conv_str(node.base)
+    including = self.conv_str(node.including)
+    desc = self.conv_str(node.desc)
+    self.s << <<EOF.format(name, base, including, desc)
 class: {0}
   base: {1}
   including: {2}

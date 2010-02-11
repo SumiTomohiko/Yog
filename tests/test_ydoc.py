@@ -52,7 +52,11 @@ ydoc.run(\"test\", \"%(destdir)s\", \"%(index)s\", generator: Generator)
         finally:
             rmtree(tmpdir)
 
-        assert expected == actual
+        e = expected.rstrip().split("\n")
+        a = actual.rstrip().split("\n")
+        assert len(e) == len(a)
+        for i in range(len(e)):
+            assert e[i].rstrip() == a[i].rstrip()
 
     def test_title0(self):
         self.do_test("""
