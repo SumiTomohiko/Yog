@@ -15,10 +15,10 @@ class Generator > ydoc.Generator
   end
 
   def write_attribute(ydoc, attr, type)
-    self.s << <<EOF.format(attr.name, type, attr.desc)
-attribute: {0}
-  type: {1}
-  {2}
+    self.s << <<EOF.format(type, attr.name, attr.type, attr.desc)
+  {0}: {1}
+    type: {2}
+    {3}
 EOF
   end
 

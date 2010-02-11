@@ -123,21 +123,20 @@ class Block > Token
 end
 
 KEY2TOKEN = {
-  "class" => Klass,
+  "attribute" => Attribute,
   "base" => Base,
+  "block" => Block,
+  "class" => Klass,
+  "classmethod" => Classmethod,
+  "data" => Data,
+  "exceptions" => Exceptions,
+  "function" => Function,
   "including" => Including,
   "method" => Method,
   "parameters" => Parameters,
-  "return" => Return,
-  "attribute" => Attribute,
-  "classmethod" => Classmethod,
-  "function" => Function,
   "property" => Property,
-  "data" => Data,
-  "type" => Type,
   "return" => Return,
-  "exceptions" => Exceptions,
-  "block" => Block }
+  "type" => Type }
 
 class Lexer
   def init(fp)
@@ -281,8 +280,9 @@ class ClassNode > Node
 end
 
 class AttributeNode > Node
-  def init(name, desc)
+  def init(name, type, desc)
     self.name = name
+    self.type = type
     self.desc = desc
   end
 end
@@ -417,11 +417,33 @@ method = action(method_token * colon_token * text_token * newline_token * (metho
   body = bodies.get(0, [[], "", [], "", ""])
   next MethodNode.new(sig.value, body[0], body[1], body[2], body[3], body[4])
 end
-attribute = action(attribute_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, desc]
-  next AttributeNode.new(name.value, desc.get(0, []).get(1, ""))
+attribute = action(attribute_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, body_opt]
+  body = body_opt.get(0, [])
+  if body.get(3) == nil
+    type = ""
+  else
+    type = body[3].value
+  end
+  if body.get(5) == nil
+    desc = ""
+  else
+    desc = body[5].get(0, "")
+  end
+  next AttributeNode.new(name.value, type, desc)
 end
-prop = action(property_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, desc]
-  next PropertyNode.new(name.value, desc.get(0, []).get(1, ""))
+prop = action(property_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, body_opt]
+  body = body_opt.get(0, [])
+  if body.get(3) == nil
+    type = ""
+  else
+    type = body[3].value
+  end
+  if body.get(5) == nil
+    desc = ""
+  else
+    desc = body[5].get(0, "")
+  end
+  next PropertyNode.new(name.value, type, desc)
 end
 data = action(data_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * text * dedent_token) ^ (-1))) do [ignore1, ignroe2, name, ignore3, bodies]
   body = bodies.get(0, [])
@@ -546,10 +568,10 @@ class Generator
         self.write_method(ydoc, attr, "classmethod")
       elif attr.kind_of?(MethodNode)
         self.write_method(ydoc, attr, "method")
-      elif attr.kind_of?(AttributeNode)
-        self.write_attribute(ydoc, attr, "attribute")
       elif attr.kind_of?(PropertyNode)
         self.write_attribute(ydoc, attr, "property")
+      elif attr.kind_of?(AttributeNode)
+        self.write_attribute(ydoc, attr, "attribute")
       end
     end
   end

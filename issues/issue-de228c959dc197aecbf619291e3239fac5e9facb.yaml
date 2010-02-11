@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add IndexError to builtins package
+desc: ""
+type: :task
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-11 14:34:01.908910 Z
+references: []
+
+id: de228c959dc197aecbf619291e3239fac5e9facb
+log_events: 
+- - 2010-02-11 14:34:02.369357 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
