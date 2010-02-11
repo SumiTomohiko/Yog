@@ -29,7 +29,7 @@ class TestYdoc(TestCase):
         self._test("""
 from test_ydoc import Generator
 import ydoc
-enable_gc_stress()
+#enable_gc_stress()
 
 ydoc.run(\"test\", \"%(destdir)s\", \"%(index)s\", generator: Generator)
 """ % { "destdir": destdir, "index": index })
@@ -154,6 +154,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   method: bar()
     parameters:
     return:
@@ -169,11 +170,13 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   method: bar()
     parameters:
     return:
     exceptions:
     block:
+
   method: baz()
     parameters:
     return:
@@ -190,6 +193,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   method: bar(baz)
     parameters:
       baz: quux
@@ -208,6 +212,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   method: bar(baz, hoge)
     parameters:
       baz: quux
@@ -225,6 +230,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   method: bar()
     parameters:
     return: hogefugapiyo
@@ -241,6 +247,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   method: bar()
     parameters:
     return:
@@ -259,6 +266,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   method: bar()
     parameters:
     return:
@@ -276,6 +284,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   method: bar()
     parameters:
     return:
@@ -290,6 +299,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   property: bar
     type:
 """)
@@ -302,6 +312,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   property: bar
     type: Baz
 """)
@@ -315,6 +326,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   property: bar
     type: Baz
     quux
@@ -327,6 +339,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   attribute: bar
     type:
 """)
@@ -339,6 +352,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   attribute: bar
     type: Baz
 """)
@@ -352,6 +366,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   attribute: bar
     type: Baz
     quux
@@ -366,6 +381,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   classmethod: bar(baz)
     parameters:
       baz: quux
@@ -384,6 +400,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   classmethod: bar(baz, hoge)
     parameters:
       baz: quux
@@ -401,6 +418,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   classmethod: bar()
     parameters:
     return: hogefugapiyo
@@ -417,6 +435,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   classmethod: bar()
     parameters:
     return:
@@ -435,6 +454,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   classmethod: bar()
     parameters:
     return:
@@ -452,6 +472,7 @@ class: Foo
 """, """class: Foo
   base:
   including:
+
   classmethod: bar()
     parameters:
     return:

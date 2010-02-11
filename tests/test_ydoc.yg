@@ -36,7 +36,7 @@ EOF
       {0}: {1}
 EOF
     end
-    self.s << <<EOF.format(meth.return_)
+    self.s << <<EOF.format(self.conv_str(meth.return_))
     return: {0}
     exceptions:
 EOF
@@ -45,7 +45,10 @@ EOF
       {0}: {1}
 EOF
     end
-    self.s << meth.desc
+    self.s << <<EOF.format(self.conv_str(meth.block), self.conv_str(meth.desc))
+    block: {0}
+    {1}
+EOF
   end
 
   def conv_str(s)

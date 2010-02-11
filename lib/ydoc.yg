@@ -119,6 +119,9 @@ end
 class Parameters > Token
 end
 
+class Block > Token
+end
+
 KEY2TOKEN = {
   "class" => Klass,
   "base" => Base,
@@ -133,7 +136,8 @@ KEY2TOKEN = {
   "data" => Data,
   "type" => Type,
   "return" => Return,
-  "exceptions" => Exceptions }
+  "exceptions" => Exceptions,
+  "block" => Block }
 
 class Lexer
   def init(fp)
@@ -287,12 +291,13 @@ class PropertyNode > AttributeNode
 end
 
 class MethodNode > Node
-  def init(sig, params, return_, excs, desc)
+  def init(sig, params, return_, excs, desc, block)
     self.sig = sig
     self.params = params
     self.return_ = return_
     self.excs = excs
     self.desc = desc
+    self.block = block
   end
 
   def to_s()
@@ -352,6 +357,7 @@ property_token = token_pattern(Property)
 attribute_token = token_pattern(Attribute)
 data_token = token_pattern(Data)
 type_token = token_pattern(Type)
+block_token = token_pattern(Block)
 
 text = action(text_token ^ 1) do [tokens]
   s = ""
@@ -393,20 +399,23 @@ end
 parameters = action(parameters_token * colon_token * text_token * newline_token * (parameters_body ^ (-1))) do [ignore1, ignore2, ignore3, ignore4, body]
   next body.get(0, [])
 end
-method_body = action(indent_token * (parameters ^ (-1)) * (return_ ^ (-1)) * (exceptions ^ (-1)) * (text ^ (-1)) * dedent_token) do [ignore1, params, return_, excs, desc, ignore2]
-  next [params.get(0, []), return_.get(0), excs.get(0, []), desc.get(0)]
+block = action(block_token * colon_token * text_token * newline_token) do [ignore1, ignore2, sig, ignore3]
+  next sig
+end
+method_body = action(indent_token * (parameters ^ (-1)) * (return_ ^ (-1)) * (exceptions ^ (-1)) * (block ^ (-1)) * (text ^ (-1)) * dedent_token) do [ignore1, params, return_, excs, block, desc, ignore2]
+  next [params.get(0, []), return_.get(0), excs.get(0, []), block.get(0), desc.get(0)]
 end
 classmethod = action(classmethod_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
-  body = bodies.get(0, [[], "", [], ""])
-  next ClassmethodNode.new(sig.value, body[0], body[1], body[2], body[3])
+  body = bodies.get(0, [[], "", [], "", ""])
+  next ClassmethodNode.new(sig.value, body[0], body[1], body[2], body[3], body[4])
 end
 function = action(function_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
-  body = bodies.get(0, [[], "", [], ""])
-  next FunctionNode.new(sig.value, body[0], body[1], body[2], body[3])
+  body = bodies.get(0, [[], "", [], "", ""])
+  next FunctionNode.new(sig.value, body[0], body[1], body[2], body[3], body[4])
 end
 method = action(method_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
-  body = bodies.get(0, [[], "", [], ""])
-  next MethodNode.new(sig.value, body[0], body[1], body[2], body[3])
+  body = bodies.get(0, [[], "", [], "", ""])
+  next MethodNode.new(sig.value, body[0], body[1], body[2], body[3], body[4])
 end
 attribute = action(attribute_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, desc]
   next AttributeNode.new(name.value, desc.get(0, []).get(1, ""))
