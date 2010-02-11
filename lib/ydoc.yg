@@ -445,14 +445,19 @@ prop = action(property_token * colon_token * text_token * newline_token * ((inde
   end
   next PropertyNode.new(name.value, type, desc)
 end
-data = action(data_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * text * dedent_token) ^ (-1))) do [ignore1, ignroe2, name, ignore3, bodies]
+data = action(data_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignroe2, name, ignore3, bodies]
   body = bodies.get(0, [])
-  if body.get(3, nil) != nil
+  if body.get(3) != nil
     type = body[3].value
   else
     type = ""
   end
-  next DataNode.new(name.value, type, body.get(5, ""))
+  if body.get(5) != nil
+    desc = body[5].get(0, "")
+  else
+    desc = ""
+  end
+  next DataNode.new(name.value, type, desc)
 end
 attr = action(prop / method / classmethod / attribute) do [attr]
   next attr
