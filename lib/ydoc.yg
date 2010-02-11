@@ -291,13 +291,13 @@ class PropertyNode > AttributeNode
 end
 
 class MethodNode > Node
-  def init(sig, params, return_, excs, desc, block)
+  def init(sig, params, return_, excs, block, desc)
     self.sig = sig
     self.params = params
     self.return_ = return_
     self.excs = excs
-    self.desc = desc
     self.block = block
+    self.desc = desc
   end
 
   def to_s()
@@ -400,10 +400,10 @@ parameters = action(parameters_token * colon_token * text_token * newline_token 
   next body.get(0, [])
 end
 block = action(block_token * colon_token * text_token * newline_token) do [ignore1, ignore2, sig, ignore3]
-  next sig
+  next sig.value
 end
 method_body = action(indent_token * (parameters ^ (-1)) * (return_ ^ (-1)) * (exceptions ^ (-1)) * (block ^ (-1)) * (text ^ (-1)) * dedent_token) do [ignore1, params, return_, excs, block, desc, ignore2]
-  next [params.get(0, []), return_.get(0), excs.get(0, []), block.get(0), desc.get(0)]
+  next [params.get(0, []), return_.get(0), excs.get(0, []), block.get(0, ""), desc.get(0)]
 end
 classmethod = action(classmethod_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
   body = bodies.get(0, [[], "", [], "", ""])
