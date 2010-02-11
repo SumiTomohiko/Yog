@@ -27,27 +27,39 @@ EOF
   end
 
   def write_method(ydoc, meth, type)
-    self.s << <<EOF.format(type, meth.sig)
-  {0}: {1}
-    parameters:
+    if type == "function"
+      indent = ""
+    else
+      indent = "  "
+    end
+
+    self.s << indent << <<EOF.format(type, meth.sig)
+{0}: {1}
+EOF
+    self.s << indent << <<EOF
+  parameters:
 EOF
     meth.params.each() do [param]
-      self.s << <<EOF.format(param.name, param.desc)
-      {0}: {1}
+      self.s << indent << <<EOF.format(param.name, param.desc)
+    {0}: {1}
 EOF
     end
-    self.s << <<EOF.format(self.conv_str(meth.return_).rtrim())
-    return: {0}
-    exceptions:
+    self.s << indent << <<EOF.format(self.conv_str(meth.return_).rtrim())
+  return: {0}
+EOF
+    self.s << indent << <<EOF
+  exceptions:
 EOF
     meth.excs.each() do [exc]
-      self.s << <<EOF.format(exc.type, exc.desc)
-      {0}: {1}
+      self.s << indent << <<EOF.format(exc.type, exc.desc)
+    {0}: {1}
 EOF
     end
-    self.s << <<EOF.format(self.conv_str(meth.block), self.conv_str(meth.desc))
-    block: {0}
-    {1}
+    self.s << indent << <<EOF.format(self.conv_str(meth.block))
+  block: {0}
+EOF
+    self.s << indent << <<EOF.format(self.conv_str(meth.desc))
+  {0}
 EOF
   end
 
