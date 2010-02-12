@@ -238,6 +238,7 @@ src/errno_init.inc
 src/errno_keep.inc
 src/errno_new.inc
 src/errno_raise.inc
+src/errno_register.inc
 src/errno_vm.inc
 src/eval.inc
 src/inst.c

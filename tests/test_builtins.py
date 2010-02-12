@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from re import match
-from os.path import join
+from os import makedirs
+from os.path import isdir, join
+from shutil import rmtree
 from testcase import TestCase
 
 class TestPuts(TestCase):
@@ -120,5 +122,38 @@ print(dirname(\"\"))
         self._test("""
 print(dirname(\"/\"))
 """, "/")
+
+    def do_test_make_dirs(self, path, topdir):
+        try:
+            self._test("""
+make_dirs(\"%(path)s\")
+""" % { "path": path })
+            assert isdir(path)
+        finally:
+            if isdir(topdir):
+                rmtree(topdir)
+
+    def test_make_dirs0(self):
+        topdir = "foo"
+        self.do_test_make_dirs(topdir, topdir)
+
+    def test_make_dirs10(self):
+        topdir = "foo"
+        self.do_test_make_dirs(join(topdir, "bar"), topdir)
+
+    def test_make_dirs20(self):
+        topdir = "foo"
+        makedirs(topdir)
+        self.do_test_make_dirs(join(topdir, "bar"), topdir)
+
+    def test_mkdir0(self):
+        path = "foo"
+        try:
+            self._test("""
+mkdir(\"%(path)s\")
+""" % { "path": path })
+            assert isdir(path)
+        finally:
+            rmtree(path)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -1,5 +1,8 @@
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "yog/array.h"
 #include "yog/class.h"
 #include "yog/classmethod.h"
@@ -75,6 +78,25 @@ print_object(YogEnv* env, YogVal obj)
     printf("%s", STRING_CSTR(s));
 
     RETURN_VOID(env);
+}
+
+static YogVal
+mkdir_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal path = YUNDEF;
+    PUSH_LOCAL(env, path);
+    YogCArg params[] = { { "path", &path }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "mkdir", params, args, kw);
+    if (!IS_PTR(path) || (BASIC_OBJ_TYPE(path) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "path must be String");
+    }
+
+    if (mkdir(STRING_CSTR(path), 0777) != 0) {
+        YogError_raise_sys_call_err(env, errno);
+    }
+
+    RETURN(env, YNIL);
 }
 
 static YogVal
@@ -327,6 +349,7 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     DEFINE_FUNCTION("import_package", import_package);
     DEFINE_FUNCTION("include_module", include_module);
     DEFINE_FUNCTION("join_path", join_path);
+    DEFINE_FUNCTION("mkdir", mkdir_);
     DEFINE_FUNCTION("print", print);
     DEFINE_FUNCTION("property", property);
     DEFINE_FUNCTION("puts", puts_);
@@ -351,6 +374,9 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     REGISTER_CLASS(eKeyError);
     REGISTER_CLASS(eSyntaxError);
     REGISTER_CLASS(eValueError);
+#if !defined(MINIYOG)
+#   include "errno_register.inc"
+#endif
 #undef REGISTER_CLASS
 
     args = argv2args(env, argc, argv);

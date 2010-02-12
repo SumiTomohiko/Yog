@@ -108,6 +108,10 @@ errno_raise.inc: $(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno
 	$(MAKE) $(MINIYOG)
 	./$(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno $@
 
+errno_register.inc: $(MINIYOG) $(TOOLS_DIR)/errno2register.yg $(TOOLS_DIR)/errno
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) $(TOOLS_DIR)/errno2register.yg $(TOOLS_DIR)/errno $@
+
 $(ROOT_DIR)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
 	$(LEMON) header=$(ROOT_DIR)/include/yog/token.h parser.y

@@ -1,4 +1,15 @@
 
+def make_dirs(path)
+  parent = dirname(path)
+  if (parent != ".") && (parent != "/")
+    make_dirs(parent)
+  end
+  try
+    mkdir(path)
+  except EEXIST
+  end
+end
+
 def dirname(path)
   if path == ""
     return "."

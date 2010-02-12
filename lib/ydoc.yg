@@ -1010,6 +1010,7 @@ class Ydoc
     self.srcs = [src]
     self.srcdir = dirname(src)
     self.ext = ext
+    self.current_src = nil
   end
 
   def replace_ext(path)
@@ -1017,36 +1018,45 @@ class Ydoc
   end
 
   def get_doc_title(path)
+    # TODO: This is a side effect. Do it explicitly.
+    path_from_topdir = join_path(dirname(self.current_src), path)
+    self.srcs.push(path_from_topdir)
+
     try
       return self.path2title[path]
     except KeyError
     end
-    File.open(join_path(self.srcdir, path)) do [fp]
+    File.open(path_from_topdir) do [fp]
       while line = fp.readline()
         if m = (line =~ /\A=+\s+(.*)\Z/)
           title = m.group(1).rtrim()
           if title != ""
-            self.srcs.push(path)
             self.path2title[path] = title
             return title
           end
         end
       end
     end
-    return self.replace_ext(path)
+    title = self.replace_ext(path)
+    self.path2title[path] = title
+    return title
   end
 
   def run(generator)
     while !self.srcs.empty?
       src = self.srcs.shift()
+      self.current_src = src
+
       nodes = File.open(src) do [fp]
         next Parser.new().parse(fp)
       end
       dest = self.replace_ext(src)
       if dest.starts_with?("/")
-        dest = dest.slice(self.srcdir.size)
+        dest = dest.slice(self.srcdir.size + 1)
       end
-      File.open(join_path(self.destdir, dest), "w") do [fp]
+      path = join_path(self.destdir, dest)
+      make_dirs(dirname(path))
+      File.open(path, "w") do [fp]
         fp.write(generator.new().generate(self, nodes))
       end
     end
