@@ -584,39 +584,42 @@ data: foo
     def do_test2(self, srcs, index, expecteds):
         tmpdir = mkdtemp()
         try:
-            for path, src in srcs:
+            for path in srcs:
                 dir = join(tmpdir, dirname(path))
-                makedirs(dir)
-                self.write(join(tmpdir, path), src)
+                try:
+                    makedirs(dir)
+                except OSError:
+                    pass
+                self.write(join(tmpdir, path), srcs[path])
 
             destdir = join(tmpdir, "out")
             makedirs(destdir)
 
-            self.run_test(destdir, index)
+            self.run_test(destdir, join(tmpdir, index))
 
-            for path, expected in expecteds:
+            for path in expecteds:
                 actual = self.read(join(destdir, path))
-                assert expected == actual
+                assert expecteds[path].rstrip() == actual.rstrip()
         finally:
             rmtree(tmpdir)
 
     def test_link0(self):
         srcs = { "index.ydoc": "[index2.ydoc]", "index2.ydoc": "" }
-        expecteds = { "index.html": "[index2.html]" }
+        expecteds = { "index.html": "{}[index2.html]" }
         self.do_test2(srcs, "index.ydoc", expecteds)
 
     def test_link10(self):
         srcs = {
             "index.ydoc": "[foo/index2.ydoc]",
             join("foo", "index2.ydoc"): "" }
-        expecteds = { "index.html": "[foo/index2.html]" }
+        expecteds = { "index.html": "{}[foo/index2.html]" }
         self.do_test2(srcs, "index.ydoc", expecteds)
 
     def test_link20(self):
         srcs = {
             "index.ydoc": "[foo/bar/index2.ydoc]",
             join("foo", "bar", "index2.ydoc"): "" }
-        expecteds = { "index.html": "[foo/bar/index2.html]" }
+        expecteds = { "index.html": "{}[foo/bar/index2.html]" }
         self.do_test2(srcs, "index.ydoc", expecteds)
 
     def test_link30(self):
@@ -624,7 +627,7 @@ data: foo
             "index.ydoc": "[foo/index2.ydoc]",
             join("foo", "index2.ydoc"): "[bar/index3.ydoc]",
             join("foo", "bar", "index3.ydoc"): "" }
-        expecteds = { join("foo", "index2.html"): "[bar/index3.html]" }
+        expecteds = { join("foo", "index2.html"): "{}[bar/index3.html]" }
         self.do_test2(srcs, "index.ydoc", expecteds)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

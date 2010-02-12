@@ -1003,12 +1003,17 @@ EOF
 end
 
 class Ydoc
-  def init(title, destdir, src)
+  def init(title, destdir, src, ext)
     self.title = title
     self.destdir = destdir
     self.path2title = {}
     self.srcs = [src]
     self.srcdir = dirname(src)
+    self.ext = ext
+  end
+
+  def replace_ext(path)
+    return path.gsub(".ydoc", self.ext)
   end
 
   def get_doc_title(path)
@@ -1016,7 +1021,7 @@ class Ydoc
       return self.path2title[path]
     except KeyError
     end
-    File.open(path) do [fp]
+    File.open(join_path(self.srcdir, path)) do [fp]
       while line = fp.readline()
         if m = (line =~ /\A=+\s+(.*)\Z/)
           title = m.group(1).rtrim()
@@ -1028,16 +1033,16 @@ class Ydoc
         end
       end
     end
-    return path
+    return self.replace_ext(path)
   end
 
-  def run(ext, generator)
+  def run(generator)
     while !self.srcs.empty?
       src = self.srcs.shift()
       nodes = File.open(src) do [fp]
         next Parser.new().parse(fp)
       end
-      dest = src.gsub(".ydoc", ext)
+      dest = self.replace_ext(src)
       if dest.starts_with?("/")
         dest = dest.slice(self.srcdir.size)
       end
@@ -1049,7 +1054,7 @@ class Ydoc
 end
 
 def run(title, destdir, src, ext=".html", generator=HtmlGenerator)
-  Ydoc.new(title, destdir, src).run(ext, generator)
+  Ydoc.new(title, destdir, src, ext).run(generator)
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog

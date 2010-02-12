@@ -7,7 +7,7 @@ class Generator > ydoc.Generator
   end
 
   def make_link(ydoc, text, url)
-    return "{{{0}}}[{1}]".format(text, url)
+    return "{{{0}}}[{1}]".format(text, ydoc.get_doc_title(url))
   end
 
   def make_newline()
@@ -85,7 +85,7 @@ EOF
   end
 
   def write_text(ydoc, s)
-    self.s << s
+    self.s << self.conv_inline_markup(ydoc, s)
   end
 
   def write_title(ydoc, level, title)
