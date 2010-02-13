@@ -130,7 +130,7 @@ EOF
 EOF
   end
 
-  def end()
+  def end(ydoc)
     return self.s
   end
 
@@ -142,7 +142,7 @@ data: {0}
 EOF
   end
 
-  def start()
+  def start(ydoc)
     self.s = ""
     self.list_level = 0
   end

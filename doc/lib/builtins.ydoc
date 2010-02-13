@@ -35,7 +35,7 @@ class: Array
 
   method: each(&block)
     parameters:
-      block: a callable object
+      &block: a callable object
     foobarbazquuxhogepiyofuga
 
   method: include?(obj)
@@ -46,6 +46,7 @@ class: Array
       + bar
   method: push(obj)
   property: size
+    type: Fixnum
     Objects number in the array.
   method: to_s()
 
@@ -100,6 +101,7 @@ class: Dict
     Callback *block* for each pairs of key and value.
     The *block*'s signature is ``block(key, val)``.
   attribute: size
+    type: Fixnum
     Number of entries in the dictionary.
 
 class: Exception
@@ -169,6 +171,7 @@ class: Thread
   method: run(arg)
   method: join()
   attribute: __recursive_stack__
+    type: Array
     The Yog interpreter uses this attribute internally.
     `Nobody cares <http:://uncyclopedia.wikia.com/wiki/Nobody_cares>`_.
 
@@ -264,7 +267,7 @@ function: include_module(klass, mod)
 
 function: loop(&block)
   parameters:
-    block: block to execute
+    &block: block to execute
   return: never return
 
   Execute *block* eternally.

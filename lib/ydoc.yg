@@ -712,17 +712,17 @@ class Generator
     end
   end
 
-  def end()
+  def end(ydoc)
   end
 
   def write_data(ydoc, node)
   end
 
-  def start()
+  def start(ydoc)
   end
 
   def generate(ydoc, nodes)
-    self.start()
+    self.start(ydoc)
     nodes.each() do [node]
       if node.kind_of?(ClassNode)
         self.write_class(ydoc, node)
@@ -736,7 +736,7 @@ class Generator
         raise Exception.new("unknown node: {0}".format(node))
       end
     end
-    return self.end()
+    return self.end(ydoc)
   end
 end
 
@@ -973,7 +973,7 @@ EOF
     self.body << "<li>{0}</li>".format(self.conv_inline_markup(ydoc, s))
   end
 
-  def end()
+  def end(ydoc)
     return "<html><head>" + self.header + "</head><body>" + self.body + "</body>"
   end
 
@@ -995,9 +995,14 @@ EOF
 EOF
   end
 
-  def start()
-    self.header << <<EOF
+  def write_ordered_list_item(ydoc, s)
+    self.body << "<li>" << self.conv_inline_markup(ydoc, s) << "</li>"
+  end
+
+  def start(ydoc)
+    self.header << <<EOF.format(ydoc.get_path_to_srcdir())
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<link ref="stylesheet" href="{0}/default.css" type="text/css"/>
 EOF
   end
 end
@@ -1011,6 +1016,16 @@ class Ydoc
     self.srcdir = dirname(src)
     self.ext = ext
     self.current_src = nil
+  end
+
+  def get_path_to_srcdir()
+    dir = dirname(self.current_src)
+    path = "."
+    while (dir != ".") && (dir != self.srcdir)
+      dir = dirname(dir)
+      path += "/.."
+    end
+    return path
   end
 
   def replace_ext(path)

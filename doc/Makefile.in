@@ -7,7 +7,7 @@ VERSION = @VERSION@
 .PHONY: all
 
 all:
-	$(YOG) makedoc.yg --title="Yog ver.$(VERSION) documentation" --destdir=$(DEST_DIR) index.ydoc
+	$(YOG) makedoc.yg --title="Yog $(VERSION) documentation" --destdir=$(DEST_DIR) index.ydoc
 
 clean:
 	rm -rf $(DEST_DIR)
