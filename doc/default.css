@@ -1,4 +1,8 @@
 
+dl {
+  margin: 0px 10px 0px 10px;
+}
+
 h1, h2 {
   background-color: #000000;
   color: #ffffff;

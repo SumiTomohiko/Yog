@@ -627,20 +627,39 @@ class Generator
   def write_ordered_list_item(ydoc, s)
   end
 
+  def start_paragraph(ydoc)
+  end
+
+  def end_paragraph(ydoc)
+  end
+
   def write_markup(ydoc, s)
     if s == nil
       return
     end
 
+    @bind(self)
+    def end_paragraph()
+      nonlocal paragraph?
+      if !paragraph?
+        return
+      end
+      self.end_paragraph(ydoc)
+      paragraph? = false
+    end
+
+    paragraph? = false
     lines = s.split("\n")
     i = 0
     while i < lines.size
       line = lines[i]
       if m = (line =~ /\A(=+)/)
+        end_paragraph()
         self.write_title(ydoc, m.end() - 1, line.slice(m.end()).trim())
       elif m = (line =~ /\A\s+/)
-        margin = m.end()
+        end_paragraph()
 
+        margin = m.end()
         self.start_pretty()
         while i < lines.size
           line = lines[i]
@@ -653,6 +672,8 @@ class Generator
         self.end_pretty()
         next
       elif m = (line =~ /\A(\+|\*)\s+/)
+        end_paragraph()
+
         type = m.group(1)
         list_stack = [List.new(0, type)]
         if type == "*"
@@ -706,6 +727,10 @@ class Generator
         end
         next
       else
+        if !paragraph?
+          self.start_paragraph(ydoc)
+          paragraph? = true
+        end
         self.write_text(ydoc, line + "\n")
       end
       i += 1
@@ -1002,6 +1027,14 @@ EOF
 
   def write_ordered_list_item(ydoc, s)
     self.body << "<li>" << self.conv_inline_markup(ydoc, s) << "</li>"
+  end
+
+  def start_paragraph(ydoc)
+    self.body << "<p>"
+  end
+
+  def end_paragraph(ydoc)
+    self.body << "</p>"
   end
 
   def start(ydoc)
