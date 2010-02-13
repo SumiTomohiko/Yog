@@ -1042,6 +1042,9 @@ EOF
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <link rel="stylesheet" href="{0}/default.css" type="text/css"/>
 EOF
+    self.body << <<EOF.format(self.escape_html(ydoc.title))
+<div align="center">{0}</div>
+EOF
   end
 end
 
