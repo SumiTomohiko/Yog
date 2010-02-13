@@ -1078,8 +1078,21 @@ class Ydoc
   end
 end
 
+class YdocHtml > Ydoc
+  def run()
+    super(HtmlGenerator)
+
+    css = "default.css"
+    copy_file(join_path(self.srcdir, css), join_path(self.destdir, css))
+  end
+end
+
 def run(title, destdir, src, ext=".html", generator=HtmlGenerator)
   Ydoc.new(title, destdir, src, ext).run(generator)
+end
+
+def run_to_html(title, destdir, src)
+  YdocHtml.new(title, destdir, src, ".html").run()
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog

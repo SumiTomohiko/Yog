@@ -1,7 +1,7 @@
 #!/usr/bin/env yog
 
 from optparse import OptionParser
-from ydoc import run
+from ydoc import run_to_html
 
 destdir = "."
 title = ""
@@ -17,6 +17,6 @@ opt.on_option("t", "title") do [val]
 end
 args = opt.parse(ARGV.slice(1))
 
-run(title, destdir, args[0])
+run_to_html(title, destdir, args[0])
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog

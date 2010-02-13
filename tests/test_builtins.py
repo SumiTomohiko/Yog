@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from re import match
-from os import makedirs
+from os import makedirs, unlink
 from os.path import isdir, join
 from shutil import rmtree
 from testcase import TestCase
@@ -155,5 +155,30 @@ mkdir(\"%(path)s\")
             assert isdir(path)
         finally:
             rmtree(path)
+
+    def test_copy_file0(self):
+        content = "hogefugapiyo"
+        src = "foo"
+        fp = open(src, "wb")
+        try:
+            try:
+                fp.write(content)
+            finally:
+                fp.close()
+
+            dest = "bar"
+            self._test("""
+copy_file(\"%(src)s\", \"%(dest)s\")
+""" % { "src": src, "dest": dest })
+            try:
+                fp = open(dest, "rb")
+                try:
+                    assert content == fp.read()
+                finally:
+                    fp.close()
+            finally:
+                unlink(dest)
+        finally:
+            unlink(src)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

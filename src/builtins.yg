@@ -1,4 +1,12 @@
 
+def copy_file(src, dest)
+  File.open(src, "rb") do [in]
+    File.open(dest, "wb") do [out]
+      out.write(in.read())
+    end
+  end
+end
+
 def make_dirs(path)
   parent = dirname(path)
   if (parent != ".") && (parent != "/")
