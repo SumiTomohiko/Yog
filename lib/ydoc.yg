@@ -853,11 +853,9 @@ EOF
         </td>
       </tr>
     </tbody></table>
-    <p>
 EOF
     self.write_markup(ydoc, meth.desc)
     self.body << <<EOF
-    </p>
   </dd>
 </dl>
 EOF
@@ -974,7 +972,16 @@ EOF
   end
 
   def end(ydoc)
-    return "<html><head>" + self.header + "</head><body>" + self.body + "</body>"
+    return <<EOF.format(self.header, self.body)
+<html>
+<head>
+{0}
+</head>
+<body>
+{1}
+</body>
+</html>
+EOF
   end
 
   def write_data(ydoc, node)
@@ -985,11 +992,9 @@ EOF
     <table><tbody><tr>
       <th align="left">Type</th><th align="left">:</th><td><tt>{1}</tt></td>
     </tr></tbody></table>
-    <p>
 EOF
     self.write_markup(ydoc, node.desc)
     self.body << <<EOF
-    </p>
   </dd>
 </dl>
 EOF
@@ -1002,7 +1007,7 @@ EOF
   def start(ydoc)
     self.header << <<EOF.format(ydoc.get_path_to_srcdir())
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<link ref="stylesheet" href="{0}/default.css" type="text/css"/>
+<link rel="stylesheet" href="{0}/default.css" type="text/css"/>
 EOF
   end
 end

@@ -1,0 +1,19 @@
+
+h1, h2 {
+  background-color: #000000;
+  color: #ffffff;
+  padding: 10px 10px 10px 10px;
+}
+
+body {
+  background-color: #efefef;
+  margin: 0px 0px 0px 0px;
+}
+
+p {
+  margin: 10px 10px 10px 10px;
+}
+
+/**
+ * vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+ */

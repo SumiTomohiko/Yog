@@ -3,6 +3,8 @@
 
 You can use classes/functions/modules in this package without the +import+ statement.
 
+== Built-in Classes
+
 class: Array
   base: Object
 
