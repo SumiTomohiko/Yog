@@ -959,7 +959,7 @@ EOF
       return
     end
     self.header << <<EOF.format(ydoc.title, self.conv_inline_markup_to_plain_text(ydoc, title))
-<title>{0}&nbsp;-&nbsp;{1}</title>
+<title>{0} - {1}</title>
 EOF
     self.title = title
   end
@@ -1043,7 +1043,7 @@ EOF
 <link rel="stylesheet" href="{0}/default.css" type="text/css"/>
 EOF
     self.body << <<EOF.format(self.escape_html(ydoc.title))
-<div align="center">{0}</div>
+<div class="header">{0}</div>
 EOF
   end
 end
