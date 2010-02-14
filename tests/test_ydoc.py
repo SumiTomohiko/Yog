@@ -58,6 +58,15 @@ ydoc.run(\"test\", \"%(destdir)s\", \"%(index)s\", generator: Generator)
         for i in range(len(e)):
             assert e[i].rstrip() == a[i].rstrip()
 
+    def test_pretty0(self):
+        self.do_test("""
+foo
+
+  [42, 26]
+""", """foo<pre>
+[42, 26]
+</pre>""")
+
     def test_title0(self):
         self.do_test("""
 = title

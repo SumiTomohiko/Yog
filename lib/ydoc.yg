@@ -907,7 +907,7 @@ EOF
       including = ""
     end
 
-    self.body << <<EOF.format(name, base, including, self.conv_inline_markup(ydoc, node.desc))
+    self.body << <<EOF.format(name, base, including)
 <dl>
   <dt>class <tt>{0}</tt></dt>
   <dd>
@@ -921,8 +921,8 @@ EOF
         </tr>
       </tbody>
     </table>
-    <p>{3}</p>
 EOF
+    self.write_markup(ydoc, node.desc)
 
     super(ydoc, node)
 

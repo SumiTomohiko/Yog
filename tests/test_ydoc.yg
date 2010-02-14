@@ -93,9 +93,15 @@ EOF
   end
 
   def start_pretty()
+    self.s << <<EOF
+<pre>
+EOF
   end
 
   def end_pretty()
+    self.s << <<EOF
+</pre>
+EOF
   end
 
   def write_pretty(s)

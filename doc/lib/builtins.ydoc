@@ -1,14 +1,16 @@
 
 = +builtins+ package
 
-You can use classes/functions/modules in this package without the +import+ statement.
+You can use classes/modules/functions/objects in this package without the +import+ statement.
 
 == Built-in Classes
 
 class: Array
   base: Object
 
-  +Array+ has many objects.
+  You can make arrays with square brackets(+[]+) and commas(+,+) to separate values. For example, +[42, 26]+ is an array which has +42+ as first element and +26+ as second element.
+
+  Each elements in arrays are accessed by an index enclosing square brackets.
 
   method: +(a)
     parameters:
