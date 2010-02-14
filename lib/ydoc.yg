@@ -500,6 +500,12 @@ class Generator
   def make_typewriter(s)
   end
 
+  def make_italic(s)
+  end
+
+  def make_bold(s)
+  end
+
   def make_link(ydoc, text, url)
   end
 
@@ -521,14 +527,19 @@ class Generator
     t = ""
     link = ""
     while i < s.size
-      if s[i] == "+"
+      if ["+", "_", "*"].include?(s[i])
+        terminator = s[i]
         i += 1
         body = ""
-        while s[i] != "+"
+        while s[i] != terminator
           body << self.conv_char(s[i])
           i += 1
         end
-        t << self.make_typewriter(body)
+        sym2proc = {
+          "+" => self.make_typewriter,
+          "_" => self.make_italic,
+          "*" => self.make_bold }
+        t << sym2proc[terminator](body)
       elif s[i] == "\n"
         t << self.make_newline()
       elif s[i] == "{"
@@ -621,16 +632,16 @@ class Generator
   def end_ordered_list()
   end
 
-  def write_list_item(ydoc, s)
-  end
-
-  def write_ordered_list_item(ydoc, s)
-  end
-
   def start_paragraph(ydoc)
   end
 
   def end_paragraph(ydoc)
+  end
+
+  def start_list_item()
+  end
+
+  def end_list_item()
   end
 
   def write_markup(ydoc, s)
@@ -672,15 +683,34 @@ class Generator
         self.end_pretty()
         next
       elif m = (line =~ /\A(\+|\*)\s+/)
+        # a list starts.
         end_paragraph()
+
+        @bind(self)
+        def start_list(type)
+          if type == "*"
+            self.start_list()
+          else
+            self.start_ordered_list()
+          end
+          self.start_list_item()
+        end
+
+        @bind(self)
+        def end_list(type)
+          self.end_list_item()
+          if type == "*"
+            self.end_list()
+          else
+            self.end_ordered_list()
+          end
+        end
 
         type = m.group(1)
         list_stack = [List.new(0, type)]
-        if type == "*"
-          self.start_list()
-        else
-          self.start_ordered_list()
-        end
+        start_list(type)
+        self.write_text(ydoc, line.slice(m.end()))
+        i += 1
 
         while i < lines.size
           line = lines[i]
@@ -689,52 +719,44 @@ class Generator
             type = m.group(2)
             if list_stack[-1].margin < margin
               list_stack << List.new(margin, type)
-              if type == "*"
-                self.start_list()
-              else
-                self.start_ordered_list()
-              end
+              start_list(type)
             elif margin < list_stack[-1].margin
               while !list_stack.empty? && (margin < list_stack[-1].margin)
                 list = list_stack.pop()
-                if list.type == "*"
-                  self.end_list()
-                else
-                  self.end_ordered_list()
-                end
+                end_list(list.type)
               end
-            end
-            s = line.slice(m.end())
-            if type == "*"
-              self.write_list_item(ydoc, s)
+              self.start_list_item()
             else
-              self.write_ordered_list_item(ydoc, s)
+              self.end_list_item()
+              self.start_list_item()
             end
+            self.write_text(ydoc, line.slice(m.end()))
           elif !(line =~ /\A[^\s]/)
-            self.write_text(ydoc, line.rtrim() + "\n")
+            self.write_text(ydoc, line.trim())
           else
             break
           end
           i += 1
         end
-        while 0 < list_stack.size
-          list = list_stack.pop()
-          if list.type == "*"
-            self.end_list()
-          else
-            self.end_ordered_list()
-          end
+        while !list_stack.empty?
+          end_list(list_stack.pop().type)
         end
         next
-      else
-        if !paragraph?
+      elif !paragraph?
+        if !(line =~ /\A\s*\Z/)
           self.start_paragraph(ydoc)
           paragraph? = true
+          self.write_text(ydoc, line)
         end
-        self.write_text(ydoc, line + "\n")
+      elif line =~ /\A\s*\Z/
+        self.end_paragraph(ydoc)
+        paragraph? = false
+      else
+        self.write_text(ydoc, line)
       end
       i += 1
     end
+    end_paragraph()
   end
 
   def end(ydoc)
@@ -992,10 +1014,6 @@ EOF
     self.body << "</ol>"
   end
 
-  def write_list_item(ydoc, s)
-    self.body << "<li>{0}</li>".format(self.conv_inline_markup(ydoc, s))
-  end
-
   def end(ydoc)
     return <<EOF.format(self.header, self.body)
 <html>
@@ -1025,16 +1043,28 @@ EOF
 EOF
   end
 
-  def write_ordered_list_item(ydoc, s)
-    self.body << "<li>" << self.conv_inline_markup(ydoc, s) << "</li>"
-  end
-
   def start_paragraph(ydoc)
     self.body << "<p>"
   end
 
   def end_paragraph(ydoc)
     self.body << "</p>"
+  end
+
+  def start_list_item()
+    self.body << "<li>"
+  end
+
+  def end_list_item()
+    self.body << "</li>"
+  end
+
+  def make_italic(s)
+    return "<i>{0}</i>".format(self.escape_html(s))
+  end
+
+  def make_bold(s)
+    return "<em>{0}</em>".format(self.escape_html(s))
   end
 
   def start(ydoc)

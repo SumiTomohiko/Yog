@@ -34,10 +34,7 @@ import ydoc
 ydoc.run(\"test\", \"%(destdir)s\", \"%(index)s\", generator: Generator)
 """ % { "destdir": destdir, "index": index })
 
-    def do_test(self, src, expected=None):
-        if expected is None:
-            expected = src.strip()
-
+    def do_test(self, src, expected):
         tmpdir = mkdtemp()
         try:
             index = join(tmpdir, "index.ydoc")
@@ -63,112 +60,154 @@ ydoc.run(\"test\", \"%(destdir)s\", \"%(index)s\", generator: Generator)
 foo
 
   [42, 26]
-""", """foo<pre>
-[42, 26]
-</pre>""")
+""", """<p>foo</p>
+<pre>[42, 26]
+</pre>
+""")
 
     def test_title0(self):
         self.do_test("""
 = title
+""", """<h1>title</h1>
 """)
 
     def test_title10(self):
         self.do_test("""
 == title
+""", """<h2>title</h2>
 """)
 
     def test_list0(self):
         self.do_test("""
 * foo
+""", """<ul>
+<li>foo</li>
+</ul>
 """)
 
     def test_list10(self):
         self.do_test("""
 * foo
 * bar
+""", """<ul>
+<li>foo</li>
+<li>bar</li>
+</ul>
 """)
 
     def test_list20(self):
         self.do_test("""
 * foo
   * bar
+""", """<ul>
+<li>foo<ul>
+<li>bar</li>
+</ul>
+</li>
+</ul>
 """)
 
     def test_ordered_list0(self):
         self.do_test("""
 + foo
+""", """<ol>
+<li>foo</li>
+</ol>
 """)
 
     def test_ordered_list10(self):
         self.do_test("""
 + foo
 + bar
+""", """<ol>
+<li>foo</li>
+<li>bar</li>
+</ol>
 """)
 
     def test_ordered_list20(self):
         self.do_test("""
 + foo
   + bar
+""", """<ol>
+<li>foo<ol>
+<li>bar</li>
+</ol>
+</li>
+</ol>
 """)
 
     def test_italic0(self):
-        self.do_test("_foo_")
+        self.do_test("_foo_", "<p><i>foo</i></p>\n")
 
     def test_bold0(self):
-        self.do_test("*foo*")
+        self.do_test("*foo*", "<p><em>foo</em></p>\n")
 
     def test_typewriter0(self):
-        self.do_test("+foo+")
+        self.do_test("+foo+", "<p><tt>foo</tt></p>\n")
 
     def test_class0(self):
         self.do_test("""
 class: Foo
-""", """class: Foo
-  base:
-  including:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+</class>
 """)
 
     def test_class10(self):
         self.do_test("""
 class: Foo
   base: Bar
-""", """class: Foo
-  base: Bar
-  including:
+""", """<class>
+<name>Foo</name>
+<base>Bar</base>
+<including></including>
+</class>
 """)
 
     def test_class20(self):
         self.do_test("""
 class: Foo
   including: Bar
-""", """class: Foo
-  base:
-  including: Bar
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including>Bar</including>
+</class>
 """)
 
     def test_class30(self):
         self.do_test("""
 class: Foo
   hogefugapiyo
-""", """class: Foo
-  base:
-  including:
-  hogefugapiyo
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<p>hogefugapiyo</p>
+</class>
 """)
 
     def test_class40(self):
         self.do_test("""
 class: Foo
   method: bar()
-""", """class: Foo
-  base:
-  including:
-
-  method: bar()
-    parameters:
-    return:
-    exceptions:
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
 """)
 
     def test_class50(self):
@@ -176,21 +215,29 @@ class: Foo
 class: Foo
   method: bar()
   method: baz()
-""", """class: Foo
-  base:
-  including:
-
-  method: bar()
-    parameters:
-    return:
-    exceptions:
-    block:
-
-  method: baz()
-    parameters:
-    return:
-    exceptions:
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+<method>
+<signature>baz()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
 """)
 
     def test_method0(self):
@@ -199,16 +246,24 @@ class: Foo
   method: bar(baz)
     parameters:
       baz: quux
-""", """class: Foo
-  base:
-  including:
-
-  method: bar(baz)
-    parameters:
-      baz: quux
-    return:
-    exceptions:
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(baz)</signature>
+<parameters>
+<parameter>
+<name>baz</name>
+<description>quux</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
 """)
 
     def test_method10(self):
@@ -218,17 +273,28 @@ class: Foo
     parameters:
       baz: quux
       hoge: fuga
-""", """class: Foo
-  base:
-  including:
-
-  method: bar(baz, hoge)
-    parameters:
-      baz: quux
-      hoge: fuga
-    return:
-    exceptions:
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(baz, hoge)</signature>
+<parameters>
+<parameter>
+<name>baz</name>
+<description>quux</description>
+</parameter>
+<parameter>
+<name>hoge</name>
+<description>fuga</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
 """)
 
     def test_method20(self):
@@ -236,15 +302,20 @@ class: Foo
 class: Foo
   method: bar()
     return: hogefugapiyo
-""", """class: Foo
-  base:
-  including:
-
-  method: bar()
-    parameters:
-    return: hogefugapiyo
-    exceptions:
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return>hogefugapiyo</return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
 """)
 
     def test_method30(self):
@@ -253,16 +324,24 @@ class: Foo
   method: bar()
     exceptions:
       Baz: quux
-""", """class: Foo
-  base:
-  including:
-
-  method: bar()
-    parameters:
-    return:
-    exceptions:
-      Baz: quux
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+<exception>
+<type>Baz</type>
+<description>quux</description>
+</exception>
+</exceptions>
+<block></block>
+</method>
+</class>
 """)
 
     def test_method40(self):
@@ -272,17 +351,28 @@ class: Foo
     exceptions:
       Baz: quux
       Hoge: fuga
-""", """class: Foo
-  base:
-  including:
-
-  method: bar()
-    parameters:
-    return:
-    exceptions:
-      Baz: quux
-      Hoge: fuga
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+<exception>
+<type>Baz</type>
+<description>quux</description>
+</exception>
+<exception>
+<type>Hoge</type>
+<description>fuga</description>
+</exception>
+</exceptions>
+<block></block>
+</method>
+</class>
 """)
 
     def test_method50(self):
@@ -290,27 +380,35 @@ class: Foo
 class: Foo
   method: bar()
     block: baz(quux)
-""", """class: Foo
-  base:
-  including:
-
-  method: bar()
-    parameters:
-    return:
-    exceptions:
-    block: baz(quux)
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block>baz(quux)</block>
+</method>
+</class>
 """)
 
     def test_property0(self):
         self.do_test("""
 class: Foo
   property: bar
-""", """class: Foo
-  base:
-  including:
-
-  property: bar
-    type:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<property>
+<name>bar</name>
+<type></type>
+</property>
+</class>
 """)
 
     def test_property10(self):
@@ -318,12 +416,15 @@ class: Foo
 class: Foo
   property: bar
     type: Baz
-""", """class: Foo
-  base:
-  including:
-
-  property: bar
-    type: Baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<property>
+<name>bar</name>
+<type>Baz</type>
+</property>
+</class>
 """)
 
     def test_property20(self):
@@ -332,25 +433,31 @@ class: Foo
   property: bar
     type: Baz
     quux
-""", """class: Foo
-  base:
-  including:
-
-  property: bar
-    type: Baz
-    quux
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<property>
+<name>bar</name>
+<type>Baz</type>
+<p>quux</p>
+</property>
+</class>
 """)
 
     def test_attribute0(self):
         self.do_test("""
 class: Foo
   attribute: bar
-""", """class: Foo
-  base:
-  including:
-
-  attribute: bar
-    type:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<attribute>
+<name>bar</name>
+<type></type>
+</attribute>
+</class>
 """)
 
     def test_attribute10(self):
@@ -358,12 +465,15 @@ class: Foo
 class: Foo
   attribute: bar
     type: Baz
-""", """class: Foo
-  base:
-  including:
-
-  attribute: bar
-    type: Baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<attribute>
+<name>bar</name>
+<type>Baz</type>
+</attribute>
+</class>
 """)
 
     def test_attribute20(self):
@@ -372,13 +482,16 @@ class: Foo
   attribute: bar
     type: Baz
     quux
-""", """class: Foo
-  base:
-  including:
-
-  attribute: bar
-    type: Baz
-    quux
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<attribute>
+<name>bar</name>
+<type>Baz</type>
+<p>quux</p>
+</attribute>
+</class>
 """)
 
     def test_classmethod0(self):
@@ -387,16 +500,24 @@ class: Foo
   classmethod: bar(baz)
     parameters:
       baz: quux
-""", """class: Foo
-  base:
-  including:
-
-  classmethod: bar(baz)
-    parameters:
-      baz: quux
-    return:
-    exceptions:
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<classmethod>
+<signature>bar(baz)</signature>
+<parameters>
+<parameter>
+<name>baz</name>
+<description>quux</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</classmethod>
+</class>
 """)
 
     def test_classmethod10(self):
@@ -406,17 +527,28 @@ class: Foo
     parameters:
       baz: quux
       hoge: fuga
-""", """class: Foo
-  base:
-  including:
-
-  classmethod: bar(baz, hoge)
-    parameters:
-      baz: quux
-      hoge: fuga
-    return:
-    exceptions:
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<classmethod>
+<signature>bar(baz, hoge)</signature>
+<parameters>
+<parameter>
+<name>baz</name>
+<description>quux</description>
+</parameter>
+<parameter>
+<name>hoge</name>
+<description>fuga</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</classmethod>
+</class>
 """)
 
     def test_classmethod20(self):
@@ -424,15 +556,20 @@ class: Foo
 class: Foo
   classmethod: bar()
     return: hogefugapiyo
-""", """class: Foo
-  base:
-  including:
-
-  classmethod: bar()
-    parameters:
-    return: hogefugapiyo
-    exceptions:
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<classmethod>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return>hogefugapiyo</return>
+<exceptions>
+</exceptions>
+<block></block>
+</classmethod>
+</class>
 """)
 
     def test_classmethod30(self):
@@ -441,16 +578,24 @@ class: Foo
   classmethod: bar()
     exceptions:
       Baz: quux
-""", """class: Foo
-  base:
-  including:
-
-  classmethod: bar()
-    parameters:
-    return:
-    exceptions:
-      Baz: quux
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<classmethod>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+<exception>
+<type>Baz</type>
+<description>quux</description>
+</exception>
+</exceptions>
+<block></block>
+</classmethod>
+</class>
 """)
 
     def test_classmethod40(self):
@@ -460,17 +605,28 @@ class: Foo
     exceptions:
       Baz: quux
       Hoge: fuga
-""", """class: Foo
-  base:
-  including:
-
-  classmethod: bar()
-    parameters:
-    return:
-    exceptions:
-      Baz: quux
-      Hoge: fuga
-    block:
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<classmethod>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+<exception>
+<type>Baz</type>
+<description>quux</description>
+</exception>
+<exception>
+<type>Hoge</type>
+<description>fuga</description>
+</exception>
+</exceptions>
+<block></block>
+</classmethod>
+</class>
 """)
 
     def test_classmethod50(self):
@@ -478,25 +634,34 @@ class: Foo
 class: Foo
   classmethod: bar()
     block: baz(quux)
-""", """class: Foo
-  base:
-  including:
-
-  classmethod: bar()
-    parameters:
-    return:
-    exceptions:
-    block: baz(quux)
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<classmethod>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block>baz(quux)</block>
+</classmethod>
+</class>
 """)
 
     def test_function0(self):
         self.do_test("""
 function: bar()
-""", """function: bar()
-  parameters:
-  return:
-  exceptions:
-  block:
+""", """<function>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</function>
 """)
 
     def test_function5(self):
@@ -504,12 +669,19 @@ function: bar()
 function: bar(baz)
   parameters:
     baz: quux
-""", """function: bar(baz)
-  parameters:
-    baz: quux
-  return:
-  exceptions:
-  block:
+""", """<function>
+<signature>bar(baz)</signature>
+<parameters>
+<parameter>
+<name>baz</name>
+<description>quux</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</function>
 """)
 
     def test_function10(self):
@@ -518,24 +690,38 @@ function: bar(baz, hoge)
   parameters:
     baz: quux
     hoge: fuga
-""", """function: bar(baz, hoge)
-  parameters:
-    baz: quux
-    hoge: fuga
-  return:
-  exceptions:
-  block:
+""", """<function>
+<signature>bar(baz, hoge)</signature>
+<parameters>
+<parameter>
+<name>baz</name>
+<description>quux</description>
+</parameter>
+<parameter>
+<name>hoge</name>
+<description>fuga</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</function>
 """)
 
     def test_function20(self):
         self.do_test("""
 function: bar()
   return: hogefugapiyo
-""", """function: bar()
-  parameters:
-  return: hogefugapiyo
-  exceptions:
-  block:
+""", """<function>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return>hogefugapiyo</return>
+<exceptions>
+</exceptions>
+<block></block>
+</function>
 """)
 
     def test_function30(self):
@@ -543,12 +729,19 @@ function: bar()
 function: bar()
   exceptions:
     Baz: quux
-""", """function: bar()
-  parameters:
-  return:
-  exceptions:
-    Baz: quux
-  block:
+""", """<function>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+<exception>
+<type>Baz</type>
+<description>quux</description>
+</exception>
+</exceptions>
+<block></block>
+</function>
 """)
 
     def test_function40(self):
@@ -557,30 +750,48 @@ function: bar()
   exceptions:
     Baz: quux
     Hoge: fuga
-""", """function: bar()
-  parameters:
-  return:
-  exceptions:
-    Baz: quux
-    Hoge: fuga
-  block:
+""", """<function>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+<exception>
+<type>Baz</type>
+<description>quux</description>
+</exception>
+<exception>
+<type>Hoge</type>
+<description>fuga</description>
+</exception>
+</exceptions>
+<block></block>
+</function>
 """)
 
     def test_function50(self):
         self.do_test("""
 function: bar()
   block: baz(quux)
-""", """function: bar()
-  parameters:
-  return:
-  exceptions:
-  block: baz(quux)
+""", """<function>
+<signature>bar()</signature>
+<parameters>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block>baz(quux)</block>
+</function>
 """)
 
     def test_data0(self):
         self.do_test("""
 data: foo
   type: Bar
+""", """<data>
+<name>foo</name>
+<type>Bar</type>
+</data>
 """)
 
     def test_data10(self):
@@ -588,6 +799,19 @@ data: foo
 data: foo
   type: Bar
   baz
+""", """<data>
+<name>foo</name>
+<type>Bar</type>
+<p>baz</p>
+</data>
+""")
+
+    def test_paragraph0(self):
+        self.do_test("""foo
+
+bar
+""", """<p>foo</p>
+<p>bar</p>
 """)
 
     def do_test2(self, srcs, index, expecteds):
@@ -614,21 +838,21 @@ data: foo
 
     def test_link0(self):
         srcs = { "index.ydoc": "[index2.ydoc]", "index2.ydoc": "" }
-        expecteds = { "index.html": "{}[index2.html]" }
+        expecteds = { "index.html": "<p>{}[index2.html]</p>" }
         self.do_test2(srcs, "index.ydoc", expecteds)
 
     def test_link10(self):
         srcs = {
             "index.ydoc": "[foo/index2.ydoc]",
             join("foo", "index2.ydoc"): "" }
-        expecteds = { "index.html": "{}[foo/index2.html]" }
+        expecteds = { "index.html": "<p>{}[foo/index2.html]</p>" }
         self.do_test2(srcs, "index.ydoc", expecteds)
 
     def test_link20(self):
         srcs = {
             "index.ydoc": "[foo/bar/index2.ydoc]",
             join("foo", "bar", "index2.ydoc"): "" }
-        expecteds = { "index.html": "{}[foo/bar/index2.html]" }
+        expecteds = { "index.html": "<p>{}[foo/bar/index2.html]</p>" }
         self.do_test2(srcs, "index.ydoc", expecteds)
 
     def test_link30(self):
@@ -636,7 +860,7 @@ data: foo
             "index.ydoc": "[foo/index2.ydoc]",
             join("foo", "index2.ydoc"): "[bar/index3.ydoc]",
             join("foo", "bar", "index3.ydoc"): "" }
-        expecteds = { join("foo", "index2.html"): "{}[bar/index3.html]" }
+        expecteds = { join("foo", "index2.html"): "<p>{}[bar/index3.html]</p>" }
         self.do_test2(srcs, "index.ydoc", expecteds)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
