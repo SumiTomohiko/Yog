@@ -39,6 +39,7 @@ end
 
 def include?(obj)
   self.each() do [elem]
+    # TODO: need to compare classes?
     if (elem.class == obj.class) && (elem == obj)
       return true
     end

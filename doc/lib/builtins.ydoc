@@ -50,25 +50,83 @@ class: Array
 
   method: each(&block)
     parameters:
-      &block: a callable object
-    foobarbazquuxhogepiyofuga
+      block: code to execute in each iterations
+    return: +self+
+    block: block(elem)
+
+    Execute _block_ for each elements in an array. This method gives each elements as an argument to _block_.
+
+  property: empty?
+    type: Bool
+
+    Becomes +true+ when no objects are in an array.
 
   method: get(index, default=nil)
+    parameters:
+      index: element's index starting zero. Negative value is allowed.
+      default: return value when _index_ is out of range
+    return: the object at _index_th
+
+    Returns the _index_th object. When _index_ is out of range, returns _default_.
 
   method: include?(obj)
+    parameters:
+      obj: an object
+    return: +true+ or +false+
+
+    Check if _obj_ is in an array.
+
   method: join(sep)
+    parameters:
+      sep: a separator between elements
+    return: string
+
+    Concatenates elements in an array separating with _sep_. Each elements are converted to +String+ with the +to_s()+ method.
+
   method: pop()
-    return: two multi value
-      + foo
-      + bar
+    return: a poped value
+    exceptions:
+      IndexError: the array is empty
+
+    Removes one element from an array.
+
   method: push(obj)
+    parameters:
+      obj: a pushed object
+    return: +self+
+
+    Appends one object to the tail of an array.
+
   method: shift()
-  method: slice()
+    return: an object which was at head of an array
+    exceptions:
+      IndexError: an array is empty
+
+    Removes one object from the head of an array.
+
+  method: slice(pos, len=nil)
+    parameters:
+      pos: index of a first element. Negative value is allowed.
+      len: length
+    return: a new array
+
+    Makes a new array with elements which are from _pos_ to _pos_ +\++ _len_ +- 1+. When _pos_ is out of range, an empty array (+[]+) is returned.
+
   property: size
     type: Fixnum
     Objects number in the array.
+
   method: to_s()
-  method: unshift()
+    return: string representation of an array
+
+    Converts an array into +String+.
+
+  method: unshift(obj)
+    parameters:
+      obj: any object
+    return: +self+
+
+    Add _obj_ to a head of an array.
 
 class: AttributeError
   base: Exception

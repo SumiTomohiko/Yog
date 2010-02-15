@@ -339,10 +339,18 @@ class HtmlGenerator > Generator
   end
 
   def write_attribute(ydoc, attr, type)
-    name = self.escape_html(attr.name)
-    desc = self.conv_inline_markup(ydoc, attr.desc)
-    self.body << <<EOF.format(type, name, desc)
-<dl><dt>{0} <tt>{1}</tt></dt><dd><p>{2}</p></dd></dl>
+    self.body << <<EOF.format(type, self.escape_html(attr.name), self.escape_html(attr.type))
+<dl>
+  <dt>{0} <tt>{1}</tt></dt>
+  <dd>
+    <table><tbody>
+      <tr><th align="left">Type</th><th>:</th><td>{2}</td></tr>
+    </tbody></table>
+EOF
+    self.write_markup(ydoc, attr.desc)
+    self.body << <<EOF
+  </dd>
+</dl>
 EOF
   end
 
@@ -353,6 +361,22 @@ EOF
     name = param.slice(0, pos)
     expr = param.slice(pos + 1)
     return "<i>{0}</i><tt>={1}</tt>".format(name, expr)
+  end
+
+  def make_block_signature(sig)
+    # FIXME: share common code with make_method_signature
+    m = sig.match(/\A(.*)\((.*)\)\Z/)
+    s = "<i>{0}</i><tt>(</tt>".format(m.group(1))
+
+    params = m.group(2).split(/\s*,\s*/)
+    s += self.make_param(params[0])
+    params.slice(1).each() do [param]
+      nonlocal s
+      s += "<tt>,</tt> " + self.make_param(param)
+    end
+
+    s += "<tt>)</tt>"
+    return s
   end
 
   def make_method_signature(sig)
@@ -411,10 +435,18 @@ EOF
             <tr><td><tt>{0}</tt></td><td>--</td><td>{1}</td></tr>
 EOF
     end
-    self.body << <<EOF
+    if meth.block != ""
+      block = <<EOF.format(self.make_block_signature(meth.block))
+      <tr><th align="left">Block</th><th>:</th><td>{0}</td></tr>
+EOF
+    else
+      block = ""
+    end
+    self.body << <<EOF.format(block)
           </tbody></table>
         </td>
       </tr>
+      {0}
     </tbody></table>
 EOF
     self.write_markup(ydoc, meth.desc)
