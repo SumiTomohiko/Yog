@@ -545,7 +545,7 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method(env, cArray, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("+", add);
-    DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD("<<", lshif);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", assign_subscript);
     DEFINE_METHOD("each", each);

@@ -10,30 +10,33 @@ class: Array
 
   You can make arrays with square brackets(+[]+) and commas(+,+) to separate values. For example, +[42, 26]+ is an array which has +42+ as first element and +26+ as second element.
 
-  Each elements in arrays are accessed by an index enclosing square brackets.
+  Each elements in arrays are accessed by an index enclosing square brackets. Index of the first element is zero. If negative index +idx+ is given to an array +a+, it is treated as +a.size \+ idx+, so the last element is accessed with +a[-1]+.
 
   method: +(a)
     parameters:
       a: An array
     return: New array
     exceptions:
-      TypeError: When +a+ is not an array.
+      TypeError: When _a_ is not an array.
 
     Concatenates two arrays.
 
   method: <<(obj)
     parameters:
       obj: an object
-    return: +self+.
+    return: +self+
 
-    add +obj+ to the array.
+    Adds +obj+ to the array.
 
   method: [](index)
     parameters:
       index: element's index starting zero
-    return: the object in the array
-      foo
-    return the object in the array.
+    return: the object at _index_th
+    exceptions:
+      IndexError: _index_ is out of range.
+      TypeError: _index_ isn't Fixnum.
+
+    Returns the _index_th object.
 
   method: []=(index, value)
 
@@ -42,6 +45,8 @@ class: Array
       &block: a callable object
     foobarbazquuxhogepiyofuga
 
+  method: get(index, default=nil)
+
   method: include?(obj)
   method: join(sep)
   method: pop()
@@ -49,10 +54,13 @@ class: Array
       + foo
       + bar
   method: push(obj)
+  method: shift()
+  method: slice()
   property: size
     type: Fixnum
     Objects number in the array.
   method: to_s()
+  method: unshift()
 
 class: AttributeError
   base: Exception
