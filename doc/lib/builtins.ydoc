@@ -39,6 +39,14 @@ class: Array
     Returns the _index_th object.
 
   method: []=(index, value)
+    parameters:
+      index: element's index starting zero
+    return: +self+
+    exceptions:
+      IndexError: _index_ is out of range.
+      TypeError: _index_ isn't Fixnum.
+
+    Sets the _index_th object.
 
   method: each(&block)
     parameters:
