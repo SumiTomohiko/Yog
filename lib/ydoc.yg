@@ -96,13 +96,13 @@ class Generator
 
   def write_class(ydoc, node)
     node.attrs.each() do [attr]
-      if attr.kind_of?(n.ClassmethodNode)
+      if attr.kind_of?(n.Classmethod)
         self.write_method(ydoc, attr, "classmethod")
-      elif attr.kind_of?(n.MethodNode)
+      elif attr.kind_of?(n.Method)
         self.write_method(ydoc, attr, "method")
-      elif attr.kind_of?(n.PropertyNode)
+      elif attr.kind_of?(n.Property)
         self.write_attribute(ydoc, attr, "property")
-      elif attr.kind_of?(n.AttributeNode)
+      elif attr.kind_of?(n.Attribute)
         self.write_attribute(ydoc, attr, "attribute")
       end
     end
@@ -287,13 +287,13 @@ class Generator
   def generate(ydoc, nodes)
     self.start(ydoc)
     nodes.each() do [node]
-      if node.kind_of?(n.ClassNode)
+      if node.kind_of?(n.Class)
         self.write_class(ydoc, node)
       elif node.kind_of?(String)
         self.write_markup(ydoc, node)
-      elif node.kind_of?(n.FunctionNode)
+      elif node.kind_of?(n.Function)
         self.write_method(ydoc, node, "function")
-      elif node.kind_of?(n.DataNode)
+      elif node.kind_of?(n.Data)
         self.write_data(ydoc, node)
       else
         raise Exception.new("unknown node: {0}".format(node))

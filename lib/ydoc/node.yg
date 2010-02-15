@@ -2,10 +2,10 @@
 class Node
 end
 
-class TextNode > Node
+class Text > Node
 end
 
-class ClassNode > Node
+class Class > Node
   def init(name, base, including, desc, attrs)
     self.name = name
     self.base = base
@@ -19,7 +19,7 @@ class ClassNode > Node
   end
 end
 
-class AttributeNode > Node
+class Attribute > Node
   def init(name, type, desc)
     self.name = name
     self.type = type
@@ -27,10 +27,10 @@ class AttributeNode > Node
   end
 end
 
-class PropertyNode > AttributeNode
+class Property > Attribute
 end
 
-class MethodNode > Node
+class Method > Node
   def init(sig, params, return_, excs, block, desc)
     self.sig = sig
     self.params = params
@@ -45,27 +45,27 @@ class MethodNode > Node
   end
 end
 
-class FunctionNode > MethodNode
+class Function > Method
 end
 
-class ClassmethodNode > MethodNode
+class Classmethod > Method
 end
 
-class ParameterNode > Node
+class Parameter > Node
   def init(name, desc)
     self.name = name
     self.desc = desc
   end
 end
 
-class ExceptionNode > Node
+class Exception > Node
   def init(type, desc)
     self.type = type
     self.desc = desc
   end
 end
 
-class DataNode > Node
+class Data > Node
   def init(name, type, desc)
     self.name = name
     self.type = type

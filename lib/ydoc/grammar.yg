@@ -302,7 +302,7 @@ end
 exceptions_body = action(indent_token * ((text_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) ^ 0) * dedent_token) do [ignore1, excs, ignore2]
   a = []
   excs.each() do [exc]
-    a << node.ExceptionNode.new(exc[0].value, exc[2].value + exc[4].get(0, ""))
+    a << node.Exception.new(exc[0].value, exc[2].value + exc[4].get(0, ""))
   end
   next a
 end
@@ -319,7 +319,7 @@ end
 parameters_body = action(indent_token * ((text_token * colon_token * text_token * newline_token) ^ 0) * dedent_token) do [ignore1, params, ignore2]
   a = []
   params.each() do [param]
-    a << node.ParameterNode.new(param[0].value, param[2].value)
+    a << node.Parameter.new(param[0].value, param[2].value)
   end
   next a
 end
@@ -334,15 +334,15 @@ method_body = action(indent_token * (parameters ^ (-1)) * (return_ ^ (-1)) * (ex
 end
 classmethod = action(classmethod_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
   body = bodies.get(0, [[], "", [], "", ""])
-  next node.ClassmethodNode.new(sig.value, body[0], body[1], body[2], body[3], body[4])
+  next node.Classmethod.new(sig.value, body[0], body[1], body[2], body[3], body[4])
 end
 function = action(function_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
   body = bodies.get(0, [[], "", [], "", ""])
-  next node.FunctionNode.new(sig.value, body[0], body[1], body[2], body[3], body[4])
+  next node.Function.new(sig.value, body[0], body[1], body[2], body[3], body[4])
 end
 method = action(method_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
   body = bodies.get(0, [[], "", [], "", ""])
-  next node.MethodNode.new(sig.value, body[0], body[1], body[2], body[3], body[4])
+  next node.Method.new(sig.value, body[0], body[1], body[2], body[3], body[4])
 end
 attribute = action(attribute_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, body_opt]
   body = body_opt.get(0, [])
@@ -356,7 +356,7 @@ attribute = action(attribute_token * colon_token * text_token * newline_token * 
   else
     desc = body[5].get(0, "")
   end
-  next node.AttributeNode.new(name.value, type, desc)
+  next node.Attribute.new(name.value, type, desc)
 end
 prop = action(property_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, body_opt]
   body = body_opt.get(0, [])
@@ -370,7 +370,7 @@ prop = action(property_token * colon_token * text_token * newline_token * ((inde
   else
     desc = body[5].get(0, "")
   end
-  next node.PropertyNode.new(name.value, type, desc)
+  next node.Property.new(name.value, type, desc)
 end
 data = action(data_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignroe2, name, ignore3, bodies]
   body = bodies.get(0, [])
@@ -384,7 +384,7 @@ data = action(data_token * colon_token * text_token * newline_token * ((indent_t
   else
     desc = ""
   end
-  next node.DataNode.new(name.value, type, desc)
+  next node.Data.new(name.value, type, desc)
 end
 attr = action(prop / method / classmethod / attribute) do [attr]
   next attr
@@ -396,7 +396,7 @@ klass_body_opt = action(klass_body ^ (-1)) do [body]
   next body.get(0, ["", "", "", []])
 end
 klass = action(klass_token * colon_token * text_token * newline_token * klass_body_opt) do [ignore1, ignore2, name, ignore3, body]
-  next node.ClassNode.new(name.value, body[0], body[1], body[2], body[3])
+  next node.Class.new(name.value, body[0], body[1], body[2], body[3])
 end
 grammar = (text / klass / function / data) ^ 0
 
