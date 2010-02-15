@@ -532,6 +532,9 @@ class Generator
         i += 1
         body = ""
         while s[i] != terminator
+          if s[i] == "\\"
+            i += 1
+          end
           body << self.conv_char(s[i])
           i += 1
         end

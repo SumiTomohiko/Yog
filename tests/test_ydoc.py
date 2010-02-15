@@ -140,11 +140,20 @@ foo
     def test_italic0(self):
         self.do_test("_foo_", "<p><i>foo</i></p>\n")
 
+    def test_italic10(self):
+        self.do_test("_\\__", "<p><i>_</i></p>\n")
+
     def test_bold0(self):
         self.do_test("*foo*", "<p><em>foo</em></p>\n")
 
+    def test_bold10(self):
+        self.do_test("*\\**", "<p><em>*</em></p>\n")
+
     def test_typewriter0(self):
         self.do_test("+foo+", "<p><tt>foo</tt></p>\n")
+
+    def test_typewriter10(self):
+        self.do_test("+\\++", "<p><tt>+</tt></p>\n")
 
     def test_class0(self):
         self.do_test("""
