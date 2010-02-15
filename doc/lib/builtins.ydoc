@@ -253,7 +253,11 @@ class: Bool
   The class of +true+ and +false+.
 
   method: hash()
+
   method: to_s()
+    return: string representation of a Bool
+
+    Converts a Bool into +String+.
 
 class: Coroutine
   base: Object
