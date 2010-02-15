@@ -21,9 +21,9 @@ class Dedent > Token
   end
 end
 
-class Klass > Token
+class Class > Token
   def to_s()
-    return "<Klass line {0}>".format(self.lineno)
+    return "<Class line {0}>".format(self.lineno)
   end
 end
 
@@ -127,7 +127,7 @@ KEY2TOKEN = {
   "attribute" => Attribute,
   "base" => Base,
   "block" => Block,
-  "class" => Klass,
+  "class" => Class,
   "classmethod" => Classmethod,
   "data" => Data,
   "exceptions" => Exceptions,
@@ -266,7 +266,7 @@ def token_pattern(klass)
   end
 end
 
-klass_token = token_pattern(Klass)
+klass_token = token_pattern(Class)
 colon_token = token_pattern(Colon)
 text_token = token_pattern(Text)
 newline_token = token_pattern(Newline)
@@ -316,10 +316,30 @@ return_ = action(return_token * colon_token * text_token * newline_token * ((ind
   end
   next s
 end
-parameters_body = action(indent_token * ((text_token * colon_token * text_token * newline_token) ^ 0) * dedent_token) do [ignore1, params, ignore2]
+parameter_name = action(text_token / base_token / including_token / method_token / function_token / classmethod_token / parameters_token / exceptions_token / property_token / attribute_token / data_token / type_token / block_token) do [name]
+  if name.kind_of?(Text)
+    next name.value
+  end
+  type2name = {
+    Base => "base",
+    Including => "including",
+    Method => "method",
+    Function => "function",
+    Classmethod => "classmethod",
+    Parameters => "parameters",
+    Exceptions => "exceptions",
+    Property => "property",
+    Attribute => "attribute",
+    Data => "data",
+    Type => "type",
+    Block => "block"
+  }
+  next type2name[name.class]
+end
+parameters_body = action(indent_token * ((parameter_name * colon_token * text_token * newline_token) ^ 0) * dedent_token) do [ignore1, params, ignore2]
   a = []
   params.each() do [param]
-    a << node.Parameter.new(param[0].value, param[2].value)
+    a << node.Parameter.new(param[0], param[2].value)
   end
   next a
 end

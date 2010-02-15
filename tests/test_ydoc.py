@@ -405,6 +405,318 @@ class: Foo
 </class>
 """)
 
+    def test_method60(self):
+        self.do_test("""
+class: Foo
+  method: bar(&block)
+    parameters:
+      block: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(&block)</signature>
+<parameters>
+<parameter>
+<name>block</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method70(self):
+        self.do_test("""
+class: Foo
+  method: bar(parameters)
+    parameters:
+      parameters: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(parameters)</signature>
+<parameters>
+<parameter>
+<name>parameters</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method80(self):
+        self.do_test("""
+class: Foo
+  method: bar(attribute)
+    parameters:
+      attribute: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(attribute)</signature>
+<parameters>
+<parameter>
+<name>attribute</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method90(self):
+        self.do_test("""
+class: Foo
+  method: bar(base)
+    parameters:
+      base: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(base)</signature>
+<parameters>
+<parameter>
+<name>base</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method90(self):
+        self.do_test("""
+class: Foo
+  method: bar(classmethod)
+    parameters:
+      classmethod: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(classmethod)</signature>
+<parameters>
+<parameter>
+<name>classmethod</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method100(self):
+        self.do_test("""
+class: Foo
+  method: bar(data)
+    parameters:
+      data: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(data)</signature>
+<parameters>
+<parameter>
+<name>data</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method110(self):
+        self.do_test("""
+class: Foo
+  method: bar(exceptions)
+    parameters:
+      exceptions: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(exceptions)</signature>
+<parameters>
+<parameter>
+<name>exceptions</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method120(self):
+        self.do_test("""
+class: Foo
+  method: bar(function)
+    parameters:
+      function: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(function)</signature>
+<parameters>
+<parameter>
+<name>function</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method130(self):
+        self.do_test("""
+class: Foo
+  method: bar(including)
+    parameters:
+      including: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(including)</signature>
+<parameters>
+<parameter>
+<name>including</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method140(self):
+        self.do_test("""
+class: Foo
+  method: bar(method)
+    parameters:
+      method: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(method)</signature>
+<parameters>
+<parameter>
+<name>method</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method150(self):
+        self.do_test("""
+class: Foo
+  method: bar(property)
+    parameters:
+      property: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(property)</signature>
+<parameters>
+<parameter>
+<name>property</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
+    def test_method160(self):
+        self.do_test("""
+class: Foo
+  method: bar(type)
+    parameters:
+      type: baz
+""", """<class>
+<name>Foo</name>
+<base></base>
+<including></including>
+<method>
+<signature>bar(type)</signature>
+<parameters>
+<parameter>
+<name>type</name>
+<description>baz</description>
+</parameter>
+</parameters>
+<return></return>
+<exceptions>
+</exceptions>
+<block></block>
+</method>
+</class>
+""")
+
     def test_property0(self):
         self.do_test("""
 class: Foo
