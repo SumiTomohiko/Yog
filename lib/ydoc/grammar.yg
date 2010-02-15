@@ -1,0 +1,419 @@
+
+from peg import action, pattern
+import ydoc.node as node
+
+class Token
+  def init(lineno, value=nil)
+    self.lineno = lineno
+    self.value = value
+  end
+end
+
+class Indent > Token
+  def to_s()
+    return "<Indent line {0}>".format(self.lineno)
+  end
+end
+
+class Dedent > Token
+  def to_s()
+    return "<Dedent line {0}>".format(self.lineno)
+  end
+end
+
+class Klass > Token
+  def to_s()
+    return "<Klass line {0}>".format(self.lineno)
+  end
+end
+
+class Base > Token
+  def to_s()
+    return "<Base line {0}>".format(self.lineno)
+  end
+end
+
+class Including > Token
+  def to_s()
+    return "<Including line {0}>".format(self.lineno)
+  end
+end
+
+class Method > Token
+  def to_s()
+    return "<Method line {0}>".format(self.lineno)
+  end
+end
+
+class Parameters > Token
+  def to_s()
+    return "<Parameters line {0}>".format(self.lineno)
+  end
+end
+
+class Return > Token
+  def to_s()
+    return "<Return line {0}>".format(self.lineno)
+  end
+end
+
+class Data > Token
+  def to_s()
+    return "<Data line {0}>".format(self.lineno)
+  end
+end
+
+class Type > Token
+end
+
+class Attribute > Token
+  def to_s()
+    return "<Attribute line {0}>".format(self.lineno)
+  end
+end
+
+class Property > Token
+  def to_s()
+    return "<Property line {0}>".format(self.lineno)
+  end
+end
+
+class Classmethod > Token
+  def to_s()
+    return "<Classmethod line {0}>".format(self.lineno)
+  end
+end
+
+class Function > Token
+  def to_s()
+    return "<Function line {0}>".format(self.lineno)
+  end
+end
+
+class Colon > Token
+  def to_s()
+    return "<Colon line {0}>".format(self.lineno)
+  end
+end
+
+class Newline > Token
+  def to_s()
+    return "<Newline line {0}>".format(self.lineno)
+  end
+end
+
+class Text > Token
+  def to_s()
+    return "<Text line {1}, {0}>".format(self.value.inspect(), self.lineno)
+  end
+end
+
+class Method > Token
+end
+
+class Return > Token
+end
+
+class Exceptions > Token
+end
+
+class Parameters > Token
+end
+
+class Block > Token
+end
+
+KEY2TOKEN = {
+  "attribute" => Attribute,
+  "base" => Base,
+  "block" => Block,
+  "class" => Klass,
+  "classmethod" => Classmethod,
+  "data" => Data,
+  "exceptions" => Exceptions,
+  "function" => Function,
+  "including" => Including,
+  "method" => Method,
+  "parameters" => Parameters,
+  "property" => Property,
+  "return" => Return,
+  "type" => Type }
+
+class Lexer
+  def init(fp)
+    self.fp = fp
+    self.lineno = 0
+    self.margin_stack = [0]
+    self.text_last? = false
+  end
+
+  def get_margin(line)
+    return (line =~ /\A\s*/).end(0)
+  end
+
+  def generate_dedent_tokens(line)
+    margin = self.get_margin(line)
+    tokens = []
+    while !self.margin_stack.empty?
+      if self.margin_stack[-1] <= margin
+        return tokens
+      end
+      self.margin_stack.pop()
+      tokens << Dedent.new(self.lineno)
+    end
+  end
+
+  def generate_indent_tokens(line)
+    margin = self.get_margin(line)
+    if self.margin_stack[-1] < margin
+      if self.text_last?
+        return []
+      end
+      self.margin_stack.push(margin)
+      return [Indent.new(self.lineno)]
+    end
+
+    return self.generate_dedent_tokens(line)
+  end
+
+  def readline()
+    comment_depth = 0
+    while line = self.fp.readline()
+      self.lineno += 1
+      if line =~ /\A\s*--/
+        comment_depth += 1
+        next
+      end
+      if line =~ /\A\s*\+\+/
+        comment_depth -= 1
+        next
+      end
+      if 0 < comment_depth
+        next
+      end
+
+      if line =~ /\A\s*#/
+        next
+      end
+      if !self.text_last? && (line =~ /\A\s*\z/)
+        next
+      end
+      break
+    end
+    return line
+  end
+
+  def split_key_value(line)
+    size = line.size
+    i = 0
+    while i < size
+      if line[i] == ":"
+        i += 1
+        if line[i] != ":"
+          key = line.slice(0, i - 1).trim()
+          value = line.slice(i).trim()
+          return key, value
+        end
+      end
+      i += 1
+    end
+
+    return nil, nil
+  end
+
+  def cut_margin(line)
+    margin = self.margin_stack[-1]
+    if line.size < margin
+      return "\n"
+    end
+    return line.slice(margin)
+  end
+
+  def split_tokens(line)
+    if self.text_last? && (line =~ /\A\s*\Z/)
+      return [Text.new(self.lineno, self.cut_margin(line))]
+    end
+    tokens = self.generate_indent_tokens(line)
+
+    key, value = self.split_key_value(line)
+    if key != nil
+      tokens << KEY2TOKEN.get(key, Text).new(self.lineno, key)
+      tokens << Colon.new(self.lineno)
+      tokens << Text.new(self.lineno, value)
+      tokens << Newline.new(self.lineno)
+      self.text_last? = false
+      return tokens
+    end
+
+    tokens << Text.new(self.lineno, self.cut_margin(line.gsub("::", ":")))
+    self.text_last? = true
+    return tokens
+  end
+
+  def get_tokens()
+    tokens = []
+    while line = self.readline()
+      tokens += self.split_tokens(line)
+    end
+    tokens += self.generate_dedent_tokens("")
+    return tokens
+  end
+end
+
+def token_pattern(klass)
+  return pattern(klass) do [pat, act]
+    next act.kind_of?(pat)
+  end
+end
+
+klass_token = token_pattern(Klass)
+colon_token = token_pattern(Colon)
+text_token = token_pattern(Text)
+newline_token = token_pattern(Newline)
+indent_token = token_pattern(Indent)
+dedent_token = token_pattern(Dedent)
+base_token = token_pattern(Base)
+including_token = token_pattern(Including)
+method_token = token_pattern(Method)
+function_token = token_pattern(Function)
+classmethod_token = token_pattern(Classmethod)
+parameters_token = token_pattern(Parameters)
+return_token = token_pattern(Return)
+exceptions_token = token_pattern(Exceptions)
+property_token = token_pattern(Property)
+attribute_token = token_pattern(Attribute)
+data_token = token_pattern(Data)
+type_token = token_pattern(Type)
+block_token = token_pattern(Block)
+
+text = action(text_token ^ 1) do [tokens]
+  s = ""
+  tokens.each() do [token]
+    s << token.value
+  end
+  next s
+end
+base = action(base_token * colon_token * text_token * newline_token) do [ignore1, ignore2, text, ignore3]
+  next text.value
+end
+including = action(including_token * colon_token * text_token * newline_token) do [ignore1, ignore2, text, ignore3]
+  next text.value
+end
+exceptions_body = action(indent_token * ((text_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) ^ 0) * dedent_token) do [ignore1, excs, ignore2]
+  a = []
+  excs.each() do [exc]
+    a << node.ExceptionNode.new(exc[0].value, exc[2].value + exc[4].get(0, ""))
+  end
+  next a
+end
+exceptions = action(exceptions_token * colon_token * text_token * newline_token * exceptions_body) do [ignore1, ignore2, ignore3, ignore4, excs]
+  next excs
+end
+return_ = action(return_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) do [ignore1, ignore2, desc, ignore, desc2]
+  s = desc.value + "\n"
+  desc2.each() do [text]
+    s << text[1]
+  end
+  next s
+end
+parameters_body = action(indent_token * ((text_token * colon_token * text_token * newline_token) ^ 0) * dedent_token) do [ignore1, params, ignore2]
+  a = []
+  params.each() do [param]
+    a << node.ParameterNode.new(param[0].value, param[2].value)
+  end
+  next a
+end
+parameters = action(parameters_token * colon_token * text_token * newline_token * (parameters_body ^ (-1))) do [ignore1, ignore2, ignore3, ignore4, body]
+  next body.get(0, [])
+end
+block = action(block_token * colon_token * text_token * newline_token) do [ignore1, ignore2, sig, ignore3]
+  next sig.value
+end
+method_body = action(indent_token * (parameters ^ (-1)) * (return_ ^ (-1)) * (exceptions ^ (-1)) * (block ^ (-1)) * (text ^ (-1)) * dedent_token) do [ignore1, params, return_, excs, block, desc, ignore2]
+  next [params.get(0, []), return_.get(0), excs.get(0, []), block.get(0, ""), desc.get(0)]
+end
+classmethod = action(classmethod_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
+  body = bodies.get(0, [[], "", [], "", ""])
+  next node.ClassmethodNode.new(sig.value, body[0], body[1], body[2], body[3], body[4])
+end
+function = action(function_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
+  body = bodies.get(0, [[], "", [], "", ""])
+  next node.FunctionNode.new(sig.value, body[0], body[1], body[2], body[3], body[4])
+end
+method = action(method_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
+  body = bodies.get(0, [[], "", [], "", ""])
+  next node.MethodNode.new(sig.value, body[0], body[1], body[2], body[3], body[4])
+end
+attribute = action(attribute_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, body_opt]
+  body = body_opt.get(0, [])
+  if body.get(3) == nil
+    type = ""
+  else
+    type = body[3].value
+  end
+  if body.get(5) == nil
+    desc = ""
+  else
+    desc = body[5].get(0, "")
+  end
+  next node.AttributeNode.new(name.value, type, desc)
+end
+prop = action(property_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, body_opt]
+  body = body_opt.get(0, [])
+  if body.get(3) == nil
+    type = ""
+  else
+    type = body[3].value
+  end
+  if body.get(5) == nil
+    desc = ""
+  else
+    desc = body[5].get(0, "")
+  end
+  next node.PropertyNode.new(name.value, type, desc)
+end
+data = action(data_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignroe2, name, ignore3, bodies]
+  body = bodies.get(0, [])
+  if body.get(3) != nil
+    type = body[3].value
+  else
+    type = ""
+  end
+  if body.get(5) != nil
+    desc = body[5].get(0, "")
+  else
+    desc = ""
+  end
+  next node.DataNode.new(name.value, type, desc)
+end
+attr = action(prop / method / classmethod / attribute) do [attr]
+  next attr
+end
+klass_body = action(indent_token * (base ^ (-1)) * (including ^ (-1)) * (text ^ (-1)) * (attr ^ 0) * dedent_token) do [ignore1, base, including, text, attrs, ignore2]
+  next [base.get(0), including.get(0), text.get(0, ""), attrs]
+end
+klass_body_opt = action(klass_body ^ (-1)) do [body]
+  next body.get(0, ["", "", "", []])
+end
+klass = action(klass_token * colon_token * text_token * newline_token * klass_body_opt) do [ignore1, ignore2, name, ignore3, body]
+  next node.ClassNode.new(name.value, body[0], body[1], body[2], body[3])
+end
+grammar = (text / klass / function / data) ^ 0
+
+class Parser
+  def parse(fp)
+    tokens = Lexer.new(fp).get_tokens()
+    m = grammar.match(tokens)
+    if m == nil
+      raise SyntaxError.new("invalid tokens")
+    end
+    if !m.rest.empty?
+      next_token = m.rest[0]
+      msg = "line {0}: invalid token: {1}".format(next_token.lineno, next_token)
+      raise SyntaxError.new(msg)
+    end
+    return m.matched
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

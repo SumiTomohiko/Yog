@@ -1,0 +1,76 @@
+
+class Node
+end
+
+class TextNode > Node
+end
+
+class ClassNode > Node
+  def init(name, base, including, desc, attrs)
+    self.name = name
+    self.base = base
+    self.including = including
+    self.desc = desc
+    self.attrs = attrs
+  end
+
+  def to_s()
+    return "<ClassNode {0}>".format(self.name)
+  end
+end
+
+class AttributeNode > Node
+  def init(name, type, desc)
+    self.name = name
+    self.type = type
+    self.desc = desc
+  end
+end
+
+class PropertyNode > AttributeNode
+end
+
+class MethodNode > Node
+  def init(sig, params, return_, excs, block, desc)
+    self.sig = sig
+    self.params = params
+    self.return_ = return_
+    self.excs = excs
+    self.block = block
+    self.desc = desc
+  end
+
+  def to_s()
+    return "<MethodNode {0}>".format(self.sig)
+  end
+end
+
+class FunctionNode > MethodNode
+end
+
+class ClassmethodNode > MethodNode
+end
+
+class ParameterNode > Node
+  def init(name, desc)
+    self.name = name
+    self.desc = desc
+  end
+end
+
+class ExceptionNode > Node
+  def init(type, desc)
+    self.type = type
+    self.desc = desc
+  end
+end
+
+class DataNode > Node
+  def init(name, type, desc)
+    self.name = name
+    self.type = type
+    self.desc = desc
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
