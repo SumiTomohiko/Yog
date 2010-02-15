@@ -48,7 +48,7 @@ class Generator
           if s[i] == "\\"
             i += 1
           end
-          body << self.conv_char(s[i])
+          body << s[i]
           i += 1
         end
         sym2proc = {
@@ -468,16 +468,14 @@ EOF
       end
       including_html = <<EOF.format(including)
 <tr>
-  <th align="left">including module(s)</th>
-  <th align="center">:</th>
-  <td><tt>{0}</tt></td>
+  <th align="left">including module(s)</th><th>:</th><td><tt>{0}</tt></td>
 </tr>
 EOF
     else
-      including = ""
+      including_html = ""
     end
 
-    self.body << <<EOF.format(name, base, including)
+    self.body << <<EOF.format(name, base, including_html)
 <dl>
   <dt>class <tt>{0}</tt></dt>
   <dd>

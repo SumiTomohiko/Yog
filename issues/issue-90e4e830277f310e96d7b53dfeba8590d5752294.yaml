@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: UFO operator
+desc: "\"1 <=> 42\" becomes SyntaxError."
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-15 13:40:42.443892 Z
+references: []
+
+id: 90e4e830277f310e96d7b53dfeba8590d5752294
+log_events: 
+- - 2010-02-15 13:40:43.586055 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
