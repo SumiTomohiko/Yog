@@ -188,14 +188,21 @@ class Generator
 
         margin = m.end()
         self.start_pretty()
+        body = ""
         while i < lines.size
           line = lines[i]
+          if line =~ /\A\s*\Z/
+            body << "\n"
+            i += 1
+            next
+          end
           if !(line =~ /\A\s+/)
             break
           end
-          self.write_pretty(line.slice(margin) + "\n")
+          body << line.slice(margin) + "\n"
           i += 1
         end
+        self.write_pretty(body.rtrim())
         self.end_pretty()
         next
       elif m = (line =~ /\A(\+|\*)\s+/)

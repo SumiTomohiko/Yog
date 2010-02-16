@@ -61,8 +61,7 @@ foo
 
   [42, 26]
 """, """<p>foo</p>
-<pre>[42, 26]
-</pre>
+<pre>[42, 26]</pre>
 """)
 
     def test_pretty10(self):
@@ -71,8 +70,20 @@ foo
 
   # [42, 26]
 """, """<p>foo</p>
-<pre># [42, 26]
-</pre>
+<pre># [42, 26]</pre>
+""")
+
+    def test_pretty20(self):
+        self.do_test("""
+foo
+
+  bar
+
+  baz
+""", """<p>foo</p>
+<pre>bar
+
+baz</pre>
 """)
 
     def test_title0(self):
