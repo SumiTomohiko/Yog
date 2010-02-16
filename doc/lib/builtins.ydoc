@@ -360,18 +360,73 @@ class: Coroutine
 
     Suspend a coroutine.
 
+class: CoroutineError
+  base: Exception
+
+  An exception for coroutines.
+
 class: Dict
   base: Object
 
+  A dictionary is a collection of a key-value pair.
+
+  Comma-separated pairs in the form of +key => value+ enclosing with braces (+{}+) become a dictionary. Any class objects can be placed on a key or a value. For example, +{ 42 => 26, "foo" => "bar" }+ is a dictionary which has two pairs. Their keys are +42+ and +"foo"+. A value for +42+ is +26+ and a value for +"foo"+ is +"bar"+.
+
+  You can read a value of a key in a dictionary +d+ in the form of +d[key]+.
+
+  A dictionary doesn't keep pairs' order. An order in which key-value pairs appear in +Dict#each+ method is not defined.
+
   method: +(d)
+    parameters:
+      d: a dictionary
+    return: a new dictionary
+    exceptions:
+      TypeError: _d_ is not a dictionary
+
+    Returns a new dictionary which has pairs in both of +self+ and _d_.
+
   method: [](key)
+    parameters:
+      key: a key
+    return: a value corresponding _key_
+    exceptions:
+      KeyError: _key_ not found
+
+    Returns a value.
+
   method: []=(key, value)
+    parameters:
+      key: a key
+      value: a value
+    return: +self+
+
+    Sets a value of _key_.
+
   method: each(&block)
-    Callback *block* for each pairs of key and value.
-    The *block*'s signature is ``block(key, val)``.
+    parameters:
+      block: a callable object
+    return: +self+
+    block: block(key, value)
+
+    Callbacks _block_ for each pairs. Order is undefined.
+
+  method: get(key, default=nil)
+    parameters:
+      key: a key
+      default: return value when _key_ is not found
+    return: a value corresponding _key_ or _default_
+
+    Returns a value or _default_.
+
   attribute: size
     type: Fixnum
-    Number of entries in the dictionary.
+
+    number of pairs in a dictionary
+
+  method: to_s()
+    return: string representation of a dictionary
+
+    Converts a dictionary to a string.
 
 class: Exception
   base: Object
