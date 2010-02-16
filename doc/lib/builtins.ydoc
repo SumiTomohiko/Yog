@@ -852,13 +852,12 @@ class: Thread
 
 function: __recurse__(obj, f, g)
   parameters:
-    obj:
-    f:
-    g:
-  return:
+    obj: any object
+    f: a function which is called when _obj_ is in +Thread#__recursive_stack__+
+    g: a function which is called when _obj_ isn't in +Thread#__recursive_stack__+
+  return: a return value of _f_ or _g_
 
-  The Yog interpreter uses this function internally.
-  `Nobody cares <http:://uncyclopedia.wikia.com/wiki/Nobody_cares>`_.
+  When _obj_ is in +Thread#__recursive_stack__+ of a current thread, calls _f_+(+_obj_+)+. Otherwise, pushes _obj_ to +Thread#__recursive_stack__+ and calls _g_+(+_obj_+)+.
 
 function: bind(obj)
   parameters:
@@ -879,10 +878,9 @@ function: bind(obj)
 function: classmethod(function)
   parameters:
     f: function
-  return: class method for *function*
+  return: class method for _function_
 
-  Return a class method for *function*.
-  To declare class method, use this function in the decorator form::
+  Return a class method for _function_. To declare class method, use this function in the decorator form::
 
     class Foo
       @classmethod
@@ -891,27 +889,35 @@ function: classmethod(function)
       end
     end
 
+function: copy_file(src, dest)
+  parameters:
+    src: a source file
+    dest: a destination path
+  return: +nil+
+
+  Copies the _src_ file to _dest_.
+
+function: dirname(path)
+  parameters:
+    path: a path
+  return: a directory part of _path_
+
 function: get_current_thread()
-  return: current thread
+  return: a current thread
 
-  Return the current thread.
-
-  The Yog interpreter uses this function internally.
+  Returns a current thread.
 
 function: import_package(name)
   parameters:
-    name: symbol of package name
-  return: imported package
+    name: a dotted name (+"foo.bar.baz"+) of a package
+  return: an imported package
 
-  Import a package.
-
-  The Yog interpreter uses this function internally.
-  If you want to import packages, use +import+ statement.
+  Import a package. If you want to import packages, use +import+ statement.
 
 function: include(mod)
   parameters:
     mod: module to include
-  return: which accepts a class to be included
+  return: a function to include a module
 
   +include+ is used to mix-in a class and modules as a decorator::
 
@@ -925,52 +931,64 @@ function: include(mod)
     class Baz
     end
 
-  Calling ``Baz.new().bar()`` prints ``42``.
+  Calling +Baz.new().bar()+ prints +42+.
 
 function: include_module(klass, mod)
   parameters:
-    klass: class to include *module*
-    module: included module
-  return: +klass+
+    klass: a class to include _mod_
+    mod: included module
+  return: _klass_
 
-  Mix-in *module* to *klass*.
+  Mix-in _mod_ to _klass_. If you want to mix-in a class and modules, use +include+ function as a decorator.
 
-  The Yog interpreter uses this function internally.
-  If you want to mix-in a class and modules, use +include+ function as a decorator.
+function: join_path(head, tail)
+  parameters:
+    head: first part of a path
+    tail: second part of a path
+  return: +String+
+
+  Joins _head_ and _tail_ separating +PATH_SEPARATOR+.
 
 function: loop(&block)
   parameters:
-    &block: block to execute
-  return: never return
+    block: a block to execute
+  return: +nil+. But this function never return.
+  block: block(n)
 
-  Execute *block* eternally.
-  +loop+ passes a loop counter to *block*.
+  Execute _block_ eternally. +loop+ passes a loop counter to _block_.
 
-function: partial(f, \*args, \*\*kw)
+function: make_dirs(path)
   parameters:
-    f: function to call
-    args: arguments to *f*
-    kw: arguments to *f*
-  return: function
+    path: a path of a directory
+  return: +nil+
 
-  +partial+ is a function for the partial application.
-  A returned function accepts rest of arguments for *f*.
-  This function is equivalent to this::
+  Makes a directory including parents directory of _path_.
 
-    def g(*v, **k)
-      return f(*(args + v), **(kw + k))
-    end
+function: mkdir(path)
+  parameters:
+    path: a path of a directory
+  exceptions:
+    SystemCallError: when cannot make a directory
+    TypeError: _path_ is not a +String+
 
-    return g
+  Makes a directory. The parent directory of _path_ must exist.
+
+function: partial(f, *args, **kw, &block=nil)
+  parameters:
+    f: a callable object
+    args: arguments to _f_
+    kw: arguments to _f_
+    block: a callable object
+  return: a function
+
+  +partial+ is a function for the partial application. A returned function accepts rest of arguments for _f_.
 
 function: print(*args)
   parameters:
     args: objects to print standard output
   return: +nil+
 
-  Print *args* to the standard output.
-  If objects are not string, they are converted with +Object#to_s+.
-  When no object are given, +print+ does nothing.
+  Prints _args_ to the standard output. If objects are not string, they are converted with +Object#to_s+. When no object are given, +print+ does nothing.
 
 function: property(getter, setter=nil)
   parameters:
@@ -978,9 +996,7 @@ function: property(getter, setter=nil)
     setter: a function called on setting property
   return: a +Property+ object
 
-  When a +Property+ object is gotten as an attribute, *getter* is called without arguments.
-  If an attirubte to be set is a +Property+ object, *setter* is called with one argment.
-  The *setter*'s argument is a new value of the attribute::
+  When a +Property+ object is gotten as an attribute, _getter_ is called without arguments. If an attirubte to be set is a +Property+ object, _setter_ is called with one argment. The _setter_'s argument is a new value of the attribute::
 
     class Foo
       def init()
@@ -1008,27 +1024,30 @@ function: puts(*args)
     args: objects to print standard output
   return: +nil+
 
-  Print *args* to the standard output with trailing newlines.
-  If objects are not string, they are converted with +Object#to_s+.
-  When no object are given, +print+ prints one newline.
+  Prints _args_ to the standard output with trailing newlines. If objects are not string, they are converted with +Object#to_s+. When no object are given, +print+ prints one newline.
 
 function: raise_exception(e)
   parameters:
     e: an exception
   return: +nil+. But this function never return!
 
-  Raise an exception.
-
-  The Yog interpreter uses this function internally.
-  If you want to raise an exception, use the +raise+ statement.
+  Raise an exception. If you want to raise an exception, use the +raise+ statement.
 
 == Built-in Objects
 
 data: ARGV
   type: Array
 
-  The +Array+ object containing command line parameters.
-  +ARGV[0]+ is a script file name.
+  The +Array+ object containing command line parameters. +ARGV[0]+ is a script file name. If Yog is invoked in an interactive mode, +ARGV+ becomes empty. With +__FILE__+ variables, you can make a special part in a script file::
+
+    if ARGV.get(0) == __FILE__
+      # Here is executed when this file is invoked
+    end
+
+data: PATH_SEPARATOR
+  type: String
+
+  a path separator of directories
 
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
