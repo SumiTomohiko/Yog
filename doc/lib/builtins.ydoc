@@ -431,9 +431,23 @@ class: Dict
 class: Exception
   base: Object
 
+  The base class of exceptions.
+
   method: init(message=nil)
+    parameters:
+      message: information about an exception
+
+    Constructor.
+
   attribute: message
+    type: Object
+
+    information about an exception
+
   method: to_s()
+    return: string representation of a exception
+
+    Converts a exception to String.
 
 class: File
   base: Object
