@@ -452,15 +452,44 @@ class: Exception
 class: File
   base: Object
 
+  The class representing objects on a file system.
+
   method: close()
-  classmethod: open(path, mode, &block=nil)
-    Callback *block* (if given).
-    The *block*'s signature is ``block(fp)``.
-    *fp* is a +File+ object.
-    When *block* is given, +open+ closes the file at the end.
+    return: +self+
+
+    Closes a file.
+
+  classmethod: open(path, mode="r", &block=nil)
+    parameters:
+      path: path of a file
+      mode: +"r"+ when reading a file or +"w"+ when writing a file
+      block: a callable object
+    return: a return value of _block_ or a +File+ object
+    exceptions:
+      SystemCallError: +SystemCallError+ or its children
+      TypeError: types of arguments are invalid
+    block: block(fp)
+
+    When _block_ is given, callbacks _block_, and closes the file at the end.
+
   method: read()
+    return: +String+
+
+    Reads all contents of a file.
+
   method: readline()
+    return: +String+ or +nil+
+
+    Reads one line from a file.
+
   method: write(s)
+    parameters:
+      s: +String+
+    return: +self+
+    exceptions:
+      TypeError: _s_ is not +String+
+
+    Writes _s_ to a file.
 
 class: Fixnum
   base: Object
@@ -501,6 +530,132 @@ class: Set
   method: add(*args)
   method: include?(obj)
   attribute: size
+
+class: SystemCallError
+  base: Exception
+
+  The parent class of the following classes::
+
+  * E2BIG
+  * EACCES
+  * EADDRINUSE
+  * EADDRNOTAVAIL
+  * EAFNOSUPPORT
+  * EAGAIN
+  * EALREADY
+  * EBADE
+  * EBADF
+  * EBADFD
+  * EBADMSG
+  * EBADR
+  * EBADRQC
+  * EBADSLT
+  * EBUSY
+  * ECANCELED
+  * ECHILD
+  * ECHRNG
+  * ECOMM
+  * ECONNABORTED
+  * ECONNREFUSED
+  * ECONNRESET
+  * EDEADLK
+  * EDEADLOCK
+  * EDESTADDRREQ
+  * EDOM
+  * EDQUOT
+  * EEXIST
+  * EFAULT
+  * EFBIG
+  * EHOSTDOWN
+  * EHOSTUNREACH
+  * EIDRM
+  * EILSEQ
+  * EINPROGRESS
+  * EINTR
+  * EINVAL
+  * EIO
+  * EISCONN
+  * EISDIR
+  * EISNAM
+  * EKEYEXPIRED
+  * EKEYREJECTED
+  * EKEYREVOKED
+  * EL2HLT
+  * EL2NSYNC
+  * EL3HLT
+  * EL3RST
+  * ELIBACC
+  * ELIBBAD
+  * ELIBMAX
+  * ELIBSCN
+  * ELIBEXEC
+  * ELOOP
+  * EMEDIUMTYPE
+  * EMFILE
+  * EMLINK
+  * EMSGSIZE
+  * EMULTIHOP
+  * ENAMETOOLONG
+  * ENETDOWN
+  * ENETRESET
+  * ENETUNREACH
+  * ENFILE
+  * ENOBUFS
+  * ENODATA
+  * ENODEV
+  * ENOENT
+  * ENOEXEC
+  * ENOKEY
+  * ENOLCK
+  * ENOLINK
+  * ENOMEDIUM
+  * ENOMEM
+  * ENOMSG
+  * ENONET
+  * ENOPKG
+  * ENOPROTOOPT
+  * ENOSPC
+  * ENOSR
+  * ENOSTR
+  * ENOSYS
+  * ENOTBLK
+  * ENOTCONN
+  * ENOTDIR
+  * ENOTEMPTY
+  * ENOTSOCK
+  * ENOTSUP
+  * ENOTTY
+  * ENOTUNIQ
+  * ENXIO
+  * EOPNOTSUPP
+  * EOVERFLOW
+  * EPERM
+  * EPFNOSUPPORT
+  * EPIPE
+  * EPROTO
+  * EPROTONOSUPPORT
+  * EPROTOTYPE
+  * ERANGE
+  * EREMCHG
+  * EREMOTE
+  * EREMOTEIO
+  * ERESTART
+  * EROFS
+  * ESHUTDOWN
+  * ESPIPE
+  * ESOCKTNOSUPPORT
+  * ESRCH
+  * ESTALE
+  * ESTRPIPE
+  * ETIME
+  * ETIMEDOUT
+  * ETXTBSY
+  * EUCLEAN
+  * EUNATCH
+  * EUSERS
+  * EWOULDBLOCK
+  * EXDEV
+  * EXFULL
 
 class: Thread
   base: Object

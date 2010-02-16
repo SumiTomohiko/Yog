@@ -181,6 +181,7 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         YogError_raise_TypeError(env, "mode must be String");
     }
     if (IS_UNDEF(encoding)) {
+        /* TODO: IS_NIL */
         encoding = YogEncoding_get_default(env);
     }
 #if 0
