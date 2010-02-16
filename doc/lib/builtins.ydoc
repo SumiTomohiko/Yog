@@ -662,9 +662,26 @@ class: Object
 class: Set
   base: Object
 
+  A +Set+ object is a collection of values. Comma-separated values enclosing braces (+{}+) becomes a +Set+. For example, +{ 42, 26 }+ is a +Set+ which contains two values of +42+ and +26+. When you create a empty +Set+, use +Set.new()+ (+{}+ is an empty dictionary).
+
   method: add(*args)
+    parameters:
+      args: objects to add to +self+
+    return: +self+
+
+    Adds objects to +self+.
+
   method: include?(obj)
+    parameters:
+      obj: any object
+    return: +true+ or +false+
+
+    Checks whether _obj_ is in +self+.
+
   attribute: size
+    type: Fixnum
+
+    number of objects in +self+
 
 class: SystemCallError
   base: Exception
