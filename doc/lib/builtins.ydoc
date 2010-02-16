@@ -619,13 +619,45 @@ class: Fixnum
 
 class: Object
 
+  The base class of all other classes.
+
   method: !=(obj)
+    parameters:
+      obj: any object
+    return: +true+ or +false+
+
+    Compares +self+ with _obj_ with +Object#==+.
+
   method: ==(obj)
+    parameters:
+      obj: any object
+    return: +true+ or +false+
+
+    Compares +self+ with _obj_.
+
   attribute: class
+    type: Class
+
+    a class of an object
+
   method: get_attr(name)
+    parameters:
+      name: +String+ or +Symbol+
+    return: attribute
+    exceptions:
+      AttributeError: attribute not found
+      TypeError: _name_ is not +String+ nor +Symbol+.
+
+    Returns an attribute of an object.
+
   method: hash()
+    return: hash value
+
   method: inspect()
+    return: +String+
+
   method: to_s()
+    return: +String+
 
 class: Set
   base: Object
