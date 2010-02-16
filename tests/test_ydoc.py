@@ -65,6 +65,16 @@ foo
 </pre>
 """)
 
+    def test_pretty10(self):
+        self.do_test("""
+foo
+
+  # [42, 26]
+""", """<p>foo</p>
+<pre># [42, 26]
+</pre>
+""")
+
     def test_title0(self):
         self.do_test("""
 = title
