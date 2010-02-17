@@ -1,0 +1,71 @@
+
+= +optparse+ package
+
+The +optparse+ package is for parsing command line parameters. The +optparse+ package accepts both short syle options (+-x+) and long style options (+--foo+).
+
+== Arguments
+
+Short style options can have an argument in forms of +"-xfoo"+ (an +"x"+ option with an argument +"foo"+) or +"-x foo"+. Long style options can have an argument in forms of +"--foo=bar"+ (a +"foo"+ option with an argument +"bar"+) or +"--foo bar"+.
+
+== Switches
+
+Switches (that is options which don't have an argument) are placed in one option. +"-xyz"+ is equivalent to +"-x -y -z"+.
+
+== +OptionParser+ class
+
+The +OptionParser+ class is a main content of this package. +OptionParser#on_option+ make a +OptionParser+ object to recognize an option. To recognize a switch, use +OptionParser#on_switch+. +OptionParser#parse+ parses options actually and returns a rest of command line arguments.
+
+=== Examples
+
+Executing
+
+  from optparse import OptionParser
+
+  opt = OptionParser.new()
+  opt.on_option("x", "foo") do [val]
+    puts(val)
+  end
+  opt.on_switch("y", "bar") do
+    puts("on")
+  end
+  args = opt.parse(ARGV.slice(1))
+  puts(args)
+
+with arguments "-x quux --foo hoge -y --bar 42 26" prints
+
+  quux
+  hoge
+  on
+  on
+  ["42", "26"]
+
+== Classes
+
+class: OptionParser
+  base: Object
+
+  method: on_option(short, long, &block)
+    parameters:
+      short: a short style option name (excluding +"-"+)
+      long: a long style option name (excluding +"--"+)
+      block: +OptionParser+ object callbacks this block when an option is given
+    return: +nil+
+    block: block(val)
+
+  method: on_switch(short, long, &block)
+    parameters:
+      short: a short style option name (excluding +"-"+)
+      long: a long style option name (excluding +"--"+)
+      block: +OptionParser+ object callbacks this block when a switch is given
+    return: +nil+
+    block: block()
+
+  method: parse(args)
+    parameters:
+      args: command line arguments
+    return: an array which contains command line parameters after options
+
+    Parses command line parameters. Command line parameters given to a Yog script are referred with +ARGV.slice(1)+ (+ARGV[0]+ is a script file name).
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
