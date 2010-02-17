@@ -6,6 +6,7 @@
   + [lib/builtins.ydoc]
   + [lib/hq9plus.ydoc]
   + [lib/optparse.ydoc]
+  + [lib/ydoc.ydoc]
 
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

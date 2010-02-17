@@ -1,0 +1,216 @@
+
+= +ydoc+ package
+
+The +ydoc+ package is a documentation tool for Yog. You can convert ydoc format documents to html. ydoc format includes class definitions, function definitions, object definitions and markups.
+
+== Classes and Methods Definition
+
+In ydoc format, class and method definitions are following\:
+
+  class: Foo
+    base: Bar
+    including: Baz
+
+    some description about this class in ydoc markup format
+
+    method: quux(hoge=42, &block)
+      parameters:
+        hoge: describe what is hoge
+        block: describe what is block
+      return: describe about return values of this method
+      exceptions:
+        FugaError: describe when this exception rises
+      block: block(piyo)
+
+      some description about this method in ydoc markup format
+
+In the ydoc format, indent is important. Like Python, indent makes structures. In above, +"base\: Bar"+ after +"class\: Foo"+ must be indented.
+
+This description is converted into html as following:
+
+class: Foo
+  base: Bar
+  including: Baz
+
+  some description about this class in ydoc markup format
+
+  method: quux(hoge=42, &block)
+    parameters:
+      hoge: describe what is hoge
+      block: describe what is block
+    return: describe about return values of this method
+    exceptions:
+      FugaError: describe when this exception rises
+    block: block(piyo)
+
+    some description about this method in ydoc markup format
+
+== Functions Definition
+
+A function definition is like as method definitions.
+
+  function: foo(bar, baz=42, &block)
+    parameters:
+      bar: describe what is bar
+      baz: describe what is baz
+      block: describe what is block
+    return: describe about return values of this function
+    exceptions:
+      FugaError: describe when this exception rises
+    block: block(piyo)
+
+    some description about this function in ydoc markup format
+
+This documentation is converted into html as following.
+
+function: foo(bar, baz=42, &block)
+  parameters:
+    bar: describe what is bar
+    baz: describe what is baz
+    block: describe what is block
+  return: describe about return values of this function
+  exceptions:
+    FugaError: describe when this exception rises
+  block: block(piyo)
+
+  some description about this function in ydoc markup format
+
+== Objects Definition
+
+The ydoc format can describe instances. The format is following.
+
+  data: FOO
+    type: Bar
+    some description about this object
+
+This documentation is converted into following.
+
+data: FOO
+  type: Bar
+  some description about this object
+
+== Markup
+
+A description in a definition can use ydoc markup format. And top-level text can also use ydoc markup.
+
+=== Titles
+
+Starting a line with +"="+ makes a title.
+
+  = Foo
+
+becomes into html as
+
+  <h1>Foo</h1>
+
+Number of +"="+ is from one to six. +"====== Foo"+ becomes +"<h6>Foo</h6>"+.
+
+=== Italic
+
+Enclosing text with underscores (+_+) makes an italic word.
+
+  _foo_
+
+becomes _foo_.
+
+=== Typewriter
+
+Enclosing text with pluses (+\++) makes an typewriter form.
+
+  +foo+
+
+becomes +foo+.
+
+=== Bold
+
+Enclosing text with stars (+*+) makes bold.
+
+  *foo*
+
+becomes *foo*.
+
+=== Unordered Lists
+
+Starting a line with a star +"*"+ makes an unordered list.
+
+  * foo
+  * bar
+  * baz
+
+becomes
+
+* foo
+* bar
+* baz
+
+=== Ordered Lists
+
+Starting a line with a star +"\+"+ makes an unordered list.
+
+  + foo
+  + bar
+  + baz
+
+becomes
+
++ foo
++ bar
++ baz
+
+=== Preformatted Text
+
+An indented text is converted into preformatted. This can be used for writing programming codes.
+
+=== Links
+
+Enclosing a text with braces (+{}+) and enclosing a following text with brackets (+[]+) makes a link.
+
+  {click me!!}[builtins.ydoc]
+
+makes {click me!!}[builtins.ydoc].
+
+A first part in braces is optional. If you don't give this, ydoc reads a first title in a document, and uses it as a link text.
+
+  [builtins.ydoc]
+
+makes [builtins.ydoc].
+
+=== Escaping
+
+If you use special charactors in a text, escape it with a backslash (+"\\"+). For example, if you want to make a plus symbol (+"\+"+) to typewriter form, write +"\+\\\+\+"+.
+
+Special characters in the ydoc format are:
+
+* +:+ (colon)
+* +\++ (plus)
+* +_+ (underscore)
+* +*+ (star)
+
+== How to Convert into Html
+
+After writing a documentation, call the +run_to_html+ function.
+
+== Functions
+
+function: run(title, destdir, src, ext=".html", generator=HtmlGenerator)
+  parameters:
+    title: a title of an entire documentation
+    destdir: a path to a directory in which generated files will be
+    src: a path to a source file
+    ext: an extension of generated files
+    generator: a generator class which converts nodes to a desired format
+  return: +nil+
+
+  Reads _src_ and other files linked from _src_ and generates a documentation in _destdir_.
+
+function: run_to_html(title, destdir, src)
+  parameters:
+    title: a title of an entire documentation
+    destdir: a path to a directory in which generated files will be
+    src: a path to a source file
+  return: +nil+
+
+  A wrapper of the +run+ function. This function generates html.
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

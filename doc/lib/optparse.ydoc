@@ -31,7 +31,7 @@ Executing
   args = opt.parse(ARGV.slice(1))
   puts(args)
 
-with arguments "-x quux --foo hoge -y --bar 42 26" prints
+with arguments +"-x quux --foo hoge -y --bar 42 26"+ prints
 
   quux
   hoge
