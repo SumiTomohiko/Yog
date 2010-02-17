@@ -4,6 +4,7 @@
 + [tutorial.ydoc]
 + Library Reference
   + [lib/builtins.ydoc]
+  + [lib/hq9plus.ydoc]
 
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
