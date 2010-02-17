@@ -815,7 +815,7 @@ Assume that you want to use the +fib+ function in +fib.yg+ from the script +foo.
 When do +import foo+, Yog searches +foo.yg+ in the following directories.
 
 + current directory
-+ +PREFIX/lib/yog/0.0.1+ (+PREFIX+ is usually +/usr/local+)
++ +PREFIX/lib/yog/0.0.4+ (+PREFIX+ is usually +/usr/local+)
 
 === Package Hierarchy
 
