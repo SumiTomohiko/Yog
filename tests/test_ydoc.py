@@ -86,6 +86,15 @@ foo
 baz</pre>
 """)
 
+    def test_pretty30(self):
+        self.do_test("""
+foo
+
+  bar:baz
+""", """<p>foo</p>
+<pre>bar:baz</pre>
+""")
+
     def test_title0(self):
         self.do_test("""
 = title
