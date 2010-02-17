@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rename pretty in ydoc package to preformat
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-17 16:10:43.197708 Z
+references: []
+
+id: b81aead32cda81a50e1dbcbd7fac757545373be4
+log_events: 
+- - 2010-02-17 16:10:43.731336 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

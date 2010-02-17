@@ -1192,6 +1192,11 @@ bar
         expecteds = { "index.html": "<p>{}[index2.html]</p>" }
         self.do_test2(srcs, "index.ydoc", expecteds)
 
+    def test_link5(self):
+        srcs = { "index.ydoc": "{click}[index2.ydoc]", "index2.ydoc": "" }
+        expecteds = { "index.html": "<p>{click}[index2.html]</p>" }
+        self.do_test2(srcs, "index.ydoc", expecteds)
+
     def test_link10(self):
         srcs = {
             "index.ydoc": "[foo/index2.ydoc]",

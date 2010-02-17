@@ -73,7 +73,6 @@ class Generator
           link << s[i]
           i += 1
         end
-        i += 1
       elif s[i] == "["
         i += 1
         url = ""
@@ -81,7 +80,6 @@ class Generator
           url << s[i]
           i += 1
         end
-        i += 1
         t << self.make_link(ydoc, link, url)
         link = ""
       else
