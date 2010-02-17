@@ -227,7 +227,7 @@ class Lexer
   end
 
   def split_tokens(line)
-    if self.text_last? && (line =~ /\A\s*\Z/)
+    if self.text_last? && ((line.ltrim() == "") || (self.margin_stack[-1] < (line =~ /\A(\s*)/).end(0)))
       return [Text.new(self.lineno, self.cut_margin(line))]
     end
     tokens = self.generate_indent_tokens(line)
