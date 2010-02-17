@@ -686,7 +686,7 @@ class: Set
 class: SystemCallError
   base: Exception
 
-  The parent class of the following classes::
+  The parent class of the following classes\:
 
   * +E2BIG+
   * +EACCES+
@@ -864,7 +864,7 @@ function: bind(obj)
     obj: an object to bind
   return: a function which accepts a function to be bound
 
-  Set +self+ in functions::
+  Set +self+ in functions\:
 
     o = Object.new()
 
@@ -880,7 +880,7 @@ function: classmethod(function)
     f: function
   return: class method for _function_
 
-  Return a class method for _function_. To declare class method, use this function in the decorator form::
+  Return a class method for _function_. To declare class method, use this function in the decorator form\:
 
     class Foo
       @classmethod
@@ -919,7 +919,7 @@ function: include(mod)
     mod: module to include
   return: a function to include a module
 
-  +include+ is used to mix-in a class and modules as a decorator::
+  +include+ is used to mix-in a class and modules as a decorator\:
 
     module Foo
       def bar()
@@ -996,7 +996,7 @@ function: property(getter, setter=nil)
     setter: a function called on setting property
   return: a +Property+ object
 
-  When a +Property+ object is gotten as an attribute, _getter_ is called without arguments. If an attirubte to be set is a +Property+ object, _setter_ is called with one argment. The _setter_'s argument is a new value of the attribute::
+  When a +Property+ object is gotten as an attribute, _getter_ is called without arguments. If an attirubte to be set is a +Property+ object, _setter_ is called with one argment. The _setter_'s argument is a new value of the attribute\:
 
     class Foo
       def init()
@@ -1038,7 +1038,7 @@ function: raise_exception(e)
 data: ARGV
   type: Array
 
-  The +Array+ object containing command line parameters. +ARGV[0]+ is a script file name. If Yog is invoked in an interactive mode, +ARGV+ becomes empty. With +__FILE__+ variables, you can make a special part in a script file::
+  The +Array+ object containing command line parameters. +ARGV[0]+ is a script file name. If Yog is invoked in an interactive mode, +ARGV+ becomes empty. With +__FILE__+ variables, you can make a special part in a script file\:
 
     if ARGV.get(0) == __FILE__
       # Here is executed when this file is invoked

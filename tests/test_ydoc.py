@@ -1214,4 +1214,10 @@ bar
         expecteds = { join("foo", "index2.html"): "<p>{}[bar/index3.html]</p>" }
         self.do_test2(srcs, "index.ydoc", expecteds)
 
+    def test_escape0(self):
+        self.do_test("\+", "<p>+</p>")
+
+    def test_escape10(self):
+        self.do_test("\:", "<p>:</p>")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

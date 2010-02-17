@@ -40,6 +40,14 @@ class Generator
     t = ""
     link = ""
     while i < s.size
+      if s[i] == "\\"
+        i += 1
+
+        t << self.conv_char(s[i])
+        i += 1
+        next
+      end
+
       if ["+", "_", "*"].include?(s[i])
         terminator = s[i]
         i += 1
