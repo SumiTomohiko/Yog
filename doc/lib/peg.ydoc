@@ -1,0 +1,173 @@
+
+= +peg+ package
+
+The +peg+ package is an implementation of PEG (Parsing Expression Grammar). You can describe a grammar with PEG to parse inputs.
+
+== Tutorial
+
+=== Matching with +String+
+
+At first, make a very simple PEG -- matching only with a string of +"foo"+.
+
+  from peg import pattern
+  fourty_two = pattern("foo")
+
+Above +fourty_two+ is a grammar matching only with +"foo"+. You can call the +fourty_two.match+ to try some strings. The +match+ method returns a +Match+ object when matched. A +Match+ object has two attribute -- +matched+ and +rest+. The +matched+ attribute contains a matched part of an input. And the +rest+ attribute contains a unmathced part.
+
+  m = fourty_two.match("foo")
+  puts(m.matched)
+  puts(m.rest)
+
+The above code prints +foo+ for the +matched+ attribute and a blank line for the +rest+ attribute (the +rest+ attribute is a empty string). In this case, the input +"foo"+ matched the grammar of +fourty_two+.
+
+If a grammar matches only head part of an input, +Match#rest+ shows a rest part.
+
+  m = fourty_two.match("foobar")
+  m.matched   # => "foo"
+  m.rest      # => "bar"
+
+When an input doen't match a grammar, the +match+ method returns +nil+.
+
+  fourty_two.match("bar")   # => nil
+
+=== Sequence
+
+When there are two PEG grammars whose name are _e1_ and _e2_, then _e1_ +*+ _e2_ is a sequence. To match a sequence overall, an input must match on _e1_ and a rest part of the input must match on _e2_.
+
+For example, the following grammar is for an input of +"foo"+ followed by +"bar"+.
+
+  from peg import pattern
+  seq = pattern("foo") * pattern("bar")
+
++seq+ matches +"foobar"+.
+
+  m = seq.match("foobar")
+  puts(m.matched)
+  puts(m.rest)
+
+The above code prints +["foo", "bar"]+ for +m.matched+ and a blank line for +m.rest+. When a sequence matched, +Match#matched+ becomes +Array+ which contains matched parts in each internal grammars (in this case, +pattern("foo")+ and +pattern("bar")+).
+
+=== Ordered Choice
+
+When there are two PEG grammars whose name are _e1_ and _e2_, then _e1_ +/+ _e2_ is a ordered choice. To match a choice overall, an input must match on _e1_ or _e2_.
+
+For example, the following grammar is for +"foo"+ or +"bar"+.
+
+  from peg import pattern
+  seq = pattern("foo") / pattern("bar")
+
++seq+ matches +"foo"+ and +"bar"+.
+
+  m = seq.match("foo")
+  puts(m.matched)   # => "foo"
+  puts(m.rest)      # => blank
+  m = seq.match("bar")
+  puts(m.matched)   # => "bar"
+  puts(m.rest)      # => blank
+
+=== At Least
+
+When _e_ is a PEG grammar, then _e_ +^+ _n_ is at least matching pattern (_n_ is a positive number including zero). For example,
+
+  from peg import pattern
+  atleast = pattern("foo") ^ 3
+
++atleast+ in the above code matches +"foofoofoo"+ (3 times of +"foo"+), +"foofoofoofoo"+ (4 times of +"foo"+) and more.
+
+  m = atleast.match("foofoofoo")
+  puts(m.matched)   # => ["foo", "foo", "foo"]
+  puts(m.rest)      # => blank
+  m = atleast.match("foofoofoofoo")
+  puts(m.matched)   # => ["foo", "foo", "foo", "foo"]
+  puts(m.rest)      # => blank
+
+Pay attention that the +matched+ attribute is +Array+.
+
++atleast+ dosen't match +"foofoo"+. Bacause this includes +"foo"+ only 2 times.
+
+  atleast.match("foofoo")   # => nil
+
+If _n_ is zero, an at least pattern may return empty +Array+.
+
+  from peg import pattern
+  atleast = pattern("foo") ^ 0
+  m = atleast.match("bar")
+  m.matched # => []
+  m.rest    # => "bar"
+
+=== At Most
+
+When _e_ is a PEG grammar, then _e_ +^+ _n_ is at least matching pattern (_n_ is a negative number excluding zero). For example,
+
+  from peg import pattern
+  atmost = pattern("foo") ^ (-3)
+
++atmost+ in the above code matches +"foofoo"+ (2 times of +"foo"+), +"foofoofoo"+ (3 times of +"foo"+).
+
+  m = atmost.match("foofoo")
+  puts(m.matched)   # => ["foo", "foo"]
+  puts(m.rest)      # => blank
+  m = atmost.match("foofoofoo")
+  puts(m.matched)   # => ["foo", "foo", "foo"]
+  puts(m.rest)      # => blank
+
+Pay attention that the +matched+ attribute is +Array+. It is same as at least patterns.
+
+Similary as at least patterns, an at most pattern may return an empty array.
+
+  m = atmost.match("bar")
+  m.matched   # => []
+  m.rest      # => "bar"
+
+=== Action
+
+Probably, you want to do something with matched parts. For example, when you write a programming language, you want to make an abstract syntax tree from a grammar. Actions are the feature for these cases.
+
+The basic usage of actions is following. Where _e_ is any pattern.  
+
+  from peg import action
+
+  g = action(e) do [params, ....]
+    # Do something. Don't forget to use the "next" statement to exit a block.
+  end
+
+When you call +g.match(foo)+ (+foo+ is any input), _e_ takes +foo+ to match. If matched, an action gives +Match#matched+ to a block as parameters. When +Match#matched+ is an array, an action unpacks this, so a block must have formal parameters as many as array's size.
+
+A returned value from a block becomes a value of that action (+Match#matched+).
+
+=== Tiny Calculator
+
+I show you a very simple PEG example. It is a calculator which has only two operators that are +"\+"+ and +"-"+.
+
+  from peg import action, pattern
+
+  digit = pattern("0") / pattern("1") / pattern("2") / pattern("3") / pattern("4") / pattern("5") / pattern("6") / pattern("7") / pattern("8") / pattern("9")
+  num = action(digit ^ 0) do [digits]
+    n = 0
+    digits.each() do [digit]
+      nonlocal n
+      n = 10 * n + digit.to_i()
+    end
+    next n
+  end
+  op = pattern("+") / pattern("-")
+  expr = action(num * ((op * num) ^ 0)) do [num, operations]
+    n = num
+    operations.each() do [operation]
+      nonlocal n
+      if operation[0] == "+"
+        n += operation[1]
+      elif operation[0] == "-"
+        n -= operation[1]
+      end
+    end
+    next n
+  end
+  print(expr.match("42+26").matched)
+
+== Classes
+
+== Functions
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

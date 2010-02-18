@@ -6,6 +6,7 @@
   + [lib/builtins.ydoc]
   + [lib/hq9plus.ydoc]
   + [lib/optparse.ydoc]
+  + [lib/peg.ydoc]
   + [lib/ydoc.ydoc]
 
 --
