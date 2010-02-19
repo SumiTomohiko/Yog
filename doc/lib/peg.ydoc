@@ -121,7 +121,7 @@ Similary as at least patterns, an at most pattern may return an empty array.
 
 === Action
 
-Probably, you want to do something with matched parts. For example, when you write a programming language, you want to make an abstract syntax tree from a grammar. Actions are the feature for these cases.
+Probably, you want to do something with matched parts. For example, when you write a programming language, you want to make an abstract syntax tree from a grammar. Actions are the feature for these cases. You can "reduce" like LALR(1) parsers.
 
 The basic usage of actions is following. Where _e_ is any pattern.  
 
@@ -163,11 +163,211 @@ I show you a very simple PEG example. It is a calculator which has only two oper
     end
     next n
   end
-  print(expr.match("42+26").matched)
+  print(expr.match("42+26").matched)  # prints 68
+
+=== Matching with Arrays
+
+You can use the +peg+ package with arrays which contains any classes. In case of matching with +42+ followed by +26+, you can write down as following.
+
+  from peg import pattern
+  g = pattern(42) * pattern(26)
+  m = g.match([42, 26, "foo"])
+  puts(m.matched)   # prints [42, 26]
+  puts(m.rest)      # prints ["foo"]
+
+==== Customize Matching
+
+You can use any expressions for matching. In case of matching with an iteration of even numbers and odd numbers, use +CustomPattern+ objects.
+
+  from peg import CustomPattern
+  even = CustomPattern.new(0) do [pat, act]
+    next act % 2 == pat
+  end
+  odd = CustomPattern.new(1) do [pat, act]
+    next act % 2 == pat
+  end
+  g = (even * odd) ^ 0
+  m = g.match([0, 1, 2, 3, 4, 5, 6, 42])
+  puts(m.matched)   # prints [[0, 1], [2, 3], [4, 5]]
+  puts(m.rest)      # prints [6, 42]
+
+== Functions
+
+function: action(pat, &block)
+  parameters:
+    pat: a +Pattern+ object
+    block: an +Action+ object callbacks this when _pat_ is matched
+  return: a return value of _block_
+
+function: pattern(pat, block=nil)
+  parameters:
+    pat: any object
+    block: a callable object to try matching
+  return: a +Pattern+ object
+
+  Makes a +Pattern+ object. If _block_ is not +nil+, returns a +CustomPattern+ object. If _pat_ is +String+, returns a +StringPattern+ object. When _pat_ is +Regexp+, returns a +RegexpPattern+ object. In case of any other class, returns +ScalarPattern+ object.
 
 == Classes
 
-== Functions
+class: Action
+  base: Pattern
+
+  method: init(pat, &block)
+    parameters:
+      pat: any pattern
+      block: a callable object called when _pat_ is matched
+
+  method: match(x)
+    parameters:
+      x: any object
+    return: +Match+ object or +nil+
+
+class: AtLeastPattern
+  base: Pattern
+
+  method: init(pat, n)
+    parameters:
+      pat: any pattern
+      n: number of _pat_
+
+  method: match(x)
+    parameters:
+      x: any object
+    return: +Match+ object or +nil+
+
+class: AtMostPattern
+  base: Pattern
+
+  method: init(pat, n)
+    parameters:
+      pat: any pattern
+      n: number of _pat_
+
+  method: match(x)
+    parameters:
+      x: any object
+    return: +Match+ object or +nil+
+
+class: ChoicePattern
+  base: Pattern
+
+  method: init(e1, e2)
+    parameters:
+      e1: any pattern
+      e2: any pattern
+
+  method: match(x)
+    parameters:
+      x: any object
+    return: +Match+ object or +nil+
+
+class: CustomPattern
+  base: Pattern
+
+  method: init(e, &block)
+    parameters:
+      e: any object
+      block: a callable object called for matching
+    block: block(pat, act)
+
+    _block_'s first parameter is _e_.
+
+  method: match(a)
+    parameters:
+      a: any object
+    return: +Match+ object or +nil+
+
+class: Match
+  base: Object
+
+  attribute: matched
+    type: Object
+
+    A matched part of a sequence. It may be +String+ or +Array+.
+
+  attribute: rest
+    type: Object
+
+    An unmatched part of a sequence. It may be +String+ or +Array+.
+
+class: Pattern
+  base: Object
+
+  method: *(pat)
+    parameters:
+      pat: a pattern
+    return: a +SerialPattern+ object
+
+    Makes a +SerialPattern+.
+
+  method: /(pat)
+    parameters:
+      pat: a pattern
+    return: a +ChoicePattern+ object
+
+    Makes a +ChoicePattern+.
+
+  method: ^(n)
+    parameters:
+      n: number of iterations
+    return: an +AtMostPattern+ object or an +AtLeastPattern+ object
+
+    Makes an +AtMostPattern+ object for _n_ +< 0+, or an +AtLeastPattern+ object.
+
+class: RegexpPattern
+  base: Pattern
+
+  A pattern class using a regular expression.
+
+  method: init(e)
+    parameters:
+      e: a regular expression
+
+  method: match(s)
+    parameters:
+      s: +String+
+    return: a +Match+ object or +nil+
+
+class: ScalarPattern
+  base: Pattern
+
+  method: init(e)
+    parameters:
+      e: any object
+
+  method: match(a)
+    parameters:
+      a: any object
+    return: a +Match+ object or +nil+
+
+class: SerialPattern
+  base: Pattern
+
+  method: init(e1, e2)
+    parameters:
+      e1: any pattern
+      e2: any pattern
+
+    Constructor.
+
+  method: match(x)
+    parameters:
+      x: any object
+    return: a +Match+ object or +nil+
+
+class: StringPattern
+  base: Pattern
+
+  method: init(e)
+    parameters:
+      e: +String+
+
+    Constructor.
+
+  method: match(s)
+    parameters:
+      s: +String+
+    return: a +Match+ object or +nil+
 
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
