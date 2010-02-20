@@ -1,5 +1,4 @@
 [Setup]
-
 AppName=Yog 0.0.4
 AppVerName=Yog 0.0.4
 OutputBaseFilename=Yog-0.0.4
