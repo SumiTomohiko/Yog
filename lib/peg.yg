@@ -1,0 +1,265 @@
+
+class Match
+  def init(matched, rest)
+    self.matched = matched
+    self.rest = rest
+  end
+end
+
+class Pattern
+  def *(pat)
+    return SerialPattern.new(self, pat)
+  end
+
+  def /(pat)
+    return ChoicePattern.new(self, pat)
+  end
+
+  def ^(n)
+    if n < 0
+      return AtMostPattern.new(self, - n)
+    end
+    return AtLeastPattern.new(self, n)
+  end
+end
+
+class StringPattern > Pattern
+  def init(e)
+    self.e = e
+  end
+
+  def match(s)
+    if !s.starts_with?(self.e)
+      return nil
+    end
+    return Match.new(s.slice(0, self.e.size), s.slice(self.e.size))
+  end
+
+  def get_can_accept_empty_array()
+    return self.e.size == 0
+  end
+
+  can_accept_empty_array? = property(get_can_accept_empty_array)
+end
+
+class RegexpPattern > Pattern
+  can_accept_empty_array? = false
+
+  def init(e)
+    self.e = e
+  end
+
+  def match(s)
+    m = (self.e =~ s)
+    if (m == nil) || (m.start() != 0)
+      return nil
+    end
+    return Match.new(s.slice(0, m.end()), s.slice(m.end()))
+  end
+end
+
+class ScalarPattern > Pattern
+  can_accept_empty_array? = false
+
+  def init(e)
+    self.e = e
+  end
+
+  def match(a)
+    if (a.size == 0) || (a[0] != self.e)
+      return nil
+    end
+    return Match.new(a[0], a.slice(1))
+  end
+end
+
+class CustomPattern > Pattern
+  can_accept_empty_array? = false
+
+  def init(e, &block)
+    self.e = e
+    self.block = block
+  end
+
+  def match(a)
+    if (a.size == 0) || !self.block(self.e, a[0])
+      return nil
+    end
+    return Match.new(a[0], a.slice(1))
+  end
+end
+
+class SerialPattern > Pattern
+  def init(e1, e2)
+    self.e1 = e1
+    self.e2 = e2
+  end
+
+  def match(x)
+    m = self.e1.match(x)
+    if m == nil
+      return nil
+    end
+    matched1 = m.matched
+
+    m = self.e2.match(m.rest)
+    if m == nil
+      return nil
+    end
+    matched2 = m.matched
+
+    rest = m.rest
+    if self.e1.kind_of?(SerialPattern)
+      if self.e2.kind_of?(SerialPattern)
+        return Match.new(matched1 + matched2, rest)
+      end
+      return Match.new(matched1 + [matched2], rest)
+    elif self.e2.kind_of?(SerialPattern)
+      return Match.new([matched1] + matched2, rest)
+    end
+    return Match.new([matched1, matched2], rest)
+  end
+
+  def get_can_accept_empty_array()
+    return self.e1.can_accept_empty_array? && self.e2.can_accept_empty_array?
+  end
+
+  can_accept_empty_array? = property(get_can_accept_empty_array)
+end
+
+class ChoicePattern > Pattern
+  def init(e1, e2)
+    self.e1 = e1
+    self.e2 = e2
+  end
+
+  def match(x)
+    [self.e1, self.e2].each() do [e]
+      m = e.match(x)
+      if m == nil
+        next
+      end
+      return Match.new(m.matched, m.rest)
+    end
+    return nil
+  end
+
+  def get_can_accept_empty_array()
+    return self.e1.can_accept_empty_array? || self.e2.can_accept_empty_array?
+  end
+
+  can_accept_empty_array? = property(get_can_accept_empty_array)
+end
+
+class AtMostPattern > Pattern
+  can_accept_empty_array? = true
+
+  def init(pat, n)
+    self.pat = pat
+    self.n = n
+  end
+
+  def match(x)
+    if x.size == 0
+      return Match.new([], x)
+    end
+
+    matched = []
+    rest = x
+    self.n.times() do
+      nonlocal rest
+      m = self.pat.match(rest)
+      if m == nil
+        return Match.new(matched, rest)
+      end
+      matched << m.matched
+      rest = m.rest
+    end
+    return Match.new(matched, rest)
+  end
+end
+
+class AtLeastPattern > Pattern
+  def init(pat, n)
+    if pat.can_accept_empty_array?
+      raise SyntaxError.new("loop body may accept empty array")
+    end
+    self.pat = pat
+    self.n = n
+  end
+
+  def match(x)
+    if (self.n == 0) && (x.size == 0)
+      return Match.new([], x)
+    end
+
+    matched = []
+    rest = x
+    self.n.times() do
+      nonlocal rest
+      m = self.pat.match(rest)
+      if m == nil
+        return nil
+      end
+      matched << m.matched
+      rest = m.rest
+    end
+    loop() do
+      nonlocal rest
+      m = self.pat.match(rest)
+      if m == nil
+        return Match.new(matched, rest)
+      end
+      matched << m.matched
+      rest = m.rest
+    end
+    return Match.new(matched, rest)
+  end
+
+  def get_can_accept_empty_array()
+    return self.pat.can_accept_empty_array? || (self.n == 0)
+  end
+
+  can_accept_empty_array? = property(get_can_accept_empty_array)
+end
+
+class Action > Pattern
+  def init(pat, &block)
+    self.pat = pat
+    self.block = block
+  end
+
+  def match(x)
+    m = self.pat.match(x)
+    if m == nil
+      return nil
+    end
+    if self.pat.kind_of?(SerialPattern)
+      return Match.new(self.block(*m.matched), m.rest)
+    end
+    return Match.new(self.block(m.matched), m.rest)
+  end
+
+  def get_can_accept_empty_array()
+    return self.pat.can_accept_empty_array?
+  end
+
+  can_accept_empty_array? = property(get_can_accept_empty_array)
+end
+
+def action(pat, &block)
+  return Action.new(pat, &block)
+end
+
+def pattern(pat, &block=nil)
+  if block != nil
+    return CustomPattern.new(pat, &block)
+  elif pat.kind_of?(String)
+    return StringPattern.new(pat)
+  elif pat.kind_of?(Regexp)
+    return RegexpPattern.new(pat)
+  end
+  return ScalarPattern.new(pat)
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

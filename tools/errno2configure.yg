@@ -1,11 +1,6 @@
 
 File.open(ARGV[1], "r") do [fp]
-  while true
-    try
-      line = fp.readline()
-    except
-      break
-    end
+  while line = fp.readline()
     line = line.gsub("\n", "").gsub("\r", "")
     puts("AC_CHECK_DECL(" + line + ", [AC_DEFINE([HAVE_" + line + "], [1], [" + line + "])], , [#include <errno.h>])")
   end

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Change Array#pop to Array#pop!
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-31 04:43:56.902236 Z
+references: []
+
+id: 823b2f23e10538a508fa5bf08f01eec390b86d0d
+log_events: 
+- - 2010-01-31 04:43:58.082774 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

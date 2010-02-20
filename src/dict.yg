@@ -1,4 +1,12 @@
 
+def get(key, default=nil)
+  try
+    return self[key]
+  except KeyError
+    return default
+  end
+end
+
 def to_s()
   def f(obj)
     return "{...}"

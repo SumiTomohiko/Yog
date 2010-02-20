@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "yog/array.h"
+#include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/parser.h"
@@ -143,7 +144,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         KEEP(multi_assign_lhs.right);
         break;
     case NODE_NEXT:
-        KEEP(next.expr);
+        KEEP(next.exprs);
         break;
     case NODE_NONLOCAL:
         KEEP(nonlocal.names);
@@ -433,12 +434,14 @@ Break_new(YogEnv* env, uint_t lineno, YogVal exprs)
 }
 
 static YogVal
-Next_new(YogEnv* env, uint_t lineno, YogVal expr)
+Next_new(YogEnv* env, uint_t lineno, YogVal exprs)
 {
-    SAVE_ARG(env, expr);
+    SAVE_ARG(env, exprs);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
 
-    YogVal node = YogNode_new(env, NODE_NEXT, lineno);
-    NODE(node)->u.next.expr = expr;
+    node = YogNode_new(env, NODE_NEXT, lineno);
+    NODE(node)->u.next.exprs = exprs;
 
     RETURN(env, node);
 }
@@ -694,12 +697,14 @@ YogParser_parse(YogEnv* env, YogVal src)
     SAVE_ARG(env, src);
     YogVal lexer = YUNDEF;
     YogVal ast = YUNDEF;
-    PUSH_LOCALS2(env, lexer, ast);
+    YogVal enc = YUNDEF;
+    PUSH_LOCALS3(env, lexer, ast, enc);
 
     lexer = YogLexer_new(env);
     PTR_AS(YogLexer, lexer)->line = src;
     PTR_AS(YogLexer, lexer)->lineno++;
-    YogLexer_set_encoding(env, lexer, PTR_AS(YogString, src)->encoding);
+    enc = YogEncoding_get_default(env);
+    YogLexer_set_encoding(env, lexer, enc);
 
     ast = parse(env, lexer, "<stdin>", FALSE);
 
@@ -906,7 +911,7 @@ stmt(A) ::= NEXT(B). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Next_new(env, lineno, YNIL);
 }
-stmt(A) ::= NEXT(B) expr(C). {
+stmt(A) ::= NEXT(B) exprs(C). {
     uint_t lineno = TOKEN_LINENO(B);
     A = Next_new(env, lineno, C);
 }
@@ -1031,9 +1036,55 @@ else_opt(A) ::= ELSE stmts(B). {
     A = B;
 }
 
-func_def(A) ::= decorators_opt(F) DEF(B) NAME(C) LPAR params(D) RPAR stmts(E) END. {
+func_def(A) ::= decorators_opt(F) DEF(B) func_name(C) LPAR params(D) RPAR stmts(E) END. {
     uint_t lineno = TOKEN_LINENO(B);
-    A = FuncDef_new(env, lineno, F, TOKEN_ID(C), D, E);
+    A = FuncDef_new(env, lineno, F, VAL2ID(C), D, E);
+}
+
+func_name(A) ::= NAME(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= PLUS(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= MINUS(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= STAR(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= DIV(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= DIV_DIV(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= EQUAL_TILDA(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= AND(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= BAR(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= PERCENT(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= LSHIFT(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= RSHIFT(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= STAR_STAR(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= XOR(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= comp_op(B). {
+    A = B;
 }
 
 decorators_opt(A) ::= /* empty */. {
@@ -1484,6 +1535,9 @@ comp_op(A) ::= GREATER. {
 }
 comp_op(A) ::= GREATER_EQUAL. {
     A = ID2VAL(YogVM_intern(env, env->vm, ">="));
+}
+comp_op(A) ::= UFO(B). {
+    A = ID2VAL(TOKEN_ID(B));
 }
 
 xor_expr(A) ::= or_expr(B). {

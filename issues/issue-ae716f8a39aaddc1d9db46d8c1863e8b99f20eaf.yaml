@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add rules for the try statement to yog.vim
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-31 15:01:57.191284 Z
+references: []
+
+id: ae716f8a39aaddc1d9db46d8c1863e8b99f20eaf
+log_events: 
+- - 2010-01-31 15:01:58.386051 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

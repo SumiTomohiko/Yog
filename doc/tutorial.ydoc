@@ -1,0 +1,859 @@
+
+= Tutorial
+
+Yog is a dynamic programming language designed as an intermediate between Python and Ruby. This document introduces basic features of Yog.
+
+== First Step into Yog
+
+=== Interactive Mode
+
+The easyest way to try Yog is *interactive mode*. When the executable +yog+ is invoked without arguments, you can enter into *interactive mode*\:
+
+  $ yog
+  >>>
+
+The interpreter waits statements with the prompt +>>>+. When you give stetements, the interpreter evaluates it immediately\:
+
+  >>> 42 + 26
+  => 68
+
+If a statements is an expression, the interpreter shows the result of it after +=>+ (in case of above, it is +68+).
+
+When two or more lines consist a statement, the interpreter waits continuation lines with the prompt of +...+\:
+
+  >>> if true
+  ...   puts(42 + 26)
+  ... end
+  68
+
+To exit interactive mode, type end of file +Ctrl\+D+.
+
+=== Variable Definition
+
+Yog doesn't need any declaration to define variables. What is all to make a variable is only assigning a value to the variable with operator +=+\:
+
+  >>> answer = 42
+  => 42
+
+=== Function Definition
+
+Defining functions in Yog are like this\:
+
+  >>> def fib(n)
+  ...   if (n == 0) || (n == 1)
+  ...     return 1
+  ...   else
+  ...     return fib(n - 1) + fib(n - 2)
+  ...   end
+  ... end
+
+Defining a function starts from the +def+ keyword. The function name and the parenthesized formal parameters follows the +def+ keyword. The function body starts at the next line, and the function must end with keyword +end+.
+
+=== Invoke Scripts
+
+If you want to execute a script, provide script's file name to +yog+ as an argument\:
+
+  $ yog filename
+
+==== Executable Scripts
+
+You can make scripts directly executable by putting the following line at the head of the file (assuming that +yog+ is installed into +/usr/local/bin/+)\:
+
+  #!/usr/local/bin/yog
+
+or\:
+
+  #!/usr/bin/env yog
+
+and add execute mode to the file by +chmod+ command\:
+
+  $ chmod +x filename
+
+==== Source Code Encoding
+
+By default, the Yog interpreter assumes that source code is written in UTF-8. When you use any other encodings, you need to tell that code to the interpreter. This is done by putting the special comment like\:
+
+  # coding: EUC-JP
+
+The interpreter accepts the encoding of +EUC-JP+, +Shift-JIS+ and +UTF-8+. Leading characters and trailing characters are allowed in this comment. And you can use "+=+" in place of "+\:+". So the folowing two examples are llegal\:
+
+  # vim: fileencoding=EUC-JP
+  # -*- coding: EUC-JP -*-
+
+=== +if+ Statements
+
+One example of +if+ statement is\:
+
+  >>> n = 42
+  => 42
+  >>> if 0 < n
+  ...   puts("positive")
+  ... elif n == 0
+  ...   puts("zero")
+  ... else
+  ...   puts("negative")
+  ... end
+  positive
+
+Yog uses the +elif+ keyword to place the condition sequence. There can be zero or more +elif+ parts. The +else+ part is optional.
+
+=== Iteration with Block
+
+If you want to iterate some statements, you can use the +times+ method of the integer object with a *block*. *Block* is a special syntax for passing some statements to functions. Its usage is like the following\:
+
+  42.times() do [n]
+    puts(n)
+  end
+
++42.times()+ is a calling the +times+ method of the object +42+. The statements between the keyword +do+ and +end+ is a block. The optional formal parameters can follow the +do+ keyword. When declaring formal parameters, enclose variables by brackets +[+ and +]+. In this case, the +times+ method iterate this block for 42 times. The +times+ method gives the count (starting from +0+) of iteration to the block. So, the above code displays the following\:
+
+  0
+  1
+  2
+  ...(snip)...
+  39
+  30
+  41
+
+=== +while+ Statements
+
+Yog provides another tool for iteration. It is the +while+ statement. One example of the +while+ statement is\:
+
+  >>> n = 0
+  => 0
+  >>> while n < 42
+  ...   print("Yeh")
+  ...   n += 1
+  ... end
+  YehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYehYeh
+
+==== +break+ and +next+ Statements
+
+The +break+ statement ends most internal +while+ loop. The +next+ statement starts next iteration of the loop.
+
+It works even in blocks.
+
+=== No +for+ Statements
+
+Many languages have the +for+ statement to iterate,  but Yog DOESN'T HAVE THE +for+ STATEMENT. Yog's objects have methods to iterate, so Yog doesn't need the +for+ statement.
+
+== Data Structures
+
+=== Arrays
+
+Yog supports most basic data scructure, arrays. Enclosing comma separated elements by brackets makes an array\:
+
+  >>> a = [42, "foo", 3.1415926545]
+  => [42, "foo", 3.14159]
+
+Indexing an array reads/writes each elements\:
+
+  >>> a[0]
+  => [42]
+  >>> a[1] = "bar"
+  => [42, "bar", 3.14159]
+
+Arrays have +size+ property, it is number of elements in the array\:
+
+  >>> a.size
+  => 3
+
+Like strings, arrays can be concatenated by the operator +\++\:
+
+  >>> b = [26, "baz"]
+  => [26, "baz"]
+  >>> c = a + b
+  => [42, "bar", 3.14159, 26, "baz"]
+
+You can remove/append the last element of arrays by +pop+/+push+ method\:
+
+  >>> c.pop()
+  => baz
+  >>> c.push("quux")
+  => [42, "bar", 3.14159, 26, "quux"]
+
+You can also append an element with the +<<+ operator\:
+
+  >>> c << "hoge"
+  => [42, "bar", 3.14159, 26, "quux", "hoge"]
+  >>> c
+  => [42, "bar", 3.14159, 26, "quux", "hoge"]
+
+=== Dictionaries
+
+Dictionaries are data structures which are called in other languages as "hashes", "maps" or "associative arrays". Dictionaries are indexed by any type's object to get a corresponding value. When make a dictionary, enclosing key-value pairs in the form of +key => value+ in braces +{+ and +}+. A few examples are following\:
+
+  >>> dict = { 42 => 26, "foo" => "bar" }
+  => { "foo" => "bar", 42 => 26 }
+  >>> dict[42]
+  => 26
+  >>> dict["foo"]
+  => bar
+  >>> dict.each() do [key, value]
+  ...   puts(key, value)
+  ... end
+  foo
+  bar
+  42
+  26
+  => { "foo" => "bar", 42 => 26 }
+
+=== Sets
+
+Sets are data structures including objects with no duplicate elements. When declaring a set, enclose elements with braces +{+ and +}+\:
+
+  >>> s = { 42, "foo", 3.141592 }
+  => <Set 000000000000028c>
+  >>> s.include?(42)
+  => true
+  >>> s.include?("bar")
+  => false
+
+If you make an empty set, use +Set.new()+. +{}+ becomes an empty dictionary\:
+
+  >>> s = Set.new()
+  => <Set 000000000000027d>
+  >>> s.size
+  => 0
+
+== More about Functions and Blocks
+
+=== +nonlocal+ Statements
+
+Functions can be placed in other functions\:
+
+  def foo()
+    bar = 42 # (1)
+
+    def baz()
+      return bar # (2)
+    end
+
+    return baz()
+  end
+
+You can read the variable in the outer function (1) from the inner function (2). The calling +foo()+ in the above code returns +42+. But you can't write the variables in the outer function from the inner function\:
+
+  def foo()
+    bar = 42
+
+    def baz()
+      bar = 26
+    end
+
+    baz()
+    return bar
+  end
+
+In the case of the above code, the calling +foo()+ returns +42+, not +26+. If you want to write variables in outer functions from inner functions, you can use +nonlocal+ statements\:
+
+  def foo()
+    bar = 42
+
+    def baz()
+      nonlocal bar
+      bar = 26
+    end
+
+    baz()
+    return bar
+  end
+
++foo()+ returns +26+ in the above code.
+
+The cases of blocks are the same as functions\:
+
+  def foo()
+    bar = 42 # (1)
+    26.times() do
+      return bar # (2)
+    end
+  end
+
+You can read variables in enclosing functions (1) from blocks (2). +foo()+ of the above code returns +42+. But, variables cannot be written at inner blocks. +foo()+ of the next code returns +42+, not +"baz"+\:
+
+  def foo()
+    bar = 42
+    26.times() do
+      bar = "baz"
+    end
+    return bar
+  end
+
+If you want to update variables, you need to use +nonlocal+ statements as same as the cases of functions\:
+
+  def foo()
+    bar = 42
+    26.times() do
+      nonlocal bar
+      bar = "baz"
+    end
+    return bar
+  end
+
++foo()+ of the above code returns +"baz"+.
+
+=== +return+ in Blocks
+
++return+ statements in blocks ends enclosing functions\:
+
+  def foo()
+    42.times() do [n]
+      puts(n)
+      return 26
+    end
+  end
+
+  foo()
+
+The above code prints only\:
+
+  0
+
+Because the function +foo+ returns +26+ by the statement of +return 26+.
+
+=== Keyword Arguments
+
+You can pass arguments to functions in the form of +name\: value+. For instance, assume this function\:
+
+  def markup(text, bold, italic)
+    s = text
+    if bold
+      s = "<b>" + s + "</b>"
+    end
+    if italic
+      s = "<em>" + s + "</em>"
+    end
+    return s
+  end
+
+You can pass +"Randolph Cartar+ for the argument +text+, +false+ for +bold+ and +true+ for +italic+ to this function in the following ways\:
+
+  markup("Randolph Carter", false, true)
+  markup("Randolph Carter", false, italic: true)
+  markup("Randolph Carter", italic: true, bold: false)
+  markup(italic: true, text: "Randolph Carter", bold: false)
+
+Keyword arguments must be placed after the positional arguments.
+
+=== Arbitrary Argument Arrays
+
+One of the useful functions is an arbitrary number of arguments. If you put the argument +*args+ (+args+ can be the name which you like), this becomes the variable argument. +args+ is an array. When you define the following function\:
+
+  >>> def foo(*args)
+  ...   args.each() do [n]
+  ...     puts(n)
+  ...   end
+  ... end
+
+You can call this function with an arbitrary number of arguments\:
+
+  >>> foo(42, 26)
+  42
+  26
+  => nil
+
+If actual parameters are specified by name, these are stored to the argument +**kw+ (+kw+ can be the name you like). +kw+ is a dictionary. When you define the following function\:
+
+  >>> def foo(**kw)
+  ...   kw.each() do [key, value]
+  ...     print(key)
+  ...     print(":")
+  ...     print(value)
+  ...     print("\n")
+  ...   end
+  ... end
+
+You can call this function with an arbitrary number of keyword arguments\:
+
+  >>> foo(bar: 42, baz: 26)
+  bar:42
+  baz:26
+
+=== Unpacking Argument Arrays
+
+If you have an array +args+ in which arguments are stored, you can use +*args+ to unpack this array\:
+
+  >>> def add(n, m)
+  ...   return n + m
+  ... end
+  >>> a = [42, 26]
+  => [42, 26]
+  >>> add(*a)
+  => 68
+
+If you have a dictionary +kw+ in which arguments are stored, you can use +**kw+ to unpack this dictionary to keyword arguments\:
+
+  >>> def add(n, m)
+  ...   return n + m
+  ... end
+  >>> d = { n: 42, m: 26 }
+  => { :n => 42, :m => 26 }
+  >>> add(**d)
+  => 68
+
+== Input and Output
+
+=== Reading and Writing Files
+
+Reading a file is realized in the following way\:
+
+  File.open(filename, "r") do [fp]
+    # do something with fp
+  end
+
+The +File.open+ is a class method of the +File+ class. When you pass a block to this method, the +File.open+ method calls the block with argument. This argument (+fp+ in the above example) is a +File+ object.
+
+The +File.open+ method also closes the file.
+
+The way to write file is similar to the above code\:
+
+  File.open(filename, "w") do [fp]
+    # do something with fp
+  end
+
+=== Methods of File Objects
+
+==== +read()+
+
+The +read+ method reads from current position to the end of the file. This method returns a read string.
+
+==== +readline()+
+
+The +readline+ method reads one line from current position. This method returns a read string including a trailing newline. This method raises +EOFError+ when there is nothing to read.
+
+==== +write(s)+
+
+The +write+ method writes a string to a file.
+
+==== +close()+
+
+The +close+ method closes the file.
+
+== Classes
+
+Yog supports object oriented programming. This section describes about classes.
+
+=== Class Definition Syntax
+
+The following code is a simple example of class\:
+
+  class Foo
+    bar = 42
+
+    def baz()
+      return self.quux
+    end
+  end
+
+Definitions of classes starts with the keyword +class+ followed a class name. Definitions of classes ends with the keyword +end+. Any statements are allowed in +class+ statements. Even +if+ statements can be placed there.
+
+Variables assigned in +class+ statements becomes class variables. Functions defined in +class+ statements becomes methods.
+
+=== Instance Variables
+
+Objects have indivisual variables set -- instance variables. When you want to access an instance variable +name+ of an object +obj+, you can write +obj.name+.
+
+In methods, you can refer a called object with the keyword +self+. So you can use +self.foo+ to access the instance variable named +foo+ of the called object.
+
+=== Instantiation
+
+You can use the +new+ method of classes for instantiation\:
+
+  foo = Foo.new()
+
+=== Constructors
+
+Some objects have initial states. Constructors role to configure objects initially. Constructors' name is +init+. These methods are called after generating objects\:
+
+  class Foo
+    def init()
+      self.bar = 42
+    end
+  end
+
+  foo = Foo.new()
+  print(foo.bar)
+
+The above code prints +42+.
+
+=== Inheritance
+
+Yog's classes can inherit any other class. When the +Devided+ class inherits the +Base+ class\:
+
+  class Devided > Base
+    # something
+  end
+
+=== Mix-in
+
+Yog doesn't support multiple inheritance. But Yog provides features of modules and mix-in like Ruby.
+
+==== Modules
+
+Modules are sets of methods. The following code show you one example of modules\:
+
+  module Foo
+    def bar()
+      puts("bar")
+    end
+  end
+
+The module +Foo+ has one method of +bar+.
+
+==== +@include+ class decorators
+
+When you want to mix the module +Foo+ to the class +Baz+, you can use +@include+ class decorators\:
+
+  module Foo
+    def bar()
+      puts("bar")
+    end
+  end
+
+  @include(Foo)
+  class Baz
+  end
+
+The class +Baz+ doesn't have the method of +bar+, but the mixed module +Foo+ has. So you can call the +bar+ method in the +Baz+ instance objects\:
+
+  baz = Baz.new()
+  baz.bar()
+
+The above code prints +bar+.
+
+=== Class Methods
+
+When you want to call methods without instance objects, you can use +@classmethod+ decorators\:
+
+  class Foo
+    @classmethod
+    def bar()
+      # do something
+    end
+  end
+
+For the above class, you can call +Foo.bar()+. In class methods, +self+ is the class itself.
+
+=== Properties
+
+Properties allow you to call methods with the same syntax as instance variables\:
+
+  class Foo
+    def init()
+      self.bar = 42
+    end
+
+    def get_baz()
+      return self.bar
+    end
+
+    def set_baz(baz)
+      self.bar = baz
+    end
+
+    baz = property(get_baz, set_baz)
+  end
+
+If +foo+ is the object of the class +Foo+, the reading +foo.baz+ calls +foo.get_baz()+. The writing +foo.baz+ calls +foo.set_baz()+.
+
+== Basic Types
+
+=== Numbers
+
+==== Integers
+
+Numbers like +42+ are evaluated as be seen\:
+
+  >>> 42
+  => 42
+
+Numbers starts with +0b+ are evaluated as binary\:
+
+  >>> 0b101010
+  => 42
+
+Samely, numbers which starts with +0o+ are octal, and +0x+ are hex\:
+
+  >>> 0o52
+  => 42
+  >>> 0x2a
+  => 42
+
+You can split a number by +_+\:
+
+  >>> 0b10_1010
+  => 42
+
+Yog has no limits on the range of integers\:
+
+  >>> 4611686018427387905
+  => 4611686018427387905
+
+The operators for numbers of +\++, +-+ and +*+ are normally defined\:
+
+  >>> 42 + 26
+  => 68
+  >>> 42 - 26
+  => 16
+  >>> 42 * 26
+  => 1092
+
+===== Division
+
+Yog has two division operators, one is +/+, the other is +//+. In almost programming language like C, +3 / 2+ gives 1 (not 1.5). In Yog, the operator to work this way is +//+. The normal +/+ operator gives always floating point number, so +3 / 2+ gives 1.5\:
+
+  >>> 3 // 2
+  => 1
+  >>> 3 / 2
+  => 1.5
+
+==== Floating Point Numbers
+
+The interpreter accepts floating point number\:
+
+  >>> 3.1415926535
+  => 3.14159
+
+=== Strings
+
+String can be enclosed in double quotes\:
+
+  >>> "Cthulhu ftgn! ftgn!"
+  => Cthulhu ftgn! ftgn!
+  >>> "\"You, fool, Warren is DEAD!\""
+  => "You, fool, Warren is DEAD!"
+
+The operator +\++ concatenates two strings\:
+
+  >>> foo = "Yog" + "Sothoth"
+  => YogSothoth
+
+Strings can be indexed. Indexing a string reads each characters, not bytes\:
+
+  >>> foo[0]
+  => Y
+  >>> bar = "九頭龍"
+  => 九頭龍
+  >>> bar[0]
+  => 九
+
+Unlike strings in some script languages, Yog's strings are mutable. You can overwrite a character by assigning to a indexed string\:
+
+  >>> baz = "dagon"
+  => dagon
+  >>> baz[0] = "D"
+  => D
+  >>> baz
+  => Dagon
+
+Yog can append a string with the +<<+ operator\:
+
+  >>> s = "Creep!"
+  => Creep!
+  >>> s << " Nyalathotep Girl"
+  => Creep! Nyalathotep Girl
+  >>> s
+  => Creep! Nyalathotep Girl
+
+=== Regular Expressions
+
+As same as Perl and Ruby, Yog supports regular expressions' literal. Regular expressions are enclosed in +/+. For example, +/Innsmouth/+ is a regular expression. In regular expressions, backslash +\\+ doen't escape characters excepting +\\n+ (it is a newline) and +\\\\+ (it is a backslash itself). For instance, +/H\.P\.Lovecraft/+ matches +"H.P.Lovecraft"+.
+
+To test if a string matches a regular expression, use the +=~+ operator. This operator returns a +Match+ object when the string matches, or returns +nil+ when doesn't match.
+
++Match+ objects have +group+ method. When +group+ method is called without arguments, it returns a matched part of the string\:
+
+  >>> m = ("carter@example.com" =~ /([a-z]+)@([a-z.]+)/)
+  => <Match 0000000000000289>
+  >>> m.group()
+  => carter@example.com
+
+When +group+ method is called with an integer argument, it returns a part of the string corresponding to the group in the regular expression. The first group's index is one\:
+
+  >>> m.group(1)
+  => carter
+  >>> m.group(2)
+  => example.com
+
++Match+ objects have +start+ method and +end+ method. +start+ method returns a start position of a matched part in the string, +end+ method returns a end position. Calling +start+ method and +end+ method with argument +0+ is same as calling without arguments\:
+
+  >>> m.start()
+  => 0
+  >>> m.start(0)
+  => 0
+  >>> m.start(1)
+  => 0
+  >>> m.start(2)
+  => 7
+  >>> m.end()
+  => 18
+  >>> m.end(0)
+  => 18
+  >>> m.end(1)
+  => 6
+  >>> m.end(2)
+  => 18
+
+== Exceptions
+
+=== Exceptions
+
+When the interpreter can not continue the process, an exception occurs. If the exception is not handled (for the exception handling, see below), the interpreter prints the information about the exception\:
+
+  >>> 1 / 0
+  Traceback (most recent call last):
+    File "__main__", line 1, in <package>
+    File builtin, in Fixnum#/
+  ZeroDivisionError: Fixnum division by zero
+
+This information consists of three parts; a traceback, an exception type and an message. A traceback shows you where the exception occurs. Most recent call is at last. An exception type tells the exception's class. A last message describes what happen.
+
+=== Handling Exceptions
+
+You can handle exceptions. To do this, +try+ statements are avalilable\:
+
+  >>> def div(n)
+  ...   try
+  ...     return 1 / n
+  ...   except ZeroDivisionError
+  ...     return nil
+  ...   end
+  ... end
+
++try+ statements can have more than one +except+ clauses.
+
+If no exception occurs, +except+ clauses are ignored.
+
+When an exception ocrrurs, the interpreter skips the remaind of the +try+ clause, and starts from the first line of +except+ clause.
+
+You can omit a type name in +exept+ clause\:
+
+  try
+    # do something...
+  except
+    # handle exceptions
+  end
+
+In this case, all types of exceptions are targets of +except+ clause.
+
++except+ clause can have one or more type names\:
+
+  except ZeroDivisionError, NameError
+
+Theses types share one common exception handler.
+
+You can specify a variable name in +except+ clause following keyword +as+\:
+
+  except ZeroDivisionError as e
+
+You can use this variable (+e+ in this example) in the exception handler.
+
++try+ statements can have one +else+ clause after +except+ clauses\:
+
+  try
+    # do something
+  except
+    # exception handler
+  else
+    # do something
+  end
+
+This +else+ clause is excecuted when +try+ clause finishes and no exception occurs.
+
+=== Raising Exceptions
+
+You can use +raise+ statements for exceptions to occur.
+
+=== User-defined Exceptions
+
+Programmers can define custom exceptions. All exceptions is a child class of +Exception+.
+
+=== Defining Clean-up Actions
+
++try+ statements can have one +finally+ clause\:
+
+  >>> def div(n)
+  ...   try
+  ...     m = 1 / n
+  ...   except ZeroDivisionError
+  ...     m = nil
+  ...   finally
+  ...     print(m)
+  ...   end
+  ... end
+
++finally+ clause is always executed before leaving the +try+ statement, whether an exception has occured or not.
+
+== Packages
+
+When you write programs for some time, you may want to reuse some useful codes. *Packages* resolve this issue. You can use codes in packages from external scripts.
+
+All of Yog's scripts are packages. If a script's file name is +foo.yg+, its package name is +foo+. First of all, packages must be *imported*. To import a package, use +import+ statement\:
+
+  import foo
+
+The imported package has its internal definitions as its attributes. When the function +bar+ is defined in the package +foo+, +foo.bar+ after importing the package is the +bar+ function, so you can call this in the way of +foo.bar()+.
+
+Show you one example. Suppose the package +fib+. This package's file name is +fib.yg+, and +fib.yg+ is the following\:
+
+  def fib(n)
+    if (n == 0) || (n == 1)
+      return 1
+    else
+      return fib(n - 1) + fib(n - 2)
+    end
+  end
+
+Assume that you want to use the +fib+ function in +fib.yg+ from the script +foo.yg+. +foo.yg+ is following\:
+
+  import fib
+  printf(fib.fib(43))
+
+=== The Package Search Path
+
+When do +import foo+, Yog searches +foo.yg+ in the following directories.
+
++ current directory
++ +PREFIX/lib/yog/0.0.4+ (+PREFIX+ is usually +/usr/local+)
+
+=== Package Hierarchy
+
+Packages are placed in the packages' tree.
+
+Assume that you want to make a package +foo.bar+. In this case, first of all, you should make +foo.yg+. At next, make a directory named +foo+. At the end, create a script +foo/bar.yg+. Finally, the directory structure becomes the following\:
+
+  +- foo.yg
+  +- foo
+     `- bar.yg
+
+When do +import foo.bar+, Yog executes +foo.yg+ at first. After this, Yog executes +foo/bar.yg+.
+
+== Coroutines
+
+Yog offers coroutines. Coroutines are callable objects like functions. The differences are\:
+
++ +Coroutine#resume+ is used to start coroutines.
++ Coroutines stop execution by +Coroutine.yield+.
++ Coroutines restart execution by the +Coroutine#resume+ method.
+
+Coroutines keep local variables. When coroutines restart, you can read previous values\:
+
+  co = Coroutine.new() do
+    puts(42)
+    Coroutine.yield()
+    puts(26)
+  end
+
+  co.resume()
+  puts("foo")
+  co.resume()
+
+The above code prints\:
+
+  42
+  foo
+  26
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

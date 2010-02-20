@@ -1,6 +1,118 @@
 
+def starts_with?(s)
+  return self.slice(0, s.size) == s
+end
+
 def inspect()
-  return "\"" + self.gsub("\\", "\\\\").gsub("\"", "\\\"") + "\""
+  s = "\""
+  self.each_char() do [c]
+    if c == "\\"
+      s << "\\\\"
+    elif c == "\t"
+      s << "\\t"
+    elif c == "\n"
+      s << "\\n"
+    else
+      s << c
+    end
+  end
+  return s + "\""
+end
+
+def slice(pos, len=nil)
+  if self.size <= pos
+    return ""
+  end
+
+  if pos < 0
+    pos = self.size + pos
+  end
+  max_len = self.size - pos
+  if (len == nil) || (max_len < len)
+    len = max_len
+  elif len < 0
+    return ""
+  end
+
+  s = ""
+  len.times() do [i]
+    s << self[pos + i]
+  end
+  return s
+end
+
+def dup()
+  return self.slice(0, self.size)
+end
+
+def rtrim()
+  m = (self =~ /[ \t\n\r]*\Z/)
+  return self.slice(0, m.start(0))
+end
+
+def ltrim()
+  m = (self =~ /\A[ \t\n\r]*/)
+  return self.slice(m.end(0))
+end
+
+def trim()
+  return self.ltrim().rtrim()
+end
+
+def rfind(substr, start_pos=-1)
+  NOT_FOUND = -1
+
+  if start_pos < - self.size
+    return self.rfind(substr, 0)
+  end
+  if start_pos < 0
+    return self.rfind(substr, self.size + start_pos)
+  end
+  if start_pos < substr.size
+    return NOT_FOUND
+  end
+
+  i = start_pos - substr.size + 1
+  while 0 < i
+    if self.slice(i, substr.size) == substr
+      return i
+    end
+    i -= 1
+  end
+
+  return NOT_FOUND
+end
+
+def find(substr, start_pos=0)
+  if start_pos < 0
+    start_pos = self.size + start_pos
+    if start_pos < 0
+      start_pos = 0
+    end
+  end
+
+  NOT_FOUND = -1
+  if self.size < substr.size
+    return NOT_FOUND
+  end
+
+  i = start_pos
+  while i <= self.size - substr.size
+    j = 0
+    while j < substr.size
+      if self[i + j] != substr[j]
+        break
+      end
+      j += 1
+    end
+    if j == substr.size
+      return i
+    end
+
+    i += 1
+  end
+
+  return NOT_FOUND
 end
 
 def format(*args, **kw)
@@ -41,6 +153,54 @@ def format(*args, **kw)
   end
 
   return s
+end
+
+def match(regexp, pos=0)
+  return regexp.match(self, pos)
+end
+
+def split(splitter=/\s+/)
+  def split_char(s)
+    a = []
+    s.each_char() do [c]
+      a << c
+    end
+    return a
+  end
+
+  if splitter.kind_of?(Regexp)
+    a = []
+    from_ = 0
+    while m = self.match(splitter, from_)
+      if m.start() == m.end()
+        return split_char(self)
+      end
+      a << self.slice(from_, m.start() - from_)
+      from_ = m.end()
+    end
+    a << self.slice(from_)
+    return a
+  end
+
+  if !splitter.kind_of?(String)
+    raise TypeError.new("splitter must be String")
+  end
+  if splitter.size == 0
+    return split_char(self)
+  end
+
+  a = []
+  from_ = 0
+  while from_ <= self.size - splitter.size
+    to = self.find(splitter, from_)
+    if to < 0
+      break
+    end
+    a << self.slice(from_, to - from_)
+    from_ = to + splitter.size
+  end
+  a << self.slice(from_)
+  return a
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

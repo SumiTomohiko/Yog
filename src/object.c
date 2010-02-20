@@ -160,6 +160,27 @@ get_class(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
 }
 
 static YogVal
+kind_of(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal c = YUNDEF;
+    YogVal klass = YUNDEF;
+    PUSH_LOCALS2(env, c, klass);
+    YogCArg params[] = { { "c", &c }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "kind_of?", params, args, kw);
+
+    klass = YogVal_get_class(env, self);
+    while (IS_PTR(klass)) {
+        if (klass == c) {
+            RETURN(env, YTRUE);
+        }
+        klass = PTR_AS(YogClass, klass)->super;
+    }
+
+    RETURN(env, YFALSE);
+}
+
+static YogVal
 hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     YOG_ASSERT(env, IS_PTR(self), "self is not pointer (0x%08x)", self);
@@ -270,6 +291,7 @@ YogObject_boot(YogEnv* env, YogVal cObject, YogVal pkg)
     DEFINE_METHOD("==", equal);
     DEFINE_METHOD("get_attr", get_attr);
     DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("kind_of?", kind_of);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
 #define DEFINE_PROP(name, getter, setter)   do { \

@@ -1,0 +1,12 @@
+
+prefix = @prefix@
+VERSION = @PACKAGE_VERSION@
+DIR = $(prefix)/lib/yog/$(VERSION)
+
+PKGS = hq9plus.yg optparse.yg peg.yg
+
+install:
+	mkdir -p $(DIR)
+	install --mode 644 $(PKGS) $(DIR)
+
+# vim: tabstop=8 shiftwidth=8 noexpandtab

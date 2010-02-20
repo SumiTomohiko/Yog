@@ -1,0 +1,22 @@
+#!/usr/bin/env yog
+
+from optparse import OptionParser
+from ydoc import run_to_html
+
+destdir = "."
+title = ""
+
+opt = OptionParser.new()
+opt.on_option("d", "destdir") do [val]
+  nonlocal destdir
+  destdir = val
+end
+opt.on_option("t", "title") do [val]
+  nonlocal title
+  title = val
+end
+args = opt.parse(ARGV.slice(1))
+
+run_to_html(title, destdir, args[0])
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog

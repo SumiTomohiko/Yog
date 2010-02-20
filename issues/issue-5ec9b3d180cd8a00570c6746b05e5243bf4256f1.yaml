@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove YogString_from_str
+desc: YogString_from_str doesn't set an encoding.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-30 17:28:06.190154 Z
+references: []
+
+id: 5ec9b3d180cd8a00570c6746b05e5243bf4256f1
+log_events: 
+- - 2010-01-30 17:28:06.761512 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

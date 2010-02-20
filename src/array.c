@@ -36,11 +36,6 @@ YogValArray_at(YogEnv* env, YogVal array, uint_t n)
 YogVal
 YogArray_at(YogEnv* env, YogVal array, uint_t n)
 {
-    size_t size = PTR_AS(YogArray, array)->size;
-    if (size <= n) {
-        YogError_raise_IndexError(env, "array index out of range");
-    }
-
     return YogValArray_at(env, PTR_AS(YogArray, array)->body, n);
 }
 
@@ -306,7 +301,6 @@ subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     YogVal index = YUNDEF;
     YogVal v = YUNDEF;
     PUSH_LOCALS2(env, index, v);
-
     YogCArg params[] = { { "index", &index }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "[]", params, args, kw);
     CHECK_SELF_TYPE(env, self);
@@ -314,9 +308,43 @@ subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         YogError_raise_TypeError(env, "index must be Fixnum");
     }
 
-    v = YogArray_at(env, self, VAL2INT(index));
+    int_t n = VAL2INT(index);
+    uint_t size = YogArray_size(env, self);
+    if (n < 0) {
+        n += size;
+    }
+    if ((n < 0) || (size <= n)) {
+        YogError_raise_IndexError(env, "array index out of range");
+    }
+    v = YogArray_at(env, self, n);
 
     RETURN(env, v);
+}
+
+static YogVal
+get(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal val = YUNDEF;
+    YogVal index = YUNDEF;
+    YogVal default_ = YNIL;
+    PUSH_LOCALS3(env, val, index, default_);
+    CHECK_SELF_TYPE(env, self);
+    YogCArg params[] = {
+        { "index", &index },
+        { "|", NULL },
+        { "default", &default_ },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get", params, args, kw);
+
+    uint_t size = YogArray_size(env, self);
+    int_t n = VAL2INT(index);
+    if ((n < 0) || (size <= n)) {
+        RETURN(env, default_);
+    }
+
+    val = YogArray_at(env, self, n);
+    RETURN(env, val);
 }
 
 static YogVal
@@ -337,6 +365,21 @@ each(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     }
 
     RETURN(env, self);
+}
+
+static YogVal
+get_empty(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    CHECK_SELF_TYPE(env, self);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_empty", params, args, kw);
+
+    if (YogArray_size(env, self) < 1) {
+        RETURN(env, YTRUE);
+    }
+
+    RETURN(env, YFALSE);
 }
 
 static YogVal
@@ -418,6 +461,50 @@ pop(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
+unshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal obj = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS2(env, obj, val);
+    CHECK_SELF_TYPE(env, self);
+    YogCArg params[] = { { "obj", &obj }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "unshift", params, args, kw);
+
+    uint_t size = YogArray_size(env, self);
+    ensure_body_size(env, self, size + 1);
+
+    YogVal body = PTR_AS(YogArray, self)->body;
+    uint_t i;
+    for (i = size; 0 < i; i--) {
+        val = YogArray_at(env, self, i - 1);
+        PTR_AS(YogValArray, body)->items[i] = val;
+    }
+    PTR_AS(YogValArray, body)->items[0] = obj;
+    PTR_AS(YogArray, self)->size++;
+
+    RETURN(env, self);
+}
+
+static YogVal
+shift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
+    CHECK_SELF_TYPE(env, self);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "shift", params, args, kw);
+    if (YogArray_size(env, self) < 1) {
+        YogError_raise_IndexError(env, "shift from empty array");
+    }
+
+    obj = YogArray_shift(env, self);
+
+    RETURN(env, obj);
+}
+
+static YogVal
 push(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -458,16 +545,20 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method(env, cArray, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("+", add);
-    DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD("<<", lshif);
     DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", assign_subscript);
     DEFINE_METHOD("each", each);
+    DEFINE_METHOD("get", get);
     DEFINE_METHOD("pop", pop);
     DEFINE_METHOD("push", push);
+    DEFINE_METHOD("shift", shift);
+    DEFINE_METHOD("unshift", unshift);
 #undef DEFINE_METHOD
 #define DEFINE_PROP(name, getter, setter)   do { \
     YogClass_define_property(env, cArray, pkg, (name), (getter), (setter)); \
 } while (0)
+    DEFINE_PROP("empty?", get_empty, NULL);
     DEFINE_PROP("size", get_size, NULL);
 #undef DEFINE_PROP
     vm->cArray = cArray;

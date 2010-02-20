@@ -2,7 +2,7 @@
 title: Design charactor
 desc: ""
 type: :task
-component: document
+component: doc
 release: 0.0.1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed
@@ -18,7 +18,7 @@ log_events:
   - ""
 - - 2009-09-02 18:03:31.172180 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-  - assigned to component document from Yog
+  - assigned to component doc from Yog
   - ""
 - - 2009-09-02 18:05:46.782363 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>

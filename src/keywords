@@ -1,6 +1,6 @@
 %{
 #include <string.h>
-#include "parser.h"
+#include "yog/token.h"
 
 typedef struct KeywordTableEntry KeywordTableEntry;
 %}

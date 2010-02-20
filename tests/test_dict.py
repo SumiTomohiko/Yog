@@ -34,8 +34,8 @@ puts(d[42])
 
     def test_literal30(self):
         self._test("""
-d = { :foo => "bar" }
-puts(d[:foo])
+d = { 'foo => "bar" }
+puts(d['foo])
 """, """bar
 """)
 
@@ -95,33 +95,48 @@ print(({} + {}).size)
 
     def test_add10(self):
         self._test("""
-print(({ :foo => 42 } + { :bar => 26 }).size)
+print(({ 'foo => 42 } + { 'bar => 26 }).size)
 """, "2")
 
     def test_add20(self):
         self._test("""
-print(({ :foo => 42 } + { :bar => 26 })[:foo])
+print(({ 'foo => 42 } + { 'bar => 26 })['foo])
 """, "42")
 
     def test_add30(self):
         self._test("""
-print(({ :foo => 42 } + { :bar => 26 })[:bar])
+print(({ 'foo => 42 } + { 'bar => 26 })['bar])
 """, "26")
 
     def test_each0(self):
         self._test("""
-d = { :foo => :bar }
+d = { 'foo => 'bar }
 d.each() do [key, value]
   print(key.inspect())
 end
-""", ":foo")
+""", "'foo")
 
     def test_each10(self):
         self._test("""
-d = { :foo => :bar }
+d = { 'foo => 'bar }
 d.each() do [key, value]
   print(value.inspect())
 end
-""", ":bar")
+""", "'bar")
+
+    def test_get0(self):
+        self._test("""
+print({ 42 => 26 }.get(42))
+""", "26")
+
+    def test_get10(self):
+        self._test("""
+print({ 42 => 26 }.get(\"foo\"))
+""", "nil")
+
+    def test_get20(self):
+        self._test("""
+print({ 42 => 26 }.get(\"foo\", \"bar\"))
+""", "bar")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

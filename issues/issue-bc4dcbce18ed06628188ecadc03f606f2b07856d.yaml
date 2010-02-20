@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add ENCODINGS built-in data
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-31 03:15:11.143218 Z
+references: []
+
+id: bc4dcbce18ed06628188ecadc03f606f2b07856d
+log_events: 
+- - 2010-01-31 03:15:12.692888 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

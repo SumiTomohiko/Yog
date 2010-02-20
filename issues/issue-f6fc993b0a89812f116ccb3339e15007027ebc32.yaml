@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add rules for multiline comment to vim.yog
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-31 13:46:41.961455 Z
+references: []
+
+id: f6fc993b0a89812f116ccb3339e15007027ebc32
+log_events: 
+- - 2010-01-31 13:46:42.606042 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

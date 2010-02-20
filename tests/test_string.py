@@ -97,7 +97,7 @@ TypeError: can't convert Symbol object to string implicitly
 """, stderr)
 
         self._test("""
-puts("foo" + :bar)
+puts("foo" + 'bar)
 """, stderr=test_stderr)
 
     def test_add40(self):
@@ -180,6 +180,13 @@ end""", u"""日
 語
 """)
 
+    def test_each_char3(self):
+        self._test("""
+\"\".each_char() do [c]
+  print(42)
+end
+""", "")
+
     def test_each_byte1(self):
         self._test("""
 \"foo\".each_byte() do [b]
@@ -204,6 +211,13 @@ end""", """230
 158
 """)
 
+    def test_each_byte3(self):
+        self._test("""
+\"\".each_byte() do [b]
+  print(42)
+end
+""", "")
+
     def test_each_line1(self):
         self._test("""
 \"foo\".each_line() do [l]
@@ -218,6 +232,13 @@ end""", """foo
 end""", """foo
 bar
 """)
+
+    def test_each_line3(self):
+        self._test("""
+\"\".each_line() do [line]
+  print(42)
+end
+""", "")
 
     def test_assign_subscript1(self):
         self._test("""
@@ -243,6 +264,13 @@ puts(s)
 """, """foo
 """)
 
+    def test_assign_subscript10(self):
+        self._test("""
+s = \"foo\"
+s[-1] = \"b\"
+print(s)
+""", "fob")
+
     def test_subscript1(self):
         self._test("""
 s = \"foo\"
@@ -264,7 +292,13 @@ puts(s[1])
 """, u"""燦
 """)
 
-    def test_subscript_error1(self):
+    def test_subscript10(self):
+        self._test("""
+s = \"bar\"
+print(s[-1])
+""", "r")
+
+    def test_subscript_error0(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
@@ -277,7 +311,7 @@ s = \"\"
 puts(s[0])
 """, stderr=test_stderr)
 
-    def test_subscript_error2(self):
+    def test_subscript_error10(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
@@ -290,7 +324,20 @@ s = \"\"
 puts(s[1])
 """, stderr=test_stderr)
 
-    def test_subscript_error3(self):
+    def test_subscript_error20(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+  File builtin, in String#\[\]
+IndexError: string index out of range
+""", stderr)
+
+        self._test("""
+s = \"\"
+puts(s[-1])
+""", stderr=test_stderr)
+
+    def test_subscript_error30(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
@@ -303,7 +350,46 @@ s = \"\"
 puts(s[\"\"])
 """, stderr=test_stderr)
 
-    def test_assign_subscript_error1(self):
+    def test_assign_subscript_error0(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+  File builtin, in String#\[\]=
+IndexError: string index out of range
+""", stderr)
+
+        self._test("""
+s = \"\"
+s[0] = \"\"
+""", stderr=test_stderr)
+
+    def test_assign_subscript_error10(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+  File builtin, in String#\[\]=
+IndexError: string index out of range
+""", stderr)
+
+        self._test("""
+s = \"\"
+s[1] = \"\"
+""", stderr=test_stderr)
+
+    def test_assign_subscript_error20(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+  File builtin, in String#\[\]=
+IndexError: string index out of range
+""", stderr)
+
+        self._test("""
+s = \"\"
+s[-1] = \"\"
+""", stderr=test_stderr)
+
+    def test_assign_subscript_error30(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
@@ -313,7 +399,8 @@ TypeError: string index must be Fixnum
 
         self._test("""
 s = \"\"
-s[\"foo\"] = \"bar\"""", stderr=test_stderr)
+s[\"\"] = \"\"
+""", stderr=test_stderr)
 
     def test_multiply0(self):
         def test_stderr(stderr):
@@ -354,7 +441,7 @@ TypeError: can't multiply string by non-Fixnum of type Symbol
 """, stderr)
 
         self._test("""
-puts("foo" * :bar)
+puts("foo" * 'bar)
 """, stderr=test_stderr)
 
     def test_multiply40(self):
@@ -422,5 +509,292 @@ print(\"{{\".format())
         self._test("""
 print(\"}}\".format())
 """, "}")
+
+    def test_find0(self):
+        self._test("""
+print(\"foo\".find(\"o\"))
+""", "1")
+
+    def test_find10(self):
+        self._test("""
+print(\"foo\".find(\"bar\"))
+""", "-1")
+
+    def test_find20(self):
+        self._test("""
+print(\"foo\".find(\"barbazquux\"))
+""", "-1")
+
+    def test_find30(self):
+        self._test("""
+print(\"foo\".find(\"o\", 0))
+""", "1")
+
+    def test_find40(self):
+        self._test("""
+print(\"foo\".find(\"o\", 1))
+""", "1")
+
+    def test_find50(self):
+        self._test("""
+print(\"foo\".find(\"o\", 2))
+""", "2")
+
+    def test_find60(self):
+        self._test("""
+print(\"foo\".find(\"o\", 3))
+""", "-1")
+
+    def test_find70(self):
+        self._test("""
+print(\"foo\".find(\"o\", -1))
+""", "2")
+
+    def test_find80(self):
+        self._test("""
+print(\"foo\".find(\"o\", -4))
+""", "1")
+
+    def test_ltrim0(self):
+        self._test("""
+print(\" foo\".ltrim())
+""", "foo")
+
+    def test_ltrim10(self):
+        self._test("""
+print(\"foo\".ltrim())
+""", "foo")
+
+    def test_ltrim20(self):
+        self._test("""
+print(\"   \".ltrim())
+""", "")
+
+    def test_rtrim0(self):
+        self._test("""
+print(\"foo \".rtrim())
+""", "foo")
+
+    def test_rtrim10(self):
+        self._test("""
+print(\"foo\".rtrim())
+""", "foo")
+
+    def test_rtrim20(self):
+        self._test("""
+print(\"   \".rtrim())
+""", "")
+
+    def test_trim0(self):
+        self._test("""
+print(\" foo \".trim())
+""", "foo")
+
+    def test_trim10(self):
+        self._test("""
+print(\"foo\".trim())
+""", "foo")
+
+    def test_dup0(self):
+        self._test("""
+print(\"foo\".dup())
+""", "foo")
+
+    def test_slice0(self):
+        self._test("""
+print(\"foo\".slice(0))
+""", "foo")
+
+    def test_slice10(self):
+        self._test("""
+print(\"foo\".slice(1))
+""", "oo")
+
+    def test_slice20(self):
+        self._test("""
+print(\"foo\".slice(-1))
+""", "o")
+
+    def test_slice30(self):
+        self._test("""
+print(\"foo\".slice(3))
+""", "")
+
+    def test_slice40(self):
+        self._test("""
+print(\"foo\".slice(0, 0))
+""", "")
+
+    def test_slice50(self):
+        self._test("""
+print(\"foo\".slice(0, 1))
+""", "f")
+
+    def test_slice60(self):
+        self._test("""
+print(\"foo\".slice(0, 3))
+""", "foo")
+
+    def test_slice70(self):
+        self._test("""
+print(\"foo\".slice(0, 4))
+""", "foo")
+
+    def test_slice80(self):
+        self._test("""
+print(\"foo\".slice(0, -1))
+""", "")
+
+    def test_starts_with0(self):
+        self._test("""
+print(\"foo\".starts_with?(\"f\"))
+""", "true")
+
+    def test_starts_with10(self):
+        self._test("""
+print(\"foo\".starts_with?(\"foo\"))
+""", "true")
+
+    def test_starts_with15(self):
+        self._test("""
+print(\"foo\".starts_with?(\"fooo\"))
+""", "false")
+
+    def test_starts_with20(self):
+        self._test("""
+print(\"foo\".starts_with?(\"bar\"))
+""", "false")
+
+    def test_inspect0(self):
+        self._test("""
+print(\"foo\".inspect())
+""", "\"foo\"")
+
+    def test_inspect10(self):
+        self._test("""
+print(\"\\n\".inspect())
+""", "\"\\n\"")
+
+    def test_inspect20(self):
+        self._test("""
+print(\"\\t\".inspect())
+""", "\"\\t\"")
+
+    def test_inspect30(self):
+        self._test("""
+print(\"\\\\\".inspect())
+""", "\"\\\\\"")
+
+    def test_inspect40(self):
+        self._test("""
+print(\"\".inspect())
+""", "\"\"")
+
+    def test_split0(self):
+        self._test("""
+print(\"foo\".split(\"o\"))
+""", "[\"f\", \"\", \"\"]")
+
+    def test_split10(self):
+        self._test("""
+print(\"foo\".split(\"\"))
+""", "[\"f\", \"o\", \"o\"]")
+
+    def test_split20(self):
+        self._test("""
+print(\"foo\\nbar\".split(\"\\n\"))
+""", "[\"foo\", \"bar\"]")
+
+    def test_split30(self):
+        self._test("""
+print(\"foo bar\".split())
+""", "[\"foo\", \"bar\"]")
+
+    def test_split40(self):
+        self._test("""
+print(\"foo\\nbar\".split())
+""", "[\"foo\", \"bar\"]")
+
+    def test_split50(self):
+        self._test("""
+print(\"foo\\tbar\".split())
+""", "[\"foo\", \"bar\"]")
+
+    def test_split60(self):
+        self._test("""
+print(\"foo\".split(//))
+""", "[\"f\", \"o\", \"o\"]")
+
+    def test_get0(self):
+        self._test("""
+print(\"\".get(0, \"foo\"))
+""", "foo")
+
+    def test_get10(self):
+        self._test("""
+print(\"foo\".get(0, \"bar\"))
+""", "f")
+
+    def test_get20(self):
+        self._test("""
+print(\"foo\".get(0))
+""", "f")
+
+    def test_get30(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in String#get
+IndexError: string index out of range
+""", stderr)
+
+        self._test("""
+\"\".get(0)
+""", stderr=test_stderr)
+
+    def test_rfind0(self):
+        self._test("""
+print(\"foo\".rfind(\"o\"))
+""", "2")
+
+    def test_rfind10(self):
+        self._test("""
+print(\"foo\".rfind(\"bar\"))
+""", "-1")
+
+    def test_rfind20(self):
+        self._test("""
+print(\"foo\".rfind(\"barbazquux\"))
+""", "-1")
+
+    def test_rfind30(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", 0))
+""", "-1")
+
+    def test_rfind40(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", 1))
+""", "1")
+
+    def test_rfind50(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", 2))
+""", "2")
+
+    def test_rfind60(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", 3))
+""", "2")
+
+    def test_rfind70(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", -1))
+""", "2")
+
+    def test_rfind80(self):
+        self._test("""
+print(\"foo\".rfind(\"o\", -4))
+""", "-1")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

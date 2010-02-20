@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Write comments for YogLexer states.
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-02 12:30:37.470248 Z
+references: []
+
+id: 1bc13187494f262da7bde88d88c5c7a0adad1076
+log_events: 
+- - 2010-02-02 12:30:38.264469 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

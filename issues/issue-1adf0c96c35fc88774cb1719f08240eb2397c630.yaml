@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Update Windows installer to install packages in lib directory.
+desc: ""
+type: :task
+component: misc
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-02 04:14:53.275195 Z
+references: []
+
+id: 1adf0c96c35fc88774cb1719f08240eb2397c630
+log_events: 
+- - 2010-02-02 04:14:54.185103 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

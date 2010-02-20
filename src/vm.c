@@ -446,6 +446,8 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(finish_code);
     KEEP(main_thread);
     KEEP(running_threads);
+
+    KEEP(path_separator);
 #undef KEEP
 
     YogIndirectPointer* indirect_ptr = vm->indirect_ptr;
@@ -476,6 +478,18 @@ init_read_write_lock(pthread_rwlock_t* lock)
 #if defined(HAVE_PTHREAD_RWLOCKATTR_INIT) && defined(HAVE_PTHREAD_RWLOCKATTR_DESTROY)
     pthread_rwlockattr_destroy(&attr);
 #endif
+}
+
+void
+YogVM_disable_gc_stress(YogEnv* env, YogVM* vm)
+{
+    vm->gc_stress = FALSE;
+}
+
+void
+YogVM_enable_gc_stress(YogEnv* env, YogVM* vm)
+{
+    vm->gc_stress = TRUE;
 }
 
 void
@@ -548,7 +562,6 @@ YogVM_init(YogVM* vm)
     INIT(running_threads);
     vm->next_thread_id = 0;
     pthread_mutex_init(&vm->next_thread_id_lock, NULL);
-#undef INIT
 
     pthread_mutexattr_t global_interp_lock_attr;
     pthread_mutexattr_init(&global_interp_lock_attr);
@@ -582,6 +595,8 @@ YogVM_init(YogVM* vm)
     pthread_mutex_init(&vm->indirect_ptr_lock, NULL);
 
     vm->debug_import = FALSE;
+    INIT(path_separator);
+#undef INIT
 }
 
 void
@@ -1011,6 +1026,15 @@ join_path(char* dest, const char* head, const char* tail)
     return p;
 }
 
+static void
+print_error(YogEnv* env, const char* filename)
+{
+    if (!env->vm->debug_import) {
+        return;
+    }
+    perror(filename);
+}
+
 static YogVal
 import_yg(YogEnv* env, const char* yg, const char* pkg_name)
 {
@@ -1020,6 +1044,7 @@ import_yg(YogEnv* env, const char* yg, const char* pkg_name)
 
     FILE* fp = fopen(yg, "r");
     if (fp == NULL) {
+        print_error(env, yg);
         RETURN(env, YNIL);
     }
 

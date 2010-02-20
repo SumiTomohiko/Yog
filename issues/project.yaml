@@ -5,7 +5,9 @@ components:
 - !ditz.rubyforge.org,2008-03-06/component 
   name: core
 - !ditz.rubyforge.org,2008-03-06/component 
-  name: document
+  name: doc
+- !ditz.rubyforge.org,2008-03-06/component 
+  name: misc
 releases: 
 - !ditz.rubyforge.org,2008-03-06/release 
   name: 0.0.1

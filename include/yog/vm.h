@@ -110,6 +110,7 @@ struct YogVM {
     pthread_mutex_t indirect_ptr_lock;
 
     BOOL debug_import;
+    YogVal path_separator;
 };
 
 typedef struct YogVM YogVM;
@@ -128,6 +129,8 @@ YOG_EXPORT YogIndirectPointer* YogVM_alloc_indirect_ptr(YogEnv*, YogVM*, YogVal)
 YOG_EXPORT void YogVM_boot(YogEnv*, YogVM*, uint_t, char**);
 YOG_EXPORT void YogVM_configure_search_path(YogEnv*, YogVM*, const char*);
 YOG_EXPORT void YogVM_delete(YogEnv*, YogVM*);
+YOG_EXPORT void YogVM_disable_gc_stress(YogEnv*, YogVM*);
+YOG_EXPORT void YogVM_enable_gc_stress(YogEnv*, YogVM*);
 YOG_EXPORT void YogVM_free_indirect_ptr(YogEnv*, YogVM*, YogIndirectPointer*);
 YOG_EXPORT YogEnv* YogVM_get_env(YogVM*);
 YOG_EXPORT YogVal YogVM_id2name(YogEnv*, YogVM*, ID);

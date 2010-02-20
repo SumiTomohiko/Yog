@@ -2,7 +2,7 @@
 title: Write README
 desc: ""
 type: :task
-component: document
+component: doc
 release: 0.0.1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed
@@ -18,7 +18,7 @@ log_events:
   - ""
 - - 2009-09-02 18:08:25.129051 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-  - assigned to component document from Yog
+  - assigned to component doc from Yog
   - ""
 - - 2009-09-02 18:09:05.957802 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>

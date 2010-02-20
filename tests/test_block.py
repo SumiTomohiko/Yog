@@ -96,4 +96,20 @@ end
 foo()
 """, "2626")
 
+    def test_self_in_block0(self):
+        def test_stdout(stdout):
+            self._test_regexp(r"<Foo [0-9a-zA-Z]+>", stdout)
+
+        self._test("""
+class Foo
+  def bar()
+    1.times() do
+      print(self)
+    end
+  end
+end
+
+Foo.new().bar()
+""", stdout=test_stdout)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

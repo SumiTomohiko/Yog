@@ -1,0 +1,95 @@
+
+class OptionBase
+  def init(&block)
+    self.block = block
+  end
+end
+
+class Option > OptionBase
+end
+
+class Switch > OptionBase
+end
+
+class OptionParser
+  def init()
+    self.short_opts = {}
+    self.long_opts = {}
+  end
+
+  def on_switch(short, long, &block)
+    opt = Switch.new(&block)
+    self.short_opts[short] = opt
+    self.long_opts[long] = opt
+  end
+
+  def on_option(short, long, &block)
+    opt = Option.new(&block)
+    self.short_opts[short] = opt
+    self.long_opts[long] = opt
+  end
+
+  def handle_long_opt(args)
+    if (pos = args[0].find("=")) < 0
+      name = args[0].slice(2)
+      opt = self.long_opts[name]
+      if opt.kind_of?(Option)
+        opt.block(args[1])
+        return self.parse(args.slice(2))
+      end
+      opt.block()
+      return self.parse(args.slice(1))
+    end
+
+    name = args[0].slice(2, pos - 2)
+    val = args[0].slice(pos + 1)
+    self.long_opts[name].block(val)
+    return self.parse(args.slice(1))
+  end
+
+  def handle_short_switches(switches, args)
+    if switches == ""
+      return self.parse(args)
+    end
+    name = switches[0]
+    opt = self.short_opts[name]
+    opt.block()
+    return self.handle_short_switches(switches.slice(1), args)
+  end
+
+  def handle_short_opt(args)
+    name = args[0].slice(1, 1)
+    opt = self.short_opts[name]
+    if opt.kind_of?(Option)
+      if 2 < args[0].size
+        val = args[0].slice(2)
+        opt.block(val)
+        return self.parse(args.slice(1))
+      end
+
+      val = args[1]
+      opt.block(val)
+      return self.parse(args.slice(2))
+    end
+
+    opts = args[0].slice(1)
+    return self.handle_short_switches(opts, args.slice(1))
+  end
+
+  def parse(args)
+    if args.empty?
+      return args
+    elif args[0] == "--"
+      return args.slice(1)
+    end
+
+    if args[0].starts_with?("--")
+      return self.handle_long_opt(args)
+    elif args[0].starts_with?("-")
+      return self.handle_short_opt(args)
+    end
+    return args
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

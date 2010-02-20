@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Make vim syntax rules for Yog documentation format.
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-31 13:44:17.770946 Z
+references: []
+
+id: 541cbd81a6a4eef0b2b74159d7cfa8f70e2afb3c
+log_events: 
+- - 2010-01-31 13:44:18.794937 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

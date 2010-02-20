@@ -1,4 +1,42 @@
 
+def copy_file(src, dest)
+  File.open(src, "rb") do [in]
+    File.open(dest, "wb") do [out]
+      out.write(in.read())
+    end
+  end
+end
+
+def make_dirs(path)
+  parent = dirname(path)
+  if (parent != ".") && (parent != "/")
+    make_dirs(parent)
+  end
+  try
+    mkdir(path)
+  except EEXIST
+  end
+end
+
+def dirname(path)
+  if path == ""
+    return "."
+  end
+  if path == PATH_SEPARATOR
+    return PATH_SEPARATOR
+  end
+  if path[-1] == PATH_SEPARATOR
+    return dirname(path.slice(0, path.size - 1))
+  end
+  if (path.get(0, "") == PATH_SEPARATOR) && (path.get(1, "") == PATH_SEPARATOR)
+    return dirname(path.slice(1))
+  end
+  if (pos = path.rfind(PATH_SEPARATOR)) < 0
+    return "."
+  end
+  return path.slice(0, pos)
+end
+
 def loop(&block)
   n = 0
   while true

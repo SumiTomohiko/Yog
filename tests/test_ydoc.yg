@@ -1,0 +1,200 @@
+
+import ydoc
+
+class Generator > ydoc.Generator
+  def make_typewriter(s)
+    return "<tt>{0}</tt>".format(s)
+  end
+
+  def make_bold(s)
+    return "<em>{0}</em>".format(s)
+  end
+
+  def make_italic(s)
+    return "<i>{0}</i>".format(s)
+  end
+
+  def make_link(ydoc, text, url)
+    return "{{{0}}}[{1}]".format(text, ydoc.get_doc_title(url))
+  end
+
+  def make_newline()
+    return "\n"
+  end
+
+  def write_attribute(ydoc, attr, type)
+    self.s << <<EOF.format(type, attr.name, attr.type)
+<{0}>
+<name>{1}</name>
+<type>{2}</type>
+EOF
+    if attr.desc != ""
+      self.write_markup(ydoc, attr.desc)
+    end
+    self.s << <<EOF.format(type)
+</{0}>
+EOF
+  end
+
+  def make_param(param)
+    return param
+  end
+
+  def write_method(ydoc, meth, type)
+    self.s << <<EOF.format(type, meth.sig)
+<{0}>
+<signature>{1}</signature>
+<parameters>
+EOF
+
+    meth.params.each() do [param]
+      self.s << <<EOF.format(param.name, param.desc)
+<parameter>
+<name>{0}</name>
+<description>{1}</description>
+</parameter>
+EOF
+    end
+
+    self.s << <<EOF.format(self.conv_str(meth.return_).rtrim())
+</parameters>
+<return>{0}</return>
+<exceptions>
+EOF
+
+    meth.excs.each() do [exc]
+      self.s << <<EOF.format(exc.type, exc.desc)
+<exception>
+<type>{0}</type>
+<description>{1}</description>
+</exception>
+EOF
+    end
+
+    self.s << <<EOF.format(self.conv_str(meth.block))
+</exceptions>
+<block>{0}</block>
+EOF
+
+    self.write_markup(ydoc, meth.desc)
+    self.s << <<EOF.format(type)
+</{0}>
+EOF
+  end
+
+  def conv_str(s)
+    if s == nil
+      return ""
+    end
+    return s
+  end
+
+  def write_class(ydoc, node)
+    name = self.conv_str(node.name)
+    base = self.conv_str(node.base)
+    including = self.conv_str(node.including)
+    self.s << <<EOF.format(name, base, including)
+<class>
+<name>{0}</name>
+<base>{1}</base>
+<including>{2}</including>
+EOF
+    self.write_markup(ydoc, node.desc)
+
+    super(ydoc, node)
+
+    self.s << <<EOF
+</class>
+EOF
+  end
+
+  def start_paragraph(ydoc)
+    self.s << "<p>"
+  end
+
+  def end_paragraph(ydoc)
+    self.s << <<EOF
+</p>
+EOF
+  end
+
+  def write_text(ydoc, s)
+    self.s << self.conv_inline_markup(ydoc, s)
+  end
+
+  def write_title(ydoc, level, title)
+    self.s << "<h{0}>{1}</h{0}>".format(level + 1, title)
+  end
+
+  def start_pretty()
+    self.s << "<pre>"
+  end
+
+  def end_pretty()
+    self.s << <<EOF
+</pre>
+EOF
+  end
+
+  def write_pretty(s)
+    self.s << s
+  end
+
+  def start_list()
+    self.s << "<ul>\n"
+  end
+
+  def end_list()
+    self.s << "</ul>\n"
+  end
+
+  def start_ordered_list()
+    self.s << "<ol>\n"
+  end
+
+  def end_ordered_list()
+    self.s << "</ol>\n"
+  end
+
+  def write_list_item(ydoc, s)
+    self.s << <<EOF.format(s)
+<li>{0}</li>
+EOF
+  end
+
+  def write_ordered_list_item(ydoc, s)
+    self.s << <<EOF.format(s)
+<li>{0}</li>
+EOF
+  end
+
+  def start_list_item()
+    self.s << "<li>"
+  end
+
+  def end_list_item()
+    self.s << "</li>\n"
+  end
+
+  def end(ydoc)
+    return self.s
+  end
+
+  def write_data(ydoc, node)
+    self.s << <<EOF.format(node.name, node.type)
+<data>
+<name>{0}</name>
+<type>{1}</type>
+EOF
+    self.write_markup(ydoc, node.desc)
+    self.s << <<EOF
+</data>
+EOF
+  end
+
+  def start(ydoc)
+    self.s = ""
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

@@ -1,9 +1,6 @@
 #include "yog/config.h"
 #include <ctype.h>
 #include <errno.h>
-#if defined(HAVE_GETOPT_H)
-#   include <getopt.h>
-#endif
 #include <setjmp.h>
 #if defined(__MINGW32__) || defined(_MSC_VER)
 #   include <pthread.h>
@@ -18,6 +15,7 @@
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/eval.h"
+#include "yog/getopt.h"
 #include "yog/package.h"
 #include "yog/repl.h"
 #include "yog/string.h"
@@ -116,9 +114,10 @@ yog_main(YogEnv* env, int_t argc, char* argv[])
 static void
 enable_gc_stress(YogVM* vm, uint_t gc_stress_level, uint_t level)
 {
-    if (level <= gc_stress_level) {
-        vm->gc_stress = TRUE;
+    if (gc_stress_level < level) {
+        return;
     }
+    YogVM_enable_gc_stress(NULL, vm);
 }
 
 int_t
@@ -207,7 +206,7 @@ main(int_t argc, char* argv[])
     YogThread_config_mark_sweep_compact(&env, dummy_thread, CHUNK_SIZE, threshold);
 #   undef CHUNK_SIZE
 #elif defined(GC_GENERATIONAL)
-#   define CHUNK_SIZE  (16 * 1024 * 1024)
+#   define CHUNK_SIZE   (16 * 1024 * 1024)
 #   define TENURE       32
     if (!YogMarkSweepCompact_install_sigsegv_handler(&env)) {
         fprintf(stderr, "failed installing SIGSEGV handler");

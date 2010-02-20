@@ -1,9 +1,13 @@
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "yog/array.h"
 #include "yog/class.h"
 #include "yog/classmethod.h"
 #include "yog/compile.h"
+#include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/eval.h"
@@ -74,6 +78,52 @@ print_object(YogEnv* env, YogVal obj)
     printf("%s", STRING_CSTR(s));
 
     RETURN_VOID(env);
+}
+
+static YogVal
+mkdir_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal path = YUNDEF;
+    PUSH_LOCAL(env, path);
+    YogCArg params[] = { { "path", &path }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "mkdir", params, args, kw);
+    if (!IS_PTR(path) || (BASIC_OBJ_TYPE(path) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "path must be String");
+    }
+
+    if (mkdir(STRING_CSTR(path), 0777) != 0) {
+        YogError_raise_sys_call_err(env, errno);
+    }
+
+    RETURN(env, YNIL);
+}
+
+static YogVal
+join_path(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal head = YUNDEF;
+    YogVal tail = YUNDEF;
+    YogVal path = YUNDEF;
+    PUSH_LOCALS3(env, head, tail, path);
+    YogCArg params[] = { { "head", &head }, { "tail", &tail }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "join_path", params, args, kw);
+#define CHECK_TYPE(name, s)   do { \
+    if (!IS_PTR(s) || (BASIC_OBJ_TYPE(s) != TYPE_STRING)) { \
+        YogError_raise_TypeError(env, "%s must be String", name); \
+    } \
+} while (0)
+    CHECK_TYPE("head", head);
+    CHECK_TYPE("tail", tail);
+#undef CHECK_TYPE
+
+    path = YogString_of_encoding(env, STRING_ENCODING(head));
+    YogString_add(env, path, head);
+    YogString_add(env, path, env->vm->path_separator);
+    YogString_add(env, path, tail);
+
+    RETURN(env, path);
 }
 
 static YogVal
@@ -169,6 +219,26 @@ property(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 }
 
 static YogVal
+disable_gc_stress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "disable_gc_stress", params, args, kw);
+    YogVM_disable_gc_stress(env, env->vm);
+    RETURN(env, YNIL);
+}
+
+static YogVal
+enable_gc_stress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "enable_gc_stress", params, args, kw);
+    YogVM_enable_gc_stress(env, env->vm);
+    RETURN(env, YNIL);
+}
+
+static YogVal
 classmethod(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -191,12 +261,15 @@ argv2args(YogEnv* env, uint_t argc, char** argv)
     SAVE_LOCALS(env);
     YogVal args = YUNDEF;
     YogVal s = YUNDEF;
-    PUSH_LOCALS2(env, args, s);
+    YogVal enc = YUNDEF;
+    PUSH_LOCALS3(env, args, s, enc);
 
+    enc = YogEncoding_get_default(env);
     args = YogArray_new(env);
     uint_t i;
     for (i = 0; i < argc; i++) {
         s = YogString_from_str(env, argv[i]);
+        STRING_ENCODING(s) = enc;
         YogArray_push(env, args, s);
     }
 
@@ -235,6 +308,30 @@ get_current_thread(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw,
     RETURN(env, thread);
 }
 
+static void
+set_path_separator(YogEnv* env, YogVal builtins)
+{
+    SAVE_ARG(env, builtins);
+    YogVal s = YUNDEF;
+    YogVal enc = YUNDEF;
+    PUSH_LOCALS2(env, s, enc);
+
+    const char* sep;
+#if defined(_WIN32)
+    sep = "\\";
+#else
+    sep = "/";
+#endif
+    s = YogString_from_str(env, sep);
+    enc = YogEncoding_get_default(env);
+    STRING_ENCODING(s) = enc;
+
+    YogObj_set_attr(env, builtins, "PATH_SEPARATOR", s);
+    env->vm->path_separator = s;
+
+    RETURN_VOID(env);
+}
+
 void
 YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
 {
@@ -246,9 +343,13 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     YogPackage_define_function(env, builtins, name, f); \
 } while (0)
     DEFINE_FUNCTION("classmethod", classmethod);
+    DEFINE_FUNCTION("disable_gc_stress", disable_gc_stress);
+    DEFINE_FUNCTION("enable_gc_stress", enable_gc_stress);
     DEFINE_FUNCTION("get_current_thread", get_current_thread);
     DEFINE_FUNCTION("import_package", import_package);
     DEFINE_FUNCTION("include_module", include_module);
+    DEFINE_FUNCTION("join_path", join_path);
+    DEFINE_FUNCTION("mkdir", mkdir_);
     DEFINE_FUNCTION("print", print);
     DEFINE_FUNCTION("property", property);
     DEFINE_FUNCTION("puts", puts_);
@@ -259,18 +360,29 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     YogVal klass = env->vm->c; \
     YogObj_set_attr_id(env, builtins, PTR_AS(YogClass, klass)->name, klass); \
 } while (0)
+    REGISTER_CLASS(cArray);
     REGISTER_CLASS(cCoroutine);
     REGISTER_CLASS(cDict);
     REGISTER_CLASS(cFile);
     REGISTER_CLASS(cObject);
+    REGISTER_CLASS(cRegexp);
     REGISTER_CLASS(cSet);
+    REGISTER_CLASS(cString);
     REGISTER_CLASS(cThread);
-    REGISTER_CLASS(eException);
     REGISTER_CLASS(eAttributeError);
+    REGISTER_CLASS(eException);
+    REGISTER_CLASS(eKeyError);
+    REGISTER_CLASS(eSyntaxError);
+    REGISTER_CLASS(eValueError);
+#if !defined(MINIYOG)
+#   include "errno_register.inc"
+#endif
 #undef REGISTER_CLASS
 
     args = argv2args(env, argc, argv);
     YogObj_set_attr(env, builtins, "ARGV",  args);
+
+    set_path_separator(env, builtins);
 
 #if !defined(MINIYOG)
     const char* src = 

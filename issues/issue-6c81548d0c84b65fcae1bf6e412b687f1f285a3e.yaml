@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Change dictionary's key-value separator from "=>" to ":".
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-31 14:49:33.474418 Z
+references: []
+
+id: 6c81548d0c84b65fcae1bf6e412b687f1f285a3e
+log_events: 
+- - 2010-01-31 14:49:35.222388 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

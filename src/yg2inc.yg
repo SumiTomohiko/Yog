@@ -1,12 +1,7 @@
 
 File.open(ARGV[1], "r") do [in]
   File.open(ARGV[2], "w") do [out]
-    while true
-      try
-        line = in.readline()
-      except
-        break
-      end
+    while line = in.readline()
       if line =~ /\A# vim:/
         next
       end

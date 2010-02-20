@@ -172,7 +172,7 @@ struct YogNode {
             YogVal right;
         } multi_assign_lhs;
         struct {
-            YogVal expr;
+            YogVal exprs;
         } next;
         struct {
             YogVal names;
@@ -227,7 +227,11 @@ struct YogLexer {
     YogVal buffer;
     uint_t lineno;
     YogVal heredoc_queue;
+    uint_t paren_depth;
 };
+
+#define LEXER_LINE(lexer)       PTR_AS(YogLexer, (lexer))->line
+#define LEXER_ENCODING(lexer)   PTR_AS(YogString, LEXER_LINE(lexer))->encoding
 
 typedef struct YogLexer YogLexer;
 

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add more information to SystemCallError raised File.open.
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-10 09:50:32.067569 Z
+references: []
+
+id: dd2bb04a2f5840285b8bc9f7ba59af4c20821a87
+log_events: 
+- - 2010-02-10 09:50:32.744610 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

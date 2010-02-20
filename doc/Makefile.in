@@ -1,0 +1,15 @@
+
+ROOT_DIR = ..
+YOG = $(ROOT_DIR)/src/yog
+DEST_DIR = html
+VERSION = @VERSION@
+
+.PHONY: all
+
+all:
+	$(YOG) --init-heap-size=8M makedoc.yg --title="Yog $(VERSION) documentation" --destdir=$(DEST_DIR) index.ydoc
+
+clean:
+	rm -rf $(DEST_DIR)
+
+# vim: tabstop=8 shiftwidth=8 noexpandtab

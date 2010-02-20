@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Bignum#<=> must return nil.
+desc: When operand is not Bignum.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-15 13:42:14.164325 Z
+references: []
+
+id: 7f76ea7267638c361e6f3fafb4c1d4b98b8194c2
+log_events: 
+- - 2010-02-15 13:42:15.157832 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

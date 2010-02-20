@@ -4,6 +4,16 @@ from testcase import TestCase
 
 class TestArray(TestCase):
 
+    def test_empty0(self):
+        self._test("""
+print([].empty?)
+""", "true")
+
+    def test_empty10(self):
+        self._test("""
+print([42].empty?)
+""", "false")
+
     def test_literal1(self):
         self._test("""
 a = [42]
@@ -118,16 +128,16 @@ print(foo.to_s())
     def test_to_s60(self):
         self._test("""
 foo = []
-bar = { :baz => foo }
+bar = { 'baz => foo }
 foo.push(bar)
 print(foo.to_s())
-""", "[{ :baz => [...] }]")
+""", "[{ 'baz => [...] }]")
 
     def test_to_s70(self):
         self._test("""
-foo = [:bar]
+foo = ['bar]
 print(foo.to_s())
-""", "[:bar]")
+""", "['bar]")
 
     def test_push0(self):
         self._test("""
@@ -168,7 +178,22 @@ foo[0] = 26
 print(foo[0])
 """, "26")
 
-    def test_IndexError0(self):
+    def test_subscript0(self):
+        self._test("""
+print([42][0])
+""", "42")
+
+    def test_subscript10(self):
+        self._test("""
+print([42][-1])
+""", "42")
+
+    def test_subscript20(self):
+        self._test("""
+print([42, 26][-1])
+""", "26")
+
+    def test_subscript30(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
@@ -179,5 +204,61 @@ IndexError: array index out of range
         self._test("""
 [][0]
 """, stderr=test_stderr)
+
+    def test_subscript40(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in Array#\[\]
+IndexError: array index out of range
+""", stderr)
+
+        self._test("""
+[][-1]
+""", stderr=test_stderr)
+
+    def test_shift0(self):
+        self._test("""
+print([42].shift())
+""", "42")
+
+    def test_shift10(self):
+        self._test("""
+foo = [42]
+foo.shift()
+print(foo)
+""", "[]")
+
+    def test_shift20(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 2, in <package>
+  File builtin, in Array#shift
+IndexError: shift from empty array
+""", stderr)
+
+        self._test("""
+[].shift()
+""", stderr=test_stderr)
+
+    def test_unshift0(self):
+        self._test("""
+print([42].unshift(26))
+""", "[26, 42]")
+
+    def test_get0(self):
+        self._test("""
+print([].get(0))
+""", "nil")
+
+    def test_get10(self):
+        self._test("""
+print([].get(0, 42))
+""", "42")
+
+    def test_get20(self):
+        self._test("""
+print([42].get(0))
+""", "42")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

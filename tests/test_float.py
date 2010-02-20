@@ -81,7 +81,7 @@ TypeError: unsupported operand type\(s\) for \+: Float and Symbol
 
         self._test("""
 # Float + Symbol (TypeError)
-puts(3.1415926535 + :foo)
+puts(3.1415926535 + 'foo)
 """, stderr=test_stderr)
 
     def test_subtract0(self):
@@ -143,7 +143,7 @@ TypeError: unsupported operand type\(s\) for -: Float and Symbol
 
         self._test("""
 # Float - Symbol (TypeError)
-puts(3.1415926535 - :foo)
+puts(3.1415926535 - 'foo)
 """, stderr=test_stderr)
 
     def test_multiply0(self):
@@ -207,7 +207,7 @@ TypeError: unsupported operand type\(s\) for \*: Float and Symbol
 
         self._test("""
 # Float * Symbol (TypeError)
-puts(3.1415926535 * :foo)
+puts(3.1415926535 * 'foo)
 """, stderr=test_stderr)
 
     def test_divide0(self):
@@ -267,7 +267,7 @@ TypeError: unsupported operand type\(s\) for /: Float and Symbol
 
         self._test("""
 # Float / Symbol (TypeError)
-puts(3.1415926535 / :foo)
+puts(3.1415926535 / 'foo)
 """, stderr=test_stderr)
 
     def test_floor_divide0(self):
@@ -327,7 +327,7 @@ TypeError: unsupported operand type\(s\) for //: Float and Symbol
 
         self._test("""
 # Float // Symbol (TypeError)
-puts(3.1415926535 // :foo)
+puts(3.1415926535 // 'foo)
 """, stderr=test_stderr)
 
     def test_power0(self):

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove YogString_of_size
+desc: YogString_of_size doesn't set an encoding.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-01-30 17:27:23.588758 Z
+references: []
+
+id: 8446ba056e9d98595951b7c073bf37d486840834
+log_events: 
+- - 2010-01-30 17:27:24.166019 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

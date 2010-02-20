@@ -1,0 +1,27 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Abort: attribute not found"
+desc: |-
+  $ src/yog-copying --gc-stress
+  >>> import peg
+  >>> peg.foo
+  Traceback (most recent call last):
+    File "__main__", line 1, in <package>
+    [BUG]
+    at package.c:104
+    attribute not found
+    zsh: abort (core dumped)  src/yog-copying --gc-stress
+type: :bugfix
+component: core
+release: 0.0.4
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-02 10:36:54.348271 Z
+references: []
+
+id: a81130f1c4e5bc7756850309bb498813b1e551f9
+log_events: 
+- - 2010-02-02 10:36:55.323958 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

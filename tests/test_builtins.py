@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from re import match
+from os import makedirs, unlink
+from os.path import isdir, join
+from shutil import rmtree
 from testcase import TestCase
 
 class TestPuts(TestCase):
@@ -74,5 +77,108 @@ foo = Foo.new()
 bar = foo.bar()
 bar()
 """, stdout=test_stdout)
+
+    def test_join_path0(self):
+        self._test("""
+print(join_path(\"foo\", \"bar\"))
+""", join("foo", "bar"))
+
+    def test_dirname0(self):
+        self._test("""
+print(dirname(\"/foo/bar\"))
+""", "/foo")
+
+    def test_dirname10(self):
+        self._test("""
+print(dirname(\"/foo/bar/\"))
+""", "/foo")
+
+    def test_dirname20(self):
+        self._test("""
+print(dirname(\"foo/bar\"))
+""", "foo")
+
+    def test_dirname30(self):
+        self._test("""
+print(dirname(\"foo/bar/\"))
+""", "foo")
+
+    def test_dirname40(self):
+        self._test("""
+print(dirname(\"foo\"))
+""", ".")
+
+    def test_dirname50(self):
+        self._test("""
+print(dirname(\"foo/\"))
+""", ".")
+
+    def test_dirname60(self):
+        self._test("""
+print(dirname(\"\"))
+""", ".")
+
+    def test_dirname70(self):
+        self._test("""
+print(dirname(\"/\"))
+""", "/")
+
+    def do_test_make_dirs(self, path, topdir):
+        try:
+            self._test("""
+make_dirs(\"%(path)s\")
+""" % { "path": path })
+            assert isdir(path)
+        finally:
+            if isdir(topdir):
+                rmtree(topdir)
+
+    def test_make_dirs0(self):
+        topdir = "foo"
+        self.do_test_make_dirs(topdir, topdir)
+
+    def test_make_dirs10(self):
+        topdir = "foo"
+        self.do_test_make_dirs(join(topdir, "bar"), topdir)
+
+    def test_make_dirs20(self):
+        topdir = "foo"
+        makedirs(topdir)
+        self.do_test_make_dirs(join(topdir, "bar"), topdir)
+
+    def test_mkdir0(self):
+        path = "foo"
+        try:
+            self._test("""
+mkdir(\"%(path)s\")
+""" % { "path": path })
+            assert isdir(path)
+        finally:
+            rmtree(path)
+
+    def test_copy_file0(self):
+        content = "hogefugapiyo"
+        src = "foo"
+        fp = open(src, "wb")
+        try:
+            try:
+                fp.write(content)
+            finally:
+                fp.close()
+
+            dest = "bar"
+            self._test("""
+copy_file(\"%(src)s\", \"%(dest)s\")
+""" % { "src": src, "dest": dest })
+            try:
+                fp = open(dest, "rb")
+                try:
+                    assert content == fp.read()
+                finally:
+                    fp.close()
+            finally:
+                unlink(dest)
+        finally:
+            unlink(src)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

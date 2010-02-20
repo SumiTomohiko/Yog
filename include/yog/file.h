@@ -8,6 +8,7 @@
 struct YogFile {
     struct YogBasicObj base;
     FILE* fp;
+    YogVal encoding;
 };
 
 typedef struct YogFile YogFile;

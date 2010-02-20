@@ -1,0 +1,728 @@
+
+import ydoc.grammar as g
+import ydoc.node as n
+
+class List
+  def init(margin, type)
+    self.margin = margin
+    self.type = type      # "*" or "+"
+  end
+end
+
+class Generator
+  def make_typewriter(s)
+  end
+
+  def make_italic(s)
+  end
+
+  def make_bold(s)
+  end
+
+  def make_link(ydoc, text, url)
+  end
+
+  def conv_char(c)
+    return c
+  end
+
+  def make_newline()
+    return "\n"
+  end
+
+  def conv_inline_markup(ydoc, s)
+    if s == nil
+      return ""
+    end
+    s = s.rtrim()
+
+    i = 0
+    t = ""
+    link = ""
+    while i < s.size
+      if s[i] == "\\"
+        i += 1
+
+        t << self.conv_char(s[i])
+        i += 1
+        next
+      end
+
+      if ["+", "_", "*"].include?(s[i])
+        terminator = s[i]
+        i += 1
+        body = ""
+        while s[i] != terminator
+          if s[i] == "\\"
+            i += 1
+          end
+          body << s[i]
+          i += 1
+        end
+        sym2proc = {
+          "+" => self.make_typewriter,
+          "_" => self.make_italic,
+          "*" => self.make_bold }
+        t << sym2proc[terminator](body)
+      elif s[i] == "\n"
+        t << self.make_newline()
+      elif s[i] == "{"
+        i += 1
+        link = ""
+        while s[i] != "}"
+          link << s[i]
+          i += 1
+        end
+      elif s[i] == "["
+        i += 1
+        url = ""
+        while s[i] != "]"
+          url << s[i]
+          i += 1
+        end
+        t << self.make_link(ydoc, link, url)
+        link = ""
+      else
+        t << self.conv_char(s[i])
+      end
+      i += 1
+    end
+
+    return t
+  end
+
+  def write_attribute(ydoc, attr, type)
+  end
+
+  def make_param(param)
+  end
+
+  def write_method(ydoc, meth, type)
+  end
+
+  def write_class(ydoc, node)
+    node.attrs.each() do [attr]
+      if attr.kind_of?(n.Classmethod)
+        self.write_method(ydoc, attr, "classmethod")
+      elif attr.kind_of?(n.Method)
+        self.write_method(ydoc, attr, "method")
+      elif attr.kind_of?(n.Property)
+        self.write_attribute(ydoc, attr, "property")
+      elif attr.kind_of?(n.Attribute)
+        self.write_attribute(ydoc, attr, "attribute")
+      end
+    end
+  end
+
+  def write_text(ydoc, s)
+  end
+
+  def conv_inline_markup_to_plain_text(ydoc, s)
+    t = ""
+    i = 0
+    while i < s.size
+      if s[i] == "+"
+      else
+        t << s[i]
+      end
+      i += 1
+    end
+    return t
+  end
+
+  def write_title(ydoc, level, title)
+  end
+
+  def start_pretty()
+  end
+
+  def end_pretty()
+  end
+
+  def write_pretty(s)
+  end
+
+  def start_list()
+  end
+
+  def end_list()
+  end
+
+  def start_ordered_list()
+  end
+
+  def end_ordered_list()
+  end
+
+  def start_paragraph(ydoc)
+  end
+
+  def end_paragraph(ydoc)
+  end
+
+  def start_list_item()
+  end
+
+  def end_list_item()
+  end
+
+  def write_markup(ydoc, s)
+    if s == nil
+      return
+    end
+
+    @bind(self)
+    def end_paragraph()
+      nonlocal paragraph?
+      if !paragraph?
+        return
+      end
+      self.end_paragraph(ydoc)
+      paragraph? = false
+    end
+
+    paragraph? = false
+    lines = s.split("\n")
+    i = 0
+    while i < lines.size
+      line = lines[i]
+      if m = (line =~ /\A(=+)/)
+        end_paragraph()
+        self.write_title(ydoc, m.end() - 1, line.slice(m.end()).trim())
+      elif m = (line =~ /\A\s+/)
+        end_paragraph()
+
+        margin = m.end()
+        self.start_pretty()
+        body = ""
+        while i < lines.size
+          line = lines[i]
+          if line =~ /\A\s*\Z/
+            body << "\n"
+            i += 1
+            next
+          end
+          if !(line =~ /\A\s+/)
+            break
+          end
+          body << line.slice(margin) + "\n"
+          i += 1
+        end
+        self.write_pretty(body.rtrim())
+        self.end_pretty()
+        next
+      elif m = (line =~ /\A(\+|\*)\s+/)
+        # a list starts.
+        end_paragraph()
+
+        @bind(self)
+        def start_list(type)
+          if type == "*"
+            self.start_list()
+          else
+            self.start_ordered_list()
+          end
+          self.start_list_item()
+        end
+
+        @bind(self)
+        def end_list(type)
+          self.end_list_item()
+          if type == "*"
+            self.end_list()
+          else
+            self.end_ordered_list()
+          end
+        end
+
+        type = m.group(1)
+        list_stack = [List.new(0, type)]
+        start_list(type)
+        self.write_text(ydoc, line.slice(m.end()))
+        i += 1
+
+        while i < lines.size
+          line = lines[i]
+          if m = (line =~ /\A(\s*)(\+|\*)\s+/)
+            margin = m.end(1)
+            type = m.group(2)
+            if list_stack[-1].margin < margin
+              list_stack << List.new(margin, type)
+              start_list(type)
+            elif margin < list_stack[-1].margin
+              while !list_stack.empty? && (margin < list_stack[-1].margin)
+                list = list_stack.pop()
+                end_list(list.type)
+              end
+              self.start_list_item()
+            else
+              self.end_list_item()
+              self.start_list_item()
+            end
+            self.write_text(ydoc, line.slice(m.end()))
+          elif !(line =~ /\A[^\s]/)
+            self.write_text(ydoc, line.trim())
+          else
+            break
+          end
+          i += 1
+        end
+        while !list_stack.empty?
+          end_list(list_stack.pop().type)
+        end
+        next
+      elif !paragraph?
+        if !(line =~ /\A\s*\Z/)
+          self.start_paragraph(ydoc)
+          paragraph? = true
+          self.write_text(ydoc, line)
+        end
+      elif line =~ /\A\s*\Z/
+        self.end_paragraph(ydoc)
+        paragraph? = false
+      else
+        self.write_text(ydoc, line)
+      end
+      i += 1
+    end
+    end_paragraph()
+  end
+
+  def end(ydoc)
+  end
+
+  def write_data(ydoc, node)
+  end
+
+  def start(ydoc)
+  end
+
+  def generate(ydoc, nodes)
+    self.start(ydoc)
+    nodes.each() do [node]
+      if node.kind_of?(n.Class)
+        self.write_class(ydoc, node)
+      elif node.kind_of?(String)
+        self.write_markup(ydoc, node)
+      elif node.kind_of?(n.Function)
+        self.write_method(ydoc, node, "function")
+      elif node.kind_of?(n.Data)
+        self.write_data(ydoc, node)
+      else
+        raise Exception.new("unknown node: {0}".format(node))
+      end
+    end
+    return self.end(ydoc)
+  end
+end
+
+class HtmlGenerator > Generator
+  def init()
+    self.header = ""
+    self.body = ""
+    self.title = nil
+  end
+
+  def escape_html(s)
+    t = ""
+    s.each_char() do [c]
+      tbl = { "<" => "&lt;", ">" => "&gt;", "&" => "&amp;", "\"" => "&quot;" }
+      t << tbl.get(c, c)
+    end
+    return t
+  end
+
+  def conv_char(c)
+    return self.escape_html(c)
+  end
+
+  def make_newline()
+    return "<br/>\n"
+  end
+
+  def make_typewriter(s)
+    return "<tt>" + self.escape_html(s) + "</tt>"
+  end
+
+  def make_link(ydoc, text, url)
+    if text == ""
+      text = ydoc.get_doc_title(url)
+    end
+    return "<a href=\"{0}\">{1}</a>".format(url.gsub(".ydoc", ".html"), self.conv_inline_markup(ydoc, text))
+  end
+
+  def write_attribute(ydoc, attr, type)
+    self.body << <<EOF.format(type, self.escape_html(attr.name), self.escape_html(attr.type))
+<dl>
+  <dt>{0} <tt>{1}</tt></dt>
+  <dd>
+    <table><tbody>
+      <tr><th align="left">Type</th><th>:</th><td>{2}</td></tr>
+    </tbody></table>
+EOF
+    self.write_markup(ydoc, attr.desc)
+    self.body << <<EOF
+  </dd>
+</dl>
+EOF
+  end
+
+  def make_param(param)
+    if (pos = param.find("=")) < 0
+      return "<i>{0}</i>".format(param)
+    end
+    name = param.slice(0, pos)
+    expr = param.slice(pos + 1)
+    return "<i>{0}</i><tt>={1}</tt>".format(name, expr)
+  end
+
+  def make_block_signature(sig)
+    # FIXME: share common code with make_method_signature
+    m = sig.match(/\A(.*)\((.*)\)\Z/)
+    s = "<i>{0}</i><tt>(</tt>".format(m.group(1))
+
+    params = m.group(2).split(/\s*,\s*/)
+    s += self.make_param(params[0])
+    params.slice(1).each() do [param]
+      nonlocal s
+      s += "<tt>,</tt> " + self.make_param(param)
+    end
+
+    s += "<tt>)</tt>"
+    return s
+  end
+
+  def make_method_signature(sig)
+    m = sig.match(/\A(.*)\((.*)\)\Z/)
+    s = "<tt>{0}(</tt>".format(m.group(1))
+
+    params = m.group(2).split(/\s*,\s*/)
+    s += self.make_param(params[0])
+    params.slice(1).each() do [param]
+      nonlocal s
+      s += "<tt>,</tt> " + self.make_param(param)
+    end
+
+    s += "<tt>)</tt>"
+    return s
+  end
+
+  def write_method(ydoc, meth, type)
+    self.body << <<EOF.format(type, self.make_method_signature(meth.sig))
+<dl>
+  <dt>{0} {1}</dt>
+  <dd>
+    <table><tbody>
+      <tr>
+        <th align="left">Parameter(s)</th>
+        <th>:</th>
+        <td>
+          <table border="0"><tbody>
+EOF
+    meth.params.each() do [param]
+      name = self.escape_html(param.name)
+      desc = self.conv_inline_markup(ydoc, param.desc)
+      self.body << <<EOF.format(name, desc)
+            <tr><td><i>{0}</i></td><td>--</td><td>{1}</td></tr>
+EOF
+    end
+    self.body << <<EOF.format(self.conv_inline_markup(ydoc, meth.return_))
+          </tbody></table>
+        </td>
+      </tr>
+      <tr>
+        <th align="left">Return</th>
+        <th>:</th>
+        <td>{0}</td>
+      </tr>
+      <tr>
+        <th align="left">Exception(s)</th>
+        <th>:</th>
+        <td>
+          <table><tbody>
+EOF
+    meth.excs.each() do [exc]
+      type = self.escape_html(exc.type)
+      desc = self.conv_inline_markup(ydoc, exc.desc)
+      self.body << <<EOF.format(type, desc)
+            <tr><td><tt>{0}</tt></td><td>--</td><td>{1}</td></tr>
+EOF
+    end
+    if meth.block != ""
+      block = <<EOF.format(self.make_block_signature(meth.block))
+      <tr><th align="left">Block</th><th>:</th><td>{0}</td></tr>
+EOF
+    else
+      block = ""
+    end
+    self.body << <<EOF.format(block)
+          </tbody></table>
+        </td>
+      </tr>
+      {0}
+    </tbody></table>
+EOF
+    self.write_markup(ydoc, meth.desc)
+    self.body << <<EOF
+  </dd>
+</dl>
+EOF
+  end
+
+  def write_class(ydoc, node)
+    name = self.conv_inline_markup(ydoc, node.name)
+    base = self.conv_inline_markup(ydoc, node.base)
+
+    if node.including != nil
+      mods = node.including.split()
+      including = mods[0]
+      mods.slice(1).each() do [mod]
+        including << "&nbsp;" << self.conv_inline_markup(ydoc, mod)
+      end
+      including_html = <<EOF.format(including)
+<tr>
+  <th align="left">including module(s)</th><th>:</th><td><tt>{0}</tt></td>
+</tr>
+EOF
+    else
+      including_html = ""
+    end
+
+    self.body << <<EOF.format(name, base, including_html)
+<dl>
+  <dt>class <tt>{0}</tt></dt>
+  <dd>
+    <table>
+      <tbody>
+        <tr>
+          <th align="left">base class</th>
+          <th align="center">:</th>
+          <td><tt>{1}</tt></td>
+          {2}
+        </tr>
+      </tbody>
+    </table>
+EOF
+    self.write_markup(ydoc, node.desc)
+
+    super(ydoc, node)
+
+    self.body << <<EOF
+  </dd>
+</dl>
+EOF
+
+  end
+
+  def write_text(ydoc, s)
+    self.body << self.conv_inline_markup(ydoc, s)
+  end
+
+  def conv_inline_markup_to_plain_text(ydoc, s)
+    t = ""
+    i = 0
+    while i < s.size
+      if s[i] == "+"
+      else
+        t << s[i]
+      end
+      i += 1
+    end
+    return t
+  end
+
+  def write_title(ydoc, level, title)
+    self.body << <<EOF.format(level + 1, self.conv_inline_markup(ydoc, title))
+<h{0}>{1}</h{0}>
+EOF
+
+    if self.title != nil
+      return
+    end
+    self.header << <<EOF.format(ydoc.title, self.conv_inline_markup_to_plain_text(ydoc, title))
+<title>{0} - {1}</title>
+EOF
+    self.title = title
+  end
+
+  def start_pretty()
+    self.body << "<pre>"
+  end
+
+  def end_pretty()
+    self.body << "</pre>"
+  end
+
+  def write_pretty(s)
+    self.body << self.escape_html(s)
+  end
+
+  def start_list()
+    self.body << "<ul>"
+  end
+
+  def end_list()
+    self.body << "</ul>"
+  end
+
+  def start_ordered_list()
+    self.body << "<ol>"
+  end
+
+  def end_ordered_list()
+    self.body << "</ol>"
+  end
+
+  def end(ydoc)
+    return <<EOF.format(self.header, self.body)
+<html>
+<head>
+{0}
+</head>
+<body>
+{1}
+</body>
+</html>
+EOF
+  end
+
+  def write_data(ydoc, node)
+    self.body << <<EOF.format(node.name, node.type)
+<dl>
+  <dt>data <tt>{0}</tt></dt>
+  <dd>
+    <table><tbody><tr>
+      <th align="left">Type</th><th align="left">:</th><td><tt>{1}</tt></td>
+    </tr></tbody></table>
+EOF
+    self.write_markup(ydoc, node.desc)
+    self.body << <<EOF
+  </dd>
+</dl>
+EOF
+  end
+
+  def start_paragraph(ydoc)
+    self.body << "<p>"
+  end
+
+  def end_paragraph(ydoc)
+    self.body << "</p>"
+  end
+
+  def start_list_item()
+    self.body << "<li>"
+  end
+
+  def end_list_item()
+    self.body << "</li>"
+  end
+
+  def make_italic(s)
+    return "<i>{0}</i>".format(self.escape_html(s))
+  end
+
+  def make_bold(s)
+    return "<em>{0}</em>".format(self.escape_html(s))
+  end
+
+  def start(ydoc)
+    self.header << <<EOF.format(ydoc.get_path_to_srcdir())
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<link rel="stylesheet" href="{0}/default.css" type="text/css"/>
+EOF
+    self.body << <<EOF.format(self.escape_html(ydoc.title))
+<div class="header">{0}</div>
+EOF
+  end
+end
+
+class Ydoc
+  def init(title, destdir, src, ext)
+    self.title = title
+    self.destdir = destdir
+    self.path2title = {}
+    self.srcs = [src]
+    self.srcdir = dirname(src)
+    self.ext = ext
+    self.current_src = nil
+  end
+
+  def get_path_to_srcdir()
+    dir = dirname(self.current_src)
+    path = "."
+    while (dir != ".") && (dir != self.srcdir)
+      dir = dirname(dir)
+      path += "/.."
+    end
+    return path
+  end
+
+  def replace_ext(path)
+    return path.gsub(".ydoc", self.ext)
+  end
+
+  def get_doc_title(path)
+    # TODO: This is a side effect. Do it explicitly.
+    path_from_topdir = join_path(dirname(self.current_src), path)
+    self.srcs.push(path_from_topdir)
+
+    try
+      return self.path2title[path]
+    except KeyError
+    end
+    File.open(path_from_topdir) do [fp]
+      while line = fp.readline()
+        if m = (line =~ /\A=+\s+(.*)\Z/)
+          title = m.group(1).rtrim()
+          if title != ""
+            self.path2title[path] = title
+            return title
+          end
+        end
+      end
+    end
+    title = self.replace_ext(path)
+    self.path2title[path] = title
+    return title
+  end
+
+  def run(generator)
+    while !self.srcs.empty?
+      src = self.srcs.shift()
+      self.current_src = src
+
+      nodes = File.open(src) do [fp]
+        next g.Parser.new().parse(fp)
+      end
+      dest = self.replace_ext(src)
+      if dest.starts_with?("/")
+        dest = dest.slice(self.srcdir.size + 1)
+      end
+      path = join_path(self.destdir, dest)
+      make_dirs(dirname(path))
+      File.open(path, "w") do [fp]
+        fp.write(generator.new().generate(self, nodes))
+      end
+    end
+  end
+end
+
+class YdocHtml > Ydoc
+  def run()
+    super(HtmlGenerator)
+
+    css = "default.css"
+    copy_file(join_path(self.srcdir, css), join_path(self.destdir, css))
+  end
+end
+
+def run(title, destdir, src, ext=".html", generator=HtmlGenerator)
+  Ydoc.new(title, destdir, src, ext).run(generator)
+end
+
+def run_to_html(title, destdir, src)
+  YdocHtml.new(title, destdir, src, ".html").run()
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog

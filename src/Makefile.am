@@ -11,14 +11,14 @@ PYTHON = python2.6
 MINIYOG = miniyog$(EXEEXT)
 TOOLS_DIR = $(ROOT_DIR)/tools
 
-BUILT_SOURCES = parser.h keywords.inc
+BUILT_SOURCES = $(ROOT_DIR)/include/yog/token.h keywords.inc
 COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 classmethod.c code.c comparable.c compile.c coroutine.c \
 		 dict.c encoding.c error.c eval.c exception.c file.c fixnum.c \
 		 float.c frame.c callable.c gc.c get_args.c inst.c lexer.c \
 		 main.c misc.c module.c nil.c object.c package.c parser.y \
 		 property.c regexp.c repl.c set.c sprintf.c stacktrace.c \
-		 string.c symbol.c table.c thread.c value.c vm.c
+		 string.c symbol.c table.c thread.c value.c vm.c getopt.c
 DEFAULT_INCLUDES = -I.
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" @CFLAGS_COMMON@
@@ -108,9 +108,13 @@ errno_raise.inc: $(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno
 	$(MAKE) $(MINIYOG)
 	./$(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno $@
 
-parser.h parser.c: parser.y parser.lt $(LEMON)
+errno_register.inc: $(MINIYOG) $(TOOLS_DIR)/errno2register.yg $(TOOLS_DIR)/errno
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) $(TOOLS_DIR)/errno2register.yg $(TOOLS_DIR)/errno $@
+
+$(ROOT_DIR)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
-	$(LEMON) parser.y
+	$(LEMON) header=$(ROOT_DIR)/include/yog/token.h parser.y
 
 keywords.inc: keywords
 	gperf $< > $@

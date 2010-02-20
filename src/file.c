@@ -21,6 +21,17 @@
     } \
 } while (0)
 
+static void
+YogFile_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
+    YogFile* file = (YogFile*)ptr;
+#define KEEP(member)    YogGC_keep(env, &file->member, keeper, heap)
+    KEEP(encoding);
+#undef KEEP
+}
+
 static YogVal
 alloc(YogEnv* env, YogVal klass)
 {
@@ -28,9 +39,10 @@ alloc(YogEnv* env, YogVal klass)
     YogVal file = YUNDEF;
     PUSH_LOCAL(env, file);
 
-    file = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, YogFile);
+    file = ALLOC_OBJ(env, YogFile_keep_children, NULL, YogFile);
     YogBasicObj_init(env, file, TYPE_FILE, 0, klass);
     PTR_AS(YogFile, file)->fp = NULL;
+    PTR_AS(YogFile, file)->encoding = YUNDEF;
 
     RETURN(env, file);
 }
@@ -72,13 +84,11 @@ read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
-
+    CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "read", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
 
-    s = YogString_new(env);
-
+    s = YogString_of_encoding(env, PTR_AS(YogFile, self)->encoding);
     FILE* fp = PTR_AS(YogFile, self)->fp;
     do {
         char buffer[4096];
@@ -119,18 +129,18 @@ readline(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal line = YUNDEF;
     PUSH_LOCAL(env, line);
-
+    CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "readline", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
 
     FILE* fp = PTR_AS(YogFile, self)->fp;
     char buffer[4096];
 #define FGETS   fgets(buffer, array_sizeof(buffer), fp)
     if (FGETS == NULL) {
-        YogError_raise_EOFError(env, "end of file reached");
+        RETURN(env, YNIL);
     }
-    line = YogString_from_str(env, buffer);
+    line = YogString_of_encoding(env, PTR_AS(YogFile, self)->encoding);
+    YogString_add_cstr(env, line, buffer);
 
     while (buffer[strlen(buffer) - 1] != '\n') {
         if (FGETS == NULL) {
@@ -150,13 +160,15 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogVal file = YUNDEF;
     YogVal path = YUNDEF;
     YogVal mode = YUNDEF;
+    YogVal encoding = YUNDEF;
     YogVal retval = YUNDEF;
-    PUSH_LOCALS4(env, file, path, mode, retval);
+    PUSH_LOCALS5(env, file, path, mode, encoding, retval);
 
     YogCArg params[] = {
         { "path", &path },
         { "|", NULL },
         { "mode", &mode },
+        { "encoding", &encoding },
         { NULL, NULL } };
     YogGetArgs_parse_args(env, "open", params, args, kw);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_CLASS)) {
@@ -168,6 +180,15 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     if (!IS_UNDEF(mode) && (!IS_PTR(mode) || (BASIC_OBJ_TYPE(mode) != TYPE_STRING))) {
         YogError_raise_TypeError(env, "mode must be String");
     }
+    if (IS_UNDEF(encoding)) {
+        /* TODO: IS_NIL */
+        encoding = YogEncoding_get_default(env);
+    }
+#if 0
+    else if (!IS_PTR(encoding) || (BASIC_OBJ_TYPE(encoding) != TYPE_ENCODING)) {
+        YogError_raise_TypeError(env, "encoding must be Encoding");
+    }
+#endif
 
     file = YogFile_new(env);
 
@@ -176,6 +197,7 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         YogError_raise_sys_call_err(env, errno);
     }
     PTR_AS(YogFile, file)->fp = fp;
+    PTR_AS(YogFile, file)->encoding = encoding;
 
     if (!IS_PTR(block)) {
         RETURN(env, file);
