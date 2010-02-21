@@ -19,6 +19,7 @@
 #include "yog/parser.h"
 #include "yog/property.h"
 #include "yog/string.h"
+#include "yog/sysdeps.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -92,7 +93,7 @@ mkdir_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
         YogError_raise_TypeError(env, "path must be String");
     }
 
-    if (mkdir(STRING_CSTR(path), 0777) != 0) {
+    if (YogSysdeps_mkdir(STRING_CSTR(path))) {
         YogError_raise_sys_call_err(env, errno);
     }
 

@@ -13,5 +13,5 @@ Source: "lib\*.yg"; DestDir: "{app}\lib"
 Source: "lib\ydoc\*.yg"; DestDir: "{app}\lib\ydoc"
 
 [Icons]
-Name: "{group}\yog"; Filename: "{app}\bin\yog.exe"
+Name: "{group}\Yog"; Filename: "{app}\bin\yog.exe"
 Name: "{group}\uninstall"; Filename: "{uninstallexe}"

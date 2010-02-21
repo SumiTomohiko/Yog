@@ -106,6 +106,8 @@ struct YogLocals {
     uint_t num_vals;
     uint_t size;
     YogVal* vals[4];
+    const char* filename;
+    uint_t lineno;
 };
 
 typedef struct YogLocals YogLocals;
@@ -160,8 +162,9 @@ typedef struct YogEnv YogEnv;
     (env)->locals->body = &tbl; \
 } while (0)
 #endif
+#define DECL_LOCALS(name)   YogLocals name = { NULL, 0, 0, { NULL, NULL, NULL, NULL }, __FILE__, __LINE__ };
 #define PUSH_LOCAL(env, x) \
-    YogLocals __locals_##x##__; \
+    DECL_LOCALS(__locals_##x##__); \
     __locals_##x##__.num_vals = 1; \
     __locals_##x##__.size = 1; \
     __locals_##x##__.vals[0] = &(x); \
@@ -170,7 +173,7 @@ typedef struct YogEnv YogEnv;
     __locals_##x##__.vals[3] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##__);
 #define PUSH_LOCALS2(env, x, y) \
-    YogLocals __locals_##x##_##y##__; \
+    DECL_LOCALS(__locals_##x##_##y##__); \
     __locals_##x##_##y##__.num_vals = 2; \
     __locals_##x##_##y##__.size = 1; \
     __locals_##x##_##y##__.vals[0] = &(x); \
@@ -179,7 +182,7 @@ typedef struct YogEnv YogEnv;
     __locals_##x##_##y##__.vals[3] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##_##y##__);
 #define PUSH_LOCALS3(env, x, y, z) \
-    YogLocals __locals_##x##_##y##_##z##__; \
+    DECL_LOCALS(__locals_##x##_##y##_##z##__); \
     __locals_##x##_##y##_##z##__.num_vals = 3; \
     __locals_##x##_##y##_##z##__.size = 1; \
     __locals_##x##_##y##_##z##__.vals[0] = &(x); \
@@ -188,7 +191,7 @@ typedef struct YogEnv YogEnv;
     __locals_##x##_##y##_##z##__.vals[3] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##__);
 #define PUSH_LOCALS4(env, x, y, z, t) \
-    YogLocals __locals_##x##_##y##_##z##_##t##__; \
+    DECL_LOCALS(__locals_##x##_##y##_##z##_##t##__); \
     __locals_##x##_##y##_##z##_##t##__.num_vals = 4; \
     __locals_##x##_##y##_##z##_##t##__.size = 1; \
     __locals_##x##_##y##_##z##_##t##__.vals[0] = &(x); \
@@ -197,7 +200,7 @@ typedef struct YogEnv YogEnv;
     __locals_##x##_##y##_##z##_##t##__.vals[3] = &(t); \
     PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##_##t##__);
 #define PUSH_LOCALS5(env, x, y, z, t, u) \
-    PUSH_LOCALS4(env, x, y, z, t); \
+    DECL_LOCALS(__locals_##x##_##y##_##z##_##t##_##u##__); \
     PUSH_LOCAL(env, u)
 #define PUSH_LOCALS6(env, x, y, z, t, u, v) \
     PUSH_LOCALS4(env, x, y, z, t); \

@@ -3981,6 +3981,7 @@ const char* header;
   FILE *out;
   char *prefix;
   int i;
+  const char* mode;
 
   if( lemp->tokenprefix ) prefix = lemp->tokenprefix;
   else                    prefix = "";
@@ -3998,7 +3999,7 @@ const char* header;
     }
   }
 #endif
-  const char* mode = "wb";
+  mode = "wb";
   if (header != NULL) {
       out = fopen(header, mode);
   }

@@ -10,17 +10,34 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#if defined(HAVE_WINDOWS_H)
+#   include <windows.h>
+#endif
 
-#if defined(_MSC_VER)
-#   define YogSysdeps_alloca                        _alloca
-#   define YogSysdeps_isnan                         _isnan
-#   define YogSysdeps_snprintf                      _snprintf
-#   define YogSysdeps_vsnprintf(s, size, fmt, ap)   vsprintf(s, fmt, ap)
+#if defined(HAVE__ALLOCA)
+#   define YogSysdeps_alloca    _alloca
 #else
-#   define YogSysdeps_alloca                        alloca
-#   define YogSysdeps_isnan                         isnan
-#   define YogSysdeps_snprintf                      snprintf
+#   define YogSysdeps_alloca    alloca
+#endif
+#if defined(HAVE__ISNAN)
+#   define YogSysdeps_isnan     _isnan
+#else
+#   define YogSysdeps_isnan     isnan
+#endif
+#if defined(HAVE__SNPRINTF)
+#   define YogSysdeps_snprintf  _snprintf
+#else
+#   define YogSysdeps_snprintf  snprintf
+#endif
+#if defined(HAVE_VSNPRINTF)
 #   define YogSysdeps_vsnprintf(s, size, fmt, ap)   vsnprintf(s, size, fmt, ap)
+#else
+#   define YogSysdeps_vsnprintf(s, size, fmt, ap)   vsprintf(s, fmt, ap)
+#endif
+#if defined(HAVE_MKDIR)
+#   define YogSysdeps_mkdir(path)   (mkdir(path, 0755) == 0)
+#else
+#   define YogSysdeps_mkdir(path)   (CreateDirectory(path, NULL) != 0)
 #endif
 
 #endif

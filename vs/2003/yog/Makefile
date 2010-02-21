@@ -45,7 +45,7 @@ YOG_OBJS = $(SRC_DIR)\yog-arg.obj $(SRC_DIR)\yog-array.obj \
 	   $(SRC_DIR)\yog-thread.obj $(SRC_DIR)\yog-value.obj \
 	   $(SRC_DIR)\yog-vm.obj $(SRC_DIR)\gc\yog-copying.obj \
 	   $(SRC_DIR)\yog-get_args.obj $(SRC_DIR)\yog-sprintf.obj icon.RES \
-	   yog-getopt.obj
+	   $(SRC_DIR)\yog-getopt.obj
 
 MINIYOG_OBJS = $(SRC_DIR)\miniyog-arg.obj $(SRC_DIR)\miniyog-array.obj \
 	       $(SRC_DIR)\miniyog-bignum.obj $(SRC_DIR)\miniyog-binary.obj \
@@ -71,7 +71,7 @@ MINIYOG_OBJS = $(SRC_DIR)\miniyog-arg.obj $(SRC_DIR)\miniyog-array.obj \
 	       $(SRC_DIR)\miniyog-value.obj $(SRC_DIR)\miniyog-vm.obj \
 	       $(SRC_DIR)\gc\miniyog-copying.obj \
 	       $(SRC_DIR)\miniyog-get_args.obj $(SRC_DIR)\miniyog-sprintf.obj \
-	       icon.RES miniyog-getopt.obj
+	       icon.RES $(SRC_DIR)\miniyog-getopt.obj
 
 all: $(YOG)
 
@@ -97,12 +97,10 @@ $(SRC_DIR)\yog-binary.obj: $(SRC_DIR)\binary.c
 $(SRC_DIR)\yog-bool.obj: $(SRC_DIR)\bool.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\yog-builtins.obj: $(SRC_DIR)\builtins.c $(SRC_DIR)\builtins.inc
-	$(CC) $(YOG_CFLAGS) /Fo$@ $(SRC_DIR)\builtins.c
-
-$(SRC_DIR)\builtins.inc: $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\builtins.yg
+$(SRC_DIR)\yog-builtins.obj: $(MINIYOG) $(SRC_DIR)\builtins.c $(SRC_DIR)\errno_register.inc $(SRC_DIR)\builtins.inc
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
-	$(MINIYOG) $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\builtins.yg $@
+	$(MINIYOG) $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\builtins.yg $(SRC_DIR)\builtins.inc
+	$(CC) $(YOG_CFLAGS) /Fo$@ $(SRC_DIR)\builtins.c
 
 $(SRC_DIR)\yog-class.obj: $(SRC_DIR)\class.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
@@ -129,16 +127,28 @@ $(SRC_DIR)\dict.inc: $(SRC_DIR)\yg2inc.yg $(SRC_DIR)\dict.yg
 $(SRC_DIR)\yog-encoding.obj: $(SRC_DIR)\encoding.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\yog-error.obj: $(SRC_DIR)\error.c
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+$(SRC_DIR)\yog-error.obj: $(SRC_DIR)\error.c $(SRC_DIR)\errno_raise.inc
+	$(CC) $(YOG_CFLAGS) /Fo$@ $(SRC_DIR)\error.c
+
+$(SRC_DIR)\errno_raise.inc: $(MINIYOG) $(TOOLS_DIR)\errno2raise.yg $(TOOLS_DIR)\errno
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(TOOLS_DIR)\errno2raise.yg $(TOOLS_DIR)\errno $@
 
 $(SRC_DIR)\yog-eval.obj: $(SRC_DIR)\eval.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
 $(SRC_DIR)\eval.c: $(SRC_DIR)\eval.inc
 
-$(SRC_DIR)\yog-exception.obj: $(SRC_DIR)\exception.c
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+$(SRC_DIR)\yog-exception.obj: $(SRC_DIR)\exception.c $(SRC_DIR)\errno_new.inc $(SRC_DIR)\errno_cons.inc
+	$(CC) $(YOG_CFLAGS) /Fo$@ $(SRC_DIR)\exception.c
+
+$(SRC_DIR)\errno_new.inc: $(MINIYOG) $(TOOLS_DIR)\errno2new.yg $(TOOLS_DIR)\errno
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(TOOLS_DIR)\errno2new.yg $(TOOLS_DIR)\errno $@
+
+$(SRC_DIR)\errno_cons.inc: $(MINIYOG) $(TOOLS_DIR)\errno2cons.yg $(TOOLS_DIR)\errno
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(TOOLS_DIR)\errno2cons.yg $(TOOLS_DIR)\errno $@
 
 $(SRC_DIR)\yog-file.obj: $(SRC_DIR)\file.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
@@ -163,6 +173,11 @@ $(SRC_DIR)\yog-inst.obj: $(SRC_DIR)\inst.c
 
 $(SRC_DIR)\yog-lexer.obj: $(SRC_DIR)\lexer.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+
+$(SRC_DIR)\lexer.c: $(INCLUDE_DIR)\yog\token.h
+
+$(INCLUDE_DIR)\yog\token.h: $(SRC_DIR)\parser.y $(LEMON_DIR)\lemon.exe
+	$(LEMON_DIR)\lemon.exe header=$(INCLUDE_DIR)\yog\token.h $(SRC_DIR)\parser.y
 
 $(SRC_DIR)\yog-main.obj: $(SRC_DIR)\main.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
@@ -223,14 +238,14 @@ $(SRC_DIR)\yog-thread.obj: $(SRC_DIR)\thread.c
 $(SRC_DIR)\yog-value.obj: $(SRC_DIR)\value.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-$(SRC_DIR)\yog-vm.obj: $(SRC_DIR)\vm.c $(INCLUDE_DIR)\yog\vm.h
-	$(CC) $(YOG_CFLAGS) /Fo$@ $?
+$(SRC_DIR)\yog-vm.obj: $(SRC_DIR)\vm.c $(INCLUDE_DIR)\yog\vm.h $(SRC_DIR)\errno_init.inc $(SRC_DIR)\errno_keep.inc
+	$(CC) $(YOG_CFLAGS) /Fo$@ $(SRC_DIR)\vm.c
+
+$(SRC_DIR)\errno_keep.inc: $(MINIYOG) $(TOOLS_DIR)\errno2keep.yg $(TOOLS_DIR)\errno
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(TOOLS_DIR)\errno2keep.yg $(TOOLS_DIR)\errno $@
 
 $(INCLUDE_DIR)\yog\vm.h: $(INCLUDE_DIR)\yog\errno_vm.inc
-
-$(INCLUDE_DIR)\yog\errno_vm.inc: $(MINIYOG) $(TOOLS_DIR)\errno2vm.yg $(TOOLS_DIR)\errno
-	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
-	$(MINIYOG) $(TOOLS_DIR)\errno2vm.yg $(TOOLS_DIR)\errno $@
 
 $(SRC_DIR)\gc\yog-copying.obj: $(SRC_DIR)\gc\copying.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
@@ -238,7 +253,7 @@ $(SRC_DIR)\gc\yog-copying.obj: $(SRC_DIR)\gc\copying.c
 $(SRC_DIR)\yog-coroutine.obj: $(SRC_DIR)\coroutine.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
-yog-getopt.obj: getopt.c
+$(SRC_DIR)\yog-getopt.obj: $(SRC_DIR)\getopt.c
 	$(CC) $(YOG_CFLAGS) /Fo$@ $?
 
 $(MINIYOG): $(MINIYOG_OBJS)
@@ -344,7 +359,7 @@ $(SRC_DIR)\miniyog-parser.obj: $(SRC_DIR)\parser.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
 $(SRC_DIR)\parser.c: $(SRC_DIR)\parser.lt $(SRC_DIR)\parser.y $(LEMON_DIR)\lemon.exe
-	$(LEMON_DIR)\lemon.exe $(SRC_DIR)\parser.y
+	$(LEMON_DIR)\lemon.exe header=$(INCLUDE_DIR)\yog\token.h $(SRC_DIR)\parser.y
 
 $(LEMON_DIR)\lemon.exe: $(LEMON_DIR)\lemon.c
 	$(CC) /Fe$@ /Wall /nologo /O2 /Z7 /MT $(LEMON_DIR)\lemon.c
@@ -388,7 +403,7 @@ $(SRC_DIR)\gc\miniyog-copying.obj: $(SRC_DIR)\gc\copying.c
 $(SRC_DIR)\miniyog-coroutine.obj: $(SRC_DIR)\coroutine.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
-miniyog-getopt.obj: getopt.c
+$(SRC_DIR)\miniyog-getopt.obj: $(SRC_DIR)\getopt.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
 
 icon.RES: icon.rc yog.ico
@@ -405,6 +420,19 @@ $(SRC_DIR)\yog-sprintf.obj: $(SRC_DIR)\sprintf.c
 
 $(SRC_DIR)\miniyog-sprintf.obj: $(SRC_DIR)\sprintf.c
 	$(CC) $(MINIYOG_CFLAGS) /Fo$@ $?
+
+$(INCLUDE_DIR)\yog\errno_vm.inc: $(MINIYOG) $(TOOLS_DIR)\errno2vm.yg $(TOOLS_DIR)\errno
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(TOOLS_DIR)\errno2vm.yg $(TOOLS_DIR)\errno $@
+
+
+$(SRC_DIR)\errno_init.inc: $(MINIYOG) $(TOOLS_DIR)\errno2init.yg $(TOOLS_DIR)\errno
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(TOOLS_DIR)\errno2init.yg $(TOOLS_DIR)\errno $@
+
+$(SRC_DIR)\errno_register.inc: $(MINIYOG) $(TOOLS_DIR)\errno2register.yg $(TOOLS_DIR)\errno
+	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
+	$(MINIYOG) $(TOOLS_DIR)\errno2register.yg $(TOOLS_DIR)\errno $@
 
 clean:
 	del $(YOG_OBJS) $(MINIYOG_OBJS) $(YOG) $(MINIYOG)
