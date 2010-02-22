@@ -425,7 +425,6 @@ $(INCLUDE_DIR)\yog\errno_vm.inc: $(MINIYOG) $(TOOLS_DIR)\errno2vm.yg $(TOOLS_DIR
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
 	$(MINIYOG) $(TOOLS_DIR)\errno2vm.yg $(TOOLS_DIR)\errno $@
 
-
 $(SRC_DIR)\errno_init.inc: $(MINIYOG) $(TOOLS_DIR)\errno2init.yg $(TOOLS_DIR)\errno
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO $(MINIYOG)
 	$(MINIYOG) $(TOOLS_DIR)\errno2init.yg $(TOOLS_DIR)\errno $@
@@ -435,6 +434,6 @@ $(SRC_DIR)\errno_register.inc: $(MINIYOG) $(TOOLS_DIR)\errno2register.yg $(TOOLS
 	$(MINIYOG) $(TOOLS_DIR)\errno2register.yg $(TOOLS_DIR)\errno $@
 
 clean:
-	del $(YOG_OBJS) $(MINIYOG_OBJS) $(YOG) $(MINIYOG)
+	del $(SRC_DIR)\*.obj *.exe
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

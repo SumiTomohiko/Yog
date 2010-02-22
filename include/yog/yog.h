@@ -200,7 +200,7 @@ typedef struct YogEnv YogEnv;
     __locals_##x##_##y##_##z##_##t##__.vals[3] = &(t); \
     PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##_##t##__);
 #define PUSH_LOCALS5(env, x, y, z, t, u) \
-    DECL_LOCALS(__locals_##x##_##y##_##z##_##t##_##u##__); \
+    PUSH_LOCALS4(env, x, y, z, t); \
     PUSH_LOCAL(env, u)
 #define PUSH_LOCALS6(env, x, y, z, t, u, v) \
     PUSH_LOCALS4(env, x, y, z, t); \

@@ -149,6 +149,9 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 void
 YogGenerational_init(YogEnv* env, YogGenerational* generational, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, uint_t tenure)
 {
+    generational->prev = generational->next = NULL;
+    generational->refered = TRUE;
+
     generational->err = ERR_GEN_NONE;
 
     YogCopying* copying = &generational->copying;

@@ -708,6 +708,9 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 void
 YogMarkSweepCompact_init(YogEnv* env, YogMarkSweepCompact* msc, size_t chunk_size, size_t threshold)
 {
+    msc->prev = msc->next = NULL;
+    msc->refered = FALSE;
+
     msc->err = ERR_MSC_NONE;
     msc->chunk_size = chunk_size;
     msc->chunks = NULL;

@@ -266,7 +266,7 @@ multiply(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 }
 
 static YogVal
-div(YogEnv* env, YogVal self, YogVal args, YogVal kw, const char* opname)
+div_(YogEnv* env, YogVal self, YogVal args, YogVal kw, const char* opname)
 {
     SAVE_ARGS3(env, self, args, kw);
     YogVal right = YUNDEF;
@@ -304,13 +304,13 @@ div(YogEnv* env, YogVal self, YogVal args, YogVal kw, const char* opname)
 static YogVal
 divide(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    return div(env, self, args, kw, "/");
+    return div_(env, self, args, kw, "/");
 }
 
 static YogVal
 floor_divide(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    return div(env, self, args, kw, "//");
+    return div_(env, self, args, kw, "//");
 }
 
 static YogVal
