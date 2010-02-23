@@ -333,7 +333,7 @@ YogError_raise_sys_call_err(YogEnv* env, int errno_)
 #endif
 
     klass = env->vm->eSystemCallError;
-    exc = YogEval_call_method1(env, klass, "new", INT2VAL(0));
+    exc = YogEval_call_method1(env, klass, "new", INT2VAL(errno_));
 
     RESTORE_LOCALS(env);
     YogError_raise(env, exc);

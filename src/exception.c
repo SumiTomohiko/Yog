@@ -333,6 +333,7 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
     EXCEPTION_NEW(eLocalJumpError, "LocalJumpError");
     EXCEPTION_NEW(eNameError, "NameError");
     EXCEPTION_NEW(eSyntaxError, "SyntaxError");
+    EXCEPTION_NEW(eSystemCallError, "SystemCallError");
     EXCEPTION_NEW(eTypeError, "TypeError");
     EXCEPTION_NEW(eValueError, "ValueError");
     EXCEPTION_NEW(eZeroDivisionError, "ZeroDivisionError");
