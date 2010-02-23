@@ -6,7 +6,15 @@ from os.path import isdir, join
 from shutil import rmtree
 from testcase import TestCase
 
-class TestPuts(TestCase):
+class TestBuiltins(TestCase):
+
+    def test_IndexError0(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 1, in <package>
+IndexError: nil
+""", stderr)
+        self._test("raise IndexError.new()", stderr=test_stderr)
 
     def test_int(self):
         self._test("""
