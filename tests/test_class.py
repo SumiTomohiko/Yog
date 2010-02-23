@@ -4,6 +4,14 @@ from testcase import TestCase
 
 class TestKlass(TestCase):
 
+    def test_AttributeError0(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("AttributeError: Class object has no attribute \"foo\"")
+
+        self._test("""
+42.class.foo
+""", stderr=test_stderr)
+
     def test_method(self):
         self._test("""
 class Foo
