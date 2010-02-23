@@ -11,11 +11,11 @@
 #if defined(HAVE_WINDOWS_H)
 #   include <windows.h>
 #endif
+#include "getopt.h"
 #include "yog/array.h"
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/eval.h"
-#include "yog/getopt.h"
 #include "yog/package.h"
 #include "yog/repl.h"
 #include "yog/string.h"
@@ -265,14 +265,6 @@ main(int_t argc, char* argv[])
 
     return 0;
 }
-
-#if defined(_MSC_VER)
-int
-WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
-{
-    return main(__argc, __argv);
-}
-#endif
 
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

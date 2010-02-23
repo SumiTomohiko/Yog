@@ -113,6 +113,9 @@ YogMarkSweep_post_gc(YogEnv* env, YogMarkSweep* ms)
 void
 YogMarkSweep_init(YogEnv* env, YogMarkSweep* ms, size_t threshold)
 {
+    ms->prev = ms->next = NULL;
+    ms->refered = TRUE;
+
     ms->header = NULL;
     ms->threshold = threshold;
     ms->allocated_size = 0;

@@ -14,7 +14,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AM_PROG_CC_C_O
-AC_PROG_LIBTOOL
+#AC_PROG_LIBTOOL
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
@@ -197,8 +197,8 @@ case "${host}" in
     ;;
 *-mingw32)
     PTHREADS_W32_DIR="`pwd`/pthreads-w32"
-    CFLAGS="${CFLAGS} -I${PTHREADS_W32_DIR}"
-    LDFLAGS_COMMON="${LDFLAGS_COMMON} ${PTHREADS_W32_DIR}/libpthreadGC2.a -lwsock32"
+    CFLAGS="${CFLAGS} -I${PTHREADS_W32_DIR} -DPTW32_STATIC_LIB"
+    LIBS="${LIBS} ${PTHREADS_W32_DIR}/libpthreadGC2.a -lwsock32"
     TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT=".dll"
@@ -226,6 +226,7 @@ AC_SUBST(BIN_PROGRAMS)
 AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(CFLAGS_COMMON)
 AC_SUBST(LDFLAGS_COMMON)
+AC_SUBST(LIBS)
 AC_SUBST(EXTS)
 AC_SUBST(SOEXT)
 

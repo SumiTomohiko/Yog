@@ -1,6 +1,7 @@
 #if !defined(__YOG_SPRINTF_H__)
 #define __YOG_SPRINTF_H__
 
+#include <stdarg.h>
 #include "yog/yog.h"
 
 /* PROTOTYPE_START */

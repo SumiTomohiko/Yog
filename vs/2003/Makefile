@@ -9,7 +9,7 @@ all:
 	cd pthreads-w32
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO VC-static-debug
 	cd ..
-	cd Yog
+	cd yog
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO
 	cd ..
 
@@ -23,20 +23,12 @@ clean:
 	cd pthreads-w32
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO clean
 	cd ..
-	cd Yog
+	cd yog
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO clean
 	cd ..
 
 test:
 	cd ..\..\tests
 	$(MAKE) /$(MAKEFLAGS) /NOLOGO /FMakefile.vs
-
-installer: Yog-0.0.4.msi
-
-Yog-0.0.4.msi: Yog-0.0.4.wixobj
-	light -nologo Yog-0.0.4.wixobj
-
-Yog-0.0.4.wixobj: Yog-0.0.4.wxs
-	candle -nologo Yog-0.0.4.wxs
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

@@ -828,7 +828,7 @@ dump(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 #define FORMAT              "0x%02x"
 #define ADD_CHAR(fmt, i)    do { \
     char buf[6]; \
-    snprintf(buf, array_sizeof(buf), fmt, STRING_CSTR(self)[i]); \
+    YogSysdeps_snprintf(buf, array_sizeof(buf), fmt, STRING_CSTR(self)[i]); \
     YogString_add_cstr(env, s, buf); \
 } while (0)
     ADD_CHAR(FORMAT, 0);

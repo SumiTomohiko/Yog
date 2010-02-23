@@ -928,7 +928,7 @@ print_dlopen_error(YogEnv* env)
         RETURN_VOID(env);
     }
     const char* msg;
-#if defined(_MSC_VER)
+#if defined(__MINGW32__) || defined(_MSC_VER)
     TCHAR buf[1024];
     if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buf, array_sizeof(buf), NULL) != 0) {
         RETURN_VOID(env);

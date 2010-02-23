@@ -196,6 +196,7 @@ void
 YogCopying_scan(YogEnv* env, YogCopying* copying, ObjectKeeper keeper, void* heap)
 {
     while (copying->scanned != copying->unscanned) {
+        DEBUG(TRACE("scanned=%p, unscanned=%p", copying->scanned, copying->unscanned));
         YogCopyingHeader* header = (YogCopyingHeader*)copying->scanned;
         ChildrenKeeper children_keeper = header->keeper;
         if (children_keeper != NULL) {
@@ -301,6 +302,9 @@ YogCopying_alloc_heap(YogEnv* env, YogCopying* copying)
 void
 YogCopying_init(YogEnv* env, YogCopying* copying, size_t heap_size)
 {
+    copying->prev = copying->next = NULL;
+    copying->refered = TRUE;
+
     copying->err = ERR_COPYING_NONE;
     copying->heap_size = heap_size;
     copying->active_heap = NULL;
@@ -322,7 +326,8 @@ YogCopying_is_empty(YogEnv* env, YogCopying* copying)
 }
 
 #if 0
-#include <stdarg.h>
+#   include <stdarg.h>
+#   include "yog/thread.h"
 
 static void
 report_bug(const char* fmt, ...)
@@ -334,37 +339,85 @@ report_bug(const char* fmt, ...)
     abort();
 }
 
+static void*
+check_ptr(YogEnv* env, void* ptr, void* heap)
+{
+    if (ptr == NULL) {
+        return ptr;
+    }
+    YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
+#if 0
+    if (header->forwarding_addr != NULL) {
+        return ptr;
+    }
+    header->forwarding_addr = (void*)0xdeadbeef;
+#endif
+
+    if (header->size == 0xfdfdfdfd) {
+        report_bug("invalid size");
+    }
+    YogCopyingHeap* inactive_heap = ((YogCopying*)heap)->inactive_heap;
+    void* from = inactive_heap->items;
+    void* to = inactive_heap->items + inactive_heap->size;
+    if ((from <= ptr) && (ptr < to)) {
+        report_bug("an object in the inactive heap");
+    }
+
+#if 0
+    if (header->keeper != NULL) {
+        header->keeper(env, ptr, check_ptr, heap);
+    }
+#endif
+    return ptr;
+}
+
+static void
+reset_forwarding_addr(YogEnv* env, YogCopyingHeader* header)
+{
+    header->forwarding_addr = NULL;
+}
+
 static void
 check_object(YogEnv* env, YogCopyingHeader* header)
 {
+#if 0
 #define ASSERT(expr, fmt, ...)  do { \
     if (!(expr)) { \
         report_bug(fmt, __VA_ARGS__); \
     } \
 } while (0)
     ASSERT(0 < header->size, "invalid size (header=%p, obj=%p, size=0x%x)", header, (YogCopyingHeader*)header + 1, header->size);
+    ASSERT(header->size != 0xfdfdfdfd, "invalid size (header=%p, obj=%p, size=0x%x)", header, (YogCopyingHeader*)header + 1, header->size);
     ASSERT(header->forwarding_addr == NULL, "invalid forwarding address (header=%p, obj=%p, addr=%p)", header, (YogCopyingHeader*)header + 1, header->forwarding_addr);
     ASSERT(((uint_t)header->finalizer & (sizeof(void*) - 1)) == 0, "invalid finalier (%p)", header->finalizer);
 #undef ASSERT
+#endif
+    if (header->keeper == NULL) {
+        return;
+    }
+    header->keeper(env, header + 1, check_ptr, NULL);
 }
 
-#   define ESCAPE_PROTO
-ESCAPE_PROTO void
-YogCopying_check(YogEnv* env, YogCopying* copying)
+void YogCopying_check(YogEnv* env, YogCopying* copying)
 {
-    iterate_objects(env, copying->active_heap, check_object);
+    iterate_objects(env, copying->active_heap, reset_forwarding_addr);
+    YogVM_keep_children(env, env->vm, check_ptr, PTR_AS(YogThread, env->thread)->heap);
+    iterate_objects(env, copying->active_heap, reset_forwarding_addr);
 }
 
-#   define ESCAPE_PROTO
-ESCAPE_PROTO void
-YogCopying_check_inactive_heap(YogEnv* env, YogCopying* copying)
+void YogCopying_check_inactive_heap(YogEnv* env, YogCopying* copying)
 {
+#if 0
     unsigned char* ptr = copying->inactive_heap->items;
-    unsigned char* to = copying->unscanned;
+#endif
+    unsigned char* ptr = copying->unscanned;
+    unsigned char* to = copying->scanned;
     while (ptr < to) {
         YogCopyingHeader* header = (YogCopyingHeader*)ptr;
         YOG_ASSERT(env, 0 < header->size, "invalid size (%x)", header->size);
-        check_object(env, header);
+        if (header->keeper != NULL) {
+            header->keeper(env, header + 1, check_ptr, NULL);
+        }
 
         ptr += header->size;
     }

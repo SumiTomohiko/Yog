@@ -1,0 +1,1 @@
+iscc tools\installer.iss
