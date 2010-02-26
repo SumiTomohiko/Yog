@@ -202,7 +202,7 @@ case "${host}" in
     LDFLAGS_MINIYOG="${LDFLAGS_MINIYOG} -Wl,--out-implib,miniyog.lib"
     LDFLAGS_COMMON="${LDFLAGS_COMMON} --enable-runtime-pseudo-reloc"
     LIBS="${LIBS} ${PTHREADS_W32_DIR}/libpthreadGC2.a -lwsock32"
-    TEST_TARGETS="${TEST_TARGETS}"
+    TEST_TARGETS="${TEST_TARGETS} test-copying"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT=".dll"
     COMMON_SOURCES="icon.rc"
