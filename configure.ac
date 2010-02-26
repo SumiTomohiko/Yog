@@ -189,7 +189,7 @@ AC_CANONICAL_HOST
 case "${host}" in
 *-openbsd*)
     CFLAGS_COMMON="${CFLAGS_COMMON} -pthread"
-    LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb"
+    LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb -export-dynamic"
     TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
     EXTS="concurrent\$(SOEXT)"
@@ -197,11 +197,15 @@ case "${host}" in
     ;;
 *-mingw32)
     PTHREADS_W32_DIR="`pwd`/pthreads-w32"
-    CFLAGS="${CFLAGS} -I${PTHREADS_W32_DIR} -DPTW32_STATIC_LIB"
+    CFLAGS_COMMON="${CFLAGS} -I${PTHREADS_W32_DIR} -DPTW32_STATIC_LIB -DYOG_CORE"
+    LDFLAGS_COPYING="${LDFLAGS_COPYING} -Wl,--out-implib,yog-copying.lib"
+    LDFLAGS_MINIYOG="${LDFLAGS_MINIYOG} -Wl,--out-implib,miniyog.lib"
+    LDFLAGS_COMMON="${LDFLAGS_COMMON} --enable-runtime-pseudo-reloc"
     LIBS="${LIBS} ${PTHREADS_W32_DIR}/libpthreadGC2.a -lwsock32"
-    TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep"
-    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) miniyog\$(EXEEXT)"
+    TEST_TARGETS="${TEST_TARGETS}"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT=".dll"
+    COMMON_SOURCES="icon.rc"
     ;;
 *)
     case "${host}" in
@@ -209,6 +213,7 @@ case "${host}" in
         CFLAGS_COMMON="${CFLAGS_COMMON} -D_XOPEN_SOURCE=500 -D_BSD_SOURCE"
         ;;
     esac
+    LDFLAGS_COMMON="${LDFLAGS_COMMON} -export-dynamic"
     AC_CONFIG_SUBDIRS([bdwgc])
     DIRS="${DIRS} bdwgc"
     TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational"
@@ -226,9 +231,16 @@ AC_SUBST(BIN_PROGRAMS)
 AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(CFLAGS_COMMON)
 AC_SUBST(LDFLAGS_COMMON)
+AC_SUBST(LDFLAGS_BDW)
+AC_SUBST(LDFLAGS_COPYING)
+AC_SUBST(LDFLAGS_GENERATIONAL)
+AC_SUBST(LDFLAGS_MARK_SWEEP)
+AC_SUBST(LDFLAGS_MARK_SWEEP_COMPACT)
+AC_SUBST(LDFLAGS_MINIYOG)
 AC_SUBST(LIBS)
 AC_SUBST(EXTS)
 AC_SUBST(SOEXT)
+AC_SUBST(COMMON_SOURCES)
 
 AC_CONFIG_SUBDIRS([onig
                    gmp])
