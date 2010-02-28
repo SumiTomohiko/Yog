@@ -52,22 +52,27 @@ class TestCase(object):
         from os import kill
         kill(pid, SIGKILL)
 
-    def lf2crlf(self, s):
-        if os.name != "nt":
-            return s
-        return "\r\n".join(s.split("\n"))
-
     def format_time(self, sec):
         return strftime("%x %X", localtime(sec))
 
     def _test_regexp(self, regexp, s):
-        m = search(self.lf2crlf(regexp), s)
+        m = search(regexp, s)
         assert m is not None
         return m
 
     def read(self, path):
         with open(path) as fp:
             return fp.read()
+
+    def wait_proc(self, proc, timeout=5 * 60):
+        time_begin = time()
+        while True:
+            if proc.poll() is not None:
+                break
+            now = time()
+            if timeout < now - time_begin:
+                self.terminate_process(proc.pid)
+                assert False, "time is out (starting at %s, now is %s)" % (self.format_time(time_begin), self.format_time(now))
 
     def do(self, stdout, stderr, stdin, status, args, timeout, encoding=None):
         stdout_path = stderr_path = None
@@ -79,15 +84,7 @@ class TestCase(object):
             if stdin is not None:
                 proc.stdin.write(stdin)
             proc.stdin.close()
-
-            time_begin = time()
-            while True:
-                if proc.poll() is not None:
-                    break
-                now = time()
-                if timeout < now - time_begin:
-                    self.terminate_process(proc.pid)
-                    assert False, "time is out (starting at %s, now is %s)" % (self.format_time(time_begin), self.format_time(now))
+            self.wait_proc(proc, timeout)
 
             if stderr is not None:
                 err = self.remove_gc_warings(self.read(stderr_path))
@@ -96,8 +93,7 @@ class TestCase(object):
                 if callable(stderr):
                     stderr(err)
                 else:
-                    stderr = self.lf2crlf(stderr)
-                    assert stderr == err, "stderr must be \"%s\", but actual is \"%s\"" % (stderr, err)
+                    assert stderr == err, "stderr must be %r, but actual is %r" % (stderr, err)
 
             if stdout is not None:
                 out = self.read(stdout_path)
@@ -106,8 +102,7 @@ class TestCase(object):
                 if callable(stdout):
                     stdout(out)
                 else:
-                    stdout = self.lf2crlf(stdout)
-                    assert stdout == out, "stdout must be \"%s\", but actual is \"%s\"" % (stdout, out)
+                    assert stdout == out, "stdout must be %r, but actual is %r" % (stdout, out)
 
             if status is not None:
                 returncode = proc.returncode

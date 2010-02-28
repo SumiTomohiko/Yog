@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from os import environ
+from os import environ, unlink
 from re import match, search
 from testcase import TestCase
 
@@ -18,10 +18,21 @@ puts("xx" * 536870912)
 """, stderr=test_stderr, status=None)
 
     def test_open0(self):
-        proc = self.run_command(["foo"])
-        stderr = proc.stderr.read()
-        m = match("can't open file \"foo\"", stderr)
-        assert m is not None
+        stdout_path = stderr_path = None
+        try:
+            stdout_path = self.make_temp_file("stdout", ".log")
+            stderr_path = self.make_temp_file("stderr", ".log")
+            proc = self.run_command(["foo"], stdout_path, stderr_path)
+            self.wait_proc(proc)
+            stderr = self.read(stderr_path)
+            m = match("can't open file \"foo\"", stderr)
+            assert m is not None
+        finally:
+            for path in [stdout_path, stderr_path]:
+                try:
+                    unlink(path)
+                except:
+                    pass
 
     def test_NameError0(self):
         def test_stderr(stderr):
