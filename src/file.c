@@ -194,7 +194,7 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 
     FILE* fp = fopen(STRING_CSTR(path), IS_UNDEF(mode) ? "r" : STRING_CSTR(mode));
     if (fp == NULL) {
-        YogError_raise_sys_err(env, errno);
+        YogError_raise_sys_err(env, errno, path);
     }
     PTR_AS(YogFile, file)->fp = fp;
     PTR_AS(YogFile, file)->encoding = encoding;

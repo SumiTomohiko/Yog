@@ -321,15 +321,17 @@ raise_sys_call_err(YogEnv* env, YogVal klass)
 #endif
 
 static void
-raise_sys_err(YogEnv* env, YogVal klass, int_t errno_)
+raise_sys_err(YogEnv* env, YogVal klass, int_t errno_, YogVal opt)
 {
-    SAVE_ARG(env, klass);
+    SAVE_ARGS2(env, klass, opt);
     YogVal exc = YUNDEF;
-    YogVal e = YUNDEF;
-    PUSH_LOCALS2(env, exc, e);
+    PUSH_LOCAL(env, exc);
+    YogVal args[] = { YUNDEF, YUNDEF };
+    PUSH_LOCALSX(env, array_sizeof(args), args);
 
-    e = YogVal_from_int(env, errno_);
-    exc = YogEval_call_method1(env, klass, "new", e);
+    args[0] = YogVal_from_int(env, errno_);
+    args[1] = opt;
+    exc = YogEval_call_method(env, klass, "new", array_sizeof(args), args);
 
     RESTORE_LOCALS(env);
     YogError_raise(env, exc);
@@ -337,19 +339,23 @@ raise_sys_err(YogEnv* env, YogVal klass, int_t errno_)
 }
 
 void
-YogError_raise_sys_err(YogEnv* env, int_t errno_)
+YogError_raise_sys_err(YogEnv* env, int_t errno_, YogVal opt)
 {
-    raise_sys_err(env, env->vm->eSystemError, errno_);
+    SAVE_ARG(env, opt);
+    raise_sys_err(env, env->vm->eSystemError, errno_, opt);
+    RETURN_VOID(env);
 }
 
 void
-YogError_raise_sys_err2(YogEnv* env, int_t err_code)
+YogError_raise_sys_err2(YogEnv* env, int_t err_code, YogVal opt)
 {
+    SAVE_ARG(env, opt);
 #if WINDOWS
-    raise_sys_err(env, env->vm->eWindowsError, err_code);
+    raise_sys_err(env, env->vm->eWindowsError, err_code, opt);
 #else
-    YogError_raise_sys_err(env, err_code);
+    YogError_raise_sys_err(env, err_code, opt);
 #endif
+    RETURN_VOID(env);
 }
 
 /**

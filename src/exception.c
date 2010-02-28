@@ -17,6 +17,7 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/sprintf.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -386,10 +387,26 @@ err_code2errno(uint_t err_code)
     return EINVAL;
 }
 
-static void
-init_WindowsError(YogEnv* env, YogVal self, uint_t err_code)
+static YogVal
+join_err_msg(YogEnv* env, const char* msg, YogVal opt)
 {
-    SAVE_ARG(env, self);
+    SAVE_ARG(env, opt);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    if (IS_NIL(opt)) {
+        s = YogString_from_str(env, msg);
+        RETURN(env, s);
+    }
+
+    s = YogSprintf_sprintf(env, "%s - %S", msg, opt);
+    RETURN(env, s);
+}
+
+static void
+init_WindowsError(YogEnv* env, YogVal self, uint_t err_code, YogVal opt)
+{
+    SAVE_ARGS2(env, self, opt);
     YogVal msg = YUNDEF;
     PUSH_LOCAL(env, msg);
 
@@ -397,14 +414,14 @@ init_WindowsError(YogEnv* env, YogVal self, uint_t err_code)
 #if WINDOWS
     char* buf = NULL;
     if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, err_code, 0, (PTSTR)&buf, 0, NULL) != 0) {
-        msg = YogString_from_str(env, buf);
+        msg = join_err_msg(env, buf, opt);
         LocalFree((HLOCAL)buf);
     }
     else {
-        msg = YNIL;
+        msg = opt;
     }
 #else
-    msg = YogString_from_str(env, strerror(errno_));
+    msg = join_err_msg(env, strerror(errno_), opt);
 #endif
     init_SystemError(env, self, msg, errno_);
     PTR_AS(YogWindowsError, self)->err_code = err_code;
@@ -417,15 +434,20 @@ WindowsError_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, 
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal err_code = YUNDEF;
-    PUSH_LOCAL(env, err_code);
+    YogVal opt = YNIL;
+    PUSH_LOCALS2(env, err_code, opt);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_WINDOWS_ERROR)) {
         YogError_raise_TypeError(env, "self must be WindowsError");
     }
-    YogCArg params[] = { { "err_code", &err_code }, { NULL, NULL } };
+    YogCArg params[] = {
+        { "err_code", &err_code },
+        { "|", NULL },
+        { "opt", &opt },
+        { NULL, NULL } };
     YogGetArgs_parse_args(env, "init", params, args, kw);
 
     uint_t e = (uint_t)YogVal_to_signed_type(env, err_code, "err_code");
-    init_WindowsError(env, self, e);
+    init_WindowsError(env, self, e, opt);
 
     RETURN(env, YNIL);
 }
@@ -436,15 +458,20 @@ SystemError_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Y
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal msg = YUNDEF;
     YogVal errno_ = YUNDEF;
-    PUSH_LOCALS2(env, msg, errno_);
+    YogVal opt = YNIL;
+    PUSH_LOCALS3(env, msg, errno_, opt);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_SYSTEM_ERROR)) {
         YogError_raise_TypeError(env, "self must be SystemError");
     }
-    YogCArg params[] = { { "errno", &errno_ }, { NULL, NULL } };
+    YogCArg params[] = {
+        { "errno", &errno_ },
+        { "|", NULL },
+        { "opt", &opt },
+        { NULL, NULL } };
     YogGetArgs_parse_args(env, "init", params, args, kw);
 
     int_t e = YogVal_to_signed_type(env, errno_, "errno");
-    msg = YogString_from_str(env, strerror(e));
+    msg = join_err_msg(env, strerror(e), opt);
     init_SystemError(env, self, msg, e);
 
     RETURN(env, YNIL);

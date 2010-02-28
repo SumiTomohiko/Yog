@@ -664,11 +664,12 @@ class Ydoc
 
   def get_doc_title(path)
     # TODO: This is a side effect. Do it explicitly.
-    path_from_topdir = join_path(dirname(self.current_src), path)
+    phisical_path = path.gsub("/", PATH_SEPARATOR)
+    path_from_topdir = join_path(dirname(self.current_src), phisical_path)
     self.srcs.push(path_from_topdir)
 
     try
-      return self.path2title[path]
+      return self.path2title[phisical_path]
     except KeyError
     end
     File.open(path_from_topdir) do [fp]
@@ -676,14 +677,14 @@ class Ydoc
         if m = (line =~ /\A=+\s+(.*)\Z/)
           title = m.group(1).rtrim()
           if title != ""
-            self.path2title[path] = title
+            self.path2title[phisical_path] = title
             return title
           end
         end
       end
     end
     title = self.replace_ext(path)
-    self.path2title[path] = title
+    self.path2title[phisical_path] = title
     return title
   end
 
@@ -696,9 +697,10 @@ class Ydoc
         next g.Parser.new().parse(fp)
       end
       dest = self.replace_ext(src)
-      if dest.starts_with?("/")
+      if dest.starts_with?("/") || (dest =~ /\A[A-Za-z]:/)
         dest = dest.slice(self.srcdir.size + 1)
       end
+      dest = dest.gsub("/", PATH_SEPARATOR)
       path = join_path(self.destdir, dest)
       make_dirs(dirname(path))
       File.open(path, "w") do [fp]

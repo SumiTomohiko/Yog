@@ -104,6 +104,40 @@ add_class_name(YogEnv* env, YogVal s, YogVal o)
 }
 
 static YogVal
+conv_to_string(YogEnv* env, YogVal o)
+{
+    SAVE_ARG(env, o);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+#define IS_STRING(o)    (IS_PTR(o) && (BASIC_OBJ_TYPE(o) == TYPE_STRING))
+    if (IS_STRING(o)) {
+        RETURN(env, o);
+    }
+
+    s = YogEval_call_method0(env, o, "to_s");
+    if (!IS_STRING(s)) {
+        YogError_raise_TypeError(env, "to_s returned non-string");
+    }
+#undef IS_STRING
+
+    RETURN(env, s);
+}
+
+static void
+add_string(YogEnv* env, YogVal s, YogVal o)
+{
+    SAVE_ARGS2(env, s, o);
+    YogVal t = YUNDEF;
+    PUSH_LOCAL(env, t);
+
+    t = conv_to_string(env, o);
+    YogString_add(env, s, t);
+
+    RETURN_VOID(env);
+}
+
+static YogVal
 format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
 {
     SAVE_LOCALS(env);
@@ -132,7 +166,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             break;
         case 'S':
             va_arg(ap, YogVal);
-            YogString_add(env, s, pv[obj_index]);
+            add_string(env, s, pv[obj_index]);
             obj_index++;
             break;
         case '%':

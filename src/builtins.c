@@ -93,7 +93,7 @@ mkdir_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     }
 
     if (!YogSysdeps_mkdir(STRING_CSTR(path))) {
-        YogError_raise_sys_err2(env, GET_ERR());
+        YogError_raise_sys_err2(env, GET_ERR(), path);
     }
 
     RETURN(env, YNIL);
