@@ -337,7 +337,8 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
 {
     SAVE_ARG(env, builtins);
     YogVal args = YUNDEF;
-    PUSH_LOCAL(env, args);
+    YogVal errno_ = YUNDEF;
+    PUSH_LOCALS2(env, args, errno_);
 
 #define DEFINE_FUNCTION(name, f)    do { \
     YogPackage_define_function(env, builtins, name, f); \
@@ -373,7 +374,9 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     REGISTER_CLASS(eException);
     REGISTER_CLASS(eKeyError);
     REGISTER_CLASS(eSyntaxError);
+    REGISTER_CLASS(eSystemError);
     REGISTER_CLASS(eValueError);
+    REGISTER_CLASS(eWindowsError);
 #undef REGISTER_CLASS
 
     args = argv2args(env, argc, argv);
@@ -382,6 +385,13 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     set_path_separator(env, builtins);
 
 #if !defined(MINIYOG)
+#   define REGISTER_ERRNO(e)    do { \
+    errno_ = YogVal_from_int(env, (e)); \
+    YogObj_set_attr(env, builtins, #e, errno_); \
+} while (0)
+#   include "errno.inc"
+#   undef REGISTER_ERRNO
+
     const char* src = 
 #   include "builtins.inc"
     ;

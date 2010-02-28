@@ -109,4 +109,7 @@ $(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF)
 $(ROOT_DIR)/include/yog/opcodes.h: $(ROOT_DIR)/include/yog/opcodes.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
+errno.inc: $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno
+	$(MINIYOG) $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno $@
+
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

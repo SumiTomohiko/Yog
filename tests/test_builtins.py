@@ -83,31 +83,48 @@ bar()
 print(join_path(\"foo\", \"bar\"))
 """, join("foo", "bar"))
 
+    def escape_special_chars(self, s):
+        t = []
+        for c in s:
+            if c == "\\":
+                t.append("\\")
+            t.append(c)
+        return "".join(t)
+
     def do_test_make_dirs(self, path, topdir):
         try:
             self._test("""
 make_dirs(\"%(path)s\")
-""" % { "path": path })
+""" % { "path": self.escape_special_chars(path) })
             assert isdir(path)
         finally:
-            if isdir(topdir):
-                rmtree(topdir)
+            self.delete_file(topdir)
+
+    def delete_file(self, path):
+        try:
+            rmtree(path)
+        except OSError:
+            pass
 
     def test_make_dirs0(self):
         topdir = "foo"
+        self.delete_file(topdir)
         self.do_test_make_dirs(topdir, topdir)
 
     def test_make_dirs10(self):
         topdir = "foo"
+        self.delete_file(topdir)
         self.do_test_make_dirs(join(topdir, "bar"), topdir)
 
     def test_make_dirs20(self):
         topdir = "foo"
+        self.delete_file(topdir)
         makedirs(topdir)
         self.do_test_make_dirs(join(topdir, "bar"), topdir)
 
     def test_mkdir0(self):
         path = "foo"
+        self.delete_file(path)
         try:
             self._test("""
 mkdir(\"%(path)s\")

@@ -482,6 +482,24 @@ get_message(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     RETURN(env, message);
 }
 
+static YogVal
+get_errno(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+    if (!IS_PTR(self) || ((BASIC_OBJ_TYPE(self) != TYPE_SYSTEM_ERROR) && (BASIC_OBJ_TYPE(self) != TYPE_WINDOWS_ERROR))) {
+        YogError_raise_TypeError(env, "self must be SystemError or WindowsError");
+    }
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_errno", params, args, kw);
+
+    int_t errno_ = PTR_AS(YogSystemError, self)->errno_;
+    val = YogVal_from_int(env, errno_);
+
+    RETURN(env, val);
+}
+
 void
 YogException_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -533,6 +551,7 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD("init", SystemError_init);
 #undef DEFINE_METHOD
+    YogClass_define_property(env, eSystemError, pkg, "errno", get_errno, NULL);
     vm->eSystemError = eSystemError;
 
     eWindowsError = YogClass_new(env, "WindowsError", eSystemError);

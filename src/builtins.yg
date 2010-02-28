@@ -14,7 +14,10 @@ def make_dirs(path)
   end
   try
     mkdir(path)
-  except EEXIST
+  except SystemError as e
+    if e.errno != EEXIST
+      raise e
+    end
   end
 end
 

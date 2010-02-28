@@ -234,6 +234,7 @@ src/builtins.inc
 src/code.inc
 src/compile.inc
 src/dict.inc
+src/errno.inc
 src/eval.inc
 src/inst.c
 src/keywords.inc
