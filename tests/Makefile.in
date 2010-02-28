@@ -5,7 +5,7 @@ CC = @CC@
 SOEXT = @SOEXT@
 
 PKGS = test_package4$(SOEXT) test_package5$(SOEXT) test_package6$(SOEXT)
-CFLAGS = -shared -I.. -I../include -Wall @CFLAGS_COMMON@
+CFLAGS = -shared -I.. -I../include -Wall @CFLAGS@
 LIBS = $(ROOT_DIR)/src/yog-copying.lib
 
 test_package4$(SOEXT): test_package4.c Makefile

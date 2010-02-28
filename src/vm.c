@@ -430,13 +430,11 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eLocalJumpError);
     KEEP(eNameError);
     KEEP(eSyntaxError);
-    KEEP(eSystemCallError);
+    KEEP(eSystemError);
     KEEP(eTypeError);
     KEEP(eValueError);
+    KEEP(eWindowsError);
     KEEP(eZeroDivisionError);
-#if !defined(MINIYOG)
-#   include "errno_keep.inc"
-#endif
 
     KEEP(mComparable);
 
@@ -541,13 +539,11 @@ YogVM_init(YogVM* vm)
     INIT(eLocalJumpError);
     INIT(eNameError);
     INIT(eSyntaxError);
-    INIT(eSystemCallError);
+    INIT(eSystemError);
     INIT(eTypeError);
     INIT(eValueError);
+    INIT(eWindowsError);
     INIT(eZeroDivisionError);
-#if !defined(MINIYOG)
-#   include "errno_init.inc"
-#endif
 
     INIT(mComparable);
 

@@ -6,7 +6,7 @@ from os.path import isdir, join
 from shutil import rmtree
 from testcase import TestCase
 
-class TestPuts(TestCase):
+class TestBuiltins(TestCase):
 
     def test_int(self):
         self._test("""
@@ -82,46 +82,6 @@ bar()
         self._test("""
 print(join_path(\"foo\", \"bar\"))
 """, join("foo", "bar"))
-
-    def test_dirname0(self):
-        self._test("""
-print(dirname(\"/foo/bar\"))
-""", "/foo")
-
-    def test_dirname10(self):
-        self._test("""
-print(dirname(\"/foo/bar/\"))
-""", "/foo")
-
-    def test_dirname20(self):
-        self._test("""
-print(dirname(\"foo/bar\"))
-""", "foo")
-
-    def test_dirname30(self):
-        self._test("""
-print(dirname(\"foo/bar/\"))
-""", "foo")
-
-    def test_dirname40(self):
-        self._test("""
-print(dirname(\"foo\"))
-""", ".")
-
-    def test_dirname50(self):
-        self._test("""
-print(dirname(\"foo/\"))
-""", ".")
-
-    def test_dirname60(self):
-        self._test("""
-print(dirname(\"\"))
-""", ".")
-
-    def test_dirname70(self):
-        self._test("""
-print(dirname(\"/\"))
-""", "/")
 
     def do_test_make_dirs(self, path, topdir):
         try:

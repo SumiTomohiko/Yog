@@ -320,24 +320,36 @@ raise_sys_call_err(YogEnv* env, YogVal klass)
 }
 #endif
 
-void
-YogError_raise_sys_call_err(YogEnv* env, int errno_)
+static void
+raise_sys_err(YogEnv* env, YogVal klass, int_t errno_)
 {
-    SAVE_LOCALS(env);
-    YogVal klass = YUNDEF;
+    SAVE_ARG(env, klass);
     YogVal exc = YUNDEF;
-    PUSH_LOCALS2(env, klass, exc);
+    YogVal e = YUNDEF;
+    PUSH_LOCALS2(env, exc, e);
 
-#if !defined(MINIYOG)
-#   include "errno_raise.inc"
-#endif
-
-    klass = env->vm->eSystemCallError;
-    exc = YogEval_call_method1(env, klass, "new", INT2VAL(0));
+    e = YogVal_from_int(env, errno_);
+    exc = YogEval_call_method1(env, klass, "new", e);
 
     RESTORE_LOCALS(env);
     YogError_raise(env, exc);
     /* NOTREACHED */
+}
+
+void
+YogError_raise_sys_err(YogEnv* env, int_t errno_)
+{
+    raise_sys_err(env, env->vm->eSystemError, errno_);
+}
+
+void
+YogError_raise_sys_err2(YogEnv* env, int_t err_code)
+{
+#if WINDOWS
+    raise_sys_err(env, env->vm->eWindowsError, err_code);
+#else
+    YogError_raise_sys_err(env, err_code);
+#endif
 }
 
 /**

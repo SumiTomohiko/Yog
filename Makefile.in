@@ -4,7 +4,7 @@ PTHREADS_W32_DIR = @PTHREADS_W32_DIR@
 prefix = @prefix@
 VERSION = @PACKAGE_VERSION@
 ARCHIVE = Yog-$(VERSION)
-PYTHON = python2.6
+PYTHON = @PYTHON@
 SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
 
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \

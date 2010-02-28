@@ -24,7 +24,7 @@ AC_CHECK_LIB([dl], [dlopen])
 AC_HEADER_STDC
 AC_CHECK_HEADERS([inttypes.h limits.h stddef.h stdint.h stdlib.h string.h \
                   strings.h sys/time.h unistd.h malloc.h getopt.h float.h \
-                  dlfcn.h sys/mman.h windows.h alloca.h])
+                  dlfcn.h sys/mman.h windows.h alloca.h winerror.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -181,6 +181,8 @@ AC_ARG_ENABLE(google-perftools,
 if test "${enable_google_perftools}" = "yes"; then
     LDFLAGS="-lprofiler ${LDFLAGS}"
 fi
+
+AM_PATH_PYTHON()
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile lib/Makefile doc/Makefile])

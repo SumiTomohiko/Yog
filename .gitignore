@@ -200,7 +200,6 @@ gmp/printf/.libs/
 gmp/scanf/.libs/
 gmp/tune/sqr_basecase.c
 html
-include/yog/errno_vm.inc
 include/yog/inst.h
 include/yog/opcodes.h
 include/yog/token.h
@@ -235,13 +234,6 @@ src/builtins.inc
 src/code.inc
 src/compile.inc
 src/dict.inc
-src/errno_cons.inc
-src/errno_init.inc
-src/errno_keep.inc
-src/errno_new.inc
-src/errno_raise.inc
-src/errno_register.inc
-src/errno_vm.inc
 src/eval.inc
 src/inst.c
 src/keywords.inc

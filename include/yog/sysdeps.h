@@ -4,6 +4,7 @@
 #if defined(HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif
+#include <errno.h>
 #if defined(HAVE_MALLOC_H)
 #   include <malloc.h>
 #endif

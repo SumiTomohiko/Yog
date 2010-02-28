@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -93,8 +92,8 @@ mkdir_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
         YogError_raise_TypeError(env, "path must be String");
     }
 
-    if (YogSysdeps_mkdir(STRING_CSTR(path))) {
-        YogError_raise_sys_call_err(env, errno);
+    if (!YogSysdeps_mkdir(STRING_CSTR(path))) {
+        YogError_raise_sys_err2(env, GET_ERR());
     }
 
     RETURN(env, YNIL);
@@ -375,9 +374,6 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     REGISTER_CLASS(eKeyError);
     REGISTER_CLASS(eSyntaxError);
     REGISTER_CLASS(eValueError);
-#if !defined(MINIYOG)
-#   include "errno_register.inc"
-#endif
 #undef REGISTER_CLASS
 
     args = argv2args(env, argc, argv);

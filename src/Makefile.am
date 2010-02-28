@@ -7,7 +7,7 @@ GMP_DIR = $(ROOT_DIR)/gmp
 LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
 YACC = $(LEMON)
-PYTHON = python2.6
+PYTHON = @PYTHON@
 MINIYOG = miniyog$(EXEEXT)
 TOOLS_DIR = $(ROOT_DIR)/tools
 
@@ -84,42 +84,12 @@ dict.inc: $(MINIYOG) dict.yg yg2inc.yg
 	$(MAKE) $(MINIYOG)
 	./$(MINIYOG) yg2inc.yg dict.yg $@
 
-../include/yog/errno_vm.inc: $(MINIYOG) $(TOOLS_DIR)/errno2vm.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2vm.yg $(TOOLS_DIR)/errno $@
-
-errno_init.inc: $(MINIYOG) $(TOOLS_DIR)/errno2init.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2init.yg $(TOOLS_DIR)/errno $@
-
-errno_keep.inc: $(MINIYOG) $(TOOLS_DIR)/errno2keep.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2keep.yg $(TOOLS_DIR)/errno $@
-
-errno_new.inc: $(MINIYOG) $(TOOLS_DIR)/errno2new.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2new.yg $(TOOLS_DIR)/errno $@
-
-errno_cons.inc: $(MINIYOG) $(TOOLS_DIR)/errno2cons.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2cons.yg $(TOOLS_DIR)/errno $@
-
-errno_raise.inc: $(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno $@
-
-errno_register.inc: $(MINIYOG) $(TOOLS_DIR)/errno2register.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2register.yg $(TOOLS_DIR)/errno $@
-
 $(ROOT_DIR)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
 	$(LEMON) header=$(ROOT_DIR)/include/yog/token.h parser.y
 
 keywords.inc: keywords
 	gperf $< > $@
-
-#keywords lexer.c: parser.h
 
 eval.inc: $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)

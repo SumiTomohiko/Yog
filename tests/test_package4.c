@@ -5,7 +5,10 @@
 #if defined(__cplusplus)
 extern "C"
 #endif
-YOG_EXPORT YogVal
+#if defined(_MSC_VER) || defined(__MINGW32__)
+__declspec(dllexport)
+#endif
+YogVal
 YogInit_test_package4(YogEnv* env)
 {
     SAVE_LOCALS(env);

@@ -20,8 +20,6 @@ class TestCase(object):
         return "\n".join(t)
 
     def get_command(self):
-        if os.name == "nt":
-            return join("..", "vs", "2003", "Yog", "yog.exe")
         try:
             return environ["YOG"]
         except KeyError:
