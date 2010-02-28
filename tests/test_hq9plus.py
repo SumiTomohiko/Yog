@@ -17,10 +17,11 @@ hq9plus.eval(\"Q\")
 """, "Q")
 
     def test_9(self):
-        self._test("""
-import hq9plus
-hq9plus.eval(\"9\")
-""", """99 bottles of beer on the wall,
+        # This case uses the special function to compare results due to the
+        # problem of newlines (the self._test() method wants to convert
+        # newlines in expected stdout/stderr).
+        def test_stdout(stdout):
+            assert """99 bottles of beer on the wall,
 99 bottles of beer,
 You take on down, pass it around,
 98 bottles of beer on the wall.
@@ -514,7 +515,12 @@ You take on down, pass it around,
 1 bottle of beer,
 You take on down, pass it around,
 0 bottles of beer on the wall.
-""")
+""" == stdout
+
+        self._test("""
+import hq9plus
+hq9plus.eval(\"9\")
+""", stdout=test_stdout)
 
     def test_plus(self):
         self._test("""

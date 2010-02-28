@@ -35,75 +35,90 @@ class TestCase(object):
                     "generational": "yog-generational" }
             return join("..", "src", env2cmd[env_gc])
 
-    def run_command(self, args):
-        cmd = [self.get_command()] + args
-        return Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    def run_command(self, args, stdout_path, stderr_path):
+        stdout = open(stdout_path, "w")
+        try:
+            stderr = open(stderr_path, "w")
+            try:
+                cmd = [self.get_command()] + args
+                return Popen(cmd, stdin=PIPE, stdout=stdout, stderr=stderr)
+            finally:
+                stderr.close()
+        finally:
+            stdout.close()
 
     def terminate_process(self, pid):
         from signal import SIGKILL
         from os import kill
         kill(pid, SIGKILL)
 
-    def conv_newline(self, s):
-        t = []
-        for line in s.split("\n"):
-            t.append(line)
-
-        if os.name == "nt":
-            newline = "\r\n"
-        else:
-            newline = "\n"
-        return newline.join(t)
+    def lf2crlf(self, s):
+        if os.name != "nt":
+            return s
+        return "\r\n".join(s.split("\n"))
 
     def format_time(self, sec):
         return strftime("%x %X", localtime(sec))
 
     def _test_regexp(self, regexp, s):
-        m = search(self.conv_newline(regexp), s)
+        m = search(self.lf2crlf(regexp), s)
         assert m is not None
         return m
 
+    def read(self, path):
+        with open(path) as fp:
+            return fp.read()
+
     def do(self, stdout, stderr, stdin, status, args, timeout, encoding=None):
-        proc = self.run_command(args)
-        if stdin is not None:
-            proc.stdin.write(stdin)
-        proc.stdin.close()
+        stdout_path = stderr_path = None
+        ext = ".log"
+        try:
+            stdout_path = self.make_temp_file(prefix="stdout", suffix=ext)
+            stderr_path = self.make_temp_file(prefix="stderr", suffix=ext)
+            proc = self.run_command(args, stdout_path, stderr_path)
+            if stdin is not None:
+                proc.stdin.write(stdin)
+            proc.stdin.close()
 
-        time_begin = time()
-        while True:
-            if proc.poll() is not None:
-                break
-            now = time()
-            if timeout < now - time_begin:
-                self.terminate_process(proc.pid)
-                assert False, "time is out (starting at %s, now is %s)" % (self.format_time(time_begin), self.format_time(now))
+            time_begin = time()
+            while True:
+                if proc.poll() is not None:
+                    break
+                now = time()
+                if timeout < now - time_begin:
+                    self.terminate_process(proc.pid)
+                    assert False, "time is out (starting at %s, now is %s)" % (self.format_time(time_begin), self.format_time(now))
 
-        if stderr is not None:
-            err = self.remove_gc_warings(proc.stderr.read())
-            if encoding is not None:
-                err = err.decode(encoding)
-            if callable(stderr):
-                stderr(err)
-            else:
-                stderr = self.conv_newline(stderr)
-                assert stderr == err
+            if stderr is not None:
+                err = self.remove_gc_warings(self.read(stderr_path))
+                if encoding is not None:
+                    err = err.decode(encoding)
+                if callable(stderr):
+                    stderr(err)
+                else:
+                    stderr = self.lf2crlf(stderr)
+                    assert stderr == err, "stderr must be \"%s\", but actual is \"%s\"" % (stderr, err)
 
-        if stdout is not None:
-            out = proc.stdout.read()
-            if encoding is not None:
-                out = out.decode(encoding)
-            if callable(stdout):
-                stdout(out)
-            else:
-                stdout = self.conv_newline(stdout)
-                assert stdout == out
+            if stdout is not None:
+                out = self.read(stdout_path)
+                if encoding is not None:
+                    out = out.decode(encoding)
+                if callable(stdout):
+                    stdout(out)
+                else:
+                    stdout = self.lf2crlf(stdout)
+                    assert stdout == out, "stdout must be \"%s\", but actual is \"%s\"" % (stdout, out)
 
-        if status is not None:
-            returncode = proc.returncode
-            if callable(status):
-                status(returncode)
-            else:
-                assert status == returncode
+            if status is not None:
+                returncode = proc.returncode
+                if callable(status):
+                    status(returncode)
+                else:
+                    assert status == returncode
+        finally:
+            for path in [stdout_path, stderr_path]:
+                if path is not None:
+                    unlink(path)
 
     def write_source(self, path, src, encoding):
         if encoding is not None:
@@ -116,8 +131,8 @@ class TestCase(object):
         finally:
             f.close()
 
-    def make_temp_file(self):
-        fd, path = mkstemp(prefix="yog", suffix=".yg")
+    def make_temp_file(self, prefix="yog", suffix=".yg"):
+        fd, path = mkstemp(prefix=prefix, suffix=suffix)
         close(fd)
         return path
 
