@@ -11,6 +11,8 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #if defined(HAVE_WINDOWS_H)
 #   include <windows.h>
 #endif

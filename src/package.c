@@ -101,9 +101,10 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
         RETURN_VOID(env);
     }
 
-    YOG_BUG(env, "attribute not found");
+    YogError_raise_AttributeError(env, "%C object has no attribute \"%I\"", self, name);
 
     /* NOTREACHED */
+    RETURN_VOID(env);
 }
 
 void

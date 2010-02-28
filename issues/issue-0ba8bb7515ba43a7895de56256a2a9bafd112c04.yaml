@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove miniyog
+desc: Use yog production version.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-22 15:22:18.364562 Z
+references: []
+
+id: 0ba8bb7515ba43a7895de56256a2a9bafd112c04
+log_events: 
+- - 2010-02-22 15:22:19.294476 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

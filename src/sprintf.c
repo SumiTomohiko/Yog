@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include "yog/class.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/string.h"
 #include "yog/sysdeps.h"
 #include "yog/vm.h"
