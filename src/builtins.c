@@ -397,6 +397,14 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
 #   include "builtins.inc"
     ;
     YogMisc_eval_source(env, builtins, src);
+    const char* sysdeps_src =
+#   if WINDOWS
+#       include "builtins_win.inc"
+#   else
+#       include "builtins_unix.inc"
+#   endif
+    ;
+    YogMisc_eval_source(env, builtins, sysdeps_src);
 #endif
 
     RETURN_VOID(env);
