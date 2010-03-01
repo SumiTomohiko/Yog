@@ -1,0 +1,23 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: raise statement without expression
+desc: |-
+  try
+    raise Exception.new()
+  except Exception
+    raise
+  end
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-28 11:59:25.934852 Z
+references: []
+
+id: 44a0fe0c2574a7030003e4b110460938a9a0aa53
+log_events: 
+- - 2010-02-28 11:59:26.769150 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Print backtrace
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-02-28 19:01:52.815273 Z
+references: []
+
+id: 94d1b21d10bce191caa237e800f6e5f72fe545cd
+log_events: 
+- - 2010-02-28 19:01:53.914863 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

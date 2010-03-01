@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add dependency of src/Makefile to src/Makefile.{in,am}
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-03-01 09:09:15.942277 Z
+references: []
+
+id: 0718ce9ad6e290ae3fe7cc828066edbf98f1d5a3
+log_events: 
+- - 2010-03-01 09:09:17.114232 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
