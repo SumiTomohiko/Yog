@@ -304,22 +304,6 @@ YogError_raise_LocalJumpError(YogEnv* env, const char* fmt, ...)
     RAISE_FORMAT(env, eLocalJumpError, fmt);
 }
 
-#if !defined(MINIYOG)
-static void
-raise_sys_call_err(YogEnv* env, YogVal klass)
-{
-    SAVE_ARG(env, klass);
-    YogVal exc = YUNDEF;
-    PUSH_LOCAL(env, exc);
-
-    exc = YogEval_call_method0(env, klass, "new");
-
-    RESTORE_LOCALS(env);
-    YogError_raise(env, exc);
-    /* NOTREACHED */
-}
-#endif
-
 static void
 raise_sys_err(YogEnv* env, YogVal klass, int_t errno_, YogVal opt)
 {
