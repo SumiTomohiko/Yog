@@ -68,6 +68,14 @@ builtins.inc: $(MINIYOG) builtins.yg yg2inc.yg
 	$(MAKE) $(MINIYOG)
 	./$(MINIYOG) yg2inc.yg builtins.yg $@
 
+builtins_win.inc: $(MINIYOG) builtins_win.yg yg2inc.yg
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) yg2inc.yg builtins_win.yg $@
+
+builtins_unix.inc: $(MINIYOG) builtins_unix.yg yg2inc.yg
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) yg2inc.yg builtins_unix.yg $@
+
 array.inc: $(MINIYOG) array.yg yg2inc.yg
 	$(MAKE) $(MINIYOG)
 	./$(MINIYOG) yg2inc.yg array.yg $@

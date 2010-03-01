@@ -32,7 +32,6 @@
 .gdb_history
 Debug
 Makefile
-Output
 Release
 aclocal.m4
 autom4te.cache
@@ -231,6 +230,8 @@ src/.deps/
 src/Makefile.in
 src/array.inc
 src/builtins.inc
+src/builtins_unix.inc
+src/builtins_win.inc
 src/code.inc
 src/compile.inc
 src/dict.inc

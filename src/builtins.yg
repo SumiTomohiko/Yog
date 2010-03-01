@@ -25,8 +25,8 @@ def dirname(path)
   if path == ""
     return "."
   end
-  if path == PATH_SEPARATOR
-    return PATH_SEPARATOR
+  if root_dir?(path)
+    return path
   end
   if path[-1] == PATH_SEPARATOR
     return dirname(path.slice(0, path.size - 1))

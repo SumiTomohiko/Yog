@@ -1,0 +1,6 @@
+
+def root_dir?(path)
+  return /\A[A-Za-z]:\\\z/.match(path) != nil
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
