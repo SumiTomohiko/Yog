@@ -1,11 +1,11 @@
 [Setup]
-AppName=Yog 0.0.4
-AppVerName=Yog 0.0.4
+AppName=@PACKAGE_NAME@ @PACKAGE_VERSION@
+AppVerName=@PACKAGE_NAME@ @PACKAGE_VERSION@
 OutputDir=.
-OutputBaseFilename=Yog-0.0.4
-DefaultDirName={sd}\Program Files\Yog-0.0.4
+OutputBaseFilename=@PACKAGE_NAME@-@PACKAGE_VERSION@
+DefaultDirName={sd}\Program Files\@PACKAGE_NAME@-@PACKAGE_VERSION@
 SourceDir=.
-DefaultGroupName=Yog-0.0.4
+DefaultGroupName=@PACKAGE_NAME@-@PACKAGE_VERSION@
 
 [Files]
 Source: "src\yog.exe"; DestDir: "{app}\bin"

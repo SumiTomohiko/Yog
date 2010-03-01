@@ -185,7 +185,7 @@ fi
 AM_PATH_PYTHON()
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
-                 ext/Makefile lib/Makefile doc/Makefile])
+                 ext/Makefile lib/Makefile doc/Makefile installer.iss])
 
 AC_CANONICAL_HOST
 case "${host}" in
@@ -194,7 +194,6 @@ case "${host}" in
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb -export-dynamic"
     TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
-    EXTS="concurrent\$(SOEXT)"
     SOEXT=".so"
     ;;
 *-mingw32)
@@ -220,7 +219,6 @@ case "${host}" in
     DIRS="${DIRS} bdwgc"
     TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
-    EXTS="concurrent\$(SOEXT)"
     SOEXT=".so"
     ;;
 esac
@@ -240,7 +238,6 @@ AC_SUBST(LDFLAGS_MARK_SWEEP)
 AC_SUBST(LDFLAGS_MARK_SWEEP_COMPACT)
 AC_SUBST(LDFLAGS_MINIYOG)
 AC_SUBST(LIBS)
-AC_SUBST(EXTS)
 AC_SUBST(SOEXT)
 AC_SUBST(COMMON_SOURCES)
 
