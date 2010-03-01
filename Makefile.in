@@ -10,7 +10,7 @@ SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 			 configure.lineno config.status.lineno
 
-.PHONY: all clean distclean maintainer-clean doc proto test test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational update-version install-vim install dist distcheck
+.PHONY: all clean distclean maintainer-clean doc proto test test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational update-version install-vim install dist distcheck installer
 
 all:
 	@for subdir in $(PTHREADS_W32_DIR); do \
@@ -92,5 +92,8 @@ config.status: configure
 
 configure: configure.ac
 	autoconf
+
+installer:
+	iscc installer.iss
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
