@@ -6,13 +6,14 @@ DIR = $(prefix)/lib/yog/$(VERSION)
 SOEXT = @SOEXT@
 exts = $(top_srcdir)/ext/concurrent$(SOEXT)
 CC = @CC@
+CFLAGS = @CFLAGS_COMMON@
 
 .PHONY: all clean distclean maintainer-clean install
 
 all: $(exts)
 
 $(top_srcdir)/ext/concurrent$(SOEXT): concurrent.c
-	$(CC) -I$(top_srcdir)/include -shared -O2 -Wall -lpthread -o $@ concurrent.c
+	$(CC) $(CFLAGS) -I$(top_srcdir)/include -shared -O2 -Wall -lpthread -o $@ concurrent.c @LIBS@
 
 clean: 
 	rm -f *$(SOEXT)

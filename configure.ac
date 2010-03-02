@@ -187,6 +187,8 @@ AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile lib/Makefile doc/Makefile installer.iss
                  ext/concurrent/Makefile])
 
+EXT_SUBDIRS = ""
+
 AC_CANONICAL_HOST
 case "${host}" in
 *-openbsd*)
@@ -195,14 +197,14 @@ case "${host}" in
     TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT=".so"
+    EXT_SUBDIRS="concurrent"
     ;;
 *-mingw32)
-    PTHREADS_W32_DIR="`pwd`/pthreads-w32"
-    CFLAGS_COMMON="${CFLAGS} -I${PTHREADS_W32_DIR} -DPTW32_STATIC_LIB -DYOG_CORE"
+    CFLAGS_COMMON="${CFLAGS} -I/mingw32/include"
     LDFLAGS_COPYING="${LDFLAGS_COPYING} -Wl,--out-implib,yog-copying.lib"
     LDFLAGS_MINIYOG="${LDFLAGS_MINIYOG} -Wl,--out-implib,miniyog.lib"
     LDFLAGS_COMMON="${LDFLAGS_COMMON} --enable-runtime-pseudo-reloc"
-    LIBS="${LIBS} ${PTHREADS_W32_DIR}/libpthreadGC2.a -lwsock32"
+    LIBS="${LIBS} /mingw32/lib/libpthread.a -lwsock32"
     TEST_TARGETS="${TEST_TARGETS} test-copying"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT=".dll"
@@ -220,12 +222,12 @@ case "${host}" in
     TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT=".so"
+    EXT_SUBDIRS="concurrent"
     ;;
 esac
 DIRS="${DIRS} onig gmp src ext"
 
 AC_SUBST(DIRS)
-AC_SUBST(PTHREADS_W32_DIR)
 AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
 AC_SUBST(PACKAGE_VERSION)
@@ -240,6 +242,7 @@ AC_SUBST(LDFLAGS_MINIYOG)
 AC_SUBST(LIBS)
 AC_SUBST(SOEXT)
 AC_SUBST(IMPORT_LIB)
+AC_SUBST(EXT_SUBDIRS)
 
 AC_CONFIG_SUBDIRS([onig
                    gmp])
