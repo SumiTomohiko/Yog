@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: Added non-destructive Array#push.
+title: Add non-destructive Array#push.
 desc: Returns a new array with the new element at last.
 type: :task
 component: core
@@ -15,4 +15,8 @@ log_events:
 - - 2010-01-31 04:47:21.882492 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2010-03-01 17:18:59.570353 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - edited title
   - ""

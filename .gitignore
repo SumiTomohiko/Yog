@@ -32,6 +32,7 @@
 .gdb_history
 Debug
 Makefile
+Makefile.in
 Release
 aclocal.m4
 autom4te.cache
