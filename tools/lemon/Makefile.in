@@ -1,13 +1,14 @@
 
 EXEEXT = @EXEEXT@
 PKG = lemon$(EXEEXT)
+SRC = lemon.c
 
 .PHONY: all clean
 
 all: $(PKG)
 
-$(PKG): lemon.c
-	$(CC) -o $@ -Wall -Werror -O2 -g $<
+$(PKG): $(SRC)
+	$(CC) -o $@ -Wall -Werror -O2 -g $(SRC)
 
 clean:
 	rm -f $(PKG)
