@@ -1,5 +1,9 @@
 #include "yog/config.h"
+#if defined(HAVE_ALLOCA_H)
+#   include <alloca.h>
+#endif
 #include <stdarg.h>
+#include <stdlib.h>
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"

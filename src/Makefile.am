@@ -97,7 +97,7 @@ $(ROOT_DIR)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	$(LEMON) header=$(ROOT_DIR)/include/yog/token.h parser.y
 
 keywords.inc: keywords
-	gperf $< > $@
+	gperf keywords > $@
 
 eval.inc: $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)

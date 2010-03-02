@@ -1,7 +1,5 @@
 
 top_srcdir = @top_srcdir@
-DEPDIR = .deps
-am__include = include
 prefix = @prefix@
 VERSION = @PACKAGE_VERSION@
 DIR = $(prefix)/lib/yog/$(VERSION)
@@ -11,24 +9,19 @@ CC = @CC@
 
 .PHONY: all clean distclean maintainer-clean install
 
-include $(DEPDIR)/concurrent.Po
-
 all: $(exts)
 
 $(top_srcdir)/ext/concurrent$(SOEXT): concurrent.c
-	$(CC) -I$(top_srcdir)/include -shared -O2 -Wall -lpthread -MT concurrent$(SOEXT) -MD -MP -MF $(DEPDIR)/concurrent.Tpo -o $@ concurrent.c
-	mv -f $(DEPDIR)/concurrent.Tpo $(DEPDIR)/concurrent.Po
+	$(CC) -I$(top_srcdir)/include -shared -O2 -Wall -lpthread -o $@ concurrent.c
 
 clean: 
 	rm -f *$(SOEXT)
 
 distclean: 
-	rm -rf ./$(DEPDIR)
 	rm -f *$(SOEXT)
 	rm -f Makefile
 
 maintainer-clean: 
-	rm -rf ./$(DEPDIR)
 	rm -f *$(SOEXT)
 	rm -f Makefile
 
