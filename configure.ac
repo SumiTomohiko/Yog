@@ -14,7 +14,6 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AM_PROG_CC_C_O
-#AC_PROG_LIBTOOL
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
@@ -185,7 +184,8 @@ fi
 AM_PATH_PYTHON()
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
-                 ext/Makefile lib/Makefile doc/Makefile installer.iss])
+                 ext/Makefile lib/Makefile doc/Makefile installer.iss
+                 ext/concurrent/Makefile])
 
 AC_CANONICAL_HOST
 case "${host}" in
