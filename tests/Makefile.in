@@ -1,12 +1,12 @@
 
-ROOT_DIR = ..
+top_srcdir = @top_srcdir@
 prefix = @prefix@
 CC = @CC@
 SOEXT = @SOEXT@
 
 PKGS = test_package4$(SOEXT) test_package5$(SOEXT) test_package6$(SOEXT)
 CFLAGS = -shared -I.. -I../include -Wall @CFLAGS@
-LIBS = $(ROOT_DIR)/src/yog-copying.lib
+LIBS = @IMPORT_LIB@
 
 test_package4$(SOEXT): test_package4.c Makefile
 	$(CC) -o $@ $(CFLAGS) test_package4.c $(LIBS)

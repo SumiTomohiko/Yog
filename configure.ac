@@ -206,7 +206,7 @@ case "${host}" in
     TEST_TARGETS="${TEST_TARGETS} test-copying"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT=".dll"
-    COMMON_SOURCES="icon.rc"
+    IMPORT_LIB="\$(top_srcdir)/src/yog-copying.lib"
     ;;
 *)
     case "${host}" in
@@ -239,7 +239,7 @@ AC_SUBST(LDFLAGS_MARK_SWEEP_COMPACT)
 AC_SUBST(LDFLAGS_MINIYOG)
 AC_SUBST(LIBS)
 AC_SUBST(SOEXT)
-AC_SUBST(COMMON_SOURCES)
+AC_SUBST(IMPORT_LIB)
 
 AC_CONFIG_SUBDIRS([onig
                    gmp])
