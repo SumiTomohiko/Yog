@@ -27,10 +27,10 @@ install:
 		(cd $$d && $(MAKE) $@) \
 	done
 
-dist:
+pkg:
 	tools/dist $(ARCHIVE)
 
-distcheck:
+pkgcheck:
 	tools/distcheck $(ARCHIVE)
 
 installer: installer.iss
