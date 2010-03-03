@@ -376,7 +376,7 @@ err_code2errno(uint_t err_code)
 #   if defined(WSAENFILE)
         { WSAENFILE, ENFILE },
 #   endif
-        { WSAENOTEMPTY, ENOTEMPTY }};
+        { WSAENOTEMPTY, ENOTEMPTY } };
     uint_t i;
     for (i = 0; i < array_sizeof(table); i++) {
         if (table[i].err_code == err_code) {

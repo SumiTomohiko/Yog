@@ -470,7 +470,7 @@ class: File
       block: a callable object
     return: a return value of _block_ or a +File+ object
     exceptions:
-      SystemCallError: +SystemCallError+ or its children
+      SystemError: +SystemError+ or its children
       TypeError: types of arguments are invalid
     block: block(fp)
 
@@ -683,139 +683,142 @@ class: Set
 
     number of objects in +self+
 
-class: SystemCallError
+class: SystemError
   base: Exception
 
-  The parent class of the following classes\:
-
-  * +E2BIG+
-  * +EACCES+
-  * +EADDRINUSE+
-  * +EADDRNOTAVAIL+
-  * +EAFNOSUPPORT+
-  * +EAGAIN+
-  * +EALREADY+
-  * +EBADE+
-  * +EBADF+
-  * +EBADFD+
-  * +EBADMSG+
-  * +EBADR+
-  * +EBADRQC+
-  * +EBADSLT+
-  * +EBUSY+
-  * +ECANCELED+
-  * +ECHILD+
-  * +ECHRNG+
-  * +ECOMM+
-  * +ECONNABORTED+
-  * +ECONNREFUSED+
-  * +ECONNRESET+
-  * +EDEADLK+
-  * +EDEADLOCK+
-  * +EDESTADDRREQ+
-  * +EDOM+
-  * +EDQUOT+
-  * +EEXIST+
-  * +EFAULT+
-  * +EFBIG+
-  * +EHOSTDOWN+
-  * +EHOSTUNREACH+
-  * +EIDRM+
-  * +EILSEQ+
-  * +EINPROGRESS+
-  * +EINTR+
-  * +EINVAL+
-  * +EIO+
-  * +EISCONN+
-  * +EISDIR+
-  * +EISNAM+
-  * +EKEYEXPIRED+
-  * +EKEYREJECTED+
-  * +EKEYREVOKED+
-  * +EL2HLT+
-  * +EL2NSYNC+
-  * +EL3HLT+
-  * +EL3RST+
-  * +ELIBACC+
-  * +ELIBBAD+
-  * +ELIBMAX+
-  * +ELIBSCN+
-  * +ELIBEXEC+
-  * +ELOOP+
-  * +EMEDIUMTYPE+
-  * +EMFILE+
-  * +EMLINK+
-  * +EMSGSIZE+
-  * +EMULTIHOP+
-  * +ENAMETOOLONG+
-  * +ENETDOWN+
-  * +ENETRESET+
-  * +ENETUNREACH+
-  * +ENFILE+
-  * +ENOBUFS+
-  * +ENODATA+
-  * +ENODEV+
-  * +ENOENT+
-  * +ENOEXEC+
-  * +ENOKEY+
-  * +ENOLCK+
-  * +ENOLINK+
-  * +ENOMEDIUM+
-  * +ENOMEM+
-  * +ENOMSG+
-  * +ENONET+
-  * +ENOPKG+
-  * +ENOPROTOOPT+
-  * +ENOSPC+
-  * +ENOSR+
-  * +ENOSTR+
-  * +ENOSYS+
-  * +ENOTBLK+
-  * +ENOTCONN+
-  * +ENOTDIR+
-  * +ENOTEMPTY+
-  * +ENOTSOCK+
-  * +ENOTSUP+
-  * +ENOTTY+
-  * +ENOTUNIQ+
-  * +ENXIO+
-  * +EOPNOTSUPP+
-  * +EOVERFLOW+
-  * +EPERM+
-  * +EPFNOSUPPORT+
-  * +EPIPE+
-  * +EPROTO+
-  * +EPROTONOSUPPORT+
-  * +EPROTOTYPE+
-  * +ERANGE+
-  * +EREMCHG+
-  * +EREMOTE+
-  * +EREMOTEIO+
-  * +ERESTART+
-  * +EROFS+
-  * +ESHUTDOWN+
-  * +ESPIPE+
-  * +ESOCKTNOSUPPORT+
-  * +ESRCH+
-  * +ESTALE+
-  * +ESTRPIPE+
-  * +ETIME+
-  * +ETIMEDOUT+
-  * +ETXTBSY+
-  * +EUCLEAN+
-  * +EUNATCH+
-  * +EUSERS+
-  * +EWOULDBLOCK+
-  * +EXDEV+
-  * +EXFULL+
-
-  They may be raised when any system call fails.
+  +SystemError+ may be raised when any system call fails.
 
   method: init(errno)
     parameters:
       errno: number of last error
 
     Constructor.
+
+  property: errno
+    type: Fixnum
+
+    One of followings.
+
+    * +E2BIG+
+    * +EACCES+
+    * +EADDRINUSE+
+    * +EADDRNOTAVAIL+
+    * +EAFNOSUPPORT+
+    * +EAGAIN+
+    * +EALREADY+
+    * +EBADE+
+    * +EBADF+
+    * +EBADFD+
+    * +EBADMSG+
+    * +EBADR+
+    * +EBADRQC+
+    * +EBADSLT+
+    * +EBUSY+
+    * +ECANCELED+
+    * +ECHILD+
+    * +ECHRNG+
+    * +ECOMM+
+    * +ECONNABORTED+
+    * +ECONNREFUSED+
+    * +ECONNRESET+
+    * +EDEADLK+
+    * +EDEADLOCK+
+    * +EDESTADDRREQ+
+    * +EDOM+
+    * +EDQUOT+
+    * +EEXIST+
+    * +EFAULT+
+    * +EFBIG+
+    * +EHOSTDOWN+
+    * +EHOSTUNREACH+
+    * +EIDRM+
+    * +EILSEQ+
+    * +EINPROGRESS+
+    * +EINTR+
+    * +EINVAL+
+    * +EIO+
+    * +EISCONN+
+    * +EISDIR+
+    * +EISNAM+
+    * +EKEYEXPIRED+
+    * +EKEYREJECTED+
+    * +EKEYREVOKED+
+    * +EL2HLT+
+    * +EL2NSYNC+
+    * +EL3HLT+
+    * +EL3RST+
+    * +ELIBACC+
+    * +ELIBBAD+
+    * +ELIBMAX+
+    * +ELIBSCN+
+    * +ELIBEXEC+
+    * +ELOOP+
+    * +EMEDIUMTYPE+
+    * +EMFILE+
+    * +EMLINK+
+    * +EMSGSIZE+
+    * +EMULTIHOP+
+    * +ENAMETOOLONG+
+    * +ENETDOWN+
+    * +ENETRESET+
+    * +ENETUNREACH+
+    * +ENFILE+
+    * +ENOBUFS+
+    * +ENODATA+
+    * +ENODEV+
+    * +ENOENT+
+    * +ENOEXEC+
+    * +ENOKEY+
+    * +ENOLCK+
+    * +ENOLINK+
+    * +ENOMEDIUM+
+    * +ENOMEM+
+    * +ENOMSG+
+    * +ENONET+
+    * +ENOPKG+
+    * +ENOPROTOOPT+
+    * +ENOSPC+
+    * +ENOSR+
+    * +ENOSTR+
+    * +ENOSYS+
+    * +ENOTBLK+
+    * +ENOTCONN+
+    * +ENOTDIR+
+    * +ENOTEMPTY+
+    * +ENOTSOCK+
+    * +ENOTSUP+
+    * +ENOTTY+
+    * +ENOTUNIQ+
+    * +ENXIO+
+    * +EOPNOTSUPP+
+    * +EOVERFLOW+
+    * +EPERM+
+    * +EPFNOSUPPORT+
+    * +EPIPE+
+    * +EPROTO+
+    * +EPROTONOSUPPORT+
+    * +EPROTOTYPE+
+    * +ERANGE+
+    * +EREMCHG+
+    * +EREMOTE+
+    * +EREMOTEIO+
+    * +ERESTART+
+    * +EROFS+
+    * +ESHUTDOWN+
+    * +ESPIPE+
+    * +ESOCKTNOSUPPORT+
+    * +ESRCH+
+    * +ESTALE+
+    * +ESTRPIPE+
+    * +ETIME+
+    * +ETIMEDOUT+
+    * +ETXTBSY+
+    * +EUCLEAN+
+    * +EUNATCH+
+    * +EUSERS+
+    * +EWOULDBLOCK+
+    * +EXDEV+
+    * +EXFULL+
 
 class: Thread
   base: Object
@@ -847,6 +850,16 @@ class: Thread
     return: a return value of _block_
 
     Waits until a thread ends.
+
+class: WindowsError
+  base: SystemError
+
+  The exception to represent failures of some of Windows API. +WindowsError#errno+ is a converted value from original error code.
+
+  method: init(err_code, opt=nil)
+    parameters:
+      err_code: error code
+      opt: optional information
 
 == Built-in Functions
 
@@ -968,7 +981,7 @@ function: mkdir(path)
   parameters:
     path: a path of a directory
   exceptions:
-    SystemCallError: when cannot make a directory
+    SystemError: when cannot make a directory
     TypeError: _path_ is not a +String+
 
   Makes a directory. The parent directory of _path_ must exist.
@@ -1033,6 +1046,13 @@ function: raise_exception(e)
 
   Raise an exception. If you want to raise an exception, use the +raise+ statement.
 
+function: root_dir?(path)
+  parameters:
+    path: path
+  return: +true+ when _path_ represents a root directory, otherwise +false+
+
+  In Windows, +C:\\+, +D:\\+ and so on are all root directories.
+
 == Built-in Objects
 
 data: ARGV
@@ -1043,6 +1063,127 @@ data: ARGV
     if ARGV.get(0) == __FILE__
       # Here is executed when this file is invoked
     end
+
+data: E2BIG
+data: EACCES
+data: EADDRINUSE
+data: EADDRNOTAVAIL
+data: EAFNOSUPPORT
+data: EAGAIN
+data: EALREADY
+data: EBADE
+data: EBADF
+data: EBADFD
+data: EBADMSG
+data: EBADR
+data: EBADRQC
+data: EBADSLT
+data: EBUSY
+data: ECANCELED
+data: ECHILD
+data: ECHRNG
+data: ECOMM
+data: ECONNABORTED
+data: ECONNREFUSED
+data: ECONNRESET
+data: EDEADLK
+data: EDEADLOCK
+data: EDESTADDRREQ
+data: EDOM
+data: EDQUOT
+data: EEXIST
+data: EFAULT
+data: EFBIG
+data: EHOSTDOWN
+data: EHOSTUNREACH
+data: EIDRM
+data: EILSEQ
+data: EINPROGRESS
+data: EINTR
+data: EINVAL
+data: EIO
+data: EISCONN
+data: EISDIR
+data: EISNAM
+data: EKEYEXPIRED
+data: EKEYREJECTED
+data: EKEYREVOKED
+data: EL2HLT
+data: EL2NSYNC
+data: EL3HLT
+data: EL3RST
+data: ELIBACC
+data: ELIBBAD
+data: ELIBMAX
+data: ELIBSCN
+data: ELIBEXEC
+data: ELOOP
+data: EMEDIUMTYPE
+data: EMFILE
+data: EMLINK
+data: EMSGSIZE
+data: EMULTIHOP
+data: ENAMETOOLONG
+data: ENETDOWN
+data: ENETRESET
+data: ENETUNREACH
+data: ENFILE
+data: ENOBUFS
+data: ENODATA
+data: ENODEV
+data: ENOENT
+data: ENOEXEC
+data: ENOKEY
+data: ENOLCK
+data: ENOLINK
+data: ENOMEDIUM
+data: ENOMEM
+data: ENOMSG
+data: ENONET
+data: ENOPKG
+data: ENOPROTOOPT
+data: ENOSPC
+data: ENOSR
+data: ENOSTR
+data: ENOSYS
+data: ENOTBLK
+data: ENOTCONN
+data: ENOTDIR
+data: ENOTEMPTY
+data: ENOTSOCK
+data: ENOTSUP
+data: ENOTTY
+data: ENOTUNIQ
+data: ENXIO
+data: EOPNOTSUPP
+data: EOVERFLOW
+data: EPERM
+data: EPFNOSUPPORT
+data: EPIPE
+data: EPROTO
+data: EPROTONOSUPPORT
+data: EPROTOTYPE
+data: ERANGE
+data: EREMCHG
+data: EREMOTE
+data: EREMOTEIO
+data: ERESTART
+data: EROFS
+data: ESHUTDOWN
+data: ESPIPE
+data: ESOCKTNOSUPPORT
+data: ESRCH
+data: ESTALE
+data: ESTRPIPE
+data: ETIME
+data: ETIMEDOUT
+data: ETXTBSY
+data: EUCLEAN
+data: EUNATCH
+data: EUSERS
+data: EWOULDBLOCK
+data: EXDEV
+data: EXFULL
 
 data: PATH_SEPARATOR
   type: String

@@ -3,6 +3,10 @@ SUBDIRS = @DIRS@
 ARCHIVE = Yog-@PACKAGE_VERSION@
 SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
 
+.PHONY: doc proto test test-installed test-copying test-mark-sweep \
+	test-mark-sweep-compact test-bdw test-generational install-vim install \
+	dist distcheck installer
+
 doc:
 	cd doc && make
 
