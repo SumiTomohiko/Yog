@@ -12,8 +12,6 @@ struct YogMarkSweep {
     struct YogMarkSweepHeader* header;
     size_t threshold;
     size_t allocated_size;
-    void* root;
-    ChildrenKeeper root_keeper;
 };
 
 typedef struct YogMarkSweep YogMarkSweep;

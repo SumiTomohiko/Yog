@@ -14,7 +14,6 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AM_PROG_CC_C_O
-#AC_PROG_LIBTOOL
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
@@ -24,7 +23,7 @@ AC_CHECK_LIB([dl], [dlopen])
 AC_HEADER_STDC
 AC_CHECK_HEADERS([inttypes.h limits.h stddef.h stdint.h stdlib.h string.h \
                   strings.h sys/time.h unistd.h malloc.h getopt.h float.h \
-                  dlfcn.h sys/mman.h windows.h alloca.h])
+                  dlfcn.h sys/mman.h windows.h alloca.h winerror.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -182,26 +181,32 @@ if test "${enable_google_perftools}" = "yes"; then
     LDFLAGS="-lprofiler ${LDFLAGS}"
 fi
 
+AM_PATH_PYTHON()
+
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
-                 ext/Makefile lib/Makefile doc/Makefile])
+                 ext/Makefile lib/Makefile doc/Makefile installer.iss
+                 ext/concurrent/Makefile])
 
 AC_CANONICAL_HOST
 case "${host}" in
 *-openbsd*)
     CFLAGS_COMMON="${CFLAGS_COMMON} -pthread"
-    LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb"
+    LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb -export-dynamic"
     TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
-    EXTS="concurrent\$(SOEXT)"
     SOEXT=".so"
     ;;
 *-mingw32)
     PTHREADS_W32_DIR="`pwd`/pthreads-w32"
-    CFLAGS="${CFLAGS} -I${PTHREADS_W32_DIR} -DPTW32_STATIC_LIB"
+    CFLAGS_COMMON="${CFLAGS} -I${PTHREADS_W32_DIR} -DPTW32_STATIC_LIB -DYOG_CORE"
+    LDFLAGS_COPYING="${LDFLAGS_COPYING} -Wl,--out-implib,yog-copying.lib"
+    LDFLAGS_MINIYOG="${LDFLAGS_MINIYOG} -Wl,--out-implib,miniyog.lib"
+    LDFLAGS_COMMON="${LDFLAGS_COMMON} --enable-runtime-pseudo-reloc"
     LIBS="${LIBS} ${PTHREADS_W32_DIR}/libpthreadGC2.a -lwsock32"
-    TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep"
-    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) miniyog\$(EXEEXT)"
+    TEST_TARGETS="${TEST_TARGETS} test-copying"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT=".dll"
+    IMPORT_LIB="\$(top_srcdir)/src/yog-copying.lib"
     ;;
 *)
     case "${host}" in
@@ -209,11 +214,11 @@ case "${host}" in
         CFLAGS_COMMON="${CFLAGS_COMMON} -D_XOPEN_SOURCE=500 -D_BSD_SOURCE"
         ;;
     esac
+    LDFLAGS_COMMON="${LDFLAGS_COMMON} -export-dynamic"
     AC_CONFIG_SUBDIRS([bdwgc])
     DIRS="${DIRS} bdwgc"
     TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
-    EXTS="concurrent\$(SOEXT)"
     SOEXT=".so"
     ;;
 esac
@@ -226,9 +231,15 @@ AC_SUBST(BIN_PROGRAMS)
 AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(CFLAGS_COMMON)
 AC_SUBST(LDFLAGS_COMMON)
+AC_SUBST(LDFLAGS_BDW)
+AC_SUBST(LDFLAGS_COPYING)
+AC_SUBST(LDFLAGS_GENERATIONAL)
+AC_SUBST(LDFLAGS_MARK_SWEEP)
+AC_SUBST(LDFLAGS_MARK_SWEEP_COMPACT)
+AC_SUBST(LDFLAGS_MINIYOG)
 AC_SUBST(LIBS)
-AC_SUBST(EXTS)
 AC_SUBST(SOEXT)
+AC_SUBST(IMPORT_LIB)
 
 AC_CONFIG_SUBDIRS([onig
                    gmp])

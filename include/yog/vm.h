@@ -67,13 +67,11 @@ struct YogVM {
     YogVal eLocalJumpError;
     YogVal eNameError;
     YogVal eSyntaxError;
-    YogVal eSystemCallError;
+    YogVal eSystemError;
     YogVal eTypeError;
     YogVal eValueError;
+    YogVal eWindowsError;
     YogVal eZeroDivisionError;
-#if !defined(MINIYOG)
-#   include "yog/errno_vm.inc"
-#endif
 
     YogVal mComparable;
 

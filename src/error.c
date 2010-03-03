@@ -304,40 +304,42 @@ YogError_raise_LocalJumpError(YogEnv* env, const char* fmt, ...)
     RAISE_FORMAT(env, eLocalJumpError, fmt);
 }
 
-#if !defined(MINIYOG)
 static void
-raise_sys_call_err(YogEnv* env, YogVal klass)
+raise_sys_err(YogEnv* env, YogVal klass, int_t errno_, YogVal opt)
 {
-    SAVE_ARG(env, klass);
+    SAVE_ARGS2(env, klass, opt);
     YogVal exc = YUNDEF;
     PUSH_LOCAL(env, exc);
+    YogVal args[] = { YUNDEF, YUNDEF };
+    PUSH_LOCALSX(env, array_sizeof(args), args);
 
-    exc = YogEval_call_method0(env, klass, "new");
+    args[0] = YogVal_from_int(env, errno_);
+    args[1] = opt;
+    exc = YogEval_call_method(env, klass, "new", array_sizeof(args), args);
 
     RESTORE_LOCALS(env);
     YogError_raise(env, exc);
     /* NOTREACHED */
 }
-#endif
 
 void
-YogError_raise_sys_call_err(YogEnv* env, int errno_)
+YogError_raise_sys_err(YogEnv* env, int_t errno_, YogVal opt)
 {
-    SAVE_LOCALS(env);
-    YogVal klass = YUNDEF;
-    YogVal exc = YUNDEF;
-    PUSH_LOCALS2(env, klass, exc);
+    SAVE_ARG(env, opt);
+    raise_sys_err(env, env->vm->eSystemError, errno_, opt);
+    RETURN_VOID(env);
+}
 
-#if !defined(MINIYOG)
-#   include "errno_raise.inc"
+void
+YogError_raise_sys_err2(YogEnv* env, int_t err_code, YogVal opt)
+{
+    SAVE_ARG(env, opt);
+#if WINDOWS
+    raise_sys_err(env, env->vm->eWindowsError, err_code, opt);
+#else
+    YogError_raise_sys_err(env, err_code, opt);
 #endif
-
-    klass = env->vm->eSystemCallError;
-    exc = YogEval_call_method1(env, klass, "new", INT2VAL(errno_));
-
-    RESTORE_LOCALS(env);
-    YogError_raise(env, exc);
-    /* NOTREACHED */
+    RETURN_VOID(env);
 }
 
 /**

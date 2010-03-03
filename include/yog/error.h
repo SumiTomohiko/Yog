@@ -28,7 +28,8 @@ YOG_EXPORT void YogError_raise_ValueError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_ZeroDivisionError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_binop_type_error(YogEnv*, YogVal, YogVal, const char*);
 YOG_EXPORT void YogError_raise_comparison_type_error(YogEnv*, YogVal, YogVal);
-YOG_EXPORT void YogError_raise_sys_call_err(YogEnv*, int);
+YOG_EXPORT void YogError_raise_sys_err(YogEnv*, int_t, YogVal);
+YOG_EXPORT void YogError_raise_sys_err2(YogEnv*, int_t, YogVal);
 YOG_EXPORT void YogError_warn(YogEnv*, const char*, uint_t, const char*, ...);
 
 /* PROTOTYPE_END */

@@ -109,7 +109,7 @@ class DeclarationInserter(object):
         old, i = self._find(lines, self.end, i)
         header.extend(lines[i:])
 
-        fp = open(header_filename, "w")
+        fp = open(header_filename, "wb")
         try:
             fp.write("".join(header))
         finally:

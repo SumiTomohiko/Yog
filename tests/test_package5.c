@@ -13,7 +13,10 @@ foo(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 #if defined(__cplusplus)
 extern "C"
 #endif
-YOG_EXPORT YogVal
+#if defined(_MSC_VER) || defined(__MINGW32__)
+__declspec(dllexport)
+#endif
+YogVal
 YogInit_test_package5(YogEnv* env)
 {
     SAVE_LOCALS(env);

@@ -1,5 +1,12 @@
+#include "yog/config.h"
 #include <errno.h>
 #include <string.h>
+#if defined(HAVE_WINDOWS_H)
+#   include <windows.h>
+#endif
+#if defined(HAVE_WINERROR_H)
+#   include <winerror.h>
+#endif
 #include "yog/array.h"
 #include "yog/callable.h"
 #include "yog/class.h"
@@ -10,21 +17,31 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/sprintf.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-struct SystemCallError {
+struct YogSystemError {
     struct YogException base;
-    int errno_;
+    int_t errno_;
 };
 
-typedef struct SystemCallError SystemCallError;
+typedef struct YogSystemError YogSystemError;
 
-#define TYPE_SYSTEM_CALL_ERROR  ((type_t)SystemCallError_alloc)
+#define TYPE_SYSTEM_ERROR   ((type_t)YogSystemError_alloc)
+
+struct YogWindowsError {
+    struct YogSystemError base;
+    uint_t err_code;
+};
+
+typedef struct YogWindowsError YogWindowsError;
+
+#define TYPE_WINDOWS_ERROR  ((type_t)YogWindowsError_alloc)
 
 static void
-keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+YogException_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
@@ -54,22 +71,52 @@ YogException_alloc(YogEnv* env, YogVal klass)
     YogVal exc = YUNDEF;
     PUSH_LOCAL(env, exc);
 
-    exc = ALLOC_OBJ(env, keep_children, NULL, YogException);
+    exc = ALLOC_OBJ(env, YogException_keep_children, NULL, YogException);
     YogException_init(env, exc, TYPE_EXCEPTION, klass);
 
     RETURN(env, exc);
 }
 
+static void
+YogSystemError_init(YogEnv* env, YogVal self, type_t type, YogVal klass)
+{
+    SAVE_ARGS2(env, self, klass);
+    YogException_init(env, self, type, klass);
+    PTR_AS(YogSystemError, self)->errno_ = 0;
+    RETURN_VOID(env);
+}
+
+static void
+YogWindowsError_init(YogEnv* env, YogVal self, type_t type, YogVal klass)
+{
+    SAVE_ARGS2(env, self, klass);
+    YogSystemError_init(env, self, type, klass);
+    PTR_AS(YogWindowsError, self)->err_code = 0;
+    RETURN_VOID(env);
+}
+
 static YogVal
-SystemCallError_alloc(YogEnv* env, YogVal klass)
+YogWindowsError_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal exc = YUNDEF;
     PUSH_LOCAL(env, exc);
 
-    exc = ALLOC_OBJ(env, keep_children, NULL, SystemCallError);
-    YogException_init(env, exc, TYPE_SYSTEM_CALL_ERROR, klass);
-    PTR_AS(SystemCallError, exc)->errno_ = 0;
+    exc = ALLOC_OBJ(env, YogException_keep_children, NULL, YogWindowsError);
+    YogWindowsError_init(env, exc, TYPE_WINDOWS_ERROR, klass);
+
+    RETURN(env, exc);
+}
+
+static YogVal
+YogSystemError_alloc(YogEnv* env, YogVal klass)
+{
+    SAVE_ARG(env, klass);
+    YogVal exc = YUNDEF;
+    PUSH_LOCAL(env, exc);
+
+    exc = ALLOC_OBJ(env, YogException_keep_children, NULL, YogSystemError);
+    YogSystemError_init(env, exc, TYPE_SYSTEM_ERROR, klass);
 
     RETURN(env, exc);
 }
@@ -215,35 +262,217 @@ Exception_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yog
 }
 
 static void
-init_SystemCallError(YogEnv* env, YogVal self, int errno_)
+init_SystemError(YogEnv* env, YogVal self, YogVal msg, int_t errno_)
 {
-    SAVE_ARG(env, self);
+    SAVE_ARGS2(env, msg, self);
+
+    init_YogException(env, self, msg);
+    PTR_AS(YogSystemError, self)->errno_ = errno_;
+
+    RETURN_VOID(env);
+}
+
+static int_t
+err_code2errno(uint_t err_code)
+{
+#if WINDOWS
+    struct Entry {
+        uint_t err_code;
+        int_t errno_;
+    };
+
+    typedef struct Entry Entry;
+
+    /* This table came from OCaml 3.11.2 (otherlibs/win32unix/unixsupport.c) */
+    Entry table[] = {
+        { ERROR_INVALID_FUNCTION, EINVAL },
+        { ERROR_FILE_NOT_FOUND, ENOENT },
+        { ERROR_PATH_NOT_FOUND, ENOENT },
+        { ERROR_TOO_MANY_OPEN_FILES, EMFILE },
+        { ERROR_ACCESS_DENIED, EACCES },
+        { ERROR_INVALID_HANDLE, EBADF },
+        { ERROR_ARENA_TRASHED, ENOMEM },
+        { ERROR_NOT_ENOUGH_MEMORY, ENOMEM },
+        { ERROR_INVALID_BLOCK, ENOMEM },
+        { ERROR_BAD_ENVIRONMENT, E2BIG },
+        { ERROR_BAD_FORMAT, ENOEXEC },
+        { ERROR_INVALID_ACCESS, EINVAL },
+        { ERROR_INVALID_DATA, EINVAL },
+        { ERROR_INVALID_DRIVE, ENOENT },
+        { ERROR_CURRENT_DIRECTORY, EACCES },
+        { ERROR_NOT_SAME_DEVICE, EXDEV },
+        { ERROR_NO_MORE_FILES, ENOENT },
+        { ERROR_LOCK_VIOLATION, EACCES },
+        { ERROR_BAD_NETPATH, ENOENT },
+        { ERROR_NETWORK_ACCESS_DENIED, EACCES },
+        { ERROR_BAD_NET_NAME, ENOENT },
+        { ERROR_FILE_EXISTS, EEXIST },
+        { ERROR_CANNOT_MAKE, EACCES },
+        { ERROR_FAIL_I24, EACCES },
+        { ERROR_INVALID_PARAMETER, EINVAL },
+        { ERROR_NO_PROC_SLOTS, EAGAIN },
+        { ERROR_DRIVE_LOCKED, EACCES },
+        { ERROR_BROKEN_PIPE, EPIPE },
+        { ERROR_NO_DATA, EPIPE },
+        { ERROR_DISK_FULL, ENOSPC },
+        { ERROR_INVALID_TARGET_HANDLE, EBADF },
+        { ERROR_INVALID_HANDLE, EINVAL },
+        { ERROR_WAIT_NO_CHILDREN, ECHILD },
+        { ERROR_CHILD_NOT_COMPLETE, ECHILD },
+        { ERROR_DIRECT_ACCESS_HANDLE, EBADF },
+        { ERROR_NEGATIVE_SEEK, EINVAL },
+        { ERROR_SEEK_ON_DEVICE, EACCES },
+        { ERROR_DIR_NOT_EMPTY, ENOTEMPTY },
+        { ERROR_NOT_LOCKED, EACCES },
+        { ERROR_BAD_PATHNAME, ENOENT },
+        { ERROR_MAX_THRDS_REACHED, EAGAIN },
+        { ERROR_LOCK_FAILED, EACCES },
+        { ERROR_ALREADY_EXISTS, EEXIST },
+        { ERROR_FILENAME_EXCED_RANGE, ENOENT },
+        { ERROR_NESTING_NOT_ALLOWED, EAGAIN },
+        { ERROR_NOT_ENOUGH_QUOTA, ENOMEM },
+        { ERROR_INVALID_STARTING_CODESEG, ENOEXEC },
+        { ERROR_INVALID_STACKSEG, ENOEXEC },
+        { ERROR_INVALID_MODULETYPE, ENOEXEC },
+        { ERROR_INVALID_EXE_SIGNATURE, ENOEXEC },
+        { ERROR_EXE_MARKED_INVALID, ENOEXEC },
+        { ERROR_BAD_EXE_FORMAT, ENOEXEC },
+        { ERROR_ITERATED_DATA_EXCEEDS_64k, ENOEXEC },
+        { ERROR_INVALID_MINALLOCSIZE, ENOEXEC },
+        { ERROR_DYNLINK_FROM_INVALID_RING, ENOEXEC },
+        { ERROR_IOPL_NOT_ENABLED, ENOEXEC },
+        { ERROR_INVALID_SEGDPL, ENOEXEC },
+        { ERROR_AUTODATASEG_EXCEEDS_64k, ENOEXEC },
+        { ERROR_RING2SEG_MUST_BE_MOVABLE, ENOEXEC },
+        { ERROR_RELOC_CHAIN_XEEDS_SEGLIM, ENOEXEC },
+        { ERROR_INFLOOP_IN_RELOC_CHAIN, ENOEXEC },
+        { ERROR_WRITE_PROTECT, EACCES },
+        { ERROR_BAD_UNIT, EACCES },
+        { ERROR_NOT_READY, EACCES },
+        { ERROR_BAD_COMMAND, EACCES },
+        { ERROR_CRC, EACCES },
+        { ERROR_BAD_LENGTH, EACCES },
+        { ERROR_SEEK, EACCES },
+        { ERROR_NOT_DOS_DISK, EACCES },
+        { ERROR_SECTOR_NOT_FOUND, EACCES },
+        { ERROR_OUT_OF_PAPER, EACCES },
+        { ERROR_WRITE_FAULT, EACCES },
+        { ERROR_READ_FAULT, EACCES },
+        { ERROR_GEN_FAILURE, EACCES },
+        { ERROR_SHARING_VIOLATION, EACCES },
+        { ERROR_LOCK_VIOLATION, EACCES },
+        { ERROR_WRONG_DISK, EACCES },
+        { ERROR_SHARING_BUFFER_EXCEEDED, EACCES },
+        { WSAEINVAL, EINVAL },
+        { WSAEACCES, EACCES },
+        { WSAEBADF, EBADF },
+        { WSAEFAULT, EFAULT },
+        { WSAEINTR, EINTR },
+        { WSAEINVAL, EINVAL },
+        { WSAEMFILE, EMFILE },
+#   if defined(WSANAMETOOLONG)
+        { WSANAMETOOLONG, ENAMETOOLONG },
+#   endif
+#   if defined(WSAENFILE)
+        { WSAENFILE, ENFILE },
+#   endif
+        { WSAENOTEMPTY, ENOTEMPTY }};
+    uint_t i;
+    for (i = 0; i < array_sizeof(table); i++) {
+        if (table[i].err_code == err_code) {
+            return table[i].errno_;
+        }
+    }
+#endif
+    return EINVAL;
+}
+
+static YogVal
+join_err_msg(YogEnv* env, const char* msg, YogVal opt)
+{
+    SAVE_ARG(env, opt);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    if (IS_NIL(opt)) {
+        s = YogString_from_str(env, msg);
+        RETURN(env, s);
+    }
+
+    s = YogSprintf_sprintf(env, "%s - %S", msg, opt);
+    RETURN(env, s);
+}
+
+static void
+init_WindowsError(YogEnv* env, YogVal self, uint_t err_code, YogVal opt)
+{
+    SAVE_ARGS2(env, self, opt);
     YogVal msg = YUNDEF;
     PUSH_LOCAL(env, msg);
 
-    msg = YogString_from_str(env, strerror(errno_));
-    init_YogException(env, self, msg);
-    PTR_AS(SystemCallError, self)->errno_ = errno_;
+    int_t errno_ = err_code2errno(err_code);
+#if WINDOWS
+    char* buf = NULL;
+    if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, err_code, 0, (PTSTR)&buf, 0, NULL) != 0) {
+        msg = join_err_msg(env, buf, opt);
+        LocalFree((HLOCAL)buf);
+    }
+    else {
+        msg = opt;
+    }
+#else
+    msg = join_err_msg(env, strerror(errno_), opt);
+#endif
+    init_SystemError(env, self, msg, errno_);
+    PTR_AS(YogWindowsError, self)->err_code = err_code;
 
     RETURN_VOID(env);
 }
 
 static YogVal
-SystemCallError_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+WindowsError_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal err_code = YUNDEF;
+    YogVal opt = YNIL;
+    PUSH_LOCALS2(env, err_code, opt);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_WINDOWS_ERROR)) {
+        YogError_raise_TypeError(env, "self must be WindowsError");
+    }
+    YogCArg params[] = {
+        { "err_code", &err_code },
+        { "|", NULL },
+        { "opt", &opt },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "init", params, args, kw);
+
+    uint_t e = (uint_t)YogVal_to_signed_type(env, err_code, "err_code");
+    init_WindowsError(env, self, e, opt);
+
+    RETURN(env, YNIL);
+}
+
+static YogVal
+SystemError_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal msg = YUNDEF;
     YogVal errno_ = YUNDEF;
-    PUSH_LOCALS2(env, msg, errno_);
-
-    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_SYSTEM_CALL_ERROR)) {
-        YogError_raise_TypeError(env, "self must be SystemCallError");
+    YogVal opt = YNIL;
+    PUSH_LOCALS3(env, msg, errno_, opt);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_SYSTEM_ERROR)) {
+        YogError_raise_TypeError(env, "self must be SystemError");
     }
-    YogCArg params[] = { { "errno", &errno_ }, { NULL, NULL } };
+    YogCArg params[] = {
+        { "errno", &errno_ },
+        { "|", NULL },
+        { "opt", &opt },
+        { NULL, NULL } };
     YogGetArgs_parse_args(env, "init", params, args, kw);
 
-    int e = YogVal_to_signed_type(env, errno_, "errno");
-    init_SystemCallError(env, self, e);
+    int_t e = YogVal_to_signed_type(env, errno_, "errno");
+    msg = join_err_msg(env, strerror(e), opt);
+    init_SystemError(env, self, msg, e);
 
     RETURN(env, YNIL);
 }
@@ -280,29 +509,33 @@ get_message(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     RETURN(env, message);
 }
 
-#if !defined(MINIYOG)
-static void
-construct_sys_call_err(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block, int errno_)
+static YogVal
+get_errno(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+    if (!IS_PTR(self) || ((BASIC_OBJ_TYPE(self) != TYPE_SYSTEM_ERROR) && (BASIC_OBJ_TYPE(self) != TYPE_WINDOWS_ERROR))) {
+        YogError_raise_TypeError(env, "self must be SystemError or WindowsError");
+    }
     YogCArg params[] = { { NULL, NULL } };
-    YogGetArgs_parse_args(env, "init", params, args, kw);
+    YogGetArgs_parse_args(env, "get_errno", params, args, kw);
 
-    init_SystemCallError(env, self, errno_);
+    int_t errno_ = PTR_AS(YogSystemError, self)->errno_;
+    val = YogVal_from_int(env, errno_);
 
-    RETURN_VOID(env);
+    RETURN(env, val);
 }
-#   include "errno_cons.inc"
-#endif
 
 void
 YogException_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
     YogVal eException = YUNDEF;
-    YogVal eSystemCallError = YUNDEF;
+    YogVal eSystemError = YUNDEF;
+    YogVal eWindowsError = YUNDEF;
     YogVal exc = YUNDEF;
-    PUSH_LOCALS3(env, eException, eSystemCallError, exc);
+    PUSH_LOCALS4(env, eException, eSystemError, eWindowsError, exc);
     YogVM* vm = env->vm;
 
     eException = YogClass_new(env, "Exception", vm->cObject);
@@ -333,28 +566,31 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
     EXCEPTION_NEW(eLocalJumpError, "LocalJumpError");
     EXCEPTION_NEW(eNameError, "NameError");
     EXCEPTION_NEW(eSyntaxError, "SyntaxError");
-    EXCEPTION_NEW(eSystemCallError, "SystemCallError");
+    EXCEPTION_NEW(eSystemError, "SystemError");
     EXCEPTION_NEW(eTypeError, "TypeError");
     EXCEPTION_NEW(eValueError, "ValueError");
+    EXCEPTION_NEW(eWindowsError, "WindowsError");
     EXCEPTION_NEW(eZeroDivisionError, "ZeroDivisionError");
 #undef EXCEPTION_NEW
 
-    eSystemCallError = YogClass_new(env, "SystemCallError", eException);
-    YogClass_define_allocator(env, eSystemCallError, SystemCallError_alloc);
+    eSystemError = YogClass_new(env, "SystemError", eException);
+    YogClass_define_allocator(env, eSystemError, YogSystemError_alloc);
 #define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, eSystemCallError, pkg, (name), (f)); \
+    YogClass_define_method(env, eSystemError, pkg, (name), (f)); \
 } while (0)
-    DEFINE_METHOD("init", SystemCallError_init);
+    DEFINE_METHOD("init", SystemError_init);
 #undef DEFINE_METHOD
-#if !defined(MINIYOG)
-#   define EXCEPTION_NEW(member, name, f)  do { \
-    exc = YogClass_new(env, name, eSystemCallError); \
-    YogClass_define_method(env, exc, pkg, "init", (f)); \
-    vm->member = exc; \
+    YogClass_define_property(env, eSystemError, pkg, "errno", get_errno, NULL);
+    vm->eSystemError = eSystemError;
+
+    eWindowsError = YogClass_new(env, "WindowsError", eSystemError);
+    YogClass_define_allocator(env, eWindowsError, YogWindowsError_alloc);
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, eWindowsError, pkg, (name), (f)); \
 } while (0)
-#   include "errno_new.inc"
-#   undef EXCEPTION_NEW
-#endif
+    DEFINE_METHOD("init", WindowsError_init);
+#undef DEFINE_METHOD
+    vm->eWindowsError = eWindowsError;
 
     RETURN_VOID(env);
 }

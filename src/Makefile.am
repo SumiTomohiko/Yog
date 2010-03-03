@@ -7,7 +7,7 @@ GMP_DIR = $(ROOT_DIR)/gmp
 LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
 YACC = $(LEMON)
-PYTHON = python2.6
+PYTHON = @PYTHON@
 MINIYOG = miniyog$(EXEEXT)
 TOOLS_DIR = $(ROOT_DIR)/tools
 
@@ -22,7 +22,7 @@ COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 DEFAULT_INCLUDES = -I.
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" @CFLAGS_COMMON@
-LDFLAGS_COMMON = -export-dynamic @LDFLAGS_COMMON@
+LDFLAGS_COMMON = @LDFLAGS_COMMON@
 LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a -lm @LIBS@
 
 EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
@@ -31,24 +31,24 @@ EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
 bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
 yog_copying_CFLAGS = $(CFLAGS_COMMON) -DGC_COPYING
-yog_copying_LDFLAGS = $(LDFLAGS_COMMON)
+yog_copying_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_COPYING@
 yog_mark_sweep_SOURCES = $(COMMON_SOURCES) gc/mark-sweep.c
 yog_mark_sweep_CFLAGS = $(CFLAGS_COMMON) -DGC_MARK_SWEEP
-yog_mark_sweep_LDFLAGS = $(LDFLAGS_COMMON)
+yog_mark_sweep_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_MARK_SWEEP@
 yog_mark_sweep_compact_SOURCES = $(COMMON_SOURCES) gc/mark-sweep-compact.c
 yog_mark_sweep_compact_CFLAGS = $(CFLAGS_COMMON) -DGC_MARK_SWEEP_COMPACT
-yog_mark_sweep_compact_LDFLAGS = $(LDFLAGS_COMMON)
+yog_mark_sweep_compact_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_MARK_SWEEP_COMPACT@
 yog_bdw_SOURCES = $(COMMON_SOURCES) gc/bdw.c
 yog_bdw_CFLAGS = $(CFLAGS_COMMON) -DGC_BDW -DGC_PTHREADS
-yog_bdw_LDFLAGS = $(LDFLAGS_COMMON)
+yog_bdw_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_BDW@
 yog_bdw_LDADD = $(BDWGC_DIR)/.libs/libgc.a
 yog_generational_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
 			   gc/mark-sweep-compact.c
 yog_generational_CFLAGS = $(CFLAGS_COMMON) -DGC_GENERATIONAL
-yog_generational_LDFLAGS = $(LDFLAGS_COMMON)
+yog_generational_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_GENERATIONAL@
 miniyog_SOURCES = $(yog_copying_SOURCES)
 miniyog_CFLAGS = $(yog_copying_CFLAGS) -DMINIYOG
-miniyog_LDFLAGS = $(yog_copying_LDFLAGS)
+miniyog_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_MINIYOG@
 
 INSTS_DEF = insts.def
 INST_PY = $(ROOT_DIR)/tools/inst.py
@@ -68,6 +68,14 @@ builtins.inc: $(MINIYOG) builtins.yg yg2inc.yg
 	$(MAKE) $(MINIYOG)
 	./$(MINIYOG) yg2inc.yg builtins.yg $@
 
+builtins_win.inc: $(MINIYOG) builtins_win.yg yg2inc.yg
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) yg2inc.yg builtins_win.yg $@
+
+builtins_unix.inc: $(MINIYOG) builtins_unix.yg yg2inc.yg
+	$(MAKE) $(MINIYOG)
+	./$(MINIYOG) yg2inc.yg builtins_unix.yg $@
+
 array.inc: $(MINIYOG) array.yg yg2inc.yg
 	$(MAKE) $(MINIYOG)
 	./$(MINIYOG) yg2inc.yg array.yg $@
@@ -84,42 +92,12 @@ dict.inc: $(MINIYOG) dict.yg yg2inc.yg
 	$(MAKE) $(MINIYOG)
 	./$(MINIYOG) yg2inc.yg dict.yg $@
 
-../include/yog/errno_vm.inc: $(MINIYOG) $(TOOLS_DIR)/errno2vm.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2vm.yg $(TOOLS_DIR)/errno $@
-
-errno_init.inc: $(MINIYOG) $(TOOLS_DIR)/errno2init.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2init.yg $(TOOLS_DIR)/errno $@
-
-errno_keep.inc: $(MINIYOG) $(TOOLS_DIR)/errno2keep.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2keep.yg $(TOOLS_DIR)/errno $@
-
-errno_new.inc: $(MINIYOG) $(TOOLS_DIR)/errno2new.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2new.yg $(TOOLS_DIR)/errno $@
-
-errno_cons.inc: $(MINIYOG) $(TOOLS_DIR)/errno2cons.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2cons.yg $(TOOLS_DIR)/errno $@
-
-errno_raise.inc: $(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2raise.yg $(TOOLS_DIR)/errno $@
-
-errno_register.inc: $(MINIYOG) $(TOOLS_DIR)/errno2register.yg $(TOOLS_DIR)/errno
-	$(MAKE) $(MINIYOG)
-	./$(MINIYOG) $(TOOLS_DIR)/errno2register.yg $(TOOLS_DIR)/errno $@
-
 $(ROOT_DIR)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
 	$(LEMON) header=$(ROOT_DIR)/include/yog/token.h parser.y
 
 keywords.inc: keywords
 	gperf keywords > $@
-
-#keywords lexer.c: parser.h
 
 eval.inc: $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
@@ -138,5 +116,8 @@ $(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF)
 
 $(ROOT_DIR)/include/yog/opcodes.h: $(ROOT_DIR)/include/yog/opcodes.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
+
+errno.inc: $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno
+	$(MINIYOG) $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno $@
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

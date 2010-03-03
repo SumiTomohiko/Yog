@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -94,7 +93,7 @@ mkdir_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     }
 
     if (!YogSysdeps_mkdir(STRING_CSTR(path))) {
-        YogError_raise_sys_call_err(env, errno);
+        YogError_raise_sys_err2(env, GET_ERR(), path);
     }
 
     RETURN(env, YNIL);
@@ -338,7 +337,8 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
 {
     SAVE_ARG(env, builtins);
     YogVal args = YUNDEF;
-    PUSH_LOCAL(env, args);
+    YogVal errno_ = YUNDEF;
+    PUSH_LOCALS2(env, args, errno_);
 
 #define DEFINE_FUNCTION(name, f)    do { \
     YogPackage_define_function(env, builtins, name, f); \
@@ -375,10 +375,9 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     REGISTER_CLASS(eIndexError);
     REGISTER_CLASS(eKeyError);
     REGISTER_CLASS(eSyntaxError);
+    REGISTER_CLASS(eSystemError);
     REGISTER_CLASS(eValueError);
-#if !defined(MINIYOG)
-#   include "errno_register.inc"
-#endif
+    REGISTER_CLASS(eWindowsError);
 #undef REGISTER_CLASS
 
     args = argv2args(env, argc, argv);
@@ -387,10 +386,25 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     set_path_separator(env, builtins);
 
 #if !defined(MINIYOG)
+#   define REGISTER_ERRNO(e)    do { \
+    errno_ = YogVal_from_int(env, (e)); \
+    YogObj_set_attr(env, builtins, #e, errno_); \
+} while (0)
+#   include "errno.inc"
+#   undef REGISTER_ERRNO
+
     const char* src = 
 #   include "builtins.inc"
     ;
     YogMisc_eval_source(env, builtins, src);
+    const char* sysdeps_src =
+#   if WINDOWS
+#       include "builtins_win.inc"
+#   else
+#       include "builtins_unix.inc"
+#   endif
+    ;
+    YogMisc_eval_source(env, builtins, sysdeps_src);
 #endif
 
     RETURN_VOID(env);

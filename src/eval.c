@@ -873,9 +873,7 @@ YogVal
 YogEval_eval_file(YogEnv* env, FILE* fp, const char* filename, const char* pkg_name)
 {
     YOG_ASSERT(env, fp != NULL, "file pointer is NULL");
-
     SAVE_LOCALS(env);
-
     YogVal stmts = YUNDEF;
     YogVal code = YUNDEF;
     YogVal pkg = YUNDEF;

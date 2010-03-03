@@ -1,22 +1,18 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: Add assert statement
-desc: ""
+title: trace function
+desc: trace function prints one message with a filename and a lineno at which this function called.
 type: :task
 component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
-creation_time: 2010-01-31 05:15:53.591549 Z
+creation_time: 2010-02-28 19:03:00.345766 Z
 references: []
 
-id: c1c60f5b84a40779b28bde7aa3849ea8402a3131
+id: e10dce1c754cce14f04147707f5976a82ccb19de
 log_events: 
-- - 2010-01-31 05:15:54.555664 Z
+- - 2010-02-28 19:03:01.137594 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
-  - ""
-- - 2010-03-01 17:19:10.943752 Z
-  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-  - edited title
   - ""

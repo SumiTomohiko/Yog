@@ -1,0 +1,18 @@
+[Setup]
+AppName=@PACKAGE_NAME@ @PACKAGE_VERSION@
+AppVerName=@PACKAGE_NAME@ @PACKAGE_VERSION@
+OutputDir=.
+OutputBaseFilename=@PACKAGE_NAME@-@PACKAGE_VERSION@
+DefaultDirName={sd}\Program Files\@PACKAGE_NAME@-@PACKAGE_VERSION@
+SourceDir=.
+DefaultGroupName=@PACKAGE_NAME@-@PACKAGE_VERSION@
+
+[Files]
+Source: "src\yog.exe"; DestDir: "{app}\bin"
+Source: "lib\*.yg"; DestDir: "{app}\lib"
+Source: "lib\ydoc\*.yg"; DestDir: "{app}\lib\ydoc"
+Source: "src\yog.ico"; DestDir: "{app}"
+
+[Icons]
+Name: "{group}\Yog"; Filename: "{app}\bin\yog.exe"; IconFilename: "{app}\yog.ico"
+Name: "{group}\uninstall"; Filename: "{uninstallexe}"

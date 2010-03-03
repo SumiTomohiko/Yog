@@ -9,12 +9,15 @@ end
 
 def make_dirs(path)
   parent = dirname(path)
-  if (parent != ".") && (parent != "/")
+  if (parent != ".") && (parent != "/") && !(parent =~ /\A[A-Za-z]:\z/)
     make_dirs(parent)
   end
   try
     mkdir(path)
-  except EEXIST
+  except SystemError as e
+    if e.errno != EEXIST
+      raise e
+    end
   end
 end
 
@@ -22,8 +25,8 @@ def dirname(path)
   if path == ""
     return "."
   end
-  if path == PATH_SEPARATOR
-    return PATH_SEPARATOR
+  if root_dir?(path)
+    return path
   end
   if path[-1] == PATH_SEPARATOR
     return dirname(path.slice(0, path.size - 1))

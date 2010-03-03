@@ -25,6 +25,15 @@ class TestYdoc(TestCase):
         finally:
             fp.close()
 
+    def escape_special_chars(self, s):
+        # TODO: Another same function is in somewhere.
+        t = []
+        for c in s:
+            if c == "\\":
+                t.append("\\")
+            t.append(c)
+        return "".join(t)
+
     def run_test(self, destdir, index):
         self._test("""
 from test_ydoc import Generator
@@ -32,7 +41,7 @@ import ydoc
 #enable_gc_stress()
 
 ydoc.run(\"test\", \"%(destdir)s\", \"%(index)s\", generator: Generator)
-""" % { "destdir": destdir, "index": index })
+""" % { "destdir": self.escape_special_chars(destdir), "index": self.escape_special_chars(index) })
 
     def do_test(self, src, expected):
         tmpdir = mkdtemp()

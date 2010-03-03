@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Move tools/errno to src
+desc: tools/errno is one of source files, not tools.
+type: :task
+component: core
+release: 
+reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-03-02 17:34:00.476381 Z
+references: []
+
+id: 9599c12327c6535fb3d9760e96d6e1b4fff77eea
+log_events: 
+- - 2010-03-02 17:34:01.504820 Z
+  - SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Move yg2inc to tools directory
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-03-01 15:24:02.757846 Z
+references: []
+
+id: ead6ddb298c7da547c74518066b59e8f7110b891
+log_events: 
+- - 2010-03-01 15:24:03.663667 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
