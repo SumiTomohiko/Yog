@@ -1,10 +1,10 @@
 
 ROOT_DIR = ..
-YOG = $(ROOT_DIR)/src/yog
+YOG = $(ROOT_DIR)/src/yog-copying
 DEST_DIR = html
 VERSION = @VERSION@
 
-.PHONY: all
+.PHONY: all clean
 
 all:
 	$(YOG) --init-heap-size=8M makedoc.yg --title="Yog $(VERSION) documentation" --destdir=$(DEST_DIR) index.ydoc
