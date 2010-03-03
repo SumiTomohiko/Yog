@@ -1,5 +1,5 @@
 
-SUBDIRS = @DIRS@ @PTHREADS_W32_DIR@
+SUBDIRS = @DIRS@
 ARCHIVE = Yog-@PACKAGE_VERSION@
 SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
 
