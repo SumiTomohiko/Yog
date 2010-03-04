@@ -65,7 +65,7 @@ if [ $? != 0 ]; then
   exit 2
 fi
 srcdir="${archive_dir}/src"
-grep -o "./\$(MINIYOG) yg2inc.yg [[:alnum:]_]\+.yg \$@" "${srcdir}/Makefile.am" | while read line
+grep -o "\$(MINIYOG) yg2inc.yg [[:alnum:]_]\+.yg \$@" "${srcdir}/Makefile.am" | while read line
 do
   yg=`echo "${line}" | cut -d " " -f 2`
   src=`echo "${line}" | cut -d " " -f 3`
