@@ -54,7 +54,7 @@ fi
 print_done
 
 echo -n "Generate configure etc..."
-(cd "${archive_dir}" && aclocal && autoheader && autoconf && automake)
+(cd "${archive_dir}" && ./autogen.sh)
 if [ $? != 0 ]; then
   echo "can't generate configure etc."
   exit 2
