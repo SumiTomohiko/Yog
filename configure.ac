@@ -184,7 +184,7 @@ fi
 AM_PATH_PYTHON()
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
-                 ext/Makefile lib/Makefile doc/Makefile installer.iss
+                 ext/Makefile lib/Makefile doc/Makefile installer.nsi
                  ext/concurrent/Makefile])
 
 EXT_SUBDIRS = ""

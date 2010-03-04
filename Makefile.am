@@ -33,7 +33,7 @@ pkg:
 pkgcheck:
 	tools/distcheck $(ARCHIVE)
 
-installer: installer.iss
-	iscc installer.iss
+installer: installer.nsi
+	makensis -V4 -P5 installer.nsi
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

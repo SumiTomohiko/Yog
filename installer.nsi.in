@@ -1,0 +1,36 @@
+
+!Define Product "Yog-@PACKAGE_VERSION@"
+OutFile "${Product}.exe"
+
+InstallDir "$PROGRAMFILES\${Product}"
+Page Directory
+Page InstFiles
+
+Section
+  SetOutPath "$INSTDIR"
+  File src\yog.ico
+
+  SetOutPath "$INSTDIR\bin"
+  File /oname=yog.exe src\yog-copying.exe
+  File src\pthreadGC2.dll
+
+  SetOutPath "$INSTDIR\lib"
+  File /r lib\*.yg
+
+  SetOutPath "$INSTDIR\doc"
+  File /r doc\html\*.*
+
+  CreateDirectory "$SMPROGRAMS\${Product}"
+  CreateShortCut "$SMPROGRAMS\${Product}\Yog.lnk" "$INSTDIR\bin\yog.exe" "" "$INSTDIR\yog.ico"
+  CreateShortCut "$SMPROGRAMS\${Product}\documentation.lnk" "$INSTDIR\doc\index.html"
+  CreateShortcut "$SMPROGRAMS\${Product}\uninstall.lnk" $INSTDIR\uninstall.exe
+
+  WriteUninstaller "$INSTDIR\uninstall.exe"
+SectionEnd
+
+Section "Uninstall"
+  RmDir /r "$SMPROGRAMS\${Product}"
+  RmDir /r "$INSTDIR"
+SectionEnd
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

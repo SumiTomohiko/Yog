@@ -192,7 +192,7 @@ html
 include/yog/inst.h
 include/yog/opcodes.h
 include/yog/token.h
-installer.iss
+installer.nsi
 libtool
 onig/onig-config
 onig/sample/crnl
