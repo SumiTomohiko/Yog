@@ -1,4 +1,4 @@
-This is Yog vesrion 0.0.4
+This is Yog vesrion 0.0.5
 =========================
 
 Yog is a dynamic programming language designed as an intermediate between Python and Ruby.
@@ -69,8 +69,8 @@ by version 0.0.3 (done)
 
 * Coroutine.
 
-by version 0.0.4
-~~~~~~~~~~~~~~~~
+by version 0.0.4 (done)
+~~~~~~~~~~~~~~~~~~~~~~~
 
 * Bugfix
 
