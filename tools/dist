@@ -5,6 +5,30 @@ print_done()
   echo "done"
 }
 
+python="python"
+opts=`getopt --long python: -- "${@}"`
+if [ $? != 0 ]; then
+  echo "illegal option(s)"
+  exit 1
+fi
+eval set -- "${opts}"
+while :
+do
+  case "${1}" in
+  --python)
+    python="${2}"
+    shift 2
+    ;;
+  --)
+    shift 1
+    break
+    ;;
+  *)
+    break
+    ;;
+  esac
+done
+
 yog="src/yog-copying"
 
 archive="${1}"
@@ -41,22 +65,25 @@ if [ $? != 0 ]; then
   exit 2
 fi
 srcdir="${archive_dir}/src"
-grep -o "./miniyog\$(EXEEXT) yg2inc.yg [[:alnum:]_]\+.yg \$@" "${srcdir}/Makefile.am.tmpl" | while read line
+grep -o "./\$(MINIYOG) yg2inc.yg [[:alnum:]_]\+.yg \$@" "${srcdir}/Makefile.am" | while read line
 do
   yg=`echo "${line}" | cut -d " " -f 2`
   src=`echo "${line}" | cut -d " " -f 3`
   dst="`echo "${src}" | cut -d "." -f 1`.inc"
   ${yog} "${srcdir}/${yg}" "${srcdir}/${src}" "${srcdir}/${dst}"
 done
-python2.6 "${archive_dir}/tools/inst.py" "${srcdir}/insts.def" "${archive_dir}"
+tools_dir=`dirname ${0}`
+${yog} "${tools_dir}/make_errno.yg" "${tools_dir}/errno" "${srcdir}/errno.inc"
+${python} "${archive_dir}/tools/inst.py" "${srcdir}/insts.def" "${archive_dir}"
 if [ $? != 0 ]; then
   echo "can't generate instruction files."
   exit 2
 fi
+gperf "${srcdir}/keywords" > "${srcdir}/keywords.inc"
 print_done
 
 echo -n "Generate HTML document..."
-(cd doc && make)
+make doc
 if [ $? != 0 ]; then
   echo "can't generate document"
   exit 2
