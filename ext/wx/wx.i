@@ -5,8 +5,8 @@
 %{
 #include <alloca.h>
 #include "wx/wx.h"
+#include "yog/callable.h"
 #include "yog/eval.h"
-#include "yog/function.h"
 #include "yog/get_args.h"
 #include "yog/string.h"
 #include "yog/vm.h"

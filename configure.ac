@@ -187,8 +187,6 @@ AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile lib/Makefile doc/Makefile installer.nsi
                  ext/concurrent/Makefile ext/wx/Makefile])
 
-WX_TYPE="gtk2"
-
 AC_CANONICAL_HOST
 case "${host}" in
 *-openbsd*)
@@ -209,7 +207,6 @@ case "${host}" in
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT=".dll"
     IMPORT_LIB="\$(top_srcdir)/src/yog-copying.lib"
-    WX_TYPE="msw"
     ;;
 *)
     case "${host}" in
@@ -244,7 +241,6 @@ AC_SUBST(LIBS)
 AC_SUBST(SOEXT)
 AC_SUBST(IMPORT_LIB)
 AC_SUBST(EXT_SUBDIRS)
-AC_SUBST(WX_TYPE)
 
 AC_CONFIG_SUBDIRS([onig
                    gmp])

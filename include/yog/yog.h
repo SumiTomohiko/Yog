@@ -277,7 +277,11 @@ typedef YogVal (*YogAPI)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 #       define YOG_EXPORT __declspec(dllimport)
 #   endif
 #else
-#   define YOG_EXPORT
+#   if defined(__cplusplus)
+#       define YOG_EXPORT extern "C"
+#   else
+#       define YOG_EXPORT
+#   endif
 #endif
 
 #if HAVE_WINDOWS_H
