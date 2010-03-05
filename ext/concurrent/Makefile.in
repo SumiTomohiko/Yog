@@ -28,6 +28,6 @@ maintainer-clean:
 
 install:
 	mkdir -p $(DIR)
-	install concurrent$(SOEXT) $(DIR)
+	install --mode 644 $(exts) $(DIR)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

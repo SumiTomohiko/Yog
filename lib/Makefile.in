@@ -7,6 +7,10 @@ PKGS = hq9plus.yg optparse.yg peg.yg
 
 install:
 	mkdir -p $(DIR)
-	install --mode 644 $(PKGS) $(DIR)
+	for f in `find . -name "*.yg"`; \
+	do \
+		mkdir -p `dirname $(DIR)/$${f}`; \
+		install --mode 644 $${f} $(DIR)/$${f}; \
+	done
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab
