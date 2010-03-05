@@ -45,14 +45,17 @@ config.h
 config.h.in
 config.log
 config.status
+config.status.lineno
 config.status.log
 configure
+configure.lineno
 configure.log
 configure.scan
 core
 core.*
 doc/Makefile
 ext/Makefile.in
+ext/wx.yg
 ext/wx/wxWidgets/.pch/
 ext/wx/wxWidgets/bk-deps
 ext/wx/wxWidgets/bk-make-pch
@@ -60,6 +63,7 @@ ext/wx/wxWidgets/configarg.cache
 ext/wx/wxWidgets/lib/wx/
 ext/wx/wxWidgets/utils/wxrc/wxrc
 ext/wx/wxWidgets/wx-config
+ext/wx/wx_wrap.cxx
 gmon.out
 gmp/config.m4
 gmp/demos/calc/calc-config.h
