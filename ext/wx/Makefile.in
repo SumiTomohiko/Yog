@@ -15,7 +15,7 @@ WX_BIN = $(WX_DIR)/lib/lib`$(WX_CONFIG) --basename`-2.8.a
 all: $(SO) $(YG)
 
 clean:
-	rm -f $(SO) $(YG) wx_wrap.o
+	rm -f $(SO) $(YG) wx_wrap.*
 
 $(YG): wx.yg
 	cp wx.yg $@
@@ -29,8 +29,11 @@ wx_wrap.o: wx_wrap.cxx
 $(WX_BIN): $(WX_DIR)/include/wx/config.h
 	cd wxWidgets && make
 
-wx.yg wx_wrap.cxx: wx.i
-	$(SWIG) -c++ -yog -I$(SWIG_DIR)/Lib/yog wx.i
+wx.yg wx_wrap.cxx: wx.i $(SWIG)
+	$(SWIG) -c++ -yog -I$(SWIG_DIR)/Lib wx.i
+
+$(SWIG):
+	cd $(SWIG_DIR) && make
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/wx/$@
