@@ -3,11 +3,16 @@ top_srcdir = @top_srcdir@
 CFLAGS = @CFLAGS@
 CC = @CC@
 SOEXT = @SOEXT@
+WX_TYPE = @WX_TYPE@
+A = wxWidgets/lib/libwx_$(WX_TYPE)d-2.8.a
 SO = $(top_srcdir)/ext/wx$(SOEXT)
 
 all: $(SO)
 
-$(SO): wx.c
-	$(CC) -o $@ -shared $(CFLAGS) -I$(top_srcdir)/include wx.c
+$(SO): wx.c $(A)
+	$(CC) -o $@ -shared $(CFLAGS) -I$(top_srcdir)/include wx.c $(A)
+
+$(A): wxWidgets/include/wx/config.h
+	cd wxWidgets && make
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab
