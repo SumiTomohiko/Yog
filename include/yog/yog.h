@@ -268,13 +268,13 @@ typedef struct YogCArg YogCArg;
 
 typedef YogVal (*YogAPI)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 
-#define WINDOWS     defined(_MSC_VER) || defined(__MINGW32__)
+#define WINDOWS     (defined(_MSC_VER) || defined(__MINGW32__))
 
-#if WINDOWS
-#   if defined(YOG_CORE)
-#       define YOG_EXPORT __declspec(dllexport)
+#if WINDOWS && defined(YOG_CORE)
+#   if defined(__cplusplus)
+#       define YOG_EXPORT extern "C" __declspec(dllexport)
 #   else
-#       define YOG_EXPORT __declspec(dllimport)
+#       define YOG_EXPORT __declspec(dllexport)
 #   endif
 #else
 #   if defined(__cplusplus)

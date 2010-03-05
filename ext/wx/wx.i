@@ -3,12 +3,12 @@
 %native(set_client_data)    YogVal set_client_data(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block);
 
 %{
-#include <alloca.h>
 #include "wx/wx.h"
 #include "yog/callable.h"
 #include "yog/eval.h"
 #include "yog/get_args.h"
 #include "yog/string.h"
+#include "yog/sysdeps.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -120,10 +120,10 @@ set_client_data(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
         }
         else {
             temp = size;
-            $2 = (wxChar**)alloca(sizeof(wxChar*) * size);
+            $2 = (wxChar**)YogSysdeps_alloca(sizeof(wxChar*) * size);
             for (size_t i = 0; i < size; i++) {
                 YogVal s = YogArray_at(env, $input, i);
-                $2[i] = (wxChar*)alloca(sizeof(wxChar) * STRING_SIZE(s));
+                $2[i] = (wxChar*)YogSysdeps_alloca(sizeof(wxChar) * STRING_SIZE(s));
             }
         }
     }

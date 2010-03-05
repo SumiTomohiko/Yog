@@ -1,7 +1,7 @@
 
 top_srcdir = @top_srcdir@
-CFLAGS = @CFLAGS@
-CC = @CC@
+CXXFLAGS = @CXXFLAGS@ @CFLAGS@
+CXX = @CXX@
 SOEXT = @SOEXT@
 EXT_DIR = $(top_srcdir)/ext
 SO = $(EXT_DIR)/_wx$(SOEXT)
@@ -11,6 +11,7 @@ SWIG = $(SWIG_DIR)/swig
 WX_DIR = wxWidgets
 WX_CONFIG = $(WX_DIR)/wx-config
 WX_BIN = $(WX_DIR)/lib/lib`$(WX_CONFIG) --basename`-2.8.a
+IMPORT_LIB = @IMPORT_LIB@
 
 all: $(SO) $(YG)
 
@@ -21,10 +22,10 @@ $(YG): wx.yg
 	cp wx.yg $@
 
 $(SO): wx_wrap.o $(WX_BIN)
-	$(CC) -o $@ -shared `$(WX_CONFIG) --libs` wx_wrap.o $(WX_BIN)
+	$(CXX) -o $@ -shared wx_wrap.o `$(WX_CONFIG) --libs` $(IMPORT_LIB)
 
 wx_wrap.o: wx_wrap.cxx
-	$(CC) `$(WX_CONFIG) --unicode=no --static --cppflags` -I$(top_srcdir)/include -O2 -Wall -g -c -DSWIGRUNTIME_DEBUG -o $@ wx_wrap.cxx
+	$(CXX) $(CXXFLAGS) `$(WX_CONFIG) --unicode=no --static --cppflags` -I$(top_srcdir)/include -Wall -g -c -DSWIGRUNTIME_DEBUG -o $@ wx_wrap.cxx
 
 $(WX_BIN): $(WX_DIR)/include/wx/config.h
 	cd wxWidgets && make

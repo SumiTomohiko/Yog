@@ -9,6 +9,7 @@ AC_CONFIG_HEADER([include/yog/config.h])
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
@@ -190,7 +191,7 @@ AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
 AC_CANONICAL_HOST
 case "${host}" in
 *-openbsd*)
-    CFLAGS_COMMON="${CFLAGS_COMMON} -pthread"
+    CFLAGS="${CFLAGS} -pthread"
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb -export-dynamic"
     TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
@@ -198,11 +199,11 @@ case "${host}" in
     EXT_SUBDIRS="concurrent"
     ;;
 *-mingw32)
-    CFLAGS_COMMON="${CFLAGS} -I/mingw32/include"
+    CFLAGS="${CFLAGS} -I/mingw32/include"
     LDFLAGS_COPYING="${LDFLAGS_COPYING} -Wl,--out-implib,yog-copying.lib"
     LDFLAGS_MINIYOG="${LDFLAGS_MINIYOG} -Wl,--out-implib,miniyog.lib"
     LDFLAGS_COMMON="${LDFLAGS_COMMON} --enable-runtime-pseudo-reloc"
-    LIBS="${LIBS} /mingw32/lib/libpthread.a -lwsock32"
+    LIBS="${LIBS} /lib/libpthread.dll.a -lwsock32"
     TEST_TARGETS="${TEST_TARGETS} test-copying"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT=".dll"
@@ -211,7 +212,7 @@ case "${host}" in
 *)
     case "${host}" in
     *-linux*)
-        CFLAGS_COMMON="${CFLAGS_COMMON} -D_XOPEN_SOURCE=500 -D_BSD_SOURCE"
+        CFLAGS="${CFLAGS} -D_XOPEN_SOURCE=500 -D_BSD_SOURCE"
         ;;
     esac
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -export-dynamic"
@@ -229,7 +230,7 @@ AC_SUBST(DIRS)
 AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
 AC_SUBST(PACKAGE_VERSION)
-AC_SUBST(CFLAGS_COMMON)
+AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS_COMMON)
 AC_SUBST(LDFLAGS_BDW)
 AC_SUBST(LDFLAGS_COPYING)

@@ -26,8 +26,6 @@ typedef struct YogString YogString;
 #define STRING_SIZE(s)      PTR_AS(YogString, s)->size
 #define STRING_ENCODING(s)  PTR_AS(YogString, s)->encoding
 
-#include "yog/encoding.h"
-
 /* PROTOTYPE_START */
 
 /**
