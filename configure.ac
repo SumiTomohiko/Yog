@@ -185,9 +185,7 @@ AM_PATH_PYTHON()
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile lib/Makefile doc/Makefile installer.nsi
-                 ext/concurrent/Makefile])
-
-EXT_SUBDIRS = ""
+                 ext/concurrent/Makefile ext/wx/Makefile])
 
 AC_CANONICAL_HOST
 case "${host}" in
@@ -246,6 +244,9 @@ AC_SUBST(EXT_SUBDIRS)
 
 AC_CONFIG_SUBDIRS([onig
                    gmp])
+(cd ext/wx/wxWidgets && ./configure --enable-debug_info --enable-debug_flag --enable-debug_gdb --enable-monolithic --disable-shared)
+(cd tools/swig && ./configure)
+
 AC_OUTPUT
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

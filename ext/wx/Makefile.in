@@ -1,0 +1,13 @@
+
+top_srcdir = @top_srcdir@
+CFLAGS = @CFLAGS@
+CC = @CC@
+SOEXT = @SOEXT@
+SO = $(top_srcdir)/ext/wx$(SOEXT)
+
+all: $(SO)
+
+$(SO): wx.c
+	$(CC) -o $@ -shared $(CFLAGS) -I$(top_srcdir)/include wx.c
+
+# vim: tabstop=8 shiftwidth=8 noexpandtab
