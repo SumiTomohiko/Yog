@@ -45,8 +45,10 @@ config.h
 config.h.in
 config.log
 config.status
+config.status.lineno
 config.status.log
 configure
+configure.lineno
 configure.log
 configure.scan
 core

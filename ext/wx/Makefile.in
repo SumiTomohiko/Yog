@@ -10,7 +10,8 @@ SWIG_DIR = $(top_srcdir)/tools/swig
 SWIG = $(SWIG_DIR)/swig
 WX_DIR = wxWidgets
 WX_CONFIG = $(WX_DIR)/wx-config
-WX_BIN = $(WX_DIR)/lib/lib`$(WX_CONFIG) --basename`-2.8.a
+WX_TYPE = @WX_TYPE@
+WX_BIN = $(WX_DIR)/lib/libwx_$(WX_TYPE)d-2.8.a
 IMPORT_LIB = @IMPORT_LIB@
 
 all: $(SO) $(YG)
