@@ -3,8 +3,9 @@ top_srcdir = @top_srcdir@
 CXXFLAGS = @CXXFLAGS@ @CFLAGS@
 CXX = @CXX@
 SOEXT = @SOEXT@
+OBJEXT = @OBJEXT@
 EXT_DIR = $(top_srcdir)/ext
-SO = $(EXT_DIR)/_wx$(SOEXT)
+SO = $(EXT_DIR)/_wx.$(SOEXT)
 YG = $(EXT_DIR)/wx.yg
 SWIG_DIR = $(top_srcdir)/tools/swig
 SWIG = $(SWIG_DIR)/swig
@@ -22,10 +23,10 @@ clean:
 $(YG): wx.yg
 	cp wx.yg $@
 
-$(SO): wx_wrap.o $(WX_BIN)
+$(SO): wx_wrap.$(OBJEXT) $(WX_BIN)
 	$(CXX) -o $@ -shared wx_wrap.o `$(WX_CONFIG) --libs` $(IMPORT_LIB)
 
-wx_wrap.o: wx_wrap.cxx
+wx_wrap.$(OBJEXT): wx_wrap.cxx
 	$(CXX) $(CXXFLAGS) `$(WX_CONFIG) --unicode=no --static --cppflags` -I$(top_srcdir)/include -Wall -g -c -DSWIGRUNTIME_DEBUG -o $@ wx_wrap.cxx
 
 $(WX_BIN): $(WX_DIR)/include/wx/config.h
@@ -38,6 +39,6 @@ $(SWIG):
 	cd $(SWIG_DIR) && make
 
 Makefile: Makefile.in
-	cd $(top_srcdir) && ./config.status ext/wx/$@
+	cd $(top_srcdir) && ./config.status ext/yaml/$@
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

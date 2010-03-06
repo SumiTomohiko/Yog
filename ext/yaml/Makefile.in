@@ -1,0 +1,29 @@
+
+top_srcdir = @top_srcdir@
+SOEXT = @SOEXT@
+OBJEXT = @OBJEXT@
+SO = $(top_srcdir)/ext/yaml.$(SOEXT)
+SYCK_DIR = syck
+SYCK_BIN = $(SYCK_DIR)/lib/libsyck.a
+CC = @CC@
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+all: $(SO)
+
+$(SO): yaml.$(OBJEXT) $(SYCK_BIN)
+	$(CC) -o $@ -shared $(LDFLAGS) yaml.$(OBJEXT) $(SYCK_BIN)
+
+$(SYCK_BIN):
+	cd $(SYCK_DIR) && make
+
+yaml.$(OBJEXT): yaml.c
+	$(CC) -o $@ -c $(CFLAGS) -Wall yaml.c
+
+Makefile: Makefile.in
+	cd $(top_srcdir) && ./config.status ext/yaml/$@
+
+clean:
+	rm -f $(SO) yaml.$(OBJEXT)
+
+# vim: tabstop=8 shiftwidth=8 noexpandtab

@@ -53,7 +53,6 @@ configure.log
 configure.scan
 core
 core.*
-doc/Makefile
 ext/Makefile.in
 ext/wx.yg
 ext/wx/wx.yg
@@ -66,6 +65,13 @@ ext/wx/wxWidgets/src/expat/expat_config.h
 ext/wx/wxWidgets/utils/wxrc/wxrc
 ext/wx/wxWidgets/wx-config
 ext/wx/wx_wrap.cxx
+ext/yaml/syck/lib/gram.c
+ext/yaml/syck/lib/gram.h
+ext/yaml/syck/lib/gram.output
+ext/yaml/syck/tests/test-basic
+ext/yaml/syck/tests/test-emit
+ext/yaml/syck/tests/test-parse
+ext/yaml/syck/tests/test-yts
 gmon.out
 gmp/config.m4
 gmp/demos/calc/calc-config.h

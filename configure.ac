@@ -186,7 +186,7 @@ AM_PATH_PYTHON()
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile lib/Makefile doc/Makefile installer.nsi
-                 ext/concurrent/Makefile ext/wx/Makefile])
+                 ext/concurrent/Makefile ext/wx/Makefile ext/yaml/Makefile])
 
 WX_TYPE="gtk2"
 
@@ -197,7 +197,7 @@ case "${host}" in
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb -export-dynamic"
     TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
-    SOEXT=".so"
+    SOEXT="so"
     EXT_SUBDIRS="concurrent"
     ;;
 *-mingw32)
@@ -208,7 +208,7 @@ case "${host}" in
     LIBS="${LIBS} /lib/libpthread.dll.a -lwsock32"
     TEST_TARGETS="${TEST_TARGETS} test-copying"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
-    SOEXT=".dll"
+    SOEXT="dll"
     IMPORT_LIB="\$(top_srcdir)/src/yog-copying.lib"
     WX_TYPE="msw"
     ;;
@@ -223,7 +223,7 @@ case "${host}" in
     DIRS="${DIRS} bdwgc"
     TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
-    SOEXT=".so"
+    SOEXT="so"
     EXT_SUBDIRS="concurrent"
     ;;
 esac
@@ -250,6 +250,7 @@ AC_SUBST(WX_TYPE)
 AC_CONFIG_SUBDIRS([onig
                    gmp])
 (cd ext/wx/wxWidgets && ./configure --enable-debug_info --enable-debug_flag --enable-debug_gdb --enable-monolithic --disable-shared)
+(cd ext/yaml/syck && ./configure)
 (cd tools/swig && ./configure)
 
 AC_OUTPUT
