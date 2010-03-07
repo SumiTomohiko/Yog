@@ -22,6 +22,8 @@ typedef struct YogFloat YogFloat;
  */
 /* src/float.c */
 YOG_EXPORT void YogFloat_define_classes(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogFloat_from_float(YogEnv*, double);
+YOG_EXPORT YogVal YogFloat_from_str(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogFloat_new(YogEnv*);
 YOG_EXPORT YogVal YogFloat_power(YogEnv*, YogVal, int_t);
 

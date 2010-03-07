@@ -567,9 +567,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                     PUSHBACK(c2);
 
                     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-                    double f = strtod(STRING_CSTR(buffer), NULL);
-                    YogVal val = YogFloat_new(env);
-                    PTR_AS(YogFloat, val)->val = f;
+                    YogVal val = YogFloat_from_str(env, buffer);
                     SET_STATE(LS_OP);
                     RETURN_VAL_TOKEN(TK_NUMBER, val);
                 }

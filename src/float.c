@@ -5,6 +5,7 @@
 #endif
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <gmp.h>
 #include "yog/array.h"
@@ -380,6 +381,33 @@ power(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 
     /* NOTREACHED */
     RETURN(env, YUNDEF);
+}
+
+YogVal
+YogFloat_from_float(YogEnv* env, double f)
+{
+    SAVE_LOCALS(env);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    val = YogFloat_new(env);
+    PTR_AS(YogFloat, val)->val = f;
+
+    RETURN(env, val);
+}
+
+YogVal
+YogFloat_from_str(YogEnv* env, YogVal s)
+{
+    SAVE_ARG(env, s);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    double f = strtod(STRING_CSTR(s), NULL);
+    val = YogFloat_new(env);
+    PTR_AS(YogFloat, val)->val = f;
+
+    RETURN(env, val);
 }
 
 void

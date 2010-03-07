@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Change YogString_from_range's end parameter
+desc: end must be a pointer to next of last charactor.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-03-06 17:34:09.944805 Z
+references: []
+
+id: 8f0fc422196f4e06d4f1ceb628528c4a915d023b
+log_events: 
+- - 2010-03-06 17:34:10.856049 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

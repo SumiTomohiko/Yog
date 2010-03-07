@@ -189,6 +189,7 @@ AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/concurrent/Makefile ext/wx/Makefile ext/yaml/Makefile])
 
 WX_TYPE="gtk2"
+CFLAGS="${CFLAGS} -Wall -I`pwd`/include -I`pwd`/onig"
 
 AC_CANONICAL_HOST
 case "${host}" in

@@ -19,6 +19,7 @@ typedef struct YogEncoding YogEncoding;
  */
 /* src/encoding.c */
 YOG_EXPORT YogVal YogEncoding_get_default(YogEnv*);
+YOG_EXPORT YogVal YogEncoding_get_utf8(YogEnv*);
 YOG_EXPORT char* YogEncoding_left_adjust_char_head(YogEnv*, YogVal, const char*, const char*);
 YOG_EXPORT int_t YogEncoding_mbc_size(YogEnv*, YogVal, const char*);
 YOG_EXPORT YogVal YogEncoding_new(YogEnv*, OnigEncoding);

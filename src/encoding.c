@@ -29,6 +29,12 @@ YogEncoding_get_default(YogEnv* env)
     RETURN(env, val);
 }
 
+YogVal
+YogEncoding_get_utf8(YogEnv* env)
+{
+    return YogEncoding_get_default(env);
+}
+
 int_t
 YogEncoding_mbc_size(YogEnv* env, YogVal enc, const char* p)
 {

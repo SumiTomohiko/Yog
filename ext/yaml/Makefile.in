@@ -6,7 +6,7 @@ SO = $(top_srcdir)/ext/yaml.$(SOEXT)
 SYCK_DIR = syck
 SYCK_BIN = $(SYCK_DIR)/lib/libsyck.a
 CC = @CC@
-CFLAGS = @CFLAGS@
+CFLAGS = @CFLAGS@ -I$(SYCK_DIR)/lib
 LDFLAGS = @LDFLAGS@
 
 all: $(SO)
@@ -18,7 +18,7 @@ $(SYCK_BIN):
 	cd $(SYCK_DIR) && make
 
 yaml.$(OBJEXT): yaml.c
-	$(CC) -o $@ -c $(CFLAGS) -Wall yaml.c
+	$(CC) -o $@ -c $(CFLAGS) yaml.c
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/yaml/$@
