@@ -41,4 +41,13 @@ EOF
 print(d[\"foo\"])
 """, "bar")
 
+    def test_dump_to_string0(self):
+        self._test("""
+import yaml
+enable_gc_stress()
+print(yaml.dump_to_string([42]))
+""", """---\x20
+- 42
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
