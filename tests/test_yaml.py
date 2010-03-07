@@ -19,4 +19,26 @@ print(yaml.load_string(<<EOF))
 EOF
 """, "[42, 26]")
 
+    def test_load_map0(self):
+        self._test("""
+import yaml
+enable_gc_stress()
+d = yaml.load_string(<<EOF)
+42: 26
+foo: bar
+EOF
+print(d[42])
+""", "26")
+
+    def test_load_map10(self):
+        self._test("""
+import yaml
+enable_gc_stress()
+d = yaml.load_string(<<EOF)
+42: 26
+foo: bar
+EOF
+print(d[\"foo\"])
+""", "bar")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
