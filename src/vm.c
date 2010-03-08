@@ -31,6 +31,7 @@
 #endif
 #include "yog/array.h"
 #include "yog/bignum.h"
+#include "yog/binary.h"
 #include "yog/bool.h"
 #include "yog/builtins.h"
 #include "yog/callable.h"
@@ -63,10 +64,7 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#define PAGE_SIZE       4096
-#define PTR2PAGE(p)     ((YogMarkSweepCompactPage*)((uintptr_t)p & ~(PAGE_SIZE - 1)))
-
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#if WINDOWS
 #   define SEPARATOR    '\\'
 #else
 #   define SEPARATOR    '/'
@@ -208,7 +206,7 @@ setup_symbol_tables(YogEnv* env, YogVM* vm)
 }
 
 static void
-setup_basic_class(YogEnv* env, YogVM* vm)
+setup_basic_classes(YogEnv* env, YogVM* vm)
 {
     SAVE_LOCALS(env);
     YogVal cObject = YUNDEF;
@@ -245,6 +243,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
 
     YogArray_define_classes(env, builtins);
     YogBignum_define_classes(env, builtins);
+    YogBinary_define_classes(env, builtins);
     YogBool_define_classes(env, builtins);
     YogClassMethod_define_classes(env, builtins);
     YogCode_define_classes(env, builtins);
@@ -309,7 +308,7 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
     PUSH_LOCAL(env, builtins);
 
     setup_symbol_tables(env, vm);
-    setup_basic_class(env, vm);
+    setup_basic_classes(env, vm);
     builtins = alloc_skelton_pkg(env, vm);
     setup_classes(env, vm, builtins);
     YogPackage_init(env, builtins, TYPE_PACKAGE);
@@ -394,6 +393,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     KEEP(cArray);
     KEEP(cBignum);
+    KEEP(cBinary);
     KEEP(cBool);
     KEEP(cClassMethod);
     KEEP(cCode);
@@ -424,6 +424,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eCoroutineError);
     KEEP(eEOFError);
     KEEP(eException);
+    KEEP(eIOError);
     KEEP(eImportError);
     KEEP(eIndexError);
     KEEP(eKeyError);
@@ -503,6 +504,7 @@ YogVM_init(YogVM* vm)
 
     INIT(cArray);
     INIT(cBignum);
+    INIT(cBinary);
     INIT(cBool);
     INIT(cClassMethod);
     INIT(cCode);
@@ -533,6 +535,7 @@ YogVM_init(YogVM* vm)
     INIT(eCoroutineError);
     INIT(eEOFError);
     INIT(eException);
+    INIT(eIOError);
     INIT(eImportError);
     INIT(eIndexError);
     INIT(eKeyError);

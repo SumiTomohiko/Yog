@@ -7,7 +7,7 @@ insts2bin(YogEnv* env, YogVal inst)
     SAVE_ARG(env, inst);
 
 #define INIT_BIN_SIZE   (0)
-    YogVal code = YogBinary_new(env, INIT_BIN_SIZE);
+    YogVal code = YogBinary_of_size(env, INIT_BIN_SIZE);
 #undef INIT_BIN_SIZE
     PUSH_LOCAL(env, code);
 

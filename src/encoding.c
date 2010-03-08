@@ -29,10 +29,32 @@ YogEncoding_get_default(YogEnv* env)
     RETURN(env, val);
 }
 
+static YogVal
+get_encoding_of_name(YogEnv* env, const char* name)
+{
+    SAVE_LOCALS(env);
+    YogVal enc = YUNDEF;
+    PUSH_LOCAL(env, enc);
+
+    YogVM* vm = env->vm;
+    ID id = YogVM_intern(env, vm, name);
+    if (!YogTable_lookup(env, vm->encodings, ID2VAL(id), &enc)) {
+        YogError_raise_ValueError(env, "encoding \"%s\" not found", name);
+    }
+
+    RETURN(env, enc);
+}
+
+YogVal
+YogEncoding_get_ascii(YogEnv* env)
+{
+    return get_encoding_of_name(env, "ascii");
+}
+
 YogVal
 YogEncoding_get_utf8(YogEnv* env)
 {
-    return YogEncoding_get_default(env);
+    return get_encoding_of_name(env, "utf-8");
 }
 
 int_t

@@ -31,6 +31,7 @@ struct YogVM {
 
     YogVal cArray;
     YogVal cBignum;
+    YogVal cBinary;
     YogVal cBool;
     YogVal cClass;
     YogVal cClassMethod;
@@ -61,6 +62,7 @@ struct YogVM {
     YogVal eCoroutineError;
     YogVal eEOFError;
     YogVal eException;
+    YogVal eIOError;
     YogVal eImportError;
     YogVal eIndexError;
     YogVal eKeyError;

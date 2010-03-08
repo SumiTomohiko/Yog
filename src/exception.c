@@ -560,6 +560,7 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
     EXCEPTION_NEW(eAttributeError, "AttributeError");
     EXCEPTION_NEW(eCoroutineError, "CoroutineError");
     EXCEPTION_NEW(eEOFError, "EOFError");
+    EXCEPTION_NEW(eIOError, "IOError");
     EXCEPTION_NEW(eImportError, "ImportError");
     EXCEPTION_NEW(eIndexError, "IndexError");
     EXCEPTION_NEW(eKeyError, "KeyError");

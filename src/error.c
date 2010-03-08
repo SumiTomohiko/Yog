@@ -189,6 +189,12 @@ YogError_raise_IndexError(YogEnv* env, const char* fmt, ...)
 }
 
 void
+YogError_raise_IOError(YogEnv* env, const char* fmt, ...)
+{
+    RAISE_FORMAT(env, eIOError, fmt);
+}
+
+void
 YogError_raise_SyntaxError(YogEnv* env, const char* fmt, ...)
 {
     RAISE_FORMAT(env, eSyntaxError, fmt);

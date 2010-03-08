@@ -269,7 +269,10 @@ YogString_from_str(YogEnv* env, const char* s)
     SAVE_LOCALS(env);
     YogVal str = YUNDEF;
     YogVal body = YUNDEF;
-    PUSH_LOCALS2(env, str, body);
+    YogVal enc = YUNDEF;
+    PUSH_LOCALS3(env, str, body, enc);
+
+    enc = YogEncoding_get_ascii(env);
 
     size_t len = strlen(s);
     char* buffer = (char*)YogSysdeps_alloca(sizeof(char) * (len + 1));
@@ -277,7 +280,7 @@ YogString_from_str(YogEnv* env, const char* s)
     body = YogCharArray_new_str(env, buffer);
 
     str = alloc(env, env->vm->cString);
-    PTR_AS(YogString, str)->encoding = YNIL;
+    PTR_AS(YogString, str)->encoding = enc;
     PTR_AS(YogString, str)->size = len + 1;
     PTR_AS(YogString, str)->body = body;
 
