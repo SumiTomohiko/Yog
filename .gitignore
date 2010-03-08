@@ -72,6 +72,10 @@ ext/yaml/syck/tests/test-basic
 ext/yaml/syck/tests/test-emit
 ext/yaml/syck/tests/test-parse
 ext/yaml/syck/tests/test-yts
+ext/zlib/Makefile.in
+ext/zlib/zlib/example
+ext/zlib/zlib/minigzip
+ext/zlib/zlib/zconf.h
 gmon.out
 gmp/config.m4
 gmp/demos/calc/calc-config.h

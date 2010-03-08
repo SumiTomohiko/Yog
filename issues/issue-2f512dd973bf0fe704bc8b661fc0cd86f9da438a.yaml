@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Handle recursive data structures in yaml.dump_to_string
+desc: |-
+  import yaml
+  a = []
+  a.push(a)
+  yaml.dump_to_string(a)
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-03-07 15:37:51.960308 Z
+references: []
+
+id: 2f512dd973bf0fe704bc8b661fc0cd86f9da438a
+log_events: 
+- - 2010-03-07 15:37:52.834834 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
