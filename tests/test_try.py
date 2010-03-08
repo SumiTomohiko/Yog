@@ -148,7 +148,7 @@ end""")
     def test_longjmp_from_native_function0(self):
         self._test("""
 # http://bitbucket.org/SumiTomohiko/yog/issue/2/
-File.open("foo.txt", "r") do [f]
+File.open("gods.txt", "r") do [f]
   try
     raise_exception(Exception.new())
   except

@@ -13,7 +13,7 @@ class TestFile(TestCase):
             fp.close()
 
     def test_open0(self):
-        filename = "foo.txt"
+        filename = "gods.txt"
         foo = self.read_file(filename)
 
         self._test("""
@@ -35,7 +35,7 @@ File.open(\"foo\", \"r\")
 """, stderr=test_stderr)
 
     def test_open20(self):
-        filename = "foo.txt"
+        filename = "gods.txt"
         foo = self.read_file(filename)
 
         self._test("""
@@ -45,7 +45,7 @@ end
 """ % { "filename": filename }, stdout=foo)
 
     def test_read0(self):
-        filename = "foo.txt"
+        filename = "gods.txt"
         foo = self.read_file(filename)
 
         self._test("""
@@ -55,7 +55,7 @@ file.close()
 """ % { "filename": filename }, stdout=foo)
 
     def test_readline0(self):
-        filename = "foo.txt"
+        filename = "gods.txt"
 
         fp = open(filename)
         try:
@@ -70,7 +70,7 @@ end
 """ % { "filename": filename }, stdout=line)
 
     def test_readline10(self):
-        filename = "foo.txt"
+        filename = "gods.txt"
         self._test("""
 File.open("%(filename)s", "r") do [f]
   f.readline()
