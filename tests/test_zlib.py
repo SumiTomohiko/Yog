@@ -23,10 +23,13 @@ print(zlib.compress(\"foo\"))
 """, "".join(data))
 
     def test_decompress_file0(self):
+        data = []
+        for c in "foo":
+            data.append("\\x%02x" % (ord(c), ))
         self._test("""
 import zlib
 enable_gc_stress()
 print(zlib.decompress(zlib.compress(\"foo\")))
-""", "foo")
+""", "".join(data))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

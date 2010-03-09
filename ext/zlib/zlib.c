@@ -48,13 +48,6 @@ Package_new(YogEnv* env)
     RETURN(env, pkg);
 }
 
-static YogVal
-decompress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    RETURN(env, YNIL);
-}
-
 static void
 raise_ZlibError(YogEnv* env, YogVal pkg, const char* msg)
 {
@@ -68,12 +61,69 @@ raise_ZlibError(YogEnv* env, YogVal pkg, const char* msg)
     }
 
     eZlibError = PTR_AS(Package, pkg)->eZlibError;
-    s = YogString_from_str(env, msg);
-    e = YogEval_call_method1(env, eZlibError, "new", s);
+    if (msg != NULL) {
+        s = YogString_from_str(env, msg);
+        e = YogEval_call_method1(env, eZlibError, "new", s);
+    }
+    else {
+        e = YogEval_call_method0(env, eZlibError, "new");
+    }
     YogError_raise(env, e);
     /* NOTREACHED */
 
     RETURN_VOID(env);
+}
+
+static YogVal
+decompress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal bytes = YUNDEF;
+    YogVal bin = YUNDEF;
+    PUSH_LOCALS2(env, bytes, bin);
+    YogCArg params[] = { { "bytes", &bytes }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "decompress", params, args, kw);
+    if (!IS_PTR(bytes) || (BASIC_OBJ_TYPE(bytes) != TYPE_BINARY)) {
+        YogError_raise_TypeError(env, "bytes must be Binary");
+    }
+
+    z_stream z;
+    z.zalloc = Z_NULL;
+    z.zfree = Z_NULL;
+    z.opaque = Z_NULL;
+    z.next_in = Z_NULL;
+    z.avail_in = 0;
+    if (inflateInit(&z) != Z_OK) {
+        raise_ZlibError(env, pkg, z.msg);
+    }
+
+    bin = YogBinary_new(env);
+    z.avail_in = YogBinary_size(env, bytes);
+    while (0 < z.avail_in) {
+#define BUF_SIZE    1024
+        char buf[BUF_SIZE];
+        uint_t size = YogBinary_size(env, bytes);
+        z.next_in = (Bytef*)&BINARY_CSTR(bytes)[size - z.avail_in];
+        z.next_out = (Bytef*)buf;
+        z.avail_out = BUF_SIZE;
+        int retval = inflate(&z, Z_NO_FLUSH);
+        if (retval == Z_STREAM_END) {
+            YogBinary_add(env, bin, buf, BUF_SIZE - z.avail_out);
+            break;
+        }
+        if (retval != Z_OK) {
+            inflateEnd(&z);
+            raise_ZlibError(env, pkg, z.msg);
+        }
+        YogBinary_add(env, bin, buf, BUF_SIZE - z.avail_out);
+#undef BUF_SIZE
+    }
+
+    if (inflateEnd(&z) != Z_OK) {
+        raise_ZlibError(env, pkg, z.msg);
+    }
+
+    RETURN(env, bin);
 }
 
 static YogVal
@@ -99,17 +149,19 @@ compress_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     }
     z.avail_in = YogString_size(env, s);
 #define BUF_SIZE    1024
-    char out_buf[BUF_SIZE];
     while (0 < z.avail_in) {
+        char out_buf[BUF_SIZE];
         z.next_in = (Bytef*)STRING_CSTR(s);
         z.next_out = (Bytef*)out_buf;
         z.avail_out = BUF_SIZE;
         if (deflate(&z, Z_NO_FLUSH) != Z_OK) {
+            deflateEnd(&z);
             raise_ZlibError(env, pkg, z.msg);
         }
         YogBinary_add(env, bin, out_buf, BUF_SIZE - z.avail_out);
     }
     while (1) {
+        char out_buf[BUF_SIZE];
         z.next_out = (Bytef*)out_buf;
         z.avail_out = BUF_SIZE;
         int retval = deflate(&z, Z_FINISH);
@@ -118,9 +170,14 @@ compress_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
             break;
         }
         if (retval != Z_OK) {
+            deflateEnd(&z);
             raise_ZlibError(env, pkg, z.msg);
         }
         YogBinary_add(env, bin, out_buf, BUF_SIZE - z.avail_out);
+    }
+
+    if (deflateEnd(&z) != Z_OK) {
+        raise_ZlibError(env, pkg, z.msg);
     }
 
     RETURN(env, bin);
