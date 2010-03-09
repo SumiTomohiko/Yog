@@ -187,7 +187,7 @@ AM_PATH_PYTHON()
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile lib/Makefile doc/Makefile installer.nsi
                  ext/concurrent/Makefile ext/wx/Makefile ext/yaml/Makefile
-                 ext/zlib/Makefile])
+                 ext/zlib/Makefile ext/zip/Makefile])
 
 WX_TYPE="gtk2"
 CFLAGS="${CFLAGS} -Wall -I`pwd`/include -I`pwd`/onig"
@@ -249,7 +249,7 @@ AC_SUBST(IMPORT_LIB)
 AC_SUBST(EXT_SUBDIRS)
 AC_SUBST(WX_TYPE)
 
-AC_CONFIG_SUBDIRS([onig gmp ext/yaml/syck tools/swig])
+AC_CONFIG_SUBDIRS([onig gmp ext/yaml/syck tools/swig ext/zip/libzip])
 (cd ext/wx/wxWidgets && ./configure --enable-debug_info --enable-debug_flag --enable-debug_gdb --enable-monolithic --disable-shared)
 (cd ext/zlib/zlib && ./configure)
 
