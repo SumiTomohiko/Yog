@@ -175,6 +175,7 @@ compress_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         }
         YogBinary_add(env, bin, out_buf, BUF_SIZE - z.avail_out);
     }
+#undef BUF_SIZE
 
     if (deflateEnd(&z) != Z_OK) {
         raise_ZlibError(env, pkg, z.msg);
