@@ -45,7 +45,7 @@ zip.compress(\"%(zipfile)s\", %(targets)s)
         self.do_compress_test("gods.txt")
 
     def test_compress10(self):
-        self.do_compress_test(join("samples", "favorites"))
+        self.do_compress_test(join("samples", "poem"))
 
     def do_decompress_test(self, *args):
         zip = "test.zip"
@@ -71,6 +71,6 @@ zip.decompress(\"%(zip)s\", \"%(tempdir)s\")
         self.do_decompress_test("gods.txt")
 
     def test_decompress10(self):
-        self.do_decompress_test(join("samples", "favorites"))
+        self.do_decompress_test(join("samples", "poem"))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
