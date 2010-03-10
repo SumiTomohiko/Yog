@@ -1,0 +1,21 @@
+
+top_srcdir = @top_srcdir@
+OBJEXT = @OBJEXT@
+SOEXT = @SOEXT@
+SO = $(top_srcdir)/ext/socket.$(SOEXT)
+CC = @CC@
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+all: $(SO)
+
+$(SO): socket.$(OBJEXT)
+	$(CC) -o $@ -shared $(LDFLAGS) socket.$(OBJEXT)
+
+socket.$(OBJEXT): socket.c
+	$(CC) -o $@ -c $(CFLAGS) socket.c
+
+Makefile: Makefile.in
+	cd $(top_srcdir) && ./config.status ext/socket/$@
+
+# vim: tabstop=8 shiftwidth=8 noexpandtab
