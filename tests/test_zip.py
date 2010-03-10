@@ -48,8 +48,8 @@ zip.compress(\"%(zipfile)s\", %(targets)s)
         self.do_compress_test(join("samples", "favorites"))
 
     def do_decompress_test(self, *args):
-        sample = "sample.zip"
-        zf = ZipFile(sample, "w", ZIP_DEFLATED)
+        zip = "test.zip"
+        zf = ZipFile(zip, "w", ZIP_DEFLATED)
         try:
             for file in args:
                 zf.write(file)
@@ -60,7 +60,7 @@ zip.compress(\"%(zipfile)s\", %(targets)s)
             self._test("""
 import zip
 enable_gc_stress()
-zip.decompress(\"%(sample)s\", \"%(tempdir)s\")
+zip.decompress(\"%(zip)s\", \"%(tempdir)s\")
 """ % locals())
             for file in args:
                 assert cmp(file, join(tempdir, file))

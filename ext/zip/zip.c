@@ -1,5 +1,6 @@
 #include "yog/config.h"
 #include <errno.h>
+#include <string.h>
 #include "zip.h"
 #include "yog/array.h"
 #include "yog/error.h"
@@ -7,6 +8,7 @@
 #include "yog/get_args.h"
 #include "yog/package.h"
 #include "yog/string.h"
+#include "yog/sysdeps.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -71,6 +73,32 @@ raise_ZipError(YogEnv* env, YogVal pkg, const char* msg)
     RETURN_VOID(env);
 }
 
+static struct zip*
+open_zip(YogEnv* env, YogVal pkg, YogVal path, int flags)
+{
+    SAVE_ARGS2(env, pkg, path);
+
+    int error;
+    struct zip* archive = zip_open(STRING_CSTR(path), flags, &error);
+    if (archive == NULL) {
+        char buf[256];
+        zip_error_to_str(buf, array_sizeof(buf), error, errno);
+        raise_ZipError(env, pkg, buf);
+    }
+
+    RETURN(env, archive);
+}
+
+static void
+close_zip(YogEnv* env, YogVal pkg, struct zip* archive)
+{
+    SAVE_ARG(env, pkg);
+    if (zip_close(archive) != 0) {
+        raise_ZipError(env, pkg, zip_strerror(archive));
+    }
+    RETURN_VOID(env);
+}
+
 static YogVal
 compress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -85,13 +113,7 @@ compress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
         YogError_raise_TypeError(env, "path must be String");
     }
 
-    int error;
-    struct zip* archive = zip_open(STRING_CSTR(path), ZIP_CREATE, &error);
-    if (archive == NULL) {
-        char buf[256];
-        zip_error_to_str(buf, array_sizeof(buf), error, errno);
-        raise_ZipError(env, pkg, buf);
-    }
+    struct zip* archive = open_zip(env, pkg, path, ZIP_CREATE);
     int n = zip_get_num_files(archive);
     int i;
     for (i = 0; i < n; i++) {
@@ -115,17 +137,130 @@ compress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
             raise_ZipError(env, pkg, zip_strerror(archive));
         }
     }
-    if (zip_close(archive) != 0) {
-        raise_ZipError(env, pkg, zip_strerror(archive));
-    }
+    close_zip(env, pkg, archive);
 
     RETURN(env, YNIL);
+}
+
+static void
+dirname(char* path)
+{
+#if WINDOWS
+#   define SEPARATOR    '\\'
+#else
+#   define SEPARATOR    '/'
+#endif
+    char* pc = strrchr(path, SEPARATOR);
+    if (pc == NULL) {
+        *path = '\0';
+        return;
+    }
+    *pc = '\0';
+#undef SEPARATOR
+}
+
+static void
+make_dirs(YogEnv* env, const char* path)
+{
+    /**
+     * TODO: Here is duplicated with builtins.make_dirs. To resolve this,
+     * + make classes to represent struct zip etc.
+     * + be open above classes to Yog script
+     * + implement creating/extracting zips in Yog
+     */
+    char* dir = (char*)YogSysdeps_alloca(strlen(path) + 1);
+    strcpy(dir, path);
+    dirname(dir);
+    if (dir[0] != '\0') {
+        make_dirs(env, dir);
+    }
+    YogSysdeps_mkdir(path);
 }
 
 static YogVal
 decompress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal zip = YUNDEF;
+    YogVal dest = YNIL;
+    YogVal s = YUNDEF;
+    PUSH_LOCALS3(env, zip, dest, s);
+    YogCArg params[] = {
+        { "zip", &zip },
+        { "|", NULL },
+        { "dest", &dest },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "decompress", params, args, kw);
+    if (!IS_PTR(zip) || (BASIC_OBJ_TYPE(zip) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "zip must be String");
+    }
+    if (!IS_NIL(dest) && (!IS_PTR(dest) || (BASIC_OBJ_TYPE(dest) != TYPE_STRING))) {
+        YogError_raise_TypeError(env, "dest must be nil or String");
+    }
+
+    struct zip* archive = open_zip(env, pkg, zip, 0);
+    int n = zip_get_num_files(archive);
+    int i;
+    for (i = 0; i < n; i++) {
+        const char* name = zip_get_name(archive, i, 0);
+        if (name == NULL) {
+            close_zip(env, pkg, archive);
+            raise_ZipError(env, pkg, zip_strerror(archive));
+        }
+        char* path = (char*)YogSysdeps_alloca(strlen(STRING_CSTR(dest)) + strlen(name) + 2);
+        strcpy(path, STRING_CSTR(dest));
+#if WINDOWS
+#   define SEP  "\\"
+#else
+#   define SEP  "/"
+#endif
+        strcat(path, SEP);
+#undef SEP
+        strcat(path, name);
+        char* dir = (char*)YogSysdeps_alloca(strlen(path) + 1);
+        strcpy(dir, path);
+        dirname(dir);
+        make_dirs(env, dir);
+
+        struct zip_file* file = zip_fopen_index(archive, i, 0);
+        if (file == NULL) {
+            close_zip(env, pkg, archive);
+            raise_ZipError(env, pkg, zip_strerror(archive));
+        }
+        FILE* fp = fopen(path, "wb");
+        if (fp == NULL) {
+            zip_fclose(file);
+            close_zip(env, pkg, archive);
+            s = YogString_from_str(env, path);
+            YogError_raise_sys_err(env, errno, s);
+        }
+        while (1) {
+            char buf[1024];
+            int len = zip_fread(file, buf, array_sizeof(buf));
+            if (len < 0) {
+                zip_fclose(file);
+                close_zip(env, pkg, archive);
+                raise_ZipError(env, pkg, zip_strerror(archive));
+            }
+            else if (len == 0) {
+                break;
+            }
+            fwrite(buf, sizeof(char), len, fp);
+            if (ferror(fp)) {
+                zip_fclose(file);
+                close_zip(env, pkg, archive);
+                YogError_raise_IOError(env, name);
+            }
+        }
+
+        fclose(fp);
+        if (zip_fclose(file) != 0) {
+            close_zip(env, pkg, archive);
+            raise_ZipError(env, pkg, zip_strerror(archive));
+        }
+    }
+    close_zip(env, pkg, archive);
+
     RETURN(env, YNIL);
 }
 
