@@ -8,8 +8,8 @@ class TestSocket(TestCase):
     port = 1092
 
     def do_test(self, callback):
-        port = self.port
-        self.port += 1
+        port = self.__class__.port
+        self.__class__.port += 1
 
         proc = Popen(["python", "echo.py", str(port)])
         try:
