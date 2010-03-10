@@ -47,11 +47,6 @@ class TestCase(object):
         finally:
             stdout.close()
 
-    def terminate_process(self, pid):
-        from signal import SIGKILL
-        from os import kill
-        kill(pid, SIGKILL)
-
     def format_time(self, sec):
         return strftime("%x %X", localtime(sec))
 
@@ -71,7 +66,7 @@ class TestCase(object):
                 break
             now = time()
             if timeout < now - time_begin:
-                self.terminate_process(proc.pid)
+                proc.kill()
                 assert False, "time is out (starting at %s, now is %s)" % (self.format_time(time_begin), self.format_time(now))
 
     def do(self, stdout, stderr, stdin, status, args, timeout, encoding=None):
