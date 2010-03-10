@@ -3,18 +3,23 @@ top_srcdir = @top_srcdir@
 OBJEXT = @OBJEXT@
 SOEXT = @SOEXT@
 SO = $(top_srcdir)/ext/zip.$(SOEXT)
-CC = @CC@
-LDFLAGS = @LDFLAGS@
-CFLAGS = @CFLAGS@
 LIBZIP_DIR = libzip
 LIBZIP_BIN = $(LIBZIP_DIR)/lib/.libs/libzip.a
+ZLIB_DIR = ../zlib/zlib
+ZLIB_BIN = $(ZLIB_DIR)/libz.a
+CC = @CC@
+LDFLAGS = @LDFLAGS@
+CFLAGS = @CFLAGS@ -I$(LIBZIP_DIR)/lib
 
 all: $(SO)
 
-$(SO): zip.$(OBJEXT) $(LIBZIP_BIN)
-	$(CC) -o $@ -shared $(LDFLAGS) zip.$(OBJEXT) $(LIBZIP_BIN)
+$(SO): zip.$(OBJEXT) $(LIBZIP_BIN) $(ZLIB_BIN) Makefile
+	$(CC) -o $@ -shared $(LDFLAGS) zip.$(OBJEXT) $(LIBZIP_BIN) $(ZLIB_BIN)
 
-zip.$(OBJEXT): zip.c
+$(ZLIB_BIN):
+	cd $(ZLIB_DIR) && make
+
+zip.$(OBJEXT): zip.c Makefile
 	$(CC) -o $@ -c $(CFLAGS) zip.c
 
 $(LIBZIP_BIN):

@@ -249,9 +249,10 @@ AC_SUBST(IMPORT_LIB)
 AC_SUBST(EXT_SUBDIRS)
 AC_SUBST(WX_TYPE)
 
-AC_CONFIG_SUBDIRS([onig gmp ext/yaml/syck tools/swig ext/zip/libzip])
+AC_CONFIG_SUBDIRS([onig gmp ext/yaml/syck tools/swig])
 (cd ext/wx/wxWidgets && ./configure --enable-debug_info --enable-debug_flag --enable-debug_gdb --enable-monolithic --disable-shared)
 (cd ext/zlib/zlib && ./configure)
+(cd ext/zip/libzip && CFLAGS="`pwd`/ext/zlib/zlib" ./configure)
 
 AC_OUTPUT
 
