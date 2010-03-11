@@ -53,7 +53,7 @@ public:
         YOG_ASSERT(env, swig_type != NULL, "swig_type_info (%s) not found", swig_name.mb_str());
         YogIndirectPointer* klass = (YogIndirectPointer*)swig_type->clientdata;
         proxy = YogEval_call_method(env, klass->val, "new", 0, NULL);
-        shadow = Shadow_new(env, this->pkg->val, &event, swig_type, 0);
+        shadow = Shadow_new(env, self->pkg->val, &event, swig_type, 0);
         YogObj_set_attr(env, proxy, "this", shadow);
         args[0] = proxy;
         YogCallable_call(env, self->func->val, array_sizeof(args), args);
