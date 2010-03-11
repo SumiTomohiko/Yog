@@ -11,7 +11,7 @@
 /* src/get_args.c */
 
 /* PROTOTYPE_END */
-void YogGetArgs_parse_args(YogEnv*, const char*, YogCArg*, YogVal, YogVal);
+YOG_EXPORT void YogGetArgs_parse_args(YogEnv*, const char*, YogCArg*, YogVal, YogVal);
 
 #endif
 /**
