@@ -25,7 +25,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([inttypes.h limits.h stddef.h stdint.h stdlib.h string.h \
                   strings.h sys/time.h unistd.h malloc.h getopt.h float.h \
                   dlfcn.h sys/mman.h windows.h alloca.h winerror.h arpa/inet.h \
-                  netdb.h sys/socket.h])
+                  netdb.h sys/socket.h winsock2.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -208,7 +208,7 @@ case "${host}" in
     LDFLAGS_COPYING="${LDFLAGS_COPYING} -Wl,--out-implib,yog-copying.lib"
     LDFLAGS_MINIYOG="${LDFLAGS_MINIYOG} -Wl,--out-implib,miniyog.lib"
     LDFLAGS_COMMON="${LDFLAGS_COMMON} --enable-runtime-pseudo-reloc"
-    LIBS="${LIBS} /lib/libpthread.dll.a -lwsock32"
+    LIBS="${LIBS} /lib/libpthread.dll.a -lws2_32"
     TEST_TARGETS="${TEST_TARGETS} test-copying"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT="dll"

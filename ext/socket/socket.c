@@ -12,6 +12,9 @@
 #endif
 #include <sys/types.h>
 #include <unistd.h>
+#if defined(HAVE_WINSOCK2_H)
+#   include <winsock2.h>
+#endif
 #include "yog/binary.h"
 #include "yog/class.h"
 #include "yog/error.h"
