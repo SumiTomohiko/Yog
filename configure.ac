@@ -167,7 +167,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit gettimeofday isascii memchr memmove memset munmap \
                 strchr strrchr strstr strtol dlopen isnan alloca vsnprintf \
                 pthread_rwlockattr_setkind_np pthread_rwlockattr_init \
-                pthread_rwlockattr_destroy snprintf _isnan mkdir])
+                pthread_rwlockattr_destroy snprintf _isnan mkdir getaddrinfo])
 
 AC_ARG_ENABLE(profile,
               AC_HELP_STRING([--enable-profile],

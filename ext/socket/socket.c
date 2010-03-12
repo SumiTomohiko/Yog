@@ -108,6 +108,8 @@ init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         YogError_raise_TypeError(env, "port must be String, not %C", port);
     }
 
+    int sock;
+#if defined(HAVE_GETADDRINFO)
     char port_s[6];
     YogSysdeps_snprintf(port_s, array_sizeof(port_s), "%u", VAL2INT(port));
     struct addrinfo hints;
@@ -120,7 +122,6 @@ init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         YogError_raise_IOError(env, gai_strerror(err));
     }
 
-    int sock;
     struct addrinfo* pa;
     for (pa = res; pa != NULL; pa = pa->ai_next) {
         sock = socket(pa->ai_family, pa->ai_socktype, pa->ai_protocol);
@@ -137,6 +138,7 @@ init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         s = YogSprintf_sprintf(env, "%S:%u", host, VAL2INT(port));
         YogError_raise_sys_err(env, errno, s);
     }
+#endif
     PTR_AS(Socket, self)->sock = sock;
 
     RETURN(env, self);
