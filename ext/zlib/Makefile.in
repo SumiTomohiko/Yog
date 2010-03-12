@@ -1,0 +1,26 @@
+
+top_srcdir = @top_srcdir@
+ZLIB_DIR = zlib
+ZLIB_BIN = $(ZLIB_DIR)/libz.a
+SOEXT = @SOEXT@
+OBJEXT = @OBJEXT@
+SO = $(top_srcdir)/ext/zlib.$(SOEXT)
+CC = @CC@
+LDFLAGS = @LDFLAGS@
+CFLAGS = @CFLAGS@ -I$(ZLIB_DIR)
+
+all: $(SO)
+
+$(SO): zlib.$(OBJEXT) $(ZLIB_BIN)
+	$(CC) -o $@ -shared $(LDFLAGS) zlib.$(OBJEXT) $(ZLIB_BIN)
+
+$(ZLIB_BIN):
+	cd $(ZLIB_DIR) && $(MAKE)
+
+zlib.$(OBJEXT): zlib.c
+	$(CC) -o $@ $(CFLAGS) -c zlib.c
+
+Makefile: Makefile.in
+	cd $(top_srcdir) && ./config.status ext/zlib/$@
+
+# vim: tabstop=8 shiftwidth=8 noexpandtab

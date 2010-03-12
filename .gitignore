@@ -90,7 +90,6 @@ ext/zip/libzip/regress/set_comment_revert
 ext/zip/libzip/src/zipcmp
 ext/zip/libzip/src/zipmerge
 ext/zip/libzip/src/ziptorrent
-ext/zlib/Makefile.in
 ext/zlib/zlib/example
 ext/zlib/zlib/minigzip
 ext/zlib/zlib/zconf.h
