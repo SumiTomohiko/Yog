@@ -11,6 +11,8 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
+#include <strings.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #if defined(HAVE_WINDOWS_H)
@@ -41,6 +43,11 @@
 #   define YogSysdeps_mkdir(path)   (mkdir(path, 0755) == 0)
 #else
 #   define YogSysdeps_mkdir(path)   (CreateDirectory(path, NULL) != 0)
+#endif
+#if defined(HAVE_BZERO)
+#   define YogSysdeps_bzero(s, n)   bzero(s, n)
+#else
+#   define YogSysdeps_bzero(s, n)   memset(s, 0, n)
 #endif
 
 #endif

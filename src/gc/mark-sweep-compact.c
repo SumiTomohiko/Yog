@@ -1,18 +1,19 @@
+#include "yog/config.h"
 #include <inttypes.h>
 #include <signal.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <sys/mman.h>
 #include "yog/error.h"
-#include "yog/vm.h"
-#include "yog/yog.h"
 #include "yog/gc.h"
 #include "yog/gc/mark-sweep-compact.h"
 #if defined(GC_GENERATIONAL)
 #   include "yog/gc/generational.h"
 #endif
+#include "yog/sysdeps.h"
+#include "yog/vm.h"
+#include "yog/yog.h"
 
 #define BITS_PER_BYTE   8
 
@@ -609,7 +610,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 #if defined(GC_GENERATIONAL)
                 size_t flags_size = (num_pages + BITS_PER_BYTE - 1) & ~(BITS_PER_BYTE - 1);
                 chunk->grey_page_flags = malloc(flags_size);
-                bzero(chunk->grey_page_flags, flags_size);
+                YogSysdeps_bzero(chunk->grey_page_flags, flags_size);
 #endif
 
                 chunk->next = chunk->all_chunks_next = NULL;
