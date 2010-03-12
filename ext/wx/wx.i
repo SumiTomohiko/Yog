@@ -179,6 +179,27 @@ public:
     wxFrame(wxWindow *parent, wxWindowID id, const wxString& title);
 };
 
+class wxControlBase: public wxWindow
+{
+};
+
+class wxControl: public wxControlBase
+{
+};
+
+class wxTextCtrlBase: public wxControl
+{
+public:
+    virtual int GetLineLength(long lineNo) const = 0;
+};
+
+class wxTextCtrl: public wxTextCtrlBase
+{
+public:
+    wxTextCtrl(wxWindow* parent, wxWindowID id);
+    virtual int GetLineLength(long lineNo) const;
+};
+
 class wxAppConsole: public wxEvtHandler
 {
 public:
@@ -200,7 +221,7 @@ public:
 class wxApp: public wxAppBase
 {
     %feature("yogappend") wxApp "\n\
-    _wx.wxEntryStart(ARGV)\n \
+    _wx.wxEntryStart(ARGV)\n\
     try\n\
       handler = self.get_attr(\"OnPreInit\")\n\
     except AttributeError\n\
