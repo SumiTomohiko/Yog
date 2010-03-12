@@ -24,7 +24,8 @@ AC_CHECK_LIB([dl], [dlopen])
 AC_HEADER_STDC
 AC_CHECK_HEADERS([inttypes.h limits.h stddef.h stdint.h stdlib.h string.h \
                   strings.h sys/time.h unistd.h malloc.h getopt.h float.h \
-                  dlfcn.h sys/mman.h windows.h alloca.h winerror.h])
+                  dlfcn.h sys/mman.h windows.h alloca.h winerror.h arpa/inet.h \
+                  netdb.h sys/socket.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

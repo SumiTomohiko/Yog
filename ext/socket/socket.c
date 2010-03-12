@@ -1,9 +1,15 @@
 #include "yog/config.h"
-#include <arpa/inet.h>
+#if defined(HAVE_ARPA_INET_H)
+#   include <arpa/inet.h>
+#endif
 #include <errno.h>
-#include <netdb.h>
+#if defined(HAVE_NETDB_H)
+#   include <netdb.h>
+#endif
 #include <strings.h>
-#include <sys/socket.h>
+#if defined(HAVE_SYS_SOCKET_H)
+#   include <sys/socket.h>
+#endif
 #include <sys/types.h>
 #include <unistd.h>
 #include "yog/binary.h"
