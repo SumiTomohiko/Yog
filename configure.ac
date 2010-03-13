@@ -253,8 +253,23 @@ AC_SUBST(WX_TYPE)
 
 AC_CONFIG_SUBDIRS([onig gmp ext/yaml/syck tools/swig])
 (cd ext/wx/wxWidgets && ./configure --enable-debug_info --enable-debug_flag --enable-debug_gdb --enable-monolithic --disable-shared)
+if test $? != 0
+then
+    echo "configure for wxWidgets fails"
+    exit 1
+fi
 (cd ext/zlib/zlib && ./configure)
+if test $? != 0
+then
+    echo "configure for zlib fails"
+    exit 1
+fi
 (cd ext/zip/libzip && CFLAGS="`pwd`/ext/zlib/zlib" ./configure)
+if test $? != 0
+then
+    echo "configure for libzip fails"
+    exit 1
+fi
 
 AC_OUTPUT
 
