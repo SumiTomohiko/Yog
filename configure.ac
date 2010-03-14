@@ -264,8 +264,8 @@ then
     echo "configure for zlib fails"
     exit 1
 fi
-pwd=`pwd`
-(cd ext/zip/libzip && ./configure "--with-zlib=${pwd}/ext/zlib/zlib")
+zlib_dir="`pwd`/ext/zlib/zlib"
+(cd ext/zip/libzip && CFLAGS="-I- -I${zlib_dir}" ./configure "--with-zlib=${zlib_dir}" --enable-shared=no)
 if test $? != 0
 then
     echo "configure for libzip fails"

@@ -10,11 +10,12 @@ ZLIB_BIN = $(ZLIB_DIR)/libz.a
 CC = @CC@
 LDFLAGS = @LDFLAGS@
 CFLAGS = @CFLAGS@ -I$(LIBZIP_DIR)/lib
+LIBS = @IMPORT_LIB@
 
 all: $(SO)
 
 $(SO): zip.$(OBJEXT) $(LIBZIP_BIN) $(ZLIB_BIN) Makefile
-	$(CC) -o $@ -shared $(LDFLAGS) zip.$(OBJEXT) $(LIBZIP_BIN) $(ZLIB_BIN)
+	$(CC) -o $@ -shared $(LDFLAGS) zip.$(OBJEXT) $(LIBZIP_BIN) $(ZLIB_BIN) $(LIBS)
 
 $(ZLIB_BIN):
 	cd $(ZLIB_DIR) && make

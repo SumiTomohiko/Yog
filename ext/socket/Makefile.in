@@ -6,7 +6,7 @@ SO = $(top_srcdir)/ext/socket.$(SOEXT)
 CC = @CC@
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@
+LIBS = @LIBS@ @IMPORT_LIB@
 
 all: $(SO)
 

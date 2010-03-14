@@ -8,11 +8,12 @@ SO = $(top_srcdir)/ext/zlib.$(SOEXT)
 CC = @CC@
 LDFLAGS = @LDFLAGS@
 CFLAGS = @CFLAGS@ -I$(ZLIB_DIR)
+LIBS = @IMPORT_LIB@
 
 all: $(SO)
 
 $(SO): zlib.$(OBJEXT) $(ZLIB_BIN)
-	$(CC) -o $@ -shared $(LDFLAGS) zlib.$(OBJEXT) $(ZLIB_BIN)
+	$(CC) -o $@ -shared $(LDFLAGS) zlib.$(OBJEXT) $(ZLIB_BIN) $(LIBS)
 
 $(ZLIB_BIN):
 	cd $(ZLIB_DIR) && $(MAKE)

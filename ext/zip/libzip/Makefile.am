@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS=dist-bzip2 foreign
 
 ACLOCAL_AMFLAGS=	-I m4
 
-SUBDIRS=lib src man regress
+SUBDIRS=lib
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libzip.pc

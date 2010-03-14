@@ -8,11 +8,12 @@ SYCK_BIN = $(SYCK_DIR)/lib/libsyck.a
 CC = @CC@
 CFLAGS = @CFLAGS@ -I$(SYCK_DIR)/lib
 LDFLAGS = @LDFLAGS@
+LIBS = @IMPORT_LIB@
 
 all: $(SO)
 
 $(SO): yaml.$(OBJEXT) $(SYCK_BIN)
-	$(CC) -o $@ -shared $(LDFLAGS) yaml.$(OBJEXT) $(SYCK_BIN)
+	$(CC) -o $@ -shared $(LDFLAGS) yaml.$(OBJEXT) $(SYCK_BIN) $(LIBS)
 
 $(SYCK_BIN):
 	cd $(SYCK_DIR) && make
