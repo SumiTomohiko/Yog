@@ -10,21 +10,23 @@ CFLAGS = @CFLAGS@ -I$(SYCK_DIR)/lib
 LDFLAGS = @LDFLAGS@
 LIBS = @IMPORT_LIB@
 
+OBJS = yaml.$(OBJEXT)
+
 all: $(SO)
 
-$(SO): yaml.$(OBJEXT) $(SYCK_BIN)
-	$(CC) -o $@ -shared $(LDFLAGS) yaml.$(OBJEXT) $(SYCK_BIN) $(LIBS)
+$(SO): $(OBJS) $(SYCK_BIN)
+	$(CC) -o $@ -shared -Wl,--enable-auto-import -Wl,--export-all-symbols -Wl,--enable-runtime-pseudo-reloc $(LDFLAGS) $(OBJS) $(SYCK_BIN) $(LIBS)
 
 $(SYCK_BIN):
 	cd $(SYCK_DIR) && make
 
-yaml.$(OBJEXT): yaml.c
-	$(CC) -o $@ -c $(CFLAGS) yaml.c
+.c.o:
+	$(CC) -o $@ -c $(CFLAGS) $<
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/yaml/$@
 
 clean:
-	rm -f $(SO) yaml.$(OBJEXT)
+	rm -f $(SO) $(OBJS)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

@@ -10,18 +10,23 @@ LDFLAGS = @LDFLAGS@
 CFLAGS = @CFLAGS@ -I$(ZLIB_DIR)
 LIBS = @IMPORT_LIB@
 
+OBJS = zlib.$(OBJEXT)
+
 all: $(SO)
 
-$(SO): zlib.$(OBJEXT) $(ZLIB_BIN)
-	$(CC) -o $@ -shared $(LDFLAGS) zlib.$(OBJEXT) $(ZLIB_BIN) $(LIBS)
+$(SO): $(OBJS) $(ZLIB_BIN)
+	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(ZLIB_BIN) $(LIBS)
 
 $(ZLIB_BIN):
 	cd $(ZLIB_DIR) && $(MAKE)
 
-zlib.$(OBJEXT): zlib.c
-	$(CC) -o $@ $(CFLAGS) -c zlib.c
+.c.o:
+	$(CC) -o $@ $(CFLAGS) -c $<
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/zlib/$@
+
+clean:
+	rm -f $(SO) $(OBJS) $(ZLIB_BIN)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

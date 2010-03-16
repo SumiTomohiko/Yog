@@ -12,16 +12,18 @@ LDFLAGS = @LDFLAGS@
 CFLAGS = @CFLAGS@ -I$(LIBZIP_DIR)/lib
 LIBS = @IMPORT_LIB@
 
+OBJS = zip.$(OBJEXT)
+
 all: $(SO)
 
-$(SO): zip.$(OBJEXT) $(LIBZIP_BIN) $(ZLIB_BIN) Makefile
-	$(CC) -o $@ -shared $(LDFLAGS) zip.$(OBJEXT) $(LIBZIP_BIN) $(ZLIB_BIN) $(LIBS)
+$(SO): $(OBJS) $(LIBZIP_BIN) $(ZLIB_BIN) Makefile
+	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(LIBZIP_BIN) $(ZLIB_BIN) $(LIBS)
 
 $(ZLIB_BIN):
 	cd $(ZLIB_DIR) && make
 
-zip.$(OBJEXT): zip.c Makefile
-	$(CC) -o $@ -c $(CFLAGS) zip.c
+.c.o:
+	$(CC) -o $@ -c $(CFLAGS) $<
 
 $(LIBZIP_BIN):
 	cd $(LIBZIP_DIR) && make
@@ -30,6 +32,6 @@ Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/zip/$@
 
 clean:
-	rm -f $(SO) zip.$(OBJEXT)
+	rm -f $(SO) $(OBJS)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab
