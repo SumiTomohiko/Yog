@@ -145,18 +145,12 @@ compress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 static void
 dirname(char* path)
 {
-#if WINDOWS
-#   define SEPARATOR    '\\'
-#else
-#   define SEPARATOR    '/'
-#endif
-    char* pc = strrchr(path, SEPARATOR);
+    char* pc = strrchr(path, '/');
     if (pc == NULL) {
         *path = '\0';
         return;
     }
     *pc = '\0';
-#undef SEPARATOR
 }
 
 static void
@@ -209,13 +203,7 @@ decompress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal 
         }
         char* path = (char*)YogSysdeps_alloca(strlen(STRING_CSTR(dest)) + strlen(name) + 2);
         strcpy(path, STRING_CSTR(dest));
-#if WINDOWS
-#   define SEP  "\\"
-#else
-#   define SEP  "/"
-#endif
-        strcat(path, SEP);
-#undef SEP
+        strcat(path, "/");
         strcat(path, name);
         char* dir = (char*)YogSysdeps_alloca(strlen(path) + 1);
         strcpy(dir, path);

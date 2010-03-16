@@ -17,13 +17,16 @@ class TestZip(TestCase):
 import zip
 """, options=["--gc-stress"])
 
+    def escape(self, s):
+        return s.replace("\\", "\\\\")
+
     def do_compress_test(self, *args):
         zipfile = "actual.zip"
         try:
             unlink(zipfile)
         except:
             pass
-        targets = ", ".join(["\"%s\"" % (file, ) for file in args])
+        targets = ", ".join(["\"%s\"" % (self.escape(file), ) for file in args])
         self._test("""
 import zip
 enable_gc_stress()
@@ -61,7 +64,7 @@ zip.compress(\"%(zipfile)s\", %(targets)s)
 import zip
 enable_gc_stress()
 zip.decompress(\"%(zip)s\", \"%(tempdir)s\")
-""" % locals())
+""" % { "zip": zip, "tempdir": self.escape(tempdir) })
             for file in args:
                 assert cmp(file, join(tempdir, file))
         finally:
