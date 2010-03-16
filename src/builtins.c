@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -92,8 +93,8 @@ mkdir_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
         YogError_raise_TypeError(env, "path must be String");
     }
 
-    if (!YogSysdeps_mkdir(STRING_CSTR(path))) {
-        YogError_raise_sys_err2(env, GET_ERR(), path);
+    if (YogSysdeps_mkdir(STRING_CSTR(path)) != 0) {
+        YogError_raise_sys_err(env, errno, path);
     }
 
     RETURN(env, YNIL);

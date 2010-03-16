@@ -39,10 +39,10 @@
 #else
 #   define YogSysdeps_vsnprintf(s, size, fmt, ap)   vsprintf(s, fmt, ap)
 #endif
-#if defined(HAVE_MKDIR)
-#   define YogSysdeps_mkdir(path)   (mkdir(path, 0755) == 0)
+#if defined(HAVE__MKDIR)
+#   define YogSysdeps_mkdir(path)   _mkdir(path)
 #else
-#   define YogSysdeps_mkdir(path)   (CreateDirectory(path, NULL) != 0)
+#   define YogSysdeps_mkdir(path)   mkdir(path, 0755)
 #endif
 #if defined(HAVE_BZERO)
 #   define YogSysdeps_bzero(s, n)   bzero(s, n)
