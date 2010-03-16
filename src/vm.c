@@ -795,7 +795,8 @@ struct ImportingPackage {
 
 typedef struct ImportingPackage ImportingPackage;
 
-#define TYPE_IMPORTING_PKG  ((type_t)ImportingPackage_new)
+DECL_AS_TYPE(ImportingPackage_new);
+#define TYPE_IMPORTING_PKG TO_TYPE(ImportingPackage_new)
 
 static void
 ImportingPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)

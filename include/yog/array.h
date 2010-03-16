@@ -19,7 +19,8 @@ struct YogArray {
 
 typedef struct YogArray YogArray;
 
-#define TYPE_ARRAY  ((type_t)YogArray_new)
+DECL_AS_TYPE(YogArray_new);
+#define TYPE_ARRAY  TO_TYPE(YogArray_new)
 
 /* PROTOTYPE_START */
 

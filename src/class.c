@@ -320,7 +320,8 @@ struct ModuleClass {
 
 typedef struct ModuleClass ModuleClass;
 
-#define TYPE_MODULE_CLASS   ((type_t)ModuleClass_new)
+DECL_AS_TYPE(ModuleClass_new);
+#define TYPE_MODULE_CLASS TO_TYPE(ModuleClass_new)
 
 static void
 ModuleClass_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)

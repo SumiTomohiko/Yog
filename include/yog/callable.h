@@ -18,7 +18,8 @@ struct YogNativeFunction {
 
 typedef struct YogNativeFunction YogNativeFunction;
 
-#define TYPE_NATIVE_FUNCTION    ((type_t)YogNativeFunction_new)
+DECL_AS_TYPE(YogNativeFunction_new);
+#define TYPE_NATIVE_FUNCTION    TO_TYPE(YogNativeFunction_new)
 
 struct YogFunction {
     struct YogBasicObj base;
@@ -35,7 +36,8 @@ struct YogFunction {
 
 typedef struct YogFunction YogFunction;
 
-#define TYPE_FUNCTION   ((type_t)YogFunction_new)
+DECL_AS_TYPE(YogFunction_new);
+#define TYPE_FUNCTION TO_TYPE(YogFunction_new)
 
 struct YogInstanceMethod {
     struct YogBasicObj base;
@@ -46,7 +48,8 @@ struct YogInstanceMethod {
 
 typedef struct YogInstanceMethod YogInstanceMethod;
 
-#define TYPE_INSTANCE_METHOD    ((type_t)YogInstanceMethod_new)
+DECL_AS_TYPE(YogInstanceMethod_new);
+#define TYPE_INSTANCE_METHOD TO_TYPE(YogInstanceMethod_new)
 
 /* PROTOTYPE_START */
 

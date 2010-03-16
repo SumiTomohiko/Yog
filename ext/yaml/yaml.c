@@ -234,7 +234,7 @@ load_string(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     YogCArg params[] = { { "yaml", &yaml }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "load_string", params, args, kw);
     if (!IS_PTR(yaml) || (BASIC_OBJ_TYPE(yaml) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "yaml must be String");
+        YogError_raise_TypeError(env, "yaml must be String, not %C", yaml);
     }
 
     SyckParser* p = syck_new_parser();

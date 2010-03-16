@@ -11,7 +11,8 @@ struct YogFloat {
 
 typedef struct YogFloat YogFloat;
 
-#define TYPE_FLOAT  ((type_t)YogFloat_new)
+DECL_AS_TYPE(YogFloat_new);
+#define TYPE_FLOAT TO_TYPE(YogFloat_new)
 
 #define FLOAT_NUM(f)    PTR_AS(YogFloat, (f))->val
 

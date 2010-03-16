@@ -11,7 +11,8 @@ struct YogModule {
 
 typedef struct YogModule YogModule;
 
-#define TYPE_MODULE     ((type_t)YogModule_new)
+DECL_AS_TYPE(YogModule_new);
+#define TYPE_MODULE TO_TYPE(YogModule_new)
 
 /* PROTOTYPE_START */
 

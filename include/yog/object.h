@@ -5,6 +5,42 @@
 
 typedef uint_t type_t;
 
+#if WINDOWS && !defined(YOG_CORE)
+    /**
+     * = Trick for Windows
+     *
+     * Assume that you define a function named "foo" in an executable. If you
+     * export this function for DLLs to an import library, this function will
+     * be "__imp__foo"! For example,
+     *
+     *   $ cat bar.c
+     *   __declspec(dllexport) void
+     *   foo()
+     *   {
+     *   }
+     * 
+     *   int
+     *   main(int argc, const char* argv[])
+     *   {
+     *       return 0;
+     *   }
+     *   $ gcc -o bar.exe -Wl,--out-implib,bar.exe.a bar.c
+     *   Creating library file: bar.exe.a
+     *   $ nm bar.exe.a | grep foo
+     *   00000000 I __imp__foo
+     *   00000000 T _foo
+     *
+     * So when compiling packages, we must tell compilers that there is a symbol
+     * of __imp__foo and use this instead of foo.
+     */
+#   define CONCAT_TYPE(name)    _imp__##name
+#   define DECL_AS_TYPE(name)   extern void* CONCAT_TYPE(name)
+#   define TO_TYPE(name)        ((type_t)CONCAT_TYPE(name))
+#else
+#   define DECL_AS_TYPE(name)
+#   define TO_TYPE(name)        ((type_t)name)
+#endif
+
 struct YogBasicObj {
     type_t type;
     uint_t id_upper;
@@ -29,7 +65,8 @@ struct YogObj {
     YogVal attrs;
 };
 
-#define TYPE_OBJ    ((type_t)YogObj_new)
+DECL_AS_TYPE(YogObj_new);
+#define TYPE_OBJ TO_TYPE(YogObj_new)
 
 #define YOGOBJ_HEAD struct YogObj base
 #define YOGOBJ(obj) ((struct YogObj*)obj)

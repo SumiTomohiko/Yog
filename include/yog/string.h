@@ -20,7 +20,8 @@ struct YogString {
 
 typedef struct YogString YogString;
 
-#define TYPE_STRING     ((type_t)YogString_new)
+DECL_AS_TYPE(YogString_new);
+#define TYPE_STRING     TO_TYPE(YogString_new)
 
 #define STRING_CSTR(s)      PTR_AS(YogCharArray, PTR_AS(YogString, s)->body)->items
 #define STRING_SIZE(s)      PTR_AS(YogString, s)->size

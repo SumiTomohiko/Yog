@@ -29,7 +29,8 @@ struct YogSystemError {
 
 typedef struct YogSystemError YogSystemError;
 
-#define TYPE_SYSTEM_ERROR   ((type_t)YogSystemError_alloc)
+DECL_AS_TYPE(YogSystemError_alloc);
+#define TYPE_SYSTEM_ERROR TO_TYPE(YogSystemError_alloc)
 
 struct YogWindowsError {
     struct YogSystemError base;
@@ -38,7 +39,8 @@ struct YogWindowsError {
 
 typedef struct YogWindowsError YogWindowsError;
 
-#define TYPE_WINDOWS_ERROR  ((type_t)YogWindowsError_alloc)
+DECL_AS_TYPE(YogWindowsError_alloc);
+#define TYPE_WINDOWS_ERROR TO_TYPE(YogWindowsError_alloc)
 
 static void
 YogException_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)

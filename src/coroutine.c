@@ -99,7 +99,8 @@ struct Coroutine {
 
 typedef struct Coroutine Coroutine;
 
-#define TYPE_COROUTINE  ((type_t)Coroutine_init)
+DECL_AS_TYPE(Coroutine_init);
+#define TYPE_COROUTINE TO_TYPE(Coroutine_init)
 
 #define STATUS_SUSPENDED    0
 #define STATUS_RUNNING      1

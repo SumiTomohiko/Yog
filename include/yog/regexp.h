@@ -12,7 +12,8 @@ struct YogRegexp {
 
 typedef struct YogRegexp YogRegexp;
 
-#define TYPE_REGEXP     ((type_t)YogRegexp_new)
+DECL_AS_TYPE(YogRegexp_new);
+#define TYPE_REGEXP TO_TYPE(YogRegexp_new)
 
 struct YogMatch {
     YOGBASICOBJ_HEAD;
