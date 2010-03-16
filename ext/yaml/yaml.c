@@ -1,7 +1,4 @@
 #include "yog/config.h"
-#if defined(HAVE_ALLOCA_H)
-#   include <alloca.h>
-#endif
 #include <stdlib.h>
 #include <string.h>
 #include "syck.h"
@@ -15,6 +12,7 @@
 #include "yog/get_args.h"
 #include "yog/package.h"
 #include "yog/string.h"
+#include "yog/sysdeps.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -215,7 +213,7 @@ err_handler(SyckParser* p, const char* msg)
     int linect = p->linect;
     int col = p->cursor - p->lineptr;
     size_t len = strlen(p->lineptr);
-    char* line = (char*)alloca(sizeof(char) * (len + 1));
+    char* line = (char*)YogSysdeps_alloca(sizeof(char) * (len + 1));
     memcpy(line, p->lineptr, len + 1);
 
     free_parser(p);

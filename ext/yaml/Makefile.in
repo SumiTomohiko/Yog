@@ -15,7 +15,7 @@ OBJS = yaml.$(OBJEXT)
 all: $(SO)
 
 $(SO): $(OBJS) $(SYCK_BIN)
-	$(CC) -o $@ -shared -Wl,--enable-auto-import -Wl,--export-all-symbols -Wl,--enable-runtime-pseudo-reloc $(LDFLAGS) $(OBJS) $(SYCK_BIN) $(LIBS)
+	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(SYCK_BIN) $(LIBS)
 
 $(SYCK_BIN):
 	cd $(SYCK_DIR) && make
