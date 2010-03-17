@@ -13,7 +13,7 @@ OBJS = socket.$(OBJEXT)
 all: $(SO)
 
 $(SO): $(OBJS)
-	$(CC) -o $@ -shared $(LDFLAGS) socket.$(OBJEXT) $(LIBS)
+	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(LIBS)
 
 .c.o:
 	$(CC) -o $@ -c $(CFLAGS) $<

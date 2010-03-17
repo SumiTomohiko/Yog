@@ -87,9 +87,15 @@ close_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "close", params, args, kw);
     CHECK_SELF(env, self);
-    if (close(PTR_AS(Socket, self)->sock) != 0) {
+#if WINDOWS
+#   define CLOSE closesocket
+#else
+#   define CLOSE close
+#endif
+    if (CLOSE(PTR_AS(Socket, self)->sock) != 0) {
         YogError_raise_sys_err(env, errno, YNIL);
     }
+#undef CLOSE
     RETURN(env, self);
 }
 
@@ -116,7 +122,7 @@ init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     char port_s[6];
     YogSysdeps_snprintf(port_s, array_sizeof(port_s), "%u", VAL2INT(port));
     struct addrinfo hints;
-    bzero(&hints, sizeof(hints));
+    YogSysdeps_bzero(&hints, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     struct addrinfo* res = NULL;
@@ -140,6 +146,27 @@ init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     if (pa == NULL) {
         s = YogSprintf_sprintf(env, "%S:%u", host, VAL2INT(port));
         YogError_raise_sys_err(env, errno, s);
+    }
+#else
+    /* Windows */
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        YogError_raise_sys_err2(env, WSAGetLastError(), YNIL);
+    }
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(VAL2INT(port));
+    unsigned long addr = inet_addr(STRING_CSTR(host));
+    if (addr == INADDR_NONE) {
+        struct hostent* ent = gethostbyname(STRING_CSTR(host));
+        if (ent == NULL) {
+            YogError_raise_sys_err2(env, WSAGetLastError(), host);
+        }
+        addr = *(unsigned long*)ent->h_addr_list[0];
+    }
+    server_addr.sin_addr.S_un.S_addr = addr;
+    if (connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) != 0) {
+        YogError_raise_sys_err2(env, WSAGetLastError(), host);
     }
 #endif
     PTR_AS(Socket, self)->sock = sock;
@@ -169,15 +196,48 @@ send_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     RETURN(env, self);
 }
 
+static void
+finalize(YogEnv* env, void* ptr)
+{
+#if WINDOWS
+    WSACleanup();
+#endif
+}
+
+static YogVal
+Package_new(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal pkg = YUNDEF;
+    PUSH_LOCAL(env, pkg);
+
+    pkg = ALLOC_OBJ(env, YogPackage_keep_children, finalize, YogPackage);
+    YogPackage_init(env, pkg, TYPE_PACKAGE);
+
+#if WINDOWS
+    WSADATA data;
+    int err_code = WSAStartup(MAKEWORD(2, 0), &data);
+    if (err_code != 0) {
+        YogError_raise_sys_err2(env, err_code, YNIL);
+    }
+#endif
+
+    RETURN(env, pkg);
+}
+
 YogVal
 YogInit_socket(YogEnv* env)
 {
+    /**
+     * Don't create this package twice in Windows' one process. This package's
+     * finalizer executes WSACleanup to unload the winsock library.
+     */
     SAVE_LOCALS(env);
     YogVal pkg = YUNDEF;
     YogVal cTcpSocket = YUNDEF;
     PUSH_LOCALS2(env, pkg, cTcpSocket);
 
-    pkg = YogPackage_new(env);
+    pkg = Package_new(env);
 
     cTcpSocket = YogClass_new(env, "TcpSocket", env->vm->cObject);
     YogClass_define_allocator(env, cTcpSocket, TcpSocket_alloc);
