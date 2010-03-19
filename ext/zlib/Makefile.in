@@ -1,14 +1,10 @@
 
+include ../Makefile.common
+
 top_srcdir = @top_srcdir@
 ZLIB_DIR = zlib
 ZLIB_BIN = $(ZLIB_DIR)/libz.a
-SOEXT = @SOEXT@
-OBJEXT = @OBJEXT@
 SO = $(top_srcdir)/ext/zlib.$(SOEXT)
-CC = @CC@
-LDFLAGS = @LDFLAGS@
-CFLAGS = @CFLAGS@ -I$(ZLIB_DIR)
-LIBS = @IMPORT_LIB@
 
 OBJS = zlib.$(OBJEXT)
 
@@ -21,12 +17,15 @@ $(ZLIB_BIN):
 	cd $(ZLIB_DIR) && $(MAKE)
 
 .c.o:
-	$(CC) -o $@ $(CFLAGS) -c $<
+	$(CC) -o $@ $(CFLAGS) -I$(ZLIB_DIR) -c $<
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/zlib/$@
 
 clean:
 	rm -f $(SO) $(OBJS) $(ZLIB_BIN)
+
+install:
+	$(install_sh_DATA) $(SO) $(libdir)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

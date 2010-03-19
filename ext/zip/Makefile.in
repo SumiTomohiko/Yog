@@ -1,16 +1,12 @@
 
+include ../Makefile.common
+
 top_srcdir = @top_srcdir@
-OBJEXT = @OBJEXT@
-SOEXT = @SOEXT@
 SO = $(top_srcdir)/ext/zip.$(SOEXT)
 LIBZIP_DIR = libzip
 LIBZIP_BIN = $(LIBZIP_DIR)/lib/.libs/libzip.a
 ZLIB_DIR = ../zlib/zlib
 ZLIB_BIN = $(ZLIB_DIR)/libz.a
-CC = @CC@
-LDFLAGS = @LDFLAGS@
-CFLAGS = @CFLAGS@ -I$(LIBZIP_DIR)/lib
-LIBS = @IMPORT_LIB@
 
 OBJS = zip.$(OBJEXT)
 
@@ -23,7 +19,7 @@ $(ZLIB_BIN):
 	cd $(ZLIB_DIR) && make
 
 .c.o:
-	$(CC) -o $@ -c $(CFLAGS) $<
+	$(CC) -o $@ -c $(CFLAGS) -I$(LIBZIP_DIR)/lib $<
 
 $(LIBZIP_BIN):
 	cd $(LIBZIP_DIR) && make
@@ -33,5 +29,8 @@ Makefile: Makefile.in
 
 clean:
 	rm -f $(SO) $(OBJS)
+
+install:
+	$(install_sh_DATA) $(SO) $(libdir)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab
