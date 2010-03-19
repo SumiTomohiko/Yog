@@ -1286,6 +1286,7 @@ dirname(YogEnv* env, YogVal filename)
     char* pc = strrchr(s, SEPARATOR);
     YOG_ASSERT(env, pc != NULL, "%s doesn't include directory name", filename);
     *pc = '\0';
+    STRING_SIZE(filename) = pc - s + 1;
 }
 
 static void
@@ -1359,13 +1360,12 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
     }
     else {
 #if WINDOWS
-#   define EXT_DIR  "..\\lib"
+        YogString_add_cstr(env, prog, "\\..\\lib");
+        YogArray_push(env, search_path, prog);
 #else
-#   define EXT_DIR  PREFIX "/lib/yog/" VERSION
-#endif
-        s = YogString_from_str(env, EXT_DIR);
-#undef EXT_DIR
+        s = YogString_from_str(env, PREFIX "/lib/yog/" VERSION);
         YogArray_push(env, search_path, s);
+#endif
     }
     vm->search_path = search_path;
 #undef ROOT_DIR_DEV
