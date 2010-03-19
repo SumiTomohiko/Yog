@@ -1,8 +1,8 @@
 
-!Define Product "Yog-@PACKAGE_VERSION@"
-OutFile "${Product}.exe"
+!Define Product "Yog @PACKAGE_VERSION@"
+OutFile "Yog-@PACKAGE_VERSION@.exe"
 
-InstallDir "$PROGRAMFILES\${Product}"
+InstallDir "$PROGRAMFILES\Yog-@PACKAGE_VERSION@"
 Page Directory
 Page InstFiles
 
@@ -11,17 +11,20 @@ Section
   File src\yog.ico
 
   SetOutPath "$INSTDIR\bin"
-  File /oname=yog.exe src\yog-copying.exe
-  File src\pthreadGC2.dll
+  File src\yog-copying.exe
+  File src\libpthread-2.dll
+  File src\mingwm10.dll
 
   SetOutPath "$INSTDIR\lib"
   File /r lib\*.yg
+  File ext\*.yg
+  File ext\*.dll
 
   SetOutPath "$INSTDIR\doc"
   File /r doc\html\*.*
 
   CreateDirectory "$SMPROGRAMS\${Product}"
-  CreateShortCut "$SMPROGRAMS\${Product}\Yog.lnk" "$INSTDIR\bin\yog.exe" "" "$INSTDIR\yog.ico"
+  CreateShortCut "$SMPROGRAMS\${Product}\Yog.lnk" "$INSTDIR\bin\yog-copying.exe" "" "$INSTDIR\yog.ico"
   CreateShortCut "$SMPROGRAMS\${Product}\documentation.lnk" "$INSTDIR\doc\index.html"
   CreateShortcut "$SMPROGRAMS\${Product}\uninstall.lnk" $INSTDIR\uninstall.exe
 
