@@ -1,13 +1,31 @@
 
-ROOT_DIR = ..
-YOG = $(ROOT_DIR)/src/yog-copying
+top_srcdir = @top_srcdir@
+DIR = $(top_srcdir)/src
 DEST_DIR = html
 VERSION = @VERSION@
+EXEEXT = @EXEEXT@
+PARAMS = --init-heap-size=8M makedoc.yg --title="Yog $(VERSION) documentation" --destdir=$(DEST_DIR) index.ydoc
 
 .PHONY: all clean
 
-all:
-	$(YOG) --init-heap-size=8M makedoc.yg --title="Yog $(VERSION) documentation" --destdir=$(DEST_DIR) index.ydoc
+all: copying
+
+measure: copying mark-sweep mark-sweep-compact generational bdw
+
+copying:
+	time $(DIR)/yog-copying$(EXEEXT) $(PARAMS)
+
+mark-sweep:
+	time $(DIR)/yog-mark-sweep$(EXEEXT) $(PARAMS)
+
+mark-sweep-compact:
+	time $(DIR)/yog-mark-sweep-compact$(EXEEXT) $(PARAMS)
+
+generational:
+	time $(DIR)/yog-generational$(EXEEXT) $(PARAMS)
+
+bdw:
+	time $(DIR)/yog-bdw$(EXEEXT) $(PARAMS)
 
 clean:
 	rm -rf $(DEST_DIR)
