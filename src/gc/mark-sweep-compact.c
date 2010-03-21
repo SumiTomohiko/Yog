@@ -554,6 +554,9 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
     msc->err = reason; \
     return NULL; \
 } while (0)
+#if 0
+    BOOL mmapped = FALSE;
+#endif
     if (IS_SMALL_OBJ(total_size)) {
         uint_t index = msc->size2index[total_size];
         YogMarkSweepCompactPage* page = msc->pages[index];
@@ -669,6 +672,7 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
         }
     }
     else {
+#if 0
         int_t prot = PROT_READ | PROT_WRITE;
         int_t flags = MAP_PRIVATE | MAP_ANONYMOUS;
         void* ptr = mmap(NULL, total_size, prot, flags, -1, 0);
@@ -676,6 +680,9 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
             ERROR(ERR_MSC_MMAP);
         }
         header = ptr;
+        mmapped = TRUE;
+#endif
+        YOG_BUG(env, "large object of size %u is not supported", total_size);
     }
 #undef ERROR
 
@@ -697,6 +704,9 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
 #if defined(GC_GENERATIONAL)
     header->gen = GEN_OLD;
 
+#if 0
+    if (msc->in_gc && !mmapped) {
+#endif
     if (msc->in_gc) {
         /* XXX: only when running major GC? */
         YogMarkSweepCompact_grey_page(header);
@@ -832,7 +842,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
                 DEBUG(TRACE("grey object kept: %p", header + 1)); \
                 ChildrenKeeper keeper = header->keeper; \
                 if (keeper != NULL) { \
-                    DEBUG(TRACE("grey object keeper: %p", keeper)); \
+                    DEBUG(TRACE("grey object keeper of %p: %p", header + 1, keeper)); \
                     (*keeper)(env, header + 1, minor_gc_keep_object, heap); \
                 } \
             } \
