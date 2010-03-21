@@ -1,9 +1,7 @@
 
+include ../Makefile.common
+
 top_srcdir = @top_srcdir@
-CXXFLAGS = @CXXFLAGS@ @CFLAGS@
-CXX = @CXX@
-SOEXT = @SOEXT@
-OBJEXT = @OBJEXT@
 EXT_DIR = $(top_srcdir)/ext
 SO = $(EXT_DIR)/_wx.$(SOEXT)
 YG = $(EXT_DIR)/wx.yg
@@ -40,5 +38,9 @@ $(SWIG):
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/yaml/$@
+
+install:
+	$(install_sh_DATA) $(YG) $(libdir)
+	$(install_sh_DATA) $(SO) $(libdir)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

@@ -22,7 +22,7 @@ install-vim:
 	@grep "NOTICE" yog.vim | sed -e 's/" NOTICE: //'
 
 install:
-	install src/yog-copying $(prefix)/bin
+	$(install_sh) -m 755 src/yog-copying$(EXEEXT) $(prefix)/bin/yog$(EXEEXT)
 	for d in lib ext; do \
 		(cd $$d && $(MAKE) $@) \
 	done

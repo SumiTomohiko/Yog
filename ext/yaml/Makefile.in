@@ -1,14 +1,10 @@
 
+include ../Makefile.common
+
 top_srcdir = @top_srcdir@
-SOEXT = @SOEXT@
-OBJEXT = @OBJEXT@
 SO = $(top_srcdir)/ext/yaml.$(SOEXT)
 SYCK_DIR = syck
 SYCK_BIN = $(SYCK_DIR)/lib/libsyck.a
-CC = @CC@
-CFLAGS = @CFLAGS@ -I$(SYCK_DIR)/lib
-LDFLAGS = @LDFLAGS@
-LIBS = @IMPORT_LIB@
 
 OBJS = yaml.$(OBJEXT)
 
@@ -21,12 +17,15 @@ $(SYCK_BIN):
 	cd $(SYCK_DIR) && make
 
 .c.o:
-	$(CC) -o $@ -c $(CFLAGS) $<
+	$(CC) -o $@ -c $(CFLAGS) -I$(SYCK_DIR)/lib $<
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/yaml/$@
 
 clean:
 	rm -f $(SO) $(OBJS)
+
+install:
+	$(install_sh_DATA) $(SO) $(libdir)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

@@ -189,7 +189,8 @@ AM_PATH_PYTHON()
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile lib/Makefile doc/Makefile installer.nsi
                  ext/concurrent/Makefile ext/wx/Makefile ext/yaml/Makefile
-                 ext/zlib/Makefile ext/zip/Makefile ext/socket/Makefile])
+                 ext/zlib/Makefile ext/zip/Makefile ext/socket/Makefile
+                 ext/Makefile.common])
 
 WX_TYPE="gtk2"
 CFLAGS="${CFLAGS} -Wall -I`pwd`/include -I`pwd`/onig"

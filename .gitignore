@@ -51,6 +51,7 @@ configure.log
 configure.scan
 core
 core.*
+ext/Makefile.common
 ext/Makefile.in
 ext/wx.yg
 ext/wx/wx.yg

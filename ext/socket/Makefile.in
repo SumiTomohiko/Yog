@@ -1,13 +1,8 @@
 
-top_srcdir = @top_srcdir@
-OBJEXT = @OBJEXT@
-SOEXT = @SOEXT@
-SO = $(top_srcdir)/ext/socket.$(SOEXT)
-CC = @CC@
-CFLAGS = @CFLAGS@
-LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@ @IMPORT_LIB@
+include ../Makefile.common
 
+top_srcdir = @top_srcdir@
+SO = $(top_srcdir)/ext/socket.$(SOEXT)
 OBJS = socket.$(OBJEXT)
 
 all: $(SO)
@@ -23,5 +18,8 @@ Makefile: Makefile.in
 
 clean:
 	rm -f $(SO) $(OBJS)
+
+install:
+	$(install_sh_DATA) $(SO) $(libdir)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab
