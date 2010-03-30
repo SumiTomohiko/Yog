@@ -61,10 +61,12 @@ destroy_memory(void* ptr, size_t size)
 }
 
 static void
-delete(YogMarkSweepHeader* header)
+delete(YogEnv* env, YogMarkSweep* ms, YogMarkSweepHeader* header)
 {
-    destroy_memory(header, header->size);
+    size_t size = header->size;
+    destroy_memory(header, size);
     free(header);
+    ms->allocated_size -= size;
 }
 
 void
@@ -97,7 +99,7 @@ YogMarkSweep_delete_garbage(YogEnv* env, YogMarkSweep* ms)
                 next->prev = header->prev;
             }
 
-            delete(header);
+            delete(env, ms, header);
         }
 
         header = next;
@@ -107,7 +109,6 @@ YogMarkSweep_delete_garbage(YogEnv* env, YogMarkSweep* ms)
 void
 YogMarkSweep_post_gc(YogEnv* env, YogMarkSweep* ms)
 {
-    ms->allocated_size = 0;
 }
 
 void
@@ -129,7 +130,7 @@ YogMarkSweep_finalize(YogEnv* env, YogMarkSweep* ms)
         YogMarkSweepHeader* next = header->next;
 
         finalize(env, header);
-        delete(header);
+        delete(env, ms, header);
 
         header = next;
     }

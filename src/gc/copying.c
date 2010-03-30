@@ -294,7 +294,7 @@ YogCopying_alloc_heap(YogEnv* env, YogCopying* copying)
         return;
     }
 
-    size_t heap_size = copying->heap_size;
+    size_t heap_size = copying->heap_size / 2;
     copying->active_heap = YogCopyingHeap_new(copying, heap_size);
     copying->inactive_heap = YogCopyingHeap_new(copying, heap_size);
 }
