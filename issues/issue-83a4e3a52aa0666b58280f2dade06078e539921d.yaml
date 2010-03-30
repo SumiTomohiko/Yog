@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rename YogMarkSweepCompact::header to headers
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-03-30 09:33:09.904169 Z
+references: []
+
+id: 83a4e3a52aa0666b58280f2dade06078e539921d
+log_events: 
+- - 2010-03-30 09:33:10.622476 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
