@@ -1,6 +1,8 @@
 #if !defined(__YOG_GC_H__)
 #define __YOG_GC_H__
 
+#include "yog/yog.h"
+
 #define ALLOC_OBJ_SIZE(env, keep_children, finalizer, size) \
     YogGC_alloc(env, keep_children, finalizer, size)
 #define ALLOC_OBJ(env, keep_children, finalizer, type) \
@@ -8,23 +10,19 @@
 #define ALLOC_OBJ_ITEM(env, keep_children, finalizer, type, size, item_type) \
     ALLOC_OBJ_SIZE(env, keep_children, finalizer, sizeof(type) + size * sizeof(item_type))
 
-#if defined(GC_COPYING)
-#   define GC_TYPE  YogCopying
-#elif defined(GC_MARK_SWEEP)
-#   define GC_TYPE  YogMarkSweep
-#elif defined(GC_MARK_SWEEP_COMPACT)
-#   define GC_TYPE  YogMarkSweepCompact
-#elif defined(GC_GENERATIONAL)
-#   define GC_TYPE  YogGenerational
-#elif defined(GC_BDW)
-#   define GC_TYPE  YogBDW
-#endif
+struct YogHeap {
+    struct YogHeap* prev;
+    struct YogHeap* next;
+    BOOL refered;
+    uint_t err;
+};
+
+typedef struct YogHeap YogHeap;
 
 #define FREE_FROM_GC(env)   YogGC_free_from_gc(env)
 #define BIND_TO_GC(env)     YogGC_bind_to_gc(env)
 
 #include <sys/types.h>
-#include "yog/yog.h"
 
 /* PROTOTYPE_START */
 

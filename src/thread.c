@@ -90,58 +90,41 @@ YogThread_init(YogEnv* env, YogVal thread, YogVal klass)
 
 #if defined(GC_COPYING)
 void
-YogThread_config_copying(YogEnv* env, YogVal thread, size_t init_heap_size)
+YogThread_config_copying(YogEnv* env, YogVal thread, size_t heap_size)
 {
-    YogCopying* copying = (YogCopying*)malloc(sizeof(YogCopying));
-    YOG_ASSERT(env, copying != NULL, "Can't allocate YogCopying");
-    YogCopying_init(env, copying, init_heap_size);
-    copying->refered = TRUE;
+    YogHeap* heap = YogCopying_new(env, heap_size);
     YogVM_add_heap(env, env->vm, copying);
-
-    PTR_AS(YogThread, thread)->heap = copying;
+    PTR_AS(YogThread, thread)->heap = heap;
 }
 #endif
 
 #if defined(GC_MARK_SWEEP)
 void
-YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t threshold)
+YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t heap_size)
 {
-    YogMarkSweep* mark_sweep = malloc(sizeof(YogMarkSweep));
-    YOG_ASSERT(env, mark_sweep != NULL, "Can't allocate YogMarkSweep");
-    YogMarkSweep_init(env, mark_sweep, threshold);
-    mark_sweep->refered = TRUE;
-    YogVM_add_heap(env, env->vm, mark_sweep);
-
-    PTR_AS(YogThread, thread)->heap = mark_sweep;
+    YogHeap* heap = YogMarkSweep_new(env, heap_size);
+    YogVM_add_heap(env, env->vm, heap);
+    PTR_AS(YogThread, thread)->heap = heap;
 }
 #endif
 
 #if defined(GC_MARK_SWEEP_COMPACT)
 void
-YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_size, size_t threshold)
+YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t heap_size)
 {
-    size_t size = sizeof(YogMarkSweepCompact);
-    YogMarkSweepCompact* mark_sweep_compact = malloc(size);
-    YOG_ASSERT(env, mark_sweep_compact != NULL, "Can't allocate YogMarkSweepCompact");
-    YogMarkSweepCompact_init(env, mark_sweep_compact, chunk_size, threshold);
-    mark_sweep_compact->refered = TRUE;
-    YogVM_add_heap(env, env->vm, mark_sweep_compact);
-
-    PTR_AS(YogThread, thread)->heap = mark_sweep_compact;
+    YogHeap* heap = YogMarkSweepCompact_new(env, heap_size);
+    YogVM_add_heap(env, env->vm, heap);
+    PTR_AS(YogThread, thread)->heap = heap;
 }
 #endif
 
 #if defined(GC_GENERATIONAL)
 void
-YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, uint_t tenure)
+YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size, size_t old_heap_size, uint_t age)
 {
-    YogGenerational* generational = malloc(sizeof(YogGenerational));
-    YOG_ASSERT(env, generational != NULL, "Can't allocate YogGenerational");
-    YogGenerational_init(env, generational, young_heap_size, old_chunk_size, old_threshold, tenure);
-    generational->refered = TRUE;
-    YogVM_add_heap(env, env->vm, generational);
-
-    PTR_AS(YogThread, thread)->heap = generational;
+    YogHeap* heap = YogGenerational_new(env, young_heap_size, old_heap_size, age);
+    YogVM_add_heap(env, env->vm, heap);
+    PTR_AS(YogThread, thread)->heap = heap;
 }
 #endif
 
@@ -149,10 +132,8 @@ YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size
 void
 YogThread_config_bdw(YogEnv* env, YogVal thread)
 {
-    YogBDW* bdw = GC_MALLOC(sizeof(YogBDW));
-    YogBDW_init(env, bdw);
-
-    PTR_AS(YogThread, thread)->heap = bdw;
+    YogHeap* heap = YogBDW_new(env);
+    PTR_AS(YogThread, thread)->heap = heap;
 }
 #endif
 

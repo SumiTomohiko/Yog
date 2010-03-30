@@ -208,7 +208,7 @@ YogGC_free_memory(YogEnv* env, void* p, size_t size)
 
 #if !defined(GC_BDW)
 static void
-delete_heap(YogEnv* env, GC_TYPE* heap)
+delete_heap(YogEnv* env, YogHeap* heap)
 {
     if (heap->refered) {
         return;
@@ -217,15 +217,19 @@ delete_heap(YogEnv* env, GC_TYPE* heap)
 #if defined(GC_COPYING)
 #   define FINALIZE     YogCopying_finalize
 #   define IS_EMPTY     YogCopying_is_empty
+#   define DELETE       YogCopying_delete
 #elif defined(GC_MARK_SWEEP)
 #   define FINALIZE     YogMarkSweep_finalize
 #   define IS_EMPTY     YogMarkSweep_is_empty
+#   define DELETE       YogMarkSweep_delete
 #elif defined(GC_MARK_SWEEP_COMPACT)
 #   define FINALIZE     YogMarkSweepCompact_finalize
 #   define IS_EMPTY     YogMarkSweepCompact_is_empty
+#   define DELETE       YogMarkSweepCompact_delete
 #elif defined(GC_GENERATIONAL)
 #   define FINALIZE     YogGenerational_finalize
 #   define IS_EMPTY     YogGenerational_is_empty
+#   define DELETE       YogGenerational_delete
 #endif
     if (!IS_EMPTY(env, heap)) {
         return;
@@ -239,7 +243,8 @@ delete_heap(YogEnv* env, GC_TYPE* heap)
     }
     DELETE_FROM_LIST(env->vm->heaps, heap);
 
-    YogGC_free_memory(env, heap, sizeof(GC_TYPE));
+    DELETE(env, heap);
+#undef DELETE
 #undef IS_EMPTY
 #undef FINALIZE
 }
@@ -247,9 +252,9 @@ delete_heap(YogEnv* env, GC_TYPE* heap)
 static void
 delete_heaps(YogEnv* env)
 {
-    GC_TYPE* heap = (GC_TYPE*)env->vm->heaps;
+    YogHeap* heap = env->vm->heaps;
     while (heap != NULL) {
-        GC_TYPE* next = heap->next;
+        YogHeap* next = heap->next;
         delete_heap(env, heap);
         heap = next;
     }
@@ -257,7 +262,7 @@ delete_heaps(YogEnv* env)
 #endif
 
 #define ITERATE_HEAPS(vm, proc)     do { \
-    GC_TYPE* heap = (GC_TYPE*)(vm)->heaps; \
+    YogHeap* heap = (vm)->heaps; \
     while (heap != NULL) { \
         proc; \
         heap = heap->next; \
@@ -355,7 +360,7 @@ do_compaction(YogEnv* env)
     YogCompactor* compactors = (YogCompactor*)YogSysdeps_alloca(sizeof(YogCompactor) * heaps);
     init_compactors(env, heaps, compactors);
 #define EACH_HEAP(proc)     do { \
-    GC_TYPE* heap = (GC_TYPE*)env->vm->heaps; \
+    YogHeap* heap = env->vm->heaps; \
     uint_t i = 0; \
     while (heap != NULL) { \
         proc; \

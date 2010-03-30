@@ -6,20 +6,7 @@
 #   include <sys/types.h>
 #endif
 #include "yog/gc.h"
-#if defined(GC_COPYING)
-#   include "yog/gc/copying.h"
-#elif defined(GC_MARK_SWEEP)
-#   include "yog/gc/mark-sweep.h"
-#elif defined(GC_MARK_SWEEP_COMPACT)
-#   include "yog/gc/mark-sweep-compact.h"
-#elif defined(GC_GENERATIONAL)
-#   include "yog/gc/generational.h"
-#elif defined(GC_BDW)
-#   include "yog/gc/bdw.h"
-#endif
 #include "yog/yog.h"
-
-#define SURVIVE_INDEX_MAX    8
 
 struct YogVM {
     BOOL gc_stress;
@@ -96,8 +83,8 @@ struct YogVM {
     uint_t suspend_counter;
     pthread_cond_t threads_suspend_cond;
     pthread_cond_t gc_finish_cond;
-    void* heaps;
-    void* last_heap;
+    YogHeap* heaps;
+    YogHeap* last_heap;
     pthread_cond_t vm_finish_cond;
     uint_t gc_id;
     struct YogLocalsAnchor* locals;
@@ -122,7 +109,7 @@ typedef struct YogVM YogVM;
  */
 /* src/vm.c */
 YOG_EXPORT void YogVM_acquire_global_interp_lock(YogEnv*, YogVM*);
-YOG_EXPORT void YogVM_add_heap(YogEnv*, YogVM*, void*);
+YOG_EXPORT void YogVM_add_heap(YogEnv*, YogVM*, YogHeap*);
 YOG_EXPORT void YogVM_add_locals(YogEnv*, YogVM*, YogLocalsAnchor*);
 YOG_EXPORT void YogVM_add_thread(YogEnv*, YogVM*, YogVal);
 YOG_EXPORT YogIndirectPointer* YogVM_alloc_indirect_ptr(YogEnv*, YogVM*, YogVal);

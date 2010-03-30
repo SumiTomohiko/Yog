@@ -726,18 +726,18 @@ YogVM_remove_thread(YogEnv* env, YogVM* vm, YogVal thread)
 
 #if !defined(GC_BDW)
 void
-YogVM_add_heap(YogEnv* env, YogVM* vm, void* heap)
+YogVM_add_heap(YogEnv* env, YogVM* vm, YogHeap* heap)
 {
     YogVM_acquire_global_interp_lock(env, vm);
     if (vm->last_heap != NULL) {
-        ((GC_TYPE*)vm->last_heap)->next = (GC_TYPE*)heap;
-        ((GC_TYPE*)heap)->prev = (GC_TYPE*)vm->last_heap;
-        vm->last_heap = (GC_TYPE*)heap;
+        vm->last_heap->next = heap;
+        heap->prev = vm->last_heap;
+        vm->last_heap = heap;
     }
     else {
-        vm->heaps = vm->last_heap = (GC_TYPE*)heap;
+        vm->heaps = vm->last_heap = heap;
     }
-    ((GC_TYPE*)heap)->next = NULL;
+    heap->next = NULL;
     YogVM_release_global_interp_lock(env, vm);
 }
 #endif
