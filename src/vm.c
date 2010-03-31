@@ -1433,7 +1433,7 @@ YogVM_free_indirect_ptr(YogEnv* env, YogVM* vm, YogIndirectPointer* ptr)
 {
     acquire_indirect_ptr_lock(env, vm);
     DELETE_FROM_LIST(vm->indirect_ptr, ptr);
-    YogGC_free_memory(env, ptr, sizeof(YogIndirectPointer));
+    YogGC_free(env, ptr, sizeof(YogIndirectPointer));
     release_indirect_ptr_lock(env, vm);
 }
 

@@ -11,19 +11,6 @@ oldify(YogEnv* env, YogGenerational* gen, void* ptr)
     header->survive_num = gen->tenure - 1;
 }
 
-static void
-oldify_all_callback(YogEnv* env, YogCopyingHeader* header)
-{
-    YogGenerational* gen = PTR_AS(YogThread, env->thread)->heap;
-    oldify(env, gen, header + 1);
-}
-
-void
-YogGenerational_oldify_all(YogEnv* env, YogGenerational* gen)
-{
-    YogCopying_iterate_objects(env, &gen->copying, oldify_all_callback);
-}
-
 void*
 YogGenerational_copy_young_object(YogEnv* env, void* ptr, ObjectKeeper obj_keeper, void* heap)
 {
@@ -146,46 +133,38 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
     return YogGenerational_copy_young_object(env, ptr, minor_gc_keep_object, heap);
 }
 
-void
-YogGenerational_init(YogEnv* env, YogGenerational* generational, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, uint_t tenure)
+YogHeap*
+YogGenerational_new(YogEnv* env, size_t young_heap_size, size_t old_chunk_size, size_t old_threshold, uint_t tenure)
 {
-    generational->prev = generational->next = NULL;
-    generational->refered = TRUE;
+    YogGenerational* generational = (YogGenerational*)YogGC_malloc(env, sizeof(YogGenerational));
+    YogHeap_init(env, (YogHeap*)generational);
 
-    generational->err = ERR_GEN_NONE;
-
-    YogCopying* copying = &generational->copying;
-    YogCopying_init(env, copying, young_heap_size);
-
-    YogMarkSweepCompact* msc = &generational->msc;
-    YogMarkSweepCompact_init(env, msc, old_chunk_size, old_threshold);
+    generational->copying = YogCopying_new(env, young_heap_size);
+    generational->msc = YogMarkSweepCompact_new(env, old_chunk_size, old_threshold);
 
     generational->tenure = tenure;
     generational->has_young_ref = FALSE;
 }
 
 void
-YogGenerational_finalize(YogEnv* env, YogGenerational* generational)
+YogGenerational_delete(YogEnv* env, YogHeap* heap)
 {
-    generational->err = ERR_GEN_NONE;
-
-    YogMarkSweepCompact* msc = &generational->msc;
-    YogMarkSweepCompact_finalize(env, msc);
-
-    YogCopying* copying = &generational->copying;
-    YogCopying_finalize(env, copying);
+    YogGenerational* generational = (YogGenerational*)heap;
+    YogMarkSweepCompact_delete(env, generational->msc);
+    YogCopying_delete(env, generational->copying);
 }
 
 void*
-YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+YogGenerational_alloc(YogEnv* env, YogHeap* heap, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    YogCopying* copying = &generational->copying;
+    YogGenerational* generational = (YogGenerational*)heap;
+    YogCopying* copying = generational->copying;
     void* ptr = YogCopying_alloc(env, copying, keeper, finalizer, size);
     if (ptr != NULL) {
         return ptr;
     }
 
-    YogMarkSweepCompact* msc = &generational->msc;
+    YogMarkSweepCompact* msc = generational->msc;
     ptr = YogMarkSweepCompact_alloc(env, msc, keeper, finalizer, size);
     if (ptr != NULL) {
         return ptr;
@@ -212,38 +191,43 @@ YogGenerational_alloc(YogEnv* env, YogGenerational* generational, ChildrenKeeper
 }
 
 void
-YogGenerational_prepare(YogEnv* env, YogGenerational* generational)
+YogGenerational_prepare(YogEnv* env, YogHeap* heap)
 {
-    YogMarkSweepCompact* msc = &generational->msc;
+    YogGenerational* generational = (YogGenerational*)heap;
+    YogMarkSweepCompact* msc = generational->msc;
     msc->in_gc = TRUE;
     YogMarkSweepCompact_unprotect_all_pages(env, msc);
     YogMarkSweepCompact_prepare(env, msc);
 
-    YogCopying_prepare(env, &generational->copying);
+    YogCopying_prepare(env, generational->copying);
 }
 
 void
-YogGenerational_minor_keep_vm(YogEnv* env, YogGenerational* generational)
+YogGenerational_minor_keep_vm(YogEnv* env, YogHeap* heap)
 {
+    YogGenerational* generational = (YogGenerational*)heap;
     YogVM_keep_children(env, env->vm, minor_gc_keep_object, generational);
 }
 
 void
-YogGenerational_minor_cheney_scan(YogEnv* env, YogGenerational* generational)
+YogGenerational_minor_cheney_scan(YogEnv* env, YogHeap* heap)
 {
-    YogCopying* copying = &generational->copying;
+    YogGenerational* generational = (YogGenerational*)heap;
+    YogCopying* copying = generational->copying;
     YogCopying_scan(env, copying, minor_gc_keep_object, generational);
 }
 
 void
-YogGenerational_minor_delete_garbage(YogEnv* env, YogGenerational* generational)
+YogGenerational_minor_delete_garbage(YogEnv* env, YogHeap* heap)
 {
+    YogGenerational* generational = (YogGenerational*)heap;
     YogCopying_delete_garbage(env, &generational->copying);
 }
 
 void
-YogGenerational_trace_grey(YogEnv* env, YogGenerational* generational)
+YogGenerational_trace_grey(YogEnv* env, YogHeap* heap)
 {
+    YogGenerational* generational = (YogGenerational*)heap;
     YogMarkSweepCompact* major_heap = &generational->msc;
     YogMarkSweepCompact_trace_grey_children(env, major_heap, generational);
 }
@@ -258,14 +242,16 @@ post_gc(YogEnv* env, YogGenerational* generational)
 }
 
 void
-YogGenerational_minor_post_gc(YogEnv* env, YogGenerational* generational)
+YogGenerational_minor_post_gc(YogEnv* env, YogHeap* heap)
 {
+    YogGenerational* generational = (YogGenerational*)heap;
     post_gc(env, generational);
 }
 
 BOOL
-YogGenerational_is_empty(YogEnv* env, YogGenerational* generational)
+YogGenerational_is_empty(YogEnv* env, YogHeap* heap)
 {
+    YogGenerational* generational = (YogGenerational*)heap;
     if (!YogCopying_is_empty(env, &generational->copying)) {
         return FALSE;
     }
@@ -277,34 +263,39 @@ YogGenerational_is_empty(YogEnv* env, YogGenerational* generational)
 }
 
 void
-YogGenerational_alloc_heap(YogEnv* env, YogGenerational* generational)
+YogGenerational_alloc_heap(YogEnv* env, YogHeap* heap)
 {
+    YogGenerational* generational = (YogGenerational*)heap;
     YogCopying_alloc_heap(env, &generational->copying);
 }
 
 void
-YogGenerational_major_keep_vm(YogEnv* env, YogGenerational* generational)
+YogGenerational_major_keep_vm(YogEnv* env, YogHeap* heap)
 {
+    YogGenerational* generational = (YogGenerational*)heap;
     YogVM_keep_children(env, env->vm, major_gc_keep_object, generational);
 }
 
 void
-YogGenerational_major_cheney_scan(YogEnv* env, YogGenerational* generational)
+YogGenerational_major_cheney_scan(YogEnv* env, YogHeap* heap)
 {
+    YogGenerational* generational = (YogGenerational*)heap;
     YogCopying* copying = &generational->copying;
     YogCopying_scan(env, copying, major_gc_keep_object, generational);
 }
 
 void
-YogGenerational_major_delete_garbage(YogEnv* env, YogGenerational* generational)
+YogGenerational_major_delete_garbage(YogEnv* env, YogHeap* heap)
 {
+    YogGenerational* generational = (YogGenerational*)heap;
     YogCopying_delete_garbage(env, &generational->copying);
     YogMarkSweepCompact_delete_garbage(env, &generational->msc);
 }
 
 void
-YogGenerational_major_post_gc(YogEnv* env, YogGenerational* generational)
+YogGenerational_major_post_gc(YogEnv* env, YogHeap* heap)
 {
+    YogGenerational* generational = (YogGenerational*)heap;
     post_gc(env, generational);
 }
 

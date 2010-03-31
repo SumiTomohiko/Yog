@@ -5,22 +5,27 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-struct YogMarkSweepHeader {
-    struct YogMarkSweepHeader* prev;
-    struct YogMarkSweepHeader* next;
+struct MarkSweep {
+    struct YogHeap base;
+
+    struct Header* header;
+    size_t threshold;
+    size_t allocated_size;
+};
+
+typedef struct MarkSweep MarkSweep;
+
+
+struct Header {
+    struct Header* prev;
+    struct Header* next;
     size_t size;
     ChildrenKeeper keeper;
     Finalizer finalizer;
     BOOL marked;
 };
 
-typedef struct YogMarkSweepHeader YogMarkSweepHeader;
-
-static void
-init_memory(void* ptr, size_t size)
-{
-    memset(ptr, 0xcb, size);
-}
+typedef struct Header Header;
 
 static void*
 keep_object(YogEnv* env, void* ptr, void* heap)
@@ -29,7 +34,7 @@ keep_object(YogEnv* env, void* ptr, void* heap)
         return NULL;
     }
 
-    YogMarkSweepHeader* header = (YogMarkSweepHeader*)ptr - 1;
+    Header* header = (Header*)ptr - 1;
     if (header->marked) {
         return ptr;
     }
@@ -47,7 +52,7 @@ keep_object(YogEnv* env, void* ptr, void* heap)
 }
 
 static void
-finalize(YogEnv* env, YogMarkSweepHeader* header)
+finalize(YogEnv* env, Header* header)
 {
     if (header->finalizer != NULL) {
         (*header->finalizer)(env, header + 1);
@@ -55,24 +60,18 @@ finalize(YogEnv* env, YogMarkSweepHeader* header)
 }
 
 static void
-destroy_memory(void* ptr, size_t size)
-{
-    memset(ptr, 0xfd, size);
-}
-
-static void
-delete(YogEnv* env, YogMarkSweep* ms, YogMarkSweepHeader* header)
+delete(YogEnv* env, MarkSweep* ms, Header* header)
 {
     size_t size = header->size;
-    destroy_memory(header, size);
-    free(header);
+    YogGC_free(env, header, size);
     ms->allocated_size -= size;
 }
 
 void
-YogMarkSweep_prepare(YogEnv* env, YogMarkSweep* ms)
+YogMarkSweep_prepare(YogEnv* env, YogHeap* heap)
 {
-    YogMarkSweepHeader* header = ms->header;
+    MarkSweep* ms = (MarkSweep*)heap;
+    Header* header = ms->header;
     while (header != NULL) {
         header->marked = FALSE;
         header = header->next;
@@ -80,11 +79,12 @@ YogMarkSweep_prepare(YogEnv* env, YogMarkSweep* ms)
 }
 
 void
-YogMarkSweep_delete_garbage(YogEnv* env, YogMarkSweep* ms)
+YogMarkSweep_delete_garbage(YogEnv* env, YogHeap* heap)
 {
-    YogMarkSweepHeader* header = ms->header;
+    MarkSweep* ms = (MarkSweep*)heap;
+    Header* header = ms->header;
     while (header != NULL) {
-        YogMarkSweepHeader* next = header->next;
+        Header* next = header->next;
 
         if (!header->marked) {
             finalize(env, header);
@@ -106,28 +106,26 @@ YogMarkSweep_delete_garbage(YogEnv* env, YogMarkSweep* ms)
     }
 }
 
-void
-YogMarkSweep_post_gc(YogEnv* env, YogMarkSweep* ms)
+YogHeap*
+YogMarkSweep_new(YogEnv* env, size_t threshold)
 {
+    MarkSweep* heap = (MarkSweep*)YogGC_malloc(env, sizeof(MarkSweep));
+    YogHeap_init(env, (YogHeap*)heap);
+
+    heap->header = NULL;
+    heap->threshold = threshold;
+    heap->allocated_size = 0;
+
+    return heap;
 }
 
 void
-YogMarkSweep_init(YogEnv* env, YogMarkSweep* ms, size_t threshold)
+YogMarkSweep_delete(YogEnv* env, YogHeap* heap)
 {
-    ms->prev = ms->next = NULL;
-    ms->refered = TRUE;
-
-    ms->header = NULL;
-    ms->threshold = threshold;
-    ms->allocated_size = 0;
-}
-
-void
-YogMarkSweep_finalize(YogEnv* env, YogMarkSweep* ms)
-{
-    YogMarkSweepHeader* header = ms->header;
+    MarkSweep* ms = (MarkSweep*)heap;
+    Header* header = ms->header;
     while (header != NULL) {
-        YogMarkSweepHeader* next = header->next;
+        Header* next = header->next;
 
         finalize(env, header);
         delete(env, ms, header);
@@ -137,16 +135,15 @@ YogMarkSweep_finalize(YogEnv* env, YogMarkSweep* ms)
 }
 
 void*
-YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+YogMarkSweep_alloc(YogEnv* env, YogHeap* heap, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
+    MarkSweep* ms = (MarkSweep*)heap;
     if (env->vm->gc_stress || (ms->threshold <= ms->allocated_size)) {
         YogGC_perform(env);
     }
 
-    size_t total_size = size + sizeof(YogMarkSweepHeader);
-    YogMarkSweepHeader* header = malloc(total_size);
-    init_memory(header, total_size);
-
+    size_t total_size = size + sizeof(Header);
+    Header* header = (Header*)YogGC_malloc(env, total_size);
     header->prev = NULL;
     header->next = ms->header;
     if (ms->header != NULL) {
@@ -165,20 +162,20 @@ YogMarkSweep_alloc(YogEnv* env, YogMarkSweep* ms, ChildrenKeeper keeper, Finaliz
 }
 
 void
-YogMarkSweep_keep_vm(YogEnv* env, YogMarkSweep* ms)
+YogMarkSweep_keep_vm(YogEnv* env, YogHeap* heap)
 {
+    MarkSweep* ms = (MarkSweep*)heap;
     YogVM_keep_children(env, env->vm, keep_object, ms);
 }
 
 BOOL
-YogMarkSweep_is_empty(YogEnv* env, YogMarkSweep* ms)
+YogMarkSweep_is_empty(YogEnv* env, YogHeap* heap)
 {
+    MarkSweep* ms = (MarkSweep*)heap;
     if (ms->header == NULL) {
         return TRUE;
     }
-    else {
-        return FALSE;
-    }
+    return FALSE;
 }
 
 /**

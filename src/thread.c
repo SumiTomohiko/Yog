@@ -55,7 +55,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(next);
 #undef KEEP
 
-    void* thread_heap = THREAD_HEAP(thread);
+    void* thread_heap = PTR_AS(YogThread, thread)->heap;
 #define KEEP(member)    YogGC_keep(env, &thread->member, keeper, thread_heap)
     KEEP(jmp_val);
     KEEP(frame_to_long_jump);
@@ -93,7 +93,7 @@ void
 YogThread_config_copying(YogEnv* env, YogVal thread, size_t heap_size)
 {
     YogHeap* heap = YogCopying_new(env, heap_size);
-    YogVM_add_heap(env, env->vm, copying);
+    YogVM_add_heap(env, env->vm, heap);
     PTR_AS(YogThread, thread)->heap = heap;
 }
 #endif
@@ -110,9 +110,9 @@ YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t heap_size)
 
 #if defined(GC_MARK_SWEEP_COMPACT)
 void
-YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t heap_size)
+YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_size, size_t heap_size)
 {
-    YogHeap* heap = YogMarkSweepCompact_new(env, heap_size);
+    YogHeap* heap = YogMarkSweepCompact_new(env, chunk_size, heap_size);
     YogVM_add_heap(env, env->vm, heap);
     PTR_AS(YogThread, thread)->heap = heap;
 }
@@ -120,9 +120,9 @@ YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t heap_size
 
 #if defined(GC_GENERATIONAL)
 void
-YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size, size_t old_heap_size, uint_t age)
+YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size, size_t chunk_size, size_t old_heap_size, uint_t age)
 {
-    YogHeap* heap = YogGenerational_new(env, young_heap_size, old_heap_size, age);
+    YogHeap* heap = YogGenerational_new(env, young_heap_size, chunk_size, old_heap_size, age);
     YogVM_add_heap(env, env->vm, heap);
     PTR_AS(YogThread, thread)->heap = heap;
 }
@@ -142,7 +142,7 @@ finalize(YogEnv* env, void* ptr)
 {
     YogThread* thread = PTR_AS(YogThread, ptr);
 #if !defined(GC_BDW)
-    GC_TYPE* heap = (GC_TYPE*)thread->heap;
+    YogHeap* heap = (YogHeap*)thread->heap;
     if (heap != NULL) {
         heap->refered = FALSE;
     }
@@ -170,7 +170,6 @@ alloc(YogEnv* env, YogVal klass)
 #elif defined(GC_COPYING)
 #   define HEAP_SIZE    (1 * 1024 * 1024)
     YogThread_config_copying(env, thread, HEAP_SIZE);
-    YogCopying_alloc_heap(env, (YogCopying*)PTR_AS(YogThread, thread)->heap);
 #   undef HEAP_SIZE
 #elif defined(GC_MARK_SWEEP)
     size_t threshold = 1 * 1024 * 1024;

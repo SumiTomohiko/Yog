@@ -11,20 +11,26 @@
 #if defined(HAVE_WINDOWS_H)
 #   include <windows.h>
 #endif
+#if defined(GC_BDW)
+#   include "gc.h"
+#endif
 #include "getopt.h"
 #include "yog/array.h"
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/eval.h"
+#if defined(GC_COPYING)
+#   include "yog/gc/copying.h"
+#endif
+#if defined(GC_GENERATIONAL)
+#   include "yog/gc/mark-sweep-compact.h"
+#endif
 #include "yog/package.h"
 #include "yog/repl.h"
 #include "yog/string.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
-#if defined(GC_BDW)
-#   include "gc.h"
-#endif
 
 static void
 print_version()
@@ -198,7 +204,6 @@ main(int_t argc, char* argv[])
     YogThread_config_bdw(&env, dummy_thread);
 #elif defined(GC_COPYING)
     YogThread_config_copying(&env, dummy_thread, init_heap_size);
-    YogCopying_alloc_heap(&env, (YogCopying*)PTR_AS(YogThread, dummy_thread)->heap);
 #elif defined(GC_MARK_SWEEP)
     YogThread_config_mark_sweep(&env, dummy_thread, threshold);
 #elif defined(GC_MARK_SWEEP_COMPACT)

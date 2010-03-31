@@ -716,11 +716,11 @@ YogMarkSweepCompact_alloc(YogEnv* env, YogMarkSweepCompact* msc, ChildrenKeeper 
     return header + 1;
 }
 
-void
-YogMarkSweepCompact_init(YogEnv* env, YogMarkSweepCompact* msc, size_t chunk_size, size_t threshold)
+YogHeap*
+YogMarkSweepCompact_new(YogEnv* env, size_t chunk_size, size_t threshold)
 {
-    msc->prev = msc->next = NULL;
-    msc->refered = FALSE;
+    YogMarkSweepCompact* msc = (YogMarkSweepCompact*)YogGC_malloc(env, sizeof(YogMarkSweepCompact));
+    YogHeap_init(env, (YogHeap*)msc);
 
     msc->err = ERR_MSC_NONE;
     msc->chunk_size = chunk_size;
@@ -753,8 +753,9 @@ YogMarkSweepCompact_init(YogEnv* env, YogMarkSweepCompact* msc, size_t chunk_siz
 }
 
 void
-YogMarkSweepCompact_finalize(YogEnv* env, YogMarkSweepCompact* msc)
+YogMarkSweepCompact_delete(YogEnv* env, YogHeap* heap)
 {
+    YogMarkSweepCompact* msc = (YogHeap*)heap;
     YogMarkSweepCompactHeader* header = msc->header;
     while (header != NULL) {
         YogMarkSweepCompactHeader* next = header->next;

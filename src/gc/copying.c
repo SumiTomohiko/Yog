@@ -1,55 +1,55 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#if HAVE_SYS_TYPES_H
+#   include <sys/types.h>
+#endif
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/gc/copying.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#define IS_IN_HEAP(ptr, heap)   do { \
-    void* from = heap->items; \
-    void* to = heap->items + heap->size; \
-    return (from <= ptr) && (ptr < to); \
-} while (0)
+struct Header {
+    ChildrenKeeper keeper;
+    Finalizer finalizer;
+    void* forwarding_addr;
+    size_t size;
+#if defined(GC_GENERATIONAL)
+    unsigned int survive_num;
+    BOOL updated;
+    unsigned int gen;
+#endif
+};
 
-BOOL
-YogCopying_is_in_active_heap(YogEnv* env, YogCopying* copying, void* ptr)
+typedef struct Header Header;
+
+struct Space {
+    unsigned char* free;
+    unsigned char items[0];
+};
+
+typedef struct Space Space;
+
+struct Copying {
+    struct YogHeap base;
+
+    uint_t space_size;
+    struct Space* from_space;
+    struct Space* to_space;
+    unsigned char* scanned;
+    unsigned char* unscanned;
+};
+
+typedef struct Copying Copying;
+
+static Space*
+Space_new(YogEnv* env, uint_t size)
 {
-    YogCopyingHeap* heap = copying->active_heap;
-    IS_IN_HEAP(ptr, heap);
-}
-
-BOOL
-YogCopying_is_in_inactive_heap(YogEnv* env, YogCopying* copying, void* ptr)
-{
-    YogCopyingHeap* heap = copying->inactive_heap;
-    IS_IN_HEAP(ptr, heap);
-}
-
-#undef IS_IN_HEAP
-
-/* TODO: commonize with the other GC */
-static void
-init_memory(void* ptr, size_t size)
-{
-    memset(ptr, 0xcb, size);
-}
-
-static YogCopyingHeap*
-YogCopyingHeap_new(YogCopying* copying, size_t size)
-{
-    YogCopyingHeap* heap = (YogCopyingHeap*)malloc(sizeof(YogCopyingHeap) + size);
-    if (heap == NULL) {
-        copying->err = ERR_COPYING_MALLOC;
-        return NULL;
-    }
-
-    heap->size = size;
-    heap->free = heap->items;
-    init_memory(heap->items, size);
-
-    return heap;
+    Space* space = (Space*)YogGC_malloc(env, sizeof(Space) + size);
+    space->free = space->items;
+    YogGC_init_memory(env, space->items, size);
+    return space;
 }
 
 static size_t
@@ -60,31 +60,32 @@ round_size(size_t size)
 }
 
 void*
-YogCopying_copy(YogEnv* env, YogCopying* copying, void* ptr)
+YogCopying_copy(YogEnv* env, YogHeap* heap, void* ptr)
 {
     if (ptr == NULL) {
         DEBUG(TRACE("%p: copy: NULL->NULL", env));
         return NULL;
     }
 
-    YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
+    Header* header = (Header*)ptr - 1;
     if (header->forwarding_addr != NULL) {
         DEBUG(TRACE("%p: forward: %p->(%p)", env, ptr, header->forwarding_addr));
         return header->forwarding_addr;
     }
 
-    unsigned char* dest = copying->unscanned;
+    Copying* copying = (Copying*)heap;
+    void* dest = copying->unscanned;
     size_t size = header->size;
     YOG_ASSERT(env, 0 < size, "invalid size: header=%p, obj=%p, size=%x", header, header + 1, size);
     memcpy(dest, header, size);
 
-    header->forwarding_addr = (YogCopyingHeader*)dest + 1;
+    header->forwarding_addr = (Header*)dest + 1;
 
     copying->unscanned += size;
     DEBUG(TRACE("%p: unscanned: %p->%p (0x%02x)", env, dest, copying->unscanned, size));
-    DEBUG(TRACE("%p: copy: %p->%p, unscanned=%p, size=%u", env, ptr, (YogCopyingHeader*)dest + 1, copying->unscanned - size, size));
+    DEBUG(TRACE("%p: copy: %p->%p, unscanned=%p, size=%u", env, ptr, (Header*)dest + 1, copying->unscanned - size, size));
 
-    return (YogCopyingHeader*)dest + 1;
+    return (Header*)dest + 1;
 }
 
 static void
@@ -94,46 +95,39 @@ destroy_memory(void* ptr, size_t size)
 }
 
 static void
-free_heap_internal(YogCopyingHeap* heap)
+free_space(YogEnv* env, Copying* copying, Space* space)
 {
-    destroy_memory(heap->items, heap->size);
-    free(heap);
+    YogGC_free(env, space, sizeof(Space) + copying->space_size);
 }
 
 static void
-free_heap(YogCopying* copying)
+free_spaces(YogEnv* env, Copying* copying)
 {
-#define FREE_HEAP(heap)     do { \
-    free_heap_internal((heap)); \
+#define FREE_SPACE(heap)     do { \
+    free_space(env, copying, (heap)); \
     (heap) = NULL; \
 } while (0)
-    FREE_HEAP(copying->active_heap);
-    FREE_HEAP(copying->inactive_heap);
-#undef FREE_HEAP
+    FREE_SPACE(copying->from_space);
+    FREE_SPACE(copying->to_space);
+#undef FREE_SPACE
 }
 
 static void
-iterate_objects(YogEnv* env, YogCopyingHeap* heap, void (*callback)(YogEnv*, YogCopyingHeader*))
+iterate_objects(YogEnv* env, Copying* copying, void (*callback)(YogEnv*, Header*))
 {
-    unsigned char* ptr = heap->items;
-    unsigned char* to = heap->free;
+    Space* space = copying->from_space;
+    unsigned char* ptr = space->items;
+    unsigned char* to = space->free;
     while (ptr < to) {
-        YogCopyingHeader* header = (YogCopyingHeader*)ptr;
+        Header* header = (Header*)ptr;
         YOG_ASSERT(env, 0 < header->size, "invalid size (%x)", header->size);
         (*callback)(env, header);
-
         ptr += header->size;
     }
 }
 
-void
-YogCopying_iterate_objects(YogEnv* env, YogCopying* copying, void (*callback)(YogEnv*, YogCopyingHeader*))
-{
-    iterate_objects(env, copying->active_heap, callback);
-}
-
 static void
-delete_garbage_each(YogEnv* env, YogCopyingHeader* header)
+delete_garbage_each(YogEnv* env, Header* header)
 {
     if (header->forwarding_addr == NULL) {
         DEBUG(TRACE("%p: finalize: %p", env, header));
@@ -145,63 +139,60 @@ delete_garbage_each(YogEnv* env, YogCopyingHeader* header)
 }
 
 void
-YogCopying_delete_garbage(YogEnv* env, YogCopying* copying)
+YogCopying_delete_garbage(YogEnv* env, YogHeap* heap)
 {
-    YogCopying_iterate_objects(env, copying, delete_garbage_each);
-}
-
-void
-YogCopying_finalize(YogEnv* env, YogCopying* copying)
-{
-    YogCopying_delete_garbage(env, copying);
-    free_heap(copying);
+    Copying* copying = (Copying*)heap;
+    iterate_objects(env, copying, delete_garbage_each);
 }
 
 static void
-swap_heap(YogCopyingHeap** a, YogCopyingHeap** b)
+swap_spaces(Space** a, Space** b)
 {
-    YogCopyingHeap* tmp = *a;
+    Space* tmp = *a;
     *a = *b;
     *b = tmp;
 }
 
 void
-YogCopying_prepare(YogEnv* env, YogCopying* copying)
+YogCopying_prepare(YogEnv* env, YogHeap* heap)
 {
-    YogCopyingHeap* to_space = copying->inactive_heap;
+    Copying* copying = (Copying*)heap;
+    Space* to_space = copying->to_space;
     copying->scanned = copying->unscanned = to_space->items;
 #define PRINT_HEAP(text, heap)   do { \
     DEBUG(TRACE("%p: %s: %p-%p", env, (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
 } while (0)
-    PRINT_HEAP("active heap", copying->active_heap);
-    PRINT_HEAP("inactive heap", copying->inactive_heap);
+    PRINT_HEAP("active heap", copying->from_space);
+    PRINT_HEAP("inactive heap", copying->to_space);
 #undef PRINT_HEAP
 }
 
 void
-YogCopying_post_gc(YogEnv* env, YogCopying* copying)
+YogCopying_post_gc(YogEnv* env, YogHeap* heap)
 {
-    YogCopyingHeap* from_space = copying->active_heap;
-    YogCopyingHeap* to_space = copying->inactive_heap;
+    Copying* copying = (Copying*)heap;
+    Space* from_space = copying->from_space;
+    Space* to_space = copying->to_space;
 
     size_t size = from_space->free - from_space->items;
     destroy_memory(from_space->items, size);
 
     to_space->free = copying->unscanned;
 
-    swap_heap(&copying->active_heap, &copying->inactive_heap);
+    swap_spaces(&copying->from_space, &copying->to_space);
 }
 
 void
-YogCopying_scan(YogEnv* env, YogCopying* copying, ObjectKeeper keeper, void* heap)
+YogCopying_scan(YogEnv* env, YogHeap* heap, ObjectKeeper keeper, void* param)
 {
+    Copying* copying = (Copying*)heap;
     while (copying->scanned != copying->unscanned) {
         DEBUG(TRACE("scanned=%p, unscanned=%p", copying->scanned, copying->unscanned));
-        YogCopyingHeader* header = (YogCopyingHeader*)copying->scanned;
+        Header* header = (Header*)copying->scanned;
         ChildrenKeeper children_keeper = header->keeper;
         if (children_keeper != NULL) {
             DEBUG(TRACE("children_keeper=%p", children_keeper));
-            (*children_keeper)(env, header + 1, keeper, heap);
+            (*children_keeper)(env, header + 1, keeper, param);
         }
 
         copying->scanned += header->size;
@@ -212,42 +203,44 @@ YogCopying_scan(YogEnv* env, YogCopying* copying, ObjectKeeper keeper, void* hea
 static void*
 keep_object(YogEnv* env, void* ptr, void* heap)
 {
-    return YogCopying_copy(env, (YogCopying*)heap, ptr);
+    return YogCopying_copy(env, (YogHeap*)heap, ptr);
 }
 
 void
-YogCopying_keep_vm(YogEnv* env, YogCopying* copying)
+YogCopying_keep_vm(YogEnv* env, YogHeap* heap)
 {
-    YogVM_keep_children(env, env->vm, keep_object, copying);
+    YogVM_keep_children(env, env->vm, keep_object, heap);
 }
 
 void
-YogCopying_cheney_scan(YogEnv* env, YogCopying* copying)
+YogCopying_cheney_scan(YogEnv* env, YogHeap* heap)
 {
-    YogCopying_scan(env, copying, keep_object, copying);
+    YogCopying_scan(env, heap, keep_object, heap);
 }
 #endif
 
 void*
-YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+YogCopying_alloc(YogEnv* env, YogHeap* heap, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
-    size_t needed_size = size + sizeof(YogCopyingHeader);
+    Copying* copying = (Copying*)heap;
+    size_t needed_size = size + sizeof(Header);
     size_t rounded_size = round_size(needed_size);
     YOG_ASSERT(env, 0 < needed_size, "invalid size (0x%08x)", needed_size);
     YOG_ASSERT(env, 0 < rounded_size, "invalid size (0x%08x)", rounded_size);
 #define PRINT_HEAP(text, heap)   do { \
     DEBUG(TRACE("%p: %s: %p-%p", env, (text), (heap)->items, (char*)(heap)->items + (heap)->size)); \
 } while (0)
-    PRINT_HEAP("active heap", copying->active_heap);
-    PRINT_HEAP("inactive heap", copying->inactive_heap);
+    PRINT_HEAP("from space", copying->from_space);
+    PRINT_HEAP("to space", copying->to_space);
 #undef PRINT_HEAP
 
-    YogCopyingHeap* heap = copying->active_heap;
-#define REST_SIZE(heap)     ((heap)->size - ((heap)->free - (heap)->items))
-    size_t rest_size = REST_SIZE(heap);
+    Space* space = copying->from_space;
+#define REST_SIZE(heap, space) \
+    ((heap)->space_size - ((space)->free - (space)->items))
+    size_t rest_size = REST_SIZE(copying, space);
     BOOL gc_stress = env->vm->gc_stress;
     if ((rest_size < rounded_size) || gc_stress) {
-        if (!gc_stress && (heap->size < rounded_size)) {
+        if (!gc_stress && (copying->space_size < rounded_size)) {
             return NULL;
         }
 
@@ -256,22 +249,19 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
 #elif defined(GC_GENERATIONAL)
         YogGC_perform_minor(env);
         if (gc_stress) {
-#if 0
-            YogGenerational_oldify_all(env, gen);
-#endif
             YogGC_perform_major(env);
         }
 #endif
-        heap = copying->active_heap;
-        rest_size = REST_SIZE(heap);
+        space = copying->from_space;
+        rest_size = REST_SIZE(copying, space);
         if (rest_size < rounded_size) {
-            copying->err = ERR_COPYING_OUT_OF_MEMORY;
+            heap->err = ERR_COPYING_OUT_OF_MEMORY;
             return NULL;
         }
     }
 #undef REST_SIZE
 
-    YogCopyingHeader* header = (YogCopyingHeader*)heap->free;
+    Header* header = (Header*)space->free;
     header->keeper = keeper;
     header->finalizer = finalizer;
     header->forwarding_addr = NULL;
@@ -282,47 +272,44 @@ YogCopying_alloc(YogEnv* env, YogCopying* copying, ChildrenKeeper keeper, Finali
     header->gen = GEN_YOUNG;
 #endif
 
-    heap->free += rounded_size;
+    space->free += rounded_size;
 
     return header + 1;
 }
 
-void
-YogCopying_alloc_heap(YogEnv* env, YogCopying* copying)
-{
-    if (copying->active_heap) {
-        return;
-    }
-
-    size_t heap_size = copying->heap_size / 2;
-    copying->active_heap = YogCopyingHeap_new(copying, heap_size);
-    copying->inactive_heap = YogCopyingHeap_new(copying, heap_size);
-}
-
-void
-YogCopying_init(YogEnv* env, YogCopying* copying, size_t heap_size)
-{
-    copying->prev = copying->next = NULL;
-    copying->refered = TRUE;
-
-    copying->err = ERR_COPYING_NONE;
-    copying->heap_size = heap_size;
-    copying->active_heap = NULL;
-    copying->inactive_heap = NULL;
-    copying->scanned = NULL;
-    copying->unscanned = NULL;
-}
-
 BOOL
-YogCopying_is_empty(YogEnv* env, YogCopying* copying)
+YogCopying_is_empty(YogEnv* env, YogHeap* heap)
 {
-    YogCopyingHeap* active_heap = copying->active_heap;
-    if (active_heap->items == active_heap->free) {
-        return TRUE;
-    }
-    else {
+    Copying* copying = (Copying*)heap;
+    Space* from_space = copying->from_space;
+    if (from_space->items != from_space->free) {
         return FALSE;
     }
+    return TRUE;
+}
+
+YogHeap*
+YogCopying_new(YogEnv* env, uint_t heap_size)
+{
+    Copying* heap = (Copying*)YogGC_malloc(env, sizeof(Copying));
+    YogHeap_init(env, (YogHeap*)heap);
+
+    uint_t space_size = heap_size / 2;
+    heap->space_size = space_size;
+    heap->from_space = Space_new(env, space_size);
+    heap->to_space = Space_new(env, space_size);
+    heap->scanned = NULL;
+    heap->unscanned = NULL;
+
+    return (YogHeap*)heap;
+}
+
+void
+YogCopying_delete(YogEnv* env, YogHeap* heap)
+{
+    YogCopying_delete_garbage(env, heap);
+    free_spaces(env, (Copying*)heap);
+    YogGC_free(env, heap, sizeof(Copying));
 }
 
 #if 0
@@ -345,7 +332,7 @@ check_ptr(YogEnv* env, void* ptr, void* heap)
     if (ptr == NULL) {
         return ptr;
     }
-    YogCopyingHeader* header = (YogCopyingHeader*)ptr - 1;
+    Header* header = (Header*)ptr - 1;
 #if 0
     if (header->forwarding_addr != NULL) {
         return ptr;
@@ -356,9 +343,9 @@ check_ptr(YogEnv* env, void* ptr, void* heap)
     if (header->size == 0xfdfdfdfd) {
         report_bug("invalid size");
     }
-    YogCopyingHeap* inactive_heap = ((YogCopying*)heap)->inactive_heap;
-    void* from = inactive_heap->items;
-    void* to = inactive_heap->items + inactive_heap->size;
+    Space* to_space = ((Copying*)heap)->to_space;
+    void* from = to_space->items;
+    void* to = to_space->items + to_space->size;
     if ((from <= ptr) && (ptr < to)) {
         report_bug("an object in the inactive heap");
     }
@@ -372,13 +359,13 @@ check_ptr(YogEnv* env, void* ptr, void* heap)
 }
 
 static void
-reset_forwarding_addr(YogEnv* env, YogCopyingHeader* header)
+reset_forwarding_addr(YogEnv* env, Header* header)
 {
     header->forwarding_addr = NULL;
 }
 
 static void
-check_object(YogEnv* env, YogCopyingHeader* header)
+check_object(YogEnv* env, Header* header)
 {
 #if 0
 #define ASSERT(expr, fmt, ...)  do { \
@@ -386,9 +373,9 @@ check_object(YogEnv* env, YogCopyingHeader* header)
         report_bug(fmt, __VA_ARGS__); \
     } \
 } while (0)
-    ASSERT(0 < header->size, "invalid size (header=%p, obj=%p, size=0x%x)", header, (YogCopyingHeader*)header + 1, header->size);
-    ASSERT(header->size != 0xfdfdfdfd, "invalid size (header=%p, obj=%p, size=0x%x)", header, (YogCopyingHeader*)header + 1, header->size);
-    ASSERT(header->forwarding_addr == NULL, "invalid forwarding address (header=%p, obj=%p, addr=%p)", header, (YogCopyingHeader*)header + 1, header->forwarding_addr);
+    ASSERT(0 < header->size, "invalid size (header=%p, obj=%p, size=0x%x)", header, (Header*)header + 1, header->size);
+    ASSERT(header->size != 0xfdfdfdfd, "invalid size (header=%p, obj=%p, size=0x%x)", header, (Header*)header + 1, header->size);
+    ASSERT(header->forwarding_addr == NULL, "invalid forwarding address (header=%p, obj=%p, addr=%p)", header, (Header*)header + 1, header->forwarding_addr);
     ASSERT(((uint_t)header->finalizer & (sizeof(void*) - 1)) == 0, "invalid finalier (%p)", header->finalizer);
 #undef ASSERT
 #endif
@@ -398,22 +385,22 @@ check_object(YogEnv* env, YogCopyingHeader* header)
     header->keeper(env, header + 1, check_ptr, NULL);
 }
 
-void YogCopying_check(YogEnv* env, YogCopying* copying)
+void YogCopying_check(YogEnv* env, Copying* copying)
 {
-    iterate_objects(env, copying->active_heap, reset_forwarding_addr);
+    iterate_objects(env, copying->from_space, reset_forwarding_addr);
     YogVM_keep_children(env, env->vm, check_ptr, PTR_AS(YogThread, env->thread)->heap);
-    iterate_objects(env, copying->active_heap, reset_forwarding_addr);
+    iterate_objects(env, copying->from_space, reset_forwarding_addr);
 }
 
-void YogCopying_check_inactive_heap(YogEnv* env, YogCopying* copying)
+void YogCopying_check_to_space(YogEnv* env, Copying* copying)
 {
 #if 0
-    unsigned char* ptr = copying->inactive_heap->items;
+    unsigned char* ptr = copying->to_space->items;
 #endif
     unsigned char* ptr = copying->unscanned;
     unsigned char* to = copying->scanned;
     while (ptr < to) {
-        YogCopyingHeader* header = (YogCopyingHeader*)ptr;
+        Header* header = (Header*)ptr;
         YOG_ASSERT(env, 0 < header->size, "invalid size (%x)", header->size);
         if (header->keeper != NULL) {
             header->keeper(env, header + 1, check_ptr, NULL);

@@ -33,13 +33,16 @@ typedef struct YogHeap YogHeap;
 YOG_EXPORT YogVal YogGC_alloc(YogEnv*, ChildrenKeeper, Finalizer, size_t);
 YOG_EXPORT void YogGC_bind_to_gc(YogEnv*);
 YOG_EXPORT void YogGC_delete(YogEnv*);
+YOG_EXPORT void YogGC_free(YogEnv*, void*, size_t);
 YOG_EXPORT void YogGC_free_from_gc(YogEnv*);
-YOG_EXPORT void YogGC_free_memory(YogEnv*, void*, size_t);
+YOG_EXPORT void YogGC_init_memory(YogEnv*, void*, size_t);
 YOG_EXPORT void YogGC_keep(YogEnv*, YogVal*, ObjectKeeper, void*);
+YOG_EXPORT void* YogGC_malloc(YogEnv*, size_t);
 YOG_EXPORT void YogGC_perform(YogEnv*);
 YOG_EXPORT void YogGC_perform_major(YogEnv*);
 YOG_EXPORT void YogGC_perform_minor(YogEnv*);
 YOG_EXPORT void YogGC_suspend(YogEnv*);
+YOG_EXPORT void YogHeap_init(YogEnv*, YogHeap*);
 
 /* PROTOTYPE_END */
 

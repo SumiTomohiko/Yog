@@ -105,7 +105,7 @@ YogGC_alloc(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size
 #elif defined(GC_BDW)
 #   define ALLOC    YogBDW_alloc
 #endif
-    void* ptr = ALLOC(env, THREAD_HEAP(thread), keeper, finalizer, size);
+    void* ptr = ALLOC(env, PTR_AS(YogThread, thread)->heap, keeper, finalizer, size);
 #undef ALLOC
 
     DEBUG(TRACE("%p: exit YogGC_alloc", env));
@@ -193,16 +193,35 @@ perform(YogEnv* env, GC gc)
 }
 #endif
 
-static void
-destroy_memory(void* p, size_t size)
+void
+YogHeap_init(YogEnv* env, YogHeap* heap)
 {
-    memset(p, 0xfd, size);
+    heap->prev = heap->next = NULL;
+    heap->refered = TRUE;
+    heap->err = 0;
 }
 
 void
-YogGC_free_memory(YogEnv* env, void* p, size_t size)
+YogGC_init_memory(YogEnv* env, void* ptr, size_t size)
 {
-    destroy_memory(p, size);
+    memset(ptr, 0xcb, size);
+}
+
+void*
+YogGC_malloc(YogEnv* env, size_t size)
+{
+    void* ptr = malloc(size);
+    if (ptr == NULL) {
+        YogError_out_of_memory(env);
+    }
+    YogGC_init_memory(env, ptr, size);
+    return ptr;
+}
+
+void
+YogGC_free(YogEnv* env, void* p, size_t size)
+{
+    memset(p, 0xfd, size);
     free(p);
 }
 
@@ -215,27 +234,21 @@ delete_heap(YogEnv* env, YogHeap* heap)
     }
 
 #if defined(GC_COPYING)
-#   define FINALIZE     YogCopying_finalize
 #   define IS_EMPTY     YogCopying_is_empty
 #   define DELETE       YogCopying_delete
 #elif defined(GC_MARK_SWEEP)
-#   define FINALIZE     YogMarkSweep_finalize
 #   define IS_EMPTY     YogMarkSweep_is_empty
 #   define DELETE       YogMarkSweep_delete
 #elif defined(GC_MARK_SWEEP_COMPACT)
-#   define FINALIZE     YogMarkSweepCompact_finalize
 #   define IS_EMPTY     YogMarkSweepCompact_is_empty
 #   define DELETE       YogMarkSweepCompact_delete
 #elif defined(GC_GENERATIONAL)
-#   define FINALIZE     YogGenerational_finalize
 #   define IS_EMPTY     YogGenerational_is_empty
 #   define DELETE       YogGenerational_delete
 #endif
     if (!IS_EMPTY(env, heap)) {
         return;
     }
-
-    FINALIZE(env, heap);
 
     YogVM* vm = env->vm;
     if (vm->last_heap == heap) {
@@ -295,7 +308,7 @@ keep_vm(YogEnv* env)
 #elif defined(GC_MARK_SWEEP_COMPACT)
 #   define KEEP     YogMarkSweepCompact_keep_vm
 #endif
-    KEEP(env, THREAD_HEAP(main_thread));
+    KEEP(env, PTR_AS(YogThread, main_thread)->heap);
 #undef KEEP
 }
 
@@ -327,7 +340,7 @@ post_gc(YogEnv* env)
 #if defined(GC_COPYING)
 #   define POST     YogCopying_post_gc
 #elif defined(GC_MARK_SWEEP)
-#   define POST     YogMarkSweep_post_gc
+#   define POST
 #elif defined(GC_MARK_SWEEP_COMPACT)
 #   define POST     YogMarkSweepCompact_post_gc
 #endif
@@ -374,7 +387,7 @@ do_compaction(YogEnv* env)
 
     YogVM* vm = env->vm;
     ITERATE_HEAPS(vm, YogMarkSweepCompact_prepare(env, heap));
-    YogVM_keep_children(env, vm, YogMarkSweepCompact_update_ptr, THREAD_HEAP(MAIN_THREAD(vm)));
+    YogVM_keep_children(env, vm, YogMarkSweepCompact_update_ptr, PTR_AS(YogThread, MAIN_THREAD(vm))->heap);
     ITERATE_HEAPS(vm, YogMarkSweepCompact_update_front_header(env, heap));
 
     init_compactors(env, heaps, compactors);
@@ -428,7 +441,7 @@ static void
 minor_keep_vm(YogEnv* env)
 {
     YogVal main_thread = MAIN_THREAD(env->vm);
-    YogGenerational_minor_keep_vm(env, THREAD_HEAP(main_thread));
+    YogGenerational_minor_keep_vm(env, PTR_AS(YogThread, main_thread)->heap);
 }
 
 static void
@@ -473,7 +486,7 @@ static void
 major_keep_vm(YogEnv* env)
 {
     YogVal main_thread = MAIN_THREAD(env->vm);
-    YogGenerational_major_keep_vm(env, THREAD_HEAP(main_thread));
+    YogGenerational_major_keep_vm(env, PTR_AS(YogThread, main_thread)->heap);
 }
 
 static void

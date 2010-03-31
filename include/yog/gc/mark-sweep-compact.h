@@ -2,6 +2,7 @@
 #define __YOG_GC_MARK_SWEEP_COMPACT_H__
 
 #include <stddef.h>
+#include "yog/gc.h"
 #include "yog/yog.h"
 
 struct YogMarkSweepCompactHeader {
@@ -94,15 +95,15 @@ typedef struct YogCompactor YogCompactor;
 YOG_EXPORT void YogCompactor_init(YogEnv*, YogCompactor*);
 YOG_EXPORT void* YogMarkSweepCompact_alloc(YogEnv*, YogMarkSweepCompact*, ChildrenKeeper, Finalizer, size_t);
 YOG_EXPORT void YogMarkSweepCompact_alloc_virtually(YogEnv*, YogMarkSweepCompact*, YogCompactor*);
+YOG_EXPORT void YogMarkSweepCompact_delete(YogEnv*, YogHeap*);
 YOG_EXPORT void YogMarkSweepCompact_delete_garbage(YogEnv*, YogMarkSweepCompact*);
-YOG_EXPORT void YogMarkSweepCompact_finalize(YogEnv*, YogMarkSweepCompact*);
 YOG_EXPORT void YogMarkSweepCompact_grey_page(void*);
-YOG_EXPORT void YogMarkSweepCompact_init(YogEnv*, YogMarkSweepCompact*, size_t, size_t);
 YOG_EXPORT BOOL YogMarkSweepCompact_install_sigsegv_handler(YogEnv*);
 YOG_EXPORT BOOL YogMarkSweepCompact_is_empty(YogEnv*, YogMarkSweepCompact*);
 YOG_EXPORT void YogMarkSweepCompact_keep_vm(YogEnv*, YogMarkSweepCompact*);
 YOG_EXPORT void* YogMarkSweepCompact_mark_recursively(YogEnv*, void*, ObjectKeeper, void*);
 YOG_EXPORT void YogMarkSweepCompact_move_objs(YogEnv*, YogMarkSweepCompact*, YogCompactor*);
+YOG_EXPORT YogHeap* YogMarkSweepCompact_new(YogEnv*, size_t, size_t);
 YOG_EXPORT void YogMarkSweepCompact_post_gc(YogEnv*, YogMarkSweepCompact*);
 YOG_EXPORT void YogMarkSweepCompact_prepare(YogEnv*, YogMarkSweepCompact*);
 YOG_EXPORT void YogMarkSweepCompact_protect_white_pages(YogEnv*, YogMarkSweepCompact*);

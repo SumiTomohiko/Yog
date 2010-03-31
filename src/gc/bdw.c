@@ -1,8 +1,15 @@
 #include <stddef.h>
 #include <string.h>
 #include "gc.h"
+#include "yog/gc.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
+
+struct BDW {
+    struct YogHeap base;
+};
+
+typedef struct BDW BDW;
 
 struct BDWHeader {
     Finalizer finalizer;
@@ -18,14 +25,8 @@ bdw_finalizer(void* obj, void* client_data)
     (*header->finalizer)(env, header + 1);
 }
 
-static void
-init_memory(void* ptr, size_t size)
-{
-    memset(ptr, 0xcb, size);
-}
-
 void*
-YogBDW_alloc(YogEnv* env, YogBDW* bdw, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
+YogBDW_alloc(YogEnv* env, YogHeap* heap, ChildrenKeeper keeper, Finalizer finalizer, size_t size)
 {
     if (env->vm->gc_stress) {
         GC_gcollect();
@@ -33,7 +34,7 @@ YogBDW_alloc(YogEnv* env, YogBDW* bdw, ChildrenKeeper keeper, Finalizer finalize
 
     uint_t total_size = size + sizeof(BDWHeader);
     BDWHeader* header = GC_MALLOC(total_size);
-    init_memory(header, total_size);
+    YogGC_init_memory(env, header, total_size);
 
     header->finalizer = finalizer;
 
@@ -44,9 +45,12 @@ YogBDW_alloc(YogEnv* env, YogBDW* bdw, ChildrenKeeper keeper, Finalizer finalize
     return header + 1;
 }
 
-void
-YogBDW_init(YogEnv* env, YogBDW* bdw)
+YogHeap*
+YogBDW_new(YogEnv* env)
 {
+    BDW* heap = (BDW*)YogGC_malloc(env, sizeof(BDW));
+    YogHeap_init(env, (YogHeap*)heap);
+    return heap;
 }
 
 /**
