@@ -32,6 +32,7 @@ typedef struct ChunkHeader ChunkHeader;
 #define CHUNK_SIZE(chunk)       AS_CHUNK((chunk))->size
 #define CHUNK_USED(chunk)       AS_CHUNK((chunk))->used
 #define NEXT_CHUNK(chunk)       AS_CHUNK((char*)(chunk) + CHUNK_SIZE((chunk)))
+#define payload2chunk(p)        AS_CHUNK((char*)(p) - sizeof(ChunkHeader))
 
 struct FreeHeader {
     struct ChunkHeader base;
@@ -419,13 +420,54 @@ YogMarkSweepCompact_new(YogEnv* env, size_t size)
 }
 
 #if defined(TEST)
-#   include <CUnit/CUnit.h>
-#   include <CUnit/Console.h>
+#include <string.h>
+#include <CUnit/Basic.h>
+#include <CUnit/CUnit.h>
+
+#define TEST_PTR(expected, actual) do { \
+    CU_ASSERT((void*)(expected) == (void*)(actual)); \
+} while (0)
+#define HEAP_SIZE (1024 * 1024)
+
+YogEnv env;
+YogVM vm;
+
+static void
+test_alloc1()
+{
+    YogHeap* heap = YogMarkSweepCompact_new(&env, HEAP_SIZE);
+    void* ptr = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
+    MarkSweepCompact* msc = (MarkSweepCompact*)heap;
+    TEST_PTR(payload2chunk((char*)ptr - sizeof(Header)), msc->arena);
+}
+
+#define TEST_OVERLAP(ptr1, ptr2) do { \
+    ChunkHeader* chunk1 = payload2chunk((char*)(ptr1) - sizeof(Header)); \
+    ChunkHeader* chunk2 = payload2chunk((char*)(ptr2) - sizeof(Header)); \
+    CU_ASSERT((chunk2 < chunk1) || (NEXT_CHUNK(chunk1) <= chunk2)); \
+    CU_ASSERT((NEXT_CHUNK(chunk2) <= chunk1) || (NEXT_CHUNK(chunk1) < NEXT_CHUNK(chunk2))); \
+} while (0)
+
+static void
+test_overlap1()
+{
+    YogHeap* heap = YogMarkSweepCompact_new(&env, HEAP_SIZE);
+    void* ptr1 = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
+    void* ptr2 = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
+    TEST_OVERLAP(ptr1, ptr2);
+}
+
 int
 main(int argc, const char* argv[])
 {
+    memset(&env, 0, sizeof(YogEnv));
+    memset(&vm, 0, sizeof(YogVM));
+    env.vm = &vm;
+
     CU_initialize_registry();
-    CU_pSuite suite = CU_add_suite("foo", NULL, NULL);
+    CU_pSuite suite = CU_add_suite("mark-sweep-compact", NULL, NULL);
+    CU_add_test(suite, "test_alloc1", test_alloc1);
+    CU_add_test(suite, "test_overlap1", test_overlap1);
     CU_basic_run_tests();
     CU_cleanup_registry();
 
