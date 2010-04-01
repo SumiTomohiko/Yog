@@ -353,7 +353,7 @@ YogMarkSweepCompact_delete_garbage(YogEnv* env, YogHeap* heap)
             current->marked = FALSE;
             continue;
         }
-        finalize(env, header);
+        finalize(env, current);
         DELETE_FROM_LIST(msc->header, current);
         delete(env, msc, current);
     }
@@ -429,38 +429,73 @@ YogMarkSweepCompact_new(YogEnv* env, size_t size)
 } while (0)
 #define HEAP_SIZE (1024 * 1024)
 
-YogEnv env;
+YogEnv env = ENV_INIT;
 YogVM vm;
+void* ptr1;
+
+static void
+init_test()
+{
+    ptr1 = NULL;
+}
 
 static void
 test_alloc1()
 {
+    init_test();
     YogHeap* heap = YogMarkSweepCompact_new(&env, HEAP_SIZE);
-    void* ptr = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
+    void* p = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
     MarkSweepCompact* msc = (MarkSweepCompact*)heap;
-    TEST_PTR(payload2chunk((char*)ptr - sizeof(Header)), msc->arena);
+    TEST_PTR(payload2chunk((char*)p - sizeof(Header)), msc->arena);
 }
 
 #define TEST_OVERLAP(ptr1, ptr2) do { \
     ChunkHeader* chunk1 = payload2chunk((char*)(ptr1) - sizeof(Header)); \
     ChunkHeader* chunk2 = payload2chunk((char*)(ptr2) - sizeof(Header)); \
     CU_ASSERT((chunk2 < chunk1) || (NEXT_CHUNK(chunk1) <= chunk2)); \
-    CU_ASSERT((NEXT_CHUNK(chunk2) <= chunk1) || (NEXT_CHUNK(chunk1) < NEXT_CHUNK(chunk2))); \
+    ChunkHeader* end = NEXT_CHUNK(chunk2); \
+    CU_ASSERT((end <= chunk1) || (NEXT_CHUNK(chunk1) < end)); \
 } while (0)
 
 static void
 test_overlap1()
 {
+    init_test();
     YogHeap* heap = YogMarkSweepCompact_new(&env, HEAP_SIZE);
-    void* ptr1 = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
-    void* ptr2 = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
-    TEST_OVERLAP(ptr1, ptr2);
+    void* p1 = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
+    void* p2 = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
+    TEST_OVERLAP(p1, p2);
+}
+
+static void
+traverse_test_ptrs(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    YogVal v = PTR2VAL(ptr1);
+    YogGC_keep(env, &v, keeper, heap);
+}
+
+static void
+gc_for_test(YogEnv* env, YogHeap* heap)
+{
+    YogMarkSweepCompact_keep_root(env, NULL, traverse_test_ptrs, heap);
+    YogMarkSweepCompact_delete_garbage(env, heap);
+}
+
+static void
+test_overlap2()
+{
+    init_test();
+    YogHeap* heap = YogMarkSweepCompact_new(&env, HEAP_SIZE);
+    YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
+    ptr1 = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
+    gc_for_test(&env, heap);
+    void* p = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
+    TEST_OVERLAP(ptr1, p);
 }
 
 int
 main(int argc, const char* argv[])
 {
-    memset(&env, 0, sizeof(YogEnv));
     memset(&vm, 0, sizeof(YogVM));
     env.vm = &vm;
 
@@ -468,6 +503,7 @@ main(int argc, const char* argv[])
     CU_pSuite suite = CU_add_suite("mark-sweep-compact", NULL, NULL);
     CU_add_test(suite, "test_alloc1", test_alloc1);
     CU_add_test(suite, "test_overlap1", test_overlap1);
+    CU_add_test(suite, "test_overlap2", test_overlap2);
     CU_basic_run_tests();
     CU_cleanup_registry();
 
