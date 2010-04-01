@@ -110,9 +110,9 @@ YogThread_config_mark_sweep(YogEnv* env, YogVal thread, size_t heap_size)
 
 #if defined(GC_MARK_SWEEP_COMPACT)
 void
-YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t chunk_size, size_t heap_size)
+YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t heap_size)
 {
-    YogHeap* heap = YogMarkSweepCompact_new(env, chunk_size, heap_size);
+    YogHeap* heap = YogMarkSweepCompact_new(env, heap_size);
     YogVM_add_heap(env, env->vm, heap);
     PTR_AS(YogThread, thread)->heap = heap;
 }
@@ -182,9 +182,7 @@ alloc(YogEnv* env, YogVal klass)
     if (env->vm->gc_stress) {
         threshold = 0;
     }
-#   define CHUNK_SIZE   (1 * 1024 * 1024)
-    YogThread_config_mark_sweep_compact(env, thread, CHUNK_SIZE, threshold);
-#   undef CHUNK_SIZE
+    YogThread_config_mark_sweep_compact(env, thread, threshold);
 #elif defined(GC_GENERATIONAL)
 #   define HEAP_SIZE    (1 * 1024 * 1024)
 #   define CHUNK_SIZE   (1 * 1024 * 1024)

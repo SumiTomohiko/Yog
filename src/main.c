@@ -207,9 +207,7 @@ main(int_t argc, char* argv[])
 #elif defined(GC_MARK_SWEEP)
     YogThread_config_mark_sweep(&env, dummy_thread, threshold);
 #elif defined(GC_MARK_SWEEP_COMPACT)
-#   define CHUNK_SIZE  (16 * 1024 * 1024)
-    YogThread_config_mark_sweep_compact(&env, dummy_thread, CHUNK_SIZE, threshold);
-#   undef CHUNK_SIZE
+    YogThread_config_mark_sweep_compact(&env, dummy_thread, threshold);
 #elif defined(GC_GENERATIONAL)
 #   define CHUNK_SIZE   (16 * 1024 * 1024)
 #   define TENURE       32

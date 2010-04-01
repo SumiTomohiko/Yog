@@ -20,7 +20,7 @@ YOG_EXPORT void* YogCopying_copy(YogEnv*, YogHeap*, void*);
 YOG_EXPORT void YogCopying_delete(YogEnv*, YogHeap*);
 YOG_EXPORT void YogCopying_delete_garbage(YogEnv*, YogHeap*);
 YOG_EXPORT BOOL YogCopying_is_empty(YogEnv*, YogHeap*);
-YOG_EXPORT void YogCopying_keep_vm(YogEnv*, YogHeap*);
+YOG_EXPORT void YogCopying_keep_root(YogEnv*, void*, ChildrenKeeper, YogHeap*);
 YOG_EXPORT YogHeap* YogCopying_new(YogEnv*, uint_t);
 YOG_EXPORT void YogCopying_post_gc(YogEnv*, YogHeap*);
 YOG_EXPORT void YogCopying_prepare(YogEnv*, YogHeap*);

@@ -287,11 +287,11 @@ static void
 prepare(YogEnv* env)
 {
 #if defined(GC_COPYING)
-#   define PREPARE  YogCopying_prepare
+#   define PREPARE(env, heap) YogCopying_prepare(env, heap)
 #elif defined(GC_MARK_SWEEP)
-#   define PREPARE  YogMarkSweep_prepare
+#   define PREPARE(env, heap) YogMarkSweep_prepare(env, heap)
 #elif defined(GC_MARK_SWEEP_COMPACT)
-#   define PREPARE  YogMarkSweepCompact_prepare
+#   define PREPARE(env, heap)
 #endif
     ITERATE_HEAPS(env->vm, PREPARE(env, heap));
 #undef PREPARE
@@ -300,15 +300,15 @@ prepare(YogEnv* env)
 static void
 keep_vm(YogEnv* env)
 {
-    YogVal main_thread = MAIN_THREAD(env->vm);
+    YogHeap* heap = PTR_AS(YogThread, MAIN_THREAD(env->vm))->heap;
 #if defined(GC_COPYING)
-#   define KEEP     YogCopying_keep_vm
+#   define KEEP YogCopying_keep_root
 #elif defined(GC_MARK_SWEEP)
-#   define KEEP     YogMarkSweep_keep_vm
+#   define KEEP YogMarkSweep_keep_root
 #elif defined(GC_MARK_SWEEP_COMPACT)
-#   define KEEP     YogMarkSweepCompact_keep_vm
+#   define KEEP YogMarkSweepCompact_keep_root
 #endif
-    KEEP(env, PTR_AS(YogThread, main_thread)->heap);
+    KEEP(env, env->vm, YogVM_keep_children, heap);
 #undef KEEP
 }
 
@@ -338,17 +338,18 @@ static void
 post_gc(YogEnv* env)
 {
 #if defined(GC_COPYING)
-#   define POST     YogCopying_post_gc
+#   define POST(env, heap) YogCopying_post_gc(env, heap)
 #elif defined(GC_MARK_SWEEP)
-#   define POST
+#   define POST(env, heap)
 #elif defined(GC_MARK_SWEEP_COMPACT)
-#   define POST     YogMarkSweepCompact_post_gc
+#   define POST(env, heap)
 #endif
     ITERATE_HEAPS(env->vm, POST(env, heap));
 #undef POST
 }
 
 #if defined(GC_MARK_SWEEP_COMPACT)
+#if 0
 static uint_t
 count_heaps(YogEnv* env)
 {
@@ -365,10 +366,12 @@ init_compactors(YogEnv* env, uint_t size, YogCompactor* compactors)
         YogCompactor_init(env, &compactors[i]);
     }
 }
+#endif
 
-static void
-do_compaction(YogEnv* env)
+void
+YogGC_compact(YogEnv* env)
 {
+#if 0
     uint_t heaps = count_heaps(env);
     YogCompactor* compactors = (YogCompactor*)YogSysdeps_alloca(sizeof(YogCompactor) * heaps);
     init_compactors(env, heaps, compactors);
@@ -395,6 +398,7 @@ do_compaction(YogEnv* env)
 
     EACH_HEAP(YogMarkSweepCompact_shrink(env, heap, &compactors[i], first_free_pages[i]));
 #undef EACH_HEAP
+#endif
 }
 #endif
 
@@ -410,7 +414,9 @@ gc(YogEnv* env)
     post_gc(env);
     delete_heaps(env);
 #if defined(GC_MARK_SWEEP_COMPACT)
+#if 0
     do_compaction(env);
+#endif
 #endif
 }
 

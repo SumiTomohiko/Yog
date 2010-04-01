@@ -207,9 +207,9 @@ keep_object(YogEnv* env, void* ptr, void* heap)
 }
 
 void
-YogCopying_keep_vm(YogEnv* env, YogHeap* heap)
+YogCopying_keep_root(YogEnv* env, void* ptr, ChildrenKeeper keeper, YogHeap* heap)
 {
-    YogVM_keep_children(env, env->vm, keep_object, heap);
+    (*keeper)(env, ptr, keep_object, heap);
 }
 
 void

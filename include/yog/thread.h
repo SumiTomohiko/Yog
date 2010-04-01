@@ -87,7 +87,7 @@ YOG_EXPORT void YogThread_config_bdw(YogEnv*, YogVal);
 YOG_EXPORT void YogThread_config_copying(YogEnv*, YogVal, size_t);
 YOG_EXPORT void YogThread_config_generational(YogEnv*, YogVal, size_t, size_t, size_t, uint_t);
 YOG_EXPORT void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t);
-YOG_EXPORT void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t, size_t);
+YOG_EXPORT void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t);
 YOG_EXPORT void YogThread_define_classes(YogEnv*, YogVal);
 YOG_EXPORT void YogThread_init(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogThread_issue_object_id(YogEnv*, YogVal, YogVal);

@@ -15,7 +15,6 @@ struct MarkSweep {
 
 typedef struct MarkSweep MarkSweep;
 
-
 struct Header {
     struct Header* prev;
     struct Header* next;
@@ -33,7 +32,6 @@ keep_object(YogEnv* env, void* ptr, void* heap)
     if (ptr == NULL) {
         return NULL;
     }
-
     Header* header = (Header*)ptr - 1;
     if (header->marked) {
         return ptr;
@@ -45,7 +43,6 @@ keep_object(YogEnv* env, void* ptr, void* heap)
     if (keeper == NULL) {
         return ptr;
     }
-
     (*keeper)(env, ptr, keep_object, heap);
 
     return ptr;
@@ -162,10 +159,9 @@ YogMarkSweep_alloc(YogEnv* env, YogHeap* heap, ChildrenKeeper keeper, Finalizer 
 }
 
 void
-YogMarkSweep_keep_vm(YogEnv* env, YogHeap* heap)
+YogMarkSweep_keep_root(YogEnv* env, void* ptr, ChildrenKeeper keeper, YogHeap* heap)
 {
-    MarkSweep* ms = (MarkSweep*)heap;
-    YogVM_keep_children(env, env->vm, keep_object, ms);
+    (*keeper)(env, ptr, keep_object, heap);
 }
 
 BOOL
