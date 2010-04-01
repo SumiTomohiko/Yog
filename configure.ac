@@ -26,6 +26,7 @@ AC_CHECK_HEADERS([inttypes.h limits.h stddef.h stdint.h stdlib.h string.h \
                   strings.h sys/time.h unistd.h malloc.h getopt.h float.h \
                   dlfcn.h sys/mman.h windows.h alloca.h winerror.h arpa/inet.h \
                   netdb.h sys/socket.h winsock2.h])
+AC_CHECK_HEADERS([CUnit/CUnit.h], cunit=yes, cunit=no)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -186,11 +187,17 @@ fi
 
 AM_PATH_PYTHON()
 
+AC_DEFINE_UNQUOTED([PREFIX], ["$prefix"], [Define install directory])
+
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile lib/Makefile doc/Makefile installer.nsi
                  ext/concurrent/Makefile ext/wx/Makefile ext/yaml/Makefile
                  ext/zlib/Makefile ext/zip/Makefile ext/socket/Makefile
                  ext/Makefile.common])
+if test "${cunit}" == "yes"
+then
+    AC_CONFIG_FILES([tests/gc/Makefile])
+fi
 
 WX_TYPE="gtk2"
 CFLAGS="${CFLAGS} -Wall -I`pwd`/include -I`pwd`/onig"

@@ -1363,7 +1363,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
         YogString_add_cstr(env, prog, "\\..\\lib");
         YogArray_push(env, search_path, prog);
 #else
-        s = YogString_from_str(env, PREFIX "/lib/yog/" VERSION);
+        s = YogString_from_str(env, PREFIX "/lib/yog/" PACKAGE_VERSION);
         YogArray_push(env, search_path, s);
 #endif
     }

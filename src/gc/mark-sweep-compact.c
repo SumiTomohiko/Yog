@@ -418,6 +418,21 @@ YogMarkSweepCompact_new(YogEnv* env, size_t size)
     return (YogHeap*)heap;
 }
 
+#if defined(TEST)
+#   include <CUnit/CUnit.h>
+#   include <CUnit/Console.h>
+int
+main(int argc, const char* argv[])
+{
+    CU_initialize_registry();
+    CU_pSuite suite = CU_add_suite("foo", NULL, NULL);
+    CU_basic_run_tests();
+    CU_cleanup_registry();
+
+    return 0;
+}
+#endif
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

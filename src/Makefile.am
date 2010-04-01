@@ -21,7 +21,7 @@ COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 string.c symbol.c table.c thread.c value.c vm.c getopt.c
 DEFAULT_INCLUDES = -I.
 CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
-		-I$(GMP_DIR) -Wall -DPREFIX=\"$(prefix)\" -DYOG_CORE @CFLAGS@
+		-I$(GMP_DIR) -Wall -DYOG_CORE @CFLAGS@
 LDFLAGS_COMMON = @LDFLAGS_COMMON@
 LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a -lm @LIBS@
 
