@@ -221,6 +221,8 @@ handle_free_chunk(YogEnv* env, MarkSweepCompact* msc, size_t size, FreeHeader* c
     else {
         CHUNK_PREV_USED(NEXT_CHUNK(chunk)) = TRUE;
     }
+    CHUNK_USED(chunk) = TRUE;
+
     return (ChunkHeader*)chunk + 1;
 }
 
@@ -440,6 +442,16 @@ init_test()
 }
 
 static void
+test_chunk_used()
+{
+    init_test();
+    YogHeap* heap = YogMarkSweepCompact_new(&env, HEAP_SIZE);
+    void* p = YogMarkSweepCompact_alloc(&env, heap, NULL, NULL, 1);
+    ChunkHeader* chunk = payload2chunk((char*)p - sizeof(Header));
+    CU_ASSERT(chunk->used);
+}
+
+static void
 test_alloc1()
 {
     init_test();
@@ -504,6 +516,7 @@ main(int argc, const char* argv[])
     CU_add_test(suite, "test_alloc1", test_alloc1);
     CU_add_test(suite, "test_overlap1", test_overlap1);
     CU_add_test(suite, "test_overlap2", test_overlap2);
+    CU_add_test(suite, "test_chunk_used", test_chunk_used);
     CU_basic_run_tests();
     CU_cleanup_registry();
 
