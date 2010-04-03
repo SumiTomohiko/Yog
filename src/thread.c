@@ -179,9 +179,6 @@ alloc(YogEnv* env, YogVal klass)
     YogThread_config_mark_sweep(env, thread, threshold);
 #elif defined(GC_MARK_SWEEP_COMPACT)
     size_t threshold = 1 * 1024 * 1024;
-    if (env->vm->gc_stress) {
-        threshold = 0;
-    }
     YogThread_config_mark_sweep_compact(env, thread, threshold);
 #elif defined(GC_GENERATIONAL)
 #   define HEAP_SIZE    (1 * 1024 * 1024)
