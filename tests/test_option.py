@@ -4,6 +4,7 @@ from testcase import TestCase
 
 class TestOption(TestCase):
 
+    """
     def _test_option(self, options):
         self._test("", options=options)
 
@@ -27,5 +28,6 @@ class TestOption(TestCase):
 
     def test_threshold6(self):
         self._test_threshold("42M43k44")
+    """
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
