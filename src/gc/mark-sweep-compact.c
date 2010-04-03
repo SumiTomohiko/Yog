@@ -406,9 +406,14 @@ YogMarkSweepCompact_new(YogEnv* env, size_t size)
     heap->header = NULL;
 
     FreeHeader* chunk = mmap_anonymous(env, size);
-    FreeHeader_init(env, chunk, size - sizeof(BOOL), TRUE);
+    uint_t arena_size = size - sizeof(ChunkHeader);
+    FreeHeader_init(env, chunk, arena_size, TRUE);
     FreeFooter* footer = chunk2footer(chunk);
     footer->size = size;
+    ChunkHeader* sentinel = NEXT_CHUNK(chunk);
+    CHUNK_PREV_USED(sentinel) = FALSE; /* unused */
+    CHUNK_SIZE(sentinel) = 0; /* unused */
+    CHUNK_USED(sentinel) = TRUE;
 
     heap->arena = CHUNK(chunk);
     heap->arena_size = size;
