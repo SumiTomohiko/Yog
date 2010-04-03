@@ -27,12 +27,12 @@ struct ChunkHeader {
 
 typedef struct ChunkHeader ChunkHeader;
 
-#define AS_CHUNK(chunk)         ((ChunkHeader*)(chunk))
-#define CHUNK_PREV_USED(chunk)  AS_CHUNK((chunk))->prev_used
-#define CHUNK_SIZE(chunk)       AS_CHUNK((chunk))->size
-#define CHUNK_USED(chunk)       AS_CHUNK((chunk))->used
-#define NEXT_CHUNK(chunk)       AS_CHUNK((char*)(chunk) + CHUNK_SIZE((chunk)))
-#define payload2chunk(p)        AS_CHUNK((char*)(p) - sizeof(ChunkHeader))
+#define CHUNK(chunk)            ((ChunkHeader*)(chunk))
+#define CHUNK_PREV_USED(chunk)  CHUNK((chunk))->prev_used
+#define CHUNK_SIZE(chunk)       CHUNK((chunk))->size
+#define CHUNK_USED(chunk)       CHUNK((chunk))->used
+#define NEXT_CHUNK(chunk)       CHUNK((char*)(chunk) + CHUNK_SIZE((chunk)))
+#define payload2chunk(p)        CHUNK((char*)(p) - sizeof(ChunkHeader))
 
 struct FreeHeader {
     struct ChunkHeader base;
@@ -44,9 +44,9 @@ typedef struct FreeHeader FreeHeader;
 
 #define chunk2footer(chunk) \
     ((FreeFooter*)((char*)(chunk) + CHUNK_SIZE((chunk))) - 1)
-#define AS_FREE(chunk)      ((FreeHeader*)(chunk))
-#define FREE_PREV(chunk)    AS_FREE((chunk))->prev
-#define FREE_NEXT(chunk)    AS_FREE((chunk))->next
+#define FREE(chunk)         ((FreeHeader*)(chunk))
+#define FREE_PREV(chunk)    FREE((chunk))->prev
+#define FREE_NEXT(chunk)    FREE((chunk))->next
 
 struct FreeFooter {
     uint_t size;
@@ -174,7 +174,7 @@ ChunkHeader_init(YogEnv* env, ChunkHeader* chunk, size_t size, BOOL prev_used, B
 static void
 FreeHeader_init(YogEnv* env, FreeHeader* chunk, size_t size, BOOL prev_used)
 {
-    ChunkHeader_init(env, AS_CHUNK(chunk), size, prev_used, FALSE);
+    ChunkHeader_init(env, CHUNK(chunk), size, prev_used, FALSE);
     FREE_PREV(chunk) = FREE_NEXT(chunk) = NULL;
 }
 
@@ -305,7 +305,7 @@ merge_with_prev_chunk(YogEnv* env, MarkSweepCompact* msc, ChunkHeader* chunk)
 static FreeHeader*
 merge_with_next_chunk(YogEnv* env, MarkSweepCompact* msc, FreeHeader* chunk)
 {
-    FreeHeader* next_chunk = AS_FREE(NEXT_CHUNK(chunk));
+    FreeHeader* next_chunk = FREE(NEXT_CHUNK(chunk));
     uint_t next_size = CHUNK_SIZE(next_chunk);
     FreeHeader** list = find_list_of_size(env, msc, next_size);
     DELETE_FROM_LIST(*list, next_chunk);
@@ -324,7 +324,8 @@ delete(YogEnv* env, MarkSweepCompact* msc, Header* header)
     if (CHUNK_PREV_USED(chunk)) {
         CHUNK_USED(chunk) = FALSE;
         FREE_PREV(chunk) = FREE_NEXT(chunk) = NULL;
-        merged_chunk1 = AS_FREE(chunk);
+        chunk2footer(chunk)->size = CHUNK_SIZE(chunk);
+        merged_chunk1 = FREE(chunk);
     }
     else {
         merged_chunk1 = merge_with_prev_chunk(env, msc, chunk);
@@ -409,7 +410,7 @@ YogMarkSweepCompact_new(YogEnv* env, size_t size)
     FreeFooter* footer = chunk2footer(chunk);
     footer->size = size;
 
-    heap->arena = AS_CHUNK(chunk);
+    heap->arena = CHUNK(chunk);
     heap->arena_size = size;
 
     uint_t i;
