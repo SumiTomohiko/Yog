@@ -9,6 +9,163 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+/**
+ * Basic idea of this allocator is same as that of dlmalloc.
+ *
+ * = Glossary
+ *
+ * == Arena
+ *
+ * One memory area overall under this allocator. An arena is splitted into
+ * plural chunks.
+ *
+ * == Chunk
+ *
+ * One memory area returned to a client application (Yog) for each allocation.
+ * There are two kinds of chunks -- used chunk and free chunk. A used chunk
+ * consists of a header and a payload. A free chunk consists of a header, a
+ * footer and unused payload. The structure ChunkHeader represents used chunks'
+ * headers. The structure FreeHeader represents free chunks' headers. The
+ * structure FreeFooter represents free chunks' footer.
+ *
+ * == Payload
+ *
+ * One memory area which a client application (Yog) can use.
+ *
+ * = Memory Layout
+ *
+ * == Arena
+ *
+ * +----------------------------+ head
+ * |                            |
+ * : used chunks / free chunks  :
+ * |                            |
+ * +----------------------------+
+ * |    used chunk (sentinel)   |
+ * +----------------------------+ tail
+ *
+ * A used chunk without a payload is at the end of an arena. This is a sentinel.
+ *
+ * == Used Chunk
+ *
+ * +----------------------------+
+ * |         prev_used          | ^
+ * +----------------------------+ |
+ * |           size             | | header
+ * +----------------------------+ |
+ * |         used (TRUE)        | v
+ * +----------------------------+
+ * |                            |
+ * :         payload            :
+ * |                            |
+ * +----------------------------+
+ *
+ * prev_used becomes TRUE when a PREVIOUS chunk is used. size is a size of this
+ * chunk.
+ *
+ * == Free Chunk
+ *
+ * +----------------------------+
+ * |         prev_used          | ^
+ * +----------------------------+ |
+ * |           size             | |
+ * +----------------------------+ |
+ * |         used (FALSE)       | | header
+ * +----------------------------+ |
+ * |           prev             | |         ^
+ * +----------------------------+ |         |
+ * |           next             | v         |
+ * +----------------------------+           |
+ * |                            |           | become payload
+ * :        unused area         :           |
+ * |                            |           |
+ * +----------------------------+           |
+ * |           size             | <- footer v
+ * +----------------------------+
+ *
+ * First three members (prev_used, size and used) are same as these of a used
+ * chunk. size member in a footer is same as size member in a header. When a
+ * free chunk becomes a used chunk, prev and next members in a header and size
+ * member in footer become parts of payload.
+ *
+ * = Links
+ *
+ * == Small
+ *
+ * +---+---+---+-----+---+
+ * | 24| 32| 40| ... |512| small[SMALL_NUM]
+ * +---+---+---+-----+---+
+ *   |
+ *   v
+ * +---+
+ * |   | A free chunk of size 24
+ * +---+
+ *   ^
+ *   |
+ *   v
+ * +---+
+ * |   |
+ * +---+
+ *
+ * There are SMALL_NUM links. Each link concatenates chunks of same size. In
+ * allocating memory, the allocator finds the best chunk from this links. A
+ * found chunk is removed from a link and separated into two chunks. The first
+ * chunk is returned to Yog, the second chunk is added to a link.
+ *
+ * = Large
+ *
+ * +---+
+ * |   | large
+ * +---+
+ *   |
+ *   v
+ * +---+
+ * |   | A free chunk of any size
+ * +---+
+ *   ^
+ *   |
+ *   v
+ * +---+
+ * |   |
+ * +---+
+ *
+ * Chunks which size is greater than MAX_SMALL_SIZE are concatenated to one
+ * link.
+ *
+ * = Deallocating
+ *
+ * 1.
+ * +----------------------------+
+ * |          free              |
+ * +----------------------------+
+ * |  chunk to be deallocated   |
+ * +----------------------------+
+ * |          free              |
+ * +----------------------------+
+ *
+ * 2.
+ * +----------------------------+
+ * |                            |
+ * |        free (merged)       |
+ * |                            |
+ * +----------------------------+
+ * |          free              |
+ * +----------------------------+
+ *
+ * 3.
+ * +----------------------------+
+ * |                            |
+ * |                            |
+ * |        free (merged)       |
+ * |                            |
+ * |                            |
+ * +----------------------------+
+ *
+ * When used chank is collected by GC, this chunk and previous/next free chunks
+ * are merged into one free chunk. This larger free chunk is added to a
+ * small/large link.
+ */
+
 struct Header {
     struct Header* prev;
     struct Header* next;
