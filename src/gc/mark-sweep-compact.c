@@ -4,6 +4,9 @@
 #include <sys/mman.h>
 #include "yog/error.h"
 #include "yog/gc.h"
+#if defined(GC_GENERATIONAL)
+#   include "yog/gc/internal.h"
+#endif
 #include "yog/gc/mark-sweep-compact.h"
 #include "yog/misc.h"
 #include "yog/vm.h"
@@ -172,9 +175,14 @@ struct Header {
     ChildrenKeeper keeper;
     Finalizer finalizer;
     BOOL marked;
+#if defined(GC_GENERATIONAL)
+    struct OldHeader generational_part;
+#endif
 };
 
 typedef struct Header Header;
+
+#define PAYLOAD2HEADER(ptr) ((Header*)(ptr) - 1)
 
 struct ChunkHeader {
     BOOL prev_used;
@@ -519,13 +527,13 @@ YogMarkSweepCompact_delete_garbage(YogEnv* env, YogHeap* heap)
     }
 }
 
-static void*
-keep_object(YogEnv* env, void* ptr, void* heap)
+void*
+YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     if (ptr == NULL) {
         return NULL;
     }
-    Header* header = (Header*)ptr - 1;
+    Header* header = PAYLOAD2HEADER(ptr);
     if (header->marked) {
         return ptr;
     }
@@ -539,6 +547,12 @@ keep_object(YogEnv* env, void* ptr, void* heap)
     (*keeper)(env, ptr, keep_object, heap);
 
     return ptr;
+}
+
+static void*
+keep_object(YogEnv* env, void* ptr, void* heap)
+{
+    return YogMarkSweepCompact_mark_recursively(env, ptr, keep_object, heap);
 }
 
 void
@@ -583,6 +597,14 @@ YogMarkSweepCompact_new(YogEnv* env, size_t size)
 
     return (YogHeap*)heap;
 }
+
+#if defined(GC_GENERATIONAL)
+ChildrenKeeper
+YogMarkSweepCompact_get_children_keeper(YogEnv* env, YogHeap* heap, void* ptr)
+{
+    return PAYLOAD2HEADER(ptr)->keeper;
+}
+#endif
 
 #if defined(TEST)
 #include <string.h>

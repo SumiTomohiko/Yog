@@ -14,7 +14,6 @@ struct YogHeap {
     struct YogHeap* prev;
     struct YogHeap* next;
     BOOL refered;
-    uint_t err;
 };
 
 typedef struct YogHeap YogHeap;

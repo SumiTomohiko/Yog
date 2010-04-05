@@ -1,8 +1,5 @@
-#if !defined(__COPYING_H__)
-#define __COPYING_H__
-
-#define ERR_COPYING_NONE            0
-#define ERR_COPYING_OUT_OF_MEMORY   1
+#if !defined(__YOG_GC_COPYING_H__)
+#define __YOG_GC_COPYING_H__
 
 #include <stddef.h>
 #include "yog/gc.h"

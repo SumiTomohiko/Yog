@@ -457,9 +457,9 @@ minor_cheney_scan(YogEnv* env)
 }
 
 static void
-trace_grey(YogEnv* env)
+trace_remembered_set(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_trace_grey(env, heap));
+    ITERATE_HEAPS(env->vm, YogGenerational_trace_remembered_set(env, heap));
 }
 
 static void
@@ -480,7 +480,7 @@ minor_gc(YogEnv* env)
     DEBUG(TRACE("%p: enter minor_gc", env));
     prepare(env);
     minor_keep_vm(env);
-    trace_grey(env);
+    trace_remembered_set(env);
     minor_cheney_scan(env);
     minor_delete_garbage(env);
     minor_post_gc(env);

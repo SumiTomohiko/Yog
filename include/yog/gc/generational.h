@@ -5,45 +5,6 @@
 #include "yog/gc.h"
 #include "yog/yog.h"
 
-#if 0
-/* TODO: commonize with yog/yog.h */
-#if !defined(__YOG_YOG_H__) && !defined(__YOG_GC_GENERATIONAL_H__)
-typedef int BOOL;
-#define FALSE   0
-#define TRUE    (!(FALSE))
-typedef struct YogEnv YogEnv;
-typedef void* (*ObjectKeeper)(YogEnv*, void*);
-typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper);
-typedef void (*Finalizer)(YogEnv*, void*);
-#endif
-#endif
-
-#define ERR_GEN_NONE        0
-#define ERR_GEN_MMAP        1
-#define ERR_GEN_MUNMAP      2
-#define ERR_GEN_MALLOC      3
-#define ERR_GEN_UNKNOWN     4
-
-struct YogGenerational {
-    struct YogGenerational* prev;
-    struct YogGenerational* next;
-    BOOL refered;
-
-    unsigned int err;
-    struct YogHeap* copying;
-    struct YogHeap* msc;
-    unsigned int tenure;
-    BOOL has_young_ref;
-};
-
-typedef struct YogGenerational YogGenerational;
-
-#define PTR2GEN(p)      (*((unsigned int*)(p) - 1))
-#define IS_YOUNG(p)     (PTR2GEN(p) == GEN_YOUNG)
-
-#define GEN_YOUNG   1
-#define GEN_OLD     2
-
 /* PROTOTYPE_START */
 
 /**

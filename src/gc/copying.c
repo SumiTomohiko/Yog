@@ -7,6 +7,9 @@
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/gc/copying.h"
+#if defined(GC_GENERATIONAL)
+#   include "yog/gc/internal.h"
+#endif
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -16,13 +19,13 @@ struct Header {
     void* forwarding_addr;
     size_t size;
 #if defined(GC_GENERATIONAL)
-    unsigned int survive_num;
-    BOOL updated;
-    unsigned int gen;
+    struct YoungHeader generational_part;
 #endif
 };
 
 typedef struct Header Header;
+
+#define PAYLOAD2HEADER(ptr) ((Header*)(ptr) - 1)
 
 struct Space {
     unsigned char* free;
@@ -67,7 +70,7 @@ YogCopying_copy(YogEnv* env, YogHeap* heap, void* ptr)
         return NULL;
     }
 
-    Header* header = (Header*)ptr - 1;
+    Header* header = PAYLOAD2HEADER(ptr);
     if (header->forwarding_addr != NULL) {
         DEBUG(TRACE("%p: forward: %p->(%p)", env, ptr, header->forwarding_addr));
         return header->forwarding_addr;
@@ -255,7 +258,6 @@ YogCopying_alloc(YogEnv* env, YogHeap* heap, ChildrenKeeper keeper, Finalizer fi
         space = copying->from_space;
         rest_size = REST_SIZE(copying, space);
         if (rest_size < rounded_size) {
-            heap->err = ERR_COPYING_OUT_OF_MEMORY;
             return NULL;
         }
     }
@@ -266,11 +268,6 @@ YogCopying_alloc(YogEnv* env, YogHeap* heap, ChildrenKeeper keeper, Finalizer fi
     header->finalizer = finalizer;
     header->forwarding_addr = NULL;
     header->size = rounded_size;
-#if defined(GC_GENERATIONAL)
-    header->survive_num = 0;
-    header->updated = FALSE;
-    header->gen = GEN_YOUNG;
-#endif
 
     space->free += rounded_size;
 
@@ -311,6 +308,38 @@ YogCopying_delete(YogEnv* env, YogHeap* heap)
     free_spaces(env, (Copying*)heap);
     YogGC_free(env, heap, sizeof(Copying));
 }
+
+#if defined(GC_GENERATIONAL)
+void
+YogCopying_set_forwarding_addr(YogEnv* env, YogHeap* heap, void* ptr, void* forwarding_addr)
+{
+    PAYLOAD2HEADER(ptr)->forwarding_addr = forwarding_addr;
+}
+
+void*
+YogCopying_get_forwarding_addr(YogEnv* env, YogHeap* heap, void* ptr)
+{
+    return PAYLOAD2HEADER(ptr)->forwarding_addr;
+}
+
+ChildrenKeeper
+YogCopying_get_keeper(YogEnv* env, YogHeap* heap, void* ptr)
+{
+    return PAYLOAD2HEADER(ptr)->keeper;
+}
+
+Finalizer
+YogCopying_get_finalizer(YogEnv* env, YogHeap* heap, void* ptr)
+{
+    return PAYLOAD2HEADER(ptr)->finalizer;
+}
+
+size_t
+YogCopying_get_payload_size(YogEnv* env, YogHeap* heap, void* ptr)
+{
+    return PAYLOAD2HEADER(ptr)->size - sizeof(Header);
+}
+#endif
 
 #if 0
 #   include <stdarg.h>
