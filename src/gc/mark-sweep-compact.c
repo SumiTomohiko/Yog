@@ -395,6 +395,7 @@ static void*
 alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
 {
     if (env->vm->gc_stress) {
+        /* TODO: don't GC in running GC */
         gc(env);
     }
 
@@ -540,11 +541,11 @@ YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper keeper
 
     header->marked = TRUE;
 
-    ChildrenKeeper keeper = header->keeper;
-    if (keeper == NULL) {
+    ChildrenKeeper children_keeper = header->keeper;
+    if (children_keeper == NULL) {
         return ptr;
     }
-    (*keeper)(env, ptr, keep_object, heap);
+    (*children_keeper)(env, ptr, keeper, heap);
 
     return ptr;
 }
@@ -690,7 +691,8 @@ test_overlap2()
     TEST_OVERLAP(ptr1, p);
 }
 
-int
+#define ESCAPE_PROTOTYPE
+ESCAPE_PROTOTYPE int
 main(int argc, const char* argv[])
 {
     memset(&vm, 0, sizeof(YogVM));

@@ -15,7 +15,7 @@ insts2bin(YogEnv* env, YogVal inst)
         switch (INST(inst)->type) {
         case INST_OP:
             {
-                switch (INST_OPCODE(inst)) {
+                switch (INST(inst)->opcode) {
 ${insts2bin}
                 default:
                     {
@@ -50,7 +50,7 @@ count_stack_size(YogEnv* env, YogVal inst)
             {
                 int_t pop_size = 0;
                 int_t push_size = 0;
-                switch (INST_OPCODE(inst)) {
+                switch (INST(inst)->opcode) {
 ${count_stack_size}
                 default:
                     {

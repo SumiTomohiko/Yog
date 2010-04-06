@@ -120,9 +120,9 @@ YogThread_config_mark_sweep_compact(YogEnv* env, YogVal thread, size_t heap_size
 
 #if defined(GC_GENERATIONAL)
 void
-YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size, size_t chunk_size, size_t old_heap_size, uint_t age)
+YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size, size_t old_heap_size, uint_t max_age)
 {
-    YogHeap* heap = YogGenerational_new(env, young_heap_size, chunk_size, old_heap_size, age);
+    YogHeap* heap = YogGenerational_new(env, young_heap_size, old_heap_size, max_age);
     YogVM_add_heap(env, env->vm, heap);
     PTR_AS(YogThread, thread)->heap = heap;
 }
@@ -182,14 +182,9 @@ alloc(YogEnv* env, YogVal klass)
     YogThread_config_mark_sweep_compact(env, thread, threshold);
 #elif defined(GC_GENERATIONAL)
 #   define HEAP_SIZE    (1 * 1024 * 1024)
-#   define CHUNK_SIZE   (1 * 1024 * 1024)
-#   define TENURE       32
-#   define THRESHOLD    (1 * 1024 * 1024)
-    YogThread_config_generational(env, thread, HEAP_SIZE, CHUNK_SIZE, THRESHOLD, TENURE);
-    YogGenerational_alloc_heap(env, PTR_AS(YogThread, thread)->heap);
-#   undef THRESHOLD
-#   undef TENURE
-#   undef CHUNK_SIZE
+#   define MAX_AGE      32
+    YogThread_config_generational(env, thread, HEAP_SIZE, HEAP_SIZE, MAX_AGE);
+#   undef MAX_AGE
 #   undef HEAP_SIZE
 #endif
 

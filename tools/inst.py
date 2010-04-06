@@ -346,7 +346,7 @@ class CodeGenerator(object):
             elif m.group("plus"):
                 s = m.group("plus")
             elif m.group("name"):
-                s = "%(inst)s_%(name)s(inst)" % { "name": m.group("name").upper(), "inst": name.upper() }
+                s = "PTR_AS(YogInst, inst)->u.%(opcode)s.%(operand)s" % { "opcode": name, "operand": m.group("name") }
             elif m.group("number"):
                 s = m.group("number")
             else:
@@ -388,12 +388,13 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, uint_t lineno""" % { "inst": 
     SAVE_ARG%(s)s%(save_arg_args_num)s(%(save_arg_args)s);
 
     YogVal inst = Inst_new(env, lineno);
-    INST(inst)->type = INST_OP;
-    INST_OPCODE(inst) = OP(%(name)s);
+    PTR_AS(YogInst, inst)->type = INST_OP;
+    PTR_AS(YogInst, inst)->opcode = OP(%(name)s);
 """ % { "name": inst.name.upper(), "s": s, "save_arg_args_num": save_arg_args_num, "save_arg_args":  ", ".join(["env", "data"] + map(lambda op: op.name, pc_operands)), })
             for operand in inst.operands:
                 compile_data.write("""
-    %(inst)s_%(operand)s(inst) = %(name)s;""" % { "inst": inst.name.upper(), "operand": operand.name.upper(), "name": operand.name })
+    PTR_AS(YogInst, inst)->u.%(opcode)s.%(operand)s = %(operand)s;
+""" % { "operand": operand.name , "opcode": inst.name })
             compile_data.write("""
 
     add_inst(env, data, inst);
@@ -409,11 +410,13 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, uint_t lineno""" % { "inst": 
                     {
                         YogBinary_push_uint8(env, code, OP(%(name)s));""" % { "name": inst.name.upper() })
             for operand in inst.operands:
-                inst_attr = "%(inst)s_%(name)s(inst)" % { "inst": inst.name.upper(), "name": operand.name.upper() }
                 if operand.type == "pc_t":
-                    inst_attr = "INST(" + inst_attr + ")->pc"
+                    insts2bin.write("""
+                        YogVal dest = PTR_AS(YogInst, inst)->u.%(opcode)s.%(operand)s;
+                        YogBinary_push_%(type)s(env, code, PTR_AS(YogInst, dest)->pc);""" % { "type": self.type_name2func_name(operand.type), "opcode": inst.name, "operand": operand.name })
+                    continue
                 insts2bin.write("""
-                        YogBinary_push_%(type)s(env, code, %(inst_attr)s);""" % { "type": self.type_name2func_name(operand.type), "inst_attr": inst_attr })
+                        YogBinary_push_%(type)s(env, code, PTR_AS(YogInst, inst)->u.%(opcode)s.%(operand)s);""" % { "type": self.type_name2func_name(operand.type), "opcode": inst.name, "operand": operand.name })
             insts2bin.write("""
                         break;
                     }""")
@@ -471,13 +474,7 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, uint_t lineno""" % { "inst": 
             structs.write("""
         } %(name)s;""" % { "name": inst.name })
 
-        macros = StringIO()
-        for inst in self.insts:
-            for operand in inst.operands:
-                macros.write("""
-#define %(inst_macro)s_%(operand_macro)s(inst) (INST(inst)->u.%(inst)s.%(operand)s)""" % { "inst_macro": inst.name.upper(), "operand_macro": operand.name.upper(), "inst": inst.name, "operand": operand.name })
-
-        kw = { "structs": structs.getvalue(), "macros": macros.getvalue(), }
+        kw = { "structs": structs.getvalue() }
         self.tmpl2file(inst_h_tmpl, kw, inst_h)
 
     def do(self, def_, opcodes_h=None, opcodes_h_tmpl=None, eval_inc=None, 

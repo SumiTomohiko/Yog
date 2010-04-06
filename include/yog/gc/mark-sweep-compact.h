@@ -14,8 +14,10 @@
 YOG_EXPORT void* YogMarkSweepCompact_alloc(YogEnv*, YogHeap*, ChildrenKeeper, Finalizer, size_t);
 YOG_EXPORT void YogMarkSweepCompact_delete(YogEnv*, YogHeap*);
 YOG_EXPORT void YogMarkSweepCompact_delete_garbage(YogEnv*, YogHeap*);
+YOG_EXPORT ChildrenKeeper YogMarkSweepCompact_get_children_keeper(YogEnv*, YogHeap*, void*);
 YOG_EXPORT BOOL YogMarkSweepCompact_is_empty(YogEnv*, YogHeap*);
 YOG_EXPORT void YogMarkSweepCompact_keep_root(YogEnv*, void*, ChildrenKeeper, YogHeap*);
+YOG_EXPORT void* YogMarkSweepCompact_mark_recursively(YogEnv*, void*, ObjectKeeper, void*);
 YOG_EXPORT YogHeap* YogMarkSweepCompact_new(YogEnv*, size_t);
 
 /* PROTOTYPE_END */

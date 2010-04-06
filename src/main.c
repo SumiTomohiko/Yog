@@ -209,16 +209,9 @@ main(int_t argc, char* argv[])
 #elif defined(GC_MARK_SWEEP_COMPACT)
     YogThread_config_mark_sweep_compact(&env, dummy_thread, threshold);
 #elif defined(GC_GENERATIONAL)
-#   define CHUNK_SIZE   (16 * 1024 * 1024)
-#   define TENURE       32
-    if (!YogMarkSweepCompact_install_sigsegv_handler(&env)) {
-        fprintf(stderr, "failed installing SIGSEGV handler");
-        return -2;
-    }
-    YogThread_config_generational(&env, dummy_thread, init_heap_size, CHUNK_SIZE, threshold, TENURE);
-    YogGenerational_alloc_heap(&env, PTR_AS(YogThread, dummy_thread)->heap);
-#   undef TENURE
-#   undef CHUNK_SIZE
+#   define MAX_AGE 32
+    YogThread_config_generational(&env, dummy_thread, init_heap_size, init_heap_size, MAX_AGE);
+#   undef MAX_AGE
 #endif
     env.thread = dummy_thread;
     YogVal main_thread = YogThread_new(&env);

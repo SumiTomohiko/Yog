@@ -198,7 +198,6 @@ YogHeap_init(YogEnv* env, YogHeap* heap)
 {
     heap->prev = heap->next = NULL;
     heap->refered = TRUE;
-    heap->err = 0;
 }
 
 void
@@ -348,60 +347,6 @@ post_gc(YogEnv* env)
 #undef POST
 }
 
-#if defined(GC_MARK_SWEEP_COMPACT)
-#if 0
-static uint_t
-count_heaps(YogEnv* env)
-{
-    uint_t n = 0;
-    ITERATE_HEAPS(env->vm, n++);
-    return n;
-}
-
-static void
-init_compactors(YogEnv* env, uint_t size, YogCompactor* compactors)
-{
-    uint_t i;
-    for (i = 0; i < size; i++) {
-        YogCompactor_init(env, &compactors[i]);
-    }
-}
-#endif
-
-void
-YogGC_compact(YogEnv* env)
-{
-#if 0
-    uint_t heaps = count_heaps(env);
-    YogCompactor* compactors = (YogCompactor*)YogSysdeps_alloca(sizeof(YogCompactor) * heaps);
-    init_compactors(env, heaps, compactors);
-#define EACH_HEAP(proc)     do { \
-    YogHeap* heap = env->vm->heaps; \
-    uint_t i = 0; \
-    while (heap != NULL) { \
-        proc; \
-        heap = heap->next; \
-        i++; \
-    } \
-} while (0)
-    EACH_HEAP(YogMarkSweepCompact_alloc_virtually(env, heap, &compactors[i]));
-    YogMarkSweepCompactPage** first_free_pages = (YogMarkSweepCompactPage**)YogSysdeps_alloca(sizeof(YogMarkSweepCompactPage*) * heaps);
-    EACH_HEAP(first_free_pages[i] = compactors[i].next_page);
-
-    YogVM* vm = env->vm;
-    ITERATE_HEAPS(vm, YogMarkSweepCompact_prepare(env, heap));
-    YogVM_keep_children(env, vm, YogMarkSweepCompact_update_ptr, PTR_AS(YogThread, MAIN_THREAD(vm))->heap);
-    ITERATE_HEAPS(vm, YogMarkSweepCompact_update_front_header(env, heap));
-
-    init_compactors(env, heaps, compactors);
-    EACH_HEAP(YogMarkSweepCompact_move_objs(env, heap, &compactors[i]));
-
-    EACH_HEAP(YogMarkSweepCompact_shrink(env, heap, &compactors[i], first_free_pages[i]));
-#undef EACH_HEAP
-#endif
-}
-#endif
-
 static void
 gc(YogEnv* env)
 {
@@ -436,7 +381,70 @@ YogGC_delete(YogEnv* env)
 }
 #endif
 
+#if defined(GC_MARK_SWEEP_COMPACT) || defined(GC_GENERATIONAL)
+#if 0
+static uint_t
+count_heaps(YogEnv* env)
+{
+    uint_t n = 0;
+    ITERATE_HEAPS(env->vm, n++);
+    return n;
+}
+
+static void
+init_compactors(YogEnv* env, uint_t size, YogCompactor* compactors)
+{
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        YogCompactor_init(env, &compactors[i]);
+    }
+}
+#endif
+
+void
+YogGC_compact(YogEnv* env)
+{
+    YOG_BUG(env, "Compaction is under construction. I apologize for inconvenience.");
+#if 0
+    uint_t heaps = count_heaps(env);
+    YogCompactor* compactors = (YogCompactor*)YogSysdeps_alloca(sizeof(YogCompactor) * heaps);
+    init_compactors(env, heaps, compactors);
+#define EACH_HEAP(proc)     do { \
+    YogHeap* heap = env->vm->heaps; \
+    uint_t i = 0; \
+    while (heap != NULL) { \
+        proc; \
+        heap = heap->next; \
+        i++; \
+    } \
+} while (0)
+    EACH_HEAP(YogMarkSweepCompact_alloc_virtually(env, heap, &compactors[i]));
+    YogMarkSweepCompactPage** first_free_pages = (YogMarkSweepCompactPage**)YogSysdeps_alloca(sizeof(YogMarkSweepCompactPage*) * heaps);
+    EACH_HEAP(first_free_pages[i] = compactors[i].next_page);
+
+    YogVM* vm = env->vm;
+    ITERATE_HEAPS(vm, YogMarkSweepCompact_prepare(env, heap));
+    YogVM_keep_children(env, vm, YogMarkSweepCompact_update_ptr, PTR_AS(YogThread, MAIN_THREAD(vm))->heap);
+    ITERATE_HEAPS(vm, YogMarkSweepCompact_update_front_header(env, heap));
+
+    init_compactors(env, heaps, compactors);
+    EACH_HEAP(YogMarkSweepCompact_move_objs(env, heap, &compactors[i]));
+
+    EACH_HEAP(YogMarkSweepCompact_shrink(env, heap, &compactors[i], first_free_pages[i]));
+#undef EACH_HEAP
+#endif
+}
+#endif
+
+
 #if defined(GC_GENERATIONAL)
+void
+YogGC_add_to_remembered_set(YogEnv* env, void* ptr)
+{
+    YogHeap* heap = PTR_AS(YogThread, env->thread)->heap;
+    YogGenerational_add_to_remembered_set(env, heap, ptr);
+}
+
 static void
 prepare(YogEnv* env)
 {
@@ -552,14 +560,13 @@ YogGC_perform_major(YogEnv* env)
 }
 #endif
 
-void
-YogGC_keep(YogEnv* env, YogVal* val, ObjectKeeper keeper, void* heap)
+YogVal
+YogGC_keep(YogEnv* env, YogVal val, ObjectKeeper keeper, void* heap)
 {
-    if (!IS_PTR(*val)) {
-        return;
+    if (!IS_PTR(val)) {
+        return val;
     }
-
-    *val = PTR2VAL((*keeper)(env, VAL2PTR(*val), heap));
+    return PTR2VAL((*keeper)(env, VAL2PTR(val), heap));
 }
 
 void

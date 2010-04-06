@@ -85,7 +85,7 @@ DECL_AS_TYPE(YogThread_new);
 /* src/thread.c */
 YOG_EXPORT void YogThread_config_bdw(YogEnv*, YogVal);
 YOG_EXPORT void YogThread_config_copying(YogEnv*, YogVal, size_t);
-YOG_EXPORT void YogThread_config_generational(YogEnv*, YogVal, size_t, size_t, size_t, uint_t);
+YOG_EXPORT void YogThread_config_generational(YogEnv*, YogVal, size_t, size_t, uint_t);
 YOG_EXPORT void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t);
 YOG_EXPORT void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t);
 YOG_EXPORT void YogThread_define_classes(YogEnv*, YogVal);

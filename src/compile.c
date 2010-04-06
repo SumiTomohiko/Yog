@@ -234,8 +234,7 @@ YogInst_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         return;
     }
 
-    YogVal* p;
-    switch (INST_OPCODE(inst)) {
+    switch (INST(inst)->opcode) {
     case OP(JUMP):
         YogGC_KEEP(env, INST(inst), u.jump.dest, keeper, heap);
         break;
@@ -1863,7 +1862,7 @@ calc_pc(YogVal inst)
         }
 
         if (INST(inst)->type == INST_OP) {
-            uint_t size = Yog_get_inst_size(INST_OPCODE(inst));
+            uint_t size = Yog_get_inst_size(INST(inst)->opcode);
             INST(inst)->size = size;
             pc += size;
         }
@@ -3518,7 +3517,7 @@ YogCompiler_compile_finish_code(YogEnv* env)
 
     inst = Inst_new(env, 0);
     INST(inst)->type = INST_OP;
-    INST_OPCODE(inst) = OP(FINISH);
+    INST(inst)->opcode = OP(FINISH);
 
     bin = insts2bin(env, inst);
     YogBinary_shrink(env, bin);

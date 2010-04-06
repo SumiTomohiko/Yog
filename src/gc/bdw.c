@@ -50,7 +50,7 @@ YogBDW_new(YogEnv* env)
 {
     BDW* heap = (BDW*)YogGC_malloc(env, sizeof(BDW));
     YogHeap_init(env, (YogHeap*)heap);
-    return heap;
+    return (YogHeap*)heap;
 }
 
 /**

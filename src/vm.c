@@ -350,7 +350,7 @@ keep_local_vals(YogEnv* env, YogVal* vals, uint_t size, ObjectKeeper keeper, voi
         YogVal* val = &vals[i];
         DEBUG(TRACE("val=%p, *val=0x%08x", val, *val));
         DEBUG(YogVal old_val = *val);
-        YogGC_keep(env, val, keeper, heap);
+        *val = YogGC_keep(env, *val, keeper, heap);
         DEBUG(TRACE("val=%p, 0x%08x->0x%08x", val, old_val, *val));
     }
 }
@@ -386,7 +386,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     }
 
 #define KEEP(member)    do { \
-    YogGC_KEEP(env, vm, member, keeper, heap); \
+    vm->member = YogGC_keep(env, vm->member, keeper, heap); \
 } while (0)
     KEEP(id2name);
     KEEP(name2id);
@@ -451,7 +451,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     YogIndirectPointer* indirect_ptr = vm->indirect_ptr;
     while (indirect_ptr != NULL) {
-        YogGC_KEEP(env, indirect_ptr, val, keeper, heap);
+        indirect_ptr->val = YogGC_keep(env, indirect_ptr->val, keeper, heap);
         indirect_ptr = indirect_ptr->next;
     }
 }

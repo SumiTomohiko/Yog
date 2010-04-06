@@ -263,7 +263,7 @@ YogInit_zip(YogEnv* env)
     pkg = Package_new(env);
 
     eZipError = YogClass_new(env, "ZipError", env->vm->eException);
-    YogGC_UPDATE_PTR(PTR_AS(Package, pkg), eZipError, eZipError);
+    YogGC_UPDATE_PTR(env, PTR_AS(Package, pkg), eZipError, eZipError);
 
     YogPackage_define_function(env, pkg, "compress", compress);
     YogPackage_define_function(env, pkg, "decompress", decompress);

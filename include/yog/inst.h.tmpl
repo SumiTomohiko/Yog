@@ -26,9 +26,6 @@ ${structs}
     uint_t size;
 };
 
-#define INST_OPCODE(v)  (INST(v)->opcode)
-${macros}
-
 typedef struct YogInst YogInst;
 
 #define INST(v)     PTR_AS(YogInst, (v))
