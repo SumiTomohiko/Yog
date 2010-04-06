@@ -135,7 +135,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
             index++;
         }
         kw = YogDict_new(env);
-        PTR_AS(YogValArray, args)->items[POS_OFFSET + index] = kw;
+        YogGC_UPDATE_PTR(PTR_AS(YogValArray, args), items[POS_OFFSET + index], kw);
     }
 
     if (arg_argc < posargc) {
@@ -148,7 +148,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
         }
         uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
         array = YogArray_new(env);
-        PTR_AS(YogValArray, args)->items[POS_OFFSET + argc] = array;
+        YogGC_UPDATE_PTR(PTR_AS(YogValArray, args), items[POS_OFFSET + argc], array);
         for (i = PTR_AS(YogArgInfo, arg_info)->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }
@@ -232,7 +232,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
         if (0 < PTR_AS(YogArgInfo, arg_info)->kwargc) {
             index++;
         }
-        PTR_AS(YogValArray, args)->items[POS_OFFSET + index] = blockarg;
+        YogGC_UPDATE_PTR(PTR_AS(YogValArray, args), items[POS_OFFSET + index], blockarg);
     }
 
     uint_t required_argc = PTR_AS(YogArgInfo, arg_info)->required_argc;
@@ -258,8 +258,8 @@ setup_script_frame(YogEnv* env, YogVal frame, YogVal code)
     YogVal stack = YogValArray_new(env, stack_size);
 
     PTR_AS(YogScriptFrame, frame)->pc = 0;
-    PTR_AS(YogScriptFrame, frame)->code = code;
-    PTR_AS(YogScriptFrame, frame)->stack = stack;
+    YogGC_UPDATE_PTR(PTR_AS(YogScriptFrame, frame), code, code);
+    YogGC_UPDATE_PTR(PTR_AS(YogScriptFrame, frame), stack, stack);
 
     RETURN_VOID(env);
 }
@@ -296,27 +296,27 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
 
     uint_t local_vars_count = PTR_AS(YogCode, code)->local_vars_count;
     vars = YogValArray_new(env, local_vars_count);
-    PTR_AS(YogValArray, vars)->items[0] = self;
+    YogGC_UPDATE_PTR(PTR_AS(YogValArray, vars), items[0], self);
 
     fill_args(env, callee, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, vars);
 
     frame = YogMethodFrame_new(env);
     setup_script_frame(env, frame, code);
-    PTR_AS(YogMethodFrame, frame)->vars = vars;
-    PTR_AS(YogMethodFrame, frame)->klass = PTR_AS(YogFunction, callee)->klass;
+    YogGC_UPDATE_PTR(PTR_AS(YogMethodFrame, frame), vars, vars);
+    YogGC_UPDATE_PTR(PTR_AS(YogMethodFrame, frame), klass, PTR_AS(YogFunction, callee)->klass);
     PTR_AS(YogMethodFrame, frame)->name = PTR_AS(YogFunction, callee)->name;
-    PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogFunction, callee)->globals;
-    PTR_AS(YogScriptFrame, frame)->outer_vars = outer_vars;
+    YogGC_UPDATE_PTR(PTR_AS(YogScriptFrame, frame), globals, PTR_AS(YogFunction, callee)->globals);
+    YogGC_UPDATE_PTR(PTR_AS(YogScriptFrame, frame), outer_vars, outer_vars);
 
     frame_to_long_return = PTR_AS(YogFunction, callee)->frame_to_long_return;
-    PTR_AS(YogScriptFrame, frame)->frame_to_long_return = IS_PTR(frame_to_long_return) ? frame_to_long_return : env->frame;
-    PTR_AS(YogScriptFrame, frame)->frame_to_long_break = PTR_AS(YogFunction, callee)->frame_to_long_break;
+    YogGC_UPDATE_PTR(PTR_AS(YogScriptFrame, frame), frame_to_long_return, IS_PTR(frame_to_long_return) ? frame_to_long_return : env->frame);
+    YogGC_UPDATE_PTR(PTR_AS(YogScriptFrame, frame), frame_to_long_break, PTR_AS(YogFunction, callee)->frame_to_long_break);
 #if 0
-    PTR_AS(YogScriptFrame, frame)->frame_to_long_return = PTR_AS(YogFunction, callee)->frame_to_long_return;
-    PTR_AS(YogScriptFrame, frame)->frame_to_long_break = PTR_AS(YogFunction, callee)->frame_to_long_break;
+    YogGC_UPDATE_PTR(PTR_AS(YogScriptFrame, frame), frame_to_long_return, PTR_AS(YogFunction, callee)->frame_to_long_return);
+    YogGC_UPDATE_PTR(PTR_AS(YogScriptFrame, frame), frame_to_long_break, PTR_AS(YogFunction, callee)->frame_to_long_break);
 #endif
 
-    PTR_AS(YogFrame, frame)->prev = env->frame;
+    YogGC_UPDATE_PTR(PTR_AS(YogFrame, frame), prev, env->frame);
     env->frame = frame;
 
     RETURN_VOID(env);
@@ -383,8 +383,8 @@ YogFunction_call_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal klass)
     PUSH_LOCAL(env, val);
 
     val = YogInstanceMethod_new(env);
-    PTR_AS(YogInstanceMethod, val)->self = obj;
-    PTR_AS(YogInstanceMethod, val)->f = self;
+    YogGC_UPDATE_PTR(PTR_AS(YogInstanceMethod, val), self, obj);
+    YogGC_UPDATE_PTR(PTR_AS(YogInstanceMethod, val), f, self);
 
     RETURN(env, val);
 }
@@ -500,8 +500,8 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uin
     kw = create_keyword_argument(env, kwargc, kwargs, varkwarg);
 
     frame = YogCFrame_new(env);
-    PTR_AS(YogCFrame, frame)->f = callee;
-    PTR_AS(YogFrame, frame)->prev = env->frame;
+    YogGC_UPDATE_PTR(PTR_AS(YogCFrame, frame), f, callee);
+    YogGC_UPDATE_PTR(PTR_AS(YogFrame, frame), prev, env->frame);
     env->frame = frame;
 
     Body f = (Body)PTR_AS(YogNativeFunction, callee)->f;
@@ -611,7 +611,7 @@ YogNativeFunction_new(YogEnv* env, ID class_name, YogVal pkg, const char* func_n
 
     func = YogNativeFunction_alloc(env, env->vm->cNativeFunction);
     PTR_AS(YogNativeFunction, func)->class_name = class_name;
-    PTR_AS(YogNativeFunction, func)->pkg = pkg;
+    YogGC_UPDATE_PTR(PTR_AS(YogNativeFunction, func), pkg, pkg);
     PTR_AS(YogNativeFunction, func)->func_name = func_id;
     PTR_AS(YogNativeFunction, func)->f = (Body)f;
 
@@ -750,8 +750,8 @@ YogNativeFunction_call_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal kl
     PUSH_LOCAL(env, val);
 
     val = YogNativeInstanceMethod_new(env);
-    PTR_AS(YogInstanceMethod, val)->self = obj;
-    PTR_AS(YogInstanceMethod, val)->f = self;
+    YogGC_UPDATE_PTR(PTR_AS(YogInstanceMethod, val), self, obj);
+    YogGC_UPDATE_PTR(PTR_AS(YogInstanceMethod, val), f, self);
 
     RETURN(env, val);
 }

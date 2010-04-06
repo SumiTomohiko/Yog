@@ -110,7 +110,7 @@ ensure_body_size(YogEnv* env, YogVal array, uint_t size)
         YogVal* from = PTR_AS(YogValArray, old_body)->items;
         memcpy(to, from, sizeof(YogVal) * cur_size);
 
-        PTR_AS(YogArray, array)->body = new_body;
+        YogGC_UPDATE_PTR(PTR_AS(YogArray, array), body, new_body);
     }
 
     RETURN_VOID(env);
@@ -125,7 +125,7 @@ YogArray_push(YogEnv* env, YogVal array, YogVal val)
 
     YogVal body = PTR_AS(YogArray, array)->body;
     size_t size = PTR_AS(YogArray, array)->size;
-    PTR_AS(YogValArray, body)->items[size] = val;
+    YogGC_UPDATE_PTR(PTR_AS(YogValArray, body), items[size], val);
     PTR_AS(YogArray, array)->size++;
 
     RETURN_VOID(env);
@@ -173,7 +173,7 @@ alloc_obj(YogEnv* env, YogVal klass, uint_t size)
     array = ALLOC_OBJ(env, YogArray_keep_children, NULL, YogArray);
     YogBasicObj_init(env, array, TYPE_ARRAY, 0, klass);
     PTR_AS(YogArray, array)->size = 0;
-    PTR_AS(YogArray, array)->body = body;
+    YogGC_UPDATE_PTR(PTR_AS(YogArray, array), body, body);
 
     RETURN(env, array);
 }
@@ -289,7 +289,7 @@ assign_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Y
     }
 
     body = PTR_AS(YogArray, self)->body;
-    PTR_AS(YogValArray, body)->items[i] = val;
+    YogGC_UPDATE_PTR(PTR_AS(YogValArray, body), items[i], val);
 
     RETURN(env, self);
 }
@@ -417,7 +417,7 @@ YogArray_shift(YogEnv* env, YogVal self)
     uint_t i;
     for (i = 1; i < size; i++) {
         elem = YogArray_at(env, self, i);
-        PTR_AS(YogValArray, body)->items[i - 1] = elem;
+        YogGC_UPDATE_PTR(PTR_AS(YogValArray, body), items[i - 1], elem);
     }
     PTR_AS(YogValArray, body)->items[size - 1] = YUNDEF;
 
@@ -478,9 +478,9 @@ unshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
     uint_t i;
     for (i = size; 0 < i; i--) {
         val = YogArray_at(env, self, i - 1);
-        PTR_AS(YogValArray, body)->items[i] = val;
+        YogGC_UPDATE_PTR(PTR_AS(YogValArray, body), items[i], val);
     }
-    PTR_AS(YogValArray, body)->items[0] = obj;
+    YogGC_UPDATE_PTR(PTR_AS(YogValArray, body), items[0], obj);
     PTR_AS(YogArray, self)->size++;
 
     RETURN(env, self);

@@ -322,8 +322,8 @@ run(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 
     arg = ThreadArg_new(env);
     PTR_AS(ThreadArg, arg)->vm = env->vm;
-    PTR_AS(ThreadArg, arg)->thread = self;
-    PTR_AS(ThreadArg, arg)->vararg = vararg;
+    YogGC_UPDATE_PTR(PTR_AS(ThreadArg, arg), thread, self);
+    YogGC_UPDATE_PTR(PTR_AS(ThreadArg, arg), vararg, vararg);
 
     YogVM_add_thread(env, env->vm, self);
 
@@ -362,7 +362,7 @@ init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogGetArgs_parse_args(env, "init", params, args, kw);
     CHECK_SELF_TYPE(env, self);
 
-    PTR_AS(YogThread, self)->block = block;
+    YogGC_UPDATE_PTR(PTR_AS(YogThread, self), block, block);
 
     RETURN(env, self);
 }
@@ -388,7 +388,7 @@ ensure_recursive_stack(YogEnv* env, YogVal self)
     }
 
     stack = YogArray_new(env);
-    PTR_AS(YogThread, self)->recursive_stack = stack;
+    YogGC_UPDATE_PTR(PTR_AS(YogThread, self), recursive_stack, stack);
 
     RETURN_VOID(env);
 }

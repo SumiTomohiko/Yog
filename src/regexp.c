@@ -49,8 +49,8 @@ YogMatch_new(YogEnv* env, YogVal str, YogVal regexp, OnigRegion* onig_region)
 
     YogVal match = ALLOC_OBJ(env, YogMatch_keep_children, YogMatch_finalize, YogMatch);
     YogBasicObj_init(env, match, TYPE_MATCH, 0, env->vm->cMatch);
-    PTR_AS(YogMatch, match)->str = str;
-    PTR_AS(YogMatch, match)->regexp = regexp;
+    YogGC_UPDATE_PTR(PTR_AS(YogMatch, match), str, str);
+    YogGC_UPDATE_PTR(PTR_AS(YogMatch, match), regexp, regexp);
     PTR_AS(YogMatch, match)->onig_region = onig_region;
 
     RETURN(env, match);

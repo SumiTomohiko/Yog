@@ -31,8 +31,10 @@
      * allocated initially
      *
      */
-
-#define TABLE_ENTRY_TOP(table, i)   (PTR_AS(YogTableEntryArray, PTR_AS(YogTable, table)->bins)->items[(i)])
+#define TABLE_BINS(table) \
+                    PTR_AS(YogTable, (table))->bins
+#define TABLE_ENTRY_TOP(table, i) \
+                    PTR_AS(YogTableEntryArray, TABLE_BINS((table)))->items[(i)]
 
 static void
 keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
@@ -143,14 +145,14 @@ rehash(YogEnv* env, YogVal table)
         while (IS_PTR(ptr)) {
             next = PTR_AS(YogTableEntry, ptr)->next;
             uint_t hash_val = PTR_AS(YogTableEntry, ptr)->hash % new_num_bins;
-            PTR_AS(YogTableEntry, ptr)->next = PTR_AS(YogTableEntryArray, new_bins)->items[hash_val];
-            PTR_AS(YogTableEntryArray, new_bins)->items[hash_val] = ptr;
+            YogGC_UPDATE_PTR(PTR_AS(YogTableEntry, ptr), next, PTR_AS(YogTableEntryArray, new_bins)->items[hash_val]);
+            YogGC_UPDATE_PTR(PTR_AS(YogTableEntryArray, new_bins), items[hash_val], ptr);
             ptr = next;
         }
     }
 
     PTR_AS(YogTable, table)->num_bins = new_num_bins;
-    PTR_AS(YogTable, table)->bins = new_bins;
+    YogGC_UPDATE_PTR(PTR_AS(YogTable, table), bins, new_bins);
 
     RETURN_VOID(env);
 }
@@ -215,7 +217,7 @@ st_init_table_with_size(YogEnv* env, YogHashType* type, int_t size)
     PTR_AS(YogTable, tbl)->num_entries = 0;
     PTR_AS(YogTable, tbl)->num_bins = size;
     bins = alloc_bins(env, size);
-    PTR_AS(YogTable, tbl)->bins = bins;
+    YogGC_UPDATE_PTR(PTR_AS(YogTable, tbl), bins, bins);
 
     RETURN(env, tbl);
 }
@@ -314,11 +316,11 @@ add_direct(YogEnv* env, YogVal table, YogVal key, YogVal value, uint_t hash_val,
     entry = alloc_entry(env);
 
     PTR_AS(YogTableEntry, entry)->hash = hash_val;
-    PTR_AS(YogTableEntry, entry)->key = key;
-    PTR_AS(YogTableEntry, entry)->record = value;
-    PTR_AS(YogTableEntry, entry)->next = TABLE_ENTRY_TOP(table, bin_pos);
+    YogGC_UPDATE_PTR(PTR_AS(YogTableEntry, entry), key, key);
+    YogGC_UPDATE_PTR(PTR_AS(YogTableEntry, entry), record, value);
+    YogGC_UPDATE_PTR(PTR_AS(YogTableEntry, entry), next, TABLE_ENTRY_TOP(table, bin_pos));
 
-    TABLE_ENTRY_TOP(table, bin_pos) = entry;
+    YogGC_UPDATE_PTR(PTR_AS(YogTableEntryArray, TABLE_BINS(table)), items[bin_pos], entry);
     PTR_AS(YogTable, table)->num_entries++;
 
     RETURN_VOID(env);
@@ -341,7 +343,7 @@ YogTable_insert(YogEnv* env, YogVal table, YogVal key, YogVal value)
         RETURN(env, FALSE);
     }
     else {
-        PTR_AS(YogTableEntry, ptr)->record = value;
+        YogGC_UPDATE_PTR(PTR_AS(YogTableEntry, ptr), record, value);
         RETURN(env, TRUE);
     }
 }
@@ -378,7 +380,7 @@ YogTable_delete(YogEnv* env, YogVal table, YogVal* key, YogVal* value)
     }
 
     if (EQUAL(env, table, *key, PTR_AS(YogTableEntry, ptr)->key)) {
-        TABLE_ENTRY_TOP(table, hash_val) = PTR_AS(YogTableEntry, ptr)->next;
+        YogGC_UPDATE_PTR(PTR_AS(YogTableEntryArray, TABLE_BINS(table)), items[hash_val], PTR_AS(YogTableEntry, ptr)->next);
         PTR_AS(YogTable, table)->num_entries--;
         if (value != NULL) {
             *value = PTR_AS(YogTableEntry, ptr)->record;
@@ -391,7 +393,7 @@ YogTable_delete(YogEnv* env, YogVal table, YogVal* key, YogVal* value)
         next = PTR_AS(YogTableEntry, ptr)->next;
         if (EQUAL(env, table, PTR_AS(YogTableEntry, next)->key, *key)) {
             tmp = next;
-            PTR_AS(YogTableEntry, ptr)->next = PTR_AS(YogTableEntry, next)->next;
+            YogGC_UPDATE_PTR(PTR_AS(YogTableEntry, ptr), next, PTR_AS(YogTableEntry, next)->next);
             PTR_AS(YogTable, table)->num_entries--;
             if (value != NULL) {
                 *value = PTR_AS(YogTableEntry, tmp)->record;
@@ -442,10 +444,10 @@ YogTable_foreach(YogEnv* env, YogVal table, int_t (*func)(YogEnv*, YogVal, YogVa
                 case ST_DELETE:
                     tmp = ptr;
                     if (!IS_PTR(last)) {
-                        TABLE_ENTRY_TOP(table, i) = PTR_AS(YogTableEntry, ptr)->next;
+                        YogGC_UPDATE_PTR(PTR_AS(YogTableEntryArray, TABLE_BINS(table)), items[i], PTR_AS(YogTableEntry, ptr)->next);
                     }
                     else {
-                        PTR_AS(YogTableEntry, last)->next = PTR_AS(YogTableEntry, ptr)->next;
+                        YogGC_UPDATE_PTR(PTR_AS(YogTableEntry, last), next, PTR_AS(YogTableEntry, ptr)->next);
                     }
                     ptr = PTR_AS(YogTableEntry, ptr)->next;
                     PTR_AS(YogTable, table)->num_entries--;
@@ -820,7 +822,7 @@ YogTableIterator_next(YogEnv* env, YogVal self)
     if (IS_PTR(current_entry)) {
         next = PTR_AS(YogTableEntry, current_entry)->next;
         if (IS_PTR(next)) {
-            PTR_AS(TableIterator, self)->entry = next;
+            YogGC_UPDATE_PTR(PTR_AS(TableIterator, self), entry, next);
             RETURN(env, TRUE);
         }
     }
@@ -839,7 +841,7 @@ YogTableIterator_next(YogEnv* env, YogVal self)
     }
     if (i < num_bins) {
         PTR_AS(TableIterator, self)->bins_index = i + 1;
-        PTR_AS(TableIterator, self)->entry = entry;
+        YogGC_UPDATE_PTR(PTR_AS(TableIterator, self), entry, entry);
         RETURN(env, TRUE);
     }
 
@@ -856,7 +858,7 @@ YogTable_get_iterator(YogEnv* env, YogVal self)
     PUSH_LOCAL(env, iter);
 
     iter = ALLOC_OBJ(env, TableIterator_keep_children, NULL, TableIterator);
-    PTR_AS(TableIterator, iter)->tbl = self;
+    YogGC_UPDATE_PTR(PTR_AS(TableIterator, iter), tbl, self);
     PTR_AS(TableIterator, iter)->bins_index = 0;
     PTR_AS(TableIterator, iter)->entry = YUNDEF;
 

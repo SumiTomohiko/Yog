@@ -213,8 +213,8 @@ property(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     }
 
     prop = YogProperty_new(env);
-    PTR_AS(YogProperty, prop)->getter = getter;
-    PTR_AS(YogProperty, prop)->setter = setter;
+    YogGC_UPDATE_PTR(PTR_AS(YogProperty, prop), getter, getter);
+    YogGC_UPDATE_PTR(PTR_AS(YogProperty, prop), setter, setter);
 
     RETURN(env, prop);
 }
@@ -251,7 +251,7 @@ classmethod(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     YogGetArgs_parse_args(env, "classmethod", params, args, kw);
 
     method = YogClassMethod_new(env);
-    PTR_AS(YogClassMethod, method)->f = f;
+    YogGC_UPDATE_PTR(PTR_AS(YogClassMethod, method), f, f);
 
     RETURN(env, method);
 }

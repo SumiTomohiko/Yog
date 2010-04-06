@@ -32,7 +32,7 @@ YogModule_new(YogEnv* env)
     module = alloc(env, env->vm->cModule);
 
     attrs = YogTable_new_symbol_table(env);
-    PTR_AS(YogObj, module)->attrs = attrs;
+    YogGC_UPDATE_PTR(PTR_AS(YogObj, module), attrs, attrs);
 
     RETURN(env, module);
 }

@@ -201,7 +201,7 @@ Module_new(YogEnv* env, uint_t lineno, ID name, YogVal stmts)
 
     module = YogNode_new(env, NODE_MODULE, lineno);
     PTR_AS(YogNode, module)->u.module.name = name;
-    PTR_AS(YogNode, module)->u.module.stmts = stmts;
+    YogGC_UPDATE_PTR(PTR_AS(YogNode, module), u.module.stmts, stmts);
 
     RETURN(env, module);
 }
@@ -224,7 +224,7 @@ Literal_new(YogEnv* env, uint_t lineno, YogVal val)
     SAVE_ARG(env, val);
 
     YogVal node = YogNode_new(env, NODE_LITERAL, lineno);
-    NODE(node)->u.literal.val = val;
+    YogGC_UPDATE_PTR(NODE(node), u.literal.val, val);
 
     RETURN(env, node);
 }
@@ -235,8 +235,8 @@ BlockArg_new(YogEnv* env, uint_t lineno, YogVal params, YogVal stmts)
     SAVE_ARGS2(env, params, stmts);
 
     YogVal node = YogNode_new(env, NODE_BLOCK_ARG, lineno);
-    NODE(node)->u.blockarg.params = params;
-    NODE(node)->u.blockarg.stmts = stmts;
+    YogGC_UPDATE_PTR(NODE(node), u.blockarg.params, params);
+    YogGC_UPDATE_PTR(NODE(node), u.blockarg.stmts, stmts);
 
     RETURN(env, node);
 }
@@ -298,7 +298,7 @@ Array_new(YogEnv* env, uint_t lineno, YogVal elems)
     SAVE_ARG(env, elems);
 
     YogVal node = YogNode_new(env, NODE_ARRAY, lineno);
-    NODE(node)->u.array.elems = elems;
+    YogGC_UPDATE_PTR(NODE(node), u.array.elems, elems);
 
     RETURN(env, node);
 }
@@ -310,7 +310,7 @@ Param_new(YogEnv* env, YogNodeType type, uint_t lineno, ID id, YogVal default_)
 
     YogVal node = YogNode_new(env, type, lineno);
     NODE(node)->u.param.name = id;
-    NODE(node)->u.param.default_ = default_;
+    YogGC_UPDATE_PTR(NODE(node), u.param.default_, default_);
 
     RETURN(env, node);
 }
@@ -332,10 +332,10 @@ FuncDef_new(YogEnv* env, uint_t lineno, YogVal decorators, ID name, YogVal param
     SAVE_ARGS3(env, decorators, params, stmts);
 
     YogVal node = YogNode_new(env, NODE_FUNC_DEF, lineno);
-    NODE(node)->u.funcdef.decorators = decorators;
+    YogGC_UPDATE_PTR(NODE(node), u.funcdef.decorators, decorators);
     NODE(node)->u.funcdef.name = name;
-    NODE(node)->u.funcdef.params = params;
-    NODE(node)->u.funcdef.stmts = stmts;
+    YogGC_UPDATE_PTR(NODE(node), u.funcdef.params, params);
+    YogGC_UPDATE_PTR(NODE(node), u.funcdef.stmts, stmts);
 
     RETURN(env, node);
 }
@@ -346,9 +346,9 @@ FuncCall_new(YogEnv* env, uint_t lineno, YogVal callee, YogVal args, YogVal bloc
     SAVE_ARGS3(env, callee, args, blockarg);
 
     YogVal node = YogNode_new(env, NODE_FUNC_CALL, lineno);
-    NODE(node)->u.func_call.callee = callee;
-    NODE(node)->u.func_call.args = args;
-    NODE(node)->u.func_call.blockarg = blockarg;
+    YogGC_UPDATE_PTR(NODE(node), u.func_call.callee, callee);
+    YogGC_UPDATE_PTR(NODE(node), u.func_call.args, args);
+    YogGC_UPDATE_PTR(NODE(node), u.func_call.blockarg, blockarg);
 
     RETURN(env, node);
 }
@@ -368,9 +368,9 @@ ExceptBody_new(YogEnv* env, uint_t lineno, YogVal types, ID var, YogVal stmts)
     SAVE_ARGS2(env, types, stmts);
 
     YogVal node = YogNode_new(env, NODE_EXCEPT_BODY, lineno);
-    NODE(node)->u.except_body.types = types;
+    YogGC_UPDATE_PTR(NODE(node), u.except_body.types, types);
     NODE(node)->u.except_body.var = var;
-    NODE(node)->u.except_body.stmts = stmts;
+    YogGC_UPDATE_PTR(NODE(node), u.except_body.stmts, stmts);
 
     RETURN(env, node);
 }
@@ -381,9 +381,9 @@ Except_new(YogEnv* env, uint_t lineno, YogVal head, YogVal excepts, YogVal else_
     SAVE_ARGS3(env, head, excepts, else_);
 
     YogVal node = YogNode_new(env, NODE_EXCEPT, lineno);
-    NODE(node)->u.except.head = head;
-    NODE(node)->u.except.excepts = excepts;
-    NODE(node)->u.except.else_ = else_;
+    YogGC_UPDATE_PTR(NODE(node), u.except.head, head);
+    YogGC_UPDATE_PTR(NODE(node), u.except.excepts, excepts);
+    YogGC_UPDATE_PTR(NODE(node), u.except.else_, else_);
 
     RETURN(env, node);
 }
@@ -394,8 +394,8 @@ Finally_new(YogEnv* env, uint_t lineno, YogVal head, YogVal body)
     SAVE_ARGS2(env, head, body);
 
     YogVal node = YogNode_new(env, NODE_FINALLY, lineno);
-    NODE(node)->u.finally.head = head;
-    NODE(node)->u.finally.body = body;
+    YogGC_UPDATE_PTR(NODE(node), u.finally.head, head);
+    YogGC_UPDATE_PTR(NODE(node), u.finally.body, body);
 
     RETURN(env, node);
 }
@@ -428,7 +428,7 @@ Break_new(YogEnv* env, uint_t lineno, YogVal exprs)
     SAVE_ARG(env, exprs);
 
     YogVal node = YogNode_new(env, NODE_BREAK, lineno);
-    NODE(node)->u.break_.exprs = exprs;
+    YogGC_UPDATE_PTR(NODE(node), u.break_.exprs, exprs);
 
     RETURN(env, node);
 }
@@ -441,7 +441,7 @@ Next_new(YogEnv* env, uint_t lineno, YogVal exprs)
     PUSH_LOCAL(env, node);
 
     node = YogNode_new(env, NODE_NEXT, lineno);
-    NODE(node)->u.next.exprs = exprs;
+    YogGC_UPDATE_PTR(NODE(node), u.next.exprs, exprs);
 
     RETURN(env, node);
 }
@@ -452,7 +452,7 @@ Return_new(YogEnv* env, uint_t lineno, YogVal exprs)
     SAVE_ARG(env, exprs);
 
     YogVal node = YogNode_new(env, NODE_RETURN, lineno);
-    NODE(node)->u.return_.exprs = exprs;
+    YogGC_UPDATE_PTR(NODE(node), u.return_.exprs, exprs);
 
     RETURN(env, node);
 }
@@ -463,7 +463,7 @@ Attr_new(YogEnv* env, uint_t lineno, YogVal obj, ID name)
     SAVE_ARG(env, obj);
 
     YogVal node = YogNode_new(env, NODE_ATTR, lineno);
-    NODE(node)->u.attr.obj = obj;
+    YogGC_UPDATE_PTR(NODE(node), u.attr.obj, obj);
     NODE(node)->u.attr.name = name;
 
     RETURN(env, node);
@@ -477,11 +477,11 @@ Args_new(YogEnv* env, uint_t lineno, YogVal posargs, YogVal kwargs, YogVal varar
     PUSH_LOCAL(env, args);
 
     args = YogNode_new(env, NODE_ARGS, lineno);
-    NODE(args)->u.args.posargs = posargs;
-    NODE(args)->u.args.kwargs = kwargs;
-    NODE(args)->u.args.vararg = vararg;
-    NODE(args)->u.args.varkwarg = varkwarg;
-    NODE(args)->u.args.block = block;
+    YogGC_UPDATE_PTR(NODE(args), u.args.posargs, posargs);
+    YogGC_UPDATE_PTR(NODE(args), u.args.kwargs, kwargs);
+    YogGC_UPDATE_PTR(NODE(args), u.args.vararg, vararg);
+    YogGC_UPDATE_PTR(NODE(args), u.args.varkwarg, varkwarg);
+    YogGC_UPDATE_PTR(NODE(args), u.args.block, block);
 
     RETURN(env, args);
 }
@@ -527,9 +527,9 @@ If_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts, YogVal tail)
     SAVE_ARGS3(env, test, stmts, tail);
 
     YogVal node = YogNode_new(env, NODE_IF, lineno);
-    NODE(node)->u.if_.test = test;
-    NODE(node)->u.if_.stmts = stmts;
-    NODE(node)->u.if_.tail = tail;
+    YogGC_UPDATE_PTR(NODE(node), u.if_.test, test);
+    YogGC_UPDATE_PTR(NODE(node), u.if_.stmts, stmts);
+    YogGC_UPDATE_PTR(NODE(node), u.if_.tail, tail);
 
     RETURN(env, node);
 }
@@ -540,8 +540,8 @@ While_new(YogEnv* env, uint_t lineno, YogVal test, YogVal stmts)
     SAVE_ARGS2(env, test, stmts);
 
     YogVal node = YogNode_new(env, NODE_WHILE, lineno);
-    NODE(node)->u.while_.test = test;
-    NODE(node)->u.while_.stmts = stmts;
+    YogGC_UPDATE_PTR(NODE(node), u.while_.test, test);
+    YogGC_UPDATE_PTR(NODE(node), u.while_.stmts, stmts);
 
     RETURN(env, node);
 }
@@ -552,10 +552,10 @@ Class_new(YogEnv* env, uint_t lineno, YogVal decorators, ID name, YogVal super, 
     SAVE_ARGS3(env, decorators, super, stmts);
 
     YogVal node = YogNode_new(env, NODE_CLASS, lineno);
-    NODE(node)->u.klass.decorators = decorators;
+    YogGC_UPDATE_PTR(NODE(node), u.klass.decorators, decorators);
     NODE(node)->u.klass.name = name;
-    NODE(node)->u.klass.super = super;
-    NODE(node)->u.klass.stmts = stmts;
+    YogGC_UPDATE_PTR(NODE(node), u.klass.super, super);
+    YogGC_UPDATE_PTR(NODE(node), u.klass.stmts, stmts);
 
     RETURN(env, node);
 }
@@ -566,8 +566,8 @@ Assign_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
     SAVE_ARGS2(env, left, right);
 
     YogVal node = YogNode_new(env, NODE_ASSIGN, lineno);
-    NODE(node)->u.assign.left = left;
-    NODE(node)->u.assign.right = right;
+    YogGC_UPDATE_PTR(NODE(node), u.assign.left, left);
+    YogGC_UPDATE_PTR(NODE(node), u.assign.right, right);
 
     RETURN(env, node);
 }
@@ -580,8 +580,8 @@ Subscript_new(YogEnv* env, uint_t lineno, YogVal prefix, YogVal index)
     PUSH_LOCAL(env, node);
 
     node = YogNode_new(env, NODE_SUBSCRIPT, lineno);
-    NODE(node)->u.subscript.prefix = prefix;
-    NODE(node)->u.subscript.index = index;
+    YogGC_UPDATE_PTR(NODE(node), u.subscript.prefix, prefix);
+    YogGC_UPDATE_PTR(NODE(node), u.subscript.index, index);
 
     RETURN(env, node);
 }
@@ -592,7 +592,7 @@ Nonlocal_new(YogEnv* env, uint_t lineno, YogVal names)
     SAVE_ARG(env, names);
 
     YogVal node = YogNode_new(env, NODE_NONLOCAL, lineno);
-    NODE(node)->u.nonlocal.names = names;
+    YogGC_UPDATE_PTR(NODE(node), u.nonlocal.names, names);
 
     RETURN(env, node);
 }
@@ -605,8 +605,8 @@ Import_new(YogEnv* env, uint_t lineno, YogVal name, YogVal as)
     PUSH_LOCAL(env, node);
 
     node = YogNode_new(env, NODE_IMPORT, lineno);
-    NODE(node)->u.import.name = name;
-    NODE(node)->u.import.as = as;
+    YogGC_UPDATE_PTR(NODE(node), u.import.name, name);
+    YogGC_UPDATE_PTR(NODE(node), u.import.as, as);
 
     RETURN(env, node);
 }
@@ -620,7 +620,7 @@ ImportedAttr_new(YogEnv* env, uint_t lineno, ID name, YogVal as)
 
     node = YogNode_new(env, NODE_IMPORTED_ATTR, lineno);
     NODE(node)->u.imported_attr.name = name;
-    NODE(node)->u.imported_attr.as = as;
+    YogGC_UPDATE_PTR(NODE(node), u.imported_attr.as, as);
 
     RETURN(env, node);
 }
@@ -633,8 +633,8 @@ From_new(YogEnv* env, uint_t lineno, YogVal pkg, YogVal attrs)
     PUSH_LOCAL(env, node);
 
     node = YogNode_new(env, NODE_FROM, lineno);
-    NODE(node)->u.from.pkg = pkg;
-    NODE(node)->u.from.attrs = attrs;
+    YogGC_UPDATE_PTR(NODE(node), u.from.pkg, pkg);
+    YogGC_UPDATE_PTR(NODE(node), u.from.attrs, attrs);
 
     RETURN(env, node);
 }
@@ -647,7 +647,7 @@ Raise_new(YogEnv* env, uint_t lineno, YogVal expr)
     PUSH_LOCAL(env, node);
 
     node = YogNode_new(env, NODE_RAISE, lineno);
-    NODE(node)->u.raise.expr = expr;
+    YogGC_UPDATE_PTR(NODE(node), u.raise.expr, expr);
 
     RETURN(env, node);
 }
@@ -701,7 +701,7 @@ YogParser_parse(YogEnv* env, YogVal src)
     PUSH_LOCALS3(env, lexer, ast, enc);
 
     lexer = YogLexer_new(env);
-    PTR_AS(YogLexer, lexer)->line = src;
+    YogGC_UPDATE_PTR(PTR_AS(YogLexer, lexer), line, src);
     PTR_AS(YogLexer, lexer)->lineno++;
     enc = YogEncoding_get_default(env);
     YogLexer_set_encoding(env, lexer, enc);
@@ -756,8 +756,8 @@ DictElem_new(YogEnv* env, uint_t lineno, YogVal key, YogVal value)
     PUSH_LOCAL(env, elem);
 
     elem = YogNode_new(env, NODE_DICT_ELEM, lineno);
-    PTR_AS(YogNode, elem)->u.dict_elem.key = key;
-    PTR_AS(YogNode, elem)->u.dict_elem.value = value;
+    YogGC_UPDATE_PTR(PTR_AS(YogNode, elem), u.dict_elem.key, key);
+    YogGC_UPDATE_PTR(PTR_AS(YogNode, elem), u.dict_elem.value, value);
 
     RETURN(env, elem);
 }
@@ -770,7 +770,7 @@ Dict_new(YogEnv* env, uint_t lineno, YogVal elems)
     PUSH_LOCAL(env, dict);
 
     dict = YogNode_new(env, NODE_DICT, lineno);
-    PTR_AS(YogNode, dict)->u.dict.elems = elems;
+    YogGC_UPDATE_PTR(PTR_AS(YogNode, dict), u.dict.elems, elems);
 
     RETURN(env, dict);
 }
@@ -783,7 +783,7 @@ Set_new(YogEnv* env, uint_t lineno, YogVal elems)
     PUSH_LOCAL(env, set);
 
     set = YogNode_new(env, NODE_SET, lineno);
-    PTR_AS(YogNode, set)->u.set.elems = elems;
+    YogGC_UPDATE_PTR(PTR_AS(YogNode, set), u.set.elems, elems);
 
     RETURN(env, set);
 }
@@ -810,8 +810,8 @@ LogicalOr_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
     PUSH_LOCAL(env, node);
 
     node = YogNode_new(env, NODE_LOGICAL_OR, lineno);
-    NODE(node)->u.logical_or.left = left;
-    NODE(node)->u.logical_or.right = right;
+    YogGC_UPDATE_PTR(NODE(node), u.logical_or.left, left);
+    YogGC_UPDATE_PTR(NODE(node), u.logical_or.right, right);
 
     RETURN(env, node);
 }
@@ -824,8 +824,8 @@ LogicalAnd_new(YogEnv* env, uint_t lineno, YogVal left, YogVal right)
     PUSH_LOCAL(env, node);
 
     node = YogNode_new(env, NODE_LOGICAL_AND, lineno);
-    NODE(node)->u.logical_and.left = left;
-    NODE(node)->u.logical_and.right = right;
+    YogGC_UPDATE_PTR(NODE(node), u.logical_and.left, left);
+    YogGC_UPDATE_PTR(NODE(node), u.logical_and.right, right);
 
     RETURN(env, node);
 }
@@ -838,8 +838,8 @@ MultiAssign_new(YogEnv* env, uint_t lineno, YogVal lhs, YogVal rhs)
     PUSH_LOCAL(env, node);
 
     node = YogNode_new(env, NODE_MULTI_ASSIGN, lineno);
-    NODE(node)->u.multi_assign.lhs = lhs;
-    NODE(node)->u.multi_assign.rhs = rhs;
+    YogGC_UPDATE_PTR(NODE(node), u.multi_assign.lhs, lhs);
+    YogGC_UPDATE_PTR(NODE(node), u.multi_assign.rhs, rhs);
 
     RETURN(env, node);
 }
@@ -852,9 +852,9 @@ MultiAssignLhs_new(YogEnv* env, uint_t lineno, YogVal left, YogVal middle, YogVa
     PUSH_LOCAL(env, node);
 
     node = YogNode_new(env, NODE_MULTI_ASSIGN_LHS, lineno);
-    NODE(node)->u.multi_assign_lhs.left = left;
-    NODE(node)->u.multi_assign_lhs.middle = middle;
-    NODE(node)->u.multi_assign_lhs.right = right;
+    YogGC_UPDATE_PTR(NODE(node), u.multi_assign_lhs.left, left);
+    YogGC_UPDATE_PTR(NODE(node), u.multi_assign_lhs.middle, middle);
+    YogGC_UPDATE_PTR(NODE(node), u.multi_assign_lhs.right, right);
 
     RETURN(env, node);
 }
@@ -1406,7 +1406,7 @@ kwargs(A) ::= kwargs(B) COMMA kwarg(C). {
 kwarg(A) ::= NAME(B) COLON expr(C). {
     A = YogNode_new(env, NODE_KW_ARG, TOKEN_LINENO(B));
     PTR_AS(YogNode, A)->u.kwarg.name = TOKEN_ID(B);
-    PTR_AS(YogNode, A)->u.kwarg.value = C;
+    YogGC_UPDATE_PTR(PTR_AS(YogNode, A), u.kwarg.value, C);
 }
 
 expr(A) ::= assign_expr(B). {
@@ -1508,7 +1508,7 @@ not_expr(A) ::= comparison(B). {
 }
 not_expr(A) ::= NOT(B) not_expr(C). {
     A = YogNode_new(env, NODE_NOT, NODE_LINENO(B));
-    NODE(A)->u.not.expr = C;
+    YogGC_UPDATE_PTR(NODE(A), u.not.expr, C);
 }
 
 comparison(A) ::= xor_expr(B). {

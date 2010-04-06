@@ -371,7 +371,7 @@ make_outer_vars(YogEnv* env, uint_t depth)
 
     outer_vars = YogOuterVars_new(env, depth);
     vars = PTR_AS(YogMethodFrame, CUR_FRAME)->vars;
-    PTR_AS(YogOuterVars, outer_vars)->items[0] = vars;
+    YogGC_UPDATE_PTR(PTR_AS(YogOuterVars, outer_vars), items[0], vars);
     if (depth == 1) {
         RETURN(env, outer_vars);
     }
@@ -391,12 +391,12 @@ setup_script_function(YogEnv* env, YogVal f, YogVal code)
 {
     SAVE_ARGS2(env, f, code);
 
-    PTR_AS(YogFunction, f)->code = code;
-    PTR_AS(YogFunction, f)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
+    YogGC_UPDATE_PTR(PTR_AS(YogFunction, f), code, code);
+    YogGC_UPDATE_PTR(PTR_AS(YogFunction, f), globals, PTR_AS(YogScriptFrame, CUR_FRAME)->globals);
 
     uint_t outer_size = PTR_AS(YogCode, code)->outer_size;
     YogVal outer_vars = make_outer_vars(env, outer_size);
-    PTR_AS(YogFunction, f)->outer_vars = outer_vars;
+    YogGC_UPDATE_PTR(PTR_AS(YogFunction, f), outer_vars, outer_vars);
 
     RETURN_VOID(env);
 }
@@ -415,8 +415,8 @@ setup_script_frame(YogEnv* env, YogVal frame, YogVal code)
     YogVal stack = YogValArray_new(env, stack_size);
 
     SCRIPT_FRAME(frame)->pc = 0;
-    SCRIPT_FRAME(frame)->code = code;
-    SCRIPT_FRAME(frame)->stack = stack;
+    YogGC_UPDATE_PTR(SCRIPT_FRAME(frame), code, code);
+    YogGC_UPDATE_PTR(SCRIPT_FRAME(frame), stack, stack);
 
     RETURN_VOID(env);
 }
@@ -559,8 +559,8 @@ long_jump(YogEnv* env, uint_t depth, int_t status, YogVal target_frame)
     detect_orphan(env, status, target_frame);
 
     YogVal thread = env->thread;
-    PTR_AS(YogThread, thread)->jmp_val = objs;
-    PTR_AS(YogThread, thread)->frame_to_long_jump = target_frame;
+    YogGC_UPDATE_PTR(PTR_AS(YogThread, thread), jmp_val, objs);
+    YogGC_UPDATE_PTR(PTR_AS(YogThread, thread), frame_to_long_jump, target_frame);
 
     RESTORE_LOCALS(env);
     longjmp(PTR_AS(YogThread, thread)->jmp_buf_list->buf, status);
@@ -858,10 +858,10 @@ YogEval_eval_package(YogEnv* env, YogVal pkg, YogVal code)
 
     frame = YogPackageFrame_new(env);
     setup_script_frame(env, frame, code);
-    PTR_AS(YogNameFrame, frame)->self = pkg;
+    YogGC_UPDATE_PTR(PTR_AS(YogNameFrame, frame), self, pkg);
     attrs = PTR_AS(YogObj, pkg)->attrs;
-    PTR_AS(YogNameFrame, frame)->vars = attrs;
-    SCRIPT_FRAME(frame)->globals = PTR_AS(YogNameFrame, frame)->vars;
+    YogGC_UPDATE_PTR(PTR_AS(YogNameFrame, frame), vars, attrs);
+    YogGC_UPDATE_PTR(SCRIPT_FRAME(frame), globals, PTR_AS(YogNameFrame, frame)->vars);
     PUSH_FRAME(frame);
 
     YogEval_mainloop(env);

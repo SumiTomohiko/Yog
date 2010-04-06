@@ -90,7 +90,7 @@ YogClass_define_class_method(YogEnv* env, YogVal self, YogVal pkg, const char* n
     YogVal class_name = PTR_AS(YogClass, self)->name;
     func = YogNativeFunction_new(env, class_name, pkg, name, f);
     method = YogClassMethod_new(env);
-    PTR_AS(YogClassMethod, method)->f = func;
+    YogGC_UPDATE_PTR(PTR_AS(YogClassMethod, method), f, func);
 
     YogObj_set_attr(env, self, name, method);
 
@@ -154,7 +154,7 @@ YogClass_new(YogEnv* env, const char* name, YogVal super)
         ID id = YogVM_intern(env, env->vm, name);
         PTR_AS(YogClass, klass)->name = id;
     }
-    PTR_AS(YogClass, klass)->super = super;
+    YogGC_UPDATE_PTR(PTR_AS(YogClass, klass), super, super);
     PTR_AS(YogClass, klass)->exec_get_attr = NULL;
     PTR_AS(YogClass, klass)->call_get_attr = NULL;
     PTR_AS(YogClass, klass)->exec_get_descr = NULL;
@@ -304,8 +304,8 @@ YogClass_define_property(YogEnv* env, YogVal self, YogVal pkg, const char* name,
     }
 
     prop = YogProperty_new(env);
-    PTR_AS(YogProperty, prop)->getter = getter;
-    PTR_AS(YogProperty, prop)->setter = setter;
+    YogGC_UPDATE_PTR(PTR_AS(YogProperty, prop), getter, getter);
+    YogGC_UPDATE_PTR(PTR_AS(YogProperty, prop), setter, setter);
 
     YogObj_set_attr(env, self, name, prop);
 
@@ -359,9 +359,9 @@ YogClass_include_module(YogEnv* env, YogVal self, YogVal module)
     CHECK_SELF_TYPE(env, self);
 
     module_class = ModuleClass_new(env);
-    PTR_AS(YogObj, module_class)->attrs = PTR_AS(YogObj, module)->attrs;
-    PTR_AS(ModuleClass, module_class)->super = PTR_AS(YogClass, self)->super;
-    PTR_AS(YogClass, self)->super = module_class;
+    YogGC_UPDATE_PTR(PTR_AS(YogObj, module_class), attrs, PTR_AS(YogObj, module)->attrs);
+    YogGC_UPDATE_PTR(PTR_AS(ModuleClass, module_class), super, PTR_AS(YogClass, self)->super);
+    YogGC_UPDATE_PTR(PTR_AS(YogClass, self), super, module_class);
 
     RETURN_VOID(env);
 }

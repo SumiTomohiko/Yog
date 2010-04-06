@@ -195,7 +195,7 @@ YogInit_zlib(YogEnv* env)
     pkg = Package_new(env);
 
     eZlibError = YogClass_new(env, "ZlibError", env->vm->eException);
-    PTR_AS(Package, pkg)->eZlibError = eZlibError;
+    YogGC_UPDATE_PTR(PTR_AS(Package, pkg), eZlibError, eZlibError);
 
     YogPackage_define_function(env, pkg, "compress", compress_);
     YogPackage_define_function(env, pkg, "decompress", decompress);

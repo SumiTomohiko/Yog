@@ -167,7 +167,7 @@ init(YogEnv* env, YogVal self, YogVal klass)
 
     YogBasicObj_init(env, self, TYPE_DICT, 0, klass);
     tbl = YogTable_new_val_table(env);
-    PTR_AS(YogDict, self)->tbl = tbl;
+    YogGC_UPDATE_PTR(PTR_AS(YogDict, self), tbl, tbl);
 
     RETURN_VOID(env);
 }
@@ -292,7 +292,7 @@ YogDict_get_iterator(YogEnv* env, YogVal self)
     tbl_iter = YogTable_get_iterator(env, PTR_AS(YogDict, self)->tbl);
 
     iter = ALLOC_OBJ(env, DictIterator_keep_children, NULL, DictIterator);
-    PTR_AS(DictIterator, iter)->tbl_iter = tbl_iter;
+    YogGC_UPDATE_PTR(PTR_AS(DictIterator, iter), tbl_iter, tbl_iter);
 
     RETURN(env, iter);
 }
