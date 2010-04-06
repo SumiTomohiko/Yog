@@ -5,11 +5,11 @@ static YogVal
 insts2bin(YogEnv* env, YogVal inst) 
 {
     SAVE_ARG(env, inst);
-
-#define INIT_BIN_SIZE   (0)
-    YogVal code = YogBinary_of_size(env, INIT_BIN_SIZE);
-#undef INIT_BIN_SIZE
+    YogVal code = YUNDEF;
     PUSH_LOCAL(env, code);
+#define INIT_BIN_SIZE   (0)
+    code = YogBinary_of_size(env, INIT_BIN_SIZE);
+#undef INIT_BIN_SIZE
 
     while (IS_PTR(inst)) {
         switch (INST(inst)->type) {
@@ -18,17 +18,15 @@ insts2bin(YogEnv* env, YogVal inst)
                 switch (INST(inst)->opcode) {
 ${insts2bin}
                 default:
-                    {
-                        YOG_ASSERT(env, FALSE, "Unkown instruction.");
-                        break;
-                    }
+                    YOG_BUG(env, "unknown opcode (0x%08x, 0x%x)", inst, INST(inst)->opcode);
+                    break;
                 }
             }
         case INST_ANCHOR:
         case INST_LABEL:
             break;
         default:
-            YOG_ASSERT(env, FALSE, "Unknown inst type.");
+            YOG_BUG(env, "unknown inst type (0x%08x, 0x%x)", inst, INST(inst)->type);
             break;
         }
 
