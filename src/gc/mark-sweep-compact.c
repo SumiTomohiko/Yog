@@ -394,10 +394,12 @@ handle_free_chunk(YogEnv* env, MarkSweepCompact* msc, size_t size, FreeHeader* c
 static void*
 alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
 {
+#if defined(GC_MARK_SWEEP_COMPACT)
     if (env->vm->gc_stress) {
         /* TODO: don't GC in running GC */
         gc(env);
     }
+#endif
 
     size_t size_including_header = size + sizeof(ChunkHeader);
     FreeHeader* chunk;
