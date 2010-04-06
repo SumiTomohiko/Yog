@@ -198,7 +198,7 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         YogError_raise_sys_err(env, errno, path);
     }
     PTR_AS(YogFile, file)->fp = fp;
-    YogGC_UPDATE_PTR(PTR_AS(YogFile, file), encoding, encoding);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFile, file), encoding, encoding);
 
     if (!IS_PTR(block)) {
         RETURN(env, file);

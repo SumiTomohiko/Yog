@@ -70,7 +70,7 @@ YogRepl_do(YogEnv* env)
 
     src = YogString_new(env);
     enc = YogEncoding_get_default(env);
-    YogGC_UPDATE_PTR(PTR_AS(YogString, src), encoding, enc);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, src), encoding, enc);
 
     print_prompt();
 

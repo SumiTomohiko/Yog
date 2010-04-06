@@ -44,7 +44,7 @@ YogObj_set_attr_id(YogEnv* env, YogVal obj, ID name, YogVal val)
 
     if (!IS_PTR(PTR_AS(YogObj, obj)->attrs)) {
         YogVal attrs = YogTable_new_symbol_table(env);
-        YogGC_UPDATE_PTR(PTR_AS(YogObj, obj), attrs, attrs);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogObj, obj), attrs, attrs);
     }
 
     YogTable_insert(env, PTR_AS(YogObj, obj)->attrs, key, val);
@@ -69,7 +69,7 @@ YogBasicObj_init(YogEnv* env, YogVal obj, type_t type, uint_t flags, YogVal klas
     YogThread_issue_object_id(env, env->thread, obj);
     PTR_AS(YogBasicObj, obj)->type = type;
     PTR_AS(YogBasicObj, obj)->flags = flags;
-    YogGC_UPDATE_PTR(PTR_AS(YogBasicObj, obj), klass, klass);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, obj), klass, klass);
 }
 
 void

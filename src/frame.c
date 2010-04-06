@@ -10,7 +10,7 @@ void
 YogCFrame_return_multi_value(YogEnv* env, YogVal self, YogVal multi_val)
 {
     SAVE_ARGS2(env, self, multi_val);
-    YogGC_UPDATE_PTR(PTR_AS(YogCFrame, self), multi_val, multi_val);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogCFrame, self), multi_val, multi_val);
     RETURN_VOID(env);
 }
 
@@ -89,7 +89,7 @@ YogScriptFrame_push_stack(YogEnv* env, YogVal frame, YogVal val)
     YOG_ASSERT(env, PTR_AS(YogScriptFrame, frame)->stack_size < capacity, "Stack is full.");
 
     uint_t n = PTR_AS(YogScriptFrame, frame)->stack_size;
-    YogGC_UPDATE_PTR(PTR_AS(YogValArray, stack), items[n], val);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, stack), items[n], val);
     PTR_AS(YogScriptFrame, frame)->stack_size++;
 
     RETURN_VOID(env);

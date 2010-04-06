@@ -231,7 +231,7 @@ coroutine_main(MAIN_PARAM)
 
     args = YogArray_of_size(&coroutine_env, 1);
     YogArray_push(&coroutine_env, args, retval);
-    YogGC_UPDATE_PTR(PTR_AS(Coroutine, self), args, args);
+    YogGC_UPDATE_PTR(env, PTR_AS(Coroutine, self), args, args);
 
     RESTORE_LOCALS(&coroutine_env);
     yield_coroutine(&coroutine_env, self, STATUS_DEAD);
@@ -326,7 +326,7 @@ yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     YogCArg params[] = { { "*", &a }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "yield", params, args, kw);
 
-    YogGC_UPDATE_PTR(PTR_AS(Coroutine, coroutine), args, a);
+    YogGC_UPDATE_PTR(env, PTR_AS(Coroutine, coroutine), args, a);
 
     boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
     frame = env->frame;
@@ -340,7 +340,7 @@ yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     yield_coroutine(env, coroutine, STATUS_SUSPENDED);
 
     boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
-    YogGC_UPDATE_PTR(PTR_AS(YogFrame, frame), prev, boundary);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, frame), prev, boundary);
 
     return_args(env, PTR_AS(Coroutine, coroutine)->args);
     RETURN(env, YUNDEF);
@@ -361,9 +361,9 @@ resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
         YogError_raise_CoroutineError(env, "dead coroutine called");
     }
 
-    YogGC_UPDATE_PTR(PTR_AS(Coroutine, self), boundary_frame, env->frame);
+    YogGC_UPDATE_PTR(env, PTR_AS(Coroutine, self), boundary_frame, env->frame);
     PTR_AS(Coroutine, self)->status = STATUS_RUNNING;
-    YogGC_UPDATE_PTR(PTR_AS(Coroutine, self), args, a);
+    YogGC_UPDATE_PTR(env, PTR_AS(Coroutine, self), args, a);
 
 #if defined(_WIN32)
     void* fiber_to_yield = GetCurrentFiber();
@@ -419,7 +419,7 @@ init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         { NULL, NULL } };
     YogGetArgs_parse_args(env, "init", params, args, kw);
 
-    YogGC_UPDATE_PTR(PTR_AS(Coroutine, self), block, block);
+    YogGC_UPDATE_PTR(env, PTR_AS(Coroutine, self), block, block);
     if (!IS_UNDEF(machine_stack_size)) {
         set_machine_stack_size(env, self, machine_stack_size);
     }

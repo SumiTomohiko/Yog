@@ -219,8 +219,8 @@ setup_basic_classes(YogEnv* env, YogVM* vm)
     cClass = YogClass_new(env, "Class", cObject);
     YogClass_define_allocator(env, cClass, YogClass_alloc);
 
-    YogGC_UPDATE_PTR(PTR_AS(YogBasicObj, cObject), klass, cClass);
-    YogGC_UPDATE_PTR(PTR_AS(YogBasicObj, cClass), klass, cClass);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, cObject), klass, cClass);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, cClass), klass, cClass);
 
     vm->cObject = cObject;
     vm->cClass = cClass;
@@ -681,7 +681,7 @@ YogVM_add_thread(YogEnv* env, YogVM* vm, YogVal thread)
     gc(env, vm);
 
     PTR_AS(YogThread, vm->running_threads)->prev = thread;
-    YogGC_UPDATE_PTR(PTR_AS(YogThread, thread), next, vm->running_threads);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogThread, thread), next, vm->running_threads);
     vm->running_threads = thread;
 
     YogVM_release_global_interp_lock(env, vm);
@@ -706,13 +706,13 @@ YogVM_remove_thread(YogEnv* env, YogVM* vm, YogVal thread)
     YogVal prev = PTR_AS(YogThread, thread)->prev;
     YogVal next = PTR_AS(YogThread, thread)->next;
     if (IS_PTR(prev)) {
-        YogGC_UPDATE_PTR(PTR_AS(YogThread, prev), next, next);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogThread, prev), next, next);
     }
     else {
         vm->running_threads = next;
     }
     if (IS_PTR(next)) {
-        YogGC_UPDATE_PTR(PTR_AS(YogThread, next), prev, prev);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogThread, next), prev, prev);
     }
 
     if (!IS_PTR(vm->running_threads)) {
@@ -1138,7 +1138,7 @@ import_package(YogEnv* env, YogVM* vm, const char* name)
     package_name2path_head(head);
 
     pkg = import(env, vm, head, name);
-    YogGC_UPDATE_PTR(PTR_AS(ImportingPackage, tmp_pkg), pkg, pkg);
+    YogGC_UPDATE_PTR(env, PTR_AS(ImportingPackage, tmp_pkg), pkg, pkg);
 
     acquire_packages_write_lock(env, vm);
     YogVal key = ID2VAL(id);

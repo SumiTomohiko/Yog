@@ -56,7 +56,7 @@ ValToken_new(YogEnv* env, uint_t type, YogVal val, uint_t lineno)
 
     YogVal token = YogToken_new(env);
     PTR_AS(YogToken, token)->type = type;
-    YogGC_UPDATE_PTR(PTR_AS(YogToken, token), u.val, val);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogToken, token), u.val, val);
     PTR_AS(YogToken, token)->lineno = lineno;
 
     RETURN(env, token);
@@ -321,7 +321,7 @@ enqueue_heredoc(YogEnv* env, YogVal lexer, YogVal heredoc)
     heredoc_queue = PTR_AS(YogLexer, lexer)->heredoc_queue;
     if (!IS_PTR(heredoc_queue)) {
         heredoc_queue = YogArray_new(env);
-        YogGC_UPDATE_PTR(PTR_AS(YogLexer, lexer), heredoc_queue, heredoc_queue);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), heredoc_queue, heredoc_queue);
     }
     YogArray_push(env, heredoc_queue, heredoc);
 
@@ -882,8 +882,8 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                     str = YogString_of_encoding(env, LEXER_ENCODING(lexer));
                     uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                     heredoc = HereDoc_new(env);
-                    YogGC_UPDATE_PTR(PTR_AS(HereDoc, heredoc), str, str);
-                    YogGC_UPDATE_PTR(PTR_AS(HereDoc, heredoc), end, heredoc_end);
+                    YogGC_UPDATE_PTR(env, PTR_AS(HereDoc, heredoc), str, str);
+                    YogGC_UPDATE_PTR(env, PTR_AS(HereDoc, heredoc), end, heredoc_end);
                     PTR_AS(HereDoc, heredoc)->lineno = lineno;
                     enqueue_heredoc(env, lexer, heredoc);
 
@@ -1236,9 +1236,9 @@ void
 YogLexer_set_encoding(YogEnv* env, YogVal lexer, YogVal encoding)
 {
     YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-    YogGC_UPDATE_PTR(PTR_AS(YogString, buffer), encoding, encoding);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, buffer), encoding, encoding);
     YogVal line = PTR_AS(YogLexer, lexer)->line;
-    YogGC_UPDATE_PTR(PTR_AS(YogString, line), encoding, encoding);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, line), encoding, encoding);
 }
 
 void
@@ -1288,10 +1288,10 @@ YogLexer_new(YogEnv* env)
     PTR_AS(YogLexer, lexer)->paren_depth = 0;
 
     line = YogString_new(env);
-    YogGC_UPDATE_PTR(PTR_AS(YogLexer, lexer), line, line);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), line, line);
 
     buffer = YogString_new(env);
-    YogGC_UPDATE_PTR(PTR_AS(YogLexer, lexer), buffer, buffer);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), buffer, buffer);
 
 
     RETURN(env, lexer);

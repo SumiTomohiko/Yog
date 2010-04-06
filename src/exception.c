@@ -207,7 +207,7 @@ YogException_get_stacktrace(YogEnv* env, YogVal frame)
                 ID class_name = PTR_AS(YogCode, code)->class_name;
                 ID func_name = PTR_AS(YogCode, code)->func_name;
                 PTR_AS(YogStackTraceEntry, ent)->lineno = lineno;
-                YogGC_UPDATE_PTR(PTR_AS(YogStackTraceEntry, ent), filename, filename);
+                YogGC_UPDATE_PTR(env, PTR_AS(YogStackTraceEntry, ent), filename, filename);
                 PTR_AS(YogStackTraceEntry, ent)->class_name = class_name;
                 PTR_AS(YogStackTraceEntry, ent)->func_name = func_name;
                 break;
@@ -218,7 +218,7 @@ YogException_get_stacktrace(YogEnv* env, YogVal frame)
             break;
         }
 
-        YogGC_UPDATE_PTR(PTR_AS(YogStackTraceEntry, ent), lower, st);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogStackTraceEntry, ent), lower, st);
         st = ent;
 
         frame = PTR_AS(YogFrame, frame)->prev;
@@ -240,8 +240,8 @@ init_YogException(YogEnv* env, YogVal self, YogVal msg)
     frame = skip_frame(env, frame, "new");
     st = YogException_get_stacktrace(env, frame);
 
-    YogGC_UPDATE_PTR(PTR_AS(YogException, self), stack_trace, st);
-    YogGC_UPDATE_PTR(PTR_AS(YogException, self), message, msg);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogException, self), stack_trace, st);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogException, self), message, msg);
 
     RETURN_VOID(env);
 }

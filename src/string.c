@@ -92,7 +92,7 @@ ensure_body(YogEnv* env, YogVal string)
 #define CAPACITY    (1)
         YogVal body = YogCharArray_new(env, CAPACITY);
 #undef CAPACITY
-        YogGC_UPDATE_PTR(PTR_AS(YogString, string), body, body);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogString, string), body, body);
     }
 
     RETURN_VOID(env);
@@ -127,7 +127,7 @@ ensure_size(YogEnv* env, YogVal string, uint_t size)
         uint_t size = PTR_AS(YogString, string)->size;
         memcpy(p, q, size);
 
-        YogGC_UPDATE_PTR(PTR_AS(YogString, string), body, new_body);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogString, string), body, new_body);
     }
 
     RETURN_VOID(env);
@@ -197,7 +197,7 @@ YogString_new(YogEnv* env)
 
     PTR_AS(YogString, self)->encoding = YUNDEF;
     PTR_AS(YogString, self)->size = 1;
-    YogGC_UPDATE_PTR(PTR_AS(YogString, self), body, body);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, self), body, body);
 
     RETURN(env, self);
 }
@@ -210,7 +210,7 @@ YogString_of_encoding(YogEnv* env, YogVal encoding)
     PUSH_LOCAL(env, s);
 
     s = YogString_new(env);
-    YogGC_UPDATE_PTR(PTR_AS(YogString, s), encoding, encoding);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), encoding, encoding);
 
     RETURN(env, s);
 }
@@ -235,9 +235,9 @@ YogString_from_range(YogEnv* env, YogVal enc, const char* start, const char* end
     PUSH_LOCAL(env, body);
 
     YogVal s = YogString_new(env);
-    YogGC_UPDATE_PTR(PTR_AS(YogString, s), encoding, enc);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), encoding, enc);
     PTR_AS(YogString, s)->size = size + 1;
-    YogGC_UPDATE_PTR(PTR_AS(YogString, s), body, body);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), body, body);
 
     RETURN(env, s);
 }
@@ -258,7 +258,7 @@ YogString_of_size(YogEnv* env, uint_t size)
 
     PTR_AS(YogString, string)->encoding = YNIL;
     PTR_AS(YogString, string)->size = 1;
-    YogGC_UPDATE_PTR(PTR_AS(YogString, string), body, body);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, string), body, body);
 
     RETURN(env, string);
 }
@@ -280,9 +280,9 @@ YogString_from_str(YogEnv* env, const char* s)
     body = YogCharArray_new_str(env, buffer);
 
     str = alloc(env, env->vm->cString);
-    YogGC_UPDATE_PTR(PTR_AS(YogString, str), encoding, enc);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, str), encoding, enc);
     PTR_AS(YogString, str)->size = len + 1;
-    YogGC_UPDATE_PTR(PTR_AS(YogString, str), body, body);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, str), body, body);
 
     RETURN(env, str);
 }
@@ -294,7 +294,7 @@ YogString_clone(YogEnv* env, YogVal string)
 
     YogVal body = PTR_AS(YogString, string)->body;
     YogVal s = YogString_from_str(env, PTR_AS(YogCharArray, body)->items);
-    YogGC_UPDATE_PTR(PTR_AS(YogString, s), encoding, PTR_AS(YogString, string)->encoding);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), encoding, PTR_AS(YogString, string)->encoding);
 
     RETURN(env, s);
 }
@@ -471,7 +471,7 @@ add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     memcpy(u, v, size2);
     u[size2] = '\0';
     PTR_AS(YogString, s)->size = size;
-    YogGC_UPDATE_PTR(PTR_AS(YogString, s), encoding, STRING_ENCODING(self));
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), encoding, STRING_ENCODING(self));
 
     RETURN(env, s);
 }
@@ -498,7 +498,7 @@ YogString_multiply(YogEnv* env, YogVal self, int_t num)
     }
     STRING_CSTR(s)[needed_size] = '\0';
     PTR_AS(YogString, s)->size = needed_size + 1;
-    YogGC_UPDATE_PTR(PTR_AS(YogString, s), encoding, STRING_ENCODING(self));
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), encoding, STRING_ENCODING(self));
 
     RETURN(env, s);
 }
@@ -1110,7 +1110,7 @@ YogString_add_cstr(YogEnv* env, YogVal self, const char* s)
     memcpy(top, STRING_CSTR(self), size1);
     memcpy(top + size1, s, size2);
     top[size1 + size2] = '\0';
-    YogGC_UPDATE_PTR(PTR_AS(YogString, self), body, body);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, self), body, body);
     PTR_AS(YogString, self)->size = size;
 
     RETURN_VOID(env);
