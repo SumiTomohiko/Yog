@@ -318,6 +318,7 @@ find_best_chunk(YogEnv* env, MarkSweepCompact* msc, size_t size, FreeHeader** pc
     return find_small_chunk(env, msc, size, pchunk, plist);
 }
 
+#if defined(GC_MARK_SWEEP_COMPACT)
 static void
 gc(YogEnv* env)
 {
@@ -327,6 +328,7 @@ gc(YogEnv* env)
     YogGC_perform_major(env);
 #endif
 }
+#endif
 
 static void
 ChunkHeader_init(YogEnv* env, ChunkHeader* chunk, size_t size, BOOL prev_used, BOOL used)
@@ -410,10 +412,12 @@ alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
     } \
 } while (0)
     FIND_BEST_CHUNK;
+#if defined(GC_MARK_SWEEP_COMPACT)
     gc(env);
     FIND_BEST_CHUNK;
     YogGC_compact(env);
     FIND_BEST_CHUNK;
+#endif
     return NULL;
 #undef FIND_BEST_CHUNK
 }
