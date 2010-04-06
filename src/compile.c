@@ -285,8 +285,15 @@ Anchor_new(YogEnv* env)
 static void
 add_inst(YogEnv* env, YogVal data, YogVal inst)
 {
-    INST(COMPILE_DATA(data)->last_inst)->next = inst;
+    SAVE_ARGS2(env, data, inst);
+    YogVal last_inst = YUNDEF;
+    PUSH_LOCAL(env, last_inst);
+    last_inst = COMPILE_DATA(data)->last_inst;
+
+    YogGC_UPDATE_PTR(env, INST(last_inst), next, inst);
     YogGC_UPDATE_PTR(env, COMPILE_DATA(data), last_inst, inst);
+
+    RETURN_VOID(env);
 }
 
 #include "compile.inc"
