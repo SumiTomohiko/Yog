@@ -50,13 +50,13 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     YogThread* thread = PTR_AS(YogThread, ptr);
 
-#define KEEP(member)    YogGC_keep(env, &thread->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, thread, member, keeper, heap)
     KEEP(prev);
     KEEP(next);
 #undef KEEP
 
     void* thread_heap = PTR_AS(YogThread, thread)->heap;
-#define KEEP(member)    YogGC_keep(env, &thread->member, keeper, thread_heap)
+#define KEEP(member)    YogGC_KEEP(env, thread, member, keeper, thread_heap)
     KEEP(jmp_val);
     KEEP(frame_to_long_jump);
     KEEP(block);
@@ -214,7 +214,7 @@ static void
 ThreadArg_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     ThreadArg* arg = PTR_AS(ThreadArg, ptr);
-#define KEEP(member)    YogGC_keep(env, &arg->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, arg, member, keeper, heap)
     KEEP(thread);
     KEEP(vararg);
 #undef KEEP

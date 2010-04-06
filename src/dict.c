@@ -178,7 +178,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogDict* dict = PTR_AS(YogDict, ptr);
-#define KEEP(member)    YogGC_keep(env, &dict->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, dict, member, keeper, heap)
     KEEP(tbl);
 #undef KEEP
 }
@@ -235,7 +235,7 @@ static void
 DictIterator_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     DictIterator* iter = PTR_AS(DictIterator, ptr);
-#define KEEP(member)    YogGC_keep(env, &iter->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, iter, member, keeper, heap)
     KEEP(tbl_iter);
 #undef KEEP
 }

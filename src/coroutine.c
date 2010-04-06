@@ -433,7 +433,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     Coroutine* coro = (Coroutine*)ptr;
-#define KEEP(member)    YogGC_keep(env, &coro->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, coro, member, keeper, heap)
 #if defined(_WIN32)
     if (coro->param != NULL) {
         KEEP(param->thread);

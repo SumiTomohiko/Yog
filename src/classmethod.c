@@ -63,7 +63,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogClassMethod* classmethod = PTR_AS(YogClassMethod, ptr);
-    YogGC_keep(env, &classmethod->f, keeper, heap);
+    YogGC_KEEP(env, classmethod, f, keeper, heap);
 }
 
 YogVal

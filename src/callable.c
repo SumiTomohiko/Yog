@@ -270,7 +270,7 @@ YogFunction_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogFunction* f = PTR_AS(YogFunction, ptr);
-#define KEEP(member)    YogGC_keep(env, &f->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, f, member, keeper, heap)
     KEEP(code);
     KEEP(globals);
     KEEP(outer_vars);
@@ -582,7 +582,7 @@ YogNativeFunction_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, voi
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogNativeFunction* f = (YogNativeFunction*)ptr;
-#define KEEP(member)    YogGC_keep(env, &f->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, f, member, keeper, heap)
     KEEP(pkg);
 #undef KEEP
 }
@@ -624,7 +624,7 @@ YogInstanceMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, voi
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogInstanceMethod* method = PTR_AS(YogInstanceMethod, ptr);
-#define KEEP(member)    YogGC_keep(env, &method->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, method, member, keeper, heap)
     KEEP(self);
     KEEP(f);
 #undef KEEP

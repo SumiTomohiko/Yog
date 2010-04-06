@@ -27,7 +27,7 @@ Package_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogPackage_keep_children(env, ptr, keeper, heap);
 
     Package* pkg = (Package*)ptr;
-#define KEEP(member)    YogGC_keep(env, &pkg->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, pkg, member, keeper, heap)
     KEEP(eZipError);
 #undef KEEP
 }

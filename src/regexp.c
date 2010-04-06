@@ -28,7 +28,7 @@ YogMatch_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogMatch* match = PTR_AS(YogMatch, ptr);
-#define KEEP(member)    YogGC_keep(env, &match->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, match, member, keeper, heap)
     KEEP(str);
     KEEP(regexp);
 #undef KEEP

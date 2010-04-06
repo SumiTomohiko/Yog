@@ -28,7 +28,7 @@ YogFile_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogFile* file = (YogFile*)ptr;
-#define KEEP(member)    YogGC_keep(env, &file->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, file, member, keeper, heap)
     KEEP(encoding);
 #undef KEEP
 }

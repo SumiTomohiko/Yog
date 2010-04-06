@@ -117,7 +117,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogObj_keep_children(env, ptr, keeper, heap);
 
     YogClass* klass = PTR_AS(YogClass, ptr);
-    YogGC_keep(env, &klass->super, keeper, heap);
+    YogGC_KEEP(env, klass, super, keeper, heap);
 }
 
 YogVal
@@ -329,7 +329,7 @@ ModuleClass_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
     YogObj_keep_children(env, ptr, keeper, heap);
 
     ModuleClass* klass = PTR_AS(ModuleClass, ptr);
-#define KEEP(member)   YogGC_keep(env, &klass->member, keeper, heap)
+#define KEEP(member)   YogGC_KEEP(env, klass, member, keeper, heap)
     KEEP(super);
 #undef KEEP
 }

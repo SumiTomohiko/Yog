@@ -31,7 +31,7 @@ YogToken_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case TK_NUMBER: /* FALLTHRU */
     case TK_REGEXP: /* FALLTHRU */
     case TK_STRING: /* FALLTHRU */
-        YogGC_keep(env, &token->u.val, keeper, heap);
+        YogGC_KEEP(env, token, u.val, keeper, heap);
         break;
     default:
         break;
@@ -340,7 +340,7 @@ static void
 HereDoc_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     HereDoc* heredoc = PTR_AS(HereDoc, ptr);
-#define KEEP(member)    YogGC_keep(env, &heredoc->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, heredoc, member, keeper, heap)
     KEEP(str);
     KEEP(end);
 #undef KEEP
@@ -1261,7 +1261,7 @@ static void
 keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogLexer* lexer = PTR_AS(YogLexer, ptr);
-#define KEEP(member)    YogGC_keep(env, &lexer->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, lexer, member, keeper, heap)
     KEEP(line);
     KEEP(buffer);
     KEEP(heredoc_queue);

@@ -18,10 +18,10 @@ static void
 YogFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogFrame* frame = PTR_AS(YogFrame, ptr);
-    YogGC_keep(env, &frame->prev, keeper, heap);
+    YogGC_KEEP(env, frame, prev, keeper, heap);
 }
 
-#define KEEP(member)    YogGC_keep(env, &frame->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, frame, member, keeper, heap)
 
 static void
 YogCFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
@@ -198,7 +198,7 @@ YogOuterVars_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* he
     uint_t size = vars->size;
     uint_t i = 0;
     for (i = 0; i < size; i++) {
-        YogGC_keep(env, &vars->items[i], keeper, heap);
+        YogGC_KEEP(env, vars, items[i], keeper, heap);
     }
 }
 

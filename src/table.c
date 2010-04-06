@@ -43,7 +43,7 @@ keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     uint_t size = array->size;
     uint_t i;
     for (i = 0; i < size; i++) {
-        YogGC_keep(env, &array->items[i], keeper, heap);
+        YogGC_KEEP(env, array, items[i], keeper, heap);
     }
 }
 
@@ -180,7 +180,7 @@ static void
 YogTable_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogTable* tbl = PTR_AS(YogTable, ptr);
-    YogGC_keep(env, &tbl->bins, keeper, heap);
+    YogGC_KEEP(env, tbl, bins, keeper, heap);
 }
 
 static YogVal
@@ -282,7 +282,7 @@ static void
 YogTableEntry_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogTableEntry* entry = PTR_AS(YogTableEntry, ptr);
-#define KEEP(member)    YogGC_keep(env, &entry->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, entry, member, keeper, heap)
     KEEP(key);
     KEEP(record);
     KEEP(next);
@@ -774,7 +774,7 @@ static void
 TableIterator_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     TableIterator* iter = PTR_AS(TableIterator, ptr);
-#define KEEP(member)    YogGC_keep(env, &iter->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, iter, member, keeper, heap)
     KEEP(tbl);
     KEEP(entry);
 #undef KEEP

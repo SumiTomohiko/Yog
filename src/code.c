@@ -216,7 +216,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     YogCode* code = PTR_AS(YogCode, ptr);
 
-    YogGC_keep(env, &code->arg_info, keeper, heap);
+    YogGC_KEEP(env, code, arg_info, keeper, heap);
 
 #define KEEP_MEMBER(member)     do { \
     code->member = PTR_AS(ID, (*keeper)(env, (void*)code->member, heap)); \
@@ -224,7 +224,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP_MEMBER(local_vars_names);
 #undef KEEP_MEMBER
 
-#define KEEP(member)    YogGC_keep(env, &code->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, code, member, keeper, heap)
     KEEP(lineno_tbl);
     KEEP(insts);
     KEEP(consts);

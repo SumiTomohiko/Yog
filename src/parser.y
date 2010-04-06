@@ -34,7 +34,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogNode* node = PTR_AS(YogNode, ptr);
 
-#define KEEP(member)    YogGC_keep(env, &node->u.member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, node, u.member, keeper, heap)
     switch (node->type) {
     case NODE_ARGS:
         KEEP(args.posargs);

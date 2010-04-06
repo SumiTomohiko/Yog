@@ -53,7 +53,7 @@ YogValArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
     uint_t size = array->size;
     uint_t i = 0;
     for (i = 0; i < size; i++) {
-        YogGC_keep(env, &array->items[i], keeper, heap);
+        YogGC_KEEP(env, array, items[i], keeper, heap);
     }
 }
 
@@ -157,7 +157,7 @@ YogArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogArray* array = PTR_AS(YogArray, ptr);
-    YogGC_keep(env, &array->body, keeper, heap);
+    YogGC_KEEP(env, array, body, keeper, heap);
 }
 
 static YogVal

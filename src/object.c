@@ -83,7 +83,7 @@ void
 YogBasicObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj* obj = PTR_AS(YogBasicObj, ptr);
-    YogGC_keep(env, &obj->klass, keeper, heap);
+    YogGC_KEEP(env, obj, klass, keeper, heap);
 }
 
 void
@@ -92,7 +92,7 @@ YogObj_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogObj* obj = PTR_AS(YogObj, ptr);
-    YogGC_keep(env, &obj->attrs, keeper, heap);
+    YogGC_KEEP(env, obj, attrs, keeper, heap);
 }
 
 YogVal

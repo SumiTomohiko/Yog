@@ -71,7 +71,7 @@ YogString_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     YogString* s = PTR_AS(YogString, ptr);
-#define KEEP(member)    YogGC_keep(env, &s->member, keeper, heap)
+#define KEEP(member)    YogGC_KEEP(env, s, member, keeper, heap)
     KEEP(body);
     KEEP(encoding);
 #undef KEEP

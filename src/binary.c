@@ -119,7 +119,7 @@ YogBinary_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBinary* bin = PTR_AS(YogBinary, ptr);
     YogBasicObj_keep_children(env, ptr, keeper, heap);
-    YogGC_keep(env, &bin->body, keeper, heap);
+    YogGC_KEEP(env, bin, body, keeper, heap);
 }
 
 static YogVal

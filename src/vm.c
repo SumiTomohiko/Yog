@@ -386,7 +386,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     }
 
 #define KEEP(member)    do { \
-    YogGC_keep(env, &vm->member, keeper, heap); \
+    YogGC_KEEP(env, vm, member, keeper, heap); \
 } while (0)
     KEEP(id2name);
     KEEP(name2id);
@@ -451,7 +451,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     YogIndirectPointer* indirect_ptr = vm->indirect_ptr;
     while (indirect_ptr != NULL) {
-        YogGC_keep(env, &indirect_ptr->val, keeper, heap);
+        YogGC_KEEP(env, indirect_ptr, val, keeper, heap);
         indirect_ptr = indirect_ptr->next;
     }
 }
@@ -804,7 +804,7 @@ ImportingPackage_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     ImportingPackage* pkg = PTR_AS(ImportingPackage, ptr);
-    YogGC_keep(env, &pkg->pkg, keeper, heap);
+    YogGC_KEEP(env, pkg, pkg, keeper, heap);
 }
 
 static void
