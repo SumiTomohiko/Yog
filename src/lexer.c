@@ -201,7 +201,7 @@ push_multibyte_char(YogEnv* env, YogVal lexer)
     if (rest_size < mbc_size) {
         YogError_raise_SyntaxError(env, "invalid multibyte char");
     }
-    int_t i = 0;
+    int_t i;
     for (i = 0; i < mbc_size; i++) {
         char c = nextc(lexer);
         add_token_char(env, lexer, c);
@@ -1289,10 +1289,8 @@ YogLexer_new(YogEnv* env)
 
     line = YogString_new(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), line, line);
-
     buffer = YogString_new(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), buffer, buffer);
-
 
     RETURN(env, lexer);
 }

@@ -669,8 +669,7 @@ subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal index = YUNDEF;
     YogVal retval = YUNDEF;
-    YogVal body = YUNDEF;
-    PUSH_LOCALS3(env, index, retval, body);
+    PUSH_LOCALS2(env, index, retval);
     CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { "index", &index }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "[]", params, args, kw);
