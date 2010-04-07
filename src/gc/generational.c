@@ -220,9 +220,28 @@ YogGenerational_alloc(YogEnv* env, YogHeap* heap, ChildrenKeeper keeper, Finaliz
 }
 
 void
-YogGenerational_prepare(YogEnv* env, YogHeap* heap)
+YogGenerational_prepare_minor(YogEnv* env, YogHeap* heap)
 {
     YogCopying_prepare(env, GENERATIONAL_YOUNG_HEAP(heap));
+}
+
+static void
+reset_remembered_set(YogEnv* env, YogHeap* heap)
+{
+    uint_t size = GENERATIONAL_REMEMBERED_SET_POS(heap);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        void* ptr = GENERATIONAL_REMEMBERED_SET(heap)[i];
+        PAYLOAD2OLD_HEADER(ptr)->remembered = FALSE;
+    }
+    GENERATIONAL_REMEMBERED_SET_POS(heap) = 0;
+}
+
+void
+YogGenerational_prepare_major(YogEnv* env, YogHeap* heap)
+{
+    YogCopying_prepare(env, GENERATIONAL_YOUNG_HEAP(heap));
+    reset_remembered_set(env, heap);
 }
 
 void

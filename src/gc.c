@@ -446,9 +446,15 @@ YogGC_add_to_remembered_set(YogEnv* env, void* ptr)
 }
 
 static void
-prepare(YogEnv* env)
+prepare_minor(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_prepare(env, heap));
+    ITERATE_HEAPS(env->vm, YogGenerational_prepare_minor(env, heap));
+}
+
+static void
+prepare_major(YogEnv* env)
+{
+    ITERATE_HEAPS(env->vm, YogGenerational_prepare_major(env, heap));
 }
 
 static void
@@ -486,9 +492,9 @@ static void
 minor_gc(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter minor_gc", env));
-    prepare(env);
-    minor_keep_vm(env);
+    prepare_minor(env);
     trace_remembered_set(env);
+    minor_keep_vm(env);
     minor_cheney_scan(env);
     minor_delete_garbage(env);
     minor_post_gc(env);
@@ -525,7 +531,7 @@ static void
 major_gc(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter major_gc", env));
-    prepare(env);
+    prepare_major(env);
     major_keep_vm(env);
     major_cheney_scan(env);
     major_delete_garbage(env);
@@ -537,7 +543,7 @@ major_gc(YogEnv* env)
 void
 YogGC_delete(YogEnv* env)
 {
-    prepare(env);
+    prepare_major(env);
     major_delete_garbage(env);
     major_post_gc(env);
     delete_heaps(env);
