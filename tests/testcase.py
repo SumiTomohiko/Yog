@@ -7,6 +7,7 @@ from subprocess import PIPE, Popen
 from tempfile import mkstemp
 from time import localtime, strftime, time
 import os
+import sys
 
 class TestCase(object):
 
@@ -81,8 +82,11 @@ class TestCase(object):
             proc.stdin.close()
             self.wait_proc(proc, timeout)
 
+            err = self.remove_gc_warings(self.read(stderr_path))
+            print >> sys.stderr, err
+            out = self.read(stdout_path)
+            print out
             if stderr is not None:
-                err = self.remove_gc_warings(self.read(stderr_path))
                 if encoding is not None:
                     err = err.decode(encoding)
                 if callable(stderr):
@@ -91,7 +95,6 @@ class TestCase(object):
                     assert stderr == err, "stderr must be %r, but actual is %r" % (stderr, err)
 
             if stdout is not None:
-                out = self.read(stdout_path)
                 if encoding is not None:
                     out = out.decode(encoding)
                 if callable(stdout):
