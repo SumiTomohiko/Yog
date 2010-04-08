@@ -543,10 +543,11 @@ static void yy_shift(
     }
   }
 #endif
-  yytos = &PTR_AS(yyParser, parser)->yystack[PTR_AS(yyParser, parser)->yyidx];
+  int yyidx = PTR_AS(yyParser, parser)->yyidx;
+  yytos = &PTR_AS(yyParser, parser)->yystack[yyidx];
   yytos->stateno = (YYACTIONTYPE)yyNewState;
   yytos->major = (YYCODETYPE)yyMajor;
-  yytos->minor = *yypMinor;
+  YogGC_UPDATE_PTR(env, PTR_AS(yyParser, parser), yystack[yyidx].minor.yy131, yypMinor->yy131);
 #if !defined(NDEBUG)
   if( yyTraceFILE && PTR_AS(yyParser, parser)->yyidx>0 ){
     int i;
