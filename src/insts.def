@@ -50,7 +50,7 @@ inst store_local
 ()
 {
     YogVal vars = LOCAL_VARS(CUR_FRAME);
-    PTR_AS(YogValArray, vars)->items[index] = val;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, vars), items[index], val);
 }
 
 inst make_block
@@ -65,14 +65,27 @@ inst make_block
 
     f = YogFunction_new(env);
     setup_script_function(env, f, code);
-    PTR_AS(YogFunction, f)->frame_to_long_return = PTR_AS(YogScriptFrame, CUR_FRAME)->frame_to_long_return;
-    PTR_AS(YogFunction, f)->frame_to_long_break = CUR_FRAME;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), frame_to_long_return, PTR_AS(YogScriptFrame, CUR_FRAME)->frame_to_long_return);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), frame_to_long_break, CUR_FRAME);
 
-    self = PTR_AS(YogValArray, LOCAL_VARS(CUR_FRAME))->items[0];
+    switch (PTR_AS(YogFrame, CUR_FRAME)->type) {
+    case FRAME_METHOD:
+        self = PTR_AS(YogValArray, LOCAL_VARS(CUR_FRAME))->items[0];
+        break;
+    case FRAME_PKG:
+    case FRAME_CLASS:
+        self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
+        break;
+    case FRAME_C:
+    case FRAME_FINISH:
+    default:
+        YOG_BUG(env, "invalid frame (0x%08x)", CUR_FRAME);
+        break;
+    }
 
     method = YogInstanceMethod_new(env);
-    PTR_AS(YogInstanceMethod, method)->self = self;
-    PTR_AS(YogInstanceMethod, method)->f = f;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogInstanceMethod, method), self, self);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogInstanceMethod, method), f, f);
 
     RESTORE_LOCALS_FROM_NAME(env, make_block);
 }
@@ -87,7 +100,7 @@ inst make_function
     PTR_AS(YogFunction, f)->name = name;
     if (PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_CLASS) {
         YogVal klass = PTR_AS(YogNameFrame, CUR_FRAME)->self;
-        PTR_AS(YogFunction, f)->klass = klass;
+        YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), klass, klass);
     }
 }
 
@@ -250,8 +263,8 @@ inst make_module
 
     frame = YogClassFrame_new(env);
     setup_script_frame(env, frame, code);
-    PTR_AS(YogNameFrame, frame)->vars = PTR_AS(YogObj, module)->attrs;
-    PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogNameFrame, frame), vars, PTR_AS(YogObj, module)->attrs);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, PTR_AS(YogScriptFrame, CUR_FRAME)->globals);
 
     PUSH_FRAME(frame);
 
@@ -273,16 +286,16 @@ inst make_class
     PTR_AS(YogClass, kls)->name = VAL2ID(name);
     PTR_AS(YogObj, kls)->attrs = YUNDEF;
     attrs = YogTable_new_symbol_table(env);
-    PTR_AS(YogObj, kls)->attrs = attrs;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogObj, kls), attrs, attrs);
     PUSH(kls);
 
     set_lhs_composition(env, 1, 0, 0);
 
     frame = YogClassFrame_new(env);
     setup_script_frame(env, frame, code);
-    PTR_AS(YogNameFrame, frame)->self = kls;
-    PTR_AS(YogNameFrame, frame)->vars = attrs;
-    PTR_AS(YogScriptFrame, frame)->globals = PTR_AS(YogScriptFrame, CUR_FRAME)->globals;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogNameFrame, frame), self, kls);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogNameFrame, frame), vars, attrs);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, PTR_AS(YogScriptFrame, CUR_FRAME)->globals);
 
     PUSH_FRAME(frame);
 
@@ -357,7 +370,7 @@ inst make_array
     uint_t i;
     for (i = 0; i < size; i++) {
         YogVal body = PTR_AS(YogArray, array)->body;
-        PTR_AS(YogValArray, body)->items[size - i - 1] = POP();
+        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, body), items[size - i - 1], POP());
     }
     PTR_AS(YogArray, array)->size = size;
 }

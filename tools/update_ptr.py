@@ -121,12 +121,12 @@ def member_exists(struct, name):
     return False
 
 def rewrite_srcs(structs):
-    for path in files([".c", ".y"]):
+    for path in files([".c", ".y", ".def"]):
         backup_path = backup(path)
         with open(path, "w") as fpout:
             with open(backup_path) as fpin:
                 for line in fpin:
-                    m = match(r"(?P<indent>\s*)PTR_AS\((?P<type>\w+), (?P<var>\w+)\)->(?P<name>.+) = (?P<val>.+);$", line)
+                    m = match(r"(?P<indent>\s*)PTR_AS\((?P<type>\w+), (?P<var>[\w+\(\)])\)->(?P<name>.+) = (?P<val>.+);$", line)
                     if m is not None:
                         name = m.group("name")
                         if not member_exists(structs[m.group("type")], name):
@@ -135,7 +135,7 @@ def rewrite_srcs(structs):
                         if m.group("val") in ["YNIL", "YUNDEF"]:
                             fpout.write(line)
                             continue
-                        fpout.write("%sYogGC_UPDATE_PTR(PTR_AS(%s, %s), %s, %s);\n" % (m.group("indent"), m.group("type"), m.group("var"), name, m.group("val")))
+                        fpout.write("%sYogGC_UPDATE_PTR(env, PTR_AS(%s, %s), %s, %s);\n" % (m.group("indent"), m.group("type"), m.group("var"), name, m.group("val")))
                         continue
 
                     m = match(r"(?P<indent>\s*)(?P<type>\w+)\((?P<var>\w+)\)->(?P<name>.+) = (?P<val>.+);$", line)
@@ -151,7 +151,7 @@ def rewrite_srcs(structs):
                         if m.group("val") in ["YNIL", "YUNDEF"]:
                             fpout.write(line)
                             continue
-                        fpout.write("%sYogGC_UPDATE_PTR(%s(%s), %s, %s);\n" % (m.group("indent"), m.group("type"), m.group("var"), name, m.group("val")))
+                        fpout.write("%sYogGC_UPDATE_PTR(env, %s(%s), %s, %s);\n" % (m.group("indent"), m.group("type"), m.group("var"), name, m.group("val")))
                         continue
 
                     fpout.write(line)

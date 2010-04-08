@@ -60,7 +60,7 @@ assign_keyword_arg(YogEnv* env, YogVal self, YogVal args, YogVal kw, ID name, Yo
             if (!IS_UNDEF(items[POS_OFFSET + i])) {
                 YogError_raise_ArgumentError(env, "%I() got multiple values for keyword argument \"%I\"", PTR_AS(YogFunction, self)->name, name);
             }
-            items[POS_OFFSET + i] = val;
+            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + i], val);
             RETURN_VOID(env);
         }
     }
@@ -140,8 +140,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
 
     if (arg_argc < posargc) {
         for (i = 0; i < PTR_AS(YogArgInfo, arg_info)->argc; i++) {
-            YogVal* items = PTR_AS(YogValArray, args)->items;
-            items[POS_OFFSET + i] = posargs[i];
+            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + i], posargs[i]);
         }
         if (PTR_AS(YogArgInfo, arg_info)->varargc != 1) {
             raise_wrong_num_args(env, self, posargc);
@@ -163,8 +162,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
     }
     else {
         for (i = 0; i < posargc; i++) {
-            YogVal* items = PTR_AS(YogValArray, args)->items;
-            items[POS_OFFSET + i] = posargs[i];
+            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + i], posargs[i]);
         }
         if (IS_UNDEF(vararg)) {
         }
@@ -172,16 +170,14 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
             raise_TypeError_for_vararg(env, vararg);
         }
         else {
-            YogVal* items = PTR_AS(YogValArray, args)->items;
             for (i = posargc; i < arg_argc; i++) {
                 YogVal val = YogArray_at(env, vararg, i - posargc);
-                items[POS_OFFSET + i] = val;
+                YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + i], val);
             }
         }
         if (0 < PTR_AS(YogArgInfo, arg_info)->varargc) {
             va = YogArray_new(env);
-            YogVal* items = PTR_AS(YogValArray, args)->items;
-            items[POS_OFFSET + posargc] = va;
+            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + posargc], va);
 
             if (IS_UNDEF(vararg)) {
             }

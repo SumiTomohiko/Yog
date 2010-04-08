@@ -29,7 +29,7 @@
 #define CUR_FRAME   env->frame
 
 #define PUSH_FRAME(f)   do { \
-    PTR_AS(YogFrame, (f))->prev = CUR_FRAME; \
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, (f)), prev, CUR_FRAME); \
     CUR_FRAME = (f); \
 } while (0)
 
