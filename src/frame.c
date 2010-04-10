@@ -196,7 +196,7 @@ YogOuterVars_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* he
     YogOuterVars* vars = PTR_AS(YogOuterVars, ptr);
 
     uint_t size = vars->size;
-    uint_t i = 0;
+    uint_t i;
     for (i = 0; i < size; i++) {
         YogGC_KEEP(env, vars, items[i], keeper, heap);
     }
@@ -207,7 +207,7 @@ YogOuterVars_new(YogEnv* env, uint_t size)
 {
     YogVal vars = ALLOC_OBJ_ITEM(env, YogOuterVars_keep_children, NULL, YogOuterVars, size, YogVal);
     PTR_AS(YogOuterVars, vars)->size = size;
-    uint_t i = 0;
+    uint_t i;
     for (i = 0; i < size; i++) {
         PTR_AS(YogOuterVars, vars)->items[i] = YUNDEF;
     }
