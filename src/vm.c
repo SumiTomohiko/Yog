@@ -284,7 +284,7 @@ setup_encodings(YogEnv* env, YogVM* vm)
 static void
 set_main_thread_class(YogEnv* env, YogVM* vm)
 {
-    PTR_AS(YogBasicObj, vm->main_thread)->klass = vm->cThread;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, vm->main_thread), klass, vm->cThread);
 }
 
 static YogVal
@@ -680,7 +680,7 @@ YogVM_add_thread(YogEnv* env, YogVM* vm, YogVal thread)
     YogVM_acquire_global_interp_lock(env, vm);
     gc(env, vm);
 
-    PTR_AS(YogThread, vm->running_threads)->prev = thread;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogThread, vm->running_threads), prev, thread);
     YogGC_UPDATE_PTR(env, PTR_AS(YogThread, thread), next, vm->running_threads);
     vm->running_threads = thread;
 

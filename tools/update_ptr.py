@@ -126,7 +126,7 @@ def rewrite_srcs(structs):
         with open(path, "w") as fpout:
             with open(backup_path) as fpin:
                 for line in fpin:
-                    m = match(r"(?P<indent>\s*)PTR_AS\((?P<type>\w+), (?P<var>[\w+\(\)])\)->(?P<name>.+) = (?P<val>.+);$", line)
+                    m = match(r"(?P<indent>\s*)PTR_AS\((?P<type>\w+), (?P<var>[->\w\(\)]+)\)->(?P<name>.+) = (?P<val>.+);$", line)
                     if m is not None:
                         name = m.group("name")
                         if not member_exists(structs[m.group("type")], name):

@@ -26,7 +26,6 @@ YOG_EXPORT void YogGenerational_minor_post_gc(YogEnv*, YogHeap*);
 YOG_EXPORT YogHeap* YogGenerational_new(YogEnv*, uint_t, uint_t, uint_t);
 YOG_EXPORT void YogGenerational_prepare_major(YogEnv*, YogHeap*);
 YOG_EXPORT void YogGenerational_prepare_minor(YogEnv*, YogHeap*);
-YOG_EXPORT void YogGenerational_trace_remembered_set(YogEnv*, YogHeap*);
 
 /* PROTOTYPE_END */
 

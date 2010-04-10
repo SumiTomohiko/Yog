@@ -8,6 +8,17 @@
 
 #include "yog/yog.h"
 
+struct RememberedSet {
+    uint_t pos;
+    uint_t size;
+    void* items[0];
+};
+
+typedef struct RememberedSet RememberedSet;
+
+#define SIZEOF_REMEMBERED_SET(size) \
+                                (sizeof(RememberedSet) + sizeof(void*) * (size))
+
 struct YoungHeader {
     uint_t age;
 
@@ -29,6 +40,9 @@ struct OldHeader {
 };
 
 typedef struct OldHeader OldHeader;
+
+RememberedSet* YogGenerational_get_remembered_set(YogEnv*, YogHeap*);
+void YogGenerational_trace_remembered_set(YogEnv*, YogHeap*, RememberedSet*);
 
 #endif
 /**

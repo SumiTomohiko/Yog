@@ -18,9 +18,7 @@ struct Generational {
     struct YogHeap* young_heap;
     struct YogHeap* old_heap;
     uint_t max_age;
-    void** remembered_set;
-    uint_t remembered_set_pos;
-    uint_t remembered_set_size;
+    struct RememberedSet* remembered_set;
 };
 
 typedef struct Generational Generational;
@@ -33,35 +31,39 @@ typedef struct Generational Generational;
 #define GENERATIONAL_MAX_AGE(heap)  GENERATIONAL((heap))->max_age
 #define GENERATIONAL_REMEMBERED_SET(heap) \
                                     GENERATIONAL((heap))->remembered_set
-#define GENERATIONAL_REMEMBERED_SET_POS(heap) \
-                                    GENERATIONAL((heap))->remembered_set_pos
-#define GENERATIONAL_REMEMBERED_SET_SIZE(heap) \
-                                    GENERATIONAL((heap))->remembered_set_size
+
+#define INTERNAL /* for escaping from tools/update_prototype.py */
+
+INTERNAL RememberedSet*
+YogGenerational_get_remembered_set(YogEnv* env, YogHeap* heap)
+{
+    return GENERATIONAL_REMEMBERED_SET(heap);
+}
 
 static void
 grow_remembered_set(YogEnv* env, YogHeap* heap)
 {
-    uint_t size = GENERATIONAL_REMEMBERED_SET_SIZE(heap) + 1024;
-    if (size < GENERATIONAL_REMEMBERED_SET_SIZE(heap)) {
+    uint_t size = GENERATIONAL_REMEMBERED_SET(heap)->size + 1024;
+    if (size < GENERATIONAL_REMEMBERED_SET(heap)->size) {
         YOG_BUG(env, "remembered set is too large");
     }
-    void** ptr = realloc(GENERATIONAL_REMEMBERED_SET(heap), size);
-    if (ptr == NULL) {
+    RememberedSet* remembered_set = (RememberedSet*)realloc(GENERATIONAL_REMEMBERED_SET(heap), SIZEOF_REMEMBERED_SET(size));
+    if (remembered_set == NULL) {
         YogError_out_of_memory(env);
     }
-    GENERATIONAL_REMEMBERED_SET(heap) = ptr;
-    GENERATIONAL_REMEMBERED_SET_SIZE(heap) = size;
+    remembered_set->size = size;
+    GENERATIONAL_REMEMBERED_SET(heap) = remembered_set;
 }
 
 void
 YogGenerational_add_to_remembered_set(YogEnv* env, YogHeap* heap, void* ptr)
 {
-    uint_t pos = GENERATIONAL_REMEMBERED_SET_POS(heap);
-    if (GENERATIONAL_REMEMBERED_SET_SIZE(heap) - 1 < pos) {
+    uint_t pos = GENERATIONAL_REMEMBERED_SET(heap)->pos;
+    if (GENERATIONAL_REMEMBERED_SET(heap)->size - 1 < pos) {
         grow_remembered_set(env, heap);
     }
-    GENERATIONAL_REMEMBERED_SET(heap)[pos] = ptr;
-    GENERATIONAL_REMEMBERED_SET_POS(heap) = pos + 1;
+    GENERATIONAL_REMEMBERED_SET(heap)->items[pos] = ptr;
+    GENERATIONAL_REMEMBERED_SET(heap)->pos = pos + 1;
     PAYLOAD2OLD_HEADER(ptr)->remembered = TRUE;
 }
 
@@ -171,9 +173,10 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
 static void
 init_remembered_set(YogEnv* env, Generational* heap, uint_t size)
 {
-    GENERATIONAL_REMEMBERED_SET(heap) = (void**)YogGC_malloc(env, sizeof(void*) * size);
-    GENERATIONAL_REMEMBERED_SET_POS(heap) = 0;
-    GENERATIONAL_REMEMBERED_SET_SIZE(heap) = size;
+    RememberedSet* remembered_set = (RememberedSet*)YogGC_malloc(env, SIZEOF_REMEMBERED_SET(size));
+    remembered_set->pos = 0;
+    remembered_set->size = size;
+    GENERATIONAL_REMEMBERED_SET(heap) = remembered_set;
 }
 
 YogHeap*
@@ -195,7 +198,7 @@ YogGenerational_delete(YogEnv* env, YogHeap* heap)
 {
     YogMarkSweepCompact_delete(env, GENERATIONAL_OLD_HEAP(heap));
     YogCopying_delete(env, GENERATIONAL_YOUNG_HEAP(heap));
-    YogGC_free(env, GENERATIONAL_REMEMBERED_SET(heap), sizeof(void*) * GENERATIONAL_REMEMBERED_SET_SIZE(heap));
+    YogGC_free(env, GENERATIONAL_REMEMBERED_SET(heap), SIZEOF_REMEMBERED_SET(GENERATIONAL_REMEMBERED_SET(heap)->size));
     YogGC_free(env, heap, sizeof(Generational));
 }
 
@@ -223,18 +226,19 @@ void
 YogGenerational_prepare_minor(YogEnv* env, YogHeap* heap)
 {
     YogCopying_prepare(env, GENERATIONAL_YOUNG_HEAP(heap));
+    init_remembered_set(env, GENERATIONAL(heap), GENERATIONAL_REMEMBERED_SET(heap)->size);
 }
 
 static void
 reset_remembered_set(YogEnv* env, YogHeap* heap)
 {
-    uint_t size = GENERATIONAL_REMEMBERED_SET_POS(heap);
+    uint_t size = GENERATIONAL_REMEMBERED_SET(heap)->pos;
     uint_t i;
     for (i = 0; i < size; i++) {
-        void* ptr = GENERATIONAL_REMEMBERED_SET(heap)[i];
+        void* ptr = GENERATIONAL_REMEMBERED_SET(heap)->items[i];
         PAYLOAD2OLD_HEADER(ptr)->remembered = FALSE;
     }
-    GENERATIONAL_REMEMBERED_SET_POS(heap) = 0;
+    GENERATIONAL_REMEMBERED_SET(heap)->pos = 0;
 }
 
 void
@@ -263,22 +267,16 @@ YogGenerational_minor_delete_garbage(YogEnv* env, YogHeap* heap)
     YogCopying_delete_garbage(env, GENERATIONAL_YOUNG_HEAP(heap));
 }
 
-void
-YogGenerational_trace_remembered_set(YogEnv* env, YogHeap* heap)
+INTERNAL void
+YogGenerational_trace_remembered_set(YogEnv* env, YogHeap* heap, RememberedSet* remembered_set)
 {
-    void** remembered_set = GENERATIONAL_REMEMBERED_SET(heap);
-    uint_t pos = GENERATIONAL_REMEMBERED_SET_POS(heap);
-    uint_t size = GENERATIONAL_REMEMBERED_SET_SIZE(heap);
-    init_remembered_set(env, GENERATIONAL(heap), GENERATIONAL_REMEMBERED_SET_SIZE(heap));
-
+    uint_t pos = remembered_set->pos;
     uint_t i;
     for (i = 0; i < pos; i++) {
-        void* ptr = remembered_set[i];
+        void* ptr = remembered_set->items[i];
         PAYLOAD2OLD_HEADER(ptr)->remembered = FALSE;
         proc_for_tenured_minor(env, ptr, minor_gc_keep_object, heap);
     }
-
-    YogGC_free(env, remembered_set, sizeof(void*) * size);
 }
 
 static void

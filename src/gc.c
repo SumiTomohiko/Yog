@@ -11,6 +11,7 @@
 #elif defined(GC_MARK_SWEEP_COMPACT)
 #   include "yog/gc/mark-sweep-compact.h"
 #elif defined(GC_GENERATIONAL)
+#   include "yog/gc/internal.h"
 #   include "yog/gc/generational.h"
 #elif defined(GC_BDW)
 #   include "yog/gc/bdw.h"
@@ -383,14 +384,6 @@ YogGC_delete(YogEnv* env)
 
 #if defined(GC_MARK_SWEEP_COMPACT) || defined(GC_GENERATIONAL)
 #if 0
-static uint_t
-count_heaps(YogEnv* env)
-{
-    uint_t n = 0;
-    ITERATE_HEAPS(env->vm, n++);
-    return n;
-}
-
 static void
 init_compactors(YogEnv* env, uint_t size, YogCompactor* compactors)
 {
@@ -471,12 +464,6 @@ minor_cheney_scan(YogEnv* env)
 }
 
 static void
-trace_remembered_set(YogEnv* env)
-{
-    ITERATE_HEAPS(env->vm, YogGenerational_trace_remembered_set(env, heap));
-}
-
-static void
 minor_delete_garbage(YogEnv* env)
 {
     ITERATE_HEAPS(env->vm, YogGenerational_minor_delete_garbage(env, heap));
@@ -488,17 +475,55 @@ minor_post_gc(YogEnv* env)
     ITERATE_HEAPS(env->vm, YogGenerational_minor_post_gc(env, heap));
 }
 
+static uint_t
+count_heaps(YogEnv* env)
+{
+    uint_t n = 0;
+    ITERATE_HEAPS(env->vm, n++);
+    return n;
+}
+
 static void
 minor_gc(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter minor_gc", env));
+
+    struct RememberedSetWithHeap {
+        struct RememberedSet* remembered_set;
+        struct YogHeap* heap;
+    };
+
+    typedef struct RememberedSetWithHeap RememberedSetWithHeap;
+
+    uint_t heaps_num = count_heaps(env);
+    RememberedSetWithHeap* r = (RememberedSetWithHeap*)YogSysdeps_alloca(sizeof(RememberedSetWithHeap) * heaps_num);
+    uint_t i;
+    YogHeap* heap;
+    for (i = 0, heap = env->vm->heaps; i < heaps_num; i++, heap = heap->next) {
+        r[i].remembered_set = YogGenerational_get_remembered_set(env, heap);
+        r[i].heap = heap;
+    }
+
     prepare_minor(env);
-    trace_remembered_set(env);
+
+    for (i = 0; i < heaps_num; i++) {
+        YogHeap* heap = r[i].heap;
+        RememberedSet* remembered_set = r[i].remembered_set;
+        YogGenerational_trace_remembered_set(env, heap, remembered_set);
+    }
+
     minor_keep_vm(env);
     minor_cheney_scan(env);
     minor_delete_garbage(env);
     minor_post_gc(env);
     delete_heaps(env);
+
+    for (i = 0; i < heaps_num; i++) {
+        RememberedSet* remembered_set = r[i].remembered_set;
+        uint_t size = SIZEOF_REMEMBERED_SET(remembered_set->size);
+        YogGC_free(env, remembered_set, size);
+    }
+
     DEBUG(TRACE("%p: exit minor_gc", env));
 }
 
