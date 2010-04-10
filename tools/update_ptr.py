@@ -104,11 +104,13 @@ def conv_macro_name(name):
 
 def find_struct(structs, name):
     for key in structs:
+        if conv_macro_name(key) == name:
+            return structs[key]
+    for key in structs:
         prefix = "Yog"
         s = key[len(prefix):] if key.startswith(prefix) else key
-        if conv_macro_name(s) != name:
-            continue
-        return structs[key]
+        if conv_macro_name(s) == name:
+            return structs[key]
 
 def member_exists(struct, name):
     name = sub(r"\[.*\]", "", name)
@@ -126,7 +128,7 @@ def rewrite_srcs(structs):
         with open(path, "w") as fpout:
             with open(backup_path) as fpin:
                 for line in fpin:
-                    m = match(r"(?P<indent>\s*)PTR_AS\((?P<type>\w+), (?P<var>[->\w\(\)]+)\)->(?P<name>.+) = (?P<val>.+);$", line)
+                    m = match(r"(?P<indent>\s*)PTR_AS\((?P<type>\w+), (?P<var>[->\w\(\)]+)\)->(?P<name>.+) = (?P<val>.+);(?P<tail>.*)$", line)
                     if m is not None:
                         name = m.group("name")
                         if not member_exists(structs[m.group("type")], name):
@@ -135,10 +137,10 @@ def rewrite_srcs(structs):
                         if m.group("val") in ["YNIL", "YUNDEF"]:
                             fpout.write(line)
                             continue
-                        fpout.write("%sYogGC_UPDATE_PTR(env, PTR_AS(%s, %s), %s, %s);\n" % (m.group("indent"), m.group("type"), m.group("var"), name, m.group("val")))
+                        fpout.write("%sYogGC_UPDATE_PTR(env, PTR_AS(%s, %s), %s, %s);%s\n" % (m.group("indent"), m.group("type"), m.group("var"), name, m.group("val"), m.group("tail")))
                         continue
 
-                    m = match(r"(?P<indent>\s*)(?P<type>\w+)\((?P<var>\w+)\)->(?P<name>.+) = (?P<val>.+);$", line)
+                    m = match(r"(?P<indent>\s*)(?P<type>\w+)\((?P<var>\w+)\)->(?P<name>.+) = (?P<val>.+);(?P<tail>.*)$", line)
                     if m is not None:
                         struct = find_struct(structs, m.group("type"))
                         if struct is None:
@@ -151,7 +153,7 @@ def rewrite_srcs(structs):
                         if m.group("val") in ["YNIL", "YUNDEF"]:
                             fpout.write(line)
                             continue
-                        fpout.write("%sYogGC_UPDATE_PTR(env, %s(%s), %s, %s);\n" % (m.group("indent"), m.group("type"), m.group("var"), name, m.group("val")))
+                        fpout.write("%sYogGC_UPDATE_PTR(env, %s(%s), %s, %s);%s\n" % (m.group("indent"), m.group("type"), m.group("var"), name, m.group("val"), m.group("tail")))
                         continue
 
                     fpout.write(line)

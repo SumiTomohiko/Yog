@@ -191,8 +191,8 @@ typedef struct CompileData CompileData;
 
 #define PUSH_EXCEPTION_TABLE_ENTRY(data, entry) do { \
     YogVal last = COMPILE_DATA((data))->exc_tbl_last; \
-    EXCEPTION_TABLE_ENTRY(last)->next = (entry); \
-    COMPILE_DATA(data)->exc_tbl_last = (entry); \
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(last), next, (entry)); \
+    YogGC_UPDATE_PTR(env, COMPILE_DATA(data), exc_tbl_last, (entry)); \
 } while (0)
 
 #define NODE(p)             PTR_AS(YogNode, (p))
@@ -2643,9 +2643,9 @@ compile_visit_finally(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
 
     exc_tbl_entry = ExceptionTableEntry_new(env);
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->next = YNIL;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->from = label_head_start;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->to = label_head_end;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->target = label_finally_error_start;
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry), from, label_head_start);
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry), to, label_head_end);
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry), target, label_finally_error_start);
     YogGC_UPDATE_PTR(env, TRY_LIST_ENTRY(try_list_entry), exc_tbl, exc_tbl_entry);
 
     add_inst(env, data, label_head_start);
@@ -2760,9 +2760,9 @@ compile_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 
     exc_tbl_entry = ExceptionTableEntry_new(env);
     EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->next = YNIL;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->from = label_head_start;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->to = label_head_end;
-    EXCEPTION_TABLE_ENTRY(exc_tbl_entry)->target = label_excepts_start;
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry), from, label_head_start);
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry), to, label_head_end);
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(exc_tbl_entry), target, label_excepts_start);
     YogGC_UPDATE_PTR(env, TRY_LIST_ENTRY(try_list_entry), exc_tbl, exc_tbl_entry);
 
     add_inst(env, data, label_head_start);
@@ -2899,11 +2899,11 @@ split_exception_table(YogEnv* env, YogVal exc_tbl_entry, YogVal label_from, YogV
     }
 
     YogVal new_entry = ExceptionTableEntry_new(env);
-    EXCEPTION_TABLE_ENTRY(new_entry)->from = label_to;
-    EXCEPTION_TABLE_ENTRY(new_entry)->to = EXCEPTION_TABLE_ENTRY(entry)->to;
-    EXCEPTION_TABLE_ENTRY(new_entry)->target = EXCEPTION_TABLE_ENTRY(entry)->target;
-    EXCEPTION_TABLE_ENTRY(entry)->to = label_from;
-    EXCEPTION_TABLE_ENTRY(entry)->next = new_entry;
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(new_entry), from, label_to);
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(new_entry), to, EXCEPTION_TABLE_ENTRY(entry)->to);
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(new_entry), target, EXCEPTION_TABLE_ENTRY(entry)->target);
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(entry), to, label_from);
+    YogGC_UPDATE_PTR(env, EXCEPTION_TABLE_ENTRY(entry), next, new_entry);
 
     RETURN_VOID(env);
 }
