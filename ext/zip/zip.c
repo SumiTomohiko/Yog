@@ -5,6 +5,7 @@
 #include "yog/array.h"
 #include "yog/error.h"
 #include "yog/eval.h"
+#include "yog/gc.h"
 #include "yog/get_args.h"
 #include "yog/package.h"
 #include "yog/string.h"
