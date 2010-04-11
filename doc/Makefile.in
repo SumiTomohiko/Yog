@@ -4,7 +4,7 @@ DIR = $(top_srcdir)/src
 DEST_DIR = html
 VERSION = @VERSION@
 EXEEXT = @EXEEXT@
-PARAMS = --init-heap-size=8M makedoc.yg --title="Yog $(VERSION) documentation" --destdir=$(DEST_DIR) index.ydoc
+PARAMS = --heap-size=8M --young-heap-size=4M --old-heap-size=4M makedoc.yg --title="Yog $(VERSION) documentation" --destdir=$(DEST_DIR) index.ydoc
 
 .PHONY: all clean
 

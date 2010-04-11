@@ -19,12 +19,6 @@
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/eval.h"
-#if defined(GC_COPYING)
-#   include "yog/gc/copying.h"
-#endif
-#if defined(GC_GENERATIONAL)
-#   include "yog/gc/mark-sweep-compact.h"
-#endif
 #include "yog/package.h"
 #include "yog/repl.h"
 #include "yog/string.h"
@@ -58,8 +52,7 @@ usage()
     puts("  --debug-import: print importing log");
     puts("  --gc-stress:");
     puts("  --help: show this message");
-    puts("  --init-heap-size=size:");
-    puts("  --threshold=size:");
+    puts("  --heap-size=size:");
     puts("  --version: print version");
 }
 
@@ -132,19 +125,17 @@ main(int_t argc, char* argv[])
     int_t debug_import = 0;
     uint_t gc_stress_level = 0;
     int_t help = 0;
-#define DEFAULT_INIT_HEAP_SIZE  (1 * 1024 * 1024)
-    size_t init_heap_size = DEFAULT_INIT_HEAP_SIZE;
-#undef DEFAULT_INIT_HEAP_SIZE
-#define DEFAULT_THRESHOLD   (1 * 1024 * 1024)
-    size_t threshold = DEFAULT_THRESHOLD;
-#undef DEFAULT_THRESHOLD
+    size_t young_heap_size = 1 * 1024 * 1024;
+    size_t old_heap_size = 1 * 1024 * 1024;
+    size_t heap_size = young_heap_size + old_heap_size;
     struct option options[] = {
         { "debug-import", no_argument, &debug_import, 1 },
         { "gc-stress", no_argument, NULL, 'g' },
+        { "heap-size", required_argument, NULL, 'i' },
         { "help", no_argument, &help, 1 },
-        { "init-heap-size", required_argument, NULL, 'i' },
-        { "threshold", required_argument, NULL, 't' },
+        { "old-heap-size", required_argument, NULL, 'o' },
         { "version", no_argument, NULL, 'v' },
+        { "young-heap-size", required_argument, NULL, 'y' },
         { NULL, 0, NULL, 0 },
     };
     char c = 0;
@@ -156,14 +147,17 @@ main(int_t argc, char* argv[])
             gc_stress_level++;
             break;
         case 'i':
-            init_heap_size = parse_size(optarg);
+            heap_size = parse_size(optarg);
             break;
-        case 't':
-            threshold = parse_size(optarg);
+        case 'o':
+            old_heap_size = parse_size(optarg);
             break;
         case 'v':
             print_version();
             exit(0);
+            break;
+        case 'y':
+            young_heap_size = parse_size(optarg);
             break;
         default:
             usage();
@@ -203,14 +197,14 @@ main(int_t argc, char* argv[])
     GC_INIT();
     YogThread_config_bdw(&env, dummy_thread);
 #elif defined(GC_COPYING)
-    YogThread_config_copying(&env, dummy_thread, init_heap_size);
+    YogThread_config_copying(&env, dummy_thread, heap_size);
 #elif defined(GC_MARK_SWEEP)
-    YogThread_config_mark_sweep(&env, dummy_thread, threshold);
+    YogThread_config_mark_sweep(&env, dummy_thread, heap_size);
 #elif defined(GC_MARK_SWEEP_COMPACT)
-    YogThread_config_mark_sweep_compact(&env, dummy_thread, threshold);
+    YogThread_config_mark_sweep_compact(&env, dummy_thread, heap_size);
 #elif defined(GC_GENERATIONAL)
 #   define MAX_AGE 32
-    YogThread_config_generational(&env, dummy_thread, init_heap_size, init_heap_size, MAX_AGE);
+    YogThread_config_generational(&env, dummy_thread, young_heap_size, old_heap_size, MAX_AGE);
 #   undef MAX_AGE
 #endif
     env.thread = dummy_thread;
