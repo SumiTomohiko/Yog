@@ -597,7 +597,11 @@ YogGC_keep(YogEnv* env, YogVal val, ObjectKeeper keeper, void* heap)
     if (!IS_PTR(val)) {
         return val;
     }
-    return PTR2VAL((*keeper)(env, VAL2PTR(val), heap));
+    void* dest = (*keeper)(env, VAL2PTR(val), heap);
+    if (dest == NULL) {
+        YogError_out_of_memory(env);
+    }
+    return PTR2VAL(dest);
 }
 
 void
