@@ -128,11 +128,13 @@ main(int_t argc, char* argv[])
     size_t young_heap_size = 1 * 1024 * 1024;
     size_t old_heap_size = 1 * 1024 * 1024;
     size_t heap_size = young_heap_size + old_heap_size;
+    uint_t max_age = 32;
     struct option options[] = {
         { "debug-import", no_argument, &debug_import, 1 },
         { "gc-stress", no_argument, NULL, 'g' },
         { "heap-size", required_argument, NULL, 'i' },
         { "help", no_argument, &help, 1 },
+        { "max-age", required_argument, NULL, 'a' },
         { "old-heap-size", required_argument, NULL, 'o' },
         { "version", no_argument, NULL, 'v' },
         { "young-heap-size", required_argument, NULL, 'y' },
@@ -142,6 +144,9 @@ main(int_t argc, char* argv[])
     while ((c = getopt_long(argc, argv, "", options, NULL)) != -1) {
         switch (c) {
         case 0:
+            break;
+        case 'a':
+            max_age = atoi(optarg);
             break;
         case 'g':
             gc_stress_level++;
@@ -203,9 +208,7 @@ main(int_t argc, char* argv[])
 #elif defined(GC_MARK_SWEEP_COMPACT)
     YogThread_config_mark_sweep_compact(&env, dummy_thread, heap_size);
 #elif defined(GC_GENERATIONAL)
-#   define MAX_AGE 32
-    YogThread_config_generational(&env, dummy_thread, young_heap_size, old_heap_size, MAX_AGE);
-#   undef MAX_AGE
+    YogThread_config_generational(&env, dummy_thread, young_heap_size, old_heap_size, max_age);
 #endif
     env.thread = dummy_thread;
     YogVal main_thread = YogThread_new(&env);
