@@ -333,10 +333,6 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
     RETURN_VOID(env);
 }
 
-#if defined(GC_GENERATIONAL)
-#   include "yog/gc/copying.h"
-#endif
-
 static void
 keep_local_vals(YogEnv* env, YogVal* vals, uint_t size, ObjectKeeper keeper, void* heap)
 {
@@ -587,7 +583,8 @@ YogVM_init(YogVM* vm)
     vm->gc_id = 0;
     vm->locals = NULL;
 #if defined(GC_GENERATIONAL)
-    vm->has_young_ref = FALSE;
+    vm->major_gc_flag = FALSE;
+    vm->compaction_flag = FALSE;
 #endif
 
     vm->indirect_ptr = NULL;

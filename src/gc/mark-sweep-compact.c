@@ -233,6 +233,7 @@ struct MarkSweepCompact {
     struct FreeHeader* small[SMALL_NUM];
     struct FreeHeader* large;
     struct Header* header;
+    size_t allocated_size;
 };
 
 typedef struct MarkSweepCompact MarkSweepCompact;
@@ -318,18 +319,6 @@ find_best_chunk(YogEnv* env, MarkSweepCompact* msc, size_t size, FreeHeader** pc
     return find_small_chunk(env, msc, size, pchunk, plist);
 }
 
-#if defined(GC_MARK_SWEEP_COMPACT)
-static void
-gc(YogEnv* env)
-{
-#if defined(GC_MARK_SWEEP_COMPACT)
-    YogGC_perform(env);
-#else
-    YogGC_perform_major(env);
-#endif
-}
-#endif
-
 static void
 ChunkHeader_init(YogEnv* env, ChunkHeader* chunk, size_t size, BOOL prev_used, BOOL used)
 {
@@ -393,16 +382,31 @@ handle_free_chunk(YogEnv* env, MarkSweepCompact* msc, size_t size, FreeHeader* c
     return (ChunkHeader*)chunk + 1;
 }
 
+#if defined(GC_GENERATIONAL)
+static BOOL
+check_if_over_threshold(YogEnv* env, MarkSweepCompact* msc, size_t size, size_t threshold)
+{
+    size_t next_threshold = msc->allocated_size == 0 ? threshold : (msc->allocated_size + threshold - 1) / threshold * threshold;
+    return (msc->allocated_size < next_threshold) && (next_threshold <= msc->allocated_size + size);
+}
+
+static void
+turn_on_major_or_compaction(YogEnv* env, MarkSweepCompact* msc, size_t size)
+{
+    if (check_if_over_threshold(env, msc, size, msc->arena_size / 3 * 2)) {
+        msc->allocated_size = 0;
+        env->vm->compaction_flag = TRUE;
+        return;
+    }
+    if (check_if_over_threshold(env, msc, size, msc->arena_size / 2)) {
+        env->vm->major_gc_flag = TRUE;
+    }
+}
+#endif
+
 static void*
 alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
 {
-#if defined(GC_MARK_SWEEP_COMPACT)
-    if (env->vm->gc_stress) {
-        /* TODO: don't GC in running GC */
-        gc(env);
-    }
-#endif
-
     size_t size_including_header = size + sizeof(ChunkHeader);
     FreeHeader* chunk;
     FreeHeader** list;
@@ -411,14 +415,25 @@ alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
         return handle_free_chunk(env, msc, size_including_header, chunk, list); \
     } \
 } while (0)
-    FIND_BEST_CHUNK;
+
 #if defined(GC_MARK_SWEEP_COMPACT)
-    gc(env);
+    if (env->vm->gc_stress) {
+        YogGC_perform(env);
+        YogGC_compact(env);
+    }
+
+    FIND_BEST_CHUNK;
+    YogGC_perform(env);
     FIND_BEST_CHUNK;
     YogGC_compact(env);
     FIND_BEST_CHUNK;
-#endif
     return NULL;
+#elif defined(GC_GENERATIONAL)
+    turn_on_major_or_compaction(env, msc, size_including_header);
+    msc->allocated_size += size_including_header;
+    FIND_BEST_CHUNK;
+    return NULL;
+#endif
 #undef FIND_BEST_CHUNK
 }
 
@@ -601,6 +616,8 @@ YogMarkSweepCompact_new(YogEnv* env, size_t size)
         heap->small[i] = NULL;
     }
     heap->large = chunk;
+
+    heap->allocated_size = 0;
 
     return (YogHeap*)heap;
 }

@@ -397,7 +397,7 @@ init_compactors(YogEnv* env, uint_t size, YogCompactor* compactors)
 void
 YogGC_compact(YogEnv* env)
 {
-    YOG_BUG(env, "Compaction is under construction. I apologize for inconvenience.");
+    /* TODO: under construction */
 #if 0
     uint_t heaps = count_heaps(env);
     YogCompactor* compactors = (YogCompactor*)YogSysdeps_alloca(sizeof(YogCompactor) * heaps);
@@ -578,7 +578,19 @@ void
 YogGC_perform_minor(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter YogGC_perform_minor", env));
+
     perform(env, minor_gc);
+
+    if (env->vm->compaction_flag) {
+        YogGC_perform_major(env);
+        YogGC_compact(env);
+        env->vm->compaction_flag = FALSE;
+    }
+    else if (env->vm->major_gc_flag) {
+        YogGC_perform_major(env);
+        env->vm->major_gc_flag = FALSE;
+    }
+
     DEBUG(TRACE("%p: exit YogGC_perform_minor", env));
 }
 

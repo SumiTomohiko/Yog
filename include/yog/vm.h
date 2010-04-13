@@ -89,8 +89,12 @@ struct YogVM {
     uint_t gc_id;
     struct YogLocalsAnchor* locals;
 #if defined(GC_GENERATIONAL)
-    /* TODO: dirty hack. remove this */
-    BOOL has_young_ref;
+    /**
+     * Generational GC needs kind of global variables. The following two
+     * variables role this.
+     */
+    BOOL major_gc_flag;
+    BOOL compaction_flag;
 #endif
 
     struct YogIndirectPointer* indirect_ptr;
