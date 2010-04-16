@@ -32,6 +32,7 @@
 .ditz-config
 .ditz-plugins
 .gdb_history
+.gdbinit
 .libs
 Debug
 Makefile
