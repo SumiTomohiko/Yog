@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Describe about command line parameters
+desc: ""
+type: :task
+component: doc
+release: 0.0.5
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-04-18 15:22:46.197600 Z
+references: []
+
+id: 90c1a290628117868b5ec93fe0dfc885f9ab3ace
+log_events: 
+- - 2010-04-18 15:22:47.449993 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2010-04-18 15:23:59.628267 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.5 from unassigned
+  - ""
