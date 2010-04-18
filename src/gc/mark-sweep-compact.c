@@ -226,12 +226,15 @@ typedef struct FreeFooter FreeFooter;
 #define MIN_SMALL_SIZE      (sizeof(FreeHeader) + sizeof(FreeFooter))
 #define SMALL_NUM           (size2index(MAX_SMALL_SIZE) + 1)
 
+#define LARGE_NUM       32
+#define LARGE_SHIFT     8
+
 struct MarkSweepCompact {
     struct YogHeap base;
     struct ChunkHeader* arena;
     uint_t arena_size;
     struct FreeHeader* small[SMALL_NUM];
-    struct FreeHeader* large;
+    struct FreeHeader* large[LARGE_NUM];
     struct Header* header;
     size_t allocated_size;
 };
@@ -266,30 +269,51 @@ mmap_anonymous(YogEnv* env, size_t size)
     return (FreeHeader*)ptr;
 }
 
+static uint_t
+compute_large_index(YogEnv* env, size_t size)
+{
+    uint_t x = size >> LARGE_SHIFT;
+    if (x == 0) {
+        return 0;
+    }
+    if (1 << (LARGE_NUM >> 1) <= x) {
+        return LARGE_NUM - 1;
+    }
+    uint_t k;
+    __asm__("bsrl\t%1, %0\n\t" : "=r" (k) : "g" (x));
+    return (k << 1) + ((size >> (k + LARGE_SHIFT - 1)) & 1);
+}
+
 static BOOL
 find_large_chunk(YogEnv* env, MarkSweepCompact* msc, size_t size, FreeHeader** pchunk, FreeHeader*** plist)
 {
-    FreeHeader* header = msc->large;
-    if (header == NULL) {
-        return FALSE;
+    uint_t index = compute_large_index(env, size);
+    uint_t i;
+    for (i = index; i < LARGE_NUM; i++) {
+        FreeHeader* best_header = NULL;
+        uint_t best_size = UINT_MAX;
+        FreeHeader* header = msc->large[i];
+        while (header != NULL) {
+            uint_t chunk_size = CHUNK_SIZE(header);
+            if (size == chunk_size) {
+                best_header = header;
+                best_size = chunk_size;
+                break;
+            }
+            if ((size < chunk_size) && (chunk_size < best_size)) {
+                best_header = header;
+                best_size = chunk_size;
+            }
+            header = header->next;
+        }
+        if (best_header != NULL) {
+            *pchunk = best_header;
+            *plist = &msc->large[i];
+            return TRUE;
+        }
     }
 
-    FreeHeader* best_header = NULL;
-    uint_t best_size = UINT_MAX;
-    while (header != NULL) {
-        uint_t chunk_size = CHUNK_SIZE(header);
-        if ((size <= chunk_size) && (chunk_size < best_size)) {
-            best_header = header;
-            best_size = chunk_size;
-        }
-        header = header->next;
-    }
-    if (best_header == NULL) {
-        return FALSE;
-    }
-    *pchunk = best_header;
-    *plist = &msc->large;
-    return TRUE;
+    return FALSE;
 }
 
 static BOOL
@@ -359,7 +383,8 @@ static void
 add_chunk(YogEnv* env, MarkSweepCompact* msc, FreeHeader* chunk)
 {
     if (MAX_SMALL_SIZE < CHUNK_SIZE(chunk)) {
-        ADD_TO_LIST(msc->large, chunk);
+        uint_t index = compute_large_index(env, CHUNK_SIZE(chunk));
+        ADD_TO_LIST(msc->large[index], chunk);
         return;
     }
     uint_t index = size2index(CHUNK_SIZE(chunk));
@@ -469,7 +494,7 @@ static FreeHeader**
 find_list_of_size(YogEnv* env, MarkSweepCompact* msc, size_t size)
 {
     if (MAX_SMALL_SIZE < size) {
-        return &msc->large;
+        return &msc->large[compute_large_index(env, size)];
     }
     return &msc->small[size2index(size)];
 }
@@ -615,7 +640,10 @@ YogMarkSweepCompact_new(YogEnv* env, size_t size)
     for (i = 0; i < SMALL_NUM; i++) {
         heap->small[i] = NULL;
     }
-    heap->large = chunk;
+    for (i = 0; i < LARGE_NUM; i++) {
+        heap->large[i] = NULL;
+    }
+    add_chunk(env, heap, chunk);
 
     heap->allocated_size = 0;
 
