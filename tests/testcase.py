@@ -133,7 +133,7 @@ class TestCase(object):
         file = tmpfile or self.make_temp_file()
         try:
             self.write_source(file, src, encoding)
-            args = options + ["--threshold=2M", file] + yog_option
+            args = options + [file] + yog_option
             self.do(stdout, stderr, stdin, status, args, timeout, encoding)
         finally:
             if remove_tmpfile:
