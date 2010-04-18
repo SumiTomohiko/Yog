@@ -191,15 +191,13 @@ AC_DEFINE_UNQUOTED([PREFIX], ["$prefix"], [Define install directory])
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile lib/Makefile doc/Makefile installer.nsi
-                 ext/concurrent/Makefile ext/wx/Makefile ext/yaml/Makefile
-                 ext/zlib/Makefile ext/zip/Makefile ext/socket/Makefile
-                 ext/Makefile.common])
+                 ext/concurrent/Makefile ext/yaml/Makefile ext/zlib/Makefile
+                 ext/zip/Makefile ext/socket/Makefile ext/Makefile.common])
 if test "${cunit}" == "yes"
 then
     AC_CONFIG_FILES([tests/gc/Makefile])
 fi
 
-WX_TYPE="gtk2"
 CFLAGS="${CFLAGS} -Wall -I`pwd`/include -I`pwd`/onig"
 
 AC_CANONICAL_HOST
@@ -222,7 +220,6 @@ case "${host}" in
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT="dll"
     IMPORT_LIB="\$(top_srcdir)/src/yog-copying.lib"
-    WX_TYPE="msw"
     ;;
 *)
     case "${host}" in
@@ -241,12 +238,6 @@ case "${host}" in
 esac
 DIRS="${DIRS} onig gmp src ext"
 
-(cd ext/wx/wxWidgets && ./configure --enable-debug_info --enable-debug_flag --enable-debug_gdb --enable-monolithic --disable-shared)
-if test $? != 0
-then
-    echo "configure for wxWidgets fails"
-    exit 1
-fi
 YOG_CHECK_EXT([z], [zlibVersion], [zlib])
 YOG_CHECK_EXT([zip], [zip_open], [zip])
 
@@ -266,7 +257,6 @@ AC_SUBST(LIBS)
 AC_SUBST(SOEXT)
 AC_SUBST(IMPORT_LIB)
 AC_SUBST(EXT_SUBDIRS)
-AC_SUBST(WX_TYPE)
 AC_OUTPUT
 
 AC_CONFIG_SUBDIRS([onig gmp ext/yaml/syck tools/swig])
