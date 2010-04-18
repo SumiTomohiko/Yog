@@ -3,26 +3,17 @@ include ../Makefile.common
 
 top_srcdir = @top_srcdir@
 SO = $(top_srcdir)/ext/zip.$(SOEXT)
-LIBZIP_DIR = libzip
-LIBZIP_BIN = $(LIBZIP_DIR)/lib/.libs/libzip.a
-ZLIB_DIR = ../zlib/zlib
-ZLIB_BIN = $(ZLIB_DIR)/libz.a
+LIBS = -lzip
 
 OBJS = zip.$(OBJEXT)
 
 all: $(SO)
 
-$(SO): $(OBJS) $(LIBZIP_BIN) $(ZLIB_BIN) Makefile
-	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(LIBZIP_BIN) $(ZLIB_BIN) $(LIBS)
-
-$(ZLIB_BIN):
-	cd $(ZLIB_DIR) && make
+$(SO): $(OBJS) Makefile
+	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(LIBS)
 
 .c.o:
-	$(CC) -o $@ -c $(CFLAGS) -I$(LIBZIP_DIR)/lib $<
-
-$(LIBZIP_BIN):
-	cd $(LIBZIP_DIR) && make
+	$(CC) -o $@ -c $(CFLAGS) $<
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/zip/$@

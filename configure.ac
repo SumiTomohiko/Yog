@@ -241,6 +241,15 @@ case "${host}" in
 esac
 DIRS="${DIRS} onig gmp src ext"
 
+(cd ext/wx/wxWidgets && ./configure --enable-debug_info --enable-debug_flag --enable-debug_gdb --enable-monolithic --disable-shared)
+if test $? != 0
+then
+    echo "configure for wxWidgets fails"
+    exit 1
+fi
+YOG_CHECK_EXT([z], [zlibVersion], [zlib])
+YOG_CHECK_EXT([zip], [zip_open], [zip])
+
 AC_SUBST(DIRS)
 AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
@@ -258,28 +267,8 @@ AC_SUBST(SOEXT)
 AC_SUBST(IMPORT_LIB)
 AC_SUBST(EXT_SUBDIRS)
 AC_SUBST(WX_TYPE)
+AC_OUTPUT
 
 AC_CONFIG_SUBDIRS([onig gmp ext/yaml/syck tools/swig])
-(cd ext/wx/wxWidgets && ./configure --enable-debug_info --enable-debug_flag --enable-debug_gdb --enable-monolithic --disable-shared)
-if test $? != 0
-then
-    echo "configure for wxWidgets fails"
-    exit 1
-fi
-(cd ext/zlib/zlib && ./configure)
-if test $? != 0
-then
-    echo "configure for zlib fails"
-    exit 1
-fi
-zlib_dir="`pwd`/ext/zlib/zlib"
-(cd ext/zip/libzip && CFLAGS="-I- -I${zlib_dir}" ./configure "--with-zlib=${zlib_dir}" --enable-shared=no)
-if test $? != 0
-then
-    echo "configure for libzip fails"
-    exit 1
-fi
-
-AC_OUTPUT
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

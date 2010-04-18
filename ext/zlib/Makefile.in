@@ -3,21 +3,18 @@ include ../Makefile.common
 
 top_srcdir = @top_srcdir@
 ZLIB_DIR = zlib
-ZLIB_BIN = $(ZLIB_DIR)/libz.a
 SO = $(top_srcdir)/ext/zlib.$(SOEXT)
+LIBS = -lz
 
 OBJS = zlib.$(OBJEXT)
 
 all: $(SO)
 
-$(SO): $(OBJS) $(ZLIB_BIN)
-	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(ZLIB_BIN) $(LIBS)
-
-$(ZLIB_BIN):
-	cd $(ZLIB_DIR) && $(MAKE)
+$(SO): $(OBJS)
+	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(LIBS)
 
 .c.o:
-	$(CC) -o $@ $(CFLAGS) -I$(ZLIB_DIR) -c $<
+	$(CC) -o $@ $(CFLAGS) -c $<
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/zlib/$@

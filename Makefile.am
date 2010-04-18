@@ -36,4 +36,7 @@ pkgcheck:
 installer: installer.nsi
 	makensis -V4 -P5 installer.nsi
 
+configure.ac: yog.m4
+	autoconf
+
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
