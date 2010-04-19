@@ -1,6 +1,8 @@
 
 = Welcome
 
++ [executables.ydoc]
++ [options.ydoc]
 + [tutorial.ydoc]
 + Library Reference
   + [lib/builtins.ydoc]

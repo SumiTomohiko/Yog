@@ -1,0 +1,36 @@
+
+= Executable Modules
+
+There are five executable modules of Yog.
+
++ yog-copying
++ yog-mark-sweep
++ yog-mark-sweep-compact
++ yog-generational
++ yog-bdw
+
+Each modules support different garbage collection (GC).
+
+== Garbage Collection
+
+GC is a memory management system. GC detects unused objects in memory, and reuse spaces which unused objects occupi. There are a lot of GC methods.
+
+GC of each executable modules are following:
+
++ +yog-copying+ -- copying GC
++ +yog-mark-sweep+ -- mark-sweep GC
++ +yog-mark-sweep-compact+ -- mark-sweep-compact GC
++ +yog-generational+ -- generational GC
++ +yog-bdw+ -- Boehm GC
+
+== Shared Library
+
+Shared libraries (.so) support only the generational GC.
+
+== Restrictions
+
+* +yog-mark-sweep-compact+ doesn't do compaction. It will be implemented in future.
+* Yog for Windows supports only copying GC.
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
