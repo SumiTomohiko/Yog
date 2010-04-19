@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Issue Tracker must list issues of bugs.
+desc: ""
+type: :task
+component: misc
+release: 0.0.5
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-04-19 15:45:37.516268 Z
+references: []
+
+id: 52c67ece17d48299767d77c59ad04632328c4ec3
+log_events: 
+- - 2010-04-19 15:45:38.642096 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
