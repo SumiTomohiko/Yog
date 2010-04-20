@@ -318,8 +318,15 @@ inst store_nonlocal
 (val)
 ()
 {
-    YogVal* ptr = get_outer_vars_ptr(env, level, index);
-    *ptr = val;
+    SAVE_LOCALS_TO_NAME(env, store_nonlocal);
+    YogVal vars = YUNDEF;
+    PUSH_LOCAL(env, vars);
+
+    vars = get_outer_vars(env, level);
+    YOG_ASSERT(env, index < YogValArray_size(env, vars), "invalid index");
+    YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, vars), items[index], val);
+
+    RESTORE_LOCALS_FROM_NAME(env, store_nonlocal);
 }
 
 inst load_nonlocal
@@ -327,8 +334,15 @@ inst load_nonlocal
 ()
 (val)
 {
-    YogVal* ptr = get_outer_vars_ptr(env, level, index);
-    val = *ptr;
+    SAVE_LOCALS_TO_NAME(env, load_nonlocal);
+    YogVal vars = YUNDEF;
+    PUSH_LOCAL(env, vars);
+
+    vars = get_outer_vars(env, level);
+    YOG_ASSERT(env, index < YogValArray_size(env, vars), "invalid index");
+    val = PTR_AS(YogValArray, vars)->items[index];
+
+    RESTORE_LOCALS_FROM_NAME(env, load_nonlocal);
 }
 
 inst store_global

@@ -295,17 +295,20 @@ exec_get_attr(YogEnv* env, YogVal obj, ID name)
     RETURN_VOID(env);
 }
 
-static YogVal*
-get_outer_vars_ptr(YogEnv* env, uint_t level, uint_t index)
+static YogVal
+get_outer_vars(YogEnv* env, uint_t level)
 {
-    YogVal outer_vars = PTR_AS(YogScriptFrame, CUR_FRAME)->outer_vars;
+    SAVE_LOCALS(env);
+    YogVal outer_vars = YUNDEF;
+    YogVal vars = YUNDEF;
+    PUSH_LOCALS2(env, outer_vars, vars);
+
+    outer_vars = PTR_AS(YogScriptFrame, CUR_FRAME)->outer_vars;
     YOG_ASSERT(env, IS_PTR(outer_vars), "no outer variables");
-    uint_t depth = PTR_AS(YogOuterVars, outer_vars)->size;
-    YOG_ASSERT(env, level <= depth, "invalid level");
-    YogVal vars = PTR_AS(YogOuterVars, outer_vars)->items[level - 1];
-    uint_t size = YogValArray_size(env, vars);
-    YOG_ASSERT(env, index < size, "invalid index");
-    return &PTR_AS(YogValArray, vars)->items[index];
+    YOG_ASSERT(env, level <= PTR_AS(YogOuterVars, outer_vars)->size, "invalid level");
+    vars = PTR_AS(YogOuterVars, outer_vars)->items[level - 1];
+
+    RETURN(env, vars);
 }
 
 YogVal
