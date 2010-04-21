@@ -13,8 +13,34 @@ doc:
 proto:
 	$(PYTHON) tools/update_prototype.py
 
-test test-installed test-copying test-mark-sweep test-mark-sweep-compact test-bdw test-generational:
-	cd tests && $(MAKE) $@
+test:
+	@for t in @TEST_TARGETS@; do \
+		$(MAKE) $${t}; \
+	done
+
+test-installed:
+	export YOG=$(prefix)/bin/yog-generational$(EXEEXT); \
+	cd tests && $(MAKE)
+
+test-copying:
+	export YOG=`pwd`/src/yog-copying$(EXEEXT); \
+	cd tests && $(MAKE)
+
+test-mark-sweep:
+	export YOG=`pwd`/src/yog-mark-sweep$(EXEEXT); \
+	cd tests && $(MAKE)
+
+test-mark-sweep-compact:
+	export YOG=`pwd`/src/yog-mark-sweep-compact$(EXEEXT); \
+	cd tests && $(MAKE)
+
+test-bdw:
+	export YOG=`pwd`/src/yog-bdw$(EXEEXT); \
+	cd tests && $(MAKE)
+
+test-generational:
+	export YOG=`pwd`/src/yog-generational$(EXEEXT); \
+	cd tests && $(MAKE)
 
 install-vim:
 	mkdir -p $(SYNTAX_DIR)

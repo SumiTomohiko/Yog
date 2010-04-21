@@ -24,17 +24,7 @@ class TestCase(object):
         try:
             return environ["YOG"]
         except KeyError:
-            try:
-                env_gc = environ["GC"]
-            except KeyError:
-                env_gc = "copying"
-            env2cmd = {
-                    "copying": "yog-copying",
-                    "mark-sweep": "yog-mark-sweep",
-                    "mark-sweep-compact": "yog-mark-sweep-compact",
-                    "bdw": "yog-bdw",
-                    "generational": "yog-generational" }
-            return join("..", "src", env2cmd[env_gc])
+            return join("..", "src", "yog-generational")
 
     def run_command(self, args, stdout_path, stderr_path):
         stdout = open(stdout_path, "w")

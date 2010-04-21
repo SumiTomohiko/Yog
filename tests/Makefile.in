@@ -5,8 +5,11 @@ CC = @CC@
 SOEXT = @SOEXT@
 
 PKGS = test_package4.$(SOEXT) test_package5.$(SOEXT) test_package6.$(SOEXT)
-CFLAGS = -shared -I.. -I../include -Wall @CFLAGS@
+CFLAGS = -shared -I.. -I../include -Wall -DGENERATIONAL @CFLAGS@
 LIBS = @IMPORT_LIB@
+
+all: $(PKGS)
+	py.test --showlocals
 
 test_package4.$(SOEXT): test_package4.c Makefile
 	$(CC) -o $@ $(CFLAGS) test_package4.c $(LIBS)
@@ -16,26 +19,6 @@ test_package5.$(SOEXT): test_package5.c Makefile
 
 test_package6.$(SOEXT): test_package6.c Makefile
 	$(CC) -o $@ $(CFLAGS) test_package6.c $(LIBS)
-
-TEST_CMD = py.test --showlocals
-TEST_TARGETS = @TEST_TARGETS@
-
-test: 
-	@for target in $(TEST_TARGETS); do \
-		$(MAKE) $${target}; \
-	done
-test-copying: $(PKGS)
-	GC=copying $(TEST_CMD)
-test-mark-sweep: $(PKGS)
-	GC=mark-sweep $(TEST_CMD)
-test-mark-sweep-compact: $(PKGS)
-	GC=mark-sweep-compact $(TEST_CMD)
-test-bdw: $(PKGS)
-	GC=bdw $(TEST_CMD)
-test-generational: $(PKGS)
-	GC=generational $(TEST_CMD)
-test-installed:
-	YOG=$(prefix)/bin/yog $(TEST_CMD)
 
 clean:
 	find . -name "core*" -print0 | xargs -0 rm -f
