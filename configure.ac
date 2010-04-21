@@ -238,6 +238,7 @@ case "${host}" in
 esac
 DIRS="${DIRS} onig gmp src ext"
 
+YOG_CHECK_EXT([yaml], [syck_new_parser], [syck])
 YOG_CHECK_EXT([z], [zlibVersion], [zlib])
 YOG_CHECK_EXT([zip], [zip_open], [zip])
 
@@ -258,7 +259,7 @@ AC_SUBST(SOEXT)
 AC_SUBST(IMPORT_LIB)
 AC_SUBST(EXT_SUBDIRS)
 
-AC_CONFIG_SUBDIRS([onig gmp ext/yaml/syck tools/swig])
+AC_CONFIG_SUBDIRS([onig gmp tools/swig])
 
 AC_OUTPUT
 

@@ -3,21 +3,17 @@ include ../Makefile.common
 
 top_srcdir = @top_srcdir@
 SO = $(top_srcdir)/ext/yaml.$(SOEXT)
-SYCK_DIR = syck
-SYCK_BIN = $(SYCK_DIR)/lib/libsyck.a
+LIBS = -lsyck
 
 OBJS = yaml.$(OBJEXT)
 
 all: $(SO)
 
-$(SO): $(OBJS) $(SYCK_BIN)
-	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(SYCK_BIN) $(LIBS)
-
-$(SYCK_BIN):
-	cd $(SYCK_DIR) && make
+$(SO): $(OBJS)
+	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(LIBS)
 
 .c.o:
-	$(CC) -o $@ -c $(CFLAGS) -I$(SYCK_DIR)/lib $<
+	$(CC) -o $@ -c $(CFLAGS) $<
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/yaml/$@
