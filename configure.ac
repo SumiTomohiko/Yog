@@ -257,8 +257,9 @@ AC_SUBST(LIBS)
 AC_SUBST(SOEXT)
 AC_SUBST(IMPORT_LIB)
 AC_SUBST(EXT_SUBDIRS)
-AC_OUTPUT
 
 AC_CONFIG_SUBDIRS([onig gmp ext/yaml/syck tools/swig])
+
+AC_OUTPUT
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
