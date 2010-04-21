@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from subprocess import Popen
-from testcase import TestCase
+from testcase import TestNativeLib
 
-class TestSocket(TestCase):
+class TestSocket(TestNativeLib):
 
     port = 1092
 

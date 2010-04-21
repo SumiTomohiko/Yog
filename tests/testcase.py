@@ -2,12 +2,18 @@
 
 from re import search
 from os import close, environ, unlink
-from os.path import join
+from os.path import basename, join, splitext
 from subprocess import PIPE, Popen
 from tempfile import mkstemp
 from time import localtime, strftime, time
 import os
 import sys
+
+def get_command():
+    try:
+        return environ["YOG"]
+    except KeyError:
+        return join("..", "src", "yog-generational")
 
 class TestCase(object):
 
@@ -20,18 +26,12 @@ class TestCase(object):
             t.append(line)
         return "\n".join(t)
 
-    def get_command(self):
-        try:
-            return environ["YOG"]
-        except KeyError:
-            return join("..", "src", "yog-generational")
-
     def run_command(self, args, stdout_path, stderr_path):
         stdout = open(stdout_path, "w")
         try:
             stderr = open(stderr_path, "w")
             try:
-                cmd = [self.get_command()] + args
+                cmd = [get_command()] + args
                 return Popen(cmd, stdin=PIPE, stdout=stdout, stderr=stderr)
             finally:
                 stderr.close()
@@ -146,5 +146,9 @@ class TestCase(object):
             self._test_source(src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile, tmpfile, yog_option, encoding)
         else:
             self._test_interactive(stdout, stderr, stdin, status, options, timeout)
+
+class TestNativeLib(TestCase):
+
+    disabled = splitext(basename(get_command()))[0] != "yog-generational"
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

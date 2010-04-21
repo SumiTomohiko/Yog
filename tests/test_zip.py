@@ -6,9 +6,9 @@ from os.path import join
 from shutil import rmtree
 from tempfile import mkdtemp
 from zipfile import ZIP_DEFLATED, ZipFile
-from testcase import TestCase
+from testcase import TestNativeLib
 
-class TestZip(TestCase):
+class TestZip(TestNativeLib):
 
     options = []
 
