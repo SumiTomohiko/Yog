@@ -8,7 +8,7 @@ LEMON_DIR = $(ROOT_DIR)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
 YACC = $(LEMON)
 PYTHON = @PYTHON@
-MINIYOG = ./miniyog$(EXEEXT)
+MINIYOG = miniyog$(EXEEXT)
 TOOLS_DIR = $(ROOT_DIR)/tools
 
 BUILT_SOURCES = $(ROOT_DIR)/include/yog/token.h keywords.inc
@@ -27,7 +27,7 @@ LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a -lm @LIBS@
 
 EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
 		 yog-mark-sweep-compact$(EXEEXT) yog-generational$(EXEEXT) \
-		 miniyog$(EXEEXT)
+		 $(MINIYOG)
 bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
 yog_copying_CFLAGS = $(CFLAGS_COMMON) -DGC_COPYING
@@ -65,32 +65,25 @@ am:
 	$(GEN_AM_CMD)
 
 builtins.inc: $(MINIYOG) builtins.yg yg2inc.yg
-	$(MAKE) $(MINIYOG)
-	$(MINIYOG) yg2inc.yg builtins.yg $@
+	./$(MINIYOG) yg2inc.yg builtins.yg $@
 
 builtins_win.inc: $(MINIYOG) builtins_win.yg yg2inc.yg
-	$(MAKE) $(MINIYOG)
-	$(MINIYOG) yg2inc.yg builtins_win.yg $@
+	./$(MINIYOG) yg2inc.yg builtins_win.yg $@
 
 builtins_unix.inc: $(MINIYOG) builtins_unix.yg yg2inc.yg
-	$(MAKE) $(MINIYOG)
-	$(MINIYOG) yg2inc.yg builtins_unix.yg $@
+	./$(MINIYOG) yg2inc.yg builtins_unix.yg $@
 
 array.inc: $(MINIYOG) array.yg yg2inc.yg
-	$(MAKE) $(MINIYOG)
-	$(MINIYOG) yg2inc.yg array.yg $@
+	./$(MINIYOG) yg2inc.yg array.yg $@
 
 object.inc: $(MINIYOG) object.yg yg2inc.yg
-	$(MAKE) $(MINIYOG)
-	$(MINIYOG) yg2inc.yg object.yg $@
+	./$(MINIYOG) yg2inc.yg object.yg $@
 
 string.inc: $(MINIYOG) string.yg yg2inc.yg
-	$(MAKE) $(MINIYOG)
-	$(MINIYOG) yg2inc.yg string.yg $@
+	./$(MINIYOG) yg2inc.yg string.yg $@
 
 dict.inc: $(MINIYOG) dict.yg yg2inc.yg
-	$(MAKE) $(MINIYOG)
-	$(MINIYOG) yg2inc.yg dict.yg $@
+	./$(MINIYOG) yg2inc.yg dict.yg $@
 
 $(ROOT_DIR)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
@@ -118,6 +111,6 @@ $(ROOT_DIR)/include/yog/opcodes.h: $(ROOT_DIR)/include/yog/opcodes.h.tmpl $(INST
 	$(INST_CMD)
 
 errno.inc: $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno
-	$(MINIYOG) $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno $@
+	./$(MINIYOG) $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno $@
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Install to ${PREFIX}/bin/yog-*
+desc: ""
+type: :task
+component: core
+release: 0.0.5
+reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-04-22 03:05:34.539032 Z
+references: []
+
+id: eb53a7ab00d36ed18291b12a04ac7ad04cf2cbb1
+log_events: 
+- - 2010-04-22 03:05:35.221628 Z
+  - SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

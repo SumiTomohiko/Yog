@@ -11,6 +11,7 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <sys/stat.h>
@@ -39,10 +40,10 @@
 #else
 #   define YogSysdeps_vsnprintf(s, size, fmt, ap)   vsprintf(s, fmt, ap)
 #endif
-#if defined(HAVE__MKDIR)
-#   define YogSysdeps_mkdir(path)   _mkdir(path)
-#else
+#if defined(HAVE_MKDIR)
 #   define YogSysdeps_mkdir(path)   mkdir(path, 0755)
+#else
+#   define YogSysdeps_mkdir(path)   _mkdir(path)
 #endif
 #if defined(HAVE_BZERO)
 #   define YogSysdeps_bzero(s, n)   bzero(s, n)

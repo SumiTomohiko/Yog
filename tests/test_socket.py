@@ -25,7 +25,9 @@ enable_gc_stress()
 sock = socket.TcpSocket.new(\"127.0.0.1\", %(port)u)
 try
   sock.send(\"foo\")
-  print(sock.recv(3))
+  print(sock.recv(1))
+  print(sock.recv(1))
+  print(sock.recv(1))
 finally
   sock.close()
 end
@@ -40,7 +42,9 @@ enable_gc_stress()
 sock = socket.TcpSocket.new(\"localhost\", %(port)u)
 try
   sock.send(\"foo\")
-  print(sock.recv(3))
+  print(sock.recv(1))
+  print(sock.recv(1))
+  print(sock.recv(1))
 finally
   sock.close()
 end

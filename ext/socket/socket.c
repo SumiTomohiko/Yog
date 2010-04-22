@@ -70,12 +70,14 @@ recv_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
         YogError_raise_TypeError(env, "size must be Fixnum");
     }
 
+    int sock = PTR_AS(Socket, self)->sock;
     char* buf = (char*)YogSysdeps_alloca(VAL2INT(size));
-    if (recv(PTR_AS(Socket, self)->sock, buf, VAL2INT(size), 0) < 0) {
+    uint_t received_size = recv(sock, buf, VAL2INT(size), 0);
+    if (received_size < 0) {
         YogError_raise_sys_err(env, errno, YNIL);
     }
     data = YogBinary_new(env);
-    YogBinary_add(env, data, buf, VAL2INT(size));
+    YogBinary_add(env, data, buf, received_size);
 
     RETURN(env, data);
 }
