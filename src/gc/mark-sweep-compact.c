@@ -1,6 +1,8 @@
 #include "yog/config.h"
 #include <errno.h>
 #include <stddef.h>
+/* <sys/types.h> must be before <sys/mman.h> */
+#include <sys/types.h>
 #include <sys/mman.h>
 #include "yog/error.h"
 #include "yog/gc.h"

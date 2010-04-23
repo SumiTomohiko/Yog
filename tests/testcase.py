@@ -17,6 +17,17 @@ def get_command():
 
 class TestCase(object):
 
+    def kill_proc(self, proc):
+        try:
+            proc.kill()
+        except AttributeError:
+            pass
+        else:
+            return
+        from os import kill
+        from signal import SIGKILL
+        kill(proc.pid, SIGKILL)
+
     def remove_gc_warings(self, out):
         s = out.split("\n")
         t = []
@@ -47,8 +58,11 @@ class TestCase(object):
         return m
 
     def read(self, path):
-        with open(path) as fp:
+        fp = open(path)
+        try:
             return fp.read()
+        finally:
+            fp.close()
 
     def wait_proc(self, proc, timeout=5 * 60):
         time_begin = time()
@@ -57,7 +71,7 @@ class TestCase(object):
                 break
             now = time()
             if timeout < now - time_begin:
-                proc.kill()
+                self.kill_proc(proc)
                 assert False, "time is out (starting at %s, now is %s)" % (self.format_time(time_begin), self.format_time(now))
 
     def do(self, stdout, stderr, stdin, status, args, timeout, encoding=None):
