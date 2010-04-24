@@ -28,7 +28,7 @@ maintainer-clean:
 
 install:
 	mkdir -p $(DIR)
-	install --mode 644 $(exts) $(DIR)
+	install --mode 644 $(SO) $(DIR)
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/concurrent/$@
