@@ -1275,15 +1275,35 @@ search_program(char* dest, const char* path, const char* prog)
     }
 }
 
+static char*
+find_separactor(YogEnv* env, const char* s)
+{
+#if WINDOWS
+    const char seps[] = { '\\', '/' };
+#else
+    const char seps[] = { '/' };
+#endif
+    uint_t i;
+    for (i = 0; i < array_sizeof(seps); i++) {
+        char* pc = strrchr(s, seps[i]);
+        if (pc != NULL) {
+            return pc;
+        }
+    }
+    return NULL;
+}
+
 static void
 dirname(YogEnv* env, YogVal filename)
 {
-    YogVal body = PTR_AS(YogString, filename)->body;
-    char* s = PTR_AS(YogCharArray, body)->items;
-    char* pc = strrchr(s, SEPARATOR);
+    SAVE_ARG(env, filename);
+
+    char* pc = find_separactor(env, STRING_CSTR(filename));
     YOG_ASSERT(env, pc != NULL, "%s doesn't include directory name", filename);
     *pc = '\0';
-    STRING_SIZE(filename) = pc - s + 1;
+    STRING_SIZE(filename) = pc - STRING_CSTR(filename) + 1;
+
+    RETURN_VOID(env);
 }
 
 static void
@@ -1312,7 +1332,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
     YogVal s = YUNDEF;
     PUSH_LOCALS5(env, prog, prog_dir, search_path, body, s);
 
-    if (strchr(argv0, SEPARATOR) == NULL) {
+    if (find_separactor(env, argv0) == NULL) {
         char* path = getenv("PATH");
         YOG_ASSERT(env, path != NULL, "PATH is empty");
         /* 1 of middle is for '/' */
