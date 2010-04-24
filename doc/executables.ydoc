@@ -13,7 +13,7 @@ Each modules support different garbage collection (GC).
 
 == Garbage Collection
 
-GC is a memory management system. GC detects unused objects in memory, and reuse spaces which unused objects occupi. There are a lot of GC methods.
+GC is a memory management system. GC detects unused objects in memory, and reuse spaces which unused objects occupy. There are a lot of GC methods.
 
 GC of each executable modules are following:
 
