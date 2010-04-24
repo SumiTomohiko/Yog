@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from zlib import compress
-from testcase import TestNativeLib
+from testcase import TestLib
 
-class TestZlib(TestNativeLib):
+class TestZlib(TestLib):
 
     options = []
 

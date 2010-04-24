@@ -161,7 +161,7 @@ class TestCase(object):
         else:
             self._test_interactive(stdout, stderr, stdin, status, options, timeout)
 
-class TestNativeLib(TestCase):
+class TestLib(TestCase):
 
     disabled = splitext(basename(get_command()))[0] != "yog-generational"
 
