@@ -518,12 +518,10 @@ times(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 
     int_t n = VAL2INT(self);
 
-    uint_t i = 0;
-    uint_t argc = 1;
+    uint_t i;
     for (i = 0; i < n; i++) {
-        YogVal* args = (YogVal*)YogSysdeps_alloca(sizeof(YogVal) * argc);
-        args[0] = INT2VAL(i);
-        YogCallable_call(env, block, argc, args);
+        YogVal args[1] = { INT2VAL(i) };
+        YogCallable_call(env, block, array_sizeof(args), args);
     }
 
     RETURN(env, YNIL);
