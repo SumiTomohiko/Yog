@@ -1,4 +1,6 @@
 
+include ../Makefile.common
+
 top_srcdir = @top_srcdir@
 prefix = @prefix@
 VERSION = @PACKAGE_VERSION@
@@ -28,7 +30,7 @@ maintainer-clean:
 
 install:
 	mkdir -p $(DIR)
-	install --mode 644 $(SO) $(DIR)
+	$(install_sh_DATA) $(SO) $(DIR)
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/concurrent/$@
