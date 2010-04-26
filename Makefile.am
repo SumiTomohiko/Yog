@@ -1,5 +1,5 @@
 
-SUBDIRS = @DIRS@
+SUBDIRS = @BDWGC_DIR@ onig gmp src ext
 ARCHIVE = Yog-@PACKAGE_VERSION@
 SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
 

@@ -229,20 +229,19 @@ case "${host}" in
     esac
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -export-dynamic"
     AC_CONFIG_SUBDIRS([bdwgc])
-    DIRS="${DIRS} bdwgc"
+    BDWGC_DIR="bdwgc"
     TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
     SOEXT="so"
     EXT_SUBDIRS="concurrent"
     ;;
 esac
-DIRS="${DIRS} onig gmp src ext"
 
 YOG_CHECK_EXT([yaml], [syck_new_parser], [syck])
 YOG_CHECK_EXT([z], [zlibVersion], [zlib])
 YOG_CHECK_EXT([zip], [zip_open], [zip])
 
-AC_SUBST(DIRS)
+AC_SUBST(BDWGC_DIR)
 AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
 AC_SUBST(PACKAGE_VERSION)
