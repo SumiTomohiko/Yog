@@ -1,6 +1,6 @@
 
-SUBDIRS = @BDWGC_DIR@ onig gmp src ext
-ARCHIVE = Yog-@PACKAGE_VERSION@
+SUBDIRS = @BDWGC_DIR@ onig gmp libffi src ext
+ARCHIVE = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
 
 .PHONY: doc proto test test-installed test-copying test-mark-sweep \

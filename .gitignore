@@ -227,6 +227,12 @@ include/yog/inst.h
 include/yog/opcodes.h
 include/yog/token.h
 installer.nsi
+libffi/fficonfig.h
+libffi/include/ffi.h
+libffi/include/ffitarget.h
+libffi/libffi.pc
+libffi/src/.dirstamp
+libffi/src/x86/.dirstamp
 libtool
 onig/onig-config
 onig/sample/crnl
