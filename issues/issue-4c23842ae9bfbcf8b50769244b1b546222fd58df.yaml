@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rewrite tools/*.py to yog
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-05-07 15:43:08.203460 Z
+references: []
+
+id: 4c23842ae9bfbcf8b50769244b1b546222fd58df
+log_events: 
+- - 2010-05-07 15:43:08.812739 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
