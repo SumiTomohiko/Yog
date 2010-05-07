@@ -1,17 +1,17 @@
 
-ROOT_DIR = ..
-ONIG_DIR = $(ROOT_DIR)/onig
-BDWGC_DIR = $(ROOT_DIR)/bdwgc
-GMP_DIR = $(ROOT_DIR)/gmp
+ONIG_DIR = $(top_srcdir)/onig
+BDWGC_DIR = $(top_srcdir)/bdwgc
+GMP_DIR = $(top_srcdir)/gmp
+LIBFFI_DIR = $(top_srcdir)/libffi
 
-LEMON_DIR = $(ROOT_DIR)/tools/lemon
+LEMON_DIR = $(top_srcdir)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
 YACC = $(LEMON)
 PYTHON = @PYTHON@
 MINIYOG = miniyog$(EXEEXT)
-TOOLS_DIR = $(ROOT_DIR)/tools
+TOOLS_DIR = $(top_srcdir)/tools
 
-BUILT_SOURCES = $(ROOT_DIR)/include/yog/token.h keywords.inc
+BUILT_SOURCES = $(top_srcdir)/include/yog/token.h keywords.inc
 COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 classmethod.c code.c comparable.c compile.c coroutine.c \
 		 dict.c encoding.c error.c eval.c exception.c file.c fixnum.c \
@@ -20,10 +20,11 @@ COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 property.c regexp.c repl.c set.c sprintf.c stacktrace.c \
 		 string.c symbol.c table.c thread.c value.c vm.c getopt.c
 DEFAULT_INCLUDES = -I.
-CFLAGS_COMMON = -I$(ROOT_DIR)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
+CFLAGS_COMMON = -I$(top_srcdir)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -Wall -DYOG_CORE @CFLAGS@
 LDFLAGS_COMMON = @LDFLAGS_COMMON@
-LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a -lm @LIBS@
+LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a \
+       $(LIBFFI_DIR)/.libs/libffi.a -lm @LIBS@
 
 EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
 		 yog-mark-sweep-compact$(EXEEXT) yog-generational$(EXEEXT) \
@@ -51,15 +52,15 @@ miniyog_CFLAGS = $(yog_copying_CFLAGS) -DMINIYOG
 miniyog_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_MINIYOG@
 
 INSTS_DEF = insts.def
-INST_PY = $(ROOT_DIR)/tools/inst.py
+INST_PY = $(top_srcdir)/tools/inst.py
 INST_CMD = make insts
 
-GEN_AM_CMD = $(PYTHON) $(ROOT_DIR)/tools/update_automake.py .
+GEN_AM_CMD = $(PYTHON) $(top_srcdir)/tools/update_automake.py .
 
 TEST_CMD = py.test
 
 insts:
-	$(PYTHON) $(ROOT_DIR)/tools/inst.py insts.def ..
+	$(PYTHON) $(top_srcdir)/tools/inst.py insts.def ..
 
 am:
 	$(GEN_AM_CMD)
@@ -85,9 +86,9 @@ string.inc: $(MINIYOG) string.yg yg2inc.yg
 dict.inc: $(MINIYOG) dict.yg yg2inc.yg
 	./$(MINIYOG) yg2inc.yg dict.yg $@
 
-$(ROOT_DIR)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
+$(top_srcdir)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
-	$(LEMON) header=$(ROOT_DIR)/include/yog/token.h parser.y
+	$(LEMON) header=$(top_srcdir)/include/yog/token.h parser.y
 
 keywords.inc: keywords
 	gperf keywords > $@
@@ -104,10 +105,10 @@ compile.inc: compile.inc.tmpl $(INSTS_DEF) $(INST_PY)
 inst.c: inst.c.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
-$(ROOT_DIR)/include/yog/inst.h: $(ROOT_DIR)/include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
+$(top_srcdir)/include/yog/inst.h: $(top_srcdir)/include/yog/inst.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
-$(ROOT_DIR)/include/yog/opcodes.h: $(ROOT_DIR)/include/yog/opcodes.h.tmpl $(INSTS_DEF) $(INST_PY)
+$(top_srcdir)/include/yog/opcodes.h: $(top_srcdir)/include/yog/opcodes.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
 errno.inc: $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno
