@@ -18,10 +18,10 @@ COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 float.c frame.c callable.c gc.c get_args.c inst.c lexer.c \
 		 main.c misc.c module.c nil.c object.c package.c parser.y \
 		 property.c regexp.c repl.c set.c sprintf.c stacktrace.c \
-		 string.c symbol.c table.c thread.c value.c vm.c getopt.c
+		 string.c symbol.c table.c thread.c value.c vm.c getopt.c ffi.c
 DEFAULT_INCLUDES = -I.
 CFLAGS_COMMON = -I$(top_srcdir)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
-		-I$(GMP_DIR) -Wall -DYOG_CORE @CFLAGS@
+		-I$(GMP_DIR) -I$(LIBFFI_DIR)/include -Wall -DYOG_CORE @CFLAGS@
 LDFLAGS_COMMON = @LDFLAGS_COMMON@
 LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a \
        $(LIBFFI_DIR)/.libs/libffi.a -lm @LIBS@
