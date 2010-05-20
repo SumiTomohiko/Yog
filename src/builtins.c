@@ -12,6 +12,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/eval.h"
+#include "yog/ffi.h"
 #include "yog/frame.h"
 #include "yog/get_args.h"
 #include "yog/misc.h"
@@ -113,7 +114,7 @@ load_lib(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
         YogError_raise_TypeError(env, "path must be String, not %C", path);
     }
 
-    void* handle = dlopen(STRING_CSTR(path), RTLD_NOW);
+    LIB_HANDLE handle = YogSysdeps_open_lib(STRING_CSTR(path));
     if (handle == NULL) {
         YogError_raise_ImportError(env, "no library named \"%S\"", path);
     }

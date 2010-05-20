@@ -4,6 +4,9 @@
 #if defined(HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif
+#if defined(HAVE_DLFCN_H)
+#   include <dlfcn.h>
+#endif
 #include <errno.h>
 #if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
@@ -49,6 +52,13 @@
 #   define YogSysdeps_bzero(s, n)   bzero(s, n)
 #else
 #   define YogSysdeps_bzero(s, n)   memset(s, 0, n)
+#endif
+#if defined(HAVE_DLOPEN)
+#   define YogSysdeps_open_lib(path)    dlopen((path), RTLD_LAZY)
+#   define LIB_HANDLE                   void*
+#else
+#   define YogSysdeps_open_lib(path)    LoadLibrary((path))
+#   define LIB_HANDLE                   HINSTANCE
 #endif
 
 #endif

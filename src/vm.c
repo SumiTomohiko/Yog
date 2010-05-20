@@ -400,6 +400,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cFloat);
     KEEP(cFunction);
     KEEP(cInstanceMethod);
+    KEEP(cLib);
     KEEP(cClass);
     KEEP(cMatch);
     KEEP(cModule);
@@ -511,6 +512,7 @@ YogVM_init(YogVM* vm)
     INIT(cFloat);
     INIT(cFunction);
     INIT(cInstanceMethod);
+    INIT(cLib);
     INIT(cClass);
     INIT(cMatch);
     INIT(cModule);
@@ -891,22 +893,6 @@ package_name2path_head(char* name)
     }
 }
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
-#   define LIB_HANDLE   HINSTANCE
-#else
-#   define LIB_HANDLE   void*
-#endif
-
-static LIB_HANDLE
-open_library(YogEnv* env, const char* path)
-{
-#if defined(__MINGW32__) || defined(_MSC_VER)
-    return LoadLibrary(path);
-#else
-    return dlopen(path, RTLD_LAZY);
-#endif
-}
-
 static void*
 get_proc(YogEnv* env, LIB_HANDLE handle, const char* name)
 {
@@ -970,7 +956,7 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
 #   define CLEAR_ERROR     dlerror()
 #endif
     CLEAR_ERROR;
-    LIB_HANDLE handle = open_library(env, path);
+    LIB_HANDLE handle = YogSysdeps_open_lib(path);
     if (handle == NULL) {
         print_dlopen_error(env);
         RETURN(env, YUNDEF);
