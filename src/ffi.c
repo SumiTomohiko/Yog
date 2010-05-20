@@ -4,6 +4,7 @@
 #include "yog/array.h"
 #include "yog/class.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
 #include "yog/object.h"
@@ -223,6 +224,34 @@ find_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     RETURN(env, f);
 }
 
+static YogVal
+LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+{
+    SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
+    int_t rvalue = 0;
+    ffi_call(&PTR_AS(LibFunc, callee)->cif, PTR_AS(LibFunc, callee)->f, &rvalue, NULL);
+    RETURN(env, YNIL);
+}
+
+static YogVal
+LibFunc_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+{
+    return LibFunc_do(env, callee, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+}
+
+static void
+LibFunc_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+{
+    SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
+    YogVal retval = YUNDEF;
+    PUSH_LOCAL(env, retval);
+
+    retval = LibFunc_do(env, callee, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    YogEval_push_returned_value(env, env->frame, retval);
+
+    RETURN_VOID(env);
+}
+
 void
 YogFFI_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -238,6 +267,8 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     vm->cLib = cLib;
     cLibFunc = YogClass_new(env, "LibFunc", vm->cObject);
     YogClass_define_allocator(env, cLibFunc, LibFunc_alloc);
+    YogClass_define_caller(env, cLibFunc, LibFunc_call);
+    YogClass_define_executor(env, cLibFunc, LibFunc_exec);
     vm->cLibFunc = cLibFunc;
 
     RETURN_VOID(env);
