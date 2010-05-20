@@ -17,6 +17,7 @@ YOG_EXPORT void YogError_raise_ArgumentError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_AttributeError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_CoroutineError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_EOFError(YogEnv*, const char*, ...);
+YOG_EXPORT void YogError_raise_FFIError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_IOError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_ImportError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_IndexError(YogEnv*, const char*, ...);

@@ -54,11 +54,15 @@
 #   define YogSysdeps_bzero(s, n)   memset(s, 0, n)
 #endif
 #if defined(HAVE_DLOPEN)
-#   define YogSysdeps_open_lib(path)    dlopen((path), RTLD_LAZY)
 #   define LIB_HANDLE                   void*
+#   define YogSysdeps_open_lib(path)    dlopen((path), RTLD_LAZY)
+#   define YogSysdeps_get_proc(handle, name) \
+                                        dlsym((handle), (name))
 #else
-#   define YogSysdeps_open_lib(path)    LoadLibrary((path))
 #   define LIB_HANDLE                   HINSTANCE
+#   define YogSysdeps_open_lib(path)    LoadLibrary((path))
+#   define YogSysdeps_get_proc(handle, name) \
+                                        GetProcAddress((handle), (name))
 #endif
 
 #endif

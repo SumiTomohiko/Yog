@@ -107,19 +107,17 @@ load_lib(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal path = YUNDEF;
-    PUSH_LOCAL(env, path);
+    YogVal lib = YUNDEF;
+    PUSH_LOCALS2(env, path, lib);
     YogCArg params[] = { { "path", &path }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "load_lib", params, args, kw);
     if (!IS_PTR(path) || (BASIC_OBJ_TYPE(path) != TYPE_STRING)) {
         YogError_raise_TypeError(env, "path must be String, not %C", path);
     }
 
-    LIB_HANDLE handle = YogSysdeps_open_lib(STRING_CSTR(path));
-    if (handle == NULL) {
-        YogError_raise_ImportError(env, "no library named \"%S\"", path);
-    }
+    lib = YogFFI_load_lib(env, STRING_CSTR(path));
 
-    RETURN(env, path);
+    RETURN(env, lib);
 }
 
 static YogVal

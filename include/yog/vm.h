@@ -31,6 +31,7 @@ struct YogVM {
     YogVal cFunction;
     YogVal cInstanceMethod;
     YogVal cLib;
+    YogVal cLibFunc;
     YogVal cMatch;
     YogVal cModule;
     YogVal cNativeFunction;
@@ -50,6 +51,7 @@ struct YogVM {
     YogVal eCoroutineError;
     YogVal eEOFError;
     YogVal eException;
+    YogVal eFFIError;
     YogVal eIOError;
     YogVal eImportError;
     YogVal eIndexError;

@@ -17,7 +17,7 @@ class TestFfi(TestCase):
         path = self.get_lib_path()
         self._test("""
 lib = load_lib(\"%(path)s\")
-f = lib.find_function(\"foo\")
+f = lib.find_func(\"foo\")
 f()
 """ % locals(), "42")
 

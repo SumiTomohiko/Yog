@@ -46,6 +46,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
+#include "yog/ffi.h"
 #include "yog/file.h"
 #include "yog/fixnum.h"
 #include "yog/float.h"
@@ -260,6 +261,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogString_define_classes(env, builtins);
     YogSymbol_define_classes(env, builtins);
     YogThread_define_classes(env, builtins);
+    YogFFI_define_classes(env, builtins);
 
     RETURN_VOID(env);
 }
@@ -401,6 +403,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cFunction);
     KEEP(cInstanceMethod);
     KEEP(cLib);
+    KEEP(cLibFunc);
     KEEP(cClass);
     KEEP(cMatch);
     KEEP(cModule);
@@ -421,6 +424,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eCoroutineError);
     KEEP(eEOFError);
     KEEP(eException);
+    KEEP(eFFIError);
     KEEP(eIOError);
     KEEP(eImportError);
     KEEP(eIndexError);
@@ -513,6 +517,7 @@ YogVM_init(YogVM* vm)
     INIT(cFunction);
     INIT(cInstanceMethod);
     INIT(cLib);
+    INIT(cLibFunc);
     INIT(cClass);
     INIT(cMatch);
     INIT(cModule);
@@ -533,6 +538,7 @@ YogVM_init(YogVM* vm)
     INIT(eCoroutineError);
     INIT(eEOFError);
     INIT(eException);
+    INIT(eFFIError);
     INIT(eIOError);
     INIT(eImportError);
     INIT(eIndexError);
@@ -893,16 +899,6 @@ package_name2path_head(char* name)
     }
 }
 
-static void*
-get_proc(YogEnv* env, LIB_HANDLE handle, const char* name)
-{
-#if defined(__MINGW32__) || defined(_MSC_VER)
-    return GetProcAddress(handle, name);
-#else
-    return dlsym(handle, name);
-#endif
-}
-
 static void
 print_dlopen_error(YogEnv* env)
 {
@@ -980,7 +976,7 @@ import_so(YogEnv* env, YogVM* vm, const char* filename, const char* pkg_name)
 
     CLEAR_ERROR;
     typedef YogVal (*Initializer)(YogEnv*);
-    Initializer init = (Initializer)get_proc(env, handle, init_name);
+    Initializer init = (Initializer)YogSysdeps_get_proc(handle, init_name);
     if (init == NULL) {
         YogError_raise_ImportError(env, "dynamic package does not define init function (%s)", init_name);
     }

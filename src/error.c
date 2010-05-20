@@ -281,6 +281,12 @@ YogError_raise_AttributeError(YogEnv* env, const char* fmt, ...)
 }
 
 void
+YogError_raise_FFIError(YogEnv* env, const char* fmt, ...)
+{
+    RAISE_FORMAT(env, eFFIError, fmt);
+}
+
+void
 YogError_raise_KeyError(YogEnv* env, const char* fmt, ...)
 {
     RAISE_FORMAT(env, eKeyError, fmt);
