@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Print dlerror when loading library failed
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-05-20 12:11:59.037221 Z
+references: []
+
+id: e8bb1cf74e44c687f2344d95a826290d87d458bd
+log_events: 
+- - 2010-05-20 12:11:59.952056 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
