@@ -175,7 +175,7 @@ map_ffi_error(YogEnv* env, ffi_status status)
 }
 
 static YogVal
-find_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal f = YUNDEF;
@@ -189,7 +189,7 @@ find_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         { "arg_types", &arg_types },
         { "rtype", &rtype },
         { NULL, NULL } };
-    YogGetArgs_parse_args(env, "find_func", params, args, kw);
+    YogGetArgs_parse_args(env, "load_func", params, args, kw);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_LIB)) {
         YogError_raise_TypeError(env, "self must be Lib, not %C", self);
     }
@@ -263,7 +263,7 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
 
     cLib = YogClass_new(env, "Lib", vm->cObject);
     YogClass_define_allocator(env, cLib, Lib_alloc);
-    YogClass_define_method(env, cLib, pkg, "find_func", find_func);
+    YogClass_define_method(env, cLib, pkg, "load_func", load_func);
     vm->cLib = cLib;
     cLibFunc = YogClass_new(env, "LibFunc", vm->cObject);
     YogClass_define_allocator(env, cLibFunc, LibFunc_alloc);
