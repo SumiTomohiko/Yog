@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rename sysdeps to sysdep
+desc: "\"s\" is not needed."
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-05-20 12:10:29.153314 Z
+references: []
+
+id: a480e9c46c78013cc28b357946f1750311eeef46
+log_events: 
+- - 2010-05-20 12:10:30.220875 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
