@@ -32,6 +32,22 @@ typedef struct LibFunc LibFunc;
 
 #define TYPE_LIB_FUNC TO_TYPE(LibFunc_alloc)
 
+struct Field {
+    ID name;
+    ID type;
+};
+
+typedef struct Field Field;
+
+struct StructClass {
+    struct YogClass base;
+    struct Field fields[0];
+};
+
+typedef struct StructClass StructClass;
+
+#define TYPE_STRUCT_CLASS TO_TYPE(StructClassClass_new)
+
 static YogVal
 LibFunc_alloc(YogEnv* env, YogVal klass)
 {
@@ -174,6 +190,49 @@ map_ffi_error(YogEnv* env, ffi_status status)
     }
 }
 
+static void
+StructClass_set_field(YogEnv* env, YogVal self, YogVal field, uint_t index)
+{
+    SAVE_ARGS2(env, self, field);
+
+    if (!IS_PTR(field) || (BASIC_OBJ_TYPE(field) != TYPE_ARRAY)) {
+        YogError_raise_TypeError(env, "field must be Array, not %C", field);
+    }
+    ID name = VAL2ID(YogArray_at(env, field, 0));
+    PTR_AS(StructClass, self)->fields[index].name = name;
+    ID type = VAL2ID(YogArray_at(env, field, 1));
+    PTR_AS(StructClass, self)->fields[index].type = type;
+
+    RETURN_VOID(env);
+}
+
+static YogVal
+StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal obj = YUNDEF;
+    YogVal fields = YUNDEF;
+    YogVal field = YUNDEF;
+    PUSH_LOCALS3(env, obj, fields, field);
+    YogCArg params[] = { { "fields", &fields }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "new", params, args, kw);
+    if (!IS_PTR(fields) || (BASIC_OBJ_TYPE(fields) != TYPE_ARRAY)) {
+        YogError_raise_TypeError(env, "fields must be Array, not %C", fields);
+    }
+
+    uint_t fields_num = YogArray_size(env, fields);
+    obj = ALLOC_OBJ_ITEM(env, YogClass_keep_children, NULL, StructClass, fields_num, Field);
+    YogClass_init(env, obj, TYPE_STRUCT_CLASS, self);
+
+    uint_t i;
+    for (i = 0; i < fields_num; i++) {
+        field = YogArray_at(env, fields, i);
+        StructClass_set_field(env, obj, field, i);
+    }
+
+    RETURN(env, obj);
+}
+
 static YogVal
 load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -258,7 +317,8 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     SAVE_ARG(env, pkg);
     YogVal cLib = YUNDEF;
     YogVal cLibFunc = YUNDEF;
-    PUSH_LOCALS2(env, cLib, cLibFunc);
+    YogVal cStructClassClass = YUNDEF;
+    PUSH_LOCALS3(env, cLib, cLibFunc, cStructClassClass);
     YogVM* vm = env->vm;
 
     cLib = YogClass_new(env, "Lib", vm->cObject);
@@ -270,6 +330,9 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_caller(env, cLibFunc, LibFunc_call);
     YogClass_define_executor(env, cLibFunc, LibFunc_exec);
     vm->cLibFunc = cLibFunc;
+    cStructClassClass = YogClass_new(env, "StructClassClass", vm->cClass);
+    YogClass_define_method(env, cStructClassClass, pkg, "new", StructClassClass_new);
+    vm->cStructClassClass = cStructClassClass;
 
     RETURN_VOID(env);
 }

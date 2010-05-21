@@ -53,6 +53,8 @@ YOG_EXPORT void YogClass_define_method(YogEnv*, YogVal, YogVal, const char*, Yog
 YOG_EXPORT void YogClass_define_property(YogEnv*, YogVal, YogVal, const char*, YogAPI, YogAPI);
 YOG_EXPORT YogVal YogClass_get_attr(YogEnv*, YogVal, ID);
 YOG_EXPORT void YogClass_include_module(YogEnv*, YogVal, YogVal);
+YOG_EXPORT void YogClass_init(YogEnv*, YogVal, type_t, YogVal);
+YOG_EXPORT void YogClass_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 YOG_EXPORT YogVal YogClass_new(YogEnv*, const char*, YogVal);
 
 /* PROTOTYPE_END */

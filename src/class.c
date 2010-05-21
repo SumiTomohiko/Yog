@@ -111,8 +111,8 @@ YogClass_define_method(YogEnv* env, YogVal klass, YogVal pkg, const char* name, 
     RETURN_VOID(env);
 }
 
-static void
-keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+void
+YogClass_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogObj_keep_children(env, ptr, keeper, heap);
 
@@ -120,13 +120,21 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogGC_KEEP(env, klass, super, keeper, heap);
 }
 
+void
+YogClass_init(YogEnv* env, YogVal self, type_t type, YogVal klass)
+{
+    SAVE_ARGS2(env, self, klass);
+    YogObj_init(env, self, type, FLAG_CLASS, klass);
+    RETURN_VOID(env);
+}
+
 YogVal
 YogClass_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
 
-    YogVal obj = ALLOC_OBJ(env, keep_children, NULL, YogClass);
-    YogObj_init(env, obj, TYPE_CLASS, FLAG_CLASS, klass);
+    YogVal obj = ALLOC_OBJ(env, YogClass_keep_children, NULL, YogClass);
+    YogClass_init(env, obj, TYPE_CLASS, klass);
 
     RETURN(env, obj);
 }
