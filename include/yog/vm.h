@@ -43,6 +43,7 @@ struct YogVM {
     YogVal cRegexp;
     YogVal cSet;
     YogVal cString;
+    YogVal cStructClass;
     YogVal cStructClassClass;
     YogVal cSymbol;
     YogVal cThread;

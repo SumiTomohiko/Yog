@@ -121,10 +121,29 @@ YogClass_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 }
 
 void
+YogClass_define_allocator(YogEnv* env, YogVal klass, Allocator allocator)
+{
+    PTR_AS(YogClass, klass)->allocator = allocator;
+}
+
+void
 YogClass_init(YogEnv* env, YogVal self, type_t type, YogVal klass)
 {
     SAVE_ARGS2(env, self, klass);
+
     YogObj_init(env, self, type, FLAG_CLASS, klass);
+    PTR_AS(YogClass, self)->allocator = NULL;
+    PTR_AS(YogClass, self)->name = INVALID_ID;
+    PTR_AS(YogClass, self)->super = YUNDEF;
+    PTR_AS(YogClass, self)->allocator = NULL;
+    PTR_AS(YogClass, self)->exec_get_attr = NULL;
+    PTR_AS(YogClass, self)->call_get_attr = NULL;
+    PTR_AS(YogClass, self)->exec_get_descr = NULL;
+    PTR_AS(YogClass, self)->call_get_descr = NULL;
+    PTR_AS(YogClass, self)->exec_set_descr = NULL;
+    PTR_AS(YogClass, self)->call = NULL;
+    PTR_AS(YogClass, self)->exec = NULL;
+
     RETURN_VOID(env);
 }
 
@@ -132,46 +151,28 @@ YogVal
 YogClass_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
 
-    YogVal obj = ALLOC_OBJ(env, YogClass_keep_children, NULL, YogClass);
+    obj = ALLOC_OBJ(env, YogClass_keep_children, NULL, YogClass);
     YogClass_init(env, obj, TYPE_CLASS, klass);
 
     RETURN(env, obj);
-}
-
-void
-YogClass_define_allocator(YogEnv* env, YogVal klass, Allocator allocator)
-{
-    PTR_AS(YogClass, klass)->allocator = allocator;
 }
 
 YogVal
 YogClass_new(YogEnv* env, const char* name, YogVal super)
 {
     SAVE_ARG(env, super);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
 
-    klass = YogClass_alloc(env, env->vm->cClass);
-    PTR_AS(YogClass, klass)->allocator = NULL;
-    PTR_AS(YogClass, klass)->name = INVALID_ID;
-    PTR_AS(YogClass, klass)->super = YNIL;
+    obj = YogClass_alloc(env, env->vm->cClass);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogClass, obj), super, super);
+    ID id = YogVM_intern(env, env->vm, name);
+    PTR_AS(YogClass, obj)->name = id;
 
-    PTR_AS(YogClass, klass)->allocator = NULL;
-    if (name != NULL) {
-        ID id = YogVM_intern(env, env->vm, name);
-        PTR_AS(YogClass, klass)->name = id;
-    }
-    YogGC_UPDATE_PTR(env, PTR_AS(YogClass, klass), super, super);
-    PTR_AS(YogClass, klass)->exec_get_attr = NULL;
-    PTR_AS(YogClass, klass)->call_get_attr = NULL;
-    PTR_AS(YogClass, klass)->exec_get_descr = NULL;
-    PTR_AS(YogClass, klass)->call_get_descr = NULL;
-    PTR_AS(YogClass, klass)->exec_set_descr = NULL;
-    PTR_AS(YogClass, klass)->call = NULL;
-    PTR_AS(YogClass, klass)->exec = NULL;
-
-    RETURN(env, klass);
+    RETURN(env, obj);
 }
 
 static YogVal
