@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: load_func must be Lib_load_func.
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-05-21 15:25:52.759402 Z
+references: []
+
+id: e0f953b7e57e20f86349d514bc3db0793646de83
+log_events: 
+- - 2010-05-21 15:25:53.312206 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
