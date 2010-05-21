@@ -172,7 +172,7 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         { "encoding", &encoding },
         { NULL, NULL } };
     YogGetArgs_parse_args(env, "open", params, args, kw);
-    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_CLASS)) {
+    if (!IS_PTR(self) || ((BASIC_OBJ_FLAGS(self) & FLAG_CLASS) == 0)) {
         YogError_raise_TypeError(env, "self must be Class");
     }
     if (!IS_PTR(path) || (BASIC_OBJ_TYPE(path) != TYPE_STRING)) {

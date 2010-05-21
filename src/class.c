@@ -21,7 +21,7 @@
 #include "yog/yog.h"
 
 #define CHECK_SELF_TYPE(env, self)  do { \
-    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_CLASS)) { \
+    if (!IS_PTR((self)) || ((BASIC_OBJ_FLAGS((self)) & FLAG_CLASS) == 0)) { \
         YogError_raise_TypeError((env), "self must be Class"); \
     } \
 } while (0)
@@ -126,7 +126,7 @@ YogClass_alloc(YogEnv* env, YogVal klass)
     SAVE_ARG(env, klass);
 
     YogVal obj = ALLOC_OBJ(env, keep_children, NULL, YogClass);
-    YogObj_init(env, obj, TYPE_CLASS, 0, klass);
+    YogObj_init(env, obj, TYPE_CLASS, FLAG_CLASS, klass);
 
     RETURN(env, obj);
 }

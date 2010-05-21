@@ -53,10 +53,12 @@ struct YogBasicObj {
 
 #define HAS_ATTRS       (1 << 0)
 #define FLAG_PKG        (1 << 1)
+#define FLAG_CLASS      (1 << 2)
 
 #define YOGBASICOBJ_HEAD    struct YogBasicObj base
 #define BASIC_OBJ(v)        PTR_AS(YogBasicObj, (v))
 #define BASIC_OBJ_TYPE(v)   BASIC_OBJ(v)->type
+#define BASIC_OBJ_FLAGS(v)  BASIC_OBJ((v))->flags
 
 typedef struct YogBasicObj YogBasicObj;
 
