@@ -23,7 +23,7 @@ f()
 
     def test_Struct0(self):
         self._test("""
-st = StructClass.new(\"Foo\", [[\'int, \'bar]])
+st = StructClass.new(\"Foo\", [[\'sint, \'bar]])
 o = st.new()
 o.bar = 42
 print(o.bar)

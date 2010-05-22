@@ -5,6 +5,7 @@
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"
+#include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
 #include "yog/object.h"
@@ -489,11 +490,33 @@ LibFunc_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint
     RETURN_VOID(env);
 }
 
+static YogVal
+Struct_get(YogEnv* env, YogVal self, YogVal field)
+{
+    SAVE_ARGS2(env, self, field);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
+        YogError_raise_TypeError(env, "selfect must be Struct, not %C", self);
+    }
+    if (!IS_PTR(field) || (BASIC_OBJ_TYPE(field) != TYPE_FIELD)) {
+        YogError_raise_TypeError(env, "fieldibute must be Field, not %C", field);
+    }
+
+    void* ptr = PTR_AS(Struct, self)->data + PTR_AS(Field, field)->offset;
+    int_t n = *((int_t*)ptr);
+
+    RETURN(env, INT2VAL(n));
+}
+
 static void
 Field_exec_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
 {
     SAVE_ARGS3(env, attr, obj, klass);
-    TRACE("TODO");
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    val = Struct_get(env, obj, attr);
+    YogScriptFrame_push_stack(env, env->frame, val);
+
     RETURN_VOID(env);
 }
 
@@ -501,17 +524,28 @@ static YogVal
 Field_call_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
 {
     SAVE_ARGS3(env, attr, obj, klass);
-    YogVal v = YUNDEF;
-    PUSH_LOCAL(env, v);
-    TRACE("TODO");
-    RETURN(env, v);
+    YogVal val = YUNDEF;
+    PUSH_LOCAL(env, val);
+
+    val = Struct_get(env, obj, attr);
+
+    RETURN(env, val);
 }
 
 static void
-Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
 {
-    SAVE_ARGS3(env, attr, obj, klass);
-    TRACE("TODO");
+    SAVE_ARGS3(env, attr, obj, val);
+    if (!IS_PTR(attr) || (BASIC_OBJ_TYPE(attr) != TYPE_FIELD)) {
+        YogError_raise_TypeError(env, "Attribute must be Field, not %C", attr);
+    }
+    if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_STRUCT)) {
+        YogError_raise_TypeError(env, "Object must be Struct, not %C", obj);
+    }
+
+    void* ptr = PTR_AS(Struct, obj)->data + PTR_AS(Field, attr)->offset;
+    *((int_t*)ptr) = VAL2INT(val);
+
     RETURN_VOID(env);
 }
 
