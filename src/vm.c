@@ -397,6 +397,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cCode);
     KEEP(cCoroutine);
     KEEP(cDict);
+    KEEP(cField);
     KEEP(cFile);
     KEEP(cFixnum);
     KEEP(cFloat);
@@ -513,6 +514,7 @@ YogVM_init(YogVM* vm)
     INIT(cCode);
     INIT(cCoroutine);
     INIT(cDict);
+    INIT(cField);
     INIT(cFile);
     INIT(cFixnum);
     INIT(cFloat);

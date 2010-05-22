@@ -33,20 +33,25 @@ typedef struct LibFunc LibFunc;
 #define TYPE_LIB_FUNC TO_TYPE(LibFunc_alloc)
 
 struct Field {
+    struct YogBasicObj base;
     ID name;
     ID type;
+    uint_t offset;
 };
 
 typedef struct Field Field;
 
+#define TYPE_FIELD TO_TYPE(Field_alloc)
+
 struct StructClass {
     struct YogClass base;
-    struct Field fields[0];
+    uint_t size;
 };
 
 typedef struct StructClass StructClass;
 
 #define TYPE_STRUCT_CLASS TO_TYPE(StructClassClass_new)
+static YogVal StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block);
 
 struct Struct {
     struct YogBasicObj base;
@@ -59,20 +64,148 @@ typedef struct Struct Struct;
 
 static YogVal Struct_alloc(YogEnv* env, YogVal klass);
 
-static void
-StructClass_set_field(YogEnv* env, YogVal self, YogVal field, uint_t index)
+static YogVal
+Field_alloc(YogEnv* env, YogVal klass)
 {
-    SAVE_ARGS2(env, self, field);
+    SAVE_ARG(env, klass);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
 
-    if (!IS_PTR(field) || (BASIC_OBJ_TYPE(field) != TYPE_ARRAY)) {
-        YogError_raise_TypeError(env, "field must be Array, not %C", field);
-    }
-    ID name = VAL2ID(YogArray_at(env, field, 0));
-    PTR_AS(StructClass, self)->fields[index].name = name;
-    ID type = VAL2ID(YogArray_at(env, field, 1));
-    PTR_AS(StructClass, self)->fields[index].type = type;
+    obj = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Field);
+    YogBasicObj_init(env, obj, TYPE_FIELD, 0, klass);
+    PTR_AS(Field, obj)->type = 0;
+    PTR_AS(Field, obj)->offset = 0;
+
+    RETURN(env, obj);
+}
+
+static YogVal
+Field_new(YogEnv* env, ID name, ID type, uint_t offset)
+{
+    SAVE_LOCALS(env);
+    YogVal field = YUNDEF;
+    PUSH_LOCAL(env, field);
+
+    field = Field_alloc(env, env->vm->cField);
+    PTR_AS(Field, field)->name = name;
+    PTR_AS(Field, field)->type = type;
+    PTR_AS(Field, field)->offset = offset;
+
+    RETURN(env, field);
+}
+
+static void
+StructClass_set_field(YogEnv* env, YogVal self, uint_t index, ID name, ID type, uint_t offset)
+{
+    SAVE_ARG(env, self);
+    YogVal field = YUNDEF;
+    PUSH_LOCAL(env, field);
+
+    field = Field_new(env, name, type, offset);
+    YogObj_set_attr_id(env, self, name, field);
 
     RETURN_VOID(env);
+}
+
+static void
+StructClass_init(YogEnv* env, YogVal self, uint_t fields_num)
+{
+    SAVE_ARG(env, self);
+
+    YogClass_init(env, self, TYPE_STRUCT_CLASS, env->vm->cStructClass);
+    PTR_AS(StructClass, self)->size = 0;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogClass, self), super, env->vm->cClass);
+
+    RETURN_VOID(env);
+}
+
+static uint_t
+map_size(YogEnv* env, ID type)
+{
+    SAVE_LOCALS(env);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    s = YogVM_id2name(env, env->vm, type);
+    const char* t = STRING_CSTR(s);
+    uint_t size;
+    if (strcmp(t, "uint8") == 0) {
+        size = sizeof(uint8_t);
+    }
+    else if (strcmp(t, "sint8") == 0) {
+        size = sizeof(int8_t);
+    }
+    else if (strcmp(t, "uint16") == 0) {
+        size = sizeof(uint16_t);
+    }
+    else if (strcmp(t, "sint16") == 0) {
+        size = sizeof(int16_t);
+    }
+    else if (strcmp(t, "uint32") == 0) {
+        size = sizeof(uint32_t);
+    }
+    else if (strcmp(t, "sint32") == 0) {
+        size = sizeof(int32_t);
+    }
+    else if (strcmp(t, "uint64") == 0) {
+        size = sizeof(uint64_t);
+    }
+    else if (strcmp(t, "sint64") == 0) {
+        size = sizeof(int64_t);
+    }
+    else if (strcmp(t, "float") == 0) {
+        size = sizeof(float);
+    }
+    else if (strcmp(t, "double") == 0) {
+        size = sizeof(double);
+    }
+    else if (strcmp(t, "uchar") == 0) {
+        size = sizeof(unsigned char);
+    }
+    else if (strcmp(t, "schar") == 0) {
+        size = sizeof(char);
+    }
+    else if (strcmp(t, "sshort") == 0) {
+        size = sizeof(short);
+    }
+    else if (strcmp(t, "ushort") == 0) {
+        size = sizeof(unsigned short);
+    }
+    else if (strcmp(t, "uint") == 0) {
+        size = sizeof(unsigned int);
+    }
+    else if (strcmp(t, "sint") == 0) {
+        size = sizeof(int);
+    }
+    else if (strcmp(t, "ulong") == 0) {
+        size = sizeof(unsigned long);
+    }
+    else if (strcmp(t, "slong") == 0) {
+        size = sizeof(long);
+    }
+    else if (strcmp(t, "longdouble") == 0) {
+        size = sizeof(long double);
+    }
+    else if (strcmp(t, "pointer") == 0) {
+        size = sizeof(void*);
+    }
+    else {
+        YogError_raise_ValueError(env, "unknown type - %S", s);
+        /* NOTREACHED */
+    }
+
+    RETURN(env, size);
+}
+
+#define ALIGN(offset, alignment) \
+                            (((offset) + (alignment) - 1) & ~((alignment) - 1))
+
+static uint_t
+align_offset(YogEnv* env, ID type, uint_t offset)
+{
+    uint_t size = map_size(env, type);
+    uint_t alignment = 4 < size ? 4 : size;
+    return ALIGN(offset, alignment);
 }
 
 static YogVal
@@ -98,8 +231,8 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
 
     uint_t fields_num = YogArray_size(env, fields);
     obj = ALLOC_OBJ_ITEM(env, YogClass_keep_children, NULL, StructClass, fields_num, Field);
-    YogClass_init(env, obj, TYPE_STRUCT_CLASS, env->vm->cStructClass);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogClass, obj), super, env->vm->cClass);
+    StructClass_init(env, obj, fields_num);
+
     uint_t size = YogString_size(env, name) + 1; /* with '\0' */
     char* s = (char*)YogSysdeps_alloca(sizeof(char) * size);
     memcpy(s, STRING_CSTR(name), size);
@@ -107,11 +240,17 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
     PTR_AS(YogClass, obj)->name = id;
     YogClass_define_allocator(env, obj, Struct_alloc);
 
+    uint_t offset = 0;
     uint_t i;
     for (i = 0; i < fields_num; i++) {
         field = YogArray_at(env, fields, i);
-        StructClass_set_field(env, obj, field, i);
+        ID type = VAL2ID(YogArray_at(env, field, 0));
+        offset = align_offset(env, type, offset);
+        ID name = VAL2ID(YogArray_at(env, field, 1));
+        StructClass_set_field(env, obj, i, name, type, offset);
+        offset += map_size(env, type);
     }
+    PTR_AS(StructClass, obj)->size = ALIGN(offset, 4);
 
     RETURN(env, obj);
 }
@@ -350,6 +489,32 @@ LibFunc_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint
     RETURN_VOID(env);
 }
 
+static void
+Field_exec_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+{
+    SAVE_ARGS3(env, attr, obj, klass);
+    TRACE("TODO");
+    RETURN_VOID(env);
+}
+
+static YogVal
+Field_call_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+{
+    SAVE_ARGS3(env, attr, obj, klass);
+    YogVal v = YUNDEF;
+    PUSH_LOCAL(env, v);
+    TRACE("TODO");
+    RETURN(env, v);
+}
+
+static void
+Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+{
+    SAVE_ARGS3(env, attr, obj, klass);
+    TRACE("TODO");
+    RETURN_VOID(env);
+}
+
 void
 YogFFI_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -358,7 +523,8 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogVal cLibFunc = YUNDEF;
     YogVal cStructClassClass = YUNDEF;
     YogVal cStructClass = YUNDEF;
-    PUSH_LOCALS4(env, cLib, cLibFunc, cStructClassClass, cStructClass);
+    YogVal cField = YUNDEF;
+    PUSH_LOCALS5(env, cLib, cLibFunc, cStructClassClass, cStructClass, cField);
     YogVM* vm = env->vm;
 
     cLib = YogClass_new(env, "Lib", vm->cObject);
@@ -377,6 +543,12 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     cStructClass = YogClass_new(env, "StructClass", vm->cClass);
     YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, cStructClass), klass, cStructClassClass);
     vm->cStructClass = cStructClass;
+    cField = YogClass_new(env, "Field", vm->cObject);
+    YogClass_define_allocator(env, cField, Field_alloc);
+    YogClass_define_descr_get_executor(env, cField, Field_exec_descr_get);
+    YogClass_define_descr_get_caller(env, cField, Field_call_descr_get);
+    YogClass_define_descr_set_executor(env, cField, Field_exec_descr_set);
+    vm->cField = cField;
 
     RETURN_VOID(env);
 }
