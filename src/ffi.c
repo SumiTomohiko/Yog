@@ -249,7 +249,7 @@ map_type(YogEnv* env, ID type)
         cif_type = &ffi_type_pointer;
     }
     else {
-        YogError_raise_ValueError(env, "unknown type - %s", t);
+        YogError_raise_ValueError(env, "unknown type - %S", s);
         /* NOTREACHED */
     }
 
