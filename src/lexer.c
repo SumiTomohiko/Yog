@@ -1067,7 +1067,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
     case '\'':
         {
             c = NEXTC();
-            while (isalpha(c) || (c == '_')) {
+            while (isalnum(c) || (c == '_')) {
                 ADD_TOKEN_CHAR(c);
                 c = NEXTC();
             }

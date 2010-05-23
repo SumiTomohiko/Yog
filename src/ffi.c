@@ -2,6 +2,7 @@
 #include <string.h>
 #include "ffi.h"
 #include "yog/array.h"
+#include "yog/bignum.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -533,9 +534,22 @@ Field_call_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
 }
 
 static void
+check_Fixnum(YogEnv* env, YogVal val, int_t min, int_t max, const char* name)
+{
+    if (!IS_FIXNUM(val)) {
+        YogError_raise_TypeError(env, "Value must be Fixnum, not %C", val);
+    }
+    if ((VAL2INT(val) < min) || (max < VAL2INT(val))) {
+        YogError_raise_ValueError(env, "Value exceeds range of %s", name);
+    }
+}
+
+static void
 Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
 {
     SAVE_ARGS3(env, attr, obj, val);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
     if (!IS_PTR(attr) || (BASIC_OBJ_TYPE(attr) != TYPE_FIELD)) {
         YogError_raise_TypeError(env, "Attribute must be Field, not %C", attr);
     }
@@ -544,7 +558,94 @@ Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     }
 
     void* ptr = PTR_AS(Struct, obj)->data + PTR_AS(Field, attr)->offset;
-    *((int_t*)ptr) = VAL2INT(val);
+
+    s = YogVM_id2name(env, env->vm, PTR_AS(Field, attr)->type);
+    const char* t = STRING_CSTR(s);
+    if (strcmp(t, "uint8") == 0) {
+        check_Fixnum(env, val, 0, UINT8_MAX, t);
+        *((uint8_t*)ptr) = VAL2INT(val);
+    }
+    else if (strcmp(t, "sint8") == 0) {
+        check_Fixnum(env, val, INT8_MIN, INT8_MAX, t);
+        *((int8_t*)ptr) = VAL2INT(val);
+    }
+    else if (strcmp(t, "uint16") == 0) {
+        check_Fixnum(env, val, 0, UINT16_MAX, t);
+        *((uint16_t*)ptr) = VAL2INT(val);
+    }
+    else if (strcmp(t, "sint16") == 0) {
+        check_Fixnum(env, val, INT16_MIN, INT16_MAX, t);
+        *((int16_t*)ptr) = VAL2INT(val);
+    }
+    else if (strcmp(t, "uint32") == 0) {
+        if (IS_FIXNUM(val)) {
+            if (VAL2INT(val) < 0) {
+                YogError_raise_ValueError(env, "Value must be more or equal zero, not %d", VAL2INT(val));
+            }
+            *((uint32_t*)ptr) = VAL2INT(val);
+        }
+        else if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
+            if (0 < YogBignum_cmp_si(env, val, 0)) {
+                YogError_raise_ValueError(env, "Value must be more or equal zero, not %D", val);
+            }
+            if (YogBignum_cmp_ui(env, val, UINT32_MAX) < 0) {
+                YogError_raise_ValueError(env, "Value must be less or equal %u, not %D", UINT32_MAX, val);
+            }
+            *((uint32_t*)ptr) = YogBignum_to_unsigned_type(env, val, "Value");
+        }
+        else {
+            YogError_raise_TypeError(env, "Value must be Fixnum or Bignum, not %C", val);
+        }
+    }
+    else if (strcmp(t, "sint32") == 0) {
+        if (IS_FIXNUM(val)) {
+            *((int32_t*)ptr) = VAL2INT(val);
+        }
+        else if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
+            if (0 < YogBignum_cmp_si(env, val, INT32_MIN)) {
+                YogError_raise_ValueError(env, "Value must be more or equal %d, not %D", INT32_MIN, val);
+            }
+            if (YogBignum_cmp_si(env, val, INT32_MAX) < 0) {
+                YogError_raise_ValueError(env, "Value must be less or equal %d, not %D", INT32_MAX, val);
+            }
+            *((int32_t*)ptr) = YogBignum_to_signed_type(env, val, "Value");
+        }
+        else {
+            YogError_raise_TypeError(env, "Value must be Fixnum or Bignum, not %C", val);
+        }
+    }
+    else if (strcmp(t, "uint64") == 0) {
+    }
+    else if (strcmp(t, "sint64") == 0) {
+    }
+    else if (strcmp(t, "float") == 0) {
+    }
+    else if (strcmp(t, "double") == 0) {
+    }
+    else if (strcmp(t, "uchar") == 0) {
+    }
+    else if (strcmp(t, "schar") == 0) {
+    }
+    else if (strcmp(t, "sshort") == 0) {
+    }
+    else if (strcmp(t, "ushort") == 0) {
+    }
+    else if (strcmp(t, "uint") == 0) {
+    }
+    else if (strcmp(t, "sint") == 0) {
+    }
+    else if (strcmp(t, "ulong") == 0) {
+    }
+    else if (strcmp(t, "slong") == 0) {
+    }
+    else if (strcmp(t, "longdouble") == 0) {
+    }
+    else if (strcmp(t, "pointer") == 0) {
+    }
+    else {
+        YogError_raise_ValueError(env, "unknown type - %S", s);
+        /* NOTREACHED */
+    }
 
     RETURN_VOID(env);
 }

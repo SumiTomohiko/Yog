@@ -4,6 +4,7 @@
 #endif
 #include <stdarg.h>
 #include <stdlib.h>
+#include "yog/bignum.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -25,6 +26,7 @@ count_objects(YogEnv* env, const char* fmt)
         pc++;
         switch (*pc) {
         case 'C':
+        case 'D':
         case 'S':
             n++;
             break;
@@ -64,6 +66,7 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
         pc++;
         switch (*pc) {
         case 'C':
+        case 'D':
         case 'S':
             dest[n] = va_arg(aq, YogVal);
             n++;
@@ -89,6 +92,29 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
     }
 
     va_end(aq);
+    RETURN_VOID(env);
+}
+
+static void
+add_num(YogEnv* env, YogVal s, YogVal o)
+{
+    SAVE_ARGS2(env, s, o);
+    YogVal t = YUNDEF;
+    PUSH_LOCAL(env, t);
+
+    if (IS_FIXNUM(o)) {
+        char buf[21]; /* 64bit integer with '\0' needs at most 21 bytes */
+        snprintf(buf, array_sizeof(buf), "%d", VAL2INT(o));
+        YogString_add_cstr(env, s, buf);
+    }
+    else if (IS_PTR(o) && (BASIC_OBJ_TYPE(o) == TYPE_BIGNUM)) {
+        t = YogBignum_to_s(env, o);
+        YogString_add(env, s, t);
+    }
+    else {
+        YogError_raise_TypeError(env, "Object for %%D must be Fixnum or Bignum, not %C", o);
+    }
+
     RETURN_VOID(env);
 }
 
@@ -165,6 +191,11 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             add_class_name(env, s, pv[obj_index]);
             obj_index++;
             break;
+        case 'D':
+            va_arg(ap, YogVal);
+            add_num(env, s, pv[obj_index]);
+            obj_index++;
+            break;
         case 'I':
             name = YogVM_id2name(env, env->vm, va_arg(ap, ID));
             YogString_add(env, s, name);
@@ -233,6 +264,7 @@ YogSprintf_vsprintf(YogEnv* env, const char* fmt, va_list ap)
 /**
  * fmt: ascii string. This function can't handle multibyte strings.
  * %C Yog object (class's name)
+ * %D Fixnum or Bignum
  * %I ID
  * %S Yog String object
  * %d integer
