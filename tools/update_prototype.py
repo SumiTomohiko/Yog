@@ -116,8 +116,7 @@ class DeclarationInserter(object):
         finally:
             fp.close()
 
-    re_type = re.compile(r"\A(?:(?:struct|unsigned|const)\s+)?\w+\s*\**\Z")
-    re_function = re.compile(r"\A(?P<name>\w+)\s*\(.*\)\Z")
+    re_function = re.compile(r"\A(?P<name>\w+)\s*\([\w\s\*\\(\).,]*\)\Z")
     re_function_pointer \
             = re.compile(r"\A(?P<head>[\w\*]+\s+\(\*)\w+(?P<tail>\)\(.*\))\Z")
 
@@ -153,7 +152,9 @@ class DeclarationInserter(object):
 
         comment = 0
 
+        line = ""
         while True:
+            prev_line = line
             try:
                 line = lines.pop(0).strip()
             except IndexError:
@@ -164,50 +165,43 @@ class DeclarationInserter(object):
                 comment -= 1
             if 0 < comment:
                 continue
-            if self.re_type.search(line):
-                return_type = line
 
-                while True:
-                    try:
-                        line = lines.pop(0).strip()
-                    except IndexError:
-                        break
+            m = self.re_function.search(line)
+            if m is None:
+                continue
+            if prev_line.startswith("INTERNAL ") or prev_line.startswith("static ") or prev_line.startswith("inline "):
+                continue
+            return_type = prev_line
+            name = m.group("name")
+
+            args = []
+            n = line.index("(")
+            m = line.rindex(")")
+            params = self._split_params(line[n + 1:m])
+            for param in params:
+                param = param.strip()
+                if param == "...":
+                    args.append(param)
+                else:
+                    m = self.re_function_pointer.search(param)
+                    if m:
+                        type_ = m.group("head") + m.group("tail")
                     else:
-                        if line != "":
-                            break
-
-                m = self.re_function.search(line)
-                if m:
-                    name = m.group("name")
-
-                    args = []
-                    n = line.index("(")
-                    m = line.rindex(")")
-                    params = self._split_params(line[n + 1:m])
-                    for param in params:
                         param = param.strip()
-                        if param == "...":
-                            args.append(param)
+                        param = param.split(" ")
+                        try:
+                            n = param[-1].rindex("*")
+                        except ValueError:
+                            type_ = " ".join(param[:-1])
                         else:
-                            m = self.re_function_pointer.search(param)
-                            if m:
-                                type_ = m.group("head") + m.group("tail")
-                            else:
-                                param = param.strip()
-                                param = param.split(" ")
-                                try:
-                                    n = param[-1].rindex("*")
-                                except ValueError:
-                                    type_ = " ".join(param[:-1])
-                                else:
-                                    type_ = " ".join(param[:-1]) \
-                                            + param[-1][:n + 1]
-                            args.append(type_)
+                            type_ = " ".join(param[:-1]) \
+                                    + param[-1][:n + 1]
+                    args.append(type_)
 
-                    declarations[name] = \
-                            "%(return_type)s %(name)s(%(args)s);" % {
-                                    "return_type": return_type, "name": name,
-                                    "args": ", ".join(args) }
+            declarations[name] = \
+                    "%(return_type)s %(name)s(%(args)s);" % {
+                            "return_type": return_type, "name": name,
+                            "args": ", ".join(args) }
 
         retval = []
         for name in sorted(declarations):

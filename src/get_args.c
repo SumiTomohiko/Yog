@@ -137,8 +137,7 @@ find_invalid_keyword(YogEnv* env, YogCArg* params, YogVal kw)
     RETURN(env, YUNDEF);
 }
 
-/* FIXME: I don't know why YOG_EXPORT must be here for Windows */
-YOG_EXPORT void
+void
 YogGetArgs_parse_args(YogEnv* env, const char* func_name, YogCArg* params, YogVal args, YogVal kw)
 {
     SAVE_ARGS2(env, args, kw);

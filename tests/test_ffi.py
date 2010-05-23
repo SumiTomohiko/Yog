@@ -23,7 +23,7 @@ f()
 
     def test_Struct0(self):
         self._test("""
-st = StructClass.new(\"Foo\", [[\'sint, \'bar]])
+st = StructClass.new(\"Foo\", [[\'int, \'bar]])
 o = st.new()
 o.bar = 42
 print(o.bar)
@@ -73,19 +73,19 @@ foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
 
-    # Tests for sint8
+    # Tests for int8
     def test_Struct60(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of sint8")
+            assert 0 < stderr.find("ValueError: Value exceeds range of int8")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint8, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int8, \'bar]])
 foo = Foo.new()
 foo.bar = -129
 """, stderr=test_stderr)
 
     def test_Struct70(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint8, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int8, \'bar]])
 foo = Foo.new()
 foo.bar = -128
 print(foo.bar)
@@ -93,7 +93,7 @@ print(foo.bar)
 
     def test_Struct80(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint8, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int8, \'bar]])
 foo = Foo.new()
 foo.bar = 127
 print(foo.bar)
@@ -101,9 +101,9 @@ print(foo.bar)
 
     def test_Struct90(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of sint8")
+            assert 0 < stderr.find("ValueError: Value exceeds range of int8")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint8, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int8, \'bar]])
 foo = Foo.new()
 foo.bar = 128
 """, stderr=test_stderr)
@@ -112,7 +112,7 @@ foo.bar = 128
         def test_stderr(stderr):
             assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint8, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int8, \'bar]])
 foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
@@ -161,19 +161,19 @@ foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
 
-    # Tests for sint16
+    # Tests for int16
     def test_Struct160(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of sint16")
+            assert 0 < stderr.find("ValueError: Value exceeds range of int16")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint16, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int16, \'bar]])
 foo = Foo.new()
 foo.bar = -32769
 """, stderr=test_stderr)
 
     def test_Struct170(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint16, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int16, \'bar]])
 foo = Foo.new()
 foo.bar = -32768
 print(foo.bar)
@@ -181,7 +181,7 @@ print(foo.bar)
 
     def test_Struct180(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint16, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int16, \'bar]])
 foo = Foo.new()
 foo.bar = 32767
 print(foo.bar)
@@ -189,9 +189,9 @@ print(foo.bar)
 
     def test_Struct190(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of sint16")
+            assert 0 < stderr.find("ValueError: Value exceeds range of int16")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint16, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int16, \'bar]])
 foo = Foo.new()
 foo.bar = 32768
 """, stderr=test_stderr)
@@ -200,7 +200,7 @@ foo.bar = 32768
         def test_stderr(stderr):
             assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint16, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int16, \'bar]])
 foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
@@ -249,19 +249,19 @@ foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
 
-    # Tests for sint32
+    # Tests for int32
     def test_Struct210(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of sint32")
+            assert 0 < stderr.find("ValueError: Value exceeds range of int32")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
 foo = Foo.new()
 foo.bar = -2147483649
 """, stderr=test_stderr)
 
     def test_Struct220(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
 foo = Foo.new()
 foo.bar = -2147483648
 print(foo.bar)
@@ -269,7 +269,7 @@ print(foo.bar)
 
     def test_Struct230(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
 foo = Foo.new()
 foo.bar = 2147483647
 print(foo.bar)
@@ -277,9 +277,9 @@ print(foo.bar)
 
     def test_Struct240(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of sint32")
+            assert 0 < stderr.find("ValueError: Value exceeds range of int32")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
 foo = Foo.new()
 foo.bar = 2147483648
 """, stderr=test_stderr)
@@ -288,24 +288,24 @@ foo.bar = 2147483648
         def test_stderr(stderr):
             assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
 foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
 
-    # Tests for sint32
+    # Tests for int32
     def test_Struct210(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of sint32")
+            assert 0 < stderr.find("ValueError: Value exceeds range of int32")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
 foo = Foo.new()
 foo.bar = -2147483649
 """, stderr=test_stderr)
 
     def test_Struct220(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
 foo = Foo.new()
 foo.bar = -2147483648
 print(foo.bar)
@@ -313,7 +313,7 @@ print(foo.bar)
 
     def test_Struct230(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
 foo = Foo.new()
 foo.bar = 2147483647
 print(foo.bar)
@@ -321,9 +321,9 @@ print(foo.bar)
 
     def test_Struct240(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of sint32")
+            assert 0 < stderr.find("ValueError: Value exceeds range of int32")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
 foo = Foo.new()
 foo.bar = 2147483648
 """, stderr=test_stderr)
@@ -332,7 +332,7 @@ foo.bar = 2147483648
         def test_stderr(stderr):
             assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
 foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
@@ -381,19 +381,19 @@ foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
 
-    # Tests for sint64
+    # Tests for int64
     def test_Struct310(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of sint64")
+            assert 0 < stderr.find("ValueError: Value exceeds range of int64")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint64, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int64, \'bar]])
 foo = Foo.new()
 foo.bar = -9223372036854775809
 """, stderr=test_stderr)
 
     def test_Struct320(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint64, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int64, \'bar]])
 foo = Foo.new()
 foo.bar = -9223372036854775808
 print(foo.bar)
@@ -401,7 +401,7 @@ print(foo.bar)
 
     def test_Struct330(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint64, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int64, \'bar]])
 foo = Foo.new()
 foo.bar = 9223372036854775807
 print(foo.bar)
@@ -409,9 +409,9 @@ print(foo.bar)
 
     def test_Struct340(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of sint64")
+            assert 0 < stderr.find("ValueError: Value exceeds range of int64")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint64, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int64, \'bar]])
 foo = Foo.new()
 foo.bar = 9223372036854775808
 """, stderr=test_stderr)
@@ -420,7 +420,7 @@ foo.bar = 9223372036854775808
         def test_stderr(stderr):
             assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'sint64, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'int64, \'bar]])
 foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
