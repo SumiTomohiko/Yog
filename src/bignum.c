@@ -995,12 +995,10 @@ YogBignum_to_long_long(YogEnv* env, YogVal self, const char* name)
     if ((YogBignum_compare_with_long_long(env, self, INT64_MIN) < 0) || (0 < YogBignum_compare_with_long_long(env, self, INT64_MAX))) {
         YogError_raise_ValueError(env, "%s must be between %lld and %lld", name, INT64_MIN, INT64_MAX);
     }
-    long long lower = mpz_get_si(BIGNUM_NUM(self));
-    unsigned long shift_num = 8 * sizeof(long);
-    mpz_t r;
-    mpz_tdiv_q_2exp(r, BIGNUM_NUM(self), shift_num);
-    long long higher = mpz_get_si(r);
-    long long retval = (higher << shift_num) + lower;
+    char buf[21];
+    mpz_get_str(buf, 10, BIGNUM_NUM(self));
+    long long retval = 0;
+    sscanf(buf, "%lld", &retval);
 
     RETURN(env, retval);
 }
@@ -1013,12 +1011,10 @@ YogBignum_to_unsigned_long_long(YogEnv* env, YogVal self, const char* name)
     if ((YogBignum_compare_with_unsigned_int(env, self, 0) < 0) || (0 < YogBignum_compare_with_unsigned_long_long(env, self, UINT64_MAX))) {
         YogError_raise_ValueError(env, "%s must be between 0 and %llu", name, UINT64_MAX);
     }
-    unsigned long long lower = mpz_get_ui(BIGNUM_NUM(self));
-    unsigned long shift_num = 8 * sizeof(long);
-    mpz_t r;
-    mpz_tdiv_q_2exp(r, BIGNUM_NUM(self), shift_num);
-    unsigned long long higher = mpz_get_ui(r);
-    unsigned long long retval = (higher << shift_num) + lower;
+    char buf[21];
+    mpz_get_str(buf, 10, BIGNUM_NUM(self));
+    unsigned long long retval = 0;
+    sscanf(buf, "%llu", &retval);
 
     RETURN(env, retval);
 }
