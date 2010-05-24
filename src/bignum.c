@@ -992,7 +992,7 @@ YogBignum_to_long_long(YogEnv* env, YogVal self, const char* name)
 {
     SAVE_ARG(env, self);
 
-    if ((0 < YogBignum_compare_with_long_long(env, self, INT64_MIN)) || (YogBignum_compare_with_long_long(env, self, INT64_MAX) < 0)) {
+    if ((YogBignum_compare_with_long_long(env, self, INT64_MIN) < 0) || (0 < YogBignum_compare_with_long_long(env, self, INT64_MAX))) {
         YogError_raise_ValueError(env, "%s must be between %lld and %lld", name, INT64_MIN, INT64_MAX);
     }
     long long lower = mpz_get_si(BIGNUM_NUM(self));
@@ -1010,7 +1010,7 @@ YogBignum_to_unsigned_long_long(YogEnv* env, YogVal self, const char* name)
 {
     SAVE_ARG(env, self);
 
-    if ((0 < YogBignum_compare_with_unsigned_int(env, self, 0)) || (YogBignum_compare_with_unsigned_long_long(env, self, UINT64_MAX) < 0)) {
+    if ((YogBignum_compare_with_unsigned_int(env, self, 0) < 0) || (0 < YogBignum_compare_with_unsigned_long_long(env, self, UINT64_MAX))) {
         YogError_raise_ValueError(env, "%s must be between 0 and %llu", name, UINT64_MAX);
     }
     unsigned long long lower = mpz_get_ui(BIGNUM_NUM(self));
