@@ -5,7 +5,7 @@ CC = @CC@
 SOEXT = @SOEXT@
 
 PKGS = test_package4.$(SOEXT) test_package5.$(SOEXT) test_package6.$(SOEXT) \
-       foo.$(SOEXT)
+       test_lib.$(SOEXT)
 CFLAGS = -shared -I.. -I../include -Wall -DGENERATIONAL @CFLAGS@
 LIBS = @IMPORT_LIB@
 
@@ -21,8 +21,8 @@ test_package5.$(SOEXT): test_package5.c Makefile
 test_package6.$(SOEXT): test_package6.c Makefile
 	$(CC) -o $@ $(CFLAGS) test_package6.c $(LIBS)
 
-foo.$(SOEXT): foo.c Makefile
-	$(CC) -o $@ $(CFLAGS) foo.c $(LIBS)
+test_lib.$(SOEXT): test_lib.c Makefile
+	$(CC) -o $@ $(CFLAGS) test_lib.c $(LIBS)
 
 clean:
 	find . -name "core*" -print0 | xargs -0 rm -f
