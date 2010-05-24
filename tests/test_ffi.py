@@ -13,21 +13,13 @@ class TestFFI(TestCase):
         path = self.get_lib_path()
         self._test("load_lib(\"%(path)s\")" % locals())
 
-    def test_find_func0(self):
+    def test_load_func0(self):
         path = self.get_lib_path()
         self._test("""
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"foo\")
 f()
 """ % locals(), "42")
-
-    def test_Struct0(self):
-        self._test("""
-st = StructClass.new(\"Foo\", [[\'int, \'bar]])
-o = st.new()
-o.bar = 42
-print(o.bar)
-""", "42")
 
     # Tests for uint8
     def test_Struct10(self):
@@ -249,46 +241,46 @@ foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
 
-    # Tests for int32
+    # Tests for uint32
     def test_Struct260(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value must be greater or equal -2147483648, not -2147483649")
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'uint32, \'bar]])
 foo = Foo.new()
-foo.bar = -2147483649
+foo.bar = -1
 """, stderr=test_stderr)
 
     def test_Struct270(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'uint32, \'bar]])
 foo = Foo.new()
-foo.bar = -2147483648
+foo.bar = 0
 print(foo.bar)
-""", "-2147483648")
+""", "0")
 
     def test_Struct280(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'uint32, \'bar]])
 foo = Foo.new()
-foo.bar = 2147483647
+foo.bar = 4294967295
 print(foo.bar)
-""", "2147483647")
+""", "4294967295")
 
     def test_Struct290(self):
         def test_stderr(stderr):
             assert 0 < stderr.find("ValueError: Value must be less or equal 2147483647, not 2147483648")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'uint32, \'bar]])
 foo = Foo.new()
-foo.bar = 2147483648
+foo.bar = 4294967296
 """, stderr=test_stderr)
 
     def test_Struct300(self):
         def test_stderr(stderr):
             assert 0 < stderr.find("TypeError: Value must be Fixnum or Bignum, not String")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'int32, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'uint32, \'bar]])
 foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
@@ -566,5 +558,579 @@ Foo = StructClass.new(\"Foo\", [[\'longdouble, \'bar]])
 foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
+
+    # Tests for uint8
+    def test_argument10(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint8\", [\'uint8])
+f(-1)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument20(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint8\", [\'uint8])
+f(0)
+""" % locals(), "0")
+
+    def test_argument30(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint8\", [\'uint8])
+f(255)
+""" % locals(), "255")
+
+    def test_argument40(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 255, not 256")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint8\", [\'uint8])
+f(256)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument50(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint8\", [\'uint8])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for int8
+    def test_argument60(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal -128, not -129")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int8\", [\'int8])
+f(-129)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument70(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int8\", [\'int8])
+f(-128)
+""" % locals(), "-128")
+
+    def test_argument80(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int8\", [\'int8])
+f(127)
+""" % locals(), "127")
+
+    def test_argument90(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 127, not 128")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int8\", [\'int8])
+f(128)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument100(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int8\", [\'int8])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for uint16
+    def test_argument110(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint16\", [\'uint16])
+f(-1)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument120(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint16\", [\'uint16])
+f(0)
+""" % locals(), "0")
+
+    def test_argument130(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint16\", [\'uint16])
+f(65535)
+""" % locals(), "65535")
+
+    def test_argument140(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 65535, not 65536")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint16\", [\'uint16])
+f(65536)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument150(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint16\", [\'uint16])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for int16
+    def test_argument160(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal -32768, not -32769")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int16\", [\'int16])
+f(-32769)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument170(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int16\", [\'int16])
+f(-32768)
+""" % locals(), "-32768")
+
+    def test_argument180(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int16\", [\'int16])
+f(32767)
+""" % locals(), "32767")
+
+    def test_argument190(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 32767, not 32768")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int16\", [\'int16])
+f(32768)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument200(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int16\", [\'int16])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for uint32
+    def test_argument210(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint32\", [\'uint32])
+f(-1)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument220(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint32\", [\'uint32])
+f(0)
+""" % locals(), "0")
+
+    def test_argument230(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint32\", [\'uint32])
+f(4294967295)
+""" % locals(), "4294967295")
+
+    def test_argument240(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 4294967295, not 4294967296")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint32\", [\'uint32])
+f(4294967296)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument250(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum or Bignum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint32\", [\'uint32])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for int32
+    def test_argument260(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal -2147483648, not -2147483649")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int32\", [\'int32])
+f(-2147483649)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument270(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int32\", [\'int32])
+f(-2147483648)
+""" % locals(), "-2147483648")
+
+    def test_argument280(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int32\", [\'int32])
+f(2147483647)
+""" % locals(), "2147483647")
+
+    def test_argument290(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 2147483647, not 2147483648")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int32\", [\'int32])
+f(2147483648)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument300(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum or Bignum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int32\", [\'int32])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for int32
+    def test_argument310(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal -2147483648, not -2147483649")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int32\", [\'int32])
+f(-2147483649)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument320(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int32\", [\'int32])
+f(-2147483648)
+""" % locals(), "-2147483648")
+
+    def test_argument330(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int32\", [\'int32])
+f(2147483647)
+""" % locals(), "2147483647")
+
+    def test_argument340(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 2147483647, not 2147483648")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int32\", [\'int32])
+f(2147483648)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument350(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum or Bignum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int32\", [\'int32])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for uint64
+    def test_argument360(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint64\", [\'uint64])
+f(-1)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument370(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint64\", [\'uint64])
+f(0)
+""" % locals(), "0")
+
+    def test_argument380(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint64\", [\'uint64])
+f(18446744073709551615)
+""" % locals(), "18446744073709551615")
+
+    def test_argument390(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 18446744073709551615, not 18446744073709551616")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint64\", [\'uint64])
+f(18446744073709551616)
+""" % locals(), "18446744073709551616")
+
+    def test_argument400(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum or Bignum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uint64\", [\'uint64])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for int64
+    def test_argument410(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal -9223372036854775808, not -9223372036854775809")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int64\", [\'int64])
+f(-9223372036854775809)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument420(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int64\", [\'int64])
+f(-9223372036854775808)
+""" % locals(), "-9223372036854775808")
+
+    def test_argument430(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int64\", [\'int64])
+f(9223372036854775807)
+""" % locals(), "9223372036854775807")
+
+    def test_argument440(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 9223372036854775807, not 9223372036854775808")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int64\", [\'int64])
+f(9223372036854775808)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument450(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum or Bignum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_int64\", [\'int64])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for float
+    def test_argument460(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_float\", [\'float])
+f(3.14)
+""" % locals(), "3.14")
+
+    def test_argument470(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Float, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_float\", [\'float])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for double
+    def test_argument480(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_double\", [\'double])
+f(3.14)
+""" % locals(), "3.14")
+
+    def test_argument490(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Float, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_double\", [\'double])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for uchar
+    def test_argument500(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uchar\", [\'uchar])
+f(-1)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument510(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uchar\", [\'uchar])
+f(0)
+""" % locals(), "0")
+
+    def test_argument520(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uchar\", [\'uchar])
+f(255)
+""" % locals(), "255")
+
+    def test_argument530(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 255, not 256")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uchar\", [\'uchar])
+f(256)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument540(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_uchar\", [\'uchar])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for schar
+    def test_argument550(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be greater or equal -128, not -129")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_char\", [\'char])
+f(-129)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument560(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_char\", [\'char])
+f(-128)
+""" % locals(), "-128")
+
+    def test_argument570(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_char\", [\'char])
+f(127)
+""" % locals(), "127")
+
+    def test_argument580(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Value must be less or equal 127, not 128")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_char\", [\'char])
+f(128)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument590(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_char\", [\'char])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
+    # Tests for longdouble
+    def test_argument600(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_longdouble\", [\'longdouble])
+f(3.14)
+""" % locals(), "3.14")
+
+    def test_argument610(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Float, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_longdouble\", [\'longdouble])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
