@@ -506,7 +506,7 @@ Struct_get(YogEnv* env, YogVal self, YogVal field)
         YogError_raise_TypeError(env, "Attribute must be Field, not %C", field);
     }
 
-    s = YogVM_id2name(env, env->vm, PTR_AS(Field, field)->name);
+    s = YogVM_id2name(env, env->vm, PTR_AS(Field, field)->type);
     const char* t = STRING_CSTR(s);
     void* ptr = PTR_AS(Struct, self)->data + PTR_AS(Field, field)->offset;
     if (strcmp(t, "uint8") == 0) {
