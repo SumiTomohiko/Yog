@@ -13,6 +13,25 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+static const char*
+read_flags(const char* s, uint_t* l)
+{
+    *l = 0;
+
+    const char* pc = s;
+    while (1) {
+        switch (*pc) {
+        case 'l':
+            (*l)++;
+            break;
+        default:
+            return pc;
+            break;
+        }
+        pc++;
+    }
+}
+
 static uint_t
 count_objects(YogEnv* env, const char* fmt)
 {
@@ -23,7 +42,8 @@ count_objects(YogEnv* env, const char* fmt)
         if (*pc != '%') {
             continue;
         }
-        pc++;
+        uint_t l;
+        pc = read_flags(pc + 1, &l);
         switch (*pc) {
         case 'C':
         case 'D':
@@ -63,7 +83,8 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
         if (*pc != '%') {
             continue;
         }
-        pc++;
+        uint_t l;
+        pc = read_flags(pc + 1, &l);
         switch (*pc) {
         case 'C':
         case 'D':
@@ -77,13 +98,23 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
             va_arg(aq, ID);
             break;
         case 'd':
-            va_arg(aq, int);
+            if (l == 0) {
+                va_arg(aq, int);
+            }
+            else {
+                va_arg(aq, long long);
+            }
             break;
         case 's':
             va_arg(aq, char*);
             break;
         case 'u':
-            va_arg(aq, unsigned int);
+            if (l == 0) {
+                va_arg(aq, unsigned int);
+            }
+            else {
+                va_arg(aq, unsigned long long);
+            }
             break;
         default:
             YOG_BUG(env, "invalid format charactor '%c'", *pc);
@@ -184,7 +215,8 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             YogString_push(env, s, *pc);
             continue;
         }
-        pc++;
+        uint_t l;
+        pc = read_flags(pc + 1, &l);
         switch (*pc) {
         case 'C':
             va_arg(ap, YogVal);
@@ -210,10 +242,16 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             break;
         case 'd':
             {
-                int n = va_arg(ap, int);
-                /* 64bit integer including '\0' needs at most 20 bytes */
-                char buf[20];
-                YogSysdeps_snprintf(buf, array_sizeof(buf), "%d", n);
+                /* 64bit integer including '\0' needs at most 21 bytes */
+                char buf[21];
+                if (l == 0) {
+                    int n = va_arg(ap, int);
+                    YogSysdeps_snprintf(buf, array_sizeof(buf), "%d", n);
+                }
+                else {
+                    long long n = va_arg(ap, long long);
+                    YogSysdeps_snprintf(buf, array_sizeof(buf), "%lld", n);
+                }
                 YogString_add_cstr(env, s, buf);
             }
             break;
@@ -225,9 +263,15 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             break;
         case 'u':
             {
-                unsigned int n = va_arg(ap, unsigned int);
-                char buf[20];
-                YogSysdeps_snprintf(buf, array_sizeof(buf), "%u", n);
+                char buf[21];
+                if (l == 0) {
+                    unsigned int n = va_arg(ap, unsigned int);
+                    YogSysdeps_snprintf(buf, array_sizeof(buf), "%u", n);
+                }
+                else {
+                    unsigned long long n = va_arg(ap, unsigned long long);
+                    YogSysdeps_snprintf(buf, array_sizeof(buf), "%llu", n);
+                }
                 YogString_add_cstr(env, s, buf);
             }
             break;
@@ -268,6 +312,8 @@ YogSprintf_vsprintf(YogEnv* env, const char* fmt, va_list ap)
  * %I ID
  * %S Yog String object
  * %d integer
+ * %lld long long
+ * %llu unsigned long long
  * %s C string
  * %u unsigned integer
  */
