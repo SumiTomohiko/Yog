@@ -299,6 +299,9 @@ typedef YogVal (*YogAPI)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
  */
 /* src/value.c */
 YOG_EXPORT YogVal YogVal_from_int(YogEnv*, int_t);
+YOG_EXPORT YogVal YogVal_from_long_long(YogEnv*, long long);
+YOG_EXPORT YogVal YogVal_from_unsigned_int(YogEnv*, uint_t);
+YOG_EXPORT YogVal YogVal_from_unsigned_long_long(YogEnv*, unsigned long long);
 YOG_EXPORT YogVal YogVal_get_attr(YogEnv*, YogVal, ID);
 YOG_EXPORT YogVal YogVal_get_class(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogVal_get_class_name(YogEnv*, YogVal);

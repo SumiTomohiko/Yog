@@ -496,6 +496,9 @@ static YogVal
 Struct_get(YogEnv* env, YogVal self, YogVal field)
 {
     SAVE_ARGS2(env, self, field);
+    YogVal s = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS2(env, s, val);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
         YogError_raise_TypeError(env, "self must be Struct, not %C", self);
     }
@@ -503,11 +506,75 @@ Struct_get(YogEnv* env, YogVal self, YogVal field)
         YogError_raise_TypeError(env, "Attribute must be Field, not %C", field);
     }
 
+    s = YogVM_id2name(env, env->vm, PTR_AS(Field, field)->name);
+    const char* t = STRING_CSTR(s);
     void* ptr = PTR_AS(Struct, self)->data + PTR_AS(Field, field)->offset;
-    /* TODO */
-    int_t n = *((int_t*)ptr);
+    if (strcmp(t, "uint8") == 0) {
+        val = INT2VAL(*((uint8_t*)ptr));
+    }
+    else if (strcmp(t, "int8") == 0) {
+        val = INT2VAL(*((int8_t*)ptr));
+    }
+    else if (strcmp(t, "uint16") == 0) {
+        val = INT2VAL(*((uint16_t*)ptr));
+    }
+    else if (strcmp(t, "int16") == 0) {
+        val = INT2VAL(*((int16_t*)ptr));
+    }
+    else if (strcmp(t, "uint32") == 0) {
+        val = YogVal_from_unsigned_int(env, *((uint32_t*)ptr));
+    }
+    else if (strcmp(t, "int32") == 0) {
+        val = YogVal_from_int(env, *((int32_t*)ptr));
+    }
+    else if (strcmp(t, "uint64") == 0) {
+        val = YogVal_from_unsigned_long_long(env, *((uint64_t*)ptr));
+    }
+    else if (strcmp(t, "int64") == 0) {
+        val = YogVal_from_long_long(env, *((int64_t*)ptr));
+    }
+    else if (strcmp(t, "float") == 0) {
+        val = YogFloat_from_float(env, *((float*)ptr));
+    }
+    else if (strcmp(t, "double") == 0) {
+        val = YogFloat_from_float(env, *((double*)ptr));
+    }
+    else if (strcmp(t, "uchar") == 0) {
+        val = INT2VAL(*((uint8_t*)ptr));
+    }
+    else if (strcmp(t, "schar") == 0) {
+        val = INT2VAL(*((int8_t*)ptr));
+    }
+    else if (strcmp(t, "ushort") == 0) {
+        val = INT2VAL(*((uint16_t*)ptr));
+    }
+    else if (strcmp(t, "short") == 0) {
+        val = INT2VAL(*((int16_t*)ptr));
+    }
+    else if (strcmp(t, "uint") == 0) {
+        val = YogVal_from_unsigned_int(env, *((uint32_t*)ptr));
+    }
+    else if (strcmp(t, "int") == 0) {
+        val = YogVal_from_int(env, *((int32_t*)ptr));
+    }
+    else if (strcmp(t, "ulong") == 0) {
+        val = YogVal_from_unsigned_int(env, *((uint32_t*)ptr));
+    }
+    else if (strcmp(t, "long") == 0) {
+        val = YogVal_from_int(env, *((int32_t*)ptr));
+    }
+    else if (strcmp(t, "longdouble") == 0) {
+        val = YogFloat_from_float(env, *((long double*)ptr));
+    }
+    else if (strcmp(t, "pointer") == 0) {
+        val = YogVal_from_unsigned_int(env, *((uint32_t*)ptr));
+    }
+    else {
+        YogError_raise_ValueError(env, "unknown type - %S", s);
+        /* NOTREACHED */
+    }
 
-    RETURN(env, INT2VAL(n));
+    RETURN(env, val);
 }
 
 static void
@@ -839,10 +906,10 @@ Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
         Struct_write_int8(env, obj, attr, val);
     }
     else if (strcmp(t, "ushort") == 0) {
-        Struct_write_int16(env, obj, attr, val);
+        Struct_write_uint16(env, obj, attr, val);
     }
     else if (strcmp(t, "short") == 0) {
-        Struct_write_uint16(env, obj, attr, val);
+        Struct_write_int16(env, obj, attr, val);
     }
     else if (strcmp(t, "uint") == 0) {
         Struct_write_uint32(env, obj, attr, val);

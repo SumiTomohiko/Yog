@@ -575,6 +575,49 @@ lshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
 }
 
 YogVal
+YogBignum_from_long_long(YogEnv* env, long long n)
+{
+    SAVE_LOCALS(env);
+    YogVal bignum = YUNDEF;
+    PUSH_LOCAL(env, bignum);
+
+    char buf[21]; /* 64bit integer with '\0' needs at most 21bytes */
+    snprintf(buf, array_sizeof(buf), "%lld", n);
+    bignum = YogBignum_new(env);
+    mpz_set_str(BIGNUM_NUM(bignum), buf, 10);
+
+    RETURN(env, bignum);
+}
+
+YogVal
+YogBignum_from_unsigned_long_long(YogEnv* env, unsigned long long n)
+{
+    SAVE_LOCALS(env);
+    YogVal bignum = YUNDEF;
+    PUSH_LOCAL(env, bignum);
+
+    char buf[21]; /* 64bit integer with '\0' needs at most 21bytes */
+    snprintf(buf, array_sizeof(buf), "%llu", n);
+    bignum = YogBignum_new(env);
+    mpz_set_str(BIGNUM_NUM(bignum), buf, 10);
+
+    RETURN(env, bignum);
+}
+
+YogVal
+YogBignum_from_unsigned_int(YogEnv* env, uint_t n)
+{
+    SAVE_LOCALS(env);
+    YogVal bignum = YUNDEF;
+    PUSH_LOCAL(env, bignum);
+
+    bignum = YogBignum_new(env);
+    mpz_set_ui(PTR_AS(YogBignum, bignum)->num, n);
+
+    RETURN(env, bignum);
+}
+
+YogVal
 YogBignum_from_int(YogEnv* env, int_t n)
 {
     SAVE_LOCALS(env);

@@ -142,12 +142,39 @@ YogVal_is_subclass_of(YogEnv* env, YogVal val, YogVal klass)
 }
 
 YogVal
+YogVal_from_long_long(YogEnv* env, long long n)
+{
+    if (FIXABLE(n)) {
+        return INT2VAL(n);
+    }
+    return YogBignum_from_long_long(env, n);
+}
+
+YogVal
+YogVal_from_unsigned_long_long(YogEnv* env, unsigned long long n)
+{
+    if (n < YINT_MAX) {
+        return INT2VAL(n);
+    }
+    return YogBignum_from_unsigned_long_long(env, n);
+}
+
+YogVal
+YogVal_from_unsigned_int(YogEnv* env, uint_t n)
+{
+    if (n < YINT_MAX) {
+        return INT2VAL(n);
+    }
+    return YogBignum_from_unsigned_int(env, n);
+}
+
+YogVal
 YogVal_from_int(YogEnv* env, int_t n)
 {
-    if (!FIXABLE(n)) {
-        return YogBignum_from_int(env, n);
+    if (FIXABLE(n)) {
+        return INT2VAL(n);
     }
-    return INT2VAL(n);
+    return YogBignum_from_int(env, n);
 }
 
 void
