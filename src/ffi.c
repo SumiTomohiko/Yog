@@ -603,15 +603,18 @@ Field_call_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
 }
 
 static void
-check_Fixnum(YogEnv* env, YogVal val, int_t min, int_t max, YogVal name)
+check_Fixnum(YogEnv* env, YogVal val, int_t min, int_t max)
 {
-    SAVE_ARGS2(env, val, name);
+    SAVE_ARG(env, val);
 
     if (!IS_FIXNUM(val)) {
         YogError_raise_TypeError(env, "Value must be Fixnum, not %C", val);
     }
-    if ((VAL2INT(val) < min) || (max < VAL2INT(val))) {
-        YogError_raise_ValueError(env, "Value exceeds range of %S", name);
+    if (VAL2INT(val) < min) {
+        YogError_raise_ValueError(env, "Value must be greater or equal %d, not %D", min, val);
+    }
+    if (max < VAL2INT(val)) {
+        YogError_raise_ValueError(env, "Value must be less or equal %d, not %D", max, val);
     }
 
     RETURN_VOID(env);
@@ -627,11 +630,8 @@ static void
 Struct_write_uint8(YogEnv* env, YogVal self, YogVal field, YogVal val)
 {
     SAVE_ARGS3(env, self, field, val);
-    YogVal type = YUNDEF;
-    PUSH_LOCAL(env, type);
 
-    type = YogVM_id2name(env, env->vm, PTR_AS(Field, field)->type);
-    check_Fixnum(env, val, 0, UINT8_MAX, type);
+    check_Fixnum(env, val, 0, UINT8_MAX);
     WRITE_DATA(uint8_t, self, field, VAL2INT(val));
 
     RETURN_VOID(env);
@@ -641,11 +641,8 @@ static void
 Struct_write_int8(YogEnv* env, YogVal self, YogVal field, YogVal val)
 {
     SAVE_ARGS3(env, self, field, val);
-    YogVal type = YUNDEF;
-    PUSH_LOCAL(env, type);
 
-    type = YogVM_id2name(env, env->vm, PTR_AS(Field, field)->type);
-    check_Fixnum(env, val, INT8_MIN, INT8_MAX, type);
+    check_Fixnum(env, val, INT8_MIN, INT8_MAX);
     WRITE_DATA(int8_t, self, field, VAL2INT(val));
 
     RETURN_VOID(env);
@@ -655,11 +652,8 @@ static void
 Struct_write_uint16(YogEnv* env, YogVal self, YogVal field, YogVal val)
 {
     SAVE_ARGS3(env, self, field, val);
-    YogVal type = YUNDEF;
-    PUSH_LOCAL(env, type);
 
-    type = YogVM_id2name(env, env->vm, PTR_AS(Field, field)->type);
-    check_Fixnum(env, val, 0, UINT16_MAX, type);
+    check_Fixnum(env, val, 0, UINT16_MAX);
     WRITE_DATA(uint16_t, self, field, VAL2INT(val));
 
     RETURN_VOID(env);
@@ -669,11 +663,8 @@ static void
 Struct_write_int16(YogEnv* env, YogVal self, YogVal field, YogVal val)
 {
     SAVE_ARGS3(env, self, field, val);
-    YogVal type = YUNDEF;
-    PUSH_LOCAL(env, type);
 
-    type = YogVM_id2name(env, env->vm, PTR_AS(Field, field)->type);
-    check_Fixnum(env, val, INT16_MIN, INT16_MAX, type);
+    check_Fixnum(env, val, INT16_MIN, INT16_MAX);
     WRITE_DATA(int16_t, self, field, VAL2INT(val));
 
     RETURN_VOID(env);

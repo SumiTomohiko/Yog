@@ -32,7 +32,7 @@ print(o.bar)
     # Tests for uint8
     def test_Struct10(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value must be greater or equal zero, not -1")
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'uint8, \'bar]])
 foo = Foo.new()
@@ -57,7 +57,7 @@ print(foo.bar)
 
     def test_Struct40(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of uint8")
+            assert 0 < stderr.find("ValueError: Value must be less or equal 255, not 256")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'uint8, \'bar]])
 foo = Foo.new()
@@ -76,7 +76,7 @@ foo.bar = \"baz\"
     # Tests for int8
     def test_Struct60(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of int8")
+            assert 0 < stderr.find("ValueError: Value must be greater or equal -128, not -129")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'int8, \'bar]])
 foo = Foo.new()
@@ -101,7 +101,7 @@ print(foo.bar)
 
     def test_Struct90(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of int8")
+            assert 0 < stderr.find("ValueError: Value must be less or equal 127, not 128")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'int8, \'bar]])
 foo = Foo.new()
@@ -120,7 +120,7 @@ foo.bar = \"baz\"
     # Tests for uint16
     def test_Struct110(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of uint16")
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'uint16, \'bar]])
 foo = Foo.new()
@@ -145,7 +145,7 @@ print(foo.bar)
 
     def test_Struct140(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of uint16")
+            assert 0 < stderr.find("ValueError: Value must be less or equal 65535, not 65536")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'uint16, \'bar]])
 foo = Foo.new()
@@ -164,7 +164,7 @@ foo.bar = \"baz\"
     # Tests for int16
     def test_Struct160(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of int16")
+            assert 0 < stderr.find("ValueError: Value must be greater or equal -32768, not -32769")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'int16, \'bar]])
 foo = Foo.new()
@@ -189,7 +189,7 @@ print(foo.bar)
 
     def test_Struct190(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of int16")
+            assert 0 < stderr.find("ValueError: Value must be less or equal 32767, not 32768")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'int16, \'bar]])
 foo = Foo.new()
@@ -208,7 +208,7 @@ foo.bar = \"baz\"
     # Tests for uint32
     def test_Struct210(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value must be greater or equal zero, not -1")
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'uint32, \'bar]])
 foo = Foo.new()
@@ -340,7 +340,7 @@ foo.bar = \"baz\"
     # Tests for uint64
     def test_Struct360(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value must be greater or equal zero, not -1")
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'uint64, \'bar]])
 foo = Foo.new()
@@ -464,7 +464,7 @@ foo.bar = \"baz\"
     # Tests for uchar
     def test_Struct500(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of uchar")
+            assert 0 < stderr.find("ValueError: Value must be greater or equal 0, not -1")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'uchar, \'bar]])
 foo = Foo.new()
@@ -489,7 +489,7 @@ print(foo.bar)
 
     def test_Struct530(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of uchar")
+            assert 0 < stderr.find("ValueError: Value must be less or equal 255, not 256")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'uchar, \'bar]])
 foo = Foo.new()
@@ -508,7 +508,7 @@ foo.bar = \"baz\"
     # Tests for schar
     def test_Struct550(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of schar")
+            assert 0 < stderr.find("ValueError: Value must be greater or equal -128, not -129")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'schar, \'bar]])
 foo = Foo.new()
@@ -533,7 +533,7 @@ print(foo.bar)
 
     def test_Struct580(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value exceeds range of schar")
+            assert 0 < stderr.find("ValueError: Value must be less or equal 127, not 128")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'schar, \'bar]])
 foo = Foo.new()
