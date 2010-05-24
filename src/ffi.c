@@ -797,10 +797,10 @@ check_Bignum_is_greater_or_equal_than_long_long(YogEnv* env, YogVal bignum, long
 {
     SAVE_ARG(env, bignum);
 
-    if (YogBignum_compare_with_long_long(env, bignum, n) <= 0) {
+    if (0 <= YogBignum_compare_with_long_long(env, bignum, n)) {
         RETURN_VOID(env);
     }
-    YogError_raise_ValueError(env, "Value must be greater or equal %llu, not %D", n, bignum);
+    YogError_raise_ValueError(env, "Value must be greater or equal %lld, not %D", n, bignum);
 
     RETURN_VOID(env);
 }
