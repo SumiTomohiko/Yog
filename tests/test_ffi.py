@@ -432,7 +432,7 @@ Foo = StructClass.new(\"Foo\", [[\'float, \'bar]])
 foo = Foo.new()
 foo.bar = 3.14
 print(foo.bar)
-""", "3.14")
+""", "3.1400001049")
 
     def test_Struct470(self):
         def test_stderr(stderr):
