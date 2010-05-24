@@ -853,7 +853,7 @@ Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     }
 
 #define WRITE_FLOAT(type) do { \
-    if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) == TYPE_FLOAT)) { \
+    if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_FLOAT)) { \
         YogError_raise_TypeError(env, "Value must be Float, not %C", val); \
     } \
     WRITE_DATA(type, obj, attr, FLOAT_NUM(val)); \
