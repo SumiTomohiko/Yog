@@ -497,10 +497,10 @@ Struct_get(YogEnv* env, YogVal self, YogVal field)
 {
     SAVE_ARGS2(env, self, field);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
-        YogError_raise_TypeError(env, "selfect must be Struct, not %C", self);
+        YogError_raise_TypeError(env, "self must be Struct, not %C", self);
     }
     if (!IS_PTR(field) || (BASIC_OBJ_TYPE(field) != TYPE_FIELD)) {
-        YogError_raise_TypeError(env, "fieldibute must be Field, not %C", field);
+        YogError_raise_TypeError(env, "Attribute must be Field, not %C", field);
     }
 
     void* ptr = PTR_AS(Struct, self)->data + PTR_AS(Field, field)->offset;
