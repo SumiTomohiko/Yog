@@ -682,7 +682,7 @@ check_Bignum_is_greater_or_equal_than_int(YogEnv* env, YogVal bignum, int_t n)
 {
     SAVE_ARG(env, bignum);
 
-    if (YogBignum_compare_with_int(env, bignum, n) <= 0) {
+    if (0 <= YogBignum_compare_with_int(env, bignum, n)) {
         RETURN_VOID(env);
     }
     YogError_raise_ValueError(env, "Value must be greater or equal %d, not %D", n, bignum);
@@ -695,7 +695,7 @@ check_Bignum_is_less_or_equal_than_unsigned_int(YogEnv* env, YogVal bignum, uint
 {
     SAVE_ARG(env, bignum);
 
-    if (0 <= YogBignum_compare_with_unsigned_int(env, bignum, n)) {
+    if (YogBignum_compare_with_unsigned_int(env, bignum, n) <= 0) {
         RETURN_VOID(env);
     }
     YogError_raise_ValueError(env, "Value must be less or equal %u, not %D", n, bignum);
@@ -729,7 +729,7 @@ check_Bignum_is_less_or_equal_than_int(YogEnv* env, YogVal val, int_t n)
 {
     SAVE_ARG(env, val);
 
-    if (0 <= YogBignum_compare_with_int(env, val, n)) {
+    if (YogBignum_compare_with_int(env, val, n) <= 0) {
         RETURN_VOID(env);
     }
     YogError_raise_ValueError(env, "Value must be less or equal %d, not %D", n, val);
@@ -763,7 +763,7 @@ check_Bignum_is_less_or_equal_than_unsigned_long_long(YogEnv* env, YogVal bignum
 {
     SAVE_ARG(env, bignum);
 
-    if (0 <= YogBignum_compare_with_unsigned_long_long(env, bignum, n)) {
+    if (YogBignum_compare_with_unsigned_long_long(env, bignum, n) <= 0) {
         RETURN_VOID(env);
     }
     YogError_raise_ValueError(env, "Value must be less or equal %llu, not %D", n, bignum);
@@ -810,7 +810,7 @@ check_Bignum_is_less_or_equal_than_long_long(YogEnv* env, YogVal bignum, long lo
 {
     SAVE_ARG(env, bignum);
 
-    if (0 <= YogBignum_compare_with_long_long(env, bignum, INT64_MAX)) {
+    if (YogBignum_compare_with_long_long(env, bignum, INT64_MAX) <= 0) {
         RETURN_VOID(env);
     }
     YogError_raise_ValueError(env, "Value must be less or equal %llu, not %D", n, bignum);
