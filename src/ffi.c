@@ -672,7 +672,7 @@ Struct_write_int16(YogEnv* env, YogVal self, YogVal field, YogVal val)
 
 #define WRITE_POSITIVE_NUM(env, type, obj, field, val) do { \
     if (VAL2INT((val)) < 0) { \
-        YogError_raise_ValueError((env), "Value must be greater or equal zero, not %d", VAL2INT((val))); \
+        YogError_raise_ValueError((env), "Value must be greater or equal 0, not %d", VAL2INT((val))); \
     } \
     WRITE_DATA(type, (obj), (field), VAL2INT((val))); \
 } while (0)
