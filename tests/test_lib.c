@@ -127,6 +127,12 @@ print_pointer(void* ptr)
     printf("%p", ptr);
 }
 
+void
+print_two_int(int n, int m)
+{
+    printf("%d%d", n, m);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

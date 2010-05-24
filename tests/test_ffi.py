@@ -1133,4 +1133,12 @@ f = lib.load_func(\"print_longdouble\", [\'longdouble])
 f(\"baz\")
 """ % locals(), stderr=test_stderr)
 
+    def test_arguments0(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_two_int\", [\'int, \'int])
+f(42, 26)
+""" % locals(), "4226")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
