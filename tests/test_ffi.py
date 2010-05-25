@@ -1141,4 +1141,332 @@ f = lib.load_func(\"print_two_int\", [\'int, \'int])
 f(42, 26)
 """ % locals(), "4226")
 
+    def test_return0(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_uint8\", [], \'uint8)
+print(f())
+""" % locals(), "42")
+
+    def test_return10(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int8\", [], \'int8)
+print(f())
+""" % locals(), "42")
+
+    def test_return20(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_uint16\", [], \'uint16)
+print(f())
+""" % locals(), "42")
+
+    def test_return30(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int16\", [], \'int16)
+print(f())
+""" % locals(), "42")
+
+    def test_return40(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_uint32_0\", [], \'uint32)
+print(f())
+""" % locals(), "1073741823")
+
+    def test_return50(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_uint32_1\", [], \'uint32)
+print(f())
+""" % locals(), "1073741824")
+
+    def test_return60(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int32_0\", [], \'int32)
+print(f())
+""" % locals(), "-1073741825")
+
+    def test_return70(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int32_1\", [], \'int32)
+print(f())
+""" % locals(), "-1073741824")
+
+    def test_return80(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int32_2\", [], \'int32)
+print(f())
+""" % locals(), "1073741823")
+
+    def test_return90(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int32_3\", [], \'int32)
+print(f())
+""" % locals(), "1073741824")
+
+    def test_return100(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_uint64_0\", [], \'uint64)
+print(f())
+""" % locals(), "1073741823")
+
+    def test_return110(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_uint64_1\", [], \'uint64)
+print(f())
+""" % locals(), "1073741824")
+
+    def test_return120(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int64_0\", [], \'int64)
+print(f())
+""" % locals(), "-4611686018427387905")
+
+    def test_return130(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int64_1\", [], \'int64)
+print(f())
+""" % locals(), "-4611686018427387904")
+
+    def test_return140(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int64_2\", [], \'int64)
+print(f())
+""" % locals(), "-1073741825")
+
+    def test_return150(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int64_3\", [], \'int64)
+print(f())
+""" % locals(), "-1073741824")
+
+    def test_return160(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int64_4\", [], \'int64)
+print(f())
+""" % locals(), "1073741823")
+
+    def test_return170(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int64_5\", [], \'int64)
+print(f())
+""" % locals(), "1073741824")
+
+    def test_return180(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int64_6\", [], \'int64)
+print(f())
+""" % locals(), "4611686018427387903")
+
+    def test_return190(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int64_7\", [], \'int64)
+print(f())
+""" % locals(), "4611686018427387904")
+
+    def test_return200(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_float\", [], \'float)
+print(f())
+""" % locals(), "3.14")
+
+    def test_return210(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_double\", [], \'double)
+print(f())
+""" % locals(), "3.14")
+
+    def test_return220(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_uchar\", [], \'uchar)
+print(f())
+""" % locals(), "42")
+
+    def test_return230(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_char\", [], \'char)
+print(f())
+""" % locals(), "42")
+
+    def test_return240(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_ushort\", [], \'ushort)
+print(f())
+""" % locals(), "42")
+
+    def test_return250(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_short\", [], \'short)
+print(f())
+""" % locals(), "42")
+
+    def test_return260(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_uint_0\", [], \'uint)
+print(f())
+""" % locals(), "1073741823")
+
+    def test_return270(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_uint_1\", [], \'uint)
+print(f())
+""" % locals(), "1073741824")
+
+    def test_return280(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int_0\", [], \'int)
+print(f())
+""" % locals(), "-1073741825")
+
+    def test_return290(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int_1\", [], \'int)
+print(f())
+""" % locals(), "-1073741824")
+
+    def test_return300(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int_2\", [], \'int)
+print(f())
+""" % locals(), "1073741823")
+
+    def test_return310(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_int_3\", [], \'int)
+print(f())
+""" % locals(), "1073741824")
+
+    def test_return320(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_ulong_0\", [], \'ulong)
+print(f())
+""" % locals(), "1073741823")
+
+    def test_return330(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_ulong_1\", [], \'ulong)
+print(f())
+""" % locals(), "1073741824")
+
+    def test_return340(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_long_0\", [], \'long)
+prlong(f())
+""" % locals(), "-1073741825")
+
+    def test_return350(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_long_1\", [], \'long)
+prlong(f())
+""" % locals(), "-1073741824")
+
+    def test_return360(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_long_2\", [], \'long)
+prlong(f())
+""" % locals(), "1073741823")
+
+    def test_return370(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_long_3\", [], \'long)
+prlong(f())
+""" % locals(), "1073741824")
+
+    def test_return380(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_long_double\", [], \'longdouble)
+print(f())
+""" % locals(), "3.14")
+
+    def test_return390(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_pointer_0\", [], \'pointer)
+print(f())
+""" % locals(), "1073741823")
+
+    def test_return400(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_pointer_1\", [], \'pointer)
+print(f())
+""" % locals(), "1073741824")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
