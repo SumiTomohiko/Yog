@@ -497,19 +497,19 @@ foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
 
-    # Tests for schar
+    # Tests for char
     def test_Struct550(self):
         def test_stderr(stderr):
             assert 0 < stderr.find("ValueError: Value must be greater or equal -128, not -129")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'schar, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'char, \'bar]])
 foo = Foo.new()
 foo.bar = -129
 """, stderr=test_stderr)
 
     def test_Struct560(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'schar, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'char, \'bar]])
 foo = Foo.new()
 foo.bar = -128
 print(foo.bar)
@@ -517,7 +517,7 @@ print(foo.bar)
 
     def test_Struct570(self):
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'schar, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'char, \'bar]])
 foo = Foo.new()
 foo.bar = 127
 print(foo.bar)
@@ -527,7 +527,7 @@ print(foo.bar)
         def test_stderr(stderr):
             assert 0 < stderr.find("ValueError: Value must be less or equal 127, not 128")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'schar, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'char, \'bar]])
 foo = Foo.new()
 foo.bar = 128
 """, stderr=test_stderr)
@@ -536,7 +536,7 @@ foo.bar = 128
         def test_stderr(stderr):
             assert 0 < stderr.find("TypeError: Value must be Fixnum, not String")
         self._test("""
-Foo = StructClass.new(\"Foo\", [[\'schar, \'bar]])
+Foo = StructClass.new(\"Foo\", [[\'char, \'bar]])
 foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
@@ -923,7 +923,7 @@ f(18446744073709551615)
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"print_uint64\", [\'uint64])
 f(18446744073709551616)
-""" % locals(), "18446744073709551616")
+""" % locals(), stderr=test_stderr)
 
     def test_argument400(self):
         def test_stderr(stderr):
@@ -1067,7 +1067,7 @@ f = lib.load_func(\"print_uchar\", [\'uchar])
 f(\"baz\")
 """ % locals(), stderr=test_stderr)
 
-    # Tests for schar
+    # Tests for char
     def test_argument550(self):
         def test_stderr(stderr):
             assert 0 < stderr.find("ValueError: Value must be greater or equal -128, not -129")

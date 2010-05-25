@@ -170,10 +170,10 @@ id2size(YogEnv* env, ID type)
     else if (strcmp(t, "uchar") == 0) {
         size = sizeof(unsigned char);
     }
-    else if (strcmp(t, "schar") == 0) {
+    else if (strcmp(t, "char") == 0) {
         size = sizeof(char);
     }
-    else if (strcmp(t, "sshort") == 0) {
+    else if (strcmp(t, "short") == 0) {
         size = sizeof(short);
     }
     else if (strcmp(t, "ushort") == 0) {
@@ -450,10 +450,10 @@ map_type(YogEnv* env, ID type)
     else if (strcmp(t, "uchar") == 0) {
         cif_type = &ffi_type_uchar;
     }
-    else if (strcmp(t, "schar") == 0) {
+    else if (strcmp(t, "char") == 0) {
         cif_type = &ffi_type_schar;
     }
-    else if (strcmp(t, "sshort") == 0) {
+    else if (strcmp(t, "short") == 0) {
         cif_type = &ffi_type_sshort;
     }
     else if (strcmp(t, "ushort") == 0) {
@@ -624,7 +624,7 @@ check_Bignum_is_less_or_equal_than_unsigned_int(YogEnv* env, YogVal bignum, uint
 
 #define WRITE_POSITIVE_ARGUMENT(env, type, dest, val) do { \
     if (VAL2INT((val)) < 0) { \
-        YogError_raise_ValueError((env), "Argument must be greater or equal 0, not %d", VAL2INT((val))); \
+        YogError_raise_ValueError((env), "Value must be greater or equal 0, not %d", VAL2INT((val))); \
     } \
     *((type*)dest) = VAL2INT((val)); \
 } while (0)
@@ -652,7 +652,7 @@ write_argument_uint32(YogEnv* env, uint32_t* dest, YogVal val)
         *dest = YogBignum_to_unsigned_type(env, val, "Value");
         RETURN_VOID(env);
     }
-    YogError_raise_TypeError(env, "Argument must be Fixnum or Bignum, not %C", val);
+    YogError_raise_TypeError(env, "Value must be Fixnum or Bignum, not %C", val);
 
     RETURN_VOID(env);
 }
@@ -690,10 +690,10 @@ write_argument_int32(YogEnv* env, int32_t* dest, YogVal val)
     }
     if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
         check_Bignum_int32(env, val);
-        *dest = YogBignum_to_signed_type(env, val, "Argument");
+        *dest = YogBignum_to_signed_type(env, val, "Value");
         RETURN_VOID(env);
     }
-    YogError_raise_TypeError(env, "Argument must be Fixnum or Bignum, not %C", val);
+    YogError_raise_TypeError(env, "Value must be Fixnum or Bignum, not %C", val);
 
     RETURN_VOID(env);
 }
@@ -731,10 +731,10 @@ write_argument_uint64(YogEnv* env, uint64_t* dest, YogVal val)
     }
     if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
         check_Bignum_uint64(env, val);
-        *dest = YogBignum_to_unsigned_long_long(env, val, "Argument");
+        *dest = YogBignum_to_unsigned_long_long(env, val, "Value");
         RETURN_VOID(env);
     }
-    YogError_raise_TypeError(env, "Argument must be Fixnum or Bignum, not %C", val);
+    YogError_raise_TypeError(env, "Value must be Fixnum or Bignum, not %C", val);
 
     RETURN_VOID(env);
 }
@@ -785,10 +785,10 @@ write_argument_int64(YogEnv* env, int64_t* dest, YogVal val)
     }
     if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
         check_Bignum_int64(env, val);
-        *dest = YogBignum_to_long_long(env, val, "Argument");
+        *dest = YogBignum_to_long_long(env, val, "Value");
         RETURN_VOID(env);
     }
-    YogError_raise_TypeError(env, "Argument must be Fixnum or Bignum, not %C", val);
+    YogError_raise_TypeError(env, "Value must be Fixnum or Bignum, not %C", val);
 
     RETURN_VOID(env);
 }
@@ -802,7 +802,7 @@ write_argument_double(YogEnv* env, double* dest, YogVal val)
         *dest = FLOAT_NUM(val);
         RETURN_VOID(env);
     }
-    YogError_raise_TypeError(env, "Argument must be Float, not %C", val);
+    YogError_raise_TypeError(env, "Value must be Float, not %C", val);
 
     RETURN_VOID(env);
 }
@@ -816,7 +816,7 @@ write_argument_long_double(YogEnv* env, long double* dest, YogVal val)
         *dest = FLOAT_NUM(val);
         RETURN_VOID(env);
     }
-    YogError_raise_TypeError(env, "Argument must be Float, not %C", val);
+    YogError_raise_TypeError(env, "Value must be Float, not %C", val);
 
     RETURN_VOID(env);
 }
@@ -830,7 +830,7 @@ write_argument_float(YogEnv* env, float* dest, YogVal val)
         *dest = FLOAT_NUM(val);
         RETURN_VOID(env);
     }
-    YogError_raise_TypeError(env, "Argument must be Float, not %C", val);
+    YogError_raise_TypeError(env, "Value must be Float, not %C", val);
 
     RETURN_VOID(env);
 }
@@ -962,7 +962,7 @@ LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_
     ffi_cif* cif = &PTR_AS(LibFunc, callee)->cif;
     unsigned nargs = cif->nargs;
     if (posargc < nargs) {
-        YogError_raise_ArgumentError(env, "%u positional argument(s) required", nargs);
+        YogError_raise_ValueError(env, "%u positional argument(s) required", nargs);
     }
     void** values = (void**)YogSysdeps_alloca(sizeof(void*) * nargs);
     ffi_type** arg_types = cif->arg_types;
@@ -1048,7 +1048,7 @@ Struct_get(YogEnv* env, YogVal self, YogVal field)
     else if (strcmp(t, "uchar") == 0) {
         val = INT2VAL(*((uint8_t*)ptr));
     }
-    else if (strcmp(t, "schar") == 0) {
+    else if (strcmp(t, "char") == 0) {
         val = INT2VAL(*((int8_t*)ptr));
     }
     else if (strcmp(t, "ushort") == 0) {
@@ -1299,7 +1299,7 @@ Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     else if (strcmp(t, "uchar") == 0) {
         Struct_write_uint8(env, obj, attr, val);
     }
-    else if (strcmp(t, "schar") == 0) {
+    else if (strcmp(t, "char") == 0) {
         Struct_write_int8(env, obj, attr, val);
     }
     else if (strcmp(t, "ushort") == 0) {
