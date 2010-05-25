@@ -1307,7 +1307,7 @@ print(f())
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"return_float\", [], \'float)
 print(f())
-""" % locals(), "3.14")
+""" % locals(), "3.1400001049")
 
     def test_return210(self):
         path = self.get_lib_path()
@@ -1418,7 +1418,7 @@ print(f())
         self._test("""
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"return_long_0\", [], \'long)
-prlong(f())
+print(f())
 """ % locals(), "-1073741825")
 
     def test_return350(self):
@@ -1426,7 +1426,7 @@ prlong(f())
         self._test("""
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"return_long_1\", [], \'long)
-prlong(f())
+print(f())
 """ % locals(), "-1073741824")
 
     def test_return360(self):
@@ -1434,7 +1434,7 @@ prlong(f())
         self._test("""
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"return_long_2\", [], \'long)
-prlong(f())
+print(f())
 """ % locals(), "1073741823")
 
     def test_return370(self):
@@ -1442,7 +1442,7 @@ prlong(f())
         self._test("""
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"return_long_3\", [], \'long)
-prlong(f())
+print(f())
 """ % locals(), "1073741824")
 
     def test_return380(self):

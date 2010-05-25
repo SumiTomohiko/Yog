@@ -173,11 +173,11 @@ id2size(YogEnv* env, ID type)
     else if (strcmp(t, "char") == 0) {
         size = sizeof(char);
     }
-    else if (strcmp(t, "short") == 0) {
-        size = sizeof(short);
-    }
     else if (strcmp(t, "ushort") == 0) {
         size = sizeof(unsigned short);
+    }
+    else if (strcmp(t, "short") == 0) {
+        size = sizeof(short);
     }
     else if (strcmp(t, "uint") == 0) {
         size = sizeof(unsigned int);
@@ -188,7 +188,7 @@ id2size(YogEnv* env, ID type)
     else if (strcmp(t, "ulong") == 0) {
         size = sizeof(unsigned long);
     }
-    else if (strcmp(t, "slong") == 0) {
+    else if (strcmp(t, "long") == 0) {
         size = sizeof(long);
     }
     else if (strcmp(t, "longdouble") == 0) {
@@ -453,10 +453,10 @@ map_type(YogEnv* env, ID type)
     else if (strcmp(t, "char") == 0) {
         cif_type = &ffi_type_schar;
     }
-    else if (strcmp(t, "short") == 0) {
-        cif_type = &ffi_type_sshort;
-    }
     else if (strcmp(t, "ushort") == 0) {
+        cif_type = &ffi_type_ushort;
+    }
+    else if (strcmp(t, "short") == 0) {
         cif_type = &ffi_type_sshort;
     }
     else if (strcmp(t, "uint") == 0) {
@@ -468,7 +468,7 @@ map_type(YogEnv* env, ID type)
     else if (strcmp(t, "ulong") == 0) {
         cif_type = &ffi_type_ulong;
     }
-    else if (strcmp(t, "slong") == 0) {
+    else if (strcmp(t, "long") == 0) {
         cif_type = &ffi_type_slong;
     }
     else if (strcmp(t, "longdouble") == 0) {
@@ -957,8 +957,6 @@ LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_
 {
     SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
 
-    int_t rvalue = 0;
-
     ffi_cif* cif = &PTR_AS(LibFunc, callee)->cif;
     unsigned nargs = cif->nargs;
     if (posargc < nargs) {
@@ -974,9 +972,76 @@ LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_
         values[i] = value;
     }
 
-    ffi_call(&PTR_AS(LibFunc, callee)->cif, PTR_AS(LibFunc, callee)->f, &rvalue, values);
+    void* rvalue = NULL;
+    ffi_type* rtype = PTR_AS(LibFunc, callee)->cif.rtype;
+    if (rtype != &ffi_type_void) {
+        rvalue = YogSysdeps_alloca(type2size(env, rtype));
+    }
 
-    RETURN(env, YogVal_from_int(env, rvalue));
+    ffi_call(&PTR_AS(LibFunc, callee)->cif, PTR_AS(LibFunc, callee)->f, rvalue, values);
+
+    if (rtype == &ffi_type_uint8) {
+        RETURN(env, YogVal_from_unsigned_int(env, *((uint8_t*)rvalue)));
+    }
+    else if (rtype == &ffi_type_sint8) {
+        RETURN(env, YogVal_from_int(env, *((int8_t*)rvalue)));
+    }
+    else if (rtype == &ffi_type_uint16) {
+        RETURN(env, YogVal_from_unsigned_int(env, *((uint16_t*)rvalue)));
+    }
+    else if (rtype == &ffi_type_sint16) {
+        RETURN(env, YogVal_from_int(env, *((int16_t*)rvalue)));
+    }
+    else if (rtype == &ffi_type_uint32) {
+        RETURN(env, YogVal_from_unsigned_int(env, *((uint32_t*)rvalue)));
+    }
+    else if (rtype == &ffi_type_sint32) {
+        RETURN(env, YogVal_from_int(env, *((int32_t*)rvalue)));
+    }
+    else if (rtype == &ffi_type_uint64) {
+        RETURN(env, YogVal_from_unsigned_long_long(env, *((uint64_t*)rvalue)));
+    }
+    else if (rtype == &ffi_type_sint64) {
+        RETURN(env, YogVal_from_long_long(env, *((int64_t*)rvalue)));
+    }
+    else if (rtype == &ffi_type_float) {
+        RETURN(env, YogFloat_from_float(env, *((float*)rvalue)));
+    }
+    else if (rtype == &ffi_type_double) {
+        RETURN(env, YogFloat_from_float(env, *((double*)rvalue)));
+    }
+    else if (rtype == &ffi_type_uchar) {
+        RETURN(env, YogVal_from_unsigned_int(env, *((unsigned char*)rvalue)));
+    }
+    else if (rtype == &ffi_type_schar) {
+        RETURN(env, YogVal_from_int(env, *((signed char*)rvalue)));
+    }
+    else if (rtype == &ffi_type_ushort) {
+        RETURN(env, YogVal_from_unsigned_int(env, *((unsigned short*)rvalue)));
+    }
+    else if (rtype == &ffi_type_sshort) {
+        RETURN(env, YogVal_from_int(env, *((short*)rvalue)));
+    }
+    else if (rtype == &ffi_type_uint) {
+        RETURN(env, YogVal_from_unsigned_int(env, *((unsigned int*)rvalue)));
+    }
+    else if (rtype == &ffi_type_sint) {
+        RETURN(env, YogVal_from_int(env, *((int*)rvalue)));
+    }
+    else if (rtype == &ffi_type_ulong) {
+        RETURN(env, YogVal_from_unsigned_int(env, *((unsigned long*)rvalue)));
+    }
+    else if (rtype == &ffi_type_slong) {
+        RETURN(env, YogVal_from_int(env, *((long*)rvalue)));
+    }
+    else if (rtype == &ffi_type_longdouble) {
+        RETURN(env, YogFloat_from_float(env, *((long double*)rvalue)));
+    }
+    else if (rtype == &ffi_type_pointer) {
+        RETURN(env, YogVal_from_unsigned_int(env, *((unsigned int*)rvalue)));
+    }
+
+    RETURN(env, YNIL);
 }
 
 static YogVal
