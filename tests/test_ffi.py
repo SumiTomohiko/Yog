@@ -269,7 +269,7 @@ print(foo.bar)
 
     def test_Struct290(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("ValueError: Value must be less or equal 2147483647, not 2147483648")
+            assert 0 < stderr.find("ValueError: Value must be less or equal 4294967295, not 4294967296")
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'uint32, \'bar]])
 foo = Foo.new()
