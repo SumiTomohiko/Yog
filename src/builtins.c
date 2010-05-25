@@ -115,7 +115,7 @@ load_lib(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
         YogError_raise_TypeError(env, "path must be String, not %C", path);
     }
 
-    lib = YogFFI_load_lib(env, STRING_CSTR(path));
+    lib = YogFFI_load_lib(env, path);
 
     RETURN(env, lib);
 }

@@ -388,15 +388,15 @@ Lib_alloc(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogFFI_load_lib(YogEnv* env, const char* path)
+YogFFI_load_lib(YogEnv* env, YogVal path)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, path);
     YogVal lib = YUNDEF;
     PUSH_LOCAL(env, lib);
 
-    LIB_HANDLE handle = YogSysdeps_open_lib(path);
+    LIB_HANDLE handle = YogSysdeps_open_lib(STRING_CSTR(path));
     if (handle == NULL) {
-        YogError_raise_ImportError(env, "no library named \"%s\"", path);
+        YogError_raise_ImportError(env, "no library named \"%S\"", path);
     }
     lib = Lib_alloc(env, env->vm->cLib);
     PTR_AS(Lib, lib)->handle = handle;

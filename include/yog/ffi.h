@@ -10,7 +10,7 @@
  */
 /* src/ffi.c */
 YOG_EXPORT void YogFFI_define_classes(YogEnv*, YogVal);
-YOG_EXPORT YogVal YogFFI_load_lib(YogEnv*, const char*);
+YOG_EXPORT YogVal YogFFI_load_lib(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 
