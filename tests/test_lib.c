@@ -1,6 +1,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
+struct Foo {
+    int bar;
+};
+
+void
+print_struct(struct Foo* foo)
+{
+    printf("%d", foo->bar);
+}
+
 void
 foo()
 {
