@@ -312,7 +312,7 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
     }
 
     uint_t fields_num = YogArray_size(env, fields);
-    obj = ALLOC_OBJ_ITEM(env, YogClass_keep_children, NULL, StructClass, fields_num, Field);
+    obj = ALLOC_OBJ(env, YogClass_keep_children, NULL, StructClass);
     StructClass_init(env, obj, fields_num);
 
     uint_t size = YogString_size(env, name) + 1; /* with '\0' */
