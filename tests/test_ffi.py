@@ -1133,6 +1133,18 @@ f = lib.load_func(\"print_longdouble\", [\'longdouble])
 f(\"baz\")
 """ % locals(), stderr=test_stderr)
 
+    def test_argument620(self):
+        path = self.get_lib_path()
+        self._test("""
+Foo = StructClass.new(\"Foo\", [['int, 'bar]])
+foo = Foo.new()
+foo.bar = 42
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_struct\", [Foo])
+f(foo)
+""" % locals(), "42")
+
+
     def test_arguments0(self):
         path = self.get_lib_path()
         self._test("""
