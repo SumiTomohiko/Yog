@@ -559,6 +559,14 @@ foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
 
+    # Tests for String
+    def test_Struct620(self):
+        self._test("""
+Bar = StructClass.new(\"Bar\", [[String, 'baz]])
+bar = Bar.new()
+print(bar.baz)
+""", "nil")
+
     # Tests for uint8
     def test_argument10(self):
         def test_stderr(stderr):
@@ -1144,6 +1152,16 @@ f = lib.load_func(\"print_struct\", [Foo])
 f(foo)
 """ % locals(), "42")
 
+    def test_argument630(self):
+        path = self.get_lib_path()
+        self._test("""
+Bar = StructClass.new(\"Bar\", [[String, 'baz]])
+bar = Bar.new()
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"test_string\", [Bar])
+f(bar)
+print(bar.baz)
+""" % locals(), "foobarbazquux")
 
     def test_arguments0(self):
         path = self.get_lib_path()
