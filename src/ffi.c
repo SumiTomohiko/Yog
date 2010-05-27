@@ -5,6 +5,9 @@
 #if defined(HAVE_STRING_H)
 #   include <string.h>
 #endif
+#if defined(HAVE_STRINGS_H)
+#   include <strings.h>
+#endif
 #include "ffi.h"
 #include "yog/array.h"
 #include "yog/bignum.h"
@@ -45,7 +48,7 @@ typedef struct LibFunc LibFunc;
 struct Field {
     struct YogBasicObj base;
     ID name;
-    ID type;
+    YogVal type;
     uint_t offset;
 };
 
@@ -74,6 +77,15 @@ typedef struct Struct Struct;
 
 static YogVal Struct_alloc(YogEnv* env, YogVal klass);
 
+static void
+Field_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
+    Field* field = (Field*)ptr;
+    YogGC_KEEP(env, field, type, keeper, heap);
+}
+
 static YogVal
 Field_alloc(YogEnv* env, YogVal klass)
 {
@@ -81,20 +93,25 @@ Field_alloc(YogEnv* env, YogVal klass)
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
-    obj = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Field);
+    obj = ALLOC_OBJ(env, Field_keep_children, NULL, Field);
     YogBasicObj_init(env, obj, TYPE_FIELD, 0, klass);
-    PTR_AS(Field, obj)->type = 0;
+    PTR_AS(Field, obj)->name = INVALID_ID;
+    PTR_AS(Field, obj)->type = YUNDEF;
     PTR_AS(Field, obj)->offset = 0;
 
     RETURN(env, obj);
 }
 
 static YogVal
-Field_new(YogEnv* env, ID name, ID type, uint_t offset)
+Field_new(YogEnv* env, ID name, YogVal type, uint_t offset)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, type);
     YogVal field = YUNDEF;
     PUSH_LOCAL(env, field);
+
+    if (!IS_SYMBOL(type) && (!IS_PTR(type) || (type != env->vm->cString))) {
+        YogError_raise_TypeError(env, "Type must be Symbol or String, not %C", type);
+    }
 
     field = Field_alloc(env, env->vm->cField);
     PTR_AS(Field, field)->name = name;
@@ -105,14 +122,17 @@ Field_new(YogEnv* env, ID name, ID type, uint_t offset)
 }
 
 static void
-StructClass_set_field(YogEnv* env, YogVal self, uint_t index, ID name, ID type, uint_t offset)
+StructClass_set_field(YogEnv* env, YogVal self, uint_t index, YogVal name, YogVal type, uint_t offset)
 {
-    SAVE_ARG(env, self);
+    SAVE_ARGS3(env, self, name, type);
     YogVal field = YUNDEF;
     PUSH_LOCAL(env, field);
 
-    field = Field_new(env, name, type, offset);
-    YogObj_set_attr_id(env, self, name, field);
+    if (!IS_SYMBOL(name)) {
+        YogError_raise_TypeError(env, "Name must be Symbol, not %C", name);
+    }
+    field = Field_new(env, VAL2ID(name), type, offset);
+    YogObj_set_attr_id(env, self, VAL2ID(name), field);
 
     RETURN_VOID(env);
 }
@@ -282,14 +302,17 @@ type2size(YogEnv* env, ffi_type* type)
 }
 
 #define ALIGN(offset, alignment) \
-                            (((offset) + (alignment) - 1) & ~((alignment) - 1))
+            (((offset) + (alignment) - 1) & ~((alignment) - 1))
+#define SIZEOF(env, val) \
+            (IS_SYMBOL((val)) ? id2size((env), VAL2ID((val))) : sizeof(void*))
 
 static uint_t
-align_offset(YogEnv* env, ID type, uint_t offset)
+align_offset(YogEnv* env, YogVal type, uint_t offset)
 {
-    uint_t size = id2size(env, type);
-    uint_t alignment = 4 < size ? 4 : size;
-    return ALIGN(offset, alignment);
+    SAVE_ARG(env, type);
+    uint_t size = SIZEOF(env, type);
+    uint_t alignment = sizeof(void*) < size ? sizeof(void*) : size;
+    RETURN(env, ALIGN(offset, alignment));
 }
 
 static YogVal
@@ -300,7 +323,9 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
     YogVal fields = YUNDEF;
     YogVal field = YUNDEF;
     YogVal name = YUNDEF;
-    PUSH_LOCALS4(env, name, obj, fields, field);
+    YogVal field_type = YUNDEF;
+    YogVal field_name = YUNDEF;
+    PUSH_LOCALS6(env, name, obj, fields, field, field_type, field_name);
     YogCArg params[] = {
         { "name", &name },
         { "fields", &fields },
@@ -328,13 +353,13 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
     uint_t i;
     for (i = 0; i < fields_num; i++) {
         field = YogArray_at(env, fields, i);
-        ID type = VAL2ID(YogArray_at(env, field, 0));
-        offset = align_offset(env, type, offset);
-        ID name = VAL2ID(YogArray_at(env, field, 1));
-        StructClass_set_field(env, obj, i, name, type, offset);
-        offset += id2size(env, type);
+        field_type = YogArray_at(env, field, 0);
+        offset = align_offset(env, field_type, offset);
+        field_name = YogArray_at(env, field, 1);
+        StructClass_set_field(env, obj, i, field_name, field_type, offset);
+        offset += SIZEOF(env, field_type);
     }
-    PTR_AS(StructClass, obj)->size = ALIGN(offset, 4);
+    PTR_AS(StructClass, obj)->size = ALIGN(offset, sizeof(void*));
 
     RETURN(env, obj);
 }
@@ -351,6 +376,7 @@ Struct_alloc(YogEnv* env, YogVal klass)
     YogBasicObj_init(env, obj, TYPE_STRUCT, 0, klass);
     uint_t size = PTR_AS(StructClass, klass)->size;
     PTR_AS(Struct, obj)->data = YogGC_malloc(env, size);
+    bzero(PTR_AS(Struct, obj)->data, size);
 
     RETURN(env, obj);
 }
@@ -1138,7 +1164,8 @@ Struct_get(YogEnv* env, YogVal self, YogVal field)
     SAVE_ARGS2(env, self, field);
     YogVal s = YUNDEF;
     YogVal val = YUNDEF;
-    PUSH_LOCALS2(env, s, val);
+    YogVal type = YUNDEF;
+    PUSH_LOCALS3(env, s, val, type);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
         YogError_raise_TypeError(env, "self must be Struct, not %C", self);
     }
@@ -1146,9 +1173,16 @@ Struct_get(YogEnv* env, YogVal self, YogVal field)
         YogError_raise_TypeError(env, "Attribute must be Field, not %C", field);
     }
 
-    s = YogVM_id2name(env, env->vm, PTR_AS(Field, field)->type);
-    const char* t = STRING_CSTR(s);
     void* ptr = PTR_AS(Struct, self)->data + PTR_AS(Field, field)->offset;
+    type = PTR_AS(Field, field)->type;
+    if (type == env->vm->cString) {
+        char* p = *((char**)ptr);
+        RETURN(env, p == NULL ? YNIL : YogString_from_str(env, p));
+    }
+
+    YOG_ASSERT(env, IS_SYMBOL(type), "Invalid FFI field type");
+    s = YogVM_id2name(env, env->vm, VAL2ID(PTR_AS(Field, field)->type));
+    const char* t = STRING_CSTR(s);
     if (strcmp(t, "uint8") == 0) {
         val = INT2VAL(*((uint8_t*)ptr));
     }
@@ -1384,12 +1418,17 @@ Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
 {
     SAVE_ARGS3(env, attr, obj, val);
     YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
+    YogVal type = YUNDEF;
+    PUSH_LOCALS2(env, s, type);
     if (!IS_PTR(attr) || (BASIC_OBJ_TYPE(attr) != TYPE_FIELD)) {
         YogError_raise_TypeError(env, "Attribute must be Field, not %C", attr);
     }
     if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_STRUCT)) {
         YogError_raise_TypeError(env, "Object must be Struct, not %C", obj);
+    }
+    type = PTR_AS(Field, attr)->type;
+    if (type == env->vm->cString) {
+        YogError_raise_FFIError(env, "Writing String fields is not supported.");
     }
 
 #define WRITE_FLOAT(type) do { \
@@ -1398,7 +1437,8 @@ Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     } \
     STRUCT_WRITE_DATA(type, obj, attr, FLOAT_NUM(val)); \
 } while (0)
-    s = YogVM_id2name(env, env->vm, PTR_AS(Field, attr)->type);
+    YOG_ASSERT(env, IS_SYMBOL(type), "Invalid field type");
+    s = YogVM_id2name(env, env->vm, VAL2ID(type));
     const char* t = STRING_CSTR(s);
     if (strcmp(t, "uint8") == 0) {
         Struct_write_uint8(env, obj, attr, val);
