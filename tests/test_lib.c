@@ -1,6 +1,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
+struct Bar {
+    const char* baz;
+};
+
+void
+test_string(struct Bar* bar)
+{
+    bar->baz = "foobarbazquux";
+}
+
 struct Foo {
     int bar;
 };
