@@ -34,11 +34,13 @@ struct LibFunc {
     struct YogBasicObj base;
     ffi_cif cif;
     void* f;
+    uint_t nargs;
+    YogVal arg_types[0];
 };
 
 typedef struct LibFunc LibFunc;
 
-#define TYPE_LIB_FUNC TO_TYPE(LibFunc_alloc)
+#define TYPE_LIB_FUNC TO_TYPE(LibFunc_new)
 
 struct Field {
     struct YogBasicObj base;
@@ -63,7 +65,7 @@ static YogVal StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal 
 
 struct Struct {
     struct YogBasicObj base;
-    char data[0];
+    void* data;
 };
 
 typedef struct Struct Struct;
@@ -345,8 +347,10 @@ Struct_alloc(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, obj);
     YOG_ASSERT(env, BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS, "invalid class");
 
-    obj = ALLOC_OBJ_ITEM(env, YogBasicObj_keep_children, NULL, Struct, 42, char);
+    obj = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Struct);
     YogBasicObj_init(env, obj, TYPE_STRUCT, 0, klass);
+    uint_t size = PTR_AS(StructClass, klass)->size;
+    PTR_AS(Struct, obj)->data = YogGC_malloc(env, size);
 
     RETURN(env, obj);
 }
@@ -358,17 +362,35 @@ LibFunc_finalize(YogEnv* env, void* ptr)
     free(f->cif.arg_types);
 }
 
-static YogVal
-LibFunc_alloc(YogEnv* env, YogVal klass)
+static void
+LibFunc_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    SAVE_ARG(env, klass);
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
+    LibFunc* f = (LibFunc*)ptr;
+    uint_t nargs = f->nargs;
+    uint_t i;
+    for (i = 0; i < nargs; i++) {
+        YogGC_KEEP(env, f, arg_types[i], keeper, heap);
+    }
+}
+
+static YogVal
+LibFunc_new(YogEnv* env, uint_t nargs)
+{
+    SAVE_LOCALS(env);
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
-    obj = ALLOC_OBJ(env, YogBasicObj_keep_children, LibFunc_finalize, LibFunc);
-    YogBasicObj_init(env, obj, TYPE_LIB_FUNC, 0, klass);
+    obj = ALLOC_OBJ_ITEM(env, LibFunc_keep_children, LibFunc_finalize, LibFunc, nargs, YogVal);
+    YogBasicObj_init(env, obj, TYPE_LIB_FUNC, 0, env->vm->cLibFunc);
     PTR_AS(LibFunc, obj)->f = NULL;
     PTR_AS(LibFunc, obj)->cif.arg_types = NULL;
+    PTR_AS(LibFunc, obj)->nargs = nargs;
+    uint_t i;
+    for (i = 0; i < nargs; i++) {
+        PTR_AS(LibFunc, obj)->arg_types[i] = YUNDEF;
+    }
 
     RETURN(env, obj);
 }
@@ -405,7 +427,7 @@ YogFFI_load_lib(YogEnv* env, YogVal path)
 }
 
 static ffi_type*
-map_type(YogEnv* env, ID type)
+map_id_type(YogEnv* env, ID type)
 {
     SAVE_LOCALS(env);
     YogVal s = YUNDEF;
@@ -485,6 +507,22 @@ map_type(YogEnv* env, ID type)
     RETURN(env, cif_type);
 }
 
+static ffi_type*
+map_type(YogEnv* env, YogVal type)
+{
+    SAVE_ARG(env, type);
+
+    if (IS_SYMBOL(type)) {
+        RETURN(env, map_id_type(env, VAL2ID(type)));
+    }
+    if (IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) {
+        RETURN(env, &ffi_type_pointer);
+    }
+    YogError_raise_TypeError(env, "Type must be StructClass or Symbol, not %C", type);
+    /* NOTREACHED */
+    RETURN(env, NULL);
+}
+
 static const char*
 map_ffi_error(YogEnv* env, ffi_status status)
 {
@@ -509,7 +547,8 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     YogVal name = YUNDEF;
     YogVal arg_types = YNIL;
     YogVal rtype = YNIL;
-    PUSH_LOCALS4(env, f, name, arg_types, rtype);
+    YogVal arg_type = YUNDEF;
+    PUSH_LOCALS5(env, f, name, arg_types, rtype, arg_type);
     YogCArg params[] = {
         { "name", &name },
         { "|", NULL },
@@ -530,24 +569,23 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         YogError_raise_TypeError(env, "rtype must be Symbol or nil, not %C", rtype);
     }
 
-    f = LibFunc_alloc(env, env->vm->cLibFunc);
     uint_t nargs = IS_NIL(arg_types) ? 0 : YogArray_size(env, arg_types);
-    ffi_type** types = (ffi_type**)malloc(sizeof(ffi_type*) * nargs);
-    if (types == NULL) {
-        YogError_out_of_memory(env);
-    }
+    f = LibFunc_new(env, nargs);
+    ffi_type** types = (ffi_type**)YogGC_malloc(env, sizeof(ffi_type*) * nargs);
     uint_t i;
     for (i = 0; i < nargs; i++) {
-        types[i] = map_type(env, VAL2ID(YogArray_at(env, arg_types, i)));
+        arg_type = YogArray_at(env, arg_types, i);
+        types[i] = map_type(env, arg_type);
+        PTR_AS(LibFunc, f)->arg_types[i] = arg_type;
     }
-    ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(rtype) ? &ffi_type_void : map_type(env, VAL2ID(rtype)), types);
+    ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(rtype) ? &ffi_type_void : map_type(env, rtype), types);
     if (status != FFI_OK) {
         const char* s = map_ffi_error(env, status);
         YogError_raise_FFIError(env, "%s", s);
     }
     void* p = YogSysdeps_get_proc(PTR_AS(Lib, self)->handle, STRING_CSTR(name));
     if (p == NULL) {
-        YogError_raise_FFIError(env, "Can't find procedure address");
+        YogError_raise_FFIError(env, "Can't find address of %S", name);
     }
     PTR_AS(LibFunc, f)->f = p;
 
@@ -880,68 +918,97 @@ write_argument_int16(YogEnv* env, int16_t* dest, YogVal val)
 }
 
 static void
-write_argument(YogEnv* env, void* dest, ffi_type* arg_type, YogVal val)
+write_argument_pointer(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
 {
-    SAVE_ARG(env, val);
+    SAVE_ARGS2(env, arg_type, val);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+    if (!IS_PTR(arg_type) || (BASIC_OBJ_TYPE(arg_type) != TYPE_STRUCT_CLASS)) {
+        YogError_raise_TypeError(env, "Argument type must be StructClass, not %C", arg_type);
+    }
+    if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_STRUCT)) {
+        YogError_raise_TypeError(env, "Argument must be Struct, not %C", val);
+    }
+    klass = YogVal_get_class(env, val);
+    if (klass != arg_type) {
+        ID name = PTR_AS(YogClass, arg_type)->name;
+        YogError_raise_TypeError(env, "Argument must be %I, not %C", name, val);
+    }
+    *ptr = PTR_AS(Struct, val)->data;
+    RETURN_VOID(env);
+}
 
-    if (arg_type == &ffi_type_uint8) {
+static void
+write_argument(YogEnv* env, void* dest, YogVal arg_type, YogVal val)
+{
+    SAVE_ARGS2(env, arg_type, val);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    if (!IS_SYMBOL(arg_type)) {
+        write_argument_pointer(env, (void**)dest, arg_type, val);
+        RETURN_VOID(env);
+    }
+
+    s = YogVM_id2name(env, env->vm, VAL2ID(arg_type));
+    if (strcmp(STRING_CSTR(s), "uint8") == 0) {
         write_argument_uint8(env, (uint8_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_sint8) {
+    else if (strcmp(STRING_CSTR(s), "int8") == 0) {
         write_argument_int8(env, (int8_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_uint16) {
+    else if (strcmp(STRING_CSTR(s), "uint16") == 0) {
         write_argument_uint16(env, (uint16_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_sint16) {
+    else if (strcmp(STRING_CSTR(s), "int16") == 0) {
         write_argument_int16(env, (int16_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_uint32) {
+    else if (strcmp(STRING_CSTR(s), "uint32") == 0) {
         write_argument_uint32(env, (uint32_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_sint32) {
+    else if (strcmp(STRING_CSTR(s), "int32") == 0) {
         write_argument_int32(env, (int32_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_uint64) {
+    else if (strcmp(STRING_CSTR(s), "uint64") == 0) {
         write_argument_uint64(env, (uint64_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_sint64) {
+    else if (strcmp(STRING_CSTR(s), "int64") == 0) {
         write_argument_int64(env, (int64_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_float) {
+    else if (strcmp(STRING_CSTR(s), "float") == 0) {
         write_argument_float(env, (float*)dest, val);
     }
-    else if (arg_type == &ffi_type_double) {
+    else if (strcmp(STRING_CSTR(s), "double") == 0) {
         write_argument_double(env, (double*)dest, val);
     }
-    else if (arg_type == &ffi_type_uchar) {
+    else if (strcmp(STRING_CSTR(s), "uchar") == 0) {
         write_argument_uint8(env, (uint8_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_schar) {
+    else if (strcmp(STRING_CSTR(s), "char") == 0) {
         write_argument_int8(env, (int8_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_ushort) {
+    else if (strcmp(STRING_CSTR(s), "ushort") == 0) {
         write_argument_uint16(env, (uint16_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_sshort) {
+    else if (strcmp(STRING_CSTR(s), "short") == 0) {
         write_argument_int16(env, (int16_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_uint) {
+    else if (strcmp(STRING_CSTR(s), "uint") == 0) {
         write_argument_uint32(env, (uint32_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_sint) {
+    else if (strcmp(STRING_CSTR(s), "int") == 0) {
         write_argument_int32(env, (int32_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_ulong) {
+    else if (strcmp(STRING_CSTR(s), "ulong") == 0) {
         write_argument_uint32(env, (uint32_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_slong) {
+    else if (strcmp(STRING_CSTR(s), "long") == 0) {
         write_argument_int32(env, (int32_t*)dest, val);
     }
-    else if (arg_type == &ffi_type_longdouble) {
+    else if (strcmp(STRING_CSTR(s), "longdouble") == 0) {
         write_argument_long_double(env, (long double*)dest, val);
     }
-    else if (arg_type == &ffi_type_pointer) {
+    else if (strcmp(STRING_CSTR(s), "pointer") == 0) {
         write_argument_uint32(env, (uint32_t*)dest, val);
     }
     else {
@@ -956,18 +1023,20 @@ static YogVal
 LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
 {
     SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
+    YogVal arg_type = YUNDEF;
+    PUSH_LOCAL(env, arg_type);
 
-    ffi_cif* cif = &PTR_AS(LibFunc, callee)->cif;
-    unsigned nargs = cif->nargs;
-    if (posargc < nargs) {
-        YogError_raise_ValueError(env, "%u positional argument(s) required", nargs);
+    uint_t nargs = PTR_AS(LibFunc, callee)->nargs;
+    if (posargc != nargs) {
+        YogError_raise_ValueError(env, "%u positional argument(s) required, not %u", nargs, posargc);
     }
     void** values = (void**)YogSysdeps_alloca(sizeof(void*) * nargs);
-    ffi_type** arg_types = cif->arg_types;
-    unsigned i;
+    ffi_type** arg_types = PTR_AS(LibFunc, callee)->cif.arg_types;
+    uint_t i;
     for (i = 0; i < nargs; i++) {
-        ffi_type* arg_type = arg_types[i];
-        void* value = YogSysdeps_alloca(type2size(env, arg_type));
+        ffi_type* ffi_arg_type = arg_types[i];
+        void* value = YogSysdeps_alloca(type2size(env, ffi_arg_type));
+        arg_type = PTR_AS(LibFunc, callee)->arg_types[i];
         write_argument(env, value, arg_type, posargs[i]);
         values[i] = value;
     }
@@ -1417,7 +1486,6 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method(env, cLib, pkg, "load_func", load_func);
     vm->cLib = cLib;
     cLibFunc = YogClass_new(env, "LibFunc", vm->cObject);
-    YogClass_define_allocator(env, cLibFunc, LibFunc_alloc);
     YogClass_define_caller(env, cLibFunc, LibFunc_call);
     YogClass_define_executor(env, cLibFunc, LibFunc_exec);
     vm->cLibFunc = cLibFunc;
