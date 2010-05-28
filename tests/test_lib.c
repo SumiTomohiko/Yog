@@ -1,5 +1,16 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
+
+struct Baz {
+    char* buf;
+};
+
+void
+test_Buffer(struct Baz* baz)
+{
+    strcpy(baz->buf, "bar");
+}
 
 void
 test_ref(int* p)
