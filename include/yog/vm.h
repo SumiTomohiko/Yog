@@ -41,6 +41,7 @@ struct YogVM {
     YogVal cObject;
     YogVal cPackage;
     YogVal cProperty;
+    YogVal cRefer;
     YogVal cRegexp;
     YogVal cSet;
     YogVal cString;

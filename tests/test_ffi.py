@@ -1499,14 +1499,17 @@ f = lib.load_func(\"return_pointer_1\", [], \'pointer)
 print(f())
 """ % locals(), "1073741824")
 
-    def test_Ref0(self):
+    def test_Refer0(self):
+        self._test("print(Refer.new().value)", "0")
+
+    def test_Refer10(self):
         path = self.get_lib_path()
         self._test("""
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"test_ref\", ['int_p])
-ref = Ref.new()
-f(ref)
-print(ref.value)
+refer = Refer.new()
+f(refer)
+print(refer.value)
 """ % locals(), "42")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
