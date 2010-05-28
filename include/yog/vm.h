@@ -20,6 +20,7 @@ struct YogVM {
     YogVal cBignum;
     YogVal cBinary;
     YogVal cBool;
+    YogVal cBuffer;
     YogVal cClass;
     YogVal cClassMethod;
     YogVal cCode;

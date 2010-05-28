@@ -1512,4 +1512,10 @@ f(refer)
 print(refer.value)
 """ % locals(), "42")
 
+    def test_Buffer0(self):
+        self._test("""
+buf = Buffer.new(42)
+print(buf.size)
+""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
