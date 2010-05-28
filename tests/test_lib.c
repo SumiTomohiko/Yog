@@ -1,6 +1,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
+void
+test_ref(int* p)
+{
+    *p = 42;
+}
+
 struct Bar {
     const char* baz;
 };

@@ -77,6 +77,29 @@ typedef struct Struct Struct;
 
 static YogVal Struct_alloc(YogEnv* env, YogVal klass);
 
+struct Refer {
+    struct YogBasicObj base;
+    YogVal value;
+};
+
+typedef struct Refer Refer;
+
+#define TYPE_REFER TO_TYPE(Refer_alloc)
+
+static YogVal
+Refer_alloc(YogEnv* env, YogVal klass)
+{
+    SAVE_ARG(env, klass);
+    YogVal refer = YUNDEF;
+    PUSH_LOCAL(env, refer);
+
+    refer = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Refer);
+    YogBasicObj_init(env, refer, TYPE_REFER, 0, klass);
+    PTR_AS(Refer, refer)->value = INT2VAL(0);
+
+    RETURN(env, refer);
+}
+
 static void
 Field_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
@@ -525,8 +548,11 @@ map_id_type(YogEnv* env, ID type)
     else if (strcmp(t, "pointer") == 0) {
         cif_type = &ffi_type_pointer;
     }
+    else if (strcmp(t, "int_p") == 0) {
+        cif_type = &ffi_type_pointer;
+    }
     else {
-        YogError_raise_ValueError(env, "unknown type - %S", s);
+        YogError_raise_ValueError(env, "Unknown type - %S", s);
         /* NOTREACHED */
     }
 
@@ -965,83 +991,142 @@ write_argument_pointer(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
 }
 
 static void
-write_argument(YogEnv* env, void* dest, YogVal arg_type, YogVal val)
+Refer_write_int32(YogEnv* env, YogVal self, int32_t* p)
+{
+    SAVE_ARG(env, self);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_REFER)) {
+        YogError_raise_TypeError(env, "Argument must be Refer, not %C", self);
+    }
+    *p = YogVal_to_signed_type(env, PTR_AS(Refer, self)->value, "Argument");
+    RETURN_VOID(env);
+}
+
+static void
+write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal val)
 {
     SAVE_ARGS2(env, arg_type, val);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
     if (!IS_SYMBOL(arg_type)) {
-        write_argument_pointer(env, (void**)dest, arg_type, val);
+        write_argument_pointer(env, (void**)pvalue, arg_type, val);
         RETURN_VOID(env);
     }
 
     s = YogVM_id2name(env, env->vm, VAL2ID(arg_type));
     if (strcmp(STRING_CSTR(s), "uint8") == 0) {
-        write_argument_uint8(env, (uint8_t*)dest, val);
+        write_argument_uint8(env, (uint8_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "int8") == 0) {
-        write_argument_int8(env, (int8_t*)dest, val);
+        write_argument_int8(env, (int8_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "uint16") == 0) {
-        write_argument_uint16(env, (uint16_t*)dest, val);
+        write_argument_uint16(env, (uint16_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "int16") == 0) {
-        write_argument_int16(env, (int16_t*)dest, val);
+        write_argument_int16(env, (int16_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "uint32") == 0) {
-        write_argument_uint32(env, (uint32_t*)dest, val);
+        write_argument_uint32(env, (uint32_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "int32") == 0) {
-        write_argument_int32(env, (int32_t*)dest, val);
+        write_argument_int32(env, (int32_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "uint64") == 0) {
-        write_argument_uint64(env, (uint64_t*)dest, val);
+        write_argument_uint64(env, (uint64_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "int64") == 0) {
-        write_argument_int64(env, (int64_t*)dest, val);
+        write_argument_int64(env, (int64_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "float") == 0) {
-        write_argument_float(env, (float*)dest, val);
+        write_argument_float(env, (float*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "double") == 0) {
-        write_argument_double(env, (double*)dest, val);
+        write_argument_double(env, (double*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "uchar") == 0) {
-        write_argument_uint8(env, (uint8_t*)dest, val);
+        write_argument_uint8(env, (uint8_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "char") == 0) {
-        write_argument_int8(env, (int8_t*)dest, val);
+        write_argument_int8(env, (int8_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "ushort") == 0) {
-        write_argument_uint16(env, (uint16_t*)dest, val);
+        write_argument_uint16(env, (uint16_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "short") == 0) {
-        write_argument_int16(env, (int16_t*)dest, val);
+        write_argument_int16(env, (int16_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "uint") == 0) {
-        write_argument_uint32(env, (uint32_t*)dest, val);
+        write_argument_uint32(env, (uint32_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "int") == 0) {
-        write_argument_int32(env, (int32_t*)dest, val);
+        write_argument_int32(env, (int32_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "ulong") == 0) {
-        write_argument_uint32(env, (uint32_t*)dest, val);
+        write_argument_uint32(env, (uint32_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "long") == 0) {
-        write_argument_int32(env, (int32_t*)dest, val);
+        write_argument_int32(env, (int32_t*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "longdouble") == 0) {
-        write_argument_long_double(env, (long double*)dest, val);
+        write_argument_long_double(env, (long double*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "pointer") == 0) {
-        write_argument_uint32(env, (uint32_t*)dest, val);
+        write_argument_uint32(env, (uint32_t*)pvalue, val);
+    }
+    else if (strcmp(STRING_CSTR(s), "int_p") == 0) {
+        Refer_write_int32(env, val, (int32_t*)refered);
+        *((void**)pvalue) = refered;
     }
     else {
         YogError_raise_ValueError(env, "Unknown argument type");
         /* NOTREACHED */
     }
 
+    RETURN_VOID(env);
+}
+
+static uint_t
+type2refered_size(YogEnv* env, YogVal type)
+{
+    SAVE_ARG(env, type);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    if (!IS_SYMBOL(type)) {
+        RETURN(env, 0);
+    }
+    s = YogVM_id2name(env, env->vm, VAL2ID(type));
+    if (strcmp(STRING_CSTR(s), "int_p") == 0) {
+        RETURN(env, sizeof(int));
+    }
+
+    RETURN(env, 0);
+}
+
+static void
+Refer_read(YogEnv* env, YogVal self, YogVal arg_type, void* p)
+{
+    if (p == NULL) {
+        return;
+    }
+
+    SAVE_ARGS2(env, self, arg_type);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_REFER)) {
+        YogError_raise_TypeError(env, "Argument must be Refer, not %C", self);
+    }
+    if (!IS_SYMBOL(arg_type)) {
+        RETURN_VOID(env);
+    }
+    s = YogVM_id2name(env, env->vm, VAL2ID(arg_type));
+    if (strcmp(STRING_CSTR(s), "int_p") == 0) {
+        PTR_AS(Refer, self)->value = YogVal_from_int(env, *((int*)p));
+    }
+    else {
+        YogError_raise_ValueError(env, "Unknown type - %S", s);
+    }
     RETURN_VOID(env);
 }
 
@@ -1057,14 +1142,18 @@ LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_
         YogError_raise_ValueError(env, "%u positional argument(s) required, not %u", nargs, posargc);
     }
     void** values = (void**)YogSysdeps_alloca(sizeof(void*) * nargs);
+    void** refereds = (void**)YogSysdeps_alloca(sizeof(void*) * nargs);
     ffi_type** arg_types = PTR_AS(LibFunc, callee)->cif.arg_types;
     uint_t i;
     for (i = 0; i < nargs; i++) {
         ffi_type* ffi_arg_type = arg_types[i];
-        void* value = YogSysdeps_alloca(type2size(env, ffi_arg_type));
+        void* pvalue = YogSysdeps_alloca(type2size(env, ffi_arg_type));
         arg_type = PTR_AS(LibFunc, callee)->arg_types[i];
-        write_argument(env, value, arg_type, posargs[i]);
-        values[i] = value;
+        uint_t refered_size = type2refered_size(env, arg_type);
+        void* refered = 0 < refered_size ? YogSysdeps_alloca(refered_size): NULL;
+        write_argument(env, pvalue, refered, arg_type, posargs[i]);
+        values[i] = pvalue;
+        refereds[i] = refered;
     }
 
     void* rvalue = NULL;
@@ -1074,6 +1163,11 @@ LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_
     }
 
     ffi_call(&PTR_AS(LibFunc, callee)->cif, PTR_AS(LibFunc, callee)->f, rvalue, values);
+
+    for (i = 0; i < nargs; i++) {
+        arg_type = PTR_AS(LibFunc, callee)->arg_types[i];
+        Refer_read(env, posargs[i], arg_type, refereds[i]);
+    }
 
     if (rtype == &ffi_type_uint8) {
         RETURN(env, YogVal_from_unsigned_int(env, *((uint8_t*)rvalue)));
@@ -1509,6 +1603,19 @@ Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     RETURN_VOID(env);
 }
 
+static YogVal
+Refer_get_value(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal value = YUNDEF;
+    PUSH_LOCAL(env, value);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_REFER)) {
+        YogError_raise_TypeError(env, "self must be Refer, not %C", self);
+    }
+    value = PTR_AS(Refer, self)->value;
+    RETURN(env, value);
+}
+
 void
 YogFFI_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -1518,7 +1625,8 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogVal cStructClassClass = YUNDEF;
     YogVal cStructClass = YUNDEF;
     YogVal cField = YUNDEF;
-    PUSH_LOCALS5(env, cLib, cLibFunc, cStructClassClass, cStructClass, cField);
+    YogVal cRefer = YUNDEF;
+    PUSH_LOCALS6(env, cLib, cLibFunc, cStructClassClass, cStructClass, cField, cRefer);
     YogVM* vm = env->vm;
 
     cLib = YogClass_new(env, "Lib", vm->cObject);
@@ -1542,6 +1650,10 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_descr_get_caller(env, cField, Field_call_descr_get);
     YogClass_define_descr_set_executor(env, cField, Field_exec_descr_set);
     vm->cField = cField;
+    cRefer = YogClass_new(env, "Refer", vm->cObject);
+    YogClass_define_allocator(env, cRefer, Refer_alloc);
+    YogClass_define_property(env, cRefer, pkg, "value", Refer_get_value, NULL);
+    vm->cRefer = cRefer;
 
     RETURN_VOID(env);
 }
