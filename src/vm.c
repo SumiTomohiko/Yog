@@ -393,6 +393,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cBignum);
     KEEP(cBinary);
     KEEP(cBool);
+    KEEP(cBuffer);
     KEEP(cClassMethod);
     KEEP(cCode);
     KEEP(cCoroutine);
@@ -511,6 +512,7 @@ YogVM_init(YogVM* vm)
     INIT(cBignum);
     INIT(cBinary);
     INIT(cBool);
+    INIT(cBuffer);
     INIT(cClassMethod);
     INIT(cCode);
     INIT(cCoroutine);
