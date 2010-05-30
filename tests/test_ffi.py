@@ -1537,9 +1537,20 @@ Bar = StructClass.new(\"Bar\", [[Buffer, \'baz]])
 bar = Bar.new()
 bar.baz = buf
 lib = load_lib(\"%(path)s\")
-f = lib.load_func(\"test_Buffer\", [Bar])
+f = lib.load_func(\"test_Buffer0\", [Bar])
 f(bar)
 print(bar.baz.to_s())
 """ % locals(), "bar")
+
+    def test_Buffer30(self):
+        path = self.get_lib_path()
+        self._test("""
+s = \"\"
+buf = Buffer.new(s)
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"test_Buffer10\", [Buffer])
+f(buf)
+print(buf.to_s())
+""" % locals(), "foo")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

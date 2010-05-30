@@ -2,12 +2,18 @@
 #include <stdio.h>
 #include <string.h>
 
+void
+test_Buffer10(char* buf)
+{
+    strcpy(buf, "foo");
+}
+
 struct Baz {
     char* buf;
 };
 
 void
-test_Buffer(struct Baz* baz)
+test_Buffer0(struct Baz* baz)
 {
     strcpy(baz->buf, "bar");
 }
