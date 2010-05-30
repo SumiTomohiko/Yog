@@ -639,10 +639,10 @@ map_type(YogEnv* env, YogVal type)
     if (IS_SYMBOL(type)) {
         RETURN(env, map_id_type(env, VAL2ID(type)));
     }
-    if (IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) {
+    if ((IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) || (type == env->vm->cBuffer)) {
         RETURN(env, &ffi_type_pointer);
     }
-    YogError_raise_TypeError(env, "Type must be StructClass or Symbol, not %C", type);
+    YogError_raise_TypeError(env, "Type must be Symbol, Buffer or StructClass, not %C", type);
     /* NOTREACHED */
     RETURN(env, NULL);
 }
@@ -1042,14 +1042,22 @@ write_argument_int16(YogEnv* env, int16_t* dest, YogVal val)
 }
 
 static void
-write_argument_pointer(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
+write_argument_Buffer(YogEnv* env, void** ptr, YogVal val)
+{
+    SAVE_ARG(env, val);
+    if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_BUFFER)) {
+        YogError_raise_TypeError(env, "Argument must be Buffer, not %C", val);
+    }
+    *ptr = PTR_AS(Buffer, val)->ptr;
+    RETURN_VOID(env);
+}
+
+static void
+write_argument_Struct(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
 {
     SAVE_ARGS2(env, arg_type, val);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
-    if (!IS_PTR(arg_type) || (BASIC_OBJ_TYPE(arg_type) != TYPE_STRUCT_CLASS)) {
-        YogError_raise_TypeError(env, "Argument type must be StructClass, not %C", arg_type);
-    }
     if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_STRUCT)) {
         YogError_raise_TypeError(env, "Argument must be Struct, not %C", val);
     }
@@ -1059,6 +1067,25 @@ write_argument_pointer(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
         YogError_raise_TypeError(env, "Argument must be %I, not %C", name, val);
     }
     *ptr = PTR_AS(Struct, val)->data;
+    RETURN_VOID(env);
+}
+
+static void
+write_argument_pointer(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
+{
+    SAVE_ARGS2(env, arg_type, val);
+    YogVal klass = YUNDEF;
+    PUSH_LOCAL(env, klass);
+    if (arg_type == env->vm->cBuffer) {
+        write_argument_Buffer(env, ptr, val);
+        RETURN_VOID(env);
+    }
+    if (IS_PTR(arg_type) && (BASIC_OBJ_TYPE(arg_type) == TYPE_STRUCT_CLASS)) {
+        write_argument_Struct(env, ptr, arg_type, val);
+        RETURN_VOID(env);
+    }
+    YogError_raise_TypeError(env, "Argument type must be Buffer or StructClass, not %C", arg_type);
+    /* NOTREACHED */
     RETURN_VOID(env);
 }
 
