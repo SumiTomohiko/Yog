@@ -386,6 +386,23 @@ align_offset(YogEnv* env, YogVal type, uint_t offset)
 }
 
 static YogVal
+Struct_get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal size = YUNDEF;
+    YogVal klass = YUNDEF;
+    PUSH_LOCALS2(env, size, klass);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_size", params, args, kw);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
+        YogError_raise_TypeError(env, "self must be Struct, not %C", self);
+    }
+    klass = YogVal_get_class(env, self);
+    size = YogVal_from_unsigned_int(env, PTR_AS(StructClass, klass)->size);
+    RETURN(env, size);
+}
+
+static YogVal
 StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -412,6 +429,7 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
     uint_t fields_num = YogArray_size(env, fields);
     obj = ALLOC_OBJ(env, YogClass_keep_children, NULL, StructClass);
     StructClass_init(env, obj, fields_num);
+    YogClass_define_property(env, obj, pkg, "size", Struct_get_size, NULL);
 
     uint_t size = YogString_size(env, name) + 1; /* with '\0' */
     char* s = (char*)YogSysdeps_alloca(sizeof(char) * size);
@@ -639,10 +657,11 @@ map_type(YogEnv* env, YogVal type)
     if (IS_SYMBOL(type)) {
         RETURN(env, map_id_type(env, VAL2ID(type)));
     }
-    if ((IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) || (type == env->vm->cBuffer)) {
+    YogVM* vm = env->vm;
+    if ((IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) || (type == vm->cBuffer) || (type == vm->cString)) {
         RETURN(env, &ffi_type_pointer);
     }
-    YogError_raise_TypeError(env, "Type must be Symbol, Buffer or StructClass, not %C", type);
+    YogError_raise_TypeError(env, "Type must be Symbol, String, Buffer or StructClass, not %C", type);
     /* NOTREACHED */
     RETURN(env, NULL);
 }
@@ -1071,12 +1090,18 @@ write_argument_Struct(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
 }
 
 static void
-write_argument_pointer(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
+write_argument_pointer(YogEnv* env, void** ptr, void* refered, YogVal arg_type, YogVal val)
 {
     SAVE_ARGS2(env, arg_type, val);
     YogVal klass = YUNDEF;
     PUSH_LOCAL(env, klass);
-    if (arg_type == env->vm->cBuffer) {
+    YogVM* vm = env->vm;
+    if (arg_type == vm->cString) {
+        memcpy(refered, STRING_CSTR(val), YogString_size(env, val) + 1);
+        *ptr = refered;
+        RETURN_VOID(env);
+    }
+    if (arg_type == vm->cBuffer) {
         write_argument_Buffer(env, ptr, val);
         RETURN_VOID(env);
     }
@@ -1108,7 +1133,7 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal
     PUSH_LOCAL(env, s);
 
     if (!IS_SYMBOL(arg_type)) {
-        write_argument_pointer(env, (void**)pvalue, arg_type, val);
+        write_argument_pointer(env, (void**)pvalue, refered, arg_type, val);
         RETURN_VOID(env);
     }
 
@@ -1186,12 +1211,25 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal
 }
 
 static uint_t
-type2refered_size(YogEnv* env, YogVal type)
+type2refered_size_of_string(YogEnv* env, YogVal arg)
 {
-    SAVE_ARG(env, type);
+    SAVE_ARG(env, arg);
+    if (!IS_PTR(arg) || (BASIC_OBJ_TYPE(arg) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "Argument must be String, not %C", arg);
+    }
+    RETURN(env, YogString_size(env, arg) + 1);
+}
+
+static uint_t
+type2refered_size(YogEnv* env, YogVal type, YogVal arg)
+{
+    SAVE_ARGS2(env, type, arg);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
 
+    if (type == env->vm->cString) {
+        RETURN(env, type2refered_size_of_string(env, arg));
+    }
     if (!IS_SYMBOL(type)) {
         RETURN(env, 0);
     }
@@ -1206,7 +1244,7 @@ type2refered_size(YogEnv* env, YogVal type)
 static void
 Refer_read(YogEnv* env, YogVal self, YogVal arg_type, void* p)
 {
-    if (p == NULL) {
+    if ((p == NULL) || (arg_type == env->vm->cString)) {
         return;
     }
 
@@ -1248,7 +1286,7 @@ LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_
         ffi_type* ffi_arg_type = arg_types[i];
         void* pvalue = YogSysdeps_alloca(type2size(env, ffi_arg_type));
         arg_type = PTR_AS(LibFunc, callee)->arg_types[i];
-        uint_t refered_size = type2refered_size(env, arg_type);
+        uint_t refered_size = type2refered_size(env, arg_type, posargs[i]);
         void* refered = 0 < refered_size ? YogSysdeps_alloca(refered_size): NULL;
         write_argument(env, pvalue, refered, arg_type, posargs[i]);
         values[i] = pvalue;
@@ -1764,6 +1802,26 @@ Buffer_alloc_string(YogEnv* env, YogVal self, YogVal s)
 }
 
 static YogVal
+Buffer_to_bin(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal bin = YUNDEF;
+    YogVal size = YUNDEF;
+    PUSH_LOCALS2(env, bin, size);
+    YogCArg params[] = { { "size", &size }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_bin", params, args, kw);
+    CHECK_SELF_BUFFER;
+    if (!IS_FIXNUM(size)) {
+        YogError_raise_TypeError(env, "size must be Fixnum, not %C", size);
+    }
+
+    bin = YogBinary_of_size(env, VAL2INT(size));
+    memcpy(BINARY_CSTR(bin), PTR_AS(Buffer, self)->ptr, VAL2INT(size));
+    BINARY_SIZE(bin) = VAL2INT(size);
+    RETURN(env, bin);
+}
+
+static YogVal
 Buffer_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -1885,6 +1943,7 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     cBuffer = YogClass_new(env, "Buffer", vm->cObject);
     YogClass_define_allocator(env, cBuffer, Buffer_alloc);
     YogClass_define_method(env, cBuffer, pkg, "init", Buffer_init);
+    YogClass_define_method(env, cBuffer, pkg, "to_bin", Buffer_to_bin);
     YogClass_define_method(env, cBuffer, pkg, "to_s", Buffer_to_s);
     YogClass_define_property(env, cBuffer, pkg, "size", Buffer_get_size, NULL);
     vm->cBuffer = cBuffer;

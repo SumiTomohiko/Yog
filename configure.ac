@@ -238,7 +238,6 @@ case "${host}" in
 esac
 
 YOG_CHECK_EXT([yaml], [syck_new_parser], [syck])
-YOG_CHECK_EXT([z], [zlibVersion], [zlib])
 YOG_CHECK_EXT([zip], [zip_open], [zip])
 
 AC_SUBST(BDWGC_DIR)

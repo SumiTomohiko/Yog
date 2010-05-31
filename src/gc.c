@@ -221,6 +221,9 @@ YogGC_malloc(YogEnv* env, size_t size)
 void
 YogGC_free(YogEnv* env, void* p, size_t size)
 {
+    if (p == NULL) {
+        return;
+    }
     memset(p, 0xfd, size);
     free(p);
 }
