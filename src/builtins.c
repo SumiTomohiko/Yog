@@ -384,6 +384,7 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     YogObj_set_attr_id(env, builtins, PTR_AS(YogClass, klass)->name, klass); \
 } while (0)
     REGISTER_CLASS(cArray);
+    REGISTER_CLASS(cBinary);
     REGISTER_CLASS(cBuffer);
     REGISTER_CLASS(cCoroutine);
     REGISTER_CLASS(cDict);

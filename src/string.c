@@ -10,6 +10,7 @@
 #include "oniguruma.h"
 #include "yog/array.h"
 #include "yog/bignum.h"
+#include "yog/binary.h"
 #include "yog/callable.h"
 #include "yog/class.h"
 #include "yog/encoding.h"
@@ -428,6 +429,24 @@ to_i(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     n = YogString_to_i(env, self);
 
     RETURN(env, n);
+}
+
+static YogVal
+to_bin(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal bin = YUNDEF;
+    PUSH_LOCAL(env, bin);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_s", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+
+    uint_t size = YogString_size(env, self);
+    bin = YogBinary_of_size(env, size);
+    memcpy(BINARY_CSTR(bin), STRING_CSTR(self), size);
+    BINARY_SIZE(bin) = size;
+
+    RETURN(env, bin);
 }
 
 static YogVal
@@ -1179,6 +1198,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("get", get);
     DEFINE_METHOD("gsub", gsub);
     DEFINE_METHOD("hash", hash);
+    DEFINE_METHOD("to_bin", to_bin);
     DEFINE_METHOD("to_i", to_i);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD

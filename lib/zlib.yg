@@ -1,0 +1,115 @@
+
+ZLIB_VERSION = "1.2.3.3"
+ZLIB_VERNUM = 0x1233
+ZLIB_VER_MAJOR = 1
+ZLIB_VER_MINOR = 2
+ZLIB_VER_REVISION = 3
+Z_NO_FLUSH = 0
+Z_PARTIAL_FLUSH = 1
+Z_SYNC_FLUSH = 2
+Z_FULL_FLUSH = 3
+Z_FINISH = 4
+Z_BLOCK = 5
+Z_OK = 0
+Z_STREAM_END = 1
+Z_NEED_DICT = 2
+Z_ERRNO = -1
+Z_STREAM_ERROR = -2
+Z_DATA_ERROR = -3
+Z_MEM_ERROR = -4
+Z_BUF_ERROR = -5
+Z_VERSION_ERROR = -6
+Z_NO_COMPRESSION = 0
+Z_BEST_SPEED = 1
+Z_BEST_COMPRESSION = 9
+Z_DEFAULT_COMPRESSION = -1
+Z_FILTERED = 1
+Z_HUFFMAN_ONLY = 2
+Z_RLE = 3
+Z_FIXED = 4
+Z_DEFAULT_STRATEGY = 0
+Z_BINARY = 0
+Z_TEXT = 1
+Z_ASCII = Z_TEXT
+Z_UNKNOWN = 2
+Z_DEFLATED = 8
+Z_NULL = 0
+
+z_stream = StructClass.new("z_stream", [
+  [Buffer, 'next_in],
+  ['uint, 'avail_in],
+  ['ulong, 'total_in],
+
+  [Buffer, 'next_out],
+  ['uint, 'avail_out],
+  ['ulong, 'total_out],
+
+  [String, 'msg],
+  ['pointer, 'state],
+
+  ['pointer, 'zalloc],
+  ['pointer, 'zfree],
+  ['pointer, 'opaque],
+
+  ['int, 'data_type],
+  ['ulong, 'adler],
+  ['ulong, 'reserved]])
+
+lib = load_lib("/usr/lib/libz.so")
+deflateInit_ = lib.load_func("deflateInit_", [z_stream, 'int, String, 'int], 'int)
+deflate = lib.load_func("deflate", [z_stream, 'int], 'int)
+deflateEnd = lib.load_func("deflateEnd", [z_stream], 'int)
+
+class ZlibError > Exception
+end
+
+def deflateInit(z, level)
+  return deflateInit_(z, level, ZLIB_VERSION, z.size)
+end
+
+def compress(s)
+  z = z_stream.new()
+  z.zalloc = Z_NULL
+  z.zfree = Z_NULL
+  z.opaque = Z_NULL
+  if deflateInit(z, Z_DEFAULT_COMPRESSION) != Z_OK
+    raise ZlibError.new(z.msg)
+  end
+  bin = Binary.new()
+  try
+    BUF_SIZE = 1024
+    t = s.to_bin()
+    while 0 < t.size
+      in = Buffer.new(t)
+      out = Buffer.new(BUF_SIZE)
+      z.next_in = in
+      z.avail_in = in.size
+      z.next_out = out
+      z.avail_out = BUF_SIZE
+      if deflate(z, Z_NO_FLUSH) != Z_OK
+        raise ZlibError.new(z.msg)
+      end
+      bin << out.to_bin(BUF_SIZE - z.avail_out)
+      t = t.slice(in.size - z.avail_in)
+    end
+    loop() do
+      out = Buffer.new(BUF_SIZE)
+      z.next_out = out
+      z.avail_out = BUF_SIZE
+      retval = deflate(z, Z_FINISH)
+      if retval == Z_STREAM_END
+        bin << out.to_bin(BUF_SIZE - z.avail_out)
+        return bin
+      end
+      if retval != Z_OK
+        raise ZlibError.new(z.msg)
+      end
+      size = BUF_SIZE - z.avail_out
+      bin << out.to_bin(BUF_SIZE - z.avail_out)
+    end
+  finally
+    deflateEnd(z)
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

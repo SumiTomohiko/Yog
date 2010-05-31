@@ -9,7 +9,7 @@
 
 struct YogByteArray {
     uint_t size;
-    uint8_t items[0];
+    char items[0];
 };
 
 typedef struct YogByteArray YogByteArray;
@@ -26,6 +26,7 @@ DECL_AS_TYPE(YogBinary_new);
 #define TYPE_BINARY         TO_TYPE(YogBinary_new)
 #define BINARY_BODY(bin)    PTR_AS(YogBinary, (bin))->body
 #define BINARY_CSTR(bin)    PTR_AS(YogByteArray, BINARY_BODY(bin))->items
+#define BINARY_SIZE(bin)    PTR_AS(YogBinary, (bin))->size
 
 /* PROTOTYPE_START */
 

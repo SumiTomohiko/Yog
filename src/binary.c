@@ -14,6 +14,13 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
+#define CHECK_BINARY(env, v, name) do { \
+    if (!IS_PTR((v)) || (BASIC_OBJ_TYPE((v)) != TYPE_BINARY)) { \
+        YogError_raise_TypeError((env), "%s must be Binary, not %C", (name), (v)); \
+    } \
+} while (0)
+#define CHECK_SELF_BINARY CHECK_BINARY(env, self, "self")
+
 uint_t
 YogBinary_size(YogEnv* env, YogVal binary)
 {
@@ -27,9 +34,9 @@ YogBinary_shrink(YogEnv* env, YogVal binary)
 
     uint_t size = YogBinary_size(env, binary);
     YogVal new_body = YogByteArray_new(env, size);
-    uint8_t* to = PTR_AS(YogByteArray, new_body)->items;
+    char* to = PTR_AS(YogByteArray, new_body)->items;
     YogVal old_body = PTR_AS(YogBinary, binary)->body;
-    uint8_t* from = PTR_AS(YogByteArray, old_body)->items;
+    char* from = PTR_AS(YogByteArray, old_body)->items;
     memcpy(to, from, size);
     YogGC_UPDATE_PTR(env, PTR_AS(YogBinary, binary), body, new_body);
 
@@ -65,10 +72,10 @@ ensure_body_size(YogEnv* env, YogVal binary, uint_t needed_size)
 
     uint_t new_size = 2 * needed_size;
     YogVal new_body = YogByteArray_new(env, new_size);
-    unsigned char* to = PTR_AS(YogByteArray, new_body)->items;
+    char* to = PTR_AS(YogByteArray, new_body)->items;
     body = PTR_AS(YogBinary, binary)->body;
     if (IS_PTR(body)) {
-        unsigned char* from = PTR_AS(YogByteArray, body)->items;
+        char* from = PTR_AS(YogByteArray, body)->items;
         memcpy(to, from, cur_size);
     }
     YogGC_UPDATE_PTR(env, PTR_AS(YogBinary, binary), body, new_body);
@@ -179,6 +186,105 @@ YogBinary_new(YogEnv* env)
 }
 
 static YogVal
+get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal size = YUNDEF;
+    PUSH_LOCAL(env, size);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_size", params, args, kw);
+    CHECK_SELF_BINARY;
+    size = YogVal_from_unsigned_int(env, BINARY_SIZE(self));
+    RETURN(env, size);
+}
+
+static YogVal
+lshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal bin = YUNDEF;
+    PUSH_LOCAL(env, bin);
+    YogCArg params[] = { { "bin", &bin }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "<<", params, args, kw);
+    CHECK_SELF_BINARY;
+    CHECK_BINARY(env, bin, "bin");
+
+    uint_t size1 = YogBinary_size(env, self);
+    uint_t size2 = YogBinary_size(env, bin);
+    uint_t size = size1 + size2;
+    if ((size < size1) || (size < size2)) {
+        YogError_raise_ValueError(env, "Too large Binary");
+    }
+    ensure_body_size(env, self, size);
+    memcpy(BINARY_CSTR(self) + size1, BINARY_CSTR(bin), size2);
+    BINARY_SIZE(self) = size;
+    RETURN(env, self);
+}
+
+static YogVal
+to_bin(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_bin", params, args, kw);
+    RETURN(env, self);
+}
+
+static YogVal
+YogBinary_slice(YogEnv* env, YogVal self, int_t pos, int_t len)
+{
+    SAVE_ARG(env, self);
+    YogVal bin = YUNDEF;
+    PUSH_LOCAL(env, bin);
+    uint_t size = YogBinary_size(env, self);
+    if (pos < 0) {
+        pos += size;
+    }
+    if (pos < 0) {
+        YogError_raise_ValueError(env, "Binary index out of range");
+    }
+    if (len < 0) {
+        YogError_raise_ValueError(env, "Binary length out of range");
+    }
+    if (size <= pos) {
+        RETURN(env, YogBinary_new(env));
+    }
+
+    bin = YogBinary_of_size(env, len);
+    memcpy(BINARY_CSTR(bin), &BINARY_CSTR(self)[pos], len);
+    BINARY_SIZE(bin) = len;
+    RETURN(env, bin);
+}
+
+static YogVal
+slice(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal pos = YUNDEF;
+    YogVal len = YNIL;
+    PUSH_LOCALS2(env, pos, len);
+    YogCArg params[] = {
+        { "pos", &pos },
+        { "|", NULL },
+        { "len", &len },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "slice", params, args, kw);
+    CHECK_SELF_BINARY;
+    if (!IS_FIXNUM(pos)) {
+        YogError_raise_TypeError(env, "pos must be Fixnum, not %C", pos);
+    }
+    if (!IS_NIL(len) && !IS_FIXNUM(len)) {
+        YogError_raise_TypeError(env, "len must be Fixnum, not %C", len);
+    }
+
+    if (IS_NIL(len)) {
+        uint_t size = YogBinary_size(env, self);
+        RETURN(env, YogBinary_slice(env, self, VAL2INT(pos), size));
+    }
+    RETURN(env, YogBinary_slice(env, self, VAL2INT(pos), VAL2INT(len)));
+}
+
+static YogVal
 to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -187,38 +293,46 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     PUSH_LOCALS2(env, s, enc);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "to_s", params, args, kw);
-    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_BINARY)) {
-        YogError_raise_TypeError(env, "self must be Binary");
-    }
+    CHECK_SELF_BINARY;
 
+    if (!IS_PTR(BINARY_BODY(self))) {
+        RETURN(env, YogString_from_str(env, "b\"\""));
+    }
     enc = YogEncoding_get_ascii(env);
     s = YogString_of_encoding(env, enc);
-    if (!IS_PTR(BINARY_BODY(self))) {
-        RETURN(env, s);
-    }
+    YogString_add_cstr(env, s, "b\"");
     uint_t size = YogBinary_size(env, self);
     uint_t i;
     for (i = 0; i < size; i++) {
-        unsigned char c = BINARY_CSTR(self)[i];
+        char c = BINARY_CSTR(self)[i];
         char buf[5];
-        YogSysdeps_snprintf(buf, array_sizeof(buf), "\\x%02x", c);
+        YogSysdeps_snprintf(buf, array_sizeof(buf), "\\x%02x", 0xff & c);
         YogString_add_cstr(env, s, buf);
     }
+    YogString_add_cstr(env, s, "\"");
 
     RETURN(env, s);
 }
 
 void
-YogBinary_define_classes(YogEnv* env, YogVal builtins)
+YogBinary_define_classes(YogEnv* env, YogVal pkg)
 {
-    SAVE_ARG(env, builtins);
+    SAVE_ARG(env, pkg);
     YogVal cBinary = YUNDEF;
     PUSH_LOCAL(env, cBinary);
 
     YogVM* vm = env->vm;
     cBinary = YogClass_new(env, "Binary", vm->cObject);
     YogClass_define_allocator(env, cBinary, alloc);
-    YogClass_define_method(env, cBinary, builtins, "to_s", to_s);
+#define DEFINE_METHOD(name, f) do { \
+    YogClass_define_method(env, cBinary, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD("slice", slice);
+    DEFINE_METHOD("to_bin", to_bin);
+    DEFINE_METHOD("to_s", to_s);
+#undef DEFINE_METHOD
+    YogClass_define_property(env, cBinary, pkg, "size", get_size, NULL);
     vm->cBinary = cBinary;
 
     RETURN_VOID(env);
