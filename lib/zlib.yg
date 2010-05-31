@@ -67,7 +67,7 @@ def deflateInit(z, level)
   return deflateInit_(z, level, ZLIB_VERSION, z.size)
 end
 
-def compress(s)
+def compress(bin)
   z = z_stream.new()
   z.zalloc = Z_NULL
   z.zfree = Z_NULL
@@ -75,12 +75,12 @@ def compress(s)
   if deflateInit(z, Z_DEFAULT_COMPRESSION) != Z_OK
     raise ZlibError.new(z.msg)
   end
-  bin = Binary.new()
+  result = Binary.new()
   try
     BUF_SIZE = 1024
-    t = s.to_bin()
-    while 0 < t.size
-      in = Buffer.new(t)
+    rest = bin
+    while 0 < rest.size
+      in = Buffer.new(rest)
       out = Buffer.new(BUF_SIZE)
       z.next_in = in
       z.avail_in = in.size
@@ -89,8 +89,8 @@ def compress(s)
       if deflate(z, Z_NO_FLUSH) != Z_OK
         raise ZlibError.new(z.msg)
       end
-      bin << out.to_bin(BUF_SIZE - z.avail_out)
-      t = t.slice(in.size - z.avail_in)
+      result << out.to_bin(BUF_SIZE - z.avail_out)
+      rest = rest.slice(in.size - z.avail_in)
     end
     loop() do
       out = Buffer.new(BUF_SIZE)
@@ -98,14 +98,14 @@ def compress(s)
       z.avail_out = BUF_SIZE
       retval = deflate(z, Z_FINISH)
       if retval == Z_STREAM_END
-        bin << out.to_bin(BUF_SIZE - z.avail_out)
-        return bin
+        result << out.to_bin(BUF_SIZE - z.avail_out)
+        return result
       end
       if retval != Z_OK
         raise ZlibError.new(z.msg)
       end
       size = BUF_SIZE - z.avail_out
-      bin << out.to_bin(BUF_SIZE - z.avail_out)
+      result << out.to_result(BUF_SIZE - z.avail_out)
     end
   finally
     deflateEnd(z)
