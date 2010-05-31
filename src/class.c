@@ -169,7 +169,7 @@ YogClass_new(YogEnv* env, const char* name, YogVal super)
 
     obj = YogClass_alloc(env, env->vm->cClass);
     YogGC_UPDATE_PTR(env, PTR_AS(YogClass, obj), super, super);
-    ID id = YogVM_intern(env, env->vm, name);
+    ID id = name == NULL ? INVALID_ID : YogVM_intern(env, env->vm, name);
     PTR_AS(YogClass, obj)->name = id;
 
     RETURN(env, obj);
