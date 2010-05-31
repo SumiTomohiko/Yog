@@ -12,6 +12,9 @@ class TestZlib(TestLib):
 import zlib
 """, options=["--gc-stress"])
 
+    def format_binary(self, s):
+        return "b\"" + s + "\""
+
     def test_compress_file0(self):
         data = []
         for b in compress("foo"):
@@ -19,8 +22,8 @@ import zlib
         self._test("""
 import zlib
 enable_gc_stress()
-print(zlib.compress(\"foo\"))
-""", "".join(data))
+print(zlib.compress(\"foo\".to_bin()))
+""", self.format_binary("".join(data)))
 
     def test_decompress_file0(self):
         data = []
@@ -29,7 +32,7 @@ print(zlib.compress(\"foo\"))
         self._test("""
 import zlib
 enable_gc_stress()
-print(zlib.decompress(zlib.compress(\"foo\")))
-""", "".join(data))
+print(zlib.decompress(zlib.compress(\"foo\".to_bin())))
+""", self.format_binary("".join(data)))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
