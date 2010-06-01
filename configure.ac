@@ -191,8 +191,8 @@ AC_DEFINE_UNQUOTED([PREFIX], ["$prefix"], [Define install directory])
 
 AC_CONFIG_FILES([Makefile src/Makefile tools/lemon/Makefile tests/Makefile
                  ext/Makefile lib/Makefile doc/Makefile installer.nsi
-                 ext/concurrent/Makefile ext/yaml/Makefile ext/zlib/Makefile
-                 ext/zip/Makefile ext/socket/Makefile ext/Makefile.common])
+                 ext/concurrent/Makefile ext/yaml/Makefile ext/zip/Makefile
+                 ext/socket/Makefile ext/Makefile.common])
 if test "${cunit}" == "yes"
 then
     AC_CONFIG_FILES([tests/gc/Makefile])
