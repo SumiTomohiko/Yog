@@ -83,14 +83,12 @@ struct ScanVarEntry {
     int_t flags;
 };
 
-#define VAR_ASSIGNED        (0x01)
-#define VAR_PARAM           (0x02)
-#define VAR_NONLOCAL        (0x04)
-#define VAR_USED            (0x08)
+#define VAR_ASSIGNED        (1 << 0)
+#define VAR_PARAM           (1 << 1)
+#define VAR_NONLOCAL        (1 << 2)
 #define IS_ASSIGNED(flags)  ((flags) & VAR_ASSIGNED)
 #define IS_PARAM(flags)     ((flags) & VAR_PARAM)
 #define IS_NONLOCAL(flags)  ((flags) & VAR_NONLOCAL)
-#define IS_USED(flags)      ((flags) & VAR_USED)
 
 typedef struct ScanVarEntry ScanVarEntry;
 
@@ -1111,7 +1109,7 @@ static void
 scan_var_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     ID id = NODE(node)->u.variable.id;
-    scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, id, VAR_USED);
+    scan_var_register(env, SCAN_VAR_DATA(data)->var_tbl, id, 0);
 }
 
 static void
