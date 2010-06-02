@@ -1312,14 +1312,14 @@ append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
             case VT_LOCAL:
                 {
                     uint_t index = VAR(var)->u.local.index;
-                    CompileData_add_store_local(env, data, lineno, index);
+                    CompileData_add_store_local_index(env, data, lineno, index);
                 }
                 break;
             case VT_NONLOCAL:
                 {
                     uint_t level = VAR(var)->u.nonlocal.level;
                     uint_t index = VAR(var)->u.nonlocal.index;
-                    CompileData_add_store_nonlocal(env, data, lineno, level, index);
+                    CompileData_add_store_nonlocal_index(env, data, lineno, level, index);
                 }
                 break;
             default:
@@ -1331,7 +1331,7 @@ append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
     case CTX_CLASS:
     case CTX_MODULE:
     case CTX_PKG:
-        CompileData_add_store_name(env, data, lineno, name);
+        CompileData_add_store_local_name(env, data, lineno, name);
         break;
     default:
         YOG_ASSERT(env, FALSE, "Unkown context.");
@@ -2536,14 +2536,14 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
             case VT_LOCAL:
                 {
                     uint_t index = VAR(var)->u.local.index;
-                    CompileData_add_load_local(env, data, lineno, index);
+                    CompileData_add_load_local_index(env, data, lineno, index);
                 }
                 break;
             case VT_NONLOCAL:
                 {
                     uint_t level = VAR(var)->u.nonlocal.level;
                     uint_t index = VAR(var)->u.nonlocal.index;
-                    CompileData_add_load_nonlocal(env, data, lineno, level, index);
+                    CompileData_add_load_nonlocal_index(env, data, lineno, level, index);
                 }
                 break;
             default:
@@ -2555,7 +2555,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     case CTX_CLASS:
     case CTX_MODULE:
     case CTX_PKG:
-        CompileData_add_load_name(env, data, lineno, id);
+        CompileData_add_load_local_name(env, data, lineno, id);
         break;
     default:
         YOG_ASSERT(env, FALSE, "Unknown context.");

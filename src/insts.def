@@ -34,7 +34,7 @@ inst make_string
     val = YogString_clone(env, c);
 }
 
-inst store_name
+inst store_local_name
 (ID id)
 (val)
 ()
@@ -44,7 +44,7 @@ inst store_name
     YogTable_insert(env, vars, key, val);
 }
 
-inst store_local
+inst store_local_index
 (uint8_t index)
 (val)
 ()
@@ -140,7 +140,7 @@ inst load_global
     }
 }
 
-inst load_name
+inst load_local_name
 (ID id)
 ()
 (val)
@@ -155,7 +155,7 @@ inst load_name
     }
 }
 
-inst load_local
+inst load_local_index
 (uint8_t index)
 ()
 (val)
@@ -313,7 +313,7 @@ inst ret
     PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 }
 
-inst store_nonlocal
+inst store_nonlocal_index
 (uint8_t level, uint8_t index)
 (val)
 ()
@@ -329,7 +329,7 @@ inst store_nonlocal
     RESTORE_LOCALS_FROM_NAME(env, store_nonlocal);
 }
 
-inst load_nonlocal
+inst load_nonlocal_index
 (uint8_t level, uint8_t index)
 ()
 (val)
