@@ -56,12 +56,9 @@ inst store_local_index
 inst make_block
 ()
 (code)
-(method)
+(f)
 {
     SAVE_LOCALS_TO_NAME(env, make_block);
-    YogVal f = YUNDEF;
-    YogVal self = YUNDEF;
-    PUSH_LOCALS2(env, f, self);
 
     f = YogFunction_new(env);
     setup_script_function(env, f, code);
@@ -331,7 +328,14 @@ inst store_nonlocal_name
 (val)
 ()
 {
-    /* TODO */
+    SAVE_LOCALS_TO_NAME(env, store_nonlocal_name);
+    YogVal vars = YUNDEF;
+    PUSH_LOCAL(env, vars);
+
+    vars = get_outer_vars(env, level);
+    YogTable_insert(env, vars, ID2VAL(name), val);
+
+    RESTORE_LOCALS_FROM_NAME(env, store_nonlocal_name);
 }
 
 inst load_nonlocal_name
@@ -339,7 +343,16 @@ inst load_nonlocal_name
 ()
 (val)
 {
-    /* TODO */
+    SAVE_LOCALS_TO_NAME(env, load_nonlocal_name);
+    YogVal vars = YUNDEF;
+    PUSH_LOCAL(env, vars);
+
+    vars = get_outer_vars(env, level);
+    if (!YogTable_lookup(env, vars, ID2VAL(name), &val)) {
+        YogError_raise_NameError(env, "%I not found", name);
+    }
+
+    RESTORE_LOCALS_FROM_NAME(env, load_nonlocal_name);
 }
 
 inst store_global

@@ -365,9 +365,7 @@ make_outer_vars(YogEnv* env, uint_t depth)
     if (depth == 0) {
         return YNIL;
     }
-
     SAVE_LOCALS(env);
-
     YogVal outer_vars = YUNDEF;
     YogVal vars = YUNDEF;
     PUSH_LOCALS2(env, outer_vars, vars);
@@ -747,7 +745,6 @@ YogEval_mainloop(YogEnv* env)
                 };
                 const char* opname = YogCode_get_op_name(op);
                 TRACE("%p: PC=%u, lineno=%u, op=%s", env, PC, lineno, opname);
-                YogCopying_check(env, THREAD_HEAP(env->thread));
             }
         } while (0);
 #endif
