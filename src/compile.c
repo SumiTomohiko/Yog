@@ -105,7 +105,10 @@ struct Var {
         } local;
         struct {
             uint_t level;
-            uint_t index;
+            union {
+                uint_t index;
+                ID name;
+            } u;
         } nonlocal;
     } u;
 };
@@ -1321,7 +1324,7 @@ is_visible(YogEnv* env, Context ctx, Context outer_ctx)
 }
 
 static BOOL
-find_outer_var(YogEnv* env, ID name, Context ctx, YogVal outer_tbl, uint_t* plevel, uint_t* pindex)
+find_outer_var(YogEnv* env, ID name, Context ctx, YogVal outer_tbl, uint_t* plevel, uint_t* pindex, Context* pctx)
 {
     SAVE_ARG(env, outer_tbl);
     YogVal tbl = YUNDEF;
@@ -1330,8 +1333,10 @@ find_outer_var(YogEnv* env, ID name, Context ctx, YogVal outer_tbl, uint_t* plev
 
     int_t level = 0;
     tbl = outer_tbl;
+    Context outer_ctx;
     while (IS_PTR(tbl) && (VAR_TABLE(tbl)->ctx != CTX_PKG)) {
-        if (is_visible(env, ctx, VAR_TABLE(tbl)->ctx)) {
+        outer_ctx = VAR_TABLE(tbl)->ctx;
+        if (is_visible(env, ctx, outer_ctx)) {
             val = YUNDEF;
             if (YogTable_lookup(env, VAR_TABLE(tbl)->vars, ID2VAL(name), &val)) {
                 switch (VAR(val)->type) {
@@ -1345,7 +1350,10 @@ find_outer_var(YogEnv* env, ID name, Context ctx, YogVal outer_tbl, uint_t* plev
                     break;
                 case VAR_NONLOCAL:
                     *plevel = level + VAR(val)->u.nonlocal.level + 1;
-                    *pindex = VAR(val)->u.nonlocal.index;
+                    if ((outer_ctx == CTX_FUNC) || (outer_ctx == CTX_BLOCK)) {
+                        *pindex = VAR(val)->u.nonlocal.u.index;
+                    }
+                    *pctx = outer_ctx;
                     RETURN(env, TRUE);
                     break;
                 default:
@@ -1363,12 +1371,16 @@ find_outer_var(YogEnv* env, ID name, Context ctx, YogVal outer_tbl, uint_t* plev
 }
 
 static void
-Var_set_nonlocal(YogEnv* env, YogVal var, uint_t level, uint_t index)
+Var_set_nonlocal(YogEnv* env, YogVal var, uint_t level, uint_t index, ID name, Context ctx)
 {
     SAVE_ARG(env, var);
     VAR(var)->type = VAR_NONLOCAL;
     VAR(var)->u.nonlocal.level = level;
-    VAR(var)->u.nonlocal.index = index;
+    if ((ctx == CTX_FUNC) || (ctx == CTX_BLOCK)) {
+        VAR(var)->u.nonlocal.u.index = index;
+        RETURN_VOID(env);
+    }
+    VAR(var)->u.nonlocal.u.name = name;
     RETURN_VOID(env);
 }
 
@@ -1379,10 +1391,11 @@ compute_nonlocal_depth(YogEnv* env, ID name, YogVal var, Context ctx, YogVal out
 
     uint_t level;
     uint_t index;
-    if (!find_outer_var(env, name, ctx, outer_tbl, &level, &index)) {
+    Context outer_ctx;
+    if (!find_outer_var(env, name, ctx, outer_tbl, &level, &index, &outer_ctx)) {
         YogError_raise_SyntaxError(env, "nonlocal variable %I not found", name);
     }
-    Var_set_nonlocal(env, var, level, index);
+    Var_set_nonlocal(env, var, level, index, name, outer_ctx);
     RETURN_VOID(env);
 }
 
@@ -1439,8 +1452,9 @@ decide_auto_var_type(YogEnv* env, ID name, YogVal var, YogVal tbl, uint_t* pinde
 
     uint_t level;
     uint_t index;
-    if ((ctx == CTX_BLOCK) && (find_outer_var(env, name, ctx, outer, &level, &index))) {
-        Var_set_nonlocal(env, var, level, index);
+    Context outer_ctx;
+    if ((ctx == CTX_BLOCK) && (find_outer_var(env, name, ctx, outer, &level, &index, &outer_ctx))) {
+        Var_set_nonlocal(env, var, level, index, name, outer_ctx);
         RETURN_VOID(env);
     }
 
@@ -1614,6 +1628,21 @@ CompileData_get_var_table(YogEnv* env, YogVal self)
     RETURN(env, tbl);
 }
 
+static Context
+CompileData_get_outer_context(YogEnv* env, YogVal data, uint_t level)
+{
+    SAVE_ARG(env, data);
+    YogVal tbl = YUNDEF;
+    PUSH_LOCAL(env, tbl);
+
+    tbl = COMPILE_DATA(data)->vars;
+    uint_t i;
+    for (i = 0; i < level; i++) {
+        tbl = VAR_TABLE(tbl)->outer_tbl;
+    }
+    RETURN(env, VAR_TABLE(tbl)->ctx);
+}
+
 static void
 append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
 {
@@ -1624,6 +1653,7 @@ append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
 
     uint_t level;
     uint_t index;
+    Context ctx;
     switch (CompileData_get_context(env, data)) {
     case CTX_BLOCK:
     case CTX_FUNC:
@@ -1642,8 +1672,15 @@ append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
             break;
         case VAR_NONLOCAL:
             level = VAR(var)->u.nonlocal.level;
-            index = VAR(var)->u.nonlocal.index;
-            CompileData_add_store_nonlocal_index(env, data, lineno, level, index);
+            ctx = CompileData_get_outer_context(env, data, level);
+            if ((ctx == CTX_FUNC) || (ctx == CTX_BLOCK)) {
+                index = VAR(var)->u.nonlocal.u.index;
+                CompileData_add_store_nonlocal_index(env, data, lineno, level, index);
+            }
+            else {
+                ID name = VAR(var)->u.nonlocal.u.name;
+                CompileData_add_store_nonlocal_name(env, data, lineno, level, name);
+            }
             break;
         default:
             YOG_BUG(env, "unknown VarType (%d)", VAR(var)->type);
@@ -2667,6 +2704,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     uint_t lineno = NODE(node)->lineno;
     uint_t level;
     uint_t index;
+    Context ctx;
     switch (CompileData_get_context(env, data)) {
     case CTX_BLOCK:
     case CTX_FUNC:
@@ -2683,8 +2721,15 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
             break;
         case VAR_NONLOCAL:
             level = VAR(var)->u.nonlocal.level;
-            index = VAR(var)->u.nonlocal.index;
-            CompileData_add_load_nonlocal_index(env, data, lineno, level, index);
+            ctx = CompileData_get_outer_context(env, data, level);
+            if ((ctx == CTX_FUNC) || (ctx == CTX_BLOCK)) {
+                index = VAR(var)->u.nonlocal.u.index;
+                CompileData_add_load_nonlocal_index(env, data, lineno, level, index);
+            }
+            else {
+                ID name = VAR(var)->u.nonlocal.u.name;
+                CompileData_add_load_nonlocal_name(env, data, lineno, level, name);
+            }
             break;
         default:
             YOG_BUG(env, "unknown variable type (0x%x)", VAR(var)->type);

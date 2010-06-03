@@ -68,25 +68,6 @@ inst make_block
     YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), frame_to_long_return, PTR_AS(YogScriptFrame, CUR_FRAME)->frame_to_long_return);
     YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), frame_to_long_break, CUR_FRAME);
 
-    switch (PTR_AS(YogFrame, CUR_FRAME)->type) {
-    case FRAME_METHOD:
-        self = PTR_AS(YogValArray, LOCAL_VARS(CUR_FRAME))->items[0];
-        break;
-    case FRAME_PKG:
-    case FRAME_CLASS:
-        self = PTR_AS(YogNameFrame, CUR_FRAME)->self;
-        break;
-    case FRAME_C:
-    case FRAME_FINISH:
-    default:
-        YOG_BUG(env, "invalid frame (0x%08x)", CUR_FRAME);
-        break;
-    }
-
-    method = YogInstanceMethod_new(env);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogInstanceMethod, method), self, self);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogInstanceMethod, method), f, f);
-
     RESTORE_LOCALS_FROM_NAME(env, make_block);
 }
 
@@ -346,7 +327,7 @@ inst load_nonlocal_index
 }
 
 inst store_nonlocal_name
-(ID name)
+(uint8_t level, ID name)
 (val)
 ()
 {
@@ -354,7 +335,7 @@ inst store_nonlocal_name
 }
 
 inst load_nonlocal_name
-(ID name)
+(uint8_t level, ID name)
 ()
 (val)
 {
