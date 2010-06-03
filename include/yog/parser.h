@@ -84,6 +84,7 @@ struct YogNode {
         struct {
             YogVal params;
             YogVal stmts;
+            YogVal var_tbl;
         } blockarg;
         struct {
             YogVal exprs;

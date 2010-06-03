@@ -56,6 +56,7 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_BLOCK_ARG:
         KEEP(blockarg.params);
         KEEP(blockarg.stmts);
+        KEEP(blockarg.var_tbl);
         break;
     case NODE_BLOCK_PARAM:
     case NODE_KW_PARAM:
@@ -237,6 +238,7 @@ BlockArg_new(YogEnv* env, uint_t lineno, YogVal params, YogVal stmts)
     YogVal node = YogNode_new(env, NODE_BLOCK_ARG, lineno);
     YogGC_UPDATE_PTR(env, NODE(node), u.blockarg.params, params);
     YogGC_UPDATE_PTR(env, NODE(node), u.blockarg.stmts, stmts);
+    NODE(node)->u.blockarg.var_tbl = YNIL;
 
     RETURN(env, node);
 }
