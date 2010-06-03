@@ -29,6 +29,7 @@ struct YogFunction {
     YogVal outer_vars;
     YogVal frame_to_long_return;
     YogVal frame_to_long_break;
+    BOOL needs_self;
 
     YogVal klass;
     ID name;

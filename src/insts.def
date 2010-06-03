@@ -64,6 +64,7 @@ inst make_block
     setup_script_function(env, f, code);
     YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), frame_to_long_return, PTR_AS(YogScriptFrame, CUR_FRAME)->frame_to_long_return);
     YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), frame_to_long_break, CUR_FRAME);
+    PTR_AS(YogFunction, f)->needs_self = FALSE;
 
     RESTORE_LOCALS_FROM_NAME(env, make_block);
 }

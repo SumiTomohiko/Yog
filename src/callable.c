@@ -11,8 +11,6 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#define POS_OFFSET  1
-
 typedef YogVal (*Body)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 
 static void
@@ -41,7 +39,7 @@ raise_TypeError_for_varkwarg(YogEnv* env, YogVal actual)
 }
 
 static void
-assign_keyword_arg(YogEnv* env, YogVal self, YogVal args, YogVal kw, ID name, YogVal val)
+assign_keyword_arg(YogEnv* env, YogVal self, uint_t args_offset, YogVal args, YogVal kw, ID name, YogVal val)
 {
     SAVE_ARGS4(env, self, args, kw, val);
     YogVal names = YUNDEF;
@@ -57,10 +55,10 @@ assign_keyword_arg(YogEnv* env, YogVal self, YogVal args, YogVal kw, ID name, Yo
         names = PTR_AS(YogArgInfo, formal_args)->argnames;
         if (PTR_AS(ID, names)[i] == name) {
             YogVal* items = PTR_AS(YogValArray, args)->items;
-            if (!IS_UNDEF(items[POS_OFFSET + i])) {
+            if (!IS_UNDEF(items[args_offset + i])) {
                 YogError_raise_ArgumentError(env, "%I() got multiple values for keyword argument \"%I\"", PTR_AS(YogFunction, self)->name, name);
             }
-            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + i], val);
+            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + i], val);
             RETURN_VOID(env);
         }
     }
@@ -100,7 +98,7 @@ check_arg_assigned(YogEnv* env, YogVal self, YogVal arg, uint_t posargc)
 }
 
 static void
-fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal args)
+fill_args(YogEnv* env, YogVal self, uint_t args_offset, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal args)
 {
     SAVE_ARGS5(env, self, blockarg, vararg, varkwarg, args);
     YogVal array = YUNDEF;
@@ -125,7 +123,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
     uint_t arg_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
     uint_t size = arg_argc + arg_blockargc;
     for (i = 0; i < size; i++) {
-        PTR_AS(YogValArray, args)->items[POS_OFFSET + i] = YUNDEF;
+        PTR_AS(YogValArray, args)->items[args_offset + i] = YUNDEF;
     }
     uint_t arg_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
     if (0 < arg_kwargc) {
@@ -135,19 +133,19 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
             index++;
         }
         kw = YogDict_new(env);
-        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + index], kw);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + index], kw);
     }
 
     if (arg_argc < posargc) {
         for (i = 0; i < PTR_AS(YogArgInfo, arg_info)->argc; i++) {
-            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + i], posargs[i]);
+            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + i], posargs[i]);
         }
         if (PTR_AS(YogArgInfo, arg_info)->varargc != 1) {
             raise_wrong_num_args(env, self, posargc);
         }
         uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
         array = YogArray_new(env);
-        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + argc], array);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + argc], array);
         for (i = PTR_AS(YogArgInfo, arg_info)->argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }
@@ -162,7 +160,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
     }
     else {
         for (i = 0; i < posargc; i++) {
-            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + i], posargs[i]);
+            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + i], posargs[i]);
         }
         if (IS_UNDEF(vararg)) {
         }
@@ -172,12 +170,12 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
         else {
             for (i = posargc; i < arg_argc; i++) {
                 YogVal val = YogArray_at(env, vararg, i - posargc);
-                YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + i], val);
+                YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + i], val);
             }
         }
         if (0 < PTR_AS(YogArgInfo, arg_info)->varargc) {
             va = YogArray_new(env);
-            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + posargc], va);
+            YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + posargc], va);
 
             if (IS_UNDEF(vararg)) {
             }
@@ -197,7 +195,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
     for (i = 0; i < kwargc; i++) {
         YogVal name = kwargs[2 * i];
         val = kwargs[2 * i + 1];
-        assign_keyword_arg(env, self, args, kw, VAL2ID(name), val);
+        assign_keyword_arg(env, self, args_offset, args, kw, VAL2ID(name), val);
     }
 
     if (IS_UNDEF(varkwarg)) {
@@ -213,7 +211,7 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
                 YogError_raise_TypeError(env, "keywords must be symbols, not %C", key);
             }
             val = YogDictIterator_current_value(env, iter);
-            assign_keyword_arg(env, self, args, kw, VAL2ID(key), val);
+            assign_keyword_arg(env, self, args_offset, args, kw, VAL2ID(key), val);
         }
     }
 
@@ -228,12 +226,12 @@ fill_args(YogEnv* env, YogVal self, uint8_t posargc, YogVal posargs[], YogVal bl
         if (0 < PTR_AS(YogArgInfo, arg_info)->kwargc) {
             index++;
         }
-        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[POS_OFFSET + index], blockarg);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + index], blockarg);
     }
 
     uint_t required_argc = PTR_AS(YogArgInfo, arg_info)->required_argc;
     for (i = 0; i < required_argc; i++) {
-        val = PTR_AS(YogValArray, args)->items[POS_OFFSET + i];
+        val = PTR_AS(YogValArray, args)->items[args_offset + i];
         check_arg_assigned(env, self, val, posargc);
     }
 
@@ -292,9 +290,15 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
 
     uint_t local_vars_count = PTR_AS(YogCode, code)->local_vars_count;
     vars = YogValArray_new(env, local_vars_count);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, vars), items[0], self);
-
-    fill_args(env, callee, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, vars);
+    uint_t args_offset;
+    if (PTR_AS(YogFunction, callee)->needs_self) {
+        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, vars), items[0], self);
+        args_offset = 1;
+    }
+    else {
+        args_offset = 0;
+    }
+    fill_args(env, callee, args_offset, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, vars);
 
     frame = YogMethodFrame_new(env);
     setup_script_frame(env, frame, code);
@@ -355,6 +359,7 @@ YogFunction_init(YogEnv* env, YogVal self, YogVal klass)
     PTR_AS(YogFunction, self)->outer_vars = YUNDEF;
     PTR_AS(YogFunction, self)->frame_to_long_return = YUNDEF;
     PTR_AS(YogFunction, self)->frame_to_long_break = YUNDEF;
+    PTR_AS(YogFunction, self)->needs_self = TRUE;
     PTR_AS(YogFunction, self)->klass = YUNDEF;
 }
 
