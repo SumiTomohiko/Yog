@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: YogNode must have filename
+desc: This can remove filename argument from register_params etc.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-06-02 09:17:31.831621 Z
+references: []
+
+id: 65d2373c96ed2859a6423e7e5b7228ba4954cadb
+log_events: 
+- - 2010-06-02 09:17:32.517749 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

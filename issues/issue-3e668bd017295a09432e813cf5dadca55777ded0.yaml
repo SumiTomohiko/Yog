@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove YogNameFrame::self
+desc: class statements, module statements and package toplevel statements don't have self.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-06-03 16:47:36.314375 Z
+references: []
+
+id: 3e668bd017295a09432e813cf5dadca55777ded0
+log_events: 
+- - 2010-06-03 16:47:37.305444 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
