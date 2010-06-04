@@ -118,7 +118,7 @@ copy_young_obj(YogEnv* env, void* ptr, ObjectKeeper obj_keeper, void* heap, Proc
 
     void* p = tenure(env, heap, ptr);
     if (p == NULL) {
-        return NULL;
+        return YogCopying_copy(env, young_heap, ptr);
     }
     (*proc_for_tenured)(env, p, obj_keeper, heap);
 
