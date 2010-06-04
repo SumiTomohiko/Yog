@@ -1371,6 +1371,12 @@ find_outer_var(YogEnv* env, ID name, Context ctx, YogVal outer_tbl, uint_t* plev
 }
 
 static void
+Var_set_global(YogEnv* env, YogVal var)
+{
+    VAR(var)->type = VAR_GLOBAL;
+}
+
+static void
 Var_set_nonlocal(YogEnv* env, YogVal var, uint_t level, uint_t index, ID name, Context ctx)
 {
     SAVE_ARG(env, var);
@@ -1393,7 +1399,8 @@ compute_nonlocal_depth(YogEnv* env, ID name, YogVal var, Context ctx, YogVal out
     uint_t index;
     Context outer_ctx;
     if (!find_outer_var(env, name, ctx, outer_tbl, &level, &index, &outer_ctx)) {
-        YogError_raise_SyntaxError(env, "nonlocal variable %I not found", name);
+        Var_set_global(env, var);
+        RETURN_VOID(env);
     }
     Var_set_nonlocal(env, var, level, index, name, outer_ctx);
     RETURN_VOID(env);
@@ -1464,7 +1471,7 @@ decide_auto_var_type(YogEnv* env, ID name, YogVal var, YogVal tbl, uint_t* pinde
             Var_set_nonlocal(env, var, level, index, name, outer_ctx);
             RETURN_VOID(env);
         }
-        VAR(var)->type = VAR_GLOBAL;
+        Var_set_global(env, var);
         RETURN_VOID(env);
     }
 
