@@ -1339,6 +1339,7 @@ find_outer_var(YogEnv* env, ID name, Context ctx, YogVal outer_tbl, uint_t* plev
         if (is_visible(env, ctx, outer_ctx)) {
             val = YUNDEF;
             if (YogTable_lookup(env, VAR_TABLE(tbl)->vars, ID2VAL(name), &val)) {
+                *pctx = outer_ctx;
                 switch (VAR(val)->type) {
                 case VAR_GLOBAL:
                     RETURN(env, FALSE);
@@ -1353,7 +1354,6 @@ find_outer_var(YogEnv* env, ID name, Context ctx, YogVal outer_tbl, uint_t* plev
                     if ((outer_ctx == CTX_FUNC) || (outer_ctx == CTX_BLOCK)) {
                         *pindex = VAR(val)->u.nonlocal.u.index;
                     }
-                    *pctx = outer_ctx;
                     RETURN(env, TRUE);
                     break;
                 default:
@@ -2697,8 +2697,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
 {
     SAVE_ARGS2(env, node, data);
     YogVal var = YUNDEF;
-    YogVal name = YUNDEF;
-    PUSH_LOCALS2(env, var, name);
+    PUSH_LOCAL(env, var);
 
     ID id = NODE(node)->u.variable.id;
     uint_t lineno = NODE(node)->lineno;
@@ -2709,8 +2708,7 @@ compile_visit_variable(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal dat
     case CTX_BLOCK:
     case CTX_FUNC:
         var = lookup_var(env, CompileData_get_var_table(env, data), id);
-        name = YogVM_id2name(env, env->vm, id);
-        YOG_ASSERT(env, IS_PTR(var), "can't find variable (%s)", STRING_CSTR(name));
+        YOG_ASSERT(env, IS_PTR(var), "can't find variable");
         switch (VAR(var)->type) {
         case VAR_GLOBAL:
             CompileData_add_load_global(env, data, lineno, id);
