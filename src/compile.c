@@ -1453,12 +1453,17 @@ decide_auto_var_type(YogEnv* env, ID name, YogVal var, YogVal tbl, uint_t* pinde
     uint_t level;
     uint_t index;
     Context outer_ctx;
-    if ((ctx == CTX_BLOCK) && (find_outer_var(env, name, ctx, outer, &level, &index, &outer_ctx))) {
+    BOOL in_outer_scope = find_outer_var(env, name, ctx, outer, &level, &index, &outer_ctx);
+    if ((ctx == CTX_BLOCK) && in_outer_scope) {
         Var_set_nonlocal(env, var, level, index, name, outer_ctx);
         RETURN_VOID(env);
     }
 
     if (!IS_ASSIGNED(flags) && !is_var_assigned_in_inner_scope(env, name, tbl)) {
+        if (in_outer_scope) {
+            Var_set_nonlocal(env, var, level, index, name, outer_ctx);
+            RETURN_VOID(env);
+        }
         VAR(var)->type = VAR_GLOBAL;
         RETURN_VOID(env);
     }
