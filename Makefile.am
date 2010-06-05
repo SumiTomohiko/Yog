@@ -4,8 +4,8 @@ ARCHIVE = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
 
 .PHONY: doc proto test test-installed test-copying test-mark-sweep \
-	test-mark-sweep-compact test-bdw test-generational install-vim install \
-	dist distcheck installer
+	test-mark-sweep-compact test-bdw test-generational vim install dist \
+	distcheck installer
 
 doc:
 	cd doc && make
@@ -42,10 +42,9 @@ test-generational:
 	export YOG=`pwd`/src/yog-generational$(EXEEXT); \
 	./run_tests
 
-install-vim:
-	mkdir -p $(SYNTAX_DIR)
-	cp yog.vim $(SYNTAX_DIR)
-	@grep "NOTICE" yog.vim | sed -e 's/" NOTICE: //'
+vim:
+	$(mkdir_p) $(SYNTAX_DIR)
+	$(INSTALL_DATA) yog.vim $(SYNTAX_DIR)
 
 install:
 	for d in src lib ext; do \
