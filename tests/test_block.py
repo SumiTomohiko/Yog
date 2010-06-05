@@ -4,6 +4,14 @@ from testcase import TestCase
 
 class TestBlock(TestCase):
 
+    def test_global0(self):
+        self._test("""
+42.times() do
+  foo = 26
+end
+print(foo)
+""", "26")
+
     def test_block3(self):
         self._test("""
 1.times() do [n]
