@@ -79,6 +79,7 @@ YogCode_dump(YogEnv* env, YogVal code)
     PUSH_LOCALS3(env, insts, consts, lineno_tbl);
 
     printf("stack size: %u\n", PTR_AS(YogCode, code)->stack_size);
+    printf("outer size: %u\n", PTR_AS(YogCode, code)->outer_size);
     printf("=== Constants ===\n");
     printf("index value\n");
 
@@ -144,12 +145,21 @@ YogCode_dump(YogEnv* env, YogVal code)
                 printf(" %d", index);
             }
             break;
+        case OP(STORE_NONLOCAL_NAME):
+        case OP(LOAD_NONLOCAL_NAME):
+            {
+                uint8_t index = OPERAND(uint8_t, 0);
+                ID id = OPERAND(ID, 1);
+                YogVal name = YogVM_id2name(env, env->vm, id);
+                printf(" %u %d ('%s)", index, id, STRING_CSTR(name));
+            }
+            break;
         case OP(STORE_LOCAL_NAME):
         case OP(LOAD_LOCAL_NAME):
             {
                 ID id = OPERAND(ID, 0);
                 YogVal name = YogVM_id2name(env, env->vm, id);
-                printf(" %d (:%s)", id, STRING_CSTR(name));
+                printf(" %d ('%s)", id, STRING_CSTR(name));
             }
             break;
         case OP(PUSH_CONST):
@@ -186,7 +196,7 @@ YogCode_dump(YogEnv* env, YogVal code)
             {
                 ID id = OPERAND(ID, 0);
                 YogVal name = YogVM_id2name(env, env->vm, id);
-                printf(" :%s", STRING_CSTR(name));
+                printf(" '%s", STRING_CSTR(name));
             }
             break;
         case OP(JUMP_IF_TRUE):
