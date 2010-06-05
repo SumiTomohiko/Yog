@@ -172,6 +172,7 @@ struct CompileData {
 
     YogVal cur_stmt;
     BOOL interactive;
+    int_t outer_depth;
 };
 
 typedef struct CompileData CompileData;
@@ -1324,6 +1325,58 @@ is_visible(YogEnv* env, Context ctx, Context outer_ctx)
 }
 
 static BOOL
+search_block_var_local_scope(YogEnv* env, ID name, YogVal outer_tbl, uint_t* plevel, uint_t* pindex, Context* pctx)
+{
+    SAVE_ARG(env, outer_tbl);
+    YogVal tbl = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS2(env, tbl, val);
+
+    int_t level = 1;
+    tbl = outer_tbl;
+    while ((VAR_TABLE(tbl)->ctx != CTX_PKG) && (VAR_TABLE(tbl)->ctx != CTX_CLASS)) {
+#define CONTINUE \
+    level++; \
+    tbl = VAR_TABLE(tbl)->outer_tbl; \
+    continue
+        if (!YogTable_lookup(env, VAR_TABLE(tbl)->vars, ID2VAL(name), &val)) {
+            CONTINUE;
+        }
+        Context outer_ctx = VAR_TABLE(tbl)->ctx;
+        switch (VAR(val)->type) {
+        case VAR_GLOBAL:
+            RETURN(env, FALSE);
+            break;
+        case VAR_LOCAL:
+            *plevel = level;
+            *pindex = VAR(val)->u.local.index;
+            *pctx = outer_ctx;
+            RETURN(env, TRUE);
+            break;
+        case VAR_NONLOCAL:
+            *plevel = level + VAR(val)->u.nonlocal.level;
+            if ((outer_ctx == CTX_FUNC) || (outer_ctx == CTX_BLOCK)) {
+                *pindex = VAR(val)->u.nonlocal.u.index;
+            }
+            *pctx = outer_ctx;
+            RETURN(env, TRUE);
+            break;
+        default:
+            YOG_BUG(env, "Unknown variable type (0x%x)", VAR(val)->type);
+            break;
+        }
+        CONTINUE;
+#undef CONTINUE
+    }
+    if (YogTable_lookup(env, VAR_TABLE(tbl)->vars, ID2VAL(name), &val) && (VAR(val)->type == VAR_LOCAL)) {
+        *plevel = level;
+        *pctx = VAR_TABLE(tbl)->ctx;
+        RETURN(env, TRUE);
+    }
+    RETURN(env, FALSE);
+}
+
+static BOOL
 find_outer_var(YogEnv* env, ID name, Context ctx, YogVal outer_tbl, uint_t* plevel, uint_t* pindex, Context* pctx)
 {
     SAVE_ARG(env, outer_tbl);
@@ -1457,26 +1510,29 @@ decide_auto_var_type(YogEnv* env, ID name, YogVal var, YogVal tbl, uint_t* pinde
         RETURN_VOID(env);
     }
 
-    uint_t level;
-    uint_t index;
-    Context outer_ctx;
-    BOOL in_outer_scope = find_outer_var(env, name, ctx, outer, &level, &index, &outer_ctx);
-#define SET_NONLOCAL_OR_GLOBAL do { \
-    if (in_outer_scope) { \
-        Var_set_nonlocal(env, var, level, index, name, outer_ctx); \
-        RETURN_VOID(env); \
-    } \
-    Var_set_global(env, var); \
-    RETURN_VOID(env); \
-} while (0)
     if (ctx == CTX_BLOCK) {
-        SET_NONLOCAL_OR_GLOBAL;
+        uint_t level;
+        uint_t index;
+        Context outer_ctx;
+        if (!search_block_var_local_scope(env, name, outer, &level, &index, &outer_ctx)) {
+            Var_set_global(env, var);
+            RETURN_VOID(env);
+        }
+        Var_set_nonlocal(env, var, level, index, name, outer_ctx);
+        RETURN_VOID(env);
     }
 
-    if (!IS_ASSIGNED(flags) && !is_var_assigned_in_inner_scope(env, name, tbl)) {
-        SET_NONLOCAL_OR_GLOBAL;
+    if (!IS_ASSIGNED(flags)) {
+        uint_t level;
+        uint_t index;
+        Context outer_ctx;
+        if (find_outer_var(env, name, ctx, outer, &level, &index, &outer_ctx)) {
+            Var_set_nonlocal(env, var, level, index, name, outer_ctx);
+            RETURN_VOID(env);
+        }
+        Var_set_global(env, var);
+        RETURN_VOID(env);
     }
-#undef SET_NONLOCAL_OR_GLOBAL
 
     VAR(var)->type = VAR_LOCAL;
     VAR(var)->u.local.index = *pindex;
@@ -2318,6 +2374,7 @@ CompileData_new(YogEnv* env, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, Yog
     COMPILE_DATA(data)->class_name = class_name;
     COMPILE_DATA(data)->cur_stmt = YUNDEF;
     COMPILE_DATA(data)->interactive = interactive;
+    COMPILE_DATA(data)->outer_depth = 0;
 
     RETURN(env, data);
 }
@@ -2336,7 +2393,7 @@ get_max_outer_level_callback(YogEnv* env, YogVal key, YogVal val, YogVal* arg)
     return ST_CONTINUE;
 }
 
-static uint_t
+static int_t
 get_max_outer_level(YogEnv* env, YogVal tbl)
 {
     YogVal arg = INT2VAL(0);
@@ -2452,10 +2509,23 @@ compile_defaults(YogEnv* env, AstVisitor* visitor, YogVal params, YogVal data)
     RETURN_VOID(env);
 }
 
-static YogVal
-compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, ID func_name, YogVal params, YogVal stmts, YogVal vars, BOOL interactive)
+static void
+update_outer_depth(YogEnv* env, YogVal data, int_t depth)
 {
-    SAVE_ARGS4(env, filename, params, stmts, vars);
+    if (!IS_PTR(data)) {
+        return;
+    }
+    SAVE_ARG(env, data);
+    if (COMPILE_DATA(data)->outer_depth < depth) {
+        COMPILE_DATA(data)->outer_depth = depth;
+    }
+    RETURN_VOID(env);
+}
+
+static YogVal
+compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, ID func_name, YogVal params, YogVal stmts, YogVal vars, YogVal outer_data, BOOL interactive)
+{
+    SAVE_ARGS5(env, filename, params, stmts, vars, outer_data);
     YogVal anchor = YUNDEF;
     YogVal exc_tbl_ent = YUNDEF;
     YogVal data = YUNDEF;
@@ -2497,8 +2567,9 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, 
     YogVal consts = table2array(env, COMPILE_DATA(data)->const2index);
     YogGC_UPDATE_PTR(env, CODE(code), consts, consts);
     YogGC_UPDATE_PTR(env, CODE(code), insts, PTR_AS(YogBinary, bin)->body);
-    uint_t outer_depth = get_max_outer_level(env, vars);
-    CODE(code)->outer_size = outer_depth;
+    int_t outer_depth = get_max_outer_level(env, vars);
+    update_outer_depth(env, outer_data, outer_depth - 1);
+    CODE(code)->outer_size = outer_depth < COMPILE_DATA(data)->outer_depth ? COMPILE_DATA(data)->outer_depth : outer_depth;
 
     make_exception_table(env, code, data);
     make_lineno_table(env, code, anchor);
@@ -2609,6 +2680,82 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
     RETURN_VOID(env);
 }
 
+static void
+register_inner_var_as_assigned(YogEnv* env, YogVal tbl, ID name, YogVal var)
+{
+    SAVE_ARGS2(env, tbl, var);
+
+    if (IS_PARAM(VAR(var)->flags)) {
+        RETURN_VOID(env);
+    }
+    if (!IS_ASSIGNED(VAR(var)->flags)) {
+        RETURN_VOID(env);
+    }
+    register_var_as_assigned(env, tbl, name);
+
+    RETURN_VOID(env);
+}
+
+static void put_vars_assigned_in_block(YogEnv*, YogVal, YogVal);
+
+static void
+put_vars_assigned_in_inner_scope(YogEnv* env, YogVal tbl, YogVal inner_tbl)
+{
+    SAVE_ARGS2(env, tbl, inner_tbl);
+    YogVal t = YUNDEF;
+    PUSH_LOCAL(env, t);
+
+    uint_t size = YogArray_size(env, VAR_TABLE(inner_tbl)->inner_tbls);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        t = YogArray_at(env, VAR_TABLE(inner_tbl)->inner_tbls, i);
+        put_vars_assigned_in_block(env, tbl, t);
+    }
+
+    RETURN_VOID(env);
+}
+
+static void
+put_vars_assigned_in_block(YogEnv* env, YogVal tbl, YogVal inner_tbl)
+{
+    SAVE_ARGS2(env, tbl, inner_tbl);
+    YogVal iter = YUNDEF;
+    YogVal key = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS3(env, iter, key, val);
+
+    iter = YogTable_get_iterator(env, VAR_TABLE(inner_tbl)->vars);
+    while (YogTableIterator_next(env, iter)) {
+        key = YogTableIterator_current_key(env, iter);
+        val = YogTableIterator_current_value(env, iter);
+        register_inner_var_as_assigned(env, tbl, VAL2ID(key), val);
+    }
+    put_vars_assigned_in_inner_scope(env, tbl, inner_tbl);
+
+    RETURN_VOID(env);
+}
+
+static void
+put_vars_assigned_in_block_to_top(YogEnv* env, YogVal tbl)
+{
+    SAVE_ARG(env, tbl);
+    put_vars_assigned_in_inner_scope(env, tbl, tbl);
+    RETURN_VOID(env);
+}
+
+static YogVal
+make_var_table_of_func(YogEnv* env, YogVal filename, Context ctx, YogVal params, YogVal stmts, YogVal outer_vars)
+{
+    SAVE_ARGS4(env, filename, params, stmts, outer_vars);
+    YogVal tbl = YUNDEF;
+    PUSH_LOCAL(env, tbl);
+
+    tbl = make_var_table(env, filename, ctx, params, stmts, outer_vars);
+    put_vars_assigned_in_block_to_top(env, tbl);
+
+    RETURN(env, tbl);
+}
+
 static YogVal
 compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, YogVal node, YogVal outer_data)
 {
@@ -2623,12 +2770,12 @@ compile_func(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, Y
     params = NODE(node)->u.funcdef.params;
     stmts = NODE(node)->u.funcdef.stmts;
     outer_vars = COMPILE_DATA(outer_data)->vars;
-    var_tbl = make_var_table(env, filename, CTX_FUNC, params, stmts, outer_vars);
+    var_tbl = make_var_table_of_func(env, filename, CTX_FUNC, params, stmts, outer_vars);
     decide_var_type(env, var_tbl);
 
     ID func_name = NODE(node)->u.funcdef.name;
 
-    code = compile_stmts(env, visitor, filename, class_name, func_name, params, stmts, var_tbl, FALSE);
+    code = compile_stmts(env, visitor, filename, class_name, func_name, params, stmts, var_tbl, outer_data, FALSE);
     setup_params(env, var_tbl, params, code);
 
     RETURN(env, code);
@@ -3219,7 +3366,7 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     params = NODE(node)->u.blockarg.params;
     stmts = NODE(node)->u.blockarg.stmts;
     var_tbl = NODE(node)->u.blockarg.var_tbl;
-    code = compile_stmts(env, visitor, filename, class_name, func_name, params, stmts, var_tbl, FALSE);
+    code = compile_stmts(env, visitor, filename, class_name, func_name, params, stmts, var_tbl, data, FALSE);
     setup_params(env, vars, params, code);
 
     RETURN(env, code);
@@ -3246,16 +3393,16 @@ compile_class(YogEnv* env, AstVisitor* visitor, ID class_name, YogVal stmts, uin
     YogVal var_tbl = YUNDEF;
     YogVal vars = YUNDEF;
     YogVal filename = YUNDEF;
-    YogVal outer_tbl = YUNDEF;
-    PUSH_LOCALS4(env, var_tbl, vars, filename, outer_tbl);
+    YogVal outer_vars = YUNDEF;
+    PUSH_LOCALS4(env, var_tbl, vars, filename, outer_vars);
 
     filename = COMPILE_DATA(data)->filename;
-    outer_tbl = COMPILE_DATA(data)->vars;
-    var_tbl = make_var_table(env, filename, CTX_CLASS, YNIL, stmts, outer_tbl);
+    outer_vars = COMPILE_DATA(data)->vars;
+    var_tbl = make_var_table_of_func(env, filename, CTX_CLASS, YNIL, stmts, outer_vars);
     decide_var_type(env, var_tbl);
 
     ID func_name = INVALID_ID;
-    YogVal code = compile_stmts(env, visitor, filename, class_name, func_name, YUNDEF, stmts, var_tbl, FALSE);
+    YogVal code = compile_stmts(env, visitor, filename, class_name, func_name, YUNDEF, stmts, var_tbl, data, FALSE);
 
     RETURN(env, code);
 }
@@ -3273,13 +3420,13 @@ compile_module(YogEnv* env, AstVisitor* visitor, ID name, YogVal stmts, uint_t l
 
     filename = COMPILE_DATA(data)->filename;
     outer_vars = COMPILE_DATA(data)->vars;
-    var_tbl = make_var_table(env, filename, CTX_CLASS, YNIL, stmts, outer_vars);
+    var_tbl = make_var_table_of_func(env, filename, CTX_CLASS, YNIL, stmts, outer_vars);
     decide_var_type(env, var_tbl);
 
     ID class_name = name;
     ID func_name = YogVM_intern(env, env->vm, "<module>");
 
-    code = compile_stmts(env, visitor, filename, class_name, func_name, YUNDEF, stmts, var_tbl, FALSE);
+    code = compile_stmts(env, visitor, filename, class_name, func_name, YUNDEF, stmts, var_tbl, data, FALSE);
 
     RETURN(env, code);
 }
@@ -3671,7 +3818,7 @@ compile_package(YogEnv* env, const char* filename, YogVal stmts, BOOL interactiv
         filename = "<stdin>";
     }
     name = YogCharArray_new_str(env, filename);
-    var_tbl = make_var_table(env, name, CTX_PKG, YNIL, stmts, YNIL);
+    var_tbl = make_var_table_of_func(env, name, CTX_PKG, YNIL, stmts, YNIL);
     decide_var_type(env, var_tbl);
 
     AstVisitor visitor;
@@ -3680,7 +3827,7 @@ compile_package(YogEnv* env, const char* filename, YogVal stmts, BOOL interactiv
     ID class_name = INVALID_ID;
     ID func_name = YogVM_intern(env, env->vm, "<package>");
 
-    YogVal code = compile_stmts(env, &visitor, name, class_name, func_name, YUNDEF, stmts, var_tbl, interactive);
+    YogVal code = compile_stmts(env, &visitor, name, class_name, func_name, YUNDEF, stmts, var_tbl, YNIL, interactive);
 
     RETURN(env, code);
 }

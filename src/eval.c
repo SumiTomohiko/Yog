@@ -371,7 +371,7 @@ make_outer_vars(YogEnv* env, uint_t depth)
     PUSH_LOCALS2(env, outer_vars, vars);
 
     outer_vars = YogOuterVars_new(env, depth);
-    vars = PTR_AS(YogMethodFrame, CUR_FRAME)->vars;
+    vars = PTR_AS(YogFrame, CUR_FRAME)->type == FRAME_METHOD ? PTR_AS(YogMethodFrame, CUR_FRAME)->vars : PTR_AS(YogNameFrame, CUR_FRAME)->vars;
     YogGC_UPDATE_PTR(env, PTR_AS(YogOuterVars, outer_vars), items[0], vars);
     if (depth == 1) {
         RETURN(env, outer_vars);
@@ -746,6 +746,16 @@ YogEval_mainloop(YogEnv* env)
                 const char* opname = YogCode_get_op_name(op);
                 TRACE("%p: PC=%u, lineno=%u, op=%s", env, PC, lineno, opname);
             }
+        } while (0);
+#endif
+#if 0
+        do {
+            uint_t lineno;
+            if (!YogCode_get_lineno(env, PTR2VAL(CODE), PC, &lineno)) {
+                lineno = 0;
+            };
+            const char* opname = YogCode_get_op_name(op);
+            TRACE("%p: PC=%u, lineno=%u, op=%s", env, PC, lineno, opname);
         } while (0);
 #endif
 #if 0
