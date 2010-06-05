@@ -173,6 +173,7 @@ struct CompileData {
     YogVal cur_stmt;
     BOOL interactive;
     int_t outer_depth;
+    YogVal outer_data;
 };
 
 typedef struct CompileData CompileData;
@@ -2355,9 +2356,9 @@ CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 }
 
 static YogVal
-CompileData_new(YogEnv* env, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID class_name, BOOL interactive)
+CompileData_new(YogEnv* env, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, YogVal filename, ID class_name, YogVal outer_data, BOOL interactive)
 {
-    SAVE_ARGS4(env, vars, anchor, exc_tbl_ent, filename);
+    SAVE_ARGS5(env, vars, anchor, exc_tbl_ent, filename, outer_data);
 
     YogVal data = ALLOC_OBJ(env, CompileData_keep_children, NULL, CompileData);
     YogGC_UPDATE_PTR(env, COMPILE_DATA(data), vars, vars);
@@ -2375,6 +2376,7 @@ CompileData_new(YogEnv* env, YogVal vars, YogVal anchor, YogVal exc_tbl_ent, Yog
     COMPILE_DATA(data)->cur_stmt = YUNDEF;
     COMPILE_DATA(data)->interactive = interactive;
     COMPILE_DATA(data)->outer_depth = 0;
+    YogGC_UPDATE_PTR(env, COMPILE_DATA(data), outer_data, outer_data);
 
     RETURN(env, data);
 }
@@ -2518,6 +2520,7 @@ update_outer_depth(YogEnv* env, YogVal data, int_t depth)
     SAVE_ARG(env, data);
     if (COMPILE_DATA(data)->outer_depth < depth) {
         COMPILE_DATA(data)->outer_depth = depth;
+        update_outer_depth(env, COMPILE_DATA(data)->outer_data, depth - 1);
     }
     RETURN_VOID(env);
 }
@@ -2537,7 +2540,7 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, 
 
     anchor = Anchor_new(env);
     exc_tbl_ent = ExceptionTableEntry_new(env);
-    data = CompileData_new(env, vars, anchor, exc_tbl_ent, filename, class_name, interactive);
+    data = CompileData_new(env, vars, anchor, exc_tbl_ent, filename, class_name, outer_data, interactive);
 
     label_return_start = Label_new(env);
     add_inst(env, data, label_return_start);
