@@ -4,7 +4,7 @@ DIR = $(top_srcdir)/src
 DEST_DIR = html
 VERSION = @VERSION@
 EXEEXT = @EXEEXT@
-PARAMS = --heap-size=8M --young-heap-size=4M --old-heap-size=4M makedoc.yg --title="Yog $(VERSION) documentation" --destdir=$(DEST_DIR) index.ydoc
+PARAMS = --heap-size=8M --young-heap-size=4M --old-heap-size=4M makedoc.yg --title="Yog $(VERSION) documentation" --destdir=$(DEST_DIR) toc.ydoc
 
 .PHONY: all clean
 
@@ -14,18 +14,23 @@ measure: copying mark-sweep mark-sweep-compact generational bdw
 
 copying:
 	time $(DIR)/yog-copying$(EXEEXT) $(PARAMS)
+	cp index.html $(DEST_DIR)
 
 mark-sweep:
 	time $(DIR)/yog-mark-sweep$(EXEEXT) $(PARAMS)
+	cp index.html $(DEST_DIR)
 
 mark-sweep-compact:
 	time $(DIR)/yog-mark-sweep-compact$(EXEEXT) $(PARAMS)
+	cp index.html $(DEST_DIR)
 
 generational:
 	time $(DIR)/yog-generational$(EXEEXT) $(PARAMS)
+	cp index.html $(DEST_DIR)
 
 bdw:
 	time $(DIR)/yog-bdw$(EXEEXT) $(PARAMS)
+	cp index.html $(DEST_DIR)
 
 clean:
 	rm -rf $(DEST_DIR)
