@@ -12,7 +12,7 @@ sy match Number "\<0[Bb][0-1][0-1_]*\>"
 sy match Number "\<0[Oo][0-7][0-7_]*\>"
 sy match Float "[0-9][0-9]*\.[0-9][0-9]*"
 
-sy keyword Exception try except finally
+sy keyword Exception try raise except finally
 sy keyword Keyword end from import as def do class return
 sy keyword Conditional if elif else
 sy keyword Statement nonlocal
