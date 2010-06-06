@@ -17,5 +17,6 @@ sy keyword Keyword end from import as def do class return
 sy keyword Conditional if elif else
 sy keyword Statement nonlocal
 sy keyword Repeat while
+sy keyword Special __FILE__ __LINE__
 
 " vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
