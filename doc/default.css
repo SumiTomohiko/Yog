@@ -65,6 +65,10 @@ div.header {
   text-align: center;
 }
 
+tt {
+  font-size: 1.2em;
+}
+
 /**
  * vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
  */
