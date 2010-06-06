@@ -1,0 +1,11 @@
+
+= Library Reference
+
++ [builtins.ydoc]
++ [hq9plus.ydoc]
++ [optparse.ydoc]
++ [peg.ydoc]
++ [ydoc.ydoc]
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
