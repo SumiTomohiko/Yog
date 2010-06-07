@@ -1,0 +1,36 @@
+
+= Thread
+
+class: Thread
+  base: Object
+
+  THIS CLASS IS EXPERIMENTAL.
+
+  The class of threads.
+
+  attribute: __recursive_stack__
+    type: Array
+
+    Collection classes (+Array+, +Dict+ and +Set+) use this attribute to guard Yog from inifinite loop.
+
+  method: init(&block)
+    parameters:
+      block: a callable object
+    block: block(arg)
+
+    Constructor.
+
+  method: run(arg)
+    parameters:
+      arg: an actual argument to _block_
+    return: +self+
+
+    Excecute a thread.
+
+  method: join()
+    return: a return value of _block_
+
+    Waits until a thread ends.
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

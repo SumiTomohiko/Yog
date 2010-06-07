@@ -1,0 +1,245 @@
+
+= Numeric
+
+class: Bignum
+  base: Object
+  including: Comparable
+
+  +Bignum+ is a big integer. "Big" depends on computers' architecture.
+
+  Yog has no limits on the size of integers.
+
+  method: %(n)
+    parameters:
+      n: Fixnum or Bignum
+    return: +self % n+
+    exceptions:
+      TypeError: _n_ is not Fixnum nor Bignum
+
+  method: &(n)
+    parameters:
+      n: Fixnum or Bignum
+    return: bitwise and of +self+ and _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum nor Bignum
+
+  method: *(n)
+    parameters:
+      n: Fixnum , Bignum or Float
+    return: +self *+ _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum, Bignum nor Float
+
+  method: **(n)
+    parameters:
+      n: Fixnum or Float
+    return: +self **+ _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum nor Float
+
+  method: +(n)
+    parameters:
+      n: Fixnum, Bignum or Float
+    return: +self \++ _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum, Bignum nor Float
+
+  method: +self()
+    return: +self+
+
+  method: -(n)
+    parameters:
+      n: Fixnum, Bignum or Float
+    return: +self -+ _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum, Bignum nor Float
+
+  method: -self()
+    return: negated +self+
+
+  method: /(n)
+    parameters:
+      n: Fixnum, Bignum or Float
+    return: +self /+ _n_. Always Float.
+    exceptions:
+      TypeError: _n_ is not Fixnum, Bignum nor Float
+      ZeroDivisionError: _n_ is zero or 0.0
+
+  method: //(n)
+    parameters:
+      n: Fixnum, Bignum or Float
+    return: +self //+ _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum, Bignum nor Float
+      ZeroDivisionError: _n_ is zero or 0.0
+
+  method: <<(n)
+    parameters:
+      n: Fixnum
+    return: +self+ left-shifted by _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum
+
+  method: <=>(n)
+    parameters:
+      n: Bignum
+    return: +-1+ when +self <+ _n_, +1+ when +self >+ _n_ and zero when +self ==+ _n_
+    exceptions:
+      TypeError: _n_ is not Bignum
+
+  method: >>(n)
+    parameters:
+      n: Fixnum
+    return: +self+ right-shifted by _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum
+
+  method: ^(n)
+    parameters:
+      n: Fixnum or Bignum
+    return: bitwise exclusive or of +self+ and _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum nor Bignum
+
+  method: hash()
+    return: hash
+
+  method: to_s()
+    return: string representation of a Bignum
+
+    Converts a Bignum into +String+.
+
+  method: |(n)
+    parameters:
+      n: Fixnum or Bignum
+    return: bitwise or of +self+ and _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum nor Bignum
+
+  method: ~self()
+    return: not +self+
+
+class: Fixnum
+  base: Object
+
+  +Fixnum+ is a small integer. "Small" depends on computers' architecture.
+
+  Yog has no limits on the size of integers. When a result of an operation exceeds a range of +Fixnum+, it becomes +Bignum+ automatically.
+
+  method: %(n)
+    parameters:
+      n: Fixnum or Bignum
+    return: +self % n+
+    exceptions:
+      TypeError: _n_ is not Fixnum nor Bignum
+
+  method: &(n)
+    parameters:
+      n: Fixnum or Bignum
+    return: bitwise and of +self+ and _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum nor Bignum
+
+  method: *(n)
+    parameters:
+      n: Fixnum , Bignum or Float
+    return: +self *+ _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum, Bignum nor Float
+
+  method: **(n)
+    parameters:
+      n: Fixnum or Float
+    return: +self **+ _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum nor Float
+
+  method: +(n)
+    parameters:
+      n: Fixnum, Bignum or Float
+    return: +self \++ _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum, Bignum nor Float
+
+  method: +self()
+    return: +self+
+
+  method: -(n)
+    parameters:
+      n: Fixnum, Bignum or Float
+    return: +self -+ _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum, Bignum nor Float
+
+  method: -self()
+    return: negated +self+
+
+  method: /(n)
+    parameters:
+      n: Fixnum, Bignum or Float
+    return: +self /+ _n_. Always Float.
+    exceptions:
+      TypeError: _n_ is not Fixnum, Bignum nor Float
+      ZeroDivisionError: _n_ is zero or 0.0
+
+  method: //(n)
+    parameters:
+      n: Fixnum, Bignum or Float
+    return: +self //+ _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum, Bignum nor Float
+      ZeroDivisionError: _n_ is zero or 0.0
+
+  method: <<(n)
+    parameters:
+      n: Fixnum
+    return: +self+ left-shifted by _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum
+
+  method: <=>(n)
+    parameters:
+      n: any object
+    return: +-1+ when +self <+ _n_, +1+ when +self >+ _n_, zero when +self ==+ _n_ or +nil+ when _n_ is not +Fixnum+
+
+  method: >>(n)
+    parameters:
+      n: Fixnum
+    return: +self+ right-shifted by _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum
+
+  method: ^(n)
+    parameters:
+      n: Fixnum or Bignum
+    return: bitwise exclusive or of +self+ and _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum nor Bignum
+
+  method: hash()
+    return: hash
+
+  method: times(&block)
+    parameters:
+      block: a callable object
+    return: +nil+
+
+    Iterates _block_ for +self+ times.
+
+  method: to_s()
+    return: string representation of a Bignum
+
+    Converts a Bignum into +String+.
+
+  method: |(n)
+    parameters:
+      n: Fixnum or Bignum
+    return: bitwise or of +self+ and _n_
+    exceptions:
+      TypeError: _n_ is not Fixnum nor Bignum
+
+  method: ~self()
+    return: not +self+
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

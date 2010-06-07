@@ -1,0 +1,19 @@
+
+= +builtins+ package
+
+You can use classes/modules/functions/objects in this package without the +import+ statement.
+
++ [object.ydoc]
++ [containers.ydoc]
++ [numeric.ydoc]
++ [bool.ydoc]
++ [exceptions.ydoc]
++ [file.ydoc]
++ [ffi.ydoc]
++ [coroutine.ydoc]
++ [thread.ydoc]
++ [functions.ydoc]
++ [constants.ydoc]
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

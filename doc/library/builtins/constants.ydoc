@@ -1,0 +1,19 @@
+
+= Built-in Constants
+
+data: ARGV
+  type: Array
+
+  The +Array+ object containing command line parameters. +ARGV[0]+ is a script file name. If Yog is invoked in an interactive mode, +ARGV+ becomes empty. With +__FILE__+ variables, you can make a special part in a script file\:
+
+    if ARGV.get(0) == __FILE__
+      # Here is executed when this file is invoked
+    end
+
+data: PATH_SEPARATOR
+  type: String
+
+  a path separator of directories
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

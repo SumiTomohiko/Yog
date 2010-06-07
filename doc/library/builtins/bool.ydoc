@@ -1,0 +1,17 @@
+
+= Bool
+
+class: Bool
+  base: Object
+
+  The class of +true+ and +false+.
+
+  method: hash()
+
+  method: to_s()
+    return: string representation of +Bool+
+
+    Converts +Bool+ into +String+.
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

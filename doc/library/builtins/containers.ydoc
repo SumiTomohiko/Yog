@@ -1,0 +1,215 @@
+
+= Array, Dictionary and Set
+
+class: Array
+  base: Object
+
+  You can make arrays with square brackets (+[]+) and commas (+,+) to separate values. For example, +[42, 26]+ is an array which has +42+ as first element and +26+ as second element.
+
+  Each elements in arrays are accessed by an index enclosing square brackets. Index of the first element is zero. If negative index +idx+ is given to an array +a+, it is treated as +a.size \+ idx+, so the last element is accessed with +a[-1]+.
+
+  method: +(a)
+    parameters:
+      a: An array
+    return: New array
+    exceptions:
+      TypeError: When _a_ is not an array.
+
+    Concatenates two arrays.
+
+  method: <<(obj)
+    parameters:
+      obj: an object
+    return: +self+
+
+    Adds +obj+ to the array.
+
+  method: [](index)
+    parameters:
+      index: element's index starting zero
+    return: the object at _index_th
+    exceptions:
+      IndexError: _index_ is out of range.
+      TypeError: _index_ isn't Fixnum.
+
+    Returns the _index_th object.
+
+  method: []=(index, value)
+    parameters:
+      index: element's index starting zero
+    return: +self+
+    exceptions:
+      IndexError: _index_ is out of range.
+      TypeError: _index_ isn't Fixnum.
+
+    Sets the _index_th object.
+
+  method: each(&block)
+    parameters:
+      block: code to execute in each iterations
+    return: +self+
+    block: block(elem)
+
+    Execute _block_ for each elements in an array. This method gives each elements as an argument to _block_.
+
+  property: empty?
+    type: Bool
+
+    Becomes +true+ when no objects are in an array.
+
+  method: get(index, default=nil)
+    parameters:
+      index: element's index starting zero. Negative value is allowed.
+      default: return value when _index_ is out of range
+    return: the object at _index_th
+
+    Returns the _index_th object. When _index_ is out of range, returns _default_.
+
+  method: include?(obj)
+    parameters:
+      obj: an object
+    return: +true+ or +false+
+
+    Check if _obj_ is in an array.
+
+  method: join(sep)
+    parameters:
+      sep: a separator between elements
+    return: string
+
+    Concatenates elements in an array separating with _sep_. Each elements are converted to +String+ with the +to_s()+ method.
+
+  method: pop()
+    return: a poped value
+    exceptions:
+      IndexError: the array is empty
+
+    Removes one element from an array.
+
+  method: push(obj)
+    parameters:
+      obj: a pushed object
+    return: +self+
+
+    Appends one object to the tail of an array.
+
+  method: shift()
+    return: an object which was at head of an array
+    exceptions:
+      IndexError: an array is empty
+
+    Removes one object from the head of an array.
+
+  method: slice(pos, len=nil)
+    parameters:
+      pos: index of a first element. Negative value is allowed.
+      len: length
+    return: a new array
+
+    Makes a new array with elements which are from _pos_ to _pos_ +\++ _len_ +- 1+. When _pos_ is out of range, an empty array (+[]+) is returned.
+
+  property: size
+    type: Fixnum
+    Objects number in the array.
+
+  method: to_s()
+    return: string representation of an array
+
+    Converts an array into +String+.
+
+  method: unshift(obj)
+    parameters:
+      obj: any object
+    return: +self+
+
+    Add _obj_ to a head of an array.
+
+class: Dict
+  base: Object
+
+  A dictionary is a collection of a key-value pair.
+
+  Comma-separated pairs in the form of +key => value+ enclosing with braces (+{}+) become a dictionary. Any class objects can be placed on a key or a value. For example, +{ 42 => 26, "foo" => "bar" }+ is a dictionary which has two pairs. Their keys are +42+ and +"foo"+. A value for +42+ is +26+ and a value for +"foo"+ is +"bar"+.
+
+  You can read a value of a key in a dictionary +d+ in the form of +d[key]+.
+
+  A dictionary doesn't keep pairs' order. An order in which key-value pairs appear in +Dict#each+ method is not defined.
+
+  method: +(d)
+    parameters:
+      d: a dictionary
+    return: a new dictionary
+    exceptions:
+      TypeError: _d_ is not a dictionary
+
+    Returns a new dictionary which has pairs in both of +self+ and _d_.
+
+  method: [](key)
+    parameters:
+      key: a key
+    return: a value corresponding _key_
+    exceptions:
+      KeyError: _key_ not found
+
+    Returns a value.
+
+  method: []=(key, value)
+    parameters:
+      key: a key
+      value: a value
+    return: +self+
+
+    Sets a value of _key_.
+
+  method: each(&block)
+    parameters:
+      block: a callable object
+    return: +self+
+    block: block(key, value)
+
+    Callbacks _block_ for each pairs. Order is undefined.
+
+  method: get(key, default=nil)
+    parameters:
+      key: a key
+      default: return value when _key_ is not found
+    return: a value corresponding _key_ or _default_
+
+    Returns a value or _default_.
+
+  attribute: size
+    type: Fixnum
+
+    number of pairs in a dictionary
+
+  method: to_s()
+    return: string representation of a dictionary
+
+    Converts a dictionary to a string.
+
+class: Set
+  base: Object
+
+  A +Set+ object is a collection of values. Comma-separated values enclosing braces (+{}+) becomes a +Set+. For example, +{ 42, 26 }+ is a +Set+ which contains two values of +42+ and +26+. When you create a empty +Set+, use +Set.new()+ (+{}+ is an empty dictionary).
+
+  method: add(*args)
+    parameters:
+      args: objects to add to +self+
+    return: +self+
+
+    Adds objects to +self+.
+
+  method: include?(obj)
+    parameters:
+      obj: any object
+    return: +true+ or +false+
+
+    Checks whether _obj_ is in +self+.
+
+  attribute: size
+    type: Fixnum
+
+    number of objects in +self+
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

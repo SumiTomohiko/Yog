@@ -1,7 +1,7 @@
 
 = Library Reference
 
-+ [builtins.ydoc]
++ [builtins/index.ydoc]
 + [hq9plus.ydoc]
 + [optparse.ydoc]
 + [peg.ydoc]

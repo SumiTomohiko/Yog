@@ -165,15 +165,15 @@ An indented text is converted into preformatted. This can be used for writing pr
 
 Enclosing a text with braces (+{}+) and enclosing a following text with brackets (+[]+) makes a link.
 
-  {click me!!}[builtins.ydoc]
+  {click me!!}[builtins/index.ydoc]
 
-makes {click me!!}[builtins.ydoc].
+makes {click me!!}[builtins/index.ydoc].
 
 A first part in braces is optional. If you don't give this, ydoc reads a first title in a document, and uses it as a link text.
 
-  [builtins.ydoc]
+  [builtins/index.ydoc]
 
-makes [builtins.ydoc].
+makes [builtins/index.ydoc].
 
 === Escaping
 

@@ -1,0 +1,106 @@
+
+= Coroutine
+
+class: Coroutine
+  base: Object
+
+  A coroutine is a suspendable function. A coroutine can stop executing a routine, and can restart later.
+
+  To create a coroutine, use the +Coroutine+ constructor giving a block. This block is a coroutine's body.
+
+    co = Coroutine.new() do
+      print(42)
+    end
+
+  A coroutine doesn't start automatically when created. Call +Coroutine#resume+ to start.
+
+    co.resume()   # prints 42
+
+  Arguments to +Coroutine#resume+ become actual parameters of a block. +Coroutine#resume+ accepts any number of arguments.
+
+    co = Coroutine.new() do [n]
+      print(n)
+    end
+    co.resume(42) # prints 42
+
+  A coroutine stops executing with +Coroutine.yield+.
+
+    co = Coroutine.new() do
+      42.times() do [n]
+        print(n)
+        Coroutine.yield()
+      end
+    end
+    co.resume()   # prints 0
+
+  Calling +Coroutine#resume+ for this coroutine again restarts executing until next +Coroutine.yield+ is called or the block ends.
+
+    co.resume()   # prints 1
+    co.resume()   # prints 2
+    co.resume()   # prints 3
+    ...(snip)...
+    co.resume()   # prints 41
+    co.resume()   # prints nothing
+
+  Resuming an ended coroutine raises +CoroutineError+ (dead coroutine called).
+
+  (Coroutines which needs different methods to resume/suspend like above is called asymmetric coroutines)
+
+  +Coroutine#resume+ and +Coroutine.yield+ exchanges information. Arguments for +Coroutine.yield+ become return values of +Coroutine#resume+, arguments for +Coroutine#resume+ become return values of +Coroutine.yield+.
+
+    co = Coroutine.new() do
+      42.times() do [n]
+        ping = Coroutine.yield("pong")
+        puts(ping)
+      end
+    end
+    co.resume()
+    pong = co.resume("ping")  # prints "ping"
+    puts(pong)                # prints "pong"
+
+  Coroutine have status. They are +Coroutine.SUSPENDED+, +Coroutine.RUNNING+ or +Coroutine.DEAD+. When a coroutine is created, its status is +Coroutine.SUSPENDED+. Calling +Coroutine#resume+ makes its status to +Coroutine.RUNNING+. A +yield+ed coroutine's status is +Coroutine.SUSPENDED+. When a coroutine finishes, its status becomes +Coroutine.DEAD+. A coroutine's status is refered by +status+ property.
+
+  property: dead?
+    type: Bool
+
+    Becomes +true+ when a coroutine's status is +Coroutine.DEAD+.
+
+  method: init(&block)
+    parameters:
+      block: coroutine's body
+
+    Constructor. _block_'s signature is any.
+
+  method: resume(*args)
+    parameters:
+      args: actual arguments to a coroutine body or return values of +Coroutine.yield+
+    return: actual arguments given to +Coroutine.yield+
+    exceptions:
+      CoroutineError: when a coroutine is dead
+
+    Executes a coroutine.
+
+  property: running?
+    type: Bool
+
+    Becomes +true+ when a coroutine's status is +Coroutine.RUNNING+.
+
+  property: status
+    type: Fixnum
+
+    Status of a coroutine. +Coroutine.SUSPENDED+, +Coroutine.RUNNING+ or +Coroutine.DEAD+.
+
+  property: suspended?
+    type: Bool
+
+    Becomes +true+ when a coroutine's status is +Coroutine.SUSPENDED+.
+
+  classmethod: yield(*args)
+    parameters:
+      args: return values of +Coroutine#resume+
+    return: actual parameters for +Coroutine#resume+
+
+    Suspend a coroutine.
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
