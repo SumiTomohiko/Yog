@@ -1,0 +1,11 @@
+12f67cf821811b6a75e293cf3d1661cc  usr/share/doc/yog/README.Debian
+10aa21b7308a97be2f186059b43ee8b8  usr/share/doc/yog/changelog.Debian.gz
+eea29fd78c54f98b4f21e5bb9a66814a  usr/share/doc/yog/copyright
+5d53ee1d2e6a1f66a8b35adf56f107d3  usr/share/doc/yog/README
+87f4c6042808ec08ddb93c34377ccb65  usr/share/doc/yog/changelog.gz
+2d13bbfaf203b69c683754e24013a0b2  home/tom/bin/yog-copying
+8c97fcdc962b9aa40f04925675b5e46a  home/tom/bin/yog-bdw
+9b3ae2ae4bbc48ade0449122d989ff22  home/tom/bin/yog-mark-sweep-compact
+47e0f10f0cdaf7120f022492a54e0923  home/tom/bin/yog-generational
+d847f823b8726784ace6235ee90f7ab6  home/tom/bin/miniyog
+0b5490b2b7e2d58ff27cc65d8d68e8b5  home/tom/bin/yog-mark-sweep

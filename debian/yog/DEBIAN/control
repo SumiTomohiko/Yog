@@ -1,0 +1,10 @@
+Package: yog
+Version: 0.0.6
+Architecture: i386
+Maintainer: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+Installed-Size: 5520
+Depends: libc6 (>= 2.4), libgcc1 (>= 1:4.1.1-21)
+Section: unknown
+Priority: extra
+Description: a dynamic programming language
+ Yog is similar to Python and Ruby.

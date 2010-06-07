@@ -1,0 +1,12 @@
+Source: yog
+Section: unknown
+Priority: extra
+Maintainer: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+Build-Depends: debhelper (>= 5), autotools-dev
+Standards-Version: 3.7.2
+
+Package: yog
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: a dynamic programming language
+ Yog is similar to Python and Ruby.
