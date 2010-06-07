@@ -1,5 +1,165 @@
 
 = Foregin Function Interface (FFI)
 
+Yog can call functions in shared objects which are implemented by C.
+
+== Example
+
+The following code prints process ID.
+
+  lib = load_lib("/lib/libc.so.6")
+  f = lib.load_func("getpid", [], 'int32)
+  print(f())
+
+== Tutorial
+
+=== Loading a Library
+
+First step into FFI is loading a library. You can do this with the +load_lib+ built-in function. This function accepts one argument -- that is path to a library.
+
+  lib = load_lib("/lib/libc.so.6")
+
+The +load_lib+ function returns a +Lib+ object.
+
+=== Loading a Function
+
+Next step is loading a function in the library. You can do this with the +load_func+ method of a +Lib+ object. The +load_func+ method accepts three arguments. The first argument is name of a function. The second argument must be an array which includes types of arguments for a function in a library (below). The last argument is a type of a returned value.
+
+Types of arguments and returned value must be one of followings.
+
+* +'uint8+ -- unsigned 8 bits integer
+* +'int8+ -- signed 8 bits integer
+* +'uint16+ -- unsigned 16 bits integer
+* +'int16+ -- signed 16 bits integer
+* +'uint32+ -- unsigned 32 bits integer
+* +'int32+ -- signed 32 bits integer
+* +'uint64+ -- unsigned 64 bits integer
+* +'int64+ -- signed 64 bits integer
+* +'float+ -- floating point value
+* +'double+ -- double floating point value
+* +'uchar+ -- unsigned char
+* +'char+ -- signed char
+* +'ushort+ -- unsigned short
+* +'short+ -- signed short
+* +'uint+ -- unsigned int
+* +'int+ -- signed int
+* +'ulong+ -- unsigned long
+* +'long+ -- signed long
+* +'longdouble+ -- long double
+* +'pointer+ -- integer
+* +'int_p+ -- pointer to int
+* +String+ -- pointer to read only char array
+* +Buffer+ -- pointer to char array for read/write
+* +StructClass+ object -- pointer to struct
+
+The next code show you an example of +Buffer+ and +String+.
+
+  f = lib.load_func("snprintf", [Buffer, 'int, String, 'int], 'pointer)
+  buf = Buffer.new(256)
+  f(buf, buf.size, "0x%02x", 42)
+  print(buf.to_s()) # prints "0x2a"
+
++snprintf+ needs a buffer as the first argument which accepts result string. You must pass a +Buffer+ object for this argument.
+
+Third argument of +snprintf+ is a format string. Because it is read only, so you can pass a +String+ object for this argument.
+
+=== Structures
+
+Yog can define structures to pass library functions. The following code show you an example of structures (this is in +lib/zlib.yg+).
+
+  z_stream = StructClass.new("z_stream", [
+    [Buffer, 'next_in],
+    ['uint, 'avail_in],
+    ['ulong, 'total_in],
+
+    [Buffer, 'next_out],
+    ['uint, 'avail_out],
+    ['ulong, 'total_out],
+
+    [String, 'msg],
+    ['pointer, 'state],
+
+    ['pointer, 'zalloc],
+    ['pointer, 'zfree],
+    ['pointer, 'opaque],
+
+    ['int, 'data_type],
+    ['ulong, 'adler],
+    ['ulong, 'reserved]])
+
+This code defines a structure that name is "z\_stream". The first field of this structure is +Buffer+ (for giving an input buffer to zlib), that name is "next\_in", etc. You can use same types as that of function arguments. The 7th field whose name is "msg" is +String+. This means that this field is read only (zlib users know what error happened in the library by this field).
+
+Structures can create new instance with the +new+ method.
+
+  z = z_stream.new()
+
+You can access structure's attributes.
+
+  in = Buffer.new(1024)
+  z.next_in = in
+
+Structures can be used in loading functions. The next code load a function of "deflateInit\_" whose first argument is +z_stream+.
+
+  deflateInit_ = lib.load_func("deflateInit_", [z_stream, 'int, String, 'int], 'int)
+
+== Classes
+
+class: Buffer
+  base: Object
+
+  This class represents a buffer for reading/writing in library functions.
+
+  method: init(data)
+    parameters:
+      data: +Fixnum+, +String+ or +Binary+
+
+    When _data_ is a +Fixnum+, this specifies size of buffer. In case of +String+, buffer is initialized with this string. When _data_ is +Binary+, buffer is initialized with binary data.
+
+  property: size
+    type: Fixnum
+
+    size of a +Buffer+ object
+
+  method: to_bin()
+    return: a +Binary+ object
+
+  method: to_s()
+    return: a +String+ object in ascii encoding.
+
+class: Lib
+  base: Object
+
+  This class represents a shared library.
+
+  method: load_func(name, arg_types=nil, rtype=nil)
+    parameters:
+      name: name of a function
+      arg_types: types of arguments
+      rtype: type of returned value
+    return: a +LibFunc+ object
+
+class: LibFunc
+  base: Object
+
+  This class represents a function in a shared library.
+
+class: Refer
+  base: Object
+
+  This class is used for passing a pointer to libraries.
+
+  property: value
+    type: Object
+
+class: StructClass
+  base: Object
+
+== Functions
+
+function: load_lib(path)
+  parameters:
+    path: path to a library
+  return: a +Lib+ object
+
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
