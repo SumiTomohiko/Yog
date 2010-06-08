@@ -1,4 +1,6 @@
-#include <dlfcn.h>
+#if defined(HAVE_DLFCN_H)
+#   include <dlfcn.h>
+#endif
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>

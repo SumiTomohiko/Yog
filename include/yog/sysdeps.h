@@ -4,6 +4,9 @@
 #if defined(HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif
+#if defined(HAVE_DIRECT_H)
+#   include <direct.h>
+#endif
 #if defined(HAVE_DLFCN_H)
 #   include <dlfcn.h>
 #endif
@@ -43,10 +46,10 @@
 #else
 #   define YogSysdeps_vsnprintf(s, size, fmt, ap)   vsprintf(s, fmt, ap)
 #endif
-#if defined(HAVE_MKDIR)
-#   define YogSysdeps_mkdir(path)   mkdir(path, 0755)
-#else
+#if defined(HAVE__MKDIR)
 #   define YogSysdeps_mkdir(path)   _mkdir(path)
+#else
+#   define YogSysdeps_mkdir(path)   mkdir(path, 0755)
 #endif
 #if defined(HAVE_BZERO)
 #   define YogSysdeps_bzero(s, n)   bzero(s, n)

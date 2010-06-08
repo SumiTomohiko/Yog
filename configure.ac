@@ -25,7 +25,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([inttypes.h limits.h stddef.h stdint.h stdlib.h string.h \
                   strings.h sys/time.h unistd.h malloc.h getopt.h float.h \
                   dlfcn.h sys/mman.h windows.h alloca.h winerror.h arpa/inet.h \
-                  netdb.h sys/socket.h winsock2.h])
+                  netdb.h sys/socket.h winsock2.h direct.h])
 AC_CHECK_HEADERS([CUnit/CUnit.h], cunit=yes, cunit=no)
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -168,7 +168,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit gettimeofday isascii memchr memmove memset munmap \
                 strchr strrchr strstr strtol dlopen isnan alloca vsnprintf \
                 pthread_rwlockattr_setkind_np pthread_rwlockattr_init \
-                pthread_rwlockattr_destroy snprintf _isnan mkdir getaddrinfo \
+                pthread_rwlockattr_destroy snprintf _isnan _mkdir getaddrinfo \
                 bzero])
 
 AC_ARG_ENABLE(profile,
