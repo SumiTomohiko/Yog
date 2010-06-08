@@ -7,7 +7,7 @@ import os
 class TestFFI(TestCase):
 
     def get_lib_path(self):
-        return join(".", "test_lib" + ".so" if os.name == "posix" else ".dll")
+        return join(".", "test_lib" + (".so" if os.name == "posix" else ".dll")).replace("\\", "\\\\")
 
     def test_load_lib0(self):
         path = self.get_lib_path()
