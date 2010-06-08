@@ -1,10 +1,7 @@
 
-import os
-from testcase import TestCase
+from unix import TestUnix
 
-class TestBuiltins(TestCase):
-
-    disabled = os.name != "posix"
+class TestBuiltins(TestUnix):
 
     def test_dirname0(self):
         self._test("""
