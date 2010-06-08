@@ -2352,6 +2352,7 @@ CompileData_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
     KEEP(try_list);
     KEEP(filename);
     KEEP(cur_stmt);
+    KEEP(outer_data);
 #undef KEEP
 }
 
