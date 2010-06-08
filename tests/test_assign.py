@@ -128,4 +128,27 @@ foo, bar = bar, foo
 print(bar)
 """, "42")
 
+    def test_UnboundLocalError0(self):
+        def test_stderr(stderr):
+            assert 0 <= stderr.find("UnboundLocalError: Local variable \"bar\" referenced before assignment")
+
+        self._test("""
+def foo()
+  print(bar)
+  bar = 42
+end
+foo()
+""", stderr=test_stderr)
+
+    def test_UnboundLocalError10(self):
+        def test_stderr(stderr):
+            assert 0 <= stderr.find("UnboundLocalError: Local variable \"self\" referenced before assignment")
+
+        self._test("""
+def foo()
+  print(self)
+end
+foo()
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

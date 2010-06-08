@@ -114,8 +114,7 @@ inst load_global
         val = lookup_builtins(env, id);
     }
     if (IS_UNDEF(val)) {
-        YogVal name = YogVM_id2name(env, env->vm, id);
-        YogError_raise_NameError(env, "name \"%S\" is not defined", name);
+        YogError_raise_NameError(env, id);
     }
 }
 
@@ -129,8 +128,7 @@ inst load_local_name
         val = lookup_builtins(env, id);
     }
     if (IS_UNDEF(val)) {
-        YogVal name = YogVM_id2name(env, env->vm, id);
-        YogError_raise_NameError(env, "name \"%S\" is not defined", name);
+        YogError_raise_NameError(env, id);
     }
 }
 
@@ -139,8 +137,18 @@ inst load_local_index
 ()
 (val)
 {
+    SAVE_LOCALS_TO_NAME(env, load_local_index);
     YogVal vars = LOCAL_VARS(CUR_FRAME);
+    PUSH_LOCAL(env, vars);
+
     val = PTR_AS(YogValArray, vars)->items[index];
+    if (IS_UNDEF(val)) {
+        ID name = CODE->local_vars_names[index];
+        YogError_raise_UnboundLocalError(env, "Local variable \"%I\" referenced before assignment", name);
+        /* NOTREACHED */
+    }
+
+    RESTORE_LOCALS_FROM_NAME(env, load_local_index);
 }
 
 inst load_super
@@ -320,6 +328,10 @@ inst load_nonlocal_index
     vars = get_outer_vars(env, level);
     YOG_ASSERT(env, index < YogValArray_size(env, vars), "invalid index");
     val = PTR_AS(YogValArray, vars)->items[index];
+    if (IS_UNDEF(val)) {
+        YogError_raise_UnboundLocalError(env, "Nonlocal variable referenced before assignment");
+        /* NOTREACHED */
+    }
 
     RESTORE_LOCALS_FROM_NAME(env, load_nonlocal_index);
 }
@@ -350,7 +362,7 @@ inst load_nonlocal_name
 
     vars = get_outer_vars(env, level);
     if (!YogTable_lookup(env, vars, ID2VAL(name), &val)) {
-        YogError_raise_NameError(env, "%I not found", name);
+        YogError_raise_NameError(env, name);
     }
 
     RESTORE_LOCALS_FROM_NAME(env, load_nonlocal_name);
