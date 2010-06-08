@@ -51,19 +51,19 @@ Defining a function starts from the +def+ keyword. The function name and the par
 
 === Invoke Scripts
 
-If you want to execute a script, provide script's file name to +yog+ as an argument\:
+If you want to execute a script, provide script's file name to one of executable modules as an argument\:
 
-  $ yog filename
+  $ yog-generational filename
 
 ==== Executable Scripts
 
-You can make scripts directly executable by putting the following line at the head of the file (assuming that +yog+ is installed into +/usr/local/bin/+)\:
+You can make scripts directly executable by putting the following line at the head of the file (assuming that +yog-generational+ is installed into +/usr/local/bin/+)\:
 
-  #!/usr/local/bin/yog
+  #!/usr/local/bin/yog-generational
 
 or\:
 
-  #!/usr/bin/env yog
+  #!/usr/bin/env yog-generational
 
 and add execute mode to the file by +chmod+ command\:
 
@@ -270,7 +270,7 @@ The cases of blocks are the same as functions\:
     end
   end
 
-You can read variables in enclosing functions (1) from blocks (2). +foo()+ of the above code returns +42+. But, variables cannot be written at inner blocks. +foo()+ of the next code returns +42+, not +"baz"+\:
+You can read variables in enclosing functions (1) from blocks (2). +foo()+ of the above code returns +42+. Variables can be written at inner blocks. +foo()+ of the next code returns +"baz"+, not +42+\:
 
   def foo()
     bar = 42
@@ -279,19 +279,6 @@ You can read variables in enclosing functions (1) from blocks (2). +foo()+ of th
     end
     return bar
   end
-
-If you want to update variables, you need to use +nonlocal+ statements as same as the cases of functions\:
-
-  def foo()
-    bar = 42
-    26.times() do
-      nonlocal bar
-      bar = "baz"
-    end
-    return bar
-  end
-
-+foo()+ of the above code returns +"baz"+.
 
 === +return+ in Blocks
 
@@ -815,7 +802,7 @@ Assume that you want to use the +fib+ function in +fib.yg+ from the script +foo.
 When do +import foo+, Yog searches +foo.yg+ in the following directories.
 
 + current directory
-+ +PREFIX/lib/yog/0.0.4+ (+PREFIX+ is usually +/usr/local+)
++ +PREFIX/lib/yog/0.0.6+ (+PREFIX+ is usually +/usr/local+)
 
 === Package Hierarchy
 
