@@ -1013,7 +1013,7 @@ YogBignum_to_unsigned_long_long(YogEnv* env, YogVal self, const char* name)
     }
     char buf[21];
     mpz_get_str(buf, 10, BIGNUM_NUM(self));
-    unsigned long long retval = 0;
+    unsigned long long retval;
     sscanf(buf, "%llu", &retval);
 
     RETURN(env, retval);
