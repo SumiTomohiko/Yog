@@ -265,4 +265,23 @@ f = lib.load_func(\"return_int64_7\", [], \'int64)
 print(f())
 """ % locals(), "4611686018427387904")
 
+    # Tests for longdouble
+    def test_argument600(self):
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_longdouble\", [\'longdouble])
+f(3.14)
+""" % locals(), "3.14")
+
+    def test_argument610(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Float, not String")
+        path = self.get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_longdouble\", [\'longdouble])
+f(\"baz\")
+""" % locals(), stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
