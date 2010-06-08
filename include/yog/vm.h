@@ -66,6 +66,7 @@ struct YogVM {
     YogVal eSyntaxError;
     YogVal eSystemError;
     YogVal eTypeError;
+    YogVal eUnboundLocalError;
     YogVal eValueError;
     YogVal eWindowsError;
     YogVal eZeroDivisionError;

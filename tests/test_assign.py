@@ -142,7 +142,7 @@ foo()
 
     def test_UnboundLocalError10(self):
         def test_stderr(stderr):
-            assert 0 <= stderr.find("UnboundLocalError: Unbound self referenced")
+            assert 0 <= stderr.find("UnboundLocalError: Local variable \"self\" referenced before assignment")
 
         self._test("""
 def foo()

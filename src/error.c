@@ -177,6 +177,12 @@ raise_format(YogEnv* env, YogVal klass, const char* fmt, va_list ap)
 }
 
 void
+YogError_raise_UnboundLocalError(YogEnv* env, const char* fmt, ...)
+{
+    RAISE_FORMAT(env, eUnboundLocalError, fmt);
+}
+
+void
 YogError_raise_TypeError(YogEnv* env, const char* fmt, ...)
 {
     RAISE_FORMAT(env, eTypeError, fmt);
@@ -263,9 +269,16 @@ YogError_raise_ArgumentError(YogEnv* env, const char* fmt, ...)
 }
 
 void
-YogError_raise_NameError(YogEnv* env, const char* fmt, ...)
+YogError_raise_NameError(YogEnv* env, ID name)
 {
-    RAISE_FORMAT(env, eNameError, fmt);
+    SAVE_LOCALS(env);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    s = YogSprintf_sprintf(env, "Name \"%I\" is not defined", name);
+    raise_error(env, env->vm->eNameError, s);
+
+    RETURN_VOID(env);
 }
 
 void
