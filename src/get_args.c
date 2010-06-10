@@ -2,6 +2,7 @@
 #include "yog/array.h"
 #include "yog/dict.h"
 #include "yog/error.h"
+#include "yog/get_args.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
