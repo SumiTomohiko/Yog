@@ -1,0 +1,27 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: yog-bdw can't parse yaml
+desc: |-
+  The next code causes KeyError unexpectedly.
+  
+  import yaml
+  enable_gc_stress()
+  d = yaml.load_string(<<EOF)
+  42: 26
+  foo: bar
+  EOF
+  print(d["foo"])
+type: :bugfix
+component: core
+release: 
+reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-06-09 08:53:56.016254 Z
+references: []
+
+id: 74d66ea15f9cf1b2b41cc1e947b65114e13f72af
+log_events: 
+- - 2010-06-09 08:53:56.664645 Z
+  - SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

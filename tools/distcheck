@@ -11,7 +11,7 @@ cleanup()
 
 do_test()
 {
-  (cd "${archive}" && mkdir $$ && ./configure --prefix=`pwd`/$$ && make && make install)
+  (cd "${archive}" && mkdir $$ && ./configure --prefix=`pwd`/$$ CFLAGS=-I${HOME}/include LDFLAGS=-L${HOME}/lib && make && make install)
   if [ $? != 0 ]; then
     echo "can't make"
     exit 2
@@ -24,18 +24,20 @@ if [ -z "${archive}" ]; then
   exit 1
 fi
 
+untar="tar xf -"
+
 cleanup
-zcat "${archive}.tar.gz" | cpio -i
+zcat "${archive}.tar.gz" | ${untar}
 if [ $? != 0 ]; then
-  echo "can't extrace ${archive}.tar.gz"
+  echo "can't extract ${archive}.tar.gz"
   exit 2
 fi
 do_test
 
 cleanup
-bzcat "${archive}.tar.bz2" | cpio -i
+bzcat "${archive}.tar.bz2" | ${untar}
 if [ $? != 0 ]; then
-  echo "can't extrace ${archive}.tar.bz2"
+  echo "can't extract ${archive}.tar.bz2"
   exit 2
 fi
 do_test
@@ -43,9 +45,9 @@ do_test
 which xzcat >/dev/null
 if [ $? = 0 ]; then
   cleanup
-  xzcat "${archive}.tar.xz" | cpio -i
+  xzcat "${archive}.tar.xz" | ${untar}
   if [ $? != 0 ]; then
-    echo "can't extrace ${archive}.tar.xz"
+    echo "can't extract ${archive}.tar.xz"
     exit 2
   fi
   do_test
@@ -54,7 +56,7 @@ fi
 cleanup
 unzip -q "${archive}.zip"
 if [ $? != 0 ]; then
-  echo "can't extrace ${archive}.zip"
+  echo "can't extract ${archive}.zip"
   exit 2
 fi
 do_test

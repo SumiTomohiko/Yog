@@ -74,12 +74,20 @@ do
 done
 tools_dir=`dirname ${0}`
 ${yog} "${tools_dir}/make_errno.yg" "${tools_dir}/errno" "${srcdir}/errno.inc"
+if [ $? != 0 ]; then
+  echo "can't generate errno files."
+  exit 2
+fi
 ${python} "${archive_dir}/tools/inst.py" "${srcdir}/insts.def" "${archive_dir}"
 if [ $? != 0 ]; then
   echo "can't generate instruction files."
   exit 2
 fi
 gperf "${srcdir}/keywords" > "${srcdir}/keywords.inc"
+if [ $? != 0 ]; then
+  echo "can't generate keywords.inc"
+  exit 2
+fi
 print_done
 
 echo -n "Generate HTML document..."

@@ -9,6 +9,9 @@ from time import localtime, strftime, time
 import os
 import sys
 
+def get_lib_path():
+    return join(".", "test_lib" + (".so" if os.name == "posix" else ".dll")).replace("\\", "\\\\")
+
 def get_command():
     try:
         return environ["YOG"]
