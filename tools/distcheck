@@ -24,8 +24,10 @@ if [ -z "${archive}" ]; then
   exit 1
 fi
 
+untar="tar xf -"
+
 cleanup
-zcat "${archive}.tar.gz" | cpio -i
+zcat "${archive}.tar.gz" | ${untar}
 if [ $? != 0 ]; then
   echo "can't extract ${archive}.tar.gz"
   exit 2
@@ -33,7 +35,7 @@ fi
 do_test
 
 cleanup
-bzcat "${archive}.tar.bz2" | cpio -i
+bzcat "${archive}.tar.bz2" | ${untar}
 if [ $? != 0 ]; then
   echo "can't extract ${archive}.tar.bz2"
   exit 2
@@ -43,7 +45,7 @@ do_test
 which xzcat >/dev/null
 if [ $? = 0 ]; then
   cleanup
-  xzcat "${archive}.tar.xz" | cpio -i
+  xzcat "${archive}.tar.xz" | ${untar}
   if [ $? != 0 ]; then
     echo "can't extract ${archive}.tar.xz"
     exit 2
