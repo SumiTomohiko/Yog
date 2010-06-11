@@ -46,7 +46,6 @@ h6 {
 
 pre {
   border: 1px solid #000000;
-  font-size: 1.2em;
   margin: 10px 20px;
   padding: 5px 10px;
 }
@@ -64,10 +63,6 @@ div.header {
   color: #ffffff;
   background-color: #800000;
   text-align: center;
-}
-
-tt {
-  font-size: 1.2em;
 }
 
 /**
