@@ -79,10 +79,14 @@ releases:
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
   name: 0.0.6
-  status: :unreleased
-  release_time: 
+  status: :released
+  release_time: 2010-06-11 04:10:54.885604 Z
   log_events: 
   - - 2010-05-26 15:54:29.798721 Z
     - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
     - created
+    - ""
+  - - 2010-06-11 04:10:54.885633 Z
+    - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+    - released
     - ""
