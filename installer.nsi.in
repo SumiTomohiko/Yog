@@ -17,7 +17,6 @@ Section
 
   SetOutPath "$INSTDIR\lib"
   File /r lib\*.yg
-  File ext\*.yg
 #  File ext\*.dll
 
   SetOutPath "$INSTDIR\doc"
