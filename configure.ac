@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT(Yog, 0.0.6, SumiTomohiko@neko-daisuki.ddo.jp)
+AC_INIT(Yog, 0.0.7, SumiTomohiko@neko-daisuki.ddo.jp)
 AM_INIT_AUTOMAKE([dist-bzip2])
 AC_CONFIG_SRCDIR([include/yog/config.h.in])
 AC_CONFIG_HEADER([include/yog/config.h])
