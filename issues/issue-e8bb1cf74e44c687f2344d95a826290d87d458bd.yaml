@@ -16,3 +16,9 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""
+- - 2010-06-18 08:56:12.825306 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - commented
+  - |-
+    In the case of Python 3.1.2, Python does fopen at first of importing in
+    Python/import.c. ImportError like "No module named foo" is raised at this point.
