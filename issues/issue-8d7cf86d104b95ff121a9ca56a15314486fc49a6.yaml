@@ -7,10 +7,10 @@ desc: |-
   bar # can read bar
 type: :task
 component: core
-release:
+release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2010-01-30 18:25:23.146905 Z
 references: []
 
@@ -20,3 +20,7 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""
+- - 2010-06-18 08:59:38.313070 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
+  - Done in previous version.
