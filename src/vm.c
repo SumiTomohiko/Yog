@@ -88,17 +88,17 @@ YogVM_register_package(YogEnv* env, YogVM* vm, const char* name, YogVal pkg)
 static void
 acquire_read_lock(YogEnv* env, pthread_rwlock_t* lock)
 {
-    FREE_FROM_GC(env);
+    YogGC_free_from_gc(env);
     pthread_rwlock_rdlock(lock);
-    BIND_TO_GC(env);
+    YogGC_bind_to_gc(env);
 }
 
 static void
 acquire_write_lock(YogEnv* env, pthread_rwlock_t* lock)
 {
-    FREE_FROM_GC(env);
+    YogGC_free_from_gc(env);
     pthread_rwlock_wrlock(lock);
-    BIND_TO_GC(env);
+    YogGC_bind_to_gc(env);
 }
 
 static void
@@ -874,9 +874,9 @@ wait_package(YogEnv* env, YogVal pkg)
     pthread_cond_t* cond = &PTR_AS(ImportingPackage, pkg)->cond;
     pthread_mutex_t* lock = &PTR_AS(ImportingPackage, pkg)->lock;
     while (!IS_PTR(PTR_AS(ImportingPackage, pkg)->pkg)) {
-        FREE_FROM_GC(env);
+        YogGC_free_from_gc(env);
         pthread_cond_wait(cond, lock);
-        BIND_TO_GC(env);
+        YogGC_bind_to_gc(env);
     }
 
     RETURN_VOID(env);

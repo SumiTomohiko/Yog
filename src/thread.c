@@ -292,13 +292,13 @@ join(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     CHECK_SELF_TYPE(env, self);
 
     void* retval = NULL;
-    FREE_FROM_GC(env);
+    YogGC_free_from_gc(env);
     if (pthread_join(PTR_AS(YogThread, self)->pthread, &retval) != 0) {
-        BIND_TO_GC(env);
+        YogGC_bind_to_gc(env);
         YOG_BUG(env, "pthread_join failed");
         /* NOTREACHED */
     }
-    BIND_TO_GC(env);
+    YogGC_bind_to_gc(env);
 
     RETURN(env, PTR2VAL(retval));
 }

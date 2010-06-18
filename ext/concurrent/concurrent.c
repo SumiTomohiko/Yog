@@ -53,9 +53,9 @@ Barrier_wait(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVa
     PTR_AS(Barrier, self)->counter--;
     while (PTR_AS(Barrier, self)->counter == 0) {
         pthread_cond_t* cond = &PTR_AS(Barrier, self)->cond;
-        FREE_FROM_GC(env);
+        YogGC_free_from_gc(env);
         pthread_cond_wait(cond, mutex);
-        BIND_TO_GC(env);
+        YogGC_bind_to_gc(env);
     }
     if (pthread_mutex_unlock(mutex) != 0) {
         YOG_BUG(env, "pthread_mutex_lock failed");
