@@ -206,18 +206,17 @@ case "${host}" in
     CFLAGS="${CFLAGS} -pthread"
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb -export-dynamic"
     TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
-    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT)"
     SOEXT="so"
     EXT_SUBDIRS="concurrent"
     ;;
 *-mingw32)
     CFLAGS="${CFLAGS} -I/mingw32/include"
     LDFLAGS_COPYING="${LDFLAGS_COPYING} -Wl,--out-implib,yog-copying.lib"
-    LDFLAGS_MINIYOG="${LDFLAGS_MINIYOG} -Wl,--out-implib,miniyog.lib"
     LDFLAGS_COMMON="${LDFLAGS_COMMON} --enable-runtime-pseudo-reloc"
     LIBS="${LIBS} /lib/libpthread.dll.a -lws2_32"
     TEST_TARGETS="${TEST_TARGETS} test-copying"
-    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) miniyog\$(EXEEXT)"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT)"
     SOEXT="dll"
     IMPORT_LIB="\$(top_srcdir)/src/yog-copying.lib"
     ;;
@@ -231,7 +230,7 @@ case "${host}" in
     AC_CONFIG_SUBDIRS([bdwgc])
     BDWGC_DIR="bdwgc"
     TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational"
-    BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT) miniyog\$(EXEEXT)"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT)"
     SOEXT="so"
     EXT_SUBDIRS="concurrent"
     ;;
@@ -251,7 +250,6 @@ AC_SUBST(LDFLAGS_COPYING)
 AC_SUBST(LDFLAGS_GENERATIONAL)
 AC_SUBST(LDFLAGS_MARK_SWEEP)
 AC_SUBST(LDFLAGS_MARK_SWEEP_COMPACT)
-AC_SUBST(LDFLAGS_MINIYOG)
 AC_SUBST(LIBS)
 AC_SUBST(SOEXT)
 AC_SUBST(IMPORT_LIB)

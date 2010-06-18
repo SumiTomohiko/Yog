@@ -8,7 +8,7 @@ LEMON_DIR = $(top_srcdir)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
 YACC = $(LEMON)
 PYTHON = @PYTHON@
-MINIYOG = miniyog$(EXEEXT)
+YOG = yog-generational
 TOOLS_DIR = $(top_srcdir)/tools
 
 BUILT_SOURCES = $(top_srcdir)/include/yog/token.h keywords.inc
@@ -28,8 +28,7 @@ LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a \
        $(LIBFFI_DIR)/.libs/libffi.a -lm @LIBS@
 
 EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
-		 yog-mark-sweep-compact$(EXEEXT) yog-generational$(EXEEXT) \
-		 $(MINIYOG)
+		 yog-mark-sweep-compact$(EXEEXT) yog-generational$(EXEEXT)
 bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
 yog_copying_CFLAGS = $(CFLAGS_COMMON) -DGC_COPYING
@@ -48,9 +47,6 @@ yog_generational_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
 			   gc/mark-sweep-compact.c
 yog_generational_CFLAGS = $(CFLAGS_COMMON) -DGC_GENERATIONAL
 yog_generational_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_GENERATIONAL@
-miniyog_SOURCES = $(yog_copying_SOURCES)
-miniyog_CFLAGS = $(yog_copying_CFLAGS) -DMINIYOG
-miniyog_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_MINIYOG@
 
 INSTS_DEF = insts.def
 INST_PY = $(top_srcdir)/tools/inst.py
@@ -66,26 +62,26 @@ insts:
 am:
 	$(GEN_AM_CMD)
 
-builtins.inc: $(MINIYOG) builtins.yg yg2inc.yg
-	./$(MINIYOG) yg2inc.yg builtins.yg $@
+builtins.inc: builtins.yg yg2inc.yg
+	$(YOG) yg2inc.yg builtins.yg $@
 
-builtins_win.inc: $(MINIYOG) builtins_win.yg yg2inc.yg
-	./$(MINIYOG) yg2inc.yg builtins_win.yg $@
+builtins_win.inc: builtins_win.yg yg2inc.yg
+	$(YOG) yg2inc.yg builtins_win.yg $@
 
-builtins_unix.inc: $(MINIYOG) builtins_unix.yg yg2inc.yg
-	./$(MINIYOG) yg2inc.yg builtins_unix.yg $@
+builtins_unix.inc: builtins_unix.yg yg2inc.yg
+	$(YOG) yg2inc.yg builtins_unix.yg $@
 
-array.inc: $(MINIYOG) array.yg yg2inc.yg
-	./$(MINIYOG) yg2inc.yg array.yg $@
+array.inc: array.yg yg2inc.yg
+	$(YOG) yg2inc.yg array.yg $@
 
-object.inc: $(MINIYOG) object.yg yg2inc.yg
-	./$(MINIYOG) yg2inc.yg object.yg $@
+object.inc: object.yg yg2inc.yg
+	$(YOG) yg2inc.yg object.yg $@
 
-string.inc: $(MINIYOG) string.yg yg2inc.yg
-	./$(MINIYOG) yg2inc.yg string.yg $@
+string.inc: string.yg yg2inc.yg
+	$(YOG) yg2inc.yg string.yg $@
 
-dict.inc: $(MINIYOG) dict.yg yg2inc.yg
-	./$(MINIYOG) yg2inc.yg dict.yg $@
+dict.inc: dict.yg yg2inc.yg
+	$(YOG) yg2inc.yg dict.yg $@
 
 $(top_srcdir)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
@@ -113,6 +109,6 @@ $(top_srcdir)/include/yog/opcodes.h: $(top_srcdir)/include/yog/opcodes.h.tmpl $(
 	$(INST_CMD)
 
 errno.inc: $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno
-	./$(MINIYOG) $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno $@
+	$(YOG) $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno $@
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
