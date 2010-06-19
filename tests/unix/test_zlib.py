@@ -2,11 +2,13 @@
 
 from sys import platform
 from zlib import compress
+
+from testcase import find_so
 from unix import TestUnix
 
 class TestZlib(TestUnix):
 
-    disabled = TestUnix.disabled or (0 <= platform.find("openbsd"))
+    disabled = TestUnix.disabled or (not find_so("z"))
     options = []
 
     def test_gc0(self):

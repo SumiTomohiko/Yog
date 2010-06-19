@@ -2,12 +2,24 @@
 
 from re import search
 from os import close, environ, unlink
-from os.path import basename, join, splitext
+from os.path import basename, exists, join, splitext
 from subprocess import PIPE, Popen
 from tempfile import mkstemp
 from time import localtime, strftime, time
 import os
 import sys
+
+def find_so(name):
+    so = "lib%s.so" % (name, )
+    try:
+        path = environ["LD_LIBRARY_PATH"]
+    except KeyError:
+        path = ""
+    dirs = [d for d in path.split(":") if 0 < len(d)] + ["/usr/local/lib", "/usr/lib", "/lib"]
+    for d in dirs:
+        if exists(join(d, so)):
+            return True
+    return False
 
 def get_lib_path():
     return join(".", "test_lib" + (".so" if os.name == "posix" else ".dll")).replace("\\", "\\\\")
