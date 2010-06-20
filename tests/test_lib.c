@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 void
@@ -418,6 +419,13 @@ void*
 return_pointer_0()
 {
     return (void*)1073741823;
+}
+
+void
+test_pointer_p(struct Foo** p)
+{
+    *p = malloc(sizeof(struct Foo));
+    (*p)->bar = 42;
 }
 
 /**

@@ -1242,6 +1242,24 @@ f(int)
 print(int.value)
 """ % locals(), "42")
 
+    def test_Pointer0(self):
+        path = get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"test_pointer_p\", [\'pointer_p])
+ptr = Pointer.new()
+f(ptr)
+try
+  Foo = StructClass.new(\"Foo\", [['int, 'bar]])
+  foo = Foo.new(ptr)
+  print(foo.bar)
+finally
+  libc = load_lib(\"/lib/libc.so\")
+  free = libc.load_func(\"free\", [\'pointer])
+  free(ptr)
+end
+""" % locals(), "42")
+
     def test_Buffer0(self):
         self._test("""
 buf = Buffer.new(42)
