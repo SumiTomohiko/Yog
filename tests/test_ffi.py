@@ -1250,11 +1250,11 @@ f = lib.load_func(\"test_pointer_p\", [\'pointer_p])
 ptr = Pointer.new()
 f(ptr)
 try
-  Foo = StructClass.new(\"Foo\", [['int, 'bar]])
+  Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
   foo = Foo.new(ptr)
   print(foo.bar)
 finally
-  libc = load_lib(\"/lib/libc.so\")
+  libc = load_lib("/lib/tls/i686/cmov/libc.so.6")
   free = libc.load_func(\"free\", [\'pointer])
   free(ptr)
 end

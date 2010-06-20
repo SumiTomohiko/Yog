@@ -72,6 +72,7 @@ static YogVal StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal 
 struct Struct {
     struct YogBasicObj base;
     void* data;
+    BOOL own;
     /**
      * A structure refered by Struct::data may have some buffers. These buffers
      * are members of Buffer objects. So Struct objects must keep these Buffer
@@ -426,6 +427,35 @@ Struct_get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
 }
 
 static YogVal
+Struct_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal klass = YUNDEF;
+    YogVal ptr = YNIL;
+    PUSH_LOCALS2(env, klass, ptr);
+    YogCArg params[] = { { "|", NULL }, { "ptr", &ptr }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "init", params, args, kw);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
+        YogError_raise_TypeError(env, "self must be Struct, not %C", self);
+    }
+    if (!IS_NIL(ptr) && (!IS_PTR(ptr) || (BASIC_OBJ_TYPE(ptr) != TYPE_POINTER))) {
+        YogError_raise_TypeError(env, "ptr must be Nil or Pointer, not %C", ptr);
+    }
+
+    if (!IS_NIL(ptr)) {
+        PTR_AS(Struct, self)->data = PTR_AS(Pointer, ptr)->ptr;
+        PTR_AS(Struct, self)->own = FALSE;
+        RETURN(env, self);
+    }
+    klass = YogVal_get_class(env, self);
+    uint_t size = PTR_AS(StructClass, klass)->size;
+    PTR_AS(Struct, self)->data = YogGC_malloc(env, size);
+    bzero(PTR_AS(Struct, self)->data, size);
+
+    RETURN(env, self);
+}
+
+static YogVal
 StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -460,6 +490,7 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
     ID id = YogVM_intern(env, env->vm, s);
     PTR_AS(YogClass, obj)->name = id;
     YogClass_define_allocator(env, obj, Struct_alloc);
+    YogClass_define_method(env, obj, pkg, "init", Struct_init);
 
     uint_t offset = 0;
     uint_t buffers_num = 0;
@@ -495,6 +526,17 @@ Struct_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     }
 }
 
+static void
+Struct_finalize(YogEnv* env, void* ptr)
+{
+    Struct* st = (Struct*)ptr;
+    if (!st->own) {
+        return;
+    }
+    YogVal klass = YogVal_get_class(env, PTR2VAL(st));
+    YogGC_free(env, st->data, PTR_AS(StructClass, klass)->size);
+}
+
 static YogVal
 Struct_alloc(YogEnv* env, YogVal klass)
 {
@@ -504,11 +546,10 @@ Struct_alloc(YogEnv* env, YogVal klass)
     YOG_ASSERT(env, BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS, "invalid class");
 
     uint_t buffers_num = PTR_AS(StructClass, klass)->buffers_num;
-    obj = ALLOC_OBJ_ITEM(env, Struct_keep_children, NULL, Struct, buffers_num, YogVal);
+    obj = ALLOC_OBJ_ITEM(env, Struct_keep_children, Struct_finalize, Struct, buffers_num, YogVal);
     YogBasicObj_init(env, obj, TYPE_STRUCT, 0, klass);
-    uint_t size = PTR_AS(StructClass, klass)->size;
-    PTR_AS(Struct, obj)->data = YogGC_malloc(env, size);
-    bzero(PTR_AS(Struct, obj)->data, size);
+    PTR_AS(Struct, obj)->data = NULL;
+    PTR_AS(Struct, obj)->own = TRUE;
     uint_t i;
     for (i = 0; i < buffers_num; i++) {
         PTR_AS(Struct, obj)->buffers[i] = YNIL;
@@ -662,6 +703,9 @@ map_id_type(YogEnv* env, ID type)
         cif_type = &ffi_type_pointer;
     }
     else if (strcmp(t, "int_p") == 0) {
+        cif_type = &ffi_type_pointer;
+    }
+    else if (strcmp(t, "pointer_p") == 0) {
         cif_type = &ffi_type_pointer;
     }
     else {
@@ -1149,6 +1193,17 @@ write_argument_object(YogEnv* env, void** ptr, void* refered, YogVal arg_type, Y
 }
 
 static void
+Pointer_write(YogEnv* env, YogVal self, void** ptr)
+{
+    SAVE_ARG(env, self);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_POINTER)) {
+        YogError_raise_TypeError(env, "Argument must be Pointer, not %C", self);
+    }
+    *ptr = PTR_AS(Pointer, self)->ptr;
+    RETURN_VOID(env);
+}
+
+static void
 Int_write(YogEnv* env, YogVal self, int* p)
 {
     SAVE_ARG(env, self);
@@ -1236,6 +1291,10 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal
         Int_write(env, val, (int*)refered);
         *((void**)pvalue) = refered;
     }
+    else if (strcmp(STRING_CSTR(s), "pointer_p") == 0) {
+        Pointer_write(env, val, (void**)refered);
+        *((void**)pvalue) = refered;
+    }
     else {
         YogError_raise_ValueError(env, "Unknown argument type");
         /* NOTREACHED */
@@ -1271,8 +1330,22 @@ type2refered_size(YogEnv* env, YogVal type, YogVal arg)
     if (strcmp(STRING_CSTR(s), "int_p") == 0) {
         RETURN(env, sizeof(int));
     }
+    if (strcmp(STRING_CSTR(s), "pointer_p") == 0) {
+        RETURN(env, sizeof(void*));
+    }
 
     RETURN(env, 0);
+}
+
+static void
+read_argument_pointer(YogEnv* env, YogVal obj, void* ptr)
+{
+    SAVE_ARG(env, obj);
+    if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_POINTER)) {
+        YogError_raise_TypeError(env, "Argument must be Pointer, not %C", obj);
+    }
+    PTR_AS(Pointer, obj)->ptr = ptr;
+    RETURN_VOID(env);
 }
 
 static void
@@ -1302,6 +1375,10 @@ read_argument(YogEnv* env, YogVal obj, YogVal arg_type, void* p)
     s = YogVM_id2name(env, env->vm, VAL2ID(arg_type));
     if (strcmp(STRING_CSTR(s), "int_p") == 0) {
         read_argument_int(env, obj, *((int*)p));
+        RETURN_VOID(env);
+    }
+    if (strcmp(STRING_CSTR(s), "pointer_p") == 0) {
+        read_argument_pointer(env, obj, *((void**)p));
         RETURN_VOID(env);
     }
     YogError_raise_ValueError(env, "Unknown type - %S", s);
