@@ -390,15 +390,19 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(name2id);
 
     KEEP(cArray);
+    KEEP(cArrayField);
     KEEP(cBignum);
     KEEP(cBinary);
     KEEP(cBool);
     KEEP(cBuffer);
+    KEEP(cBufferField);
+    KEEP(cClass);
     KEEP(cClassMethod);
     KEEP(cCode);
     KEEP(cCoroutine);
     KEEP(cDict);
     KEEP(cField);
+    KEEP(cFieldArray);
     KEEP(cFile);
     KEEP(cFixnum);
     KEEP(cFloat);
@@ -407,7 +411,6 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cInt);
     KEEP(cLib);
     KEEP(cLibFunc);
-    KEEP(cClass);
     KEEP(cMatch);
     KEEP(cModule);
     KEEP(cNativeFunction);
@@ -420,6 +423,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cRegexp);
     KEEP(cSet);
     KEEP(cString);
+    KEEP(cStringField);
     KEEP(cStructClass);
     KEEP(cStructClassClass);
     KEEP(cSymbol);
@@ -511,15 +515,19 @@ YogVM_init(YogVM* vm)
     init_read_write_lock(&vm->sym_lock);
 
     INIT(cArray);
+    INIT(cArrayField);
     INIT(cBignum);
     INIT(cBinary);
     INIT(cBool);
     INIT(cBuffer);
+    INIT(cBufferField);
+    INIT(cClass);
     INIT(cClassMethod);
     INIT(cCode);
     INIT(cCoroutine);
     INIT(cDict);
     INIT(cField);
+    INIT(cFieldArray);
     INIT(cFile);
     INIT(cFixnum);
     INIT(cFloat);
@@ -528,7 +536,6 @@ YogVM_init(YogVM* vm)
     INIT(cInt);
     INIT(cLib);
     INIT(cLibFunc);
-    INIT(cClass);
     INIT(cMatch);
     INIT(cModule);
     INIT(cNativeFunction);
@@ -541,6 +548,7 @@ YogVM_init(YogVM* vm)
     INIT(cRegexp);
     INIT(cSet);
     INIT(cString);
+    INIT(cStringField);
     INIT(cStructClass);
     INIT(cStructClassClass);
     INIT(cSymbol);

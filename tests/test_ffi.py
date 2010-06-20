@@ -1254,7 +1254,7 @@ try
   foo = Foo.new(ptr)
   print(foo.bar)
 finally
-  libc = load_lib("/lib/tls/i686/cmov/libc.so.6")
+  libc = load_lib(\"/lib/tls/i686/cmov/libc.so.6\")
   free = libc.load_func(\"free\", [\'pointer])
   free(ptr)
 end

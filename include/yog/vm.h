@@ -17,16 +17,19 @@ struct YogVM {
     pthread_rwlock_t sym_lock;
 
     YogVal cArray;
+    YogVal cArrayField;
     YogVal cBignum;
     YogVal cBinary;
     YogVal cBool;
     YogVal cBuffer;
+    YogVal cBufferField;
     YogVal cClass;
     YogVal cClassMethod;
     YogVal cCode;
     YogVal cCoroutine;
     YogVal cDict;
     YogVal cField;
+    YogVal cFieldArray;
     YogVal cFile;
     YogVal cFixnum;
     YogVal cFloat;
@@ -47,6 +50,7 @@ struct YogVM {
     YogVal cRegexp;
     YogVal cSet;
     YogVal cString;
+    YogVal cStringField;
     YogVal cStructClass;
     YogVal cStructClassClass;
     YogVal cSymbol;
