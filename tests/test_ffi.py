@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os.path import join
+from re import match
 from testcase import TestCase, get_lib_path
 import os
 
@@ -959,6 +960,25 @@ f(bar)
 print(bar.baz)
 """ % locals(), "foobarbazquux")
 
+    # Tests for pointer
+    def test_argument640(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Argument must be Pointer, not Fixnum")
+        path = get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_pointer\", [\'pointer])
+f(42)
+""" % locals(), stderr=test_stderr)
+
+    def test_argument650(self):
+        path = get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_pointer\", [\'pointer])
+f(Pointer.new())
+""" % locals(), "NULL")
+
     def test_arguments0(self):
         path = get_lib_path()
         self._test("""
@@ -1200,20 +1220,14 @@ print(f())
 """ % locals(), "3.14")
 
     def test_return390(self):
+        def test_stdout(stdout):
+            assert match(r"<Pointer .*>\Z", stdout) is not None
         path = get_lib_path()
         self._test("""
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"return_pointer_0\", [], \'pointer)
 print(f())
-""" % locals(), "1073741823")
-
-    def test_return400(self):
-        path = get_lib_path()
-        self._test("""
-lib = load_lib(\"%(path)s\")
-f = lib.load_func(\"return_pointer_1\", [], \'pointer)
-print(f())
-""" % locals(), "1073741824")
+""" % locals(), test_stdout)
 
     def test_Refer0(self):
         self._test("print(Refer.new().value)", "0")

@@ -167,6 +167,10 @@ print_longdouble(long double f)
 void
 print_pointer(void* ptr)
 {
+    if (ptr == NULL) {
+        printf("NULL");
+        return;
+    }
     printf("%p", ptr);
 }
 
@@ -414,12 +418,6 @@ void*
 return_pointer_0()
 {
     return (void*)1073741823;
-}
-
-void*
-return_pointer_1()
-{
-    return (void*)1073741824;
 }
 
 /**

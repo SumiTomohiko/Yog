@@ -110,6 +110,29 @@ typedef struct Buffer Buffer;
     } \
 } while (0)
 
+struct Pointer {
+    struct YogBasicObj base;
+    void* ptr;
+};
+
+typedef struct Pointer Pointer;
+
+#define TYPE_POINTER TO_TYPE(Pointer_alloc)
+
+static YogVal
+Pointer_alloc(YogEnv* env, YogVal klass)
+{
+    SAVE_ARG(env, klass);
+    YogVal ptr = YUNDEF;
+    PUSH_LOCAL(env, ptr);
+
+    ptr = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Pointer);
+    YogBasicObj_init(env, ptr, TYPE_POINTER, 0, klass);
+    PTR_AS(Pointer, ptr)->ptr = NULL;
+
+    RETURN(env, ptr);
+}
+
 static void
 Buffer_finalize(YogEnv* env, void* ptr)
 {
@@ -1090,7 +1113,18 @@ write_argument_Struct(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
 }
 
 static void
-write_argument_pointer(YogEnv* env, void** ptr, void* refered, YogVal arg_type, YogVal val)
+write_argument_pointer(YogEnv* env, void** ptr, YogVal val)
+{
+    SAVE_ARG(env, val);
+    if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_POINTER)) {
+        YogError_raise_TypeError(env, "Argument must be Pointer, not %C", val);
+    }
+    *ptr = PTR_AS(Pointer, val)->ptr;
+    RETURN_VOID(env);
+}
+
+static void
+write_argument_object(YogEnv* env, void** ptr, void* refered, YogVal arg_type, YogVal val)
 {
     SAVE_ARGS2(env, arg_type, val);
     YogVal klass = YUNDEF;
@@ -1133,7 +1167,7 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal
     PUSH_LOCAL(env, s);
 
     if (!IS_SYMBOL(arg_type)) {
-        write_argument_pointer(env, (void**)pvalue, refered, arg_type, val);
+        write_argument_object(env, (void**)pvalue, refered, arg_type, val);
         RETURN_VOID(env);
     }
 
@@ -1196,7 +1230,7 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal
         write_argument_long_double(env, (long double*)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "pointer") == 0) {
-        write_argument_uint32(env, (uint32_t*)pvalue, val);
+        write_argument_pointer(env, (void**)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "int_p") == 0) {
         Refer_write_int32(env, val, (int32_t*)refered);
@@ -1268,6 +1302,19 @@ Refer_read(YogEnv* env, YogVal self, YogVal arg_type, void* p)
 }
 
 static YogVal
+Pointer_new(YogEnv* env, void* ptr)
+{
+    SAVE_LOCALS(env);
+    YogVal p = YUNDEF;
+    PUSH_LOCAL(env, p);
+
+    p = Pointer_alloc(env, env->vm->cPointer);
+    PTR_AS(Pointer, p)->ptr = ptr;
+
+    RETURN(env, p);
+}
+
+static YogVal
 LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
 {
     SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
@@ -1293,11 +1340,8 @@ LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_
         refereds[i] = refered;
     }
 
-    void* rvalue = NULL;
     ffi_type* rtype = PTR_AS(LibFunc, callee)->cif.rtype;
-    if (rtype != &ffi_type_void) {
-        rvalue = YogSysdeps_alloca(type2size(env, rtype));
-    }
+    void* rvalue = rtype != &ffi_type_void ? YogSysdeps_alloca(type2size(env, rtype)) : NULL;
 
     ffi_call(&PTR_AS(LibFunc, callee)->cif, PTR_AS(LibFunc, callee)->f, rvalue, values);
 
@@ -1364,7 +1408,7 @@ LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_
         RETURN(env, YogFloat_from_float(env, *((long double*)rvalue)));
     }
     else if (rtype == &ffi_type_pointer) {
-        RETURN(env, YogVal_from_unsigned_int(env, *((unsigned int*)rvalue)));
+        RETURN(env, Pointer_new(env, *((void**)rvalue)));
     }
 
     RETURN(env, YNIL);
@@ -1911,7 +1955,8 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogVal cField = YUNDEF;
     YogVal cRefer = YUNDEF;
     YogVal cBuffer = YUNDEF;
-    PUSH_LOCALS7(env, cLib, cLibFunc, cStructClassClass, cStructClass, cField, cRefer, cBuffer);
+    YogVal cPointer = YUNDEF;
+    PUSH_LOCALS8(env, cLib, cLibFunc, cStructClassClass, cStructClass, cField, cRefer, cBuffer, cPointer);
     YogVM* vm = env->vm;
 
     cLib = YogClass_new(env, "Lib", vm->cObject);
@@ -1947,6 +1992,9 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method(env, cBuffer, pkg, "to_s", Buffer_to_s);
     YogClass_define_property(env, cBuffer, pkg, "size", Buffer_get_size, NULL);
     vm->cBuffer = cBuffer;
+    cPointer = YogClass_new(env, "Pointer", vm->cObject);
+    YogClass_define_allocator(env, cPointer, Pointer_alloc);
+    vm->cPointer = cPointer;
 
     RETURN_VOID(env);
 }
