@@ -1229,17 +1229,17 @@ f = lib.load_func(\"return_pointer_0\", [], \'pointer)
 print(f())
 """ % locals(), test_stdout)
 
-    def test_Refer0(self):
-        self._test("print(Refer.new().value)", "0")
+    def test_Int0(self):
+        self._test("print(Int.new().value)", "0")
 
-    def test_Refer10(self):
+    def test_Int10(self):
         path = get_lib_path()
         self._test("""
 lib = load_lib(\"%(path)s\")
-f = lib.load_func(\"test_ref\", ['int_p])
-refer = Refer.new()
-f(refer)
-print(refer.value)
+f = lib.load_func(\"test_int_p\", ['int_p])
+int = Int.new()
+f(int)
+print(int.value)
 """ % locals(), "42")
 
     def test_Buffer0(self):

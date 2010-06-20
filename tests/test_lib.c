@@ -19,7 +19,7 @@ test_Buffer0(struct Baz* baz)
 }
 
 void
-test_ref(int* p)
+test_int_p(int* p)
 {
     *p = 42;
 }

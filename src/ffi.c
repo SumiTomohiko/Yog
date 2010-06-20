@@ -86,14 +86,14 @@ typedef struct Struct Struct;
 
 static YogVal Struct_alloc(YogEnv* env, YogVal klass);
 
-struct Refer {
+struct Int {
     struct YogBasicObj base;
-    YogVal value;
+    int value;
 };
 
-typedef struct Refer Refer;
+typedef struct Int Int;
 
-#define TYPE_REFER TO_TYPE(Refer_alloc)
+#define TYPE_INT TO_TYPE(Int_alloc)
 
 struct Buffer {
     struct YogBasicObj base;
@@ -156,17 +156,17 @@ Buffer_alloc(YogEnv* env, YogVal klass)
 }
 
 static YogVal
-Refer_alloc(YogEnv* env, YogVal klass)
+Int_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
-    YogVal refer = YUNDEF;
-    PUSH_LOCAL(env, refer);
+    YogVal int_ = YUNDEF;
+    PUSH_LOCAL(env, int_);
 
-    refer = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Refer);
-    YogBasicObj_init(env, refer, TYPE_REFER, 0, klass);
-    PTR_AS(Refer, refer)->value = INT2VAL(0);
+    int_ = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Int);
+    YogBasicObj_init(env, int_, TYPE_INT, 0, klass);
+    PTR_AS(Int, int_)->value = 0;
 
-    RETURN(env, refer);
+    RETURN(env, int_);
 }
 
 static void
@@ -1149,13 +1149,13 @@ write_argument_object(YogEnv* env, void** ptr, void* refered, YogVal arg_type, Y
 }
 
 static void
-Refer_write_int32(YogEnv* env, YogVal self, int32_t* p)
+Int_write(YogEnv* env, YogVal self, int* p)
 {
     SAVE_ARG(env, self);
-    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_REFER)) {
-        YogError_raise_TypeError(env, "Argument must be Refer, not %C", self);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_INT)) {
+        YogError_raise_TypeError(env, "Argument must be Int, not %C", self);
     }
-    *p = YogVal_to_signed_type(env, PTR_AS(Refer, self)->value, "Argument");
+    *p = PTR_AS(Int, self)->value;
     RETURN_VOID(env);
 }
 
@@ -1233,7 +1233,7 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal
         write_argument_pointer(env, (void**)pvalue, val);
     }
     else if (strcmp(STRING_CSTR(s), "int_p") == 0) {
-        Refer_write_int32(env, val, (int32_t*)refered);
+        Int_write(env, val, (int*)refered);
         *((void**)pvalue) = refered;
     }
     else {
@@ -1276,28 +1276,35 @@ type2refered_size(YogEnv* env, YogVal type, YogVal arg)
 }
 
 static void
-Refer_read(YogEnv* env, YogVal self, YogVal arg_type, void* p)
+read_argument_int(YogEnv* env, YogVal obj, int n)
+{
+    SAVE_ARG(env, obj);
+    if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_INT)) {
+        YogError_raise_TypeError(env, "Argument must be Int, not %C", obj);
+    }
+    PTR_AS(Int, obj)->value = n;
+    RETURN_VOID(env);
+}
+
+static void
+read_argument(YogEnv* env, YogVal obj, YogVal arg_type, void* p)
 {
     if ((p == NULL) || (arg_type == env->vm->cString)) {
         return;
     }
 
-    SAVE_ARGS2(env, self, arg_type);
+    SAVE_ARGS2(env, obj, arg_type);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
-    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_REFER)) {
-        YogError_raise_TypeError(env, "Argument must be Refer, not %C", self);
-    }
     if (!IS_SYMBOL(arg_type)) {
         RETURN_VOID(env);
     }
     s = YogVM_id2name(env, env->vm, VAL2ID(arg_type));
     if (strcmp(STRING_CSTR(s), "int_p") == 0) {
-        PTR_AS(Refer, self)->value = YogVal_from_int(env, *((int*)p));
+        read_argument_int(env, obj, *((int*)p));
+        RETURN_VOID(env);
     }
-    else {
-        YogError_raise_ValueError(env, "Unknown type - %S", s);
-    }
+    YogError_raise_ValueError(env, "Unknown type - %S", s);
     RETURN_VOID(env);
 }
 
@@ -1347,7 +1354,7 @@ LibFunc_do(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_
 
     for (i = 0; i < nargs; i++) {
         arg_type = PTR_AS(LibFunc, callee)->arg_types[i];
-        Refer_read(env, posargs[i], arg_type, refereds[i]);
+        read_argument(env, posargs[i], arg_type, refereds[i]);
     }
 
     if (rtype == &ffi_type_uint8) {
@@ -1928,18 +1935,18 @@ Buffer_get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
 }
 
 static YogVal
-Refer_get_value(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+Int_get_value(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal value = YUNDEF;
     PUSH_LOCAL(env, value);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "get_value", params, args, kw);
-    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_REFER)) {
-        YogError_raise_TypeError(env, "self must be Refer, not %C", self);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_INT)) {
+        YogError_raise_TypeError(env, "self must be Int, not %C", self);
     }
 
-    value = PTR_AS(Refer, self)->value;
+    value = YogVal_from_int(env, PTR_AS(Int, self)->value);
 
     RETURN(env, value);
 }
@@ -1953,10 +1960,10 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogVal cStructClassClass = YUNDEF;
     YogVal cStructClass = YUNDEF;
     YogVal cField = YUNDEF;
-    YogVal cRefer = YUNDEF;
+    YogVal cInt = YUNDEF;
     YogVal cBuffer = YUNDEF;
     YogVal cPointer = YUNDEF;
-    PUSH_LOCALS8(env, cLib, cLibFunc, cStructClassClass, cStructClass, cField, cRefer, cBuffer, cPointer);
+    PUSH_LOCALS8(env, cLib, cLibFunc, cStructClassClass, cStructClass, cField, cInt, cBuffer, cPointer);
     YogVM* vm = env->vm;
 
     cLib = YogClass_new(env, "Lib", vm->cObject);
@@ -1981,10 +1988,10 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_descr_set_executor(env, cField, Field_exec_descr_set);
     vm->cField = cField;
 
-    cRefer = YogClass_new(env, "Refer", vm->cObject);
-    YogClass_define_allocator(env, cRefer, Refer_alloc);
-    YogClass_define_property(env, cRefer, pkg, "value", Refer_get_value, NULL);
-    vm->cRefer = cRefer;
+    cInt = YogClass_new(env, "Int", vm->cObject);
+    YogClass_define_allocator(env, cInt, Int_alloc);
+    YogClass_define_property(env, cInt, pkg, "value", Int_get_value, NULL);
+    vm->cInt = cInt;
     cBuffer = YogClass_new(env, "Buffer", vm->cObject);
     YogClass_define_allocator(env, cBuffer, Buffer_alloc);
     YogClass_define_method(env, cBuffer, pkg, "init", Buffer_init);

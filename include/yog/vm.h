@@ -32,6 +32,7 @@ struct YogVM {
     YogVal cFloat;
     YogVal cFunction;
     YogVal cInstanceMethod;
+    YogVal cInt;
     YogVal cLib;
     YogVal cLibFunc;
     YogVal cMatch;
@@ -43,7 +44,6 @@ struct YogVM {
     YogVal cPackage;
     YogVal cPointer;
     YogVal cProperty;
-    YogVal cRefer;
     YogVal cRegexp;
     YogVal cSet;
     YogVal cString;
