@@ -477,6 +477,44 @@ bar = Bar.new()
 print(bar.baz)
 """, "nil")
 
+    # Test for Array
+    def test_Struct630(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[[\'int, 32], \'bar]])
+foo = Foo.new()
+foo.bar[0] = 42
+print(foo.bar[0])
+""", "42")
+
+    def test_Struct640(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[[\'char, 4], \'bar]])
+foo = Foo.new()
+foo.bar[0] = 0x66
+foo.bar[1] = 0x6f
+foo.bar[2] = 0x6f
+foo.bar[3] = 0
+print(foo.bar.to_s())
+""", "foo")
+
+    def test_Struct650(self):
+        path = get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"test_pointer_p2\", [\'pointer_p])
+ptr = Pointer.new()
+f(ptr)
+try
+  Foo = StructClass.new(\"Foo\", [[[\'char, 0], \'bar]])
+  foo = Foo.new(ptr)
+  print(foo.bar[0])
+finally
+  libc = load_lib(\"/lib/tls/i686/cmov/libc.so.6\")
+  free = libc.load_func(\"free\", [\'pointer])
+  free(ptr)
+end
+""" % locals(), "42")
+
     # Tests for uint8
     def test_argument10(self):
         def test_stderr(stderr):

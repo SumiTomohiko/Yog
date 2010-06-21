@@ -424,8 +424,19 @@ return_pointer_0()
 void
 test_pointer_p(struct Foo** p)
 {
-    *p = malloc(sizeof(struct Foo));
+    *p = (struct Foo*)malloc(sizeof(struct Foo));
     (*p)->bar = 42;
+}
+
+struct Quux {
+    char foo[0];
+};
+
+void
+test_pointer_p2(struct Quux** p)
+{
+    *p = (struct Quux*)malloc(sizeof(struct Quux) + sizeof(char) * 1);
+    (*p)->foo[0] = 42;
 }
 
 /**
