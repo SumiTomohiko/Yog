@@ -11,6 +11,7 @@
 #include "yog/classmethod.h"
 #include "yog/compile.h"
 #include "yog/encoding.h"
+#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/eval.h"
@@ -361,7 +362,8 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     SAVE_ARG(env, builtins);
     YogVal args = YUNDEF;
     YogVal errno_ = YUNDEF;
-    PUSH_LOCALS2(env, args, errno_);
+    YogVal e = YUNDEF;
+    PUSH_LOCALS3(env, args, errno_, e);
 
 #define DEFINE_FUNCTION(name, f)    do { \
     YogPackage_define_function(env, builtins, name, f); \
@@ -411,6 +413,8 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
 
     args = argv2args(env, argc, argv);
     YogObj_set_attr(env, builtins, "ARGV",  args);
+    e = YogEnv_new(env);
+    YogObj_set_attr(env, builtins, "ENV", e);
 
     set_path_separator(env, builtins);
 

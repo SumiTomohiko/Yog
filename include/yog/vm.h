@@ -28,6 +28,7 @@ struct YogVM {
     YogVal cCode;
     YogVal cCoroutine;
     YogVal cDict;
+    YogVal cEnv;
     YogVal cField;
     YogVal cFieldArray;
     YogVal cFile;

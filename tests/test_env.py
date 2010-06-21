@@ -12,27 +12,27 @@ class TestEnv(TestCase):
             pass
 
     def test_subscript0(self):
-        environ["foo"] = "bar"
-        self._test("print(ENV[\"foo\"])", "bar")
+        environ["FOO"] = "bar"
+        self._test("print(ENV[\"FOO\"])", "bar")
 
     def test_subscript10(self):
         def test_stderr(stderr):
-            assert 0 < stderr.find("KeyError: foo")
-        self.delete_env("foo")
-        self._test("print(ENV[\"foo\"])", stderr=test_stderr)
+            assert 0 < stderr.find("KeyError: FOO")
+        self.delete_env("FOO")
+        self._test("print(ENV[\"FOO\"])", stderr=test_stderr)
 
     def test_subscript_assign0(self):
         self._test("""
-ENV[\"foo\"] = \"bar\"
-print(ENV[\"foo\"])
+ENV[\"FOO\"] = \"bar\"
+print(ENV[\"FOO\"])
 """, "bar")
 
     def test_get0(self):
-        self.delete_env("foo")
-        self._test("print(ENV.get(\"foo\"))", "nil")
+        self.delete_env("FOO")
+        self._test("print(ENV.get(\"FOO\"))", "nil")
 
     def test_get10(self):
-        self.delete_env("foo")
-        self._test("print(ENV.get(\"foo\", 42))", "42")
+        self.delete_env("FOO")
+        self._test("print(ENV.get(\"FOO\", 42))", "42")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -43,6 +43,7 @@
 #include "yog/coroutine.h"
 #include "yog/dict.h"
 #include "yog/encoding.h"
+#include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
@@ -250,18 +251,19 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogCode_define_classes(env, builtins);
     YogCoroutine_define_classes(env, builtins);
     YogDict_define_classes(env, builtins);
+    YogEnv_define_classes(env, builtins);
+    YogFFI_define_classes(env, builtins);
     YogFile_define_classes(env, builtins);
     YogFixnum_define_classes(env, builtins);
     YogFloat_define_classes(env, builtins);
-    YogRegexp_define_classes(env, builtins);
     YogModule_define_classes(env, builtins);
     YogNil_define_classes(env, builtins);
     YogPackage_define_classes(env, builtins);
+    YogRegexp_define_classes(env, builtins);
     YogSet_define_classes(env, builtins);
     YogString_define_classes(env, builtins);
     YogSymbol_define_classes(env, builtins);
     YogThread_define_classes(env, builtins);
-    YogFFI_define_classes(env, builtins);
 
     RETURN_VOID(env);
 }
@@ -401,6 +403,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cCode);
     KEEP(cCoroutine);
     KEEP(cDict);
+    KEEP(cEnv);
     KEEP(cField);
     KEEP(cFieldArray);
     KEEP(cFile);
@@ -526,6 +529,7 @@ YogVM_init(YogVM* vm)
     INIT(cCode);
     INIT(cCoroutine);
     INIT(cDict);
+    INIT(cEnv);
     INIT(cField);
     INIT(cFieldArray);
     INIT(cFile);
