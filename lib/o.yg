@@ -1,0 +1,16 @@
+
+oDB = StructClass.new("oDB", [
+  [String, 'path],
+  [['char, 256], 'msg],
+  ['int, 'lock_file],
+  ['int, 'next_doc_id],
+  ['pointer, 'index],
+  ['pointer, 'doc]])
+oHits = StructClass.new("oHits", [
+  ['int, 'num],
+  [['int, 0], 'doc_id]])
+
+lib = find_lib("o")
+oDB_create = lib.load_func("oDB_create", [oDB, String])
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
