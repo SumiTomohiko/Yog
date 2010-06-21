@@ -126,6 +126,20 @@ YogObj_class_init(YogEnv* env, YogVal klass, YogVal pkg)
     RETURN_VOID(env);
 }
 
+YogVal
+YogBasicObj_to_s(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+    char id_upper[9];
+    YogSysdeps_snprintf(id_upper, array_sizeof(id_upper), "%08x", BASIC_OBJ(self)->id_upper);
+    char id_lower[9];
+    YogSysdeps_snprintf(id_lower, array_sizeof(id_lower), "%08x", BASIC_OBJ(self)->id_lower);
+    s = YogSprintf_sprintf(env, "<%C %s%s>", self, id_upper, id_lower);
+    RETURN(env, s);
+}
+
 static YogVal
 to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -135,12 +149,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "to_s", params, args, kw);
 
-    char id_upper[9];
-    YogSysdeps_snprintf(id_upper, array_sizeof(id_upper), "%08x", BASIC_OBJ(self)->id_upper);
-    char id_lower[9];
-    YogSysdeps_snprintf(id_lower, array_sizeof(id_lower), "%08x", BASIC_OBJ(self)->id_lower);
-    s = YogSprintf_sprintf(env, "<%C %s%s>", self, id_upper, id_lower);
-
+    s = YogBasicObj_to_s(env, self);
     RETURN(env, s);
 }
 

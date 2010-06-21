@@ -2394,6 +2394,36 @@ FieldArray_subscript_assign(YogEnv* env, YogVal self, YogVal pkg, YogVal args, Y
 }
 
 static YogVal
+FieldArray_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal s = YUNDEF;
+    YogVal field = YUNDEF;
+    YogVal st = YUNDEF;
+    YogVal enc = YUNDEF;
+    PUSH_LOCALS4(env, s, field, st, enc);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_s", params, args, kw);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_FIELD_ARRAY)) {
+        YogError_raise_TypeError(env, "self must be FieldArray, not %C", self);
+    }
+    field = PTR_AS(FieldArray, self)->field;
+    ID id_char = YogVM_intern(env, env->vm, "char");
+    if (PTR_AS(ArrayField, field)->type == id_char) {
+        enc = YogEncoding_get_ascii(env);
+        st = PTR_AS(FieldArray, self)->st;
+        uint_t offset = PTR_AS(FieldBase, field)->offset;
+        const char* begin = PTR_AS(Struct, st)->data + offset;
+        int_t size = PTR_AS(ArrayField, field)->size;
+        const char* end = begin + size;
+        s = YogString_from_range(env, enc, begin, end);
+        RETURN(env, s);
+    }
+    s = YogBasicObj_to_s(env, self);
+    RETURN(env, s);
+}
+
+static YogVal
 FieldArray_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -2550,6 +2580,7 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_allocator(env, cFieldArray, FieldArray_alloc);
     YogClass_define_method(env, cFieldArray, pkg, "[]", FieldArray_subscript);
     YogClass_define_method(env, cFieldArray, pkg, "[]=", FieldArray_subscript_assign);
+    YogClass_define_method(env, cFieldArray, pkg, "to_s", FieldArray_to_s);
     vm->cFieldArray = cFieldArray;
 
     cInt = YogClass_new(env, "Int", vm->cObject);

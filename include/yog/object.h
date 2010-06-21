@@ -85,6 +85,7 @@ typedef YogVal (*Allocator)(struct YogEnv*, YogVal);
 /* src/object.c */
 YOG_EXPORT void YogBasicObj_init(YogEnv*, YogVal, type_t, uint_t, YogVal);
 YOG_EXPORT void YogBasicObj_keep_children(YogEnv*, void*, ObjectKeeper, void*);
+YOG_EXPORT YogVal YogBasicObj_to_s(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogObj_alloc(YogEnv*, YogVal);
 YOG_EXPORT void YogObj_class_init(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogObj_get_attr(YogEnv*, YogVal, ID);
