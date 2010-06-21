@@ -210,8 +210,8 @@ FieldArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap
 
     FieldArray* array = (FieldArray*)ptr;
 #define KEEP(member) YogGC_KEEP(env, array, member, keeper, heap)
-    KEEP(field);
     KEEP(st);
+    KEEP(field);
 #undef KEEP
 }
 
@@ -1792,22 +1792,15 @@ Struct_get_String(YogEnv* env, YogVal self, YogVal field)
 }
 
 static YogVal
-Struct_get(YogEnv* env, YogVal self, YogVal field)
+Struct_read(YogEnv* env, YogVal self, uint_t offset, ID type)
 {
-    SAVE_ARGS2(env, self, field);
-    YogVal s = YUNDEF;
+    SAVE_ARG(env, self);
     YogVal val = YUNDEF;
-    PUSH_LOCALS2(env, s, val);
-    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
-        YogError_raise_TypeError(env, "self must be Struct, not %C", self);
-    }
-    if (!IS_PTR(field) || (BASIC_OBJ_TYPE(field) != TYPE_FIELD)) {
-        YogError_raise_TypeError(env, "Attribute must be Field, not %C", field);
-    }
+    YogVal s = YUNDEF;
+    PUSH_LOCALS2(env, val, s);
 
-    void* ptr = PTR_AS(Struct, self)->data + PTR_AS(FieldBase, field)->offset;
-
-    s = YogVM_id2name(env, env->vm, PTR_AS(Field, field)->type);
+    void* ptr = PTR_AS(Struct, self)->data + offset;
+    s = YogVM_id2name(env, env->vm, type);
     const char* t = STRING_CSTR(s);
     if (strcmp(t, "uint8") == 0) {
         val = INT2VAL(*((uint8_t*)ptr));
@@ -1878,11 +1871,31 @@ Struct_get(YogEnv* env, YogVal self, YogVal field)
 }
 
 static YogVal
+Struct_get(YogEnv* env, YogVal self, YogVal field)
+{
+    SAVE_ARGS2(env, self, field);
+    YogVal s = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS2(env, s, val);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
+        YogError_raise_TypeError(env, "self must be Struct, not %C", self);
+    }
+    if (!IS_PTR(field) || (BASIC_OBJ_TYPE(field) != TYPE_FIELD)) {
+        YogError_raise_TypeError(env, "Attribute must be Field, not %C", field);
+    }
+
+    uint_t offset = PTR_AS(FieldBase, field)->offset;
+    val = Struct_read(env, self, offset, PTR_AS(Field, field)->type);
+    RETURN(env, val);
+}
+
+static YogVal
 FieldArray_new(YogEnv* env, YogVal st, YogVal field)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARGS2(env, st, field);
     YogVal array = YUNDEF;
     PUSH_LOCAL(env, array);
+    YOG_ASSERT(env, IS_PTR(st) && (BASIC_OBJ_TYPE(st) == TYPE_STRUCT), "Invalid structure (%p)", BASIC_OBJ_TYPE(st));
 
     array = FieldArray_alloc(env, env->vm->cFieldArray);
     PTR_AS(FieldArray, array)->st = st;
@@ -1983,76 +1996,74 @@ Field_call_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     RETURN(env, val);
 }
 
-#define STRUCT_WRITE_DATA(type, obj, attr, val) do { \
-    char* data = PTR_AS(Struct, (obj))->data; \
-    uint_t offset = PTR_AS(FieldBase, (attr))->offset; \
-    *((type*)(data + offset)) = (val); \
+#define STRUCT_WRITE_DATA(type, obj, offset, val) do { \
+    *((type*)(PTR_AS(Struct, (obj))->data + (offset))) = (val); \
 } while (0)
 
 static void
-Struct_write_uint8(YogEnv* env, YogVal self, YogVal field, YogVal val)
+Struct_write_uint8(YogEnv* env, YogVal self, uint_t offset, YogVal val)
 {
-    SAVE_ARGS3(env, self, field, val);
+    SAVE_ARGS2(env, self, val);
 
     check_Fixnum_uint8(env, val);
-    STRUCT_WRITE_DATA(uint8_t, self, field, VAL2INT(val));
+    STRUCT_WRITE_DATA(uint8_t, self, offset, VAL2INT(val));
 
     RETURN_VOID(env);
 }
 
 static void
-Struct_write_int8(YogEnv* env, YogVal self, YogVal field, YogVal val)
+Struct_write_int8(YogEnv* env, YogVal self, uint_t offset, YogVal val)
 {
-    SAVE_ARGS3(env, self, field, val);
+    SAVE_ARGS2(env, self, val);
 
     check_Fixnum_int8(env, val);
-    STRUCT_WRITE_DATA(int8_t, self, field, VAL2INT(val));
+    STRUCT_WRITE_DATA(int8_t, self, offset, VAL2INT(val));
 
     RETURN_VOID(env);
 }
 
 static void
-Struct_write_uint16(YogEnv* env, YogVal self, YogVal field, YogVal val)
+Struct_write_uint16(YogEnv* env, YogVal self, uint_t offset, YogVal val)
 {
-    SAVE_ARGS3(env, self, field, val);
+    SAVE_ARGS2(env, self, val);
 
     check_Fixnum_uint16(env, val);
-    STRUCT_WRITE_DATA(uint16_t, self, field, VAL2INT(val));
+    STRUCT_WRITE_DATA(uint16_t, self, offset, VAL2INT(val));
 
     RETURN_VOID(env);
 }
 
 static void
-Struct_write_int16(YogEnv* env, YogVal self, YogVal field, YogVal val)
+Struct_write_int16(YogEnv* env, YogVal self, uint_t offset, YogVal val)
 {
-    SAVE_ARGS3(env, self, field, val);
+    SAVE_ARGS2(env, self, val);
 
     check_Fixnum_int16(env, val);
-    STRUCT_WRITE_DATA(int16_t, self, field, VAL2INT(val));
+    STRUCT_WRITE_DATA(int16_t, self, offset, VAL2INT(val));
 
     RETURN_VOID(env);
 }
 
-#define WRITE_POSITIVE_NUM(env, type, obj, field, val) do { \
+#define WRITE_POSITIVE_NUM(env, type, obj, offset, val) do { \
     if (VAL2INT((val)) < 0) { \
         YogError_raise_ValueError((env), "Value must be greater or equal 0, not %d", VAL2INT((val))); \
     } \
-    STRUCT_WRITE_DATA(type, (obj), (field), VAL2INT((val))); \
+    STRUCT_WRITE_DATA(type, (obj), (offset), VAL2INT((val))); \
 } while (0)
 
 static void
-Struct_write_uint32(YogEnv* env, YogVal self, YogVal field, YogVal val)
+Struct_write_uint32(YogEnv* env, YogVal self, uint_t offset, YogVal val)
 {
-    SAVE_ARGS3(env, self, field, val);
+    SAVE_ARGS2(env, self, val);
 
     if (IS_FIXNUM(val)) {
-        WRITE_POSITIVE_NUM(env, uint32_t, self, field, val);
+        WRITE_POSITIVE_NUM(env, uint32_t, self, offset, val);
         RETURN_VOID(env);
     }
     if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
         check_Bignum_uint32(env, val);
         uint_t n = YogBignum_to_unsigned_type(env, val, "Value");
-        STRUCT_WRITE_DATA(uint32_t, self, field, n);
+        STRUCT_WRITE_DATA(uint32_t, self, offset, n);
         RETURN_VOID(env);
     }
     YogError_raise_TypeError(env, "Value must be Fixnum or Bignum, not %C", val);
@@ -2061,18 +2072,18 @@ Struct_write_uint32(YogEnv* env, YogVal self, YogVal field, YogVal val)
 }
 
 static void
-Struct_write_int32(YogEnv* env, YogVal self, YogVal field, YogVal val)
+Struct_write_int32(YogEnv* env, YogVal self, uint_t offset, YogVal val)
 {
-    SAVE_ARGS3(env, self, field, val);
+    SAVE_ARGS2(env, self, val);
 
     if (IS_FIXNUM(val)) {
-        STRUCT_WRITE_DATA(int32_t, self, field, VAL2INT(val));
+        STRUCT_WRITE_DATA(int32_t, self, offset, VAL2INT(val));
         RETURN_VOID(env);
     }
     if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
         check_Bignum_int32(env, val);
         int_t n = YogBignum_to_signed_type(env, val, "Value");
-        STRUCT_WRITE_DATA(int32_t, self, field, n);
+        STRUCT_WRITE_DATA(int32_t, self, offset, n);
         RETURN_VOID(env);
     }
     YogError_raise_TypeError(env, "Value must be Fixnum or Bignum, not %C", val);
@@ -2081,18 +2092,18 @@ Struct_write_int32(YogEnv* env, YogVal self, YogVal field, YogVal val)
 }
 
 static void
-Struct_write_uint64(YogEnv* env, YogVal self, YogVal field, YogVal val)
+Struct_write_uint64(YogEnv* env, YogVal self, uint_t offset, YogVal val)
 {
-    SAVE_ARGS3(env, self, field, val);
+    SAVE_ARGS2(env, self, val);
 
     if (IS_FIXNUM(val)) {
-        WRITE_POSITIVE_NUM(env, uint64_t, self, field, val);
+        WRITE_POSITIVE_NUM(env, uint64_t, self, offset, val);
         RETURN_VOID(env);
     }
     if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
         check_Bignum_uint64(env, val);
         unsigned long long n = YogBignum_to_unsigned_long_long(env, val, "Value");
-        STRUCT_WRITE_DATA(uint64_t, self, field, n);
+        STRUCT_WRITE_DATA(uint64_t, self, offset, n);
         RETURN_VOID(env);
     }
     YogError_raise_TypeError(env, "Value must be Fixnum or Bignum, not %C", val);
@@ -2101,18 +2112,18 @@ Struct_write_uint64(YogEnv* env, YogVal self, YogVal field, YogVal val)
 }
 
 static void
-Struct_write_int64(YogEnv* env, YogVal self, YogVal field, YogVal val)
+Struct_write_int64(YogEnv* env, YogVal self, uint_t offset, YogVal val)
 {
-    SAVE_ARGS3(env, self, field, val);
+    SAVE_ARGS2(env, self, val);
 
     if (IS_FIXNUM(val)) {
-        STRUCT_WRITE_DATA(int64_t, self, field, VAL2INT(val));
+        STRUCT_WRITE_DATA(int64_t, self, offset, VAL2INT(val));
         RETURN_VOID(env);
     }
     if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
         check_Bignum_int64(env, val);
         long long n = YogBignum_to_long_long(env, val, "Value");
-        STRUCT_WRITE_DATA(int64_t, self, field, n);
+        STRUCT_WRITE_DATA(int64_t, self, offset, n);
         RETURN_VOID(env);
     }
     YogError_raise_TypeError(env, "Value must be Fixnum or Bignum, not %C", val);
@@ -2126,7 +2137,8 @@ Struct_write_Buffer(YogEnv* env, YogVal self, YogVal field, YogVal buf)
     SAVE_ARGS3(env, self, field, buf);
     uint_t index = PTR_AS(BufferField, field)->buffer_index;
     YogGC_UPDATE_PTR(env, PTR_AS(Struct, self), buffers[index], buf);
-    STRUCT_WRITE_DATA(void*, self, field, PTR_AS(Buffer, buf)->ptr);
+    uint_t offset = PTR_AS(FieldBase, field)->offset;
+    STRUCT_WRITE_DATA(void*, self, offset, PTR_AS(Buffer, buf)->ptr);
     RETURN_VOID(env);
 }
 
@@ -2166,6 +2178,88 @@ StringField_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
 }
 
 static void
+Struct_write(YogEnv* env, YogVal self, uint_t offset, ID type, YogVal val)
+{
+    SAVE_ARGS2(env, self, val);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+#define WRITE_FLOAT(type) do { \
+    if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_FLOAT)) { \
+        YogError_raise_TypeError(env, "Value must be Float, not %C", val); \
+    } \
+    STRUCT_WRITE_DATA(type, self, offset, FLOAT_NUM(val)); \
+} while (0)
+    s = YogVM_id2name(env, env->vm, type);
+    const char* t = STRING_CSTR(s);
+    if (strcmp(t, "uint8") == 0) {
+        Struct_write_uint8(env, self, offset, val);
+    }
+    else if (strcmp(t, "int8") == 0) {
+        Struct_write_int8(env, self, offset, val);
+    }
+    else if (strcmp(t, "uint16") == 0) {
+        Struct_write_uint16(env, self, offset, val);
+    }
+    else if (strcmp(t, "int16") == 0) {
+        Struct_write_int16(env, self, offset, val);
+    }
+    else if (strcmp(t, "uint32") == 0) {
+        Struct_write_uint32(env, self, offset, val);
+    }
+    else if (strcmp(t, "int32") == 0) {
+        Struct_write_int32(env, self, offset, val);
+    }
+    else if (strcmp(t, "uint64") == 0) {
+        Struct_write_uint64(env, self, offset, val);
+    }
+    else if (strcmp(t, "int64") == 0) {
+        Struct_write_int64(env, self, offset, val);
+    }
+    else if (strcmp(t, "float") == 0) {
+        WRITE_FLOAT(float);
+    }
+    else if (strcmp(t, "double") == 0) {
+        WRITE_FLOAT(double);
+    }
+    else if (strcmp(t, "uchar") == 0) {
+        Struct_write_uint8(env, self, offset, val);
+    }
+    else if (strcmp(t, "char") == 0) {
+        Struct_write_int8(env, self, offset, val);
+    }
+    else if (strcmp(t, "ushort") == 0) {
+        Struct_write_uint16(env, self, offset, val);
+    }
+    else if (strcmp(t, "short") == 0) {
+        Struct_write_int16(env, self, offset, val);
+    }
+    else if (strcmp(t, "uint") == 0) {
+        Struct_write_uint32(env, self, offset, val);
+    }
+    else if (strcmp(t, "int") == 0) {
+        Struct_write_int32(env, self, offset, val);
+    }
+    else if (strcmp(t, "ulong") == 0) {
+        Struct_write_uint32(env, self, offset, val);
+    }
+    else if (strcmp(t, "long") == 0) {
+        Struct_write_int32(env, self, offset, val);
+    }
+    else if (strcmp(t, "longdouble") == 0) {
+        WRITE_FLOAT(long double);
+    }
+    else if (strcmp(t, "pointer") == 0) {
+        Struct_write_uint32(env, self, offset, val);
+    }
+    else {
+        YogError_raise_ValueError(env, "unknown type - %S", s);
+        /* NOTREACHED */
+    }
+#undef WRITE_FLOAT
+    RETURN_VOID(env);
+}
+
+static void
 Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
 {
     SAVE_ARGS3(env, attr, obj, val);
@@ -2178,79 +2272,8 @@ Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
         YogError_raise_TypeError(env, "Object must be Struct, not %C", obj);
     }
 
-#define WRITE_FLOAT(type) do { \
-    if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_FLOAT)) { \
-        YogError_raise_TypeError(env, "Value must be Float, not %C", val); \
-    } \
-    STRUCT_WRITE_DATA(type, obj, attr, FLOAT_NUM(val)); \
-} while (0)
-    s = YogVM_id2name(env, env->vm, PTR_AS(Field, attr)->type);
-    const char* t = STRING_CSTR(s);
-    if (strcmp(t, "uint8") == 0) {
-        Struct_write_uint8(env, obj, attr, val);
-    }
-    else if (strcmp(t, "int8") == 0) {
-        Struct_write_int8(env, obj, attr, val);
-    }
-    else if (strcmp(t, "uint16") == 0) {
-        Struct_write_uint16(env, obj, attr, val);
-    }
-    else if (strcmp(t, "int16") == 0) {
-        Struct_write_int16(env, obj, attr, val);
-    }
-    else if (strcmp(t, "uint32") == 0) {
-        Struct_write_uint32(env, obj, attr, val);
-    }
-    else if (strcmp(t, "int32") == 0) {
-        Struct_write_int32(env, obj, attr, val);
-    }
-    else if (strcmp(t, "uint64") == 0) {
-        Struct_write_uint64(env, obj, attr, val);
-    }
-    else if (strcmp(t, "int64") == 0) {
-        Struct_write_int64(env, obj, attr, val);
-    }
-    else if (strcmp(t, "float") == 0) {
-        WRITE_FLOAT(float);
-    }
-    else if (strcmp(t, "double") == 0) {
-        WRITE_FLOAT(double);
-    }
-    else if (strcmp(t, "uchar") == 0) {
-        Struct_write_uint8(env, obj, attr, val);
-    }
-    else if (strcmp(t, "char") == 0) {
-        Struct_write_int8(env, obj, attr, val);
-    }
-    else if (strcmp(t, "ushort") == 0) {
-        Struct_write_uint16(env, obj, attr, val);
-    }
-    else if (strcmp(t, "short") == 0) {
-        Struct_write_int16(env, obj, attr, val);
-    }
-    else if (strcmp(t, "uint") == 0) {
-        Struct_write_uint32(env, obj, attr, val);
-    }
-    else if (strcmp(t, "int") == 0) {
-        Struct_write_int32(env, obj, attr, val);
-    }
-    else if (strcmp(t, "ulong") == 0) {
-        Struct_write_uint32(env, obj, attr, val);
-    }
-    else if (strcmp(t, "long") == 0) {
-        Struct_write_int32(env, obj, attr, val);
-    }
-    else if (strcmp(t, "longdouble") == 0) {
-        WRITE_FLOAT(long double);
-    }
-    else if (strcmp(t, "pointer") == 0) {
-        Struct_write_uint32(env, obj, attr, val);
-    }
-    else {
-        YogError_raise_ValueError(env, "unknown type - %S", s);
-        /* NOTREACHED */
-    }
-#undef WRITE_FLOAT
+    uint_t offset = PTR_AS(FieldBase, attr)->offset;
+    Struct_write(env, obj, offset, PTR_AS(Field, attr)->type, val);
 
     RETURN_VOID(env);
 }
@@ -2328,6 +2351,76 @@ Buffer_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     s = YogString_from_str(env, PTR_AS(Buffer, self)->ptr);
 
     RETURN(env, s);
+}
+
+static int_t
+FieldArray_normalize_index(YogEnv* env, YogVal self, int_t index)
+{
+    return index < 0 ? index + PTR_AS(ArrayField, self)->size : index;
+}
+
+static YogVal
+FieldArray_subscript_assign(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal val = YUNDEF;
+    YogVal index = YUNDEF;
+    YogVal st = YUNDEF;
+    YogVal field = YUNDEF;
+    PUSH_LOCALS4(env, val, index, st, field);
+    YogCArg params[] = {
+        { "index", &index },
+        { "value", &val },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "[]=", params, args, kw);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_FIELD_ARRAY)) {
+        YogError_raise_TypeError(env, "self must be FieldArray, not %C", self);
+    }
+    if (!IS_FIXNUM(index)) {
+        YogError_raise_TypeError(env, "index must be Fixnum, not %C", index);
+    }
+
+    field = PTR_AS(FieldArray, self)->field;
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(field) == TYPE_ARRAY_FIELD, "Invalid field");
+    int_t size = PTR_AS(ArrayField, field)->size;
+    int_t idx = FieldArray_normalize_index(env, field, VAL2INT(index));
+    if ((idx < 0) || ((size != 0) && (size <= idx))) {
+        YogError_raise_IndexError(env, "Index out of range - %d", VAL2INT(index));
+    }
+    ID type = PTR_AS(ArrayField, field)->type;
+    uint_t offset = PTR_AS(FieldBase, field)->offset + id2size(env, type) * idx;
+    Struct_write(env, PTR_AS(FieldArray, self)->st, offset, type, val);
+    RETURN(env, self);
+}
+
+static YogVal
+FieldArray_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal val = YUNDEF;
+    YogVal index = YUNDEF;
+    YogVal field = YUNDEF;
+    PUSH_LOCALS3(env, val, index, field);
+    YogCArg params[] = { { "index", &index }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "[]", params, args, kw);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_FIELD_ARRAY)) {
+        YogError_raise_TypeError(env, "self must be FieldArray, not %C", self);
+    }
+    if (!IS_FIXNUM(index)) {
+        YogError_raise_TypeError(env, "index must be Fixnum, not %C", index);
+    }
+
+    field = PTR_AS(FieldArray, self)->field;
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(field) == TYPE_ARRAY_FIELD, "Invalid field");
+    int_t size = PTR_AS(ArrayField, field)->size;
+    int_t idx = FieldArray_normalize_index(env, field, VAL2INT(index));
+    if ((idx < 0) || ((size != 0) && (size <= idx))) {
+        YogError_raise_IndexError(env, "Index out of range - %d", VAL2INT(index));
+    }
+    ID type = PTR_AS(ArrayField, field)->type;
+    uint_t offset = PTR_AS(FieldBase, field)->offset + id2size(env, type) * idx;
+    val = Struct_read(env, PTR_AS(FieldArray, self)->st, offset, type);
+    RETURN(env, val);
 }
 
 static YogVal
@@ -2455,6 +2548,8 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     vm->cStringField = cStringField;
     cFieldArray = YogClass_new(env, "FieldArray", vm->cObject);
     YogClass_define_allocator(env, cFieldArray, FieldArray_alloc);
+    YogClass_define_method(env, cFieldArray, pkg, "[]", FieldArray_subscript);
+    YogClass_define_method(env, cFieldArray, pkg, "[]=", FieldArray_subscript_assign);
     vm->cFieldArray = cFieldArray;
 
     cInt = YogClass_new(env, "Int", vm->cObject);
