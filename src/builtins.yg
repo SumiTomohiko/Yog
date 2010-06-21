@@ -96,4 +96,16 @@ def __recurse__(obj, f, g)
   return retval
 end
 
+def find_lib(head)
+  name = "lib" + head + ".so"
+  dirs = ENV.get("LD_LIBRARY_PATH", "").split(":") + ["/usr/local/lib", "/usr/lib", "/lib"]
+  dirs.each() do [dir]
+    try
+      return load_lib(join_path(dir, name))
+    except ImportError
+    end
+  end
+  raise ImportError.new("Library not found - {0}".format(name))
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
