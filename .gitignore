@@ -270,6 +270,7 @@ src/yog-mark-sweep
 src/yog-mark-sweep-compact
 stamp-h1
 tags
+tests/TestO.db
 tests/gc/Makefile.in
 tests/gc/test-mark-sweep-compact
 tests/test_package4.ilk
