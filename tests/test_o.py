@@ -87,6 +87,6 @@ try
 finally
   o.oDB_fini(db)
 end
-""" % locals(), "1")
+""" % locals(), "0")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

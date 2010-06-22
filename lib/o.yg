@@ -14,5 +14,12 @@ lib = find_lib("o")
 oDB_create = lib.load_func("oDB_create", [oDB, String], 'int)
 oDB_init = lib.load_func("oDB_init", [oDB])
 oDB_fini = lib.load_func("oDB_fini", [oDB])
+oDB_open_to_read = lib.load_func("oDB_open_to_read", [oDB, String], 'int)
+oDB_open_to_write = lib.load_func("oDB_open_to_write", [oDB, String], 'int)
+oDB_close = lib.load_func("oDB_close", [oDB], 'int)
+oDB_put = lib.load_func("oDB_put", [oDB, String], 'int)
+oDB_get = lib.load_func("oDB_get", [oDB, 'int, 'int_p], 'int)
+oDB_search = lib.load_func("oDB_search", [oDB, String, 'pointer_p], 'int)
+oDB_set_msg_of_errno = lib.load_func("oDB_set_msg_of_errno", [oDB, String])
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
