@@ -22,6 +22,7 @@ class TestO(TestCase):
         self.clean_db(path)
         self._test("""
 import o
+import libc
 enable_gc_stress()
 db = o.oDB.new()
 o.oDB_init(db)
@@ -41,9 +42,7 @@ try
       hits = o.oHits.new(ptr)
       print(hits.num)
     finally
-      libc = load_lib(\"/lib/tls/i686/cmov/libc.so.6\")
-      free = libc.load_func(\"free\", [\'pointer])
-      free(ptr)
+      libc.free(ptr)
     end
   finally
     o.oDB_close(db)
@@ -58,6 +57,7 @@ end
         self.clean_db(path)
         self._test("""
 import o
+import libc
 enable_gc_stress()
 db = o.oDB.new()
 o.oDB_init(db)
@@ -77,9 +77,7 @@ try
       hits = o.oHits.new(ptr)
       print(hits.doc_id[0])
     finally
-      libc = load_lib(\"/lib/tls/i686/cmov/libc.so.6\")
-      free = libc.load_func(\"free\", [\'pointer])
-      free(ptr)
+      libc.free(ptr)
     end
   finally
     o.oDB_close(db)

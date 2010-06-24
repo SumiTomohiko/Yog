@@ -500,6 +500,8 @@ print(foo.bar.to_s())
     def test_Struct650(self):
         path = get_lib_path()
         self._test("""
+import libc
+enable_gc_stress()
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"test_pointer_p2\", [\'pointer_p])
 ptr = Pointer.new()
@@ -509,11 +511,9 @@ try
   foo = Foo.new(ptr)
   print(foo.bar[0])
 finally
-  libc = load_lib(\"/lib/tls/i686/cmov/libc.so.6\")
-  free = libc.load_func(\"free\", [\'pointer])
-  free(ptr)
+  libc.free(ptr)
 end
-""" % locals(), "42")
+""" % locals(), "42", options=[])
 
     # Tests for uint8
     def test_argument10(self):
@@ -1283,6 +1283,8 @@ print(int.value)
     def test_Pointer0(self):
         path = get_lib_path()
         self._test("""
+import libc
+enable_gc_stress()
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"test_pointer_p\", [\'pointer_p])
 ptr = Pointer.new()
@@ -1292,11 +1294,9 @@ try
   foo = Foo.new(ptr)
   print(foo.bar)
 finally
-  libc = load_lib(\"/lib/tls/i686/cmov/libc.so.6\")
-  free = libc.load_func(\"free\", [\'pointer])
-  free(ptr)
+  libc.free(ptr)
 end
-""" % locals(), "42")
+""" % locals(), "42", options=[])
 
     def test_Buffer0(self):
         self._test("""
