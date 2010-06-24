@@ -19,4 +19,6 @@ sy keyword Statement nonlocal
 sy keyword Repeat while next break
 sy keyword Special __FILE__ __LINE__ self
 
+sy match Type "\<[A-Z][A-Za-z_0-9]*\>"
+
 " vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
