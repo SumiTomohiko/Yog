@@ -1,0 +1,19 @@
+
+def find_libc()
+  try
+    File.open("/proc/self/maps", "r") do [fp]
+      while line = fp.readline()
+        path = line.trim().split().get(5, "")
+        if path =~ /\blibc\b/
+          return path
+        end
+      end
+    end
+  except SystemError
+  end
+end
+
+lib = load_lib(find_libc())
+free = lib.load_func("free", ['pointer])
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
