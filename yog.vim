@@ -16,7 +16,7 @@ sy keyword Exception try raise except finally
 sy keyword Keyword end from import as def do class return
 sy keyword Conditional if elif else
 sy keyword Statement nonlocal
-sy keyword Repeat while
+sy keyword Repeat while next break
 sy keyword Special __FILE__ __LINE__ self
 
 " vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
