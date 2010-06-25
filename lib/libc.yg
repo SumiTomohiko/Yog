@@ -88,16 +88,38 @@ SOCK_RDM = 4
 SOCK_SEQPACKET = 5
 SOCK_PACKET = 10
 send = lib.load_func("send", ['int, Buffer, 'uint, 'int], 'uint)
-sockaddr = StructClass.new("sockaddr", [
-  ['ushort, 'sa_family],
-  [['char, 14], 'sa_data]])
-connect = lib.load_func("connect", ['int, sockaddr, 'uint], 'int)
+recv = lib.load_func("recv", ['int, Buffer, 'uint, 'int], 'uint)
+sockaddr_in = StructClass.new("sockaddr_in", [
+  ['uint16, 'sin_family],
+  ['uint16, 'sin_port],
+  ['uint32, 'sin_addr],
+  [['char, 8], 'padding]])
+connect = lib.load_func("connect", ['int, sockaddr_in, 'uint], 'int)
+htonl = lib.load_func("htonl", ['uint32], 'uint32)
+htons = lib.load_func("htons", ['uint16], 'uint16)
+ntohl = lib.load_func("ntohl", ['uint32], 'uint32)
+ntohs = lib.load_func("ntohs", ['uint16], 'uint16)
+in_addr_t = 'uint32
+inet_addr = lib.load_func("inet_addr", [String], in_addr_t)
 
 close = lib.load_func("close", ['int], 'int)
 
 if ARGV.get(0) == __FILE__
-  s = socket(AF_INET, SOCK_STREAM, 0)
-  close(s)
+  sock = socket(AF_INET, SOCK_STREAM, 0)
+  addr = sockaddr_in.new()
+  addr.sin_family = AF_INET
+  addr.sin_port = htons(80)
+  addr.sin_addr = inet_addr("127.0.0.1")
+  if connect(sock, addr, 16) != 0
+    raise Exception.new("Connect error")
+  end
+  s = "GET / HTTP/1.0\n\n"
+  send_buf = Buffer.new(s)
+  send(sock, send_buf, send_buf.size, 0)
+  recv_buf = Buffer.new(4096)
+  recv(sock, recv_buf, recv_buf.size, 0)
+  print(recv_buf.to_s())
+  close(sock)
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
