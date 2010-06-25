@@ -1,0 +1,19 @@
+--- !ditz.rubyforge.org,2008-03-06/issue
+title: FFI must load functions whose rtype is String
+desc: |-
+
+type: :task
+component: core
+release:
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition:
+creation_time: 2010-06-25 16:14:34.816351 Z
+references: []
+
+id: cc32d77a00c627cce707d9ee1d28abf79ed1f047
+log_events:
+- - 2010-06-25 16:14:34.816351 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
