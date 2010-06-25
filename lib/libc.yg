@@ -101,22 +101,47 @@ ntohl = lib.load_func("ntohl", ['uint32], 'uint32)
 ntohs = lib.load_func("ntohs", ['uint16], 'uint16)
 in_addr_t = 'uint32
 inet_addr = lib.load_func("inet_addr", [String], in_addr_t)
+socklen_t = 'uint32
+addrinfo = StructClass.new("addrinfo", [
+  ['int, 'ai_flags],
+  ['int, 'ai_family],
+  ['int, 'ai_socktype],
+  ['int, 'ai_protocol],
+  [socklen_t, 'ai_addrlen],
+  ['pointer (: sockaddr :), 'ai_addr],
+  [String, 'ai_canonname],
+  ['pointer (: addrinfo :), 'ai_next]])
+getaddrinfo = lib.load_func("getaddrinfo", [String, String, addrinfo, 'pointer_p], 'int)
+freeaddrinfo = lib.load_func("freeaddrinfo", ['pointer])
+gai_strerror = lib.load_func("gai_strerror", ['int], 'pointer (: String :))
 
 close = lib.load_func("close", ['int], 'int)
 
 if ARGV.get(0) == __FILE__
-  sock = socket(AF_INET, SOCK_STREAM, 0)
-  addr = sockaddr_in.new()
-  addr.sin_family = AF_INET
-  addr.sin_port = htons(80)
-  addr.sin_addr = inet_addr("127.0.0.1")
-  if connect(sock, addr, 16) != 0
-    raise Exception.new("Connect error")
+  hints = addrinfo.new()
+  hints.ai_family = AF_INET
+  hints.ai_socktype = SOCK_STREAM
+  res = Pointer.new()
+  if getaddrinfo("nymphenburg", "80", hints, res) != 0
+    raise Exception.new("getaddrinfo failed")
+  end
+  try
+    pa = addrinfo.new(res)
+    sock = socket(pa.ai_family, pa.ai_socktype, pa.ai_protocol)
+    if sock == -1
+      raise Exception.new("socket failed")
+    end
+    addr = sockaddr_in.new(pa.ai_addr)
+    if connect(sock, addr, pa.ai_addrlen) != 0
+      raise Exception.new("connect failed")
+    end
+  finally
+    freeaddrinfo(res)
   end
   s = "GET / HTTP/1.0\n\n"
   send_buf = Buffer.new(s)
   send(sock, send_buf, send_buf.size, 0)
-  recv_buf = Buffer.new(4096)
+  recv_buf = Buffer.new(1024)
   recv(sock, recv_buf, recv_buf.size, 0)
   print(recv_buf.to_s())
   close(sock)

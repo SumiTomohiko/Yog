@@ -13,6 +13,7 @@
 #include "yog/bignum.h"
 #include "yog/binary.h"
 #include "yog/class.h"
+#include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/float.h"
@@ -1860,7 +1861,7 @@ Struct_read(YogEnv* env, YogVal self, uint_t offset, ID type)
         val = YogFloat_from_float(env, *((long double*)ptr));
     }
     else if (strcmp(t, "pointer") == 0) {
-        val = YogVal_from_unsigned_int(env, *((uint32_t*)ptr));
+        val = Pointer_new(env, *((void**)ptr));
     }
     else {
         YogError_raise_ValueError(env, "unknown type - %S", s);
