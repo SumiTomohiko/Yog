@@ -10,6 +10,7 @@
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/string.h"
 #include "yog/sysdeps.h"
 #include "yog/vm.h"
 #include "yog/yog.h"

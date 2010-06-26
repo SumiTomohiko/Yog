@@ -28,6 +28,7 @@ struct YogVM {
     YogVal cCode;
     YogVal cCoroutine;
     YogVal cDict;
+    YogVal cEncoding;
     YogVal cEnv;
     YogVal cField;
     YogVal cFieldArray;
@@ -84,6 +85,8 @@ struct YogVM {
     YogVal search_path;
 
     YogVal encodings;
+    YogVal encAscii;
+    YogVal encUtf8;
 
     YogVal finish_code;
 

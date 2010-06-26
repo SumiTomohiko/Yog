@@ -416,6 +416,7 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     YogObj_set_attr(env, builtins, "ARGV",  args);
     e = YogEnv_new(env);
     YogObj_set_attr(env, builtins, "ENV", e);
+    YogObj_set_attr(env, builtins, "ENCODINGS", env->vm->encodings);
 
     set_path_separator(env, builtins);
 

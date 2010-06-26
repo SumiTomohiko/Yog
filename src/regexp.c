@@ -8,6 +8,7 @@
 #include "yog/gc.h"
 #include "yog/get_args.h"
 #include "yog/regexp.h"
+#include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 

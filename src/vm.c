@@ -60,6 +60,7 @@
 #include "yog/property.h"
 #include "yog/regexp.h"
 #include "yog/set.h"
+#include "yog/string.h"
 #include "yog/symbol.h"
 #include "yog/sysdeps.h"
 #include "yog/table.h"
@@ -251,6 +252,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogCode_define_classes(env, builtins);
     YogCoroutine_define_classes(env, builtins);
     YogDict_define_classes(env, builtins);
+    YogEncoding_define_classes(env, builtins);
     YogEnv_define_classes(env, builtins);
     YogFFI_define_classes(env, builtins);
     YogFile_define_classes(env, builtins);
@@ -269,20 +271,43 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
 }
 
 static void
+register_encoding(YogEnv* env, YogVM* vm, const char* name, YogVal enc)
+{
+    SAVE_ARG(env, enc);
+    YogVal s = YUNDEF;
+    PUSH_LOCAL(env, s);
+
+    s = YogString_from_str(env, name);
+    YogDict_set(env, vm->encodings, s, enc);
+
+    RETURN_VOID(env);
+}
+
+static void
 setup_encodings(YogEnv* env, YogVM* vm)
 {
-    /* TODO: changed not to use macro */
+    SAVE_LOCALS(env);
+    YogVal enc = YUNDEF;
+    YogVal ascii = YUNDEF;
+    YogVal utf8 = YUNDEF;
+    PUSH_LOCALS3(env, enc, ascii, utf8);
+
+    ascii = YogEncoding_new(env, ONIG_ENCODING_ASCII);
+    vm->encAscii = ascii;
+    utf8 = YogEncoding_new(env, ONIG_ENCODING_UTF8);
+    vm->encUtf8 = utf8;
+    register_encoding(env, vm, "ascii", ascii);
+    register_encoding(env, vm, "utf-8", utf8);
+
 #define REGISTER_ENCODING(name, onig)   do { \
-    ID id = YogVM_intern(env, env->vm, name); \
-    YogVal key = ID2VAL(id); \
-    YogVal enc = YogEncoding_new(env, onig); \
-    YogTable_add_direct(env, vm->encodings, key, enc); \
+    enc = YogEncoding_new(env, (onig)); \
+    register_encoding(env, vm, (name), enc); \
 } while (0)
-    REGISTER_ENCODING("ascii", ONIG_ENCODING_ASCII);
-    REGISTER_ENCODING("utf-8", ONIG_ENCODING_UTF8);
     REGISTER_ENCODING("euc-jp", ONIG_ENCODING_EUC_JP);
     REGISTER_ENCODING("shift-jis", ONIG_ENCODING_SJIS);
 #undef REGISTER_ENCODING
+
+    RETURN_VOID(env);
 }
 
 static void
@@ -323,7 +348,7 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
 
     vm->pkgs = YogTable_new_symbol_table(env);
 
-    vm->encodings = YogTable_new_symbol_table(env);
+    vm->encodings = YogDict_new(env);
     setup_encodings(env, vm);
 
     vm->finish_code = YogCompiler_compile_finish_code(env);
@@ -403,6 +428,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cCode);
     KEEP(cCoroutine);
     KEEP(cDict);
+    KEEP(cEncoding);
     KEEP(cEnv);
     KEEP(cField);
     KEEP(cFieldArray);
@@ -457,6 +483,8 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(pkgs);
     KEEP(search_path);
     KEEP(encodings);
+    KEEP(encAscii);
+    KEEP(encUtf8);
     KEEP(finish_code);
     KEEP(main_thread);
     KEEP(running_threads);
@@ -529,6 +557,7 @@ YogVM_init(YogVM* vm)
     INIT(cCode);
     INIT(cCoroutine);
     INIT(cDict);
+    INIT(cEncoding);
     INIT(cEnv);
     INIT(cField);
     INIT(cFieldArray);
@@ -584,7 +613,9 @@ YogVM_init(YogVM* vm)
     init_read_write_lock(&vm->pkgs_lock);
     INIT(search_path);
 
-    vm->encodings = YNIL;
+    INIT(encodings);
+    INIT(encAscii);
+    INIT(encUtf8);
 
     INIT(finish_code);
 

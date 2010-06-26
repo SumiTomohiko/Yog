@@ -1,7 +1,10 @@
+#include "yog/config.h"
 #include <ctype.h>
+#include "yog/class.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/gc.h"
+#include "yog/string.h"
 #include "yog/table.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -14,47 +17,21 @@ YogEncoding_left_adjust_char_head(YogEnv* env, YogVal enc, const char* start, co
 }
 
 YogVal
-YogEncoding_get_default(YogEnv* env)
-{
-    SAVE_LOCALS(env);
-    YogVal val = YUNDEF;
-    PUSH_LOCAL(env, val);
-
-#define DEFAULT_ENCODING_NAME   "utf-8"
-    ID name = YogVM_intern(env, env->vm, DEFAULT_ENCODING_NAME);
-    if (!YogTable_lookup(env, env->vm->encodings, ID2VAL(name), &val)) {
-        YOG_BUG(env, "can't find default encoding: %s (%u)", DEFAULT_ENCODING_NAME, name);
-    }
-#undef DEFAULT_ENCODING_NAME
-    RETURN(env, val);
-}
-
-static YogVal
-get_encoding_of_name(YogEnv* env, const char* name)
-{
-    SAVE_LOCALS(env);
-    YogVal enc = YUNDEF;
-    PUSH_LOCAL(env, enc);
-
-    YogVM* vm = env->vm;
-    ID id = YogVM_intern(env, vm, name);
-    if (!YogTable_lookup(env, vm->encodings, ID2VAL(id), &enc)) {
-        YogError_raise_ValueError(env, "encoding \"%s\" not found", name);
-    }
-
-    RETURN(env, enc);
-}
-
-YogVal
 YogEncoding_get_ascii(YogEnv* env)
 {
-    return get_encoding_of_name(env, "ascii");
+    return env->vm->encAscii;
 }
 
 YogVal
 YogEncoding_get_utf8(YogEnv* env)
 {
-    return get_encoding_of_name(env, "utf-8");
+    return env->vm->encUtf8;
+}
+
+YogVal
+YogEncoding_get_default(YogEnv* env)
+{
+    return YogEncoding_get_utf8(env);
 }
 
 int_t
@@ -86,13 +63,46 @@ YogEncoding_normalize_name(YogEnv* env, YogVal name)
     return s;
 }
 
+static YogVal
+alloc(YogEnv* env, YogVal klass)
+{
+    SAVE_ARG(env, klass);
+    YogVal enc = YUNDEF;
+    PUSH_LOCAL(env, enc);
+
+    enc = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, YogEncoding);
+    YogBasicObj_init(env, enc, TYPE_ENCODING, 0, klass);
+    PTR_AS(YogEncoding, enc)->onig_enc = NULL;
+
+    RETURN(env, enc);
+}
+
+void
+YogEncoding_define_classes(YogEnv* env, YogVal pkg)
+{
+    SAVE_ARG(env, pkg);
+    YogVal cEncoding = YUNDEF;
+    PUSH_LOCAL(env, cEncoding);
+    YogVM* vm = env->vm;
+
+    cEncoding = YogClass_new(env, "Encoding", vm->cObject);
+    YogClass_define_allocator(env, cEncoding, alloc);
+    vm->cEncoding = cEncoding;
+
+    RETURN_VOID(env);
+}
+
 YogVal
 YogEncoding_new(YogEnv* env, OnigEncoding onig_enc)
 {
-    YogVal enc = ALLOC_OBJ(env, NULL, NULL, YogEncoding);
+    SAVE_LOCALS(env);
+    YogVal enc = YUNDEF;
+    PUSH_LOCAL(env, enc);
+
+    enc = alloc(env, env->vm->cEncoding);
     PTR_AS(YogEncoding, enc)->onig_enc = onig_enc;
 
-    return enc;
+    RETURN(env, enc);
 }
 
 /**

@@ -17,6 +17,7 @@
 #include "yog/gc.h"
 #include "yog/parser.h"
 #include "yog/regexp.h"
+#include "yog/string.h"
 #include "yog/sysdeps.h"
 #include "yog/table.h"
 #include "yog/token.h"
