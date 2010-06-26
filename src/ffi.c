@@ -2311,7 +2311,7 @@ Buffer_alloc_string(YogEnv* env, YogVal self, YogVal s)
 {
     SAVE_ARGS2(env, self, s);
 
-    uint_t size = YogString_size(env, s) + 1;
+    uint_t size = YogString_size(env, s);
     void* ptr = YogGC_malloc(env, size);
     memcpy(ptr, STRING_CSTR(s), size);
     PTR_AS(Buffer, self)->size = size;
@@ -2356,10 +2356,13 @@ Buffer_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     if (!IS_FIXNUM(size)) {
         YogError_raise_TypeError(env, "size must be Fixnum, not %C", size);
     }
-    if ((VAL2INT(size) < 1) || (PTR_AS(Buffer, self)->size < VAL2INT(size))) {
-        YogError_raise_ValueError(env, "Out of Buffer size");
+    if ((VAL2INT(size) < 0) || (PTR_AS(Buffer, self)->size < VAL2INT(size))) {
+        YogError_raise_ValueError(env, "Out of Buffer size - %d", VAL2INT(size));
     }
 
+    if (VAL2INT(size) == 0) {
+        RETURN(env, YogString_of_encoding(env, enc));
+    }
     char* pc = PTR_AS(Buffer, self)->ptr;
     s = YogString_from_range(env, enc, pc, pc + VAL2INT(size) - 1);
 
