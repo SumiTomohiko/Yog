@@ -1,0 +1,45 @@
+
+from libc import AF_INET, SOCK_STREAM, addrinfo, close, connect, freeaddrinfo, getaddrinfo, send, sockaddr_in, socket, recv
+
+class TcpSocket
+  def init(host, port)
+    hints = addrinfo.new()
+    hints.ai_family = AF_INET
+    hints.ai_socktype = SOCK_STREAM
+    res = Pointer.new()
+    if getaddrinfo(host, port.to_s(), hints, res) != 0
+      raise Exception.new("getaddrinfo failed")
+    end
+    try
+      pa = addrinfo.new(res)
+      sock = socket(pa.ai_family, pa.ai_socktype, pa.ai_protocol)
+      if sock == -1
+        raise Exception.new("socket failed")
+      end
+      addr = sockaddr_in.new(pa.ai_addr)
+      if connect(sock, addr, pa.ai_addrlen) != 0
+        raise Exception.new("connect failed")
+      end
+    finally
+      freeaddrinfo(res)
+    end
+    self.sock = sock
+  end
+
+  def send(size)
+    buf = Buffer.new(size)
+    send(self.sock, buf, buf.size, 0)
+  end
+
+  def close()
+    close(self.sock)
+  end
+
+  def recv(size)
+    buf = Buffer.new(size)
+    recv(self.sock, buf, buf.size, 0)
+    return buf.to_bin(1)
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

@@ -6,6 +6,7 @@ from testcase import TestLib
 class TestSocket(TestLib):
 
     port = 1092
+    options = []
 
     def do_test(self, callback):
         port = self.__class__.port
