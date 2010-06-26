@@ -2,7 +2,7 @@
 from libc import AF_INET, SOCK_STREAM, addrinfo, close, connect, freeaddrinfo, getaddrinfo, send, sockaddr_in, socket, recv
 
 class TcpSocket
-  def init(host, port)
+  def init(host, port, encoding=ENCODINGS["ascii"])
     hints = addrinfo.new()
     hints.ai_family = AF_INET
     hints.ai_socktype = SOCK_STREAM
@@ -24,6 +24,7 @@ class TcpSocket
       freeaddrinfo(res)
     end
     self.sock = sock
+    self.encoding = encoding
   end
 
   def send(data)
@@ -37,8 +38,20 @@ class TcpSocket
 
   def recv(size)
     buf = Buffer.new(size)
-    recv(self.sock, buf, buf.size, 0)
-    return buf.to_bin(1)
+    recv_size = recv(self.sock, buf, buf.size, 0)
+    return buf.to_s(recv_size, self.encoding)
+  end
+
+  def readline()
+    s = ""
+    while (c = self.recv(1)) != "\n"
+      s << c
+    end
+    s << c
+    if self.encoding == nil
+      return s
+    end
+    return s.gsub("\r\n", "\n")
   end
 end
 

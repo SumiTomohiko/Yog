@@ -2344,12 +2344,24 @@ Buffer_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
-    YogCArg params[] = { { NULL, NULL } };
+    YogVal enc = YUNDEF;
+    YogVal size = YUNDEF;
+    PUSH_LOCALS3(env, s, enc, size);
+    YogCArg params[] = {
+        { "size", &size },
+        { "encoding", &enc },
+        { NULL, NULL } };
     YogGetArgs_parse_args(env, "to_s", params, args, kw);
     CHECK_SELF_BUFFER;
+    if (!IS_FIXNUM(size)) {
+        YogError_raise_TypeError(env, "size must be Fixnum, not %C", size);
+    }
+    if ((VAL2INT(size) < 1) || (PTR_AS(Buffer, self)->size < VAL2INT(size))) {
+        YogError_raise_ValueError(env, "Out of Buffer size");
+    }
 
-    s = YogString_from_str(env, PTR_AS(Buffer, self)->ptr);
+    char* pc = PTR_AS(Buffer, self)->ptr;
+    s = YogString_from_range(env, enc, pc, pc + VAL2INT(size) - 1);
 
     RETURN(env, s);
 }
