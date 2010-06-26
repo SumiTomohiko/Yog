@@ -26,8 +26,8 @@ class TcpSocket
     self.sock = sock
   end
 
-  def send(size)
-    buf = Buffer.new(size)
+  def send(data)
+    buf = Buffer.new(data)
     send(self.sock, buf, buf.size, 0)
   end
 
