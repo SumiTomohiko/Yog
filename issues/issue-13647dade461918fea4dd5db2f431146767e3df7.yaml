@@ -1,0 +1,19 @@
+--- !ditz.rubyforge.org,2008-03-06/issue
+title: Exception in a loaded package causes file descriptor leak
+desc: |-
+
+type: :task
+component: core
+release:
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition:
+creation_time: 2010-06-26 15:55:44.944476 Z
+references: []
+
+id: 13647dade461918fea4dd5db2f431146767e3df7
+log_events:
+- - 2010-06-26 15:55:44.944476 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
