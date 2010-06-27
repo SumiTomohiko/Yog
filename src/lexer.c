@@ -11,6 +11,7 @@
 #endif
 #include "oniguruma.h"
 #include "yog/array.h"
+#include "yog/dict.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/float.h"
@@ -1215,9 +1216,8 @@ read_encoding(YogEnv* env, YogVal lexer)
         }
 
         ID id = YogString_intern(env, coding);
-        YogVal key = ID2VAL(id);
-        YogVal val = YUNDEF;
-        if (!YogTable_lookup(env, env->vm->encodings, key, &val)) {
+        YogVal val = YogDict_get(env, env->vm->encodings, coding);
+        if (IS_UNDEF(val)) {
             continue;
         }
         encoding = val;
