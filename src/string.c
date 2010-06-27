@@ -395,6 +395,16 @@ gsub(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
+get_encoding(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_encoding", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    RETURN(env, STRING_ENCODING(self));
+}
+
+static YogVal
 get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     CHECK_SELF_TYPE(env, self);
@@ -577,25 +587,31 @@ static BOOL
 index2offset(YogEnv* env, YogVal self, int_t index, uint_t* offset)
 {
     SAVE_ARG(env, self);
+    YogVal enc = STRING_ENCODING(self);
+    PUSH_LOCAL(env, enc);
     if (index < 0) {
         RETURN(env, FALSE);
     }
-
     uint_t size = YogString_size(env, self);
+    OnigEncoding onig = PTR_AS(YogEncoding, enc)->onig_enc;
+    int max_mbc_len = ONIGENC_MBC_MAXLEN(onig);
+    int min_mbc_len = ONIGENC_MBC_MINLEN(onig);
+    if (max_mbc_len == min_mbc_len) {
+        int mbc_len = max_mbc_len;
+        *offset = mbc_len * index;
+        RETURN(env, *offset < size ? TRUE : FALSE);
+    }
+
     uint_t n = 0;
     int_t i;
     for (i = 0; i < index; i++) {
         char* p = &STRING_CSTR(self)[n];
-        n += YogEncoding_mbc_size(env, STRING_ENCODING(self), p);
+        n += YogEncoding_mbc_size(env, enc, p);
         if (size <= n) {
             RETURN(env, FALSE);
         }
     }
-    if (size <= n) {
-        RETURN(env, FALSE);
-    }
     *offset = n;
-
     RETURN(env, TRUE);
 }
 
@@ -1203,7 +1219,12 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("to_i", to_i);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
-    YogClass_define_property(env, cString, pkg, "size", get_size, NULL);
+#define DEFINE_PROP(name, getter, setter) do { \
+    YogClass_define_property(env, cString, pkg, (name), (getter), (setter)); \
+} while (0)
+    DEFINE_PROP("size", get_size, NULL);
+    DEFINE_PROP("encoding", get_encoding, NULL);
+#undef DEFINE_PROP
     vm->cString = cString;
 
     RETURN_VOID(env);

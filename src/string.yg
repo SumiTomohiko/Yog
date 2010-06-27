@@ -21,7 +21,7 @@ end
 
 def slice(pos, len=nil)
   if self.size <= pos
-    return ""
+    return self.encoding.create_string()
   end
 
   if pos < 0
@@ -31,10 +31,10 @@ def slice(pos, len=nil)
   if (len == nil) || (max_len < len)
     len = max_len
   elif len < 0
-    return ""
+    return self.encoding.create_string()
   end
 
-  s = ""
+  s = self.encoding.create_string()
   len.times() do [i]
     s << self[pos + i]
   end

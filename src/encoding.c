@@ -4,6 +4,7 @@
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/gc.h"
+#include "yog/get_args.h"
 #include "yog/string.h"
 #include "yog/table.h"
 #include "yog/vm.h"
@@ -77,6 +78,18 @@ alloc(YogEnv* env, YogVal klass)
     RETURN(env, enc);
 }
 
+static YogVal
+create_string(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "create_string", params, args, kw);
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_ENCODING)) {
+        YogError_raise_TypeError((env), "self must be Encoding");
+    }
+    RETURN(env, YogString_of_encoding(env, self));
+}
+
 void
 YogEncoding_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -87,6 +100,7 @@ YogEncoding_define_classes(YogEnv* env, YogVal pkg)
 
     cEncoding = YogClass_new(env, "Encoding", vm->cObject);
     YogClass_define_allocator(env, cEncoding, alloc);
+    YogClass_define_method(env, cEncoding, pkg, "create_string", create_string);
     vm->cEncoding = cEncoding;
 
     RETURN_VOID(env);
