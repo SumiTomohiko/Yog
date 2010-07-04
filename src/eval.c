@@ -697,43 +697,6 @@ YogEval_mainloop(YogEnv* env)
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define THREAD          (env->thread)
 #define JUMP(m)         PC = m;
-#define POP_ARGS(args, kwargs, vararg, varkwarg, blockarg) \
-    YogVal varkwarg = YUNDEF; \
-    YogVal vararg = YUNDEF; \
-    YogVal blockarg = YUNDEF; \
-    YogVal kwargs[256]; \
-    YogVal args[256]; \
-    uint_t i; \
-    for (i = 0; i < 2 * (kwargc); i++) { \
-        kwargs[i] = YUNDEF; \
-    } \
-    for (i = 0; i < (argc); i++) { \
-        args[i] = YUNDEF; \
-    } \
-    PUSH_LOCALS3(env, varkwarg, vararg, blockarg); \
-    PUSH_LOCALSX(env, 2 * (kwargc), kwargs); \
-    PUSH_LOCALSX(env, (argc), args); \
-\
-    for (i = 0; i < argc; i++) { \
-        args[i] = POP(); \
-    } \
-\
-    for (i = 0; i < kwargc; i++) { \
-        kwargs[2 * i] = POP(); \
-        kwargs[2 * i + 1] = POP(); \
-    } \
-\
-    if (varargc == 1) { \
-        vararg = POP(); \
-    } \
-\
-    if (varkwargc == 1) { \
-        varkwarg = POP(); \
-    } \
-\
-    if (blockargc == 1) { \
-        blockarg = POP(); \
-    }
         OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
 #if 0 && !defined(MINIYOG)
