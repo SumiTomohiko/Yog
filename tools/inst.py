@@ -219,6 +219,17 @@ class CodeGenerator(object):
             lineno += len(s.split("\n")) - 1
             inc.write(s)
 
+            if 0 < len(inst.operands):
+                s = """
+            YogVal __frame__ = env->frame;
+            YogVal __code__ = SCRIPT_FRAME(__frame__)->code;
+            YogVal __insts__ = PTR_AS(YogCode, __code__)->insts;
+            PUSH_LOCALS3(env, __frame__, __code__, __insts__);
+            const char* __bytes__ = PTR_AS(YogByteArray, __insts__)->items;
+            uint_t __size__ = PTR_AS(YogByteArray, __insts__)->size;
+            pc_t __pc__ = SCRIPT_FRAME(__frame__)->pc;"""
+                lineno += len(s.split("\n")) - 1
+                inc.write(s)
             declared_names = set()
             for operand in inst.operands:
                 name = operand.name
@@ -226,12 +237,17 @@ class CodeGenerator(object):
                     raise Exception("%(name)s is used." % { "name": name })
 
                 s = """
-            YOG_ASSERT(env, PC < YogByteArray_size(env, CODE->insts), "pc is over code length.");
-            %(type)s %(name)s = *((%(type)s*)&PTR_AS(YogByteArray, CODE->insts)->items[PC]);
-            PC += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
+            YOG_ASSERT(env, __pc__ < __size__, "pc is over code length.");
+            %(type)s %(name)s = *((%(type)s*)(&__bytes__[__pc__]));
+            __pc__ += sizeof(%(type)s);""" % { "type": operand.type, "name": name }
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
                 declared_names.add(name)
+            if 0 < len(inst.operands):
+                s = """
+            SCRIPT_FRAME(__frame__)->pc = __pc__;"""
+                lineno += len(s.split("\n")) - 1
+                inc.write(s)
 
             for val in inst.pop_values:
                 if val not in declared_names:
