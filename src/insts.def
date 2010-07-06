@@ -129,7 +129,6 @@ inst call_function
     if (PTR_AS(YogClass, klass)->exec == NULL) {
         YogError_raise_TypeError(env, "%C is not callable", callee);
     }
-    YOG_ASSERT(env, PTR_AS(YogClass, klass)->exec != NULL, "uncallable");
     PTR_AS(YogClass, klass)->exec(env, callee, argc, args, kwargc, kwargs, vararg, varkwarg, blockarg);
 
     RESTORE_LOCALS_FROM_NAME(env, call_function);
