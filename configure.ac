@@ -198,8 +198,6 @@ then
     AC_CONFIG_FILES([tests/gc/Makefile])
 fi
 
-CFLAGS="${CFLAGS} -Wall -I`pwd`/include -I`pwd`/onig"
-
 AC_CANONICAL_HOST
 case "${host}" in
 *-openbsd*)

@@ -22,8 +22,7 @@ COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 ffi.c env.c
 DEFAULT_INCLUDES = -I.
 CFLAGS_COMMON = -I$(top_srcdir)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
-		-I$(GMP_DIR) -I$(LIBFFI_DIR)/include -Wall -g -DYOG_CORE \
-		@CFLAGS@
+		-I$(GMP_DIR) -I$(LIBFFI_DIR)/include -Wall -g -DYOG_CORE -O2
 LDFLAGS_COMMON = @LDFLAGS_COMMON@
 LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a \
        $(LIBFFI_DIR)/.libs/libffi.a -lm @LIBS@
