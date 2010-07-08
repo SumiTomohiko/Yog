@@ -106,25 +106,15 @@ fill_args(YogEnv* env, YogVal self, uint_t args_offset, uint8_t posargc, YogVal 
     YogVal va = YUNDEF;
     YogVal iter = YUNDEF;
     YogVal val = YUNDEF;
-    YogVal code = YUNDEF;
-    YogVal arg_info = YUNDEF;
+    YogVal code = PTR_AS(YogFunction, self)->code;
+    YogVal arg_info = PTR_AS(YogCode, code)->arg_info;
     PUSH_LOCALS7(env, array, kw, va, iter, val, code, arg_info);
     YOG_ASSERT(env, IS_PTR(self), "invalid self (0x%x)", self);
     YOG_ASSERT(env, BASIC_OBJ_TYPE(self) == TYPE_FUNCTION, "invalid type self (0x%x)", BASIC_OBJ_TYPE(self));
-
-    code = PTR_AS(YogFunction, self)->code;
-    arg_info = PTR_AS(YogCode, code)->arg_info;
     if (!IS_PTR(arg_info)) {
         RETURN_VOID(env);
     }
 
-    uint_t i;
-    uint_t arg_argc = PTR_AS(YogArgInfo, arg_info)->argc;
-    uint_t arg_blockargc = PTR_AS(YogArgInfo, arg_info)->blockargc;
-    uint_t size = arg_argc + arg_blockargc;
-    for (i = 0; i < size; i++) {
-        PTR_AS(YogValArray, args)->items[args_offset + i] = YUNDEF;
-    }
     uint_t arg_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
     if (0 < arg_kwargc) {
         uint_t index = PTR_AS(YogArgInfo, arg_info)->argc;
@@ -136,20 +126,23 @@ fill_args(YogEnv* env, YogVal self, uint_t args_offset, uint8_t posargc, YogVal 
         YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + index], kw);
     }
 
+    uint_t i;
+    uint_t arg_argc = PTR_AS(YogArgInfo, arg_info)->argc;
     if (arg_argc < posargc) {
-        for (i = 0; i < PTR_AS(YogArgInfo, arg_info)->argc; i++) {
+        uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
+        for (i = 0; i < argc; i++) {
             YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + i], posargs[i]);
         }
         if (PTR_AS(YogArgInfo, arg_info)->varargc != 1) {
             raise_wrong_num_args(env, self, posargc);
         }
-        uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
         array = YogArray_new(env);
         YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + argc], array);
-        for (i = PTR_AS(YogArgInfo, arg_info)->argc; i < posargc; i++) {
+        for (i = argc; i < posargc; i++) {
             YogArray_push(env, array, posargs[i]);
         }
         if (IS_UNDEF(vararg)) {
+            /* Do nothing */
         }
         else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
             raise_TypeError_for_vararg(env, vararg);
@@ -163,6 +156,7 @@ fill_args(YogEnv* env, YogVal self, uint_t args_offset, uint8_t posargc, YogVal 
             YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + i], posargs[i]);
         }
         if (IS_UNDEF(vararg)) {
+            /* Do nothing */
         }
         else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
             raise_TypeError_for_vararg(env, vararg);
@@ -178,6 +172,7 @@ fill_args(YogEnv* env, YogVal self, uint_t args_offset, uint8_t posargc, YogVal 
             YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, args), items[args_offset + posargc], va);
 
             if (IS_UNDEF(vararg)) {
+                /* Do nothing */
             }
             else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
                 raise_TypeError_for_vararg(env, vararg);
@@ -199,6 +194,7 @@ fill_args(YogEnv* env, YogVal self, uint_t args_offset, uint8_t posargc, YogVal 
     }
 
     if (IS_UNDEF(varkwarg)) {
+        /* Do nothing */
     }
     else if (!IS_PTR(varkwarg) || (BASIC_OBJ_TYPE(varkwarg) != TYPE_DICT)) {
         raise_TypeError_for_varkwarg(env, varkwarg);
