@@ -62,14 +62,14 @@ exec_get_attr(YogEnv* env, YogVal self, ID name)
     attr = YogClass_get_attr(env, klass, name);
     if (!IS_UNDEF(attr)) {
         attr = YogVal_get_descr(env, attr, self, klass);
-        FRAME_PUSH(env, attr);
+        YogScriptFrame_push_stack(env, env->frame, attr);
         RETURN_VOID(env);
     }
 
     attr = YogObj_get_attr(env, self, name);
     if (!IS_UNDEF(attr)) {
         attr = YogVal_get_descr(env, attr, YNIL, self);
-        FRAME_PUSH(env, attr);
+        YogScriptFrame_push_stack(env, env->frame, attr);
         RETURN_VOID(env);
     }
 

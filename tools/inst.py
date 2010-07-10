@@ -283,10 +283,10 @@ class CodeGenerator(object):
             for pop_value in inst.pop_values:
                 if (0 < len(inst.codes)) or (0 < len(inst.push_values)):
                     s = """
-            %(name)s = POP();""" % { "name": pop_value }
+            %(name)s = pop(env);""" % { "name": pop_value }
                 else:
                     s = """
-            POP();"""
+            pop(env);"""
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
 
@@ -318,7 +318,7 @@ class CodeGenerator(object):
 
             for push_value in inst.push_values:
                 s = """
-            PUSH(%(name)s);""" % { "name": push_value }
+            YogScriptFrame_push_stack(env, env->frame, %(name)s);""" % { "name": push_value }
                 lineno += len(s.split("\n")) - 1
                 inc.write(s)
 

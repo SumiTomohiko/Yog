@@ -5,10 +5,8 @@
 
 enum YogFrameType {
     FRAME_C,
-    FRAME_METHOD,
-    FRAME_PKG,
-    FRAME_CLASS,
     FRAME_FINISH,
+    FRAME_SCRIPT,
 };
 
 typedef enum YogFrameType YogFrameType;
@@ -28,61 +26,80 @@ struct YogCFrame {
 
 typedef struct YogCFrame YogCFrame;
 
-struct YogOuterVars {
-    uint_t size;
-    YogVal items[0];
-};
-
-typedef struct YogOuterVars YogOuterVars;
-
 struct YogScriptFrame {
     struct YogFrame base;
+
     pc_t pc;
-    YogVal code;
+    uint_t stack_capacity;
     uint_t stack_size;
-    YogVal stack;
+    uint_t locals_num;
+    uint_t outer_frames_num;
+
+    YogVal code;
     YogVal globals;
-    YogVal outer_vars;
     YogVal frame_to_long_return;
     YogVal frame_to_long_break;
 
     uint_t lhs_left_num;
     uint_t lhs_middle_num;
     uint_t lhs_right_num;
+
+    /* Fields used for super */
+    YogVal klass;
+    ID name;
+
+    /**
+     * = Layout of Dynamically Sized Fields
+     *
+     * == For class statements and package level
+     *
+     * +--------+
+     * :        : statically sized fields
+     * +--------+
+     * |        | ^ bottom
+     * |        | |
+     * :        : : stack (stack_capacity)
+     * |        | |
+     * |        | v top
+     * +--------+
+     * |        | locals (locals_num == 1) as YogTable
+     * +--------+
+     * |        |
+     * :        : outer frames
+     * |        |
+     * +--------+
+     *
+     * == For methods and functions
+     *
+     * +--------+
+     * :        : statically sized fields
+     * +--------+
+     * |        | ^ bottom
+     * |        | |
+     * :        : : stack (stack_capacity)
+     * |        | |
+     * |        | v top
+     * +--------+
+     * |        |
+     * :        : locals (locals_num)
+     * |        |
+     * +--------+
+     * |        |
+     * :        : outer frames
+     * |        |
+     * +--------+
+     */
+    YogVal locals_etc[0];
 };
 
 typedef struct YogScriptFrame YogScriptFrame;
 
 #define YogFinishFrame  YogScriptFrame
 
-#define SCRIPT_FRAME(v)     PTR_AS(YogScriptFrame, (v))
-
-struct YogNameFrame {
-    struct YogScriptFrame base;
-    YogVal self;
-    YogVal vars;
-};
-
-typedef struct YogNameFrame YogNameFrame;
-
-#define NAME_FRAME(v)   PTR_AS(YogNameFrame, (v))
-#define NAME_VARS(v)    (NAME_FRAME(v)->vars)
-
-#define YogClassFrame       YogNameFrame
-#define YogPackageFrame     YogNameFrame
-
-struct YogMethodFrame {
-    struct YogScriptFrame base;
-    YogVal vars;
-
-    YogVal klass;   /* class defining this method */
-    ID name;
-};
-
-typedef struct YogMethodFrame YogMethodFrame;
-
-#define METHOD_FRAME(v)     PTR_AS(YogMethodFrame, (v))
-#define LOCAL_VARS(f)       (METHOD_FRAME(f)->vars)
+#define SCRIPT_FRAME(frame) PTR_AS(YogScriptFrame, (frame))
+#define SCRIPT_FRAME_STACK_TOP(frame) (SCRIPT_FRAME((frame))->locals_etc + SCRIPT_FRAME((frame))->stack_size)
+#define SCRIPT_FRAME_LOCALS(frame) (SCRIPT_FRAME((frame))->locals_etc + SCRIPT_FRAME((frame))->stack_capacity)
+#define SCRIPT_FRAME_OUTER_FRAMES(frame) (SCRIPT_FRAME_LOCALS((frame)) + SCRIPT_FRAME((frame))->locals_num)
 
 /* PROTOTYPE_START */
 
@@ -92,19 +109,11 @@ typedef struct YogMethodFrame YogMethodFrame;
 /* src/frame.c */
 YOG_EXPORT YogVal YogCFrame_new(YogEnv*);
 YOG_EXPORT void YogCFrame_return_multi_value(YogEnv*, YogVal, YogVal);
-YOG_EXPORT YogVal YogClassFrame_new(YogEnv*);
 YOG_EXPORT YogVal YogFinishFrame_new(YogEnv*);
-YOG_EXPORT YogVal YogMethodFrame_new(YogEnv*);
-YOG_EXPORT YogVal YogOuterVars_new(YogEnv*, uint_t);
-YOG_EXPORT YogVal YogPackageFrame_new(YogEnv*);
-YOG_EXPORT YogVal YogScriptFrame_pop_stack(YogEnv*, YogScriptFrame*);
+YOG_EXPORT YogVal YogScriptFrame_new(YogEnv*, YogFrameType, YogVal, uint_t, uint_t);
 YOG_EXPORT void YogScriptFrame_push_stack(YogEnv*, YogVal, YogVal);
 
 /* PROTOTYPE_END */
-
-#define FRAME_PUSH(env, val)    do { \
-    YogScriptFrame_push_stack((env), env->frame, (val)); \
-} while (0)
 
 #endif
 /**

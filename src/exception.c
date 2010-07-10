@@ -139,9 +139,7 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
             }
             break;
         }
-    case FRAME_METHOD:
-    case FRAME_PKG:
-    case FRAME_CLASS:
+    case FRAME_SCRIPT:
         {
             YogVal code = PTR_AS(YogScriptFrame, frame)->code;
             if (PTR_AS(YogCode, code)->func_name == name) {
@@ -186,9 +184,7 @@ YogException_get_stacktrace(YogEnv* env, YogVal frame)
                 PTR_AS(YogStackTraceEntry, ent)->func_name = func_name;
                 break;
             }
-        case FRAME_METHOD:
-        case FRAME_PKG:
-        case FRAME_CLASS:
+        case FRAME_SCRIPT:
             {
                 code = PTR_AS(YogScriptFrame, frame)->code;
                 uint_t lineno = 0;

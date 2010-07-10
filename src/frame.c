@@ -1,10 +1,25 @@
 #include <stdarg.h>
 #include <string.h>
 #include "yog/array.h"
+#include "yog/code.h"
 #include "yog/error.h"
 #include "yog/frame.h"
 #include "yog/gc.h"
+#include "yog/vm.h"
 #include "yog/yog.h"
+
+void
+YogScriptFrame_push_stack(YogEnv* env, YogVal self, YogVal val)
+{
+    SAVE_ARGS2(env, self, val);
+
+    uint_t size = PTR_AS(YogScriptFrame, self)->stack_size;
+    YOG_ASSERT(env, size < PTR_AS(YogScriptFrame, self)->stack_capacity, "Full stack");
+    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, self), locals_etc[size], val);
+    PTR_AS(YogScriptFrame, self)->stack_size++;
+
+    RETURN_VOID(env);
+}
 
 void
 YogCFrame_return_multi_value(YogEnv* env, YogVal self, YogVal multi_val)
@@ -38,33 +53,30 @@ YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* 
 {
     YogFrame_keep_children(env, ptr, keeper, heap);
 
-    YogScriptFrame* frame = PTR_AS(YogScriptFrame, ptr);
+    YogScriptFrame* frame = (YogScriptFrame*)ptr;
     KEEP(code);
-    KEEP(stack);
     KEEP(globals);
-    KEEP(outer_vars);
     KEEP(frame_to_long_return);
     KEEP(frame_to_long_break);
-}
-
-static void
-YogNameFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
-{
-    YogScriptFrame_keep_children(env, ptr, keeper, heap);
-
-    YogNameFrame* frame = PTR_AS(YogNameFrame, ptr);
-    KEEP(self);
-    KEEP(vars);
-}
-
-static void
-YogMethodFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
-{
-    YogScriptFrame_keep_children(env, ptr, keeper, heap);
-
-    YogMethodFrame* frame = PTR_AS(YogMethodFrame, ptr);
-    KEEP(vars);
     KEEP(klass);
+
+    uint_t stack_size = frame->stack_size;
+    uint_t i;
+    for (i = 0; i < stack_size; i++) {
+        KEEP(locals_etc[i]);
+    }
+
+    uint_t stack_capacity = frame->stack_capacity;
+    uint_t locals_num = frame->locals_num;
+    for (i = 0; i < locals_num; i++) {
+        KEEP(locals_etc[stack_capacity + i]);
+    }
+
+    uint_t offset = stack_capacity + locals_num;
+    uint_t frames_num = frame->outer_frames_num;
+    for (i = 0; i < frames_num; i++) {
+        KEEP(locals_etc[offset + i]);
+    }
 }
 
 #undef KEEP
@@ -76,100 +88,54 @@ YogFrame_init(YogVal frame, YogFrameType type)
     PTR_AS(YogFrame, frame)->type = type;
 }
 
-void
-YogScriptFrame_push_stack(YogEnv* env, YogVal frame, YogVal val)
+static void
+YogScriptFrame_init(YogEnv* env, YogVal self, YogFrameType type, YogVal code, uint_t locals_num, uint_t lhs_left_num)
 {
-    YOG_ASSERT(env, PTR_AS(YogFrame, frame)->type != FRAME_C, "invalid frame type (0x%x)", PTR_AS(YogFrame, frame)->type);
-    SAVE_ARGS2(env, frame, val);
-    YogVal stack = YUNDEF;
-    PUSH_LOCAL(env, stack);
+    SAVE_ARG(env, code);
+    uint_t stack_capacity = PTR_AS(YogCode, code)->stack_size;
+    uint_t outer_depth = PTR_AS(YogCode, code)->outer_size;
 
-    stack = PTR_AS(YogScriptFrame, frame)->stack;
-    uint_t capacity = YogValArray_size(env, stack);
-    YOG_ASSERT(env, PTR_AS(YogScriptFrame, frame)->stack_size < capacity, "Stack is full.");
+    YogFrame_init(self, type);
+#define INIT(member, value) PTR_AS(YogScriptFrame, self)->member = (value)
+    INIT(pc, 0);
+    INIT(code, YUNDEF);
+    INIT(stack_capacity, stack_capacity);
+    INIT(stack_size, 0);
+    INIT(locals_num, locals_num);
+    INIT(outer_frames_num, outer_depth);
+    INIT(globals, YUNDEF);
+    INIT(frame_to_long_return, YUNDEF);
+    INIT(frame_to_long_break, YUNDEF);
+    INIT(lhs_left_num, lhs_left_num);
+    INIT(lhs_middle_num, 0);
+    INIT(lhs_right_num, 0);
+    INIT(klass, YUNDEF);
+    INIT(name, INVALID_ID);
 
-    uint_t n = PTR_AS(YogScriptFrame, frame)->stack_size;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, stack), items[n], val);
-    PTR_AS(YogScriptFrame, frame)->stack_size++;
+    uint_t locals_etc_size = stack_capacity + locals_num + outer_depth;
+    uint_t i;
+    for (i = 0; i < locals_etc_size; i++) {
+        INIT(locals_etc[i], YUNDEF);
+    }
+#undef INIT
+
+    YogGC_UPDATE_PTR(env, SCRIPT_FRAME(self), code, code);
 
     RETURN_VOID(env);
 }
 
 YogVal
-YogScriptFrame_pop_stack(YogEnv* env, YogScriptFrame* frame)
+YogScriptFrame_new(YogEnv* env, YogFrameType type, YogVal code, uint_t locals_num, uint_t lhs_left_num)
 {
-    YOG_ASSERT(env, 0 < frame->stack_size, "Stack is empty.");
+    SAVE_ARG(env, code);
+    YogVal frame = YUNDEF;
+    PUSH_LOCAL(env, frame);
 
-    YogVal stack = frame->stack;
-    uint_t index = frame->stack_size - 1;
-    YogVal retval = YogValArray_at(env, stack, index);
+    uint_t locals_etc_size = PTR_AS(YogCode, code)->stack_size + locals_num + PTR_AS(YogCode, code)->outer_size;
+    frame = ALLOC_OBJ_ITEM(env, YogScriptFrame_keep_children, NULL, YogScriptFrame, locals_etc_size, YogVal);
+    YogScriptFrame_init(env, frame, type, code, locals_num, lhs_left_num);
 
-    PTR_AS(YogValArray, stack)->items[index] = YUNDEF;
-    frame->stack_size--;
-
-    return retval;
-}
-
-static void
-YogScriptFrame_init(YogVal frame, YogFrameType type)
-{
-    YogFrame_init(frame, type);
-#define INIT(member, value)     PTR_AS(YogScriptFrame, frame)->member = value
-    INIT(pc, 0);
-    INIT(code, YUNDEF);
-    INIT(stack_size, 0);
-    INIT(stack, YUNDEF);
-    INIT(globals, YUNDEF);
-    INIT(outer_vars, YUNDEF);
-    INIT(frame_to_long_return, YUNDEF);
-    INIT(frame_to_long_break, YUNDEF);
-    INIT(lhs_left_num, 0);
-    INIT(lhs_middle_num, 0);
-    INIT(lhs_right_num, 0);
-#undef INIT
-}
-
-static void
-YogNameFrame_init(YogVal frame, YogFrameType type)
-{
-    YogScriptFrame_init(frame, type);
-    PTR_AS(YogNameFrame, frame)->self = YUNDEF;
-    PTR_AS(YogNameFrame, frame)->vars = YUNDEF;
-}
-
-YogVal
-YogClassFrame_new(YogEnv* env)
-{
-    YogVal frame = ALLOC_OBJ(env, YogNameFrame_keep_children, NULL, YogClassFrame);
-    YogNameFrame_init(frame, FRAME_CLASS);
-
-    return frame;
-}
-
-YogVal
-YogPackageFrame_new(YogEnv* env)
-{
-    YogVal frame = ALLOC_OBJ(env, YogNameFrame_keep_children, NULL, YogPackageFrame);
-    YogNameFrame_init(frame, FRAME_PKG);
-
-    return frame;
-}
-
-static void
-YogMethodFrame_init(YogVal frame)
-{
-    YogScriptFrame_init(frame, FRAME_METHOD);
-    PTR_AS(YogMethodFrame, frame)->vars = YUNDEF;
-    PTR_AS(YogMethodFrame, frame)->klass = YUNDEF;
-}
-
-YogVal
-YogMethodFrame_new(YogEnv* env)
-{
-    YogVal frame = ALLOC_OBJ(env, YogMethodFrame_keep_children, NULL, YogMethodFrame);
-    YogMethodFrame_init(frame);
-
-    return frame;
+    RETURN(env, frame);
 }
 
 static void
@@ -190,47 +156,16 @@ YogCFrame_new(YogEnv* env)
     return frame;
 }
 
-static void
-YogOuterVars_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
-{
-    YogOuterVars* vars = PTR_AS(YogOuterVars, ptr);
-
-    uint_t size = vars->size;
-    uint_t i;
-    for (i = 0; i < size; i++) {
-        YogGC_KEEP(env, vars, items[i], keeper, heap);
-    }
-}
-
-YogVal
-YogOuterVars_new(YogEnv* env, uint_t size)
-{
-    YogVal vars = ALLOC_OBJ_ITEM(env, YogOuterVars_keep_children, NULL, YogOuterVars, size, YogVal);
-    PTR_AS(YogOuterVars, vars)->size = size;
-    uint_t i;
-    for (i = 0; i < size; i++) {
-        PTR_AS(YogOuterVars, vars)->items[i] = YUNDEF;
-    }
-
-    return vars;
-}
-
-static void
-YogFinishFrame_init(YogEnv* env, YogVal self)
-{
-    YogScriptFrame_init(self, FRAME_FINISH);
-    PTR_AS(YogScriptFrame, self)->lhs_left_num = 1;
-}
-
 YogVal
 YogFinishFrame_new(YogEnv* env)
 {
     SAVE_LOCALS(env);
+    YogVal code = env->vm->finish_code;
     YogVal frame = YUNDEF;
-    PUSH_LOCAL(env, frame);
+    PUSH_LOCALS2(env, code, frame);
 
-    frame = ALLOC_OBJ(env, YogScriptFrame_keep_children, NULL, YogScriptFrame);
-    YogFinishFrame_init(env, frame);
+    uint_t locals_num = PTR_AS(YogCode, code)->local_vars_count;
+    frame = YogScriptFrame_new(env, FRAME_FINISH, code, locals_num, 1);
 
     RETURN(env, frame);
 }

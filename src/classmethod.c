@@ -36,7 +36,7 @@ exec_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     PUSH_LOCAL(env, method);
 
     method = call_descr_get(env, attr, obj, klass);
-    FRAME_PUSH(env, method);
+    YogScriptFrame_push_stack(env, env->frame, method);
 
     RETURN_VOID(env);
 }
