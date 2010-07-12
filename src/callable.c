@@ -229,7 +229,6 @@ fill_args(YogEnv* env, YogVal self, uint_t args_offset, uint8_t posargc, YogVal 
         STORE_LOCAL(env, frame, args_offset + index, blockarg);
     }
 
-    uint_t i;
     uint_t required_argc = PTR_AS(YogArgInfo, arg_info)->required_argc;
     for (i = 0; i < required_argc; i++) {
         val = PTR_AS(YogValArray, frame)->items[args_offset + i];
@@ -278,12 +277,11 @@ static void
 YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
 {
     SAVE_ARGS5(env, callee, self, vararg, varkwarg, blockarg);
-    YogVal code = YUNDEF;
+    YogVal code = PTR_AS(YogFunction, callee)->code;
     YogVal frame = YUNDEF;
     YogVal frame_to_long_return = YUNDEF;
     PUSH_LOCALS3(env, code, frame, frame_to_long_return);
 
-    code = PTR_AS(YogFunction, callee)->code;
     uint_t locals_num = PTR_AS(YogCode, code)->local_vars_count;
     frame = YogScriptFrame_new(env, FRAME_SCRIPT, code, locals_num, 0);
     uint_t args_offset;
