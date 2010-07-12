@@ -13,7 +13,7 @@ $(SO): $(OBJS)
 	$(CC) -o $@ -shared $(LDFLAGS) $(OBJS) $(LIBS)
 
 .c.o:
-	$(CC) -o $@ -c $(CFLAGS) $<
+	$(CC) -o $@ -c $(CFLAGS) -I$(top_srcdir)/include $<
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/yaml/$@
