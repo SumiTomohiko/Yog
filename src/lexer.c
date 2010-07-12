@@ -1172,10 +1172,13 @@ is_coding_char(char c)
 static YogVal
 read_encoding(YogEnv* env, YogVal lexer)
 {
-    SAVE_LOCALS(env);
-    PUSH_LOCAL(env, lexer);
-
-    YogVal encoding = YUNDEF;
+    SAVE_ARG(env, lexer);
+    YogVal line = YUNDEF;
+    YogVal body = YUNDEF;
+    YogVal buffer = YUNDEF;
+    YogVal coding = YUNDEF;
+    YogVal val = YUNDEF;
+    PUSH_LOCALS5(env, line, body, buffer, coding, val);
 
     while (readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
         PTR_AS(YogLexer, lexer)->next_index = 0;
@@ -1186,9 +1189,9 @@ read_encoding(YogEnv* env, YogVal lexer)
             continue;
         }
 
-        YogVal line = PTR_AS(YogLexer, lexer)->line;
+        line = PTR_AS(YogLexer, lexer)->line;
         uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
-        YogVal body = PTR_AS(YogString, line)->body;
+        body = PTR_AS(YogString, line)->body;
         const char* s = &PTR_AS(YogCharArray, body)->items[next_index];
 #define KEY     "coding"
         const char* ptr = strstr(s, KEY);
@@ -1209,22 +1212,21 @@ read_encoding(YogEnv* env, YogVal lexer)
             add_token_char(env, lexer, c);
             c = nextc(lexer);
         }
-        YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-        YogVal coding = YogEncoding_normalize_name(env, buffer);
+        buffer = PTR_AS(YogLexer, lexer)->buffer;
+        coding = YogEncoding_normalize_name(env, buffer);
         if (YogString_size(env, coding) < 1) {
             continue;
         }
 
         ID id = YogString_intern(env, coding);
-        YogVal val = YogDict_get(env, env->vm->encodings, coding);
+        val = YogDict_get(env, env->vm->encodings, coding);
         if (IS_UNDEF(val)) {
             continue;
         }
-        encoding = val;
         break;
     }
 
-    RETURN(env, encoding);
+    RETURN(env, val);
 }
 
 static void
