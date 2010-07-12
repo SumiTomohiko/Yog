@@ -163,14 +163,12 @@ typedef struct YogEnv YogEnv;
 } while (0)
 #endif
 #define DECL_LOCALS(name)   YogLocals name = { NULL, 0, 0, { NULL, NULL, NULL, NULL }, __FILE__, __LINE__ };
+/* The macros of PUSH_LOCAL(S)n doesn't initialize unused elements in vals */
 #define PUSH_LOCAL(env, x) \
     DECL_LOCALS(__locals_##x##__); \
     __locals_##x##__.num_vals = 1; \
     __locals_##x##__.size = 1; \
     __locals_##x##__.vals[0] = &(x); \
-    __locals_##x##__.vals[1] = NULL; \
-    __locals_##x##__.vals[2] = NULL; \
-    __locals_##x##__.vals[3] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##__);
 #define PUSH_LOCALS2(env, x, y) \
     DECL_LOCALS(__locals_##x##_##y##__); \
@@ -178,8 +176,6 @@ typedef struct YogEnv YogEnv;
     __locals_##x##_##y##__.size = 1; \
     __locals_##x##_##y##__.vals[0] = &(x); \
     __locals_##x##_##y##__.vals[1] = &(y); \
-    __locals_##x##_##y##__.vals[2] = NULL; \
-    __locals_##x##_##y##__.vals[3] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##_##y##__);
 #define PUSH_LOCALS3(env, x, y, z) \
     DECL_LOCALS(__locals_##x##_##y##_##z##__); \
@@ -188,7 +184,6 @@ typedef struct YogEnv YogEnv;
     __locals_##x##_##y##_##z##__.vals[0] = &(x); \
     __locals_##x##_##y##_##z##__.vals[1] = &(y); \
     __locals_##x##_##y##_##z##__.vals[2] = &(z); \
-    __locals_##x##_##y##_##z##__.vals[3] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##_##y##_##z##__);
 #define PUSH_LOCALS4(env, x, y, z, t) \
     DECL_LOCALS(__locals_##x##_##y##_##z##_##t##__); \
@@ -216,9 +211,6 @@ typedef struct YogEnv YogEnv;
     __locals_##x##__.num_vals = 1; \
     __locals_##x##__.size = (num); \
     __locals_##x##__.vals[0] = (x); \
-    __locals_##x##__.vals[1] = NULL; \
-    __locals_##x##__.vals[2] = NULL; \
-    __locals_##x##__.vals[3] = NULL; \
     PUSH_LOCAL_TABLE(env, __locals_##x##__);
 #define SAVE_ARG(env, x)        SAVE_LOCALS((env)); \
                                 PUSH_LOCAL((env), x)
