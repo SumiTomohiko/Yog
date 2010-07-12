@@ -231,7 +231,7 @@ fill_args(YogEnv* env, YogVal self, uint_t args_offset, uint8_t posargc, YogVal 
 
     uint_t required_argc = PTR_AS(YogArgInfo, arg_info)->required_argc;
     for (i = 0; i < required_argc; i++) {
-        val = PTR_AS(YogValArray, frame)->items[args_offset + i];
+        val = SCRIPT_FRAME_LOCALS(frame)[args_offset + i];
         check_arg_assigned(env, self, val, posargc);
     }
 
