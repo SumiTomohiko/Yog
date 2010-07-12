@@ -32,7 +32,7 @@ try
 finally
   sock.close()
 end
-""" % locals(), "b\"\\x66\"b\"\\x6f\"b\"\\x6f\"")
+""" % locals(), "foo")
         self.do_test(test)
 
     def test_TcpSocket10(self):
@@ -49,7 +49,7 @@ try
 finally
   sock.close()
 end
-""" % locals(), "b\"\\x66\"b\"\\x6f\"b\"\\x6f\"")
+""" % locals(), "foo")
         self.do_test(test)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

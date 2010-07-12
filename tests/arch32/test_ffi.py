@@ -271,48 +271,4 @@ foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
 
-    # Tests for pointer
-    def test_Struct300(self):
-        def test_stderr(stderr):
-            assert 0 < stderr.find("Value must be greater or equal 0, not -1")
-        self._test("""
-Foo = StructClass.new(\"Foo\", [[\'pointer, \'bar]])
-foo = Foo.new()
-foo.bar = -1
-""", stderr=test_stderr)
-
-    def test_Struct310(self):
-        self._test("""
-Foo = StructClass.new(\"Foo\", [[\'pointer, \'bar]])
-foo = Foo.new()
-foo.bar = 0
-print(foo.bar)
-""", "0")
-
-    def test_Struct320(self):
-        self._test("""
-Foo = StructClass.new(\"Foo\", [[\'pointer, \'bar]])
-foo = Foo.new()
-foo.bar = 4294967295
-print(foo.bar)
-""", "4294967295")
-
-    def test_Struct330(self):
-        def test_stderr(stderr):
-            assert 0 < stderr.find("Value must be less or equal 4294967295, not 4294967296")
-        self._test("""
-Foo = StructClass.new(\"Foo\", [[\'pointer, \'bar]])
-foo = Foo.new()
-foo.bar = 4294967296
-""", stderr=test_stderr)
-
-    def test_Struct340(self):
-        def test_stderr(stderr):
-            assert 0 < stderr.find("TypeError: Value must be Fixnum or Bignum, not String")
-        self._test("""
-Foo = StructClass.new(\"Foo\", [[\'pointer, \'bar]])
-foo = Foo.new()
-foo.bar = \"baz\"
-""", stderr=test_stderr)
-
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

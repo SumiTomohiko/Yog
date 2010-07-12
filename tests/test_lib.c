@@ -3,12 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void
-test_Buffer10(char* buf)
-{
-    strcpy(buf, "foo");
-}
-
 struct Baz {
     char* buf;
 };
