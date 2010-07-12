@@ -542,8 +542,8 @@ create_frame_for_names(YogEnv* env, YogVal code, YogVal vars)
     PUSH_LOCAL(env, frame);
 
     frame = YogScriptFrame_new(env, FRAME_SCRIPT, code, 1, 0);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), locals_etc[PTR_AS(YogScriptFrame, frame)->stack_capacity], vars);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, PTR_AS(YogScriptFrame, CUR_FRAME)->globals);
+    uint_t pos = PTR_AS(YogScriptFrame, frame)->stack_capacity;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), locals_etc[pos], vars);
 
     RETURN(env, frame);
 }
@@ -786,10 +786,12 @@ YogEval_eval_package(YogEnv* env, YogVal pkg, YogVal code)
 {
     SAVE_ARGS2(env, pkg, code);
     YogVal frame = YUNDEF;
-    PUSH_LOCAL(env, frame);
+    YogVal attrs = PTR_AS(YogObj, pkg)->attrs;
+    PUSH_LOCALS2(env, frame, attrs);
 
     YogEval_push_finish_frame(env);
-    frame = create_frame_for_names(env, code, PTR_AS(YogObj, pkg)->attrs);
+    frame = create_frame_for_names(env, code, attrs);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, attrs);
     PUSH_FRAME(frame);
     YogEval_mainloop(env);
 

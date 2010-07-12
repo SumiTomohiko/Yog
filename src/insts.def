@@ -269,6 +269,7 @@ inst make_module
 
     set_lhs_composition(env, 1, 0, 0);
     frame = create_frame_for_names(env, code, PTR_AS(YogObj, module)->attrs);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, PTR_AS(YogScriptFrame, CUR_FRAME)->globals);
     PUSH_FRAME(frame);
 
     RESTORE_LOCALS_FROM_NAME(env, make_module);
@@ -293,10 +294,8 @@ inst make_class
     YogScriptFrame_push_stack(env, env->frame, kls);
 
     set_lhs_composition(env, 1, 0, 0);
-
     frame = create_frame_for_names(env, code, attrs);
     YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, PTR_AS(YogScriptFrame, CUR_FRAME)->globals);
-
     PUSH_FRAME(frame);
 
     RESTORE_LOCALS_FROM_NAME(env, make_class);
@@ -473,6 +472,7 @@ inst finish
 ()
 {
     POP_JMPBUF(env);
+
     POP_FRAME();
     RETURN(env, val);
 }
