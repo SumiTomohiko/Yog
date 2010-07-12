@@ -260,7 +260,7 @@ fill_outer_frames(YogEnv* env, YogVal frame, YogVal outer_frame)
     if (PTR_AS(YogScriptFrame, frame)->outer_frames_num == 0) {
         RETURN_VOID(env);
     }
-    YOG_ASSERT(env, PTR_AS(YogScriptFrame, frame)->outer_frames_num == PTR_AS(YogScriptFrame, outer_frame)->outer_frames_num + 1, "Depth unmatched (%u, %u)", PTR_AS(YogScriptFrame, frame)->outer_frames_num, PTR_AS(YogScriptFrame, outer_frame)->outer_frames_num);
+    YOG_ASSERT(env, PTR_AS(YogScriptFrame, frame)->outer_frames_num <= PTR_AS(YogScriptFrame, outer_frame)->outer_frames_num + 1, "Depth unmatched (%u, %u)", PTR_AS(YogScriptFrame, frame)->outer_frames_num, PTR_AS(YogScriptFrame, outer_frame)->outer_frames_num);
 
     uint_t offset = PTR_AS(YogScriptFrame, frame)->stack_capacity + PTR_AS(YogScriptFrame, frame)->locals_num;
     YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), locals_etc[offset], outer_frame);
