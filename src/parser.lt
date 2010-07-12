@@ -601,6 +601,8 @@ static void yy_reduce(
   locals.vals[1] = &yygotominor.yy0;
   locals.vals[2] = NULL;
   locals.vals[3] = NULL;
+  locals.filename = __FILE__;
+  locals.lineno = __LINE__;
   PUSH_LOCAL_TABLE(env, locals);
 
   ParseARG_FETCH;
