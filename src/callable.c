@@ -53,9 +53,9 @@ assign_keyword_arg(YogEnv* env, YogVal self, uint_t args_offset, YogVal frame, Y
     code = PTR_AS(YogFunction, self)->code;
     formal_args = PTR_AS(YogCode, code)->arg_info;
     uint_t argc = PTR_AS(YogArgInfo, formal_args)->argc;
+    names = PTR_AS(YogArgInfo, formal_args)->argnames;
     uint_t i;
     for (i = 0; i < argc; i++) {
-        names = PTR_AS(YogArgInfo, formal_args)->argnames;
         if (PTR_AS(ID, names)[i] != name) {
             continue;
         }
@@ -63,7 +63,7 @@ assign_keyword_arg(YogEnv* env, YogVal self, uint_t args_offset, YogVal frame, Y
         if (!IS_UNDEF(v)) {
             YogError_raise_ArgumentError(env, "%I() got multiple values for keyword argument \"%I\"", PTR_AS(YogFunction, self)->name, name);
         }
-        STORE_LOCAL(env, frame, args_offset + i, v);
+        STORE_LOCAL(env, frame, args_offset + i, val);
         RETURN_VOID(env);
     }
     if (!IS_PTR(kw)) {
