@@ -91,7 +91,7 @@ YogFrame_init(YogVal frame, YogFrameType type)
 static void
 YogScriptFrame_init(YogEnv* env, YogVal self, YogFrameType type, YogVal code, uint_t locals_num, uint_t lhs_left_num)
 {
-    SAVE_ARG(env, code);
+    SAVE_ARGS2(env, self, code);
     uint_t stack_capacity = PTR_AS(YogCode, code)->stack_size;
     uint_t outer_depth = PTR_AS(YogCode, code)->outer_size;
 
