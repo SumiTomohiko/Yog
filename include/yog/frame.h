@@ -29,11 +29,12 @@ typedef struct YogCFrame YogCFrame;
 struct YogScriptFrame {
     struct YogFrame base;
 
-    pc_t pc;
     uint_t stack_capacity;
-    uint_t stack_size;
     uint_t locals_num;
     uint_t outer_frames_num;
+
+    pc_t pc;
+    uint_t stack_size;
 
     YogVal code;
     YogVal globals;
