@@ -613,12 +613,20 @@ index2offset(YogEnv* env, YogVal self, int_t index, uint_t* offset)
         RETURN(env, *offset < size ? TRUE : FALSE);
     }
 
+    if (index == 0) {
+        const char* pc = &STRING_CSTR(self)[0];
+        if ((*pc == '\0') || (size < YogEncoding_mbc_size(env, enc, pc))) {
+            RETURN(env, FALSE);
+        }
+        *offset = 0;
+        RETURN(env, TRUE);
+    }
     uint_t n = 0;
     int_t i;
     for (i = 0; i < index; i++) {
         char* p = &STRING_CSTR(self)[n];
         n += YogEncoding_mbc_size(env, enc, p);
-        if (size <= n) {
+        if (size < n) {
             RETURN(env, FALSE);
         }
     }
