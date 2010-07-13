@@ -48,20 +48,53 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
-    YogThread* thread = PTR_AS(YogThread, ptr);
+    YogThread* thread = (YogThread*)ptr;
 
 #define KEEP(member)    YogGC_KEEP(env, thread, member, keeper, heap)
     KEEP(prev);
     KEEP(next);
 #undef KEEP
 
-    void* thread_heap = PTR_AS(YogThread, thread)->heap;
+    void* thread_heap = thread->heap;
 #define KEEP(member)    YogGC_KEEP(env, thread, member, keeper, thread_heap)
     KEEP(jmp_val);
     KEEP(frame_to_long_jump);
     KEEP(block);
     KEEP(recursive_stack);
+
+    uint_t i;
+    for (i = 0; i < thread->finish_frames_num; i++) {
+        KEEP(finish_frames[i]);
+    }
 #undef KEEP
+}
+
+YogVal
+YogThread_get_finish_frame(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal frame = YUNDEF;
+    PUSH_LOCAL(env, frame);
+    uint_t n = PTR_AS(YogThread, self)->finish_frames_num;
+    if (n == 0) {
+        RETURN(env, YNIL);
+    }
+    frame = PTR_AS(YogThread, self)->finish_frames[n - 1];
+    PTR_AS(YogThread, self)->finish_frames_num--;
+    RETURN(env, frame);
+}
+
+void
+YogThread_put_finish_frame(YogEnv* env, YogVal self, YogVal frame)
+{
+    SAVE_ARGS2(env, self, frame);
+    uint_t n = PTR_AS(YogThread, self)->finish_frames_num;
+    if (FINISH_FRAMES_MAX <= n) {
+        RETURN_VOID(env);
+    }
+    YogGC_UPDATE_PTR(env, PTR_AS(YogThread, self), finish_frames[n], frame);
+    PTR_AS(YogThread, self)->finish_frames_num++;
+    RETURN_VOID(env);
 }
 
 void
@@ -86,6 +119,8 @@ YogThread_init(YogEnv* env, YogVal thread, YogVal klass)
 
     PTR_AS(YogThread, thread)->recursive_stack = YUNDEF;
     PTR_AS(YogThread, thread)->env = env;
+
+    PTR_AS(YogThread, thread)->finish_frames_num = 0;
 }
 
 #if defined(GC_COPYING)

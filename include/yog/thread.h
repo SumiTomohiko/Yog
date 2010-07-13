@@ -45,6 +45,10 @@ struct YogThread {
     YogVal recursive_stack;
 
     YogEnv* env;
+
+    uint_t finish_frames_num;
+#define FINISH_FRAMES_MAX 8
+    YogVal finish_frames[FINISH_FRAMES_MAX];
 };
 
 typedef struct YogThread YogThread;
@@ -89,9 +93,11 @@ YOG_EXPORT void YogThread_config_generational(YogEnv*, YogVal, size_t, size_t, u
 YOG_EXPORT void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t);
 YOG_EXPORT void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t);
 YOG_EXPORT void YogThread_define_classes(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogThread_get_finish_frame(YogEnv*, YogVal);
 YOG_EXPORT void YogThread_init(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogThread_issue_object_id(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogThread_new(YogEnv*);
+YOG_EXPORT void YogThread_put_finish_frame(YogEnv*, YogVal, YogVal);
 
 /* PROTOTYPE_END */
 

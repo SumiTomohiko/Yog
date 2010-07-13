@@ -818,13 +818,27 @@ YogEval_eval_file(YogEnv* env, FILE* fp, const char* filename, const char* pkg_n
     RETURN(env, pkg);
 }
 
+static YogVal
+get_finish_frame(YogEnv* env)
+{
+    SAVE_LOCALS(env);
+    YogVal frame = YUNDEF;
+    PUSH_LOCAL(env, frame);
+    frame = YogThread_get_finish_frame(env, env->thread);
+    if (IS_PTR(frame)) {
+        RETURN(env, frame);
+    }
+    frame = YogFinishFrame_new(env);
+    RETURN(env, frame);
+}
+
 void
 YogEval_push_finish_frame(YogEnv* env)
 {
     SAVE_LOCALS(env);
     YogVal frame = YUNDEF;
     PUSH_LOCAL(env, frame);
-    frame = YogFinishFrame_new(env);
+    frame = get_finish_frame(env);
     PUSH_FRAME(frame);
     RETURN_VOID(env);
 }
