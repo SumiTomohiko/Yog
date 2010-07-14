@@ -45,6 +45,12 @@ struct YogScriptFrame {
     uint_t lhs_middle_num;
     uint_t lhs_right_num;
 
+    /**
+     * Becomes TRUE when YogFunction::outer_frame refers this frame. Once it is
+     * TRUE, never returns to FALSE. Used frames are not reused.
+     */
+    BOOL used_by_func;
+
     /* Fields used for super */
     YogVal klass;
     ID name;
@@ -110,7 +116,10 @@ typedef struct YogScriptFrame YogScriptFrame;
 /* src/frame.c */
 YOG_EXPORT YogVal YogCFrame_new(YogEnv*);
 YOG_EXPORT void YogCFrame_return_multi_value(YogEnv*, YogVal, YogVal);
+YOG_EXPORT void YogFinishFrame_clean(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogFinishFrame_new(YogEnv*);
+YOG_EXPORT YogVal YogFrame_get_script_frame(YogEnv*, YogVal, uint_t);
+YOG_EXPORT void YogScriptFrame_cleanup(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogScriptFrame_new(YogEnv*, YogFrameType, YogVal, uint_t, uint_t);
 YOG_EXPORT void YogScriptFrame_push_stack(YogEnv*, YogVal, YogVal);
 

@@ -33,10 +33,6 @@
     CUR_FRAME = (f); \
 } while (0)
 
-#define POP_FRAME()     do { \
-    CUR_FRAME = PTR_AS(YogFrame, CUR_FRAME)->prev; \
-} while (0)
-
 static YogVal
 pop(YogEnv* env)
 {
@@ -374,9 +370,14 @@ static void
 setup_script_function(YogEnv* env, YogVal f, YogVal code)
 {
     SAVE_ARGS2(env, f, code);
+    YogVal frame = env->frame;
+    PUSH_LOCAL(env, frame);
+
     YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), code, code);
     YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), globals, PTR_AS(YogScriptFrame, CUR_FRAME)->globals);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), outer_frame, env->frame);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), outer_frame, frame);
+    PTR_AS(YogScriptFrame, frame)->used_by_func = TRUE;
+
     RETURN_VOID(env);
 }
 
@@ -541,7 +542,7 @@ create_frame_for_names(YogEnv* env, YogVal code, YogVal vars)
     YogVal frame = YUNDEF;
     PUSH_LOCAL(env, frame);
 
-    frame = YogScriptFrame_new(env, FRAME_SCRIPT, code, 1, 0);
+    frame = YogFrame_get_script_frame(env, code, 1);
     uint_t pos = PTR_AS(YogScriptFrame, frame)->stack_capacity;
     YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), locals_etc[pos], vars);
 
@@ -663,18 +664,6 @@ YogEval_mainloop(YogEnv* env)
 #define JUMP(m)         PC = m;
         OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
-#if 0 && !defined(MINIYOG)
-        do {
-            if (env->vm->gc_stress) {
-                uint_t lineno;
-                if (!YogCode_get_lineno(env, PTR2VAL(CODE), PC, &lineno)) {
-                    lineno = 0;
-                };
-                const char* opname = YogCode_get_op_name(op);
-                TRACE("%p: PC=%u, lineno=%u, op=%s", env, PC, lineno, opname);
-            }
-        } while (0);
-#endif
 #if 0
         do {
             uint_t lineno;
@@ -741,13 +730,10 @@ YogEval_mainloop(YogEnv* env)
 #undef THREAD
 #undef CONSTS
     }
-
-    POP_JMPBUF(env);
 #undef CODE
 #undef PC
-
-    POP_FRAME();
-
+    YOG_BUG(env, "Exited mainloop");
+    /* NOTREACHED */
     RETURN(env, YUNDEF);
 }
 

@@ -63,6 +63,7 @@ repr_as_str(YogEnv* env, YogVal obj)
 
 #define METHOD_NAME     "to_s"
     s = YogEval_call_method0(env, obj, METHOD_NAME);
+    YOG_ASSERT(env, !IS_UNDEF(s), "to_s returned undef");
     if (IS_PTR(s) && (BASIC_OBJ_TYPE(s) == TYPE_STRING)) {
         RETURN(env, s);
     }

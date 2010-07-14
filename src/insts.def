@@ -82,7 +82,6 @@ inst call_function
 (...) depth: left + middle + right
 {
     SAVE_LOCALS_TO_NAME(env, call_function);
-
     YogVal callee = pop(env);
     YogVal varkwarg = YUNDEF;
     YogVal vararg = YUNDEF;
@@ -306,10 +305,20 @@ inst ret
 (...) depth: n
 ()
 {
-    move_returned_value(env, n);
+    SAVE_LOCALS_TO_NAME(env, ret);
+    YogVal frame = env->frame;
+    YogVal prev_frame = PTR_AS(YogFrame, frame)->prev;
+    PUSH_LOCALS2(env, frame, prev_frame);
 
-    POP_FRAME();
+    move_returned_value(env, n);
+    if (!PTR_AS(YogScriptFrame, frame)->used_by_func) {
+        YogScriptFrame_cleanup(env, frame);
+        YogThread_put_script_frame(env, env->thread, frame);
+    }
+    env->frame = prev_frame;
     PC = SCRIPT_FRAME(CUR_FRAME)->pc;
+
+    RESTORE_LOCALS_FROM_NAME(env, ret);
 }
 
 inst store_nonlocal_index
@@ -471,9 +480,17 @@ inst finish
 (val)
 ()
 {
+    SAVE_LOCALS_TO_NAME(env, finish);
+    YogVal frame = env->frame;
+    YogVal prev_frame = PTR_AS(YogFrame, frame)->prev;
+    PUSH_LOCAL(env, frame);
+
     POP_JMPBUF(env);
-    YogThread_put_finish_frame(env, env->thread, env->frame);
-    POP_FRAME();
+    YogFinishFrame_clean(env, frame);
+    YogThread_put_finish_frame(env, env->thread, frame);
+    env->frame = prev_frame;
+
+    RESTORE_LOCALS_FROM_NAME(env, finish);
     RETURN(env, val);
 }
 

@@ -254,19 +254,18 @@ YogFunction_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 }
 
 static void
-fill_outer_frames(YogEnv* env, YogVal frame, YogVal outer_frame)
+fill_outer_frames(YogEnv* env, YogVal frame, YogVal outer_frame, uint_t depth)
 {
     SAVE_ARGS2(env, frame, outer_frame);
-    if (PTR_AS(YogScriptFrame, frame)->outer_frames_num == 0) {
+    if (depth == 0) {
         RETURN_VOID(env);
     }
-    YOG_ASSERT(env, PTR_AS(YogScriptFrame, frame)->outer_frames_num <= PTR_AS(YogScriptFrame, outer_frame)->outer_frames_num + 1, "Depth unmatched (%u, %u)", PTR_AS(YogScriptFrame, frame)->outer_frames_num, PTR_AS(YogScriptFrame, outer_frame)->outer_frames_num);
+    YOG_ASSERT(env, depth <= PTR_AS(YogScriptFrame, frame)->outer_frames_num, "Shallow frame depth (%u, %u)", depth, PTR_AS(YogScriptFrame, frame)->outer_frames_num);
 
     uint_t offset = PTR_AS(YogScriptFrame, frame)->stack_capacity + PTR_AS(YogScriptFrame, frame)->locals_num;
     YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), locals_etc[offset], outer_frame);
-    uint_t depth = PTR_AS(YogScriptFrame, outer_frame)->outer_frames_num;
     uint_t i;
-    for (i = 0; i < depth; i++) {
+    for (i = 0; i < depth - 1; i++) {
         YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), locals_etc[offset + 1 + i], SCRIPT_FRAME_OUTER_FRAMES(outer_frame)[i]);
     }
 
@@ -280,10 +279,11 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
     YogVal code = PTR_AS(YogFunction, callee)->code;
     YogVal frame = YUNDEF;
     YogVal frame_to_long_return = YUNDEF;
-    PUSH_LOCALS3(env, code, frame, frame_to_long_return);
+    YogVal outer_frame = PTR_AS(YogFunction, callee)->outer_frame;
+    PUSH_LOCALS4(env, code, frame, frame_to_long_return, outer_frame);
 
     uint_t locals_num = PTR_AS(YogCode, code)->local_vars_count;
-    frame = YogScriptFrame_new(env, FRAME_SCRIPT, code, locals_num, 0);
+    frame = YogFrame_get_script_frame(env, code, locals_num);
     uint_t args_offset;
     if (PTR_AS(YogFunction, callee)->needs_self) {
         uint_t pos = PTR_AS(YogScriptFrame, frame)->stack_capacity;
@@ -296,7 +296,8 @@ YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
     fill_args(env, callee, args_offset, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, frame);
 
     YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, PTR_AS(YogFunction, callee)->globals);
-    fill_outer_frames(env, frame, PTR_AS(YogFunction, callee)->outer_frame);
+    uint_t depth = PTR_AS(YogCode, code)->outer_size;
+    fill_outer_frames(env, frame, outer_frame, depth);
 
     frame_to_long_return = PTR_AS(YogFunction, callee)->frame_to_long_return;
     YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), frame_to_long_return, IS_PTR(frame_to_long_return) ? frame_to_long_return : env->frame);

@@ -533,6 +533,7 @@ YogString_multiply(YogEnv* env, YogVal self, int_t num)
     RETURN(env, s);
 }
 
+#if 0
 static YogVal
 slice(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -543,6 +544,7 @@ slice(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     }
     return s;
 }
+#endif
 
 static YogVal
 multiply(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)

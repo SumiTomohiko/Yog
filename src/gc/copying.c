@@ -194,7 +194,7 @@ YogCopying_scan(YogEnv* env, YogHeap* heap, ObjectKeeper keeper, void* param)
         Header* header = (Header*)copying->scanned;
         ChildrenKeeper children_keeper = header->keeper;
         if (children_keeper != NULL) {
-            DEBUG(TRACE("children_keeper=%p", children_keeper));
+            DEBUG(TRACE("ptr=%p, children_keeper=%p", header + 1, children_keeper));
             (*children_keeper)(env, header + 1, keeper, param);
         }
 
