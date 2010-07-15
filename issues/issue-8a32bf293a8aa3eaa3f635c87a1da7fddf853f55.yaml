@@ -1,0 +1,19 @@
+--- !ditz.rubyforge.org,2008-03-06/issue
+title: "Memory leak: reused frames contain old data"
+desc: |-
+
+type: :task
+component: core
+release:
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition:
+creation_time: 2010-07-13 16:56:36.354573 Z
+references: []
+
+id: 8a32bf293a8aa3eaa3f635c87a1da7fddf853f55
+log_events:
+- - 2010-07-13 16:56:36.354573 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
