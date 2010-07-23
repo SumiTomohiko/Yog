@@ -11,6 +11,7 @@ typedef void (*GetAttrExecutor)(YogEnv*, YogVal, ID);
 typedef YogVal (*GetAttrCaller)(YogEnv*, YogVal, ID);
 typedef void (*Executor)(YogEnv*, YogVal, uint8_t, YogVal*, uint8_t, YogVal*, YogVal, YogVal, YogVal);
 typedef YogVal (*Caller)(YogEnv*, YogVal, uint8_t, YogVal*, uint8_t, YogVal*, YogVal, YogVal, YogVal);
+typedef YogVal (*Caller2)(YogEnv*, YogHandle*, uint8_t, YogHandle**, uint8_t, YogHandle**, YogHandle*, YogHandle*, YogHandle*);
 
 struct YogClass {
     YOGOBJ_HEAD;
@@ -24,6 +25,7 @@ struct YogClass {
     void (*exec_set_descr)(YogEnv*, YogVal, YogVal, YogVal);
     Executor exec;
     Caller call;
+    Caller2 call2;
 };
 
 typedef struct YogClass YogClass;
@@ -42,6 +44,7 @@ YOG_EXPORT void YogClass_boot(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogClass_class_init(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogClass_define_allocator(YogEnv*, YogVal, Allocator);
 YOG_EXPORT void YogClass_define_caller(YogEnv*, YogVal, Caller);
+YOG_EXPORT void YogClass_define_caller2(YogEnv*, YogVal, Caller2);
 YOG_EXPORT void YogClass_define_class_method(YogEnv*, YogVal, YogVal, const char*, YogAPI);
 YOG_EXPORT void YogClass_define_descr_get_caller(YogEnv*, YogVal, YogVal (*)(YogEnv*, YogVal, YogVal, YogVal));
 YOG_EXPORT void YogClass_define_descr_get_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));

@@ -19,6 +19,7 @@
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/eval.h"
+#include "yog/handle.h"
 #include "yog/package.h"
 #include "yog/repl.h"
 #include "yog/string.h"
@@ -185,6 +186,9 @@ main(int_t argc, char* argv[])
     YogLocalsAnchor locals = LOCALS_ANCHOR_INIT;
     YogEnv env = ENV_INIT;
     env.locals = &locals;
+    YogHandles handles;
+    YogHandles_init(&handles);
+    env.handles = &handles;
 
     YogVM vm;
     YogVM_init(&vm);
@@ -192,6 +196,7 @@ main(int_t argc, char* argv[])
     vm.debug_import = debug_import != 0 ? TRUE : FALSE;
     env.vm = &vm;
     YogVM_add_locals(&env, env.vm, &locals);
+    YogVM_add_handles(&env, env.vm, &handles);
 
     YogThread dummy_thread_body;
     YogVal dummy_thread = PTR2VAL(&dummy_thread_body);
@@ -214,7 +219,7 @@ main(int_t argc, char* argv[])
     YogVal main_thread = YogThread_new(&env);
     memcpy(VAL2PTR(main_thread), VAL2PTR(dummy_thread), sizeof(YogThread));
     env.thread = main_thread;
-    locals.heap = PTR_AS(YogThread, main_thread)->heap;
+    handles.heap = locals.heap = PTR_AS(YogThread, main_thread)->heap;
     YogVM_set_main_thread(&env, &vm, main_thread);
 
     YogLocals env_guard;
@@ -249,8 +254,10 @@ main(int_t argc, char* argv[])
     YogVM_remove_thread(&env, env.vm, env.thread);
 
     YogVM_wait_finish(&env, env.vm);
+    YogVM_remove_handles(&env, env.vm, &handles);
     YogVM_remove_locals(&env, env.vm, &locals);
     YogVM_delete(&env, env.vm);
+    YogHandles_finalize(&handles);
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
     pthread_win32_process_detach_np();

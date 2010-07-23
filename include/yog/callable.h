@@ -69,6 +69,7 @@ YOG_EXPORT YogVal YogNativeInstanceMethod_define_class(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogNativeInstanceMethod_new(YogEnv*);
 
 /* PROTOTYPE_END */
+YogVal YogCallable_call_2(YogEnv*, YogHandle*, uint_t, YogHandle* args[]);
 
 #endif
 /**

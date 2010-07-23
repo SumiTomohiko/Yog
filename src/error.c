@@ -134,20 +134,22 @@ print_stacktrace(YogEnv* env, YogVal st)
 void
 YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...)
 {
-    SAVE_LOCALS(env);
-    YogVal st = YUNDEF;
-    PUSH_LOCAL(env, st);
+    if (env != NULL) {
+        SAVE_LOCALS(env);
+        YogVal st = YUNDEF;
+        PUSH_LOCAL(env, st);
 
-    st = YogException_get_stacktrace(env, env->frame);
-    print_stacktrace(env, st);
+        st = YogException_get_stacktrace(env, env->frame);
+        print_stacktrace(env, st);
+
+        RESTORE_LOCALS(env);
+    }
     va_list ap;
     va_start(ap, fmt);
     print_error(env, "BUG", filename, lineno, fmt, ap);
     va_end(ap);
     abort();
-
     /* NOTREACHED */
-    RETURN_VOID(env);
 }
 
 static void

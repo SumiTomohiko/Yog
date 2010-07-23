@@ -102,6 +102,32 @@ YogThread_get_script_frame(YogEnv* env, YogVal self)
     RETURN(env, frame);
 }
 
+YogHandleScope*
+YogThread_get_handle_scope(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    uint_t n = PTR_AS(YogThread, self)->handle_scopes_num;
+    if (n == 0) {
+        RETURN(env, NULL);
+    }
+    YogHandleScope* scope = PTR_AS(YogThread, self)->handle_scopes[n - 1];
+    PTR_AS(YogThread, self)->handle_scopes_num--;
+    RETURN(env, scope);
+}
+
+BOOL
+YogThread_put_handle_scope(YogEnv* env, YogVal self, YogHandleScope* scope)
+{
+    SAVE_ARG(env, self);
+    uint_t n = PTR_AS(YogThread, self)->handle_scopes_num;
+    if (HANDLE_SCOPES_MAX <= n) {
+        RETURN(env, FALSE);
+    }
+    PTR_AS(YogThread, self)->handle_scopes[n] = scope;
+    PTR_AS(YogThread, self)->handle_scopes_num++;
+    RETURN(env, TRUE);
+}
+
 void
 YogThread_put_script_frame(YogEnv* env, YogVal self, YogVal frame)
 {
@@ -153,6 +179,7 @@ YogThread_init(YogEnv* env, YogVal thread, YogVal klass)
 
     PTR_AS(YogThread, thread)->finish_frames_num = 0;
     PTR_AS(YogThread, thread)->script_frames_num = 0;
+    PTR_AS(YogThread, thread)->handle_scopes_num = 0;
 }
 
 #if defined(GC_COPYING)

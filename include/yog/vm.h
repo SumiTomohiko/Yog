@@ -106,6 +106,7 @@ struct YogVM {
     pthread_cond_t vm_finish_cond;
     uint_t gc_id;
     struct YogLocalsAnchor* locals;
+    struct YogHandles* handles;
 #if defined(GC_GENERATIONAL)
     /**
      * Generational GC needs kind of global variables. The following two
@@ -131,6 +132,7 @@ typedef struct YogVM YogVM;
  */
 /* src/vm.c */
 YOG_EXPORT void YogVM_acquire_global_interp_lock(YogEnv*, YogVM*);
+YOG_EXPORT void YogVM_add_handles(YogEnv*, YogVM*, YogHandles*);
 YOG_EXPORT void YogVM_add_heap(YogEnv*, YogVM*, YogHeap*);
 YOG_EXPORT void YogVM_add_locals(YogEnv*, YogVM*, YogLocalsAnchor*);
 YOG_EXPORT void YogVM_add_thread(YogEnv*, YogVM*, YogVal);
@@ -150,6 +152,7 @@ YOG_EXPORT uint_t YogVM_issue_thread_id(YogEnv*, YogVM*);
 YOG_EXPORT void YogVM_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 YOG_EXPORT void YogVM_register_package(YogEnv*, YogVM*, const char*, YogVal);
 YOG_EXPORT void YogVM_release_global_interp_lock(YogEnv*, YogVM*);
+YOG_EXPORT void YogVM_remove_handles(YogEnv*, YogVM*, YogHandles*);
 YOG_EXPORT void YogVM_remove_locals(YogEnv*, YogVM*, YogLocalsAnchor*);
 YOG_EXPORT void YogVM_remove_thread(YogEnv*, YogVM*, YogVal);
 YOG_EXPORT void YogVM_set_main_thread(YogEnv*, YogVM*, YogVal);

@@ -57,6 +57,7 @@
 #include "yog/module.h"
 #include "yog/nil.h"
 #include "yog/package.h"
+#include "yog/private.h"
 #include "yog/property.h"
 #include "yog/regexp.h"
 #include "yog/set.h"
@@ -399,6 +400,39 @@ keep_locals_list(YogEnv* env, YogLocals* list, ObjectKeeper keeper, void* heap)
     }
 }
 
+static void
+keep_handle(YogEnv* env, YogHandle* begin, YogHandle* end, ObjectKeeper keeper, void* heap)
+{
+    YogHandle* p;
+    for (p = begin; p < end; p++) {
+        p->val = YogGC_keep(env, p->val, keeper, heap);
+    }
+}
+
+static void
+keep_scope(YogEnv* env, YogHandles* handles, YogHandleScope* scope, uint_t end, ObjectKeeper keeper, void* heap)
+{
+    keep_handle(env, handles->ptr[end - 1], scope->pos, keeper, heap);
+    uint_t i;
+    for (i = end - 1; scope->begin < i; i--) {
+        YogHandle* begin = handles->ptr[i - 1];
+        YogHandle* end = begin + HANDLES_SIZE;
+        keep_handle(env, begin, end, keeper, heap);
+    }
+}
+
+static void
+keep_handles(YogEnv* env, YogHandles* handles, ObjectKeeper keeper, void* heap)
+{
+    uint_t i = handles->used_num;
+    YogHandleScope* scope = handles->scope;
+    while (scope != NULL) {
+        keep_scope(env, handles, scope, i, keeper, heap);
+        i = scope->begin;
+        scope = scope->next;
+    }
+}
+
 void
 YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
@@ -408,6 +442,11 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     while (locals != NULL) {
         keep_locals_list(env, locals->body, keeper, locals->heap);
         locals = locals->next;
+    }
+    YogHandles* handles = vm->handles;
+    while (handles != NULL) {
+        keep_handles(env, handles, keeper, handles->heap);
+        handles = handles->next;
     }
 
 #define KEEP(member)    do { \
@@ -647,6 +686,7 @@ YogVM_init(YogVM* vm)
     vm->heaps = vm->last_heap = NULL;
     vm->gc_id = 0;
     vm->locals = NULL;
+    vm->handles = NULL;
 #if defined(GC_GENERATIONAL)
     vm->major_gc_flag = FALSE;
     vm->compaction_flag = FALSE;
@@ -1439,6 +1479,22 @@ YogVM_issue_thread_id(YogEnv* env, YogVM* vm)
     YOG_ASSERT(env, vm->next_thread_id != 0, "thread id overflow");
     release_lock(env, lock);
     return id;
+}
+
+void
+YogVM_add_handles(YogEnv* env, YogVM* vm, YogHandles* handles)
+{
+    YogVM_acquire_global_interp_lock(env, vm);
+    ADD_TO_LIST(vm->handles, handles);
+    YogVM_release_global_interp_lock(env, vm);
+}
+
+void
+YogVM_remove_handles(YogEnv* env, YogVM* vm, YogHandles* handles)
+{
+    YogVM_acquire_global_interp_lock(env, vm);
+    DELETE_FROM_LIST(vm->handles, handles);
+    YogVM_release_global_interp_lock(env, vm);
 }
 
 void

@@ -123,18 +123,77 @@ typedef struct YogLocalsAnchor YogLocalsAnchor;
 
 #define LOCALS_ANCHOR_INIT  { NULL, NULL, NULL, NULL }
 
+struct YogHandle {
+    YogVal val;
+};
+
+typedef struct YogHandle YogHandle;
+
+struct YogHandleScope {
+    uint_t begin;
+    struct YogHandle* pos;
+    struct YogHandle* last;
+    struct YogHandleScope* next;
+};
+
+typedef struct YogHandleScope YogHandleScope;
+
+struct YogHandles {
+    struct YogHandles* prev;
+    struct YogHandles* next;
+    struct YogHandle** ptr;
+    uint_t num;
+    uint_t used_num;
+    uint_t alloc_num;
+    struct YogHandleScope* scope;
+    void* heap;
+};
+
+typedef struct YogHandles YogHandles;
+
 struct YogEnv {
     struct YogVM* vm;
     YogVal thread;
     struct YogLocalsAnchor* locals;
+
+    struct YogHandles* handles;
+    struct YogHandle* pos;
+    struct YogHandle* last;
+
     YogVal coroutine;
     YogVal frame;
 };
 
 typedef struct YogEnv YogEnv;
 
-#define ENV_INIT    { NULL, YUNDEF, NULL, YUNDEF, YUNDEF }
+#define ENV_INIT { NULL, YUNDEF, NULL, NULL, NULL, NULL, YUNDEF, YUNDEF }
 
+#if 0
+/* TODO: Remove this in future commit. Here is only for testing */
+#define SAVE_LOCALS(env)
+#define RESTORE_LOCALS(env)
+#define SAVE_LOCALS_TO_NAME(env, name)
+#define RESTORE_LOCALS_FROM_NAME(env, name)
+#define PUSH_LOCAL_TABLE(env, tbl)
+#define DECL_LOCALS(name)
+#define PUSH_LOCAL(env, x)
+#define PUSH_LOCALS2(env, x, y)
+#define PUSH_LOCALS3(env, x, y, z)
+#define PUSH_LOCALS4(env, x, y, z, t)
+#define PUSH_LOCALS5(env, x, y, z, t, u)
+#define PUSH_LOCALS6(env, x, y, z, t, u, v)
+#define PUSH_LOCALS7(env, x, y, z, t, u, v, w)
+#define PUSH_LOCALS8(env, x, y, z, t, u, v, w, p)
+#define PUSH_LOCALSX(env, num, x)
+#define SAVE_ARG(env, x)
+#define SAVE_ARGS2(env, x, y)
+#define SAVE_ARGS3(env, x, y, z)
+#define SAVE_ARGS4(env, x, y, z, t)
+#define SAVE_ARGS5(env, x, y, z, t, u)
+#define SAVE_ARGS6(env, x, y, z, t, u, v)
+#define RETURN(env, val) return val
+#define RETURN_VOID(env) return
+#else
 #define SAVE_LOCALS(env)        YogLocals* __cur_locals__ = (env)->locals->body
 #define RESTORE_LOCALS(env)     (env)->locals->body = __cur_locals__
 #define SAVE_LOCALS_TO_NAME(env, name) \
@@ -236,6 +295,7 @@ typedef struct YogEnv YogEnv;
     RESTORE_LOCALS(env); \
     return; \
 } while (0)
+#endif
 
 typedef void* (*ObjectKeeper)(YogEnv*, void*, void*);
 typedef void (*ChildrenKeeper)(YogEnv*, void*, ObjectKeeper, void*);

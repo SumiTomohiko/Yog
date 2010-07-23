@@ -272,6 +272,12 @@ YogClass_define_get_attr_executor(YogEnv* env, YogVal self, GetAttrExecutor gett
 }
 
 void
+YogClass_define_caller2(YogEnv* env, YogVal self, Caller2 call)
+{
+    PTR_AS(YogClass, self)->call2 = call;
+}
+
+void
 YogClass_define_caller(YogEnv* env, YogVal self, Caller call)
 {
     PTR_AS(YogClass, self)->call = call;

@@ -1,3 +1,4 @@
+#include "yog/config.h"
 #include "yog/arg.h"
 #include "yog/array.h"
 #include "yog/callable.h"
@@ -7,6 +8,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
+#include "yog/handle.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -273,6 +275,48 @@ fill_outer_frames(YogEnv* env, YogVal frame, YogVal outer_frame, uint_t depth)
 }
 
 static void
+YogFunction_exec_for_instance2(YogEnv* env, YogHandle* callee, /*YogHandle* self,*/ uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+{
+#undef CODE
+#define CODE PTR_AS(YogFunction, callee->val)->code
+#define OUTER_FRAME PTR_AS(YogFunction, callee->val)->outer_frame
+    uint_t locals_num = PTR_AS(YogCode, CODE)->local_vars_count;
+    YogHandle* frame = YogHandle_register(env, YogFrame_get_script_frame(env, CODE, locals_num));
+    uint_t args_offset;
+    if (PTR_AS(YogFunction, callee->val)->needs_self) {
+        uint_t pos = PTR_AS(YogScriptFrame, frame->val)->stack_capacity;
+        YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame->val), locals_etc[pos], YUNDEF);
+        args_offset = 1;
+    }
+    else {
+        args_offset = 0;
+    }
+#if 0
+    fill_args(env, callee, args_offset, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, frame);
+#endif
+
+    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame->val), globals, PTR_AS(YogFunction, callee)->globals);
+    uint_t depth = PTR_AS(YogCode, CODE)->outer_size;
+    fill_outer_frames(env, frame->val, OUTER_FRAME, depth);
+
+    YogVal frame_to_long_return = PTR_AS(YogFunction, callee)->frame_to_long_return;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame->val), frame_to_long_return, IS_PTR(frame_to_long_return) ? frame_to_long_return : env->frame);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame->val), frame_to_long_break, PTR_AS(YogFunction, callee)->frame_to_long_break);
+
+#if 0
+    if (!IS_UNDEF(self->val)) {
+        YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame->val), klass, YogVal_get_class(env, self->val));
+    }
+#endif
+    PTR_AS(YogScriptFrame, frame->val)->name = PTR_AS(YogFunction, callee->val)->name;
+
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, frame->val), prev, env->frame);
+    env->frame = frame->val;
+#undef OUTER_FRAME
+#undef CODE
+}
+
+static void
 YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
 {
     SAVE_ARGS5(env, callee, self, vararg, varkwarg, blockarg);
@@ -333,6 +377,24 @@ YogFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t p
     retval = YogEval_mainloop(env);
 
     RETURN(env, retval);
+}
+
+static YogVal
+YogFunction_call_for_instance2(YogEnv* env, YogHandle* callee, /*YogHandle* self,*/ uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+{
+    YogEval_push_finish_frame(env);
+
+    YogFunction_exec_for_instance2(env, callee, /*self,*/ posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    return YogEval_mainloop(env);
+}
+
+static YogVal
+YogFunction_call2(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+{
+#if 0
+    YogHandle* undef = YogHandle_register(env, YUNDEF);
+#endif
+    return YogFunction_call_for_instance2(env, callee, /*undef,*/ posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static YogVal
@@ -790,6 +852,7 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_descr_get_executor(env, cFunction, YogFunction_exec_get_descr);
     YogClass_define_descr_get_caller(env, cFunction, YogFunction_call_get_descr);
     YogClass_define_caller(env, cFunction, YogFunction_call);
+    YogClass_define_caller2(env, cFunction, YogFunction_call2);
     YogClass_define_executor(env, cFunction, YogFunction_exec);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cFunction, pkg, (name), (f)); \
@@ -811,6 +874,15 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     vm->cNativeInstanceMethod = cNativeInstanceMethod;
 
     RETURN_VOID(env);
+}
+
+YogVal
+YogCallable_call_2(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[])
+{
+    YogVal klass = YogVal_get_class(env, self->val);
+    Caller2 call = PTR_AS(YogClass, klass)->call2;
+    YOG_ASSERT(env, call != NULL, "uncallable");
+    return call(env, self, argc, args, 0, NULL, NULL, NULL, NULL);
 }
 
 YogVal
