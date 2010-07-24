@@ -661,7 +661,6 @@ YogEval_mainloop(YogEnv* env)
 
     while (PC < PTR_AS(YogByteArray, CODE->insts)->size) {
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
-#define THREAD          (env->thread)
 #define JUMP(m)         PC = m;
         OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
@@ -723,12 +722,10 @@ YogEval_mainloop(YogEnv* env)
         switch (op) {
 #include "eval.inc"
         default:
-            YOG_ASSERT(env, FALSE, "Unknown instruction.");
+            YOG_BUG(env, "Unknown instruction (0x%08x)", op);
             break;
         }
-#undef POP_ARGS
 #undef JUMP
-#undef THREAD
 #undef CONSTS
     }
 #undef CODE
