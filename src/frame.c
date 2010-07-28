@@ -211,12 +211,7 @@ YogFinishFrame_new(YogEnv* env)
 YogVal
 YogFrame_get_script_frame(YogEnv* env, YogVal code, uint_t locals_num)
 {
-    SAVE_ARG(env, code);
-    YogVal frame = YUNDEF;
-    YogVal thread = env->thread;
-    PUSH_LOCALS2(env, frame, thread);
-
-    frame = YogThread_get_script_frame(env, env->thread);
+    YogVal frame = YogThread_get_script_frame(env, env->thread);
     if (IS_PTR(frame)) {
         uint_t actual = PTR_AS(YogScriptFrame, frame)->stack_capacity + PTR_AS(YogScriptFrame, frame)->locals_num + PTR_AS(YogScriptFrame, frame)->outer_frames_num;
         uint_t stack_size = PTR_AS(YogCode, code)->stack_size;
@@ -227,12 +222,11 @@ YogFrame_get_script_frame(YogEnv* env, YogVal code, uint_t locals_num)
             uint_t outer_frames_num = actual - stack_size - locals_num;
             PTR_AS(YogScriptFrame, frame)->outer_frames_num = outer_frames_num;
             YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), code, code);
-            RETURN(env, frame);
+            return frame;
         }
     }
 
-    frame = YogScriptFrame_new(env, FRAME_SCRIPT, code, locals_num, 0);
-    RETURN(env, frame);
+    return YogScriptFrame_new(env, FRAME_SCRIPT, code, locals_num, 0);
 }
 
 /**
