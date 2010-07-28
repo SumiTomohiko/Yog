@@ -258,9 +258,8 @@ YogFunction_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 static void
 fill_outer_frames(YogEnv* env, YogVal frame, YogVal outer_frame, uint_t depth)
 {
-    SAVE_ARGS2(env, frame, outer_frame);
     if (depth == 0) {
-        RETURN_VOID(env);
+        return;
     }
     YOG_ASSERT(env, depth <= PTR_AS(YogScriptFrame, frame)->outer_frames_num, "Shallow frame depth (%u, %u)", depth, PTR_AS(YogScriptFrame, frame)->outer_frames_num);
 
@@ -270,8 +269,6 @@ fill_outer_frames(YogEnv* env, YogVal frame, YogVal outer_frame, uint_t depth)
     for (i = 0; i < depth - 1; i++) {
         YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), locals_etc[offset + 1 + i], SCRIPT_FRAME_OUTER_FRAMES(outer_frame)[i]);
     }
-
-    RETURN_VOID(env);
 }
 
 static void
