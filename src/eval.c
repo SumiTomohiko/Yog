@@ -37,18 +37,12 @@
 static YogVal
 pop(YogEnv* env)
 {
-    SAVE_LOCALS(env);
-    YogVal val = YUNDEF;
-    YogVal frame = YUNDEF;
-    PUSH_LOCALS2(env, val, frame);
-
-    frame = env->frame;
+    YogVal frame = env->frame;
     uint_t size = PTR_AS(YogScriptFrame, frame)->stack_size;
     YOG_ASSERT(env, 0 < size, "Empty stack");
-    val = PTR_AS(YogScriptFrame, frame)->locals_etc[size - 1];
+    YogVal val = PTR_AS(YogScriptFrame, frame)->locals_etc[size - 1];
     PTR_AS(YogScriptFrame, frame)->stack_size--;
-
-    RETURN(env, val);
+    return val;
 }
 
 static YogVal
