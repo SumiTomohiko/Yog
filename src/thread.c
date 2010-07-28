@@ -87,16 +87,13 @@ YogThread_get_finish_frame(YogEnv* env, YogVal self)
 YogVal
 YogThread_get_script_frame(YogEnv* env, YogVal self)
 {
-    SAVE_ARG(env, self);
-    YogVal frame = YUNDEF;
-    PUSH_LOCAL(env, frame);
     uint_t n = PTR_AS(YogThread, self)->script_frames_num;
     if (n == 0) {
-        RETURN(env, YNIL);
+        return YNIL;
     }
-    frame = PTR_AS(YogThread, self)->script_frames[n - 1];
+    YogVal frame = PTR_AS(YogThread, self)->script_frames[n - 1];
     PTR_AS(YogThread, self)->script_frames_num--;
-    RETURN(env, frame);
+    return frame;
 }
 
 void
