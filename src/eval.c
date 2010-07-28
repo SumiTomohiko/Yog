@@ -126,23 +126,21 @@ move_stack_value(YogEnv* env, uint_t n)
 void
 YogEval_push_returned_value(YogEnv* env, YogVal frame, YogVal val)
 {
-    SAVE_ARGS2(env, frame, val);
-    YogVal middle = YUNDEF;
-    PUSH_LOCAL(env, middle);
-
     uint_t left_num = PTR_AS(YogScriptFrame, frame)->lhs_left_num;
     uint_t middle_num = PTR_AS(YogScriptFrame, frame)->lhs_middle_num;
     uint_t right_num = PTR_AS(YogScriptFrame, frame)->lhs_right_num;
     if (left_num + middle_num + right_num == 0) {
-        RETURN_VOID(env);
+        return;
     }
     if (0 < middle_num) {
         if (0 < left_num + right_num) {
             YogError_raise_ValueError(env, "too few multiple value");
         }
-        middle = YogArray_of_size(env, 1);
-        YogArray_push(env, middle, val);
-        YogScriptFrame_push_stack(env, frame, middle);
+        YogHandle* h_frame = YogHandle_register(env, frame);
+        YogHandle* h_val = YogHandle_register(env, val);
+        YogVal middle = YogArray_of_size(env, 1);
+        YogArray_push(env, middle, h_val->val);
+        YogScriptFrame_push_stack(env, h_frame->val, middle);
     }
     else if (left_num != 1) {
         YogError_raise_ValueError(env, "number of multiple value unmatched");
@@ -151,8 +149,6 @@ YogEval_push_returned_value(YogEnv* env, YogVal frame, YogVal val)
     else {
         YogScriptFrame_push_stack(env, frame, val);
     }
-
-    RETURN_VOID(env);
 }
 
 static void
@@ -812,26 +808,18 @@ YogEval_eval_file(YogEnv* env, FILE* fp, const char* filename, const char* pkg_n
 static YogVal
 get_finish_frame(YogEnv* env)
 {
-    SAVE_LOCALS(env);
-    YogVal frame = YUNDEF;
-    PUSH_LOCAL(env, frame);
-    frame = YogThread_get_finish_frame(env, env->thread);
+    YogVal frame = YogThread_get_finish_frame(env, env->thread);
     if (IS_PTR(frame)) {
-        RETURN(env, frame);
+        return frame;
     }
-    frame = YogFinishFrame_new(env);
-    RETURN(env, frame);
+    return YogFinishFrame_new(env);
 }
 
 void
 YogEval_push_finish_frame(YogEnv* env)
 {
-    SAVE_LOCALS(env);
-    YogVal frame = YUNDEF;
-    PUSH_LOCAL(env, frame);
-    frame = get_finish_frame(env);
+    YogVal frame = get_finish_frame(env);
     PUSH_FRAME(frame);
-    RETURN_VOID(env);
 }
 
 /**
