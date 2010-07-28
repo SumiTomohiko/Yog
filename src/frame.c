@@ -84,9 +84,7 @@ YogScriptFrame_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* 
 static void
 YogFrame_clean(YogEnv* env, YogVal self)
 {
-    SAVE_ARG(env, self);
     PTR_AS(YogFrame, self)->prev = YNIL;
-    RETURN_VOID(env);
 }
 
 static void
@@ -101,8 +99,6 @@ YogFrame_init(YogEnv* env, YogVal self, YogFrameType type)
 static void
 cleanup_locals(YogEnv* env, YogVal self)
 {
-    SAVE_ARG(env, self);
-
     uint_t stack_capacity = PTR_AS(YogScriptFrame, self)->stack_capacity;
     uint_t locals_num = PTR_AS(YogScriptFrame, self)->locals_num;
     uint_t outer_depth = PTR_AS(YogScriptFrame, self)->outer_frames_num;
@@ -111,14 +107,11 @@ cleanup_locals(YogEnv* env, YogVal self)
     for (i = 0; i < locals_etc_size; i++) {
         PTR_AS(YogScriptFrame, self)->locals_etc[i] = YUNDEF;
     }
-
-    RETURN_VOID(env);
 }
 
 void
 YogScriptFrame_cleanup(YogEnv* env, YogVal self)
 {
-    SAVE_ARG(env, self);
     YogFrame_clean(env, self);
 #define CLEAN(member, val) PTR_AS(YogScriptFrame, self)->member = (val)
     CLEAN(pc, 0);
@@ -130,7 +123,6 @@ YogScriptFrame_cleanup(YogEnv* env, YogVal self)
     CLEAN(klass, YUNDEF);
 #undef CLEAN
     cleanup_locals(env, self);
-    RETURN_VOID(env);
 }
 
 static void
