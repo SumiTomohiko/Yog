@@ -105,14 +105,12 @@ YogThread_get_script_frame(YogEnv* env, YogVal self)
 void
 YogThread_put_script_frame(YogEnv* env, YogVal self, YogVal frame)
 {
-    SAVE_ARGS2(env, self, frame);
     uint_t n = PTR_AS(YogThread, self)->script_frames_num;
     if (SCRIPT_FRAMES_MAX <= n) {
-        RETURN_VOID(env);
+        return;
     }
     YogGC_UPDATE_PTR(env, PTR_AS(YogThread, self), script_frames[n], frame);
     PTR_AS(YogThread, self)->script_frames_num++;
-    RETURN_VOID(env);
 }
 
 void
