@@ -524,7 +524,8 @@ times(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 #if 0
         YogCallable_call(env, block, array_sizeof(args), args);
 #else
-        YogHandleScope_open(env);
+        YogHandleScope scope;
+        YogHandleScope_open(env, &scope);
         YogHandle* h_block = YogHandle_register(env, block);
         YogHandle* h_args[1];
         h_args[0] = YogHandle_register(env, args[0]);

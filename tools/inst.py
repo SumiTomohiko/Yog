@@ -214,8 +214,7 @@ class CodeGenerator(object):
 
             s = """
     case OP(%(name)s):
-        {
-            SAVE_LOCALS_TO_NAME(env, op);""" % { "name": inst.name.upper() }
+        {""" % { "name": inst.name.upper() }
             lineno += len(s.split("\n")) - 1
             inc.write(s)
 
@@ -224,7 +223,6 @@ class CodeGenerator(object):
             YogVal __frame__ = env->frame;
             YogVal __code__ = SCRIPT_FRAME(__frame__)->code;
             YogVal __insts__ = PTR_AS(YogCode, __code__)->insts;
-            PUSH_LOCALS3(env, __frame__, __code__, __insts__);
             const char* __bytes__ = PTR_AS(YogByteArray, __insts__)->items;
             uint_t __size__ = PTR_AS(YogByteArray, __insts__)->size;
             pc_t __pc__ = SCRIPT_FRAME(__frame__)->pc;"""
@@ -250,36 +248,26 @@ class CodeGenerator(object):
                 inc.write(s)
 
             for val in inst.pop_values:
-                if val not in declared_names:
-                    if len(inst.codes) == 0:
-                        continue
-                    s = """
-            YogVal %(name)s = YUNDEF;""" % { "name": val }
-                    lineno += len(s.split("\n")) - 1
-                    inc.write(s)
-                    declared_names.add(val)
+                if val in declared_names:
+                    continue
+                if len(inst.codes) == 0:
+                    continue
+                s = """
+            YogVal %(name)s = YUNDEF;""" % { "name": val}
+                lineno += len(s.split("\n")) - 1
+                inc.write(s)
+                declared_names.add(val)
             for val in inst.push_values:
-                if val not in declared_names:
-                    s = """
+                if val in declared_names:
+                    continue
+                s = """
             YogVal %(name)s = YUNDEF;""" % { "name": val }
-                    lineno += len(s.split("\n")) - 1
-                    inc.write(s)
-                    declared_names.add(val)
+                lineno += len(s.split("\n")) - 1
+                inc.write(s)
+                declared_names.add(val)
             stack_vals_all = inst.pop_values + inst.push_values
             stack_vals = self.remove_duplicate_elem(stack_vals_all)
             num_stack_vals = len(stack_vals)
-            if (0 < num_stack_vals) and ((0 < len(inst.codes)) or (0 < len(inst.push_values))):
-                children = self.split_array(stack_vals, 5)
-                for child in children:
-                    index = len(child)
-                    if index == 1:
-                        macro = "PUSH_LOCAL"
-                    else:
-                        macro = "PUSH_LOCALS%(index)d" % { "index": index }
-                    s = """
-            %(macro)s(env, %(vars)s);""" % { "macro": macro, "vars": ", ".join(child) }
-                    lineno += len(s.split("\n")) - 1
-                    inc.write(s)
             for pop_value in inst.pop_values:
                 if (0 < len(inst.codes)) or (0 < len(inst.push_values)):
                     s = """
@@ -323,7 +311,6 @@ class CodeGenerator(object):
                 inc.write(s)
 
             s = """
-            RESTORE_LOCALS_FROM_NAME(env, op);
             break;
         }"""
             lineno += len(s.split("\n")) - 1

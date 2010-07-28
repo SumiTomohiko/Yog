@@ -52,9 +52,6 @@ struct YogThread {
     uint_t script_frames_num;
 #define SCRIPT_FRAMES_MAX 32
     YogVal script_frames[SCRIPT_FRAMES_MAX];
-    uint_t handle_scopes_num;
-#define HANDLE_SCOPES_MAX 32
-    struct YogHandleScope* handle_scopes[HANDLE_SCOPES_MAX];
 };
 
 typedef struct YogThread YogThread;
@@ -80,12 +77,20 @@ DECL_AS_TYPE(YogThread_new);
     YogVal name##_cur_frame = env->frame; \
     PUSH_LOCAL((env), name##_cur_frame); \
     YogLocals* name##_locals = (env)->locals->body; \
-    YogJmpBuf* name##_jmpbuf = PTR_AS(YogThread, (env)->thread)->jmp_buf_list
-#define RESTORE_STAT(env, name) \
+    YogJmpBuf* name##_jmpbuf = PTR_AS(YogThread, (env)->thread)->jmp_buf_list; \
+    YogHandleScope* name##_scope = (env)->handles->scope
+#define RESTORE_STAT(env, name) do { \
     PTR_AS(YogThread, (env)->thread)->jmp_buf_list = name##_jmpbuf; \
     PTR_AS(YogThread, (env)->thread)->env = (env); \
     (env)->locals->body = name##_locals; \
-    env->frame = name##_cur_frame
+    env->frame = name##_cur_frame; \
+    YogHandleScope* scope = env->handles->scope; \
+    while (scope != name##_scope) { \
+        YogHandleScope* next = scope->next; \
+        YogHandleScope_close(env); \
+        scope = next; \
+    } \
+} while (0)
 
 /* PROTOTYPE_START */
 
@@ -100,16 +105,16 @@ YOG_EXPORT void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t);
 YOG_EXPORT void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t);
 YOG_EXPORT void YogThread_define_classes(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogThread_get_finish_frame(YogEnv*, YogVal);
-YOG_EXPORT YogHandleScope* YogThread_get_handle_scope(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogThread_get_script_frame(YogEnv*, YogVal);
 YOG_EXPORT void YogThread_init(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogThread_issue_object_id(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogThread_new(YogEnv*);
 YOG_EXPORT void YogThread_put_finish_frame(YogEnv*, YogVal, YogVal);
-YOG_EXPORT BOOL YogThread_put_handle_scope(YogEnv*, YogVal, YogHandleScope*);
 YOG_EXPORT void YogThread_put_script_frame(YogEnv*, YogVal, YogVal);
 
 /* PROTOTYPE_END */
+
+#include "yog/handle.h"
 
 #endif
 /**

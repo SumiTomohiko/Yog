@@ -553,8 +553,6 @@ create_frame_for_names(YogEnv* env, YogVal code, YogVal vars)
 YogVal
 YogEval_mainloop(YogEnv* env)
 {
-    SAVE_LOCALS(env);
-
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
 #undef CODE
 #define CODE        PTR_AS(YogCode, SCRIPT_FRAME(CUR_FRAME)->code)
@@ -562,6 +560,7 @@ YogEval_mainloop(YogEnv* env)
     PUSH_JMPBUF(env->thread, jmpbuf);
     SAVE_CURRENT_STAT(env, mainloop);
 
+    YogHandleScope scope;
     int_t status;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
     }
@@ -570,6 +569,13 @@ YogEval_mainloop(YogEnv* env)
         PTR_AS(YogThread, thread)->jmp_buf_list = mainloop_jmpbuf;
         PTR_AS(YogThread, thread)->env = env;
         env->locals->body = mainloop_locals;
+        YogHandleScope* scope = env->handles->scope;
+        while (scope != mainloop_scope) {
+            YogHandleScope* next = scope->next;
+            YogHandleScope_close(env);
+            scope = next;
+        }
+
         YogVal frame = env->frame;
         if (PTR_AS(YogFrame, frame)->type == FRAME_C) {
             do {
@@ -592,7 +598,7 @@ YogEval_mainloop(YogEnv* env)
                 if (!found) {
                     jump_to_prev_buf(env, status);
                     YogError_print_stacktrace(env);
-                    RETURN(env, INT2VAL(-1));
+                    return INT2VAL(-1);
                 }
             }
             break;
@@ -658,8 +664,8 @@ YogEval_mainloop(YogEnv* env)
 #if 0
     YogCode_dump(env, (YogVal)(CODE));
 #endif
-
     while (PC < PTR_AS(YogByteArray, CODE->insts)->size) {
+        YogHandleScope_open(env, &scope);
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define JUMP(m)         PC = m;
         OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];
@@ -727,12 +733,13 @@ YogEval_mainloop(YogEnv* env)
         }
 #undef JUMP
 #undef CONSTS
+        YogHandleScope_close(env);
     }
 #undef CODE
 #undef PC
     YOG_BUG(env, "Exited mainloop");
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+    return YUNDEF;
 }
 
 YogVal

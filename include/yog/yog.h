@@ -130,7 +130,7 @@ struct YogHandle {
 typedef struct YogHandle YogHandle;
 
 struct YogHandleScope {
-    uint_t begin;
+    uint_t used_num;
     struct YogHandle* pos;
     struct YogHandle* last;
     struct YogHandleScope* next;

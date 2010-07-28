@@ -410,11 +410,22 @@ keep_handle(YogEnv* env, YogHandle* begin, YogHandle* end, ObjectKeeper keeper, 
 }
 
 static void
-keep_scope(YogEnv* env, YogHandles* handles, YogHandleScope* scope, uint_t end, ObjectKeeper keeper, void* heap)
+keep_scope1(YogEnv* env, YogHandles* handles, YogHandle* pos, uint_t end, ObjectKeeper keeper, void* heap)
 {
-    keep_handle(env, handles->ptr[end - 1], scope->pos, keeper, heap);
+    if (pos == NULL) {
+        return;
+    }
+    keep_handle(env, handles->ptr[end - 1], pos, keeper, heap);
+}
+
+static void
+keep_scope2(YogEnv* env, YogHandles* handles, uint_t begin , uint_t end, ObjectKeeper keeper, void* heap)
+{
+    if (begin == end) {
+        return;
+    }
     uint_t i;
-    for (i = end - 1; scope->begin < i; i--) {
+    for (i = end - 1; begin < i; i--) {
         YogHandle* begin = handles->ptr[i - 1];
         YogHandle* end = begin + HANDLES_SIZE;
         keep_handle(env, begin, end, keeper, heap);
@@ -424,11 +435,15 @@ keep_scope(YogEnv* env, YogHandles* handles, YogHandleScope* scope, uint_t end, 
 static void
 keep_handles(YogEnv* env, YogHandles* handles, ObjectKeeper keeper, void* heap)
 {
-    uint_t i = handles->used_num;
+    uint_t end = handles->used_num;
     YogHandleScope* scope = handles->scope;
     while (scope != NULL) {
-        keep_scope(env, handles, scope, i, keeper, heap);
-        i = scope->begin;
+        keep_scope1(env, handles, scope->pos, end, keeper, heap);
+
+        uint_t begin = end - scope->used_num;
+        keep_scope2(env, handles, begin, end, keeper, heap);
+
+        end = begin;
         scope = scope->next;
     }
 }

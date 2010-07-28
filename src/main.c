@@ -107,7 +107,10 @@ yog_main(YogEnv* env, int_t argc, char* argv[])
         fprintf(stderr, "can't open file \"%s\": %s\n", filename, errmsg);
         return;
     }
+    YogHandleScope scope;
+    YogHandleScope_open(env, &scope);
     YogEval_eval_file(env, fp, filename, MAIN_MODULE_NAME);
+    YogHandleScope_close(env);
     fclose(fp);
 }
 
