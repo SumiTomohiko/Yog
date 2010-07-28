@@ -75,16 +75,13 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 YogVal
 YogThread_get_finish_frame(YogEnv* env, YogVal self)
 {
-    SAVE_ARG(env, self);
-    YogVal frame = YUNDEF;
-    PUSH_LOCAL(env, frame);
     uint_t n = PTR_AS(YogThread, self)->finish_frames_num;
     if (n == 0) {
-        RETURN(env, YNIL);
+        return YNIL;
     }
-    frame = PTR_AS(YogThread, self)->finish_frames[n - 1];
+    YogVal frame = PTR_AS(YogThread, self)->finish_frames[n - 1];
     PTR_AS(YogThread, self)->finish_frames_num--;
-    RETURN(env, frame);
+    return frame;
 }
 
 YogVal
@@ -116,14 +113,12 @@ YogThread_put_script_frame(YogEnv* env, YogVal self, YogVal frame)
 void
 YogThread_put_finish_frame(YogEnv* env, YogVal self, YogVal frame)
 {
-    SAVE_ARGS2(env, self, frame);
     uint_t n = PTR_AS(YogThread, self)->finish_frames_num;
     if (FINISH_FRAMES_MAX <= n) {
-        RETURN_VOID(env);
+        return;
     }
     YogGC_UPDATE_PTR(env, PTR_AS(YogThread, self), finish_frames[n], frame);
     PTR_AS(YogThread, self)->finish_frames_num++;
-    RETURN_VOID(env);
 }
 
 void
