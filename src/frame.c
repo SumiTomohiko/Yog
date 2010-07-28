@@ -11,14 +11,10 @@
 void
 YogScriptFrame_push_stack(YogEnv* env, YogVal self, YogVal val)
 {
-    SAVE_ARGS2(env, self, val);
-
     uint_t size = PTR_AS(YogScriptFrame, self)->stack_size;
     YOG_ASSERT(env, size < PTR_AS(YogScriptFrame, self)->stack_capacity, "Full stack");
     YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, self), locals_etc[size], val);
     PTR_AS(YogScriptFrame, self)->stack_size++;
-
-    RETURN_VOID(env);
 }
 
 void
