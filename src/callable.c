@@ -735,21 +735,6 @@ create_instance_method(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogInstanceMethod_define_class(YogEnv* env, YogVal pkg)
-{
-    SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
-
-    klass = YogClass_new(env, "InstanceMethod", env->vm->cObject);
-    YogClass_define_allocator(env, klass, create_instance_method);
-    YogClass_define_caller(env, klass, YogInstanceMethod_call);
-    YogClass_define_executor(env, klass, YogInstanceMethod_exec);
-
-    RETURN(env, klass);
-}
-
-YogVal
 YogInstanceMethod_new(YogEnv* env)
 {
     return create_instance_method(env, env->vm->cInstanceMethod);
@@ -928,21 +913,6 @@ YogCallable_call2(YogEnv* env, YogVal self, uint_t argc, YogVal* args, YogVal bl
     retval = call(env, self, argc, args, 0, NULL, YUNDEF, YUNDEF, block);
 
     RETURN(env, retval);
-}
-
-YogVal
-YogNativeInstanceMethod_define_class(YogEnv* env, YogVal pkg)
-{
-    SAVE_ARG(env, pkg);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
-
-    klass = YogClass_new(env, "NativeInstanceMethod", env->vm->cObject);
-    YogClass_define_allocator(env, klass, create_instance_method);
-    YogClass_define_caller(env, klass, YogNativeInstanceMethod_call);
-    YogClass_define_executor(env, klass, YogNativeInstanceMethod_exec);
-
-    RETURN(env, klass);
 }
 
 /**

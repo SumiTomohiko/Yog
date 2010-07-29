@@ -62,10 +62,8 @@ YOG_EXPORT YogVal YogCallable_call1(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogCallable_call2(YogEnv*, YogVal, uint_t, YogVal*, YogVal);
 YOG_EXPORT void YogFunction_define_classes(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogFunction_new(YogEnv*);
-YOG_EXPORT YogVal YogInstanceMethod_define_class(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogInstanceMethod_new(YogEnv*);
 YOG_EXPORT YogVal YogNativeFunction_new(YogEnv*, ID, YogVal, const char*, YogAPI);
-YOG_EXPORT YogVal YogNativeInstanceMethod_define_class(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogNativeInstanceMethod_new(YogEnv*);
 
 /* PROTOTYPE_END */
