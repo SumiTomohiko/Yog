@@ -42,18 +42,6 @@ YogHandles_finalize(YogHandles* self)
     free(self->ptr);
 }
 
-static YogHandleScope*
-get_handle_scope(YogEnv* env)
-{
-    YogHandleScope* scope = YogThread_get_handle_scope(env, env->thread);
-    if (scope != NULL) {
-        return scope;
-    }
-    scope = (YogHandleScope*)malloc(sizeof(YogHandleScope));
-    YOG_ASSERT(NULL, scope != NULL, "Can't malloc");
-    return scope;
-}
-
 static void
 YogHandles_extend_handles(YogEnv* env, YogHandles* self)
 {
