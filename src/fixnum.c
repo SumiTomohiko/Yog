@@ -521,17 +521,7 @@ times(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     uint_t i;
     for (i = 0; i < n; i++) {
         YogVal args[1] = { INT2VAL(i) };
-#if 0
         YogCallable_call(env, block, array_sizeof(args), args);
-#else
-        YogHandleScope scope;
-        YogHandleScope_open(env, &scope);
-        YogHandle* h_block = YogHandle_register(env, block);
-        YogHandle* h_args[1];
-        h_args[0] = YogHandle_register(env, args[0]);
-        YogCallable_call_2(env, h_block, array_sizeof(h_args), h_args);
-        YogHandleScope_close(env);
-#endif
     }
 
     RETURN(env, YNIL);

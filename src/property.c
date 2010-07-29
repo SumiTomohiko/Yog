@@ -2,6 +2,7 @@
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/gc.h"
+#include "yog/handle.h"
 #include "yog/property.h"
 #include "yog/string.h"
 #include "yog/vm.h"
@@ -56,7 +57,8 @@ exec_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     class_of_method = YogVal_get_class(env, method);
     Executor exec = PTR_AS(YogClass, class_of_method)->exec;
     YOG_ASSERT(env, exec != NULL, "method isn't callable");
-    exec(env, method, 0, NULL, 0, NULL, YUNDEF, YUNDEF, YUNDEF);
+    YogHandle* h_method = YogHandle_register(env, method);
+    exec(env, h_method, 0, NULL, 0, NULL, NULL, NULL, NULL);
 
     RETURN_VOID(env);
 }
@@ -84,7 +86,8 @@ call_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     class_of_method = YogVal_get_class(env, method);
     Caller call = PTR_AS(YogClass, class_of_method)->call;
     YOG_ASSERT(env, call != NULL, "method isn't callable");
-    retval = call(env, method, 0, NULL, 0, NULL, YUNDEF, YUNDEF, YUNDEF);
+    YogHandle* h_method = YogHandle_register(env, method);
+    retval = call(env, h_method, 0, NULL, 0, NULL, NULL, NULL, NULL);
 
     RETURN(env, retval);
 }
@@ -99,8 +102,7 @@ exec_set_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     YogVal class_of_method = YUNDEF;
     YogVal class_of_obj = YUNDEF;
     PUSH_LOCALS5(env, setter, class_of_setter, method, class_of_method, class_of_obj);
-    YogVal args[] = { val };
-    PUSH_LOCALSX(env, array_sizeof(args), args);
+    YogHandle* args[] = { YogHandle_register(env, val) };
 
     setter = PTR_AS(YogProperty, attr)->setter;
     class_of_setter = YogVal_get_class(env, setter);
@@ -115,7 +117,9 @@ exec_set_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     class_of_method = YogVal_get_class(env, method);
     Executor exec = PTR_AS(YogClass, class_of_method)->exec;
     YOG_ASSERT(env, exec != NULL, "method isn't callable");
-    exec(env, method, array_sizeof(args), args, 0, NULL, YUNDEF, YUNDEF, YUNDEF);
+
+    YogHandle* h_method = YogHandle_register(env, method);
+    exec(env, h_method, array_sizeof(args), args, 0, NULL, NULL, NULL, NULL);
 
     RETURN_VOID(env);
 }

@@ -27,217 +27,187 @@ raise_TypeError(YogEnv* env, const char* mark, const char* needed, YogVal actual
 static void
 raise_TypeError_for_vararg(YogEnv* env, YogVal actual)
 {
-    SAVE_ARG(env, actual);
     raise_TypeError(env, "*", "an Array", actual);
-    RETURN_VOID(env);
 }
 
 static void
 raise_TypeError_for_varkwarg(YogEnv* env, YogVal actual)
 {
-    SAVE_ARG(env, actual);
     raise_TypeError(env, "**", "a Dict", actual);
-    RETURN_VOID(env);
 }
 
-#define STORE_LOCAL(env, frame, index, val) YogGC_UPDATE_PTR((env), SCRIPT_FRAME((frame)), locals_etc[SCRIPT_FRAME((frame))->stack_capacity + (index)], (val))
+#define STORE_LOCAL(env, frame, index, val) YogGC_UPDATE_PTR((env), HDL_AS(YogScriptFrame, (frame)), locals_etc[HDL_AS(YogScriptFrame, (frame))->stack_capacity + (index)], (val))
 
 static void
-assign_keyword_arg(YogEnv* env, YogVal self, uint_t args_offset, YogVal frame, YogVal kw, ID name, YogVal val)
+assign_keyword_arg(YogEnv* env, YogHandle* self, uint_t args_offset, YogHandle* frame, YogHandle* kw, ID name, YogHandle* val)
 {
-    SAVE_ARGS4(env, self, frame, kw, val);
-    YogVal names = YUNDEF;
-    YogVal code = YUNDEF;
-    YogVal formal_args = YUNDEF;
-    YogVal v = YUNDEF;
-    PUSH_LOCALS4(env, names, code, formal_args, v);
-
-    code = PTR_AS(YogFunction, self)->code;
-    formal_args = PTR_AS(YogCode, code)->arg_info;
+    YogVal code = HDL_AS(YogFunction, self)->code;
+    YogVal formal_args = PTR_AS(YogCode, code)->arg_info;
     uint_t argc = PTR_AS(YogArgInfo, formal_args)->argc;
-    names = PTR_AS(YogArgInfo, formal_args)->argnames;
+    YogVal names = PTR_AS(YogArgInfo, formal_args)->argnames;
     uint_t i;
     for (i = 0; i < argc; i++) {
         if (PTR_AS(ID, names)[i] != name) {
             continue;
         }
-        v = SCRIPT_FRAME_LOCALS(frame)[args_offset + i];
+        YogVal v = SCRIPT_FRAME_LOCALS(frame->val)[args_offset + i];
         if (!IS_UNDEF(v)) {
-            YogError_raise_ArgumentError(env, "%I() got multiple values for keyword argument \"%I\"", PTR_AS(YogFunction, self)->name, name);
+            YogError_raise_ArgumentError(env, "%I() got multiple values for keyword argument \"%I\"", HDL_AS(YogFunction, self)->name, name);
         }
-        STORE_LOCAL(env, frame, args_offset + i, val);
-        RETURN_VOID(env);
+        STORE_LOCAL(env, frame, args_offset + i, val->val);
+        return;
     }
-    if (!IS_PTR(kw)) {
+    if (!IS_PTR(kw->val)) {
         YogError_raise_ArgumentError(env, "an unexpected keyword argument \"%I\"", name);
     }
-    YogDict_set(env, kw, ID2VAL(name), val);
-
-    RETURN_VOID(env);
+    YogDict_set(env, kw->val, ID2VAL(name), val->val);
 }
 
 static void
 raise_wrong_num_args(YogEnv* env, YogVal self, uint_t posargc)
 {
-    SAVE_ARG(env, self);
-    YogVal formal_args = YUNDEF;
-    YogVal code = YUNDEF;
-    PUSH_LOCALS2(env, formal_args, code);
-
-    code = PTR_AS(YogFunction, self)->code;
-    formal_args = PTR_AS(YogCode, code)->arg_info;
+    YogVal code = PTR_AS(YogFunction, self)->code;
+    YogVal formal_args = PTR_AS(YogCode, code)->arg_info;
     uint_t formal_posargc = PTR_AS(YogArgInfo, formal_args)->argc;
     YogError_raise_ArgumentError(env, "%I() requires %u positional argument(s) (%u given)", PTR_AS(YogFunction, self)->name, formal_posargc, posargc);
-
-    RETURN_VOID(env);
 }
 
 static void
 check_arg_assigned(YogEnv* env, YogVal self, YogVal arg, uint_t posargc)
 {
-    SAVE_ARGS2(env, self, arg);
     if (!IS_UNDEF(arg)) {
-        RETURN_VOID(env);
+        return;
     }
     raise_wrong_num_args(env, self, posargc);
-    RETURN_VOID(env);
 }
 
 static void
-fill_args(YogEnv* env, YogVal self, uint_t args_offset, uint8_t posargc, YogVal posargs[], YogVal blockarg, uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal frame)
+fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, YogHandle* posargs[], YogHandle* blockarg, uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* frame)
 {
-    SAVE_ARGS5(env, self, blockarg, vararg, varkwarg, frame);
-    YogVal array = YUNDEF;
-    YogVal kw = YUNDEF;
-    YogVal va = YUNDEF;
-    YogVal iter = YUNDEF;
-    YogVal val = YUNDEF;
-    YogVal code = PTR_AS(YogFunction, self)->code;
-    YogVal arg_info = PTR_AS(YogCode, code)->arg_info;
-    PUSH_LOCALS7(env, array, kw, va, iter, val, code, arg_info);
-    YOG_ASSERT(env, IS_PTR(self), "invalid self (0x%x)", self);
-    YOG_ASSERT(env, BASIC_OBJ_TYPE(self) == TYPE_FUNCTION, "invalid type self (0x%x)", BASIC_OBJ_TYPE(self));
-    if (!IS_PTR(arg_info)) {
-        RETURN_VOID(env);
+    YOG_ASSERT(env, IS_PTR(self->val), "invalid self (0x%x)", self);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(self->val) == TYPE_FUNCTION, "invalid type self (0x%x)", BASIC_OBJ_TYPE(self->val));
+    YogVal code = HDL_AS(YogFunction, self)->code;
+    YogHandle* arg_info = YogHandle_register(env, PTR_AS(YogCode, code)->arg_info);
+    if (!IS_PTR(arg_info->val)) {
+        return;
     }
 
-    uint_t arg_kwargc = PTR_AS(YogArgInfo, arg_info)->kwargc;
+    YogHandle* kw = YogHandle_register(env, YUNDEF);
+    uint_t arg_kwargc = HDL_AS(YogArgInfo, arg_info)->kwargc;
     if (0 < arg_kwargc) {
-        uint_t index = PTR_AS(YogArgInfo, arg_info)->argc;
-        uint_t varargc = PTR_AS(YogArgInfo, arg_info)->varargc;
+        uint_t index = HDL_AS(YogArgInfo, arg_info)->argc;
+        uint_t varargc = HDL_AS(YogArgInfo, arg_info)->varargc;
         if (0 < varargc) {
             index++;
         }
-        kw = YogDict_new(env);
-        STORE_LOCAL(env, frame, args_offset + index, kw);
+        kw->val = YogDict_new(env);
+        STORE_LOCAL(env, frame, args_offset + index, kw->val);
     }
 
     uint_t i;
-    uint_t arg_argc = PTR_AS(YogArgInfo, arg_info)->argc;
+    uint_t arg_argc = HDL_AS(YogArgInfo, arg_info)->argc;
     if (arg_argc < posargc) {
-        uint_t argc = PTR_AS(YogArgInfo, arg_info)->argc;
+        uint_t argc = HDL_AS(YogArgInfo, arg_info)->argc;
         for (i = 0; i < argc; i++) {
-            STORE_LOCAL(env, frame, args_offset + i, posargs[i]);
+            STORE_LOCAL(env, frame, args_offset + i, posargs[i]->val);
         }
         if (PTR_AS(YogArgInfo, arg_info)->varargc != 1) {
-            raise_wrong_num_args(env, self, posargc);
+            raise_wrong_num_args(env, self->val, posargc);
         }
-        array = YogArray_new(env);
-        STORE_LOCAL(env, frame, args_offset + argc, array);
+        YogHandle* array = YogHandle_register(env, YogArray_new(env));
+        STORE_LOCAL(env, frame, args_offset + argc, array->val);
         for (i = argc; i < posargc; i++) {
-            YogArray_push(env, array, posargs[i]);
+            YogArray_push(env, array->val, posargs[i]->val);
         }
-        if (IS_UNDEF(vararg)) {
+        if (IS_UNDEF(NULL2UNDEF(vararg))) {
             /* Do nothing */
         }
-        else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
-            raise_TypeError_for_vararg(env, vararg);
+        else if (!IS_PTR(vararg->val) || (BASIC_OBJ_TYPE(vararg->val) != TYPE_ARRAY)) {
+            raise_TypeError_for_vararg(env, vararg->val);
         }
         else {
-            YogArray_extend(env, array, vararg);
+            YogArray_extend(env, array->val, vararg->val);
         }
     }
     else {
         for (i = 0; i < posargc; i++) {
-            STORE_LOCAL(env, frame, args_offset + i, posargs[i]);
+            STORE_LOCAL(env, frame, args_offset + i, posargs[i]->val);
         }
-        if (IS_UNDEF(vararg)) {
+        if (IS_UNDEF(NULL2UNDEF(vararg))) {
             /* Do nothing */
         }
-        else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
-            raise_TypeError_for_vararg(env, vararg);
+        else if (!IS_PTR(vararg->val) || (BASIC_OBJ_TYPE(vararg->val) != TYPE_ARRAY)) {
+            raise_TypeError_for_vararg(env, vararg->val);
         }
         else {
             for (i = posargc; i < arg_argc; i++) {
-                YogVal val = YogArray_at(env, vararg, i - posargc);
+                YogVal val = YogArray_at(env, vararg->val, i - posargc);
                 STORE_LOCAL(env, frame, args_offset + i, val);
             }
         }
-        if (0 < PTR_AS(YogArgInfo, arg_info)->varargc) {
-            va = YogArray_new(env);
-            STORE_LOCAL(env, frame, args_offset + posargc, va);
+        if (0 < HDL_AS(YogArgInfo, arg_info)->varargc) {
+            YogHandle* va = YogHandle_register(env, YogArray_new(env));
+            STORE_LOCAL(env, frame, args_offset + posargc, va->val);
 
-            if (IS_UNDEF(vararg)) {
+            if (IS_UNDEF(NULL2UNDEF(vararg))) {
                 /* Do nothing */
             }
-            else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
-                raise_TypeError_for_vararg(env, vararg);
+            else if (!IS_PTR(vararg->val) || (BASIC_OBJ_TYPE(vararg->val) != TYPE_ARRAY)) {
+                raise_TypeError_for_vararg(env, vararg->val);
             }
             else {
-                uint_t size = YogArray_size(env, vararg);
+                uint_t size = YogArray_size(env, vararg->val);
                 for (i = arg_argc - posargc; i < size; i++) {
-                    YogVal val = YogArray_at(env, vararg, i);
-                    YogArray_push(env, va, val);
+                    YogVal val = YogArray_at(env, vararg->val, i);
+                    YogArray_push(env, va->val, val);
                 }
             }
         }
     }
 
     for (i = 0; i < kwargc; i++) {
-        ID name = VAL2ID(kwargs[2 * i]);
-        val = kwargs[2 * i + 1];
+        ID name = VAL2ID(kwargs[2 * i]->val);
+        YogHandle* val = kwargs[2 * i + 1];
         assign_keyword_arg(env, self, args_offset, frame, kw, name, val);
     }
 
-    if (IS_UNDEF(varkwarg)) {
+    if (IS_UNDEF(NULL2UNDEF(varkwarg))) {
         /* Do nothing */
     }
-    else if (!IS_PTR(varkwarg) || (BASIC_OBJ_TYPE(varkwarg) != TYPE_DICT)) {
-        raise_TypeError_for_varkwarg(env, varkwarg);
+    else if (!IS_PTR(varkwarg->val) || (BASIC_OBJ_TYPE(varkwarg->val) != TYPE_DICT)) {
+        raise_TypeError_for_varkwarg(env, varkwarg->val);
     }
     else {
-        iter = YogDict_get_iterator(env, varkwarg);
-        while (YogDictIterator_next(env, iter)) {
-            YogVal key = YogDictIterator_current_key(env, iter);
+        YogHandle* iter = YogHandle_register(env, YogDict_get_iterator(env, varkwarg->val));
+        while (YogDictIterator_next(env, iter->val)) {
+            YogVal key = YogDictIterator_current_key(env, iter->val);
             if (!IS_SYMBOL(key)) {
                 YogError_raise_TypeError(env, "keywords must be symbols, not %C", key);
             }
-            val = YogDictIterator_current_value(env, iter);
+            YogHandle* val = YogHandle_register(env, YogDictIterator_current_value(env, iter->val));
             assign_keyword_arg(env, self, args_offset, frame, kw, VAL2ID(key), val);
         }
     }
 
-    if (!IS_UNDEF(blockarg)) {
-        if (PTR_AS(YogArgInfo, arg_info)->blockargc != 1) {
+    if (!IS_UNDEF(NULL2UNDEF(blockarg))) {
+        if (HDL_AS(YogArgInfo, arg_info)->blockargc != 1) {
             YogError_raise_ArgumentError(env, "can't accept a block argument");
         }
-        uint_t index = PTR_AS(YogArgInfo, arg_info)->argc;
-        if (0 < PTR_AS(YogArgInfo, arg_info)->varargc) {
+        uint_t index = HDL_AS(YogArgInfo, arg_info)->argc;
+        if (0 < HDL_AS(YogArgInfo, arg_info)->varargc) {
             index++;
         }
-        if (0 < PTR_AS(YogArgInfo, arg_info)->kwargc) {
+        if (0 < HDL_AS(YogArgInfo, arg_info)->kwargc) {
             index++;
         }
-        STORE_LOCAL(env, frame, args_offset + index, blockarg);
+        STORE_LOCAL(env, frame, args_offset + index, blockarg->val);
     }
 
-    uint_t required_argc = PTR_AS(YogArgInfo, arg_info)->required_argc;
+    uint_t required_argc = HDL_AS(YogArgInfo, arg_info)->required_argc;
     for (i = 0; i < required_argc; i++) {
-        val = SCRIPT_FRAME_LOCALS(frame)[args_offset + i];
-        check_arg_assigned(env, self, val, posargc);
+        YogVal val = SCRIPT_FRAME_LOCALS(frame)[args_offset + i];
+        check_arg_assigned(env, self->val, val, posargc);
     }
-
-    RETURN_VOID(env);
 }
 
 static void
@@ -272,132 +242,60 @@ fill_outer_frames(YogEnv* env, YogVal frame, YogVal outer_frame, uint_t depth)
 }
 
 static void
-YogFunction_exec_for_instance2(YogEnv* env, YogHandle* callee, /*YogHandle* self,*/ uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-#undef CODE
-#define CODE PTR_AS(YogFunction, callee->val)->code
-#define OUTER_FRAME PTR_AS(YogFunction, callee->val)->outer_frame
-    uint_t locals_num = PTR_AS(YogCode, CODE)->local_vars_count;
-    YogHandle* frame = YogHandle_register(env, YogFrame_get_script_frame(env, CODE, locals_num));
-    uint_t args_offset;
-    if (PTR_AS(YogFunction, callee->val)->needs_self) {
-        uint_t pos = PTR_AS(YogScriptFrame, frame->val)->stack_capacity;
-        YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame->val), locals_etc[pos], YUNDEF);
-        args_offset = 1;
-    }
-    else {
-        args_offset = 0;
-    }
-#if 0
-    fill_args(env, callee, args_offset, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, frame);
-#endif
-
-    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame->val), globals, PTR_AS(YogFunction, callee)->globals);
-    uint_t depth = PTR_AS(YogCode, CODE)->outer_size;
-    fill_outer_frames(env, frame->val, OUTER_FRAME, depth);
-
-    YogVal frame_to_long_return = PTR_AS(YogFunction, callee)->frame_to_long_return;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame->val), frame_to_long_return, IS_PTR(frame_to_long_return) ? frame_to_long_return : env->frame);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame->val), frame_to_long_break, PTR_AS(YogFunction, callee)->frame_to_long_break);
-
-#if 0
-    if (!IS_UNDEF(self->val)) {
-        YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame->val), klass, YogVal_get_class(env, self->val));
-    }
-#endif
-    PTR_AS(YogScriptFrame, frame->val)->name = PTR_AS(YogFunction, callee->val)->name;
-
-    YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, frame->val), prev, env->frame);
-    env->frame = frame->val;
-#undef OUTER_FRAME
-#undef CODE
-}
-
-static void
-YogFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
-{
-    SAVE_ARGS5(env, callee, self, vararg, varkwarg, blockarg);
-    YogVal code = PTR_AS(YogFunction, callee)->code;
-    YogVal frame = YUNDEF;
-    YogVal frame_to_long_return = YUNDEF;
-    YogVal outer_frame = PTR_AS(YogFunction, callee)->outer_frame;
-    PUSH_LOCALS4(env, code, frame, frame_to_long_return, outer_frame);
-
-    uint_t locals_num = PTR_AS(YogCode, code)->local_vars_count;
-    frame = YogFrame_get_script_frame(env, code, locals_num);
-    uint_t args_offset;
-    if (PTR_AS(YogFunction, callee)->needs_self) {
-        uint_t pos = PTR_AS(YogScriptFrame, frame)->stack_capacity;
-        YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), locals_etc[pos], self);
-        args_offset = 1;
-    }
-    else {
-        args_offset = 0;
-    }
-    fill_args(env, callee, args_offset, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, frame);
-
-    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, PTR_AS(YogFunction, callee)->globals);
+    YogVal code = HDL_AS(YogFunction, callee)->code;
     uint_t depth = PTR_AS(YogCode, code)->outer_size;
-    fill_outer_frames(env, frame, outer_frame, depth);
-
-    frame_to_long_return = PTR_AS(YogFunction, callee)->frame_to_long_return;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), frame_to_long_return, IS_PTR(frame_to_long_return) ? frame_to_long_return : env->frame);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), frame_to_long_break, PTR_AS(YogFunction, callee)->frame_to_long_break);
-
-    if (!IS_UNDEF(self)) {
-        YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), klass, YogVal_get_class(env, self));
+    uint_t locals_num = PTR_AS(YogCode, code)->local_vars_count;
+    YogHandle* frame = YogHandle_register(env, YogFrame_get_script_frame(env, code, locals_num));
+    uint_t args_offset;
+    if (HDL_AS(YogFunction, callee)->needs_self) {
+        uint_t pos = HDL_AS(YogScriptFrame, frame)->stack_capacity;
+        YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), locals_etc[pos], self->val);
+        args_offset = 1;
     }
-    PTR_AS(YogScriptFrame, frame)->name = PTR_AS(YogFunction, callee)->name;
+    else {
+        args_offset = 0;
+    }
+    fill_args(env, callee, args_offset, posargc, posargs, blockarg, kwargc, kwargs, vararg, varkwarg, frame);
 
-    YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, frame), prev, env->frame);
-    env->frame = frame;
+    YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), globals, HDL_AS(YogFunction, callee)->globals);
+    YogVal outer_frame = HDL_AS(YogFunction, callee)->outer_frame;
+    fill_outer_frames(env, frame->val, outer_frame, depth);
 
-    RETURN_VOID(env);
+    YogVal frame_to_long_return = HDL_AS(YogFunction, callee)->frame_to_long_return;
+    YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), frame_to_long_return, IS_PTR(frame_to_long_return) ? frame_to_long_return : env->frame);
+    YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), frame_to_long_break, HDL_AS(YogFunction, callee)->frame_to_long_break);
+
+    if (!IS_UNDEF(NULL2UNDEF(self))) {
+        YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), klass, YogVal_get_class(env, self->val));
+    }
+    PTR_AS(YogScriptFrame, frame)->name = HDL_AS(YogFunction, callee)->name;
+
+    YogGC_UPDATE_PTR(env, HDL_AS(YogFrame, frame), prev, env->frame);
+    env->frame = frame->val;
 }
 
 static void
-YogFunction_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+YogFunction_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    YogFunction_exec_for_instance(env, callee, YUNDEF, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    YogHandle* receiver = YogHandle_register(env, YUNDEF);
+    YogFunction_exec_for_instance(env, callee, receiver, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static YogVal
-YogFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+YogFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    SAVE_ARGS5(env, callee, self, vararg, varkwarg, blockarg);
-    YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
-
     YogEval_push_finish_frame(env);
-
     YogFunction_exec_for_instance(env, callee, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
-    retval = YogEval_mainloop(env);
-
-    RETURN(env, retval);
-}
-
-static YogVal
-YogFunction_call_for_instance2(YogEnv* env, YogHandle* callee, /*YogHandle* self,*/ uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
-{
-    YogEval_push_finish_frame(env);
-
-    YogFunction_exec_for_instance2(env, callee, /*self,*/ posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
     return YogEval_mainloop(env);
 }
 
 static YogVal
-YogFunction_call2(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+YogFunction_call(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-#if 0
     YogHandle* undef = YogHandle_register(env, YUNDEF);
-#endif
-    return YogFunction_call_for_instance2(env, callee, /*undef,*/ posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
-}
-
-static YogVal
-YogFunction_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
-{
-    return YogFunction_call_for_instance(env, callee, YUNDEF, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    return YogFunction_call_for_instance(env, callee, undef, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static void
@@ -479,141 +377,107 @@ YogFunction_new(YogEnv* env)
     return YogFunction_alloc(env, env->vm->cFunction);
 }
 
-static YogVal
-create_keyword_argument(YogEnv* env, uint8_t kwargc, YogVal kwargs[], YogVal varkwarg)
+static YogHandle*
+create_keyword_argument(YogEnv* env, uint8_t kwargc, YogHandle* kwargs[], YogHandle* varkwarg)
 {
-    SAVE_ARG(env, varkwarg);
-    YogVal kw = YUNDEF;
-    YogVal key = YUNDEF;
-    YogVal value = YUNDEF;
-    PUSH_LOCALS3(env, kw, key, value);
-
-    if ((kwargc == 0) && IS_UNDEF(varkwarg)) {
-        RETURN(env, YUNDEF);
+    if ((kwargc == 0) && IS_UNDEF(NULL2UNDEF(varkwarg))) {
+        return NULL;
     }
 
-    kw = YogDict_new(env);
+    YogHandle* kw = YogHandle_register(env, YogDict_new(env));
     uint_t i;
     for (i = 0; i < kwargc; i += 2) {
-        key = kwargs[i];
-        value = kwargs[i + 1];
-        YogDict_set(env, kw, key, value);
+        YogDict_set(env, kw->val, kwargs[i]->val, kwargs[i + 1]->val);
     }
-    if (IS_UNDEF(varkwarg)) {
+    if (IS_UNDEF(NULL2UNDEF(varkwarg))) {
     }
-    else if (!IS_PTR(varkwarg) || (BASIC_OBJ_TYPE(varkwarg) != TYPE_DICT)) {
-        raise_TypeError_for_varkwarg(env, varkwarg);
+    else if (!IS_PTR(varkwarg->val) || (BASIC_OBJ_TYPE(varkwarg->val) != TYPE_DICT)) {
+        raise_TypeError_for_varkwarg(env, varkwarg->val);
     }
     else {
-        YogDict_add(env, kw, varkwarg);
+        YogDict_add(env, kw->val, varkwarg->val);
     }
 
-    RETURN(env, kw);
+    return kw;
 }
 
-static YogVal
-create_positional_argument(YogEnv* env, uint8_t posargc, YogVal posargs[], YogVal vararg)
+static YogHandle*
+create_positional_argument(YogEnv* env, uint8_t posargc, YogHandle* posargs[], YogHandle* vararg)
 {
-    SAVE_ARG(env, vararg);
-    YogVal args = YUNDEF;
-    PUSH_LOCAL(env, args);
-
-    args = YogArray_new(env);
+    YogHandle* args = YogHandle_register(env, YogArray_new(env));
     uint_t i;
     for (i = 0; i < posargc; i++) {
-        YogArray_push(env, args, posargs[i]);
+        YogArray_push(env, args->val, posargs[i]->val);
     }
 
-    if (IS_UNDEF(vararg)) {
+    if (IS_UNDEF(NULL2UNDEF(vararg))) {
     }
-    else if (!IS_PTR(vararg) || (BASIC_OBJ_TYPE(vararg) != TYPE_ARRAY)) {
-        raise_TypeError_for_vararg(env, vararg);
+    else if (!IS_PTR(vararg->val) || (BASIC_OBJ_TYPE(vararg->val) != TYPE_ARRAY)) {
+        raise_TypeError_for_vararg(env, vararg->val);
     }
     else {
-        YogArray_add(env, args, vararg);
+        YogArray_add(env, args->val, vararg->val);
     }
 
-    RETURN(env, args);
+    return args;
 }
 
 static YogVal
-YogNativeFunction_call_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg, YogVal* multi_val)
+YogNativeFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg, YogVal* multi_val)
 {
-    SAVE_ARGS5(env, callee, self, vararg, varkwarg, blockarg);
-    YogVal args = YUNDEF;
-    YogVal retval = YUNDEF;
-    YogVal frame = YUNDEF;
-    YogVal kw = YUNDEF;
-    YogVal pkg = YUNDEF;
-    PUSH_LOCALS5(env, args, retval, frame, kw, pkg);
+    YogHandle* args = create_positional_argument(env, posargc, posargs, vararg);
+    YogHandle* kw = create_keyword_argument(env, kwargc, kwargs, varkwarg);
 
-    args = create_positional_argument(env, posargc, posargs, vararg);
-    kw = create_keyword_argument(env, kwargc, kwargs, varkwarg);
-
-    frame = YogCFrame_new(env);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogCFrame, frame), f, callee);
+    YogVal frame = YogCFrame_new(env);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogCFrame, frame), f, callee->val);
     YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, frame), prev, env->frame);
     env->frame = frame;
 
-    Body f = (Body)PTR_AS(YogNativeFunction, callee)->f;
-    pkg = PTR_AS(YogNativeFunction, callee)->pkg;
-    retval = (*f)(env, self, pkg, args, kw, blockarg);
+    YogNativeFunction* obj = HDL_AS(YogNativeFunction, callee);
+    Body f = (Body)obj->f;
+    YogVal retval = (*f)(env, NULL2UNDEF(self), obj->pkg, args->val, NULL2UNDEF(kw), NULL2UNDEF(blockarg));
     if (IS_UNDEF(retval) && (multi_val != NULL)) {
         *multi_val = PTR_AS(YogCFrame, frame)->multi_val;
     }
 
     env->frame = PTR_AS(YogFrame, env->frame)->prev;
-
-    RETURN(env, retval);
+    return retval;
 }
 
 static void
 error_for_multi_value(YogEnv* env, YogVal retval)
 {
-    SAVE_ARG(env, retval);
     if (!IS_UNDEF(retval)) {
-        RETURN_VOID(env);
+        return;
     }
     YogError_raise_ValueError(env, "multiple value are not allowed");
-    RETURN_VOID(env);
 }
 
 static YogVal
-YogNativeFunction_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+YogNativeFunction_call(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
-    YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
-
-    retval = YogNativeFunction_call_for_instance(env, callee, YUNDEF, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, NULL);
+    YogVal retval = YogNativeFunction_call_for_instance(env, callee, NULL, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, NULL);
     error_for_multi_value(env, retval);
-
-    RETURN(env, retval);
+    return retval;
 }
 
 static void
-YogNativeFunction_exec_for_instance(YogEnv* env, YogVal callee, YogVal self, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+YogNativeFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    SAVE_ARGS5(env, callee, self, vararg, varkwarg, blockarg);
-    YogVal retval = YUNDEF;
-    YogVal multi_val = YUNDEF;
-    PUSH_LOCALS2(env, retval, multi_val);
-
-    retval = YogNativeFunction_call_for_instance(env, callee, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, &multi_val);
+    YogVal multi_val;
+    YogVal retval = YogNativeFunction_call_for_instance(env, callee, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, &multi_val);
     if (IS_UNDEF(retval)) {
         YogEval_push_returned_multi_value(env, multi_val);
-        RETURN_VOID(env);
+        return;
     }
-
     YogEval_push_returned_value(env, env->frame, retval);
-
-    RETURN_VOID(env);
 }
 
 static void
-YogNativeFunction_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+YogNativeFunction_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    YogNativeFunction_exec_for_instance(env, callee, YUNDEF, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    YogHandle* undef = YogHandle_register(env, YUNDEF);
+    YogNativeFunction_exec_for_instance(env, callee, undef, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static void
@@ -682,34 +546,21 @@ YogInstanceMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, voi
 }
 
 static void
-YogInstanceMethod_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+YogInstanceMethod_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
-    YogVal self = YUNDEF;
-    YogVal f = YUNDEF;
-    PUSH_LOCALS2(env, self, f);
-
-    self = PTR_AS(YogInstanceMethod, callee)->self;
-    f = PTR_AS(YogInstanceMethod, callee)->f;
+    YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
+    YogHandle* self = YogHandle_register(env, obj->self);
+    YogHandle* f = YogHandle_register(env, obj->f);
     YogFunction_exec_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
-
-    RETURN_VOID(env);
 }
 
 static YogVal
-YogInstanceMethod_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+YogInstanceMethod_call(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
-    YogVal self = YUNDEF;
-    YogVal f = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS3(env, self, f, retval);
-
-    self = PTR_AS(YogInstanceMethod, callee)->self;
-    f = PTR_AS(YogInstanceMethod, callee)->f;
-    retval = YogFunction_call_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
-
-    RETURN(env, retval);
+    YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
+    YogHandle* self = YogHandle_register(env, obj->self);
+    YogHandle* f = YogHandle_register(env, obj->f);
+    return YogFunction_call_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static void
@@ -741,35 +592,23 @@ YogInstanceMethod_new(YogEnv* env)
 }
 
 static void
-YogNativeInstanceMethod_exec(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+YogNativeInstanceMethod_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
-    YogVal self = YUNDEF;
-    YogVal f = YUNDEF;
-    PUSH_LOCALS2(env, self, f);
-
-    self = PTR_AS(YogInstanceMethod, callee)->self;
-    f = PTR_AS(YogInstanceMethod, callee)->f;
+    YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
+    YogHandle* self = YogHandle_register(env, obj->self);
+    YogHandle* f = YogHandle_register(env, obj->f);
     YogNativeFunction_exec_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
-
-    RETURN_VOID(env);
 }
 
 static YogVal
-YogNativeInstanceMethod_call(YogEnv* env, YogVal callee, uint8_t posargc, YogVal posargs[], uint8_t kwargc, YogVal kwargs[], YogVal vararg, YogVal varkwarg, YogVal blockarg)
+YogNativeInstanceMethod_call(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    SAVE_ARGS4(env, callee, vararg, varkwarg, blockarg);
-    YogVal self = YUNDEF;
-    YogVal f = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS3(env, self, f, retval);
-
-    self = PTR_AS(YogInstanceMethod, callee)->self;
-    f = PTR_AS(YogInstanceMethod, callee)->f;
-    retval = YogNativeFunction_call_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, NULL);
+    YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
+    YogHandle* self = YogHandle_register(env, obj->self);
+    YogHandle* f = YogHandle_register(env, obj->f);
+    YogVal retval = YogNativeFunction_call_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, NULL);
     error_for_multi_value(env, retval);
-
-    RETURN(env, retval);
+    return retval;
 }
 
 YogVal
@@ -834,7 +673,6 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_descr_get_executor(env, cFunction, YogFunction_exec_get_descr);
     YogClass_define_descr_get_caller(env, cFunction, YogFunction_call_get_descr);
     YogClass_define_caller(env, cFunction, YogFunction_call);
-    YogClass_define_caller2(env, cFunction, YogFunction_call2);
     YogClass_define_executor(env, cFunction, YogFunction_exec);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cFunction, pkg, (name), (f)); \
@@ -859,32 +697,6 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
 }
 
 YogVal
-YogCallable_call_2(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[])
-{
-    YogVal klass = YogVal_get_class(env, self->val);
-    Caller2 call = PTR_AS(YogClass, klass)->call2;
-    YOG_ASSERT(env, call != NULL, "uncallable");
-    return call(env, self, argc, args, 0, NULL, NULL, NULL, NULL);
-}
-
-YogVal
-YogCallable_call(YogEnv* env, YogVal self, uint_t argc, YogVal* args)
-{
-    SAVE_ARG(env, self);
-    YogVal klass = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, klass, retval);
-
-    klass = YogVal_get_class(env, self);
-    Caller call = PTR_AS(YogClass, klass)->call;
-    YOG_ASSERT(env, call != NULL, "uncallable");
-
-    retval = call(env, self, argc, args, 0, NULL, YUNDEF, YUNDEF, YUNDEF);
-
-    RETURN(env, retval);
-}
-
-YogVal
 YogCallable_call1(YogEnv* env, YogVal self, YogVal arg0)
 {
     SAVE_ARGS2(env, self, arg0);
@@ -899,20 +711,33 @@ YogCallable_call1(YogEnv* env, YogVal self, YogVal arg0)
 }
 
 YogVal
-YogCallable_call2(YogEnv* env, YogVal self, uint_t argc, YogVal* args, YogVal block)
+YogCallable_call_with_block(YogEnv* env, YogVal self, uint_t argc, YogVal* args, YogVal block)
 {
-    SAVE_ARGS2(env, self, block);
-    YogVal klass = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, klass, retval);
+    YogHandleScope scope;
+    YogHandleScope_open(env, &scope);
 
-    klass = YogVal_get_class(env, self);
+    YogVal klass = YogVal_get_class(env, self);
     Caller call = PTR_AS(YogClass, klass)->call;
     YOG_ASSERT(env, call != NULL, "uncallable");
 
-    retval = call(env, self, argc, args, 0, NULL, YUNDEF, YUNDEF, block);
+    YogHandle* h_self = YogHandle_register(env, self);
+    YogHandle* h_args[argc];
+    uint_t i;
+    for (i = 0; i < argc; i++) {
+        h_args[i] = YogHandle_register(env, args[i]);
+    }
+    YogHandle* h_block = IS_UNDEF(block) ? NULL : YogHandle_register(env, block);
+    YogVal val = call(env, h_self, argc, h_args, 0, NULL, NULL, NULL, h_block);
 
-    RETURN(env, retval);
+    YogHandleScope_close(env);
+
+    return val;
+}
+
+YogVal
+YogCallable_call(YogEnv* env, YogVal self, uint_t argc, YogVal* args)
+{
+    return YogCallable_call_with_block(env, self, argc, args, YUNDEF);
 }
 
 /**

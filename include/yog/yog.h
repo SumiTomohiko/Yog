@@ -129,6 +129,10 @@ struct YogHandle {
 
 typedef struct YogHandle YogHandle;
 
+#define HDL_AS(type, h) PTR_AS(type, (h)->val)
+#define HDL2VAL(h)      (h)->val
+#define NULL2UNDEF(h)   ((h) != NULL ? HDL2VAL((h)) : YUNDEF)
+
 struct YogHandleScope {
     uint_t used_num;
     struct YogHandle* pos;

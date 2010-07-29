@@ -757,7 +757,7 @@ YogEval_call_method_id2(YogEnv* env, YogVal receiver, ID method, uint_t argc, Yo
 
     attr = YogVal_get_attr(env, receiver, method);
     YOG_ASSERT(env, IS_PTR(attr), "Attribute isn't object.");
-    retval = YogCallable_call2(env, attr, argc, args, blockarg);
+    retval = YogCallable_call_with_block(env, attr, argc, args, blockarg);
 
     RETURN(env, retval);
 }

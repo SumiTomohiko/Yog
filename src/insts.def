@@ -101,16 +101,7 @@ inst call_function
         YogError_raise_TypeError(env, "%C is not callable", callee);
     }
 
-    YogVal v_args[argc];
-    for (i = 0; i < argc; i++) {
-        v_args[i] = args[i]->val;
-    }
-    YogVal v_kwargs[2 * kwargc];
-    for (i = 0; i < 2 * kwargc; i++) {
-        v_kwargs[2 * i] = kwargs[2 * i]->val;
-        v_kwargs[2 * i + 1] = kwargs[2 * i + 1]->val;
-    }
-    PTR_AS(YogClass, klass)->exec(env, callee->val, argc, v_args, kwargc, v_kwargs, vararg->val, varkwarg->val, blockarg->val);
+    PTR_AS(YogClass, klass)->exec(env, callee, argc, args, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 inst load_global
