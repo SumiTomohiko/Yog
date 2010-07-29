@@ -113,7 +113,7 @@ YogMarkSweep_new(YogEnv* env, size_t threshold)
     heap->threshold = threshold;
     heap->allocated_size = 0;
 
-    return heap;
+    return (YogHeap*)heap;
 }
 
 void

@@ -278,6 +278,11 @@ get_attr(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
         const char* msg = "attribute name must be stringo or symbol";
         YogError_raise_TypeError(env, msg);
         /* NOTREACHED */
+        /**
+         * gcc complains "‘id’ may be used uninitialized in this function"
+         * without the following assignment.
+         */
+        id = 0;
     }
 
     val = YogVal_get_attr(env, self, id);

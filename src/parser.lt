@@ -322,6 +322,7 @@ static void yy_destructor(
   YYCODETYPE yymajor,     /* Type code for object to destroy */
   YYMINORTYPE *yypminor   /* The object to be destroyed */
 ){
+#if 0
   ParseARG_FETCH;
   switch( yymajor ){
     /* Here is inserted the actions which take place when a
@@ -337,6 +338,7 @@ static void yy_destructor(
 %%
     default:  break;   /* If no destructor action specified: do nothing */
   }
+#endif
 }
 
 /*

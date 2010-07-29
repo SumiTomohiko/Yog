@@ -1218,7 +1218,6 @@ read_encoding(YogEnv* env, YogVal lexer)
             continue;
         }
 
-        ID id = YogString_intern(env, coding);
         val = YogDict_get(env, env->vm->encodings, coding);
         if (IS_UNDEF(val)) {
             continue;

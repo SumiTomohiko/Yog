@@ -1513,7 +1513,11 @@ decide_auto_var_type(YogEnv* env, ID name, YogVal var, YogVal tbl, uint_t* pinde
 
     if (ctx == CTX_BLOCK) {
         uint_t level;
-        uint_t index;
+        /**
+         * gcc complains that "'index' may be used uninitialized in this
+         * function".
+         */
+        uint_t index = 0;
         Context outer_ctx;
         if (!search_block_var_local_scope(env, name, outer, &level, &index, &outer_ctx)) {
             Var_set_global(env, var);
