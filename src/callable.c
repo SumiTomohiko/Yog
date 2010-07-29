@@ -279,8 +279,7 @@ YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
 static void
 YogFunction_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    YogHandle* receiver = YogHandle_register(env, YUNDEF);
-    YogFunction_exec_for_instance(env, callee, receiver, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    YogFunction_exec_for_instance(env, callee, NULL, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static YogVal
@@ -294,8 +293,7 @@ YogFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
 static YogVal
 YogFunction_call(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    YogHandle* undef = YogHandle_register(env, YUNDEF);
-    return YogFunction_call_for_instance(env, callee, undef, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    return YogFunction_call_for_instance(env, callee, NULL, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static void
@@ -476,8 +474,7 @@ YogNativeFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* s
 static void
 YogNativeFunction_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    YogHandle* undef = YogHandle_register(env, YUNDEF);
-    YogNativeFunction_exec_for_instance(env, callee, undef, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    YogNativeFunction_exec_for_instance(env, callee, NULL, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static void
