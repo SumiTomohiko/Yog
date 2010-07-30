@@ -112,7 +112,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
         for (i = 0; i < argc; i++) {
             STORE_LOCAL(env, frame, args_offset + i, posargs[i]->val);
         }
-        if (PTR_AS(YogArgInfo, arg_info)->varargc != 1) {
+        if (HDL_AS(YogArgInfo, arg_info)->varargc != 1) {
             raise_wrong_num_args(env, self->val, posargc);
         }
         YogHandle* array = YogHandle_register(env, YogArray_new(env));
