@@ -206,7 +206,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
 
     uint_t required_argc = HDL_AS(YogArgInfo, arg_info)->required_argc;
     for (i = 0; i < required_argc; i++) {
-        YogVal val = SCRIPT_FRAME_LOCALS(frame)[args_offset + i];
+        YogVal val = SCRIPT_FRAME_LOCALS(HDL2VAL(frame))[args_offset + i];
         check_arg_assigned(env, self->val, val, posargc);
     }
 }
