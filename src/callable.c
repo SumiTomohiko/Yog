@@ -252,7 +252,7 @@ YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
     uint_t args_offset;
     if (HDL_AS(YogFunction, callee)->needs_self) {
         uint_t pos = HDL_AS(YogScriptFrame, frame)->stack_capacity;
-        YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), locals_etc[pos], HDL2VAL(self));
+        YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), locals_etc[pos], NULL2UNDEF(self));
         args_offset = 1;
     }
     else {
