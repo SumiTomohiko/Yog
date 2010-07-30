@@ -129,8 +129,8 @@ struct YogHandle {
 
 typedef struct YogHandle YogHandle;
 
-#define HDL_AS(type, h) PTR_AS(type, (h)->val)
 #define HDL2VAL(h)      (h)->val
+#define HDL_AS(type, h) PTR_AS(type, HDL2VAL((h)))
 #define NULL2UNDEF(h)   ((h) != NULL ? HDL2VAL((h)) : YUNDEF)
 
 struct YogHandleScope {
