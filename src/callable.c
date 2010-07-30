@@ -87,10 +87,11 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
     YOG_ASSERT(env, IS_PTR(self->val), "invalid self (0x%x)", self);
     YOG_ASSERT(env, BASIC_OBJ_TYPE(self->val) == TYPE_FUNCTION, "invalid type self (0x%x)", BASIC_OBJ_TYPE(self->val));
     YogVal code = HDL_AS(YogFunction, self)->code;
-    YogHandle* arg_info = YogHandle_register(env, PTR_AS(YogCode, code)->arg_info);
-    if (!IS_PTR(arg_info->val)) {
+    YogVal a = PTR_AS(YogCode, code)->arg_info;
+    if (!IS_PTR(a)) {
         return;
     }
+    YogHandle* arg_info = YogHandle_register(env, a);
 
     YogHandle* kw = YogHandle_register(env, YUNDEF);
     uint_t arg_kwargc = HDL_AS(YogArgInfo, arg_info)->kwargc;
@@ -251,7 +252,7 @@ YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
     uint_t args_offset;
     if (HDL_AS(YogFunction, callee)->needs_self) {
         uint_t pos = HDL_AS(YogScriptFrame, frame)->stack_capacity;
-        YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), locals_etc[pos], self->val);
+        YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), locals_etc[pos], HDL2VAL(self));
         args_offset = 1;
     }
     else {
@@ -261,7 +262,7 @@ YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
 
     YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), globals, HDL_AS(YogFunction, callee)->globals);
     YogVal outer_frame = HDL_AS(YogFunction, callee)->outer_frame;
-    fill_outer_frames(env, frame->val, outer_frame, depth);
+    fill_outer_frames(env, HDL2VAL(frame), outer_frame, depth);
 
     YogVal frame_to_long_return = HDL_AS(YogFunction, callee)->frame_to_long_return;
     YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), frame_to_long_return, IS_PTR(frame_to_long_return) ? frame_to_long_return : env->frame);
@@ -273,7 +274,7 @@ YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
     PTR_AS(YogScriptFrame, frame)->name = HDL_AS(YogFunction, callee)->name;
 
     YogGC_UPDATE_PTR(env, HDL_AS(YogFrame, frame), prev, env->frame);
-    env->frame = frame->val;
+    env->frame = HDL2VAL(frame);
 }
 
 static void
