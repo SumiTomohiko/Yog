@@ -17,6 +17,7 @@ YOG_EXPORT YogVal YogEval_call_method_id(YogEnv*, YogVal, ID, uint_t, YogVal*);
 YOG_EXPORT YogVal YogEval_call_method_id2(YogEnv*, YogVal, ID, uint_t, YogVal*, YogVal);
 YOG_EXPORT YogVal YogEval_eval_file(YogEnv*, FILE*, const char*, const char*);
 YOG_EXPORT void YogEval_eval_package(YogEnv*, YogVal, YogVal);
+YOG_EXPORT void YogEval_longjmp(YogEnv*, int);
 YOG_EXPORT YogVal YogEval_mainloop(YogEnv*);
 YOG_EXPORT void YogEval_push_finish_frame(YogEnv*);
 YOG_EXPORT void YogEval_push_returned_multi_value(YogEnv*, YogVal);

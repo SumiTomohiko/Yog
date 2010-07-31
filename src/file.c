@@ -7,6 +7,7 @@
 #include "yog/class.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/file.h"
 #include "yog/get_args.h"
 #include "yog/object.h"
@@ -204,22 +205,21 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         RETURN(env, file);
     }
 
-    SAVE_CURRENT_STAT(env, open);
-
     YogJmpBuf jmpbuf;
-    int_t status;
-    if ((status = setjmp(jmpbuf.buf)) == 0) {
+    int_t status = setjmp(jmpbuf.buf);
+    if (status == 0) {
+        INIT_JMPBUF(env, jmpbuf);
         PUSH_JMPBUF(env->thread, jmpbuf);
+
         retval = YogCallable_call1(env, block, file);
         do_close(env, file);
+
         POP_JMPBUF(env);
-    }
-    else {
-        RESTORE_STAT(env, open);
-        do_close(env, file);
-        LONGJMP(env, status);
+        RETURN(env, retval);
     }
 
+    do_close(env, file);
+    YogEval_longjmp(env, status);
     RETURN(env, retval);
 }
 

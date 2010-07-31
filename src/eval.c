@@ -469,61 +469,33 @@ dump_frame(YogEnv* env)
 }
 #endif
 
-static void
-long_jump_current_frame(YogEnv* env)
+void
+YogEval_longjmp(YogEnv* env, int status)
 {
-    YogVal frame = env->frame;
-    while (IS_PTR(frame = PTR_AS(YogFrame, frame)->prev)) {
-        YogFrameType type = PTR_AS(YogFrame, frame)->type;
-        switch (type) {
-        case FRAME_SCRIPT:
-            break;
-        case FRAME_C:
-            env->frame = frame;
-            return;
-            break;
-        case FRAME_FINISH:
-            env->frame = PTR_AS(YogFrame, frame)->prev;
-            return;
-            break;
-        default:
-            YOG_BUG(env, "invalid frame type (0x%x)", type);
-            break;
-        }
-    }
+    YogJmpBuf* buf = PTR_AS(YogThread, env->thread)->jmp_buf_list;
+    POP_JMPBUF(env);
 
-    YOG_BUG(env, "can't long jump current frame");
+    env->frame = HDL2VAL(buf->frame);
+    env->handles->scope = buf->scope;
+    env->locals->body = buf->locals;
+    longjmp(buf->buf, status);
+    /* NOTREACHED */
 }
 
 static void
 long_jump(YogEnv* env, uint_t depth, int_t status, YogVal target_frame)
 {
-    SAVE_ARG(env, target_frame);
-    YogVal objs = YUNDEF;
-    PUSH_LOCAL(env, objs);
+    YogHandle* h_target_frame = YogHandle_register(env, target_frame);
 
-    objs = make_jmp_val(env, depth);
+    YogHandle* objs = YogHandle_register(env, make_jmp_val(env, depth));
     detect_orphan(env, status, target_frame);
 
     YogVal thread = env->thread;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogThread, thread), jmp_val, objs);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogThread, thread), frame_to_long_jump, target_frame);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogThread, thread), jmp_val, HDL2VAL(objs));
+    YogGC_UPDATE_PTR(env, PTR_AS(YogThread, thread), frame_to_long_jump, HDL2VAL(h_target_frame));
 
-    RESTORE_LOCALS(env);
-    longjmp(PTR_AS(YogThread, thread)->jmp_buf_list->buf, status);
+    YogEval_longjmp(env, status);
     /* NOTREACHED */
-}
-
-static void
-jump_to_prev_buf(YogEnv* env, int status)
-{
-    long_jump_current_frame(env);
-
-    POP_JMPBUF(env);
-    YogJmpBuf* list = PTR_AS(YogThread, env->thread)->jmp_buf_list;
-    if (list != NULL) {
-        longjmp(list->buf, status);
-    }
 }
 
 static YogVal
@@ -549,28 +521,14 @@ YogEval_mainloop(YogEnv* env)
     YogHandleScope outer_scope;
     YogHandleScope_OPEN(env, &outer_scope);
 
-    YogJmpBuf jmpbuf;
-    PUSH_JMPBUF(env->thread, jmpbuf);
-    SAVE_CURRENT_STAT(env, mainloop);
-
     YogHandleScope inner_scope;
-    int_t status;
-    if ((status = setjmp(jmpbuf.buf)) == 0) {
+    YogJmpBuf jmpbuf;
+    int_t status = setjmp(jmpbuf.buf);
+    if (status == 0) {
+        INIT_JMPBUF(env, jmpbuf);
+        PUSH_JMPBUF(env->thread, jmpbuf);
     }
     else {
-        YogVal thread = env->thread;
-        PTR_AS(YogThread, thread)->jmp_buf_list = mainloop_jmpbuf;
-        PTR_AS(YogThread, thread)->env = env;
-        env->locals->body = mainloop_locals;
-        YogHandleScope* scope = env->handles->scope;
-        while (scope != mainloop_scope) {
-            YogHandleScope* next = scope->next;
-            YogHandleScope_close(env);
-            scope = next;
-        }
-
-        env->frame = HDL2VAL(mainloop_cur_frame);
-
         switch (status) {
         case JMP_RAISE:
             {
@@ -583,9 +541,7 @@ YogEval_mainloop(YogEnv* env)
                     }
                 }
                 if (!found) {
-                    jump_to_prev_buf(env, status);
-                    YogError_print_stacktrace(env);
-                    return INT2VAL(-1);
+                    YogEval_longjmp(env, status);
                 }
             }
             break;
@@ -598,8 +554,7 @@ YogEval_mainloop(YogEnv* env)
                     YogFrameType type = PTR_AS(YogFrame, frame)->type;
                     switch (type) {
                     case FRAME_C:
-                        jump_to_prev_buf(env, status);
-                        YOG_BUG(env, "no destination to longjmp");
+                        YogEval_longjmp(env, status);
                         break;
                     case FRAME_SCRIPT:
                         {

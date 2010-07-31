@@ -610,25 +610,17 @@ compare_val(YogEnv* env, YogVal a, YogVal b)
     YogVal val = YUNDEF;
     PUSH_LOCAL(env, val);
 
-    SAVE_CURRENT_STAT(env, compare);
-
     YogJmpBuf jmpbuf;
-    int_t status;
-    if ((status = setjmp(jmpbuf.buf)) == 0) {
-        PUSH_JMPBUF(env->thread, jmpbuf);
-        val = YogEval_call_method1(env, a, "==", b);
-        POP_JMPBUF(env);
-    }
-    else {
-        RESTORE_STAT(env, compare);
+    int_t status = setjmp(jmpbuf.buf);
+    if (status != 0) {
         RETURN(env, FALSE);
     }
+    INIT_JMPBUF(env, jmpbuf);
+    PUSH_JMPBUF(env->thread, jmpbuf);
+    val = YogEval_call_method1(env, a, "==", b);
+    POP_JMPBUF(env);
 
-    if (YOG_TEST(val)) {
-        RETURN(env, TRUE);
-    }
-
-    RETURN(env, FALSE);
+    RETURN(env, YOG_TEST(val) ? TRUE : FALSE);
 }
 
 static int_t

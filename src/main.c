@@ -107,10 +107,7 @@ yog_main(YogEnv* env, int_t argc, char* argv[])
         fprintf(stderr, "can't open file \"%s\": %s\n", filename, errmsg);
         return;
     }
-    YogHandleScope scope;
-    YogHandleScope_OPEN(env, &scope);
     YogEval_eval_file(env, fp, filename, MAIN_MODULE_NAME);
-    YogHandleScope_close(env);
     fclose(fp);
 }
 
@@ -233,12 +230,14 @@ main(int_t argc, char* argv[])
     env_guard.vals[2] = &main_thread;
     env_guard.vals[3] = NULL;
     PUSH_LOCAL_TABLE(&env, env_guard);
-    SAVE_LOCALS(&env);
 
     YogJmpBuf jmpbuf;
-    int_t status;
-    if ((status = setjmp(jmpbuf.buf)) == 0) {
-        PUSH_JMPBUF(main_thread, jmpbuf);
+    int_t status = setjmp(jmpbuf.buf);
+    if (status == 0) {
+        YogHandleScope scope;
+        YogHandleScope_OPEN(&env, &scope);
+        INIT_JMPBUF(&env, jmpbuf);
+        PUSH_JMPBUF(env.thread, jmpbuf);
 
         uint_t yog_argc = argc - optind;
         char** yog_argv = &argv[optind];
@@ -247,10 +246,11 @@ main(int_t argc, char* argv[])
 
         enable_gc_stress(&vm, gc_stress_level, 1);
         yog_main(&env, yog_argc, yog_argv);
+
+        POP_JMPBUF(&env);
+        YogHandleScope_close(&env);
     }
     else {
-        RESTORE_LOCALS(&env);
-        PTR_AS(YogThread, main_thread)->env = &env;
         YogError_print_stacktrace(&env);
     }
 

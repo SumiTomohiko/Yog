@@ -61,13 +61,7 @@ void
 YogError_raise(YogEnv* env, YogVal exc)
 {
     YogVal thread = env->thread;
-    YogVal jmp_val = YUNDEF;
-    if (IS_UNDEF(exc)) {
-        jmp_val = PTR_AS(YogThread, thread)->jmp_val;
-    }
-    else {
-        jmp_val = exc;
-    }
+    YogVal jmp_val = IS_UNDEF(exc) ? PTR_AS(YogThread, thread)->jmp_val : exc;
     YOG_ASSERT(env, !IS_UNDEF(jmp_val), "jmp_val is undefined.");
 
     YogGC_UPDATE_PTR(env, PTR_AS(YogThread, thread), jmp_val, jmp_val);

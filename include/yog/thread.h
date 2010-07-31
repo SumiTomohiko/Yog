@@ -16,8 +16,12 @@ enum YogJmpStatus {
 typedef enum YogJmpStatus YogJmpStatus;
 
 struct YogJmpBuf {
-    jmp_buf buf;
     struct YogJmpBuf* prev;
+
+    jmp_buf buf;
+    YogHandle* frame;
+    YogHandleScope* scope;
+    YogLocals* locals;
 };
 
 typedef struct YogJmpBuf YogJmpBuf;
@@ -59,36 +63,18 @@ typedef struct YogThread YogThread;
 DECL_AS_TYPE(YogThread_new);
 #define TYPE_THREAD TO_TYPE(YogThread_new)
 
+#define INIT_JMPBUF(env, jmpbuf) do { \
+    (jmpbuf).frame = YogHandle_register((env), (env)->frame); \
+    (jmpbuf).scope = (env)->handles->scope; \
+    (jmpbuf).locals = (env)->locals->body; \
+} while (0)
 #define PUSH_JMPBUF(thread, jmpbuf)     do { \
     jmpbuf.prev = PTR_AS(YogThread, (thread))->jmp_buf_list; \
     PTR_AS(YogThread, (thread))->jmp_buf_list = &jmpbuf; \
 } while (0)
 #define POP_JMPBUF(env)     do { \
-    YogJmpBuf* prev = PTR_AS(YogThread, env->thread)->jmp_buf_list->prev; \
-    PTR_AS(YogThread, env->thread)->jmp_buf_list = prev; \
-} while (0)
-#define LONGJMP(env, status)    do { \
-    YogJmpBuf* list = PTR_AS(YogThread, env->thread)->jmp_buf_list; \
-    YOG_ASSERT(env, list != NULL, "no longjmp destination"); \
-    longjmp(list->buf, status); \
-} while (0)
-
-#define SAVE_CURRENT_STAT(env, name)    \
-    YogHandle* name##_cur_frame = YogHandle_register((env), (env)->frame); \
-    YogLocals* name##_locals = (env)->locals->body; \
-    YogJmpBuf* name##_jmpbuf = PTR_AS(YogThread, (env)->thread)->jmp_buf_list; \
-    YogHandleScope* name##_scope = (env)->handles->scope
-#define RESTORE_STAT(env, name) do { \
-    PTR_AS(YogThread, (env)->thread)->jmp_buf_list = name##_jmpbuf; \
-    PTR_AS(YogThread, (env)->thread)->env = (env); \
-    (env)->locals->body = name##_locals; \
-    env->frame = HDL2VAL(name##_cur_frame); \
-    YogHandleScope* scope = env->handles->scope; \
-    while (scope != name##_scope) { \
-        YogHandleScope* next = scope->next; \
-        YogHandleScope_close(env); \
-        scope = next; \
-    } \
+    YogJmpBuf* prev = PTR_AS(YogThread, (env)->thread)->jmp_buf_list->prev; \
+    PTR_AS(YogThread, (env)->thread)->jmp_buf_list = prev; \
 } while (0)
 
 /* PROTOTYPE_START */
