@@ -394,7 +394,7 @@ static void
 keep_locals_list(YogEnv* env, YogLocals* list, ObjectKeeper keeper, void* heap)
 {
     while (list != NULL) {
-        DEBUG(TRACE("list=%p, list->filename=\"%s\", list->lineno=%u, list->next=%p", list, list->filename, list->lineno, list->next));
+        DEBUG(TRACE("list=%p, list->filename=\"%s\", list->lineno=%u, list->num_vals=%u, list->next=%p", list, list->filename, list->lineno, list->num_vals, list->next));
         keep_locals(env, list, keeper, heap);
         list = list->next;
     }

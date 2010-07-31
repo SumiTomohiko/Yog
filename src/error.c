@@ -65,7 +65,8 @@ YogError_raise(YogEnv* env, YogVal exc)
     YOG_ASSERT(env, !IS_UNDEF(jmp_val), "jmp_val is undefined.");
 
     YogGC_UPDATE_PTR(env, PTR_AS(YogThread, thread), jmp_val, jmp_val);
-    longjmp(PTR_AS(YogThread, thread)->jmp_buf_list->buf, JMP_RAISE);
+    YogEval_longjmp(env, JMP_RAISE);
+    /* NOTREACHED */
 }
 
 static void
