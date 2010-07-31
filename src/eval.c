@@ -475,6 +475,12 @@ YogEval_longjmp(YogEnv* env, int status)
     YogJmpBuf* buf = PTR_AS(YogThread, env->thread)->jmp_buf_list;
     POP_JMPBUF(env);
 
+    YogHandleScope* scope = env->handles->scope;
+    while (scope != buf->scope) {
+        YogHandleScope_close(env);
+        scope = scope->next;
+    }
+
     env->frame = HDL2VAL(buf->frame);
     env->handles->scope = buf->scope;
     env->locals->body = buf->locals;
