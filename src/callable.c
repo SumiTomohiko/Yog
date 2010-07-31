@@ -712,7 +712,7 @@ YogVal
 YogCallable_call_with_block(YogEnv* env, YogVal self, uint_t argc, YogVal* args, YogVal block)
 {
     YogHandleScope scope;
-    YogHandleScope_open(env, &scope);
+    YogHandleScope_OPEN(env, &scope);
 
     YogVal klass = YogVal_get_class(env, self);
     Caller call = PTR_AS(YogClass, klass)->call;

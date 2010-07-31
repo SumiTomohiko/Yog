@@ -74,8 +74,7 @@ DECL_AS_TYPE(YogThread_new);
 } while (0)
 
 #define SAVE_CURRENT_STAT(env, name)    \
-    YogVal name##_cur_frame = env->frame; \
-    PUSH_LOCAL((env), name##_cur_frame); \
+    YogHandle* name##_cur_frame = YogHandle_register((env), (env)->frame); \
     YogLocals* name##_locals = (env)->locals->body; \
     YogJmpBuf* name##_jmpbuf = PTR_AS(YogThread, (env)->thread)->jmp_buf_list; \
     YogHandleScope* name##_scope = (env)->handles->scope
@@ -83,7 +82,7 @@ DECL_AS_TYPE(YogThread_new);
     PTR_AS(YogThread, (env)->thread)->jmp_buf_list = name##_jmpbuf; \
     PTR_AS(YogThread, (env)->thread)->env = (env); \
     (env)->locals->body = name##_locals; \
-    env->frame = name##_cur_frame; \
+    env->frame = HDL2VAL(name##_cur_frame); \
     YogHandleScope* scope = env->handles->scope; \
     while (scope != name##_scope) { \
         YogHandleScope* next = scope->next; \

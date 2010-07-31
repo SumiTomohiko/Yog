@@ -302,7 +302,7 @@ thread_main(void* arg)
     env.locals = &locals;
     SAVE_LOCALS(&env);
     PTR_AS(YogThread, thread)->env = &env;
-    YogLocals locals0;
+    DECL_LOCALS(locals0);
     locals0.num_vals = 3;
     locals0.size = 1;
     locals0.vals[0] = &env.thread;

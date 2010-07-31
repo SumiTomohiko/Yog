@@ -53,6 +53,7 @@
 #include "yog/float.h"
 #include "yog/gc.h"
 #include "yog/gc/bdw.h"
+#include "yog/handle.h"
 #include "yog/misc.h"
 #include "yog/module.h"
 #include "yog/nil.h"
@@ -333,19 +334,18 @@ alloc_skelton_pkg(YogEnv* env, YogVM* vm)
 void
 YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
 {
-    SAVE_LOCALS(env);
-    YogVal builtins = YUNDEF;
-    PUSH_LOCAL(env, builtins);
+    YogHandleScope scope;
+    YogHandleScope_OPEN(env, &scope);
 
     setup_symbol_tables(env, vm);
     setup_basic_classes(env, vm);
-    builtins = alloc_skelton_pkg(env, vm);
-    setup_classes(env, vm, builtins);
-    YogPackage_init(env, builtins, TYPE_PACKAGE);
+    YogHandle* builtins = YogHandle_register(env, alloc_skelton_pkg(env, vm));
+    setup_classes(env, vm, HDL2VAL(builtins));
+    YogPackage_init(env, HDL2VAL(builtins), TYPE_PACKAGE);
     set_main_thread_class(env, vm);
-    YogException_define_classes(env, builtins);
-    YogObject_boot(env, vm->cObject, builtins);
-    YogClass_boot(env, vm->cClass, builtins);
+    YogException_define_classes(env, HDL2VAL(builtins));
+    YogObject_boot(env, vm->cObject, HDL2VAL(builtins));
+    YogClass_boot(env, vm->cClass, HDL2VAL(builtins));
 
     vm->pkgs = YogTable_new_symbol_table(env);
 
@@ -354,13 +354,13 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
 
     vm->finish_code = YogCompiler_compile_finish_code(env);
 
-    setup_builtins(env, vm, builtins, argc, argv);
+    setup_builtins(env, vm, HDL2VAL(builtins), argc, argv);
     YogArray_eval_builtin_script(env, vm->cArray);
     YogDict_eval_builtin_script(env, vm->cDict);
     YogObject_eval_builtin_script(env, vm->cObject);
     YogString_eval_builtin_script(env, vm->cString);
 
-    RETURN_VOID(env);
+    YogHandleScope_close(env);
 }
 
 static void
@@ -394,7 +394,7 @@ static void
 keep_locals_list(YogEnv* env, YogLocals* list, ObjectKeeper keeper, void* heap)
 {
     while (list != NULL) {
-        DEBUG(TRACE("list=%p, list->next=%p", list, list->next));
+        DEBUG(TRACE("list=%p, list->filename=\"%s\", list->lineno=%u, list->next=%p", list, list->filename, list->lineno, list->next));
         keep_locals(env, list, keeper, heap);
         list = list->next;
     }

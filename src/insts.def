@@ -384,6 +384,7 @@ inst finish
     YogThread_put_finish_frame(env, env->thread, env->frame);
     env->frame = prev_frame;
     YogHandleScope_close(env);
+    YogHandleScope_close(env);
     return val;
 }
 

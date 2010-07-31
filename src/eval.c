@@ -546,11 +546,14 @@ YogEval_mainloop(YogEnv* env)
 #define PC          (SCRIPT_FRAME(CUR_FRAME)->pc)
 #undef CODE
 #define CODE        PTR_AS(YogCode, SCRIPT_FRAME(CUR_FRAME)->code)
+    YogHandleScope outer_scope;
+    YogHandleScope_OPEN(env, &outer_scope);
+
     YogJmpBuf jmpbuf;
     PUSH_JMPBUF(env->thread, jmpbuf);
     SAVE_CURRENT_STAT(env, mainloop);
 
-    YogHandleScope scope;
+    YogHandleScope inner_scope;
     int_t status;
     if ((status = setjmp(jmpbuf.buf)) == 0) {
     }
@@ -566,13 +569,7 @@ YogEval_mainloop(YogEnv* env)
             scope = next;
         }
 
-        YogVal frame = env->frame;
-        if (PTR_AS(YogFrame, frame)->type == FRAME_C) {
-            do {
-                frame = PTR_AS(YogFrame, frame)->prev;
-            } while (PTR_AS(YogFrame, frame)->type == FRAME_C);
-            env->frame = frame;
-        }
+        env->frame = HDL2VAL(mainloop_cur_frame);
 
         switch (status) {
         case JMP_RAISE:
@@ -655,7 +652,7 @@ YogEval_mainloop(YogEnv* env)
     YogCode_dump(env, (YogVal)(CODE));
 #endif
     while (PC < PTR_AS(YogByteArray, CODE->insts)->size) {
-        YogHandleScope_open(env, &scope);
+        YogHandleScope_OPEN(env, &inner_scope);
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define JUMP(m)         PC = m;
         OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];

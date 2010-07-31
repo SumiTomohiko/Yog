@@ -138,6 +138,8 @@ struct YogHandleScope {
     struct YogHandle* pos;
     struct YogHandle* last;
     struct YogHandleScope* next;
+    const char* filename;
+    uint_t lineno;
 };
 
 typedef struct YogHandleScope YogHandleScope;
@@ -270,7 +272,7 @@ typedef struct YogEnv YogEnv;
     PUSH_LOCALS4(env, x, y, z, t); \
     PUSH_LOCALS4(env, u, v, w, p)
 #define PUSH_LOCALSX(env, num, x) \
-    YogLocals __locals_##x##__; \
+    DECL_LOCALS(__locals_##x##__); \
     __locals_##x##__.num_vals = 1; \
     __locals_##x##__.size = (num); \
     __locals_##x##__.vals[0] = (x); \

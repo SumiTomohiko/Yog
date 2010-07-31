@@ -205,7 +205,7 @@ coroutine_main(MAIN_PARAM)
 #endif
     SAVE_LOCALS(&coroutine_env);
     PTR_AS(YogThread, thread)->env = &coroutine_env;
-    YogLocals locals;
+    DECL_LOCALS(locals);
     locals.num_vals = 4;
     locals.size = 1;
     locals.vals[0] = &self;

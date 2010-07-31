@@ -33,7 +33,7 @@ YogHandle_register(YogEnv* env, YogVal val)
 }
 
 static inline void
-YogHandleScope_open(YogEnv* env, YogHandleScope* self)
+YogHandleScope_open(YogEnv* env, YogHandleScope* self, const char* filename, uint_t lineno)
 {
     YogHandle_sync_scope_with_env(env);
 
@@ -41,9 +41,15 @@ YogHandleScope_open(YogEnv* env, YogHandleScope* self)
     self->used_num = 0;
     env->pos = env->last = NULL;
 
+    self->filename = filename;
+    self->lineno = lineno;
+
     self->next = handles->scope;
     handles->scope = self;
 }
+
+#define YogHandleScope_OPEN(env, scope) \
+    YogHandleScope_open((env), (scope), __FILE__, __LINE__)
 
 static inline void
 YogHandleScope_close(YogEnv* env)

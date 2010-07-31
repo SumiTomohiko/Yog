@@ -108,7 +108,7 @@ yog_main(YogEnv* env, int_t argc, char* argv[])
         return;
     }
     YogHandleScope scope;
-    YogHandleScope_open(env, &scope);
+    YogHandleScope_OPEN(env, &scope);
     YogEval_eval_file(env, fp, filename, MAIN_MODULE_NAME);
     YogHandleScope_close(env);
     fclose(fp);
@@ -225,7 +225,7 @@ main(int_t argc, char* argv[])
     handles.heap = locals.heap = PTR_AS(YogThread, main_thread)->heap;
     YogVM_set_main_thread(&env, &vm, main_thread);
 
-    YogLocals env_guard;
+    DECL_LOCALS(env_guard);
     env_guard.num_vals = 3;
     env_guard.size = 1;
     env_guard.vals[0] = &env.thread;
