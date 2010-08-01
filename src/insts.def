@@ -224,7 +224,7 @@ inst make_module
     set_lhs_composition(env, 1, 0, 0);
     YogVal frame = create_frame_for_names(env, h_code->val, PTR_AS(YogObj, module)->attrs);
     YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, PTR_AS(YogScriptFrame, CUR_FRAME)->globals);
-    PUSH_FRAME(frame);
+    YogEval_push_frame(env, frame);
 }
 
 inst make_class
@@ -243,7 +243,7 @@ inst make_class
     set_lhs_composition(env, 1, 0, 0);
     YogVal frame = create_frame_for_names(env, h_code->val, attrs);
     YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, PTR_AS(YogScriptFrame, CUR_FRAME)->globals);
-    PUSH_FRAME(frame);
+    YogEval_push_frame(env, frame);
 }
 
 inst ret
@@ -253,12 +253,12 @@ inst ret
 {
     move_returned_value(env, n);
 
-    YogVal prev_frame = PTR_AS(YogFrame, env->frame)->prev;
-    if (!PTR_AS(YogScriptFrame, env->frame)->used_by_func) {
-        YogScriptFrame_cleanup(env, env->frame);
-        YogThread_put_script_frame(env, env->thread, env->frame);
+    YogVal frame = env->frame;
+    YogEval_pop_frame(env);
+    if (!PTR_AS(YogScriptFrame, frame)->used_by_func) {
+        YogScriptFrame_cleanup(env, frame);
+        YogThread_put_script_frame(env, env->thread, frame);
     }
-    env->frame = prev_frame;
     PC = SCRIPT_FRAME(CUR_FRAME)->pc;
 }
 
@@ -379,10 +379,10 @@ inst finish
 ()
 {
     POP_JMPBUF(env);
-    YogVal prev_frame = PTR_AS(YogFrame, env->frame)->prev;
-    YogFinishFrame_clean(env, env->frame);
-    YogThread_put_finish_frame(env, env->thread, env->frame);
-    env->frame = prev_frame;
+    YogVal frame = env->frame;
+    YogEval_pop_frame(env);
+    YogFinishFrame_clean(env, frame);
+    YogThread_put_finish_frame(env, env->thread, frame);
     YogHandleScope_close(env);
     YogHandleScope_close(env);
     return val;

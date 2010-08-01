@@ -43,10 +43,8 @@ raise_exception(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
         exc = YogEval_call_method1(env, env->vm->eException, "new", exc);
     }
 
-    env->frame = PTR_AS(YogFrame, env->frame)->prev;
-
+    YogEval_pop_frame(env);
     YogError_raise(env, exc);
-
     /* NOTREACHED */
     RETURN(env, YNIL);
 }

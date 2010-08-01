@@ -26,13 +26,21 @@
 #include "yog/yog.h"
 
 #define DUMP_CODE(code)  YogCode_dump(env, code)
-
+/* TODO: Remove this */
 #define CUR_FRAME   env->frame
 
-#define PUSH_FRAME(f)   do { \
-    YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, (f)), prev, CUR_FRAME); \
-    CUR_FRAME = (f); \
-} while (0)
+void
+YogEval_pop_frame(YogEnv* env)
+{
+    env->frame = PTR_AS(YogFrame, env->frame)->prev;
+}
+
+void
+YogEval_push_frame(YogEnv* env, YogVal frame)
+{
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, frame), prev, env->frame);
+    env->frame = frame;
+}
 
 static YogVal
 pop(YogEnv* env)
@@ -473,18 +481,50 @@ void
 YogEval_longjmp(YogEnv* env, int status)
 {
     YogJmpBuf* buf = PTR_AS(YogThread, env->thread)->jmp_buf_list;
-    POP_JMPBUF(env);
-
     YogHandleScope* scope = env->handles->scope;
     while (scope != buf->scope) {
         YogHandleScope_close(env);
         scope = scope->next;
     }
 
-    env->frame = HDL2VAL(buf->frame);
     env->handles->scope = buf->scope;
     env->locals->body = buf->locals;
     longjmp(buf->buf, status);
+    /* NOTREACHED */
+}
+
+static void
+skip_to_c_frame(YogEnv* env)
+{
+    YogVal frame = env->frame;
+    while (IS_PTR(frame = PTR_AS(YogFrame, frame)->prev)) {
+        YogFrameType type = PTR_AS(YogFrame, frame)->type;
+        switch (type) {
+        case FRAME_SCRIPT:
+            break;
+        case FRAME_C:
+            env->frame = frame;
+            return;
+            break;
+        case FRAME_FINISH:
+            env->frame = PTR_AS(YogFrame, frame)->prev;
+            return;
+            break;
+        default:
+            YOG_BUG(env, "Invalid frame type (0x%x)", type);
+            break;
+        }
+    }
+
+    YOG_BUG(env, "Can't long jump current frame");
+}
+
+static void
+longjump_to_prev_buf(YogEnv* env, int status)
+{
+    skip_to_c_frame(env);
+    POP_JMPBUF(env);
+    YogEval_longjmp(env, status);
     /* NOTREACHED */
 }
 
@@ -518,6 +558,16 @@ create_frame_for_names(YogEnv* env, YogVal code, YogVal vars)
     RETURN(env, frame);
 }
 
+static void
+skip_c_frame(YogEnv* env)
+{
+    YogVal frame = env->frame;
+    while (PTR_AS(YogFrame, frame)->type == FRAME_C) {
+        frame = PTR_AS(YogFrame, frame)->prev;
+    }
+    env->frame = frame;
+}
+
 YogVal
 YogEval_mainloop(YogEnv* env)
 {
@@ -535,6 +585,8 @@ YogEval_mainloop(YogEnv* env)
         PUSH_JMPBUF(env->thread, jmpbuf);
     }
     else {
+        skip_c_frame(env);
+
         switch (status) {
         case JMP_RAISE:
             {
@@ -547,7 +599,7 @@ YogEval_mainloop(YogEnv* env)
                     }
                 }
                 if (!found) {
-                    YogEval_longjmp(env, status);
+                    longjump_to_prev_buf(env, status);
                 }
             }
             break;
@@ -560,7 +612,7 @@ YogEval_mainloop(YogEnv* env)
                     YogFrameType type = PTR_AS(YogFrame, frame)->type;
                     switch (type) {
                     case FRAME_C:
-                        YogEval_longjmp(env, status);
+                        longjump_to_prev_buf(env, status);
                         break;
                     case FRAME_SCRIPT:
                         {
@@ -731,7 +783,7 @@ YogEval_eval_package(YogEnv* env, YogVal pkg, YogVal code)
     YogEval_push_finish_frame(env);
     frame = create_frame_for_names(env, code, attrs);
     YogGC_UPDATE_PTR(env, PTR_AS(YogScriptFrame, frame), globals, attrs);
-    PUSH_FRAME(frame);
+    YogEval_push_frame(env, frame);
     YogEval_mainloop(env);
 
     RETURN_VOID(env);
@@ -770,8 +822,7 @@ get_finish_frame(YogEnv* env)
 void
 YogEval_push_finish_frame(YogEnv* env)
 {
-    YogVal frame = get_finish_frame(env);
-    PUSH_FRAME(frame);
+    YogEval_push_frame(env, get_finish_frame(env));
 }
 
 /**

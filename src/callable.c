@@ -273,8 +273,7 @@ YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
     }
     PTR_AS(YogScriptFrame, frame)->name = HDL_AS(YogFunction, callee)->name;
 
-    YogGC_UPDATE_PTR(env, HDL_AS(YogFrame, frame), prev, env->frame);
-    env->frame = HDL2VAL(frame);
+    YogEval_push_frame(env, HDL2VAL(frame));
 }
 
 static void
@@ -429,8 +428,7 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* s
 
     YogVal frame = YogCFrame_new(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogCFrame, frame), f, callee->val);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, frame), prev, env->frame);
-    env->frame = frame;
+    YogEval_push_frame(env, frame);
 
     YogNativeFunction* obj = HDL_AS(YogNativeFunction, callee);
     Body f = (Body)obj->f;
@@ -439,7 +437,7 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* s
         *multi_val = PTR_AS(YogCFrame, frame)->multi_val;
     }
 
-    env->frame = PTR_AS(YogFrame, env->frame)->prev;
+    YogEval_pop_frame(env);
     return retval;
 }
 

@@ -19,7 +19,6 @@ struct YogJmpBuf {
     struct YogJmpBuf* prev;
 
     jmp_buf buf;
-    YogHandle* frame;
     YogHandleScope* scope;
     YogLocals* locals;
 };
@@ -64,7 +63,6 @@ DECL_AS_TYPE(YogThread_new);
 #define TYPE_THREAD TO_TYPE(YogThread_new)
 
 #define INIT_JMPBUF(env, jmpbuf) do { \
-    (jmpbuf).frame = YogHandle_register((env), (env)->frame); \
     (jmpbuf).scope = (env)->handles->scope; \
     (jmpbuf).locals = (env)->locals->body; \
 } while (0)
