@@ -17,7 +17,7 @@ sy keyword Keyword end from import as def do class return
 sy keyword Conditional if elif else
 sy keyword Statement nonlocal
 sy keyword Repeat while next break
-sy keyword Special __FILE__ __LINE__ self
+sy keyword Special __FILE__ __LINE__ self super
 
 sy match Type "\<[A-Z][A-Za-z_0-9]*\>"
 
