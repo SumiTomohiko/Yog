@@ -436,6 +436,9 @@ static void
 keep_handles(YogEnv* env, YogHandles* handles, ObjectKeeper keeper, void* heap)
 {
     uint_t end = handles->used_num;
+    if (end == 0) {
+        return;
+    }
     YogHandleScope* scope = handles->scope;
     while (scope != NULL) {
         keep_scope1(env, handles, scope->pos, end, keeper, heap);
