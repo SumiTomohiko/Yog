@@ -96,9 +96,9 @@ inst call_function
 
     set_lhs_composition(env, left, middle, right);
 
-    YogVal klass = YogVal_get_class(env, callee->val);
+    YogVal klass = YogVal_get_class(env, HDL2VAL(callee));
     if (PTR_AS(YogClass, klass)->exec == NULL) {
-        YogError_raise_TypeError(env, "%C is not callable", callee);
+        YogError_raise_TypeError(env, "%C is not callable", HDL2VAL(callee));
     }
 
     PTR_AS(YogClass, klass)->exec(env, callee, argc, args, kwargc, kwargs, vararg, varkwarg, blockarg);
