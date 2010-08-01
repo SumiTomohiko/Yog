@@ -519,10 +519,9 @@ skip_to_c_frame(YogEnv* env)
     YOG_BUG(env, "Can't long jump current frame");
 }
 
-static void
-longjump_to_prev_buf(YogEnv* env, int status)
+void
+YogEval_longjmp_to_prev_buf(YogEnv* env, int status)
 {
-    skip_to_c_frame(env);
     POP_JMPBUF(env);
     YogEval_longjmp(env, status);
     /* NOTREACHED */
@@ -599,7 +598,8 @@ YogEval_mainloop(YogEnv* env)
                     }
                 }
                 if (!found) {
-                    longjump_to_prev_buf(env, status);
+                    skip_to_c_frame(env);
+                    YogEval_longjmp_to_prev_buf(env, status);
                 }
             }
             break;
@@ -612,7 +612,8 @@ YogEval_mainloop(YogEnv* env)
                     YogFrameType type = PTR_AS(YogFrame, frame)->type;
                     switch (type) {
                     case FRAME_C:
-                        longjump_to_prev_buf(env, status);
+                        skip_to_c_frame(env);
+                        YogEval_longjmp_to_prev_buf(env, status);
                         break;
                     case FRAME_SCRIPT:
                         {

@@ -105,10 +105,8 @@ read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 static void
 do_close(YogEnv* env, YogVal self)
 {
-    SAVE_ARG(env, self);
     fclose(PTR_AS(YogFile, self)->fp);
     PTR_AS(YogFile, self)->fp = NULL;
-    RETURN_VOID(env);
 }
 
 static YogVal
@@ -219,7 +217,7 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     }
 
     do_close(env, file);
-    YogEval_longjmp(env, status);
+    YogEval_longjmp_to_prev_buf(env, status);
     RETURN(env, retval);
 }
 
