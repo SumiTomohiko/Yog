@@ -60,6 +60,10 @@ struct Coroutine {
      * |          | | self
      * +----------+ |
      * |          | |
+     * |          | | YogHandles
+     * |          | |
+     * +----------+ |
+     * |          | |
      * |          | | YogLocalsAnchor
      * |          | |
      * +----------+ v
@@ -116,6 +120,21 @@ static YogLocalsAnchor*
 machine_stack2locals(YogEnv* env, void* stack, uint_t size)
 {
     return (YogLocalsAnchor*)((char*)stack + size - sizeof(YogLocalsAnchor));
+}
+
+static YogHandles*
+machine_stack2handles(YogEnv* env, void* stack, uint_t size)
+{
+    uintptr_t ptr = (uintptr_t)machine_stack2locals(env, stack, size);
+    return (YogHandles*)(ptr - sizeof(YogHandles));
+}
+
+static void
+register_handles(YogEnv* env, YogHandles* handles)
+{
+    YogHandles_init(handles);
+    handles->heap = PTR_AS(YogThread, env->thread)->heap;
+    YogVM_add_handles(env, env->vm, handles);
 }
 
 static void
@@ -200,6 +219,7 @@ coroutine_main(MAIN_PARAM)
     void* stack = PTR_AS(Coroutine, self)->machine_stack;
     uint_t stack_size = PTR_AS(Coroutine, self)->machine_stack_size;
     coroutine_env.locals = machine_stack2locals(env, stack, stack_size);
+    coroutine_env.handles = machine_stack2handles(env, stack, stack_size);
     coroutine_env.coroutine = self;
     coroutine_env.frame = PTR_AS(Coroutine, self)->boundary_frame;
 #endif
@@ -262,6 +282,8 @@ alloc_machine_stack(YogEnv* env, YogVal self)
     YOG_ASSERT(env, machine_stack != NULL, "malloc failed");
     YogLocalsAnchor* locals = machine_stack2locals(env, machine_stack, machine_stack_size);
     register_locals(env, locals);
+    YogHandles* handles = machine_stack2handles(env, machine_stack, machine_stack_size);
+    register_handles(env, handles);
     PTR_AS(Coroutine, self)->machine_stack = machine_stack;
 #endif
 
@@ -380,7 +402,7 @@ resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
         alloc_machine_stack(env, self);
         void* stack = PTR_AS(Coroutine, self)->machine_stack;
         uint_t size = PTR_AS(Coroutine, self)->machine_stack_size;
-        void** locals = (void**)machine_stack2locals(env, stack, size);
+        void** locals = (void**)machine_stack2handles(env, stack, size);
         locals[-1] = (void*)self;
         locals[-2] = (void*)env;
         locals[-3] = (void*)0xdeaddead;
@@ -463,6 +485,8 @@ finalize(YogEnv* env, void* ptr)
     if (machine_stack != NULL) {
         YogLocalsAnchor* locals = machine_stack2locals(env, machine_stack, coro->machine_stack_size);
         YogVM_remove_locals(env, env->vm, locals);
+        YogHandles* handles = machine_stack2handles(env, machine_stack, coro->machine_stack_size);
+        YogVM_remove_handles(env, env->vm, handles);
         free(machine_stack);
     }
 #endif
