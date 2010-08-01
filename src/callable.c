@@ -271,7 +271,7 @@ YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
     if (!IS_UNDEF(NULL2UNDEF(self))) {
         YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), klass, YogVal_get_class(env, self->val));
     }
-    PTR_AS(YogScriptFrame, frame)->name = HDL_AS(YogFunction, callee)->name;
+    HDL_AS(YogScriptFrame, frame)->name = HDL_AS(YogFunction, callee)->name;
 
     YogEval_push_frame(env, HDL2VAL(frame));
 }
