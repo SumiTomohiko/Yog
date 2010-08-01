@@ -405,16 +405,16 @@ create_positional_argument(YogEnv* env, uint8_t posargc, YogHandle* posargs[], Y
     YogHandle* args = YogHandle_register(env, YogArray_new(env));
     uint_t i;
     for (i = 0; i < posargc; i++) {
-        YogArray_push(env, args->val, posargs[i]->val);
+        YogArray_push(env, HDL2VAL(args), HDL2VAL(posargs[i]));
     }
 
     if (IS_UNDEF(NULL2UNDEF(vararg))) {
     }
-    else if (!IS_PTR(vararg->val) || (BASIC_OBJ_TYPE(vararg->val) != TYPE_ARRAY)) {
-        raise_TypeError_for_vararg(env, vararg->val);
+    else if (!IS_PTR(HDL2VAL(vararg)) || (BASIC_OBJ_TYPE(HDL2VAL(vararg)) != TYPE_ARRAY)) {
+        raise_TypeError_for_vararg(env, HDL2VAL(vararg));
     }
     else {
-        YogArray_add(env, args->val, vararg->val);
+        YogArray_add(env, HDL2VAL(args), HDL2VAL(vararg));
     }
 
     return args;
@@ -426,15 +426,15 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* s
     YogHandle* args = create_positional_argument(env, posargc, posargs, vararg);
     YogHandle* kw = create_keyword_argument(env, kwargc, kwargs, varkwarg);
 
-    YogVal frame = YogCFrame_new(env);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogCFrame, frame), f, callee->val);
-    YogEval_push_frame(env, frame);
+    YogHandle* frame = YogHandle_register(env, YogCFrame_new(env));
+    YogGC_UPDATE_PTR(env, HDL_AS(YogCFrame, frame), f, HDL2VAL(callee));
+    YogEval_push_frame(env, HDL2VAL(frame));
 
     YogNativeFunction* obj = HDL_AS(YogNativeFunction, callee);
     Body f = (Body)obj->f;
-    YogVal retval = (*f)(env, NULL2UNDEF(self), obj->pkg, args->val, NULL2UNDEF(kw), NULL2UNDEF(blockarg));
+    YogVal retval = (*f)(env, NULL2UNDEF(self), obj->pkg, HDL2VAL(args), NULL2UNDEF(kw), NULL2UNDEF(blockarg));
     if (IS_UNDEF(retval) && (multi_val != NULL)) {
-        *multi_val = PTR_AS(YogCFrame, frame)->multi_val;
+        *multi_val = HDL_AS(YogCFrame, frame)->multi_val;
     }
 
     YogEval_pop_frame(env);
