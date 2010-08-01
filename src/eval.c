@@ -534,7 +534,7 @@ long_jump(YogEnv* env, uint_t depth, int_t status, YogVal target_frame)
     YogHandle* h_target_frame = YogHandle_register(env, target_frame);
 
     YogHandle* objs = YogHandle_register(env, make_jmp_val(env, depth));
-    detect_orphan(env, status, target_frame);
+    detect_orphan(env, status, HDL2VAL(h_target_frame));
 
     YogVal thread = env->thread;
     YogGC_UPDATE_PTR(env, PTR_AS(YogThread, thread), jmp_val, HDL2VAL(objs));
