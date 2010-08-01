@@ -487,6 +487,7 @@ finalize(YogEnv* env, void* ptr)
         YogVM_remove_locals(env, env->vm, locals);
         YogHandles* handles = machine_stack2handles(env, machine_stack, coro->machine_stack_size);
         YogVM_remove_handles(env, env->vm, handles);
+        YogHandles_finalize(handles);
         free(machine_stack);
     }
 #endif
