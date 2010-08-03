@@ -183,7 +183,7 @@ typedef struct YogEnv YogEnv;
 #define SAVE_LOCALS_TO_NAME(env, name)
 #define RESTORE_LOCALS_FROM_NAME(env, name)
 #define PUSH_LOCAL_TABLE(env, tbl)
-#define DECL_LOCALS(name)
+#define DECL_LOCALS(name) YogLocals name
 #define PUSH_LOCAL(env, x)
 #define PUSH_LOCALS2(env, x, y)
 #define PUSH_LOCALS3(env, x, y, z)

@@ -142,10 +142,9 @@ void
 YogGetArgs_parse_args(YogEnv* env, const char* func_name, YogCArg* params, YogVal args, YogVal kw)
 {
     SAVE_ARGS2(env, args, kw);
-    YogVal val = YUNDEF;
     YogVal dest = YUNDEF;
     YogVal invalid_key = YUNDEF;
-    PUSH_LOCALS3(env, val, dest, invalid_key);
+    PUSH_LOCALS2(env, dest, invalid_key);
 
 #define ACCEPT_OPT_MARK(param)  do { \
     if (strcmp((param)->name, "|") == 0) { \

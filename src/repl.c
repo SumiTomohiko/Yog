@@ -29,8 +29,7 @@ eval(YogEnv* env, YogVal pkg, YogVal src)
     SAVE_ARGS2(env, pkg, src);
     YogVal stmts = YUNDEF;
     YogVal code = YUNDEF;
-    YogVal cur_frame = YUNDEF;
-    PUSH_LOCALS3(env, stmts, code, cur_frame);
+    PUSH_LOCALS2(env, stmts, code);
 
     YogJmpBuf jmpbuf;
     int_t status = setjmp(jmpbuf.buf);

@@ -179,6 +179,7 @@ static void
 perform(YogEnv* env, GC gc)
 {
     DEBUG(TRACE("%p: enter perform: gc=%p", env, gc));
+    TRACE("%p: enter perform: gc=%p", env, gc);
     YogHandle_sync_scope_with_env(env);
     YogVM* vm = env->vm;
     YogVM_acquire_global_interp_lock(env, vm);

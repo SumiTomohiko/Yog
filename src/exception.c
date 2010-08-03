@@ -532,8 +532,7 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
     YogVal eException = YUNDEF;
     YogVal eSystemError = YUNDEF;
     YogVal eWindowsError = YUNDEF;
-    YogVal exc = YUNDEF;
-    PUSH_LOCALS4(env, eException, eSystemError, eWindowsError, exc);
+    PUSH_LOCALS3(env, eException, eSystemError, eWindowsError);
     YogVM* vm = env->vm;
 
     eException = YogClass_new(env, "Exception", vm->cObject);

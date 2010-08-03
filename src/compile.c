@@ -791,8 +791,6 @@ static void
 scan_var_visit_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
-    YogVal left = YUNDEF;
-    PUSH_LOCAL(env, left);
 
     scan_var_visit_lhs(env, visitor, NODE(node)->u.assign.left, data);
     visit_node(env, visitor, NODE(node)->u.assign.right, data);
@@ -906,8 +904,7 @@ scan_var_visit_imported_attr(YogEnv* env, AstVisitor* visitor, YogVal node, YogV
 {
     SAVE_ARGS2(env, node, data);
     YogVal as = YUNDEF;
-    YogVal tbl = YUNDEF;
-    PUSH_LOCALS2(env, as, tbl);
+    PUSH_LOCAL(env, as);
 
     as = NODE(node)->u.imported_attr.as;
     if (IS_NIL(as)) {
@@ -1204,8 +1201,6 @@ static void
 VarTable_add_child(YogEnv* env, YogVal self, YogVal child)
 {
     SAVE_ARGS2(env, self, child);
-    YogVal tbls = YUNDEF;
-    PUSH_LOCAL(env, tbls);
     if (!IS_PTR(self)) {
         RETURN_VOID(env);
     }
@@ -1551,11 +1546,10 @@ decide_var_type(YogEnv* env, YogVal tbl)
     SAVE_ARG(env, tbl);
     YogVal iter = YUNDEF;
     YogVal entry = YUNDEF;
-    YogVal outer = YUNDEF;
     YogVal vars = YUNDEF;
     YogVal inner_tbls = YUNDEF;
     YogVal inner_tbl = YUNDEF;
-    PUSH_LOCALS6(env, iter, entry, outer, vars, inner_tbls, inner_tbl);
+    PUSH_LOCALS5(env, iter, entry, vars, inner_tbls, inner_tbl);
 
     vars = VAR_TABLE(tbl)->vars;
     uint_t params_num = 0;
@@ -1625,8 +1619,7 @@ scan_var_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     YogVal params = YUNDEF;
     YogVal stmts = YUNDEF;
     YogVal tbl = YUNDEF;
-    YogVal outer_tbl = YUNDEF;
-    PUSH_LOCALS4(env, params, stmts, tbl, outer_tbl);
+    PUSH_LOCALS3(env, params, stmts, tbl);
 
     params = NODE(node)->u.blockarg.params;
     stmts = NODE(node)->u.blockarg.stmts;
@@ -1936,9 +1929,8 @@ compile_call_func(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data, ui
     YogVal label_break_start = YUNDEF;
     PUSH_LOCALS8(env, posargs, kwargs, args, blockarg, child_node, vararg, varkwarg, label_break_start);
     YogVal label_break_end = YUNDEF;
-    YogVal exc_tbl_entry = YUNDEF;
     YogVal and_block = YUNDEF;
-    PUSH_LOCALS3(env, label_break_end, exc_tbl_entry, and_block);
+    PUSH_LOCALS2(env, label_break_end, and_block);
 
     blockarg = NODE(node)->u.func_call.blockarg;
     if (IS_PTR(blockarg)) {
@@ -2033,10 +2025,9 @@ compile_visit_multi_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal
     YogVal left = YUNDEF;
     YogVal right = YUNDEF;
     YogVal rhs = YUNDEF;
-    YogVal elem = YUNDEF;
     YogVal middle = YUNDEF;
     YogVal head = YUNDEF;
-    PUSH_LOCALS7(env, lhs, left, right, rhs, elem, middle, head);
+    PUSH_LOCALS6(env, lhs, left, right, rhs, middle, head);
 
     lhs = NODE(node)->u.multi_assign.lhs;
     left = NODE(lhs)->u.multi_assign_lhs.left;
@@ -2538,10 +2529,8 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, 
     YogVal exc_tbl_ent = YUNDEF;
     YogVal data = YUNDEF;
     YogVal label_return_start = YUNDEF;
-    YogVal label_return_end = YUNDEF;
-    YogVal exc_tbl_entry = YUNDEF;
     YogVal last_inst = YUNDEF;
-    PUSH_LOCALS7(env, anchor, exc_tbl_ent, data, label_return_start, label_return_end, exc_tbl_entry, last_inst);
+    PUSH_LOCALS5(env, anchor, exc_tbl_ent, data, label_return_start, last_inst);
 
     anchor = Anchor_new(env);
     exc_tbl_ent = ExceptionTableEntry_new(env);
@@ -2817,10 +2806,9 @@ static void
 compile_visit_func_def(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
-    YogVal var = YUNDEF;
     YogVal code = YUNDEF;
     YogVal decorators = YUNDEF;
-    PUSH_LOCALS3(env, var, code, decorators);
+    PUSH_LOCALS2(env, code, decorators);
 
     ID class_name = CompileData_get_context(env, data) == CTX_CLASS ? COMPILE_DATA(data)->class_name : INVALID_ID;
 
@@ -3399,10 +3387,9 @@ compile_class(YogEnv* env, AstVisitor* visitor, ID class_name, YogVal stmts, uin
 {
     SAVE_ARGS2(env, stmts, data);
     YogVal var_tbl = YUNDEF;
-    YogVal vars = YUNDEF;
     YogVal filename = YUNDEF;
     YogVal outer_vars = YUNDEF;
-    PUSH_LOCALS4(env, var_tbl, vars, filename, outer_vars);
+    PUSH_LOCALS3(env, var_tbl, filename, outer_vars);
 
     filename = COMPILE_DATA(data)->filename;
     outer_vars = COMPILE_DATA(data)->vars;
@@ -3420,11 +3407,10 @@ compile_module(YogEnv* env, AstVisitor* visitor, ID name, YogVal stmts, uint_t l
 {
     SAVE_ARGS2(env, stmts, data);
     YogVal var_tbl = YUNDEF;
-    YogVal vars = YUNDEF;
     YogVal code = YUNDEF;
     YogVal filename = YUNDEF;
     YogVal outer_vars = YUNDEF;
-    PUSH_LOCALS5(env, var_tbl, vars, code, filename, outer_vars);
+    PUSH_LOCALS4(env, var_tbl, code, filename, outer_vars);
 
     filename = COMPILE_DATA(data)->filename;
     outer_vars = COMPILE_DATA(data)->vars;
@@ -3677,8 +3663,7 @@ compile_visit_import(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
     YogVal name = YUNDEF;
     YogVal as = YUNDEF;
     YogVal var = YUNDEF;
-    YogVal attr = YUNDEF;
-    PUSH_LOCALS4(env, name, as, var, attr);
+    PUSH_LOCALS3(env, name, as, var);
 
     uint_t lineno = NODE_LINENO(node);
     name = NODE(node)->u.import.name;
@@ -3818,9 +3803,8 @@ compile_package(YogEnv* env, const char* filename, YogVal stmts, BOOL interactiv
 {
     SAVE_ARG(env, stmts);
     YogVal var_tbl = YUNDEF;
-    YogVal vars = YUNDEF;
     YogVal name = YUNDEF;
-    PUSH_LOCALS3(env, var_tbl, vars, name);
+    PUSH_LOCALS2(env, var_tbl, name);
 
     if (filename == NULL) {
         filename = "<stdin>";

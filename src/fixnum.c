@@ -171,9 +171,8 @@ multiply(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal result = YUNDEF;
-    YogVal bignum = YUNDEF;
     YogVal right = YUNDEF;
-    PUSH_LOCALS3(env, result, bignum, right);
+    PUSH_LOCALS2(env, result, right);
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "*", params, args, kw);
@@ -228,9 +227,8 @@ divide(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal result = YUNDEF;
-    YogVal bignum = YUNDEF;
     YogVal right = YUNDEF;
-    PUSH_LOCALS3(env, result, bignum, right);
+    PUSH_LOCALS2(env, result, right);
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "/", params, args, kw);
@@ -307,9 +305,8 @@ floor_divide(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVa
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal result = YUNDEF;
-    YogVal bignum = YUNDEF;
     YogVal right = YUNDEF;
-    PUSH_LOCALS3(env, result, bignum, right);
+    PUSH_LOCALS2(env, result, right);
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "//", params, args, kw);
@@ -629,9 +626,8 @@ power(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal retval = YUNDEF;
     YogVal f = YUNDEF;
-    YogVal bignum = YUNDEF;
     YogVal right = YUNDEF;
-    PUSH_LOCALS4(env, retval, f, bignum, right);
+    PUSH_LOCALS3(env, retval, f, right);
 
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "**", params, args, kw);
@@ -662,8 +658,7 @@ compare(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal right = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, right, retval);
+    PUSH_LOCAL(env, right);
     CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { "n", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "<=>", params, args, kw);

@@ -230,8 +230,7 @@ add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal array = YUNDEF;
     YogVal right = YUNDEF;
-    YogVal val = YUNDEF;
-    PUSH_LOCALS3(env, array, right, val);
+    PUSH_LOCALS2(env, array, right);
 
     YogCArg params[] = { { "a", &right }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "+", params, args, kw);

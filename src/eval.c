@@ -280,9 +280,7 @@ exec_get_attr(YogEnv* env, YogVal obj, ID name)
     YogVal attr = YUNDEF;
     YogVal class_of_obj = YUNDEF;
     YogVal class_of_attr = YUNDEF;
-    YogVal class_name = YUNDEF;
-    YogVal attr_name = YUNDEF;
-    PUSH_LOCALS5(env, attr, class_of_obj, class_of_attr, class_name, attr_name);
+    PUSH_LOCALS3(env, attr, class_of_obj, class_of_attr);
 
     class_of_obj = YogVal_get_class(env, obj);
 

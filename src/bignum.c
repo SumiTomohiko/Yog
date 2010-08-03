@@ -878,10 +878,7 @@ YogBignum_power(YogEnv* env, YogVal self, YogVal right)
 {
     SAVE_ARGS2(env, self, right);
     YogVal retval = YUNDEF;
-    YogVal f = YUNDEF;
-    YogVal bignum = YUNDEF;
-    YogVal mod = YUNDEF;
-    PUSH_LOCALS4(env, retval, f, bignum, mod);
+    PUSH_LOCAL(env, retval);
 
     if (IS_FIXNUM(right)) {
         retval = power_int(env, self, VAL2INT(right));

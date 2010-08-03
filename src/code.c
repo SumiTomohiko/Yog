@@ -75,8 +75,7 @@ YogCode_dump(YogEnv* env, YogVal code)
     SAVE_ARG(env, code);
     YogVal insts = YUNDEF;
     YogVal consts = YUNDEF;
-    YogVal lineno_tbl = YUNDEF;
-    PUSH_LOCALS3(env, insts, consts, lineno_tbl);
+    PUSH_LOCALS2(env, insts, consts);
 
     printf("stack size: %u\n", PTR_AS(YogCode, code)->stack_size);
     printf("outer size: %u\n", PTR_AS(YogCode, code)->outer_size);

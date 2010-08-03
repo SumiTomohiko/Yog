@@ -127,9 +127,7 @@ group_num(YogEnv* env, YogVal self, int_t group)
     SAVE_ARG(env, self);
     YogVal s = YUNDEF;
     YogVal str = YUNDEF;
-    YogVal to_body = YUNDEF;
-    YogVal from_body = YUNDEF;
-    PUSH_LOCALS4(env, s, str, to_body, from_body);
+    PUSH_LOCALS2(env, s, str);
 
     OnigRegion* region = PTR_AS(YogMatch, self)->onig_region;
     if ((group < 0) || (region->num_regs <= group)) {

@@ -438,8 +438,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
     YogVal heredoc = YUNDEF;
     YogVal heredoc_queue = YUNDEF;
     YogVal end = YUNDEF;
-    YogVal line = YUNDEF;
-    PUSH_LOCALS6(env, heredoc_end, str, heredoc, heredoc_queue, end, line);
+    PUSH_LOCALS5(env, heredoc_end, str, heredoc, heredoc_queue, end);
 
     clear_buffer(env, lexer);
 

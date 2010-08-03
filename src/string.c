@@ -1115,8 +1115,7 @@ YogString_to_i(YogEnv* env, YogVal self)
     YogVal normalized = YUNDEF;
     YogVal body = YUNDEF;
     YogVal bignum = YUNDEF;
-    YogVal v = YUNDEF;
-    PUSH_LOCALS4(env, normalized, body, bignum, v);
+    PUSH_LOCALS3(env, normalized, body, bignum);
 
 #define RAISE_VALUE_ERROR   do { \
     YogError_raise_ValueError(env, "invalid literal: %S", self); \
@@ -1177,8 +1176,7 @@ compare(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal obj = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, obj, retval);
+    PUSH_LOCAL(env, obj);
     CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { "s", &obj}, { NULL, NULL } };
     YogGetArgs_parse_args(env, "<=>", params, args, kw);

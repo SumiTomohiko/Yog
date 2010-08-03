@@ -1421,13 +1421,10 @@ void
 YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
 {
     SAVE_LOCALS(env);
-
     YogVal prog = YUNDEF;
-    YogVal prog_dir = YUNDEF;
     YogVal search_path = YUNDEF;
-    YogVal body = YUNDEF;
     YogVal s = YUNDEF;
-    PUSH_LOCALS5(env, prog, prog_dir, search_path, body, s);
+    PUSH_LOCALS3(env, prog, search_path, s);
 
     if (find_separactor(env, argv0) == NULL) {
         char* path = getenv("PATH");

@@ -213,15 +213,12 @@ void
 YogError_print_stacktrace(YogEnv* env)
 {
     SAVE_LOCALS(env);
-    YogVal s = YUNDEF;
-    YogVal t = YUNDEF;
     YogVal name = YUNDEF;
     YogVal exc = YUNDEF;
     YogVal st = YUNDEF;
-    YogVal filename = YUNDEF;
     YogVal klass = YUNDEF;
     YogVal msg = YUNDEF;
-    PUSH_LOCALS8(env, s, t, name, exc, st, filename, klass, msg);
+    PUSH_LOCALS5(env, name, exc, st, klass, msg);
 
     exc = PTR_AS(YogThread, env->thread)->jmp_val;
     st = PTR_AS(YogException, exc)->stack_trace;

@@ -1426,8 +1426,6 @@ static void
 write_argument_object(YogEnv* env, void** ptr, void* refered, YogVal arg_type, YogVal val)
 {
     SAVE_ARGS2(env, arg_type, val);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
     YogVM* vm = env->vm;
     if (arg_type == vm->cString) {
         memcpy(refered, STRING_CSTR(val), YogString_size(env, val) + 1);
@@ -1762,10 +1760,6 @@ static YogVal
 Struct_get_Buffer(YogEnv* env, YogVal self, YogVal field)
 {
     SAVE_ARGS2(env, self, field);
-    YogVal s = YUNDEF;
-    YogVal val = YUNDEF;
-    YogVal type = YUNDEF;
-    PUSH_LOCALS3(env, s, val, type);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
         YogError_raise_TypeError(env, "Object must be Struct, not %C", self);
     }
@@ -1781,10 +1775,6 @@ static YogVal
 Struct_get_String(YogEnv* env, YogVal self, YogVal field)
 {
     SAVE_ARGS2(env, self, field);
-    YogVal s = YUNDEF;
-    YogVal val = YUNDEF;
-    YogVal type = YUNDEF;
-    PUSH_LOCALS3(env, s, val, type);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
         YogError_raise_TypeError(env, "self must be Struct, not %C", self);
     }
@@ -1880,9 +1870,8 @@ static YogVal
 Struct_get(YogEnv* env, YogVal self, YogVal field)
 {
     SAVE_ARGS2(env, self, field);
-    YogVal s = YUNDEF;
     YogVal val = YUNDEF;
-    PUSH_LOCALS2(env, s, val);
+    PUSH_LOCAL(env, val);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
         YogError_raise_TypeError(env, "self must be Struct, not %C", self);
     }
@@ -2161,9 +2150,6 @@ static void
 BufferField_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
 {
     SAVE_ARGS3(env, attr, obj, val);
-    YogVal s = YUNDEF;
-    YogVal type = YUNDEF;
-    PUSH_LOCALS2(env, s, type);
     if (!IS_PTR(attr) || (BASIC_OBJ_TYPE(attr) != TYPE_BUFFER_FIELD)) {
         YogError_raise_TypeError(env, "Attribute must be Field, not %C", attr);
     }
@@ -2269,8 +2255,6 @@ static void
 Field_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
 {
     SAVE_ARGS3(env, attr, obj, val);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
     if (!IS_PTR(attr) || (BASIC_OBJ_TYPE(attr) != TYPE_FIELD)) {
         YogError_raise_TypeError(env, "Attribute must be Field, not %C", attr);
     }
@@ -2386,9 +2370,8 @@ FieldArray_subscript_assign(YogEnv* env, YogVal self, YogVal pkg, YogVal args, Y
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal val = YUNDEF;
     YogVal index = YUNDEF;
-    YogVal st = YUNDEF;
     YogVal field = YUNDEF;
-    PUSH_LOCALS4(env, val, index, st, field);
+    PUSH_LOCALS3(env, val, index, field);
     YogCArg params[] = {
         { "index", &index },
         { "value", &val },

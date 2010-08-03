@@ -231,9 +231,8 @@ static YogVal
 equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal retval = YUNDEF;
     YogVal obj = YUNDEF;
-    PUSH_LOCALS2(env, retval, obj);
+    PUSH_LOCAL(env, obj);
 
     YogCArg params[] = { { "obj", &obj }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "==", params, args, kw);
