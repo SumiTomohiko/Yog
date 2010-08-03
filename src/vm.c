@@ -339,7 +339,7 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
 
     setup_symbol_tables(env, vm);
     setup_basic_classes(env, vm);
-    YogHandle* builtins = YogHandle_register(env, alloc_skelton_pkg(env, vm));
+    YogHandle* builtins = YogHandle_REGISTER(env, alloc_skelton_pkg(env, vm));
     setup_classes(env, vm, HDL2VAL(builtins));
     YogPackage_init(env, HDL2VAL(builtins), TYPE_PACKAGE);
     set_main_thread_class(env, vm);

@@ -55,7 +55,7 @@ inst make_block
 (code)
 (f)
 {
-    YogHandle* h_code = YogHandle_register(env, code);
+    YogHandle* h_code = YogHandle_REGISTER(env, code);
     f = YogFunction_new(env);
     setup_script_function(env, f, h_code->val);
     YogGC_UPDATE_PTR(env, PTR_AS(YogFunction, f), frame_to_long_return, PTR_AS(YogScriptFrame, CUR_FRAME)->frame_to_long_return);
@@ -68,7 +68,7 @@ inst make_function
 (code)
 (f)
 {
-    YogHandle* h_code = YogHandle_register(env, code);
+    YogHandle* h_code = YogHandle_REGISTER(env, code);
     f = YogFunction_new(env);
     setup_script_function(env, f, h_code->val);
     PTR_AS(YogFunction, f)->name = name;
@@ -79,20 +79,20 @@ inst call_function
 (...) depth: argc + 2 * kwargc + varargc + varkwargc + blockargc
 (...) depth: left + middle + right
 {
-    YogHandle* callee = YogHandle_register(env, pop(env));
+    YogHandle* callee = YogHandle_REGISTER(env, pop(env));
     YogHandle* args[argc];
     uint_t i;
     for (i = 0; i < argc; i++) {
-        args[i] = YogHandle_register(env, pop(env));
+        args[i] = YogHandle_REGISTER(env, pop(env));
     }
     YogHandle* kwargs[2 * kwargc];
     for (i = 0; i < kwargc; i++) {
-        kwargs[2 * i] = YogHandle_register(env, pop(env));
-        kwargs[2 * i + 1] = YogHandle_register(env, pop(env));
+        kwargs[2 * i] = YogHandle_REGISTER(env, pop(env));
+        kwargs[2 * i + 1] = YogHandle_REGISTER(env, pop(env));
     }
-    YogHandle* vararg = YogHandle_register(env, varargc == 1 ? pop(env) : YUNDEF);
-    YogHandle* varkwarg = YogHandle_register(env, varkwargc == 1 ? pop(env) : YUNDEF);
-    YogHandle* blockarg = YogHandle_register(env, blockargc == 1 ? pop(env) : YUNDEF);
+    YogHandle* vararg = YogHandle_REGISTER(env, varargc == 1 ? pop(env) : YUNDEF);
+    YogHandle* varkwarg = YogHandle_REGISTER(env, varkwargc == 1 ? pop(env) : YUNDEF);
+    YogHandle* blockarg = YogHandle_REGISTER(env, blockargc == 1 ? pop(env) : YUNDEF);
 
     set_lhs_composition(env, left, middle, right);
 
@@ -216,7 +216,7 @@ inst make_module
 (code)
 (...) depth: 2
 {
-    YogHandle* h_code = YogHandle_register(env, code);
+    YogHandle* h_code = YogHandle_REGISTER(env, code);
     YogVal module = YogModule_new(env);
     PTR_AS(YogModule, module)->name = name;
     YogScriptFrame_push_stack(env, env->frame, module);
@@ -232,8 +232,8 @@ inst make_class
 (code, super, name)
 (...) depth: 2
 {
-    YogHandle* h_code = YogHandle_register(env, code);
-    YogHandle* kls = YogHandle_register(env, YogClass_new(env, NULL, super));
+    YogHandle* h_code = YogHandle_REGISTER(env, code);
+    YogHandle* kls = YogHandle_REGISTER(env, YogClass_new(env, NULL, super));
     PTR_AS(YogClass, kls->val)->name = VAL2ID(name);
     PTR_AS(YogObj, kls->val)->attrs = YUNDEF;
     YogVal attrs = YogTable_new_symbol_table(env);
@@ -349,7 +349,7 @@ inst make_dict
 (...) depth: 2 * size
 (dict)
 {
-    YogHandle* h_dict = YogHandle_register(env, YogDict_new(env));
+    YogHandle* h_dict = YogHandle_REGISTER(env, YogDict_new(env));
     uint_t i;
     for (i = 0; i < size; i++) {
         YogVal value = pop(env);
@@ -364,7 +364,7 @@ inst make_set
 (...) depth: size
 (set)
 {
-    YogHandle* h_set = YogHandle_register(env, YogSet_new(env));
+    YogHandle* h_set = YogHandle_REGISTER(env, YogSet_new(env));
     uint_t i;
     for (i = 0; i < size; i++) {
         YogVal elem = pop(env);
@@ -408,7 +408,7 @@ inst print_top_multi_value
     YOG_ASSERT(env, IS_PTR(val), "invalid operand (0x%08x)", val);
     YOG_ASSERT(env, BASIC_OBJ_TYPE(val) == TYPE_ARRAY, "invalid operand type (0x%08x)", BASIC_OBJ_TYPE(val));
     uint_t size = YogArray_size(env, val);
-    YogHandle* h_val = YogHandle_register(env, val);
+    YogHandle* h_val = YogHandle_REGISTER(env, val);
     uint_t i;
     for (i = 0; i < size; i++) {
         YogVal obj = YogArray_at(env, h_val->val, i);
@@ -433,9 +433,9 @@ inst store_attr
     else {
         has_attrs = FALSE;
     }
-    YogHandle* h_class_of_obj = YogHandle_register(env, class_of_obj);
-    YogHandle* h_obj = YogHandle_register(env, obj);
-    YogHandle* h_val = YogHandle_register(env, val);
+    YogHandle* h_class_of_obj = YogHandle_REGISTER(env, class_of_obj);
+    YogHandle* h_obj = YogHandle_REGISTER(env, obj);
+    YogHandle* h_val = YogHandle_REGISTER(env, val);
 
     YogVal attr = YUNDEF;
     if (has_attrs) {

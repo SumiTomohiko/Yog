@@ -91,9 +91,9 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
     if (!IS_PTR(a)) {
         return;
     }
-    YogHandle* arg_info = YogHandle_register(env, a);
+    YogHandle* arg_info = YogHandle_REGISTER(env, a);
 
-    YogHandle* kw = YogHandle_register(env, YUNDEF);
+    YogHandle* kw = YogHandle_REGISTER(env, YUNDEF);
     uint_t arg_kwargc = HDL_AS(YogArgInfo, arg_info)->kwargc;
     if (0 < arg_kwargc) {
         uint_t index = HDL_AS(YogArgInfo, arg_info)->argc;
@@ -115,7 +115,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
         if (HDL_AS(YogArgInfo, arg_info)->varargc != 1) {
             raise_wrong_num_args(env, self->val, posargc);
         }
-        YogHandle* array = YogHandle_register(env, YogArray_new(env));
+        YogHandle* array = YogHandle_REGISTER(env, YogArray_new(env));
         STORE_LOCAL(env, frame, args_offset + argc, array->val);
         for (i = argc; i < posargc; i++) {
             YogArray_push(env, array->val, posargs[i]->val);
@@ -147,7 +147,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
             }
         }
         if (0 < HDL_AS(YogArgInfo, arg_info)->varargc) {
-            YogHandle* va = YogHandle_register(env, YogArray_new(env));
+            YogHandle* va = YogHandle_REGISTER(env, YogArray_new(env));
             STORE_LOCAL(env, frame, args_offset + posargc, va->val);
 
             if (IS_UNDEF(NULL2UNDEF(vararg))) {
@@ -179,13 +179,13 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
         raise_TypeError_for_varkwarg(env, varkwarg->val);
     }
     else {
-        YogHandle* iter = YogHandle_register(env, YogDict_get_iterator(env, varkwarg->val));
+        YogHandle* iter = YogHandle_REGISTER(env, YogDict_get_iterator(env, varkwarg->val));
         while (YogDictIterator_next(env, iter->val)) {
             YogVal key = YogDictIterator_current_key(env, iter->val);
             if (!IS_SYMBOL(key)) {
                 YogError_raise_TypeError(env, "keywords must be symbols, not %C", key);
             }
-            YogHandle* val = YogHandle_register(env, YogDictIterator_current_value(env, iter->val));
+            YogHandle* val = YogHandle_REGISTER(env, YogDictIterator_current_value(env, iter->val));
             assign_keyword_arg(env, self, args_offset, frame, kw, VAL2ID(key), val);
         }
     }
@@ -248,7 +248,7 @@ YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
     YogVal code = HDL_AS(YogFunction, callee)->code;
     uint_t depth = PTR_AS(YogCode, code)->outer_size;
     uint_t locals_num = PTR_AS(YogCode, code)->local_vars_count;
-    YogHandle* frame = YogHandle_register(env, YogFrame_get_script_frame(env, code, locals_num));
+    YogHandle* frame = YogHandle_REGISTER(env, YogFrame_get_script_frame(env, code, locals_num));
     uint_t args_offset;
     if (HDL_AS(YogFunction, callee)->needs_self) {
         uint_t pos = HDL_AS(YogScriptFrame, frame)->stack_capacity;
@@ -382,7 +382,7 @@ create_keyword_argument(YogEnv* env, uint8_t kwargc, YogHandle* kwargs[], YogHan
         return NULL;
     }
 
-    YogHandle* kw = YogHandle_register(env, YogDict_new(env));
+    YogHandle* kw = YogHandle_REGISTER(env, YogDict_new(env));
     uint_t i;
     for (i = 0; i < kwargc; i += 2) {
         YogDict_set(env, kw->val, kwargs[i]->val, kwargs[i + 1]->val);
@@ -402,7 +402,7 @@ create_keyword_argument(YogEnv* env, uint8_t kwargc, YogHandle* kwargs[], YogHan
 static YogHandle*
 create_positional_argument(YogEnv* env, uint8_t posargc, YogHandle* posargs[], YogHandle* vararg)
 {
-    YogHandle* args = YogHandle_register(env, YogArray_new(env));
+    YogHandle* args = YogHandle_REGISTER(env, YogArray_new(env));
     uint_t i;
     for (i = 0; i < posargc; i++) {
         YogArray_push(env, HDL2VAL(args), HDL2VAL(posargs[i]));
@@ -426,7 +426,7 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* s
     YogHandle* args = create_positional_argument(env, posargc, posargs, vararg);
     YogHandle* kw = create_keyword_argument(env, kwargc, kwargs, varkwarg);
 
-    YogHandle* frame = YogHandle_register(env, YogCFrame_new(env));
+    YogHandle* frame = YogHandle_REGISTER(env, YogCFrame_new(env));
     YogGC_UPDATE_PTR(env, HDL_AS(YogCFrame, frame), f, HDL2VAL(callee));
     YogEval_push_frame(env, HDL2VAL(frame));
 
@@ -545,8 +545,8 @@ static void
 YogInstanceMethod_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
-    YogHandle* self = YogHandle_register(env, obj->self);
-    YogHandle* f = YogHandle_register(env, obj->f);
+    YogHandle* self = YogHandle_REGISTER(env, obj->self);
+    YogHandle* f = YogHandle_REGISTER(env, obj->f);
     YogFunction_exec_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
@@ -554,8 +554,8 @@ static YogVal
 YogInstanceMethod_call(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
-    YogHandle* self = YogHandle_register(env, obj->self);
-    YogHandle* f = YogHandle_register(env, obj->f);
+    YogHandle* self = YogHandle_REGISTER(env, obj->self);
+    YogHandle* f = YogHandle_REGISTER(env, obj->f);
     return YogFunction_call_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
@@ -591,8 +591,8 @@ static void
 YogNativeInstanceMethod_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
-    YogHandle* self = YogHandle_register(env, obj->self);
-    YogHandle* f = YogHandle_register(env, obj->f);
+    YogHandle* self = YogHandle_REGISTER(env, obj->self);
+    YogHandle* f = YogHandle_REGISTER(env, obj->f);
     YogNativeFunction_exec_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
@@ -600,8 +600,8 @@ static YogVal
 YogNativeInstanceMethod_call(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
-    YogHandle* self = YogHandle_register(env, obj->self);
-    YogHandle* f = YogHandle_register(env, obj->f);
+    YogHandle* self = YogHandle_REGISTER(env, obj->self);
+    YogHandle* f = YogHandle_REGISTER(env, obj->f);
     YogVal retval = YogNativeFunction_call_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, NULL);
     error_for_multi_value(env, retval);
     return retval;
@@ -716,13 +716,13 @@ YogCallable_call_with_block(YogEnv* env, YogVal self, uint_t argc, YogVal* args,
     Caller call = PTR_AS(YogClass, klass)->call;
     YOG_ASSERT(env, call != NULL, "uncallable");
 
-    YogHandle* h_self = YogHandle_register(env, self);
+    YogHandle* h_self = YogHandle_REGISTER(env, self);
     YogHandle* h_args[argc];
     uint_t i;
     for (i = 0; i < argc; i++) {
-        h_args[i] = YogHandle_register(env, args[i]);
+        h_args[i] = YogHandle_REGISTER(env, args[i]);
     }
-    YogHandle* h_block = IS_UNDEF(block) ? NULL : YogHandle_register(env, block);
+    YogHandle* h_block = IS_UNDEF(block) ? NULL : YogHandle_REGISTER(env, block);
     YogVal val = call(env, h_self, argc, h_args, 0, NULL, NULL, NULL, h_block);
 
     YogHandleScope_close(env);

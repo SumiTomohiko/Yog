@@ -125,6 +125,8 @@ typedef struct YogLocalsAnchor YogLocalsAnchor;
 
 struct YogHandle {
     YogVal val;
+    const char* filename;
+    uint_t lineno;
 };
 
 typedef struct YogHandle YogHandle;

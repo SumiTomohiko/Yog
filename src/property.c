@@ -57,7 +57,7 @@ exec_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     class_of_method = YogVal_get_class(env, method);
     Executor exec = PTR_AS(YogClass, class_of_method)->exec;
     YOG_ASSERT(env, exec != NULL, "method isn't callable");
-    YogHandle* h_method = YogHandle_register(env, method);
+    YogHandle* h_method = YogHandle_REGISTER(env, method);
     exec(env, h_method, 0, NULL, 0, NULL, NULL, NULL, NULL);
 
     RETURN_VOID(env);
@@ -86,7 +86,7 @@ call_get_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     class_of_method = YogVal_get_class(env, method);
     Caller call = PTR_AS(YogClass, class_of_method)->call;
     YOG_ASSERT(env, call != NULL, "method isn't callable");
-    YogHandle* h_method = YogHandle_register(env, method);
+    YogHandle* h_method = YogHandle_REGISTER(env, method);
     retval = call(env, h_method, 0, NULL, 0, NULL, NULL, NULL, NULL);
 
     RETURN(env, retval);
@@ -102,7 +102,7 @@ exec_set_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     YogVal class_of_method = YUNDEF;
     YogVal class_of_obj = YUNDEF;
     PUSH_LOCALS5(env, setter, class_of_setter, method, class_of_method, class_of_obj);
-    YogHandle* args[] = { YogHandle_register(env, val) };
+    YogHandle* args[] = { YogHandle_REGISTER(env, val) };
 
     setter = PTR_AS(YogProperty, attr)->setter;
     class_of_setter = YogVal_get_class(env, setter);
@@ -118,7 +118,7 @@ exec_set_descr(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
     Executor exec = PTR_AS(YogClass, class_of_method)->exec;
     YOG_ASSERT(env, exec != NULL, "method isn't callable");
 
-    YogHandle* h_method = YogHandle_register(env, method);
+    YogHandle* h_method = YogHandle_REGISTER(env, method);
     exec(env, h_method, array_sizeof(args), args, 0, NULL, NULL, NULL, NULL);
 
     RETURN_VOID(env);

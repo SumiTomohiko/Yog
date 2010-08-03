@@ -18,7 +18,7 @@ YOG_EXPORT void YogHandles_set_pos(YogEnv*, YogHandles*);
 /* PROTOTYPE_END */
 
 static inline YogHandle*
-YogHandle_register(YogEnv* env, YogVal val)
+YogHandle_register(YogEnv* env, YogVal val, const char* filename, uint_t lineno)
 {
     YogHandle* pos = env->pos;
     if (env->last == pos) {
@@ -28,22 +28,25 @@ YogHandle_register(YogEnv* env, YogVal val)
         pos = env->pos;
     }
     pos->val = val;
+    pos->filename = filename;
+    pos->lineno = lineno;
     env->pos = pos + 1;
     return pos;
 }
+
+#define YogHandle_REGISTER(env, val) YogHandle_register((env), (val), __FILE__, __LINE__)
 
 static inline void
 YogHandleScope_open(YogEnv* env, YogHandleScope* self, const char* filename, uint_t lineno)
 {
     YogHandle_sync_scope_with_env(env);
 
-    YogHandles* handles = env->handles;
     self->used_num = 0;
     env->pos = env->last = NULL;
-
     self->filename = filename;
     self->lineno = lineno;
 
+    YogHandles* handles = env->handles;
     self->next = handles->scope;
     handles->scope = self;
 }

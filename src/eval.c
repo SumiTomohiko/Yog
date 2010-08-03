@@ -138,8 +138,8 @@ YogEval_push_returned_value(YogEnv* env, YogVal frame, YogVal val)
         if (0 < left_num + right_num) {
             YogError_raise_ValueError(env, "too few multiple value");
         }
-        YogHandle* h_frame = YogHandle_register(env, frame);
-        YogHandle* h_val = YogHandle_register(env, val);
+        YogHandle* h_frame = YogHandle_REGISTER(env, frame);
+        YogHandle* h_val = YogHandle_REGISTER(env, val);
         YogVal middle = YogArray_of_size(env, 1);
         YogArray_push(env, middle, h_val->val);
         YogScriptFrame_push_stack(env, h_frame->val, middle);
@@ -530,9 +530,9 @@ YogEval_longjmp_to_prev_buf(YogEnv* env, int status)
 static void
 long_jump(YogEnv* env, uint_t depth, int_t status, YogVal target_frame)
 {
-    YogHandle* h_target_frame = YogHandle_register(env, target_frame);
+    YogHandle* h_target_frame = YogHandle_REGISTER(env, target_frame);
 
-    YogHandle* objs = YogHandle_register(env, make_jmp_val(env, depth));
+    YogHandle* objs = YogHandle_REGISTER(env, make_jmp_val(env, depth));
     detect_orphan(env, status, HDL2VAL(h_target_frame));
 
     YogVal thread = env->thread;
