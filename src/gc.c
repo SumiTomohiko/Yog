@@ -90,6 +90,7 @@ YogGC_alloc(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size
     DEBUG(TRACE("%p: enter YogGC_alloc: keeper=%p, finalizer=%p, size=%u", env, keeper, finalizer, size));
     YogVM* vm = env->vm;
     if (vm->waiting_suspend) {
+        YogHandle_sync_scope_with_env(env);
         YogVM_acquire_global_interp_lock(env, vm);
         YogGC_suspend(env);
         YogVM_release_global_interp_lock(env, vm);
@@ -626,6 +627,7 @@ YogGC_free_from_gc(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter YogGC_free_from_gc", env));
 #if !defined(GC_BDW)
+    YogHandle_sync_scope_with_env(env);
     YogVM* vm = env->vm;
     YogVM_acquire_global_interp_lock(env, vm);
     while (vm->waiting_suspend) {
