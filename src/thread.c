@@ -296,10 +296,14 @@ thread_main(void* arg)
     YogVal thread = PTR_AS(ThreadArg, thread_arg)->thread;
     YogLocalsAnchor locals = LOCALS_ANCHOR_INIT;
     locals.heap = PTR_AS(YogThread, thread)->heap;
+    YogHandles handles;
+    YogHandles_init(&handles);
+    handles.heap = PTR_AS(YogThread, thread)->heap;
     YogEnv env = ENV_INIT;
     env.vm = vm;
     env.thread = thread;
     env.locals = &locals;
+    env.handles = &handles;
     SAVE_LOCALS(&env);
     PTR_AS(YogThread, thread)->env = &env;
     DECL_LOCALS(locals0);
@@ -311,6 +315,7 @@ thread_main(void* arg)
     locals0.vals[3] = NULL;
     PUSH_LOCAL_TABLE(&env, locals0);
     YogVM_add_locals(&env, vm, &locals);
+    YogVM_add_handles(&env, vm, &handles);
 
     YogVal vararg = PTR_AS(ThreadArg, thread_arg)->vararg;
     YogVal block = PTR_AS(YogThread, thread)->block;
@@ -330,7 +335,9 @@ thread_main(void* arg)
     RESTORE_LOCALS(&env);
 
     YogVM_remove_thread(&env, vm, env.thread);
+    YogVM_remove_handles(&env, vm, &handles);
     YogVM_remove_locals(&env, vm, &locals);
+    YogHandles_finalize(&handles);
 
 #if defined(__MINGW32__) || defined(_MSC_VER)
     pthread_win32_thread_detach_np();
