@@ -106,7 +106,8 @@ YogClass_define_method2(YogEnv* env, YogVal klass, YogVal pkg, const char* name,
     ID id_class_name = PTR_AS(YogClass, klass)->name;
     YogVal class_name = YogVM_id2name(env, vm, id_class_name);
     YogHandle* h_class_name = YogHandle_REGISTER(env, class_name);
-    YogVal func_name = YogVM_intern(env, vm, name);
+    ID id_func_name = YogVM_intern(env, vm, name);
+    YogVal func_name = YogVM_id2name(env, vm, id_func_name);
     YogHandle* h_func_name = YogHandle_REGISTER(env, func_name);
     va_list ap;
     va_start(ap, f);
