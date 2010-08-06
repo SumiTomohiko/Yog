@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "yog/bignum.h"
 #include "yog/class.h"
+#include "yog/compat.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/string.h"
@@ -70,12 +71,7 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
 {
     SAVE_LOCALS(env);
     va_list aq;
-#if defined(HAVE_VA_COPY)
     va_copy(aq, ap);
-#else
-    /* probably */
-    aq = ap;
-#endif
 
     uint_t n = 0;
     const char* pc;

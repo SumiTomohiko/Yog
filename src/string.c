@@ -31,6 +31,12 @@
         YogError_raise_TypeError((env), "self must be String"); \
     } \
 } while (0)
+#define CHECK_SELF_TYPE2(env, self)  do { \
+    YogVal s = HDL2VAL((self)); \
+    if (!IS_PTR(s) || (BASIC_OBJ_TYPE(s) != TYPE_STRING)) { \
+        YogError_raise_TypeError((env), "self must be String"); \
+    } \
+} while (0)
 
 ID
 YogString_intern(YogEnv* env, YogVal s)
@@ -473,37 +479,32 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal arg = YUNDEF;
-    PUSH_LOCAL(env, arg);
-
-    YogCArg params[] = { { "s", &arg }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "+", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-    if (!IS_PTR(arg) || (BASIC_OBJ_TYPE(arg) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "can't convert %C object to string implicitly", arg);
+    CHECK_SELF_TYPE2(env, self);
+    if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "Can't convert %C object to string implicitly", HDL2VAL(s));
+        /* NOTREACHED */
     }
 
-    uint_t size1 = YogString_size(env, self);
-    uint_t size2 = YogString_size(env, arg);
+    uint_t size1 = YogString_size(env, HDL2VAL(self));
+    uint_t size2 = YogString_size(env, HDL2VAL(s));
     uint_t size = size1 + size2 + 1;
-    YogVal s = YogString_of_size(env, size);
-    YogVal body = PTR_AS(YogString, s)->body;
+    YogVal t = YogString_of_size(env, size);
+    YogVal body = PTR_AS(YogString, t)->body;
     char* p = PTR_AS(YogCharArray, body)->items;
-    YogVal self_body = PTR_AS(YogString, self)->body;
+    YogVal self_body = HDL_AS(YogString, self)->body;
     const char* q = PTR_AS(YogCharArray, self_body)->items;
     memcpy(p, q, size1);
     char* u = &PTR_AS(YogCharArray, body)->items[size1];
-    YogVal arg_body = PTR_AS(YogString, arg)->body;
+    YogVal arg_body = HDL_AS(YogString, s)->body;
     const char* v = PTR_AS(YogCharArray, arg_body)->items;
     memcpy(u, v, size2);
     u[size2] = '\0';
-    PTR_AS(YogString, s)->size = size;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), encoding, STRING_ENCODING(self));
+    PTR_AS(YogString, t)->size = size;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, t), encoding, STRING_ENCODING(HDL2VAL(self)));
 
-    RETURN(env, s);
+    return t;
 }
 
 YogVal
@@ -1223,7 +1224,6 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method(env, cString, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("*", multiply);
-    DEFINE_METHOD("+", add);
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD("<=>", compare);
     DEFINE_METHOD("=~", match);
@@ -1243,6 +1243,11 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("slice", slice);
 #endif
 #undef DEFINE_METHOD
+#define DEFINE_METHOD2(name, ...)  do { \
+    YogClass_define_method2(env, cString, pkg, (name), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD2("+", add, "s", NULL);
+#undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter) do { \
     YogClass_define_property(env, cString, pkg, (name), (getter), (setter)); \
 } while (0)

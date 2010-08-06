@@ -360,6 +360,10 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
     YogObject_eval_builtin_script(env, vm->cObject);
     YogString_eval_builtin_script(env, vm->cString);
 
+    vm->id_star = YogVM_intern(env, vm, "*");
+    vm->id_star2 = YogVM_intern(env, vm, "**");
+    vm->id_amp = YogVM_intern(env, vm, "&");
+
     YogHandleScope_close(env);
 }
 
@@ -500,7 +504,9 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cMatch);
     KEEP(cModule);
     KEEP(cNativeFunction);
+    KEEP(cNativeFunction2);
     KEEP(cNativeInstanceMethod);
+    KEEP(cNativeInstanceMethod2);
     KEEP(cNil);
     KEEP(cObject);
     KEEP(cPackage);
@@ -629,7 +635,9 @@ YogVM_init(YogVM* vm)
     INIT(cMatch);
     INIT(cModule);
     INIT(cNativeFunction);
+    INIT(cNativeFunction2);
     INIT(cNativeInstanceMethod);
+    INIT(cNativeInstanceMethod2);
     INIT(cNil);
     INIT(cObject);
     INIT(cPackage);

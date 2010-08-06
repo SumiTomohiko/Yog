@@ -98,6 +98,24 @@ YogClass_define_class_method(YogEnv* env, YogVal self, YogVal pkg, const char* n
 }
 
 void
+YogClass_define_method2(YogEnv* env, YogVal klass, YogVal pkg, const char* name, void* f, ...)
+{
+    YogHandle* h_klass = YogHandle_REGISTER(env, klass);
+    YogHandle* h_pkg = YogHandle_REGISTER(env, pkg);
+    YogVM* vm = env->vm;
+    ID id_class_name = PTR_AS(YogClass, klass)->name;
+    YogVal class_name = YogVM_id2name(env, vm, id_class_name);
+    YogHandle* h_class_name = YogHandle_REGISTER(env, class_name);
+    YogVal func_name = YogVM_intern(env, vm, name);
+    YogHandle* h_func_name = YogHandle_REGISTER(env, func_name);
+    va_list ap;
+    va_start(ap, f);
+    YogHandle* func = YogNativeFunction2_new(env, h_pkg, h_class_name, h_func_name, f, ap);
+    va_end(ap);
+    YogObj_set_attr(env, HDL2VAL(h_klass), name, HDL2VAL(func));
+}
+
+void
 YogClass_define_method(YogEnv* env, YogVal klass, YogVal pkg, const char* name, YogAPI f)
 {
     SAVE_ARGS2(env, klass, pkg);

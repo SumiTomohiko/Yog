@@ -20,6 +20,9 @@ YOG_EXPORT void YogHandles_set_pos(YogEnv*, YogHandles*);
 static inline YogHandle*
 YogHandle_register(YogEnv* env, YogVal val, const char* filename, uint_t lineno)
 {
+    if (IS_UNDEF(val)) {
+        return NULL;
+    }
     YogHandle* pos = env->pos;
     if (env->last == pos) {
         YogHandles* handles = env->handles;

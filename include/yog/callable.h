@@ -21,6 +21,29 @@ typedef struct YogNativeFunction YogNativeFunction;
 DECL_AS_TYPE(YogNativeFunction_new);
 #define TYPE_NATIVE_FUNCTION    TO_TYPE(YogNativeFunction_new)
 
+struct YogNativeArg {
+    ID name;
+    BOOL optional;
+};
+
+typedef struct YogNativeArg YogNativeArg;
+
+struct YogNativeFunction2 {
+    struct YogBasicObj base;
+
+    YogVal pkg;
+    YogVal class_name;
+    YogVal func_name;
+    void* f;
+
+    uint_t args_num;
+    struct YogNativeArg args[0];
+};
+
+typedef struct YogNativeFunction2 YogNativeFunction2;
+
+#define TYPE_NATIVE_FUNCTION2 TO_TYPE(YogNativeFunction2_new)
+
 struct YogFunction {
     struct YogBasicObj base;
 
@@ -63,11 +86,10 @@ YOG_EXPORT YogVal YogCallable_call_with_block(YogEnv*, YogVal, uint_t, YogVal*, 
 YOG_EXPORT void YogFunction_define_classes(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogFunction_new(YogEnv*);
 YOG_EXPORT YogVal YogInstanceMethod_new(YogEnv*);
+YOG_EXPORT YogHandle* YogNativeFunction2_new(YogEnv*, YogHandle*, YogHandle*, YogHandle*, void*, va_list);
 YOG_EXPORT YogVal YogNativeFunction_new(YogEnv*, ID, YogVal, const char*, YogAPI);
-YOG_EXPORT YogVal YogNativeInstanceMethod_new(YogEnv*);
 
 /* PROTOTYPE_END */
-YogVal YogCallable_call_2(YogEnv*, YogHandle*, uint_t, YogHandle* args[]);
 
 #endif
 /**
