@@ -26,6 +26,11 @@
         YogError_raise_TypeError((env), "self must be Fixnum"); \
     } \
 } while (0)
+#define CHECK_SELF_TYPE2(env, self)  do { \
+    if (!IS_FIXNUM(HDL2VAL((self)))) { \
+        YogError_raise_TypeError((env), "self must be Fixnum"); \
+    } \
+} while (0)
 
 static YogVal
 to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
@@ -57,37 +62,29 @@ YogFixnum_add_bignum(YogEnv* env, YogVal self, YogVal bignum)
 }
 
 static YogVal
-add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal result = YUNDEF;
-    PUSH_LOCALS2(env, right, result);
+    CHECK_SELF_TYPE2(env, self);
 
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "+", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        result = YogVal_from_int(env, VAL2INT(self) + VAL2INT(right));
-        RETURN(env, result);
+        return YogVal_from_int(env, VAL2INT(HDL2VAL(self)) + VAL2INT(right));
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = (double)VAL2INT(self) + FLOAT_NUM(right);
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        FLOAT_NUM(result) = (double)VAL2INT(HDL2VAL(self)) + FLOAT_NUM(right);
+        return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        result = YogFixnum_add_bignum(env, self, right);
-        RETURN(env, result);
+        return YogFixnum_add_bignum(env, HDL2VAL(self), right);
     }
 
-    YogError_raise_binop_type_error(env, self, right, "+");
+    YogError_raise_binop_type_error(env, HDL2VAL(self), right, "+");
 
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+    return YUNDEF;
 }
 
 static YogVal
@@ -699,7 +696,6 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("&", and);
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("**", power);
-    DEFINE_METHOD("+", add);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-", subtract);
     DEFINE_METHOD("-self", negative);
@@ -715,6 +711,11 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("|", or);
     DEFINE_METHOD("~self", not);
 #undef DEFINE_METHOD
+#define DEFINE_METHOD2(name, ...)  do { \
+    YogClass_define_method2(env, cFixnum, pkg, (name), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD2("+", add, "n", NULL);
+#undef DEFINE_METHOD2
     vm->cFixnum = cFixnum;
 
     RETURN_VOID(env);
