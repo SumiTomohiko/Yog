@@ -37,6 +37,9 @@ struct YogNativeFunction2 {
     void* f;
 
     uint_t args_num;
+    uint_t posargs_num; /* arguments number but *, **, & */
+    int_t vararg_pos; /* index or -1 for unacceptable */
+    int_t varkwarg_pos; /* index or -1 for unacceptable */
     struct YogNativeArg args[0];
 };
 

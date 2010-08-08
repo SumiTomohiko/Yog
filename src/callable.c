@@ -1,6 +1,7 @@
 #include "yog/config.h"
 #include <stdarg.h>
 #include <string.h>
+#include <strings.h>
 #include "yog/arg.h"
 #include "yog/array.h"
 #include "yog/callable.h"
@@ -451,8 +452,8 @@ set_posarg(YogEnv* env, YogHandle* self, uint_t args_num, YogHandle* args[], uin
     /* NOTREACHED */
 }
 
-static BOOL
-find_special_arg(YogEnv* env, YogHandle* self, ID name, uint_t* pindex)
+static int_t
+find_special_arg(YogEnv* env, YogHandle* self, ID name)
 {
     uint_t args_num = HDL_AS(YogNativeFunction2, self)->args_num;
     YogNativeArg* args = HDL_AS(YogNativeFunction2, self)->args;
@@ -461,41 +462,21 @@ find_special_arg(YogEnv* env, YogHandle* self, ID name, uint_t* pindex)
         if (args[i].name != name) {
             continue;
         }
-        *pindex = i;
-        return TRUE;
+        return i;
     }
-    return FALSE;
+    return -1;
 }
 
-static BOOL
-find_varkwarg(YogEnv* env, YogHandle* self, uint_t* pindex)
+static int_t
+find_varkwarg(YogEnv* env, YogHandle* self)
 {
-    return find_special_arg(env, self, env->vm->id_star, pindex);
+    return find_special_arg(env, self, env->vm->id_star);
 }
 
-static BOOL
-find_vararg(YogEnv* env, YogHandle* self, uint_t* pindex)
+static int_t
+find_vararg(YogEnv* env, YogHandle* self)
 {
-    return find_special_arg(env, self, env->vm->id_star2, pindex);
-}
-
-static uint_t
-count_posargs(YogEnv* env, YogHandle* self)
-{
-    uint_t args_num = HDL_AS(YogNativeFunction2, self)->args_num;
-    YogVM* vm = env->vm;
-    ID id_star = vm->id_star;
-    ID id_star2 = vm->id_star2;
-    ID id_amp = vm->id_amp;
-    YogNativeArg* args = HDL_AS(YogNativeFunction2, self)->args;
-    uint_t i;
-    for (i = 0; i < args_num; i++) {
-        ID name = args[i].name;
-        if ((name == id_star) || (name == id_star2) || (name == id_amp)) {
-            break;
-        }
-    }
-    return i;
+    return find_special_arg(env, self, env->vm->id_star2);
 }
 
 static BOOL
@@ -600,27 +581,24 @@ set_blockarg(YogEnv* env, YogHandle* self, YogHandle* args[], YogHandle* blockar
 static YogVal
 YogNativeFunction2_call_for_instance(YogEnv* env, YogHandle* self, YogHandle* recv, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg, YogVal* pmulti_val)
 {
-    YogHandle* frame = YogHandle_REGISTER(env, YogCFrame_new(env));
-    YogGC_UPDATE_PTR(env, HDL_AS(YogCFrame, frame), f, HDL2VAL(self));
-    YogEval_push_frame(env, HDL2VAL(frame));
+    YogVal frame = YogCFrame_new(env);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogCFrame, frame), f, HDL2VAL(self));
+    YogEval_push_frame(env, frame);
 
     uint_t args_num = HDL_AS(YogNativeFunction2, self)->args_num;
     YogHandle* args[args_num];
-    uint_t i;
-    for (i = 0; i < args_num; i++) {
-        args[i] = NULL;
-    }
+    bzero(args, sizeof(args));
 
-    uint_t formal_posargc = count_posargs(env, self);
+    uint_t formal_posargc = HDL_AS(YogNativeFunction2, self)->posargs_num;
     YogHandle* formal_vararg;
-    uint_t index;
-    if (find_vararg(env, self, &index)) {
+    if (HDL_AS(YogNativeFunction2, self)->vararg_pos != -1) {
         formal_vararg = YogHandle_REGISTER(env, YogArray_new(env));
-        args[index] = formal_vararg;
+        args[HDL_AS(YogNativeFunction2, self)->vararg_pos] = formal_vararg;
     }
     else {
         formal_vararg = NULL;
     }
+    uint_t i;
     for (i = 0; i < posargc; i++) {
         set_posarg(env, self, formal_posargc, args, i, formal_vararg, posargs[i], posargc);
     }
@@ -630,9 +608,9 @@ YogNativeFunction2_call_for_instance(YogEnv* env, YogHandle* self, YogHandle* re
     }
 
     YogHandle* formal_varkwarg;
-    if (find_varkwarg(env, self, &index)) {
+    if (HDL_AS(YogNativeFunction2, self)->varkwarg_pos != -1) {
         formal_varkwarg = YogHandle_REGISTER(env, YogDict_new(env));
-        args[index] = formal_varkwarg;
+        args[HDL_AS(YogNativeFunction2, self)->varkwarg_pos] = formal_varkwarg;
     }
     else {
         formal_varkwarg = NULL;
@@ -691,7 +669,7 @@ YogNativeFunction2_call_for_instance(YogEnv* env, YogHandle* self, YogHandle* re
     }
 
     if (IS_UNDEF(retval) && (pmulti_val != NULL)) {
-        *pmulti_val = HDL_AS(YogCFrame, frame)->multi_val;
+        *pmulti_val = PTR_AS(YogCFrame, env->frame)->multi_val;
     }
 
     YogEval_pop_frame(env);
@@ -1041,12 +1019,22 @@ YogNativeFunction2_new(YogEnv* env, YogHandle* pkg, YogHandle* class_name, YogHa
     YogGC_UPDATE_PTR(env, HDL_AS(YogNativeFunction2, h_self), func_name, HDL2VAL(func_name));
     HDL_AS(YogNativeFunction2, h_self)->f = f;
     HDL_AS(YogNativeFunction2, h_self)->args_num = args_num;
+    va_list aq;
+    va_copy(aq, ap);
     uint_t n = 0;
     BOOL optional = FALSE;
     const char* name;
     while ((name = va_arg(ap, const char*)) != NULL) {
         n += init_arg(env, h_self, n, name, &optional);
     }
+    uint_t posargs_num = 0;
+    while ((name = va_arg(aq, const char*)) != NULL) {
+        char c = name[0];
+        posargs_num += (c == '|') || (c == '*') || (c == '&') ? 0 : 1;
+    }
+    HDL_AS(YogNativeFunction2, h_self)->posargs_num = posargs_num;
+    HDL_AS(YogNativeFunction2, h_self)->vararg_pos = find_vararg(env, h_self);
+    HDL_AS(YogNativeFunction2, h_self)->varkwarg_pos = find_varkwarg(env, h_self);
 
     return h_self;
 }
