@@ -80,9 +80,10 @@ make_jmp_val(YogEnv* env, uint_t n)
 static void
 set_lhs_composition(YogEnv* env, uint_t left, uint_t middle, uint_t right)
 {
-    PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_left_num = left;
-    PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_middle_num = middle;
-    PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_right_num = right;
+    YogVal frame = env->frame;
+    PTR_AS(YogScriptFrame, frame)->lhs_left_num = left;
+    PTR_AS(YogScriptFrame, frame)->lhs_middle_num = middle;
+    PTR_AS(YogScriptFrame, frame)->lhs_right_num = right;
 }
 
 static void
