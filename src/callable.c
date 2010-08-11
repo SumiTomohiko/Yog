@@ -581,7 +581,7 @@ set_blockarg(YogEnv* env, YogHandle* self, YogHandle* args[], YogHandle* blockar
 static YogVal
 YogNativeFunction2_call_for_instance(YogEnv* env, YogHandle* self, YogHandle* recv, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg, YogVal* pmulti_val)
 {
-    YogVal frame = YogCFrame_new(env);
+    YogVal frame = YogFrame_get_c_frame(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogCFrame, frame), f, HDL2VAL(self));
     YogEval_push_frame(env, frame);
 
@@ -672,6 +672,7 @@ YogNativeFunction2_call_for_instance(YogEnv* env, YogHandle* self, YogHandle* re
         *pmulti_val = PTR_AS(YogCFrame, env->frame)->multi_val;
     }
 
+    YogThread_put_c_frame(env, env->thread, env->frame);
     YogEval_pop_frame(env);
     return retval;
 }
@@ -682,7 +683,7 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* s
     YogHandle* args = create_positional_argument(env, posargc, posargs, vararg);
     YogHandle* kw = create_keyword_argument(env, kwargc, kwargs, varkwarg);
 
-    YogHandle* frame = YogHandle_REGISTER(env, YogCFrame_new(env));
+    YogHandle* frame = YogHandle_REGISTER(env, YogFrame_get_c_frame(env));
     YogGC_UPDATE_PTR(env, HDL_AS(YogCFrame, frame), f, HDL2VAL(callee));
     YogEval_push_frame(env, HDL2VAL(frame));
 
@@ -693,6 +694,7 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* s
         *multi_val = HDL_AS(YogCFrame, frame)->multi_val;
     }
 
+    YogThread_put_c_frame(env, env->thread, env->frame);
     YogEval_pop_frame(env);
     return retval;
 }

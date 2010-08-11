@@ -207,6 +207,16 @@ YogFinishFrame_new(YogEnv* env)
 }
 
 YogVal
+YogFrame_get_c_frame(YogEnv* env)
+{
+    YogVal frame = YogThread_get_c_frame(env, env->thread);
+    if (IS_PTR(frame)) {
+        return frame;
+    }
+    return YogCFrame_new(env);
+}
+
+YogVal
 YogFrame_get_script_frame(YogEnv* env, YogVal code, uint_t locals_num)
 {
     YogVal frame = YogThread_get_script_frame(env, env->thread);
