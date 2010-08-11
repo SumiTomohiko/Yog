@@ -86,10 +86,8 @@ YogFrame_clean(YogEnv* env, YogVal self)
 static void
 YogFrame_init(YogEnv* env, YogVal self, YogFrameType type)
 {
-    SAVE_ARG(env, self);
     YogFrame_clean(env, self);
     PTR_AS(YogFrame, self)->type = type;
-    RETURN_VOID(env);
 }
 
 static void
