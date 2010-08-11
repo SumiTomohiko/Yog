@@ -240,8 +240,6 @@ st_init_table(YogEnv* env, YogHashType* type)
 inline static void
 find_entry(YogEnv* env, YogVal table, YogVal* ptr, uint_t hash_val, uint_t* bin_pos, YogVal key)
 {
-    SAVE_ARGS2(env, table, key);
-
     *bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
     *ptr = TABLE_ENTRY_TOP(table, *bin_pos);
     if (PTR_NOT_EQUAL(env, table, *ptr, hash_val, key)) {
@@ -251,8 +249,25 @@ find_entry(YogEnv* env, YogVal table, YogVal* ptr, uint_t hash_val, uint_t* bin_
         }
         *ptr = PTR_AS(YogTableEntry, (*ptr))->next;
     }
+}
 
-    RETURN_VOID(env);
+BOOL
+YogTable_lookup_sym(YogEnv* env, YogVal table, YogVal key, YogVal* value)
+{
+    /* YogTable_lookup without GC guard */
+    uint_t hash_val = do_hash(env, table, key);
+
+    YogVal ptr = YUNDEF;
+    uint_t bin_pos = 0;
+    find_entry(env, table, &ptr, hash_val, &bin_pos, key);
+
+    if (!IS_PTR(ptr)) {
+        return FALSE;
+    }
+    if (value != NULL) {
+        *value = PTR_AS(YogTableEntry, ptr)->record;
+    }
+    return TRUE;
 }
 
 BOOL

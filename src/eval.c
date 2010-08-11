@@ -277,35 +277,24 @@ push_jmp_val(YogEnv* env)
 static void
 exec_get_attr(YogEnv* env, YogVal obj, ID name)
 {
-    SAVE_ARG(env, obj);
     YogVal attr = YUNDEF;
-    YogVal class_of_obj = YUNDEF;
-    YogVal class_of_attr = YUNDEF;
-    YogVal class_name = YUNDEF;
-    YogVal attr_name = YUNDEF;
-    PUSH_LOCALS5(env, attr, class_of_obj, class_of_attr, class_name, attr_name);
-
-    class_of_obj = YogVal_get_class(env, obj);
-
     if (IS_PTR(obj) && ((PTR_AS(YogBasicObj, obj)->flags & HAS_ATTRS) != 0)) {
         attr = YogObj_get_attr(env, obj, name);
     }
+    YogVal class_of_obj = YogVal_get_class(env, obj);
     if (IS_UNDEF(attr)) {
         attr = YogClass_get_attr(env, class_of_obj, name);
     }
     if (IS_UNDEF(attr)) {
         YogError_raise_AttributeError(env, "%C object has no attribute \"%I\"", obj, name);
     }
-    class_of_attr = YogVal_get_class(env, attr);
+    YogVal class_of_attr = YogVal_get_class(env, attr);
     void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogClass, class_of_attr)->exec_get_descr;
     if (exec == NULL) {
         YogScriptFrame_push_stack(env, env->frame, attr);
+        return;
     }
-    else {
-        exec(env, attr, obj, class_of_obj);
-    }
-
-    RETURN_VOID(env);
+    exec(env, attr, obj, class_of_obj);
 }
 
 static YogVal
