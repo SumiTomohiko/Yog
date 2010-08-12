@@ -13,6 +13,7 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
+#include "yog/fixnum.h"
 #include "yog/frame.h"
 #include "yog/handle.h"
 #include "yog/misc.h"

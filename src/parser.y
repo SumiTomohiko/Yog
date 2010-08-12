@@ -53,6 +53,10 @@ YogNode_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     case NODE_ATTR:
         KEEP(attr.obj);
         break;
+    case NODE_BINOP:
+        KEEP(binop.left);
+        KEEP(binop.right);
+        break;
     case NODE_BLOCK_ARG:
         KEEP(blockarg.params);
         KEEP(blockarg.stmts);
@@ -205,6 +209,21 @@ Module_new(YogEnv* env, uint_t lineno, ID name, YogVal stmts)
     YogGC_UPDATE_PTR(env, PTR_AS(YogNode, module), u.module.stmts, stmts);
 
     RETURN(env, module);
+}
+
+static YogVal
+Binop_new(YogEnv* env, uint_t lineno, YogBinop op, YogVal left, YogVal right)
+{
+    SAVE_ARGS2(env, left, right);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    node = YogNode_new(env, NODE_BINOP, lineno);
+    PTR_AS(YogNode, node)->u.binop.op = op;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogNode, node), u.binop.left, left);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogNode, node), u.binop.right, right);
+
+    RETURN(env, node);
 }
 
 static YogVal
@@ -791,14 +810,14 @@ Set_new(YogEnv* env, uint_t lineno, YogVal elems)
 }
 
 static YogVal
-AugmentedAssign_new(YogEnv* env, uint_t lineno, YogVal left, ID name, YogVal right)
+AugmentedAssign_new(YogEnv* env, uint_t lineno, YogBinop op, YogVal left, YogVal right)
 {
     SAVE_ARGS2(env, left, right);
     YogVal expr = YUNDEF;
     YogVal assign = YUNDEF;
     PUSH_LOCALS2(env, expr, assign);
 
-    expr = FuncCall_new2(env, lineno, left, name, right);
+    expr = Binop_new(env, lineno, op, left, right);
     assign = Assign_new(env, lineno, left, expr);
 
     RETURN(env, assign);
@@ -1085,8 +1104,23 @@ func_name(A) ::= STAR_STAR(B). {
 func_name(A) ::= XOR(B). {
     A = ID2VAL(TOKEN_ID(B));
 }
-func_name(A) ::= comp_op(B). {
-    A = B;
+func_name(A) ::= EQUAL_EQUAL(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= NOT_EQUAL(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= GREATER(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= GREATER_EQUAL(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= LESS(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
+func_name(A) ::= LESS_EQUAL(B). {
+    A = ID2VAL(TOKEN_ID(B));
 }
 
 decorators_opt(A) ::= /* empty */. {
@@ -1419,8 +1453,41 @@ assign_expr(A) ::= postfix_expr(B) EQUAL logical_or_expr(C). {
     uint_t lineno = NODE_LINENO(B);
     A = Assign_new(env, lineno, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) augmented_assign_op(C) logical_or_expr(D). {
-    A = AugmentedAssign_new(env, NODE_LINENO(B), B, VAL2ID(C), D);
+assign_expr(A) ::= postfix_expr(B) PLUS_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_ADD, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) MINUS_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_SUB, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) STAR_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_MUL, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) DIV_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_DIV, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) DIV_DIV_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_DIV_DIV, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) PERCENT_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_MOD, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) BAR_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_OR, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) AND_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_AND, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) XOR_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_XOR, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) STAR_STAR_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_POWER, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) LSHIFT_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_LSHIFT, B, C);
+}
+assign_expr(A) ::= postfix_expr(B) RSHIFT_EQUAL logical_or_expr(C). {
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_RSHIFT, B, C);
 }
 assign_expr(A) ::= postfix_expr(B) AND_AND_EQUAL logical_or_expr(C). {
     SAVE_LOCALS_TO_NAME(env, assign_expr);
@@ -1454,43 +1521,6 @@ assign_expr(A) ::= logical_or_expr(B). {
     A = B;
 }
 
-augmented_assign_op(A) ::= PLUS_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "+"));
-}
-augmented_assign_op(A) ::= MINUS_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "-"));
-}
-augmented_assign_op(A) ::= STAR_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "*"));
-}
-augmented_assign_op(A) ::= DIV_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "/"));
-}
-augmented_assign_op(A) ::= DIV_DIV_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "//"));
-}
-augmented_assign_op(A) ::= PERCENT_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "%"));
-}
-augmented_assign_op(A) ::= BAR_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "|"));
-}
-augmented_assign_op(A) ::= AND_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "&"));
-}
-augmented_assign_op(A) ::= XOR_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "^"));
-}
-augmented_assign_op(A) ::= STAR_STAR_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "**"));
-}
-augmented_assign_op(A) ::= LSHIFT_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "<<"));
-}
-augmented_assign_op(A) ::= RSHIFT_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, ">>"));
-}
-
 logical_or_expr(A) ::= logical_and_expr(B). {
     A = B;
 }
@@ -1516,30 +1546,26 @@ not_expr(A) ::= NOT(B) not_expr(C). {
 comparison(A) ::= xor_expr(B). {
     A = B;
 }
-comparison(A) ::= xor_expr(B) comp_op(C) xor_expr(D). {
-    A = FuncCall_new2(env, NODE_LINENO(B), B, VAL2ID(C), D);
+comparison(A) ::= xor_expr(B) EQUAL_EQUAL xor_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_EQ, B, C);
 }
-
-comp_op(A) ::= EQUAL_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "=="));
+comparison(A) ::= xor_expr(B) NOT_EQUAL xor_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_NEQ, B, C);
 }
-comp_op(A) ::= NOT_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "!="));
+comparison(A) ::= xor_expr(B) LESS xor_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_LT, B, C);
 }
-comp_op(A) ::= LESS. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "<"));
+comparison(A) ::= xor_expr(B) LESS_EQUAL xor_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_LE, B, C);
 }
-comp_op(A) ::= LESS_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "<="));
+comparison(A) ::= xor_expr(B) GREATER xor_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_GT, B, C);
 }
-comp_op(A) ::= GREATER. {
-    A = ID2VAL(YogVM_intern(env, env->vm, ">"));
+comparison(A) ::= xor_expr(B) GREATER_EQUAL xor_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_GE, B, C);
 }
-comp_op(A) ::= GREATER_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, ">="));
-}
-comp_op(A) ::= UFO(B). {
-    A = ID2VAL(TOKEN_ID(B));
+comparison(A) ::= xor_expr(B) UFO xor_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_UFO, B, C);
 }
 
 xor_expr(A) ::= or_expr(B). {
@@ -1566,16 +1592,11 @@ and_expr(A) ::= and_expr(B) AND(C) shift_expr(D). {
 shift_expr(A) ::= match_expr(B). {
     A = B;
 }
-shift_expr(A) ::= shift_expr(B) shift_op(C) match_expr(D). {
-    uint_t lineno = NODE_LINENO(B);
-    A = FuncCall_new2(env, lineno, B, VAL2ID(C), D);
+shift_expr(A) ::= shift_expr(B) LSHIFT match_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_LSHIFT, B, C);
 }
-
-shift_op(A) ::= LSHIFT(B). {
-    A = ID2VAL(TOKEN_ID(B));
-}
-shift_op(A) ::= RSHIFT(B). {
-    A = ID2VAL(TOKEN_ID(B));
+shift_expr(A) ::= shift_expr(B) RSHIFT match_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_RSHIFT, B, C);
 }
 
 match_expr(A) ::= arith_expr(B). {
@@ -1589,37 +1610,27 @@ match_expr(A) ::= match_expr(B) EQUAL_TILDA(C) arith_expr(D). {
 arith_expr(A) ::= term(B). {
     A = B;
 }
-arith_expr(A) ::= arith_expr(B) arith_op(C) term(D). {
-    uint_t lineno = NODE_LINENO(B);
-    A = FuncCall_new2(env, lineno, B, VAL2ID(C), D);
+arith_expr(A) ::= arith_expr(B) PLUS term(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_ADD, B, C);
+}
+arith_expr(A) ::= arith_expr(B) MINUS term(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_SUB, B, C);
 }
 
-arith_op(A) ::= PLUS(B). {
-    A = ID2VAL(TOKEN_ID(B));
+term(A) ::= term(B) STAR factor(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_MUL, B, C);
 }
-arith_op(A) ::= MINUS(B). {
-    A = ID2VAL(TOKEN_ID(B));
+term(A) ::= term(B) DIV factor(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_DIV, B, C);
 }
-
-term(A) ::= term(B) term_op(C) factor(D). {
-    uint_t lineno = NODE_LINENO(B);
-    A = FuncCall_new2(env, lineno, B, VAL2ID(C), D);
+term(A) ::= term(B) DIV_DIV factor(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_DIV_DIV, B, C);
+}
+term(A) ::= term(B) PERCENT factor(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_MOD, B, C);
 }
 term(A) ::= factor(B). {
     A = B;
-}
-
-term_op(A) ::= STAR(B). {
-    A = ID2VAL(TOKEN_ID(B));
-}
-term_op(A) ::= DIV(B). {
-    A = ID2VAL(TOKEN_ID(B));
-}
-term_op(A) ::= DIV_DIV(B). {
-    A = ID2VAL(TOKEN_ID(B));
-}
-term_op(A) ::= PERCENT(B). {
-    A = ID2VAL(TOKEN_ID(B));
 }
 
 factor(A) ::= PLUS(B) factor(C). {
@@ -1645,9 +1656,7 @@ power(A) ::= postfix_expr(B). {
     A = B;
 }
 power(A) ::= postfix_expr(B) STAR_STAR factor(C). {
-    uint_t lineno = NODE_LINENO(B);
-    ID id = YogVM_intern(env, env->vm, "**");
-    A = FuncCall_new2(env, lineno, B, id, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_POWER, B, C);
 }
 
 postfix_expr(A) ::= atom(B). {
@@ -1660,31 +1669,9 @@ postfix_expr(A) ::= postfix_expr(B) LBRACKET expr(C) RBRACKET. {
     uint_t lineno = NODE_LINENO(B);
     A = Subscript_new(env, lineno, B, C);
 }
-postfix_expr(A) ::= postfix_expr(B) DOT name(C). {
+postfix_expr(A) ::= postfix_expr(B) DOT func_name(C). {
     uint_t lineno = NODE_LINENO(B);
     A = Attr_new(env, lineno, B, VAL2ID(C));
-}
-
-name(A) ::= NAME(B). {
-    A = ID2VAL(TOKEN_ID(B));
-}
-name(A) ::= EQUAL_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "=="));
-}
-name(A) ::= NOT_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "!="));
-}
-name(A) ::= LESS. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "<"));
-}
-name(A) ::= LESS_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, "<="));
-}
-name(A) ::= GREATER. {
-    A = ID2VAL(YogVM_intern(env, env->vm, ">"));
-}
-name(A) ::= GREATER_EQUAL. {
-    A = ID2VAL(YogVM_intern(env, env->vm, ">="));
 }
 
 atom(A) ::= NAME(B). {

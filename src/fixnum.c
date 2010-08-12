@@ -61,30 +61,36 @@ YogFixnum_add_bignum(YogEnv* env, YogVal self, YogVal bignum)
     RETURN(env, left_and_result);
 }
 
-static YogVal
-add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+YogVal
+YogFixnum_add(YogEnv* env, YogVal self, YogHandle* n)
 {
-    CHECK_SELF_TYPE2(env, self);
+    CHECK_SELF_TYPE(env, self);
 
     YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        return YogVal_from_int(env, VAL2INT(HDL2VAL(self)) + VAL2INT(right));
+        return YogVal_from_int(env, VAL2INT(self) + VAL2INT(right));
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         YogVal result = YogFloat_new(env);
-        FLOAT_NUM(result) = (double)VAL2INT(HDL2VAL(self)) + FLOAT_NUM(right);
+        FLOAT_NUM(result) = (double)VAL2INT(self) + FLOAT_NUM(right);
         return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        return YogFixnum_add_bignum(env, HDL2VAL(self), right);
+        return YogFixnum_add_bignum(env, self, right);
     }
 
-    YogError_raise_binop_type_error(env, HDL2VAL(self), right, "+");
+    YogError_raise_binop_type_error(env, self, right, "+");
 
     /* NOTREACHED */
     return YUNDEF;
+}
+
+static YogVal
+add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    return YogFixnum_add(env, HDL2VAL(self), n);
 }
 
 static YogVal

@@ -519,6 +519,158 @@ inst match_exception
     }
 }
 
+inst add
+()
+(right, left)
+(...) depth: 1
+{
+    if (IS_FIXNUM(left)) {
+        YogHandle* x = YogHandle_REGISTER(env, right);
+        YogVal n = YogFixnum_add(env, left, x);
+        YogScriptFrame_push_stack(env, env->frame, n);
+    }
+}
+
+inst sub
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst mul
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst div
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst div_div
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst match
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst lshift
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst rshift
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst mod
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst power
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst and
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst or
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst xor
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst lt
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst gt
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst le
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst ge
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst eq
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst neq
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst ufo
+()
+(right, left)
+(...) depth: 1
+{
+}
+
+inst subscript
+()
+(right, left)
+(...) depth: 1
+{
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=c
  */

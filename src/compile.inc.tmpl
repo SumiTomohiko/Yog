@@ -57,7 +57,7 @@ ${count_stack_size}
                     }
                 }
                 size += push_size - pop_size;
-                YOG_ASSERT(env, 0 <= size, "Too many pops.");
+                YOG_ASSERT(env, 0 <= size, "Too many pops (%d)", size);
                 if (max < size) {
                     max = size;
                 }
