@@ -430,11 +430,9 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, uint_t lineno""" % { "inst": 
             push_size = self.stack_depth2c(inst.name, inst.push_size, inst.push_values)
             count_stack_size.write("""
                 case OP(%(name)s):
-                    {
-                        pop_size =%(pop_size)s;
-                        push_size =%(push_size)s;
-                        break;
-                    }""" % { "name": inst.name.upper(), "pop_size": pop_size, "push_size": push_size })
+                    pop_size =%(pop_size)s;
+                    push_size =%(push_size)s;
+                    break;""" % { "name": inst.name.upper(), "pop_size": pop_size, "push_size": push_size })
 
         s = self.substitute_template(
                 compile_inc_tmpl, 
