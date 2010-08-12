@@ -435,8 +435,8 @@ static void*
 alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
 {
     size_t size_including_header = size + sizeof(ChunkHeader);
-    FreeHeader* chunk;
-    FreeHeader** list;
+    FreeHeader* chunk = NULL;
+    FreeHeader** list = NULL;
 #define FIND_BEST_CHUNK do { \
     if (find_best_chunk(env, msc, size_including_header, &chunk, &list)) { \
         return handle_free_chunk(env, msc, size_including_header, chunk, list); \
