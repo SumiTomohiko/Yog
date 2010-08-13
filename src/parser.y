@@ -1457,19 +1457,19 @@ assign_expr(A) ::= postfix_expr(B) PLUS_EQUAL logical_or_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_ADD, B, C);
 }
 assign_expr(A) ::= postfix_expr(B) MINUS_EQUAL logical_or_expr(C). {
-    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_SUB, B, C);
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_SUBTRACT, B, C);
 }
 assign_expr(A) ::= postfix_expr(B) STAR_EQUAL logical_or_expr(C). {
-    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_MUL, B, C);
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_MULTIPLY, B, C);
 }
 assign_expr(A) ::= postfix_expr(B) DIV_EQUAL logical_or_expr(C). {
-    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_DIV, B, C);
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_DIVIDE, B, C);
 }
 assign_expr(A) ::= postfix_expr(B) DIV_DIV_EQUAL logical_or_expr(C). {
-    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_DIV_DIV, B, C);
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_FLOOR_DIVIDE, B, C);
 }
 assign_expr(A) ::= postfix_expr(B) PERCENT_EQUAL logical_or_expr(C). {
-    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_MOD, B, C);
+    A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_MODULO, B, C);
 }
 assign_expr(A) ::= postfix_expr(B) BAR_EQUAL logical_or_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_OR, B, C);
@@ -1547,22 +1547,22 @@ comparison(A) ::= xor_expr(B). {
     A = B;
 }
 comparison(A) ::= xor_expr(B) EQUAL_EQUAL xor_expr(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_EQ, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_EQUAL, B, C);
 }
 comparison(A) ::= xor_expr(B) NOT_EQUAL xor_expr(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_NEQ, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_NOT_EQUAL, B, C);
 }
 comparison(A) ::= xor_expr(B) LESS xor_expr(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_LT, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_LESS, B, C);
 }
 comparison(A) ::= xor_expr(B) LESS_EQUAL xor_expr(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_LE, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_LESS_EQUAL, B, C);
 }
 comparison(A) ::= xor_expr(B) GREATER xor_expr(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_GT, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_GREATER, B, C);
 }
 comparison(A) ::= xor_expr(B) GREATER_EQUAL xor_expr(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_GE, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_GREATER_EQUAL, B, C);
 }
 comparison(A) ::= xor_expr(B) UFO xor_expr(C). {
     A = Binop_new(env, NODE_LINENO(B), BINOP_UFO, B, C);
@@ -1614,20 +1614,20 @@ arith_expr(A) ::= arith_expr(B) PLUS term(C). {
     A = Binop_new(env, NODE_LINENO(B), BINOP_ADD, B, C);
 }
 arith_expr(A) ::= arith_expr(B) MINUS term(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_SUB, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_SUBTRACT, B, C);
 }
 
 term(A) ::= term(B) STAR factor(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_MUL, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_MULTIPLY, B, C);
 }
 term(A) ::= term(B) DIV factor(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_DIV, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_DIVIDE, B, C);
 }
 term(A) ::= term(B) DIV_DIV factor(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_DIV_DIV, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_FLOOR_DIVIDE, B, C);
 }
 term(A) ::= term(B) PERCENT factor(C). {
-    A = Binop_new(env, NODE_LINENO(B), BINOP_MOD, B, C);
+    A = Binop_new(env, NODE_LINENO(B), BINOP_MODULO, B, C);
 }
 term(A) ::= factor(B). {
     A = B;

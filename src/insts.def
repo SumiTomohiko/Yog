@@ -543,28 +543,28 @@ inst add
     }
 }
 
-inst sub
+inst subtract
 ()
 (right, left)
 (...) depth: 1
 {
 }
 
-inst mul
+inst multiply
 ()
 (right, left)
 (...) depth: 1
 {
 }
 
-inst div
+inst divide
 ()
 (right, left)
 (...) depth: 1
 {
 }
 
-inst div_div
+inst floor_divide
 ()
 (right, left)
 (...) depth: 1
@@ -592,7 +592,7 @@ inst rshift
 {
 }
 
-inst mod
+inst modulo
 ()
 (right, left)
 (...) depth: 1
@@ -627,42 +627,42 @@ inst xor
 {
 }
 
-inst lt
+inst less
 ()
 (right, left)
 (...) depth: 1
 {
 }
 
-inst gt
+inst greater
 ()
 (right, left)
 (...) depth: 1
 {
 }
 
-inst le
+inst less_equal
 ()
 (right, left)
 (...) depth: 1
 {
 }
 
-inst ge
+inst greater_equal
 ()
 (right, left)
 (...) depth: 1
 {
 }
 
-inst eq
+inst equal
 ()
 (right, left)
 (...) depth: 1
 {
 }
 
-inst neq
+inst not_equal
 ()
 (right, left)
 (...) depth: 1
