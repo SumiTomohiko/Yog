@@ -548,6 +548,27 @@ inst subtract
 (right, left)
 (...) depth: 1
 {
+    if (IS_FIXNUM(left)) {
+        YogHandle* x = YogHandle_REGISTER(env, right);
+        YogVal n = YogFixnum_subtract(env, left, x);
+        push(env, n);
+    }
+    else if (IS_PTR(left)) {
+        YogHandle* x = YogHandle_REGISTER(env, left);
+        YogHandle* y = YogHandle_REGISTER(env, right);
+        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+            push(env, YogBignum_subtract(env, x, y));
+        }
+        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
+            push(env, YogFloat_subtract(env, x, y));
+        }
+        else {
+            exec_subtract(env, left, right);
+        }
+    }
+    else {
+        exec_subtract(env, left, right);
+    }
 }
 
 inst multiply

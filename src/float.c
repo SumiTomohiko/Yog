@@ -200,40 +200,40 @@ add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
     return YogFloat_add(env, self, f);
 }
 
-static YogVal
-subtract(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFloat_subtract(YogEnv* env, YogHandle* self, YogHandle* f)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal result = YUNDEF;
-    PUSH_LOCALS2(env, right, result);
-
-    YogCArg params[] = { { "f", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "-", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(f);
     if (IS_FIXNUM(right)) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = FLOAT_NUM(self) - VAL2INT(right);
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) - VAL2INT(HDL2VAL(f));
+        return result;
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = FLOAT_NUM(self) - mpz_get_d(BIGNUM_NUM(right));
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        mpz_t* h = &BIGNUM_NUM(HDL2VAL(f));
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) - mpz_get_d(*h);
+        return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = FLOAT_NUM(self) - FLOAT_NUM(right);
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) - FLOAT_NUM(HDL2VAL(f));
+        return result;
     }
 
-    YogError_raise_binop_type_error(env, self, right, "-");
-
+    YogError_raise_binop_type_error(env, HDL2VAL(self), right, "-");
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+static YogVal
+subtract(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFloat_subtract(env, self, f);
 }
 
 static YogVal
@@ -433,7 +433,6 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
-    DEFINE_METHOD("-", subtract);
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
@@ -445,6 +444,7 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method2(env, cFloat, pkg, name, __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD2("+", add, "f", NULL);
+    DEFINE_METHOD2("-", subtract, "f", NULL);
 #undef DEFINE_METHOD2
     vm->cFloat = cFloat;
 

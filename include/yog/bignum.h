@@ -40,7 +40,7 @@ YOG_EXPORT YogVal YogBignum_modulo(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogBignum_multiply(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogBignum_or(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogBignum_power(YogEnv*, YogVal, YogVal);
-YOG_EXPORT YogVal YogBignum_subtract(YogEnv*, YogVal, YogVal);
+YOG_EXPORT YogVal YogBignum_subtract(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT long long YogBignum_to_long_long(YogEnv*, YogVal, const char*);
 YOG_EXPORT YogVal YogBignum_to_s(YogEnv*, YogVal);
 YOG_EXPORT SIGNED_TYPE YogBignum_to_signed_type(YogEnv*, YogVal, const char*);

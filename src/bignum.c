@@ -8,6 +8,7 @@
 #include "yog/float.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/vm.h"
@@ -157,65 +158,39 @@ normalize(YogEnv* env, YogVal self)
 }
 
 YogVal
-YogBignum_subtract(YogEnv* env, YogVal self, YogVal bignum)
+YogBignum_subtract(YogEnv* env, YogHandle* self, YogHandle* n)
 {
-    SAVE_ARGS2(env, self, bignum);
-    YogVal result = YUNDEF;
-    PUSH_LOCAL(env, result);
-
-    result = YogBignum_new(env);
-    mpz_sub(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
-    result = normalize(env, result);
-
-    RETURN(env, result);
-}
-
-static YogVal
-subtract_int(YogEnv* env, YogVal self, int_t right)
-{
-    SAVE_ARG(env, self);
-    YogVal result = YUNDEF;
-    YogVal bignum = YUNDEF;
-    PUSH_LOCALS2(env, result, bignum);
-
-    bignum = YogBignum_from_int(env, right);
-    result = YogBignum_subtract(env, self, bignum);
-
-    RETURN(env, result);
-}
-
-static YogVal
-subtract(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal result = YUNDEF;
-    PUSH_LOCALS2(env, right, result);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "-", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        result = subtract_int(env, self, VAL2INT(right));
-        RETURN(env, result);
+        YogVal bignum = YogBignum_from_int(env, right);
+        return YogBignum_subtract(env, self, YogHandle_REGISTER(env, bignum));
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(self)) - FLOAT_NUM(right);
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        mpz_t* h = &BIGNUM_NUM(HDL2VAL(self));
+        FLOAT_NUM(result) = mpz_get_d(*h) - FLOAT_NUM(HDL2VAL(n));
+        return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        result = YogBignum_subtract(env, self, right);
-        RETURN(env, result);
+        YogVal result = YogBignum_new(env);
+        mpz_t* h = &BIGNUM_NUM(HDL2VAL(self));
+        mpz_sub(BIGNUM_NUM(result), *h, BIGNUM_NUM(HDL2VAL(n)));
+        return normalize(env, result);
     }
 
-    YogError_raise_binop_type_error(env, self, right, "-");
-
+    YogError_raise_binop_type_error(env, HDL2VAL(self), right, "-");
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+static YogVal
+subtract(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogBignum_subtract(env, self, n);
 }
 
 static YogVal
@@ -1045,7 +1020,6 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
-    DEFINE_METHOD("-", subtract);
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
@@ -1062,6 +1036,7 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method2(env, cBignum, pkg, (name), __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD2("+", add, "n", NULL);
+    DEFINE_METHOD2("-", subtract, "n", NULL);
 #undef DEFINE_METHOD2
     vm->cBignum = cBignum;
 

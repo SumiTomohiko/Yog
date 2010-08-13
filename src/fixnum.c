@@ -92,40 +92,36 @@ add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
     return YogFixnum_add(env, HDL2VAL(self), n);
 }
 
-static YogVal
-subtract(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFixnum_subtract(YogEnv* env, YogVal self, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal result = YUNDEF;
-    YogVal bignum = YUNDEF;
-    YogVal right = YUNDEF;
-    PUSH_LOCALS3(env, result, bignum, right);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "-", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        result = YogVal_from_int(env, VAL2INT(self) - VAL2INT(right));
-        RETURN(env, result);
+        return YogVal_from_int(env, VAL2INT(self) - VAL2INT(right));
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = (double)VAL2INT(self) - FLOAT_NUM(right);
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        FLOAT_NUM(result) = (double)VAL2INT(self) - FLOAT_NUM(HDL2VAL(n));
+        return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        bignum = YogBignum_from_int(env, VAL2INT(self));
-        result = YogBignum_subtract(env, bignum, right);
-        RETURN(env, result);
+        YogVal bignum = YogBignum_from_int(env, VAL2INT(self));
+        return YogBignum_subtract(env, YogHandle_REGISTER(env, bignum), n);
     }
 
     YogError_raise_binop_type_error(env, self, right, "-");
-
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+static YogVal
+subtract(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFixnum_subtract(env, HDL2VAL(self), n);
 }
 
 static YogVal
@@ -702,7 +698,6 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
-    DEFINE_METHOD("-", subtract);
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
@@ -720,6 +715,7 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method2(env, cFixnum, pkg, (name), __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD2("+", add, "n", NULL);
+    DEFINE_METHOD2("-", subtract, "n", NULL);
 #undef DEFINE_METHOD2
     vm->cFixnum = cFixnum;
 
