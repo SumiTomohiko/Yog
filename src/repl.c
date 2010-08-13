@@ -73,7 +73,7 @@ YogRepl_do(YogEnv* env)
 
     char buffer[4096];
     while (fgets(buffer, array_sizeof(buffer), stdin) != NULL) {
-        YogString_add_cstr(env, src, buffer);
+        YogString_append_cstr(env, src, buffer);
         if (eval(env, pkg, src)) {
             YogString_clear(env, src);
             print_prompt();

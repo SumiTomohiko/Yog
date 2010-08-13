@@ -345,7 +345,7 @@ find(YogEnv* env, YogVal self, YogVal substr, uint_t from)
 }
 
 void
-YogString_add(YogEnv* env, YogVal self, YogVal s)
+YogString_append(YogEnv* env, YogVal self, YogVal s)
 {
     SAVE_ARGS2(env, self, s);
 
@@ -384,14 +384,14 @@ gsub(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     char* t = (char*)YogSysdeps_alloca(sizeof(char) * (size + 1)); \
     memcpy(t, STRING_CSTR(self) + from, size); \
     t[size] = '\0'; \
-    YogString_add_cstr(env, s, t); \
+    YogString_append_cstr(env, s, t); \
 } while (0)
     s = YogString_of_encoding(env, STRING_ENCODING(self));
     uint_t from = 0;
     uint_t index;
     while ((index = find(env, self, substr, from)) != UNSIGNED_MAX) {
         ADD_STR(index);
-        YogString_add(env, s, to);
+        YogString_append(env, s, to);
         from = index + YogString_size(env, substr);
     }
     ADD_STR(YogString_size(env, self));
@@ -478,15 +478,9 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     RETURN(env, self);
 }
 
-static YogVal
-add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
+YogVal
+YogString_add(YogEnv* env, YogHandle* self, YogHandle* s)
 {
-    CHECK_SELF_TYPE2(env, self);
-    if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "Can't convert %C object to string implicitly", HDL2VAL(s));
-        /* NOTREACHED */
-    }
-
     uint_t size1 = YogString_size(env, HDL2VAL(self));
     uint_t size2 = YogString_size(env, HDL2VAL(s));
     uint_t size = size1 + size2 + 1;
@@ -505,6 +499,17 @@ add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
     YogGC_UPDATE_PTR(env, PTR_AS(YogString, t), encoding, STRING_ENCODING(HDL2VAL(self)));
 
     return t;
+}
+
+static YogVal
+add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
+{
+    CHECK_SELF_TYPE2(env, self);
+    if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "Can't convert %C object to string implicitly", HDL2VAL(s));
+        /* NOTREACHED */
+    }
+    return YogString_add(env, self, s);
 }
 
 YogVal
@@ -876,7 +881,7 @@ dump(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 #define ADD_CHAR(fmt, i)    do { \
     char buf[6]; \
     YogSysdeps_snprintf(buf, array_sizeof(buf), fmt, STRING_CSTR(self)[i]); \
-    YogString_add_cstr(env, s, buf); \
+    YogString_append_cstr(env, s, buf); \
 } while (0)
     ADD_CHAR(FORMAT, 0);
     uint_t size = YogString_size(env, self) + 1;
@@ -1139,7 +1144,7 @@ YogString_to_i(YogEnv* env, YogVal self)
 }
 
 void
-YogString_add_cstr(YogEnv* env, YogVal self, const char* s)
+YogString_append_cstr(YogEnv* env, YogVal self, const char* s)
 {
     SAVE_ARG(env, self);
     YogVal body = YUNDEF;

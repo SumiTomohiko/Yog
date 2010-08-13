@@ -96,7 +96,7 @@ read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         char buffer[4096];
         uint_t size = fread(buffer, sizeof(char), array_sizeof(buffer) - 1, fp);
         buffer[size] = '\0';
-        YogString_add_cstr(env, s, buffer);
+        YogString_append_cstr(env, s, buffer);
     } while (!feof(fp));
 
     RETURN(env, s);
@@ -140,13 +140,13 @@ readline(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
         RETURN(env, YNIL);
     }
     line = YogString_of_encoding(env, PTR_AS(YogFile, self)->encoding);
-    YogString_add_cstr(env, line, buffer);
+    YogString_append_cstr(env, line, buffer);
 
     while (buffer[strlen(buffer) - 1] != '\n') {
         if (FGETS == NULL) {
             break;
         }
-        YogString_add_cstr(env, line, buffer);
+        YogString_append_cstr(env, line, buffer);
     }
 #undef FGETS
 

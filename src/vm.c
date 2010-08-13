@@ -1482,7 +1482,7 @@ YogVM_configure_search_path(YogEnv* env, YogVM* vm, const char* argv0)
     }
     else {
 #if WINDOWS
-        YogString_add_cstr(env, prog, "\\..\\lib");
+        YogString_append_cstr(env, prog, "\\..\\lib");
         YogArray_push(env, search_path, prog);
 #else
         s = YogString_from_str(env, PREFIX "/lib/yog/" PACKAGE_VERSION);

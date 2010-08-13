@@ -483,7 +483,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                     }
 
                     str = PTR_AS(HereDoc, heredoc)->str;
-                    YogString_add(env, str, line);
+                    YogString_append(env, str, line);
                 }
             }
 

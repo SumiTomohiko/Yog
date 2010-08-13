@@ -132,11 +132,11 @@ add_num(YogEnv* env, YogVal s, YogVal o)
     if (IS_FIXNUM(o)) {
         char buf[21]; /* 64bit integer with '\0' needs at most 21 bytes */
         snprintf(buf, array_sizeof(buf), "%d", VAL2INT(o));
-        YogString_add_cstr(env, s, buf);
+        YogString_append_cstr(env, s, buf);
     }
     else if (IS_PTR(o) && (BASIC_OBJ_TYPE(o) == TYPE_BIGNUM)) {
         t = YogBignum_to_s(env, o);
-        YogString_add(env, s, t);
+        YogString_append(env, s, t);
     }
     else {
         YogError_raise_TypeError(env, "Object for %%D must be Fixnum or Bignum, not %C", o);
@@ -156,7 +156,7 @@ add_class_name(YogEnv* env, YogVal s, YogVal o)
     klass = YogVal_get_class(env, o);
     ID id = PTR_AS(YogClass, klass)->name;
     name = YogVM_id2name(env, env->vm, id);
-    YogString_add(env, s, name);
+    YogString_append(env, s, name);
 
     RETURN_VOID(env);
 }
@@ -190,7 +190,7 @@ add_string(YogEnv* env, YogVal s, YogVal o)
     PUSH_LOCAL(env, t);
 
     t = conv_to_string(env, o);
-    YogString_add(env, s, t);
+    YogString_append(env, s, t);
 
     RETURN_VOID(env);
 }
@@ -226,7 +226,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             break;
         case 'I':
             name = YogVM_id2name(env, env->vm, va_arg(ap, ID));
-            YogString_add(env, s, name);
+            YogString_append(env, s, name);
             break;
         case 'S':
             va_arg(ap, YogVal);
@@ -248,13 +248,13 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
                     long long n = va_arg(ap, long long);
                     YogSysdeps_snprintf(buf, array_sizeof(buf), "%lld", n);
                 }
-                YogString_add_cstr(env, s, buf);
+                YogString_append_cstr(env, s, buf);
             }
             break;
         case 's':
             {
                 char* p = va_arg(ap, char*);
-                YogString_add_cstr(env, s, p);
+                YogString_append_cstr(env, s, p);
             }
             break;
         case 'u':
@@ -268,7 +268,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
                     unsigned long long n = va_arg(ap, unsigned long long);
                     YogSysdeps_snprintf(buf, array_sizeof(buf), "%llu", n);
                 }
-                YogString_add_cstr(env, s, buf);
+                YogString_append_cstr(env, s, buf);
             }
             break;
         default:

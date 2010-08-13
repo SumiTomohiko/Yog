@@ -52,7 +52,7 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        line = line.replace("YogHandle_register", "YogHandle_REGISTER")
+                        line = line.replace("YogString_add", "YogString_append")
                         out.write(line)
             move(tmp, path)
 

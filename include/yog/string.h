@@ -34,8 +34,9 @@ DECL_AS_TYPE(YogString_new);
  */
 /* src/string.c */
 YOG_EXPORT YogVal YogCharArray_new_str(YogEnv*, const char*);
-YOG_EXPORT void YogString_add(YogEnv*, YogVal, YogVal);
-YOG_EXPORT void YogString_add_cstr(YogEnv*, YogVal, const char*);
+YOG_EXPORT YogVal YogString_add(YogEnv*, YogHandle*, YogHandle*);
+YOG_EXPORT void YogString_append(YogEnv*, YogVal, YogVal);
+YOG_EXPORT void YogString_append_cstr(YogEnv*, YogVal, const char*);
 YOG_EXPORT char YogString_at(YogEnv*, YogVal, uint_t);
 YOG_EXPORT void YogString_clear(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogString_clone(YogEnv*, YogVal);

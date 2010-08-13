@@ -530,12 +530,14 @@ inst add
         YogScriptFrame_push_stack(env, env->frame, n);
     }
     else if (IS_PTR(left)) {
+        YogHandle* x = YogHandle_REGISTER(env, left);
+        YogHandle* y = YogHandle_REGISTER(env, right);
         if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
-            YogHandle* x = YogHandle_REGISTER(env, left);
-            YogHandle* y = YogHandle_REGISTER(env, right);
             YogScriptFrame_push_stack(env, env->frame, YogFloat_add(env, x, y));
         }
         else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
+            YogVal result = YogString_add(env, x, y);
+            YogScriptFrame_push_stack(env, env->frame, result);
         }
         else {
         }

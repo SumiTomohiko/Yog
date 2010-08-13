@@ -142,9 +142,9 @@ join_path(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
 #undef CHECK_TYPE
 
     path = YogString_of_encoding(env, STRING_ENCODING(head));
-    YogString_add(env, path, head);
-    YogString_add(env, path, env->vm->path_separator);
-    YogString_add(env, path, tail);
+    YogString_append(env, path, head);
+    YogString_append(env, path, env->vm->path_separator);
+    YogString_append(env, path, tail);
 
     RETURN(env, path);
 }
