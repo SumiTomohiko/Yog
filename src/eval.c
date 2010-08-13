@@ -44,6 +44,53 @@ YogEval_push_frame(YogEnv* env, YogVal frame)
     env->frame = frame;
 }
 
+static void
+push(YogEnv* env, YogVal val)
+{
+    YogScriptFrame_push_stack(env, env->frame, val);
+}
+
+static void
+set_lhs_composition(YogEnv* env, uint_t left, uint_t middle, uint_t right)
+{
+    YogVal frame = env->frame;
+    PTR_AS(YogScriptFrame, frame)->lhs_left_num = left;
+    PTR_AS(YogScriptFrame, frame)->lhs_middle_num = middle;
+    PTR_AS(YogScriptFrame, frame)->lhs_right_num = right;
+}
+
+static void
+exec_call(YogEnv* env, YogHandle* callee, uint_t left, uint_t middle, uint_t right, uint_t posargc, YogHandle* posargs[], uint_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+{
+    set_lhs_composition(env, left, middle, right);
+
+    YogVal klass = YogVal_get_class(env, HDL2VAL(callee));
+    if (PTR_AS(YogClass, klass)->exec == NULL) {
+        YogError_raise_TypeError(env, "%C is not callable", HDL2VAL(callee));
+    }
+
+    PTR_AS(YogClass, klass)->exec(env, callee, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+}
+
+static void
+exec_binop(YogEnv* env, const char* op, YogVal left, YogVal right)
+{
+    YogVal attr = YogVal_get_attr(env, left, YogVM_intern(env, env->vm, op));
+    if (IS_UNDEF(attr)) {
+        YogError_raise_AttributeError(env, "%C object doesn't have an attribute of %s", left, op);
+        /* NOTREACHED */
+    }
+    YogHandle* h_attr = YogHandle_REGISTER(env, attr);
+    YogHandle* h = YogHandle_REGISTER(env, right);
+    exec_call(env, h_attr, 1, 0, 0, 1, &h, 0, NULL, NULL, NULL, NULL);
+}
+
+static void
+exec_add(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "+", left, right);
+}
+
 static YogVal
 pop(YogEnv* env)
 {
@@ -77,15 +124,6 @@ make_jmp_val(YogEnv* env, uint_t n)
     }
 
     RETURN(env, objs);
-}
-
-static void
-set_lhs_composition(YogEnv* env, uint_t left, uint_t middle, uint_t right)
-{
-    YogVal frame = env->frame;
-    PTR_AS(YogScriptFrame, frame)->lhs_left_num = left;
-    PTR_AS(YogScriptFrame, frame)->lhs_middle_num = middle;
-    PTR_AS(YogScriptFrame, frame)->lhs_right_num = right;
 }
 
 static void

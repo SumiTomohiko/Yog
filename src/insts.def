@@ -94,14 +94,7 @@ inst call_function
     YogHandle* varkwarg = YogHandle_REGISTER(env, varkwargc == 1 ? pop(env) : YUNDEF);
     YogHandle* blockarg = YogHandle_REGISTER(env, blockargc == 1 ? pop(env) : YUNDEF);
 
-    set_lhs_composition(env, left, middle, right);
-
-    YogVal klass = YogVal_get_class(env, HDL2VAL(callee));
-    if (PTR_AS(YogClass, klass)->exec == NULL) {
-        YogError_raise_TypeError(env, "%C is not callable", HDL2VAL(callee));
-    }
-
-    PTR_AS(YogClass, klass)->exec(env, callee, argc, args, kwargc, kwargs, vararg, varkwarg, blockarg);
+    exec_call(env, callee, left, middle, right, argc, args, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 inst load_global
@@ -219,7 +212,7 @@ inst make_module
     YogHandle* h_code = YogHandle_REGISTER(env, code);
     YogVal module = YogModule_new(env);
     PTR_AS(YogModule, module)->name = name;
-    YogScriptFrame_push_stack(env, env->frame, module);
+    push(env, module);
 
     set_lhs_composition(env, 1, 0, 0);
     YogVal frame = create_frame_for_names(env, h_code->val, PTR_AS(YogObj, module)->attrs);
@@ -238,7 +231,7 @@ inst make_class
     PTR_AS(YogObj, kls->val)->attrs = YUNDEF;
     YogVal attrs = YogTable_new_symbol_table(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogObj, kls->val), attrs, attrs);
-    YogScriptFrame_push_stack(env, env->frame, kls->val);
+    push(env, kls->val);
 
     set_lhs_composition(env, 1, 0, 0);
     YogVal frame = create_frame_for_names(env, h_code->val, attrs);
@@ -527,22 +520,23 @@ inst add
     if (IS_FIXNUM(left)) {
         YogHandle* x = YogHandle_REGISTER(env, right);
         YogVal n = YogFixnum_add(env, left, x);
-        YogScriptFrame_push_stack(env, env->frame, n);
+        push(env, n);
     }
     else if (IS_PTR(left)) {
         YogHandle* x = YogHandle_REGISTER(env, left);
         YogHandle* y = YogHandle_REGISTER(env, right);
         if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
-            YogScriptFrame_push_stack(env, env->frame, YogFloat_add(env, x, y));
+            push(env, YogFloat_add(env, x, y));
         }
         else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
-            YogVal result = YogString_add(env, x, y);
-            YogScriptFrame_push_stack(env, env->frame, result);
+            push(env, YogString_add(env, x, y));
         }
         else {
+            exec_add(env, left, right);
         }
     }
     else {
+        exec_add(env, left, right);
     }
 }
 
