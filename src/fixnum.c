@@ -188,41 +188,45 @@ static double
 divide_float(YogEnv* env, YogVal left, YogVal right)
 {
     if (FLOAT_NUM(right) == 0.0) {
-        YogError_raise_ZeroDivisionError(env, "float division");
+        YogError_raise_ZeroDivisionError(env, "Float division");
     }
     return VAL2INT(left) / FLOAT_NUM(right);
 }
 
-static YogVal
-divide(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFixnum_divide(YogEnv* env, YogVal self, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal result = YUNDEF;
-    YogVal bignum = YUNDEF;
-    YogVal right = YUNDEF;
-    PUSH_LOCALS3(env, result, bignum, right);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "/", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(n);
     if (IS_BOOL(right) || IS_NIL(right) || IS_SYMBOL(right)) {
         YogError_raise_binop_type_error(env, self, right, "/");
+        /* NOTREACHED */
     }
 
-    result = YogFloat_new(env);
-
+    YogVal result = YogFloat_new(env);
+    right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
         FLOAT_NUM(result) = divide_int(env, self, right);
+        return result;
     }
-    else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
+    if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         FLOAT_NUM(result) = divide_float(env, self, right);
+        return result;
     }
-    else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
+    if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         FLOAT_NUM(result) = VAL2INT(self) / mpz_get_d(BIGNUM_NUM(right));
+        return result;
     }
+    /* NOTREACHED */
+    YOG_BUG(env, "Invalid operand (%p)", n);
 
-    RETURN(env, result);
+    return YUNDEF;
+}
+
+static YogVal
+divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFixnum_divide(env, HDL2VAL(self), n);
 }
 
 static int_t
@@ -670,7 +674,6 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
-    DEFINE_METHOD("/", divide);
     DEFINE_METHOD("//", floor_divide);
     DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD("<=>", compare);
@@ -688,6 +691,7 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("*", multiply, "n", NULL);
     DEFINE_METHOD2("+", add, "n", NULL);
     DEFINE_METHOD2("-", subtract, "n", NULL);
+    DEFINE_METHOD2("/", divide, "n", NULL);
 #undef DEFINE_METHOD2
     vm->cFixnum = cFixnum;
 

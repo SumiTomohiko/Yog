@@ -87,6 +87,12 @@ exec_binop(YogEnv* env, const char* op, YogVal left, YogVal right)
 }
 
 static void
+exec_divide(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "/", left, right);
+}
+
+static void
 exec_multiply(YogEnv* env, YogVal left, YogVal right)
 {
     exec_binop(env, "*", left, right);

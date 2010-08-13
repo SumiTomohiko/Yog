@@ -273,51 +273,58 @@ multiply(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
 }
 
 static YogVal
-div_(YogEnv* env, YogVal self, YogVal args, YogVal kw, const char* opname)
+divide_internal(YogEnv* env, YogHandle* self, YogHandle* f, const char* opname)
 {
-    SAVE_ARGS3(env, self, args, kw);
-    YogVal right = YUNDEF;
-    YogVal result = YUNDEF;
-    PUSH_LOCALS2(env, right, result);
-
-    YogCArg params[] = { { "f", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, opname, params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(f);
     if (IS_FIXNUM(right)) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = FLOAT_NUM(self) / VAL2INT(right);
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) / VAL2INT(right);
+        return result;
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = FLOAT_NUM(self) / mpz_get_d(BIGNUM_NUM(right));
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        double d = mpz_get_d(BIGNUM_NUM(HDL2VAL(f)));
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) / d;
+        return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = FLOAT_NUM(self) / FLOAT_NUM(right);
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) / FLOAT_NUM(HDL2VAL(f));
+        return result;
     }
 
-    YogError_raise_binop_type_error(env, self, right, opname);
-
+    YogError_raise_binop_type_error(env, HDL2VAL(self), right, opname);
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+YogVal
+YogFloat_divide(YogEnv* env, YogHandle* self, YogHandle* f)
+{
+    return divide_internal(env, self, f, "/");
+}
+
+YogVal
+YogFloat_floor_divide(YogEnv* env, YogHandle* self, YogHandle* f)
+{
+    return divide_internal(env, self, f, "//");
 }
 
 static YogVal
-divide(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+floor_divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
 {
-    return div_(env, self, args, kw, "/");
+    CHECK_SELF_TYPE2(env, self);
+    return YogFloat_floor_divide(env, self, f);
 }
 
 static YogVal
-floor_divide(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
 {
-    return div_(env, self, args, kw, "//");
+    CHECK_SELF_TYPE2(env, self);
+    return YogFloat_divide(env, self, f);
 }
 
 static YogVal
@@ -433,8 +440,6 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
-    DEFINE_METHOD("/", divide);
-    DEFINE_METHOD("//", floor_divide);
     DEFINE_METHOD("<=>", cmp);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
@@ -445,6 +450,8 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("*", multiply, "f", NULL);
     DEFINE_METHOD2("+", add, "f", NULL);
     DEFINE_METHOD2("-", subtract, "f", NULL);
+    DEFINE_METHOD2("/", divide, "f", NULL);
+    DEFINE_METHOD2("//", floor_divide, "f", NULL);
 #undef DEFINE_METHOD2
     vm->cFloat = cFloat;
 

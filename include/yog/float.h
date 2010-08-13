@@ -24,6 +24,8 @@ DECL_AS_TYPE(YogFloat_new);
 /* src/float.c */
 YOG_EXPORT YogVal YogFloat_add(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT void YogFloat_define_classes(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogFloat_divide(YogEnv*, YogHandle*, YogHandle*);
+YOG_EXPORT YogVal YogFloat_floor_divide(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogFloat_from_float(YogEnv*, double);
 YOG_EXPORT YogVal YogFloat_from_str(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogFloat_multiply(YogEnv*, YogHandle*, YogHandle*);

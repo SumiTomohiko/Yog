@@ -513,15 +513,19 @@ inst add
         push(env, n);
     }
     else if (IS_PTR(left)) {
-        YogHandle* x = YogHandle_REGISTER(env, left);
-        YogHandle* y = YogHandle_REGISTER(env, right);
         if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
             push(env, YogString_add(env, x, y));
         }
         else if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
             push(env, YogBignum_add(env, x, y));
         }
         else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
             push(env, YogFloat_add(env, x, y));
         }
         else {
@@ -544,12 +548,14 @@ inst subtract
         push(env, n);
     }
     else if (IS_PTR(left)) {
-        YogHandle* x = YogHandle_REGISTER(env, left);
-        YogHandle* y = YogHandle_REGISTER(env, right);
         if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
             push(env, YogBignum_subtract(env, x, y));
         }
         else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
             push(env, YogFloat_subtract(env, x, y));
         }
         else {
@@ -599,6 +605,29 @@ inst divide
 (right, left)
 (...) depth: 1
 {
+    if (IS_FIXNUM(left)) {
+        YogHandle* h = YogHandle_REGISTER(env, right);
+        YogVal n = YogFixnum_divide(env, left, h);
+        push(env, n);
+    }
+    else if (IS_PTR(left)) {
+        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
+            push(env, YogBignum_divide(env, x, y));
+        }
+        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
+            push(env, YogFloat_divide(env, x, y));
+        }
+        else {
+            exec_divide(env, left, right);
+        }
+    }
+    else {
+        exec_divide(env, left, right);
+    }
 }
 
 inst floor_divide
