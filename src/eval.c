@@ -5,6 +5,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
+#include "yog/bignum.h"
 #include "yog/binary.h"
 #include "yog/callable.h"
 #include "yog/code.h"

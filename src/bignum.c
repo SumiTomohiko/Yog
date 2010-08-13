@@ -18,6 +18,12 @@
         YogError_raise_TypeError((env), "self must be Bignum"); \
     } \
 } while (0)
+#define CHECK_SELF_TYPE2(env, self)  do { \
+    YogVal bignum = HDL2VAL((self)); \
+    if (!IS_PTR(bignum) || (BASIC_OBJ_TYPE(bignum) != TYPE_BIGNUM)) { \
+        YogError_raise_TypeError((env), "self must be Bignum"); \
+    } \
+} while (0)
 
 YogVal
 YogBignum_to_s(YogEnv* env, YogVal self)
@@ -96,40 +102,42 @@ negative(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     RETURN(env, bignum);
 }
 
-static YogVal
-add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogBignum_add(YogEnv* env, YogHandle* self, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal result = YUNDEF;
-    PUSH_LOCALS2(env, right, result);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "+", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        result = YogBignum_from_int(env, VAL2INT(right));
-        mpz_add(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(result));
-        RETURN(env, result);
+        YogVal result = YogBignum_from_int(env, VAL2INT(right));
+        mpz_t* num = &BIGNUM_NUM(HDL2VAL(self));
+        mpz_add(BIGNUM_NUM(result), *num, BIGNUM_NUM(result));
+        return result;
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(self)) + FLOAT_NUM(right);
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        mpz_t* num = &BIGNUM_NUM(HDL2VAL(self));
+        FLOAT_NUM(result) = mpz_get_d(*num) + FLOAT_NUM(HDL2VAL(n));
+        return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        result = YogBignum_new(env);
-        mpz_add(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(right));
-        RETURN(env, result);
+        YogVal result = YogBignum_new(env);
+        mpz_t* num = &BIGNUM_NUM(HDL2VAL(self));
+        mpz_add(BIGNUM_NUM(result), *num, BIGNUM_NUM(HDL2VAL(n)));
+        return result;
     }
 
-    YogError_raise_binop_type_error(env, self, right, "+");
-
+    YogError_raise_binop_type_error(env, HDL2VAL(self), right, "+");
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+static YogVal
+add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogBignum_add(env, self, n);
 }
 
 static YogVal
@@ -1036,7 +1044,6 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("&", and);
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("**", power);
-    DEFINE_METHOD("+", add);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-", subtract);
     DEFINE_METHOD("-self", negative);
@@ -1051,6 +1058,11 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("|", or);
     DEFINE_METHOD("~self", not);
 #undef DEFINE_METHOD
+#define DEFINE_METHOD2(name, ...) do { \
+    YogClass_define_method2(env, cBignum, pkg, (name), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD2("+", add, "n", NULL);
+#undef DEFINE_METHOD2
     vm->cBignum = cBignum;
 
     RETURN_VOID(env);

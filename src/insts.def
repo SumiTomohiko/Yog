@@ -525,11 +525,14 @@ inst add
     else if (IS_PTR(left)) {
         YogHandle* x = YogHandle_REGISTER(env, left);
         YogHandle* y = YogHandle_REGISTER(env, right);
-        if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
-            push(env, YogFloat_add(env, x, y));
-        }
-        else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
+        if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
             push(env, YogString_add(env, x, y));
+        }
+        else if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+            push(env, YogBignum_add(env, x, y));
+        }
+        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
+            push(env, YogFloat_add(env, x, y));
         }
         else {
             exec_add(env, left, right);
