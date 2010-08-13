@@ -465,12 +465,7 @@ inst not
 (val)
 (b)
 {
-    if (YOG_TEST(val)) {
-        b = YFALSE;
-    }
-    else {
-        b = YTRUE;
-    }
+    b = YOG_TEST(val) ? YFALSE : YTRUE;
 }
 
 inst long_return
@@ -504,12 +499,7 @@ inst match_exception
 (klass, exc)
 (b)
 {
-    if (YogVal_is_subclass_of(env, exc, klass)) {
-        b = YTRUE;
-    }
-    else {
-        b = YFALSE;
-    }
+    b = YogVal_is_subclass_of(env, exc, klass) ? YTRUE : YFALSE;
 }
 
 inst add
