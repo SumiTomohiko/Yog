@@ -539,19 +539,6 @@ YogString_multiply(YogEnv* env, YogVal self, int_t num)
     RETURN(env, s);
 }
 
-#if 0
-static YogVal
-slice(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
-{
-    YogVal s = YogString_of_size(env, STRING_SIZE(self));
-    uint_t i;
-    for (i = 0; i < STRING_SIZE(self); i++) {
-        STRING_CSTR(s)[i] = '\0';
-    }
-    return s;
-}
-#endif
-
 static YogVal
 multiply(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -1229,9 +1216,6 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("to_bin", to_bin);
     DEFINE_METHOD("to_i", to_i);
     DEFINE_METHOD("to_s", to_s);
-#if 0
-    DEFINE_METHOD("slice", slice);
-#endif
 #undef DEFINE_METHOD
 #define DEFINE_METHOD2(name, ...)  do { \
     YogClass_define_method2(env, cString, pkg, (name), __VA_ARGS__); \
