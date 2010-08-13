@@ -529,6 +529,19 @@ inst add
         YogVal n = YogFixnum_add(env, left, x);
         YogScriptFrame_push_stack(env, env->frame, n);
     }
+    else if (IS_PTR(left)) {
+        if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
+            YogScriptFrame_push_stack(env, env->frame, YogFloat_add(env, x, y));
+        }
+        else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
+        }
+        else {
+        }
+    }
+    else {
+    }
 }
 
 inst sub

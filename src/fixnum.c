@@ -64,8 +64,6 @@ YogFixnum_add_bignum(YogEnv* env, YogVal self, YogVal bignum)
 YogVal
 YogFixnum_add(YogEnv* env, YogVal self, YogHandle* n)
 {
-    CHECK_SELF_TYPE(env, self);
-
     YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
         return YogVal_from_int(env, VAL2INT(self) + VAL2INT(right));
@@ -90,6 +88,7 @@ YogFixnum_add(YogEnv* env, YogVal self, YogHandle* n)
 static YogVal
 add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
+    CHECK_SELF_TYPE2(env, self);
     return YogFixnum_add(env, HDL2VAL(self), n);
 }
 

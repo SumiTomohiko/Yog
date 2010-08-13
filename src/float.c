@@ -26,6 +26,12 @@
         YogError_raise_TypeError((env), "self must be Float"); \
     } \
 } while (0)
+#define CHECK_SELF_TYPE2(env, self)  do { \
+    YogVal obj = HDL2VAL((self)); \
+    if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_FLOAT)) { \
+        YogError_raise_TypeError((env), "self must be Float"); \
+    } \
+} while (0)
 
 static YogVal
 alloc(YogEnv* env, YogVal klass)
@@ -158,40 +164,40 @@ positive(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     RETURN(env, self);
 }
 
-static YogVal
-add(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFloat_add(YogEnv* env, YogHandle* self, YogHandle* f)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal result = YUNDEF;
-    PUSH_LOCALS2(env, right, result);
-
-    YogCArg params[] = { { "f", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "+", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(f);
     if (IS_FIXNUM(right)) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = FLOAT_NUM(self) + VAL2INT(right);
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) + VAL2INT(right);
+        return result;
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = FLOAT_NUM(self) + mpz_get_d(BIGNUM_NUM(right));
-        RETURN(env, result);
+        double x = mpz_get_d(BIGNUM_NUM(right));
+        YogVal result = YogFloat_new(env);
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) + x;
+        return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
-        result = YogFloat_new(env);
-        FLOAT_NUM(result) = FLOAT_NUM(self) + FLOAT_NUM(right);
-        RETURN(env, result);
+        YogVal result = YogFloat_new(env);
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) + FLOAT_NUM(HDL2VAL(f));
+        return result;
     }
 
-    YogError_raise_binop_type_error(env, self, right, "+");
-
+    YogError_raise_binop_type_error(env, HDL2VAL(self), right, "+");
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+static YogVal
+add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFloat_add(env, self, f);
 }
 
 static YogVal
@@ -426,7 +432,6 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("**", power);
-    DEFINE_METHOD("+", add);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-", subtract);
     DEFINE_METHOD("-self", negative);
@@ -436,6 +441,11 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
+#define DEFINE_METHOD2(name, ...) do { \
+    YogClass_define_method2(env, cFloat, pkg, name, __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD2("+", add, "f", NULL);
+#undef DEFINE_METHOD2
     vm->cFloat = cFloat;
 
     RETURN_VOID(env);

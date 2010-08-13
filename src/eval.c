@@ -14,6 +14,7 @@
 #include "yog/eval.h"
 #include "yog/exception.h"
 #include "yog/fixnum.h"
+#include "yog/float.h"
 #include "yog/frame.h"
 #include "yog/handle.h"
 #include "yog/misc.h"
