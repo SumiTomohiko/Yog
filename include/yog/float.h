@@ -26,6 +26,7 @@ YOG_EXPORT YogVal YogFloat_add(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT void YogFloat_define_classes(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogFloat_from_float(YogEnv*, double);
 YOG_EXPORT YogVal YogFloat_from_str(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogFloat_multiply(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogFloat_new(YogEnv*);
 YOG_EXPORT YogVal YogFloat_power(YogEnv*, YogVal, int_t);
 YOG_EXPORT YogVal YogFloat_subtract(YogEnv*, YogHandle*, YogHandle*);

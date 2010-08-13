@@ -37,7 +37,7 @@ YOG_EXPORT YogVal YogBignum_from_unsigned_int(YogEnv*, uint_t);
 YOG_EXPORT YogVal YogBignum_from_unsigned_long_long(YogEnv*, unsigned long long);
 YOG_EXPORT YogVal YogBignum_lshift(YogEnv*, YogVal, int_t);
 YOG_EXPORT YogVal YogBignum_modulo(YogEnv*, YogVal, YogVal);
-YOG_EXPORT YogVal YogBignum_multiply(YogEnv*, YogVal, YogVal);
+YOG_EXPORT YogVal YogBignum_multiply(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogBignum_or(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogBignum_power(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogBignum_subtract(YogEnv*, YogHandle*, YogHandle*);

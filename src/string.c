@@ -513,51 +513,42 @@ add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
 }
 
 YogVal
-YogString_multiply(YogEnv* env, YogVal self, int_t num)
+YogString_multiply(YogEnv* env, YogHandle* self, YogVal n)
 {
-    SAVE_ARG(env, self);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
+    if (!IS_FIXNUM(n)) {
+        YogError_raise_TypeError(env, "Can't multiply string by non-Fixnum of type %C", n);
+        /* NOTREACHED */
+    }
 
-    uint_t size = YogString_size(env, self);
+    uint_t size = YogString_size(env, HDL2VAL(self));
+    int_t num = VAL2INT(n);
     if (num < 0) {
-        YogError_raise_ArgumentError(env, "negative argument");
+        YogError_raise_ArgumentError(env, "Negative argument");
+        /* NOTREACHED */
     }
-    uint_t needed_size = size * num;
-    if ((num != 0) && (needed_size / num != size)) {
-        YogError_raise_ArgumentError(env, "argument too big");
+    uint_t needed_size = size * num + 1;
+    if ((num != 0) && ((needed_size - 1) / num != size)) {
+        YogError_raise_ArgumentError(env, "Argument too big");
+        /* NOTREACHED */
     }
-    s = YogString_of_size(env, needed_size + 1);
+    YogVal s = YogString_of_size(env, needed_size);
     int_t i;
     for (i = 0; i < num; i++) {
-        memcpy(STRING_CSTR(s) + i * size, STRING_CSTR(self), size);
+        memcpy(STRING_CSTR(s) + i * size, STRING_CSTR(HDL2VAL(self)), size);
     }
-    STRING_CSTR(s)[needed_size] = '\0';
-    PTR_AS(YogString, s)->size = needed_size + 1;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), encoding, STRING_ENCODING(self));
+    STRING_CSTR(s)[needed_size - 1] = '\0';
+    PTR_AS(YogString, s)->size = needed_size;
+    YogVal enc = STRING_ENCODING(HDL2VAL(self));
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), encoding, enc);
 
-    RETURN(env, s);
+    return s;
 }
 
 static YogVal
-multiply(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+multiply(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal arg = YUNDEF;
-    YogVal s = YUNDEF;
-    PUSH_LOCALS2(env, arg, s);
-
-    YogCArg params[] = { { "n", &arg }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "*", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
-    if (!IS_FIXNUM(arg)) {
-        YogError_raise_TypeError(env, "can't multiply string by non-Fixnum of type %C", arg);
-    }
-
-    s = YogString_multiply(env, self, VAL2INT(arg));
-
-    RETURN(env, s);
+    CHECK_SELF_TYPE2(env, self);
+    return YogString_multiply(env, self, HDL2VAL(n));
 }
 
 static YogVal
@@ -1202,7 +1193,6 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cString, pkg, (name), (f)); \
 } while (0)
-    DEFINE_METHOD("*", multiply);
     DEFINE_METHOD("<=>", compare);
     DEFINE_METHOD("=~", match);
     DEFINE_METHOD("[]=", assign_subscript);
@@ -1220,6 +1210,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD2(name, ...)  do { \
     YogClass_define_method2(env, cString, pkg, (name), __VA_ARGS__); \
 } while (0)
+    DEFINE_METHOD2("*", multiply, "n", NULL);
     DEFINE_METHOD2("+", add, "s", NULL);
     DEFINE_METHOD2("<<", lshift, "s", NULL);
     DEFINE_METHOD2("[]", subscript, "index", NULL);

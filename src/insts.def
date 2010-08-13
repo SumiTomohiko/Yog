@@ -518,8 +518,8 @@ inst add
 (...) depth: 1
 {
     if (IS_FIXNUM(left)) {
-        YogHandle* x = YogHandle_REGISTER(env, right);
-        YogVal n = YogFixnum_add(env, left, x);
+        YogHandle* h = YogHandle_REGISTER(env, right);
+        YogVal n = YogFixnum_add(env, left, h);
         push(env, n);
     }
     else if (IS_PTR(left)) {
@@ -549,8 +549,8 @@ inst subtract
 (...) depth: 1
 {
     if (IS_FIXNUM(left)) {
-        YogHandle* x = YogHandle_REGISTER(env, right);
-        YogVal n = YogFixnum_subtract(env, left, x);
+        YogHandle* h = YogHandle_REGISTER(env, right);
+        YogVal n = YogFixnum_subtract(env, left, h);
         push(env, n);
     }
     else if (IS_PTR(left)) {
@@ -576,6 +576,32 @@ inst multiply
 (right, left)
 (...) depth: 1
 {
+    if (IS_FIXNUM(left)) {
+        YogHandle* h = YogHandle_REGISTER(env, right);
+        YogVal n = YogFixnum_multiply(env, left, h);
+        push(env, n);
+    }
+    else if (IS_PTR(left)) {
+        YogHandle* x = YogHandle_REGISTER(env, left);
+        if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
+            push(env, YogString_multiply(env, x, right));
+        }
+        else {
+            YogHandle* y = YogHandle_REGISTER(env, right);
+            if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+                push(env, YogBignum_multiply(env, x, y));
+            }
+            else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
+                push(env, YogFloat_multiply(env, x, y));
+            }
+            else {
+                exec_multiply(env, left, right);
+            }
+        }
+    }
+    else {
+        exec_multiply(env, left, right);
+    }
 }
 
 inst divide
