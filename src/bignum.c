@@ -758,79 +758,54 @@ YogBignum_clone(YogEnv* env, YogVal self)
     RETURN(env, retval);
 }
 
-static YogVal
-power_int(YogEnv* env, YogVal self, int_t exp)
+YogVal
+YogBignum_power(YogEnv* env, YogHandle* self, int_t exp)
 {
-    SAVE_ARG(env, self);
-    YogVal f = YUNDEF;
-    YogVal bignum = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS3(env, f, bignum, retval);
-
     if (exp < 0) {
-        f = YogFloat_new(env);
-        FLOAT_NUM(f) = 1 / mpz_get_d(BIGNUM_NUM(self));
-        retval = YogFloat_power(env, f, - exp);
-        RETURN(env, retval);
+        YogVal f = YogFloat_new(env);
+        FLOAT_NUM(f) = 1 / mpz_get_d(BIGNUM_NUM(HDL2VAL(self)));
+        return YogFloat_power(env, f, - exp);
     }
     else if (exp == 0) {
-        RETURN(env, INT2VAL(1));
+        return INT2VAL(1);
     }
 
-    bignum = YogBignum_clone(env, self);
-    int_t n = exp;
-    while (1 < n) {
-        mpz_mul(BIGNUM_NUM(bignum), BIGNUM_NUM(bignum), BIGNUM_NUM(self));
-        n--;
+    YogVal bignum = YogBignum_clone(env, HDL2VAL(self));
+    mpz_t* m = &BIGNUM_NUM(HDL2VAL(self));
+    int_t i;
+    for (i = exp; 1 < i; i--) {
+        mpz_mul(BIGNUM_NUM(bignum), BIGNUM_NUM(bignum), *m);
     }
-
-    RETURN(env, bignum);
+    return bignum;
 }
 
 YogVal
-YogBignum_power(YogEnv* env, YogVal self, YogVal right)
+YogBignum_binop_power(YogEnv* env, YogHandle* self, YogHandle* n)
 {
-    SAVE_ARGS2(env, self, right);
-    YogVal retval = YUNDEF;
-    YogVal f = YUNDEF;
-    YogVal bignum = YUNDEF;
-    YogVal mod = YUNDEF;
-    PUSH_LOCALS4(env, retval, f, bignum, mod);
-
+    YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        retval = power_int(env, self, VAL2INT(right));
-        RETURN(env, retval);
+        return YogBignum_power(env, self, VAL2INT(right));
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
-        double f = mpz_get_d(BIGNUM_NUM(self));
-        retval = YogFloat_new(env);
-        FLOAT_NUM(retval) = pow(f, FLOAT_NUM(right));
-        RETURN(env, retval);
+        double f = mpz_get_d(BIGNUM_NUM(HDL2VAL(self)));
+        YogVal retval = YogFloat_new(env);
+        FLOAT_NUM(retval) = pow(f, FLOAT_NUM(HDL2VAL(n)));
+        return retval;
     }
 
-    YogError_raise_binop_type_error(env, self, right, "**");
-
+    YogError_raise_binop_type_error(env, HDL2VAL(self), right, "**");
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
 }
 
 static YogVal
-power(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+power(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, right, retval);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "**", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
-    retval = YogBignum_power(env, self, right);
-
-    RETURN(env, retval);
+    CHECK_SELF_TYPE2(env, self);
+    return YogBignum_binop_power(env, self, n);
 }
 
 int_t
@@ -947,7 +922,6 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method(env, cBignum, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("&", and);
-    DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("<=>", compare);
@@ -962,6 +936,7 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD2("%", modulo, "n", NULL);
     DEFINE_METHOD2("*", multiply, "n", NULL);
+    DEFINE_METHOD2("**", power, "n", NULL);
     DEFINE_METHOD2("+", add, "n", NULL);
     DEFINE_METHOD2("-", subtract, "n", NULL);
     DEFINE_METHOD2("/", divide, "n", NULL);

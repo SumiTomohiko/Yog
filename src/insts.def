@@ -762,6 +762,28 @@ inst power
 (right, left)
 (...) depth: 1
 {
+    if (IS_FIXNUM(left)) {
+        YogHandle* h = YogHandle_REGISTER(env, right);
+        push(env, YogFixnum_binop_power(env, left, h));
+    }
+    else if (IS_PTR(left)) {
+        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
+            push(env, YogBignum_binop_power(env, x, y));
+        }
+        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
+            push(env, YogFloat_binop_power(env, x, y));
+        }
+        else {
+            exec_power(env, left, right);
+        }
+    }
+    else {
+        exec_power(env, left, right);
+    }
 }
 
 inst and

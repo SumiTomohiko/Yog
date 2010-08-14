@@ -328,72 +328,54 @@ divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
 }
 
 static YogVal
-power_float(YogEnv* env, YogVal self, double exp)
+power_float(YogEnv* env, YogHandle* self, double exp)
 {
-    SAVE_ARG(env, self);
-    YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
-
-    if (FLOAT_NUM(self) == 0.0) {
+    if (FLOAT_NUM(HDL2VAL(self)) == 0.0) {
         YogError_raise_ZeroDivisionError(env, "0.0 cannot be raised to a negative power");
     }
 
-    retval = YogFloat_new(env);
-    FLOAT_NUM(retval) = pow(FLOAT_NUM(self), exp);
-
-    RETURN(env, retval);
-}
-
-static YogVal
-power_int(YogEnv* env, YogVal self, int_t exp)
-{
-    SAVE_ARG(env, self);
-    YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
-
-    if (FLOAT_NUM(self) == 0.0) {
-        YogError_raise_ZeroDivisionError(env, "0.0 cannot be raised to a negative power");
-    }
-
-    retval = YogFloat_new(env);
-    FLOAT_NUM(retval) = pow(FLOAT_NUM(self), (double)exp);
-
-    RETURN(env, retval);
+    YogVal retval = YogFloat_new(env);
+    FLOAT_NUM(retval) = pow(FLOAT_NUM(HDL2VAL(self)), exp);
+    return retval;
 }
 
 YogVal
 YogFloat_power(YogEnv* env, YogVal self, int_t exp)
 {
-    return power_int(env, self, exp);
+    if (FLOAT_NUM(self) == 0.0) {
+        YogError_raise_ZeroDivisionError(env, "0.0 cannot be raised to a negative power");
+    }
+
+    double x = FLOAT_NUM(self);
+    YogVal retval = YogFloat_new(env);
+    FLOAT_NUM(retval) = pow(x, (double)exp);
+    return retval;
 }
 
-static YogVal
-power(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFloat_binop_power(YogEnv* env, YogHandle* self, YogHandle* f)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal retval = YUNDEF;
-    YogVal right = YUNDEF;
-    PUSH_LOCALS2(env, retval, right);
-
-    YogCArg params[] = { { "f", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "**", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(f);
     if (IS_FIXNUM(right)) {
-        retval = power_int(env, self, VAL2INT(right));
-        RETURN(env, retval);
+        return YogFloat_power(env, HDL2VAL(self), VAL2INT(right));
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
-        retval = power_float(env, self, FLOAT_NUM(right));
-        RETURN(env, retval);
+        return power_float(env, self, FLOAT_NUM(right));
     }
 
-    YogError_raise_binop_type_error(env, self, right, "**");
-
+    YogError_raise_binop_type_error(env, HDL2VAL(self), right, "**");
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+static YogVal
+power(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFloat_binop_power(env, self, f);
 }
 
 YogVal
@@ -437,7 +419,6 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cFloat, pkg, (name), (f)); \
 } while (0)
-    DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("<=>", cmp);
@@ -448,6 +429,7 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method2(env, cFloat, pkg, name, __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD2("*", multiply, "f", NULL);
+    DEFINE_METHOD2("**", power, "f", NULL);
     DEFINE_METHOD2("+", add, "f", NULL);
     DEFINE_METHOD2("-", subtract, "f", NULL);
     DEFINE_METHOD2("/", divide, "f", NULL);
