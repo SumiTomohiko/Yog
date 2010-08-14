@@ -22,6 +22,7 @@
 #include "yog/module.h"
 #include "yog/package.h"
 #include "yog/parser.h"
+#include "yog/regexp.h"
 #include "yog/set.h"
 #include "yog/string.h"
 #include "yog/table.h"
@@ -84,6 +85,12 @@ exec_binop(YogEnv* env, const char* op, YogVal left, YogVal right)
     YogHandle* h_attr = YogHandle_REGISTER(env, attr);
     YogHandle* h = YogHandle_REGISTER(env, right);
     exec_call(env, h_attr, 1, 0, 0, 1, &h, 0, NULL, NULL, NULL, NULL);
+}
+
+static void
+exec_match(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "=~", left, right);
 }
 
 static void

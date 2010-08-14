@@ -479,7 +479,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogString_add(YogEnv* env, YogHandle* self, YogHandle* s)
+YogString_binop_add(YogEnv* env, YogHandle* self, YogHandle* s)
 {
     uint_t size1 = YogString_size(env, HDL2VAL(self));
     uint_t size2 = YogString_size(env, HDL2VAL(s));
@@ -509,11 +509,11 @@ add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
         YogError_raise_TypeError(env, "Can't convert %C object to string implicitly", HDL2VAL(s));
         /* NOTREACHED */
     }
-    return YogString_add(env, self, s);
+    return YogString_binop_add(env, self, s);
 }
 
 YogVal
-YogString_multiply(YogEnv* env, YogHandle* self, YogVal n)
+YogString_binop_multiply(YogEnv* env, YogHandle* self, YogVal n)
 {
     if (!IS_FIXNUM(n)) {
         YogError_raise_TypeError(env, "Can't multiply string by non-Fixnum of type %C", n);
@@ -548,7 +548,7 @@ static YogVal
 multiply(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogString_multiply(env, self, HDL2VAL(n));
+    return YogString_binop_multiply(env, self, HDL2VAL(n));
 }
 
 static YogVal
@@ -617,10 +617,8 @@ index2offset(YogEnv* env, YogVal self, int_t index, uint_t* offset)
 static int_t
 normalize_index(YogEnv* env, YogVal self, int_t index)
 {
-    SAVE_ARG(env, self);
-
     if (0 <= index) {
-        RETURN(env, index);
+        return index;
     }
     uint_t n = 0;
     uint_t pos = 0;
@@ -630,8 +628,7 @@ normalize_index(YogEnv* env, YogVal self, int_t index)
         pos += YogEncoding_mbc_size(env, STRING_ENCODING(self), p);
         n++;
     }
-
-    RETURN(env, n + index);
+    return n + index;
 }
 
 static uint_t
@@ -764,15 +761,11 @@ assign_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Y
 YogVal
 YogString_match(YogEnv* env, YogVal self, YogVal regexp, int_t pos)
 {
-    SAVE_ARGS2(env, self, regexp);
-    YogVal m = YUNDEF;
-    PUSH_LOCAL(env, m);
-
     int_t n = normalize_index(env, self, pos);
     uint_t offset = 0;
     uint_t size = YogString_size(env, self);
     if ((0 < size) && !index2offset(env, self, n, &offset)) {
-        RETURN(env, YNIL);
+        return YNIL;
     }
 
     OnigUChar* str = (OnigUChar*)STRING_CSTR(self);
@@ -781,31 +774,27 @@ YogString_match(YogEnv* env, YogVal self, YogVal regexp, int_t pos)
     OnigRegion* region = onig_region_new();
     int_t r = onig_search(PTR_AS(YogRegexp, regexp)->onig_regexp, str, end, start, end, region, ONIG_OPTION_NONE);
     if (r == ONIG_MISMATCH) {
-        RETURN(env, YNIL);
+        return YNIL;
     }
 
-    m = YogMatch_new(env, self, regexp, region);
+    return YogMatch_new(env, self, regexp, region);
+}
 
-    RETURN(env, m);
+YogVal
+YogString_binop_match(YogEnv* env, YogHandle* self, YogHandle* regexp)
+{
+    YogVal re = HDL2VAL(regexp);
+    if (!IS_PTR(re) || (BASIC_OBJ_TYPE(re) != TYPE_REGEXP)) {
+        YogError_raise_TypeError(env, "Can't convert %C object to Regexp implicitly", HDL2VAL(regexp));
+        /* NOTREACHED */
+    }
+    return YogString_match(env, HDL2VAL(self), re, 0);
 }
 
 static YogVal
-match(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+match(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* regexp)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal m = YUNDEF;
-    YogVal regexp = YUNDEF;
-    PUSH_LOCALS2(env, m, regexp);
-    CHECK_SELF_TYPE(env, self);
-    YogCArg params[] = { { "regexp", &regexp }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "=~", params, args, kw);
-    if (!IS_PTR(regexp) || (BASIC_OBJ_TYPE(regexp) != TYPE_REGEXP)) {
-        YogError_raise_TypeError(env, "operand must be Regexp");
-    }
-
-    m = YogString_match(env, self, regexp, 0);
-
-    RETURN(env, m);
+    return YogString_binop_match(env, self, regexp);
 }
 
 static YogVal
@@ -1194,7 +1183,6 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method(env, cString, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("<=>", compare);
-    DEFINE_METHOD("=~", match);
     DEFINE_METHOD("[]=", assign_subscript);
     DEFINE_METHOD("dump", dump);
     DEFINE_METHOD("each_byte", each_byte);
@@ -1213,6 +1201,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("*", multiply, "n", NULL);
     DEFINE_METHOD2("+", add, "s", NULL);
     DEFINE_METHOD2("<<", lshift, "s", NULL);
+    DEFINE_METHOD2("=~", match, "regexp", NULL);
     DEFINE_METHOD2("[]", subscript, "index", NULL);
 #undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter) do { \

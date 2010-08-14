@@ -104,7 +104,7 @@ negative(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 }
 
 YogVal
-YogBignum_add(YogEnv* env, YogHandle* self, YogHandle* n)
+YogBignum_binop_add(YogEnv* env, YogHandle* self, YogHandle* n)
 {
     YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
@@ -138,7 +138,7 @@ static YogVal
 add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogBignum_add(env, self, n);
+    return YogBignum_binop_add(env, self, n);
 }
 
 static YogVal
@@ -158,12 +158,13 @@ normalize(YogEnv* env, YogVal self)
 }
 
 YogVal
-YogBignum_subtract(YogEnv* env, YogHandle* self, YogHandle* n)
+YogBignum_binop_subtract(YogEnv* env, YogHandle* self, YogHandle* n)
 {
     YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
         YogVal bignum = YogBignum_from_int(env, right);
-        return YogBignum_subtract(env, self, YogHandle_REGISTER(env, bignum));
+        YogHandle* h = YogHandle_REGISTER(env, bignum);
+        return YogBignum_binop_subtract(env, self, h);
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
@@ -190,14 +191,14 @@ static YogVal
 subtract(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogBignum_subtract(env, self, n);
+    return YogBignum_binop_subtract(env, self, n);
 }
 
 static YogVal
 multiply(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogBignum_multiply(env, self, n);
+    return YogBignum_binop_multiply(env, self, n);
 }
 
 static YogVal
@@ -239,7 +240,7 @@ divide_bignum(YogEnv* env, YogHandle* self, YogHandle* bignum)
 }
 
 YogVal
-YogBignum_divide(YogEnv* env, YogHandle* self, YogHandle* n)
+YogBignum_binop_divide(YogEnv* env, YogHandle* self, YogHandle* n)
 {
     YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
@@ -264,7 +265,7 @@ static YogVal
 divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogBignum_divide(env, self, n);
+    return YogBignum_binop_divide(env, self, n);
 }
 
 static YogVal
@@ -357,7 +358,7 @@ modulo(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
 }
 
 YogVal
-YogBignum_floor_divide(YogEnv* env, YogHandle* self, YogHandle* n)
+YogBignum_binop_floor_divide(YogEnv* env, YogHandle* self, YogHandle* n)
 {
     YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
@@ -382,7 +383,7 @@ static YogVal
 floor_divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogBignum_floor_divide(env, self, n);
+    return YogBignum_binop_floor_divide(env, self, n);
 }
 
 static YogVal
@@ -569,11 +570,11 @@ YogBignum_from_str(YogEnv* env, YogVal s, int_t base)
 }
 
 YogVal
-YogBignum_multiply(YogEnv* env, YogHandle* self, YogHandle* n)
+YogBignum_binop_multiply(YogEnv* env, YogHandle* self, YogHandle* n)
 {
     YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        return YogFixnum_multiply(env, right, self);
+        return YogFixnum_binop_multiply(env, right, self);
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }

@@ -342,28 +342,27 @@ end_str(YogEnv* env, YogVal self, YogVal group)
     RETURN(env, a);
 }
 
-static YogVal
-match(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogRegexp_binop_match(YogEnv* env, YogHandle* self, YogHandle* s)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal m = YUNDEF;
-    YogVal pos = YUNDEF;
-    YogVal s = YUNDEF;
-    PUSH_LOCALS3(env, m, pos, s);
-    CHECK_SELF_REGEXP(env, self);
-    YogCArg params[] = {
-        { "s", &s }, { "|", NULL }, { "pos", &pos }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "match", params, args, kw);
-    if (!IS_PTR(s) || (BASIC_OBJ_TYPE(s) != TYPE_STRING)) {
+    if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "Can't convert %C object to String implicitly", HDL2VAL(s));
+        /* NOTREACHED */
+    }
+    return YogString_match(env, HDL2VAL(s), HDL2VAL(self), 0);
+}
+
+static YogVal
+match(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s, YogHandle* pos)
+{
+    if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
         YogError_raise_TypeError(env, "s must be String");
     }
-    if (!IS_UNDEF(pos) && !IS_FIXNUM(pos)) {
+    if ((pos != NULL) && (!IS_FIXNUM(HDL2VAL(pos)))) {
         YogError_raise_TypeError(env, "pos must be Fixnum");
     }
-
-    m = YogString_match(env, s, self, IS_UNDEF(pos) ? 0 : VAL2INT(pos));
-
-    RETURN(env, m);
+    int_t n = pos == NULL ? 0 : VAL2INT(HDL2VAL(pos));
+    return YogString_match(env, HDL2VAL(s), HDL2VAL(self), n);
 }
 
 static YogVal
@@ -404,10 +403,10 @@ YogRegexp_define_classes(YogEnv* env, YogVal pkg)
     YogVM* vm = env->vm;
 
     cRegexp = YogClass_new(env, "Regexp", vm->cObject);
-#define DEFINE_METHOD(name, f)  do { \
-    YogClass_define_method(env, cRegexp, pkg, (name), (f)); \
+#define DEFINE_METHOD(name, ...) do { \
+    YogClass_define_method2(env, cRegexp, pkg, (name), __VA_ARGS__); \
 } while (0)
-    DEFINE_METHOD("match", match);
+    DEFINE_METHOD("match", match, "s", "|", "pos", NULL);
 #undef DEFINE_METHOD
     vm->cRegexp = cRegexp;
 

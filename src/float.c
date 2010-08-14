@@ -165,7 +165,7 @@ positive(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 }
 
 YogVal
-YogFloat_add(YogEnv* env, YogHandle* self, YogHandle* f)
+YogFloat_binop_add(YogEnv* env, YogHandle* self, YogHandle* f)
 {
     YogVal right = HDL2VAL(f);
     if (IS_FIXNUM(right)) {
@@ -197,11 +197,11 @@ static YogVal
 add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogFloat_add(env, self, f);
+    return YogFloat_binop_add(env, self, f);
 }
 
 YogVal
-YogFloat_subtract(YogEnv* env, YogHandle* self, YogHandle* f)
+YogFloat_binop_subtract(YogEnv* env, YogHandle* self, YogHandle* f)
 {
     YogVal right = HDL2VAL(f);
     if (IS_FIXNUM(right)) {
@@ -233,11 +233,11 @@ static YogVal
 subtract(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogFloat_subtract(env, self, f);
+    return YogFloat_binop_subtract(env, self, f);
 }
 
 YogVal
-YogFloat_multiply(YogEnv* env, YogHandle* self, YogHandle* f)
+YogFloat_binop_multiply(YogEnv* env, YogHandle* self, YogHandle* f)
 {
     YogVal right = HDL2VAL(f);
     if (IS_FIXNUM(right)) {
@@ -269,7 +269,7 @@ static YogVal
 multiply(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogFloat_multiply(env, self, f);
+    return YogFloat_binop_multiply(env, self, f);
 }
 
 static YogVal
@@ -302,13 +302,13 @@ divide_internal(YogEnv* env, YogHandle* self, YogHandle* f, const char* opname)
 }
 
 YogVal
-YogFloat_divide(YogEnv* env, YogHandle* self, YogHandle* f)
+YogFloat_binop_divide(YogEnv* env, YogHandle* self, YogHandle* f)
 {
     return divide_internal(env, self, f, "/");
 }
 
 YogVal
-YogFloat_floor_divide(YogEnv* env, YogHandle* self, YogHandle* f)
+YogFloat_binop_floor_divide(YogEnv* env, YogHandle* self, YogHandle* f)
 {
     return divide_internal(env, self, f, "//");
 }
@@ -317,14 +317,14 @@ static YogVal
 floor_divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogFloat_floor_divide(env, self, f);
+    return YogFloat_binop_floor_divide(env, self, f);
 }
 
 static YogVal
 divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogFloat_divide(env, self, f);
+    return YogFloat_binop_divide(env, self, f);
 }
 
 static YogVal

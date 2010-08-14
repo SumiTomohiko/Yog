@@ -344,7 +344,7 @@ output(SyckEmitter* e, const char* str, long len)
 
     enc = YogEncoding_get_utf8(env);
     s = YogString_from_range(env, enc, str, str + len - 1);
-    YogString_add(env, *extra->buf, s);
+    YogString_append(env, *extra->buf, s);
 
     RETURN_VOID(env);
 }
