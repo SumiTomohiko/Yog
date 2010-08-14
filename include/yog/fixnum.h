@@ -13,6 +13,7 @@ YOG_EXPORT YogVal YogFixnum_add(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_add_bignum(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogFixnum_define_classes(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogFixnum_divide(YogEnv*, YogVal, YogHandle*);
+YOG_EXPORT YogVal YogFixnum_floor_divide(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_multiply(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_subtract(YogEnv*, YogVal, YogHandle*);
 

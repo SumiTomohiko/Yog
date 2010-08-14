@@ -31,6 +31,7 @@ YOG_EXPORT int_t YogBignum_compare_with_unsigned_int(YogEnv*, YogVal, uint_t);
 YOG_EXPORT int_t YogBignum_compare_with_unsigned_long_long(YogEnv*, YogVal, unsigned long long);
 YOG_EXPORT void YogBignum_define_classes(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogBignum_divide(YogEnv*, YogHandle*, YogHandle*);
+YOG_EXPORT YogVal YogBignum_floor_divide(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogBignum_from_int(YogEnv*, int_t);
 YOG_EXPORT YogVal YogBignum_from_long_long(YogEnv*, long long);
 YOG_EXPORT YogVal YogBignum_from_str(YogEnv*, YogVal, int_t);
