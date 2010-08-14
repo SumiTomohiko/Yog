@@ -248,33 +248,30 @@ floor_divide_float(YogEnv* env, YogVal left, YogVal right)
     return VAL2INT(left) / FLOAT_NUM(right);
 }
 
-static YogVal
-modulo(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFixnum_binop_modulo(YogEnv* env, YogVal self, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal result = YUNDEF;
-    YogVal bignum = YUNDEF;
-    YogVal right = YUNDEF;
-    PUSH_LOCALS3(env, result, bignum, right);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "%", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        result = INT2VAL(VAL2INT(self) % VAL2INT(right));
-        RETURN(env, result);
+        return INT2VAL(VAL2INT(self) % VAL2INT(right));
     }
     else if (IS_PTR(right) && (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM)) {
-        bignum = YogBignum_from_int(env, VAL2INT(self));
-        result = YogBignum_modulo(env, bignum, right);
-        RETURN(env, result);
+        YogVal bignum = YogBignum_from_int(env, VAL2INT(self));
+        YogHandle* h = YogHandle_REGISTER(env, bignum);
+        return YogBignum_modulo(env, h, n);
     }
 
     YogError_raise_binop_type_error(env, self, right, "%");
-
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+static YogVal
+modulo(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFixnum_binop_modulo(env, HDL2VAL(self), n);
 }
 
 YogVal
@@ -657,7 +654,6 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cFixnum, pkg, (name), (f)); \
 } while (0)
-    DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("&", and);
     DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
@@ -673,6 +669,7 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD2(name, ...) do { \
     YogClass_define_method2(env, cFixnum, pkg, (name), __VA_ARGS__); \
 } while (0)
+    DEFINE_METHOD2("%", modulo, "n", NULL);
     DEFINE_METHOD2("*", multiply, "n", NULL);
     DEFINE_METHOD2("+", add, "n", NULL);
     DEFINE_METHOD2("-", subtract, "n", NULL);

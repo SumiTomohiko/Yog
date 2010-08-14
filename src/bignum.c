@@ -310,51 +310,48 @@ floor_divide_bignum(YogEnv* env, YogHandle* self, YogHandle* right)
 }
 
 YogVal
-YogBignum_modulo(YogEnv* env, YogVal self, YogVal n)
+YogBignum_modulo(YogEnv* env, YogHandle* self, YogHandle* n)
 {
-    SAVE_ARGS2(env, self, n);
-    YogVal bignum = YUNDEF;
-    YogVal result = YUNDEF;
-    PUSH_LOCALS2(env, bignum, result);
-
-    if (IS_FIXNUM(n)) {
-        bignum = YogBignum_from_int(env, VAL2INT(n));
+    /* gcc can't know that bignum is always initialized */
+    YogHandle* bignum = NULL;
+    YogVal m = HDL2VAL(n);
+    if (IS_FIXNUM(m)) {
+        YogVal val = YogBignum_from_int(env, VAL2INT(m));
+        bignum = YogHandle_REGISTER(env, val);
     }
-    else if (IS_PTR(n) && (BASIC_OBJ_TYPE(n) == TYPE_BIGNUM)) {
+    else if (IS_PTR(m) && (BASIC_OBJ_TYPE(m) == TYPE_BIGNUM)) {
         bignum = n;
     }
     else {
-        YogError_raise_binop_type_error(env, self, n, "%");
+        /* NOTREACHED? */
+        YOG_BUG(env, "YogBignum_modulo got an unexpected type argument");
     }
 
-    result = YogBignum_new(env);
-    mpz_mod(BIGNUM_NUM(result), BIGNUM_NUM(self), BIGNUM_NUM(bignum));
-    result = normalize(env, result);
+    YogVal result = YogBignum_new(env);
+    mpz_t* l = &BIGNUM_NUM(HDL2VAL(self));
+    mpz_mod(BIGNUM_NUM(result), *l, BIGNUM_NUM(HDL2VAL(bignum)));
+    return normalize(env, result);
+}
 
-    RETURN(env, result);
+YogVal
+YogBignum_binop_modulo(YogEnv* env, YogHandle* self, YogHandle* n)
+{
+    YogVal right = HDL2VAL(n);
+    if (IS_FIXNUM(right) || (IS_PTR(right) && (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM))) {
+        return YogBignum_modulo(env, self, n);
+    }
+
+    YogError_raise_binop_type_error(env, HDL2VAL(self), right, "%");
+    /* NOTREACHED */
+
+    return YUNDEF;
 }
 
 static YogVal
-modulo(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+modulo(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal result = YUNDEF;
-    PUSH_LOCALS2(env, right, result);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "%", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
-    if (IS_FIXNUM(right) || (IS_PTR(right) && (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM))) {
-        result = YogBignum_modulo(env, self, right);
-        RETURN(env, result);
-    }
-
-    YogError_raise_binop_type_error(env, self, right, "%");
-
-    /* NOTREACHED */
-    RETURN(env, YUNDEF);
+    CHECK_SELF_TYPE2(env, self);
+    return YogBignum_binop_modulo(env, self, n);
 }
 
 YogVal
@@ -949,7 +946,6 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cBignum, pkg, (name), (f)); \
 } while (0)
-    DEFINE_METHOD("%", modulo);
     DEFINE_METHOD("&", and);
     DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
@@ -964,6 +960,7 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD2(name, ...) do { \
     YogClass_define_method2(env, cBignum, pkg, (name), __VA_ARGS__); \
 } while (0)
+    DEFINE_METHOD2("%", modulo, "n", NULL);
     DEFINE_METHOD2("*", multiply, "n", NULL);
     DEFINE_METHOD2("+", add, "n", NULL);
     DEFINE_METHOD2("-", subtract, "n", NULL);
