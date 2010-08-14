@@ -416,85 +416,64 @@ not(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogBignum_lshift(YogEnv* env, YogVal self, int_t width)
+YogBignum_lshift(YogEnv* env, YogHandle* self, int_t width)
 {
-    YOG_ASSERT(env, 0 <= width, "negative width (%d)", width);
-
-    SAVE_ARG(env, self);
-    YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
-
-    retval = YogBignum_new(env);
-    mpz_mul_2exp(BIGNUM_NUM(retval), BIGNUM_NUM(self), width);
-
-    RETURN(env, retval);
+    YogVal retval = YogBignum_new(env);
+    mpz_mul_2exp(BIGNUM_NUM(retval), BIGNUM_NUM(HDL2VAL(self)), width);
+    return retval;
 }
 
 static YogVal
-YogBignum_rshift(YogEnv* env, YogVal self, int_t width)
+YogBignum_rshift(YogEnv* env, YogHandle* self, int_t width)
 {
-    YOG_ASSERT(env, 0 <= width, "negative width (%d)", width);
-
-    SAVE_ARG(env, self);
-    YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
-
-    retval = YogBignum_new(env);
-    mpz_fdiv_q_2exp(BIGNUM_NUM(retval), BIGNUM_NUM(self), width);
-
-    RETURN(env, retval);
+    YogVal retval = YogBignum_new(env);
+    mpz_fdiv_q_2exp(BIGNUM_NUM(retval), BIGNUM_NUM(HDL2VAL(self)), width);
+    return retval;
 }
 
-static YogVal
-rshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogBignum_binop_rshift(YogEnv* env, YogHandle* self, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal retval = YUNDEF;
-    YogVal right = YUNDEF;
-    PUSH_LOCALS2(env, retval, right);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, ">>", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(n);
     if (!IS_FIXNUM(right)) {
-        YogError_raise_binop_type_error(env, self, right, ">>");
-    }
-    int_t n = VAL2INT(right);
-    if (0 < n) {
-        retval = YogBignum_rshift(env, self, n);
-    }
-    else {
-        retval = YogBignum_lshift(env, self, - n);
+        YogError_raise_binop_type_error(env, HDL2VAL(self), right, ">>");
+        /* NOTREACHED */
     }
 
-    RETURN(env, retval);
+    int_t m = VAL2INT(right);
+    if (0 < m) {
+        return YogBignum_rshift(env, self, m);
+    }
+    return YogBignum_lshift(env, self, - m);
 }
 
 static YogVal
-lshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+rshift(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal retval = YUNDEF;
-    YogVal right = YUNDEF;
-    PUSH_LOCALS2(env, retval, right);
+    CHECK_SELF_TYPE2(env, self);
+    return YogBignum_binop_rshift(env, self, n);
+}
 
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "<<", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+YogVal
+YogBignum_binop_lshift(YogEnv* env, YogHandle* self, YogHandle* n)
+{
+    YogVal right = HDL2VAL(n);
     if (!IS_FIXNUM(right)) {
-        YogError_raise_binop_type_error(env, self, right, "<<");
+        YogError_raise_binop_type_error(env, HDL2VAL(self), right, "<<");
+        /* NOTREACHED */
     }
-    int_t n = VAL2INT(right);
-    if (0 < n) {
-        retval = YogBignum_lshift(env, self, n);
+    int_t width = VAL2INT(right);
+    if (0 < width) {
+        return YogBignum_lshift(env, self, width);
     }
-    else {
-        retval = YogBignum_rshift(env, self, - n);
-    }
+    return YogBignum_rshift(env, self, - width);
+}
 
-    RETURN(env, retval);
+static YogVal
+lshift(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogBignum_binop_lshift(env, self, n);
 }
 
 YogVal
@@ -975,9 +954,7 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
-    DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD("<=>", compare);
-    DEFINE_METHOD(">>", rshift);
     DEFINE_METHOD("^", xor);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
@@ -992,6 +969,8 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("-", subtract, "n", NULL);
     DEFINE_METHOD2("/", divide, "n", NULL);
     DEFINE_METHOD2("//", floor_divide, "n", NULL);
+    DEFINE_METHOD2("<<", lshift, "n", NULL);
+    DEFINE_METHOD2(">>", rshift, "n", NULL);
 #undef DEFINE_METHOD2
     vm->cBignum = cBignum;
 

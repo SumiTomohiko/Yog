@@ -88,6 +88,18 @@ exec_binop(YogEnv* env, const char* op, YogVal left, YogVal right)
 }
 
 static void
+exec_rshift(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, ">>", left, right);
+}
+
+static void
+exec_lshift(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "<<", left, right);
+}
+
+static void
 exec_match(YogEnv* env, YogVal left, YogVal right)
 {
     exec_binop(env, "=~", left, right);

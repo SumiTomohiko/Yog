@@ -327,23 +327,15 @@ static YogVal
 do_lshift(YogEnv* env, int_t val, int_t width)
 {
     YOG_ASSERT(env, 0 <= width, "negative width (%d)", width);
-
-    SAVE_LOCALS(env);
-    YogVal retval = YUNDEF;
-    YogVal bignum = YUNDEF;
-    PUSH_LOCALS2(env, retval, bignum);
-
     if (width < sizeof(int_t) * CHAR_BIT) {
         int_t result = val << width;
         if ((result >> width == val) && FIXABLE(result)) {
-            RETURN(env, INT2VAL(result));
+            return INT2VAL(result);
         }
     }
 
-    bignum = YogBignum_from_int(env, val);
-    retval = YogBignum_lshift(env, bignum, width);
-
-    RETURN(env, retval);
+    YogHandle* bignum = YogHandle_REGISTER(env, YogBignum_from_int(env, val));
+    return YogBignum_lshift(env, bignum, width);
 }
 
 static YogVal
@@ -433,56 +425,49 @@ or(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     RETURN(env, YUNDEF);
 }
 
-static YogVal
-rshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFixnum_binop_rshift(YogEnv* env, YogVal self, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, right, retval);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, ">>", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
+    YogVal right = HDL2VAL(n);
     if (!IS_FIXNUM(right)) {
         YogError_raise_binop_type_error(env, self, right, ">>");
+        /* NOTREACHED */
     }
 
-    int_t n = VAL2INT(right);
-    if (0 < n) {
-        retval = do_rshift(env, VAL2INT(self), n);
+    int_t width = VAL2INT(right);
+    if (0 < width) {
+        return do_rshift(env, VAL2INT(self), width);
     }
-    else {
-        retval = do_lshift(env, VAL2INT(self), - n);
-    }
-
-    RETURN(env, retval);
+    return do_lshift(env, VAL2INT(self), - width);
 }
 
 static YogVal
-lshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+rshift(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, right, retval);
+    CHECK_SELF_TYPE2(env, self);
+    return YogFixnum_binop_rshift(env, HDL2VAL(self), n);
+}
 
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "<<", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+YogVal
+YogFixnum_binop_lshift(YogEnv* env, YogVal self, YogHandle* n)
+{
+    YogVal right = HDL2VAL(n);
     if (!IS_FIXNUM(right)) {
         YogError_raise_binop_type_error(env, self, right, "<<");
+        /* NOTREACHED */
     }
-    int_t n = VAL2INT(right);
-    if (0 < n) {
-        retval = do_lshift(env, VAL2INT(self), n);
+    int_t width = VAL2INT(right);
+    if (0 < width) {
+        return do_lshift(env, VAL2INT(self), width);
     }
-    else {
-        retval = do_rshift(env, VAL2INT(self), - n);
-    }
+    return do_rshift(env, VAL2INT(self), - width);
+}
 
-    RETURN(env, retval);
+static YogVal
+lshift(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFixnum_binop_lshift(env, HDL2VAL(self), n);
 }
 
 static YogVal
@@ -677,9 +662,7 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("**", power);
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
-    DEFINE_METHOD("<<", lshift);
     DEFINE_METHOD("<=>", compare);
-    DEFINE_METHOD(">>", rshift);
     DEFINE_METHOD("^", xor);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("times", times);
@@ -687,7 +670,7 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("|", or);
     DEFINE_METHOD("~self", not);
 #undef DEFINE_METHOD
-#define DEFINE_METHOD2(name, ...)  do { \
+#define DEFINE_METHOD2(name, ...) do { \
     YogClass_define_method2(env, cFixnum, pkg, (name), __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD2("*", multiply, "n", NULL);
@@ -695,6 +678,8 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("-", subtract, "n", NULL);
     DEFINE_METHOD2("/", divide, "n", NULL);
     DEFINE_METHOD2("//", floor_divide, "n", NULL);
+    DEFINE_METHOD2("<<", lshift, "n", NULL);
+    DEFINE_METHOD2(">>", rshift, "n", NULL);
 #undef DEFINE_METHOD2
     vm->cFixnum = cFixnum;
 

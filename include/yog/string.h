@@ -38,6 +38,7 @@ YOG_EXPORT void YogString_append(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogString_append_cstr(YogEnv*, YogVal, const char*);
 YOG_EXPORT char YogString_at(YogEnv*, YogVal, uint_t);
 YOG_EXPORT YogVal YogString_binop_add(YogEnv*, YogHandle*, YogHandle*);
+YOG_EXPORT YogVal YogString_binop_lshift(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogString_binop_match(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogString_binop_multiply(YogEnv*, YogHandle*, YogVal);
 YOG_EXPORT void YogString_clear(YogEnv*, YogVal);

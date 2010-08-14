@@ -509,8 +509,7 @@ inst add
 {
     if (IS_FIXNUM(left)) {
         YogHandle* h = YogHandle_REGISTER(env, right);
-        YogVal n = YogFixnum_binop_add(env, left, h);
-        push(env, n);
+        push(env, YogFixnum_binop_add(env, left, h));
     }
     else if (IS_PTR(left)) {
         if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
@@ -544,8 +543,7 @@ inst subtract
 {
     if (IS_FIXNUM(left)) {
         YogHandle* h = YogHandle_REGISTER(env, right);
-        YogVal n = YogFixnum_binop_subtract(env, left, h);
-        push(env, n);
+        push(env, YogFixnum_binop_subtract(env, left, h));
     }
     else if (IS_PTR(left)) {
         if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
@@ -574,8 +572,7 @@ inst multiply
 {
     if (IS_FIXNUM(left)) {
         YogHandle* h = YogHandle_REGISTER(env, right);
-        YogVal n = YogFixnum_binop_multiply(env, left, h);
-        push(env, n);
+        push(env, YogFixnum_binop_multiply(env, left, h));
     }
     else if (IS_PTR(left)) {
         YogHandle* x = YogHandle_REGISTER(env, left);
@@ -607,8 +604,7 @@ inst divide
 {
     if (IS_FIXNUM(left)) {
         YogHandle* h = YogHandle_REGISTER(env, right);
-        YogVal n = YogFixnum_binop_divide(env, left, h);
-        push(env, n);
+        push(env, YogFixnum_binop_divide(env, left, h));
     }
     else if (IS_PTR(left)) {
         if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
@@ -637,8 +633,7 @@ inst floor_divide
 {
     if (IS_FIXNUM(left)) {
         YogHandle* h = YogHandle_REGISTER(env, right);
-        YogVal n = YogFixnum_binop_floor_divide(env, left, h);
-        push(env, n);
+        push(env, YogFixnum_binop_floor_divide(env, left, h));
     }
     else if (IS_PTR(left)) {
         if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
@@ -690,6 +685,28 @@ inst lshift
 (right, left)
 (...) depth: 1
 {
+    if (IS_FIXNUM(left)) {
+        YogHandle* h = YogHandle_REGISTER(env, right);
+        push(env, YogFixnum_binop_lshift(env, left, h));
+    }
+    else if (IS_PTR(left)) {
+        if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
+            push(env, YogString_binop_lshift(env, x, y));
+        }
+        else if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
+            push(env, YogBignum_binop_lshift(env, x, y));
+        }
+        else {
+            exec_lshift(env, left, right);
+        }
+    }
+    else {
+        exec_lshift(env, left, right);
+    }
 }
 
 inst rshift
@@ -697,6 +714,23 @@ inst rshift
 (right, left)
 (...) depth: 1
 {
+    if (IS_FIXNUM(left)) {
+        YogHandle* h = YogHandle_REGISTER(env, right);
+        push(env, YogFixnum_binop_rshift(env, left, h));
+    }
+    else if (IS_PTR(left)) {
+        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
+            push(env, YogBignum_binop_rshift(env, x, y));
+        }
+        else {
+            exec_rshift(env, left, right);
+        }
+    }
+    else {
+        exec_rshift(env, left, right);
+    }
 }
 
 inst modulo

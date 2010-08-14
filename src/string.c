@@ -551,10 +551,9 @@ multiply(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
     return YogString_binop_multiply(env, self, HDL2VAL(n));
 }
 
-static YogVal
-lshift(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
+YogVal
+YogString_binop_lshift(YogEnv* env, YogHandle* self, YogHandle* s)
 {
-    CHECK_SELF_TYPE2(env, self);
     if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
         YogError_raise_TypeError(env, "Operand must be String");
     }
@@ -572,6 +571,13 @@ lshift(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
     HDL_AS(YogString, self)->size = size;
 
     return HDL2VAL(self);
+}
+
+static YogVal
+lshift(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogString_binop_lshift(env, self, s);
 }
 
 static BOOL
