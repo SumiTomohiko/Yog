@@ -17,6 +17,7 @@ YOG_EXPORT YogVal YogFixnum_binop_floor_divide(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_binop_lshift(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_binop_modulo(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_binop_multiply(YogEnv*, YogVal, YogHandle*);
+YOG_EXPORT YogVal YogFixnum_binop_or(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_binop_power(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_binop_rshift(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_binop_subtract(YogEnv*, YogVal, YogHandle*);

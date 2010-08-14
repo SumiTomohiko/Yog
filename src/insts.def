@@ -790,6 +790,23 @@ inst or
 (right, left)
 (...) depth: 1
 {
+    if (IS_FIXNUM(left)) {
+        YogHandle* h = YogHandle_REGISTER(env, right);
+        push(env, YogFixnum_binop_or(env, left, h));
+    }
+    else if (IS_PTR(left)) {
+        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+            YogHandle* x = YogHandle_REGISTER(env, left);
+            YogHandle* y = YogHandle_REGISTER(env, right);
+            push(env, YogBignum_binop_or(env, x, y));
+        }
+        else {
+            exec_or(env, left, right);
+        }
+    }
+    else {
+        exec_or(env, left, right);
+    }
 }
 
 inst xor

@@ -390,33 +390,30 @@ and(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
     return YogFixnum_binop_and(env, HDL2VAL(self), n);
 }
 
-static YogVal
-or(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFixnum_binop_or(YogEnv* env, YogVal self, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, right, retval);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "|", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        retval = INT2VAL(VAL2INT(self) | VAL2INT(right));
-        RETURN(env, retval);
+        return INT2VAL(VAL2INT(self) | VAL2INT(right));
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        retval = YogBignum_or(env, right, self);
-        RETURN(env, retval);
+        return YogBignum_or(env, n, VAL2INT(self));
     }
 
     YogError_raise_binop_type_error(env, self, right, "|");
-
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+static YogVal
+or(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFixnum_binop_or(env, HDL2VAL(self), n);
 }
 
 YogVal
@@ -647,22 +644,22 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("times", times);
     DEFINE_METHOD("to_s", to_s);
-    DEFINE_METHOD("|", or);
     DEFINE_METHOD("~self", not);
 #undef DEFINE_METHOD
 #define DEFINE_METHOD2(name, ...) do { \
     YogClass_define_method2(env, cFixnum, pkg, (name), __VA_ARGS__); \
 } while (0)
-    DEFINE_METHOD2("&", and, "n", NULL);
-    DEFINE_METHOD2("**", power, "n", NULL);
     DEFINE_METHOD2("%", modulo, "n", NULL);
+    DEFINE_METHOD2("&", and, "n", NULL);
     DEFINE_METHOD2("*", multiply, "n", NULL);
+    DEFINE_METHOD2("**", power, "n", NULL);
     DEFINE_METHOD2("+", add, "n", NULL);
     DEFINE_METHOD2("-", subtract, "n", NULL);
     DEFINE_METHOD2("/", divide, "n", NULL);
     DEFINE_METHOD2("//", floor_divide, "n", NULL);
     DEFINE_METHOD2("<<", lshift, "n", NULL);
     DEFINE_METHOD2(">>", rshift, "n", NULL);
+    DEFINE_METHOD2("|", or, "n", NULL);
 #undef DEFINE_METHOD2
     vm->cFixnum = cFixnum;
 
