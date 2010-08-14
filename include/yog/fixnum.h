@@ -11,6 +11,7 @@
 /* src/fixnum.c */
 YOG_EXPORT YogVal YogFixnum_add_bignum(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogFixnum_binop_add(YogEnv*, YogVal, YogHandle*);
+YOG_EXPORT YogVal YogFixnum_binop_and(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_binop_divide(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_binop_floor_divide(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_binop_lshift(YogEnv*, YogVal, YogHandle*);
