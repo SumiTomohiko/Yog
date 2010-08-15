@@ -895,7 +895,7 @@ inst equal
 (right, left)
 (...) depth: 1
 {
-    CMP_BODY(do_equal, exec_equal);
+    EQUAL_BODY(do_equal, exec_equal);
 }
 
 inst not_equal
@@ -903,7 +903,7 @@ inst not_equal
 (right, left)
 (...) depth: 1
 {
-    CMP_BODY(do_not_equal, exec_not_equal);
+    EQUAL_BODY(do_not_equal, exec_not_equal);
 }
 
 inst ufo

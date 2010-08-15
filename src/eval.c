@@ -224,16 +224,20 @@ check_comparison_result(YogEnv* env, YogVal left, YogVal right, YogVal n)
 }
 
 static YogVal
-do_not_equal(YogEnv* env, YogVal left, YogVal right, YogVal n)
+do_not_equal(YogEnv* env, YogVal n)
 {
-    check_comparison_result(env, left, right, n);
+    if (IS_NIL(n)) {
+        return YTRUE;
+    }
     return VAL2INT(n) != 0 ? YTRUE : YFALSE;
 }
 
 static YogVal
-do_equal(YogEnv* env, YogVal left, YogVal right, YogVal n)
+do_equal(YogEnv* env, YogVal n)
 {
-    check_comparison_result(env, left, right, n);
+    if (IS_NIL(n)) {
+        return YFALSE;
+    }
     return VAL2INT(n) == 0 ? YTRUE : YFALSE;
 }
 
@@ -899,6 +903,32 @@ YogEval_mainloop(YogEnv* env)
         exec(env, left, right); \
     } \
 } while (0)
+#define EQUAL_BODY(do_, exec) do { \
+    if (IS_FIXNUM(left)) { \
+        YogVal n = YogFixnum_binop_ufo(env, left, right); \
+        push(env, do_(env, n)); \
+    } \
+    else if (IS_PTR(left)) { \
+        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) { \
+            YogVal n = YogBignum_binop_ufo(env, left, right); \
+            push(env, do_(env, n)); \
+        } \
+        else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) { \
+            YogVal n = YogString_binop_ufo(env, left, right); \
+            push(env, do_(env, n)); \
+        } \
+        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) { \
+            YogVal n = YogFloat_binop_ufo(env, left, right); \
+            push(env, do_(env, n)); \
+        } \
+        else { \
+            exec(env, left, right); \
+        } \
+    } \
+    else { \
+        exec(env, left, right); \
+    } \
+} while (0)
         OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
 #if 0
@@ -962,6 +992,7 @@ YogEval_mainloop(YogEnv* env)
             YOG_BUG(env, "Unknown instruction (0x%08x)", op);
             break;
         }
+#undef EQUAL_BODY
 #undef CMP_BODY
 #undef JUMP
 #undef CONSTS
