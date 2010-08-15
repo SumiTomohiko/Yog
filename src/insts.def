@@ -863,30 +863,7 @@ inst less
 (right, left)
 (...) depth: 1
 {
-    if (IS_FIXNUM(left)) {
-        YogVal n = YogFixnum_binop_ufo(env, left, right);
-        push(env, do_less(env, left, right, n));
-    }
-    else if (IS_PTR(left)) {
-        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
-            YogVal n = YogBignum_binop_ufo(env, left, right);
-            push(env, do_less(env, left, right, n));
-        }
-        else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
-            YogVal n = YogString_binop_ufo(env, left, right);
-            push(env, do_less(env, left, right, n));
-        }
-        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
-            YogVal n = YogFloat_binop_ufo(env, left, right);
-            push(env, do_less(env, left, right, n));
-        }
-        else {
-            exec_less(env, left, right);
-        }
-    }
-    else {
-        exec_less(env, left, right);
-    }
+    CMP_BODY(do_less, exec_less);
 }
 
 inst greater
@@ -894,30 +871,7 @@ inst greater
 (right, left)
 (...) depth: 1
 {
-    if (IS_FIXNUM(left)) {
-        YogVal n = YogFixnum_binop_ufo(env, left, right);
-        push(env, do_greater(env, left, right, n));
-    }
-    else if (IS_PTR(left)) {
-        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
-            YogVal n = YogBignum_binop_ufo(env, left, right);
-            push(env, do_greater(env, left, right, n));
-        }
-        else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
-            YogVal n = YogString_binop_ufo(env, left, right);
-            push(env, do_greater(env, left, right, n));
-        }
-        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
-            YogVal n = YogFloat_binop_ufo(env, left, right);
-            push(env, do_greater(env, left, right, n));
-        }
-        else {
-            exec_greater(env, left, right);
-        }
-    }
-    else {
-        exec_greater(env, left, right);
-    }
+    CMP_BODY(do_greater, exec_greater);
 }
 
 inst less_equal
@@ -925,6 +879,7 @@ inst less_equal
 (right, left)
 (...) depth: 1
 {
+    CMP_BODY(do_less_equal, exec_less_equal);
 }
 
 inst greater_equal
@@ -932,6 +887,7 @@ inst greater_equal
 (right, left)
 (...) depth: 1
 {
+    CMP_BODY(do_greater_equal, exec_greater_equal);
 }
 
 inst equal
@@ -939,6 +895,7 @@ inst equal
 (right, left)
 (...) depth: 1
 {
+    CMP_BODY(do_equal, exec_equal);
 }
 
 inst not_equal
@@ -946,6 +903,7 @@ inst not_equal
 (right, left)
 (...) depth: 1
 {
+    CMP_BODY(do_not_equal, exec_not_equal);
 }
 
 inst ufo

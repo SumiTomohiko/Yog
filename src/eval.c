@@ -166,6 +166,18 @@ exec_add(YogEnv* env, YogVal left, YogVal right)
 }
 
 static void
+exec_greater_equal(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "=>", left, right);
+}
+
+static void
+exec_less_equal(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "<=", left, right);
+}
+
+static void
 exec_greater(YogEnv* env, YogVal left, YogVal right)
 {
     exec_binop(env, ">", left, right);
@@ -178,6 +190,18 @@ exec_less(YogEnv* env, YogVal left, YogVal right)
 }
 
 static void
+exec_not_equal(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "!=", left, right);
+}
+
+static void
+exec_equal(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "==", left, right);
+}
+
+static void
 check_comparison_result(YogEnv* env, YogVal left, YogVal right, YogVal n)
 {
     if (IS_FIXNUM(n)) {
@@ -185,6 +209,34 @@ check_comparison_result(YogEnv* env, YogVal left, YogVal right, YogVal n)
     }
     const char* fmt = "Comparison of %C with %C failed";
     YogError_raise_TypeError(env, fmt, left, right);
+}
+
+static YogVal
+do_not_equal(YogEnv* env, YogVal left, YogVal right, YogVal n)
+{
+    check_comparison_result(env, left, right, n);
+    return VAL2INT(n) != 0 ? YTRUE : YFALSE;
+}
+
+static YogVal
+do_equal(YogEnv* env, YogVal left, YogVal right, YogVal n)
+{
+    check_comparison_result(env, left, right, n);
+    return VAL2INT(n) == 0 ? YTRUE : YFALSE;
+}
+
+static YogVal
+do_greater_equal(YogEnv* env, YogVal left, YogVal right, YogVal n)
+{
+    check_comparison_result(env, left, right, n);
+    return 0 <= VAL2INT(n) ? YTRUE : YFALSE;
+}
+
+static YogVal
+do_less_equal(YogEnv* env, YogVal left, YogVal right, YogVal n)
+{
+    check_comparison_result(env, left, right, n);
+    return VAL2INT(n) <= 0 ? YTRUE : YFALSE;
 }
 
 static YogVal
@@ -809,6 +861,32 @@ YogEval_mainloop(YogEnv* env)
         YogHandleScope_OPEN(env, &inner_scope);
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define JUMP(m)         PC = m;
+#define CMP_BODY(do_, exec) do { \
+    if (IS_FIXNUM(left)) { \
+        YogVal n = YogFixnum_binop_ufo(env, left, right); \
+        push(env, do_(env, left, right, n)); \
+    } \
+    else if (IS_PTR(left)) { \
+        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) { \
+            YogVal n = YogBignum_binop_ufo(env, left, right); \
+            push(env, do_(env, left, right, n)); \
+        } \
+        else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) { \
+            YogVal n = YogString_binop_ufo(env, left, right); \
+            push(env, do_(env, left, right, n)); \
+        } \
+        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) { \
+            YogVal n = YogFloat_binop_ufo(env, left, right); \
+            push(env, do_(env, left, right, n)); \
+        } \
+        else { \
+            exec(env, left, right); \
+        } \
+    } \
+    else { \
+        exec(env, left, right); \
+    } \
+} while (0)
         OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
 #if 0
@@ -872,6 +950,7 @@ YogEval_mainloop(YogEnv* env)
             YOG_BUG(env, "Unknown instruction (0x%08x)", op);
             break;
         }
+#undef CMP_BODY
 #undef JUMP
 #undef CONSTS
         YogHandleScope_close(env);
