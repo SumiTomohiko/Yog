@@ -166,6 +166,12 @@ exec_add(YogEnv* env, YogVal left, YogVal right)
 }
 
 static void
+exec_greater(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, ">", left, right);
+}
+
+static void
 exec_less(YogEnv* env, YogVal left, YogVal right)
 {
     exec_binop(env, "<", left, right);
@@ -179,6 +185,13 @@ check_comparison_result(YogEnv* env, YogVal left, YogVal right, YogVal n)
     }
     const char* fmt = "Comparison of %C with %C failed";
     YogError_raise_TypeError(env, fmt, left, right);
+}
+
+static YogVal
+do_greater(YogEnv* env, YogVal left, YogVal right, YogVal n)
+{
+    check_comparison_result(env, left, right, n);
+    return 0 < VAL2INT(n) ? YTRUE : YFALSE;
 }
 
 static YogVal
