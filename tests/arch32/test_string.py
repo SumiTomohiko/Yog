@@ -12,7 +12,7 @@ class TestString(TestCase):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#\*
-ArgumentError: argument too big
+ArgumentError: Argument too big
 """, stderr)
 
         self._test("""
