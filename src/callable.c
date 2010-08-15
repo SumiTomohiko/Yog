@@ -62,7 +62,7 @@ assign_keyword_arg(YogEnv* env, YogHandle* self, uint_t args_offset, YogHandle* 
         STORE_LOCAL(env, frame, args_offset + i, val->val);
         return;
     }
-    if ((kw == NULL) || !IS_PTR(kw->val)) {
+    if (kw == NULL) {
         YogError_raise_ArgumentError(env, "an unexpected keyword argument \"%I\"", name);
     }
     YogDict_set(env, kw->val, ID2VAL(name), val->val);
@@ -98,7 +98,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
     }
     YogHandle* arg_info = YogHandle_REGISTER(env, a);
 
-    YogHandle* kw = YogHandle_REGISTER(env, YUNDEF);
+    YogHandle* kw = NULL;
     uint_t arg_kwargc = HDL_AS(YogArgInfo, arg_info)->kwargc;
     if (0 < arg_kwargc) {
         uint_t index = HDL_AS(YogArgInfo, arg_info)->argc;
@@ -106,8 +106,9 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
         if (0 < varargc) {
             index++;
         }
-        kw->val = YogDict_new(env);
-        STORE_LOCAL(env, frame, args_offset + index, kw->val);
+        YogVal dict = YogDict_new(env);
+        STORE_LOCAL(env, frame, args_offset + index, dict);
+        kw = YogHandle_REGISTER(env, dict);
     }
 
     uint_t i;
