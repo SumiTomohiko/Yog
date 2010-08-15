@@ -701,23 +701,29 @@ get(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     RETURN(env, c);
 }
 
+YogVal
+YogString_subscript(YogEnv* env, YogVal self, YogVal index)
+{
+    if (!IS_FIXNUM(index)) {
+        YogError_raise_TypeError(env, "String index must be Fixnum");
+    }
+
+    uint_t offset = unnormalized_index2offset(env, self, VAL2INT(index));
+    char* p = &STRING_CSTR(self)[offset];
+    uint_t mbc_size = YogEncoding_mbc_size(env, STRING_ENCODING(self), p);
+    uint_t size = YogString_size(env, self);
+    if (size - offset < mbc_size) {
+        YogError_raise_IndexError(env, "String has not enough size");
+    }
+
+    return get_at(env, self, offset);
+}
+
 static YogVal
 subscript(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* index)
 {
     CHECK_SELF_TYPE2(env, self);
-    if (!IS_FIXNUM(HDL2VAL(index))) {
-        YogError_raise_TypeError(env, "String index must be Fixnum");
-    }
-
-    uint_t offset = unnormalized_index2offset(env, HDL2VAL(self), VAL2INT(HDL2VAL(index)));
-    char* p = &STRING_CSTR(HDL2VAL(self))[offset];
-    uint_t mbc_size = YogEncoding_mbc_size(env, STRING_ENCODING(HDL2VAL(self)), p);
-    uint_t size = YogString_size(env, HDL2VAL(self));
-    if (size - offset < mbc_size) {
-        YogError_raise_IndexError(env, "string has not enough size");
-    }
-
-    return get_at(env, HDL2VAL(self), offset);
+    return YogString_subscript(env, HDL2VAL(self), HDL2VAL(index));
 }
 
 static YogVal

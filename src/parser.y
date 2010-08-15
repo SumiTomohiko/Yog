@@ -1666,8 +1666,7 @@ postfix_expr(A) ::= postfix_expr(B) LPAR args(C) RPAR blockarg_opt(D). {
     A = FuncCall_new(env, NODE_LINENO(B), B, C, D);
 }
 postfix_expr(A) ::= postfix_expr(B) LBRACKET expr(C) RBRACKET. {
-    uint_t lineno = NODE_LINENO(B);
-    A = Subscript_new(env, lineno, B, C);
+    A = Subscript_new(env, NODE_LINENO(B), B, C);
 }
 postfix_expr(A) ::= postfix_expr(B) DOT func_name(C). {
     uint_t lineno = NODE_LINENO(B);

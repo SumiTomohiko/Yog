@@ -15,6 +15,12 @@
         YogError_raise_TypeError((env), "self must be Dict"); \
     } \
 } while (0)
+#define CHECK_SELF_TYPE2(env, self)  do { \
+    YogVal dict = HDL2VAL((self)); \
+    if (!IS_PTR(dict) || (BASIC_OBJ_TYPE(dict) != TYPE_DICT)) { \
+        YogError_raise_TypeError((env), "self must be Dict"); \
+    } \
+} while (0)
 
 struct DictIterator {
     YogVal tbl_iter;
@@ -106,26 +112,25 @@ YogDict_include(YogEnv* env, YogVal self, YogVal key)
     return IS_UNDEF(YogDict_get(env, self, key)) ? FALSE : TRUE;
 }
 
-static YogVal
-subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogDict_subscript(YogEnv* env, YogVal self, YogVal key)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal key = YUNDEF;
-    YogVal value = YUNDEF;
-    PUSH_LOCALS2(env, key, value);
-
-    YogCArg params[] = { { "key", &key }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "[]", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal value;
     if (YogTable_lookup(env, PTR_AS(YogDict, self)->tbl, key, &value)) {
-        RETURN(env, value);
+        return value;
     }
 
-    YogError_raise_KeyError(env, "not found");
-
+    YogError_raise_KeyError(env, "Not found");
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+static YogVal
+subscript(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* key)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogDict_subscript(env, HDL2VAL(self), HDL2VAL(key));
 }
 
 void
@@ -322,10 +327,14 @@ YogDict_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method(env, cDict, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("+", add);
-    DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", subscript_assign);
     DEFINE_METHOD("each", each);
 #undef DEFINE_METHOD
+#define DEFINE_METHOD2(name, ...) do { \
+    YogClass_define_method2(env, cDict, pkg, (name), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD2("[]", subscript, "key", NULL);
+#undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter)   do { \
     YogClass_define_property(env, cDict, pkg, (name), (getter), (setter)); \
 } while (0)

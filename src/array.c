@@ -18,6 +18,12 @@
         YogError_raise_TypeError((env), "self must be Array"); \
     } \
 } while (0)
+#define CHECK_SELF_TYPE2(env, self)  do { \
+    YogVal a = HDL2VAL((self)); \
+    if (IS_PTR(a) && (BASIC_OBJ_TYPE(a) != TYPE_ARRAY)) { \
+        YogError_raise_TypeError((env), "self must be Array"); \
+    } \
+} while (0)
 
 uint_t
 YogValArray_size(YogEnv* env, YogVal array)
@@ -294,18 +300,11 @@ assign_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Y
     RETURN(env, self);
 }
 
-static YogVal
-subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogArray_subscript(YogEnv* env, YogVal self, YogVal index)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal index = YUNDEF;
-    YogVal v = YUNDEF;
-    PUSH_LOCALS2(env, index, v);
-    YogCArg params[] = { { "index", &index }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "[]", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
     if (!IS_FIXNUM(index)) {
-        YogError_raise_TypeError(env, "index must be Fixnum");
+        YogError_raise_TypeError(env, "Index must be Fixnum");
     }
 
     int_t n = VAL2INT(index);
@@ -314,11 +313,16 @@ subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         n += size;
     }
     if ((n < 0) || (size <= n)) {
-        YogError_raise_IndexError(env, "array index out of range");
+        YogError_raise_IndexError(env, "Array index out of range");
     }
-    v = YogArray_at(env, self, n);
+    return YogArray_at(env, self, n);
+}
 
-    RETURN(env, v);
+static YogVal
+subscript(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* index)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogArray_subscript(env, HDL2VAL(self), HDL2VAL(index));
 }
 
 static YogVal
@@ -546,7 +550,6 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD("+", add);
     DEFINE_METHOD("<<", lshift);
-    DEFINE_METHOD("[]", subscript);
     DEFINE_METHOD("[]=", assign_subscript);
     DEFINE_METHOD("each", each);
     DEFINE_METHOD("get", get);
@@ -555,6 +558,11 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("shift", shift);
     DEFINE_METHOD("unshift", unshift);
 #undef DEFINE_METHOD
+#define DEFINE_METHOD2(name, ...) do { \
+    YogClass_define_method2(env, cArray, pkg, (name), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD2("[]", subscript, "index", NULL);
+#undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter)   do { \
     YogClass_define_property(env, cArray, pkg, (name), (getter), (setter)); \
 } while (0)

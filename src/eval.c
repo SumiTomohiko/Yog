@@ -208,6 +208,12 @@ exec_ufo(YogEnv* env, YogVal left, YogVal right)
 }
 
 static void
+exec_subscript(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "[]", left, right);
+}
+
+static void
 check_comparison_result(YogEnv* env, YogVal left, YogVal right, YogVal n)
 {
     if (IS_FIXNUM(n)) {

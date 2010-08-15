@@ -935,9 +935,26 @@ inst ufo
 
 inst subscript
 ()
-(right, left)
+(index, prefix)
 (...) depth: 1
 {
+    if (IS_PTR(prefix)) {
+        if (BASIC_OBJ_TYPE(prefix) == TYPE_ARRAY) {
+            push(env, YogArray_subscript(env, prefix, index));
+        }
+        else if (BASIC_OBJ_TYPE(prefix) == TYPE_STRING) {
+            push(env, YogString_subscript(env, prefix, index));
+        }
+        else if (BASIC_OBJ_TYPE(prefix) == TYPE_DICT) {
+            push(env, YogDict_subscript(env, prefix, index));
+        }
+        else {
+            exec_subscript(env, prefix, index);
+        }
+    }
+    else {
+        exec_subscript(env, prefix, index);
+    }
 }
 
 /**

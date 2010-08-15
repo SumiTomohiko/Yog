@@ -40,7 +40,6 @@ enum YogBinop {
     BINOP_EQUAL,
     BINOP_NOT_EQUAL,
     BINOP_UFO,
-    BINOP_SUBSCRIPT,
 };
 
 typedef enum YogBinop YogBinop;

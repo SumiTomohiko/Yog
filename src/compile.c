@@ -3423,7 +3423,6 @@ compile_visit_binop(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
         CompileData_add_equal,
         CompileData_add_not_equal,
         CompileData_add_ufo,
-        CompileData_add_subscript,
     };
     f[PTR_AS(YogNode, node)->u.binop.op](env, data, NODE_LINENO(node));
     RETURN_VOID(env);
@@ -3590,16 +3589,9 @@ static void
 compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
-
-    visit_node(env, visitor, NODE(node)->u.subscript.index, data);
-
     visit_node(env, visitor, NODE(node)->u.subscript.prefix, data);
-    uint_t lineno = NODE(node)->lineno;
-    ID attr = YogVM_intern(env, env->vm, "[]");
-    CompileData_add_load_attr(env, data, lineno, attr);
-
-    CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0, 1, 0, 0);
-
+    visit_node(env, visitor, NODE(node)->u.subscript.index, data);
+    CompileData_add_subscript(env, data, NODE_LINENO(node));
     RETURN_VOID(env);
 }
 

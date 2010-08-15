@@ -57,6 +57,7 @@ YOG_EXPORT YogVal YogString_of_encoding(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogString_of_size(YogEnv*, uint_t);
 YOG_EXPORT void YogString_push(YogEnv*, YogVal, char);
 YOG_EXPORT uint_t YogString_size(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogString_subscript(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogString_to_i(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
