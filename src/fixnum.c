@@ -335,33 +335,30 @@ do_lshift(YogEnv* env, int_t val, int_t width)
     return YogBignum_lshift(env, bignum, width);
 }
 
-static YogVal
-xor(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFixnum_binop_xor(YogEnv* env, YogVal self, YogHandle* n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, right, retval);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "^", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
+    YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        retval = INT2VAL(VAL2INT(self) ^ VAL2INT(right));
-        RETURN(env, retval);
+        return INT2VAL(VAL2INT(self) ^ VAL2INT(right));
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        retval = YogBignum_xor(env, right, self);
-        RETURN(env, retval);
+        return YogBignum_xor(env, n, VAL2INT(self));
     }
 
     YogError_raise_binop_type_error(env, self, right, "^");
-
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
+}
+
+static YogVal
+xor(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFixnum_binop_xor(env, HDL2VAL(self), n);
 }
 
 YogVal
@@ -640,7 +637,6 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("<=>", compare);
-    DEFINE_METHOD("^", xor);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("times", times);
     DEFINE_METHOD("to_s", to_s);
@@ -659,6 +655,7 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("//", floor_divide, "n", NULL);
     DEFINE_METHOD2("<<", lshift, "n", NULL);
     DEFINE_METHOD2(">>", rshift, "n", NULL);
+    DEFINE_METHOD2("^", xor, "n", NULL);
     DEFINE_METHOD2("|", or, "n", NULL);
 #undef DEFINE_METHOD2
     vm->cFixnum = cFixnum;

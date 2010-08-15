@@ -35,6 +35,7 @@ YOG_EXPORT YogVal YogBignum_binop_or(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogBignum_binop_power(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogBignum_binop_rshift(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogBignum_binop_subtract(YogEnv*, YogHandle*, YogHandle*);
+YOG_EXPORT YogVal YogBignum_binop_xor(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT int_t YogBignum_compare_with_int(YogEnv*, YogVal, int_t);
 YOG_EXPORT int_t YogBignum_compare_with_long_long(YogEnv*, YogVal, long long);
 YOG_EXPORT int_t YogBignum_compare_with_unsigned_int(YogEnv*, YogVal, uint_t);
@@ -54,7 +55,7 @@ YOG_EXPORT YogVal YogBignum_to_s(YogEnv*, YogVal);
 YOG_EXPORT SIGNED_TYPE YogBignum_to_signed_type(YogEnv*, YogVal, const char*);
 YOG_EXPORT unsigned long long YogBignum_to_unsigned_long_long(YogEnv*, YogVal, const char*);
 YOG_EXPORT UNSIGNED_TYPE YogBignum_to_unsigned_type(YogEnv*, YogVal, const char*);
-YOG_EXPORT YogVal YogBignum_xor(YogEnv*, YogVal, YogVal);
+YOG_EXPORT YogVal YogBignum_xor(YogEnv*, YogHandle*, int_t);
 
 /* PROTOTYPE_END */
 

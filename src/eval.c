@@ -88,6 +88,12 @@ exec_binop(YogEnv* env, const char* op, YogVal left, YogVal right)
 }
 
 static void
+exec_xor(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "^", left, right);
+}
+
+static void
 exec_or(YogEnv* env, YogVal left, YogVal right)
 {
     exec_binop(env, "|", left, right);
