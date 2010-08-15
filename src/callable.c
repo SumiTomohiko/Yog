@@ -62,7 +62,7 @@ assign_keyword_arg(YogEnv* env, YogHandle* self, uint_t args_offset, YogHandle* 
         STORE_LOCAL(env, frame, args_offset + i, val->val);
         return;
     }
-    if (!IS_PTR(kw->val)) {
+    if ((kw == NULL) || !IS_PTR(kw->val)) {
         YogError_raise_ArgumentError(env, "an unexpected keyword argument \"%I\"", name);
     }
     YogDict_set(env, kw->val, ID2VAL(name), val->val);
