@@ -911,6 +911,26 @@ inst ufo
 (right, left)
 (...) depth: 1
 {
+    if (IS_FIXNUM(left)) {
+        push(env, YogFixnum_binop_ufo(env, left, right));
+    }
+    else if (IS_PTR(left)) {
+        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) {
+            push(env, YogBignum_binop_ufo(env, left, right));
+        }
+        else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
+            push(env, YogString_binop_ufo(env, left, right));
+        }
+        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) {
+            push(env, YogFloat_binop_ufo(env, left, right));
+        }
+        else {
+            exec_ufo(env, left, right);
+        }
+    }
+    else {
+        exec_ufo(env, left, right);
+    }
 }
 
 inst subscript
