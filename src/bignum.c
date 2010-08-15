@@ -708,29 +708,28 @@ hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     RETURN(env, INT2VAL(h));
 }
 
-static YogVal
-compare(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogBignum_binop_ufo(YogEnv* env, YogVal self, YogVal n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    PUSH_LOCAL(env, right);
-
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "<=>", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-    if (!IS_PTR(right) || (BASIC_OBJ_TYPE(right) != TYPE_BIGNUM)) {
+    if (!IS_PTR(n) || (BASIC_OBJ_TYPE(n) != TYPE_BIGNUM)) {
         YogError_raise_TypeError(env, "operand must be Bignum");
     }
 
-    int_t n = mpz_cmp(BIGNUM_NUM(self), BIGNUM_NUM(right));
-    if (n < 0) {
-        RETURN(env, INT2VAL(-1));
+    int_t m = mpz_cmp(BIGNUM_NUM(self), BIGNUM_NUM(n));
+    if (m < 0) {
+        return INT2VAL(-1);
     }
-    else if (n == 0) {
-        RETURN(env, INT2VAL(n));
+    if (m == 0) {
+        return INT2VAL(0);
     }
+    return INT2VAL(1);
+}
 
-    RETURN(env, INT2VAL(1));
+static YogVal
+ufo(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogBignum_binop_ufo(env, HDL2VAL(self), HDL2VAL(n));
 }
 
 static YogVal
@@ -911,7 +910,6 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
-    DEFINE_METHOD("<=>", compare);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
     DEFINE_METHOD("~self", not);
@@ -928,6 +926,7 @@ YogBignum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("/", divide, "n", NULL);
     DEFINE_METHOD2("//", floor_divide, "n", NULL);
     DEFINE_METHOD2("<<", lshift, "n", NULL);
+    DEFINE_METHOD2("<=>", ufo, "n", NULL);
     DEFINE_METHOD2(">>", rshift, "n", NULL);
     DEFINE_METHOD2("^", xor, "n", NULL);
     DEFINE_METHOD2("|", or, "n", NULL);

@@ -28,6 +28,7 @@ YOG_EXPORT YogVal YogFloat_binop_floor_divide(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogFloat_binop_multiply(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogFloat_binop_power(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogFloat_binop_subtract(YogEnv*, YogHandle*, YogHandle*);
+YOG_EXPORT YogVal YogFloat_binop_ufo(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogFloat_define_classes(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogFloat_from_float(YogEnv*, double);
 YOG_EXPORT YogVal YogFloat_from_str(YogEnv*, YogVal);

@@ -596,29 +596,28 @@ power(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
     return YogFixnum_binop_power(env, HDL2VAL(self), n);
 }
 
-static YogVal
-compare(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFixnum_binop_ufo(YogEnv* env, YogVal self, YogVal n)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal right = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, right, retval);
-    CHECK_SELF_TYPE(env, self);
-    YogCArg params[] = { { "n", &right }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "<=>", params, args, kw);
-    if (!IS_FIXNUM(right)) {
-        RETURN(env, YNIL);
+    if (!IS_FIXNUM(n)) {
+        return YNIL;
     }
 
-    int_t n = VAL2INT(self) - VAL2INT(right);
-    if (n < 0) {
-        RETURN(env, INT2VAL(-1));
+    int_t m = VAL2INT(self) - VAL2INT(n);
+    if (m < 0) {
+        return INT2VAL(-1);
     }
-    else if (n == 0) {
-        RETURN(env, INT2VAL(n));
+    if (m == 0) {
+        return INT2VAL(0);
     }
+    return INT2VAL(1);
+}
 
-    RETURN(env, INT2VAL(1));
+static YogVal
+ufo(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFixnum_binop_ufo(env, HDL2VAL(self), HDL2VAL(n));
 }
 
 void
@@ -636,7 +635,6 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
-    DEFINE_METHOD("<=>", compare);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("times", times);
     DEFINE_METHOD("to_s", to_s);
@@ -654,6 +652,7 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("/", divide, "n", NULL);
     DEFINE_METHOD2("//", floor_divide, "n", NULL);
     DEFINE_METHOD2("<<", lshift, "n", NULL);
+    DEFINE_METHOD2("<=>", ufo, "n", NULL);
     DEFINE_METHOD2(">>", rshift, "n", NULL);
     DEFINE_METHOD2("^", xor, "n", NULL);
     DEFINE_METHOD2("|", or, "n", NULL);

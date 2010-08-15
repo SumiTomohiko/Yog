@@ -1138,29 +1138,28 @@ YogString_append_cstr(YogEnv* env, YogVal self, const char* s)
     RETURN_VOID(env);
 }
 
-static YogVal
-compare(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogString_binop_ufo(YogEnv* env, YogVal self, YogVal s)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal obj = YUNDEF;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, obj, retval);
-    CHECK_SELF_TYPE(env, self);
-    YogCArg params[] = { { "s", &obj}, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "<=>", params, args, kw);
-    if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_STRING)) {
-        RETURN(env, YNIL);
+    if (!IS_PTR(s) || (BASIC_OBJ_TYPE(s) != TYPE_STRING)) {
+        return YNIL;
     }
 
-    int_t n = strcmp(STRING_CSTR(self), STRING_CSTR(obj));
+    int_t n = strcmp(STRING_CSTR(self), STRING_CSTR(s));
     if (n < 0) {
-        RETURN(env, INT2VAL(-1));
+        return INT2VAL(-1);
     }
-    else if (n == 0) {
-        RETURN(env, INT2VAL(n));
+    if (n == 0) {
+        return INT2VAL(0);
     }
+    return INT2VAL(1);
+}
 
-    RETURN(env, INT2VAL(1));
+static YogVal
+ufo(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogString_binop_ufo(env, HDL2VAL(self), HDL2VAL(n));
 }
 
 void
@@ -1188,7 +1187,6 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cString, pkg, (name), (f)); \
 } while (0)
-    DEFINE_METHOD("<=>", compare);
     DEFINE_METHOD("[]=", assign_subscript);
     DEFINE_METHOD("dump", dump);
     DEFINE_METHOD("each_byte", each_byte);
@@ -1207,6 +1205,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("*", multiply, "n", NULL);
     DEFINE_METHOD2("+", add, "s", NULL);
     DEFINE_METHOD2("<<", lshift, "s", NULL);
+    DEFINE_METHOD2("<=>", ufo, "n", NULL);
     DEFINE_METHOD2("=~", match, "regexp", NULL);
     DEFINE_METHOD2("[]", subscript, "index", NULL);
 #undef DEFINE_METHOD2

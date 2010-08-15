@@ -41,6 +41,7 @@ YOG_EXPORT YogVal YogString_binop_add(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogString_binop_lshift(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogString_binop_match(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogString_binop_multiply(YogEnv*, YogHandle*, YogVal);
+YOG_EXPORT YogVal YogString_binop_ufo(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogString_clear(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogString_clone(YogEnv*, YogVal);
 YOG_EXPORT void YogString_define_classes(YogEnv*, YogVal);

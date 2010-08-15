@@ -67,27 +67,27 @@ remove_trailing_zero(YogEnv* env, char* buffer)
     memmove(pc, src, strlen(src) + 1);
 }
 
-static YogVal
-cmp(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+YogVal
+YogFloat_binop_ufo(YogEnv* env, YogVal self, YogVal f)
 {
-    CHECK_SELF_TYPE(env, self);
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal f = YUNDEF;
-    PUSH_LOCAL(env, f);
-    YogCArg params[] = { { "f", &f }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "<=>", params, args, kw);
     if (!IS_PTR(f) || (BASIC_OBJ_TYPE(f) != TYPE_FLOAT)) {
-        RETURN(env, YNIL);
+        return YNIL;
     }
 
     if (FLOAT_NUM(self) < FLOAT_NUM(f)) {
-        RETURN(env, INT2VAL(-1));
+        return INT2VAL(-1);
     }
-    else if (FLOAT_NUM(self) == FLOAT_NUM(f)) {
-        RETURN(env, INT2VAL(0));
+    if (FLOAT_NUM(self) == FLOAT_NUM(f)) {
+        return INT2VAL(0);
     }
+    return INT2VAL(1);
+}
 
-    RETURN(env, INT2VAL(1));
+static YogVal
+ufo(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* f)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogFloat_binop_ufo(env, HDL2VAL(self), HDL2VAL(f));
 }
 
 static YogVal
@@ -421,7 +421,6 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD("+self", positive);
     DEFINE_METHOD("-self", negative);
-    DEFINE_METHOD("<=>", cmp);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
@@ -434,6 +433,7 @@ YogFloat_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("-", subtract, "f", NULL);
     DEFINE_METHOD2("/", divide, "f", NULL);
     DEFINE_METHOD2("//", floor_divide, "f", NULL);
+    DEFINE_METHOD2("<=>", ufo, "f", NULL);
 #undef DEFINE_METHOD2
     vm->cFloat = cFloat;
 
