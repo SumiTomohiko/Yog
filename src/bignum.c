@@ -159,7 +159,7 @@ YogBignum_binop_subtract(YogEnv* env, YogHandle* self, YogHandle* n)
 {
     YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        YogVal bignum = YogBignum_from_int(env, right);
+        YogVal bignum = YogBignum_from_int(env, VAL2INT(right));
         YogHandle* h = YogHandle_REGISTER(env, bignum);
         return YogBignum_binop_subtract(env, self, h);
     }
