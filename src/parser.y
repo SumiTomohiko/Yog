@@ -1574,8 +1574,8 @@ comparison(A) ::= xor_expr(B) UFO xor_expr(C). {
 xor_expr(A) ::= or_expr(B). {
     A = B;
 }
-xor_expr(A) ::= xor_expr(B) XOR(C) or_expr(D). {
-    A = FuncCall_new2(env, NODE_LINENO(B), B, TOKEN_ID(C), D);
+xor_expr(A) ::= xor_expr(B) XOR or_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_XOR, B, C);
 }
 
 or_expr(A) ::= and_expr(B). {
