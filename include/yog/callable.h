@@ -1,6 +1,7 @@
 #if !defined(__YOG_CALLABLE_H__)
 #define __YOG_CALLABLE_H__
 
+#include <stdarg.h>
 #if defined(HAVE_STDINT_H)
 #   include <stdint.h>
 #endif
