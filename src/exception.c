@@ -175,15 +175,23 @@ YogException_get_stacktrace(YogEnv* env, YogVal frame)
         switch (PTR_AS(YogFrame, frame)->type) {
         case FRAME_C:
             {
+                ID class_name;
+                ID func_name;
                 YogVal f = PTR_AS(YogCFrame, frame)->f;
-                ID class_name = PTR_AS(YogNativeFunction, f)->class_name;
-                ID func_name = PTR_AS(YogNativeFunction, f)->func_name;
+                if (IS_PTR(f) && (BASIC_OBJ_TYPE(f) == TYPE_NATIVE_FUNCTION)) {
+                    class_name = PTR_AS(YogNativeFunction, f)->class_name;
+                    func_name = PTR_AS(YogNativeFunction, f)->func_name;
+                }
+                else {
+                    class_name = PTR_AS(YogNativeFunction2, f)->class_name;
+                    func_name = PTR_AS(YogNativeFunction2, f)->func_name;
+                }
                 PTR_AS(YogStackTraceEntry, ent)->lineno = 0;
                 PTR_AS(YogStackTraceEntry, ent)->filename = YNIL;
                 PTR_AS(YogStackTraceEntry, ent)->class_name = class_name;
                 PTR_AS(YogStackTraceEntry, ent)->func_name = func_name;
-                break;
             }
+            break;
         case FRAME_SCRIPT:
             {
                 code = PTR_AS(YogScriptFrame, frame)->code;
@@ -206,8 +214,8 @@ YogException_get_stacktrace(YogEnv* env, YogVal frame)
                 YogGC_UPDATE_PTR(env, PTR_AS(YogStackTraceEntry, ent), filename, filename);
                 PTR_AS(YogStackTraceEntry, ent)->class_name = class_name;
                 PTR_AS(YogStackTraceEntry, ent)->func_name = func_name;
-                break;
             }
+            break;
         case FRAME_FINISH:
         default:
             YOG_ASSERT(env, FALSE, "invalid frame type (0x%x)", PTR_AS(YogFrame, frame)->type);

@@ -77,14 +77,16 @@ exec_call(YogEnv* env, YogHandle* callee, uint_t left, uint_t middle, uint_t rig
 static void
 exec_binop(YogEnv* env, const char* op, YogVal left, YogVal right)
 {
-    YogVal attr = YogVal_get_attr(env, left, YogVM_intern(env, env->vm, op));
+    YogHandle* h_left = YogHandle_REGISTER(env, left);
+    YogHandle* h_right = YogHandle_REGISTER(env, right);
+    ID name = YogVM_intern(env, env->vm, op);
+    YogVal attr = YogVal_get_attr(env, HDL2VAL(h_left), name);
     if (IS_UNDEF(attr)) {
         YogError_raise_AttributeError(env, "%C object doesn't have an attribute of %s", left, op);
         /* NOTREACHED */
     }
     YogHandle* h_attr = YogHandle_REGISTER(env, attr);
-    YogHandle* h = YogHandle_REGISTER(env, right);
-    exec_call(env, h_attr, 1, 0, 0, 1, &h, 0, NULL, NULL, NULL, NULL);
+    exec_call(env, h_attr, 1, 0, 0, 1, &h_right, 0, NULL, NULL, NULL, NULL);
 }
 
 static void
