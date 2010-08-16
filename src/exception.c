@@ -17,6 +17,7 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
 #include "yog/sprintf.h"
 #include "yog/string.h"
 #include "yog/vm.h"
@@ -183,8 +184,9 @@ YogException_get_stacktrace(YogEnv* env, YogVal frame)
                     func_name = PTR_AS(YogNativeFunction, f)->func_name;
                 }
                 else {
-                    class_name = PTR_AS(YogNativeFunction2, f)->class_name;
-                    func_name = PTR_AS(YogNativeFunction2, f)->func_name;
+                    YogHandle* h_f = YogHandle_REGISTER(env, f);
+                    class_name = YogString_intern(env, PTR_AS(YogNativeFunction2, HDL2VAL(h_f))->class_name);
+                    func_name = YogString_intern(env, PTR_AS(YogNativeFunction2, HDL2VAL(h_f))->func_name);
                 }
                 PTR_AS(YogStackTraceEntry, ent)->lineno = 0;
                 PTR_AS(YogStackTraceEntry, ent)->filename = YNIL;
