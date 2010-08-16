@@ -481,8 +481,14 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 YogVal
 YogString_binop_add(YogEnv* env, YogHandle* self, YogHandle* s)
 {
+    YogVal right = HDL2VAL(s);
+    if (!IS_PTR(right) || (BASIC_OBJ_TYPE(right) != TYPE_STRING)) {
+        YogError_raise_binop_type_error(env, HDL2VAL(self), right, "+");
+        /* NOTREACHED */
+    }
+
     uint_t size1 = YogString_size(env, HDL2VAL(self));
-    uint_t size2 = YogString_size(env, HDL2VAL(s));
+    uint_t size2 = YogString_size(env, right);
     uint_t size = size1 + size2 + 1;
     YogVal t = YogString_of_size(env, size);
     YogVal body = PTR_AS(YogString, t)->body;
