@@ -1581,15 +1581,15 @@ xor_expr(A) ::= xor_expr(B) XOR(C) or_expr(D). {
 or_expr(A) ::= and_expr(B). {
     A = B;
 }
-or_expr(A) ::= or_expr(B) BAR(C) and_expr(D). {
-    A = FuncCall_new2(env, NODE_LINENO(B), B, TOKEN_ID(C), D);
+or_expr(A) ::= or_expr(B) BAR and_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_OR, B, C);
 }
 
 and_expr(A) ::= shift_expr(B). {
     A = B;
 }
-and_expr(A) ::= and_expr(B) AND(C) shift_expr(D). {
-    A = FuncCall_new2(env, NODE_LINENO(B), B, TOKEN_ID(C), D);
+and_expr(A) ::= and_expr(B) AND shift_expr(C). {
+    A = Binop_new(env, NODE_LINENO(B), BINOP_AND, B, C);
 }
 
 shift_expr(A) ::= match_expr(B). {
