@@ -1122,6 +1122,9 @@ func_name(A) ::= LESS(B). {
 func_name(A) ::= LESS_EQUAL(B). {
     A = ID2VAL(TOKEN_ID(B));
 }
+func_name(A) ::= UFO(B). {
+    A = ID2VAL(TOKEN_ID(B));
+}
 
 decorators_opt(A) ::= /* empty */. {
     A = YNIL;
