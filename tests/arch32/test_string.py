@@ -11,7 +11,6 @@ class TestString(TestCase):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\*
 ArgumentError: Argument too big
 """, stderr)
 

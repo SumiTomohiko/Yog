@@ -68,8 +68,7 @@ puts("foo" + "bar" + "baz")
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\+
-TypeError: can't convert Fixnum object to string implicitly
+TypeError: unsupported operand type\(s\) for \+: String and Fixnum
 """, stderr)
 
         self._test("""
@@ -80,8 +79,7 @@ puts("foo" + 42)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\+
-TypeError: can't convert Bool object to string implicitly
+TypeError: unsupported operand type\(s\) for \+: String and Bool
 """, stderr)
 
         self._test("""
@@ -92,8 +90,7 @@ puts("foo" + true)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\+
-TypeError: can't convert Symbol object to string implicitly
+TypeError: unsupported operand type\(s\) for \+: String and Symbol
 """, stderr)
 
         self._test("""
@@ -104,8 +101,7 @@ puts("foo" + 'bar)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\+
-TypeError: can't convert Nil object to string implicitly
+TypeError: unsupported operand type\(s\) for \+: String and Nil
 """, stderr)
 
         self._test("""
@@ -116,8 +112,7 @@ puts("foo" + nil)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\+
-TypeError: can't convert Float object to string implicitly
+TypeError: unsupported operand type\(s\) for \+: String and Float
 """, stderr)
 
         self._test("""
@@ -302,7 +297,6 @@ print(s[-1])
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in String#\[\]
 IndexError: string index out of range
 """, stderr)
 
@@ -315,7 +309,6 @@ puts(s[0])
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in String#\[\]
 IndexError: string index out of range
 """, stderr)
 
@@ -328,7 +321,6 @@ puts(s[1])
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in String#\[\]
 IndexError: string index out of range
 """, stderr)
 
@@ -341,8 +333,7 @@ puts(s[-1])
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in String#\[\]
-TypeError: string index must be Fixnum
+TypeError: String index must be Fixnum
 """, stderr)
 
         self._test("""
@@ -406,8 +397,7 @@ s[\"\"] = \"\"
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\*
-TypeError: can't multiply string by non-Fixnum of type String
+TypeError: Can't multiply string by non-Fixnum of type String
 """, stderr)
 
         self._test("""
@@ -424,8 +414,7 @@ puts("foo" * 2)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\*
-TypeError: can't multiply string by non-Fixnum of type Bool
+TypeError: Can't multiply string by non-Fixnum of type Bool
 """, stderr)
 
         self._test("""
@@ -436,8 +425,7 @@ puts("foo" * true)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\*
-TypeError: can't multiply string by non-Fixnum of type Symbol
+TypeError: Can't multiply string by non-Fixnum of type Symbol
 """, stderr)
 
         self._test("""
@@ -448,8 +436,7 @@ puts("foo" * 'bar)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\*
-TypeError: can't multiply string by non-Fixnum of type Nil
+TypeError: Can't multiply string by non-Fixnum of type Nil
 """, stderr)
 
         self._test("""
@@ -460,8 +447,7 @@ puts("foo" * nil)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\*
-TypeError: can't multiply string by non-Fixnum of type Float
+TypeError: Can't multiply string by non-Fixnum of type Float
 """, stderr)
 
         self._test("""
@@ -472,8 +458,7 @@ puts("foo" * 3.1415926535)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in String#\*
-ArgumentError: negative argument
+ArgumentError: Negative argument
 """, stderr)
 
         self._test("""

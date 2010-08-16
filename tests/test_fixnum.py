@@ -73,8 +73,7 @@ print(42 >= 42)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in <
-TypeError: comparison of Fixnum with Nil failed
+TypeError: Comparison of Fixnum with Nil failed
 """, stderr)
 
         self._test("""
@@ -430,7 +429,6 @@ puts(1 + 4611686018427387904)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#\+
 TypeError: unsupported operand type\(s\) for \+: Fixnum and Object
 """, stderr)
 
@@ -443,7 +441,6 @@ puts(42 + Object.new())
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#\+
 TypeError: unsupported operand type\(s\) for \+: Fixnum and Nil
 """, stderr)
 
@@ -456,7 +453,6 @@ puts(42 + nil)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#\+
 TypeError: unsupported operand type\(s\) for \+: Fixnum and Bool
 """, stderr)
 
@@ -469,7 +465,6 @@ puts(42 + true)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#\+
 TypeError: unsupported operand type\(s\) for \+: Fixnum and Symbol
 """, stderr)
 
@@ -530,7 +525,6 @@ puts(- 42 - 3.141592)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#-
 TypeError: unsupported operand type\(s\) for -: Fixnum and Object
 """, stderr)
 
@@ -543,7 +537,6 @@ puts(42 - Object.new())
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#-
 TypeError: unsupported operand type\(s\) for -: Fixnum and Nil
 """, stderr)
 
@@ -556,7 +549,6 @@ puts(42 - nil)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#-
 TypeError: unsupported operand type\(s\) for -: Fixnum and Bool
 """, stderr)
 
@@ -569,7 +561,6 @@ puts(42 - true)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#-
 TypeError: unsupported operand type\(s\) for -: Fixnum and Symbol
 """, stderr)
 
@@ -617,7 +608,6 @@ puts(2 * 3.1415926535)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#\*
 TypeError: unsupported operand type\(s\) for \*: Fixnum and Bool
 """, stderr)
 
@@ -630,7 +620,6 @@ puts(42 * true)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#\*
 TypeError: unsupported operand type\(s\) for \*: Fixnum and Nil
 """, stderr)
 
@@ -643,7 +632,6 @@ puts(42 * nil)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#\*
 TypeError: unsupported operand type\(s\) for \*: Fixnum and Object
 """, stderr)
 
@@ -656,7 +644,6 @@ puts(42 * Object.new())
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#\*
 TypeError: unsupported operand type\(s\) for \*: Fixnum and Symbol
 """, stderr)
 
@@ -700,7 +687,6 @@ puts(2305843009213693952 / 4611686018427387904)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#/
 TypeError: unsupported operand type\(s\) for /: Fixnum and Bool
 """, stderr)
 
@@ -713,7 +699,6 @@ puts(42 / true)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#/
 TypeError: unsupported operand type\(s\) for /: Fixnum and Nil
 """, stderr)
 
@@ -726,7 +711,6 @@ puts(42 / nil)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#/
 ZeroDivisionError: Fixnum division by zero
 """, stderr)
 
@@ -739,8 +723,7 @@ puts(42 / 0)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#/
-ZeroDivisionError: float division
+ZeroDivisionError: Float division
 """, stderr)
 
         self._test("""
@@ -783,7 +766,6 @@ puts(2305843009213693952 // 4611686018427387904)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#//
 TypeError: unsupported operand type\(s\) for //: Fixnum and Bool
 """, stderr)
 
@@ -796,7 +778,6 @@ puts(42 // true)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#//
 TypeError: unsupported operand type\(s\) for //: Fixnum and Nil
 """, stderr)
 
@@ -809,7 +790,6 @@ puts(42 // nil)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#//
 ZeroDivisionError: Fixnum division by zero
 """, stderr)
 
@@ -822,7 +802,6 @@ puts(42 // 0)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Fixnum#//
 ZeroDivisionError: float division
 """, stderr)
 
@@ -889,7 +868,6 @@ puts((- 3) << (- 1))
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Fixnum#<<
 TypeError: unsupported operand type\(s\) for <<: Fixnum and String
 """, stderr)
 
@@ -963,7 +941,6 @@ puts((- 3) >> 1)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Fixnum#>>
 TypeError: unsupported operand type\(s\) for >>: Fixnum and String
 """, stderr)
 
@@ -989,7 +966,6 @@ puts(42 | 4611686018427387904)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Fixnum#\|
 TypeError: unsupported operand type\(s\) for \|: Fixnum and String
 """, stderr)
 
@@ -1015,7 +991,6 @@ puts(42 & 4611686018427387904)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Fixnum#&
 TypeError: unsupported operand type\(s\) for &: Fixnum and String
 """, stderr)
 
@@ -1039,7 +1014,6 @@ puts(42 ^ 1073741824)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Fixnum#\^
 TypeError: unsupported operand type\(s\) for \^: Fixnum and String
 """, stderr)
 
@@ -1065,7 +1039,6 @@ puts(42 % 4611686018427387904)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Fixnum#%
 TypeError: unsupported operand type\(s\) for %: Fixnum and String
 """, stderr)
 
@@ -1179,7 +1152,6 @@ print(42 ** 0.0)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Fixnum#\*\*
 ZeroDivisionError: 0.0 cannot be raised to a negative power
 """, stderr)
 
@@ -1191,7 +1163,6 @@ print(0 ** (- 1))
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Fixnum#\*\*
 TypeError: unsupported operand type\(s\) for \*\*: Fixnum and Bool
 """, stderr)
 

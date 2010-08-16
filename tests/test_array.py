@@ -197,8 +197,7 @@ print([42, 26][-1])
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Array#\[\]
-IndexError: array index out of range
+IndexError: Array index out of range
 """, stderr)
 
         self._test("""
@@ -209,8 +208,7 @@ IndexError: array index out of range
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-  File builtin, in Array#\[\]
-IndexError: array index out of range
+IndexError: Array index out of range
 """, stderr)
 
         self._test("""
