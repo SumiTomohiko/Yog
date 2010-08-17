@@ -2,7 +2,12 @@
 OBJEXT = @OBJEXT@
 SOEXT = @SOEXT@
 CC = @CC@
-CFLAGS = @CFLAGS@ -DGC_GENERATIONAL
+ONIG_DIR = $(top_srcdir)/onig
+GMP_DIR = $(top_srcdir)/gmp
+LIBFFI_DIR = $(top_srcdir)/libffi
+BDWGC_DIR = $(top_srcdir)/bdwgc
+CFLAGS = @CFLAGS@ -I$(top_srcdir)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
+	 -I$(GMP_DIR) -I$(LIBFFI_DIR)/include -DGC_GENERATIONAL -Wall -g -O2
 CXXFLAGS = @CXXFLAGS@ @CFLAGS@
 CXX = @CXX@
 LDFLAGS = @LDFLAGS@
