@@ -1,4 +1,7 @@
 
+" Write the following line in $(prefix)/share/vim/vim71/filetype.vim
+" au BufNewFile,BufRead *.yg setf yog
+
 sy region Comment start="(:" end=":)"
 sy region Comment start="#" end="$"
 
