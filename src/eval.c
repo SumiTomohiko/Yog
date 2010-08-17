@@ -170,7 +170,7 @@ exec_add(YogEnv* env, YogVal left, YogVal right)
 static void
 exec_greater_equal(YogEnv* env, YogVal left, YogVal right)
 {
-    exec_binop(env, "=>", left, right);
+    exec_binop(env, ">=", left, right);
 }
 
 static void
