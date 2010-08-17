@@ -82,7 +82,7 @@ exec_binop(YogEnv* env, const char* op, YogVal left, YogVal right)
     ID name = YogVM_intern(env, env->vm, op);
     YogVal attr = YogVal_get_attr(env, HDL2VAL(h_left), name);
     if (IS_UNDEF(attr)) {
-        YogError_raise_AttributeError(env, "%C object doesn't have an attribute of %s", left, op);
+        YogError_raise_AttributeError(env, "%C object doesn't have an attribute of %s", HDL2VAL(h_left), op);
         /* NOTREACHED */
     }
     YogHandle* h_attr = YogHandle_REGISTER(env, attr);
