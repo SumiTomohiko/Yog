@@ -290,6 +290,7 @@ tools/swig/Tools/config/config.guess
 tools/swig/Tools/config/config.sub
 tools/swig/Tools/config/depcomp
 tools/swig/Tools/config/install-sh
+tools/swig/Tools/config/ltmain.sh
 tools/swig/Tools/config/missing
 tools/swig/Tools/config/ylwrap
 tools/swig/swig
