@@ -15,7 +15,7 @@ inspect(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
 
     s = YogString_from_str(env, "'");
     sym = YogVM_id2name(env, env->vm, VAL2ID(self));
-    YogString_add(env, s, sym);
+    YogString_append(env, s, sym);
 
     RETURN(env, s);
 }

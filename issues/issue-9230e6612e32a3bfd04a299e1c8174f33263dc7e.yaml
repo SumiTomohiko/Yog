@@ -1,0 +1,34 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "*args cannot accept arguments"
+desc: |-
+  $ cat bar.yg
+  
+    def foo(bar, *args)
+      puts(bar)
+      puts(args)
+    end
+  
+    foo(*["foo", "bar"])
+  
+    # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+    $ src/yog-generational bar.yg
+    ["bar"]
+    Traceback (most recent call last):
+      File "bar.yg", line 7, in <package>
+      File "bar.yg", line 4, in foo
+    UnboundLocalError: Local variable "args" referenced before assignment
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-08-06 11:59:44.090332 Z
+references: []
+
+id: 9230e6612e32a3bfd04a299e1c8174f33263dc7e
+log_events: 
+- - 2010-08-06 11:59:45.737191 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

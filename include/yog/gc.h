@@ -20,7 +20,7 @@
 #   define GENERATION_YOUNG     0
 #   define GENERATION_OLD       1
 #   define YogGC_IS_YOUNG(obj)  (*PAYLOAD2GENERATION((obj)) == GENERATION_YOUNG)
-#   define YogGC_IS_OLD(obj)    !YogGC_IS_YOUNG((obj))
+#   define YogGC_IS_OLD(obj)    (*PAYLOAD2GENERATION((obj)) == GENERATION_OLD)
 #   define PAYLOAD2REMEMBERED(payload) \
                                 ((uint_t*)(payload) - 2)
 #   define YogGC_IS_REMEMBERED(obj) \

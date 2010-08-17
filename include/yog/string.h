@@ -34,9 +34,14 @@ DECL_AS_TYPE(YogString_new);
  */
 /* src/string.c */
 YOG_EXPORT YogVal YogCharArray_new_str(YogEnv*, const char*);
-YOG_EXPORT void YogString_add(YogEnv*, YogVal, YogVal);
-YOG_EXPORT void YogString_add_cstr(YogEnv*, YogVal, const char*);
+YOG_EXPORT void YogString_append(YogEnv*, YogVal, YogVal);
+YOG_EXPORT void YogString_append_cstr(YogEnv*, YogVal, const char*);
 YOG_EXPORT char YogString_at(YogEnv*, YogVal, uint_t);
+YOG_EXPORT YogVal YogString_binop_add(YogEnv*, YogHandle*, YogHandle*);
+YOG_EXPORT YogVal YogString_binop_lshift(YogEnv*, YogHandle*, YogHandle*);
+YOG_EXPORT YogVal YogString_binop_match(YogEnv*, YogHandle*, YogHandle*);
+YOG_EXPORT YogVal YogString_binop_multiply(YogEnv*, YogHandle*, YogVal);
+YOG_EXPORT YogVal YogString_binop_ufo(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogString_clear(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogString_clone(YogEnv*, YogVal);
 YOG_EXPORT void YogString_define_classes(YogEnv*, YogVal);
@@ -47,12 +52,12 @@ YOG_EXPORT YogVal YogString_from_str(YogEnv*, const char*);
 YOG_EXPORT int_t YogString_hash(YogEnv*, YogVal);
 YOG_EXPORT ID YogString_intern(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogString_match(YogEnv*, YogVal, YogVal, int_t);
-YOG_EXPORT YogVal YogString_multiply(YogEnv*, YogVal, int_t);
 YOG_EXPORT YogVal YogString_new(YogEnv*);
 YOG_EXPORT YogVal YogString_of_encoding(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogString_of_size(YogEnv*, uint_t);
 YOG_EXPORT void YogString_push(YogEnv*, YogVal, char);
 YOG_EXPORT uint_t YogString_size(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogString_subscript(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogString_to_i(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */

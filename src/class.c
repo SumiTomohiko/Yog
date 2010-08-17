@@ -98,6 +98,25 @@ YogClass_define_class_method(YogEnv* env, YogVal self, YogVal pkg, const char* n
 }
 
 void
+YogClass_define_method2(YogEnv* env, YogVal klass, YogVal pkg, const char* name, void* f, ...)
+{
+    YogHandle* h_klass = YogHandle_REGISTER(env, klass);
+    YogHandle* h_pkg = YogHandle_REGISTER(env, pkg);
+    YogVM* vm = env->vm;
+    ID id_class_name = PTR_AS(YogClass, klass)->name;
+    YogVal class_name = YogVM_id2name(env, vm, id_class_name);
+    YogHandle* h_class_name = YogHandle_REGISTER(env, class_name);
+    ID id_func_name = YogVM_intern(env, vm, name);
+    YogVal func_name = YogVM_id2name(env, vm, id_func_name);
+    YogHandle* h_func_name = YogHandle_REGISTER(env, func_name);
+    va_list ap;
+    va_start(ap, f);
+    YogHandle* func = YogNativeFunction2_new(env, h_pkg, h_class_name, h_func_name, f, ap);
+    va_end(ap);
+    YogObj_set_attr(env, HDL2VAL(h_klass), name, HDL2VAL(func));
+}
+
+void
 YogClass_define_method(YogEnv* env, YogVal klass, YogVal pkg, const char* name, YogAPI f)
 {
     SAVE_ARGS2(env, klass, pkg);
@@ -224,21 +243,16 @@ YogClass_class_init(YogEnv* env, YogVal cClass, YogVal pkg)
 YogVal
 YogClass_get_attr(YogEnv* env, YogVal self, ID name)
 {
-    SAVE_ARG(env, self);
-    YogVal attr = YUNDEF;
-    YogVal klass = YUNDEF;
-    PUSH_LOCALS2(env, attr, klass);
-
-    klass = self;
+    YogVal klass = self;
     do {
-        attr = YogObj_get_attr(env, klass, name);
+        YogVal attr = YogObj_get_attr(env, klass, name);
         if (!IS_UNDEF(attr)) {
-            RETURN(env, attr);
+            return attr;
         }
         klass = PTR_AS(YogClass, klass)->super;
     } while (IS_PTR(klass));
 
-    RETURN(env, YUNDEF);
+    return YUNDEF;
 }
 
 void

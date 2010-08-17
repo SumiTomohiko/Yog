@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove *.bat
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-08-06 16:42:12.046830 Z
+references: []
+
+id: 56cfa098e2808977ab8a6a76ce79c2c33bbc140e
+log_events: 
+- - 2010-08-06 16:42:12.733963 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

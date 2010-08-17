@@ -118,6 +118,7 @@ YOG_EXPORT YogVal YogCFrame_new(YogEnv*);
 YOG_EXPORT void YogCFrame_return_multi_value(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogFinishFrame_clean(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogFinishFrame_new(YogEnv*);
+YOG_EXPORT YogVal YogFrame_get_c_frame(YogEnv*);
 YOG_EXPORT YogVal YogFrame_get_script_frame(YogEnv*, YogVal, uint_t);
 YOG_EXPORT void YogScriptFrame_cleanup(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogScriptFrame_new(YogEnv*, YogFrameType, YogVal, uint_t, uint_t);

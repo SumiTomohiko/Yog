@@ -43,7 +43,9 @@ struct YogVM {
     YogVal cMatch;
     YogVal cModule;
     YogVal cNativeFunction;
+    YogVal cNativeFunction2;
     YogVal cNativeInstanceMethod;
+    YogVal cNativeInstanceMethod2;
     YogVal cNil;
     YogVal cObject;
     YogVal cPackage;
@@ -87,6 +89,10 @@ struct YogVM {
     YogVal encodings;
     YogVal encAscii;
     YogVal encUtf8;
+
+    ID id_star;
+    ID id_star2;
+    ID id_amp;
 
     YogVal finish_code;
 

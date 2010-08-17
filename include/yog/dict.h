@@ -33,6 +33,7 @@ YOG_EXPORT BOOL YogDict_include(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogDict_new(YogEnv*);
 YOG_EXPORT void YogDict_set(YogEnv*, YogVal, YogVal, YogVal);
 YOG_EXPORT uint_t YogDict_size(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogDict_subscript(YogEnv*, YogVal, YogVal);
 
 /* PROTOTYPE_END */
 

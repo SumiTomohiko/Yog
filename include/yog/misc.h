@@ -31,6 +31,7 @@
  */
 /* src/misc.c */
 YOG_EXPORT void YogMisc_eval_source(YogEnv*, YogVal, const char*);
+YOG_EXPORT YogHandle* YogMisc_format_method(YogEnv*, YogHandle*, YogHandle*);
 
 /* PROTOTYPE_END */
 

@@ -55,6 +55,9 @@ struct YogThread {
     uint_t script_frames_num;
 #define SCRIPT_FRAMES_MAX 32
     YogVal script_frames[SCRIPT_FRAMES_MAX];
+    uint_t c_frames_num;
+#define C_FRAMES_MAX 32
+    YogVal c_frames[C_FRAMES_MAX];
 };
 
 typedef struct YogThread YogThread;
@@ -87,11 +90,13 @@ YOG_EXPORT void YogThread_config_generational(YogEnv*, YogVal, size_t, size_t, u
 YOG_EXPORT void YogThread_config_mark_sweep(YogEnv*, YogVal, size_t);
 YOG_EXPORT void YogThread_config_mark_sweep_compact(YogEnv*, YogVal, size_t);
 YOG_EXPORT void YogThread_define_classes(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogThread_get_c_frame(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogThread_get_finish_frame(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogThread_get_script_frame(YogEnv*, YogVal);
 YOG_EXPORT void YogThread_init(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogThread_issue_object_id(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogThread_new(YogEnv*);
+YOG_EXPORT void YogThread_put_c_frame(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogThread_put_finish_frame(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogThread_put_script_frame(YogEnv*, YogVal, YogVal);
 

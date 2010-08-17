@@ -1,14 +1,19 @@
 #include "yog/config.h"
+#include <stdarg.h>
+#include <string.h>
+#include <strings.h>
 #include "yog/arg.h"
 #include "yog/array.h"
 #include "yog/callable.h"
 #include "yog/class.h"
 #include "yog/code.h"
+#include "yog/compat.h"
 #include "yog/dict.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/frame.h"
 #include "yog/handle.h"
+#include "yog/misc.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -57,7 +62,7 @@ assign_keyword_arg(YogEnv* env, YogHandle* self, uint_t args_offset, YogHandle* 
         STORE_LOCAL(env, frame, args_offset + i, val->val);
         return;
     }
-    if (!IS_PTR(kw->val)) {
+    if (kw == NULL) {
         YogError_raise_ArgumentError(env, "an unexpected keyword argument \"%I\"", name);
     }
     YogDict_set(env, kw->val, ID2VAL(name), val->val);
@@ -93,7 +98,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
     }
     YogHandle* arg_info = YogHandle_REGISTER(env, a);
 
-    YogHandle* kw = YogHandle_REGISTER(env, YUNDEF);
+    YogHandle* kw = NULL;
     uint_t arg_kwargc = HDL_AS(YogArgInfo, arg_info)->kwargc;
     if (0 < arg_kwargc) {
         uint_t index = HDL_AS(YogArgInfo, arg_info)->argc;
@@ -101,8 +106,9 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
         if (0 < varargc) {
             index++;
         }
-        kw->val = YogDict_new(env);
-        STORE_LOCAL(env, frame, args_offset + index, kw->val);
+        YogVal dict = YogDict_new(env);
+        STORE_LOCAL(env, frame, args_offset + index, dict);
+        kw = YogHandle_REGISTER(env, dict);
     }
 
     uint_t i;
@@ -420,13 +426,265 @@ create_positional_argument(YogEnv* env, uint8_t posargc, YogHandle* posargs[], Y
     return args;
 }
 
+static YogHandle*
+YogNativeFunction2_format_method(YogEnv* env, YogHandle* self)
+{
+    YogVal class_name = HDL_AS(YogNativeFunction2, self)->class_name;
+    YogHandle* h_class_name = YogHandle_REGISTER(env, class_name);
+    YogVal func_name = HDL_AS(YogNativeFunction2, self)->func_name;
+    YogHandle* h_func_name = YogHandle_REGISTER(env, func_name);
+    return YogMisc_format_method(env, h_class_name, h_func_name);
+}
+
+static void
+set_posarg(YogEnv* env, YogHandle* self, uint_t args_num, YogHandle* args[], uint_t index, YogHandle* vararg, YogHandle* val, uint_t posargc)
+{
+    if (index < args_num) {
+        args[index] = val;
+        return;
+    }
+    if (vararg != NULL) {
+        YogArray_push(env, HDL2VAL(vararg), HDL2VAL(val));
+        return;
+    }
+
+    YogHandle* name = YogNativeFunction2_format_method(env, self);
+    YogError_raise_ArgumentError(env, "%S() required %u positional argument(s) (%u given)", HDL2VAL(name), args_num, posargc);
+    /* NOTREACHED */
+}
+
+static int_t
+find_special_arg(YogEnv* env, YogHandle* self, ID name)
+{
+    uint_t args_num = HDL_AS(YogNativeFunction2, self)->args_num;
+    YogNativeArg* args = HDL_AS(YogNativeFunction2, self)->args;
+    uint_t i;
+    for (i = 0; i < args_num; i++) {
+        if (args[i].name != name) {
+            continue;
+        }
+        return i;
+    }
+    return -1;
+}
+
+static int_t
+find_varkwarg(YogEnv* env, YogHandle* self)
+{
+    return find_special_arg(env, self, env->vm->id_star);
+}
+
+static int_t
+find_vararg(YogEnv* env, YogHandle* self)
+{
+    return find_special_arg(env, self, env->vm->id_star2);
+}
+
+static BOOL
+find_keyword(YogEnv* env, YogHandle* self, uint_t argc, ID name, uint_t* pindex)
+{
+    YogNativeArg* args = HDL_AS(YogNativeFunction2, self)->args;
+    uint_t i;
+    for (i = 0; i < argc; i++) {
+        if (args[i].name != name) {
+            continue;
+        }
+        *pindex = i;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+static void
+check_keyword_assigned(YogEnv* env, YogHandle* self, YogHandle* val, ID name)
+{
+    if (val == NULL) {
+        return;
+    }
+    YogHandle* meth = YogNativeFunction2_format_method(env, self);
+    YogError_raise_ArgumentError(env, "%S() got multiple values for keyword argument \"%I\"", HDL2VAL(meth), name);
+}
+
+static void
+set_keyword_arg(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[], YogHandle* varkwarg, ID name, YogHandle* val)
+{
+    uint_t index;
+    if (find_keyword(env, self, argc, name, &index)) {
+        check_keyword_assigned(env, self, args[index], name);
+        args[index] = val;
+        return;
+    }
+    if (varkwarg != NULL) {
+        YogDict_set(env, HDL2VAL(varkwarg), ID2VAL(name), HDL2VAL(val));
+        return;
+    }
+    YogHandle* f = YogNativeFunction2_format_method(env, self);
+    const char* fmt = "%S() got an unexpected keyword argument \"%I\"";
+    YogError_raise_ArgumentError(env, fmt, HDL2VAL(f), name);
+}
+
+static void
+set_vararg_each(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[], uint_t index, YogHandle* vararg, YogVal val, uint_t given_argc)
+{
+    if (index < argc) {
+        args[index] = YogHandle_REGISTER(env, val);
+        return;
+    }
+    if (vararg != NULL) {
+        YogArray_push(env, HDL2VAL(vararg), val);
+        return;
+    }
+
+    YogHandle* name = YogNativeFunction2_format_method(env, self);
+    YogError_raise_ArgumentError(env, "%S() takes exactly %u argument(s) (%u given)", HDL2VAL(name), argc, given_argc);
+    /* NOTREACHED */
+}
+
+static void
+set_vararg(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[], YogHandle* vararg, YogHandle* arg, uint_t posargc)
+{
+    uint_t size = YogArray_size(env, HDL2VAL(arg));
+    uint_t given_argc = size + posargc;
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        YogVal val = YogArray_at(env, HDL2VAL(arg), i);
+        uint_t index = posargc + i;
+        set_vararg_each(env, self, argc, args, index, vararg, val, given_argc);
+    }
+}
+
+static void
+set_varkwarg(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[], YogHandle* varkwarg, YogHandle* arg)
+{
+    YogVal iter = YogDict_get_iterator(env, HDL2VAL(arg));
+    YogHandle* h_iter = YogHandle_REGISTER(env, iter);
+    while (YogDictIterator_next(env, HDL2VAL(h_iter))) {
+        YogVal name = YogDictIterator_current_key(env, HDL2VAL(h_iter));
+        YogVal val = YogDictIterator_current_value(env, HDL2VAL(h_iter));
+        YogHandle* h_val = YogHandle_REGISTER(env, val);
+        set_keyword_arg(env, self, argc, args, varkwarg, VAL2ID(name), h_val);
+    }
+}
+
+static void
+set_blockarg(YogEnv* env, YogHandle* self, YogHandle* args[], YogHandle* blockarg)
+{
+    uint_t args_num = HDL_AS(YogNativeFunction2, self)->args_num;
+    YogNativeArg* formal_args = HDL_AS(YogNativeFunction2, self)->args;
+    if (formal_args[args_num - 1].name != env->vm->id_amp) {
+        YogHandle* name = YogNativeFunction2_format_method(env, self);
+        YogError_raise_ArgumentError(env, "%S got an unexpected block argument", HDL2VAL(name));
+        /* NOTREACHED */
+    }
+    args[args_num - 1] = blockarg;
+}
+
+static YogVal
+YogNativeFunction2_call_for_instance(YogEnv* env, YogHandle* self, YogHandle* recv, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg, YogVal* pmulti_val)
+{
+    YogVal frame = YogFrame_get_c_frame(env);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogCFrame, frame), f, HDL2VAL(self));
+    YogEval_push_frame(env, frame);
+
+    uint_t args_num = HDL_AS(YogNativeFunction2, self)->args_num;
+    YogHandle* args[args_num];
+    bzero(args, sizeof(args));
+
+    uint_t formal_posargc = HDL_AS(YogNativeFunction2, self)->posargs_num;
+    YogHandle* formal_vararg;
+    if (HDL_AS(YogNativeFunction2, self)->vararg_pos != -1) {
+        formal_vararg = YogHandle_REGISTER(env, YogArray_new(env));
+        args[HDL_AS(YogNativeFunction2, self)->vararg_pos] = formal_vararg;
+    }
+    else {
+        formal_vararg = NULL;
+    }
+    uint_t i;
+    for (i = 0; i < posargc; i++) {
+        set_posarg(env, self, formal_posargc, args, i, formal_vararg, posargs[i], posargc);
+    }
+
+    if (vararg != NULL) {
+        set_vararg(env, self, formal_posargc, args, formal_vararg, vararg, posargc);
+    }
+
+    YogHandle* formal_varkwarg;
+    if (HDL_AS(YogNativeFunction2, self)->varkwarg_pos != -1) {
+        formal_varkwarg = YogHandle_REGISTER(env, YogDict_new(env));
+        args[HDL_AS(YogNativeFunction2, self)->varkwarg_pos] = formal_varkwarg;
+    }
+    else {
+        formal_varkwarg = NULL;
+    }
+    for (i = 0; i < kwargc; i += 2) {
+        ID name = VAL2ID(HDL2VAL(kwargs[i]));
+        YogHandle* val = kwargs[i + 1];
+        set_keyword_arg(env, self, formal_posargc, args, formal_varkwarg, name, val);
+    }
+
+    if (varkwarg != NULL) {
+        set_varkwarg(env, self, formal_posargc, args, formal_varkwarg, varkwarg);
+    }
+
+    if (blockarg != NULL) {
+        set_blockarg(env, self, args, blockarg);
+    }
+
+    void* f = HDL_AS(YogNativeFunction2, self)->f;
+    YogVal pkg = HDL_AS(YogNativeFunction2, self)->pkg;
+    YogHandle* h_pkg = YogHandle_REGISTER(env, pkg);
+    /* gcc cannot detect that retval is always initialized */
+    YogVal retval = YUNDEF;
+    switch (args_num) {
+    case 0:
+        retval = ((YogVal (*)(YogEnv*, YogHandle*, YogHandle*))f)(env, recv, h_pkg);
+        break;
+    case 1:
+        retval = ((YogVal (*)(YogEnv*, YogHandle*, YogHandle*, YogHandle*))f)(env, recv, h_pkg, args[0]);
+        break;
+    case 2:
+        retval = ((YogVal (*)(YogEnv*, YogHandle*, YogHandle*, YogHandle*, YogHandle*))f)(env, recv, h_pkg, args[0], args[1]);
+        break;
+    case 3:
+        retval = ((YogVal (*)(YogEnv*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*))f)(env, recv, h_pkg, args[0], args[1], args[2]);
+        break;
+    case 4:
+        retval = ((YogVal (*)(YogEnv*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*))f)(env, recv, h_pkg, args[0], args[1], args[2], args[3]);
+        break;
+    case 5:
+        retval = ((YogVal (*)(YogEnv*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*))f)(env, recv, h_pkg, args[0], args[1], args[2], args[3], args[4]);
+        break;
+    case 6:
+        retval = ((YogVal (*)(YogEnv*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*))f)(env, recv, h_pkg, args[0], args[1], args[2], args[3], args[4], args[5]);
+        break;
+    case 7:
+        retval = ((YogVal (*)(YogEnv*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*))f)(env, recv, h_pkg, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+        break;
+    case 8:
+        retval = ((YogVal (*)(YogEnv*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*, YogHandle*))f)(env, recv, h_pkg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
+        break;
+    default:
+        YOG_BUG(env, "Can't handle more than 8 arguments");
+        /* NOTREACHED */
+        break;
+    }
+
+    if (IS_UNDEF(retval) && (pmulti_val != NULL)) {
+        *pmulti_val = PTR_AS(YogCFrame, env->frame)->multi_val;
+    }
+
+    YogThread_put_c_frame(env, env->thread, env->frame);
+    YogEval_pop_frame(env);
+    return retval;
+}
+
 static YogVal
 YogNativeFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg, YogVal* multi_val)
 {
     YogHandle* args = create_positional_argument(env, posargc, posargs, vararg);
     YogHandle* kw = create_keyword_argument(env, kwargc, kwargs, varkwarg);
 
-    YogHandle* frame = YogHandle_REGISTER(env, YogCFrame_new(env));
+    YogHandle* frame = YogHandle_REGISTER(env, YogFrame_get_c_frame(env));
     YogGC_UPDATE_PTR(env, HDL_AS(YogCFrame, frame), f, HDL2VAL(callee));
     YogEval_push_frame(env, HDL2VAL(frame));
 
@@ -437,6 +695,7 @@ YogNativeFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* s
         *multi_val = HDL_AS(YogCFrame, frame)->multi_val;
     }
 
+    YogThread_put_c_frame(env, env->thread, env->frame);
     YogEval_pop_frame(env);
     return retval;
 }
@@ -448,6 +707,32 @@ error_for_multi_value(YogEnv* env, YogVal retval)
         return;
     }
     YogError_raise_ValueError(env, "multiple value are not allowed");
+}
+
+static void
+YogNativeFunction2_exec_for_instance(YogEnv* env, YogHandle* self, YogHandle* recv, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+{
+    YogVal multi_val;
+    YogVal retval = YogNativeFunction2_call_for_instance(env, self, recv, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, &multi_val);
+    if (IS_UNDEF(retval)) {
+        YogEval_push_returned_multi_value(env, multi_val);
+        return;
+    }
+    YogEval_push_returned_value(env, env->frame, retval);
+}
+
+static void
+YogNativeFunction2_exec(YogEnv* env, YogHandle* self, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+{
+    YogNativeFunction2_exec_for_instance(env, self, NULL, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+}
+
+static YogVal
+YogNativeFunction2_call(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+{
+    YogVal retval = YogNativeFunction2_call_for_instance(env, callee, NULL, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, NULL);
+    error_for_multi_value(env, retval);
+    return retval;
 }
 
 static YogVal
@@ -588,12 +873,32 @@ YogInstanceMethod_new(YogEnv* env)
 }
 
 static void
+YogNativeInstanceMethod2_exec(YogEnv* env, YogHandle* self, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+{
+    YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, self);
+    YogHandle* recv = YogHandle_REGISTER(env, obj->self);
+    YogHandle* f = YogHandle_REGISTER(env, obj->f);
+    YogNativeFunction2_exec_for_instance(env, f, recv, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+}
+
+static void
 YogNativeInstanceMethod_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
     YogHandle* self = YogHandle_REGISTER(env, obj->self);
     YogHandle* f = YogHandle_REGISTER(env, obj->f);
     YogNativeFunction_exec_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+}
+
+static YogVal
+YogNativeInstanceMethod2_call(YogEnv* env, YogHandle* self, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+{
+    YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, self);
+    YogHandle* recv = YogHandle_REGISTER(env, obj->self);
+    YogHandle* f = YogHandle_REGISTER(env, obj->f);
+    YogVal retval = YogNativeFunction2_call_for_instance(env, f, recv, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg, NULL);
+    error_for_multi_value(env, retval);
+    return retval;
 }
 
 static YogVal
@@ -607,10 +912,27 @@ YogNativeInstanceMethod_call(YogEnv* env, YogHandle* callee, uint8_t posargc, Yo
     return retval;
 }
 
-YogVal
+static YogVal
 YogNativeInstanceMethod_new(YogEnv* env)
 {
     return create_instance_method(env, env->vm->cNativeInstanceMethod);
+}
+
+static YogVal
+YogNativeInstanceMethod2_new(YogEnv* env)
+{
+    return create_instance_method(env, env->vm->cNativeInstanceMethod2);
+}
+
+static YogVal
+YogNativeFunction2_call_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal klass)
+{
+    YogHandle* h_self = YogHandle_REGISTER(env, self);
+    YogHandle* h_obj = YogHandle_REGISTER(env, obj);
+    YogVal meth = YogNativeInstanceMethod2_new(env);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogInstanceMethod, meth), self, HDL2VAL(h_obj));
+    YogGC_UPDATE_PTR(env, PTR_AS(YogInstanceMethod, meth), f, HDL2VAL(h_self));
+    return meth;
 }
 
 static YogVal
@@ -628,6 +950,13 @@ YogNativeFunction_call_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal kl
 }
 
 static void
+YogNativeFunction2_exec_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal klass)
+{
+    YogVal retval = YogNativeFunction2_call_get_descr(env, self, obj, klass);
+    YogScriptFrame_push_stack(env, env->frame, retval);
+}
+
+static void
 YogNativeFunction_exec_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal klass)
 {
     SAVE_ARGS3(env, self, obj, klass);
@@ -640,15 +969,90 @@ YogNativeFunction_exec_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal kl
     RETURN_VOID(env);
 }
 
+static uint_t
+count_args(YogEnv* env, va_list ap)
+{
+    uint_t n = 0;
+    va_list aq;
+    va_copy(aq, ap);
+    const char* name;
+    while ((name = va_arg(aq, const char*)) != NULL) {
+        n += strcmp(name, "|") == 0 ? 0 : 1;
+    }
+    return n;
+}
+
+static void
+YogNativeFunction2_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
+    YogNativeFunction2* f = (YogNativeFunction2*)ptr;
+#define KEEP(name) YogGC_KEEP(env, f, name, keeper, heap)
+    KEEP(pkg);
+    KEEP(class_name);
+    KEEP(func_name);
+#undef KEEP
+}
+
+static uint_t
+init_arg(YogEnv* env, YogHandle* f, uint_t index, const char* name, BOOL* optional)
+{
+    if (strcmp(name, "|") == 0) {
+        *optional = TRUE;
+        return 0;
+    }
+    ID id = YogVM_intern(env, env->vm, name);
+    YogNativeArg* arg = &HDL_AS(YogNativeFunction2, f)->args[index];
+    arg->name = id;
+    arg->optional = *optional;
+    return 1;
+}
+
+YogHandle*
+YogNativeFunction2_new(YogEnv* env, YogHandle* pkg, YogHandle* class_name, YogHandle* func_name, void* f, va_list ap)
+{
+    uint_t args_num = count_args(env, ap);
+    YogVal self = ALLOC_OBJ_ITEM(env, YogNativeFunction2_keep_children, NULL, YogNativeFunction2, args_num, YogNativeArg);
+    YogHandle* h_self = YogHandle_REGISTER(env, self);
+    YogVal klass = env->vm->cNativeFunction2;
+    YogBasicObj_init(env, self, TYPE_NATIVE_FUNCTION2, 0, klass);
+    YogGC_UPDATE_PTR(env, HDL_AS(YogNativeFunction2, h_self), pkg, HDL2VAL(pkg));
+    YogGC_UPDATE_PTR(env, HDL_AS(YogNativeFunction2, h_self), class_name, HDL2VAL(class_name));
+    YogGC_UPDATE_PTR(env, HDL_AS(YogNativeFunction2, h_self), func_name, HDL2VAL(func_name));
+    HDL_AS(YogNativeFunction2, h_self)->f = f;
+    HDL_AS(YogNativeFunction2, h_self)->args_num = args_num;
+    va_list aq;
+    va_copy(aq, ap);
+    uint_t n = 0;
+    BOOL optional = FALSE;
+    const char* name;
+    while ((name = va_arg(ap, const char*)) != NULL) {
+        n += init_arg(env, h_self, n, name, &optional);
+    }
+    uint_t posargs_num = 0;
+    while ((name = va_arg(aq, const char*)) != NULL) {
+        char c = name[0];
+        posargs_num += (c == '|') || (c == '*') || (c == '&') ? 0 : 1;
+    }
+    HDL_AS(YogNativeFunction2, h_self)->posargs_num = posargs_num;
+    HDL_AS(YogNativeFunction2, h_self)->vararg_pos = find_vararg(env, h_self);
+    HDL_AS(YogNativeFunction2, h_self)->varkwarg_pos = find_varkwarg(env, h_self);
+
+    return h_self;
+}
+
 void
 YogFunction_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
     YogVal cNativeFunction = YUNDEF;
+    YogVal cNativeFunction2 = YUNDEF;
     YogVal cFunction = YUNDEF;
     YogVal cInstanceMethod = YUNDEF;
     YogVal cNativeInstanceMethod = YUNDEF;
-    PUSH_LOCALS4(env, cNativeFunction, cFunction, cInstanceMethod, cNativeInstanceMethod);
+    YogVal cNativeInstanceMethod2 = YUNDEF;
+    PUSH_LOCALS6(env, cNativeFunction, cNativeFunction2, cFunction, cInstanceMethod, cNativeInstanceMethod, cNativeInstanceMethod2);
     YogVM* vm = env->vm;
 
     cNativeFunction = YogClass_new(env, "NativeFunction", vm->cObject);
@@ -663,6 +1067,18 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("descr_get", descr_get);
 #undef DEFINE_METHOD
     vm->cNativeFunction = cNativeFunction;
+
+    cNativeFunction2 = YogClass_new(env, "NativeFunction2", vm->cObject);
+    YogClass_define_descr_get_executor(env, cNativeFunction2, YogNativeFunction2_exec_get_descr);
+    YogClass_define_descr_get_caller(env, cNativeFunction2, YogNativeFunction2_call_get_descr);
+    YogClass_define_caller(env, cNativeFunction2, YogNativeFunction2_call);
+    YogClass_define_executor(env, cNativeFunction2, YogNativeFunction2_exec);
+#define DEFINE_METHOD(name, f)  do { \
+    YogClass_define_method(env, cNativeFunction2, pkg, (name), (f)); \
+} while (0)
+    DEFINE_METHOD("descr_get", descr_get);
+#undef DEFINE_METHOD
+    vm->cNativeFunction2 = cNativeFunction2;
 
     cFunction = YogClass_new(env, "Function", vm->cObject);
     YogClass_define_allocator(env, cFunction, YogFunction_alloc);
@@ -688,6 +1104,11 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_caller(env, cNativeInstanceMethod, YogNativeInstanceMethod_call);
     YogClass_define_executor(env, cNativeInstanceMethod, YogNativeInstanceMethod_exec);
     vm->cNativeInstanceMethod = cNativeInstanceMethod;
+
+    cNativeInstanceMethod2 = YogClass_new(env, "NativeInstanceMethod2", vm->cObject);
+    YogClass_define_caller(env, cNativeInstanceMethod2, YogNativeInstanceMethod2_call);
+    YogClass_define_executor(env, cNativeInstanceMethod2, YogNativeInstanceMethod2_exec);
+    vm->cNativeInstanceMethod2 = cNativeInstanceMethod2;
 
     RETURN_VOID(env);
 }

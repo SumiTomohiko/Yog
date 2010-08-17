@@ -38,6 +38,7 @@ struct AstVisitor {
     VisitNode visit_array;
     VisitNode visit_assign;
     VisitNode visit_attr;
+    VisitNode visit_binop;
     VisitNode visit_block;
     VisitNode visit_break;
     VisitNode visit_class;
@@ -364,11 +365,14 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_ATTR:
         VISIT(attr);
         break;
-    case NODE_BREAK:
-        VISIT(break);
+    case NODE_BINOP:
+        VISIT(binop);
         break;
     case NODE_BLOCK_ARG:
         VISIT(block);
+        break;
+    case NODE_BREAK:
+        VISIT(break);
         break;
     case NODE_CLASS:
         VISIT(class);
@@ -483,6 +487,15 @@ visit_each_dict_elem(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
+scan_var_visit_binop(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    visit_node(env, visitor, PTR_AS(YogNode, node)->u.binop.left, data);
+    visit_node(env, visitor, PTR_AS(YogNode, node)->u.binop.right, data);
+    RETURN_VOID(env);
+}
+
+static void
 scan_var_visit_dict(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     visit_each_dict_elem(env, visitor, node, data);
@@ -526,6 +539,7 @@ process_stack_top_interactive(YogEnv* env, YogVal node, YogVal data)
     switch (NODE(node)->type) {
     case NODE_ASSIGN:
     case NODE_ATTR:
+    case NODE_BINOP:
     case NODE_LITERAL:
     case NODE_SUBSCRIPT:
     case NODE_VARIABLE:
@@ -549,6 +563,7 @@ process_stack_top_uninteractive(YogEnv* env, YogVal node, YogVal data)
     switch (NODE(node)->type) {
     case NODE_ASSIGN:
     case NODE_ATTR:
+    case NODE_BINOP:
     case NODE_LITERAL:
     case NODE_SUBSCRIPT:
     case NODE_VARIABLE:
@@ -1635,6 +1650,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_array = scan_var_visit_array;
     visitor->visit_assign = scan_var_visit_assign;
     visitor->visit_attr = scan_var_visit_attr;
+    visitor->visit_binop = scan_var_visit_binop;
     visitor->visit_block = scan_var_visit_block;
     visitor->visit_break = scan_var_visit_break;
     visitor->visit_class = scan_var_visit_class;
@@ -3369,6 +3385,38 @@ compile_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
+compile_visit_binop(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    visit_node(env, visitor, PTR_AS(YogNode, node)->u.binop.left, data);
+    visit_node(env, visitor, PTR_AS(YogNode, node)->u.binop.right, data);
+    void (*f[])(YogEnv*, YogVal, uint_t) = {
+        CompileData_add_add,
+        CompileData_add_subtract,
+        CompileData_add_multiply,
+        CompileData_add_divide,
+        CompileData_add_floor_divide,
+        CompileData_add_match,
+        CompileData_add_lshift,
+        CompileData_add_rshift,
+        CompileData_add_modulo,
+        CompileData_add_power,
+        CompileData_add_and,
+        CompileData_add_or,
+        CompileData_add_xor,
+        CompileData_add_less,
+        CompileData_add_greater,
+        CompileData_add_less_equal,
+        CompileData_add_greater_equal,
+        CompileData_add_equal,
+        CompileData_add_not_equal,
+        CompileData_add_ufo,
+    };
+    f[PTR_AS(YogNode, node)->u.binop.op](env, data, NODE_LINENO(node));
+    RETURN_VOID(env);
+}
+
+static void
 compile_visit_block(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -3527,16 +3575,9 @@ static void
 compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
-
-    visit_node(env, visitor, NODE(node)->u.subscript.index, data);
-
     visit_node(env, visitor, NODE(node)->u.subscript.prefix, data);
-    uint_t lineno = NODE(node)->lineno;
-    ID attr = YogVM_intern(env, env->vm, "[]");
-    CompileData_add_load_attr(env, data, lineno, attr);
-
-    CompileData_add_call_function(env, data, lineno, 1, 0, 0, 0, 0, 1, 0, 0);
-
+    visit_node(env, visitor, NODE(node)->u.subscript.index, data);
+    CompileData_add_subscript(env, data, NODE_LINENO(node));
     RETURN_VOID(env);
 }
 
@@ -3765,6 +3806,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_array = compile_visit_array;
     visitor->visit_assign = compile_visit_assign;
     visitor->visit_attr = compile_visit_attr;
+    visitor->visit_binop = compile_visit_binop;
     visitor->visit_block = compile_visit_block;
     visitor->visit_break = compile_visit_break;
     visitor->visit_class = compile_visit_class;

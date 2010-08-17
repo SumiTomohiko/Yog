@@ -301,16 +301,16 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     }
     enc = YogEncoding_get_ascii(env);
     s = YogString_of_encoding(env, enc);
-    YogString_add_cstr(env, s, "b\"");
+    YogString_append_cstr(env, s, "b\"");
     uint_t size = YogBinary_size(env, self);
     uint_t i;
     for (i = 0; i < size; i++) {
         char c = BINARY_CSTR(self)[i];
         char buf[5];
         YogSysdeps_snprintf(buf, array_sizeof(buf), "\\x%02x", 0xff & c);
-        YogString_add_cstr(env, s, buf);
+        YogString_append_cstr(env, s, buf);
     }
-    YogString_add_cstr(env, s, "\"");
+    YogString_append_cstr(env, s, "\"");
 
     RETURN(env, s);
 }

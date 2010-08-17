@@ -38,6 +38,7 @@ YOG_EXPORT YogVal YogArray_of_size(YogEnv*, uint_t);
 YOG_EXPORT void YogArray_push(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogArray_shift(YogEnv*, YogVal);
 YOG_EXPORT uint_t YogArray_size(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogArray_subscript(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogValArray_at(YogEnv*, YogVal, uint_t);
 YOG_EXPORT YogVal YogValArray_new(YogEnv*, uint_t);
 YOG_EXPORT uint_t YogValArray_size(YogEnv*, YogVal);

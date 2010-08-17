@@ -79,7 +79,6 @@ foo(d)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-  File builtin, in Dict#\[\]
 KeyError: .*
 """, stderr)
 

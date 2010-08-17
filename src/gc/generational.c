@@ -141,6 +141,7 @@ major_gc_keep_object(YogEnv* env, void* ptr, void* heap)
     if (YogGC_IS_OLD(ptr)) {
         return YogMarkSweepCompact_mark_recursively(env, ptr, major_gc_keep_object, heap);
     }
+    YOG_ASSERT(env, YogGC_IS_YOUNG(ptr), "Invalid generation (0x%08x)", PAYLOAD2GENERATION(ptr));
 
     return copy_young_obj(env, ptr, major_gc_keep_object, heap, proc_for_tenured_major);
 }
@@ -166,6 +167,7 @@ minor_gc_keep_object(YogEnv* env, void* ptr, void* heap)
         DEBUG(TRACE("%p: %p is in old generation.", env, ptr));
         return ptr;
     }
+    YOG_ASSERT(env, YogGC_IS_YOUNG(ptr), "Invalid generation (0x%08x)", PAYLOAD2GENERATION(ptr));
 
     return copy_young_obj(env, ptr, minor_gc_keep_object, heap, proc_for_tenured_minor);
 }

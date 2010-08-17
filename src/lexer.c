@@ -482,7 +482,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                     }
 
                     str = PTR_AS(HereDoc, heredoc)->str;
-                    YogString_add(env, str, line);
+                    YogString_append(env, str, line);
                 }
             }
 
@@ -852,7 +852,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                 RETURN_ID_TOKEN(TK_EQUAL_TILDA, "=~");
                 break;
             case '=':
-                RETURN_TOKEN(TK_EQUAL_EQUAL);
+                RETURN_ID_TOKEN(TK_EQUAL_EQUAL, "==");
                 break;
             case '>':
                 RETURN_TOKEN(TK_EQUAL_GREATER);
@@ -917,13 +917,13 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                     }
                     else {
                         PUSHBACK(c3);
-                        RETURN_TOKEN(TK_LESS_EQUAL);
+                        RETURN_ID_TOKEN(TK_LESS_EQUAL, "<=");
                     }
                 }
                 break;
             default:
                 PUSHBACK(c2);
-                RETURN_TOKEN(TK_LESS);
+                RETURN_ID_TOKEN(TK_LESS, "<");
                 break;
             }
         }
@@ -949,11 +949,11 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                 }
                 break;
             case '=':
-                RETURN_TOKEN(TK_GREATER_EQUAL);
+                RETURN_ID_TOKEN(TK_GREATER_EQUAL, ">=");
                 break;
             default:
                 PUSHBACK(c2);
-                RETURN_TOKEN(TK_GREATER);
+                RETURN_ID_TOKEN(TK_GREATER, ">");
                 break;
             }
         }
@@ -1012,7 +1012,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
 
             char c2 = NEXTC();
             if (c2 == '=') {
-                RETURN_TOKEN(TK_NOT_EQUAL);
+                RETURN_ID_TOKEN(TK_NOT_EQUAL, "!=");
             }
             else {
                 PUSHBACK(c2);

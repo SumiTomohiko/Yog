@@ -15,11 +15,41 @@ struct YogToken {
 
 typedef struct YogToken YogToken;
 
+enum YogBinop {
+    /**
+     * Don't change this order. compile_visit_binop in src/compile.c depends on
+     * this order.
+     */
+    BINOP_ADD,
+    BINOP_SUBTRACT,
+    BINOP_MULTIPLY,
+    BINOP_DIVIDE,
+    BINOP_FLOOR_DIVIDE,
+    BINOP_MATCH,
+    BINOP_LSHIFT,
+    BINOP_RSHIFT,
+    BINOP_MODULO,
+    BINOP_POWER,
+    BINOP_AND,
+    BINOP_OR,
+    BINOP_XOR,
+    BINOP_LESS,
+    BINOP_GREATER,
+    BINOP_LESS_EQUAL,
+    BINOP_GREATER_EQUAL,
+    BINOP_EQUAL,
+    BINOP_NOT_EQUAL,
+    BINOP_UFO,
+};
+
+typedef enum YogBinop YogBinop;
+
 enum YogNodeType {
     NODE_ARGS,
     NODE_ARRAY,
     NODE_ASSIGN,
     NODE_ATTR,
+    NODE_BINOP,
     NODE_BLOCK_ARG,
     NODE_BLOCK_PARAM,
     NODE_BREAK,
@@ -81,6 +111,11 @@ struct YogNode {
             YogVal obj;
             ID name;
         } attr;
+        struct {
+            YogBinop op;
+            YogVal left;
+            YogVal right;
+        } binop;
         struct {
             YogVal params;
             YogVal stmts;

@@ -129,7 +129,7 @@ print_stacktrace(YogEnv* env, YogVal st)
 void
 YogError_bug(YogEnv* env, const char* filename, uint_t lineno, const char* fmt, ...)
 {
-    if (env != NULL) {
+    if ((env != NULL) && (!env->vm->running_gc)) {
         SAVE_LOCALS(env);
         YogVal st = YUNDEF;
         PUSH_LOCAL(env, st);

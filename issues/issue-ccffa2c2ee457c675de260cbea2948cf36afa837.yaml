@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "OverflowError: repeated string is too long"
+desc: Python throws OverflowError when multiplying String with Fixnum results overflow
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-08-15 15:45:04.809884 Z
+references: []
+
+id: ccffa2c2ee457c675de260cbea2948cf36afa837
+log_events: 
+- - 2010-08-15 15:45:05.531015 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

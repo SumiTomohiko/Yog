@@ -63,6 +63,7 @@ YOG_EXPORT YogVal YogTable_get_iterator(YogEnv*, YogVal);
 YOG_EXPORT BOOL YogTable_insert(YogEnv*, YogVal, YogVal, YogVal);
 YOG_EXPORT BOOL YogTable_lookup(YogEnv*, YogVal, YogVal, YogVal*);
 YOG_EXPORT BOOL YogTable_lookup_str(YogEnv*, YogVal, const char*, YogVal*);
+YOG_EXPORT BOOL YogTable_lookup_sym(YogEnv*, YogVal, YogVal, YogVal*);
 YOG_EXPORT YogVal YogTable_new_string_table(YogEnv*);
 YOG_EXPORT YogVal YogTable_new_symbol_table(YogEnv*);
 YOG_EXPORT YogVal YogTable_new_val_table(YogEnv*);

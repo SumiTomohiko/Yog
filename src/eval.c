@@ -5,6 +5,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
+#include "yog/bignum.h"
 #include "yog/binary.h"
 #include "yog/callable.h"
 #include "yog/code.h"
@@ -13,12 +14,15 @@
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/exception.h"
+#include "yog/fixnum.h"
+#include "yog/float.h"
 #include "yog/frame.h"
 #include "yog/handle.h"
 #include "yog/misc.h"
 #include "yog/module.h"
 #include "yog/package.h"
 #include "yog/parser.h"
+#include "yog/regexp.h"
 #include "yog/set.h"
 #include "yog/string.h"
 #include "yog/table.h"
@@ -40,6 +44,231 @@ YogEval_push_frame(YogEnv* env, YogVal frame)
 {
     YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, frame), prev, env->frame);
     env->frame = frame;
+}
+
+static void
+push(YogEnv* env, YogVal val)
+{
+    YogScriptFrame_push_stack(env, env->frame, val);
+}
+
+static void
+set_lhs_composition(YogEnv* env, uint_t left, uint_t middle, uint_t right)
+{
+    YogVal frame = env->frame;
+    PTR_AS(YogScriptFrame, frame)->lhs_left_num = left;
+    PTR_AS(YogScriptFrame, frame)->lhs_middle_num = middle;
+    PTR_AS(YogScriptFrame, frame)->lhs_right_num = right;
+}
+
+static void
+exec_call(YogEnv* env, YogHandle* callee, uint_t left, uint_t middle, uint_t right, uint_t posargc, YogHandle* posargs[], uint_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+{
+    set_lhs_composition(env, left, middle, right);
+
+    YogVal klass = YogVal_get_class(env, HDL2VAL(callee));
+    if (PTR_AS(YogClass, klass)->exec == NULL) {
+        YogError_raise_TypeError(env, "%C is not callable", HDL2VAL(callee));
+    }
+
+    PTR_AS(YogClass, klass)->exec(env, callee, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+}
+
+static void
+exec_binop(YogEnv* env, const char* op, YogVal left, YogVal right)
+{
+    YogHandle* h_left = YogHandle_REGISTER(env, left);
+    YogHandle* h_right = YogHandle_REGISTER(env, right);
+    ID name = YogVM_intern(env, env->vm, op);
+    YogVal attr = YogVal_get_attr(env, HDL2VAL(h_left), name);
+    if (IS_UNDEF(attr)) {
+        YogError_raise_AttributeError(env, "%C object doesn't have an attribute of %s", HDL2VAL(h_left), op);
+        /* NOTREACHED */
+    }
+    YogHandle* h_attr = YogHandle_REGISTER(env, attr);
+    exec_call(env, h_attr, 1, 0, 0, 1, &h_right, 0, NULL, NULL, NULL, NULL);
+}
+
+static void
+exec_xor(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "^", left, right);
+}
+
+static void
+exec_or(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "|", left, right);
+}
+
+static void
+exec_and(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "&", left, right);
+}
+
+static void
+exec_power(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "**", left, right);
+}
+
+static void
+exec_modulo(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "%", left, right);
+}
+
+static void
+exec_rshift(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, ">>", left, right);
+}
+
+static void
+exec_lshift(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "<<", left, right);
+}
+
+static void
+exec_match(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "=~", left, right);
+}
+
+static void
+exec_floor_divide(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "//", left, right);
+}
+
+static void
+exec_divide(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "/", left, right);
+}
+
+static void
+exec_multiply(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "*", left, right);
+}
+
+static void
+exec_subtract(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "-", left, right);
+}
+
+static void
+exec_add(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "+", left, right);
+}
+
+static void
+exec_greater_equal(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, ">=", left, right);
+}
+
+static void
+exec_less_equal(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "<=", left, right);
+}
+
+static void
+exec_greater(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, ">", left, right);
+}
+
+static void
+exec_less(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "<", left, right);
+}
+
+static void
+exec_not_equal(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "!=", left, right);
+}
+
+static void
+exec_equal(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "==", left, right);
+}
+
+static void
+exec_ufo(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "<=>", left, right);
+}
+
+static void
+exec_subscript(YogEnv* env, YogVal left, YogVal right)
+{
+    exec_binop(env, "[]", left, right);
+}
+
+static void
+check_comparison_result(YogEnv* env, YogVal left, YogVal right, YogVal n)
+{
+    if (IS_FIXNUM(n)) {
+        return;
+    }
+    const char* fmt = "Comparison of %C with %C failed";
+    YogError_raise_TypeError(env, fmt, left, right);
+}
+
+static YogVal
+do_not_equal(YogEnv* env, YogVal n)
+{
+    if (IS_NIL(n)) {
+        return YTRUE;
+    }
+    return VAL2INT(n) != 0 ? YTRUE : YFALSE;
+}
+
+static YogVal
+do_equal(YogEnv* env, YogVal n)
+{
+    if (IS_NIL(n)) {
+        return YFALSE;
+    }
+    return VAL2INT(n) == 0 ? YTRUE : YFALSE;
+}
+
+static YogVal
+do_greater_equal(YogEnv* env, YogVal left, YogVal right, YogVal n)
+{
+    check_comparison_result(env, left, right, n);
+    return 0 <= VAL2INT(n) ? YTRUE : YFALSE;
+}
+
+static YogVal
+do_less_equal(YogEnv* env, YogVal left, YogVal right, YogVal n)
+{
+    check_comparison_result(env, left, right, n);
+    return VAL2INT(n) <= 0 ? YTRUE : YFALSE;
+}
+
+static YogVal
+do_greater(YogEnv* env, YogVal left, YogVal right, YogVal n)
+{
+    check_comparison_result(env, left, right, n);
+    return 0 < VAL2INT(n) ? YTRUE : YFALSE;
+}
+
+static YogVal
+do_less(YogEnv* env, YogVal left, YogVal right, YogVal n)
+{
+    check_comparison_result(env, left, right, n);
+    return VAL2INT(n) < 0 ? YTRUE : YFALSE;
 }
 
 static YogVal
@@ -75,14 +304,6 @@ make_jmp_val(YogEnv* env, uint_t n)
     }
 
     RETURN(env, objs);
-}
-
-static void
-set_lhs_composition(YogEnv* env, uint_t left, uint_t middle, uint_t right)
-{
-    PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_left_num = left;
-    PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_middle_num = middle;
-    PTR_AS(YogScriptFrame, CUR_FRAME)->lhs_right_num = right;
 }
 
 static void
@@ -276,33 +497,24 @@ push_jmp_val(YogEnv* env)
 static void
 exec_get_attr(YogEnv* env, YogVal obj, ID name)
 {
-    SAVE_ARG(env, obj);
     YogVal attr = YUNDEF;
-    YogVal class_of_obj = YUNDEF;
-    YogVal class_of_attr = YUNDEF;
-    PUSH_LOCALS3(env, attr, class_of_obj, class_of_attr);
-
-    class_of_obj = YogVal_get_class(env, obj);
-
     if (IS_PTR(obj) && ((PTR_AS(YogBasicObj, obj)->flags & HAS_ATTRS) != 0)) {
         attr = YogObj_get_attr(env, obj, name);
     }
+    YogVal class_of_obj = YogVal_get_class(env, obj);
     if (IS_UNDEF(attr)) {
         attr = YogClass_get_attr(env, class_of_obj, name);
     }
     if (IS_UNDEF(attr)) {
         YogError_raise_AttributeError(env, "%C object has no attribute \"%I\"", obj, name);
     }
-    class_of_attr = YogVal_get_class(env, attr);
+    YogVal class_of_attr = YogVal_get_class(env, attr);
     void (*exec)(YogEnv*, YogVal, YogVal, YogVal) = PTR_AS(YogClass, class_of_attr)->exec_get_descr;
     if (exec == NULL) {
         YogScriptFrame_push_stack(env, env->frame, attr);
+        return;
     }
-    else {
-        exec(env, attr, obj, class_of_obj);
-    }
-
-    RETURN_VOID(env);
+    exec(env, attr, obj, class_of_obj);
 }
 
 static YogVal
@@ -667,6 +879,58 @@ YogEval_mainloop(YogEnv* env)
         YogHandleScope_OPEN(env, &inner_scope);
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))
 #define JUMP(m)         PC = m;
+#define CMP_BODY(do_, exec) do { \
+    if (IS_FIXNUM(left)) { \
+        YogVal n = YogFixnum_binop_ufo(env, left, right); \
+        push(env, do_(env, left, right, n)); \
+    } \
+    else if (IS_PTR(left)) { \
+        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) { \
+            YogVal n = YogBignum_binop_ufo(env, left, right); \
+            push(env, do_(env, left, right, n)); \
+        } \
+        else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) { \
+            YogVal n = YogString_binop_ufo(env, left, right); \
+            push(env, do_(env, left, right, n)); \
+        } \
+        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) { \
+            YogVal n = YogFloat_binop_ufo(env, left, right); \
+            push(env, do_(env, left, right, n)); \
+        } \
+        else { \
+            exec(env, left, right); \
+        } \
+    } \
+    else { \
+        exec(env, left, right); \
+    } \
+} while (0)
+#define EQUAL_BODY(do_, exec) do { \
+    if (IS_FIXNUM(left)) { \
+        YogVal n = YogFixnum_binop_ufo(env, left, right); \
+        push(env, do_(env, n)); \
+    } \
+    else if (IS_PTR(left)) { \
+        if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) { \
+            YogVal n = YogBignum_binop_ufo(env, left, right); \
+            push(env, do_(env, n)); \
+        } \
+        else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) { \
+            YogVal n = YogString_binop_ufo(env, left, right); \
+            push(env, do_(env, n)); \
+        } \
+        else if (BASIC_OBJ_TYPE(left) == TYPE_FLOAT) { \
+            YogVal n = YogFloat_binop_ufo(env, left, right); \
+            push(env, do_(env, n)); \
+        } \
+        else { \
+            exec(env, left, right); \
+        } \
+    } \
+    else { \
+        exec(env, left, right); \
+    } \
+} while (0)
         OpCode op = (OpCode)PTR_AS(YogByteArray, CODE->insts)->items[PC];
 
 #if 0
@@ -730,6 +994,8 @@ YogEval_mainloop(YogEnv* env)
             YOG_BUG(env, "Unknown instruction (0x%08x)", op);
             break;
         }
+#undef EQUAL_BODY
+#undef CMP_BODY
 #undef JUMP
 #undef CONSTS
         YogHandleScope_close(env);

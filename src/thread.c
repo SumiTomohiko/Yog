@@ -69,6 +69,9 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     for (i = 0; i < thread->script_frames_num; i++) {
         KEEP(script_frames[i]);
     }
+    for (i = 0; i < thread->c_frames_num; i++) {
+        KEEP(c_frames[i]);
+    }
 #undef KEEP
 }
 
@@ -82,6 +85,29 @@ YogThread_get_finish_frame(YogEnv* env, YogVal self)
     YogVal frame = PTR_AS(YogThread, self)->finish_frames[n - 1];
     PTR_AS(YogThread, self)->finish_frames_num--;
     return frame;
+}
+
+YogVal
+YogThread_get_c_frame(YogEnv* env, YogVal self)
+{
+    uint_t n = PTR_AS(YogThread, self)->c_frames_num;
+    if (n == 0) {
+        return YNIL;
+    }
+    YogVal frame = PTR_AS(YogThread, self)->c_frames[n - 1];
+    PTR_AS(YogThread, self)->c_frames_num--;
+    return frame;
+}
+
+void
+YogThread_put_c_frame(YogEnv* env, YogVal self, YogVal frame)
+{
+    uint_t n = PTR_AS(YogThread, self)->c_frames_num;
+    if (C_FRAMES_MAX <= n) {
+        return;
+    }
+    YogGC_UPDATE_PTR(env, PTR_AS(YogThread, self), c_frames[n], frame);
+    PTR_AS(YogThread, self)->c_frames_num++;
 }
 
 YogVal
@@ -143,6 +169,7 @@ YogThread_init(YogEnv* env, YogVal thread, YogVal klass)
 
     PTR_AS(YogThread, thread)->finish_frames_num = 0;
     PTR_AS(YogThread, thread)->script_frames_num = 0;
+    PTR_AS(YogThread, thread)->c_frames_num = 0;
 }
 
 #if defined(GC_COPYING)

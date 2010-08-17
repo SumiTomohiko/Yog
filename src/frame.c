@@ -86,10 +86,8 @@ YogFrame_clean(YogEnv* env, YogVal self)
 static void
 YogFrame_init(YogEnv* env, YogVal self, YogFrameType type)
 {
-    SAVE_ARG(env, self);
     YogFrame_clean(env, self);
     PTR_AS(YogFrame, self)->type = type;
-    RETURN_VOID(env);
 }
 
 static void
@@ -206,6 +204,16 @@ YogFinishFrame_new(YogEnv* env)
     frame = YogScriptFrame_new(env, FRAME_FINISH, code, locals_num, 1);
 
     RETURN(env, frame);
+}
+
+YogVal
+YogFrame_get_c_frame(YogEnv* env)
+{
+    YogVal frame = YogThread_get_c_frame(env, env->thread);
+    if (IS_PTR(frame)) {
+        return frame;
+    }
+    return YogCFrame_new(env);
 }
 
 YogVal
