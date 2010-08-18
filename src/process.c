@@ -1,10 +1,15 @@
 #include "yog/config.h"
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include "yog/array.h"
 #include "yog/class.h"
+#include "yog/encoding.h"
 #include "yog/error.h"
+#include "yog/file.h"
 #include "yog/gc.h"
 #include "yog/handle.h"
 #include "yog/object.h"
@@ -77,16 +82,22 @@ check_string(YogEnv* env, YogVal s)
         return;
     }
     YogError_raise_TypeError(env, "Argument must be String, not %C", s);
-    /* NOTREACHED */
 }
 
+#define R 0
+#define W 1
+
+#define CLOSE_PIPE(name) do { \
+    close(name[R]); \
+    close(name[W]); \
+} while (0)
+
 static void
-exec_child(YogEnv* env, YogHandle* self)
+exec_child(YogEnv* env, YogHandle* self, int pipe_stdin[2], int pipe_stdout[2], int pipe_stderr[2])
 {
     YogVal args = HDL_AS(Process, self)->args;
     if (!IS_PTR(args) || (BASIC_OBJ_TYPE(args) != TYPE_ARRAY)) {
         YogError_raise_TypeError(env, "Arguments must be Array, not %C", args);
-        /* NOTREACHED */
     }
     uint_t size = YogArray_size(env, args);
     char* argv[size + 1];
@@ -97,24 +108,80 @@ exec_child(YogEnv* env, YogHandle* self)
         argv[i] = STRING_CSTR(a);
     }
     argv[size] = NULL;
+
+    close(pipe_stdin[W]);
+    if (dup2(pipe_stdin[R], 0) == -1) {
+        close(pipe_stdin[R]);
+        CLOSE_PIPE(pipe_stdout);
+        CLOSE_PIPE(pipe_stderr);
+        YogError_raise_sys_err(env, errno, YUNDEF);
+    }
+    close(pipe_stdin[R]);
+    close(pipe_stdout[R]);
+    if (dup2(pipe_stdout[W], 1) == -1) {
+        close(pipe_stdout[W]);
+        CLOSE_PIPE(pipe_stderr);
+        YogError_raise_sys_err(env, errno, YUNDEF);
+    }
+    close(pipe_stdout[W]);
+    close(pipe_stderr[R]);
+    if (dup2(pipe_stderr[W], 2) == -1) {
+        close(pipe_stderr[W]);
+        YogError_raise_sys_err(env, errno, YUNDEF);
+    }
+    close(pipe_stderr[W]);
+
     execv(argv[0], argv);
-    YogError_raise_sys_err(env, errno, args);
     /* NOTREACHED */
+    YogError_raise_sys_err(env, errno, args);
+}
+
+static void
+create_pipe(YogEnv* env, int pipefd[2])
+{
+    if (pipe(pipefd) == 0) {
+        return;
+    }
+    YogError_raise_sys_err(env, errno, YUNDEF);
 }
 
 static YogVal
 run(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     CHECK_SELF_TYPE(env, self);
+#define CREATE_PIPE(name) \
+    int name[2]; \
+    create_pipe(env, name)
+    CREATE_PIPE(pipe_stdin);
+    CREATE_PIPE(pipe_stdout);
+    CREATE_PIPE(pipe_stderr);
+#undef CREATE_PIPE
     pid_t pid = fork();
     if (pid == -1) {
+        CLOSE_PIPE(pipe_stdin);
+        CLOSE_PIPE(pipe_stdout);
+        CLOSE_PIPE(pipe_stderr);
         YogError_raise_sys_err(env, errno, YUNDEF);
-        /* NOTREACHED */
     }
     if (pid == 0) {
-        exec_child(env, self);
-        /* NOTREACHED */
+        exec_child(env, self, pipe_stdin, pipe_stdout, pipe_stderr);
     }
+
+    HDL_AS(Process, self)->pid = pid;
+    close(pipe_stdin[R]);
+    close(pipe_stdout[W]);
+    close(pipe_stderr[W]);
+    YogHandle* enc = YogHandle_REGISTER(env, YogEncoding_get_ascii(env));
+#define CREATE_FILE(fd, mode, name) do { \
+    YogVal fp = YogFile_new(env); \
+    PTR_AS(YogFile, fp)->fp = fdopen((fd), (mode)); \
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFile, fp), encoding, HDL2VAL(enc)); \
+    YogGC_UPDATE_PTR(env, HDL_AS(Process, self), name, fp); \
+} while (0)
+    CREATE_FILE(pipe_stdin[W], "w", stdin_);
+    CREATE_FILE(pipe_stdout[R], "r", stdout_);
+    CREATE_FILE(pipe_stderr[R], "r", stderr_);
+#undef CREATE_FILE
 
     return HDL2VAL(self);
 }
@@ -123,32 +190,32 @@ static YogVal
 get_stderr(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     CHECK_SELF_TYPE(env, self);
-    /* TODO */
-    return YUNDEF;
+    return HDL_AS(Process, self)->stderr_;
 }
 
 static YogVal
 get_stdout(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     CHECK_SELF_TYPE(env, self);
-    /* TODO */
-    return YUNDEF;
+    return HDL_AS(Process, self)->stdout_;
 }
 
 static YogVal
 get_stdin(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     CHECK_SELF_TYPE(env, self);
-    /* TODO */
-    return YUNDEF;
+    return HDL_AS(Process, self)->stdin_;
 }
 
 static YogVal
-wait(YogEnv* env, YogHandle* self, YogHandle* pkg)
+wait_(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     CHECK_SELF_TYPE(env, self);
-    /* TODO */
-    return YUNDEF;
+    int status;
+    if (waitpid(HDL_AS(Process, self)->pid, &status, 0) == -1) {
+        YogError_raise_sys_err(env, errno, YUNDEF);
+    }
+    return YogVal_from_int(env, WEXITSTATUS(status));
 }
 
 void
@@ -163,7 +230,7 @@ YogProcess_define_classes(YogEnv* env, YogHandle* pkg)
 } while (0)
     DEFINE_METHOD("init", init, "args", NULL);
     DEFINE_METHOD("run", run, NULL);
-    DEFINE_METHOD("wait", wait, NULL);
+    DEFINE_METHOD("wait", wait_, NULL);
 #undef DEFINE_METHOD
 #define DEFINE_PROP(name, getter, setter) do { \
     YogClass_define_property2(env, h_cProcess, pkg, (name), (getter), (setter)); \

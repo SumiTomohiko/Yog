@@ -49,16 +49,10 @@ alloc(YogEnv* env, YogVal klass)
     RETURN(env, file);
 }
 
-static YogVal
+YogVal
 YogFile_new(YogEnv* env)
 {
-    SAVE_LOCALS(env);
-    YogVal file = YUNDEF;
-    PUSH_LOCAL(env, file);
-
-    file = alloc(env, env->vm->cFile);
-
-    RETURN(env, file);
+    return alloc(env, env->vm->cFile);
 }
 
 static YogVal

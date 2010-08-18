@@ -23,6 +23,7 @@ DECL_AS_TYPE(YogFile_define_classes);
  */
 /* src/file.c */
 YOG_EXPORT void YogFile_define_classes(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogFile_new(YogEnv*);
 
 /* PROTOTYPE_END */
 
