@@ -1,6 +1,7 @@
 #include "yog/config.h"
 #include <unistd.h>
 #include "yog/class.h"
+#include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/handle.h"
 #include "yog/object.h"
@@ -50,10 +51,18 @@ alloc(YogEnv* env, YogVal klass)
     return obj;
 }
 
+#define CHECK_SELF_TYPE(env, self) do { \
+    YogVal obj = HDL2VAL((self)); \
+    if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_PROCESS)) { \
+        YogError_raise_TypeError((env), "self must be Process"); \
+    } \
+} while (0)
+
 static YogVal
 init(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* args)
 {
-    /* TODO */
+    CHECK_SELF_TYPE(env, self);
+    YogGC_UPDATE_PTR(env, HDL_AS(Process, self), args, HDL2VAL(args));
     return HDL2VAL(self);
 }
 
