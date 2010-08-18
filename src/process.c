@@ -1,10 +1,14 @@
 #include "yog/config.h"
+#include <errno.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include "yog/array.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/handle.h"
 #include "yog/object.h"
+#include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -66,16 +70,59 @@ init(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* args)
     return HDL2VAL(self);
 }
 
+static void
+check_string(YogEnv* env, YogVal s)
+{
+    if (IS_PTR(s) && (BASIC_OBJ_TYPE(s) == TYPE_STRING)) {
+        return;
+    }
+    YogError_raise_TypeError(env, "Argument must be String, not %C", s);
+    /* NOTREACHED */
+}
+
+static void
+exec_child(YogEnv* env, YogHandle* self)
+{
+    YogVal args = HDL_AS(Process, self)->args;
+    if (!IS_PTR(args) || (BASIC_OBJ_TYPE(args) != TYPE_ARRAY)) {
+        YogError_raise_TypeError(env, "Arguments must be Array, not %C", args);
+        /* NOTREACHED */
+    }
+    uint_t size = YogArray_size(env, args);
+    char* argv[size + 1];
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        YogVal a = YogArray_at(env, args, i);
+        check_string(env, a);
+        argv[i] = STRING_CSTR(a);
+    }
+    argv[size] = NULL;
+    execv(argv[0], argv);
+    YogError_raise_sys_err(env, errno, args);
+    /* NOTREACHED */
+}
+
 static YogVal
 run(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
-    /* TODO */
-    return YUNDEF;
+    CHECK_SELF_TYPE(env, self);
+    pid_t pid = fork();
+    if (pid == -1) {
+        YogError_raise_sys_err(env, errno, YUNDEF);
+        /* NOTREACHED */
+    }
+    if (pid == 0) {
+        exec_child(env, self);
+        /* NOTREACHED */
+    }
+
+    return HDL2VAL(self);
 }
 
 static YogVal
 get_stderr(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
+    CHECK_SELF_TYPE(env, self);
     /* TODO */
     return YUNDEF;
 }
@@ -83,6 +130,7 @@ get_stderr(YogEnv* env, YogHandle* self, YogHandle* pkg)
 static YogVal
 get_stdout(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
+    CHECK_SELF_TYPE(env, self);
     /* TODO */
     return YUNDEF;
 }
@@ -90,6 +138,7 @@ get_stdout(YogEnv* env, YogHandle* self, YogHandle* pkg)
 static YogVal
 get_stdin(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
+    CHECK_SELF_TYPE(env, self);
     /* TODO */
     return YUNDEF;
 }
@@ -97,6 +146,7 @@ get_stdin(YogEnv* env, YogHandle* self, YogHandle* pkg)
 static YogVal
 wait(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
+    CHECK_SELF_TYPE(env, self);
     /* TODO */
     return YUNDEF;
 }
