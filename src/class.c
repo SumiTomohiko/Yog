@@ -15,6 +15,7 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/property.h"
+#include "yog/string.h"
 #include "yog/sysdeps.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
@@ -295,6 +296,47 @@ void
 YogClass_define_executor(YogEnv* env, YogVal self, Executor exec)
 {
     PTR_AS(YogClass, self)->exec = exec;
+}
+
+static YogHandle*
+create_property_body(YogEnv* env, YogHandle* pkg, YogHandle* class_name, const char* prefix, const char* name, void* f, ...)
+{
+    if (f == NULL) {
+        return NULL;
+    }
+
+    uint_t size = strlen(prefix) + strlen(name) + 1;
+    char* buf = (char*)YogSysdeps_alloca(sizeof(char) * size);
+    YogSysdeps_snprintf(buf, size, "%s%s", prefix, name);
+    YogVal func_name = YogString_from_str(env, buf);
+    YogHandle* h_func_name = YogHandle_REGISTER(env, func_name);
+
+    va_list ap;
+    va_start(ap, f);
+    YogHandle* obj = YogNativeFunction2_new(env, pkg, class_name, h_func_name, f, ap);
+    va_end(ap);
+    return obj;
+}
+
+void
+YogClass_define_property2(YogEnv* env, YogHandle* self, YogHandle* pkg, const char* name, void* getter, void* setter)
+{
+    ID id = HDL_AS(YogClass, self)->name;
+    YogVal class_name = YogVM_id2name(env, env->vm, id);
+    YogHandle* h_class_name = YogHandle_REGISTER(env, class_name);
+
+    YogHandle* g = create_property_body(env, pkg, h_class_name, "get_", name, getter, NULL);
+    YogHandle* s = create_property_body(env, pkg, h_class_name, "set_", name, setter, "val", NULL);
+
+    YogVal prop = YogProperty_new(env);
+    if (g != NULL) {
+        YogGC_UPDATE_PTR(env, PTR_AS(YogProperty, prop), getter, HDL2VAL(g));
+    }
+    if (s != NULL) {
+        YogGC_UPDATE_PTR(env, PTR_AS(YogProperty, prop), setter, HDL2VAL(s));
+    }
+
+    YogObj_set_attr(env, HDL2VAL(self), name, prop);
 }
 
 void

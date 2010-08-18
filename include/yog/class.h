@@ -52,6 +52,7 @@ YOG_EXPORT void YogClass_define_get_attr_executor(YogEnv*, YogVal, GetAttrExecut
 YOG_EXPORT void YogClass_define_method(YogEnv*, YogVal, YogVal, const char*, YogAPI);
 YOG_EXPORT void YogClass_define_method2(YogEnv*, YogVal, YogVal, const char*, void*, ...);
 YOG_EXPORT void YogClass_define_property(YogEnv*, YogVal, YogVal, const char*, YogAPI, YogAPI);
+YOG_EXPORT void YogClass_define_property2(YogEnv*, YogHandle*, YogHandle*, const char*, void*, void*);
 YOG_EXPORT YogVal YogClass_get_attr(YogEnv*, YogVal, ID);
 YOG_EXPORT void YogClass_include_module(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogClass_init(YogEnv*, YogVal, type_t, YogVal);

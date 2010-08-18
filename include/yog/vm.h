@@ -42,14 +42,15 @@ struct YogVM {
     YogVal cLibFunc;
     YogVal cMatch;
     YogVal cModule;
-    YogVal cNativeFunction;
     YogVal cNativeFunction2;
-    YogVal cNativeInstanceMethod;
+    YogVal cNativeFunction;
     YogVal cNativeInstanceMethod2;
+    YogVal cNativeInstanceMethod;
     YogVal cNil;
     YogVal cObject;
     YogVal cPackage;
     YogVal cPointer;
+    YogVal cProcess;
     YogVal cProperty;
     YogVal cRegexp;
     YogVal cSet;

@@ -59,6 +59,7 @@
 #include "yog/nil.h"
 #include "yog/package.h"
 #include "yog/private.h"
+#include "yog/process.h"
 #include "yog/property.h"
 #include "yog/regexp.h"
 #include "yog/set.h"
@@ -246,6 +247,8 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
 
     YogComparable_define_classes(env, builtins);
 
+    YogHandle* h_builtins = YogHandle_REGISTER(env, builtins);
+
     YogArray_define_classes(env, builtins);
     YogBignum_define_classes(env, builtins);
     YogBinary_define_classes(env, builtins);
@@ -263,6 +266,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogModule_define_classes(env, builtins);
     YogNil_define_classes(env, builtins);
     YogPackage_define_classes(env, builtins);
+    YogProcess_define_classes(env, h_builtins);
     YogRegexp_define_classes(env, builtins);
     YogSet_define_classes(env, builtins);
     YogString_define_classes(env, builtins);
@@ -511,6 +515,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cObject);
     KEEP(cPackage);
     KEEP(cPointer);
+    KEEP(cProcess);
     KEEP(cProperty);
     KEEP(cRegexp);
     KEEP(cSet);
@@ -642,6 +647,7 @@ YogVM_init(YogVM* vm)
     INIT(cObject);
     INIT(cPackage);
     INIT(cPointer);
+    INIT(cProcess);
     INIT(cProperty);
     INIT(cRegexp);
     INIT(cSet);
