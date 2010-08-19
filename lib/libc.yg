@@ -1,15 +1,14 @@
 
 def find_libc()
-  try
-    File.open("/proc/self/maps", "r") do [fp]
-      while line = fp.readline()
-        path = line.trim().split().get(5, "")
-        if path =~ /\blibc\b/
-          return path
-        end
+  proc = Process.new(["/usr/bin/ldd", EXECUTABLE])
+  proc.run()
+  while line = proc.stdout.readline()
+    cols = line.trim().split()
+    if cols.get(1) == "=>"
+      if cols[0] =~ /\Alibc\.so\..*\z/
+        return cols[2]
       end
     end
-  except SystemError
   end
 end
 
