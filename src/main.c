@@ -241,7 +241,7 @@ main(int_t argc, char* argv[])
 
         uint_t yog_argc = argc - optind;
         char** yog_argv = &argv[optind];
-        YogVM_boot(&env, env.vm, yog_argc, yog_argv);
+        YogVM_boot(&env, env.vm, argv[0], yog_argc, yog_argv);
         YogVM_configure_search_path(&env, env.vm, argv[0]);
 
         enable_gc_stress(&vm, gc_stress_level, 1);

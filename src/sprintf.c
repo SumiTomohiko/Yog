@@ -53,6 +53,7 @@ count_objects(YogEnv* env, const char* fmt)
             break;
         case '%':
         case 'I':
+        case 'c':
         case 'd':
         case 's':
         case 'u':
@@ -92,6 +93,9 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
             break;
         case 'I':
             va_arg(aq, ID);
+            break;
+        case 'c':
+            va_arg(aq, int);
             break;
         case 'd':
             if (l == 0) {
@@ -236,6 +240,13 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
         case '%':
             YogString_push(env, s, *pc);
             break;
+        case 'c':
+            {
+                char buf[2];
+                snprintf(buf, array_sizeof(buf), "%c", va_arg(ap, int));
+                YogString_append_cstr(env, s, buf);
+            }
+            break;
         case 'd':
             {
                 /* 64bit integer including '\0' needs at most 21 bytes */
@@ -312,6 +323,7 @@ YogSprintf_vsprintf(YogEnv* env, const char* fmt, va_list ap)
  * %llu unsigned long long
  * %s C string
  * %u unsigned integer
+ * %c char
  */
 YogVal
 YogSprintf_sprintf(YogEnv* env, const char* fmt, ...)

@@ -196,10 +196,10 @@ YogVM_intern(YogEnv* env, YogVM* vm, const char* name)
 }
 
 static void
-setup_builtins(YogEnv* env, YogVM* vm, YogVal builtins, uint_t argc, char** argv)
+setup_builtins(YogEnv* env, YogVM* vm, YogVal builtins, const char* exe, uint_t argc, char** argv)
 {
     SAVE_ARG(env, builtins);
-    YogBuiltins_boot(env, builtins, argc, argv);
+    YogBuiltins_boot(env, builtins, exe, argc, argv);
     YogVM_register_package(env, vm, "builtins", builtins);
     RETURN_VOID(env);
 }
@@ -336,7 +336,7 @@ alloc_skelton_pkg(YogEnv* env, YogVM* vm)
 }
 
 void
-YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
+YogVM_boot(YogEnv* env, YogVM* vm, const char* exe, uint_t argc, char** argv)
 {
     YogHandleScope scope;
     YogHandleScope_OPEN(env, &scope);
@@ -358,7 +358,7 @@ YogVM_boot(YogEnv* env, YogVM* vm, uint_t argc, char** argv)
 
     vm->finish_code = YogCompiler_compile_finish_code(env);
 
-    setup_builtins(env, vm, HDL2VAL(builtins), argc, argv);
+    setup_builtins(env, vm, HDL2VAL(builtins), exe, argc, argv);
     YogArray_eval_builtin_script(env, vm->cArray);
     YogDict_eval_builtin_script(env, vm->cDict);
     YogObject_eval_builtin_script(env, vm->cObject);

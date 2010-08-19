@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include "yog/array.h"
 #include "yog/class.h"
 #include "yog/classmethod.h"
@@ -23,11 +24,18 @@
 #include "yog/package.h"
 #include "yog/parser.h"
 #include "yog/property.h"
+#include "yog/sprintf.h"
 #include "yog/string.h"
 #include "yog/sysdeps.h"
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
+
+#if WINDOWS
+#   define SEP '\\'
+#else
+#   define SEP '/'
+#endif
 
 static YogVal
 raise_exception(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
@@ -331,6 +339,95 @@ get_current_thread(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw,
     RETURN(env, thread);
 }
 
+static const char*
+get_path()
+{
+    const char* path = getenv("PATH");
+    if (path == NULL) {
+        return NULL;
+    }
+    return strchr(path, '=');
+}
+
+static const char*
+find_path_end(const char* path)
+{
+    const char* pc = strchr(path, ':');
+    if (pc != NULL) {
+        return pc;
+    }
+    return path + strlen(path);
+}
+
+static BOOL
+is_executable(const char* path)
+{
+    struct stat buf;
+    if (stat(path, &buf) != 0) {
+        return FALSE;
+    }
+    if (!S_ISREG(buf.st_mode)) {
+        return FALSE;
+    }
+    if ((buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) == 0) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+static YogVal
+find_exe(YogEnv* env, const char* exe)
+{
+    if (strchr(exe, SEP) != NULL) {
+        return YogString_from_str(env, exe);
+    }
+    const char* path = get_path();
+    if (path == NULL) {
+        return YogString_from_str(env, exe);
+    }
+    const char* begin = path;
+    const char* end = path + strlen(path);
+    while (begin < end) {
+        const char* pc = find_path_end(begin);
+        uint_t size = pc - begin;
+        char dir[size + 1];
+        memcpy(dir, begin, size);
+        dir[size] = '\0';
+
+        uint_t len = strlen(exe) + size;
+        char path[len + 1];
+        snprintf(path, len + 1, "%s%c%s", dir, SEP, exe);
+        if (is_executable(path)) {
+            return YogString_from_str(env, path);
+        }
+
+        begin = pc + 1;
+    }
+
+    return YNIL;
+}
+
+static YogVal
+absolutize(YogEnv* env, YogVal path)
+{
+    if (!IS_PTR(path) || (STRING_CSTR(path)[0] == SEP)) {
+        return path;
+    }
+    char cwd[1024]; /* TODO: enouph? */
+    getcwd(cwd, array_sizeof(cwd));
+    char abs_path[2048];
+    snprintf(abs_path, array_sizeof(abs_path), "%s%c%s", cwd, SEP, STRING_CSTR(path));
+    return YogString_from_str(env, abs_path);
+}
+
+static void
+set_executable(YogEnv* env, YogHandle* builtins, const char* exe)
+{
+    YogVal path = find_exe(env, exe);
+    YogVal s = absolutize(env, path);
+    YogObj_set_attr(env, HDL2VAL(builtins), "EXECUTABLE", s);
+}
+
 static void
 set_path_separator(YogEnv* env, YogVal builtins)
 {
@@ -339,13 +436,7 @@ set_path_separator(YogEnv* env, YogVal builtins)
     YogVal enc = YUNDEF;
     PUSH_LOCALS2(env, s, enc);
 
-    const char* sep;
-#if defined(_WIN32)
-    sep = "\\";
-#else
-    sep = "/";
-#endif
-    s = YogString_from_str(env, sep);
+    s = YogSprintf_sprintf(env, "%c", SEP);
     enc = YogEncoding_get_default(env);
     STRING_ENCODING(s) = enc;
 
@@ -356,7 +447,7 @@ set_path_separator(YogEnv* env, YogVal builtins)
 }
 
 void
-YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
+YogBuiltins_boot(YogEnv* env, YogVal builtins, const char* exe, uint_t argc, char** argv)
 {
     SAVE_ARG(env, builtins);
     YogVal args = YUNDEF;
@@ -419,6 +510,8 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, uint_t argc, char** argv)
     YogObj_set_attr(env, builtins, "ENCODINGS", env->vm->encodings);
 
     set_path_separator(env, builtins);
+    YogHandle* h = YogHandle_REGISTER(env, builtins);
+    set_executable(env, h, exe);
 
 #if !defined(MINIYOG)
 #   define REGISTER_ERRNO(e)    do { \

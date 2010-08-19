@@ -159,7 +159,7 @@ class DeclarationInserter(object):
         while True:
             prev_line = line
             try:
-                line = lines.pop(0).strip()
+                line = lines.pop(0).rstrip()
             except IndexError:
                 break
             if line == "#if 0":
