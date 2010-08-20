@@ -1,4 +1,7 @@
 
+from uname import sysname
+SYSNAME = sysname()
+
 def find_libc()
   proc = Process.new(["/usr/bin/ldd", EXECUTABLE])
   proc.run()
@@ -105,20 +108,35 @@ ntohs = lib.load_func("ntohs", ['uint16], 'uint16)
 in_addr_t = 'uint32
 inet_addr = lib.load_func("inet_addr", [String], in_addr_t)
 socklen_t = 'uint32
-addrinfo = StructClass.new("addrinfo", [
-  ['int, 'ai_flags],
-  ['int, 'ai_family],
-  ['int, 'ai_socktype],
-  ['int, 'ai_protocol],
-  [socklen_t, 'ai_addrlen],
-  ['pointer (: sockaddr :), 'ai_addr],
-  [String, 'ai_canonname],
-  ['pointer (: addrinfo :), 'ai_next]])
+if SYSNAME == "FreeBSD"
+  addrinfo_members = [
+    ['int, 'ai_flags],
+    ['int, 'ai_family],
+    ['int, 'ai_socktype],
+    ['int, 'ai_protocol],
+    [socklen_t, 'ai_addrlen],
+    [String, 'ai_canonname],
+    ['pointer (: sockaddr :), 'ai_addr],
+    ['pointer (: addrinfo :), 'ai_next]]
+else
+  addrinfo_members = [
+    ['int, 'ai_flags],
+    ['int, 'ai_family],
+    ['int, 'ai_socktype],
+    ['int, 'ai_protocol],
+    [socklen_t, 'ai_addrlen],
+    ['pointer (: sockaddr :), 'ai_addr],
+    [String, 'ai_canonname],
+    ['pointer (: addrinfo :), 'ai_next]]
+end
+addrinfo = StructClass.new("addrinfo", addrinfo_members)
 getaddrinfo = lib.load_func("getaddrinfo", [String, String, addrinfo, 'pointer_p], 'int)
 freeaddrinfo = lib.load_func("freeaddrinfo", ['pointer])
 gai_strerror = lib.load_func("gai_strerror", ['int], 'pointer (: String :))
 
 close = lib.load_func("close", ['int], 'int)
+
+perror = lib.load_func("perror", [String])
 
 if ARGV.get(0) == __FILE__
   hints = addrinfo.new()
