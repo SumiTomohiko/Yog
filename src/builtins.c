@@ -340,16 +340,6 @@ get_current_thread(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw,
 }
 
 static const char*
-get_path()
-{
-    const char* path = getenv("PATH");
-    if (path == NULL) {
-        return NULL;
-    }
-    return strchr(path, '=') + 1;
-}
-
-static const char*
 find_path_end(const char* path)
 {
     const char* pc = strchr(path, ':');
@@ -381,7 +371,7 @@ find_exe(YogEnv* env, const char* exe)
     if (strchr(exe, SEP) != NULL) {
         return YogString_from_str(env, exe);
     }
-    const char* path = get_path();
+    const char* path = getenv("PATH");
     if (path == NULL) {
         return YogString_from_str(env, exe);
     }
@@ -394,7 +384,7 @@ find_exe(YogEnv* env, const char* exe)
         memcpy(dir, begin, size);
         dir[size] = '\0';
 
-        uint_t len = strlen(exe) + size;
+        uint_t len = strlen(exe) + size + 1;
         char path[len + 1];
         snprintf(path, len + 1, "%s%c%s", dir, SEP, exe);
         if (is_executable(path)) {
