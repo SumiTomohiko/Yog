@@ -7,7 +7,6 @@ VERSION = @PACKAGE_VERSION@
 DIR = $(prefix)/lib/yog/$(VERSION)
 SOEXT = @SOEXT@
 CC = @CC@
-CFLAGS = @CFLAGS@
 SO = $(top_srcdir)/ext/uname.$(SOEXT)
 
 .PHONY: all clean distclean maintainer-clean install
