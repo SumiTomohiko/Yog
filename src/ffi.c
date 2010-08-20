@@ -21,6 +21,7 @@
 #include "yog/gc.h"
 #include "yog/get_args.h"
 #include "yog/object.h"
+#include "yog/sprintf.h"
 #include "yog/string.h"
 #include "yog/sysdeps.h"
 #include "yog/vm.h"
@@ -150,6 +151,11 @@ typedef struct Buffer Buffer;
 #define CHECK_SELF_BUFFER do { \
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_BUFFER)) { \
         YogError_raise_TypeError(env, "self must be Buffer, not %C", self); \
+    } \
+} while (0)
+#define CHECK_SELF_POINTER do { \
+    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_POINTER)) { \
+        YogError_raise_TypeError(env, "self must be Pointer, not %C", self); \
     } \
 } while (0)
 
@@ -641,6 +647,7 @@ Struct_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     if (!IS_NIL(ptr)) {
         PTR_AS(Struct, self)->data = PTR_AS(Pointer, ptr)->ptr;
         PTR_AS(Struct, self)->own = FALSE;
+        TRACE("data=%p", PTR_AS(Struct, self)->data);
         RETURN(env, self);
     }
     klass = YogVal_get_class(env, self);
@@ -2329,6 +2336,17 @@ Buffer_to_bin(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogV
 }
 
 static YogVal
+Pointer_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "to_s", params, args, kw);
+    CHECK_SELF_POINTER;
+    void* p = PTR_AS(Pointer, self)->ptr;
+    RETURN(env, YogSprintf_sprintf(env, "<Pointer %p>", p));
+}
+
+static YogVal
 Buffer_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -2600,6 +2618,7 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     vm->cBuffer = cBuffer;
     cPointer = YogClass_new(env, "Pointer", vm->cObject);
     YogClass_define_allocator(env, cPointer, Pointer_alloc);
+    YogClass_define_method(env, cPointer, pkg, "to_s", Pointer_to_s);
     vm->cPointer = cPointer;
 
     RETURN_VOID(env);

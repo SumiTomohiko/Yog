@@ -55,6 +55,7 @@ count_objects(YogEnv* env, const char* fmt)
         case 'I':
         case 'c':
         case 'd':
+        case 'p':
         case 's':
         case 'u':
             break;
@@ -104,6 +105,9 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
             else {
                 va_arg(aq, long long);
             }
+            break;
+        case 'p':
+            va_arg(aq, void*);
             break;
         case 's':
             va_arg(aq, char*);
@@ -262,6 +266,15 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
                 YogString_append_cstr(env, s, buf);
             }
             break;
+        case 'p':
+            {
+                /* 2 at head is for "0x", 1 at tail is for "\0" */
+                uint_t size = 2 + 2 * sizeof(void*) + 1;
+                char buf[size];
+                snprintf(buf, size, "%p", va_arg(ap, void*));
+                YogString_append_cstr(env, s, buf);
+            }
+            break;
         case 's':
             {
                 char* p = va_arg(ap, char*);
@@ -318,12 +331,13 @@ YogSprintf_vsprintf(YogEnv* env, const char* fmt, va_list ap)
  * %D Fixnum or Bignum
  * %I ID
  * %S Yog String object
+ * %c char
  * %d integer
  * %lld long long
  * %llu unsigned long long
+ * %p pointer
  * %s C string
  * %u unsigned integer
- * %c char
  */
 YogVal
 YogSprintf_sprintf(YogEnv* env, const char* fmt, ...)
