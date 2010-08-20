@@ -647,7 +647,6 @@ Struct_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     if (!IS_NIL(ptr)) {
         PTR_AS(Struct, self)->data = PTR_AS(Pointer, ptr)->ptr;
         PTR_AS(Struct, self)->own = FALSE;
-        TRACE("data=%p", PTR_AS(Struct, self)->data);
         RETURN(env, self);
     }
     klass = YogVal_get_class(env, self);
