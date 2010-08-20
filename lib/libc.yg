@@ -8,6 +8,10 @@ def find_libc()
       if cols[0] =~ /\Alibc\.so\..*\z/
         return cols[2]
       end
+    elif cols[0] =~ /\A[0-9A-Fa-f]+\z/
+      if cols[6] =~ /\/libc\.so\.[^\/]+\z/
+        return cols[6]
+      end
     end
   end
 end
