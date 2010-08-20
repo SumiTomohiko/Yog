@@ -346,7 +346,7 @@ get_path()
     if (path == NULL) {
         return NULL;
     }
-    return strchr(path, '=');
+    return strchr(path, '=') + 1;
 }
 
 static const char*
