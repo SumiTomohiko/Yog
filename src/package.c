@@ -10,6 +10,21 @@
 #include "yog/yog.h"
 
 void
+YogPackage_define_function2(YogEnv* env, YogHandle* pkg, const char* name, void* f, ...)
+{
+    YogHandle* h_class_name = YogHandle_REGISTER(env, YNIL);
+    YogVM* vm = env->vm;
+    ID id_func_name = YogVM_intern(env, vm, name);
+    YogVal func_name = YogVM_id2name(env, vm, id_func_name);
+    YogHandle* h_func_name = YogHandle_REGISTER(env, func_name);
+    va_list ap;
+    va_start(ap, f);
+    YogHandle* func = YogNativeFunction2_new(env, pkg, h_class_name, h_func_name, f, ap);
+    va_end(ap);
+    YogObj_set_attr(env, HDL2VAL(pkg), name, HDL2VAL(func));
+}
+
+void
 YogPackage_define_function(YogEnv* env, YogVal pkg, const char* name, YogAPI f)
 {
     SAVE_ARG(env, pkg);

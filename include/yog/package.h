@@ -23,6 +23,7 @@ DECL_AS_TYPE(YogPackage_new);
 /* src/package.c */
 YOG_EXPORT void YogPackage_define_classes(YogEnv*, YogVal);
 YOG_EXPORT void YogPackage_define_function(YogEnv*, YogVal, const char*, YogAPI);
+YOG_EXPORT void YogPackage_define_function2(YogEnv*, YogHandle*, const char*, void*, ...);
 YOG_EXPORT void YogPackage_init(YogEnv*, YogVal, type_t);
 YOG_EXPORT void YogPackage_keep_children(YogEnv*, void*, ObjectKeeper, void*);
 YOG_EXPORT YogVal YogPackage_new(YogEnv*);
