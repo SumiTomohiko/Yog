@@ -21,7 +21,6 @@ Requirements
   * Ubuntu Linux 8.04
   * FreeBSD 7.2
   * OpenBSD 4.6
-  * Windows 2000
 
 Documentation
 -------------
@@ -54,7 +53,7 @@ Development progress & plans
 by version 0.0.2 (done)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-* Port to Windows 2000.
+* Port to Windows 2000. (Cancelled at 0.0.7)
 * Port to OpenBSD.
 * Port to FreeBSD.
 
@@ -78,8 +77,8 @@ by version 0.0.6 (done)
 
 * libffi binding
 
-by version 0.0.7
-~~~~~~~~~~~~~~~~
+by version 0.0.7 (done)
+~~~~~~~~~~~~~~~~~~~~~~~
 
 * Performance tuning
 
