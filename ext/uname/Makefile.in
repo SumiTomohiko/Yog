@@ -14,7 +14,7 @@ SO = $(top_srcdir)/ext/uname.$(SOEXT)
 all: $(SO)
 
 $(SO): uname.c
-	$(CC) $(CFLAGS) -I$(top_srcdir)/include -shared -O2 -Wall -o $@ uname.c @LIBS@
+	$(CC) $(CFLAGS) -shared -O2 -Wall -o $@ uname.c @LIBS@
 
 clean: 
 	rm -f $(SO)
