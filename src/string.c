@@ -728,16 +728,16 @@ YogString_subscript(YogEnv* env, YogVal self, YogVal index)
 }
 
 static int_t
-normalize_position(YogEnv* env, int_t pos, int_t chars_num)
+normalize_position(YogEnv* env, int_t pos, int_t max_index)
 {
-    return pos < 0 ? pos + chars_num : pos;
+    return pos < 0 ? pos + max_index + 1 : pos;
 }
 
 static int_t
-normalize_length(YogEnv* env, YogHandle* len, int_t chars_num, int_t pos)
+normalize_length(YogEnv* env, YogHandle* len, int_t max_index, int_t pos)
 {
-    if ((len == NULL) || (chars_num < pos + VAL2INT(HDL2VAL(len)))) {
-        return chars_num - pos;
+    if ((len == NULL) || (max_index < pos + VAL2INT(HDL2VAL(len)))) {
+        return max_index - pos + 1;
     }
     return VAL2INT(HDL2VAL(len));
 }
@@ -746,32 +746,33 @@ static YogVal
 slice(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* pos, YogHandle* len)
 {
     CHECK_SELF_TYPE2(env, self);
-    int_t chars_num = count_chars(env, HDL2VAL(self));
+    int_t max_index = count_chars(env, HDL2VAL(self)) - 1;
     if (!IS_FIXNUM(HDL2VAL(pos))) {
         const char* fmt = "pos must be Fixnum, not %C";
         YogError_raise_TypeError(env, fmt, HDL2VAL(pos));
     }
-    int_t n = normalize_position(env, VAL2INT(HDL2VAL(pos)), chars_num);
-    if ((n < 0) || (chars_num < n)) {
+    int_t n = normalize_position(env, VAL2INT(HDL2VAL(pos)), max_index);
+    if ((n < 0) || (max_index < n)) {
         return YogString_of_encoding(env, STRING_ENCODING(HDL2VAL(self)));
     }
     uint_t begin;
     if (!index2offset(env, HDL2VAL(self), n, &begin)) {
         YogError_raise_IndexError(env, "string index out of range");
     }
-    if ((len != NULL) && (VAL2INT(HDL2VAL(len)) < 0)) {
+    if ((len != NULL) && (VAL2INT(HDL2VAL(len)) <= 0)) {
         return YogString_of_encoding(env, STRING_ENCODING(HDL2VAL(self)));
     }
-    int_t l = normalize_length(env, len, chars_num, n);
+    int_t l = normalize_length(env, len, max_index, n);
     uint_t end;
-    if (!index2offset(env, HDL2VAL(self), n + l, &end)) {
+    if (!index2offset(env, HDL2VAL(self), n + l - 1, &end)) {
         YogError_raise_IndexError(env, "string index out of range");
     }
-    YogVal s = YogString_of_size(env, end - begin + 1);
+    uint_t width = end - begin + 1;
+    YogVal s = YogString_of_size(env, width + 1);
     YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), encoding, STRING_ENCODING(HDL2VAL(self)));
-    memcpy(STRING_CSTR(s), STRING_CSTR(HDL2VAL(self)) + begin, end - begin);
-    STRING_CSTR(s)[end - begin] = '\0';
-    STRING_SIZE(s) = end - begin + 1;
+    memcpy(STRING_CSTR(s), STRING_CSTR(HDL2VAL(self)) + begin, width);
+    STRING_CSTR(s)[width] = '\0';
+    STRING_SIZE(s) = width + 1;
     return s;
 }
 
