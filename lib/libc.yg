@@ -137,6 +137,7 @@ gai_strerror = lib.load_func("gai_strerror", ['int], 'pointer (: String :))
 close = lib.load_func("close", ['int], 'int)
 
 perror = lib.load_func("perror", [String])
+abort = lib.load_func("abort")
 
 if ARGV.get(0) == __FILE__
   hints = addrinfo.new()
