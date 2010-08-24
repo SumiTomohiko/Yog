@@ -410,27 +410,29 @@ get_encoding(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVa
     RETURN(env, STRING_ENCODING(self));
 }
 
+static int_t
+count_chars(YogEnv* env, YogVal self)
+{
+    int_t n = 0;
+    char* begin = STRING_CSTR(self);
+    char* end = begin + YogString_size(env, self);
+    char* pc = begin;
+    YogVal enc = STRING_ENCODING(self);
+    while (pc < end) {
+        pc += YogEncoding_mbc_size(env, enc, pc);
+        n++;
+    }
+    return n;
+}
+
 static YogVal
 get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     CHECK_SELF_TYPE(env, self);
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal enc = YUNDEF;
-    PUSH_LOCAL(env, enc);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "get_size", params, args, kw);
-
-    int_t n = 0;
-    char* begin = STRING_CSTR(self);
-    char* end = begin + YogString_size(env, self);
-    char* pc = begin;
-    enc = STRING_ENCODING(self);
-    while (pc < end) {
-        pc += YogEncoding_mbc_size(env, enc, pc);
-        n++;
-    }
-
-    RETURN(env, INT2VAL(n));
+    RETURN(env, INT2VAL(count_chars(env, self)));
 }
 
 static YogVal
@@ -723,6 +725,54 @@ YogString_subscript(YogEnv* env, YogVal self, YogVal index)
     }
 
     return get_at(env, self, offset);
+}
+
+static int_t
+normalize_position(YogEnv* env, int_t pos, int_t chars_num)
+{
+    return pos < 0 ? pos + chars_num : pos;
+}
+
+static int_t
+normalize_length(YogEnv* env, YogHandle* len, int_t chars_num, int_t pos)
+{
+    if ((len == NULL) || (chars_num < pos + VAL2INT(HDL2VAL(len)))) {
+        return chars_num - pos;
+    }
+    return VAL2INT(HDL2VAL(len));
+}
+
+static YogVal
+slice(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* pos, YogHandle* len)
+{
+    CHECK_SELF_TYPE2(env, self);
+    int_t chars_num = count_chars(env, HDL2VAL(self));
+    if (!IS_FIXNUM(HDL2VAL(pos))) {
+        const char* fmt = "pos must be Fixnum, not %C";
+        YogError_raise_TypeError(env, fmt, HDL2VAL(pos));
+    }
+    int_t n = normalize_position(env, VAL2INT(HDL2VAL(pos)), chars_num);
+    if ((n < 0) || (chars_num < n)) {
+        return YogString_of_encoding(env, STRING_ENCODING(HDL2VAL(self)));
+    }
+    uint_t begin;
+    if (!index2offset(env, HDL2VAL(self), n, &begin)) {
+        YogError_raise_IndexError(env, "string index out of range");
+    }
+    if ((len != NULL) && (VAL2INT(HDL2VAL(len)) < 0)) {
+        return YogString_of_encoding(env, STRING_ENCODING(HDL2VAL(self)));
+    }
+    int_t l = normalize_length(env, len, chars_num, n);
+    uint_t end;
+    if (!index2offset(env, HDL2VAL(self), n + l, &end)) {
+        YogError_raise_IndexError(env, "string index out of range");
+    }
+    YogVal s = YogString_of_size(env, end - begin + 1);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), encoding, STRING_ENCODING(HDL2VAL(self)));
+    memcpy(STRING_CSTR(s), STRING_CSTR(HDL2VAL(self)) + begin, end - begin);
+    STRING_CSTR(s)[end - begin] = '\0';
+    STRING_SIZE(s) = end - begin + 1;
+    return s;
 }
 
 static YogVal
@@ -1219,6 +1269,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("<=>", ufo, "n", NULL);
     DEFINE_METHOD2("=~", match, "regexp", NULL);
     DEFINE_METHOD2("[]", subscript, "index", NULL);
+    DEFINE_METHOD2("slice", slice, "pos", "|", "len", NULL);
 #undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter) do { \
     YogClass_define_property(env, cString, pkg, (name), (getter), (setter)); \
