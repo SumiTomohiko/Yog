@@ -1,5 +1,5 @@
-#if !defined(__YOG_FILE_H__)
-#define __YOG_FILE_H__
+#if !defined(YOG_FILE_H_INCLUDED)
+#define YOG_FILE_H_INCLUDED
 
 #include <stdio.h>
 #include "yog/object.h"

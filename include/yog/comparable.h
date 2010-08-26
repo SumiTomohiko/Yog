@@ -1,5 +1,5 @@
-#if !defined(__YOG_COMPARABLE_H__)
-#define __YOG_COMPARABLE_H__
+#if !defined(YOG_COMPARABLE_H_INCLUDED)
+#define YOG_COMPARABLE_H_INCLUDED
 
 #include "yog/yog.h"
 

@@ -1,5 +1,5 @@
-#if !defined(__YOG_PARSER_H__)
-#define __YOG_PARSER_H__
+#if !defined(YOG_PARSER_H_INCLUDED)
+#define YOG_PARSER_H_INCLUDED
 
 #include <stdio.h>
 #include "yog/yog.h"

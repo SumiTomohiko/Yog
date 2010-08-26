@@ -1,5 +1,5 @@
-#if !defined(__YOG_VM_H__)
-#define __YOG_VM_H__
+#if !defined(YOG_VM_H_INCLUDED)
+#define YOG_VM_H_INCLUDED
 
 #include <pthread.h>
 #if HAVE_SYS_TYPES_H

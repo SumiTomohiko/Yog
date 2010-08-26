@@ -1,5 +1,5 @@
-#if !defined(__YOG_PROPERTY_H__)
-#define __YOG_PROPERTY_H__
+#if !defined(YOG_PROPERTY_H_INCLUDED)
+#define YOG_PROPERTY_H_INCLUDED
 
 #include "yog/object.h"
 #include "yog/yog.h"

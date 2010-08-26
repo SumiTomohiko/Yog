@@ -5,7 +5,8 @@ from os.path import exists, join, splitext
 from re import compile, search, sub
 from shutil import copy, move
 
-exts = [".c", ".h", ".y", ".def", ]
+exts = [".h"]
+#exts = [".c", ".h", ".y", ".def", ]
 #exts = [".py"]
 
 def get_indent(line):
@@ -52,7 +53,7 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        line = line.replace("YogString_add", "YogString_append")
+                        line = sub(r"\b__YOG_([\w]+)_H__\b", r"YOG_\1_H_INCLUDED", line)
                         out.write(line)
             move(tmp, path)
 

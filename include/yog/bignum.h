@@ -1,5 +1,5 @@
-#if !defined(__YOG_BIGNUM_H__)
-#define __YOG_BIGNUM_H__
+#if !defined(YOG_BIGNUM_H_INCLUDED)
+#define YOG_BIGNUM_H_INCLUDED
 
 #include "gmp.h"
 #include "yog/object.h"

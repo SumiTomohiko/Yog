@@ -1,5 +1,5 @@
-#if !defined(__YOG_FLOAT_H__)
-#define __YOG_FLOAT_H__
+#if !defined(YOG_FLOAT_H_INCLUDED)
+#define YOG_FLOAT_H_INCLUDED
 
 #include "yog/object.h"
 #include "yog/yog.h"

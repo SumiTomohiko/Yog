@@ -1,5 +1,5 @@
-#if !defined(__YOG_CLASS_H__)
-#define __YOG_CLASS_H__
+#if !defined(YOG_CLASS_H_INCLUDED)
+#define YOG_CLASS_H_INCLUDED
 
 #if defined(HAVE_STDINT_H)
 #   include <stdint.h>

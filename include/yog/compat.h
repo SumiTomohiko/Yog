@@ -1,5 +1,5 @@
-#if !defined(__YOG_COMPAT_H__)
-#define __YOG_COMPAT_H__
+#if !defined(YOG_COMPAT_H_INCLUDED)
+#define YOG_COMPAT_H_INCLUDED
 
 #include "yog/config.h"
 #include <stdarg.h>

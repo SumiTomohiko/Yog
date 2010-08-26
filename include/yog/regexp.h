@@ -1,5 +1,5 @@
-#if !defined(__YOG_REGEXP_H__)
-#define __YOG_REGEXP_H__
+#if !defined(YOG_REGEXP_H_INCLUDED)
+#define YOG_REGEXP_H_INCLUDED
 
 #include "oniguruma.h"
 #include "yog/object.h"

@@ -1,5 +1,5 @@
-#if !defined(__YOG_COROUTINE_H__)
-#define __YOG_COROUTINE_H__
+#if !defined(YOG_COROUTINE_H_INCLUDED)
+#define YOG_COROUTINE_H_INCLUDED
 
 #include "yog/yog.h"
 

@@ -1,5 +1,5 @@
-#if !defined(__YOG_YOG_H__)
-#define __YOG_YOG_H__
+#if !defined(YOG_YOG_H_INCLUDED)
+#define YOG_YOG_H_INCLUDED
 
 #include "yog/config.h"
 #if defined(HAVE_LIMITS_H)

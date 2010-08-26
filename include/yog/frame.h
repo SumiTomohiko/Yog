@@ -1,5 +1,5 @@
-#if !defined(__YOG_FRAME_H__)
-#define __YOG_FRAME_H__
+#if !defined(YOG_FRAME_H_INCLUDED)
+#define YOG_FRAME_H_INCLUDED
 
 #include "yog/yog.h"
 

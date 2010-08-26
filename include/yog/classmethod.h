@@ -1,5 +1,5 @@
-#if !defined(__YOG_CLASSMETHOD_H__)
-#define __YOG_CLASSMETHOD_H__
+#if !defined(YOG_CLASSMETHOD_H_INCLUDED)
+#define YOG_CLASSMETHOD_H_INCLUDED
 
 #include "yog/object.h"
 #include "yog/yog.h"

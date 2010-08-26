@@ -1,5 +1,5 @@
-#if !defined(__YOG_BINARY_H__)
-#define __YOG_BINARY_H__
+#if !defined(YOG_BINARY_H_INCLUDED)
+#define YOG_BINARY_H_INCLUDED
 
 #if defined(HAVE_STDINT_H)
 #   include <stdint.h>

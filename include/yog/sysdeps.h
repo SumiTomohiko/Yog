@@ -1,5 +1,5 @@
-#if !defined(__YOG_SYSDEPS_H__)
-#define __YOG_SYSDEPS_H__
+#if !defined(YOG_SYSDEPS_H_INCLUDED)
+#define YOG_SYSDEPS_H_INCLUDED
 
 #if defined(HAVE_ALLOCA_H)
 #   include <alloca.h>

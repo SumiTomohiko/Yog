@@ -2,8 +2,8 @@
 
 /* @(#) st.h 5.1 89/12/14 */
 
-#if !defined(__YOG_ST_H__)
-#define __YOG_ST_H__
+#if !defined(YOG_ST_H_INCLUDED)
+#define YOG_ST_H_INCLUDED
 
 #include "yog/yog.h"
 

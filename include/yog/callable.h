@@ -1,5 +1,5 @@
-#if !defined(__YOG_CALLABLE_H__)
-#define __YOG_CALLABLE_H__
+#if !defined(YOG_CALLABLE_H_INCLUDED)
+#define YOG_CALLABLE_H_INCLUDED
 
 #include <stdarg.h>
 #if defined(HAVE_STDINT_H)

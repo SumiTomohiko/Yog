@@ -1,5 +1,5 @@
-#if !defined(__YOG_PRIVATE_H__)
-#define __YOG_PRIVATE_H__
+#if !defined(YOG_PRIVATE_H_INCLUDED)
+#define YOG_PRIVATE_H_INCLUDED
 
 #define HANDLES_SIZE 1024
 

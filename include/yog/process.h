@@ -1,5 +1,5 @@
-#if !defined(__YOG_POPEN_H__)
-#define __YOG_POPEN_H__
+#if !defined(YOG_POPEN_H_INCLUDED)
+#define YOG_POPEN_H_INCLUDED
 
 /* PROTOTYPE_START */
 

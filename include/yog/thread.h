@@ -1,5 +1,5 @@
-#if !defined(__YOG_THREAD_H__)
-#define __YOG_THREAD_H__
+#if !defined(YOG_THREAD_H_INCLUDED)
+#define YOG_THREAD_H_INCLUDED
 
 #include <pthread.h>
 #include <setjmp.h>

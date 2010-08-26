@@ -1,5 +1,5 @@
-#if !defined(__YOG_SPRINTF_H__)
-#define __YOG_SPRINTF_H__
+#if !defined(YOG_SPRINTF_H_INCLUDED)
+#define YOG_SPRINTF_H_INCLUDED
 
 #include <stdarg.h>
 #include "yog/yog.h"
