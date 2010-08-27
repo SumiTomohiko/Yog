@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rename Shift-JIS to Shift_JIS
+desc: "\"Shift_JIS\" is in IANA name."
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-08-27 18:11:10.846183 Z
+references: []
+
+id: 7f00afc2a3064ad6e0d2e18b3849629c8db66f3b
+log_events: 
+- - 2010-08-27 18:11:11.916058 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
