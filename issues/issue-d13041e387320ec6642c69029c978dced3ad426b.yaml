@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: YogSprintf_printf
+desc: Replace printf calling to YogSprintf_printf which is newly created.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-08-31 16:49:25.464441 Z
+references: []
+
+id: d13041e387320ec6642c69029c978dced3ad426b
+log_events: 
+- - 2010-08-31 16:49:26.223664 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
