@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add_current_directory must be improved.
+desc: Use getcwd instead of ".".
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-09-03 11:12:43.088560 Z
+references: []
+
+id: b18b0fc0a8e211187e2cf2639fb852882cd97d7b
+log_events: 
+- - 2010-09-03 11:12:44.239869 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
