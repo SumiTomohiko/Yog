@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: is_whitespace
+desc: Use isspace.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-09-04 13:43:26.963737 Z
+references: []
+
+id: 6bf0d5d1158bfed37b028325955512878bcecb5f
+log_events: 
+- - 2010-09-04 13:43:27.610655 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
