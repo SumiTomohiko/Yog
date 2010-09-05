@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "yog/array.h"
+#include "yog/binary.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/gc.h"
@@ -26,7 +27,7 @@
 #define NODE_LINENO(node)       PTR_AS(YogNode, (node))->lineno
 
 static BOOL Parse(struct YogEnv*, YogVal, int_t, YogVal, YogVal*);
-static YogVal LemonParser_new(YogEnv*, YogVal);
+static YogVal LemonParser_new(YogEnv*, YogHandle*);
 static void ParseTrace(FILE*, char*);
 
 static void
@@ -674,23 +675,21 @@ Raise_new(YogEnv* env, uint_t lineno, YogVal expr)
 }
 
 static void
-push_token(YogEnv* env, YogVal parser, YogVal lexer, YogVal token, const char* filename, YogVal* ast)
+push_token(YogEnv* env, YogVal parser, YogVal lexer, YogVal token, YogHandle* filename, YogVal* ast)
 {
-    SAVE_ARGS3(env, parser, lexer, token);
-
     uint_t type = PTR_AS(YogToken, token)->type;
     if (Parse(env, parser, type, token, ast)) {
-        RETURN_VOID(env);
+        return;
     }
 
-    YogError_raise_SyntaxError(env, "file \"%s\", line %u: invalid syntax", filename, PTR_AS(YogLexer, lexer)->lineno);
-
+    const char* fmt = "File \"%S\", line %u: Invalid syntax";
+    uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
+    YogError_raise_SyntaxError(env, fmt, HDL2VAL(filename), lineno);
     /* NOTREACHED */
-    RETURN_VOID(env);
 }
 
 static YogVal
-parse(YogEnv* env, YogVal lexer, const char* filename, BOOL debug)
+parse(YogEnv* env, YogVal lexer, YogHandle* filename, BOOL debug)
 {
     SAVE_ARG(env, lexer);
     YogVal ast = YUNDEF;
@@ -699,8 +698,7 @@ parse(YogEnv* env, YogVal lexer, const char* filename, BOOL debug)
     YogVal s = YUNDEF;
     PUSH_LOCALS4(env, ast, lemon_parser, token, s);
 
-    s = YogString_from_str(env, filename);
-    lemon_parser = LemonParser_new(env, s);
+    lemon_parser = LemonParser_new(env, filename);
     if (debug) {
         ParseTrace(stdout, "parser> ");
     }
@@ -717,9 +715,8 @@ YogParser_parse(YogEnv* env, YogVal src)
 {
     SAVE_ARG(env, src);
     YogVal lexer = YUNDEF;
-    YogVal ast = YUNDEF;
     YogVal enc = YUNDEF;
-    PUSH_LOCALS3(env, lexer, ast, enc);
+    PUSH_LOCALS2(env, lexer, enc);
 
     lexer = YogLexer_new(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), line, src);
@@ -727,16 +724,14 @@ YogParser_parse(YogEnv* env, YogVal src)
     enc = YogEncoding_get_default(env);
     YogLexer_set_encoding(env, lexer, enc);
 
-    ast = parse(env, lexer, "<stdin>", FALSE);
-
-    RETURN(env, ast);
+    YogHandle* filename = VAL2HDL(env, YogString_from_string(env, "<stdin>"));
+    RETURN(env, parse(env, lexer, filename, FALSE));
 }
 
 YogVal
-YogParser_parse_file(YogEnv* env, FILE* fp, const char* filename, BOOL debug)
+YogParser_parse_file(YogEnv* env, FILE* fp, YogHandle* filename, BOOL debug)
 {
     YOG_ASSERT(env, fp != NULL, "file pointer is NULL");
-
     SAVE_LOCALS(env);
     YogVal lexer = YUNDEF;
     YogVal ast = YUNDEF;

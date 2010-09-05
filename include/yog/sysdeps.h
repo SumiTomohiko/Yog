@@ -61,11 +61,13 @@
 #   define YogSysdeps_open_lib(path)    dlopen((path), RTLD_LAZY)
 #   define YogSysdeps_get_proc(handle, name) \
                                         dlsym((handle), (name))
+#   define YogSysdeps_dlerror()         dlerror()
 #else
 #   define LIB_HANDLE                   HINSTANCE
 #   define YogSysdeps_open_lib(path)    LoadLibrary((path))
 #   define YogSysdeps_get_proc(handle, name) \
                                         GetProcAddress((handle), (name))
+#   define YogSysdeps_dlerror()
 #endif
 
 #endif

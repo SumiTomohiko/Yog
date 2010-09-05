@@ -308,7 +308,7 @@ create_property_body(YogEnv* env, YogHandle* pkg, YogHandle* class_name, const c
     uint_t size = strlen(prefix) + strlen(name) + 1;
     char* buf = (char*)YogSysdeps_alloca(sizeof(char) * size);
     YogSysdeps_snprintf(buf, size, "%s%s", prefix, name);
-    YogVal func_name = YogString_from_str(env, buf);
+    YogVal func_name = YogString_from_string(env, buf);
     YogHandle* h_func_name = YogHandle_REGISTER(env, func_name);
 
     va_list ap;

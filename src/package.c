@@ -52,7 +52,7 @@ YogPackage_init(YogEnv* env, YogVal pkg, type_t type)
     PUSH_LOCAL(env, attrs);
 
     YogObj_init(env, pkg, type, FLAG_PKG, env->vm->cPackage);
-    attrs = YogTable_new_symbol_table(env);
+    attrs = YogTable_create_symbol_table(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogObj, pkg), attrs, attrs);
 
     RETURN_VOID(env);

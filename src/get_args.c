@@ -1,8 +1,10 @@
 #include <string.h>
 #include "yog/array.h"
+#include "yog/binary.h"
 #include "yog/dict.h"
 #include "yog/error.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -20,7 +22,9 @@ find_param(YogEnv* env, YogCArg* params, YogVal name)
             param++;
             YOG_ASSERT(env, param->name != NULL, "invalid format");
         }
-        if (strcmp(STRING_CSTR(name), param->name) == 0) {
+        YogHandle* h = YogHandle_REGISTER(env, name);
+        YogVal bin = YogString_to_bin_in_default_encoding(env, h);
+        if (strcmp(BINARY_CSTR(bin), param->name) == 0) {
             RETURN(env, TRUE);
         }
         param++;

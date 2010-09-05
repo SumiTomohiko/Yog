@@ -38,6 +38,7 @@ YogHandle_register(YogEnv* env, YogVal val, const char* filename, uint_t lineno)
 }
 
 #define YogHandle_REGISTER(env, val) YogHandle_register((env), (val), __FILE__, __LINE__)
+#define VAL2HDL(env, val) YogHandle_REGISTER((env), (val))
 
 static inline void
 YogHandleScope_open(YogEnv* env, YogHandleScope* self, const char* filename, uint_t lineno)

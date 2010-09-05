@@ -10,11 +10,13 @@
 #include <gmp.h>
 #include "yog/array.h"
 #include "yog/bignum.h"
+#include "yog/binary.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/float.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/sysdeps.h"
@@ -121,7 +123,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     CHECK_SELF_TYPE(env, self);
 
     if (YogSysdeps_isnan(FLOAT_NUM(self))) {
-        s = YogString_from_str(env, "NaN");
+        s = YogString_from_string(env, "NaN");
         RETURN(env, s);
     }
 
@@ -130,7 +132,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogSysdeps_snprintf(buffer, array_sizeof(buffer), "%#.12g", val);
     remove_trailing_zero(env, buffer);
 
-    s = YogString_from_str(env, buffer);
+    s = YogString_from_string(env, buffer);
 
     RETURN(env, s);
 }
@@ -398,7 +400,9 @@ YogFloat_from_str(YogEnv* env, YogVal s)
     YogVal val = YUNDEF;
     PUSH_LOCAL(env, val);
 
-    double f = strtod(STRING_CSTR(s), NULL);
+    YogHandle* h = YogHandle_REGISTER(env, s);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, h);
+    double f = strtod(BINARY_CSTR(bin), NULL);
     val = YogFloat_new(env);
     PTR_AS(YogFloat, val)->val = f;
 

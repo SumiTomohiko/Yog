@@ -229,7 +229,7 @@ inst make_class
     YogHandle* kls = YogHandle_REGISTER(env, YogClass_new(env, NULL, super));
     PTR_AS(YogClass, kls->val)->name = VAL2ID(name);
     PTR_AS(YogObj, kls->val)->attrs = YUNDEF;
-    YogVal attrs = YogTable_new_symbol_table(env);
+    YogVal attrs = YogTable_create_symbol_table(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogObj, kls->val), attrs, attrs);
     push(env, kls->val);
 
@@ -388,7 +388,9 @@ inst print_top
 {
     YogVal s = YogEval_call_method(env, val, "to_s", 0, NULL);
     YOG_ASSERT(env, IS_PTR(s) && (BASIC_OBJ_TYPE(s) == TYPE_STRING), "object isn't string");
-    printf("=> %s\n", STRING_CSTR(s));
+    YogHandle* h = YogHandle_REGISTER(env, s);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, h);
+    printf("=> %s\n", BINARY_CSTR(bin));
 }
 
 inst print_top_multi_value
@@ -408,7 +410,9 @@ inst print_top_multi_value
         YogVal s = YogEval_call_method(env, obj, "to_s", 0, NULL);
         YOG_ASSERT(env, IS_PTR(s), "invalid string (0x%08x)", s);
         YOG_ASSERT(env, BASIC_OBJ_TYPE(s) == TYPE_STRING, "invalid string type (0x%08x)", BASIC_OBJ_TYPE(s));
-        printf(" %s", STRING_CSTR(s));
+        YogHandle* h = YogHandle_REGISTER(env, s);
+        YogVal bin = YogString_to_bin_in_default_encoding(env, h);
+        printf(" %s", BINARY_CSTR(bin));
     }
     printf("\n");
 }

@@ -11,11 +11,13 @@
 #endif
 #include "oniguruma.h"
 #include "yog/array.h"
+#include "yog/binary.h"
 #include "yog/dict.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/float.h"
 #include "yog/gc.h"
+#include "yog/handle.h"
 #include "yog/parser.h"
 #include "yog/regexp.h"
 #include "yog/string.h"
@@ -76,36 +78,26 @@ IDToken_new(YogEnv* env, uint_t type, ID id, uint_t lineno)
 }
 
 static BOOL
-readline(YogEnv* env, YogVal lexer, FILE* fp)
+readline(YogEnv* env, YogVal lexer)
 {
+    FILE* fp = PTR_AS(YogLexer, lexer)->fp;
     if (fp == NULL) {
         return FALSE;
     }
-
-    SAVE_LOCALS(env);
-    PUSH_LOCAL(env, lexer);
-
-    YogVal line = PTR_AS(YogLexer, lexer)->line;
+    SAVE_ARG(env, lexer);
+    YogVal line = YogBinary_new(env);
     PUSH_LOCAL(env, line);
-    YogString_clear(env, line);
 
-    int_t c = 0;
-    do {
-        c = fgetc(fp);
-        if (c == EOF) {
-            break;
-        }
+    int_t c;
+    while ((c = fgetc(fp)) != EOF) {
+        YogBinary_push_char(env, line, c);
         if ((c == '\n') || (c == '\r')) {
-            YogString_push(env, line, c);
             break;
         }
-        YogString_push(env, line, c);
-    } while (1);
-
-    if (YogString_size(env, line) == 0) {
+    }
+    if (YogBinary_size(env, line) == 0) {
         RETURN(env, FALSE);
     }
-
     if (c == '\r') {
         c = fgetc(fp);
         if (c != '\n') {
@@ -113,31 +105,32 @@ readline(YogEnv* env, YogVal lexer, FILE* fp)
         }
     }
 
+    YogVal s = YogBinary_to_s(env, line, PTR_AS(YogLexer, lexer)->encoding);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), line, s);
     PTR_AS(YogLexer, lexer)->lineno++;
 
     RETURN(env, TRUE);
 }
 
-static char
+static YogChar
 nextc(YogVal lexer)
 {
     YogVal line = PTR_AS(YogLexer, lexer)->line;
     uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
-    YogVal body = PTR_AS(YogString, line)->body;
-    char c = PTR_AS(YogCharArray, body)->items[next_index];
+    YogChar c = STRING_CHARS(line)[next_index];
     PTR_AS(YogLexer, lexer)->next_index++;
 
     return c;
 }
 
 static void
-pushback(YogVal lexer, char c)
+pushback(YogVal lexer, YogChar c)
 {
     PTR_AS(YogLexer, lexer)->next_index--;
 }
 
 static BOOL
-is_whitespace(char c)
+is_whitespace(YogChar c)
 {
     return (c == ' ') || (c == '\t');
 }
@@ -145,23 +138,28 @@ is_whitespace(char c)
 static void
 skip_whitespace(YogVal lexer)
 {
-    char c = 0;
+    YogVal line = PTR_AS(YogLexer, lexer)->line;
+#define FINISHED (STRING_SIZE(line) <= PTR_AS(YogLexer, lexer)->next_index)
+    if (FINISHED) {
+        return;
+    }
+
+    YogChar c;
     do {
         c = nextc(lexer);
-    } while (is_whitespace(c));
+    } while (isspace(c) && !FINISHED);
+#undef FINISHED
 
     pushback(lexer, c);
 }
 
 static BOOL
-is_name_char(char c)
+is_name_char(YogChar c)
 {
     if (isascii(c)) {
         return isalnum(c) || (c == '_');
     }
-    else {
-        return TRUE;
-    }
+    return TRUE;
 }
 
 static void
@@ -171,7 +169,7 @@ clear_buffer(YogEnv* env, YogVal lexer)
 }
 
 static void
-add_token_char(YogEnv* env, YogVal lexer, char c)
+add_token_char(YogEnv* env, YogVal lexer, YogChar c)
 {
     YogString_push(env, PTR_AS(YogLexer, lexer)->buffer, c);
 }
@@ -186,52 +184,26 @@ get_rest_size(YogEnv* env, YogVal lexer)
     return YogString_size(env, line) - next_index;
 }
 
-static void
-push_multibyte_char(YogEnv* env, YogVal lexer)
-{
-    SAVE_LOCALS(env);
-    PUSH_LOCAL(env, lexer);
-
-    YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-    YogVal enc = PTR_AS(YogString, buffer)->encoding;
-    YogVal line = PTR_AS(YogLexer, lexer)->line;
-    uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
-    YogVal body = PTR_AS(YogString, line)->body;
-    const char* ptr = &PTR_AS(YogCharArray, body)->items[next_index];
-    int_t mbc_size = YogEncoding_mbc_size(env, enc, ptr);
-    int_t rest_size = get_rest_size(env, lexer);
-    if (rest_size < mbc_size) {
-        YogError_raise_SyntaxError(env, "invalid multibyte char");
-    }
-    int_t i;
-    for (i = 0; i < mbc_size; i++) {
-        char c = nextc(lexer);
-        add_token_char(env, lexer, c);
-    }
-
-    RETURN_VOID(env);
-}
-
 static BOOL
-is_binary_char(char c)
+is_binary_char(YogChar c)
 {
     return (c == '0') || (c == '1');
 }
 
 static BOOL
-is_octet_char(char c)
+is_octet_char(YogChar c)
 {
     return ('0' <= c) && (c <= '7');
 }
 
 static BOOL
-is_digit_char(char c)
+is_digit_char(YogChar c)
 {
     return ('0' <= c) && (c <= '9');
 }
 
 static BOOL
-is_hex_char(char c)
+is_hex_char(YogChar c)
 {
     if (is_digit_char(c)) {
         return TRUE;
@@ -247,21 +219,16 @@ is_hex_char(char c)
 }
 
 static void
-print_current_position(YogEnv* env, YogVal lexer)
+print_current_position(YogEnv* env, YogHandle* lexer)
 {
-    YogVal line = PTR_AS(YogLexer, lexer)->line;
-    uint_t size = STRING_SIZE(line);
-    YOG_ASSERT(env, 0 < size, "invalid size (%u)", size);
-    char* s = (char*)YogSysdeps_alloca(sizeof(char) * size);
-    memcpy(s, STRING_CSTR(line), size);
-    char* pc = s + size - 1;
-    while ((*pc == '\0') || (*pc == '\r') || (*pc == '\n')) {
+    YogVal bin = YogString_to_bin_in_default_encoding(env, lexer);
+    char* pc = BINARY_CSTR(bin) + BINARY_SIZE(bin) - 1;
+    while ((*pc == '\r') || (*pc == '\n')) {
         *pc = '\0';
         pc--;
     }
-
     FILE* out = stderr;
-    fprintf(out, "%s\n", s);
+    fprintf(out, "%s\n", BINARY_CSTR(bin));
 
     uint_t pos = PTR_AS(YogLexer, lexer)->next_index - 1;
     uint_t i;
@@ -276,13 +243,13 @@ print_current_position(YogEnv* env, YogVal lexer)
 #define ADD_TOKEN_CHAR(c)   add_token_char(env, lexer, c)
 
 static void
-read_number(YogEnv* env, YogVal lexer, BOOL (*is_valid_char)(char))
+read_number(YogEnv* env, YogVal lexer, BOOL (*is_valid_char)(YogChar))
 {
-    SAVE_ARG(env, lexer);
+    YogHandle* h_lexer = YogHandle_REGISTER(env, lexer);
 
-    char c = NEXTC();
+    YogChar c = NEXTC();
     if (!is_valid_char(c)) {
-        print_current_position(env, lexer);
+        print_current_position(env, h_lexer);
         YogError_raise_SyntaxError(env, "numeric literal without digits");
     }
     ADD_TOKEN_CHAR(c);
@@ -297,18 +264,19 @@ read_number(YogEnv* env, YogVal lexer, BOOL (*is_valid_char)(char))
 
             c = NEXTC();
             if (c == '_') {
-                print_current_position(env, lexer);
+                print_current_position(env, h_lexer);
                 YogError_raise_SyntaxError(env, "trailing \"_\" in number");
             }
             else if (!is_valid_char(c)) {
-                print_current_position(env, lexer);
-                YogError_raise_SyntaxError(env, "numeric literal without digits");
+                print_current_position(env, h_lexer);
+                const char* msg = "numeric literal without digits";
+                YogError_raise_SyntaxError(env, msg);
             }
             ADD_TOKEN_CHAR(c);
         }
         else {
             PUSHBACK(c);
-            RETURN_VOID(env);
+            return;
         }
     }
 }
@@ -370,9 +338,9 @@ skip_comment(YogEnv* env, YogVal lexer)
 
     uint_t depth = 1;
     do {
-        char c = NEXTC();
+        YogChar c = NEXTC();
         if (c == ':') {
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == ')') {
                 depth--;
                 if (depth == 0) {
@@ -384,7 +352,7 @@ skip_comment(YogEnv* env, YogVal lexer)
             }
         }
         else if (c == '(') {
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == ':') {
                 depth++;
             }
@@ -393,7 +361,7 @@ skip_comment(YogEnv* env, YogVal lexer)
             }
         }
         else if (c == '\0') {
-            if (!readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
+            if (!readline(env, lexer)) {
                 YogError_raise_SyntaxError(env, "EOF while scanning comment");
             }
             PTR_AS(YogLexer, lexer)->next_index = 0;
@@ -408,18 +376,18 @@ static BOOL
 read_elf(YogEnv* env, YogVal lexer)
 {
     SAVE_ARG(env, lexer);
-    char c = NEXTC();
+    YogChar c = NEXTC();
     if (c != 'e') {
         PUSHBACK(c);
         RETURN(env, FALSE);
     }
-    char c2 = NEXTC();
+    YogChar c2 = NEXTC();
     if (c2 != 'l') {
         PUSHBACK(c2);
         PUSHBACK(c);
         RETURN(env, FALSE);
     }
-    char c3 = NEXTC();
+    YogChar c3 = NEXTC();
     if (c3 != 'f') {
         PUSHBACK(c3);
         PUSHBACK(c2);
@@ -429,26 +397,34 @@ read_elf(YogEnv* env, YogVal lexer)
     RETURN(env, TRUE);
 }
 
+static void
+raise_heredoc_error(YogEnv* env, YogHandle* filename, YogVal heredoc)
+{
+    const char* fmt = "File \"%S\", line %u: EOF while scanning heredoc";
+    uint_t lineno = PTR_AS(HereDoc, heredoc)->lineno;
+    YogError_raise_SyntaxError(env, fmt, HDL2VAL(filename), lineno);
+}
+
 BOOL
-YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* token)
+YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* token)
 {
     SAVE_ARG(env, lexer);
     YogVal heredoc_end = YUNDEF;
     YogVal str = YUNDEF;
     YogVal heredoc = YUNDEF;
     YogVal heredoc_queue = YUNDEF;
-    YogVal end = YUNDEF;
-    PUSH_LOCALS5(env, heredoc_end, str, heredoc, heredoc_queue, end);
+    YogVal end_mark = YUNDEF;
+    PUSH_LOCALS5(env, heredoc_end, str, heredoc, heredoc_queue, end_mark);
 
     clear_buffer(env, lexer);
 
 #define SET_STATE(stat)     PTR_AS(YogLexer, lexer)->state = stat
 #define IS_STATE(stat)      (PTR_AS(YogLexer, lexer)->state == stat)
-    char c = 0;
+    YogChar c;
     do {
         uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
         YogVal line = PTR_AS(YogLexer, lexer)->line;
-        if (next_index < YogString_size(env, line)) {
+        if (IS_PTR(line) && (next_index < STRING_SIZE(line))) {
             c = NEXTC();
             if (is_whitespace(c)) {
                 skip_whitespace(lexer);
@@ -469,14 +445,16 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                 }
                 heredoc = YogArray_shift(env, heredoc_queue);
                 while (1) {
-                    if (!readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
-                        YogError_raise_SyntaxError(env, "file \"%s\", line %u: EOF while scanning heredoc", filename, PTR_AS(HereDoc, heredoc)->lineno);
+                    if (!readline(env, lexer)) {
+                        raise_heredoc_error(env, filename, heredoc);
+                        /* NOTREACHED */
                     }
-                    end = PTR_AS(HereDoc, heredoc)->end;
-                    uint_t size = YogString_size(env, end);
+                    end_mark = PTR_AS(HereDoc, heredoc)->end;
+                    uint_t size = STRING_SIZE(end_mark);
                     line = PTR_AS(YogLexer, lexer)->line;
-                    if (strncmp(STRING_CSTR(end), STRING_CSTR(line), size) == 0) {
-                        if ((STRING_CSTR(line)[size] == '\r') || (STRING_CSTR(line)[size] == '\n')) {
+                    if (YogString_strncmp(env, end_mark, line, size) == 0) {
+                        YogChar c = STRING_CHARS(line)[size];
+                        if ((c == '\r') || (c == '\n')) {
                             break;
                         }
                     }
@@ -486,7 +464,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                 }
             }
 
-            if (!readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
+            if (!readline(env, lexer)) {
                 RETURN(env, FALSE);
             }
             PTR_AS(YogLexer, lexer)->next_index = 0;
@@ -520,7 +498,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
     switch (c) {
     case '0':
         {
-            int_t c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if ((c2 == 'b') || (c2 == 'B')) {
                 ADD_TOKEN_CHAR(c);
                 ADD_TOKEN_CHAR(c2);
@@ -558,7 +536,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             } while (isdigit(c));
 
             if (c == '.') {
-                int_t c2 = NEXTC();
+                YogChar c2 = NEXTC();
                 if (isdigit(c2)) {
                     ADD_TOKEN_CHAR(c);
                     do {
@@ -586,45 +564,39 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         }
     case '\"':
         {
-            char quote = c;
+            YogChar quote = c;
 
             c = NEXTC();
             while (c != quote) {
-                if (isascii(c)) {
-                    if (c == '\\') {
-                        int_t rest_size = get_rest_size(env, lexer);
-                        if (rest_size < 1) {
-                            YogError_raise_SyntaxError(env, "EOL while scanning string literal");
-                        }
-                        c = NEXTC();
-                        switch (c) {
-                        case '\\':
-                            ADD_TOKEN_CHAR('\\');
-                            break;
-                        case 'n':
-                            ADD_TOKEN_CHAR('\n');
-                            break;
-                        case 'r':
-                            ADD_TOKEN_CHAR('\r');
-                            break;
-                        case 't':
-                            ADD_TOKEN_CHAR('\t');
-                            break;
-                        default:
-                            ADD_TOKEN_CHAR(c);
-                            break;
-                        }
-                    }
-                    else {
-                        ADD_TOKEN_CHAR(c);
+                if (c == '\\') {
+                    int_t rest_size = get_rest_size(env, lexer);
+                    if (rest_size < 1) {
+                        const char* msg = "EOL while scanning string literal";
+                        YogError_raise_SyntaxError(env, msg);
                     }
                     c = NEXTC();
+                    switch (c) {
+                    case '\\':
+                        ADD_TOKEN_CHAR('\\');
+                        break;
+                    case 'n':
+                        ADD_TOKEN_CHAR('\n');
+                        break;
+                    case 'r':
+                        ADD_TOKEN_CHAR('\r');
+                        break;
+                    case 't':
+                        ADD_TOKEN_CHAR('\t');
+                        break;
+                    default:
+                        ADD_TOKEN_CHAR(c);
+                        break;
+                    }
                 }
                 else {
-                    PUSHBACK(c);
-                    push_multibyte_char(env, lexer);
-                    c = NEXTC();
+                    ADD_TOKEN_CHAR(c);
                 }
+                c = NEXTC();
             }
 
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
@@ -643,7 +615,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         break;
     case '(':
         {
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == ':') {
                 skip_comment(env, lexer);
                 BOOL b = YogLexer_next_token(env, lexer, filename, token);
@@ -662,9 +634,9 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         break;
     case '[':
         if (IS_STATE(LS_NAME)) {
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == ']') {
-                char c3 = NEXTC();
+                YogChar c3 = NEXTC();
                 if (c3 == '=') {
                     RETURN_ID_TOKEN(TK_NAME, "[]=");
                 }
@@ -692,7 +664,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         break;
     case '+':
         {
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == '=') {
                 SET_STATE(LS_EXPR);
                 RETURN_TOKEN(TK_PLUS_EQUAL);
@@ -710,7 +682,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         break;
     case '-':
         {
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == '=') {
                 SET_STATE(LS_EXPR);
                 RETURN_TOKEN(TK_MINUS_EQUAL);
@@ -730,12 +702,12 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         {
             SET_STATE(LS_EXPR);
 
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == '=') {
                 RETURN_TOKEN(TK_STAR_EQUAL);
             }
             else if (c2 == '*') {
-                char c3 = NEXTC();
+                YogChar c3 = NEXTC();
                 if (c3 == '=') {
                     RETURN_TOKEN(TK_STAR_STAR_EQUAL);
                 }
@@ -754,12 +726,12 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         if (!IS_STATE(LS_EXPR)) {
             SET_STATE(LS_EXPR);
 
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == '=') {
                 RETURN_TOKEN(TK_DIV_EQUAL);
             }
             else if (c2 == '/') {
-                char c3 = NEXTC();
+                YogChar c3 = NEXTC();
                 if (c3 == '=') {
                     RETURN_TOKEN(TK_DIV_DIV_EQUAL);
                 }
@@ -774,39 +746,33 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
             }
         }
         else {
-            char delimitor = c;
+            YogChar delimitor = c;
 
             c = NEXTC();
             while (c != delimitor) {
-                if (isascii(c)) {
-                    if (c == '\\') {
-                        int_t rest_size = get_rest_size(env, lexer);
-                        if (rest_size < 1) {
-                            YogError_raise_SyntaxError(env, "EOL while scanning regexp literal");
-                        }
-                        c = NEXTC();
-                        switch (c) {
-                        case 'n':
-                            ADD_TOKEN_CHAR('\n');
-                            break;
-                        default:
-                            if (c != delimitor) {
-                                ADD_TOKEN_CHAR('\\');
-                            }
-                            ADD_TOKEN_CHAR(c);
-                            break;
-                        }
-                    }
-                    else {
-                        ADD_TOKEN_CHAR(c);
+                if (c == '\\') {
+                    int_t rest_size = get_rest_size(env, lexer);
+                    if (rest_size < 1) {
+                        const char* msg = "EOL while scanning regexp literal";
+                        YogError_raise_SyntaxError(env, msg);
                     }
                     c = NEXTC();
+                    switch (c) {
+                    case 'n':
+                        ADD_TOKEN_CHAR('\n');
+                        break;
+                    default:
+                        if (c != delimitor) {
+                            ADD_TOKEN_CHAR('\\');
+                        }
+                        ADD_TOKEN_CHAR(c);
+                        break;
+                    }
                 }
                 else {
-                    PUSHBACK(c);
-                    push_multibyte_char(env, lexer);
-                    c = NEXTC();
+                    ADD_TOKEN_CHAR(c);
                 }
+                c = NEXTC();
             }
 
             BOOL ignore_case = TRUE;
@@ -832,7 +798,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         {
             SET_STATE(LS_EXPR);
 
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == '=') {
                 RETURN_TOKEN(TK_PERCENT_EQUAL);
             }
@@ -846,7 +812,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         {
             SET_STATE(LS_EXPR);
 
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             switch (c2) {
             case '~':
                 RETURN_ID_TOKEN(TK_EQUAL_TILDA, "=~");
@@ -866,24 +832,24 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         break;
     case '<':
         {
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             switch (c2) {
             case '<':
                 if (IS_STATE(LS_EXPR)) {
-                    char c3 = NEXTC();
+                    YogChar c3 = NEXTC();
                     if (!isalpha(c3) && (c3 != '_')) {
                         PUSHBACK(c3);
                         RETURN_ID_TOKEN(TK_LSHIFT, "<<");
                     }
 
-                    heredoc_end = YogString_of_encoding(env, LEXER_ENCODING(lexer));
+                    heredoc_end = YogString_new(env);
                     do {
                         YogString_push(env, heredoc_end, c3);
                         c3 = NEXTC();
                     } while (isalnum(c3) || (c3 == '_'));
                     PUSHBACK(c3);
 
-                    str = YogString_of_encoding(env, LEXER_ENCODING(lexer));
+                    str = YogString_new(env);
                     uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                     heredoc = HereDoc_new(env);
                     YogGC_UPDATE_PTR(env, PTR_AS(HereDoc, heredoc), str, str);
@@ -897,7 +863,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                 else {
                     SET_STATE(LS_EXPR);
 
-                    char c3 = NEXTC();
+                    YogChar c3 = NEXTC();
                     if (c3 == '=') {
                         RETURN_TOKEN(TK_LSHIFT_EQUAL);
                     }
@@ -911,7 +877,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                 {
                     SET_STATE(LS_EXPR);
 
-                    char c3 = NEXTC();
+                    YogChar c3 = NEXTC();
                     if (c3 == '>') {
                         RETURN_ID_TOKEN(TK_UFO, "<=>");
                     }
@@ -932,11 +898,11 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         {
             SET_STATE(LS_EXPR);
 
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             switch (c2) {
             case '>':
                 {
-                    char c3 = NEXTC();
+                    YogChar c3 = NEXTC();
                     switch (c3) {
                     case '=':
                         RETURN_TOKEN(TK_RSHIFT_EQUAL);
@@ -962,12 +928,12 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         {
             SET_STATE(LS_EXPR);
 
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == '=') {
                 RETURN_TOKEN(TK_BAR_EQUAL);
             }
             else if (c2 == '|') {
-                char c3 = NEXTC();
+                YogChar c3 = NEXTC();
                 if (c3 == '=') {
                     RETURN_TOKEN(TK_BAR_BAR_EQUAL);
                 }
@@ -986,12 +952,12 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         {
             SET_STATE(LS_EXPR);
 
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == '=') {
                 RETURN_TOKEN(TK_AND_EQUAL);
             }
             else if (c2 == '&') {
-                char c3 = NEXTC();
+                YogChar c3 = NEXTC();
                 if (c3 == '=') {
                     RETURN_TOKEN(TK_AND_AND_EQUAL);
                 }
@@ -1010,7 +976,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         {
             SET_STATE(LS_EXPR);
 
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == '=') {
                 RETURN_ID_TOKEN(TK_NOT_EQUAL, "!=");
             }
@@ -1024,7 +990,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         {
             SET_STATE(LS_EXPR);
 
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (c2 == '=') {
                 RETURN_TOKEN(TK_XOR_EQUAL);
             }
@@ -1036,7 +1002,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
         break;
     case '~':
         {
-            char c2 = NEXTC();
+            YogChar c2 = NEXTC();
             if (IS_STATE(LS_NAME) && (c2 == 's') && read_elf(env, lexer)) {
                 SET_STATE(LS_OP);
                 RETURN_ID_TOKEN(TK_NAME, "~self");
@@ -1087,15 +1053,8 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
     default:
         {
             do {
-                if (isascii(c)) {
-                    ADD_TOKEN_CHAR(c);
-                    c = NEXTC();
-                }
-                else {
-                    PUSHBACK(c);
-                    push_multibyte_char(env, lexer);
-                    c = NEXTC();
-                }
+                ADD_TOKEN_CHAR(c);
+                c = NEXTC();
             } while (is_name_char(c));
 
             if (c == '!') {
@@ -1116,16 +1075,16 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                 PUSHBACK(c);
             }
 
-            YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-            YogVal body = PTR_AS(YogString, buffer)->body;
-            const char* name = PTR_AS(YogCharArray, body)->items;
+            YogHandle* buffer = VAL2HDL(env, PTR_AS(YogLexer, lexer)->buffer);
             if (IS_STATE(LS_NAME)) {
-                ID id = YogVM_intern(env, env->vm, name);
+                ID id = YogString_intern(env, HDL2VAL(buffer));
                 uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                 *token = IDToken_new(env, TK_NAME, id, lineno);
                 SET_STATE(LS_OP);
             }
             else {
+                YogVal bin = YogString_to_bin_in_default_encoding(env, buffer);
+                const char* name = BINARY_CSTR(bin);
                 const KeywordTableEntry* entry = __Yog_lookup_keyword__(name, strlen(name));
                 uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                 if (entry != NULL) {
@@ -1139,7 +1098,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
                     }
                 }
                 else {
-                    ID id = YogVM_intern(env, env->vm, name);
+                    ID id = YogVM_intern2(env, env->vm, HDL2VAL(buffer));
                     *token = IDToken_new(env, TK_NAME, id, lineno);
                     SET_STATE(LS_OP);
                 }
@@ -1163,7 +1122,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, const char* filename, YogVal* tok
 #undef NEXTC
 
 static BOOL
-is_coding_char(char c)
+is_coding_char(YogChar c)
 {
     return isalnum(c) || (c == '_') || (c == '-');
 }
@@ -1173,36 +1132,33 @@ read_encoding(YogEnv* env, YogVal lexer)
 {
     SAVE_ARG(env, lexer);
     YogVal line = YUNDEF;
-    YogVal body = YUNDEF;
     YogVal buffer = YUNDEF;
     YogVal coding = YUNDEF;
     YogVal val = YUNDEF;
-    PUSH_LOCALS5(env, line, body, buffer, coding, val);
+    PUSH_LOCALS4(env, line, buffer, coding, val);
 
-    while (readline(env, lexer, PTR_AS(YogLexer, lexer)->fp)) {
+    while (readline(env, lexer)) {
         PTR_AS(YogLexer, lexer)->next_index = 0;
 
         skip_whitespace(lexer);
-        int_t c = nextc(lexer);
+        YogChar c = nextc(lexer);
         if (c != '#') {
             continue;
         }
 
+#define KEY "coding"
         line = PTR_AS(YogLexer, lexer)->line;
-        uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
-        body = PTR_AS(YogString, line)->body;
-        const char* s = &PTR_AS(YogCharArray, body)->items[next_index];
-#define KEY     "coding"
-        const char* ptr = strstr(s, KEY);
-        if (ptr == NULL) {
+        int_t pos = YogString_strstr(env, line, KEY);
+        if (pos < 0) {
             continue;
         }
-        ptr += strlen(KEY);
+        pos += strlen(KEY);
 #undef KEY
-        if ((*ptr != '=') && (*ptr != ':')) {
+        c = STRING_CHARS(line)[pos];
+        if ((c != '=') && (c != ':')) {
             continue;
         }
-        PTR_AS(YogLexer, lexer)->next_index += ptr - s + 1;
+        PTR_AS(YogLexer, lexer)->next_index += pos + 1;
         skip_whitespace(lexer);
 
         clear_buffer(env, lexer);
@@ -1213,7 +1169,7 @@ read_encoding(YogEnv* env, YogVal lexer)
         }
         buffer = PTR_AS(YogLexer, lexer)->buffer;
         coding = YogEncoding_normalize_name(env, buffer);
-        if (YogString_size(env, coding) < 1) {
+        if (STRING_SIZE(coding) < 1) {
             continue;
         }
 
@@ -1231,7 +1187,7 @@ static void
 reset_lexer(YogEnv* env, YogVal lexer)
 {
     fseek(PTR_AS(YogLexer, lexer)->fp, 0, SEEK_SET);
-    YogString_clear(env, PTR_AS(YogLexer, lexer)->line);
+    PTR_AS(YogLexer, lexer)->line = YUNDEF;
     PTR_AS(YogLexer, lexer)->next_index = 0;
     PTR_AS(YogLexer, lexer)->lineno = 0;
 }
@@ -1239,10 +1195,7 @@ reset_lexer(YogEnv* env, YogVal lexer)
 void
 YogLexer_set_encoding(YogEnv* env, YogVal lexer, YogVal encoding)
 {
-    YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogString, buffer), encoding, encoding);
-    YogVal line = PTR_AS(YogLexer, lexer)->line;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogString, line), encoding, encoding);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), encoding, encoding);
 }
 
 void
@@ -1269,6 +1222,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(line);
     KEEP(buffer);
     KEEP(heredoc_queue);
+    KEEP(encoding);
 #undef KEEP
 }
 
@@ -1291,10 +1245,10 @@ YogLexer_new(YogEnv* env)
     PTR_AS(YogLexer, lexer)->heredoc_queue = YUNDEF;
     PTR_AS(YogLexer, lexer)->paren_depth = 0;
 
-    line = YogString_new(env);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), line, line);
+    PTR_AS(YogLexer, lexer)->line = YUNDEF;
     buffer = YogString_new(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), buffer, buffer);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), encoding, env->vm->encUtf8);
 
     RETURN(env, lexer);
 }

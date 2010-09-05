@@ -2,6 +2,7 @@
 #if defined(HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include "yog/bignum.h"
@@ -140,7 +141,7 @@ add_num(YogEnv* env, YogVal s, YogVal o)
     if (IS_FIXNUM(o)) {
         char buf[21]; /* 64bit integer with '\0' needs at most 21 bytes */
         snprintf(buf, array_sizeof(buf), "%d", VAL2INT(o));
-        YogString_append_cstr(env, s, buf);
+        YogString_append_string(env, s, buf);
     }
     else if (IS_PTR(o) && (BASIC_OBJ_TYPE(o) == TYPE_BIGNUM)) {
         t = YogBignum_to_s(env, o);
@@ -248,7 +249,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
             {
                 char buf[2];
                 snprintf(buf, array_sizeof(buf), "%c", va_arg(ap, int));
-                YogString_append_cstr(env, s, buf);
+                YogString_append_string(env, s, buf);
             }
             break;
         case 'd':
@@ -263,7 +264,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
                     long long n = va_arg(ap, long long);
                     YogSysdeps_snprintf(buf, array_sizeof(buf), "%lld", n);
                 }
-                YogString_append_cstr(env, s, buf);
+                YogString_append_string(env, s, buf);
             }
             break;
         case 'p':
@@ -272,13 +273,13 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
                 uint_t size = 2 + 2 * sizeof(void*) + 1;
                 char buf[size];
                 snprintf(buf, size, "%p", va_arg(ap, void*));
-                YogString_append_cstr(env, s, buf);
+                YogString_append_string(env, s, buf);
             }
             break;
         case 's':
             {
                 char* p = va_arg(ap, char*);
-                YogString_append_cstr(env, s, p);
+                YogString_append_string(env, s, p);
             }
             break;
         case 'u':
@@ -292,7 +293,7 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
                     unsigned long long n = va_arg(ap, unsigned long long);
                     YogSysdeps_snprintf(buf, array_sizeof(buf), "%llu", n);
                 }
-                YogString_append_cstr(env, s, buf);
+                YogString_append_string(env, s, buf);
             }
             break;
         default:

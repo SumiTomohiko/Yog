@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include "yog/array.h"
+#include "yog/binary.h"
 #include "yog/class.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
@@ -105,7 +106,8 @@ exec_child(YogEnv* env, YogHandle* self, int pipe_stdin[2], int pipe_stdout[2], 
     for (i = 0; i < size; i++) {
         YogVal a = YogArray_at(env, args, i);
         check_string(env, a);
-        argv[i] = STRING_CSTR(a);
+        YogVal bin = YogString_to_bin_in_default_encoding(env, VAL2HDL(env, a));
+        argv[i] = BINARY_CSTR(bin);
     }
     argv[size] = NULL;
 

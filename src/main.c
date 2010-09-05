@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #if defined(HAVE_WINDOWS_H)
 #   include <windows.h>
 #endif
@@ -16,6 +19,7 @@
 #endif
 #include "getopt.h"
 #include "yog/array.h"
+#include "yog/binary.h"
 #include "yog/code.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -93,21 +97,23 @@ parse_size(const char* s)
 }
 
 static void
-yog_main(YogEnv* env, int_t argc, char* argv[])
+yog_main(YogEnv* env, YogHandle* args)
 {
-    if (argc == 0) {
+    if (YogArray_size(env, HDL2VAL(args)) == 0) {
         YogRepl_do(env);
         return;
     }
 
-    const char* filename = argv[0];
-    FILE* fp = fopen(filename, "r");
+    YogHandle* filename = VAL2HDL(env, YogArray_at(env, HDL2VAL(args), 0));
+    YogVal bin = YogString_to_bin_in_default_encoding(env, filename);
+    FILE* fp = fopen(BINARY_CSTR(bin), "r");
     if (fp == NULL) {
-        const char* errmsg = strerror(errno);
-        fprintf(stderr, "can't open file \"%s\": %s\n", filename, errmsg);
+        const char* fmt = "Can't open file \"%s\": %s\n";
+        fprintf(stderr, fmt, BINARY_CSTR(bin), strerror(errno));
         return;
     }
-    YogEval_eval_file(env, fp, filename, MAIN_MODULE_NAME);
+    YogVal name = YogString_from_string(env, MAIN_MODULE_NAME);
+    YogEval_eval_file(env, fp, filename, YogHandle_REGISTER(env, name));
     fclose(fp);
 }
 
@@ -118,6 +124,103 @@ enable_gc_stress(YogVM* vm, uint_t gc_stress_level, uint_t level)
         return;
     }
     YogVM_enable_gc_stress(NULL, vm);
+}
+
+static YogHandle*
+argv2args(YogEnv* env, uint_t argc, char** argv)
+{
+    YogHandle* args = YogHandle_REGISTER(env, YogArray_new(env));
+    uint_t i;
+    for (i = 0; i < argc; i++) {
+        YogVal s = YogString_from_string(env, argv[i]);
+        YogArray_push(env, HDL2VAL(args), s);
+    }
+    return args;
+}
+
+static const char*
+find_path_end(const char* path)
+{
+    const char* pc = strchr(path, ':');
+    if (pc != NULL) {
+        return pc;
+    }
+    return path + strlen(path);
+}
+
+static YogHandle*
+absolutize(YogEnv* env, const char* path)
+{
+    if (path[0] == PATH_SEPARATOR) {
+        return VAL2HDL(env, YogString_from_string(env, path));
+    }
+    char cwd[1024]; /* TODO: enouph? */
+    getcwd(cwd, array_sizeof(cwd));
+    char abs_path[2048];
+    snprintf(abs_path, array_sizeof(abs_path), "%s%c%s", cwd, PATH_SEPARATOR, path);
+    return VAL2HDL(env, YogString_from_string(env, abs_path));
+}
+
+static BOOL
+is_executable(const char* path)
+{
+#if WINDOWS
+    uint_t attrs = GetFileAttributes(path);
+    return attrs & FILE_ATTRIBUTE_NORMAL;
+#else
+    struct stat buf;
+    if (stat(path, &buf) != 0) {
+        return FALSE;
+    }
+    if (!S_ISREG(buf.st_mode)) {
+        return FALSE;
+    }
+    uint_t mode;
+#if defined(__MINGW32__)
+    mode = S_IEXEC;
+#else
+    mode = S_IXUSR | S_IXGRP | S_IXOTH;
+#endif
+    if ((buf.st_mode & mode) == 0) {
+        return FALSE;
+    }
+    return TRUE;
+#endif
+}
+
+static YogHandle*
+find_exe(YogEnv* env, const char* exe)
+{
+    if (strchr(exe, PATH_SEPARATOR) != NULL) {
+        return absolutize(env, exe);
+    }
+    const char* path = getenv("PATH");
+    if (path == NULL) {
+        return absolutize(env, exe);
+    }
+    const char* begin = path;
+    const char* end = path + strlen(path);
+    while (begin < end) {
+        const char* pc = find_path_end(begin);
+        uint_t size = pc - begin;
+        char dir[size + 1];
+        memcpy(dir, begin, size);
+        dir[size] = '\0';
+
+        uint_t len = strlen(exe) + size + 1;
+        char path[len + 1];
+        snprintf(path, len + 1, "%s%c%s", dir, PATH_SEPARATOR, exe);
+        if (is_executable(path)) {
+            return absolutize(env, path);
+        }
+
+        begin = pc + 1;
+    }
+
+    YOG_BUG(env, "Can't find executable in %s", path);
+    /* NOTREACHED */
+
+    return NULL;
 }
 
 int_t
@@ -239,13 +342,15 @@ main(int_t argc, char* argv[])
         INIT_JMPBUF(&env, jmpbuf);
         PUSH_JMPBUF(env.thread, jmpbuf);
 
-        uint_t yog_argc = argc - optind;
-        char** yog_argv = &argv[optind];
-        YogVM_boot(&env, env.vm, argv[0], yog_argc, yog_argv);
-        YogVM_configure_search_path(&env, env.vm, argv[0]);
+        YogVM_boot(&env, env.vm);
+        YogHandle* args = argv2args(&env, argc - optind, argv + optind);
+        YogVM_register_args(&env, env.vm, args);
+        YogHandle* exe = find_exe(&env, argv[0]);
+        YogVM_register_executable(&env, env.vm, exe);
+        YogVM_configure_search_path(&env, env.vm, exe);
 
         enable_gc_stress(&vm, gc_stress_level, 1);
-        yog_main(&env, yog_argc, yog_argv);
+        yog_main(&env, args);
 
         POP_JMPBUF(&env);
         YogHandleScope_close(&env);

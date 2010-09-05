@@ -10,6 +10,7 @@
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
 #include "yog/string.h"
 #include "yog/sysdeps.h"
 #include "yog/vm.h"
@@ -101,6 +102,12 @@ void
 YogBinary_push_uint8(YogEnv* env, YogVal binary, uint8_t n)
 {
     PUSH_TYPE(uint8_t, n);
+}
+
+void
+YogBinary_push_char(YogEnv* env, YogVal binary, char c)
+{
+    PUSH_TYPE(char, c);
 }
 
 void
@@ -231,6 +238,17 @@ to_bin(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     RETURN(env, self);
 }
 
+YogVal
+YogBinary_to_s(YogEnv* env, YogVal self, YogVal encoding)
+{
+    uint_t size = BINARY_SIZE(self);
+    char buf[size + 1];
+    memcpy(buf, BINARY_CSTR(self), size);
+    buf[size] = '\0';
+    YogHandle* h = YogHandle_REGISTER(env, encoding);
+    return YogEncoding_conv_to_yog(env, h, buf, buf + size);
+}
+
 static YogVal
 YogBinary_slice(YogEnv* env, YogVal self, int_t pos, int_t len)
 {
@@ -297,20 +315,19 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     CHECK_SELF_BINARY;
 
     if (!IS_PTR(BINARY_BODY(self))) {
-        RETURN(env, YogString_from_str(env, "b\"\""));
+        RETURN(env, YogString_from_string(env, "b\"\""));
     }
     enc = YogEncoding_get_ascii(env);
-    s = YogString_of_encoding(env, enc);
-    YogString_append_cstr(env, s, "b\"");
+    s = YogString_from_string(env, "b\"");
     uint_t size = YogBinary_size(env, self);
     uint_t i;
     for (i = 0; i < size; i++) {
         char c = BINARY_CSTR(self)[i];
         char buf[5];
         YogSysdeps_snprintf(buf, array_sizeof(buf), "\\x%02x", 0xff & c);
-        YogString_append_cstr(env, s, buf);
+        YogString_append_string(env, s, buf);
     }
-    YogString_append_cstr(env, s, "\"");
+    YogString_append_string(env, s, "\"");
 
     RETURN(env, s);
 }

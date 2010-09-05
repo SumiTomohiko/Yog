@@ -20,6 +20,8 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
+#include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/sprintf.h"
 #include "yog/string.h"
@@ -438,12 +440,7 @@ StructClass_init(YogEnv* env, YogVal self, uint_t fields_num)
 static uint_t
 id2size(YogEnv* env, ID type)
 {
-    SAVE_LOCALS(env);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
-
-    s = YogVM_id2name(env, env->vm, type);
-    const char* t = STRING_CSTR(s);
+    const char* t = BINARY_CSTR(YogVM_id2bin(env, env->vm, type));
     uint_t size;
     if (strcmp(t, "uint8") == 0) {
         size = sizeof(uint8_t);
@@ -506,7 +503,7 @@ id2size(YogEnv* env, ID type)
         size = sizeof(void*);
     }
     else {
-        YogError_raise_ValueError(env, "unknown type - %S", s);
+        YogError_raise_ValueError(env, "unknown type - %I", type);
         /* NOTREACHED */
         /**
          * gcc complains "‘size’ may be used uninitialized in this function"
@@ -515,7 +512,7 @@ id2size(YogEnv* env, ID type)
         size = 0;
     }
 
-    RETURN(env, size);
+    return size;
 }
 
 static uint_t
@@ -735,10 +732,7 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
     StructClass_init(env, obj, fields_num);
     YogClass_define_property(env, obj, pkg, "size", Struct_get_size, NULL);
 
-    uint_t size = YogString_size(env, name) + 1; /* with '\0' */
-    char* s = (char*)YogSysdeps_alloca(sizeof(char) * size);
-    memcpy(s, STRING_CSTR(name), size);
-    ID id = YogVM_intern(env, env->vm, s);
+    ID id = YogVM_intern2(env, env->vm, name);
     PTR_AS(YogClass, obj)->name = id;
     YogClass_define_allocator(env, obj, Struct_alloc);
     YogClass_define_method(env, obj, pkg, "init", Struct_init);
@@ -869,103 +863,94 @@ Lib_alloc(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogFFI_load_lib(YogEnv* env, YogVal path)
+YogFFI_load_lib(YogEnv* env, YogHandle* path)
 {
-    SAVE_ARG(env, path);
-    YogVal lib = YUNDEF;
-    PUSH_LOCAL(env, lib);
-
-    LIB_HANDLE handle = YogSysdeps_open_lib(STRING_CSTR(path));
+    LIB_HANDLE handle = YogMisc_load_lib(env, path);
     if (handle == NULL) {
-        YogError_raise_ImportError(env, "no library named \"%S\"", path);
+        YogError_raise_ImportError(env, "No library named \"%S\"", path);
     }
-    lib = Lib_alloc(env, env->vm->cLib);
+    YogVal lib = Lib_alloc(env, env->vm->cLib);
     PTR_AS(Lib, lib)->handle = handle;
 
-    RETURN(env, lib);
+    return lib;
 }
 
 static ffi_type*
 map_id_type(YogEnv* env, ID type)
 {
-    SAVE_LOCALS(env);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
-
-    s = YogVM_id2name(env, env->vm, type);
-    const char* t = STRING_CSTR(s);
+    const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, type));
     ffi_type* cif_type;
-    if (strcmp(t, "void") == 0) {
+    if (strcmp(s, "void") == 0) {
         cif_type = &ffi_type_void;
     }
-    else if (strcmp(t, "uint8") == 0) {
+    else if (strcmp(s, "uint8") == 0) {
         cif_type = &ffi_type_uint8;
     }
-    else if (strcmp(t, "int8") == 0) {
+    else if (strcmp(s, "int8") == 0) {
         cif_type = &ffi_type_sint8;
     }
-    else if (strcmp(t, "uint16") == 0) {
+    else if (strcmp(s, "uint16") == 0) {
         cif_type = &ffi_type_uint16;
     }
-    else if (strcmp(t, "int16") == 0) {
+    else if (strcmp(s, "int16") == 0) {
         cif_type = &ffi_type_sint16;
     }
-    else if (strcmp(t, "uint32") == 0) {
+    else if (strcmp(s, "uint32") == 0) {
         cif_type = &ffi_type_uint32;
     }
-    else if (strcmp(t, "int32") == 0) {
+    else if (strcmp(s, "int32") == 0) {
         cif_type = &ffi_type_sint32;
     }
-    else if (strcmp(t, "uint64") == 0) {
+    else if (strcmp(s, "uint64") == 0) {
         cif_type = &ffi_type_uint64;
     }
-    else if (strcmp(t, "int64") == 0) {
+    else if (strcmp(s, "int64") == 0) {
         cif_type = &ffi_type_sint64;
     }
-    else if (strcmp(t, "float") == 0) {
+    else if (strcmp(s, "float") == 0) {
         cif_type = &ffi_type_float;
     }
-    else if (strcmp(t, "double") == 0) {
+    else if (strcmp(s, "double") == 0) {
         cif_type = &ffi_type_double;
     }
-    else if (strcmp(t, "uchar") == 0) {
+    else if (strcmp(s, "uchar") == 0) {
         cif_type = &ffi_type_uchar;
     }
-    else if (strcmp(t, "char") == 0) {
+    else if (strcmp(s, "char") == 0) {
         cif_type = &ffi_type_schar;
     }
-    else if (strcmp(t, "ushort") == 0) {
+    else if (strcmp(s, "ushort") == 0) {
         cif_type = &ffi_type_ushort;
     }
-    else if (strcmp(t, "short") == 0) {
+    else if (strcmp(s, "short") == 0) {
         cif_type = &ffi_type_sshort;
     }
-    else if (strcmp(t, "uint") == 0) {
+    else if (strcmp(s, "uint") == 0) {
         cif_type = &ffi_type_uint;
     }
-    else if (strcmp(t, "int") == 0) {
+    else if (strcmp(s, "int") == 0) {
         cif_type = &ffi_type_sint;
     }
-    else if (strcmp(t, "ulong") == 0) {
+    else if (strcmp(s, "ulong") == 0) {
         cif_type = &ffi_type_ulong;
     }
-    else if (strcmp(t, "long") == 0) {
+    else if (strcmp(s, "long") == 0) {
         cif_type = &ffi_type_slong;
     }
-    else if (strcmp(t, "longdouble") == 0) {
+    else if (strcmp(s, "longdouble") == 0) {
         cif_type = &ffi_type_longdouble;
     }
-    else if (strcmp(t, "pointer") == 0) {
+    else if (strcmp(s, "pointer") == 0) {
         cif_type = &ffi_type_pointer;
     }
-    else if (strcmp(t, "int_p") == 0) {
+    else if (strcmp(s, "int_p") == 0) {
         cif_type = &ffi_type_pointer;
     }
-    else if (strcmp(t, "pointer_p") == 0) {
+    else if (strcmp(s, "pointer_p") == 0) {
         cif_type = &ffi_type_pointer;
     }
     else {
-        YogError_raise_ValueError(env, "Unknown type - %S", s);
+        YogError_raise_ValueError(env, "Unknown type - %s", s);
         /* NOTREACHED */
         /**
          * gcc complains "‘cif_type’ may be used uninitialized in this function"
@@ -974,7 +959,7 @@ map_id_type(YogEnv* env, ID type)
         cif_type = NULL;
     }
 
-    RETURN(env, cif_type);
+    return cif_type;
 }
 
 static ffi_type*
@@ -1054,7 +1039,8 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         const char* s = map_ffi_error(env, status);
         YogError_raise_FFIError(env, "%s", s);
     }
-    void* p = YogSysdeps_get_proc(PTR_AS(Lib, self)->handle, STRING_CSTR(name));
+    YogVal s = YogString_to_bin_in_default_encoding(env, VAL2HDL(env, name));
+    void* p = YogSysdeps_get_proc(PTR_AS(Lib, self)->handle, BINARY_CSTR(s));
     if (p == NULL) {
         YogError_raise_FFIError(env, "Can't find address of %S", name);
     }
@@ -1434,7 +1420,7 @@ write_argument_object(YogEnv* env, void** ptr, void* refered, YogVal arg_type, Y
     SAVE_ARGS2(env, arg_type, val);
     YogVM* vm = env->vm;
     if (arg_type == vm->cString) {
-        memcpy(refered, STRING_CSTR(val), YogString_size(env, val) + 1);
+        memcpy(refered, STRING_CHARS(val), STRING_SIZE(val));
         *ptr = refered;
         RETURN_VOID(env);
     }
@@ -1476,81 +1462,77 @@ Int_write(YogEnv* env, YogVal self, int* p)
 static void
 write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal val)
 {
-    SAVE_ARGS2(env, arg_type, val);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
-
     if (!IS_SYMBOL(arg_type)) {
         write_argument_object(env, (void**)pvalue, refered, arg_type, val);
-        RETURN_VOID(env);
+        return;
     }
 
-    s = YogVM_id2name(env, env->vm, VAL2ID(arg_type));
-    if (strcmp(STRING_CSTR(s), "uint8") == 0) {
+    const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, VAL2ID(arg_type)));
+    if (strcmp(s, "uint8") == 0) {
         write_argument_uint8(env, (uint8_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "int8") == 0) {
+    else if (strcmp(s, "int8") == 0) {
         write_argument_int8(env, (int8_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "uint16") == 0) {
+    else if (strcmp(s, "uint16") == 0) {
         write_argument_uint16(env, (uint16_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "int16") == 0) {
+    else if (strcmp(s, "int16") == 0) {
         write_argument_int16(env, (int16_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "uint32") == 0) {
+    else if (strcmp(s, "uint32") == 0) {
         write_argument_uint32(env, (uint32_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "int32") == 0) {
+    else if (strcmp(s, "int32") == 0) {
         write_argument_int32(env, (int32_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "uint64") == 0) {
+    else if (strcmp(s, "uint64") == 0) {
         write_argument_uint64(env, (uint64_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "int64") == 0) {
+    else if (strcmp(s, "int64") == 0) {
         write_argument_int64(env, (int64_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "float") == 0) {
+    else if (strcmp(s, "float") == 0) {
         write_argument_float(env, (float*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "double") == 0) {
+    else if (strcmp(s, "double") == 0) {
         write_argument_double(env, (double*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "uchar") == 0) {
+    else if (strcmp(s, "uchar") == 0) {
         write_argument_uint8(env, (uint8_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "char") == 0) {
+    else if (strcmp(s, "char") == 0) {
         write_argument_int8(env, (int8_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "ushort") == 0) {
+    else if (strcmp(s, "ushort") == 0) {
         write_argument_uint16(env, (uint16_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "short") == 0) {
+    else if (strcmp(s, "short") == 0) {
         write_argument_int16(env, (int16_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "uint") == 0) {
+    else if (strcmp(s, "uint") == 0) {
         write_argument_uint32(env, (uint32_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "int") == 0) {
+    else if (strcmp(s, "int") == 0) {
         write_argument_int32(env, (int32_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "ulong") == 0) {
+    else if (strcmp(s, "ulong") == 0) {
         write_argument_uint32(env, (uint32_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "long") == 0) {
+    else if (strcmp(s, "long") == 0) {
         write_argument_int32(env, (int32_t*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "longdouble") == 0) {
+    else if (strcmp(s, "longdouble") == 0) {
         write_argument_long_double(env, (long double*)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "pointer") == 0) {
+    else if (strcmp(s, "pointer") == 0) {
         write_argument_pointer(env, (void**)pvalue, val);
     }
-    else if (strcmp(STRING_CSTR(s), "int_p") == 0) {
+    else if (strcmp(s, "int_p") == 0) {
         Int_write(env, val, (int*)refered);
         *((void**)pvalue) = refered;
     }
-    else if (strcmp(STRING_CSTR(s), "pointer_p") == 0) {
+    else if (strcmp(s, "pointer_p") == 0) {
         Pointer_write(env, val, (void**)refered);
         *((void**)pvalue) = refered;
     }
@@ -1558,18 +1540,15 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal
         YogError_raise_ValueError(env, "Unknown argument type");
         /* NOTREACHED */
     }
-
-    RETURN_VOID(env);
 }
 
 static uint_t
 type2refered_size_of_string(YogEnv* env, YogVal arg)
 {
-    SAVE_ARG(env, arg);
     if (!IS_PTR(arg) || (BASIC_OBJ_TYPE(arg) != TYPE_STRING)) {
         YogError_raise_TypeError(env, "Argument must be String, not %C", arg);
     }
-    RETURN(env, YogString_size(env, arg) + 1);
+    return sizeof(YogChar) * STRING_SIZE(arg);
 }
 
 static uint_t
@@ -1581,11 +1560,11 @@ type2refered_size(YogEnv* env, YogVal type, YogVal arg)
     if (!IS_SYMBOL(type)) {
         return 0;
     }
-    YogVal s = YogVM_id2name(env, env->vm, VAL2ID(type));
-    if (strcmp(STRING_CSTR(s), "int_p") == 0) {
+    const char* s = BINARY_CSTR(YogVM_id2name(env, env->vm, VAL2ID(type)));
+    if (strcmp(s, "int_p") == 0) {
         return sizeof(int);
     }
-    if (strcmp(STRING_CSTR(s), "pointer_p") == 0) {
+    if (strcmp(s, "pointer_p") == 0) {
         return sizeof(void*);
     }
 
@@ -1622,17 +1601,15 @@ read_argument(YogEnv* env, YogVal obj, YogVal arg_type, void* p)
     }
 
     SAVE_ARGS2(env, obj, arg_type);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
     if (!IS_SYMBOL(arg_type)) {
         RETURN_VOID(env);
     }
-    s = YogVM_id2name(env, env->vm, VAL2ID(arg_type));
-    if (strcmp(STRING_CSTR(s), "int_p") == 0) {
+    YogVal s = YogVM_id2bin(env, env->vm, VAL2ID(arg_type));
+    if (strcmp(BINARY_CSTR(s), "int_p") == 0) {
         read_argument_int(env, obj, *((int*)p));
         RETURN_VOID(env);
     }
-    if (strcmp(STRING_CSTR(s), "pointer_p") == 0) {
+    if (strcmp(BINARY_CSTR(s), "pointer_p") == 0) {
         read_argument_pointer(env, obj, *((void**)p));
         RETURN_VOID(env);
     }
@@ -1790,86 +1767,86 @@ Struct_get_String(YogEnv* env, YogVal self, YogVal field)
 
     void* ptr = PTR_AS(Struct, self)->data + PTR_AS(FieldBase, field)->offset;
     char* pc = *((char**)ptr);
-    RETURN(env, pc == NULL ? YNIL : YogString_from_str(env, pc));
+    RETURN(env, pc == NULL ? YNIL : YogString_from_string(env, pc));
 }
 
 static YogVal
 Struct_read(YogEnv* env, YogVal self, uint_t offset, ID type)
 {
-    SAVE_ARG(env, self);
-    YogVal val = YUNDEF;
-    YogVal s = YUNDEF;
-    PUSH_LOCALS2(env, val, s);
-
     void* ptr = PTR_AS(Struct, self)->data + offset;
-    s = YogVM_id2name(env, env->vm, type);
-    const char* t = STRING_CSTR(s);
-    if (strcmp(t, "uint8") == 0) {
+    YogVal val;
+    const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, type));
+    if (strcmp(s, "uint8") == 0) {
         val = INT2VAL(*((uint8_t*)ptr));
     }
-    else if (strcmp(t, "int8") == 0) {
+    else if (strcmp(s, "int8") == 0) {
         val = INT2VAL(*((int8_t*)ptr));
     }
-    else if (strcmp(t, "uint16") == 0) {
+    else if (strcmp(s, "uint16") == 0) {
         val = INT2VAL(*((uint16_t*)ptr));
     }
-    else if (strcmp(t, "int16") == 0) {
+    else if (strcmp(s, "int16") == 0) {
         val = INT2VAL(*((int16_t*)ptr));
     }
-    else if (strcmp(t, "uint32") == 0) {
+    else if (strcmp(s, "uint32") == 0) {
         val = YogVal_from_unsigned_int(env, *((uint32_t*)ptr));
     }
-    else if (strcmp(t, "int32") == 0) {
+    else if (strcmp(s, "int32") == 0) {
         val = YogVal_from_int(env, *((int32_t*)ptr));
     }
-    else if (strcmp(t, "uint64") == 0) {
+    else if (strcmp(s, "uint64") == 0) {
         val = YogVal_from_unsigned_long_long(env, *((uint64_t*)ptr));
     }
-    else if (strcmp(t, "int64") == 0) {
+    else if (strcmp(s, "int64") == 0) {
         val = YogVal_from_long_long(env, *((int64_t*)ptr));
     }
-    else if (strcmp(t, "float") == 0) {
+    else if (strcmp(s, "float") == 0) {
         val = YogFloat_from_float(env, *((float*)ptr));
     }
-    else if (strcmp(t, "double") == 0) {
+    else if (strcmp(s, "double") == 0) {
         val = YogFloat_from_float(env, *((double*)ptr));
     }
-    else if (strcmp(t, "uchar") == 0) {
+    else if (strcmp(s, "uchar") == 0) {
         val = INT2VAL(*((uint8_t*)ptr));
     }
-    else if (strcmp(t, "char") == 0) {
+    else if (strcmp(s, "char") == 0) {
         val = INT2VAL(*((int8_t*)ptr));
     }
-    else if (strcmp(t, "ushort") == 0) {
+    else if (strcmp(s, "ushort") == 0) {
         val = INT2VAL(*((uint16_t*)ptr));
     }
-    else if (strcmp(t, "short") == 0) {
+    else if (strcmp(s, "short") == 0) {
         val = INT2VAL(*((int16_t*)ptr));
     }
-    else if (strcmp(t, "uint") == 0) {
+    else if (strcmp(s, "uint") == 0) {
         val = YogVal_from_unsigned_int(env, *((uint32_t*)ptr));
     }
-    else if (strcmp(t, "int") == 0) {
+    else if (strcmp(s, "int") == 0) {
         val = YogVal_from_int(env, *((int32_t*)ptr));
     }
-    else if (strcmp(t, "ulong") == 0) {
+    else if (strcmp(s, "ulong") == 0) {
         val = YogVal_from_unsigned_int(env, *((uint32_t*)ptr));
     }
-    else if (strcmp(t, "long") == 0) {
+    else if (strcmp(s, "long") == 0) {
         val = YogVal_from_int(env, *((int32_t*)ptr));
     }
-    else if (strcmp(t, "longdouble") == 0) {
+    else if (strcmp(s, "longdouble") == 0) {
         val = YogFloat_from_float(env, *((long double*)ptr));
     }
-    else if (strcmp(t, "pointer") == 0) {
+    else if (strcmp(s, "pointer") == 0) {
         val = Pointer_new(env, *((void**)ptr));
     }
     else {
-        YogError_raise_ValueError(env, "unknown type - %S", s);
+        YogError_raise_ValueError(env, "unknown type - %s", s);
         /* NOTREACHED */
+        /**
+         * gcc complains "‘val’ may be used uninitialized in this function"
+         * without the following line.
+         */
+        val = YUNDEF;
     }
 
-    RETURN(env, val);
+    return val;
 }
 
 static YogVal
@@ -2179,16 +2156,13 @@ static void
 Struct_write(YogEnv* env, YogVal self, uint_t offset, ID type, YogVal val)
 {
     SAVE_ARGS2(env, self, val);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
 #define WRITE_FLOAT(type) do { \
     if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_FLOAT)) { \
         YogError_raise_TypeError(env, "Value must be Float, not %C", val); \
     } \
     STRUCT_WRITE_DATA(type, self, offset, FLOAT_NUM(val)); \
 } while (0)
-    s = YogVM_id2name(env, env->vm, type);
-    const char* t = STRING_CSTR(s);
+    const char* t = BINARY_CSTR(YogVM_id2bin(env, env->vm, type));
     if (strcmp(t, "uint8") == 0) {
         Struct_write_uint8(env, self, offset, val);
     }
@@ -2250,7 +2224,7 @@ Struct_write(YogEnv* env, YogVal self, uint_t offset, ID type, YogVal val)
         Struct_write_uint32(env, self, offset, val);
     }
     else {
-        YogError_raise_ValueError(env, "unknown type - %S", s);
+        YogError_raise_ValueError(env, "unknown type - %I", type);
         /* NOTREACHED */
     }
 #undef WRITE_FLOAT
@@ -2306,9 +2280,9 @@ Buffer_alloc_string(YogEnv* env, YogVal self, YogVal s)
 {
     SAVE_ARGS2(env, self, s);
 
-    uint_t size = YogString_size(env, s);
+    uint_t size = sizeof(YogChar) * STRING_SIZE(s);
     void* ptr = YogGC_malloc(env, size);
-    memcpy(ptr, STRING_CSTR(s), size);
+    memcpy(ptr, STRING_CHARS(s), size);
     PTR_AS(Buffer, self)->size = size;
     PTR_AS(Buffer, self)->ptr = ptr;
     RETURN_VOID(env);
@@ -2367,7 +2341,7 @@ Buffer_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     }
 
     if (VAL2INT(size) == 0) {
-        RETURN(env, YogString_of_encoding(env, enc));
+        RETURN(env, YogString_new(env));
     }
     char* pc = PTR_AS(Buffer, self)->ptr;
     s = YogString_from_range(env, enc, pc, pc + VAL2INT(size) - 1);

@@ -264,6 +264,7 @@ struct YogLexer {
     uint_t lineno;
     YogVal heredoc_queue;
     uint_t paren_depth;
+    YogVal encoding;
 };
 
 #define LEXER_LINE(lexer)       PTR_AS(YogLexer, (lexer))->line
@@ -278,13 +279,13 @@ typedef struct YogLexer YogLexer;
  */
 /* src/lexer.c */
 YOG_EXPORT YogVal YogLexer_new(YogEnv*);
-YOG_EXPORT BOOL YogLexer_next_token(YogEnv*, YogVal, const char*, YogVal*);
+YOG_EXPORT BOOL YogLexer_next_token(YogEnv*, YogVal, YogHandle*, YogVal*);
 YOG_EXPORT void YogLexer_read_encoding(YogEnv*, YogVal);
 YOG_EXPORT void YogLexer_set_encoding(YogEnv*, YogVal, YogVal);
 
 /* src/parser.y */
 YOG_EXPORT YogVal YogParser_parse(YogEnv*, YogVal);
-YOG_EXPORT YogVal YogParser_parse_file(YogEnv*, FILE*, const char*, BOOL);
+YOG_EXPORT YogVal YogParser_parse_file(YogEnv*, FILE*, YogHandle*, BOOL);
 
 /* PROTOTYPE_END */
 

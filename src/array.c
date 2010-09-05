@@ -1,3 +1,4 @@
+#include "yog/config.h"
 #include <string.h>
 #include "yog/array.h"
 #include "yog/callable.h"
@@ -7,6 +8,7 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/string.h"
@@ -530,7 +532,7 @@ YogArray_eval_builtin_script(YogEnv* env, YogVal klass)
     const char* src =
 #   include "array.inc"
     ;
-    YogMisc_eval_source(env, klass, src);
+    YogMisc_eval_source(env, VAL2HDL(env, klass), src);
 #endif
 }
 

@@ -194,10 +194,12 @@ static void
 raise_error(YogEnv* env, YogVal filename, uint_t lineno, const char* fmt, ...)
 {
     SAVE_ARG(env, filename);
+    YogHandle* h = YogHandle_REGISTER(env, filename);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, h);
 
 #define BUFFER_SIZE     4096
     char head[BUFFER_SIZE];
-    YogSysdeps_snprintf(head, array_sizeof(head), "file \"%s\", line %u: ", PTR_AS(YogCharArray, filename)->items, lineno);
+    YogSysdeps_snprintf(head, array_sizeof(head), "file \"%s\", line %u: ", BINARY_CSTR(bin), lineno);
 
     char s[BUFFER_SIZE];
     va_list ap;
@@ -1251,7 +1253,7 @@ VarTable_new(YogEnv* env, Context ctx, YogVal outer)
 
     inner_tbls = YogArray_new(env);
     YogGC_UPDATE_PTR(env, VAR_TABLE(tbl), inner_tbls, inner_tbls);
-    vars = YogTable_new_symbol_table(env);
+    vars = YogTable_create_symbol_table(env);
     YogGC_UPDATE_PTR(env, VAR_TABLE(tbl), vars, vars);
 
     RETURN(env, tbl);
@@ -1744,8 +1746,8 @@ append_store(YogEnv* env, YogVal data, uint_t lineno, ID name)
     case CTX_FUNC:
         var = lookup_var(env, CompileData_get_var_table(env, data), name);
         if (!IS_PTR(var)) {
-            s = YogVM_id2name(env, env->vm, name);
-            YOG_BUG(env, "variable not found (%s)", STRING_CSTR(s));
+            YogVal bin = YogVM_id2bin(env, env->vm, name);
+            YOG_BUG(env, "variable not found (%s)", BINARY_CSTR(bin));
         }
         switch (VAR(var)->type) {
         case VAR_GLOBAL:
@@ -1877,7 +1879,7 @@ register_const(YogEnv* env, YogVal data, YogVal const_)
     const2index = COMPILE_DATA(data)->const2index;
 
     if (!IS_PTR(const2index)) {
-        const2index = YogTable_new_val_table(env);
+        const2index = YogTable_create_value_table(env);
         YogGC_UPDATE_PTR(env, COMPILE_DATA(data), const2index, const2index);
     }
 
@@ -3602,16 +3604,16 @@ join_package_names(YogEnv* env, YogVal pkg_names)
     char* pc = pkg - 1;
     for (i = 0; i < size; i++) {
         name = YogArray_at(env, pkg_names, i);
-        s = YogVM_id2name(env, env->vm, VAL2ID(name));
+        s = YogVM_id2bin(env, env->vm, VAL2ID(name));
         pc++;
-        uint_t size = YogString_size(env, s);
-        memcpy(pc, STRING_CSTR(s), size);
+        uint_t size = BINARY_SIZE(s) - 1;
+        memcpy(pc, BINARY_CSTR(s), size);
         pc += size;
         *pc = '.';
     }
     *pc = '\0';
 
-    RETURN(env, YogString_from_str(env, pkg));
+    RETURN(env, YogString_from_string(env, pkg));
 }
 
 static void
@@ -3841,18 +3843,13 @@ compile_init_visitor(AstVisitor* visitor)
 }
 
 static YogVal
-compile_package(YogEnv* env, const char* filename, YogVal stmts, BOOL interactive)
+compile_package(YogEnv* env, YogHandle* filename, YogVal stmts, BOOL interactive)
 {
     SAVE_ARG(env, stmts);
     YogVal var_tbl = YUNDEF;
-    YogVal name = YUNDEF;
-    PUSH_LOCALS2(env, var_tbl, name);
+    PUSH_LOCAL(env, var_tbl);
 
-    if (filename == NULL) {
-        filename = "<stdin>";
-    }
-    name = YogCharArray_new_str(env, filename);
-    var_tbl = make_var_table_of_func(env, name, CTX_PKG, YNIL, stmts, YNIL);
+    var_tbl = make_var_table_of_func(env, HDL2VAL(filename), CTX_PKG, YNIL, stmts, YNIL);
     decide_var_type(env, var_tbl);
 
     AstVisitor visitor;
@@ -3861,13 +3858,13 @@ compile_package(YogEnv* env, const char* filename, YogVal stmts, BOOL interactiv
     ID class_name = INVALID_ID;
     ID func_name = YogVM_intern(env, env->vm, "<package>");
 
-    YogVal code = compile_stmts(env, &visitor, name, class_name, func_name, YUNDEF, stmts, var_tbl, YNIL, interactive);
+    YogVal code = compile_stmts(env, &visitor, HDL2VAL(filename), class_name, func_name, YUNDEF, stmts, var_tbl, YNIL, interactive);
 
     RETURN(env, code);
 }
 
 YogVal
-YogCompiler_compile_package(YogEnv* env, const char* filename, YogVal stmts)
+YogCompiler_compile_package(YogEnv* env, YogHandle* filename, YogVal stmts)
 {
     return compile_package(env, filename, stmts, FALSE);
 }
@@ -3875,7 +3872,9 @@ YogCompiler_compile_package(YogEnv* env, const char* filename, YogVal stmts)
 YogVal
 YogCompiler_compile_interactive(YogEnv* env, YogVal stmts)
 {
-    return compile_package(env, MAIN_MODULE_NAME, stmts, TRUE);
+    YogHandle* h = VAL2HDL(env, stmts);
+    YogVal filename = YogString_from_string(env, MAIN_MODULE_NAME);
+    return compile_package(env, VAL2HDL(env, filename), HDL2VAL(h), TRUE);
 }
 
 YogVal

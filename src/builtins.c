@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "yog/array.h"
+#include "yog/binary.h"
 #include "yog/class.h"
 #include "yog/classmethod.h"
 #include "yog/compile.h"
@@ -30,12 +31,6 @@
 #include "yog/thread.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
-
-#if WINDOWS
-#   define SEP '\\'
-#else
-#   define SEP '/'
-#endif
 
 static YogVal
 raise_exception(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
@@ -60,74 +55,51 @@ raise_exception(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
 static YogVal
 repr_as_str(YogEnv* env, YogVal obj)
 {
-    SAVE_ARG(env, obj);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
     if (IS_PTR(obj) && (BASIC_OBJ_TYPE(obj) == TYPE_STRING)) {
-        RETURN(env, obj);
+        return obj;
     }
 
-#define METHOD_NAME     "to_s"
-    s = YogEval_call_method0(env, obj, METHOD_NAME);
-    YOG_ASSERT(env, !IS_UNDEF(s), "to_s returned undef");
+#define METHOD_NAME "to_s"
+    YogVal s = YogEval_call_method0(env, obj, METHOD_NAME);
+    YOG_ASSERT(env, !IS_UNDEF(s), "%s returned undef", METHOD_NAME);
     if (IS_PTR(s) && (BASIC_OBJ_TYPE(s) == TYPE_STRING)) {
-        RETURN(env, s);
+        return s;
     }
-    YogError_raise_TypeError(env, "%C#%s() returned non-string (%C)", obj, METHOD_NAME, s);
+    const char* fmt = "%C#%s() returned non-string (%C)";
+    YogError_raise_TypeError(env, fmt, obj, METHOD_NAME, s);
 #undef METHOD_NAME
-
     /* NOTREACHED */
-    RETURN(env, YUNDEF);
+
+    return YUNDEF;
 }
 
 static void
 print_object(YogEnv* env, YogVal obj)
 {
-    SAVE_ARG(env, obj);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
-
-    s = repr_as_str(env, obj);
-    printf("%s", STRING_CSTR(s));
-
-    RETURN_VOID(env);
+    YogHandle* s = YogHandle_REGISTER(env, repr_as_str(env, obj));
+    printf("%s", BINARY_CSTR(YogString_to_bin_in_default_encoding(env, s)));
 }
 
 static YogVal
-mkdir_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+mkdir_(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* path)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal path = YUNDEF;
-    PUSH_LOCAL(env, path);
-    YogCArg params[] = { { "path", &path }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "mkdir", params, args, kw);
-    if (!IS_PTR(path) || (BASIC_OBJ_TYPE(path) != TYPE_STRING)) {
+    YogVal obj = HDL2VAL(path);
+    if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_STRING)) {
         YogError_raise_TypeError(env, "path must be String");
     }
 
-    if (YogSysdeps_mkdir(STRING_CSTR(path)) != 0) {
-        YogError_raise_sys_err(env, errno, path);
+    YogVal s = YogString_to_bin_in_default_encoding(env, path);
+    if (YogSysdeps_mkdir(BINARY_CSTR(s)) != 0) {
+        YogError_raise_sys_err(env, errno, HDL2VAL(path));
     }
 
-    RETURN(env, YNIL);
+    return YNIL;
 }
 
 static YogVal
-load_lib(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+load_lib(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* path)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal path = YUNDEF;
-    YogVal lib = YUNDEF;
-    PUSH_LOCALS2(env, path, lib);
-    YogCArg params[] = { { "path", &path }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "load_lib", params, args, kw);
-    if (!IS_PTR(path) || (BASIC_OBJ_TYPE(path) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "path must be String, not %C", path);
-    }
-
-    lib = YogFFI_load_lib(env, path);
-
-    RETURN(env, lib);
+    return YogFFI_load_lib(env, path);
 }
 
 static YogVal
@@ -149,7 +121,7 @@ join_path(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     CHECK_TYPE("tail", tail);
 #undef CHECK_TYPE
 
-    path = YogString_of_encoding(env, STRING_ENCODING(head));
+    path = YogString_new(env);
     YogString_append(env, path, head);
     YogString_append(env, path, env->vm->path_separator);
     YogString_append(env, path, tail);
@@ -158,24 +130,14 @@ join_path(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
 }
 
 static YogVal
-print(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+print(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* args)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal obj = YUNDEF;
-    YogVal objs = YUNDEF;
-    PUSH_LOCALS2(env, obj, objs);
-
-    YogCArg params[] = { { "*", &objs }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "print", params, args, kw);
-
-    uint_t size = YogArray_size(env, objs);
+    uint_t size = YogArray_size(env, HDL2VAL(args));
     uint_t i;
     for (i = 0; i < size; i++) {
-        obj = YogArray_at(env, objs, i);
-        print_object(env, obj);
+        print_object(env, YogArray_at(env, HDL2VAL(args), i));
     }
-
-    RETURN(env, YNIL);
+    return YNIL;
 }
 
 static YogVal
@@ -206,21 +168,14 @@ puts_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 }
 
 static YogVal
-import_package(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+import_package(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* name)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal p = YUNDEF;
-    YogVal name = YUNDEF;
-    PUSH_LOCALS2(env, p, name);
-    YogCArg params[] = { { "name", &name }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "import_package", params, args, kw);
-    if (!IS_PTR(name) || (BASIC_OBJ_TYPE(name) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "package name must be String");
+    if (!IS_PTR(HDL2VAL(name)) || (BASIC_OBJ_TYPE(HDL2VAL(name)) != TYPE_STRING)) {
+        const char* fmt = "package name must be String, not %C";
+        YogError_raise_TypeError(env, fmt, name);
+        /* NOTREACHED */
     }
-
-    p = YogVM_import_package(env, env->vm, name);
-
-    RETURN(env, p);
+    return HDL2VAL(YogVM_import_package(env, env->vm, name));
 }
 
 static YogVal
@@ -287,27 +242,6 @@ classmethod(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
 }
 
 static YogVal
-argv2args(YogEnv* env, uint_t argc, char** argv)
-{
-    SAVE_LOCALS(env);
-    YogVal args = YUNDEF;
-    YogVal s = YUNDEF;
-    YogVal enc = YUNDEF;
-    PUSH_LOCALS3(env, args, s, enc);
-
-    enc = YogEncoding_get_default(env);
-    args = YogArray_new(env);
-    uint_t i;
-    for (i = 0; i < argc; i++) {
-        s = YogString_from_str(env, argv[i]);
-        STRING_ENCODING(s) = enc;
-        YogArray_push(env, args, s);
-    }
-
-    RETURN(env, args);
-}
-
-static YogVal
 include_module(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
@@ -339,133 +273,49 @@ get_current_thread(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw,
     RETURN(env, thread);
 }
 
-static const char*
-find_path_end(const char* path)
-{
-    const char* pc = strchr(path, ':');
-    if (pc != NULL) {
-        return pc;
-    }
-    return path + strlen(path);
-}
-
-static BOOL
-is_executable(const char* path)
-{
-    struct stat buf;
-    if (stat(path, &buf) != 0) {
-        return FALSE;
-    }
-    if (!S_ISREG(buf.st_mode)) {
-        return FALSE;
-    }
-    if ((buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) == 0) {
-        return FALSE;
-    }
-    return TRUE;
-}
-
-static YogVal
-find_exe(YogEnv* env, const char* exe)
-{
-    if (strchr(exe, SEP) != NULL) {
-        return YogString_from_str(env, exe);
-    }
-    const char* path = getenv("PATH");
-    if (path == NULL) {
-        return YogString_from_str(env, exe);
-    }
-    const char* begin = path;
-    const char* end = path + strlen(path);
-    while (begin < end) {
-        const char* pc = find_path_end(begin);
-        uint_t size = pc - begin;
-        char dir[size + 1];
-        memcpy(dir, begin, size);
-        dir[size] = '\0';
-
-        uint_t len = strlen(exe) + size + 1;
-        char path[len + 1];
-        snprintf(path, len + 1, "%s%c%s", dir, SEP, exe);
-        if (is_executable(path)) {
-            return YogString_from_str(env, path);
-        }
-
-        begin = pc + 1;
-    }
-
-    return YNIL;
-}
-
-static YogVal
-absolutize(YogEnv* env, YogVal path)
-{
-    if (!IS_PTR(path) || (STRING_CSTR(path)[0] == SEP)) {
-        return path;
-    }
-    char cwd[1024]; /* TODO: enouph? */
-    getcwd(cwd, array_sizeof(cwd));
-    char abs_path[2048];
-    snprintf(abs_path, array_sizeof(abs_path), "%s%c%s", cwd, SEP, STRING_CSTR(path));
-    return YogString_from_str(env, abs_path);
-}
-
 static void
-set_executable(YogEnv* env, YogHandle* builtins, const char* exe)
+set_path_separator(YogEnv* env, YogHandle* builtins)
 {
-    YogVal path = find_exe(env, exe);
-    YogVal s = absolutize(env, path);
-    YogObj_set_attr(env, HDL2VAL(builtins), "EXECUTABLE", s);
-}
-
-static void
-set_path_separator(YogEnv* env, YogVal builtins)
-{
-    SAVE_ARG(env, builtins);
-    YogVal s = YUNDEF;
-    YogVal enc = YUNDEF;
-    PUSH_LOCALS2(env, s, enc);
-
-    s = YogSprintf_sprintf(env, "%c", SEP);
-    enc = YogEncoding_get_default(env);
-    STRING_ENCODING(s) = enc;
-
-    YogObj_set_attr(env, builtins, "PATH_SEPARATOR", s);
-    env->vm->path_separator = s;
-
-    RETURN_VOID(env);
+    YogVal sep = YogSprintf_sprintf(env, "%c", PATH_SEPARATOR);
+    YogHandle* s = VAL2HDL(env, sep);
+    YogObj_set_attr(env, HDL2VAL(builtins), "PATH_SEPARATOR", HDL2VAL(s));
+    env->vm->path_separator = HDL2VAL(s);
 }
 
 void
-YogBuiltins_boot(YogEnv* env, YogVal builtins, const char* exe, uint_t argc, char** argv)
+YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
 {
-    SAVE_ARG(env, builtins);
-    YogVal args = YUNDEF;
+    SAVE_LOCALS(env);
     YogVal errno_ = YUNDEF;
     YogVal e = YUNDEF;
-    PUSH_LOCALS3(env, args, errno_, e);
+    PUSH_LOCALS2(env, errno_, e);
 
 #define DEFINE_FUNCTION(name, f)    do { \
-    YogPackage_define_function(env, builtins, name, f); \
+    YogPackage_define_function(env, HDL2VAL(builtins), name, f); \
 } while (0)
     DEFINE_FUNCTION("classmethod", classmethod);
     DEFINE_FUNCTION("disable_gc_stress", disable_gc_stress);
     DEFINE_FUNCTION("enable_gc_stress", enable_gc_stress);
     DEFINE_FUNCTION("get_current_thread", get_current_thread);
-    DEFINE_FUNCTION("import_package", import_package);
     DEFINE_FUNCTION("include_module", include_module);
     DEFINE_FUNCTION("join_path", join_path);
-    DEFINE_FUNCTION("load_lib", load_lib);
-    DEFINE_FUNCTION("mkdir", mkdir_);
-    DEFINE_FUNCTION("print", print);
     DEFINE_FUNCTION("property", property);
     DEFINE_FUNCTION("puts", puts_);
     DEFINE_FUNCTION("raise_exception", raise_exception);
 #undef DEFINE_FUNCTION
+#define DEFINE_FUNCTION2(name, f, ...) do { \
+    YogPackage_define_function2(env, builtins, (name), (f), __VA_ARGS__); \
+} while (0)
+    DEFINE_FUNCTION2("import_package", import_package, "name", NULL);
+    DEFINE_FUNCTION2("load_lib", load_lib, "path", NULL);
+    DEFINE_FUNCTION2("mkdir", mkdir_, "path", NULL);
+    DEFINE_FUNCTION2("print", print, "*", NULL);
+#undef DEFINE_FUNCTION2
 
 #define REGISTER_CLASS(c)   do { \
     YogVal klass = env->vm->c; \
-    YogObj_set_attr_id(env, builtins, PTR_AS(YogClass, klass)->name, klass); \
+    ID name = PTR_AS(YogClass, klass)->name; \
+    YogObj_set_attr_id(env, HDL2VAL(builtins), name, klass); \
 } while (0)
     REGISTER_CLASS(cArray);
     REGISTER_CLASS(cBinary);
@@ -493,20 +343,16 @@ YogBuiltins_boot(YogEnv* env, YogVal builtins, const char* exe, uint_t argc, cha
     REGISTER_CLASS(eWindowsError);
 #undef REGISTER_CLASS
 
-    args = argv2args(env, argc, argv);
-    YogObj_set_attr(env, builtins, "ARGV",  args);
     e = YogEnv_new(env);
-    YogObj_set_attr(env, builtins, "ENV", e);
-    YogObj_set_attr(env, builtins, "ENCODINGS", env->vm->encodings);
+    YogObj_set_attr(env, HDL2VAL(builtins), "ENV", e);
+    YogObj_set_attr(env, HDL2VAL(builtins), "ENCODINGS", env->vm->encodings);
 
     set_path_separator(env, builtins);
-    YogHandle* h = YogHandle_REGISTER(env, builtins);
-    set_executable(env, h, exe);
 
 #if !defined(MINIYOG)
 #   define REGISTER_ERRNO(e)    do { \
     errno_ = YogVal_from_int(env, (e)); \
-    YogObj_set_attr(env, builtins, #e, errno_); \
+    YogObj_set_attr(env, HDL2VAL(builtins), #e, errno_); \
 } while (0)
 #   include "errno.inc"
 #   undef REGISTER_ERRNO

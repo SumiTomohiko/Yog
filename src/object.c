@@ -39,7 +39,7 @@ YogObj_set_attr_id(YogEnv* env, YogVal obj, ID name, YogVal val)
     YogVal key = ID2VAL(name);
 
     if (!IS_PTR(PTR_AS(YogObj, obj)->attrs)) {
-        YogVal attrs = YogTable_new_symbol_table(env);
+        YogVal attrs = YogTable_create_symbol_table(env);
         YogGC_UPDATE_PTR(env, PTR_AS(YogObj, obj), attrs, attrs);
     }
 
@@ -247,7 +247,7 @@ YogObject_eval_builtin_script(YogEnv* env, YogVal klass)
     const char* src =
 #   include "object.inc"
     ;
-    YogMisc_eval_source(env, klass, src);
+    YogMisc_eval_source(env, VAL2HDL(env, klass), src);
 #endif
 }
 
@@ -264,13 +264,13 @@ get_attr(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 
     ID id;
     if (IS_PTR(name) && (BASIC_OBJ_TYPE(name) == TYPE_STRING)) {
-        id = YogVM_intern(env, env->vm, STRING_CSTR(name));
+        id = YogString_intern(env, name);
     }
     else if (IS_SYMBOL(name)) {
         id = VAL2ID(name);
     }
     else {
-        const char* msg = "attribute name must be stringo or symbol";
+        const char* msg = "Attribute name must be String or Symbol";
         YogError_raise_TypeError(env, msg);
         /* NOTREACHED */
         /**
@@ -282,7 +282,7 @@ get_attr(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
 
     val = YogVal_get_attr(env, self, id);
     if (IS_UNDEF(val)) {
-        YogError_raise_AttributeError(env, "object has no attribute");
+        YogError_raise_AttributeError(env, "An instance has no attribute");
     }
 
     RETURN(env, val);

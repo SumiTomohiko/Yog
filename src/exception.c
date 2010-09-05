@@ -156,6 +156,21 @@ skip_frame(YogEnv* env, YogVal frame, const char* func_name)
     RETURN(env, frame);
 }
 
+static void
+get_names_in_c_frame(YogEnv* env, YogVal f, ID* class_name, ID* func_name)
+{
+    if (IS_PTR(f) && (BASIC_OBJ_TYPE(f) == TYPE_NATIVE_FUNCTION)) {
+        *class_name = PTR_AS(YogNativeFunction, f)->class_name;
+        *func_name = PTR_AS(YogNativeFunction, f)->func_name;
+        return;
+    }
+    YogHandle* h_f = YogHandle_REGISTER(env, f);
+    YogVal s = PTR_AS(YogNativeFunction2, HDL2VAL(h_f))->class_name;
+    *class_name = IS_PTR(s) ? YogString_intern(env, s) : INVALID_ID;
+    YogVal t = PTR_AS(YogNativeFunction2, HDL2VAL(h_f))->func_name;
+    *func_name = IS_PTR(t) ? YogString_intern(env, t) : INVALID_ID;
+}
+
 YogVal
 YogException_get_stacktrace(YogEnv* env, YogVal frame)
 {
@@ -179,15 +194,7 @@ YogException_get_stacktrace(YogEnv* env, YogVal frame)
                 ID class_name;
                 ID func_name;
                 YogVal f = PTR_AS(YogCFrame, frame)->f;
-                if (IS_PTR(f) && (BASIC_OBJ_TYPE(f) == TYPE_NATIVE_FUNCTION)) {
-                    class_name = PTR_AS(YogNativeFunction, f)->class_name;
-                    func_name = PTR_AS(YogNativeFunction, f)->func_name;
-                }
-                else {
-                    YogHandle* h_f = YogHandle_REGISTER(env, f);
-                    class_name = YogString_intern(env, PTR_AS(YogNativeFunction2, HDL2VAL(h_f))->class_name);
-                    func_name = YogString_intern(env, PTR_AS(YogNativeFunction2, HDL2VAL(h_f))->func_name);
-                }
+                get_names_in_c_frame(env, f, &class_name, &func_name);
                 PTR_AS(YogStackTraceEntry, ent)->lineno = 0;
                 PTR_AS(YogStackTraceEntry, ent)->filename = YNIL;
                 PTR_AS(YogStackTraceEntry, ent)->class_name = class_name;
@@ -403,7 +410,7 @@ join_err_msg(YogEnv* env, const char* msg, YogVal opt)
     PUSH_LOCAL(env, s);
 
     if (IS_NIL(opt)) {
-        s = YogString_from_str(env, msg);
+        s = YogString_from_string(env, msg);
         RETURN(env, s);
     }
 

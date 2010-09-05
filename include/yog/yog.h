@@ -391,6 +391,11 @@ YOG_EXPORT SIGNED_TYPE YogVal_to_signed_type(YogEnv*, YogVal, const char*);
 
 #define array_sizeof(a)     (sizeof(a) / sizeof(a[0]))
 #define MAIN_MODULE_NAME    "__main__"
+#if WINDOWS
+#   define PATH_SEPARATOR   '\\'
+#else
+#   define PATH_SEPARATOR   '/'
+#endif
 
 #if !defined(HAVE_STDINT_H)
 typedef unsigned char uint8_t;

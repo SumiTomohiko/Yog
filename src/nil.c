@@ -7,7 +7,7 @@
 static YogVal
 to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
-    return YogString_from_str(env, "nil");
+    return YogString_from_string(env, "nil");
 }
 
 static YogVal

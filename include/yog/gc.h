@@ -16,15 +16,15 @@
      * include/yog/gc/internal.h. These are not good.
      */
 #   define PAYLOAD2GENERATION(payload) \
-                                ((uint_t*)(payload) - 1)
+                                (*((uint_t*)(payload) - 1))
 #   define GENERATION_YOUNG     0
 #   define GENERATION_OLD       1
-#   define YogGC_IS_YOUNG(obj)  (*PAYLOAD2GENERATION((obj)) == GENERATION_YOUNG)
-#   define YogGC_IS_OLD(obj)    (*PAYLOAD2GENERATION((obj)) == GENERATION_OLD)
+#   define YogGC_IS_YOUNG(obj)  (PAYLOAD2GENERATION((obj)) == GENERATION_YOUNG)
+#   define YogGC_IS_OLD(obj)    (PAYLOAD2GENERATION((obj)) == GENERATION_OLD)
 #   define PAYLOAD2REMEMBERED(payload) \
-                                ((uint_t*)(payload) - 2)
+                                (*((uint_t*)(payload) - 2))
 #   define YogGC_IS_REMEMBERED(obj) \
-                                (*PAYLOAD2REMEMBERED((obj)))
+                                PAYLOAD2REMEMBERED((obj))
 #   define YogGC_UPDATE_PTR(env, obj, member, val) do { \
     do { \
         if (!IS_PTR(PTR2VAL((obj))) || YogGC_IS_YOUNG((obj))) { \

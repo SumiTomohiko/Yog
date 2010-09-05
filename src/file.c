@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "yog/array.h"
+#include "yog/binary.h"
 #include "yog/callable.h"
 #include "yog/class.h"
 #include "yog/encoding.h"
@@ -19,6 +20,12 @@
 
 #define CHECK_SELF_TYPE(env, self)  do { \
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_FILE)) { \
+        YogError_raise_TypeError((env), "self must be File"); \
+    } \
+} while (0)
+#define CHECK_SELF_TYPE2(env, self)  do { \
+    YogVal obj = HDL2VAL(self); \
+    if (!IS_PTR(obj) || (BASIC_OBJ_TYPE(obj) != TYPE_FILE)) { \
         YogError_raise_TypeError((env), "self must be File"); \
     } \
 } while (0)
@@ -56,22 +63,17 @@ YogFile_new(YogEnv* env)
 }
 
 static YogVal
-write(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+write(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
-
-    YogCArg params[] = { { "s", &s }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "write", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-    if (!IS_PTR(s) || (BASIC_OBJ_TYPE(s) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "first argument must be String");
+    CHECK_SELF_TYPE2(env, self);
+    if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "First argument must be String");
     }
 
-    fputs(STRING_CSTR(s), PTR_AS(YogFile, self)->fp);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, s);
+    fputs(BINARY_CSTR(bin), PTR_AS(YogFile, self)->fp);
 
-    RETURN(env, self);
+    return HDL2VAL(self);
 }
 
 static YogVal
@@ -84,13 +86,13 @@ read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "read", params, args, kw);
 
-    s = YogString_of_encoding(env, PTR_AS(YogFile, self)->encoding);
+    s = YogString_new(env);
     FILE* fp = PTR_AS(YogFile, self)->fp;
     do {
         char buffer[4096];
         uint_t size = fread(buffer, sizeof(char), array_sizeof(buffer) - 1, fp);
         buffer[size] = '\0';
-        YogString_append_cstr(env, s, buffer);
+        YogString_append_string(env, s, buffer);
     } while (!feof(fp));
 
     RETURN(env, s);
@@ -133,14 +135,14 @@ readline(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     if (FGETS == NULL) {
         RETURN(env, YNIL);
     }
-    line = YogString_of_encoding(env, PTR_AS(YogFile, self)->encoding);
-    YogString_append_cstr(env, line, buffer);
+    line = YogString_new(env);
+    YogString_append_string(env, line, buffer);
 
     while (buffer[strlen(buffer) - 1] != '\n') {
         if (FGETS == NULL) {
             break;
         }
-        YogString_append_cstr(env, line, buffer);
+        YogString_append_string(env, line, buffer);
     }
 #undef FGETS
 
@@ -186,7 +188,10 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 
     file = YogFile_new(env);
 
-    FILE* fp = fopen(STRING_CSTR(path), IS_UNDEF(mode) ? "r" : STRING_CSTR(mode));
+    YogHandle* h = YogHandle_REGISTER(env, path);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, h);
+    const char* m = IS_UNDEF(mode) ? "r" : BINARY_CSTR(YogString_to_bin_in_default_encoding(env, YogHandle_REGISTER(env, mode)));
+    FILE* fp = fopen(BINARY_CSTR(bin), m);
     if (fp == NULL) {
         YogError_raise_sys_err(env, errno, path);
     }
@@ -236,8 +241,12 @@ YogFile_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("close", close);
     DEFINE_METHOD("read", read);
     DEFINE_METHOD("readline", readline);
-    DEFINE_METHOD("write", write);
 #undef DEFINE_METHOD
+#define DEFINE_METHOD2(name, f, ...) do { \
+    YogClass_define_method2(env, cFile, pkg, (name), (f), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD2("write", write, "s", NULL);
+#undef DEFINE_METHOD2
     vm->cFile = cFile;
 
     RETURN_VOID(env);

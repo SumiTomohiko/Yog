@@ -1,9 +1,11 @@
+#include "yog/config.h"
 #include "yog/array.h"
 #include "yog/callable.h"
 #include "yog/class.h"
 #include "yog/dict.h"
 #include "yog/error.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
 #include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/table.h"
@@ -171,7 +173,7 @@ init(YogEnv* env, YogVal self, YogVal klass)
     PUSH_LOCAL(env, tbl);
 
     YogBasicObj_init(env, self, TYPE_DICT, 0, klass);
-    tbl = YogTable_new_val_table(env);
+    tbl = YogTable_create_value_table(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogDict, self), tbl, tbl);
 
     RETURN_VOID(env);
@@ -309,7 +311,7 @@ YogDict_eval_builtin_script(YogEnv* env, YogVal klass)
     const char* src =
 #   include "dict.inc"
     ;
-    YogMisc_eval_source(env, klass, src);
+    YogMisc_eval_source(env, VAL2HDL(env, klass), src);
 #endif
 }
 

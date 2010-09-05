@@ -1,3 +1,4 @@
+#include "yog/config.h"
 #include <setjmp.h>
 #include <stdio.h>
 #include "yog/compile.h"
@@ -24,9 +25,9 @@ print_prompt2()
 }
 
 static BOOL
-eval(YogEnv* env, YogVal pkg, YogVal src)
+eval(YogEnv* env, YogHandle* pkg, YogVal src)
 {
-    SAVE_ARGS2(env, pkg, src);
+    SAVE_ARG(env, src);
     YogVal stmts = YUNDEF;
     YogVal code = YUNDEF;
     PUSH_LOCALS2(env, stmts, code);
@@ -56,23 +57,19 @@ void
 YogRepl_do(YogEnv* env)
 {
     SAVE_LOCALS(env);
-    YogVal pkg = YUNDEF;
     YogVal src = YUNDEF;
     YogVal enc = YUNDEF;
-    PUSH_LOCALS3(env, pkg, src, enc);
+    PUSH_LOCALS2(env, src, enc);
 
-    pkg = YogPackage_new(env);
-    YogVM_register_package(env, env->vm, MAIN_MODULE_NAME, pkg);
-
+    YogHandle* pkg = VAL2HDL(env, YogPackage_new(env));
+    YogVal s = YogString_from_string(env, MAIN_MODULE_NAME);
+    YogHandle* name = VAL2HDL(env, s);
+    YogVM_register_package(env, env->vm, name, pkg);
     src = YogString_new(env);
-    enc = YogEncoding_get_default(env);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogString, src), encoding, enc);
-
     print_prompt();
-
     char buffer[4096];
     while (fgets(buffer, array_sizeof(buffer), stdin) != NULL) {
-        YogString_append_cstr(env, src, buffer);
+        YogString_append_string(env, src, buffer);
         if (eval(env, pkg, src)) {
             YogString_clear(env, src);
             print_prompt();

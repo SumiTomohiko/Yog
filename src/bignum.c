@@ -2,7 +2,9 @@
 #include "gmp.h"
 #include "yog/array.h"
 #include "yog/bignum.h"
+#include "yog/binary.h"
 #include "yog/class.h"
+#include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/fixnum.h"
 #include "yog/float.h"
@@ -30,17 +32,14 @@ YogVal
 YogBignum_to_s(YogEnv* env, YogVal self)
 {
     SAVE_ARG(env, self);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
 
-#define BASE    10
-    size_t size = mpz_sizeinbase(PTR_AS(YogBignum, self)->num, BASE) + 2;
-    s = YogString_of_size(env, size);
-    mpz_get_str(STRING_CSTR(s), BASE, PTR_AS(YogBignum, self)->num);
-    STRING_SIZE(s) = size;
+#define BASE 10
+    /* 1 is for sign, another 1 is for a '\0' terminator */
+    size_t size = mpz_sizeinbase(PTR_AS(YogBignum, self)->num, BASE) + 1 + 1;
+    char buf[size];
+    mpz_get_str(buf, BASE, PTR_AS(YogBignum, self)->num);
 #undef BASE
-
-    RETURN(env, s);
+    RETURN(env, YogString_from_string(env, buf));
 }
 
 static YogVal
@@ -529,17 +528,16 @@ YogBignum_from_int(YogEnv* env, int_t n)
 YogVal
 YogBignum_from_str(YogEnv* env, YogVal s, int_t base)
 {
-    SAVE_ARG(env, s);
-    YogVal bignum = YUNDEF;
-    PUSH_LOCAL(env, bignum);
-
-    bignum = YogBignum_new(env);
-    const char* str = STRING_CSTR(s);
-    if (mpz_set_str(PTR_AS(YogBignum, bignum)->num, str, base) != 0) {
+    YogHandle* str = YogHandle_REGISTER(env, s);
+    YogHandle* bignum = YogHandle_REGISTER(env, YogBignum_new(env));
+    YogHandle* enc = YogHandle_REGISTER(env, env->vm->encAscii);
+    YogVal ascii = YogEncoding_conv_from_yog(env, enc, str);
+    const char* pc = BINARY_CSTR(ascii);
+    if (mpz_set_str(HDL_AS(YogBignum, bignum)->num, pc, base) != 0) {
         YOG_BUG(env, "mpz_set_str failed");
     }
 
-    RETURN(env, bignum);
+    return HDL2VAL(bignum);
 }
 
 YogVal

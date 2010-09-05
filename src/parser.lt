@@ -265,7 +265,7 @@ static void yyGrowStack(YogVal p){
 static void 
 LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    yyParser* pParser = PTR_AS(yyParser, ptr);
+    yyParser* pParser = (yyParser*)ptr;
     int i;
     for (i = 0; i < pParser->yyidx; i++) {
         YogGC_KEEP(env, pParser, yystack[i + 1].minor.yy0, keeper, heap);
@@ -286,13 +286,9 @@ LemonParser_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 ** to Parse and ParseFree.
 */
 static YogVal 
-LemonParser_new(YogEnv* env, YogVal filename)
+LemonParser_new(YogEnv* env, YogHandle* filename)
 {
-    SAVE_ARG(env, filename);
-    YogVal pParser = YUNDEF;
-    PUSH_LOCAL(env, pParser);
-
-    pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
+    YogVal pParser = ALLOC_OBJ(env, LemonParser_keep_children, NULL, yyParser);
     PTR_AS(yyParser, pParser)->yyidx = -1;
 #if defined(YYTRACKMAXSTACKDEPTH)
     PTR_AS(yyParser, pParser)->yyidxMax = 0;
@@ -307,9 +303,8 @@ LemonParser_new(YogEnv* env, YogVal filename)
         PTR_AS(yyParser, pParser)->yystack[i].minor.yy0 = YUNDEF;
     }
 #endif
-    PTR_AS(yyParser, pParser)->filename = filename;
-
-    RETURN(env, pParser);
+    YogGC_UPDATE_PTR(env, PTR_AS(yyParser, pParser), filename, HDL2VAL(filename));
+    return pParser;
 }
 
 /* The following function deletes the value associated with a

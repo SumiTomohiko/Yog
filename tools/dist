@@ -72,13 +72,13 @@ do
   dst="`echo "${src}" | cut -d "." -f 1`.inc"
   ${yog} "${srcdir}/${yg}" "${srcdir}/${src}" "${srcdir}/${dst}"
 done
-tools_dir=`dirname ${0}`
+tools_dir="${archive_dir}/tools"
 ${yog} "${tools_dir}/make_errno.yg" "${tools_dir}/errno" "${srcdir}/errno.inc"
 if [ $? != 0 ]; then
   echo "can't generate errno files."
   exit 2
 fi
-${python} "${archive_dir}/tools/inst.py" "${srcdir}/insts.def" "${archive_dir}"
+${python} "${tools_dir}/inst.py" "${srcdir}/insts.def" "${archive_dir}"
 if [ $? != 0 ]; then
   echo "can't generate instruction files."
   exit 2
@@ -88,6 +88,7 @@ if [ $? != 0 ]; then
   echo "can't generate keywords.inc"
   exit 2
 fi
+${python} "${tools_dir}/shift_jis2yog.py" > "${srcdir}/shift_jis2yog.inc"
 print_done
 
 echo -n "Generate HTML document..."

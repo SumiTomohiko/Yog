@@ -39,11 +39,10 @@ print_val(YogEnv* env, YogVal val)
         printf("nil");
     }
     else if (IS_SYMBOL(val)) {
-        YogVal s = YogVM_id2name(env, env->vm, VAL2ID(val));
-        printf(" :%s", STRING_CSTR(s));
+        printf(" :%s", BINARY_CSTR(YogVM_id2bin(env, env->vm, VAL2ID(val))));
     }
     else {
-        YOG_ASSERT(env, FALSE, "Unknown value type.");
+        YOG_BUG(env, "Unknown value type.");
     }
 }
 
@@ -149,16 +148,16 @@ YogCode_dump(YogEnv* env, YogVal code)
             {
                 uint8_t index = OPERAND(uint8_t, 0);
                 ID id = OPERAND(ID, 1);
-                YogVal name = YogVM_id2name(env, env->vm, id);
-                printf(" %u %d ('%s)", index, id, STRING_CSTR(name));
+                YogVal bin = YogVM_id2bin(env, env->vm, id);
+                printf(" %u %d ('%s)", index, id, BINARY_CSTR(bin));
             }
             break;
         case OP(STORE_LOCAL_NAME):
         case OP(LOAD_LOCAL_NAME):
             {
                 ID id = OPERAND(ID, 0);
-                YogVal name = YogVM_id2name(env, env->vm, id);
-                printf(" %d ('%s)", id, STRING_CSTR(name));
+                YogVal bin = YogVM_id2bin(env, env->vm, id);
+                printf(" %d ('%s)", id, BINARY_CSTR(bin));
             }
             break;
         case OP(PUSH_CONST):
@@ -193,9 +192,8 @@ YogCode_dump(YogEnv* env, YogVal code)
         case OP(LOAD_GLOBAL):
         case OP(LOAD_ATTR):
             {
-                ID id = OPERAND(ID, 0);
-                YogVal name = YogVM_id2name(env, env->vm, id);
-                printf(" '%s", STRING_CSTR(name));
+                YogVal bin = YogVM_id2bin(env, env->vm, OPERAND(ID, 0));
+                printf(" '%s", BINARY_CSTR(bin));
             }
             break;
         case OP(JUMP_IF_TRUE):

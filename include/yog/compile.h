@@ -12,7 +12,7 @@
 /* src/compile.c */
 YOG_EXPORT YogVal YogCompiler_compile_finish_code(YogEnv*);
 YOG_EXPORT YogVal YogCompiler_compile_interactive(YogEnv*, YogVal);
-YOG_EXPORT YogVal YogCompiler_compile_package(YogEnv*, const char*, YogVal);
+YOG_EXPORT YogVal YogCompiler_compile_package(YogEnv*, YogHandle*, YogVal);
 
 /* PROTOTYPE_END */
 

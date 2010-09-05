@@ -1,9 +1,11 @@
 #include "yog/config.h"
+#include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "yog/binary.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -83,13 +85,14 @@ print_stacktrace(YogEnv* env, YogVal st)
     }
 
     fprintf(stderr, "Traceback (most recent call last):\n");
-#define ID2NAME(id)     YogVM_id2name(env, env->vm, id)
+#define ID2BIN(id) YogVM_id2bin(env, env->vm, id)
     while (IS_PTR(st)) {
         fprintf(stderr, "  File ");
         filename = PTR_AS(YogStackTraceEntry, st)->filename;
         if (IS_PTR(filename)) {
-            const char* name = PTR_AS(YogCharArray, filename)->items;
-            fprintf(stderr, "\"%s\"", name);
+            YogHandle* h = YogHandle_REGISTER(env, filename);
+            YogVal bin = YogString_to_bin_in_default_encoding(env, h);
+            fprintf(stderr, "\"%s\"", BINARY_CSTR(bin));
         }
         else {
             fprintf(stderr, "builtin");
@@ -105,18 +108,16 @@ print_stacktrace(YogEnv* env, YogVal st)
         ID func_name = PTR_AS(YogStackTraceEntry, st)->func_name;
         if (class_name != INVALID_ID) {
             if (func_name != INVALID_ID) {
-                s = ID2NAME(class_name);
-                t = ID2NAME(func_name);
-                fprintf(stderr, "%s#%s", STRING_CSTR(s), STRING_CSTR(t));
+                s = ID2BIN(class_name);
+                t = ID2BIN(func_name);
+                fprintf(stderr, "%s#%s", BINARY_CSTR(s), BINARY_CSTR(t));
             }
             else {
-                name = ID2NAME(class_name);
-                fprintf(stderr, "<class %s>", STRING_CSTR(name));
+                fprintf(stderr, "<class %s>", BINARY_CSTR(ID2BIN(class_name)));
             }
         }
         else {
-            name = ID2NAME(func_name);
-            fprintf(stderr, "%s", STRING_CSTR(name));
+            fprintf(stderr, "%s", BINARY_CSTR(ID2BIN(func_name)));
         }
         fprintf(stderr, "\n");
 
@@ -217,8 +218,8 @@ YogError_print_stacktrace(YogEnv* env)
     YogVal exc = YUNDEF;
     YogVal st = YUNDEF;
     YogVal klass = YUNDEF;
-    YogVal msg = YUNDEF;
-    PUSH_LOCALS5(env, name, exc, st, klass, msg);
+    YogVal msg_str = YUNDEF;
+    PUSH_LOCALS5(env, name, exc, st, klass, msg_str);
 
     exc = PTR_AS(YogThread, env->thread)->jmp_val;
     st = PTR_AS(YogException, exc)->stack_trace;
@@ -226,10 +227,12 @@ YogError_print_stacktrace(YogEnv* env)
 
     klass = BASIC_OBJ(exc)->klass;
     ID id = PTR_AS(YogClass, klass)->name;
-    name = ID2NAME(id);
-#undef ID2NAME
-    msg = YogEval_call_method(env, PTR_AS(YogException, exc)->message, "to_s", 0, NULL);
-    fprintf(stderr, "%s: %s\n", STRING_CSTR(name), STRING_CSTR(msg));
+    name = ID2BIN(id);
+#undef ID2BIN
+    YogVal msg = PTR_AS(YogException, exc)->message;
+    YogHandle* h = VAL2HDL(env, YogEval_call_method0(env, msg, "to_s"));
+    YogVal bin = YogString_to_bin_in_default_encoding(env, h);
+    fprintf(stderr, "%s: %s\n", BINARY_CSTR(name), BINARY_CSTR(bin));
 
     RETURN_VOID(env);
 }

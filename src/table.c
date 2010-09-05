@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #endif
 #include <string.h>
+#include "yog/binary.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/gc.h"
@@ -510,7 +511,7 @@ static YogHashType type_symbol = {
 };
 
 YogVal
-YogTable_new_symbol_table(YogEnv* env)
+YogTable_create_symbol_table(YogEnv* env)
 {
     return st_init_table(env, &type_symbol);
 }
@@ -518,58 +519,17 @@ YogTable_new_symbol_table(YogEnv* env)
 static BOOL
 compare_string(YogEnv* env, YogVal a, YogVal b)
 {
-#define GET_STR(val)    (((YogCharArray*)VAL2PTR(a))->items)
-    if (strcmp(GET_STR(a), GET_STR(b)) == 0) {
-        return TRUE;
-    }
-    else {
+    if (STRING_SIZE(a) != STRING_SIZE(b)) {
         return FALSE;
     }
-#undef GET_STR
-}
-
-static int_t
-strhash(const char* string)
-{
-    register int_t c;
-
-#if defined(HASH_ELFHASH)
-    register uint_t h = 0, g;
-
-    while ((c = *string++) != '\0') {
-        h = ( h << 4 ) + c;
-        if ( g = h & 0xF0000000 )
-            h ^= g >> 24;
-        h &= ~g;
-    }
-    return h;
-#elif defined(HASH_PERL)
-    register int_t val = 0;
-
-    while ((c = *string++) != '\0') {
-        val += c;
-        val += (val << 10);
-        val ^= (val >> 6);
-    }
-    val += (val << 3);
-    val ^= (val >> 11);
-
-    return val + (val << 15);
-#else
-    register int_t val = 0;
-
-    while ((c = *string++) != '\0') {
-        val = val*997 + c;
-    }
-
-    return val + (val>>5);
-#endif
+    uint_t n = sizeof(YogChar) * STRING_SIZE(a);
+    return memcmp(STRING_CHARS(a), STRING_CHARS(b), n) == 0 ? TRUE : FALSE;
 }
 
 static int_t
 hash_string(YogEnv* env, YogVal key)
 {
-    return strhash(PTR_AS(YogCharArray, key)->items);
+    return YogString_hash(env, key);
 }
 
 static YogHashType type_string = {
@@ -578,57 +538,9 @@ static YogHashType type_string = {
 };
 
 YogVal
-YogTable_new_string_table(YogEnv* env)
+YogTable_create_string_table(YogEnv* env)
 {
     return st_init_table(env, &type_string);
-}
-
-inline static BOOL
-is_not_equal_entry(YogEnv* env, YogVal table, YogVal entry, const char* key, uint_t hash_val)
-{
-    if (!IS_PTR(entry)) {
-        return FALSE;
-    }
-    if (PTR_AS(YogTableEntry, entry)->hash != hash_val) {
-        return TRUE;
-    }
-    YogVal s = PTR_AS(YogTableEntry, entry)->key;
-    if (strcmp(PTR_AS(YogCharArray, s)->items, key) != 0) {
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
-BOOL
-YogTable_lookup_str(YogEnv* env, YogVal table, const char* key, YogVal* value)
-{
-    SAVE_ARG(env, table);
-    YogVal entry = YUNDEF;
-    PUSH_LOCAL(env, entry);
-
-    YOG_ASSERT(env, PTR_AS(YogTable, table)->type == &type_string, "Table type must be type_string.");
-
-    uint_t hash_val = strhash(key);
-    uint_t bin_pos = hash_val % PTR_AS(YogTable, table)->num_bins;
-    entry = TABLE_ENTRY_TOP(table, bin_pos);
-
-    if (is_not_equal_entry(env, table, entry, key, hash_val)) {
-        COLLISION;
-        do {
-            entry = PTR_AS(YogTableEntry, entry)->next;
-        } while (is_not_equal_entry(env, table, entry, key, hash_val));
-    }
-
-    if (IS_PTR(entry)) {
-        if (value != NULL) {
-            *value = PTR_AS(YogTableEntry, entry)->record;
-        }
-        RETURN(env, TRUE);
-    }
-    else {
-        RETURN(env, FALSE);
-    }
 }
 
 static BOOL
@@ -670,7 +582,7 @@ static YogHashType type_val = {
 };
 
 YogVal
-YogTable_new_val_table(YogEnv* env)
+YogTable_create_value_table(YogEnv* env)
 {
     return st_init_table(env, &type_val);
 }
@@ -735,7 +647,9 @@ static int_t
 dump_string_callback(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
 {
     if (IS_PTR(key)) {
-        printf("  \"%s\" => ", PTR_AS(YogCharArray, key)->items);
+        YogHandle* h = YogHandle_REGISTER(env, key);
+        YogVal s = YogString_to_bin_in_default_encoding(env, h);
+        printf("  \"%s\" => ", BINARY_CSTR(s));
     }
     else {
         printf("  undef => ");

@@ -19,7 +19,7 @@ COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 main.c misc.c module.c nil.c object.c package.c parser.y \
 		 property.c regexp.c repl.c set.c sprintf.c stacktrace.c \
 		 string.c symbol.c table.c thread.c value.c vm.c getopt.c \
-		 ffi.c env.c handle.c process.c
+		 ffi.c env.c handle.c process.c path.c
 DEFAULT_INCLUDES =
 CFLAGS_COMMON = -I$(top_srcdir)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
 		-I$(GMP_DIR) -I$(LIBFFI_DIR)/include -Wall -Werror -g -O2 \
@@ -111,5 +111,8 @@ $(top_srcdir)/include/yog/opcodes.h: $(top_srcdir)/include/yog/opcodes.h.tmpl $(
 
 errno.inc: $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno
 	$(YOG) $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno $@
+
+euc_jp2yog_zenkaku.inc euc_jp2yog_hankaku.inc euc_jp2yog_3bytes.inc yog2euc_jp1.inc yog2euc_jp2.inc yog2euc_jp3.inc: $(TOOLS_DIR)/make_euc_jp_table.py euc-jis-2004-std.txt
+	$(PYTHON) $(TOOLS_DIR)/make_euc_jp_table.py
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
