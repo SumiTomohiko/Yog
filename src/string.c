@@ -629,15 +629,24 @@ slice(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* pos, YogHandle* l
     }
     uint_t begin;
     if (!index2offset(env, HDL2VAL(self), n, &begin)) {
-        YogError_raise_IndexError(env, "String index out of range");
+        const char* fmt = "Position %d out of range [-%u, %u]";
+        int_t n = VAL2INT(HDL2VAL(pos));
+        uint_t size = STRING_SIZE(HDL2VAL(self));
+        uint_t lower = size;
+        uint_t upper = size - 1;
+        YogError_raise_IndexError(env, fmt, n, lower, upper);
+        /* NOTREACHED */
     }
     if ((len != NULL) && (VAL2INT(HDL2VAL(len)) <= 0)) {
         return YogString_new(env);
     }
     int_t l = normalize_length(env, len, max_index, n);
     uint_t end;
-    if (!index2offset(env, HDL2VAL(self), n + l, &end)) {
-        YogError_raise_IndexError(env, "String index out of range");
+    if (!index2offset(env, HDL2VAL(self), n + l - 1, &end)) {
+        const char* fmt = "Length %d out of range [0, %d]";
+        int_t l = VAL2INT(HDL2VAL(len));
+        YogError_raise_ValueError(env, fmt, l, STRING_SIZE(HDL2VAL(self)) - n);
+        /* NOTREACHED */
     }
     return YogString_slice(env, self, begin, end - begin);
 }
