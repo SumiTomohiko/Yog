@@ -648,7 +648,7 @@ slice(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* pos, YogHandle* l
         YogError_raise_ValueError(env, fmt, l, STRING_SIZE(HDL2VAL(self)) - n);
         /* NOTREACHED */
     }
-    return YogString_slice(env, self, begin, end - begin);
+    return YogString_slice(env, self, begin, end - begin + 1);
 }
 
 static YogVal
@@ -711,7 +711,8 @@ YogString_binop_match(YogEnv* env, YogHandle* self, YogHandle* regexp)
 {
     YogVal re = HDL2VAL(regexp);
     if (!IS_PTR(re) || (BASIC_OBJ_TYPE(re) != TYPE_REGEXP)) {
-        YogError_raise_TypeError(env, "Can't convert %C object to Regexp implicitly", HDL2VAL(regexp));
+        const char* fmt = "Can't convert %C object to Regexp implicitly";
+        YogError_raise_TypeError(env, fmt, HDL2VAL(regexp));
         /* NOTREACHED */
     }
     return YogString_match(env, HDL2VAL(self), re, 0);
