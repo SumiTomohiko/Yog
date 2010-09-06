@@ -6,6 +6,7 @@
 #if 0
 #   include "defines.h"
 #endif
+#include <ctype.h>
 #include <stdio.h>
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -299,12 +300,10 @@ YogTable_lookup(YogEnv* env, YogVal table, YogVal key, YogVal* value)
     if (!IS_PTR(ptr)) {
         RETURN(env, FALSE);
     }
-    else {
-        if (value != NULL) {
-            *value = PTR_AS(YogTableEntry, ptr)->record;
-        }
-        RETURN(env, TRUE);
+    if (value != NULL) {
+        *value = PTR_AS(YogTableEntry, ptr)->record;
     }
+    RETURN(env, TRUE);
 }
 
 static void
