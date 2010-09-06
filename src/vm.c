@@ -347,15 +347,15 @@ YogVM_boot(YogEnv* env, YogVM* vm)
 
     vm->finish_code = YogCompiler_compile_finish_code(env);
 
+    vm->id_star = YogVM_intern(env, vm, "*");
+    vm->id_star2 = YogVM_intern(env, vm, "**");
+    vm->id_amp = YogVM_intern(env, vm, "&");
+
     setup_builtins(env, vm, builtins);
     YogArray_eval_builtin_script(env, vm->cArray);
     YogDict_eval_builtin_script(env, vm->cDict);
     YogObject_eval_builtin_script(env, vm->cObject);
     YogString_eval_builtin_script(env, vm->cString);
-
-    vm->id_star = YogVM_intern(env, vm, "*");
-    vm->id_star2 = YogVM_intern(env, vm, "**");
-    vm->id_amp = YogVM_intern(env, vm, "&");
 
     YogHandleScope_close(env);
 }
