@@ -72,11 +72,15 @@ YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
 {
     OnigRegex onig_regexp = NULL;
     OnigUChar* pattern_begin = (OnigUChar*)STRING_CHARS(pattern);
-    OnigUChar* pattern_end = pattern_begin + STRING_SIZE(pattern);
+    YogChar* end = STRING_CHARS(pattern) + STRING_SIZE(pattern);
+    OnigUChar* pattern_end = (OnigUChar*)end;
     OnigErrorInfo einfo;
     int_t r = onig_new(&onig_regexp, pattern_begin, pattern_end, option, &OnigEncodingUTF32_LE, ONIG_SYNTAX_DEFAULT, &einfo);
     if (r != ONIG_NORMAL) {
-        return YNIL;
+        char buf[ONIG_MAX_ERROR_MESSAGE_LEN];
+        onig_error_code_to_str(buf, r, &einfo);
+        YogError_raise_ValueError(env, "oniguruma error: %s", buf);
+        /* NOTREACHED */
     }
 
     YogVal regexp = ALLOC_OBJ(env, YogBasicObj_keep_children, YogRegexp_finalize, YogRegexp);
