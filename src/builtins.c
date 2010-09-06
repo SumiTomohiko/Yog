@@ -58,6 +58,7 @@ repr_as_str(YogEnv* env, YogVal obj)
     if (IS_PTR(obj) && (BASIC_OBJ_TYPE(obj) == TYPE_STRING)) {
         return obj;
     }
+    YogHandle* h = VAL2HDL(env, obj);
 
 #define METHOD_NAME "to_s"
     YogVal s = YogEval_call_method0(env, obj, METHOD_NAME);
@@ -66,7 +67,7 @@ repr_as_str(YogEnv* env, YogVal obj)
         return s;
     }
     const char* fmt = "%C#%s() returned non-string (%C)";
-    YogError_raise_TypeError(env, fmt, obj, METHOD_NAME, s);
+    YogError_raise_TypeError(env, fmt, HDL2VAL(h), METHOD_NAME, s);
 #undef METHOD_NAME
     /* NOTREACHED */
 
