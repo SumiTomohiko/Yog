@@ -1,4 +1,5 @@
 #include "yog/config.h"
+#include <ctype.h>
 #if defined(HAVE_DLFCN_H)
 #   include <dlfcn.h>
 #endif
@@ -154,10 +155,11 @@ YogVM_intern2(YogEnv* env, YogVM* vm, YogVal name)
     FIND_SYM;
 #undef FIND_SYM
 
+    YogHandle* clone = VAL2HDL(env, YogString_clone(env, name));
     ID id = vm->next_id;
     YogVal symbol = ID2VAL(id);
-    YogTable_add_direct(env, vm->name2id, name, symbol);
-    YogTable_add_direct(env, vm->id2name, symbol, name);
+    YogTable_add_direct(env, vm->name2id, HDL2VAL(clone), symbol);
+    YogTable_add_direct(env, vm->id2name, symbol, HDL2VAL(clone));
     vm->next_id++;
 
     release_symbols_lock(env, vm);
