@@ -37,11 +37,14 @@ def trim()
   return self.ltrim().rtrim()
 end
 
-def rfind(substr, start_pos=-1)
+def rfind(substr, start_pos=nil)
   NOT_FOUND = -1
 
+  if start_pos == nil
+    return self.rfind(substr, self.size - 1)
+  end
   if start_pos < - self.size
-    return self.rfind(substr, 0)
+    return NOT_FOUND
   end
   if start_pos < 0
     return self.rfind(substr, self.size + start_pos)
