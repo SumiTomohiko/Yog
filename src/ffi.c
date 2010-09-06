@@ -440,66 +440,66 @@ StructClass_init(YogEnv* env, YogVal self, uint_t fields_num)
 static uint_t
 id2size(YogEnv* env, ID type)
 {
-    const char* t = BINARY_CSTR(YogVM_id2bin(env, env->vm, type));
+    const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, type));
     uint_t size;
-    if (strcmp(t, "uint8") == 0) {
+    if (strcmp(s, "uint8") == 0) {
         size = sizeof(uint8_t);
     }
-    else if (strcmp(t, "int8") == 0) {
+    else if (strcmp(s, "int8") == 0) {
         size = sizeof(int8_t);
     }
-    else if (strcmp(t, "uint16") == 0) {
+    else if (strcmp(s, "uint16") == 0) {
         size = sizeof(uint16_t);
     }
-    else if (strcmp(t, "int16") == 0) {
+    else if (strcmp(s, "int16") == 0) {
         size = sizeof(int16_t);
     }
-    else if (strcmp(t, "uint32") == 0) {
+    else if (strcmp(s, "uint32") == 0) {
         size = sizeof(uint32_t);
     }
-    else if (strcmp(t, "int32") == 0) {
+    else if (strcmp(s, "int32") == 0) {
         size = sizeof(int32_t);
     }
-    else if (strcmp(t, "uint64") == 0) {
+    else if (strcmp(s, "uint64") == 0) {
         size = sizeof(uint64_t);
     }
-    else if (strcmp(t, "int64") == 0) {
+    else if (strcmp(s, "int64") == 0) {
         size = sizeof(int64_t);
     }
-    else if (strcmp(t, "float") == 0) {
+    else if (strcmp(s, "float") == 0) {
         size = sizeof(float);
     }
-    else if (strcmp(t, "double") == 0) {
+    else if (strcmp(s, "double") == 0) {
         size = sizeof(double);
     }
-    else if (strcmp(t, "uchar") == 0) {
+    else if (strcmp(s, "uchar") == 0) {
         size = sizeof(unsigned char);
     }
-    else if (strcmp(t, "char") == 0) {
+    else if (strcmp(s, "char") == 0) {
         size = sizeof(char);
     }
-    else if (strcmp(t, "ushort") == 0) {
+    else if (strcmp(s, "ushort") == 0) {
         size = sizeof(unsigned short);
     }
-    else if (strcmp(t, "short") == 0) {
+    else if (strcmp(s, "short") == 0) {
         size = sizeof(short);
     }
-    else if (strcmp(t, "uint") == 0) {
+    else if (strcmp(s, "uint") == 0) {
         size = sizeof(unsigned int);
     }
-    else if (strcmp(t, "int") == 0) {
+    else if (strcmp(s, "int") == 0) {
         size = sizeof(int);
     }
-    else if (strcmp(t, "ulong") == 0) {
+    else if (strcmp(s, "ulong") == 0) {
         size = sizeof(unsigned long);
     }
-    else if (strcmp(t, "long") == 0) {
+    else if (strcmp(s, "long") == 0) {
         size = sizeof(long);
     }
-    else if (strcmp(t, "longdouble") == 0) {
+    else if (strcmp(s, "longdouble") == 0) {
         size = sizeof(long double);
     }
-    else if (strcmp(t, "pointer") == 0) {
+    else if (strcmp(s, "pointer") == 0) {
         size = sizeof(void*);
     }
     else {
@@ -2162,65 +2162,65 @@ Struct_write(YogEnv* env, YogVal self, uint_t offset, ID type, YogVal val)
     } \
     STRUCT_WRITE_DATA(type, self, offset, FLOAT_NUM(val)); \
 } while (0)
-    const char* t = BINARY_CSTR(YogVM_id2bin(env, env->vm, type));
-    if (strcmp(t, "uint8") == 0) {
+    const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, type));
+    if (strcmp(s, "uint8") == 0) {
         Struct_write_uint8(env, self, offset, val);
     }
-    else if (strcmp(t, "int8") == 0) {
+    else if (strcmp(s, "int8") == 0) {
         Struct_write_int8(env, self, offset, val);
     }
-    else if (strcmp(t, "uint16") == 0) {
+    else if (strcmp(s, "uint16") == 0) {
         Struct_write_uint16(env, self, offset, val);
     }
-    else if (strcmp(t, "int16") == 0) {
+    else if (strcmp(s, "int16") == 0) {
         Struct_write_int16(env, self, offset, val);
     }
-    else if (strcmp(t, "uint32") == 0) {
+    else if (strcmp(s, "uint32") == 0) {
         Struct_write_uint32(env, self, offset, val);
     }
-    else if (strcmp(t, "int32") == 0) {
+    else if (strcmp(s, "int32") == 0) {
         Struct_write_int32(env, self, offset, val);
     }
-    else if (strcmp(t, "uint64") == 0) {
+    else if (strcmp(s, "uint64") == 0) {
         Struct_write_uint64(env, self, offset, val);
     }
-    else if (strcmp(t, "int64") == 0) {
+    else if (strcmp(s, "int64") == 0) {
         Struct_write_int64(env, self, offset, val);
     }
-    else if (strcmp(t, "float") == 0) {
+    else if (strcmp(s, "float") == 0) {
         WRITE_FLOAT(float);
     }
-    else if (strcmp(t, "double") == 0) {
+    else if (strcmp(s, "double") == 0) {
         WRITE_FLOAT(double);
     }
-    else if (strcmp(t, "uchar") == 0) {
+    else if (strcmp(s, "uchar") == 0) {
         Struct_write_uint8(env, self, offset, val);
     }
-    else if (strcmp(t, "char") == 0) {
+    else if (strcmp(s, "char") == 0) {
         Struct_write_int8(env, self, offset, val);
     }
-    else if (strcmp(t, "ushort") == 0) {
+    else if (strcmp(s, "ushort") == 0) {
         Struct_write_uint16(env, self, offset, val);
     }
-    else if (strcmp(t, "short") == 0) {
+    else if (strcmp(s, "short") == 0) {
         Struct_write_int16(env, self, offset, val);
     }
-    else if (strcmp(t, "uint") == 0) {
+    else if (strcmp(s, "uint") == 0) {
         Struct_write_uint32(env, self, offset, val);
     }
-    else if (strcmp(t, "int") == 0) {
+    else if (strcmp(s, "int") == 0) {
         Struct_write_int32(env, self, offset, val);
     }
-    else if (strcmp(t, "ulong") == 0) {
+    else if (strcmp(s, "ulong") == 0) {
         Struct_write_uint32(env, self, offset, val);
     }
-    else if (strcmp(t, "long") == 0) {
+    else if (strcmp(s, "long") == 0) {
         Struct_write_int32(env, self, offset, val);
     }
-    else if (strcmp(t, "longdouble") == 0) {
+    else if (strcmp(s, "longdouble") == 0) {
         WRITE_FLOAT(long double);
     }
-    else if (strcmp(t, "pointer") == 0) {
+    else if (strcmp(s, "pointer") == 0) {
         Struct_write_uint32(env, self, offset, val);
     }
     else {
