@@ -250,7 +250,7 @@ foo(26, *quux)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-TypeError: argument after \* must be an Array, not Fixnum
+TypeError: Argument after \* must be an Array, not Fixnum
 """, stderr)
 
         self._test("""
@@ -261,7 +261,7 @@ print(*42)
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 4, in <package>
-TypeError: argument after \* must be an Array, not Fixnum
+TypeError: Argument after \* must be an Array, not Fixnum
 """, stderr)
 
         self._test("""
@@ -323,7 +323,7 @@ foo(**{ 'bar => 42, 'quux => 26})
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
-TypeError: argument after \*\* must be a Dict, not Fixnum
+TypeError: Argument after \*\* must be a Dict, not Fixnum
 """, stderr)
 
         self._test("""
@@ -348,7 +348,7 @@ foo(**{ 42 => 26 })
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 4, in <package>
-TypeError: argument after \*\* must be a Dict, not Fixnum
+TypeError: Argument after \*\* must be a Dict, not Fixnum
 """, stderr)
 
         self._test("""

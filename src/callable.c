@@ -23,10 +23,8 @@ typedef YogVal (*Body)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 static void
 raise_TypeError(YogEnv* env, const char* mark, const char* needed, YogVal actual)
 {
-    SAVE_ARG(env, actual);
-    YogError_raise_TypeError(env, "argument after %s must be %s, not %C", mark, needed, actual);
+    YogError_raise_TypeError(env, "Argument after %s must be %s, not %C", mark, needed, actual);
     /* NOTREACHED */
-    RETURN_VOID(env);
 }
 
 static void
@@ -543,7 +541,11 @@ set_vararg_each(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[], ui
 static void
 set_vararg(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[], YogHandle* vararg, YogHandle* arg, uint_t posargc)
 {
-    uint_t size = YogArray_size(env, HDL2VAL(arg));
+    YogVal a = HDL2VAL(arg);
+    if (!IS_PTR(a) || (BASIC_OBJ_TYPE(a) != TYPE_ARRAY)) {
+        raise_TypeError_for_vararg(env, a);
+    }
+    uint_t size = YogArray_size(env, a);
     uint_t given_argc = size + posargc;
     uint_t i;
     for (i = 0; i < size; i++) {
