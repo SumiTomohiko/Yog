@@ -558,7 +558,11 @@ set_vararg(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[], YogHand
 static void
 set_varkwarg(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[], YogHandle* varkwarg, YogHandle* arg)
 {
-    YogVal iter = YogDict_get_iterator(env, HDL2VAL(arg));
+    YogVal d = HDL2VAL(arg);
+    if (!IS_PTR(d) || (BASIC_OBJ_TYPE(d) != TYPE_DICT)) {
+        raise_TypeError_for_varkwarg(env, d);
+    }
+    YogVal iter = YogDict_get_iterator(env, d);
     YogHandle* h_iter = YogHandle_REGISTER(env, iter);
     while (YogDictIterator_next(env, HDL2VAL(h_iter))) {
         YogVal name = YogDictIterator_current_key(env, HDL2VAL(h_iter));
