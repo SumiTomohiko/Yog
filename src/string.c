@@ -487,9 +487,9 @@ YogString_binop_lshift(YogEnv* env, YogHandle* self, YogHandle* s)
     uint_t size2 = YogString_size(env, HDL2VAL(s));
     uint_t size = size1 + size2;
     ensure_size(env, HDL2VAL(self), size);
-    YogChar* dest = STRING_CHARS(self) + size1;
-    memcpy(dest, STRING_CHARS(s), sizeof(YogChar) * size2);
-    STRING_SIZE(self) = size;
+    YogChar* dest = STRING_CHARS(HDL2VAL(self)) + size1;
+    memcpy(dest, STRING_CHARS(HDL2VAL(s)), sizeof(YogChar) * size2);
+    STRING_SIZE(HDL2VAL(self)) = size;
 
     return HDL2VAL(self);
 }
