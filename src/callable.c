@@ -471,13 +471,13 @@ find_special_arg(YogEnv* env, YogHandle* self, ID name)
 static int_t
 find_varkwarg(YogEnv* env, YogHandle* self)
 {
-    return find_special_arg(env, self, env->vm->id_star);
+    return find_special_arg(env, self, env->vm->id_star2);
 }
 
 static int_t
 find_vararg(YogEnv* env, YogHandle* self)
 {
-    return find_special_arg(env, self, env->vm->id_star2);
+    return find_special_arg(env, self, env->vm->id_star);
 }
 
 static BOOL
@@ -592,9 +592,10 @@ YogNativeFunction2_call_for_instance(YogEnv* env, YogHandle* self, YogHandle* re
 
     uint_t formal_posargc = HDL_AS(YogNativeFunction2, self)->posargs_num;
     YogHandle* formal_vararg;
-    if (HDL_AS(YogNativeFunction2, self)->vararg_pos != -1) {
+    int_t vararg_pos = HDL_AS(YogNativeFunction2, self)->vararg_pos;
+    if (vararg_pos != -1) {
         formal_vararg = YogHandle_REGISTER(env, YogArray_new(env));
-        args[HDL_AS(YogNativeFunction2, self)->vararg_pos] = formal_vararg;
+        args[vararg_pos] = formal_vararg;
     }
     else {
         formal_vararg = NULL;
