@@ -2394,11 +2394,9 @@ static YogVal
 FieldArray_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal s = YUNDEF;
     YogVal field = YUNDEF;
     YogVal st = YUNDEF;
-    YogVal enc = YUNDEF;
-    PUSH_LOCALS4(env, s, field, st, enc);
+    PUSH_LOCALS2(env, field, st);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "to_s", params, args, kw);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_FIELD_ARRAY)) {
@@ -2407,17 +2405,14 @@ FieldArray_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
     field = PTR_AS(FieldArray, self)->field;
     ID id_char = YogVM_intern(env, env->vm, "char");
     if (PTR_AS(ArrayField, field)->type == id_char) {
-        enc = YogEncoding_get_ascii(env);
+        YogHandle* enc = VAL2HDL(env, YogEncoding_get_ascii(env));
         st = PTR_AS(FieldArray, self)->st;
         uint_t offset = PTR_AS(FieldBase, field)->offset;
         const char* begin = PTR_AS(Struct, st)->data + offset;
-        int_t size = PTR_AS(ArrayField, field)->size;
-        const char* end = begin + size;
-        s = YogString_from_range(env, enc, begin, end);
-        RETURN(env, s);
+        const char* end = begin + PTR_AS(ArrayField, field)->size;
+        RETURN(env, YogEncoding_conv_to_yog(env, enc, begin, end));
     }
-    s = YogBasicObj_to_s(env, self);
-    RETURN(env, s);
+    RETURN(env, YogBasicObj_to_s(env, self));
 }
 
 static YogVal
