@@ -14,7 +14,7 @@ class TestError(TestCase):
             assert m is not None
 
         self._test("""
-puts("xx" * 536870912)
+puts("xx" * 134217728)
 """, stderr=test_stderr, status=None)
 
     def test_open0(self):
