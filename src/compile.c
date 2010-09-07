@@ -3584,37 +3584,21 @@ compile_visit_subscript(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     RETURN_VOID(env);
 }
 
-static ID
+static YogVal
 join_package_names(YogEnv* env, YogVal pkg_names)
 {
-    SAVE_ARG(env, pkg_names);
-    YogVal name = YUNDEF;
-    YogVal s = YUNDEF;
-    PUSH_LOCALS2(env, name, s);
-
-    size_t len = 0;
+    ID id = VAL2ID(YogArray_at(env, pkg_names, 0));
+    YogVal head = YogVM_id2name(env, env->vm, id);
+    YogHandle* s = VAL2HDL(env, YogString_clone(env, head));
+    YogHandle* h = VAL2HDL(env, pkg_names);
     uint_t size = YogArray_size(env, pkg_names);
     uint_t i;
-    for (i = 0; i < size; i++) {
-        name = YogArray_at(env, pkg_names, i);
-        s = YogVM_id2name(env, env->vm, VAL2ID(name));
-        len += YogString_size(env, s);
+    for (i = 1; i < size; i++) {
+        YogString_append_string(env, HDL2VAL(s), ".");
+        ID id = VAL2ID(YogArray_at(env, HDL2VAL(h), i));
+        YogString_append(env, HDL2VAL(s), YogVM_id2name(env, env->vm, id));
     }
-    len += size - 1;
-    char* pkg = (char*)YogSysdeps_alloca(sizeof(char) * (len + 1));
-    char* pc = pkg - 1;
-    for (i = 0; i < size; i++) {
-        name = YogArray_at(env, pkg_names, i);
-        s = YogVM_id2bin(env, env->vm, VAL2ID(name));
-        pc++;
-        uint_t size = BINARY_SIZE(s) - 1;
-        memcpy(pc, BINARY_CSTR(s), size);
-        pc += size;
-        *pc = '.';
-    }
-    *pc = '\0';
-
-    RETURN(env, YogString_from_string(env, pkg));
+    return HDL2VAL(s);
 }
 
 static void
