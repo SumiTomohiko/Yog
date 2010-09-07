@@ -378,21 +378,11 @@ to_i(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-to_bin(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+to_bin(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* encoding)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal bin = YUNDEF;
-    PUSH_LOCAL(env, bin);
-    YogCArg params[] = { { NULL, NULL } };
-    YogGetArgs_parse_args(env, "to_s", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
-    uint_t size = YogString_size(env, self);
-    bin = YogBinary_of_size(env, size);
-    memcpy(BINARY_CSTR(bin), STRING_CHARS(self), sizeof(YogChar) * size);
-    BINARY_SIZE(bin) = size;
-
-    RETURN(env, bin);
+    CHECK_SELF_TYPE2(env, self);
+    YogMisc_check_encoding(env, encoding, "encoding");
+    return YogEncoding_conv_from_yog(env, encoding, self);
 }
 
 static YogVal
@@ -1109,7 +1099,6 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("get", get);
     DEFINE_METHOD("gsub", gsub);
     DEFINE_METHOD("hash", hash);
-    DEFINE_METHOD("to_bin", to_bin);
     DEFINE_METHOD("to_i", to_i);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
@@ -1123,6 +1112,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("=~", match, "regexp", NULL);
     DEFINE_METHOD2("[]", subscript, "index", NULL);
     DEFINE_METHOD2("slice", slice, "pos", "|", "len", NULL);
+    DEFINE_METHOD2("to_bin", to_bin, "encoding", NULL);
 #undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter) do { \
     YogClass_define_property(env, cString, pkg, (name), (getter), (setter)); \

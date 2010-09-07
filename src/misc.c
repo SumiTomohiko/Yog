@@ -1,6 +1,7 @@
 #include "yog/config.h"
 #include "yog/binary.h"
 #include "yog/compile.h"
+#include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/handle.h"
@@ -11,12 +12,23 @@
 #include "yog/yog.h"
 
 void
-YogMisc_check_string(YogEnv* env, YogHandle* val, const char* name)
+YogMisc_check_encoding(YogEnv* env, YogHandle* val, const char* name)
 {
-    if (IS_PTR(HDL2VAL(val)) && (BASIC_OBJ_TYPE(HDL2VAL(val)) == TYPE_STRING)) {
+    YogVal v = HDL2VAL(val);
+    if (IS_PTR(v) && (BASIC_OBJ_TYPE(v) == TYPE_ENCODING)) {
         return;
     }
-    YogError_raise_TypeError(env, "%s must be String, not %C", name, val);
+    YogError_raise_TypeError(env, "%s must be Encoding, not %C", name, v);
+}
+
+void
+YogMisc_check_string(YogEnv* env, YogHandle* val, const char* name)
+{
+    YogVal v = HDL2VAL(val);
+    if (IS_PTR(v) && (BASIC_OBJ_TYPE(v) == TYPE_STRING)) {
+        return;
+    }
+    YogError_raise_TypeError(env, "%s must be String, not %C", name, v);
 }
 
 static YogHandle*
