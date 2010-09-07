@@ -3,10 +3,13 @@
 #include <string.h>
 #include "zip.h"
 #include "yog/array.h"
+#include "yog/binary.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
+#include "yog/misc.h"
 #include "yog/package.h"
 #include "yog/string.h"
 #include "yog/sysdeps.h"
@@ -62,7 +65,7 @@ raise_ZipError(YogEnv* env, YogVal pkg, const char* msg)
 
     eZipError = PTR_AS(Package, pkg)->eZipError;
     if (msg != NULL) {
-        s = YogString_from_str(env, msg);
+        s = YogString_from_string(env, msg);
         e = YogEval_call_method1(env, eZipError, "new", s);
     }
     else {
@@ -80,7 +83,8 @@ open_zip(YogEnv* env, YogVal pkg, YogVal path, int flags)
     SAVE_ARGS2(env, pkg, path);
 
     int error;
-    struct zip* archive = zip_open(STRING_CSTR(path), flags, &error);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, VAL2HDL(env, path));
+    struct zip* archive = zip_open(BINARY_CSTR(bin), flags, &error);
     if (archive == NULL) {
         char buf[256];
         zip_error_to_str(buf, array_sizeof(buf), error, errno);
@@ -106,8 +110,7 @@ compress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal path = YUNDEF;
     YogVal files = YUNDEF;
-    YogVal name = YUNDEF;
-    PUSH_LOCALS3(env, path, files, name);
+    PUSH_LOCALS2(env, path, files);
     YogCArg params[] = { { "path", &path }, { "*", &files }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "compress", params, args, kw);
     if (!IS_PTR(path) || (BASIC_OBJ_TYPE(path) != TYPE_STRING)) {
@@ -125,11 +128,10 @@ compress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     uint_t size = YogArray_size(env, files);
     uint_t j;
     for (j = 0; j < size; j++) {
-        name = YogArray_at(env, files, j);
-        if (!IS_PTR(name) || (BASIC_OBJ_TYPE(name) != TYPE_STRING)) {
-            YogError_raise_TypeError(env, "filename must be String");
-        }
-        const char* fname = STRING_CSTR(name);
+        YogHandle* name = VAL2HDL(env, YogArray_at(env, files, j));
+        YogMisc_check_string(env, name, "Filename");
+        YogVal bin = YogString_to_bin_in_default_encoding(env, name);
+        const char* fname = BINARY_CSTR(bin);
         struct zip_source* source = zip_source_file(archive, fname, 0, 0);
         if (source == NULL) {
             raise_ZipError(env, pkg, zip_strerror(archive));
@@ -195,6 +197,7 @@ decompress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal 
 
     struct zip* archive = open_zip(env, pkg, zip, 0);
     int n = zip_get_num_files(archive);
+    YogHandle* h = VAL2HDL(env, dest);
     int i;
     for (i = 0; i < n; i++) {
         const char* name = zip_get_name(archive, i, 0);
@@ -202,8 +205,9 @@ decompress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal 
             close_zip(env, pkg, archive);
             raise_ZipError(env, pkg, zip_strerror(archive));
         }
-        char* path = (char*)YogSysdeps_alloca(strlen(STRING_CSTR(dest)) + strlen(name) + 2);
-        strcpy(path, STRING_CSTR(dest));
+        YogVal bin = YogString_to_bin_in_default_encoding(env, h);
+        char* path = (char*)YogSysdeps_alloca(strlen(BINARY_CSTR(bin)) + strlen(name) + 2);
+        strcpy(path, BINARY_CSTR(bin));
         strcat(path, "/");
         strcat(path, name);
         char* dir = (char*)YogSysdeps_alloca(strlen(path) + 1);
@@ -220,7 +224,7 @@ decompress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal 
         if (fp == NULL) {
             zip_fclose(file);
             close_zip(env, pkg, archive);
-            s = YogString_from_str(env, path);
+            s = YogString_from_string(env, path);
             YogError_raise_sys_err(env, errno, s);
         }
         while (1) {

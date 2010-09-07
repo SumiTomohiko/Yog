@@ -4,12 +4,14 @@
 #include "syck.h"
 #include "syck_st.h"
 #include "yog/array.h"
+#include "yog/binary.h"
 #include "yog/dict.h"
 #include "yog/encoding.h"
 #include "yog/error.h"
 #include "yog/eval.h"
 #include "yog/float.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
 #include "yog/package.h"
 #include "yog/string.h"
 #include "yog/sysdeps.h"
@@ -222,6 +224,14 @@ err_handler(SyckParser* p, const char* msg)
     /* NOTREACHED */
 }
 
+static const char*
+get_cstr(YogEnv* env, YogVal s)
+{
+    /* This function returns a pointer under GC */
+    YogVal bin = YogString_to_bin_in_default_encoding(env, VAL2HDL(env, s));
+    return BINARY_CSTR(bin);
+}
+
 static YogVal
 load_string(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -239,7 +249,7 @@ load_string(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     syck_parser_set_root_on_error(p, YNIL);
     syck_parser_handler(p, parse);
     syck_parser_error_handler(p, err_handler);
-    syck_parser_str(p, STRING_CSTR(yaml), YogString_size(env, yaml), NULL);
+    syck_parser_str(p, get_cstr(env, yaml), YogString_size(env, yaml), NULL);
     p->bonus = (void*)env;
     SYMID root = syck_parse(p);
     obj = lookup_ptr(env, p, root)->val;
@@ -264,7 +274,7 @@ emit_str(YogEnv* env, SyckEmitter* e, YogVal obj)
 
     s = YogEval_call_method0(env, obj, "to_s");
     uint_t size = YogString_size(env, s);
-    syck_emit_scalar(e, "str", scalar_none, 0, 0, 0, STRING_CSTR(s), size);
+    syck_emit_scalar(e, "str", scalar_none, 0, 0, 0, get_cstr(env, s), size);
 
     RETURN_VOID(env);
 }
@@ -301,7 +311,7 @@ emit(SyckEmitter* e, st_data_t data)
         YOG_BUG(env, "invalid object (0x%08x)", obj);
     }
     else if (BASIC_OBJ_TYPE(obj) == TYPE_STRING) {
-        const char* s = STRING_CSTR(obj);
+        const char* s = get_cstr(env, obj);
         uint_t size = YogString_size(env, obj);
         syck_emit_scalar(e, "str", scalar_none, 0, 0, 0, s, size);
     }

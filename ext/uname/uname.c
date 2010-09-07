@@ -21,7 +21,7 @@ do_uname(YogEnv* env, struct utsname* name)
     { \
         struct utsname __name__; \
         do_uname(env, &__name__); \
-        return YogString_from_str(env, __name__.name); \
+        return YogString_from_string(env, __name__.name); \
     }
 
 DEFINE_FUNC_BODY(release)
