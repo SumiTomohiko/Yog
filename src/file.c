@@ -11,6 +11,7 @@
 #include "yog/eval.h"
 #include "yog/file.h"
 #include "yog/get_args.h"
+#include "yog/misc.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/string.h"
@@ -66,12 +67,10 @@ static YogVal
 write(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
 {
     CHECK_SELF_TYPE2(env, self);
-    if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "First argument must be String");
-    }
+    YogMisc_check_string(env, s, "s");
 
     YogVal bin = YogString_to_bin_in_default_encoding(env, s);
-    fputs(BINARY_CSTR(bin), PTR_AS(YogFile, self)->fp);
+    fputs(BINARY_CSTR(bin), HDL_AS(YogFile, self)->fp);
 
     return HDL2VAL(self);
 }
@@ -189,9 +188,9 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     file = YogFile_new(env);
 
     YogHandle* h = YogHandle_REGISTER(env, path);
-    YogVal bin = YogString_to_bin_in_default_encoding(env, h);
+    YogHandle* bin = VAL2HDL(env, YogString_to_bin_in_default_encoding(env, h));
     const char* m = IS_UNDEF(mode) ? "r" : BINARY_CSTR(YogString_to_bin_in_default_encoding(env, YogHandle_REGISTER(env, mode)));
-    FILE* fp = fopen(BINARY_CSTR(bin), m);
+    FILE* fp = fopen(BINARY_CSTR(HDL2VAL(bin)), m);
     if (fp == NULL) {
         YogError_raise_sys_err(env, errno, path);
     }
