@@ -1442,12 +1442,12 @@ write_argument_object(YogEnv* env, void** ptr, void* refered, YogVal arg_type, Y
 static void
 Pointer_write(YogEnv* env, YogVal self, void** ptr)
 {
-    SAVE_ARG(env, self);
     if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_POINTER)) {
-        YogError_raise_TypeError(env, "Argument must be Pointer, not %C", self);
+        const char* fmt = "Argument must be Pointer, not %C";
+        YogError_raise_TypeError(env, fmt, self);
+        /* NOTREACHED */
     }
     *ptr = PTR_AS(Pointer, self)->ptr;
-    RETURN_VOID(env);
 }
 
 static void
@@ -1464,9 +1464,10 @@ Int_write(YogEnv* env, YogVal self, int* p)
 static void
 write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal val)
 {
+    SAVE_ARG(env, val);
     if (!IS_SYMBOL(arg_type)) {
         write_argument_object(env, (void**)pvalue, refered, arg_type, val);
-        return;
+        RETURN_VOID(env);
     }
 
     const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, VAL2ID(arg_type)));
@@ -1542,6 +1543,7 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal
         YogError_raise_ValueError(env, "Unknown argument type");
         /* NOTREACHED */
     }
+    RETURN_VOID(env);
 }
 
 static uint_t
@@ -1562,7 +1564,7 @@ type2refered_size(YogEnv* env, YogVal type, YogVal arg)
     if (!IS_SYMBOL(type)) {
         return 0;
     }
-    const char* s = BINARY_CSTR(YogVM_id2name(env, env->vm, VAL2ID(type)));
+    const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, VAL2ID(type)));
     if (strcmp(s, "int_p") == 0) {
         return sizeof(int);
     }
