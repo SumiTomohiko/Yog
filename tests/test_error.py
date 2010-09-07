@@ -25,7 +25,7 @@ puts("xx" * 134217728)
             proc = self.run_command(["foo"], stdout_path, stderr_path)
             self.wait_proc(proc)
             stderr = self.read(stderr_path)
-            m = match("can't open file \"foo\"", stderr)
+            m = match("Can't open file \"foo\"", stderr)
             assert m is not None
         finally:
             for path in [stdout_path, stderr_path]:
