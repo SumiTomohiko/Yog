@@ -2347,8 +2347,9 @@ Buffer_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     if (VAL2INT(size) == 0) {
         RETURN(env, YogString_new(env));
     }
-    char* pc = PTR_AS(Buffer, self)->ptr;
-    s = YogString_from_range(env, enc, pc, pc + VAL2INT(size) - 1);
+    const char* begin = PTR_AS(Buffer, self)->ptr;
+    const char* end = begin + VAL2INT(size) - 1;
+    s = YogEncoding_conv_to_yog(env, VAL2HDL(env, enc), begin, end);
 
     RETURN(env, s);
 }
