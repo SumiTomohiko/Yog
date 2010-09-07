@@ -980,8 +980,8 @@ YogString_to_i(YogEnv* env, YogVal self)
     normalize_as_number(env, self, &normalized, &base);
 
     YogHandle* h_enc = YogHandle_REGISTER(env, env->vm->encAscii);
-    YogHandle* h_s = YogHandle_REGISTER(env, self);
-    bin = YogEncoding_conv_from_yog(env, h_enc, h_s);
+    YogHandle* h_normalized = YogHandle_REGISTER(env, normalized);
+    bin = YogEncoding_conv_from_yog(env, h_enc, h_normalized);
     char* endptr = NULL;
     errno = 0;
     long n = strtol(BINARY_CSTR(bin), &endptr, base);
