@@ -123,7 +123,8 @@ YogEncoding_conv_from_yog(YogEnv* env, YogHandle* self, YogHandle* s)
 {
     uint_t bytes_num = compute_bytes(env, self, s);
     YogVal bin = YogBinary_of_size(env, bytes_num + 1);
-    char* pc = BINARY_CSTR(bin);
+    char* begin = BINARY_CSTR(bin);
+    char* pc = begin;
     uint_t size = STRING_SIZE(HDL2VAL(s));
     uint_t i;
     for (i = 0; i < size; i++) {
@@ -131,6 +132,7 @@ YogEncoding_conv_from_yog(YogEnv* env, YogHandle* self, YogHandle* s)
         pc += conv(env, self, STRING_CHARS(HDL2VAL(s))[i], pc);
     }
     *pc = '\0';
+    BINARY_SIZE(bin) = pc - begin + 1;
 
     return bin;
 }
