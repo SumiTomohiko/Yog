@@ -53,13 +53,11 @@ static YogVal
 get(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* key, YogHandle* default_)
 {
     check_self(env, self);
-    if (!IS_PTR(HDL2VAL(key)) || (BASIC_OBJ_TYPE(HDL2VAL(key)) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "key must be String, not %C", key);
-    }
+    YogMisc_check_string(env, key, "key");
 
     const char* val = getenv_(env, key);
     if (val == NULL) {
-        return HDL2VAL(default_);
+        return default_ == NULL ? YNIL : HDL2VAL(default_);
     }
     return YogString_from_string(env, val);
 }
