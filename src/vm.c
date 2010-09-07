@@ -1153,9 +1153,10 @@ import(YogEnv* env, YogVM* vm, YogHandle* path_head, YogHandle* pkg_name)
         }
     }
 
-    YogError_raise_ImportError(env, "no package named \"%s\"", pkg_name);
-
+    const char* fmt = "No package named \"%S\"";
+    YogError_raise_ImportError(env, fmt, HDL2VAL(pkg_name));
     /* NOTREACHED */
+
     RETURN(env, YUNDEF);
 }
 

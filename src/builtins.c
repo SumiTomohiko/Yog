@@ -171,11 +171,7 @@ puts_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 static YogVal
 import_package(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* name)
 {
-    if (!IS_PTR(HDL2VAL(name)) || (BASIC_OBJ_TYPE(HDL2VAL(name)) != TYPE_STRING)) {
-        const char* fmt = "package name must be String, not %C";
-        YogError_raise_TypeError(env, fmt, name);
-        /* NOTREACHED */
-    }
+    YogMisc_check_string(env, name, "Package name");
     return HDL2VAL(YogVM_import_package(env, env->vm, name));
 }
 
