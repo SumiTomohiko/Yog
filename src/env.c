@@ -82,13 +82,11 @@ static YogVal
 subscript(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* key)
 {
     check_self(env, self);
-    if (!IS_PTR(HDL2VAL(key)) || (BASIC_OBJ_TYPE(HDL2VAL(key)) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "key must be String, not %C", key);
-    }
+    YogMisc_check_string(env, key, "key");
 
     const char* val = getenv_(env, key);
     if (val == NULL) {
-        YogError_raise_KeyError(env, "%S", key);
+        YogError_raise_KeyError(env, "%S", HDL2VAL(key));
     }
     return YogString_from_string(env, val);
 }
