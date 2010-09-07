@@ -54,6 +54,7 @@ YogByteArray_size(YogEnv* env, YogVal array)
 YogVal
 YogByteArray_new(YogEnv* env, uint_t size)
 {
+    YogGC_check_multiply_overflow(env, size, sizeof(uint8_t));
     YogVal array = ALLOC_OBJ_ITEM(env, NULL, NULL, YogByteArray, size, uint8_t);
     PTR_AS(YogByteArray, array)->size = size;
 

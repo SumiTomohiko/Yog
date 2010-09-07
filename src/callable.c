@@ -1020,6 +1020,7 @@ YogHandle*
 YogNativeFunction2_new(YogEnv* env, YogHandle* pkg, YogHandle* class_name, YogHandle* func_name, void* f, va_list ap)
 {
     uint_t args_num = count_args(env, ap);
+    YogGC_check_multiply_overflow(env, args_num, sizeof(YogNativeArg));
     YogVal self = ALLOC_OBJ_ITEM(env, YogNativeFunction2_keep_children, NULL, YogNativeFunction2, args_num, YogNativeArg);
     YogHandle* h_self = YogHandle_REGISTER(env, self);
     YogVal klass = env->vm->cNativeFunction2;

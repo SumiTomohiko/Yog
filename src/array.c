@@ -68,6 +68,7 @@ YogValArray_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* hea
 YogVal
 YogValArray_new(YogEnv* env, uint_t size)
 {
+    YogGC_check_multiply_overflow(env, size, sizeof(YogVal));
     YogVal array = ALLOC_OBJ_ITEM(env, YogValArray_keep_children, NULL, YogValArray, size, YogVal);
     PTR_AS(YogValArray, array)->size = size;
 	uint_t i;

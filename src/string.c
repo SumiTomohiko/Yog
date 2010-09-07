@@ -48,6 +48,7 @@ YogString_intern(YogEnv* env, YogVal s)
 static YogVal
 YogCharArray_new(YogEnv* env, uint_t size)
 {
+    YogGC_check_multiply_overflow(env, size, sizeof(YogChar));
     YogVal array = ALLOC_OBJ_ITEM(env, NULL, NULL, YogCharArray, size, YogChar);
     PTR_AS(YogCharArray, array)->size = size;
 
@@ -443,7 +444,8 @@ YogVal
 YogString_binop_multiply(YogEnv* env, YogHandle* self, YogVal n)
 {
     if (!IS_FIXNUM(n)) {
-        YogError_raise_TypeError(env, "Can't multiply string by non-Fixnum of type %C", n);
+        const char* fmt = "Can't multiply string by non-Fixnum of type %C";
+        YogError_raise_TypeError(env, fmt, n);
         /* NOTREACHED */
     }
 

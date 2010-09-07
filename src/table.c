@@ -52,6 +52,7 @@ keep_bins_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 static YogVal
 alloc_bins(YogEnv* env, int_t size)
 {
+    YogGC_check_multiply_overflow(env, size, sizeof(YogVal));
     YogVal array = ALLOC_OBJ_ITEM(env, keep_bins_children, NULL, YogTableEntryArray, size, YogVal);
 
     PTR_AS(YogTableEntryArray, array)->size = size;

@@ -156,6 +156,7 @@ YogScriptFrame_new(YogEnv* env, YogFrameType type, YogVal code, uint_t locals_nu
     PUSH_LOCAL(env, frame);
 
     uint_t locals_etc_size = PTR_AS(YogCode, code)->stack_size + locals_num + PTR_AS(YogCode, code)->outer_size;
+    YogGC_check_multiply_overflow(env, locals_etc_size, sizeof(YogVal));
     frame = ALLOC_OBJ_ITEM(env, YogScriptFrame_keep_children, NULL, YogScriptFrame, locals_etc_size, YogVal);
     YogScriptFrame_init(env, frame, type, code, locals_num, lhs_left_num);
 

@@ -796,6 +796,7 @@ Struct_alloc(YogEnv* env, YogVal klass)
     YOG_ASSERT(env, BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS, "invalid class");
 
     uint_t buffers_num = PTR_AS(StructClass, klass)->buffers_num;
+    YogGC_check_multiply_overflow(env, buffers_num, sizeof(YogVal));
     obj = ALLOC_OBJ_ITEM(env, Struct_keep_children, Struct_finalize, Struct, buffers_num, YogVal);
     YogBasicObj_init(env, obj, TYPE_STRUCT, 0, klass);
     PTR_AS(Struct, obj)->data = NULL;
@@ -835,6 +836,7 @@ LibFunc_new(YogEnv* env, uint_t nargs)
     YogVal obj = YUNDEF;
     PUSH_LOCAL(env, obj);
 
+    YogGC_check_multiply_overflow(env, nargs, sizeof(YogVal));
     obj = ALLOC_OBJ_ITEM(env, LibFunc_keep_children, LibFunc_finalize, LibFunc, nargs, YogVal);
     YogBasicObj_init(env, obj, TYPE_LIB_FUNC, 0, env->vm->cLibFunc);
     PTR_AS(LibFunc, obj)->f = NULL;

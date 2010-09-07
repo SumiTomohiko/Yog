@@ -2214,6 +2214,7 @@ make_exception_table(YogEnv* env, YogVal code, YogVal data)
     }
 
     if (0 < size) {
+        YogGC_check_multiply_overflow(env, size, sizeof(YogExceptionTableEntry));
         YogVal exc_tbl = ALLOC_OBJ_ITEM(env, NULL, NULL, YogExceptionTable, size, YogExceptionTableEntry);
 
         uint_t i = 0;

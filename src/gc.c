@@ -655,6 +655,16 @@ YogGC_bind_to_gc(YogEnv* env)
     DEBUG(TRACE("%p: exit YogGC_bind_to_gc", env));
 }
 
+void
+YogGC_check_multiply_overflow(YogEnv* env, uint_t n, uint_t m)
+{
+    uint_t l = n * m;
+    if ((m == 0) || (l / m == n)) {
+        return;
+    }
+    YogError_out_of_memory(env);
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */

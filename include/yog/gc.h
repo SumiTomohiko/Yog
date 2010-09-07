@@ -70,6 +70,7 @@ typedef struct YogHeap YogHeap;
 YOG_EXPORT void YogGC_add_to_remembered_set(YogEnv*, void*);
 YOG_EXPORT YogVal YogGC_alloc(YogEnv*, ChildrenKeeper, Finalizer, size_t);
 YOG_EXPORT void YogGC_bind_to_gc(YogEnv*);
+YOG_EXPORT void YogGC_check_multiply_overflow(YogEnv*, uint_t, uint_t);
 YOG_EXPORT void YogGC_compact(YogEnv*);
 YOG_EXPORT void YogGC_delete(YogEnv*);
 YOG_EXPORT void YogGC_free(YogEnv*, void*, size_t);
