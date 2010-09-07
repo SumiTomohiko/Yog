@@ -33,7 +33,7 @@ EOF2
 
     def test_error0(self):
         def test_stderr(stderr):
-            self._test_regexp("SyntaxError: file \"[^\"]+\", line 2: EOF while scanning heredoc\n", stderr)
+            self._test_regexp("SyntaxError: File \"[^\"]+\", line 2: EOF while scanning heredoc\n", stderr)
 
         self._test("""
 print(<<EOF)
