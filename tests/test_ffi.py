@@ -1307,7 +1307,7 @@ print(buf.size)
     def test_Buffer10(self):
         self._test("""
 s = \"foo\"
-buf = Buffer.new(s)
+buf = Buffer.new(s.to_bin(ENCODINGS[\"utf-8\"]))
 Bar = StructClass.new(\"Bar\", [[Buffer, \'baz]])
 bar = Bar.new()
 bar.baz = buf
@@ -1318,7 +1318,7 @@ print(bar.baz.to_s(buf.size, ENCODINGS[\"utf-8\"]))
         path = get_lib_path()
         self._test("""
 s = \"foo\"
-buf = Buffer.new(s)
+buf = Buffer.new(s.to_bin(ENCODINGS[\"utf-8\"]))
 Bar = StructClass.new(\"Bar\", [[Buffer, \'baz]])
 bar = Bar.new()
 bar.baz = buf
