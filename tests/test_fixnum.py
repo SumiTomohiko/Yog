@@ -138,7 +138,7 @@ puts(0b0_0_1_0_1_0_1_0)
 puts(0b0010__1010)
 """, stderr="""puts(0b0010__1010)
             ^
-SyntaxError: trailing \"_\" in number
+SyntaxError: Trailing \"_\" in number
 """)
 
     def test_binary_literal40(self):
@@ -146,7 +146,7 @@ SyntaxError: trailing \"_\" in number
 puts(0b_)
 """, stderr="""puts(0b_)
        ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_binary_literal50(self):
@@ -154,7 +154,7 @@ SyntaxError: numeric literal without digits
 puts(0b2)
 """, stderr="""puts(0b2)
        ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_binary_literal60(self):
@@ -162,7 +162,7 @@ SyntaxError: numeric literal without digits
 puts(0b1_2)
 """, stderr="""puts(0b1_2)
          ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_digit_literal0(self):
