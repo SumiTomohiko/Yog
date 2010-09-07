@@ -221,8 +221,10 @@ is_hex_char(YogChar c)
 static void
 print_current_position(YogEnv* env, YogHandle* lexer)
 {
-    YogVal bin = YogString_to_bin_in_default_encoding(env, lexer);
-    char* pc = BINARY_CSTR(bin) + BINARY_SIZE(bin) - 1;
+    YogHandle* line = VAL2HDL(env, HDL_AS(YogLexer, lexer)->line);
+    YogHandle* enc = VAL2HDL(env, HDL_AS(YogLexer, lexer)->encoding);
+    YogVal bin = YogEncoding_conv_from_yog(env, enc, line);
+    char* pc = BINARY_CSTR(bin) + BINARY_SIZE(bin) - 2;
     while ((*pc == '\r') || (*pc == '\n')) {
         *pc = '\0';
         pc--;
@@ -230,7 +232,7 @@ print_current_position(YogEnv* env, YogHandle* lexer)
     FILE* out = stderr;
     fprintf(out, "%s\n", BINARY_CSTR(bin));
 
-    uint_t pos = PTR_AS(YogLexer, lexer)->next_index - 1;
+    uint_t pos = HDL_AS(YogLexer, lexer)->next_index - 1;
     uint_t i;
     for (i = 0; i < pos; i++) {
         fprintf(out, " ");
@@ -250,7 +252,7 @@ read_number(YogEnv* env, YogVal lexer, BOOL (*is_valid_char)(YogChar))
     YogChar c = NEXTC();
     if (!is_valid_char(c)) {
         print_current_position(env, h_lexer);
-        YogError_raise_SyntaxError(env, "numeric literal without digits");
+        YogError_raise_SyntaxError(env, "Numeric literal without digits");
     }
     ADD_TOKEN_CHAR(c);
 
@@ -265,11 +267,11 @@ read_number(YogEnv* env, YogVal lexer, BOOL (*is_valid_char)(YogChar))
             c = NEXTC();
             if (c == '_') {
                 print_current_position(env, h_lexer);
-                YogError_raise_SyntaxError(env, "trailing \"_\" in number");
+                YogError_raise_SyntaxError(env, "Trailing \"_\" in number");
             }
             else if (!is_valid_char(c)) {
                 print_current_position(env, h_lexer);
-                const char* msg = "numeric literal without digits";
+                const char* msg = "Numeric literal without digits";
                 YogError_raise_SyntaxError(env, msg);
             }
             ADD_TOKEN_CHAR(c);
