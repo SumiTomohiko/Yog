@@ -182,37 +182,6 @@ end""", u"""日
 end
 """, "")
 
-    def test_each_byte1(self):
-        self._test("""
-\"foo\".each_byte() do [b]
-  puts(b)
-end""", """102
-111
-111
-""")
-
-    def test_each_byte2(self):
-        self._test(u"""
-\"日本語\".each_byte() do [b]
-  puts(b)
-end""", """230
-151
-165
-230
-156
-172
-232
-170
-158
-""")
-
-    def test_each_byte3(self):
-        self._test("""
-\"\".each_byte() do [b]
-  print(42)
-end
-""", "")
-
     def test_each_line1(self):
         self._test("""
 \"foo\".each_line() do [l]
