@@ -6,7 +6,7 @@ class TestParser(TestCase):
 
     def test_duplicate_argument_name(self):
         def test_stderr(stderr):
-            self._test_regexp("SyntaxError: file \"[^\"]+\", line 2: Duplicated argument name in function definition\n", stderr)
+            self._test_regexp("SyntaxError: File \"[^\"]+\", line 2: Duplicated argument name in function definition\n", stderr)
 
         self._test("""
 def foo(bar, bar)
@@ -15,7 +15,7 @@ end
 
     def test_SyntaxError0(self):
         def test_stderr(stderr):
-            self._test_regexp(r"""SyntaxError: file "[^"]+", line 2: invalid syntax
+            self._test_regexp(r"""SyntaxError: File "[^"]+", line 2: Invalid syntax
 """, stderr)
 
         self._test("""
