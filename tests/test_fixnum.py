@@ -200,7 +200,7 @@ puts(0d4_2)
 puts(0d4__2)
 """, stderr="""puts(0d4__2)
          ^
-SyntaxError: trailing \"_\" in number
+SyntaxError: Trailing \"_\" in number
 """)
 
     def test_digit_literal40(self):
@@ -208,7 +208,7 @@ SyntaxError: trailing \"_\" in number
 puts(0d_)
 """, stderr="""puts(0d_)
        ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_digit_literal50(self):
@@ -216,7 +216,7 @@ SyntaxError: numeric literal without digits
 puts(0da)
 """, stderr="""puts(0da)
        ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_digit_literal60(self):
@@ -224,7 +224,7 @@ SyntaxError: numeric literal without digits
 puts(0d4_a)
 """, stderr="""puts(0d4_a)
          ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_octet_literal0(self):
@@ -262,7 +262,7 @@ puts(0o4_2)
 puts(0o4__2)
 """, stderr="""puts(0o4__2)
          ^
-SyntaxError: trailing \"_\" in number
+SyntaxError: Trailing \"_\" in number
 """)
 
     def test_octet_literal40(self):
@@ -270,7 +270,7 @@ SyntaxError: trailing \"_\" in number
 puts(0o_)
 """, stderr="""puts(0o_)
        ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_octet_literal50(self):
@@ -278,7 +278,7 @@ SyntaxError: numeric literal without digits
 puts(0o8)
 """, stderr="""puts(0o8)
        ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_octet_literal60(self):
@@ -286,7 +286,7 @@ SyntaxError: numeric literal without digits
 puts(0o4_8)
 """, stderr="""puts(0o4_8)
          ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_hex_literal0(self):
@@ -348,7 +348,7 @@ puts(0x4_2)
 puts(0x4__2)
 """, stderr="""puts(0x4__2)
          ^
-SyntaxError: trailing \"_\" in number
+SyntaxError: Trailing \"_\" in number
 """)
 
     def test_hex_literal100(self):
@@ -356,7 +356,7 @@ SyntaxError: trailing \"_\" in number
 puts(0x_)
 """, stderr="""puts(0x_)
        ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_hex_literal110(self):
@@ -364,7 +364,7 @@ SyntaxError: numeric literal without digits
 puts(0xg)
 """, stderr="""puts(0xg)
        ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_hex_literal120(self):
@@ -372,7 +372,7 @@ SyntaxError: numeric literal without digits
 puts(0xG)
 """, stderr="""puts(0xG)
        ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_hex_literal130(self):
@@ -380,7 +380,7 @@ SyntaxError: numeric literal without digits
 puts(0x4_g)
 """, stderr="""puts(0x4_g)
          ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_hex_literal140(self):
@@ -388,7 +388,7 @@ SyntaxError: numeric literal without digits
 puts(0x4_G)
 """, stderr="""puts(0x4_G)
          ^
-SyntaxError: numeric literal without digits
+SyntaxError: Numeric literal without digits
 """)
 
     def test_add0(self):
