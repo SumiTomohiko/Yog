@@ -266,7 +266,7 @@ print(s[-1])
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-IndexError: string index out of range
+IndexError: String index out of range
 """, stderr)
 
         self._test("""
@@ -278,7 +278,7 @@ puts(s[0])
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-IndexError: string index out of range
+IndexError: String index out of range
 """, stderr)
 
         self._test("""
@@ -290,7 +290,7 @@ puts(s[1])
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
-IndexError: string index out of range
+IndexError: String index out of range
 """, stderr)
 
         self._test("""
@@ -315,7 +315,7 @@ puts(s[\"\"])
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]=
-IndexError: string index out of range
+IndexError: String index out of range
 """, stderr)
 
         self._test("""
@@ -328,7 +328,7 @@ s[0] = \"\"
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]=
-IndexError: string index out of range
+IndexError: String index out of range
 """, stderr)
 
         self._test("""
@@ -341,7 +341,7 @@ s[1] = \"\"
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]=
-IndexError: string index out of range
+IndexError: String index out of range
 """, stderr)
 
         self._test("""
@@ -354,7 +354,7 @@ s[-1] = \"\"
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in String#\[\]=
-TypeError: string index must be Fixnum
+TypeError: String index must be Fixnum
 """, stderr)
 
         self._test("""
@@ -699,7 +699,7 @@ print(\"foo\".get(0))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in String#get
-IndexError: string index out of range
+IndexError: String index out of range
 """, stderr)
 
         self._test("""
