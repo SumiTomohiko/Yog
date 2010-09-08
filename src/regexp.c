@@ -104,8 +104,9 @@ group2indexes(YogEnv* env, YogVal self, YogVal group, int_t** num_list)
 
     regexp = PTR_AS(YogMatch, self)->regexp;
     OnigRegex onig_regexp = PTR_AS(YogRegexp, regexp)->onig_regexp;
-    OnigUChar* name_begin = (OnigUChar*)STRING_CHARS(group);
-    OnigUChar* name_end = name_begin + STRING_SIZE(group);
+    YogChar* begin = STRING_CHARS(group);
+    OnigUChar* name_begin = (OnigUChar*)begin;
+    OnigUChar* name_end = (OnigUChar*)(begin + STRING_SIZE(group));
     int_t r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, num_list);
     if (r < 1) {
         YogError_raise_IndexError(env, "no such group");
