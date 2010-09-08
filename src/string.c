@@ -664,7 +664,7 @@ assign_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Y
         { NULL, NULL } };
     YogGetArgs_parse_args(env, "[]=", params, args, kw);
     if (!IS_FIXNUM(index)) {
-        YogError_raise_TypeError(env, "string index must be Fixnum");
+        YogError_raise_TypeError(env, "String index must be Fixnum");
     }
     if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_STRING)) {
         YogError_raise_TypeError(env, "value must be String");
