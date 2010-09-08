@@ -63,7 +63,7 @@ o.foo
 """)
 
     def test_SyntaxError0(self):
-        self._test(stdout=">>> >>> ", stderr="""SyntaxError: file "<stdin>", line 1: invalid syntax
+        self._test(stdout=">>> >>> ", stderr="""SyntaxError: file "<stdin>", line 1: Invalid syntax
 """, stdin="""def def
 """)
 
