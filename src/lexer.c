@@ -117,15 +117,20 @@ nextc(YogVal lexer)
 {
     YogVal line = PTR_AS(YogLexer, lexer)->line;
     uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
+    if (STRING_SIZE(line) <= next_index) {
+        return '\0';
+    }
     YogChar c = STRING_CHARS(line)[next_index];
     PTR_AS(YogLexer, lexer)->next_index++;
-
     return c;
 }
 
 static void
 pushback(YogVal lexer, YogChar c)
 {
+    if (c == '\0') {
+        return;
+    }
     PTR_AS(YogLexer, lexer)->next_index--;
 }
 
@@ -138,18 +143,10 @@ is_whitespace(YogChar c)
 static void
 skip_whitespace(YogVal lexer)
 {
-    YogVal line = PTR_AS(YogLexer, lexer)->line;
-#define FINISHED (STRING_SIZE(line) <= PTR_AS(YogLexer, lexer)->next_index)
-    if (FINISHED) {
-        return;
-    }
-
     YogChar c;
     do {
         c = nextc(lexer);
-    } while (isspace(c) && !FINISHED);
-#undef FINISHED
-
+    } while (isspace(c));
     pushback(lexer, c);
 }
 
