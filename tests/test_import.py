@@ -70,7 +70,7 @@ test_package5.foo()""", """42
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in import_package
-ImportError: no package named "foo"
+ImportError: No package named "foo"
 """, stderr)
 
         self._test("""
@@ -82,7 +82,7 @@ import foo
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 2, in <package>
   File builtin, in import_package
-ImportError: dynamic package does not define init function \(YogInit_test_package6\)
+ImportError: Dynamic package does not define init function \(YogInit_test_package6\)
 """, stderr)
 
         self._test("""

@@ -1069,7 +1069,8 @@ call_initializer(YogEnv* env, LIB_HANDLE handle, YogHandle* pkg_name)
     typedef YogVal (*Initializer)(YogEnv*);
     Initializer init = (Initializer)YogSysdeps_get_proc(handle, s);
     if (init == NULL) {
-        YogError_raise_ImportError(env, "dynamic package does not define init function (%s)", init_name);
+        const char* fmt = "Dynamic package does not define init function (%S)";
+        YogError_raise_ImportError(env, fmt, HDL2VAL(init_name));
     }
 
     YogVal pkg = (*init)(env);
