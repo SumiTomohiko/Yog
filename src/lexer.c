@@ -1160,7 +1160,7 @@ read_encoding(YogEnv* env, YogVal lexer)
         if ((c != '=') && (c != ':')) {
             continue;
         }
-        PTR_AS(YogLexer, lexer)->next_index += pos + 1;
+        PTR_AS(YogLexer, lexer)->next_index = pos + 1;
         skip_whitespace(lexer);
 
         clear_buffer(env, lexer);
