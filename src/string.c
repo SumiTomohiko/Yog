@@ -687,7 +687,7 @@ YogString_match(YogEnv* env, YogVal self, YogVal regexp, int_t pos)
     }
 
     OnigUChar* str = (OnigUChar*)STRING_CHARS(self);
-    OnigUChar* end = (OnigUChar*)&STRING_CHARS(self)[STRING_SIZE(self) - 1];
+    OnigUChar* end = (OnigUChar*)&STRING_CHARS(self)[STRING_SIZE(self)];
     OnigUChar* start = (OnigUChar*)&STRING_CHARS(self)[offset];
     OnigRegion* region = onig_region_new();
     int_t r = onig_search(PTR_AS(YogRegexp, regexp)->onig_regexp, str, end, start, end, region, ONIG_OPTION_NONE);
@@ -704,7 +704,7 @@ YogString_binop_match(YogEnv* env, YogHandle* self, YogHandle* regexp)
     YogVal re = HDL2VAL(regexp);
     if (!IS_PTR(re) || (BASIC_OBJ_TYPE(re) != TYPE_REGEXP)) {
         const char* fmt = "Can't convert %C object to Regexp implicitly";
-        YogError_raise_TypeError(env, fmt, HDL2VAL(regexp));
+        YogError_raise_TypeError(env, fmt, re);
         /* NOTREACHED */
     }
     return YogString_match(env, HDL2VAL(self), re, 0);

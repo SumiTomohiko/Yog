@@ -1,3 +1,5 @@
+#include "yog/config.h"
+#include <ctype.h>
 #include <string.h>
 #include "oniguruma.h"
 #include "yog/array.h"
