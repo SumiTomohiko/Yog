@@ -757,10 +757,10 @@ each_line(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     uint_t size = YogString_size(env, self);
     while (i < size) {
         int_t pos = YogString_find_char(env, self, i, '\n');
-        uint_t len = pos < 0 ? STRING_SIZE(self) : pos - i + 1;
+        uint_t len = (pos < 0 ? STRING_SIZE(self) : pos) - i;
         arg[0] = YogString_slice(env, h, i, len);
         YogCallable_call(env, block, array_sizeof(arg), arg);
-        i++;
+        i += len + (pos < 0 ? 0 : 1);
     }
 
     RETURN(env, YNIL);
