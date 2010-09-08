@@ -141,7 +141,7 @@ group_num(YogEnv* env, YogVal self, int_t group)
     s = YogString_of_size(env, size);
     str = PTR_AS(YogMatch, self)->str;
     memcpy(STRING_CHARS(s), ADD_ADDR(STRING_CHARS(str), begin), size);
-    STRING_SIZE(s) = size;
+    STRING_SIZE(s) = size / sizeof(YogChar);
 
     RETURN(env, s);
 }
