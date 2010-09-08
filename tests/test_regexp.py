@@ -104,7 +104,7 @@ puts(m.group(\"name\"))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Match#group
-IndexError: no such group
+IndexError: No such group
 """, stderr)
 
         self._test("""
@@ -188,7 +188,7 @@ print(m.start(0))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Match#start
-IndexError: no such group
+IndexError: No such group
 """, stderr)
 
         self._test("""
@@ -260,7 +260,7 @@ print(m.end(0))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Match#end
-IndexError: no such group
+IndexError: No such group
 """, stderr)
 
         self._test("""

@@ -109,7 +109,7 @@ group2indexes(YogEnv* env, YogVal self, YogVal group, int_t** num_list)
     OnigUChar* name_end = (OnigUChar*)(begin + STRING_SIZE(group));
     int_t r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, num_list);
     if (r < 1) {
-        YogError_raise_IndexError(env, "no such group");
+        YogError_raise_IndexError(env, "No such group");
     }
 
     RETURN(env, r);
@@ -218,7 +218,7 @@ start_num(YogEnv* env, YogVal self, int_t group)
 
     OnigRegion* region = PTR_AS(YogMatch, self)->onig_region;
     if ((group < 0) || (region->num_regs <= group)) {
-        YogError_raise_IndexError(env, "no such group");
+        YogError_raise_IndexError(env, "No such group");
     }
     s = PTR_AS(YogMatch, self)->str;
     const YogChar* start = ADD_ADDR(STRING_CHARS(s), region->beg[group]);
@@ -292,7 +292,7 @@ end_num(YogEnv* env, YogVal self, int_t group)
 
     OnigRegion* region = PTR_AS(YogMatch, self)->onig_region;
     if ((group < 0) || (region->num_regs <= group)) {
-        YogError_raise_IndexError(env, "no such group");
+        YogError_raise_IndexError(env, "No such group");
     }
     s = PTR_AS(YogMatch, self)->str;
     const YogChar* end = ADD_ADDR(STRING_CHARS(s), region->end[group]);
