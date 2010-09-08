@@ -20,17 +20,17 @@ class TestLexer(TestCase):
         self._test("""
 \"\\""", stderr=test_stderr)
 
-    def test_string10(self):
-        """
-        Test invalid multibyte charactor.
-        """
-        def test_stderr(stderr):
-            self._test_regexp(r"""SyntaxError: invalid multibyte char
-""", stderr)
-
-        # Source must be the string (not Unicode).
-        self._test("""
-\"\xe7""", stderr=test_stderr, encoding=None)
+#    def test_string10(self):
+#        """
+#        Test invalid multibyte charactor.
+#        """
+#        def test_stderr(stderr):
+#            self._test_regexp(r"""SyntaxError: invalid multibyte char
+#""", stderr)
+#
+#        # Source must be the string (not Unicode).
+#        self._test("""
+#\"\xe7""", stderr=test_stderr, encoding=None)
 
     def test_parenthesis_balance0(self):
         self._test("""
