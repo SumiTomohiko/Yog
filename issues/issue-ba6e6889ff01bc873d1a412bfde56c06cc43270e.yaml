@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: copy_string in encoding.c
+desc: Use strcpy.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-09-09 02:53:01.462393 Z
+references: []
+
+id: ba6e6889ff01bc873d1a412bfde56c06cc43270e
+log_events: 
+- - 2010-09-09 02:53:02.005166 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
