@@ -35,6 +35,7 @@ Z_UNKNOWN = 2
 Z_DEFLATED = 8
 Z_NULL = 0
 
+string = ['string, ENCODINGS["utf-8"]]
 z_stream = StructClass.new("z_stream", [
   [Buffer, 'next_in],
   ['uint, 'avail_in],
@@ -44,7 +45,7 @@ z_stream = StructClass.new("z_stream", [
   ['uint, 'avail_out],
   ['ulong, 'total_out],
 
-  [String, 'msg],
+  [string, 'msg],
   ['pointer, 'state],
 
   ['pointer, 'zalloc],
@@ -56,11 +57,12 @@ z_stream = StructClass.new("z_stream", [
   ['ulong, 'reserved]])
 
 lib = load_lib("/usr/lib/libz.so")
-deflateInit_ = lib.load_func("deflateInit_", [z_stream, 'int, String, 'int], 'int)
+string = ['string, ENCODINGS["utf-8"]]
+deflateInit_ = lib.load_func("deflateInit_", [z_stream, 'int, string, 'int], 'int)
 deflate = lib.load_func("deflate", [z_stream, 'int], 'int)
 deflateEnd = lib.load_func("deflateEnd", [z_stream], 'int)
 
-inflateInit_ = lib.load_func("inflateInit_", [z_stream, String, 'int], 'int)
+inflateInit_ = lib.load_func("inflateInit_", [z_stream, string, 'int], 'int)
 inflate = lib.load_func("inflate", [z_stream, 'int], 'int)
 inflateEnd = lib.load_func("inflateEnd", [z_stream], 'int)
 
