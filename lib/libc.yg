@@ -106,7 +106,8 @@ htons = lib.load_func("htons", ['uint16], 'uint16)
 ntohl = lib.load_func("ntohl", ['uint32], 'uint32)
 ntohs = lib.load_func("ntohs", ['uint16], 'uint16)
 in_addr_t = 'uint32
-inet_addr = lib.load_func("inet_addr", [String], in_addr_t)
+string = ['string, ENCODINGS["utf-8"]]
+inet_addr = lib.load_func("inet_addr", [string], in_addr_t)
 socklen_t = 'uint32
 if SYSNAME == "FreeBSD"
   addrinfo_members = [
@@ -115,7 +116,7 @@ if SYSNAME == "FreeBSD"
     ['int, 'ai_socktype],
     ['int, 'ai_protocol],
     [socklen_t, 'ai_addrlen],
-    [['string, ENCODINGS["ascii"]], 'ai_canonname],
+    [string, 'ai_canonname],
     ['pointer (: sockaddr :), 'ai_addr],
     ['pointer (: addrinfo :), 'ai_next]]
 else
@@ -126,17 +127,17 @@ else
     ['int, 'ai_protocol],
     [socklen_t, 'ai_addrlen],
     ['pointer (: sockaddr :), 'ai_addr],
-    [['string, ENCODINGS["ascii"]], 'ai_canonname],
+    [string, 'ai_canonname],
     ['pointer (: addrinfo :), 'ai_next]]
 end
 addrinfo = StructClass.new("addrinfo", addrinfo_members)
-getaddrinfo = lib.load_func("getaddrinfo", [String, String, addrinfo, 'pointer_p], 'int)
+getaddrinfo = lib.load_func("getaddrinfo", [string, string, addrinfo, 'pointer_p], 'int)
 freeaddrinfo = lib.load_func("freeaddrinfo", ['pointer])
 gai_strerror = lib.load_func("gai_strerror", ['int], 'pointer (: String :))
 
 close = lib.load_func("close", ['int], 'int)
 
-perror = lib.load_func("perror", [String])
+perror = lib.load_func("perror", [string])
 abort = lib.load_func("abort")
 
 if ARGV.get(0) == __FILE__

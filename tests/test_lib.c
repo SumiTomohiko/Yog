@@ -3,6 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+void
+print_string(const char* s)
+{
+    printf("%s", s);
+}
+
 struct Baz {
     char* buf;
 };

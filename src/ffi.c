@@ -1016,18 +1016,17 @@ map_id_type(YogEnv* env, ID type)
 static ffi_type*
 map_type(YogEnv* env, YogVal type)
 {
-    SAVE_ARG(env, type);
-
     if (IS_SYMBOL(type)) {
-        RETURN(env, map_id_type(env, VAL2ID(type)));
+        return map_id_type(env, VAL2ID(type));
     }
     YogVM* vm = env->vm;
-    if ((IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) || (type == vm->cBuffer) || (type == vm->cString)) {
-        RETURN(env, &ffi_type_pointer);
+    if ((IS_PTR(type) && ((BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS) || (BASIC_OBJ_TYPE(type) == TYPE_ARRAY))) || (type == vm->cBuffer)) {
+        return &ffi_type_pointer;
     }
-    YogError_raise_TypeError(env, "Type must be Symbol, String, Buffer or StructClass, not %C", type);
+    const char* fmt = "Type must be Symbol, Array, Buffer or StructClass, not %C";
+    YogError_raise_TypeError(env, fmt, type);
     /* NOTREACHED */
-    RETURN(env, NULL);
+    return NULL;
 }
 
 static const char*
@@ -1070,10 +1069,14 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         YogError_raise_TypeError(env, "name must be String, not %C", name);
     }
     if (!IS_NIL(arg_types) && (BASIC_OBJ_TYPE(arg_types) != TYPE_ARRAY)) {
-        YogError_raise_TypeError(env, "arg_types must be Array or nil, not %C", arg_types);
+        const char* fmt = "arg_types must be Array or nil, not %C";
+        YogError_raise_TypeError(env, fmt, arg_types);
+        /* NOTREACHED */
     }
     if (!IS_NIL(rtype) && !IS_SYMBOL(rtype)) {
-        YogError_raise_TypeError(env, "rtype must be Symbol or nil, not %C", rtype);
+        const char* fmt = "rtype must be Symbol or nil, not %C";
+        YogError_raise_TypeError(env, fmt, rtype);
+        /* NOTREACHED */
     }
 
     uint_t nargs = IS_NIL(arg_types) ? 0 : YogArray_size(env, arg_types);
@@ -1087,8 +1090,8 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     }
     ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(rtype) ? &ffi_type_void : map_type(env, rtype), types);
     if (status != FFI_OK) {
-        const char* s = map_ffi_error(env, status);
-        YogError_raise_FFIError(env, "%s", s);
+        YogError_raise_FFIError(env, "%s", map_ffi_error(env, status));
+        /* NOTREACHED */
     }
     YogVal s = YogString_to_bin_in_default_encoding(env, VAL2HDL(env, name));
     void* p = YogSysdeps_get_proc(PTR_AS(Lib, self)->handle, BINARY_CSTR(s));
@@ -1470,20 +1473,34 @@ write_argument_object(YogEnv* env, void** ptr, void* refered, YogVal arg_type, Y
 {
     SAVE_ARGS2(env, arg_type, val);
     YogVM* vm = env->vm;
-    if (arg_type == vm->cString) {
-        memcpy(refered, STRING_CHARS(val), STRING_SIZE(val));
-        *ptr = refered;
-        RETURN_VOID(env);
-    }
     if (arg_type == vm->cBuffer) {
         write_argument_Buffer(env, ptr, val);
         RETURN_VOID(env);
     }
-    if (IS_PTR(arg_type) && (BASIC_OBJ_TYPE(arg_type) == TYPE_STRUCT_CLASS)) {
+#define RAISE_TYPE_ERROR do { \
+    const char* fmt = "Argument type must be Array, Buffer or StructClass, not %C"; \
+    YogError_raise_TypeError(env, fmt, arg_type); \
+} while (0)
+    if (!IS_PTR(arg_type)) {
+        RAISE_TYPE_ERROR;
+    }
+    if (BASIC_OBJ_TYPE(arg_type) == TYPE_STRUCT_CLASS) {
         write_argument_Struct(env, ptr, arg_type, val);
         RETURN_VOID(env);
     }
-    YogError_raise_TypeError(env, "Argument type must be Buffer or StructClass, not %C", arg_type);
+    if (BASIC_OBJ_TYPE(arg_type) != TYPE_ARRAY) {
+        RAISE_TYPE_ERROR;
+    }
+#undef RAISE_TYPE_ERROR
+    if (YogArray_size(env, arg_type) != 2) {
+        const char* fmt = "Parameterized type must have two elements";
+        YogError_raise_ValueError(env, fmt);
+        /* NOTREACHED */
+    }
+    YogHandle* enc = VAL2HDL(env, YogArray_at(env, arg_type, 1));
+    YogVal bin = YogEncoding_conv_from_yog(env, enc, VAL2HDL(env, val));
+    memcpy(refered, BINARY_CSTR(bin), BINARY_SIZE(bin));
+    *ptr = refered;
     /* NOTREACHED */
     RETURN_VOID(env);
 }
@@ -1596,19 +1613,48 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal
 }
 
 static uint_t
-type2refered_size_of_string(YogEnv* env, YogVal arg)
+type2refered_size_of_string(YogEnv* env, YogHandle* type, YogHandle* arg)
 {
-    if (!IS_PTR(arg) || (BASIC_OBJ_TYPE(arg) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "Argument must be String, not %C", arg);
+    uint_t size = YogArray_size(env, HDL2VAL(type));
+    if (size < 1) {
+        YogError_raise_ValueError(env, "Type array is empty");
+        /* NOTREACHED */
     }
-    return sizeof(YogChar) * STRING_SIZE(arg);
+    YogVal id = YogArray_at(env, HDL2VAL(type), 0);
+    if (!IS_SYMBOL(id)) {
+        const char* fmt = "First element of type must be Symbol, not %C";
+        YogError_raise_ValueError(env, fmt, id);
+        /* NOTREACHED */
+    }
+    if (VAL2ID(id) != YogVM_intern(env, env->vm, "string")) {
+        const char* fmt = "Type must be \'string, not \'%I";
+        YogError_raise_ValueError(env, fmt, VAL2ID(id));
+    }
+    if (size < 2) {
+        YogError_raise_ValueError(env, "\'string type needs encoding");
+        /* NOTREACHED */
+    }
+    YogVal enc = YogArray_at(env, HDL2VAL(type), 1);
+    if (!IS_PTR(enc) || (BASIC_OBJ_TYPE(enc) != TYPE_ENCODING)) {
+        const char* fmt = "Second element of type must be Encoding, not %C";
+        YogError_raise_TypeError(env, fmt, enc);
+        /* NOTREACHED */
+    }
+    YogVal h = HDL2VAL(arg);
+    if (!IS_PTR(h) || (BASIC_OBJ_TYPE(h) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "Argument must be String, not %C", h);
+        /* NOTREACHED */
+    }
+    return PTR_AS(YogEncoding, enc)->max_size * STRING_SIZE(h);
 }
 
 static uint_t
 type2refered_size(YogEnv* env, YogVal type, YogVal arg)
 {
-    if (type == env->vm->cString) {
-        return type2refered_size_of_string(env, arg);
+    if (IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_ARRAY)) {
+        YogHandle* h_type = VAL2HDL(env, type);
+        YogHandle* h_arg = VAL2HDL(env, arg);
+        return type2refered_size_of_string(env, h_type, h_arg);
     }
     if (!IS_SYMBOL(type)) {
         return 0;
@@ -1688,7 +1734,9 @@ LibFunc_do(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[]
 {
     uint_t nargs = HDL_AS(LibFunc, callee)->nargs;
     if (posargc != nargs) {
-        YogError_raise_ValueError(env, "%u positional argument(s) required, not %u", nargs, posargc);
+        const char* fmt = "%u positional argument(s) required, not %u";
+        YogError_raise_ValueError(env, fmt, nargs, posargc);
+        /* NOTREACHED */
     }
     void** values = (void**)YogSysdeps_alloca(sizeof(void*) * nargs);
     void** refereds = (void**)YogSysdeps_alloca(sizeof(void*) * nargs);

@@ -1017,6 +1017,14 @@ f = lib.load_func(\"print_pointer\", [\'pointer])
 f(Pointer.new())
 """ % locals(), "NULL")
 
+    def test_argument660(self):
+        path = get_lib_path()
+        self._test("""
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"print_string\", [[\'string, ENCODINGS[\"ascii\"]]])
+f(\"foo\")
+""" % locals(), "foo")
+
     def test_arguments0(self):
         path = get_lib_path()
         self._test("""

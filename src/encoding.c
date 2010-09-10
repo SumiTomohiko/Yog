@@ -62,6 +62,7 @@ YogEncoding_new(YogEnv* env)
     PTR_AS(YogEncoding, enc)->conv_char_to_yog = NULL;
     PTR_AS(YogEncoding, enc)->get_yog_char_bytes = NULL;
     PTR_AS(YogEncoding, enc)->conv_char_from_yog = NULL;
+    PTR_AS(YogEncoding, enc)->max_size = 1;
     return enc;
 }
 
@@ -383,6 +384,7 @@ YogEncoding_create_utf8(YogEnv* env)
     PTR_AS(YogEncoding, enc)->conv_char_to_yog = utf8_conv_char_to_yog;
     PTR_AS(YogEncoding, enc)->get_yog_char_bytes = utf8_get_yog_char_bytes;
     PTR_AS(YogEncoding, enc)->conv_char_from_yog = utf8_conv_char_from_yog;
+    PTR_AS(YogEncoding, enc)->max_size = 6;
     return enc;
 }
 
@@ -463,6 +465,7 @@ YogEncoding_create_shift_jis(YogEnv* env)
     PTR_AS(YogEncoding, enc)->conv_char_to_yog = shift_jis_conv_char_to_yog;
     PTR_AS(YogEncoding, enc)->get_yog_char_bytes = shift_jis_get_yog_char_bytes;
     PTR_AS(YogEncoding, enc)->conv_char_from_yog = shift_jis_conv_char_from_yog;
+    PTR_AS(YogEncoding, enc)->max_size = 2;
     return enc;
 }
 
@@ -510,6 +513,7 @@ YogEncoding_create_euc_jp(YogEnv* env)
     PTR_AS(YogEncoding, enc)->conv_char_to_yog = euc_jp_conv_char_to_yog;
     PTR_AS(YogEncoding, enc)->get_yog_char_bytes = euc_jp_get_yog_char_bytes;
     PTR_AS(YogEncoding, enc)->conv_char_from_yog = euc_jp_conv_char_from_yog;
+    PTR_AS(YogEncoding, enc)->max_size = 2;
     return enc;
 }
 
@@ -534,6 +538,7 @@ YogEncoding_create_ascii(YogEnv* env)
     PTR_AS(YogEncoding, enc)->conv_char_to_yog = ascii_conv_char_to_yog;
     PTR_AS(YogEncoding, enc)->get_yog_char_bytes = ascii_get_yog_char_bytes;
     PTR_AS(YogEncoding, enc)->conv_char_from_yog = ascii_conv_char_from_yog;
+    PTR_AS(YogEncoding, enc)->max_size = 1;
     return enc;
 }
 

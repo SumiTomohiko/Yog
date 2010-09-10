@@ -17,6 +17,7 @@ struct YogEncoding {
     YogConvCharToYog conv_char_to_yog;
     YogGetYogCharBytes get_yog_char_bytes;
     YogConvCharFromYog conv_char_from_yog;
+    uint_t max_size;
 };
 
 typedef struct YogEncoding YogEncoding;
