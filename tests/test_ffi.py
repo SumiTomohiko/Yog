@@ -472,7 +472,7 @@ foo.bar = \"baz\"
     # Tests for String
     def test_Struct620(self):
         self._test("""
-Bar = StructClass.new(\"Bar\", [[String, 'baz]])
+Bar = StructClass.new(\"Bar\", [[[\'string, ENCODINGS[\"ascii\"]], \'baz]])
 bar = Bar.new()
 print(bar.baz)
 """, "nil")
@@ -990,7 +990,7 @@ f(foo)
     def test_argument630(self):
         path = get_lib_path()
         self._test("""
-Bar = StructClass.new(\"Bar\", [[String, 'baz]])
+Bar = StructClass.new(\"Bar\", [[[\'string, ENCODINGS[\"ascii\"]], \'baz]])
 bar = Bar.new()
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"test_string\", [Bar])

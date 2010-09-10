@@ -126,7 +126,7 @@ else
     ['int, 'ai_protocol],
     [socklen_t, 'ai_addrlen],
     ['pointer (: sockaddr :), 'ai_addr],
-    [String, 'ai_canonname],
+    [['string, ENCODINGS["ascii"]], 'ai_canonname],
     ['pointer (: addrinfo :), 'ai_next]]
 end
 addrinfo = StructClass.new("addrinfo", addrinfo_members)

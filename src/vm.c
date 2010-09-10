@@ -293,7 +293,9 @@ register_encoding(YogEnv* env, YogVM* vm, const char* name, YogVal enc)
 static void
 setup_encodings2(YogEnv* env, YogVM* vm)
 {
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, vm->encAscii), klass, vm->cEncoding);
     register_encoding(env, vm, "ascii", vm->encAscii);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, vm->encUtf8), klass, vm->cEncoding);
     register_encoding(env, vm, "utf-8", vm->encUtf8);
 #define REGISTER_ENCODING(name, f) do { \
     YogVal enc = f(env); \
@@ -541,9 +543,11 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     KEEP(pkgs);
     KEEP(search_path);
+
     KEEP(encodings);
     KEEP(encAscii);
     KEEP(encUtf8);
+
     KEEP(finish_code);
     KEEP(main_thread);
     KEEP(running_threads);
