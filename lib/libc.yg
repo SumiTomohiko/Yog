@@ -115,7 +115,7 @@ if SYSNAME == "FreeBSD"
     ['int, 'ai_socktype],
     ['int, 'ai_protocol],
     [socklen_t, 'ai_addrlen],
-    [String, 'ai_canonname],
+    [['string, ENCODINGS["ascii"]], 'ai_canonname],
     ['pointer (: sockaddr :), 'ai_addr],
     ['pointer (: addrinfo :), 'ai_next]]
 else
