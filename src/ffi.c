@@ -1,4 +1,5 @@
 #include "yog/config.h"
+#include <ctype.h>
 #if defined(HAVE_STDLIB_H)
 #   include <stdlib.h>
 #endif
@@ -2448,7 +2449,7 @@ Buffer_to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
         RETURN(env, YogString_new(env));
     }
     const char* begin = PTR_AS(Buffer, self)->ptr;
-    const char* end = begin + VAL2INT(size) - 1;
+    const char* end = begin + VAL2INT(size);
     s = YogEncoding_conv_to_yog(env, VAL2HDL(env, enc), begin, end);
 
     RETURN(env, s);
