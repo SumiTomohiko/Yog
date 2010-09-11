@@ -1,4 +1,5 @@
 #include "yog/config.h"
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include "syck.h"
@@ -224,12 +225,11 @@ err_handler(SyckParser* p, const char* msg)
     /* NOTREACHED */
 }
 
-static const char*
-get_cstr(YogEnv* env, YogVal s)
+static YogVal
+get_bin(YogEnv* env, YogVal s)
 {
-    /* This function returns a pointer under GC */
-    YogVal bin = YogString_to_bin_in_default_encoding(env, VAL2HDL(env, s));
-    return BINARY_CSTR(bin);
+    YogVal enc = YogEncoding_get_utf8(env);
+    return YogEncoding_conv_from_yog(env, VAL2HDL(env, enc), VAL2HDL(env, s));
 }
 
 static YogVal
@@ -249,7 +249,8 @@ load_string(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal
     syck_parser_set_root_on_error(p, YNIL);
     syck_parser_handler(p, parse);
     syck_parser_error_handler(p, err_handler);
-    syck_parser_str(p, get_cstr(env, yaml), YogString_size(env, yaml), NULL);
+    YogVal bin = get_bin(env, yaml);
+    syck_parser_str(p, BINARY_CSTR(bin), BINARY_SIZE(bin) - 1, NULL);
     p->bonus = (void*)env;
     SYMID root = syck_parse(p);
     obj = lookup_ptr(env, p, root)->val;
@@ -269,12 +270,10 @@ static void
 emit_str(YogEnv* env, SyckEmitter* e, YogVal obj)
 {
     SAVE_ARG(env, obj);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
 
-    s = YogEval_call_method0(env, obj, "to_s");
-    uint_t size = YogString_size(env, s);
-    syck_emit_scalar(e, "str", scalar_none, 0, 0, 0, get_cstr(env, s), size);
+    YogVal s = get_bin(env, YogEval_call_method0(env, obj, "to_s"));
+    uint_t size = BINARY_SIZE(s) - 1;
+    syck_emit_scalar(e, "str", scalar_none, 0, 0, 0, BINARY_CSTR(s), size);
 
     RETURN_VOID(env);
 }
@@ -311,9 +310,9 @@ emit(SyckEmitter* e, st_data_t data)
         YOG_BUG(env, "invalid object (0x%08x)", obj);
     }
     else if (BASIC_OBJ_TYPE(obj) == TYPE_STRING) {
-        const char* s = get_cstr(env, obj);
-        uint_t size = YogString_size(env, obj);
-        syck_emit_scalar(e, "str", scalar_none, 0, 0, 0, s, size);
+        YogVal s = get_bin(env, obj);
+        uint_t size = BINARY_SIZE(s) - 1;
+        syck_emit_scalar(e, "str", scalar_none, 0, 0, 0, BINARY_CSTR(s), size);
     }
     else if (BASIC_OBJ_TYPE(obj) == TYPE_ARRAY) {
         syck_emit_seq(e, "seq", seq_none);

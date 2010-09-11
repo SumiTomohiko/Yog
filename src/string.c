@@ -174,19 +174,10 @@ YogString_from_range(YogEnv* env, YogVal enc, const char* start, const char* end
     }
 
     /* FIXME: dirty hack */
-    char* escaped_from_gc = (char*)YogSysdeps_alloca(sizeof(char) * size);
-    strncpy(escaped_from_gc, start, size);
-
-    YogVal body = YogCharArray_new(env, size + 1);
-    memcpy(PTR_AS(YogCharArray, body)->items, escaped_from_gc, size);
-    PTR_AS(YogCharArray, body)->items[size] = '\0';
-    PUSH_LOCAL(env, body);
-
-    YogVal s = YogString_new(env);
-    PTR_AS(YogString, s)->size = size + 1;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogString, s), body, body);
-
-    RETURN(env, s);
+    char* pc = (char*)YogSysdeps_alloca(sizeof(char) * size);
+    strncpy(pc, start, size);
+    YogHandle* h = VAL2HDL(env, enc);
+    RETURN(env, YogEncoding_conv_to_yog(env, h, pc, pc + size));
 }
 
 YogVal
