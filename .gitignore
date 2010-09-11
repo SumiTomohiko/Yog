@@ -53,6 +53,7 @@ configure.log
 configure.scan
 core
 core.*
+doc/index.html
 ext/Makefile.common
 ext/Makefile.in
 ext/wx.yg
