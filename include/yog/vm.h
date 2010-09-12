@@ -90,6 +90,7 @@ struct YogVM {
     YogVal encodings;
     YogVal encAscii;
     YogVal encUtf8;
+    YogVal default_encoding;
 
     ID id_star;
     ID id_star2;

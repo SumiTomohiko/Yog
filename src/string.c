@@ -1031,7 +1031,7 @@ ufo(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 YogVal
 YogString_to_bin_in_default_encoding(YogEnv* env, YogHandle* self)
 {
-    YogHandle* enc = YogHandle_REGISTER(env, env->vm->encUtf8);
+    YogHandle* enc = YogHandle_REGISTER(env, env->vm->default_encoding);
     return YogEncoding_conv_from_yog(env, enc, self);
 }
 

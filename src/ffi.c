@@ -919,7 +919,9 @@ YogFFI_load_lib(YogEnv* env, YogHandle* path)
 {
     LIB_HANDLE handle = YogMisc_load_lib(env, path);
     if (handle == NULL) {
-        YogError_raise_ImportError(env, "No library named \"%S\"", path);
+        const char* fmt = "No library named \"%S\"";
+        YogError_raise_ImportError(env, fmt, HDL2VAL(path));
+        /* NOTREACHED */
     }
     YogVal lib = Lib_alloc(env, env->vm->cLib);
     PTR_AS(Lib, lib)->handle = handle;

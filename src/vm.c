@@ -327,6 +327,36 @@ alloc_skelton_pkg(YogEnv* env, YogVM* vm)
     return pkg;
 }
 
+static const char*
+get_default_encoding_name()
+{
+#define ENCODING_DEFAULT "ascii"
+    const char* lang = getenv("LANG");
+    if (lang == NULL) {
+        return ENCODING_DEFAULT;
+    }
+    const char* pc = strchr(lang, '.');
+    if (pc == NULL) {
+        return ENCODING_DEFAULT;
+    }
+    pc++;
+    if (strcmp(pc, "UTF-8") == 0) {
+        return "utf-8";
+    }
+    if (strcmp(pc, "eucJP") == 0) {
+        return "euc-jp";
+    }
+    return ENCODING_DEFAULT;
+#undef ENCODING_DEFAULT
+}
+
+static void
+setup_default_encoding(YogEnv* env, YogVM* vm)
+{
+    YogVal s = YogString_from_string(env, get_default_encoding_name());
+    vm->default_encoding = YogDict_get(env, vm->encodings, s);
+}
+
 void
 YogVM_boot(YogEnv* env, YogVM* vm)
 {
@@ -348,6 +378,7 @@ YogVM_boot(YogEnv* env, YogVM* vm)
 
     vm->encodings = YogDict_new(env);
     setup_encodings2(env, vm);
+    setup_default_encoding(env, vm);
 
     vm->finish_code = YogCompiler_compile_finish_code(env);
 
@@ -547,6 +578,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(encodings);
     KEEP(encAscii);
     KEEP(encUtf8);
+    KEEP(default_encoding);
 
     KEEP(finish_code);
     KEEP(main_thread);
@@ -682,6 +714,7 @@ YogVM_init(YogVM* vm)
     INIT(encodings);
     INIT(encAscii);
     INIT(encUtf8);
+    INIT(default_encoding);
 
     INIT(finish_code);
 

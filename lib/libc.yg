@@ -106,7 +106,7 @@ htons = lib.load_func("htons", ['uint16], 'uint16)
 ntohl = lib.load_func("ntohl", ['uint32], 'uint32)
 ntohs = lib.load_func("ntohs", ['uint16], 'uint16)
 in_addr_t = 'uint32
-string = ['string, ENCODINGS["utf-8"]]
+string = ['string, DEFAULT_ENCODING]
 inet_addr = lib.load_func("inet_addr", [string], in_addr_t)
 socklen_t = 'uint32
 if SYSNAME == "FreeBSD"

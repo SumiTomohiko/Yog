@@ -35,7 +35,7 @@ Z_UNKNOWN = 2
 Z_DEFLATED = 8
 Z_NULL = 0
 
-string = ['string, ENCODINGS["utf-8"]]
+string = ['string, DEFAULT_ENCODING]
 z_stream = StructClass.new("z_stream", [
   [Buffer, 'next_in],
   ['uint, 'avail_in],
@@ -57,7 +57,6 @@ z_stream = StructClass.new("z_stream", [
   ['ulong, 'reserved]])
 
 lib = load_lib("/usr/lib/libz.so")
-string = ['string, ENCODINGS["utf-8"]]
 deflateInit_ = lib.load_func("deflateInit_", [z_stream, 'int, string, 'int], 'int)
 deflate = lib.load_func("deflate", [z_stream, 'int], 'int)
 deflateEnd = lib.load_func("deflateEnd", [z_stream], 'int)

@@ -343,6 +343,8 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
     e = YogEnv_new(env);
     YogObj_set_attr(env, HDL2VAL(builtins), "ENV", e);
     YogObj_set_attr(env, HDL2VAL(builtins), "ENCODINGS", env->vm->encodings);
+    YogVal enc = env->vm->default_encoding;
+    YogObj_set_attr(env, HDL2VAL(builtins), "DEFAULT_ENCODING", enc);
 
     set_path_separator(env, builtins);
 
