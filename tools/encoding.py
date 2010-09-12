@@ -63,7 +63,7 @@ def write_bin2yog_entry(entry, fp):
     bin = " ".join(["0x%02x" % (b, ) for b in entry.bin])
     lineno = entry.lineno
     fmt = "0x%(u)06x, /* %(s)s (%(bin)s) lineno: %(lineno)d */"
-    print(fmt % locals(), file=fp)
+    print((fmt % locals()).encode("UTF-8"), file=fp)
 
 def write_table(path, unicode_collection, bin2entry):
     with open(path, "w") as fp:
