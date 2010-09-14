@@ -18,9 +18,9 @@ oDB_fini = lib.load_func("oDB_fini", [oDB])
 oDB_open_to_read = lib.load_func("oDB_open_to_read", [oDB, string], 'int)
 oDB_open_to_write = lib.load_func("oDB_open_to_write", [oDB, string], 'int)
 oDB_close = lib.load_func("oDB_close", [oDB], 'int)
-oDB_put = lib.load_func("oDB_put", [oDB, ['string, ENCODING["utf-8"]]], 'int)
+oDB_put = lib.load_func("oDB_put", [oDB, ['string, ENCODINGS["utf-8"]]], 'int)
 oDB_get = lib.load_func("oDB_get", [oDB, 'int, 'int_p], 'int)
-oDB_search = lib.load_func("oDB_search", [oDB, ['string, ENCODING["utf-8"]], 'pointer_p], 'int)
+oDB_search = lib.load_func("oDB_search", [oDB, ['string, ENCODINGS["utf-8"]], 'pointer_p], 'int)
 oDB_set_msg_of_errno = lib.load_func("oDB_set_msg_of_errno", [oDB, string])
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
