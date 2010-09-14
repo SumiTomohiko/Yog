@@ -58,7 +58,7 @@ class TestCase(object):
             stderr = open(stderr_path, "w")
             try:
                 cmd = [get_command()] + args
-                return Popen(cmd, stdin=PIPE, stdout=stdout, stderr=stderr)
+                return Popen(cmd, stdin=PIPE, stdout=stdout, stderr=stderr, env={ "LANG": "ja_JP.UTF-8" })
             finally:
                 stderr.close()
         finally:
@@ -107,7 +107,7 @@ class TestCase(object):
             print out
             if stderr is not None:
                 if encoding is not None:
-                    err = err.decode(encoding)
+                    err = err.decode("UTF-8")
                 if callable(stderr):
                     stderr(err)
                 else:
@@ -115,7 +115,7 @@ class TestCase(object):
 
             if stdout is not None:
                 if encoding is not None:
-                    out = out.decode(encoding)
+                    out = out.decode("UTF-8")
                 if callable(stdout):
                     stdout(out)
                 else:
