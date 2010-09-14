@@ -34,6 +34,7 @@ YogMisc_check_string(YogEnv* env, YogHandle* val, const char* name)
 static YogHandle*
 get_so_path(YogEnv* env, YogHandle* filename)
 {
+    YogMisc_check_string(env, filename, "Filename");
     if (0 <= YogString_find_char(env, HDL2VAL(filename), 0, PATH_SEPARATOR)) {
         return filename;
     }
