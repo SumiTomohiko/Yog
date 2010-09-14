@@ -101,13 +101,18 @@ exec_child(YogEnv* env, YogHandle* self, int pipe_stdin[2], int pipe_stdout[2], 
         YogError_raise_TypeError(env, "Arguments must be Array, not %C", args);
     }
     uint_t size = YogArray_size(env, args);
-    char* argv[size + 1];
+    YogHandle* h = VAL2HDL(env, args);
+    YogHandle* bins[size];
     uint_t i;
     for (i = 0; i < size; i++) {
-        YogVal a = YogArray_at(env, args, i);
+        YogVal a = YogArray_at(env, HDL2VAL(h), i);
         check_string(env, a);
         YogVal bin = YogString_to_bin_in_default_encoding(env, VAL2HDL(env, a));
-        argv[i] = BINARY_CSTR(bin);
+        bins[i] = VAL2HDL(env, bin);
+    }
+    char* argv[size + 1];
+    for (i = 0; i < size; i++) {
+        argv[i] = BINARY_CSTR(HDL2VAL(bins[i]));
     }
     argv[size] = NULL;
 
