@@ -442,14 +442,18 @@ EOF
         <td align="left" valign="top"><table border="0"><tbody><tr><th>
           Return
         </th></tr></tbody></table></td>
-        <td><table border="0"><tbody><tr><th>:</th></tr></tbody></table></td>
+        <td valign="top"><table border="0"><tbody><tr><th>
+          :
+        </th></tr></tbody></table></td>
         <td><table border="0"><tbody><tr><td>{0}</td></tr></tbody></table></td>
       </tr>
       <tr>
         <td align="left" valign="top"><table border="0"><tbody><tr><th>
           Exception(s)
         </th></tr></tbody></table></td>
-        <td><table border="0"><tbody><tr><th>:</th></tr></tbody></table></td>
+        <td valign="top"><table border="0"><tbody><tr><th>
+          :
+        </th></tr></tbody></table></td>
         <td><table border="0"><tbody>
 EOF
     meth.excs.each() do [exc]
@@ -524,7 +528,7 @@ EOF
       <td align="left" valign="top"><table border="0"><tbody><tr><th>
         base class
       </th></tr></tbody></table></td>
-      <td align="center" valign="top"><table border="0"><tbody><tr><th>
+      <td valign="top"><table border="0"><tbody><tr><th>
         :
       </th></tr></tbody></table></td>
       <td valign="top"><table border="0"><tbody><tr><td>
@@ -625,7 +629,7 @@ EOF
       <td align="left" valign="top"><table border="0"><tbody><tr><th>
         Type
       </th></tr></tbody></table></td>
-      <td align="left" valign="top"><table border="0"><tbody><tr><th>
+      <td valign="top"><table border="0"><tbody><tr><th>
         :
       </th></tr></tbody></table></td>
       <td valign="top"><table border="0"><tbody><tr><td>
