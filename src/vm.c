@@ -1057,7 +1057,7 @@ package_name2path_head(YogEnv* env, YogVal name)
 }
 
 static void
-print_dlopen_error(YogEnv* env)
+print_dlopen_error(YogEnv* env, YogHandle* filename)
 {
     SAVE_LOCALS(env);
     if (!env->vm->debug_import) {
@@ -1076,7 +1076,8 @@ print_dlopen_error(YogEnv* env)
         RETURN_VOID(env);
     }
 #endif
-    fprintf(stderr, "%s\n", msg);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, filename);
+    fprintf(stderr, "%s: %s\n", BINARY_CSTR(bin), msg);
     RETURN_VOID(env);
 }
 
@@ -1121,7 +1122,7 @@ import_so(YogEnv* env, YogVM* vm, YogHandle* filename, YogHandle* pkg_name)
 {
     LIB_HANDLE handle = YogMisc_load_lib(env, filename);
     if (handle == NULL) {
-        print_dlopen_error(env);
+        print_dlopen_error(env, filename);
         return YUNDEF;
     }
 
