@@ -1076,8 +1076,12 @@ print_dlopen_error(YogEnv* env, YogHandle* filename)
         RETURN_VOID(env);
     }
 #endif
+#if defined(__OpenBSD__)
     YogVal bin = YogString_to_bin_in_default_encoding(env, filename);
     fprintf(stderr, "%s: %s\n", BINARY_CSTR(bin), msg);
+#else
+    fprintf(stderr, "%s\n", msg);
+#endif
     RETURN_VOID(env);
 }
 
