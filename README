@@ -1,4 +1,4 @@
-This is Yog vesrion 0.0.7
+This is Yog vesrion 0.0.8
 =========================
 
 Yog is a dynamic programming language designed as an intermediate between Python and Ruby.
@@ -19,7 +19,7 @@ Requirements
   * Intel x86
 * OS
   * Ubuntu Linux 8.04
-  * FreeBSD 7.2
+  * FreeBSD 8.1
   * OpenBSD 4.6
 
 Documentation
@@ -81,6 +81,11 @@ by version 0.0.7 (done)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 * Performance tuning
+
+by version 0.0.8 (done)
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* Change internal encoding of strings to UTF-32
 
 by version 1.0.0
 ~~~~~~~~~~~~~~~~
