@@ -58,7 +58,12 @@ class TestCase(object):
             stderr = open(stderr_path, "w")
             try:
                 cmd = [get_command()] + args
-                return Popen(cmd, stdin=PIPE, stdout=stdout, stderr=stderr, env={ "LANG": "ja_JP.UTF-8" })
+                env = { "LANG": "ja_JP.UTF-8" }
+                try:
+                    env["LD_LIBRARY_PATH"] = environ["LD_LIBRARY_PATH"]
+                except KeyError:
+                    pass
+                return Popen(cmd, stdin=PIPE, stdout=stdout, stderr=stderr, env=env)
             finally:
                 stderr.close()
         finally:
