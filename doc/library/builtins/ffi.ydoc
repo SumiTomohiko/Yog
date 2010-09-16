@@ -48,16 +48,16 @@ Types of arguments and returned value must be one of followings.
 * +'longdouble+ -- long double
 * +'pointer+ -- integer
 * +'int_p+ -- pointer to int
-* +String+ -- pointer to read only char array
+* +['string, +_encoding_+]+ -- pointer to read only char array. _encoding_ is an +Encoding+ object.
 * +Buffer+ -- pointer to char array for read/write
 * +StructClass+ object -- pointer to struct
 
-The next code show you an example of +Buffer+ and +String+.
+The next code show you an example of +Buffer+ and +'string+.
 
-  f = lib.load_func("snprintf", [Buffer, 'int, String, 'int], 'pointer)
+  f = lib.load_func("snprintf", [Buffer, 'int, ['string, ENCODINGS["ascii"]], 'int], 'pointer)
   buf = Buffer.new(256)
   f(buf, buf.size, "0x%02x", 42)
-  print(buf.to_s()) # prints "0x2a"
+  print(buf.to_s(4, ENCODINGS["ascii"])) # prints "0x2a"
 
 +snprintf+ needs a buffer as the first argument which accepts result string. You must pass a +Buffer+ object for this argument.
 
@@ -67,6 +67,7 @@ Third argument of +snprintf+ is a format string. Because it is read only, so you
 
 Yog can define structures to pass library functions. The following code show you an example of structures (this is in +lib/zlib.yg+).
 
+  string = ['string, DEFAULT_ENCODING]
   z_stream = StructClass.new("z_stream", [
     [Buffer, 'next_in],
     ['uint, 'avail_in],
@@ -76,7 +77,7 @@ Yog can define structures to pass library functions. The following code show you
     ['uint, 'avail_out],
     ['ulong, 'total_out],
 
-    [String, 'msg],
+    [string, 'msg],
     ['pointer, 'state],
 
     ['pointer, 'zalloc],
@@ -87,7 +88,7 @@ Yog can define structures to pass library functions. The following code show you
     ['ulong, 'adler],
     ['ulong, 'reserved]])
 
-This code defines a structure that name is "z\_stream". The first field of this structure is +Buffer+ (for giving an input buffer to zlib), that name is "next\_in", etc. You can use same types as that of function arguments. The 7th field whose name is "msg" is +String+. This means that this field is read only (zlib users know what error happened in the library by this field).
+This code defines a structure that name is "z\_stream". The first field of this structure is +Buffer+ (for giving an input buffer to zlib), that name is "next\_in", etc. You can use same types as that of function arguments. The 7th field whose name is "msg" is +'string+ with +DEFAULT_ENCODING+. This means that this field is read only (zlib users know what error happened in the library by this field).
 
 Structures can create new instance with the +new+ method.
 
@@ -100,7 +101,7 @@ You can access structure's attributes.
 
 Structures can be used in loading functions. The next code load a function of "deflateInit\_" whose first argument is +z_stream+.
 
-  deflateInit_ = lib.load_func("deflateInit_", [z_stream, 'int, String, 'int], 'int)
+  deflateInit_ = lib.load_func("deflateInit_", [z_stream, 'int, string, 'int], 'int)
 
 == Classes
 
@@ -120,11 +121,16 @@ class: Buffer
 
     size of a +Buffer+ object
 
-  method: to_bin()
+  method: to_bin(size)
+    parameters:
+      size: binary size
     return: a +Binary+ object
 
-  method: to_s()
-    return: a +String+ object in ascii encoding.
+  method: to_s(size, encoding)
+    parameters:
+      size: binary size
+      encoding: encoding of buffer
+    return: a +String+ object
 
 class: Lib
   base: Object
