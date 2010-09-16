@@ -1,5 +1,5 @@
 
-= Numeric
+= Numeric -- +Fixnum+, +Bignum+ and +Float+
 
 class: Bignum
   base: Object

@@ -1,10 +1,10 @@
 
-= Bool
+= +Bool+ class
+
++Bool+ is the class of +true+ and +false+.
 
 class: Bool
   base: Object
-
-  The class of +true+ and +false+.
 
   method: hash()
 
