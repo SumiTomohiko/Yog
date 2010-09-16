@@ -1,5 +1,36 @@
 
 = Regular Expressions
 
+== +Regexp+ class
+
+class: Regexp
+  base: Object
+
+  method: match(s, pos=nil)
+    parameters:
+      s: string
+      pos: starting position for matching
+    return: +Match+ object
+
+== +Match+ class
+
+class: Match
+  base: Object
+
+  method: end(group=nil)
+    parameters:
+      group: group name or group index
+    return: ending position at the matched string
+
+  method: group(group=nil)
+    parameters:
+      group: group name or group index
+    return: substring matching with the regular expression
+
+  method: start(group=nil)
+    parameters:
+      group: group name or group index
+    return: starting position at the matched string
+
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
