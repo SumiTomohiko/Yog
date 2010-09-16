@@ -6,6 +6,8 @@ You can use classes/modules/functions/objects in this package without the +impor
 + [object.ydoc]
 + [numeric.ydoc]
 + [bool.ydoc]
++ [string.ydoc]
++ [regexp.ydoc]
 + [containers.ydoc]
 + [exceptions.ydoc]
 + [file.ydoc]
