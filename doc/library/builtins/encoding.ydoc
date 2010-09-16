@@ -14,7 +14,14 @@ Yog supports the following encodings:
 
 You can use these name as a key for +ENCODINGS+.
 
+== +DEFAULT_ENCODING+
+
+Yog determines a natual encoding for the environment by the environment variable +LANG+ at boot. You can access this encoding as +DEFAULT_ENCODING+.
+
 == Built-in Objects
+
+data: DEFAULT_ENCODING
+  type: Encoding
 
 data: ENCODINGS
   type: Dict
