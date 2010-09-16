@@ -3,13 +3,6 @@
 
 Yog contains strings in UTF-32. When Yog passes strings to other system (including C runtime library), Yog converts strings into an encoding which is natual for an environment. Yog knows this encoding by the environment variable +LANG+.
 
-Yog supports the following encodings:
-
-* ascii
-* utf-8
-* euc-jp
-* shift-jis
-
 class: String
   base: Object
 

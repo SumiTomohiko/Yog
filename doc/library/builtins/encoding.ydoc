@@ -1,0 +1,23 @@
+
+= +Encoding+ class
+
++Encoding+ objects represent encodings of strings. These objects are used in specifying an encoding for functions/methods.
+
++Encoding+ objects are stored in a built-in dictionary, that name is +ENCODINGS+. You can access an +Encoding+ object with a form of +ENCODINGS["utf-8"]+.
+
+Yog supports the following encodings:
+
+* ascii
+* utf-8
+* euc-jp
+* shift-jis
+
+You can use these name as a key for +ENCODINGS+.
+
+== Built-in Objects
+
+data: ENCODINGS
+  type: Dict
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
