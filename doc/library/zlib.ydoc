@@ -1,5 +1,19 @@
 
 = +zlib+ Package
 
+function: compress(bin)
+  parameters:
+    bin: +Binary+ object to compress
+  return: +Binary+ object
+  exceptions:
+    ZlibError: zlib failed.
+
+function: decompress(bin)
+  parameters:
+    bin: +Binary+ object to decompress
+  return: +Binary+ object
+  exceptions:
+    ZlibError: zlib failed.
+
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
