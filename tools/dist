@@ -120,7 +120,7 @@ if [ $? != 0 ]; then
 fi
 print_done
 echo -n "Archive .tar.xz..."
-(cd "${dir}" && tar c "${archive}" | xz --compress > "../${archive}.tar.xz")
+(cd "${dir}" && tar cf - "${archive}" | xz --compress > "../${archive}.tar.xz")
 if [ $? != 0 ]; then
   echo "can't archive .tar.xz"
   exit 2
