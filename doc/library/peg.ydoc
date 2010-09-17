@@ -1,5 +1,5 @@
 
-= +peg+ package
+= +peg+ Package
 
 The +peg+ package is an implementation of PEG (Parsing Expression Grammar). You can describe a grammar with PEG to parse inputs.
 

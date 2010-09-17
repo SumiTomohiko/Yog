@@ -1,5 +1,5 @@
 
-= +optparse+ package
+= +optparse+ Package
 
 The +optparse+ package is for parsing command line parameters. The +optparse+ package accepts both short syle options (+-x+) and long style options (+--foo+).
 

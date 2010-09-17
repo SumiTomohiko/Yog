@@ -1,5 +1,5 @@
 
-= +builtins+ package
+= +builtins+ Package
 
 You can use classes/modules/functions/objects in this package without the +import+ statement.
 

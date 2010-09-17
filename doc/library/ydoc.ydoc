@@ -1,5 +1,5 @@
 
-= +ydoc+ package
+= +ydoc+ Package
 
 The +ydoc+ package is a documentation tool for Yog. You can convert ydoc format documents to html. ydoc format includes class definitions, function definitions, object definitions and markups.
 
