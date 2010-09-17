@@ -1,5 +1,23 @@
 
 = +zip+ Package
 
++zip+ package handles zip files.
+
+function: compress(path, *args)
+  parameters:
+    path: path of new zip file
+    args: pathes of files to be compressed
+  return: +nil+
+
+  Compresses files of _args_ to one zip file of _path_.
+
+function: decompress(zip, dest=nil)
+  parameters:
+    zip: path of zip file
+    dest: path of a destination directory
+  return: +nil+
+
+  Decompress a zip file.
+
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
