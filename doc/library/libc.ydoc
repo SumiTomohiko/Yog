@@ -1,5 +1,7 @@
 
 = +libc+ Package
 
+This package includes functions in C library.
+
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
