@@ -88,8 +88,8 @@ if [ $? != 0 ]; then
   echo "can't generate keywords.inc"
   exit 2
 fi
-(cd ${src_dir} && ${python} "${tools_dir}/make_shift_jis_tables.py")
-(cd ${src_dir} && ${python} "${tools_dir}/make_euc_jp_tables.py")
+(cd ${src_dir} && ${python} "../tools/make_shift_jis_tables.py")
+(cd ${src_dir} && ${python} "../tools/make_euc_jp_tables.py")
 print_done
 
 echo -n "Generate HTML document..."
