@@ -1,5 +1,22 @@
 
 = +uname+ Package
 
++uname+ package tells you what platform Yog run on.
+
+function: machine()
+  return: +String+
+
+function: nodename()
+  return: +String+
+
+function: release()
+  return: +String+
+
+function: sysname()
+  return: +String+
+
+function: version()
+  return: +String+
+
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
