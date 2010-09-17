@@ -52,7 +52,7 @@ install:
 	done
 
 pkg:
-	tools/dist --python=$(PYTHON) $(ARCHIVE)
+	tools/dist -p $(PYTHON) $(ARCHIVE)
 
 pkgcheck:
 	tools/distcheck $(ARCHIVE)

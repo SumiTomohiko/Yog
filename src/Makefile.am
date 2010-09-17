@@ -114,13 +114,13 @@ errno.inc: $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno
 
 SHIFT_JIS_TABLES = shift_jis2yog_hankaku.inc shift_jis2yog_zenkaku.inc \
 		   yog2shift_jis1.inc yog2shift_jis2.inc yog2shift_jis3.inc
-$(SHIFT_JIS_TABLES): $(TOOLS_DIR)/make_shift_jis_table.py sjis-0213-2004-std.txt
-	$(PYTHON) $(TOOLS_DIR)/make_shift_jis_table.py
+$(SHIFT_JIS_TABLES): $(TOOLS_DIR)/make_shift_jis_tables.py sjis-0213-2004-std.txt
+	$(PYTHON) $(TOOLS_DIR)/make_shift_jis_tables.py
 
 EUC_JP_TABLES = euc_jp2yog_zenkaku.inc euc_jp2yog_hankaku.inc \
 		euc_jp2yog_3bytes.inc yog2euc_jp1.inc yog2euc_jp2.inc \
 		yog2euc_jp3.inc
-$(EUC_JP_TABLES): $(TOOLS_DIR)/make_euc_jp_table.py euc-jis-2004-std.txt
-	$(PYTHON) $(TOOLS_DIR)/make_euc_jp_table.py
+$(EUC_JP_TABLES): $(TOOLS_DIR)/make_euc_jp_tables.py euc-jis-2004-std.txt
+	$(PYTHON) $(TOOLS_DIR)/make_euc_jp_tables.py
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake

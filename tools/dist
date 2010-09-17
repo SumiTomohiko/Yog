@@ -6,7 +6,7 @@ print_done()
 }
 
 python="python"
-opts=`getopt --long python: -- "${@}"`
+opts=`getopt p: "${*}"`
 if [ $? != 0 ]; then
   echo "illegal option(s)"
   exit 1
@@ -15,7 +15,7 @@ eval set -- "${opts}"
 while :
 do
   case "${1}" in
-  --python)
+  -p)
     python="${2}"
     shift 2
     ;;
@@ -64,32 +64,32 @@ if [ $? != 0 ]; then
   echo "can't remove autom4te"
   exit 2
 fi
-srcdir="${archive_dir}/src"
-grep -o "\$(YOG) yg2inc.yg [[:alnum:]_]\+.yg \$@" "${srcdir}/Makefile.am" | while read line
+src_dir="${archive_dir}/src"
+grep -o "\$(YOG) yg2inc.yg [[:alnum:]_]\+.yg \$@" "${src_dir}/Makefile.am" | while read line
 do
   yg=`echo "${line}" | cut -d " " -f 2`
   src=`echo "${line}" | cut -d " " -f 3`
   dst="`echo "${src}" | cut -d "." -f 1`.inc"
-  ${yog} "${srcdir}/${yg}" "${srcdir}/${src}" "${srcdir}/${dst}"
+  ${yog} "${src_dir}/${yg}" "${src_dir}/${src}" "${src_dir}/${dst}"
 done
 tools_dir="${archive_dir}/tools"
-${yog} "${tools_dir}/make_errno.yg" "${tools_dir}/errno" "${srcdir}/errno.inc"
+${yog} "${tools_dir}/make_errno.yg" "${tools_dir}/errno" "${src_dir}/errno.inc"
 if [ $? != 0 ]; then
   echo "can't generate errno files."
   exit 2
 fi
-${python} "${tools_dir}/inst.py" "${srcdir}/insts.def" "${archive_dir}"
+${python} "${tools_dir}/inst.py" "${src_dir}/insts.def" "${archive_dir}"
 if [ $? != 0 ]; then
   echo "can't generate instruction files."
   exit 2
 fi
-gperf "${srcdir}/keywords" > "${srcdir}/keywords.inc"
+gperf "${src_dir}/keywords" > "${src_dir}/keywords.inc"
 if [ $? != 0 ]; then
   echo "can't generate keywords.inc"
   exit 2
 fi
-(cd src && ${python} "${tools_dir}/make_shift_jis_table.py")
-(cd src && ${python} "${tools_dir}/make_euc_jp_table.py")
+(cd ${src_dir} && ${python} "${tools_dir}/make_shift_jis_tables.py")
+(cd ${src_dir} && ${python} "${tools_dir}/make_euc_jp_tables.py")
 print_done
 
 echo -n "Generate HTML document..."
