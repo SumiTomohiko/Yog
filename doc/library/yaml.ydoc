@@ -1,5 +1,20 @@
 
 = +yaml+ Package
 
++yaml+ package converts objects from/into YAML.
+
+function: dump_to_string(obj)
+  parameters:
+    obj: an object to convert into YAML
+  return: +String+
+
+  Converts +obj+ to YAML.
+
+function: load_string(yaml)
+  parameters:
+    yaml: YAML string
+
+  Converts objects from YAML.
+
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
