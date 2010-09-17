@@ -3,9 +3,15 @@
 
 + [builtins/index.ydoc]
 + [hq9plus.ydoc]
++ [libc.ydoc]
 + [optparse.ydoc]
 + [peg.ydoc]
++ [socket.ydoc]
++ [uname.ydoc]
++ [yaml.ydoc]
 + [ydoc.ydoc]
++ [zip.ydoc]
++ [zlib.ydoc]
 
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
