@@ -1,0 +1,104 @@
+
+= +String+ class
+
+Yog contains strings in UTF-32. When Yog passes strings to other system (including C runtime library), Yog converts strings into an encoding which is natual for an environment. Yog knows this encoding by the environment variable +LANG+.
+
+class: String
+  base: Object
+
+  method: *(n)
+    parameters:
+      n: count for iteration
+    return: new string
+
+    Concatenates +self+ for _n_ times.
+
+  method: <<(s)
+    parameters:
+      s: string
+    return: +self+
+
+    Appends _s_ to +self+.
+
+  method: <=>(n)
+    parameters:
+      s: string
+    return:
+
+    Compares +self+ with _n_.
+
+  method: =~(regexp)
+    parameters:
+      regexp: regular expression
+    return: +Match+ object
+
+  method: [](index)
+    parameters:
+      index:
+    return: _index_th character in +self+
+
+  method: []=(index, value)
+    parameters:
+      index:
+      value:
+
+  method: add(s)
+    parameters:
+      s: string
+    return: new string
+
+    Concatenates +self+ and _s_.
+
+  method: each_char(&block)
+    return: +self+
+    block: block(c)
+
+    Callbacks _block_ for each characters in +self+.
+
+  method: each_line(&block)
+    return: +nil+
+    block: block(line)
+
+    Callbacks _block_ for each lines in +self+.
+
+  method: get(index, default=nil)
+    parameters:
+      index:
+      default:
+    return: +self[+_index_+]+ or _default_
+
+  method: gsub(substr, to)
+    parameters:
+      substr: string to search
+      to: string to replace
+    return: new string
+
+    Replaces _substr_ in +self+ with _to_.
+
+  method: hash()
+    return: hash
+
+  property: size
+    type: Fixnum
+
+    Length of a string.
+
+  method: slice(pos, len=nil)
+    parameters:
+      pos: starting position of substring
+      len: length of substring
+    return: new string
+
+  method: to_bin(encoding)
+    parameters:
+      encoding: +Encoding+ object
+    return: +Binary+ object
+
+  method: to_i()
+    Parse +self+ as an integer.
+
+  method: to_s()
+    return: +self+
+
+--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

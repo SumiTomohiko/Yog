@@ -1,5 +1,5 @@
 
-= File
+= +File+ class
 
 class: File
   base: Object

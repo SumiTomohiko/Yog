@@ -1,5 +1,5 @@
 
-= Array, Dictionary and Set
+= Containers -- +Array+, +Dict+ and +Set+
 
 class: Array
   base: Object

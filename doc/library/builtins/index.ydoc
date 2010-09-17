@@ -4,9 +4,12 @@
 You can use classes/modules/functions/objects in this package without the +import+ statement.
 
 + [object.ydoc]
-+ [containers.ydoc]
 + [numeric.ydoc]
 + [bool.ydoc]
++ [string.ydoc]
++ [regexp.ydoc]
++ [encoding.ydoc]
++ [containers.ydoc]
 + [exceptions.ydoc]
 + [file.ydoc]
 + [ffi.ydoc]
