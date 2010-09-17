@@ -1,5 +1,33 @@
 
 = +socket+ Package
 
+class: TcpSocket
+  method: close()
+
+    Closes the socket.
+
+  method: init(host, port, encoding=ENCODINGS["ascii"])
+    parameters:
+      host: destination address or hostname in +String+
+      port: destination port number
+      encoding: encoding of data
+
+    Constructor.
+
+  method: readline()
+    Reads one line from the socket.
+
+  method: recv(size)
+    parameters:
+      size: size to receive
+
+    Receives data of _size_ bytes from the socket.
+
+  method: send(data)
+    parameters:
+      data: data to send
+
+    Sends _data_ to the socket.
+
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
