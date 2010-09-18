@@ -1,0 +1,31 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Struct must have other structs itself.
+desc: |-
+  Foo = StructClass.new("Foo", [
+      ['bar, 'int]])
+    Bar = StructClass.new("Bar", [
+      ['baz, ['struct, Foo]])
+  
+  The above code is equivalent to the following C code:
+  
+    struct Foo {
+      int bar;
+    };
+    struct Bar {
+      struct Foo baz;
+    };
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-09-18 15:43:12.640146 Z
+references: []
+
+id: f285b9fd2b057ab2a5211825e586897a2618568a
+log_events: 
+- - 2010-09-18 15:43:13.747816 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
