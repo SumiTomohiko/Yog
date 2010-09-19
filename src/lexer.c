@@ -134,12 +134,6 @@ pushback(YogVal lexer, YogChar c)
     PTR_AS(YogLexer, lexer)->next_index--;
 }
 
-static BOOL
-is_whitespace(YogChar c)
-{
-    return (c == ' ') || (c == '\t');
-}
-
 static void
 skip_whitespace(YogVal lexer)
 {
@@ -425,7 +419,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
         YogVal line = PTR_AS(YogLexer, lexer)->line;
         if (IS_PTR(line) && (next_index < STRING_SIZE(line))) {
             c = NEXTC();
-            if (is_whitespace(c)) {
+            if (isblank(c)) {
                 skip_whitespace(lexer);
                 continue;
             }

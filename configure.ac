@@ -119,7 +119,7 @@ case "${host}" in
 *)
     case "${host}" in
     *-linux*)
-        CFLAGS="${CFLAGS} -D_XOPEN_SOURCE=500 -D_BSD_SOURCE"
+        CFLAGS="${CFLAGS} -D_XOPEN_SOURCE=600 -D_BSD_SOURCE"
         ;;
     esac
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -export-dynamic"
