@@ -4,6 +4,11 @@ from testcase import TestCase
 
 class TestLexer(TestCase):
 
+    def test_unsupported_encoding(self):
+        def test_stderr(stderr):
+            self._test_regexp("SyntaxError: Unsupported encoding: foo", stderr)
+        self._test("# -*- coding: foo -*-", stderr=test_stderr)
+
     def test_regexp0(self):
         def test_stderr(stderr):
             self._test_regexp(r"""SyntaxError: EOL while scanning regexp literal

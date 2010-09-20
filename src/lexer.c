@@ -426,7 +426,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
             else if (c == '#') {
                 do {
                     c = NEXTC();
-                } while ((c != '\r') && (c != '\n'));
+                } while ((c != '\r') && (c != '\n') && (c != '\0'));
             }
             break;
         }
@@ -1121,6 +1121,18 @@ is_coding_char(YogChar c)
 }
 
 static YogVal
+get_encoding(YogEnv* env, YogVal coding)
+{
+    YogHandle* h = VAL2HDL(env, coding);
+    YogVal val = YogDict_get(env, env->vm->encodings, coding);
+    if (IS_UNDEF(val)) {
+        YogError_raise_SyntaxError(env, "Unsupported encoding: %S", HDL2VAL(h));
+        /* NOTREACHED */
+    }
+    return val;
+}
+
+static YogVal
 read_encoding(YogEnv* env, YogVal lexer)
 {
     SAVE_ARG(env, lexer);
@@ -1165,15 +1177,10 @@ read_encoding(YogEnv* env, YogVal lexer)
         if (STRING_SIZE(coding) < 1) {
             continue;
         }
-
-        val = YogDict_get(env, env->vm->encodings, coding);
-        if (IS_UNDEF(val)) {
-            continue;
-        }
-        break;
+        RETURN(env, get_encoding(env, coding));
     }
 
-    RETURN(env, val);
+    RETURN(env, YUNDEF);
 }
 
 static void
