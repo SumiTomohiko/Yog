@@ -1,4 +1,8 @@
 #include "yog/config.h"
+#include <alloca.h>
+#include <errno.h>
+#include <unistd.h>
+#include "yog/error.h"
 #include "yog/handle.h"
 #include "yog/string.h"
 #include "yog/yog.h"
@@ -35,6 +39,23 @@ YogPath_dirname(YogEnv* env, YogHandle* self)
         return VAL2HDL(env, YogString_from_string(env, "."));
     }
     return VAL2HDL(env, YogString_slice(env, self, 0, pos));
+}
+
+YogVal
+YogPath_getcwd(YogEnv* env)
+{
+    size_t size = 1;
+    char* buf;
+    char* dir;
+    do {
+        size *= 1024;
+        buf = alloca(sizeof(char) * size);
+    } while (((dir = getcwd(buf, size)) == NULL) && (errno == ERANGE));
+    if (dir == NULL) {
+        YogError_raise_sys_err(env, errno, YNIL);
+        /* NOTREACHED */
+    }
+    return YogString_from_string(env, dir);
 }
 
 /**

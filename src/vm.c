@@ -1307,8 +1307,7 @@ is_directory(YogEnv* env, YogHandle* path)
 static void
 add_current_dir_to_search_path(YogEnv* env, YogHandle* search_path)
 {
-    YogVal s = YogString_from_string(env, ".");
-    YogArray_push(env, HDL2VAL(search_path), s);
+    YogArray_push(env, HDL2VAL(search_path), YogPath_getcwd(env));
 }
 
 static void

@@ -8,6 +8,7 @@
  */
 /* src/path.c */
 YOG_EXPORT YogHandle* YogPath_dirname(YogEnv*, YogHandle*);
+YOG_EXPORT YogVal YogPath_getcwd(YogEnv*);
 YOG_EXPORT YogHandle* YogPath_join(YogEnv*, YogHandle*, const char*);
 YOG_EXPORT YogHandle* YogPath_join2(YogEnv*, YogHandle*, YogHandle*);
 

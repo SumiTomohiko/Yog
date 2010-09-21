@@ -25,6 +25,7 @@
 #include "yog/eval.h"
 #include "yog/handle.h"
 #include "yog/package.h"
+#include "yog/path.h"
 #include "yog/repl.h"
 #include "yog/string.h"
 #include "yog/thread.h"
@@ -151,14 +152,12 @@ find_path_end(const char* path)
 static YogHandle*
 absolutize(YogEnv* env, const char* path)
 {
+    YogHandle* h = VAL2HDL(env, YogString_from_string(env, path));
     if (path[0] == PATH_SEPARATOR) {
-        return VAL2HDL(env, YogString_from_string(env, path));
+        return h;
     }
-    char cwd[1024]; /* TODO: enouph? */
-    getcwd(cwd, array_sizeof(cwd));
-    char abs_path[2048];
-    snprintf(abs_path, array_sizeof(abs_path), "%s%c%s", cwd, PATH_SEPARATOR, path);
-    return VAL2HDL(env, YogString_from_string(env, abs_path));
+    YogHandle* dir = VAL2HDL(env, YogPath_getcwd(env));
+    return YogPath_join2(env, dir, h);
 }
 
 static BOOL
