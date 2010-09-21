@@ -5,8 +5,8 @@ type: :task
 component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2010-05-20 12:11:59.037221 Z
 references: []
 
@@ -22,3 +22,7 @@ log_events:
   - |-
     In the case of Python 3.1.2, Python does fopen at first of importing in
     Python/import.c. ImportError like "No module named foo" is raised at this point.
+- - 2010-09-21 12:04:54.133128 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition wontfix
+  - Probably the --debug-import option realize this.
