@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Improve tools/update_prototype.py
+desc: To update header files only when prototypes are updated.
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-09-21 13:04:36.893674 Z
+references: []
+
+id: 9f641b1ad39584c2c3f301c4b53671a128039c82
+log_events: 
+- - 2010-09-21 13:04:37.578248 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
