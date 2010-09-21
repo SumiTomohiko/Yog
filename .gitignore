@@ -252,12 +252,11 @@ src/inst.c
 src/miniyog
 src/parser.c
 src/parser.out
-src/yog
-src/yog-bdw
-src/yog-copying
-src/yog-generational
-src/yog-mark-sweep
-src/yog-mark-sweep-compact
+src/yog-bdw*
+src/yog-copying*
+src/yog-generational*
+src/yog-mark-sweep*
+src/yog-mark-sweep-compact*
 stamp-h1
 tags
 tests/TestO.db
