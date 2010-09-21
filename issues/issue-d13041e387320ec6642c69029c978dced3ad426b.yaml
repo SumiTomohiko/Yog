@@ -5,8 +5,8 @@ type: :task
 component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2010-08-31 16:49:25.464441 Z
 references: []
 
@@ -16,3 +16,7 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""
+- - 2010-09-21 12:50:02.184328 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition wontfix
+  - No mean?
