@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: String#=~ leaks memory of onig_region
+desc: Free onig_region when unmatched.
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-09-25 16:25:40.846200 Z
+references: []
+
+id: 6480600988bd5be726b92a21d484f449d123d6c5
+log_events: 
+- - 2010-09-25 16:25:41.348259 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
