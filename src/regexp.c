@@ -1,7 +1,7 @@
 #include "yog/config.h"
 #include <ctype.h>
 #include <string.h>
-#include "oniguruma.h"
+#include "corgi.h"
 #include "yog/array.h"
 #include "yog/class.h"
 #include "yog/encoding.h"
@@ -24,6 +24,12 @@
         YogError_raise_TypeError(env, "self must be Match"); \
     } \
 } while (0)
+#define CHECK_SELF_MATCH2(env, self)  do { \
+    YogVal match = HDL2VAL((self)); \
+    if (!IS_PTR(match) || (BASIC_OBJ_TYPE(match) != TYPE_MATCH)) { \
+        YogError_raise_TypeError(env, "self must be Match"); \
+    } \
+} while (0)
 
 #define ADD_ADDR(s, n) (YogChar*)((char*)(s) + (n))
 
@@ -43,76 +49,67 @@ static void
 YogMatch_finalize(YogEnv* env, void* ptr)
 {
     YogMatch* match = PTR_AS(YogMatch, ptr);
-    onig_region_free(match->onig_region, 1);
-    match->onig_region = NULL;
+    corgi_fini_match(&match->corgi_match);
 }
 
 YogVal
-YogMatch_new(YogEnv* env, YogVal str, YogVal regexp, OnigRegion* onig_region)
+YogMatch_new(YogEnv* env, YogHandle* str, YogHandle* regexp)
 {
-    SAVE_ARGS2(env, str, regexp);
-
     YogVal match = ALLOC_OBJ(env, YogMatch_keep_children, YogMatch_finalize, YogMatch);
     YogBasicObj_init(env, match, TYPE_MATCH, 0, env->vm->cMatch);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogMatch, match), str, str);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogMatch, match), regexp, regexp);
-    PTR_AS(YogMatch, match)->onig_region = onig_region;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogMatch, match), str, HDL2VAL(str));
+    YogGC_UPDATE_PTR(env, PTR_AS(YogMatch, match), regexp, HDL2VAL(regexp));
+    corgi_init_match(&PTR_AS(YogMatch, match)->corgi_match);
 
-    RETURN(env, match);
+    return match;
 }
 
 static void
 YogRegexp_finalize(YogEnv* env, void* ptr)
 {
     YogRegexp* regexp = PTR_AS(YogRegexp, ptr);
-    onig_free(regexp->onig_regexp);
-    regexp->onig_regexp = NULL;
+    corgi_fini_regexp(&regexp->corgi_regexp);
 }
 
 YogVal
-YogRegexp_new(YogEnv* env, YogVal pattern, OnigOptionType option)
+YogRegexp_new(YogEnv* env, YogVal pattern, BOOL ignore_case)
 {
-    OnigRegex onig_regexp = NULL;
-    OnigUChar* pattern_begin = (OnigUChar*)STRING_CHARS(pattern);
-    YogChar* end = STRING_CHARS(pattern) + STRING_SIZE(pattern);
-    OnigUChar* pattern_end = (OnigUChar*)end;
-    OnigErrorInfo einfo;
-    int_t r = onig_new(&onig_regexp, pattern_begin, pattern_end, option, &OnigEncodingUTF32_LE, ONIG_SYNTAX_DEFAULT, &einfo);
-    if (r != ONIG_NORMAL) {
-        char buf[ONIG_MAX_ERROR_MESSAGE_LEN];
-        onig_error_code_to_str(buf, r, &einfo);
-        YogError_raise_ValueError(env, "oniguruma error: %s", buf);
-        /* NOTREACHED */
-    }
-
     YogVal regexp = ALLOC_OBJ(env, YogBasicObj_keep_children, YogRegexp_finalize, YogRegexp);
     YogBasicObj_init(env, regexp, TYPE_REGEXP, 0, env->vm->cRegexp);
-    PTR_AS(YogRegexp, regexp)->onig_regexp = onig_regexp;
+    corgi_init_regexp(&PTR_AS(YogRegexp, regexp)->corgi_regexp);
+
+    CorgiChar* begin = STRING_CHARS(pattern);
+    CorgiOptions opts = 0;
+    if (ignore_case) {
+        opts |= CORGI_OPT_IGNORE_CASE;
+    }
+    CorgiStatus status = corgi_compile(&PTR_AS(YogRegexp, regexp)->corgi_regexp, begin, begin + STRING_SIZE(pattern), opts);
+    if (status != CORGI_OK) {
+        const char* msg = corgi_strerror(status);
+        YogError_raise_ValueError(env, "corgi error: %s", msg);
+        /* NOTREACHED */
+    }
 
     return regexp;
 }
 
 static int_t
-group2indexes(YogEnv* env, YogVal self, YogVal group, int_t** num_list)
+group_name2id(YogEnv* env, YogVal self, YogVal group)
 {
     YOG_ASSERT(env, IS_PTR(group), "invalid group (0x%x)", group);
     YOG_ASSERT(env, BASIC_OBJ_TYPE(group) == TYPE_STRING, "invalid group type (0x%x)", BASIC_OBJ_TYPE(group));
-    YOG_ASSERT(env, num_list != NULL, "num_list is NULL");
-    SAVE_ARG(env, group);
-    YogVal regexp = YUNDEF;
-    PUSH_LOCAL(env, regexp);
 
-    regexp = PTR_AS(YogMatch, self)->regexp;
-    OnigRegex onig_regexp = PTR_AS(YogRegexp, regexp)->onig_regexp;
+    YogVal regexp = PTR_AS(YogMatch, self)->regexp;
+    CorgiRegexp* corgi_regexp = &PTR_AS(YogRegexp, regexp)->corgi_regexp;
     YogChar* begin = STRING_CHARS(group);
-    OnigUChar* name_begin = (OnigUChar*)begin;
-    OnigUChar* name_end = (OnigUChar*)(begin + STRING_SIZE(group));
-    int_t r = onig_name_to_group_numbers(onig_regexp, name_begin, name_end, num_list);
-    if (r < 1) {
-        YogError_raise_IndexError(env, "No such group");
+    YogChar* end = begin + STRING_SIZE(group);
+    uint_t id;
+    CorgiStatus status = corgi_group_name2id(corgi_regexp, begin, end, &id);
+    if (status != CORGI_OK) {
+        YogError_raise_IndexError(env, "No such group: %S", group);
     }
 
-    RETURN(env, r);
+    return id + 1;
 }
 
 static void
@@ -124,107 +121,67 @@ raise_invalid_group(YogEnv* env, YogVal group)
     RETURN_VOID(env);
 }
 
-static YogVal
-group_num(YogEnv* env, YogVal self, int_t group)
+static void
+get_group_range(YogEnv* env, YogVal self, int_t id, uint_t* begin, uint_t* end)
 {
-    SAVE_ARG(env, self);
-    YogVal s = YUNDEF;
-    YogVal str = YUNDEF;
-    PUSH_LOCALS2(env, s, str);
-
-    OnigRegion* region = PTR_AS(YogMatch, self)->onig_region;
-    if ((group < 0) || (region->num_regs <= group)) {
-        YogError_raise_IndexError(env, "No such group");
+    CorgiMatch* match = &PTR_AS(YogMatch, self)->corgi_match;
+    if (id == 0) {
+        *begin = match->begin;
+        *end = match->end;
+        return;
     }
-    int_t begin = region->beg[group];
-    int_t end = region->end[group];
-    int_t size = end - begin;
-    s = YogString_of_size(env, size);
-    str = PTR_AS(YogMatch, self)->str;
-    memcpy(STRING_CHARS(s), ADD_ADDR(STRING_CHARS(str), begin), size);
-    STRING_SIZE(s) = size / sizeof(YogChar);
-
-    RETURN(env, s);
+    if (corgi_get_group_range(match, id - 1, begin, end) == CORGI_OK) {
+        return;
+    }
+    YogError_raise_IndexError(env, "No such group: %u", id);
 }
 
 static YogVal
-group_str(YogEnv* env, YogVal self, YogVal group)
+group_num(YogEnv* env, YogHandle* self, int_t group)
 {
-    YOG_ASSERT(env, IS_PTR(group), "invalid group (0x%x)", group);
-    YOG_ASSERT(env, BASIC_OBJ_TYPE(group) == TYPE_STRING, "invalid group type (0x%x)", group);
-    SAVE_ARGS2(env, self, group);
-    YogVal s = YUNDEF;
-    YogVal a = YUNDEF;
-    PUSH_LOCALS2(env, s, a);
-
-    int_t* num_list;
-    int_t num = group2indexes(env, self, group, &num_list);
-    if (num == 1) {
-        s = group_num(env, self, num_list[0]);
-        RETURN(env, s);
-    }
-
-    YOG_ASSERT(env, 1 < num, "invalid num (0x%x)", num);
-    a = YogArray_of_size(env, num);
-    uint_t i;
-    for (i = 0; i < num; i++) {
-        s = group_num(env, self, num_list[i]);
-        YogArray_push(env, a, s);
-    }
-
-    RETURN(env, a);
+    uint_t begin;
+    uint_t end;
+    get_group_range(env, HDL2VAL(self), group, &begin, &end);
+    uint_t size = end - begin;
+    YogVal retval = YogString_of_size(env, size);
+    YogVal s = HDL_AS(YogMatch, self)->str;
+    uint_t bytes_num = sizeof(YogChar) * size;
+    memcpy(STRING_CHARS(retval), STRING_CHARS(s) + begin, bytes_num);
+    STRING_SIZE(retval) = size;
+    return retval;
 }
 
 static YogVal
-group(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+group_str(YogEnv* env, YogHandle* self, YogHandle* group)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal group = YNIL;
-    YogVal retval = YUNDEF;
-    PUSH_LOCALS2(env, group, retval);
-
-    YogCArg params[] = { { "|", NULL }, { "group", &group }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "group", params, args, kw);
-    CHECK_SELF_MATCH(env, self);
-
-    if (IS_FIXNUM(group)) {
-        retval = group_num(env, self, VAL2INT(group));
-    }
-    else if (IS_NIL(group)) {
-        retval = group_num(env, self, 0);
-    }
-    else if (IS_PTR(group) && (BASIC_OBJ_TYPE(group) == TYPE_STRING)) {
-        retval = group_str(env, self, group);
-    }
-    else {
-        raise_invalid_group(env, group);
-    }
-
-    RETURN(env, retval);
+    return group_num(env, self, group_name2id(env, HDL2VAL(self), HDL2VAL(group)));
 }
 
-static int_t
-ptr2index(YogEnv* env, YogVal s, const YogChar* ptr)
+static YogVal
+group(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* group)
 {
-    return ptr - STRING_CHARS(s);
+    CHECK_SELF_MATCH2(env, self);
+
+    if ((group == NULL) || IS_NIL(HDL2VAL(group))) {
+        return group_num(env, self, 0);
+    }
+    if (IS_FIXNUM(HDL2VAL(group))) {
+        return group_num(env, self, VAL2INT(HDL2VAL(group)));
+    }
+    if (IS_PTR(HDL2VAL(group)) && (BASIC_OBJ_TYPE(HDL2VAL(group)) == TYPE_STRING)) {
+        return group_str(env, self, group);
+    }
+    raise_invalid_group(env, HDL2VAL(group));
+    return YUNDEF;
 }
 
 static YogVal
 start_num(YogEnv* env, YogVal self, int_t group)
 {
-    SAVE_ARG(env, self);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
-
-    OnigRegion* region = PTR_AS(YogMatch, self)->onig_region;
-    if ((group < 0) || (region->num_regs <= group)) {
-        YogError_raise_IndexError(env, "No such group");
-    }
-    s = PTR_AS(YogMatch, self)->str;
-    const YogChar* start = ADD_ADDR(STRING_CHARS(s), region->beg[group]);
-    int_t n = ptr2index(env, s, start);
-
-    RETURN(env, INT2VAL(n));
+    uint_t begin;
+    uint_t end;
+    get_group_range(env, self, group, &begin, &end);
+    return YogVal_from_unsigned_int(env, begin);
 }
 
 static YogVal
@@ -232,27 +189,7 @@ start_str(YogEnv* env, YogVal self, YogVal group)
 {
     YOG_ASSERT(env, IS_PTR(group), "invalid group (0x%x)", group);
     YOG_ASSERT(env, BASIC_OBJ_TYPE(group) == TYPE_STRING, "invalid group type (0x%0x)", BASIC_OBJ_TYPE(group));
-    SAVE_ARGS2(env, self, group);
-    YogVal n = YUNDEF;
-    YogVal a = YUNDEF;
-    PUSH_LOCALS2(env, n, a);
-
-    int_t* num_list;
-    int_t num = group2indexes(env, self, group, &num_list);
-    if (num == 1) {
-        n = start_num(env, self, num_list[0]);
-        RETURN(env, n);
-    }
-
-    YOG_ASSERT(env, 1 < num, "invalid num (0x%x)", num);
-    a = YogArray_of_size(env, num);
-    uint_t i;
-    for (i = 0; i < num; i++) {
-        n = start_num(env, self, num_list[i]);
-        YogArray_push(env, a, n);
-    }
-
-    RETURN(env, a);
+    return start_num(env, self, group_name2id(env, self, group));
 }
 
 static YogVal
@@ -286,19 +223,10 @@ start(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 static YogVal
 end_num(YogEnv* env, YogVal self, int_t group)
 {
-    SAVE_ARG(env, self);
-    YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
-
-    OnigRegion* region = PTR_AS(YogMatch, self)->onig_region;
-    if ((group < 0) || (region->num_regs <= group)) {
-        YogError_raise_IndexError(env, "No such group");
-    }
-    s = PTR_AS(YogMatch, self)->str;
-    const YogChar* end = ADD_ADDR(STRING_CHARS(s), region->end[group]);
-    int_t n = ptr2index(env, s, end);
-
-    RETURN(env, INT2VAL(n));
+    uint_t begin;
+    uint_t end;
+    get_group_range(env, self, group, &begin, &end);
+    return YogVal_from_unsigned_int(env, end);
 }
 
 static YogVal
@@ -306,27 +234,7 @@ end_str(YogEnv* env, YogVal self, YogVal group)
 {
     YOG_ASSERT(env, IS_PTR(group), "invalid group (0x%x)", group);
     YOG_ASSERT(env, BASIC_OBJ_TYPE(group) == TYPE_STRING, "invalid group type (0x%0x)", BASIC_OBJ_TYPE(group));
-    SAVE_ARGS2(env, self, group);
-    YogVal n = YUNDEF;
-    YogVal a = YUNDEF;
-    PUSH_LOCALS2(env, n, a);
-
-    int_t* num_list;
-    int_t num = group2indexes(env, self, group, &num_list);
-    if (num == 1) {
-        n = end_num(env, self, num_list[0]);
-        RETURN(env, n);
-    }
-
-    YOG_ASSERT(env, 1 < num, "invalid num (0x%x)", num);
-    a = YogArray_of_size(env, num);
-    uint_t i;
-    for (i = 0; i < num; i++) {
-        n = end_num(env, self, num_list[i]);
-        YogArray_push(env, a, n);
-    }
-
-    RETURN(env, a);
+    return end_num(env, self, group_name2id(env, self, group));
 }
 
 YogVal
@@ -336,7 +244,7 @@ YogRegexp_binop_match(YogEnv* env, YogHandle* self, YogHandle* s)
         YogError_raise_TypeError(env, "Can't convert %C object to String implicitly", HDL2VAL(s));
         /* NOTREACHED */
     }
-    return YogString_match(env, HDL2VAL(s), HDL2VAL(self), 0);
+    return YogString_match(env, s, self, 0);
 }
 
 static YogVal
@@ -349,7 +257,7 @@ match(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s, YogHandle* pos
         YogError_raise_TypeError(env, "pos must be Fixnum");
     }
     int_t n = pos == NULL ? 0 : VAL2INT(HDL2VAL(pos));
-    return YogString_match(env, HDL2VAL(s), HDL2VAL(self), n);
+    return YogString_match(env, s, self, n);
 }
 
 static YogVal
@@ -401,10 +309,14 @@ YogRegexp_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cMatch, pkg, (name), (f)); \
 } while (0)
-    DEFINE_METHOD("group", group);
     DEFINE_METHOD("start", start);
     DEFINE_METHOD("end", end);
 #undef DEFINE_METHOD
+#define DEFINE_METHOD2(name, ...) do { \
+    YogClass_define_method2(env, cMatch, pkg, (name), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD2("group", group, "|", "group", NULL);
+#undef DEFINE_METHOD2
     vm->cMatch = cMatch;
 
     RETURN_VOID(env);

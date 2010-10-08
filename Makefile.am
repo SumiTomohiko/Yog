@@ -1,5 +1,5 @@
 
-SUBDIRS = @BDWGC_DIR@ onig gmp libffi src ext
+SUBDIRS = @BDWGC_DIR@ corgi gmp libffi src ext
 ARCHIVE = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
 

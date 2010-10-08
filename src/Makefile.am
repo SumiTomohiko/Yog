@@ -1,5 +1,5 @@
 
-ONIG_DIR = $(top_srcdir)/onig
+CORGI_DIR = $(top_srcdir)/corgi
 BDWGC_DIR = $(top_srcdir)/bdwgc
 GMP_DIR = $(top_srcdir)/gmp
 LIBFFI_DIR = $(top_srcdir)/libffi
@@ -21,11 +21,11 @@ COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 string.c symbol.c table.c thread.c value.c vm.c getopt.c \
 		 ffi.c env.c handle.c process.c path.c
 DEFAULT_INCLUDES =
-CFLAGS_COMMON = -I$(top_srcdir)/include -I$(ONIG_DIR) -I$(BDWGC_DIR)/include \
-		-I$(GMP_DIR) -I$(LIBFFI_DIR)/include -Wall -Werror -g -O2 \
-		-DYOG_CORE
+CFLAGS_COMMON = -I$(top_srcdir)/include -I$(CORGI_DIR)/include \
+		-I$(BDWGC_DIR)/include -I$(GMP_DIR) -I$(LIBFFI_DIR)/include \
+		-Wall -Werror -g -O2 -DYOG_CORE
 LDFLAGS_COMMON = @LDFLAGS_COMMON@
-LIBS = $(ONIG_DIR)/.libs/libonig.a $(GMP_DIR)/.libs/libgmp.a \
+LIBS = $(CORGI_DIR)/src/.libs/libcorgi.a $(GMP_DIR)/.libs/libgmp.a \
        $(LIBFFI_DIR)/.libs/libffi.a -lm @LIBS@
 
 EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \

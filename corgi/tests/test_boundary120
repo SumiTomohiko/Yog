@@ -1,0 +1,9 @@
+#!/bin/sh
+
+matched=`echo "foo" "bar" | xargs -n 1 "${CORGI}" search "^bar"`
+if [ "${matched}" != "bar" ]; then
+  exit 1
+fi
+exit 0
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

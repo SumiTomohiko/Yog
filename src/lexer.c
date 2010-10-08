@@ -775,12 +775,8 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
                 PUSHBACK(c);
             }
 
-            OnigOptionType option = ONIG_OPTION_NONE;
-            if (ignore_case) {
-                option = ONIG_OPTION_IGNORECASE;
-            }
             YogVal buffer = PTR_AS(YogLexer, lexer)->buffer;
-            YogVal val = YogRegexp_new(env, buffer, option);
+            YogVal val = YogRegexp_new(env, buffer, ignore_case);
 
             SET_STATE(LS_EXPR);
             RETURN_VAL_TOKEN(TK_REGEXP, val);

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+matched=`"${CORGI}" match "x{2,4}?" "xxxx"`
+if [ "${matched}" != "xx" ]; then
+  exit 1
+fi
+exit 0
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

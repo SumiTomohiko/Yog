@@ -1,0 +1,17 @@
+#!/bin/sh
+
+dir=`dirname $0`
+tests_dir="${dir}/tests"
+export CORGI="${dir}/src/corgi"
+find "${tests_dir}" -perm 0755 -name "test_*" | sort | while read cmd
+do
+  echo "------------ ${cmd} ------------"
+  "${cmd}"
+  if [ "$?" = 0 ]; then
+    echo "${cmd}: OK"
+  else
+    echo "${cmd}: NG"
+  fi
+done
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

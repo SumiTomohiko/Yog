@@ -1,0 +1,84 @@
+#!/bin/sh
+
+print_done()
+{
+  echo "done"
+}
+
+run()
+{
+  "$@"
+  if [ $? != 0 ]; then
+    echo "Failed: $@"
+    exit 1
+  fi
+}
+
+python="python"
+opts=`getopt p: "${*}"`
+if [ $? != 0 ]; then
+  echo "Illegal option(s)"
+  exit 1
+fi
+eval set -- "${opts}"
+while :
+do
+  case "${1}" in
+  -p)
+    python="${2}"
+    shift 2
+    ;;
+  --)
+    shift 1
+    break
+    ;;
+  *)
+    break
+    ;;
+  esac
+done
+
+archive="${1}"
+if [ -z "${archive}" ]; then
+  echo "Usage: ${0} <head>"
+  exit 1
+fi
+
+dir="$$"
+archive_dir="${dir}/${archive}"
+echo -n "Extract source tree..."
+run mkdir "${dir}"
+run git archive "--prefix=${archive_dir}/" HEAD | tar xf -
+print_done
+
+echo -n "Generate configure etc..."
+(cd "${archive_dir}" && run ./autogen.sh)
+run rm -rf "${archive_dir}/autom4te.cache"
+tools_dir="${archive_dir}/tools"
+for py in "tools/constants.py" "tools/makeunicodedata.py"
+do
+  (cd "${archive_dir}" && run ${python} "${py}")
+done
+print_done
+
+echo -n "Generate HTML document..."
+run make doc
+run cp -r doc/html "${archive_dir}/doc"
+print_done
+
+echo -n "Archive .tar.gz..."
+(cd "${dir}" && run tar czf "../${archive}.tar.gz" "${archive}")
+print_done
+echo -n "Archive .tar.bz2..."
+(cd "${dir}" && run tar cjf "../${archive}.tar.bz2" "${archive}")
+print_done
+echo -n "Archive .tar.xz..."
+(cd "${dir}" && run tar cf - "${archive}" | xz --compress > "../${archive}.tar.xz")
+print_done
+echo -n "Archive .zip..."
+(cd "${dir}" && run zip -qr "../${archive}.zip" "${archive}")
+print_done
+
+run rm -rf "${dir}"
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

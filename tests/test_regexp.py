@@ -104,7 +104,7 @@ puts(m.group(\"name\"))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Match#group
-IndexError: No such group
+IndexError: No such group: 42
 """, stderr)
 
         self._test("""
@@ -123,11 +123,6 @@ TypeError: group must be a Fixnum, String or nil, not Array
         self._test("""
 (\"foo\" =~ /foo/).group([])
 """, stderr=test_stderr)
-
-    def test_match_group70(self):
-        self._test("""
-print((\"foobar\" =~ /(?<baz>foo)(?<baz>bar)/).group(\"baz\"))
-""", "[\"foo\", \"bar\"]")
 
     def test_match_start05(self):
         self._test("""
@@ -188,18 +183,13 @@ print(m.start(0))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Match#start
-IndexError: No such group
+IndexError: No such group: 42
 """, stderr)
 
         self._test("""
 m = \"foo\" =~ /foo/
 puts(m.start(42))
 """, stderr=test_stderr)
-
-    def test_match_start60(self):
-        self._test("""
-print((\"foobar\" =~ /(?<baz>foo)(?<baz>bar)/).start(\"baz\"))
-""", "[0, 3]")
 
     def test_match_end05(self):
         self._test("""
@@ -260,17 +250,12 @@ print(m.end(0))
             self._test_regexp(r"""Traceback \(most recent call last\):
   File "[^"]+", line 3, in <package>
   File builtin, in Match#end
-IndexError: No such group
+IndexError: No such group: 42
 """, stderr)
 
         self._test("""
 m = \"foo\" =~ /foo/
 puts(m.end(42))
 """, stderr=test_stderr)
-
-    def test_match_end60(self):
-        self._test("""
-print((\"foobar\" =~ /(?<baz>foo)(?<baz>bar)/).end(\"baz\"))
-""", "[3, 6]")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

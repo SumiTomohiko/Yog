@@ -192,7 +192,7 @@ class Lexer
         next
       end
 
-      if !self.text_last? && (line =~ /\A\s*\z/)
+      if !self.text_last? && (line =~ /\A\s*\Z/)
         next
       end
       break

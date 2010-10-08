@@ -57,7 +57,7 @@ YOG_EXPORT YogVal YogString_from_range(YogEnv*, YogVal, const char*, const char*
 YOG_EXPORT YogVal YogString_from_string(YogEnv*, const char*);
 YOG_EXPORT int_t YogString_hash(YogEnv*, YogVal);
 YOG_EXPORT ID YogString_intern(YogEnv*, YogVal);
-YOG_EXPORT YogVal YogString_match(YogEnv*, YogVal, YogVal, int_t);
+YOG_EXPORT YogVal YogString_match(YogEnv*, YogHandle*, YogHandle*, int_t);
 YOG_EXPORT YogVal YogString_new(YogEnv*);
 YOG_EXPORT YogVal YogString_of_size(YogEnv*, uint_t);
 YOG_EXPORT void YogString_push(YogEnv*, YogVal, YogChar);

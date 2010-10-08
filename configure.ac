@@ -151,7 +151,7 @@ AC_SUBST(SOEXT)
 AC_SUBST(IMPORT_LIB)
 AC_SUBST(EXT_SUBDIRS)
 
-AC_CONFIG_SUBDIRS([onig gmp libffi tools/swig])
+AC_CONFIG_SUBDIRS([corgi gmp libffi tools/swig])
 
 AC_OUTPUT
 

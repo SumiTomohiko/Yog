@@ -8,11 +8,11 @@ def find_libc()
   while line = proc.stdout.readline()
     cols = line.trim().split()
     if cols.get(1) == "=>"
-      if cols[0] =~ /\Alibc\.so\..*\z/
+      if cols[0] =~ /\Alibc\.so\..*\Z/
         return cols[2]
       end
-    elif cols[0] =~ /\A[0-9A-Fa-f]+\z/
-      if cols[6] =~ /\/libc\.so\.[^\/]+\z/
+    elif cols[0] =~ /\A[0-9A-Fa-f]+\Z/
+      if cols[6] =~ /\/libc\.so\.[^\/]+\Z/
         return cols[6]
       end
     end

@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "oniguruma.h"
+#include "corgi.h"
 #include "yog/array.h"
 #include "yog/bignum.h"
 #include "yog/binary.h"
@@ -668,25 +668,24 @@ assign_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Y
 }
 
 YogVal
-YogString_match(YogEnv* env, YogVal self, YogVal regexp, int_t pos)
+YogString_match(YogEnv* env, YogHandle* self, YogHandle* regexp, int_t pos)
 {
-    int_t n = normalize_index(env, self, pos);
+    int_t n = normalize_index(env, HDL2VAL(self), pos);
     uint_t offset = 0;
-    uint_t size = YogString_size(env, self);
-    if ((0 < size) && !index2offset(env, self, n, &offset)) {
+    uint_t size = STRING_SIZE(HDL2VAL(self));
+    if ((0 < size) && !index2offset(env, HDL2VAL(self), n, &offset)) {
         return YNIL;
     }
 
-    OnigUChar* str = (OnigUChar*)STRING_CHARS(self);
-    OnigUChar* end = (OnigUChar*)&STRING_CHARS(self)[STRING_SIZE(self)];
-    OnigUChar* start = (OnigUChar*)&STRING_CHARS(self)[offset];
-    OnigRegion* region = onig_region_new();
-    int_t r = onig_search(PTR_AS(YogRegexp, regexp)->onig_regexp, str, end, start, end, region, ONIG_OPTION_NONE);
-    if (r == ONIG_MISMATCH) {
-        return YNIL;
-    }
-
-    return YogMatch_new(env, self, regexp, region);
+    YogVal match = YogMatch_new(env, self, regexp);
+    CorgiMatch* corgi_match = &PTR_AS(YogMatch, match)->corgi_match;
+    CorgiRegexp* corgi_regexp = &HDL_AS(YogRegexp, regexp)->corgi_regexp;
+    CorgiChar* begin = STRING_CHARS(HDL2VAL(self));
+    CorgiChar* end = begin + STRING_SIZE(HDL2VAL(self));
+    CorgiChar* at = begin + pos;
+    CorgiOptions opts = 0;
+    CorgiStatus status = corgi_search(corgi_match, corgi_regexp, begin, end, at, opts);
+    return status != CORGI_OK ? YNIL : match;
 }
 
 YogVal
@@ -698,7 +697,7 @@ YogString_binop_match(YogEnv* env, YogHandle* self, YogHandle* regexp)
         YogError_raise_TypeError(env, fmt, re);
         /* NOTREACHED */
     }
-    return YogString_match(env, HDL2VAL(self), re, 0);
+    return YogString_match(env, self, regexp, 0);
 }
 
 static YogVal
