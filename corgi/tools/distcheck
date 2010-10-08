@@ -1,21 +1,22 @@
 #!/bin/sh
 
+run()
+{
+  "$@"
+  if [ "$?" != 0 ]; then
+    echo "Failed: $@"
+    exit 1
+  fi
+}
+
 cleanup()
 {
-  rm -rf "${archive}"
-  if [ $? != 0 ]; then
-    echo "can't cleanup"
-    exit 2
-  fi
+  run rm -rf "${tmp_dir}/${archive}"
 }
 
 do_test()
 {
-  (cd "${archive}" && mkdir $$ && ./configure --prefix=`pwd`/$$ CFLAGS=-I${HOME}/include LDFLAGS=-L${HOME}/lib && make && make install)
-  if [ $? != 0 ]; then
-    echo "can't make"
-    exit 2
-  fi
+  (cd "${tmp_dir}/${archive}" && run mkdir $$ && run ./configure --prefix=`pwd`/$$ CFLAGS=-I${HOME}/include LDFLAGS=-L${HOME}/lib && run make && run make install)
 }
 
 archive="${1}"
@@ -25,42 +26,29 @@ if [ -z "${archive}" ]; then
 fi
 
 untar="tar xf -"
+tmp_dir="/tmp/$$"
+run mkdir -p "${tmp_dir}"
 
 cleanup
-zcat "${archive}.tar.gz" | ${untar}
-if [ $? != 0 ]; then
-  echo "can't extract ${archive}.tar.gz"
-  exit 2
-fi
+dir=`pwd`
+(cd "${tmp_dir}" && run zcat "${dir}/${archive}.tar.gz" | ${untar})
 do_test
 
 cleanup
-bzcat "${archive}.tar.bz2" | ${untar}
-if [ $? != 0 ]; then
-  echo "can't extract ${archive}.tar.bz2"
-  exit 2
-fi
+(cd "${tmp_dir}" && run bzcat "${dir}/${archive}.tar.bz2" | ${untar})
 do_test
 
 which xzcat >/dev/null
 if [ $? = 0 ]; then
   cleanup
-  xzcat "${archive}.tar.xz" | ${untar}
-  if [ $? != 0 ]; then
-    echo "can't extract ${archive}.tar.xz"
-    exit 2
-  fi
+  (cd "${tmp_dir}" && run xzcat "${dir}/${archive}.tar.xz" | ${untar})
   do_test
 fi
 
 cleanup
-unzip -q "${archive}.zip"
-if [ $? != 0 ]; then
-  echo "can't extract ${archive}.zip"
-  exit 2
-fi
+(cd "${tmp_dir}" && run unzip -q "${dir}/${archive}.zip")
 do_test
 
-cleanup
+run rm -rf "${tmp_dir}"
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

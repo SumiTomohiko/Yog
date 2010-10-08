@@ -49,36 +49,42 @@ archive_dir="${dir}/${archive}"
 echo -n "Extract source tree..."
 run mkdir "${dir}"
 run git archive "--prefix=${archive_dir}/" HEAD | tar xf -
+run rm -f "${archive_dir}/.gitignore"
+tmp_dir="/tmp/$$"
+run mkdir -p "${tmp_dir}"
+run mv "${archive_dir}" "${tmp_dir}"
+run rm -rf "${dir}"
 print_done
 
 echo -n "Generate configure etc..."
-(cd "${archive_dir}" && run ./autogen.sh)
-run rm -rf "${archive_dir}/autom4te.cache"
-tools_dir="${archive_dir}/tools"
+setup_dir="${tmp_dir}/${archive}"
+(cd "${setup_dir}" && run ./autogen.sh)
+run rm -rf "${setup_dir}/autom4te.cache"
 for py in "tools/constants.py" "tools/makeunicodedata.py"
 do
-  (cd "${archive_dir}" && run ${python} "${py}")
+  (cd "${setup_dir}" && run ${python} "${py}")
 done
 print_done
 
 echo -n "Generate HTML document..."
 run make doc
-run cp -r doc/html "${archive_dir}/doc"
+run cp -r doc/html "${setup_dir}/doc"
 print_done
 
+dest_dir=`pwd`
 echo -n "Archive .tar.gz..."
-(cd "${dir}" && run tar czf "../${archive}.tar.gz" "${archive}")
+(cd "${tmp_dir}" && run tar czf "${dest_dir}/${archive}.tar.gz" "${archive}")
 print_done
 echo -n "Archive .tar.bz2..."
-(cd "${dir}" && run tar cjf "../${archive}.tar.bz2" "${archive}")
+(cd "${tmp_dir}" && run tar cjf "${dest_dir}/${archive}.tar.bz2" "${archive}")
 print_done
 echo -n "Archive .tar.xz..."
-(cd "${dir}" && run tar cf - "${archive}" | xz --compress > "../${archive}.tar.xz")
+(cd "${tmp_dir}" && run tar cf - "${archive}" | xz --compress > "${dest_dir}/${archive}.tar.xz")
 print_done
 echo -n "Archive .zip..."
-(cd "${dir}" && run zip -qr "../${archive}.zip" "${archive}")
+(cd "${tmp_dir}" && run zip -qr "${dest_dir}/${archive}.zip" "${archive}")
 print_done
 
-run rm -rf "${dir}"
+run rm -rf "${tmp_dir}"
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

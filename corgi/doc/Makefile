@@ -38,6 +38,15 @@ clean:
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	find html -name "*.html" | while read html; \
+	do \
+		sed -e "s/_static/static/g" < $$html > tmp; \
+		mv tmp $$html; \
+	done
+	if [ -d html/_static ]; then \
+		rm -rf html/static; \
+		mv html/_static html/static; \
+	fi
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
