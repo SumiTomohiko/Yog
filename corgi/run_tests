@@ -1,17 +1,34 @@
 #!/bin/sh
 
-dir=`dirname $0`
-tests_dir="${dir}/tests"
-export CORGI="${dir}/src/corgi"
-find "${tests_dir}" -perm 0755 -name "test_*" | sort | while read cmd
-do
-  echo "------------ ${cmd} ------------"
-  "${cmd}"
-  if [ "$?" = 0 ]; then
-    echo "${cmd}: OK"
+print_result()
+{
+  if [ "$1" = 0 ]; then
+    result="OK"
   else
-    echo "${cmd}: NG"
+    result="NG"
   fi
+  echo "$2: ${result}"
+}
+
+print_header()
+{
+  echo "------------ $1 ------------"
+}
+
+dir=`dirname $0`
+. "${dir}/rc"
+tests_dir="${dir}/tests"
+find "${tests_dir}" -perm 0755 -name "test_*" | grep -wv py | sort | while read cmd
+do
+  print_header "${cmd}"
+  CORGI="${dir}/src/corgi" "${cmd}"
+  print_result $? "${cmd}"
+done
+find "${tests_dir}" -perm 0755 -name "test_*.py" | sort | while read py
+do
+  print_header "${py}"
+  CORGI="${dir}/src/corgi" "${python}" "${py}"
+  print_result $? "${py}"
 done
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

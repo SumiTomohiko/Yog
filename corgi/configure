@@ -12924,7 +12924,7 @@ if test "${enable_profile}" = "yes"; then
     LDFLAGS="-pg ${LDFLAGS}"
 fi
 
-ac_config_files="$ac_config_files Makefile src/Makefile tests/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile tests/Makefile rc"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -13805,6 +13805,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
+    "rc") CONFIG_FILES="$CONFIG_FILES rc" ;;
 
   *) { { $as_echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 $as_echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -15252,6 +15253,7 @@ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
+echo "Replacing directive names..."
 config_file="include/corgi/config.h"
 tmp_file="$$"
 sed -e "s/^#define /#define CORGI_/" < "${config_file}" > "${tmp_file}"
