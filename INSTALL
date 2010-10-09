@@ -7,13 +7,20 @@ Do the following commands::
   $ make
   $ sudo make install
 
-Then you will get ``/usr/local/bin/yog``.
+Then you will get the followings at ``/usr/local/bin``.
 
-If you want to install another directory, you can use the ``--prefix`` option to the configure.
+* ``yog-generational``
+* ``yog-copying``
+* ``yog-mark-sweep``
+* ``yog-mark-sweep-compact``
+* ``yog-bdw``
+
+If you want to install another directory, you can use the ``--prefix`` option to
+the configure.
 If you do::
 
   $ ./configure --prefix=PREFIX
 
-you will get ``PREFIX/bin/yog``.
+you will get ``PREFIX/bin/yog-*``.
 
 .. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=rst
