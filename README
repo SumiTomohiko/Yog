@@ -1,7 +1,7 @@
-This is Yog vesrion 0.0.8
+This is Yog vesrion 0.0.9
 =========================
 
-Yog is a dynamic programming language designed as an intermediate between Python and Ruby.
+Yog is a dynamic programming language designed as an intermediate between Pythonand Ruby.
 
 Features
 --------
@@ -86,6 +86,12 @@ by version 0.0.8 (done)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 * Change internal encoding of strings to UTF-32
+
+by version 0.0.9 (done)
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* Improved the regular expression faster by using corgi.
+  * http://github.com/SumiTomohiko/corgi
 
 by version 1.0.0
 ~~~~~~~~~~~~~~~~
