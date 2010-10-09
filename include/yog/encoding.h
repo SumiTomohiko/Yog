@@ -1,7 +1,6 @@
 #if !defined(YOG_ENCODING_H_INCLUDED)
 #define YOG_ENCODING_H_INCLUDED
 
-#include "oniguruma.h"
 #include "yog/object.h"
 #include "yog/string.h"
 #include "yog/yog.h"

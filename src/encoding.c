@@ -2,7 +2,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include "oniguruma.h"
 #include "yog/binary.h"
 #include "yog/class.h"
 #include "yog/encoding.h"

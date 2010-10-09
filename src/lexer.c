@@ -9,7 +9,6 @@
 #if defined(HAVE_UNISTD_H)
 #   include <unistd.h>
 #endif
-#include "oniguruma.h"
 #include "yog/array.h"
 #include "yog/binary.h"
 #include "yog/dict.h"
