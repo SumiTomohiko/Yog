@@ -61,6 +61,7 @@ configure.scan
 core
 core.*
 corgi/Makefile
+corgi/rc
 corgi/src/Makefile
 corgi/src/corgi
 corgi/tests/Makefile
