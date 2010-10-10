@@ -55,6 +55,7 @@ run mkdir -p "${tmp_dir}"
 run mv "${archive_dir}" "${tmp_dir}"
 run rm -rf "${dir}"
 print_done
+run echo "Temporary directory is ${tmp_dir}"
 
 echo -n "Generate configure etc..."
 setup_dir="${tmp_dir}/${archive}"

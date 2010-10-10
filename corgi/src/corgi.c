@@ -320,7 +320,10 @@ sre_charset(CorgiCode* set, CorgiCode ch)
     /* check if character is a member of the given set */
     int ok = 1;
     for (;;) {
-        switch (*set++) {
+        CorgiCode op = *set;
+        set++;
+        const char* fmt;
+        switch (op) {
         case SRE_OP_FAILURE:
             return !ok;
         case SRE_OP_LITERAL:
@@ -371,6 +374,8 @@ sre_charset(CorgiCode* set, CorgiCode ch)
         default:
             /* internal error -- there's not much we can do about it
                here, so let's just pretend it didn't match... */
+            fmt = "%s:%u set - 1=%p, op=%u\n";
+            printf(fmt, __FILE__, __LINE__, set - 1, op);
             assert(FALSE);
             abort();
         }
@@ -1675,6 +1680,20 @@ create_two_literal_nodes(Compiler* compiler, CorgiChar c1, CorgiChar c2, Node** 
 static CorgiStatus parse_escape(Compiler*, CorgiChar**, CorgiChar*, Node**);
 
 static CorgiStatus
+parse_escape_in_charset(Compiler* compiler, CorgiChar** pc, CorgiChar* end, Node** node)
+{
+    CorgiStatus status = parse_escape(compiler, pc, end, node);
+    if (status != CORGI_OK) {
+        return status;
+    }
+    if ((*node)->type != NODE_IN) {
+        return status;
+    }
+    *node = (*node)->u.in.set;
+    return CORGI_OK;
+}
+
+static CorgiStatus
 parse_in_internal(Compiler* compiler, CorgiChar** pc, CorgiChar* end, Node** node)
 {
     CorgiChar c = **pc;
@@ -1683,7 +1702,7 @@ parse_in_internal(Compiler* compiler, CorgiChar** pc, CorgiChar* end, Node** nod
         return create_node(compiler, NODE_NEGATE, node);
     }
     if (c == '\\') {
-        return parse_escape(compiler, pc, end, node);
+        return parse_escape_in_charset(compiler, pc, end, node);
     }
     if ((end <= *pc) || (**pc != '-')) {
         return create_literal_node(compiler, c, node);

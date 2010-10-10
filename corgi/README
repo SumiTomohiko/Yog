@@ -1,4 +1,4 @@
-corgi 0.0.1
+corgi 0.0.2
 ===========
 
 corgi is a regular expression library for C.
@@ -107,11 +107,12 @@ Syntax
 Syntax Elements
 ~~~~~~~~~~~~~~~
 
-========= ===============
-``|``     alternation
-``(...)`` group
-``[...]`` character class
-========= ===============
+================ ===============
+``|``            alternation
+``(...)``        group
+``(?<name>...)`` named group
+``[...]``        character class
+================ ===============
 
 Character Types
 ~~~~~~~~~~~~~~~

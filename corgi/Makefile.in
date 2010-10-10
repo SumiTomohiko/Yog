@@ -37,6 +37,7 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/rc.in $(top_srcdir)/configure \
+	$(top_srcdir)/doc/conf.py.in \
 	$(top_srcdir)/include/corgi/config.h.in AUTHORS COPYING \
 	ChangeLog INSTALL NEWS compile config.guess config.sub depcomp \
 	install-sh ltmain.sh missing
@@ -53,7 +54,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/include/corgi/config.h
-CONFIG_CLEAN_FILES = rc
+CONFIG_CLEAN_FILES = rc doc/conf.py
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -246,6 +247,8 @@ distclean-hdr:
 	-rm -f include/corgi/config.h include/corgi/stamp-h1
 rc: $(top_builddir)/config.status $(srcdir)/rc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
+doc/conf.py: $(top_builddir)/config.status $(top_srcdir)/doc/conf.py.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -392,7 +395,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/include/corgi $(distdir)/m4
+	$(mkdir_p) $(distdir)/. $(distdir)/doc $(distdir)/include/corgi $(distdir)/m4
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
