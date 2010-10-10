@@ -5,6 +5,15 @@ print_done()
   echo "done"
 }
 
+run()
+{
+  "$@"
+  if [ "$?" != 0 ]; then
+    echo "Failed: $@"
+    exit 1
+  fi
+}
+
 python="python"
 opts=`getopt p: "${*}"`
 if [ $? != 0 ]; then
@@ -33,7 +42,7 @@ yog="src/yog-generational"
 
 archive="${1}"
 if [ -z "${archive}" ]; then
-  echo "${0} head"
+  echo "${0} <head>"
   exit 1
 fi
 
@@ -41,103 +50,54 @@ dir="$$"
 archive_dir="${dir}/${archive}"
 
 echo -n "Extract source tree..."
-mkdir "${dir}"
-if [ $? != 0 ]; then
-  echo "can't make temporary directory"
-  exit 2
-fi
-git archive "--prefix=${archive_dir}/" HEAD | tar xf -
-if [ $? != 0 ]; then
-  echo "can't extract source tree"
-  exit 2
-fi
+run mkdir "${dir}"
+run git archive "--prefix=${archive_dir}/" HEAD | run tar xf -
+work_dir="/tmp/$$"
+run mkdir -p "${work_dir}"
+run mv "${archive_dir}" "${work_dir}"
+run rmdir "${dir}"
 print_done
+run echo "Working directory is ${work_dir}"
 
-echo -n "Generate configure etc..."
-(cd "${archive_dir}" && ./autogen.sh)
-if [ $? != 0 ]; then
-  echo "can't generate configure etc."
-  exit 2
-fi
-rm -rf "${archive_dir}/autom4te.cache"
-if [ $? != 0 ]; then
-  echo "can't remove autom4te"
-  exit 2
-fi
-src_dir="${archive_dir}/src"
-grep -o "\$(YOG) yg2inc.yg [[:alnum:]_]\+.yg \$@" "${src_dir}/Makefile.am" | while read line
+run echo -n "Generate configure etc..."
+src_root="${work_dir}/${archive}"
+(cd "${src_root}" && run ./autogen.sh)
+run rm -rf "${src_root}/autom4te.cache"
+src_dir="${src_root}/src"
+run grep -o "\$(YOG) yg2inc.yg [[:alnum:]_]\+.yg \$@" "${src_dir}/Makefile.am" | while read line
 do
   yg=`echo "${line}" | cut -d " " -f 2`
   src=`echo "${line}" | cut -d " " -f 3`
   dst="`echo "${src}" | cut -d "." -f 1`.inc"
-  ${yog} "${src_dir}/${yg}" "${src_dir}/${src}" "${src_dir}/${dst}"
+  run ${yog} "${src_dir}/${yg}" "${src_dir}/${src}" "${src_dir}/${dst}"
 done
-tools_dir="${archive_dir}/tools"
-${yog} "${tools_dir}/make_errno.yg" "${tools_dir}/errno" "${src_dir}/errno.inc"
-if [ $? != 0 ]; then
-  echo "can't generate errno files."
-  exit 2
-fi
-${python} "${tools_dir}/inst.py" "${src_dir}/insts.def" "${archive_dir}"
-if [ $? != 0 ]; then
-  echo "can't generate instruction files."
-  exit 2
-fi
-gperf "${src_dir}/keywords" > "${src_dir}/keywords.inc"
-if [ $? != 0 ]; then
-  echo "can't generate keywords.inc"
-  exit 2
-fi
-(cd ${src_dir} && ${python} "../tools/make_shift_jis_tables.py")
-(cd ${src_dir} && ${python} "../tools/make_euc_jp_tables.py")
+tools_dir="${src_root}/tools"
+run ${yog} "${tools_dir}/make_errno.yg" "${tools_dir}/errno" "${src_dir}/errno.inc"
+run ${python} "${tools_dir}/inst.py" "${src_dir}/insts.def" "${src_root}"
+run gperf "${src_dir}/keywords" > "${src_dir}/keywords.inc"
+(cd ${src_dir} && run ${python} "../tools/make_shift_jis_tables.py")
+(cd ${src_dir} && run ${python} "../tools/make_euc_jp_tables.py")
 print_done
 
 echo -n "Generate HTML document..."
-make doc
-if [ $? != 0 ]; then
-  echo "can't generate document"
-  exit 2
-fi
-cp -r doc/html "${archive_dir}/doc"
-if [ $? != 0 ]; then
-  echo "can't copy documents"
-  exit 2
-fi
+run make doc
+run cp -r doc/html "${src_root}/doc"
 print_done
 
 echo -n "Archive .tar.gz..."
-(cd "${dir}" && tar czf "../${archive}.tar.gz" "${archive}")
-if [ $? != 0 ]; then
-  echo "can't archive .tar.gz"
-  exit 2
-fi
+cwd=`pwd`
+(cd "${work_dir}" && run tar czf "${cwd}/${archive}.tar.gz" "${archive}")
 print_done
 echo -n "Archive .tar.bz2..."
-(cd "${dir}" && tar cjf "../${archive}.tar.bz2" "${archive}")
-if [ $? != 0 ]; then
-  echo "can't archive .tar.bz2"
-  exit 2
-fi
+(cd "${work_dir}" && run tar cjf "${cwd}/${archive}.tar.bz2" "${archive}")
 print_done
 echo -n "Archive .tar.xz..."
-(cd "${dir}" && tar cf - "${archive}" | xz --compress > "../${archive}.tar.xz")
-if [ $? != 0 ]; then
-  echo "can't archive .tar.xz"
-  exit 2
-fi
+(cd "${work_dir}" && run tar cf - "${archive}" | run xz --compress > "${cwd}/${archive}.tar.xz")
 print_done
 echo -n "Archive .zip..."
-(cd "${dir}" && zip -qr "../${archive}.zip" "${archive}")
-if [ $? != 0 ]; then
-  echo "can't archive .zip"
-  exit 2
-fi
+(cd "${work_dir}" && run zip -qr "${cwd}/${archive}.zip" "${archive}")
 print_done
 
-rm -rf "${dir}"
-if [ $? != 0 ]; then
-  echo "can't cleanup temporary directory"
-  exit 2
-fi
+run rm -rf "${work_dir}"
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
