@@ -1,66 +1,58 @@
 #!/bin/sh
 
+run()
+{
+  "$@"
+  if [ "$?" != 0 ]; then
+    echo "Failed: $@"
+    exit 1
+  fi
+}
+
 cleanup()
 {
-  rm -rf "${archive}"
-  if [ $? != 0 ]; then
-    echo "can't cleanup"
-    exit 2
-  fi
+  run rm -rf "${tmp_dir}/${archive}"
 }
 
 do_test()
 {
-  (cd "${archive}" && mkdir $$ && ./configure --prefix=`pwd`/$$ CFLAGS=-I${HOME}/include LDFLAGS=-L${HOME}/lib && make && make install)
-  if [ $? != 0 ]; then
-    echo "can't make"
-    exit 2
-  fi
+  (cd "${tmp_dir}/${archive}" && run mkdir -p $$ && run ./configure --prefix=`pwd`/$$ CFLAGS=-I${HOME}/include LDFLAGS=-L${HOME}/lib && run make && run make install)
 }
 
 archive="${1}"
 if [ -z "${archive}" ]; then
-  echo "${0} head"
+  echo "${0} <head>"
   exit 1
 fi
 
-untar="tar xf -"
+tmp_dir="/tmp/$$"
+run mkdir -p "${tmp_dir}"
+echo "Temporary directory is ${tmp_dir}"
 
-cleanup
-zcat "${archive}.tar.gz" | ${untar}
-if [ $? != 0 ]; then
-  echo "can't extract ${archive}.tar.gz"
-  exit 2
-fi
+echo "Testing ${archive}.tar.gz ..."
+untar="tar xf -"
+cwd=`pwd`
+(cd "${tmp_dir}" && run zcat "${cwd}/${archive}.tar.gz" | run ${untar})
 do_test
 
+echo "Testing ${archive}.tar.bz2 ..."
 cleanup
-bzcat "${archive}.tar.bz2" | ${untar}
-if [ $? != 0 ]; then
-  echo "can't extract ${archive}.tar.bz2"
-  exit 2
-fi
+(cd "${tmp_dir}" && run bzcat "${cwd}/${archive}.tar.bz2" | run ${untar})
 do_test
 
 which xzcat >/dev/null
 if [ $? = 0 ]; then
+  echo "Testing ${archive}.tar.xz ..."
   cleanup
-  xzcat "${archive}.tar.xz" | ${untar}
-  if [ $? != 0 ]; then
-    echo "can't extract ${archive}.tar.xz"
-    exit 2
-  fi
+  (cd "${tmp_dir}" && run xzcat "${cwd}/${archive}.tar.xz" | run ${untar})
   do_test
 fi
 
+echo "Testing ${archive}.zip ..."
 cleanup
-unzip -q "${archive}.zip"
-if [ $? != 0 ]; then
-  echo "can't extract ${archive}.zip"
-  exit 2
-fi
+(cd "${tmp_dir}" && run unzip -q "${cwd}/${archive}.zip")
 do_test
 
-cleanup
+run rm -rf "${tmp_dir}"
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
