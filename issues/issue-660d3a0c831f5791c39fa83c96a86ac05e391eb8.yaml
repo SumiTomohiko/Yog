@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "\"foo.bar() = baz\" causes segmentation fault"
+desc: ""
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-10-12 04:48:34.096550 Z
+references: []
+
+id: 660d3a0c831f5791c39fa83c96a86ac05e391eb8
+log_events: 
+- - 2010-10-12 04:48:34.707089 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
