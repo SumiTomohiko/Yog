@@ -716,7 +716,7 @@ class Ydoc
     end
     File.open(path_from_topdir) do [fp]
       while line = fp.readline()
-        if m = (line.trim() =~ /\A=+\s+(.*)\Z/)
+        if m = (line =~ /\A=+\s+(.*)$/)
           title = m.group(1).rtrim()
           if title != ""
             self.path2title[phisical_path] = title
