@@ -515,6 +515,152 @@ finally
 end
 """ % locals(), "42", options=[])
 
+    # Tests for pointer
+    def test_Struct660(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'pointer, \'bar]])
+foo = Foo.new()
+print(foo.bar)
+""", "0")
+
+    def test_Struct670(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'pointer, \'bar]])
+foo = Foo.new()
+foo.bar = 42
+print(foo.ptr)
+""", "42")
+
+    # Tests for internal structs
+    def test_Struct680(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
+Baz = StructClass.new(\"Baz\", [[Foo, \'foo]])
+baz = Baz.new()
+baz.foo.bar = 42
+print(baz.foo.bar)""", "42")
+
+    def test_Struct690(self):
+        path = self.get_lib_path()
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
+Baz = StructClass.new(\"Baz\", [[Foo, \'foo]])
+lib = load_lib(\"./test_Struct690.so\")
+f = lib.load_func(\"test_Struct690\", [Baz])
+baz = Baz.new()
+f(baz)
+print(baz.foo.bar)""", "42")
+
+    def test_Struct700(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
+Baz = StructClass.new(\"Baz\", [[Foo, \'foo], [\'int, \'quux]])
+lib = load_lib(\"./test_Struct700.so\")
+f = lib.load_func(\"test_Struct700\", [Baz])
+baz = Baz.new()
+f(baz)
+print(baz.quux)""", "42")
+
+    def test_Struct705(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
+Baz = StructClass.new(\"Baz\", [[\'int, \'quux], [Foo, \'foo]])
+lib = load_lib(\"./test_Struct705.so\")
+f = lib.load_func(\"test_Struct705\", [Baz])
+baz = Baz.new()
+f(baz)
+print(baz.foo.bar)""", "42")
+
+    def test_Struct710(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[[\'struct, [[\'int, \'bar]]], \'baz]])
+foo = Foo.new()
+foo.baz.bar = 42
+print(foo.baz.bar)""", "42")
+
+    def test_Struct720(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[[\'struct, [[\'int, \'bar]]], \'baz]])
+lib = load_lib(\"./test_Struct720.so\")
+f = lib.load_func(\"test_Struct720\", [Foo])
+foo = Foo.new()
+f(foo)
+print(foo.baz.bar)""", "42")
+
+    def test_Struct730(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [
+  [[\'struct, [[\'int, \'bar]]], \'baz],
+  [\'int, \'quux]])
+lib = load_lib(\"./test_Struct730.so\")
+f = lib.load_func(\"test_Struct730\", [Foo])
+foo = Foo.new()
+f(foo)
+print(foo.baz.bar)""", "42")
+
+    # Tests for pointers to a struct
+    def test_Struct740(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
+Baz = StructClass.new(\"Baz\", [[[\'pointer, Foo], \'foo]])
+foo = Foo.new()
+baz = Baz.new()
+baz.foo = foo
+lib = load_lib(\"./test_Struct740.so\")
+f = lib.load_func(\"test_Struct740\", [Baz])
+f(baz)
+print(baz.foo.bar)""", "42")
+
+    # Tests for UnionClass
+    def test_Union000(self):
+        self._test("""
+Foo = UnionClass.new(\"Foo\", [[\'int, \'bar]])
+foo = Foo.new()
+foo.bar = 42
+print(foo.bar)""", "42")
+
+    def test_Union010(self):
+        self._test("""
+Foo = UnionClass.new(\"Foo\", [[\'int, \'bar], [\'int, \'baz]])
+foo = Foo.new()
+foo.bar = 42
+print(foo.baz)""", "42")
+
+    def test_Union020(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'int, \'bar], [\'int, \'baz]])
+Quux = UnionClass.new(\"Quux\", [[\'int, \'hoge], [Foo, \'foo]])
+quux = Quux.new()
+quux.hoge = 42
+print(quux.foo.bar)""", "42")
+
+    def test_Union030(self):
+        self._test("""
+Foo = UnionClass.new(\"Foo\", [[\'int, \'bar], [\'int, \'baz]])
+lib = load_lib(\"./test_Union030.so\")
+f = lib.load_func(\"test_Union030\", [[\'pointer, Foo]])
+foo = Foo.new()
+f(foo)
+print(foo.baz)""", "42")
+
+    def test_Union040(self):
+        self._test("""
+Foo = UnionClass.new(\"Foo\", [[\'int, \'bar], [\'int, \'baz]])
+lib = load_lib(\"./test_Union040.so\")
+f = lib.load_func(\"test_Union040\", [[\'pointer, Foo]])
+foo = Foo.new()
+f(foo)
+print(foo.bar)""", "42")
+
+    def test_Union050(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'int, \'bar], [\'int, \'baz]])
+Quux = UnionClass.new(\"Quux\", [[\'int, \'hoge], [Foo, \'foo]])
+quux = Quux.new()
+lib = load_lib(\"./test_Union050.so\")
+f = lib.load_func(\"test_Union050\", [[\'pointer, Quux]])
+print(quux.foo.baz)""", "42")
+
     # Tests for uint8
     def test_argument10(self):
         def test_stderr(stderr):
