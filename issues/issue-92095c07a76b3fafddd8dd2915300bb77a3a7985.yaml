@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: StructClassBase
+desc: Create StructClassBase class and move init and get_size methods to it.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-10-18 16:31:07.429338 Z
+references: []
+
+id: 92095c07a76b3fafddd8dd2915300bb77a3a7985
+log_events: 
+- - 2010-10-18 16:31:07.816774 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
