@@ -67,6 +67,15 @@ typedef struct Field Field;
 
 #define TYPE_FIELD TO_TYPE(Field_alloc)
 
+struct StructField {
+    struct FieldBase base;
+    YogVal klass;
+};
+
+typedef struct StructField StructField;
+
+#define TYPE_STRUCT_FIELD TO_TYPE(StructField_alloc)
+
 struct ArrayField {
     struct FieldBase base;
     ID type;
@@ -109,6 +118,7 @@ struct StructClass {
     struct YogClass base;
     uint_t size;
     uint_t buffers_num;
+    uint_t first_field_size;
 };
 
 typedef struct StructClass StructClass;
@@ -120,6 +130,7 @@ struct Struct {
     struct YogBasicObj base;
     void* data;
     BOOL own;
+    YogVal top;
     /**
      * A structure refered by Struct::data may have some buffers. These buffers
      * are members of Buffer objects. So Struct objects must keep these Buffer
@@ -172,6 +183,40 @@ typedef struct Pointer Pointer;
 
 #define TYPE_POINTER TO_TYPE(Pointer_alloc)
 
+static void
+FieldBase_init(YogEnv* env, YogVal self, type_t type, YogVal klass)
+{
+    YogBasicObj_init(env, self, type, 0, klass);
+    PTR_AS(FieldBase, self)->offset = 0;
+}
+
+static void
+StructField_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
+    StructField* field = (StructField*)ptr;
+    YogGC_KEEP(env, field, klass, keeper, heap);
+}
+
+static YogVal
+StructField_alloc(YogEnv* env, YogVal klass)
+{
+    YogVal field = ALLOC_OBJ(env, StructField_keep_children, NULL, StructField);
+    FieldBase_init(env, field, TYPE_STRUCT_FIELD, klass);
+    PTR_AS(StructField, field)->klass = YUNDEF;
+    return field;
+}
+
+static YogVal
+StructField_new(YogEnv* env, uint_t offset, YogVal klass)
+{
+    YogVal field = StructField_alloc(env, env->vm->cStructField);
+    PTR_AS(FieldBase, field)->offset = offset;
+    YogGC_UPDATE_PTR(env, PTR_AS(StructField, field), klass, klass);
+    return field;
+}
+
 static YogVal
 ArrayField_alloc(YogEnv* env, YogVal klass)
 {
@@ -180,7 +225,7 @@ ArrayField_alloc(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, field);
 
     field = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, ArrayField);
-    YogBasicObj_init(env, field, TYPE_ARRAY_FIELD, 0, klass);
+    FieldBase_init(env, field, TYPE_ARRAY_FIELD, klass);
     PTR_AS(ArrayField, field)->type = INVALID_ID;
     PTR_AS(ArrayField, field)->size = 0;
 
@@ -204,7 +249,7 @@ StringField_alloc(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, field);
 
     field = ALLOC_OBJ(env, StringField_keep_children, NULL, StringField);
-    YogBasicObj_init(env, field, TYPE_STRING_FIELD, 0, klass);
+    FieldBase_init(env, field, TYPE_STRING_FIELD, klass);
     PTR_AS(StringField, field)->encoding = YNIL;
 
     RETURN(env, field);
@@ -218,7 +263,7 @@ BufferField_alloc(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, field);
 
     field = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, BufferField);
-    YogBasicObj_init(env, field, TYPE_BUFFER_FIELD, 0, klass);
+    FieldBase_init(env, field, TYPE_BUFFER_FIELD, klass);
     PTR_AS(BufferField, field)->buffer_index = 0;
 
     RETURN(env, field);
@@ -309,8 +354,7 @@ Field_alloc(YogEnv* env, YogVal klass)
     PUSH_LOCAL(env, obj);
 
     obj = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Field);
-    YogBasicObj_init(env, obj, TYPE_FIELD, 0, klass);
-    PTR_AS(FieldBase, obj)->offset = 0;
+    FieldBase_init(env, obj, TYPE_FIELD, klass);
     PTR_AS(Field, obj)->type = INVALID_ID;
 
     RETURN(env, obj);
@@ -402,6 +446,9 @@ create_scalar_field(YogEnv* env, YogVal type, uint_t offset, uint_t buffer_index
 } while (0)
     if (!IS_PTR(type)) {
         RAISE_TYPE_ERROR;
+    }
+    if (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS) {
+        RETURN(env, StructField_new(env, offset, type));
     }
     if (BASIC_OBJ_TYPE(type) == TYPE_ARRAY) {
         RETURN(env, create_parameterized_field(env, type, offset));
@@ -630,16 +677,32 @@ type2size(YogEnv* env, ffi_type* type)
     RETURN(env, size);
 }
 
+static uint_t
+get_size(YogEnv* env, YogVal type)
+{
+    if (IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) {
+        return PTR_AS(StructClass, type)->size;
+    }
+    return IS_SYMBOL(type) ? id2size(env, VAL2ID(type)) : sizeof(void*);
+}
+
 #define ALIGN(offset, alignment) \
             (((offset) + (alignment) - 1) & ~((alignment) - 1))
-#define SIZEOF(env, val) \
-            (IS_SYMBOL((val)) ? id2size((env), VAL2ID((val))) : sizeof(void*))
+
+static uint_t
+get_alignment_unit(YogEnv* env, YogVal type)
+{
+    if (IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) {
+        return PTR_AS(StructClass, type)->first_field_size;
+    }
+    return get_size(env, type);
+}
 
 static uint_t
 align_offset(YogEnv* env, YogVal type, uint_t offset)
 {
     SAVE_ARG(env, type);
-    uint_t size = SIZEOF(env, type);
+    uint_t size = get_alignment_unit(env, type);
     uint_t alignment = sizeof(void*) < size ? sizeof(void*) : size;
     RETURN(env, ALIGN(offset, alignment));
 }
@@ -711,7 +774,7 @@ get_field_type_and_size(YogEnv* env, YogVal type, YogVal* field_type, int_t* psi
         RETURN_VOID(env);
     }
     YogVM* vm = env->vm;
-    if (type == vm->cBuffer) {
+    if ((type == vm->cBuffer) || (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) {
         *field_type = type;
         *psize = -1;
         RETURN_VOID(env);
@@ -753,6 +816,19 @@ get_field_type_and_size(YogEnv* env, YogVal type, YogVal* field_type, int_t* psi
     RETURN_VOID(env);
 }
 
+static uint_t
+get_first_field_size(YogEnv* env, YogVal fields)
+{
+    if (YogArray_size(env, fields) == 0) {
+        return 0;
+    }
+    YogVal field = YogArray_at(env, fields, 0);
+    if (YogArray_size(env, field) == 0) {
+        YogError_raise_ValueError(env, "Field have no elements");
+    }
+    return get_alignment_unit(env, YogArray_at(env, field, 0));
+}
+
 static YogVal
 StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -786,6 +862,8 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
     PTR_AS(YogClass, obj)->name = id;
     YogClass_define_allocator(env, obj, Struct_alloc);
     YogClass_define_method(env, obj, pkg, "init", Struct_init);
+    uint_t first_field_size = get_first_field_size(env, fields);
+    PTR_AS(StructClass, obj)->first_field_size = first_field_size;
 
     uint_t offset = 0;
     uint_t buffers_num = 0;
@@ -798,14 +876,15 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
          * function" without assignement initial value.
          */
         int_t field_size = 0;
-        get_field_type_and_size(env, YogArray_at(env, field, 0), &field_type, &field_size);
+        YogVal type = YogArray_at(env, field, 0);
+        get_field_type_and_size(env, type, &field_type, &field_size);
         offset = align_offset(env, field_type, offset);
         field_name = YogArray_at(env, field, 1);
         StructClass_set_field(env, obj, i, field_name, field_type, field_size, offset, buffers_num);
-        offset += SIZEOF(env, field_type) * (field_size == -1 ? 1 : field_size);
+        offset += get_size(env, field_type) * (field_size == -1 ? 1 : field_size);
         buffers_num += field_type == cBuffer ? 1 : 0;
     }
-    PTR_AS(StructClass, obj)->size = ALIGN(offset, sizeof(void*));
+    PTR_AS(StructClass, obj)->size = offset;
     PTR_AS(StructClass, obj)->buffers_num = buffers_num;
 
     RETURN(env, obj);
@@ -817,6 +896,8 @@ Struct_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     Struct* st = (Struct*)ptr;
+    YogGC_KEEP(env, st, top, keeper, heap);
+
     YogVal klass = ((YogBasicObj*)st)->klass;
     YOG_ASSERT(env, BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS, "Invalid class");
     uint_t buffers_num = PTR_AS(StructClass, klass)->buffers_num;
@@ -851,6 +932,7 @@ Struct_alloc(YogEnv* env, YogVal klass)
     YogBasicObj_init(env, obj, TYPE_STRUCT, 0, klass);
     PTR_AS(Struct, obj)->data = NULL;
     PTR_AS(Struct, obj)->own = TRUE;
+    PTR_AS(Struct, obj)->top = obj;
     uint_t i;
     for (i = 0; i < buffers_num; i++) {
         PTR_AS(Struct, obj)->buffers[i] = YNIL;
@@ -2230,6 +2312,24 @@ Struct_write_Buffer(YogEnv* env, YogVal self, YogVal field, YogVal buf)
 }
 
 static void
+StructField_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
+{
+    SAVE_ARGS3(env, attr, obj, val);
+    if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_STRUCT)) {
+        YogError_raise_TypeError(env, "Value must be Struct, not %C", val);
+    }
+    YogVal klass = PTR_AS(StructField, attr)->klass;
+    if (klass != PTR_AS(YogBasicObj, val)->klass) {
+        ID name = PTR_AS(YogClass, klass)->name;
+        YogError_raise_TypeError(env, "Value must be %I, not %C", name, val);
+    }
+    uint_t offset = PTR_AS(FieldBase, attr)->offset;
+    void* dest = (char*)PTR_AS(Struct, obj)->data + offset;
+    memcpy(dest, PTR_AS(Struct, val)->data, PTR_AS(StructClass, klass)->size);
+    RETURN_VOID(env);
+}
+
+static void
 ArrayField_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
 {
     SAVE_ARGS3(env, attr, obj, val);
@@ -2615,6 +2715,25 @@ Int_get_value(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogV
     RETURN(env, value);
 }
 
+static YogVal
+StructField_call_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+{
+    SAVE_ARGS3(env, attr, obj, klass);
+    YogVal st = Struct_alloc(env, PTR_AS(StructField, attr)->klass);
+    uint_t offset = PTR_AS(FieldBase, attr)->offset;
+    PTR_AS(Struct, st)->data = (char*)PTR_AS(Struct, obj)->data + offset;
+    PTR_AS(Struct, st)->own = FALSE;
+    YogGC_UPDATE_PTR(env, PTR_AS(Struct, st), top, PTR_AS(Struct, obj)->top);
+    RETURN(env, st);
+}
+
+static void
+StructField_exec_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+{
+    YogVal st = StructField_call_descr_get(env, attr, obj, klass);
+    YogScriptFrame_push_stack(env, env->frame, st);
+}
+
 void
 YogFFI_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -2627,12 +2746,13 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogVal cInt = YUNDEF;
     YogVal cBuffer = YUNDEF;
     YogVal cPointer = YUNDEF;
+    YogVal cStructField = YUNDEF;
     YogVal cArrayField = YUNDEF;
     YogVal cBufferField = YUNDEF;
     YogVal cStringField = YUNDEF;
     YogVal cFieldArray = YUNDEF;
     PUSH_LOCALS8(env, cLib, cLibFunc, cStructClassClass, cStructClass, cField, cInt, cBuffer, cPointer);
-    PUSH_LOCALS4(env, cArrayField, cBufferField, cStringField, cFieldArray);
+    PUSH_LOCALS5(env, cArrayField, cBufferField, cStringField, cFieldArray, cStructField);
     YogVM* vm = env->vm;
 
     cLib = YogClass_new(env, "Lib", vm->cObject);
@@ -2656,6 +2776,12 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_descr_get_caller(env, cField, Field_call_descr_get);
     YogClass_define_descr_set_executor(env, cField, Field_exec_descr_set);
     vm->cField = cField;
+    cStructField = YogClass_new(env, "StructField", vm->cObject);
+    YogClass_define_allocator(env, cStructField, StructField_alloc);
+    YogClass_define_descr_get_executor(env, cStructField, StructField_exec_descr_get);
+    YogClass_define_descr_get_caller(env, cStructField, StructField_call_descr_get);
+    YogClass_define_descr_set_executor(env, cStructField, StructField_exec_descr_set);
+    vm->cStructField = cStructField;
     cArrayField = YogClass_new(env, "ArrayField", vm->cObject);
     YogClass_define_allocator(env, cArrayField, ArrayField_alloc);
     YogClass_define_descr_get_executor(env, cArrayField, ArrayField_exec_descr_get);

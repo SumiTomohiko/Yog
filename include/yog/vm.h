@@ -58,6 +58,7 @@ struct YogVM {
     YogVal cStringField;
     YogVal cStructClass;
     YogVal cStructClassClass;
+    YogVal cStructField;
     YogVal cSymbol;
     YogVal cThread;
 
