@@ -141,9 +141,9 @@ struct Struct {
 
 typedef struct Struct Struct;
 
-#define TYPE_STRUCT TO_TYPE(Struct_alloc)
+#define TYPE_STRUCT TO_TYPE(StructBase_alloc)
 
-static YogVal Struct_alloc(YogEnv* env, YogVal klass);
+static YogVal StructBase_alloc(YogEnv* env, YogVal klass);
 
 struct Int {
     struct YogBasicObj base;
@@ -512,7 +512,7 @@ StructClass_init(YogEnv* env, YogVal self, uint_t fields_num)
 
     YogClass_init(env, self, TYPE_STRUCT_CLASS, env->vm->cStructClass);
     PTR_AS(StructClass, self)->size = 0;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogClass, self), super, env->vm->cClass);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogClass, self), super, env->vm->cStructBase);
 
     RETURN_VOID(env);
 }
@@ -708,7 +708,7 @@ align_offset(YogEnv* env, YogVal type, uint_t offset)
 }
 
 static YogVal
-Struct_get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+StructBase_get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal size = YUNDEF;
@@ -725,7 +725,7 @@ Struct_get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
 }
 
 static YogVal
-Struct_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+StructBase_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal klass = YUNDEF;
@@ -856,12 +856,9 @@ StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal k
     uint_t fields_num = YogArray_size(env, fields);
     obj = ALLOC_OBJ(env, YogClass_keep_children, NULL, StructClass);
     StructClass_init(env, obj, fields_num);
-    YogClass_define_property(env, obj, pkg, "size", Struct_get_size, NULL);
 
     ID id = YogVM_intern2(env, env->vm, name);
     PTR_AS(YogClass, obj)->name = id;
-    YogClass_define_allocator(env, obj, Struct_alloc);
-    YogClass_define_method(env, obj, pkg, "init", Struct_init);
     uint_t first_field_size = get_first_field_size(env, fields);
     PTR_AS(StructClass, obj)->first_field_size = first_field_size;
 
@@ -919,7 +916,7 @@ Struct_finalize(YogEnv* env, void* ptr)
 }
 
 static YogVal
-Struct_alloc(YogEnv* env, YogVal klass)
+StructBase_alloc(YogEnv* env, YogVal klass)
 {
     SAVE_ARG(env, klass);
     YogVal obj = YUNDEF;
@@ -2719,7 +2716,7 @@ static YogVal
 StructField_call_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
 {
     SAVE_ARGS3(env, attr, obj, klass);
-    YogVal st = Struct_alloc(env, PTR_AS(StructField, attr)->klass);
+    YogVal st = StructBase_alloc(env, PTR_AS(StructField, attr)->klass);
     uint_t offset = PTR_AS(FieldBase, attr)->offset;
     PTR_AS(Struct, st)->data = (char*)PTR_AS(Struct, obj)->data + offset;
     PTR_AS(Struct, st)->own = FALSE;
@@ -2738,21 +2735,22 @@ void
 YogFFI_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
+    YogVal cArrayField = YUNDEF;
+    YogVal cBuffer = YUNDEF;
+    YogVal cBufferField = YUNDEF;
+    YogVal cField = YUNDEF;
+    YogVal cFieldArray = YUNDEF;
+    YogVal cInt = YUNDEF;
     YogVal cLib = YUNDEF;
     YogVal cLibFunc = YUNDEF;
-    YogVal cStructClassClass = YUNDEF;
-    YogVal cStructClass = YUNDEF;
-    YogVal cField = YUNDEF;
-    YogVal cInt = YUNDEF;
-    YogVal cBuffer = YUNDEF;
     YogVal cPointer = YUNDEF;
-    YogVal cStructField = YUNDEF;
-    YogVal cArrayField = YUNDEF;
-    YogVal cBufferField = YUNDEF;
     YogVal cStringField = YUNDEF;
-    YogVal cFieldArray = YUNDEF;
+    YogVal cStructBase = YUNDEF;
+    YogVal cStructClass = YUNDEF;
+    YogVal cStructClassClass = YUNDEF;
+    YogVal cStructField = YUNDEF;
     PUSH_LOCALS8(env, cLib, cLibFunc, cStructClassClass, cStructClass, cField, cInt, cBuffer, cPointer);
-    PUSH_LOCALS5(env, cArrayField, cBufferField, cStringField, cFieldArray, cStructField);
+    PUSH_LOCALS6(env, cArrayField, cBufferField, cStringField, cFieldArray, cStructField, cStructBase);
     YogVM* vm = env->vm;
 
     cLib = YogClass_new(env, "Lib", vm->cObject);
@@ -2767,6 +2765,11 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     cStructClassClass = YogClass_new(env, "StructClassClass", vm->cClass);
     YogClass_define_method(env, cStructClassClass, pkg, "new", StructClassClass_new);
     vm->cStructClassClass = cStructClassClass;
+    cStructBase = YogClass_new(env, "StructBase", vm->cClass);
+    YogClass_define_property(env, cStructBase, pkg, "size", StructBase_get_size, NULL);
+    YogClass_define_allocator(env, cStructBase, StructBase_alloc);
+    YogClass_define_method(env, cStructBase, pkg, "init", StructBase_init);
+    vm->cStructBase = cStructBase;
     cStructClass = YogClass_new(env, "StructClass", vm->cClass);
     YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, cStructClass), klass, cStructClassClass);
     vm->cStructClass = cStructClass;
