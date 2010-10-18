@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: StructClassClass#new causes aborting
+desc: Foo = StructClass.new("Foo", [['int]])
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-10-18 11:52:26.098153 Z
+references: []
+
+id: b9f62eeb6e97a8f0d2d4492bf017f18f2c99356e
+log_events: 
+- - 2010-10-18 11:52:26.707712 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
