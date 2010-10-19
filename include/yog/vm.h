@@ -63,6 +63,8 @@ struct YogVM {
     YogVal cStructField;
     YogVal cSymbol;
     YogVal cThread;
+    YogVal cUnionClass;
+    YogVal cUnionClassClass;
 
     YogVal eArgumentError;
     YogVal eAttributeError;

@@ -128,13 +128,13 @@ struct StructClass {
     struct YogClass base;
     uint_t size;
     uint_t children_num;
-    uint_t first_field_size;
+    uint_t alignment_unit;
 };
 
 typedef struct StructClass StructClass;
 
-#define TYPE_STRUCT_CLASS TO_TYPE(StructClassClass_new)
-static YogVal StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block);
+#define TYPE_STRUCT_CLASS TO_TYPE(StructClass_new)
+static YogVal StructClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block);
 
 struct Struct {
     struct YogBasicObj base;
@@ -532,14 +532,14 @@ ArrayField_new(YogEnv* env, YogVal node, uint_t offset)
 {
     SAVE_ARG(env, node);
     YogVal type = PTR_AS(Node, node)->u.array.type;
-    if (!IS_SYMBOL(type)) {
-        const char* fmt = "Type of array must be Symbol, not %C";
-        YogError_raise_TypeError(env, fmt, type);
+    PUSH_LOCAL(env, type);
+    if (PTR_AS(Node, type)->type != NODE_ATOM) {
+        YogError_raise_TypeError(env, "Type of array must be atom");
     }
 
     YogVal field = ArrayField_alloc(env, env->vm->cArrayField);
     PTR_AS(FieldBase, field)->offset = offset;
-    PTR_AS(ArrayField, field)->type = VAL2ID(type);
+    PTR_AS(ArrayField, field)->type = PTR_AS(Node, type)->u.atom.type;
     PTR_AS(ArrayField, field)->size = PTR_AS(Node, node)->u.array.size;
     RETURN(env, field);
 }
@@ -587,15 +587,23 @@ StructClass_set_field(YogEnv* env, YogVal self, YogVal node, uint_t offset, uint
 }
 
 static void
+init_struct(YogEnv* env, YogVal obj, YogVal klass)
+{
+    YogClass_init(env, obj, TYPE_STRUCT_CLASS, klass);
+    PTR_AS(StructClass, obj)->size = 0;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogClass, obj), super, env->vm->cStructBase);
+}
+
+static void
+UnionClass_init(YogEnv* env, YogVal self)
+{
+    init_struct(env, self, env->vm->cUnionClass);
+}
+
+static void
 StructClass_init(YogEnv* env, YogVal self)
 {
-    SAVE_ARG(env, self);
-
-    YogClass_init(env, self, TYPE_STRUCT_CLASS, env->vm->cStructClass);
-    PTR_AS(StructClass, self)->size = 0;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogClass, self), super, env->vm->cStructBase);
-
-    RETURN_VOID(env);
+    init_struct(env, self, env->vm->cStructClass);
 }
 
 static uint_t
@@ -806,7 +814,7 @@ get_first_field_size_of_node(YogEnv* env, YogVal node)
         return get_size(env, node);
     case NODE_STRUCT:
         klass = PTR_AS(Node, node)->u.struct_.klass;
-        return PTR_AS(StructClass, klass)->first_field_size;
+        return PTR_AS(StructClass, klass)->alignment_unit;
     case NODE_ARRAY:
     case NODE_FIELD:
     default:
@@ -1048,8 +1056,8 @@ get_total_field_size(YogEnv* env, YogVal node)
 {
     YogVal type = PTR_AS(Node, node)->u.field.type;
     if (PTR_AS(Node, type)->type == NODE_ARRAY) {
-        uint_t size = PTR_AS(Node, node)->u.array.size;
-        return get_size(env, PTR_AS(Node, node)->u.array.type) * size;
+        uint_t size = PTR_AS(Node, type)->u.array.size;
+        return get_size(env, PTR_AS(Node, type)->u.array.type) * size;
     }
     return get_size(env, type);
 }
@@ -1060,6 +1068,64 @@ get_children_num(YogEnv* env, YogVal node)
     YogVal type = PTR_AS(Node, node)->u.field.type;
     NodeType nt = PTR_AS(Node, type)->type;
     return (nt == NODE_POINTER) || (nt == NODE_BUFFER) ? 1 : 0;
+}
+
+static void
+update_max(uint_t* max, uint_t n)
+{
+    if (n <= *max) {
+        return;
+    }
+    *max = n;
+}
+
+static uint_t
+get_union_size(YogEnv* env, YogVal nodes)
+{
+    uint_t max = 0;
+    YogVal node;
+    for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
+        update_max(&max, get_total_field_size(env, node));
+    }
+    return max;
+}
+
+static uint_t
+get_alignment_unit_of_union(YogEnv* env, YogVal nodes)
+{
+    uint_t max = 0;
+    YogVal node;
+    for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
+        update_max(&max, get_first_field_size(env, node));
+    }
+    return max;
+}
+
+static YogVal
+build_UnionClass(YogEnv* env, ID name, YogVal fields)
+{
+    SAVE_ARG(env, fields);
+    YogVal obj = YUNDEF;
+    YogVal nodes = YUNDEF;
+    YogVal node = YUNDEF;
+    PUSH_LOCALS3(env, obj, nodes, node);
+
+    obj = ALLOC_OBJ(env, YogClass_keep_children, NULL, StructClass);
+    UnionClass_init(env, obj);
+    PTR_AS(YogClass, obj)->name = name;
+
+    nodes = parse_fields(env, fields);
+    uint_t alignment_unit = get_alignment_unit_of_union(env, nodes);
+    PTR_AS(StructClass, obj)->alignment_unit = alignment_unit;
+
+    uint_t children_num = 0;
+    for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
+        StructClass_set_field(env, obj, node, 0, children_num);
+        children_num += get_children_num(env, node);
+    }
+    PTR_AS(StructClass, obj)->size = get_union_size(env, nodes);
+    PTR_AS(StructClass, obj)->children_num = children_num;
+    RETURN(env, obj);
 }
 
 static YogVal
@@ -1076,8 +1142,8 @@ build_StructClass(YogEnv* env, ID name, YogVal fields)
     PTR_AS(YogClass, obj)->name = name;
 
     nodes = parse_fields(env, fields);
-    uint_t first_field_size = get_first_field_size(env, nodes);
-    PTR_AS(StructClass, obj)->first_field_size = first_field_size;
+    uint_t alignment_unit = get_first_field_size(env, nodes);
+    PTR_AS(StructClass, obj)->alignment_unit = alignment_unit;
 
     uint_t offset = 0;
     uint_t children_num = 0;
@@ -1093,17 +1159,35 @@ build_StructClass(YogEnv* env, ID name, YogVal fields)
 }
 
 static YogVal
-StructClassClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+UnionClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal obj = YUNDEF;
     YogVal fields = YUNDEF;
-    YogVal field = YUNDEF;
     YogVal name = YUNDEF;
-    YogVal field_type = YUNDEF;
-    YogVal field_name = YUNDEF;
-    YogVal cBuffer = YUNDEF;
-    PUSH_LOCALS7(env, name, obj, fields, field, field_type, field_name, cBuffer);
+    PUSH_LOCALS2(env, name, fields);
+    YogCArg params[] = {
+        { "name", &name },
+        { "fields", &fields },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "new", params, args, kw);
+    if (!IS_PTR(name) || (BASIC_OBJ_TYPE(name) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "name must be String, not %C", name);
+    }
+    if (!IS_PTR(fields) || (BASIC_OBJ_TYPE(fields) != TYPE_ARRAY)) {
+        YogError_raise_TypeError(env, "fields must be Array, not %C", fields);
+    }
+
+    ID id = YogVM_intern2(env, env->vm, name);
+    RETURN(env, build_UnionClass(env, id, fields));
+}
+
+static YogVal
+StructClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal fields = YUNDEF;
+    YogVal name = YUNDEF;
+    PUSH_LOCALS2(env, name, fields);
     YogCArg params[] = {
         { "name", &name },
         { "fields", &fields },
@@ -3018,6 +3102,26 @@ StructField_exec_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
     YogScriptFrame_push_stack(env, env->frame, st);
 }
 
+static YogVal
+UnionClassClass_new(YogEnv* env)
+{
+    YogVM* vm = env->vm;
+    YogVal cUnionClass = YogClass_new(env, "UnionClass", vm->cClass);
+    YogVal klass = vm->cUnionClassClass;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, cUnionClass), klass, klass);
+    return cUnionClass;
+}
+
+static YogVal
+StructClassClass_new(YogEnv* env)
+{
+    YogVM* vm = env->vm;
+    YogVal cStructClass = YogClass_new(env, "StructClass", vm->cClass);
+    YogVal klass = vm->cStructClassClass;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, cStructClass), klass, klass);
+    return cStructClass;
+}
+
 void
 YogFFI_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -3034,10 +3138,10 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogVal cPointerField = YUNDEF;
     YogVal cStringField = YUNDEF;
     YogVal cStructBase = YUNDEF;
-    YogVal cStructClass = YUNDEF;
     YogVal cStructClassClass = YUNDEF;
     YogVal cStructField = YUNDEF;
-    PUSH_LOCALS8(env, cLib, cLibFunc, cStructClassClass, cStructClass, cField, cInt, cBuffer, cPointer);
+    YogVal cUnionClassClass = YUNDEF;
+    PUSH_LOCALS8(env, cUnionClassClass, cLib, cLibFunc, cStructClassClass, cField, cInt, cBuffer, cPointer);
     PUSH_LOCALS7(env, cArrayField, cPointerField, cStringField, cFieldArray, cStructField, cStructBase, cBufferField);
     YogVM* vm = env->vm;
 
@@ -3051,16 +3155,18 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     vm->cLibFunc = cLibFunc;
 
     cStructClassClass = YogClass_new(env, "StructClassClass", vm->cClass);
-    YogClass_define_method(env, cStructClassClass, pkg, "new", StructClassClass_new);
+    YogClass_define_method(env, cStructClassClass, pkg, "new", StructClass_new);
     vm->cStructClassClass = cStructClassClass;
     cStructBase = YogClass_new(env, "StructBase", vm->cClass);
     YogClass_define_property(env, cStructBase, pkg, "size", StructBase_get_size, NULL);
     YogClass_define_allocator(env, cStructBase, StructBase_alloc);
     YogClass_define_method(env, cStructBase, pkg, "init", StructBase_init);
     vm->cStructBase = cStructBase;
-    cStructClass = YogClass_new(env, "StructClass", vm->cClass);
-    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, cStructClass), klass, cStructClassClass);
-    vm->cStructClass = cStructClass;
+    vm->cStructClass = StructClassClass_new(env);
+    cUnionClassClass = YogClass_new(env, "UnionClassClass", vm->cClass);
+    YogClass_define_method(env, cUnionClassClass, pkg, "new", UnionClass_new);
+    vm->cUnionClassClass = cUnionClassClass;
+    vm->cUnionClass = UnionClassClass_new(env);
     cField = YogClass_new(env, "Field", vm->cObject);
     YogClass_define_allocator(env, cField, Field_alloc);
     YogClass_define_descr_get_executor(env, cField, Field_exec_descr_get);
