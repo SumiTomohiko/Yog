@@ -50,6 +50,7 @@ struct YogVM {
     YogVal cObject;
     YogVal cPackage;
     YogVal cPointer;
+    YogVal cPointerField;
     YogVal cProcess;
     YogVal cProperty;
     YogVal cRegexp;
