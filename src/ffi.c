@@ -183,6 +183,83 @@ typedef struct Pointer Pointer;
 
 #define TYPE_POINTER TO_TYPE(Pointer_alloc)
 
+struct Node {
+    enum {
+        NODE_ARRAY,
+        NODE_ATOM,
+        NODE_FIELD,
+        NODE_POINTER,
+        NODE_STRING,
+        NODE_STRUCT,
+    } type;
+    union {
+        struct {
+            YogVal type;
+            uint_t size;
+        } array;
+        struct {
+            ID type;
+        } atom;
+        struct {
+            YogVal next;
+            ID name;
+            YogVal type;
+        } field;
+        struct {
+            ID name;
+        } name;
+        struct {
+            YogVal klass;
+        } pointer;
+        struct {
+            YogVal encoding;
+        } string;
+        struct {
+            YogVal klass;
+        } struct_;
+    } u;
+};
+
+typedef struct Node Node;
+
+static void
+Node_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    Node* node = (Node*)ptr;
+    switch (node->type) {
+    case NODE_ARRAY:
+        YogGC_KEEP(env, node, u.array.type, keeper, heap);
+        break;
+    case NODE_ATOM:
+        break;
+    case NODE_FIELD:
+        YogGC_KEEP(env, node, u.field.next, keeper, heap);
+        YogGC_KEEP(env, node, u.field.type, keeper, heap);
+        break;
+    case NODE_POINTER:
+        YogGC_KEEP(env, node, u.pointer.klass, keeper, heap);
+        break;
+    case NODE_STRING:
+        YogGC_KEEP(env, node, u.string.encoding, keeper, heap);
+        break;
+    case NODE_STRUCT:
+        YogGC_KEEP(env, node, u.struct_.klass, keeper, heap);
+        break;
+    default:
+        break;
+    }
+}
+
+static YogVal
+Node_new(YogEnv* env)
+{
+    YogVal node = ALLOC_OBJ(env, Node_keep_children, NULL, Node);
+    PTR_AS(Node, node)->type = NODE_ARRAY;
+    PTR_AS(Node, node)->u.array.type = YUNDEF;
+    PTR_AS(Node, node)->u.array.size = 0;
+    return node;
+}
+
 static void
 FieldBase_init(YogEnv* env, YogVal self, type_t type, YogVal klass)
 {
@@ -402,108 +479,57 @@ BufferField_new(YogEnv* env, uint_t offset, uint_t buffer_index)
 }
 
 static YogVal
-create_parameterized_field(YogEnv* env, YogVal field, uint_t offset)
+ArrayField_new(YogEnv* env, YogVal node, uint_t offset)
 {
-    YOG_ASSERT(env, IS_PTR(field), "Invalid field (0x%08x)", field);
-    YOG_ASSERT(env, BASIC_OBJ_TYPE(field) == TYPE_ARRAY, "Invalid field (0x%08x)", BASIC_OBJ_TYPE(field));
-    YogHandle* h = VAL2HDL(env, field);
-    uint_t size = YogArray_size(env, field);
-    if (size != 2) {
-        const char* fmt = "Parameterized field size must be 2, not %u";
-        YogError_raise_ValueError(env, fmt, size);
-        /* NOTREACHED */
-    }
-    YogVal type = YogArray_at(env, field, 0);
+    SAVE_ARG(env, node);
+    YogVal type = PTR_AS(Node, node)->u.array.type;
     if (!IS_SYMBOL(type)) {
-        const char* fmt = "Parameterized field type must be Symbol, not %C";
-        YogError_raise_ValueError(env, fmt, type);
-        /* NOTREACHED */
-    }
-    ID id = VAL2ID(type);
-    if (id != YogVM_intern(env, env->vm, "string")) {
-        const char* fmt = "Parameterized field type must be \'string, not %I";
-        YogError_raise_ValueError(env, fmt, id);
-        /* NOTREACHED */
-    }
-    YogVal enc = YogArray_at(env, HDL2VAL(h), 1);
-    if (!IS_PTR(enc) || (BASIC_OBJ_TYPE(enc) != TYPE_ENCODING)) {
-        const char* fmt = "Parameter of \'string must be Encoding, not %C";
-        YogError_raise_ValueError(env, fmt, enc);
-        /* NOTREACHED */
-    }
-    return StringField_new(env, offset, enc);
-}
-
-static YogVal
-create_scalar_field(YogEnv* env, YogVal type, uint_t offset, uint_t buffer_index)
-{
-    SAVE_ARG(env, type);
-    YogVM* vm = env->vm;
-
-    if (IS_SYMBOL(type)) {
-        RETURN(env, Field_new(env, offset, VAL2ID(type)));
-    }
-#define RAISE_TYPE_ERROR do { \
-    const char* fmt = "Type must be Symbol, Array or Buffer, not %C"; \
-    YogError_raise_TypeError(env, fmt, type); \
-} while (0)
-    if (!IS_PTR(type)) {
-        RAISE_TYPE_ERROR;
-    }
-    if (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS) {
-        RETURN(env, StructField_new(env, offset, type));
-    }
-    if (BASIC_OBJ_TYPE(type) == TYPE_ARRAY) {
-        RETURN(env, create_parameterized_field(env, type, offset));
-    }
-    if (type == vm->cBuffer) {
-        RETURN(env, BufferField_new(env, offset, buffer_index));
-    }
-    RAISE_TYPE_ERROR;
-    /* NOTREACHED */
-#undef RAISE_TYPE_ERROR
-    RETURN(env, YUNDEF);
-}
-
-static YogVal
-ArrayField_new(YogEnv* env, YogVal type, int_t size, uint_t offset)
-{
-    SAVE_ARG(env, type);
-    YogVal field = YUNDEF;
-    PUSH_LOCAL(env, field);
-    if (!IS_SYMBOL(type)) {
-        YogError_raise_TypeError(env, "Type of array must be Symbol, not %C", type);
+        const char* fmt = "Type of array must be Symbol, not %C";
+        YogError_raise_TypeError(env, fmt, type);
     }
 
-    field = ArrayField_alloc(env, env->vm->cArrayField);
+    YogVal field = ArrayField_alloc(env, env->vm->cArrayField);
     PTR_AS(FieldBase, field)->offset = offset;
     PTR_AS(ArrayField, field)->type = VAL2ID(type);
-    PTR_AS(ArrayField, field)->size = size;
-
+    PTR_AS(ArrayField, field)->size = PTR_AS(Node, node)->u.array.size;
     RETURN(env, field);
 }
 
 static YogVal
-create_field(YogEnv* env, YogVal type, int_t size, uint_t offset, uint_t buffer_index)
+create_field(YogEnv* env, YogVal node, uint_t offset, uint_t buffer_index)
 {
-    if (size == -1) {
-        return create_scalar_field(env, type, offset, buffer_index);
+    YogVal klass;
+    YogVal encoding;
+    switch (PTR_AS(Node, node)->type) {
+    case NODE_ARRAY:
+        return ArrayField_new(env, node, offset);
+    case NODE_ATOM:
+        return Field_new(env, offset, PTR_AS(Node, node)->u.atom.type);
+    case NODE_POINTER:
+        return BufferField_new(env, offset, buffer_index);
+    case NODE_STRING:
+        encoding = PTR_AS(Node, node)->u.string.encoding;
+        return StringField_new(env, offset, encoding);
+    case NODE_STRUCT:
+        klass = PTR_AS(Node, node)->u.struct_.klass;
+        return StructField_new(env, offset, klass);
+    case NODE_FIELD:
+    default:
+        YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
     }
-    return ArrayField_new(env, type, size, offset);
+
+    return YUNDEF;
 }
 
 static void
-StructClass_set_field(YogEnv* env, YogVal self, uint_t index, YogVal name, YogVal type, int_t size, uint_t offset, uint_t buffer_index)
+StructClass_set_field(YogEnv* env, YogVal self, YogVal node, uint_t offset, uint_t buffer_index)
 {
-    SAVE_ARGS3(env, self, name, type);
-    YogVal field = YUNDEF;
-    PUSH_LOCAL(env, field);
+    SAVE_ARGS2(env, self, node);
 
-    field = create_field(env, type, size, offset, buffer_index);
-    if (!IS_SYMBOL(name)) {
-        YogError_raise_TypeError(env, "Name must be Symbol, not %C", name);
-    }
-    YogObj_set_attr_id(env, self, VAL2ID(name), field);
+    ID name = PTR_AS(Node, node)->u.field.name;
+    YogVal type = PTR_AS(Node, node)->u.field.type;
+    YogVal field = create_field(env, type, offset, buffer_index);
+    YogObj_set_attr_id(env, self, name, field);
 
     RETURN_VOID(env);
 }
@@ -681,12 +707,25 @@ type2size(YogEnv* env, ffi_type* type)
 }
 
 static uint_t
-get_size(YogEnv* env, YogVal type)
+get_size(YogEnv* env, YogVal node)
 {
-    if (IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) {
-        return PTR_AS(StructClass, type)->size;
+    YogVal klass;
+    switch (PTR_AS(Node, node)->type) {
+    case NODE_ATOM:
+        return id2size(env, PTR_AS(Node, node)->u.atom.type);
+    case NODE_POINTER:
+    case NODE_STRING:
+        return sizeof(void*);
+    case NODE_STRUCT:
+        klass = PTR_AS(Node, node)->u.struct_.klass;
+        return PTR_AS(StructClass, klass)->size;
+    case NODE_ARRAY:
+    case NODE_FIELD:
+    default:
+        YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
     }
-    return IS_SYMBOL(type) ? id2size(env, VAL2ID(type)) : sizeof(void*);
+
+    return 0;
 }
 
 static YogVal
@@ -703,19 +742,45 @@ get_fields_of_anonymous_struct(YogEnv* env, YogVal type)
 }
 
 static uint_t
-get_alignment_unit(YogEnv* env, YogVal type)
+get_first_field_size_of_node(YogEnv* env, YogVal node)
 {
-    if (IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) {
-        return PTR_AS(StructClass, type)->first_field_size;
+    YogVal klass;
+    switch (PTR_AS(Node, node)->type) {
+    case NODE_ATOM:
+    case NODE_POINTER:
+    case NODE_STRING:
+        return get_size(env, node);
+    case NODE_STRUCT:
+        klass = PTR_AS(Node, node)->u.struct_.klass;
+        return PTR_AS(StructClass, klass)->first_field_size;
+    case NODE_ARRAY:
+    case NODE_FIELD:
+    default:
+        YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
     }
-    return get_size(env, type);
+
+    return 0;
 }
 
 static uint_t
-align_offset(YogEnv* env, YogVal type, uint_t offset)
+get_first_field_size(YogEnv* env, YogVal nodes)
 {
-    SAVE_ARG(env, type);
-    uint_t size = get_alignment_unit(env, type);
+    if (!IS_PTR(nodes)) {
+        return 0;
+    }
+    YogVal node = PTR_AS(Node, nodes)->u.field.type;
+    if (PTR_AS(Node, node)->type == NODE_ARRAY) {
+        YogVal unit = PTR_AS(Node, node)->u.array.type;
+        return get_first_field_size_of_node(env, unit);
+    }
+    return get_first_field_size_of_node(env, node);
+}
+
+static uint_t
+align_offset(YogEnv* env, YogVal node, uint_t offset)
+{
+    SAVE_ARG(env, node);
+    uint_t size = get_first_field_size(env, node);
     uint_t alignment = sizeof(void*) < size ? sizeof(void*) : size;
 #define ALIGN(offset, alignment) \
                             (((offset) + (alignment) - 1) & ~((alignment) - 1))
@@ -778,17 +843,47 @@ create_anonymous_StructClass(YogEnv* env, YogVal type)
     return build_StructClass(env, INVALID_ID, fields);
 }
 
-static void
-get_field_type_and_size(YogEnv* env, YogVal type, YogVal* field_type, int_t* psize)
+static YogVal
+parse_string_or_struct(YogEnv* env, YogVal type)
 {
     SAVE_ARG(env, type);
-    YogVal array_type = YUNDEF;
-    YogVal array_size = YUNDEF;
-    PUSH_LOCALS2(env, array_type, array_size);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
+    YogVal name = YogArray_at(env, type, 0);
+    if (!IS_SYMBOL(name)) {
+        RETURN(env, YUNDEF);
+    }
+    YogVM* vm = env->vm;
+    if (VAL2ID(name) == YogVM_intern(env, vm, "string")) {
+        node = Node_new(env);
+        PTR_AS(Node, node)->type = NODE_STRING;
+        YogVal encoding = YogArray_at(env, type, 1);
+        YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.string.encoding, encoding);
+        RETURN(env, node);
+    }
+    if (VAL2ID(name) == YogVM_intern(env, vm, "struct")) {
+        node = Node_new(env);
+        PTR_AS(Node, node)->type = NODE_STRUCT;
+        YogVal klass = create_anonymous_StructClass(env, type);
+        YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.struct_.klass, klass);
+        RETURN(env, node);
+    }
+    RETURN(env, YUNDEF);
+}
+
+static YogVal
+parse_type(YogEnv* env, YogVal type)
+{
+    SAVE_ARG(env, type);
+    YogVal node = YUNDEF;
+    PUSH_LOCAL(env, node);
+
     if (IS_SYMBOL(type)) {
-        *field_type = type;
-        *psize = -1; /* -1 indicates that this field is scalar */
-        RETURN_VOID(env);
+        node = Node_new(env);
+        PTR_AS(Node, node)->type = NODE_ATOM;
+        PTR_AS(Node, node)->u.atom.type = VAL2ID(type);
+        RETURN(env, node);
     }
 #define RAISE_TYPE_ERROR do { \
     const char* fmt = "Field must be Symbol or Array, not %C"; \
@@ -796,72 +891,121 @@ get_field_type_and_size(YogEnv* env, YogVal type, YogVal* field_type, int_t* psi
 } while (0)
     if (!IS_PTR(type)) {
         RAISE_TYPE_ERROR;
-        RETURN_VOID(env);
     }
     YogVM* vm = env->vm;
-    if ((type == vm->cBuffer) || (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS)) {
-        *field_type = type;
-        *psize = -1;
-        RETURN_VOID(env);
+    if (type == vm->cBuffer) {
+        node = Node_new(env);
+        PTR_AS(Node, node)->type = NODE_POINTER;
+        YogVal klass = env->vm->cBuffer;
+        YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.pointer.klass, klass);
+        RETURN(env, node);
+    }
+    if (BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS) {
+        node = Node_new(env);
+        PTR_AS(Node, node)->type = NODE_STRUCT;
+        YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.struct_.klass, type);
+        RETURN(env, node);
     }
     if (BASIC_OBJ_TYPE(type) != TYPE_ARRAY) {
         RAISE_TYPE_ERROR;
     }
 #undef RAISE_TYPE_ERROR
-    uint_t size = YogArray_size(env, type);
-    if (size != 2) {
+    uint_t n = YogArray_size(env, type);
+    if (n != 2) {
         const char* fmt = "Array field must be length of two, not %u";
-        YogError_raise_ValueError(env, fmt, size);
-        /* NOTREACHED */
+        YogError_raise_ValueError(env, fmt, n);
     }
-    array_type = YogArray_at(env, type, 0);
-    if (!IS_SYMBOL(array_type)) {
-        const char* fmt = "Array field type must be Symbol, not %C";
-        YogError_raise_TypeError(env, fmt, array_type);
-        /* NOTREACHED */
+    node = parse_string_or_struct(env, type);
+    if (!IS_UNDEF(node)) {
+        RETURN(env, node);
     }
-    if (VAL2ID(array_type) == YogVM_intern(env, env->vm, "string")) {
-        *field_type = type;
-        *psize = -1;
-        RETURN_VOID(env);
-    }
-    if (VAL2ID(array_type) == YogVM_intern(env, env->vm, "struct")) {
-        *field_type = create_anonymous_StructClass(env, type);
-        *psize = -1;
-        RETURN_VOID(env);
-    }
-    *field_type = array_type;
-    array_size = YogArray_at(env, type, 1);
-    if (!IS_FIXNUM(array_size)) {
+    YogVal size = YogArray_at(env, type, 1);
+    if (!IS_FIXNUM(size)) {
         const char* fmt = "Array field size must be Fixnum, not %C";
-        YogError_raise_TypeError(env, fmt, array_size);
-        /* NOTREACHED */
+        YogError_raise_TypeError(env, fmt, size);
     }
-    if (VAL2INT(array_size) < 0) {
+    if (VAL2INT(size) < 0) {
         const char* fmt = "Array field size must be positive, not %d";
-        YogError_raise_ValueError(env, fmt, VAL2INT(array_size));
-        /* NOTREACHED */
+        YogError_raise_ValueError(env, fmt, VAL2INT(size));
     }
-    *psize = VAL2INT(array_size);
-    RETURN_VOID(env);
+    node = Node_new(env);
+    PTR_AS(Node, node)->type = NODE_ARRAY;
+    YogVal child = parse_type(env, YogArray_at(env, type, 0));
+    YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.array.type, child);
+    RETURN(env, node);
+}
+
+static YogVal
+parse_field(YogEnv* env, YogVal field)
+{
+    SAVE_ARG(env, field);
+    YogVal node = YUNDEF;
+    YogVal type = YUNDEF;
+    PUSH_LOCALS2(env, node, type);
+    if (!IS_PTR(field) || (BASIC_OBJ_TYPE(field) != TYPE_ARRAY)) {
+        YogError_raise_TypeError(env, "Field must be Array, not %C", field);
+    }
+    uint_t size = YogArray_size(env, field);
+    if (size < 2) {
+        YogError_raise_ValueError(env, "Field size must be two, not %u", size);
+    }
+    node = Node_new(env);
+    PTR_AS(Node, node)->type = NODE_FIELD;
+    PTR_AS(Node, node)->u.field.next = YUNDEF;
+    type = parse_type(env, YogArray_at(env, field, 0));
+    YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.field.type, type);
+    YogVal name = YogArray_at(env, field, 1);
+    if (!IS_SYMBOL(name)) {
+        const char* fmt = "Field name must be Symbol, not %C";
+        YogError_raise_TypeError(env, fmt, name);
+    }
+    PTR_AS(Node, node)->u.field.name = VAL2ID(name);
+    RETURN(env, node);
+}
+
+static YogVal
+parse_fields(YogEnv* env, YogVal fields)
+{
+    SAVE_ARG(env, fields);
+    YogVal anchor = Node_new(env);
+    YogVal node = YUNDEF;
+    YogVal next = YUNDEF;
+    PUSH_LOCALS3(env, anchor, node, next);
+
+    node = anchor;
+    uint_t size = YogArray_size(env, fields);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        next = parse_field(env, YogArray_at(env, fields, i));
+        YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.field.next, next);
+        node = next;
+    }
+
+    RETURN(env, PTR_AS(Node, anchor)->u.field.next);
 }
 
 static uint_t
-get_first_field_size(YogEnv* env, YogVal fields)
+get_total_field_size(YogEnv* env, YogVal node)
 {
-    if (YogArray_size(env, fields) == 0) {
+    YogVal type = PTR_AS(Node, node)->u.field.type;
+    if (PTR_AS(Node, type)->type == NODE_ARRAY) {
+        uint_t size = PTR_AS(Node, node)->u.array.size;
+        return get_size(env, PTR_AS(Node, node)->u.array.type) * size;
+    }
+    return get_size(env, type);
+}
+
+static uint_t
+get_buffers_num(YogEnv* env, YogVal node)
+{
+    YogVal type = PTR_AS(Node, node)->u.field.type;
+    if (PTR_AS(Node, type)->type != NODE_POINTER) {
         return 0;
     }
-    YogVal field = YogArray_at(env, fields, 0);
-    if (YogArray_size(env, field) == 0) {
-        YogError_raise_ValueError(env, "Field have no elements");
+    if (PTR_AS(Node, type)->u.pointer.klass != env->vm->cBuffer) {
+        return 0;
     }
-    YogVal type = YogArray_at(env, field, 0);
-    if (IS_SYMBOL(type) && (VAL2ID(type) == YogVM_intern(env, env->vm, "struct"))) {
-        YogVal fields = get_fields_of_anonymous_struct(env, field);
-        return get_first_field_size(env, fields);
-    }
-    return get_alignment_unit(env, type);
+    return 1;
 }
 
 static YogVal
@@ -869,38 +1013,25 @@ build_StructClass(YogEnv* env, ID name, YogVal fields)
 {
     SAVE_ARG(env, fields);
     YogVal obj = YUNDEF;
-    YogVal cBuffer = YUNDEF;
-    YogVal field = YUNDEF;
-    YogVal field_name = YUNDEF;
-    YogVal field_type = YUNDEF;
-    PUSH_LOCALS5(env, obj, cBuffer, field, field_name, field_type);
+    YogVal nodes = YUNDEF;
+    YogVal node = YUNDEF;
+    PUSH_LOCALS3(env, obj, nodes, node);
 
     obj = ALLOC_OBJ(env, YogClass_keep_children, NULL, StructClass);
     StructClass_init(env, obj);
-
     PTR_AS(YogClass, obj)->name = name;
-    uint_t first_field_size = get_first_field_size(env, fields);
+
+    nodes = parse_fields(env, fields);
+    uint_t first_field_size = get_first_field_size(env, nodes);
     PTR_AS(StructClass, obj)->first_field_size = first_field_size;
 
     uint_t offset = 0;
     uint_t buffers_num = 0;
-    cBuffer = env->vm->cBuffer;
-    uint_t fields_num = YogArray_size(env, fields);
-    uint_t i;
-    for (i = 0; i < fields_num; i++) {
-        field = YogArray_at(env, fields, i);
-        /**
-         * gcc complains "‘field_size’ may be used uninitialized in this
-         * function" without assignement initial value.
-         */
-        int_t field_size = 0;
-        YogVal type = YogArray_at(env, field, 0);
-        get_field_type_and_size(env, type, &field_type, &field_size);
-        offset = align_offset(env, field_type, offset);
-        field_name = YogArray_at(env, field, 1);
-        StructClass_set_field(env, obj, i, field_name, field_type, field_size, offset, buffers_num);
-        offset += get_size(env, field_type) * (field_size == -1 ? 1 : field_size);
-        buffers_num += field_type == cBuffer ? 1 : 0;
+    for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
+        offset = align_offset(env, node, offset);
+        StructClass_set_field(env, obj, node, offset, buffers_num);
+        offset += get_total_field_size(env, node);
+        buffers_num += get_buffers_num(env, node);
     }
     PTR_AS(StructClass, obj)->size = offset;
     PTR_AS(StructClass, obj)->buffers_num = buffers_num;
