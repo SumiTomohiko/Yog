@@ -2703,7 +2703,8 @@ Struct_write_child(YogEnv* env, YogVal self, uint_t index, YogVal obj, uint_t of
         YogError_raise_TypeError(env, "Object must be Struct, not %C", self);
     }
     YogGC_UPDATE_PTR(env, PTR_AS(Struct, self), children[index], obj);
-    *((void**)PTR_AS(Struct, self)->data + offset) = ptr;
+    void** dest = PTR_AS(Struct, self)->data + offset;
+    *dest = ptr;
 }
 
 static void
