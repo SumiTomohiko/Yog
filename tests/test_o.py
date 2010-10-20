@@ -39,10 +39,10 @@ try
     ptr = Pointer.new()
     o.oDB_search(db, \"uu\", ptr)
     try
-      hits = o.oHits.new(ptr)
+      hits = o.oHits.new(ptr.value)
       print(hits.num)
     finally
-      libc.free(ptr)
+      libc.free(ptr.value)
     end
   finally
     o.oDB_close(db)
@@ -74,10 +74,10 @@ try
     ptr = Pointer.new()
     o.oDB_search(db, \"uu\", ptr)
     try
-      hits = o.oHits.new(ptr)
+      hits = o.oHits.new(ptr.value)
       print(hits.doc_id[0])
     finally
-      libc.free(ptr)
+      libc.free(ptr.value)
     end
   finally
     o.oDB_close(db)
