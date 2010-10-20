@@ -981,6 +981,8 @@ parse_subtype(YogEnv* env, YogVal type)
         node = Node_new(env);
         PTR_AS(Node, node)->type = NODE_STRING;
         YogVal encoding = YogArray_at(env, type, 1);
+        const char* name = "Second element of type";
+        YogMisc_check_encoding(env, VAL2HDL(env, encoding), name);
         YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.string.encoding, encoding);
         RETURN(env, node);
     }
@@ -1482,18 +1484,24 @@ map_id_type(YogEnv* env, ID type)
 }
 
 static ffi_type*
-map_type(YogEnv* env, YogVal type)
+map_type(YogEnv* env, YogVal node)
 {
-    if (IS_SYMBOL(type)) {
-        return map_id_type(env, VAL2ID(type));
-    }
-    YogVM* vm = env->vm;
-    if ((IS_PTR(type) && ((BASIC_OBJ_TYPE(type) == TYPE_STRUCT_CLASS) || (BASIC_OBJ_TYPE(type) == TYPE_ARRAY))) || (type == vm->cBuffer)) {
+    switch (PTR_AS(Node, node)->type) {
+    case NODE_ARRAY:
+        YogError_raise_FFIError(env, "Array argument is not supported");
+    case NODE_ATOM:
+        return map_id_type(env, PTR_AS(Node, node)->u.atom.type);
+    case NODE_BUFFER:
+    case NODE_POINTER:
+    case NODE_STRING:
         return &ffi_type_pointer;
+    case NODE_STRUCT:
+        YogError_raise_FFIError(env, "Struct argument is not supported");
+    case NODE_FIELD:
+    default:
+        YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
     }
-    const char* fmt = "Type must be Symbol, Array, Buffer or StructClass, not %C";
-    YogError_raise_TypeError(env, fmt, type);
-    /* NOTREACHED */
+
     return NULL;
 }
 
@@ -1522,7 +1530,8 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     YogVal arg_types = YNIL;
     YogVal rtype = YNIL;
     YogVal arg_type = YUNDEF;
-    PUSH_LOCALS5(env, f, name, arg_types, rtype, arg_type);
+    YogVal node = YUNDEF;
+    PUSH_LOCALS6(env, f, name, arg_types, rtype, arg_type, node);
     YogCArg params[] = {
         { "name", &name },
         { "|", NULL },
@@ -1553,10 +1562,11 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     uint_t i;
     for (i = 0; i < nargs; i++) {
         arg_type = YogArray_at(env, arg_types, i);
-        types[i] = map_type(env, arg_type);
-        YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), arg_types[i], arg_type);
+        node = parse_type(env, arg_type);
+        types[i] = map_type(env, node);
+        YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), arg_types[i], node);
     }
-    ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(rtype) ? &ffi_type_void : map_type(env, rtype), types);
+    ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(rtype) ? &ffi_type_void : map_type(env, parse_type(env, rtype)), types);
     if (status != FFI_OK) {
         YogError_raise_FFIError(env, "%s", map_ffi_error(env, status));
         /* NOTREACHED */
@@ -1921,12 +1931,10 @@ write_int16(YogEnv* env, void* dest, YogVal val)
 static void
 write_argument_Buffer(YogEnv* env, void** ptr, YogVal val)
 {
-    SAVE_ARG(env, val);
     if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_BUFFER)) {
         YogError_raise_TypeError(env, "Argument must be Buffer, not %C", val);
     }
     *ptr = PTR_AS(Buffer, val)->ptr;
-    RETURN_VOID(env);
 }
 
 static void
@@ -1944,43 +1952,6 @@ write_argument_Struct(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
         YogError_raise_TypeError(env, "Argument must be %I, not %C", name, val);
     }
     *ptr = PTR_AS(Struct, val)->data;
-    RETURN_VOID(env);
-}
-
-static void
-write_argument_object(YogEnv* env, void** ptr, void* refered, YogVal arg_type, YogVal val)
-{
-    SAVE_ARGS2(env, arg_type, val);
-    YogVM* vm = env->vm;
-    if (arg_type == vm->cBuffer) {
-        write_argument_Buffer(env, ptr, val);
-        RETURN_VOID(env);
-    }
-#define RAISE_TYPE_ERROR do { \
-    const char* fmt = "Argument type must be Array, Buffer or StructClass, not %C"; \
-    YogError_raise_TypeError(env, fmt, arg_type); \
-} while (0)
-    if (!IS_PTR(arg_type)) {
-        RAISE_TYPE_ERROR;
-    }
-    if (BASIC_OBJ_TYPE(arg_type) == TYPE_STRUCT_CLASS) {
-        write_argument_Struct(env, ptr, arg_type, val);
-        RETURN_VOID(env);
-    }
-    if (BASIC_OBJ_TYPE(arg_type) != TYPE_ARRAY) {
-        RAISE_TYPE_ERROR;
-    }
-#undef RAISE_TYPE_ERROR
-    if (YogArray_size(env, arg_type) != 2) {
-        const char* fmt = "Parameterized type must have two elements";
-        YogError_raise_ValueError(env, fmt);
-        /* NOTREACHED */
-    }
-    YogHandle* enc = VAL2HDL(env, YogArray_at(env, arg_type, 1));
-    YogVal bin = YogEncoding_conv_from_yog(env, enc, VAL2HDL(env, val));
-    memcpy(refered, BINARY_CSTR(bin), BINARY_SIZE(bin));
-    *ptr = refered;
-    /* NOTREACHED */
     RETURN_VOID(env);
 }
 
@@ -2206,19 +2177,43 @@ write_data(YogEnv* env, void* dest, ID type, YogVal val)
 }
 
 static void
-write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal val)
+write_argument(YogEnv* env, void* pvalue, void* refered, YogVal node, YogVal val)
 {
-    SAVE_ARG(env, val);
-    if (!IS_SYMBOL(arg_type)) {
-        write_argument_object(env, (void**)pvalue, refered, arg_type, val);
+    SAVE_ARGS2(env, node, val);
+    YogVal klass;
+    YogHandle* encoding;
+    YogVal bin;
+    YogHandle* h;
+    switch (PTR_AS(Node, node)->type) {
+    case NODE_ATOM:
+        break;
+    case NODE_BUFFER:
+        write_argument_Buffer(env, pvalue, val);
         RETURN_VOID(env);
+    case NODE_POINTER:
+        klass = PTR_AS(Node, node)->u.pointer.klass;
+        write_argument_Struct(env, pvalue, klass, val);
+        RETURN_VOID(env);
+    case NODE_STRING:
+        encoding = VAL2HDL(env, PTR_AS(Node, node)->u.string.encoding);
+        h = VAL2HDL(env, val);
+        YogMisc_check_string(env, h, "Actual parameter");
+        bin = YogEncoding_conv_from_yog(env, encoding, h);
+        memcpy(refered, BINARY_CSTR(bin), BINARY_SIZE(bin));
+        *((char**)pvalue) = (char*)refered;
+        RETURN_VOID(env);
+    case NODE_ARRAY:
+    case NODE_FIELD:
+    case NODE_STRUCT:
+    default:
+        YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
     }
 
-    if (write_data(env, pvalue, VAL2ID(arg_type), val)) {
+    ID name = PTR_AS(Node, node)->u.atom.type;
+    if (write_data(env, pvalue, name, val)) {
         RETURN_VOID(env);
     }
-
-    const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, VAL2ID(arg_type)));
+    const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, name));
     if (strcmp(s, "int_p") == 0) {
         Int_write(env, val, (int*)refered);
     }
@@ -2226,67 +2221,46 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal arg_type, YogVal
         Pointer_write(env, val, (void**)refered);
     }
     else {
-        YogError_raise_ValueError(env, "Unknown argument type - %I", arg_type);
+        YogError_raise_ValueError(env, "Unknown argument type - %I", name);
     }
     *((void**)pvalue) = refered;
     RETURN_VOID(env);
 }
 
 static uint_t
-type2refered_size_of_string(YogEnv* env, YogHandle* type, YogHandle* arg)
+type2refered_size_of_string(YogEnv* env, YogVal node, YogVal arg)
 {
-    uint_t size = YogArray_size(env, HDL2VAL(type));
-    if (size < 1) {
-        YogError_raise_ValueError(env, "Type array is empty");
-        /* NOTREACHED */
-    }
-    YogVal id = YogArray_at(env, HDL2VAL(type), 0);
-    if (!IS_SYMBOL(id)) {
-        const char* fmt = "First element of type must be Symbol, not %C";
-        YogError_raise_ValueError(env, fmt, id);
-        /* NOTREACHED */
-    }
-    if (VAL2ID(id) != YogVM_intern(env, env->vm, "string")) {
-        const char* fmt = "Type must be \'string, not \'%I";
-        YogError_raise_ValueError(env, fmt, VAL2ID(id));
-    }
-    if (size < 2) {
-        YogError_raise_ValueError(env, "\'string type needs encoding");
-        /* NOTREACHED */
-    }
-    YogVal enc = YogArray_at(env, HDL2VAL(type), 1);
-    if (!IS_PTR(enc) || (BASIC_OBJ_TYPE(enc) != TYPE_ENCODING)) {
-        const char* fmt = "Second element of type must be Encoding, not %C";
-        YogError_raise_TypeError(env, fmt, enc);
-        /* NOTREACHED */
-    }
-    YogVal h = HDL2VAL(arg);
-    if (!IS_PTR(h) || (BASIC_OBJ_TYPE(h) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "Argument must be String, not %C", h);
-        /* NOTREACHED */
-    }
-    return PTR_AS(YogEncoding, enc)->max_size * STRING_SIZE(h);
+    YogVal enc = PTR_AS(Node, node)->u.string.encoding;
+    YogMisc_check_string(env, VAL2HDL(env, arg), "Argument");
+    return PTR_AS(YogEncoding, enc)->max_size * STRING_SIZE(arg);
 }
 
 static uint_t
-type2refered_size(YogEnv* env, YogVal type, YogVal arg)
+type2refered_size(YogEnv* env, YogVal node, YogVal arg)
 {
-    if (IS_PTR(type) && (BASIC_OBJ_TYPE(type) == TYPE_ARRAY)) {
-        YogHandle* h_type = VAL2HDL(env, type);
-        YogHandle* h_arg = VAL2HDL(env, arg);
-        return type2refered_size_of_string(env, h_type, h_arg);
-    }
-    if (!IS_SYMBOL(type)) {
+    switch (PTR_AS(Node, node)->type) {
+    case NODE_ATOM:
+        break;
+    case NODE_BUFFER:
+    case NODE_POINTER:
         return 0;
+    case NODE_STRING:
+        return type2refered_size_of_string(env, node, arg);
+    case NODE_ARRAY:
+    case NODE_FIELD:
+    case NODE_STRUCT:
+    default:
+        YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
     }
-    const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, VAL2ID(type)));
+
+    ID name = PTR_AS(Node, node)->u.atom.type;
+    const char* s = BINARY_CSTR(YogVM_id2bin(env, env->vm, name));
     if (strcmp(s, "int_p") == 0) {
         return sizeof(int);
     }
     if (strcmp(s, "pointer_p") == 0) {
         return sizeof(void*);
     }
-
     return 0;
 }
 
@@ -2313,17 +2287,28 @@ read_argument_int(YogEnv* env, YogVal obj, int n)
 }
 
 static void
-read_argument(YogEnv* env, YogVal obj, YogVal arg_type, void* p)
+read_argument(YogEnv* env, YogVal obj, YogVal node, void* p)
 {
-    if ((p == NULL) || (arg_type == env->vm->cString)) {
-        return;
-    }
-
-    SAVE_ARGS2(env, obj, arg_type);
-    if (!IS_SYMBOL(arg_type)) {
+    SAVE_ARGS2(env, obj, node);
+    if (p == NULL) {
         RETURN_VOID(env);
     }
-    YogVal s = YogVM_id2bin(env, env->vm, VAL2ID(arg_type));
+    switch (PTR_AS(Node, node)->type) {
+    case NODE_ATOM:
+        break;
+    case NODE_BUFFER:
+    case NODE_POINTER:
+    case NODE_STRING:
+        RETURN_VOID(env);
+    case NODE_ARRAY:
+    case NODE_FIELD:
+    case NODE_STRUCT:
+    default:
+        YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
+    }
+
+    ID name = PTR_AS(Node, node)->u.atom.type;
+    YogVal s = YogVM_id2bin(env, env->vm, name);
     if (strcmp(BINARY_CSTR(s), "int_p") == 0) {
         read_argument_int(env, obj, *((int*)p));
         RETURN_VOID(env);
@@ -2332,21 +2317,8 @@ read_argument(YogEnv* env, YogVal obj, YogVal arg_type, void* p)
         read_argument_pointer(env, obj, *((void**)p));
         RETURN_VOID(env);
     }
-    YogError_raise_ValueError(env, "Unknown type - %I", VAL2ID(arg_type));
+    YogError_raise_ValueError(env, "Unknown type - %I", name);
     RETURN_VOID(env);
-}
-
-static YogVal
-Pointer_new(YogEnv* env, void* ptr)
-{
-    SAVE_LOCALS(env);
-    YogVal p = YUNDEF;
-    PUSH_LOCAL(env, p);
-
-    p = Pointer_alloc(env, env->vm->cPointer);
-    PTR_AS(Pointer, p)->ptr = ptr;
-
-    RETURN(env, p);
 }
 
 static YogVal
@@ -2366,9 +2338,11 @@ LibFunc_do(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[]
         ffi_type* ffi_arg_type = arg_types[i];
         void* pvalue = YogSysdeps_alloca(type2size(env, ffi_arg_type));
         YogVal arg_type = HDL_AS(LibFunc, callee)->arg_types[i];
+        YogHandle* h_arg_type = VAL2HDL(env, arg_type);
         uint_t refered_size = type2refered_size(env, arg_type, posargs[i]->val);
         void* refered = 0 < refered_size ? YogSysdeps_alloca(refered_size): NULL;
-        write_argument(env, pvalue, refered, arg_type, posargs[i]->val);
+        YogVal val = posargs[i]->val;
+        write_argument(env, pvalue, refered, HDL2VAL(h_arg_type), val);
         values[i] = pvalue;
         refereds[i] = refered;
     }
@@ -2441,7 +2415,7 @@ LibFunc_do(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[]
         return YogFloat_from_float(env, *((long double*)rvalue));
     }
     if (rtype == &ffi_type_pointer) {
-        return Pointer_new(env, *((void**)rvalue));
+        return YogVal_from_unsigned_int(env, *((uint_t*)rvalue));
     }
 
     return YNIL;

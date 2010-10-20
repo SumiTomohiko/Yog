@@ -100,7 +100,7 @@ sockaddr_in = StructClass.new("sockaddr_in", [
   ['uint16, 'sin_port],
   ['uint32, 'sin_addr],
   [['char, 8], 'padding]])
-connect = lib.load_func("connect", ['int, sockaddr_in, 'uint], 'int)
+connect = lib.load_func("connect", ['int, ['pointer, sockaddr_in], 'uint], 'int)
 htonl = lib.load_func("htonl", ['uint32], 'uint32)
 htons = lib.load_func("htons", ['uint16], 'uint16)
 ntohl = lib.load_func("ntohl", ['uint32], 'uint32)
@@ -131,7 +131,7 @@ else
     ['pointer (: addrinfo :), 'ai_next]]
 end
 addrinfo = StructClass.new("addrinfo", addrinfo_members)
-getaddrinfo = lib.load_func("getaddrinfo", [string, string, addrinfo, 'pointer_p], 'int)
+getaddrinfo = lib.load_func("getaddrinfo", [string, string, ['pointer, addrinfo], 'pointer_p], 'int)
 freeaddrinfo = lib.load_func("freeaddrinfo", ['pointer])
 gai_strerror = lib.load_func("gai_strerror", ['int], 'pointer (: String :))
 
