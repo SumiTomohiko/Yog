@@ -114,11 +114,16 @@ store_objects(YogEnv* env, YogVal* dest, const char* fmt, va_list ap)
             va_arg(aq, char*);
             break;
         case 'u':
-            if (l == 0) {
+            switch (l) {
+            case 0:
                 va_arg(aq, unsigned int);
-            }
-            else {
+                break;
+            case 1:
+                va_arg(aq, unsigned long);
+                break;
+            default:
                 va_arg(aq, unsigned long long);
+                break;
             }
             break;
         default:
@@ -285,13 +290,22 @@ format(YogEnv* env, const char* fmt, va_list ap, YogVal* pv)
         case 'u':
             {
                 char buf[21];
-                if (l == 0) {
-                    unsigned int n = va_arg(ap, unsigned int);
-                    YogSysdeps_snprintf(buf, array_sizeof(buf), "%u", n);
-                }
-                else {
-                    unsigned long long n = va_arg(ap, unsigned long long);
-                    YogSysdeps_snprintf(buf, array_sizeof(buf), "%llu", n);
+                unsigned int u;
+                unsigned long lu;
+                unsigned long long llu;
+                switch (l) {
+                case 0:
+                    u = va_arg(ap, unsigned int);
+                    YogSysdeps_snprintf(buf, array_sizeof(buf), "%u", u);
+                    break;
+                case 1:
+                    lu = va_arg(ap, unsigned long);
+                    YogSysdeps_snprintf(buf, array_sizeof(buf), "%lu", lu);
+                    break;
+                default:
+                    llu = va_arg(ap, unsigned long long);
+                    YogSysdeps_snprintf(buf, array_sizeof(buf), "%llu", llu);
+                    break;
                 }
                 YogString_append_string(env, s, buf);
             }
