@@ -1007,6 +1007,7 @@ parse_type(YogEnv* env, YogVal type)
     }
     node = Node_new(env);
     PTR_AS(Node, node)->type = NODE_ARRAY;
+    PTR_AS(Node, node)->u.array.size = VAL2INT(size);
     YogVal child = parse_type(env, YogArray_at(env, type, 0));
     YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.array.type, child);
     RETURN(env, node);
