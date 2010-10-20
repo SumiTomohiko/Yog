@@ -793,17 +793,18 @@ static YogVal
 get_fields_of_anonymous_struct(YogEnv* env, YogVal type)
 {
     if (YogArray_size(env, type) < 1) {
-        YogError_raise_ValueError(env, "struct field have no fields");
+        YogError_raise_ValueError(env, "Anonymous struct/union have no fields");
     }
     YogVal fields = YogArray_at(env, type, 1);
     if (!IS_PTR(fields) || (BASIC_OBJ_TYPE(fields) != TYPE_ARRAY)) {
-        YogError_raise_TypeError(env, "Fields must be Array, not %C", fields);
+        const char* fmt = "Anonymous struct/union fields must be Array, not %C";
+        YogError_raise_TypeError(env, fmt, fields);
     }
     return fields;
 }
 
 static uint_t
-get_first_field_size_of_node(YogEnv* env, YogVal node)
+get_alignment_unit_of_node(YogEnv* env, YogVal node)
 {
     YogVal klass;
     switch (PTR_AS(Node, node)->type) {
@@ -825,7 +826,7 @@ get_first_field_size_of_node(YogEnv* env, YogVal node)
 }
 
 static uint_t
-get_first_field_size(YogEnv* env, YogVal nodes)
+get_alignment_unit(YogEnv* env, YogVal nodes)
 {
     if (!IS_PTR(nodes)) {
         return 0;
@@ -833,16 +834,16 @@ get_first_field_size(YogEnv* env, YogVal nodes)
     YogVal node = PTR_AS(Node, nodes)->u.field.type;
     if (PTR_AS(Node, node)->type == NODE_ARRAY) {
         YogVal unit = PTR_AS(Node, node)->u.array.type;
-        return get_first_field_size_of_node(env, unit);
+        return get_alignment_unit_of_node(env, unit);
     }
-    return get_first_field_size_of_node(env, node);
+    return get_alignment_unit_of_node(env, node);
 }
 
 static uint_t
 align_offset(YogEnv* env, YogVal node, uint_t offset)
 {
     SAVE_ARG(env, node);
-    uint_t size = get_first_field_size(env, node);
+    uint_t size = get_alignment_unit(env, node);
     uint_t alignment = sizeof(void*) < size ? sizeof(void*) : size;
 #define ALIGN(offset, alignment) \
                             (((offset) + (alignment) - 1) & ~((alignment) - 1))
@@ -896,13 +897,23 @@ StructBase_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
     RETURN(env, self);
 }
 
+typedef YogVal (*StructBuilder)(YogEnv*, ID, YogVal);
 static YogVal build_StructClass(YogEnv*, ID, YogVal);
+static YogVal build_UnionClass(YogEnv*, ID, YogVal);
 
 static YogVal
-create_anonymous_StructClass(YogEnv* env, YogVal type)
+create_anonymous_struct_node(YogEnv* env, YogVal type, StructBuilder builder)
 {
+    SAVE_ARG(env, type);
+    YogVal node = Node_new(env);
+    PUSH_LOCAL(env, node);
+
+    PTR_AS(Node, node)->type = NODE_STRUCT;
     YogVal fields = get_fields_of_anonymous_struct(env, type);
-    return build_StructClass(env, INVALID_ID, fields);
+    YogVal klass = builder(env, INVALID_ID, fields);
+    YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.struct_.klass, klass);
+
+    RETURN(env, node);
 }
 
 static YogVal
@@ -925,11 +936,10 @@ parse_subtype(YogEnv* env, YogVal type)
         RETURN(env, node);
     }
     if (VAL2ID(name) == YogVM_intern(env, vm, "struct")) {
-        node = Node_new(env);
-        PTR_AS(Node, node)->type = NODE_STRUCT;
-        YogVal klass = create_anonymous_StructClass(env, type);
-        YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.struct_.klass, klass);
-        RETURN(env, node);
+        RETURN(env, create_anonymous_struct_node(env, type, build_StructClass));
+    }
+    if (VAL2ID(name) == YogVM_intern(env, vm, "union")) {
+        RETURN(env, create_anonymous_struct_node(env, type, build_UnionClass));
     }
     if (VAL2ID(name) == YogVM_intern(env, vm, "pointer")) {
         node = Node_new(env);
@@ -1096,7 +1106,7 @@ get_alignment_unit_of_union(YogEnv* env, YogVal nodes)
     uint_t max = 0;
     YogVal node;
     for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
-        update_max(&max, get_first_field_size(env, node));
+        update_max(&max, get_alignment_unit(env, node));
     }
     return max;
 }
@@ -1142,7 +1152,7 @@ build_StructClass(YogEnv* env, ID name, YogVal fields)
     PTR_AS(YogClass, obj)->name = name;
 
     nodes = parse_fields(env, fields);
-    uint_t alignment_unit = get_first_field_size(env, nodes);
+    uint_t alignment_unit = get_alignment_unit(env, nodes);
     PTR_AS(StructClass, obj)->alignment_unit = alignment_unit;
 
     uint_t offset = 0;
