@@ -57,13 +57,14 @@ z_stream = StructClass.new("z_stream", [
   ['ulong, 'reserved]])
 
 lib = load_lib("/usr/lib/libz.so")
-deflateInit_ = lib.load_func("deflateInit_", [z_stream, 'int, string, 'int], 'int)
-deflate = lib.load_func("deflate", [z_stream, 'int], 'int)
-deflateEnd = lib.load_func("deflateEnd", [z_stream], 'int)
+pz_stream = ['pointer, z_stream]
+deflateInit_ = lib.load_func("deflateInit_", [pz_stream, 'int, string, 'int], 'int)
+deflate = lib.load_func("deflate", [pz_stream, 'int], 'int)
+deflateEnd = lib.load_func("deflateEnd", [pz_stream], 'int)
 
-inflateInit_ = lib.load_func("inflateInit_", [z_stream, string, 'int], 'int)
-inflate = lib.load_func("inflate", [z_stream, 'int], 'int)
-inflateEnd = lib.load_func("inflateEnd", [z_stream], 'int)
+inflateInit_ = lib.load_func("inflateInit_", [pz_stream, string, 'int], 'int)
+inflate = lib.load_func("inflate", [pz_stream, 'int], 'int)
+inflateEnd = lib.load_func("inflateEnd", [pz_stream], 'int)
 
 class ZlibError > Exception
 end
