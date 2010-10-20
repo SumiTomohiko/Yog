@@ -1554,7 +1554,7 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     for (i = 0; i < nargs; i++) {
         arg_type = YogArray_at(env, arg_types, i);
         types[i] = map_type(env, arg_type);
-        PTR_AS(LibFunc, f)->arg_types[i] = arg_type;
+        YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), arg_types[i], arg_type);
     }
     ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(rtype) ? &ffi_type_void : map_type(env, rtype), types);
     if (status != FFI_OK) {
