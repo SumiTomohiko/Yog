@@ -793,44 +793,92 @@ power(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
     return YogBignum_binop_power(env, self, n);
 }
 
-int_t
+int
+YogBignum_compare_with_unsigned_long(YogEnv* env, YogVal self, unsigned long n)
+{
+    return mpz_cmp_ui(BIGNUM_NUM(self), n);
+}
+
+int
 YogBignum_compare_with_unsigned_int(YogEnv* env, YogVal self, uint_t n)
 {
     return mpz_cmp_ui(BIGNUM_NUM(self), n);
 }
 
-int_t
+int
+YogBignum_compare_with_long(YogEnv* env, YogVal self, long n)
+{
+    return mpz_cmp_si(BIGNUM_NUM(self), n);
+}
+
+int
 YogBignum_compare_with_int(YogEnv* env, YogVal self, int_t n)
 {
     return mpz_cmp_si(BIGNUM_NUM(self), n);
 }
 
+static void
+check_range_unsigned(YogEnv* env, YogVal self, const char* name, unsigned long max)
+{
+#define RAISE_ERROR do { \
+    const char* fmt = "%s must between %lu and %lu"; \
+    YogError_raise_ValueError(env, fmt, name, 0, max); \
+} while (0)
+    if (YogBignum_compare_with_unsigned_long(env, self, 0) < 0) {
+        RAISE_ERROR;
+    }
+    if (0 < YogBignum_compare_with_unsigned_long(env, self, max)) {
+        RAISE_ERROR;
+    }
+#undef RAISE_ERROR
+}
+
+unsigned long
+YogBignum_to_unsigned_long(YogEnv* env, YogVal self, const char* name)
+{
+    CHECK_SELF_TYPE(env, self);
+    check_range_unsigned(env, self, name, ULONG_MAX);
+    return mpz_get_ui(BIGNUM_NUM(self));
+}
+
 UNSIGNED_TYPE
 YogBignum_to_unsigned_type(YogEnv* env, YogVal self, const char* name)
 {
-    SAVE_ARG(env, self);
     CHECK_SELF_TYPE(env, self);
+    check_range_unsigned(env, self, name, UNSIGNED_MAX);
+    return mpz_get_ui(BIGNUM_NUM(self));
+}
 
-    if ((mpz_cmp_ui(BIGNUM_NUM(self), 0) < 0) || (0 < mpz_cmp_ui(BIGNUM_NUM(self), UNSIGNED_MAX))) {
-        YogError_raise_ValueError(env, "%s must between %d and %d", name, 0, UNSIGNED_MAX);
+static void
+check_range(YogEnv* env, YogVal self, const char* name, long min, long max)
+{
+#define RAISE_ERROR do { \
+    const char* fmt = "%s must between %d and %d"; \
+    YogError_raise_ValueError(env, fmt, name, min, max); \
+} while (0)
+    if (YogBignum_compare_with_int(env, self, min) < 0) {
+        RAISE_ERROR;
     }
-    UNSIGNED_TYPE ui = mpz_get_ui(BIGNUM_NUM(self));
+    if (0 < YogBignum_compare_with_int(env, self, max)) {
+        RAISE_ERROR;
+    }
+#undef RAISE_ERROR
+}
 
-    RETURN(env, ui);
+long
+YogBignum_to_long(YogEnv* env, YogVal self, const char* name)
+{
+    CHECK_SELF_TYPE(env, self);
+    check_range(env, self, name, LONG_MIN, LONG_MAX);
+    return mpz_get_si(BIGNUM_NUM(self));
 }
 
 SIGNED_TYPE
 YogBignum_to_signed_type(YogEnv* env, YogVal self, const char* name)
 {
-    SAVE_ARG(env, self);
     CHECK_SELF_TYPE(env, self);
-
-    if ((YogBignum_compare_with_int(env, self, SIGNED_MIN) < 0) || (0 < YogBignum_compare_with_int(env, self, SIGNED_MAX))) {
-        YogError_raise_ValueError(env, "%s must between %d and %d", name, SIGNED_MIN, SIGNED_MAX);
-    }
-    SIGNED_TYPE si = mpz_get_si(BIGNUM_NUM(self));
-
-    RETURN(env, si);
+    check_range(env, self, name, SIGNED_MIN, SIGNED_MAX);
+    return mpz_get_si(BIGNUM_NUM(self));
 }
 
 int_t

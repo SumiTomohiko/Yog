@@ -508,10 +508,10 @@ ptr = Pointer.new()
 f(ptr)
 try
   Foo = StructClass.new(\"Foo\", [[[\'char, 0], \'bar]])
-  foo = Foo.new(ptr)
+  foo = Foo.new(ptr.value)
   print(foo.bar[0])
 finally
-  libc.free(ptr)
+  libc.free(ptr.value)
 end
 """ % locals(), "42", options=[])
 
@@ -528,7 +528,7 @@ print(foo.bar)
 Foo = StructClass.new(\"Foo\", [[\'pointer, \'bar]])
 foo = Foo.new()
 foo.bar = 42
-print(foo.ptr)
+print(foo.bar)
 """, "42")
 
     # Tests for internal structs
@@ -541,7 +541,7 @@ baz.foo.bar = 42
 print(baz.foo.bar)""", "42")
 
     def test_Struct690(self):
-        path = self.get_lib_path()
+        path = get_lib_path()
         self._test("""
 Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
 Baz = StructClass.new(\"Baz\", [[Foo, \'foo]])
@@ -596,7 +596,7 @@ lib = load_lib(\"./test_Struct730.so\")
 f = lib.load_func(\"test_Struct730\", [Foo])
 foo = Foo.new()
 f(foo)
-print(foo.baz.bar)""", "42")
+print(foo.quux)""", "42")
 
     # Tests for pointers to a struct
     def test_Struct740(self):
@@ -1146,22 +1146,12 @@ print(bar.baz)
 
     # Tests for pointer
     def test_argument640(self):
-        def test_stderr(stderr):
-            assert 0 < stderr.find("TypeError: Argument must be Pointer, not Fixnum")
         path = get_lib_path()
         self._test("""
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"print_pointer\", [\'pointer])
 f(42)
-""" % locals(), stderr=test_stderr)
-
-    def test_argument650(self):
-        path = get_lib_path()
-        self._test("""
-lib = load_lib(\"%(path)s\")
-f = lib.load_func(\"print_pointer\", [\'pointer])
-f(Pointer.new())
-""" % locals(), "NULL")
+""" % locals(), "0x2a")
 
     def test_argument660(self):
         path = get_lib_path()
@@ -1412,14 +1402,12 @@ print(f())
 """ % locals(), "3.14")
 
     def test_return390(self):
-        def test_stdout(stdout):
-            assert match(r"<Pointer .*>\Z", stdout) is not None
         path = get_lib_path()
         self._test("""
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"return_pointer_0\", [], \'pointer)
 print(f())
-""" % locals(), test_stdout)
+""" % locals(), "42")
 
     def test_Int0(self):
         self._test("print(Int.new().value)", "0")
@@ -1445,10 +1433,10 @@ ptr = Pointer.new()
 f(ptr)
 try
   Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
-  foo = Foo.new(ptr)
+  foo = Foo.new(ptr.value)
   print(foo.bar)
 finally
-  libc.free(ptr)
+  libc.free(ptr.value)
 end
 """ % locals(), "42", options=[])
 
