@@ -1145,7 +1145,7 @@ static uint_t
 get_union_size(YogEnv* env, YogVal nodes)
 {
     SAVE_ARG(env, nodes);
-    YogVal node;
+    YogVal node = YUNDEF;
     PUSH_LOCAL(env, node);
 
     uint_t max = 0;
@@ -1160,7 +1160,7 @@ static uint_t
 get_alignment_unit_of_union(YogEnv* env, YogVal nodes)
 {
     SAVE_ARG(env, nodes);
-    YogVal node;
+    YogVal node = YUNDEF;
     PUSH_LOCAL(env, node);
 
     uint_t max = 0;
