@@ -11,7 +11,7 @@ class TcpSocket
       raise Exception.new("getaddrinfo failed")
     end
     try
-      pa = addrinfo.new(res)
+      pa = addrinfo.new(res.value)
       sock = socket(pa.ai_family, pa.ai_socktype, pa.ai_protocol)
       if sock == -1
         raise Exception.new("socket failed")
@@ -21,7 +21,7 @@ class TcpSocket
         raise Exception.new("connect failed")
       end
     finally
-      freeaddrinfo(res)
+      freeaddrinfo(res.value)
     end
     self.sock = sock
     self.encoding = encoding
