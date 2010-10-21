@@ -13,7 +13,7 @@ CFLAGS = -shared -I.. -I../include -Wall -Werror -DGENERATIONAL @CFLAGS@
 LIBS = @IMPORT_LIB@
 
 all: lib
-	py.test --showlocals
+	py.test --showlocals --verbose
 
 lib: $(PKGS)
 
