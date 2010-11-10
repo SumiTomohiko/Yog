@@ -4886,5 +4886,5 @@ int(*f)(/* struct config * */);
 }
 
 /**
- * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
+ * vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
  */
