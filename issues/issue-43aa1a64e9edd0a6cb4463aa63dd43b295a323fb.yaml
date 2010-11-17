@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "\"module\" nonterminal symbol in src/parser.y must be renamed to \"package\""
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-11-17 18:28:38.527151 Z
+references: []
+
+id: 43aa1a64e9edd0a6cb4463aa63dd43b295a323fb
+log_events: 
+- - 2010-11-17 18:28:39.249033 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
