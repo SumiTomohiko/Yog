@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: next statement must be renamed to continue.
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-12-04 18:24:05.288356 Z
+references: []
+
+id: 8d1e25d3affdc80242c017729350a59eb9fc5c9c
+log_events: 
+- - 2010-12-04 18:24:05.796350 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
