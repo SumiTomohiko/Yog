@@ -152,6 +152,15 @@ struct symbol {
   struct symbol **subsym;  /* Array of constituent symbols */
 };
 
+char*
+symbol_to_s(char* dest, struct symbol* sym)
+{
+    const char* fmt = "<Symbol %p name=\"%s\" index=%d lambda=%s>";
+    const char* lambda = sym->lambda ? "true" : "false";
+    sprintf(dest, fmt, sym, sym->name, sym->index, lambda);
+    return dest;
+}
+
 /* Each production rule in the grammar is stored in the following
 ** structure.  */
 struct rule {
@@ -170,6 +179,19 @@ struct rule {
   struct rule *nextlhs;    /* Next rule with the same LHS */
   struct rule *next;       /* Next rule in the global list */
 };
+
+char*
+rule_to_s(char* dest, struct rule* rule)
+{
+    strcpy(dest, rule->lhs->name);
+    strcat(dest, " ::=");
+    int i;
+    for (i = 0; i < rule->nrhs; i++) {
+        strcat(dest, " ");
+        strcat(dest, rule->rhs[i]->name);
+    }
+    return dest;
+}
 
 /* A configuration is a production rule of the grammar together with
 ** a mark (dot) showing how much of that rule has been processed so far.
@@ -190,6 +212,15 @@ struct config {
   struct config *next;     /* Next configuration in the state */
   struct config *bp;       /* The next basis configuration */
 };
+
+char*
+config_to_s(char* dest, struct config* cfg)
+{
+    const char* fmt = "<Config %p rule=\"%s\" dot=%d>";
+    char rule[4096];
+    sprintf(dest, fmt, cfg, rule_to_s(rule, cfg->rp), cfg->dot);
+    return dest;
+}
 
 /* Every shift or reduce operation is stored as one of the following */
 struct action {
@@ -791,6 +822,12 @@ struct symbol *b;
   return 1;
 }
 
+#define TRACE(...) do { \
+    char __buf__[4096]; \
+    snprintf(__buf__, sizeof(__buf__), __VA_ARGS__); \
+    printf("%s:%u %s\n", __FILE__, __LINE__, __buf__); \
+} while (0)
+
 /* Construct all successor states to the given state.  A "successor"
 ** state is any state which can be reached by a shift action.
 */
@@ -878,6 +915,36 @@ struct lemon *lemp;
       }
     }
   }
+}
+
+#define array_sizeof(a) (sizeof(a) / sizeof(a[0]))
+
+static int size = 0;
+
+char*
+set_to_s(struct lemon* lemp, char* dest, char* s)
+{
+    strcpy(dest, "[");
+    int i;
+    for (i = 0; i < size; i++) {
+        if (s[i] != 1) {
+            continue;
+        }
+        const char* name = NULL;
+        int j;
+        for (j = 0; (j < lemp->nsymbol) && (name == NULL); j++) {
+            struct symbol* sym = lemp->symbols[j];
+            if (lemp->symbols[j]->index != i) {
+                continue;
+            }
+            name = sym->name;
+        }
+        char buf[4096];
+        snprintf(buf, array_sizeof(buf), "%s (%d), ", name, i);
+        strcat(dest, buf);
+    }
+    strcat(dest, "]");
+    return dest;
 }
 
 /* Compute all followsets.
@@ -4141,8 +4208,6 @@ struct lemon *lemp;
 ** Set manipulation routines for the LEMON parser generator.
 */
 
-static int size = 0;
-
 /* Set the set size */
 void SetSize(n)
 int n;
@@ -4197,6 +4262,7 @@ char *s2;
   }
   return progress;
 }
+
 /********************** From the file "table.c" ****************************/
 /*
 ** All code in this file has been automatically generated
