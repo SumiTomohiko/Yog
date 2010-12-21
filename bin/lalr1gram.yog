@@ -1,0 +1,77 @@
+#!/usr/bin/env yog-generational
+# -*- coding: utf-8 -*-
+
+class Token
+  def init(type, value=nil)
+    self.type = type
+    self.value = value
+  end
+end
+
+class Lexer
+  def init(fp)
+    self.fp = fp
+    self.line = ""
+    self.pos = 0
+  end
+
+  def read_line()
+    self.line = self.fp.readline()
+    self.pos = 0
+  end
+
+  def skip_whitespace()
+    m = /\s*/.match(self.line, self.pos)
+    if m == nil
+      return
+    end
+    self.pos = m.end()
+  end
+
+  def get_next_token()
+    if self.line == nil
+      return nil
+    end
+    self.skip_whitespace()
+    if self.line.size <= self.pos
+      self.read_line()
+      return self.get_next_token()
+    end
+
+    if (m = /[a-z_]+/.match(self.line, self.pos)) != nil
+      self.pos = m.end()
+      size = m.end() - m.start()
+      return Token.new('nonterminal, self.line.slice(m.start(), size).to_sym())
+    end
+    if (m = /<[a-z_]+>/.match(self.line, self.pos)) != nil
+      self.pos = m.end()
+      size = m.end() - m.start() - 2
+      return Token.new('terminal, self.line.slice(m.start() + 1, size).to_sym())
+    end
+    { "->": 'arrow, "@": 'at }.each() do [key, value]
+      if self.line.slice(self.pos, key.size) == key
+        self.pos += key.size
+        return Token.new(value)
+      end
+    end
+    if self.line[0] == "{"
+      self.pos += 1
+      return Token.new('action)
+    end
+  end
+end
+
+def main(dest, src)
+  File.open(src) do [fp]
+    lexer = Lexer.new(fp)
+    while (token = lexer.get_next_token()) != nil
+      puts(token)
+    end
+  end
+end
+
+if __FILE__ == ARGV.get(0)
+  main(ARGV[1], ARGV[2])
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
