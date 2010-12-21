@@ -319,11 +319,6 @@ src/parser.out
 src/shift_jis2yog_hankaku.inc
 src/shift_jis2yog_zenkaku.inc
 src/string.inc
-src/yog-bdw*
-src/yog-copying*
-src/yog-generational*
-src/yog-mark-sweep*
-src/yog-mark-sweep-compact*
 src/yog2euc_jp1.inc
 src/yog2euc_jp2.inc
 src/yog2euc_jp3.inc
@@ -611,3 +606,8 @@ tools/swig/Tools/config/missing
 tools/swig/Tools/config/ylwrap
 tools/swig/swig
 vgcore.*
+yog-bdw*
+yog-copying*
+yog-generational*
+yog-mark-sweep*
+yog-mark-sweep-compact*
