@@ -1,0 +1,24 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Regexp#search and Regexp#match
+desc: |-
+  Regexp#match searches a substring at any position in the string. This must be
+  done at the begin of the string. The current Regexp#match must be renamed to
+  Regexp#search.
+  
+  bin/lalr1gram.yog uses Regexp#match expecting to search at the position zero.
+  Change this.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-12-21 09:52:50.702195 Z
+references: []
+
+id: 81439ce002c19e053fd077a940bf33a1e5877581
+log_events: 
+- - 2010-12-21 09:52:51.537154 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
