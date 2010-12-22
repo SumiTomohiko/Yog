@@ -67,7 +67,7 @@ static YogVal
 write(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
 {
     CHECK_SELF_TYPE2(env, self);
-    YogMisc_check_string(env, s, "s");
+    YogMisc_check_String(env, s, "s");
 
     YogVal bin = YogString_to_bin_in_default_encoding(env, s);
     fputs(BINARY_CSTR(bin), HDL_AS(YogFile, self)->fp);

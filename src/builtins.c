@@ -171,7 +171,7 @@ puts_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 static YogVal
 import_package(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* name)
 {
-    YogMisc_check_string(env, name, "Package name");
+    YogMisc_check_String(env, name, "Package name");
     return HDL2VAL(YogVM_import_package(env, env->vm, name));
 }
 

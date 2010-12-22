@@ -129,7 +129,7 @@ compress(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     uint_t j;
     for (j = 0; j < size; j++) {
         YogHandle* name = VAL2HDL(env, YogArray_at(env, files, j));
-        YogMisc_check_string(env, name, "Filename");
+        YogMisc_check_String(env, name, "Filename");
         YogVal bin = YogString_to_bin_in_default_encoding(env, name);
         const char* fname = BINARY_CSTR(bin);
         struct zip_source* source = zip_source_file(archive, fname, 0, 0);

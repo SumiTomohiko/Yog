@@ -9,6 +9,7 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/misc.h"
 #include "yog/regexp.h"
 #include "yog/string.h"
 #include "yog/vm.h"
@@ -238,26 +239,33 @@ end_str(YogEnv* env, YogVal self, YogVal group)
 }
 
 YogVal
-YogRegexp_binop_match(YogEnv* env, YogHandle* self, YogHandle* s)
+YogRegexp_binop_search(YogEnv* env, YogHandle* self, YogHandle* s)
 {
     if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
         YogError_raise_TypeError(env, "Can't convert %C object to String implicitly", HDL2VAL(s));
         /* NOTREACHED */
     }
-    return YogString_match(env, s, self, 0);
+    return YogString_search(env, s, self, 0);
+}
+
+static YogVal
+do_match_or_search(YogEnv* env, YogHandle* self, YogHandle* s, YogHandle* pos, YogVal (*f)(YogEnv*, YogHandle*, YogHandle*, int_t))
+{
+    YogMisc_check_String(env, s, "s");
+    YogMisc_check_Fixnum_optional(env, pos, "pos");
+    return f(env, s, self, pos == NULL ? 0 : VAL2INT(HDL2VAL(pos)));
 }
 
 static YogVal
 match(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s, YogHandle* pos)
 {
-    if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "s must be String");
-    }
-    if ((pos != NULL) && (!IS_FIXNUM(HDL2VAL(pos)))) {
-        YogError_raise_TypeError(env, "pos must be Fixnum");
-    }
-    int_t n = pos == NULL ? 0 : VAL2INT(HDL2VAL(pos));
-    return YogString_match(env, s, self, n);
+    return do_match_or_search(env, self, s, pos, YogString_match);
+}
+
+static YogVal
+search(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s, YogHandle* pos)
+{
+    return do_match_or_search(env, self, s, pos, YogString_search);
 }
 
 static YogVal
@@ -302,6 +310,7 @@ YogRegexp_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method2(env, cRegexp, pkg, (name), __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD("match", match, "s", "|", "pos", NULL);
+    DEFINE_METHOD("search", search, "s", "|", "pos", NULL);
 #undef DEFINE_METHOD
     vm->cRegexp = cRegexp;
 

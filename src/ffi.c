@@ -982,7 +982,7 @@ parse_subtype(YogEnv* env, YogVal type)
         PTR_AS(Node, node)->type = NODE_STRING;
         YogVal encoding = YogArray_at(env, type, 1);
         const char* name = "Second element of type";
-        YogMisc_check_encoding(env, VAL2HDL(env, encoding), name);
+        YogMisc_check_Encoding(env, VAL2HDL(env, encoding), name);
         YogGC_UPDATE_PTR(env, PTR_AS(Node, node), u.string.encoding, encoding);
         RETURN(env, node);
     }
@@ -2197,7 +2197,7 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal node, YogVal val
     case NODE_STRING:
         encoding = VAL2HDL(env, PTR_AS(Node, node)->u.string.encoding);
         h = VAL2HDL(env, val);
-        YogMisc_check_string(env, h, "Actual parameter");
+        YogMisc_check_String(env, h, "Actual parameter");
         bin = YogEncoding_conv_from_yog(env, encoding, h);
         memcpy(refered, BINARY_CSTR(bin), BINARY_SIZE(bin));
         *((char**)pvalue) = (char*)refered;
@@ -2231,7 +2231,7 @@ static uint_t
 type2refered_size_of_string(YogEnv* env, YogVal node, YogVal arg)
 {
     YogVal enc = PTR_AS(Node, node)->u.string.encoding;
-    YogMisc_check_string(env, VAL2HDL(env, arg), "Argument");
+    YogMisc_check_String(env, VAL2HDL(env, arg), "Argument");
     return PTR_AS(YogEncoding, enc)->max_size * STRING_SIZE(arg);
 }
 

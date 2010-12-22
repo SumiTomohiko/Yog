@@ -837,7 +837,7 @@ inst xor
     }
 }
 
-inst match
+inst search
 ()
 (right, left)
 (...) depth: 1
@@ -846,19 +846,19 @@ inst match
         if (BASIC_OBJ_TYPE(left) == TYPE_STRING) {
             YogHandle* x = YogHandle_REGISTER(env, left);
             YogHandle* y = YogHandle_REGISTER(env, right);
-            push(env, YogString_binop_match(env, x, y));
+            push(env, YogString_binop_search(env, x, y));
         }
         else if (BASIC_OBJ_TYPE(left) == TYPE_REGEXP) {
             YogHandle* x = YogHandle_REGISTER(env, left);
             YogHandle* y = YogHandle_REGISTER(env, right);
-            push(env, YogRegexp_binop_match(env, x, y));
+            push(env, YogRegexp_binop_search(env, x, y));
         }
         else {
-            exec_match(env, left, right);
+            exec_search(env, left, right);
         }
     }
     else {
-        exec_match(env, left, right);
+        exec_search(env, left, right);
     }
 }
 

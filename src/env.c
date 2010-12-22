@@ -53,7 +53,7 @@ static YogVal
 get(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* key, YogHandle* default_)
 {
     check_self(env, self);
-    YogMisc_check_string(env, key, "key");
+    YogMisc_check_String(env, key, "key");
 
     const char* val = getenv_(env, key);
     if (val == NULL) {
@@ -66,8 +66,8 @@ static YogVal
 subscript_assign(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* key, YogHandle* value)
 {
     check_self(env, self);
-    YogMisc_check_string(env, key, "key");
-    YogMisc_check_string(env, value, "value");
+    YogMisc_check_String(env, key, "key");
+    YogMisc_check_String(env, value, "value");
 
     YogHandle* k = VAL2HDL(env, YogString_to_bin_in_default_encoding(env, key));
     YogVal v = YogString_to_bin_in_default_encoding(env, value);
@@ -80,7 +80,7 @@ static YogVal
 subscript(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* key)
 {
     check_self(env, self);
-    YogMisc_check_string(env, key, "key");
+    YogMisc_check_String(env, key, "key");
 
     const char* val = getenv_(env, key);
     if (val == NULL) {
