@@ -132,7 +132,7 @@ exec_lshift(YogEnv* env, YogVal left, YogVal right)
 }
 
 static void
-exec_match(YogEnv* env, YogVal left, YogVal right)
+exec_search(YogEnv* env, YogVal left, YogVal right)
 {
     exec_binop(env, "=~", left, right);
 }

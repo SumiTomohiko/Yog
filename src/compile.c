@@ -3399,7 +3399,7 @@ compile_visit_binop(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
         CompileData_add_multiply,
         CompileData_add_divide,
         CompileData_add_floor_divide,
-        CompileData_add_match,
+        CompileData_add_search,
         CompileData_add_lshift,
         CompileData_add_rshift,
         CompileData_add_modulo,

@@ -33,7 +33,7 @@ typedef struct YogMatch YogMatch;
  */
 /* src/regexp.c */
 YOG_EXPORT YogVal YogMatch_new(YogEnv*, YogHandle*, YogHandle*);
-YOG_EXPORT YogVal YogRegexp_binop_match(YogEnv*, YogHandle*, YogHandle*);
+YOG_EXPORT YogVal YogRegexp_binop_search(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT void YogRegexp_define_classes(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogRegexp_new(YogEnv*, YogVal, BOOL);
 

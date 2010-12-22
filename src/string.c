@@ -668,7 +668,7 @@ assign_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Y
 }
 
 YogVal
-YogString_match(YogEnv* env, YogHandle* self, YogHandle* regexp, int_t pos)
+YogString_search(YogEnv* env, YogHandle* self, YogHandle* regexp, int_t pos)
 {
     int_t n = normalize_index(env, HDL2VAL(self), pos);
     uint_t offset = 0;
@@ -689,7 +689,7 @@ YogString_match(YogEnv* env, YogHandle* self, YogHandle* regexp, int_t pos)
 }
 
 YogVal
-YogString_binop_match(YogEnv* env, YogHandle* self, YogHandle* regexp)
+YogString_binop_search(YogEnv* env, YogHandle* self, YogHandle* regexp)
 {
     YogVal re = HDL2VAL(regexp);
     if (!IS_PTR(re) || (BASIC_OBJ_TYPE(re) != TYPE_REGEXP)) {
@@ -697,13 +697,13 @@ YogString_binop_match(YogEnv* env, YogHandle* self, YogHandle* regexp)
         YogError_raise_TypeError(env, fmt, re);
         /* NOTREACHED */
     }
-    return YogString_match(env, self, regexp, 0);
+    return YogString_search(env, self, regexp, 0);
 }
 
 static YogVal
-match(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* regexp)
+search(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* regexp)
 {
-    return YogString_binop_match(env, self, regexp);
+    return YogString_binop_search(env, self, regexp);
 }
 
 int_t
@@ -1076,7 +1076,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("+", add, "s", NULL);
     DEFINE_METHOD2("<<", lshift, "s", NULL);
     DEFINE_METHOD2("<=>", ufo, "n", NULL);
-    DEFINE_METHOD2("=~", match, "regexp", NULL);
+    DEFINE_METHOD2("=~", search, "regexp", NULL);
     DEFINE_METHOD2("[]", subscript, "index", NULL);
     DEFINE_METHOD2("slice", slice, "pos", "|", "len", NULL);
     DEFINE_METHOD2("to_bin", to_bin, "encoding", NULL);

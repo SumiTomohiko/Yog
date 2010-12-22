@@ -238,13 +238,13 @@ end_str(YogEnv* env, YogVal self, YogVal group)
 }
 
 YogVal
-YogRegexp_binop_match(YogEnv* env, YogHandle* self, YogHandle* s)
+YogRegexp_binop_search(YogEnv* env, YogHandle* self, YogHandle* s)
 {
     if (!IS_PTR(HDL2VAL(s)) || (BASIC_OBJ_TYPE(HDL2VAL(s)) != TYPE_STRING)) {
         YogError_raise_TypeError(env, "Can't convert %C object to String implicitly", HDL2VAL(s));
         /* NOTREACHED */
     }
-    return YogString_match(env, s, self, 0);
+    return YogString_search(env, s, self, 0);
 }
 
 static YogVal
@@ -257,7 +257,7 @@ match(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s, YogHandle* pos
         YogError_raise_TypeError(env, "pos must be Fixnum");
     }
     int_t n = pos == NULL ? 0 : VAL2INT(HDL2VAL(pos));
-    return YogString_match(env, s, self, n);
+    return YogString_search(env, s, self, n);
 }
 
 static YogVal
