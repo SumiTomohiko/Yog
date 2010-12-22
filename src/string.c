@@ -369,6 +369,13 @@ to_i(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
+to_sym(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return ID2VAL(YogString_intern(env, HDL2VAL(self)));
+}
+
+static YogVal
 to_bin(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* encoding)
 {
     CHECK_SELF_TYPE2(env, self);
@@ -1092,6 +1099,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("[]", subscript, "index", NULL);
     DEFINE_METHOD2("slice", slice, "pos", "|", "len", NULL);
     DEFINE_METHOD2("to_bin", to_bin, "encoding", NULL);
+    DEFINE_METHOD2("to_sym", to_sym, NULL);
 #undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter) do { \
     YogClass_define_property(env, cString, pkg, (name), (getter), (setter)); \

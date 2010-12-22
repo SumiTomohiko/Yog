@@ -751,4 +751,7 @@ print(\"foo\".rfind(\"o\", -1))
 print(\"foo\".rfind(\"o\", -4))
 """, "-1")
 
+    def test_to_sym0(self):
+        self._test("print(\"foo\".to_sym().inspect())", "\'foo")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
