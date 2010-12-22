@@ -52,7 +52,7 @@ def replace_for_dir(dirname):
                 tmp = path + ".tmp"
                 with open(tmp, "w") as out:
                     for line in in_:
-                        line = line.replace("YogTable_new_string_table", "YogTable_create_string_table")
+                        line = line.replace("YogMisc_check_encoding", "YogMisc_check_Encoding")
                         out.write(line)
             move(tmp, path)
 

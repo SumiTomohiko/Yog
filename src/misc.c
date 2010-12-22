@@ -11,30 +11,55 @@
 #include "yog/sysdeps.h"
 #include "yog/yog.h"
 
+static void
+raise_TypeError(YogEnv* env, YogVal val, const char* name, const char* expected)
+{
+    YogError_raise_TypeError(env, "%s must be %s, not %C", name, expected, val);
+}
+
 void
-YogMisc_check_encoding(YogEnv* env, YogHandle* val, const char* name)
+YogMisc_check_Encoding(YogEnv* env, YogHandle* val, const char* name)
 {
     YogVal v = HDL2VAL(val);
     if (IS_PTR(v) && (BASIC_OBJ_TYPE(v) == TYPE_ENCODING)) {
         return;
     }
-    YogError_raise_TypeError(env, "%s must be Encoding, not %C", name, v);
+    raise_TypeError(env, v, name, "Encoding");
 }
 
 void
-YogMisc_check_string(YogEnv* env, YogHandle* val, const char* name)
+YogMisc_check_Fixnum(YogEnv* env, YogHandle* val, const char* name)
+{
+    YogVal v = HDL2VAL(val);
+    if (IS_FIXNUM(v)) {
+        return;
+    }
+    raise_TypeError(env, v, name, "Fixnum");
+}
+
+void
+YogMisc_check_Fixnum_optional(YogEnv* env, YogHandle* val, const char* name)
+{
+    if (val == NULL) {
+        return;
+    }
+    YogMisc_check_Fixnum(env, val, name);
+}
+
+void
+YogMisc_check_String(YogEnv* env, YogHandle* val, const char* name)
 {
     YogVal v = HDL2VAL(val);
     if (IS_PTR(v) && (BASIC_OBJ_TYPE(v) == TYPE_STRING)) {
         return;
     }
-    YogError_raise_TypeError(env, "%s must be String, not %C", name, v);
+    raise_TypeError(env, v, name, "String");
 }
 
 static YogHandle*
 get_so_path(YogEnv* env, YogHandle* filename)
 {
-    YogMisc_check_string(env, filename, "Filename");
+    YogMisc_check_String(env, filename, "Filename");
     if (0 <= YogString_find_char(env, HDL2VAL(filename), 0, PATH_SEPARATOR)) {
         return filename;
     }

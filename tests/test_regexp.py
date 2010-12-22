@@ -258,4 +258,28 @@ m = \"foo\" =~ /foo/
 puts(m.end(42))
 """, stderr=test_stderr)
 
+    def test_match0(self):
+        self._test("print(/foo/.match(\"foo\") != nil)", "true")
+
+    def test_match10(self):
+        self._test("print(/bar/.match(\"foobar\") != nil)", "false")
+
+    def test_match20(self):
+        self._test("print(/bar/.match(\"foobar\", 3) != nil)", "true")
+
+    def test_match30(self):
+        self._test("print(/foo/.match(\"foobar\", 3) != nil)", "false")
+
+    def test_search0(self):
+        self._test("print(/foo/.search(\"foo\") != nil)", "true")
+
+    def test_search10(self):
+        self._test("print(/bar/.search(\"foobar\") != nil)", "true")
+
+    def test_search20(self):
+        self._test("print(/bar/.search(\"foobar\", 3) != nil)", "true")
+
+    def test_search30(self):
+        self._test("print(/foo/.search(\"foobar\", 3) != nil)", "false")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
