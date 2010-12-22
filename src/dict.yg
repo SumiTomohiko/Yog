@@ -15,7 +15,7 @@ def to_s()
   def g(obj)
     a = []
     obj.each() do [key, value]
-      a.push(key.inspect() + " => " + value.inspect())
+      a.push(key.inspect() + ": " + value.inspect())
     end
     return "{ " + a.join(", ") + " }"
   end

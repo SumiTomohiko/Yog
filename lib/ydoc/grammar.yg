@@ -124,20 +124,20 @@ class Block > Token
 end
 
 KEY2TOKEN = {
-  "attribute" => Attribute,
-  "base" => Base,
-  "block" => Block,
-  "class" => Class,
-  "classmethod" => Classmethod,
-  "data" => Data,
-  "exceptions" => Exceptions,
-  "function" => Function,
-  "including" => Including,
-  "method" => Method,
-  "parameters" => Parameters,
-  "property" => Property,
-  "return" => Return,
-  "type" => Type }
+  "attribute": Attribute,
+  "base": Base,
+  "block": Block,
+  "class": Class,
+  "classmethod": Classmethod,
+  "data": Data,
+  "exceptions": Exceptions,
+  "function": Function,
+  "including": Including,
+  "method": Method,
+  "parameters": Parameters,
+  "property": Property,
+  "return": Return,
+  "type": Type }
 
 class Lexer
   def init(fp)
@@ -308,18 +308,18 @@ parameter_name = action(text_token / base_token / including_token / method_token
     next name.value
   end
   type2name = {
-    Base => "base",
-    Including => "including",
-    Method => "method",
-    Function => "function",
-    Classmethod => "classmethod",
-    Parameters => "parameters",
-    Exceptions => "exceptions",
-    Property => "property",
-    Attribute => "attribute",
-    Data => "data",
-    Type => "type",
-    Block => "block"
+    Base: "base",
+    Including: "including",
+    Method: "method",
+    Function: "function",
+    Classmethod: "classmethod",
+    Parameters: "parameters",
+    Exceptions: "exceptions",
+    Property: "property",
+    Attribute: "attribute",
+    Data: "data",
+    Type: "type",
+    Block: "block"
   }
   next type2name[name.class]
 end

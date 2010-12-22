@@ -129,7 +129,7 @@ ArgumentError: an unexpected keyword argument "bar"
 def foo()
 end
 
-foo(**{ 'bar => 42 })
+foo(**{ 'bar: 42 })
 """, stderr=test_stderr)
 
     def test_keyword_argument30(self):
@@ -143,7 +143,7 @@ ArgumentError: foo\(\) got multiple values for keyword argument "bar"
 def foo(bar)
 end
 
-foo(26, **{ 'bar => 42 })
+foo(26, **{ 'bar: 42 })
 """, stderr=test_stderr)
 
     def test_keyword_argument40(self):
@@ -288,7 +288,7 @@ def foo(bar)
   puts(bar)
 end
 
-foo(**{ 'bar => 42 })
+foo(**{ 'bar: 42 })
 """, """42
 """)
 
@@ -298,7 +298,7 @@ def foo(n, m)
   print(n + m)
 end
 
-foo(**{ 'n => 42, 'm => 26 })
+foo(**{ 'n: 42, 'm: 26 })
 """, "68")
 
     def test_variable_keyword_parameter20(self):
@@ -307,7 +307,7 @@ def foo(bar, **baz)
   puts(bar)
 end
 
-foo(**{ 'bar => 42, 'quux => 26})
+foo(**{ 'bar: 42, 'quux: 26})
 """, """42
 """)
 
@@ -317,7 +317,7 @@ def foo(bar, **baz)
   puts(baz['quux])
 end
 
-foo(**{ 'bar => 42, 'quux => 26})
+foo(**{ 'bar: 42, 'quux: 26})
 """, """26
 """)
 
@@ -344,7 +344,7 @@ TypeError: keywords must be symbols, not Fixnum
 def foo()
 end
 
-foo(**{ 42 => 26 })
+foo(**{ 42: 26 })
 """, stderr=test_stderr)
 
     def test_variable_parameter70(self):

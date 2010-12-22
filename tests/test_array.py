@@ -128,10 +128,10 @@ print(foo.to_s())
     def test_to_s60(self):
         self._test("""
 foo = []
-bar = { 'baz => foo }
+bar = { 'baz: foo }
 foo.push(bar)
 print(foo.to_s())
-""", "[{ 'baz => [...] }]")
+""", "[{ 'baz: [...] }]")
 
     def test_to_s70(self):
         self._test("""

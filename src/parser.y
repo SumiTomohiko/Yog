@@ -1755,7 +1755,7 @@ dict_elems(A) ::= dict_elems(B) COMMA dict_elem(C). {
     YogArray_push(env, B, C);
     A = B;
 }
-dict_elem(A) ::= expr(B) EQUAL_GREATER expr(C). {
+dict_elem(A) ::= expr(B) COLON expr(C). {
     A = DictElem_new(env, NODE_LINENO(B), B, C);
 }
 

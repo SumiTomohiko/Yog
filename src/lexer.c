@@ -808,9 +808,6 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
             case '=':
                 RETURN_ID_TOKEN(TK_EQUAL_EQUAL, "==");
                 break;
-            case '>':
-                RETURN_TOKEN(TK_EQUAL_GREATER);
-                break;
             default:
                 PUSHBACK(c2);
                 RETURN_TOKEN(TK_EQUAL);

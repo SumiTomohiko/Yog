@@ -60,9 +60,9 @@ class Generator
           i += 1
         end
         sym2proc = {
-          "+" => self.make_typewriter,
-          "_" => self.make_italic,
-          "*" => self.make_bold }
+          "+": self.make_typewriter,
+          "_": self.make_italic,
+          "*": self.make_bold }
         t << sym2proc[terminator](body)
       elif s[i] == "\n"
         t << self.make_newline()
@@ -326,7 +326,7 @@ class HtmlGenerator > Generator
   def escape_html(s)
     t = ""
     s.each_char() do [c]
-      tbl = { "<" => "&lt;", ">" => "&gt;", "&" => "&amp;", "\"" => "&quot;" }
+      tbl = { "<": "&lt;", ">": "&gt;", "&": "&amp;", "\"": "&quot;" }
       t << tbl.get(c, c)
     end
     return t
