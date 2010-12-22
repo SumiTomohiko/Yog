@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Use BINOP_MATCH in match_expr
+desc: |-
+  match_expr(A) ::= match_expr(B) EQUAL_TILDA(C) arith_expr(D). {
+      uint_t lineno = NODE_LINENO(B);
+      A = FuncCall_new2(env, lineno, B, TOKEN_ID(C), D);
+  }
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2010-12-22 05:29:54.657110 Z
+references: []
+
+id: 332f34e1a9518eb842cc8483fec373aa53c53cfb
+log_events: 
+- - 2010-12-22 05:29:55.339812 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
