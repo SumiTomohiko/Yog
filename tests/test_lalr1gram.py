@@ -7,8 +7,6 @@ from testcase import TestCase, get_command
 
 class TestLalr1gram(TestCase):
 
-    disabled = True
-
     def check_normal_lalr1gram_result(self, status, stdout, stderr):
         assert status == 0
         assert stdout == ""
