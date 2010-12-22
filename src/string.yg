@@ -140,6 +140,10 @@ def match(regexp, pos=0)
   return regexp.match(self, pos)
 end
 
+def search(regexp, pos=0)
+  return regexp.search(self, pos)
+end
+
 def split(splitter=/\s+/)
   def split_char(s)
     a = []
@@ -152,7 +156,7 @@ def split(splitter=/\s+/)
   if splitter.kind_of?(Regexp)
     a = []
     from_ = 0
-    while m = self.match(splitter, from_)
+    while m = self.search(splitter, from_)
       if m.start() == m.end()
         return split_char(self)
       end
