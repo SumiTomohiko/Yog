@@ -28,6 +28,15 @@ class Lexer
     self.pos = m.end()
   end
 
+  def read_action()
+    action = ""
+    while ((line = self.fp.readline()) != nil) && (line.rtrim() != "}")
+      action += line
+    end
+    self.read_line()
+    return action
+  end
+
   def get_next_token()
     if self.line == nil
       return nil
@@ -48,15 +57,16 @@ class Lexer
       size = m.end() - m.start() - 2
       return Token.new('terminal, self.line.slice(m.start() + 1, size).to_sym())
     end
-    { "->": 'arrow, "@": 'at }.each() do [key, value]
-      if self.line.slice(self.pos, key.size) == key
-        self.pos += key.size
-        return Token.new(value)
+    { "->": 'arrow, "@": 'at, ":": 'colon }.each() do [key, value]
+      if self.line.slice(self.pos, key.size) != key
+        next
       end
+      self.pos += key.size
+      return Token.new(value)
     end
-    if self.line[0] == "{"
-      self.pos += 1
-      return Token.new('action)
+    if self.line[self.pos] == "{"
+      self.pos = 0
+      return Token.new('action, self.read_action())
     end
   end
 end
