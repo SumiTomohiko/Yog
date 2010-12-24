@@ -13,11 +13,18 @@ class Lexer
     self.fp = fp
     self.line = ""
     self.pos = 0
+    self.lineno = 0
+    self.ungotten_token = nil
+  end
+
+  def increment_lineno()
+    self.lineno += 1
   end
 
   def read_line()
     self.line = self.fp.readline()
     self.pos = 0
+    self.increment_lineno()
   end
 
   def skip_whitespace()
@@ -31,13 +38,24 @@ class Lexer
   def read_action()
     action = ""
     while ((line = self.fp.readline()) != nil) && (line.rtrim() != "}")
+      self.increment_lineno()
       action += line
     end
+    self.increment_lineno()
     self.read_line()
     return action
   end
 
+  def unget_token(token)
+    self.ungotten_token = token
+  end
+
   def get_next_token()
+    if self.ungotten_token != nil
+      token = self.ungotten_token
+      self.ungotten_token = nil
+      return token
+    end
     if self.line == nil
       return nil
     end
@@ -57,7 +75,8 @@ class Lexer
       size = m.end() - m.start() - 2
       return Token.new('terminal, self.line.slice(m.start() + 1, size).to_sym())
     end
-    { "->": 'arrow, "@": 'at, ":": 'colon }.each() do [key, value]
+    tokens = { "->": 'arrow, "@": 'at, ";": 'semicolon, "|": 'bar }
+    tokens.each() do [key, value]
       if self.line.slice(self.pos, key.size) != key
         next
       end
@@ -65,19 +84,128 @@ class Lexer
       return Token.new(value)
     end
     if self.line[self.pos] == "{"
-      self.pos = 0
       return Token.new('action, self.read_action())
     end
+    raise SyntaxError.new("Invalid syntax: line {0}".format(self.lineno))
+  end
+end
+
+class GrammarSymbol
+  def init(sym)
+    self.sym = sym
+  end
+end
+
+class NonTerminal > GrammarSymbol
+end
+
+class Terminal > GrammarSymbol
+end
+
+class Node
+end
+
+class RuleNode > Node
+  def init(sym)
+    self.lhs = NonTerminal.new(sym)
+    self.rhs = []
+  end
+end
+
+class RhsNode > Node
+  def init()
+    self.syms = []
+    self.action = nil
+  end
+end
+
+class Parser
+  def init(lexer)
+    self.lexer = lexer
+    self.terminals = {}
+    self.nonterminals = {}
+  end
+
+  def unget_token(token)
+    self.lexer.unget_token(token)
+  end
+
+  def get_next_token(*expected)
+    token = self.lexer.get_next_token()
+    if (token == nil) || expected.include?(token.type)
+      return token
+    end
+    fmt = "Invalid syntax: {0} expected, but {1} at line {2}"
+    raise SyntaxError.new(fmt.format(expected, token.type, self.lexer.lineno))
+  end
+
+  def get_symbol(sym, dict, klass)
+    try
+      return dict[sym]
+    except KeyError
+    end
+    obj = klass.new(sym)
+    dict[sym] = obj
+    return obj
+  end
+
+  def get_nonterminal(sym)
+    return self.get_symbol(sym, self.nonterminals, NonTerminal)
+  end
+
+  def get_terminal(sym)
+    return self.get_symbol(sym, self.terminals, Terminal)
+  end
+
+  def parse_rhs()
+    rhs = RhsNode.new()
+    loop() do
+      token = self.get_next_token('terminal, 'nonterminal, 'action, 'bar)
+      if token.type == 'terminal
+        rhs.syms << self.get_terminal(token.value)
+        next
+      end
+      if token.type == 'nonterminal
+        rhs.syms << self.get_nonterminal(token.value)
+        next
+      end
+      if token.type == 'action
+        rhs.action = token.value
+        return rhs
+      end
+      self.unget_token(token)
+      return rhs
+    end
+  end
+
+  def parse_rule()
+    token = self.get_next_token('nonterminal)
+    rule = RuleNode.new(token.value)
+    self.get_next_token('arrow)
+    loop() do
+      rule.rhs << self.parse_rhs()
+      token = self.get_next_token('semicolon, 'bar)
+      if token.type == 'semicolon
+        return rule
+      end
+    end
+  end
+
+  def parse()
+    rules = []
+    while (token = self.get_next_token('nonterminal)) != nil
+      self.unget_token(token)
+      rules << self.parse_rule()
+    end
+    return rules
   end
 end
 
 def main(dest, src)
   File.open(src) do [fp]
-    lexer = Lexer.new(fp)
-    while (token = lexer.get_next_token()) != nil
-      puts(token)
-    end
+    nodes = Parser.new(Lexer.new(fp)).parse()
   end
+  print(nodes)
 end
 
 if __FILE__ == ARGV.get(0)
