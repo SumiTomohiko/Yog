@@ -37,6 +37,13 @@ def join(sep)
   return s
 end
 
+def extend(a)
+  a.each() do [elem]
+    self << elem
+  end
+  return self
+end
+
 def include?(obj)
   self.each() do [elem]
     # TODO: need to compare classes?
