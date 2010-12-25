@@ -42,6 +42,7 @@ struct AstVisitor {
     VisitNode visit_block;
     VisitNode visit_break;
     VisitNode visit_class;
+    VisitNode visit_conditional;
     VisitNode visit_dict;
     VisitNode visit_except;
     VisitNode visit_except_body;
@@ -379,6 +380,9 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
     case NODE_CLASS:
         VISIT(class);
         break;
+    case NODE_CONDITIONAL:
+        VISIT(conditional);
+        break;
     case NODE_DICT:
         VISIT(dict);
         break;
@@ -542,6 +546,7 @@ process_stack_top_interactive(YogEnv* env, YogVal node, YogVal data)
     case NODE_ASSIGN:
     case NODE_ATTR:
     case NODE_BINOP:
+    case NODE_CONDITIONAL:
     case NODE_LITERAL:
     case NODE_SUBSCRIPT:
     case NODE_VARIABLE:
@@ -566,6 +571,7 @@ process_stack_top_uninteractive(YogEnv* env, YogVal node, YogVal data)
     case NODE_ASSIGN:
     case NODE_ATTR:
     case NODE_BINOP:
+    case NODE_CONDITIONAL:
     case NODE_LITERAL:
     case NODE_SUBSCRIPT:
     case NODE_VARIABLE:
@@ -1087,6 +1093,16 @@ scan_var_visit_module(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     ID name = NODE(node)->u.module.name;
     register_var_as_assigned(env, data, name);
 
+    RETURN_VOID(env);
+}
+
+static void
+scan_var_visit_conditional(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    visit_node(env, visitor, NODE(node)->u.conditional.test, data);
+    visit_node(env, visitor, NODE(node)->u.conditional.true_expr, data);
+    visit_node(env, visitor, NODE(node)->u.conditional.false_expr, data);
     RETURN_VOID(env);
 }
 
@@ -1656,6 +1672,7 @@ scan_var_init_visitor(AstVisitor* visitor)
     visitor->visit_block = scan_var_visit_block;
     visitor->visit_break = scan_var_visit_break;
     visitor->visit_class = scan_var_visit_class;
+    visitor->visit_conditional = scan_var_visit_conditional;
     visitor->visit_dict = scan_var_visit_dict;
     visitor->visit_except = scan_var_visit_except;
     visitor->visit_except_body = scan_var_visit_except_body;
@@ -3500,6 +3517,28 @@ compile_visit_module(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 }
 
 static void
+compile_visit_conditional(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
+{
+    SAVE_ARGS2(env, node, data);
+    YogVal label_false = YUNDEF;
+    YogVal label_end = YUNDEF;
+    PUSH_LOCALS2(env, label_false, label_end);
+    label_false = Label_new(env);
+    label_end = Label_new(env);
+
+    visit_node(env, visitor, NODE(node)->u.conditional.test, data);
+    uint_t lineno = NODE(node)->lineno;
+    CompileData_add_jump_if_false(env, data, lineno, label_false);
+    visit_node(env, visitor, NODE(node)->u.conditional.true_expr, data);
+    CompileData_add_jump(env, data, lineno, label_end);
+    add_inst(env, data, label_false);
+    visit_node(env, visitor, NODE(node)->u.conditional.false_expr, data);
+    add_inst(env, data, label_end);
+
+    RETURN_VOID(env);
+}
+
+static void
 compile_visit_class(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
@@ -3797,6 +3836,7 @@ compile_init_visitor(AstVisitor* visitor)
     visitor->visit_block = compile_visit_block;
     visitor->visit_break = compile_visit_break;
     visitor->visit_class = compile_visit_class;
+    visitor->visit_conditional = compile_visit_conditional;
     visitor->visit_dict = compile_visit_dict;
     visitor->visit_except = compile_visit_except;
     visitor->visit_except_body = NULL;

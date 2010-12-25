@@ -54,6 +54,7 @@ enum YogNodeType {
     NODE_BLOCK_PARAM,
     NODE_BREAK,
     NODE_CLASS,
+    NODE_CONDITIONAL,
     NODE_DICT,
     NODE_DICT_ELEM,
     NODE_EXCEPT,
@@ -124,6 +125,11 @@ struct YogNode {
         struct {
             YogVal exprs;
         } break_;
+        struct {
+            YogVal test;
+            YogVal true_expr;
+            YogVal false_expr;
+        } conditional;
         struct {
             YogVal elems;
         } dict;
