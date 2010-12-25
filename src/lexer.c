@@ -1035,6 +1035,9 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
     case '@':
         RETURN_TOKEN(TK_AT);
         break;
+    case '?':
+        RETURN_TOKEN(TK_QUESTION);
+        break;
     default:
         {
             do {

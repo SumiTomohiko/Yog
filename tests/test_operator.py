@@ -739,4 +739,22 @@ end
 print(Foo.new()[26] = 42)
 """, "42")
 
+    def test_conditional_operator0(self):
+        self._test("print(true ? 42 : 26)", "42")
+
+    def test_conditional_operator10(self):
+        self._test("print(false ? 42 : 26)", "26")
+
+    def test_conditional_operator20(self):
+        self._test("print(\"foo\" == \"foo\" ? 42 : 26)", "42")
+
+    def test_conditional_operator30(self):
+        self._test("print(\"foo\" == \"bar\" ? 42 : 26)", "26")
+
+    def test_conditional_operator40(self):
+        self._test("print(true ? 42 + 26 : \"foo\")", "68")
+
+    def test_conditional_operator50(self):
+        self._test("print(true ? \"foo\" : 42 + 26)", "foo")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
