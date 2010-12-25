@@ -102,19 +102,10 @@ end
 class Terminal > GrammarSymbol
 end
 
-class Node
-end
-
-class RuleNode > Node
-  def init(sym)
-    self.lhs = NonTerminal.new(sym)
+class Rule
+  def init(lhs)
+    self.lhs = lhs
     self.rhs = []
-  end
-end
-
-class RhsNode > Node
-  def init()
-    self.syms = []
     self.action = nil
   end
 end
@@ -157,36 +148,37 @@ class Parser
     return self.get_symbol(sym, self.terminals, Terminal)
   end
 
-  def parse_rhs()
-    rhs = RhsNode.new()
+  def parse_rhs(rule)
     loop() do
       token = self.get_next_token('terminal, 'nonterminal, 'action, 'bar)
       if token.type == 'terminal
-        rhs.syms << self.get_terminal(token.value)
+        rule.rhs << self.get_terminal(token.value)
         next
       end
       if token.type == 'nonterminal
-        rhs.syms << self.get_nonterminal(token.value)
+        rule.rhs << self.get_nonterminal(token.value)
         next
       end
       if token.type == 'action
-        rhs.action = token.value
-        return rhs
+        rule.action = token.value
+        return
       end
       self.unget_token(token)
-      return rhs
+      return
     end
   end
 
   def parse_rule()
-    token = self.get_next_token('nonterminal)
-    rule = RuleNode.new(token.value)
+    lhs = self.get_nonterminal(self.get_next_token('nonterminal).value)
     self.get_next_token('arrow)
+    rules = []
     loop() do
-      rule.rhs << self.parse_rhs()
+      rule = Rule.new(lhs)
+      self.parse_rhs(rule)
+      rules << rule
       token = self.get_next_token('semicolon, 'bar)
       if token.type == 'semicolon
-        return rule
+        return rules
       end
     end
   end
@@ -195,17 +187,62 @@ class Parser
     rules = []
     while (token = self.get_next_token('nonterminal)) != nil
       self.unget_token(token)
-      rules << self.parse_rule()
+      rules.extend(self.parse_rule())
     end
     return rules
   end
 end
 
-def main(dest, src)
-  File.open(src) do [fp]
-    nodes = Parser.new(Lexer.new(fp)).parse()
+class Item
+  def init()
+    self.rule = nil
+    self.pos = 0
+    self.lookahead = Set.new()
   end
-  print(nodes)
+end
+
+class State
+  def init()
+    self.items = []
+    self.shifts = {}
+  end
+end
+
+def make_first_state(nonterm)
+  rule = Rule.new(NonTerminal.new("S'".to_sym()))
+  rule.rhs << nonterm
+  item = Item.new()
+  item.rule = rule
+  state = State.new()
+  state.items << item
+  return state
+end
+
+def compute_states(state, nonterm2rules)
+  queue = [state]
+  while 0 < queue.size
+    children = []
+    compute_lr0(queue.shift()).each() do [s]
+      children << (t = find_state(s)) != nil ? t : s
+    end
+    children.each() do [s]
+    end
+  end
+end
+
+def main(dest, src)
+  rules = File.open(src) do [fp]
+    next Parser.new(Lexer.new(fp)).parse()
+  end
+  nonterm2rules = {}
+  rules.each() do [rule]
+    try
+      nonterm2rules[rule.lhs] << rule
+    except KeyError
+      nonterm2rules[rule.lhs] = [rule]
+    end
+  end
+  compute_states(make_first_state(rules[0].lhs), nonterm2rules)
 end
 
 if __FILE__ == ARGV.get(0)
