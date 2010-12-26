@@ -22,7 +22,8 @@ DECL_AS_TYPE(YogModule_new);
 /* src/module.c */
 YOG_EXPORT void YogModule_define_classes(YogEnv*, YogVal);
 YOG_EXPORT void YogModule_define_function(YogEnv*, YogVal, YogVal, const char*, YogAPI);
-YOG_EXPORT YogVal YogModule_new(YogEnv*);
+YOG_EXPORT YogVal YogModule_new(YogEnv*, ID);
+YOG_EXPORT YogVal YogModule_of_name(YogEnv*, const char*);
 
 /* PROTOTYPE_END */
 

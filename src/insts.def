@@ -210,8 +210,7 @@ inst make_module
 (...) depth: 2
 {
     YogHandle* h_code = YogHandle_REGISTER(env, code);
-    YogVal module = YogModule_new(env);
-    PTR_AS(YogModule, module)->name = name;
+    YogVal module = YogModule_new(env, name);
     push(env, module);
 
     set_lhs_composition(env, 1, 0, 0);

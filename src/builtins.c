@@ -21,6 +21,7 @@
 #include "yog/frame.h"
 #include "yog/get_args.h"
 #include "yog/misc.h"
+#include "yog/module.h"
 #include "yog/object.h"
 #include "yog/package.h"
 #include "yog/parser.h"
@@ -340,6 +341,13 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
     REGISTER_CLASS(eValueError);
     REGISTER_CLASS(eWindowsError);
 #undef REGISTER_CLASS
+#define REGISTER_MODULE(m) do { \
+    YogVal mod = env->vm->m; \
+    ID name = PTR_AS(YogModule, mod)->name; \
+    YogObj_set_attr_id(env, HDL2VAL(builtins), name, mod); \
+} while (0)
+    REGISTER_MODULE(mComparable);
+#undef REGISTER_MODULE
 
     e = YogEnv_new(env);
     YogObj_set_attr(env, HDL2VAL(builtins), "ENV", e);

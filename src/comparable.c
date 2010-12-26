@@ -151,7 +151,7 @@ YogComparable_define_classes(YogEnv* env, YogVal pkg)
     PUSH_LOCAL(env, mComparable);
     YogVM* vm = env->vm;
 
-    mComparable = YogModule_new(env);
+    mComparable = YogModule_of_name(env, "Comparable");
 #define DEFINE_FUNCTION(name, f)    do { \
     YogModule_define_function(env, mComparable, pkg, (name), (f)); \
 } while (0)

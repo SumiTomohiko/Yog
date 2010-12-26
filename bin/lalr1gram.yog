@@ -97,9 +97,15 @@ class GrammarSymbol
 end
 
 class NonTerminal > GrammarSymbol
+  def to_s()
+    return self.sym.to_s()
+  end
 end
 
 class Terminal > GrammarSymbol
+  def to_s()
+    return "<{0}>".format(self.sym)
+  end
 end
 
 class Rule
@@ -201,10 +207,31 @@ class Item
   end
 end
 
+@include(Comparable)
 class State
   def init()
     self.items = []
     self.shifts = {}
+    self.id = nil
+  end
+
+  def get_thru()
+    item = self.items[0]
+    return item.rule.rhs[item.pos - 1]
+  end
+
+  thru = property(get_thru)
+
+  def <=>(state)
+    if self.items.size != state.items.size
+      return false
+    end
+    self.items.size.times() do [i]
+      if self.items[i].rule != state.items[i].rule
+        return false
+      end
+    end
+    return true
   end
 end
 
@@ -218,15 +245,151 @@ def make_first_state(nonterm)
   return state
 end
 
+def compute_item_from_kernel(item)
+  if item.rule.rhs.size <= item.pos
+    return nil
+  end
+  i = Item.new()
+  i.rule = item.rule
+  i.pos = item.pos + 1
+  return i
+end
+
+def compute_items_from_nonkernel(item, nonterm2rules)
+  sym = item.rule.rhs[item.pos - 1]
+  if sym.kind_of?(Terminal)
+    return []
+  end
+  items = []
+  nonterm2rules[sym].each() do [rule]
+    if rule.rhs.size < 1
+      next
+    end
+    i = Item.new()
+    i.rule = rule
+    i.pos = 1
+    items << i
+  end
+  return items
+end
+
+def group_items_by_sym(items, d)
+  items.each() do [item]
+    sym = item.rule.rhs[item.pos - 1]
+    try
+      d[sym] << item
+    except KeyError
+      d[sym] = [item]
+    end
+  end
+end
+
+def compute_lr(state, nonterm2rules)
+  queue = []
+  state.items.each() do [item]
+    i = compute_item_from_kernel(item)
+    if i == nil
+      next
+    end
+    queue << i
+  end
+  sym2items = {}
+  group_items_by_sym(queue, sym2items)
+  while 0 < queue.size
+    a = compute_items_from_nonkernel(queue.shift(), nonterm2rules)
+    group_items_by_sym(a, sym2items)
+    queue.extend(a)
+  end
+  states = []
+  sym2items.each() do [_, items]
+    state = State.new()
+    state.items = items
+    states << state
+  end
+  return states
+end
+
+def find_state(sym2states, state)
+  try
+    states = sym2states[state.thru]
+  except KeyError
+    return nil
+  end
+  states.each() do [s]
+    if s != state
+      next
+    end
+    return s
+  end
+  return nil
+end
+
 def compute_states(state, nonterm2rules)
+  sym2states = {}
   queue = [state]
   while 0 < queue.size
     children = []
-    compute_lr0(queue.shift()).each() do [s]
-      children << (t = find_state(s)) != nil ? t : s
+    parent = queue.shift()
+    compute_lr(parent, nonterm2rules).each() do [s]
+      t = find_state(sym2states, s)
+      if t != nil
+        children << t
+        next
+      end
+      children << s
+      queue << s
+      sym = s.thru
+      try
+        sym2states[sym] << s
+      except KeyError
+        sym2states[sym] = [s]
+      end
     end
     children.each() do [s]
+      parent.shifts[s.thru] = s
     end
+  end
+end
+
+def iterate_states(top, &block)
+  queue = [top]
+  while 0 < queue.size
+    state = queue.shift()
+    block(state)
+    state.shifts.each() do [_, state]
+      queue << state
+    end
+  end
+end
+
+def dump_state(state)
+  puts("state {0}".format(state.id))
+  state.items.each() do [item]
+    rule = item.rule
+    print("  {0} ->".format(rule.lhs.sym))
+    rule.rhs.each_with_index() do [i, sym]
+      print("{0} {1}".format(i == item.pos ? " ." : "", sym))
+    end
+    print(item.rule.rhs.size == item.pos ? " ." : "")
+  end
+  puts("")
+  puts("  shift:")
+  state.shifts.each() do [sym, state]
+    puts("    {0}: {1}".format(sym, state.id))
+  end
+end
+
+def dump_states(top)
+  iterate_states(top) do [state]
+    dump_state(state)
+  end
+end
+
+def number_states(top)
+  id = 0
+  iterate_states(top) do [state]
+    state.id = id
+    id += 1
   end
 end
 
@@ -236,13 +399,17 @@ def main(dest, src)
   end
   nonterm2rules = {}
   rules.each() do [rule]
+    sym = rule.lhs
     try
-      nonterm2rules[rule.lhs] << rule
+      nonterm2rules[sym] << rule
     except KeyError
-      nonterm2rules[rule.lhs] = [rule]
+      nonterm2rules[sym] = [rule]
     end
   end
-  compute_states(make_first_state(rules[0].lhs), nonterm2rules)
+  top_state = make_first_state(rules[0].lhs)
+  compute_states(top_state, nonterm2rules)
+  number_states(top_state)
+  dump_states(top_state)
 end
 
 if __FILE__ == ARGV.get(0)

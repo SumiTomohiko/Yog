@@ -22,6 +22,14 @@ def slice(pos, len=nil)
   return a
 end
 
+def each_with_index(&block)
+  i = 0
+  self.each() do [elem]
+    block(i, elem)
+    i += 1
+  end
+end
+
 def join(sep)
   s = ""
   i = 0

@@ -22,7 +22,7 @@ alloc(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogModule_new(YogEnv* env)
+YogModule_new(YogEnv* env, ID name)
 {
     SAVE_LOCALS(env);
     YogVal module = YUNDEF;
@@ -30,11 +30,19 @@ YogModule_new(YogEnv* env)
     PUSH_LOCALS2(env, module, attrs);
 
     module = alloc(env, env->vm->cModule);
+    PTR_AS(YogModule, module)->name = name;
 
     attrs = YogTable_create_symbol_table(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogObj, module), attrs, attrs);
 
     RETURN(env, module);
+}
+
+YogVal
+YogModule_of_name(YogEnv* env, const char* name)
+{
+    ID id = YogVM_intern(env, env->vm, name);
+    return YogModule_new(env, id);
 }
 
 void
