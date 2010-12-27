@@ -7,6 +7,26 @@ def get(key, default=nil)
   end
 end
 
+def get_values()
+  values = []
+  self.each() do [_, value]
+    values << value
+  end
+  return values
+end
+
+values = property(get_values)
+
+def get_keys()
+  keys = []
+  self.each() do [key, _]
+    keys << key
+  end
+  return keys
+end
+
+keys = property(get_keys)
+
 def to_s()
   def f(obj)
     return "{...}"
