@@ -11,6 +11,7 @@
 /* src/set.c */
 YOG_EXPORT void YogSet_add(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogSet_define_classes(YogEnv*, YogVal);
+YOG_EXPORT void YogSet_eval_builtin_script(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogSet_new(YogEnv*);
 
 /* PROTOTYPE_END */

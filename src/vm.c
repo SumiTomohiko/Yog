@@ -390,6 +390,7 @@ YogVM_boot(YogEnv* env, YogVM* vm)
     YogArray_eval_builtin_script(env, vm->cArray);
     YogDict_eval_builtin_script(env, vm->cDict);
     YogObject_eval_builtin_script(env, vm->cObject);
+    YogSet_eval_builtin_script(env, vm->cSet);
     YogString_eval_builtin_script(env, vm->cString);
 
     YogHandleScope_close(env);

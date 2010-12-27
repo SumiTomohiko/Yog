@@ -1,7 +1,11 @@
+#include "yog/config.h"
 #include "yog/array.h"
+#include "yog/callable.h"
 #include "yog/class.h"
 #include "yog/dict.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
+#include "yog/misc.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -79,6 +83,35 @@ YogSet_new(YogEnv* env)
     RETURN(env, set);
 }
 
+static YogVal
+each(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* block)
+{
+    SAVE_LOCALS(env);
+    YogVal iter = YUNDEF;
+    PUSH_LOCAL(env, iter);
+    YogVal params[] = { YUNDEF };
+    PUSH_LOCALSX(env, array_sizeof(params), params);
+
+    iter = YogDict_get_iterator(env, HDL2VAL(self));
+    while (YogDictIterator_next(env, iter)) {
+        params[0] = YogDictIterator_current_key(env, iter);
+        YogCallable_call(env, HDL2VAL(block), array_sizeof(params), params);
+    }
+
+    RETURN(env, YNIL);
+}
+
+void
+YogSet_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+#if !defined(MINIYOG)
+    const char* src =
+#   include "set.inc"
+    ;
+    YogMisc_eval_source(env, VAL2HDL(env, klass), src);
+#endif
+}
+
 void
 YogSet_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -95,6 +128,11 @@ YogSet_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("add", add);
     DEFINE_METHOD("include?", include);
 #undef DEFINE_METHOD
+#define DEFINE_METHOD2(name, ...)  do { \
+    YogClass_define_method2(env, cSet, pkg, (name), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD2("each", each, "&", NULL);
+#undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter)   do { \
     YogClass_define_property(env, cSet, pkg, (name), (getter), (setter)); \
 } while (0)

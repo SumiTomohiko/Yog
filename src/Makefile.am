@@ -81,6 +81,9 @@ object.inc: object.yg yg2inc.yg
 string.inc: string.yg yg2inc.yg
 	$(YOG) yg2inc.yg string.yg $@
 
+set.inc: set.yg yg2inc.yg
+	$(YOG) yg2inc.yg set.yg $@
+
 dict.inc: dict.yg yg2inc.yg
 	$(YOG) yg2inc.yg dict.yg $@
 

@@ -1,0 +1,10 @@
+
+def to_a()
+  a = []
+  self.each() do [elem]
+    a << elem
+  end
+  return a
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
