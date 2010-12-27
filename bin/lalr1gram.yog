@@ -244,6 +244,7 @@ end
 def make_first_state(rule)
   item = Item.new()
   item.rule = rule
+  item.lookahead.add(Terminal.new("$".to_sym()))
   state = State.new()
   state.items << item
   return state
@@ -367,6 +368,7 @@ def dump_state(state)
       print("{0} {1}".format(i == item.pos ? " ." : "", sym))
     end
     print(item.rule.rhs.size == item.pos ? " ." : "")
+    print(", {0}".format(item.lookahead.to_a().join("/")))
   end
   puts("")
   puts("  shift:")
