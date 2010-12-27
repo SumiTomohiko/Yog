@@ -97,6 +97,12 @@ class GrammarSymbol
 end
 
 class NonTerminal > GrammarSymbol
+  def init(sym)
+    super(sym)
+    self.nullable? = false
+    self.first = Set.new()
+  end
+
   def to_s()
     return self.sym.to_s()
   end
@@ -235,9 +241,7 @@ class State
   end
 end
 
-def make_first_state(nonterm)
-  rule = Rule.new(NonTerminal.new("S'".to_sym()))
-  rule.rhs << nonterm
+def make_first_state(rule)
   item = Item.new()
   item.rule = rule
   state = State.new()
@@ -326,10 +330,12 @@ end
 
 def compute_states(state, nonterm2rules)
   sym2states = {}
-  queue = [state]
-  while 0 < queue.size
+  states = [state]
+  pos = 0
+  while pos < states.size
     children = []
-    parent = queue.shift()
+    parent = states[pos]
+    pos += 1
     compute_lr(parent, nonterm2rules).each() do [s]
       t = find_state(sym2states, s)
       if t != nil
@@ -337,7 +343,7 @@ def compute_states(state, nonterm2rules)
         next
       end
       children << s
-      queue << s
+      states << s
       sym = s.thru
       try
         sym2states[sym] << s
@@ -349,17 +355,7 @@ def compute_states(state, nonterm2rules)
       parent.shifts[s.thru] = s
     end
   end
-end
-
-def iterate_states(top, &block)
-  queue = [top]
-  while 0 < queue.size
-    state = queue.shift()
-    block(state)
-    state.shifts.each() do [_, state]
-      queue << state
-    end
-  end
+  return states
 end
 
 def dump_state(state)
@@ -379,24 +375,98 @@ def dump_state(state)
   end
 end
 
-def dump_states(top)
-  iterate_states(top) do [state]
+def dump_states(states)
+  states.each() do [state]
     dump_state(state)
   end
 end
 
-def number_states(top)
+def number_states(states)
   id = 0
-  iterate_states(top) do [state]
+  states.each() do [state]
     state.id = id
     id += 1
   end
 end
 
-def main(dest, src)
-  rules = File.open(src) do [fp]
-    next Parser.new(Lexer.new(fp)).parse()
+def compute_lookahead(states)
+  updated = true
+  while updated
+    updated = false
+    states.each() do [state]
+      # TODO
+    end
   end
+end
+
+def compute_nullable(rules)
+  updated? = true
+  while updated?
+    updated? = false
+    rules.each() do [rule]
+      nullable? = true
+      rule.rhs.each() do [sym]
+        if sym.kind_of?(NonTerminal) && sym.nullable?
+          next
+        end
+        nullable? = false
+        break
+      end
+      if !nullable? || rule.lhs.nullable?
+        next
+      end
+      rule.lhs.nullable? = true
+      updated? = true
+    end
+  end
+end
+
+def compute_first(rules)
+  updated? = true
+  while updated?
+    updated? = false
+    rules.each() do [rule]
+      rule.rhs.each() do [sym]
+        first = rule.lhs.first
+        if sym.kind_of?(Terminal)
+          if !first.include?(sym)
+            first.add(sym)
+            updated? = true
+          end
+          break
+        end
+        sym.first.each() do [term]
+          if first.include?(term)
+            next
+          end
+          first.add(term)
+          updated? = true
+        end
+        if !sym.nullable?
+          break
+        end
+      end
+    end
+  end
+end
+
+def dump_nonterminals(nonterms)
+  puts("NonTerminal")
+  nonterms.each() do [nonterm]
+    puts("{0}:".format(nonterm))
+    puts("  nullable?: {0}".format(nonterm.nullable?))
+    puts("  first: {0}".format(nonterm.first.to_a().join(" ")))
+    puts("")
+  end
+end
+
+def make_initial_rule(nonterm)
+  rule = Rule.new(NonTerminal.new("S'".to_sym()))
+  rule.rhs << nonterm
+  return rule
+end
+
+def make_nonterm2rules(rules)
   nonterm2rules = {}
   rules.each() do [rule]
     sym = rule.lhs
@@ -406,10 +476,22 @@ def main(dest, src)
       nonterm2rules[sym] = [rule]
     end
   end
-  top_state = make_first_state(rules[0].lhs)
-  compute_states(top_state, nonterm2rules)
-  number_states(top_state)
-  dump_states(top_state)
+  return nonterm2rules
+end
+
+def main(dest, src)
+  rules = File.open(src) do [fp]
+    next Parser.new(Lexer.new(fp)).parse()
+  end
+  rules.unshift(make_initial_rule(rules[0].lhs))
+  compute_nullable(rules)
+  compute_first(rules)
+  nonterm2rules = make_nonterm2rules(rules)
+  dump_nonterminals(nonterm2rules.keys)
+  states = compute_states(make_first_state(rules[0]), nonterm2rules)
+  number_states(states)
+  dump_states(states)
+  compute_lookahead(states)
 end
 
 if __FILE__ == ARGV.get(0)
