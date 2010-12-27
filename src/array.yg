@@ -34,11 +34,10 @@ def join(sep)
   s = ""
   i = 0
   self.each() do [elem]
-    nonlocal i
     if 0 < i
       s << sep
     end
-    s << elem
+    s << elem.to_s()
     i += 1
   end
 
