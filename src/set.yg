@@ -1,10 +1,23 @@
 
+def copy()
+  set = Set.new()
+  set.extend(self)
+  return set
+end
+
 def to_a()
   a = []
   self.each() do [elem]
     a << elem
   end
   return a
+end
+
+def extend(set)
+  set.each() do [elem]
+    set.add(elem)
+  end
+  return self
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
