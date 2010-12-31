@@ -210,6 +210,7 @@ class Item
     self.rule = nil
     self.pos = 0
     self.lookahead = Set.new()
+    self.shifted_from = nil
   end
 end
 
@@ -241,13 +242,48 @@ class State
   end
 end
 
-def make_first_state(rule)
+def make_empty_items_of_rule(rule, pos, nonterm2rules)
+  if rule.rhs.size <= pos
+    return []
+  end
+  sym = rule.rhs[pos]
+  if sym.kind_of?(Terminal)
+    return []
+  end
+  items = []
+  nonterm2rules[sym].each() do [r]
+    if 0 < r.rhs.size
+      items.extend(make_empty_items_of_rule(r, 0, nonterm2rules))
+      next
+    end
+    i = Item.new()
+    i.rule = r
+    items << i
+  end
+  return items
+end
+
+def make_empty_items(items, nonterm2rules)
+  empty_items = []
+  items.each() do [item]
+    a = make_empty_items_of_rule(item.rule, item.pos, nonterm2rules)
+    empty_items.extend(a)
+  end
+  return empty_items
+end
+
+def make_state(items, nonterm2rules)
+  state = State.new()
+  state.items.extend(items)
+  state.items.extend(make_empty_items(items, nonterm2rules))
+  return state
+end
+
+def make_first_state(rule, nonterm2rules)
   item = Item.new()
   item.rule = rule
   item.lookahead.add(Terminal.new("$".to_sym()))
-  state = State.new()
-  state.items << item
-  return state
+  return make_state([item], nonterm2rules)
 end
 
 def compute_item_from_kernel(item)
@@ -257,6 +293,7 @@ def compute_item_from_kernel(item)
   i = Item.new()
   i.rule = item.rule
   i.pos = item.pos + 1
+  i.shifted_from = 'kernel
   return i
 end
 
@@ -273,6 +310,7 @@ def compute_items_from_nonkernel(item, nonterm2rules)
     i = Item.new()
     i.rule = rule
     i.pos = 1
+    i.shifted_from = 'nonkernel
     items << i
   end
   return items
@@ -306,10 +344,8 @@ def compute_lr(state, nonterm2rules)
     queue.extend(a)
   end
   states = []
-  sym2items.each() do [_, items]
-    state = State.new()
-    state.items = items
-    states << state
+  sym2items.values.each() do [items]
+    states << make_state(items, nonterm2rules)
   end
   return states
 end
@@ -368,7 +404,7 @@ def dump_state(state)
       print("{0} {1}".format(i == item.pos ? " ." : "", sym))
     end
     print(item.rule.rhs.size == item.pos ? " ." : "")
-    print(", {0}".format(item.lookahead.to_a().join("/")))
+    puts(", {0}".format(item.lookahead.to_a().join("/")))
   end
   puts("")
   puts("  shift:")
@@ -391,12 +427,145 @@ def number_states(states)
   end
 end
 
+def compute_first_of_rule(rule, pos)
+  first = Set.new()
+  n = pos
+  rhs = rule.rhs
+  while n < rhs.size
+    sym = rhs[n]
+    if sym.kind_of?(Terminal)
+      first.add(sym)
+      return first
+    end
+    first.extend(sym.first)
+    if !sym.nullable?
+      return first
+    end
+    n += 1
+  end
+  return first
+end
+
+def nullable?(rule, pos)
+  rule.rhs.slice(pos).each() do [sym]
+    if sym.kind_of?(Terminal) || !sym.nullable?
+      return false
+    end
+  end
+  return true
+end
+
+def add_follow(follow, nonterm, terms)
+  try
+    prev_num = follow[nonterm].size
+    follow[nonterm].extend(terms)
+    return prev_num != follow[nonterm].size
+  except KeyError
+    follow[nonterm] = terms.copy()
+    return true
+  end
+end
+
+def compute_follow(state)
+  follow = {}
+  state.items.each() do [item]
+    rule = item.rule
+    rhs = rule.rhs
+    pos = item.pos
+    if rhs.size <= pos
+      next
+    end
+    if !nullable?(rule, pos + 1)
+      next
+    end
+    add_follow(follow, rhs[pos], item.lookahead)
+  end
+  states = state.shifts.values
+  states.each() do [s]
+    sym = s.thru
+    if sym.kind_of?(Terminal)
+      next
+    end
+    s.items.each() do [item]
+      syms = compute_first_of_rule(item.rule, item.pos)
+      add_follow(follow, sym, syms)
+    end
+  end
+  updated? = true
+  while updated?
+    updated? = false
+    states.each() do [s]
+      sym = s.thru
+      if sym.kind_of?(Terminal)
+        next
+      end
+      s.items.each() do [item]
+        if item.shifted_from == 'kernel
+          next
+        end
+        rule = item.rule
+        if !nullable?(rule, item.pos)
+          next
+        end
+        if add_follow(follow, sym, follow.get(rule.lhs, Set.new()))
+          updated? = true
+        end
+      end
+    end
+  end
+  return follow
+end
+
+def find_next_item(state, item)
+  if item.rule.rhs.size <= item.pos
+    return nil
+  end
+  s = state.shifts[item.rule.rhs[item.pos]]
+  s.items.each() do [i]
+    if (i.rule != item.rule) || (i.pos - 1 != item.pos)
+      next
+    end
+    return i
+  end
+end
+
+def update_set(set1, set2)
+  prev_num = set1.size
+  set1.extend(set2)
+  return set1.size != prev_num
+end
+
 def compute_lookahead(states)
-  updated = true
-  while updated
-    updated = false
+  updated? = true
+  while updated?
+    updated? = false
     states.each() do [state]
-      # TODO
+      state.items.each() do [item]
+        next_item = find_next_item(state, item)
+        if next_item == nil
+          next
+        end
+        if update_set(next_item.lookahead, item.lookahead)
+          updated? = true
+        end
+      end
+      follow = compute_follow(state)
+      state.shifts.values.each() do [s]
+        s.items.each() do [item]
+          if item.shifted_from == 'kernel
+            next
+          end
+          if update_set(item.lookahead, follow[item.rule.lhs])
+            updated? = true
+          end
+        end
+      end
+      state.items.each() do [item]
+        if 0 < item.rule.rhs.size
+          next
+        end
+        item.lookahead.extend(follow[item.rule.lhs])
+      end
     end
   end
 end
@@ -423,7 +592,7 @@ def compute_nullable(rules)
   end
 end
 
-def compute_first(rules)
+def compute_first_of_nonterminals(rules)
   updated? = true
   while updated?
     updated? = false
@@ -487,13 +656,14 @@ def main(dest, src)
   end
   rules.unshift(make_initial_rule(rules[0].lhs))
   compute_nullable(rules)
-  compute_first(rules)
+  compute_first_of_nonterminals(rules)
   nonterm2rules = make_nonterm2rules(rules)
   dump_nonterminals(nonterm2rules.keys)
-  states = compute_states(make_first_state(rules[0]), nonterm2rules)
+  first_state = make_first_state(rules[0], nonterm2rules)
+  states = compute_states(first_state, nonterm2rules)
   number_states(states)
-  dump_states(states)
   compute_lookahead(states)
+  dump_states(states)
 end
 
 if __FILE__ == ARGV.get(0)
