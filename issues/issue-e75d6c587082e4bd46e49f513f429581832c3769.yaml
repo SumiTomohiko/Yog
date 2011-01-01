@@ -1,0 +1,29 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Multiple value returned from a block
+desc: |-
+  $ cat bar.yg
+  
+  foo, bar = File.open("/dev/null") do [fp]
+    next 42, 26
+  end
+  $ src/yog-generational bar.yg
+  Traceback (most recent call last):
+    File "bar.yg", line 2, in <package>
+    File builtin, in File#open
+    File "bar.yg", line 3, in <block>
+  ValueError: number of multiple value unmatched
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-01-01 11:12:57.013922 Z
+references: []
+
+id: e75d6c587082e4bd46e49f513f429581832c3769
+log_events: 
+- - 2011-01-01 11:12:59.248815 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
