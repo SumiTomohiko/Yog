@@ -92,6 +92,7 @@ end
 
 class GrammarSymbol
   def init(sym)
+    self.id = nil
     self.sym = sym
   end
 end
@@ -116,6 +117,7 @@ end
 
 class Rule
   def init(lhs)
+    self.id = nil
     self.lhs = lhs
     self.rhs = []
     self.action = nil
@@ -127,6 +129,7 @@ class Parser
     self.lexer = lexer
     self.terminals = {}
     self.nonterminals = {}
+    self.rules = nil
   end
 
   def unget_token(token)
@@ -201,7 +204,7 @@ class Parser
       self.unget_token(token)
       rules.extend(self.parse_rule())
     end
-    return rules
+    self.rules = rules
   end
 end
 
@@ -217,9 +220,9 @@ end
 @include(Comparable)
 class State
   def init()
+    self.id = nil
     self.items = []
     self.shifts = {}
-    self.id = nil
   end
 
   def get_thru()
@@ -279,10 +282,10 @@ def make_state(items, nonterm2rules)
   return state
 end
 
-def make_first_state(rule, nonterm2rules)
+def make_first_state(rule, eof, nonterm2rules)
   item = Item.new()
   item.rule = rule
-  item.lookahead.add(Terminal.new("$".to_sym()))
+  item.lookahead.add(eof)
   return make_state([item], nonterm2rules)
 end
 
@@ -419,11 +422,9 @@ def dump_states(states)
   end
 end
 
-def number_states(states)
-  id = 0
-  states.each() do [state]
-    state.id = id
-    id += 1
+def number_array_elements(a)
+  a.each_with_index() do [index, elem]
+    elem.id = index
   end
 end
 
@@ -650,20 +651,107 @@ def make_nonterm2rules(rules)
   return nonterm2rules
 end
 
-def main(dest, src)
-  rules = File.open(src) do [fp]
-    next Parser.new(Lexer.new(fp)).parse()
+class Action
+  def init(type, subinfo=nil)
+    self.type = type
+    self.subinfo = subinfo
   end
+
+  def encode()
+    return (self.type == 'shift ? 1 : 0) + (self.subinfo << 1)
+  end
+end
+
+def compute_tables(states, rules, terms, nonterms)
+  term2act = Array.new(states.size)
+  nonterm2act = Array.new(states.size)
+  states.each() do [state]
+    term2act_state = Array.new(terms.size)
+    nonterm2act_state = Array.new(nonterms.size)
+    state.items.each() do [item]
+      if item.pos < item.rule.rhs.size
+        next
+      end
+      item.lookahead.each() do [term]
+        term2act_state[term.id] = Action.new('redule, item.rule.id)
+      end
+    end
+    state.shifts.each() do [sym, dest]
+      act = Action.new('shift, dest.id)
+      tbl = sym.kind_of?(Terminal) ? term2act_state : nonterm2act_state
+      tbl[sym.id] = act
+    end
+    term2act[state.id] = term2act_state
+    nonterm2act[state.id] = nonterm2act_state
+  end
+  rule_size = Array.new(rules.size)
+  rules.each() do [rule]
+    rule_size[rule.id] = rule.rhs.size
+  end
+  return term2act, nonterm2act, rule_size
+end
+
+def output_grammar(dest, term2act, nonterm2act, rule_size)
+  s = ""
+  term2act.each() do [a]
+    s << "["
+    a.each() do [act]
+      s << (act != nil ? act.encode() : nil).to_s() << ", "
+    end
+    s << "],\n"
+  end
+  t = ""
+  nonterm2act.each() do [a]
+    t << "["
+    a.each() do [act]
+      t << (act != nil ? act.subinfo : nil).to_s() << ", "
+    end
+    t << "],\n"
+  end
+  u = ""
+  rule_size.each() do [size]
+    u << size.to_s() << ", "
+  end
+  File.open(dest, "w") do [fp]
+    fp.write(<<EOF.format(s, t, u))
+term2act = [
+{0}
+]
+nonterm2act = [
+{1}
+]
+rule_size = [
+{2}
+]
+EOF
+  end
+end
+
+def main(dest, src)
+  parser = File.open(src) do [fp]
+    parser = Parser.new(Lexer.new(fp))
+    parser.parse()
+    next parser
+  end
+  rules = parser.rules
   rules.unshift(make_initial_rule(rules[0].lhs))
   compute_nullable(rules)
   compute_first_of_nonterminals(rules)
   nonterm2rules = make_nonterm2rules(rules)
   dump_nonterminals(nonterm2rules.keys)
-  first_state = make_first_state(rules[0], nonterm2rules)
+  eof = Terminal.new("$".to_sym())
+  first_state = make_first_state(rules[0], eof, nonterm2rules)
   states = compute_states(first_state, nonterm2rules)
-  number_states(states)
+  number_array_elements(states)
+  number_array_elements(rules)
+  terms = [eof] + parser.terminals.values
+  number_array_elements(terms)
+  nonterms = parser.nonterminals.values
+  number_array_elements(nonterms)
   compute_lookahead(states)
   dump_states(states)
+  term2act, nonterm2act, rule_size = compute_tables(states, rules, terms, nonterms)
+  output_grammar(dest, term2act, nonterm2act, rule_size)
 end
 
 if __FILE__ == ARGV.get(0)
