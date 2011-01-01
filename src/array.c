@@ -73,7 +73,7 @@ YogValArray_new(YogEnv* env, uint_t size)
     PTR_AS(YogValArray, array)->size = size;
 	uint_t i;
     for (i = 0; i < size; i++) {
-        PTR_AS(YogValArray, array)->items[i] = YUNDEF;
+        PTR_AS(YogValArray, array)->items[i] = YNIL;
     }
 
     return array;
@@ -321,6 +321,21 @@ YogArray_subscript(YogEnv* env, YogVal self, YogVal index)
 }
 
 static YogVal
+init(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* size)
+{
+    CHECK_SELF_TYPE2(env, self);
+    YogMisc_check_Fixnum(env, size, "size");
+    if (VAL2INT(HDL2VAL(size)) < 0) {
+        const char* fmt = "size must be positive, not %d";
+        YogError_raise_ValueError(env, fmt, VAL2INT(HDL2VAL(size)));
+    }
+    YogVal body = YogValArray_new(env, VAL2INT(HDL2VAL(size)));
+    YogGC_UPDATE_PTR(env, HDL_AS(YogArray, self), body, body);
+    HDL_AS(YogArray, self)->size = VAL2INT(HDL2VAL(size));
+    return HDL2VAL(self);
+}
+
+static YogVal
 subscript(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* index)
 {
     CHECK_SELF_TYPE2(env, self);
@@ -564,6 +579,7 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method2(env, cArray, pkg, (name), __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD2("[]", subscript, "index", NULL);
+    DEFINE_METHOD2("init", init, "size", NULL);
 #undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter)   do { \
     YogClass_define_property(env, cArray, pkg, (name), (getter), (setter)); \
