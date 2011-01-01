@@ -33,6 +33,9 @@ puts(a[1])
 a = []
 """, "")
 
+    def test_literal4(self):
+        self._test("print([42, ][0])", "42")
+
     def test_lshift1(self):
         self._test("""
 a = []

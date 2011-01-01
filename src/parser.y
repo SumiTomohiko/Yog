@@ -1748,7 +1748,7 @@ atom(A) ::= LINE(B). {
     YogVal val = INT2VAL(lineno);
     A = Literal_new(env, lineno, val);
 }
-atom(A) ::= LBRACKET(B) exprs(C) RBRACKET. {
+atom(A) ::= LBRACKET(B) exprs(C) comma_opt RBRACKET. {
     A = Array_new(env, NODE_LINENO(B), C);
 }
 atom(A) ::= LBRACKET(B) RBRACKET. {
