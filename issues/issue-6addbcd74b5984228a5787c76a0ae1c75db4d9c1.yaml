@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Array#to_s must be rewrite with Array#map
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-01-02 16:29:42.538202 Z
+references: []
+
+id: 6addbcd74b5984228a5787c76a0ae1c75db4d9c1
+log_events: 
+- - 2011-01-02 16:29:42.994094 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
