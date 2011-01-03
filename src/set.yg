@@ -36,4 +36,8 @@ def to_s()
   return __recurse__(self, f, g)
 end
 
+def <<(elem)
+  return self.add(elem)
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
