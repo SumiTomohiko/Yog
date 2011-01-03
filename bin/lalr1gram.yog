@@ -756,7 +756,13 @@ def decide_arg_names(rule)
   end
 end
 
-def output_grammar(dest, terms, term2act, nonterm2act, rules)
+def make_dict_entries(syms)
+  return syms.map() do [sym]
+    next "{0}.to_sym(): {1}".format(sym.sym.to_s().inspect(), sym.id)
+  end.join(", ")
+end
+
+def output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules)
   s = make_table_for_states(term2act) do [act]
     next (act != nil ? act.encode() : nil).to_s()
   end
@@ -766,9 +772,7 @@ def output_grammar(dest, terms, term2act, nonterm2act, rules)
   u = rules.map() do [rule]
     next rule.rhs.size.to_s()
   end.join(", ")
-  v = terms.map() do [term]
-    next "{0}.to_sym(): {1}".format(term.sym.to_s().inspect(), term.id)
-  end.join(", ")
+  v = make_dict_entries(terms)
   w = rules.map() do [rule]
     next rule.lhs.id.to_s()
   end.join(", ")
@@ -788,8 +792,9 @@ EOF
       next n.to_s()
     end.join(", ") + "]"
   end.join(",\n")
+  a = make_dict_entries(nonterms)
   File.open(dest, "w") do [fp]
-    fp.write(<<EOF.format(s, t, u, v, w, x, y, z))
+    fp.write(<<EOF.format(s, t, u, v, w, x, y, z, a))
 term2act = [
 {0}
 ]
@@ -801,6 +806,9 @@ rule_size = [
 ]
 terms = {{
 {3}
+}}
+nonterms = {{
+{8}
 }}
 lhs = [
 {4}
@@ -817,8 +825,11 @@ pos = [
 ]
 
 def get_action(state, type)
-  act = term2act[state][terms[type]]
-  return act & 1 == 1 ? 'shift : 'reduce, act >> 1
+  index = terms.get(type)
+  if index != nil
+    return term2act[state][index]
+  end
+  return 'reduce, nonterm2act[state][nonterms[type]]
 end
 
 def get_rule_size(rule)
@@ -867,7 +878,7 @@ def main(dest, src)
   compute_lookahead(states)
   #dump_states(states)
   term2act, nonterm2act = compute_tables(states, rules, terms, nonterms)
-  output_grammar(dest, terms, term2act, nonterm2act, rules)
+  output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules)
 end
 
 if __FILE__ == ARGV.get(0)
