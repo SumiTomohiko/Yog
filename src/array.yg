@@ -1,4 +1,12 @@
 
+def map(&block)
+  a = Array.new(self.size)
+  self.each_with_index() do [index, elem]
+    a[index] = block(elem)
+  end
+  return a
+end
+
 def slice(pos, len=nil)
   # TODO: This code is almost same as String#slice.
   if self.size <= pos
