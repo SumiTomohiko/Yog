@@ -120,6 +120,7 @@ class Rule
     self.id = nil
     self.lhs = lhs
     self.rhs = []
+    self.alias = []
     self.action = nil
   end
 end
@@ -164,14 +165,27 @@ class Parser
   end
 
   def parse_rhs(rule)
+    expected = ['terminal, 'nonterminal, 'action, 'bar]
     loop() do
-      token = self.get_next_token('terminal, 'nonterminal, 'action, 'bar)
+      token = self.get_next_token(*expected)
       if token.type == 'terminal
         rule.rhs << self.get_terminal(token.value)
+        rule.alias << nil
         next
       end
       if token.type == 'nonterminal
-        rule.rhs << self.get_nonterminal(token.value)
+        next_token = self.get_next_token(*(['at] + expected))
+        if next_token.type != 'at
+          self.unget_token(next_token)
+          rule.rhs << self.get_nonterminal(token.value)
+          rule.alias << nil
+          next
+        end
+        rule.alias << token.value
+        token = self.get_next_token('terminal, 'nonterminal)
+        type = token.type
+        getter = type == 'terminal ? self.get_terminal : self.get_nonterminal
+        rule.rhs << getter(token.value)
         next
       end
       if token.type == 'action
@@ -635,6 +649,7 @@ end
 def make_initial_rule(nonterm)
   rule = Rule.new(NonTerminal.new("S'".to_sym()))
   rule.rhs << nonterm
+  rule.alias << nil
   return rule
 end
 
@@ -684,36 +699,84 @@ def compute_tables(states, rules, terms, nonterms)
     term2act[state.id] = term2act_state
     nonterm2act[state.id] = nonterm2act_state
   end
-  rule_size = Array.new(rules.size)
-  rules.each() do [rule]
-    rule_size[rule.id] = rule.rhs.size
-  end
-  return term2act, nonterm2act, rule_size
+  return term2act, nonterm2act
 end
 
-def output_grammar(dest, term2act, nonterm2act, rule_size)
-  s = ""
-  term2act.each() do [a]
-    s << "["
-    a.each() do [act]
-      s << (act != nil ? act.encode() : nil).to_s() << ", "
+def make_table_for_states(a, &block)
+  return a.map() do [state2act]
+    next "[" + state2act.map(&block).join(", ") + "]"
+  end.join(",\n")
+end
+
+def make_func_name(rule)
+  return "action_on_reduce_at_rule{0}".format(rule.id)
+end
+
+def decide_arg_pos(rule)
+  names = Set.new()
+  pos = []
+  rule.rhs.size.times() do [i]
+    name = rule.alias[i] != nil ? rule.alias[i] : rule.rhs[i]
+    if names.include?(name)
+      pos << nil
+      next
     end
-    s << "],\n"
+    pos << names.size
+    names << name
   end
-  t = ""
-  nonterm2act.each() do [a]
-    t << "["
-    a.each() do [act]
-      t << (act != nil ? act.subinfo : nil).to_s() << ", "
+  return pos
+end
+
+def decide_arg_names(rule)
+  names = Set.new()
+  args = []
+  rule.rhs.size.times() do [i]
+    name = rule.alias[i] != nil ? rule.alias[i] : rule.rhs[i]
+    if names.include?(name)
+      next
     end
-    t << "],\n"
+    names << name
+    args << name
   end
-  u = ""
-  rule_size.each() do [size]
-    u << size.to_s() << ", "
+  return args.map() do [arg]
+    next arg.to_s()
   end
+end
+
+def output_grammar(dest, terms, term2act, nonterm2act, rules)
+  s = make_table_for_states(term2act) do [act]
+    next (act != nil ? act.encode() : nil).to_s()
+  end
+  t = make_table_for_states(nonterm2act) do [act]
+    next (act != nil ? act.subinfo : nil).to_s()
+  end
+  u = rules.map() do [rule]
+    next rule.rhs.size.to_s()
+  end.join(", ")
+  v = terms.map() do [term]
+    next "{0}.to_sym(): {1}".format(term.sym.to_s().inspect(), term.id)
+  end.join(", ")
+  w = rules.map() do [rule]
+    next rule.lhs.id.to_s()
+  end.join(", ")
+  x = rules.map(&make_func_name).join(",\n")
+  y = rules.map() do [rule]
+    args = decide_arg_names(rule)
+    body = rule.action != nil ? rule.action : "return nil"
+    next <<EOF.format(make_func_name(rule), args.join(", "), body)
+def {0}({1})
+  {2}
+end
+EOF
+  end.join("")
+  z = rules.map() do [rule]
+    pos = decide_arg_pos(rule)
+    next "[" + pos.map() do [n]
+      next n.to_s()
+    end.join(", ") + "]"
+  end.join(",\n")
   File.open(dest, "w") do [fp]
-    fp.write(<<EOF.format(s, t, u))
+    fp.write(<<EOF.format(s, t, u, v, w, x, y, z))
 term2act = [
 {0}
 ]
@@ -723,6 +786,46 @@ nonterm2act = [
 rule_size = [
 {2}
 ]
+terms = {{
+{3}
+}}
+lhs = [
+{4}
+]
+
+{6}
+
+funcs = [
+{5}
+]
+
+pos = [
+{7}
+]
+
+def get_action(state, type)
+  act = term2act[state][terms[type]]
+  return act & 1 == 1 ? 'shift : 'reduce, act >> 1
+end
+
+def get_rule_size(rule)
+  return rule_size[rule]
+end
+
+def get_next_state(state, rule)
+  return nonterm2act[state][lhs[rule]]
+end
+
+def invoke(rule, args)
+  params = []
+  args.each_with_index() do [index, arg]
+    if pos[rule][index] == nil
+      next
+    end
+    params << arg
+  end
+  return funcs[rule](*params)
+end
 EOF
   end
 end
@@ -750,8 +853,8 @@ def main(dest, src)
   number_array_elements(nonterms)
   compute_lookahead(states)
   dump_states(states)
-  term2act, nonterm2act, rule_size = compute_tables(states, rules, terms, nonterms)
-  output_grammar(dest, term2act, nonterm2act, rule_size)
+  term2act, nonterm2act = compute_tables(states, rules, terms, nonterms)
+  output_grammar(dest, terms, term2act, nonterm2act, rules)
 end
 
 if __FILE__ == ARGV.get(0)
