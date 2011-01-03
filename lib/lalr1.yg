@@ -1,4 +1,11 @@
 
+class Token
+  def init(type, value)
+    self.type = type
+    self.value = value
+  end
+end
+
 def parse(gram, get_token)
   state_stack = [0]
   stack = []
