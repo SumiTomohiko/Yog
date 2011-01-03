@@ -744,7 +744,7 @@ def decide_arg_names(rule)
   names = Set.new()
   args = []
   rule.rhs.size.times() do [i]
-    name = rule.alias[i] != nil ? rule.alias[i] : rule.rhs[i]
+    name = rule.alias[i] != nil ? rule.alias[i] : rule.rhs[i].sym
     if names.include?(name)
       next
     end
