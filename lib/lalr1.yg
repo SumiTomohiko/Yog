@@ -9,7 +9,7 @@ def parse(gram, get_token)
     act, subinfo = gram.get_action(state, type)
     if act == 'shift
       state_stack << subinfo
-      statck << token
+      stack << token
       token = get_token()
       next
     end
