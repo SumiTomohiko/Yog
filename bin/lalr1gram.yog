@@ -50,6 +50,14 @@ class Lexer
     self.ungotten_token = token
   end
 
+  def skip_comment()
+    if (m = /\*\//.search(self.line, self.pos)) == nil
+      self.read_line()
+      return self.skip_comment()
+    end
+    self.pos = m.end()
+  end
+
   def get_next_token()
     if self.ungotten_token != nil
       token = self.ungotten_token
@@ -85,6 +93,11 @@ class Lexer
     end
     if self.line[self.pos] == "{"
       return Token.new('action, self.read_action())
+    end
+    if (m = /\/\*/.match(self.line, self.pos)) != nil
+      self.pos = m.end()
+      self.skip_comment()
+      return self.get_next_token()
     end
     raise SyntaxError.new("Invalid syntax: line {0}".format(self.lineno))
   end
