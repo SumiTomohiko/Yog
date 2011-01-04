@@ -70,6 +70,20 @@ def include?(obj)
   return false
 end
 
+def zip(a)
+  ret = []
+  if self.size < a.size
+    a.each_with_index() do [index, elem]
+      ret << [self.get(index), elem]
+    end
+    return ret
+  end
+  self.each_with_index() do [index, elem]
+    ret << [elem, a.get(index)]
+  end
+  return ret
+end
+
 def to_s()
   def f(obj)
     return "[...]"
