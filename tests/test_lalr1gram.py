@@ -12,17 +12,19 @@ class TestLalr1gram(TestCase):
         assert stdout == ""
         assert stderr == ""
 
-    def do_generator_test(self, src, test_func):
-        path = self.make_temp_file(suffix=".yogg")
+    def do_lalr1gram(self, gram):
+        path = self.write_content_to_tmpfile(gram, ".yogg")
         try:
-            with open(path, "w") as fp:
-                fp.write(src)
             script = join(environ["BIN_DIR"], "lalr1gram.yog")
-            cmd = [get_command(), script, "gram.yog", path]
+            cmd = [get_command(), script, "gram.yg", path]
             proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
             proc.wait()
         finally:
             unlink(path)
+        return proc
+
+    def do_generator_test(self, src, test_func):
+        proc = self.do_lalr1gram(src)
         test_func(proc.returncode, proc.stdout.read(), proc.stderr.read())
 
     def test_basic_tokens1(self):
@@ -84,5 +86,50 @@ foo -> <bar> {
  * special comments
  */
 """, self.check_normal_lalr1gram_result)
+
+    def write_content_to_tmpfile(self, content, suffix):
+        path = self.make_temp_file(suffix=suffix)
+        try:
+            with open(path, "w") as fp:
+                fp.write(content)
+        except:
+            unlink(path)
+        return path
+
+    def do_parser_test(self, gram, src, expected):
+        self.do_lalr1gram(gram)
+        path = self.write_content_to_tmpfile(src, ".yg")
+        try:
+            proc = Popen([get_command(), path], stdout=PIPE, stderr=PIPE)
+            proc.wait()
+        finally:
+            unlink(path)
+        assert expected == proc.stdout.read()
+
+    def test_parser0(self):
+        self.do_parser_test("""
+foo -> <bar> {
+  return 42
+}
+;
+""", """
+from lalr1 import Token, parse
+import gram
+
+def get_get_token()
+  n = 0
+  def get_token()
+    nonlocal n
+    n += 1
+    if n == 1
+      return Token.new(\'bar)
+    end
+    return nil
+  end
+  return get_token
+end
+
+print(parse(gram, get_get_token()))
+""", "42")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
