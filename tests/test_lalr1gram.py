@@ -132,4 +132,88 @@ end
 print(parse(gram, get_get_token()))
 """, "42")
 
+    def test_parser10(self):
+        self.do_parser_test("""
+foo -> <bar> {
+  return bar.value
+}
+;
+""", """
+from lalr1 import Token, parse
+import gram
+
+def get_get_token()
+  n = 0
+  def get_token()
+    nonlocal n
+    n += 1
+    if n == 1
+      return Token.new(\'bar, 42)
+    end
+    return nil
+  end
+  return get_token
+end
+
+print(parse(gram, get_get_token()))
+""", "42")
+
+    def test_parser20(self):
+        self.do_parser_test("""
+foo -> <bar> <baz> {
+  return bar.value
+}
+;
+""", """
+from lalr1 import Token, parse
+import gram
+
+def get_get_token()
+  n = 0
+  def get_token()
+    nonlocal n
+    n += 1
+    if n == 1
+      return Token.new(\'bar, 42)
+    end
+    if n == 2
+      return Token.new(\'baz, 26)
+    end
+    return nil
+  end
+  return get_token
+end
+
+print(parse(gram, get_get_token()))
+""", "42")
+
+    def test_parser30(self):
+        self.do_parser_test("""
+foo -> <bar> <baz> {
+  return baz.value
+}
+;
+""", """
+from lalr1 import Token, parse
+import gram
+
+def get_get_token()
+  n = 0
+  def get_token()
+    nonlocal n
+    n += 1
+    if n == 1
+      return Token.new(\'bar, 42)
+    end
+    if n == 2
+      return Token.new(\'baz, 26)
+    end
+    return nil
+  end
+  return get_token
+end
+
+print(parse(gram, get_get_token()))
+""", "26")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
