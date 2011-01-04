@@ -1,6 +1,6 @@
 
 class Token
-  def init(type, value)
+  def init(type, value=nil)
     self.type = type
     self.value = value
   end
