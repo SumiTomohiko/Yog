@@ -333,7 +333,7 @@ tests/TestO.db
 tests/gc/Makefile
 tests/gc/Makefile.in
 tests/gc/test-mark-sweep-compact
-tests/gram.yog
+tests/gram.yg
 tests/test_package4.ilk
 tests/test_package5.ilk
 tests/test_package6.ilk
