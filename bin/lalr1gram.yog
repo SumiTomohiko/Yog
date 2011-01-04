@@ -827,7 +827,8 @@ pos = [
 def get_action(state, type)
   index = terms.get(type)
   if index != nil
-    return term2act[state][index]
+    act = term2act[state][index]
+    return act & 1 == 1 ? 'shift : 'reduce, act >> 1
   end
   return 'reduce, nonterm2act[state][nonterms[type]]
 end
