@@ -629,19 +629,25 @@ find_exception_table_entry(YogEnv* env, YogVal code, uint_t pc, uint_t* target)
 }
 
 static void
+raise_LocalJumpError(YogEnv* env, const char* what_to_do)
+{
+    YogError_raise_LocalJumpError(env, "frame to %s is lost", what_to_do);
+}
+
+static void
 detect_orphan(YogEnv* env, int status, YogVal target_frame)
 {
     YogVal frame = env->frame;
     while (IS_PTR(frame = PTR_AS(YogFrame, frame)->prev)) {
         YogFrameType type = PTR_AS(YogFrame, frame)->type;
         switch (type) {
+        case FRAME_FINISH:
         case FRAME_SCRIPT:
             if (frame == target_frame) {
                 return;
             }
             break;
         case FRAME_C:
-        case FRAME_FINISH:
             break;
         default:
             YOG_BUG(env, "invalid frame type (0x%x)", type);
@@ -661,7 +667,7 @@ detect_orphan(YogEnv* env, int status, YogVal target_frame)
         YOG_BUG(env, "invalid status (0x%x)", status);
         break;
     }
-    YogError_raise_LocalJumpError(env, "frame to %s is lost", stmt);
+    raise_LocalJumpError(env, stmt);
 }
 
 #if 0
@@ -825,6 +831,7 @@ YogEval_mainloop(YogEnv* env)
                         skip_to_c_frame(env);
                         YogEval_longjmp_to_prev_buf(env, status);
                         break;
+                    case FRAME_FINISH:
                     case FRAME_SCRIPT:
                         {
                             YogVal thread = env->thread;
@@ -835,8 +842,6 @@ YogEval_mainloop(YogEnv* env)
                                 found = TRUE;
                             }
                         }
-                        break;
-                    case FRAME_FINISH:
                         break;
                     default:
                         YOG_BUG(env, "invalid frame type (0x%x)", type);
@@ -862,7 +867,7 @@ YogEval_mainloop(YogEnv* env)
                         YOG_BUG(env, "invalid status (0x%x)", status);
                         break;
                     }
-                    YogError_raise_LocalJumpError(env, "frame to %s is lost", stmt);
+                    raise_LocalJumpError(env, stmt);
                 }
             }
             break;
