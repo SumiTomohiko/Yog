@@ -4,6 +4,10 @@ class Token
     self.type = type
     self.value = value
   end
+
+  def to_s()
+    return "<Token type={0} value={1}>".format(self.type, self.value)
+  end
 end
 
 def parse(gram, get_token)
