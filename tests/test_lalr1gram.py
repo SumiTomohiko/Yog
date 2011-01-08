@@ -334,4 +334,62 @@ end
 print(parse(gram, get_get_token()))
 """, "26")
 
+    def test_parser80(self):
+        self.do_parser_test("""
+foo -> <bar> {
+  return bar.value
+}
+    | <baz> {
+  return baz.value
+}
+;
+""", """
+from lalr1 import Token, parse
+import gram
+
+def get_get_token()
+  n = 0
+  def get_token()
+    nonlocal n
+    n += 1
+    if n == 1
+      return Token.new(\'bar, 42)
+    end
+    return nil
+  end
+  return get_token
+end
+
+print(parse(gram, get_get_token()))
+""", "42")
+
+    def test_parser90(self):
+        self.do_parser_test("""
+foo -> <bar> {
+  return bar.value
+}
+    | <baz> {
+  return baz.value
+}
+;
+""", """
+from lalr1 import Token, parse
+import gram
+
+def get_get_token()
+  n = 0
+  def get_token()
+    nonlocal n
+    n += 1
+    if n == 1
+      return Token.new(\'bar, 42)
+    end
+    return nil
+  end
+  return get_token
+end
+
+print(parse(gram, get_get_token()))
+""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
