@@ -260,15 +260,26 @@ class State
   thru = property(get_thru)
 
   def <=>(state)
-    if self.items.size != state.items.size
-      return false
+    if state == nil
+      return 1
     end
-    self.items.size.times() do [i]
-      if self.items[i].rule != state.items[i].rule
-        return false
+    diff = self.items.size - state.items.size
+    if diff != 0
+      return diff
+    end
+    self.items.zip(state.items).each() do [items]
+      (:
+      diff = items[0].rule.id - items[1].rule.id
+      if diff != 0
+        return diff
+      end
+      :)
+      diff = items[0].pos - items[1].pos
+      if diff != 0
+        return diff
       end
     end
-    return true
+    return 0
   end
 end
 
@@ -425,17 +436,19 @@ def compute_states(state, nonterm2rules)
   return states
 end
 
+def dump_item(item)
+  rule = item.rule
+  print("  {0} ->".format(rule.lhs.sym))
+  rule.rhs.each_with_index() do [i, sym]
+    print("{0} {1}".format(i == item.pos ? " ." : "", sym))
+  end
+  print(item.rule.rhs.size == item.pos ? " ." : "")
+  puts(", {0}".format(item.lookahead.to_a().join("/")))
+end
+
 def dump_state(state)
   puts("state {0}".format(state.id))
-  state.items.each() do [item]
-    rule = item.rule
-    print("  {0} ->".format(rule.lhs.sym))
-    rule.rhs.each_with_index() do [i, sym]
-      print("{0} {1}".format(i == item.pos ? " ." : "", sym))
-    end
-    print(item.rule.rhs.size == item.pos ? " ." : "")
-    puts(", {0}".format(item.lookahead.to_a().join("/")))
-  end
+  state.items.each(&dump_item)
   puts("")
   puts("  shift:")
   state.shifts.each() do [sym, state]
