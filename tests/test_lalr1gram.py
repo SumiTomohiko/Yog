@@ -13,7 +13,7 @@ class TestLalr1gram(TestCase):
         assert stderr == ""
 
     def do_lalr1gram(self, gram):
-        path = self.write_content_to_tmpfile(gram, ".yogg")
+        path = self.write_content_to_tmpfile(gram, ".yogram")
         try:
             script = join(environ["BIN_DIR"], "lalr1gram.yog")
             cmd = [get_command(), script, "gram.yg", path]
