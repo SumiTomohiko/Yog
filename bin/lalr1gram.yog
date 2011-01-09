@@ -17,6 +17,15 @@ class Lexer
     self.ungotten_token = nil
   end
 
+  def read_code()
+    code = self.line.slice(self.pos)
+    while ((line = self.read_line()) != nil) && (line.trim() != "%}")
+      code += line
+    end
+    self.read_line()
+    return code
+  end
+
   def increment_lineno()
     self.lineno += 1
   end
@@ -25,6 +34,7 @@ class Lexer
     self.line = self.fp.readline()
     self.pos = 0
     self.increment_lineno()
+    return self.line
   end
 
   def skip_whitespace()
@@ -99,6 +109,13 @@ class Lexer
       self.skip_comment()
       return self.get_next_token()
     end
+    if self.line[self.pos] == "%"
+      self.pos += 1
+      if self.line[self.pos] == "{"
+        self.pos += 1
+        return Token.new('decl, "{".to_sym())
+      end
+    end
     raise SyntaxError.new("Invalid syntax: line {0}".format(self.lineno))
   end
 end
@@ -144,6 +161,7 @@ class Parser
     self.terminals = {}
     self.nonterminals = {}
     self.rules = nil
+    self.code = ""
   end
 
   def unget_token(token)
@@ -227,7 +245,14 @@ class Parser
 
   def parse()
     rules = []
-    while (token = self.get_next_token('nonterminal)) != nil
+    while (token = self.get_next_token('decl, 'nonterminal)) != nil
+      if token.type == 'decl
+        if token.value == "{".to_sym()
+          self.code = self.lexer.read_code()
+          next
+        end
+        raise SyntaxError.new("Invalid declaration: {0}".format(token.value))
+      end
       self.unget_token(token)
       rules.extend(self.parse_rule())
     end
@@ -775,7 +800,7 @@ def make_dict_entries(syms)
   end.join(", ")
 end
 
-def output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules)
+def output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules, code)
   s = make_table_for_states(term2act) do [act]
     next (act != nil ? act.encode() : nil).to_s()
   end
@@ -806,8 +831,11 @@ EOF
     end.join(", ") + "]"
   end.join(",\n")
   a = make_dict_entries(nonterms)
+  b = code != nil ? code : ""
   File.open(dest, "w") do [fp]
-    fp.write(<<EOF.format(s, t, u, v, w, x, y, z, a))
+    fp.write(<<EOF.format(s, t, u, v, w, x, y, z, a, b))
+{9}
+
 term2act = [
 {0}
 ]
@@ -892,7 +920,7 @@ def main(dest, src)
   compute_lookahead(states)
   #dump_states(states)
   term2act, nonterm2act = compute_tables(states, rules, terms, nonterms)
-  output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules)
+  output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules, parser.code)
 end
 
 if __FILE__ == ARGV.get(0)

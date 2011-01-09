@@ -392,4 +392,19 @@ end
 print(parse(gram, get_get_token()))
 """, "42")
 
+    def test_include0(self):
+        self.do_parser_test("""
+%{
+def foo()
+  return 42
+end
+%}
+bar -> {
+}
+;
+""", """
+from gram import foo
+print(foo())
+""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
