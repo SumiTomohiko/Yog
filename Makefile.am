@@ -1,7 +1,6 @@
 
 SUBDIRS = @BDWGC_DIR@ corgi gmp libffi src ext
 ARCHIVE = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
-SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
 
 .PHONY: doc proto test test-installed test-copying test-mark-sweep \
 	test-mark-sweep-compact test-bdw test-generational vim install dist \
@@ -43,8 +42,7 @@ test-generational:
 	./run_tests
 
 vim:
-	$(mkdir_p) $(SYNTAX_DIR)
-	$(INSTALL_DATA) yog.vim $(SYNTAX_DIR)
+	cd vim && make
 
 install:
 	for d in src lib ext; do \

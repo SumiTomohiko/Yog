@@ -608,6 +608,8 @@ tools/swig/Tools/config/missing
 tools/swig/Tools/config/ylwrap
 tools/swig/swig
 vgcore.*
+vim/Makefile
+vim/Makefile.in
 yog-bdw*
 yog-copying*
 yog-generational*
