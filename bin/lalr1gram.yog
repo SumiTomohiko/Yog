@@ -93,7 +93,7 @@ class Lexer
       size = m.end() - m.start() - 2
       return Token.new('terminal, self.line.slice(m.start() + 1, size).to_sym())
     end
-    tokens = { "->": 'arrow, "@": 'at, ";": 'semicolon, "|": 'bar }
+    tokens = { ":": 'colon, "@": 'at, ";": 'semicolon, "|": 'bar }
     tokens.each() do [key, value]
       if self.line.slice(self.pos, key.size) != key
         next
@@ -230,7 +230,7 @@ class Parser
 
   def parse_rule()
     lhs = self.get_nonterminal(self.get_next_token('nonterminal).value)
-    self.get_next_token('arrow)
+    self.get_next_token('colon)
     rules = []
     loop() do
       rule = Rule.new(lhs)

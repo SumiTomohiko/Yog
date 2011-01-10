@@ -29,41 +29,41 @@ class TestLalr1gram(TestCase):
 
     def test_basic_tokens1(self):
         self.do_generator_test("""
-foo -> <bar> {
+foo : <bar> {
 }
 ;
 """, self.check_normal_lalr1gram_result)
 
     def test_basic_tokens2(self):
         self.do_generator_test("""
-foo -> bar {
+foo : bar {
 }
 ;
-bar -> <baz> {
+bar : <baz> {
 }
 ;
 """, self.check_normal_lalr1gram_result)
 
     def test_basic_tokens3(self):
         self.do_generator_test("""
-foo -> baz@<bar> {
+foo : baz@<bar> {
 }
 ;
 """, self.check_normal_lalr1gram_result)
 
     def test_basic_tokens4(self):
         self.do_generator_test("""
-foo -> baz@bar {
+foo : baz@bar {
 }
 ;
-bar -> <quux> {
+bar : <quux> {
 }
 ;
 """, self.check_normal_lalr1gram_result)
 
     def test_basic_tokens5(self):
         self.do_generator_test("""
-foo -> <bar> {
+foo : <bar> {
 }
     | <baz> {
 }
@@ -72,14 +72,14 @@ foo -> <bar> {
 
     def test_comment1(self):
         self.do_generator_test("""
-foo -> (: empty :) {
+foo : (: empty :) {
 }
 ;
 """, self.check_normal_lalr1gram_result)
 
     def test_comment2(self):
         self.do_generator_test("""
-foo -> <bar> {
+foo : <bar> {
 }
 ;
 (:
@@ -108,7 +108,7 @@ foo -> <bar> {
 
     def test_parser0(self):
         self.do_parser_test("""
-foo -> <bar> {
+foo : <bar> {
   return 42
 }
 ;
@@ -134,7 +134,7 @@ print(parse(gram, get_get_token()))
 
     def test_parser10(self):
         self.do_parser_test("""
-foo -> <bar> {
+foo : <bar> {
   return bar.value
 }
 ;
@@ -160,7 +160,7 @@ print(parse(gram, get_get_token()))
 
     def test_parser20(self):
         self.do_parser_test("""
-foo -> <bar> <baz> {
+foo : <bar> <baz> {
   return bar.value
 }
 ;
@@ -189,7 +189,7 @@ print(parse(gram, get_get_token()))
 
     def test_parser30(self):
         self.do_parser_test("""
-foo -> <bar> <baz> {
+foo : <bar> <baz> {
   return baz.value
 }
 ;
@@ -218,11 +218,11 @@ print(parse(gram, get_get_token()))
 
     def test_parser40(self):
         self.do_parser_test("""
-foo -> bar {
+foo : bar {
   return bar
 }
 ;
-bar -> <baz> {
+bar : <baz> {
   return 42
 }
 ;
@@ -248,11 +248,11 @@ print(parse(gram, get_get_token()))
 
     def test_parser50(self):
         self.do_parser_test("""
-foo -> bar {
+foo : bar {
   return bar
 }
 ;
-bar -> <baz> {
+bar : <baz> {
   return baz.value
 }
 ;
@@ -278,7 +278,7 @@ print(parse(gram, get_get_token()))
 
     def test_parser60(self):
         self.do_parser_test("""
-foo -> bar@<baz> quux@<baz> {
+foo : bar@<baz> quux@<baz> {
   return bar.value
 }
 ;
@@ -307,7 +307,7 @@ print(parse(gram, get_get_token()))
 
     def test_parser70(self):
         self.do_parser_test("""
-foo -> bar@<baz> quux@<baz> {
+foo : bar@<baz> quux@<baz> {
   return quux.value
 }
 ;
@@ -336,7 +336,7 @@ print(parse(gram, get_get_token()))
 
     def test_parser80(self):
         self.do_parser_test("""
-foo -> <bar> {
+foo : <bar> {
   return bar.value
 }
     | <baz> {
@@ -365,7 +365,7 @@ print(parse(gram, get_get_token()))
 
     def test_parser90(self):
         self.do_parser_test("""
-foo -> <bar> {
+foo : <bar> {
   return bar.value
 }
     | <baz> {
@@ -399,7 +399,7 @@ def foo()
   return 42
 end
 %}
-bar -> {
+bar : {
 }
 ;
 """, """
