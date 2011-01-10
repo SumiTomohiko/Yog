@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Extention of Yog script files must be "*.yog".
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-01-10 17:52:28.939617 Z
+references: []
+
+id: ab8341b021caaa5aed982247158d4a8b7c82a3c5
+log_events: 
+- - 2011-01-10 17:52:29.622801 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
