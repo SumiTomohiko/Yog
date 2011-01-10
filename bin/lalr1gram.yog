@@ -61,7 +61,7 @@ class Lexer
   end
 
   def skip_comment()
-    if (m = /\*\//.search(self.line, self.pos)) == nil
+    if (m = /:\)/.search(self.line, self.pos)) == nil
       self.read_line()
       return self.skip_comment()
     end
@@ -104,7 +104,7 @@ class Lexer
     if self.line[self.pos] == "{"
       return Token.new('action, self.read_action())
     end
-    if (m = /\/\*/.match(self.line, self.pos)) != nil
+    if (m = /\(\:/.match(self.line, self.pos)) != nil
       self.pos = m.end()
       self.skip_comment()
       return self.get_next_token()

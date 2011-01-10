@@ -72,7 +72,7 @@ foo -> <bar> {
 
     def test_comment1(self):
         self.do_generator_test("""
-foo -> /* empty */ {
+foo -> (: empty :) {
 }
 ;
 """, self.check_normal_lalr1gram_result)
@@ -82,9 +82,9 @@ foo -> /* empty */ {
 foo -> <bar> {
 }
 ;
-/**
- * special comments
- */
+(:
+ : special comments
+ :)
 """, self.check_normal_lalr1gram_result)
 
     def write_content_to_tmpfile(self, content, suffix):
