@@ -542,7 +542,7 @@ get(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal index = YUNDEF;
-    YogVal default_ = YUNDEF;
+    YogVal default_ = YNIL;
     YogVal c = YUNDEF;
     PUSH_LOCALS3(env, index, default_, c);
     YogCArg params[] = {
@@ -558,10 +558,7 @@ get(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     int_t n = normalize_index(env, self, VAL2INT(index));
     uint_t offset = 0;
     if (!index2offset(env, self, n, &offset)) {
-        if (!IS_UNDEF(default_)) {
-            RETURN(env, default_);
-        }
-        YogError_raise_IndexError(env, "String index out of range");
+        RETURN(env, default_);
     }
 
     c = get_at(env, self, offset);
