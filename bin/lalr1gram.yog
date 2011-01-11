@@ -31,10 +31,15 @@ class Lexer
   end
 
   def read_line()
-    self.line = self.fp.readline()
-    self.pos = 0
+    line = self.fp.readline()
     self.increment_lineno()
-    return self.line
+    if (line != nil) && (line.ltrim().get(0) == "#")
+      return self.read_line()
+    end
+
+    self.line = line
+    self.pos = 0
+    return line
   end
 
   def skip_whitespace()

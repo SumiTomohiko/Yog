@@ -70,14 +70,23 @@ foo : <bar> {
 ;
 """, self.check_normal_lalr1gram_result)
 
-    def test_comment1(self):
+    def test_singleline_comment0(self):
+        self.do_generator_test("""
+# foo
+foo : {
+}
+;
+""", self.check_normal_lalr1gram_result)
+
+
+    def test_multiline_comment0(self):
         self.do_generator_test("""
 foo : (: empty :) {
 }
 ;
 """, self.check_normal_lalr1gram_result)
 
-    def test_comment2(self):
+    def test_multiline_comment10(self):
         self.do_generator_test("""
 foo : <bar> {
 }
