@@ -4,7 +4,7 @@
 
 source <sfile>:p:h/yog.vim
 
-sy match Identifier "<[a-z_][a-z_]*>"
+sy match Identifier "<[A-Za-z_][A-Za-z0-9_]*>"
 sy match Define "%[^ ][^ ]*"
 setlocal iskeyword+={,},;,:
 sy keyword Special : { } ;
