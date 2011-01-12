@@ -247,6 +247,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogProperty_define_classes(env, builtins);
 
     YogComparable_define_classes(env, builtins);
+    YogString_define_classes(env, builtins);
 
     YogHandle* h_builtins = YogHandle_REGISTER(env, builtins);
 
@@ -270,7 +271,6 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogProcess_define_classes(env, h_builtins);
     YogRegexp_define_classes(env, builtins);
     YogSet_define_classes(env, builtins);
-    YogString_define_classes(env, builtins);
     YogSymbol_define_classes(env, builtins);
     YogThread_define_classes(env, builtins);
 
