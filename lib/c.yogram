@@ -1,0 +1,1040 @@
+
+# This grammar came from gcc-4.2-4.2.4/gc-4.2-20070719/gcc/c-parser.c.
+
+translation_unit  : external_declarations {
+}
+                  | (: empty :) {
+}
+;
+
+external_declarations : external_declaration {
+}
+                      | external_declarations external_declaration {
+}
+;
+
+external_declaration  : function_definition {
+}
+                      | declaration {
+}
+                      | asm_definition {
+}
+                      | <semicolon> {
+}
+                      | <__extension__> external_declaration {
+}
+;
+
+function_definition : declaration_specifiers_opt declarator declaration_list_opt compound_statement {
+}
+;
+
+declaration : declaration_specifiers init_declarator_list_opt <semicolon> {
+}
+;
+
+asm_definition  : simple_asm_expr <semicolon> {
+}
+;
+
+declaration_specifiers_opt  : (: empty :) {
+}
+                            | declaration_specifiers {
+}
+;
+
+declarator_opt  : (: empty :) {
+}
+                | declarator {
+}
+;
+
+declarator  : pointer_opt direct_declarator {
+}
+;
+
+compound_statement  : <lbrace> block_item_list_opt <rbrace> {
+}
+                    | <lbrace> label_declarations block_item_list <rbrace> {
+}
+;
+
+declaration_specifiers  : storage_class_specifier declaration_specifiers_opt {
+}
+                        | type_specifier declaration_specifiers_opt {
+}
+                        | type_qualifier declaration_specifiers_opt {
+}
+                        | function_specifier declaration_specifiers_opt {
+}
+                        | attributes declaration_specifiers_opt {
+}
+;
+
+declaration_list_opt  : (: empty :) {
+}
+                      | declaration_list {
+  return declaration_list
+}
+;
+
+declaration_list  : declaration {
+}
+                  | declaration_list declaration {
+}
+;
+
+init_declarator_list_opt  : (: empty :) {
+}
+                          | init_declarator_list {
+}
+;
+
+init_declarator_list  : init_declarator {
+}
+                      | init_declarator_list <comma> init_declarator {
+}
+;
+
+init_declarator : declarator simple_asm_expr_opt attributes_opt {
+}
+                | declarator simple_asm_expr_opt attributes_opt <equal> initializer {
+}
+;
+
+nested_function_definition  : declaration_specifiers declarator declaration_list_opt {
+}
+                            | compound_statement {
+}
+;
+
+storage_class_specifier : <typedef> {
+  return 'typedef
+}
+                        | <extern> {
+  return 'extern
+}
+                        | <static> {
+  return 'static
+}
+                        | <auto> {
+  return 'auto
+}
+                        | <register> {
+  return 'register
+}
+;
+
+function_specifier  : <inline> {
+}
+;
+
+type_specifier  : <void> {
+  return 'void
+}
+                | <char> {
+  return 'char
+}
+                | <short> {
+  return 'short
+}
+                | <int> {
+  return 'int
+}
+                | <long> {
+  return 'long
+}
+                | <float> {
+  return 'float
+}
+                | <double> {
+  return 'double
+}
+                | <signed> {
+  return 'signed
+}
+                | <unsigned> {
+  return 'unsigned
+}
+                | <_Bool> {
+  return '_Bool
+}
+                | <_Complex> {
+  return '_Complex
+}
+                | struct_or_union_specifier {
+  return struct_or_union_specifier
+}
+                | enum_specifier {
+  return enum_specifier
+}
+(:
+                | typedef_name {
+  return typedef_name
+}
+:)
+                | <identifier> {
+}
+;
+
+type_qualifier_opt  : (: empty :) {
+}
+                    | type_qualifier {
+}
+;
+
+type_qualifier  : <const> {
+  return 'const
+}
+                | <restrict> {
+  return 'restrict
+}
+                | <volatile> {
+  return 'volatile
+}
+;
+
+storage_class_specifier : <__thread> {
+}
+;
+
+type_specifier  : typeof_specifier {
+  return typeof_specifier
+}
+                | <_Decimal32> {
+}
+                | <_Decimal64> {
+}
+                | <_Decimal128> {
+}
+;
+
+enum_specifier  : <enum> attributes_opt identifier_opt <lbrace> enumerator_list <rbrace> attributes_opt {
+}
+                | <enum> attributes_opt identifier_opt <lbrace> enumerator_list <comma> <rbrace> attributes_opt {
+}
+                | <enum> attributes_opt <identifier> {
+}
+;
+
+identifier_opt  : (: empty :) {
+}
+                | <identifier> {
+}
+;
+
+enumerator_list : enumerator {
+  return [enumerator]
+}
+                | enumerator_list <comma> enumerator {
+  return enumerator_list + [enumerator]
+}
+;
+
+enumerator  : enumeration_constant {
+}
+            | enumeration_constant <equal> constant_expression {
+}
+;
+
+enumeration_constant  : <identifier> {
+}
+;
+
+struct_or_union_specifier : struct_or_union attributes_opt identifier_opt <lbrace> struct_contents <rbrace> attributes_opt {
+}
+                          | struct_or_union attributes_opt <identifier> {
+}
+;
+
+struct_or_union : <struct> {
+}
+                | <union> {
+}
+;
+
+struct_contents : (: empty :) {
+}
+                | struct_declaration {
+}
+                | struct_declaration_list struct_declaration {
+}
+;
+
+struct_declaration_list : struct_declaration <semicolon> {
+}
+                        | struct_declaration_list struct_declaration <semicolon> {
+}
+                        | <semicolon> {
+}
+;
+
+struct_declaration  : specifier_qualifier_list struct_declarator_list {
+}
+                    | <__extension__> struct_declaration {
+}
+                    | specifier_qualifier_list {
+}
+;
+
+specifier_qualifier_list_opt  : (: empty :) {
+}
+                              | specifier_qualifier_list {
+}
+;
+
+specifier_qualifier_list  : type_specifier specifier_qualifier_list_opt {
+}
+                          | type_qualifier specifier_qualifier_list_opt {
+}
+                          | attributes specifier_qualifier_list_opt {
+}
+;
+
+struct_declarator_list  : struct_declarator {
+}
+                        | struct_declarator_list <comma> attributes_opt struct_declarator {
+}
+;
+
+struct_declarator : declarator attributes_opt {
+}
+                  | declarator_opt <colon> constant_expression attributes_opt {
+}
+;
+
+typeof_specifier  : <typeof> <lpar> expression <rpar> {
+}
+                  | <typeof> <lpar> type_name <rpar> {
+}
+;
+
+direct_declarator : <identifier> {
+}
+                  | <lpar> attributes_opt declarator <rpar> {
+}
+(:
+                  | direct_declarator array_declarator {
+}
+:)
+                  | direct_declarator <lpar> parameter_type_list <rpar> {
+}
+                  | direct_declarator <lpar> identifier_list_opt <rpar> {
+}
+                  | direct_declarator <lpar> parameter_forward_declarations parameter_type_list_opt <rpar> {
+}
+;
+
+pointer_opt : (: empty :) {
+}
+            | pointer {
+}
+;
+
+pointer : <star> type_qualifier_list_opt {
+}
+        | <star> type_qualifier_list_opt pointer {
+}
+;
+
+type_qualifier_list_opt : (: empty :) {
+}
+                        | type_qualifier_list {
+}
+;
+
+type_qualifier_list : type_qualifier {
+}
+                    | attributes {
+}
+                    | type_qualifier_list type_qualifier {
+}
+                    | type_qualifier_list attributes {
+}
+;
+
+parameter_type_list_opt : (: empty :) {
+}
+                        | parameter_type_list {
+}
+;
+
+parameter_type_list : parameter_list {
+}
+                    | parameter_list <colon> <dots> {
+}
+;
+
+parameter_list  : parameter_declaration {
+  return [parameter_declaration]
+}
+                | parameter_list <colon> parameter_declaration {
+  return parameter_list + [parameter_declaration]
+}
+;
+
+parameter_declaration : declaration_specifiers declarator attributes_opt {
+}
+                      | declaration_specifiers abstract_declarator_opt attributes_opt {
+}
+;
+
+identifier_list_opt : (: empty :) {
+}
+                    | identifier_list {
+}
+;
+
+identifier_list : <identifier> {
+  return [identifier]
+}
+                | identifier_list <colon> <identifier> {
+  return identifier_list + [identifier]
+}
+;
+
+abstract_declarator_opt : (: empty :) {
+}
+                        | abstract_declarator {
+}
+;
+
+abstract_declarator : pointer {
+}
+                    | pointer_opt direct_abstract_declarator {
+}
+;
+
+direct_abstract_declarator_opt  : (: empty :) {
+}
+                                | direct_abstract_declarator {
+}
+;
+
+direct_abstract_declarator  : <lpar> attributes_opt abstract_declarator <rpar> {
+}
+(:
+                            | direct_abstract_declarator_opt array_declarator {
+}
+:)
+                            | direct_abstract_declarator_opt <lpar> parameter_type_list_opt <rpar> {
+}
+                            | direct_abstract_declarator_opt <lpar> parameter_forward_declarations parameter_type_list_opt <rpar> {
+}
+;
+
+parameter_forward_declarations  : parameter_list <semicolon> {
+}
+                                | parameter_forward_declarations parameter_list <semicolon> {
+}
+;
+
+asm_string_literal  : <string_literal> {
+}
+;
+
+simple_asm_expr_opt : (: empty :) {
+}
+                    | simple_asm_expr {
+}
+;
+
+simple_asm_expr : <asm> <lpar> asm_string_literal <rpar> {
+}
+;
+
+attributes_opt  : (: empty :) {
+}
+                | attributes {
+}
+;
+
+attributes  : attribute {
+}
+            | attributes attribute {
+}
+;
+
+attribute : <__attribute__> <lpar> <lpar> attribute_list <rpar> <rpar> {
+  return attribute_list
+}
+;
+
+attribute_list  : attrib {
+  return [attrib]
+}
+                | attribute_list <comma> attrib {
+  return attribute_list + [attrib]
+}
+;
+
+attrib  : (: empty :) {
+}
+        | attrib_word {
+}
+        | attrib_word <lpar> <identifier> <rpar> {
+}
+        | attrib_word <lpar> <identifier> <comma> nonempty_expr_list <rpar> {
+}
+        | attrib_word <lpar> expr_list <rpar> {
+}
+;
+
+attrib_word : <static> {
+  return 'static
+}
+            | <unsigned> {
+  return 'unsigned
+}
+            | <long> {
+  return 'long
+}
+            | <const> {
+  return 'const
+}
+            | <extern> {
+  return 'extern
+}
+            | <register> {
+  return 'register
+}
+            | <typedef> {
+  return 'typedef
+}
+            | <short> {
+  return 'short
+}
+            | <inline> {
+  return 'inline
+}
+            | <volatile> {
+  return 'volatile
+}
+            | <signed> {
+  return 'signed
+}
+            | <auto> {
+  return 'auto
+}
+            | <restrict> {
+  return 'restrict
+}
+            | <_Complex> {
+  return '_Complex
+}
+            | <__thread> {
+  return '__thread
+}
+            | <int> {
+  return 'int
+}
+            | <char> {
+  return 'char
+}
+            | <float> {
+  return 'float
+}
+            | <double> {
+  return 'double
+}
+            | <void> {
+  return 'void
+}
+            | <_Decimal32> {
+  return '_Decimal32
+}
+            | <_Decimal64> {
+  return '_Decimal64
+}
+            | <_Decimal128> {
+  return '_Decimal128
+}
+            | <_Bool> {
+  return '_Bool
+}
+;
+
+type_name : specifier_qualifier_list abstract_declarator_opt {
+}
+;
+
+initializer : assignment_expression {
+}
+            | <lbrace> initializer_list <rbrace> {
+}
+            | <lbrace> initializer_list <comma> <rbrace> {
+}
+            | <lbrace> <rbrace> {
+}
+;
+
+initializer_list  : designation_opt initializer {
+}
+                  | initializer_list <comma> designation_opt initializer {
+}
+;
+
+designation_opt : (: empty :) {
+}
+                | designation {
+  return designation
+}
+;
+
+designation : designator_list <equal> {
+}
+;
+
+designator_list : designator {
+  return [designator]
+}
+                | designator_list designator {
+  return designator_list + [designator]
+}
+;
+
+designator  : array_designator {
+}
+            | <dot> <identifier> {
+}
+;
+
+array_designator  : <lbracket> constant_expression <rbracket> {
+}
+;
+
+designation : array_designator {
+}
+            | <identifier> <semicolon> {
+}
+;
+
+array_designator  : <lbracket> constant_expression <dots> constant_expression <rbracket> {
+}
+;
+
+block_item_list_opt : (: empty :) {
+}
+                    | block_item_list {
+}
+;
+
+block_item_list : block_item {
+}
+                | block_item_list block_item {
+}
+;
+
+block_item  : nested_declaration {
+}
+            | statement {
+}
+;
+
+nested_declaration  : declaration {
+}
+                    | <__extension__> nested_declaration {
+}
+                    | nested_function_definition {
+}
+;
+
+label_declarations  : label_declaration {
+}
+                    | label_declarations label_declaration {
+}
+;
+
+label_declaration : <__label__> identifier_list <semicolon> {
+}
+;
+
+label : <identifier> <colon> attributes_opt {
+}
+      | <case> constant_expression <colon> {
+}
+      | <case> constant_expression <dots> constant_expression <colon> {
+}
+      | <default> <colon> {
+}
+;
+
+constant_expression : <constant> {
+}
+;
+
+statement : labeled_statement {
+}
+          | compound_statement {
+}
+          | expression_statement {
+}
+          | selection_statement {
+}
+          | iteration_statement {
+}
+          | jump_statement {
+}
+          | asm_statement {
+}
+;
+
+labeled_statement : label statement {
+}
+;
+
+expression_statement  : expression_opt <semicolon> {
+}
+;
+
+selection_statement : if_statement {
+}
+                    | switch_statement {
+}
+;
+
+iteration_statement : while_statement {
+}
+                    | do_statement {
+}
+                    | for_statement {
+}
+;
+
+jump_statement  : <goto> <identifier> <semicolon> {
+}
+                | <continue> <semicolon> {
+}
+                | <break> <semicolon> {
+}
+                | <return> expression_opt <semicolon> {
+}
+;
+
+jump_statement  : <goto> <star> expression <semicolon> {
+}
+;
+
+condition : <lpar> expression <rpar> {
+}
+;
+
+if_statement  : <if> <lpar> expression <rpar> statement {
+}
+              | <if> <lpar> expression <rpar> statement <else> statement {
+}
+;
+
+switch_statement  : <switch> <lpar> expression <rpar> statement {
+}
+;
+
+while_statement : <while> <lpar> expression <rpar> statement {
+}
+;
+
+do_statement  : <do> statement <while> <lpar> expression <rpar> <semicolon> {
+}
+;
+
+for_statement : <for> <lpar> expression_opt <semicolon> expression_opt <semicolon> expression_opt <rpar> statement {
+}
+              | <for> <lpar> nested_declaration expression_opt <semicolon> expression_opt <rpar> statement {
+}
+;
+
+asm_statement : <asm> type_qualifier_opt <lpar> asm_argument <rpar> <semicolon> {
+}
+;
+
+asm_argument  : asm_string_literal {
+}
+              | asm_string_literal <colon> asm_operands_opt {
+}
+              | asm_string_literal <colon> asm_operands_opt <colon> asm_operands_opt {
+}
+              | asm_string_literal <colon> asm_operands_opt <colon> asm_operands_opt <colon> asm_clobbers {
+}
+;
+
+asm_operands_opt  : (: empty :) {
+}
+                  | asm_operands {
+}
+;
+
+asm_operands  : asm_operand {
+}
+              | asm_operands <comma> asm_operand {
+}
+;
+
+asm_operand : asm_string_literal <lpar> expression <rpar> {
+}
+            | <lbracket> <identifier> <rbracket> asm_string_literal <lpar> expression <rpar> {
+}
+;
+
+asm_clobbers  : asm_string_literal {
+}
+              | asm_clobbers <comma> asm_string_literal {
+}
+;
+
+assignment_expression : conditional_expression {
+}
+                      | unary_expression assignment_operator assignment_expression {
+}
+;
+
+assignment_operator : <equal> {
+}
+                    | <star_equal> {
+}
+                    | <div_equal> {
+}
+                    | <percent_equal> {
+}
+                    | <plus_equal> {
+}
+                    | <minus_equal> {
+}
+                    | <lshift_equal> {
+}
+                    | <rshift_equal> {
+}
+                    | <and_equal> {
+}
+                    | <xor_equal> {
+}
+                    | <or_equal> {
+}
+;
+
+conditional_expression  : logical_or_expression {
+}
+                        | logical_or_expression <question> expression <colon> conditional_expression {
+}
+                        | logical_or_expression <question> <colon> conditional_expression {
+}
+;
+
+multiplicative_expression : cast_expression {
+}
+                          | multiplicative_expression <star> cast_expression {
+}
+                          | multiplicative_expression <div> cast_expression {
+}
+                          | multiplicative_expression <percent> cast_expression {
+}
+;
+
+additive_expression : multiplicative_expression {
+}
+                    | additive_expression <plus> multiplicative_expression {
+}
+                    | additive_expression <minus> multiplicative_expression {
+}
+;
+
+shift_expression  : additive_expression {
+}
+                  | shift_expression <lshift> additive_expression {
+}
+                  | shift_expression <rshift> additive_expression {
+}
+;
+
+relational_expression : shift_expression {
+}
+                      | relational_expression <less> shift_expression {
+}
+                      | relational_expression <greater> shift_expression {
+}
+                      | relational_expression <less_equal> shift_expression {
+}
+                      | relational_expression <greater_equal> shift_expression {
+}
+;
+
+equality_expression : relational_expression {
+}
+                    | equality_expression <equal_equal> relational_expression {
+}
+                    | equality_expression <not_equal> relational_expression {
+}
+;
+
+and_expression  : equality_expression {
+}
+                | and_expression <and> equality_expression {
+}
+;
+
+exclusive_or_expression : and_expression {
+}
+                        | exclusive_or_expression <xor> and_expression {
+}
+;
+
+inclusive_or_expression : exclusive_or_expression {
+}
+                        | inclusive_or_expression <or> exclusive_or_expression {
+}
+;
+
+logical_and_expression  : inclusive_or_expression {
+}
+                        | logical_and_expression <and_and> inclusive_or_expression {
+}
+;
+
+logical_or_expression : logical_and_expression {
+}
+                      | logical_or_expression <or_or> logical_and_expression {
+}
+;
+
+cast_expression : unary_expression {
+}
+                | <lpar> type_name <rpar> unary_expression {
+}
+;
+
+unary_expression  : postfix_expression {
+}
+                  | <plus_plus> unary_expression {
+}
+                  | <minus_minus> unary_expression {
+}
+                  | unary_operator cast_expression {
+}
+                  | <sizeof> unary_expression {
+}
+                  | <sizeof> <lpar> type_name <rpar> {
+}
+                  | <__alignof__> unary_expression {
+}
+                  | <__alignof__> <lpar> type_name <rpar> {
+}
+                  | <and_and> <identifier> {
+}
+;
+
+unary_operator  : <and> {
+}
+                | <star> {
+}
+                | <plus> {
+}
+                | <minus> {
+}
+                | <tilda> {
+}
+                | <not> {
+}
+                | <__extension__> {
+}
+                | <__real__> {
+}
+                | <__imag__> {
+}
+;
+
+postfix_expression  : primary_expression {
+}
+                    | postfix_expression <lbracket> expression <rbracket> {
+}
+                    | postfix_expression <lpar> argument_expression_list_opt <rpar> {
+}
+                    | postfix_expression <dot> <identifier> {
+}
+                    | postfix_expression <arrow> <identifier> {
+}
+                    | postfix_expression <plus_plus> {
+}
+                    | postfix_expression <minus_minus> {
+}
+                    | <lpar> type_name <rpar> <lbracket> initializer_list <rbracket> {
+}
+                    | <lpar> type_name <rpar> <lbracket> initializer_list <comma> <rbracket> {
+}
+;
+
+argument_expression_list_opt  : (: empty :) {
+}
+                              | argument_expression_list {
+}
+;
+
+argument_expression_list  : argument_expression {
+}
+                          | argument_expression_list <comma> argument_expression {
+}
+;
+
+argument_expression : expression {
+}
+;
+
+primary_expression  : <identifier> {
+}
+                    | <constant> {
+}
+                    | <string_literal> {
+}
+                    | <lpar> expression <rpar> {
+}
+                    | <__func__> {
+}
+                    | <__FUNCTION__> {
+}
+                    | <__PRETTY_FUNCTION__> {
+}
+                    | <lpar> compound_statement <rpar> {
+}
+                    | <__builtin_va_arg> <lpar> assignment_expression <comma> type_name <rpar> {
+}
+                    | <__builtin_offsetof> <lpar> type_name <comma> offsetof_member_designator <rpar> {
+}
+                    | <__builtin_choose_expr> <lpar> assignment_expression <comma> assignment_expression <comma> assignment_expression <rpar> {
+}
+                    | <__builtin_types_compatible_p> <lpar> type_name <comma> type_name <rpar> {
+}
+;
+
+offsetof_member_designator  : <identifier> {
+}
+                            | offsetof_member_designator <dot> <identifier> {
+}
+                            | offsetof_member_designator <lbracket> expression <rbracket> {
+}
+;
+
+expression_opt  : (: empty :) {
+}
+                | expression {
+}
+;
+
+expression  : assignment_expression {
+}
+            | expression <comma> assignment_expression {
+}
+;
+
+expr_list : (: empty :) {
+}
+          | nonempty_expr_list {
+}
+;
+
+nonempty_expr_list  : assignment_expression {
+}
+                    | nonempty_expr_list <comma> assignment_expression {
+}
+;
+
+(:
+ : vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+ :)
