@@ -1,4 +1,4 @@
-#!/usr/bin/env yog-generational
+#!/usr/bin/env yog-generational --young-heap-size=32M
 # -*- coding: utf-8 -*-
 
 class Token
@@ -645,7 +645,7 @@ def compute_lookahead(states)
           if item.shifted_from == 'kernel
             next
           end
-          if update_set(item.lookahead, follow[item.rule.lhs])
+          if update_set(item.lookahead, follow.get(item.rule.lhs, Set.new()))
             updated? = true
           end
         end
