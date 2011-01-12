@@ -1072,6 +1072,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     cString = YogClass_new(env, "String", vm->cObject);
     YogClass_define_allocator(env, cString, alloc);
     YogClass_include_module(env, cString, vm->mComparable);
+    vm->cString = cString;
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cString, pkg, (name), (f)); \
 } while (0)
@@ -1103,7 +1104,6 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_PROP("size", get_size, NULL);
 #undef DEFINE_PROP
-    vm->cString = cString;
 
     RETURN_VOID(env);
 }
