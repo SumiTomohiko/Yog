@@ -88,12 +88,12 @@ class Lexer
       return self.get_next_token()
     end
 
-    if (m = /[a-z_]+/.match(self.line, self.pos)) != nil
+    if (m = /[A-Za-z_][A-Za-z0-9_]*/.match(self.line, self.pos)) != nil
       self.pos = m.end()
       size = m.end() - m.start()
       return Token.new('nonterminal, self.line.slice(m.start(), size).to_sym())
     end
-    if (m = /<[a-z_]+>/.match(self.line, self.pos)) != nil
+    if (m = /<[A-Za-z_][A-Za-z0-9_]*>/.match(self.line, self.pos)) != nil
       self.pos = m.end()
       size = m.end() - m.start() - 2
       return Token.new('terminal, self.line.slice(m.start() + 1, size).to_sym())
@@ -157,6 +157,10 @@ class Rule
     self.rhs = []
     self.alias = []
     self.action = nil
+  end
+
+  def to_s()
+    return "<Rule {0}: {1}>".format(self.lhs, self.rhs.join(" "))
   end
 end
 
