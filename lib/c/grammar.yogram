@@ -705,9 +705,9 @@ jump_statement  : <goto> <identifier> <semicolon> {
 }
                 | <continue> <semicolon> {
 }
-                | <break> <semicolon> {
+                | break_@<break> <semicolon> {
 }
-                | <return> expression_opt <semicolon> {
+                | return_@<return> expression_opt <semicolon> {
 }
 ;
 
@@ -719,9 +719,9 @@ condition : <lpar> expression <rpar> {
 }
 ;
 
-if_statement  : <if> <lpar> expression <rpar> statement {
+if_statement  : if_@<if> <lpar> expression <rpar> statement {
 }
-              | <if> <lpar> expression <rpar> statement <else> statement {
+              | if_@<if> <lpar> expression <rpar> statement else_@<else> statement {
 }
 ;
 
@@ -729,11 +729,11 @@ switch_statement  : <switch> <lpar> expression <rpar> statement {
 }
 ;
 
-while_statement : <while> <lpar> expression <rpar> statement {
+while_statement : while_@<while> <lpar> expression <rpar> statement {
 }
 ;
 
-do_statement  : <do> statement <while> <lpar> expression <rpar> <semicolon> {
+do_statement  : do_@<do> statement while_@<while> <lpar> expression <rpar> <semicolon> {
 }
 ;
 
