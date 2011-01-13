@@ -323,7 +323,7 @@ inst load_attr
 }
 
 inst make_array
-(uint8_t size)
+(uint_t size)
 (...) depth: size
 (array)
 {

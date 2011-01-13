@@ -782,7 +782,6 @@ visit_array_elements(YogEnv* env, AstVisitor* visitor, YogVal elems, YogVal data
     YOG_ASSERT(env, BASIC_OBJ_TYPE(elems) == TYPE_ARRAY, "invalid elems type (0x%08x)", BASIC_OBJ_TYPE(elems));
 
     uint_t size = YogArray_size(env, elems);
-    YOG_ASSERT(env, size < 256, "max array size is 255");
     uint_t i;
     for (i = 0; i < size; i++) {
         YogVal elem = YogArray_at(env, elems, i);

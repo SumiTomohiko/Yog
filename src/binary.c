@@ -118,7 +118,7 @@ YogBinary_push_id(YogEnv* env, YogVal binary, ID id)
 }
 
 void
-YogBinary_push_unsigned_int(YogEnv* env, YogVal binary, uint_t n)
+YogBinary_push_uint(YogEnv* env, YogVal binary, uint_t n)
 {
     PUSH_TYPE(uint_t, n);
 }
