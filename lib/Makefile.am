@@ -1,4 +1,6 @@
 
+SUBDIRS = c
+
 DIR = $(prefix)/lib/yog/$(VERSION)
 
 install:

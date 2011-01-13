@@ -273,6 +273,9 @@ include/yog/opcodes.h
 include/yog/token.h
 installer.nsi
 lib/Makefile
+lib/Makefile.in
+lib/c/Makefile
+lib/c/Makefile.in
 libffi/Makefile
 libffi/fficonfig.h
 libffi/include/Makefile
