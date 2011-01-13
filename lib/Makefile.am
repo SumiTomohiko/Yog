@@ -1,9 +1,5 @@
 
-prefix = @prefix@
-VERSION = @PACKAGE_VERSION@
 DIR = $(prefix)/lib/yog/$(VERSION)
-install_sh = @install_sh@
-install_sh_DATA = $(install_sh) -c -m 644
 
 install:
 	mkdir -p $(DIR)

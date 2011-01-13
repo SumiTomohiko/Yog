@@ -1,5 +1,6 @@
 
-SUBDIRS = @BDWGC_DIR@ corgi gmp libffi src ext
+INSTALL_SUBDIRS = src ext lib
+SUBDIRS = @BDWGC_DIR@ corgi gmp libffi $(INSTALL_SUBDIRS)
 ARCHIVE = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 
 .PHONY: doc proto test test-installed test-copying test-mark-sweep \
@@ -45,7 +46,7 @@ vim:
 	cd vim && make
 
 install:
-	for d in src lib ext; do \
+	for d in $(INSTALL_SUBDIRS); do \
 		(cd $$d && $(MAKE) $@) \
 	done
 
