@@ -18,7 +18,7 @@ inst pop
 }
 
 inst push_const
-(uint8_t index)
+(uint_t index)
 ()
 (val)
 {
@@ -26,7 +26,7 @@ inst push_const
 }
 
 inst make_string
-(uint8_t index)
+(uint_t index)
 ()
 (val)
 {
