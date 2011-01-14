@@ -65,20 +65,19 @@ static void
 ensure_body_size(YogEnv* env, YogVal binary, uint_t needed_size)
 {
     SAVE_ARG(env, binary);
-    YogVal body = YUNDEF;
+    YogVal body = PTR_AS(YogBinary, binary)->body;
     PUSH_LOCAL(env, body);
 
-    size_t cur_size = PTR_AS(YogBinary, binary)->size;
-    if (needed_size <= cur_size) {
+    if (IS_PTR(body) && (needed_size <= PTR_AS(YogByteArray, body)->size)) {
         RETURN_VOID(env);
     }
 
     uint_t new_size = 2 * needed_size;
     YogVal new_body = YogByteArray_new(env, new_size);
     char* to = PTR_AS(YogByteArray, new_body)->items;
-    body = PTR_AS(YogBinary, binary)->body;
     if (IS_PTR(body)) {
         char* from = PTR_AS(YogByteArray, body)->items;
+        size_t cur_size = PTR_AS(YogBinary, binary)->size;
         memcpy(to, from, cur_size);
     }
     YogGC_UPDATE_PTR(env, PTR_AS(YogBinary, binary), body, new_body);
