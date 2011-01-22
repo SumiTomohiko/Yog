@@ -43,6 +43,7 @@ YOG_EXPORT void YogClass_class_init(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogClass_define_allocator(YogEnv*, YogVal, Allocator);
 YOG_EXPORT void YogClass_define_caller(YogEnv*, YogVal, Caller);
 YOG_EXPORT void YogClass_define_class_method(YogEnv*, YogVal, YogVal, const char*, YogAPI);
+YOG_EXPORT void YogClass_define_class_method2(YogEnv*, YogHandle*, YogHandle*, const char*, void*, ...);
 YOG_EXPORT void YogClass_define_descr_get_caller(YogEnv*, YogVal, YogVal (*)(YogEnv*, YogVal, YogVal, YogVal));
 YOG_EXPORT void YogClass_define_descr_get_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));
 YOG_EXPORT void YogClass_define_descr_set_executor(YogEnv*, YogVal, void (*)(YogEnv*, YogVal, YogVal, YogVal));

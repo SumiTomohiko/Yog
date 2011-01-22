@@ -369,6 +369,13 @@ to_i(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
+to_path(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    CHECK_SELF_TYPE2(env, self);
+    return YogString_to_path(env, HDL2VAL(self));
+}
+
+static YogVal
 to_sym(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     CHECK_SELF_TYPE2(env, self);
@@ -415,6 +422,18 @@ YogString_binop_add(YogEnv* env, YogHandle* self, YogHandle* s)
     STRING_SIZE(t) = size;
 
     return t;
+}
+
+static YogVal
+divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
+{
+    CHECK_SELF_TYPE2(env, self);
+    YogMisc_check_String(env, s, "s");
+
+    YogHandle* path = VAL2HDL(env, YogString_to_path(env, HDL2VAL(self)));
+    YogString_append(env, HDL2VAL(path), env->vm->path_separator);
+    YogString_append(env, HDL2VAL(path), HDL2VAL(s));
+    return HDL2VAL(path);
 }
 
 static YogVal
@@ -1051,6 +1070,20 @@ YogString_to_bin_in_default_encoding(YogEnv* env, YogHandle* self)
 }
 
 void
+YogString_change_class_to_path(YogEnv* env, YogVal self)
+{
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, self), klass, env->vm->cPath);
+}
+
+YogVal
+YogString_to_path(YogEnv* env, YogVal self)
+{
+    YogVal path = YogString_clone(env, self);
+    YogString_change_class_to_path(env, path);
+    return path;
+}
+
+void
 YogString_eval_builtin_script(YogEnv* env, YogVal klass)
 {
 #if !defined(MINIYOG)
@@ -1091,12 +1124,14 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD2("*", multiply, "n", NULL);
     DEFINE_METHOD2("+", add, "s", NULL);
+    DEFINE_METHOD2("/", divide, "s", NULL);
     DEFINE_METHOD2("<<", lshift, "s", NULL);
     DEFINE_METHOD2("<=>", ufo, "n", NULL);
     DEFINE_METHOD2("=~", search, "regexp", NULL);
     DEFINE_METHOD2("[]", subscript, "index", NULL);
     DEFINE_METHOD2("slice", slice, "pos", "|", "len", NULL);
     DEFINE_METHOD2("to_bin", to_bin, "encoding", NULL);
+    DEFINE_METHOD2("to_path", to_path, NULL);
     DEFINE_METHOD2("to_sym", to_sym, NULL);
 #undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter) do { \

@@ -48,6 +48,7 @@ YOG_EXPORT YogVal YogString_binop_lshift(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogString_binop_multiply(YogEnv*, YogHandle*, YogVal);
 YOG_EXPORT YogVal YogString_binop_search(YogEnv*, YogHandle*, YogHandle*);
 YOG_EXPORT YogVal YogString_binop_ufo(YogEnv*, YogVal, YogVal);
+YOG_EXPORT void YogString_change_class_to_path(YogEnv*, YogVal);
 YOG_EXPORT void YogString_clear(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogString_clone(YogEnv*, YogVal);
 YOG_EXPORT void YogString_define_classes(YogEnv*, YogVal);
@@ -70,6 +71,7 @@ YOG_EXPORT int_t YogString_strstr(YogEnv*, YogVal, const char*);
 YOG_EXPORT YogVal YogString_subscript(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogString_to_bin_in_default_encoding(YogEnv*, YogHandle*);
 YOG_EXPORT YogVal YogString_to_i(YogEnv*, YogVal);
+YOG_EXPORT YogVal YogString_to_path(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 

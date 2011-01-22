@@ -275,9 +275,9 @@ static void
 set_path_separator(YogEnv* env, YogHandle* builtins)
 {
     YogVal sep = YogSprintf_sprintf(env, "%c", PATH_SEPARATOR);
-    YogHandle* s = VAL2HDL(env, sep);
-    YogObj_set_attr(env, HDL2VAL(builtins), "PATH_SEPARATOR", HDL2VAL(s));
-    env->vm->path_separator = HDL2VAL(s);
+    YogVal path = YogString_to_path(env, sep);
+    env->vm->path_separator = path;
+    YogObj_set_attr(env, HDL2VAL(builtins), "PATH_SEPARATOR", path);
 }
 
 void
@@ -323,6 +323,7 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
     REGISTER_CLASS(cFile);
     REGISTER_CLASS(cInt);
     REGISTER_CLASS(cObject);
+    REGISTER_CLASS(cPath);
     REGISTER_CLASS(cPointer);
     REGISTER_CLASS(cProcess);
     REGISTER_CLASS(cRegexp);

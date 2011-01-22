@@ -49,6 +49,7 @@ struct YogVM {
     YogVal cNil;
     YogVal cObject;
     YogVal cPackage;
+    YogVal cPath;
     YogVal cPointer;
     YogVal cPointerField;
     YogVal cProcess;

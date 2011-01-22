@@ -268,6 +268,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogModule_define_classes(env, builtins);
     YogNil_define_classes(env, builtins);
     YogPackage_define_classes(env, builtins);
+    YogPath_define_classes(env, h_builtins);
     YogProcess_define_classes(env, h_builtins);
     YogRegexp_define_classes(env, builtins);
     YogSet_define_classes(env, builtins);
@@ -539,6 +540,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cNil);
     KEEP(cObject);
     KEEP(cPackage);
+    KEEP(cPath);
     KEEP(cPointer);
     KEEP(cPointerField);
     KEEP(cProcess);
@@ -679,6 +681,7 @@ YogVM_init(YogVM* vm)
     INIT(cNil);
     INIT(cObject);
     INIT(cPackage);
+    INIT(cPath);
     INIT(cPointer);
     INIT(cPointerField);
     INIT(cProcess);
@@ -1324,7 +1327,7 @@ add_current_dir_to_search_path(YogEnv* env, YogHandle* search_path)
 static void
 add_lib_dir_to_search_path(YogEnv* env, YogHandle* search_path, YogHandle* exe)
 {
-    YogHandle* dir = YogPath_dirname(env, exe);
+    YogHandle* dir = VAL2HDL(env, YogPath_dirname(env, exe));
     YogHandle* top_dir = YogPath_join(env, dir, "..");
     YogHandle* ext_dir = YogPath_join(env, top_dir, "ext");
     if (is_directory(env, ext_dir)) {
