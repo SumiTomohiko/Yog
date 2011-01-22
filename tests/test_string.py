@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from os.path import join
 from testcase import TestCase
 
 class TestString(TestCase):
@@ -753,5 +754,12 @@ print(\"foo\".rfind(\"o\", -4))
 
     def test_to_sym0(self):
         self._test("print(\"foo\".to_sym().inspect())", "\'foo")
+
+    def test_to_path0(self):
+        path = join("foo", "bar")
+        self._test("print(\"%(path)s\".to_path().dirname)" % locals(), "foo")
+
+    def test_divide0(self):
+        self._test("print((\"foo\" / \"bar\").dirname)", "foo")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
