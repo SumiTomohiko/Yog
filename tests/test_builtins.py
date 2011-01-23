@@ -8,6 +8,24 @@ from testcase import TestCase
 
 class TestBuiltins(TestCase):
 
+    def test_run_command0(self):
+        self._test("""
+status, _, _ = run_command(\"/bin/echo\")
+print(status)
+""", "0")
+
+    def test_run_command10(self):
+        self._test("""
+_, stdout, _ = run_command(\"/bin/echo\", \"foo\")
+print(stdout.rtrim())
+""", "foo")
+
+    def test_run_command20(self):
+        self._test("""
+_, _, stderr = run_command(\"/bin/sh\", \"-c\", \"/bin/echo foo >&2\")
+print(stderr.rtrim())
+""", "foo")
+
     def test_IndexError0(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):

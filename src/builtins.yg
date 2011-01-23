@@ -1,4 +1,13 @@
 
+def run_command(*cmd)
+  proc = Process.new(cmd)
+  proc.run()
+  status = proc.wait()
+  stdout = proc.stdout.read()
+  stderr = proc.stderr.read()
+  return status, stdout, stderr
+end
+
 def copy_file(src, dest)
   File.open(src, "rb") do [in]
     File.open(dest, "wb") do [out]
