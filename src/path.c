@@ -37,7 +37,7 @@ YogPath_join(YogEnv* env, YogHandle* self, const char* name)
     return path;
 }
 
-static YogVal
+YogVal
 YogPath_from_string(YogEnv* env, const char* path)
 {
     YogVal s = YogString_from_string(env, path);

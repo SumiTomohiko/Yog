@@ -131,8 +131,13 @@ static YogHandle*
 argv2args(YogEnv* env, uint_t argc, char** argv)
 {
     YogHandle* args = YogHandle_REGISTER(env, YogArray_new(env));
+    if (argc == 0) {
+        return args;
+    }
+    YogVal path = YogPath_from_string(env, argv[0]);
+    YogArray_push(env, HDL2VAL(args), path);
     uint_t i;
-    for (i = 0; i < argc; i++) {
+    for (i = 1; i < argc; i++) {
         YogVal s = YogString_from_string(env, argv[i]);
         YogArray_push(env, HDL2VAL(args), s);
     }
