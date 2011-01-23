@@ -26,6 +26,16 @@ _, _, stderr = run_command(\"/bin/sh\", \"-c\", \"/bin/echo foo >&2\")
 print(stderr.rtrim())
 """, "foo")
 
+    def test_run_command30(self):
+        self._test("""
+_, stdout, _ = run_command(\"/bin/cat\") do [stdin]
+  stdin.write(<<EOF)
+foo
+EOF
+end
+print(stdout)
+""", "foo\n")
+
     def test_IndexError0(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):

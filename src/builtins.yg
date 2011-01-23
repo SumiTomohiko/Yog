@@ -1,7 +1,11 @@
 
-def run_command(*cmd)
+def run_command(*cmd, &block=nil)
   proc = Process.new(cmd)
   proc.run()
+  if block != nil
+    block(proc.stdin)
+  end
+  proc.stdin.close()
   status = proc.wait()
   stdout = proc.stdout.read()
   stderr = proc.stderr.read()
