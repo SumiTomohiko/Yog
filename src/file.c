@@ -100,8 +100,11 @@ read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 static void
 do_close(YogEnv* env, YogVal self)
 {
-    fclose(PTR_AS(YogFile, self)->fp);
-    PTR_AS(YogFile, self)->fp = NULL;
+    if (fclose(PTR_AS(YogFile, self)->fp) == 0) {
+        PTR_AS(YogFile, self)->fp = NULL;
+        return;
+    }
+    YogError_raise_sys_err(env, errno, YUNDEF);
 }
 
 static YogVal
