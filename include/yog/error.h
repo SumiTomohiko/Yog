@@ -49,6 +49,9 @@ YOG_EXPORT void YogError_warn(YogEnv*, const char*, uint_t, const char*, ...);
         YOG_BUG(env, __VA_ARGS__); \
     } \
 } while (0)
+#   define YOG_ASSERT2(env, test)   do { \
+    YOG_ASSERT((env), (test), #test); \
+} while (0)
 #else
 #   include <stdarg.h>
 #   include <stdio.h>

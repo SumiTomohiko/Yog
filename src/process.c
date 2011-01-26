@@ -227,6 +227,7 @@ do_waitpid(YogEnv* env, YogHandle* self, int options)
          */
         return YUNDEF;
     case 0:
+        YOG_ASSERT2(env, options & WNOHANG);
         return YNIL;
     default:
         return YogVal_from_int(env, WEXITSTATUS(status));
