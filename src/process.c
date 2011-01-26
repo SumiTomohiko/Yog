@@ -215,14 +215,34 @@ get_stdin(YogEnv* env, YogHandle* self, YogHandle* pkg)
 }
 
 static YogVal
-wait_(YogEnv* env, YogHandle* self, YogHandle* pkg)
+do_waitpid(YogEnv* env, YogHandle* self, int options)
 {
     CHECK_SELF_TYPE(env, self);
     int status;
-    if (waitpid(HDL_AS(Process, self)->pid, &status, 0) == -1) {
+    switch (waitpid(HDL_AS(Process, self)->pid, &status, options)) {
+    case -1:
         YogError_raise_sys_err(env, errno, YUNDEF);
+        /**
+         * gcc claims error when the following statement doesn't exist.
+         */
+        return YUNDEF;
+    case 0:
+        return YNIL;
+    default:
+        return YogVal_from_int(env, WEXITSTATUS(status));
     }
-    return YogVal_from_int(env, WEXITSTATUS(status));
+}
+
+static YogVal
+poll(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    return do_waitpid(env, self, WNOHANG);
+}
+
+static YogVal
+wait_(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    return do_waitpid(env, self, 0);
 }
 
 void
@@ -236,6 +256,7 @@ YogProcess_define_classes(YogEnv* env, YogHandle* pkg)
     YogClass_define_method2(env, HDL2VAL(h_cProcess), HDL2VAL(pkg), (name), __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD("init", init, "args", NULL);
+    DEFINE_METHOD("poll", poll, NULL);
     DEFINE_METHOD("run", run, NULL);
     DEFINE_METHOD("wait", wait_, NULL);
 #undef DEFINE_METHOD
