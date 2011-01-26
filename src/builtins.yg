@@ -6,9 +6,12 @@ def run_command(*cmd, &block=nil)
     block(proc.stdin)
   end
   proc.stdin.close()
-  status = proc.wait()
-  stdout = proc.stdout.read()
-  stderr = proc.stderr.read()
+  stdout = ""
+  stderr = ""
+  while (status = proc.poll()) == nil
+    stdout << proc.stdout.read()
+    stderr << proc.stderr.read()
+  end
   return status, stdout, stderr
 end
 
