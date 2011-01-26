@@ -2,8 +2,10 @@
 # This grammar came from gcc-4.2-4.2.4/gc-4.2-20070719/gcc/c-parser.c.
 
 translation_unit  : external_declarations {
+  return []
 }
                   | (: empty :) {
+  return []
 }
 ;
 

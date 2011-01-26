@@ -1,0 +1,25 @@
+
+from c import parse
+
+def build_command(src)
+  cmd = ["/usr/bin/gcc", "-E", "-dD"]
+  src.each() do [header]
+    cmd.extend(["-include", header])
+  end
+  cmd << "-"
+  return cmd
+end
+
+class H2YogError > Exception
+end
+
+def h2yog(dest, src, &block)
+  cmd = build_command(src)
+  status, stdout, _ = run_command(*cmd)
+  if status != 0
+    raise H2YogError.new("failed: {0}".format(cmd.join(" ")))
+  end
+  nodes = parse(src)
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

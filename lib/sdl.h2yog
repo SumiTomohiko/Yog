@@ -1,0 +1,22 @@
+
+from h2yog import h2yog
+
+def main()
+  dest = __FILE__.dirname / "sdl.yg"
+
+  status, prefix, _ = run_command("/bin/sh", "-c", "sdl-config --prefix")
+  if status != 0
+    return 1
+  end
+  src = prefix.rtrim() / "include" / "SDL" / "SDL.h"
+
+  h2yog(dest, [src]) do [path, sym]
+    next (path =~ /\/SDL\//) != nil
+  end
+end
+
+if __FILE__ == ARGV.get(0)
+  main()
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog

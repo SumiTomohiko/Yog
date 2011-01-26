@@ -1,0 +1,22 @@
+
+import c.grammar
+import lalr1
+
+class Lexer
+  def init(src)
+    self.src = src
+    self.macros = []
+  end
+
+  def get_next_token()
+    return nil
+  end
+end
+
+def parse(src)
+  lexer = Lexer.new(src)
+  nodes = lalr1.parse(c.grammar, lexer.get_next_token)
+  return nodes + lexer.macros
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
