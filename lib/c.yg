@@ -16,7 +16,7 @@ end
 def parse(src)
   lexer = Lexer.new(src)
   nodes = lalr1.parse(c.grammar, lexer.get_next_token)
-  return nodes + lexer.macros
+  return nodes, lexer.macros
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

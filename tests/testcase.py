@@ -52,15 +52,18 @@ class TestCase(object):
             t.append(line)
         return "\n".join(t)
 
-    def run_command(self, args, stdout_path, stderr_path):
+    def run_command(self, args, stdout=None, stderr=None):
+        cmd = [get_command()] + args
+        env = environ.copy()
+        env["LANG"] = "ja_JP.UTF-8"
+        return Popen(cmd, stdin=PIPE, stdout=stdout, stderr=stderr, env=env)
+
+    def run_yog(self, args, stdout_path, stderr_path):
         stdout = open(stdout_path, "w")
         try:
             stderr = open(stderr_path, "w")
             try:
-                cmd = [get_command()] + args
-                env = environ.copy()
-                env["LANG"] = "ja_JP.UTF-8"
-                return Popen(cmd, stdin=PIPE, stdout=stdout, stderr=stderr, env=env)
+                return self.run_command(args, stdout, stderr)
             finally:
                 stderr.close()
         finally:
@@ -97,7 +100,7 @@ class TestCase(object):
         try:
             stdout_path = self.make_temp_file(prefix="stdout", suffix=ext)
             stderr_path = self.make_temp_file(prefix="stderr", suffix=ext)
-            proc = self.run_command(args, stdout_path, stderr_path)
+            proc = self.run_yog(args, stdout_path, stderr_path)
             if stdin is not None:
                 proc.stdin.write(stdin)
             proc.stdin.close()
@@ -134,7 +137,7 @@ class TestCase(object):
                 if path is not None:
                     unlink(path)
 
-    def write_source(self, path, src, encoding):
+    def write_source(self, path, src, encoding=None):
         if encoding is not None:
             import codecs
             f = codecs.open(path, "w", encoding)

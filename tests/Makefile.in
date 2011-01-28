@@ -8,7 +8,7 @@ PKGS = test_package4.$(SOEXT) test_package5.$(SOEXT) test_package6.$(SOEXT) \
        test_lib.$(SOEXT) test_Struct690.$(SOEXT) test_Struct700.$(SOEXT) \
        test_Struct720.$(SOEXT) test_Struct730.$(SOEXT) test_Struct740.$(SOEXT) \
        test_Struct705.$(SOEXT) test_Union030.$(SOEXT) test_Union040.$(SOEXT) \
-       test_Union050.$(SOEXT)
+       test_Union050.$(SOEXT) empty.$(SOEXT)
 CFLAGS = -shared -I.. -I../include -Wall -Werror -DGENERATIONAL @CFLAGS@
 LIBS = @IMPORT_LIB@
 
