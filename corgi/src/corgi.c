@@ -64,8 +64,8 @@ struct CorgiGroup {
 };
 
 struct CorgiRange {
-    CorgiUInt begin;
-    CorgiUInt end;
+    CorgiInt begin;
+    CorgiInt end;
 };
 
 static CorgiChar
@@ -2808,6 +2808,18 @@ corgi_compile(CorgiRegexp* regexp, CorgiChar* begin, CorgiChar* end, CorgiOption
 
 typedef CorgiInt (*Proc)(State*, CorgiCode*);
 
+static void
+set_group_range(State* state, CorgiRange* group, CorgiInt i)
+{
+    if (i < state->lastindex) {
+        CorgiChar* beginning = state->beginning;
+        group->begin = state->mark[2 * i] - beginning;
+        group->end = state->mark[2 * i + 1] - beginning;
+        return;
+    }
+    group->begin = group->end = -1;
+}
+
 static CorgiStatus
 do_with_state(State* state, CorgiMatch* match, CorgiRegexp* regexp, Proc proc)
 {
@@ -2824,10 +2836,9 @@ do_with_state(State* state, CorgiMatch* match, CorgiRegexp* regexp, Proc proc)
     CorgiChar* beginning = state->beginning;
     match->begin = state->start - beginning;
     match->end = state->ptr - beginning;
-    CorgiUInt i;
+    CorgiInt i;
     for (i = 0; i < regexp->groups_num; i++) {
-        groups[i].begin = state->mark[2 * i] - beginning;
-        groups[i].end = state->mark[2 * i + 1] - beginning;
+        set_group_range(state, groups + i, i);
     }
     match->groups = groups;
     return CORGI_OK;
@@ -3332,7 +3343,7 @@ corgi_group_name2id(CorgiRegexp* regexp, CorgiChar* begin, CorgiChar* end, Corgi
 }
 
 CorgiStatus
-corgi_get_group_range(CorgiMatch* match, CorgiUInt group_id, CorgiUInt* begin, CorgiUInt* end)
+corgi_get_group_range(CorgiMatch* match, CorgiUInt group_id, CorgiInt* begin, CorgiInt* end)
 {
     if (match->regexp->groups_num <= group_id) {
         return ERR_NO_SUCH_GROUP;

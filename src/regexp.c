@@ -123,7 +123,7 @@ raise_invalid_group(YogEnv* env, YogVal group)
 }
 
 static void
-get_group_range(YogEnv* env, YogVal self, int_t id, uint_t* begin, uint_t* end)
+get_group_range(YogEnv* env, YogVal self, int_t id, int_t* begin, int_t* end)
 {
     CorgiMatch* match = &PTR_AS(YogMatch, self)->corgi_match;
     if (id == 0) {
@@ -140,9 +140,12 @@ get_group_range(YogEnv* env, YogVal self, int_t id, uint_t* begin, uint_t* end)
 static YogVal
 group_num(YogEnv* env, YogHandle* self, int_t group)
 {
-    uint_t begin;
-    uint_t end;
+    int_t begin;
+    int_t end;
     get_group_range(env, HDL2VAL(self), group, &begin, &end);
+    if (begin < 0) {
+        return YNIL;
+    }
     uint_t size = end - begin;
     YogVal retval = YogString_of_size(env, size);
     YogVal s = HDL_AS(YogMatch, self)->str;
@@ -179,10 +182,13 @@ group(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* group)
 static YogVal
 start_num(YogEnv* env, YogVal self, int_t group)
 {
-    uint_t begin;
-    uint_t end;
+    int_t begin;
+    int_t end;
     get_group_range(env, self, group, &begin, &end);
-    return YogVal_from_unsigned_int(env, begin);
+    if (begin < 0) {
+        return YNIL;
+    }
+    return YogVal_from_int(env, begin);
 }
 
 static YogVal
@@ -224,10 +230,13 @@ start(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 static YogVal
 end_num(YogEnv* env, YogVal self, int_t group)
 {
-    uint_t begin;
-    uint_t end;
+    int_t begin;
+    int_t end;
     get_group_range(env, self, group, &begin, &end);
-    return YogVal_from_unsigned_int(env, end);
+    if (begin < 0) {
+        return YNIL;
+    }
+    return YogVal_from_int(env, end);
 }
 
 static YogVal

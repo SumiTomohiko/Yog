@@ -124,6 +124,9 @@ TypeError: group must be a Fixnum, String or nil, not Array
 (\"foo\" =~ /foo/).group([])
 """, stderr=test_stderr)
 
+    def test_search_op_group70(self):
+        self._test("print(/(foo)?/.match(\"bar\").group(1))", "nil")
+
     def test_search_op_start05(self):
         self._test("""
 m = \"foo\" =~ /foo/
@@ -191,6 +194,9 @@ m = \"foo\" =~ /foo/
 puts(m.start(42))
 """, stderr=test_stderr)
 
+    def test_search_op_start60(self):
+        self._test("print(/(foo)?/.match(\"bar\").start(1))", "nil")
+
     def test_search_op_end05(self):
         self._test("""
 m = \"foo\" =~ /foo/
@@ -257,6 +263,9 @@ IndexError: No such group: 42
 m = \"foo\" =~ /foo/
 puts(m.end(42))
 """, stderr=test_stderr)
+
+    def test_search_op_end60(self):
+        self._test("print(/(foo)?/.match(\"bar\").end(1))", "nil")
 
     def test_match0(self):
         self._test("print(/foo/.match(\"foo\") != nil)", "true")

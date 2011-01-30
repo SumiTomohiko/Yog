@@ -221,14 +221,17 @@ work_with_match(CorgiRegexp* regexp, CorgiMatch* match, Options* opts, const cha
         print_error("Can't get group id", status);
         return 1;
     }
-    CorgiUInt matched_begin;
-    CorgiUInt matched_end;
+    CorgiInt matched_begin;
+    CorgiInt matched_end;
     if (group_id == 0) {
         matched_begin = match->begin;
         matched_end = match->end;
     }
     else {
         corgi_get_group_range(match, group_id - 1, &matched_begin, &matched_end);
+    }
+    if (matched_begin < 0) {
+        return 0;
     }
     CorgiUInt matched_size = matched_end - matched_begin;
     char* u = (char*)alloca(6 * matched_size + 1);
