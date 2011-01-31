@@ -1,8 +1,8 @@
 
 from c import parse
 
-def build_command(headers)
-  cmd = ["/usr/bin/gcc", "-E", "-dD"]
+def build_command(headers, opts)
+  cmd = ["/usr/bin/gcc", "-E"] + opts
   headers.each() do [header]
     cmd.extend(["-include", header])
   end
@@ -13,13 +13,41 @@ end
 class H2YogError > Exception
 end
 
-def h2yog(yog, headers, so, &block)
-  cmd = build_command(headers)
-  status, stdout, _ = run_command(*cmd)
+def run_gcc(headers, opts, &block=nil)
+  cmd = build_command(headers, opts)
+  status, stdout, _ = run_command(*cmd, &block)
+  #print(stdout)
   if status != 0
     raise H2YogError.new("failed: {0}".format(cmd.join(" ")))
   end
-  nodes, macros = parse(stdout)
+  return stdout
+end
+
+def parse_to_nodes(headers)
+  nodes, macros = parse(run_gcc(headers, ["-dD"]))
+  return nodes, macros
+end
+
+def get_macros_implementation(headers, macros, &block)
+  stdout = run_gcc(headers, []) do [stdin]
+    macros.each() do [macro]
+      if !block(macro.filename, macro.name)
+        next
+      end
+      args = macro.args != nil ? "({0})".format(macro.args) : ""
+      stdin.write("{0}{1}\n".format(macro.name, args))
+    end
+  end
+  mark = "# 1 \"<stdin>\"\n"
+  pos = stdout.find(mark, stdout.find("\n"))
+  return stdout.slice(pos + mark.size).trim().split("\n")
+end
+
+def h2yog(yog, headers, so, &block)
+  nodes, macros = parse_to_nodes(headers)
+  #print(macros)
+  impls =  get_macros_implementation(headers, macros, &block)
+  print(impls)
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
