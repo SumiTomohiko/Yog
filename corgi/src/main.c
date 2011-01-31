@@ -191,7 +191,13 @@ get_group_id(CorgiRegexp* regexp, Options* opts, CorgiUInt* group_id)
     CorgiChar* begin = (CorgiChar*)alloca(sizeof(CorgiChar) * size);
     conv_utf8_to_utf32(begin, name);
     CorgiChar* end = begin + size;
-    return corgi_group_name2id(regexp, begin, end, group_id);
+    CorgiUInt id;
+    CorgiStatus status = corgi_group_name2id(regexp, begin, end, &id);
+    if (status != CORGI_OK) {
+        return 1;
+    }
+    *group_id = id + 1;
+    return CORGI_OK;
 }
 
 typedef CorgiStatus (*Worker)(CorgiMatch*, CorgiRegexp*, CorgiChar*, CorgiChar*, CorgiChar*, CorgiOptions);

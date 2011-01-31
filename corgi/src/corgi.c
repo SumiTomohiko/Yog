@@ -2753,7 +2753,7 @@ alloc_groups(Compiler* compiler, CorgiUInt groups_num, CorgiGroup*** p)
     CorgiUInt i = 0;
     Node* node = compiler->groups;
     while ((node != NULL) && (status == CORGI_OK)) {
-        status = alloc_group(node, groups + i);
+        status = alloc_group(node, groups + groups_num - i - 1);
         i++;
         node = node->u.subpattern.next;
     }

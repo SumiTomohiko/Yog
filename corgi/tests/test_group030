@@ -1,0 +1,9 @@
+#!/bin/sh
+
+matched=`"${CORGI}" --group-name foo match "(?<foo>foo)(?<bar>bar)(?<baz>baz)" "foobarbaz"`
+if [ "${matched}" != "foo" ]; then
+  exit 1
+fi
+exit 0
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
