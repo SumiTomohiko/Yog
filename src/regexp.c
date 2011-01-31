@@ -134,7 +134,7 @@ get_group_range(YogEnv* env, YogVal self, int_t id, int_t* begin, int_t* end)
     if (corgi_get_group_range(match, id - 1, begin, end) == CORGI_OK) {
         return;
     }
-    YogError_raise_IndexError(env, "No such group: %u", id);
+    YogError_raise_IndexError(env, "No such group: %d", id);
 }
 
 static YogVal
