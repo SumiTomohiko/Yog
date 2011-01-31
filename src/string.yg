@@ -3,6 +3,10 @@ def starts_with?(s)
   return self.slice(0, s.size) == s
 end
 
+def ends_with?(s)
+  return self.slice(- s.size) == s
+end
+
 def inspect()
   s = "\""
   self.each_char() do [c]
