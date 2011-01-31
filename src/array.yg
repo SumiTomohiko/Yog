@@ -1,4 +1,14 @@
 
+def select(&block)
+  a = []
+  self.each() do [elem]
+    if block(elem)
+      a << elem
+    end
+  end
+  return a
+end
+
 def map(&block)
   a = Array.new(self.size)
   self.each_with_index() do [index, elem]
