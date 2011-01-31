@@ -2,13 +2,73 @@
 import c.grammar
 import lalr1
 
+class Node
+  def init(filename)
+    self.filename = filename
+  end
+end
+
+class Macro > Node
+  def init(filename, name, args)
+    super(filename)
+    self.name = name
+    self.args = args
+  end
+
+  def to_s()
+    return "<Macro filename=\"{0}\" name=\"{1}\" args={2}>".format(self.filename, self.name, self.args)
+  end
+end
+
 class Lexer
   def init(src)
     self.src = src
     self.macros = []
+    self.bol? = true # begin of line
+    self.pos = 0
+    self.filename = ""
+  end
+
+  def get_filename()
+    m = /# \d+ "(?<filename>.*)"/.match(self.src, self.pos)
+    return m == nil ? nil : m.group("filename")
+  end
+
+  def find_next_line()
+    if (pos = self.src.find("\n", self.pos)) == nil
+      return self.src.size
+    end
+    return pos + 1
+  end
+
+  def skip_to_next_line()
+    self.pos = self.find_next_line()
+    self.bol? = true
+  end
+
+  def get_macro()
+    m = /#define (?<name>\w+)(?<args>\([\w\s,]*\))?/.match(self.src, self.pos)
+    if m == nil
+      return nil
+    end
+    s = m.group("args")
+    args = s != nil ? s.slice(1, -1) : nil
+    return Macro.new(self.filename, m.group("name"), args)
   end
 
   def get_next_token()
+    if self.bol?
+      if (filename = self.get_filename()) != nil
+        self.filename = filename
+        self.skip_to_next_line()
+        return self.get_next_token()
+      end
+      if (macro = self.get_macro()) != nil
+        self.macros << macro
+        self.skip_to_next_line()
+        return self.get_next_token()
+      end
+    end
     return nil
   end
 end
