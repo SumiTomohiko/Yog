@@ -92,6 +92,13 @@ class Lexer
     if (m = self.match(/\d+/)) != nil
       return Token.new('constant, m.group().to_i())
     end
+    syms = { ";": 'semicolon }
+    syms.each() do [key, value]
+      if self.src.slice(self.pos, key.size) != key
+        next
+      end
+      return Token.new(value)
+    end
     return nil
   end
 end
