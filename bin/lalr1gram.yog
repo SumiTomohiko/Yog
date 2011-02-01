@@ -832,8 +832,9 @@ def output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules, code)
     next (act != nil ? act.subinfo : nil).to_s()
   end
   u = rules.map() do [rule]
-    next rule.rhs.size.to_s()
-  end.join(", ")
+    fmt = "{0}, # {1}: {2}"
+    next fmt.format(rule.rhs.size, rule.lhs, rule.rhs.join(" ")).rtrim()
+  end.join("\n")
   v = make_dict_entries(terms)
   w = rules.map() do [rule]
     next rule.lhs.id.to_s()
@@ -916,6 +917,8 @@ def invoke(rule, args)
   end
   return funcs[rule](*params)
 end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
 EOF
   end
 end
