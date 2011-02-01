@@ -10,7 +10,7 @@ def main()
   end
   header = prefix.rtrim() / "include" / "SDL" / "SDL.h"
 
-  h2yog(yog, [header], "SDL") do [path, sym]
+  h2yog(yog, [header], "SDL") do [path, name]
     next (path =~ /\/SDL\//) != nil
   end
 end
