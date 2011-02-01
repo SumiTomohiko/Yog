@@ -1,4 +1,5 @@
 
+from lalr1 import Token
 import c.grammar
 import lalr1
 
@@ -56,6 +57,23 @@ class Lexer
     return Macro.new(self.filename, m.group("name"), args)
   end
 
+  def skip_whitespace()
+    m = /\s*/.match(self.src, self.pos)
+    if m == nil
+      return
+    end
+    self.pos = m.end()
+  end
+
+  def match(regexp)
+    m = regexp.match(self.src, self.pos)
+    if m == nil
+      return nil
+    end
+    self.pos = m.end()
+    return m
+  end
+
   def get_next_token()
     if self.bol?
       if (filename = self.get_filename()) != nil
@@ -68,6 +86,11 @@ class Lexer
         self.skip_to_next_line()
         return self.get_next_token()
       end
+    end
+    self.bol? = false
+    self.skip_whitespace()
+    if (m = self.match(/\d+/)) != nil
+      return Token.new('constant, m.group().to_i())
     end
     return nil
   end
