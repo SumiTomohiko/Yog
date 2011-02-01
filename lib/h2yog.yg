@@ -23,17 +23,14 @@ def run_gcc(headers, opts, &block=nil)
   return stdout
 end
 
-def parse_to_nodes(headers)
+def parse_to_nodes(headers, &block)
   nodes, macros = parse(run_gcc(headers, ["-dD"]))
-  return nodes, macros
+  return nodes.select(&block), macros.select(&block)
 end
 
-def get_macros_implementation(headers, macros, &block)
+def get_macros_implementation(headers, macros)
   stdout = run_gcc(headers, []) do [stdin]
     macros.each() do [macro]
-      if !block(macro.filename, macro.name)
-        next
-      end
       args = macro.args != nil ? "({0})".format(macro.args) : ""
       stdin.write("{0}{1}\n".format(macro.name, args))
     end
@@ -44,10 +41,17 @@ def get_macros_implementation(headers, macros, &block)
 end
 
 def h2yog(yog, headers, so, &block)
-  nodes, macros = parse_to_nodes(headers)
+  nodes, macros = parse_to_nodes(headers) do [node]
+    next block(node.filename, node.name)
+  end
   #print(macros)
-  impls =  get_macros_implementation(headers, macros, &block)
-  print(impls)
+  impls =  get_macros_implementation(headers, macros)
+  macros.zip(impls).each() do [args]
+    macro = args[0]
+    impl = args[1]
+    node, _ = parse(impl + ";")
+    print(node)
+  end
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
