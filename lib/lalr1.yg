@@ -28,7 +28,7 @@ def parse(gram, get_token)
       return stack[-1]
     end
     size = gram.get_rule_size(subinfo)
-    obj = gram.invoke(subinfo, stack.slice(- size))
+    obj = gram.invoke(subinfo, size == 0 ? [] : stack.slice(- size))
     stack = stack.slice(0, stack.size - size) + [obj]
     state_stack = state_stack.slice(0, state_stack.size - size)
     state_stack << gram.get_next_state(state_stack[-1], subinfo)
