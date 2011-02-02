@@ -312,6 +312,9 @@ class State
         return diff
       end
       :)
+      if items[0].rule != items[1].rule
+        return items[0].rule.hash() - items[1].rule.hash()
+      end
       diff = items[0].pos - items[1].pos
       if diff != 0
         return diff
@@ -745,6 +748,10 @@ class Action
   def init(type, subinfo=nil)
     self.type = type
     self.subinfo = subinfo
+  end
+
+  def to_s()
+    return "<Action type={0}, subinfo={1}>".format(self.type, self.subinfo)
   end
 
   def encode()
