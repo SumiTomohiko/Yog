@@ -7,8 +7,11 @@ class TestH2Yog(TestCase):
 
     def run_h2yog(self, headers, so):
         src = """from h2yog import h2yog
-h2yog(\"test_h2yog.yg\", [%(headers)s], \"%(so)s\") do
-  next true
+headers = [%(headers)s].map() do [h]
+  next h.to_path()
+end
+h2yog(\"test_h2yog.yg\", headers, \"%(so)s\") do [path, name]
+  next headers.include?(path.basename)
 end""" % { "headers": ", ".join([ "\"%s\"" % (header, ) for header in headers]), "so": so }
         path = "run_h2yog.yg"
         unlink(path)
