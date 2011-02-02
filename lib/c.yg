@@ -97,6 +97,7 @@ class Lexer
       if self.src.slice(self.pos, key.size) != key
         next
       end
+      self.pos += key.size
       return Token.new(value)
     end
     return nil
