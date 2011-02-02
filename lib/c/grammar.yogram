@@ -2,7 +2,9 @@
 # This grammar came from gcc-4.2-4.2.4/gc-4.2-20070719/gcc/c-parser.c.
 
 translation_unit  : external_declarations {
-  return []
+}
+                  | block_item_list {
+  return block_item_list
 }
                   | (: empty :) {
   return []
@@ -622,14 +624,17 @@ block_item_list_opt : (: empty :) {
 ;
 
 block_item_list : block_item {
+  return [block_item]
 }
                 | block_item_list block_item {
+  return block_item_list + [block_item]
 }
 ;
 
 block_item  : nested_declaration {
 }
             | statement {
+  return statement
 }
 ;
 
@@ -670,6 +675,7 @@ statement : labeled_statement {
           | compound_statement {
 }
           | expression_statement {
+  return expression_statement
 }
           | selection_statement {
 }
@@ -686,6 +692,7 @@ labeled_statement : label statement {
 ;
 
 expression_statement  : expression_opt <semicolon> {
+  return expression_opt
 }
 ;
 
@@ -784,6 +791,7 @@ asm_clobbers  : asm_string_literal {
 ;
 
 assignment_expression : conditional_expression {
+  return conditional_expression
 }
                       | unary_expression assignment_operator assignment_expression {
 }
@@ -814,6 +822,7 @@ assignment_operator : <equal> {
 ;
 
 conditional_expression  : logical_or_expression {
+  return logical_or_expression
 }
                         | logical_or_expression <question> expression <colon> conditional_expression {
 }
@@ -822,6 +831,7 @@ conditional_expression  : logical_or_expression {
 ;
 
 multiplicative_expression : cast_expression {
+  return cast_expression
 }
                           | multiplicative_expression <star> cast_expression {
 }
@@ -832,6 +842,7 @@ multiplicative_expression : cast_expression {
 ;
 
 additive_expression : multiplicative_expression {
+  return multiplicative_expression
 }
                     | additive_expression <plus> multiplicative_expression {
 }
@@ -840,6 +851,7 @@ additive_expression : multiplicative_expression {
 ;
 
 shift_expression  : additive_expression {
+  return additive_expression
 }
                   | shift_expression <lshift> additive_expression {
 }
@@ -848,6 +860,7 @@ shift_expression  : additive_expression {
 ;
 
 relational_expression : shift_expression {
+  return shift_expression
 }
                       | relational_expression <less> shift_expression {
 }
@@ -860,6 +873,7 @@ relational_expression : shift_expression {
 ;
 
 equality_expression : relational_expression {
+  return relational_expression
 }
                     | equality_expression <equal_equal> relational_expression {
 }
@@ -868,42 +882,49 @@ equality_expression : relational_expression {
 ;
 
 and_expression  : equality_expression {
+  return equality_expression
 }
                 | and_expression <and> equality_expression {
 }
 ;
 
 exclusive_or_expression : and_expression {
+  return and_expression
 }
                         | exclusive_or_expression <xor> and_expression {
 }
 ;
 
 inclusive_or_expression : exclusive_or_expression {
+  return exclusive_or_expression
 }
                         | inclusive_or_expression <or> exclusive_or_expression {
 }
 ;
 
 logical_and_expression  : inclusive_or_expression {
+  return inclusive_or_expression
 }
                         | logical_and_expression <and_and> inclusive_or_expression {
 }
 ;
 
 logical_or_expression : logical_and_expression {
+  return logical_and_expression
 }
                       | logical_or_expression <or_or> logical_and_expression {
 }
 ;
 
 cast_expression : unary_expression {
+  return unary_expression
 }
                 | <lpar> type_name <rpar> unary_expression {
 }
 ;
 
 unary_expression  : postfix_expression {
+  return postfix_expression
 }
                   | <plus_plus> unary_expression {
 }
@@ -944,6 +965,7 @@ unary_operator  : <and> {
 ;
 
 postfix_expression  : primary_expression {
+  return primary_expression
 }
                     | postfix_expression <lbracket> expression <rbracket> {
 }
@@ -982,6 +1004,7 @@ argument_expression : expression {
 primary_expression  : <identifier> {
 }
                     | <constant> {
+  return constant
 }
                     | <string_literal> {
 }
@@ -1016,10 +1039,12 @@ offsetof_member_designator  : <identifier> {
 expression_opt  : (: empty :) {
 }
                 | expression {
+  return expression
 }
 ;
 
 expression  : assignment_expression {
+  return assignment_expression
 }
             | expression <comma> assignment_expression {
 }
