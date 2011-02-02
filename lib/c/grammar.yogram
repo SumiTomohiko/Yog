@@ -1,6 +1,14 @@
 
 # This grammar came from gcc-4.2-4.2.4/gc-4.2-20070719/gcc/c-parser.c.
 
+%{
+class ConstantNode
+  def init(value)
+    self.value = value
+  end
+end
+%}
+
 translation_unit  : external_declarations {
 }
                   | block_item_list {
@@ -1004,7 +1012,7 @@ argument_expression : expression {
 primary_expression  : <identifier> {
 }
                     | <constant> {
-  return constant
+  return ConstantNode.new(constant.value)
 }
                     | <string_literal> {
 }
