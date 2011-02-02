@@ -1,5 +1,6 @@
 
 from c import parse
+from c.grammar import ConstantNode
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -29,6 +30,9 @@ def parse_to_nodes(headers, &block)
 end
 
 def get_macros_implementation(headers, macros)
+  if macros.empty?
+    return []
+  end
   stdout = run_gcc(headers, []) do [stdin]
     macros.each() do [macro]
       args = macro.args != nil ? "({0})".format(macro.args) : ""
@@ -40,17 +44,28 @@ def get_macros_implementation(headers, macros)
   return stdout.slice(pos + mark.size).trim().split("\n")
 end
 
+def node2yog(node)
+  if node.kind_of?(ConstantNode)
+    return node.value.to_s()
+  end
+end
+
 def h2yog(yog, headers, so, &block)
   nodes, macros = parse_to_nodes(headers) do [node]
     next block(node.filename, node.name)
   end
   #print(macros)
   impls =  get_macros_implementation(headers, macros)
-  macros.zip(impls).each() do [args]
-    macro = args[0]
-    impl = args[1]
-    node, _ = parse(impl + ";")
-    print(node)
+  File.open(yog, "w") do [fp]
+    macros.zip(impls).each() do [args]
+      macro = args[0]
+      impl = args[1]
+      node, _ = parse(impl + ";")
+      if node.empty? || ((src = node2yog(node[0])) == nil)
+        next
+      end
+      fp.write("{0} = {1}\n".format(macro.name, src))
+    end
   end
 end
 
