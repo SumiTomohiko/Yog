@@ -32,7 +32,7 @@ class Lexer
 
   def get_filename()
     m = /# \d+ "(?<filename>.*)"/.match(self.src, self.pos)
-    return m == nil ? nil : m.group("filename")
+    return m == nil ? nil : m.group("filename").to_path()
   end
 
   def find_next_line()
