@@ -41,7 +41,8 @@ def get_macros_implementation(headers, macros)
   end
   mark = "# 1 \"<stdin>\"\n"
   pos = stdout.find(mark, stdout.find("\n"))
-  return stdout.slice(pos + mark.size).trim().split("\n")
+  impls = stdout.slice(pos + mark.size).split("\n")
+  return impls.slice(0, impls.size - 1) # remove last empty string
 end
 
 def node2yog(node)
