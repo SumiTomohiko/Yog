@@ -36,7 +36,7 @@ class Lexer
   end
 
   def find_next_line()
-    if (pos = self.src.find("\n", self.pos)) == nil
+    if (pos = self.src.find("\n", self.pos)) < 0
       return self.src.size
     end
     return pos + 1
@@ -58,7 +58,7 @@ class Lexer
   end
 
   def skip_whitespace()
-    m = /\s*/.match(self.src, self.pos)
+    m = /[ \t]*/.match(self.src, self.pos)
     if m == nil
       return
     end
@@ -74,21 +74,27 @@ class Lexer
     return m
   end
 
+  def skip_newlines()
+    if (m = /\n+/.match(self.src, self.pos)) == nil
+      return
+    end
+    self.pos = m.end()
+    self.bol? = true
+  end
+
   def get_next_token()
-    if self.bol?
+    self.skip_whitespace()
+    self.skip_newlines()
+    if self.bol? && (self.src.get(self.pos) == "#")
       if (filename = self.get_filename()) != nil
         self.filename = filename
-        self.skip_to_next_line()
-        return self.get_next_token()
-      end
-      if (macro = self.get_macro()) != nil
+      elif (macro = self.get_macro()) != nil
         self.macros << macro
-        self.skip_to_next_line()
-        return self.get_next_token()
       end
+      self.skip_to_next_line()
+      return self.get_next_token()
     end
     self.bol? = false
-    self.skip_whitespace()
     if (m = self.match(/\d+/)) != nil
       return Token.new('constant, m.group().to_i())
     end
