@@ -277,6 +277,7 @@ lib/Makefile.in
 lib/c/Makefile
 lib/c/Makefile.in
 lib/c/grammar.yg
+lib/sdl.yg
 libffi/Makefile
 libffi/fficonfig.h
 libffi/include/Makefile
