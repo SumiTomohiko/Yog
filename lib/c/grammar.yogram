@@ -10,6 +10,7 @@ end
 %}
 
 translation_unit  : external_declarations {
+  return external_declarations
 }
                   | block_item_list {
   return block_item_list
@@ -20,8 +21,10 @@ translation_unit  : external_declarations {
 ;
 
 external_declarations : external_declaration {
+  return [external_declaration]
 }
                       | external_declarations external_declaration {
+  return external_declarations + [external_declaration]
 }
 ;
 
