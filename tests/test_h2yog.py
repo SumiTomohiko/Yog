@@ -16,11 +16,20 @@ end""" % { "headers": ", ".join([ "\"%s\"" % (header, ) for header in headers]),
         path = "run_h2yog.yg"
         unlink(path)
         self.write_source(path, src)
-        self.run_command([path])
+        proc = self.run_command(["--young-heap-size=48M", path])
+        self.wait_proc(proc)
 
     def do_test(self, headers, so, src, expected):
+        self.unlink("test_h2yog.yg")
         self.run_h2yog(headers, so)
         self._test(src, expected)
+
+    def test_undef0(self):
+        headers = ["test_undef0.h"]
+        so = "empty"
+        src = """from test_h2yog import FOO
+print(FOO)"""
+        self.do_test(headers, so, src, "42")
 
     def test_constant0(self):
         headers = ["test_constant0.h"]

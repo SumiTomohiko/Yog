@@ -153,6 +153,12 @@ class TestCase(object):
         close(fd)
         return path
 
+    def unlink(self, path):
+        try:
+            unlink(path)
+        except OSError:
+            pass
+
     def _test_source(self, src, stdout, stderr, stdin, status, options, timeout, remove_tmpfile=True, tmpfile=None, yog_option=[], encoding=None):
         file = tmpfile or self.make_temp_file()
         try:
@@ -161,10 +167,7 @@ class TestCase(object):
             self.do(stdout, stderr, stdin, status, args, timeout, encoding)
         finally:
             if remove_tmpfile:
-                try:
-                    unlink(file)
-                except:
-                    pass
+                self.unlink(file)
 
     def _test_interactive(self, stdout, stderr, stdin, status, options, timeout):
         self.do(stdout, stderr, stdin, status, options, timeout)
