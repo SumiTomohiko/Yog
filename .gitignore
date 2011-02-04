@@ -617,6 +617,7 @@ tools/swig/swig
 vgcore.*
 vim/Makefile
 vim/Makefile.in
+y.output
 yog-bdw*
 yog-copying*
 yog-generational*

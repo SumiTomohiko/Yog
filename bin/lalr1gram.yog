@@ -488,29 +488,29 @@ def compute_states(state, nonterm2rules)
   return states
 end
 
-def dump_item(item)
+def dump_item(fp, item)
   rule = item.rule
-  print("  {0} ->".format(rule.lhs.sym))
+  fp.write("  {0} ->".format(rule.lhs.sym))
   rule.rhs.each_with_index() do [i, sym]
-    print("{0} {1}".format(i == item.pos ? " ." : "", sym))
+    fp.write("{0} {1}".format(i == item.pos ? " ." : "", sym))
   end
-  print(item.rule.rhs.size == item.pos ? " ." : "")
-  puts(", {0}".format(item.lookahead.to_a().join("/")))
+  fp.write(item.rule.rhs.size == item.pos ? " ." : "")
+  fp.write(", {0}\n".format(item.lookahead.to_a().join("/")))
 end
 
-def dump_state(state)
-  puts("state {0}".format(state.id))
-  state.items.each(&dump_item)
-  puts("")
-  puts("  shift:")
+def dump_state(fp, state)
+  fp.write("state {0}\n".format(state.id))
+  state.items.each(&partial(dump_item, fp))
+  fp.write("\n")
+  fp.write("  shift:\n")
   state.shifts.each() do [sym, state]
-    puts("    {0}: {1}".format(sym, state.id))
+    fp.write("    {0}: {1}\n".format(sym, state.id))
   end
 end
 
-def dump_states(states)
+def dump_states(fp, states)
   states.each() do [state]
-    dump_state(state)
+    dump_state(fp, state)
   end
 end
 
@@ -952,7 +952,9 @@ def main(dest, src)
   nonterms = parser.nonterminals.values
   number_array_elements(nonterms)
   compute_lookahead(states)
-  #dump_states(states)
+  File.open("y.output", "w") do [fp]
+    dump_states(fp, states)
+  end
   term2act, nonterm2act = compute_tables(states, rules, terms, nonterms)
   output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules, parser.code)
 end
