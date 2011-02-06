@@ -811,7 +811,7 @@ end
 
 def decide_arg_names(rule)
   names = Set.new()
-  args = []
+  args = ['__data__]
   rule.rhs.size.times() do [i]
     name = rule.alias[i] != nil ? rule.alias[i] : rule.rhs[i].sym
     if names.include?(name)
@@ -901,6 +901,9 @@ def get_action(state, type)
   index = terms.get(type)
   if index != nil
     act = term2act[state][index]
+    if act == nil
+      return 'error, nil
+    end
     return act & 1 == 1 ? 'shift : 'reduce, act >> 1
   end
   return 'reduce, nonterm2act[state][nonterms[type]]
@@ -914,7 +917,7 @@ def get_next_state(state, rule)
   return nonterm2act[state][lhs[rule]]
 end
 
-def invoke(rule, args)
+def invoke(rule, args, __data__)
   params = []
   args.each_with_index() do [index, arg]
     if pos[rule][index] == nil
@@ -922,7 +925,7 @@ def invoke(rule, args)
     end
     params << arg
   end
-  return funcs[rule](*params)
+  return funcs[rule](__data__, *params)
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
