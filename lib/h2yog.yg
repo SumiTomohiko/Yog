@@ -1,5 +1,5 @@
 
-from c import parse
+from c import parse, parse_macro
 from c.grammar import ConstantNode
 
 def build_command(headers, opts)
@@ -17,7 +17,9 @@ end
 def run_gcc(headers, opts, &block=nil)
   cmd = build_command(headers, opts)
   status, stdout, _ = run_command(*cmd, &block)
-  #print(stdout)
+  #puts("{0}:{1} status={2}".format(__FILE__, __LINE__, status))
+  #puts(stdout)
+  #puts(_)
   if status != 0
     raise H2YogError.new("failed: {0}".format(cmd.join(" ")))
   end
@@ -35,8 +37,11 @@ def get_macros_implementation(headers, macros)
   end
   stdout = run_gcc(headers, []) do [stdin]
     macros.each() do [macro]
+      #puts("{0}:{1} macro={2}".format(__FILE__, __LINE__, macro))
       args = macro.args != nil ? "({0})".format(macro.args) : ""
-      stdin.write("{0}{1}\n".format(macro.name, args))
+      src = "{0}{1}\n".format(macro.name, args)
+      #print("{0}:{1} src={2}".format(__FILE__, __LINE__, src))
+      stdin.write(src)
     end
   end
   mark = "# 1 \"<stdin>\"\n"
@@ -53,7 +58,7 @@ end
 
 def h2yog(yog, headers, so, &block)
   nodes, macros = parse_to_nodes(headers) do [node]
-    next block(node.filename, node.name)
+    next (node != nil) && block(node.filename, node.name)
   end
   #print(macros)
   impls =  get_macros_implementation(headers, macros)
@@ -61,8 +66,8 @@ def h2yog(yog, headers, so, &block)
     macros.zip(impls).each() do [args]
       macro = args[0]
       impl = args[1]
-      node, _ = parse(impl + ";")
-      if node.empty? || ((src = node2yog(node[0])) == nil)
+      node, _ = parse_macro(impl + ";")
+      if (node == nil) || node.empty? || ((src = node2yog(node[0])) == nil)
         next
       end
       fp.write("{0} = {1}\n".format(macro.name, src))
