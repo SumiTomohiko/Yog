@@ -7,12 +7,24 @@ class ConstantNode
     self.value = value
   end
 end
+
+class TypedefNode
+  def init(type)
+    self.type = type
+  end
+end
+
+class StructNode
+end
+
+class EnumNode
+end
 %}
 
 translation_unit  : external_declarations {
   return external_declarations
 }
-                  | block_item_list {
+                  | <macro_mark> block_item_list {
   return block_item_list
 }
                   | (: empty :) {
@@ -40,11 +52,20 @@ external_declaration  : function_definition {
 }
 ;
 
-function_definition : declaration_specifiers_opt declarator declaration_list_opt compound_statement {
+function_definition : declaration_specifiers init_declarator_list_opt declaration_list_opt compound_statement {
+  # Original rule is
+  # function_definition: declaration_specifiers declarator declaration_list_opt compound_statement
+}
+                    | init_declarator_list_opt declaration_list_opt compound_statement {
 }
 ;
 
 declaration : declaration_specifiers init_declarator_list_opt <semicolon> {
+  if declaration_specifiers.kind_of?(TypedefNode)
+    if (name = init_declarator_list_opt.get(0)) != nil
+      __data__.add(name)
+    end
+  end
 }
 ;
 
@@ -55,6 +76,7 @@ asm_definition  : simple_asm_expr <semicolon> {
 declaration_specifiers_opt  : (: empty :) {
 }
                             | declaration_specifiers {
+  return declaration_specifiers
 }
 ;
 
@@ -65,6 +87,7 @@ declarator_opt  : (: empty :) {
 ;
 
 declarator  : pointer_opt direct_declarator {
+  return direct_declarator
 }
 ;
 
@@ -75,14 +98,25 @@ compound_statement  : <lbrace> block_item_list_opt <rbrace> {
 ;
 
 declaration_specifiers  : storage_class_specifier declaration_specifiers_opt {
+  if declaration_specifiers_opt == nil
+    return nil
+  end
+  if { 'extern, 'static, 'auto, 'register }.include?(storage_class_specifier)
+    return declaration_specifiers_opt
+  end
+  return TypedefNode.new(declaration_specifiers_opt)
 }
                         | type_specifier declaration_specifiers_opt {
+  return type_specifier
 }
                         | type_qualifier declaration_specifiers_opt {
+  return declaration_specifiers_opt
 }
                         | function_specifier declaration_specifiers_opt {
+  return declaration_specifiers_opt
 }
                         | attributes declaration_specifiers_opt {
+  return declaration_specifiers_opt
 }
 ;
 
@@ -100,26 +134,32 @@ declaration_list  : declaration {
 ;
 
 init_declarator_list_opt  : (: empty :) {
+  return []
 }
                           | init_declarator_list {
+  return init_declarator_list
 }
 ;
 
 init_declarator_list  : init_declarator {
+  return [init_declarator]
 }
                       | init_declarator_list <comma> init_declarator {
+  return init_declarator_list + [init_declarator]
 }
 ;
 
 init_declarator : declarator simple_asm_expr_opt attributes_opt {
+  return declarator
 }
                 | declarator simple_asm_expr_opt attributes_opt <equal> initializer {
 }
 ;
 
-nested_function_definition  : declaration_specifiers declarator declaration_list_opt {
-}
-                            | compound_statement {
+nested_function_definition  : declaration_specifiers declarator declaration_list_opt compound_statement {
+  if declaration_specifiers.kind_of?(TypedefNode)
+    __data__.add(declarator)
+  end
 }
 ;
 
@@ -183,12 +223,8 @@ type_specifier  : <void> {
                 | enum_specifier {
   return enum_specifier
 }
-(:
-                | typedef_name {
+                | <typedef_name> {
   return typedef_name
-}
-:)
-                | <identifier> {
 }
 ;
 
@@ -225,10 +261,13 @@ type_specifier  : typeof_specifier {
 ;
 
 enum_specifier  : <enum> attributes_opt identifier_opt <lbrace> enumerator_list <rbrace> attributes_opt {
+  return EnumNode.new()
 }
                 | <enum> attributes_opt identifier_opt <lbrace> enumerator_list <comma> <rbrace> attributes_opt {
+  return EnumNode.new()
 }
                 | <enum> attributes_opt <identifier> {
+  return EnumNode.new()
 }
 ;
 
@@ -257,8 +296,13 @@ enumeration_constant  : <identifier> {
 ;
 
 struct_or_union_specifier : struct_or_union attributes_opt identifier_opt <lbrace> struct_contents <rbrace> attributes_opt {
+  return StructNode.new()
 }
                           | struct_or_union attributes_opt <identifier> {
+  return StructNode.new()
+}
+                          | struct_or_union attributes_opt <typedef_name> {
+  return StructNode.new()
 }
 ;
 
@@ -268,11 +312,7 @@ struct_or_union : <struct> {
 }
 ;
 
-struct_contents : (: empty :) {
-}
-                | struct_declaration {
-}
-                | struct_declaration_list struct_declaration {
+struct_contents : struct_declaration_list {
 }
 ;
 
@@ -324,19 +364,33 @@ typeof_specifier  : <typeof> <lpar> expression <rpar> {
 }
 ;
 
+assignment_expression_opt : (: empty :) {
+}
+                          | assignment_expression {
+}
+;
+
+array_declarator  : <lbracket> assignment_expression_opt <rbracket> {
+}
+;
+
 direct_declarator : <identifier> {
+  return identifier.value
 }
                   | <lpar> attributes_opt declarator <rpar> {
+  return declarator
 }
-(:
                   | direct_declarator array_declarator {
+  return direct_declarator
 }
-:)
                   | direct_declarator <lpar> parameter_type_list <rpar> {
+  return direct_declarator
 }
                   | direct_declarator <lpar> identifier_list_opt <rpar> {
+  return direct_declarator
 }
                   | direct_declarator <lpar> parameter_forward_declarations parameter_type_list_opt <rpar> {
+  return direct_declarator
 }
 ;
 
@@ -376,14 +430,14 @@ parameter_type_list_opt : (: empty :) {
 
 parameter_type_list : parameter_list {
 }
-                    | parameter_list <colon> <dots> {
+                    | parameter_list <comma> <dots> {
 }
 ;
 
 parameter_list  : parameter_declaration {
   return [parameter_declaration]
 }
-                | parameter_list <colon> parameter_declaration {
+                | parameter_list <comma> parameter_declaration {
   return parameter_list + [parameter_declaration]
 }
 ;
@@ -428,10 +482,8 @@ direct_abstract_declarator_opt  : (: empty :) {
 
 direct_abstract_declarator  : <lpar> attributes_opt abstract_declarator <rpar> {
 }
-(:
                             | direct_abstract_declarator_opt array_declarator {
 }
-:)
                             | direct_abstract_declarator_opt <lpar> parameter_type_list_opt <rpar> {
 }
                             | direct_abstract_declarator_opt <lpar> parameter_forward_declarations parameter_type_list_opt <rpar> {
@@ -444,7 +496,13 @@ parameter_forward_declarations  : parameter_list <semicolon> {
 }
 ;
 
-asm_string_literal  : <string_literal> {
+string_literals : <string_literal> {
+}
+                | string_literals <string_literal> {
+}
+;
+
+asm_string_literal  : string_literals {
 }
 ;
 
@@ -485,17 +543,17 @@ attribute_list  : attrib {
 
 attrib  : (: empty :) {
 }
-        | attrib_word {
+        | any_word {
 }
-        | attrib_word <lpar> <identifier> <rpar> {
+        | any_word <lpar> <identifier> <rpar> {
 }
-        | attrib_word <lpar> <identifier> <comma> nonempty_expr_list <rpar> {
+        | any_word <lpar> <identifier> <comma> nonempty_expr_list <rpar> {
 }
-        | attrib_word <lpar> expr_list <rpar> {
+        | any_word <lpar> expr_list <rpar> {
 }
 ;
 
-attrib_word : <static> {
+any_word : <static> {
   return 'static
 }
             | <unsigned> {
@@ -566,6 +624,8 @@ attrib_word : <static> {
 }
             | <_Bool> {
   return '_Bool
+}
+            | <identifier> {
 }
 ;
 
@@ -677,7 +737,7 @@ label : <identifier> <colon> attributes_opt {
 }
 ;
 
-constant_expression : <constant> {
+constant_expression : assignment_expression {
 }
 ;
 
@@ -1017,7 +1077,7 @@ primary_expression  : <identifier> {
                     | <constant> {
   return ConstantNode.new(constant.value)
 }
-                    | <string_literal> {
+                    | string_literals {
 }
                     | <lpar> expression <rpar> {
 }
