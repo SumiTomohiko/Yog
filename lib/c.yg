@@ -24,10 +24,11 @@ end
 class Lexer
   def init(src)
     self.src = src
-    self.macros = []
+    self.macros = {}
     self.bol? = true # begin of line
     self.pos = 0
     self.filename = ""
+    self.typedef_names = { '__builtin_va_list }
   end
 
   def get_filename()
@@ -47,13 +48,20 @@ class Lexer
     self.bol? = true
   end
 
-  def get_macro()
+  def get_undef_macro()
+    if (m = /#undef (?<name>\w+)/.match(self.src, self.pos)) == nil
+      return nil
+    end
+    return m.group("name")
+  end
+
+  def get_define_macro()
     m = /#define (?<name>\w+)(?<args>\([\w\s,]*\))?/.match(self.src, self.pos)
     if m == nil
       return nil
     end
     s = m.group("args")
-    args = s != nil ? s.slice(1, -1) : nil
+    args = s != nil ? s.slice(1, s.size - 2) : nil
     return Macro.new(self.filename, m.group("name"), args)
   end
 
@@ -80,14 +88,18 @@ class Lexer
     if self.bol? && (self.src.get(self.pos) == "#")
       if (filename = self.get_filename()) != nil
         self.filename = filename
-      elif (macro = self.get_macro()) != nil
-        self.macros << macro
+      elif (macro = self.get_define_macro()) != nil
+        self.macros[macro.name] = macro
+      elif (name = self.get_undef_macro()) != nil
+        self.macros[name] = nil
       end
       self.skip_to_next_line()
       return self.get_next_token()
     end
     self.bol? = false
-    if (m = self.match(/\d+/)) != nil
+    if (m = self.match(/0x[\da-fA-F]+/)) != nil
+      return Token.new('constant, m.group().to_i())
+    elif (m = self.match(/\d+/)) != nil
       return Token.new('constant, m.group().to_i())
     elif (m = self.match(/\w[\w\d]*/)) != nil
       name = m.group().to_sym()
@@ -129,7 +141,13 @@ class Lexer
       if (type = keywords2.get(name)) != nil
         return Token.new(type)
       end
+      if self.typedef_names.include?(name)
+        return Token.new('typedef_name, name)
+      end
       return Token.new('identifier, name)
+    elif self.src.get(self.pos) == "\""
+      self.pos += 1
+      return Token.new('string_literal, self.get_string())
     end
     syms = [
       ["&&", 'and_and],
@@ -145,14 +163,13 @@ class Lexer
       ["==", 'equal_equal],
       ["=", 'equal],
       [">=", 'greater_equal],
-      [">", 'greater],
       ["{", 'lbrace],
       ["[", 'lbracket],
       ["<=", 'less_equal],
-      ["<", 'less],
       ["(", 'lpar],
       ["<<=", 'lshift_equal],
       ["<<", 'lshift],
+      ["<", 'less],
       ["-=", 'minus_equal],
       ["--", 'minus_minus],
       ["-", 'minus],
@@ -172,6 +189,7 @@ class Lexer
       [")", 'rpar],
       [">>=", 'rshift_equal],
       [">>", 'rshift],
+      [">", 'greater],
       [";", 'semicolon],
       ["*=", 'star_equal],
       ["*", 'star],
@@ -188,12 +206,51 @@ class Lexer
     end
     return nil
   end
+
+  def get_string()
+    s = ""
+    while (c = self.src[self.pos]) != "\""
+      if c == "\\"
+        s << self.src[self.pos + 1]
+        self.pos += 2
+        next
+      end
+      s << c
+      self.pos += 1
+    end
+    self.pos += 1
+    return s
+  end
 end
 
 def parse(src)
   lexer = Lexer.new(src)
-  nodes = lalr1.parse(c.grammar, lexer.get_next_token)
-  return nodes, lexer.macros
+  nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer.typedef_names)
+  return nodes, lexer.macros.values.select() do [macro]
+    next macro != nil
+  end
+end
+
+def parse_macro(src)
+  class MacroLexer > Lexer
+    def init(src)
+      super(src)
+      self.init? = true
+    end
+
+    def get_next_token()
+      if self.init?
+        self.init? = false
+        return Token.new('macro_mark)
+      end
+      return super()
+    end
+  end
+  lexer = MacroLexer.new(src)
+  nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer.typedef_names)
+  return nodes, lexer.macros.values.select() do [macro]
+    next macro != nil
+  end
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
