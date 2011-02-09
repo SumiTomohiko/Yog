@@ -223,15 +223,19 @@ class Lexer
   end
 end
 
-def parse(src)
+def get_logger(verbose)
+  return verbose ? puts : nil
+end
+
+def parse(src, verbose=false)
   lexer = Lexer.new(src)
-  nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer.typedef_names)
+  nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer.typedef_names, get_logger(verbose))
   return nodes, lexer.macros.values.select() do [macro]
     next macro != nil
   end
 end
 
-def parse_macro(src)
+def parse_macro(src, verbose=false)
   class MacroLexer > Lexer
     def init(src)
       super(src)
@@ -247,7 +251,7 @@ def parse_macro(src)
     end
   end
   lexer = MacroLexer.new(src)
-  nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer.typedef_names)
+  nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer.typedef_names, get_logger(verbose))
   return nodes, lexer.macros.values.select() do [macro]
     next macro != nil
   end

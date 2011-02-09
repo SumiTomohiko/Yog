@@ -26,8 +26,8 @@ def run_gcc(headers, opts, &block=nil)
   return stdout
 end
 
-def parse_to_nodes(headers, &block)
-  nodes, macros = parse(run_gcc(headers, ["-dD"]))
+def parse_to_nodes(headers, verbose, &block)
+  nodes, macros = parse(run_gcc(headers, ["-dD"]), verbose)
   return nodes.select(&block), macros.select(&block)
 end
 
@@ -56,8 +56,8 @@ def node2yog(node)
   end
 end
 
-def h2yog(yog, headers, so, &block)
-  nodes, macros = parse_to_nodes(headers) do [node]
+def h2yog(yog, headers, so, verbose=false, &block)
+  nodes, macros = parse_to_nodes(headers, verbose) do [node]
     next (node != nil) && block(node.filename, node.name)
   end
   #print(macros)
@@ -66,7 +66,7 @@ def h2yog(yog, headers, so, &block)
     macros.zip(impls).each() do [args]
       macro = args[0]
       impl = args[1]
-      node, _ = parse_macro(impl + ";")
+      node, _ = parse_macro(impl + ";", verbose)
       if (node == nil) || node.empty? || ((src = node2yog(node[0])) == nil)
         next
       end
