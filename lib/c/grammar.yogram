@@ -52,20 +52,28 @@ external_declaration  : function_definition {
 }
 ;
 
-function_definition : declaration_specifiers init_declarator_list_opt declaration_list_opt compound_statement {
-  # Original rule is
-  # function_definition: declaration_specifiers declarator declaration_list_opt compound_statement
+(:
+ : The rule of function_definition in GCC has declaration_list_opt in it. But
+ : this causes shift/reduce confict. This grammar aims to parse SDL/SDL.h which
+ : doesn't need declaration_list_opt. So declaration_list_opt is ignored here.
+ :
+ : c-wrapper 0.6.1 for Gauche seems to ignore __attribute__ to avoid this
+ : conflict (see src/c-lex.c and lib/c-wrapper/c-lex.scm in c-wrapper).
+ :)
+function_definition : declaration_specifiers declarator (: declaration_list_opt :) compound_statement {
 }
-                    | init_declarator_list_opt declaration_list_opt compound_statement {
+                    | declarator (: declaration_list_opt :) compound_statement {
 }
 ;
 
-declaration : declaration_specifiers init_declarator_list_opt <semicolon> {
+declaration : declaration_specifiers init_declarator_list <semicolon> {
   if declaration_specifiers.kind_of?(TypedefNode)
-    if (name = init_declarator_list_opt.get(0)) != nil
+    if (name = init_declarator_list.get(0)) != nil
       __data__.add(name)
     end
   end
+}
+            | declaration_specifiers <semicolon> {
 }
 ;
 
@@ -149,10 +157,25 @@ init_declarator_list  : init_declarator {
 }
 ;
 
-init_declarator : declarator simple_asm_expr_opt attributes_opt {
+init_declarator_head  : declarator {
   return declarator
 }
-                | declarator simple_asm_expr_opt attributes_opt <equal> initializer {
+                      | declarator simple_asm_expr {
+  return declarator
+}
+                      | declarator attributes {
+  return declarator
+}
+                      | declarator simple_asm_expr attributes {
+  return declarator
+}
+;
+
+init_declarator : init_declarator_head {
+  return init_declarator_head
+}
+                | init_declarator_head <equal> initializer {
+  return init_declarator_head
 }
 ;
 
