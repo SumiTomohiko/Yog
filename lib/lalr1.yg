@@ -50,6 +50,7 @@ def parse(gram, get_token, __data__, logger=nil)
       return stack[-1]
     end
     log("Reduced using rule {0}".format(subinfo))
+    log(gram.get_rule(subinfo))
     size = gram.get_rule_size(subinfo)
     obj = gram.invoke(subinfo, size == 0 ? [] : stack.slice(- size), __data__)
     stack = stack.slice(0, stack.size - size) + [obj]

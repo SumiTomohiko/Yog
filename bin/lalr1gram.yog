@@ -159,8 +159,12 @@ class Rule
     self.action = nil
   end
 
+  def inspect()
+    return "<Rule {0}>".format(self.to_s())
+  end
+
   def to_s()
-    return "<Rule {0}: {1}>".format(self.lhs, self.rhs.join(" "))
+    return "({0}) {1}: {2}".format(self.id, self.lhs, self.rhs.join(" "))
   end
 end
 
@@ -456,6 +460,26 @@ def find_state(sym2states, state)
     return s
   end
   return nil
+end
+
+def dump_item_to_stdout(item)
+  rule = item.rule
+  print("  {0} ->".format(rule.lhs.sym))
+  rule.rhs.each_with_index() do [i, sym]
+    print("{0} {1}".format(i == item.pos ? " ." : "", sym))
+  end
+  print(item.rule.rhs.size == item.pos ? " ." : "")
+  print(", {0}\n".format(item.lookahead.to_a().join("/")))
+end
+
+def dump_state_to_stdout(state)
+  print("state {0}\n".format(state.id))
+  state.items.each(&dump_item_to_stdout)
+  print("\n")
+  print("  shift:\n")
+  state.shifts.each() do [sym, state]
+    print("    {0}: {1}\n".format(sym, state.id))
+  end
 end
 
 def compute_states(state, nonterm2rules)
@@ -839,8 +863,8 @@ def output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules, code)
     next (act != nil ? act.subinfo : nil).to_s()
   end
   u = rules.map() do [rule]
-    fmt = "{0}, # {1}: {2}"
-    next fmt.format(rule.rhs.size, rule.lhs, rule.rhs.join(" ")).rtrim()
+    fmt = "{0}, # {1}"
+    next fmt.format(rule.rhs.size, rule.to_s()).rtrim()
   end.join("\n")
   v = make_dict_entries(terms)
   w = rules.map() do [rule]
@@ -864,9 +888,20 @@ EOF
   end.join(",\n")
   a = make_dict_entries(nonterms)
   b = code != nil ? code : ""
+  c = rules.map() do [rule]
+    next rule.to_s().inspect()
+  end.join(",\n")
   File.open(dest, "w") do [fp]
-    fp.write(<<EOF.format(s, t, u, v, w, x, y, z, a, b))
+    fp.write(<<EOF.format(s, t, u, v, w, x, y, z, a, b, c))
 {9}
+
+rules = [
+{10}
+]
+
+def get_rule(rule)
+  return rules[rule]
+end
 
 term2act = [
 {0}
@@ -933,6 +968,12 @@ EOF
   end
 end
 
+def dump_rules(fp, rules)
+  rules.each() do [rule]
+    fp.write("{0}\n".format(rule.to_s()))
+  end
+end
+
 def main(dest, src)
   parser = File.open(src) do [fp]
     parser = Parser.new(Lexer.new(fp))
@@ -956,6 +997,7 @@ def main(dest, src)
   number_array_elements(nonterms)
   compute_lookahead(states)
   File.open("y.output", "w") do [fp]
+    dump_rules(fp, rules)
     dump_states(fp, states)
   end
   term2act, nonterm2act = compute_tables(states, rules, terms, nonterms)
