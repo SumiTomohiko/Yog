@@ -227,12 +227,17 @@ def get_logger(verbose)
   return verbose ? puts : nil
 end
 
-def parse(src, verbose=false)
-  lexer = Lexer.new(src)
+def parse_internal(lexer, verbose)
   nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer.typedef_names, get_logger(verbose))
   return nodes, lexer.macros.values.select() do [macro]
     next macro != nil
   end
+end
+
+def parse(src, verbose=false)
+  lexer = Lexer.new(src)
+  nodes, macros = parse_internal(lexer, verbose)
+  return nodes, macros
 end
 
 def parse_macro(src, verbose=false)
@@ -251,10 +256,8 @@ def parse_macro(src, verbose=false)
     end
   end
   lexer = MacroLexer.new(src)
-  nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer.typedef_names, get_logger(verbose))
-  return nodes, lexer.macros.values.select() do [macro]
-    next macro != nil
-  end
+  nodes, macros = parse_internal(lexer, verbose)
+  return nodes, macros
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
