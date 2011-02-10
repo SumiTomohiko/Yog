@@ -330,6 +330,7 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
     REGISTER_CLASS(cSet);
     REGISTER_CLASS(cString);
     REGISTER_CLASS(cStructClass);
+    REGISTER_CLASS(cSymbol);
     REGISTER_CLASS(cThread);
     REGISTER_CLASS(cUnionClass);
     REGISTER_CLASS(eAttributeError);
