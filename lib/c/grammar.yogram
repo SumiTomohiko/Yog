@@ -22,10 +22,31 @@ class TypedefNode > Node
   end
 end
 
+class StructFieldNode > Node
+  def init(filename, type, names=nil)
+    super(filename)
+    self.type = type
+    self.names = names
+  end
+
+  def to_s()
+    return "<StructFieldNode type={0} names={1}".format(self.type, self.names)
+  end
+end
+
 class StructNode > Node
-  def init(filename, name)
+  def init(filename, name, contents=[])
     super(filename)
     self.name = name
+    self.contents = contents
+  end
+end
+
+class BitFieldNode > Node
+  def init(filename, name, num)
+    super(filename)
+    self.name = name
+    self.num = num
   end
 end
 
@@ -114,6 +135,7 @@ declaration_specifiers_opt  : (: empty :) {
 declarator_opt  : (: empty :) {
 }
                 | declarator {
+  return declarator
 }
 ;
 
@@ -343,7 +365,7 @@ enumeration_constant  : <identifier> {
 ;
 
 struct_or_union_specifier : struct_or_union attributes_opt identifier_opt <lbrace> struct_contents <rbrace> attributes_opt {
-  return StructNode.new(__data__.filename, identifier_opt)
+  return StructNode.new(__data__.filename, identifier_opt, struct_contents)
 }
                           | struct_or_union attributes_opt <identifier> {
   return StructNode.new(__data__.filename, identifier.value)
@@ -360,48 +382,66 @@ struct_or_union : <struct> {
 ;
 
 struct_contents : struct_declaration_list {
+  return struct_declaration_list
 }
 ;
 
 struct_declaration_list : struct_declaration <semicolon> {
+  return [struct_declaration]
 }
                         | struct_declaration_list struct_declaration <semicolon> {
+  return struct_declaration_list + [struct_declaration]
 }
                         | <semicolon> {
+  return []
 }
 ;
 
 struct_declaration  : specifier_qualifier_list struct_declarator_list {
+  return StructFieldNode.new(__data__.filename, specifier_qualifier_list, struct_declarator_list)
 }
                     | <__extension__> struct_declaration {
+  return struct_declaration
 }
                     | specifier_qualifier_list {
+  return StructFieldNode.new(__data__.filename, specifier_qualifier_list)
 }
 ;
 
 specifier_qualifier_list_opt  : (: empty :) {
 }
                               | specifier_qualifier_list {
+  return specifier_qualifier_list
 }
 ;
 
 specifier_qualifier_list  : type_specifier specifier_qualifier_list_opt {
+  if type_specifier.kind_of?(Symbol)
+    return [type_specifier] + (specifier_qualifier_list_opt || [])
+  end
+  return type_specifier
 }
                           | type_qualifier specifier_qualifier_list_opt {
+  return specifier_qualifier_list_opt
 }
                           | attributes specifier_qualifier_list_opt {
+  return specifier_qualifier_list_opt
 }
 ;
 
 struct_declarator_list  : struct_declarator {
+  return [struct_declarator]
 }
                         | struct_declarator_list <comma> attributes_opt struct_declarator {
+  return struct_declarator_list + [struct_declarator]
 }
 ;
 
 struct_declarator : declarator attributes_opt {
+  return declarator
 }
                   | declarator_opt <colon> constant_expression attributes_opt {
+  return BitFieldNode.new(__data__.filename, declarator_opt, constant_expression)
 }
 ;
 
@@ -785,6 +825,7 @@ label : <identifier> <colon> attributes_opt {
 ;
 
 constant_expression : assignment_expression {
+  return assignment_expression
 }
 ;
 
