@@ -56,7 +56,18 @@ def node2yog(node)
   end
   if node.kind_of?(StructNode)
     name = node.name
-    return "{0} = StructClass.new({1})".format(name, name.to_s().inspect())
+    head = <<EOF.format(name, name.to_s().inspect())
+{0} = StructClass.new({1})
+{0}.define_fields([
+EOF
+    return head + node.contents.map() do [content]
+      type = content.type[0].inspect()
+      next content.names.map() do [name]
+        next <<EOF.format(type, name.inspect())
+  [{0}, {1}]
+EOF
+      end.join(",\n")
+    end.join(",\n").rtrim() + "])\n"
   end
 end
 
