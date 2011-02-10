@@ -3,13 +3,7 @@ from lalr1 import Token
 import c.grammar
 import lalr1
 
-class Node
-  def init(filename)
-    self.filename = filename
-  end
-end
-
-class Macro > Node
+class Macro > c.grammar.Node
   def init(filename, name, args)
     super(filename)
     self.name = name
@@ -228,7 +222,7 @@ def get_logger(verbose)
 end
 
 def parse_internal(lexer, verbose)
-  nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer.typedef_names, get_logger(verbose))
+  nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer, get_logger(verbose))
   return nodes, lexer.macros.values.select() do [macro]
     next macro != nil
   end
@@ -240,21 +234,22 @@ def parse(src, verbose=false)
   return nodes, macros
 end
 
-def parse_macro(src, verbose=false)
-  class MacroLexer > Lexer
-    def init(src)
-      super(src)
-      self.init? = true
-    end
-
-    def get_next_token()
-      if self.init?
-        self.init? = false
-        return Token.new('macro_mark)
-      end
-      return super()
-    end
+class MacroLexer > Lexer
+  def init(src)
+    super(src)
+    self.init? = true
   end
+
+  def get_next_token()
+    if self.init?
+      self.init? = false
+      return Token.new('macro_mark)
+    end
+    return super()
+  end
+end
+
+def parse_macro(src, verbose=false)
   lexer = MacroLexer.new(src)
   nodes, macros = parse_internal(lexer, verbose)
   return nodes, macros

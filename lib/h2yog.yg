@@ -1,6 +1,6 @@
 
 from c import parse, parse_macro
-from c.grammar import ConstantNode
+from c.grammar import ConstantNode, StructNode
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -54,6 +54,10 @@ def node2yog(node)
   if node.kind_of?(ConstantNode)
     return node.value.to_s()
   end
+  if node.kind_of?(StructNode)
+    name = node.name
+    return "{0} = StructClass.new({1})".format(name, name.to_s().inspect())
+  end
 end
 
 def h2yog(yog, headers, so, verbose=false, &block)
@@ -71,6 +75,9 @@ def h2yog(yog, headers, so, verbose=false, &block)
         next
       end
       fp.write("{0} = {1}\n".format(macro.name, src))
+    end
+    nodes.each() do [node]
+      fp.write("{0}\n".format(node2yog(node)))
     end
   end
 end

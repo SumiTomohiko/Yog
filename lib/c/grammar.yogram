@@ -2,19 +2,31 @@
 # This grammar came from gcc-4.2-4.2.4/gc-4.2-20070719/gcc/c-parser.c.
 
 %{
-class ConstantNode
-  def init(value)
+class Node
+  def init(filename)
+    self.filename = filename
+  end
+end
+
+class ConstantNode > Node
+  def init(filename, value)
+    super(filename)
     self.value = value
   end
 end
 
-class TypedefNode
-  def init(type)
+class TypedefNode > Node
+  def init(filename, type)
+    super(filename)
     self.type = type
   end
 end
 
-class StructNode
+class StructNode > Node
+  def init(filename, name)
+    super(filename)
+    self.name = name
+  end
 end
 
 class EnumNode
@@ -33,9 +45,15 @@ translation_unit  : external_declarations {
 ;
 
 external_declarations : external_declaration {
+  if external_declaration == nil
+    return []
+  end
   return [external_declaration]
 }
                       | external_declarations external_declaration {
+  if external_declaration == nil
+    return external_declarations
+  end
   return external_declarations + [external_declaration]
 }
 ;
@@ -43,12 +61,14 @@ external_declarations : external_declaration {
 external_declaration  : function_definition {
 }
                       | declaration {
+  return declaration
 }
                       | asm_definition {
 }
                       | <semicolon> {
 }
                       | <__extension__> external_declaration {
+  return external_declaration
 }
 ;
 
@@ -69,11 +89,14 @@ function_definition : declaration_specifiers declarator (: declaration_list_opt 
 declaration : declaration_specifiers init_declarator_list <semicolon> {
   if declaration_specifiers.kind_of?(TypedefNode)
     if (name = init_declarator_list.get(0)) != nil
-      __data__.add(name)
+      __data__.typedef_names.add(name)
     end
   end
 }
             | declaration_specifiers <semicolon> {
+  if declaration_specifiers.kind_of?(StructNode)
+    return declaration_specifiers
+  end
 }
 ;
 
@@ -112,7 +135,7 @@ declaration_specifiers  : storage_class_specifier declaration_specifiers_opt {
   if { 'extern, 'static, 'auto, 'register }.include?(storage_class_specifier)
     return declaration_specifiers_opt
   end
-  return TypedefNode.new(declaration_specifiers_opt)
+  return TypedefNode.new(__data__.filename, declaration_specifiers_opt)
 }
                         | type_specifier declaration_specifiers_opt {
   return type_specifier
@@ -181,7 +204,7 @@ init_declarator : init_declarator_head {
 
 nested_function_definition  : declaration_specifiers declarator declaration_list_opt compound_statement {
   if declaration_specifiers.kind_of?(TypedefNode)
-    __data__.add(declarator)
+    __data__.typedef_names.add(declarator)
   end
 }
 ;
@@ -297,6 +320,7 @@ enum_specifier  : <enum> attributes_opt identifier_opt <lbrace> enumerator_list 
 identifier_opt  : (: empty :) {
 }
                 | <identifier> {
+  return identifier.value
 }
 ;
 
@@ -319,13 +343,13 @@ enumeration_constant  : <identifier> {
 ;
 
 struct_or_union_specifier : struct_or_union attributes_opt identifier_opt <lbrace> struct_contents <rbrace> attributes_opt {
-  return StructNode.new()
+  return StructNode.new(__data__.filename, identifier_opt)
 }
                           | struct_or_union attributes_opt <identifier> {
-  return StructNode.new()
+  return StructNode.new(__data__.filename, identifier.value)
 }
                           | struct_or_union attributes_opt <typedef_name> {
-  return StructNode.new()
+  return StructNode.new(__data__.filename, typedef_name.value)
 }
 ;
 
@@ -1098,7 +1122,7 @@ argument_expression : expression {
 primary_expression  : <identifier> {
 }
                     | <constant> {
-  return ConstantNode.new(constant.value)
+  return ConstantNode.new(__data__.filename, constant.value)
 }
                     | string_literals {
 }
