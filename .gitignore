@@ -335,6 +335,7 @@ stamp-h1
 tags
 tests/Makefile
 tests/TestO.db
+tests/datatype.h
 tests/gc/Makefile
 tests/gc/Makefile.in
 tests/gc/test-mark-sweep-compact
