@@ -1471,4 +1471,11 @@ f(bar)
 print(bar.baz.to_s(buf.size, ENCODINGS[\"utf-8\"]))
 """ % locals(), "bar")
 
+    def test_define_fields0(self):
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[\'int, \'bar]])
+foo = Foo.new()
+foo.bar = 42
+print(foo.bar)""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
