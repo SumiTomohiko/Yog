@@ -271,4 +271,92 @@ foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
 
+    # Tests for ulonglong
+    def test_Struct300(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("Value must be greater or equal 0, not -1")
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'ulonglong, \'bar]])
+foo = Foo.new()
+foo.bar = -1
+""", stderr=test_stderr)
+
+    def test_Struct310(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'ulonglong, \'bar]])
+foo = Foo.new()
+foo.bar = 0
+print(foo.bar)
+""", "0")
+
+    def test_Struct320(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'ulonglong, \'bar]])
+foo = Foo.new()
+foo.bar = 18446744073709551615
+print(foo.bar)
+""", "18446744073709551615")
+
+    def test_Struct330(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("Value must be less or equal 18446744073709551615, not 18446744073709551616")
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'ulonglong, \'bar]])
+foo = Foo.new()
+foo.bar = 18446744073709551616
+""", stderr=test_stderr)
+
+    def test_Struct340(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum or Bignum, not String")
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'ulonglong, \'bar]])
+foo = Foo.new()
+foo.bar = \"baz\"
+""", stderr=test_stderr)
+
+    # Tests for longlong
+    def test_Struct350(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("Value must be greater or equal -9223372036854775808, not -9223372036854775809")
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'longlong, \'bar]])
+foo = Foo.new()
+foo.bar = -9223372036854775809
+""", stderr=test_stderr)
+
+    def test_Struct360(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'longlong, \'bar]])
+foo = Foo.new()
+foo.bar = -9223372036854775808
+print(foo.bar)
+""", "-9223372036854775808")
+
+    def test_Struct370(self):
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'longlong, \'bar]])
+foo = Foo.new()
+foo.bar = 9223372036854775807
+print(foo.bar)
+""", "9223372036854775807")
+
+    def test_Struct380(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("Value must be less or equal 9223372036854775807, not 9223372036854775808")
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'longlong, \'bar]])
+foo = Foo.new()
+foo.bar = 9223372036854775808
+""", stderr=test_stderr)
+
+    def test_Struct390(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("TypeError: Value must be Fixnum or Bignum, not String")
+        self._test("""
+Foo = StructClass.new(\"Foo\", [[\'longlong, \'bar]])
+foo = Foo.new()
+foo.bar = \"baz\"
+""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
