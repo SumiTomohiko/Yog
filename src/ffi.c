@@ -674,6 +674,12 @@ id2size(YogEnv* env, ID type)
     else if (strcmp(s, "long") == 0) {
         size = sizeof(long);
     }
+    else if (strcmp(s, "ulonglong") == 0) {
+        size = sizeof(unsigned long long);
+    }
+    else if (strcmp(s, "longlong") == 0) {
+        size = sizeof(long long);
+    }
     else if (strcmp(s, "longdouble") == 0) {
         size = sizeof(long double);
     }
@@ -1686,6 +1692,23 @@ check_Bignum_is_less_or_equal_than_unsigned_long(YogEnv* env, YogVal bignum, uns
 }
 
 static void
+check_Bignum_is_less_or_equal_than_unsigned_long_long(YogEnv* env, YogVal bignum, unsigned long long n)
+{
+    if (YogBignum_compare_with_unsigned_long_long(env, bignum, n) <= 0) {
+        return;
+    }
+    const char* fmt = "Value must be less or equal %llu, not %D";
+    YogError_raise_ValueError(env, fmt, n, bignum);
+}
+
+static void
+check_Bignum_unsigned_long_long(YogEnv* env, YogVal val)
+{
+    check_Bignum_is_greater_or_equal_than_int(env, val, 0);
+    check_Bignum_is_less_or_equal_than_unsigned_long_long(env, val, ULLONG_MAX);
+}
+
+static void
 check_Bignum_unsigned_long(YogEnv* env, YogVal val)
 {
     check_Bignum_is_greater_or_equal_than_int(env, val, 0);
@@ -1729,6 +1752,33 @@ check_Bignum_is_less_or_equal_than_int(YogEnv* env, YogVal val, int_t n)
 }
 
 static void
+check_Bignum_is_greater_or_equal_than_long_long(YogEnv* env, YogVal bignum, long long n)
+{
+    if (0 <= YogBignum_compare_with_long_long(env, bignum, n)) {
+        return;
+    }
+    const char* fmt = "Value must be greater or equal %lld, not %D";
+    YogError_raise_ValueError(env, fmt, n, bignum);
+}
+
+static void
+check_Bignum_is_less_or_equal_than_long_long(YogEnv* env, YogVal bignum, long long n)
+{
+    if (YogBignum_compare_with_long_long(env, bignum, INT64_MAX) <= 0) {
+        return;
+    }
+    const char* fmt = "Value must be less or equal %llu, not %D";
+    YogError_raise_ValueError(env, fmt, n, bignum);
+}
+
+static void
+check_Bignum_long_long(YogEnv* env, YogVal val)
+{
+    check_Bignum_is_greater_or_equal_than_long_long(env, val, LLONG_MIN);
+    check_Bignum_is_less_or_equal_than_long_long(env, val, LLONG_MAX);
+}
+
+static void
 check_Bignum_long(YogEnv* env, YogVal val)
 {
     check_Bignum_is_greater_or_equal_than_long(env, val, LONG_MIN);
@@ -1752,6 +1802,13 @@ check_Bignum_int32(YogEnv* env, YogVal val)
 }
 
 static void
+raise_TypeError_for_int(YogEnv* env, YogVal val)
+{
+    const char* fmt = "Value must be Fixnum or Bignum, not %C";
+    YogError_raise_TypeError(env, fmt, val);
+}
+
+static void
 write_uint32(YogEnv* env, void* dest, YogVal val)
 {
     SAVE_ARG(env, val);
@@ -1767,8 +1824,7 @@ write_uint32(YogEnv* env, void* dest, YogVal val)
         *p = YogBignum_to_unsigned_type(env, val, "Value");
         RETURN_VOID(env);
     }
-    const char* fmt = "Value must be Fixnum or Bignum, not %C";
-    YogError_raise_TypeError(env, fmt, val);
+    raise_TypeError_for_int(env, val);
 
     RETURN_VOID(env);
 }
@@ -1788,20 +1844,9 @@ write_int32(YogEnv* env, void* dest, YogVal val)
         *p = YogBignum_to_signed_type(env, val, "Value");
         RETURN_VOID(env);
     }
-    const char* fmt = "Value must be Fixnum or Bignum, not %C";
-    YogError_raise_TypeError(env, fmt, val);
+    raise_TypeError_for_int(env, val);
 
     RETURN_VOID(env);
-}
-
-static void
-check_Bignum_is_less_or_equal_than_unsigned_long_long(YogEnv* env, YogVal bignum, unsigned long long n)
-{
-    if (YogBignum_compare_with_unsigned_long_long(env, bignum, n) <= 0) {
-        return;
-    }
-    const char* fmt = "Value must be less or equal %llu, not %D";
-    YogError_raise_ValueError(env, fmt, n, bignum);
 }
 
 static void
@@ -1839,30 +1884,9 @@ write_uint64(YogEnv* env, void* dest, YogVal val)
         *p = YogBignum_to_unsigned_long_long(env, val, "Value");
         RETURN_VOID(env);
     }
-    const char* fmt = "Value must be Fixnum or Bignum, not %C";
-    YogError_raise_TypeError(env, fmt, val);
+    raise_TypeError_for_int(env, val);
 
     RETURN_VOID(env);
-}
-
-static void
-check_Bignum_is_greater_or_equal_than_long_long(YogEnv* env, YogVal bignum, long long n)
-{
-    if (0 <= YogBignum_compare_with_long_long(env, bignum, n)) {
-        return;
-    }
-    const char* fmt = "Value must be greater or equal %lld, not %D";
-    YogError_raise_ValueError(env, fmt, n, bignum);
-}
-
-static void
-check_Bignum_is_less_or_equal_than_long_long(YogEnv* env, YogVal bignum, long long n)
-{
-    if (YogBignum_compare_with_long_long(env, bignum, INT64_MAX) <= 0) {
-        return;
-    }
-    const char* fmt = "Value must be less or equal %llu, not %D";
-    YogError_raise_ValueError(env, fmt, n, bignum);
 }
 
 static void
@@ -1889,8 +1913,7 @@ write_int64(YogEnv* env, void* dest, YogVal val)
         *p = YogBignum_to_long_long(env, val, "Value");
         RETURN_VOID(env);
     }
-    const char* fmt = "Value must be Fixnum or Bignum, not %C";
-    YogError_raise_TypeError(env, fmt, val);
+    raise_TypeError_for_int(env, val);
 
     RETURN_VOID(env);
 }
@@ -2044,22 +2067,64 @@ write_short(YogEnv* env, void* dest, YogVal val)
 } while (0)
 
 static void
+write_ulonglong(YogEnv* env, void* dest, YogVal val)
+{
+    SAVE_ARG(env, val);
+
+    typedef unsigned long long TargetType;
+    if (IS_FIXNUM(val)) {
+        WRITE_POSITIVE_NUM(env, TargetType, dest, val);
+        RETURN_VOID(env);
+    }
+    if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
+        check_Bignum_unsigned_long_long(env, val);
+        TargetType* p = (TargetType*)dest;
+        *p = YogBignum_to_unsigned_long_long(env, val, "Value");
+        RETURN_VOID(env);
+    }
+    raise_TypeError_for_int(env, val);
+
+    RETURN_VOID(env);
+}
+
+static void
 write_ulong(YogEnv* env, void* dest, YogVal val)
 {
     SAVE_ARG(env, val);
 
+    typedef unsigned long TargetType;
     if (IS_FIXNUM(val)) {
-        WRITE_POSITIVE_NUM(env, unsigned long, dest, val);
+        WRITE_POSITIVE_NUM(env, TargetType, dest, val);
         RETURN_VOID(env);
     }
     if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
         check_Bignum_unsigned_long(env, val);
-        unsigned long* p = (unsigned long*)dest;
+        TargetType* p = (TargetType*)dest;
         *p = YogBignum_to_unsigned_long(env, val, "Value");
         RETURN_VOID(env);
     }
-    const char* fmt = "Value must be Fixnum or Bignum, not %C";
-    YogError_raise_TypeError(env, fmt, val);
+    raise_TypeError_for_int(env, val);
+
+    RETURN_VOID(env);
+}
+
+static void
+write_longlong(YogEnv* env, void* dest, YogVal val)
+{
+    SAVE_ARG(env, val);
+
+    typedef long long TargetType;
+    TargetType* p = (TargetType*)dest;
+    if (IS_FIXNUM(val)) {
+        *p = VAL2INT(val);
+        RETURN_VOID(env);
+    }
+    if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
+        check_Bignum_long_long(env, val);
+        *p = YogBignum_to_long_long(env, val, "Value");
+        RETURN_VOID(env);
+    }
+    raise_TypeError_for_int(env, val);
 
     RETURN_VOID(env);
 }
@@ -2079,8 +2144,7 @@ write_long(YogEnv* env, void* dest, YogVal val)
         *p = YogBignum_to_long(env, val, "Value");
         RETURN_VOID(env);
     }
-    const char* fmt = "Value must be Fixnum or Bignum, not %C";
-    YogError_raise_TypeError(env, fmt, val);
+    raise_TypeError_for_int(env, val);
 
     RETURN_VOID(env);
 }
@@ -2090,18 +2154,18 @@ write_pointer(YogEnv* env, void* dest, YogVal val)
 {
     SAVE_ARG(env, val);
 
+    typedef void* TargetType;
     if (IS_FIXNUM(val)) {
-        WRITE_POSITIVE_NUM(env, void*, dest, val);
+        WRITE_POSITIVE_NUM(env, TargetType, dest, val);
         RETURN_VOID(env);
     }
     if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
         check_Bignum_uint(env, val);
-        void** p = (void**)dest;
-        *p = (void*)YogBignum_to_unsigned_type(env, val, "Value");
+        TargetType* p = (TargetType*)dest;
+        *p = (TargetType)YogBignum_to_unsigned_type(env, val, "Value");
         RETURN_VOID(env);
     }
-    const char* fmt = "Value must be Fixnum or Bignum, not %C";
-    YogError_raise_TypeError(env, fmt, val);
+    raise_TypeError_for_int(env, val);
 
     RETURN_VOID(env);
 }
@@ -2122,8 +2186,7 @@ write_uint(YogEnv* env, void* dest, YogVal val)
         *p = YogBignum_to_unsigned_type(env, val, "Value");
         RETURN_VOID(env);
     }
-    const char* fmt = "Value must be Fixnum or Bignum, not %C";
-    YogError_raise_TypeError(env, fmt, val);
+    raise_TypeError_for_int(env, val);
 
     RETURN_VOID(env);
 }
@@ -2143,8 +2206,7 @@ write_int(YogEnv* env, void* dest, YogVal val)
         *p = YogBignum_to_signed_type(env, val, "Value");
         RETURN_VOID(env);
     }
-    const char* fmt = "Value must be Fixnum or Bignum, not %C";
-    YogError_raise_TypeError(env, fmt, val);
+    raise_TypeError_for_int(env, val);
 
     RETURN_VOID(env);
 }
@@ -2207,6 +2269,12 @@ write_data(YogEnv* env, void* dest, ID type, YogVal val)
     }
     else if (strcmp(s, "long") == 0) {
         write_long(env, dest, val);
+    }
+    else if (strcmp(s, "ulonglong") == 0) {
+        write_ulonglong(env, dest, val);
+    }
+    else if (strcmp(s, "longlong") == 0) {
+        write_longlong(env, dest, val);
     }
     else if (strcmp(s, "longdouble") == 0) {
         write_long_double(env, dest, val);
@@ -2591,6 +2659,12 @@ Struct_read(YogEnv* env, YogVal self, uint_t offset, ID type)
     }
     else if (strcmp(s, "long") == 0) {
         val = YogVal_from_int(env, *((long*)ptr));
+    }
+    else if (strcmp(s, "ulonglong") == 0) {
+        val = YogVal_from_unsigned_long_long(env, *((unsigned long long*)ptr));
+    }
+    else if (strcmp(s, "longlong") == 0) {
+        val = YogVal_from_long_long(env, *((long long*)ptr));
     }
     else if (strcmp(s, "longdouble") == 0) {
         val = YogFloat_from_float(env, *((long double*)ptr));
