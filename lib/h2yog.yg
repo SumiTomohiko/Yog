@@ -50,6 +50,49 @@ def get_macros_implementation(headers, macros)
   return impls.slice(0, impls.size - 1) # remove last empty string
 end
 
+def make_type_text(type)
+  unsigned? = false
+  short? = false
+  long? = false
+  long_long? = false
+  basic = 'int
+  type.each() do [sym]
+    if sym == 'unsigned
+      unsigned? = true
+    elif sym == 'short
+      short? = true
+    elif sym == 'long
+      if long?
+        long_long? = true
+      else
+        long? = true
+      end
+    elif sym == 'char
+      basic = 'char
+    elif sym == 'float
+      return 'float.inspect()
+    elif sym == 'double
+      basic = 'double
+    end
+  end
+  if basic == 'char
+    return (unsigned? ? 'uchar : 'char).inspect()
+  end
+  if basic == 'double
+    return (long? ? 'longdouble : 'double).inspect()
+  end
+  if short?
+    return (unsigned? ? 'ushort : 'short).inspect()
+  end
+  if long_long?
+    return (unsigned? ? 'ulonglong : 'longlong).inspect()
+  end
+  if long?
+    return (unsigned? ? 'ulong : 'long).inspect()
+  end
+  return (unsigned? ? 'uint : 'int).inspect()
+end
+
 def node2yog(node)
   if node.kind_of?(ConstantNode)
     return node.value.to_s()
@@ -61,9 +104,9 @@ def node2yog(node)
 {0}.define_fields([
 EOF
     return head + node.contents.map() do [content]
-      type = content.type[0].inspect()
+      type = make_type_text(content.type)
       next content.names.map() do [name]
-        next <<EOF.format(type, name.inspect())
+        next <<EOF.rtrim().format(type, name.inspect())
   [{0}, {1}]
 EOF
       end.join(",\n")

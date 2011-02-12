@@ -23,7 +23,7 @@ print(foo.bar)""".format(expected)
         ["long int", -2147483648],
         ["long", -2147483648],
         ["signed long", -2147483648],
-        ["unsigned long", 18446744073709551615],
+        ["unsigned long", 4294967295],
 
         # Tests for long long
         ["long long int", -9223372036854775808],
@@ -33,8 +33,8 @@ print(foo.bar)""".format(expected)
 
         # Tests for short
         ["short int", -32768],
-        ["short", 32768],
-        ["signed short", 32768],
+        ["short", 32767],
+        ["signed short", 32767],
         ["unsigned short", 65535],
 
         # Tests for char
