@@ -34,4 +34,7 @@ print(foo.bar)"""
     def test_struct20(self):
         self.do_struct_test("test_struct20.h")
 
+    def test_struct30(self):
+        self.do_struct_test("test_struct30.h")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -1,6 +1,6 @@
 
 from c import parse, parse_macro
-from c.grammar import ConstantNode, StructNode
+from c.grammar import ConstantNode, StructNode, TypedefNode
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -93,24 +93,30 @@ def make_type_text(type)
   return (unsigned? ? 'uint : 'int).inspect()
 end
 
+def struct2yog(node, name)
+  head = <<EOF.format(name, name.to_s().inspect())
+{0} = StructClass.new({1})
+{0}.define_fields([
+EOF
+  return head + node.contents.map() do [content]
+    type = make_type_text(content.type)
+    next content.names.map() do [name]
+      next <<EOF.rtrim().format(type, name.inspect())
+  [{0}, {1}]
+EOF
+    end.join(",\n")
+  end.join(",\n").rtrim() + "])\n"
+end
+
 def node2yog(node)
   if node.kind_of?(ConstantNode)
     return node.value.to_s()
   end
+  if node.kind_of?(TypedefNode) && node.type.kind_of?(StructNode)
+    return struct2yog(node.type, node.name)
+  end
   if node.kind_of?(StructNode)
-    name = node.name
-    head = <<EOF.format(name, name.to_s().inspect())
-{0} = StructClass.new({1})
-{0}.define_fields([
-EOF
-    return head + node.contents.map() do [content]
-      type = make_type_text(content.type)
-      next content.names.map() do [name]
-        next <<EOF.rtrim().format(type, name.inspect())
-  [{0}, {1}]
-EOF
-      end.join(",\n")
-    end.join(",\n").rtrim() + "])\n"
+    return struct2yog(node, node.name)
   end
 end
 

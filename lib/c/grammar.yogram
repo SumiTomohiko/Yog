@@ -19,6 +19,7 @@ class TypedefNode > Node
   def init(filename, type)
     super(filename)
     self.type = type
+    self.name = nil
   end
 end
 
@@ -111,6 +112,8 @@ declaration : declaration_specifiers init_declarator_list <semicolon> {
   if declaration_specifiers.kind_of?(TypedefNode)
     if (name = init_declarator_list.get(0)) != nil
       __data__.typedef_names.add(name)
+      declaration_specifiers.name = name
+      return declaration_specifiers
     end
   end
 }
