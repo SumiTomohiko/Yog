@@ -73,6 +73,8 @@ def make_type_text(type)
       return 'float.inspect()
     elif sym == 'double
       basic = 'double
+    elif !['int, 'signed].include?(sym)
+      return sym.to_s()
     end
   end
   if basic == 'char
