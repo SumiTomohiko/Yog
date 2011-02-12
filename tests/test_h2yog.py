@@ -37,4 +37,45 @@ print(foo.bar)"""
     def test_struct30(self):
         self.do_struct_test("test_struct30.h")
 
+    def do_typedef_test(self, type, expected):
+        header = "typedef {0} Foo;".format(type)
+        src = """from test_h2yog import Foo
+print(Foo)"""
+        self.do_test2(header, src, expected)
+
+    datatypes = [
+        # Tests for int
+        ["int", "int"],
+        ["signed int", "int"],
+        ["unsigned int", "uint"],
+
+        # Tests for long
+        ["long int", "long"],
+        ["long", "long"],
+        ["signed long", "long"],
+        ["unsigned long", "ulong"],
+
+        # Tests for long long
+        ["long long int", "longlong"],
+        ["long long", "longlong"],
+        ["signed long long", "longlong"],
+        ["unsigned long long", "ulonglong"],
+
+        # Tests for short
+        ["short int", "short"],
+        ["short", "short"],
+        ["signed short", "short"],
+        ["unsigned short", "ushort"],
+
+        # Tests for char
+        ["char", "char"],
+        ["signed char", "char"],
+        ["unsigned char", "uchar"],
+
+        # Tests for grammar
+        ["long signed", "long"]]
+    for type, expected in datatypes:
+        exec """def test_typedef_{0}(self):
+    self.do_typedef_test(\"{1}\", \"{2}\")""".format(type.replace(" ", "_"), type, expected)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

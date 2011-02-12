@@ -5,13 +5,12 @@ from h2yog_helper import Base
 class TestH2Yog(Base):
 
     def do_datatype_test(self, datatype, expected):
-        path = "datatype.h"
-        self.write_source(path, "struct Foo {{ {0} bar; }};".format(datatype))
+        header = "struct Foo {{ {0} bar; }};".format(datatype)
         src = """from test_h2yog import Foo
 foo = Foo.new()
 foo.bar = {0}
 print(foo.bar)""".format(expected)
-        self.do_test([path], "empty", src, str(expected))
+        self.do_test2(self, header, src, str(expected))
 
     datatypes = [
         # Tests for int

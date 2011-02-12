@@ -108,12 +108,18 @@ EOF
   end.join(",\n").rtrim() + "])\n"
 end
 
+def typedef2yog(type, name)
+  return "{0} = {1}\n".format(name, make_type_text(type))
+end
+
 def node2yog(node)
   if node.kind_of?(ConstantNode)
     return node.value.to_s()
   end
-  if node.kind_of?(TypedefNode) && node.type.kind_of?(StructNode)
-    return struct2yog(node.type, node.name)
+  if node.kind_of?(TypedefNode)
+    type = node.type
+    f = type.kind_of?(StructNode) ? struct2yog : typedef2yog
+    return f(type, node.name)
   end
   if node.kind_of?(StructNode)
     return struct2yog(node, node.name)

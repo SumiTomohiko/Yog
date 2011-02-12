@@ -163,6 +163,9 @@ declaration_specifiers  : storage_class_specifier declaration_specifiers_opt {
   return TypedefNode.new(__data__.filename, declaration_specifiers_opt)
 }
                         | type_specifier declaration_specifiers_opt {
+  if type_specifier.kind_of?(Symbol)
+    return [type_specifier] + (declaration_specifiers_opt || [])
+  end
   return type_specifier
 }
                         | type_qualifier declaration_specifiers_opt {

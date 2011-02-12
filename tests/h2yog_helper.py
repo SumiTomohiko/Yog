@@ -24,4 +24,9 @@ end""" % { "headers": ", ".join([ "\"%s\"" % (header, ) for header in headers]),
         self.run_h2yog(headers, so)
         self._test(src, expected)
 
+    def do_test2(self, header, src, expected):
+        path = "h2yog.h"
+        self.write_source(path, header)
+        self.do_test([path], "empty", src, expected)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
