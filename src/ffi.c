@@ -43,6 +43,7 @@ struct LibFunc {
     struct YogBasicObj base;
     ffi_cif cif;
     void* f;
+    YogVal rtype;
     uint_t nargs;
     YogVal arg_types[0];
 };
@@ -922,6 +923,13 @@ check_Bignum_uint(YogEnv* env, YogVal val)
     check_Bignum_is_less_or_equal_than_unsigned_int(env, val, UNSIGNED_MAX);
 }
 
+static void
+init_struct_with_ptr(YogEnv* env, YogVal obj, void* ptr)
+{
+    PTR_AS(Struct, obj)->data = ptr;
+    PTR_AS(Struct, obj)->own = FALSE;
+}
+
 static YogVal
 StructBase_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -944,15 +952,13 @@ StructBase_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
     }
     if (IS_FIXNUM(ptr)) {
         check_Fixnum_positive(env, ptr);
-        PTR_AS(Struct, self)->data = (void*)VAL2INT(ptr);
-        PTR_AS(Struct, self)->own = FALSE;
+        init_struct_with_ptr(env, self, (void*)VAL2INT(ptr));
         RETURN(env, self);
     }
     if (IS_PTR(ptr) && (BASIC_OBJ_TYPE(ptr) == TYPE_BIGNUM)) {
         check_Bignum_uint(env, ptr);
         void* data = (void*)YogBignum_to_unsigned_type(env, ptr, "ptr");
-        PTR_AS(Struct, self)->data = data;
-        PTR_AS(Struct, self)->own = FALSE;
+        init_struct_with_ptr(env, self, data);
         RETURN(env, self);
     }
 
@@ -1389,6 +1395,7 @@ LibFunc_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     YogBasicObj_keep_children(env, ptr, keeper, heap);
 
     LibFunc* f = (LibFunc*)ptr;
+    YogGC_KEEP(env, f, rtype, keeper, heap);
     uint_t nargs = f->nargs;
     uint_t i;
     for (i = 0; i < nargs; i++) {
@@ -1408,6 +1415,7 @@ LibFunc_new(YogEnv* env, uint_t nargs)
     YogBasicObj_init(env, obj, TYPE_LIB_FUNC, 0, env->vm->cLibFunc);
     PTR_AS(LibFunc, obj)->f = NULL;
     PTR_AS(LibFunc, obj)->cif.arg_types = NULL;
+    PTR_AS(LibFunc, obj)->rtype = YUNDEF;
     PTR_AS(LibFunc, obj)->nargs = nargs;
     uint_t i;
     for (i = 0; i < nargs; i++) {
@@ -1571,6 +1579,18 @@ map_ffi_error(YogEnv* env, ffi_status status)
     }
 }
 
+static void
+check_rtype_class(YogEnv* env, YogVal rtype)
+{
+    if (IS_NIL(rtype) || IS_SYMBOL(rtype)) {
+        return;
+    }
+    if (IS_PTR(rtype) && (BASIC_OBJ_TYPE(rtype) == TYPE_ARRAY)) {
+        return;
+    }
+    YogError_raise_TypeError(env, "rtype must be Symbol or nil, not %C", rtype);
+}
+
 static YogVal
 load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -1600,11 +1620,7 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         YogError_raise_TypeError(env, fmt, arg_types);
         /* NOTREACHED */
     }
-    if (!IS_NIL(rtype) && !IS_SYMBOL(rtype)) {
-        const char* fmt = "rtype must be Symbol or nil, not %C";
-        YogError_raise_TypeError(env, fmt, rtype);
-        /* NOTREACHED */
-    }
+    check_rtype_class(env, rtype);
 
     uint_t nargs = IS_NIL(arg_types) ? 0 : YogArray_size(env, arg_types);
     f = LibFunc_new(env, nargs);
@@ -1616,7 +1632,9 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         types[i] = map_type(env, node);
         YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), arg_types[i], node);
     }
-    ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(rtype) ? &ffi_type_void : map_type(env, parse_type(env, rtype)), types);
+    node = IS_NIL(rtype) ? YNIL : parse_type(env, rtype);
+    YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), rtype, node);
+    ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(rtype) ? &ffi_type_void : map_type(env, node), types);
     if (status != FFI_OK) {
         YogError_raise_FFIError(env, "%s", map_ffi_error(env, status));
         /* NOTREACHED */
@@ -2434,6 +2452,24 @@ read_argument(YogEnv* env, YogVal obj, YogVal node, void* p)
 }
 
 static YogVal
+create_ptr_retval(YogEnv* env, YogHandle* callee, void* rvalue)
+{
+    YogVal node = HDL_AS(LibFunc, callee)->rtype;
+    if (PTR_AS(Node, node)->type != NODE_POINTER) {
+        return YogVal_from_unsigned_int(env, (uint_t)rvalue);
+    }
+    YogVal klass = PTR_AS(Node, node)->u.pointer.klass;
+    if (IS_PTR(klass) && (BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS)) {
+        YogVal obj = StructBase_alloc(env, klass);
+        init_struct_with_ptr(env, obj, rvalue);
+        return obj;
+    }
+    const char* fmt = "Pointer to Struct is allowed for rtype, not %C";
+    YogError_raise_TypeError(env, fmt, klass);
+    return YUNDEF;
+}
+
+static YogVal
 LibFunc_do(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     uint_t nargs = HDL_AS(LibFunc, callee)->nargs;
@@ -2527,7 +2563,7 @@ LibFunc_do(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[]
         return YogFloat_from_float(env, *((long double*)rvalue));
     }
     if (rtype == &ffi_type_pointer) {
-        return YogVal_from_unsigned_int(env, *((uint_t*)rvalue));
+        return create_ptr_retval(env, callee, *((void**)rvalue));
     }
 
     return YNIL;
