@@ -24,7 +24,7 @@ def log_state_stack(stack, logger)
 end
 
 def parse(gram, get_token, __data__, logger=nil)
-  log = logger != nil ? logger : nop
+  log = logger || nop
 
   state_stack = [0]
   stack = []
