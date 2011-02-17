@@ -1,4 +1,6 @@
 
+ROOT_RULE = 0
+
 class Token
   def init(type, value=nil)
     self.type = type
@@ -23,14 +25,42 @@ def log_state_stack(stack, logger)
   logger("State stack: {0}".format(stack.join(" ")))
 end
 
+class Parser
+  def init()
+    self.state_stack = [0]
+    self.stack = []
+  end
+
+  def reduce(gram, rule, __data__, log)
+    log("Reduced using rule {0}".format(rule))
+    log(gram.get_rule(rule))
+    size = gram.get_rule_size(rule)
+    obj = gram.invoke(rule, size == 0 ? [] : self.stack.slice(- size), __data__)
+    self.stack = self.stack.slice(0, self.stack.size - size) + [obj]
+    self.state_stack = self.state_stack.slice(0, self.state_stack.size - size)
+    next_state = gram.get_next_state(self.state_stack[-1], rule)
+    self.state_stack << next_state
+    log("New state is {0}".format(next_state))
+    log_state_stack(self.state_stack, log)
+  end
+
+  def process_reduce_only_states(gram, __data__, log)
+    rule = gram.get_reduce_only_rule(self.state_stack[-1])
+    if (rule == nil) || (rule == ROOT_RULE)
+      return
+    end
+    self.reduce(gram, rule, __data__, log)
+    self.process_reduce_only_states(gram, __data__, log)
+  end
+end
+
 def parse(gram, get_token, __data__, logger=nil)
   log = logger || nop
 
-  state_stack = [0]
-  stack = []
+  parser = Parser.new()
   token = get_token_internal(get_token, log)
   loop() do
-    state = state_stack[-1]
+    state = parser.state_stack[-1]
     type = token != nil ? token.type : "$".to_sym()
     act, subinfo = gram.get_action(state, type)
     if act == 'error
@@ -38,27 +68,23 @@ def parse(gram, get_token, __data__, logger=nil)
       return nil
     end
     if act == 'shift
-      state_stack << subinfo
+      parser.state_stack << subinfo
       log("Shifted to state {0}".format(subinfo))
-      log_state_stack(state_stack, log)
-      stack << token
+      log_state_stack(parser.state_stack, log)
+      parser.stack << token
+      log("Process reduce only states")
+      parser.process_reduce_only_states(gram, __data__, log)
       token = get_token_internal(get_token, log)
       next
     end
-    if subinfo == 0
+    # reduce
+    if subinfo == ROOT_RULE
       log("Accepted")
-      return stack[-1]
+      return parser.stack[-1]
     end
-    log("Reduced using rule {0}".format(subinfo))
-    log(gram.get_rule(subinfo))
-    size = gram.get_rule_size(subinfo)
-    obj = gram.invoke(subinfo, size == 0 ? [] : stack.slice(- size), __data__)
-    stack = stack.slice(0, stack.size - size) + [obj]
-    state_stack = state_stack.slice(0, state_stack.size - size)
-    next_state = gram.get_next_state(state_stack[-1], subinfo)
-    state_stack << next_state
-    log("New state is {0}".format(next_state))
-    log_state_stack(state_stack, log)
+    parser.reduce(gram, subinfo, __data__, log)
+    log("Process reduce only states")
+    parser.process_reduce_only_states(gram, __data__, log)
   end
 end
 

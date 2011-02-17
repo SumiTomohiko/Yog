@@ -855,7 +855,21 @@ def make_dict_entries(syms)
   end.join(", ")
 end
 
-def output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules, code)
+def get_reduce_only_rule(state)
+  if 0 < state.shifts.size
+    return nil
+  end
+  if 1 < state.items.size
+    return nil
+  end
+  item = state.items[0]
+  if item.pos < item.rule.rhs.size
+    return nil
+  end
+  return item.rule.id
+end
+
+def output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules, states, code)
   s = make_table_for_states(term2act) do [act]
     next (act != nil ? act.encode() : nil).to_s()
   end
@@ -891,9 +905,23 @@ EOF
   c = rules.map() do [rule]
     next rule.to_s().inspect()
   end.join(",\n")
+
+  reduce_only_rules = Array.new(states.size)
+  states.each() do [state]
+    reduce_only_rules[state.id] = get_reduce_only_rule(state)
+  end
+
   File.open(dest, "w") do [fp]
-    fp.write(<<EOF.format(s, t, u, v, w, x, y, z, a, b, c))
+    fp.write(<<EOF.format(s, t, u, v, w, x, y, z, a, b, c, reduce_only_rules.join(", ")))
 {9}
+
+reduce_only_rules = [
+{11}
+]
+
+def get_reduce_only_rule(state)
+  return reduce_only_rules[state]
+end
 
 rules = [
 {10}
@@ -1001,7 +1029,7 @@ def main(dest, src)
     dump_states(fp, states)
   end
   term2act, nonterm2act = compute_tables(states, rules, terms, nonterms)
-  output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules, parser.code)
+  output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules, states, parser.code)
 end
 
 if __FILE__ == ARGV.get(0)
