@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import unlink
-from testcase import TestCase
+from testcase import TestCase, get_lib_path
 
 class Base(TestCase):
 
@@ -27,6 +27,6 @@ end""" % { "headers": ", ".join([ "\"%s\"" % (header, ) for header in headers]),
     def do_test2(self, header, src, expected):
         path = "h2yog.h"
         self.write_source(path, header)
-        self.do_test([path], "empty", src, expected)
+        self.do_test([path], get_lib_path("empty"), src, expected)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

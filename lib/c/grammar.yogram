@@ -8,6 +8,22 @@ class Node
   end
 end
 
+class DeclarationNode > Node
+  def init(filename, spec, declarators=[])
+    super(filename)
+    self.spec = spec
+    self.declarators = declarators
+  end
+end
+
+class PointerNode > Node
+  def init(filename)
+    super(filename)
+    self.num = 1
+    self.node = nil
+  end
+end
+
 class ConstantNode > Node
   def init(filename, value)
     super(filename)
@@ -19,7 +35,6 @@ class TypedefNode > Node
   def init(filename, type)
     super(filename)
     self.type = type
-    self.name = nil
   end
 end
 
@@ -36,7 +51,7 @@ class StructFieldNode > Node
 end
 
 class StructNode > Node
-  def init(filename, name, contents=[])
+  def init(filename, name, contents=nil)
     super(filename)
     self.name = name
     self.contents = contents
@@ -52,6 +67,14 @@ class BitFieldNode > Node
 end
 
 class EnumNode
+end
+
+class ProtoNode > Node
+  def init(filename, name, params)
+    super(filename)
+    self.name = name
+    self.params = params
+  end
 end
 %}
 
@@ -110,17 +133,14 @@ function_definition : declaration_specifiers declarator (: declaration_list_opt 
 
 declaration : declaration_specifiers init_declarator_list <semicolon> {
   if declaration_specifiers.kind_of?(TypedefNode)
-    if (name = init_declarator_list.get(0)) != nil
-      __data__.typedef_names.add(name)
-      declaration_specifiers.name = name
-      return declaration_specifiers
+    init_declarator_list.each() do [decl]
+      __data__.typedef_names << (decl.kind_of?(PointerNode) ? decl.node : decl)
     end
   end
+  return DeclarationNode.new(__data__.filename, declaration_specifiers, init_declarator_list)
 }
             | declaration_specifiers <semicolon> {
-  if declaration_specifiers.kind_of?(StructNode)
-    return declaration_specifiers
-  end
+  return DeclarationNode.new(__data__.filename, declaration_specifiers)
 }
 ;
 
@@ -143,7 +163,11 @@ declarator_opt  : (: empty :) {
 ;
 
 declarator  : pointer_opt direct_declarator {
-  return direct_declarator
+  if pointer_opt == nil
+    return direct_declarator
+  end
+  pointer_opt.node = direct_declarator
+  return pointer_opt
 }
 ;
 
@@ -231,9 +255,6 @@ init_declarator : init_declarator_head {
 ;
 
 nested_function_definition  : declaration_specifiers declarator declaration_list_opt compound_statement {
-  if declaration_specifiers.kind_of?(TypedefNode)
-    __data__.typedef_names.add(declarator)
-  end
 }
 ;
 
@@ -477,10 +498,13 @@ direct_declarator : <identifier> {
   return direct_declarator
 }
                   | direct_declarator <lpar> parameter_type_list <rpar> {
-  return direct_declarator
+  return ProtoNode.new(__data__.filename, direct_declarator, parameter_type_list)
 }
                   | direct_declarator <lpar> identifier_list_opt <rpar> {
-  return direct_declarator
+  params = identifier_list_opt.map() do
+    next ['int]
+  end
+  return ProtoNode.new(__data__.filename, direct_declarator, params)
 }
                   | direct_declarator <lpar> parameter_forward_declarations parameter_type_list_opt <rpar> {
   return direct_declarator
@@ -488,14 +512,19 @@ direct_declarator : <identifier> {
 ;
 
 pointer_opt : (: empty :) {
+  return nil
 }
             | pointer {
+  return pointer
 }
 ;
 
 pointer : <star> type_qualifier_list_opt {
+  return PointerNode.new(__data__.filename)
 }
         | <star> type_qualifier_list_opt pointer {
+  pointer.num += 1
+  return pointer
 }
 ;
 
@@ -522,8 +551,10 @@ parameter_type_list_opt : (: empty :) {
 ;
 
 parameter_type_list : parameter_list {
+  return parameter_list
 }
                     | parameter_list <comma> <dots> {
+  return parameter_list
 }
 ;
 
@@ -536,34 +567,42 @@ parameter_list  : parameter_declaration {
 ;
 
 parameter_declaration : declaration_specifiers declarator attributes_opt {
+  return DeclarationNode.new(__data__.filename, declaration_specifiers, [declarator])
 }
                       | declaration_specifiers abstract_declarator_opt attributes_opt {
+  return DeclarationNode.new(__data__.filename, declaration_specifiers, abstract_declarator_opt ? [abstract_declarator_opt] : [])
 }
 ;
 
 identifier_list_opt : (: empty :) {
+  return []
 }
                     | identifier_list {
+  return identifier_list
 }
 ;
 
 identifier_list : <identifier> {
-  return [identifier]
+  return [identifier.value]
 }
                 | identifier_list <colon> <identifier> {
-  return identifier_list + [identifier]
+  return identifier_list + [identifier.value]
 }
 ;
 
 abstract_declarator_opt : (: empty :) {
+  return nil
 }
                         | abstract_declarator {
+  return abstract_declarator
 }
 ;
 
 abstract_declarator : pointer {
+  return pointer
 }
                     | pointer_opt direct_abstract_declarator {
+  return pointer_opt
 }
 ;
 

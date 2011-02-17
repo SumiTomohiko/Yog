@@ -341,10 +341,12 @@ tests/gc/test-mark-sweep-compact
 tests/gram.yg
 tests/h2yog.h
 tests/run_h2yog.yg
+tests/test_argtype_*
 tests/test_h2yog.yg
 tests/test_package4.ilk
 tests/test_package5.ilk
 tests/test_package6.ilk
+tests/test_rettype_*
 tests/test_write0.tmp
 tools/lemon/Makefile
 tools/lemon/lemon

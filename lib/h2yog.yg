@@ -1,6 +1,6 @@
 
-from c import parse, parse_macro
-from c.grammar import ConstantNode, StructNode, TypedefNode
+from c import Macro, parse, parse_macro
+from c.grammar import ConstantNode, PointerNode, ProtoNode, StructNode, TypedefNode
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -50,13 +50,20 @@ def get_macros_implementation(headers, macros)
   return impls.slice(0, impls.size - 1) # remove last empty string
 end
 
-def make_type_text(type)
+def spec2yog(spec)
+  if spec.kind_of?(StructNode)
+    return spec.name.to_s()
+  end
+
   unsigned? = false
   short? = false
   long? = false
   long_long? = false
   basic = 'int
-  type.each() do [sym]
+  spec.each() do [sym]
+    if sym == 'void
+      return nil.inspect()
+    end
     if sym == 'unsigned
       unsigned? = true
     elif sym == 'short
@@ -95,14 +102,22 @@ def make_type_text(type)
   return (unsigned? ? 'uint : 'int).inspect()
 end
 
+def make_type_text(spec, decl)
+  basic = spec2yog(spec)
+  if decl.kind_of?(PointerNode)
+    return "['pointer, {0}]".format(basic)
+  end
+  return basic
+end
+
 def struct2yog(node, name)
   head = <<EOF.format(name, name.to_s().inspect())
 {0} = StructClass.new({1})
 {0}.define_fields([
 EOF
   return head + node.contents.map() do [content]
-    type = make_type_text(content.type)
     next content.names.map() do [name]
+      type = make_type_text(content.type, name)
       next <<EOF.rtrim().format(type, name.inspect())
   [{0}, {1}]
 EOF
@@ -110,27 +125,73 @@ EOF
   end.join(",\n").rtrim() + "])\n"
 end
 
-def typedef2yog(type, name)
-  return "{0} = {1}\n".format(name, make_type_text(type))
+def typedef2yog(type, decl)
+  name = decl.kind_of?(Symbol) ? decl : decl.node
+  return "{0} = {1}\n".format(name, make_type_text(type, decl))
+end
+
+def proto2node(node)
+  fmt = "{0} = lib.load_func({1}, [{2}], {3})\n"
+  name = node.name
+  return fmt.format(name, name.to_s().inspect())
+end
+
+def proto2yog(type, decl)
+  fmt = "{0} = lib.load_func({1}, [{2}], {3})"
+  body = decl.kind_of?(PointerNode) ? decl.node : decl
+  name = body.name
+  params = body.params.map() do [param]
+    next make_type_text(param.spec, param.declarators.get(0))
+  end.join(", ")
+  rettype = make_type_text(type, decl)
+  return fmt.format(name, name.to_s().inspect(), params, rettype)
 end
 
 def node2yog(node)
+  if node == nil
+    return nil
+  end
   if node.kind_of?(ConstantNode)
     return node.value.to_s()
   end
-  if node.kind_of?(TypedefNode)
-    type = node.type
+  spec = node.spec
+  if spec.kind_of?(TypedefNode)
+    type = spec.type
     f = type.kind_of?(StructNode) ? struct2yog : typedef2yog
-    return f(type, node.name)
+    return node.declarators.map() do [decl]
+      next f(type, decl)
+    end.join("")
   end
-  if node.kind_of?(StructNode)
-    return struct2yog(node, node.name)
+  if spec.kind_of?(StructNode) && (spec.contents != nil)
+    return struct2yog(spec, spec.name)
   end
+  return node.declarators.map() do [decl]
+    if decl.kind_of?(ProtoNode)
+      next proto2yog(spec, decl)
+    end
+    if decl.kind_of?(PointerNode) && decl.node.kind_of?(ProtoNode)
+      next proto2yog(spec, decl)
+    end
+    next ""
+  end.join("")
 end
 
 def h2yog(yog, headers, so, verbose=false, &block)
   nodes, macros = parse_to_nodes(headers, verbose) do [node]
-    next (node != nil) && block(node.filename, node.name)
+    if node == nil
+      next false
+    end
+    if node.kind_of?(Macro)
+      next block(node.filename, node.name)
+    end
+    spec = node.spec
+    if spec.kind_of?(StructNode)
+      next block(spec.filename, spec.name)
+    end
+    next node.declarators.select() do [decl]
+      filename = decl.kind_of?(Symbol) ? spec.filename : decl.filename
+      next block(filename, decl.kind_of?(ProtoNode) ? decl.name : decl)
+    end.size != 0
   end
   #print(macros)
   impls =  get_macros_implementation(headers, macros)
@@ -144,6 +205,7 @@ def h2yog(yog, headers, so, verbose=false, &block)
       end
       fp.write("{0} = {1}\n".format(macro.name, src))
     end
+    fp.write("lib = load_lib({0})\n".format(so.inspect()))
     nodes.each() do [node]
       fp.write("{0}\n".format(node2yog(node)))
     end

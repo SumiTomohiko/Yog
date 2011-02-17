@@ -21,8 +21,8 @@ def find_so(name):
             return True
     return False
 
-def get_lib_path():
-    return join(".", "test_lib" + (".so" if os.name == "posix" else ".dll")).replace("\\", "\\\\")
+def get_lib_path(name="test_lib"):
+    return join(".", name + (".so" if os.name == "posix" else ".dll")).replace("\\", "\\\\")
 
 def get_command():
     try:
