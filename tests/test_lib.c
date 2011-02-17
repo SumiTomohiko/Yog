@@ -417,6 +417,14 @@ return_pointer_0()
     return (void*)42;
 }
 
+struct Foo*
+return_pointer_10()
+{
+    struct Foo* foo = (struct Foo*)malloc(sizeof(struct Foo));
+    foo->bar = 42;
+    return foo;
+}
+
 void
 test_pointer_p(struct Foo** p)
 {

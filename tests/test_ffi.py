@@ -1410,6 +1410,13 @@ f = lib.load_func(\"return_pointer_0\", [], \'pointer)
 print(f())
 """ % locals(), "42")
 
+    def test_return400(self):
+        path = get_lib_path()
+        self._test("""Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
+lib = load_lib(\"%(path)s\")
+f = lib.load_func(\"return_pointer_10\", [], [\'pointer, Foo])
+print(f().bar)""" % locals(), "42")
+
     def test_Int0(self):
         self._test("print(Int.new().value)", "0")
 
