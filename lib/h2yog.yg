@@ -1,6 +1,6 @@
 
 from c import Macro, parse, parse_macro
-from c.grammar import ConstantNode, EnumNode, LShiftNode, PointerNode, ProtoNode, StructNode, TypedefNode
+from c.grammar import BinopNode, ConstantNode, EnumNode, LShiftNode, OrNode, PointerNode, ProtoNode, StructNode, TypedefNode, VarNode
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -169,11 +169,17 @@ def node2yog(node)
   if node == nil
     return nil
   end
-  if node.kind_of?(LShiftNode)
-    return "{0} << {1}".format(node2yog(node.left), node2yog(node.right))
+  if node.kind_of?(BinopNode)
+    ops = { LShiftNode: "<<", OrNode: "|" }
+    left = node2yog(node.left)
+    right = node2yog(node.right)
+    return [left, ops[node.class], right].join(" ")
   end
   if node.kind_of?(ConstantNode)
     return node.value.to_s()
+  end
+  if node.kind_of?(VarNode)
+    return node.name.to_s()
   end
   spec = node.spec
   if spec.kind_of?(TypedefNode)

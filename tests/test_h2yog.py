@@ -68,6 +68,10 @@ print({0})""".format(name), expected)
     def test_enum60(self):
         self.do_simple_print_test("enum { BAR, FOO = 42 };", "42")
 
+    def test_enum70(self):
+        self.do_simple_print_test("""enum { BAR };
+enum { FOO = BAR };""", "0")
+
     def test_undef0(self):
         headers = ["test_undef0.h"]
         so = get_lib_path("empty")
@@ -81,11 +85,14 @@ print(FOO)"""
     def test_constant10(self):
         self.do_simple_print_test("#define FOO 0x2a", "42")
 
-    def test_constant20(self):
+    def test_expression0(self):
         self.do_simple_print_test("#define FOO 1 << 2", "4")
 
-    def test_constant30(self):
+    def test_expression10(self):
         self.do_simple_print_test("#define FOO (42)", "42")
+
+    def test_expression20(self):
+        self.do_simple_print_test("#define FOO 42 | 26", "58")
 
     def do_struct_test(self, header):
         so = get_lib_path("empty")

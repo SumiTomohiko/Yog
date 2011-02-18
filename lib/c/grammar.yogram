@@ -8,12 +8,28 @@ class Node
   end
 end
 
-class LShiftNode > Node
-  def init(filename, left, right)
+class VarNode > Node
+  def init(filename, name)
     super(filename)
+    self.name = name
+  end
+end
+
+class BinopNode > Node
+  def init(filename, left, right)
+    # Bug: Cannot call Node#init
+    #super(filename)
+    self.filename = filename
+
     self.left = left
     self.right = right
   end
+end
+
+class OrNode > BinopNode
+end
+
+class LShiftNode > BinopNode
 end
 
 class EnumFieldNode > Node
@@ -1128,6 +1144,7 @@ inclusive_or_expression : exclusive_or_expression {
   return exclusive_or_expression
 }
                         | inclusive_or_expression <or> exclusive_or_expression {
+  return OrNode.new(__data__.filename, inclusive_or_expression, exclusive_or_expression)
 }
 ;
 
@@ -1231,6 +1248,7 @@ argument_expression : expression {
 ;
 
 primary_expression  : <identifier> {
+  return VarNode.new(__data__.filename, identifier.value)
 }
                     | <constant> {
   return ConstantNode.new(__data__.filename, constant.value)
