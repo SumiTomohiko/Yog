@@ -2023,7 +2023,7 @@ write_argument_Buffer(YogEnv* env, void** ptr, YogVal val)
 }
 
 static void
-write_argument_Struct(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
+write_argument_Struct(YogEnv* env, void* ptr, YogVal arg_type, YogVal val)
 {
     SAVE_ARGS2(env, arg_type, val);
     YogVal klass = YUNDEF;
@@ -2036,7 +2036,7 @@ write_argument_Struct(YogEnv* env, void** ptr, YogVal arg_type, YogVal val)
         ID name = PTR_AS(YogClass, arg_type)->name;
         YogError_raise_TypeError(env, "Argument must be %I, not %C", name, val);
     }
-    *ptr = PTR_AS(Struct, val)->data;
+    *((void**)ptr) = PTR_AS(Struct, val)->data;
     RETURN_VOID(env);
 }
 
@@ -2307,6 +2307,25 @@ write_data(YogEnv* env, void* dest, ID type, YogVal val)
 }
 
 static void
+write_argument_pointer(YogEnv* env, void* pvalue, YogVal klass, YogVal val)
+{
+    if (IS_PTR(klass) && (BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS)) {
+        write_argument_Struct(env, pvalue, klass, val);
+        return;
+    }
+    if (!IS_SYMBOL(klass)) {
+        const char* fmt = "Only Symbol or StructClass are allowed in pointer fields, not %C";
+        YogError_raise_TypeError(env, fmt, klass);
+    }
+    ID field = VAL2ID(klass);
+    if (field == YogVM_intern(env, env->vm, "void")) {
+        write_pointer(env, pvalue, val);
+        return;
+    }
+    YogError_raise_ValueError(env, "Invalid pointer field: %I", klass);
+}
+
+static void
 write_argument(YogEnv* env, void* pvalue, void* refered, YogVal node, YogVal val)
 {
     SAVE_ARGS2(env, node, val);
@@ -2322,7 +2341,7 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal node, YogVal val
         RETURN_VOID(env);
     case NODE_POINTER:
         klass = PTR_AS(Node, node)->u.pointer.klass;
-        write_argument_Struct(env, pvalue, klass, val);
+        write_argument_pointer(env, pvalue, klass, val);
         RETURN_VOID(env);
     case NODE_STRING:
         encoding = VAL2HDL(env, PTR_AS(Node, node)->u.string.encoding);

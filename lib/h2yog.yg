@@ -133,6 +133,10 @@ def enum2yog(node, name)
 end
 
 def struct2yog(node, name)
+  if node.contents == nil
+    return "{0} = 'void\n".format(name)
+  end
+
   head = <<EOF.format(name, name.to_s().inspect())
 {0} = StructClass.new({1})
 {0}.define_fields([
@@ -152,15 +156,9 @@ def typedef2yog(type, decl)
   return "{0} = {1}\n".format(name, make_type_text(type, decl))
 end
 
-def proto2node(node)
-  fmt = "{0} = lib.load_func({1}, [{2}], {3})\n"
-  name = node.name
-  return fmt.format(name, name.to_s().inspect())
-end
-
 def proto2yog(type, decl)
   fmt = "{0} = lib.load_func({1}, [{2}], {3})"
-  body = decl.kind_of?(PointerNode) ? decl.node : decl
+  body = get_pointer_body(decl)
   name = body.name
   params = body.params.map() do [param]
     next make_type_text(param.spec, param.declarators.get(0))
@@ -199,7 +197,7 @@ def node2yog(node)
       next f(type, decl)
     end.join("")
   end
-  if spec.kind_of?(StructNode) && (spec.contents != nil)
+  if spec.kind_of?(StructNode)
     return struct2yog(spec, spec.name)
   end
   if spec.kind_of?(EnumNode)
@@ -216,6 +214,10 @@ def node2yog(node)
   end.join("")
 end
 
+def get_pointer_body(node)
+  return node.kind_of?(PointerNode) ? node.node : node
+end
+
 def h2yog(yog, headers, so, verbose=false, &block)
   nodes, macros = parse_to_nodes(headers, verbose) do [node]
     if node == nil
@@ -229,8 +231,16 @@ def h2yog(yog, headers, so, verbose=false, &block)
       next block(spec.filename, spec.name)
     end
     next node.declarators.select() do [decl]
-      filename = decl.kind_of?(Symbol) ? spec.filename : decl.filename
-      next block(filename, decl.kind_of?(ProtoNode) ? decl.name : decl)
+      if spec.kind_of?(TypedefNode)
+        next block(spec.filename, get_pointer_body(decl))
+      end
+      if (proto = get_pointer_body(decl)).kind_of?(ProtoNode)
+        if proto.name.kind_of?(PointerNode)
+          next false
+        end
+        next block(decl.filename, proto.name)
+      end
+      next false
     end.size != 0
   end
   #print(macros)
