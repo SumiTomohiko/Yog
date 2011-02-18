@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Cannot call methods in super class
+desc: See BinopNode class in lib/c/grammar.yogram.
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-02-18 12:05:41.713754 Z
+references: []
+
+id: 97bd60245bda36927ff296032dccc16c1614db6b
+log_events: 
+- - 2011-02-18 12:05:42.471664 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
