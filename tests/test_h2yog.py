@@ -40,6 +40,34 @@ datatypes_typedef = datatypes + [
 
 class TestH2Yog(Base):
 
+    def do_simple_print_test(self, header, expected, name="FOO"):
+        self.do_test2(header, """from test_h2yog import {0}
+print({0})""".format(name), expected)
+
+    def do_test_enum_type(self, header):
+        self.do_simple_print_test(header, "int", "Foo")
+
+    def test_enum0(self):
+        self.do_test_enum_type("enum Foo { BAR };")
+
+    def test_enum10(self):
+        self.do_test_enum_type("typedef enum foo_t { BAR } Foo;")
+
+    def test_enum20(self):
+        self.do_test_enum_type("typedef enum { BAR } Foo;")
+
+    def test_enum30(self):
+        self.do_simple_print_test("enum { FOO };", "0")
+
+    def test_enum40(self):
+        self.do_simple_print_test("enum { BAR, FOO };", "1")
+
+    def test_enum50(self):
+        self.do_simple_print_test("enum { BAR = 42, FOO };", "43")
+
+    def test_enum60(self):
+        self.do_simple_print_test("enum { BAR, FOO = 42 };", "42")
+
     def test_undef0(self):
         headers = ["test_undef0.h"]
         so = get_lib_path("empty")
@@ -48,11 +76,16 @@ print(FOO)"""
         self.do_test(headers, so, src, "42")
 
     def test_constant0(self):
-        headers = ["test_constant0.h"]
-        so = get_lib_path("empty")
-        src = """from test_h2yog import FOO
-print(FOO)"""
-        self.do_test(headers, so, src, "42")
+        self.do_simple_print_test("#define FOO 42", "42")
+
+    def test_constant10(self):
+        self.do_simple_print_test("#define FOO 0x2a", "42")
+
+    def test_constant20(self):
+        self.do_simple_print_test("#define FOO 1 << 2", "4")
+
+    def test_constant30(self):
+        self.do_simple_print_test("#define FOO (42)", "42")
 
     def do_struct_test(self, header):
         so = get_lib_path("empty")
@@ -75,10 +108,7 @@ print(foo.bar)"""
         self.do_struct_test("test_struct30.h")
 
     def do_typedef_test(self, type, expected):
-        header = "typedef {0} Foo;".format(type)
-        src = """from test_h2yog import Foo
-print(Foo)"""
-        self.do_test2(header, src, expected)
+        self.do_simple_print_test("typedef {0} Foo;".format(type), expected, "Foo")
 
     for type, expected in datatypes_typedef:
         exec """def test_typedef_{0}(self):

@@ -8,6 +8,22 @@ class Node
   end
 end
 
+class LShiftNode > Node
+  def init(filename, left, right)
+    super(filename)
+    self.left = left
+    self.right = right
+  end
+end
+
+class EnumFieldNode > Node
+  def init(filename, name, expr=nil)
+    super(filename)
+    self.name = name
+    self.expr = expr
+  end
+end
+
 class DeclarationNode > Node
   def init(filename, spec, declarators=[])
     super(filename)
@@ -66,7 +82,12 @@ class BitFieldNode > Node
   end
 end
 
-class EnumNode
+class EnumNode > Node
+  def init(filename, name, contents=nil)
+    super(filename)
+    self.name = name
+    self.contents = contents
+  end
 end
 
 class ProtoNode > Node
@@ -356,13 +377,13 @@ type_specifier  : typeof_specifier {
 ;
 
 enum_specifier  : <enum> attributes_opt identifier_opt <lbrace> enumerator_list <rbrace> attributes_opt {
-  return EnumNode.new()
+  return EnumNode.new(__data__.filename, identifier_opt, enumerator_list)
 }
                 | <enum> attributes_opt identifier_opt <lbrace> enumerator_list <comma> <rbrace> attributes_opt {
-  return EnumNode.new()
+  return EnumNode.new(__data__.filename, identifier_opt, enumerator_list)
 }
                 | <enum> attributes_opt <identifier> {
-  return EnumNode.new()
+  return EnumNode.new(__data__.filename, identifier.value)
 }
 ;
 
@@ -382,12 +403,15 @@ enumerator_list : enumerator {
 ;
 
 enumerator  : enumeration_constant {
+  return EnumFieldNode.new(__data__.filename, enumeration_constant)
 }
             | enumeration_constant <equal> constant_expression {
+  return EnumFieldNode.new(__data__.filename, enumeration_constant, constant_expression)
 }
 ;
 
 enumeration_constant  : <identifier> {
+  return identifier.value
 }
 ;
 
@@ -1058,6 +1082,7 @@ shift_expression  : additive_expression {
   return additive_expression
 }
                   | shift_expression <lshift> additive_expression {
+  return LShiftNode.new(__data__.filename, shift_expression, additive_expression)
 }
                   | shift_expression <rshift> additive_expression {
 }
@@ -1213,6 +1238,7 @@ primary_expression  : <identifier> {
                     | string_literals {
 }
                     | <lpar> expression <rpar> {
+  return expression
 }
                     | <__func__> {
 }

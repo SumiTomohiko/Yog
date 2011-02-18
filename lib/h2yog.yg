@@ -1,6 +1,6 @@
 
 from c import Macro, parse, parse_macro
-from c.grammar import ConstantNode, PointerNode, ProtoNode, StructNode, TypedefNode
+from c.grammar import ConstantNode, EnumNode, LShiftNode, PointerNode, ProtoNode, StructNode, TypedefNode
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -110,6 +110,24 @@ def make_type_text(spec, decl)
   return basic
 end
 
+def enum2yog(node, name)
+  yog = name ? "{0} = 'int\n".format(name) : ""
+
+  FMT = "{0} = {1}"
+  content = node.contents[0]
+  yog << FMT.format(content.name, node2yog(content.expr) || 0) << "\n"
+  prev = content.name
+
+  yog << node.contents.slice(1).map() do [content]
+    value = node2yog(content.expr) || "{0} + 1".format(prev)
+    s = FMT.format(content.name, value)
+    prev = content.name
+    next s
+  end.join("\n")
+
+  return yog
+end
+
 def struct2yog(node, name)
   head = <<EOF.format(name, name.to_s().inspect())
 {0} = StructClass.new({1})
@@ -151,19 +169,31 @@ def node2yog(node)
   if node == nil
     return nil
   end
+  if node.kind_of?(LShiftNode)
+    return "{0} << {1}".format(node2yog(node.left), node2yog(node.right))
+  end
   if node.kind_of?(ConstantNode)
     return node.value.to_s()
   end
   spec = node.spec
   if spec.kind_of?(TypedefNode)
     type = spec.type
-    f = type.kind_of?(StructNode) ? struct2yog : typedef2yog
+    if type.kind_of?(StructNode)
+      f = struct2yog
+    elif type.kind_of?(EnumNode)
+      f = enum2yog
+    else
+      f = typedef2yog
+    end
     return node.declarators.map() do [decl]
       next f(type, decl)
     end.join("")
   end
   if spec.kind_of?(StructNode) && (spec.contents != nil)
     return struct2yog(spec, spec.name)
+  end
+  if spec.kind_of?(EnumNode)
+    return enum2yog(spec, spec.name)
   end
   return node.declarators.map() do [decl]
     if decl.kind_of?(ProtoNode)
@@ -185,7 +215,7 @@ def h2yog(yog, headers, so, verbose=false, &block)
       next block(node.filename, node.name)
     end
     spec = node.spec
-    if spec.kind_of?(StructNode)
+    if spec.kind_of?(StructNode) || spec.kind_of?(EnumNode)
       next block(spec.filename, spec.name)
     end
     next node.declarators.select() do [decl]
