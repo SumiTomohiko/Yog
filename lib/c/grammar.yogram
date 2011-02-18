@@ -113,6 +113,19 @@ class ProtoNode > Node
     self.params = params
   end
 end
+
+def get_typedef_name(decl)
+  if decl.kind_of?(Symbol)
+    return decl
+  end
+  if decl.kind_of?(PointerNode)
+    return get_typedef_name(decl.node)
+  end
+  if decl.kind_of?(ProtoNode)
+    return get_typedef_name(decl.name)
+  end
+  raise SyntaxError.new("Unsupported typedef")
+end
 %}
 
 translation_unit  : external_declarations {
@@ -171,7 +184,7 @@ function_definition : declaration_specifiers declarator (: declaration_list_opt 
 declaration : declaration_specifiers init_declarator_list <semicolon> {
   if declaration_specifiers.kind_of?(TypedefNode)
     init_declarator_list.each() do [decl]
-      __data__.typedef_names << (decl.kind_of?(PointerNode) ? decl.node : decl)
+      __data__.typedef_names << get_typedef_name(decl)
     end
   end
   return DeclarationNode.new(__data__.filename, declaration_specifiers, init_declarator_list)

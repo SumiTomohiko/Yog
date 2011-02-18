@@ -1,6 +1,6 @@
 
 from c import Macro, parse, parse_macro
-from c.grammar import BinopNode, ConstantNode, EnumNode, LShiftNode, OrNode, PointerNode, ProtoNode, StructNode, TypedefNode, VarNode
+from c.grammar import BinopNode, ConstantNode, EnumNode, LShiftNode, OrNode, PointerNode, ProtoNode, StructNode, TypedefNode, VarNode, get_typedef_name
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -103,6 +103,10 @@ def spec2yog(spec)
 end
 
 def make_type_text(spec, decl)
+  if decl.kind_of?(ProtoNode) && decl.name.kind_of?(PointerNode)
+    return 'pointer.inspect()
+  end
+
   basic = spec2yog(spec)
   if decl.kind_of?(PointerNode)
     return "['pointer, {0}]".format(basic)
@@ -144,7 +148,7 @@ EOF
 end
 
 def typedef2yog(type, decl)
-  name = decl.kind_of?(Symbol) ? decl : decl.node
+  name = get_typedef_name(decl)
   return "{0} = {1}\n".format(name, make_type_text(type, decl))
 end
 
