@@ -114,6 +114,17 @@ print(foo.bar)"""
     def test_struct30(self):
         self.do_struct_test("test_struct30.h")
 
+    def test_struct40(self):
+        self.do_simple_print_test("struct Foo;", "void", "Foo")
+
+    def test_struct50(self):
+        self.do_simple_print_test("""struct Foo;
+typedef struct Foo Foo;""", "void", "Foo")
+
+    def test_struct60(self):
+        self.do_simple_print_test("""struct Foo_t;
+typedef struct Foo_t Foo;""", "void", "Foo")
+
     def do_typedef_test(self, type, expected):
         self.do_simple_print_test("typedef {0} Foo;".format(type), expected, "Foo")
 

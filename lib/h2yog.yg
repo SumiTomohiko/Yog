@@ -191,7 +191,7 @@ def node2yog(node)
   spec = node.spec
   if spec.kind_of?(TypedefNode)
     type = spec.type
-    if type.kind_of?(StructNode)
+    if type.kind_of?(StructNode) && (type.contents != nil)
       f = struct2yog
     elif type.kind_of?(EnumNode)
       f = enum2yog
