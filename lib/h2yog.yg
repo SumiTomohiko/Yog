@@ -129,10 +129,7 @@ def enum2yog(node, name)
 end
 
 def struct2yog(node, name)
-  if node.contents == nil
-    return "{0} = 'void\n".format(name)
-  end
-
+  # Bug: Cannot handle "typedef struct Foo_t Foo;"
   head = <<EOF.format(name, name.to_s().inspect())
 {0} = StructClass.new({1})
 {0}.define_fields([
@@ -193,7 +190,11 @@ def node2yog(node)
     end.join("")
   end
   if spec.kind_of?(StructNode)
-    return struct2yog(spec, spec.name)
+    if spec.contents != nil
+      return struct2yog(spec, spec.name)
+    elif node.declarators.empty?
+      return "{0} = {1}\n".format(spec.name, 'void.inspect())
+    end
   end
   if spec.kind_of?(EnumNode)
     return enum2yog(spec, spec.name)
