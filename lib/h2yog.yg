@@ -149,13 +149,26 @@ def typedef2yog(type, decl)
   return "{0} = {1}\n".format(name, make_type_text(type, decl))
 end
 
+def params2yog(params)
+  if params.size == 1
+    param = params[0]
+    spec = param.spec
+    if spec.kind_of?(Array) && (spec.size == 1) && (spec[0] == 'void)
+      if param.declarators.empty?
+        return ""
+      end
+    end
+  end
+  return params.map() do [param]
+    next make_type_text(param.spec, param.declarators.get(0))
+  end.join(", ")
+end
+
 def proto2yog(type, decl)
   fmt = "{0} = lib.load_func({1}, [{2}], {3})"
   body = get_pointer_body(decl)
   name = body.name
-  params = body.params.map() do [param]
-    next make_type_text(param.spec, param.declarators.get(0))
-  end.join(", ")
+  params = params2yog(body.params)
   rettype = make_type_text(type, decl)
   return fmt.format(name, name.to_s().inspect(), params, rettype)
 end

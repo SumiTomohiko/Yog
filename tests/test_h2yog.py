@@ -173,6 +173,10 @@ print({0}().bar)""".format(base), "42")
         self.do_func_test(base, """from test_h2yog import {0}
 {0}(42)""".format(base), "42")
 
+    def test_func70(self):
+        self.do_func_test("test_func70", """from test_h2yog import foo
+foo()""", "42")
+
 if __name__ == "__main__":
     # This part generated headers and codes for .so partially.
     from os.path import dirname, join
