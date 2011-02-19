@@ -58,7 +58,7 @@ def spec2yog(spec)
   basic = 'int
   spec.each() do [sym]
     if sym == 'void
-      return nil.inspect()
+      return 'void.inspect()
     end
     if sym == 'unsigned
       unsigned? = true
@@ -129,7 +129,6 @@ def enum2yog(node, name)
 end
 
 def struct2yog(node, name)
-  # Bug: Cannot handle "typedef struct Foo_t Foo;"
   head = <<EOF.format(name, name.to_s().inspect())
 {0} = StructClass.new({1})
 {0}.define_fields([

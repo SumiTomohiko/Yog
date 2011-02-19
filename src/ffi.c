@@ -1591,6 +1591,23 @@ check_rtype_class(YogEnv* env, YogVal rtype)
     YogError_raise_TypeError(env, "rtype must be Symbol or nil, not %C", rtype);
 }
 
+static BOOL
+is_void(YogEnv* env, YogVal sym)
+{
+    const char* s = "void";
+    return IS_SYMBOL(sym) && (VAL2ID(sym) == YogVM_intern(env, env->vm, s));
+}
+
+static YogVal
+rtype2node(YogEnv* env, YogVal rtype)
+{
+    SAVE_ARG(env, rtype);
+    if (IS_NIL(rtype) && is_void(env, rtype)) {
+        RETURN(env, YNIL);
+    }
+    RETURN(env, parse_type(env, rtype));
+}
+
 static YogVal
 load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -1632,9 +1649,9 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         types[i] = map_type(env, node);
         YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), arg_types[i], node);
     }
-    node = IS_NIL(rtype) ? YNIL : parse_type(env, rtype);
+    node = rtype2node(env, rtype);
     YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), rtype, node);
-    ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(rtype) ? &ffi_type_void : map_type(env, node), types);
+    ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(node) ? &ffi_type_void : map_type(env, node), types);
     if (status != FFI_OK) {
         YogError_raise_FFIError(env, "%s", map_ffi_error(env, status));
         /* NOTREACHED */
@@ -2470,12 +2487,38 @@ read_argument(YogEnv* env, YogVal obj, YogVal node, void* p)
     RETURN_VOID(env);
 }
 
+static const char*
+NodeType_to_s(YogEnv* env, NodeType type)
+{
+    switch (type) {
+    case NODE_ARRAY:
+        return "NODE_ARRAY";
+    case NODE_ATOM:
+        return "NODE_ATOM";
+    case NODE_BUFFER:
+        return "NODE_BUFFER";
+    case NODE_FIELD:
+        return "NODE_FIELD";
+    case NODE_POINTER:
+        return "NODE_POINTER";
+    case NODE_STRING:
+        return "NODE_STRING";
+    case NODE_STRUCT:
+        return "NODE_STRUCT";
+    default:
+        YogError_raise_FFIError(env, "Invalid NodeType: %u", type);
+        return NULL;
+    }
+}
+
 static YogVal
 create_ptr_retval(YogEnv* env, YogHandle* callee, void* rvalue)
 {
     YogVal node = HDL_AS(LibFunc, callee)->rtype;
-    if (PTR_AS(Node, node)->type != NODE_POINTER) {
-        return YogVal_from_unsigned_int(env, (uint_t)rvalue);
+    NodeType type = PTR_AS(Node, node)->type;
+    if (type != NODE_POINTER) {
+        const char* fmt = "Node::type is not NODE_POINTER, %s";
+        YogError_raise_FFIError(env, fmt, NodeType_to_s(env, type));
     }
     YogVal klass = PTR_AS(Node, node)->u.pointer.klass;
     if (IS_PTR(klass) && (BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS)) {
@@ -2483,7 +2526,10 @@ create_ptr_retval(YogEnv* env, YogHandle* callee, void* rvalue)
         init_struct_with_ptr(env, obj, rvalue);
         return obj;
     }
-    const char* fmt = "Pointer to Struct is allowed for rtype, not %C";
+    if (is_void(env, klass)) {
+        return YogVal_from_unsigned_int(env, (uint_t)rvalue);
+    }
+    const char* fmt = "Pointer to Struct or void is allowed for rtype, not %C";
     YogError_raise_TypeError(env, fmt, klass);
     return YUNDEF;
 }

@@ -4,7 +4,7 @@ from h2yog_helper import Base
 from testcase import get_lib_path
 
 def type2base(type):
-    return type.replace(" ", "_")
+    return type.replace(" ", "_").replace("*", "p")
 
 datatypes = [
     # Tests for int
@@ -30,7 +30,10 @@ datatypes = [
     ["unsigned char", "uchar"],
 
     # Tests for grammar
-    ["long signed", "long"]]
+    ["long signed", "long"],
+
+    # Test(s) for void*
+    ["void*", "[\'pointer, \'void]"]]
 datatypes_typedef = datatypes + [
     # Tests for long long
     ["long long int", "longlong"],
@@ -214,7 +217,7 @@ void
             fp.write("""{0}
 {1}()
 {{
-    return 42;
+    return ({0})42;
 }}
 """.format(type, rettype_base))
 

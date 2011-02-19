@@ -13,9 +13,9 @@ PKGS = test_package4.$(SOEXT) test_package5.$(SOEXT) test_package6.$(SOEXT) \
        test_func10.$(SOEXT) test_func20.$(SOEXT) test_func30.$(SOEXT) \
        test_func40.$(SOEXT) test_func50.$(SOEXT) test_func60.$(SOEXT) \
        test_func70.$(SOEXT) test_argtype_char.$(SOEXT) \
-       test_argtype_int.$(SOEXT) \ test_argtype_long.$(SOEXT) \
-       test_argtype_long_int.$(SOEXT) \ test_argtype_long_long.$(SOEXT) \
-       test_argtype_long_long_int.$(SOEXT) \ test_argtype_long_signed.$(SOEXT) \
+       test_argtype_int.$(SOEXT) test_argtype_long.$(SOEXT) \
+       test_argtype_long_int.$(SOEXT) test_argtype_long_long.$(SOEXT) \
+       test_argtype_long_long_int.$(SOEXT) test_argtype_long_signed.$(SOEXT) \
        test_argtype_short.$(SOEXT) test_argtype_short_int.$(SOEXT) \
        test_argtype_signed_char.$(SOEXT) test_argtype_signed_int.$(SOEXT) \
        test_argtype_signed_long.$(SOEXT) \
@@ -23,18 +23,18 @@ PKGS = test_package4.$(SOEXT) test_package5.$(SOEXT) test_package6.$(SOEXT) \
        test_argtype_signed_short.$(SOEXT) test_argtype_unsigned_char.$(SOEXT) \
        test_argtype_unsigned_int.$(SOEXT) test_argtype_unsigned_long.$(SOEXT) \
        test_argtype_unsigned_long_long.$(SOEXT) \
-       test_argtype_unsigned_short.$(SOEXT) test_rettype_char.$(SOEXT) \
-       test_rettype_int.$(SOEXT) test_rettype_long.$(SOEXT) \
-       test_rettype_long_int.$(SOEXT) test_rettype_long_long.$(SOEXT) \
-       test_rettype_long_long_int.$(SOEXT) test_rettype_long_signed.$(SOEXT) \
-       test_rettype_short.$(SOEXT) test_rettype_short_int.$(SOEXT) \
-       test_rettype_signed_char.$(SOEXT) test_rettype_signed_int.$(SOEXT) \
-       test_rettype_signed_long.$(SOEXT) \
+       test_argtype_unsigned_short.$(SOEXT) test_argtype_voidp.$(SOEXT) \
+       test_rettype_char.$(SOEXT) test_rettype_int.$(SOEXT) \
+       test_rettype_long.$(SOEXT) test_rettype_long_int.$(SOEXT) \
+       test_rettype_long_long.$(SOEXT) test_rettype_long_long_int.$(SOEXT) \
+       test_rettype_long_signed.$(SOEXT) test_rettype_short.$(SOEXT) \
+       test_rettype_short_int.$(SOEXT) test_rettype_signed_char.$(SOEXT) \
+       test_rettype_signed_int.$(SOEXT) test_rettype_signed_long.$(SOEXT) \
        test_rettype_signed_long_long.$(SOEXT) \
        test_rettype_signed_short.$(SOEXT) test_rettype_unsigned_char.$(SOEXT) \
        test_rettype_unsigned_int.$(SOEXT) test_rettype_unsigned_long.$(SOEXT) \
        test_rettype_unsigned_long_long.$(SOEXT) \
-       test_rettype_unsigned_short.$(SOEXT)
+       test_rettype_unsigned_short.$(SOEXT) test_rettype_voidp.$(SOEXT)
 CFLAGS = -shared -I.. -I../include -Wall -Werror -DGENERATIONAL @CFLAGS@
 LIBS = @IMPORT_LIB@
 
@@ -57,15 +57,16 @@ SRCS = test_argtype_char.c test_argtype_int.c test_argtype_long.c \
        test_argtype_signed_short.c test_argtype_unsigned_char.c \
        test_argtype_unsigned_int.c test_argtype_unsigned_long.c \
        test_argtype_unsigned_long_long.c test_argtype_unsigned_short.c \
-       test_rettype_char.c test_rettype_int.c test_rettype_long.c \
-       test_rettype_long_int.c test_rettype_long_long.c \
+       test_argtype_voidp.c test_rettype_char.c test_rettype_int.c \
+       test_rettype_long.c test_rettype_long_int.c test_rettype_long_long.c \
        test_rettype_long_long_int.c test_rettype_long_signed.c \
        test_rettype_short.c test_rettype_short_int.c \
        test_rettype_signed_char.c test_rettype_signed_int.c \
        test_rettype_signed_long.c test_rettype_signed_long_long.c \
        test_rettype_signed_short.c test_rettype_unsigned_char.c \
        test_rettype_unsigned_int.c test_rettype_unsigned_long.c \
-       test_rettype_unsigned_long_long.c test_rettype_unsigned_short.c
+       test_rettype_unsigned_long_long.c test_rettype_unsigned_short.c \
+       test_rettype_voidp.c
 
 $(SRCS): test_h2yog.py
 	$(PYTHON) test_h2yog.py
