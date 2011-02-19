@@ -1,6 +1,8 @@
 
 from h2yog import h2yog
 
+INCLUDED_SYMBOLS = { 'int8_t, 'uint8_t, 'int16_t, 'uint16_t, 'int32_t, 'uint32_t, 'int64_t, 'uint64_t }
+
 def main()
   yog = __FILE__.dirname / "sdl.yg"
 
@@ -12,6 +14,9 @@ def main()
 
   verbose = false
   h2yog(yog, [header], "SDL", verbose) do [path, name]
+    if INCLUDED_SYMBOLS.include?(name)
+      next true
+    end
     next (path =~ /\/SDL\//) != nil
   end
 end
