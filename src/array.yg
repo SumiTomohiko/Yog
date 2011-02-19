@@ -1,4 +1,10 @@
 
+def to_set()
+  set = Set.new()
+  self.each(&set.<<)
+  return set
+end
+
 def select(&block)
   a = []
   self.each() do [elem]
