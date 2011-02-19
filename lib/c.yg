@@ -196,7 +196,7 @@ class Lexer
         next
       end
       self.pos += key.size
-      return Token.new(entry[1])
+      return Token.new(entry[1], entry[0])
     end
     return nil
   end

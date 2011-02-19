@@ -1,6 +1,6 @@
 
 from c import Macro, parse, parse_macro
-from c.grammar import BinopNode, ConstantNode, EnumNode, LShiftNode, OrNode, PointerNode, ProtoNode, StructNode, TypedefNode, VarNode, get_typedef_name
+from c.grammar import BinopNode, ConstantNode, EnumNode, PointerNode, ProtoNode, StructNode, TypedefNode, VarNode, get_typedef_name
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -37,11 +37,7 @@ def get_macros_implementation(headers, macros)
   end
   stdout = run_gcc(headers, []) do [stdin]
     macros.each() do [macro]
-      #puts("{0}:{1} macro={2}".format(__FILE__, __LINE__, macro))
-      args = macro.args != nil ? "({0})".format(macro.args) : ""
-      src = "{0}{1}\n".format(macro.name, args)
-      #print("{0}:{1} src={2}".format(__FILE__, __LINE__, src))
-      stdin.write(src)
+      stdin.write("{0}\n".format(macro.name))
     end
   end
   mark = "# 1 \"<stdin>\"\n"
@@ -172,10 +168,9 @@ def node2yog(node)
     return nil
   end
   if node.kind_of?(BinopNode)
-    ops = { LShiftNode: "<<", OrNode: "|" }
     left = node2yog(node.left)
     right = node2yog(node.right)
-    return [left, ops[node.class], right].join(" ")
+    return "({0} {1} {2})".format(left, node.op.to_s(), right)
   end
   if node.kind_of?(ConstantNode)
     return node.value.to_s()
@@ -224,7 +219,7 @@ def h2yog(yog, headers, so, verbose=false, &block)
       next false
     end
     if node.kind_of?(Macro)
-      next block(node.filename, node.name)
+      next (node.args == nil) && block(node.filename, node.name)
     end
     spec = node.spec
     if spec.kind_of?(StructNode) || spec.kind_of?(EnumNode)

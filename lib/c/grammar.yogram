@@ -16,20 +16,19 @@ class VarNode > Node
 end
 
 class BinopNode > Node
-  def init(filename, left, right)
+  def init(filename, left, op, right)
     # Bug: Cannot call Node#init
     #super(filename)
     self.filename = filename
 
     self.left = left
+    self.op = op
     self.right = right
   end
-end
 
-class OrNode > BinopNode
-end
-
-class LShiftNode > BinopNode
+  def to_s()
+    return "<BinopNode op={0}>".format(self.op)
+  end
 end
 
 class EnumFieldNode > Node
@@ -1104,6 +1103,7 @@ additive_expression : multiplicative_expression {
                     | additive_expression <plus> multiplicative_expression {
 }
                     | additive_expression <minus> multiplicative_expression {
+  return BinopNode.new(__data__.filename, additive_expression, minus.value, multiplicative_expression)
 }
 ;
 
@@ -1111,7 +1111,7 @@ shift_expression  : additive_expression {
   return additive_expression
 }
                   | shift_expression <lshift> additive_expression {
-  return LShiftNode.new(__data__.filename, shift_expression, additive_expression)
+  return BinopNode.new(__data__.filename, shift_expression, lshift.value, additive_expression)
 }
                   | shift_expression <rshift> additive_expression {
 }
@@ -1157,7 +1157,7 @@ inclusive_or_expression : exclusive_or_expression {
   return exclusive_or_expression
 }
                         | inclusive_or_expression <or> exclusive_or_expression {
-  return OrNode.new(__data__.filename, inclusive_or_expression, exclusive_or_expression)
+  return BinopNode.new(__data__.filename, inclusive_or_expression, or.value, exclusive_or_expression)
 }
 ;
 
