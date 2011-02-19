@@ -1,8 +1,8 @@
 
 from h2yog import h2yog
 
-INCLUDED_SYMBOLS = { 'int8_t, 'uint8_t, 'int16_t, 'uint16_t, 'int32_t, 'uint32_t, 'int64_t, 'uint64_t, 'size_t }
-EXCLUDED_SYMBOLS = ['strtoull, 'strtoul, 'strrchr, 'strtoll, 'strtol, 'strchr, 'snprintf, 'calloc, 'vsnprintf, 'iconv_close, 'strtod, 'strcmp, 'strstr, 'iconv_t, 'free, 'putenv, 'memset, 'strdup, 'iconv_open, 'qsort, 'strcasecmp, 'strncasecmp, 'abs, 'getenv, 'strlen, 'atof, 'atoi, 'realloc, 'memmove, 'malloc, 'memcmp, 'strncmp, 'sscanf].map() do [sym]
+INCLUDED_SYMBOLS = { 'int8_t, 'uint8_t, 'int16_t, 'uint16_t, 'int32_t, 'uint32_t, 'int64_t, 'uint64_t, 'size_t, 'iconv_t }
+EXCLUDED_SYMBOLS = ['strtoull, 'strtoul, 'strrchr, 'strtoll, 'strtol, 'strchr, 'snprintf, 'calloc, 'vsnprintf, 'iconv_close, 'strtod, 'strcmp, 'strstr, 'free, 'putenv, 'memset, 'strdup, 'iconv_open, 'qsort, 'strcasecmp, 'strncasecmp, 'abs, 'getenv, 'strlen, 'atof, 'atoi, 'realloc, 'memmove, 'malloc, 'memcmp, 'strncmp, 'sscanf].map() do [sym]
   next sym.to_s()
 end.map(&"SDL_".+).to_set()
 
