@@ -120,7 +120,7 @@ def get_typedef_name(decl)
   if decl.kind_of?(PointerNode)
     return get_typedef_name(decl.node)
   end
-  if decl.kind_of?(ProtoNode)
+  if decl.kind_of?(ProtoNode) || decl.kind_of?(BitFieldNode)
     return get_typedef_name(decl.name)
   end
   raise SyntaxError.new("Unsupported typedef")

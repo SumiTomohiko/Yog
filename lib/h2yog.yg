@@ -136,7 +136,7 @@ EOF
   return head + node.contents.map() do [content]
     next content.names.map() do [name]
       type = make_type_text(content.type, name)
-      next <<EOF.rtrim().format(type, name.inspect())
+      next <<EOF.rtrim().format(type, get_typedef_name(name).inspect())
   [{0}, {1}]
 EOF
     end.join(",\n")
