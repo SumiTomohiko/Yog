@@ -98,6 +98,9 @@ def spec2yog(spec)
   return (unsigned? ? 'uint : 'int).inspect()
 end
 
+# FIXME: DON'T DO IT
+defined_structs = Set.new()
+
 def make_type_text(spec, decl)
   if decl.kind_of?(ProtoNode) && decl.name.kind_of?(PointerNode)
     return 'pointer.inspect()
@@ -105,7 +108,8 @@ def make_type_text(spec, decl)
 
   basic = spec2yog(spec)
   if decl.kind_of?(PointerNode)
-    return "['pointer, {0}]".format(basic)
+    name = defined_structs.include?(basic) ? basic : 'void.inspect()
+    return "['pointer, {0}]".format(name)
   end
   return basic
 end
@@ -129,6 +133,8 @@ def enum2yog(node, name)
 end
 
 def struct2yog(node, name)
+  defined_structs << name
+
   head = <<EOF.format(name, name.to_s().inspect())
 {0} = StructClass.new({1})
 {0}.define_fields([

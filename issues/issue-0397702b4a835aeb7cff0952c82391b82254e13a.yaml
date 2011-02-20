@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove defined_structs in lib/h2yog.yg.
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-02-20 09:20:26.227911 Z
+references: []
+
+id: 0397702b4a835aeb7cff0952c82391b82254e13a
+log_events: 
+- - 2011-02-20 09:20:26.608097 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
