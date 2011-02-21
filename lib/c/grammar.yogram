@@ -3,46 +3,48 @@
 
 %{
 class Node
-  def init(filename)
+  def init(filename, lineno)
     self.filename = filename
+    self.lineno = lineno
   end
 end
 
 class SizeofNode > Node
-  def init(filename, expr)
-    super(filename)
+  def init(filename, lineno, expr)
+    super(filename, lineno)
     self.expr = expr
   end
 end
 
 class UnaryNode > Node
-  def init(filename, op, expr)
-    super(filename)
+  def init(filename, lineno, op, expr)
+    super(filename, lineno)
     self.op = op
     self.expr = expr
   end
 end
 
 class ArrayNode > Node
-  def init(filename, decl, size)
-    super(filename)
+  def init(filename, lineno, decl, size)
+    super(filename, lineno)
     self.decl = decl
     self.size = size
   end
 end
 
 class VarNode > Node
-  def init(filename, name)
-    super(filename)
+  def init(filename, lineno, name)
+    super(filename, lineno)
     self.name = name
   end
 end
 
 class BinopNode > Node
-  def init(filename, left, op, right)
+  def init(filename, lineno, left, op, right)
     # Bug: Cannot call Node#init
-    #super(filename)
+    #super(filename, lineno)
     self.filename = filename
+    self.lineno = lineno
 
     self.left = left
     self.op = op
@@ -55,46 +57,46 @@ class BinopNode > Node
 end
 
 class EnumFieldNode > Node
-  def init(filename, name, expr=nil)
-    super(filename)
+  def init(filename, lineno, name, expr=nil)
+    super(filename, lineno)
     self.name = name
     self.expr = expr
   end
 end
 
 class DeclarationNode > Node
-  def init(filename, spec, declarators=[])
-    super(filename)
+  def init(filename, lineno, spec, declarators=[])
+    super(filename, lineno)
     self.spec = spec
     self.declarators = declarators
   end
 end
 
 class PointerNode > Node
-  def init(filename)
-    super(filename)
+  def init(filename, lineno)
+    super(filename, lineno)
     self.num = 1
     self.node = nil
   end
 end
 
 class ConstantNode > Node
-  def init(filename, value)
-    super(filename)
+  def init(filename, lineno, value)
+    super(filename, lineno)
     self.value = value
   end
 end
 
 class TypedefNode > Node
-  def init(filename, type)
-    super(filename)
+  def init(filename, lineno, type)
+    super(filename, lineno)
     self.type = type
   end
 end
 
 class StructFieldNode > Node
-  def init(filename, type, names=nil)
-    super(filename)
+  def init(filename, lineno, type, names=nil)
+    super(filename, lineno)
     self.type = type
     self.names = names
   end
@@ -105,10 +107,12 @@ class StructFieldNode > Node
 end
 
 class StructBaseNode > Node
-  def init(filename, name, contents=nil)
+  def init(filename, lineno, name, contents=nil)
     # Bug: super cannot call Node#init
-    #super(filename)
+    #super(filename, lineno)
     self.filename = filename
+    self.lineno = lineno
+
     self.name = name
     self.contents = contents
   end
@@ -121,24 +125,24 @@ class UnionNode > StructBaseNode
 end
 
 class BitFieldNode > Node
-  def init(filename, name, num)
-    super(filename)
+  def init(filename, lineno, name, num)
+    super(filename, lineno)
     self.name = name
     self.num = num
   end
 end
 
 class EnumNode > Node
-  def init(filename, name, contents=nil)
-    super(filename)
+  def init(filename, lineno, name, contents=nil)
+    super(filename, lineno)
     self.name = name
     self.contents = contents
   end
 end
 
 class ProtoNode > Node
-  def init(filename, name, params)
-    super(filename)
+  def init(filename, lineno, name, params)
+    super(filename, lineno)
     self.name = name
     self.params = params
   end
@@ -220,10 +224,10 @@ declaration : declaration_specifiers init_declarator_list <semicolon> {
       __data__.typedef_names << get_typedef_name(decl)
     end
   end
-  return DeclarationNode.new(__data__.filename, declaration_specifiers, init_declarator_list)
+  return DeclarationNode.new(__data__.filename, __data__.lineno, declaration_specifiers, init_declarator_list)
 }
             | declaration_specifiers <semicolon> {
-  return DeclarationNode.new(__data__.filename, declaration_specifiers)
+  return DeclarationNode.new(__data__.filename, __data__.lineno, declaration_specifiers)
 }
 ;
 
@@ -267,7 +271,7 @@ declaration_specifiers  : storage_class_specifier declaration_specifiers_opt {
   if { 'extern, 'static, 'auto, 'register }.include?(storage_class_specifier)
     return declaration_specifiers_opt
   end
-  return TypedefNode.new(__data__.filename, declaration_specifiers_opt)
+  return TypedefNode.new(__data__.filename, __data__.lineno, declaration_specifiers_opt)
 }
                         | type_specifier declaration_specifiers_opt {
   if type_specifier.kind_of?(Symbol)
@@ -439,13 +443,13 @@ type_specifier  : typeof_specifier {
 ;
 
 enum_specifier  : <enum> attributes_opt identifier_opt <lbrace> enumerator_list <rbrace> attributes_opt {
-  return EnumNode.new(__data__.filename, identifier_opt, enumerator_list)
+  return EnumNode.new(__data__.filename, __data__.lineno, identifier_opt, enumerator_list)
 }
                 | <enum> attributes_opt identifier_opt <lbrace> enumerator_list <comma> <rbrace> attributes_opt {
-  return EnumNode.new(__data__.filename, identifier_opt, enumerator_list)
+  return EnumNode.new(__data__.filename, __data__.lineno, identifier_opt, enumerator_list)
 }
                 | <enum> attributes_opt <identifier> {
-  return EnumNode.new(__data__.filename, identifier.value)
+  return EnumNode.new(__data__.filename, __data__.lineno, identifier.value)
 }
 ;
 
@@ -465,10 +469,10 @@ enumerator_list : enumerator {
 ;
 
 enumerator  : enumeration_constant {
-  return EnumFieldNode.new(__data__.filename, enumeration_constant)
+  return EnumFieldNode.new(__data__.filename, __data__.lineno, enumeration_constant)
 }
             | enumeration_constant <equal> constant_expression {
-  return EnumFieldNode.new(__data__.filename, enumeration_constant, constant_expression)
+  return EnumFieldNode.new(__data__.filename, __data__.lineno, enumeration_constant, constant_expression)
 }
 ;
 
@@ -478,13 +482,13 @@ enumeration_constant  : <identifier> {
 ;
 
 struct_or_union_specifier : struct_or_union attributes_opt identifier_opt <lbrace> struct_contents <rbrace> attributes_opt {
-  return struct_or_union.new(__data__.filename, identifier_opt, struct_contents)
+  return struct_or_union.new(__data__.filename, __data__.lineno, identifier_opt, struct_contents)
 }
                           | struct_or_union attributes_opt <identifier> {
-  return struct_or_union.new(__data__.filename, identifier.value)
+  return struct_or_union.new(__data__.filename, __data__.lineno, identifier.value)
 }
                           | struct_or_union attributes_opt <typedef_name> {
-  return struct_or_union.new(__data__.filename, typedef_name.value)
+  return struct_or_union.new(__data__.filename, __data__.lineno, typedef_name.value)
 }
 ;
 
@@ -513,13 +517,13 @@ struct_declaration_list : struct_declaration <semicolon> {
 ;
 
 struct_declaration  : specifier_qualifier_list struct_declarator_list {
-  return StructFieldNode.new(__data__.filename, specifier_qualifier_list, struct_declarator_list)
+  return StructFieldNode.new(__data__.filename, __data__.lineno, specifier_qualifier_list, struct_declarator_list)
 }
                     | <__extension__> struct_declaration {
   return struct_declaration
 }
                     | specifier_qualifier_list {
-  return StructFieldNode.new(__data__.filename, specifier_qualifier_list)
+  return StructFieldNode.new(__data__.filename, __data__.lineno, specifier_qualifier_list)
 }
 ;
 
@@ -556,7 +560,7 @@ struct_declarator : declarator attributes_opt {
   return declarator
 }
                   | declarator_opt <colon> constant_expression attributes_opt {
-  return BitFieldNode.new(__data__.filename, declarator_opt, constant_expression)
+  return BitFieldNode.new(__data__.filename, __data__.lineno, declarator_opt, constant_expression)
 }
 ;
 
@@ -585,16 +589,16 @@ direct_declarator : <identifier> {
   return declarator
 }
                   | direct_declarator array_declarator {
-  return ArrayNode.new(__data__.filename, direct_declarator, array_declarator)
+  return ArrayNode.new(__data__.filename, __data__.lineno, direct_declarator, array_declarator)
 }
                   | direct_declarator <lpar> parameter_type_list <rpar> {
-  return ProtoNode.new(__data__.filename, direct_declarator, parameter_type_list)
+  return ProtoNode.new(__data__.filename, __data__.lineno, direct_declarator, parameter_type_list)
 }
                   | direct_declarator <lpar> identifier_list_opt <rpar> {
   params = identifier_list_opt.map() do
     next ['int]
   end
-  return ProtoNode.new(__data__.filename, direct_declarator, params)
+  return ProtoNode.new(__data__.filename, __data__.lineno, direct_declarator, params)
 }
                   | direct_declarator <lpar> parameter_forward_declarations parameter_type_list_opt <rpar> {
   return direct_declarator
@@ -609,7 +613,7 @@ pointer_opt : (: empty :) {
 ;
 
 pointer : <star> type_qualifier_list_opt {
-  return PointerNode.new(__data__.filename)
+  return PointerNode.new(__data__.filename, __data__.lineno)
 }
         | <star> type_qualifier_list_opt pointer {
   pointer.num += 1
@@ -656,10 +660,10 @@ parameter_list  : parameter_declaration {
 ;
 
 parameter_declaration : declaration_specifiers declarator attributes_opt {
-  return DeclarationNode.new(__data__.filename, declaration_specifiers, [declarator])
+  return DeclarationNode.new(__data__.filename, __data__.lineno, declaration_specifiers, [declarator])
 }
                       | declaration_specifiers abstract_declarator_opt attributes_opt {
-  return DeclarationNode.new(__data__.filename, declaration_specifiers, abstract_declarator_opt ? [abstract_declarator_opt] : [])
+  return DeclarationNode.new(__data__.filename, __data__.lineno, declaration_specifiers, abstract_declarator_opt ? [abstract_declarator_opt] : [])
 }
 ;
 
@@ -1127,7 +1131,7 @@ multiplicative_expression : cast_expression {
   return cast_expression
 }
                           | multiplicative_expression <star> cast_expression {
-  return BinopNode.new(__data__.filename, multiplicative_expression, star.value, cast_expression)
+  return BinopNode.new(__data__.filename, __data__.lineno, multiplicative_expression, star.value, cast_expression)
 }
                           | multiplicative_expression <div> cast_expression {
 }
@@ -1141,7 +1145,7 @@ additive_expression : multiplicative_expression {
                     | additive_expression <plus> multiplicative_expression {
 }
                     | additive_expression <minus> multiplicative_expression {
-  return BinopNode.new(__data__.filename, additive_expression, minus.value, multiplicative_expression)
+  return BinopNode.new(__data__.filename, __data__.lineno, additive_expression, minus.value, multiplicative_expression)
 }
 ;
 
@@ -1149,7 +1153,7 @@ shift_expression  : additive_expression {
   return additive_expression
 }
                   | shift_expression <lshift> additive_expression {
-  return BinopNode.new(__data__.filename, shift_expression, lshift.value, additive_expression)
+  return BinopNode.new(__data__.filename, __data__.lineno, shift_expression, lshift.value, additive_expression)
 }
                   | shift_expression <rshift> additive_expression {
 }
@@ -1172,7 +1176,7 @@ equality_expression : relational_expression {
   return relational_expression
 }
                     | equality_expression <equal_equal> relational_expression {
-  return BinopNode.new(__data__.filename, equality_expression, equal_equal.value, relational_expression)
+  return BinopNode.new(__data__.filename, __data__.lineno, equality_expression, equal_equal.value, relational_expression)
 }
                     | equality_expression <not_equal> relational_expression {
 }
@@ -1196,7 +1200,7 @@ inclusive_or_expression : exclusive_or_expression {
   return exclusive_or_expression
 }
                         | inclusive_or_expression <or> exclusive_or_expression {
-  return BinopNode.new(__data__.filename, inclusive_or_expression, or.value, exclusive_or_expression)
+  return BinopNode.new(__data__.filename, __data__.lineno, inclusive_or_expression, or.value, exclusive_or_expression)
 }
 ;
 
@@ -1230,12 +1234,12 @@ unary_expression  : postfix_expression {
                   | <minus_minus> unary_expression {
 }
                   | unary_operator cast_expression {
-  return UnaryNode.new(__data__.filename, unary_operator, cast_expression)
+  return UnaryNode.new(__data__.filename, __data__.lineno, unary_operator, cast_expression)
 }
                   | <sizeof> unary_expression {
 }
                   | <sizeof> <lpar> type_name <rpar> {
-  return SizeofNode.new(__data__.filename, type_name)
+  return SizeofNode.new(__data__.filename, __data__.lineno, type_name)
 }
                   | <__alignof__> unary_expression {
 }
@@ -1304,10 +1308,10 @@ argument_expression : expression {
 ;
 
 primary_expression  : <identifier> {
-  return VarNode.new(__data__.filename, identifier.value)
+  return VarNode.new(__data__.filename, __data__.lineno, identifier.value)
 }
                     | <constant> {
-  return ConstantNode.new(__data__.filename, constant.value)
+  return ConstantNode.new(__data__.filename, __data__.lineno, constant.value)
 }
                     | string_literals {
 }

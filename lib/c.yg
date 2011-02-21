@@ -4,8 +4,8 @@ import c.grammar
 import lalr1
 
 class Macro > c.grammar.Node
-  def init(filename, name, args)
-    super(filename)
+  def init(filename, lineno, name, args)
+    super(filename, lineno)
     self.name = name
     self.args = args
   end
@@ -23,6 +23,7 @@ class Lexer
     self.pos = 0
     self.filename = ""
     self.typedef_names = typedef_names
+    self.lineno = 1
   end
 
   def get_filename()
@@ -40,6 +41,7 @@ class Lexer
   def skip_to_next_line()
     self.pos = self.find_next_line()
     self.bol? = true
+    self.lineno += 1
   end
 
   def get_undef_macro()
@@ -56,7 +58,7 @@ class Lexer
     end
     s = m.group("args")
     args = s != nil ? s.slice(1, s.size - 2) : nil
-    return Macro.new(self.filename, m.group("name"), args)
+    return Macro.new(self.filename, self.lineno, m.group("name"), args)
   end
 
   def skip_whitespaces()
@@ -66,6 +68,7 @@ class Lexer
     end
     self.pos = m.end()
     self.bol? = self.src[self.pos - 1] == "\n"
+    self.lineno += m.group().split("\n").size - 1
   end
 
   def match(regexp)
