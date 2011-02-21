@@ -48,7 +48,7 @@ class Lexer
     if (m = /#undef (?<name>\w+)/.match(self.src, self.pos)) == nil
       return nil
     end
-    return m.group("name")
+    return m.group("name").to_sym()
   end
 
   def get_define_macro()
@@ -58,7 +58,7 @@ class Lexer
     end
     s = m.group("args")
     args = s != nil ? s.slice(1, s.size - 2) : nil
-    return Macro.new(self.filename, self.lineno, m.group("name"), args)
+    return Macro.new(self.filename, self.lineno, m.group("name").to_sym(), args)
   end
 
   def skip_whitespaces()
