@@ -81,12 +81,20 @@ class StructFieldNode > Node
   end
 end
 
-class StructNode > Node
+class StructBaseNode > Node
   def init(filename, name, contents=nil)
-    super(filename)
+    # Bug: super cannot call Node#init
+    #super(filename)
+    self.filename = filename
     self.name = name
     self.contents = contents
   end
+end
+
+class StructNode > StructBaseNode
+end
+
+class UnionNode > StructBaseNode
 end
 
 class BitFieldNode > Node
@@ -444,19 +452,21 @@ enumeration_constant  : <identifier> {
 ;
 
 struct_or_union_specifier : struct_or_union attributes_opt identifier_opt <lbrace> struct_contents <rbrace> attributes_opt {
-  return StructNode.new(__data__.filename, identifier_opt, struct_contents)
+  return struct_or_union.new(__data__.filename, identifier_opt, struct_contents)
 }
                           | struct_or_union attributes_opt <identifier> {
-  return StructNode.new(__data__.filename, identifier.value)
+  return struct_or_union.new(__data__.filename, identifier.value)
 }
                           | struct_or_union attributes_opt <typedef_name> {
-  return StructNode.new(__data__.filename, typedef_name.value)
+  return struct_or_union.new(__data__.filename, typedef_name.value)
 }
 ;
 
 struct_or_union : <struct> {
+  return StructNode
 }
                 | <union> {
+  return UnionNode
 }
 ;
 

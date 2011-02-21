@@ -1,6 +1,6 @@
 
 from c import Macro, parse, parse_macro
-from c.grammar import BinopNode, ConstantNode, EnumNode, PointerNode, ProtoNode, StructNode, TypedefNode, VarNode, get_typedef_name
+from c.grammar import BinopNode, ConstantNode, EnumNode, PointerNode, ProtoNode, StructBaseNode, StructNode, TypedefNode, VarNode, get_typedef_name
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -47,7 +47,7 @@ def get_macros_implementation(headers, macros)
 end
 
 def spec2yog(spec)
-  if spec.kind_of?(StructNode)
+  if spec.kind_of?(StructBaseNode)
     return spec.name.to_s()
   end
 
@@ -130,26 +130,46 @@ def enum2yog(node, name)
   return yog
 end
 
-def struct2yog(node, name)
-  defined_structs << name
-
-  head = <<EOF.format(name, name.to_s().inspect())
-{0} = StructClass.new({1})
-{0}.define_fields([
-EOF
-  return head + node.contents.map() do [content]
+def struct_content2yog(contents)
+  return contents.map() do [content]
     next content.names.map() do [name]
-      type = make_type_text(content.type, name)
+      type = make_struct_field_type(content.type, name)
       next <<EOF.rtrim().format(type, get_typedef_name(name).inspect())
   [{0}, {1}]
 EOF
     end.join(",\n")
-  end.join(",\n").rtrim() + "])\n"
+  end.join(",\n")
+end
+
+def make_struct_field_type(type, name)
+  if !type.kind_of?(StructBaseNode) || (type.contents == nil)
+    return make_type_text(type, name)
+  end
+  tag = type.kind_of?(StructNode) ? 'struct : 'union
+  return "[{0}, [{1}]]".format(tag.inspect(), struct_content2yog(type.contents))
+end
+
+def struct_base2yog(node, klass, name)
+  defined_structs << name
+
+  head = <<EOF.format(name, name.to_s().inspect(), klass)
+{0} = {2}.new({1})
+{0}.define_fields([
+EOF
+  return head + struct_content2yog(node.contents).rtrim() + "])\n"
+end
+
+def struct2yog(node, name)
+  return struct_base2yog(node, "StructClass", name)
+end
+
+def union2yog(node, name)
+  return struct_base2yog(node, "UnionClass", name)
 end
 
 def typedef2yog(type, decl)
   f = partial("{0} = {1}\n".format, get_typedef_name(decl))
-  if type.kind_of?(StructNode) && !defined_structs.include?(type.name)
+  if type.kind_of?(StructBaseNode) && !defined_structs.include?(type.name)
     return f(pointer2yog('void.inspect(), decl))
   end
   return f(make_type_text(type, decl))
@@ -197,8 +217,8 @@ def node2yog(node)
   spec = node.spec
   if spec.kind_of?(TypedefNode)
     type = spec.type
-    if type.kind_of?(StructNode) && (type.contents != nil)
-      f = struct2yog
+    if type.kind_of?(StructBaseNode) && (type.contents != nil)
+      f = type.kind_of?(StructNode) ? struct2yog : union2yog
     elif type.kind_of?(EnumNode)
       f = enum2yog
     else
@@ -208,9 +228,10 @@ def node2yog(node)
       next f(type, decl)
     end.join("")
   end
-  if spec.kind_of?(StructNode)
+  if spec.kind_of?(StructBaseNode)
     if spec.contents != nil
-      return struct2yog(spec, spec.name)
+      f = spec.kind_of?(StructNode) ? struct2yog : union2yog
+      return f(spec, spec.name)
     elif node.declarators.empty?
       return "{0} = {1}\n".format(spec.name, 'void.inspect())
     end
@@ -242,7 +263,7 @@ def h2yog(yog, headers, so, verbose=false, &block)
       next (node.args == nil) && block(node.filename, node.name)
     end
     spec = node.spec
-    if spec.kind_of?(StructNode) || spec.kind_of?(EnumNode)
+    if spec.kind_of?(StructBaseNode) || spec.kind_of?(EnumNode)
       next block(spec.filename, spec.name)
     end
     next node.declarators.select() do [decl]

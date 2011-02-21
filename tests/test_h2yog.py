@@ -105,6 +105,39 @@ foo.bar = 42
 print(foo.bar)"""
         self.do_test([header], so, src, "42")
 
+    do_union_test = do_struct_test
+
+    def test_union0(self):
+        self.do_union_test("test_union0.h")
+
+    def test_union10(self):
+        self.do_union_test("test_union10.h")
+
+    def test_union20(self):
+        self.do_union_test("test_union20.h")
+
+    def test_union30(self):
+        self.do_union_test("test_union30.h")
+
+    def test_union40(self):
+        self.do_simple_print_test("union Foo;", "void", "Foo")
+
+    def test_union50(self):
+        self.do_simple_print_test("""union Foo;
+typedef union Foo Foo;""", "void", "Foo")
+
+    def test_union60(self):
+        self.do_simple_print_test("""union Foo_t;
+typedef union Foo_t Foo;""", "void", "Foo")
+
+    def test_union70(self):
+        base = "test_union70"
+        src = """from test_h2yog import Foo, {0}
+foo = Foo.new()
+foo.bar.baz = 42
+{0}(foo)""".format(base)
+        self.do_test([base + ".h"], get_lib_path(base), src, "42")
+
     def test_struct0(self):
         self.do_struct_test("test_struct0.h")
 
@@ -127,6 +160,14 @@ typedef struct Foo Foo;""", "void", "Foo")
     def test_struct60(self):
         self.do_simple_print_test("""struct Foo_t;
 typedef struct Foo_t Foo;""", "void", "Foo")
+
+    def test_struct70(self):
+        base = "test_struct70"
+        src = """from test_h2yog import Foo, {0}
+foo = Foo.new()
+foo.bar.baz = 42
+{0}(foo)""".format(base)
+        self.do_test([base + ".h"], get_lib_path(base), src, "42")
 
     def do_typedef_test(self, type, expected):
         self.do_simple_print_test("typedef {0} Foo;".format(type), expected, "Foo")
