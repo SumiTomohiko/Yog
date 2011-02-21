@@ -215,7 +215,8 @@ def typedef2yog(type, decl)
     'int8_t, 'int16_t, 'int32_t, 'int64_t, 'uint8_t, 'uint16_t, 'uint32_t,
     'uint64_t }
   if SPECIALS.include?(name)
-    return f(name.inspect())
+    s = name.to_s()
+    return f(s.slice(0, s.size - 2).to_sym().inspect())
   end
   return f(make_type_text(type, decl))
 end
@@ -334,7 +335,7 @@ def h2yog(yog, headers, so, verbose=false, &block)
     end
     next node.declarators.select() do [decl]
       if spec.kind_of?(TypedefNode)
-        next block(spec.filename, get_pointer_body(decl))
+        next block(spec.filename, get_typedef_name(decl))
       end
       if (proto = get_pointer_body(decl)).kind_of?(ProtoNode)
         if proto.name.kind_of?(PointerNode)
@@ -345,7 +346,6 @@ def h2yog(yog, headers, so, verbose=false, &block)
       next false
     end.size != 0
   end
-  #print(macros)
   impls = macros.zip(get_macros_implementation(headers, macros)).map() do [args]
     next MacroImpl.new(args[0], args[1])
   end
