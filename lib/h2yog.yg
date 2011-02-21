@@ -101,15 +101,26 @@ end
 # FIXME: DON'T DO IT
 defined_structs = Set.new()
 
+def get_struct_name_for_pointer(spec)
+  name = spec2yog(spec)
+  if defined_structs.include?(name.to_sym())
+    return name
+  end
+  return 'void.inspect()
+end
+
 def pointer2yog(spec, decl)
-  return decl.kind_of?(PointerNode) ? "['pointer, {0}]".format(spec) : spec
+  if decl.kind_of?(PointerNode)
+    return "['pointer, {0}]".format(get_struct_name_for_pointer(spec))
+  end
+  return spec2yog(spec)
 end
 
 def make_type_text(spec, decl)
   if decl.kind_of?(ProtoNode) && decl.name.kind_of?(PointerNode)
     return 'pointer.inspect()
   end
-  return pointer2yog(spec2yog(spec), decl)
+  return pointer2yog(spec, decl)
 end
 
 def enum2yog(node, name)
@@ -168,11 +179,8 @@ def union2yog(node, name)
 end
 
 def typedef2yog(type, decl)
-  f = partial("{0} = {1}\n".format, get_typedef_name(decl))
-  if type.kind_of?(StructBaseNode) && !defined_structs.include?(type.name)
-    return f(pointer2yog('void.inspect(), decl))
-  end
-  return f(make_type_text(type, decl))
+  name = get_typedef_name(decl)
+  return "{0} = {1}\n".format(name, make_type_text(type, decl))
 end
 
 def params2yog(params)
