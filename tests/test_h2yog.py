@@ -101,6 +101,9 @@ print(FOO)"""
         self.do_simple_print_test("""typedef unsigned int size_t;
 #define FOO (size_t)-42""", "-42")
 
+    def test_expression40(self):
+        self.do_simple_print_test("#define FOO ~42", "-43")
+
     def do_struct_test(self, header):
         so = get_lib_path("empty")
         src = """from test_h2yog import Foo

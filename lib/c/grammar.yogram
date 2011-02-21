@@ -1259,6 +1259,7 @@ unary_operator  : <and> {
   return minus.value
 }
                 | <tilda> {
+  return tilda.value
 }
                 | <not> {
 }
