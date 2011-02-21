@@ -8,6 +8,13 @@ class Node
   end
 end
 
+class SizeofNode > Node
+  def init(filename, expr)
+    super(filename)
+    self.expr = expr
+  end
+end
+
 class UnaryNode > Node
   def init(filename, op, expr)
     super(filename)
@@ -595,7 +602,6 @@ direct_declarator : <identifier> {
 ;
 
 pointer_opt : (: empty :) {
-  return nil
 }
             | pointer {
   return pointer
@@ -1121,6 +1127,7 @@ multiplicative_expression : cast_expression {
   return cast_expression
 }
                           | multiplicative_expression <star> cast_expression {
+  return BinopNode.new(__data__.filename, multiplicative_expression, star.value, cast_expression)
 }
                           | multiplicative_expression <div> cast_expression {
 }
@@ -1165,6 +1172,7 @@ equality_expression : relational_expression {
   return relational_expression
 }
                     | equality_expression <equal_equal> relational_expression {
+  return BinopNode.new(__data__.filename, equality_expression, equal_equal.value, relational_expression)
 }
                     | equality_expression <not_equal> relational_expression {
 }
@@ -1227,6 +1235,7 @@ unary_expression  : postfix_expression {
                   | <sizeof> unary_expression {
 }
                   | <sizeof> <lpar> type_name <rpar> {
+  return SizeofNode.new(__data__.filename, type_name)
 }
                   | <__alignof__> unary_expression {
 }
