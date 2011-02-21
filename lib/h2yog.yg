@@ -196,7 +196,28 @@ end
 
 def typedef2yog(type, decl)
   name = get_typedef_name(decl)
-  return "{0} = {1}\n".format(name, make_type_text(type, decl))
+
+  f = partial("{0} = {1}\n".format, name)
+  (:
+   : GCC defines int*_t with the following statements;
+   :
+   : typedef int int8_t __attribute__ ((__mode__ (__QI__)));
+   : typedef int int16_t __attribute__ ((__mode__ (__HI__)));
+   : typedef int int32_t __attribute__ ((__mode__ (__SI__)));
+   : typedef int int64_t __attribute__ ((__mode__ (__DI__)));
+   :
+   : I don't know GCC's special syntax of __attribute__. I escape these with
+   : adhoc way now.
+   :
+   : TODO: Use __attribute__.
+   :)
+  SPECIALS = {
+    'int8_t, 'int16_t, 'int32_t, 'int64_t, 'uint8_t, 'uint16_t, 'uint32_t,
+    'uint64_t }
+  if SPECIALS.include?(name)
+    return f(name.inspect())
+  end
+  return f(make_type_text(type, decl))
 end
 
 def params2yog(params)
