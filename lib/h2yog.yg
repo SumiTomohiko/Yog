@@ -1,6 +1,6 @@
 
 from c import Macro, parse, parse_macro
-from c.grammar import ArrayNode, BinopNode, ConstantNode, EnumNode, PointerNode, ProtoNode, StructBaseNode, StructNode, TypedefNode, VarNode, get_typedef_name
+from c.grammar import ArrayNode, BinopNode, ConstantNode, EnumNode, PointerNode, ProtoNode, StructBaseNode, StructNode, TypedefNode, UnaryNode, VarNode, get_typedef_name
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -26,8 +26,8 @@ def run_gcc(headers, opts, &block=nil)
   return stdout
 end
 
-def parse_to_nodes(headers, verbose, &block)
-  nodes, macros = parse(run_gcc(headers, ["-dD"]), verbose)
+def parse_to_nodes(headers, typedef_names, verbose, &block)
+  nodes, macros = parse(run_gcc(headers, ["-dD"]), typedef_names, verbose)
   return nodes.select(&block), macros.select(&block)
 end
 
@@ -259,6 +259,9 @@ def node2yog(node)
   if node.kind_of?(VarNode)
     return node.name.to_s()
   end
+  if node.kind_of?(UnaryNode)
+    return "{0}({1})".format(node.op, node2yog(node.expr))
+  end
   spec = node.spec
   if spec.kind_of?(TypedefNode)
     type = spec.type
@@ -300,7 +303,8 @@ def get_pointer_body(node)
 end
 
 def h2yog(yog, headers, so, verbose=false, &block)
-  nodes, macros = parse_to_nodes(headers, verbose) do [node]
+  typedef_names = Set.new()
+  nodes, macros = parse_to_nodes(headers, typedef_names, verbose) do [node]
     if node == nil
       next false
     end
@@ -330,7 +334,7 @@ def h2yog(yog, headers, so, verbose=false, &block)
     macros.zip(impls).each() do [args]
       macro = args[0]
       impl = args[1]
-      node, _ = parse_macro(impl + ";", verbose)
+      node, _ = parse_macro(impl + ";", typedef_names, verbose)
       if (node == nil) || node.empty? || ((src = node2yog(node[0])) == nil)
         next
       end

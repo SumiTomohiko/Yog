@@ -8,6 +8,14 @@ class Node
   end
 end
 
+class UnaryNode > Node
+  def init(filename, op, expr)
+    super(filename)
+    self.op = op
+    self.expr = expr
+  end
+end
+
 class ArrayNode > Node
   def init(filename, decl, size)
     super(filename)
@@ -1202,6 +1210,7 @@ cast_expression : unary_expression {
   return unary_expression
 }
                 | <lpar> type_name <rpar> unary_expression {
+  return unary_expression
 }
 ;
 
@@ -1213,6 +1222,7 @@ unary_expression  : postfix_expression {
                   | <minus_minus> unary_expression {
 }
                   | unary_operator cast_expression {
+  return UnaryNode.new(__data__.filename, unary_operator, cast_expression)
 }
                   | <sizeof> unary_expression {
 }
@@ -1233,6 +1243,7 @@ unary_operator  : <and> {
                 | <plus> {
 }
                 | <minus> {
+  return minus.value
 }
                 | <tilda> {
 }
