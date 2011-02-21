@@ -1,0 +1,3 @@
+union Foo {
+    int bar;
+};
