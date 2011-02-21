@@ -8,6 +8,14 @@ class Node
   end
 end
 
+class ArrayNode > Node
+  def init(filename, decl, size)
+    super(filename)
+    self.decl = decl
+    self.size = size
+  end
+end
+
 class VarNode > Node
   def init(filename, name)
     super(filename)
@@ -130,6 +138,9 @@ def get_typedef_name(decl)
   end
   if decl.kind_of?(ProtoNode) || decl.kind_of?(BitFieldNode)
     return get_typedef_name(decl.name)
+  end
+  if decl.kind_of?(ArrayNode)
+    return get_typedef_name(decl.decl)
   end
   raise SyntaxError.new("Unsupported typedef")
 end
@@ -543,10 +554,12 @@ typeof_specifier  : <typeof> <lpar> expression <rpar> {
 assignment_expression_opt : (: empty :) {
 }
                           | assignment_expression {
+  return assignment_expression
 }
 ;
 
 array_declarator  : <lbracket> assignment_expression_opt <rbracket> {
+  return assignment_expression_opt
 }
 ;
 
@@ -557,7 +570,7 @@ direct_declarator : <identifier> {
   return declarator
 }
                   | direct_declarator array_declarator {
-  return direct_declarator
+  return ArrayNode.new(__data__.filename, direct_declarator, array_declarator)
 }
                   | direct_declarator <lpar> parameter_type_list <rpar> {
   return ProtoNode.new(__data__.filename, direct_declarator, parameter_type_list)

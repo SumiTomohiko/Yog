@@ -1,6 +1,6 @@
 
 from c import Macro, parse, parse_macro
-from c.grammar import BinopNode, ConstantNode, EnumNode, PointerNode, ProtoNode, StructBaseNode, StructNode, TypedefNode, VarNode, get_typedef_name
+from c.grammar import ArrayNode, BinopNode, ConstantNode, EnumNode, PointerNode, ProtoNode, StructBaseNode, StructNode, TypedefNode, VarNode, get_typedef_name
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -103,10 +103,7 @@ defined_structs = Set.new()
 
 def get_struct_name_for_pointer(spec)
   name = spec2yog(spec)
-  if defined_structs.include?(name.to_sym())
-    return name
-  end
-  return 'void.inspect()
+  return defined_structs.include?(name.to_sym()) ? name : 'void.inspect()
 end
 
 def pointer2yog(spec, decl)
@@ -116,11 +113,30 @@ def pointer2yog(spec, decl)
   return spec2yog(spec)
 end
 
-def make_type_text(spec, decl)
+def get_array_size(decl)
+  if decl.kind_of?(ArrayNode)
+    return decl.size
+  end
+  if decl.kind_of?(PointerNode)
+    return get_array_size(decl.node)
+  end
+  if decl.kind_of?(ProtoNode)
+    return get_array_size(decl.name)
+  end
+  return nil
+end
+
+def make_type_text_of_scalar(spec, decl)
   if decl.kind_of?(ProtoNode) && decl.name.kind_of?(PointerNode)
-    return 'pointer.inspect()
+    return "[{0}, {1}]".format('pointer.inspect(), 'void.inspect())
   end
   return pointer2yog(spec, decl)
+end
+
+def make_type_text(spec, decl)
+  type = make_type_text_of_scalar(spec, decl)
+  size = get_array_size(decl)
+  return size == nil ? type : "[{0}, {1}]".format(type, node2yog(size))
 end
 
 def enum2yog(node, name)

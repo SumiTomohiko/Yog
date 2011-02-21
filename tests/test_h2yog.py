@@ -232,6 +232,17 @@ print({0}().bar)""".format(base), "42")
         self.do_func_test("test_func70", """from test_h2yog import foo
 foo()""", "42")
 
+    def do_simple_array_test(self, base):
+        src = """from test_h2yog import Foo
+foo = Foo.new()
+foo.bar[0] = 42
+print(foo.bar[0])"""
+        self.do_test([base + ".h"], get_lib_path("empty"), src, "42")
+
+    for base in ["test_array0", "test_array10", "test_array20"]:
+        exec """def {0}(self):
+    self.do_simple_array_test(\"{0}\")""".format(base)
+
 if __name__ == "__main__":
     # This part generated headers and codes for .so partially.
     from os.path import dirname, join
