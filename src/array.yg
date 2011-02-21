@@ -1,4 +1,19 @@
 
+def sort(&block)
+  if self.empty?
+    return []
+  end
+  pibot = self[0]
+  rest = self.slice(1)
+  a = rest.select() do [elem]
+    next block(elem, pibot) <= 0
+  end
+  b = rest.select() do [elem]
+    next 0 < block(elem, pibot)
+  end
+  return a.sort(&block) + [pibot] + b.sort(&block)
+end
+
 def to_set()
   set = Set.new()
   self.each(&set.<<)
