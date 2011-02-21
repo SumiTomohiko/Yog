@@ -306,6 +306,19 @@ def get_pointer_body(node)
   return node.kind_of?(PointerNode) ? node.node : node
 end
 
+class MacroImpl
+  def init(macro, impl)
+    self.macro = macro
+    self.impl = impl
+  end
+
+  def get_lineno()
+    return self.macro.lineno
+  end
+
+  lineno = property(get_lineno)
+end
+
 def h2yog(yog, headers, so, verbose=false, &block)
   typedef_names = Set.new()
   nodes, macros = parse_to_nodes(headers, typedef_names, verbose) do [node]
@@ -333,20 +346,23 @@ def h2yog(yog, headers, so, verbose=false, &block)
     end.size != 0
   end
   #print(macros)
-  impls =  get_macros_implementation(headers, macros)
+  impls = macros.zip(get_macros_implementation(headers, macros)).map() do [args]
+    next MacroImpl.new(args[0], args[1])
+  end
   File.open(yog, "w") do [fp]
-    macros.zip(impls).each() do [args]
-      macro = args[0]
-      impl = args[1]
-      node, _ = parse_macro(impl + ";", typedef_names, verbose)
-      if (node == nil) || node.empty? || ((src = node2yog(node[0])) == nil)
+    fp.write("lib = load_lib({0})\n".format(so.inspect()))
+    (nodes + impls).sort() do [a, b]
+      next a.lineno <=> b.lineno
+    end.each() do [obj]
+      if obj.kind_of?(MacroImpl)
+        node, _ = parse_macro(obj.impl + ";", typedef_names, verbose)
+        if (node == nil) || node.empty? || ((src = node2yog(node[0])) == nil)
+          next
+        end
+        fp.write("{0} = {1}\n".format(obj.macro.name, src))
         next
       end
-      fp.write("{0} = {1}\n".format(macro.name, src))
-    end
-    fp.write("lib = load_lib({0})\n".format(so.inspect()))
-    nodes.each() do [node]
-      fp.write("{0}\n".format(node2yog(node)))
+      fp.write("{0}\n".format(node2yog(obj)))
     end
   end
 end
