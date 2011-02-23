@@ -43,10 +43,6 @@ datatypes_typedef = datatypes + [
 
 class TestH2Yog(Base):
 
-    def do_simple_print_test(self, header, expected, name="FOO"):
-        self.do_test2(header, """from test_h2yog import {0}
-print({0})""".format(name), expected)
-
     def do_test_enum_type(self, header):
         self.do_simple_print_test(header, "int", "Foo")
 
@@ -249,6 +245,18 @@ print(foo.bar[0])"""
     for base in ["test_array0", "test_array10", "test_array20"]:
         exec """def {0}(self):
     self.do_simple_array_test(\"{0}\")""".format(base)
+
+    int_modes = [
+        ["word", "int16"],
+        ["__word__", "int16"],
+        ["byte", "int8"],
+        ["__byte__", "int8"]]
+    for mode, expected in int_modes:
+        exec """def test_signed_int_mode_{0}(self):
+    self.do_mode_test(\"int\", \"{0}\", \"{1}\")""".format(mode, expected)
+    for mode, expected in int_modes:
+        exec """def test_unsigned_int_mode_{0}(self):
+    self.do_mode_test(\"unsigned\", \"{0}\", \"{1}\")""".format(mode, "u" + expected)
 
 if __name__ == "__main__":
     # This part generated headers and codes for .so partially.

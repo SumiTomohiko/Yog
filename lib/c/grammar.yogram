@@ -9,6 +9,22 @@ class Node
   end
 end
 
+class InitDeclaratorNode > Node
+  def init(filename, lineno, declarator, attrs=[])
+    super(filename, lineno)
+    self.declarator = declarator
+    self.attrs = attrs
+  end
+end
+
+class AttributeNode > Node
+  def init(filename, lineno, name, args)
+    super(filename, lineno)
+    self.name = name
+    self.args = args
+  end
+end
+
 class SizeofNode > Node
   def init(filename, lineno, expr)
     super(filename, lineno)
@@ -64,11 +80,19 @@ class EnumFieldNode > Node
   end
 end
 
-class DeclarationNode > Node
-  def init(filename, lineno, spec, declarators=[])
+class ParameterDeclarationNode > Node
+  def init(filename, lineno, spec, declarator)
     super(filename, lineno)
     self.spec = spec
-    self.declarators = declarators
+    self.declarator = declarator
+  end
+end
+
+class DeclarationNode > Node
+  def init(filename, lineno, spec, init_declarators=[])
+    super(filename, lineno)
+    self.spec = spec
+    self.init_declarators = init_declarators
   end
 end
 
@@ -163,6 +187,10 @@ def get_typedef_name(decl)
   end
   raise SyntaxError.new("Unsupported typedef")
 end
+
+def create_array(obj)
+  return obj != nil ? [obj] : []
+end
 %}
 
 translation_unit  : external_declarations {
@@ -220,8 +248,8 @@ function_definition : declaration_specifiers declarator (: declaration_list_opt 
 
 declaration : declaration_specifiers init_declarator_list <semicolon> {
   if declaration_specifiers.kind_of?(TypedefNode)
-    init_declarator_list.each() do [decl]
-      __data__.typedef_names << get_typedef_name(decl)
+    init_declarator_list.each() do [init_decl]
+      __data__.typedef_names << get_typedef_name(init_decl.declarator)
     end
   end
   return DeclarationNode.new(__data__.filename, __data__.lineno, declaration_specifiers, init_declarator_list)
@@ -320,16 +348,16 @@ init_declarator_list  : init_declarator {
 ;
 
 init_declarator_head  : declarator {
-  return declarator
+  return InitDeclaratorNode.new(__data__.filename, __data__.lineno, declarator)
 }
                       | declarator simple_asm_expr {
-  return declarator
+  return InitDeclaratorNode.new(__data__.filename, __data__.lineno, declarator)
 }
                       | declarator attributes {
-  return declarator
+  return InitDeclaratorNode.new(__data__.filename, __data__.lineno, declarator, attributes)
 }
                       | declarator simple_asm_expr attributes {
-  return declarator
+  return InitDeclaratorNode.new(__data__.filename, __data__.lineno, declarator, attributes)
 }
 ;
 
@@ -660,10 +688,10 @@ parameter_list  : parameter_declaration {
 ;
 
 parameter_declaration : declaration_specifiers declarator attributes_opt {
-  return DeclarationNode.new(__data__.filename, __data__.lineno, declaration_specifiers, [declarator])
+  return ParameterDeclarationNode.new(__data__.filename, __data__.lineno, declaration_specifiers, declarator)
 }
                       | declaration_specifiers abstract_declarator_opt attributes_opt {
-  return DeclarationNode.new(__data__.filename, __data__.lineno, declaration_specifiers, abstract_declarator_opt ? [abstract_declarator_opt] : [])
+  return ParameterDeclarationNode.new(__data__.filename, __data__.lineno, declaration_specifiers, abstract_declarator_opt)
 }
 ;
 
@@ -684,7 +712,6 @@ identifier_list : <identifier> {
 ;
 
 abstract_declarator_opt : (: empty :) {
-  return nil
 }
                         | abstract_declarator {
   return abstract_declarator
@@ -748,8 +775,10 @@ attributes_opt  : (: empty :) {
 ;
 
 attributes  : attribute {
+  return attribute
 }
             | attributes attribute {
+  return attributes + attribute
 }
 ;
 
@@ -759,22 +788,26 @@ attribute : <__attribute__> <lpar> <lpar> attribute_list <rpar> <rpar> {
 ;
 
 attribute_list  : attrib {
-  return [attrib]
+  return create_array(attrib)
 }
                 | attribute_list <comma> attrib {
-  return attribute_list + [attrib]
+  return attribute_list + create_array(attrib)
 }
 ;
 
 attrib  : (: empty :) {
 }
         | any_word {
+  return AttributeNode.new(__data__.filename, __data__.lineno, any_word, [])
 }
         | any_word <lpar> <identifier> <rpar> {
+  return AttributeNode.new(__data__.filename, __data__.lineno, any_word, [identifier.value])
 }
         | any_word <lpar> <identifier> <comma> nonempty_expr_list <rpar> {
+  return AttributeNode.new(__data__.filename, __data__.lineno, any_word, [identifier.value] + expr_list)
 }
         | any_word <lpar> expr_list <rpar> {
+  return AttributeNode.new(__data__.filename, __data__.lineno, any_word, expr_list)
 }
 ;
 
@@ -851,6 +884,7 @@ any_word : <static> {
   return '_Bool
 }
             | <identifier> {
+  return identifier.value
 }
 ;
 
@@ -1360,14 +1394,18 @@ expression  : assignment_expression {
 ;
 
 expr_list : (: empty :) {
+  return []
 }
           | nonempty_expr_list {
+  return nonempty_expr_list
 }
 ;
 
 nonempty_expr_list  : assignment_expression {
+  return [assignment_expression]
 }
                     | nonempty_expr_list <comma> assignment_expression {
+  return nonempty_expr_list + [assignment_expression]
 }
 ;
 

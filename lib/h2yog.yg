@@ -194,30 +194,30 @@ def union2yog(node, name)
   return struct_base2yog(node, "UnionClass", name)
 end
 
-def typedef2yog(type, decl)
-  name = get_typedef_name(decl)
-
-  f = partial("{0} = {1}\n".format, name)
-  (:
-   : GCC defines int*_t with the following statements;
-   :
-   : typedef int int8_t __attribute__ ((__mode__ (__QI__)));
-   : typedef int int16_t __attribute__ ((__mode__ (__HI__)));
-   : typedef int int32_t __attribute__ ((__mode__ (__SI__)));
-   : typedef int int64_t __attribute__ ((__mode__ (__DI__)));
-   :
-   : I don't know GCC's special syntax of __attribute__. I escape these with
-   : adhoc way now.
-   :
-   : TODO: Use __attribute__.
-   :)
-  SPECIALS = {
-    'int8_t, 'int16_t, 'int32_t, 'int64_t, 'uint8_t, 'uint16_t, 'uint32_t,
-    'uint64_t }
-  if SPECIALS.include?(name)
-    s = name.to_s()
-    return f(s.slice(0, s.size - 2).to_sym().inspect())
+def unsigned?(type)
+  if (type.size == 0) || (type[0] == 'signed)
+    return false
   end
+  if type[0] == 'unsigned
+    return true
+  end
+  return unsigned?(type.slice(1))
+end
+
+def typedef2yog(type, init_decl)
+  decl = init_decl.declarator
+  name = get_typedef_name(decl)
+  f = partial("{0} = {1}\n".format, name)
+  attrs = init_decl.attrs
+  if !attrs.empty? && ((attr = attrs[0]).name == '__mode__)
+    MODE2YOG = {
+      'DI: "int64", 'SI: "int32", 'HI: "int16", 'QI: "int8", 'byte: "int8",
+      'word: "int16", 'pointer: "int32", 'SF: "float", 'DF: "longdouble" }
+    base_type = MODE2YOG[attr.args[0].to_s().gsub("__", "").to_sym()]
+    act_type = ((unsigned?(type) ? "u" : "") + base_type).to_sym()
+    return f(act_type.inspect())
+  end
+
   return f(make_type_text(type, decl))
 end
 
@@ -226,13 +226,13 @@ def params2yog(params)
     param = params[0]
     spec = param.spec
     if spec.kind_of?(Array) && (spec.size == 1) && (spec[0] == 'void)
-      if param.declarators.empty?
+      if !param.declarator.kind_of?(PointerNode)
         return ""
       end
     end
   end
   return params.map() do [param]
-    next make_type_text(param.spec, param.declarators.get(0))
+    next make_type_text(param.spec, param.declarator)
   end.join(", ")
 end
 
@@ -243,6 +243,13 @@ def proto2yog(type, decl)
   params = params2yog(body.params)
   rettype = make_type_text(type, decl)
   return fmt.format(name, name.to_s().inspect(), params, rettype)
+end
+
+def init_declators2yog(node, f)
+  type = node.spec.type
+  return node.init_declarators.map() do [init_decl]
+    next f(type, init_decl.declarator)
+  end.join("")
 end
 
 def node2yog(node)
@@ -272,27 +279,26 @@ def node2yog(node)
     type = spec.type
     if type.kind_of?(StructBaseNode) && (type.contents != nil)
       f = type.kind_of?(StructNode) ? struct2yog : union2yog
-    elif type.kind_of?(EnumNode)
-      f = enum2yog
-    else
-      f = typedef2yog
+      return init_declators2yog(node, f)
     end
-    return node.declarators.map() do [decl]
-      next f(type, decl)
-    end.join("")
+    if type.kind_of?(EnumNode)
+      return init_declators2yog(node, enum2yog)
+    end
+    return node.init_declarators.map(&partial(typedef2yog, type)).join("")
   end
   if spec.kind_of?(StructBaseNode)
     if spec.contents != nil
       f = spec.kind_of?(StructNode) ? struct2yog : union2yog
       return f(spec, spec.name)
-    elif node.declarators.empty?
+    elif node.init_declarators.empty?
       return "{0} = {1}\n".format(spec.name, 'void.inspect())
     end
   end
   if spec.kind_of?(EnumNode)
     return enum2yog(spec, spec.name)
   end
-  return node.declarators.map() do [decl]
+  return node.init_declarators.map() do [init_decl]
+    decl = init_decl.declarator
     if decl.kind_of?(ProtoNode)
       next proto2yog(spec, decl)
     end
@@ -333,7 +339,8 @@ def h2yog(yog, headers, so, verbose=false, &block)
     if spec.kind_of?(StructBaseNode) || spec.kind_of?(EnumNode)
       next block(spec.filename, spec.name)
     end
-    next node.declarators.select() do [decl]
+    next node.init_declarators.select() do [init_decl]
+      decl = init_decl.declarator
       if spec.kind_of?(TypedefNode)
         next block(spec.filename, get_typedef_name(decl))
       end

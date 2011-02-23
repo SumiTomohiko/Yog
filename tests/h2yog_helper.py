@@ -5,6 +5,14 @@ from testcase import TestCase, get_lib_path
 
 class Base(TestCase):
 
+    def do_mode_test(self, type, mode, expected):
+        fmt = "typedef {0} Foo __attribute__((__mode__({1})));"
+        self.do_simple_print_test(fmt.format(type, mode), expected, "Foo")
+
+    def do_simple_print_test(self, header, expected, name="FOO"):
+        self.do_test2(header, """from test_h2yog import {0}
+print({0})""".format(name), expected)
+
     def run_h2yog(self, headers, so):
         src = """from h2yog import h2yog
 headers = [%(headers)s].map() do [h]
