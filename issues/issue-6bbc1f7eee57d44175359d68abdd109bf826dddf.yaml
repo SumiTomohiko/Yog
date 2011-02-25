@@ -1,0 +1,63 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Alignment of Struct
+desc: |-
+  In the current version, aligment of struct is decided by the first field of
+  the struct. It is incollect. It seems decided by the biggest field. If the
+  struct contains only char and short, its alignment becomes 2. But if the struct
+  contains char, short and int, its alignment becomes 4, even if the total size
+  of struct is same.
+  
+    $ cat baz.c
+    #include <stddef.h>
+    #include <stdio.h>
+    
+    struct Foo {
+    #if FOO
+        char a, b, c, d;
+    #else
+        int a;
+    #endif
+        short bar;
+        short baz;
+        char quux;
+    };
+    
+    struct Bar {
+        struct Foo foo;
+        short bar;
+    };
+    
+    int
+    main(int argc, const char* argv[])
+    {
+        printf("sizeof(struct Foo)=%zu\n", sizeof(struct Foo));
+        printf("offsetof(struct Bar, bar)=%u\n", offsetof(struct Bar, bar));
+        return 0;
+    }
+    
+    /**
+     * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
+     */
+    $ gcc baz.c
+    $ ./a.out
+    sizeof(struct Foo)=12
+    offsetof(struct Bar, bar)=12
+    $ gcc -DFOO baz.c
+    $ ./a.out
+    sizeof(struct Foo)=10
+    offsetof(struct Bar, bar)=10
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-02-25 16:15:26.620703 Z
+references: []
+
+id: 6bbc1f7eee57d44175359d68abdd109bf826dddf
+log_events: 
+- - 2011-02-25 16:15:27.612064 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
