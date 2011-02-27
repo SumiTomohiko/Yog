@@ -15,6 +15,7 @@
 #include "yog/frame.h"
 #include "yog/get_args.h"
 #include "yog/handle.h"
+#include "yog/misc.h"
 #include "yog/sprintf.h"
 #include "yog/string.h"
 #include "yog/sysdeps.h"
@@ -618,6 +619,20 @@ ufo(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
     CHECK_SELF_TYPE2(env, self);
     return YogFixnum_binop_ufo(env, HDL2VAL(self), HDL2VAL(n));
+}
+
+uint_t
+YogFixnum_to_uint(YogEnv* env, YogVal self, const char* name)
+{
+    if (!IS_FIXNUM(self)) {
+        YogMisc_raise_TypeError(env, self, name, "Fixnum");
+    }
+    int_t n = VAL2INT(self);
+    if (n < 0) {
+        const char* fmt = "%s must be greater or equal 0, not %d";
+        YogError_raise_ValueError(env, fmt, name, n);
+    }
+    return (uint_t)n;
 }
 
 void

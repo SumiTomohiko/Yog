@@ -2,6 +2,7 @@
 #include "yog/bignum.h"
 #include "yog/class.h"
 #include "yog/error.h"
+#include "yog/fixnum.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -191,6 +192,33 @@ YogVal_set_attr(YogEnv* env, YogVal obj, ID name, YogVal val)
     RETURN_VOID(env);
 }
 
+static void
+raise_numeric_TypeError(YogEnv* env, YogVal self, const char* name)
+{
+    const char* fmt = "%s must be Fixnum or Bignum, not %C";
+    YogError_raise_TypeError(env, fmt, name, self);
+}
+
+uint_t
+YogVal_to_uint(YogEnv* env, YogVal self, const char* name)
+{
+    if (IS_FIXNUM(self)) {
+        return YogFixnum_to_uint(env, self, name);
+    }
+    if (IS_PTR(self) && (BASIC_OBJ_TYPE(self) == TYPE_BIGNUM)) {
+        return YogBignum_to_unsigned_type(env, self, name);
+    }
+    raise_numeric_TypeError(env, self, name);
+
+    /* XXX: Do you have a better way to escape the GCC warning? */
+    return 42;
+}
+
+/**
+ * FIXME: Rename
+ * SIGNED_TYPE -> int_t
+ * YogVal_to_signed_type -> YogVal_to_int
+ */
 SIGNED_TYPE
 YogVal_to_signed_type(YogEnv* env, YogVal self, const char* name)
 {
@@ -202,8 +230,7 @@ YogVal_to_signed_type(YogEnv* env, YogVal self, const char* name)
     if (IS_PTR(self) && (BASIC_OBJ_TYPE(self) == TYPE_BIGNUM)) {
         RETURN(env, YogBignum_to_signed_type(env, self, name));
     }
-
-    YogError_raise_TypeError(env, "%s must be a Fixnum or Bignum", name);
+    raise_numeric_TypeError(env, self, name);
 
     /* NOTREACHED */
     RETURN(env, 0);

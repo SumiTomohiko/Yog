@@ -20,6 +20,7 @@ struct YogVM {
     YogVal cArrayField;
     YogVal cBignum;
     YogVal cBinary;
+    YogVal cBitField;
     YogVal cBool;
     YogVal cBuffer;
     YogVal cBufferField;
@@ -66,6 +67,7 @@ struct YogVM {
     YogVal cThread;
     YogVal cUnionClass;
     YogVal cUnionClassClass;
+    YogVal cUnsignedBitField;
 
     YogVal eArgumentError;
     YogVal eAttributeError;

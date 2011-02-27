@@ -370,6 +370,7 @@ YOG_EXPORT BOOL YogVal_is_subclass_of(YogEnv*, YogVal, YogVal);
 YOG_EXPORT void YogVal_print(YogEnv*, YogVal);
 YOG_EXPORT void YogVal_set_attr(YogEnv*, YogVal, ID, YogVal);
 YOG_EXPORT SIGNED_TYPE YogVal_to_signed_type(YogEnv*, YogVal, const char*);
+YOG_EXPORT uint_t YogVal_to_uint(YogEnv*, YogVal, const char*);
 
 /* PROTOTYPE_END */
 

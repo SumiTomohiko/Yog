@@ -11,8 +11,8 @@
 #include "yog/sysdeps.h"
 #include "yog/yog.h"
 
-static void
-raise_TypeError(YogEnv* env, YogVal val, const char* name, const char* expected)
+void
+YogMisc_raise_TypeError(YogEnv* env, YogVal val, const char* name, const char* expected)
 {
     YogError_raise_TypeError(env, "%s must be %s, not %C", name, expected, val);
 }
@@ -24,7 +24,7 @@ YogMisc_check_Encoding(YogEnv* env, YogHandle* val, const char* name)
     if (IS_PTR(v) && (BASIC_OBJ_TYPE(v) == TYPE_ENCODING)) {
         return;
     }
-    raise_TypeError(env, v, name, "Encoding");
+    YogMisc_raise_TypeError(env, v, name, "Encoding");
 }
 
 void
@@ -34,7 +34,7 @@ YogMisc_check_Fixnum(YogEnv* env, YogHandle* val, const char* name)
     if (IS_FIXNUM(v)) {
         return;
     }
-    raise_TypeError(env, v, name, "Fixnum");
+    YogMisc_raise_TypeError(env, v, name, "Fixnum");
 }
 
 void
@@ -53,7 +53,7 @@ YogMisc_check_String(YogEnv* env, YogHandle* val, const char* name)
     if (IS_PTR(v) && (BASIC_OBJ_TYPE(v) == TYPE_STRING)) {
         return;
     }
-    raise_TypeError(env, v, name, "String");
+    YogMisc_raise_TypeError(env, v, name, "String");
 }
 
 static YogHandle*

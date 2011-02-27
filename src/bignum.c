@@ -820,17 +820,14 @@ YogBignum_compare_with_int(YogEnv* env, YogVal self, int_t n)
 static void
 check_range_unsigned(YogEnv* env, YogVal self, const char* name, unsigned long max)
 {
-#define RAISE_ERROR do { \
-    const char* fmt = "%s must between %lu and %lu"; \
-    YogError_raise_ValueError(env, fmt, name, 0, max); \
-} while (0)
     if (YogBignum_compare_with_unsigned_long(env, self, 0) < 0) {
-        RAISE_ERROR;
+        const char* fmt = "%s must be greater or equal than 0, not %S";
+        YogError_raise_ValueError(env, fmt, name, self);
     }
     if (0 < YogBignum_compare_with_unsigned_long(env, self, max)) {
-        RAISE_ERROR;
+        const char* fmt = "%s must be less or equal %lu, not %S";
+        YogError_raise_ValueError(env, fmt, name, max, self);
     }
-#undef RAISE_ERROR
 }
 
 unsigned long
@@ -852,17 +849,14 @@ YogBignum_to_unsigned_type(YogEnv* env, YogVal self, const char* name)
 static void
 check_range(YogEnv* env, YogVal self, const char* name, long min, long max)
 {
-#define RAISE_ERROR do { \
-    const char* fmt = "%s must between %d and %d"; \
-    YogError_raise_ValueError(env, fmt, name, min, max); \
-} while (0)
     if (YogBignum_compare_with_int(env, self, min) < 0) {
-        RAISE_ERROR;
+        const char* fmt = "%s must be greater or equal %d, not %S";
+        YogError_raise_ValueError(env, fmt, name, min, self);
     }
     if (0 < YogBignum_compare_with_int(env, self, max)) {
-        RAISE_ERROR;
+        const char* fmt = "%s must be less or equal %d, not %S";
+        YogError_raise_ValueError(env, fmt, name, max, self);
     }
-#undef RAISE_ERROR
 }
 
 long

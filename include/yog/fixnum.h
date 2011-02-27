@@ -24,6 +24,7 @@ YOG_EXPORT YogVal YogFixnum_binop_subtract(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT YogVal YogFixnum_binop_ufo(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogFixnum_binop_xor(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT void YogFixnum_define_classes(YogEnv*, YogVal);
+YOG_EXPORT uint_t YogFixnum_to_uint(YogEnv*, YogVal, const char*);
 
 /* PROTOTYPE_END */
 

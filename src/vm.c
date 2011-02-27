@@ -511,6 +511,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cArrayField);
     KEEP(cBignum);
     KEEP(cBinary);
+    KEEP(cBitField);
     KEEP(cBool);
     KEEP(cBuffer);
     KEEP(cBufferField);
@@ -557,6 +558,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cThread);
     KEEP(cUnionClass);
     KEEP(cUnionClassClass);
+    KEEP(cUnsignedBitField);
 
     KEEP(eArgumentError);
     KEEP(eAttributeError);
@@ -652,6 +654,7 @@ YogVM_init(YogVM* vm)
     INIT(cArrayField);
     INIT(cBignum);
     INIT(cBinary);
+    INIT(cBitField);
     INIT(cBool);
     INIT(cBuffer);
     INIT(cBufferField);
@@ -698,6 +701,7 @@ YogVM_init(YogVM* vm)
     INIT(cThread);
     INIT(cUnionClass);
     INIT(cUnionClassClass);
+    INIT(cUnsignedBitField);
 
     INIT(eArgumentError);
     INIT(eAttributeError);

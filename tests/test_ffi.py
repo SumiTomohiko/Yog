@@ -2,10 +2,11 @@
 
 from os.path import join
 from re import match
-from testcase import TestCase, get_lib_path
+from ffi_helper import Base, define_range_test
+from testcase import get_lib_path
 import os
 
-class TestFFI(TestCase):
+class TestFFI(Base):
 
     def test_load_lib0(self):
         path = get_lib_path()
@@ -610,6 +611,84 @@ lib = load_lib(\"./test_Struct740.so\")
 f = lib.load_func(\"test_Struct740\", [[\'pointer, Baz]])
 f(baz)
 print(baz.foo.bar)""", "42")
+
+    # Test for bit field
+    def test_Struct750(self):
+        def test_stderr(stderr):
+            msg = "TypeError: Value must be Fixnum or Bignum, not String"
+            assert 0 < stderr.find(msg)
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'bit, 1], \'bar]])
+foo = Foo.new()
+foo.bar = \"baz\"""", stderr=test_stderr)
+
+    def test_Struct760(self):
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'ubit, 1], \'bar], [[\'ubit, 1], \'baz]])
+foo = Foo.new()
+foo.bar = 0
+foo.baz = 1
+print(foo.baz)""", "1")
+
+    def test_Struct770(self):
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'ubit, 1], \'bar], [[\'ubit, 1], \'baz]])
+lib = load_lib(\"./test_Struct770.so\")
+f = lib.load_func(\"test_Struct770\", [[\'pointer, Foo]])
+foo = Foo.new()
+f(foo)
+print(foo.baz)""", "1")
+
+    def test_Struct780(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Zero width for bit field")
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'ubit, 0], \'bar]])""", stderr=test_stderr)
+
+    def test_Struct790(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: Zero width for bit field")
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'bit, 0], \'bar]])""", stderr=test_stderr)
+
+    def test_Struct795(self):
+        def test_stderr(stderr):
+            msg = "TypeError: Bit-field width must be Fixnum, not String"
+            assert 0 < stderr.find(msg)
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'bit, \"baz\"], \'bar]])""", stderr=test_stderr)
+
+    def test_Struct800(self):
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'ubit, 8], \'bar], [\'char, \'baz]])
+foo = Foo.new()
+foo.baz = 42
+print(foo.baz)""", "42")
+
+    def test_Struct810(self):
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'ubit, 8], \'bar], [\'char, \'baz]])
+lib = load_lib(\"./test_Struct810.so\")
+f = lib.load_func(\"test_Struct810\", [[\'pointer, Foo]])
+foo = Foo.new()
+f(foo)
+print(foo.baz)""", "42")
+
+    def test_Struct820(self):
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'ubit, 9], \'bar], [\'char, \'baz]])
+foo = Foo.new()
+foo.baz = 42
+print(foo.baz)""", "42")
+
+    def test_Struct830(self):
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'ubit, 9], \'bar], [\'char, \'baz]])
+lib = load_lib(\"./test_Struct830.so\")
+f = lib.load_func(\"test_Struct830\", [[\'pointer, Foo]])
+foo = Foo.new()
+f(foo)
+print(foo.baz)""", "42")
 
     # Tests for UnionClass
     def test_Union000(self):
@@ -1484,5 +1563,10 @@ Foo.define_fields([[\'int, \'bar]])
 foo = Foo.new()
 foo.bar = 42
 print(foo.bar)""", "42")
+
+define_range_test(TestFFI, "bit", 1, -1, 0)
+define_range_test(TestFFI, "ubit", 1, 0, 1)
+define_range_test(TestFFI, "bit", 2, -2, 1)
+define_range_test(TestFFI, "ubit", 2, 0, 3)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

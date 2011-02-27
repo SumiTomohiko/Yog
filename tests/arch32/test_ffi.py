@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from testcase import TestCase
+from os.path import dirname
+from ffi_helper import Base, define_range_test
 from utils import is_32bit
 
-class TestFFI(TestCase):
+class TestFFI(Base):
 
     disabled = is_32bit() is not True
 
@@ -358,5 +359,32 @@ Foo = StructClass.new(\"Foo\", [[\'longlong, \'bar]])
 foo = Foo.new()
 foo.bar = \"baz\"
 """, stderr=test_stderr)
+
+    def test_Struct400(self):
+        d = dirname(__file__)
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'ubit, 31], \'bar], [[\'ubit, 2], \'baz]])
+lib = load_lib(\"{d}/test_Struct400.so\")
+f = lib.load_func(\"test_Struct400\", [[\'pointer, Foo]])
+foo = Foo.new()
+f(foo)
+print(foo.baz)""".format(**locals()), "3")
+
+    def test_Struct410(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("Width of bit field exceeds its type")
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'ubit, 33], \'bar]])""", stderr=test_stderr)
+
+    def test_Struct420(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("Width of bit field exceeds its type")
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[[\'bit, 33], \'bar]])""", stderr=test_stderr)
+
+define_range_test(TestFFI, "bit", 31, -1073741824, 1073741823)
+define_range_test(TestFFI, "ubit", 31, 0, 2147483647)
+define_range_test(TestFFI, "bit", 32, -2147483648, 2147483647)
+define_range_test(TestFFI, "ubit", 32, 0, 4294967295)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

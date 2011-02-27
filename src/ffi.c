@@ -115,6 +115,16 @@ typedef struct PointerField PointerField;
 
 #define TYPE_POINTER_FIELD TO_TYPE(PointerField_alloc)
 
+struct BitField {
+    struct FieldBase base;
+    uint_t pos;
+    uint_t width;
+};
+
+typedef struct BitField BitField;
+
+#define TYPE_BIT_FIELD TO_TYPE(BitField_alloc)
+
 struct FieldArray {
     struct YogBasicObj base;
     YogVal st;
@@ -211,6 +221,7 @@ typedef struct Pointer Pointer;
 enum NodeType {
     NODE_ARRAY,
     NODE_ATOM,
+    NODE_BIT,
     NODE_BUFFER,
     NODE_FIELD,
     NODE_POINTER,
@@ -219,6 +230,13 @@ enum NodeType {
 };
 
 typedef enum NodeType NodeType;
+
+enum BitSign {
+    BIT_SIGNED,
+    BIT_UNSIGNED,
+};
+
+typedef enum BitSign BitSign;
 
 struct Node {
     enum NodeType type;
@@ -230,6 +248,10 @@ struct Node {
         struct {
             ID type;
         } atom;
+        struct {
+            BitSign sign;
+            uint_t width;
+        } bit_field;
         struct {
             YogVal next;
             ID name;
@@ -274,6 +296,7 @@ Node_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
         YogGC_KEEP(env, node, u.struct_.klass, keeper, heap);
         break;
     case NODE_ATOM:
+    case NODE_BIT:
     case NODE_BUFFER:
         break;
     default:
@@ -562,15 +585,77 @@ ArrayField_new(YogEnv* env, YogVal node, uint_t offset)
 }
 
 static YogVal
-create_field(YogEnv* env, YogVal node, uint_t offset, uint_t child_index)
+BitField_alloc(YogEnv* env, YogVal klass)
+{
+    SAVE_ARG(env, klass);
+    YogVal field = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, BitField);
+    PUSH_LOCAL(env, field);
+    FieldBase_init(env, field, TYPE_BIT_FIELD, klass);
+    PTR_AS(BitField, field)->pos = 0;
+    PTR_AS(BitField, field)->width = 0;
+    RETURN(env, field);
+}
+
+#define BITS_PER_BYTE   8
+#define BITS_NUM        (BITS_PER_BYTE * sizeof(void*))
+
+static YogVal
+alloc_bit_field(YogEnv* env, YogVal klass, uint_t offset, uint_t pos, uint_t width)
+{
+    if (width == 0) {
+        YogError_raise_ValueError(env, "Zero width for bit field");
+    }
+    if (BITS_NUM < width) {
+        YogError_raise_ValueError(env, "Width of bit field exceeds its type");
+    }
+
+    YogVal field = BitField_alloc(env, klass);
+    /**
+     * FIXME: This file includes the following
+     * PTR_AS(Foo, bar)->offset = offset at many places.
+     */
+    PTR_AS(FieldBase, field)->offset = offset;
+    PTR_AS(BitField, field)->pos = pos;
+    PTR_AS(BitField, field)->width = width;
+    return field;
+}
+
+static YogVal
+UnsignedBitField_new(YogEnv* env, uint_t offset, uint_t pos, uint_t width)
+{
+    return alloc_bit_field(env, env->vm->cUnsignedBitField, offset, pos, width);
+}
+
+static YogVal
+BitField_new(YogEnv* env, uint_t offset, uint_t pos, uint_t width)
+{
+    return alloc_bit_field(env, env->vm->cBitField, offset, pos, width);
+}
+
+static YogVal
+create_bit_field(YogEnv* env, uint_t offset, uint_t bit_pos, BitSign sign, uint_t width)
+{
+    YogVal (*f)(YogEnv*, uint_t, uint_t, uint_t);
+    f = sign == BIT_SIGNED ? BitField_new : UnsignedBitField_new;
+    return f(env, offset, bit_pos, width);
+}
+
+static YogVal
+create_field(YogEnv* env, YogVal node, uint_t offset, uint_t bit_pos, uint_t child_index)
 {
     YogVal klass;
     YogVal encoding;
+    BitSign sign;
+    uint_t width;
     switch (PTR_AS(Node, node)->type) {
     case NODE_ARRAY:
         return ArrayField_new(env, node, offset);
     case NODE_ATOM:
         return Field_new(env, offset, PTR_AS(Node, node)->u.atom.type);
+    case NODE_BIT:
+        sign = PTR_AS(Node, node)->u.bit_field.sign;
+        width = PTR_AS(Node, node)->u.bit_field.width;
+        return create_bit_field(env, offset, bit_pos, sign, width);
     case NODE_BUFFER:
         return BufferField_new(env, offset, child_index);
     case NODE_POINTER:
@@ -591,13 +676,13 @@ create_field(YogEnv* env, YogVal node, uint_t offset, uint_t child_index)
 }
 
 static void
-StructClass_set_field(YogEnv* env, YogVal self, YogVal node, uint_t offset, uint_t child_index)
+StructClass_set_field(YogEnv* env, YogVal self, YogVal node, uint_t offset, uint_t bit_pos, uint_t child_index)
 {
     SAVE_ARGS2(env, self, node);
 
     ID name = PTR_AS(Node, node)->u.field.name;
     YogVal type = PTR_AS(Node, node)->u.field.type;
-    YogVal field = create_field(env, type, offset, child_index);
+    YogVal field = create_field(env, type, offset, bit_pos, child_index);
     YogObj_set_attr_id(env, self, name, field);
 
     RETURN_VOID(env);
@@ -830,7 +915,8 @@ static uint_t
 get_alignment_unit_of_node(YogEnv* env, YogVal node)
 {
     YogVal klass;
-    switch (PTR_AS(Node, node)->type) {
+    NodeType type = PTR_AS(Node, node)->type;
+    switch (type) {
     case NODE_ATOM:
     case NODE_BUFFER:
     case NODE_POINTER:
@@ -839,10 +925,12 @@ get_alignment_unit_of_node(YogEnv* env, YogVal node)
     case NODE_STRUCT:
         klass = PTR_AS(Node, node)->u.struct_.klass;
         return PTR_AS(StructClass, klass)->alignment_unit;
+    case NODE_BIT:
+        return 1;
     case NODE_ARRAY:
     case NODE_FIELD:
     default:
-        YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
+        YOG_BUG(env, "Invalid Node type (%u)", type);
     }
 
     return 0;
@@ -864,16 +952,36 @@ get_alignment_unit(YogEnv* env, YogVal nodes)
     RETURN(env, get_alignment_unit_of_node(env, node));
 }
 
+#define ALIGN(offset, alignment) \
+                    (((offset) + (alignment) - 1) & ~((alignment) - 1))
 static uint_t
-align_offset(YogEnv* env, YogVal node, uint_t offset)
+compute_bit_field_size(YogEnv* env, uint_t pos)
+{
+    return ALIGN(pos, BITS_PER_BYTE) / BITS_PER_BYTE;
+}
+
+static void
+align_offset(YogEnv* env, YogVal node, uint_t* offset, uint_t* bit_pos)
 {
     SAVE_ARG(env, node);
-    uint_t size = get_alignment_unit(env, node);
-    uint_t alignment = sizeof(void*) < size ? sizeof(void*) : size;
-#define ALIGN(offset, alignment) \
-                            (((offset) + (alignment) - 1) & ~((alignment) - 1))
-    RETURN(env, ALIGN(offset, alignment));
-#undef ALIGN
+
+    YogVal type = PTR_AS(Node, node)->u.field.type;
+    if (PTR_AS(Node, type)->type != NODE_BIT) {
+        uint_t size = get_alignment_unit(env, node);
+        uint_t alignment = sizeof(void*) < size ? sizeof(void*) : size;
+        uint_t bit_field_size = compute_bit_field_size(env, *bit_pos);
+        *offset = ALIGN(*offset + bit_field_size, alignment);
+        *bit_pos = 0;
+        RETURN_VOID(env);
+    }
+
+    if (BITS_NUM <= *bit_pos + PTR_AS(Node, type)->u.bit_field.width - 1) {
+        *offset += sizeof(void*);
+        *bit_pos = 0;
+        RETURN_VOID(env);
+    }
+
+    RETURN_VOID(env);
 }
 
 static YogVal
@@ -937,6 +1045,41 @@ init_struct_with_ptr(YogEnv* env, YogVal obj, void* ptr)
     PTR_AS(Struct, obj)->own = FALSE;
 }
 
+static void
+dump_data(YogEnv* env, YogVal s, char* ptr, const char* prefix, uint_t size)
+{
+    SAVE_ARG(env, s);
+    if (size == 0) {
+        RETURN_VOID(env);
+    }
+    YogString_append_string(env, s, prefix);
+#define FMT "0x%02x"
+    char buf[strlen(FMT) + 1];
+    snprintf(buf, array_sizeof(buf), FMT, 0xff & *ptr);
+#undef FMT
+    YogString_append_string(env, s, buf);
+    dump_data(env, s, ptr + 1, " ", size - 1);
+    RETURN_VOID(env);
+}
+
+static YogVal
+StructBase_dump(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal s = YogString_new(env);
+    PUSH_LOCAL(env, s);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "dump", params, args, kw);
+    CHECK_SELF_STRUCT;
+
+    YogVal klass = YogVal_get_class(env, self);
+    CHECK_STRUCT_CLASS(env, klass, "Class");
+    uint_t size = PTR_AS(StructClass, klass)->size;
+    dump_data(env, s, PTR_AS(Struct, self)->data, "", size);
+
+    RETURN(env, s);
+}
+
 static YogVal
 StructBase_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -946,9 +1089,7 @@ StructBase_init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Yo
     PUSH_LOCALS2(env, klass, ptr);
     YogCArg params[] = { { "|", NULL }, { "ptr", &ptr }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "init", params, args, kw);
-    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
-        YogError_raise_TypeError(env, "self must be Struct, not %C", self);
-    }
+    CHECK_SELF_STRUCT;
 
     if (IS_NIL(ptr)) {
         klass = YogVal_get_class(env, self);
@@ -1031,6 +1172,23 @@ parse_pointer(YogEnv* env, YogVal subinfo)
 }
 
 static YogVal
+create_bit_node(YogEnv* env, YogVal width, BitSign sign)
+{
+    SAVE_ARG(env, width);
+    YogVal node = Node_new(env);
+    PUSH_LOCAL(env, node);
+    if (!IS_FIXNUM(width)) {
+        const char* fmt = "Bit-field width must be Fixnum, not %C";
+        YogError_raise_TypeError(env, fmt, width);
+    }
+
+    PTR_AS(Node, node)->type = NODE_BIT;
+    PTR_AS(Node, node)->u.bit_field.sign = sign;
+    PTR_AS(Node, node)->u.bit_field.width = VAL2INT(width);
+    RETURN(env, node);
+}
+
+static YogVal
 parse_subtype(YogEnv* env, YogVal type)
 {
     SAVE_ARG(env, type);
@@ -1052,15 +1210,24 @@ parse_subtype(YogEnv* env, YogVal type)
         RETURN(env, node);
     }
     ID sym = VAL2ID(name);
-    if (sym == YogVM_intern(env, vm, "struct")) {
+#define INTERN(name)    YogVM_intern(env, vm, (name))
+    if (sym == INTERN("struct")) {
         RETURN(env, create_anonymous_struct_node(env, type, build_StructClass));
     }
-    if (sym == YogVM_intern(env, vm, "union")) {
+    if (sym == INTERN("union")) {
         RETURN(env, create_anonymous_struct_node(env, type, build_UnionClass));
     }
-    if (sym == YogVM_intern(env, env->vm, "pointer")) {
-        RETURN(env, parse_pointer(env, YogArray_at(env, type, 1)));
+    YogVal subinfo = YogArray_at(env, type, 1);
+    if (sym == INTERN("pointer")) {
+        RETURN(env, parse_pointer(env, subinfo));
     }
+    if (sym == INTERN("bit")) {
+        RETURN(env, create_bit_node(env, subinfo, BIT_SIGNED));
+    }
+    if (sym == INTERN("ubit")) {
+        RETURN(env, create_bit_node(env, subinfo, BIT_UNSIGNED));
+    }
+#undef INTERN
     RETURN(env, YUNDEF);
 }
 
@@ -1176,11 +1343,16 @@ static uint_t
 get_total_field_size(YogEnv* env, YogVal node)
 {
     YogVal type = PTR_AS(Node, node)->u.field.type;
-    if (PTR_AS(Node, type)->type == NODE_ARRAY) {
-        uint_t size = PTR_AS(Node, type)->u.array.size;
+    uint_t size;
+    switch (PTR_AS(Node, type)->type) {
+    case NODE_ARRAY:
+        size = PTR_AS(Node, type)->u.array.size;
         return get_size(env, PTR_AS(Node, type)->u.array.type) * size;
+    case NODE_BIT:
+        return 0;
+    default:
+        return get_size(env, type);
     }
-    return get_size(env, type);
 }
 
 static uint_t
@@ -1252,7 +1424,7 @@ define_fields_to_UnionClass(YogEnv* env, YogVal self, YogVal fields)
 
     uint_t children_num = 0;
     for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
-        StructClass_set_field(env, self, node, 0, children_num);
+        StructClass_set_field(env, self, node, 0, 0, children_num);
         children_num += get_children_num(env, node);
     }
     uint_t union_size = get_union_size(env, nodes);
@@ -1290,18 +1462,28 @@ define_fields_to_StructClass(YogEnv* env, YogVal self, YogVal fields)
     YogVal node = YUNDEF;
     PUSH_LOCALS2(env, nodes, node);
 
+    /**
+     * BUG: The following code is a bug. See
+     * issues/issue-6bbc1f7eee57d44175359d68abdd109bf826dddf.yaml.
+     * Alignment of struct must be decided by the biggest field.
+     */
     uint_t alignment_unit = get_alignment_unit(env, nodes);
     PTR_AS(StructClass, self)->alignment_unit = alignment_unit;
 
     uint_t offset = 0;
+    uint_t bit_pos = 0;
     uint_t children_num = 0;
     for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
-        offset = align_offset(env, node, offset);
-        StructClass_set_field(env, self, node, offset, children_num);
+        align_offset(env, node, &offset, &bit_pos);
+        StructClass_set_field(env, self, node, offset, bit_pos, children_num);
         offset += get_total_field_size(env, node);
+        YogVal tn = PTR_AS(Node, node)->u.field.type;
+        NodeType type = PTR_AS(Node, tn)->type;
+        bit_pos += type == NODE_BIT ? PTR_AS(Node, tn)->u.bit_field.width : 0;
         children_num += get_children_num(env, node);
     }
-    PTR_AS(StructClass, self)->size = offset;
+    uint_t bit_field_size = compute_bit_field_size(env, bit_pos);
+    PTR_AS(StructClass, self)->size = offset + bit_field_size;
     PTR_AS(StructClass, self)->children_num = children_num;
 
     RETURN_VOID(env);
@@ -3434,11 +3616,155 @@ StructClassClass_new(YogEnv* env, YogVal pkg)
     RETURN(env, cStructClass);
 }
 
+static uint_t
+make_mask(uint_t width)
+{
+    return width < BITS_NUM ? (1 << width) - 1 : ~0;
+}
+
+static int_t
+extend_sign(YogEnv* env, int_t n, uint_t width)
+{
+    if (((n >> (width - 1)) & 1) == 1) {
+        return n | ~make_mask(width);
+    }
+    return n;
+}
+
+#define STRUCT_DATA(self, field) \
+    ((char*)PTR_AS(Struct, (self))->data + PTR_AS(FieldBase, (field))->offset)
+
+static YogVal
+BitField_call_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+{
+    /* FIXME: Validate attr, obj and klass */
+    /**
+     * TODO: The following three lines are similar with lines in
+     * UnsignedBitField_call_descr_get. Make a function or a macro to share.
+     */
+    uint_t pos = PTR_AS(BitField, attr)->pos;
+    uint_t width = PTR_AS(BitField, attr)->width;
+    int_t n = (*((int_t*)STRUCT_DATA(obj, attr)) >> pos) & make_mask(width);
+    return YogVal_from_int(env, extend_sign(env, n, width));
+}
+
+static void
+BitField_exec_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+{
+    YogVal val = BitField_call_descr_get(env, attr, obj, klass);
+    YogScriptFrame_push_stack(env, env->frame, val);
+}
+
+static uint_t
+min(uint_t n, uint_t m)
+{
+    return n < m ? n : m;
+}
+
+static void
+write_bit_field(YogEnv* env, char* ptr, uint_t n, uint_t pos, uint_t width)
+{
+    char* next_ptr = ptr + 1;
+    if (BITS_PER_BYTE <= pos) {
+        write_bit_field(env, next_ptr, n, pos - BITS_PER_BYTE, width);
+        return;
+    }
+
+    uint_t upper_mask = ~make_mask(min(width, BITS_PER_BYTE - pos)) << pos;
+    uint_t lower_mask = make_mask(pos);
+    uint_t mask = upper_mask | lower_mask;
+    *ptr = (mask & *ptr) | ((0xff & n) << pos);
+    if (width <= BITS_PER_BYTE) {
+        return;
+    }
+    uint_t next_n = n >> BITS_PER_BYTE;
+    write_bit_field(env, next_ptr, next_n, 0, width - BITS_PER_BYTE);
+}
+
+static void
+BitField_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
+{
+    /* FIXME: Validate attr, obj */
+    int_t n = YogVal_to_signed_type(env, val, "Value");
+    /**
+     * If a bit-field is signed, the most significant bit is for sign. But GCC
+     * doesn't set this flag.
+     *
+     * $ cat bar.c
+     * #include <stdio.h>
+     * #include <strings.h>
+     *
+     * int
+     * main(int argc, const char* argv[])
+     * {
+     *     struct {
+     *         signed int bar: 8;
+     *     } foo;
+     *     bzero(&foo, sizeof(foo));
+     *     foo.bar = atoi(argv[1]);
+     *     printf("%u", *((char*)&foo));
+     *
+     *     return 0;
+     * }
+     * $ gcc bar.c
+     * $ ./a.out -2147483648
+     * 0
+     * $ ./a.out -2147483647
+     * 1
+     */
+    uint_t pos = PTR_AS(BitField, attr)->pos;
+    uint_t width = PTR_AS(BitField, attr)->width;
+    int_t max = make_mask(width - 1);
+    if (max < n) {
+        const char* fmt = "Value must be less or equal %d, not %d";
+        YogError_raise_ValueError(env, fmt, max, n);
+    }
+    int_t min = ~max;
+    if (n < min) {
+        const char* fmt = "Value must be greater or equal %d, not %d";
+        YogError_raise_ValueError(env, fmt, min, n);
+    }
+    write_bit_field(env, STRUCT_DATA(obj, attr), (uint_t)n, pos, width);
+}
+
+static YogVal
+UnsignedBitField_call_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+{
+    /* FIXME: Validate attr, obj and klass */
+    uint_t pos = PTR_AS(BitField, attr)->pos;
+    uint_t width = PTR_AS(BitField, attr)->width;
+    uint_t n = *((uint_t*)STRUCT_DATA(obj, attr));
+    return YogVal_from_unsigned_int(env, (n >> pos) & make_mask(width));
+}
+
+static void
+UnsignedBitField_exec_descr_get(YogEnv* env, YogVal attr, YogVal obj, YogVal klass)
+{
+    YogVal val = UnsignedBitField_call_descr_get(env, attr, obj, klass);
+    YogScriptFrame_push_stack(env, env->frame, val);
+}
+
+static void
+UnsignedBitField_exec_descr_set(YogEnv* env, YogVal attr, YogVal obj, YogVal val)
+{
+    /* FIXME: Validate attr, obj */
+    uint_t n = YogVal_to_uint(env, val, "Value");
+    uint_t pos = PTR_AS(BitField, attr)->pos;
+    uint_t width = PTR_AS(BitField, attr)->width;
+    uint_t max = make_mask(width);
+    if (max < n) {
+        const char* fmt = "Value must be less or equal %u, not %u";
+        YogError_raise_ValueError(env, fmt, max, n);
+    }
+    write_bit_field(env, STRUCT_DATA(obj, attr), n, pos, width);
+}
+
 void
 YogFFI_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);
     YogVal cArrayField = YUNDEF;
+    YogVal cBitField = YUNDEF;
     YogVal cBuffer = YUNDEF;
     YogVal cBufferField = YUNDEF;
     YogVal cField = YUNDEF;
@@ -3453,8 +3779,10 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogVal cStructClassClass = YUNDEF;
     YogVal cStructField = YUNDEF;
     YogVal cUnionClassClass = YUNDEF;
+    YogVal cUnsignedBitField = YUNDEF;
     PUSH_LOCALS8(env, cUnionClassClass, cLib, cLibFunc, cStructClassClass, cField, cInt, cBuffer, cPointer);
-    PUSH_LOCALS7(env, cArrayField, cPointerField, cStringField, cFieldArray, cStructField, cStructBase, cBufferField);
+    PUSH_LOCALS8(env, cArrayField, cPointerField, cStringField, cFieldArray, cStructField, cStructBase, cBufferField, cBitField);
+    PUSH_LOCAL(env, cUnsignedBitField);
     YogVM* vm = env->vm;
 
     cLib = YogClass_new(env, "Lib", vm->cObject);
@@ -3472,6 +3800,7 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     cStructBase = YogClass_new(env, "StructBase", vm->cClass);
     YogClass_define_property(env, cStructBase, pkg, "size", StructBase_get_size, NULL);
     YogClass_define_allocator(env, cStructBase, StructBase_alloc);
+    YogClass_define_method(env, cStructBase, pkg, "dump", StructBase_dump);
     YogClass_define_method(env, cStructBase, pkg, "init", StructBase_init);
     vm->cStructBase = cStructBase;
     vm->cStructClass = StructClassClass_new(env, pkg);
@@ -3515,6 +3844,17 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_descr_get_caller(env, cStringField, StringField_call_descr_get);
     YogClass_define_descr_set_executor(env, cStringField, StringField_exec_descr_set);
     vm->cStringField = cStringField;
+    cBitField = YogClass_new(env, "BitField", vm->cObject);
+    YogClass_define_descr_get_executor(env, cBitField, BitField_exec_descr_get);
+    YogClass_define_descr_get_caller(env, cBitField, BitField_call_descr_get);
+    YogClass_define_descr_set_executor(env, cBitField, BitField_exec_descr_set);
+    vm->cBitField = cBitField;
+    cUnsignedBitField = YogClass_new(env, "UnsignedBitField", vm->cObject);
+    YogClass_define_descr_get_executor(env, cUnsignedBitField, UnsignedBitField_exec_descr_get);
+    YogClass_define_descr_get_caller(env, cUnsignedBitField, UnsignedBitField_call_descr_get);
+    YogClass_define_descr_set_executor(env, cUnsignedBitField, UnsignedBitField_exec_descr_set);
+    vm->cUnsignedBitField = cUnsignedBitField;
+
     cFieldArray = YogClass_new(env, "FieldArray", vm->cObject);
     YogClass_define_allocator(env, cFieldArray, FieldArray_alloc);
     YogClass_define_method(env, cFieldArray, pkg, "[]", FieldArray_subscript);
