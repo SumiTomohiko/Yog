@@ -5,13 +5,15 @@ INCLUDED_SYMBOLS = {
   'int8_t, 'uint8_t, 'int16_t, 'uint16_t, 'int32_t, 'uint32_t, 'int64_t,
   'uint64_t, 'size_t, 'iconv_t }
 EXCLUDED_SYMBOLS = [
+  'strlcpy, 'strlcat, 'strrev, 'strupr, 'strlwr, 'ltoa, 'ultoa, 'lltoa, 'ulltoa,
   'strtoull, 'strtoul, 'strrchr, 'strtoll, 'strtol, 'strchr, 'snprintf, 'calloc,
   'vsnprintf, 'iconv_close, 'strtod, 'strcmp, 'strstr, 'free, 'putenv, 'memset,
   'strdup, 'iconv_open, 'qsort, 'strcasecmp, 'strncasecmp, 'abs, 'getenv,
   'strlen, 'atof, 'atoi, 'realloc, 'memmove, 'malloc, 'memcmp, 'strncmp,
   'sscanf, 'dummy_uint8, 'dummy_sint8, 'dummy_uint16, 'dummy_sint16,
   'dummy_uint32, 'dummy_sint32, 'dummy_uint64, 'dummy_sint64, 'dummy_enum,
-  'AllocSurface, 'BlitSurface].map() do [sym]
+  'AllocSurface, 'BlitSurface, 'ReadLE64, 'ReadBE64, 'WriteLE64,
+  'WriteBE64].map() do [sym]
   next "SDL_{0}".format(sym).to_sym()
 end.to_set().add('WMcursor)
 
