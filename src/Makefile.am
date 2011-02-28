@@ -87,6 +87,9 @@ set.inc: set.yg yg2inc.yg
 dict.inc: dict.yg yg2inc.yg
 	$(YOG) yg2inc.yg dict.yg $@
 
+symbol.inc: symbol.yg yg2inc.yg
+	$(YOG) yg2inc.yg symbol.yg $@
+
 $(top_srcdir)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
 	$(LEMON) header=$(top_srcdir)/include/yog/token.h parser.y

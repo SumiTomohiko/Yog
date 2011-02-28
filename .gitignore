@@ -325,6 +325,7 @@ src/set.inc
 src/shift_jis2yog_hankaku.inc
 src/shift_jis2yog_zenkaku.inc
 src/string.inc
+src/symbol.inc
 src/yog2euc_jp1.inc
 src/yog2euc_jp2.inc
 src/yog2euc_jp3.inc

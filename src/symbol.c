@@ -1,6 +1,8 @@
 #include <string.h>
 #include "yog/array.h"
 #include "yog/class.h"
+#include "yog/handle.h"
+#include "yog/misc.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -55,6 +57,15 @@ equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     }
 
     RETURN(env, retval);
+}
+
+void
+YogSymbol_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+    const char* src =
+#include "symbol.inc"
+    ;
+    YogMisc_eval_source(env, VAL2HDL(env, klass), src);
 }
 
 void

@@ -10,6 +10,7 @@
  */
 /* src/symbol.c */
 YOG_EXPORT void YogSymbol_define_classes(YogEnv*, YogVal);
+YOG_EXPORT void YogSymbol_eval_builtin_script(YogEnv*, YogVal);
 
 /* PROTOTYPE_END */
 
