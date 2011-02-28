@@ -1,0 +1,41 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: core dumped (Invalid generation)
+desc: |-
+  Reproducing way:
+  
+    $ cat game.yog import sdl 
+    def wait()
+      1024.times() do
+        1024.times() do
+          16.times() do
+          end
+        end
+      end
+    end
+    
+    sdl.SDL_Init(sdl.SDL_INIT_AUDIO | sdl.SDL_INIT_VIDEO)
+    sdl.SDL_SetVideoMode(640, 480, 24, sdl.SDL_SWSURFACE)
+    wait()
+    sdl.SDL_Quit()
+    
+    # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+    $ src/yog-generational game.yog
+    [BUG]
+    at gc/generational.c:144
+    Invalid generation (0xb74d13bc at 0xb74c0170)
+    zsh: abort (core dumped)  src/yog-generational game.yog
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-02-28 04:43:38.628890 Z
+references: []
+
+id: ece14614f3e8cfe91299bd486db6de74c1ba75ff
+log_events: 
+- - 2011-02-28 04:43:39.274197 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

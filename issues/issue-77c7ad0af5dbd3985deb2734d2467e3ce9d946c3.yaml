@@ -1,0 +1,46 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Segmanted fault
+desc: |-
+  Reproducing way:
+  
+    $ cat game.yog
+    import sdl
+    
+    def wait()
+      1024.times() do
+        1024.times() do
+          16.times() do
+          end
+        end
+      end
+    end
+    
+    sdl.SDL_Init(sdl.SDL_INIT_AUDIO | sdl.SDL_INIT_VIDEO)
+    sdl.SDL_SetVideoMode(640, 480, 24, sdl.SDL_SWSURFACE)
+    wait()
+    sdl.SDL_Quit()
+    
+    # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+    $ src/yog-generational --old-heap-size=2M game.yog
+    Traceback (most recent call last):
+      File "game.yog", line 1, in <package>
+      File builtin, in import_package
+    [BUG]
+    at compile.c:465
+    Unknown node type (0xfdfdfdfd)
+    zsh: abort (core dumped)  src/yog-generational --old-heap-size=2M game.yog
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-02-28 04:41:21.278944 Z
+references: []
+
+id: 77c7ad0af5dbd3985deb2734d2467e3ce9d946c3
+log_events: 
+- - 2011-02-28 04:41:22.152320 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
