@@ -149,10 +149,10 @@ class UnionNode > StructBaseNode
 end
 
 class BitFieldNode > Node
-  def init(filename, lineno, name, num)
+  def init(filename, lineno, name, width)
     super(filename, lineno)
     self.name = name
-    self.num = num
+    self.width = width
   end
 end
 
@@ -804,7 +804,7 @@ attrib  : (: empty :) {
   return AttributeNode.new(__data__.filename, __data__.lineno, any_word, [identifier.value])
 }
         | any_word <lpar> <identifier> <comma> nonempty_expr_list <rpar> {
-  return AttributeNode.new(__data__.filename, __data__.lineno, any_word, [identifier.value] + expr_list)
+  return AttributeNode.new(__data__.filename, __data__.lineno, any_word, [identifier.value] + nonempty_expr_list)
 }
         | any_word <lpar> expr_list <rpar> {
   return AttributeNode.new(__data__.filename, __data__.lineno, any_word, expr_list)

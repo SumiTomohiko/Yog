@@ -100,13 +100,20 @@ print(FOO)"""
     def test_expression40(self):
         self.do_simple_print_test("#define FOO ~42", "-43")
 
-    def do_struct_test(self, header):
+    def do_struct_test(self, header, value="42"):
         so = get_lib_path("empty")
         src = """from test_h2yog import Foo
 foo = Foo.new()
-foo.bar = 42
-print(foo.bar)"""
-        self.do_test([header], so, src, "42")
+foo.bar = {value}
+print(foo.bar)""".format(**locals())
+        self.do_test([header], so, src, value)
+
+    def do_bit_field_test(self, name):
+        self.do_struct_test(name + ".h", "1")
+
+    for name in ["test_bit_field{0}".format(10 * n) for n in range(3)]:
+        exec """def {0}(self):
+    self.do_bit_field_test(\"{0}\")""".format(name)
 
     do_union_test = do_struct_test
 

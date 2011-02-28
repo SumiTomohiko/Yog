@@ -1,6 +1,6 @@
 
 from c import Macro, parse, parse_macro
-from c.grammar import ArrayNode, BinopNode, ConstantNode, EnumNode, PointerNode, ProtoNode, SizeofNode, StructBaseNode, StructNode, TypedefNode, UnaryNode, VarNode, get_typedef_name
+from c.grammar import ArrayNode, BinopNode, BitFieldNode, ConstantNode, EnumNode, PointerNode, ProtoNode, SizeofNode, StructBaseNode, StructNode, TypedefNode, UnaryNode, VarNode, get_typedef_name
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/gcc", "-E"] + opts
@@ -168,7 +168,45 @@ EOF
   end.join(",\n")
 end
 
+def find_basic_type(type)
+  if (basic = type_map.get(type)) == nil
+    return type
+  end
+  return find_basic_type(basic)
+end
+
+def unsigned_bit?(type)
+  if type.size == 0
+    return false
+  end
+  sym = type[0]
+  if sym == 'signed
+    return false
+  end
+  if sym == 'unsigned
+    return true
+  end
+  basic = find_basic_type(sym.to_s())
+  UNSIGNED_TYPES = {
+    "'uchar", "'ushort", "'uint", "'ulonglong", "'uint8", "'uint16", "'uint32",
+    "'uint64" }
+  if UNSIGNED_TYPES.include?(basic)
+    return true
+  end
+  SIGNED_TYPES = {
+    "'char", "'short", "'int", "'longlong", "'int8", "'int16", "'int32",
+    "'int64" }
+  if SIGNED_TYPES.include?(basic)
+    return false
+  end
+  return unsigned_bit?(type.slice(1))
+end
+
 def make_struct_field_type(type, name)
+  if name.kind_of?(BitFieldNode)
+    sym = unsigned_bit?(type) ? 'ubit : 'bit
+    return "[{0}, {1}]".format(sym.inspect(), node2yog(name.width))
+  end
   if !type.kind_of?(StructBaseNode) || (type.contents == nil)
     return make_type_text(type, name)
   end
@@ -204,6 +242,13 @@ def unsigned?(type)
   return unsigned?(type.slice(1))
 end
 
+# FIXME: Make class and move type_map to it.
+type_map = {}
+
+def register_type_map(name, type)
+  type_map[name.to_s()] = type.to_s()
+end
+
 def typedef2yog(type, init_decl)
   decl = init_decl.declarator
   name = get_typedef_name(decl)
@@ -215,10 +260,13 @@ def typedef2yog(type, init_decl)
       'word: "int16", 'pointer: "int32", 'SF: "float", 'DF: "longdouble" }
     base_type = MODE2YOG[attr.args[0].to_s().gsub("__", "").to_sym()]
     act_type = ((unsigned?(type) ? "u" : "") + base_type).to_sym()
+    register_type_map(name, act_type)
     return f(act_type.inspect())
   end
 
-  return f(make_type_text(type, decl))
+  txt = make_type_text(type, decl)
+  register_type_map(name, txt)
+  return f(txt)
 end
 
 def params2yog(params)
