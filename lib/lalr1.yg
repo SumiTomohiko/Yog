@@ -54,7 +54,7 @@ class Parser
   end
 end
 
-def parse(gram, get_token, __data__, logger=nil)
+def parse(gram, get_token, __data__=nil, logger=nil)
   log = logger || nop
 
   parser = Parser.new()
