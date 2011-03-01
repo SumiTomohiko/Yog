@@ -962,14 +962,15 @@ pos = [
 
 def get_action(state, type)
   index = terms.get(type)
-  if index != nil
-    act = term2act[state][index]
-    if act == nil
-      return 'error, nil
-    end
+  if index == nil
+    return 'reduce, nonterm2act[state][nonterms[type]]
+  end
+  act = term2act[state][index]
+  if act != nil
     return (act & 1) == 1 ? 'shift : 'reduce, act >> 1
   end
-  return 'reduce, nonterm2act[state][nonterms[type]]
+  # TODO: Raise syntax error
+  return 'error, nil
 end
 
 def get_rule_size(rule)
