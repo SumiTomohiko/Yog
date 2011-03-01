@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import environ, unlink
-from os.path import join
+from os.path import dirname, join
 from subprocess import PIPE, Popen
 from testcase import TestCase, get_command
 
@@ -12,10 +12,17 @@ class TestLalr1gram(TestCase):
         assert stdout == ""
         assert stderr == ""
 
+    def get_bin_dir(self):
+        try:
+            return environ["BIN_DIR"]
+        except KeyError:
+            pass
+        return join(dirname(__file__), "..", "bin")
+
     def do_lalr1gram(self, gram):
         path = self.write_content_to_tmpfile(gram, ".yogram")
         try:
-            script = join(environ["BIN_DIR"], "lalr1gram.yog")
+            script = join(self.get_bin_dir(), "lalr1gram.yog")
             cmd = [get_command(), script, "gram.yg", path]
             proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
             proc.wait()
