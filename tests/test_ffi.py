@@ -1249,6 +1249,25 @@ f = lib.load_func(\"print_two_int\", [\'int, \'int])
 f(42, 26)
 """ % locals(), "4226")
 
+    # Tests for variable arguments
+    def test_arguments10(self):
+        path = get_lib_path()
+        self._test("""lib = load_lib(\"{path}\")
+f = lib.load_func(\"print_int\", [\'int])
+f(*[42])""".format(**locals()), "42")
+
+    def test_arguments20(self):
+        path = get_lib_path()
+        self._test("""lib = load_lib(\"{path}\")
+f = lib.load_func(\"print_int\", [\'int])
+f(42, *[])""".format(**locals()), "42")
+
+    def test_arguments30(self):
+        path = get_lib_path()
+        self._test("""lib = load_lib(\"{path}\")
+f = lib.load_func(\"print_three_int\", [\'int, \'int, \'int])
+f(42, *[26, 14])""".format(**locals()), "422614")
+
     def test_return0(self):
         path = get_lib_path()
         self._test("""

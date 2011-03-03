@@ -14,30 +14,12 @@
 #include "yog/frame.h"
 #include "yog/handle.h"
 #include "yog/misc.h"
+#include "yog/module.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
 typedef YogVal (*Body)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
-
-static void
-raise_TypeError(YogEnv* env, const char* mark, const char* needed, YogVal actual)
-{
-    YogError_raise_TypeError(env, "Argument after %s must be %s, not %C", mark, needed, actual);
-    /* NOTREACHED */
-}
-
-static void
-raise_TypeError_for_vararg(YogEnv* env, YogVal actual)
-{
-    raise_TypeError(env, "*", "an Array", actual);
-}
-
-static void
-raise_TypeError_for_varkwarg(YogEnv* env, YogVal actual)
-{
-    raise_TypeError(env, "**", "a Dict", actual);
-}
 
 #define STORE_LOCAL(env, frame, index, val) YogGC_UPDATE_PTR((env), HDL_AS(YogScriptFrame, (frame)), locals_etc[HDL_AS(YogScriptFrame, (frame))->stack_capacity + (index)], (val))
 
@@ -128,7 +110,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
             /* Do nothing */
         }
         else if (!IS_PTR(vararg->val) || (BASIC_OBJ_TYPE(vararg->val) != TYPE_ARRAY)) {
-            raise_TypeError_for_vararg(env, vararg->val);
+            YogError_raise_TypeError_for_vararg(env, vararg->val);
         }
         else {
             YogArray_extend(env, array->val, vararg->val);
@@ -142,7 +124,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
             /* Do nothing */
         }
         else if (!IS_PTR(vararg->val) || (BASIC_OBJ_TYPE(vararg->val) != TYPE_ARRAY)) {
-            raise_TypeError_for_vararg(env, vararg->val);
+            YogError_raise_TypeError_for_vararg(env, vararg->val);
         }
         else {
             for (i = posargc; i < arg_argc; i++) {
@@ -158,7 +140,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
                 /* Do nothing */
             }
             else if (!IS_PTR(vararg->val) || (BASIC_OBJ_TYPE(vararg->val) != TYPE_ARRAY)) {
-                raise_TypeError_for_vararg(env, vararg->val);
+                YogError_raise_TypeError_for_vararg(env, vararg->val);
             }
             else {
                 uint_t size = YogArray_size(env, vararg->val);
@@ -180,7 +162,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
         /* Do nothing */
     }
     else if (!IS_PTR(varkwarg->val) || (BASIC_OBJ_TYPE(varkwarg->val) != TYPE_DICT)) {
-        raise_TypeError_for_varkwarg(env, varkwarg->val);
+        YogError_raise_TypeError_for_varkwarg(env, varkwarg->val);
     }
     else {
         YogHandle* iter = YogHandle_REGISTER(env, YogDict_get_iterator(env, varkwarg->val));
@@ -394,7 +376,7 @@ create_keyword_argument(YogEnv* env, uint8_t kwargc, YogHandle* kwargs[], YogHan
     if (IS_UNDEF(NULL2UNDEF(varkwarg))) {
     }
     else if (!IS_PTR(varkwarg->val) || (BASIC_OBJ_TYPE(varkwarg->val) != TYPE_DICT)) {
-        raise_TypeError_for_varkwarg(env, varkwarg->val);
+        YogError_raise_TypeError_for_varkwarg(env, varkwarg->val);
     }
     else {
         YogDict_add(env, kw->val, varkwarg->val);
@@ -415,7 +397,7 @@ create_positional_argument(YogEnv* env, uint8_t posargc, YogHandle* posargs[], Y
     if (IS_UNDEF(NULL2UNDEF(vararg))) {
     }
     else if (!IS_PTR(HDL2VAL(vararg)) || (BASIC_OBJ_TYPE(HDL2VAL(vararg)) != TYPE_ARRAY)) {
-        raise_TypeError_for_vararg(env, HDL2VAL(vararg));
+        YogError_raise_TypeError_for_vararg(env, HDL2VAL(vararg));
     }
     else {
         YogArray_add(env, HDL2VAL(args), HDL2VAL(vararg));
@@ -543,7 +525,7 @@ set_vararg(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[], YogHand
 {
     YogVal a = HDL2VAL(arg);
     if (!IS_PTR(a) || (BASIC_OBJ_TYPE(a) != TYPE_ARRAY)) {
-        raise_TypeError_for_vararg(env, a);
+        YogError_raise_TypeError_for_vararg(env, a);
     }
     uint_t size = YogArray_size(env, a);
     uint_t given_argc = size + posargc;
@@ -560,7 +542,7 @@ set_varkwarg(YogEnv* env, YogHandle* self, uint_t argc, YogHandle* args[], YogHa
 {
     YogVal d = HDL2VAL(arg);
     if (!IS_PTR(d) || (BASIC_OBJ_TYPE(d) != TYPE_DICT)) {
-        raise_TypeError_for_varkwarg(env, d);
+        YogError_raise_TypeError_for_varkwarg(env, d);
     }
     YogVal iter = YogDict_get_iterator(env, d);
     YogHandle* h_iter = YogHandle_REGISTER(env, iter);
@@ -1060,8 +1042,12 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     YogVal cInstanceMethod = YUNDEF;
     YogVal cNativeInstanceMethod = YUNDEF;
     YogVal cNativeInstanceMethod2 = YUNDEF;
-    PUSH_LOCALS6(env, cNativeFunction, cNativeFunction2, cFunction, cInstanceMethod, cNativeInstanceMethod, cNativeInstanceMethod2);
+    YogVal mCallable = YUNDEF;
+    PUSH_LOCALS7(env, cNativeFunction, cNativeFunction2, cFunction, cInstanceMethod, cNativeInstanceMethod, cNativeInstanceMethod2, mCallable);
     YogVM* vm = env->vm;
+
+    mCallable = YogModule_of_name(env, "Callable");
+    vm->mCallable = mCallable;
 
     cNativeFunction = YogClass_new(env, "NativeFunction", vm->cObject);
     YogClass_define_allocator(env, cNativeFunction, YogNativeFunction_alloc);
@@ -1163,6 +1149,15 @@ YogVal
 YogCallable_call(YogEnv* env, YogVal self, uint_t argc, YogVal* args)
 {
     return YogCallable_call_with_block(env, self, argc, args, YUNDEF);
+}
+
+void
+YogCallable_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+    const char* src =
+#include "callable.inc"
+    ;
+    YogMisc_eval_source(env, VAL2HDL(env, klass), src);
 }
 
 /**

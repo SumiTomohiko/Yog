@@ -2784,11 +2784,33 @@ create_ptr_retval(YogEnv* env, YogHandle* callee, void* rvalue)
     return YUNDEF;
 }
 
+static uint_t
+compute_args_num(YogEnv* env, uint8_t posargc, YogHandle* vararg)
+{
+    if (vararg == NULL) {
+        return posargc;
+    }
+    YogVal val = HDL2VAL(vararg);
+    if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_ARRAY)) {
+        YogError_raise_TypeError_for_vararg(env, val);
+    }
+    return posargc + YogArray_size(env, val);
+}
+
+static YogVal
+get_posarg_at(YogEnv* env, uint_t i, uint8_t posargc, YogHandle* posargs[], YogHandle* vararg)
+{
+    if (i < posargc) {
+        return HDL2VAL(posargs[i]);
+    }
+    return YogArray_at(env, HDL2VAL(vararg), i - posargc);
+}
+
 static YogVal
 LibFunc_do(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     uint_t nargs = HDL_AS(LibFunc, callee)->nargs;
-    if (posargc != nargs) {
+    if (compute_args_num(env, posargc, vararg) != nargs) {
         const char* fmt = "%u positional argument(s) required, not %u";
         YogError_raise_ValueError(env, fmt, nargs, posargc);
         /* NOTREACHED */
@@ -2802,9 +2824,9 @@ LibFunc_do(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[]
         void* pvalue = YogSysdeps_alloca(type2size(env, ffi_arg_type));
         YogVal arg_type = HDL_AS(LibFunc, callee)->arg_types[i];
         YogHandle* h_arg_type = VAL2HDL(env, arg_type);
-        uint_t refered_size = type2refered_size(env, arg_type, posargs[i]->val);
+        uint_t refered_size = type2refered_size(env, arg_type, get_posarg_at(env, i, posargc, posargs, vararg));
         void* refered = 0 < refered_size ? YogSysdeps_alloca(refered_size): NULL;
-        YogVal val = posargs[i]->val;
+        YogVal val = get_posarg_at(env, i, posargc, posargs, vararg);
         write_argument(env, pvalue, refered, HDL2VAL(h_arg_type), val);
         values[i] = pvalue;
         refereds[i] = refered;
@@ -2817,7 +2839,8 @@ LibFunc_do(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[]
 
     for (i = 0; i < nargs; i++) {
         YogVal arg_type = HDL_AS(LibFunc, callee)->arg_types[i];
-        read_argument(env, posargs[i]->val, arg_type, refereds[i]);
+        YogVal val = get_posarg_at(env, i, posargc, posargs, vararg);
+        read_argument(env, val, arg_type, refereds[i]);
     }
 
     if (rtype == &ffi_type_uint8) {
@@ -3790,6 +3813,7 @@ YogFFI_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method(env, cLib, pkg, "load_func", load_func);
     vm->cLib = cLib;
     cLibFunc = YogClass_new(env, "LibFunc", vm->cObject);
+    YogClass_include_module(env, cLibFunc, vm->mCallable);
     YogClass_define_caller(env, cLibFunc, LibFunc_call);
     YogClass_define_executor(env, cLibFunc, LibFunc_exec);
     vm->cLibFunc = cLibFunc;

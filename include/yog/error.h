@@ -26,6 +26,8 @@ YOG_EXPORT void YogError_raise_LocalJumpError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_NameError(YogEnv*, ID);
 YOG_EXPORT void YogError_raise_SyntaxError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_TypeError(YogEnv*, const char*, ...);
+YOG_EXPORT void YogError_raise_TypeError_for_vararg(YogEnv*, YogVal);
+YOG_EXPORT void YogError_raise_TypeError_for_varkwarg(YogEnv*, YogVal);
 YOG_EXPORT void YogError_raise_UnboundLocalError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_ValueError(YogEnv*, const char*, ...);
 YOG_EXPORT void YogError_raise_ZeroDivisionError(YogEnv*, const char*, ...);

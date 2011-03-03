@@ -253,6 +253,25 @@ YogError_raise_binop_type_error(YogEnv* env, YogVal left, YogVal right, const ch
     YogError_raise_TypeError(env, buffer, left, right);
 }
 
+static void
+raise_TypeError(YogEnv* env, const char* mark, const char* needed, YogVal actual)
+{
+    const char* fmt = "Argument after %s must be %s, not %C";
+    YogError_raise_TypeError(env, fmt, mark, needed, actual);
+}
+
+void
+YogError_raise_TypeError_for_vararg(YogEnv* env, YogVal actual)
+{
+    raise_TypeError(env, "*", "an Array", actual);
+}
+
+void
+YogError_raise_TypeError_for_varkwarg(YogEnv* env, YogVal actual)
+{
+    raise_TypeError(env, "**", "a Dict", actual);
+}
+
 void
 YogError_raise_ZeroDivisionError(YogEnv* env, const char* fmt, ...)
 {

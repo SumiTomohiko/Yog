@@ -89,6 +89,7 @@ struct YogVM {
     YogVal eWindowsError;
     YogVal eZeroDivisionError;
 
+    YogVal mCallable;
     YogVal mComparable;
 
     YogVal pkgs;

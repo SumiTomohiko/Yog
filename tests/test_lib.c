@@ -172,6 +172,12 @@ print_pointer(void* ptr)
 }
 
 void
+print_three_int(int n, int m, int l)
+{
+    printf("%d%d%d", n, m, l);
+}
+
+void
 print_two_int(int n, int m)
 {
     printf("%d%d", n, m);

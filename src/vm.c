@@ -394,6 +394,7 @@ YogVM_boot(YogEnv* env, YogVM* vm)
     YogSet_eval_builtin_script(env, vm->cSet);
     YogString_eval_builtin_script(env, vm->cString);
     YogSymbol_eval_builtin_script(env, vm->cSymbol);
+    YogCallable_eval_builtin_script(env, vm->mCallable);
 
     YogHandleScope_close(env);
 }
@@ -581,6 +582,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eWindowsError);
     KEEP(eZeroDivisionError);
 
+    KEEP(mCallable);
     KEEP(mComparable);
 
     KEEP(pkgs);
@@ -724,6 +726,7 @@ YogVM_init(YogVM* vm)
     INIT(eWindowsError);
     INIT(eZeroDivisionError);
 
+    INIT(mCallable);
     INIT(mComparable);
 
     vm->pkgs = YNIL;

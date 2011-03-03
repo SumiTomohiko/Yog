@@ -87,6 +87,7 @@ DECL_AS_TYPE(YogInstanceMethod_new);
 YOG_EXPORT YogVal YogCallable_call(YogEnv*, YogVal, uint_t, YogVal*);
 YOG_EXPORT YogVal YogCallable_call1(YogEnv*, YogVal, YogVal);
 YOG_EXPORT YogVal YogCallable_call_with_block(YogEnv*, YogVal, uint_t, YogVal*, YogVal);
+YOG_EXPORT void YogCallable_eval_builtin_script(YogEnv*, YogVal);
 YOG_EXPORT void YogFunction_define_classes(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogFunction_new(YogEnv*);
 YOG_EXPORT YogVal YogInstanceMethod_new(YogEnv*);
