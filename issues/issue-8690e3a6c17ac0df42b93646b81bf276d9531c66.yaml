@@ -1,0 +1,27 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Syntax error
+desc: |-
+  $ cat foo.yog
+    
+    print(Array.new(42) do [index]
+      next index
+    end)
+    
+    # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+    $ src/yog-generational --gc-stress foo.yog
+    SyntaxError: File "foo.yog", line 3: Invalid syntax
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-03-04 17:14:45.905802 Z
+references: []
+
+id: 8690e3a6c17ac0df42b93646b81bf276d9531c66
+log_events: 
+- - 2011-03-04 17:14:47.427453 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
