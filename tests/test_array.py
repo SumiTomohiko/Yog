@@ -4,6 +4,15 @@ from testcase import TestCase
 
 class TestArray(TestCase):
 
+    def test_init0(self):
+        self._test("""a = Array.new(42) do [index]
+  next index
+end
+print(a)""","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]")
+
+    def test_init10(self):
+        self._test("print(Array.new(42))", "[nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil]")
+
     def test_empty0(self):
         self._test("""
 print([].empty?)

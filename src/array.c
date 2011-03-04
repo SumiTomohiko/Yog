@@ -271,6 +271,25 @@ lshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     RETURN(env, self);
 }
 
+static int_t
+normalize_index(YogEnv* env, YogVal self, int_t index)
+{
+    return 0 <= index ? index : YogArray_size(env, self) + index;
+}
+
+static void
+assign(YogEnv* env, YogVal self, int_t index, YogVal val)
+{
+    uint_t size = YogArray_size(env, self);
+    int_t n = normalize_index(env, self, index);
+    if ((n < 0) || (size <= n)) {
+        const char* fmt = "Array assignment index (%d) out of range (%u)";
+        YogError_raise_IndexError(env, fmt, index, size);
+    }
+    YogVal body = PTR_AS(YogArray, self)->body;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, body), items[n], val);
+}
+
 static YogVal
 assign_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -279,25 +298,15 @@ assign_subscript(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, Y
     YogVal val = YUNDEF;
     YogVal body = YUNDEF;
     PUSH_LOCALS3(env, index, val, body);
-
     YogCArg params[] = {
-        { "index", &index },
-        { "value", &val},
-        { NULL, NULL } };
+        { "index", &index }, { "value", &val}, { NULL, NULL } };
     YogGetArgs_parse_args(env, "[]=", params, args, kw);
     CHECK_SELF_TYPE(env, self);
     if (!IS_FIXNUM(index)) {
         YogError_raise_TypeError(env, "index must be Fixnum");
     }
-    int_t i = VAL2INT(index);
 
-    uint_t size = YogArray_size(env, self);
-    if (size <= i) {
-        YogError_raise_IndexError(env, "array assignment index out of range");
-    }
-
-    body = PTR_AS(YogArray, self)->body;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, body), items[i], val);
+    assign(env, self, VAL2INT(index), val);
 
     RETURN(env, self);
 }
@@ -321,7 +330,7 @@ YogArray_subscript(YogEnv* env, YogVal self, YogVal index)
 }
 
 static YogVal
-init(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* size)
+init(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* size, YogHandle* block)
 {
     CHECK_SELF_TYPE2(env, self);
     YogMisc_check_Fixnum(env, size, "size");
@@ -332,6 +341,15 @@ init(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* size)
     YogVal body = YogValArray_new(env, VAL2INT(HDL2VAL(size)));
     YogGC_UPDATE_PTR(env, HDL_AS(YogArray, self), body, body);
     HDL_AS(YogArray, self)->size = VAL2INT(HDL2VAL(size));
+    if ((block == NULL) || IS_NIL(HDL2VAL(block))) {
+        return HDL2VAL(self);
+    }
+    int_t i;
+    for (i = 0; i < VAL2INT(HDL2VAL(size)); i++) {
+        YogVal val = YogCallable_call1(env, HDL2VAL(block), INT2VAL(i));
+        assign(env, HDL2VAL(self), i, val);
+    }
+
     return HDL2VAL(self);
 }
 
@@ -579,7 +597,7 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method2(env, cArray, pkg, (name), __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD2("[]", subscript, "index", NULL);
-    DEFINE_METHOD2("init", init, "size", NULL);
+    DEFINE_METHOD2("init", init, "size", "|", "&", NULL);
 #undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter)   do { \
     YogClass_define_property(env, cArray, pkg, (name), (getter), (setter)); \
