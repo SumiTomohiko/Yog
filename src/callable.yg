@@ -1,0 +1,9 @@
+
+def while(expected, *args, **kw, &block)
+  while (retval = self(*args, **kw)) == expected
+    block(retval)
+  end
+  return retval
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

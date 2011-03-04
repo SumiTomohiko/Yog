@@ -307,6 +307,7 @@ src/Makefile.in
 src/array.inc
 src/builtins.inc
 src/builtins_unix.inc
+src/callable.inc
 src/code.inc
 src/compile.inc
 src/dict.inc
