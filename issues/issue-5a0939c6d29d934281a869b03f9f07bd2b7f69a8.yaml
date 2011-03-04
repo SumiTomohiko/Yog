@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Syntax error in multiple assignment
+desc: foo = bar = 42
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-03-04 17:19:58.365187 Z
+references: []
+
+id: 5a0939c6d29d934281a869b03f9f07bd2b7f69a8
+log_events: 
+- - 2011-03-04 17:19:59.352612 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
