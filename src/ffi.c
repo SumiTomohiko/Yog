@@ -1193,7 +1193,8 @@ parse_subtype(YogEnv* env, YogVal type)
 {
     SAVE_ARG(env, type);
     YogVal node = YUNDEF;
-    PUSH_LOCAL(env, node);
+    YogVal subinfo = YUNDEF;
+    PUSH_LOCALS2(env, node, subinfo);
 
     YogVal name = YogArray_at(env, type, 0);
     if (!IS_SYMBOL(name)) {
@@ -1217,7 +1218,7 @@ parse_subtype(YogEnv* env, YogVal type)
     if (sym == INTERN("union")) {
         RETURN(env, create_anonymous_struct_node(env, type, build_UnionClass));
     }
-    YogVal subinfo = YogArray_at(env, type, 1);
+    subinfo = YogArray_at(env, type, 1);
     if (sym == INTERN("pointer")) {
         RETURN(env, parse_pointer(env, subinfo));
     }
