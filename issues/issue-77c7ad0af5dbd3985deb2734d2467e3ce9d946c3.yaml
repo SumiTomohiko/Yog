@@ -5,7 +5,7 @@ desc: |-
   
     $ cat game.yog
     import sdl
-    
+  
     def wait()
       1024.times() do
         1024.times() do
@@ -14,12 +14,12 @@ desc: |-
         end
       end
     end
-    
+  
     sdl.SDL_Init(sdl.SDL_INIT_AUDIO | sdl.SDL_INIT_VIDEO)
     sdl.SDL_SetVideoMode(640, 480, 24, sdl.SDL_SWSURFACE)
     wait()
     sdl.SDL_Quit()
-    
+  
     # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
     $ src/yog-generational --old-heap-size=2M game.yog
     Traceback (most recent call last):
@@ -33,8 +33,8 @@ type: :bugfix
 component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2011-02-28 04:41:21.278944 Z
 references: []
 
@@ -44,3 +44,7 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""
+- - 2011-03-04 15:39:38.366713 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition wontfix
+  - It seems to be fixed at commit 148af2a2e7dbf7ecc555ef54d7852584fa8bba00.
