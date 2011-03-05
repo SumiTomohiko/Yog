@@ -84,6 +84,9 @@ print(FOO)"""
     def test_constant10(self):
         self.do_simple_print_test("#define FOO 0x2a", "42")
 
+    def test_constant20(self):
+        self.do_simple_print_test("#define FOO \"foo\"", "foo")
+
     def test_expression0(self):
         self.do_simple_print_test("#define FOO 1 << 2", "4")
 
@@ -270,6 +273,28 @@ print(foo.bar[0])"""
     for mode, expected in int_modes:
         exec """def test_unsigned_int_mode_{0}(self):
     self.do_mode_test(\"unsigned\", \"{0}\", \"{1}\")""".format(mode, "u" + expected)
+
+    def test_macro_function0(self):
+        self.do_test2("#define FOO() 42", """from test_h2yog import FOO
+print(FOO())""", "42")
+
+    def test_macro_function10(self):
+        self.do_test2("#define FOO(bar) 42", """from test_h2yog import FOO
+print(FOO(26))""", "42")
+
+    def test_macro_function20(self):
+        self.do_test2("#define FOO(bar) bar", """from test_h2yog import FOO
+print(FOO(42))""", "42")
+
+    def test_macro_function25(self):
+        self.do_test2("#define FOO(bar, baz) baz", """from test_h2yog import FOO
+print(FOO(42, 26))""", "26")
+
+    def test_macro_function30(self):
+        name = "test_macro_function30"
+        header = name + ".h"
+        self.do_test([header], get_lib_path(name), """from test_h2yog import FOO
+FOO()""", "42")
 
 if __name__ == "__main__":
     # This part generated headers and codes for .so partially.

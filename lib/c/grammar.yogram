@@ -32,7 +32,18 @@ class SizeofNode > Node
   end
 end
 
-class UnaryNode > Node
+class ExprNode > Node
+end
+
+class CallNode > ExprNode
+  def init(filename, lineno, name, args)
+    super(filename, lineno)
+    self.name = name
+    self.args = args
+  end
+end
+
+class UnaryNode > ExprNode
   def init(filename, lineno, op, expr)
     super(filename, lineno)
     self.op = op
@@ -48,14 +59,14 @@ class ArrayNode > Node
   end
 end
 
-class VarNode > Node
+class VarNode > ExprNode
   def init(filename, lineno, name)
     super(filename, lineno)
     self.name = name
   end
 end
 
-class BinopNode > Node
+class BinopNode > ExprNode
   def init(filename, lineno, left, op, right)
     # Bug: Cannot call Node#init
     #super(filename, lineno)
@@ -104,7 +115,7 @@ class PointerNode > Node
   end
 end
 
-class ConstantNode > Node
+class ConstantNode > ExprNode
   def init(filename, lineno, value)
     super(filename, lineno)
     self.value = value
@@ -749,8 +760,10 @@ parameter_forward_declarations  : parameter_list <semicolon> {
 ;
 
 string_literals : <string_literal> {
+  return string_literal.value
 }
                 | string_literals <string_literal> {
+  return string_literals + string_literal.value
 }
 ;
 
@@ -1311,6 +1324,7 @@ postfix_expression  : primary_expression {
                     | postfix_expression <lbracket> expression <rbracket> {
 }
                     | postfix_expression <lpar> argument_expression_list_opt <rpar> {
+  return CallNode.new(__data__.filename, __data__.lineno, postfix_expression, argument_expression_list_opt)
 }
                     | postfix_expression <dot> <identifier> {
 }
@@ -1327,18 +1341,23 @@ postfix_expression  : primary_expression {
 ;
 
 argument_expression_list_opt  : (: empty :) {
+  return []
 }
                               | argument_expression_list {
+  return argument_expression_list
 }
 ;
 
 argument_expression_list  : argument_expression {
+  return [argument_expression]
 }
                           | argument_expression_list <comma> argument_expression {
+  return argument_expression_list + [argument_expression]
 }
 ;
 
 argument_expression : expression {
+  return expression
 }
 ;
 
@@ -1349,6 +1368,7 @@ primary_expression  : <identifier> {
   return ConstantNode.new(__data__.filename, __data__.lineno, constant.value)
 }
                     | string_literals {
+  return ConstantNode.new(__data__.filename, __data__.lineno, string_literals)
 }
                     | <lpar> expression <rpar> {
   return expression

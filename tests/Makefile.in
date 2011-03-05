@@ -39,7 +39,8 @@ PKGS = test_package4.$(SOEXT) test_package5.$(SOEXT) test_package6.$(SOEXT) \
        test_struct70.$(SOEXT) test_union70.$(SOEXT) test_bit_1.$(SOEXT) \
        test_bit_2.$(SOEXT) test_bit_31.$(SOEXT) test_bit_32.$(SOEXT) \
        test_ubit_1.$(SOEXT) test_ubit_2.$(SOEXT) test_ubit_31.$(SOEXT) \
-       test_ubit_32.$(SOEXT) arch32/test_Struct400.$(SOEXT)
+       test_ubit_32.$(SOEXT) test_macro_function30.$(SOEXT) \
+       arch32/test_Struct400.$(SOEXT)
 CFLAGS = -shared -I.. -I../include -Wall -Werror -DGENERATIONAL @CFLAGS@
 LIBS = @IMPORT_LIB@
 
