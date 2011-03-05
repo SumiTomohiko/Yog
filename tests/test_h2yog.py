@@ -242,6 +242,12 @@ print({0}().bar)""".format(base), "42")
         self.do_func_test("test_func70", """from test_h2yog import foo
 foo()""", "42")
 
+    def test_func80(self):
+        name = "test_func80"
+        expected = "foobarbazquux"
+        self.do_func_test(name, """from test_h2yog import {name}
+{name}(\"{expected}\")""".format(**locals()), expected)
+
     def do_simple_array_test(self, base):
         src = """from test_h2yog import Foo
 foo = Foo.new()

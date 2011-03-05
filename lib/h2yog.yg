@@ -106,11 +106,32 @@ def get_struct_name_for_pointer(spec)
   return defined_structs.include?(name.to_sym()) ? name : 'void.inspect()
 end
 
-def pointer2yog(spec, decl)
-  if decl.kind_of?(PointerNode)
-    return "['pointer, {0}]".format(get_struct_name_for_pointer(spec))
+def find_char(spec)
+  if spec.size == 0
+    return false
   end
-  return spec2yog(spec)
+  if spec[0] == 'char
+    return true
+  end
+  return find_char(spec.slice(1))
+end
+
+def char?(spec)
+  if !spec.kind_of?(Array)
+    return false
+  end
+  return find_char(spec)
+end
+
+def pointer2yog(spec, decl)
+  if !decl.kind_of?(PointerNode)
+    return spec2yog(spec)
+  end
+  if char?(spec)
+    # TODO: Improved to be able to specify an encoding.
+    return "['string, ENCODINGS[{0}]]".format("ascii".inspect())
+  end
+  return "['pointer, {0}]".format(get_struct_name_for_pointer(spec))
 end
 
 def get_array_size(decl)

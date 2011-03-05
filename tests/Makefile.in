@@ -13,7 +13,7 @@ PKGS = test_package4.$(SOEXT) test_package5.$(SOEXT) test_package6.$(SOEXT) \
        test_Union050.$(SOEXT) empty.$(SOEXT) test_func0.$(SOEXT) \
        test_func10.$(SOEXT) test_func20.$(SOEXT) test_func30.$(SOEXT) \
        test_func40.$(SOEXT) test_func50.$(SOEXT) test_func60.$(SOEXT) \
-       test_func70.$(SOEXT) test_argtype_char.$(SOEXT) \
+       test_func70.$(SOEXT) test_func80.$(SOEXT) test_argtype_char.$(SOEXT) \
        test_argtype_int.$(SOEXT) test_argtype_long.$(SOEXT) \
        test_argtype_long_int.$(SOEXT) test_argtype_long_long.$(SOEXT) \
        test_argtype_long_long_int.$(SOEXT) test_argtype_long_signed.$(SOEXT) \
