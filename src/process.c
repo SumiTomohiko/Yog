@@ -230,8 +230,12 @@ do_waitpid(YogEnv* env, YogHandle* self, int options)
         YOG_ASSERT2(env, options & WNOHANG);
         return YNIL;
     default:
-        return YogVal_from_int(env, WEXITSTATUS(status));
+        break;
     }
+    if (!WIFEXITED(status)) {
+        return YNIL;
+    }
+    return YogVal_from_int(env, WEXITSTATUS(status));
 }
 
 static YogVal

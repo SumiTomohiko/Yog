@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: What is the best way when WIFEXITED returns false in src/process.c?
+desc: |-
+  In src/process.c, Yog checks a child process's status with WIFEXITED. In current
+  implementation, if WIFEXITED returns false, Process#poll will return nil. Is it
+  the best way? It seems to have to raise an exception.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-03-05 18:27:26.666606 Z
+references: []
+
+id: fb9f137d750f1794659449cff4e24e330cb51ec2
+log_events: 
+- - 2011-03-05 18:27:27.464479 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
