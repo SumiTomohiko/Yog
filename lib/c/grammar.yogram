@@ -1356,8 +1356,8 @@ argument_expression_list  : argument_expression {
 }
 ;
 
-argument_expression : expression {
-  return expression
+argument_expression : assignment_expression {
+  return assignment_expression
 }
 ;
 
