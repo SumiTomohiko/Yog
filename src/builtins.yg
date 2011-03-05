@@ -12,6 +12,8 @@ def run_command(*cmd, &block=nil)
     stdout << proc.stdout.read()
     stderr << proc.stderr.read()
   end
+  stdout << proc.stdout.read()
+  stderr << proc.stderr.read()
   return status, stdout, stderr
 end
 
