@@ -1213,6 +1213,14 @@ f = lib.load_func(\"print_struct\", [[\'pointer, Foo]])
 f(foo)
 """ % locals(), "42")
 
+    def test_argument625(self):
+        path = get_lib_path()
+        self._test("""Hoge = StructClass.new(\"Hoge\")
+Hoge.define_fields([])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"print_struct2\", [[\'pointer, Hoge]])
+f(nil)""".format(**locals()), "(nil)")
+
     def test_argument630(self):
         path = get_lib_path()
         self._test("""

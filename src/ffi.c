@@ -2565,6 +2565,10 @@ write_data(YogEnv* env, void* dest, ID type, YogVal val)
 static void
 write_argument_pointer(YogEnv* env, void* pvalue, YogVal klass, YogVal val)
 {
+    if (IS_NIL(val)) {
+        *((void**)pvalue) = NULL;
+        return;
+    }
     if (IS_PTR(klass) && (BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS)) {
         write_argument_Struct(env, pvalue, klass, val);
         return;

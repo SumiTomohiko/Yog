@@ -45,6 +45,15 @@ print_struct(struct Foo* foo)
     printf("%d", foo->bar);
 }
 
+struct Hoge {
+};
+
+void
+print_struct2(struct Hoge* hoge)
+{
+    printf("%p", hoge);
+}
+
 void
 foo()
 {
