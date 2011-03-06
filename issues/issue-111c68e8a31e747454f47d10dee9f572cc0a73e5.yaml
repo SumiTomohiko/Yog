@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Multiple assignment
+desc: Yog raises SyntaxError for the expression of "foo = bar = baz = 42".
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-03-06 17:33:15.955465 Z
+references: []
+
+id: 111c68e8a31e747454f47d10dee9f572cc0a73e5
+log_events: 
+- - 2011-03-06 17:33:16.562920 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
