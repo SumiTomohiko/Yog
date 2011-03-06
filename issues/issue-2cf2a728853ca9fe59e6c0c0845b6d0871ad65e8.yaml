@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Definition of SDL_BlitSurface
+desc: |-
+  SDL_BlitSurface is defined in SDL/SDL_video.h, but the definition uses undefined
+   (at that time) symbol such as SDL_UpperBlit. So h2yog cannot output
+  SDL_BlitSurface to sdl.yg.
+type: :task
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-03-06 14:20:50.328777 Z
+references: []
+
+id: 2cf2a728853ca9fe59e6c0c0845b6d0871ad65e8
+log_events: 
+- - 2011-03-06 14:20:51.425419 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
