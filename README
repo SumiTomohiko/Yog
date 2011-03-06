@@ -90,7 +90,7 @@ by version 0.0.8 (done)
 by version 0.0.9 (done)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-* Improved the regular expression faster by using corgi.
+* Improved the regular expression to be faster by using corgi.
   * http://github.com/SumiTomohiko/corgi
 
 by version 1.0.0
