@@ -1,0 +1,39 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Finalizer only for FFI
+desc: |-
+  One idea for SDL (SDL_Surface must be free'ed by SDL_FreeSurface) is;
+  
+    from sdl import SDL_FreeSurface
+  
+    # The Finalizer class must be implemented by C in src/ffi.c.
+    class Finalizer
+      def init(f)
+        self.f = f
+      end
+    end
+  
+    # The following finalizer is shared in all of SDL_Surface objects.
+    finalizer = Finalizer.new(SDL_FreeSurface)
+  
+    foo = SDL_LoadBMP("foo.bmp")
+    foo.finalizer = finalizer
+    bar = SDL_LoadBMP("bar.bmp")
+    bar.finalizer = finalizer
+  
+  Then, if foo (and bar) becomes a garbage, SDL_FreeSurface in finalizer is called
+  with one argument of the SDL_Surface object.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-03-06 17:24:48.758642 Z
+references: []
+
+id: 56d1e5330aa72a2546fb0e3152c7af22f2d53d25
+log_events: 
+- - 2011-03-06 17:24:49.404073 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
