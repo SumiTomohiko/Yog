@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: builtins.min, builtins.max and Array#reduce
+desc: |-
+  builtins.min and builtins.max functions are requested in other application.
+  Array#reduce will be needed in implementing these.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-03-07 18:28:15.801052 Z
+references: []
+
+id: b1647c4deb83a6caa00a923d93731c6aa02c9e20
+log_events: 
+- - 2011-03-07 18:28:16.371470 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
