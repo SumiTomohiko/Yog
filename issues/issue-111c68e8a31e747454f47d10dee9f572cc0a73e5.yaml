@@ -5,8 +5,8 @@ type: :bugfix
 component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2011-03-06 17:33:15.955465 Z
 references: []
 
@@ -16,3 +16,7 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""
+- - 2011-03-07 05:45:42.586825 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition wontfix
+  - This issue is same as 5a0939c6d29d934281a869b03f9f07bd2b7f69a8.
