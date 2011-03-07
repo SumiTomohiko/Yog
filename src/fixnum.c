@@ -130,6 +130,9 @@ static YogVal
 multiply_int(YogEnv* env, YogVal self, YogHandle* right)
 {
     int_t n = VAL2INT(self);
+    if (n == 0) {
+        return INT2VAL(0);
+    }
     int_t m = VAL2INT(HDL2VAL(right));
     int_t l = n * m;
     if ((l / n == m) && FIXABLE(l)) {

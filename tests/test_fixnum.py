@@ -604,6 +604,9 @@ puts(2 * 3.1415926535)
 """, """6.283185307
 """)
 
+    def test_multiply45(self):
+        self._test("print(0 * 42)", "0")
+
     def test_multiply50(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
