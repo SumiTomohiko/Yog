@@ -521,4 +521,41 @@ end
 co.resume()
 """, "42")
 
+    def test_bug0(self):
+        # If any context are not resumed in Coroutine#yield, the following Yog
+        # code causes segmentation fault. This bug appeared at commit
+        # 8b575f915c281bc4e3e1683cf5b8f8b1cecc8819.
+        self._test("""co = Coroutine.new() do
+  Coroutine.yield()
+end
+co.resume()
+try
+  {}[42]
+except KeyError
+end""")
+
+    def test_bug5(self):
+        # This test checks if contexts of coroutines are recovered after
+        # Coroutine#yield. This test is related with test_bug0.
+        self._test("""co = Coroutine.new() do
+  Coroutine.yield()
+  try
+    {}[nil]
+  except KeyError
+  end
+end
+co.resume()
+co.resume()""")
+
+    def test_bug10(self):
+        # This test checks if GC out of coroutines keeps objects in coroutines.
+        # GC synchronizes contexts for coroutines, so in this case, don't GC in
+        # coroutines. GC must be out of coroutines.
+        self._test("""co = Coroutine.new() do
+  Coroutine.yield()
+end
+co.resume()
+minor_gc()
+co.resume()""", options=[])
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

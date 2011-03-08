@@ -99,6 +99,7 @@ struct Coroutine {
     uint_t status;
 
     YogVal args;
+    YogJmpBuf* prev_jmp_buf;
 };
 
 typedef struct Coroutine Coroutine;
@@ -311,6 +312,7 @@ Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
     PTR_AS(Coroutine, self)->block = YUNDEF;
     PTR_AS(Coroutine, self)->status = STATUS_SUSPENDED;
     PTR_AS(Coroutine, self)->args = YUNDEF;
+    PTR_AS(Coroutine, self)->prev_jmp_buf = NULL;
 
     RETURN_VOID(env);
 }
@@ -336,6 +338,16 @@ return_args(YogEnv* env, YogVal args)
     RETURN_VOID(env);
 }
 
+static YogJmpBuf*
+find_bottom_jmp_buf(YogEnv* env, YogVal coroutine)
+{
+    YogJmpBuf* buf = PTR_AS(YogThread, env->thread)->jmp_buf_list;
+    while (buf->prev != PTR_AS(Coroutine, coroutine)->prev_jmp_buf) {
+        buf = buf->prev;
+    }
+    return buf;
+}
+
 static YogVal
 yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -344,7 +356,8 @@ yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     YogVal frame = YUNDEF;
     YogVal boundary = YUNDEF;
     YogVal a = YUNDEF;
-    PUSH_LOCALS4(env, coroutine, frame, boundary, a);
+    YogVal thread = YUNDEF;
+    PUSH_LOCALS5(env, coroutine, frame, boundary, a, thread);
     YogCArg params[] = { { "*", &a }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "yield", params, args, kw);
 
@@ -359,7 +372,13 @@ yield(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
     PTR_AS(YogFrame, frame)->prev = YUNDEF;
     boundary = YUNDEF;  /* Kill previous frames from the machine stack */
 
+    YogHandle_sync_scope_with_env(env);
+    thread = env->thread;
+    YogJmpBuf* top_jmp_buf = PTR_AS(YogThread, thread)->jmp_buf_list;
+    YogJmpBuf* bottom_jmp_buf = find_bottom_jmp_buf(env, coroutine);
     yield_coroutine(env, coroutine, STATUS_SUSPENDED);
+    bottom_jmp_buf->prev = PTR_AS(YogThread, thread)->jmp_buf_list;
+    PTR_AS(YogThread, thread)->jmp_buf_list = top_jmp_buf;
 
     boundary = PTR_AS(Coroutine, coroutine)->boundary_frame;
     YogGC_UPDATE_PTR(env, PTR_AS(YogFrame, frame), prev, boundary);
@@ -412,7 +431,11 @@ resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
 
     SwitchContext* to = &PTR_AS(Coroutine, self)->ctx_to_resume;
     SwitchContext* cont = &PTR_AS(Coroutine, self)->ctx_to_yield;
+    YogHandle_sync_scope_with_env(env);
+    YogJmpBuf* prev_jmp_buf = PTR_AS(YogThread, env->thread)->jmp_buf_list;
+    PTR_AS(Coroutine, self)->prev_jmp_buf = prev_jmp_buf;
     switch_context(env, to, cont);
+    PTR_AS(YogThread, env->thread)->jmp_buf_list = prev_jmp_buf;
 #endif
 
     return_args(env, PTR_AS(Coroutine, self)->args);
