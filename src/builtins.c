@@ -132,6 +132,32 @@ join_path(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
 }
 
 static YogVal
+minor_gc(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+#if defined(GC_GENERATIONAL)
+#   define GC_PROC(env) YogGC_perform_minor((env))
+#elif !defined(GC_BDW)
+#   define GC_PROC(env) YogGC_perform((env))
+#else
+#   define GC_PROC(env)
+#endif
+    GC_PROC(env);
+#undef GC_PROC
+    return YNIL;
+}
+
+static YogVal
+major_gc(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+#if defined(GC_GENERATIONAL)
+    YogGC_perform_minor(env);
+    return YNIL;
+#else
+    return minor_gc(env, self, pkg);
+#endif
+}
+
+static YogVal
 print(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* args)
 {
     uint_t size = YogArray_size(env, HDL2VAL(args));
@@ -306,6 +332,8 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
 } while (0)
     DEFINE_FUNCTION2("import_package", import_package, "name", NULL);
     DEFINE_FUNCTION2("load_lib", load_lib, "path", NULL);
+    DEFINE_FUNCTION2("major_gc", major_gc, NULL);
+    DEFINE_FUNCTION2("minor_gc", minor_gc, NULL);
     DEFINE_FUNCTION2("mkdir", mkdir_, "path", NULL);
     DEFINE_FUNCTION2("print", print, "*", NULL);
 #undef DEFINE_FUNCTION2
