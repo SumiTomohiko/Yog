@@ -192,6 +192,12 @@ print_two_int(int n, int m)
     printf("%d%d", n, m);
 }
 
+const char*
+return_string()
+{
+    return "foobarbazquux";
+}
+
 uint8_t
 return_uint8()
 {

@@ -1523,6 +1523,12 @@ lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"return_pointer_10\", [], [\'pointer, Foo])
 print(f().bar)""" % locals(), "42")
 
+    def test_return410(self):
+        path = get_lib_path()
+        self._test("""lib = load_lib(\"{path}\")
+return_string = lib.load_func(\"return_string\", [], [\'string, ENCODINGS[\"ascii\"]])
+print(return_string())""".format(**locals()), "foobarbazquux")
+
     def test_Int0(self):
         self._test("print(Int.new().value)", "0")
 

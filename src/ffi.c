@@ -2774,6 +2774,9 @@ create_ptr_retval(YogEnv* env, YogHandle* callee, void* rvalue)
     if (type == NODE_ATOM) {
         return ptr2int_retval(env, node, rvalue);
     }
+    if (type == NODE_STRING) {
+        return YogString_from_string(env, (char*)rvalue);
+    }
     if (type != NODE_POINTER) {
         const char* fmt = "Node::type must be NODE_ATOM or NODE_POINTER, not %s";
         YogError_raise_FFIError(env, fmt, NodeType_to_s(env, type));
