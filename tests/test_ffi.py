@@ -1525,6 +1525,13 @@ print(f().bar)""" % locals(), "42")
 
     def test_return410(self):
         path = get_lib_path()
+        self._test("""Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"return_pointer_20\", [], [\'pointer, Foo])
+print(f())""".format(**locals()), "nil")
+
+    def test_return420(self):
+        path = get_lib_path()
         self._test("""lib = load_lib(\"{path}\")
 return_string = lib.load_func(\"return_string\", [], [\'string, ENCODINGS[\"ascii\"]])
 print(return_string())""".format(**locals()), "foobarbazquux")

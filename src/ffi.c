@@ -2774,12 +2774,15 @@ create_ptr_retval(YogEnv* env, YogHandle* callee, void* rvalue)
     if (type == NODE_ATOM) {
         return ptr2int_retval(env, node, rvalue);
     }
+    if (rvalue == NULL) {
+        return YNIL;
+    }
     if (type == NODE_STRING) {
         return YogString_from_string(env, (char*)rvalue);
     }
     if (type != NODE_POINTER) {
-        const char* fmt = "Node::type must be NODE_ATOM or NODE_POINTER, not %s";
-        YogError_raise_FFIError(env, fmt, NodeType_to_s(env, type));
+        const char* s = "Node::type must be NODE_ATOM or NODE_POINTER, not %s";
+        YogError_raise_FFIError(env, s, NodeType_to_s(env, type));
     }
     YogVal klass = PTR_AS(Node, node)->u.pointer.klass;
     if (IS_PTR(klass) && (BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS)) {

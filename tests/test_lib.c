@@ -446,6 +446,12 @@ return_pointer_10()
     return foo;
 }
 
+struct Foo*
+return_pointer_20()
+{
+    return NULL;
+}
+
 void
 test_pointer_p(struct Foo** p)
 {
