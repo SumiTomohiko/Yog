@@ -2586,13 +2586,29 @@ write_argument_pointer(YogEnv* env, void* pvalue, YogVal klass, YogVal val)
 }
 
 static void
+write_argument_string(YogEnv* env, void* pvalue, void* refered, YogVal encoding, YogVal val)
+{
+    SAVE_ARGS2(env, encoding, val);
+    if (IS_NIL(val)) {
+        *((char**)pvalue) = NULL;
+        RETURN_VOID(env);
+    }
+
+    YogHandle* h = VAL2HDL(env, val);
+    YogMisc_check_String(env, h, "Actual parameter");
+    YogVal bin = YogEncoding_conv_from_yog(env, VAL2HDL(env, encoding), h);
+    memcpy(refered, BINARY_CSTR(bin), BINARY_SIZE(bin));
+    *((char**)pvalue) = (char*)refered;
+
+    RETURN_VOID(env);
+}
+
+static void
 write_argument(YogEnv* env, void* pvalue, void* refered, YogVal node, YogVal val)
 {
     SAVE_ARGS2(env, node, val);
+    YogVal encoding;
     YogVal klass;
-    YogHandle* encoding;
-    YogVal bin;
-    YogHandle* h;
     switch (PTR_AS(Node, node)->type) {
     case NODE_ATOM:
         break;
@@ -2604,12 +2620,8 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal node, YogVal val
         write_argument_pointer(env, pvalue, klass, val);
         RETURN_VOID(env);
     case NODE_STRING:
-        encoding = VAL2HDL(env, PTR_AS(Node, node)->u.string.encoding);
-        h = VAL2HDL(env, val);
-        YogMisc_check_String(env, h, "Actual parameter");
-        bin = YogEncoding_conv_from_yog(env, encoding, h);
-        memcpy(refered, BINARY_CSTR(bin), BINARY_SIZE(bin));
-        *((char**)pvalue) = (char*)refered;
+        encoding = PTR_AS(Node, node)->u.string.encoding;
+        write_argument_string(env, pvalue, refered, encoding, val);
         RETURN_VOID(env);
     case NODE_ARRAY:
     case NODE_FIELD:
@@ -2639,9 +2651,12 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal node, YogVal val
 static uint_t
 type2refered_size_of_string(YogEnv* env, YogVal node, YogVal arg)
 {
+    if (IS_NIL(arg)) {
+        return 0;
+    }
     YogVal enc = PTR_AS(Node, node)->u.string.encoding;
     YogMisc_check_String(env, VAL2HDL(env, arg), "Argument");
-    return PTR_AS(YogEncoding, enc)->max_size * STRING_SIZE(arg);
+    return PTR_AS(YogEncoding, enc)->max_size * STRING_SIZE(arg) + 1;
 }
 
 static uint_t

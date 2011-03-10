@@ -4,6 +4,12 @@
 #include <string.h>
 
 void
+print_string2(const char* s)
+{
+    printf("%p", s);
+}
+
+void
 print_string(const char* s)
 {
     printf("%s", s);

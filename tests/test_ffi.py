@@ -1249,6 +1249,19 @@ f = lib.load_func(\"print_string\", [[\'string, ENCODINGS[\"ascii\"]]])
 f(\"foo\")
 """ % locals(), "foo")
 
+    def test_argument670(self):
+        path = get_lib_path()
+        self._test("""lib = load_lib(\"{path}\")
+f = lib.load_func(\"print_string\", [[\'string, ENCODINGS[\"ascii\"]]])
+f(\"\")
+""".format(**locals()), "")
+
+    def test_argument680(self):
+        path = get_lib_path()
+        self._test("""lib = load_lib(\"{path}\")
+f = lib.load_func(\"print_string2\", [[\'string, ENCODINGS[\"ascii\"]]])
+f(nil)""".format(**locals()), "(nil)")
+
     def test_arguments0(self):
         path = get_lib_path()
         self._test("""
