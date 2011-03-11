@@ -2782,6 +2782,14 @@ ptr2int_retval(YogEnv* env, YogVal node, void* rvalue)
 }
 
 static YogVal
+create_struct_from_pointer(YogEnv* env, YogVal klass, void* ptr)
+{
+    YogVal obj = StructBase_alloc(env, klass);
+    init_struct_with_ptr(env, obj, ptr);
+    return obj;
+}
+
+static YogVal
 create_ptr_retval(YogEnv* env, YogHandle* callee, void* rvalue)
 {
     YogVal node = HDL_AS(LibFunc, callee)->rtype;
@@ -2801,9 +2809,7 @@ create_ptr_retval(YogEnv* env, YogHandle* callee, void* rvalue)
     }
     YogVal klass = PTR_AS(Node, node)->u.pointer.klass;
     if (IS_PTR(klass) && (BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS)) {
-        YogVal obj = StructBase_alloc(env, klass);
-        init_struct_with_ptr(env, obj, rvalue);
-        return obj;
+        return create_struct_from_pointer(env, klass, rvalue);
     }
     const char* fmt = "rtype must be a pointer to Struct or void, not %C";
     YogError_raise_TypeError(env, fmt, klass);
@@ -2949,9 +2955,6 @@ LibFunc_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs
 static YogVal
 Struct_get_child(YogEnv* env, YogVal self, uint_t index)
 {
-    if (!IS_PTR(self) || (BASIC_OBJ_TYPE(self) != TYPE_STRUCT)) {
-        YogError_raise_TypeError(env, "Object must be Struct, not %C", self);
-    }
     return PTR_AS(Struct, self)->children[index];
 }
 
@@ -2962,6 +2965,7 @@ Struct_get_Buffer(YogEnv* env, YogVal self, YogVal field)
         const char* fmt = "Attribute must be BufferField, not %C";
         YogError_raise_TypeError(env, fmt, field);
     }
+    CHECK_SELF_STRUCT;
 
     uint_t index = PTR_AS(BufferField, field)->child_index;
     return Struct_get_child(env, self, index);
@@ -2973,6 +2977,13 @@ Struct_get_pointer(YogEnv* env, YogVal self, YogVal field)
     if (!IS_PTR(field) || (BASIC_OBJ_TYPE(field) != TYPE_POINTER_FIELD)) {
         const char* fmt = "Attribute must be PointerField, not %C";
         YogError_raise_TypeError(env, fmt, field);
+    }
+    CHECK_SELF_STRUCT;
+    if (!PTR_AS(Struct, self)->own) {
+        YogVal klass = PTR_AS(PointerField, field)->klass;
+        uint_t offset = PTR_AS(FieldBase, field)->offset;
+        void* ptr = *((void**)((char*)PTR_AS(Struct, self)->data + offset));
+        return create_struct_from_pointer(env, klass, ptr);
     }
 
     uint_t index = PTR_AS(PointerField, field)->child_index;

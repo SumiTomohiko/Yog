@@ -612,6 +612,14 @@ f = lib.load_func(\"test_Struct740\", [[\'pointer, Baz]])
 f(baz)
 print(baz.foo.bar)""", "42")
 
+    def test_Struct745(self):
+        self._test("""Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
+Baz = StructClass.new(\"Baz\", [[[\'pointer, Foo], \'foo]])
+lib = load_lib(\"./test_Struct745.so\")
+f = lib.load_func(\"test_Struct745\", [], [\'pointer, Baz])
+baz = f()
+print(baz.foo.bar)""", "42")
+
     # Test for bit field
     def test_Struct750(self):
         def test_stderr(stderr):
