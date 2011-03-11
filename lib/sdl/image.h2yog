@@ -1,0 +1,27 @@
+
+from h2yog import h2yog
+
+def main()
+  yog = __FILE__.dirname / "image.yg"
+
+  status, prefix, _ = run_command("/bin/sh", "-c", "sdl-config --prefix")
+  if status != 0
+    return 1
+  end
+  header = prefix.rtrim() / "include" / "SDL" / "SDL_image.h"
+
+  predefined = {
+    'sdl: ['SDL_RWops, 'SDL_version, 'SDL_Surface, 'SDL_SetError, 'SDL_GetError]
+    }
+  verbose = false
+  #verbose = true
+  h2yog(yog, [header], "SDL_image", predefined, verbose) do [path, name]
+    next name.to_s().starts_with?("IMG_")
+  end
+end
+
+if __FILE__ == ARGV.get(0)
+  main()
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=yog
