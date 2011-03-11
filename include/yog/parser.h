@@ -271,6 +271,8 @@ struct YogLexer {
     YogVal heredoc_queue;
     uint_t paren_depth;
     YogVal encoding;
+    YogVal ended_type_stack;
+    YogVal paren_depth_stack;
 };
 
 #define LEXER_LINE(lexer)       PTR_AS(YogLexer, (lexer))->line

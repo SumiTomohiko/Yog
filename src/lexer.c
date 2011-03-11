@@ -397,6 +397,28 @@ raise_heredoc_error(YogEnv* env, YogHandle* filename, YogVal heredoc)
     YogError_raise_SyntaxError(env, fmt, HDL2VAL(filename), lineno);
 }
 
+static void
+restore_paren_depth(YogEnv* env, YogVal lexer)
+{
+    YogVal stack = PTR_AS(YogLexer, lexer)->paren_depth_stack;
+    uint_t depth = VAL2INT(YogArray_pop(env, stack));
+    PTR_AS(YogLexer, lexer)->paren_depth = depth;
+}
+
+static void
+push_ended_type(YogEnv* env, YogVal lexer, uint_t type)
+{
+    YogVal stack = PTR_AS(YogLexer, lexer)->ended_type_stack;
+    YogArray_push(env, stack, INT2VAL(type));
+}
+
+static void
+push_paren_depth(YogEnv* env, YogVal lexer)
+{
+    YogVal stack = PTR_AS(YogLexer, lexer)->paren_depth_stack;
+    YogArray_push(env, stack, INT2VAL(PTR_AS(YogLexer, lexer)->paren_depth));
+}
+
 BOOL
 YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* token)
 {
@@ -1077,6 +1099,29 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
                 uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
                 if (entry != NULL) {
                     uint_t type = entry->type;
+                    YogVal stack;
+                    switch (type) {
+                    case TK_DO:
+                        push_paren_depth(env, lexer);
+                        PTR_AS(YogLexer, lexer)->paren_depth = 0;
+                        /* FALLTHRU */
+                    case TK_CLASS:
+                    case TK_DEF:
+                    case TK_IF:
+                    case TK_MODULE:
+                    case TK_TRY:
+                    case TK_WHILE:
+                        push_ended_type(env, lexer, type);
+                        break;
+                    case TK_END:
+                        stack = PTR_AS(YogLexer, lexer)->ended_type_stack;
+                        if (VAL2INT(YogArray_pop(env, stack)) == TK_DO) {
+                            restore_paren_depth(env, lexer);
+                        }
+                        break;
+                    default:
+                        break;
+                    }
                     *token = ValToken_new(env, type, YUNDEF, lineno);
                     if (type == TK_DEF) {
                         SET_STATE(LS_NAME);
@@ -1218,6 +1263,8 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(buffer);
     KEEP(heredoc_queue);
     KEEP(encoding);
+    KEEP(ended_type_stack);
+    KEEP(paren_depth_stack);
 #undef KEEP
 }
 
@@ -1239,11 +1286,17 @@ YogLexer_new(YogEnv* env)
     PTR_AS(YogLexer, lexer)->lineno = 0;
     PTR_AS(YogLexer, lexer)->heredoc_queue = YUNDEF;
     PTR_AS(YogLexer, lexer)->paren_depth = 0;
+    PTR_AS(YogLexer, lexer)->ended_type_stack = YUNDEF;
+    PTR_AS(YogLexer, lexer)->paren_depth_stack = YUNDEF;
 
     PTR_AS(YogLexer, lexer)->line = YUNDEF;
     buffer = YogString_new(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), buffer, buffer);
     YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), encoding, env->vm->encUtf8);
+    YogVal ended_type_stack = YogArray_new(env);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), ended_type_stack, ended_type_stack);
+    YogVal paren_depth_stack = YogArray_new(env);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), paren_depth_stack, paren_depth_stack);
 
     RETURN(env, lexer);
 }

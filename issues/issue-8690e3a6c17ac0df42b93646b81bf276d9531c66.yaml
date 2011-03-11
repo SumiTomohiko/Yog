@@ -2,11 +2,11 @@
 title: Syntax error
 desc: |-
   $ cat foo.yog
-    
+  
     print(Array.new(42) do [index]
       next index
     end)
-    
+  
     # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
     $ src/yog-generational --gc-stress foo.yog
     SyntaxError: File "foo.yog", line 3: Invalid syntax
@@ -14,8 +14,8 @@ type: :bugfix
 component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2011-03-04 17:14:45.905802 Z
 references: []
 
@@ -24,4 +24,8 @@ log_events:
 - - 2011-03-04 17:14:47.427453 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2011-03-11 07:34:16.985840 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
   - ""

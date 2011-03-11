@@ -465,7 +465,7 @@ YogArray_shift(YogEnv* env, YogVal self)
     RETURN(env, retval);
 }
 
-static YogVal
+YogVal
 YogArray_pop(YogEnv* env, YogVal self)
 {
     SAVE_ARG(env, self);
