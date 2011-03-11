@@ -1,4 +1,22 @@
 
+def max(*args)
+  if args.empty?
+    return nil
+  end
+  return args.slice(1).reduce(args[0]) do [init, elem]
+    next elem < init ? init : elem
+  end
+end
+
+def min(*args)
+  if args.empty?
+    return nil
+  end
+  return args.slice(1).reduce(args[0]) do [init, elem]
+    next init < elem ? init : elem
+  end
+end
+
 def run_command(*cmd, &block=nil)
   proc = Process.new(cmd)
   proc.run()

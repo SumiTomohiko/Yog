@@ -8,6 +8,30 @@ from testcase import TestCase
 
 class TestBuiltins(TestCase):
 
+    def test_max0(self):
+        self._test("print(max())", "nil")
+
+    def test_max10(self):
+        self._test("print(max(42))", "42")
+
+    def test_max20(self):
+        self._test("print(max(42, 26))", "42")
+
+    def test_max30(self):
+        self._test("print(max(26, 42, 26))", "42")
+
+    def test_min0(self):
+        self._test("print(min())", "nil")
+
+    def test_min10(self):
+        self._test("print(min(42))", "42")
+
+    def test_min20(self):
+        self._test("print(min(42, 26))", "26")
+
+    def test_min30(self):
+        self._test("print(min(42, 26, 42))", "26")
+
     def test_run_command0(self):
         self._test("""
 status, _, _ = run_command(\"/bin/echo\")
