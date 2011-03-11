@@ -27,7 +27,7 @@ def main()
   header = prefix.rtrim() / "include" / "SDL" / "SDL.h"
 
   verbose = false
-  h2yog(yog, [header], "SDL", verbose) do [path, name]
+  h2yog(yog, [header], "SDL", verbose: verbose) do [path, name]
     if INCLUDED_SYMBOLS.include?(name)
       next true
     end

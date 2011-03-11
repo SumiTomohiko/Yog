@@ -403,7 +403,7 @@ class MacroImpl
   lineno = property(get_lineno)
 end
 
-def h2yog(yog, headers, so, verbose=false, &block)
+def h2yog(yog, headers, so, predefined={}, verbose=false, &block)
   typedef_names = Set.new()
   nodes, macros = parse_to_nodes(headers, typedef_names, verbose) do [node]
     if node == nil
@@ -433,8 +433,18 @@ def h2yog(yog, headers, so, verbose=false, &block)
   impls = macros.zip(get_macros_implementation(headers, macros)).map() do [args]
     next MacroImpl.new(args[0], args[1])
   end
+
+  # FIXME: Is defined_structs deplicated with typedef_names?
+  defined_structs.extend(predefined.values.reduce(Set.new()) do [init, val]
+    next init + val.to_set()
+  end)
   File.open(yog, "w") do [fp]
-    fp.write("lib = load_lib({0})\n".format(so.inspect()))
+    predefined.each() do [key, value]
+      fp.write("from {0} import {1}\n".format(key, value.map() do [sym]
+        next sym.to_s()
+      end.join(", ")))
+    end
+    fp.write("lib = load_lib({0})\n".format(("lib" + so + ".so").inspect()))
     (nodes + impls).sort() do [a, b]
       next a.lineno <=> b.lineno
     end.each() do [obj]
