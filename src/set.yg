@@ -40,4 +40,10 @@ def <<(elem)
   return self.add(elem)
 end
 
+def +(set)
+  a = self.copy()
+  set.each(&a.add)
+  return a
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
