@@ -56,25 +56,10 @@ YogMisc_check_String(YogEnv* env, YogHandle* val, const char* name)
     YogMisc_raise_TypeError(env, v, name, "String");
 }
 
-static YogHandle*
-get_so_path(YogEnv* env, YogHandle* filename)
-{
-    YogMisc_check_String(env, filename, "Filename");
-    if (0 <= YogString_find_char(env, HDL2VAL(filename), 0, PATH_SEPARATOR)) {
-        return filename;
-    }
-    uint_t n = STRING_SIZE(HDL2VAL(filename)) + 2;
-    YogHandle* path = VAL2HDL(env, YogString_of_size(env, n));
-    YogString_append_string(env, HDL2VAL(path), "./");
-    YogString_append(env, HDL2VAL(path), HDL2VAL(filename));
-    return path;
-}
-
 LIB_HANDLE
 YogMisc_load_lib(YogEnv* env, YogHandle* filename)
 {
-    YogHandle* path = get_so_path(env, filename);
-    YogVal bin = YogString_to_bin_in_default_encoding(env, path);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, filename);
     YogSysdeps_dlerror();
     return YogSysdeps_open_lib(BINARY_CSTR(bin));
 }
