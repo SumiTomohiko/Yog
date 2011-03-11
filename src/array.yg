@@ -1,4 +1,11 @@
 
+def reduce(init, &block)
+  if self.empty?
+    return init
+  end
+  return self.slice(1).reduce(block(init, self[0]), &block)
+end
+
 def sort(&block)
   if self.empty?
     return []

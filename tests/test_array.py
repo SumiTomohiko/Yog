@@ -271,4 +271,14 @@ print([].get(0, 42))
 print([42].get(0))
 """, "42")
 
+    def test_reduce0(self):
+        self._test("""print([].reduce(42) do [init, val]
+  next nil
+end)""", "42")
+
+    def test_reduce10(self):
+        self._test("""print([42].reduce(26) do [init, val]
+  next init + val
+end)""", "68")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
