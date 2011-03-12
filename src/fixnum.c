@@ -237,10 +237,16 @@ divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 static int_t
 floor_divide_int(YogEnv* env, YogVal left, YogVal right)
 {
-    if (VAL2INT(right) == 0) {
+    int_t n = VAL2INT(left);
+    int_t m = VAL2INT(right);
+    if (m == 0) {
         YogError_raise_ZeroDivisionError(env, "Fixnum division by zero");
     }
-    return VAL2INT(left) / VAL2INT(right);
+    div_t q = div(n, m);
+    if (((q.rem < 0) && (0 < m)) || ((0 < q.rem) && (m < 0))) {
+        return q.quot - 1;
+    }
+    return q.quot;
 }
 
 static double

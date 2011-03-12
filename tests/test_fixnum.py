@@ -765,6 +765,24 @@ puts(2305843009213693952 // 4611686018427387904)
 """, """0
 """)
 
+    def test_floor_divide31(self):
+        self._test("print((-42) // 26)", "-2")
+
+    def test_floor_divide32(self):
+        self._test("print(42 // (-26))", "-2")
+
+    def test_floor_divide33(self):
+        self._test("print((-42) // (-26))", "1")
+
+    def test_floor_divide34(self):
+        self._test("print((-42) // 4611686018427387904)", "-1")
+
+    def test_floor_divide35(self):
+        self._test("print(42 // (-4611686018427387904))", "-1")
+
+    def test_floor_divide36(self):
+        self._test("print((-42) // (-4611686018427387904))", "0")
+
     def test_floor_divide40(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
