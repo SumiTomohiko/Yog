@@ -645,6 +645,15 @@ YogFixnum_to_uint(YogEnv* env, YogVal self, const char* name)
 }
 
 void
+YogFixnum_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+    const char* src =
+#include "fixnum.inc"
+    ;
+    YogMisc_eval_source(env, VAL2HDL(env, klass), src);
+}
+
+void
 YogFixnum_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);

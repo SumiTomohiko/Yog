@@ -317,6 +317,7 @@ src/euc_jp2yog_3bytes.inc
 src/euc_jp2yog_hankaku.inc
 src/euc_jp2yog_zenkaku.inc
 src/eval.inc
+src/fixnum.inc
 src/inst.c
 src/keywords.inc
 src/miniyog

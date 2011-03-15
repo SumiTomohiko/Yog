@@ -1,0 +1,15 @@
+
+def to(limit, step=1, &block)
+  if step == 0
+    raise ValueError.new("step must be not zero")
+  end
+  n = self
+  pred? = 0 < step ? limit.> : limit.<
+  while pred?(n)
+    block(n)
+    n += step
+  end
+  return self
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

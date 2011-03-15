@@ -93,6 +93,9 @@ symbol.inc: symbol.yg yg2inc.yg
 callable.inc: callable.yg yg2inc.yg
 	$(YOG) yg2inc.yg callable.yg $@
 
+fixnum.inc: fixnum.yg yg2inc.yg
+	$(YOG) yg2inc.yg fixnum.yg $@
+
 $(top_srcdir)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
 	$(LEMON) header=$(top_srcdir)/include/yog/token.h parser.y

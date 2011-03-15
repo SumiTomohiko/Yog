@@ -4,6 +4,26 @@ from testcase import TestCase
 
 class TestFixnum(TestCase):
 
+    def test_to0(self):
+        self._test("print(26.to(42, &nop))", "26")
+
+    def test_to10(self):
+        self._test("26.to(42, &print)", "26272829303132333435363738394041")
+
+    def test_to20(self):
+        self._test("26.to(42, 2, &print)", "2628303234363840")
+
+    def test_to30(self):
+        self._test("42.to(26, &print)")
+
+    def test_to40(self):
+        self._test("42.to(26, -1, &print)", "42414039383736353433323130292827")
+
+    def test_to50(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("ValueError: step must be not zero")
+        self._test("26.to(42, 0, &nop)", stderr=test_stderr)
+
     def test_plus_one(self):
         self._test("""
 puts(42 + 1)
