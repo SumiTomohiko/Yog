@@ -8,6 +8,12 @@ from testcase import TestCase
 
 class TestBuiltins(TestCase):
 
+    def test_nop0(self):
+        self._test("print(nop(42))", "nil")
+
+    def test_nop10(self):
+        self._test("print(nop(&42))", "nil")
+
     def test_max0(self):
         self._test("print(max())", "nil")
 

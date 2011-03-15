@@ -1,4 +1,8 @@
 
+def nop(*args, **kw, &block=nil)
+  return nil
+end
+
 def max(*args)
   if args.empty?
     return nil
