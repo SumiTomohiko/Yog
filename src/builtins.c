@@ -366,6 +366,7 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
     REGISTER_CLASS(eImportError);
     REGISTER_CLASS(eIndexError);
     REGISTER_CLASS(eKeyError);
+    REGISTER_CLASS(eNotImplementedError);
     REGISTER_CLASS(eSyntaxError);
     REGISTER_CLASS(eSystemError);
     REGISTER_CLASS(eValueError);

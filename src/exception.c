@@ -581,6 +581,7 @@ YogException_define_classes(YogEnv* env, YogVal pkg)
     EXCEPTION_NEW(eKeyError, "KeyError");
     EXCEPTION_NEW(eLocalJumpError, "LocalJumpError");
     EXCEPTION_NEW(eNameError, "NameError");
+    EXCEPTION_NEW(eNotImplementedError, "NotImplementedError");
     EXCEPTION_NEW(eSyntaxError, "SyntaxError");
     EXCEPTION_NEW(eSystemError, "SystemError");
     EXCEPTION_NEW(eTypeError, "TypeError");

@@ -575,6 +575,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eKeyError);
     KEEP(eLocalJumpError);
     KEEP(eNameError);
+    KEEP(eNotImplementedError);
     KEEP(eSyntaxError);
     KEEP(eSystemError);
     KEEP(eTypeError);
@@ -719,6 +720,7 @@ YogVM_init(YogVM* vm)
     INIT(eKeyError);
     INIT(eLocalJumpError);
     INIT(eNameError);
+    INIT(eNotImplementedError);
     INIT(eSyntaxError);
     INIT(eSystemError);
     INIT(eTypeError);

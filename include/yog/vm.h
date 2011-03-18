@@ -81,6 +81,7 @@ struct YogVM {
     YogVal eKeyError;
     YogVal eLocalJumpError;
     YogVal eNameError;
+    YogVal eNotImplementedError;
     YogVal eSyntaxError;
     YogVal eSystemError;
     YogVal eTypeError;
