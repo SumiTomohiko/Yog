@@ -1,0 +1,33 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Reading unknown attributes on Struct causes aborting
+desc: |-
+  $ cat foo.yog
+    
+    Foo = StructClass.new("Foo")
+    Foo.define_fields([])
+    foo = Foo.new()
+    foo.bar
+    
+    # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+    $ src/yog-generational foo.yog
+    Traceback (most recent call last):
+      File "foo.yog", line 5, in <package>
+    [BUG]
+    at vm.c:129
+    can't find symbol (0xb7e3552c)
+    zsh: abort (core dumped)  src/yog-generational foo.yog
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-03-18 15:57:12.513885 Z
+references: []
+
+id: c9fea4b10646cac320fc2183cbadee9eff9152dd
+log_events: 
+- - 2011-03-18 15:57:13.539400 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
