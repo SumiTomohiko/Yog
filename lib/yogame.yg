@@ -1,0 +1,136 @@
+
+import sdl
+import sdl.image
+# XXX: h2yog cannot output SDL_BlitSurface. Wait for fixing this bug.
+sdl.SDL_BlitSurface = sdl.SDL_UpperBlit
+
+class SdlError > Exception
+  def init(msg)
+    super("{0}: {1}".format(msg, sdl.SDL_GetError()))
+  end
+end
+
+def init_img(&block)
+  flags = sdl.image.IMG_INIT_PNG
+  if sdl.image.IMG_Init(flags) != flags
+    raise SdlError.new("IMG_Init failed")
+  end
+  try
+    block()
+  finally
+    sdl.image.IMG_Quit()
+  end
+end
+
+def init(width, height, bpp, caption, &block)
+  sdl.SDL_Init(sdl.SDL_INIT_VIDEO)
+  try
+    init_img() do
+      sdl.SDL_WM_SetCaption(caption, nil)
+      flags = sdl.SDL_SWSURFACE | sdl.SDL_DOUBLEBUF | sdl.SDL_ANYFORMAT
+      block(sdl.SDL_SetVideoMode(width, height, bpp, flags))
+    end
+  finally
+    sdl.SDL_Quit()
+  end
+end
+
+def run(controller, view)
+  event = sdl.SDL_Event.new()
+  loop() do
+    sdl.SDL_PollEvent.while(1, event) do
+      if controller.dispatch(event)
+        return
+      end
+    end
+    controller.animate()
+    view.draw()
+  end
+end
+
+BUTTON2NAME = {
+  sdl.SDL_BUTTON_LEFT: "left", sdl.SDL_BUTTON_MIDDLE: "middle",
+  sdl.SDL_BUTTON_RIGHT: "right", sdl.SDL_BUTTON_WHEELUP: "wheelup",
+  sdl.SDL_BUTTON_WHEELDOWN: "wheeldown" }
+
+class Controller
+  def on_middle_button_released(x, y)
+  end
+
+  def on_wheelup_button_released(x, y)
+  end
+
+  def on_wheeldown_button_released(x, y)
+  end
+
+  def on_right_button_released(x, y)
+  end
+
+  def on_left_button_released(x, y)
+  end
+
+  def on_middle_button_pressed(x, y)
+  end
+
+  def on_wheelup_button_pressed(x, y)
+  end
+
+  def on_wheeldown_button_pressed(x, y)
+  end
+
+  def on_right_button_pressed(x, y)
+  end
+
+  def on_left_button_pressed(x, y)
+  end
+
+  def default_mousebutton_handler(button, x, y, suffix)
+    name = "on_{0}_button_{1}".format(BUTTON2NAME[button], suffix)
+    return self.get_attr(name)(x, y)
+  end
+
+  def on_mousebuttonup(button, x, y)
+    return self.default_mousebutton_handler(button, x, y, "released")
+  end
+
+  def on_mousebuttondown(button, x, y)
+    return self.default_mousebutton_handler(button, x, y, "pressed")
+  end
+
+  def fire_mousebutton_handler(event, f)
+    mouse_button_event = event.button
+    button = mouse_button_event.button
+    x = mouse_button_event.x
+    y = mouse_button_event.y
+    return f(button, x, y)
+  end
+
+  def dispatch(event)
+    if event.type == sdl.SDL_QUIT
+      return true
+    end
+    if event.type == sdl.SDL_MOUSEBUTTONDOWN
+      return self.fire_mousebutton_handler(event, self.on_mousebuttondown)
+    end
+    if event.type == sdl.SDL_MOUSEBUTTONUP
+      return self.fire_mousebutton_handler(event, self.on_mousebuttonup)
+    end
+  end
+end
+
+def load_image(path)
+  if (img = sdl.image.IMG_Load(path)) == nil
+    raise SdlError.new("IMG_Load failed")
+  end
+  try
+    optimized = sdl.SDL_DisplayFormatAlpha(img)
+  finally
+    sdl.SDL_FreeSurface(img)
+  end
+  if optimized == nil
+    raise SdlError.new("SDL_DisplayFormatAlpha failed")
+  end
+  return optimized
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
