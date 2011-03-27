@@ -39,8 +39,8 @@ def run(controller, view)
   event = sdl.SDL_Event.new()
   loop() do
     sdl.SDL_PollEvent.while(1, event) do
-      if controller.dispatch(event)
-        return
+      if (msg = controller.dispatch(event)) != nil
+        return msg
       end
     end
     controller.animate()
