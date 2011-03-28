@@ -1360,9 +1360,13 @@ add_lib_dir_to_search_path(YogEnv* env, YogHandle* search_path, YogHandle* exe)
 }
 
 void
-YogVM_configure_search_path(YogEnv* env, YogVM* vm, YogHandle* exe)
+YogVM_configure_search_path(YogEnv* env, YogVM* vm, YogHandle* exe, const char* lib_path)
 {
     YogHandle* search_path = VAL2HDL(env, YogArray_new(env));
+    if (lib_path != NULL) {
+        YogVal path = YogString_from_string(env, lib_path);
+        YogArray_push(env, HDL2VAL(search_path), path);
+    }
     add_current_dir_to_search_path(env, search_path);
     add_lib_dir_to_search_path(env, search_path, exe);
     vm->search_path = HDL2VAL(search_path);

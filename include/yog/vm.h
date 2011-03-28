@@ -156,7 +156,7 @@ YOG_EXPORT void YogVM_add_locals(YogEnv*, YogVM*, YogLocalsAnchor*);
 YOG_EXPORT void YogVM_add_thread(YogEnv*, YogVM*, YogVal);
 YOG_EXPORT YogIndirectPointer* YogVM_alloc_indirect_ptr(YogEnv*, YogVM*, YogVal);
 YOG_EXPORT void YogVM_boot(YogEnv*, YogVM*);
-YOG_EXPORT void YogVM_configure_search_path(YogEnv*, YogVM*, YogHandle*);
+YOG_EXPORT void YogVM_configure_search_path(YogEnv*, YogVM*, YogHandle*, const char*);
 YOG_EXPORT void YogVM_delete(YogEnv*, YogVM*);
 YOG_EXPORT void YogVM_disable_gc_stress(YogEnv*, YogVM*);
 YOG_EXPORT void YogVM_enable_gc_stress(YogEnv*, YogVM*);

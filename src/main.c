@@ -1,4 +1,5 @@
 #include "yog/config.h"
+#include <alloca.h>
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -237,11 +238,13 @@ main(int_t argc, char* argv[])
     size_t old_heap_size = 1 * 1024 * 1024;
     size_t heap_size = young_heap_size + old_heap_size;
     uint_t max_age = 32;
+    char* lib_path = NULL;
     struct option options[] = {
         { "debug-import", no_argument, &debug_import, 1 },
         { "gc-stress", no_argument, NULL, 'g' },
         { "heap-size", required_argument, NULL, 'i' },
         { "help", no_argument, &help, 1 },
+        { "lib-path", required_argument, NULL, 'I' },
         { "max-age", required_argument, NULL, 'a' },
         { "old-heap-size", required_argument, NULL, 'o' },
         { "version", no_argument, NULL, 'v' },
@@ -252,6 +255,10 @@ main(int_t argc, char* argv[])
     while ((c = getopt_long(argc, argv, "", options, NULL)) != -1) {
         switch (c) {
         case 0:
+            break;
+        case 'I':
+            lib_path = (char*)alloca(strlen(optarg) + 1);
+            strcpy(lib_path, optarg);
             break;
         case 'a':
             max_age = atoi(optarg);
@@ -351,7 +358,7 @@ main(int_t argc, char* argv[])
         YogVM_register_args(&env, env.vm, args);
         YogHandle* exe = find_exe(&env, argv[0]);
         YogVM_register_executable(&env, env.vm, exe);
-        YogVM_configure_search_path(&env, env.vm, exe);
+        YogVM_configure_search_path(&env, env.vm, exe, lib_path);
 
         enable_gc_stress(&vm, gc_stress_level, 1);
         yog_main(&env, args);
