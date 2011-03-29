@@ -1059,23 +1059,30 @@ YogEval_eval_package(YogEnv* env, YogHandle* pkg, YogVal code)
     RETURN_VOID(env);
 }
 
-YogVal
-YogEval_eval_file(YogEnv* env, FILE* fp, YogHandle* filename, YogHandle* pkg_name)
+static YogVal
+eval_stmts(YogEnv* env, YogHandle* filename, YogHandle* pkg_name, YogVal stmts)
 {
-    YOG_ASSERT(env, fp != NULL, "file pointer is NULL");
-    SAVE_LOCALS(env);
-    YogVal stmts = YUNDEF;
-    YogVal code = YUNDEF;
-    PUSH_LOCALS2(env, stmts, code);
-
-    stmts = YogParser_parse_file(env, fp, filename, FALSE);
-    code = YogCompiler_compile_package(env, filename, stmts);
+    YogVal code = YogCompiler_compile_package(env, filename, stmts);
+    YogHandle* h = VAL2HDL(env, code);
 
     YogHandle* pkg = VAL2HDL(env, YogPackage_new(env));
     YogVM_register_package(env, env->vm, pkg_name, pkg);
-    YogEval_eval_package(env, pkg, code);
+    YogEval_eval_package(env, pkg, HDL2VAL(h));
+    return HDL2VAL(pkg);
+}
 
-    RETURN(env, HDL2VAL(pkg));
+YogVal
+YogEval_eval_stdin(YogEnv* env, YogHandle* filename, YogHandle* pkg_name)
+{
+    YogVal stmts = YogParser_parse_stdin(env, filename);
+    return eval_stmts(env, filename, pkg_name, stmts);
+}
+
+YogVal
+YogEval_eval_file(YogEnv* env, FILE* fp, YogHandle* filename, YogHandle* pkg_name)
+{
+    YogVal stmts = YogParser_parse_file(env, fp, filename, FALSE);
+    return eval_stmts(env, filename, pkg_name, stmts);
 }
 
 static YogVal

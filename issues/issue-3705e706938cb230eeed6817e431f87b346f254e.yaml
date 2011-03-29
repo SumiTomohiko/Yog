@@ -1,0 +1,32 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove YogParser_parse_stdin
+desc: |-
+  YogParser_parse_stdin in src/parser.y is almost same as YogParser_parse_file.
+  YogLexer_read_encoding is because of it. Yog must read "coding:" entry, and
+  YogLexer_read_encoding uses fseek. fseek cannot be applyed to stdin. So
+  another function (YogParser_parse_stdin) is needed for stdin input, which
+  doesn't call YogLexer_read_encoding. If YogParser_parse_stdin is removed,
+  YogEval_eval_stdin will also be removal.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-03-29 16:12:38.289464 Z
+references: []
+
+id: 3705e706938cb230eeed6817e431f87b346f254e
+log_events: 
+- - 2011-03-29 16:12:38.913981 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2011-03-29 16:17:49.197085 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - edited description
+  - ""
+- - 2011-03-29 16:19:39.434893 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - edited description
+  - ""

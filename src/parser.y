@@ -734,6 +734,14 @@ YogParser_parse(YogEnv* env, YogVal src)
 }
 
 YogVal
+YogParser_parse_stdin(YogEnv* env, YogHandle* filename)
+{
+    YogVal lexer = YogLexer_new(env);
+    PTR_AS(YogLexer, lexer)->fp = stdin;
+    return parse(env, lexer, filename, FALSE);
+}
+
+YogVal
 YogParser_parse_file(YogEnv* env, FILE* fp, YogHandle* filename, BOOL debug)
 {
     YOG_ASSERT(env, fp != NULL, "file pointer is NULL");

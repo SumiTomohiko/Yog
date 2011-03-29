@@ -99,10 +99,22 @@ parse_size(const char* s)
 }
 
 static void
+proc_stdin(YogEnv* env)
+{
+    if (isatty(0)) {
+        YogRepl_do(env);
+        return;
+    }
+    YogHandle* filename = VAL2HDL(env, YogString_from_string(env, "<stdin>"));
+    YogVal name = YogString_from_string(env, MAIN_MODULE_NAME);
+    YogEval_eval_stdin(env, filename, VAL2HDL(env, name));
+}
+
+static void
 yog_main(YogEnv* env, YogHandle* args)
 {
     if (YogArray_size(env, HDL2VAL(args)) == 0) {
-        YogRepl_do(env);
+        proc_stdin(env);
         return;
     }
 
@@ -115,7 +127,7 @@ yog_main(YogEnv* env, YogHandle* args)
         return;
     }
     YogVal name = YogString_from_string(env, MAIN_MODULE_NAME);
-    YogEval_eval_file(env, fp, filename, YogHandle_REGISTER(env, name));
+    YogEval_eval_file(env, fp, filename, VAL2HDL(env, name));
     fclose(fp);
 }
 

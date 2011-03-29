@@ -294,6 +294,7 @@ YOG_EXPORT void YogLexer_set_encoding(YogEnv*, YogVal, YogVal);
 /* src/parser.y */
 YOG_EXPORT YogVal YogParser_parse(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogParser_parse_file(YogEnv*, FILE*, YogHandle*, BOOL);
+YOG_EXPORT YogVal YogParser_parse_stdin(YogEnv*, YogHandle*);
 
 /* PROTOTYPE_END */
 
