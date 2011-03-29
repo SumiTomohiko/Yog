@@ -105,7 +105,7 @@ proc_stdin(YogEnv* env)
         YogRepl_do(env);
         return;
     }
-    YogHandle* filename = VAL2HDL(env, YogString_from_string(env, "<stdin>"));
+    YogHandle* filename = VAL2HDL(env, YogPath_from_string(env, "<stdin>"));
     YogVal name = YogString_from_string(env, MAIN_MODULE_NAME);
     YogEval_eval_stdin(env, filename, VAL2HDL(env, name));
 }
@@ -118,7 +118,8 @@ yog_main(YogEnv* env, YogHandle* args)
         return;
     }
 
-    YogHandle* filename = VAL2HDL(env, YogArray_at(env, HDL2VAL(args), 0));
+    YogVal s = YogArray_at(env, HDL2VAL(args), 0);
+    YogHandle* filename = VAL2HDL(env, YogString_to_path(env, s));
     YogVal bin = YogString_to_bin_in_default_encoding(env, filename);
     FILE* fp = fopen(BINARY_CSTR(bin), "r");
     if (fp == NULL) {

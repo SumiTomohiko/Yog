@@ -16,7 +16,7 @@
 static YogHandle*
 append_separator(YogEnv* env, YogHandle* self)
 {
-    YogHandle* path = VAL2HDL(env, YogString_clone(env, HDL2VAL(self)));
+    YogHandle* path = VAL2HDL(env, YogString_to_path(env, HDL2VAL(self)));
     YogString_push(env, HDL2VAL(path), PATH_SEPARATOR);
     return path;
 }
