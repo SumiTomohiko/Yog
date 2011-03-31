@@ -1,4 +1,8 @@
 
+def abs(x)
+  return 0 < x ? x : -x
+end
+
 def nop(*args, **kw, &block=nil)
   return nil
 end
