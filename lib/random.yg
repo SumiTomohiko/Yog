@@ -1,0 +1,10 @@
+
+import libc.random
+
+seed = libc.random.srandom
+
+def random(max, min=0)
+  return libc.random.random() % (max - min + 1) + min
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

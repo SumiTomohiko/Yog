@@ -1,0 +1,7 @@
+
+from libc import lib
+
+srandom = lib.load_func("srandom", ['uint])
+random = lib.load_func("random", [], 'ulong)
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

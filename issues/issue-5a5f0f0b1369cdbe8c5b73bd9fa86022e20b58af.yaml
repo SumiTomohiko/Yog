@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: random.random cannot generate values over RAND_MAX.
+desc: Because current random.random() implementation is very simple.
+type: :bugfix
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-01 11:59:00.165890 Z
+references: []
+
+id: 5a5f0f0b1369cdbe8c5b73bd9fa86022e20b58af
+log_events: 
+- - 2011-04-01 11:59:00.964009 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
