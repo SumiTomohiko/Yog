@@ -1,0 +1,6 @@
+
+from libc import lib
+
+free = lib.load_func("free", ['pointer])
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

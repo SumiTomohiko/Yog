@@ -500,8 +500,7 @@ print(foo.bar.to_s())
 
     def test_Struct650(self):
         path = get_lib_path()
-        self._test("""
-import libc
+        self._test("""from libc.memory import free
 enable_gc_stress()
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"test_pointer_p2\", [\'pointer_p])
@@ -512,7 +511,7 @@ try
   foo = Foo.new(ptr.value)
   print(foo.bar[0])
 finally
-  libc.free(ptr.value)
+  free(ptr.value)
 end
 """ % locals(), "42", options=[])
 
@@ -1572,8 +1571,7 @@ print(int.value)
 
     def test_Pointer0(self):
         path = get_lib_path()
-        self._test("""
-import libc
+        self._test("""from libc.memory import free
 enable_gc_stress()
 lib = load_lib(\"%(path)s\")
 f = lib.load_func(\"test_pointer_p\", [\'pointer_p])
@@ -1584,7 +1582,7 @@ try
   foo = Foo.new(ptr.value)
   print(foo.bar)
 finally
-  libc.free(ptr.value)
+  free(ptr.value)
 end
 """ % locals(), "42", options=[])
 

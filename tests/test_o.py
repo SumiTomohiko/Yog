@@ -20,9 +20,8 @@ class TestO(TestCase):
     def test_search0(self):
         path = self.get_db_path()
         self.clean_db(path)
-        self._test("""
+        self._test("""from libc.memory import free
 import o
-import libc
 enable_gc_stress()
 db = o.oDB.new()
 o.oDB_init(db)
@@ -42,7 +41,7 @@ try
       hits = o.oHits.new(ptr.value)
       print(hits.num)
     finally
-      libc.free(ptr.value)
+      free(ptr.value)
     end
   finally
     o.oDB_close(db)
@@ -55,9 +54,8 @@ end
     def test_search10(self):
         path = self.get_db_path()
         self.clean_db(path)
-        self._test("""
+        self._test("""from libc.memory import free
 import o
-import libc
 enable_gc_stress()
 db = o.oDB.new()
 o.oDB_init(db)
@@ -77,7 +75,7 @@ try
       hits = o.oHits.new(ptr.value)
       print(hits.doc_id[0])
     finally
-      libc.free(ptr.value)
+      free(ptr.value)
     end
   finally
     o.oDB_close(db)

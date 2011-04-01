@@ -1,0 +1,6 @@
+
+from libc import lib
+
+close = lib.load_func("close", ['int], 'int)
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

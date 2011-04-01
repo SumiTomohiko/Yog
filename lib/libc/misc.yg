@@ -1,0 +1,7 @@
+
+from libc import lib, string
+
+perror = lib.load_func("perror", [string])
+abort = lib.load_func("abort")
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

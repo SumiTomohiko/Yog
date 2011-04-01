@@ -1,0 +1,152 @@
+
+from libc import lib, string
+from uname import sysname
+
+socket = lib.load_func("socket", ['int, 'int, 'int], 'int)
+PF_UNSPEC = 0
+PF_LOCAL = 1
+PF_UNIX = PF_LOCAL
+PF_FILE = PF_LOCAL
+PF_INET = 2
+PF_AX25 = 3
+PF_IPX = 4
+PF_APPLETALK = 5
+PF_NETROM = 6
+PF_BRIDGE = 7
+PF_ATMPVC = 8
+PF_X25 = 9
+PF_INET6 = 10
+PF_ROSE = 11
+PF_DECnet = 12
+PF_NETBEUI = 13
+PF_SECURITY = 14
+PF_KEY = 15
+PF_NETLINK = 16
+PF_ROUTE = PF_NETLINK
+PF_PACKET = 17
+PF_ASH = 18
+PF_ECONET = 19
+PF_ATMSVC = 20
+PF_SNA = 22
+PF_IRDA = 23
+PF_PPPOX = 24
+PF_WANPIPE = 25
+PF_BLUETOOTH = 31
+PF_IUCV = 32
+PF_RXRPC = 33
+PF_MAX = 34
+AF_UNSPEC	= PF_UNSPEC
+AF_LOCAL = PF_LOCAL
+AF_UNIX = PF_UNIX
+AF_FILE = PF_FILE
+AF_INET = PF_INET
+AF_AX25 = PF_AX25
+AF_IPX = PF_IPX
+AF_APPLETALK = PF_APPLETALK
+AF_NETROM = PF_NETROM
+AF_BRIDGE = PF_BRIDGE
+AF_ATMPVC = PF_ATMPVC
+AF_X25 = PF_X25
+AF_INET6 = PF_INET6
+AF_ROSE = PF_ROSE
+AF_DECnet = PF_DECnet
+AF_NETBEUI = PF_NETBEUI
+AF_SECURITY = PF_SECURITY
+AF_KEY = PF_KEY
+AF_NETLINK = PF_NETLINK
+AF_ROUTE = PF_ROUTE
+AF_PACKET = PF_PACKET
+AF_ASH = PF_ASH
+AF_ECONET = PF_ECONET
+AF_ATMSVC = PF_ATMSVC
+AF_SNA = PF_SNA
+AF_IRDA = PF_IRDA
+AF_PPPOX = PF_PPPOX
+AF_WANPIPE = PF_WANPIPE
+AF_BLUETOOTH = PF_BLUETOOTH
+AF_IUCV = PF_IUCV
+AF_RXRPC = PF_RXRPC
+AF_MAX = PF_MAX
+SOCK_STREAM = 1
+SOCK_DGRAM = 2
+SOCK_RAW = 3
+SOCK_RDM = 4
+SOCK_SEQPACKET = 5
+SOCK_PACKET = 10
+send = lib.load_func("send", ['int, Buffer, 'uint, 'int], 'uint)
+recv = lib.load_func("recv", ['int, Buffer, 'uint, 'int], 'uint)
+sockaddr_in = StructClass.new("sockaddr_in", [
+  ['uint16, 'sin_family],
+  ['uint16, 'sin_port],
+  ['uint32, 'sin_addr],
+  [['char, 8], 'padding]])
+connect = lib.load_func("connect", ['int, ['pointer, sockaddr_in], 'uint], 'int)
+htonl = lib.load_func("htonl", ['uint32], 'uint32)
+htons = lib.load_func("htons", ['uint16], 'uint16)
+ntohl = lib.load_func("ntohl", ['uint32], 'uint32)
+ntohs = lib.load_func("ntohs", ['uint16], 'uint16)
+in_addr_t = 'uint32
+inet_addr = lib.load_func("inet_addr", [string], in_addr_t)
+socklen_t = 'uint32
+if sysname() == "FreeBSD"
+  addrinfo_members = [
+    ['int, 'ai_flags],
+    ['int, 'ai_family],
+    ['int, 'ai_socktype],
+    ['int, 'ai_protocol],
+    [socklen_t, 'ai_addrlen],
+    [string, 'ai_canonname],
+    ['pointer (: sockaddr :), 'ai_addr],
+    ['pointer (: addrinfo :), 'ai_next]]
+else
+  addrinfo_members = [
+    ['int, 'ai_flags],
+    ['int, 'ai_family],
+    ['int, 'ai_socktype],
+    ['int, 'ai_protocol],
+    [socklen_t, 'ai_addrlen],
+    ['pointer (: sockaddr :), 'ai_addr],
+    [string, 'ai_canonname],
+    ['pointer (: addrinfo :), 'ai_next]]
+end
+addrinfo = StructClass.new("addrinfo", addrinfo_members)
+getaddrinfo = lib.load_func("getaddrinfo", [string, string, ['pointer, addrinfo], 'pointer_p], 'int)
+freeaddrinfo = lib.load_func("freeaddrinfo", ['pointer])
+gai_strerror = lib.load_func("gai_strerror", ['int], 'pointer (: String :))
+
+if ARGV.get(0) == __FILE__
+  from libc.file import close
+
+  hints = addrinfo.new()
+  hints.ai_family = AF_INET
+  hints.ai_socktype = SOCK_STREAM
+  res = Pointer.new()
+  if getaddrinfo(ARGV.get(1, "neko-daisuki.ddo.jp"), "80", hints, res) != 0
+    raise Exception.new("getaddrinfo failed")
+  end
+  try
+    pa = addrinfo.new(res.value)
+    sock = socket(pa.ai_family, pa.ai_socktype, pa.ai_protocol)
+    if sock == -1
+      raise Exception.new("socket failed")
+    end
+    addr = sockaddr_in.new(pa.ai_addr)
+    if connect(sock, addr, pa.ai_addrlen) != 0
+      raise Exception.new("connect failed")
+    end
+  finally
+    freeaddrinfo(res.value)
+  end
+  s = "GET / HTTP/1.0\n\n"
+  size = 0
+  while size < s.size
+    send_buf = Buffer.new(s.slice(size).to_bin(DEFAULT_ENCODING))
+    size += send(sock, send_buf, send_buf.size, 0)
+  end
+  recv_buf = Buffer.new(1024)
+  size = recv(sock, recv_buf, recv_buf.size, 0)
+  print(recv_buf.to_s(size, DEFAULT_ENCODING))
+  close(sock)
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

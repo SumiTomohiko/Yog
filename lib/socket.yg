@@ -1,5 +1,6 @@
 
-from libc import AF_INET, SOCK_STREAM, addrinfo, close, connect, freeaddrinfo, getaddrinfo, send, sockaddr_in, socket, recv
+from libc.file import close
+from libc.socket import AF_INET, SOCK_STREAM, addrinfo, connect, freeaddrinfo, getaddrinfo, send, sockaddr_in, socket, recv
 
 class TcpSocket
   def init(host, port, encoding=ENCODINGS["ascii"])
