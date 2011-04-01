@@ -35,9 +35,18 @@ def init(width, height, bpp, caption, &block)
   end
 end
 
-def run(controller, view)
+def delay(milliseconds)
+  if milliseconds < 0
+    return
+  end
+  sdl.SDL_Delay(milliseconds)
+end
+
+def run(controller, view, fps=10)
   event = sdl.SDL_Event.new()
   loop() do
+    ticks = sdl.SDL_GetTicks()
+
     sdl.SDL_PollEvent.while(1, event) do
       if (msg = controller.dispatch(event)) != nil
         return msg
@@ -45,6 +54,11 @@ def run(controller, view)
     end
     controller.animate()
     view.draw()
+
+    # milliseconds can be negative when a game runs for 49 days. This case is
+    # ignored implicitly.
+    milliseconds = sdl.SDL_GetTicks() - ticks
+    delay(1000 // fps - milliseconds)
   end
 end
 
