@@ -1,5 +1,9 @@
 
-SUBDIRS = c
+SUBDIRS = c sdl
+
+bin_SCRIPTS = sdl.yg
+
+include $(top_srcdir)/lib/Makefile.common
 
 DIR = $(prefix)/lib/yog/$(VERSION)
 

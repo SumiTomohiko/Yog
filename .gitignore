@@ -278,6 +278,8 @@ lib/c/Makefile
 lib/c/Makefile.in
 lib/c/grammar.yg
 lib/sdl.yg
+lib/sdl/Makefile
+lib/sdl/Makefile.in
 lib/sdl/image.yg
 lib/sdl/ttf.yg
 libffi/Makefile
