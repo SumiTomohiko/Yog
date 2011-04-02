@@ -444,7 +444,7 @@ def h2yog(yog, headers, so, predefined={}, verbose=false, &block)
         next sym.to_s()
       end.join(", ")))
     end
-    fp.write("lib = load_lib({0})\n".format(("lib" + so + ".so").inspect()))
+    fp.write("lib = load_lib({0})\n".format(so.inspect()))
     (nodes + impls).sort() do [a, b]
       next a.lineno <=> b.lineno
     end.each() do [obj]
