@@ -129,9 +129,6 @@ print(foo.bar)""".format(**locals())
     def test_union20(self):
         self.do_union_test("test_union20.h")
 
-    def test_union30(self):
-        self.do_union_test("test_union30.h")
-
     def test_union40(self):
         self.do_simple_print_test("union Foo;", "void", "Foo")
 
@@ -159,9 +156,6 @@ foo.bar.baz = 42
 
     def test_struct20(self):
         self.do_struct_test("test_struct20.h")
-
-    def test_struct30(self):
-        self.do_struct_test("test_struct30.h")
 
     def test_struct40(self):
         self.do_simple_print_test("struct Foo;", "void", "Foo")
