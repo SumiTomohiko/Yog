@@ -45,7 +45,7 @@ struct LibFunc {
     void* f;
     YogVal rtype;
     uint_t nargs;
-    YogVal arg_types[0];
+    YogVal nodes[0];
 };
 
 typedef struct LibFunc LibFunc;
@@ -140,6 +140,7 @@ struct StructClass {
     uint_t size;
     uint_t children_num;
     uint_t alignment_unit;
+    ffi_type* type;
 };
 
 typedef struct StructClass StructClass;
@@ -689,23 +690,26 @@ StructClass_set_field(YogEnv* env, YogVal self, YogVal node, uint_t offset, uint
 }
 
 static void
-init_struct(YogEnv* env, YogVal obj, YogVal klass)
+init_struct(YogEnv* env, YogVal obj, YogVal klass, ID name)
 {
     YogClass_init(env, obj, TYPE_STRUCT_CLASS, klass);
+    PTR_AS(YogClass, obj)->name = name;
+
     PTR_AS(StructClass, obj)->size = 0;
+    PTR_AS(StructClass, obj)->type = NULL;
     YogGC_UPDATE_PTR(env, PTR_AS(YogClass, obj), super, env->vm->cStructBase);
 }
 
 static void
-UnionClass_init(YogEnv* env, YogVal self)
+UnionClass_init(YogEnv* env, YogVal self, ID name)
 {
-    init_struct(env, self, env->vm->cUnionClass);
+    init_struct(env, self, env->vm->cUnionClass, name);
 }
 
 static void
-StructClass_init(YogEnv* env, YogVal self)
+StructClass_init(YogEnv* env, YogVal self, ID name)
 {
-    init_struct(env, self, env->vm->cStructClass);
+    init_struct(env, self, env->vm->cStructClass, name);
 }
 
 static uint_t
@@ -796,9 +800,9 @@ id2size(YogEnv* env, ID type)
 }
 
 static uint_t
-type2size(YogEnv* env, ffi_type* type)
+type2size(YogEnv* env, ffi_type* type, YogVal node)
 {
-    SAVE_LOCALS(env);
+    SAVE_ARG(env, node);
 
     uint_t size;
     if (type == &ffi_type_uint8) {
@@ -860,6 +864,10 @@ type2size(YogEnv* env, ffi_type* type)
     }
     else if (type == &ffi_type_pointer) {
         size = sizeof(void*);
+    }
+    else if (PTR_AS(Node, node)->type == NODE_STRUCT) {
+        YogVal klass = PTR_AS(Node, node)->u.struct_.klass;
+        size = PTR_AS(StructClass, klass)->size;
     }
     else {
         YogError_raise_ValueError(env, "Unknown FFI type");
@@ -1403,295 +1411,25 @@ get_alignment_unit_of_union(YogEnv* env, YogVal nodes)
     RETURN(env, max);
 }
 
+static void
+StructClass_finalize(YogEnv* env, void* ptr)
+{
+    StructClass* klass = (StructClass*)ptr;
+    free(klass->type);
+}
+
+static YogVal
+allocate_StructClass(YogEnv* env)
+{
+    return ALLOC_OBJ(env, YogClass_keep_children, StructClass_finalize, StructClass);
+}
+
 static YogVal
 create_UnionClass(YogEnv* env, ID name)
 {
-    YogVal obj = ALLOC_OBJ(env, YogClass_keep_children, NULL, StructClass);
-    UnionClass_init(env, obj);
-    PTR_AS(YogClass, obj)->name = name;
+    YogVal obj = allocate_StructClass(env);
+    UnionClass_init(env, obj, name);
     return obj;
-}
-
-static void
-define_fields_to_UnionClass(YogEnv* env, YogVal self, YogVal fields)
-{
-    SAVE_ARGS2(env, self, fields);
-    YogVal nodes = parse_fields(env, fields);
-    YogVal node = YUNDEF;
-    PUSH_LOCALS2(env, nodes, node);
-
-    uint_t alignment_unit = get_alignment_unit_of_union(env, nodes);
-    PTR_AS(StructClass, self)->alignment_unit = alignment_unit;
-
-    uint_t children_num = 0;
-    for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
-        StructClass_set_field(env, self, node, 0, 0, children_num);
-        children_num += get_children_num(env, node);
-    }
-    uint_t union_size = get_union_size(env, nodes);
-    PTR_AS(StructClass, self)->size = union_size;
-    PTR_AS(StructClass, self)->children_num = children_num;
-    RETURN_VOID(env);
-}
-
-static YogVal
-build_UnionClass(YogEnv* env, ID name, YogVal fields)
-{
-    SAVE_ARG(env, fields);
-    YogVal obj = create_UnionClass(env, name);
-    PUSH_LOCAL(env, obj);
-
-    define_fields_to_UnionClass(env, obj, fields);
-
-    RETURN(env, obj);
-}
-
-static YogVal
-create_StructClass(YogEnv* env, ID name)
-{
-    YogVal obj = ALLOC_OBJ(env, YogClass_keep_children, NULL, StructClass);
-    StructClass_init(env, obj);
-    PTR_AS(YogClass, obj)->name = name;
-    return obj;
-}
-
-static void
-define_fields_to_StructClass(YogEnv* env, YogVal self, YogVal fields)
-{
-    SAVE_ARGS2(env, self, fields);
-    YogVal nodes = parse_fields(env, fields);
-    YogVal node = YUNDEF;
-    PUSH_LOCALS2(env, nodes, node);
-
-    /**
-     * BUG: The following code is a bug. See
-     * issues/issue-6bbc1f7eee57d44175359d68abdd109bf826dddf.yaml.
-     * Alignment of struct must be decided by the biggest field.
-     */
-    uint_t alignment_unit = get_alignment_unit(env, nodes);
-    PTR_AS(StructClass, self)->alignment_unit = alignment_unit;
-
-    uint_t offset = 0;
-    uint_t bit_pos = 0;
-    uint_t children_num = 0;
-    for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
-        align_offset(env, node, &offset, &bit_pos);
-        StructClass_set_field(env, self, node, offset, bit_pos, children_num);
-        offset += get_total_field_size(env, node);
-        YogVal tn = PTR_AS(Node, node)->u.field.type;
-        NodeType type = PTR_AS(Node, tn)->type;
-        bit_pos += type == NODE_BIT ? PTR_AS(Node, tn)->u.bit_field.width : 0;
-        children_num += get_children_num(env, node);
-    }
-    uint_t bit_field_size = compute_bit_field_size(env, bit_pos);
-    PTR_AS(StructClass, self)->size = offset + bit_field_size;
-    PTR_AS(StructClass, self)->children_num = children_num;
-
-    RETURN_VOID(env);
-}
-
-static YogVal
-build_StructClass(YogEnv* env, ID name, YogVal fields)
-{
-    SAVE_ARG(env, fields);
-    YogVal obj = create_StructClass(env, name);
-    PUSH_LOCAL(env, obj);
-
-    define_fields_to_StructClass(env, obj, fields);
-
-    RETURN(env, obj);
-}
-
-static YogVal
-UnionClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal fields = YUNDEF;
-    YogVal name = YUNDEF;
-    PUSH_LOCALS2(env, name, fields);
-    YogCArg params[] = {
-        { "name", &name },
-        { "|", NULL },
-        { "fields", &fields },
-        { NULL, NULL } };
-    YogGetArgs_parse_args(env, "new", params, args, kw);
-    if (!IS_PTR(name) || (BASIC_OBJ_TYPE(name) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "name must be String, not %C", name);
-    }
-    ID id = YogVM_intern2(env, env->vm, name);
-    if (IS_UNDEF(fields)) {
-        RETURN(env, create_UnionClass(env, name));
-    }
-    if (!IS_PTR(fields) || (BASIC_OBJ_TYPE(fields) != TYPE_ARRAY)) {
-        YogError_raise_TypeError(env, "fields must be Array, not %C", fields);
-    }
-
-    RETURN(env, build_UnionClass(env, id, fields));
-}
-
-static YogVal
-StructClass_define_fields(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal fields = YUNDEF;
-    PUSH_LOCAL(env, fields);
-    YogCArg params[] = { { "fields", &fields }, { NULL, NULL } };
-    YogGetArgs_parse_args(env, "define_fields", params, args, kw);
-    CHECK_SELF_STRUCT_CLASS;
-
-    define_fields_to_StructClass(env, self, fields);
-
-    RETURN(env, self);
-}
-
-static YogVal
-StructClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
-{
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal fields = YUNDEF;
-    YogVal name = YUNDEF;
-    PUSH_LOCALS2(env, name, fields);
-    YogCArg params[] = {
-        { "name", &name },
-        { "|", NULL },
-        { "fields", &fields },
-        { NULL, NULL } };
-    YogGetArgs_parse_args(env, "new", params, args, kw);
-    if (!IS_PTR(name) || (BASIC_OBJ_TYPE(name) != TYPE_STRING)) {
-        YogError_raise_TypeError(env, "name must be String, not %C", name);
-    }
-    ID id = YogVM_intern2(env, env->vm, name);
-    if (IS_UNDEF(fields)) {
-        RETURN(env, create_StructClass(env, name));
-    }
-    if (!IS_PTR(fields) || (BASIC_OBJ_TYPE(fields) != TYPE_ARRAY)) {
-        YogError_raise_TypeError(env, "fields must be Array, not %C", fields);
-    }
-
-    RETURN(env, build_StructClass(env, id, fields));
-}
-
-static void
-Struct_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
-{
-    YogBasicObj_keep_children(env, ptr, keeper, heap);
-
-    Struct* st = (Struct*)ptr;
-    YogGC_KEEP(env, st, top, keeper, heap);
-
-    YogVal klass = ((YogBasicObj*)st)->klass;
-    YOG_ASSERT(env, BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS, "Invalid class");
-    uint_t children_num = PTR_AS(StructClass, klass)->children_num;
-    uint_t i;
-    for (i = 0; i < children_num; i++) {
-        YogGC_KEEP(env, st, children[i], keeper, heap);
-    }
-}
-
-static void
-Struct_finalize(YogEnv* env, void* ptr)
-{
-    Struct* st = (Struct*)ptr;
-    if (!st->own) {
-        return;
-    }
-    YogVal klass = YogVal_get_class(env, PTR2VAL(st));
-    YogGC_free(env, st->data, PTR_AS(StructClass, klass)->size);
-}
-
-static YogVal
-StructBase_alloc(YogEnv* env, YogVal klass)
-{
-    SAVE_ARG(env, klass);
-    YogVal obj = YUNDEF;
-    PUSH_LOCAL(env, obj);
-    YOG_ASSERT(env, BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS, "invalid class");
-
-    uint_t children_num = PTR_AS(StructClass, klass)->children_num;
-    YogGC_check_multiply_overflow(env, children_num, sizeof(YogVal));
-    obj = ALLOC_OBJ_ITEM(env, Struct_keep_children, Struct_finalize, Struct, children_num, YogVal);
-    YogBasicObj_init(env, obj, TYPE_STRUCT, 0, klass);
-    PTR_AS(Struct, obj)->data = NULL;
-    PTR_AS(Struct, obj)->own = TRUE;
-    PTR_AS(Struct, obj)->top = obj;
-    uint_t i;
-    for (i = 0; i < children_num; i++) {
-        PTR_AS(Struct, obj)->children[i] = YNIL;
-    }
-
-    RETURN(env, obj);
-}
-
-static void
-LibFunc_finalize(YogEnv* env, void* ptr)
-{
-    LibFunc* f = (LibFunc*)ptr;
-    YogGC_free(env, f->cif.arg_types, sizeof(*f->cif.arg_types) * f->nargs);
-}
-
-static void
-LibFunc_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
-{
-    YogBasicObj_keep_children(env, ptr, keeper, heap);
-
-    LibFunc* f = (LibFunc*)ptr;
-    YogGC_KEEP(env, f, rtype, keeper, heap);
-    uint_t nargs = f->nargs;
-    uint_t i;
-    for (i = 0; i < nargs; i++) {
-        YogGC_KEEP(env, f, arg_types[i], keeper, heap);
-    }
-}
-
-static YogVal
-LibFunc_new(YogEnv* env, uint_t nargs)
-{
-    SAVE_LOCALS(env);
-    YogVal obj = YUNDEF;
-    PUSH_LOCAL(env, obj);
-
-    YogGC_check_multiply_overflow(env, nargs, sizeof(YogVal));
-    obj = ALLOC_OBJ_ITEM(env, LibFunc_keep_children, LibFunc_finalize, LibFunc, nargs, YogVal);
-    YogBasicObj_init(env, obj, TYPE_LIB_FUNC, 0, env->vm->cLibFunc);
-    PTR_AS(LibFunc, obj)->f = NULL;
-    PTR_AS(LibFunc, obj)->cif.arg_types = NULL;
-    PTR_AS(LibFunc, obj)->rtype = YUNDEF;
-    PTR_AS(LibFunc, obj)->nargs = nargs;
-    uint_t i;
-    for (i = 0; i < nargs; i++) {
-        PTR_AS(LibFunc, obj)->arg_types[i] = YUNDEF;
-    }
-
-    RETURN(env, obj);
-}
-
-static YogVal
-Lib_alloc(YogEnv* env, YogVal klass)
-{
-    SAVE_ARG(env, klass);
-    YogVal obj = YUNDEF;
-    PUSH_LOCAL(env, obj);
-
-    obj = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Lib);
-    YogBasicObj_init(env, obj, TYPE_LIB, 0, klass);
-    PTR_AS(Lib, obj)->handle = NULL;
-
-    RETURN(env, obj);
-}
-
-YogVal
-YogFFI_load_lib(YogEnv* env, YogHandle* path)
-{
-    LIB_HANDLE handle = YogMisc_load_lib(env, path);
-    if (handle == NULL) {
-        const char* fmt = "No library named \"%S\"";
-        YogError_raise_ImportError(env, fmt, HDL2VAL(path));
-        /* NOTREACHED */
-    }
-    YogVal lib = Lib_alloc(env, env->vm->cLib);
-    PTR_AS(Lib, lib)->handle = handle;
-
-    return lib;
 }
 
 static ffi_type*
@@ -1784,6 +1522,7 @@ map_id_type(YogEnv* env, ID type)
 static ffi_type*
 map_type(YogEnv* env, YogVal node)
 {
+    YogVal klass;
     switch (PTR_AS(Node, node)->type) {
     case NODE_ARRAY:
         YogError_raise_FFIError(env, "Array argument is not supported");
@@ -1794,13 +1533,349 @@ map_type(YogEnv* env, YogVal node)
     case NODE_STRING:
         return &ffi_type_pointer;
     case NODE_STRUCT:
-        YogError_raise_FFIError(env, "Struct argument is not supported");
+        klass = PTR_AS(Node, node)->u.struct_.klass;
+        return PTR_AS(StructClass, klass)->type;
+    case NODE_BIT:
     case NODE_FIELD:
     default:
         YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
     }
 
     return NULL;
+}
+
+static ffi_type*
+map_type_of_fields(YogEnv* env, YogVal node)
+{
+    NodeType type = PTR_AS(Node, node)->type;
+    if ((type == NODE_ARRAY) || (type == NODE_BIT)) {
+        return NULL;
+    }
+    return map_type(env, node);
+}
+
+static void
+update_union_elements(YogEnv* env, YogVal node, ffi_type** elements, uint_t* max_size)
+{
+    SAVE_ARG(env, node);
+    YogVal type = PTR_AS(Node, node)->u.field.type;
+    PUSH_LOCAL(env, type);
+
+    uint_t field_size = get_size(env, type);
+    if (field_size <= *max_size) {
+        RETURN_VOID(env);
+    }
+    *elements = map_type_of_fields(env, type);
+    *max_size = field_size;
+    RETURN_VOID(env);
+}
+
+static ffi_type*
+allocate_ffi_type(YogEnv* env, ffi_type** elements, uint_t size)
+{
+    ffi_type* type = (ffi_type*)YogGC_malloc(env, sizeof(ffi_type) + size);
+    type->size = 0;
+    type->alignment = 0;
+    type->type = FFI_TYPE_STRUCT;
+    type->elements = (ffi_type**)(type + 1);
+    memcpy(type->elements, elements, size);
+    return type;
+}
+
+static void
+define_fields_to_UnionClass(YogEnv* env, YogVal self, YogVal fields)
+{
+    SAVE_ARGS2(env, self, fields);
+    YogVal nodes = parse_fields(env, fields);
+    YogVal node = YUNDEF;
+    PUSH_LOCALS2(env, nodes, node);
+
+    uint_t alignment_unit = get_alignment_unit_of_union(env, nodes);
+    PTR_AS(StructClass, self)->alignment_unit = alignment_unit;
+
+    uint_t children_num = 0;
+    uint_t elements_num = YogArray_size(env, fields) == 0 ? 0 : 1;
+    uint_t size = sizeof(ffi_type*) * (elements_num + 1);
+    ffi_type** elements = (ffi_type**)alloca(size);
+    uint_t max_size = 0;
+    for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
+        StructClass_set_field(env, self, node, 0, 0, children_num);
+        children_num += get_children_num(env, node);
+        update_union_elements(env, node, elements, &max_size);
+    }
+    elements[elements_num] = NULL;
+    uint_t union_size = get_union_size(env, nodes);
+    PTR_AS(StructClass, self)->size = union_size;
+    PTR_AS(StructClass, self)->children_num = children_num;
+    PTR_AS(StructClass, self)->type = allocate_ffi_type(env, elements, size);
+    RETURN_VOID(env);
+}
+
+static YogVal
+build_UnionClass(YogEnv* env, ID name, YogVal fields)
+{
+    SAVE_ARG(env, fields);
+    YogVal obj = create_UnionClass(env, name);
+    PUSH_LOCAL(env, obj);
+
+    define_fields_to_UnionClass(env, obj, fields);
+
+    RETURN(env, obj);
+}
+
+static YogVal
+create_StructClass(YogEnv* env, ID name)
+{
+    YogVal obj = allocate_StructClass(env);
+    StructClass_init(env, obj, name);
+    return obj;
+}
+
+static void
+define_fields_to_StructClass(YogEnv* env, YogVal self, YogVal fields)
+{
+    SAVE_ARGS2(env, self, fields);
+    YogVal nodes = parse_fields(env, fields);
+    YogVal node = YUNDEF;
+    PUSH_LOCALS2(env, nodes, node);
+
+    /**
+     * BUG: The following code is a bug. See
+     * issues/issue-6bbc1f7eee57d44175359d68abdd109bf826dddf.yaml.
+     * Alignment of struct must be decided by the biggest field.
+     */
+    uint_t alignment_unit = get_alignment_unit(env, nodes);
+    PTR_AS(StructClass, self)->alignment_unit = alignment_unit;
+
+    uint_t offset = 0;
+    uint_t bit_pos = 0;
+    uint_t children_num = 0;
+    uint_t size = sizeof(ffi_type*) * (YogArray_size(env, fields) + 1);
+    ffi_type** elements = (ffi_type**)alloca(size);
+    uint_t i = 0;
+    for (node = nodes; IS_PTR(node); node = PTR_AS(Node, node)->u.field.next) {
+        align_offset(env, node, &offset, &bit_pos);
+        StructClass_set_field(env, self, node, offset, bit_pos, children_num);
+        offset += get_total_field_size(env, node);
+        YogVal tn = PTR_AS(Node, node)->u.field.type;
+        NodeType type = PTR_AS(Node, tn)->type;
+        bit_pos += type == NODE_BIT ? PTR_AS(Node, tn)->u.bit_field.width : 0;
+        children_num += get_children_num(env, node);
+        elements[i] = map_type_of_fields(env, tn);
+        i++;
+    }
+    elements[i] = NULL;
+
+    uint_t bit_field_size = compute_bit_field_size(env, bit_pos);
+    PTR_AS(StructClass, self)->size = offset + bit_field_size;
+    PTR_AS(StructClass, self)->children_num = children_num;
+    PTR_AS(StructClass, self)->type = allocate_ffi_type(env, elements, size);
+
+    RETURN_VOID(env);
+}
+
+static YogVal
+build_StructClass(YogEnv* env, ID name, YogVal fields)
+{
+    SAVE_ARG(env, fields);
+    YogVal obj = create_StructClass(env, name);
+    PUSH_LOCAL(env, obj);
+
+    define_fields_to_StructClass(env, obj, fields);
+
+    RETURN(env, obj);
+}
+
+static YogVal
+UnionClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal fields = YUNDEF;
+    YogVal name = YUNDEF;
+    PUSH_LOCALS2(env, name, fields);
+    YogCArg params[] = {
+        { "name", &name },
+        { "|", NULL },
+        { "fields", &fields },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "new", params, args, kw);
+    if (!IS_PTR(name) || (BASIC_OBJ_TYPE(name) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "name must be String, not %C", name);
+    }
+    ID id = YogVM_intern2(env, env->vm, name);
+    if (IS_UNDEF(fields)) {
+        RETURN(env, create_UnionClass(env, id));
+    }
+    if (!IS_PTR(fields) || (BASIC_OBJ_TYPE(fields) != TYPE_ARRAY)) {
+        YogError_raise_TypeError(env, "fields must be Array, not %C", fields);
+    }
+
+    RETURN(env, build_UnionClass(env, id, fields));
+}
+
+static YogVal
+StructClass_define_fields(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal fields = YUNDEF;
+    PUSH_LOCAL(env, fields);
+    YogCArg params[] = { { "fields", &fields }, { NULL, NULL } };
+    YogGetArgs_parse_args(env, "define_fields", params, args, kw);
+    CHECK_SELF_STRUCT_CLASS;
+
+    define_fields_to_StructClass(env, self, fields);
+
+    RETURN(env, self);
+}
+
+static YogVal
+StructClass_new(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogVal fields = YUNDEF;
+    YogVal name = YUNDEF;
+    PUSH_LOCALS2(env, name, fields);
+    YogCArg params[] = {
+        { "name", &name },
+        { "|", NULL },
+        { "fields", &fields },
+        { NULL, NULL } };
+    YogGetArgs_parse_args(env, "new", params, args, kw);
+    if (!IS_PTR(name) || (BASIC_OBJ_TYPE(name) != TYPE_STRING)) {
+        YogError_raise_TypeError(env, "name must be String, not %C", name);
+    }
+    ID id = YogVM_intern2(env, env->vm, name);
+    if (IS_UNDEF(fields)) {
+        RETURN(env, create_StructClass(env, id));
+    }
+    if (!IS_PTR(fields) || (BASIC_OBJ_TYPE(fields) != TYPE_ARRAY)) {
+        YogError_raise_TypeError(env, "fields must be Array, not %C", fields);
+    }
+
+    RETURN(env, build_StructClass(env, id, fields));
+}
+
+static void
+Struct_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
+    Struct* st = (Struct*)ptr;
+    YogGC_KEEP(env, st, top, keeper, heap);
+
+    YogVal klass = ((YogBasicObj*)st)->klass;
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS, "Invalid class");
+    uint_t children_num = PTR_AS(StructClass, klass)->children_num;
+    uint_t i;
+    for (i = 0; i < children_num; i++) {
+        YogGC_KEEP(env, st, children[i], keeper, heap);
+    }
+}
+
+static void
+Struct_finalize(YogEnv* env, void* ptr)
+{
+    Struct* st = (Struct*)ptr;
+    if (!st->own) {
+        return;
+    }
+    YogVal klass = YogVal_get_class(env, PTR2VAL(st));
+    YogGC_free(env, st->data, PTR_AS(StructClass, klass)->size);
+}
+
+static YogVal
+StructBase_alloc(YogEnv* env, YogVal klass)
+{
+    SAVE_ARG(env, klass);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS, "invalid class");
+
+    uint_t children_num = PTR_AS(StructClass, klass)->children_num;
+    YogGC_check_multiply_overflow(env, children_num, sizeof(YogVal));
+    obj = ALLOC_OBJ_ITEM(env, Struct_keep_children, Struct_finalize, Struct, children_num, YogVal);
+    YogBasicObj_init(env, obj, TYPE_STRUCT, 0, klass);
+    PTR_AS(Struct, obj)->data = NULL;
+    PTR_AS(Struct, obj)->own = TRUE;
+    PTR_AS(Struct, obj)->top = obj;
+    uint_t i;
+    for (i = 0; i < children_num; i++) {
+        PTR_AS(Struct, obj)->children[i] = YNIL;
+    }
+
+    RETURN(env, obj);
+}
+
+static void
+LibFunc_finalize(YogEnv* env, void* ptr)
+{
+    LibFunc* f = (LibFunc*)ptr;
+    YogGC_free(env, f->cif.arg_types, sizeof(*f->cif.arg_types) * f->nargs);
+}
+
+static void
+LibFunc_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    YogBasicObj_keep_children(env, ptr, keeper, heap);
+
+    LibFunc* f = (LibFunc*)ptr;
+    YogGC_KEEP(env, f, rtype, keeper, heap);
+    uint_t nargs = f->nargs;
+    uint_t i;
+    for (i = 0; i < nargs; i++) {
+        YogGC_KEEP(env, f, nodes[i], keeper, heap);
+    }
+}
+
+static YogVal
+LibFunc_new(YogEnv* env, uint_t nargs)
+{
+    SAVE_LOCALS(env);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
+
+    YogGC_check_multiply_overflow(env, nargs, sizeof(YogVal));
+    obj = ALLOC_OBJ_ITEM(env, LibFunc_keep_children, LibFunc_finalize, LibFunc, nargs, YogVal);
+    YogBasicObj_init(env, obj, TYPE_LIB_FUNC, 0, env->vm->cLibFunc);
+    PTR_AS(LibFunc, obj)->f = NULL;
+    PTR_AS(LibFunc, obj)->cif.arg_types = NULL;
+    PTR_AS(LibFunc, obj)->rtype = YUNDEF;
+    PTR_AS(LibFunc, obj)->nargs = nargs;
+    uint_t i;
+    for (i = 0; i < nargs; i++) {
+        PTR_AS(LibFunc, obj)->nodes[i] = YUNDEF;
+    }
+
+    RETURN(env, obj);
+}
+
+static YogVal
+Lib_alloc(YogEnv* env, YogVal klass)
+{
+    SAVE_ARG(env, klass);
+    YogVal obj = YUNDEF;
+    PUSH_LOCAL(env, obj);
+
+    obj = ALLOC_OBJ(env, YogBasicObj_keep_children, NULL, Lib);
+    YogBasicObj_init(env, obj, TYPE_LIB, 0, klass);
+    PTR_AS(Lib, obj)->handle = NULL;
+
+    RETURN(env, obj);
+}
+
+YogVal
+YogFFI_load_lib(YogEnv* env, YogHandle* path)
+{
+    LIB_HANDLE handle = YogMisc_load_lib(env, path);
+    if (handle == NULL) {
+        const char* fmt = "No library named \"%S\"";
+        YogError_raise_ImportError(env, fmt, HDL2VAL(path));
+        /* NOTREACHED */
+    }
+    YogVal lib = Lib_alloc(env, env->vm->cLib);
+    PTR_AS(Lib, lib)->handle = handle;
+
+    return lib;
 }
 
 static const char*
@@ -1886,7 +1961,7 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
         arg_type = YogArray_at(env, arg_types, i);
         node = parse_type(env, arg_type);
         types[i] = map_type(env, node);
-        YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), arg_types[i], node);
+        YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), nodes[i], node);
     }
     node = rtype2node(env, rtype);
     YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), rtype, node);
@@ -2279,21 +2354,29 @@ write_argument_Buffer(YogEnv* env, void** ptr, YogVal val)
 }
 
 static void
-write_argument_Struct(YogEnv* env, void* ptr, YogVal arg_type, YogVal val)
+raise_TypeError_for_struct(YogEnv* env, YogVal expected, YogVal actual)
 {
-    SAVE_ARGS2(env, arg_type, val);
-    YogVal klass = YUNDEF;
-    PUSH_LOCAL(env, klass);
+    ID name = PTR_AS(YogClass, expected)->name;
+    YogError_raise_TypeError(env, "Argument must be %I, not %C", name, actual);
+}
+
+static void
+check_Struct(YogEnv* env, YogVal val, YogVal arg_type)
+{
     if (!IS_PTR(val) || (BASIC_OBJ_TYPE(val) != TYPE_STRUCT)) {
-        YogError_raise_TypeError(env, "Argument must be Struct, not %C", val);
+        raise_TypeError_for_struct(env, arg_type, val);
     }
-    klass = YogVal_get_class(env, val);
+    YogVal klass = YogVal_get_class(env, val);
     if (klass != arg_type) {
-        ID name = PTR_AS(YogClass, arg_type)->name;
-        YogError_raise_TypeError(env, "Argument must be %I, not %C", name, val);
+        raise_TypeError_for_struct(env, arg_type, val);
     }
+}
+
+static void
+write_argument_struct_pointer(YogEnv* env, void* ptr, YogVal arg_type, YogVal val)
+{
+    check_Struct(env, val, arg_type);
     *((void**)ptr) = PTR_AS(Struct, val)->data;
-    RETURN_VOID(env);
 }
 
 static void
@@ -2570,7 +2653,7 @@ write_argument_pointer(YogEnv* env, void* pvalue, YogVal klass, YogVal val)
         return;
     }
     if (IS_PTR(klass) && (BASIC_OBJ_TYPE(klass) == TYPE_STRUCT_CLASS)) {
-        write_argument_Struct(env, pvalue, klass, val);
+        write_argument_struct_pointer(env, pvalue, klass, val);
         return;
     }
     if (!IS_SYMBOL(klass)) {
@@ -2604,6 +2687,14 @@ write_argument_string(YogEnv* env, void* pvalue, void* refered, YogVal encoding,
 }
 
 static void
+write_argument_struct(YogEnv* env, void* pvalue, YogVal klass, YogVal val)
+{
+    check_Struct(env, val, klass);
+    void* data = PTR_AS(Struct, val)->data;
+    memcpy(pvalue, data, PTR_AS(StructClass, klass)->size);
+}
+
+static void
 write_argument(YogEnv* env, void* pvalue, void* refered, YogVal node, YogVal val)
 {
     SAVE_ARGS2(env, node, val);
@@ -2623,9 +2714,12 @@ write_argument(YogEnv* env, void* pvalue, void* refered, YogVal node, YogVal val
         encoding = PTR_AS(Node, node)->u.string.encoding;
         write_argument_string(env, pvalue, refered, encoding, val);
         RETURN_VOID(env);
+    case NODE_STRUCT:
+        klass = PTR_AS(Node, node)->u.struct_.klass;
+        write_argument_struct(env, pvalue, klass, val);
+        RETURN_VOID(env);
     case NODE_ARRAY:
     case NODE_FIELD:
-    case NODE_STRUCT:
     default:
         YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
     }
@@ -2667,12 +2761,12 @@ type2refered_size(YogEnv* env, YogVal node, YogVal arg)
         break;
     case NODE_BUFFER:
     case NODE_POINTER:
+    case NODE_STRUCT:
         return 0;
     case NODE_STRING:
         return type2refered_size_of_string(env, node, arg);
     case NODE_ARRAY:
     case NODE_FIELD:
-    case NODE_STRUCT:
     default:
         YOG_BUG(env, "Invalid Node type (%u)", PTR_AS(Node, node)->type);
     }
@@ -2853,26 +2947,28 @@ LibFunc_do(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[]
     uint_t i;
     for (i = 0; i < nargs; i++) {
         ffi_type* ffi_arg_type = arg_types[i];
-        void* pvalue = YogSysdeps_alloca(type2size(env, ffi_arg_type));
-        YogVal arg_type = HDL_AS(LibFunc, callee)->arg_types[i];
-        YogHandle* h_arg_type = VAL2HDL(env, arg_type);
-        uint_t refered_size = type2refered_size(env, arg_type, get_posarg_at(env, i, posargc, posargs, vararg));
-        void* refered = 0 < refered_size ? YogSysdeps_alloca(refered_size): NULL;
         YogVal val = get_posarg_at(env, i, posargc, posargs, vararg);
-        write_argument(env, pvalue, refered, HDL2VAL(h_arg_type), val);
+        YogHandle* h_val = VAL2HDL(env, val);
+        YogVal node = HDL_AS(LibFunc, callee)->nodes[i];
+        YogHandle* h_node = VAL2HDL(env, node);
+        uint_t size = type2size(env, ffi_arg_type, node);
+        void* pvalue = YogSysdeps_alloca(size);
+        uint_t refered_size = type2refered_size(env, node, val);
+        void* refered = 0 < refered_size ? YogSysdeps_alloca(refered_size): NULL;
+        write_argument(env, pvalue, refered, HDL2VAL(h_node), HDL2VAL(h_val));
         values[i] = pvalue;
         refereds[i] = refered;
     }
 
     ffi_type* rtype = HDL_AS(LibFunc, callee)->cif.rtype;
-    void* rvalue = rtype != &ffi_type_void ? YogSysdeps_alloca(type2size(env, rtype)) : NULL;
+    void* rvalue = rtype != &ffi_type_void ? YogSysdeps_alloca(type2size(env, rtype, PTR_AS(LibFunc, callee)->rtype)) : NULL;
 
     ffi_call(&HDL_AS(LibFunc, callee)->cif, HDL_AS(LibFunc, callee)->f, rvalue, values);
 
     for (i = 0; i < nargs; i++) {
-        YogVal arg_type = HDL_AS(LibFunc, callee)->arg_types[i];
+        YogVal node = HDL_AS(LibFunc, callee)->nodes[i];
         YogVal val = get_posarg_at(env, i, posargc, posargs, vararg);
-        read_argument(env, val, arg_type, refereds[i]);
+        read_argument(env, val, node, refereds[i]);
     }
 
     if (rtype == &ffi_type_uint8) {

@@ -9,8 +9,10 @@ PKGS = test_package4.$(SOEXT) test_package5.$(SOEXT) test_package6.$(SOEXT) \
        test_lib.$(SOEXT) test_Struct690.$(SOEXT) test_Struct700.$(SOEXT) \
        test_Struct720.$(SOEXT) test_Struct730.$(SOEXT) test_Struct740.$(SOEXT) \
        test_Struct745.$(SOEXT) test_Struct705.$(SOEXT) test_Struct770.$(SOEXT) \
-       test_Struct810.$(SOEXT) test_Struct830.$(SOEXT) test_Union030.$(SOEXT) \
-       test_Union040.$(SOEXT) test_Union050.$(SOEXT) empty.$(SOEXT) \
+       test_Struct810.$(SOEXT) test_Struct830.$(SOEXT) test_Struct840.$(SOEXT) \
+       test_Struct850.$(SOEXT) test_Struct860.$(SOEXT) test_Union030.$(SOEXT) \
+       test_Union040.$(SOEXT) test_Union050.$(SOEXT) test_Union060.$(SOEXT) \
+       test_Union070.$(SOEXT) test_Union080.$(SOEXT) empty.$(SOEXT) \
        test_func0.$(SOEXT) test_func10.$(SOEXT) test_func20.$(SOEXT) \
        test_func30.$(SOEXT) test_func40.$(SOEXT) test_func50.$(SOEXT) \
        test_func60.$(SOEXT) test_func70.$(SOEXT) test_func80.$(SOEXT) \

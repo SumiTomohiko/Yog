@@ -697,6 +697,48 @@ foo = Foo.new()
 f(foo)
 print(foo.baz)""", "42")
 
+    # Tests for structs
+    def test_Struct840(self):
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[\'int, \'bar]])
+lib = load_lib(\"./test_Struct840.so\")
+f = lib.load_func(\"test_Struct840\", [Foo])
+foo = Foo.new()
+foo.bar = 42
+f(foo)""", "42")
+
+    def test_Struct850(self):
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[\'int, \'bar]])
+Baz = StructClass.new(\"Baz\")
+Baz.define_fields([[Foo, \'foo]])
+lib = load_lib(\"./test_Struct850.so\")
+f = lib.load_func(\"test_Struct850\", [Baz])
+baz = Baz.new()
+baz.foo.bar = 42
+f(baz)""", "42")
+
+    def test_Struct860(self):
+        self._test("""Foo = UnionClass.new(\"Foo\")
+Foo.define_fields([[\'int, \'bar]])
+Baz = StructClass.new(\"Baz\")
+Baz.define_fields([[Foo, \'foo]])
+lib = load_lib(\"./test_Struct860.so\")
+f = lib.load_func(\"test_Struct860\", [Baz])
+baz = Baz.new()
+baz.foo.bar = 42
+f(baz)""", "42")
+
+    def test_Struct870(self):
+        def test_stderr(stderr):
+            msg = "TypeError: Argument must be Foo, not Fixnum"
+            assert 0 < stderr.find(msg)
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[\'int, \'bar]])
+lib = load_lib(\"./test_Struct840.so\")
+f = lib.load_func(\"test_Struct840\", [Foo])
+f(42)""", stderr=test_stderr)
+
     # Tests for UnionClass
     def test_Union000(self):
         self._test("""
@@ -747,6 +789,48 @@ lib = load_lib(\"./test_Union050.so\")
 f = lib.load_func(\"test_Union050\", [[\'pointer, Quux]])
 f(quux)
 print(quux.foo.baz)""", "42")
+
+    # Tests for unions
+    def test_Union060(self):
+        self._test("""Foo = UnionClass.new(\"Foo\")
+Foo.define_fields([[\'int, \'bar]])
+lib = load_lib(\"./test_Union060.so\")
+f = lib.load_func(\"test_Union060\", [Foo])
+foo = Foo.new()
+foo.bar = 42
+f(foo)""", "42")
+
+    def test_Union070(self):
+        self._test("""Foo = StructClass.new(\"Foo\")
+Foo.define_fields([[\'int, \'bar]])
+Baz = UnionClass.new(\"Baz\")
+Baz.define_fields([[Foo, \'foo]])
+lib = load_lib(\"./test_Union070.so\")
+f = lib.load_func(\"test_Union070\", [Baz])
+baz = Baz.new()
+baz.foo.bar = 42
+f(baz)""", "42")
+
+    def test_Union080(self):
+        self._test("""Foo = UnionClass.new(\"Foo\")
+Foo.define_fields([[\'int, \'bar]])
+Baz = UnionClass.new(\"Baz\")
+Baz.define_fields([[Foo, \'foo]])
+lib = load_lib(\"./test_Union080.so\")
+f = lib.load_func(\"test_Union080\", [Baz])
+baz = Baz.new()
+baz.foo.bar = 42
+f(baz)""", "42")
+
+    def test_Union090(self):
+        def test_stderr(stderr):
+            msg = "TypeError: Argument must be Foo, not Fixnum"
+            assert 0 < stderr.find(msg)
+        self._test("""Foo = UnionClass.new(\"Foo\")
+Foo.define_fields([[\'int, \'bar]])
+lib = load_lib(\"./test_Union060.so\")
+f = lib.load_func(\"test_Union060\", [Foo])
+f(42)""", stderr=test_stderr)
 
     # Tests for uint8
     def test_argument10(self):
