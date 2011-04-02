@@ -50,7 +50,8 @@ end
 
 def spec2yog(spec)
   if spec.kind_of?(StructBaseNode)
-    return spec.name.to_s()
+    name = spec.name
+    return defined_structs.include?(name) ? name.to_s() : 'void.inspect()
   end
 
   unsigned? = false

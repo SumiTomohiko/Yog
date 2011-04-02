@@ -39,7 +39,9 @@ datatypes_typedef = datatypes + [
     ["long long int", "longlong"],
     ["long long", "longlong"],
     ["signed long long", "longlong"],
-    ["unsigned long long", "ulonglong"]]
+    ["unsigned long long", "ulonglong"],
+
+    ["struct Bar", "void"]]
 
 class TestH2Yog(Base):
 
