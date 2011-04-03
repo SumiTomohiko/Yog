@@ -119,6 +119,9 @@ class Controller
     return f(button, x, y)
   end
 
+  def on_mousemotion(state, x, y, xrel, yrel)
+  end
+
   def dispatch(event)
     if event.type == sdl.SDL_QUIT
       return true
@@ -128,6 +131,15 @@ class Controller
     end
     if event.type == sdl.SDL_MOUSEBUTTONUP
       return self.fire_mousebutton_handler(event, self.on_mousebuttonup)
+    end
+    if event.type == sdl.SDL_MOUSEMOTION
+      motion = event.motion
+      state = motion.state
+      x = motion.x
+      y = motion.y
+      xrel = motion.xrel
+      yrel = motion.yrel
+      return self.on_mousemotion(state, x, y, xrel, yrel)
     end
   end
 end
