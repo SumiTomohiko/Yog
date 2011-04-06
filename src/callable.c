@@ -1055,6 +1055,7 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_descr_get_caller(env, cNativeFunction, YogNativeFunction_call_get_descr);
     YogClass_define_caller(env, cNativeFunction, YogNativeFunction_call);
     YogClass_define_executor(env, cNativeFunction, YogNativeFunction_exec);
+    YogClass_include_module(env, cNativeFunction, mCallable);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cNativeFunction, pkg, (name), (f)); \
 } while (0)
@@ -1067,6 +1068,7 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_descr_get_caller(env, cNativeFunction2, YogNativeFunction2_call_get_descr);
     YogClass_define_caller(env, cNativeFunction2, YogNativeFunction2_call);
     YogClass_define_executor(env, cNativeFunction2, YogNativeFunction2_exec);
+    YogClass_include_module(env, cNativeFunction2, mCallable);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cNativeFunction2, pkg, (name), (f)); \
 } while (0)
@@ -1080,6 +1082,7 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_descr_get_caller(env, cFunction, YogFunction_call_get_descr);
     YogClass_define_caller(env, cFunction, YogFunction_call);
     YogClass_define_executor(env, cFunction, YogFunction_exec);
+    YogClass_include_module(env, cFunction, mCallable);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cFunction, pkg, (name), (f)); \
 } while (0)
@@ -1091,17 +1094,20 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_allocator(env, cInstanceMethod, create_instance_method);
     YogClass_define_caller(env, cInstanceMethod, YogInstanceMethod_call);
     YogClass_define_executor(env, cInstanceMethod, YogInstanceMethod_exec);
+    YogClass_include_module(env, cInstanceMethod, mCallable);
     vm->cInstanceMethod = cInstanceMethod;
 
     cNativeInstanceMethod = YogClass_new(env, "NativeInstanceMethod", vm->cObject);
     YogClass_define_allocator(env, cNativeInstanceMethod, create_instance_method);
     YogClass_define_caller(env, cNativeInstanceMethod, YogNativeInstanceMethod_call);
     YogClass_define_executor(env, cNativeInstanceMethod, YogNativeInstanceMethod_exec);
+    YogClass_include_module(env, cNativeInstanceMethod, mCallable);
     vm->cNativeInstanceMethod = cNativeInstanceMethod;
 
     cNativeInstanceMethod2 = YogClass_new(env, "NativeInstanceMethod2", vm->cObject);
     YogClass_define_caller(env, cNativeInstanceMethod2, YogNativeInstanceMethod2_call);
     YogClass_define_executor(env, cNativeInstanceMethod2, YogNativeInstanceMethod2_exec);
+    YogClass_include_module(env, cNativeInstanceMethod2, mCallable);
     vm->cNativeInstanceMethod2 = cNativeInstanceMethod2;
 
     RETURN_VOID(env);

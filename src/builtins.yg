@@ -92,22 +92,6 @@ def loop(&block)
   end
 end
 
-def partial(f, *args, **kw, &block=nil)
-  def g(*v, **k, &b=nil)
-    p = args + v
-    q = kw + k
-    if b != nil
-      return f(*p, **q, &b)
-    elif block != nil
-      return f(*p, **q, &block)
-    else
-      return f(*p, **q)
-    end
-  end
-
-  return g
-end
-
 def include(mod)
   def f(clazz)
     return include_module(clazz, mod)

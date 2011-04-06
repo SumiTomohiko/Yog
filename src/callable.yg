@@ -6,4 +6,21 @@ def while(expected, *args, **kw, &block)
   return retval
 end
 
+def partial(*args, **kw, &block=nil)
+  @bind(self)
+  def g(*v, **k, &b=nil)
+    p = args + v
+    q = kw + k
+    if b != nil
+      return self(*p, **q, &b)
+    end
+    if block != nil
+      return self(*p, **q, &block)
+    end
+    return self(*p, **q)
+  end
+
+  return g
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
