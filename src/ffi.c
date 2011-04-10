@@ -552,13 +552,36 @@ BufferField_new(YogEnv* env, uint_t offset, uint_t child_index)
     return field;
 }
 
+static ID
+intern_pointer(YogEnv* env)
+{
+    return YogVM_intern(env, env->vm, "pointer");
+}
+
+static YogVal
+create_atom_node(YogEnv* env, ID type)
+{
+    YogVal node = Node_new(env);
+    PTR_AS(Node, node)->type = NODE_ATOM;
+    PTR_AS(Node, node)->u.atom.type = type;
+    return node;
+}
+
+static YogVal
+create_pointer_node(YogEnv* env)
+{
+    return create_atom_node(env, intern_pointer(env));
+}
+
 static YogVal
 PointerField_new(YogEnv* env, uint_t offset, YogVal klass, uint_t child_index)
 {
     SAVE_ARG(env, klass);
     YogVal field = YUNDEF;
     PUSH_LOCAL(env, field);
-    CHECK_STRUCT_CLASS(env, klass, "pointer field");
+    if (!IS_PTR(klass) || (BASIC_OBJ_TYPE(klass) != TYPE_STRUCT_CLASS)) {
+        return create_pointer_node(env);
+    }
 
     field = PointerField_alloc(env, env->vm->cPointerField);
     PTR_AS(FieldBase, field)->offset = offset;
@@ -1142,21 +1165,6 @@ create_anonymous_struct_node(YogEnv* env, YogVal type, StructBuilder builder)
     RETURN(env, node);
 }
 
-static YogVal
-create_atom_node(YogEnv* env, ID type)
-{
-    YogVal node = Node_new(env);
-    PTR_AS(Node, node)->type = NODE_ATOM;
-    PTR_AS(Node, node)->u.atom.type = type;
-    return node;
-}
-
-static ID
-intern_pointer(YogEnv* env)
-{
-    return YogVM_intern(env, env->vm, "pointer");
-}
-
 static ID
 intern_void(YogEnv* env)
 {
@@ -1171,7 +1179,7 @@ parse_pointer(YogEnv* env, YogVal subinfo)
     PUSH_LOCAL(env, node);
 
     if (IS_SYMBOL(subinfo) && (VAL2ID(subinfo) == intern_void(env))) {
-        RETURN(env, create_atom_node(env, intern_pointer(env)));
+        RETURN(env, create_pointer_node(env));
     }
     node = Node_new(env);
     PTR_AS(Node, node)->type = NODE_POINTER;
