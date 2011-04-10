@@ -276,7 +276,7 @@ end
 def typedef2yog(type, init_decl)
   decl = init_decl.declarator
   name = get_typedef_name(decl)
-  f = partial("{0} = {1}\n".format, name)
+  f = "{0} = {1}\n".format.partial(name)
   attrs = init_decl.attrs
   if !attrs.empty? && ((attr = attrs[0]).name == '__mode__)
     MODE2YOG = {
@@ -362,7 +362,7 @@ def node2yog(node)
     if type.kind_of?(EnumNode)
       return init_declators2yog(node, enum2yog)
     end
-    return node.init_declarators.map(&partial(typedef2yog, type)).join("")
+    return node.init_declarators.map(&typedef2yog.partial(type)).join("")
   end
   if spec.kind_of?(StructBaseNode)
     if spec.contents != nil
