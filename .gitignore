@@ -281,6 +281,7 @@ lib/sdl.yg
 lib/sdl/Makefile
 lib/sdl/Makefile.in
 lib/sdl/image.yg
+lib/sdl/mixer.yg
 lib/sdl/ttf.yg
 libffi/Makefile
 libffi/fficonfig.h
