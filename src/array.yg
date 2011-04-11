@@ -1,4 +1,13 @@
 
+def any?(&block)
+  self.each() do [elem]
+    if block(elem)
+      return true
+    end
+  end
+  return false
+end
+
 def reduce(init, &block)
   if self.empty?
     return init

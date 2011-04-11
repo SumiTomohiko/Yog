@@ -4,6 +4,29 @@ from testcase import TestCase
 
 class TestArray(TestCase):
 
+    def test_any0(self):
+        self._test("print([].any?(&nop))", "false")
+
+    def test_any10(self):
+        self._test("""print([42].any?() do [elem]
+  next elem == 26
+end)""", "false")
+
+    def test_any20(self):
+        self._test("""print([42, \"foo\"].any?() do [elem]
+  next elem == 26
+end)""", "false")
+
+    def test_any30(self):
+        self._test("""print([42].any?() do [elem]
+  next elem == 42
+end)""", "true")
+
+    def test_any40(self):
+        self._test("""print([42, 26].any?() do [elem]
+  next elem == 26
+end)""", "true")
+
     def test_init0(self):
         self._test("""a = Array.new(42) do [index]
   next index
