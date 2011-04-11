@@ -12,9 +12,7 @@ class SdlError > Exception
 end
 
 def init_audio(&block)
-  # FIXME: Avoids the bug of e04815b1105e9dbfda2894d6031e3a58aeb44d07.
-  #flags = sdl.mixer.MIX_INIT_MP3
-  flags = 0x04
+  flags = sdl.mixer.MIX_INIT_MP3
   if (sdl.mixer.Mix_Init(flags) & flags != flags)
     sdl.mixer.Mix_Quit()
     raise SdlError.new("Mix_Init failed")
