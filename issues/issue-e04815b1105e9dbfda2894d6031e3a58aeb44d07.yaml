@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: MIX_INIT_MP3 is not included in sdl.mixer package
+desc: ""
+type: :bugfix
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-11 16:16:52.344035 Z
+references: []
+
+id: e04815b1105e9dbfda2894d6031e3a58aeb44d07
+log_events: 
+- - 2011-04-11 16:16:52.988105 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
