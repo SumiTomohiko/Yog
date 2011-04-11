@@ -1,12 +1,28 @@
 
 import sdl
 import sdl.image
+import sdl.mixer
 # XXX: h2yog cannot output SDL_BlitSurface. Wait for fixing this bug.
 sdl.SDL_BlitSurface = sdl.SDL_UpperBlit
 
 class SdlError > Exception
   def init(msg)
     super("{0}: {1}".format(msg, sdl.SDL_GetError()))
+  end
+end
+
+def init_audio(&block)
+  # FIXME: Avoids the bug of e04815b1105e9dbfda2894d6031e3a58aeb44d07.
+  #flags = sdl.mixer.MIX_INIT_MP3
+  flags = 0x04
+  if (sdl.mixer.Mix_Init(flags) & flags != flags)
+    sdl.mixer.Mix_Quit()
+    raise SdlError.new("Mix_Init failed")
+  end
+  try
+    block()
+  finally
+    sdl.mixer.Mix_Quit()
   end
 end
 
@@ -26,9 +42,11 @@ def init(width, height, bpp, caption, &block)
   sdl.SDL_Init(sdl.SDL_INIT_VIDEO)
   try
     init_img() do
-      sdl.SDL_WM_SetCaption(caption, nil)
-      flags = sdl.SDL_SWSURFACE | sdl.SDL_DOUBLEBUF | sdl.SDL_ANYFORMAT
-      block(sdl.SDL_SetVideoMode(width, height, bpp, flags))
+      init_audio() do
+        sdl.SDL_WM_SetCaption(caption, nil)
+        flags = sdl.SDL_SWSURFACE | sdl.SDL_DOUBLEBUF | sdl.SDL_ANYFORMAT
+        block(sdl.SDL_SetVideoMode(width, height, bpp, flags))
+      end
     end
   finally
     sdl.SDL_Quit()
