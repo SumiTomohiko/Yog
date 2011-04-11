@@ -11,6 +11,20 @@ class SdlError > Exception
   end
 end
 
+def open_audio(&block)
+  frequency = sdl.mixer.MIX_DEFAULT_FREQUENCY
+  fmt = sdl.mixer.MIX_DEFAULT_FORMAT
+  channels = sdl.mixer.MIX_DEFAULT_CHANNELS
+  if sdl.mixer.Mix_OpenAudio(frequency, fmt, channels, 4096) != 0
+    raise SdlError.new("Mix_OpenAudio failed")
+  end
+  try
+    block()
+  finally
+    sdl.mixer.Mix_CloseAudio()
+  end
+end
+
 def init_audio(&block)
   flags = sdl.mixer.MIX_INIT_MP3
   if (sdl.mixer.Mix_Init(flags) & flags != flags)
@@ -18,7 +32,7 @@ def init_audio(&block)
     raise SdlError.new("Mix_Init failed")
   end
   try
-    block()
+    open_audio(&block)
   finally
     sdl.mixer.Mix_Quit()
   end
