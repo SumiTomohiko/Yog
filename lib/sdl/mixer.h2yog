@@ -12,8 +12,8 @@ def main()
 
   predefined = {
     'sdl: [
-      'SDL_GetError, 'SDL_RWops, 'SDL_SetError, 'SDL_version, 'Sint16, 'Uint32,
-      'Uint16, 'Uint8]}
+      'SDL_GetError, 'SDL_RWFromFile, 'SDL_RWops, 'SDL_SetError, 'SDL_version,
+      'Sint16, 'Uint32, 'Uint16, 'Uint8]}
   verbose = false
   #verbose = true
   h2yog(yog, [header], "libSDL_mixer.so", predefined, verbose) do [path, name]
