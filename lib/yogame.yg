@@ -11,7 +11,7 @@ class SdlError > Exception
   end
 end
 
-def open_audio(&block)
+def open_audio(numchans, &block)
   frequency = sdl.mixer.MIX_DEFAULT_FREQUENCY
   fmt = sdl.mixer.MIX_DEFAULT_FORMAT
   channels = sdl.mixer.MIX_DEFAULT_CHANNELS
@@ -19,20 +19,21 @@ def open_audio(&block)
     raise SdlError.new("Mix_OpenAudio failed")
   end
   try
+    sdl.mixer.Mix_AllocateChannels(numchans)
     block()
   finally
     sdl.mixer.Mix_CloseAudio()
   end
 end
 
-def init_audio(&block)
+def init_audio(numchans, &block)
   flags = sdl.mixer.MIX_INIT_MP3
   if (sdl.mixer.Mix_Init(flags) & flags != flags)
     sdl.mixer.Mix_Quit()
     raise SdlError.new("Mix_Init failed")
   end
   try
-    open_audio(&block)
+    open_audio(numchans, &block)
   finally
     sdl.mixer.Mix_Quit()
   end
@@ -50,11 +51,11 @@ def init_img(&block)
   end
 end
 
-def init(width, height, bpp, caption, &block)
+def init(width, height, bpp, caption, numchans, &block)
   sdl.SDL_Init(sdl.SDL_INIT_VIDEO)
   try
     init_img() do
-      init_audio() do
+      init_audio(numchans) do
         sdl.SDL_WM_SetCaption(caption, nil)
         flags = sdl.SDL_SWSURFACE | sdl.SDL_DOUBLEBUF | sdl.SDL_ANYFORMAT
         block(sdl.SDL_SetVideoMode(width, height, bpp, flags))
