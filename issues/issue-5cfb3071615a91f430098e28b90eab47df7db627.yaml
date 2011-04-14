@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: FFI cannot return nil when a native function returned NULL.
+desc: ""
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-14 06:22:44.837247 Z
+references: []
+
+id: 5cfb3071615a91f430098e28b90eab47df7db627
+log_events: 
+- - 2011-04-14 06:22:45.902170 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
