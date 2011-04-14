@@ -2,6 +2,7 @@
 import sdl
 import sdl.image
 import sdl.mixer
+import sdl.ttf
 # XXX: h2yog cannot output SDL_BlitSurface. Wait for fixing this bug.
 sdl.SDL_BlitSurface = sdl.SDL_UpperBlit
 
@@ -51,14 +52,25 @@ def init_img(&block)
   end
 end
 
+def init_ttf(&block)
+  sdl.ttf.TTF_Init()
+  try
+    block()
+  finally
+    sdl.ttf.TTF_Quit()
+  end
+end
+
 def init(width, height, bpp, caption, numchans, &block)
   sdl.SDL_Init(sdl.SDL_INIT_VIDEO)
   try
     init_img() do
       init_audio(numchans) do
-        sdl.SDL_WM_SetCaption(caption, nil)
-        flags = sdl.SDL_SWSURFACE | sdl.SDL_DOUBLEBUF | sdl.SDL_ANYFORMAT
-        block(sdl.SDL_SetVideoMode(width, height, bpp, flags))
+        init_ttf() do
+          sdl.SDL_WM_SetCaption(caption, nil)
+          flags = sdl.SDL_SWSURFACE | sdl.SDL_DOUBLEBUF | sdl.SDL_ANYFORMAT
+          block(sdl.SDL_SetVideoMode(width, height, bpp, flags))
+        end
       end
     end
   finally
