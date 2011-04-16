@@ -91,12 +91,15 @@ def run(controller, view, fps=10)
     ticks = sdl.SDL_GetTicks()
 
     sdl.SDL_PollEvent.while(1, event) do
-      if (msg = controller.dispatch(event)) != nil
-        return msg
-      end
+      controller.dispatch(event)
     end
     controller.animate()
+    view.cls()
     view.draw()
+    view.flip()
+    if controller.__status__ != nil
+      return controller.__status__
+    end
 
     # milliseconds can be negative when a game runs for 49 days. This case is
     # ignored implicitly.
@@ -110,7 +113,45 @@ BUTTON2NAME = {
   sdl.SDL_BUTTON_RIGHT: "right", sdl.SDL_BUTTON_WHEELUP: "wheelup",
   sdl.SDL_BUTTON_WHEELDOWN: "wheeldown" }
 
+class View
+  def init(screen)
+    self.screen = screen
+  end
+
+  def cls()
+    if sdl.SDL_FillRect(self.screen, nil, 0) != 0
+      raise SdlError.new("SDL_FillRect failed")
+    end
+  end
+
+  def flip()
+    if sdl.SDL_Flip(self.screen) != 0
+      raise SdlError.new("SDL_Flip failed")
+    end
+  end
+
+  def blit_surface(src, srcrect, dstrect)
+    if sdl.SDL_BlitSurface(src, srcrect, self.screen, dstrect) != 0
+      raise SdlError.new("SDL_BlitSurface failed")
+    end
+  end
+
+  def draw()
+  end
+end
+
 class Controller
+  def init()
+    self.__status__ = nil
+  end
+
+  def exit(status)
+    self.__status__ = status
+  end
+
+  def animate()
+  end
+
   def on_middle_button_released(x, y)
   end
 
@@ -167,7 +208,8 @@ class Controller
 
   def dispatch(event)
     if event.type == sdl.SDL_QUIT
-      return true
+      self.exit('quit)
+      return
     end
     if event.type == sdl.SDL_MOUSEBUTTONDOWN
       return self.fire_mousebutton_handler(event, self.on_mousebuttondown)
