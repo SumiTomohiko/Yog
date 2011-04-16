@@ -76,7 +76,7 @@ void
 YogVM_register_package(YogEnv* env, YogVM* vm, YogHandle* name, YogHandle* pkg)
 {
     ID id = YogVM_intern2(env, vm, HDL2VAL(name));
-    YogTable_add_direct(env, vm->pkgs, ID2VAL(id), HDL2VAL(pkg));
+    YogTable_insert(env, vm->pkgs, ID2VAL(id), HDL2VAL(pkg));
 }
 
 static void
@@ -1063,6 +1063,7 @@ get_package(YogEnv* env, YogVM* vm, YogVal pkg)
         ImportingPackage_unlock(env, pkg);
         return PTR_AS(ImportingPackage, pkg)->pkg;
     }
+    YOG_ASSERT(env, BASIC_OBJ_TYPE(pkg) == TYPE_PACKAGE, "Invalid package");
     release_packages_lock(env, vm);
     return pkg;
 }
@@ -1251,7 +1252,7 @@ import_package(YogEnv* env, YogVM* vm, YogHandle* name)
     FIND_PKG;
 #undef FIND_PKG
     tmp_pkg = ImportingPackage_new(env);
-    YogTable_add_direct(env, vm->pkgs, ID2VAL(id), tmp_pkg);
+    YogVM_register_package(env, vm, name, VAL2HDL(env, tmp_pkg));
     release_packages_lock(env, vm);
 
     YogHandle* head = package_name2path_head(env, HDL2VAL(name));
@@ -1264,7 +1265,6 @@ import_package(YogEnv* env, YogVM* vm, YogHandle* name)
         YOG_BUG(env, "Can't delete importing package");
     }
     imported_pkg = PTR_AS(ImportingPackage, tmp_pkg)->pkg;
-    YogTable_add_direct(env, vm->pkgs, ID2VAL(id), imported_pkg);
     YogVM_register_package(env, vm, name, VAL2HDL(env, imported_pkg));
     pthread_cond_broadcast(&PTR_AS(ImportingPackage, tmp_pkg)->cond);
     release_packages_lock(env, vm);
