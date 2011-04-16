@@ -1,0 +1,40 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Registering packages confuses Yog.
+desc: |-
+  YogVM_import_package imports a package with two steps. At first, a temporary
+  package is registered into YogVM::pkg. After evaluating source code, this
+  function removed the temporary package and registers a true package. But
+  YogEval_eval_file (which is called in evaluating a package) also registers
+  another true package with YogVM_register_package. Moreover,
+  YogVM_register_package uses YogTable_add_direct, not YogTable_insert. Because
+  YogTable_add_direct assumes that there are no duplicated entries, so there may
+  be two packages for same name (One is a temporary package, and the other is a
+  true package). Next, YogVM_import_package aims to remove the temporary package,
+  but actually, this function may remove the true package. Finally, the temporary
+  package is left in YogVM::pkg. If the package is imported under this condition,
+  pthread_wait_cond will be called bacause the package is a temporary package, and
+  this call never return. This bug's reproductivity is low.
+  
+  One true package must be registered only once.
+  
+  This bug implies another problem.
+  
+  If YogVM_register_package is removed from YogEval_eval_file, importing a parent
+  package will block Yog. For example, this is the case of "import foo" in
+  foo.bar package. Packages must be registered as soon as possible. But number of
+  threads which evaluate the package must be one.
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-16 17:39:58.174094 Z
+references: []
+
+id: 1b55e70f4ef8f0391b42c5a9386233b5181b2ac9
+log_events: 
+- - 2011-04-16 17:39:59.390730 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
