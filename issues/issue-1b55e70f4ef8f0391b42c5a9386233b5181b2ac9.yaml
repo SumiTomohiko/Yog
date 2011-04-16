@@ -38,3 +38,9 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""
+- - 2011-04-16 17:58:13.823467 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - commented
+  - |-
+    Even in case of multi-thread, must we wait finishing of importing packages? It
+    may be good for other threads to see packages which are in evaluating.
