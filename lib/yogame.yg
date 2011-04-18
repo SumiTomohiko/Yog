@@ -17,7 +17,9 @@ def open_audio(numchans, &block)
   fmt = sdl.mixer.MIX_DEFAULT_FORMAT
   channels = sdl.mixer.MIX_DEFAULT_CHANNELS
   if sdl.mixer.Mix_OpenAudio(frequency, fmt, channels, 4096) != 0
-    raise SdlError.new("Mix_OpenAudio failed")
+    puts("WARNING: Mix_OpenAudio failed: {0}".format(sdl.mixer.Mix_GetError()))
+    block()
+    return
   end
   try
     sdl.mixer.Mix_AllocateChannels(numchans)
