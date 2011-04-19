@@ -3626,10 +3626,10 @@ static YogVal
 join_package_names(YogEnv* env, YogVal pkg_names)
 {
     ID id = VAL2ID(YogArray_at(env, pkg_names, 0));
+    YogHandle* h = VAL2HDL(env, pkg_names);
     YogVal head = YogVM_id2name(env, env->vm, id);
     YogHandle* s = VAL2HDL(env, YogString_clone(env, head));
-    YogHandle* h = VAL2HDL(env, pkg_names);
-    uint_t size = YogArray_size(env, pkg_names);
+    uint_t size = YogArray_size(env, HDL2VAL(h));
     uint_t i;
     for (i = 1; i < size; i++) {
         YogString_append_string(env, HDL2VAL(s), ".");
