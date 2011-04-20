@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: sizeof operator
+desc: Some C headers include sizeof operators.
+type: :task
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-20 05:21:58.057559 Z
+references: []
+
+id: e564046c7b7aa7e5903a3c786b05f4cb947f4e3b
+log_events: 
+- - 2011-04-20 05:21:58.702089 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

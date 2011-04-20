@@ -1,0 +1,25 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: C headers need the results of "==" as integer.
+desc: |-
+  SDL/SDL_stdinc.h has the following statement;
+  
+  SDL_COMPILE_TIME_ASSERT(uint8, sizeof(Uint8) == 1);
+  
+  This statement use the result of "==" operator as an integer. But Yog's results
+  of "==" is boolean, and Yog cannot calculate operations of integer with
+  boolean.
+type: :task
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-20 05:21:24.031422 Z
+references: []
+
+id: fc7ddc80d08a1f5234db1a14081d31e7a4b47fec
+log_events: 
+- - 2011-04-20 05:21:24.709933 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

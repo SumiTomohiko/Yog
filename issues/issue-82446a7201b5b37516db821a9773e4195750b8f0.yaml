@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Show conflicts of lalr1
+desc: ""
+type: :task
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-20 09:27:11.110707 Z
+references: []
+
+id: 82446a7201b5b37516db821a9773e4195750b8f0
+log_events: 
+- - 2011-04-20 09:27:11.830788 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

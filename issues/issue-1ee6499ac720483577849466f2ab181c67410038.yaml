@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Definition of SDL_AllocSurface
+desc: |-
+  SDL_AllocSurface is defined with SDL_CreateRGBSurface, but SDL_CreateRGBSurface
+  is not defined when SDL_AllocSurface's definition appears.
+type: :bugfix
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-20 04:51:57.479328 Z
+references: []
+
+id: 1ee6499ac720483577849466f2ab181c67410038
+log_events: 
+- - 2011-04-20 04:51:58.123615 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

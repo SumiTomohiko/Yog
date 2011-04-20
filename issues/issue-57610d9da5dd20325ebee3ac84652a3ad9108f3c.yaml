@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Improve y.output which should be same as that of bison
+desc: ""
+type: :task
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-20 09:26:38.076376 Z
+references: []
+
+id: 57610d9da5dd20325ebee3ac84652a3ad9108f3c
+log_events: 
+- - 2011-04-20 09:26:38.727436 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

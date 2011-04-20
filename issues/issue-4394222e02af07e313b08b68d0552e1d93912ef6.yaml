@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Cannot catch the exception raised from get_action in bin/lalr1gram.yog
+desc: See TODO comment in bin/lalr1gram.yog.
+type: :bugfix
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-20 09:25:49.339621 Z
+references: []
+
+id: 4394222e02af07e313b08b68d0552e1d93912ef6
+log_events: 
+- - 2011-04-20 09:25:50.401865 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

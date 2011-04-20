@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: WMcursor definition in SDL
+desc: WMcursor definition in SDL seems not to appear in sdl package.
+type: :bugfix
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-20 05:24:39.811942 Z
+references: []
+
+id: 3c9a831569eb567c5d47c33f6b44dde286c66845
+log_events: 
+- - 2011-04-20 05:24:40.494430 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
