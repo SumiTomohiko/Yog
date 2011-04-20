@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: h2yog package needs to be refactored.
+desc: See FIXME and TODO in lib/h2yog.yg.
+type: :task
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-04-20 13:48:25.816785 Z
+references: []
+
+id: 2b99cddfda8d7756b8a694aadd620f320b917640
+log_events: 
+- - 2011-04-20 13:48:26.348456 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
