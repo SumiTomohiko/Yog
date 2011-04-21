@@ -24,12 +24,6 @@ print(foo.bar)""".format(expected)
         ["signed long", -2147483648],
         ["unsigned long", 4294967295],
 
-        # Tests for long long
-        ["long long int", -9223372036854775808],
-        ["long long", -9223372036854775808],
-        ["signed long long", -9223372036854775808],
-        ["unsigned long long", 18446744073709551615],
-
         # Tests for short
         ["short int", -32768],
         ["short", 32767],
