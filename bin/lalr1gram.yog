@@ -524,7 +524,7 @@ end
 
 def dump_state(fp, state)
   fp.write("state {0}\n".format(state.id))
-  state.items.each(&partial(dump_item, fp))
+  state.items.each(&dump_item.partial(fp))
   fp.write("\n")
   fp.write("  shift:\n")
   state.shifts.each() do [sym, state]

@@ -1,5 +1,7 @@
 #include "yog/config.h"
-#include <alloca.h>
+#if defined(HAVE_ALLOCA_H)
+#   include <alloca.h>
+#endif
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
