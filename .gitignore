@@ -61,6 +61,7 @@ configure.scan
 core
 core.*
 corgi/Makefile
+corgi/_configs.sed
 corgi/doc/conf.py
 corgi/rc
 corgi/src/Makefile

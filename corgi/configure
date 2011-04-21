@@ -2498,6 +2498,9 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 ac_config_headers="$ac_config_headers include/corgi/config.h"
 
 
+ac_config_commands="$ac_config_commands include/corgi/config.h"
+
+
 
 # Checks for programs.
 ac_ext=c
@@ -4439,13 +4442,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4442: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4445: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4445: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4448: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4448: output\"" >&5)
+  (eval echo "\"\$as_me:4451: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -5651,7 +5654,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5654 "configure"' > conftest.$ac_ext
+  echo '#line 5657 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7508,11 +7511,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7511: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7514: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7515: \$? = $ac_status" >&5
+   echo "$as_me:7518: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7847,11 +7850,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7850: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7853: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7854: \$? = $ac_status" >&5
+   echo "$as_me:7857: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7952,11 +7955,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7955: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7958: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:7959: \$? = $ac_status" >&5
+   echo "$as_me:7962: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8007,11 +8010,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8010: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8013: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8014: \$? = $ac_status" >&5
+   echo "$as_me:8017: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10807,7 +10810,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10810 "configure"
+#line 10813 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10903,7 +10906,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10906 "configure"
+#line 10909 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13534,6 +13537,7 @@ cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
 #
 # INIT-COMMANDS
 #
+PACKAGE="$PACKAGE"
 AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"
 
 
@@ -13800,6 +13804,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "include/corgi/config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/corgi/config.h" ;;
+    "include/corgi/config.h") CONFIG_COMMANDS="$CONFIG_COMMANDS include/corgi/config.h" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
@@ -14454,6 +14459,140 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
 
 
   case $ac_file$ac_mode in
+    "include/corgi/config.h":C) ac_prefix_conf_OUT=`echo include/corgi/config.h`
+ac_prefix_conf_DEF=`echo _$ac_prefix_conf_OUT | sed -e "y:abcdefghijklmnopqrstuvwxyz:ABCDEFGHIJKLMNOPQRSTUVWXYZ:" -e "s/[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ]/_/g"`
+ac_prefix_conf_PKG=`echo $PACKAGE`
+ac_prefix_conf_LOW=`echo _$ac_prefix_conf_PKG | sed -e "y:ABCDEFGHIJKLMNOPQRSTUVWXYZ-:abcdefghijklmnopqrstuvwxyz_:"`
+ac_prefix_conf_UPP=`echo $ac_prefix_conf_PKG | sed -e "y:abcdefghijklmnopqrstuvwxyz-:ABCDEFGHIJKLMNOPQRSTUVWXYZ_:"  -e "/^[0123456789]/s/^/_/"`
+ac_prefix_conf_INP=`echo "" | sed -e 's/ *//'`
+if test ".$ac_prefix_conf_INP" = "."; then
+   for ac_file in : $CONFIG_HEADERS; do test "_$ac_file" = _: && continue
+     case "$ac_file" in
+        *.h) ac_prefix_conf_INP=$ac_file ;;
+        *)
+     esac
+     test ".$ac_prefix_conf_INP" != "." && break
+   done
+fi
+if test ".$ac_prefix_conf_INP" = "."; then
+   case "$ac_prefix_conf_OUT" in
+      */*) ac_prefix_conf_INP=`basename "$ac_prefix_conf_OUT"`
+      ;;
+      *-*) ac_prefix_conf_INP=`echo "$ac_prefix_conf_OUT" | sed -e "s/[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_]*-//"`
+      ;;
+      *) ac_prefix_conf_INP=config.h
+      ;;
+   esac
+fi
+if test -z "$ac_prefix_conf_PKG" ; then
+   { { $as_echo "$as_me:$LINENO: error: no prefix for _PREFIX_PKG_CONFIG_H" >&5
+$as_echo "$as_me: error: no prefix for _PREFIX_PKG_CONFIG_H" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  if test ! -f "$ac_prefix_conf_INP" ; then if test -f "$srcdir/$ac_prefix_conf_INP" ; then
+     ac_prefix_conf_INP="$srcdir/$ac_prefix_conf_INP"
+  fi fi
+  { $as_echo "$as_me:$LINENO: creating $ac_prefix_conf_OUT - prefix $ac_prefix_conf_UPP for $ac_prefix_conf_INP defines" >&5
+$as_echo "$as_me: creating $ac_prefix_conf_OUT - prefix $ac_prefix_conf_UPP for $ac_prefix_conf_INP defines" >&6;}
+  if test -f $ac_prefix_conf_INP ; then
+    $as_echo "s/^#undef  *\\([ABCDEFGHIJKLMNOPQRSTUVWXYZ_]\\)/#undef $ac_prefix_conf_UPP""_\\1/" > conftest.prefix
+    $as_echo "s/^#undef  *\\([abcdefghijklmnopqrstuvwxyz]\\)/#undef $ac_prefix_conf_LOW""_\\1/" >> conftest.prefix
+    $as_echo "s/^#define  *\\([ABCDEFGHIJKLMNOPQRSTUVWXYZ_][abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_]*\\)\\(.*\\)/#ifndef $ac_prefix_conf_UPP""_\\1\\" >> conftest.prefix
+    $as_echo "#define $ac_prefix_conf_UPP""_\\1\\2\\" >> conftest.prefix
+    $as_echo "#endif/" >> conftest.prefix
+    $as_echo "s/^#define  *\\([abcdefghijklmnopqrstuvwxyz][abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_]*\\)\\(.*\\)/#ifndef $ac_prefix_conf_LOW""_\\1\\" >> conftest.prefix
+    $as_echo "#define $ac_prefix_conf_LOW""_\\1\\2\\" >> conftest.prefix
+    $as_echo "#endif/" >> conftest.prefix
+    # now executing _script on _DEF input to create _OUT output file
+    echo "#ifndef $ac_prefix_conf_DEF"      >$tmp/pconfig.h
+    echo "#define $ac_prefix_conf_DEF 1" >>$tmp/pconfig.h
+    echo ' ' >>$tmp/pconfig.h
+    echo /'*' $ac_prefix_conf_OUT. Generated automatically at end of configure. '*'/ >>$tmp/pconfig.h
+
+    sed -f conftest.prefix $ac_prefix_conf_INP >>$tmp/pconfig.h
+    echo ' ' >>$tmp/pconfig.h
+    echo '/* once:' $ac_prefix_conf_DEF '*/' >>$tmp/pconfig.h
+    echo "#endif" >>$tmp/pconfig.h
+    if cmp -s $ac_prefix_conf_OUT $tmp/pconfig.h 2>/dev/null; then
+      { $as_echo "$as_me:$LINENO: $ac_prefix_conf_OUT is unchanged" >&5
+$as_echo "$as_me: $ac_prefix_conf_OUT is unchanged" >&6;}
+    else
+      ac_dir=`$as_dirname -- "$ac_prefix_conf_OUT" ||
+$as_expr X"$ac_prefix_conf_OUT" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$ac_prefix_conf_OUT" : 'X\(//\)[^/]' \| \
+	 X"$ac_prefix_conf_OUT" : 'X\(//\)$' \| \
+	 X"$ac_prefix_conf_OUT" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$ac_prefix_conf_OUT" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q'`
+      { as_dir="$ac_dir"
+  case $as_dir in #(
+  -*) as_dir=./$as_dir;;
+  esac
+  test -d "$as_dir" || { $as_mkdir_p && mkdir -p "$as_dir"; } || {
+    as_dirs=
+    while :; do
+      case $as_dir in #(
+      *\'*) as_qdir=`$as_echo "$as_dir" | sed "s/'/'\\\\\\\\''/g"`;; #'(
+      *) as_qdir=$as_dir;;
+      esac
+      as_dirs="'$as_qdir' $as_dirs"
+      as_dir=`$as_dirname -- "$as_dir" ||
+$as_expr X"$as_dir" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$as_dir" : 'X\(//\)[^/]' \| \
+	 X"$as_dir" : 'X\(//\)$' \| \
+	 X"$as_dir" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$as_dir" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q'`
+      test -d "$as_dir" && break
+    done
+    test -z "$as_dirs" || eval "mkdir $as_dirs"
+  } || test -d "$as_dir" || { { $as_echo "$as_me:$LINENO: error: cannot create directory $as_dir" >&5
+$as_echo "$as_me: error: cannot create directory $as_dir" >&2;}
+   { (exit 1); exit 1; }; }; }
+      rm -f "$ac_prefix_conf_OUT"
+      mv $tmp/pconfig.h "$ac_prefix_conf_OUT"
+    fi
+    cp conftest.prefix _configs.sed
+  else
+    { { $as_echo "$as_me:$LINENO: error: input file $ac_prefix_conf_INP does not exist - skip generating $ac_prefix_conf_OUT" >&5
+$as_echo "$as_me: error: input file $ac_prefix_conf_INP does not exist - skip generating $ac_prefix_conf_OUT" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+  rm -f conftest.*
+fi
+ ;;
     "depfiles":C) test x"$AMDEP_TRUE" != x"" || for mf in $CONFIG_FILES; do
   # Strip MF so we end up with the name of the file.
   mf=`echo "$mf" | sed -e 's/:.*$//'`
@@ -15253,11 +15392,5 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
-
-echo "Replacing directive names..."
-config_file="include/corgi/config.h"
-tmp_file="$$"
-sed -e "s/^#define /#define CORGI_/" < "${config_file}" > "${tmp_file}"
-mv "${tmp_file}" "${config_file}"
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

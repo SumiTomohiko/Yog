@@ -6,6 +6,7 @@ AC_INIT([corgi], [0.0.2], [SumiTomohiko@neko-daisuki.ddo.jp])
 AM_INIT_AUTOMAKE([dist-bzip2])
 AC_CONFIG_SRCDIR([src/corgi.c])
 AC_CONFIG_HEADERS([include/corgi/config.h])
+AX_PREFIX_CONFIG_H([include/corgi/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 # Checks for programs.
@@ -41,11 +42,5 @@ AC_CONFIG_FILES([Makefile
                  rc
                  doc/conf.py])
 AC_OUTPUT
-
-echo "Replacing directive names..."
-config_file="include/corgi/config.h"
-tmp_file="$$"
-sed -e "s/^#define /#define CORGI_/" < "${config_file}" > "${tmp_file}"
-mv "${tmp_file}" "${config_file}"
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
