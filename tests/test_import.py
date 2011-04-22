@@ -102,6 +102,6 @@ print(test_package8.foo.bar)
 """, "42")
 
     def test_lib_path0(self):
-        self._test("import bar", "42", options=["--lib-path=foo"])
+        self._test("import foo", "42", options=["--lib-path=test_lib_path0"])
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
