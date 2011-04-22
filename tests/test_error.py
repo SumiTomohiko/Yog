@@ -22,7 +22,7 @@ puts("xx" * 134217728)
         try:
             stdout_path = self.make_temp_file("stdout", ".log")
             stderr_path = self.make_temp_file("stderr", ".log")
-            proc = self.run_command(["foo"], stdout_path, stderr_path)
+            proc = self.run_command(["Not exists"], stdout_path, stderr_path)
             self.wait_proc(proc)
             stderr = self.read(stderr_path)
             m = match("Can't open file \"foo\"", stderr)
