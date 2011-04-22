@@ -681,6 +681,9 @@ print(\"foo\".split(//))
 """, "[\"f\", \"o\", \"o\"]")
 
     def test_get0(self):
+        self._test("print(\"\".get(0))", "nil")
+
+    def test_get5(self):
         self._test("""
 print(\"\".get(0, \"foo\"))
 """, "foo")
@@ -694,18 +697,6 @@ print(\"foo\".get(0, \"bar\"))
         self._test("""
 print(\"foo\".get(0))
 """, "f")
-
-    def test_get30(self):
-        def test_stderr(stderr):
-            self._test_regexp(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <package>
-  File builtin, in String#get
-IndexError: String index out of range
-""", stderr)
-
-        self._test("""
-\"\".get(0)
-""", stderr=test_stderr)
 
     def test_rfind0(self):
         self._test("""
