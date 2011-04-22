@@ -3753,31 +3753,29 @@ UnionClass_define_fields(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogV
 }
 
 static YogVal
+make_meta_class(YogEnv* env, YogVal pkg, const char* name, YogVal klass, YogAPI define_fields)
+{
+    SAVE_ARGS2(env, pkg, klass);
+    YogVM* vm = env->vm;
+    YogVal obj = YogClass_new(env, name, vm->cClass);
+    PUSH_LOCAL(env, obj);
+
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, obj), klass, klass);
+    YogClass_define_method(env, obj, pkg, "define_fields", define_fields);
+
+    RETURN(env, obj);
+}
+
+static YogVal
 UnionClassClass_new(YogEnv* env, YogVal pkg)
 {
-    SAVE_ARG(env, pkg);
-
-    YogVM* vm = env->vm;
-    YogVal cUnionClass = YogClass_new(env, "UnionClass", vm->cClass);
-    YogVal klass = vm->cUnionClassClass;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, cUnionClass), klass, klass);
-    YogClass_define_method(env, cUnionClass, pkg, "define_fields", UnionClass_define_fields);
-
-    RETURN(env, cUnionClass);
+    return make_meta_class(env, pkg, "UnionClass", env->vm->cUnionClassClass, UnionClass_define_fields);
 }
 
 static YogVal
 StructClassClass_new(YogEnv* env, YogVal pkg)
 {
-    SAVE_ARG(env, pkg);
-
-    YogVM* vm = env->vm;
-    YogVal cStructClass = YogClass_new(env, "StructClass", vm->cClass);
-    YogVal klass = vm->cStructClassClass;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, cStructClass), klass, klass);
-    YogClass_define_method(env, cStructClass, pkg, "define_fields", StructClass_define_fields);
-
-    RETURN(env, cStructClass);
+    return make_meta_class(env, pkg, "StructClass", env->vm->cStructClassClass, StructClass_define_fields);
 }
 
 static uint_t
