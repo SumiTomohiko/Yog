@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from platform import system
 from pty import CHILD, openpty
 from select import select
 from termios import ECHO, TCSAFLUSH, tcgetattr, tcsetattr
@@ -69,6 +70,8 @@ def spawn(argv, stdin):
     return stdout, stderr
 
 class TestInteractive(TestCase):
+
+    disabled = system() != "Linux"
 
     def replace_newlines(self, s):
         return s.replace("\r\n", "\n")
