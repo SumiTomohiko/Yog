@@ -22,10 +22,12 @@ puts("xx" * 134217728)
         try:
             stdout_path = self.make_temp_file("stdout", ".log")
             stderr_path = self.make_temp_file("stderr", ".log")
-            proc = self.run_command(["Not exists"], stdout_path, stderr_path)
+            filename = "Not exists"
+            proc = self.run_yog([filename], stdout_path, stderr_path)
             self.wait_proc(proc)
             stderr = self.read(stderr_path)
-            m = match("Can't open file \"foo\"", stderr)
+            regexp = "Can't open file \"{filename}\"".format(**locals())
+            m = match(regexp, stderr)
             assert m is not None
         finally:
             for path in [stdout_path, stderr_path]:
