@@ -185,9 +185,9 @@ class TestCase(object):
         else:
             self._test_interactive(stdout, stderr, stdin, status, options, timeout)
 
-skipif = pytest.mark.skipif
+skipif = splitext(basename(get_command()))[0] != "yog-generational"
 
-@skipif("splitext(basename(get_command()))[0] != \"yog-generational\"")
+@pytest.mark.skipif("{skipif}".format(**globals()))
 class TestLib(TestCase):
     pass
 
