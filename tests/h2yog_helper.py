@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from os import unlink
 from testcase import TestCase, get_lib_path
 
 class Base(TestCase):
@@ -22,7 +21,7 @@ h2yog(\"test_h2yog.yg\", headers, \"%(so)s\") do [path, name]
   next headers.include?(path.basename)
 end""" % { "headers": ", ".join([ "\"%s\"" % (header, ) for header in headers]), "so": so }
         path = "run_h2yog.yg"
-        unlink(path)
+        self.unlink(path)
         self.write_source(path, src)
         proc = self.run_command(["--young-heap-size=48M", path])
         self.wait_proc(proc)
