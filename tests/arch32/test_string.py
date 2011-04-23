@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import pytest
 from testcase import TestCase
 from utils import is_32bit
 
+@pytest.mark.skipif("is_32bit() is not True")
 class TestString(TestCase):
-
-    disabled = is_32bit() is not True
 
     def test_string_multiply0(self):
         def test_stderr(stderr):

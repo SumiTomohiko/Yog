@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from os import name
+import pytest
 from testcase import TestCase
 
+@pytest.mark.skipif("name == \"nt\"")
 class TestThread(TestCase):
-
-    disabled = name == "nt"
 
     def test_thread1(self):
         self._test("""

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from os.path import dirname
+import pytest
 from ffi_helper import Base, define_range_test
 from utils import is_32bit
 
+@pytest.mark.skipif("is_32bit() is not True")
 class TestFFI(Base):
-
-    disabled = is_32bit() is not True
 
     # Tests for ushort
     def test_Struct0(self):

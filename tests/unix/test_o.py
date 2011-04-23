@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import pytest
 from testcase import find_so
 from unix import TestUnix
 
+@pytest.mark.skipif("not find_so(\"o\")")
 class TestZlib(TestUnix):
 
-    disabled = TestUnix.disabled or (not find_so("o"))
     options = []
 
     def test_gc0(self):

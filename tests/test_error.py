@@ -2,11 +2,11 @@
 
 from os import environ, unlink
 from re import match, search
+import pytest
 from testcase import TestCase
 
+@pytest.mark.skipif("environ.get(\"GC\", \"copying\") != \"copying\"")
 class TestError(TestCase):
-
-    disabled = environ.get("GC", "copying") != "copying"
 
     def test_out_of_memory0(self):
         def test_stderr(stderr):

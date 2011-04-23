@@ -6,7 +6,7 @@ from select import select
 from termios import ECHO, TCSAFLUSH, tcgetattr, tcsetattr
 from tty import LFLAG
 import os
-
+import pytest
 from testcase import TestCase, get_command
 
 def write(fd, data):
@@ -69,9 +69,8 @@ def spawn(argv, stdin):
         os.close(fd)
     return stdout, stderr
 
+@pytest.mark.skipif("system() != \"Linux\"")
 class TestInteractive(TestCase):
-
-    disabled = system() != "Linux"
 
     def replace_newlines(self, s):
         return s.replace("\r\n", "\n")

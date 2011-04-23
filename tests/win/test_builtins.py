@@ -1,10 +1,10 @@
 
 import os
+import pytest
 from testcase import TestCase
 
+@pytest.mark.skipif("os.name != \"nt\"")
 class TestBuiltins(TestCase):
-
-    disabled = os.name != "nt"
 
     def test_dirname0(self):
         self._test("""

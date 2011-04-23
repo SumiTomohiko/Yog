@@ -8,6 +8,7 @@ from tempfile import mkstemp
 from time import localtime, strftime, time
 import os
 import sys
+import pytest
 
 def find_so(name):
     so = "lib%s.so" % (name, )
@@ -184,8 +185,10 @@ class TestCase(object):
         else:
             self._test_interactive(stdout, stderr, stdin, status, options, timeout)
 
-class TestLib(TestCase):
+skipif = pytest.mark.skipif
 
-    disabled = splitext(basename(get_command()))[0] != "yog-generational"
+@skipif("splitext(basename(get_command()))[0] != \"yog-generational\"")
+class TestLib(TestCase):
+    pass
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

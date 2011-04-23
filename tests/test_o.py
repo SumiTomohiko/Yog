@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from shutil import rmtree
+import pytest
 from testcase import TestCase, find_so
 
+@pytest.mark.skipif("not find_so(\"o\")")
 class TestO(TestCase):
 
-    disabled = not find_so("o")
     options = []
 
     def get_db_path(self):
