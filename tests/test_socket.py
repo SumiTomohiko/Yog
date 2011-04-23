@@ -21,7 +21,7 @@ class TestSocket(TestLib):
 
     def wait_server_start(self, port):
         n = 0
-        max = 4096
+        max = 4
         while (n < max) and (not self.try_to_connect(port)):
             n += 1
             sleep(1)
