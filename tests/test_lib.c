@@ -4,9 +4,19 @@
 #include <string.h>
 
 void
+print_pointer(const void* p)
+{
+    if (p == NULL) {
+        printf("(nil)");
+        return;
+    }
+    printf("%p", p);
+}
+
+void
 print_string2(const char* s)
 {
-    printf("%p", s);
+    print_pointer(s);
 }
 
 void
@@ -57,7 +67,7 @@ struct Hoge {
 void
 print_struct2(struct Hoge* hoge)
 {
-    printf("%p", hoge);
+    print_pointer(hoge);
 }
 
 void
@@ -178,12 +188,6 @@ void
 print_longdouble(long double f)
 {
     printf("%.2Lf", f);
-}
-
-void
-print_pointer(void* ptr)
-{
-    printf("%p", ptr);
 }
 
 void
