@@ -1,5 +1,5 @@
 
-INSTALL_SUBDIRS = src ext lib
+INSTALL_SUBDIRS = bin src ext lib
 SUBDIRS = @BDWGC_DIR@ corgi gmp libffi $(INSTALL_SUBDIRS)
 ARCHIVE = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 

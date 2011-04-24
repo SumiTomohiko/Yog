@@ -50,6 +50,8 @@ bdwgc/libatomic_ops-1.2/src/Makefile
 bdwgc/libatomic_ops-1.2/src/atomic_ops/Makefile
 bdwgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/Makefile
 bdwgc/libatomic_ops-1.2/tests/Makefile
+bin/Makefile
+bin/Makefile.in
 config.h
 config.log
 config.status
