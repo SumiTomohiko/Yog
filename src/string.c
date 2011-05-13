@@ -633,7 +633,7 @@ slice(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* pos, YogHandle* l
     if ((n < 0) || (max_index < n)) {
         return YogString_new(env);
     }
-    uint_t begin;
+    uint_t begin = 0; /* GCC 4.4.3 warns uninitialized this variable */
     if (!index2offset(env, HDL2VAL(self), n, &begin)) {
         const char* fmt = "Position %d out of range [-%u, %u]";
         int_t n = VAL2INT(HDL2VAL(pos));
@@ -647,7 +647,7 @@ slice(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* pos, YogHandle* l
         return YogString_new(env);
     }
     int_t l = normalize_length(env, len, max_index, n);
-    uint_t end;
+    uint_t end = 0; /* GCC 4.4.3 warns uninitialized this variable */
     if (!index2offset(env, HDL2VAL(self), n + l - 1, &end)) {
         const char* fmt = "Length %d out of range [0, %d]";
         int_t l = VAL2INT(HDL2VAL(len));
