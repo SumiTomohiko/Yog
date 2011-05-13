@@ -232,7 +232,7 @@ euc_jp_conv_char_to_yog(YogEnv* env, YogHandle* self, const char* s)
         YogChar euc_jp2yog_hankaku[] = {
 #include "euc_jp2yog_hankaku.inc"
         };
-        return euc_jp2yog_hankaku[s[1] - 0xa1];
+        return euc_jp2yog_hankaku[(unsigned char)s[1] - 0xa1];
     }
     if (c1 == 0x8f) {
         YogChar euc_jp2yog_3bytes[] = {
