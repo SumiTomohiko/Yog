@@ -1487,39 +1487,6 @@ compute_nonlocal_depth(YogEnv* env, ID name, YogVal var, Context ctx, YogVal out
     RETURN_VOID(env);
 }
 
-static BOOL
-is_var_assigned_in_inner_scope(YogEnv* env, ID name, YogVal tbl)
-{
-    SAVE_ARG(env, tbl);
-    YogVal vars = YUNDEF;
-    YogVal var = YUNDEF;
-    YogVal inner_tbls = YUNDEF;
-    YogVal inner_tbl = YUNDEF;
-    PUSH_LOCALS4(env, vars, var, inner_tbls, inner_tbl);
-
-    inner_tbls = VAR_TABLE(tbl)->inner_tbls;
-    uint_t size = YogArray_size(env, inner_tbls);
-    uint_t i;
-    for (i = 0; i < size; i++) {
-        inner_tbl = YogArray_at(env, inner_tbls, i);
-        vars = VAR_TABLE(inner_tbl)->vars;
-        var = YUNDEF;
-        if (YogTable_lookup(env, vars, ID2VAL(name), &var)) {
-            if (IS_PARAM(VAR(var)->flags)) {
-                continue;
-            }
-            if (IS_ASSIGNED(VAR(var)->flags)) {
-                RETURN(env, TRUE);
-            }
-        }
-        if (is_var_assigned_in_inner_scope(env, name, inner_tbl)) {
-            RETURN(env, TRUE);
-        }
-    }
-
-    RETURN(env, FALSE);
-}
-
 static void
 decide_auto_var_type(YogEnv* env, ID name, YogVal var, YogVal tbl, uint_t* pindex)
 {
