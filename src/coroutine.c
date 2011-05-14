@@ -158,7 +158,7 @@ SwitchContext_init(YogEnv* env, SwitchContext* ctx)
 #endif
 
 #if !defined(_WIN32)
-static void
+static void __attribute__((noinline))
 switch_context(YogEnv* env, SwitchContext* to, SwitchContext* cont)
 {
     __asm__ __volatile__(
