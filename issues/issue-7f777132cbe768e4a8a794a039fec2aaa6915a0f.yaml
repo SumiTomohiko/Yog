@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rewrite yaml package in Yog
+desc: ""
+type: :task
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-05-14 14:38:56.152198 Z
+references: []
+
+id: 7f777132cbe768e4a8a794a039fec2aaa6915a0f
+log_events: 
+- - 2011-05-14 14:38:56.685084 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
