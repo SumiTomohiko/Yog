@@ -1,0 +1,46 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: run_command for unknown commands cause segmentation fault
+desc: |-
+  $ cat foo.yg
+    
+    out, err, stat = run_command("foo")
+    puts("------------------------")
+    puts(out)
+    puts("------------------------")
+    puts(err)
+    puts("------------------------")
+    puts(stat)
+    puts("------------------------")
+    
+    # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+    
+    $ src/yog-generational --gc-stress foo.yg
+    zsh: segmentation fault (core dumped)  src/yog-generational --gc-stress foo.yg
+    $ src/yog-generational foo.yg
+    ------------------------
+    0
+    ------------------------
+    
+    ------------------------
+    Traceback (most recent call last):
+      File "foo.yg", line 2, in <package>
+      File "builtins", line 1, in run_command
+      File builtin, in Process#run
+      SystemError: No such file or directory - ["foo"]
+    
+    ------------------------
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-05-14 01:14:16.099136 Z
+references: []
+
+id: 30e5fbf5ab99c784337aea4ea961dd045893ee52
+log_events: 
+- - 2011-05-14 01:14:16.898875 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
