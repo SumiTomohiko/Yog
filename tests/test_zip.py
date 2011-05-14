@@ -6,8 +6,10 @@ from os.path import dirname, join
 from shutil import rmtree
 from tempfile import mkdtemp
 from zipfile import ZIP_DEFLATED, ZipFile
-from testcase import TestLib
+from testcase import TestLib, find_so
+import pytest
 
+@pytest.mark.skipif("not find_so(\"zip\")")
 class TestZip(TestLib):
 
     options = []

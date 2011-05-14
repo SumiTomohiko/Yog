@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from testcase import TestCase
+from testcase import TestLib, find_so
+import pytest
 
-class TestYaml(TestCase):
+@pytest.mark.skipif("not find_so(\"syck\")")
+class TestYaml(TestLib):
 
     options = []
 
