@@ -3,7 +3,7 @@ from c import Macro, parse, parse_macro
 from c.grammar import ArrayNode, BinopNode, BitFieldNode, CallNode, ConstantNode, EnumNode, ExprNode, PointerNode, ProtoNode, SizeofNode, StructBaseNode, StructNode, TypedefNode, UnaryNode, VarNode, get_typedef_name
 
 def build_command(headers, opts)
-  cmd = ["/usr/bin/gcc", "-E"] + opts
+  cmd = ["/usr/bin/env", "gcc", "-E"] + opts
   headers.each() do [header]
     cmd.extend(["-include", header])
   end
