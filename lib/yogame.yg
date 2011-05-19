@@ -30,7 +30,7 @@ def open_audio(numchans, &block)
 end
 
 def init_audio(numchans, &block)
-  flags = sdl.mixer.MIX_INIT_MP3
+  flags = 0
   if (sdl.mixer.Mix_Init(flags) & flags != flags)
     sdl.mixer.Mix_Quit()
     raise SdlError.new("Mix_Init failed")
