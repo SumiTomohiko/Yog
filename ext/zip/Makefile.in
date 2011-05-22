@@ -4,7 +4,6 @@ include ../Makefile.common
 top_srcdir = @top_srcdir@
 SO = $(top_srcdir)/ext/zip.$(SOEXT)
 LIBS = -lzip
-mkdir_p = @mkdir_p@
 
 OBJS = zip.$(OBJEXT)
 

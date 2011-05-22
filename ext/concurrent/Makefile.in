@@ -6,7 +6,6 @@ SOEXT = @SOEXT@
 CC = @CC@
 CFLAGS = @CFLAGS@
 SO = $(top_srcdir)/ext/concurrent.$(SOEXT)
-mkdir_p = @mkdir_p@
 
 .PHONY: all clean distclean maintainer-clean install
 

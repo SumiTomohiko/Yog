@@ -5,7 +5,6 @@ top_srcdir = @top_srcdir@
 SOEXT = @SOEXT@
 CC = @CC@
 SO = $(top_srcdir)/ext/uname.$(SOEXT)
-mkdir_p = @mkdir_p@
 
 .PHONY: all clean distclean maintainer-clean install
 
