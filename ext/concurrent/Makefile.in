@@ -2,12 +2,11 @@
 include ../Makefile.common
 
 top_srcdir = @top_srcdir@
-prefix = @prefix@
-VERSION = @PACKAGE_VERSION@
 SOEXT = @SOEXT@
 CC = @CC@
 CFLAGS = @CFLAGS@
 SO = $(top_srcdir)/ext/concurrent.$(SOEXT)
+mkdir_p = @mkdir_p@
 
 .PHONY: all clean distclean maintainer-clean install
 
@@ -28,6 +27,7 @@ maintainer-clean:
 	rm -f Makefile
 
 install:
+	$(mkdir_p) $(libdir)
 	$(install_sh_DATA) $(SO) $(libdir)
 
 Makefile: Makefile.in

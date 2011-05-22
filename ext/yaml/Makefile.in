@@ -4,6 +4,7 @@ include ../Makefile.common
 top_srcdir = @top_srcdir@
 SO = $(top_srcdir)/ext/yaml.$(SOEXT)
 LIBS = -lsyck
+mkdir_p = @mkdir_p@
 
 OBJS = yaml.$(OBJEXT)
 
@@ -22,6 +23,7 @@ clean:
 	rm -f $(SO) $(OBJS)
 
 install:
+	$(mkdir_p) $(libdir)
 	$(install_sh_DATA) $(SO) $(libdir)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab
