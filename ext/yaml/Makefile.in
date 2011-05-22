@@ -4,6 +4,7 @@ include ../Makefile.common
 top_srcdir = @top_srcdir@
 SO = $(top_srcdir)/ext/yaml.$(SOEXT)
 LIBS = -lsyck
+top_builddir = @top_builddir@
 mkdir_p = @mkdir_p@
 
 OBJS = yaml.$(OBJEXT)
