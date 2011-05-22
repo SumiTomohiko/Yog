@@ -4,7 +4,6 @@ include ../Makefile.common
 top_srcdir = @top_srcdir@
 prefix = @prefix@
 VERSION = @PACKAGE_VERSION@
-DIR = $(prefix)/lib/yog/$(VERSION)
 SOEXT = @SOEXT@
 CC = @CC@
 CFLAGS = @CFLAGS@
@@ -29,8 +28,7 @@ maintainer-clean:
 	rm -f Makefile
 
 install:
-	mkdir -p $(DIR)
-	$(install_sh_DATA) $(SO) $(DIR)
+	$(install_sh_DATA) $(SO) $(libdir)
 
 Makefile: Makefile.in
 	cd $(top_srcdir) && ./config.status ext/concurrent/$@
