@@ -5,6 +5,8 @@ top_srcdir = @top_srcdir@
 SO = $(top_srcdir)/ext/zip.$(SOEXT)
 LIBS = -lzip
 top_builddir = @top_builddir@
+SHELL = @SHELL@
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 mkdir_p = @mkdir_p@
 
 OBJS = zip.$(OBJEXT)
