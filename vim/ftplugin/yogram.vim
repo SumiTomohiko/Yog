@@ -1,7 +1,4 @@
 
-" Write the following line in ~/.vim/filetype.vim
-" au BufNewFile,BufRead *.yogram setf yogram
-
 source <sfile>:p:h/yog.vim
 
 sy match Identifier "<[A-Za-z_][A-Za-z0-9_]*>"

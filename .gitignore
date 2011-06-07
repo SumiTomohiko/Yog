@@ -631,6 +631,11 @@ tools/swig/swig
 vgcore.*
 vim/Makefile
 vim/Makefile.in
+vim/ftdetect/Makefile
+vim/ftdetect/Makefile.in
+vim/ftplugin/Makefile
+vim/ftplugin/Makefile.in
+vim/ftplugin/yg.vim
 y.output
 yog-bdw*
 yog-copying*

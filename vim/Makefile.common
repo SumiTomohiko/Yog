@@ -1,4 +1,4 @@
 
-SUBDIRS = ftdetect ftplugin
+VIM_DIR = $(HOME)/.vim
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab filetype=automake
