@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Build continuous integration system
+desc: |-
+  To avoid the bug which was fixed in commit 8710539 (the problem of
+  ext/**/Makefile.in).
+type: :task
+component: misc
+release: 
+reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-06-07 07:30:57.411114 Z
+references: []
+
+id: 0c7073fe7be2d84d29be7195556e56be0300e136
+log_events: 
+- - 2011-06-07 07:30:58.854650 Z
+  - SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
