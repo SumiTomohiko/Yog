@@ -308,8 +308,7 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal s = YUNDEF;
-    YogVal enc = YUNDEF;
-    PUSH_LOCALS2(env, s, enc);
+    PUSH_LOCAL(env, s);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "to_s", params, args, kw);
     CHECK_SELF_BINARY;
@@ -317,7 +316,6 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     if (!IS_PTR(BINARY_BODY(self))) {
         RETURN(env, YogString_from_string(env, "b\"\""));
     }
-    enc = YogEncoding_get_ascii(env);
     s = YogString_from_string(env, "b\"");
     uint_t size = YogBinary_size(env, self);
     uint_t i;
