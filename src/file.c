@@ -63,16 +63,59 @@ YogFile_new(YogEnv* env)
     return alloc(env, env->vm->cFile);
 }
 
+static void
+write_binary(YogEnv* env, YogHandle* self, YogVal val)
+{
+    FILE* fp = HDL_AS(YogFile, self)->fp;
+    uint_t rest = BINARY_SIZE(val);
+    const char* p = BINARY_CSTR(val);
+    while (0 < rest) {
+        uint_t size = fwrite(p, 1, rest, fp);
+        rest -= size;
+        p += size;
+    }
+}
+
 static YogVal
-write(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
+write(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* data)
 {
     CHECK_SELF_TYPE2(env, self);
-    YogMisc_check_String(env, s, "s");
+    YOG_ASSERT(env, data != NULL, "data is not optional.");
+    YogVal val = HDL2VAL(data);
+#define RAISE_TYPE_ERROR    do { \
+    const char* msg = "data must be Binary or String, not %C"; \
+    YogError_raise_TypeError(env, msg, data); \
+} while (0)
+    if (!IS_PTR(val)) {
+        RAISE_TYPE_ERROR;
+    }
+    if (BASIC_OBJ_TYPE(val) == TYPE_BINARY) {
+        write_binary(env, self, val);
+        return HDL2VAL(self);
+    }
+    if (BASIC_OBJ_TYPE(val) != TYPE_STRING) {
+        RAISE_TYPE_ERROR;
+    }
+#undef RAISE_TYPE_ERROR
 
-    YogVal bin = YogString_to_bin_in_default_encoding(env, s);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, data);
     fputs(BINARY_CSTR(bin), HDL_AS(YogFile, self)->fp);
 
     return HDL2VAL(self);
+}
+
+static YogVal
+read_binary(YogEnv* env, YogVal self)
+{
+    FILE* fp = PTR_AS(YogFile, self)->fp;
+    YogHandle* data = VAL2HDL(env, YogBinary_new(env));
+    do {
+        char buffer[4096];
+        size_t unit = sizeof(buffer[0]);
+        uint_t size = fread(buffer, unit, array_sizeof(buffer), fp);
+        YogBinary_add(env, HDL2VAL(data), buffer, size);
+    } while (!feof(fp));
+    return HDL2VAL(data);
 }
 
 static YogVal
@@ -84,6 +127,10 @@ read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { NULL, NULL } };
     YogGetArgs_parse_args(env, "read", params, args, kw);
+
+    if (IS_UNDEF(PTR_AS(YogFile, self)->encoding)) {
+        RETURN(env, read_binary(env, self));
+    }
 
     s = YogString_new(env);
     FILE* fp = PTR_AS(YogFile, self)->fp;
@@ -151,6 +198,31 @@ readline(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     RETURN(env, line);
 }
 
+static const char* r = "r";
+
+static const char*
+mode2cstr(YogEnv* env, YogVal mode)
+{
+    if (IS_UNDEF(mode)) {
+        return r;
+    }
+    YogHandle* h = VAL2HDL(env, mode);
+    return BINARY_CSTR(YogString_to_bin_in_default_encoding(env, h));
+}
+
+static YogVal
+decide_encoding(YogEnv* env, const char* mode, YogVal encoding)
+{
+    if (strchr(mode, 'b') != NULL) {
+        return YUNDEF;
+    }
+
+    if (IS_UNDEF(encoding) || IS_NIL(encoding)) {
+        return YogEncoding_get_default(env);
+    }
+    return encoding;
+}
+
 static YogVal
 open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -160,7 +232,8 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     YogVal mode = YUNDEF;
     YogVal encoding = YUNDEF;
     YogVal retval = YUNDEF;
-    PUSH_LOCALS5(env, file, path, mode, encoding, retval);
+    YogVal fp_enc = YUNDEF;
+    PUSH_LOCALS6(env, file, path, mode, encoding, retval, fp_enc);
 
     YogCArg params[] = {
         { "path", &path },
@@ -178,10 +251,8 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     if (!IS_UNDEF(mode) && (!IS_PTR(mode) || (BASIC_OBJ_TYPE(mode) != TYPE_STRING))) {
         YogError_raise_TypeError(env, "mode must be String");
     }
-    if (IS_UNDEF(encoding)) {
-        /* TODO: IS_NIL */
-        encoding = YogEncoding_get_default(env);
-    }
+    char m[3];
+    strncpy(m, mode2cstr(env, mode), array_sizeof(m));
 #if 0
     else if (!IS_PTR(encoding) || (BASIC_OBJ_TYPE(encoding) != TYPE_ENCODING)) {
         YogError_raise_TypeError(env, "encoding must be Encoding");
@@ -192,13 +263,13 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 
     YogHandle* h = YogHandle_REGISTER(env, path);
     YogHandle* bin = VAL2HDL(env, YogString_to_bin_in_default_encoding(env, h));
-    const char* m = IS_UNDEF(mode) ? "r" : BINARY_CSTR(YogString_to_bin_in_default_encoding(env, YogHandle_REGISTER(env, mode)));
     FILE* fp = fopen(BINARY_CSTR(HDL2VAL(bin)), m);
     if (fp == NULL) {
         YogError_raise_sys_err(env, errno, path);
     }
     PTR_AS(YogFile, file)->fp = fp;
-    YogGC_UPDATE_PTR(env, PTR_AS(YogFile, file), encoding, encoding);
+    fp_enc = decide_encoding(env, m, encoding);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFile, file), encoding, fp_enc);
 
     if (!IS_PTR(block)) {
         RETURN(env, file);
@@ -247,7 +318,7 @@ YogFile_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD2(name, f, ...) do { \
     YogClass_define_method2(env, cFile, pkg, (name), (f), __VA_ARGS__); \
 } while (0)
-    DEFINE_METHOD2("write", write, "s", NULL);
+    DEFINE_METHOD2("write", write, "data", NULL);
 #undef DEFINE_METHOD2
     vm->cFile = cFile;
 
