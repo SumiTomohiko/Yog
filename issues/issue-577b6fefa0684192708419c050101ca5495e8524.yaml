@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Make Binary#to_s which accepts an encoding of a String object.
+desc: ""
+type: :task
+component: core
+release: 
+reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-06-09 11:27:53.635408 Z
+references: []
+
+id: 577b6fefa0684192708419c050101ca5495e8524
+log_events: 
+- - 2011-06-09 11:27:55.392567 Z
+  - SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

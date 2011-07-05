@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Process objects cannot handle binary data.
+desc: |-
+  If a process outputs binary data, the caller cannot recieve it as a Binary
+  object. It is a case of running "curl http://example.com/foo.tar.xz".
+type: :bugfix
+component: core
+release: 
+reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-06-09 08:53:05.647077 Z
+references: []
+
+id: 2f93b48628b90d1c5486ad68830915f2a1ed5fe0
+log_events: 
+- - 2011-06-09 08:53:06.232287 Z
+  - SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

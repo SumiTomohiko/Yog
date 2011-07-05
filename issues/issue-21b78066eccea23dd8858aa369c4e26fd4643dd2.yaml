@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Change Binary#to_s to Binary#inspect.
+desc: Current implementation of Binary#to_s is Binary#inspect.
+type: :task
+component: core
+release: 
+reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-06-09 11:26:47.741074 Z
+references: []
+
+id: 21b78066eccea23dd8858aa369c4e26fd4643dd2
+log_events: 
+- - 2011-06-09 11:26:48.209634 Z
+  - SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

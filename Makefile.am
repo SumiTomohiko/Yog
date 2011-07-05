@@ -42,8 +42,12 @@ test-generational:
 	export YOG=`pwd`/src/yog-generational$(EXEEXT); \
 	./run_tests
 
+VIM_DIR = vim
 vim:
-	cd vim && make
+	cd $(VIM_DIR) && $(MAKE)
+
+install-vim: vim
+	cd $(VIM_DIR) && $(MAKE) install
 
 install:
 	for d in $(INSTALL_SUBDIRS); do \

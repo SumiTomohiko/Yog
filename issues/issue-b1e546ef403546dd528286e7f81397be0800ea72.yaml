@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: run_command cannot handle binary data.
+desc: See the issue fo 2f93b48628b90d1c5486ad68830915f2a1ed5fe0 for more information.
+type: :bugfix
+component: core
+release: 
+reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-06-09 08:58:35.453806 Z
+references: []
+
+id: b1e546ef403546dd528286e7f81397be0800ea72
+log_events: 
+- - 2011-06-09 08:58:36.039401 Z
+  - SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

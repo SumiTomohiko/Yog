@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from re import match
+from filecmp import cmp
 from os import makedirs, unlink
 from os.path import isdir, join
+from re import match
 from shutil import rmtree
 from testcase import TestCase
 
@@ -229,5 +230,14 @@ copy_file(\"%(src)s\", \"%(dest)s\")
                 unlink(dest)
         finally:
             unlink(src)
+
+    def test_copy_file10(self):
+        src = "test_copy_file10.dat"
+        dest = src + "~"
+        try:
+            self._test("copy_file(\"{src}\", \"{dest}\")".format(**locals()))
+            assert cmp(src, dest, False)
+        finally:
+            self.unlink(dest)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

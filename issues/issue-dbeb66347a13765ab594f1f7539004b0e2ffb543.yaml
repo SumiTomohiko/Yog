@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Use automake for ext/**/Makefile.
+desc: |-
+  To avoid the bug which was fixed at commit 8710539 (the problem of make install
+  at ext/**/Makefile.in).
+type: :task
+component: lib
+release: 
+reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-06-07 07:32:27.009878 Z
+references: []
+
+id: dbeb66347a13765ab594f1f7539004b0e2ffb543
+log_events: 
+- - 2011-06-07 07:32:27.666807 Z
+  - SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
