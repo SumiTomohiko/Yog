@@ -1,5 +1,5 @@
 
-SYNTAX_DIR = $(prefix)/share/vim/vim71/syntax
+SYNTAX_DIR = $(HOME)/.vim/syntax
 FILES = yog.vim yogram.vim
 
 all:
