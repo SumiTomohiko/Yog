@@ -5,10 +5,10 @@ from testcase import TestCase
 
 class TestFile(TestCase):
 
-    def read_file(self, filename):
+    def read_file(self, filename, size=-1):
         fp = open(filename)
         try:
-            return fp.read()
+            return fp.read(size)
         finally:
             fp.close()
 
@@ -44,15 +44,52 @@ File.open(\"%(filename)s\") do [f]
 end
 """ % { "filename": filename }, stdout=foo)
 
-    def test_read0(self):
+    def run_read_all_test(self, size):
         filename = "gods.txt"
-        foo = self.read_file(filename)
+        expected = self.read_file(filename)
 
-        self._test("""
-file = File.open("%(filename)s", "r")
-print(file.read())
+        self._test("""file = File.open(\"{filename}\", \"r\")
+print(file.read({size}))
 file.close()
-""" % { "filename": filename }, stdout=foo)
+""".format(**locals()), stdout=expected)
+
+    def test_read0(self):
+        self.run_read_all_test("")
+
+    def test_read5(self):
+        self.run_read_all_test("nil")
+
+    def run_read_test_of_size(self, size, filename="gods.txt"):
+        expected = self.read_file(filename, size)
+        self._test("""file = File.open(\"{filename}\", \"r\")
+print(file.read({size}))
+file.close()
+""".format(**locals()), stdout=expected)
+
+    def test_read10(self):
+        self.run_read_test_of_size(1)
+
+    def test_read20(self):
+        self.run_read_test_of_size(2)
+
+    def test_read30(self):
+        self.run_read_test_of_size(0)
+
+    def test_read33(self):
+        self.run_read_test_of_size(4097)
+
+    def test_read36(self):
+        self.run_read_test_of_size(8193)
+
+    def test_read40(self):
+        filename = "gods.txt"
+        expected = self.read_file(filename)
+        size = len(expected) + 1
+
+        self._test("""file = File.open(\"{filename}\", \"r\")
+print(file.read({size}))
+file.close()
+""".format(**locals()), stdout=expected)
 
     def test_readline0(self):
         filename = "gods.txt"

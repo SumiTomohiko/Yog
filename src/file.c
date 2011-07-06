@@ -118,28 +118,66 @@ read_binary(YogEnv* env, YogVal self)
     return HDL2VAL(data);
 }
 
+static uint_t
+read_to_append(YogEnv* env, YogVal s, FILE* fp, size_t size)
+{
+    char buffer[size + 1];
+    uint_t nbytes = fread(buffer, sizeof(buffer[0]), size, fp);
+    buffer[nbytes] = '\0';
+    YogString_append_string(env, s, buffer);
+    return nbytes;
+}
+
+static YogVal
+read_all(YogEnv* env, YogVal self)
+{
+    SAVE_ARG(env, self);
+    YogVal s = YogString_new(env);
+    PUSH_LOCAL(env, s);
+
+    FILE* fp = PTR_AS(YogFile, self)->fp;
+    do {
+        read_to_append(env, s, fp, 4096);
+    } while (!feof(fp));
+
+    RETURN(env, s);
+}
+
 static YogVal
 read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal s = YUNDEF;
-    PUSH_LOCAL(env, s);
+    YogVal size = YNIL;
+    PUSH_LOCALS2(env, s, size);
     CHECK_SELF_TYPE(env, self);
-    YogCArg params[] = { { NULL, NULL } };
+    YogCArg params[] = { { "|", NULL }, { "size", &size }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "read", params, args, kw);
+    if (!IS_NIL(size) && !IS_FIXNUM(size)) {
+        const char* fmt = "size must be Fixnum or Nil, not %C";
+        YogError_raise_TypeError(env, fmt, size);
+    }
+    if (IS_FIXNUM(size) && (VAL2INT(size) < 0)) {
+        const char* fmt = "size must be equal to or greater than zero, not %d";
+        YogError_raise_ValueError(env, fmt, VAL2INT(size));
+    }
 
     if (IS_UNDEF(PTR_AS(YogFile, self)->encoding)) {
         RETURN(env, read_binary(env, self));
     }
 
+    if (IS_NIL(size)) {
+        RETURN(env, read_all(env, self));
+    }
+
     s = YogString_new(env);
     FILE* fp = PTR_AS(YogFile, self)->fp;
+    uint_t rest = VAL2INT(size);
     do {
-        char buffer[4096];
-        uint_t size = fread(buffer, sizeof(char), array_sizeof(buffer) - 1, fp);
-        buffer[size] = '\0';
-        YogString_append_string(env, s, buffer);
-    } while (!feof(fp));
+        size_t max = 4096;
+        uint_t nbytes = read_to_append(env, s, fp, max < rest ? max : rest);
+        rest -= nbytes;
+    } while (!feof(fp) && (0 < rest));
 
     RETURN(env, s);
 }
