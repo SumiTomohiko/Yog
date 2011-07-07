@@ -2,5 +2,7 @@
 from libc import lib
 
 close = lib.load_func("close", ['int], 'int)
+read = lib.load_func("read", ['int, Buffer, 'uint], 'int)
+write = lib.load_func("write", ['int, Buffer, 'uint], 'int)
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
