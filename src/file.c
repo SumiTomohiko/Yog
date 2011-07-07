@@ -77,6 +77,16 @@ write_binary(YogEnv* env, YogHandle* self, YogVal val)
 }
 
 static YogVal
+flush(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    CHECK_SELF_TYPE2(env, self);
+    if (fflush(HDL_AS(YogFile, self)->fp) != 0) {
+        YogError_raise_sys_err(env, errno, YUNDEF);
+    }
+    return HDL2VAL(self);
+}
+
+static YogVal
 write(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* data)
 {
     CHECK_SELF_TYPE2(env, self);
@@ -172,7 +182,7 @@ read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 
     s = YogString_new(env);
     FILE* fp = PTR_AS(YogFile, self)->fp;
-    uint_t rest = VAL2INT(size);
+    int_t rest = VAL2INT(size);
     do {
         size_t max = 4096;
         uint_t nbytes = read_to_append(env, s, fp, max < rest ? max : rest);
@@ -357,6 +367,7 @@ YogFile_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method2(env, cFile, pkg, (name), (f), __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD2("write", write, "data", NULL);
+    DEFINE_METHOD2("flush", flush, NULL);
 #undef DEFINE_METHOD2
     vm->cFile = cFile;
 
