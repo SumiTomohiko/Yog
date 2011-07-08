@@ -120,24 +120,34 @@ File.open("%(filename)s", "r") do [f]
 end
 """ % { "filename": filename }, "nil")
 
-    def test_write0(self):
+    def run_write_test(self, make_source):
         filename = "test_write0.tmp"
+        expected = "foobarbazquux"
+        src = make_source(filename, expected)
 
         def test_stdout(ignored):
             fp = open(filename)
             try:
-                assert fp.read() == "foobarbazquux"
+                assert fp.read() == expected
             finally:
                 fp.close()
 
-        try:
-            unlink(filename)
-        except OSError:
-            pass
-        self._test("""
-File.open("%(filename)s", "w") do [f]
-  f.write("foobarbazquux")
-end
-""" % { "filename": filename }, stdout=test_stdout)
+        self.unlink(filename)
+        self._test(src, stdout=test_stdout)
+
+    def test_write0(self):
+        def make_source(filename, data):
+            return """File.open(\"{filename}\", \"w\") do [fp]
+  fp.write(\"{data}\")
+end""".format(**locals())
+        self.run_write_test(make_source)
+
+    def test_flush0(self):
+        def make_source(filename, data):
+            return """File.open(\"{filename}\", \"w\") do [fp]
+  fp.write(\"{data}\")
+  fp.flush()
+end""".format(**locals())
+        self.run_write_test(make_source)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
