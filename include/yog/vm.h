@@ -28,6 +28,7 @@ struct YogVM {
     YogVal cClassMethod;
     YogVal cCode;
     YogVal cCoroutine;
+    YogVal cDatetime;
     YogVal cDict;
     YogVal cEncoding;
     YogVal cEnv;

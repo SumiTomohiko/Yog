@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: The buffer in Datetime#strftime is too small.
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-07-08 15:23:58.760275 Z
+references: []
+
+id: 0de8dfbc9c096241d78377936ab885051dab933c
+log_events: 
+- - 2011-07-08 15:23:59.291286 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

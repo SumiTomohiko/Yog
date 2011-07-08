@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: update_prototype.py detects IMPLEMENT_PROPERTY as a function.
+desc: It is a story of datetime.c.
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-07-08 16:03:42.006135 Z
+references: []
+
+id: bf6823d9105621e752cbde6da7e738f8f34e7c61
+log_events: 
+- - 2011-07-08 16:03:43.072881 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

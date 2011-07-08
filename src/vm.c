@@ -42,6 +42,7 @@
 #include "yog/comparable.h"
 #include "yog/compile.h"
 #include "yog/coroutine.h"
+#include "yog/datetime.h"
 #include "yog/dict.h"
 #include "yog/encoding.h"
 #include "yog/env.h"
@@ -258,6 +259,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogClassMethod_define_classes(env, builtins);
     YogCode_define_classes(env, builtins);
     YogCoroutine_define_classes(env, builtins);
+    YogDatetime_define_classes(env, h_builtins);
     YogDict_define_classes(env, builtins);
     YogEncoding_define_classes(env, builtins);
     YogEnv_define_classes(env, h_builtins);
@@ -522,6 +524,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cClassMethod);
     KEEP(cCode);
     KEEP(cCoroutine);
+    KEEP(cDatetime);
     KEEP(cDict);
     KEEP(cEncoding);
     KEEP(cEnv);
@@ -667,6 +670,7 @@ YogVM_init(YogVM* vm)
     INIT(cClassMethod);
     INIT(cCode);
     INIT(cCoroutine);
+    INIT(cDatetime);
     INIT(cDict);
     INIT(cEncoding);
     INIT(cEnv);
