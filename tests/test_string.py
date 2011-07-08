@@ -465,6 +465,30 @@ print(\"{{\".format())
 print(\"}}\".format())
 """, "}")
 
+    def test_format_spec_width0(self):
+        self._test("print(\"{0:1}\".format(42))", "42")
+
+    def test_format_spec_width10(self):
+        self._test("print(\"{0:1}\".format(0))", "0")
+
+    def test_format_spec_width20(self):
+        self._test("print(\"{0:2}\".format(128))", "128")
+
+    def test_format_spec_width30(self):
+        self._test("print(\"{0:2}\".format(42))", "42")
+
+    def test_format_spec_width40(self):
+        self._test("print(\"{0:2}\".format(0))", " 0")
+
+    def test_format_spec_width50(self):
+        self._test("print(\"{0:02}\".format(128))", "128")
+
+    def test_format_spec_width60(self):
+        self._test("print(\"{0:02}\".format(42))", "42")
+
+    def test_format_spec_width70(self):
+        self._test("print(\"{0:02}\".format(0))", "00")
+
     def test_find0(self):
         self._test("""
 print(\"foo\".find(\"o\"))

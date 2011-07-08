@@ -135,7 +135,18 @@ def format(*args, **kw)
       t << self[i]
       i += 1
     end
-    s << args[t.to_i()].to_s()
+    colon_pos = t.find(":")
+    if colon_pos < 0
+      s << args[t.to_i()].to_s()
+      i += 1
+      next
+    end
+    field_name = t.slice(0, colon_pos)
+    val = args[field_name.to_i()].to_s()
+    format_spec = t.slice(colon_pos + 1)
+    padding_char = format_spec[0] == "0" ? "0" : " "
+    width = format_spec.to_i()
+    s << (width < val.size ? val : padding_char * (width - val.size) + val)
     i += 1
   end
 
