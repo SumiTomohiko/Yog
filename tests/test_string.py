@@ -645,6 +645,9 @@ print(\"\\\\\".inspect())
 print(\"\".inspect())
 """, "\"\"")
 
+    def test_inspect50(self):
+        self._test("print(\"\\\"\".inspect())", "\"\\\"\"")
+
     def test_split0(self):
         self._test("""
 print(\"foo\".split(\"o\"))

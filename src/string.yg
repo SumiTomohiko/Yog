@@ -16,6 +16,8 @@ def inspect()
       s << "\\t"
     elif c == "\n"
       s << "\\n"
+    elif c == "\""
+      s << "\\\""
     else
       s << c
     end
