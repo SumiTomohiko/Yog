@@ -1,0 +1,68 @@
+
+import libc.syslog as raw
+
+closelog = raw.closelog
+
+def openlog(ident, opts, facility, &block=nil)
+  raw.openlog(Buffer.new(ident.to_bin(ENCODINGS["ascii"])), opts, facility)
+  try
+    block()
+  finally
+    closelog()
+  end
+end
+
+syslog = raw.syslog
+
+LOG_EMERG = raw.LOG_EMERG
+LOG_ALERT = raw.LOG_ALERT
+LOG_CRIT = raw.LOG_CRIT
+LOG_ERR = raw.LOG_ERR
+LOG_WARNING = raw.LOG_WARNING
+LOG_NOTICE = raw.LOG_NOTICE
+LOG_INFO = raw.LOG_INFO
+LOG_DEBUG = raw.LOG_DEBUG
+
+LOG_PRIMASK = raw.LOG_PRIMASK
+LOG_PRI = raw.LOG_PRI
+LOG_MAKEPRI = raw.LOG_MAKEPRI
+
+LOG_KERN = raw.LOG_KERN
+LOG_USER = raw.LOG_USER
+LOG_MAIL = raw.LOG_MAIL
+LOG_DAEMON = raw.LOG_DAEMON
+LOG_AUTH = raw.LOG_AUTH
+LOG_SYSLOG = raw.LOG_SYSLOG
+LOG_LPR = raw.LOG_LPR
+LOG_NEWS = raw.LOG_NEWS
+LOG_UUCP = raw.LOG_UUCP
+LOG_CRON = raw.LOG_CRON
+LOG_AUTHPRIV = raw.LOG_AUTHPRIV
+LOG_FTP = raw.LOG_FTP
+LOG_NTP = raw.LOG_NTP
+LOG_SECURITY = raw.LOG_SECURITY
+LOG_CONSOLE = raw.LOG_CONSOLE
+LOG_LOCAL0 = raw.LOG_LOCAL0
+LOG_LOCAL1 = raw.LOG_LOCAL1
+LOG_LOCAL2 = raw.LOG_LOCAL2
+LOG_LOCAL3 = raw.LOG_LOCAL3
+LOG_LOCAL4 = raw.LOG_LOCAL4
+LOG_LOCAL5 = raw.LOG_LOCAL5
+LOG_LOCAL6 = raw.LOG_LOCAL6
+LOG_LOCAL7 = raw.LOG_LOCAL7
+
+LOG_NFACILITIES = raw.LOG_NFACILITIES
+LOG_FACMASK = raw.LOG_FACMASK
+LOG_FAC = raw.LOG_FAC
+
+LOG_MASK = raw.LOG_MASK
+LOG_UPTO = raw.LOG_UPTO
+
+LOG_PID = raw.LOG_PID
+LOG_CONS = raw.LOG_CONS
+LOG_ODELAY = raw.LOG_ODELAY
+LOG_NDELAY = raw.LOG_NDELAY
+LOG_NOWAIT = raw.LOG_NOWAIT
+LOG_PERROR = raw.LOG_PERROR
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
