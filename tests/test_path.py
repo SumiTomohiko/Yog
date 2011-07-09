@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from os.path import join
+from os.path import abspath, join
 from testcase import TestCase
 
 class TestPath(TestCase):
@@ -44,5 +44,23 @@ class TestPath(TestCase):
 
     def test_basename40(self):
         self.do_basename_test("..", ".")
+
+    for i, testee in enumerate([".", "..", "foo", "/", "/foo"]):
+        exec """def test_abs{index}(self):
+    self._test(\"print(\\\"{testee}\\\".to_path().abs())\", abspath(\"{testee}\"))""".format(index=10 * i, testee=testee)
+
+    for i, pattern in enumerate([
+        ["foo", "foo"],
+        ["foo/", "foo"],
+        ["foo/bar", "foo/bar"],
+        ["foo//bar", "foo/bar"],
+        ["/", "/"],
+        ["//", "/"],
+        ["/foo", "/foo"],
+        ["//foo", "/foo"]]):
+        testee = pattern[0]
+        expected = pattern[1]
+        exec """def test_normalize{index}(self):
+    self._test(\"print(\\\"{testee}\\\".to_path().normalize())\", \"{expected}\")""".format(index=10 * i, testee=testee, expected=expected)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

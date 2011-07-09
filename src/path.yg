@@ -1,0 +1,22 @@
+
+def normalize()
+  names = self.split(/\/+/).reduce([]) do [names, entry]
+    if entry == ""
+      next names.empty? ? [entry] : names
+    end
+    if entry == "."
+      next names
+    end
+    if entry == ".."
+      next names.slice(0, names.size - 1)
+    end
+    next names + [entry]
+  end
+  return (names.size == 1) && (names[0] == "") ? "/" : names.join("/").to_path()
+end
+
+def abs()
+  return self.starts_with?("/") ? self : (Path.getcwd() / self).normalize()
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

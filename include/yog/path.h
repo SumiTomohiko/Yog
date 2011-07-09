@@ -9,6 +9,7 @@
 /* src/path.c */
 YOG_EXPORT void YogPath_define_classes(YogEnv*, YogHandle*);
 YOG_EXPORT YogVal YogPath_dirname(YogEnv*, YogHandle*);
+YOG_EXPORT void YogPath_eval_builtin_script(YogEnv*, YogVal);
 YOG_EXPORT YogVal YogPath_from_string(YogEnv*, const char*);
 YOG_EXPORT YogVal YogPath_getcwd(YogEnv*);
 YOG_EXPORT YogHandle* YogPath_join(YogEnv*, YogHandle*, const char*);

@@ -331,6 +331,7 @@ src/miniyog
 src/object.inc
 src/parser.c
 src/parser.out
+src/path.inc
 src/set.inc
 src/shift_jis2yog_hankaku.inc
 src/shift_jis2yog_zenkaku.inc

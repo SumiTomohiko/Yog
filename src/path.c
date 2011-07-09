@@ -106,6 +106,15 @@ YogPath_getcwd(YogEnv* env)
 }
 
 static YogVal
+getcwd_(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    char* cwd = getcwd(NULL, 0);
+    YogVal s = YogPath_from_string(env, cwd);
+    free(cwd);
+    return s;
+}
+
+static YogVal
 get_root(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     return env->vm->path_separator;
@@ -150,6 +159,14 @@ get_basename(YogEnv* env, YogHandle* self, YogHandle* pkg)
 }
 
 void
+YogPath_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+    YogMisc_eval_source(env, VAL2HDL(env, klass),
+#include "path.inc"
+    );
+}
+
+void
 YogPath_define_classes(YogEnv* env, YogHandle* pkg)
 {
     YogVM* vm = env->vm;
@@ -166,6 +183,7 @@ YogPath_define_classes(YogEnv* env, YogHandle* pkg)
     YogClass_define_class_method2(env, cPath, pkg, (name), __VA_ARGS__); \
 } while (0)
     DEFINE_CLASS_METHOD("get_root", get_root, NULL);
+    DEFINE_CLASS_METHOD("getcwd", getcwd_, NULL);
 #undef DEFINE_CLASS_METHOD
 }
 

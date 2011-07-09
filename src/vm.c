@@ -396,6 +396,7 @@ YogVM_boot(YogEnv* env, YogVM* vm)
     YogObject_eval_builtin_script(env, vm->cObject);
     YogSet_eval_builtin_script(env, vm->cSet);
     YogString_eval_builtin_script(env, vm->cString);
+    YogPath_eval_builtin_script(env, vm->cPath);
     YogSymbol_eval_builtin_script(env, vm->cSymbol);
     YogCallable_eval_builtin_script(env, vm->mCallable);
 

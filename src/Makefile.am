@@ -81,6 +81,9 @@ object.inc: object.yg yg2inc.yg
 string.inc: string.yg yg2inc.yg
 	$(YOG) yg2inc.yg string.yg $@
 
+path.inc: path.yg yg2inc.yg
+	$(YOG) yg2inc.yg path.yg $@
+
 set.inc: set.yg yg2inc.yg
 	$(YOG) yg2inc.yg set.yg $@
 
