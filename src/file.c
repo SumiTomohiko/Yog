@@ -344,6 +344,16 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     RETURN(env, retval);
 }
 
+static YogVal
+get_eof(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    SAVE_ARGS5(env, self, pkg, args, kw, block);
+    YogCArg params[] = { { NULL, NULL } };
+    YogGetArgs_parse_args(env, "get_eof", params, args, kw);
+    CHECK_SELF_TYPE(env, self);
+    RETURN(env, feof(PTR_AS(YogFile, self)->fp) ? YTRUE : YFALSE);
+}
+
 void
 YogFile_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -372,6 +382,11 @@ YogFile_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("write", write, "data", NULL);
     DEFINE_METHOD2("flush", flush, NULL);
 #undef DEFINE_METHOD2
+#define DEFINE_PROP(name, getter, setter) do { \
+    YogClass_define_property(env, cFile, pkg, (name), (getter), (setter)); \
+} while (0)
+    DEFINE_PROP("eof?", get_eof, NULL);
+#undef DEFINE_PROP
     vm->cFile = cFile;
 
     RETURN_VOID(env);

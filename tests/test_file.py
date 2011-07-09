@@ -150,4 +150,17 @@ end""".format(**locals())
 end""".format(**locals())
         self.run_write_test(make_source)
 
+    def test_eof0(self):
+        filename = "gods.txt"
+        self._test("""File.open(\"{filename}\") do [fp]
+  print(fp.eof?)
+end""".format(**locals()), "false")
+
+    def test_eof10(self):
+        filename = "gods.txt"
+        self._test("""File.open(\"{filename}\") do [fp]
+  fp.read()
+  print(fp.eof?)
+end""".format(**locals()), "true")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
