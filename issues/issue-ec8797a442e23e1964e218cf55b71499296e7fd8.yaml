@@ -1,0 +1,37 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: finally does not work.
+desc: |-
+  Next code cannot print "OK".
+  
+    def main()
+      raise Exception.new()
+    end
+  
+    try
+      main()
+    finally
+      puts("OK")
+    end
+  
+  Next code prints "OK".
+  
+    try
+      raise Exception.new()
+    finally
+      puts("OK")
+    end
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-07-09 12:54:42.029800 Z
+references: []
+
+id: ec8797a442e23e1964e218cf55b71499296e7fd8
+log_events: 
+- - 2011-07-09 12:54:43.472038 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
