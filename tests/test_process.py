@@ -20,4 +20,15 @@ end
 print(status)
 """, "0")
 
+    def test_ferror0(self):
+        def test_stderr(stderr):
+            assert 0 < stderr.find("SystemError: Bad file descriptor")
+
+        self._test("""proc = Process.new([\"/bin/echo\"]).run()
+try
+  print(proc.stdin.read())
+finally
+  proc.wait()
+end""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

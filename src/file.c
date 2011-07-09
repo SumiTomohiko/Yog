@@ -133,6 +133,9 @@ read_to_append(YogEnv* env, YogVal s, FILE* fp, size_t size)
 {
     char buffer[size + 1];
     uint_t nbytes = fread(buffer, sizeof(buffer[0]), size, fp);
+    if (ferror(fp)) {
+        YogError_raise_sys_err(env, errno, YNIL);
+    }
     buffer[nbytes] = '\0';
     YogString_append_string(env, s, buffer);
     return nbytes;
