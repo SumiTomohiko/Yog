@@ -30,6 +30,9 @@ class TestPath(TestCase):
     def test_dirname40(self):
         self.do_dirname_test("..", ".")
 
+    def test_dirname50(self):
+        self.do_dirname_test("/usr", "/")
+
     def test_basename0(self):
         self.do_basename_test("foo", "foo")
 

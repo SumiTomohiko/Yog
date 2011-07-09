@@ -85,6 +85,9 @@ YogPath_dirname(YogEnv* env, YogHandle* self)
     if (pos < 0) {
         return YogPath_of_current_dir(env);
     }
+    if (pos == 0) {
+        return env->vm->path_separator;
+    }
     return YogPath_slice(env, VAL2HDL(env, s), 0, pos);
 }
 
