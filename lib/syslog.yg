@@ -3,8 +3,19 @@ import libc.syslog as raw
 
 closelog = raw.closelog
 
+class Anchor
+  # This class is for holding ident of syslog. ident is not allowed to change.
+  def init()
+    self.ident = nil
+  end
+end
+
+anchor = Anchor.new()
+
 def openlog(ident, opts, facility, &block=nil)
-  raw.openlog(Buffer.new(ident.to_bin(ENCODINGS["ascii"])), opts, facility)
+  buffer = Buffer.new(ident.to_bin(ENCODINGS["ascii"]))
+  anchor.ident = buffer
+  raw.openlog(buffer, opts, facility)
   try
     block()
   finally

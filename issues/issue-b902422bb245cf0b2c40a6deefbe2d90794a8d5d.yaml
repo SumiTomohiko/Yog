@@ -22,8 +22,8 @@ type: :bugfix
 component: lib
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2011-07-10 17:17:20.674411 Z
 references: []
 
@@ -32,4 +32,8 @@ log_events:
 - - 2011-07-10 17:17:21.857566 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2011-07-10 19:23:16.398544 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
   - ""
