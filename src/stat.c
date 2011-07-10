@@ -55,15 +55,41 @@ YogStat_lstat(YogEnv* env, YogHandle* path)
     return do_stat(env, path, lstat);
 }
 
+static void
+check_self_type(YogEnv* env, YogHandle* self)
+{
+    YogVal val = HDL2VAL(self);
+    if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_STAT)) {
+        return;
+    }
+    YogError_raise_TypeError(env, "self must be Stat, not %C", val);
+}
+
+static YogVal
+get_gid(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    check_self_type(env, self);
+    return INT2VAL(HDL_AS(Stat, self)->st.st_gid);
+}
+
+static YogVal
+get_uid(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    check_self_type(env, self);
+    return INT2VAL(HDL_AS(Stat, self)->st.st_uid);
+}
+
 static YogVal
 get_mode(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
+    check_self_type(env, self);
     return INT2VAL(0777 & HDL_AS(Stat, self)->st.st_mode);
 }
 
 static YogVal
 get_dir(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
+    check_self_type(env, self);
     return S_ISDIR(HDL_AS(Stat, self)->st.st_mode) ? YTRUE : YFALSE;
 }
 
@@ -76,7 +102,9 @@ YogStat_define_classes(YogEnv* env, YogHandle* pkg)
     YogClass_define_property2(env, cStat, pkg, (name), (getter), (setter)); \
 } while (0)
     DEFINE_PROP("dir?", get_dir, NULL);
+    DEFINE_PROP("gid", get_gid, NULL);
     DEFINE_PROP("mode", get_mode, NULL);
+    DEFINE_PROP("uid", get_uid, NULL);
 #undef DEFINE_PROP
     vm->cStat = HDL2VAL(cStat);
 }
