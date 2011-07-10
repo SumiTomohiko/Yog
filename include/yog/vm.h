@@ -30,6 +30,7 @@ struct YogVM {
     YogVal cCoroutine;
     YogVal cDatetime;
     YogVal cDict;
+    YogVal cDir;
     YogVal cEncoding;
     YogVal cEnv;
     YogVal cField;

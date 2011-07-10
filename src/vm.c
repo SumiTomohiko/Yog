@@ -44,6 +44,7 @@
 #include "yog/coroutine.h"
 #include "yog/datetime.h"
 #include "yog/dict.h"
+#include "yog/dir.h"
 #include "yog/encoding.h"
 #include "yog/env.h"
 #include "yog/error.h"
@@ -261,6 +262,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogCoroutine_define_classes(env, builtins);
     YogDatetime_define_classes(env, h_builtins);
     YogDict_define_classes(env, builtins);
+    YogDir_define_classes(env, h_builtins);
     YogEncoding_define_classes(env, builtins);
     YogEnv_define_classes(env, h_builtins);
     YogFFI_define_classes(env, builtins);
@@ -527,6 +529,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cCoroutine);
     KEEP(cDatetime);
     KEEP(cDict);
+    KEEP(cDir);
     KEEP(cEncoding);
     KEEP(cEnv);
     KEEP(cField);
@@ -673,6 +676,7 @@ YogVM_init(YogVM* vm)
     INIT(cCoroutine);
     INIT(cDatetime);
     INIT(cDict);
+    INIT(cDir);
     INIT(cEncoding);
     INIT(cEnv);
     INIT(cField);

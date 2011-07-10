@@ -349,6 +349,7 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
     REGISTER_CLASS(cCoroutine);
     REGISTER_CLASS(cDatetime);
     REGISTER_CLASS(cDict);
+    REGISTER_CLASS(cDir);
     REGISTER_CLASS(cFile);
     REGISTER_CLASS(cInt);
     REGISTER_CLASS(cObject);
