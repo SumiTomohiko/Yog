@@ -56,6 +56,12 @@ YogStat_lstat(YogEnv* env, YogHandle* path)
 }
 
 static YogVal
+get_mode(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    return INT2VAL(0777 & HDL_AS(Stat, self)->st.st_mode);
+}
+
+static YogVal
 get_dir(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     return S_ISDIR(HDL_AS(Stat, self)->st.st_mode) ? YTRUE : YFALSE;
@@ -70,6 +76,7 @@ YogStat_define_classes(YogEnv* env, YogHandle* pkg)
     YogClass_define_property2(env, cStat, pkg, (name), (getter), (setter)); \
 } while (0)
     DEFINE_PROP("dir?", get_dir, NULL);
+    DEFINE_PROP("mode", get_mode, NULL);
 #undef DEFINE_PROP
     vm->cStat = HDL2VAL(cStat);
 }
