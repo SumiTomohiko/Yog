@@ -19,4 +19,33 @@ def abs()
   return self.starts_with?("/") ? self : (Path.getcwd() / self).normalize()
 end
 
+def walk(&block)
+  Dir.open(self) do [dir]
+    block(self)
+    dir.each() do [name]
+      if (name == ".") || (name == "..")
+        next
+      end
+
+      path = self / name
+      if path.dir?
+        path.walk(&block)
+        next
+      end
+      block(path)
+    end
+  end
+end
+
+def get_dir()
+  try
+    st = self.lstat()
+  except SystemError
+    return false
+  end
+  return st.dir?
+end
+
+dir? = property(get_dir)
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

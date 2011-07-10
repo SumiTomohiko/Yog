@@ -67,6 +67,7 @@
 #include "yog/property.h"
 #include "yog/regexp.h"
 #include "yog/set.h"
+#include "yog/stat.h"
 #include "yog/string.h"
 #include "yog/symbol.h"
 #include "yog/sysdeps.h"
@@ -276,6 +277,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogProcess_define_classes(env, h_builtins);
     YogRegexp_define_classes(env, builtins);
     YogSet_define_classes(env, builtins);
+    YogStat_define_classes(env, h_builtins);
     YogSymbol_define_classes(env, builtins);
     YogThread_define_classes(env, builtins);
 
@@ -558,6 +560,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(cProperty);
     KEEP(cRegexp);
     KEEP(cSet);
+    KEEP(cStat);
     KEEP(cString);
     KEEP(cStringField);
     KEEP(cStructBase);
@@ -705,6 +708,7 @@ YogVM_init(YogVM* vm)
     INIT(cProperty);
     INIT(cRegexp);
     INIT(cSet);
+    INIT(cStat);
     INIT(cString);
     INIT(cStringField);
     INIT(cStructBase);

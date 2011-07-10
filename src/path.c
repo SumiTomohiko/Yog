@@ -9,6 +9,7 @@
 #include "yog/error.h"
 #include "yog/handle.h"
 #include "yog/misc.h"
+#include "yog/stat.h"
 #include "yog/string.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
@@ -169,6 +170,20 @@ YogPath_eval_builtin_script(YogEnv* env, YogVal klass)
     );
 }
 
+static YogVal
+stat_(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    CHECK_SELF_TYPE(env, self);
+    return YogStat_stat(env, self);
+}
+
+static YogVal
+lstat_(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    CHECK_SELF_TYPE(env, self);
+    return YogStat_lstat(env, self);
+}
+
 void
 YogPath_define_classes(YogEnv* env, YogHandle* pkg)
 {
@@ -182,6 +197,12 @@ YogPath_define_classes(YogEnv* env, YogHandle* pkg)
     DEFINE_PROP("dirname", get_dirname, NULL);
     DEFINE_PROP("basename", get_basename, NULL);
 #undef DEFINE_PROP
+#define DEFINE_METHOD(name, ...) do { \
+    YogClass_define_method2(env, HDL2VAL(cPath), HDL2VAL(pkg), (name), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD("lstat", lstat_, NULL);
+    DEFINE_METHOD("stat", stat_, NULL);
+#undef DEFINE_METHOD
 #define DEFINE_CLASS_METHOD(name, ...) do { \
     YogClass_define_class_method2(env, cPath, pkg, (name), __VA_ARGS__); \
 } while (0)

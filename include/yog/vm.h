@@ -59,6 +59,7 @@ struct YogVM {
     YogVal cProperty;
     YogVal cRegexp;
     YogVal cSet;
+    YogVal cStat;
     YogVal cString;
     YogVal cStringField;
     YogVal cStructBase;

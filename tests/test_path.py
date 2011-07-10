@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from os import makedirs, walk
 from os.path import abspath, join
+from shutil import rmtree
+from tempfile import mkdtemp
 from testcase import TestCase
 
 class TestPath(TestCase):
@@ -65,5 +68,56 @@ class TestPath(TestCase):
         expected = pattern[1]
         exec """def test_normalize{index}(self):
     self._test(\"print(\\\"{testee}\\\".to_path().normalize())\", \"{expected}\")""".format(index=10 * i, testee=testee, expected=expected)
+
+    def run_walk_test(self, dirs):
+        def test_stdout(stdout):
+            actual = sorted(stdout.rstrip().split("\n"))
+            expected = sorted([name for name, _, __ in walk(tmp_dir)])
+            assert len(expected) == len(actual)
+            for i in range(len(expected)):
+                assert expected[i] == actual[i]
+
+        tmp_dir = mkdtemp()
+        try:
+            for name in dirs:
+                makedirs(join(tmp_dir, name))
+            src = "\"{tmp_dir}\".to_path().walk(&puts)".format(**locals())
+            self._test(src, stdout=test_stdout)
+        finally:
+            rmtree(tmp_dir)
+
+    for i, testee in enumerate([
+        [],
+        ["foo"],
+        ["foo", "bar"],
+        [join("foo", "bar")],
+        ["foo", join("bar", "baz")]]):
+        exec """def test_walk{index}(self):
+    self.run_walk_test({testee})""".format(index=10 * i, testee=testee)
+
+    def run_dir_test(self, f, expected):
+        tmp_dir = mkdtemp()
+        try:
+            path = join(tmp_dir, "foo")
+            f(path)
+            src = "print(\"{path}\".to_path().dir?)".format(**locals())
+            self._test(src, expected)
+        finally:
+            rmtree(tmp_dir)
+
+    def touch(self, path):
+        with open(path, "w") as fp:
+            pass
+
+    def test_dir0(self):
+        self.run_dir_test(makedirs, "true")
+
+    def test_dir10(self):
+        self.run_dir_test(self.touch, "false")
+
+    def test_dir20(self):
+        def nop(_):
+            pass
+        self.run_dir_test(nop, "false")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
