@@ -1,0 +1,35 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: syslog requires fixed memory for ident
+desc: |-
+  ident for syslog cannot be changed.
+  
+    #include <stdarg.h>
+    #include <string.h>
+    #include <syslog.h>
+  
+    int
+    main(int argc, const char* argv[])
+    {
+        char ident[1024];
+        strcpy(ident, "foo");
+        openlog(ident, LOG_PID, LOG_LOCAL0);
+        syslog(LOG_INFO, "foo");
+        strcpy(ident, "bar");
+        syslog(LOG_INFO, "bar");
+        return 0;
+    }
+type: :bugfix
+component: lib
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-07-10 17:17:20.674411 Z
+references: []
+
+id: b902422bb245cf0b2c40a6deefbe2d90794a8d5d
+log_events: 
+- - 2011-07-10 17:17:21.857566 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
