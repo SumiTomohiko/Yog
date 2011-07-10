@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Octal number literal starting with zero
+desc: Improve the lexer.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-07-10 17:10:24.549387 Z
+references: []
+
+id: 2bab87034113cd4f36dfe984f20bc1307c291644
+log_events: 
+- - 2011-07-10 17:10:25.205072 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
