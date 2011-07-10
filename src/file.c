@@ -58,9 +58,11 @@ alloc(YogEnv* env, YogVal klass)
 }
 
 YogVal
-YogFile_new(YogEnv* env)
+YogFile_new(YogEnv* env, FILE* fp)
 {
-    return alloc(env, env->vm->cFile);
+    YogVal file = alloc(env, env->vm->cFile);
+    PTR_AS(YogFile, file)->fp = fp;
+    return file;
 }
 
 static void
@@ -310,7 +312,6 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     }
 #endif
 
-    file = YogFile_new(env);
 
     YogHandle* h = YogHandle_REGISTER(env, path);
     YogHandle* bin = VAL2HDL(env, YogString_to_bin_in_default_encoding(env, h));
@@ -318,7 +319,7 @@ open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     if (fp == NULL) {
         YogError_raise_sys_err(env, errno, path);
     }
-    PTR_AS(YogFile, file)->fp = fp;
+    file = YogFile_new(env, fp);
     fp_enc = decide_encoding(env, m, encoding);
     YogGC_UPDATE_PTR(env, PTR_AS(YogFile, file), encoding, fp_enc);
 

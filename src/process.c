@@ -180,8 +180,7 @@ run(YogEnv* env, YogHandle* self, YogHandle* pkg)
     close(pipe_stderr[W]);
     YogHandle* enc = YogHandle_REGISTER(env, YogEncoding_get_ascii(env));
 #define CREATE_FILE(fd, mode, name) do { \
-    YogVal fp = YogFile_new(env); \
-    PTR_AS(YogFile, fp)->fp = fdopen((fd), (mode)); \
+    YogVal fp = YogFile_new(env, fdopen((fd), (mode))); \
     YogGC_UPDATE_PTR(env, PTR_AS(YogFile, fp), encoding, HDL2VAL(enc)); \
     YogGC_UPDATE_PTR(env, HDL_AS(Process, self), name, fp); \
 } while (0)

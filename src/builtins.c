@@ -16,8 +16,8 @@
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
-#include "yog/eval.h"
 #include "yog/ffi.h"
+#include "yog/file.h"
 #include "yog/frame.h"
 #include "yog/get_args.h"
 #include "yog/misc.h"
@@ -387,6 +387,8 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
     YogObj_set_attr(env, HDL2VAL(builtins), "ENCODINGS", env->vm->encodings);
     YogVal enc = env->vm->default_encoding;
     YogObj_set_attr(env, HDL2VAL(builtins), "DEFAULT_ENCODING", enc);
+    YogVal STDOUT = YogFile_new(env, stdout);
+    YogObj_set_attr(env, HDL2VAL(builtins), "STDOUT", STDOUT);
 
     set_path_separator(env, builtins);
 
