@@ -161,7 +161,7 @@ def search(regexp, pos=0)
   return regexp.search(self, pos)
 end
 
-def split(splitter=/\s+/)
+def split(splitter=/\s+/, max=nil)
   def split_char(s)
     a = []
     s.each_char() do [c]
@@ -173,12 +173,14 @@ def split(splitter=/\s+/)
   if splitter.kind_of?(Regexp)
     a = []
     from_ = 0
-    while m = self.search(splitter, from_)
+    count = 0
+    while (m = self.search(splitter, from_)) && ((max == nil) || (count < max))
       if m.start() == m.end()
         return split_char(self)
       end
       a << self.slice(from_, m.start() - from_)
       from_ = m.end()
+      count += 1
     end
     a << self.slice(from_)
     return a
@@ -193,13 +195,15 @@ def split(splitter=/\s+/)
 
   a = []
   from_ = 0
-  while from_ <= self.size - splitter.size
+  count = 0
+  while (from_ <= self.size - splitter.size) && ((max == nil) || (count < max))
     to = self.find(splitter, from_)
     if to < 0
       break
     end
     a << self.slice(from_, to - from_)
     from_ = to + splitter.size
+    count += 1
   end
   a << self.slice(from_)
   return a

@@ -707,6 +707,35 @@ print(\"foo\\tbar\".split())
 print(\"foo\".split(//))
 """, "[\"f\", \"o\", \"o\"]")
 
+    def test_split70(self):
+        self._test("print(\"foo bar\".split(max: 0))", "[\"foo bar\"]")
+
+    def test_split80(self):
+        self._test("print(\"foo bar\".split(max: 1))", "[\"foo\", \"bar\"]")
+
+    def test_split90(self):
+        self._test("print(\"foo bar\".split(max: 2))", "[\"foo\", \"bar\"]")
+
+    def test_split100(self):
+        src = "print(\"foo bar baz\".split(max: 1))"
+        self._test(src, "[\"foo\", \"bar baz\"]")
+
+    def test_split110(self):
+        src = "print(\"foo+bar\".split(\"+\", 0))"
+        self._test(src, "[\"foo+bar\"]")
+
+    def test_split120(self):
+        src = "print(\"foo+bar\".split(\"+\", 1))"
+        self._test(src, "[\"foo\", \"bar\"]")
+
+    def test_split130(self):
+        src = "print(\"foo+bar\".split(\"+\", 2))"
+        self._test(src, "[\"foo\", \"bar\"]")
+
+    def test_split140(self):
+        src = "print(\"foo+bar+baz\".split(\"+\", 1))"
+        self._test(src, "[\"foo\", \"bar+baz\"]")
+
     def test_get0(self):
         self._test("print(\"\".get(0))", "nil")
 
