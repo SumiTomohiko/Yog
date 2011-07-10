@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Share cleanup code of Dir#open with File#open.
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-07-10 15:17:05.882346 Z
+references: []
+
+id: fb237f586ad5863693a583415b340d63ace7a0e8
+log_events: 
+- - 2011-07-10 15:17:06.338662 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

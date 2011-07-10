@@ -67,6 +67,10 @@ open_(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* path, YogHandle* 
     }
     HDL_AS(Dir, dir)->dir = dirp;
 
+    /**
+     * TODO: This code was copied and pasted from file.c. Share codes.
+     * issue: fb237f586ad5863693a583415b340d63ace7a0e8
+     */
     YogJmpBuf jmpbuf;
     int_t status = setjmp(jmpbuf.buf);
     if (status == 0) {
