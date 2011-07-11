@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from os import chmod, close, stat, unlink
+from datetime import datetime
+from os import chmod, close, lstat, unlink
 from os.path import basename
 from tempfile import mkstemp
 from testcase import TestCase
@@ -27,12 +28,30 @@ class TestStat(TestCase):
         try:
             attr = "st_{name}".format(**locals())
             fmt = "print(\"{path}\".to_path().lstat().{name})"
-            self._test(fmt.format(**locals()), str(getattr(stat(path), attr)))
+            self._test(fmt.format(**locals()), str(getattr(lstat(path), attr)))
         finally:
             unlink(path)
 
     for name in ["uid", "gid"]:
         exec """def test_{name}0(self):
     self.run_id_test(\"{name}\")""".format(name=name)
+
+    def get_iso8601(self, timestamp):
+        # TODO: timestamp dose not have microsecond?
+        return datetime.fromtimestamp(timestamp).isoformat() + ",000"
+
+    def run_time_test(self, name):
+        path = self.make_temp_file(prefix=basename(__file__))
+        try:
+            fmt = "print(\"{path}\".to_path().lstat().{name}.to_iso8601())"
+            attr = "st_{name}".format(**locals())
+            expected = self.get_iso8601(getattr(lstat(path), attr))
+            self._test(fmt.format(**locals()), expected)
+        finally:
+            unlink(path)
+
+    for name in ["mtime", "ctime"]:
+        exec """def test_{name}0(self):
+    self.run_time_test(\"{name}\")""".format(name=name)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

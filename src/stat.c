@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include "yog/binary.h"
 #include "yog/class.h"
+#include "yog/datetime.h"
 #include "yog/error.h"
 #include "yog/gc.h"
 #include "yog/handle.h"
@@ -80,6 +81,20 @@ get_uid(YogEnv* env, YogHandle* self, YogHandle* pkg)
 }
 
 static YogVal
+get_ctime(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    check_self_type(env, self);
+    return YogDatetime_new(env, HDL_AS(Stat, self)->st.st_ctime);
+}
+
+static YogVal
+get_mtime(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    check_self_type(env, self);
+    return YogDatetime_new(env, HDL_AS(Stat, self)->st.st_mtime);
+}
+
+static YogVal
 get_mode(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     check_self_type(env, self);
@@ -101,9 +116,11 @@ YogStat_define_classes(YogEnv* env, YogHandle* pkg)
 #define DEFINE_PROP(name, getter, setter) do { \
     YogClass_define_property2(env, cStat, pkg, (name), (getter), (setter)); \
 } while (0)
+    DEFINE_PROP("ctime", get_ctime, NULL);
     DEFINE_PROP("dir?", get_dir, NULL);
     DEFINE_PROP("gid", get_gid, NULL);
     DEFINE_PROP("mode", get_mode, NULL);
+    DEFINE_PROP("mtime", get_mtime, NULL);
     DEFINE_PROP("uid", get_uid, NULL);
 #undef DEFINE_PROP
     vm->cStat = HDL2VAL(cStat);

@@ -37,6 +37,15 @@ alloc(YogEnv* env, YogVal klass)
     RETURN(env, datetime);
 }
 
+YogVal
+YogDatetime_new(YogEnv* env, time_t timestamp)
+{
+    YogVal obj = alloc(env, env->vm->cDatetime);
+    PTR_AS(Datetime, obj)->val.tv_sec = timestamp;
+    PTR_AS(Datetime, obj)->val.tv_usec = 0;
+    return obj;
+}
+
 static void
 check_Datetime(YogEnv* env, YogHandle* obj, const char* name)
 {
