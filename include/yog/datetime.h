@@ -8,6 +8,7 @@
  */
 
 void YogDatetime_define_classes(YogEnv*, YogHandle*);
+void YogDatetime_eval_builtin_script(YogEnv*, YogVal);
 
 #endif
 /**

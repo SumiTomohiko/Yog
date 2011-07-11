@@ -1,0 +1,6 @@
+
+def to_iso8601()
+  return "{0:04}-{1:02}-{2:02}T{3:02}:{4:02}:{5:02},{6:03}".format(self.year, self.month, self.day, self.hour, self.minute, self.second, self.microsecond // 1000)
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

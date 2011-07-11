@@ -155,6 +155,14 @@ get_microsecond(YogEnv* env, YogHandle* self, YogHandle* pkg)
 }
 
 void
+YogDatetime_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+    YogMisc_eval_source(env, VAL2HDL(env, klass),
+#include "datetime.inc"
+    );
+}
+
+void
 YogDatetime_define_classes(YogEnv* env, YogHandle* pkg)
 {
     YogVM* vm = env->vm;

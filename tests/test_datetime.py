@@ -81,4 +81,8 @@ print(t0 == t1)""", "false")
 t1 = Datetime.new(2038, 1, 19, 3, 14, 7, 42)
 print(t0 == t1)""", "true")
 
+    def test_to_iso8601_0(self):
+        src = "print(Datetime.new(2038, 1, 19, 3, 14, 7, 42000).to_iso8601())"
+        self._test(src, "2038-01-19T03:14:07,042")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

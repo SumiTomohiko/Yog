@@ -318,6 +318,7 @@ src/builtins_unix.inc
 src/callable.inc
 src/code.inc
 src/compile.inc
+src/datetime.inc
 src/dict.inc
 src/errno.inc
 src/euc_jp2yog_3bytes.inc

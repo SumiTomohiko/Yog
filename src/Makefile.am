@@ -75,6 +75,9 @@ builtins_unix.inc: builtins_unix.yg yg2inc.yg
 array.inc: array.yg yg2inc.yg
 	$(YOG) yg2inc.yg array.yg $@
 
+datetime.inc: datetime.yg yg2inc.yg
+	$(YOG) yg2inc.yg datetime.yg $@
+
 object.inc: object.yg yg2inc.yg
 	$(YOG) yg2inc.yg object.yg $@
 
