@@ -306,6 +306,15 @@ set_path_separator(YogEnv* env, YogHandle* builtins)
     YogObj_set_attr(env, HDL2VAL(builtins), "PATH_SEPARATOR", path);
 }
 
+static YogVal
+create_stdio(YogEnv* env, FILE* fp)
+{
+    YogVal file = YogFile_new(env, fp);
+    YogVal enc = env->vm->default_encoding;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogFile, file), encoding, enc);
+    return file;
+}
+
 void
 YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
 {
@@ -387,8 +396,12 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
     YogObj_set_attr(env, HDL2VAL(builtins), "ENCODINGS", env->vm->encodings);
     YogVal enc = env->vm->default_encoding;
     YogObj_set_attr(env, HDL2VAL(builtins), "DEFAULT_ENCODING", enc);
-    YogVal STDOUT = YogFile_new(env, stdout);
+    YogVal STDIN = create_stdio(env, stdin);
+    YogObj_set_attr(env, HDL2VAL(builtins), "STDIN", STDIN);
+    YogVal STDOUT = create_stdio(env, stdout);
     YogObj_set_attr(env, HDL2VAL(builtins), "STDOUT", STDOUT);
+    YogVal STDERR = create_stdio(env, stderr);
+    YogObj_set_attr(env, HDL2VAL(builtins), "STDERR", STDERR);
 
     set_path_separator(env, builtins);
 
