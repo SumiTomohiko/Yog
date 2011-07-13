@@ -66,19 +66,16 @@ check_self_type(YogEnv* env, YogHandle* self)
     YogError_raise_TypeError(env, "self must be Stat, not %C", val);
 }
 
-static YogVal
-get_gid(YogEnv* env, YogHandle* self, YogHandle* pkg)
-{
-    check_self_type(env, self);
-    return INT2VAL(HDL_AS(Stat, self)->st.st_gid);
-}
-
-static YogVal
-get_uid(YogEnv* env, YogHandle* self, YogHandle* pkg)
-{
-    check_self_type(env, self);
-    return INT2VAL(HDL_AS(Stat, self)->st.st_uid);
-}
+#define IMPLEMENT_GETTER(name, member) \
+    static YogVal \
+    name(YogEnv* env, YogHandle* self, YogHandle* pkg) \
+    { \
+        check_self_type(env, self); \
+        return INT2VAL(HDL_AS(Stat, self)->st.member); \
+    }
+IMPLEMENT_GETTER(get_gid, st_gid)
+IMPLEMENT_GETTER(get_size, st_size)
+IMPLEMENT_GETTER(get_uid, st_uid)
 
 static YogVal
 get_ctime(YogEnv* env, YogHandle* self, YogHandle* pkg)
@@ -121,6 +118,7 @@ YogStat_define_classes(YogEnv* env, YogHandle* pkg)
     DEFINE_PROP("gid", get_gid, NULL);
     DEFINE_PROP("mode", get_mode, NULL);
     DEFINE_PROP("mtime", get_mtime, NULL);
+    DEFINE_PROP("size", get_size, NULL);
     DEFINE_PROP("uid", get_uid, NULL);
 #undef DEFINE_PROP
     vm->cStat = HDL2VAL(cStat);

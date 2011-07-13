@@ -54,4 +54,10 @@ class TestStat(TestCase):
         exec """def test_{name}0(self):
     self.run_time_test(\"{name}\")""".format(name=name)
 
+    def test_size0(self):
+        filename = "gods.txt"
+        expected = str(lstat(filename).st_size)
+        src = "print(\"{filename}\".to_path().lstat().size)"
+        self._test(src.format(**locals()), expected)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
