@@ -34,19 +34,41 @@
 } while (0)
 
 static YogVal
-to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+to_s_internal(YogEnv* env, int_t self, int_t radix)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal retval = YUNDEF;
-    PUSH_LOCAL(env, retval);
+    /**
+     * buffer is small for 64bit.
+     * Issue: e03cb3906e74d58cc481879d9042ab51fd9c8340
+     */
+    char buffer[31];
+    char* p = buffer + array_sizeof(buffer) - 1;
+    int_t num = abs(self);
+    do {
+        int_t mod = num % radix;
+        *p = mod < 10 ? '0' + mod : 'a' + mod - 10;
+        p--;
+        num /= radix;
+    } while (num != 0);
+    if (self < 0) {
+        *p = '-';
+        p--;
+    }
+    return YogString_from_string(env, p + 1);
+}
 
-    YogCArg params[] = { { NULL, NULL } };
-    YogGetArgs_parse_args(env, "to_s", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
-
-    retval = YogSprintf_sprintf(env, "%d", VAL2INT(self));
-
-    RETURN(env, retval);
+static YogVal
+to_s(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* radix)
+{
+    CHECK_SELF_TYPE2(env, self);
+    YogMisc_check_Fixnum_optional(env, radix, "radix");
+    if (radix == NULL) {
+        return to_s_internal(env, HDL2INT(self), 10);
+    }
+    if ((HDL2INT(radix) < 2) || (36 < HDL2INT(radix))) {
+        const char* fmt = "radix must be in range from 2 to 36, not %d";
+        YogError_raise_ValueError(env, fmt, HDL2INT(radix));
+    }
+    return to_s_internal(env, HDL2INT(self), HDL2INT(radix));
 }
 
 YogVal
@@ -670,7 +692,6 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("-self", negative);
     DEFINE_METHOD("hash", hash);
     DEFINE_METHOD("times", times);
-    DEFINE_METHOD("to_s", to_s);
     DEFINE_METHOD("~self", not);
 #undef DEFINE_METHOD
 #define DEFINE_METHOD2(name, ...) do { \
@@ -688,6 +709,7 @@ YogFixnum_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("<=>", ufo, "n", NULL);
     DEFINE_METHOD2(">>", rshift, "n", NULL);
     DEFINE_METHOD2("^", xor, "n", NULL);
+    DEFINE_METHOD2("to_s", to_s, "|", "radix", NULL);
     DEFINE_METHOD2("|", or, "n", NULL);
 #undef DEFINE_METHOD2
     vm->cFixnum = cFixnum;

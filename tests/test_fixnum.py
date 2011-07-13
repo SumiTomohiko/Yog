@@ -100,11 +100,23 @@ TypeError: Comparison of Fixnum with Nil failed
 puts(42 < nil)
 """, stderr=test_stderr)
 
-    def test_to_s(self):
-        self._test("""
-puts(42.to_s())
-""", """42
-""")
+    for i, testee in enumerate([
+        [42, None, "42"],
+        [42, 2, "101010"],
+        [42, 8, "52"],
+        [42, 10, "42"],
+        [42, 16, "2a"],
+        [42, 36, "16"]]):
+        num = testee[0]
+        radix = testee[1]
+        expected = testee[2]
+        fmt = """def test_to_s{index}(self):
+    self._test(\"print({num}.to_s({radix}))\", \"{expected}\")"""
+        exec fmt.format(
+            index=10 * i,
+            num=num,
+            radix=radix if radix is not None else "",
+            expected=expected)
 
     def test_times(self):
         self._test("""

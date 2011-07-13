@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Fixnum#to_s() cannot work in 64bit.
+desc: ""
+type: :bugfix
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-07-13 19:14:06.677025 Z
+references: []
+
+id: e03cb3906e74d58cc481879d9042ab51fd9c8340
+log_events: 
+- - 2011-07-13 19:14:08.519400 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

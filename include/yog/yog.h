@@ -132,6 +132,7 @@ struct YogHandle {
 typedef struct YogHandle YogHandle;
 
 #define HDL2VAL(h)      (h)->val
+#define HDL2INT(h)      VAL2INT(HDL2VAL((h)))
 #define HDL_AS(type, h) PTR_AS(type, HDL2VAL((h)))
 #define NULL2UNDEF(h)   ((h) != NULL ? HDL2VAL((h)) : YUNDEF)
 
