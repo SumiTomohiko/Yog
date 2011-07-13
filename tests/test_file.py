@@ -163,4 +163,18 @@ end""".format(**locals()), "false")
   print(fp.eof?)
 end""".format(**locals()), "true")
 
+    def test_lock_shared0(self):
+        filename = "gods.txt"
+        self._test("""File.open(\"{filename}\") do [fp]
+  fp.lock_shared() do [fp]
+  end
+end""".format(**locals()))
+
+    def test_lock_exclusive0(self):
+        filename = "gods.txt"
+        self._test("""File.open(\"{filename}\") do [fp]
+  fp.lock_exclusive() do [fp]
+  end
+end""".format(**locals()))
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

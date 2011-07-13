@@ -2,6 +2,7 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/file.h>
 #include "yog/array.h"
 #include "yog/binary.h"
 #include "yog/callable.h"
@@ -78,6 +79,100 @@ write_binary(YogEnv* env, YogHandle* self, YogVal val)
     }
 }
 
+static uint_t
+read_binary_to_append(YogEnv* env, YogHandle* bin, FILE* fp, size_t size)
+{
+    char buffer[size];
+    size_t nbytes = fread(buffer, sizeof(buffer[0]), size, fp);
+    if (ferror(fp)) {
+        YogError_raise_sys_err(env, errno, YUNDEF);
+    }
+    YogBinary_add(env, HDL2VAL(bin), buffer, nbytes);
+    return nbytes;
+}
+
+static YogVal
+read_binary_all(YogEnv* env, FILE* fp)
+{
+    YogHandle* data = VAL2HDL(env, YogBinary_new(env));
+    while (!feof(fp)) {
+        read_binary_to_append(env, data, fp, 4096);
+    }
+    return HDL2VAL(data);
+}
+
+static YogVal
+read_binary(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* size)
+{
+    CHECK_SELF_TYPE2(env, self);
+    if (size == NULL) {
+        return read_binary_all(env, HDL_AS(YogFile, self)->fp);
+    }
+    YogMisc_check_Fixnum(env, size, "size");
+    if (VAL2INT(HDL2VAL(size)) < 0) {
+        const char* fmt = "size must be equal to or greater than zero, not %d";
+        YogError_raise_ValueError(env, fmt, VAL2INT(HDL2VAL(size)));
+    }
+
+    uint_t rest = (uint_t)VAL2INT(HDL2VAL(size));
+    YogHandle* bin = VAL2HDL(env, YogBinary_new(env));
+    FILE* fp = HDL_AS(YogFile, self)->fp;
+    while (!feof(fp) && (0 < rest)) {
+        uint_t max = 4096;
+        uint_t size = max < rest ? max : rest;
+        uint_t nbytes = read_binary_to_append(env, bin, fp, size);
+        rest -= nbytes;
+    }
+    return HDL2VAL(bin);
+}
+
+static void
+do_unlock(YogEnv* env, YogHandle* self)
+{
+    if (flock(fileno(HDL_AS(YogFile, self)->fp), LOCK_UN) != 0) {
+        YogError_raise_sys_err(env, errno, YUNDEF);
+    }
+}
+
+static YogVal
+do_lock(YogEnv* env, YogHandle* self, YogHandle* block, int operation)
+{
+    CHECK_SELF_TYPE2(env, self);
+    if (flock(fileno(HDL_AS(YogFile, self)->fp), operation) != 0) {
+        YogError_raise_sys_err(env, errno, YUNDEF);
+    }
+
+    YogJmpBuf jmpbuf;
+    int_t status = setjmp(jmpbuf.buf);
+    if (status == 0) {
+        INIT_JMPBUF(env, jmpbuf);
+        PUSH_JMPBUF(env->thread, jmpbuf);
+
+        YogVal retval = YogCallable_call1(env, HDL2VAL(block), HDL2VAL(self));
+        do_unlock(env, self);
+
+        POP_JMPBUF(env);
+        return retval;
+    }
+
+    do_unlock(env, self);
+    YogEval_longjmp_to_prev_buf(env, status);
+    /* NOTREACHED */
+    return YUNDEF;
+}
+
+static YogVal
+lock_exclusive(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* block)
+{
+    return do_lock(env, self, block, LOCK_EX);
+}
+
+static YogVal
+lock_shared(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* block)
+{
+    return do_lock(env, self, block, LOCK_SH);
+}
+
 static YogVal
 flush(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
@@ -89,7 +184,7 @@ flush(YogEnv* env, YogHandle* self, YogHandle* pkg)
 }
 
 static YogVal
-write(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* data)
+write_(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* data)
 {
     CHECK_SELF_TYPE2(env, self);
     YOG_ASSERT(env, data != NULL, "data is not optional.");
@@ -114,20 +209,6 @@ write(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* data)
     fputs(BINARY_CSTR(bin), HDL_AS(YogFile, self)->fp);
 
     return HDL2VAL(self);
-}
-
-static YogVal
-read_binary(YogEnv* env, YogVal self)
-{
-    FILE* fp = PTR_AS(YogFile, self)->fp;
-    YogHandle* data = VAL2HDL(env, YogBinary_new(env));
-    do {
-        char buffer[4096];
-        size_t unit = sizeof(buffer[0]);
-        uint_t size = fread(buffer, unit, array_sizeof(buffer), fp);
-        YogBinary_add(env, HDL2VAL(data), buffer, size);
-    } while (!feof(fp));
-    return HDL2VAL(data);
 }
 
 static uint_t
@@ -159,7 +240,7 @@ read_all(YogEnv* env, YogVal self)
 }
 
 static YogVal
-read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+read_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal s = YUNDEF;
@@ -178,7 +259,7 @@ read(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     }
 
     if (IS_UNDEF(PTR_AS(YogFile, self)->encoding)) {
-        RETURN(env, read_binary(env, self));
+        RETURN(env, read_binary_all(env, PTR_AS(YogFile, self)->fp));
     }
 
     if (IS_NIL(size)) {
@@ -208,7 +289,7 @@ do_close(YogEnv* env, YogVal self)
 }
 
 static YogVal
-close(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+close_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
 
@@ -277,7 +358,7 @@ decide_encoding(YogEnv* env, const char* mode, YogVal encoding)
 }
 
 static YogVal
-open(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+open_(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal file = YUNDEF;
@@ -368,20 +449,23 @@ YogFile_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_CLASS_METHOD(name, f)    do { \
     YogClass_define_class_method(env, cFile, pkg, (name), (f)); \
 } while (0)
-    DEFINE_CLASS_METHOD("open", open);
+    DEFINE_CLASS_METHOD("open", open_);
 #undef DEFINE_CLASS_METHOD
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cFile, pkg, (name), (f)); \
 } while (0)
-    DEFINE_METHOD("close", close);
-    DEFINE_METHOD("read", read);
+    DEFINE_METHOD("close", close_);
+    DEFINE_METHOD("read", read_);
     DEFINE_METHOD("readline", readline);
 #undef DEFINE_METHOD
 #define DEFINE_METHOD2(name, f, ...) do { \
     YogClass_define_method2(env, cFile, pkg, (name), (f), __VA_ARGS__); \
 } while (0)
-    DEFINE_METHOD2("write", write, "data", NULL);
     DEFINE_METHOD2("flush", flush, NULL);
+    DEFINE_METHOD2("lock_exclusive", lock_exclusive, "&", NULL);
+    DEFINE_METHOD2("lock_shared", lock_shared, "&", NULL);
+    DEFINE_METHOD2("read_binary", read_binary, "|", "size", NULL);
+    DEFINE_METHOD2("write", write_, "data", NULL);
 #undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter) do { \
     YogClass_define_property(env, cFile, pkg, (name), (getter), (setter)); \

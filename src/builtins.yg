@@ -44,9 +44,9 @@ def run_command(*cmd, &block=nil)
 end
 
 def copy_file(src, dest)
-  File.open(src, "rb") do [in]
-    File.open(dest, "wb") do [out]
-      out.write(in.read())
+  File.open(src, "r") do [in]
+    File.open(dest, "w") do [out]
+      out.write(in.read_binary())
     end
   end
 end
