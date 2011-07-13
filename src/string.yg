@@ -209,4 +209,20 @@ def split(splitter=/\s+/, max=nil)
   return a
 end
 
+def as_bin()
+  return self.to_i(2)
+end
+
+def as_oct()
+  return self.to_i(8)
+end
+
+def as_dec()
+  return self.to_i(10)
+end
+
+def as_hex()
+  return self.to_i(16)
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

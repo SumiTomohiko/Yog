@@ -353,19 +353,155 @@ get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     RETURN(env, INT2VAL(STRING_SIZE(self)));
 }
 
-static YogVal
-to_i(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+static void
+normalize_as_number(YogEnv* env, YogVal self, YogVal* normalized, int_t* base)
 {
-    SAVE_ARGS5(env, self, pkg, args, kw, block);
-    YogVal n = YUNDEF;
-    PUSH_LOCAL(env, n);
-    YogCArg params[] = { { NULL, NULL } };
-    YogGetArgs_parse_args(env, "to_i", params, args, kw);
-    CHECK_SELF_TYPE(env, self);
+    YOG_ASSERT(env, normalized != NULL, "normalized is NULL");
+    YOG_ASSERT(env, base != NULL, "base is NULL");
+    SAVE_ARG(env, self);
+    YogVal body = YUNDEF;
+    PUSH_LOCAL(env, body);
 
-    n = YogString_to_i(env, self);
+    uint_t size = STRING_SIZE(self);
+    if (size == 0) {
+        YogError_raise_ValueError(env, "Empty string to convert into integer");
+        /* NOTREACHED */
+    }
+    *normalized = YogString_new(env);
 
-    RETURN(env, n);
+    body = PTR_AS(YogString, self)->body;
+    uint_t next_index = 0;
+#define NEXTC PTR_AS(YogCharArray, body)->items[next_index]
+    YogChar c = NEXTC;
+    if (c == '+') {
+        next_index++;
+    }
+    else if (c == '-') {
+        YogString_push(env, *normalized, c);
+        next_index++;
+    }
+    if (size <= next_index) {
+        YogError_raise_ValueError(env, "String contains only sign: %S", self);
+        /* NOTREACHED */
+    }
+
+    YogChar c1 = NEXTC;
+    if ((c1 == '0') && (next_index < size - 1)) {
+        YogChar c2 = PTR_AS(YogCharArray, body)->items[next_index + 1];
+        if ((c2 == 'b') || (c2 == 'B')) {
+            *base = 2;
+            next_index += 2;
+        }
+        else if ((c2 == 'o') || (c2 == 'O')) {
+            *base = 8;
+            next_index += 2;
+        }
+        else if ((c2 == 'd') || (c2 == 'D')) {
+            *base = 10;
+            next_index += 2;
+        }
+        else if ((c2 == 'x') || (c2 == 'X')) {
+            *base = 16;
+            next_index += 2;
+        }
+        else {
+            YogString_push(env, *normalized, c1);
+            *base = 10;
+            next_index += 1;
+        }
+        if (size <= next_index) {
+            YogError_raise_ValueError(env, "String ends with radix: %S", self);
+            /* NOTREACHED */
+        }
+    }
+    else {
+        YogString_push(env, *normalized, c1);
+        next_index += 1;
+    }
+
+    while (next_index < size) {
+        c = NEXTC;
+        if (isalpha(c)) {
+            YogString_push(env, *normalized, tolower(c));
+            next_index++;
+        }
+        else if (c == '_') {
+            next_index++;
+            if (size <= next_index) {
+                const char* fmt = "String ends with \"_\": %S";
+                YogError_raise_ValueError(env, fmt, self);
+                /* NOTREACHED */
+            }
+            c = NEXTC;
+            if (!isalpha(c) && !isdigit(c)) {
+                const char* fmt = "No alphabet or digit follows \"_\": %S";
+                YogError_raise_ValueError(env, fmt, self);
+                /* NOTREACHED */
+            }
+        }
+        else {
+            YogString_push(env, *normalized, c);
+            next_index++;
+        }
+    }
+#undef NEXTC
+
+    RETURN_VOID(env);
+}
+
+static YogVal
+to_i_of_radix(YogEnv* env, YogVal self, int_t radix)
+{
+    SAVE_ARG(env, self);
+    YogVal normalized = YUNDEF;
+    YogVal bignum = YUNDEF;
+    YogVal bin = YUNDEF;
+    PUSH_LOCALS3(env, normalized, bignum, bin);
+
+#define RAISE_VALUE_ERROR   do { \
+    YogError_raise_ValueError(env, "Invalid literal: %S", self); \
+    RETURN(env, INT2VAL(0)); \
+} while (0)
+    normalize_as_number(env, self, &normalized, &radix);
+
+    YogHandle* h_enc = YogHandle_REGISTER(env, env->vm->encAscii);
+    YogHandle* h_normalized = YogHandle_REGISTER(env, normalized);
+    bin = YogEncoding_conv_from_yog(env, h_enc, h_normalized);
+    char* endptr = NULL;
+    errno = 0;
+    long n = strtol(BINARY_CSTR(bin), &endptr, radix);
+    if (*endptr != '\0') {
+        RAISE_VALUE_ERROR;
+    }
+    if (errno == 0) {
+        YogVal v = YogVal_from_int(env, n);
+        RETURN(env, v);
+    }
+    else if (errno == ERANGE) {
+        bignum = YogBignum_from_str(env, normalized, radix);
+        RETURN(env, bignum);
+    }
+
+    RAISE_VALUE_ERROR;
+#undef RAISE_VALUE_ERROR
+
+    /* NOTREACHED */
+    RETURN(env, self);
+}
+
+static YogVal
+to_i(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* radix)
+{
+    CHECK_SELF_TYPE2(env, self);
+    YogMisc_check_Fixnum_optional(env, radix, "radix");
+    if (radix == NULL) {
+        return to_i_of_radix(env, HDL2VAL(self), 10);
+    }
+    if ((HDL2INT(radix) < 2) || (36 < HDL2INT(radix))) {
+        const char* fmt = "radix must be in range from 2 to 36, not %d";
+        YogError_raise_ValueError(env, fmt, HDL2INT(radix));
+    }
+    return to_i_of_radix(env, HDL2VAL(self), HDL2INT(radix));
 }
 
 static YogVal
@@ -869,142 +1005,10 @@ hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     RETURN(env, INT2VAL(hash));
 }
 
-static void
-normalize_as_number(YogEnv* env, YogVal self, YogVal* normalized, int_t* base)
-{
-    YOG_ASSERT(env, normalized != NULL, "normalized is NULL");
-    YOG_ASSERT(env, base != NULL, "base is NULL");
-    SAVE_ARG(env, self);
-    YogVal body = YUNDEF;
-    PUSH_LOCAL(env, body);
-
-    uint_t size = STRING_SIZE(self);
-    if (size == 0) {
-        YogError_raise_ValueError(env, "Empty string to convert into integer");
-        /* NOTREACHED */
-    }
-    *normalized = YogString_new(env);
-
-    body = PTR_AS(YogString, self)->body;
-    uint_t next_index = 0;
-#define NEXTC PTR_AS(YogCharArray, body)->items[next_index]
-    YogChar c = NEXTC;
-    if (c == '+') {
-        next_index++;
-    }
-    else if (c == '-') {
-        YogString_push(env, *normalized, c);
-        next_index++;
-    }
-    if (size <= next_index) {
-        YogError_raise_ValueError(env, "String contains only sign: %S", self);
-        /* NOTREACHED */
-    }
-
-    YogChar c1 = NEXTC;
-    if ((c1 == '0') && (next_index < size - 1)) {
-        YogChar c2 = PTR_AS(YogCharArray, body)->items[next_index + 1];
-        if ((c2 == 'b') || (c2 == 'B')) {
-            *base = 2;
-            next_index += 2;
-        }
-        else if ((c2 == 'o') || (c2 == 'O')) {
-            *base = 8;
-            next_index += 2;
-        }
-        else if ((c2 == 'd') || (c2 == 'D')) {
-            *base = 10;
-            next_index += 2;
-        }
-        else if ((c2 == 'x') || (c2 == 'X')) {
-            *base = 16;
-            next_index += 2;
-        }
-        else {
-            YogString_push(env, *normalized, c1);
-            *base = 10;
-            next_index += 1;
-        }
-        if (size <= next_index) {
-            YogError_raise_ValueError(env, "String ends with radix: %S", self);
-            /* NOTREACHED */
-        }
-    }
-    else {
-        YogString_push(env, *normalized, c1);
-        *base = 10;
-        next_index += 1;
-    }
-
-    while (next_index < size) {
-        c = NEXTC;
-        if (isalpha(c)) {
-            YogString_push(env, *normalized, tolower(c));
-            next_index++;
-        }
-        else if (c == '_') {
-            next_index++;
-            if (size <= next_index) {
-                const char* fmt = "String ends with \"_\": %S";
-                YogError_raise_ValueError(env, fmt, self);
-                /* NOTREACHED */
-            }
-            c = NEXTC;
-            if (!isalpha(c) && !isdigit(c)) {
-                const char* fmt = "No alphabet or digit follows \"_\": %S";
-                YogError_raise_ValueError(env, fmt, self);
-                /* NOTREACHED */
-            }
-        }
-        else {
-            YogString_push(env, *normalized, c);
-            next_index++;
-        }
-    }
-#undef NEXTC
-
-    RETURN_VOID(env);
-}
-
 YogVal
 YogString_to_i(YogEnv* env, YogVal self)
 {
-    SAVE_ARG(env, self);
-    YogVal normalized = YUNDEF;
-    YogVal bignum = YUNDEF;
-    YogVal bin = YUNDEF;
-    PUSH_LOCALS3(env, normalized, bignum, bin);
-
-#define RAISE_VALUE_ERROR   do { \
-    YogError_raise_ValueError(env, "Invalid literal: %S", self); \
-    RETURN(env, INT2VAL(0)); \
-} while (0)
-    int_t base;
-    normalize_as_number(env, self, &normalized, &base);
-
-    YogHandle* h_enc = YogHandle_REGISTER(env, env->vm->encAscii);
-    YogHandle* h_normalized = YogHandle_REGISTER(env, normalized);
-    bin = YogEncoding_conv_from_yog(env, h_enc, h_normalized);
-    char* endptr = NULL;
-    errno = 0;
-    long n = strtol(BINARY_CSTR(bin), &endptr, base);
-    if (*endptr != '\0') {
-        RAISE_VALUE_ERROR;
-    }
-    if (errno == 0) {
-        YogVal v = YogVal_from_int(env, n);
-        RETURN(env, v);
-    }
-    else if (errno == ERANGE) {
-        bignum = YogBignum_from_str(env, normalized, base);
-        RETURN(env, bignum);
-    }
-
-    RAISE_VALUE_ERROR;
-#undef RAISE_VALUE_ERROR
-
-    /* NOTREACHED */
-    RETURN(env, self);
+    return to_i_of_radix(env, self, 10);
 }
 
 void
@@ -1116,7 +1120,6 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("get", get);
     DEFINE_METHOD("gsub", gsub);
     DEFINE_METHOD("hash", hash);
-    DEFINE_METHOD("to_i", to_i);
     DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
 #define DEFINE_METHOD2(name, ...)  do { \
@@ -1131,6 +1134,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("[]", subscript, "index", NULL);
     DEFINE_METHOD2("slice", slice, "pos", "|", "len", NULL);
     DEFINE_METHOD2("to_bin", to_bin, "encoding", NULL);
+    DEFINE_METHOD2("to_i", to_i, "|", "radix", NULL);
     DEFINE_METHOD2("to_path", to_path, NULL);
     DEFINE_METHOD2("to_sym", to_sym, NULL);
 #undef DEFINE_METHOD2

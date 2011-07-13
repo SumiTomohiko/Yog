@@ -809,4 +809,31 @@ print(\"foo\".rfind(\"o\", -4))
     def test_divide0(self):
         self._test("print((\"foo\" / \"bar\").dirname)", "foo")
 
+    def test_as_bin0(self):
+        self._test("print(\"101010\".as_bin())", "42")
+
+    def test_as_oct0(self):
+        self._test("print(\"42\".as_oct())", "34")
+
+    def test_as_hex0(self):
+        self._test("print(\"42\".as_hex())", "66")
+
+    def test_as_dec0(self):
+        self._test("print(\"42\".as_dec())", "42")
+
+    def test_to_i0(self):
+        self._test("print(\"42\".to_i())", "42")
+
+    def test_to_i10(self):
+        self._test("print(\"42\".to_i(16))", "66")
+
+    def test_to_i20(self):
+        self._test("print(\"42\".to_i(10))", "42")
+
+    def test_to_i30(self):
+        self._test("print(\"42\".to_i(8))", "34")
+
+    def test_to_i40(self):
+        self._test("print(\"101010\".to_i(2))", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
