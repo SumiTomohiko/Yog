@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from os import makedirs, walk
+from os import getpid, lstat, makedirs, walk
 from os.path import abspath, join
 from shutil import rmtree
-from tempfile import mkdtemp
+from tempfile import gettempdir, mkdtemp
 from testcase import TestCase
 
 class TestPath(TestCase):
@@ -119,5 +119,21 @@ class TestPath(TestCase):
         def nop(_):
             pass
         self.run_dir_test(nop, "false")
+
+    def test_link_to0(self):
+        dir_ = gettempdir()
+        head = str(getpid())
+        src = join(dir_, "{head}.src".format(**locals()))
+        self.touch(src)
+        try:
+            dest = join(dir_, "{head}.dest".format(**locals()))
+            fmt = "\"{dest}\".to_path().link_to(\"{src}\")"
+            self._test(fmt.format(**locals()))
+            try:
+                assert lstat(src).st_ino == lstat(dest).st_ino
+            finally:
+                self.unlink(dest)
+        finally:
+            self.unlink(src)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

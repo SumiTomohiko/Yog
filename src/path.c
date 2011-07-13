@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "yog/binary.h"
 #include "yog/class.h"
 #include "yog/error.h"
 #include "yog/handle.h"
@@ -171,6 +172,20 @@ YogPath_eval_builtin_script(YogEnv* env, YogVal klass)
 }
 
 static YogVal
+link_to(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* src)
+{
+    CHECK_SELF_TYPE(env, self);
+    YogMisc_check_String(env, src, "src");
+    YogVal o = YogString_to_bin_in_default_encoding(env, src);
+    YogHandle* name1 = VAL2HDL(env, o);
+    YogVal name2 = YogString_to_bin_in_default_encoding(env, self);
+    if (link(BINARY_CSTR(HDL2VAL(name1)), BINARY_CSTR(name2)) != 0) {
+        YogError_raise_sys_err(env, errno, HDL2VAL(src));
+    }
+    return HDL2VAL(src);
+}
+
+static YogVal
 stat_(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     CHECK_SELF_TYPE(env, self);
@@ -200,6 +215,7 @@ YogPath_define_classes(YogEnv* env, YogHandle* pkg)
 #define DEFINE_METHOD(name, ...) do { \
     YogClass_define_method2(env, HDL2VAL(cPath), HDL2VAL(pkg), (name), __VA_ARGS__); \
 } while (0)
+    DEFINE_METHOD("link_to", link_to, "src", NULL);
     DEFINE_METHOD("lstat", lstat_, NULL);
     DEFINE_METHOD("stat", stat_, NULL);
 #undef DEFINE_METHOD
