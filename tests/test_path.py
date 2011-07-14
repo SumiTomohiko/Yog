@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from os import getpid, lstat, makedirs, walk
+from os import getpid, lstat, makedirs, readlink, walk
 from os.path import abspath, join
 from shutil import rmtree
 from tempfile import gettempdir, mkdtemp
@@ -120,20 +120,30 @@ class TestPath(TestCase):
             pass
         self.run_dir_test(nop, "false")
 
-    def test_link_to0(self):
+    def run_link_test(self, name, f):
         dir_ = gettempdir()
         head = str(getpid())
         src = join(dir_, "{head}.src".format(**locals()))
         self.touch(src)
         try:
             dest = join(dir_, "{head}.dest".format(**locals()))
-            fmt = "\"{dest}\".to_path().link_to(\"{src}\")"
+            fmt = "\"{dest}\".to_path().{name}(\"{src}\")"
             self._test(fmt.format(**locals()))
             try:
-                assert lstat(src).st_ino == lstat(dest).st_ino
+                f(src, dest)
             finally:
                 self.unlink(dest)
         finally:
             self.unlink(src)
+
+    def test_link_to0(self):
+        def test(src, dest):
+            assert lstat(src).st_ino == lstat(dest).st_ino
+        self.run_link_test("link_to", test)
+
+    def test_symlink_to0(self):
+        def test(src, dest):
+            assert src == readlink(dest)
+        self.run_link_test("symlink_to", test)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

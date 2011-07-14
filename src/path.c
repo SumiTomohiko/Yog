@@ -171,17 +171,30 @@ YogPath_eval_builtin_script(YogEnv* env, YogVal klass)
     );
 }
 
-static YogVal
-link_to(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* src)
+static void
+do_link(YogEnv* env, YogHandle* self, YogHandle* src, int (*f)(const char*, const char*))
 {
     CHECK_SELF_TYPE(env, self);
     YogMisc_check_String(env, src, "src");
     YogVal o = YogString_to_bin_in_default_encoding(env, src);
     YogHandle* name1 = VAL2HDL(env, o);
     YogVal name2 = YogString_to_bin_in_default_encoding(env, self);
-    if (link(BINARY_CSTR(HDL2VAL(name1)), BINARY_CSTR(name2)) != 0) {
+    if (f(BINARY_CSTR(HDL2VAL(name1)), BINARY_CSTR(name2)) != 0) {
         YogError_raise_sys_err(env, errno, HDL2VAL(src));
     }
+}
+
+static YogVal
+symlink_to(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* src)
+{
+    do_link(env, self, src, symlink);
+    return HDL2VAL(src);
+}
+
+static YogVal
+link_to(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* src)
+{
+    do_link(env, self, src, link);
     return HDL2VAL(src);
 }
 
@@ -218,6 +231,7 @@ YogPath_define_classes(YogEnv* env, YogHandle* pkg)
     DEFINE_METHOD("link_to", link_to, "src", NULL);
     DEFINE_METHOD("lstat", lstat_, NULL);
     DEFINE_METHOD("stat", stat_, NULL);
+    DEFINE_METHOD("symlink_to", symlink_to, "src", NULL);
 #undef DEFINE_METHOD
 #define DEFINE_CLASS_METHOD(name, ...) do { \
     YogClass_define_class_method2(env, cPath, pkg, (name), __VA_ARGS__); \
