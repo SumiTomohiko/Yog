@@ -156,4 +156,21 @@ class TestPath(TestCase):
         finally:
             self.unlink(dest)
 
+    def run_symlink_test(self, f, expected):
+        path = join(gettempdir(), str(getpid()))
+        f(path)
+        try:
+            src = "print(\"{path}\".to_path().symlink?)".format(**locals())
+            self._test(src, expected)
+        finally:
+            self.unlink(path)
+
+    def test_symlink0(self):
+        self.run_symlink_test(self.touch, "false")
+
+    def test_symlink10(self):
+        def f(path):
+            symlink("/foo/bar/baz/quux", path)
+        self.run_symlink_test(f, "true")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

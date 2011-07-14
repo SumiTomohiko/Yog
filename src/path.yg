@@ -45,7 +45,16 @@ def get_dir()
   end
   return st.dir?
 end
-
 dir? = property(get_dir)
+
+def get_symlink()
+  try
+    st = self.lstat()
+  except SystemError
+    return false
+  end
+  return st.symlink?
+end
+symlink? = property(get_symlink)
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
-from os import chmod, close, lstat, unlink
-from os.path import basename
-from tempfile import mkstemp
+from os import chmod, close, getpid, lstat, symlink, unlink
+from os.path import basename, join
+from tempfile import gettempdir, mkstemp
 from testcase import TestCase
 
 class TestStat(TestCase):
@@ -59,5 +59,27 @@ class TestStat(TestCase):
         expected = str(lstat(filename).st_size)
         src = "print(\"{filename}\".to_path().lstat().size)"
         self._test(src.format(**locals()), expected)
+
+    def run_symlink_test(self, f, expected):
+        # XXX: Here was copied and pasted from test_path.py.
+        path = join(gettempdir(), str(getpid()))
+        f(path)
+        try:
+            fmt = "print(\"{path}\".to_path().lstat().symlink?)"
+            self._test(fmt.format(**locals()), expected)
+        finally:
+            self.unlink(path)
+
+    def touch(self, path):
+        with open(path, "w") as fp:
+            pass
+
+    def test_symlink0(self):
+        self.run_symlink_test(self.touch, "false")
+
+    def test_symlink10(self):
+        def f(path):
+            symlink("/foo/bar/baz/quux", path)
+        self.run_symlink_test(f, "true")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
