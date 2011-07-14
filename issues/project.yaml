@@ -92,3 +92,12 @@ releases:
     - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
     - released
     - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: 0.0.11
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2011-07-14 19:19:04.245153 Z
+    - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+    - created
+    - "An objective of this version is quality for casual using."

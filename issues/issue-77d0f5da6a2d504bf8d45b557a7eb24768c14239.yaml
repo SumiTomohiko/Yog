@@ -50,7 +50,7 @@ desc: "$ cat foo.yg                                    [~/projects/Yog]\n\n\
   ---Type <return> to continue, or q <return> to quit---\n    kwargc=0 '\\0', kwargs=0x0, vararg=2, varkwarg=2, blockarg=2)\n    at callable.c:334\n\n    posargc=<value optimized out>, posargs=0xb761df50,\n    kwargc=<value optimized out>, kwargs=0x0, vararg=2, varkwarg=2, blockarg=2)\n    at callable.c:655\n\n    argc=<value optimized out>, args=0xb761df50) at callable.c:832\n\n    at coroutine.c:230"
 type: :bugfix
 component: core
-release: 
+release: 0.0.11
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -62,4 +62,8 @@ log_events:
 - - 2010-04-24 14:55:46.290491 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2011-07-14 19:21:56.586396 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.11 from unassigned
   - ""

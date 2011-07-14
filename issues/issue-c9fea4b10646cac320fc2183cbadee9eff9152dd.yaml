@@ -2,12 +2,12 @@
 title: Reading unknown attributes on Struct causes aborting
 desc: |-
   $ cat foo.yog
-    
+  
     Foo = StructClass.new("Foo")
     Foo.define_fields([])
     foo = Foo.new()
     foo.bar
-    
+  
     # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
     $ src/yog-generational foo.yog
     Traceback (most recent call last):
@@ -18,7 +18,7 @@ desc: |-
     zsh: abort (core dumped)  src/yog-generational foo.yog
 type: :bugfix
 component: core
-release: 
+release: 0.0.11
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -30,4 +30,8 @@ log_events:
 - - 2011-03-18 15:57:13.539400 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2011-07-14 19:47:39.242983 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.11 from unassigned
   - ""

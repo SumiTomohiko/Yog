@@ -3,7 +3,7 @@ title: "OverflowError: repeated string is too long"
 desc: Python throws OverflowError when multiplying String with Fixnum results overflow
 type: :task
 component: core
-release: 
+release: 0.0.11
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2010-08-15 15:45:05.531015 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2011-07-14 19:41:25.198056 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.11 from unassigned
   - ""

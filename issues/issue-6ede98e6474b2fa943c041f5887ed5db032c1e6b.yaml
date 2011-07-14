@@ -2,19 +2,19 @@
 title: Combination of the conditional operator with the here document causes SyntaxError
 desc: |-
   $ cat foo.yog
-    
+  
     print(true ? <<EOF : <<EOF)
     foo
     EOF
     bar
     EOF
-    
+  
     # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
     $ src/yog-generational --gc-stress foo.yog
     SyntaxError: File "foo.yog", line 2: Invalid syntax
 type: :bugfix
 component: core
-release: 
+release: 0.0.11
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -26,4 +26,8 @@ log_events:
 - - 2011-03-19 17:25:26.132564 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2011-07-14 19:47:02.913394 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.11 from unassigned
   - ""

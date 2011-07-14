@@ -19,7 +19,7 @@ desc: |-
     UnboundLocalError: Local variable "args" referenced before assignment
 type: :bugfix
 component: core
-release: 
+release: 0.0.11
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -31,4 +31,8 @@ log_events:
 - - 2010-08-06 11:59:45.737191 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2011-07-14 19:41:05.289185 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.11 from unassigned
   - ""

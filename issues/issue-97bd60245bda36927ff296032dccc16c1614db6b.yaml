@@ -3,7 +3,7 @@ title: Cannot call methods in super class
 desc: See BinopNode class in lib/c/grammar.yogram.
 type: :bugfix
 component: core
-release: 
+release: 0.0.11
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -22,3 +22,7 @@ log_events:
   - |-
     GameStage and AnythingElseStage in flourish.stage use this super() call. If the
     bug is fixed, fix these classes too.
+- - 2011-07-14 19:51:21.474606 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.11 from unassigned
+  - ""

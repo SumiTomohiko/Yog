@@ -3,7 +3,7 @@ title: Add permalink to class/method/function.
 desc: ""
 type: :task
 component: doc
-release: 
+release: 0.0.11
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2010-02-23 15:09:20.099566 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - unassigned from release 0.0.4
+  - ""
+- - 2011-07-14 19:38:57.800454 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.0.11 from unassigned
   - ""
