@@ -199,6 +199,20 @@ link_to(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* src)
 }
 
 static YogVal
+readlink_(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    CHECK_SELF_TYPE(env, self);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, self);
+    char path[1024];
+    ssize_t size = readlink(BINARY_CSTR(bin), path, array_sizeof(path));
+    if (size == -1) {
+        YogError_raise_sys_err(env, errno, HDL2VAL(self));
+    }
+    path[size] = '\0';
+    return YogPath_from_string(env, path);
+}
+
+static YogVal
 stat_(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     CHECK_SELF_TYPE(env, self);
@@ -230,6 +244,7 @@ YogPath_define_classes(YogEnv* env, YogHandle* pkg)
 } while (0)
     DEFINE_METHOD("link_to", link_to, "src", NULL);
     DEFINE_METHOD("lstat", lstat_, NULL);
+    DEFINE_METHOD("readlink", readlink_, NULL);
     DEFINE_METHOD("stat", stat_, NULL);
     DEFINE_METHOD("symlink_to", symlink_to, "src", NULL);
 #undef DEFINE_METHOD

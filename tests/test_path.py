@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from os import getpid, lstat, makedirs, readlink, walk
+from os import getpid, lstat, makedirs, readlink, symlink, walk
 from os.path import abspath, join
 from shutil import rmtree
 from tempfile import gettempdir, mkdtemp
@@ -145,5 +145,15 @@ class TestPath(TestCase):
         def test(src, dest):
             assert src == readlink(dest)
         self.run_link_test("symlink_to", test)
+
+    def test_readlink0(self):
+        src = "/foo/bar/baz/quux"
+        dest = join(gettempdir(), str(getpid()))
+        symlink(src, dest)
+        try:
+            fmt = "print(\"{dest}\".to_path().readlink())"
+            self._test(fmt.format(**locals()), src)
+        finally:
+            self.unlink(dest)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
