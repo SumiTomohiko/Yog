@@ -110,7 +110,10 @@ static YogVal
 ufo(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* datetime)
 {
     CHECK_SELF_TYPE(env, self);
-    check_Datetime(env, datetime, "datetime");
+    YogVal o = HDL2VAL(datetime);
+    if (!IS_PTR(o) || (BASIC_OBJ_TYPE(o) != TYPE_DATETIME)) {
+        return YNIL;
+    }
     struct timeval* tv1 = &HDL_AS(Datetime, self)->val;
     struct timeval* tv0 = &HDL_AS(Datetime, datetime)->val;
     double diff = difftime(tv1->tv_sec, tv0->tv_sec);
