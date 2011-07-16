@@ -243,11 +243,11 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
 {
     SAVE_ARG(env, builtins);
 
+    YogProperty_define_classes(env, builtins);
     YogFunction_define_classes(env, builtins);
 
     YogObj_class_init(env, vm->cObject, builtins);
     YogClass_class_init(env, vm->cClass, builtins);
-    YogProperty_define_classes(env, builtins);
 
     YogComparable_define_classes(env, builtins);
     YogString_define_classes(env, builtins);
@@ -259,7 +259,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogBinary_define_classes(env, builtins);
     YogBool_define_classes(env, builtins);
     YogClassMethod_define_classes(env, builtins);
-    YogCode_define_classes(env, builtins);
+    YogCode_define_classes(env, h_builtins);
     YogCoroutine_define_classes(env, builtins);
     YogDatetime_define_classes(env, h_builtins);
     YogDict_define_classes(env, builtins);

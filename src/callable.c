@@ -1032,6 +1032,22 @@ YogNativeFunction2_new(YogEnv* env, YogHandle* pkg, YogHandle* class_name, YogHa
     return h_self;
 }
 
+static void
+check_self_Function(YogEnv* env, YogVal self)
+{
+    if (IS_PTR(self) && (BASIC_OBJ_TYPE(self) == TYPE_FUNCTION)) {
+        return;
+    }
+    YogError_raise_TypeError(env, "self must be Function, not %C", self);
+}
+
+static YogVal
+YogFunction_get_code(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+{
+    check_self_Function(env, self);
+    return PTR_AS(YogFunction, self)->code;
+}
+
 void
 YogFunction_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -1088,6 +1104,11 @@ YogFunction_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD("descr_get", descr_get);
 #undef DEFINE_METHOD
+#define DEFINE_PROP(name, getter, setter) do { \
+    YogClass_define_property(env, cFunction, pkg, (name), (getter), (setter)); \
+} while (0)
+    DEFINE_PROP("code", YogFunction_get_code, NULL);
+#undef DEFINE_PROP
     vm->cFunction = cFunction;
 
     cInstanceMethod = YogClass_new(env, "InstanceMethod", vm->cObject);

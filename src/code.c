@@ -240,18 +240,36 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 #undef KEEP
 }
 
-void
-YogCode_define_classes(YogEnv* env, YogVal pkg)
+static void
+check_self_Code(YogEnv* env, YogHandle* self)
 {
-    SAVE_ARG(env, pkg);
-    YogVal cCode = YUNDEF;
-    PUSH_LOCAL(env, cCode);
+    YogVal val = HDL2VAL(self);
+    if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_CODE)) {
+        return;
+    }
+    YogError_raise_TypeError(env, "self must be Code, not %C", val);
+}
+
+static YogVal
+dump(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    check_self_Code(env, self);
+    YogCode_dump(env, HDL2VAL(self));
+    return HDL2VAL(self);
+}
+
+void
+YogCode_define_classes(YogEnv* env, YogHandle* pkg)
+{
     YogVM* vm = env->vm;
-
-    cCode = YogClass_new(env, "Code", vm->cObject);
-    vm->cCode = cCode;
-
-    RETURN_VOID(env);
+    YogHandle* cCode = VAL2HDL(env, YogClass_new(env, "Code", vm->cObject));
+#define DEFINE_METHOD(name, ...) do { \
+    YogVal o = HDL2VAL(cCode); \
+    YogClass_define_method2(env, o, HDL2VAL(pkg), (name), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD("dump", dump, NULL);
+#undef DEFINE_METHOD
+    vm->cCode = HDL2VAL(cCode);
 }
 
 YogVal
