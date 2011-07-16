@@ -24,7 +24,7 @@ type: :bugfix
 component: core
 release: 0.0.11
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
+status: :in_progress
 disposition: 
 creation_time: 2011-07-09 12:54:42.029800 Z
 references: []
@@ -38,4 +38,8 @@ log_events:
 - - 2011-07-14 19:19:27.556438 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - assigned to release 0.0.11 from unassigned
+  - ""
+- - 2011-07-15 12:45:55.665013 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - changed status from unstarted to in_progress
   - ""
