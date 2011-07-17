@@ -68,7 +68,7 @@ YogCode_get_lineno(YogEnv* env, YogVal self, uint_t pc, uint_t* lineno)
     RETURN(env, FALSE);
 }
 
-void
+static void
 YogCode_dump(YogEnv* env, YogVal code)
 {
     SAVE_ARG(env, code);
@@ -97,7 +97,7 @@ YogCode_dump(YogEnv* env, YogVal code)
     }
 
     printf("=== Exception Table ===\n");
-    printf("Status From To Target\n");
+    printf("From To Target\n");
 
     uint_t exc_tbl_size = PTR_AS(YogCode, code)->exc_tbl_size;
     for (i = 0; i < exc_tbl_size; i++) {

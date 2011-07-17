@@ -67,7 +67,6 @@ DECL_AS_TYPE(YogCode_new);
  */
 /* src/code.c */
 YOG_EXPORT void YogCode_define_classes(YogEnv*, YogHandle*);
-YOG_EXPORT void YogCode_dump(YogEnv*, YogVal);
 YOG_EXPORT BOOL YogCode_get_lineno(YogEnv*, YogVal, uint_t, uint_t*);
 YOG_EXPORT YogVal YogCode_new(YogEnv*);
 

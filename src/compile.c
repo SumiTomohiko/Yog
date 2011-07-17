@@ -2577,11 +2577,6 @@ compile_stmts(YogEnv* env, AstVisitor* visitor, YogVal filename, ID class_name, 
     CODE(code)->class_name = class_name;
     CODE(code)->func_name = func_name;
 
-#if 0 && !defined(MINIYOG)
-    TRACE("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-    YogCode_dump(env, code);
-#endif
-
     RETURN(env, code);
 }
 

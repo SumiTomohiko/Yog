@@ -594,7 +594,7 @@ YogTable_size(YogEnv* env, YogVal table)
 }
 
 /**
- * TODO: commonize with YogCode_dump.
+ * TODO: commonize with Code#dump.
  */
 static void
 print_val(YogEnv* env, YogVal val)

@@ -29,7 +29,6 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#define DUMP_CODE(code)  YogCode_dump(env, code)
 /* TODO: Remove this */
 #define CUR_FRAME   env->frame
 
@@ -783,6 +782,23 @@ skip_c_frame(YogEnv* env)
     env->frame = frame;
 }
 
+static BOOL
+rollback_frames(YogEnv* env, YogVal frame)
+{
+    if (!IS_PTR(frame) || (PTR_AS(YogFrame, frame)->type != FRAME_SCRIPT)) {
+        return FALSE;
+    }
+    YogVal code = PTR_AS(YogScriptFrame, frame)->code;
+    uint_t pc = PTR_AS(YogScriptFrame, frame)->pc;
+    uint_t target = 0;
+    if (!find_exception_table_entry(env, code, pc, &target)) {
+        return rollback_frames(env, PTR_AS(YogFrame, frame)->prev);
+    }
+    env->frame = frame;
+    PTR_AS(YogScriptFrame, frame)->pc = target;
+    return TRUE;
+}
+
 YogVal
 YogEval_mainloop(YogEnv* env)
 {
@@ -804,19 +820,9 @@ YogEval_mainloop(YogEnv* env)
 
         switch (status) {
         case JMP_RAISE:
-            {
-                BOOL found = FALSE;
-                if (PTR_AS(YogFrame, CUR_FRAME)->type != FRAME_C) {
-                    uint_t target = 0;
-                    found = find_exception_table_entry(env, (YogVal)CODE, PC, &target);
-                    if (found) {
-                        PC = target;
-                    }
-                }
-                if (!found) {
-                    skip_to_c_frame(env);
-                    YogEval_longjmp_to_prev_buf(env, status);
-                }
+            if (!rollback_frames(env, env->frame)) {
+                skip_to_c_frame(env);
+                YogEval_longjmp_to_prev_buf(env, status);
             }
             break;
         case JMP_RETURN:
@@ -877,9 +883,6 @@ YogEval_mainloop(YogEnv* env)
         }
     }
 
-#if 0
-    YogCode_dump(env, (YogVal)(CODE));
-#endif
     while (PC < PTR_AS(YogByteArray, CODE->insts)->size) {
         YogHandleScope_OPEN(env, &inner_scope);
 #define CONSTS(index)   (YogValArray_at(env, CODE->consts, index))

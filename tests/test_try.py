@@ -251,4 +251,22 @@ except FooException
 end
 """, stderr=test_stderr)
 
+    def test_function0(self):
+        def nop(*args, **kw):
+            pass
+
+        self._test("""def foo()
+  raise Exception.new()
+end
+
+def bar()
+  try
+    foo()
+  finally
+    print(42)
+  end
+end
+
+bar()""", "42", nop)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
