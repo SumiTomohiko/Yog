@@ -177,4 +177,7 @@ class TestPath(TestCase):
         src = "print((\"foo\".to_path() + \"bar\".to_path()).class == Path)"
         self._test(src, "true")
 
+    def test_divide0(self):
+        self._test("print(\"/\".to_path() / \"foo\")", "/foo")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

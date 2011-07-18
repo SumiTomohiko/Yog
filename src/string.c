@@ -566,18 +566,6 @@ YogString_binop_add(YogEnv* env, YogHandle* self, YogHandle* s)
 }
 
 static YogVal
-divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
-{
-    CHECK_SELF_TYPE2(env, self);
-    YogMisc_check_String(env, s, "s");
-
-    YogHandle* path = VAL2HDL(env, YogString_to_path(env, HDL2VAL(self)));
-    YogString_append(env, HDL2VAL(path), env->vm->path_separator);
-    YogString_append(env, HDL2VAL(path), HDL2VAL(s));
-    return HDL2VAL(path);
-}
-
-static YogVal
 add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* s)
 {
     CHECK_SELF_TYPE2(env, self);
@@ -1132,7 +1120,6 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD2("*", multiply, "n", NULL);
     DEFINE_METHOD2("+", add, "s", NULL);
-    DEFINE_METHOD2("/", divide, "s", NULL);
     DEFINE_METHOD2("<<", lshift, "s", NULL);
     DEFINE_METHOD2("<=>", ufo, "n", NULL);
     DEFINE_METHOD2("=~", search, "regexp", NULL);

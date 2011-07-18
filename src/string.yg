@@ -1,4 +1,11 @@
 
+def /(s)
+  if (m = /\/+\Z/.search(self)) != nil
+    return self.slice(0, m.start(0)) / s
+  end
+  return self + "/" + s
+end
+
 def starts_with?(s)
   return self.slice(0, s.size) == s
 end
