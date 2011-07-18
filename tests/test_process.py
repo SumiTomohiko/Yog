@@ -31,4 +31,7 @@ finally
   proc.wait()
 end""", stderr=test_stderr)
 
+    def test_kill_term0(self):
+        self._test("Process.new([\"/bin/cat\"]).run().kill_term()")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

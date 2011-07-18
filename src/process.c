@@ -1,5 +1,6 @@
 #include "yog/config.h"
 #include <errno.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -238,6 +239,15 @@ do_waitpid(YogEnv* env, YogHandle* self, int options)
 }
 
 static YogVal
+kill_term(YogEnv* env, YogHandle* self, YogHandle* pkg)
+{
+    if (kill(HDL_AS(Process, self)->pid, SIGTERM) != 0) {
+        YogError_raise_sys_err(env, errno, YUNDEF);
+    }
+    return HDL2VAL(self);
+}
+
+static YogVal
 poll(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     return do_waitpid(env, self, WNOHANG);
@@ -260,6 +270,7 @@ YogProcess_define_classes(YogEnv* env, YogHandle* pkg)
     YogClass_define_method2(env, HDL2VAL(h_cProcess), HDL2VAL(pkg), (name), __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD("init", init, "args", NULL);
+    DEFINE_METHOD("kill_term", kill_term, NULL);
     DEFINE_METHOD("poll", poll, NULL);
     DEFINE_METHOD("run", run, NULL);
     DEFINE_METHOD("wait", wait_, NULL);

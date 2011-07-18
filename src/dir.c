@@ -1,5 +1,6 @@
 #include "yog/config.h"
 #include <dirent.h>
+#include <errno.h>
 #include <sys/types.h>
 #include "yog/binary.h"
 #include "yog/callable.h"
