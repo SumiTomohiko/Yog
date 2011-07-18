@@ -3,7 +3,7 @@ def /(s)
   if (m = /\/+\Z/.search(self)) != nil
     return self.slice(0, m.start(0)) / s
   end
-  return self + "/" + s
+  return (self + "/" + s).to_path()
 end
 
 def starts_with?(s)
