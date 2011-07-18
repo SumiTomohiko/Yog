@@ -173,4 +173,8 @@ class TestPath(TestCase):
             symlink("/foo/bar/baz/quux", path)
         self.run_symlink_test(f, "true")
 
+    def test_plus0(self):
+        src = "print((\"foo\".to_path() + \"bar\".to_path()).class == Path)"
+        self._test(src, "true")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

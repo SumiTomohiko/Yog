@@ -557,6 +557,11 @@ YogString_binop_add(YogEnv* env, YogHandle* self, YogHandle* s)
     memcpy(STRING_CHARS(t) + size1, q, sizeof(YogChar) * size2);
     STRING_SIZE(t) = size;
 
+    YogVal klass = HDL_AS(YogBasicObj, self)->klass;
+    if (klass != PTR_AS(YogBasicObj, t)->klass) {
+        YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, t), klass, klass);
+    }
+
     return t;
 }
 
