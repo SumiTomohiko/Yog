@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add String#empty?
+desc: ""
+type: :task
+component: core
+release: 0.0.11
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-07-18 17:29:34.722889 Z
+references: []
+
+id: 2a7782e83d7f0b27353605b15c20b9a9697fb0d3
+log_events: 
+- - 2011-07-18 17:29:35.525062 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
