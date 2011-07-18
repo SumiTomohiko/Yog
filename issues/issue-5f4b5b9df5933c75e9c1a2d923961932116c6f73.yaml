@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: String#slice cannot return a Path instance.
+desc: |-
+  Next code must print "true", but "false" actually.
+  
+    print("/foo".to_path().slice(0, 1).class == Path)
+type: :bugfix
+component: core
+release: 0.0.11
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-07-18 17:24:58.706796 Z
+references: []
+
+id: 5f4b5b9df5933c75e9c1a2d923961932116c6f73
+log_events: 
+- - 2011-07-18 17:24:59.738217 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
