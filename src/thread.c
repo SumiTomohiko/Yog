@@ -456,10 +456,18 @@ init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 void
 YogThread_issue_object_id(YogEnv* env, YogVal self, YogVal obj)
 {
+    /**
+     * FIXME: Disabled this function. See an issue of
+     * 50affa92367f2d8eb95c83320feef1deec6eb460.
+     */
     PTR_AS(YogBasicObj, obj)->id_upper = PTR_AS(YogThread, self)->thread_id;
+#if 0
     PTR_AS(YogBasicObj, obj)->id_lower = PTR_AS(YogThread, self)->next_obj_id;
     PTR_AS(YogThread, self)->next_obj_id++;
     YOG_ASSERT(env, PTR_AS(YogThread, self)->next_obj_id != 0, "object id overflow");
+#else
+    PTR_AS(YogBasicObj, obj)->id_lower = 0;
+#endif
 }
 
 static void
