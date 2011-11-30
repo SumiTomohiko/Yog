@@ -27,10 +27,6 @@
 *.wixpdb
 *.zip
 *~
-./Makefile
-./Makefile.in
-./Makefile.in
-./aclocal.m4
 .deps
 .ditz-config
 .ditz-plugins
@@ -38,7 +34,10 @@
 .gdbinit
 .libs
 Debug
+Makefile
+Makefile.in
 Release
+aclocal.m4
 autom4te.cache
 bdwgc/.dirstamp
 bdwgc/Makefile
@@ -52,11 +51,13 @@ bdwgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/Makefile
 bdwgc/libatomic_ops-1.2/tests/Makefile
 bin/Makefile
 bin/Makefile.in
+build-stamp
 config.h
 config.log
 config.status
 config.status.lineno
 config.status.log
+configure
 configure.lineno
 configure.log
 configure.scan
