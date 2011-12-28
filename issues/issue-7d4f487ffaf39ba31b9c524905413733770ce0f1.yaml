@@ -3,7 +3,7 @@ title: Incomplete blocks doesn't cause compile errors.
 desc: "[].each() do"
 type: :bugfix
 component: core
-release: 0.0.11
+release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -22,5 +22,5 @@ log_events:
   - Same problem is in methods.
 - - 2011-07-14 19:37:57.931316 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-  - assigned to release 0.0.11 from unassigned
+  - assigned to release 0.1.0 from unassigned
   - ""

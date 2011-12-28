@@ -3,7 +3,7 @@ title: Add more information to SystemError and WindowsError raised at File#open
 desc: ""
 type: :task
 component: core
-release: 0.0.11
+release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -22,5 +22,5 @@ log_events:
   - ""
 - - 2011-07-14 19:37:49.269972 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-  - assigned to release 0.0.11 from unassigned
+  - assigned to release 0.1.0 from unassigned
   - ""

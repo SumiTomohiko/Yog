@@ -22,7 +22,7 @@ desc: |-
     end
 type: :bugfix
 component: core
-release: 0.0.11
+release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed
 disposition: :fixed
@@ -37,7 +37,7 @@ log_events:
   - ""
 - - 2011-07-14 19:19:27.556438 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-  - assigned to release 0.0.11 from unassigned
+  - assigned to release 0.1.0 from unassigned
   - ""
 - - 2011-07-15 12:45:55.665013 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>

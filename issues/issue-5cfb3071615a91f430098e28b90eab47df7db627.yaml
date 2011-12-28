@@ -3,7 +3,7 @@ title: FFI cannot return nil when a native function returned NULL.
 desc: ""
 type: :bugfix
 component: core
-release: 0.0.11
+release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -18,5 +18,5 @@ log_events:
   - ""
 - - 2011-07-14 19:29:50.840109 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-  - assigned to release 0.0.11 from unassigned
+  - assigned to release 0.1.0 from unassigned
   - ""

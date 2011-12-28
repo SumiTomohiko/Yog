@@ -3,7 +3,7 @@ title: Redesign Object#id
 desc: Object#id achieved UINT_MAX in UnnamedBackupTool.
 type: :bugfix
 component: core
-release: 0.0.11
+release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 

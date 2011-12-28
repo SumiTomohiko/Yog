@@ -3,7 +3,7 @@ title: Change Binary#to_s to Binary#inspect.
 desc: Current implementation of Binary#to_s is Binary#inspect.
 type: :task
 component: core
-release: 0.0.11
+release: 0.1.0
 reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -18,5 +18,5 @@ log_events:
   - ""
 - - 2011-07-14 19:26:49.641901 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-  - assigned to release 0.0.11 from unassigned
+  - assigned to release 0.1.0 from unassigned
   - ""

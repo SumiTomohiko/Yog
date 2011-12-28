@@ -3,7 +3,7 @@ title: Packages' path must be full path.
 desc: Packages' path in stacktraces are related path. Change those to full paths.
 type: :task
 component: core
-release: 0.0.11
+release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -18,5 +18,5 @@ log_events:
   - ""
 - - 2011-07-14 19:30:37.292657 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-  - assigned to release 0.0.11 from unassigned
+  - assigned to release 0.1.0 from unassigned
   - ""
