@@ -1,8 +1,18 @@
+
 Installation
+************
+
+Requirements
+============
+
+* `gcc <http://gcc.gnu.org/`_ 4.2.1
+
+Instructions
 ============
 
 Do the following commands::
 
+  $ tar xf Yog-x.y.z.tar.xz
   $ ./configure
   $ make
   $ sudo make install
