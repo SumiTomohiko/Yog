@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add ydoc vim plugin.
+desc: ""
+type: :task
+component: misc
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-12-29 17:40:45.831710 Z
+references: []
+
+id: 65b1cb7a3d7c85e5574e68aca0c5db341c01762a
+log_events: 
+- - 2011-12-29 17:40:46.413380 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
