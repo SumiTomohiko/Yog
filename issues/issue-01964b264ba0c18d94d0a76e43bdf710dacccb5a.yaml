@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Building system must autodetect which libraries are targets.
+desc: For library such as lib/sdl.
+type: :task
+component: misc
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2011-12-29 17:16:06.220512 Z
+references: []
+
+id: 01964b264ba0c18d94d0a76e43bdf710dacccb5a
+log_events: 
+- - 2011-12-29 17:16:07.433296 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
