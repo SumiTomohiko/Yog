@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Implement finalizers.
+desc: ""
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-01-27 20:27:15.181576 Z
+references: []
+
+id: ee4f0b54e7a35990eaf1cfc8f1906ccde961b8de
+log_events: 
+- - 2012-01-27 20:27:15.716459 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
