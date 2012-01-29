@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Generational GC stops for stack overflow.
+desc: For this reason, h2yog cannot work.
+type: :bugfix
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-01-29 17:19:47.327425 Z
+references: []
+
+id: 4871e64c7866d8a69157f1377cb061136a2a8cc9
+log_events: 
+- - 2012-01-29 17:19:49.197032 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
