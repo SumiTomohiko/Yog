@@ -3,12 +3,13 @@ top_srcdir = @top_srcdir@
 DIR = $(top_srcdir)/src
 DEST_DIR = html
 VERSION = @VERSION@
+TITLE = "Yog $(VERSION) documentation"
 EXEEXT = @EXEEXT@
-PARAMS = --heap-size=8M --young-heap-size=4M --old-heap-size=4M makedoc.yg --title="Yog $(VERSION) documentation" --destdir=$(DEST_DIR) toc.ydoc
+PARAMS = makedoc.yg --title=$(TITLE) --destdir=$(DEST_DIR) toc.ydoc
 
 .PHONY: all clean
 
-all: copying
+all: generational
 
 measure: copying mark-sweep mark-sweep-compact generational bdw
 

@@ -21,8 +21,9 @@
  *
  * == Arena
  *
- * One memory area overall under this allocator. An arena is splitted into
- * plural chunks.
+ * One large memory area. An arena is splitted into plural chunks.
+ *
+ * Arenas construct a linked list.
  *
  * == Chunk
  *
@@ -42,6 +43,8 @@
  * == Arena
  *
  * +----------------------------+ head
+ * |   pointer to next arena    |
+ * +----------------------------+
  * |                            |
  * : used chunks / free chunks  :
  * |                            |
@@ -231,9 +234,17 @@ typedef struct FreeFooter FreeFooter;
 #define LARGE_NUM       32
 #define LARGE_SHIFT     8
 
+struct Arena {
+    struct Arena* next;
+};
+
+#define ARENA_CHUNKS(arena) ((FreeHeader*)((arena) + 1))
+
+typedef struct Arena Arena;
+
 struct MarkSweepCompact {
     struct YogHeap base;
-    struct ChunkHeader* arena;
+    struct Arena* arenas;
     uint_t arena_size;
     struct FreeHeader* small[SMALL_NUM];
     struct FreeHeader* large[LARGE_NUM];
@@ -243,20 +254,31 @@ struct MarkSweepCompact {
 
 typedef struct MarkSweepCompact MarkSweepCompact;
 
+static void
+delete_arena(YogEnv* env, Arena* arena, size_t size)
+{
+    if (munmap(arena, size) != 0) {
+        YogError_raise_sys_err(env, errno, YNIL);
+    }
+}
+
 void
 YogMarkSweepCompact_delete(YogEnv* env, YogHeap* heap)
 {
     YogMarkSweepCompact_delete_garbage(env, heap);
 
     MarkSweepCompact* msc = (MarkSweepCompact*)heap;
-    if (munmap(msc->arena, msc->arena_size) != 0) {
-        YogError_raise_sys_err(env, errno, YNIL);
+    Arena* arena = msc->arenas;
+    while (arena != NULL) {
+        Arena* next = arena->next;
+        delete_arena(env, arena, msc->arena_size);
+        arena = next;
     }
 
     YogGC_free(env, heap, sizeof(MarkSweepCompact));
 }
 
-static FreeHeader*
+static Arena*
 mmap_anonymous(YogEnv* env, size_t size)
 {
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
@@ -268,7 +290,7 @@ mmap_anonymous(YogEnv* env, size_t size)
     if (ptr == MAP_FAILED) {
         YogError_raise_sys_err(env, errno, YNIL);
     }
-    return (FreeHeader*)ptr;
+    return (Arena*)ptr;
 }
 
 static uint_t
@@ -431,6 +453,36 @@ turn_on_major_or_compaction(YogEnv* env, MarkSweepCompact* msc, size_t size)
 }
 #endif
 
+static Arena*
+alloc_arena(YogEnv* env, size_t size, Arena* next)
+{
+    Arena* arena = mmap_anonymous(env, size);
+    arena->next = next;
+
+    FreeHeader* chunk = ARENA_CHUNKS(arena);
+    size_t sentinel_size = sizeof(ChunkHeader);
+    size_t usable_size = size - sentinel_size - sizeof(Arena);
+    FreeHeader_init(env, chunk, usable_size, TRUE);
+    chunk2footer(chunk)->size = usable_size; /* unused */
+
+    ChunkHeader* sentinel = NEXT_CHUNK(chunk);
+    CHUNK_PREV_USED(sentinel) = FALSE; /* unused */
+    CHUNK_SIZE(sentinel) = 0; /* unused */
+    CHUNK_USED(sentinel) = TRUE;
+
+    return arena;
+}
+
+#if defined(GC_GENERATIONAL)
+static void
+add_arena(YogEnv* env, MarkSweepCompact* msc)
+{
+    Arena* arena = alloc_arena(env, msc->arena_size, msc->arenas);
+    add_chunk(env, msc, ARENA_CHUNKS(arena));
+    msc->arenas = arena;
+}
+#endif
+
 static void*
 alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
 {
@@ -458,6 +510,8 @@ alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
 #elif defined(GC_GENERATIONAL)
     turn_on_major_or_compaction(env, msc, size_including_header);
     msc->allocated_size += size_including_header;
+    FIND_BEST_CHUNK;
+    add_arena(env, msc);
     FIND_BEST_CHUNK;
     return NULL;
 #endif
@@ -625,17 +679,8 @@ YogMarkSweepCompact_new(YogEnv* env, size_t size)
 
     heap->header = NULL;
 
-    FreeHeader* chunk = mmap_anonymous(env, size);
-    uint_t arena_size = size - sizeof(ChunkHeader);
-    FreeHeader_init(env, chunk, arena_size, TRUE);
-    FreeFooter* footer = chunk2footer(chunk);
-    footer->size = size;
-    ChunkHeader* sentinel = NEXT_CHUNK(chunk);
-    CHUNK_PREV_USED(sentinel) = FALSE; /* unused */
-    CHUNK_SIZE(sentinel) = 0; /* unused */
-    CHUNK_USED(sentinel) = TRUE;
-
-    heap->arena = CHUNK(chunk);
+    Arena* arena = alloc_arena(env, size, NULL);
+    heap->arenas = arena;
     heap->arena_size = size;
 
     uint_t i;
@@ -645,7 +690,7 @@ YogMarkSweepCompact_new(YogEnv* env, size_t size)
     for (i = 0; i < LARGE_NUM; i++) {
         heap->large[i] = NULL;
     }
-    add_chunk(env, heap, chunk);
+    add_chunk(env, heap, ARENA_CHUNKS(arena));
 
     heap->allocated_size = 0;
 
