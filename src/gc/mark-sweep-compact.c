@@ -473,7 +473,6 @@ alloc_arena(YogEnv* env, size_t size, Arena* next)
     return arena;
 }
 
-#if defined(GC_GENERATIONAL)
 static void
 add_arena(YogEnv* env, MarkSweepCompact* msc)
 {
@@ -481,7 +480,6 @@ add_arena(YogEnv* env, MarkSweepCompact* msc)
     add_chunk(env, msc, ARENA_CHUNKS(arena));
     msc->arenas = arena;
 }
-#endif
 
 static void*
 alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
@@ -505,6 +503,8 @@ alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
     YogGC_perform(env);
     FIND_BEST_CHUNK;
     YogGC_compact(env);
+    FIND_BEST_CHUNK;
+    add_arena(env, msc);
     FIND_BEST_CHUNK;
     return NULL;
 #elif defined(GC_GENERATIONAL)
