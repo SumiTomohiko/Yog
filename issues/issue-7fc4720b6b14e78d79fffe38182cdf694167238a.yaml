@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Try wscript.
+desc: ""
+type: :task
+component: misc
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-01 11:27:25.137556 Z
+references: []
+
+id: 7fc4720b6b14e78d79fffe38182cdf694167238a
+log_events: 
+- - 2012-02-01 11:27:25.630018 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
