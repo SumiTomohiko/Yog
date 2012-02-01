@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Generational GC's children have unused members.
+desc: See FIXME of YogHeap in src/gc.c.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-01-31 06:13:46.981901 Z
+references: []
+
+id: 0bb72a341f7958a937350573c4afb6fe044f2dc0
+log_events: 
+- - 2012-01-31 06:13:47.399307 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
