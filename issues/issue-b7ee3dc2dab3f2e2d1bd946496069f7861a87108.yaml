@@ -1,0 +1,23 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Syntax for formal parameters in blocks with default values.
+desc: |-
+  It is enclosing with two new tokens, such as "[|" and "|]". User can specify
+  parameters with default values like "[|x=42, y=26|]".
+  
+  Current format of using brackets are same as syntax of an array. It is not
+  good design.
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-01 19:42:24.829819 Z
+references: []
+
+id: b7ee3dc2dab3f2e2d1bd946496069f7861a87108
+log_events: 
+- - 2012-02-01 19:42:25.402793 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

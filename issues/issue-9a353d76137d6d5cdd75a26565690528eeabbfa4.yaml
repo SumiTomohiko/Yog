@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Simple syntax for formal parameters of blocks without default values.
+desc: |-
+  It is enclosing parameters with two bar '|' like ruby (do |x, y|...).
+  These parameters cannot have default values.
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-01 19:39:32.731082 Z
+references: []
+
+id: 9a353d76137d6d5cdd75a26565690528eeabbfa4
+log_events: 
+- - 2012-02-01 19:39:33.374460 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
