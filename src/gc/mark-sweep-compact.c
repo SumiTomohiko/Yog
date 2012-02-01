@@ -275,6 +275,7 @@ YogMarkSweepCompact_delete(YogEnv* env, YogHeap* heap)
         arena = next;
     }
 
+    YogHeap_finalize(env, heap);
     YogGC_free(env, heap, sizeof(MarkSweepCompact));
 }
 
@@ -652,10 +653,52 @@ YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper keeper
     return ptr;
 }
 
+void*
+YogMarkSweepCompact_mark(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    Header* header = PAYLOAD2HEADER(ptr);
+    if (header->marked) {
+        return ptr;
+    }
+    header->marked = TRUE;
+
+    if (header->keeper != NULL) {
+        YogHeap_add_to_marked_objects(env, heap, PTR2VAL(ptr));
+    }
+
+    return ptr;
+}
+
 static void*
 keep_object(YogEnv* env, void* ptr, void* heap)
 {
-    return YogMarkSweepCompact_mark_recursively(env, ptr, keep_object, heap);
+    return YogMarkSweepCompact_mark(env, ptr, keep_object, heap);
+}
+
+static void
+mark_children(YogEnv* env, YogHeap* heap)
+{
+    uint_t i;
+    for (i = 0; !IS_NIL(heap->marked_objects.prev[i]); i++) {
+        YogVal v = heap->marked_objects.prev[i];
+        YOG_ASSERT(env, IS_PTR(v), "Invalid value");
+        void* ptr = VAL2PTR(v);
+        (*PAYLOAD2HEADER(ptr)->keeper)(env, ptr, keep_object, heap);
+    }
+}
+
+void
+YogMarkSweepCompact_mark_in_breadth_first(YogEnv* env, YogHeap* heap)
+{
+    do {
+        YogHeap_init_marked_objects(env, heap);
+        mark_children(env, heap);
+        YogHeap_finish_marked_objects(env, heap);
+    } while (!YogHeap_is_marked_objects_empty(env, heap));
 }
 
 void

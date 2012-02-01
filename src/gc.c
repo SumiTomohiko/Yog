@@ -27,6 +27,83 @@
 
 typedef void (*GC)(YogEnv*);
 
+static YogVal*
+alloc_marked_objects(YogVal* old, uint_t size)
+{
+    YogVal* p = (YogVal*)realloc(old, sizeof(YogVal) * size);
+    if (p == NULL) {
+        fputs("Cannot allocate memory for marked objects.", stderr);
+        exit(1);
+    }
+    return p;
+}
+
+void
+YogHeap_finalize(YogEnv* env, YogHeap* heap)
+{
+    free(heap->marked_objects.prev);
+    free(heap->marked_objects.cur);
+}
+
+static void
+swap_marked_objects(YogHeap* heap)
+{
+    YogVal* tmp = heap->marked_objects.prev;
+    heap->marked_objects.prev = heap->marked_objects.cur;
+    heap->marked_objects.cur = tmp;
+}
+
+void
+YogHeap_init_marked_objects(YogEnv* env, YogHeap* heap)
+{
+    swap_marked_objects(heap);
+    heap->marked_objects.cur_pos = 0;
+}
+
+static void
+extend_marked_objects(YogHeap* heap)
+{
+    uint_t new_size = heap->marked_objects.size + 1024;
+
+#define ALLOC_MARKED_OBJECTS(name) do { \
+    YogVal* ptr = heap->marked_objects.name; \
+    heap->marked_objects.name = alloc_marked_objects(ptr, new_size); \
+} while (0)
+
+    ALLOC_MARKED_OBJECTS(prev);
+    ALLOC_MARKED_OBJECTS(cur);
+
+#undef ALLOC_MARKED_OBJECTS
+
+    heap->marked_objects.size = new_size;
+}
+
+void
+YogHeap_add_to_marked_objects(YogEnv* env, YogHeap* heap, YogVal v)
+{
+    if (!IS_PTR(v) && !IS_NIL(v)) {
+        return;
+    }
+    uint_t cur_pos = heap->marked_objects.cur_pos;
+    if (cur_pos == heap->marked_objects.size) {
+        extend_marked_objects(heap);
+    }
+    heap->marked_objects.cur[cur_pos] = v;
+    heap->marked_objects.cur_pos++;
+}
+
+void
+YogHeap_finish_marked_objects(YogEnv* env, YogHeap* heap)
+{
+    YogHeap_add_to_marked_objects(env, heap, YNIL);
+}
+
+BOOL
+YogHeap_is_marked_objects_empty(YogEnv* env, YogHeap* heap)
+{
+    return IS_NIL(heap->marked_objects.cur[0]);
+}
+
 static void
 wakeup_gc_thread(YogEnv* env)
 {
@@ -202,6 +279,10 @@ YogHeap_init(YogEnv* env, YogHeap* heap)
 {
     heap->prev = heap->next = NULL;
     heap->refered = TRUE;
+
+    heap->marked_objects.size = 0;
+    heap->marked_objects.prev = heap->marked_objects.cur = NULL;
+    heap->marked_objects.cur_pos = 0;
 }
 
 void
@@ -326,6 +407,15 @@ cheney_scan(YogEnv* env)
 }
 #endif
 
+#if defined(GC_MARK_SWEEP_COMPACT)
+static void
+mark_in_breadth_first(YogEnv* env)
+{
+    YogVM* vm = env->vm;
+    ITERATE_HEAPS(vm, YogMarkSweepCompact_mark_in_breadth_first(env, heap));
+}
+#endif
+
 static void
 delete_garbage(YogEnv* env)
 {
@@ -358,10 +448,17 @@ static void
 gc(YogEnv* env)
 {
     prepare(env);
+
+    ITERATE_HEAPS(env->vm, YogHeap_init_marked_objects(env, heap));
     keep_vm(env);
+    ITERATE_HEAPS(env->vm, YogHeap_finish_marked_objects(env, heap));
+
 #if defined(GC_COPYING)
     cheney_scan(env);
+#elif defined(GC_MARK_SWEEP_COMPACT)
+    mark_in_breadth_first(env);
 #endif
+
     delete_garbage(env);
     post_gc(env);
     delete_heaps(env);
