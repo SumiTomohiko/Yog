@@ -10,7 +10,7 @@
  */
 /* src/error.c */
 YOG_EXPORT void YogError_bug(YogEnv*, const char*, uint_t, const char*, ...);
-YOG_EXPORT void YogError_out_of_memory(YogEnv*);
+YOG_EXPORT void YogError_out_of_memory(YogEnv*, size_t);
 YOG_EXPORT void YogError_print_stacktrace(YogEnv*);
 YOG_EXPORT void YogError_raise(YogEnv*, YogVal);
 YOG_EXPORT void YogError_raise_ArgumentError(YogEnv*, const char*, ...);

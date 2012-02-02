@@ -52,9 +52,20 @@
 } while (0)
 
 struct YogHeap {
+    /**
+     * FIXME: YogGenerational's children have also these members, but they are
+     * not used.
+     */
     struct YogHeap* prev;
     struct YogHeap* next;
     BOOL refered;
+
+    struct {
+        uint_t size;
+        YogVal* prev;
+        YogVal* cur;
+        uint_t cur_pos;
+    } marked_objects;
 };
 
 typedef struct YogHeap YogHeap;
@@ -82,7 +93,12 @@ YOG_EXPORT void YogGC_perform(YogEnv*);
 YOG_EXPORT void YogGC_perform_major(YogEnv*);
 YOG_EXPORT void YogGC_perform_minor(YogEnv*);
 YOG_EXPORT void YogGC_suspend(YogEnv*);
+YOG_EXPORT void YogHeap_add_to_marked_objects(YogEnv*, YogHeap*, YogVal);
+YOG_EXPORT void YogHeap_finalize(YogEnv*, YogHeap*);
+YOG_EXPORT void YogHeap_finish_marked_objects(YogEnv*, YogHeap*);
 YOG_EXPORT void YogHeap_init(YogEnv*, YogHeap*);
+YOG_EXPORT void YogHeap_init_marked_objects(YogEnv*, YogHeap*);
+YOG_EXPORT BOOL YogHeap_is_marked_objects_empty(YogEnv*, YogHeap*);
 
 /* PROTOTYPE_END */
 

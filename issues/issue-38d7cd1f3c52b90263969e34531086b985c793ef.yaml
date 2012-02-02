@@ -1,0 +1,35 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: h2yog cannot accept verbose keyword option.
+desc: |-
+  h2yog.h2yog does not output verbose messages in parsing. An example is:
+  
+    from h2yog import h2yog
+    headers = ["foo.h"].map() do [h]
+      next h.to_path()
+    end
+    h2yog("test_h2yog.yog", headers, "./empty.so", verbose=true) do [path, name]
+      next headers.include?(path.basename)
+    end
+  
+  But next code can do it:
+  
+    h2yog("test_h2yog.yog", headers, "./empty.so", {}, true) do [path, name]
+type: :bugfix
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :closed
+disposition: :wontfix
+creation_time: 2012-02-02 17:13:43.972395 Z
+references: []
+
+id: 38d7cd1f3c52b90263969e34531086b985c793ef
+log_events: 
+- - 2012-02-02 17:13:44.577607 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2012-02-02 20:22:36.209693 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition wontfix
+  - This is not a bug.

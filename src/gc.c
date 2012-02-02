@@ -27,6 +27,83 @@
 
 typedef void (*GC)(YogEnv*);
 
+static YogVal*
+alloc_marked_objects(YogVal* old, uint_t size)
+{
+    YogVal* p = (YogVal*)realloc(old, sizeof(YogVal) * size);
+    if (p == NULL) {
+        fputs("Cannot allocate memory for marked objects.", stderr);
+        exit(1);
+    }
+    return p;
+}
+
+void
+YogHeap_finalize(YogEnv* env, YogHeap* heap)
+{
+    free(heap->marked_objects.prev);
+    free(heap->marked_objects.cur);
+}
+
+static void
+swap_marked_objects(YogHeap* heap)
+{
+    YogVal* tmp = heap->marked_objects.prev;
+    heap->marked_objects.prev = heap->marked_objects.cur;
+    heap->marked_objects.cur = tmp;
+}
+
+void
+YogHeap_init_marked_objects(YogEnv* env, YogHeap* heap)
+{
+    swap_marked_objects(heap);
+    heap->marked_objects.cur_pos = 0;
+}
+
+static void
+extend_marked_objects(YogHeap* heap)
+{
+    uint_t new_size = heap->marked_objects.size + 1024;
+
+#define ALLOC_MARKED_OBJECTS(name) do { \
+    YogVal* ptr = heap->marked_objects.name; \
+    heap->marked_objects.name = alloc_marked_objects(ptr, new_size); \
+} while (0)
+
+    ALLOC_MARKED_OBJECTS(prev);
+    ALLOC_MARKED_OBJECTS(cur);
+
+#undef ALLOC_MARKED_OBJECTS
+
+    heap->marked_objects.size = new_size;
+}
+
+void
+YogHeap_add_to_marked_objects(YogEnv* env, YogHeap* heap, YogVal v)
+{
+    if (!IS_PTR(v) && !IS_NIL(v)) {
+        return;
+    }
+    uint_t cur_pos = heap->marked_objects.cur_pos;
+    if (cur_pos == heap->marked_objects.size) {
+        extend_marked_objects(heap);
+    }
+    heap->marked_objects.cur[cur_pos] = v;
+    heap->marked_objects.cur_pos++;
+}
+
+void
+YogHeap_finish_marked_objects(YogEnv* env, YogHeap* heap)
+{
+    YogHeap_add_to_marked_objects(env, heap, YNIL);
+}
+
+BOOL
+YogHeap_is_marked_objects_empty(YogEnv* env, YogHeap* heap)
+{
+    return IS_NIL(heap->marked_objects.cur[0]);
+}
+
 static void
 wakeup_gc_thread(YogEnv* env)
 {
@@ -113,7 +190,7 @@ YogGC_alloc(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size
 
     DEBUG(TRACE("%p: exit YogGC_alloc", env));
     if (ptr == NULL) {
-        YogError_out_of_memory(env);
+        YogError_out_of_memory(env, size);
     }
 
     return PTR2VAL(ptr);
@@ -202,6 +279,10 @@ YogHeap_init(YogEnv* env, YogHeap* heap)
 {
     heap->prev = heap->next = NULL;
     heap->refered = TRUE;
+
+    heap->marked_objects.size = 0;
+    heap->marked_objects.prev = heap->marked_objects.cur = NULL;
+    heap->marked_objects.cur_pos = 0;
 }
 
 void
@@ -215,7 +296,7 @@ YogGC_malloc(YogEnv* env, size_t size)
 {
     void* ptr = malloc(size);
     if (ptr == NULL) {
-        YogError_out_of_memory(env);
+        YogError_out_of_memory(env, size);
     }
     YogGC_init_memory(env, ptr, size);
     return ptr;
@@ -326,6 +407,15 @@ cheney_scan(YogEnv* env)
 }
 #endif
 
+#if defined(GC_MARK_SWEEP_COMPACT)
+static void
+mark_in_breadth_first(YogEnv* env)
+{
+    YogVM* vm = env->vm;
+    ITERATE_HEAPS(vm, YogMarkSweepCompact_mark_in_breadth_first(env, heap));
+}
+#endif
+
 static void
 delete_garbage(YogEnv* env)
 {
@@ -358,10 +448,17 @@ static void
 gc(YogEnv* env)
 {
     prepare(env);
+
+    ITERATE_HEAPS(env->vm, YogHeap_init_marked_objects(env, heap));
     keep_vm(env);
+    ITERATE_HEAPS(env->vm, YogHeap_finish_marked_objects(env, heap));
+
 #if defined(GC_COPYING)
     cheney_scan(env);
+#elif defined(GC_MARK_SWEEP_COMPACT)
+    mark_in_breadth_first(env);
 #endif
+
     delete_garbage(env);
     post_gc(env);
     delete_heaps(env);
@@ -464,9 +561,9 @@ minor_keep_vm(YogEnv* env)
 }
 
 static void
-minor_cheney_scan(YogEnv* env)
+minor_traverse(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_minor_cheney_scan(env, heap));
+    ITERATE_HEAPS(env->vm, YogGenerational_minor_traverse(env, heap));
 }
 
 static void
@@ -512,14 +609,16 @@ minor_gc(YogEnv* env)
 
     prepare_minor(env);
 
+    ITERATE_HEAPS(env->vm, YogHeap_init_marked_objects(env, heap));
     for (i = 0; i < heaps_num; i++) {
         YogHeap* heap = r[i].heap;
         RememberedSet* remembered_set = r[i].remembered_set;
         YogGenerational_trace_remembered_set(env, heap, remembered_set);
     }
-
     minor_keep_vm(env);
-    minor_cheney_scan(env);
+    ITERATE_HEAPS(env->vm, YogHeap_finish_marked_objects(env, heap));
+
+    minor_traverse(env);
     minor_delete_garbage(env);
     minor_post_gc(env);
     delete_heaps(env);
@@ -541,9 +640,9 @@ major_keep_vm(YogEnv* env)
 }
 
 static void
-major_cheney_scan(YogEnv* env)
+major_traverse(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_major_cheney_scan(env, heap));
+    ITERATE_HEAPS(env->vm, YogGenerational_major_traverse(env, heap));
 }
 
 static void
@@ -563,8 +662,12 @@ major_gc(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter major_gc", env));
     prepare_major(env);
+
+    ITERATE_HEAPS(env->vm, YogHeap_init_marked_objects(env, heap));
     major_keep_vm(env);
-    major_cheney_scan(env);
+    ITERATE_HEAPS(env->vm, YogHeap_finish_marked_objects(env, heap));
+
+    major_traverse(env);
     major_delete_garbage(env);
     major_post_gc(env);
     delete_heaps(env);
@@ -616,9 +719,7 @@ YogGC_keep(YogEnv* env, YogVal val, ObjectKeeper keeper, void* heap)
         return val;
     }
     void* dest = (*keeper)(env, VAL2PTR(val), heap);
-    if (dest == NULL) {
-        YogError_out_of_memory(env);
-    }
+    YOG_ASSERT(env, dest != NULL, "Out of memory");
     return PTR2VAL(dest);
 }
 
@@ -662,7 +763,7 @@ YogGC_check_multiply_overflow(YogEnv* env, uint_t n, uint_t m)
     if ((m == 0) || (l / m == n)) {
         return;
     }
-    YogError_out_of_memory(env);
+    YOG_BUG(env, "Multiplying %u with %u failed.", n, m);
 }
 
 /**

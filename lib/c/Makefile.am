@@ -7,6 +7,6 @@ bin_PROGRAMS = grammar.yg
 grammar_yg_SOURCES = $(SRC)
 
 grammar.yg: $(SRC) $(LALR1GRAM)
-	$(YOG) --young-heap-size=48M $(LALR1GRAM) $@ $(SRC)
+	$(YOG) $(LALR1GRAM) $@ $(SRC)
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

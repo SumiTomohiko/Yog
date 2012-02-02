@@ -140,6 +140,13 @@
  * Chunks which size is greater than MAX_SMALL_SIZE are concatenated to one
  * link.
  *
+ * = Huge
+ *
+ * An arena has upper limit of memory size. If requested size exceeds this
+ * limit, this allocator allocate memory with mmap(2).
+ *
+ * The allocator has no list for huge chunks. It does not reuse huge chunks.
+ *
  * = Deallocating
  *
  * 1.
@@ -255,11 +262,17 @@ struct MarkSweepCompact {
 typedef struct MarkSweepCompact MarkSweepCompact;
 
 static void
-delete_arena(YogEnv* env, Arena* arena, size_t size)
+do_mummap(YogEnv* env, void* ptr, size_t size)
 {
-    if (munmap(arena, size) != 0) {
+    if (munmap(ptr, size) != 0) {
         YogError_raise_sys_err(env, errno, YNIL);
     }
+}
+
+static void
+delete_arena(YogEnv* env, Arena* arena, size_t size)
+{
+    return do_mummap(env, arena, size);
 }
 
 void
@@ -275,10 +288,11 @@ YogMarkSweepCompact_delete(YogEnv* env, YogHeap* heap)
         arena = next;
     }
 
+    YogHeap_finalize(env, heap);
     YogGC_free(env, heap, sizeof(MarkSweepCompact));
 }
 
-static Arena*
+static void*
 mmap_anonymous(YogEnv* env, size_t size)
 {
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
@@ -290,7 +304,7 @@ mmap_anonymous(YogEnv* env, size_t size)
     if (ptr == MAP_FAILED) {
         YogError_raise_sys_err(env, errno, YNIL);
     }
-    return (Arena*)ptr;
+    return ptr;
 }
 
 static uint_t
@@ -453,27 +467,29 @@ turn_on_major_or_compaction(YogEnv* env, MarkSweepCompact* msc, size_t size)
 }
 #endif
 
+static size_t
+compute_upper_limit_of_arena(size_t arena_size)
+{
+    return arena_size - sizeof(Arena) - sizeof(ChunkHeader);
+}
+
 static Arena*
 alloc_arena(YogEnv* env, size_t size, Arena* next)
 {
-    Arena* arena = mmap_anonymous(env, size);
+    Arena* arena = (Arena*)mmap_anonymous(env, size);
     arena->next = next;
 
     FreeHeader* chunk = ARENA_CHUNKS(arena);
-    size_t sentinel_size = sizeof(ChunkHeader);
-    size_t usable_size = size - sentinel_size - sizeof(Arena);
+    size_t usable_size = compute_upper_limit_of_arena(size);
     FreeHeader_init(env, chunk, usable_size, TRUE);
     chunk2footer(chunk)->size = usable_size; /* unused */
 
     ChunkHeader* sentinel = NEXT_CHUNK(chunk);
-    CHUNK_PREV_USED(sentinel) = FALSE; /* unused */
-    CHUNK_SIZE(sentinel) = 0; /* unused */
-    CHUNK_USED(sentinel) = TRUE;
+    ChunkHeader_init(env, sentinel, 0, FALSE, TRUE);
 
     return arena;
 }
 
-#if defined(GC_GENERATIONAL)
 static void
 add_arena(YogEnv* env, MarkSweepCompact* msc)
 {
@@ -481,12 +497,24 @@ add_arena(YogEnv* env, MarkSweepCompact* msc)
     add_chunk(env, msc, ARENA_CHUNKS(arena));
     msc->arenas = arena;
 }
-#endif
+
+static void*
+alloc_huge(YogEnv* env, MarkSweepCompact* msc, size_t size)
+{
+    ChunkHeader* chunk = (ChunkHeader*)mmap_anonymous(env, size);
+    ChunkHeader_init(env, chunk, size, FALSE, TRUE);
+    return chunk + 1;
+}
 
 static void*
 alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
 {
+    size_t limit = compute_upper_limit_of_arena(msc->arena_size);
     size_t size_including_header = size + sizeof(ChunkHeader);
+    if (limit <= size_including_header) {
+        return alloc_huge(env, msc, size_including_header);
+    }
+
     FreeHeader* chunk = NULL; /* -Wall complicates uninitialized using */
     FreeHeader** list = NULL;
 #define FIND_BEST_CHUNK do { \
@@ -505,6 +533,8 @@ alloc(YogEnv* env, MarkSweepCompact* msc, size_t size)
     YogGC_perform(env);
     FIND_BEST_CHUNK;
     YogGC_compact(env);
+    FIND_BEST_CHUNK;
+    add_arena(env, msc);
     FIND_BEST_CHUNK;
     return NULL;
 #elif defined(GC_GENERATIONAL)
@@ -588,6 +618,11 @@ static void
 delete(YogEnv* env, MarkSweepCompact* msc, Header* header)
 {
     ChunkHeader* chunk = (ChunkHeader*)header - 1;
+    if (compute_upper_limit_of_arena(msc->arena_size) <= CHUNK_SIZE(chunk)) {
+        do_mummap(env, chunk, CHUNK_SIZE(chunk));
+        return;
+    }
+
     FreeHeader* merged_chunk1;
     if (CHUNK_PREV_USED(chunk)) {
         CHUNK_USED(chunk) = FALSE;
@@ -652,10 +687,52 @@ YogMarkSweepCompact_mark_recursively(YogEnv* env, void* ptr, ObjectKeeper keeper
     return ptr;
 }
 
+void*
+YogMarkSweepCompact_mark(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
+{
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    Header* header = PAYLOAD2HEADER(ptr);
+    if (header->marked) {
+        return ptr;
+    }
+    header->marked = TRUE;
+
+    if (header->keeper != NULL) {
+        YogHeap_add_to_marked_objects(env, heap, PTR2VAL(ptr));
+    }
+
+    return ptr;
+}
+
 static void*
 keep_object(YogEnv* env, void* ptr, void* heap)
 {
-    return YogMarkSweepCompact_mark_recursively(env, ptr, keep_object, heap);
+    return YogMarkSweepCompact_mark(env, ptr, keep_object, heap);
+}
+
+void
+YogMarkSweepCompact_mark_children(YogEnv* env, YogHeap* heap, ObjectKeeper keeper)
+{
+    uint_t i;
+    for (i = 0; !IS_NIL(heap->marked_objects.prev[i]); i++) {
+        YogVal v = heap->marked_objects.prev[i];
+        YOG_ASSERT(env, IS_PTR(v), "Invalid value");
+        void* ptr = VAL2PTR(v);
+        (*PAYLOAD2HEADER(ptr)->keeper)(env, ptr, keeper, heap);
+    }
+}
+
+void
+YogMarkSweepCompact_mark_in_breadth_first(YogEnv* env, YogHeap* heap)
+{
+    do {
+        YogHeap_init_marked_objects(env, heap);
+        YogMarkSweepCompact_mark_children(env, heap, keep_object);
+        YogHeap_finish_marked_objects(env, heap);
+    } while (!YogHeap_is_marked_objects_empty(env, heap));
 }
 
 void

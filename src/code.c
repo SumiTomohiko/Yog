@@ -223,6 +223,7 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     YogCode* code = PTR_AS(YogCode, ptr);
 
+    /* FIXME: Why not to use KEEP? */
     YogGC_KEEP(env, code, arg_info, keeper, heap);
 
 #define KEEP_MEMBER(member)     do { \

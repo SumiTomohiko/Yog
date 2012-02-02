@@ -185,11 +185,18 @@ YogCopying_post_gc(YogEnv* env, YogHeap* heap)
     swap_spaces(&copying->from_space, &copying->to_space);
 }
 
+BOOL
+YogCopying_is_finished(YogEnv* env, YogHeap* heap)
+{
+    Copying* copying = (Copying*)heap;
+    return copying->scanned == copying->unscanned;
+}
+
 void
 YogCopying_scan(YogEnv* env, YogHeap* heap, ObjectKeeper keeper, void* param)
 {
-    Copying* copying = (Copying*)heap;
-    while (copying->scanned != copying->unscanned) {
+    while (!YogCopying_is_finished(env, heap)) {
+        Copying* copying = (Copying*)heap;
         DEBUG(TRACE("scanned=%p, unscanned=%p", copying->scanned, copying->unscanned));
         Header* header = (Header*)copying->scanned;
         ChildrenKeeper children_keeper = header->keeper;
