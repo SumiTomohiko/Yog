@@ -331,7 +331,9 @@ inst make_array
     uint_t i;
     for (i = 0; i < size; i++) {
         YogVal body = PTR_AS(YogArray, array)->body;
-        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, body), items[size - i - 1], pop(env));
+        uint_t pos = size - i - 1;
+        YogVal v = pop(env);
+        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, body), items[pos], v);
     }
     PTR_AS(YogArray, array)->size = size;
 }
