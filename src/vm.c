@@ -1449,7 +1449,7 @@ YogVM_alloc_indirect_ptr(YogEnv* env, YogVM* vm, YogVal val)
     size_t size = sizeof(YogIndirectPointer);
     YogIndirectPointer* ptr = (YogIndirectPointer*)malloc(size);
     if (ptr == NULL) {
-        YogError_out_of_memory(env);
+        YogError_out_of_memory(env, size);
     }
     ADD_TO_LIST(vm->indirect_ptr, ptr);
     ptr->val = val;

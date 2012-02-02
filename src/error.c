@@ -25,10 +25,11 @@
 } while (0)
 
 void
-YogError_out_of_memory(YogEnv* env)
+YogError_out_of_memory(YogEnv* env, size_t size)
 {
     FILE* out = stderr;
-    fprintf(out, "[ERROR]\nout of memory\n");
+    fprintf(out, "[ERROR]\n");
+    fprintf(out, "Out of memory: requested size=%u\n", size);
     fflush(out);
     abort();
 }

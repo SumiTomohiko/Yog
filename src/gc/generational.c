@@ -49,7 +49,7 @@ grow_remembered_set(YogEnv* env, YogHeap* heap)
     }
     RememberedSet* remembered_set = (RememberedSet*)realloc(GENERATIONAL_REMEMBERED_SET(heap), SIZEOF_REMEMBERED_SET(size));
     if (remembered_set == NULL) {
-        YogError_out_of_memory(env);
+        YogError_out_of_memory(env, SIZEOF_REMEMBERED_SET(size));
     }
     remembered_set->size = size;
     GENERATIONAL_REMEMBERED_SET(heap) = remembered_set;

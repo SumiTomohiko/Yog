@@ -190,7 +190,7 @@ YogGC_alloc(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size
 
     DEBUG(TRACE("%p: exit YogGC_alloc", env));
     if (ptr == NULL) {
-        YogError_out_of_memory(env);
+        YogError_out_of_memory(env, size);
     }
 
     return PTR2VAL(ptr);
@@ -296,7 +296,7 @@ YogGC_malloc(YogEnv* env, size_t size)
 {
     void* ptr = malloc(size);
     if (ptr == NULL) {
-        YogError_out_of_memory(env);
+        YogError_out_of_memory(env, size);
     }
     YogGC_init_memory(env, ptr, size);
     return ptr;
@@ -719,9 +719,7 @@ YogGC_keep(YogEnv* env, YogVal val, ObjectKeeper keeper, void* heap)
         return val;
     }
     void* dest = (*keeper)(env, VAL2PTR(val), heap);
-    if (dest == NULL) {
-        YogError_out_of_memory(env);
-    }
+    YOG_ASSERT(env, dest != NULL, "Out of memory");
     return PTR2VAL(dest);
 }
 
@@ -765,7 +763,7 @@ YogGC_check_multiply_overflow(YogEnv* env, uint_t n, uint_t m)
     if ((m == 0) || (l / m == n)) {
         return;
     }
-    YogError_out_of_memory(env);
+    YOG_BUG(env, "Multiplying %u with %u failed.", n, m);
 }
 
 /**
