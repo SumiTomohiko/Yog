@@ -275,7 +275,7 @@ pop(YogEnv* env)
 {
     YogVal frame = env->frame;
     uint_t size = PTR_AS(YogScriptFrame, frame)->stack_size;
-    YOG_ASSERT(env, 0 < size, "Empty stack");
+    YOG_ASSERT(env, 0 < size, "Empty stack: frame=%p, size=0x%08x (%u)", VAL2PTR(frame), size, size);
     YogVal val = PTR_AS(YogScriptFrame, frame)->locals_etc[size - 1];
     PTR_AS(YogScriptFrame, frame)->stack_size--;
     return val;
