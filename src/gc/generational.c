@@ -128,7 +128,7 @@ copy_young_obj(YogEnv* env, void* ptr, ObjectKeeper obj_keeper, void* heap, Proc
 static void
 proc_for_tenured_major(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
-    YogMarkSweepCompact_mark_recursively(env, ptr, keeper, heap);
+    YogMarkSweepCompact_mark(env, ptr, keeper, heap);
 }
 
 static void*
@@ -139,7 +139,7 @@ major_gc_keep_object(YogEnv* env, void* ptr, void* heap)
         return NULL;
     }
     if (YogGC_IS_OLD(ptr)) {
-        return YogMarkSweepCompact_mark_recursively(env, ptr, major_gc_keep_object, heap);
+        return YogMarkSweepCompact_mark(env, ptr, major_gc_keep_object, heap);
     }
     YOG_ASSERT(env, YogGC_IS_YOUNG(ptr), "Invalid generation (0x%08x at 0x%08x)", PAYLOAD2GENERATION(ptr), &PAYLOAD2GENERATION(ptr));
 
@@ -153,7 +153,7 @@ proc_for_tenured_minor(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     if (children_keeper == NULL) {
         return;
     }
-    (*children_keeper)(env, ptr, keeper, heap);
+    YogHeap_add_to_marked_objects(env, heap, PTR2VAL(ptr));
 }
 
 static void*
@@ -201,6 +201,7 @@ YogGenerational_delete(YogEnv* env, YogHeap* heap)
     YogMarkSweepCompact_delete(env, GENERATIONAL_OLD_HEAP(heap));
     YogCopying_delete(env, GENERATIONAL_YOUNG_HEAP(heap));
     YogGC_free(env, GENERATIONAL_REMEMBERED_SET(heap), SIZEOF_REMEMBERED_SET(GENERATIONAL_REMEMBERED_SET(heap)->size));
+    YogHeap_finalize(env, heap);
     YogGC_free(env, heap, sizeof(Generational));
 }
 
@@ -256,11 +257,21 @@ YogGenerational_minor_keep_vm(YogEnv* env, YogHeap* heap)
     YogVM_keep_children(env, env->vm, minor_gc_keep_object, heap);
 }
 
-void
-YogGenerational_minor_cheney_scan(YogEnv* env, YogHeap* heap)
+static void
+mark(YogEnv* env, YogHeap* heap, ObjectKeeper keeper)
+{
+    while (!YogHeap_is_marked_objects_empty(env, heap)) {
+        YogHeap_init_marked_objects(env, heap);
+        YogMarkSweepCompact_mark_children(env, heap, keeper);
+        YogHeap_finish_marked_objects(env, heap);
+    }
+}
+
+static void
+cheney_scan(YogEnv* env, YogHeap* heap, ObjectKeeper keeper)
 {
     YogHeap* young_heap = GENERATIONAL_YOUNG_HEAP(heap);
-    YogCopying_scan(env, young_heap, minor_gc_keep_object, heap);
+    YogCopying_scan(env, young_heap, keeper, heap);
 }
 
 void
@@ -313,13 +324,6 @@ YogGenerational_major_keep_vm(YogEnv* env, YogHeap* heap)
 }
 
 void
-YogGenerational_major_cheney_scan(YogEnv* env, YogHeap* heap)
-{
-    YogHeap* young_heap = GENERATIONAL_YOUNG_HEAP(heap);
-    YogCopying_scan(env, young_heap, major_gc_keep_object, heap);
-}
-
-void
 YogGenerational_major_delete_garbage(YogEnv* env, YogHeap* heap)
 {
     YogCopying_delete_garbage(env, GENERATIONAL_YOUNG_HEAP(heap));
@@ -330,6 +334,37 @@ void
 YogGenerational_major_post_gc(YogEnv* env, YogHeap* heap)
 {
     post_gc(env, heap);
+}
+
+static void
+traverse(YogEnv* env, YogHeap* heap, ObjectKeeper keeper)
+{
+    /**
+     * YogHeap::marked_objects of heap has some objects which were added in
+     * processing root pointers. They must be consumed first.
+     */
+    mark(env, heap, keeper);
+
+    YogHeap* yound_heap = GENERATIONAL_YOUNG_HEAP(heap);
+    while (!YogCopying_is_finished(env, yound_heap)) {
+        YogHeap_init_marked_objects(env, heap);
+        cheney_scan(env, heap, keeper);
+        YogHeap_finish_marked_objects(env, heap);
+
+        mark(env, heap, keeper);
+    }
+}
+
+void
+YogGenerational_minor_traverse(YogEnv* env, YogHeap* heap)
+{
+    traverse(env, heap, minor_gc_keep_object);
+}
+
+void
+YogGenerational_major_traverse(YogEnv* env, YogHeap* heap)
+{
+    traverse(env, heap, major_gc_keep_object);
 }
 
 /**

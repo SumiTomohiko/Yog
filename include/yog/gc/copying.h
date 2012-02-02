@@ -21,6 +21,7 @@ YOG_EXPORT void* YogCopying_get_forwarding_addr(YogEnv*, YogHeap*, void*);
 YOG_EXPORT ChildrenKeeper YogCopying_get_keeper(YogEnv*, YogHeap*, void*);
 YOG_EXPORT size_t YogCopying_get_payload_size(YogEnv*, YogHeap*, void*);
 YOG_EXPORT BOOL YogCopying_is_empty(YogEnv*, YogHeap*);
+YOG_EXPORT BOOL YogCopying_is_finished(YogEnv*, YogHeap*);
 YOG_EXPORT void YogCopying_keep_root(YogEnv*, void*, ChildrenKeeper, YogHeap*);
 YOG_EXPORT YogHeap* YogCopying_new(YogEnv*, uint_t);
 YOG_EXPORT void YogCopying_post_gc(YogEnv*, YogHeap*);

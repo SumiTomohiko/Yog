@@ -561,9 +561,9 @@ minor_keep_vm(YogEnv* env)
 }
 
 static void
-minor_cheney_scan(YogEnv* env)
+minor_traverse(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_minor_cheney_scan(env, heap));
+    ITERATE_HEAPS(env->vm, YogGenerational_minor_traverse(env, heap));
 }
 
 static void
@@ -609,14 +609,16 @@ minor_gc(YogEnv* env)
 
     prepare_minor(env);
 
+    ITERATE_HEAPS(env->vm, YogHeap_init_marked_objects(env, heap));
     for (i = 0; i < heaps_num; i++) {
         YogHeap* heap = r[i].heap;
         RememberedSet* remembered_set = r[i].remembered_set;
         YogGenerational_trace_remembered_set(env, heap, remembered_set);
     }
-
     minor_keep_vm(env);
-    minor_cheney_scan(env);
+    ITERATE_HEAPS(env->vm, YogHeap_finish_marked_objects(env, heap));
+
+    minor_traverse(env);
     minor_delete_garbage(env);
     minor_post_gc(env);
     delete_heaps(env);
@@ -638,9 +640,9 @@ major_keep_vm(YogEnv* env)
 }
 
 static void
-major_cheney_scan(YogEnv* env)
+major_traverse(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_major_cheney_scan(env, heap));
+    ITERATE_HEAPS(env->vm, YogGenerational_major_traverse(env, heap));
 }
 
 static void
@@ -660,8 +662,12 @@ major_gc(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter major_gc", env));
     prepare_major(env);
+
+    ITERATE_HEAPS(env->vm, YogHeap_init_marked_objects(env, heap));
     major_keep_vm(env);
-    major_cheney_scan(env);
+    ITERATE_HEAPS(env->vm, YogHeap_finish_marked_objects(env, heap));
+
+    major_traverse(env);
     major_delete_garbage(env);
     major_post_gc(env);
     delete_heaps(env);
