@@ -871,7 +871,7 @@ end
 def make_dict_entries(syms)
   return syms.map() do [sym]
     next "{0}.to_sym(): {1}".format(sym.sym.to_s().inspect(), sym.id)
-  end.join(", ")
+  end.join(",\n")
 end
 
 def get_reduce_only_rule(state)
