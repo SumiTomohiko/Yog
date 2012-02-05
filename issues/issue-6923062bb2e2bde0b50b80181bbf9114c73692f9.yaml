@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Array#sort's block parameter must be optional.
+desc: Default is "next x <=> y".
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-05 18:36:48.954454 Z
+references: []
+
+id: 6923062bb2e2bde0b50b80181bbf9114c73692f9
+log_events: 
+- - 2012-02-05 18:36:49.486605 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
