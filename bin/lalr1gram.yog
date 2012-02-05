@@ -150,12 +150,20 @@ class NonTerminal > GrammarSymbol
     self.first = Set.new()
   end
 
+  def inspect()
+    return "<NonTerminal {0}>".format(self.sym.to_s())
+  end
+
   def to_s()
     return self.sym.to_s()
   end
 end
 
 class Terminal > GrammarSymbol
+  def inspect()
+    return "<Terminal {0}>".format(self.sym.to_s())
+  end
+
   def to_s()
     return "<{0}>".format(self.sym)
   end
