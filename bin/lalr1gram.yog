@@ -125,10 +125,21 @@ class Lexer
   end
 end
 
+@include(Comparable)
 class GrammarSymbol
   def init(sym)
     self.id = nil
     self.sym = sym
+  end
+
+  def <=>(sym)
+    if (self.class == Terminal) && (sym.class == NonTerminal)
+      return -1
+    end
+    if (self.class == NonTerminal) && (sym.class == Terminal)
+      return 1
+    end
+    return self.sym.to_s() <=> sym.sym.to_s()
   end
 end
 
