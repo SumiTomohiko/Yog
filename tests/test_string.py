@@ -5,6 +5,27 @@ from testcase import TestCase
 
 class TestString(TestCase):
 
+    def test_compare0(self):
+        self._test("print(\"g\" < \"foo\")", "false")
+
+    def test_compare10(self):
+        self._test("print(\"foo\" < \"g\")", "true")
+
+    def test_compare20(self):
+        self._test("print(\"foo\" < \"goo\")", "true")
+
+    def test_compare30(self):
+        self._test("print(\"goo\" < \"foo\")", "false")
+
+    def test_compare40(self):
+        self._test("print(\"foo\" < \"foo\")", "false")
+
+    def test_compare50(self):
+        self._test("print(\"fooo\" < \"foo\")", "false")
+
+    def test_compare60(self):
+        self._test("print(\"foo\" < \"fooo\")", "true")
+
     def test_literal1(self):
         self._test("""
 puts(\"foo\")

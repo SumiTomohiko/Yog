@@ -125,10 +125,21 @@ class Lexer
   end
 end
 
+@include(Comparable)
 class GrammarSymbol
   def init(sym)
     self.id = nil
     self.sym = sym
+  end
+
+  def <=>(sym)
+    if (self.class == Terminal) && (sym.class == NonTerminal)
+      return -1
+    end
+    if (self.class == NonTerminal) && (sym.class == Terminal)
+      return 1
+    end
+    return self.sym.to_s() <=> sym.sym.to_s()
   end
 end
 
@@ -139,12 +150,20 @@ class NonTerminal > GrammarSymbol
     self.first = Set.new()
   end
 
+  def inspect()
+    return "<NonTerminal {0}>".format(self.sym.to_s())
+  end
+
   def to_s()
     return self.sym.to_s()
   end
 end
 
 class Terminal > GrammarSymbol
+  def inspect()
+    return "<Terminal {0}>".format(self.sym.to_s())
+  end
+
   def to_s()
     return "<{0}>".format(self.sym)
   end
@@ -482,9 +501,9 @@ def dump_state_to_stdout(state)
   end
 end
 
-def compute_states(state, nonterm2rules)
+def compute_states(first_state, nonterm2rules)
   sym2states = {}
-  states = [state]
+  states = [first_state]
   pos = 0
   while pos < states.size
     children = []
@@ -852,7 +871,7 @@ end
 def make_dict_entries(syms)
   return syms.map() do [sym]
     next "{0}.to_sym(): {1}".format(sym.sym.to_s().inspect(), sym.id)
-  end.join(", ")
+  end.join(",\n")
 end
 
 def get_reduce_only_rule(state)

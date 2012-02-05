@@ -1028,6 +1028,15 @@ YogString_append_string(YogEnv* env, YogVal self, const char* s)
     RETURN_VOID(env);
 }
 
+static uint_t
+get_smaller_size(YogVal s, YogVal t)
+{
+    if (STRING_SIZE(s) < STRING_SIZE(t)) {
+        return STRING_SIZE(s);
+    }
+    return STRING_SIZE(t);
+}
+
 YogVal
 YogString_binop_ufo(YogEnv* env, YogVal self, YogVal s)
 {
@@ -1035,21 +1044,28 @@ YogString_binop_ufo(YogEnv* env, YogVal self, YogVal s)
         return YNIL;
     }
 
+#define SELF_IS_GREATER INT2VAL(1)
+#define SELF_IS_LESSER INT2VAL(-1)
+
+    uint_t n = sizeof(YogChar) * get_smaller_size(self, s);
+    int result = memcmp(STRING_CHARS(self), STRING_CHARS(s), n);
+    if (result < 0) {
+        return SELF_IS_LESSER;
+    }
+    else if (0 < result) {
+        return SELF_IS_GREATER;
+    }
     if (STRING_SIZE(self) < STRING_SIZE(s)) {
-        return INT2VAL(-1);
+        return SELF_IS_LESSER;
     }
-    if (STRING_SIZE(s) < STRING_SIZE(self)) {
-        return INT2VAL(1);
+    else if (STRING_SIZE(s) < STRING_SIZE(self)) {
+        return SELF_IS_GREATER;
     }
-    uint_t n = sizeof(YogChar) * STRING_SIZE(self);
-    int_t m = memcmp(STRING_CHARS(self), STRING_CHARS(s), n);
-    if (m < 0) {
-        return INT2VAL(-1);
-    }
-    if (m == 0) {
-        return INT2VAL(0);
-    }
-    return INT2VAL(1);
+
+#undef SELF_IS_LESSER
+#undef SELF_IS_GREATER
+
+    return INT2VAL(0);
 }
 
 static YogVal
