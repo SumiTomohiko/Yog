@@ -501,9 +501,9 @@ def dump_state_to_stdout(state)
   end
 end
 
-def compute_states(state, nonterm2rules)
+def compute_states(first_state, nonterm2rules)
   sym2states = {}
-  states = [state]
+  states = [first_state]
   pos = 0
   while pos < states.size
     children = []
