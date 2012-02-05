@@ -456,18 +456,26 @@ init(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 void
 YogThread_issue_object_id(YogEnv* env, YogVal self, YogVal obj)
 {
-    /**
-     * FIXME: Disabled this function. See an issue of
-     * 50affa92367f2d8eb95c83320feef1deec6eb460.
-     */
     PTR_AS(YogBasicObj, obj)->id_upper = PTR_AS(YogThread, self)->thread_id;
-#if 0
     PTR_AS(YogBasicObj, obj)->id_lower = PTR_AS(YogThread, self)->next_obj_id;
+
+    /**
+     * YogThread::next_obj_id can overflow. So it is possible that two objects
+     * have same YogBasicObj::id_lower. But I estimated that its bad effect is
+     * low for the following reason.
+     *
+     * YogBasicObj::id_lower is used at two places. One is Object#hash. If two
+     * objects have same id_lower, their Object#hash return same value. But it
+     * is not a big problem. Because hash value is only for positioning in hash
+     * tables. Hash#[] compares two with Object#== strictly.
+     *
+     * Another YogBasicObj::id_lower's use is in default Object#to_s. Users must
+     * be confused when two objects return same string from Object#to_s. I think
+     * that it is rare. The default implementation of Object#to_s shows object's
+     * class name also. Users may be able to know with it that two are different
+     * objects.
+     */
     PTR_AS(YogThread, self)->next_obj_id++;
-    YOG_ASSERT(env, PTR_AS(YogThread, self)->next_obj_id != 0, "object id overflow");
-#else
-    PTR_AS(YogBasicObj, obj)->id_lower = 0;
-#endif
 }
 
 static void
