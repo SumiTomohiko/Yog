@@ -4,7 +4,7 @@ SUBDIRS = @BDWGC_DIR@ corgi gmp libffi $(INSTALL_SUBDIRS)
 ARCHIVE = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 
 .PHONY: doc proto test test-installed test-copying test-mark-sweep \
-	test-mark-sweep-compact test-bdw test-generational vim install dist \
+	test-mark-sweep-compact test-bdw test-default vim install dist \
 	distcheck installer
 
 doc:
@@ -19,7 +19,7 @@ test:
 	done
 
 test-installed:
-	export YOG=$(prefix)/bin/yog-generational$(EXEEXT); \
+	export YOG=$(prefix)/bin/yog$(EXEEXT); \
 	./run_tests
 
 test-copying:
@@ -38,8 +38,8 @@ test-bdw:
 	export YOG=`pwd`/src/yog-bdw$(EXEEXT); \
 	./run_tests
 
-test-generational:
-	export YOG=`pwd`/src/yog-generational$(EXEEXT); \
+test-default:
+	export YOG=`pwd`/src/yog$(EXEEXT); \
 	./run_tests
 
 VIM_DIR = vim

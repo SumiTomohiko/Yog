@@ -9,9 +9,9 @@ PARAMS = makedoc.yg --title=$(TITLE) --destdir=$(DEST_DIR) toc.ydoc
 
 .PHONY: all clean
 
-all: generational
+all: default
 
-measure: copying mark-sweep mark-sweep-compact generational bdw
+measure: copying mark-sweep mark-sweep-compact default bdw
 
 copying:
 	time $(DIR)/yog-copying$(EXEEXT) $(PARAMS)
@@ -25,8 +25,8 @@ mark-sweep-compact:
 	time $(DIR)/yog-mark-sweep-compact$(EXEEXT) $(PARAMS)
 	cp index.html $(DEST_DIR)
 
-generational:
-	time $(DIR)/yog-generational$(EXEEXT) $(PARAMS)
+default:
+	time $(DIR)/yog$(EXEEXT) $(PARAMS)
 	cp index.html $(DEST_DIR)
 
 bdw:

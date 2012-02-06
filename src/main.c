@@ -38,19 +38,21 @@
 static void
 print_version()
 {
-#if defined(GC_COPYING)
-#   define GC_NAME  "copying"
-#elif defined(GC_MARK_SWEEP)
-#   define GC_NAME  "mark-sweep"
-#elif defined(GC_MARK_SWEEP_COMPACT)
-#   define GC_NAME  "mark-sweep-compact"
-#elif defined(GC_GENERATIONAL)
-#   define GC_NAME  "generational"
-#elif defined(GC_BDW)
-#   define GC_NAME  "BDW"
-#endif
+#if defined(GC_GENERATIONAL)
+    printf("yog %s\n", PACKAGE_VERSION);
+#else
+#   if defined(GC_COPYING)
+#       define GC_NAME  "copying"
+#   elif defined(GC_MARK_SWEEP)
+#       define GC_NAME  "mark-sweep"
+#   elif defined(GC_MARK_SWEEP_COMPACT)
+#       define GC_NAME  "mark-sweep-compact"
+#   else
+#       define GC_NAME  "BDW"
+#   endif
     printf("yog %s %s GC\n", PACKAGE_VERSION, GC_NAME);
-#undef GC_NAME
+#   undef GC_NAME
+#endif
 }
 
 static void

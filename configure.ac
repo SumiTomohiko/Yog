@@ -103,8 +103,8 @@ case "${host}" in
 *-openbsd*)
     CFLAGS="${CFLAGS} -pthread"
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb -export-dynamic"
-    TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-generational"
-    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT)"
+    TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-default"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog\$(EXEEXT)"
     SOEXT="so"
     EXT_SUBDIRS="concurrent"
     ;;
@@ -127,8 +127,8 @@ case "${host}" in
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -export-dynamic"
     AC_CONFIG_SUBDIRS([bdwgc])
     BDWGC_DIR="bdwgc"
-    TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-generational"
-    BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog-generational\$(EXEEXT)"
+    TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-default"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog\$(EXEEXT)"
     SOEXT="so"
     EXT_SUBDIRS="concurrent"
     ;;

@@ -1,6 +1,6 @@
 
 SUFFIXES = .h2yog .yg
 .h2yog.yg:
-	$(top_srcdir)/src/yog-generational --young-heap-size=48M $<
+	$(top_srcdir)/src/yog $<
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

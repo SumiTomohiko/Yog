@@ -8,7 +8,6 @@ LEMON_DIR = $(top_srcdir)/tools/lemon
 LEMON = $(LEMON_DIR)/lemon
 YACC = $(LEMON)
 PYTHON = @PYTHON@
-YOG = yog-generational
 TOOLS_DIR = $(top_srcdir)/tools
 
 BUILT_SOURCES = $(top_srcdir)/include/yog/token.h keywords.inc
@@ -29,7 +28,7 @@ LIBS = $(CORGI_DIR)/src/.libs/libcorgi.a $(GMP_DIR)/.libs/libgmp.a \
        $(LIBFFI_DIR)/.libs/libffi.a -lm @LIBS@
 
 EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
-		 yog-mark-sweep-compact$(EXEEXT) yog-generational$(EXEEXT)
+		 yog-mark-sweep-compact$(EXEEXT) yog$(EXEEXT)
 bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
 yog_copying_CFLAGS = $(CFLAGS_COMMON) -DGC_COPYING
@@ -44,10 +43,10 @@ yog_bdw_SOURCES = $(COMMON_SOURCES) gc/bdw.c
 yog_bdw_CFLAGS = $(CFLAGS_COMMON) -DGC_BDW -DGC_PTHREADS
 yog_bdw_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_BDW@
 yog_bdw_LDADD = $(BDWGC_DIR)/.libs/libgc.a
-yog_generational_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
-			   gc/mark-sweep-compact.c
-yog_generational_CFLAGS = $(CFLAGS_COMMON) -DGC_GENERATIONAL
-yog_generational_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_GENERATIONAL@
+yog_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
+	      gc/mark-sweep-compact.c
+yog_CFLAGS = $(CFLAGS_COMMON)
+yog_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_GENERATIONAL@
 
 INSTS_DEF = insts.def
 INST_PY = $(top_srcdir)/tools/inst.py

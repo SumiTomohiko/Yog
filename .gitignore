@@ -640,8 +640,4 @@ vim/ftplugin/Makefile
 vim/ftplugin/Makefile.in
 vim/ftplugin/yg.vim
 y.output
-yog-bdw*
-yog-copying*
-yog-generational*
-yog-mark-sweep*
-yog-mark-sweep-compact*
+yog*
