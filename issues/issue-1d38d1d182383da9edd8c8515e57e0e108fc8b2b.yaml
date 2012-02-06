@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove descriptions for MINIYOG.
+desc: miniyog is unused now.
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-06 18:54:59.738163 Z
+references: []
+
+id: 1d38d1d182383da9edd8c8515e57e0e108fc8b2b
+log_events: 
+- - 2012-02-06 18:55:00.259387 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

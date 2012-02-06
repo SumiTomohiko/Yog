@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Rewrite plans in README.
+desc: ""
+type: :task
+component: doc
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-06 18:58:14.624227 Z
+references: []
+
+id: 6b819b121c101559cd2bd69eb990e52bafadadd1
+log_events: 
+- - 2012-02-06 18:58:15.006644 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

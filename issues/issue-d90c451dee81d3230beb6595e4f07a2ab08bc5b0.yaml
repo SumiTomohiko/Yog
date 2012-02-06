@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove code for Windows.
+desc: |-
+  Now yog does not support Windows. The followings are unused.
+  
+  * installer.nsi.in
+  * description for mingw32 in configure.ac
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-06 18:57:49.581452 Z
+references: []
+
+id: d90c451dee81d3230beb6595e4f07a2ab08bc5b0
+log_events: 
+- - 2012-02-06 18:57:50.113936 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
