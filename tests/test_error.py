@@ -8,15 +8,6 @@ from testcase import TestCase
 @pytest.mark.skipif("environ.get(\"GC\", \"copying\") != \"copying\"")
 class TestError(TestCase):
 
-    def test_out_of_memory0(self):
-        def test_stderr(stderr):
-            m = search(r"out of memory", stderr)
-            assert m is not None
-
-        self._test("""
-puts("xx" * 134217728)
-""", stderr=test_stderr, status=None)
-
     def test_open0(self):
         stdout_path = stderr_path = None
         try:
