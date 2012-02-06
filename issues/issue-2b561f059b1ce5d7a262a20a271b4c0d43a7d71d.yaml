@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: TestThread::test_AtomicInt1 failed.
+desc: "\"Invalid generation (0xfdfdfdfd at 0x28601190)\" ocurred."
+type: :bugfix
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-06 00:47:43.040470 Z
+references: []
+
+id: 2b561f059b1ce5d7a262a20a271b4c0d43a7d71d
+log_events: 
+- - 2012-02-06 00:47:44.141236 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
