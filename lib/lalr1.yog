@@ -12,9 +12,6 @@ class Token
   end
 end
 
-def nop(s)
-end
-
 def get_token_internal(get_token, logger)
   token = get_token()
   logger("Read token: {0}".format(token))
