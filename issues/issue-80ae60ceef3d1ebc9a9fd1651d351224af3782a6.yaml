@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add formal arguments syntax of blocks using "[|...|]".
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-07 12:26:22.481912 Z
+references: []
+
+id: 80ae60ceef3d1ebc9a9fd1651d351224af3782a6
+log_events: 
+- - 2012-02-07 12:26:23.087565 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
