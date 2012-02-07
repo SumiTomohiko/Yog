@@ -134,7 +134,7 @@ class ChoicePattern > Pattern
   end
 
   def match(x)
-    [self.e1, self.e2].each() do [e]
+    [self.e1, self.e2].each() do |e|
       m = e.match(x)
       if m == nil
         next

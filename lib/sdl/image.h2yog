@@ -15,7 +15,7 @@ def main()
     }
   verbose = false
   #verbose = true
-  h2yog(yog, [header], "libSDL_image.so", predefined, verbose) do [path, name]
+  h2yog(yog, [header], "libSDL_image.so", predefined, verbose) do |path, name|
     next name.to_s().starts_with?("IMG_")
   end
 end

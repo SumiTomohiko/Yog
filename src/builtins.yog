@@ -11,7 +11,7 @@ def max(*args)
   if args.empty?
     return nil
   end
-  return args.slice(1).reduce(args[0]) do [init, elem]
+  return args.slice(1).reduce(args[0]) do |init, elem|
     next elem < init ? init : elem
   end
 end
@@ -20,7 +20,7 @@ def min(*args)
   if args.empty?
     return nil
   end
-  return args.slice(1).reduce(args[0]) do [init, elem]
+  return args.slice(1).reduce(args[0]) do |init, elem|
     next init < elem ? init : elem
   end
 end
@@ -44,8 +44,8 @@ def run_command(*cmd, &block=nil)
 end
 
 def copy_file(src, dest)
-  File.open(src, "r") do [in]
-    File.open(dest, "w") do [out]
+  File.open(src, "r") do |in|
+    File.open(dest, "w") do |out|
       out.write(in.read_binary())
     end
   end
@@ -127,7 +127,7 @@ end
 def find_lib(head)
   name = "lib" + head + ".so"
   dirs = ENV.get("LD_LIBRARY_PATH", "").split(":") + ["/usr/local/lib", "/usr/lib", "/lib"]
-  dirs.each() do [dir]
+  dirs.each() do |dir|
     try
       return load_lib(join_path(dir, name))
     except ImportError

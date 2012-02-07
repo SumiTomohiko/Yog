@@ -16,7 +16,7 @@ def main()
       'Sint16, 'Uint32, 'Uint16, 'Uint8]}
   verbose = false
   #verbose = true
-  h2yog(yog, [header], "libSDL_mixer.so", predefined, verbose) do [path, name]
+  h2yog(yog, [header], "libSDL_mixer.so", predefined, verbose) do |path, name|
     next ["Mix_", "MIX_"].any?(&name.to_s().starts_with?)
   end
 end

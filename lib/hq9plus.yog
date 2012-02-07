@@ -6,7 +6,7 @@ def eval(src)
    : This implementation is incomplete.
    :)
   # acc = 0
-  src.each_char() do [c]
+  src.each_char() do |c|
     if c == "H"
       print("Hello, world!")
     elif c == "Q"

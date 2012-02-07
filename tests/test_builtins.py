@@ -65,7 +65,7 @@ print(stderr.rtrim())
 
     def test_run_command30(self):
         self._test("""
-_, stdout, _ = run_command(\"/bin/cat\") do [stdin]
+_, stdout, _ = run_command(\"/bin/cat\") do |stdin|
   stdin.write(<<EOF)
 foo
 EOF

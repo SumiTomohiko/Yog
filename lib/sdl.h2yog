@@ -13,7 +13,7 @@ EXCLUDED_SYMBOLS = [
   'sscanf, 'dummy_uint8, 'dummy_sint8, 'dummy_uint16, 'dummy_sint16,
   'dummy_uint32, 'dummy_sint32, 'dummy_uint64, 'dummy_sint64, 'dummy_enum,
   'AllocSurface, 'BlitSurface, 'ReadLE64, 'ReadBE64, 'WriteLE64,
-  'WriteBE64].map() do [sym]
+  'WriteBE64].map() do |sym|
   next "SDL_{0}".format(sym).to_sym()
 end.to_set().add('WMcursor)
 
@@ -27,7 +27,7 @@ def main()
   header = prefix.rtrim() / "include" / "SDL" / "SDL.h"
 
   verbose = false
-  h2yog(yog, [header], "libSDL.so", verbose: verbose) do [path, name]
+  h2yog(yog, [header], "libSDL.so", verbose: verbose) do |path, name|
     if INCLUDED_SYMBOLS.include?(name)
       next true
     end

@@ -4,7 +4,7 @@ from c.grammar import ArrayNode, BinopNode, BitFieldNode, CallNode, ConstantNode
 
 def build_command(headers, opts)
   cmd = ["/usr/bin/env", "gcc", "-E"] + opts
-  headers.each() do [header]
+  headers.each() do |header|
     cmd.extend(["-include", header])
   end
   cmd << "-"
@@ -36,8 +36,8 @@ def get_macros_implementation(headers, macros)
   if macros.empty?
     return []
   end
-  stdout = run_gcc(headers, []) do [stdin]
-    macros.each() do [macro]
+  stdout = run_gcc(headers, []) do |stdin|
+    macros.each() do |macro|
       args = macro.args != nil ? "({0})".format(macro.args) : ""
       stdin.write("{0}{1}\n".format(macro.name, args))
     end
@@ -59,7 +59,7 @@ def spec2yog(spec)
   long? = false
   long_long? = false
   basic = 'int
-  spec.each() do [sym]
+  spec.each() do |sym|
     if sym == 'void
       return 'void.inspect()
     end
@@ -171,7 +171,7 @@ def enum2yog(node, name)
   yog << FMT.format(content.name, node2yog(content.expr) || 0) << "\n"
   prev = content.name
 
-  yog << node.contents.slice(1).map() do [content]
+  yog << node.contents.slice(1).map() do |content|
     value = node2yog(content.expr) || "{0} + 1".format(prev)
     s = FMT.format(content.name, value)
     prev = content.name
@@ -182,8 +182,8 @@ def enum2yog(node, name)
 end
 
 def struct_content2yog(contents)
-  return contents.map() do [content]
-    next content.names.map() do [name]
+  return contents.map() do |content|
+    next content.names.map() do |name|
       type = make_struct_field_type(content.type, name)
       next <<EOF.rtrim().format(type, get_typedef_name(name).inspect())
   [{0}, {1}]
@@ -303,7 +303,7 @@ def params2yog(params)
       end
     end
   end
-  return params.map() do [param]
+  return params.map() do |param|
     next make_type_text(param.spec, param.declarator)
   end.join(", ")
 end
@@ -319,7 +319,7 @@ end
 
 def init_declators2yog(node, f)
   type = node.spec.type
-  return node.init_declarators.map() do [init_decl]
+  return node.init_declarators.map() do |init_decl|
     next f(type, init_decl.declarator)
   end.join("")
 end
@@ -338,7 +338,7 @@ def node2yog(node)
     return "0"
   end
   if node.kind_of?(CallNode)
-    args = node.args.map() do [arg]
+    args = node.args.map() do |arg|
       next node2yog(arg)
     end
     return "{0}({1})".format(node2yog(node.name), args.join(", "))
@@ -375,7 +375,7 @@ def node2yog(node)
   if spec.kind_of?(EnumNode)
     return enum2yog(spec, spec.name)
   end
-  return node.init_declarators.map() do [init_decl]
+  return node.init_declarators.map() do |init_decl|
     decl = init_decl.declarator
     if decl.kind_of?(ProtoNode)
       next proto2yog(spec, decl)
@@ -406,7 +406,7 @@ end
 
 def h2yog(yog, headers, so, predefined={}, verbose=false, &block)
   typedef_names = Set.new()
-  nodes, macros = parse_to_nodes(headers, typedef_names, verbose) do [node]
+  nodes, macros = parse_to_nodes(headers, typedef_names, verbose) do |node|
     if node == nil
       next false
     end
@@ -417,7 +417,7 @@ def h2yog(yog, headers, so, predefined={}, verbose=false, &block)
     if spec.kind_of?(StructBaseNode) || spec.kind_of?(EnumNode)
       next block(spec.filename, spec.name)
     end
-    next node.init_declarators.select() do [init_decl]
+    next node.init_declarators.select() do |init_decl|
       decl = init_decl.declarator
       if spec.kind_of?(TypedefNode)
         next block(spec.filename, get_typedef_name(decl))
@@ -431,24 +431,24 @@ def h2yog(yog, headers, so, predefined={}, verbose=false, &block)
       next false
     end.size != 0
   end
-  impls = macros.zip(get_macros_implementation(headers, macros)).map() do [args]
+  impls = macros.zip(get_macros_implementation(headers, macros)).map() do |args|
     next MacroImpl.new(args[0], args[1])
   end
 
   # FIXME: Is defined_structs deplicated with typedef_names?
-  defined_structs.extend(predefined.values.reduce(Set.new()) do [init, val]
+  defined_structs.extend(predefined.values.reduce(Set.new()) do |init, val|
     next init + val.to_set()
   end)
-  File.open(yog, "w") do [fp]
-    predefined.each() do [key, value]
-      fp.write("from {0} import {1}\n".format(key, value.map() do [sym]
+  File.open(yog, "w") do |fp|
+    predefined.each() do |key, value|
+      fp.write("from {0} import {1}\n".format(key, value.map() do |sym|
         next sym.to_s()
       end.join(", ")))
     end
     fp.write("lib = load_lib({0})\n".format(so.inspect()))
-    (nodes + impls).sort() do [a, b]
+    (nodes + impls).sort() do |a, b|
       next a.lineno <=> b.lineno
-    end.each() do [obj]
+    end.each() do |obj|
       if !obj.kind_of?(MacroImpl)
         fp.write("{0}\n".format(node2yog(obj)))
         next

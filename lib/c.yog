@@ -193,7 +193,7 @@ class Lexer
       ["~", 'tilda],
       ["^=", 'xor_equal],
       ["^", 'xor]]
-    syms.each() do [entry]
+    syms.each() do |entry|
       key = entry[0]
       if self.src.slice(self.pos, key.size) != key
         next
@@ -226,7 +226,7 @@ end
 
 def parse_internal(lexer, verbose)
   nodes = lalr1.parse(c.grammar, lexer.get_next_token, lexer, get_logger(verbose))
-  return nodes, lexer.macros.values.select() do [macro]
+  return nodes, lexer.macros.values.select() do |macro|
     next macro != nil
   end
 end

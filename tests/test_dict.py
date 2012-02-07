@@ -110,7 +110,7 @@ print(({ 'foo: 42 } + { 'bar: 26 })['bar])
     def test_each0(self):
         self._test("""
 d = { 'foo: 'bar }
-d.each() do [key, value]
+d.each() do |key, value|
   print(key.inspect())
 end
 """, "'foo")
@@ -118,7 +118,7 @@ end
     def test_each10(self):
         self._test("""
 d = { 'foo: 'bar }
-d.each() do [key, value]
+d.each() do |key, value|
   print(value.inspect())
 end
 """, "'bar")

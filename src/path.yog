@@ -1,6 +1,6 @@
 
 def normalize()
-  names = self.split(/\/+/).reduce([]) do [names, entry]
+  names = self.split(/\/+/).reduce([]) do |names, entry|
     if entry == ""
       next names.empty? ? [entry] : names
     end
@@ -20,9 +20,9 @@ def abs()
 end
 
 def walk(&block)
-  Dir.open(self) do [dir]
+  Dir.open(self) do |dir|
     block(self)
-    dir.each() do [name]
+    dir.each() do |name|
       if (name == ".") || (name == "..")
         next
       end

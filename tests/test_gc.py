@@ -6,7 +6,7 @@ class TestGc(TestCase):
 
     def test_gc(self):
         self._test("""
-500.times() do [n]
+500.times() do |n|
     o = Object.new()
 end
 """)

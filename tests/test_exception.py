@@ -56,7 +56,7 @@ Exception: nil
 """, stderr)
 
         self._test("""
-1.times() do [n]
+1.times() do |n|
   raise Exception.new()
 end""", stderr=test_stderr)
 
@@ -72,7 +72,7 @@ Exception: nil
 
         self._test("""
 def foo()
-  1.times() do [n]
+  1.times() do |n|
     raise Exception.new()
   end
 end
@@ -92,7 +92,7 @@ Exception: nil
         self._test("""
 class Foo
   def bar()
-    1.times() do [n]
+    1.times() do |n|
       raise Exception.new()
     end
   end

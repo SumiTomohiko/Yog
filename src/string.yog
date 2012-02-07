@@ -16,7 +16,7 @@ end
 
 def inspect()
   s = "\""
-  self.each_char() do [c]
+  self.each_char() do |c|
     if c == "\\"
       s << "\\\\"
     elif c == "\t"
@@ -171,7 +171,7 @@ end
 def split(splitter=/\s+/, max=nil)
   def split_char(s)
     a = []
-    s.each_char() do [c]
+    s.each_char() do |c|
       a << c
     end
     return a

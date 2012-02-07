@@ -14,10 +14,10 @@ print({0})""".format(name), expected)
 
     def run_h2yog(self, headers, so):
         src = """from h2yog import h2yog
-headers = [%(headers)s].map() do [h]
+headers = [%(headers)s].map() do |h|
   next h.to_path()
 end
-h2yog(\"test_h2yog.yog\", headers, \"%(so)s\") do [path, name]
+h2yog(\"test_h2yog.yog\", headers, \"%(so)s\") do |path, name|
   next headers.include?(path.basename)
 end""" % { "headers": ", ".join([ "\"%s\"" % (header, ) for header in headers]), "so": so }
         path = "run_h2yog.yog"

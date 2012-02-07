@@ -16,7 +16,7 @@ def main()
       'SDL_version, 'Uint16]}
   verbose = false
   #verbose = true
-  h2yog(yog, [header], "libSDL_ttf.so", predefined, verbose) do [path, name]
+  h2yog(yog, [header], "libSDL_ttf.so", predefined, verbose) do |path, name|
     next name.to_s().starts_with?("TTF_")
   end
 end

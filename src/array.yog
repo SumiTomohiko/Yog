@@ -1,6 +1,6 @@
 
 def any?(&block)
-  self.each() do [elem]
+  self.each() do |elem|
     if block(elem)
       return true
     end
@@ -21,10 +21,10 @@ def sort(&block)
   end
   pibot = self[0]
   rest = self.slice(1)
-  a = rest.select() do [elem]
+  a = rest.select() do |elem|
     next block(elem, pibot) <= 0
   end
-  b = rest.select() do [elem]
+  b = rest.select() do |elem|
     next 0 < block(elem, pibot)
   end
   return a.sort(&block) + [pibot] + b.sort(&block)
@@ -38,7 +38,7 @@ end
 
 def select(&block)
   a = []
-  self.each() do [elem]
+  self.each() do |elem|
     if block(elem)
       a << elem
     end
@@ -48,7 +48,7 @@ end
 
 def map(&block)
   a = Array.new(self.size)
-  self.each_with_index() do [index, elem]
+  self.each_with_index() do |index, elem|
     a[index] = block(elem)
   end
   return a
@@ -71,7 +71,7 @@ def slice(pos, len=nil)
   end
 
   a = []
-  len.times() do [i]
+  len.times() do |i|
     a << self[pos + i]
   end
   return a
@@ -79,7 +79,7 @@ end
 
 def each_with_index(&block)
   i = 0
-  self.each() do [elem]
+  self.each() do |elem|
     block(i, elem)
     i += 1
   end
@@ -88,7 +88,7 @@ end
 def join(sep)
   s = ""
   i = 0
-  self.each() do [elem]
+  self.each() do |elem|
     if 0 < i
       s << sep
     end
@@ -100,14 +100,14 @@ def join(sep)
 end
 
 def extend(a)
-  a.each() do [elem]
+  a.each() do |elem|
     self << elem
   end
   return self
 end
 
 def include?(obj)
-  self.each() do [elem]
+  self.each() do |elem|
     # TODO: need to compare classes?
     if (elem.class == obj.class) && (elem == obj)
       return true
@@ -120,12 +120,12 @@ end
 def zip(a)
   ret = []
   if self.size < a.size
-    a.each_with_index() do [index, elem]
+    a.each_with_index() do |index, elem|
       ret << [self.get(index), elem]
     end
     return ret
   end
-  self.each_with_index() do [index, elem]
+  self.each_with_index() do |index, elem|
     ret << [elem, a.get(index)]
   end
   return ret
@@ -138,7 +138,7 @@ def to_s()
 
   def g(obj)
     a = []
-    obj.each() do [elem]
+    obj.each() do |elem|
       a.push(elem.inspect())
     end
     return "[" + a.join(", ") + "]"

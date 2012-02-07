@@ -65,7 +65,7 @@ def main()
     i = i + 1
   end
 
-  threads.each() do [thread]
+  threads.each() do |thread|
     thread.join()
   end
 

@@ -24,7 +24,7 @@ print(foo)
 
     def test_block3(self):
         self._test("""
-1.times() do [n]
+1.times() do |n|
     puts(n)
 end
 """, """0
@@ -41,7 +41,7 @@ end
     def test_block7(self):
         self._test("""
 n = 42
-1.times() do [n]
+1.times() do |n|
   puts(n)
 end
 
@@ -54,7 +54,7 @@ puts(n)
         self._test("""
 def main()
   n = 42
-  1.times() do [n]
+  1.times() do |n|
     puts(n)
   end
   puts(n)

@@ -9,7 +9,7 @@ end
 
 def get_values()
   values = []
-  self.each() do [_, value]
+  self.each() do |_, value|
     values << value
   end
   return values
@@ -19,7 +19,7 @@ values = property(get_values)
 
 def get_keys()
   keys = []
-  self.each() do [key, _]
+  self.each() do |key, _|
     keys << key
   end
   return keys
@@ -34,7 +34,7 @@ def to_s()
 
   def g(obj)
     a = []
-    obj.each() do [key, value]
+    obj.each() do |key, value|
       a.push(key.inspect() + ": " + value.inspect())
     end
     return "{ " + a.join(", ") + " }"

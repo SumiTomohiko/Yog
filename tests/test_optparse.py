@@ -86,7 +86,7 @@ opt.parse([\"-xy\"])
 import optparse
 enable_gc_stress()
 opt = optparse.OptionParser.new()
-opt.on_option(\"x\", \"foo\") do [val]
+opt.on_option(\"x\", \"foo\") do |val|
   print(val)
 end
 opt.parse([\"-x\", \"42\"])
@@ -97,7 +97,7 @@ opt.parse([\"-x\", \"42\"])
 import optparse
 enable_gc_stress()
 opt = optparse.OptionParser.new()
-opt.on_option(\"x\", \"foo\") do [val]
+opt.on_option(\"x\", \"foo\") do |val|
   print(val)
 end
 opt.parse([\"-x42\"])
@@ -108,7 +108,7 @@ opt.parse([\"-x42\"])
 import optparse
 enable_gc_stress()
 opt = optparse.OptionParser.new()
-opt.on_option(\"x\", \"foo\") do [val]
+opt.on_option(\"x\", \"foo\") do |val|
   print(val)
 end
 opt.parse([\"--foo\", \"42\"])
@@ -119,7 +119,7 @@ opt.parse([\"--foo\", \"42\"])
 import optparse
 enable_gc_stress()
 opt = optparse.OptionParser.new()
-opt.on_option(\"x\", \"foo\") do [val]
+opt.on_option(\"x\", \"foo\") do |val|
   print(val)
 end
 opt.parse([\"--foo=42\"])

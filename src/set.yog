@@ -7,14 +7,14 @@ end
 
 def to_a()
   a = []
-  self.each() do [elem]
+  self.each() do |elem|
     a << elem
   end
   return a
 end
 
 def extend(set)
-  set.each() do [elem]
+  set.each() do |elem|
     self.add(elem)
   end
   return self
@@ -27,7 +27,7 @@ def to_s()
 
   def g(obj)
     a = []
-    obj.each() do [elem]
+    obj.each() do |elem|
       a.push(elem.inspect())
     end
     return "{ " + a.join(", ") + " }"

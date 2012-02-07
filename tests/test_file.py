@@ -17,7 +17,7 @@ class TestFile(TestCase):
         foo = self.read_file(filename)
 
         self._test("""
-file = File.open("%(filename)s", "r") do [f]
+file = File.open("%(filename)s", "r") do |f|
   print(f.read())
 end
 """ % { "filename": filename }, stdout=foo)
@@ -39,7 +39,7 @@ File.open(\"foo\", \"r\")
         foo = self.read_file(filename)
 
         self._test("""
-File.open(\"%(filename)s\") do [f]
+File.open(\"%(filename)s\") do |f|
   print(f.read())
 end
 """ % { "filename": filename }, stdout=foo)
@@ -101,7 +101,7 @@ file.close()
             fp.close()
 
         self._test("""
-File.open("%(filename)s", "r") do [f]
+File.open("%(filename)s", "r") do |f|
   print(f.readline())
 end
 """ % { "filename": filename }, stdout=line)
@@ -109,7 +109,7 @@ end
     def test_readline10(self):
         filename = "gods.txt"
         self._test("""
-File.open("%(filename)s", "r") do [f]
+File.open("%(filename)s", "r") do |f|
   f.readline()
   f.readline()
   f.readline()
@@ -137,14 +137,14 @@ end
 
     def test_write0(self):
         def make_source(filename, data):
-            return """File.open(\"{filename}\", \"w\") do [fp]
+            return """File.open(\"{filename}\", \"w\") do |fp|
   fp.write(\"{data}\")
 end""".format(**locals())
         self.run_write_test(make_source)
 
     def test_flush0(self):
         def make_source(filename, data):
-            return """File.open(\"{filename}\", \"w\") do [fp]
+            return """File.open(\"{filename}\", \"w\") do |fp|
   fp.write(\"{data}\")
   fp.flush()
 end""".format(**locals())
@@ -152,28 +152,28 @@ end""".format(**locals())
 
     def test_eof0(self):
         filename = "gods.txt"
-        self._test("""File.open(\"{filename}\") do [fp]
+        self._test("""File.open(\"{filename}\") do |fp|
   print(fp.eof?)
 end""".format(**locals()), "false")
 
     def test_eof10(self):
         filename = "gods.txt"
-        self._test("""File.open(\"{filename}\") do [fp]
+        self._test("""File.open(\"{filename}\") do |fp|
   fp.read()
   print(fp.eof?)
 end""".format(**locals()), "true")
 
     def test_lock_shared0(self):
         filename = "gods.txt"
-        self._test("""File.open(\"{filename}\") do [fp]
-  fp.lock_shared() do [fp]
+        self._test("""File.open(\"{filename}\") do |fp|
+  fp.lock_shared() do |fp|
   end
 end""".format(**locals()))
 
     def test_lock_exclusive0(self):
         filename = "gods.txt"
-        self._test("""File.open(\"{filename}\") do [fp]
-  fp.lock_exclusive() do [fp]
+        self._test("""File.open(\"{filename}\") do |fp|
+  fp.lock_exclusive() do |fp|
   end
 end""".format(**locals()))
 

@@ -101,7 +101,7 @@ class Generator
   end
 
   def write_class(ydoc, node)
-    node.attrs.each() do [attr]
+    node.attrs.each() do |attr|
       if attr.kind_of?(n.Classmethod)
         self.write_method(ydoc, attr, "classmethod")
       elif attr.kind_of?(n.Method)
@@ -299,7 +299,7 @@ class Generator
 
   def generate(ydoc, nodes)
     self.start(ydoc)
-    nodes.each() do [node]
+    nodes.each() do |node|
       if node.kind_of?(n.Class)
         self.write_class(ydoc, node)
       elif node.kind_of?(String)
@@ -325,7 +325,7 @@ class HtmlGenerator > Generator
 
   def escape_html(s)
     t = ""
-    s.each_char() do [c]
+    s.each_char() do |c|
       tbl = { "<": "&lt;", ">": "&gt;", "&": "&amp;", "\"": "&quot;" }
       t << tbl.get(c, c)
     end
@@ -389,7 +389,7 @@ EOF
 
     params = m.group(2).split(/\s*,\s*/)
     s += self.make_param(params[0])
-    params.slice(1).each() do [param]
+    params.slice(1).each() do |param|
       nonlocal s
       s += "<tt>,</tt> " + self.make_param(param)
     end
@@ -404,7 +404,7 @@ EOF
 
     params = m.group(2).split(/\s*,\s*/)
     s += self.make_param(params[0])
-    params.slice(1).each() do [param]
+    params.slice(1).each() do |param|
       nonlocal s
       s += "<tt>,</tt> " + self.make_param(param)
     end
@@ -428,7 +428,7 @@ EOF
         </th></tr></tbody></table></td>
         <td><table border="0"><tbody>
 EOF
-    meth.params.each() do [param]
+    meth.params.each() do |param|
       name = self.escape_html(param.name)
       desc = self.conv_inline_markup(ydoc, param.desc)
       self.body << <<EOF.format(name, desc)
@@ -456,7 +456,7 @@ EOF
         </th></tr></tbody></table></td>
         <td><table border="0"><tbody>
 EOF
-    meth.excs.each() do [exc]
+    meth.excs.each() do |exc|
       type = self.escape_html(exc.type)
       desc = self.conv_inline_markup(ydoc, exc.desc)
       self.body << <<EOF.format(type, desc)
@@ -500,7 +500,7 @@ EOF
     if node.including != nil
       mods = node.including.split()
       including = mods[0]
-      mods.slice(1).each() do [mod]
+      mods.slice(1).each() do |mod|
         including << "&nbsp;" << self.conv_inline_markup(ydoc, mod)
       end
       including_html = <<EOF.format(including)
@@ -714,7 +714,7 @@ class Ydoc
       return self.path2title[phisical_path]
     except KeyError
     end
-    File.open(path_from_topdir) do [fp]
+    File.open(path_from_topdir) do |fp|
       while line = fp.readline()
         if m = (line =~ /\A=+\s+(.*)$/)
           title = m.group(1).rtrim()
@@ -735,7 +735,7 @@ class Ydoc
       src = self.srcs.shift()
       self.current_src = src
 
-      nodes = File.open(src) do [fp]
+      nodes = File.open(src) do |fp|
         next g.Parser.new().parse(fp)
       end
       dest = self.replace_ext(src)
@@ -745,7 +745,7 @@ class Ydoc
       dest = dest.gsub("/", PATH_SEPARATOR)
       path = join_path(self.destdir, dest)
       make_dirs(dirname(path))
-      File.open(path, "w") do [fp]
+      File.open(path, "w") do |fp|
         fp.write(generator.new().generate(self, nodes))
       end
     end

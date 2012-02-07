@@ -120,7 +120,7 @@ puts(42 < nil)
 
     def test_times(self):
         self._test("""
-10.times() do [n]
+10.times() do |n|
     puts(n)
 end
 """, """0

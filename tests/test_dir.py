@@ -16,7 +16,7 @@ class TestDir(TestCase):
         try:
             for e in expected:
                 self.touch(tmp_dir, e)
-            self._test("""Dir.open(\"{tmp_dir}\") do [dir]
+            self._test("""Dir.open(\"{tmp_dir}\") do |dir|
   dir.each(&print)
 end""".format(**locals()), "".join([".", ".."] + expected))
         finally:

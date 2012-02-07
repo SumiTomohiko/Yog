@@ -8,27 +8,27 @@ class TestArray(TestCase):
         self._test("print([].any?(&nop))", "false")
 
     def test_any10(self):
-        self._test("""print([42].any?() do [elem]
+        self._test("""print([42].any?() do |elem|
   next elem == 26
 end)""", "false")
 
     def test_any20(self):
-        self._test("""print([42, \"foo\"].any?() do [elem]
+        self._test("""print([42, \"foo\"].any?() do |elem|
   next elem == 26
 end)""", "false")
 
     def test_any30(self):
-        self._test("""print([42].any?() do [elem]
+        self._test("""print([42].any?() do |elem|
   next elem == 42
 end)""", "true")
 
     def test_any40(self):
-        self._test("""print([42, 26].any?() do [elem]
+        self._test("""print([42, 26].any?() do |elem|
   next elem == 26
 end)""", "true")
 
     def test_init0(self):
-        self._test("""a = Array.new(42) do [index]
+        self._test("""a = Array.new(42) do |index|
   next index
 end
 print(a)""","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]")
@@ -79,7 +79,7 @@ puts(a[0])
     def test_each1(self):
         self._test("""
 a = []
-a.each() do [n]
+a.each() do |n|
   puts(n)
 end
 """, "")
@@ -87,7 +87,7 @@ end
     def test_each2(self):
         self._test("""
 a = [42]
-a.each() do [n]
+a.each() do |n|
   puts(n)
 end
 """, """42
@@ -96,7 +96,7 @@ end
     def test_each3(self):
         self._test("""
 a = [42, 26]
-a.each() do [n]
+a.each() do |n|
   puts(n)
 end
 """, """42
@@ -295,12 +295,12 @@ print([42].get(0))
 """, "42")
 
     def test_reduce0(self):
-        self._test("""print([].reduce(42) do [init, val]
+        self._test("""print([].reduce(42) do |init, val|
   next nil
 end)""", "42")
 
     def test_reduce10(self):
-        self._test("""print([42].reduce(26) do [init, val]
+        self._test("""print([42].reduce(26) do |init, val|
   next init + val
 end)""", "68")
 

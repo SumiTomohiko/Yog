@@ -378,7 +378,7 @@ def foo(&block)
   block(42)
 end
 
-foo() do [n]
+foo() do |n|
   print(n)
 end
 """, "42")

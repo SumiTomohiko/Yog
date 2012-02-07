@@ -379,7 +379,7 @@ print(baz)
 
     def test_arguments_for_first_resume0(self):
         self._test("""
-co = Coroutine.new() do [foo]
+co = Coroutine.new() do |foo|
   print(foo)
 end
 co.resume(42)

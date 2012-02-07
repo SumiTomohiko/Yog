@@ -1812,8 +1812,15 @@ blockarg_opt(A) ::= DO(B) blockarg_params_opt(C) NEWLINE stmts(D) END. {
 blockarg_params_opt(A) ::= /* empty */. {
     A = YNIL;
 }
-blockarg_params_opt(A) ::= LBRACKET params(B) RBRACKET. {
-    A = B;
+blockarg_params_opt(A) ::= BAR(B) names(C) BAR. {
+    uint_t size = YogArray_size(env, C);
+    A = YogArray_of_size(env, size);
+    uint_t lineno = TOKEN_LINENO(B);
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        YogVal name = YogArray_at(env, C, i);
+        ParamArray_push(env, A, lineno, VAL2ID(name), YNIL);
+    }
 }
 
 and_block(A) ::= AND expr(B). {

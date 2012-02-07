@@ -259,7 +259,7 @@ function_definition : declaration_specifiers declarator (: declaration_list_opt 
 
 declaration : declaration_specifiers init_declarator_list <semicolon> {
   if declaration_specifiers.kind_of?(TypedefNode)
-    init_declarator_list.each() do [init_decl]
+    init_declarator_list.each() do |init_decl|
       __data__.typedef_names << get_typedef_name(init_decl.declarator)
     end
   end

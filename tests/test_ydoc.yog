@@ -47,7 +47,7 @@ EOF
 <parameters>
 EOF
 
-    meth.params.each() do [param]
+    meth.params.each() do |param|
       self.s << <<EOF.format(param.name, param.desc)
 <parameter>
 <name>{0}</name>
@@ -62,7 +62,7 @@ EOF
 <exceptions>
 EOF
 
-    meth.excs.each() do [exc]
+    meth.excs.each() do |exc|
       self.s << <<EOF.format(exc.type, exc.desc)
 <exception>
 <type>{0}</type>

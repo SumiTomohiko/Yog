@@ -422,7 +422,7 @@ print((peg.pattern(42) / peg.pattern(26)).match([26]).rest)
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.action(peg.pattern(42)) do [matched]
+pat = peg.action(peg.pattern(42)) do |matched|
   next 26
 end
 print(pat.match([42]).matched)
@@ -432,7 +432,7 @@ print(pat.match([42]).matched)
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.action(peg.pattern(42)) do [matched]
+pat = peg.action(peg.pattern(42)) do |matched|
   next 26
 end
 print(pat.match([42]).rest)
@@ -442,7 +442,7 @@ print(pat.match([42]).rest)
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.action(peg.pattern(42)) do [matched]
+pat = peg.action(peg.pattern(42)) do |matched|
   next matched
 end
 print(pat.match([42]).matched)
@@ -452,7 +452,7 @@ print(pat.match([42]).matched)
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.action(peg.pattern(42) * peg.pattern(26)) do [elem42, elem26]
+pat = peg.action(peg.pattern(42) * peg.pattern(26)) do |elem42, elem26|
   next elem42
 end
 print(pat.match([42, 26]).matched)
@@ -462,7 +462,7 @@ print(pat.match([42, 26]).matched)
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.action(peg.pattern(42) ^ 0) do [elem]
+pat = peg.action(peg.pattern(42) ^ 0) do |elem|
   next elem
 end
 print(pat.match([42, 42]).matched)
@@ -472,7 +472,7 @@ print(pat.match([42, 42]).matched)
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.action(peg.pattern(42) ^ 0) do [elem]
+pat = peg.action(peg.pattern(42) ^ 0) do |elem|
   next elem
 end
 print(pat.match([]).matched)
@@ -482,7 +482,7 @@ print(pat.match([]).matched)
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.action(peg.pattern(42) ^ (-1)) do [elem]
+pat = peg.action(peg.pattern(42) ^ (-1)) do |elem|
   next elem
 end
 print(pat.match([42, 42]).matched)
@@ -492,7 +492,7 @@ print(pat.match([42, 42]).matched)
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.action(peg.pattern(42) ^ (-1)) do [elem]
+pat = peg.action(peg.pattern(42) ^ (-1)) do |elem|
   next elem
 end
 print(pat.match([]).matched)
@@ -502,7 +502,7 @@ print(pat.match([]).matched)
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.action(peg.pattern(\"foo\")) do [pat, act]
+pat = peg.action(peg.pattern(\"foo\")) do |pat, act|
 end
 pat.match(\"bar\")
 """, stderr="")
@@ -518,7 +518,7 @@ class Foo
   end
 end
 
-pat = peg.pattern(Foo.new(42)) do [pat, act]
+pat = peg.pattern(Foo.new(42)) do |pat, act|
   next pat.x == act.x
 end
 m = pat.match([Foo.new(42)])
@@ -536,7 +536,7 @@ class Foo
   end
 end
 
-pat = peg.pattern(Foo.new(42)) do [pat, act]
+pat = peg.pattern(Foo.new(42)) do |pat, act|
   next pat.x == act.x
 end
 m = pat.match([Foo.new(26)])
@@ -547,7 +547,7 @@ print(m)
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.pattern(42) do [pat, act]
+pat = peg.pattern(42) do |pat, act|
   print(pat)
   next false
 end
@@ -558,7 +558,7 @@ pat.match([26])
         self._test("""
 import peg
 enable_gc_stress()
-pat = peg.pattern(42) do [pat, act]
+pat = peg.pattern(42) do |pat, act|
   print(act)
   next false
 end

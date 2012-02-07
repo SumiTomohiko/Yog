@@ -248,7 +248,7 @@ class Lexer
 end
 
 def token_pattern(klass)
-  return pattern(klass) do [pat, act]
+  return pattern(klass) do |pat, act|
     next act.kind_of?(pat)
   end
 end
@@ -273,37 +273,37 @@ data_token = token_pattern(Data)
 type_token = token_pattern(Type)
 block_token = token_pattern(Block)
 
-text = action(text_token ^ 1) do [tokens]
+text = action(text_token ^ 1) do |tokens|
   s = ""
-  tokens.each() do [token]
+  tokens.each() do |token|
     s << token.value
   end
   next s
 end
-base = action(base_token * colon_token * text_token * newline_token) do [ignore1, ignore2, text, ignore3]
+base = action(base_token * colon_token * text_token * newline_token) do |ignore1, ignore2, text, ignore3|
   next text.value
 end
-including = action(including_token * colon_token * text_token * newline_token) do [ignore1, ignore2, text, ignore3]
+including = action(including_token * colon_token * text_token * newline_token) do |ignore1, ignore2, text, ignore3|
   next text.value
 end
-exceptions_body = action(indent_token * ((text_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) ^ 0) * dedent_token) do [ignore1, excs, ignore2]
+exceptions_body = action(indent_token * ((text_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) ^ 0) * dedent_token) do |ignore1, excs, ignore2|
   a = []
-  excs.each() do [exc]
+  excs.each() do |exc|
     a << node.Exception.new(exc[0].value, exc[2].value + exc[4].get(0, ""))
   end
   next a
 end
-exceptions = action(exceptions_token * colon_token * text_token * newline_token * exceptions_body) do [ignore1, ignore2, ignore3, ignore4, excs]
+exceptions = action(exceptions_token * colon_token * text_token * newline_token * exceptions_body) do |ignore1, ignore2, ignore3, ignore4, excs|
   next excs
 end
-return_ = action(return_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) do [ignore1, ignore2, desc, ignore, desc2]
+return_ = action(return_token * colon_token * text_token * newline_token * ((indent_token * text * dedent_token) ^ (-1))) do |ignore1, ignore2, desc, ignore, desc2|
   s = desc.value + "\n"
-  desc2.each() do [text]
+  desc2.each() do |text|
     s << text[1]
   end
   next s
 end
-parameter_name = action(text_token / base_token / including_token / method_token / function_token / classmethod_token / parameters_token / exceptions_token / property_token / attribute_token / data_token / type_token / block_token) do [name]
+parameter_name = action(text_token / base_token / including_token / method_token / function_token / classmethod_token / parameters_token / exceptions_token / property_token / attribute_token / data_token / type_token / block_token) do |name|
   if name.kind_of?(Text)
     next name.value
   end
@@ -323,35 +323,35 @@ parameter_name = action(text_token / base_token / including_token / method_token
   }
   next type2name[name.class]
 end
-parameters_body = action(indent_token * ((parameter_name * colon_token * text_token * newline_token) ^ 0) * dedent_token) do [ignore1, params, ignore2]
+parameters_body = action(indent_token * ((parameter_name * colon_token * text_token * newline_token) ^ 0) * dedent_token) do |ignore1, params, ignore2|
   a = []
-  params.each() do [param]
+  params.each() do |param|
     a << node.Parameter.new(param[0], param[2].value)
   end
   next a
 end
-parameters = action(parameters_token * colon_token * text_token * newline_token * (parameters_body ^ (-1))) do [ignore1, ignore2, ignore3, ignore4, body]
+parameters = action(parameters_token * colon_token * text_token * newline_token * (parameters_body ^ (-1))) do |ignore1, ignore2, ignore3, ignore4, body|
   next body.get(0, [])
 end
-block = action(block_token * colon_token * text_token * newline_token) do [ignore1, ignore2, sig, ignore3]
+block = action(block_token * colon_token * text_token * newline_token) do |ignore1, ignore2, sig, ignore3|
   next sig.value
 end
-method_body = action(indent_token * (parameters ^ (-1)) * (return_ ^ (-1)) * (exceptions ^ (-1)) * (block ^ (-1)) * (text ^ (-1)) * dedent_token) do [ignore1, params, return_, excs, block, desc, ignore2]
+method_body = action(indent_token * (parameters ^ (-1)) * (return_ ^ (-1)) * (exceptions ^ (-1)) * (block ^ (-1)) * (text ^ (-1)) * dedent_token) do |ignore1, params, return_, excs, block, desc, ignore2|
   next [params.get(0, []), return_.get(0), excs.get(0, []), block.get(0, ""), desc.get(0)]
 end
-classmethod = action(classmethod_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
+classmethod = action(classmethod_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do |ignore1, ignore2, sig, ignore3, bodies|
   body = bodies.get(0, [[], "", [], "", ""])
   next node.Classmethod.new(sig.value, body[0], body[1], body[2], body[3], body[4])
 end
-function = action(function_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
+function = action(function_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do |ignore1, ignore2, sig, ignore3, bodies|
   body = bodies.get(0, [[], "", [], "", ""])
   next node.Function.new(sig.value, body[0], body[1], body[2], body[3], body[4])
 end
-method = action(method_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do [ignore1, ignore2, sig, ignore3, bodies]
+method = action(method_token * colon_token * text_token * newline_token * (method_body ^ (-1))) do |ignore1, ignore2, sig, ignore3, bodies|
   body = bodies.get(0, [[], "", [], "", ""])
   next node.Method.new(sig.value, body[0], body[1], body[2], body[3], body[4])
 end
-attribute = action(attribute_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, body_opt]
+attribute = action(attribute_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do |ignore1, ignore2, name, ignore3, body_opt|
   body = body_opt.get(0, [])
   if body.get(3) == nil
     type = ""
@@ -365,7 +365,7 @@ attribute = action(attribute_token * colon_token * text_token * newline_token * 
   end
   next node.Attribute.new(name.value, type, desc)
 end
-prop = action(property_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignore2, name, ignore3, body_opt]
+prop = action(property_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do |ignore1, ignore2, name, ignore3, body_opt|
   body = body_opt.get(0, [])
   if body.get(3) == nil
     type = ""
@@ -379,7 +379,7 @@ prop = action(property_token * colon_token * text_token * newline_token * ((inde
   end
   next node.Property.new(name.value, type, desc)
 end
-data = action(data_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do [ignore1, ignroe2, name, ignore3, bodies]
+data = action(data_token * colon_token * text_token * newline_token * ((indent_token * type_token * colon_token * text_token * newline_token * (text ^ (-1)) * dedent_token) ^ (-1))) do |ignore1, ignroe2, name, ignore3, bodies|
   body = bodies.get(0, [])
   if body.get(3) != nil
     type = body[3].value
@@ -393,16 +393,16 @@ data = action(data_token * colon_token * text_token * newline_token * ((indent_t
   end
   next node.Data.new(name.value, type, desc)
 end
-attr = action(prop / method / classmethod / attribute) do [attr]
+attr = action(prop / method / classmethod / attribute) do |attr|
   next attr
 end
-klass_body = action(indent_token * (base ^ (-1)) * (including ^ (-1)) * (text ^ (-1)) * (attr ^ 0) * dedent_token) do [ignore1, base, including, text, attrs, ignore2]
+klass_body = action(indent_token * (base ^ (-1)) * (including ^ (-1)) * (text ^ (-1)) * (attr ^ 0) * dedent_token) do |ignore1, base, including, text, attrs, ignore2|
   next [base.get(0), including.get(0), text.get(0, ""), attrs]
 end
-klass_body_opt = action(klass_body ^ (-1)) do [body]
+klass_body_opt = action(klass_body ^ (-1)) do |body|
   next body.get(0, ["", "", "", []])
 end
-klass = action(klass_token * colon_token * text_token * newline_token * klass_body_opt) do [ignore1, ignore2, name, ignore3, body]
+klass = action(klass_token * colon_token * text_token * newline_token * klass_body_opt) do |ignore1, ignore2, name, ignore3, body|
   next node.Class.new(name.value, body[0], body[1], body[2], body[3])
 end
 grammar = (text / klass / function / data) ^ 0

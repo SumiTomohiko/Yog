@@ -99,7 +99,7 @@ class Lexer
       return Token.new('terminal, self.line.slice(m.start() + 1, size).to_sym())
     end
     tokens = { ":": 'colon, "@": 'at, ";": 'semicolon, "|": 'bar }
-    tokens.each() do [key, value]
+    tokens.each() do |key, value|
       if self.line.slice(self.pos, key.size) != key
         next
       end
@@ -328,7 +328,7 @@ class State
     if diff != 0
       return diff
     end
-    self.items.zip(state.items).each() do [items]
+    self.items.zip(state.items).each() do |items|
       (:
       diff = items[0].rule.id - items[1].rule.id
       if diff != 0
@@ -358,7 +358,7 @@ def make_empty_items_of_rule(rule, pos, nonterm2rules, visited)
   visited << sym
 
   items = []
-  nonterm2rules[sym].each() do [r]
+  nonterm2rules[sym].each() do |r|
     if 0 < r.rhs.size
       items.extend(make_empty_items_of_rule(r, 0, nonterm2rules, visited))
       next
@@ -373,7 +373,7 @@ end
 def make_empty_items(items, nonterm2rules)
   empty_items = []
   visited = Set.new()
-  items.each() do [item]
+  items.each() do |item|
     a = make_empty_items_of_rule(item.rule, item.pos, nonterm2rules, visited)
     empty_items.extend(a)
   end
@@ -411,7 +411,7 @@ def compute_items_from_nonkernel(item, nonterm2rules)
     return []
   end
   items = []
-  nonterm2rules[sym].each() do [rule]
+  nonterm2rules[sym].each() do |rule|
     if rule.rhs.size < 1
       next
     end
@@ -425,7 +425,7 @@ def compute_items_from_nonkernel(item, nonterm2rules)
 end
 
 def group_items_by_sym(items, d)
-  items.each() do [item]
+  items.each() do |item|
     sym = item.rule.rhs[item.pos - 1]
     try
       d[sym] << item
@@ -437,7 +437,7 @@ end
 
 def compute_lalr(state, nonterm2rules)
   queue = []
-  state.items.each() do [item]
+  state.items.each() do |item|
     i = compute_item_from_kernel(item)
     if i == nil
       next
@@ -460,7 +460,7 @@ def compute_lalr(state, nonterm2rules)
     queue.extend(a)
   end
   states = []
-  sym2items.values.each() do [items]
+  sym2items.values.each() do |items|
     states << make_state(items, nonterm2rules)
   end
   return states
@@ -472,7 +472,7 @@ def find_state(sym2states, state)
   except KeyError
     return nil
   end
-  states.each() do [s]
+  states.each() do |s|
     if s != state
       next
     end
@@ -484,7 +484,7 @@ end
 def dump_item_to_stdout(item)
   rule = item.rule
   print("  {0} ->".format(rule.lhs.sym))
-  rule.rhs.each_with_index() do [i, sym]
+  rule.rhs.each_with_index() do |i, sym|
     print("{0} {1}".format(i == item.pos ? " ." : "", sym))
   end
   print(item.rule.rhs.size == item.pos ? " ." : "")
@@ -496,7 +496,7 @@ def dump_state_to_stdout(state)
   state.items.each(&dump_item_to_stdout)
   print("\n")
   print("  shift:\n")
-  state.shifts.each() do [sym, state]
+  state.shifts.each() do |sym, state|
     print("    {0}: {1}\n".format(sym, state.id))
   end
 end
@@ -509,7 +509,7 @@ def compute_states(first_state, nonterm2rules)
     children = []
     parent = states[pos]
     pos += 1
-    compute_lalr(parent, nonterm2rules).each() do [s]
+    compute_lalr(parent, nonterm2rules).each() do |s|
       t = find_state(sym2states, s)
       if t != nil
         children << t
@@ -524,7 +524,7 @@ def compute_states(first_state, nonterm2rules)
         sym2states[sym] = [s]
       end
     end
-    children.each() do [s]
+    children.each() do |s|
       parent.shifts[s.thru] = s
     end
   end
@@ -534,7 +534,7 @@ end
 def dump_item(fp, item)
   rule = item.rule
   fp.write("  {0} ->".format(rule.lhs.sym))
-  rule.rhs.each_with_index() do [i, sym]
+  rule.rhs.each_with_index() do |i, sym|
     fp.write("{0} {1}".format(i == item.pos ? " ." : "", sym))
   end
   fp.write(item.rule.rhs.size == item.pos ? " ." : "")
@@ -546,19 +546,19 @@ def dump_state(fp, state)
   state.items.each(&dump_item.partial(fp))
   fp.write("\n")
   fp.write("  shift:\n")
-  state.shifts.each() do [sym, state]
+  state.shifts.each() do |sym, state|
     fp.write("    {0}: {1}\n".format(sym, state.id))
   end
 end
 
 def dump_states(fp, states)
-  states.each() do [state]
+  states.each() do |state|
     dump_state(fp, state)
   end
 end
 
 def number_array_elements(a)
-  a.each_with_index() do [index, elem]
+  a.each_with_index() do |index, elem|
     elem.id = index
   end
 end
@@ -583,7 +583,7 @@ def compute_first_of_rule(rule, pos)
 end
 
 def nullable?(rule, pos)
-  rule.rhs.slice(pos).each() do [sym]
+  rule.rhs.slice(pos).each() do |sym|
     if sym.kind_of?(Terminal) || !sym.nullable?
       return false
     end
@@ -604,7 +604,7 @@ end
 
 def compute_follow(state)
   follow = {}
-  state.items.each() do [item]
+  state.items.each() do |item|
     rule = item.rule
     rhs = rule.rhs
     pos = item.pos
@@ -617,12 +617,12 @@ def compute_follow(state)
     add_follow(follow, rhs[pos], item.lookahead)
   end
   states = state.shifts.values
-  states.each() do [s]
+  states.each() do |s|
     sym = s.thru
     if sym.kind_of?(Terminal)
       next
     end
-    s.items.each() do [item]
+    s.items.each() do |item|
       syms = compute_first_of_rule(item.rule, item.pos)
       add_follow(follow, sym, syms)
     end
@@ -630,12 +630,12 @@ def compute_follow(state)
   updated? = true
   while updated?
     updated? = false
-    states.each() do [s]
+    states.each() do |s|
       sym = s.thru
       if sym.kind_of?(Terminal)
         next
       end
-      s.items.each() do [item]
+      s.items.each() do |item|
         if item.shifted_from == 'kernel
           next
         end
@@ -657,7 +657,7 @@ def find_next_item(state, item)
     return nil
   end
   s = state.shifts[item.rule.rhs[item.pos]]
-  s.items.each() do [i]
+  s.items.each() do |i|
     if (i.rule != item.rule) || (i.pos - 1 != item.pos)
       next
     end
@@ -675,8 +675,8 @@ def compute_lookahead(states)
   updated? = true
   while updated?
     updated? = false
-    states.each() do [state]
-      state.items.each() do [item]
+    states.each() do |state|
+      state.items.each() do |item|
         next_item = find_next_item(state, item)
         if next_item == nil
           next
@@ -686,8 +686,8 @@ def compute_lookahead(states)
         end
       end
       follow = compute_follow(state)
-      state.shifts.values.each() do [s]
-        s.items.each() do [item]
+      state.shifts.values.each() do |s|
+        s.items.each() do |item|
           if item.shifted_from == 'kernel
             next
           end
@@ -696,7 +696,7 @@ def compute_lookahead(states)
           end
         end
       end
-      state.items.each() do [item]
+      state.items.each() do |item|
         if 0 < item.rule.rhs.size
           next
         end
@@ -710,9 +710,9 @@ def compute_nullable(rules)
   updated? = true
   while updated?
     updated? = false
-    rules.each() do [rule]
+    rules.each() do |rule|
       nullable? = true
-      rule.rhs.each() do [sym]
+      rule.rhs.each() do |sym|
         if sym.kind_of?(NonTerminal) && sym.nullable?
           next
         end
@@ -732,8 +732,8 @@ def compute_first_of_nonterminals(rules)
   updated? = true
   while updated?
     updated? = false
-    rules.each() do [rule]
-      rule.rhs.each() do [sym]
+    rules.each() do |rule|
+      rule.rhs.each() do |sym|
         first = rule.lhs.first
         if sym.kind_of?(Terminal)
           if !first.include?(sym)
@@ -742,7 +742,7 @@ def compute_first_of_nonterminals(rules)
           end
           break
         end
-        sym.first.each() do [term]
+        sym.first.each() do |term|
           if first.include?(term)
             next
           end
@@ -759,7 +759,7 @@ end
 
 def dump_nonterminals(nonterms)
   puts("NonTerminal")
-  nonterms.each() do [nonterm]
+  nonterms.each() do |nonterm|
     puts("{0}:".format(nonterm))
     puts("  nullable?: {0}".format(nonterm.nullable?))
     puts("  first: {0}".format(nonterm.first.to_a().join(" ")))
@@ -776,7 +776,7 @@ end
 
 def make_nonterm2rules(rules)
   nonterm2rules = {}
-  rules.each() do [rule]
+  rules.each() do |rule|
     sym = rule.lhs
     try
       nonterm2rules[sym] << rule
@@ -805,18 +805,18 @@ end
 def compute_tables(states, rules, terms, nonterms)
   term2act = Array.new(states.size)
   nonterm2act = Array.new(states.size)
-  states.each() do [state]
+  states.each() do |state|
     term2act_state = Array.new(terms.size)
     nonterm2act_state = Array.new(nonterms.size)
-    state.items.each() do [item]
+    state.items.each() do |item|
       if item.pos < item.rule.rhs.size
         next
       end
-      item.lookahead.each() do [term]
+      item.lookahead.each() do |term|
         term2act_state[term.id] = Action.new('redule, item.rule.id)
       end
     end
-    state.shifts.each() do [sym, dest]
+    state.shifts.each() do |sym, dest|
       act = Action.new('shift, dest.id)
       tbl = sym.kind_of?(Terminal) ? term2act_state : nonterm2act_state
       tbl[sym.id] = act
@@ -828,7 +828,7 @@ def compute_tables(states, rules, terms, nonterms)
 end
 
 def make_table_for_states(a, &block)
-  return a.map() do [state2act]
+  return a.map() do |state2act|
     next "[" + state2act.map(&block).join(", ") + "]"
   end.join(",\n")
 end
@@ -840,7 +840,7 @@ end
 def decide_arg_pos(rule)
   names = Set.new()
   pos = []
-  rule.rhs.size.times() do [i]
+  rule.rhs.size.times() do |i|
     name = rule.alias[i] != nil ? rule.alias[i] : rule.rhs[i]
     if names.include?(name)
       pos << nil
@@ -855,7 +855,7 @@ end
 def decide_arg_names(rule)
   names = Set.new()
   args = ['__data__]
-  rule.rhs.size.times() do [i]
+  rule.rhs.size.times() do |i|
     name = rule.alias[i] != nil ? rule.alias[i] : rule.rhs[i].sym
     if names.include?(name)
       next
@@ -863,13 +863,13 @@ def decide_arg_names(rule)
     names << name
     args << name
   end
-  return args.map() do [arg]
+  return args.map() do |arg|
     next arg.to_s()
   end
 end
 
 def make_dict_entries(syms)
-  return syms.map() do [sym]
+  return syms.map() do |sym|
     next "{0}.to_sym(): {1}".format(sym.sym.to_s().inspect(), sym.id)
   end.join(",\n")
 end
@@ -889,22 +889,22 @@ def get_reduce_only_rule(state)
 end
 
 def output_grammar(dest, terms, nonterms, term2act, nonterm2act, rules, states, code)
-  s = make_table_for_states(term2act) do [act]
+  s = make_table_for_states(term2act) do |act|
     next (act != nil ? act.encode() : nil).to_s()
   end
-  t = make_table_for_states(nonterm2act) do [act]
+  t = make_table_for_states(nonterm2act) do |act|
     next (act != nil ? act.subinfo : nil).to_s()
   end
-  u = rules.map() do [rule]
+  u = rules.map() do |rule|
     fmt = "{0}, # {1}"
     next fmt.format(rule.rhs.size, rule.to_s()).rtrim()
   end.join("\n")
   v = make_dict_entries(terms)
-  w = rules.map() do [rule]
+  w = rules.map() do |rule|
     next rule.lhs.id.to_s()
   end.join(", ")
   x = rules.map(&make_func_name).join(",\n")
-  y = rules.map() do [rule]
+  y = rules.map() do |rule|
     args = decide_arg_names(rule)
     body = rule.action != nil ? rule.action : "return nil"
     next <<EOF.format(make_func_name(rule), args.join(", "), body)
@@ -913,24 +913,24 @@ def {0}({1})
 end
 EOF
   end.join("")
-  z = rules.map() do [rule]
+  z = rules.map() do |rule|
     pos = decide_arg_pos(rule)
-    next "[" + pos.map() do [n]
+    next "[" + pos.map() do |n|
       next n.to_s()
     end.join(", ") + "]"
   end.join(",\n")
   a = make_dict_entries(nonterms)
   b = code != nil ? code : ""
-  c = rules.map() do [rule]
+  c = rules.map() do |rule|
     next rule.to_s().inspect()
   end.join(",\n")
 
   reduce_only_rules = Array.new(states.size)
-  states.each() do [state]
+  states.each() do |state|
     reduce_only_rules[state.id] = get_reduce_only_rule(state)
   end
 
-  File.open(dest, "w") do [fp]
+  File.open(dest, "w") do |fp|
     fp.write(<<EOF.format(s, t, u, v, w, x, y, z, a, b, c, reduce_only_rules.join(", ")))
 {9}
 
@@ -1002,7 +1002,7 @@ end
 
 def invoke(rule, args, __data__)
   params = []
-  args.each_with_index() do [index, arg]
+  args.each_with_index() do |index, arg|
     if pos[rule][index] == nil
       next
     end
@@ -1017,13 +1017,13 @@ EOF
 end
 
 def dump_rules(fp, rules)
-  rules.each() do [rule]
+  rules.each() do |rule|
     fp.write("{0}\n".format(rule.to_s()))
   end
 end
 
 def main(dest, src)
-  parser = File.open(src) do [fp]
+  parser = File.open(src) do |fp|
     parser = Parser.new(Lexer.new(fp))
     parser.parse()
     next parser
@@ -1044,7 +1044,7 @@ def main(dest, src)
   nonterms = parser.nonterminals.values
   number_array_elements(nonterms)
   compute_lookahead(states)
-  File.open("y.output", "w") do [fp]
+  File.open("y.output", "w") do |fp|
     dump_rules(fp, rules)
     dump_states(fp, states)
   end

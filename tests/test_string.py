@@ -181,7 +181,7 @@ puts(s)
 
     def test_each_char1(self):
         self._test("""
-\"foo\".each_char() do [c]
+\"foo\".each_char() do |c|
   puts(c)
 end""", """f
 o
@@ -190,7 +190,7 @@ o
 
     def test_each_char2(self):
         self._test(u"""
-\"日本語\".each_char() do [c]
+\"日本語\".each_char() do |c|
   puts(c)
 end""", u"""日
 本
@@ -199,21 +199,21 @@ end""", u"""日
 
     def test_each_char3(self):
         self._test("""
-\"\".each_char() do [c]
+\"\".each_char() do |c|
   print(42)
 end
 """, "")
 
     def test_each_line1(self):
         self._test("""
-\"foo\".each_line() do [l]
+\"foo\".each_line() do |l|
   puts(l)
 end""", """foo
 """)
 
     def test_each_line2(self):
         self._test("""
-\"foo\\nbar\".each_line() do [l]
+\"foo\\nbar\".each_line() do |l|
   puts(l)
 end""", """foo
 bar
@@ -221,7 +221,7 @@ bar
 
     def test_each_line3(self):
         self._test("""
-\"\".each_line() do [line]
+\"\".each_line() do |line|
   print(42)
 end
 """, "")
