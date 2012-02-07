@@ -18,6 +18,6 @@ puts(__LINE__)
     def test_FILE0(self):
         self._test("""
 print(__FILE__)
-""", "foo.yg", tmpfile="foo.yg")
+""", "foo.yog", tmpfile="foo.yog")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

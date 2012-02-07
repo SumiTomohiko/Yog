@@ -117,7 +117,7 @@ print(Foo.new())
     def test_ARGV0(self):
         self._test("""
 print(ARGV[0])
-""", "foo.yg", tmpfile="foo.yg")
+""", "foo.yog", tmpfile="foo.yog")
 
     def test_ARGV1(self):
         self._test("""

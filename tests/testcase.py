@@ -149,7 +149,7 @@ class TestCase(object):
         finally:
             f.close()
 
-    def make_temp_file(self, prefix="yog", suffix=".yg"):
+    def make_temp_file(self, prefix="yog", suffix=".yog"):
         fd, path = mkstemp(prefix=prefix, suffix=suffix)
         close(fd)
         return path

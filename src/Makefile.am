@@ -9,6 +9,7 @@ LEMON = $(LEMON_DIR)/lemon
 YACC = $(LEMON)
 PYTHON = @PYTHON@
 TOOLS_DIR = $(top_srcdir)/tools
+YOG = yog
 
 BUILT_SOURCES = $(top_srcdir)/include/yog/token.h keywords.inc
 COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
@@ -62,44 +63,44 @@ insts:
 am:
 	$(GEN_AM_CMD)
 
-builtins.inc: builtins.yg yg2inc.yg
-	$(YOG) yg2inc.yg builtins.yg $@
+builtins.inc: builtins.yog yog2inc.yog
+	$(YOG) yog2inc.yog builtins.yog $@
 
-builtins_win.inc: builtins_win.yg yg2inc.yg
-	$(YOG) yg2inc.yg builtins_win.yg $@
+builtins_win.inc: builtins_win.yog yog2inc.yog
+	$(YOG) yog2inc.yog builtins_win.yog $@
 
-builtins_unix.inc: builtins_unix.yg yg2inc.yg
-	$(YOG) yg2inc.yg builtins_unix.yg $@
+builtins_unix.inc: builtins_unix.yog yog2inc.yog
+	$(YOG) yog2inc.yog builtins_unix.yog $@
 
-array.inc: array.yg yg2inc.yg
-	$(YOG) yg2inc.yg array.yg $@
+array.inc: array.yog yog2inc.yog
+	$(YOG) yog2inc.yog array.yog $@
 
-datetime.inc: datetime.yg yg2inc.yg
-	$(YOG) yg2inc.yg datetime.yg $@
+datetime.inc: datetime.yog yog2inc.yog
+	$(YOG) yog2inc.yog datetime.yog $@
 
-object.inc: object.yg yg2inc.yg
-	$(YOG) yg2inc.yg object.yg $@
+object.inc: object.yog yog2inc.yog
+	$(YOG) yog2inc.yog object.yog $@
 
-string.inc: string.yg yg2inc.yg
-	$(YOG) yg2inc.yg string.yg $@
+string.inc: string.yog yog2inc.yog
+	$(YOG) yog2inc.yog string.yog $@
 
-path.inc: path.yg yg2inc.yg
-	$(YOG) yg2inc.yg path.yg $@
+path.inc: path.yog yog2inc.yog
+	$(YOG) yog2inc.yog path.yog $@
 
-set.inc: set.yg yg2inc.yg
-	$(YOG) yg2inc.yg set.yg $@
+set.inc: set.yog yog2inc.yog
+	$(YOG) yog2inc.yog set.yog $@
 
-dict.inc: dict.yg yg2inc.yg
-	$(YOG) yg2inc.yg dict.yg $@
+dict.inc: dict.yog yog2inc.yog
+	$(YOG) yog2inc.yog dict.yog $@
 
-symbol.inc: symbol.yg yg2inc.yg
-	$(YOG) yg2inc.yg symbol.yg $@
+symbol.inc: symbol.yog yog2inc.yog
+	$(YOG) yog2inc.yog symbol.yog $@
 
-callable.inc: callable.yg yg2inc.yg
-	$(YOG) yg2inc.yg callable.yg $@
+callable.inc: callable.yog yog2inc.yog
+	$(YOG) yog2inc.yog callable.yog $@
 
-fixnum.inc: fixnum.yg yg2inc.yg
-	$(YOG) yg2inc.yg fixnum.yg $@
+fixnum.inc: fixnum.yog yog2inc.yog
+	$(YOG) yog2inc.yog fixnum.yog $@
 
 $(top_srcdir)/include/yog/token.h parser.c: parser.y parser.lt $(LEMON)
 	(cd $(LEMON_DIR); $(MAKE))
@@ -126,8 +127,8 @@ $(top_srcdir)/include/yog/inst.h: $(top_srcdir)/include/yog/inst.h.tmpl $(INSTS_
 $(top_srcdir)/include/yog/opcodes.h: $(top_srcdir)/include/yog/opcodes.h.tmpl $(INSTS_DEF) $(INST_PY)
 	$(INST_CMD)
 
-errno.inc: $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno
-	$(YOG) $(TOOLS_DIR)/make_errno.yg $(TOOLS_DIR)/errno $@
+errno.inc: $(TOOLS_DIR)/make_errno.yog $(TOOLS_DIR)/errno
+	$(YOG) $(TOOLS_DIR)/make_errno.yog $(TOOLS_DIR)/errno $@
 
 SHIFT_JIS_TABLES = shift_jis2yog_hankaku.inc shift_jis2yog_zenkaku.inc \
 		   yog2shift_jis1.inc yog2shift_jis2.inc yog2shift_jis3.inc

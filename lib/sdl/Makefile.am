@@ -1,5 +1,5 @@
 
-bin_SCRIPTS = image.yg mixer.yg ttf.yg
+bin_SCRIPTS = image.yog mixer.yog ttf.yog
 
 include $(top_srcdir)/lib/Makefile.common
 

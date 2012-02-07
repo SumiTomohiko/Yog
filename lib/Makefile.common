@@ -1,6 +1,6 @@
 
-SUFFIXES = .h2yog .yg
-.h2yog.yg:
+SUFFIXES = .h2yog .yog
+.h2yog.yog:
 	$(top_srcdir)/src/yog $<
 
 # vim: tabstop=8 shiftwidth=8 noexpandtab

@@ -1183,15 +1183,15 @@ print_error(YogEnv* env, YogHandle* filename)
 }
 
 static YogVal
-import_yg(YogEnv* env, YogHandle* yg, YogHandle* pkg_name)
+import_yog(YogEnv* env, YogHandle* yog, YogHandle* pkg_name)
 {
-    YogVal bin = YogString_to_bin_in_default_encoding(env, yg);
+    YogVal bin = YogString_to_bin_in_default_encoding(env, yog);
     FILE* fp = fopen(BINARY_CSTR(bin), "r");
     if (fp == NULL) {
-        print_error(env, yg);
+        print_error(env, yog);
         return YNIL;
     }
-    YogVal pkg = YogEval_eval_file(env, fp, yg, pkg_name);
+    YogVal pkg = YogEval_eval_file(env, fp, yog, pkg_name);
     fclose(fp);
     return pkg;
 }
@@ -1210,15 +1210,15 @@ import(YogEnv* env, YogVM* vm, YogHandle* path_head, YogHandle* pkg_name)
     SAVE_LOCALS(env);
     YogVal pkg = YUNDEF;
     YogVal body = YUNDEF;
-    YogVal yg = YUNDEF;
-    PUSH_LOCALS3(env, pkg, body, yg);
+    YogVal yog = YUNDEF;
+    PUSH_LOCALS3(env, pkg, body, yog);
 
     uint_t size = YogArray_size(env, vm->search_path);
     uint_t i;
     for (i = 0; i < size; i++) {
         YogHandle* dir = VAL2HDL(env, YogArray_at(env, vm->search_path, i));
-        YogHandle* yg = make_package_path(env, dir, path_head, ".yg");
-        pkg = import_yg(env, yg, pkg_name);
+        YogHandle* yog = make_package_path(env, dir, path_head, ".yog");
+        pkg = import_yog(env, yog, pkg_name);
         if (IS_PTR(pkg)) {
             RETURN(env, pkg);
         }

@@ -17,17 +17,17 @@ print({0})""".format(name), expected)
 headers = [%(headers)s].map() do [h]
   next h.to_path()
 end
-h2yog(\"test_h2yog.yg\", headers, \"%(so)s\") do [path, name]
+h2yog(\"test_h2yog.yog\", headers, \"%(so)s\") do [path, name]
   next headers.include?(path.basename)
 end""" % { "headers": ", ".join([ "\"%s\"" % (header, ) for header in headers]), "so": so }
-        path = "run_h2yog.yg"
+        path = "run_h2yog.yog"
         self.unlink(path)
         self.write_source(path, src)
         proc = self.run_command(["--young-heap-size=48M", path])
         self.wait_proc(proc)
 
     def do_test(self, headers, so, src, expected):
-        self.unlink("test_h2yog.yg")
+        self.unlink("test_h2yog.yog")
         self.run_h2yog(headers, so)
         self._test(src, expected)
 

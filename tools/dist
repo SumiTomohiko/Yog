@@ -64,15 +64,15 @@ src_root="${work_dir}/${archive}"
 (cd "${src_root}" && run ./autogen.sh)
 run rm -rf "${src_root}/autom4te.cache"
 src_dir="${src_root}/src"
-run grep -o "\$(YOG) yg2inc.yg [[:alnum:]_]\+.yg \$@" "${src_dir}/Makefile.am" | while read line
+run grep -o "\$(YOG) yog2inc.yog [[:alnum:]_]\+.yog \$@" "${src_dir}/Makefile.am" | while read line
 do
-  yg=`echo "${line}" | cut -d " " -f 2`
+  prog=`echo "${line}" | cut -d " " -f 2`
   src=`echo "${line}" | cut -d " " -f 3`
   dst="`echo "${src}" | cut -d "." -f 1`.inc"
-  run ${yog} "${src_dir}/${yg}" "${src_dir}/${src}" "${src_dir}/${dst}"
+  run ${yog} "${src_dir}/${prog}" "${src_dir}/${src}" "${src_dir}/${dst}"
 done
 tools_dir="${src_root}/tools"
-run ${yog} "${tools_dir}/make_errno.yg" "${tools_dir}/errno" "${src_dir}/errno.inc"
+run ${yog} "${tools_dir}/make_errno.yog" "${tools_dir}/errno" "${src_dir}/errno.inc"
 run ${python} "${tools_dir}/inst.py" "${src_dir}/insts.def" "${src_root}"
 run gperf "${src_dir}/keywords" > "${src_dir}/keywords.inc"
 (cd ${src_dir} && run ${python} "../tools/make_shift_jis_tables.py")

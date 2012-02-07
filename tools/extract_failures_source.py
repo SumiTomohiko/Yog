@@ -19,7 +19,7 @@ for line in stdin:
         index = line.find(endmarker)
         if index != -1:
             source.append(line[:index])
-            with open("error_%(id)03d.yg" % { "id": source_id }, "w") as fp:
+            with open("error_%(id)03d.yog" % { "id": source_id }, "w") as fp:
                 fp.write("".join(source))
                 from sys import stdout
                 stdout.write("".join(source))

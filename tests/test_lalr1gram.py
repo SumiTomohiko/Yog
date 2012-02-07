@@ -23,7 +23,7 @@ class TestLalr1gram(TestCase):
         path = self.write_content_to_tmpfile(gram, ".yogram")
         try:
             script = join(self.get_bin_dir(), "lalr1gram.yog")
-            cmd = [get_command(), script, "gram.yg", path]
+            cmd = [get_command(), script, "gram.yog", path]
             proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
             proc.wait()
         finally:
@@ -114,7 +114,7 @@ foo : <bar> {
 
     def do_parser_test(self, gram, src, expected):
         self.do_lalr1gram(gram)
-        path = self.write_content_to_tmpfile(src, ".yg")
+        path = self.write_content_to_tmpfile(src, ".yog")
         try:
             proc = Popen([get_command(), path], stdout=PIPE, stderr=PIPE)
             proc.wait()

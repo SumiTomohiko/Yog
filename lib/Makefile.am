@@ -1,13 +1,13 @@
 
 SUBDIRS = c sdl
 
-bin_SCRIPTS = sdl.yg
+bin_SCRIPTS = sdl.yog
 
 include $(top_srcdir)/lib/Makefile.common
 
 libdir = $(DESTDIR)$(prefix)/lib/yog/$(PACKAGE_VERSION)
 install:
-	for f in `find . -name "*.yg"`; \
+	for f in `find . -name "*.yog"`; \
 	do \
 		$(mkdir_p) `dirname $(libdir)/$${f}`; \
 		$(install_sh_DATA) $${f} $(libdir)/$${f}; \
