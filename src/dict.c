@@ -307,12 +307,10 @@ YogDict_get_iterator(YogEnv* env, YogVal self)
 void
 YogDict_eval_builtin_script(YogEnv* env, YogVal klass)
 {
-#if !defined(MINIYOG)
     const char* src =
-#   include "dict.inc"
+#include "dict.inc"
     ;
     YogMisc_eval_source(env, VAL2HDL(env, klass), src);
-#endif
 }
 
 void

@@ -405,19 +405,17 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
 
     set_path_separator(env, builtins);
 
-#if !defined(MINIYOG)
-#   define REGISTER_ERRNO(e)    do { \
+#define REGISTER_ERRNO(e) do { \
     errno_ = YogVal_from_int(env, (e)); \
     YogObj_set_attr(env, HDL2VAL(builtins), #e, errno_); \
 } while (0)
-#   include "errno.inc"
-#   undef REGISTER_ERRNO
+#include "errno.inc"
+#undef REGISTER_ERRNO
 
     const char* src = 
-#   include "builtins.inc"
+#include "builtins.inc"
     ;
     YogMisc_eval_source(env, builtins, src);
-#endif
 
     RETURN_VOID(env);
 }

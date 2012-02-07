@@ -562,12 +562,10 @@ push(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 void
 YogArray_eval_builtin_script(YogEnv* env, YogVal klass)
 {
-#if !defined(MINIYOG)
     const char* src =
-#   include "array.inc"
+#include "array.inc"
     ;
     YogMisc_eval_source(env, VAL2HDL(env, klass), src);
-#endif
 }
 
 void

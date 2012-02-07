@@ -243,12 +243,10 @@ equal(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 void
 YogObject_eval_builtin_script(YogEnv* env, YogVal klass)
 {
-#if !defined(MINIYOG)
     const char* src =
-#   include "object.inc"
+#include "object.inc"
     ;
     YogMisc_eval_source(env, VAL2HDL(env, klass), src);
-#endif
 }
 
 static YogVal

@@ -209,7 +209,7 @@ typedef struct YogEnv YogEnv;
     YogLocals* __locals_##name##__ = (env)->locals->body
 #define RESTORE_LOCALS_FROM_NAME(env, name) \
     (env)->locals->body = __locals_##name##__
-#if 0 && !defined(MINIYOG)
+#if 0
 #   define PUSH_LOCAL_TABLE(env, tbl)   do { \
     uint_t i; \
     TRACE("tbl=%p", &tbl); \
@@ -385,7 +385,7 @@ YOG_EXPORT uint_t YogVal_to_uint(YogEnv*, YogVal, const char*);
 #else
 #   define TRACE    printf("%s:%d ", __FILE__, __LINE__); printf
 #endif
-#if 0 && !defined(MINIYOG)
+#if 0
 #   define DEBUG(x)     x
 #else
 #   define DEBUG(x)

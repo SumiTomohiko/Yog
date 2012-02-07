@@ -1099,12 +1099,10 @@ YogString_to_path(YogEnv* env, YogVal self)
 void
 YogString_eval_builtin_script(YogEnv* env, YogVal klass)
 {
-#if !defined(MINIYOG)
     const char* src =
-#   include "string.inc"
+#include "string.inc"
     ;
     YogMisc_eval_source(env, VAL2HDL(env, klass), src);
-#endif
 }
 
 void

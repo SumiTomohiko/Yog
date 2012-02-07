@@ -104,12 +104,10 @@ each(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* block)
 void
 YogSet_eval_builtin_script(YogEnv* env, YogVal klass)
 {
-#if !defined(MINIYOG)
     const char* src =
-#   include "set.inc"
+#include "set.inc"
     ;
     YogMisc_eval_source(env, VAL2HDL(env, klass), src);
-#endif
 }
 
 void
