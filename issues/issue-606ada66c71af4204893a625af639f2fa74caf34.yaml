@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add locals() builtins function.
+desc: I hope "some_string.format(**locals())".
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-07 20:07:37.891051 Z
+references: []
+
+id: 606ada66c71af4204893a625af639f2fa74caf34
+log_events: 
+- - 2012-02-07 20:07:38.539827 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
