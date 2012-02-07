@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Fix the documentation to use new syntax block arguments (|...|).
+desc: ""
+type: :task
+component: doc
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-07 16:16:41.031491 Z
+references: []
+
+id: c1745b3baedd34947ddf08107fbc8e3eacb5bf50
+log_events: 
+- - 2012-02-07 16:16:41.451556 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
