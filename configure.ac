@@ -89,8 +89,8 @@ AC_DEFINE_UNQUOTED([PREFIX], ["$prefix"], [Define install directory])
 
 AC_CONFIG_FILES([Makefile bin/Makefile doc/Makefile doc/index.html ext/Makefile
                  ext/Makefile.common ext/concurrent/Makefile ext/uname/Makefile
-                 ext/yaml/Makefile ext/zip/Makefile installer.nsi lib/Makefile
-                 lib/c/Makefile lib/sdl/Makefile src/Makefile tests/Makefile
+                 ext/yaml/Makefile ext/zip/Makefile lib/Makefile lib/c/Makefile
+                 lib/sdl/Makefile src/Makefile tests/Makefile
                  tools/lemon/Makefile vim/Makefile vim/ftdetect/Makefile
                  vim/ftplugin/Makefile])
 if test "${cunit}" == "yes"

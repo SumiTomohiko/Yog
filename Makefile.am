@@ -5,7 +5,7 @@ ARCHIVE = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 
 .PHONY: doc proto test test-installed test-copying test-mark-sweep \
 	test-mark-sweep-compact test-bdw test-default vim install dist \
-	distcheck installer
+	distcheck
 
 doc:
 	cd doc && make
@@ -59,9 +59,6 @@ pkg:
 
 pkgcheck:
 	tools/distcheck $(ARCHIVE)
-
-installer: installer.nsi
-	makensis -V4 -P5 installer.nsi
 
 configure.ac: yog.m4
 	autoconf
