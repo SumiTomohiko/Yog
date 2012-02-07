@@ -5,8 +5,8 @@ type: :task
 component: core
 release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2012-02-07 15:33:31.945542 Z
 references: []
 
@@ -16,3 +16,11 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""
+- - 2012-02-07 15:43:07.884577 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2012-02-07 16:13:48.536598 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition wontfix
+  - Already implemented.
