@@ -115,10 +115,8 @@ case "${host}" in
         ;;
     esac
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -export-dynamic"
-    AC_CONFIG_SUBDIRS([bdwgc])
-    BDWGC_DIR="bdwgc"
-    TEST_TARGETS="${TEST_TARGETS} test-bdw test-copying test-mark-sweep test-mark-sweep-compact test-default"
-    BIN_PROGRAMS="${BIN_PROGRAMS} yog-bdw\$(EXEEXT) yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog\$(EXEEXT)"
+    TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-default"
+    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog\$(EXEEXT)"
     SOEXT="so"
     EXT_SUBDIRS="concurrent"
     ;;
@@ -127,13 +125,11 @@ esac
 YOG_CHECK_EXT([syck], [syck_new_parser], [yaml])
 YOG_CHECK_EXT([zip], [zip_open], [zip])
 
-AC_SUBST(BDWGC_DIR)
 AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
 AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS_COMMON)
-AC_SUBST(LDFLAGS_BDW)
 AC_SUBST(LDFLAGS_COPYING)
 AC_SUBST(LDFLAGS_GENERATIONAL)
 AC_SUBST(LDFLAGS_MARK_SWEEP)

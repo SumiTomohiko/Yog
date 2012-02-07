@@ -37,11 +37,6 @@ main()""", """42
 """)
 
     def test_AtomicInt1(self):
-        # Skip this test when GC is BDW. This needs too many time.
-        from os import environ
-        if environ.get("GC", "copying") == "bdw":
-            return
-
         self._test("""
 import concurrent
 

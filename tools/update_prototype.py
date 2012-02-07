@@ -56,7 +56,6 @@ class DeclarationInserter(object):
                 "src/gc/mark-sweep-compact.c", ],
             "include/yog/gc/copying.h": [ "src/gc/copying.c", ],
             "include/yog/gc/mark-sweep.h": [ "src/gc/mark-sweep.c", ],
-            "include/yog/gc/bdw.h": [ "src/gc/bdw.c", ],
             "include/yog/gc/generational.h": [ "src/gc/generational.c", ],
             "include/yog/thread.h": [ "src/thread.c", ],
             "include/yog/vm.h": [ "src/vm.c", ],

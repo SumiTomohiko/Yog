@@ -55,7 +55,6 @@
 #include "yog/fixnum.h"
 #include "yog/float.h"
 #include "yog/gc.h"
-#include "yog/gc/bdw.h"
 #include "yog/handle.h"
 #include "yog/misc.h"
 #include "yog/module.h"
@@ -802,9 +801,7 @@ YogVM_init(YogVM* vm)
 void
 YogVM_delete(YogEnv* env, YogVM* vm)
 {
-#if !defined(GC_BDW)
     YogGC_delete(env);
-#endif
 
     YogIndirectPointer* indirect_ptr = vm->indirect_ptr;
     while (indirect_ptr != NULL) {
@@ -925,7 +922,6 @@ YogVM_remove_thread(YogEnv* env, YogVM* vm, YogVal thread)
     YogVM_release_global_interp_lock(env, vm);
 }
 
-#if !defined(GC_BDW)
 void
 YogVM_add_heap(YogEnv* env, YogVM* vm, YogHeap* heap)
 {
@@ -941,7 +937,6 @@ YogVM_add_heap(YogEnv* env, YogVM* vm, YogHeap* heap)
     heap->next = NULL;
     YogVM_release_global_interp_lock(env, vm);
 }
-#endif
 
 static uint_t
 count_running_threads(YogEnv* env, YogVM* vm)

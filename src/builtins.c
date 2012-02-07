@@ -136,10 +136,8 @@ minor_gc(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
 #if defined(GC_GENERATIONAL)
 #   define GC_PROC(env) YogGC_perform_minor((env))
-#elif !defined(GC_BDW)
-#   define GC_PROC(env) YogGC_perform((env))
 #else
-#   define GC_PROC(env)
+#   define GC_PROC(env) YogGC_perform((env))
 #endif
     GC_PROC(env);
 #undef GC_PROC

@@ -1,6 +1,5 @@
 
 CORGI_DIR = $(top_srcdir)/corgi
-BDWGC_DIR = $(top_srcdir)/bdwgc
 GMP_DIR = $(top_srcdir)/gmp
 LIBFFI_DIR = $(top_srcdir)/libffi
 
@@ -21,14 +20,13 @@ COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 string.c symbol.c table.c thread.c value.c vm.c getopt.c \
 		 ffi.c env.c handle.c process.c path.c datetime.c dir.c stat.c
 DEFAULT_INCLUDES =
-CFLAGS_COMMON = -I$(top_srcdir)/include -I$(CORGI_DIR)/include \
-		-I$(BDWGC_DIR)/include -I$(GMP_DIR) -I$(LIBFFI_DIR)/include \
-		-Wall -Werror -g -O2 -DYOG_CORE
+CFLAGS_COMMON = -I$(top_srcdir)/include -I$(CORGI_DIR)/include -I$(GMP_DIR) \
+		-I$(LIBFFI_DIR)/include -Wall -Werror -g -O2 -DYOG_CORE
 LDFLAGS_COMMON = @LDFLAGS_COMMON@
 LIBS = $(CORGI_DIR)/src/.libs/libcorgi.a $(GMP_DIR)/.libs/libgmp.a \
        $(LIBFFI_DIR)/.libs/libffi.a -lm @LIBS@
 
-EXTRA_PROGRAMS = yog-bdw$(EXEEXT) yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
+EXTRA_PROGRAMS = yog-copying$(EXEEXT) yog-mark-sweep$(EXEEXT) \
 		 yog-mark-sweep-compact$(EXEEXT) yog$(EXEEXT)
 bin_PROGRAMS = @BIN_PROGRAMS@
 yog_copying_SOURCES = $(COMMON_SOURCES) gc/copying.c
@@ -40,10 +38,6 @@ yog_mark_sweep_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_MARK_SWEEP@
 yog_mark_sweep_compact_SOURCES = $(COMMON_SOURCES) gc/mark-sweep-compact.c
 yog_mark_sweep_compact_CFLAGS = $(CFLAGS_COMMON) -DGC_MARK_SWEEP_COMPACT
 yog_mark_sweep_compact_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_MARK_SWEEP_COMPACT@
-yog_bdw_SOURCES = $(COMMON_SOURCES) gc/bdw.c
-yog_bdw_CFLAGS = $(CFLAGS_COMMON) -DGC_BDW -DGC_PTHREADS
-yog_bdw_LDFLAGS = $(LDFLAGS_COMMON) @LDFLAGS_BDW@
-yog_bdw_LDADD = $(BDWGC_DIR)/.libs/libgc.a
 yog_SOURCES = $(COMMON_SOURCES) gc/generational.c gc/copying.c \
 	      gc/mark-sweep-compact.c
 yog_CFLAGS = $(CFLAGS_COMMON)

@@ -9,10 +9,6 @@
 #if HAVE_SYS_TYPES_H
 #   include <sys/types.h>
 #endif
-#if defined(GC_BDW)
-#   include "gc.h"
-#   include "gc_pthread_redirects.h"
-#endif
 #include "yog/array.h"
 #include "yog/callable.h"
 #include "yog/class.h"
@@ -28,8 +24,6 @@
 #   include "yog/gc/mark-sweep-compact.h"
 #elif defined(GC_GENERATIONAL)
 #   include "yog/gc/generational.h"
-#elif defined(GC_BDW)
-#   include "yog/gc/bdw.h"
 #endif
 #include "yog/get_args.h"
 #include "yog/sysdeps.h"
@@ -212,25 +206,14 @@ YogThread_config_generational(YogEnv* env, YogVal thread, size_t young_heap_size
 }
 #endif
 
-#if defined(GC_BDW)
-void
-YogThread_config_bdw(YogEnv* env, YogVal thread)
-{
-    YogHeap* heap = YogBDW_new(env);
-    PTR_AS(YogThread, thread)->heap = heap;
-}
-#endif
-
 static void
 finalize(YogEnv* env, void* ptr)
 {
     YogThread* thread = PTR_AS(YogThread, ptr);
-#if !defined(GC_BDW)
     YogHeap* heap = (YogHeap*)thread->heap;
     if (heap != NULL) {
         heap->refered = FALSE;
     }
-#endif
     thread->heap = NULL;
 }
 
@@ -249,9 +232,7 @@ alloc(YogEnv* env, YogVal klass)
     SAVE_ARG(env, klass);
 
     YogVal thread = alloc_obj(env, klass);
-#if defined(GC_BDW)
-    YogThread_config_bdw(env, thread);
-#elif defined(GC_COPYING)
+#if defined(GC_COPYING)
 #   define HEAP_SIZE    (1 * 1024 * 1024)
     YogThread_config_copying(env, thread, HEAP_SIZE);
 #   undef HEAP_SIZE
@@ -421,16 +402,10 @@ run(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
         YOG_BUG(env, "pthread_attr_setstacksize failed");
     }
 
-#if !defined(GC_BDW)
-#   define CREATE_THREAD    pthread_create
-#else
-#   define CREATE_THREAD    GC_pthread_create
-#endif
     pthread_t* pt = &PTR_AS(YogThread, self)->pthread;
-    if (CREATE_THREAD(pt, &attr, thread_main, (void*)arg) != 0) {
+    if (pthread_create(pt, &attr, thread_main, (void*)arg) != 0) {
         YOG_BUG(env, "can't create new thread: %s", strerror(errno));
     }
-#undef CREATE_THREAD
 
     if (pthread_attr_destroy(&attr) != 0) {
         YOG_BUG(env, "pthread_attr_destroy failed");

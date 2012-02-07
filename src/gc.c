@@ -10,11 +10,9 @@
 #   include "yog/gc/mark-sweep.h"
 #elif defined(GC_MARK_SWEEP_COMPACT)
 #   include "yog/gc/mark-sweep-compact.h"
-#elif defined(GC_GENERATIONAL)
+#else
 #   include "yog/gc/internal.h"
 #   include "yog/gc/generational.h"
-#elif defined(GC_BDW)
-#   include "yog/gc/bdw.h"
 #endif
 #include "yog/handle.h"
 #include "yog/misc.h"
@@ -182,8 +180,6 @@ YogGC_alloc(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size
 #   define ALLOC    YogMarkSweepCompact_alloc
 #elif defined(GC_GENERATIONAL)
 #   define ALLOC    YogGenerational_alloc
-#elif defined(GC_BDW)
-#   define ALLOC    YogBDW_alloc
 #endif
     void* ptr = ALLOC(env, PTR_AS(YogThread, thread)->heap, keeper, finalizer, size);
 #undef ALLOC
@@ -196,7 +192,6 @@ YogGC_alloc(YogEnv* env, ChildrenKeeper keeper, Finalizer finalizer, size_t size
     return PTR2VAL(ptr);
 }
 
-#if !defined(GC_BDW)
 static void
 wakeup_suspend_threads(YogEnv* env)
 {
@@ -272,7 +267,6 @@ perform(YogEnv* env, GC gc)
     YogVM_release_global_interp_lock(env, vm);
     DEBUG(TRACE("%p: exit perform", env));
 }
-#endif
 
 void
 YogHeap_init(YogEnv* env, YogHeap* heap)
@@ -312,7 +306,6 @@ YogGC_free(YogEnv* env, void* p, size_t size)
     free(p);
 }
 
-#if !defined(GC_BDW)
 static void
 delete_heap(YogEnv* env, YogHeap* heap)
 {
@@ -359,7 +352,6 @@ delete_heaps(YogEnv* env)
         heap = next;
     }
 }
-#endif
 
 #define ITERATE_HEAPS(vm, proc)     do { \
     YogHeap* heap = (vm)->heaps; \
@@ -727,7 +719,6 @@ void
 YogGC_free_from_gc(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter YogGC_free_from_gc", env));
-#if !defined(GC_BDW)
     YogHandle_sync_scope_with_env(env);
     YogVM* vm = env->vm;
     YogVM_acquire_global_interp_lock(env, vm);
@@ -736,7 +727,6 @@ YogGC_free_from_gc(YogEnv* env)
     }
     PTR_AS(YogThread, env->thread)->gc_bound = FALSE;
     YogVM_release_global_interp_lock(env, vm);
-#endif
     DEBUG(TRACE("%p: exit YogGC_free_from_gc", env));
 }
 
@@ -744,7 +734,6 @@ void
 YogGC_bind_to_gc(YogEnv* env)
 {
     DEBUG(TRACE("%p: enter YogGC_bind_to_gc", env));
-#if !defined(GC_BDW)
     YogVM* vm = env->vm;
     YogVM_acquire_global_interp_lock(env, vm);
     while (vm->waiting_suspend) {
@@ -752,7 +741,6 @@ YogGC_bind_to_gc(YogEnv* env)
     }
     PTR_AS(YogThread, env->thread)->gc_bound = TRUE;
     YogVM_release_global_interp_lock(env, vm);
-#endif
     DEBUG(TRACE("%p: exit YogGC_bind_to_gc", env));
 }
 

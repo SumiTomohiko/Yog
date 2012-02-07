@@ -404,7 +404,7 @@ typedef unsigned char uint8_t;
 #   define UINT8_MAX    255
 #endif
 
-#if !defined(GC_BDW) && !defined(GC_COPYING) && !defined(GC_GENERATIONAL) \
+#if !defined(GC_COPYING) && !defined(GC_GENERATIONAL) \
     && !defined(GC_MARK_SWEEP) && !defined(GC_MARK_SWEEP_COMPACT)
 #   define GC_GENERATIONAL
 #endif

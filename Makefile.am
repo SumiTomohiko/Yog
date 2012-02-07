@@ -1,11 +1,10 @@
 
 INSTALL_SUBDIRS = bin src ext lib
-SUBDIRS = @BDWGC_DIR@ corgi gmp libffi $(INSTALL_SUBDIRS)
+SUBDIRS = corgi gmp libffi $(INSTALL_SUBDIRS)
 ARCHIVE = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 
 .PHONY: doc proto test test-installed test-copying test-mark-sweep \
-	test-mark-sweep-compact test-bdw test-default vim install dist \
-	distcheck
+	test-mark-sweep-compact test-default vim install dist distcheck
 
 doc:
 	cd doc && make
@@ -32,10 +31,6 @@ test-mark-sweep:
 
 test-mark-sweep-compact:
 	export YOG=`pwd`/src/yog-mark-sweep-compact$(EXEEXT); \
-	./run_tests
-
-test-bdw:
-	export YOG=`pwd`/src/yog-bdw$(EXEEXT); \
 	./run_tests
 
 test-default:
