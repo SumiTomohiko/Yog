@@ -66,12 +66,6 @@ am:
 builtins.inc: builtins.yog yog2inc.yog
 	$(YOG) yog2inc.yog builtins.yog $@
 
-builtins_win.inc: builtins_win.yog yog2inc.yog
-	$(YOG) yog2inc.yog builtins_win.yog $@
-
-builtins_unix.inc: builtins_unix.yog yog2inc.yog
-	$(YOG) yog2inc.yog builtins_unix.yog $@
-
 array.inc: array.yog yog2inc.yog
 	$(YOG) yog2inc.yog array.yog $@
 

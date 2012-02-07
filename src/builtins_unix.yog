@@ -1,6 +1,0 @@
-
-def root_dir?(path)
-  return path == PATH_SEPARATOR
-end
-
-# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
