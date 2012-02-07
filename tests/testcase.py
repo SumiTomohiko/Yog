@@ -29,7 +29,7 @@ def get_command():
     try:
         return environ["YOG"]
     except KeyError:
-        return join("..", "src", "yog-generational")
+        return join("..", "src", "yog")
 
 class TestCase(object):
 
