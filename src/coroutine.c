@@ -15,16 +15,6 @@
 #include "yog/vm.h"
 #include "yog/yog.h"
 
-#if defined(_WIN32)
-struct MainParam {
-    struct YogVM* vm;
-    YogVal thread;
-    YogVal coroutine;
-    YogLocalsAnchor locals;
-};
-
-typedef struct MainParam MainParam;
-#else
 struct SwitchContext {
     void* eip;
     void* esp;
@@ -32,16 +22,10 @@ struct SwitchContext {
 };
 
 typedef struct SwitchContext SwitchContext;
-#endif
 
 struct Coroutine {
     struct YogBasicObj base;
 
-#if defined(_WIN32)
-    void* fiber_to_resume;
-    void* fiber_to_yield;
-    struct MainParam* param;
-#else
     /**
      * Coroutines' machine stack layout (x86)
      *
@@ -73,7 +57,6 @@ struct Coroutine {
 
     struct SwitchContext ctx_to_resume;
     struct SwitchContext ctx_to_yield;
-#endif
 
     int_t machine_stack_size;
 
@@ -147,7 +130,6 @@ register_locals(YogEnv* env, YogLocalsAnchor* locals)
     YogVM_add_locals(env, env->vm, locals);
 }
 
-#if !defined(_WIN32)
 static void
 SwitchContext_init(YogEnv* env, SwitchContext* ctx)
 {
@@ -155,9 +137,7 @@ SwitchContext_init(YogEnv* env, SwitchContext* ctx)
     ctx->esp = NULL;
     ctx->ebp = NULL;
 }
-#endif
 
-#if !defined(_WIN32)
 static void __attribute__((noinline))
 switch_context(YogEnv* env, SwitchContext* to, SwitchContext* cont)
 {
@@ -172,49 +152,26 @@ switch_context(YogEnv* env, SwitchContext* to, SwitchContext* cont)
         : : "r" (cont), "r" (to) : "eax", "ebx", "ecx", "edx"
     );
 }
-#endif
 
 static void
 yield_coroutine(YogEnv* env, YogVal self, uint_t status)
 {
     PTR_AS(Coroutine, self)->status = status;
 
-#if defined(_WIN32)
-    SwitchToFiber(PTR_AS(Coroutine, self)->fiber_to_yield);
-#else
     SwitchContext* to = &PTR_AS(Coroutine, self)->ctx_to_yield;
     SwitchContext* cont = &PTR_AS(Coroutine, self)->ctx_to_resume;
     switch_context(env, to, cont);
-#endif
 }
 
-#if defined(_WIN32)
-#   define MAIN_PARAM   void* p
-#else
-#   define CALLBACK
-#   define MAIN_PARAM   YogEnv* env, YogVal self
-#endif
 /**
- * For Linux and *BSD:
  * main function of coroutines. This function is invoked with coroutines'
  * machine stack (Coroutine::machine_stack). This function never return.
  */
-static void CALLBACK
-coroutine_main(MAIN_PARAM)
+static void
+coroutine_main(YogEnv* env, YogVal self)
 {
     YogEnv coroutine_env = ENV_INIT;
-    YogVal thread;
-#if defined(_WIN32)
-    MainParam* param = (MainParam*)p;
-    thread = param->thread;
-    coroutine_env.vm = param->vm;
-    coroutine_env.thread = thread;
-    coroutine_env.locals = &param->locals;
-    coroutine_env.coroutine = param->coroutine;
-    coroutine_env.frame = PTR_AS(Coroutine, param->coroutine)->boundary_frame;
-    YogVal self = param->coroutine;
-#else
-    thread = env->thread;
+    YogVal thread = env->thread;
     coroutine_env.vm = env->vm;
     coroutine_env.thread = thread;
     void* stack = PTR_AS(Coroutine, self)->machine_stack;
@@ -223,7 +180,6 @@ coroutine_main(MAIN_PARAM)
     coroutine_env.handles = machine_stack2handles(env, stack, stack_size);
     coroutine_env.coroutine = self;
     coroutine_env.frame = PTR_AS(Coroutine, self)->boundary_frame;
-#endif
     SAVE_LOCALS(&coroutine_env);
     PTR_AS(YogThread, thread)->env = &coroutine_env;
     DECL_LOCALS(locals);
@@ -257,8 +213,6 @@ coroutine_main(MAIN_PARAM)
     RESTORE_LOCALS(&coroutine_env);
     yield_coroutine(&coroutine_env, self, STATUS_DEAD);
 }
-#undef CALLBACK
-#undef MAIN_PARAM
 
 static void
 alloc_machine_stack(YogEnv* env, YogVal self)
@@ -266,19 +220,6 @@ alloc_machine_stack(YogEnv* env, YogVal self)
     SAVE_ARG(env, self);
     int_t machine_stack_size = PTR_AS(Coroutine, self)->machine_stack_size;
 
-#if defined(_WIN32)
-    MainParam* param = (MainParam*)malloc(sizeof(MainParam));
-    YOG_ASSERT(env, param != NULL, "can't allocate MainParam");
-    param->vm = env->vm;
-    param->thread = YUNDEF;
-    param->coroutine = self;
-    register_locals(env, &param->locals);
-    void* fiber = CreateFiber(machine_stack_size, coroutine_main, param);
-    YOG_ASSERT(env, fiber != NULL, "CreateFiber failed");
-    PTR_AS(Coroutine, self)->fiber_to_resume = fiber;
-    PTR_AS(Coroutine, self)->fiber_to_yield = NULL;
-    PTR_AS(Coroutine, self)->param = param;
-#else
     void* machine_stack = malloc(machine_stack_size);
     YOG_ASSERT(env, machine_stack != NULL, "malloc failed");
     YogLocalsAnchor* locals = machine_stack2locals(env, machine_stack, machine_stack_size);
@@ -286,7 +227,6 @@ alloc_machine_stack(YogEnv* env, YogVal self)
     YogHandles* handles = machine_stack2handles(env, machine_stack, machine_stack_size);
     register_handles(env, handles);
     PTR_AS(Coroutine, self)->machine_stack = machine_stack;
-#endif
 
     RETURN_VOID(env);
 }
@@ -297,15 +237,9 @@ Coroutine_init(YogEnv* env, YogVal self, YogVal klass)
     SAVE_ARGS2(env, self, klass);
     YogBasicObj_init(env, self, TYPE_COROUTINE, 0, klass);
 
-#if defined(_WIN32)
-    PTR_AS(Coroutine, self)->fiber_to_resume = NULL;
-    PTR_AS(Coroutine, self)->fiber_to_yield = NULL;
-    PTR_AS(Coroutine, self)->param = NULL;
-#else
     PTR_AS(Coroutine, self)->machine_stack = NULL;
     SwitchContext_init(env, &PTR_AS(Coroutine, self)->ctx_to_resume);
     SwitchContext_init(env, &PTR_AS(Coroutine, self)->ctx_to_yield);
-#endif
 
     PTR_AS(Coroutine, self)->machine_stack_size = 2048 * 4096;
     PTR_AS(Coroutine, self)->boundary_frame = YUNDEF;
@@ -406,17 +340,6 @@ resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     PTR_AS(Coroutine, self)->status = STATUS_RUNNING;
     YogGC_UPDATE_PTR(env, PTR_AS(Coroutine, self), args, a);
 
-#if defined(_WIN32)
-    void* fiber_to_yield = GetCurrentFiber();
-    if ((fiber_to_yield == NULL) || (fiber_to_yield == (void*)0x1e00)) {
-        alloc_machine_stack(env, self);
-        fiber_to_yield = ConvertThreadToFiber(NULL);
-        YOG_ASSERT(env, fiber_to_yield != NULL, "ConvertThreadToFiber failed");
-    }
-    PTR_AS(Coroutine, self)->fiber_to_yield = fiber_to_yield;
-    PTR_AS(Coroutine, self)->param->thread = env->thread;
-    SwitchToFiber(PTR_AS(Coroutine, self)->fiber_to_resume);
-#else
     if (PTR_AS(Coroutine, self)->ctx_to_resume.eip == NULL) {
         alloc_machine_stack(env, self);
         void* stack = PTR_AS(Coroutine, self)->machine_stack;
@@ -436,7 +359,6 @@ resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     PTR_AS(Coroutine, self)->prev_jmp_buf = prev_jmp_buf;
     switch_context(env, to, cont);
     PTR_AS(YogThread, env->thread)->jmp_buf_list = prev_jmp_buf;
-#endif
 
     return_args(env, PTR_AS(Coroutine, self)->args);
     RETURN(env, YUNDEF);
@@ -479,12 +401,6 @@ keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     Coroutine* coro = (Coroutine*)ptr;
 #define KEEP(member)    YogGC_KEEP(env, coro, member, keeper, heap)
-#if defined(_WIN32)
-    if (coro->param != NULL) {
-        KEEP(param->thread);
-        KEEP(param->coroutine);
-    }
-#endif
     KEEP(boundary_frame);
     KEEP(block);
     KEEP(args);
@@ -496,14 +412,6 @@ finalize(YogEnv* env, void* ptr)
 {
     Coroutine* coro = (Coroutine*)ptr;
 
-#if defined(_WIN32)
-    DeleteFiber(coro->fiber_to_resume);
-    MainParam* param = coro->param;
-    if (param != NULL) {
-        YogVM_remove_locals(env, env->vm, &param->locals);
-        free(param);
-    }
-#else
     void* machine_stack = coro->machine_stack;
     if (machine_stack != NULL) {
         YogLocalsAnchor* locals = machine_stack2locals(env, machine_stack, coro->machine_stack_size);
@@ -513,7 +421,6 @@ finalize(YogEnv* env, void* ptr)
         YogHandles_finalize(handles);
         free(machine_stack);
     }
-#endif
 }
 
 static YogVal
