@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: nop builtin function.
+desc: nop(*args, **kw, &block) returns nil always and does nothing.
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-07 15:33:31.945542 Z
+references: []
+
+id: 500ab3a3508ef7150eefa7d2078d7a407a61476e
+log_events: 
+- - 2012-02-07 15:33:32.359591 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
