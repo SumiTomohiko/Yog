@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove code for CUnit.
+desc: These are in not only src/gc/*.c, but also tests/gc/*.
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-07 20:59:48.733913 Z
+references: []
+
+id: c0cc31f903d9b82b3b3df60813634c6bb7c37034
+log_events: 
+- - 2012-02-07 20:59:49.227390 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
