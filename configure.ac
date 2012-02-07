@@ -108,16 +108,6 @@ case "${host}" in
     SOEXT="so"
     EXT_SUBDIRS="concurrent"
     ;;
-*-mingw32)
-    CFLAGS="${CFLAGS} -I/mingw32/include"
-    LDFLAGS_COPYING="${LDFLAGS_COPYING} -Wl,--out-implib,yog-copying.lib"
-    LDFLAGS_COMMON="${LDFLAGS_COMMON} --enable-runtime-pseudo-reloc"
-    LIBS="${LIBS} /lib/libpthread.dll.a -lws2_32"
-    TEST_TARGETS="${TEST_TARGETS} test-copying"
-    BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT)"
-    SOEXT="dll"
-    IMPORT_LIB="\$(top_srcdir)/src/yog-copying.lib"
-    ;;
 *)
     case "${host}" in
     *-linux*)
