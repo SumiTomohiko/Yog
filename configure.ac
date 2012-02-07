@@ -103,7 +103,6 @@ case "${host}" in
 *-openbsd*)
     CFLAGS="${CFLAGS} -pthread"
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -ggdb -export-dynamic"
-    TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-default"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog\$(EXEEXT)"
     SOEXT="so"
     EXT_SUBDIRS="concurrent"
@@ -115,7 +114,6 @@ case "${host}" in
         ;;
     esac
     LDFLAGS_COMMON="${LDFLAGS_COMMON} -export-dynamic"
-    TEST_TARGETS="${TEST_TARGETS} test-copying test-mark-sweep test-mark-sweep-compact test-default"
     BIN_PROGRAMS="${BIN_PROGRAMS} yog-copying\$(EXEEXT) yog-mark-sweep\$(EXEEXT) yog-mark-sweep-compact\$(EXEEXT) yog\$(EXEEXT)"
     SOEXT="so"
     EXT_SUBDIRS="concurrent"
@@ -125,7 +123,6 @@ esac
 YOG_CHECK_EXT([syck], [syck_new_parser], [yaml])
 YOG_CHECK_EXT([zip], [zip_open], [zip])
 
-AC_SUBST(TEST_TARGETS)
 AC_SUBST(BIN_PROGRAMS)
 AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(CFLAGS)

@@ -4,18 +4,13 @@ SUBDIRS = corgi gmp libffi $(INSTALL_SUBDIRS)
 ARCHIVE = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 
 .PHONY: doc proto test test-installed test-copying test-mark-sweep \
-	test-mark-sweep-compact test-default vim install dist distcheck
+	test-mark-sweep-compact vim install dist distcheck
 
 doc:
 	cd doc && make
 
 proto:
 	$(PYTHON) tools/update_prototype.py
-
-test:
-	@for t in @TEST_TARGETS@; do \
-		$(MAKE) $${t}; \
-	done
 
 test-installed:
 	export YOG=$(prefix)/bin/yog$(EXEEXT); \
@@ -33,7 +28,7 @@ test-mark-sweep-compact:
 	export YOG=`pwd`/src/yog-mark-sweep-compact$(EXEEXT); \
 	./run_tests
 
-test-default:
+test:
 	export YOG=`pwd`/src/yog$(EXEEXT); \
 	./run_tests
 
