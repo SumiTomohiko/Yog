@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Improve Makefiles not to generate sdl.yog when libsdl is not in the system.
+desc: ""
+type: :task
+component: misc
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-08 16:04:27.796608 Z
+references: []
+
+id: d9aaa48df916740c28b8a6daf2fa02b5eea4e88f
+log_events: 
+- - 2012-02-08 16:04:28.328276 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

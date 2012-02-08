@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove Mark-Sweep support(?)
+desc: ""
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-08 16:02:16.276712 Z
+references: []
+
+id: 225e5f8885f821624a37c33c8aa3630028dcde90
+log_events: 
+- - 2012-02-08 16:02:16.928858 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
