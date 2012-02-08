@@ -1,0 +1,43 @@
+
+class LexError > Exception
+end
+
+class Rule
+  def init(expr, &block)
+    self.expr = expr
+    self.block = block
+  end
+end
+
+class Lexer
+  def init()
+    self.src = nil
+    self.rules = []
+  end
+
+  def tokenize(src)
+    self.src = src
+  end
+
+  def add_rule(rule, &block)
+    self.rules << Rule.new(rule, &block)
+  end
+
+  def next()
+    if self.src.size == 0
+      return 'eof
+    end
+
+    self.rules.each() do |rule|
+      src = self.src
+      expr = rule.expr
+      if src.starts_with?(expr)
+        self.src = src.slice(expr.size)
+        return rule.block(expr)
+      end
+    end
+    raise LexError.new("Unmatched")
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
