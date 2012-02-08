@@ -304,4 +304,21 @@ end)""", "42")
   next init + val
 end)""", "68")
 
+    def test_sort0(self):
+        self._test("print([].sort())", "[]")
+
+    def test_sort10(self):
+        self._test("print([42].sort())", "[42]")
+
+    def test_sort20(self):
+        self._test("print([42, 26].sort())", "[26, 42]")
+
+    def test_sort30(self):
+        self._test("print([26, 42].sort())", "[26, 42]")
+
+    def test_sort40(self):
+        self._test("""print([26, 42].sort() do |x, y|
+  next y <=> x
+end)""", "[42, 26]")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

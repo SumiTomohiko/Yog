@@ -15,7 +15,13 @@ def reduce(init, &block)
   return self.slice(1).reduce(block(init, self[0]), &block)
 end
 
-def sort(&block)
+def sort(&block=nil)
+  if block == nil
+    return self.sort() do |x, y|
+      next x <=> y
+    end
+  end
+
   if self.empty?
     return []
   end
