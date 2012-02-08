@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove WindowsError.
+desc: ""
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-08 16:16:12.582435 Z
+references: []
+
+id: 923c7ab6bb576faa7e05a88582c619c12dc7ccc9
+log_events: 
+- - 2012-02-08 16:16:13.075228 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

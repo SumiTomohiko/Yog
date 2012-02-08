@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: Add more information to SystemError and WindowsError raised at File#open
+title: Add more information to SystemError which is raised at File#open.
 desc: ""
 type: :task
 component: core
@@ -23,4 +23,8 @@ log_events:
 - - 2011-07-14 19:37:49.269972 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - assigned to release 0.1.0 from unassigned
+  - ""
+- - 2012-02-08 16:15:56.176522 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - edited title
   - ""
