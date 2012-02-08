@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Try Scons.
+desc: ""
+type: :task
+component: misc
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-08 17:10:26.154313 Z
+references: []
+
+id: a9725fa1f12aa2acc918a551e177d7880969b8f3
+log_events: 
+- - 2012-02-08 17:10:26.613153 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
