@@ -5,6 +5,12 @@ from testcase import TestCase
 
 class TestString(TestCase):
 
+    def test_empty0(self):
+        self._test("print(\"\".empty?)", "true")
+
+    def test_empty10(self):
+        self._test("print(\"x\".empty?)", "false")
+
     def test_compare0(self):
         self._test("print(\"g\" < \"foo\")", "false")
 

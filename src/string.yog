@@ -6,6 +6,12 @@ def /(s)
   return (self + "/" + s).to_path()
 end
 
+def get_empty?()
+  return self == ""
+end
+
+empty? = property(get_empty?)
+
 def starts_with?(s)
   return self.slice(0, s.size) == s
 end
