@@ -2,7 +2,7 @@
 
 from re import search
 from os import close, environ, unlink
-from os.path import basename, exists, join, splitext
+from os.path import abspath, basename, dirname, exists, join, splitext
 from subprocess import PIPE, Popen
 from tempfile import mkstemp
 from time import localtime, strftime, time
@@ -29,7 +29,8 @@ def get_command():
     try:
         return environ["YOG"]
     except KeyError:
-        return join("..", "src", "yog")
+        pass
+    return abspath(join(abspath(dirname(__file__)), "..", "src", "yog"))
 
 class TestCase(object):
 
