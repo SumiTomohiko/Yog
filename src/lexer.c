@@ -1124,12 +1124,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename)
                         break;
                     }
                     tok = ValToken_new(env, type, YUNDEF, lineno);
-                    if (type == TK_DEF) {
-                        SET_STATE(LS_NAME);
-                    }
-                    else {
-                        SET_STATE(LS_EXPR);
-                    }
+                    SET_STATE(type == TK_DEF ? LS_NAME : LS_EXPR);
                 }
                 else {
                     ID id = YogVM_intern2(env, env->vm, HDL2VAL(buffer));
