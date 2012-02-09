@@ -21,7 +21,7 @@ COMMON_SOURCES = arg.c array.c bignum.c binary.c bool.c builtins.c class.c \
 		 ffi.c env.c handle.c process.c path.c datetime.c dir.c stat.c
 DEFAULT_INCLUDES =
 CFLAGS_COMMON = -I$(top_srcdir)/include -I$(CORGI_DIR)/include -I$(GMP_DIR) \
-		-I$(LIBFFI_DIR)/include -Wall -Werror -g -O2 -DYOG_CORE
+		-I$(LIBFFI_DIR)/include -Wall -Werror -g -O2
 LDFLAGS_COMMON = @LDFLAGS_COMMON@
 LIBS = $(CORGI_DIR)/src/.libs/libcorgi.a $(GMP_DIR)/.libs/libgmp.a \
        $(LIBFFI_DIR)/.libs/libffi.a -lm @LIBS@
