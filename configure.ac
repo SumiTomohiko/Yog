@@ -26,7 +26,6 @@ AC_CHECK_HEADERS([inttypes.h limits.h stddef.h stdint.h stdlib.h string.h \
                   strings.h sys/time.h unistd.h malloc.h getopt.h float.h \
                   dlfcn.h sys/mman.h windows.h alloca.h winerror.h arpa/inet.h \
                   netdb.h sys/socket.h winsock2.h direct.h])
-AC_CHECK_HEADERS([CUnit/CUnit.h], cunit=yes, cunit=no)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -93,10 +92,6 @@ AC_CONFIG_FILES([Makefile bin/Makefile doc/Makefile doc/index.html ext/Makefile
                  lib/sdl/Makefile src/Makefile tests/Makefile
                  tools/lemon/Makefile vim/Makefile vim/ftdetect/Makefile
                  vim/ftplugin/Makefile])
-if test "${cunit}" == "yes"
-then
-    AC_CONFIG_FILES([tests/gc/Makefile])
-fi
 
 AC_CANONICAL_HOST
 case "${host}" in
