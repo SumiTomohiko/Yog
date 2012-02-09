@@ -26,9 +26,6 @@
 #if defined(HAVE_UNISTD_H)
 #   include <unistd.h>
 #endif
-#if defined(HAVE_WINDOWS_H)
-#   include <windows.h>
-#endif
 #include "yog/array.h"
 #include "yog/bignum.h"
 #include "yog/binary.h"

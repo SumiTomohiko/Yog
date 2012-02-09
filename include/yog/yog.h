@@ -335,13 +335,8 @@ typedef YogVal (*YogAPI)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 #    define YOG_EXPORT
 #endif
 
-#if HAVE_WINDOWS_H
-#   include <windows.h>
-#   define GET_ERR()    GetLastError()
-#else
-#   include <errno.h>
-#   define GET_ERR()    errno
-#endif
+#include <errno.h>
+#define GET_ERR()    errno
 
 /* PROTOTYPE_START */
 

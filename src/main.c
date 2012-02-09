@@ -14,9 +14,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#if defined(HAVE_WINDOWS_H)
-#   include <windows.h>
-#endif
 #include "getopt.h"
 #include "yog/array.h"
 #include "yog/binary.h"

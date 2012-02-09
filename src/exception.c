@@ -1,12 +1,6 @@
 #include "yog/config.h"
 #include <errno.h>
 #include <string.h>
-#if defined(HAVE_WINDOWS_H)
-#   include <windows.h>
-#endif
-#if defined(HAVE_WINERROR_H)
-#   include <winerror.h>
-#endif
 #include "yog/array.h"
 #include "yog/callable.h"
 #include "yog/class.h"

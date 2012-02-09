@@ -22,9 +22,6 @@
 #include <strings.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#if defined(HAVE_WINDOWS_H)
-#   include <windows.h>
-#endif
 
 #if defined(HAVE__ALLOCA)
 #   define YogSysdeps_alloca    _alloca

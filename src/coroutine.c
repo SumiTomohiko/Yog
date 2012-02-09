@@ -1,8 +1,5 @@
 #include "yog/config.h"
 #include <stdlib.h>
-#if defined(HAVE_WINDOWS_H)
-#   include <windows.h>
-#endif
 #include "yog/array.h"
 #include "yog/callable.h"
 #include "yog/class.h"
