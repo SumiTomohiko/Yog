@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove DECL_AS_TYPE and TO_TYPE macro.
+desc: ""
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-09 18:10:33.113094 Z
+references: []
+
+id: 88b51f2415994980e1af09624ff3eed9961a4174
+log_events: 
+- - 2012-02-09 18:10:33.498132 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
