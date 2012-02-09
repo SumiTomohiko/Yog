@@ -379,7 +379,6 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
     REGISTER_CLASS(eSyntaxError);
     REGISTER_CLASS(eSystemError);
     REGISTER_CLASS(eValueError);
-    REGISTER_CLASS(eWindowsError);
 #undef REGISTER_CLASS
 #define REGISTER_MODULE(m) do { \
     YogVal mod = env->vm->m; \

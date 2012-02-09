@@ -591,7 +591,6 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
     KEEP(eTypeError);
     KEEP(eUnboundLocalError);
     KEEP(eValueError);
-    KEEP(eWindowsError);
     KEEP(eZeroDivisionError);
 
     KEEP(mCallable);
@@ -739,7 +738,6 @@ YogVM_init(YogVM* vm)
     INIT(eTypeError);
     INIT(eUnboundLocalError);
     INIT(eValueError);
-    INIT(eWindowsError);
     INIT(eZeroDivisionError);
 
     INIT(mCallable);

@@ -90,7 +90,6 @@ struct YogVM {
     YogVal eTypeError;
     YogVal eUnboundLocalError;
     YogVal eValueError;
-    YogVal eWindowsError;
     YogVal eZeroDivisionError;
 
     YogVal mCallable;

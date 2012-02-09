@@ -372,18 +372,6 @@ YogError_raise_sys_err(YogEnv* env, int_t errno_, YogVal opt)
     RETURN_VOID(env);
 }
 
-void
-YogError_raise_sys_err2(YogEnv* env, int_t err_code, YogVal opt)
-{
-    SAVE_ARG(env, opt);
-#if WINDOWS
-    raise_sys_err(env, env->vm->eWindowsError, err_code, opt);
-#else
-    YogError_raise_sys_err(env, err_code, opt);
-#endif
-    RETURN_VOID(env);
-}
-
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
