@@ -53,7 +53,6 @@ struct YogCode {
 
 typedef struct YogCode YogCode;
 
-DECL_AS_TYPE(YogCode_new);
 #define TYPE_CODE TO_TYPE(YogCode_new)
 
 #define CODE(v)     PTR_AS(YogCode, (v))

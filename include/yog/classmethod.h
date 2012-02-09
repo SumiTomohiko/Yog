@@ -11,7 +11,6 @@ struct YogClassMethod {
 
 typedef struct YogClassMethod YogClassMethod;
 
-DECL_AS_TYPE(YogClassMethod_new);
 #define TYPE_CLASS_METHOD TO_TYPE(YogClassMethod_new)
 
 /* PROTOTYPE_START */

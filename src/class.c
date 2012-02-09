@@ -404,7 +404,6 @@ struct ModuleClass {
 
 typedef struct ModuleClass ModuleClass;
 
-DECL_AS_TYPE(ModuleClass_new);
 #define TYPE_MODULE_CLASS TO_TYPE(ModuleClass_new)
 
 static void

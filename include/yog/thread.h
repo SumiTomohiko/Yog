@@ -62,7 +62,6 @@ struct YogThread {
 
 typedef struct YogThread YogThread;
 
-DECL_AS_TYPE(YogThread_new);
 #define TYPE_THREAD TO_TYPE(YogThread_new)
 
 #define INIT_JMPBUF(env, jmpbuf) do { \

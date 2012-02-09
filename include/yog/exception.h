@@ -22,7 +22,6 @@ struct YogException {
 
 typedef struct YogException YogException;
 
-DECL_AS_TYPE(YogException_define_classes);
 #define TYPE_EXCEPTION TO_TYPE(YogException_define_classes)
 
 /* PROTOTYPE_START */

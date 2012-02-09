@@ -13,7 +13,6 @@ struct YogFile {
 
 typedef struct YogFile YogFile;
 
-DECL_AS_TYPE(YogFile_define_classes);
 #define TYPE_FILE TO_TYPE(YogFile_define_classes)
 
 /* PROTOTYPE_START */

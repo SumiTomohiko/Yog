@@ -28,7 +28,6 @@ struct YogString {
 
 typedef struct YogString YogString;
 
-DECL_AS_TYPE(YogString_new);
 #define TYPE_STRING TO_TYPE(YogString_new)
 
 #define STRING_BODY(s)  PTR_AS(YogString, (s))->body

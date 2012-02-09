@@ -24,7 +24,6 @@ struct YogSystemError {
 
 typedef struct YogSystemError YogSystemError;
 
-DECL_AS_TYPE(YogSystemError_alloc);
 #define TYPE_SYSTEM_ERROR TO_TYPE(YogSystemError_alloc)
 
 static void

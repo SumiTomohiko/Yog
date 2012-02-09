@@ -5,8 +5,7 @@
 
 typedef uint_t type_t;
 
-#define DECL_AS_TYPE(name)
-#define TO_TYPE(name)        ((type_t)name)
+#define TO_TYPE(name) ((type_t)name)
 
 struct YogBasicObj {
     type_t type;
@@ -34,7 +33,6 @@ struct YogObj {
     YogVal attrs;
 };
 
-DECL_AS_TYPE(YogObj_new);
 #define TYPE_OBJ TO_TYPE(YogObj_new)
 
 #define YOGOBJ_HEAD struct YogObj base

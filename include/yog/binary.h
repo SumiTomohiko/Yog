@@ -22,7 +22,6 @@ struct YogBinary {
 
 typedef struct YogBinary YogBinary;
 
-DECL_AS_TYPE(YogBinary_new);
 #define TYPE_BINARY         TO_TYPE(YogBinary_new)
 #define BINARY_BODY(bin)    PTR_AS(YogBinary, (bin))->body
 #define BINARY_CSTR(bin)    PTR_AS(YogByteArray, BINARY_BODY(bin))->items

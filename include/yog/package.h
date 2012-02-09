@@ -10,7 +10,6 @@ struct YogPackage {
 
 typedef struct YogPackage YogPackage;
 
-DECL_AS_TYPE(YogPackage_new);
 #define TYPE_PACKAGE TO_TYPE(YogPackage_new)
 
 #include "yog/class.h"

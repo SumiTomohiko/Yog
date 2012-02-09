@@ -985,7 +985,6 @@ struct ImportingPackage {
 
 typedef struct ImportingPackage ImportingPackage;
 
-DECL_AS_TYPE(ImportingPackage_new);
 #define TYPE_IMPORTING_PKG TO_TYPE(ImportingPackage_new)
 
 static void
