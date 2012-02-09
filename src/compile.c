@@ -1774,34 +1774,56 @@ compile_assign(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
 
+    YogNodeType type = NODE(node)->type;
     uint_t lineno = NODE(node)->lineno;
-    switch (NODE(node)->type) {
+    ID name;
+    const char* node_name;
+    switch (type) {
     case NODE_VARIABLE:
-        {
-            ID name = NODE(node)->u.variable.id;
-            append_store(env, data, lineno, name);
-        }
+        name = NODE(node)->u.variable.id;
+        append_store(env, data, lineno, name);
         break;
     case NODE_SUBSCRIPT:
-        {
-            visit_node(env, visitor, NODE(node)->u.subscript.index, data);
-            visit_node(env, visitor, NODE(node)->u.subscript.prefix, data);
-            ID attr = YogVM_intern(env, env->vm, "[]=");
-            CompileData_add_load_attr(env, data, lineno, attr);
+        visit_node(env, visitor, NODE(node)->u.subscript.index, data);
+        visit_node(env, visitor, NODE(node)->u.subscript.prefix, data);
+        name = YogVM_intern(env, env->vm, "[]=");
+        CompileData_add_load_attr(env, data, lineno, name);
 
-            CompileData_add_call_function(env, data, lineno, 2, 0, 0, 0, 0, 1, 0, 0);
-        }
+        CompileData_add_call_function(env, data, lineno, 2, 0, 0, 0, 0, 1, 0, 0);
         break;
     case NODE_ATTR:
-        {
-            visit_node(env, visitor, NODE(node)->u.attr.obj, data);
-            ID name = NODE(node)->u.attr.name;
-            CompileData_add_store_attr(env, data, lineno, name);
-        }
+        visit_node(env, visitor, NODE(node)->u.attr.obj, data);
+        name = NODE(node)->u.attr.name;
+        CompileData_add_store_attr(env, data, lineno, name);
         break;
     default:
-        YOG_BUG(env, "invalid node type (0x%08x)", NODE(node)->type);
-        break;
+        switch (type) {
+        case NODE_ARRAY:
+            node_name = "array";
+            break;
+        case NODE_DICT:
+            node_name = "dictionary";
+            break;
+        case NODE_FUNC_CALL:
+            node_name = "function call";
+            break;
+        case NODE_LITERAL:
+            node_name = "literal";
+            break;
+        case NODE_SET:
+            node_name = "set";
+            break;
+        case NODE_SUPER:
+            node_name = "super";
+            break;
+        default:
+            YOG_BUG(env, "Invalid node type 0x%x", type);
+            /* NOTREACHED */
+            node_name = NULL; /* assignment to escape compiler warning */
+        }
+        const char* fmt = "line %u: Cannot assign to %s";
+        YogError_raise_SyntaxError(env, fmt, lineno, node_name);
+        /* NOTREACHED */
     }
 
     RETURN_VOID(env);
