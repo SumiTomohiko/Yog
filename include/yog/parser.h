@@ -287,7 +287,7 @@ typedef struct YogLexer YogLexer;
  */
 /* src/lexer.c */
 YOG_EXPORT YogVal YogLexer_new(YogEnv*);
-YOG_EXPORT BOOL YogLexer_next_token(YogEnv*, YogVal, YogHandle*, YogVal*);
+YOG_EXPORT YogVal YogLexer_next_token(YogEnv*, YogVal, YogHandle*);
 YOG_EXPORT void YogLexer_read_encoding(YogEnv*, YogVal);
 YOG_EXPORT void YogLexer_set_encoding(YogEnv*, YogVal, YogVal);
 

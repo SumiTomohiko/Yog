@@ -18,6 +18,7 @@
 #include "yog/parser.h"
 #include "yog/string.h"
 #include "yog/thread.h"
+#include "yog/token.h"
 #include "yog/vm.h"
 #include "yog/yog.h"
 
@@ -707,9 +708,12 @@ parse(YogEnv* env, YogVal lexer, YogHandle* filename, BOOL debug)
     if (debug) {
         ParseTrace(stdout, "parser> ");
     }
-    while (YogLexer_next_token(env, lexer, filename, &token)) {
+    token = YogLexer_next_token(env, lexer, filename);
+    while (PTR_AS(YogToken, token)->type != TK_EOF) {
         push_token(env, lemon_parser, lexer, token, filename, &ast);
+        token = YogLexer_next_token(env, lexer, filename);
     }
+    push_token(env, lemon_parser, lexer, token, filename, &ast);
     Parse(env, lemon_parser, 0, YNIL, &ast);
 
     RETURN(env, ast);
@@ -904,7 +908,7 @@ MultiAssignLhs_new(YogEnv* env, uint_t lineno, YogVal left, YogVal middle, YogVa
 }
 }   // end of %include
 
-module ::= stmts(A). {
+module ::= stmts(A) EOF. {
     *pval = A;
 }
 

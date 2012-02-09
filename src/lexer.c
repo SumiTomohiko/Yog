@@ -419,8 +419,8 @@ push_paren_depth(YogEnv* env, YogVal lexer)
     YogArray_push(env, stack, INT2VAL(PTR_AS(YogLexer, lexer)->paren_depth));
 }
 
-BOOL
-YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* token)
+YogVal
+YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename)
 {
     SAVE_ARG(env, lexer);
     YogVal heredoc_end = YUNDEF;
@@ -428,12 +428,39 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
     YogVal heredoc = YUNDEF;
     YogVal heredoc_queue = YUNDEF;
     YogVal end_mark = YUNDEF;
-    PUSH_LOCALS5(env, heredoc_end, str, heredoc, heredoc_queue, end_mark);
+    YogVal tok = YUNDEF;
+    PUSH_LOCALS6(env, heredoc_end, str, heredoc, heredoc_queue, end_mark, tok);
 
     clear_buffer(env, lexer);
 
 #define SET_STATE(stat)     PTR_AS(YogLexer, lexer)->state = stat
 #define IS_STATE(stat)      (PTR_AS(YogLexer, lexer)->state == stat)
+
+#define RETURN_VAL_TOKEN(type, val)         do { \
+    uint_t lineno = PTR_AS(YogLexer, lexer)->lineno; \
+    RETURN(env, ValToken_new(env, type, val, lineno)); \
+} while (0)
+#define RETURN_ID_TOKEN(type, s)            do { \
+    ID id = YogVM_intern(env, env->vm, s); \
+    uint_t lineno = PTR_AS(YogLexer, lexer)->lineno; \
+    RETURN(env, IDToken_new(env, type, id, lineno)); \
+} while (0)
+#define RETURN_TOKEN(type_)                 do { \
+    RETURN_VAL_TOKEN((type_), YUNDEF); \
+} while (0)
+#define BUFSIZE                             (4)
+#define RETURN_ID_TOKEN1(type, c)           do { \
+    char buffer[BUFSIZE]; \
+    YogSysdeps_snprintf(buffer, sizeof(buffer), "%c", (c)); \
+    RETURN_ID_TOKEN((type), buffer); \
+} while (0)
+#define RETURN_INT  do { \
+    YogVal buffer = PTR_AS(YogLexer, lexer)->buffer; \
+    YogVal num = YogString_to_i(env, buffer); \
+    SET_STATE(LS_OP); \
+    RETURN_VAL_TOKEN(TK_NUMBER, num); \
+} while (0)
+
     YogChar c;
     do {
         uint_t next_index = PTR_AS(YogLexer, lexer)->next_index;
@@ -479,36 +506,12 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
             }
 
             if (!readline(env, lexer)) {
-                RETURN(env, FALSE);
+                RETURN_TOKEN(TK_EOF);
             }
             PTR_AS(YogLexer, lexer)->next_index = 0;
         }
     } while (1);
 
-#define RETURN_VAL_TOKEN(type, val)         do { \
-    *token = ValToken_new(env, type, val, PTR_AS(YogLexer, lexer)->lineno); \
-    RETURN(env, TRUE); \
-} while (0)
-#define RETURN_ID_TOKEN(type, s)            do { \
-    ID id = YogVM_intern(env, env->vm, s); \
-    *token = IDToken_new(env, type, id, PTR_AS(YogLexer, lexer)->lineno); \
-    RETURN(env, TRUE); \
-} while (0)
-#define RETURN_TOKEN(type_)                 do { \
-    RETURN_VAL_TOKEN((type_), YUNDEF); \
-} while (0)
-#define BUFSIZE                             (4)
-#define RETURN_ID_TOKEN1(type, c)           do { \
-    char buffer[BUFSIZE]; \
-    YogSysdeps_snprintf(buffer, sizeof(buffer), "%c", (c)); \
-    RETURN_ID_TOKEN((type), buffer); \
-} while (0)
-#define RETURN_INT  do { \
-    YogVal buffer = PTR_AS(YogLexer, lexer)->buffer; \
-    YogVal num = YogString_to_i(env, buffer); \
-    SET_STATE(LS_OP); \
-    RETURN_VAL_TOKEN(TK_NUMBER, num); \
-} while (0)
     switch (c) {
     case '0':
         {
@@ -632,8 +635,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
             YogChar c2 = NEXTC();
             if (c2 == ':') {
                 skip_comment(env, lexer);
-                BOOL b = YogLexer_next_token(env, lexer, filename, token);
-                RETURN(env, b);
+                RETURN(env, YogLexer_next_token(env, lexer, filename));
             }
             PUSHBACK(c2);
             SET_STATE(LS_EXPR);
@@ -1031,8 +1033,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
     case '\n':
         {
             if (0 < PTR_AS(YogLexer, lexer)->paren_depth) {
-                BOOL b = YogLexer_next_token(env, lexer, filename, token);
-                RETURN(env, b);
+                RETURN(env, YogLexer_next_token(env, lexer, filename));
             }
             SET_STATE(LS_EXPR);
             RETURN_TOKEN(TK_NEWLINE);
@@ -1089,7 +1090,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
             if (IS_STATE(LS_NAME)) {
                 ID id = YogString_intern(env, HDL2VAL(buffer));
                 uint_t lineno = PTR_AS(YogLexer, lexer)->lineno;
-                *token = IDToken_new(env, TK_NAME, id, lineno);
+                tok = IDToken_new(env, TK_NAME, id, lineno);
                 SET_STATE(LS_OP);
             }
             else {
@@ -1122,7 +1123,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
                     default:
                         break;
                     }
-                    *token = ValToken_new(env, type, YUNDEF, lineno);
+                    tok = ValToken_new(env, type, YUNDEF, lineno);
                     if (type == TK_DEF) {
                         SET_STATE(LS_NAME);
                     }
@@ -1132,14 +1133,15 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename, YogVal* toke
                 }
                 else {
                     ID id = YogVM_intern2(env, env->vm, HDL2VAL(buffer));
-                    *token = IDToken_new(env, TK_NAME, id, lineno);
+                    tok = IDToken_new(env, TK_NAME, id, lineno);
                     SET_STATE(LS_OP);
                 }
             }
-            RETURN(env, TRUE);
+            RETURN(env, tok);
             break;
         }
     }
+
 #undef RETURN_INT
 #undef BUFSIZE
 #undef RETURN_NAME
