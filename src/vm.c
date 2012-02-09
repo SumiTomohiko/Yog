@@ -17,7 +17,6 @@
 #if defined(HAVE_SYS_MMAN_H)
 #   include <sys/mman.h>
 #endif
-/* Linux and Windows both have <sys/stat.h>. */
 #include <sys/stat.h>
 #if defined(HAVE_SYS_TIME_H)
 #   include <sys/time.h>
@@ -1216,13 +1215,7 @@ import(YogEnv* env, YogVM* vm, YogHandle* path_head, YogHandle* pkg_name)
             RETURN(env, pkg);
         }
 
-#if WINDOWS
-#   define SOEXT ".dll"
-#else
-#   define SOEXT ".so"
-#endif
-        YogHandle* so = make_package_path(env, dir, path_head, SOEXT);
-#undef SOEXT
+        YogHandle* so = make_package_path(env, dir, path_head, ".so");
         pkg = import_so(env, vm, so, pkg_name);
         if (IS_PTR(pkg)) {
             RETURN(env, pkg);
@@ -1356,13 +1349,7 @@ add_lib_dir_to_search_path(YogEnv* env, YogHandle* search_path, YogHandle* exe)
         return;
     }
 
-    YogVal s;
-#if WINDOWS
-    YogString_append_string(env, HDL2VAL(exe), "\\..\\lib");
-    s = prog;
-#else
-    s = YogString_from_string(env, PREFIX "/lib/yog/" PACKAGE_VERSION);
-#endif
+    YogVal s = YogString_from_string(env, PREFIX "/lib/yog/" PACKAGE_VERSION);
     YogArray_push(env, HDL2VAL(search_path), s);
 }
 

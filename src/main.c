@@ -181,10 +181,6 @@ absolutize(YogEnv* env, const char* path)
 static BOOL
 is_executable(const char* path)
 {
-#if WINDOWS
-    uint_t attrs = GetFileAttributes(path);
-    return attrs & FILE_ATTRIBUTE_NORMAL;
-#else
     struct stat buf;
     if (stat(path, &buf) != 0) {
         return FALSE;
@@ -192,17 +188,10 @@ is_executable(const char* path)
     if (!S_ISREG(buf.st_mode)) {
         return FALSE;
     }
-    uint_t mode;
-#if defined(__MINGW32__)
-    mode = S_IEXEC;
-#else
-    mode = S_IXUSR | S_IXGRP | S_IXOTH;
-#endif
-    if ((buf.st_mode & mode) == 0) {
+    if ((buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) == 0) {
         return FALSE;
     }
     return TRUE;
-#endif
 }
 
 static YogHandle*

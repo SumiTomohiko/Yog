@@ -46,11 +46,7 @@
 #else
 #   define YogSysdeps_vsnprintf(s, size, fmt, ap)   vsprintf(s, fmt, ap)
 #endif
-#if WINDOWS
-#   define YogSysdeps_mkdir(path)   _mkdir(path)
-#else
-#   define YogSysdeps_mkdir(path)   mkdir(path, 0755)
-#endif
+#define YogSysdeps_mkdir(path)   mkdir(path, 0755)
 #if defined(HAVE_BZERO)
 #   define YogSysdeps_bzero(s, n)   bzero(s, n)
 #else

@@ -329,20 +329,10 @@ typedef struct YogCArg YogCArg;
 
 typedef YogVal (*YogAPI)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 
-#define WINDOWS     (defined(_MSC_VER) || defined(__MINGW32__))
-
-#if WINDOWS && defined(YOG_CORE)
-#   if defined(__cplusplus)
-#       define YOG_EXPORT extern "C" __declspec(dllexport)
-#   else
-#       define YOG_EXPORT __declspec(dllexport)
-#   endif
+#if defined(__cplusplus)
+#    define YOG_EXPORT extern "C"
 #else
-#   if defined(__cplusplus)
-#       define YOG_EXPORT extern "C"
-#   else
-#       define YOG_EXPORT
-#   endif
+#    define YOG_EXPORT
 #endif
 
 #if HAVE_WINDOWS_H
@@ -393,11 +383,7 @@ YOG_EXPORT uint_t YogVal_to_uint(YogEnv*, YogVal, const char*);
 
 #define array_sizeof(a)     (sizeof(a) / sizeof(a[0]))
 #define MAIN_MODULE_NAME    "__main__"
-#if WINDOWS
-#   define PATH_SEPARATOR   '\\'
-#else
-#   define PATH_SEPARATOR   '/'
-#endif
+#define PATH_SEPARATOR   '/'
 
 #if !defined(HAVE_STDINT_H)
 typedef unsigned char uint8_t;
