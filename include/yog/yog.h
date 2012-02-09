@@ -329,9 +329,6 @@ typedef struct YogCArg YogCArg;
 
 typedef YogVal (*YogAPI)(YogEnv*, YogVal, YogVal, YogVal, YogVal, YogVal);
 
-#include <errno.h>
-#define GET_ERR()    errno
-
 /* PROTOTYPE_START */
 
 /**
