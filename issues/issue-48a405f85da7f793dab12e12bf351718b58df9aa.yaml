@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove WINDOWS directive defined in yog/yog.h.
+desc: ""
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-09 16:42:14.168313 Z
+references: []
+
+id: 48a405f85da7f793dab12e12bf351718b58df9aa
+log_events: 
+- - 2012-02-09 16:42:14.586297 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove YOG_CORE directive given to GCC.
+desc: ""
+type: :task
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-09 16:43:54.809780 Z
+references: []
+
+id: 81019c7445b2bfd935caed1f94ea17ab0794cc7e
+log_events: 
+- - 2012-02-09 16:43:55.179727 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
