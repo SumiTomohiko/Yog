@@ -1838,19 +1838,33 @@ excepts(A) ::= excepts(B) except(C). {
     A = Array_push(env, B, C);
 }
 
-except(A) ::= EXCEPT(B) exprs(C) AS NAME(D) NEWLINE stmts(E). {
+except(A) ::= EXCEPT(B) exprs(C) AS NAME(D) NEWLINE except_stmts(E). {
     uint_t lineno = TOKEN_LINENO(B);
     ID id = TOKEN_ID(D);
     YOG_ASSERT(env, id != NO_EXC_VAR, "Too many variables.");
     A = ExceptBody_new(env, lineno, C, id, E);
 }
-except(A) ::= EXCEPT(B) exprs(C) NEWLINE stmts(E). {
+except(A) ::= EXCEPT(B) exprs(C) NEWLINE except_stmts(E). {
     uint_t lineno = TOKEN_LINENO(B);
     A = ExceptBody_new(env, lineno, C, NO_EXC_VAR, E);
 }
-except(A) ::= EXCEPT(B) NEWLINE stmts(C). {
+except(A) ::= EXCEPT(B) NEWLINE except_stmts(C). {
     uint_t lineno = TOKEN_LINENO(B);
     A = ExceptBody_new(env, lineno, YNIL, NO_EXC_VAR, C);
+}
+
+except_stmts(A) ::= except_stmts(B) NEWLINE except_stmt(C). {
+    A = Array_push(env, B, C);
+}
+except_stmts(A) ::= except_stmt(B). {
+    A = make_array_with(env, B);
+}
+
+except_stmt(A) ::= stmt(B). {
+    A = B;
+}
+except_stmt(A) ::= RAISE(B). {
+    A = Raise_new(env, TOKEN_LINENO(B), YUNDEF);
 }
 
 finally_opt(A) ::= /* empty */. {

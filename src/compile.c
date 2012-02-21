@@ -3782,8 +3782,14 @@ static void
 compile_visit_raise(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data)
 {
     SAVE_ARGS2(env, node, data);
+    YogVal expr = NODE(node)->u.raise.expr;
+    PUSH_LOCAL(env, expr);
+    if (IS_UNDEF(expr)) {
+        add_raise_last_exception(env, data, NODE_LINENO(node));
+        RETURN_VOID(env);
+    }
 
-    visit_node(env, visitor, NODE(node)->u.raise.expr, data);
+    visit_node(env, visitor, expr, data);
     uint_t lineno = NODE_LINENO(node);
     ID func = YogVM_intern(env, env->vm, "raise_exception");
     CompileData_add_load_global(env, data, lineno, func);

@@ -114,4 +114,18 @@ class Foo
   raise Exception.new()
 end""", stderr=test_stderr)
 
+    def test_default_raise(self):
+        def test_stderr(stderr):
+            self._test_regexp(r"""Traceback \(most recent call last\):
+  File "[^"]+", line 3, in <package>
+Exception: nil
+""", stderr)
+
+        self._test("""
+try
+  raise Exception.new()
+except
+  raise
+end""", stderr=test_stderr)
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
