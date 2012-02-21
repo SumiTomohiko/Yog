@@ -710,7 +710,7 @@ YogVal
 YogBignum_binop_ufo(YogEnv* env, YogVal self, YogVal n)
 {
     if (!IS_PTR(n) || (BASIC_OBJ_TYPE(n) != TYPE_BIGNUM)) {
-        YogError_raise_TypeError(env, "operand must be Bignum");
+        return YNIL;
     }
 
     int_t m = mpz_cmp(BIGNUM_NUM(self), BIGNUM_NUM(n));

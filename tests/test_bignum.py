@@ -4,6 +4,9 @@ from testcase import TestCase
 
 class TestBignum(TestCase):
 
+    def test_ufo0(self):
+        self._test("print(4611686018427387905 <=> \"foo\")", "nil")
+
     def test_negative0(self):
         self._test("""
 puts(- 4611686018427387905)
