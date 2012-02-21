@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Comparision of Bignum with Fixnum failed.
+desc: "\"bignum_number < fixnum_number\" raises an exception."
+type: :bugfix
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-21 19:56:11.825137 Z
+references: []
+
+id: 6d30041eb99b81fcbe7f16d1d268df78e30b09f2
+log_events: 
+- - 2012-02-21 19:56:12.868275 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

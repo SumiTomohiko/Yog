@@ -1,9 +1,9 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: Remove Mark-Sweep support(?)
+title: Remove Mark-Sweep support
 desc: ""
 type: :task
 component: core
-release: 
+release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
@@ -16,3 +16,15 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""
+- - 2012-02-21 19:56:36.522198 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - edited title
+  - ""
+- - 2012-02-21 19:56:48.111142 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.1.0 from unassigned
+  - ""
+- - 2012-02-21 19:58:16.542211 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - commented
+  - mark-sweep version is why I must wait long time. And this is unused.
