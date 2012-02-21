@@ -16,7 +16,7 @@ def normalize()
 end
 
 def abs()
-  return self.starts_with?("/") ? self : (Path.getcwd() / self).normalize()
+  return (self.starts_with?("/") ? self : (Path.getcwd() / self)).normalize()
 end
 
 def walk(&block)

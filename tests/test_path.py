@@ -180,4 +180,8 @@ class TestPath(TestCase):
     def test_divide0(self):
         self._test("print(\"/\".to_path() / \"foo\")", "/foo")
 
+    def test_bug0(self):
+        src = "print(\"/home/tom/projects/Yog/src/../lib/lex.yog\".to_path().abs())"
+        self._test(src, "/home/tom/projects/Yog/lib/lex.yog")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
