@@ -5,8 +5,8 @@ type: :task
 component: misc
 release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2012-02-08 17:10:26.154313 Z
 references: []
 
@@ -16,3 +16,11 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""
+- - 2012-02-21 14:31:00.038680 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
+  - |-
+    I understood that what I need is an alternative of "configure" (autotools) as
+    well as make.
+    
+    SCons's configuring code is not declarative.
