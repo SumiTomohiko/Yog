@@ -10,12 +10,10 @@ class TestString(TestCase):
     def test_string_multiply0(self):
         def test_stderr(stderr):
             self._test_regexp(r"""Traceback \(most recent call last\):
-  File "[^"]+", line 2, in <package>
-ArgumentError: Argument too big
+  File "[^"]+", line 1, in <package>
+OverflowError: Repeated string is too long
 """, stderr)
 
-        self._test("""
-puts("xxxxxxxx" * 536870912)
-""", stderr=test_stderr)
+        self._test("\"xxxxxxxx\" * 536870912", stderr=test_stderr)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

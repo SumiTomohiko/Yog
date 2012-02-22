@@ -593,7 +593,7 @@ YogString_binop_multiply(YogEnv* env, YogHandle* self, YogVal n)
     }
     uint_t needed_size = size * num;
     if ((num != 0) && (needed_size / num != size)) {
-        YogError_raise_ArgumentError(env, "Argument too big");
+        YogError_raise_OverflowError(env, "Repeated string is too long");
         /* NOTREACHED */
     }
     YogVal s = YogString_of_size(env, needed_size);

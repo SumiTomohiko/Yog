@@ -24,6 +24,7 @@ void YogError_raise_IndexError(YogEnv*, const char*, ...);
 void YogError_raise_KeyError(YogEnv*, const char*, ...);
 void YogError_raise_LocalJumpError(YogEnv*, const char*, ...);
 void YogError_raise_NameError(YogEnv*, ID);
+void YogError_raise_OverflowError(YogEnv*, const char*, ...);
 void YogError_raise_SyntaxError(YogEnv*, const char*, ...);
 void YogError_raise_TypeError(YogEnv*, const char*, ...);
 void YogError_raise_TypeError_for_vararg(YogEnv*, YogVal);

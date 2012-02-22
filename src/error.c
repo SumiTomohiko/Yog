@@ -299,6 +299,12 @@ YogError_raise_NameError(YogEnv* env, ID name)
 }
 
 void
+YogError_raise_OverflowError(YogEnv* env, const char* fmt, ...)
+{
+    RAISE_FORMAT(env, eOverflowError, fmt);
+}
+
+void
 YogError_raise_ImportError(YogEnv* env, const char* fmt, ...)
 {
     RAISE_FORMAT(env, eImportError, fmt);
