@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: There is no way to free strings allocated with libc.string.strdup.
+desc: |-
+  Current implementation handles a pointer as a number. It must be changed to
+  use a Pointer object.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-22 06:43:15.199463 Z
+references: []
+
+id: 5e28448872a6061ba6cabeaed0f86e46276b7ef9
+log_events: 
+- - 2012-02-22 06:43:15.659043 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

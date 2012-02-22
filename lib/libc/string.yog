@@ -1,0 +1,10 @@
+
+from libc import lib, string
+
+(:
+ : Don't use this. There is no way to free a returned value. This problem will
+ : be fixed in future.
+ :)
+strdup = lib.load_func("strdup", [string], string)
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
