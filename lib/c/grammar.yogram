@@ -68,11 +68,7 @@ end
 
 class BinopNode > ExprNode
   def init(filename, lineno, left, op, right)
-    # Bug: Cannot call Node#init
-    #super(filename, lineno)
-    self.filename = filename
-    self.lineno = lineno
-
+    super(filename, lineno)
     self.left = left
     self.op = op
     self.right = right
