@@ -8,6 +8,7 @@
 #include "yog/binary.h"
 #include "yog/class.h"
 #include "yog/error.h"
+#include "yog/eval.h"
 #include "yog/handle.h"
 #include "yog/misc.h"
 #include "yog/stat.h"
@@ -224,6 +225,12 @@ lstat_(YogEnv* env, YogHandle* self, YogHandle* pkg)
 {
     CHECK_SELF_TYPE(env, self);
     return YogStat_lstat(env, self);
+}
+
+YogVal
+YogPath_abs(YogEnv* env, YogHandle* self)
+{
+    return YogEval_call_method0(env, HDL2VAL(self), "abs");
 }
 
 void

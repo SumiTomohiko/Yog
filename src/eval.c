@@ -1084,10 +1084,8 @@ YogEval_eval_stdin(YogEnv* env, YogHandle* filename, YogHandle* pkg_name)
 YogVal
 YogEval_eval_file(YogEnv* env, FILE* fp, YogHandle* filename, YogHandle* pkg_name)
 {
-    YogVal s = YogEval_call_method0(env, HDL2VAL(filename), "abs");
-    YogHandle* abspath = VAL2HDL(env, s);
-    YogVal stmts = YogParser_parse_file(env, fp, abspath, FALSE);
-    return eval_stmts(env, abspath, pkg_name, stmts);
+    YogVal stmts = YogParser_parse_file(env, fp, filename, FALSE);
+    return eval_stmts(env, filename, pkg_name, stmts);
 }
 
 static YogVal

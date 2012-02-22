@@ -1334,16 +1334,23 @@ add_current_dir_to_search_path(YogEnv* env, YogHandle* search_path)
 }
 
 static void
+add_search_path_entry(YogEnv* env, YogHandle* search_pathes, YogHandle* path)
+{
+    YogVal abspath = YogPath_abs(env, path);
+    YogArray_push(env, HDL2VAL(search_pathes), abspath);
+}
+
+static void
 add_lib_dir_to_search_path(YogEnv* env, YogHandle* search_path, YogHandle* exe)
 {
     YogHandle* dir = VAL2HDL(env, YogPath_dirname(env, exe));
     YogHandle* top_dir = YogPath_join(env, dir, "..");
     YogHandle* ext_dir = YogPath_join(env, top_dir, "ext");
     if (is_directory(env, ext_dir)) {
-        YogArray_push(env, HDL2VAL(search_path), HDL2VAL(ext_dir));
+        add_search_path_entry(env, search_path, ext_dir);
 
         YogHandle* lib_dir = YogPath_join(env, top_dir, "lib");
-        YogArray_push(env, HDL2VAL(search_path), HDL2VAL(lib_dir));
+        add_search_path_entry(env, search_path, lib_dir);
         return;
     }
 

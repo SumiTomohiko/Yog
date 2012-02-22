@@ -114,8 +114,7 @@ yog_main(YogEnv* env, YogHandle* args)
         return;
     }
 
-    YogVal s = YogArray_at(env, HDL2VAL(args), 0);
-    YogHandle* filename = VAL2HDL(env, YogString_to_path(env, s));
+    YogHandle* filename = VAL2HDL(env, YogArray_at(env, HDL2VAL(args), 0));
     YogVal bin = YogString_to_bin_in_default_encoding(env, filename);
     FILE* fp = fopen(BINARY_CSTR(bin), "r");
     if (fp == NULL) {
@@ -144,8 +143,9 @@ argv2args(YogEnv* env, uint_t argc, char** argv)
     if (argc == 0) {
         return args;
     }
-    YogVal path = YogPath_from_string(env, argv[0]);
-    YogArray_push(env, HDL2VAL(args), path);
+    YogHandle* path = VAL2HDL(env, YogPath_from_string(env, argv[0]));
+    YogVal abspath = YogPath_abs(env, path);
+    YogArray_push(env, HDL2VAL(args), abspath);
     uint_t i;
     for (i = 1; i < argc; i++) {
         YogVal s = YogString_from_string(env, argv[i]);
