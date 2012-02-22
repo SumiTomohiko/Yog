@@ -261,18 +261,23 @@ YogClass_class_init(YogEnv* env, YogVal cClass, YogVal pkg)
 }
 
 YogVal
-YogClass_get_attr(YogEnv* env, YogVal self, ID name)
+YogClass_get_attr_and_defining_class(YogEnv* env, YogVal self, ID name, YogVal* defining_class)
 {
     YogVal klass = self;
-    do {
-        YogVal attr = YogObj_get_attr(env, klass, name);
-        if (!IS_UNDEF(attr)) {
-            return attr;
-        }
+    YogVal attr = YUNDEF;
+    while (IS_UNDEF(attr) && IS_PTR(klass)) {
+        *defining_class = klass;
+        attr = YogObj_get_attr(env, klass, name);
         klass = PTR_AS(YogClass, klass)->super;
-    } while (IS_PTR(klass));
+    }
+    return attr;
+}
 
-    return YUNDEF;
+YogVal
+YogClass_get_attr(YogEnv* env, YogVal self, ID name)
+{
+    YogVal _;
+    return YogClass_get_attr_and_defining_class(env, self, name, &_);
 }
 
 void

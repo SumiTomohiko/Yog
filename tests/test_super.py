@@ -21,4 +21,22 @@ end
 Baz.new().bar()
 """, "42")
 
+    def test_super10(self):
+        self._test("""class Foo
+  def init()
+    print(\"foo\")
+  end
+end
+
+class Bar > Foo
+  def init()
+    super()
+  end
+end
+
+class Baz > Bar
+end
+
+Baz.new()""", "foo")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

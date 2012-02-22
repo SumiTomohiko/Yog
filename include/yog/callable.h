@@ -69,6 +69,7 @@ struct YogInstanceMethod {
 
     YogVal self;
     YogVal f;
+    YogVal defining_class;
 };
 
 typedef struct YogInstanceMethod YogInstanceMethod;

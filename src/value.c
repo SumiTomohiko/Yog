@@ -101,9 +101,10 @@ get_attr_default(YogEnv* env, YogVal self, ID name)
         }
     }
 
-    attr = YogClass_get_attr(env, klass, name);
+    YogVal defining_class;
+    attr = YogClass_get_attr_and_defining_class(env, klass, name, &defining_class);
     if (!IS_UNDEF(attr)) {
-        attr = YogVal_get_descr(env, attr, self, klass);
+        attr = YogVal_get_descr(env, attr, self, defining_class);
         RETURN(env, attr);
     }
 

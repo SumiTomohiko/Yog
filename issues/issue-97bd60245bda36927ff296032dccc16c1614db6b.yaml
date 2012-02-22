@@ -1,12 +1,12 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: Cannot call methods in super class
+title: super() in a super class hungs up.
 desc: See BinopNode class in lib/c/grammar.yogram.
 type: :bugfix
 component: core
 release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2011-02-18 12:05:41.713754 Z
 references: []
 
@@ -25,4 +25,40 @@ log_events:
 - - 2011-07-14 19:51:21.474606 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - assigned to release 0.1.0 from unassigned
+  - ""
+- - 2012-02-22 07:56:29.837396 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2012-02-22 08:22:40.946368 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - commented
+  - |-
+    Reproduction code::
+    
+      class Foo
+        def init()
+          print("Foo#init")
+        end
+      end
+    
+      class Bar > Foo
+        def init()
+          super()
+        end
+      end
+    
+      class Baz > Bar
+      end
+    
+      Baz.new()
+    
+    This code hung up.
+- - 2012-02-22 08:24:11.537866 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - edited title
+  - ""
+- - 2012-02-22 16:23:33.727395 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
   - ""

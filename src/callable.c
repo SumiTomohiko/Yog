@@ -230,7 +230,7 @@ fill_outer_frames(YogEnv* env, YogVal frame, YogVal outer_frame, uint_t depth)
 }
 
 static void
-YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, YogHandle* defining_class, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     YogVal code = HDL_AS(YogFunction, callee)->code;
     uint_t depth = PTR_AS(YogCode, code)->outer_size;
@@ -255,8 +255,8 @@ YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
     YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), frame_to_long_return, IS_PTR(frame_to_long_return) ? frame_to_long_return : env->frame);
     YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), frame_to_long_break, HDL_AS(YogFunction, callee)->frame_to_long_break);
 
-    if (!IS_UNDEF(NULL2UNDEF(self))) {
-        YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), klass, YogVal_get_class(env, self->val));
+    if (defining_class != NULL) {
+        YogGC_UPDATE_PTR(env, HDL_AS(YogScriptFrame, frame), klass, HDL2VAL(defining_class));
     }
     HDL_AS(YogScriptFrame, frame)->name = HDL_AS(YogFunction, callee)->name;
 
@@ -266,21 +266,21 @@ YogFunction_exec_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, u
 static void
 YogFunction_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    YogFunction_exec_for_instance(env, callee, NULL, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    YogFunction_exec_for_instance(env, callee, NULL, NULL, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static YogVal
-YogFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
+YogFunction_call_for_instance(YogEnv* env, YogHandle* callee, YogHandle* self, YogHandle* defining_class, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     YogEval_push_finish_frame(env);
-    YogFunction_exec_for_instance(env, callee, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    YogFunction_exec_for_instance(env, callee, self, defining_class, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
     return YogEval_mainloop(env);
 }
 
 static YogVal
 YogFunction_call(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
-    return YogFunction_call_for_instance(env, callee, NULL, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    return YogFunction_call_for_instance(env, callee, NULL, NULL, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static void
@@ -319,6 +319,7 @@ YogFunction_call_get_descr(YogEnv* env, YogVal self, YogVal obj, YogVal klass)
     val = YogInstanceMethod_new(env);
     YogGC_UPDATE_PTR(env, PTR_AS(YogInstanceMethod, val), self, obj);
     YogGC_UPDATE_PTR(env, PTR_AS(YogInstanceMethod, val), f, self);
+    YogGC_UPDATE_PTR(env, PTR_AS(YogInstanceMethod, val), defining_class, klass);
 
     RETURN(env, val);
 }
@@ -813,6 +814,7 @@ YogInstanceMethod_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, voi
 #define KEEP(member)    YogGC_KEEP(env, method, member, keeper, heap)
     KEEP(self);
     KEEP(f);
+    KEEP(defining_class);
 #undef KEEP
 }
 
@@ -820,18 +822,20 @@ static void
 YogInstanceMethod_exec(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
-    YogHandle* self = YogHandle_REGISTER(env, obj->self);
-    YogHandle* f = YogHandle_REGISTER(env, obj->f);
-    YogFunction_exec_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    YogHandle* self = VAL2HDL(env, obj->self);
+    YogHandle* f = VAL2HDL(env, obj->f);
+    YogHandle* defining_class = VAL2HDL(env, obj->defining_class);
+    YogFunction_exec_for_instance(env, f, self, defining_class, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static YogVal
 YogInstanceMethod_call(YogEnv* env, YogHandle* callee, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg)
 {
     YogInstanceMethod* obj = HDL_AS(YogInstanceMethod, callee);
-    YogHandle* self = YogHandle_REGISTER(env, obj->self);
-    YogHandle* f = YogHandle_REGISTER(env, obj->f);
-    return YogFunction_call_for_instance(env, f, self, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
+    YogHandle* self = VAL2HDL(env, obj->self);
+    YogHandle* f = VAL2HDL(env, obj->f);
+    YogHandle* defining_class = VAL2HDL(env, obj->defining_class);
+    return YogFunction_call_for_instance(env, f, self, defining_class, posargc, posargs, kwargc, kwargs, vararg, varkwarg, blockarg);
 }
 
 static void
@@ -841,6 +845,7 @@ YogInstanceMethod_init(YogEnv* env, YogVal self, YogVal klass)
 
     PTR_AS(YogInstanceMethod, self)->self = YUNDEF;
     PTR_AS(YogInstanceMethod, self)->f = YUNDEF;
+    PTR_AS(YogInstanceMethod, self)->defining_class = YUNDEF;
 }
 
 static YogVal

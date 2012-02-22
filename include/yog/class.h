@@ -54,6 +54,7 @@ void YogClass_define_method2(YogEnv*, YogVal, YogVal, const char*, void*, ...);
 void YogClass_define_property(YogEnv*, YogVal, YogVal, const char*, YogAPI, YogAPI);
 void YogClass_define_property2(YogEnv*, YogHandle*, YogHandle*, const char*, void*, void*);
 YogVal YogClass_get_attr(YogEnv*, YogVal, ID);
+YogVal YogClass_get_attr_and_defining_class(YogEnv*, YogVal, ID, YogVal*);
 void YogClass_include_module(YogEnv*, YogVal, YogVal);
 void YogClass_init(YogEnv*, YogVal, type_t, YogVal);
 void YogClass_keep_children(YogEnv*, void*, ObjectKeeper, void*);
