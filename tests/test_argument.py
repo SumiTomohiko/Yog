@@ -94,6 +94,18 @@ foo(42, 26)
 """, """26
 """)
 
+    def test_variable_argument90(self):
+        self._test("""def foo(bar, *args)
+  print(bar)
+end
+foo(*[42, 26])""", "42")
+
+    def test_variable_argument100(self):
+        self._test("""def foo(bar, *args)
+  print(args)
+end
+foo(*[42, 26])""", "[26]")
+
     def test_keyword_argument0(self):
         self._test("""
 def foo(bar)

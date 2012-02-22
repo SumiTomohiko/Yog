@@ -134,7 +134,8 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
         }
         if (0 < HDL_AS(YogArgInfo, arg_info)->varargc) {
             YogHandle* va = YogHandle_REGISTER(env, YogArray_new(env));
-            STORE_LOCAL(env, frame, args_offset + posargc, va->val);
+            uint_t pos = args_offset + HDL_AS(YogArgInfo, arg_info)->argc;
+            STORE_LOCAL(env, frame, pos, HDL2VAL(va));
 
             if (IS_UNDEF(NULL2UNDEF(vararg))) {
                 /* Do nothing */
