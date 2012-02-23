@@ -8,8 +8,8 @@ type: :task
 component: core
 release: 
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :reorg
 creation_time: 2011-03-05 18:27:26.666606 Z
 references: []
 
@@ -19,3 +19,7 @@ log_events:
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
   - ""
+- - 2012-02-23 17:57:25.428079 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition reorg
+  - The best way is returning a ProcessStatus object. See issue b1bd8fdba5d58e426b143aabf27948663b00b6ee.
