@@ -57,10 +57,8 @@ YogVal_get_class(YogEnv* env, YogVal val)
     else if (IS_SYMBOL(val)) {
         return env->vm->cSymbol;
     }
-    else {
-        YOG_BUG(env, "Uknown type of value (0x%08x)", val);
-    }
 
+    YOG_BUG(env, "Uknown type of value (0x%08x)", val);
     /* NOTREACHED */
     return YUNDEF;
 }
