@@ -2171,7 +2171,7 @@ static int_t
 table2array_fill_array(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
 {
     int_t index = VAL2INT(value);
-    PTR_AS(YogValArray, *arg)->items[index] = key;
+    YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, *arg), items[index], key);
 
     return ST_CONTINUE;
 }
