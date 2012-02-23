@@ -9,6 +9,7 @@
 #include "yog/frame.h"
 #include "yog/gc.h"
 #include "yog/get_args.h"
+#include "yog/handle.h"
 #include "yog/misc.h"
 #include "yog/regexp.h"
 #include "yog/string.h"
@@ -75,16 +76,19 @@ YogRegexp_finalize(YogEnv* env, void* ptr)
 YogVal
 YogRegexp_new(YogEnv* env, YogVal pattern, BOOL ignore_case)
 {
+    YogHandle* h = VAL2HDL(env, pattern);
     YogVal regexp = ALLOC_OBJ(env, YogBasicObj_keep_children, YogRegexp_finalize, YogRegexp);
     YogBasicObj_init(env, regexp, TYPE_REGEXP, 0, env->vm->cRegexp);
     corgi_init_regexp(&PTR_AS(YogRegexp, regexp)->corgi_regexp);
 
-    CorgiChar* begin = STRING_CHARS(pattern);
+    CorgiChar* begin = STRING_CHARS(HDL2VAL(h));
     CorgiOptions opts = 0;
     if (ignore_case) {
         opts |= CORGI_OPT_IGNORE_CASE;
     }
-    CorgiStatus status = corgi_compile(&PTR_AS(YogRegexp, regexp)->corgi_regexp, begin, begin + STRING_SIZE(pattern), opts);
+    CorgiRegexp* reg = &PTR_AS(YogRegexp, regexp)->corgi_regexp;
+    CorgiChar* end = begin + STRING_SIZE(HDL2VAL(h));
+    CorgiStatus status = corgi_compile(reg, begin, end, opts);
     if (status != CORGI_OK) {
         const char* msg = corgi_strerror(status);
         YogError_raise_ValueError(env, "corgi error: %s", msg);
