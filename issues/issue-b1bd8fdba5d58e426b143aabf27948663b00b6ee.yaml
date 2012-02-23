@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: ProcessStatus class
+desc: See `git log 8e3bdca8941753dc58f73c9bf68bd166c199983a`.
+type: :task
+component: core
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-02-23 17:52:58.841219 Z
+references: []
+
+id: b1bd8fdba5d58e426b143aabf27948663b00b6ee
+log_events: 
+- - 2012-02-23 17:52:59.441627 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
