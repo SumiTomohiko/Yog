@@ -140,8 +140,12 @@ exec_child(YogEnv* env, YogHandle* self, int pipe_stdin[2], int pipe_stdout[2], 
     close(pipe_stderr[W]);
 
     execv(argv[0], argv);
-    /* NOTREACHED */
-    YogError_raise_sys_err(env, errno, args);
+
+    /**
+     * Here is reachable when argv[0] is not found. Be careful that the
+     * traceback goes to stderr of the CHILD process.
+     */
+    YogError_raise_sys_err(env, errno, HDL_AS(Process, self)->args);
 }
 
 static void
