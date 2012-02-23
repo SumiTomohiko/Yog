@@ -363,7 +363,8 @@ raise_sys_err(YogEnv* env, YogVal klass, int_t errno_, YogVal opt)
 
     args[0] = YogVal_from_int(env, errno_);
     args[1] = opt;
-    exc = YogEval_call_method(env, klass, "new", array_sizeof(args), args);
+    uint_t argc = IS_UNDEF(opt) ? 1 : array_sizeof(args);
+    exc = YogEval_call_method(env, klass, "new", argc, args);
 
     RESTORE_LOCALS(env);
     YogError_raise(env, exc);
