@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "waf: Make config.h."
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-05-09 11:57:50.456529 Z
+references: []
+
+id: 53df3928329e572d9538dee381f66e1e74c7ebf5
+log_events: 
+- - 2012-05-09 11:57:51.065006 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

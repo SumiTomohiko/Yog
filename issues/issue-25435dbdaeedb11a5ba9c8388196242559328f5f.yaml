@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "waf: Detect host's OS."
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-05-09 11:55:37.536006 Z
+references: []
+
+id: 25435dbdaeedb11a5ba9c8388196242559328f5f
+log_events: 
+- - 2012-05-09 11:55:38.029689 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "waf: Run configure of corgi."
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-05-09 11:56:31.624530 Z
+references: []
+
+id: 7f7da0f07a60a9994c67ff172ba3bda4888b587e
+log_events: 
+- - 2012-05-09 11:56:32.117903 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

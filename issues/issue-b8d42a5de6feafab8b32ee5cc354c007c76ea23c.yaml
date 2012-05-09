@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "waf: Detect libraries."
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-05-09 11:56:11.793448 Z
+references: []
+
+id: b8d42a5de6feafab8b32ee5cc354c007c76ea23c
+log_events: 
+- - 2012-05-09 11:56:12.137056 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

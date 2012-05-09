@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "waf: Detect size of int."
+desc: ""
+type: :task
+component: misc
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-05-09 11:53:54.551445 Z
+references: []
+
+id: 5827b3f304bc57a0e3b4182ae955b45e925d8ac8
+log_events: 
+- - 2012-05-09 11:53:54.891369 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
