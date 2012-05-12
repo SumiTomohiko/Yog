@@ -2,7 +2,7 @@
 
 from filecmp import cmp
 from os import makedirs, unlink
-from os.path import isdir, join
+from os.path import abspath, isdir, join
 from re import match
 from shutil import rmtree
 from testcase import TestCase
@@ -115,9 +115,8 @@ print(Foo.new())
 """, stderr=test_stderr)
 
     def test_ARGV0(self):
-        self._test("""
-print(ARGV[0])
-""", "foo.yog", tmpfile="foo.yog")
+        tmpfile = abspath("foo.yog")
+        self._test("print(ARGV[0])", tmpfile, tmpfile=tmpfile)
 
     def test_ARGV1(self):
         self._test("""

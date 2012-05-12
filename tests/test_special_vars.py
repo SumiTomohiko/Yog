@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from os.path import abspath
 from testcase import TestCase
 
 class TestSpecialVars(TestCase):
@@ -16,8 +17,7 @@ puts(__LINE__)
 """)
 
     def test_FILE0(self):
-        self._test("""
-print(__FILE__)
-""", "foo.yog", tmpfile="foo.yog")
+        tmpfile = abspath("foo.yog")
+        self._test("print(__FILE__)", tmpfile, tmpfile=tmpfile)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

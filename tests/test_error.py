@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import environ, unlink
+from os.path import abspath
 from re import match, search
 import pytest
 from testcase import TestCase
@@ -13,7 +14,7 @@ class TestError(TestCase):
         try:
             stdout_path = self.make_temp_file("stdout", ".log")
             stderr_path = self.make_temp_file("stderr", ".log")
-            filename = "Not exists"
+            filename = abspath("Not exists")
             proc = self.run_yog([filename], stdout_path, stderr_path)
             self.wait_proc(proc)
             stderr = self.read(stderr_path)
