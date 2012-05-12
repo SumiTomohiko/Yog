@@ -52,10 +52,13 @@ Original data are in the ``issues`` dicretory of the source tree.
 Plan
 ----
 
-version 1.0.0
-.............
+version 0.42.0
+..............
 
 * GPL free
+  * `waf <http://code.google.com/p/waf/>`_'ize to remove autotools
+  * Change the compiler to `llvm clang <http://clang.llvm.org/>`_
+  * Change GMP to a non-copyleft library.
 
 Author
 ------
