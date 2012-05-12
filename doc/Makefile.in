@@ -5,7 +5,7 @@ DEST_DIR = html
 VERSION = @VERSION@
 TITLE = "Yog $(VERSION) documentation"
 EXEEXT = @EXEEXT@
-PARAMS = makedoc.yg --title=$(TITLE) --destdir=$(DEST_DIR) toc.ydoc
+PARAMS = makedoc.yog --title=$(TITLE) --destdir=$(DEST_DIR) toc.ydoc
 
 .PHONY: all clean
 
