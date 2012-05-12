@@ -20,9 +20,10 @@ Requirements
 * CPU
   * Intel x86
 * OS
-  * Ubuntu Linux 8.04
-  * FreeBSD 8.1
-  * OpenBSD 4.6
+  * FreeBSD 8.2
+
+Previous versions supported Ubuntu Linux and OpenBSD, but this version does not.
+Future version will support again.
 
 Documentation
 -------------
@@ -59,6 +60,7 @@ version 0.42.0
   * `waf <http://code.google.com/p/waf/>`_'ize to remove autotools
   * Change the compiler to `llvm clang <http://clang.llvm.org/>`_
   * Change GMP to a non-copyleft library.
+* Supports Linux and OpenBSD.
 
 Author
 ------
