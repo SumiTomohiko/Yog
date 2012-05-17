@@ -41,7 +41,9 @@ to_s_internal(YogEnv* env, int_t self, int_t radix)
      * Issue: e03cb3906e74d58cc481879d9042ab51fd9c8340
      */
     char buffer[31];
-    char* p = buffer + array_sizeof(buffer) - 1;
+    char* pend = buffer + array_sizeof(buffer) - 1;
+    *pend = '\0';
+    char* p = pend - 1;
     int_t num = abs(self);
     do {
         int_t mod = num % radix;
