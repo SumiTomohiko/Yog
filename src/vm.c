@@ -496,15 +496,13 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 {
     YogVM* vm = PTR_AS(YogVM, ptr);
 
-    YogLocalsAnchor* locals = vm->locals;
-    while (locals != NULL) {
+    YogLocalsAnchor* locals;
+    for (locals = vm->locals; locals != NULL; locals = locals->next) {
         keep_locals_list(env, locals->body, keeper, locals->heap);
-        locals = locals->next;
     }
-    YogHandles* handles = vm->handles;
-    while (handles != NULL) {
+    YogHandles* handles;
+    for (handles = vm->handles; handles != NULL; handles = handles->next) {
         keep_handles(env, handles, keeper, handles->heap);
-        handles = handles->next;
     }
 
 #define KEEP(member)    do { \
