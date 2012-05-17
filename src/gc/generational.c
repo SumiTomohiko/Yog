@@ -341,7 +341,7 @@ traverse(YogEnv* env, YogHeap* heap, ObjectKeeper keeper)
 {
     /**
      * YogHeap::marked_objects of heap has some objects which were added in
-     * processing root pointers. They must be consumed first.
+     * processing root pointers. They must be consumed at first.
      */
     mark(env, heap, keeper);
 
