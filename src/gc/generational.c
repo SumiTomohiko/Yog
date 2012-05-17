@@ -261,9 +261,8 @@ static void
 mark(YogEnv* env, YogHeap* heap, ObjectKeeper keeper)
 {
     while (!YogHeap_is_marked_objects_empty(env, heap)) {
-        YogHeap_init_marked_objects(env, heap);
+        YogHeap_prepare_marking(env, heap);
         YogMarkSweepCompact_mark_children(env, heap, keeper);
-        YogHeap_finish_marked_objects(env, heap);
     }
 }
 
@@ -336,22 +335,25 @@ YogGenerational_major_post_gc(YogEnv* env, YogHeap* heap)
     post_gc(env, heap);
 }
 
+BOOL
+YogGenerational_is_finished(YogEnv* env, YogHeap* heap)
+{
+    if (!YogCopying_is_finished(env, GENERATIONAL_YOUNG_HEAP(heap))) {
+        return FALSE;
+    }
+    if (!YogHeap_is_marked_objects_empty(env, heap)) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
 static void
 traverse(YogEnv* env, YogHeap* heap, ObjectKeeper keeper)
 {
-    /**
-     * YogHeap::marked_objects of heap has some objects which were added in
-     * processing root pointers. They must be consumed at first.
-     */
-    mark(env, heap, keeper);
-
-    YogHeap* yound_heap = GENERATIONAL_YOUNG_HEAP(heap);
-    while (!YogCopying_is_finished(env, yound_heap)) {
-        YogHeap_init_marked_objects(env, heap);
-        cheney_scan(env, heap, keeper);
-        YogHeap_finish_marked_objects(env, heap);
-
+    while (!YogGenerational_is_finished(env, heap)) {
         mark(env, heap, keeper);
+        YogHeap_prepare_marking(env, heap);
+        cheney_scan(env, heap, keeper);
     }
 }
 

@@ -15,6 +15,7 @@ void YogGenerational_add_to_remembered_set(YogEnv*, YogHeap*, void*);
 void* YogGenerational_alloc(YogEnv*, YogHeap*, ChildrenKeeper, Finalizer, size_t);
 void YogGenerational_delete(YogEnv*, YogHeap*);
 BOOL YogGenerational_is_empty(YogEnv*, YogHeap*);
+BOOL YogGenerational_is_finished(YogEnv*, YogHeap*);
 void YogGenerational_major_delete_garbage(YogEnv*, YogHeap*);
 void YogGenerational_major_keep_vm(YogEnv*, YogHeap*);
 void YogGenerational_major_post_gc(YogEnv*, YogHeap*);

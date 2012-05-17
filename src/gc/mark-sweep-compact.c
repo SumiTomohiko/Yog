@@ -716,10 +716,11 @@ keep_object(YogEnv* env, void* ptr, void* heap)
 void
 YogMarkSweepCompact_mark_children(YogEnv* env, YogHeap* heap, ObjectKeeper keeper)
 {
+    YogMarkedObjects* mo = heap->prev_marked_objects;
     uint_t i;
-    for (i = 0; !IS_NIL(heap->marked_objects.prev[i]); i++) {
-        YogVal v = heap->marked_objects.prev[i];
-        YOG_ASSERT(env, IS_PTR(v), "Invalid value");
+    for (i = 0; i < mo->pos; i++) {
+        YogVal v = mo->ptr[i];
+        YOG_ASSERT2(env, IS_PTR(v));
         void* ptr = VAL2PTR(v);
         (*PAYLOAD2HEADER(ptr)->keeper)(env, ptr, keeper, heap);
     }
@@ -729,9 +730,8 @@ void
 YogMarkSweepCompact_mark_in_breadth_first(YogEnv* env, YogHeap* heap)
 {
     do {
-        YogHeap_init_marked_objects(env, heap);
+        YogHeap_prepare_marking(env, heap);
         YogMarkSweepCompact_mark_children(env, heap, keep_object);
-        YogHeap_finish_marked_objects(env, heap);
     } while (!YogHeap_is_marked_objects_empty(env, heap));
 }
 

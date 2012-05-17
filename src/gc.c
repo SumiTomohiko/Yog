@@ -39,67 +39,57 @@ alloc_marked_objects(YogVal* old, uint_t size)
 void
 YogHeap_finalize(YogEnv* env, YogHeap* heap)
 {
-    free(heap->marked_objects.prev);
-    free(heap->marked_objects.cur);
+    uint_t i;
+    for (i = 0; i < array_sizeof(heap->marked_objects); i++) {
+        free(heap->marked_objects[i].ptr);
+    }
 }
 
 static void
 swap_marked_objects(YogHeap* heap)
 {
-    YogVal* tmp = heap->marked_objects.prev;
-    heap->marked_objects.prev = heap->marked_objects.cur;
-    heap->marked_objects.cur = tmp;
+    YogMarkedObjects* tmp = heap->cur_marked_objects;
+    heap->cur_marked_objects = heap->prev_marked_objects;
+    heap->prev_marked_objects = tmp;
 }
 
 void
-YogHeap_init_marked_objects(YogEnv* env, YogHeap* heap)
+YogHeap_prepare_marking(YogEnv* env, YogHeap* heap)
 {
     swap_marked_objects(heap);
-    heap->marked_objects.cur_pos = 0;
+    heap->cur_marked_objects->pos = 0;
 }
 
 static void
-extend_marked_objects(YogHeap* heap)
+extend_marked_objects(YogEnv* env, YogMarkedObjects* mo)
 {
-    uint_t new_size = heap->marked_objects.size + 1024;
+    uint_t new_size = mo->size + 1024;
+    const char* fmt = "mo->size=%u, new_size=%u";
+    YOG_ASSERT(env, mo->size < new_size, fmt, mo->size, new_size);
 
-#define ALLOC_MARKED_OBJECTS(name) do { \
-    YogVal* ptr = heap->marked_objects.name; \
-    heap->marked_objects.name = alloc_marked_objects(ptr, new_size); \
-} while (0)
-
-    ALLOC_MARKED_OBJECTS(prev);
-    ALLOC_MARKED_OBJECTS(cur);
-
-#undef ALLOC_MARKED_OBJECTS
-
-    heap->marked_objects.size = new_size;
+    mo->ptr = alloc_marked_objects(mo->ptr, new_size);
+    mo->size = new_size;
 }
 
 void
 YogHeap_add_to_marked_objects(YogEnv* env, YogHeap* heap, YogVal v)
 {
-    if (!IS_PTR(v) && !IS_NIL(v)) {
+    if (!IS_PTR(v)) {
         return;
     }
-    uint_t cur_pos = heap->marked_objects.cur_pos;
-    if (cur_pos == heap->marked_objects.size) {
-        extend_marked_objects(heap);
+    YogMarkedObjects* mo = heap->cur_marked_objects;
+    uint_t pos = mo->pos;
+    if (pos == mo->size) {
+        extend_marked_objects(env, mo);
     }
-    heap->marked_objects.cur[cur_pos] = v;
-    heap->marked_objects.cur_pos++;
-}
-
-void
-YogHeap_finish_marked_objects(YogEnv* env, YogHeap* heap)
-{
-    YogHeap_add_to_marked_objects(env, heap, YNIL);
+    mo->ptr[pos] = v;
+    mo->pos++;
 }
 
 BOOL
 YogHeap_is_marked_objects_empty(YogEnv* env, YogHeap* heap)
 {
-    return IS_NIL(heap->marked_objects.cur[0]);
+    return heap->cur_marked_objects->pos == 0;
 }
 
 static void
@@ -274,9 +264,14 @@ YogHeap_init(YogEnv* env, YogHeap* heap)
     heap->prev = heap->next = NULL;
     heap->refered = TRUE;
 
-    heap->marked_objects.size = 0;
-    heap->marked_objects.prev = heap->marked_objects.cur = NULL;
-    heap->marked_objects.cur_pos = 0;
+    uint_t i;
+    for (i = 0; i < array_sizeof(heap->marked_objects); i++) {
+        YogMarkedObjects* marked = &heap->marked_objects[i];
+        marked->ptr = NULL;
+        marked->size = marked->pos = 0;
+    }
+    heap->cur_marked_objects = &heap->marked_objects[0];
+    heap->prev_marked_objects = &heap->marked_objects[1];
 }
 
 void
@@ -354,12 +349,20 @@ delete_heaps(YogEnv* env)
 }
 
 #define ITERATE_HEAPS(vm, proc)     do { \
-    YogHeap* heap = (vm)->heaps; \
-    while (heap != NULL) { \
+    YogHeap* heap; \
+    for (heap = (vm)->heaps; heap != NULL; heap = heap->next) { \
         proc; \
-        heap = heap->next; \
-    }; \
+    } \
 } while (0)
+
+static void
+iterate_heaps(YogEnv* env, void (*f)(YogEnv*, YogHeap*))
+{
+    YogHeap* heap;
+    for (heap = env->vm->heaps; heap != NULL; heap = heap->next) {
+        f(env, heap);
+    }
+}
 
 #if defined(GC_COPYING) || defined(GC_MARK_SWEEP) || defined(GC_MARK_SWEEP_COMPACT)
 static void
@@ -395,7 +398,7 @@ keep_vm(YogEnv* env)
 static void
 cheney_scan(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogCopying_cheney_scan(env, heap));
+    iterate_heaps(env, YogCopying_cheney_scan);
 }
 #endif
 
@@ -403,8 +406,7 @@ cheney_scan(YogEnv* env)
 static void
 mark_in_breadth_first(YogEnv* env)
 {
-    YogVM* vm = env->vm;
-    ITERATE_HEAPS(vm, YogMarkSweepCompact_mark_in_breadth_first(env, heap));
+    iterate_heaps(env, YogMarkSweepCompact_mark_in_breadth_first);
 }
 #endif
 
@@ -418,7 +420,7 @@ delete_garbage(YogEnv* env)
 #elif defined(GC_MARK_SWEEP_COMPACT)
 #   define DELETE   YogMarkSweepCompact_delete_garbage
 #endif
-    ITERATE_HEAPS(env->vm, DELETE(env, heap));
+    iterate_heaps(env, DELETE);
 #undef DELETE
 }
 
@@ -441,9 +443,8 @@ gc(YogEnv* env)
 {
     prepare(env);
 
-    ITERATE_HEAPS(env->vm, YogHeap_init_marked_objects(env, heap));
+    iterate_heaps(env, YogHeap_prepare_marking);
     keep_vm(env);
-    ITERATE_HEAPS(env->vm, YogHeap_finish_marked_objects(env, heap));
 
 #if defined(GC_COPYING)
     cheney_scan(env);
@@ -536,13 +537,13 @@ YogGC_add_to_remembered_set(YogEnv* env, void* ptr)
 static void
 prepare_minor(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_prepare_minor(env, heap));
+    iterate_heaps(env, YogGenerational_prepare_minor);
 }
 
 static void
 prepare_major(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_prepare_major(env, heap));
+    iterate_heaps(env, YogGenerational_prepare_major);
 }
 
 static void
@@ -552,22 +553,42 @@ minor_keep_vm(YogEnv* env)
     YogGenerational_minor_keep_vm(env, PTR_AS(YogThread, main_thread)->heap);
 }
 
+static BOOL
+is_finished(YogEnv* env)
+{
+    BOOL finished = TRUE;
+    YogHeap* heap;
+    for (heap = env->vm->heaps; (heap != NULL) && finished; heap = heap->next) {
+        finished = finished && YogGenerational_is_finished(env, heap);
+    }
+    return finished;
+}
+
+static void
+minor_traverse_main(YogEnv* env, YogHeap* heap)
+{
+    YogGenerational_minor_traverse(env, heap);
+    YogHeap_prepare_marking(env, heap);
+}
+
 static void
 minor_traverse(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_minor_traverse(env, heap));
+    while (!is_finished(env)) {
+        iterate_heaps(env, minor_traverse_main);
+    }
 }
 
 static void
 minor_delete_garbage(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_minor_delete_garbage(env, heap));
+    iterate_heaps(env, YogGenerational_minor_delete_garbage);
 }
 
 static void
 minor_post_gc(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_minor_post_gc(env, heap));
+    iterate_heaps(env, YogGenerational_minor_post_gc);
 }
 
 static uint_t
@@ -601,14 +622,13 @@ minor_gc(YogEnv* env)
 
     prepare_minor(env);
 
-    ITERATE_HEAPS(env->vm, YogHeap_init_marked_objects(env, heap));
+    iterate_heaps(env, YogHeap_prepare_marking);
     for (i = 0; i < heaps_num; i++) {
         YogHeap* heap = r[i].heap;
         RememberedSet* remembered_set = r[i].remembered_set;
         YogGenerational_trace_remembered_set(env, heap, remembered_set);
     }
     minor_keep_vm(env);
-    ITERATE_HEAPS(env->vm, YogHeap_finish_marked_objects(env, heap));
 
     minor_traverse(env);
     minor_delete_garbage(env);
@@ -632,21 +652,30 @@ major_keep_vm(YogEnv* env)
 }
 
 static void
+major_traverse_main(YogEnv* env, YogHeap* heap)
+{
+    YogGenerational_major_traverse(env, heap);
+    YogHeap_prepare_marking(env, heap);
+}
+
+static void
 major_traverse(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_major_traverse(env, heap));
+    while (!is_finished(env)) {
+        iterate_heaps(env, major_traverse_main);
+    }
 }
 
 static void
 major_delete_garbage(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_major_delete_garbage(env, heap));
+    iterate_heaps(env, YogGenerational_major_delete_garbage);
 }
 
 static void
 major_post_gc(YogEnv* env)
 {
-    ITERATE_HEAPS(env->vm, YogGenerational_major_post_gc(env, heap));
+    iterate_heaps(env, YogGenerational_major_post_gc);
 }
 
 static void
@@ -655,9 +684,8 @@ major_gc(YogEnv* env)
     DEBUG(TRACE("%p: enter major_gc", env));
     prepare_major(env);
 
-    ITERATE_HEAPS(env->vm, YogHeap_init_marked_objects(env, heap));
+    iterate_heaps(env, YogHeap_prepare_marking);
     major_keep_vm(env);
-    ITERATE_HEAPS(env->vm, YogHeap_finish_marked_objects(env, heap));
 
     major_traverse(env);
     major_delete_garbage(env);

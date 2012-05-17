@@ -51,6 +51,14 @@
     YogGC_UPDATE_PTR((env), (obj), member, val); \
 } while (0)
 
+struct YogMarkedObjects {
+    YogVal* ptr;
+    uint_t size;
+    uint_t pos;
+};
+
+typedef struct YogMarkedObjects YogMarkedObjects;
+
 struct YogHeap {
     /**
      * FIXME: YogGenerational's children have also these members, but they are
@@ -60,12 +68,9 @@ struct YogHeap {
     struct YogHeap* next;
     BOOL refered;
 
-    struct {
-        uint_t size;
-        YogVal* prev;
-        YogVal* cur;
-        uint_t cur_pos;
-    } marked_objects;
+    YogMarkedObjects marked_objects[2];
+    YogMarkedObjects* prev_marked_objects;
+    YogMarkedObjects* cur_marked_objects;
 };
 
 typedef struct YogHeap YogHeap;
@@ -95,10 +100,9 @@ void YogGC_perform_minor(YogEnv*);
 void YogGC_suspend(YogEnv*);
 void YogHeap_add_to_marked_objects(YogEnv*, YogHeap*, YogVal);
 void YogHeap_finalize(YogEnv*, YogHeap*);
-void YogHeap_finish_marked_objects(YogEnv*, YogHeap*);
 void YogHeap_init(YogEnv*, YogHeap*);
-void YogHeap_init_marked_objects(YogEnv*, YogHeap*);
 BOOL YogHeap_is_marked_objects_empty(YogEnv*, YogHeap*);
+void YogHeap_prepare_marking(YogEnv*, YogHeap*);
 
 /* PROTOTYPE_END */
 
