@@ -29,28 +29,11 @@ tmp_dir="/tmp/$$"
 run mkdir -p "${tmp_dir}"
 echo "Temporary directory is ${tmp_dir}"
 
-echo "Testing ${archive}.tar.gz ..."
 untar="tar xf -"
 cwd=`pwd`
-(cd "${tmp_dir}" && run zcat "${cwd}/${archive}.tar.gz" | run ${untar})
-do_test
-
-echo "Testing ${archive}.tar.bz2 ..."
+echo "Testing ${archive}.tar.xz ..."
 cleanup
-(cd "${tmp_dir}" && run bzcat "${cwd}/${archive}.tar.bz2" | run ${untar})
-do_test
-
-which xzcat >/dev/null
-if [ $? = 0 ]; then
-  echo "Testing ${archive}.tar.xz ..."
-  cleanup
-  (cd "${tmp_dir}" && run xzcat "${cwd}/${archive}.tar.xz" | run ${untar})
-  do_test
-fi
-
-echo "Testing ${archive}.zip ..."
-cleanup
-(cd "${tmp_dir}" && run unzip -q "${cwd}/${archive}.zip")
+(cd "${tmp_dir}" && run xzcat "${cwd}/${archive}.tar.xz" | run ${untar})
 do_test
 
 run rm -rf "${tmp_dir}"
