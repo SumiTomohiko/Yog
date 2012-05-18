@@ -127,7 +127,7 @@ The basic usage of actions is following. Where _e_ is any pattern.
 
   from peg import action
 
-  g = action(e) do [params, ....]
+  g = action(e) do |params, ....|
     # Do something. Don't forget to use the "next" statement to exit a block.
   end
 
@@ -142,18 +142,18 @@ I show you a very simple PEG example. It is a calculator which has only two oper
   from peg import action, pattern
 
   digit = pattern("0") / pattern("1") / pattern("2") / pattern("3") / pattern("4") / pattern("5") / pattern("6") / pattern("7") / pattern("8") / pattern("9")
-  num = action(digit ^ 0) do [digits]
+  num = action(digit ^ 0) do |digits|
     n = 0
-    digits.each() do [digit]
+    digits.each() do |digit|
       nonlocal n
       n = 10 * n + digit.to_i()
     end
     next n
   end
   op = pattern("+") / pattern("-")
-  expr = action(num * ((op * num) ^ 0)) do [num, operations]
+  expr = action(num * ((op * num) ^ 0)) do |num, operations|
     n = num
-    operations.each() do [operation]
+    operations.each() do |operation|
       nonlocal n
       if operation[0] == "+"
         n += operation[1]
@@ -180,10 +180,10 @@ You can use the +peg+ package with arrays which contains any classes. In case of
 You can use any expressions for matching. In case of matching with an iteration of even numbers and odd numbers, use +CustomPattern+ objects.
 
   from peg import CustomPattern
-  even = CustomPattern.new(0) do [pat, act]
+  even = CustomPattern.new(0) do |pat, act|
     next act % 2 == pat
   end
-  odd = CustomPattern.new(1) do [pat, act]
+  odd = CustomPattern.new(1) do |pat, act|
     next act % 2 == pat
   end
   g = (even * odd) ^ 0

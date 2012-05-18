@@ -18,7 +18,7 @@ class: Coroutine
 
   Arguments to +Coroutine#resume+ become actual parameters of a block. +Coroutine#resume+ accepts any number of arguments.
 
-    co = Coroutine.new() do [n]
+    co = Coroutine.new() do |n|
       print(n)
     end
     co.resume(42) # prints 42
@@ -26,7 +26,7 @@ class: Coroutine
   A coroutine stops executing with +Coroutine.yield+.
 
     co = Coroutine.new() do
-      42.times() do [n]
+      42.times() do |n|
         print(n)
         Coroutine.yield()
       end
@@ -49,7 +49,7 @@ class: Coroutine
   +Coroutine#resume+ and +Coroutine.yield+ exchanges information. Arguments for +Coroutine.yield+ become return values of +Coroutine#resume+, arguments for +Coroutine#resume+ become return values of +Coroutine.yield+.
 
     co = Coroutine.new() do
-      42.times() do [n]
+      42.times() do |n|
         ping = Coroutine.yield("pong")
         puts(ping)
       end

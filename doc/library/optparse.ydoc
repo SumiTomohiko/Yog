@@ -22,7 +22,7 @@ Executing
   from optparse import OptionParser
 
   opt = OptionParser.new()
-  opt.on_option("x", "foo") do [val]
+  opt.on_option("x", "foo") do |val|
     puts(val)
   end
   opt.on_switch("y", "bar") do

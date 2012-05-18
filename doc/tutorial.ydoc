@@ -101,7 +101,7 @@ Yog uses the +elif+ keyword to place the condition sequence. There can be zero o
 
 If you want to iterate some statements, you can use the +times+ method of the integer object with a *block*. *Block* is a special syntax for passing some statements to functions. Its usage is like the following\:
 
-  42.times() do [n]
+  42.times() do |n|
     puts(n)
   end
 
@@ -189,7 +189,7 @@ Dictionaries are data structures which are called in other languages as "hashes"
   => 26
   >>> dict["foo"]
   => bar
-  >>> dict.each() do [key, value]
+  >>> dict.each() do |key, value|
   ...   puts(key, value)
   ... end
   foo
@@ -285,7 +285,7 @@ You can read variables in enclosing functions (1) from blocks (2). +foo()+ of th
 +return+ statements in blocks ends enclosing functions\:
 
   def foo()
-    42.times() do [n]
+    42.times() do |n|
       puts(n)
       return 26
     end
@@ -328,7 +328,7 @@ Keyword arguments must be placed after the positional arguments.
 One of the useful functions is an arbitrary number of arguments. If you put the argument +*args+ (+args+ can be the name which you like), this becomes the variable argument. +args+ is an array. When you define the following function\:
 
   >>> def foo(*args)
-  ...   args.each() do [n]
+  ...   args.each() do |n|
   ...     puts(n)
   ...   end
   ... end
@@ -343,7 +343,7 @@ You can call this function with an arbitrary number of arguments\:
 If actual parameters are specified by name, these are stored to the argument +**kw+ (+kw+ can be the name you like). +kw+ is a dictionary. When you define the following function\:
 
   >>> def foo(**kw)
-  ...   kw.each() do [key, value]
+  ...   kw.each() do |key, value|
   ...     print(key)
   ...     print(":")
   ...     print(value)
@@ -385,7 +385,7 @@ If you have a dictionary +kw+ in which arguments are stored, you can use +**kw+ 
 
 Reading a file is realized in the following way\:
 
-  File.open(filename, "r") do [fp]
+  File.open(filename, "r") do |fp|
     # do something with fp
   end
 
@@ -395,7 +395,7 @@ The +File.open+ method also closes the file.
 
 The way to write file is similar to the above code\:
 
-  File.open(filename, "w") do [fp]
+  File.open(filename, "w") do |fp|
     # do something with fp
   end
 
