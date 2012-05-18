@@ -1,13 +1,12 @@
 
 = Executable Modules
 
-There are five executable modules of Yog.
+There are four executable modules of Yog.
 
 + yog-copying
 + yog-mark-sweep
 + yog-mark-sweep-compact
-+ yog-generational
-+ yog-bdw
++ yog
 
 Each modules support different garbage collection (GC).
 
@@ -20,8 +19,7 @@ GC of each executable modules are following:
 + +yog-copying+ -- copying GC
 + +yog-mark-sweep+ -- mark-sweep GC
 + +yog-mark-sweep-compact+ -- mark-sweep-compact GC
-+ +yog-generational+ -- generational GC
-+ +yog-bdw+ -- Boehm GC
++ +yog+ -- generational GC
 
 == Shared Library
 
