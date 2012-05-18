@@ -38,7 +38,7 @@ do
   esac
 done
 
-yog="src/yog-generational"
+yog="src/yog"
 
 archive="${1}"
 if [ -z "${archive}" ]; then
