@@ -16,7 +16,8 @@ cleanup()
 
 do_test()
 {
-  (cd "${tmp_dir}/${archive}" && run mkdir -p $$ && run ./configure --prefix=`pwd`/$$ CFLAGS=-I${HOME}/include LDFLAGS=-L${HOME}/lib && run make && run make install)
+  prefix="$(pwd)/$$"
+  (cd "${tmp_dir}/${archive}" && run mkdir -p "${prefix}" && run ./configure --prefix="${prefix}" CFLAGS=-I${HOME}/include LDFLAGS=-L${HOME}/lib && run make && run make install && YOG="${prefix}/bin/yog" run make test)
 }
 
 archive="${1}"
