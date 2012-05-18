@@ -58,12 +58,13 @@ SRCS = test_argtype_char.c test_argtype_int.c test_argtype_long.c \
        test_argtype_unsigned_char.c test_argtype_unsigned_int.c \
        test_argtype_unsigned_long.c test_argtype_unsigned_short.c \
        test_argtype_voidp.c test_rettype_char.c test_rettype_int.c \
-       test_rettype_long.c test_rettype_long_int.c test_rettype_short.c \
-       test_rettype_short_int.c test_rettype_signed_char.c \
-       test_rettype_signed_int.c test_rettype_signed_long.c \
-       test_rettype_signed_short.c test_rettype_unsigned_char.c \
-       test_rettype_unsigned_int.c test_rettype_unsigned_long.c \
-       test_rettype_unsigned_short.c test_rettype_voidp.c
+       test_rettype_long.c test_rettype_long_int.c test_rettype_long_signed.c \
+       test_rettype_short.c test_rettype_short_int.c \
+       test_rettype_signed_char.c test_rettype_signed_int.c \
+       test_rettype_signed_long.c test_rettype_signed_short.c \
+       test_rettype_unsigned_char.c test_rettype_unsigned_int.c \
+       test_rettype_unsigned_long.c test_rettype_unsigned_short.c \
+       test_rettype_voidp.c
 
 $(SRCS): test_h2yog.py
 	$(PYTHON) test_h2yog.py
