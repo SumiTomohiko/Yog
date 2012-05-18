@@ -28,7 +28,6 @@ Shared libraries (.so) support only the generational GC.
 == Restrictions
 
 * +yog-mark-sweep-compact+ doesn't do compaction. It will be implemented in future.
-* Yog for Windows supports only copying GC.
 
 --
 vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
