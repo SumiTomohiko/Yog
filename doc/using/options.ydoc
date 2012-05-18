@@ -5,17 +5,17 @@
 
 This option defines heap's size. This option accepts a format of _g_+G+_m_+M+_k_+K+. For example, +--heap-size=42M+ defines a heap of 42MByte.
 
-+yog-generational+ and +yog-bdw+ ignore this option.
++yog+ ignores this option.
 
 == +--old-heap-size+
 
-This is only for +yog-generational+.
+This is only for +yog+.
 
 This option defines heap's size of the old generation. This option accepts the same format of +--heap-size+.
 
 == +--young-heap-size+
 
-This is only for +yog-generational+.
+This is only for +yog+.
 
 This option defines heap's size of the young generation. This option accepts the same format of +--heap-size+.
 
