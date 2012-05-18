@@ -84,18 +84,9 @@ run make doc
 run cp -r doc/html "${src_root}/doc"
 print_done
 
-echo -n "Archive .tar.gz..."
 cwd=`pwd`
-(cd "${work_dir}" && run tar czf "${cwd}/${archive}.tar.gz" "${archive}")
-print_done
-echo -n "Archive .tar.bz2..."
-(cd "${work_dir}" && run tar cjf "${cwd}/${archive}.tar.bz2" "${archive}")
-print_done
 echo -n "Archive .tar.xz..."
 (cd "${work_dir}" && run tar cf - "${archive}" | run xz --compress > "${cwd}/${archive}.tar.xz")
-print_done
-echo -n "Archive .zip..."
-(cd "${work_dir}" && run zip -qr "${cwd}/${archive}.zip" "${archive}")
 print_done
 
 run rm -rf "${work_dir}"
