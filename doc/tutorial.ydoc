@@ -53,17 +53,17 @@ Defining a function starts from the +def+ keyword. The function name and the par
 
 If you want to execute a script, provide script's file name to one of executable modules as an argument\:
 
-  $ yog-generational filename
+  $ yog filename
 
 ==== Executable Scripts
 
-You can make scripts directly executable by putting the following line at the head of the file (assuming that +yog-generational+ is installed into +/usr/local/bin/+)\:
+You can make scripts directly executable by putting the following line at the head of the file (assuming that +yog+ is installed into +/usr/local/bin/+)\:
 
-  #!/usr/local/bin/yog-generational
+  #!/usr/local/bin/yog
 
 or\:
 
-  #!/usr/bin/env yog-generational
+  #!/usr/bin/env yog
 
 and add execute mode to the file by +chmod+ command\:
 
