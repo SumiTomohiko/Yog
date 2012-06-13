@@ -3,7 +3,7 @@ title: "waf: Detect libraries."
 desc: ""
 type: :task
 component: misc
-release: 
+release: 0.1.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed
 disposition: :fixed
@@ -19,4 +19,8 @@ log_events:
 - - 2012-06-13 08:33:27.485886 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - closed with disposition fixed
+  - ""
+- - 2012-06-13 16:01:57.583371 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - assigned to release 0.1.0 from unassigned
   - ""
