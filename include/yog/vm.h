@@ -2,7 +2,7 @@
 #define YOG_VM_H_INCLUDED
 
 #include <pthread.h>
-#if HAVE_SYS_TYPES_H
+#if YOG_HAVE_SYS_TYPES_H
 #   include <sys/types.h>
 #endif
 #include "yog/gc.h"

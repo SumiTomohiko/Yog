@@ -22,7 +22,7 @@ extern char *optarg;
 /* Some systems have this, otherwise you need to define it somewhere. */
 extern int  optreset;
 
-#ifndef HAVE_STRUCT_OPTION
+#ifndef YOG_HAVE_STRUCT_OPTION
 
 struct option
 {
@@ -37,7 +37,7 @@ struct option
 #define optional_argument 2
 #endif
 
-#ifndef HAVE_GETOPT_LONG
+#ifndef YOG_HAVE_GETOPT_LONG
 
 extern int getopt_long(int argc, char *const argv[],
             const char *optstring,

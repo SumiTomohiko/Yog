@@ -1,4 +1,4 @@
-#if defined(HAVE_DLFCN_H)
+#if defined(YOG_HAVE_DLFCN_H)
 #   include <dlfcn.h>
 #endif
 #include <errno.h>

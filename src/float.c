@@ -1,6 +1,6 @@
 #include "yog/config.h"
 #include <ctype.h>
-#if defined(HAVE_FLOAT_H)
+#if defined(YOG_HAVE_FLOAT_H)
 #   include <float.h>
 #endif
 #include <math.h>

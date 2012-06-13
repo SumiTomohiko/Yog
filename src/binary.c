@@ -1,5 +1,5 @@
 #include "yog/config.h"
-#if defined(HAVE_STDINT_H)
+#if defined(YOG_HAVE_STDINT_H)
 #   include <stdint.h>
 #endif
 #include <stdio.h>

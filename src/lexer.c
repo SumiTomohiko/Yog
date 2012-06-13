@@ -1,12 +1,12 @@
 #include "yog/config.h"
 #include <ctype.h>
-#if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
+#if defined(YOG_HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(YOG_HAVE_UNISTD_H)
 #   include <unistd.h>
 #endif
 #include "yog/array.h"

@@ -1,12 +1,12 @@
 #include "yog/config.h"
 #include <ctype.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(YOG_HAVE_STDLIB_H)
 #   include <stdlib.h>
 #endif
-#if defined(HAVE_STRING_H)
+#if defined(YOG_HAVE_STRING_H)
 #   include <string.h>
 #endif
-#if defined(HAVE_STRINGS_H)
+#if defined(YOG_HAVE_STRINGS_H)
 #   include <strings.h>
 #endif
 #include "ffi.h"

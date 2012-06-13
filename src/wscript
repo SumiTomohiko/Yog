@@ -1,0 +1,26 @@
+# -*- coding: utf-8 -*-
+
+def build(ctx):
+    target = "yog"
+    source = ctx.path.ant_glob("*.c") + [
+            "gc/generational.c",
+            "gc/copying.c",
+            "gc/mark-sweep-compact.c"]
+    corgi_dir = "../corgi"
+    libffi_dir = "../libffi"
+    gmp_dir = "../gmp"
+    includes = [
+            "../include",
+            corgi_dir + "/include",
+            libffi_dir + "/include",
+            gmp_dir]
+    cflags = ["-Wall", "-Werror", "-O2", "-g"]
+    lib = ["m", "pthread"]
+    stlib = ["corgi", "ffi", "gmp"]
+    stlibpath = [
+            corgi_dir + "/src/.libs",
+            libffi_dir + "/.libs",
+            gmp_dir + "/.libs"]
+    ctx.program(**locals())
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

@@ -1,11 +1,11 @@
 #include "yog/config.h"
-#if defined(HAVE_STDINT_H)
+#if defined(YOG_HAVE_STDINT_H)
 #   include <stdint.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(YOG_HAVE_STDLIB_H)
 #   include <stdlib.h>
 #endif
-#if defined(HAVE_STRINGS_H)
+#if defined(YOG_HAVE_STRINGS_H)
 #   include <strings.h>
 #endif
 #include "yog/error.h"

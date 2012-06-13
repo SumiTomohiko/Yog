@@ -8,7 +8,7 @@
 #endif
 #include <ctype.h>
 #include <stdio.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(YOG_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include <string.h>

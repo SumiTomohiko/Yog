@@ -1,17 +1,17 @@
 #if !defined(YOG_SYSDEPS_H_INCLUDED)
 #define YOG_SYSDEPS_H_INCLUDED
 
-#if defined(HAVE_ALLOCA_H)
+#if defined(YOG_HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif
-#if defined(HAVE_DIRECT_H)
+#if defined(YOG_HAVE_DIRECT_H)
 #   include <direct.h>
 #endif
-#if defined(HAVE_DLFCN_H)
+#if defined(YOG_HAVE_DLFCN_H)
 #   include <dlfcn.h>
 #endif
 #include <errno.h>
-#if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
+#if defined(YOG_HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
 #include <math.h>
@@ -23,33 +23,33 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#if defined(HAVE__ALLOCA)
+#if defined(YOG_HAVE__ALLOCA)
 #   define YogSysdeps_alloca    _alloca
 #else
 #   define YogSysdeps_alloca    alloca
 #endif
-#if defined(HAVE__ISNAN)
+#if defined(YOG_HAVE__ISNAN)
 #   define YogSysdeps_isnan     _isnan
 #else
 #   define YogSysdeps_isnan     isnan
 #endif
-#if defined(HAVE__SNPRINTF)
+#if defined(YOG_HAVE__SNPRINTF)
 #   define YogSysdeps_snprintf  _snprintf
 #else
 #   define YogSysdeps_snprintf  snprintf
 #endif
-#if defined(HAVE_VSNPRINTF)
+#if defined(YOG_HAVE_VSNPRINTF)
 #   define YogSysdeps_vsnprintf(s, size, fmt, ap)   vsnprintf(s, size, fmt, ap)
 #else
 #   define YogSysdeps_vsnprintf(s, size, fmt, ap)   vsprintf(s, fmt, ap)
 #endif
 #define YogSysdeps_mkdir(path)   mkdir(path, 0755)
-#if defined(HAVE_BZERO)
+#if defined(YOG_HAVE_BZERO)
 #   define YogSysdeps_bzero(s, n)   bzero(s, n)
 #else
 #   define YogSysdeps_bzero(s, n)   memset(s, 0, n)
 #endif
-#if defined(HAVE_DLOPEN)
+#if defined(YOG_HAVE_DLOPEN)
 #   define LIB_HANDLE                   void*
 #   define YogSysdeps_open_lib(path)    dlopen((path), RTLD_LAZY)
 #   define YogSysdeps_get_proc(handle, name) \

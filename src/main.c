@@ -1,5 +1,5 @@
 #include "yog/config.h"
-#if defined(HAVE_ALLOCA_H)
+#if defined(YOG_HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif
 #include <ctype.h>
@@ -33,7 +33,7 @@ static void
 print_version()
 {
 #if defined(GC_GENERATIONAL)
-    printf("yog %s\n", PACKAGE_VERSION);
+    printf("yog %s\n", YOG_PACKAGE_VERSION);
 #else
 #   if defined(GC_COPYING)
 #       define GC_NAME  "copying"

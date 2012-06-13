@@ -1,29 +1,29 @@
 #include "yog/config.h"
 #include <ctype.h>
-#if defined(HAVE_DLFCN_H)
+#if defined(YOG_HAVE_DLFCN_H)
 #   include <dlfcn.h>
 #endif
 #include <errno.h>
-#if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
+#if defined(YOG_HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined(HAVE_STRINGS_H)
+#if defined(YOG_HAVE_STRINGS_H)
 #   include <strings.h>
 #endif
-#if defined(HAVE_SYS_MMAN_H)
+#if defined(YOG_HAVE_SYS_MMAN_H)
 #   include <sys/mman.h>
 #endif
 #include <sys/stat.h>
-#if defined(HAVE_SYS_TIME_H)
+#if defined(YOG_HAVE_SYS_TIME_H)
 #   include <sys/time.h>
 #endif
 #include <sys/types.h>
 #include <time.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(YOG_HAVE_UNISTD_H)
 #   include <unistd.h>
 #endif
 #include "yog/array.h"
@@ -619,10 +619,10 @@ static void
 init_read_write_lock(pthread_rwlock_t* lock)
 {
     pthread_rwlockattr_t* pattr;
-#if defined(HAVE_PTHREAD_RWLOCKATTR_INIT)
+#if defined(YOG_HAVE_PTHREAD_RWLOCKATTR_INIT)
     pthread_rwlockattr_t attr;
     pthread_rwlockattr_init(&attr);
-#   if defined(HAVE_PTHREAD_RWLOCKATTR_SETKIND_NP)
+#   if defined(YOG_HAVE_PTHREAD_RWLOCKATTR_SETKIND_NP)
     pthread_rwlockattr_setkind_np(&attr, PTHREAD_RWLOCK_PREFER_WRITER_NP);
 #   endif
     pattr = &attr;
@@ -633,7 +633,7 @@ init_read_write_lock(pthread_rwlock_t* lock)
     if ((err = pthread_rwlock_init(lock, pattr)) != 0) {
         YOG_BUG(NULL, "pthread_rwlock_init failed: %s", strerror(err));
     }
-#if defined(HAVE_PTHREAD_RWLOCKATTR_INIT) && defined(HAVE_PTHREAD_RWLOCKATTR_DESTROY)
+#if defined(YOG_HAVE_PTHREAD_RWLOCKATTR_INIT) && defined(YOG_HAVE_PTHREAD_RWLOCKATTR_DESTROY)
     pthread_rwlockattr_destroy(&attr);
 #endif
 }
@@ -1354,7 +1354,8 @@ add_lib_dir_to_search_path(YogEnv* env, YogHandle* search_path, YogHandle* exe)
         return;
     }
 
-    YogVal s = YogString_from_string(env, PREFIX "/lib/yog/" PACKAGE_VERSION);
+    const char* path = YOG_PREFIX "/lib/yog" YOG_PACKAGE_VERSION;
+    YogVal s = YogString_from_string(env, path);
     YogArray_push(env, HDL2VAL(search_path), s);
 }
 

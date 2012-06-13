@@ -4,9 +4,9 @@
 #include "yog/object.h"
 #include "yog/yog.h"
 
-#if SIZEOF_INT == 4
+#if YOG_SIZEOF_INT == 4
 #   define CHAR_TYPE int
-#elif SIZEOF_LONG == 4
+#elif YOG_SIZEOF_LONG == 4
 #   define CHAR_TYPE long
 #else
 #   error "Can't determine type of charactor"
