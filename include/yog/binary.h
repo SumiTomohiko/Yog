@@ -1,7 +1,7 @@
 #if !defined(YOG_BINARY_H_INCLUDED)
 #define YOG_BINARY_H_INCLUDED
 
-#if defined(HAVE_STDINT_H)
+#if defined(YOG_HAVE_STDINT_H)
 #   include <stdint.h>
 #endif
 #include "yog/object.h"

@@ -1,5 +1,5 @@
 #include "yog/config.h"
-#if defined(HAVE_ALLOCA_H)
+#if defined(YOG_HAVE_ALLOCA_H)
 #   include <alloca.h>
 #endif
 #include <ctype.h>

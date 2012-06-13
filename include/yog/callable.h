@@ -2,7 +2,7 @@
 #define YOG_CALLABLE_H_INCLUDED
 
 #include <stdarg.h>
-#if defined(HAVE_STDINT_H)
+#if defined(YOG_HAVE_STDINT_H)
 #   include <stdint.h>
 #endif
 #include "yog/object.h"

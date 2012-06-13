@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "waf: Run configure of libffi."
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :closed
+disposition: :fixed
+creation_time: 2012-05-09 11:57:06.476039 Z
+references: []
+
+id: 048f3ada9b8e4a45a6c9c433a3b9a98e5cf573fb
+log_events: 
+- - 2012-05-09 11:57:06.934433 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2012-06-13 08:47:32.117608 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
+  - ""

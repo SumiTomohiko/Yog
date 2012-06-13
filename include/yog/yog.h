@@ -2,7 +2,7 @@
 #define YOG_YOG_H_INCLUDED
 
 #include "yog/config.h"
-#if defined(HAVE_LIMITS_H)
+#if defined(YOG_HAVE_LIMITS_H)
 #   include <limits.h>
 #endif
 #include <stdio.h>
@@ -30,11 +30,11 @@
  * xxxx xxxx xxxx xxxx xxxx xxxx xxxx 1110 Symbol
  * xxxx xxxx xxxx xxxx xxxx xxxx xxxx xx00 pointer
  */
-#if defined(SIZEOF_VOID_)
-#   define SIZEOF_VOIDP     SIZEOF_VOID_
+#if defined(YOG_SIZEOF_VOID_)
+#   define YOG_SIZEOF_VOIDP     YOG_SIZEOF_VOID_
 #endif
 
-#if SIZEOF_VOIDP == SIZEOF_INT
+#if YOG_SIZEOF_VOIDP == YOG_SIZEOF_INT
 typedef unsigned int YogVal;
 typedef unsigned int ID;
 #   define INVALID_ID       VAL2ID(UINT_MAX & (~1))
@@ -44,7 +44,7 @@ typedef unsigned int pc_t;
 #   define SIGNED_MIN       INT_MIN
 #   define UNSIGNED_TYPE    unsigned int
 #   define UNSIGNED_MAX     UINT_MAX
-#elif SIZEOF_VOIDP == SIZEOF_LONG
+#elif YOG_SIZEOF_VOIDP == YOG_SIZEOF_LONG
 typedef unsigned long YogVal;
 typedef unsigned long ID;
 #   define INVALID_ID       VAL2ID(ULONG_MAX & (~1))
@@ -54,7 +54,7 @@ typedef unsigned long pc_t;
 #   define SIGNED_MIN       LONG_MIN
 #   define UNSIGNED_TYPE    unsigned long
 #   define UNSIGNED_MAX     ULONG_MAX
-#elif SIZEOF_VOIDP == SIZEOF_LONG_LONG
+#elif YOG_SIZEOF_VOIDP == YOG_SIZEOF_LONG_LONG
 typedef unsigned long long YogVal;
 typedef unsigned long long ID;
 #   define INVALID_ID       VAL2ID(ULLONG_MAX & (~1))
@@ -371,7 +371,7 @@ uint_t YogVal_to_uint(YogEnv*, YogVal, const char*);
 #define MAIN_MODULE_NAME    "__main__"
 #define PATH_SEPARATOR   '/'
 
-#if !defined(HAVE_STDINT_H)
+#if !defined(YOG_HAVE_STDINT_H)
 typedef unsigned char uint8_t;
 #   define UINT8_MAX    255
 #endif

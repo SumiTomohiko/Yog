@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#if HAVE_SYS_TYPES_H
+#if YOG_HAVE_SYS_TYPES_H
 #   include <sys/types.h>
 #endif
 #include "yog/error.h"

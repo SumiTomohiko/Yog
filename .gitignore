@@ -33,6 +33,8 @@
 .gdb_history
 .gdbinit
 .libs
+.lock-waf*
+.waf*
 Debug
 Makefile
 Makefile.in
@@ -51,6 +53,7 @@ bdwgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/Makefile
 bdwgc/libatomic_ops-1.2/tests/Makefile
 bin/Makefile
 bin/Makefile.in
+build
 build-stamp
 config.h
 config.log

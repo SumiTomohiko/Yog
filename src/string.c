@@ -1,7 +1,7 @@
 #include "yog/config.h"
 #include <ctype.h>
 #include <errno.h>
-#if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
+#if defined(YOG_HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
 #include <stdio.h>

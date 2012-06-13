@@ -38,7 +38,7 @@
 #include <string.h>
 #include "getopt.h"
 
-#ifndef HAVE_INT_OPTRESET
+#ifndef YOG_HAVE_INT_OPTRESET
 int         optreset;
 #endif
 

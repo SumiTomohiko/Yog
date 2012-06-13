@@ -1,6 +1,6 @@
 #include "yog/config.h"
 #include <errno.h>
-#if defined(HAVE_SYS_TIME_H)
+#if defined(YOG_HAVE_SYS_TIME_H)
 #   include <sys/time.h>
 #endif
 #include "yog/binary.h"

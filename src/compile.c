@@ -1,10 +1,10 @@
 #include "yog/config.h"
 #include <limits.h>
-#if defined(HAVE_MALLOC_H) && !defined(__OpenBSD__)
+#if defined(YOG_HAVE_MALLOC_H) && !defined(__OpenBSD__)
 #   include <malloc.h>
 #endif
 #include <stdarg.h>
-#if defined(HAVE_STDINT_H)
+#if defined(YOG_HAVE_STDINT_H)
 #   include <stdint.h>
 #endif
 #include <stdio.h>

@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "waf: Run configure of gmp."
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :closed
+disposition: :fixed
+creation_time: 2012-05-09 11:56:48.125867 Z
+references: []
+
+id: 80a7d4dc4f2f4dec659a13101ac01f7d235ac5d2
+log_events: 
+- - 2012-05-09 11:56:48.507123 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2012-06-13 08:47:28.364578 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
+  - ""

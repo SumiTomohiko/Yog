@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "waf: Detect size of long long."
+desc: ""
+type: :task
+component: misc
+release: 
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :closed
+disposition: :fixed
+creation_time: 2012-05-09 11:54:38.915758 Z
+references: []
+
+id: 6b363e03d38890d1aa6f85c0772daf4e02b8fb34
+log_events: 
+- - 2012-05-09 11:54:39.412666 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
+- - 2012-06-13 07:27:41.517015 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
+  - ""
