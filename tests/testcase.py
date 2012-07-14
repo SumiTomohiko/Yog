@@ -30,7 +30,8 @@ def get_command():
         return environ["YOG"]
     except KeyError:
         pass
-    return abspath(join(abspath(dirname(__file__)), "..", "src", "yog"))
+    dirpath = abspath(dirname(__file__))
+    return abspath(join(dirpath, "..", "build", "src", "yog"))
 
 class TestCase(object):
 
