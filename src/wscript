@@ -17,6 +17,7 @@ def build(ctx):
     cflags = ["-Wall", "-Werror", "-O2", "-g"]
     lib = ["m", "pthread"]
     stlib = ["corgi", "ffi", "gmp"]
+    linkflags = "-export-dynamic"
     stlibpath = [
             corgi_dir + "/src/.libs",
             libffi_dir + "/.libs",
