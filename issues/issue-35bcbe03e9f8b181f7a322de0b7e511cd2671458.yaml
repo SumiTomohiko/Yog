@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: unix/test_ffi.py::test_Struct430 takes too long time (it cause timeover).
+desc: ""
+type: :bugfix
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-07-15 17:58:38.803614 Z
+references: []
+
+id: 35bcbe03e9f8b181f7a322de0b7e511cd2671458
+log_events: 
+- - 2012-07-15 17:58:39.413832 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""

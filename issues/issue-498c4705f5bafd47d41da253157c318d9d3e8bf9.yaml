@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: unix/test_ffi.py::test_argument430 takes too long time (timeover).
+desc: ""
+type: :bugfix
+component: core
+release: 0.1.0
+reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+status: :unstarted
+disposition: 
+creation_time: 2012-07-15 17:59:22.106679 Z
+references: []
+
+id: 498c4705f5bafd47d41da253157c318d9d3e8bf9
+log_events: 
+- - 2012-07-15 17:59:22.794937 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - created
+  - ""
