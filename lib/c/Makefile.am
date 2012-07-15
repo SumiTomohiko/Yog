@@ -1,5 +1,5 @@
 
-YOG = $(top_srcdir)/src/yog
+YOG = $(top_srcdir)/build/src/yog
 LALR1GRAM = $(top_srcdir)/bin/lalr1gram.yog
 SRC = grammar.yogram
 
