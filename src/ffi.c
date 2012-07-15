@@ -2111,21 +2111,29 @@ check_Bignum_is_less_or_equal_than_int(YogEnv* env, YogVal val, int_t n)
 static void
 check_Bignum_is_greater_or_equal_than_long_long(YogEnv* env, YogVal bignum, long long n)
 {
+    SAVE_ARG(env, bignum);
+
     if (0 <= YogBignum_compare_with_long_long(env, bignum, n)) {
-        return;
+        RETURN_VOID(env);
     }
     const char* fmt = "Value must be greater or equal %lld, not %D";
     YogError_raise_ValueError(env, fmt, n, bignum);
+
+    RETURN_VOID(env);
 }
 
 static void
 check_Bignum_is_less_or_equal_than_long_long(YogEnv* env, YogVal bignum, long long n)
 {
+    SAVE_ARG(env, bignum);
+
     if (YogBignum_compare_with_long_long(env, bignum, INT64_MAX) <= 0) {
-        return;
+        RETURN_VOID(env);
     }
     const char* fmt = "Value must be less or equal %llu, not %D";
     YogError_raise_ValueError(env, fmt, n, bignum);
+
+    RETURN_VOID(env);
 }
 
 static void

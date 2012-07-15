@@ -1,13 +1,14 @@
 #if !defined(YOG_BIGNUM_H_INCLUDED)
 #define YOG_BIGNUM_H_INCLUDED
 
-#include "gmp.h"
+#include <bigd.h>
 #include "yog/object.h"
 #include "yog/yog.h"
 
 struct YogBignum {
     YOGBASICOBJ_HEAD;
-    mpz_t num;
+    BIGD num;
+    int_t sign; /* 1 or -1 */
 };
 
 typedef struct YogBignum YogBignum;
@@ -15,6 +16,7 @@ typedef struct YogBignum YogBignum;
 #define TYPE_BIGNUM TO_TYPE(YogBignum_define_classes)
 
 #define BIGNUM_NUM(bignum)  PTR_AS(YogBignum, (bignum))->num
+#define BIGNUM_SIGN(bignum) PTR_AS(YogBignum, (bignum))->sign
 
 /* PROTOTYPE_START */
 
@@ -52,6 +54,7 @@ YogVal YogBignum_lshift(YogEnv*, YogHandle*, int_t);
 YogVal YogBignum_modulo(YogEnv*, YogHandle*, YogHandle*);
 YogVal YogBignum_or(YogEnv*, YogHandle*, int_t);
 YogVal YogBignum_power(YogEnv*, YogHandle*, int_t);
+double YogBignum_to_float(YogEnv*, YogHandle*);
 long YogBignum_to_long(YogEnv*, YogVal, const char*);
 long long YogBignum_to_long_long(YogEnv*, YogVal, const char*);
 YogVal YogBignum_to_s(YogEnv*, YogVal);

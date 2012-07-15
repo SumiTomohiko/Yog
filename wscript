@@ -49,7 +49,7 @@ def check_lib(ctx, lib):
     check(ctx, lib, lib=lib)
 
 def exec_submodules(ctx, cmd):
-    for mod in ["corgi", "libffi", "gmp"]:
+    for mod in ["corgi", "libffi", "BigDigits"]:
         ctx.exec_command("cd {mod} && {cmd}".format(**locals()))
 
 def check_errno(ctx, errno):

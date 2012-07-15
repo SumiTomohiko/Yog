@@ -1,5 +1,7 @@
+#include <limits.h>
 #include <math.h>
-#include "gmp.h"
+#include <stdlib.h>
+
 #include "yog/array.h"
 #include "yog/bignum.h"
 #include "yog/binary.h"
@@ -28,17 +30,42 @@
     } \
 } while (0)
 
+/* Zero Or Die */
+#define ZOD(x) \
+    if ((x) != 0) { \
+        YOG_BUG(env, "%s failed.", #x); \
+    } \
+
+static size_t
+compute_needed_size(YogVal n)
+{
+    size_t size_for_sign = 0 < BIGNUM_SIGN(n) ? 0 : 1;
+    return size_for_sign + bdConvToDecimal(BIGNUM_NUM(n), NULL, 0) + 1;
+}
+
+static void
+conv_to_decimal(YogVal n, char* dest, size_t size)
+{
+    char* p = dest;
+    size_t len = size;
+    if (BIGNUM_SIGN(n) < 0) {
+        *p = '-';
+        p++;
+        len--;
+    }
+    bdConvToDecimal(BIGNUM_NUM(n), p, len);
+}
+
+#define CONV_TO_DECIMAL(dest, src) \
+    size_t __size__ = compute_needed_size((src)); \
+    char dest[__size__]; \
+    conv_to_decimal((src), dest, __size__)
+
 YogVal
 YogBignum_to_s(YogEnv* env, YogVal self)
 {
     SAVE_ARG(env, self);
-
-#define BASE 10
-    /* 1 is for sign, another 1 is for a '\0' terminator */
-    size_t size = mpz_sizeinbase(PTR_AS(YogBignum, self)->num, BASE) + 1 + 1;
-    char buf[size];
-    mpz_get_str(buf, BASE, PTR_AS(YogBignum, self)->num);
-#undef BASE
+    CONV_TO_DECIMAL(buf, self);
     RETURN(env, YogString_from_string(env, buf));
 }
 
@@ -62,14 +89,15 @@ static void
 YogBignum_finalize(YogEnv* env, void* ptr)
 {
     YogBignum* bignum = PTR_AS(YogBignum, ptr);
-    mpz_clear(bignum->num);
+    bdFree(&bignum->num);
 }
 
 static void
 YogBignum_init(YogEnv* env, YogVal self)
 {
     YogBasicObj_init(env, self, TYPE_BIGNUM, 0, env->vm->cBignum);
-    mpz_init(PTR_AS(YogBignum, self)->num);
+    PTR_AS(YogBignum, self)->num = bdNew();
+    PTR_AS(YogBignum, self)->sign = 1;
 }
 
 static YogVal
@@ -97,9 +125,57 @@ negative(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     CHECK_SELF_TYPE(env, self);
 
     bignum = YogBignum_new(env);
-    mpz_neg(BIGNUM_NUM(bignum), BIGNUM_NUM(self));
+    ZOD(bdSetEqual(BIGNUM_NUM(bignum), BIGNUM_NUM(self)));
+    BIGNUM_SIGN(bignum) = - BIGNUM_SIGN(self);
 
     RETURN(env, bignum);
+}
+
+static YogVal
+normalize(YogEnv* env, YogVal self)
+{
+    CONV_TO_DECIMAL(buf, self);
+    char* endptr;
+    long n = strtol(buf, &endptr, 10);
+    if ((*endptr == '\0') && FIXABLE(n)) {
+        return INT2VAL(n);
+    }
+    return self;
+}
+
+static YogVal
+add_two_bignum(YogEnv* env, YogHandle* self, YogHandle* n)
+{
+    if ((BIGNUM_SIGN(HDL2VAL(self)) < 0) && (0 < BIGNUM_SIGN(HDL2VAL(n)))) {
+        return add_two_bignum(env, n, self);
+    }
+
+    YogVal bignum = YogBignum_new(env);
+    YogVal left = HDL2VAL(self);
+    YogVal right = HDL2VAL(n);
+    if (BIGNUM_SIGN(left) == BIGNUM_SIGN(right)) {
+        bdAdd(BIGNUM_NUM(bignum), BIGNUM_NUM(left), BIGNUM_NUM(right));
+        BIGNUM_SIGN(bignum) = BIGNUM_SIGN(left);
+        return bignum;
+    }
+    if (bdCompare(BIGNUM_NUM(left), BIGNUM_NUM(right)) < 0) {
+        BIGD dest = BIGNUM_NUM(bignum);
+        ZOD(bdSubtract(dest, BIGNUM_NUM(right), BIGNUM_NUM(left)));
+        BIGNUM_SIGN(bignum) = -1;
+        return normalize(env, bignum);
+    }
+    ZOD(bdSubtract(BIGNUM_NUM(bignum), BIGNUM_NUM(left), BIGNUM_NUM(right)));
+    return normalize(env, bignum);
+}
+
+double
+YogBignum_to_float(YogEnv* env, YogHandle* self)
+{
+    CONV_TO_DECIMAL(buf, HDL2VAL(self));
+    char* endptr;
+    double x = strtod(buf, &endptr);
+    YOG_ASSERT2(env, *endptr == '\0');
+    return x;
 }
 
 YogVal
@@ -107,24 +183,19 @@ YogBignum_binop_add(YogEnv* env, YogHandle* self, YogHandle* n)
 {
     YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        YogVal result = YogBignum_from_int(env, VAL2INT(right));
-        mpz_t* num = &BIGNUM_NUM(HDL2VAL(self));
-        mpz_add(BIGNUM_NUM(result), *num, BIGNUM_NUM(result));
-        return result;
+        YogHandle* h = VAL2HDL(env, YogBignum_from_int(env, VAL2INT(right)));
+        return add_two_bignum(env, self, h);
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         YogVal result = YogFloat_new(env);
-        mpz_t* num = &BIGNUM_NUM(HDL2VAL(self));
-        FLOAT_NUM(result) = mpz_get_d(*num) + FLOAT_NUM(HDL2VAL(n));
+        double f = YogBignum_to_float(env, self);
+        FLOAT_NUM(result) = f + FLOAT_NUM(HDL2VAL(n));
         return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        YogVal result = YogBignum_new(env);
-        mpz_t* num = &BIGNUM_NUM(HDL2VAL(self));
-        mpz_add(BIGNUM_NUM(result), *num, BIGNUM_NUM(HDL2VAL(n)));
-        return result;
+        return add_two_bignum(env, self, n);
     }
 
     YogError_raise_binop_type_error(env, HDL2VAL(self), right, "+");
@@ -141,16 +212,13 @@ add(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 }
 
 static YogVal
-normalize(YogEnv* env, YogVal self)
+copy(YogEnv* env, YogHandle* self)
 {
-    if (!mpz_fits_sint_p(BIGNUM_NUM(self))) {
-        return self;
-    }
-    int_t n = mpz_get_si(BIGNUM_NUM(self));
-    if (!FIXABLE(n)) {
-        return self;
-    }
-    return INT2VAL(n);
+    YogVal bignum = YogBignum_new(env);
+    YogVal n = HDL2VAL(self);
+    ZOD(bdSetEqual(BIGNUM_NUM(bignum), BIGNUM_NUM(n)));
+    BIGNUM_SIGN(bignum) = BIGNUM_SIGN(n);
+    return bignum;
 }
 
 YogVal
@@ -166,15 +234,14 @@ YogBignum_binop_subtract(YogEnv* env, YogHandle* self, YogHandle* n)
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         YogVal result = YogFloat_new(env);
-        mpz_t* h = &BIGNUM_NUM(HDL2VAL(self));
-        FLOAT_NUM(result) = mpz_get_d(*h) - FLOAT_NUM(HDL2VAL(n));
+        double f = YogBignum_to_float(env, self);
+        FLOAT_NUM(result) = f - FLOAT_NUM(HDL2VAL(n));
         return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        YogVal result = YogBignum_new(env);
-        mpz_t* h = &BIGNUM_NUM(HDL2VAL(self));
-        mpz_sub(BIGNUM_NUM(result), *h, BIGNUM_NUM(HDL2VAL(n)));
-        return normalize(env, result);
+        YogVal m = copy(env, n);
+        BIGNUM_SIGN(m) = - BIGNUM_SIGN(HDL2VAL(n));
+        return add_two_bignum(env, self, VAL2HDL(env, m));
     }
 
     YogError_raise_binop_type_error(env, HDL2VAL(self), right, "-");
@@ -204,7 +271,7 @@ divide_int(YogEnv* env, YogHandle* self, int_t right)
         YogError_raise_ZeroDivisionError(env, "Bignum division by zero");
     }
     YogVal result = YogFloat_new(env);
-    FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(HDL2VAL(self))) / right;
+    FLOAT_NUM(result) = YogBignum_to_float(env, self) / right;
     return result;
 }
 
@@ -216,22 +283,16 @@ divide_float(YogEnv* env, YogHandle* self, double right)
         /* NOTREACHED */
     }
     YogVal result = YogFloat_new(env);
-    FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(HDL2VAL(self))) / right;
+    FLOAT_NUM(result) = YogBignum_to_float(env, self) / right;
     return result;
 }
 
 static YogVal
 divide_bignum(YogEnv* env, YogHandle* self, YogHandle* bignum)
 {
-    mpz_t* n = &BIGNUM_NUM(HDL2VAL(bignum));
-    if (mpz_fits_sint_p(*n)) {
-        return divide_int(env, self, mpz_get_si(*n));
-    }
-
     YogVal result = YogFloat_new(env);
-#define BIGNUM2FLOAT(bignum) mpz_get_d(BIGNUM_NUM(HDL2VAL((bignum))))
-    FLOAT_NUM(result) = BIGNUM2FLOAT(self) / BIGNUM2FLOAT(bignum);
-#undef BIGNUM2FLOAT
+    double f = YogBignum_to_float(env, self);
+    FLOAT_NUM(result) = f / YogBignum_to_float(env, bignum);
     return result;
 }
 
@@ -264,69 +325,69 @@ divide(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
     return YogBignum_binop_divide(env, self, n);
 }
 
-static YogVal
-floor_divide_int(YogEnv* env, YogHandle* self, int_t right)
+static int
+divide_BIGD(BIGD q, BIGD u, BIGD v)
 {
-    if (right == 0) {
+    BIGD _ = bdNew();
+    int retval = bdDivide(q, _, u, v);
+    bdFree(&_);
+    return retval;
+}
+
+static YogVal
+floor_divide_bignum_without_normailzing(YogEnv* env, YogHandle* self, YogHandle* right)
+{
+    if (bdIsZero(BIGNUM_NUM(HDL2VAL(right)))) {
         YogError_raise_ZeroDivisionError(env, "Bignum division by zero");
         /* NOTREACHED */
     }
-
-    YogVal bignum = YogBignum_from_int(env, right);
-    mpz_t* h = &BIGNUM_NUM(bignum);
-    mpz_fdiv_q(*h, BIGNUM_NUM(HDL2VAL(self)), *h);
-    return normalize(env, bignum);
-}
-
-static BOOL
-is_zero(YogVal bignum)
-{
-    if (!mpz_fits_sint_p(BIGNUM_NUM(bignum))) {
-        return FALSE;
+    if (BIGNUM_SIGN(HDL2VAL(self)) == BIGNUM_SIGN(HDL2VAL(right))) {
+        YogVal retval = YogBignum_new(env);
+        BIGD u = BIGNUM_NUM(HDL2VAL(self));
+        BIGD v = BIGNUM_NUM(HDL2VAL(right));
+        ZOD(divide_BIGD(BIGNUM_NUM(retval), u, v));
+        return retval;
     }
-    if (mpz_get_si(BIGNUM_NUM(bignum)) != 0) {
-        return FALSE;
-    }
+    YogVal retval = YogBignum_new(env);
+    BIGD n = BIGNUM_NUM(retval);
+    ZOD(divide_BIGD(n, BIGNUM_NUM(HDL2VAL(self)), BIGNUM_NUM(HDL2VAL(right))));
+    bdIncrement(n);
 
-    return TRUE;
+    BIGNUM_SIGN(retval) = -1;
+
+    return retval;
 }
 
 static YogVal
 floor_divide_bignum(YogEnv* env, YogHandle* self, YogHandle* right)
 {
-    if (is_zero(HDL2VAL(right))) {
-        YogError_raise_ZeroDivisionError(env, "Bignum division by zero");
-        /* NOTREACHED */
-    }
+    YogVal val = floor_divide_bignum_without_normailzing(env, self, right);
+    return normalize(env, val);
+}
 
-    YogVal bignum = YogBignum_new(env);
-    mpz_t* h = &BIGNUM_NUM(bignum);
-    mpz_fdiv_q(*h, BIGNUM_NUM(HDL2VAL(self)), BIGNUM_NUM(HDL2VAL(right)));
-    return normalize(env, bignum);
+static YogHandle*
+denormalize_to_bignum(YogEnv* env, YogHandle* n)
+{
+    YogVal val = HDL2VAL(n);
+    if (IS_FIXNUM(val)) {
+        return VAL2HDL(env, YogBignum_from_int(env, VAL2INT(val)));
+    }
+    if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
+        return n;
+    }
+    YOG_BUG(env, "YogBignum_modulo got an unexpected type argument");
+    /* NOTREACHED */
+
+    return NULL;
 }
 
 YogVal
 YogBignum_modulo(YogEnv* env, YogHandle* self, YogHandle* n)
 {
-    /* gcc can't know that bignum is always initialized */
-    YogHandle* bignum = NULL;
-    YogVal m = HDL2VAL(n);
-    if (IS_FIXNUM(m)) {
-        YogVal val = YogBignum_from_int(env, VAL2INT(m));
-        bignum = YogHandle_REGISTER(env, val);
-    }
-    else if (IS_PTR(m) && (BASIC_OBJ_TYPE(m) == TYPE_BIGNUM)) {
-        bignum = n;
-    }
-    else {
-        /* NOTREACHED? */
-        YOG_BUG(env, "YogBignum_modulo got an unexpected type argument");
-    }
-
-    YogVal result = YogBignum_new(env);
-    mpz_t* l = &BIGNUM_NUM(HDL2VAL(self));
-    mpz_mod(BIGNUM_NUM(result), *l, BIGNUM_NUM(HDL2VAL(bignum)));
-    return normalize(env, result);
+    YogHandle* n2 = denormalize_to_bignum(env, n);
+    YogVal div = floor_divide_bignum_without_normailzing(env, self, n2);
+    YogVal mul = YogBignum_binop_multiply(env, VAL2HDL(env, div), n);
+    return YogBignum_binop_subtract(env, self, VAL2HDL(env, mul));
 }
 
 YogVal
@@ -355,7 +416,8 @@ YogBignum_binop_floor_divide(YogEnv* env, YogHandle* self, YogHandle* n)
 {
     YogVal right = HDL2VAL(n);
     if (IS_FIXNUM(right)) {
-        return floor_divide_int(env, self, VAL2INT(right));
+        YogVal m = YogBignum_from_int(env, VAL2INT(right));
+        return YogBignum_binop_floor_divide(env, self, VAL2HDL(env, m));
     }
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
@@ -403,7 +465,9 @@ not(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     CHECK_SELF_TYPE(env, self);
 
     retval = YogBignum_new(env);
-    mpz_com(BIGNUM_NUM(retval), BIGNUM_NUM(self));
+    ZOD(bdSetEqual(BIGNUM_NUM(retval), BIGNUM_NUM(self)));
+    bdIncrement(BIGNUM_NUM(retval));
+    BIGNUM_SIGN(retval) = - BIGNUM_SIGN(self);
 
     RETURN(env, retval);
 }
@@ -412,7 +476,8 @@ YogVal
 YogBignum_lshift(YogEnv* env, YogHandle* self, int_t width)
 {
     YogVal retval = YogBignum_new(env);
-    mpz_mul_2exp(BIGNUM_NUM(retval), BIGNUM_NUM(HDL2VAL(self)), width);
+    bdShiftLeft(BIGNUM_NUM(retval), BIGNUM_NUM(HDL2VAL(self)), width);
+    BIGNUM_SIGN(retval) = BIGNUM_SIGN(HDL2VAL(self));
     return retval;
 }
 
@@ -420,7 +485,11 @@ static YogVal
 YogBignum_rshift(YogEnv* env, YogHandle* self, int_t width)
 {
     YogVal retval = YogBignum_new(env);
-    mpz_fdiv_q_2exp(BIGNUM_NUM(retval), BIGNUM_NUM(HDL2VAL(self)), width);
+    bdShiftRight(BIGNUM_NUM(retval), BIGNUM_NUM(HDL2VAL(self)), width);
+    BIGNUM_SIGN(retval) = BIGNUM_SIGN(HDL2VAL(self));
+    if (BIGNUM_SIGN(retval) < 0) {
+        bdIncrement(BIGNUM_NUM(retval));
+    }
     return retval;
 }
 
@@ -479,7 +548,13 @@ YogBignum_from_long_long(YogEnv* env, long long n)
     char buf[21]; /* 64bit integer with '\0' needs at most 21bytes */
     snprintf(buf, array_sizeof(buf), "%lld", n);
     bignum = YogBignum_new(env);
-    mpz_set_str(BIGNUM_NUM(bignum), buf, 10);
+    if (buf[0] == '-') {
+        YOG_ASSERT2(env, n < 0);
+        bdConvFromDecimal(BIGNUM_NUM(bignum), &buf[1]);
+        BIGNUM_SIGN(bignum) = -1;
+        RETURN(env, bignum);
+    }
+    bdConvFromDecimal(BIGNUM_NUM(bignum), buf);
 
     RETURN(env, bignum);
 }
@@ -494,7 +569,7 @@ YogBignum_from_unsigned_long_long(YogEnv* env, unsigned long long n)
     char buf[21]; /* 64bit integer with '\0' needs at most 21bytes */
     snprintf(buf, array_sizeof(buf), "%llu", n);
     bignum = YogBignum_new(env);
-    mpz_set_str(BIGNUM_NUM(bignum), buf, 10);
+    bdConvFromDecimal(BIGNUM_NUM(bignum), buf);
 
     RETURN(env, bignum);
 }
@@ -502,40 +577,38 @@ YogBignum_from_unsigned_long_long(YogEnv* env, unsigned long long n)
 YogVal
 YogBignum_from_unsigned_int(YogEnv* env, uint_t n)
 {
-    SAVE_LOCALS(env);
-    YogVal bignum = YUNDEF;
-    PUSH_LOCAL(env, bignum);
-
-    bignum = YogBignum_new(env);
-    mpz_set_ui(PTR_AS(YogBignum, bignum)->num, n);
-
-    RETURN(env, bignum);
+    YogVal bignum = YogBignum_new(env);
+    ZOD(bdSetShort(BIGNUM_NUM(bignum), n));
+    return bignum;
 }
 
 YogVal
 YogBignum_from_int(YogEnv* env, int_t n)
 {
-    SAVE_LOCALS(env);
-    YogVal bignum = YUNDEF;
-    PUSH_LOCAL(env, bignum);
+    YogVal bignum = YogBignum_new(env);
+    if (n < 0) {
+        ZOD(bdSetShort(BIGNUM_NUM(bignum), - n));
+        BIGNUM_SIGN(bignum) = -1;
+        return bignum;
+    }
 
-    bignum = YogBignum_new(env);
-    mpz_set_si(PTR_AS(YogBignum, bignum)->num, n);
-
-    RETURN(env, bignum);
+    ZOD(bdSetShort(BIGNUM_NUM(bignum), n));
+    return bignum;
 }
 
 YogVal
 YogBignum_from_str(YogEnv* env, YogVal s, int_t base)
 {
+    /* FIXME: Cannot accept any base but 10 */
+    if (base != 10) {
+        YogError_raise_ValueError(env, "Cannot accept any base but 10");
+    }
+
     YogHandle* str = YogHandle_REGISTER(env, s);
     YogHandle* bignum = YogHandle_REGISTER(env, YogBignum_new(env));
     YogHandle* enc = YogHandle_REGISTER(env, env->vm->encAscii);
     YogVal ascii = YogEncoding_conv_from_yog(env, enc, str);
-    const char* pc = BINARY_CSTR(ascii);
-    if (mpz_set_str(HDL_AS(YogBignum, bignum)->num, pc, base) != 0) {
-        YOG_BUG(env, "mpz_set_str failed");
-    }
+    bdConvFromDecimal(BIGNUM_NUM(HDL2VAL(bignum)), BINARY_CSTR(ascii));
 
     return HDL2VAL(bignum);
 }
@@ -551,14 +624,14 @@ YogBignum_binop_multiply(YogEnv* env, YogHandle* self, YogHandle* n)
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
         YogVal result = YogFloat_new(env);
-        double f = FLOAT_NUM(HDL2VAL(n));
-        FLOAT_NUM(result) = mpz_get_d(BIGNUM_NUM(HDL2VAL(self))) * f;
+        double f = YogBignum_to_float(env, self);
+        FLOAT_NUM(result) = f * FLOAT_NUM(HDL2VAL(n));
         return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         YogVal result = YogBignum_new(env);
-        mpz_t* h = &BIGNUM_NUM(HDL2VAL(self));
-        mpz_mul(BIGNUM_NUM(result), *h, BIGNUM_NUM(HDL2VAL(n)));
+        BIGD m = BIGNUM_NUM(HDL2VAL(self));
+        ZOD(bdMultiply(BIGNUM_NUM(result), m, BIGNUM_NUM(HDL2VAL(n))));
         return result;
     }
 
@@ -572,8 +645,8 @@ static YogVal
 or_bignum(YogEnv* env, YogHandle* self, YogHandle* n)
 {
     YogVal retval = YogBignum_new(env);
-    mpz_t* m = &BIGNUM_NUM(HDL2VAL(self));
-    mpz_ior(BIGNUM_NUM(retval), *m, BIGNUM_NUM(HDL2VAL(n)));
+    BIGD m = BIGNUM_NUM(retval);
+    bdOrBits(m, BIGNUM_NUM(HDL2VAL(self)), BIGNUM_NUM(HDL2VAL(n)));
     return retval;
 }
 
@@ -612,10 +685,10 @@ or(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 static YogVal
 xor_bignum(YogEnv* env, YogHandle* self, YogHandle* n)
 {
-    YogVal result = YogBignum_new(env);
-    mpz_t* m = &BIGNUM_NUM(HDL2VAL(self));
-    mpz_xor(BIGNUM_NUM(result), *m, BIGNUM_NUM(HDL2VAL(n)));
-    return normalize(env, result);
+    YogVal retval = YogBignum_new(env);
+    BIGD m = BIGNUM_NUM(retval);
+    bdXorBits(m, BIGNUM_NUM(HDL2VAL(self)), BIGNUM_NUM(HDL2VAL(n)));
+    return normalize(env, retval);
 }
 
 YogVal
@@ -629,8 +702,8 @@ static YogVal
 and_bignum(YogEnv* env, YogHandle* self, YogHandle* n)
 {
     YogVal result = YogBignum_new(env);
-    mpz_t* m = &BIGNUM_NUM(HDL2VAL(self));
-    mpz_and(BIGNUM_NUM(result), *m, BIGNUM_NUM(HDL2VAL(n)));
+    BIGD m = BIGNUM_NUM(result);
+    bdAndBits(m, BIGNUM_NUM(HDL2VAL(self)), BIGNUM_NUM(HDL2VAL(n)));
     return normalize(env, result);
 }
 
@@ -713,7 +786,7 @@ YogBignum_binop_ufo(YogEnv* env, YogVal self, YogVal n)
         return YNIL;
     }
 
-    int_t m = mpz_cmp(BIGNUM_NUM(self), BIGNUM_NUM(n));
+    int_t m = bdCompare(BIGNUM_NUM(self), BIGNUM_NUM(n));
     if (m < 0) {
         return INT2VAL(-1);
     }
@@ -738,7 +811,7 @@ YogBignum_clone(YogEnv* env, YogVal self)
     PUSH_LOCAL(env, retval);
 
     retval = YogBignum_new(env);
-    mpz_set(BIGNUM_NUM(retval), BIGNUM_NUM(self));
+    ZOD(bdSetEqual(BIGNUM_NUM(retval), BIGNUM_NUM(self)));
 
     RETURN(env, retval);
 }
@@ -748,7 +821,7 @@ YogBignum_power(YogEnv* env, YogHandle* self, int_t exp)
 {
     if (exp < 0) {
         YogVal f = YogFloat_new(env);
-        FLOAT_NUM(f) = 1 / mpz_get_d(BIGNUM_NUM(HDL2VAL(self)));
+        FLOAT_NUM(f) = 1 / YogBignum_to_float(env, self);
         return YogFloat_power(env, f, - exp);
     }
     else if (exp == 0) {
@@ -756,10 +829,10 @@ YogBignum_power(YogEnv* env, YogHandle* self, int_t exp)
     }
 
     YogVal bignum = YogBignum_clone(env, HDL2VAL(self));
-    mpz_t* m = &BIGNUM_NUM(HDL2VAL(self));
+    BIGD m = BIGNUM_NUM(HDL2VAL(self));
     int_t i;
     for (i = exp; 1 < i; i--) {
-        mpz_mul(BIGNUM_NUM(bignum), BIGNUM_NUM(bignum), *m);
+        ZOD(bdMultiply_s(BIGNUM_NUM(bignum), BIGNUM_NUM(bignum), m));
     }
     return bignum;
 }
@@ -774,8 +847,8 @@ YogBignum_binop_power(YogEnv* env, YogHandle* self, YogHandle* n)
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
-        double f = mpz_get_d(BIGNUM_NUM(HDL2VAL(self)));
         YogVal retval = YogFloat_new(env);
+        double f = YogBignum_to_float(env, self);
         FLOAT_NUM(retval) = pow(f, FLOAT_NUM(HDL2VAL(n)));
         return retval;
     }
@@ -796,25 +869,81 @@ power(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 int
 YogBignum_compare_with_unsigned_long(YogEnv* env, YogVal self, unsigned long n)
 {
-    return mpz_cmp_ui(BIGNUM_NUM(self), n);
+    if (BIGNUM_SIGN(self) < 0) {
+        return -1;
+    }
+
+    char buf[21];
+    snprintf(buf, array_sizeof(buf), "%lu", n);
+    BIGD n2 = bdNew();
+    bdConvFromDecimal(n2, buf);
+    int retval = bdCompare(BIGNUM_NUM(self), n2);
+    bdFree(&n2);
+    return retval;
 }
 
 int
 YogBignum_compare_with_unsigned_int(YogEnv* env, YogVal self, uint_t n)
 {
-    return mpz_cmp_ui(BIGNUM_NUM(self), n);
+    if (BIGNUM_SIGN(self) < 0) {
+        return -1;
+    }
+
+    char buf[21];
+    snprintf(buf, array_sizeof(buf), "%u", n);
+    BIGD n2 = bdNew();
+    bdConvFromDecimal(n2, buf);
+    int retval = bdCompare(BIGNUM_NUM(self), n2);
+    bdFree(&n2);
+    return retval;
 }
+
+#define RETURN_IF_DIFFERENT_SIGN(self, n) do { \
+    int sign_of_self = BIGNUM_SIGN((self)); \
+    int sign_of_n = 0 < (n) ? 1 : -1; \
+    if (sign_of_self * sign_of_n < 0) { \
+        return sign_of_self; \
+    } \
+} while (0)
 
 int
 YogBignum_compare_with_long(YogEnv* env, YogVal self, long n)
 {
-    return mpz_cmp_si(BIGNUM_NUM(self), n);
+    RETURN_IF_DIFFERENT_SIGN(self, n);
+
+    /* FIXME: In case of n == LONG_MIN */
+    int sign_of_n = 0 < n ? 1 : -1;
+    long abs_of_n = sign_of_n * n;
+    char buf[21];
+    snprintf(buf, array_sizeof(buf), "%lu", abs_of_n);
+    BIGD n2 = bdNew();
+    bdConvFromDecimal(n2, buf);
+    int retval = bdCompare(BIGNUM_NUM(self), n2);
+    bdFree(&n2);
+
+    return 0 < BIGNUM_SIGN(self) ? retval : - retval;
 }
 
 int
 YogBignum_compare_with_int(YogEnv* env, YogVal self, int_t n)
 {
-    return mpz_cmp_si(BIGNUM_NUM(self), n);
+    int sign_of_self = BIGNUM_SIGN(self);
+    int sign_of_n = 0 < n ? 1 : -1;
+    if (sign_of_self * sign_of_n < 0) {
+        /* When sign of self and that of n are different */
+        return sign_of_self;
+    }
+
+    /* FIXME: In case of n == LONG_MIN */
+    int_t abs_of_n = sign_of_n * n;
+    char buf[21];
+    snprintf(buf, array_sizeof(buf), "%d", abs_of_n);
+    BIGD n2 = bdNew();
+    bdConvFromDecimal(n2, buf);
+    int retval = bdCompare(BIGNUM_NUM(self), n2);
+    bdFree(&n2);
+
+    return 0 < sign_of_self ? retval : - retval;
 }
 
 static void
@@ -835,7 +964,13 @@ YogBignum_to_unsigned_long(YogEnv* env, YogVal self, const char* name)
 {
     CHECK_SELF_TYPE(env, self);
     check_range_unsigned(env, self, name, ULONG_MAX);
-    return mpz_get_ui(BIGNUM_NUM(self));
+
+    CONV_TO_DECIMAL(buf, self);
+    char* endptr;
+    unsigned long l = strtoul(buf, &endptr, 10);
+    YOG_ASSERT2(env, *endptr == '\0');
+
+    return l;
 }
 
 UNSIGNED_TYPE
@@ -843,7 +978,13 @@ YogBignum_to_unsigned_type(YogEnv* env, YogVal self, const char* name)
 {
     CHECK_SELF_TYPE(env, self);
     check_range_unsigned(env, self, name, UNSIGNED_MAX);
-    return mpz_get_ui(BIGNUM_NUM(self));
+
+    CONV_TO_DECIMAL(buf, self);
+    char* endptr;
+    UNSIGNED_TYPE n = strtoul(buf, &endptr, 10);
+    YOG_ASSERT2(env, *endptr == '\0');
+
+    return n;
 }
 
 static void
@@ -864,7 +1005,13 @@ YogBignum_to_long(YogEnv* env, YogVal self, const char* name)
 {
     CHECK_SELF_TYPE(env, self);
     check_range(env, self, name, LONG_MIN, LONG_MAX);
-    return mpz_get_si(BIGNUM_NUM(self));
+
+    CONV_TO_DECIMAL(buf, self);
+    char* endptr;
+    long l = strtol(buf, &endptr, 10);
+    YOG_ASSERT2(env, *endptr == '\0');
+
+    return l;
 }
 
 SIGNED_TYPE
@@ -872,35 +1019,37 @@ YogBignum_to_signed_type(YogEnv* env, YogVal self, const char* name)
 {
     CHECK_SELF_TYPE(env, self);
     check_range(env, self, name, SIGNED_MIN, SIGNED_MAX);
-    return mpz_get_si(BIGNUM_NUM(self));
+
+    CONV_TO_DECIMAL(buf, self);
+    char* endptr;
+    SIGNED_TYPE n = strtol(buf, &endptr, 10);
+    YOG_ASSERT2(env, *endptr == '\0');
+
+    return n;
 }
 
 int_t
 YogBignum_compare_with_long_long(YogEnv* env, YogVal self, long long n)
 {
     SAVE_ARG(env, self);
+    RETURN_IF_DIFFERENT_SIGN(self, n);
 
-    char buf[21];
-    snprintf(buf, array_sizeof(buf), "%lld", n);
-    mpz_t rop;
-    mpz_init_set_str(rop, buf, 10);
-    int_t retval = mpz_cmp(BIGNUM_NUM(self), rop);
+    YogVal n2 = YogBignum_from_long_long(env, n);
+    int retval = bdCompare(BIGNUM_NUM(self), BIGNUM_NUM(n2));
 
-    RETURN(env, retval);
+    RETURN(env, 0 < BIGNUM_SIGN(self) ? retval : - retval);
 }
 
 int_t
 YogBignum_compare_with_unsigned_long_long(YogEnv* env, YogVal self, unsigned long long n)
 {
     SAVE_ARG(env, self);
+    if (BIGNUM_SIGN(self) < 0) {
+        RETURN(env, -1);
+    }
 
-    char buf[21];
-    snprintf(buf, array_sizeof(buf), "%llu", n);
-    mpz_t rop;
-    mpz_init_set_str(rop, buf, 10);
-    int_t retval = mpz_cmp(BIGNUM_NUM(self), rop);
-
-    RETURN(env, retval);
+    YogVal n2 = YogBignum_from_unsigned_long_long(env, n);
+    RETURN(env, bdCompare(BIGNUM_NUM(self), BIGNUM_NUM(n2)));
 }
 
 long long
@@ -911,10 +1060,11 @@ YogBignum_to_long_long(YogEnv* env, YogVal self, const char* name)
     if ((YogBignum_compare_with_long_long(env, self, INT64_MIN) < 0) || (0 < YogBignum_compare_with_long_long(env, self, INT64_MAX))) {
         YogError_raise_ValueError(env, "%s must be between %lld and %lld", name, INT64_MIN, INT64_MAX);
     }
-    char buf[21];
-    mpz_get_str(buf, 10, BIGNUM_NUM(self));
-    long long retval = 0;
-    sscanf(buf, "%lld", &retval);
+
+    CONV_TO_DECIMAL(buf, self);
+    char* endptr;
+    long long retval = strtoll(buf, &endptr, 10);
+    YOG_ASSERT2(env, *endptr == '\0');
 
     RETURN(env, retval);
 }
@@ -927,10 +1077,11 @@ YogBignum_to_unsigned_long_long(YogEnv* env, YogVal self, const char* name)
     if ((YogBignum_compare_with_unsigned_int(env, self, 0) < 0) || (0 < YogBignum_compare_with_unsigned_long_long(env, self, UINT64_MAX))) {
         YogError_raise_ValueError(env, "%s must be between 0 and %llu", name, UINT64_MAX);
     }
-    char buf[21];
-    mpz_get_str(buf, 10, BIGNUM_NUM(self));
-    unsigned long long retval;
-    sscanf(buf, "%llu", &retval);
+
+    CONV_TO_DECIMAL(buf, self);
+    char* endptr;
+    unsigned long long retval = strtoull(buf, &endptr, 10);
+    YOG_ASSERT2(env, *endptr == '\0');
 
     RETURN(env, retval);
 }

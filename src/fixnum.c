@@ -4,7 +4,6 @@
 #endif
 #include <stdlib.h>
 #include <math.h>
-#include <gmp.h>
 #include "yog/array.h"
 #include "yog/bignum.h"
 #include "yog/callable.h"
@@ -74,19 +73,6 @@ to_s(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* radix)
 }
 
 YogVal
-YogFixnum_add_bignum(YogEnv* env, YogVal self, YogVal bignum)
-{
-    SAVE_ARGS2(env, self, bignum);
-    YogVal left_and_result = YUNDEF;
-    PUSH_LOCAL(env, left_and_result);
-
-    left_and_result = YogBignum_from_int(env, VAL2INT(self));
-    mpz_add(BIGNUM_NUM(left_and_result), BIGNUM_NUM(left_and_result), BIGNUM_NUM(bignum));
-
-    RETURN(env, left_and_result);
-}
-
-YogVal
 YogFixnum_binop_add(YogEnv* env, YogVal self, YogHandle* n)
 {
     YogVal right = HDL2VAL(n);
@@ -101,7 +87,7 @@ YogFixnum_binop_add(YogEnv* env, YogVal self, YogHandle* n)
         return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        return YogFixnum_add_bignum(env, self, right);
+        return YogBignum_binop_add(env, n, VAL2HDL(env, self));
     }
 
     YogError_raise_binop_type_error(env, self, right, "+");
@@ -242,7 +228,7 @@ YogFixnum_binop_divide(YogEnv* env, YogVal self, YogHandle* n)
         return result;
     }
     if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        FLOAT_NUM(result) = VAL2INT(self) / mpz_get_d(BIGNUM_NUM(right));
+        FLOAT_NUM(result) = VAL2INT(self) / YogBignum_to_float(env, n);
         return result;
     }
     /* NOTREACHED */
@@ -323,10 +309,9 @@ YogFixnum_binop_floor_divide(YogEnv* env, YogVal self, YogHandle* n)
         return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        YogVal result = YogBignum_from_int(env, VAL2INT(self));
-        mpz_t* h = &BIGNUM_NUM(HDL2VAL(n));
-        mpz_fdiv_q(BIGNUM_NUM(result), BIGNUM_NUM(result), *h);
-        return result;
+        int_t m = VAL2INT(self);
+        YogHandle* h_self = VAL2HDL(env, YogBignum_from_int(env, m));
+        return YogBignum_binop_floor_divide(env, h_self, n);
     }
 
     YogError_raise_binop_type_error(env, self, right, "//");

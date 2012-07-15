@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gmp.h>
+#include <bigd.h>
 #include "yog/array.h"
 #include "yog/bignum.h"
 #include "yog/binary.h"
@@ -178,8 +178,8 @@ YogFloat_binop_add(YogEnv* env, YogHandle* self, YogHandle* f)
     else if (IS_NIL(right) || IS_BOOL(right) || IS_SYMBOL(right)) {
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
-        double x = mpz_get_d(BIGNUM_NUM(right));
         YogVal result = YogFloat_new(env);
+        double x = YogBignum_to_float(env, f);
         FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) + x;
         return result;
     }
@@ -215,8 +215,8 @@ YogFloat_binop_subtract(YogEnv* env, YogHandle* self, YogHandle* f)
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         YogVal result = YogFloat_new(env);
-        mpz_t* h = &BIGNUM_NUM(HDL2VAL(f));
-        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) - mpz_get_d(*h);
+        double x = YogBignum_to_float(env, f);
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) - x;
         return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
@@ -251,8 +251,8 @@ YogFloat_binop_multiply(YogEnv* env, YogHandle* self, YogHandle* f)
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         YogVal result = YogFloat_new(env);
-        mpz_t* h = &BIGNUM_NUM(HDL2VAL(f));
-        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) * mpz_get_d(*h);
+        double x = YogBignum_to_float(env, f);
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) * x;
         return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
@@ -287,8 +287,8 @@ divide_internal(YogEnv* env, YogHandle* self, YogHandle* f, const char* opname)
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_BIGNUM) {
         YogVal result = YogFloat_new(env);
-        double d = mpz_get_d(BIGNUM_NUM(HDL2VAL(f)));
-        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) / d;
+        double x = YogBignum_to_float(env, f);
+        FLOAT_NUM(result) = FLOAT_NUM(HDL2VAL(self)) / x;
         return result;
     }
     else if (BASIC_OBJ_TYPE(right) == TYPE_FLOAT) {
