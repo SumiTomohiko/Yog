@@ -1,6 +1,21 @@
 # -*- coding: utf-8 -*-
 
-def build(ctx):
+from os import listdir
+from os.path import join, splitext
+
+def add_rules_for_builtin_script(ctx):
+    # FIXME: waf runs these always. Why?
+    for src in listdir("src"):
+        base, ext = splitext(src)
+        if (base == "yog2inc") or (ext != ".yog"):
+            continue
+        rule = "yog {top_dir}/src/yog2inc.yog ${{SRC}} ${{TGT}}"
+        ctx(
+                rule=rule.format(top_dir=ctx.top_dir),
+                target=base + ".inc",
+                source=src)
+
+def add_rule_for_yog(ctx):
     target = "yog"
     source = ctx.path.ant_glob("*.c") + [
             "gc/generational.c",
@@ -23,5 +38,25 @@ def build(ctx):
             libffi_dir + "/.libs",
             BigDigits_dir + "/build"]
     ctx.program(**locals())
+
+def add_rules_for_parser(ctx):
+    header = join("include", "yog", "token.h")
+    lemon_dir = join("tools", "lemon")
+    lemon = join(lemon_dir, "lemon")
+    top_dir = ctx.top_dir
+    rule="../{lemon} header={top_dir}/{header} ../src/parser.y"
+    ctx(
+            rule=rule.format(**locals()),
+            source=["parser.y", "parser.lt", "../{lemon}".format(**locals())],
+            target=["../{header}".format(**locals()), "parser.c"])
+    ctx(
+            rule="cd {top_dir}/{lemon_dir} && make".format(**locals()),
+            target="../{lemon}".format(**locals()),
+            source="../{lemon_dir}/lemon.c".format(**locals()))
+
+def build(ctx):
+    add_rules_for_builtin_script(ctx)
+    add_rules_for_parser(ctx)
+    add_rule_for_yog(ctx)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
