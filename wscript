@@ -1,5 +1,6 @@
 
 from re import search
+import subprocess
 
 def read_version():
     with open("README") as fp:
@@ -50,7 +51,7 @@ def check_lib(ctx, lib):
 
 def exec_submodules(ctx, cmd):
     for mod in ["corgi", "libffi", "BigDigits"]:
-        ctx.exec_command("cd {mod} && {cmd}".format(**locals()))
+        subprocess.call("cd {mod} && {cmd}".format(**locals()), shell=True)
 
 def check_errno(ctx, errno):
     ctx.check_cc(
