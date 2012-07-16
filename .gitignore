@@ -36,7 +36,6 @@
 .lock-waf*
 .waf*
 Debug
-Makefile
 Makefile.in
 Release
 aclocal.m4
