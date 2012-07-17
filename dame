@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from functools import partial
 from glob import glob
 from os import chdir, close, getcwd, stat, unlink, write
 from os.path import join, splitext
@@ -364,12 +365,18 @@ def build(top_dir, dirpath):
     for node in construct_dependencies(b.tasks):
         resolve(top_dir, node)
 
+def get_request():
+    try:
+        return argv[1]
+    except IndexError:
+        return "build"
+
 def main():
-    if (len(argv) == 1) or (argv[1] == "build"):
-        top_dir = "."
-        build(top_dir, top_dir)
-    elif argv[1] == "configure":
-        configure()
+    top_dir = "."
+    d = {
+            "build": partial(build, top_dir, top_dir),
+            "configure": configure }
+    d[get_request()]()
 
 main()
 
