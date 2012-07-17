@@ -49,7 +49,7 @@ def check_func(ctx, f, header):
 def check_lib(ctx, lib):
     check(ctx, lib, lib=lib)
 
-def exec_submodules(ctx, cmd):
+def exec_submodules(cmd):
     for mod in ["corgi", "libffi", "BigDigits"]:
         subprocess.call("cd {mod} && {cmd}".format(**locals()), shell=True)
 
@@ -119,10 +119,10 @@ def configure(ctx):
     define(ctx, "PACKAGE_VERSION", VERSION)
     ctx.write_config_header("include/yog/config.h")
 
-    exec_submodules(ctx, "./configure")
+    exec_submodules("./configure")
 
 def build(ctx):
-    exec_submodules(ctx, "make")
+    exec_submodules("make")
     ctx.recurse("src")
 
 def set_algo(ctx):
