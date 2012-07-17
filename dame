@@ -16,6 +16,10 @@ class Configure:
         self.sizeof = []
         self.libraries = []
         self.prefix = ""
+        self.config_h_path = None
+
+    def make_config_h(self, path):
+        self.config_h_path = path
 
     def define_prefix(self, prefix):
         self.prefix = prefix
@@ -175,11 +179,30 @@ main(int argc, const char* argv[])
 """
     add_definition_if_zero(prefix, config_h, lib, src, "-l" + lib)
 
+def quote_if_str(val):
+    return "\"{val}\"".format(**locals()) if isinstance(val, str) else val
+
+def make_config_h(path, config_h):
+    guard = make_config_name(path)
+    with open(path, "w") as fp:
+        write = fp.write
+        write("""\
+#ifndef {guard}
+#define {guard}
+""".format(**locals()))
+        for key, value in config_h:
+            v = quote_if_str(value)
+            write("#define {key} {v}\n".format(**locals()))
+        write("""\
+#endif
+""")
+
 def configure():
     settings = run_path("Damefile")
 
     conf = Configure()
     g = {
+            "make_config_h": conf.make_config_h,
             "define_prefix": conf.define_prefix,
             "check_header": conf.check_header,
             "check_func": conf.check_func,
@@ -207,7 +230,7 @@ def configure():
         check_sizeof(prefix, config_h, sizeof)
     for library in conf.libraries:
         check_lib(prefix, config_h, library)
-    print(config_h)
+    make_config_h(conf.config_h_path, config_h)
 
 def main():
     if argv[1] == "configure":

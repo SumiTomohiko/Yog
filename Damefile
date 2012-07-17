@@ -31,5 +31,6 @@ def configure():
         "EXDEV", "EXFULL"])
     check_sizeof(["int", "long", "long long", "void*"])
     check_lib(["pthread", "dl", "syck", "zip"])
+    make_config_h("include/yog/config.h")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
