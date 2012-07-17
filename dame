@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+
+from os import close, unlink, write
+from os.path import splitext
+from runpy import run_path
+from subprocess import PIPE, Popen
+from sys import argv
+from tempfile import mkstemp
+
+class Configure:
+
+    def __init__(self):
+        self.headers = []
+        self.functions = []
+        self.errno = []
+        self.sizeof = []
+        self.libraries = []
+        self.prefix = ""
+
+    def define_prefix(self, prefix):
+        self.prefix = prefix
+
+    def check_header(self, names):
+        if isinstance(names, str):
+            return self.check_header([names])
+        self.headers += names
+
+    def check_function(self, names):
+        if isinstance(names, str):
+            return self.check_function([names])
+        self.functions += names
+
+    def check_errno(self, names):
+        if isinstance(names, str):
+            return self.check_errno([names])
+        self.errno += names
+
+    def check_sizeof(self, names):
+        if isinstance(names, str):
+            return self.check_sizeof([names])
+        self.sizeof += names
+
+    def check_library(self, names):
+        if isinstance(names, str):
+            return self.check_library([names])
+        self.libraries += names
+
+def run_cc(src):
+    fd, path = mkstemp(prefix="dame", suffix=".c")
+    try:
+        write(fd, bytes(src, "ascii"))
+        close(fd)
+
+        o = splitext(path)[0] + ".o"
+        cmd = ["cc", "-o", o, "-c", path]
+        with Popen(cmd, stdout=PIPE, stderr=PIPE) as proc:
+            try:
+                stdout, _ = proc.communicate()
+            finally:
+                try:
+                    unlink(o)
+                except FileNotFoundError:
+                    pass
+            return proc.returncode, stdout
+    finally:
+        unlink(path)
+
+def make_config_name(name):
+    upper = name.upper()
+    for c in ["/", "."]:
+        upper = upper.replace(c, "_")
+    return upper
+
+def check_header(prefix, config_h, name):
+    src = "#include <{name}>".format(**locals())
+    status, _ = run_cc(src)
+    if status != 0:
+        return
+    fmt = "{prefix}HAVE_{name}"
+    config_h.append((fmt.format(prefix=prefix, name=make_config_name(name)), 1))
+
+def check_function(config_h, function):
+    pass
+
+def check_errno(config_h, errno):
+    pass
+
+def check_sizeof(config_h, sizeof):
+    pass
+
+def check_library(config_h, library):
+    pass
+
+def configure():
+    settings = run_path("Damefile")
+
+    conf = Configure()
+    g = {
+            "define_prefix": conf.define_prefix,
+            "check_header": conf.check_header,
+            "check_function": conf.check_function,
+            "check_errno": conf.check_errno,
+            "check_sizeof": conf.check_sizeof,
+            "check_library": conf.check_library }
+    # ???: I expected settings["configure"].__globals__ keeps init_global, but
+    # actual is wrong.
+    for key in settings.keys():
+        value = settings[key]
+        if not callable(value):
+            continue
+        value.__globals__.update(g)
+    settings["configure"]()
+
+    prefix = conf.prefix
+    config_h = []
+    for header in conf.headers:
+        check_header(prefix, config_h, header)
+    for function in conf.functions:
+        check_function(config_h, function)
+    for errno in conf.errno:
+        check_errno(config_h, errno)
+    for sizeof in conf.sizeof:
+        check_sizeof(config_h, sizeof)
+    for library in conf.libraries:
+        check_library(config_h, library)
+    print(config_h)
+
+def main():
+    if argv[1] == "configure":
+        configure()
+
+main()
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

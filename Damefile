@@ -1,0 +1,10 @@
+
+def configure():
+    define_prefix("YOG_")
+    check_header([
+        "inttypes.h", "limits.h", "stddef.h", "stdint.h", "stdlib.h",
+        "string.h", "strings.h", "sys/time.h", "unistd.h", "malloc.h",
+        "getopt.h", "float.h", "dlfcn.h", "sys/mman.h", "alloca.h",
+        "arpa/inet.h", "netdb.h", "sys/socket.h", "direct.h"])
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
