@@ -6,5 +6,28 @@ def configure():
         "string.h", "strings.h", "sys/time.h", "unistd.h", "malloc.h",
         "getopt.h", "float.h", "dlfcn.h", "sys/mman.h", "alloca.h",
         "arpa/inet.h", "netdb.h", "sys/socket.h", "direct.h"])
+    check_function(["dlopen"])
+    check_errno([
+        "E2BIG", "EACCESS", "EADDINUSE", "EADDRNOTAVAIL", "EAFNOSUPPORT",
+        "EAGAIN", "EALREADY", "EBADE", "EBADFD", "EBADF", "EBADMSG", "EBADRQC",
+        "EBADR", "EBADSLT", "EBUSY", "ECANCELED", "ECHILD", "ECHRNG", "ECOMM",
+        "ECONNABORTED", "ECONNREFUSED", "ECONNRESET", "EDEADLK", "EDEADLOCK",
+        "EDESTADDRREQ", "EDOM", "EDQUOT", "EEXIST", "EFAULT", "EFBIG",
+        "EHOSTDOWN", "EHOSTUNREACH", "EIDRM", "EILSEQ", "EINPROGRESS", "EINTR",
+        "EINVAL", "EIO", "EISCONN", "EISDIR", "EISNAM", "EKEYEXPIRED",
+        "EKEYREJECTED", "EKEYREVOKED", "EL2HLT", "EL2NSYNC", "EL3HLT", "EL3RST",
+        "ELIBACC", "ELIBBAD", "ELIBEXEC", "ELIBMAX", "ELIBSCN", "ELOOP",
+        "EMEDIUMTYPE", "EMFILE", "EMLINK", "EMSGSIZE", "EMULTIHOP",
+        "ENAMETOOLONG", "ENETDOWN", "ENETRESET", "ENETUNREACH", "ENFILE",
+        "ENOBUFS", "ENODATA", "ENODEV", "ENOENT", "ENOEXEC", "ENOKEY", "ENOLCK",
+        "ENOLINK", "ENOMEDIUM", "ENOMEM", "ENOMSG", "ENONET", "ENOPKG",
+        "ENOPROTOOPT", "ENOSPC", "ENOSR", "ENOSTR", "ENOSYS", "ENOTBLK",
+        "ENOTCONN", "ENOTDIR", "ENOTEMPTY", "ENOTSOCK", "ENOTSUP", "ENOTTY",
+        "ENOTUNIQ", "ENXIO", "EOPNOTSUPP", "EOVERFLOW", "EPERM", "EPFNOSUPPORT",
+        "EPIPE", "EPROTONOSUPPORT", "EPROTOTYPE", "EPROTO", "ERANGE", "EREMCHG",
+        "EREMOTEIO", "EREMOTE", "ERESTART", "EROFS", "ESHUTDOWN",
+        "ESOCKTNOSUPPORT", "ESPIPE", "ESRCH", "ESTALE", "ESTRPIPE", "ETIMEDOUT",
+        "ETIME", "ETXTBSY", "EUCLEAN", "EUNATCH", "EUSERS", "EWOULDBLOCK",
+        "EXDEV", "EXFULL"])
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

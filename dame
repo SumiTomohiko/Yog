@@ -51,14 +51,14 @@ def run_cc(src):
         write(fd, bytes(src, "ascii"))
         close(fd)
 
-        o = splitext(path)[0] + ".o"
-        cmd = ["cc", "-o", o, "-c", path]
+        exe = splitext(path)[0]
+        cmd = ["cc", "-o", exe, path]
         with Popen(cmd, stdout=PIPE, stderr=PIPE) as proc:
             try:
                 stdout, _ = proc.communicate()
             finally:
                 try:
-                    unlink(o)
+                    unlink(exe)
                 except FileNotFoundError:
                     pass
             return proc.returncode, stdout
@@ -71,21 +71,54 @@ def make_config_name(name):
         upper = upper.replace(c, "_")
     return upper
 
-def check_header(prefix, config_h, name):
-    src = "#include <{name}>".format(**locals())
-    status, _ = run_cc(src)
-    if status != 0:
-        return
+def add_definition(prefix, config_h, name):
     fmt = "{prefix}HAVE_{name}"
     config_h.append((fmt.format(prefix=prefix, name=make_config_name(name)), 1))
 
-def check_function(config_h, function):
-    pass
+def add_definition_if_zero(prefix, config_h, name, src):
+    status, _ = run_cc(src)
+    if status != 0:
+        return
+    add_definition(prefix, config_h, name)
 
-def check_errno(config_h, errno):
-    pass
+def check_header(prefix, config_h, name):
+    src = """\
+#include <{name}>
 
-def check_sizeof(config_h, sizeof):
+int
+main(int argc, const char* argv[])
+{{
+    return 0;
+}}
+""".format(**locals())
+    add_definition_if_zero(prefix, config_h, name, src)
+
+def check_function(prefix, config_h, function):
+    src = """\
+int
+main(int argc, const char* argv[])
+{{
+    void {function}();
+    {function}();
+    return 0;
+}}
+""".format(**locals())
+    add_definition_if_zero(prefix, config_h, function, src)
+
+def check_errno(prefix, config_h, errno):
+    src = """\
+#include <errno.h>
+
+int
+main(int argc, const char* argv[])
+{{
+    {errno};
+    return 0;
+}}
+""".format(**locals())
+    add_definition_if_zero(prefix, config_h, errno, src)
+
+def check_sizeof(prefix, config_h, sizeof):
     pass
 
 def check_library(config_h, library):
@@ -116,9 +149,9 @@ def configure():
     for header in conf.headers:
         check_header(prefix, config_h, header)
     for function in conf.functions:
-        check_function(config_h, function)
+        check_function(prefix, config_h, function)
     for errno in conf.errno:
-        check_errno(config_h, errno)
+        check_errno(prefix, config_h, errno)
     for sizeof in conf.sizeof:
         check_sizeof(config_h, sizeof)
     for library in conf.libraries:
