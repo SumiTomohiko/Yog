@@ -5,7 +5,7 @@ from os.path import splitext
 from runpy import run_path
 from subprocess import PIPE, Popen
 from sys import argv
-from tempfile import mkstemp
+import tempfile
 
 class Configure:
 
@@ -45,8 +45,11 @@ class Configure:
             return self.check_library([names])
         self.libraries += names
 
+def mkstemp():
+    return tempfile.mkstemp(prefix="dame", suffix=".c")
+
 def run_cc(src):
-    fd, path = mkstemp(prefix="dame", suffix=".c")
+    fd, path = mkstemp()
     try:
         write(fd, bytes(src, "ascii"))
         close(fd)
@@ -67,7 +70,7 @@ def run_cc(src):
 
 def make_config_name(name):
     upper = name.upper()
-    for c in ["/", "."]:
+    for c in [" ", "/", "."]:
         upper = upper.replace(c, "_")
     return upper
 
@@ -118,8 +121,46 @@ main(int argc, const char* argv[])
 """.format(**locals())
     add_definition_if_zero(prefix, config_h, errno, src)
 
-def check_sizeof(prefix, config_h, sizeof):
-    pass
+def run_src(src):
+    fd, path = mkstemp()
+    try:
+        write(fd, bytes(src, "ascii"))
+        close(fd)
+
+        exe = splitext(path)[0]
+        cmd = ["cc", "-o", exe, path]
+        try:
+            with Popen(cmd, stdout=PIPE, stderr=PIPE) as proc:
+                proc.communicate()
+                if proc.returncode != 0:
+                    raise Exception("Cannot compile a given code.")
+            with Popen(exe, stdout=PIPE) as proc:
+                stdout, _ = proc.communicate()
+                return stdout
+        finally:
+            try:
+                unlink(exe)
+            except FileNotFoundError:
+                pass
+    finally:
+        unlink(path)
+
+def check_sizeof(prefix, config_h, name):
+    src = """\
+#include <stdio.h>
+
+int
+main(int argc, const char* argv[])
+{{
+    printf("%zu", sizeof({name}));
+    return 0;
+}}
+""".format(**locals())
+    stdout = run_src(src)
+
+    fmt = "{prefix}SIZEOF_{name}"
+    s = make_config_name(name.replace("*", "P"))
+    config_h.append((fmt.format(prefix=prefix, name=s), int(stdout)))
 
 def check_library(config_h, library):
     pass
@@ -153,7 +194,7 @@ def configure():
     for errno in conf.errno:
         check_errno(prefix, config_h, errno)
     for sizeof in conf.sizeof:
-        check_sizeof(config_h, sizeof)
+        check_sizeof(prefix, config_h, sizeof)
     for library in conf.libraries:
         check_library(config_h, library)
     print(config_h)

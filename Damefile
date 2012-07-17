@@ -29,5 +29,6 @@ def configure():
         "ESOCKTNOSUPPORT", "ESPIPE", "ESRCH", "ESTALE", "ESTRPIPE", "ETIMEDOUT",
         "ETIME", "ETXTBSY", "EUCLEAN", "EUNATCH", "EUSERS", "EWOULDBLOCK",
         "EXDEV", "EXFULL"])
+    check_sizeof(["int", "long", "long long", "void*"])
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
