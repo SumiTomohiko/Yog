@@ -262,15 +262,22 @@ def change_ext(filename, ext):
 
 class Program:
 
-    def __init__(self, dirpath, targets, sources):
+    def __init__(self, dirpath, targets, sources, **kw):
         self.dirpath = dirpath
         self.targets = targets
         self.sources = sources
+        self.kw = kw
+
+    def make_compile_command(self):
+        command = ["cc", "-o", "{targets}", "-Wall", "-Werror", "-g", "-O2"]
+        command += ["-I" + d for d in self.kw.get("includes", [])]
+        command += ["-c", "{sources}"]
+        return " ".join(command)
 
     def make_obj(self, src):
-        compile_cmd = "cc -o {targets} -Wall -Werror -g -O3 -c {sources}"
+        command = self.make_compile_command()
         o = join(self.dirpath, change_ext(src, ".o"))
-        return Node(o, Node(join(self.dirpath, src), None, []), compile_cmd)
+        return Node(o, Node(join(self.dirpath, src), None, []), command)
 
     def make_target(self, target, objs):
         link_cmd = "cc -o {targets} {sources}"
@@ -305,7 +312,7 @@ class Build:
             return self.program([targets], sources, **kw)
         if not isinstance(sources, list):
             return self.program(targets, [sources], **kw)
-        self.tasks.append(Program(self.dirpath, targets, sources))
+        self.tasks.append(Program(self.dirpath, targets, sources, **kw))
 
 def construct_dependencies(tasks):
     roots = []
@@ -326,20 +333,24 @@ def is_up_to_date(node):
         return False
     return True
 
-def resolve(node):
+def resolve(top_dir, node):
     if node is None:
         return
     for source in node.sources:
-        resolve(source)
+        resolve(top_dir, source)
     if is_up_to_date(node):
         return
     for fmt in node.commands:
         sources = " ".join([n.name for n in node.sources if n is not None])
-        command = fmt.format(targets=node.name, sources=sources)
+        d = {
+                "targets": node.name,
+                "sources": sources,
+                "top_dir": top_dir }
+        command = fmt.format(**d)
         if call(command, shell=True) != 0:
             raise Exception("Command failed: {command}".format(**locals()))
 
-def build(dirpath):
+def build(top_dir, dirpath):
     settings = run_path(join(dirpath, DAMEFILE))
     b = Build(dirpath)
     g = {
@@ -349,13 +360,14 @@ def build(dirpath):
     update_globals(settings, g)
     settings["build"]()
     for subdir in b.subdirs:
-        build(join(dirpath, subdir))
+        build(top_dir, join(dirpath, subdir))
     for node in construct_dependencies(b.tasks):
-        resolve(node)
+        resolve(top_dir, node)
 
 def main():
     if (len(argv) == 1) or (argv[1] == "build"):
-        build(".")
+        top_dir = "."
+        build(top_dir, top_dir)
     elif argv[1] == "configure":
         configure()
 
