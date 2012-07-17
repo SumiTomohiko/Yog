@@ -25,9 +25,9 @@ class Configure:
             return self.check_header([names])
         self.headers += names
 
-    def check_function(self, names):
+    def check_func(self, names):
         if isinstance(names, str):
-            return self.check_function([names])
+            return self.check_func([names])
         self.functions += names
 
     def check_errno(self, names):
@@ -40,22 +40,22 @@ class Configure:
             return self.check_sizeof([names])
         self.sizeof += names
 
-    def check_library(self, names):
+    def check_lib(self, names):
         if isinstance(names, str):
-            return self.check_library([names])
+            return self.check_lib([names])
         self.libraries += names
 
 def mkstemp():
     return tempfile.mkstemp(prefix="dame", suffix=".c")
 
-def run_cc(src):
+def run_cc(src, flags):
     fd, path = mkstemp()
     try:
         write(fd, bytes(src, "ascii"))
         close(fd)
 
         exe = splitext(path)[0]
-        cmd = ["cc", "-o", exe, path]
+        cmd = ["cc", "-o", exe, path] + flags
         with Popen(cmd, stdout=PIPE, stderr=PIPE) as proc:
             try:
                 stdout, _ = proc.communicate()
@@ -78,8 +78,11 @@ def add_definition(prefix, config_h, name):
     fmt = "{prefix}HAVE_{name}"
     config_h.append((fmt.format(prefix=prefix, name=make_config_name(name)), 1))
 
-def add_definition_if_zero(prefix, config_h, name, src):
-    status, _ = run_cc(src)
+def add_definition_if_zero(prefix, config_h, name, src, flags=[]):
+    if isinstance(flags, str):
+        return add_definition_if_zero(prefix, config_h, name, src, [flags])
+
+    status, _ = run_cc(src, flags)
     if status != 0:
         return
     add_definition(prefix, config_h, name)
@@ -96,17 +99,17 @@ main(int argc, const char* argv[])
 """.format(**locals())
     add_definition_if_zero(prefix, config_h, name, src)
 
-def check_function(prefix, config_h, function):
+def check_func(prefix, config_h, func):
     src = """\
 int
 main(int argc, const char* argv[])
 {{
-    void {function}();
-    {function}();
+    void {func}();
+    {func}();
     return 0;
 }}
 """.format(**locals())
-    add_definition_if_zero(prefix, config_h, function, src)
+    add_definition_if_zero(prefix, config_h, func, src)
 
 def check_errno(prefix, config_h, errno):
     src = """\
@@ -162,8 +165,15 @@ main(int argc, const char* argv[])
     s = make_config_name(name.replace("*", "P"))
     config_h.append((fmt.format(prefix=prefix, name=s), int(stdout)))
 
-def check_library(config_h, library):
-    pass
+def check_lib(prefix, config_h, lib):
+    src = """\
+int
+main(int argc, const char* argv[])
+{
+    return 0;
+}
+"""
+    add_definition_if_zero(prefix, config_h, lib, src, "-l" + lib)
 
 def configure():
     settings = run_path("Damefile")
@@ -172,10 +182,10 @@ def configure():
     g = {
             "define_prefix": conf.define_prefix,
             "check_header": conf.check_header,
-            "check_function": conf.check_function,
+            "check_func": conf.check_func,
             "check_errno": conf.check_errno,
             "check_sizeof": conf.check_sizeof,
-            "check_library": conf.check_library }
+            "check_lib": conf.check_lib }
     # ???: I expected settings["configure"].__globals__ keeps init_global, but
     # actual is wrong.
     for key in settings.keys():
@@ -190,13 +200,13 @@ def configure():
     for header in conf.headers:
         check_header(prefix, config_h, header)
     for function in conf.functions:
-        check_function(prefix, config_h, function)
+        check_func(prefix, config_h, function)
     for errno in conf.errno:
         check_errno(prefix, config_h, errno)
     for sizeof in conf.sizeof:
         check_sizeof(prefix, config_h, sizeof)
     for library in conf.libraries:
-        check_library(config_h, library)
+        check_lib(prefix, config_h, library)
     print(config_h)
 
 def main():

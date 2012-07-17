@@ -6,7 +6,7 @@ def configure():
         "string.h", "strings.h", "sys/time.h", "unistd.h", "malloc.h",
         "getopt.h", "float.h", "dlfcn.h", "sys/mman.h", "alloca.h",
         "arpa/inet.h", "netdb.h", "sys/socket.h", "direct.h"])
-    check_function(["dlopen"])
+    check_func(["dlopen"])
     check_errno([
         "E2BIG", "EACCESS", "EADDINUSE", "EADDRNOTAVAIL", "EAFNOSUPPORT",
         "EAGAIN", "EALREADY", "EBADE", "EBADFD", "EBADF", "EBADMSG", "EBADRQC",
@@ -30,5 +30,6 @@ def configure():
         "ETIME", "ETXTBSY", "EUCLEAN", "EUNATCH", "EUSERS", "EWOULDBLOCK",
         "EXDEV", "EXFULL"])
     check_sizeof(["int", "long", "long long", "void*"])
+    check_lib(["pthread", "dl", "syck", "zip"])
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
