@@ -1,4 +1,14 @@
 
+from re import search
+
+def read_version():
+    with open("README") as fp:
+        for line in fp:
+            m = search(r"\d+\.\d+\.\d+$", line)
+            if m is None:
+                continue
+            return m.group()
+
 def configure():
     define_prefix("YOG_")
     check_header([
@@ -31,6 +41,9 @@ def configure():
         "EXDEV", "EXFULL"])
     check_sizeof(["int", "long", "long long", "void*"])
     check_lib(["pthread", "dl", "syck", "zip"])
+
+    define("PACKAGE_VERSION", read_version())
+
     make_config_h("include/yog/config.h")
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

@@ -17,6 +17,10 @@ class Configure:
         self.libraries = []
         self.prefix = ""
         self.config_h_path = None
+        self.definitions = []
+
+    def define(self, key, value):
+        self.definitions.append((key, value))
 
     def make_config_h(self, path):
         self.config_h_path = path
@@ -202,6 +206,7 @@ def configure():
 
     conf = Configure()
     g = {
+            "define": conf.define,
             "make_config_h": conf.make_config_h,
             "define_prefix": conf.define_prefix,
             "check_header": conf.check_header,
@@ -216,6 +221,7 @@ def configure():
         if not callable(value):
             continue
         value.__globals__.update(g)
+        value.__globals__.update(settings)
     settings["configure"]()
 
     prefix = conf.prefix
@@ -230,6 +236,7 @@ def configure():
         check_sizeof(prefix, config_h, sizeof)
     for library in conf.libraries:
         check_lib(prefix, config_h, library)
+    config_h += conf.definitions
     make_config_h(conf.config_h_path, config_h)
 
 def main():
