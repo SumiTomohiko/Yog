@@ -9,6 +9,9 @@ def read_version():
                 continue
             return m.group()
 
+def build():
+    recurse("src")
+
 def configure():
     define_prefix("YOG_")
     check_header([

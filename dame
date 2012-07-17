@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-from os import close, unlink, write
-from os.path import splitext
+from glob import glob
+from os import chdir, close, getcwd, stat, unlink, write
+from os.path import join, splitext
 from runpy import run_path
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, call
 from sys import argv
 import tempfile
 
@@ -29,27 +30,27 @@ class Configure:
         self.prefix = prefix
 
     def check_header(self, names):
-        if isinstance(names, str):
+        if not isinstance(names, list):
             return self.check_header([names])
         self.headers += names
 
     def check_func(self, names):
-        if isinstance(names, str):
+        if not isinstance(names, list):
             return self.check_func([names])
         self.functions += names
 
     def check_errno(self, names):
-        if isinstance(names, str):
+        if not isinstance(names, list):
             return self.check_errno([names])
         self.errno += names
 
     def check_sizeof(self, names):
-        if isinstance(names, str):
+        if not isinstance(names, list):
             return self.check_sizeof([names])
         self.sizeof += names
 
     def check_lib(self, names):
-        if isinstance(names, str):
+        if not isinstance(names, list):
             return self.check_lib([names])
         self.libraries += names
 
@@ -87,7 +88,7 @@ def add_definition(prefix, config_h, name):
     config_h.append((fmt.format(prefix=prefix, name=make_config_name(name)), 1))
 
 def add_definition_if_zero(prefix, config_h, name, src, flags=[]):
-    if isinstance(flags, str):
+    if not isinstance(flags, list):
         return add_definition_if_zero(prefix, config_h, name, src, [flags])
 
     status, _ = run_cc(src, flags)
@@ -201,8 +202,18 @@ def make_config_h(path, config_h):
 #endif
 """)
 
+def update_globals(settings, g):
+    for key in settings.keys():
+        value = settings[key]
+        if not callable(value):
+            continue
+        value.__globals__.update(g)
+        value.__globals__.update(settings)
+
+DAMEFILE = "Damefile"
+
 def configure():
-    settings = run_path("Damefile")
+    settings = run_path(DAMEFILE)
 
     conf = Configure()
     g = {
@@ -216,12 +227,8 @@ def configure():
             "check_lib": conf.check_lib }
     # ???: I expected settings["configure"].__globals__ keeps init_global, but
     # actual is wrong.
-    for key in settings.keys():
-        value = settings[key]
-        if not callable(value):
-            continue
-        value.__globals__.update(g)
-        value.__globals__.update(settings)
+    update_globals(settings, g)
+
     settings["configure"]()
 
     prefix = conf.prefix
@@ -239,8 +246,117 @@ def configure():
     config_h += conf.definitions
     make_config_h(conf.config_h_path, config_h)
 
+class Node:
+
+    def __init__(self, name, sources, commands):
+        if not isinstance(commands, list):
+            return self.__init__(name, sources, [commands])
+        if not isinstance(sources, list):
+            return self.__init__(name, [sources], commands)
+        self.name = name
+        self.sources = sources
+        self.commands = commands
+
+def change_ext(filename, ext):
+    return splitext(filename)[0] + ext
+
+class Program:
+
+    def __init__(self, dirpath, targets, sources):
+        self.dirpath = dirpath
+        self.targets = targets
+        self.sources = sources
+
+    def make_obj(self, src):
+        compile_cmd = "cc -o {targets} -Wall -Werror -g -O3 -c {sources}"
+        o = join(self.dirpath, change_ext(src, ".o"))
+        return Node(o, Node(join(self.dirpath, src), None, []), compile_cmd)
+
+    def make_target(self, target, objs):
+        link_cmd = "cc -o {targets} {sources}"
+        return Node(join(self.dirpath, target), objs, link_cmd)
+
+    def construct_dependencies(self):
+        objs = [self.make_obj(src) for src in self.sources]
+        return [self.make_target(target, objs) for target in self.targets]
+
+class Build:
+
+    def __init__(self, dirpath):
+        self.dirpath = dirpath
+        self.subdirs = []
+        self.tasks = []
+
+    def recurse(self, subdirs):
+        if not isinstance(subdirs, list):
+            return self.recurse([subdirs])
+        self.subdirs += subdirs
+
+    def glob(self, pat):
+        cwd = getcwd()
+        chdir(self.dirpath)
+        try:
+            return glob(pat)
+        finally:
+            chdir(cwd)
+
+    def program(self, targets, sources, **kw):
+        if not isinstance(targets, list):
+            return self.program([targets], sources, **kw)
+        if not isinstance(sources, list):
+            return self.program(targets, [sources], **kw)
+        self.tasks.append(Program(self.dirpath, targets, sources))
+
+def construct_dependencies(tasks):
+    roots = []
+    for task in tasks:
+        roots += task.construct_dependencies()
+    return roots
+
+def is_up_to_date(node):
+    try:
+        target_mtime = stat(node.name).st_mtime
+        for source in node.sources:
+            if source is None:
+                continue
+            source_mtime = stat(source.name).st_mtime
+            if target_mtime < source_mtime:
+                return False
+    except FileNotFoundError:
+        return False
+    return True
+
+def resolve(node):
+    if node is None:
+        return
+    for source in node.sources:
+        resolve(source)
+    if is_up_to_date(node):
+        return
+    for fmt in node.commands:
+        sources = " ".join([n.name for n in node.sources if n is not None])
+        command = fmt.format(targets=node.name, sources=sources)
+        if call(command, shell=True) != 0:
+            raise Exception("Command failed: {command}".format(**locals()))
+
+def build(dirpath):
+    settings = run_path(join(dirpath, DAMEFILE))
+    b = Build(dirpath)
+    g = {
+            "program": b.program,
+            "glob": b.glob,
+            "recurse": b.recurse }
+    update_globals(settings, g)
+    settings["build"]()
+    for subdir in b.subdirs:
+        build(join(dirpath, subdir))
+    for node in construct_dependencies(b.tasks):
+        resolve(node)
+
 def main():
-    if argv[1] == "configure":
+    if (len(argv) == 1) or (argv[1] == "build"):
+        build(".")
+    elif argv[1] == "configure":
         configure()
 
 main()

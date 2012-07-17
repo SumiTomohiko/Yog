@@ -1,0 +1,26 @@
+
+def build():
+    targets = "yog"
+    sources = glob("*.c") + [
+            "gc/generational.c",
+            "gc/copying.c",
+            "gc/mark-sweep-compact.c"]
+    corgi_dir = "{top_dir}/corgi"
+    libffi_dir = "{top_dir}/libffi"
+    BigDigits_dir = "{top_dir}/BigDigits"
+    includes = [
+            "{top_dir}/include",
+            corgi_dir + "/include",
+            libffi_dir + "/include",
+            BigDigits_dir]
+    cflags = ["-Wall", "-Werror", "-O2", "-g"]
+    lib = ["m", "pthread"]
+    linkflags = "-export-dynamic"
+    stlib = ["corgi", "ffi", "BigDigits"]
+    stlibpath = [
+            corgi_dir + "/src/.libs",
+            libffi_dir + "/.libs",
+            BigDigits_dir + "/build"]
+    program(**locals())
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
