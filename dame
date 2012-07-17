@@ -3,7 +3,7 @@
 from functools import partial
 from glob import glob
 from os import chdir, close, getcwd, stat, unlink, write
-from os.path import join, splitext
+from os.path import abspath, join, splitext
 from runpy import run_path
 from subprocess import PIPE, Popen, call
 from sys import argv
@@ -206,7 +206,7 @@ def make_config_h(path, config_h):
 def update_globals(settings, g):
     for key in settings.keys():
         value = settings[key]
-        if not callable(value):
+        if (not callable(value)) or (value.__module__ != "<run_path>"):
             continue
         value.__globals__.update(g)
         value.__globals__.update(settings)
@@ -261,6 +261,17 @@ class Node:
 def change_ext(filename, ext):
     return splitext(filename)[0] + ext
 
+class Command:
+
+    def __init__(self, dirpath, commands, targets, sources):
+        self.dirpath = dirpath
+        self.commands = commands
+        self.targets = targets
+        self.sources = sources
+
+    def construct_dependencies(self):
+        return []
+
 class Program:
 
     def __init__(self, dirpath, targets, sources, **kw):
@@ -294,6 +305,15 @@ class Build:
         self.dirpath = dirpath
         self.subdirs = []
         self.tasks = []
+
+    def command(self, commands, targets, sources):
+        if not isinstance(commands, list):
+            return self.command([commands], targets, sources)
+        if not isinstance(targets, list):
+            return self.command(commands, [targets], sources)
+        if not isinstance(sources, list):
+            return self.command(commands, targets, [sources])
+        self.tasks.append(Command(self.dirpath, commands, targets, sources))
 
     def recurse(self, subdirs):
         if not isinstance(subdirs, list):
@@ -355,6 +375,7 @@ def build(top_dir, dirpath):
     settings = run_path(join(dirpath, DAMEFILE))
     b = Build(dirpath)
     g = {
+            "command": b.command,
             "program": b.program,
             "glob": b.glob,
             "recurse": b.recurse }
@@ -372,7 +393,7 @@ def get_request():
         return "build"
 
 def main():
-    top_dir = "."
+    top_dir = abspath(".")
     d = {
             "build": partial(build, top_dir, top_dir),
             "configure": configure }
