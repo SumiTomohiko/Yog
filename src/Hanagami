@@ -36,7 +36,7 @@ def define_rule_for_builtin_script():
                 sources=src)
 
 def build():
-    define_rule_for_builtin_script()
     define_rule_for_yog()
+    define_rule_for_builtin_script()
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
