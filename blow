@@ -211,10 +211,10 @@ def update_globals(settings, g):
         value.__globals__.update(g)
         value.__globals__.update(settings)
 
-DAMEFILE = "Damefile"
+DEFAULT_FILENAME = "Hanagami"
 
 def configure():
-    settings = run_path(DAMEFILE)
+    settings = run_path(DEFAULT_FILENAME)
 
     conf = Configure()
     g = {
@@ -247,57 +247,21 @@ def configure():
     config_h += conf.definitions
     make_config_h(conf.config_h_path, config_h)
 
-class Node:
-
-    def __init__(self, name, sources, commands):
-        if not isinstance(commands, list):
-            return self.__init__(name, sources, [commands])
-        if not isinstance(sources, list):
-            return self.__init__(name, [sources], commands)
-        self.name = name
-        self.sources = sources
-        self.commands = commands
-
 def change_ext(filename, ext):
     return splitext(filename)[0] + ext
 
-class Command:
+class Task:
 
-    def __init__(self, dirpath, commands, targets, sources):
-        self.dirpath = dirpath
-        self.commands = commands
-        self.targets = targets
-        self.sources = sources
+    def __init__(self):
+        self.dirpath = None
+        self.sources = None
+        self.targets = None
+        self.commands = None
 
-    def construct_dependencies(self):
-        return []
-
-class Program:
-
-    def __init__(self, dirpath, targets, sources, **kw):
-        self.dirpath = dirpath
-        self.targets = targets
-        self.sources = sources
-        self.kw = kw
-
-    def make_compile_command(self):
-        command = ["cc", "-o", "{targets}", "-Wall", "-Werror", "-g", "-O2"]
-        command += ["-I" + d for d in self.kw.get("includes", [])]
-        command += ["-c", "{sources}"]
-        return " ".join(command)
-
-    def make_obj(self, src):
-        command = self.make_compile_command()
-        o = join(self.dirpath, change_ext(src, ".o"))
-        return Node(o, Node(join(self.dirpath, src), None, []), command)
-
-    def make_target(self, target, objs):
-        link_cmd = "cc -o {targets} {sources}"
-        return Node(join(self.dirpath, target), objs, link_cmd)
-
-    def construct_dependencies(self):
-        objs = [self.make_obj(src) for src in self.sources]
-        return [self.make_target(target, objs) for target in self.targets]
+    def __repr__(self):
+        fmt = "<Task dirpath={0} targets={1} sources={2} commands={3}>"
+        args = [self.dirpath, self.targets, self.sources, self.commands]
+        return fmt.format(*args)
 
 class Build:
 
@@ -313,7 +277,12 @@ class Build:
             return self.command(commands, [targets], sources)
         if not isinstance(sources, list):
             return self.command(commands, targets, [sources])
-        self.tasks.append(Command(self.dirpath, commands, targets, sources))
+        task = Task()
+        task.dirpath = self.dirpath
+        task.targets = targets
+        task.sources = sources
+        task.commands = commands
+        self.tasks.append(task)
 
     def recurse(self, subdirs):
         if not isinstance(subdirs, list):
@@ -328,51 +297,102 @@ class Build:
         finally:
             chdir(cwd)
 
+    def make_compile_command(self, kw):
+        command = ["cc", "-o", "{targets}", "-Wall", "-Werror", "-g", "-O2"]
+        command += ["-I" + d for d in kw.get("includes", [])]
+        command += ["-c", "{sources}"]
+        return " ".join(command)
+
     def program(self, targets, sources, **kw):
         if not isinstance(targets, list):
             return self.program([targets], sources, **kw)
         if not isinstance(sources, list):
             return self.program(targets, [sources], **kw)
-        self.tasks.append(Program(self.dirpath, targets, sources, **kw))
 
-def construct_dependencies(tasks):
-    roots = []
-    for task in tasks:
-        roots += task.construct_dependencies()
-    return roots
+        commands = [self.make_compile_command(kw)]
 
-def is_up_to_date(node):
+        objects = [change_ext(source, ".o") for source in sources]
+        for source, object_ in zip(sources, objects):
+            task = Task()
+            task.dirpath = self.dirpath
+            task.targets = [object_]
+            task.sources = [source]
+            task.commands = commands
+            self.tasks.append(task)
+
+        task = Task()
+        task.dirpath = self.dirpath
+        task.targets = targets
+        task.sources = objects
+        task.commands = ["cc -o {targets} {sources}"]
+        self.tasks.append(task)
+
+def mtime_of_file(dirpath, name):
     try:
-        target_mtime = stat(node.name).st_mtime
-        for source in node.sources:
-            if source is None:
-                continue
-            source_mtime = stat(source.name).st_mtime
-            if target_mtime < source_mtime:
-                return False
+        return stat(join(dirpath, name)).st_mtime
     except FileNotFoundError:
-        return False
-    return True
+        return None
 
-def resolve(top_dir, node):
-    if node is None:
+def mtime_of_files(dirpath, names):
+    l = []
+    for name in names:
+        mtime = mtime_of_file(dirpath, name)
+        if mtime is None:
+            continue
+        l.append(mtime)
+    return l
+
+def is_up_to_date(task):
+    dirpath = task.dirpath
+    targets_mtime = mtime_of_files(dirpath, task.targets)
+    if len(targets_mtime) == 0:
+        return False
+    sources_mtime = mtime_of_files(dirpath, task.sources)
+    return max(sources_mtime) < min(targets_mtime)
+
+def find_task_of_target(target, tasks):
+    for task in tasks:
+        if target in task.targets:
+            return task
+    return None
+
+def join_filenames(dirpath, names):
+    return " ".join([join(dirpath, name) for name in names])
+
+def resolve(top_dir, task, tasks):
+    for source in task.sources:
+        t = find_task_of_target(source, tasks)
+        if t is None:
+            continue
+        resolve(top_dir, t, tasks)
+    if is_up_to_date(task):
         return
-    for source in node.sources:
-        resolve(top_dir, source)
-    if is_up_to_date(node):
-        return
-    for fmt in node.commands:
-        sources = " ".join([n.name for n in node.sources if n is not None])
+    dirpath = task.dirpath
+    for template in task.commands:
         d = {
-                "targets": node.name,
-                "sources": sources,
+                "targets": join_filenames(dirpath, task.targets),
+                "sources": join_filenames(dirpath, task.sources),
                 "top_dir": top_dir }
-        command = fmt.format(**d)
+        command = template.format(**d)
         if call(command, shell=True) != 0:
             raise Exception("Command failed: {command}".format(**locals()))
 
+def find_root_targets(tasks):
+    l = []
+    for task in tasks:
+        for target in task.targets:
+            target_is_source = False
+            for t in tasks:
+                if target in t.sources:
+                    target_is_source = True
+                    break
+            if not target_is_source:
+                l.append(task)
+                break
+    return l
+
 def build(top_dir, dirpath):
-    settings = run_path(join(dirpath, DAMEFILE))
+    settings = run_path(join(dirpath, DEFAULT_FILENAME))
     b = Build(dirpath)
     g = {
             "command": b.command,
@@ -383,8 +403,9 @@ def build(top_dir, dirpath):
     settings["build"]()
     for subdir in b.subdirs:
         build(top_dir, join(dirpath, subdir))
-    for node in construct_dependencies(b.tasks):
-        resolve(top_dir, node)
+    tasks = b.tasks
+    for root in find_root_targets(tasks):
+        resolve(top_dir, root, tasks)
 
 def get_request():
     try:
