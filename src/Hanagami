@@ -26,14 +26,14 @@ def define_rule_for_yog():
     program(**locals())
 
 def define_rule_for_builtin_script():
-    for src in glob("*.yog"):
-        base, ext = splitext(src)
+    for source in glob("*.yog"):
+        base, ext = splitext(source)
         if base == "yog2inc":
             continue
         command(
                 commands="yog yog2inc.yog {sources} {targets}",
                 targets=base + ".inc",
-                sources=src)
+                sources=source)
 
 def build():
     define_rule_for_yog()
