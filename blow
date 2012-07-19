@@ -23,7 +23,7 @@ class Configure:
         self.definitions = []
 
     def define(self, key, value):
-        self.definitions.append((key, value))
+        self.definitions.append((self.prefix + key, value))
 
     def make_config_h(self, path):
         self.config_h_path = path
