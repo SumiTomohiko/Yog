@@ -409,6 +409,10 @@ def make_tasks_for_includes(tasks, top_dir):
         for source in task.sources:
             if splitext(source)[1] != ".c":
                 continue
+            task_for_c = Task()
+            task_for_c.dirpath = task.dirpath
+            task_for_c.targets = [source]
+            task_for_c.sources = []
             with open(join(task.dirpath, source)) as fp:
                 for line in fp:
                     m = match(r"#include [\"<](?P<path>.*)[\">]", line.strip())
@@ -417,27 +421,29 @@ def make_tasks_for_includes(tasks, top_dir):
                     path = m.group("path")
                     system_include_dir = ["/usr/include", "/usr/local/include"]
                     if find_in_includes(path, system_include_dir) is not None:
+                        # The header file is found in a system include
+                        # directory. Updating such file is rare, so it is
+                        # ignored.
                         continue
-                    fullpath = find_in_includes(path, task.includes, top_dir)
+                    includes = [task.dirpath] + task.includes
+                    fullpath = find_in_includes(path, includes, top_dir)
                     if fullpath is not None:
-                        t = Task()
-                        t.dirpath = dirname(fullpath)
-                        t.targets = task.sources
-                        t.sources = [basename(fullpath)]
-                        t.commands = []
-                        l.append(t)
+                        # The included file is found in a user's include
+                        # directory.
+                        task_for_c.sources += [fullpath]
                         continue
                     t = find_task_of_target(basename(path), tasks)
                     if t is None:
-                        fmt = "WARNING: I cannot find a task for {path}"
+                        # In here case:
+                        # 1. The included file is not found in any directories. 
+                        # 2. The included file is not a target of any tasks.
+                        # I don't know how to generate it.
+                        fmt = "WARNING: Cannot find a task for {path}"
                         print(fmt.format(**locals()))
                         continue
-                    t2 = Task()
-                    t2.dirpath = t.dirpath
-                    t2.targets = task.sources
-                    t2.sources = t.targets
-                    t2.commands = []
-                    l.append(t2)
+                    task_for_c.sources += t.targets
+            if 0 < len(task_for_c.sources):
+                l.append(task_for_c)
     return l
 
 def build(top_dir, dirpath):
