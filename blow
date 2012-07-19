@@ -3,7 +3,8 @@
 from functools import partial
 from glob import glob
 from os import close, stat, unlink, write
-from os.path import abspath, join, splitext
+from os.path import abspath, basename, dirname, exists, join, splitext
+from re import match
 from runpy import run_path
 from subprocess import PIPE, Popen, call
 from sys import argv
@@ -257,6 +258,7 @@ class Task:
         self.sources = None
         self.targets = None
         self.commands = None
+        self.includes = None
 
     def __repr__(self):
         fmt = "<Task dirpath={0} targets={1} sources={2} commands={3}>"
@@ -290,7 +292,8 @@ class Build:
         self.subdirs += subdirs
 
     def glob(self, pat):
-        return glob(join(self.dirpath, pat))
+        dirpath = self.dirpath
+        return [name[len(dirpath) + 1:] for name in glob(join(dirpath, pat))]
 
     def make_compile_command(self, kw):
         command = ["cc", "-o", "{targets}", "-Wall", "-Werror", "-g", "-O2"]
@@ -305,6 +308,7 @@ class Build:
             return self.program(targets, [sources], **kw)
 
         commands = [self.make_compile_command(kw)]
+        includes = kw.get("includes", [])
 
         objects = [change_ext(source, ".o") for source in sources]
         for source, object_ in zip(sources, objects):
@@ -313,6 +317,7 @@ class Build:
             task.targets = [object_]
             task.sources = [source]
             task.commands = commands
+            task.includes = includes
             self.tasks.append(task)
 
         task = Task()
@@ -386,6 +391,50 @@ def find_root_targets(tasks):
                 break
     return l
 
+def find_in_includes(path, includes, top_dir=""):
+    for include in includes:
+        fullpath = join(include.format(**locals()), path)
+        if exists(fullpath):
+            return fullpath
+    return None
+
+def make_tasks_for_includes(tasks, top_dir):
+    l = []
+    for task in tasks:
+        for source in task.sources:
+            if splitext(source)[1] != ".c":
+                continue
+            with open(join(task.dirpath, source)) as fp:
+                for line in fp:
+                    m = match(r"#include [\"<](?P<path>.*)[\">]", line.strip())
+                    if m is None:
+                        continue
+                    path = m.group("path")
+                    system_include_dir = ["/usr/include", "/usr/local/include"]
+                    if find_in_includes(path, system_include_dir) is not None:
+                        continue
+                    fullpath = find_in_includes(path, task.includes, top_dir)
+                    if fullpath is not None:
+                        t = Task()
+                        t.dirpath = dirname(fullpath)
+                        t.targets = task.sources
+                        t.sources = [basename(fullpath)]
+                        t.commands = []
+                        l.append(t)
+                        continue
+                    t = find_task_of_target(basename(path), tasks)
+                    if t is None:
+                        fmt = "WARNING: I cannot find a task for {path}"
+                        print(fmt.format(**locals()))
+                        continue
+                    t2 = Task()
+                    t2.dirpath = t.dirpath
+                    t2.targets = task.sources
+                    t2.sources = t.targets
+                    t2.commands = []
+                    l.append(t2)
+    return l
+
 def build(top_dir, dirpath):
     settings = run_path(join(dirpath, DEFAULT_FILENAME))
     b = Build(dirpath)
@@ -399,8 +448,9 @@ def build(top_dir, dirpath):
     for subdir in b.subdirs:
         build(top_dir, join(dirpath, subdir))
     tasks = b.tasks
-    for root in find_root_targets(tasks):
-        resolve(top_dir, root, tasks)
+    all_tasks = tasks + make_tasks_for_includes(tasks, top_dir)
+    for root in find_root_targets(all_tasks):
+        resolve(top_dir, root, all_tasks)
 
 def get_request():
     try:
