@@ -2,7 +2,7 @@
 
 from functools import partial
 from glob import glob
-from os import close, stat, unlink, write
+from os import chdir, close, getcwd, stat, unlink, write
 from os.path import abspath, basename, dirname, exists, join, splitext
 from re import match
 from runpy import run_path
@@ -368,14 +368,19 @@ def resolve(top_dir, task, tasks):
     if is_up_to_date(task):
         return
     dirpath = task.dirpath
-    for template in task.commands:
+    for template in task.commands or []:
         d = {
                 "targets": join_filenames(dirpath, task.targets),
                 "sources": join_filenames(dirpath, task.sources),
                 "top_dir": top_dir }
         command = template.format(**d)
-        if call(command, shell=True) != 0:
-            raise Exception("Command failed: {command}".format(**locals()))
+        cwd_old = getcwd()
+        chdir(task.dirpath)
+        try:
+            if call(command, shell=True) != 0:
+                raise Exception("Command failed: {command}".format(**locals()))
+        finally:
+            chdir(cwd_old)
 
 def find_root_targets(tasks):
     l = []
