@@ -42,7 +42,7 @@ debug = logger.debug
 
 class Configure:
 
-    def __init__(self):
+    def __init__(self, options):
         self.headers = []
         self.functions = []
         self.errno = []
@@ -51,6 +51,10 @@ class Configure:
         self.prefix = ""
         self.config_h_path = None
         self.definitions = []
+        self.options = options
+
+    def get_option(self, key, default):
+        return self.options.get(key, default)
 
     def define(self, key, value):
         self.definitions.append((self.prefix + key, value))
@@ -265,8 +269,9 @@ def parse_options(args):
 def configure():
     settings = run_path(DEFAULT_FILENAME)
 
-    conf = Configure()
+    conf = Configure(parse_options(argv[2:]))
     g = {
+            "get_option": conf.get_option,
             "define": conf.define,
             "make_config_h": conf.make_config_h,
             "define_prefix": conf.define_prefix,
@@ -279,7 +284,7 @@ def configure():
     # actual is wrong.
     update_globals(settings, g)
 
-    settings["configure"](parse_options(argv[2:]))
+    settings["configure"]()
 
     prefix = conf.prefix
     config_h = []
