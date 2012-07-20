@@ -330,7 +330,8 @@ class Build:
         return ["-" + opt + s for s in kw.get(key, [])]
 
     def make_compile_command(self, kw):
-        command = ["cc", "-o", "{targets}", "-Wall", "-Werror", "-g", "-O2"]
+        command = ["cc", "-o", "{targets}"]
+        command += kw.get("cflags", ["-Wall", "-Werror", "-g", "-O2"])
         command += self.join_params("I", "includes", kw)
         command += ["-c", "{sources}"]
         return " ".join(command)
@@ -354,6 +355,10 @@ class Build:
         if not isinstance(kw.get("linkflags", []), list):
             kw2 = kw.copy()
             kw2["linkflags"] = [kw["linkflags"]]
+            return self.program(targets, sources, **kw2)
+        if not isinstance(kw.get("cflags", []), list):
+            kw2 = kw.copy()
+            kw2["cflags"] = [kw["cflags"]]
             return self.program(targets, sources, **kw2)
 
         commands = [self.make_compile_command(kw)]
