@@ -2,13 +2,43 @@
 
 from functools import partial
 from glob import glob
-from os import chdir, close, getcwd, stat, unlink, write
+from logging import FileHandler, Formatter, StreamHandler, getLogger
+from os import chdir, close, getcwd, mkdir, stat, unlink, write
 from os.path import abspath, basename, dirname, exists, join, splitext
 from re import match
 from runpy import run_path
 from subprocess import PIPE, Popen, call
-from sys import argv
+from sys import argv, stdout
+from time import localtime, strftime
 import tempfile
+
+VAR_DIR = ".tissue"
+try:
+    mkdir(VAR_DIR)
+except FileExistsError:
+    pass
+
+def add_log_handler(logger, handler, level, fmt):
+    handler.setLevel(level)
+    handler.setFormatter(fmt)
+    logger.addHandler(handler)
+
+def setup_logger():
+    logger = getLogger(__name__)
+    logger.setLevel("DEBUG")
+
+    fmt = Formatter(fmt="%(levelname)s: %(message)s")
+
+    log_path = join(VAR_DIR, "build.log")
+    add_log_handler(logger, FileHandler(log_path, "w"), "DEBUG", fmt)
+    add_log_handler(logger, StreamHandler(stdout), "INFO", fmt)
+
+    return logger
+
+logger = setup_logger()
+warn = logger.warn
+info = logger.info
+debug = logger.debug
 
 class Configure:
 
@@ -327,20 +357,27 @@ class Build:
         task.commands = ["cc -o {targets} {sources}"]
         self.tasks.append(task)
 
-def mtime_of_file(dirpath, name):
+def mtime_of_file(path):
     try:
-        return stat(join(dirpath, name)).st_mtime
+        return stat(path).st_mtime
     except FileNotFoundError:
         return None
 
 def mtime_of_files(dirpath, names):
     l = []
     for name in names:
-        mtime = mtime_of_file(dirpath, name)
+        path = join(dirpath, name)
+        mtime = mtime_of_file(path)
         if mtime is None:
             continue
-        l.append(mtime)
+        l.append((path, mtime))
+    l.sort(key=lambda t: t[1])
     return l
+
+def log_file_info(msg, t):
+    path = t[0]
+    tm = strftime("%Y-%m-%d %H:%M:%S", localtime(t[1]))
+    debug("{msg}: {path}, {tm}".format(**locals()))
 
 def is_up_to_date(task):
     dirpath = task.dirpath
@@ -348,7 +385,13 @@ def is_up_to_date(task):
     if len(targets_mtime) == 0:
         return False
     sources_mtime = mtime_of_files(dirpath, task.sources)
-    return max(sources_mtime) < min(targets_mtime)
+    youngest_source = sources_mtime[-1]
+    oldest_target = targets_mtime[0]
+
+    log_file_info("Youngest source", youngest_source)
+    log_file_info("Oldest target", oldest_target)
+
+    return youngest_source[1] < oldest_target[1]
 
 def find_task_of_target(target, tasks):
     for task in tasks:
@@ -360,13 +403,16 @@ def join_filenames(dirpath, names):
     return " ".join([join(dirpath, name) for name in names])
 
 def resolve(top_dir, task, tasks):
+    debug("Resolving: {task}".format(**locals()))
     for source in task.sources:
         t = find_task_of_target(source, tasks)
         if t is None:
             continue
         resolve(top_dir, t, tasks)
     if is_up_to_date(task):
+        debug("Skip")
         return
+    debug("Must update")
     dirpath = task.dirpath
     for template in task.commands or []:
         d = {
@@ -377,6 +423,8 @@ def resolve(top_dir, task, tasks):
         cwd_old = getcwd()
         chdir(task.dirpath)
         try:
+            debug("Chdir: {0}".format(task.dirpath))
+            debug("Execute: {command}".format(**locals()))
             if call(command, shell=True) != 0:
                 raise Exception("Command failed: {command}".format(**locals()))
         finally:
@@ -446,6 +494,10 @@ def make_tasks_for_includes(tasks, top_dir):
                 l.append(task_for_c)
     return l
 
+def log_tasks(tasks):
+    for i, task in enumerate(tasks):
+        debug("taks[{i}]: {task}".format(**locals()))
+
 def build(top_dir, dirpath):
     settings = run_path(join(dirpath, DEFAULT_FILENAME))
     b = Build(dirpath)
@@ -460,6 +512,7 @@ def build(top_dir, dirpath):
         build(top_dir, join(dirpath, subdir))
     tasks = b.tasks
     all_tasks = tasks + make_tasks_for_includes(tasks, top_dir)
+    log_tasks(all_tasks)
     for root in find_root_targets(all_tasks):
         resolve(top_dir, root, all_tasks)
 
