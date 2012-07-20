@@ -410,9 +410,9 @@ def resolve(top_dir, task, tasks):
             continue
         resolve(top_dir, t, tasks)
     if is_up_to_date(task):
-        debug("Skip")
+        debug("Skip: {task}".format(**locals()))
         return
-    debug("Must update")
+    debug("Must update: {task}".format(**locals()))
     dirpath = task.dirpath
     for template in task.commands or []:
         d = {
@@ -528,6 +528,7 @@ def main():
             "build": partial(build, top_dir, top_dir),
             "configure": configure }
     d[get_request()]()
+    debug("End")
 
 main()
 
