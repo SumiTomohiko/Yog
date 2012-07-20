@@ -326,10 +326,24 @@ class Build:
         dirpath = self.dirpath
         return [name[len(dirpath) + 1:] for name in glob(join(dirpath, pat))]
 
+    def join_params(self, opt, key, kw):
+        return ["-" + opt + s for s in kw.get(key, [])]
+
     def make_compile_command(self, kw):
         command = ["cc", "-o", "{targets}", "-Wall", "-Werror", "-g", "-O2"]
-        command += ["-I" + d for d in kw.get("includes", [])]
+        command += self.join_params("I", "includes", kw)
         command += ["-c", "{sources}"]
+        return " ".join(command)
+
+    def make_link_command(self, kw):
+        command = ["cc", "-o", "{targets}", "{sources}"]
+        command += self.join_params("Wl,", "linkflags", kw)
+        command += ["-Wl,-Bstatic"]
+        command += self.join_params("L", "stlibpath", kw)
+        command += self.join_params("l", "stlib", kw)
+        command += ["-Wl,-Bdynamic"]
+        command += self.join_params("L", "libpath", kw)
+        command += self.join_params("l", "lib", kw)
         return " ".join(command)
 
     def program(self, targets, sources, **kw):
@@ -337,6 +351,10 @@ class Build:
             return self.program([targets], sources, **kw)
         if not isinstance(sources, list):
             return self.program(targets, [sources], **kw)
+        if not isinstance(kw.get("linkflags", []), list):
+            kw2 = kw.copy()
+            kw2["linkflags"] = [kw["linkflags"]]
+            return self.program(targets, sources, **kw2)
 
         commands = [self.make_compile_command(kw)]
         includes = kw.get("includes", [])
@@ -355,7 +373,8 @@ class Build:
         task.dirpath = self.dirpath
         task.targets = targets
         task.sources = objects
-        task.commands = ["cc -o {targets} {sources}"]
+        task.commands = [self.make_link_command(kw)]
+
         self.tasks.append(task)
 
 def mtime_of_file(path):
