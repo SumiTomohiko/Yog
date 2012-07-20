@@ -289,6 +289,7 @@ class Task:
         self.targets = None
         self.commands = None
         self.includes = None
+        self.additional_sources = []
 
     def __repr__(self):
         fmt = "<Task dirpath={0} targets={1} sources={2} commands={3}>"
@@ -384,7 +385,8 @@ def is_up_to_date(task):
     targets_mtime = mtime_of_files(dirpath, task.targets)
     if len(targets_mtime) == 0:
         return False
-    sources_mtime = mtime_of_files(dirpath, task.sources)
+    sources = task.sources + task.additional_sources
+    sources_mtime = mtime_of_files(dirpath, sources)
     youngest_source = sources_mtime[-1]
     oldest_target = targets_mtime[0]
 
@@ -404,7 +406,7 @@ def join_filenames(dirpath, names):
 
 def resolve(top_dir, task, tasks):
     debug("Resolving: {task}".format(**locals()))
-    for source in task.sources:
+    for source in task.sources + task.additional_sources:
         t = find_task_of_target(source, tasks)
         if t is None:
             continue
@@ -451,16 +453,11 @@ def find_in_includes(path, includes, top_dir=""):
             return fullpath
     return None
 
-def make_tasks_for_includes(tasks, top_dir):
-    l = []
+def add_included_sources(tasks, top_dir):
     for task in tasks:
         for source in task.sources:
             if splitext(source)[1] != ".c":
                 continue
-            task_for_c = Task()
-            task_for_c.dirpath = task.dirpath
-            task_for_c.targets = [source]
-            task_for_c.sources = []
             with open(join(task.dirpath, source)) as fp:
                 for line in fp:
                     m = match(r"#include [\"<](?P<path>.*)[\">]", line.strip())
@@ -478,7 +475,7 @@ def make_tasks_for_includes(tasks, top_dir):
                     if fullpath is not None:
                         # The included file is found in a user's include
                         # directory.
-                        task_for_c.sources += [fullpath]
+                        task.additional_sources.append(fullpath)
                         continue
                     t = find_task_of_target(basename(path), tasks)
                     if t is None:
@@ -489,10 +486,7 @@ def make_tasks_for_includes(tasks, top_dir):
                         fmt = "WARNING: Cannot find a task for {path}"
                         print(fmt.format(**locals()))
                         continue
-                    task_for_c.sources += t.targets
-            if 0 < len(task_for_c.sources):
-                l.append(task_for_c)
-    return l
+                    task.additional_sources.extend(t.targets)
 
 def log_tasks(tasks):
     for i, task in enumerate(tasks):
@@ -511,10 +505,9 @@ def build(top_dir, dirpath):
     for subdir in b.subdirs:
         build(top_dir, join(dirpath, subdir))
     tasks = b.tasks
-    all_tasks = tasks + make_tasks_for_includes(tasks, top_dir)
-    log_tasks(all_tasks)
-    for root in find_root_targets(all_tasks):
-        resolve(top_dir, root, all_tasks)
+    add_included_sources(tasks, top_dir)
+    for root in find_root_targets(tasks):
+        resolve(top_dir, root, tasks)
 
 def get_request():
     try:
