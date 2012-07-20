@@ -813,7 +813,7 @@ id2size(YogEnv* env, ID type)
         YogError_raise_ValueError(env, "Unknown type for size - %I", type);
         /* NOTREACHED */
         /**
-         * gcc complains "‘size’ may be used uninitialized in this function"
+         * gcc complains "'size' may be used uninitialized in this function"
          * without the following assignment.
          */
         size = 0;
@@ -896,7 +896,7 @@ type2size(YogEnv* env, ffi_type* type, YogVal node)
         YogError_raise_ValueError(env, "Unknown FFI type");
         /* NOTREACHED */
         /**
-         * gcc complains "‘size’ may be used uninitialized in this function"
+         * gcc complains "'size' may be used uninitialized in this function"
          * without the following assignment.
          */
         size = 0;
@@ -1518,7 +1518,7 @@ map_id_type(YogEnv* env, ID type)
         YogError_raise_ValueError(env, "Unknown type - %I", type);
         /* NOTREACHED */
         /**
-         * gcc complains "‘cif_type’ may be used uninitialized in this function"
+         * gcc complains "'cif_type' may be used uninitialized in this function"
          * without the following assignment.
          */
         cif_type = NULL;
@@ -3200,7 +3200,7 @@ Struct_read(YogEnv* env, YogVal self, uint_t offset, ID type)
         YogError_raise_ValueError(env, fmt, type);
         /* NOTREACHED */
         /**
-         * gcc complains "‘val’ may be used uninitialized in this function"
+         * gcc complains "'val' may be used uninitialized in this function"
          * without the following line.
          */
         val = YUNDEF;
