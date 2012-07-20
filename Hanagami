@@ -12,7 +12,7 @@ def read_version():
 def build():
     recurse("src")
 
-def configure():
+def configure(opts):
     define_prefix("YOG_")
     check_header([
         "inttypes.h", "limits.h", "stddef.h", "stdint.h", "stdlib.h",
@@ -46,6 +46,8 @@ def configure():
     check_lib(["pthread", "dl", "syck", "zip"])
 
     define("PACKAGE_VERSION", read_version())
+
+    define("PREFIX", opts.get("prefix", "/usr/local"))
 
     make_config_h("include/yog/config.h")
 
