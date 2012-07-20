@@ -46,7 +46,6 @@ def configure(opts):
     check_lib(["pthread", "dl", "syck", "zip"])
 
     define("PACKAGE_VERSION", read_version())
-
     define("PREFIX", opts.get("prefix", "/usr/local"))
 
     make_config_h("include/yog/config.h")
