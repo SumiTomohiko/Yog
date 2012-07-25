@@ -586,6 +586,9 @@ def read_config_py():
     except FileNotFoundError:
         return {}
 
+def nop():
+    pass
+
 def main():
     config = read_config_py()
 
@@ -594,7 +597,7 @@ def main():
             "clean": partial(clean, top_dir, top_dir, config),
             "build": partial(build, top_dir, top_dir, config),
             "configure": configure }
-    d[get_request()]()
+    d.get(get_request(), nop)()
     debug("End")
 
 main()
