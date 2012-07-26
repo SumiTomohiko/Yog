@@ -1,4 +1,16 @@
 
+def get_attr(name)
+  if !name.kind_of?(Symbol)
+    return get_attr(name.to_sym())
+  end
+
+  def f(o)
+    return o.get_attr(name)
+  end
+
+  return f
+end
+
 def abs(x)
   return 0 < x ? x : -x
 end
