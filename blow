@@ -301,7 +301,7 @@ class Task:
         self.additional_sources = []
 
     def __repr__(self):
-        fmt = "<Task dirpath={dirpath} targets={targets} sources={sources}>"
+        fmt = "<Task dirpath={dirpath} targets={targets}>"
         return fmt.format(**self.__dict__)
 
 class Build:
