@@ -11,6 +11,14 @@ def get_attr(name)
   return f
 end
 
+def apply_with(*args, **kw)
+  def f(g)
+    return g(*args, **kw)
+  end
+
+  return f
+end
+
 def abs(x)
   return 0 < x ? x : -x
 end
