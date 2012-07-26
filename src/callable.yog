@@ -1,4 +1,13 @@
 
+def +(f)
+  @bind(self)
+  def g(*args, **kw)
+    return f(self(*args, **kw))
+  end
+
+  return g
+end
+
 def while(expected, *args, **kw, &block)
   while (retval = self(*args, **kw)) == expected
     block(retval)
