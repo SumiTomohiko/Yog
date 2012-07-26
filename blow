@@ -477,6 +477,7 @@ def resolve(top_dir, task, tasks):
         try:
             debug("Chdir: {0}".format(task.dirpath))
             debug("Execute: {command}".format(**locals()))
+            print(command)
             if call(command, shell=True) != 0:
                 raise Exception("Command failed: {command}".format(**locals()))
         finally:
