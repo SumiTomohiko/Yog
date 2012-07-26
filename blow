@@ -430,7 +430,7 @@ def is_up_to_date(ctx, task):
 
 def find_task_of_target(target, tasks):
     for task in tasks:
-        if target in task.targets:
+        if target in [join(task.dirpath, target) for target in task.targets]:
             return task
     return None
 
@@ -440,7 +440,7 @@ def join_filenames(dirpath, names):
 def resolve(ctx, top_dir, task, tasks):
     ctx.log("resolving: {task}".format(**locals()))
     for source in task.sources + task.additional_sources:
-        t = find_task_of_target(source, tasks)
+        t = find_task_of_target(join(task.dirpath, source), tasks)
         if t is None:
             continue
         resolve(ctx, top_dir, t, tasks)
