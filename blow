@@ -8,7 +8,7 @@ from os.path import abspath, basename, dirname, exists, join, splitext
 from re import match
 from runpy import run_path
 from subprocess import PIPE, Popen, call
-from sys import argv, stdout
+from sys import argv, exit, stdout
 from time import localtime, strftime
 import tempfile
 
@@ -461,8 +461,10 @@ def resolve(ctx, top_dir, task, tasks):
             ctx.log("chdir: {0}".format(task.dirpath))
             ctx.log("execute: {command}".format(**locals()))
             ctx.print(command)
-            if call(command, shell=True) != 0:
-                raise Exception("Command failed: {command}".format(**locals()))
+            status = call(command, shell=True)
+            if status != 0:
+                ctx.print("exit at {0}. stopped.".format(status))
+                exit(1)
         finally:
             chdir(cwd_old)
 
