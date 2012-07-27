@@ -4048,7 +4048,7 @@ const char* header;
   FILE *out;
   char *prefix;
   int i;
-  const char* mode;
+  char* mode;
 
   if( lemp->tokenprefix ) prefix = lemp->tokenprefix;
   else                    prefix = "";
