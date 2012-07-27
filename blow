@@ -326,9 +326,9 @@ class Build:
         task.commands = commands
         self.tasks.append(task)
 
-    def recurse(self, subdirs):
-        if not isinstance(subdirs, list):
-            return self.recurse([subdirs])
+    def recurse(self, *subdirs):
+        if (len(subdirs) == 1) and isinstance(subdirs[0], list):
+            return self.recurse(*subdirs[0])
         self.subdirs += subdirs
 
     def glob(self, pat):

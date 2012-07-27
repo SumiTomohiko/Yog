@@ -1,0 +1,9 @@
+# -*- coding: utf-8 -*-
+
+def build():
+    targets = "lemon"
+    sources = "lemon.c"
+    cflags = ["-Wall", "-Werror", "-O3", "-g"]
+    program(**locals())
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
