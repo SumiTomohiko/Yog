@@ -3,7 +3,7 @@ title: Building system must autodetect which libraries are targets.
 desc: For library such as lib/sdl.
 type: :task
 component: misc
-release: 0.1.0
+release: 0.42.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 

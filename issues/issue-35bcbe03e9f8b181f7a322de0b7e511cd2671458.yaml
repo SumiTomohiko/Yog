@@ -3,7 +3,7 @@ title: unix/test_ffi.py::test_Struct430 takes too long time (it cause timeover).
 desc: ""
 type: :bugfix
 component: core
-release: 0.1.0
+release: 0.42.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 

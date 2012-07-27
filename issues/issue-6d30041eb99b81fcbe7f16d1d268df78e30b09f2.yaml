@@ -3,7 +3,7 @@ title: Comparision of Bignum with Fixnum failed.
 desc: "\"bignum_number < fixnum_number\" raises an exception."
 type: :bugfix
 component: core
-release: 0.1.0
+release: 0.42.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 

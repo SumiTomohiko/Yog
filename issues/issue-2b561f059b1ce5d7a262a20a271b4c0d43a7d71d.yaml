@@ -3,7 +3,7 @@ title: TestThread::test_AtomicInt1 failed.
 desc: "\"Invalid generation (0xfdfdfdfd at 0x28601190)\" ocurred."
 type: :bugfix
 component: core
-release: 0.1.0
+release: 0.42.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 

@@ -3,7 +3,7 @@ title: Improve Makefiles not to generate sdl.yog when libsdl is not in the syste
 desc: ""
 type: :task
 component: misc
-release: 0.1.0
+release: 0.42.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 

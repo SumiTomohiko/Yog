@@ -50,7 +50,7 @@ desc: "$ cat foo.yg                                    [~/projects/Yog]\n\n\
   ---Type <return> to continue, or q <return> to quit---\n    kwargc=0 '\\0', kwargs=0x0, vararg=2, varkwarg=2, blockarg=2)\n    at callable.c:334\n\n    posargc=<value optimized out>, posargs=0xb761df50,\n    kwargc=<value optimized out>, kwargs=0x0, vararg=2, varkwarg=2, blockarg=2)\n    at callable.c:655\n\n    argc=<value optimized out>, args=0xb761df50) at callable.c:832\n\n    at coroutine.c:230"
 type: :bugfix
 component: core
-release: 0.1.0
+release: 0.42.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed
 disposition: :wontfix

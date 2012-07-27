@@ -6,7 +6,7 @@ desc: |-
     print("/foo".to_path().slice(0, 1).class == Path)
 type: :bugfix
 component: core
-release: 0.1.0
+release: 0.42.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :unstarted
 disposition: 
