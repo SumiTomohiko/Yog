@@ -10,7 +10,7 @@ def read_version():
             return m.group()
 
 def build():
-    recurse("src", "tools")
+    recurse("src", "tools", "tests")
 
 def configure():
     define_prefix("YOG_")

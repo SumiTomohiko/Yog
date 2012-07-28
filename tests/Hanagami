@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+
+from os.path import splitext
+
+def add_shlib_rules():
+    sources = glob("*.c") + glob("arch32/*.c")
+    targets = [splitext(source)[0] + ".so" for source in sources]
+    for target, source in zip(targets, sources):
+        shlib(
+                target=target,
+                sources=[source],
+                includes=["{top_dir}/include"],
+                cflags=["-Wall", "-Werror", "-g", "-O3"])
+
+def add_h2yog_rules():
+    targets = """
+test_argtype_char.c test_argtype_int.c test_argtype_long.c
+test_argtype_long_int.c test_argtype_long_signed.c test_argtype_short.c
+test_argtype_short_int.c test_argtype_signed_char.c test_argtype_signed_int.c
+test_argtype_signed_long.c test_argtype_signed_short.c
+test_argtype_unsigned_char.c test_argtype_unsigned_int.c
+test_argtype_unsigned_long.c test_argtype_unsigned_short.c test_argtype_voidp.c
+test_rettype_char.c test_rettype_int.c test_rettype_long.c
+test_rettype_long_int.c test_rettype_long_signed.c test_rettype_short.c
+test_rettype_short_int.c test_rettype_signed_char.c test_rettype_signed_int.c
+test_rettype_signed_long.c test_rettype_signed_short.c
+test_rettype_unsigned_char.c test_rettype_unsigned_int.c
+test_rettype_unsigned_long.c test_rettype_unsigned_short.c test_rettype_voidp.c
+""".split()
+    sources = "test_h2yog.py"
+    commands = "python3 {sources}"
+    command(**locals())
+
+def build():
+    add_shlib_rules()
+    add_h2yog_rules()
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
