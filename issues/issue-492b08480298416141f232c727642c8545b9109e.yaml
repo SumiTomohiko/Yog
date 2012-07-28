@@ -9,8 +9,8 @@ type: :task
 component: core
 release: 0.42.0
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2012-01-26 15:18:34.395152 Z
 references: []
 
@@ -19,4 +19,8 @@ log_events:
 - - 2012-01-26 15:18:34.923250 Z
   - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
   - created
+  - ""
+- - 2012-07-28 00:34:59.087522 Z
+  - Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
+  - closed with disposition fixed
   - ""
