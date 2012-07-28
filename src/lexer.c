@@ -1040,6 +1040,7 @@ YogLexer_next_token(YogEnv* env, YogVal lexer, YogHandle* filename)
             break;
         }
     case ':':
+        SET_STATE(LS_EXPR);
         RETURN_TOKEN(TK_COLON);
         break;
     case '\'':

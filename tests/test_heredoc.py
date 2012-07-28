@@ -39,4 +39,14 @@ EOF2
 print(<<EOF)
 """, stderr=test_stderr)
 
+    def test_with_conditional_expr0(self):
+        self._test("""
+print(true ? <<EOF : <<EOF)
+foo
+EOF
+bar
+EOF
+""", """foo
+""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
