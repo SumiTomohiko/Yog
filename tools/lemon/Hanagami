@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 def build():
-    targets = "lemon"
+    target = "lemon"
     sources = "lemon.c"
     cflags = ["-Wall", "-Werror", "-O3", "-g"]
     program(**locals())

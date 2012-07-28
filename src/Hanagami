@@ -2,11 +2,14 @@
 from os.path import splitext
 
 def define_rule_for_yog():
-    targets = "yog"
+    target = "yog"
     sources = glob("*.c") + [
             "gc/generational.c",
             "gc/copying.c",
             "gc/mark-sweep-compact.c"]
+    if "parser.c" not in sources:
+        # FIXME: This is a dirty way.
+        sources += ["parser.c"]
     corgi_dir = "{top_dir}/corgi"
     libffi_dir = "{top_dir}/libffi"
     BigDigits_dir = "{top_dir}/BigDigits"
