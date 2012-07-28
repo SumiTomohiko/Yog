@@ -234,7 +234,9 @@ main(int_t argc, char* argv[])
     int_t help = 0;
     size_t young_heap_size = 1 * 1024 * 1024;
     size_t old_heap_size = 1 * 1024 * 1024;
+#if !defined(GC_GENERATIONAL)
     size_t heap_size = young_heap_size + old_heap_size;
+#endif
     uint_t max_age = 32;
     char* lib_path = NULL;
     struct option options[] = {
@@ -265,7 +267,9 @@ main(int_t argc, char* argv[])
             gc_stress_level++;
             break;
         case 'i':
+#if !defined(GC_GENERATIONAL)
             heap_size = parse_size(optarg);
+#endif
             break;
         case 'o':
             old_heap_size = parse_size(optarg);
