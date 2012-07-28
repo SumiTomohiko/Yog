@@ -336,7 +336,7 @@ class Build:
         return [name[len(dirpath) + 1:] for name in glob(join(dirpath, pat))]
 
     def join_params(self, opt, key, kw):
-        return ["-" + opt + s for s in kw.get(key, [])]
+        return ["-" + opt + s for s in kw[key]]
 
     def make_compile_command(self, kw):
         command = [self.config["CC"], "-o", "{targets}"]
@@ -356,22 +356,23 @@ class Build:
         command += self.join_params("l", "lib", kw)
         return " ".join(command)
 
-    def program(self, targets, sources, **kw):
-        if not isinstance(targets, list):
-            return self.program([targets], sources, **kw)
-        if not isinstance(sources, list):
-            return self.program(targets, [sources], **kw)
-        if not isinstance(kw.get("linkflags", []), list):
-            kw2 = kw.copy()
-            kw2["linkflags"] = [kw["linkflags"]]
-            return self.program(targets, sources, **kw2)
-        if not isinstance(kw.get("cflags", []), list):
-            kw2 = kw.copy()
-            kw2["cflags"] = [kw["cflags"]]
-            return self.program(targets, sources, **kw2)
+    def normalize_flags(self, kw):
+        flags = kw.copy()
+        for name in [
+                "includes", "linkflags", "cflags", "stlib", "stlibpath", "lib",
+                "libpath"]:
+            try:
+                val = kw[name]
+            except KeyError:
+                flags[name] = []
+            else:
+                if not isinstance(val, list):
+                    flags[name] = [val]
+        return flags
 
-        commands = [self.make_compile_command(kw)]
-        includes = kw.get("includes", [])
+    def add_c_rules(self, target, sources, flags):
+        compile_commands = [self.make_compile_command(flags)]
+        includes = flags["includes"]
 
         objects = [change_ext(source, ".o") for source in sources]
         for source, object_ in zip(sources, objects):
@@ -379,17 +380,30 @@ class Build:
             task.dirpath = self.dirpath
             task.targets = [object_]
             task.sources = [source]
-            task.commands = commands
+            task.commands = compile_commands
             task.includes = includes
             self.tasks.append(task)
 
         task = Task()
         task.dirpath = self.dirpath
-        task.targets = targets
+        task.targets = [target]
         task.sources = objects
-        task.commands = [self.make_link_command(kw)]
+        task.commands = [self.make_link_command(flags)]
 
         self.tasks.append(task)
+
+    def shlib(self, target, sources, **kw):
+        if not isinstance(sources, list):
+            return self.shlib(target, [sources], **kw)
+        flags = self.normalize_flags(kw)
+        flags["linkflags"] += ["-shared"]
+        self.add_c_rules(target, sources, flags)
+
+    def program(self, target, sources, **kw):
+        if not isinstance(sources, list):
+            return self.program(target, [sources], **kw)
+        flags = self.normalize_flags(kw)
+        self.add_c_rules(target, sources, flags)
 
 def mtime_of_file(path):
     try:
@@ -530,6 +544,7 @@ def read_build_settings(top_dir, dirpath, config):
     g = {
             "command": b.command,
             "program": b.program,
+            "shlib": b.shlib,
             "glob": b.glob,
             "recurse": b.recurse }
     update_globals(settings, g)
