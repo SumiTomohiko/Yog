@@ -1479,47 +1479,47 @@ expr(A) ::= assign_expr(B). {
     A = B;
 }
 
-assign_expr(A) ::= postfix_expr(B) EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) EQUAL assign_expr(C). {
     uint_t lineno = NODE_LINENO(B);
     A = Assign_new(env, lineno, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) PLUS_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) PLUS_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_ADD, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) MINUS_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) MINUS_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_SUBTRACT, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) STAR_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) STAR_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_MULTIPLY, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) DIV_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) DIV_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_DIVIDE, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) DIV_DIV_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) DIV_DIV_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_FLOOR_DIVIDE, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) PERCENT_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) PERCENT_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_MODULO, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) BAR_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) BAR_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_OR, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) AND_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) AND_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_AND, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) XOR_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) XOR_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_XOR, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) STAR_STAR_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) STAR_STAR_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_POWER, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) LSHIFT_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) LSHIFT_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_LSHIFT, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) RSHIFT_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) RSHIFT_EQUAL assign_expr(C). {
     A = AugmentedAssign_new(env, NODE_LINENO(B), BINOP_RSHIFT, B, C);
 }
-assign_expr(A) ::= postfix_expr(B) AND_AND_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) AND_AND_EQUAL assign_expr(C). {
     SAVE_LOCALS_TO_NAME(env, assign_expr);
     YogVal expr = YUNDEF;
     YogVal assign = YUNDEF;
@@ -1533,7 +1533,7 @@ assign_expr(A) ::= postfix_expr(B) AND_AND_EQUAL conditional_expr(C). {
 
     A = assign;
 }
-assign_expr(A) ::= postfix_expr(B) BAR_BAR_EQUAL conditional_expr(C). {
+assign_expr(A) ::= postfix_expr(B) BAR_BAR_EQUAL assign_expr(C). {
     SAVE_LOCALS_TO_NAME(env, assign_expr);
     YogVal expr = YUNDEF;
     YogVal assign = YUNDEF;

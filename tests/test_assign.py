@@ -151,4 +151,16 @@ end
 foo()
 """, stderr=test_stderr)
 
+    def test_multi_assign0(self):
+        self._test("""
+foo = bar = 42
+print(foo)
+""", "42")
+
+    def test_multi_assign10(self):
+        self._test("""
+foo = bar = 42
+print(bar)
+""", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

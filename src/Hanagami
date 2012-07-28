@@ -35,8 +35,17 @@ def define_rule_for_builtin_script():
                 targets=base + ".inc",
                 sources=source)
 
+def define_rule_for_parser():
+    header = "{top_dir}/include/yog/token.h"
+    fmt ="{{top_dir}}/tools/lemon/lemon header={header} parser.y"
+    command(
+            commands=fmt.format(**locals()),
+            targets=[header, "parser.c"],
+            sources=["parser.y", "parser.lt"])
+
 def build():
     define_rule_for_yog()
     define_rule_for_builtin_script()
+    define_rule_for_parser()
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
