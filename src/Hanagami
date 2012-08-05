@@ -1,7 +1,7 @@
 
 from os.path import splitext
 
-def define_rule_for_yog():
+def define_rules_for_yog():
     targets = "yog"
     sources = glob("*.c") + [
             "gc/generational.c",
@@ -25,7 +25,7 @@ def define_rule_for_yog():
             BigDigits_dir + "/build"]
     program(**locals())
 
-def define_rule_for_builtin_script():
+def define_rules_for_builtin_script():
     for source in glob("*.yog"):
         base, ext = splitext(source)
         if base == "yog2inc":
@@ -35,7 +35,7 @@ def define_rule_for_builtin_script():
                 targets=base + ".inc",
                 sources=source)
 
-def define_rule_for_parser():
+def define_rules_for_parser():
     header = "{top_dir}/include/yog/token.h"
     fmt ="{{top_dir}}/tools/lemon/lemon header={header} parser.y"
     command(
@@ -43,9 +43,18 @@ def define_rule_for_parser():
             targets=[header, "parser.c"],
             sources=["parser.y", "parser.lt"])
 
+def define_rules_for_errno():
+    script = "{top_dir}/tools/make_errno.yog"
+    source = "errno"
+    command(
+            commands="yog {script} {source} {{targets}}".format(**locals()),
+            targets=source + ".inc",
+            sources=[script, source])
+
 def build():
-    define_rule_for_yog()
-    define_rule_for_builtin_script()
-    define_rule_for_parser()
+    define_rules_for_yog()
+    define_rules_for_builtin_script()
+    define_rules_for_parser()
+    define_rules_for_errno()
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
