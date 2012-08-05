@@ -428,11 +428,18 @@ def is_up_to_date(ctx, task):
 
     return youngest_source[1] < oldest_target[1]
 
-def find_task_of_target(target, tasks):
+def find_task(target, tasks, f):
     for task in tasks:
-        if target in [join(task.dirpath, target) for target in task.targets]:
+        if target in [f(task, target) for target in task.targets]:
             return task
     return None
+
+def find_task_of_target_name(target, tasks):
+    return find_task(target, tasks, lambda _, target: target)
+
+def find_task_of_target(target, tasks):
+    f = lambda task, target: join(task.dirpath, target)
+    return find_task(target, tasks, f)
 
 def join_filenames(dirpath, names):
     return " ".join([join(dirpath, name) for name in names])
@@ -513,7 +520,7 @@ def add_included_sources(tasks, top_dir):
                         # directory.
                         task.additional_sources.append(fullpath)
                         continue
-                    t = find_task_of_target(basename(path), tasks)
+                    t = find_task_of_target_name(basename(path), tasks)
                     if t is None:
                         # In here case:
                         # 1. The included file is not found in any directories. 
