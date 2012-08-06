@@ -471,8 +471,8 @@ def resolve(ctx, top_dir, task, tasks):
             ctx.print(command)
             status = call(command, shell=True)
             if status != 0:
-                ctx.print("exit at {0}. stopped.".format(status))
-                exit(1)
+                ctx.print("command exited at {0}.".format(status))
+                exit(status)
         finally:
             chdir(cwd_old)
 
