@@ -14,8 +14,9 @@ import tempfile
 
 class Context:
 
-    def __init__(self, log_file):
+    def __init__(self, log_file, conf):
         self.log_file = log_file
+        self.conf = conf
 
     def log(self, msg):
         self.log_file.write(msg + "\n")
@@ -233,13 +234,18 @@ DEFAULT_FILENAME = "Hanagami"
 VAR_DIR = ".tissue"
 CONFIG_PY = join(VAR_DIR, "config.py")
 
-def output_environ(out, environ, key, default):
-    value = repr(environ.get(key, default))
-    print("{key} = {value}".format(**locals()), file=out)
+def output_conf(fp, key, value):
+    print("{key} = {value}".format(**locals()), file=fp)
 
-def make_config_py():
+def output_environ(fp, environ, key, default):
+    output_conf(fp, key, repr(environ.get(key, default)))
+
+CONF_KEY = "conf"
+
+def make_config_py(conf):
     with open(CONFIG_PY, "w") as fp:
         output_environ(fp, environ, "CC", "clang")
+        output_conf(fp, CONF_KEY, conf)
 
 def parse_options(args):
     opts = {}
@@ -250,7 +256,7 @@ def parse_options(args):
         opts[s[2:pos]] = s[pos + 1:]
     return opts
 
-def configure(_):
+def configure(ctx):
     settings = run_path(DEFAULT_FILENAME)
 
     conf = Configure(parse_options(argv[2:]))
@@ -268,7 +274,7 @@ def configure(_):
     # actual is wrong.
     update_globals(settings, g)
 
-    settings["configure"]()
+    settings["configure"](ctx.conf)
 
     prefix = conf.prefix
     config_h = []
@@ -285,7 +291,7 @@ def configure(_):
     config_h += conf.definitions
     make_config_h(conf.config_h_path, config_h)
 
-    make_config_py()
+    make_config_py(ctx.conf)
 
 def change_ext(filename, ext):
     return splitext(filename)[0] + ext
@@ -441,8 +447,8 @@ def find_task_of_target(target, tasks):
     f = lambda task, target: join(task.dirpath, target)
     return find_task(target, tasks, f)
 
-def join_filenames(dirpath, names):
-    return " ".join([join(dirpath, name) for name in names])
+def join_filenames(conf, dirpath, names):
+    return " ".join([join(dirpath, name).format(**conf) for name in names])
 
 def resolve(ctx, top_dir, task, tasks):
     ctx.log("resolving: {task}".format(**locals()))
@@ -457,10 +463,11 @@ def resolve(ctx, top_dir, task, tasks):
     ctx.log("Must update: {task}".format(**locals()))
     dirpath = task.dirpath
     for template in task.commands or []:
+        conf = ctx.conf
         d = {
-                "targets": join_filenames(dirpath, task.targets),
-                "sources": join_filenames(dirpath, task.sources),
-                "top_dir": top_dir }
+                "targets": join_filenames(conf, dirpath, task.targets),
+                "sources": join_filenames(conf, dirpath, task.sources) }
+        d.update(ctx.conf)
         command = template.format(**d)
         cwd_old = getcwd()
         chdir(task.dirpath)
@@ -531,7 +538,7 @@ def add_included_sources(tasks, top_dir):
                         continue
                     task.additional_sources.extend(t.targets)
 
-def read_build_settings(top_dir, dirpath, config):
+def read_build_settings(conf, top_dir, dirpath, config):
     settings = run_path(join(dirpath, DEFAULT_FILENAME))
     b = Build(dirpath, config)
     g = {
@@ -540,14 +547,14 @@ def read_build_settings(top_dir, dirpath, config):
             "glob": b.glob,
             "recurse": b.recurse }
     update_globals(settings, g)
-    settings["build"]()
+    settings["build"](conf)
     add_included_sources(b.tasks, top_dir)
     return b
 
-def clean(_, top_dir, dirpath, config):
-    b = read_build_settings(top_dir, dirpath, config)
+def clean(ctx, top_dir, dirpath, config):
+    b = read_build_settings(ctx.conf, top_dir, dirpath, config)
     for subdir in b.subdirs:
-        clean(_, top_dir, join(dirpath, subdir), config)
+        clean(ctx, top_dir, join(dirpath, subdir), config)
     for task in b.tasks:
         for target in task.targets:
             try:
@@ -569,7 +576,7 @@ def log_tasks(ctx, tasks):
             log("  " + fmt.format(**task.__dict__))
 
 def build(ctx, top_dir, dirpath, config):
-    b = read_build_settings(top_dir, dirpath, config)
+    b = read_build_settings(ctx.conf, top_dir, dirpath, config)
     for subdir in b.subdirs:
         build(ctx, top_dir, join(dirpath, subdir), config)
     tasks = b.tasks
@@ -598,9 +605,9 @@ def main():
 
     req = get_request()
     with open(join(VAR_DIR, req + ".log"), "w") as fp:
-        ctx = Context(fp)
-
         top_dir = abspath(".")
+        ctx = Context(fp, config.get(CONF_KEY, { "top_dir": top_dir }))
+
         d = {
                 "clean": partial(clean, ctx, top_dir, top_dir, config),
                 "build": partial(build, ctx, top_dir, top_dir, config),

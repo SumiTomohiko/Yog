@@ -37,21 +37,22 @@ def define_rules_for_builtin_script():
 
 def define_rules_for_parser():
     header = "{top_dir}/include/yog/token.h"
-    fmt ="{{top_dir}}/tools/lemon/lemon header={header} parser.y"
+    fmt ="{{tools_dir}}/lemon/lemon header={header} parser.y"
     command(
             commands=fmt.format(**locals()),
             targets=[header, "parser.c"],
             sources=["parser.y", "parser.lt"])
 
 def define_rules_for_errno():
-    script = "{top_dir}/tools/make_errno.yog"
+    script = "{tools_dir}/make_errno.yog"
     source = "errno"
+    fmt = "yog {script} {source} {{targets}}"
     command(
-            commands="yog {script} {source} {{targets}}".format(**locals()),
+            commands=fmt.format(**locals()),
             targets=source + ".inc",
             sources=[script, source])
 
-def build():
+def build(conf):
     define_rules_for_yog()
     define_rules_for_builtin_script()
     define_rules_for_parser()
