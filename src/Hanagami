@@ -52,10 +52,31 @@ def define_rules_for_errno():
             targets=source + ".inc",
             sources=[script, source])
 
+def define_rules_for_insts():
+    defs = "insts.def"
+    script = "{tools_dir}/inst.py"
+    commands = "python {script} {defs} {{top_dir}}".format(**locals())
+    sources = [defs, script]
+    command(
+            commands=commands,
+            targets="eval.inc",
+            sources=sources)
+    for target in [
+            "code.inc",
+            "compile.inc",
+            "inst.c",
+            "{top_dir}/include/yog/inst.h",
+            "{top_dir}/include/yog/opcodes.h"]:
+        command(
+                commands=commands,
+                targets=target,
+                sources=sources + [target + ".tmpl"])
+
 def build(conf):
     define_rules_for_yog()
     define_rules_for_builtin_script()
     define_rules_for_parser()
     define_rules_for_errno()
+    define_rules_for_insts()
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
