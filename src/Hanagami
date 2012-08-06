@@ -72,11 +72,40 @@ def define_rules_for_insts():
                 targets=target,
                 sources=sources + [target + ".tmpl"])
 
+def define_rules_for_charset(script, targets, source):
+    command(
+            commands="python {script}".format(**locals()),
+            targets=targets,
+            sources=[script, source])
+
+def define_rules_for_shift_jis():
+    script = "{tools_dir}/make_shift_jis_tables.py"
+    targets= [
+            "shift_jis2yog_hankaku.inc",
+            "shift_jis2yog_zenkaku.inc",
+            "yog2shift_jis1.inc",
+            "yog2shift_jis2.inc",
+            "yog2shift_jis3.inc"]
+    define_rules_for_charset(script, targets, "sjis-0213-2004-std.txt")
+
+def define_rules_for_euc_jp():
+    script = "{tools_dir}/make_euc_jp_tables.py"
+    targets = [
+            "euc_jp2yog_zenkaku.inc",
+            "euc_jp2yog_hankaku.inc",
+            "euc_jp2yog_3bytes.inc",
+            "yog2euc_jp1.inc",
+            "yog2euc_jp2.inc",
+            "yog2euc_jp3.inc"]
+    define_rules_for_charset(script, targets, "euc-jis-2004-std.txt")
+
 def build(conf):
     define_rules_for_yog()
     define_rules_for_builtin_script()
     define_rules_for_parser()
     define_rules_for_errno()
     define_rules_for_insts()
+    define_rules_for_shift_jis()
+    define_rules_for_euc_jp()
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
