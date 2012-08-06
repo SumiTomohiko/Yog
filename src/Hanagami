@@ -99,6 +99,13 @@ def define_rules_for_euc_jp():
             "yog2euc_jp3.inc"]
     define_rules_for_charset(script, targets, "euc-jis-2004-std.txt")
 
+def define_rules_for_keywords():
+    source = "keywords"
+    command(
+            commands="gperf {sources} > {targets}",
+            targets=source + ".inc",
+            sources=source)
+
 def build(conf):
     define_rules_for_yog()
     define_rules_for_builtin_script()
@@ -107,5 +114,6 @@ def build(conf):
     define_rules_for_insts()
     define_rules_for_shift_jis()
     define_rules_for_euc_jp()
+    define_rules_for_keywords()
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
