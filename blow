@@ -528,7 +528,7 @@ def add_included_sources(tasks, top_dir):
                         # 2. The included file is not a target of any tasks.
                         # I don't know how to generate it.
                         fmt = "Cannot find a task for {path}"
-                        print(fmt.format(**locals()))
+                        ctx.print(fmt.format(**locals()))
                         exit(1)
                     task.additional_sources.extend(t.targets)
 
