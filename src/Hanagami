@@ -1,7 +1,7 @@
 
 from os.path import splitext
 
-def define_rule_for_yog():
+def define_rules_for_yog():
     target = "yog"
     sources = glob("*.c") + [
             "gc/generational.c",
@@ -28,7 +28,7 @@ def define_rule_for_yog():
             BigDigits_dir + "/build"]
     program(**locals())
 
-def define_rule_for_builtin_script():
+def define_rules_for_builtin_script():
     for source in glob("*.yog"):
         base, ext = splitext(source)
         if base == "yog2inc":
@@ -38,17 +38,85 @@ def define_rule_for_builtin_script():
                 targets=base + ".inc",
                 sources=source)
 
-def define_rule_for_parser():
+def define_rules_for_parser():
     header = "{top_dir}/include/yog/token.h"
-    fmt ="{{top_dir}}/tools/lemon/lemon header={header} parser.y"
+    fmt ="{{tools_dir}}/lemon/lemon header={header} parser.y"
     command(
             commands=fmt.format(**locals()),
             targets=[header, "parser.c"],
             sources=["parser.y", "parser.lt"])
 
+def define_rules_for_errno():
+    script = "{tools_dir}/make_errno.yog"
+    source = "errno"
+    fmt = "yog {script} {source} {{targets}}"
+    command(
+            commands=fmt.format(**locals()),
+            targets=source + ".inc",
+            sources=[script, source])
+
+def define_rules_for_insts():
+    defs = "insts.def"
+    script = "{tools_dir}/inst.py"
+    commands = "python {script} {defs} {{top_dir}}".format(**locals())
+    sources = [defs, script]
+    command(
+            commands=commands,
+            targets="eval.inc",
+            sources=sources)
+    for target in [
+            "code.inc",
+            "compile.inc",
+            "inst.c",
+            "{top_dir}/include/yog/inst.h",
+            "{top_dir}/include/yog/opcodes.h"]:
+        command(
+                commands=commands,
+                targets=target,
+                sources=sources + [target + ".tmpl"])
+
+def define_rules_for_charset(script, targets, source):
+    command(
+            commands="python {script}".format(**locals()),
+            targets=targets,
+            sources=[script, source])
+
+def define_rules_for_shift_jis():
+    script = "{tools_dir}/make_shift_jis_tables.py"
+    targets= [
+            "shift_jis2yog_hankaku.inc",
+            "shift_jis2yog_zenkaku.inc",
+            "yog2shift_jis1.inc",
+            "yog2shift_jis2.inc",
+            "yog2shift_jis3.inc"]
+    define_rules_for_charset(script, targets, "sjis-0213-2004-std.txt")
+
+def define_rules_for_euc_jp():
+    script = "{tools_dir}/make_euc_jp_tables.py"
+    targets = [
+            "euc_jp2yog_zenkaku.inc",
+            "euc_jp2yog_hankaku.inc",
+            "euc_jp2yog_3bytes.inc",
+            "yog2euc_jp1.inc",
+            "yog2euc_jp2.inc",
+            "yog2euc_jp3.inc"]
+    define_rules_for_charset(script, targets, "euc-jis-2004-std.txt")
+
+def define_rules_for_keywords():
+    source = "keywords"
+    command(
+            commands="gperf {sources} > {targets}",
+            targets=source + ".inc",
+            sources=source)
+
 def build():
-    define_rule_for_yog()
-    define_rule_for_builtin_script()
-    define_rule_for_parser()
+    define_rules_for_yog()
+    define_rules_for_builtin_script()
+    define_rules_for_parser()
+    define_rules_for_errno()
+    define_rules_for_insts()
+    define_rules_for_shift_jis()
+    define_rules_for_euc_jp()
+    define_rules_for_keywords()
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

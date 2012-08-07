@@ -14,8 +14,9 @@ import tempfile
 
 class Context:
 
-    def __init__(self, log_file):
+    def __init__(self, log_file, conf):
         self.log_file = log_file
+        self.conf = conf
 
     def log(self, msg):
         self.log_file.write(msg + "\n")
@@ -233,13 +234,18 @@ DEFAULT_FILENAME = "Hanagami"
 VAR_DIR = ".tissue"
 CONFIG_PY = join(VAR_DIR, "config.py")
 
-def output_environ(out, environ, key, default):
-    value = repr(environ.get(key, default))
-    print("{key} = {value}".format(**locals()), file=out)
+def output_conf(fp, key, value):
+    print("{key} = {value}".format(**locals()), file=fp)
 
-def make_config_py():
+def output_environ(fp, environ, key, default):
+    output_conf(fp, key, repr(environ.get(key, default)))
+
+CONF_KEY = "conf"
+
+def make_config_py(conf):
     with open(CONFIG_PY, "w") as fp:
         output_environ(fp, environ, "CC", "clang")
+        output_conf(fp, CONF_KEY, conf)
 
 def parse_options(args):
     opts = {}
@@ -250,7 +256,7 @@ def parse_options(args):
         opts[s[2:pos]] = s[pos + 1:]
     return opts
 
-def configure(_):
+def configure(ctx):
     settings = run_path(DEFAULT_FILENAME)
 
     conf = Configure(parse_options(argv[2:]))
@@ -268,7 +274,7 @@ def configure(_):
     # actual is wrong.
     update_globals(settings, g)
 
-    settings["configure"]()
+    settings["configure"](ctx.conf)
 
     prefix = conf.prefix
     config_h = []
@@ -285,7 +291,7 @@ def configure(_):
     config_h += conf.definitions
     make_config_h(conf.config_h_path, config_h)
 
-    make_config_py()
+    make_config_py(ctx.conf)
 
 def change_ext(filename, ext):
     return splitext(filename)[0] + ext
@@ -312,6 +318,18 @@ class Build:
         self.subdirs = []
         self.tasks = []
 
+    def replace(self, a):
+        return [s.format(**self.config["conf"]) for s in a]
+
+    def add_task(self, targets, sources, commands, includes=[]):
+        task = Task()
+        task.dirpath = self.dirpath
+        task.targets = self.replace(targets)
+        task.sources = self.replace(sources)
+        task.commands = commands
+        task.includes = self.replace(includes)
+        self.tasks.append(task)
+
     def command(self, commands, targets, sources):
         if not isinstance(commands, list):
             return self.command([commands], targets, sources)
@@ -319,12 +337,7 @@ class Build:
             return self.command(commands, [targets], sources)
         if not isinstance(sources, list):
             return self.command(commands, targets, [sources])
-        task = Task()
-        task.dirpath = self.dirpath
-        task.targets = targets
-        task.sources = sources
-        task.commands = commands
-        self.tasks.append(task)
+        self.add_task(targets, sources, commands)
 
     def recurse(self, *subdirs):
         if (len(subdirs) == 1) and isinstance(subdirs[0], list):
@@ -376,21 +389,8 @@ class Build:
 
         objects = [change_ext(source, ".o") for source in sources]
         for source, object_ in zip(sources, objects):
-            task = Task()
-            task.dirpath = self.dirpath
-            task.targets = [object_]
-            task.sources = [source]
-            task.commands = compile_commands
-            task.includes = includes
-            self.tasks.append(task)
-
-        task = Task()
-        task.dirpath = self.dirpath
-        task.targets = [target]
-        task.sources = objects
-        task.commands = [self.make_link_command(flags)]
-
-        self.tasks.append(task)
+            self.add_task([object_], [source], compile_commands, includes)
+        self.add_task([target], objects, [self.make_link_command(flags)])
 
     def shlib(self, target, sources, **kw):
         if not isinstance(sources, list):
@@ -442,9 +442,16 @@ def is_up_to_date(ctx, task):
 
     return youngest_source[1] < oldest_target[1]
 
-def find_task_of_target(target, tasks):
+def find_task(target, tasks):
     for task in tasks:
         if target in [join(task.dirpath, target) for target in task.targets]:
+            return task
+    return None
+
+def find_task_of_orphan_target(target, tasks, includes):
+    for path in [join(d, target) for d in includes]:
+        task = find_task(path, tasks)
+        if task is not None:
             return task
     return None
 
@@ -454,7 +461,7 @@ def join_filenames(dirpath, names):
 def resolve(ctx, top_dir, task, tasks):
     ctx.log("resolving: {task}".format(**locals()))
     for source in task.sources + task.additional_sources:
-        t = find_task_of_target(join(task.dirpath, source), tasks)
+        t = find_task(join(task.dirpath, source), tasks)
         if t is None:
             continue
         resolve(ctx, top_dir, t, tasks)
@@ -466,8 +473,8 @@ def resolve(ctx, top_dir, task, tasks):
     for template in task.commands or []:
         d = {
                 "targets": join_filenames(dirpath, task.targets),
-                "sources": join_filenames(dirpath, task.sources),
-                "top_dir": top_dir }
+                "sources": join_filenames(dirpath, task.sources) }
+        d.update(ctx.conf)
         command = template.format(**d)
         cwd_old = getcwd()
         chdir(task.dirpath)
@@ -496,9 +503,9 @@ def find_root_targets(tasks):
                 break
     return l
 
-def find_in_includes(path, includes, top_dir=""):
+def find_in_includes(path, includes):
     for include in includes:
-        fullpath = join(include.format(**locals()), path)
+        fullpath = join(include, path)
         if exists(fullpath):
             return fullpath
     return None
@@ -508,52 +515,37 @@ def add_included_sources(tasks, top_dir):
         for source in task.sources:
             if splitext(source)[1] != ".c":
                 continue
-            try:
-                with open(join(task.dirpath, source)) as fp:
-                    for line in fp:
-                        regexp = r"#include [\"<](?P<path>.*)[\">]"
-                        m = match(regexp, line.strip())
-                        if m is None:
-                            continue
-                        path = m.group("path")
-                        system_include_dirs = [
-                                "/usr/include",
-                                "/usr/local/include"]
-                        fullpath = find_in_includes(path, system_include_dirs)
-                        if fullpath is not None:
-                            # The header file is found in a system include
-                            # directory. Updating such file is rare, so it is
-                            # ignored.
-                            continue
-                        includes = [task.dirpath] + task.includes
-                        fullpath = find_in_includes(path, includes, top_dir)
-                        if fullpath is not None:
-                            # The included file is found in a user's include
-                            # directory.
-                            task.additional_sources.append(fullpath)
-                            continue
-                        found = False
-                        for dirpath in includes:
-                            t = find_task_of_target(join(dirpath, path), tasks)
-                            if t is not None:
-                                task.additional_sources.extend(t.targets)
-                                found = True
-                                break
-                        if not found:
-                            # In here case:
-                            # 1. The included file is not found in any
-                            #    directories.
-                            # 2. The included file is not a target of any tasks.
-                            #    I don't know how to generate it.
-                            fmt = "WARNING: Cannot find a task for {path}"
-                            print(fmt.format(**locals()))
-            except FileNotFoundError:
-                # If a source file (.c) will be generated from a parser rules
-                # (.y), the source file may not be in the directory at this
-                # time.
-                pass
+            with open(join(task.dirpath, source)) as fp:
+                for line in fp:
+                    m = match(r"#include [\"<](?P<path>.*)[\">]", line.strip())
+                    if m is None:
+                        continue
+                    path = m.group("path")
+                    system_include_dirs = ["/usr/include", "/usr/local/include"]
+                    if find_in_includes(path, system_include_dirs) is not None:
+                        # The header file is found in a system include
+                        # directory. Updating such file is rare, so it is
+                        # ignored.
+                        continue
+                    includes = [task.dirpath] + task.includes
+                    fullpath = find_in_includes(path, includes)
+                    if fullpath is not None:
+                        # The included file is found in a user's include
+                        # directory.
+                        task.additional_sources.append(fullpath)
+                        continue
+                    t = find_task_of_orphan_target(path, tasks, includes)
+                    if t is None:
+                        # In here case:
+                        # 1. The included file is not found in any directories. 
+                        # 2. The included file is not a target of any tasks.
+                        # I don't know how to generate it.
+                        fmt = "Cannot find a task for {path}"
+                        print(fmt.format(**locals()))
+                        exit(1)
+                    task.additional_sources.extend(t.targets)
 
-def read_build_settings(top_dir, dirpath, config):
+def read_build_settings(conf, top_dir, dirpath, config):
     settings = run_path(join(dirpath, DEFAULT_FILENAME))
     b = Build(dirpath, config)
     g = {
@@ -567,10 +559,10 @@ def read_build_settings(top_dir, dirpath, config):
     add_included_sources(b.tasks, top_dir)
     return b
 
-def clean(_, top_dir, dirpath, config):
-    b = read_build_settings(top_dir, dirpath, config)
+def clean(ctx, top_dir, dirpath, config):
+    b = read_build_settings(ctx.conf, top_dir, dirpath, config)
     for subdir in b.subdirs:
-        clean(_, top_dir, join(dirpath, subdir), config)
+        clean(ctx, top_dir, join(dirpath, subdir), config)
     for task in b.tasks:
         for target in task.targets:
             try:
@@ -592,7 +584,7 @@ def log_tasks(ctx, tasks):
             log("  " + fmt.format(**task.__dict__))
 
 def build(ctx, top_dir, dirpath, config):
-    b = read_build_settings(top_dir, dirpath, config)
+    b = read_build_settings(ctx.conf, top_dir, dirpath, config)
     for subdir in b.subdirs:
         build(ctx, top_dir, join(dirpath, subdir), config)
     tasks = b.tasks
@@ -621,9 +613,9 @@ def main():
 
     req = get_request()
     with open(join(VAR_DIR, req + ".log"), "w") as fp:
-        ctx = Context(fp)
-
         top_dir = abspath(".")
+        ctx = Context(fp, config.get(CONF_KEY, { "top_dir": top_dir }))
+
         d = {
                 "clean": partial(clean, ctx, top_dir, top_dir, config),
                 "build": partial(build, ctx, top_dir, top_dir, config),
