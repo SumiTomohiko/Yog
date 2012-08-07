@@ -430,7 +430,7 @@ def log_file_info(ctx, msg, t):
 def is_up_to_date(ctx, task):
     dirpath = task.dirpath
     targets_mtime = mtime_of_files(dirpath, task.targets)
-    if len(targets_mtime) == 0:
+    if len(targets_mtime) != len(task.targets):
         return False
     sources = task.sources + task.additional_sources
     sources_mtime = mtime_of_files(dirpath, sources)
