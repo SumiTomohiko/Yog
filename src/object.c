@@ -272,7 +272,7 @@ get_attr(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
         YogError_raise_TypeError(env, msg);
         /* NOTREACHED */
         /**
-         * gcc complains "‘id’ may be used uninitialized in this function"
+         * gcc complains "'id' may be used uninitialized in this function"
          * without the following assignment.
          */
         id = 0;
