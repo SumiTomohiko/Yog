@@ -419,6 +419,15 @@ YogNativeFunction2_format_method(YogEnv* env, YogHandle* self)
 }
 
 static void
+raise_ArgumentError(YogEnv* env, YogHandle* self, uint_t args_num, uint_t posargc)
+{
+    YogHandle* name = YogNativeFunction2_format_method(env, self);
+    const char* fmt = "%S() requires %u positional argument(s) (%u given)";
+    YogError_raise_ArgumentError(env, fmt, HDL2VAL(name), args_num, posargc);
+    /* NOTREACHED */
+}
+
+static void
 set_posarg(YogEnv* env, YogHandle* self, uint_t args_num, YogHandle* args[], uint_t index, YogHandle* vararg, YogHandle* val, uint_t posargc)
 {
     if (index < args_num) {
@@ -430,9 +439,7 @@ set_posarg(YogEnv* env, YogHandle* self, uint_t args_num, YogHandle* args[], uin
         return;
     }
 
-    YogHandle* name = YogNativeFunction2_format_method(env, self);
-    YogError_raise_ArgumentError(env, "%S() required %u positional argument(s) (%u given)", HDL2VAL(name), args_num, posargc);
-    /* NOTREACHED */
+    raise_ArgumentError(env, self, args_num, posargc);
 }
 
 static int_t
@@ -569,6 +576,18 @@ set_blockarg(YogEnv* env, YogHandle* self, YogHandle* args[], YogHandle* blockar
     args[args_num - 1] = blockarg;
 }
 
+static void
+raise_ArgumentError_if_not_given(YogEnv* env, YogHandle* self, uint_t i, YogHandle* args[], uint_t args_num, uint_t posargc)
+{
+    if (HDL_AS(YogNativeFunction2, self)->args[i].optional) {
+        return;
+    }
+    if (args[i] != NULL) {
+        return;
+    }
+    raise_ArgumentError(env, self, args_num, posargc);
+}
+
 static YogVal
 YogNativeFunction2_call_for_instance(YogEnv* env, YogHandle* self, YogHandle* recv, uint8_t posargc, YogHandle* posargs[], uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* blockarg, YogVal* pmulti_val)
 {
@@ -619,6 +638,10 @@ YogNativeFunction2_call_for_instance(YogEnv* env, YogHandle* self, YogHandle* re
 
     if (blockarg != NULL) {
         set_blockarg(env, self, args, blockarg);
+    }
+
+    for (i = 0; i < HDL_AS(YogNativeFunction2, self)->posargs_num; i++) {
+        raise_ArgumentError_if_not_given(env, self, i, args, args_num, posargc);
     }
 
     void* f = HDL_AS(YogNativeFunction2, self)->f;
