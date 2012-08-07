@@ -1973,7 +1973,10 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     }
     node = rtype2node(env, rtype);
     YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), rtype, node);
-    ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(node) ? &ffi_type_void : map_type(env, node), types);
+    ffi_abi abi = FFI_DEFAULT_ABI;
+    ffi_type* ffi_rtype = IS_NIL(node) ? &ffi_type_void : map_type(env, node);
+    ffi_cif* cif = &PTR_AS(LibFunc, f)->cif;
+    ffi_status status = ffi_prep_cif(cif, abi, nargs, ffi_rtype, types);
     if (status != FFI_OK) {
         YogError_raise_FFIError(env, "%s", map_ffi_error(env, status));
         /* NOTREACHED */
