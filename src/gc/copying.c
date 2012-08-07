@@ -80,7 +80,7 @@ YogCopying_copy(YogEnv* env, YogHeap* heap, void* ptr)
     void* dest = copying->unscanned;
     size_t size = header->size;
     const char* fmt = "header=%p, size=%d, &header->size=%p";
-    YOG_ASSERT(env, sizeof(*header) < size, fmt, header, header->size, &header->size);
+    YOG_ASSERT(env, sizeof(*header) <= size, fmt, header, header->size, &header->size);
     memcpy(dest, header, size);
 
     header->forwarding_addr = (Header*)dest + 1;
