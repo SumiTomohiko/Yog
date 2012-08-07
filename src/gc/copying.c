@@ -79,7 +79,8 @@ YogCopying_copy(YogEnv* env, YogHeap* heap, void* ptr)
     Copying* copying = (Copying*)heap;
     void* dest = copying->unscanned;
     size_t size = header->size;
-    YOG_ASSERT(env, 0 < size, "invalid size: header=%p, obj=%p, size=%x", header, header + 1, size);
+    const char* fmt = "header=%p, size=%d, &header->size=%p";
+    YOG_ASSERT(env, sizeof(*header) < size, fmt, header, header->size, &header->size);
     memcpy(dest, header, size);
 
     header->forwarding_addr = (Header*)dest + 1;
