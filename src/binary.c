@@ -11,6 +11,7 @@
 #include "yog/gc.h"
 #include "yog/get_args.h"
 #include "yog/handle.h"
+#include "yog/misc.h"
 #include "yog/string.h"
 #include "yog/sysdeps.h"
 #include "yog/vm.h"
@@ -239,14 +240,13 @@ to_bin(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
 }
 
 YogVal
-YogBinary_to_s(YogEnv* env, YogVal self, YogVal encoding)
+YogBinary_to_s(YogEnv* env, YogVal self, YogHandle* encoding)
 {
+    /* XXX: self must include the terminating NUL character. */
     uint_t size = BINARY_SIZE(self);
-    char buf[size + 1];
+    char buf[size];
     memcpy(buf, BINARY_CSTR(self), size);
-    buf[size] = '\0';
-    YogHandle* h = YogHandle_REGISTER(env, encoding);
-    return YogEncoding_conv_to_yog(env, h, buf, buf + size);
+    return YogEncoding_conv_to_yog(env, encoding, buf, buf + size - 1);
 }
 
 static YogVal
@@ -330,6 +330,13 @@ inspect(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
     RETURN(env, s);
 }
 
+static YogVal
+to_s(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* encoding)
+{
+    YogMisc_check_Encoding(env, encoding, "encoding");
+    return YogBinary_to_s(env, HDL2VAL(self), encoding);
+}
+
 void
 YogBinary_define_classes(YogEnv* env, YogVal pkg)
 {
@@ -348,6 +355,11 @@ YogBinary_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD("slice", slice);
     DEFINE_METHOD("to_bin", to_bin);
 #undef DEFINE_METHOD
+#define DEFINE_METHOD2(name, ...)  do { \
+    YogClass_define_method2(env, cBinary, pkg, (name), __VA_ARGS__); \
+} while (0)
+    DEFINE_METHOD2("to_s", to_s, "encoding", NULL);
+#undef DEFINE_METHOD2
     YogClass_define_property(env, cBinary, pkg, "size", get_size, NULL);
     vm->cBinary = cBinary;
 

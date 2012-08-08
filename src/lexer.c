@@ -103,8 +103,10 @@ readline(YogEnv* env, YogVal lexer)
             ungetc(c, fp);
         }
     }
+    YogBinary_push_char(env, line, '\0');
 
-    YogVal s = YogBinary_to_s(env, line, PTR_AS(YogLexer, lexer)->encoding);
+    YogHandle* encoding = VAL2HDL(env, PTR_AS(YogLexer, lexer)->encoding);
+    YogVal s = YogBinary_to_s(env, line, encoding);
     YogGC_UPDATE_PTR(env, PTR_AS(YogLexer, lexer), line, s);
     PTR_AS(YogLexer, lexer)->lineno++;
 

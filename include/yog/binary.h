@@ -44,7 +44,7 @@ void YogBinary_push_uint(YogEnv*, YogVal, uint_t);
 void YogBinary_push_uint8(YogEnv*, YogVal, uint8_t);
 void YogBinary_shrink(YogEnv*, YogVal);
 uint_t YogBinary_size(YogEnv*, YogVal);
-YogVal YogBinary_to_s(YogEnv*, YogVal, YogVal);
+YogVal YogBinary_to_s(YogEnv*, YogVal, YogHandle*);
 YogVal YogByteArray_new(YogEnv*, uint_t);
 uint_t YogByteArray_size(YogEnv*, YogVal);
 
