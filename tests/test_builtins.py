@@ -239,4 +239,24 @@ copy_file(\"%(src)s\", \"%(dest)s\")
         finally:
             self.unlink(dest)
 
+    def test_locals0(self):
+        self._test("""\
+def foo()
+  bar = 42
+  print(locals())
+end
+
+foo()""", "{ \'bar: 42 }")
+
+    def test_locals10(self):
+        self._test("""\
+def foo()
+  bar = 42
+  baz = 26
+  print(locals()[\'bar])
+  print(locals()[\'baz])
+end
+
+foo()""", "4226")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

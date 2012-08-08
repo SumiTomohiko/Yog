@@ -11,7 +11,9 @@
 #include "yog/binary.h"
 #include "yog/class.h"
 #include "yog/classmethod.h"
+#include "yog/code.h"
 #include "yog/compile.h"
+#include "yog/dict.h"
 #include "yog/encoding.h"
 #include "yog/env.h"
 #include "yog/error.h"
@@ -102,6 +104,39 @@ static YogVal
 load_lib(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* path)
 {
     return YogFFI_load_lib(env, path);
+}
+
+static void
+set_assigned_local(YogEnv* env, YogVal tbl, YogVal name, YogVal val)
+{
+    if (IS_UNDEF(val)) {
+        return;
+    }
+    YogDict_set(env, tbl, name, val);
+}
+
+static YogVal
+locals(YogEnv* env, YogHandle* _, YogHandle* __)
+{
+    YogVal prev = PTR_AS(YogFrame, env->frame)->prev;
+    if (!IS_PTR(prev) || (PTR_AS(YogFrame, prev)->type != FRAME_SCRIPT)) {
+        YogError_raise_ArgumentError(env, "Only script can call locals()");
+        /* NOTREACHED */
+    }
+    YogHandle* code = VAL2HDL(env, PTR_AS(YogScriptFrame, prev)->code);
+    uint_t stack_size = HDL_AS(YogCode, code)->stack_size;
+    uint_t locals_num = HDL_AS(YogCode, code)->local_vars_count;
+
+    YogHandle* tbl = VAL2HDL(env, YogDict_new(env));
+
+    uint_t i;
+    for (i = 0; i < locals_num; i++) {
+        YogVal name = ID2VAL(HDL_AS(YogCode, code)->local_vars_names[i]);
+        YogVal v = PTR_AS(YogScriptFrame, prev)->locals_etc[stack_size + i];
+        set_assigned_local(env, HDL2VAL(tbl), name, v);
+    }
+
+    return HDL2VAL(tbl);
 }
 
 static YogVal
@@ -339,6 +374,7 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
 } while (0)
     DEFINE_FUNCTION2("import_package", import_package, "name", NULL);
     DEFINE_FUNCTION2("load_lib", load_lib, "path", NULL);
+    DEFINE_FUNCTION2("locals", locals, NULL);
     DEFINE_FUNCTION2("major_gc", major_gc, NULL);
     DEFINE_FUNCTION2("minor_gc", minor_gc, NULL);
     DEFINE_FUNCTION2("mkdir", mkdir_, "path", NULL);
