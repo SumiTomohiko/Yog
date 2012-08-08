@@ -304,13 +304,13 @@ slice(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block
 }
 
 static YogVal
-to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+inspect(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
     YogCArg params[] = { { NULL, NULL } };
-    YogGetArgs_parse_args(env, "to_s", params, args, kw);
+    YogGetArgs_parse_args(env, "inspect", params, args, kw);
     CHECK_SELF_BINARY;
 
     if (!IS_PTR(BINARY_BODY(self))) {
@@ -344,9 +344,9 @@ YogBinary_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method(env, cBinary, pkg, (name), (f)); \
 } while (0)
     DEFINE_METHOD("<<", lshift);
+    DEFINE_METHOD("inspect", inspect);
     DEFINE_METHOD("slice", slice);
     DEFINE_METHOD("to_bin", to_bin);
-    DEFINE_METHOD("to_s", to_s);
 #undef DEFINE_METHOD
     YogClass_define_property(env, cBinary, pkg, "size", get_size, NULL);
     vm->cBinary = cBinary;
