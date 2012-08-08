@@ -36,7 +36,7 @@ YogVal YogBignum_binop_or(YogEnv*, YogHandle*, YogHandle*);
 YogVal YogBignum_binop_power(YogEnv*, YogHandle*, YogHandle*);
 YogVal YogBignum_binop_rshift(YogEnv*, YogHandle*, YogHandle*);
 YogVal YogBignum_binop_subtract(YogEnv*, YogHandle*, YogHandle*);
-YogVal YogBignum_binop_ufo(YogEnv*, YogVal, YogVal);
+YogVal YogBignum_binop_ufo(YogEnv*, YogHandle*, YogHandle*);
 YogVal YogBignum_binop_xor(YogEnv*, YogHandle*, YogHandle*);
 int YogBignum_compare_with_int(YogEnv*, YogVal, int_t);
 int YogBignum_compare_with_long(YogEnv*, YogVal, long);

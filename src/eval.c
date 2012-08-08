@@ -894,7 +894,9 @@ YogEval_mainloop(YogEnv* env)
     } \
     else if (IS_PTR(left)) { \
         if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) { \
-            YogVal n = YogBignum_binop_ufo(env, left, right); \
+            YogHandle* h_left = VAL2HDL(env, left); \
+            YogHandle* h_right = VAL2HDL(env, right); \
+            YogVal n = YogBignum_binop_ufo(env, h_left, h_right); \
             push(env, do_(env, left, right, n)); \
         } \
         else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) { \
@@ -920,7 +922,9 @@ YogEval_mainloop(YogEnv* env)
     } \
     else if (IS_PTR(left)) { \
         if (BASIC_OBJ_TYPE(left) == TYPE_BIGNUM) { \
-            YogVal n = YogBignum_binop_ufo(env, left, right); \
+            YogHandle* h_left = VAL2HDL(env, left); \
+            YogHandle* h_right = VAL2HDL(env, right); \
+            YogVal n = YogBignum_binop_ufo(env, h_left, h_right); \
             push(env, do_(env, n)); \
         } \
         else if (BASIC_OBJ_TYPE(left) == TYPE_STRING) { \
