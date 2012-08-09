@@ -1,0 +1,686 @@
+#!/usr/bin/env python3
+
+from functools import partial
+from glob import glob
+from logging import FileHandler, Formatter, StreamHandler, getLogger
+from os import chdir, close, environ, getcwd, mkdir, stat, unlink, write
+from os.path import abspath, basename, dirname, exists, join, splitext
+from re import match
+from runpy import run_path
+from subprocess import PIPE, Popen, call
+from sys import argv, exit, stdout
+from time import localtime, strftime
+import tempfile
+
+class Context:
+
+    def __init__(self, log_file, conf):
+        self.log_file = log_file
+        self.conf = conf
+
+    def log(self, msg):
+        self.log_file.write(msg + "\n")
+
+    def print(self, msg):
+        print(msg)
+
+class Configure:
+
+    def __init__(self, options):
+        self.headers = []
+        self.functions = []
+        self.errno = []
+        self.sizeof = []
+        self.libraries = []
+        self.prefix = ""
+        self.config_h_path = None
+        self.definitions = []
+        self.options = options
+        self.subdirs = []
+
+    def configure_subdirs(self, subdirs):
+        self.subdirs.extend(subdirs)
+
+    def get_option(self, key, default):
+        return self.options.get(key, default)
+
+    def define(self, key, value):
+        self.definitions.append((self.prefix + key, value))
+
+    def make_config_h(self, path):
+        self.config_h_path = path
+
+    def define_prefix(self, prefix):
+        self.prefix = prefix
+
+    def check_header(self, names):
+        if not isinstance(names, list):
+            return self.check_header([names])
+        self.headers += names
+
+    def check_func(self, names):
+        if not isinstance(names, list):
+            return self.check_func([names])
+        self.functions += names
+
+    def check_errno(self, names):
+        if not isinstance(names, list):
+            return self.check_errno([names])
+        self.errno += names
+
+    def check_sizeof(self, names):
+        if not isinstance(names, list):
+            return self.check_sizeof([names])
+        self.sizeof += names
+
+    def check_lib(self, names):
+        if not isinstance(names, list):
+            return self.check_lib([names])
+        self.libraries += names
+
+def mkstemp():
+    return tempfile.mkstemp(prefix="dame", suffix=".c")
+
+def run_cc(src, flags):
+    fd, path = mkstemp()
+    try:
+        write(fd, bytes(src, "ascii"))
+        close(fd)
+
+        exe = splitext(path)[0]
+        cmd = ["cc", "-o", exe, path] + flags
+        with Popen(cmd, stdout=PIPE, stderr=PIPE) as proc:
+            try:
+                stdout, _ = proc.communicate()
+            finally:
+                try:
+                    unlink(exe)
+                except FileNotFoundError:
+                    pass
+            return proc.returncode, stdout
+    finally:
+        unlink(path)
+
+def make_config_name(name):
+    upper = name.upper()
+    for c in [" ", "/", "."]:
+        upper = upper.replace(c, "_")
+    return upper
+
+def add_definition(prefix, config_h, name):
+    fmt = "{prefix}HAVE_{name}"
+    config_h.append((fmt.format(prefix=prefix, name=make_config_name(name)), 1))
+
+def add_definition_if_zero(prefix, config_h, name, src, flags=[]):
+    if not isinstance(flags, list):
+        return add_definition_if_zero(prefix, config_h, name, src, [flags])
+
+    status, _ = run_cc(src, flags)
+    if status != 0:
+        return
+    add_definition(prefix, config_h, name)
+
+def check_header(prefix, config_h, name):
+    src = """\
+#include <{name}>
+
+int
+main(int argc, const char* argv[])
+{{
+    return 0;
+}}
+""".format(**locals())
+    add_definition_if_zero(prefix, config_h, name, src)
+
+def check_func(prefix, config_h, func):
+    src = """\
+int
+main(int argc, const char* argv[])
+{{
+    void {func}();
+    {func}();
+    return 0;
+}}
+""".format(**locals())
+    add_definition_if_zero(prefix, config_h, func, src)
+
+def check_errno(prefix, config_h, errno):
+    src = """\
+#include <errno.h>
+
+int
+main(int argc, const char* argv[])
+{{
+    {errno};
+    return 0;
+}}
+""".format(**locals())
+    add_definition_if_zero(prefix, config_h, errno, src)
+
+def run_src(src):
+    fd, path = mkstemp()
+    try:
+        write(fd, bytes(src, "ascii"))
+        close(fd)
+
+        exe = splitext(path)[0]
+        cmd = ["cc", "-o", exe, path]
+        try:
+            with Popen(cmd, stdout=PIPE, stderr=PIPE) as proc:
+                proc.communicate()
+                if proc.returncode != 0:
+                    raise Exception("Cannot compile a given code.")
+            with Popen(exe, stdout=PIPE) as proc:
+                stdout, _ = proc.communicate()
+                return stdout
+        finally:
+            try:
+                unlink(exe)
+            except FileNotFoundError:
+                pass
+    finally:
+        unlink(path)
+
+def check_sizeof(prefix, config_h, name):
+    src = """\
+#include <stdio.h>
+
+int
+main(int argc, const char* argv[])
+{{
+    printf("%zu", sizeof({name}));
+    return 0;
+}}
+""".format(**locals())
+    stdout = run_src(src)
+
+    fmt = "{prefix}SIZEOF_{name}"
+    s = make_config_name(name.replace("*", "P"))
+    config_h.append((fmt.format(prefix=prefix, name=s), int(stdout)))
+
+def check_lib(prefix, config_h, lib):
+    src = """\
+int
+main(int argc, const char* argv[])
+{
+    return 0;
+}
+"""
+    add_definition_if_zero(prefix, config_h, lib, src, "-l" + lib)
+
+def quote_if_str(val):
+    return "\"{val}\"".format(**locals()) if isinstance(val, str) else val
+
+def make_config_h(path, config_h):
+    if path is None:
+        return
+
+    guard = make_config_name(path)
+    with open(path, "w") as fp:
+        write = fp.write
+        write("""\
+#ifndef {guard}
+#define {guard}
+""".format(**locals()))
+        for key, value in config_h:
+            v = quote_if_str(value)
+            write("#define {key} {v}\n".format(**locals()))
+        write("""\
+#endif
+""")
+
+def update_globals(settings, g):
+    for key in settings.keys():
+        value = settings[key]
+        if (not callable(value)) or (value.__module__ != "<run_path>"):
+            continue
+        value.__globals__.update(g)
+        value.__globals__.update(settings)
+
+DEFAULT_FILENAME = "Hanagami"
+VAR_DIR = ".tissue"
+CONFIG_PY = join(VAR_DIR, "config.py")
+
+def output_conf(fp, key, value):
+    print("{key} = {value}".format(**locals()), file=fp)
+
+def output_environ(fp, environ, key, default):
+    output_conf(fp, key, repr(environ.get(key, default)))
+
+CONF_KEY = "conf"
+
+def make_config_py(conf):
+    with open(CONFIG_PY, "w") as fp:
+        output_environ(fp, environ, "CC", "clang")
+        output_conf(fp, CONF_KEY, conf)
+
+def parse_options(args):
+    opts = {}
+    for s in args:
+        if s[:2] != "--":
+            break
+        pos = s.find("=")
+        opts[s[2:pos]] = s[pos + 1:]
+    return opts
+
+def configure_subdirs(ctx, subdirs):
+    for dirpath in subdirs:
+        chdir_and_call(ctx, dirpath, "./configure")
+
+def configure(ctx):
+    settings = run_path(DEFAULT_FILENAME)
+
+    conf = Configure(parse_options(argv[2:]))
+    g = {
+            "configure_subdirs": conf.configure_subdirs,
+            "get_option": conf.get_option,
+            "define": conf.define,
+            "make_config_h": conf.make_config_h,
+            "define_prefix": conf.define_prefix,
+            "check_header": conf.check_header,
+            "check_func": conf.check_func,
+            "check_errno": conf.check_errno,
+            "check_sizeof": conf.check_sizeof,
+            "check_lib": conf.check_lib }
+    # ???: I expected settings["configure"].__globals__ keeps init_global, but
+    # actual is wrong.
+    update_globals(settings, g)
+
+    settings.get("configure", lambda _: None)(ctx.conf)
+    configure_subdirs(ctx, conf.subdirs)
+
+    prefix = conf.prefix
+    config_h = []
+    for header in conf.headers:
+        check_header(prefix, config_h, header)
+    for function in conf.functions:
+        check_func(prefix, config_h, function)
+    for errno in conf.errno:
+        check_errno(prefix, config_h, errno)
+    for sizeof in conf.sizeof:
+        check_sizeof(prefix, config_h, sizeof)
+    for library in conf.libraries:
+        check_lib(prefix, config_h, library)
+    config_h += conf.definitions
+    make_config_h(conf.config_h_path, config_h)
+
+    make_config_py(ctx.conf)
+
+def change_ext(filename, ext):
+    return splitext(filename)[0] + ext
+
+class Task:
+
+    def __init__(self):
+        self.dirpath = None
+        self.sources = None
+        self.targets = None
+        self.commands = None
+        self.includes = None
+        self.additional_sources = []
+
+    def __repr__(self):
+        fmt = "<Task dirpath={dirpath} targets={targets}>"
+        return fmt.format(**self.__dict__)
+
+class Build:
+
+    def __init__(self, dirpath, config):
+        self.dirpath = dirpath
+        self.config = config
+        self.subdirs = []
+        self.subdirs_to_make = []
+        self.tasks = []
+
+    def replace(self, a):
+        return [s.format(**self.config["conf"]) for s in a]
+
+    def add_task(self, targets, sources, commands, includes=[]):
+        task = Task()
+        task.dirpath = self.dirpath
+        task.targets = self.replace(targets)
+        task.sources = self.replace(sources)
+        task.commands = commands
+        task.includes = self.replace(includes)
+        self.tasks.append(task)
+
+    def command(self, commands, targets, sources):
+        if not isinstance(commands, list):
+            return self.command([commands], targets, sources)
+        if not isinstance(targets, list):
+            return self.command(commands, [targets], sources)
+        if not isinstance(sources, list):
+            return self.command(commands, targets, [sources])
+        self.add_task(targets, sources, commands)
+
+    def recurse(self, *subdirs):
+        if (len(subdirs) == 1) and isinstance(subdirs[0], list):
+            return self.recurse(*subdirs[0])
+        self.subdirs += subdirs
+
+    def glob(self, pat):
+        dirpath = self.dirpath
+        return [name[len(dirpath) + 1:] for name in glob(join(dirpath, pat))]
+
+    def join_params(self, opt, key, kw):
+        return ["-" + opt + s for s in kw[key]]
+
+    def make_compile_command(self, kw):
+        command = [self.config["CC"], "-o", "{targets}"]
+        command += kw.get("cflags", ["-Wall", "-Werror", "-g", "-O2"])
+        command += self.join_params("I", "includes", kw)
+        command += ["-c", "{sources}"]
+        return " ".join(command)
+
+    def make_link_command(self, kw):
+        command = [self.config["CC"], "-o", "{targets}", "{sources}"]
+        command += self.join_params("Wl,", "linkflags", kw)
+        command += ["-Wl,-Bstatic"]
+        command += self.join_params("L", "stlibpath", kw)
+        command += self.join_params("l", "stlib", kw)
+        command += ["-Wl,-Bdynamic"]
+        command += self.join_params("L", "libpath", kw)
+        command += self.join_params("l", "lib", kw)
+        return " ".join(command)
+
+    def make_subdirs(self, subdirs):
+        self.subdirs_to_make.extend(subdirs)
+
+    def normalize_flags(self, kw):
+        flags = kw.copy()
+        for name in [
+                "includes", "linkflags", "cflags", "stlib", "stlibpath", "lib",
+                "libpath"]:
+            try:
+                val = kw[name]
+            except KeyError:
+                flags[name] = []
+            else:
+                if not isinstance(val, list):
+                    flags[name] = [val]
+        return flags
+
+    def find_stlibs(self, libpath, libs):
+        l = []
+        for dirpath in [path.format(**self.config["conf"]) for path in libpath]:
+            for lib in libs:
+                path = join(dirpath, "lib{lib}.a".format(**locals()))
+                if exists(path):
+                    l.append(path)
+        return l
+
+    def add_c_rules(self, target, sources, flags, link_command):
+        compile_commands = [self.make_compile_command(flags)]
+        includes = flags["includes"]
+
+        objects = [change_ext(source, ".o") for source in sources]
+        for source, object_ in zip(sources, objects):
+            self.add_task([object_], [source], compile_commands, includes)
+
+        stlibs = self.find_stlibs(flags["stlibpath"], flags["stlib"])
+        self.add_task([target], objects + stlibs, [link_command])
+
+    def add_rules_for_lib(self, target, sources, link_command, **kw):
+        if not isinstance(sources, list):
+            callee = self.add_rules_for_lib
+            return callee(target, [sources], link_command, **kw)
+        flags = self.normalize_flags(kw)
+        self.add_c_rules(target, sources, flags, link_command)
+
+    def stlib(self, target, sources, **kw):
+        link_command = "ar -cr {targets} {sources}"
+        self.add_rules_for_lib(target, sources, link_command, **kw)
+
+    def shlib(self, target, sources, **kw):
+        link_command = "clang -o {targets} -shared {sources}"
+        self.add_rules_for_lib(target, sources, link_command, **kw)
+
+    def program(self, target, sources, **kw):
+        if not isinstance(sources, list):
+            return self.program(target, [sources], **kw)
+        flags = self.normalize_flags(kw)
+        self.add_c_rules(target, sources, flags, self.make_link_command(flags))
+
+def mtime_of_file(path):
+    try:
+        return stat(path).st_mtime
+    except FileNotFoundError:
+        return None
+
+def mtime_of_files(dirpath, names):
+    l = []
+    for name in names:
+        path = join(dirpath, name)
+        mtime = mtime_of_file(path)
+        if mtime is None:
+            continue
+        l.append((path, mtime))
+    l.sort(key=lambda t: t[1])
+    return l
+
+def log_file_info(ctx, msg, t):
+    path = t[0]
+    tm = strftime("%Y-%m-%d %H:%M:%S", localtime(t[1]))
+    ctx.log("{msg}: {path}, {tm}".format(**locals()))
+
+def is_up_to_date(ctx, task):
+    dirpath = task.dirpath
+    targets_mtime = mtime_of_files(dirpath, task.targets)
+    if len(targets_mtime) != len(task.targets):
+        return False
+    sources = task.sources + task.additional_sources
+    sources_mtime = mtime_of_files(dirpath, sources)
+    youngest_source = sources_mtime[-1]
+    oldest_target = targets_mtime[0]
+
+    log_file_info(ctx, "youngest source", youngest_source)
+    log_file_info(ctx, "oldest target", oldest_target)
+
+    return youngest_source[1] < oldest_target[1]
+
+def find_task(target, tasks):
+    for task in tasks:
+        if target in [join(task.dirpath, target) for target in task.targets]:
+            return task
+    return None
+
+def find_task_of_orphan_target(target, tasks, includes):
+    for path in [join(d, target) for d in includes]:
+        task = find_task(path, tasks)
+        if task is not None:
+            return task
+    return None
+
+def join_filenames(dirpath, names):
+    return " ".join([join(dirpath, name) for name in names])
+
+def chdir_and_call(ctx, dirpath, command):
+    cwd_old = getcwd()
+    chdir(dirpath)
+    try:
+        ctx.log("chdir: {0}".format(dirpath))
+        ctx.log("execute: {command}".format(**locals()))
+        ctx.print("blow: at {0}".format(dirpath))
+        ctx.print("blow: {command}".format(**locals()))
+        status = call(command, shell=True)
+        if status != 0:
+            ctx.print("exit at {0}. stopped.".format(status))
+            exit(1)
+    finally:
+        chdir(cwd_old)
+
+def resolve(ctx, top_dir, task, tasks):
+    ctx.log("resolving: {task}".format(**locals()))
+    for source in task.sources + task.additional_sources:
+        t = find_task(join(task.dirpath, source), tasks)
+        if t is None:
+            continue
+        resolve(ctx, top_dir, t, tasks)
+    if is_up_to_date(ctx, task):
+        ctx.log("skip: {task}".format(**locals()))
+        return
+    ctx.log("Must update: {task}".format(**locals()))
+    dirpath = task.dirpath
+    for template in task.commands or []:
+        d = {
+                "targets": join_filenames(dirpath, task.targets),
+                "sources": join_filenames(dirpath, task.sources) }
+        d.update(ctx.conf)
+        chdir_and_call(ctx, task.dirpath, template.format(**d))
+
+def find_root_targets(tasks):
+    l = []
+    for task in tasks:
+        for target in task.targets:
+            target_is_source = False
+            for t in tasks:
+                if target in t.sources:
+                    target_is_source = True
+                    break
+            if not target_is_source:
+                l.append(task)
+                break
+    return l
+
+def find_in_includes(path, includes):
+    for include in includes:
+        fullpath = join(include, path)
+        if exists(fullpath):
+            return fullpath
+    return None
+
+def add_included_sources(tasks, top_dir):
+    for task in tasks:
+        for source in task.sources:
+            if splitext(source)[1] != ".c":
+                continue
+            try:
+                with open(join(task.dirpath, source)) as fp:
+                    for line in fp:
+                        regexp = r"#include [\"<](?P<path>.*)[\">]"
+                        m = match(regexp, line.strip())
+                        if m is None:
+                            continue
+                        path = m.group("path")
+                        system_include_dirs = [
+                                "/usr/include",
+                                "/usr/local/include"]
+                        fullpath = find_in_includes(path, system_include_dirs)
+                        if fullpath is not None:
+                            # The header file is found in a system include
+                            # directory. Updating such file is rare, so it is
+                            # ignored.
+                            continue
+                        includes = [task.dirpath] + task.includes
+                        fullpath = find_in_includes(path, includes)
+                        if fullpath is not None:
+                            # The included file is found in a user's include
+                            # directory.
+                            task.additional_sources.append(fullpath)
+                            continue
+                        t = find_task_of_orphan_target(path, tasks, includes)
+                        if t is None:
+                            # In here case:
+                            # 1. The included file is not found in any
+                            #    directories.
+                            # 2. The included file is not a target of any tasks.
+                            #    I don't know how to generate it.
+                            fmt = "WARNING: Cannot find a task for {path}"
+                            print(fmt.format(**locals()))
+                            continue
+                        task.additional_sources.extend(t.targets)
+            except FileNotFoundError:
+                # If a source file (.c) will be generated from a parser rules
+                # (.y), the source file may not be in the directory at this
+                # time.
+                pass
+
+def read_build_settings(conf, top_dir, dirpath, config):
+    settings = run_path(join(dirpath, DEFAULT_FILENAME))
+    b = Build(dirpath, config)
+    g = {
+            "command": b.command,
+            "program": b.program,
+            "shlib": b.shlib,
+            "stlib": b.stlib,
+            "glob": b.glob,
+            "make_subdirs": b.make_subdirs,
+            "recurse": b.recurse }
+    update_globals(settings, g)
+    settings["build"]()
+    add_included_sources(b.tasks, top_dir)
+    return b
+
+def make_subdirs(ctx, dirpath, subdirs, target="all"):
+    for path in [join(dirpath, subdir) for subdir in subdirs]:
+        chdir_and_call(ctx, path, "make {target}".format(**locals()))
+
+def clean(ctx, top_dir, dirpath, config):
+    b = read_build_settings(ctx.conf, top_dir, dirpath, config)
+    make_subdirs(ctx, dirpath, b.subdirs_to_make, "clean")
+    for subdir in b.subdirs:
+        clean(ctx, top_dir, join(dirpath, subdir), config)
+    for task in b.tasks:
+        for target in task.targets:
+            try:
+                unlink(join(dirpath, target) if target[0] != "/" else target)
+            except FileNotFoundError:
+                pass
+
+def log_tasks(ctx, tasks):
+    log = ctx.log
+    for i, task in enumerate(tasks):
+        log("task{i}:".format(**locals()))
+        for fmt in [
+                "dirpath: {dirpath}",
+                "targets: {targets}",
+                "sources: {sources}",
+                "commands: {commands}",
+                "includes: {includes}",
+                "additional_sources: {additional_sources}"]:
+            log("  " + fmt.format(**task.__dict__))
+
+def build(ctx, top_dir, dirpath, config):
+    b = read_build_settings(ctx.conf, top_dir, dirpath, config)
+    make_subdirs(ctx, dirpath, b.subdirs_to_make)
+    for subdir in b.subdirs:
+        build(ctx, top_dir, join(dirpath, subdir), config)
+    tasks = b.tasks
+    log_tasks(ctx, tasks)
+    for root in find_root_targets(tasks):
+        resolve(ctx, top_dir, root, tasks)
+
+def get_request():
+    try:
+        return argv[1]
+    except IndexError:
+        return "build"
+
+def read_config_py():
+    try:
+        return run_path(CONFIG_PY)
+    except FileNotFoundError:
+        return {}
+
+def main():
+    try:
+        mkdir(VAR_DIR)
+    except FileExistsError:
+        pass
+    config = read_config_py()
+
+    req = get_request()
+    with open(join(VAR_DIR, req + ".log"), "w") as fp:
+        top_dir = abspath(".")
+        ctx = Context(fp, config.get(CONF_KEY, { "top_dir": top_dir }))
+
+        d = {
+                "clean": partial(clean, ctx, top_dir, top_dir, config),
+                "build": partial(build, ctx, top_dir, top_dir, config),
+                "configure": partial(configure, ctx) }
+        d.get(req, lambda: None)()
+        ctx.log("End")
+
+main()
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

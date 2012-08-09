@@ -1,14 +1,9 @@
 
-def options(ctx):
-    ctx.load("compiler_c")
-
-configure = options
-
-def build(ctx):
-    target = "BigDigits"
-    source = ["bigd.c", "bigdigits.c"]
+def build():
+    target = "libBigDigits.a"
+    sources = ["bigd.c", "bigdigits.c"]
     # This library causes many warnings. So I cannot pass -Werror.
     cflags = ["-Wall", "-O3", "-g"]
-    ctx.stlib(**locals())
+    stlib(**locals())
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

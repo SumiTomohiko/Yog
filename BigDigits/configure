@@ -1,5 +1,5 @@
 #!/bin/sh
 
-exec ./waf configure "$@"
+exec ./blow configure "$@"
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
