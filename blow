@@ -36,6 +36,10 @@ class Configure:
         self.config_h_path = None
         self.definitions = []
         self.options = options
+        self.subdirs = []
+
+    def configure_subdirs(self, subdirs):
+        self.subdirs.extend(subdirs)
 
     def get_option(self, key, default):
         return self.options.get(key, default)
@@ -256,11 +260,16 @@ def parse_options(args):
         opts[s[2:pos]] = s[pos + 1:]
     return opts
 
+def configure_subdirs(ctx, subdirs):
+    for dirpath in subdirs:
+        chdir_and_call(ctx, dirpath, "./configure")
+
 def configure(ctx):
     settings = run_path(DEFAULT_FILENAME)
 
     conf = Configure(parse_options(argv[2:]))
     g = {
+            "configure_subdirs": conf.configure_subdirs,
             "get_option": conf.get_option,
             "define": conf.define,
             "make_config_h": conf.make_config_h,
@@ -275,6 +284,7 @@ def configure(ctx):
     update_globals(settings, g)
 
     settings["configure"](ctx.conf)
+    configure_subdirs(ctx, conf.subdirs)
 
     prefix = conf.prefix
     config_h = []
@@ -316,6 +326,7 @@ class Build:
         self.dirpath = dirpath
         self.config = config
         self.subdirs = []
+        self.subdirs_to_make = []
         self.tasks = []
 
     def replace(self, a):
@@ -368,6 +379,9 @@ class Build:
         command += self.join_params("L", "libpath", kw)
         command += self.join_params("l", "lib", kw)
         return " ".join(command)
+
+    def make_subdirs(self, subdirs):
+        self.subdirs_to_make.extend(subdirs)
 
     def normalize_flags(self, kw):
         flags = kw.copy()
@@ -458,6 +472,21 @@ def find_task_of_orphan_target(target, tasks, includes):
 def join_filenames(dirpath, names):
     return " ".join([join(dirpath, name) for name in names])
 
+def chdir_and_call(ctx, dirpath, command):
+    cwd_old = getcwd()
+    chdir(dirpath)
+    try:
+        ctx.log("chdir: {0}".format(dirpath))
+        ctx.log("execute: {command}".format(**locals()))
+        ctx.print("blow: at {0}".format(dirpath))
+        ctx.print("blow: {command}".format(**locals()))
+        status = call(command, shell=True)
+        if status != 0:
+            ctx.print("exit at {0}. stopped.".format(status))
+            exit(1)
+    finally:
+        chdir(cwd_old)
+
 def resolve(ctx, top_dir, task, tasks):
     ctx.log("resolving: {task}".format(**locals()))
     for source in task.sources + task.additional_sources:
@@ -475,19 +504,7 @@ def resolve(ctx, top_dir, task, tasks):
                 "targets": join_filenames(dirpath, task.targets),
                 "sources": join_filenames(dirpath, task.sources) }
         d.update(ctx.conf)
-        command = template.format(**d)
-        cwd_old = getcwd()
-        chdir(task.dirpath)
-        try:
-            ctx.log("chdir: {0}".format(task.dirpath))
-            ctx.log("execute: {command}".format(**locals()))
-            ctx.print(command)
-            status = call(command, shell=True)
-            if status != 0:
-                ctx.print("exit at {0}. stopped.".format(status))
-                exit(1)
-        finally:
-            chdir(cwd_old)
+        chdir_and_call(ctx, task.dirpath, template.format(**d))
 
 def find_root_targets(tasks):
     l = []
@@ -564,14 +581,20 @@ def read_build_settings(conf, top_dir, dirpath, config):
             "program": b.program,
             "shlib": b.shlib,
             "glob": b.glob,
+            "make_subdirs": b.make_subdirs,
             "recurse": b.recurse }
     update_globals(settings, g)
     settings["build"]()
     add_included_sources(b.tasks, top_dir)
     return b
 
+def make_subdirs(ctx, dirpath, subdirs, target="all"):
+    for path in [join(dirpath, subdir) for subdir in subdirs]:
+        chdir_and_call(ctx, path, "make {target}".format(**locals()))
+
 def clean(ctx, top_dir, dirpath, config):
     b = read_build_settings(ctx.conf, top_dir, dirpath, config)
+    make_subdirs(ctx, dirpath, b.subdirs_to_make, "clean")
     for subdir in b.subdirs:
         clean(ctx, top_dir, join(dirpath, subdir), config)
     for task in b.tasks:
@@ -596,6 +619,7 @@ def log_tasks(ctx, tasks):
 
 def build(ctx, top_dir, dirpath, config):
     b = read_build_settings(ctx.conf, top_dir, dirpath, config)
+    make_subdirs(ctx, dirpath, b.subdirs_to_make)
     for subdir in b.subdirs:
         build(ctx, top_dir, join(dirpath, subdir), config)
     tasks = b.tasks
