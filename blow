@@ -212,6 +212,9 @@ def quote_if_str(val):
     return "\"{val}\"".format(**locals()) if isinstance(val, str) else val
 
 def make_config_h(path, config_h):
+    if path is None:
+        return
+
     guard = make_config_name(path)
     with open(path, "w") as fp:
         write = fp.write
@@ -283,7 +286,7 @@ def configure(ctx):
     # actual is wrong.
     update_globals(settings, g)
 
-    settings["configure"](ctx.conf)
+    settings.get("configure", lambda _: None)(ctx.conf)
     configure_subdirs(ctx, conf.subdirs)
 
     prefix = conf.prefix
@@ -397,27 +400,46 @@ class Build:
                     flags[name] = [val]
         return flags
 
-    def add_c_rules(self, target, sources, flags):
+    def find_stlibs(self, libpath, libs):
+        l = []
+        for dirpath in [path.format(**self.config["conf"]) for path in libpath]:
+            for lib in libs:
+                path = join(dirpath, "lib{lib}.a".format(**locals()))
+                if exists(path):
+                    l.append(path)
+        return l
+
+    def add_c_rules(self, target, sources, flags, link_command):
         compile_commands = [self.make_compile_command(flags)]
         includes = flags["includes"]
 
         objects = [change_ext(source, ".o") for source in sources]
         for source, object_ in zip(sources, objects):
             self.add_task([object_], [source], compile_commands, includes)
-        self.add_task([target], objects, [self.make_link_command(flags)])
+
+        stlibs = self.find_stlibs(flags["stlibpath"], flags["stlib"])
+        self.add_task([target], objects + stlibs, [link_command])
+
+    def add_rules_for_lib(self, target, sources, link_command, **kw):
+        if not isinstance(sources, list):
+            callee = self.add_rules_for_lib
+            return callee(target, [sources], link_command, **kw)
+        flags = self.normalize_flags(kw)
+        self.add_c_rules(target, sources, flags, link_command)
+
+    def stlib(self, target, sources, **kw):
+        link_command = "ar -cr {targets} {sources}"
+        self.add_rules_for_lib(target, sources, link_command, **kw)
 
     def shlib(self, target, sources, **kw):
-        if not isinstance(sources, list):
-            return self.shlib(target, [sources], **kw)
-        flags = self.normalize_flags(kw)
-        flags["linkflags"] += ["-shared"]
-        self.add_c_rules(target, sources, flags)
+        link_command = "clang -o {targets} -shared {sources}"
+        self.add_rules_for_lib(target, sources, link_command, **kw)
 
     def program(self, target, sources, **kw):
         if not isinstance(sources, list):
             return self.program(target, [sources], **kw)
         flags = self.normalize_flags(kw)
-        self.add_c_rules(target, sources, flags)
+        self.add_c_rules(target, sources, flags, self.make_link_command(flags))
 
 def mtime_of_file(path):
     try:
@@ -580,6 +602,7 @@ def read_build_settings(conf, top_dir, dirpath, config):
             "command": b.command,
             "program": b.program,
             "shlib": b.shlib,
+            "stlib": b.stlib,
             "glob": b.glob,
             "make_subdirs": b.make_subdirs,
             "recurse": b.recurse }
