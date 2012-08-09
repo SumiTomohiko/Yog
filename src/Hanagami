@@ -1,5 +1,5 @@
 
-from os.path import splitext
+from os.path import join, splitext
 
 def define_rules_for_yog():
     target = "yog"
@@ -14,18 +14,18 @@ def define_rules_for_yog():
     libffi_dir = "{top_dir}/libffi"
     BigDigits_dir = "{top_dir}/BigDigits"
     includes = [
-            "{top_dir}/include",
-            corgi_dir + "/include",
-            libffi_dir + "/include",
+            join("{top_dir}", "include"),
+            join(corgi_dir, "include"),
+            join(libffi_dir, "include"),
             BigDigits_dir]
     cflags = ["-Wall", "-Werror", "-O2", "-g"]
     lib = ["m", "pthread"]
     linkflags = "-export-dynamic"
     stlib = ["corgi", "ffi", "BigDigits"]
     stlibpath = [
-            corgi_dir + "/src/.libs",
-            libffi_dir + "/.libs",
-            BigDigits_dir + "/build"]
+            join(corgi_dir, "src/.libs"),
+            join(libffi_dir, ".libs"),
+            BigDigits_dir]
     program(**locals())
 
 def define_rules_for_builtin_script():
