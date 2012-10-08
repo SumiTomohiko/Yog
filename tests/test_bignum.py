@@ -7,6 +7,30 @@ class TestBignum(TestCase):
     def test_ufo0(self):
         self._test("print(4611686018427387905 <=> \"foo\")", "nil")
 
+    def test_comparison0(self):
+        self._test("print(4611686018427387905 < 42)", "false")
+
+    def test_comparison10(self):
+        self._test("print(-4611686018427387905 < 42)", "true")
+
+    def test_comparison20(self):
+        self._test("print(4611686018427387905 < -42)", "false")
+
+    def test_comparison30(self):
+        self._test("print(-4611686018427387905 < -42)", "true")
+
+    def test_comparison40(self):
+        self._test("print(4611686018427387905 > 42)", "true")
+
+    def test_comparison50(self):
+        self._test("print(-4611686018427387905 > 42)", "false")
+
+    def test_comparison60(self):
+        self._test("print(4611686018427387905 > -42)", "true")
+
+    def test_comparison70(self):
+        self._test("print(-4611686018427387905 > -42)", "false")
+
     def test_negative0(self):
         self._test("""
 puts(- 4611686018427387905)

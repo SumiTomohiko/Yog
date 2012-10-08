@@ -10,10 +10,15 @@ def read_version():
                 continue
             return m.group()
 
-def build(conf):
-    recurse("src", "tools")
+submodules = ["BigDigits", "corgi", "libffi"]
+
+def build():
+    make_subdirs(submodules)
+    recurse("src", "tools", "tests")
 
 def configure(conf):
+    configure_subdirs(submodules)
+
     define_prefix("YOG_")
     check_header([
         "inttypes.h", "limits.h", "stddef.h", "stdint.h", "stdlib.h",

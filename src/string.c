@@ -538,6 +538,18 @@ to_s(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
     RETURN(env, self);
 }
 
+static void
+update_class(YogEnv* env, YogVal self, YogVal klass)
+{
+    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, self), klass, klass);
+}
+
+static void
+update_class_to(YogEnv* env, YogVal self, YogHandle* o)
+{
+    update_class(env, self, YogVal_get_class(env, HDL2VAL(o)));
+}
+
 YogVal
 YogString_binop_add(YogEnv* env, YogHandle* self, YogHandle* s)
 {
@@ -562,6 +574,7 @@ YogString_binop_add(YogEnv* env, YogHandle* self, YogHandle* s)
         YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, t), klass, klass);
     }
 
+    update_class_to(env, t, self);
     return t;
 }
 
@@ -604,6 +617,7 @@ YogString_binop_multiply(YogEnv* env, YogHandle* self, YogVal n)
     }
     STRING_SIZE(s) = needed_size;
 
+    update_class_to(env, s, self);
     return s;
 }
 
@@ -750,6 +764,14 @@ YogString_slice(YogEnv* env, YogHandle* self, uint_t pos, uint_t size)
 }
 
 static YogVal
+create_string_of_class(YogEnv* env, YogHandle* self)
+{
+    YogVal s = YogString_new(env);
+    update_class_to(env, s, self);
+    return s;
+}
+
+static YogVal
 slice(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* pos, YogHandle* len)
 {
     CHECK_SELF_TYPE2(env, self);
@@ -760,7 +782,7 @@ slice(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* pos, YogHandle* l
     }
     int_t n = normalize_position(env, VAL2INT(HDL2VAL(pos)), max_index);
     if ((n < 0) || (max_index < n)) {
-        return YogString_new(env);
+        return create_string_of_class(env, self);
     }
     uint_t begin = 0; /* GCC 4.4.3 warns uninitialized this variable */
     if (!index2offset(env, HDL2VAL(self), n, &begin)) {
@@ -773,7 +795,7 @@ slice(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* pos, YogHandle* l
         /* NOTREACHED */
     }
     if ((len != NULL) && (VAL2INT(HDL2VAL(len)) <= 0)) {
-        return YogString_new(env);
+        return create_string_of_class(env, self);
     }
     int_t l = normalize_length(env, len, max_index, n);
     uint_t end = 0; /* GCC 4.4.3 warns uninitialized this variable */
@@ -783,7 +805,9 @@ slice(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* pos, YogHandle* l
         YogError_raise_ValueError(env, fmt, l, STRING_SIZE(HDL2VAL(self)) - n);
         /* NOTREACHED */
     }
-    return YogString_slice(env, self, begin, end - begin + 1);
+    YogVal s = YogString_slice(env, self, begin, end - begin + 1);
+    update_class_to(env, s, self);
+    return s;
 }
 
 static YogVal
@@ -1085,7 +1109,7 @@ YogString_to_bin_in_default_encoding(YogEnv* env, YogHandle* self)
 void
 YogString_change_class_to_path(YogEnv* env, YogVal self)
 {
-    YogGC_UPDATE_PTR(env, PTR_AS(YogBasicObj, self), klass, env->vm->cPath);
+    update_class(env, self, env->vm->cPath);
 }
 
 YogVal

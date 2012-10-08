@@ -780,27 +780,39 @@ hash(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 YogVal
-YogBignum_binop_ufo(YogEnv* env, YogVal self, YogVal n)
+YogBignum_binop_ufo(YogEnv* env, YogHandle* self, YogHandle* v)
 {
+    YogVal n = HDL2VAL(v);
+    if (IS_FIXNUM(n)) {
+        YogVal bignum = YogBignum_from_int(env, VAL2INT(n));
+        return YogBignum_binop_ufo(env, self, VAL2HDL(env, bignum));
+    }
     if (!IS_PTR(n) || (BASIC_OBJ_TYPE(n) != TYPE_BIGNUM)) {
         return YNIL;
     }
 
-    int_t m = bdCompare(BIGNUM_NUM(self), BIGNUM_NUM(n));
-    if (m < 0) {
+    if (BIGNUM_SIGN(HDL2VAL(self)) < BIGNUM_SIGN(n)) {
         return INT2VAL(-1);
+    }
+    else if (BIGNUM_SIGN(n) < BIGNUM_SIGN(HDL2VAL(self))) {
+        return INT2VAL(1);
+    }
+
+    int_t m = bdCompare(BIGNUM_NUM(HDL2VAL(self)), BIGNUM_NUM(n));
+    if (m < 0) {
+        return INT2VAL(- BIGNUM_SIGN(HDL2VAL(self)));
     }
     if (m == 0) {
         return INT2VAL(0);
     }
-    return INT2VAL(1);
+    return INT2VAL(BIGNUM_SIGN(HDL2VAL(self)));
 }
 
 static YogVal
 ufo(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* n)
 {
     CHECK_SELF_TYPE2(env, self);
-    return YogBignum_binop_ufo(env, HDL2VAL(self), HDL2VAL(n));
+    return YogBignum_binop_ufo(env, self, n);
 }
 
 static YogVal

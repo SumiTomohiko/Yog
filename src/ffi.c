@@ -32,7 +32,7 @@
 
 struct Lib {
     struct YogBasicObj base;
-    LIB_HANDLE handle;
+    void* handle;
 };
 
 typedef struct Lib Lib;
@@ -1874,7 +1874,7 @@ Lib_alloc(YogEnv* env, YogVal klass)
 YogVal
 YogFFI_load_lib(YogEnv* env, YogHandle* path)
 {
-    LIB_HANDLE handle = YogMisc_load_lib(env, path);
+    void* handle = YogMisc_load_lib(env, path);
     if (handle == NULL) {
         const char* fmt = "No library named \"%S\"";
         YogError_raise_ImportError(env, fmt, HDL2VAL(path));
@@ -1973,13 +1973,16 @@ load_func(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     }
     node = rtype2node(env, rtype);
     YogGC_UPDATE_PTR(env, PTR_AS(LibFunc, f), rtype, node);
-    ffi_status status = ffi_prep_cif(&PTR_AS(LibFunc, f)->cif, FFI_DEFAULT_ABI, nargs, IS_NIL(node) ? &ffi_type_void : map_type(env, node), types);
+    ffi_abi abi = FFI_DEFAULT_ABI;
+    ffi_type* ffi_rtype = IS_NIL(node) ? &ffi_type_void : map_type(env, node);
+    ffi_cif* cif = &PTR_AS(LibFunc, f)->cif;
+    ffi_status status = ffi_prep_cif(cif, abi, nargs, ffi_rtype, types);
     if (status != FFI_OK) {
         YogError_raise_FFIError(env, "%s", map_ffi_error(env, status));
         /* NOTREACHED */
     }
     YogVal s = YogString_to_bin_in_default_encoding(env, VAL2HDL(env, name));
-    void* p = YogSysdeps_get_proc(PTR_AS(Lib, self)->handle, BINARY_CSTR(s));
+    void* p = dlsym(PTR_AS(Lib, self)->handle, BINARY_CSTR(s));
     if (p == NULL) {
         YogError_raise_FFIError(env, "Can't find address of %S", name);
     }

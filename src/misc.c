@@ -56,12 +56,12 @@ YogMisc_check_String(YogEnv* env, YogHandle* val, const char* name)
     YogMisc_raise_TypeError(env, v, name, "String");
 }
 
-LIB_HANDLE
+void*
 YogMisc_load_lib(YogEnv* env, YogHandle* filename)
 {
     YogVal bin = YogString_to_bin_in_default_encoding(env, filename);
-    YogSysdeps_dlerror();
-    return YogSysdeps_open_lib(BINARY_CSTR(bin));
+    dlerror();
+    return dlopen(BINARY_CSTR(bin), RTLD_LAZY);
 }
 
 YogHandle*

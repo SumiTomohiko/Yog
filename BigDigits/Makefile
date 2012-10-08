@@ -1,12 +1,12 @@
 
-WAF = ./waf
+CMD = ./blow
 
 .PHONY: build
 
 all: build
 
 build:
-	@$(WAF) build
+	@$(CMD) build
 
 clean:
-	@$(WAF) clean
+	@$(CMD) clean

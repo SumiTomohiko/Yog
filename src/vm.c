@@ -1129,15 +1129,15 @@ make_initializer_name(YogEnv* env, YogHandle* pkg_name)
 }
 
 static YogVal
-call_initializer(YogEnv* env, LIB_HANDLE handle, YogHandle* pkg_name)
+call_initializer(YogEnv* env, void* handle, YogHandle* pkg_name)
 {
     YogHandle* init_name = make_initializer_name(env, pkg_name);
     YogVal bin = YogString_to_bin_in_default_encoding(env, init_name);
     const char* s = BINARY_CSTR(bin);
 
-    YogSysdeps_dlerror();
+    dlerror();
     typedef YogVal (*Initializer)(YogEnv*);
-    Initializer init = (Initializer)YogSysdeps_get_proc(handle, s);
+    Initializer init = (Initializer)dlsym(handle, s);
     if (init == NULL) {
         const char* fmt = "Dynamic package does not define init function (%S)";
         YogError_raise_ImportError(env, fmt, HDL2VAL(init_name));
@@ -1152,7 +1152,7 @@ call_initializer(YogEnv* env, LIB_HANDLE handle, YogHandle* pkg_name)
 static YogVal
 import_so(YogEnv* env, YogVM* vm, YogHandle* filename, YogHandle* pkg_name)
 {
-    LIB_HANDLE handle = YogMisc_load_lib(env, filename);
+    void* handle = YogMisc_load_lib(env, filename);
     if (handle == NULL) {
         print_dlopen_error(env, filename);
         return YUNDEF;
@@ -1342,7 +1342,7 @@ static void
 add_lib_dir_to_search_path(YogEnv* env, YogHandle* search_path, YogHandle* exe)
 {
     YogHandle* dir = VAL2HDL(env, YogPath_dirname(env, exe));
-    YogHandle* top_dir = YogPath_join(env, dir, "../..");
+    YogHandle* top_dir = YogPath_join(env, dir, "..");
     YogHandle* ext_dir = YogPath_join(env, top_dir, "ext");
     if (is_directory(env, ext_dir)) {
         add_search_path_entry(env, search_path, ext_dir);
