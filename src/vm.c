@@ -1352,7 +1352,7 @@ add_lib_dir_to_search_path(YogEnv* env, YogHandle* search_path, YogHandle* exe)
         return;
     }
 
-    const char* path = YOG_PREFIX "/lib/yog" YOG_PACKAGE_VERSION;
+    const char* path = YOG_PREFIX "/lib/yog/" YOG_PACKAGE_VERSION;
     YogVal s = YogString_from_string(env, path);
     YogArray_push(env, HDL2VAL(search_path), s);
 }
