@@ -11,7 +11,7 @@ def get_attr(name)
   return f
 end
 
-def apply_with(*args, **kw)
+def apply(*args, **kw)
   def f(g)
     return g(*args, **kw)
   end
