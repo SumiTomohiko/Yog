@@ -52,8 +52,8 @@ class TestPath(TestCase):
         self.do_basename_test("..", ".")
 
     for i, testee in enumerate([".", "..", "foo", "/", "/foo"]):
-        exec """def test_abs{index}(self):
-    self._test(\"print(\\\"{testee}\\\".to_path().abs())\", abspath(\"{testee}\"))""".format(index=10 * i, testee=testee)
+        exec("""def test_abs{index}(self):
+    self._test(\"print(\\\"{testee}\\\".to_path().abs())\", abspath(\"{testee}\"))""".format(index=10 * i, testee=testee))
 
     for i, pattern in enumerate([
         ["foo", "foo"],
@@ -66,8 +66,8 @@ class TestPath(TestCase):
         ["//foo", "/foo"]]):
         testee = pattern[0]
         expected = pattern[1]
-        exec """def test_normalize{index}(self):
-    self._test(\"print(\\\"{testee}\\\".to_path().normalize())\", \"{expected}\")""".format(index=10 * i, testee=testee, expected=expected)
+        exec("""def test_normalize{index}(self):
+    self._test(\"print(\\\"{testee}\\\".to_path().normalize())\", \"{expected}\")""".format(index=10 * i, testee=testee, expected=expected))
 
     def run_walk_test(self, dirs):
         def test_stdout(stdout):
@@ -92,8 +92,8 @@ class TestPath(TestCase):
         ["foo", "bar"],
         [join("foo", "bar")],
         ["foo", join("bar", "baz")]]):
-        exec """def test_walk{index}(self):
-    self.run_walk_test({testee})""".format(index=10 * i, testee=testee)
+        exec("""def test_walk{index}(self):
+    self.run_walk_test({testee})""".format(index=10 * i, testee=testee))
 
     def run_dir_test(self, f, expected):
         tmp_dir = mkdtemp()

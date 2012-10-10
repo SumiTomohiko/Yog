@@ -112,11 +112,11 @@ puts(42 < nil)
         expected = testee[2]
         fmt = """def test_to_s{index}(self):
     self._test(\"print({num}.to_s({radix}))\", \"{expected}\")"""
-        exec fmt.format(
+        exec(fmt.format(
             index=10 * i,
             num=num,
             radix=radix if radix is not None else "",
-            expected=expected)
+            expected=expected))
 
     def test_times(self):
         self._test("""

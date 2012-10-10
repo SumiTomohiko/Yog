@@ -12,8 +12,8 @@ class TestBuiltins(TestCase):
     for i, data in enumerate([[0, 0], [1, 1], [1, -1]]):
         expected = data[0]
         arg = data[1]
-        exec """def test_abs{i}(self):
-    self._test(\"print(abs({arg}))\", \"{expected}\")""".format(**locals())
+        exec("""def test_abs{i}(self):
+    self._test(\"print(abs({arg}))\", \"{expected}\")""".format(**locals()))
 
     def test_nop0(self):
         self._test("print(nop(42))", "nil")

@@ -40,7 +40,7 @@ print(foo.bar)""".format(expected)
     for datatype, value in datatypes:
         tmpl = """def test_datatype_{0}(self):
     self.do_datatype_test(\"{1}\", {2})"""
-        exec tmpl.format(datatype.replace(" ", "_"), datatype, value)
+        exec(tmpl.format(datatype.replace(" ", "_"), datatype, value))
 
     int_modes = [
         ["DI", "int64"],
@@ -54,11 +54,11 @@ print(foo.bar)""".format(expected)
         ["pointer", "int32"],
         ["__pointer__", "int32"]]
     for mode, expected in int_modes:
-        exec """def test_signed_int_mode_{0}(self):
-    self.do_mode_test(\"int\", \"{0}\", \"{1}\")""".format(mode, expected)
+        exec("""def test_signed_int_mode_{0}(self):
+    self.do_mode_test(\"int\", \"{0}\", \"{1}\")""".format(mode, expected))
     for mode, expected in int_modes:
-        exec """def test_unsigned_int_mode_{0}(self):
-    self.do_mode_test(\"unsigned\", \"{0}\", \"{1}\")""".format(mode, "u" + expected)
+        exec("""def test_unsigned_int_mode_{0}(self):
+    self.do_mode_test(\"unsigned\", \"{0}\", \"{1}\")""".format(mode, "u" + expected))
 
     float_modes = [
         ["SF", "float"],
@@ -66,7 +66,7 @@ print(foo.bar)""".format(expected)
         ["DF", "longdouble"],
         ["__DF__", "longdouble"]]
     for mode, expected in float_modes:
-        exec """def test_float_mode_{0}(self):
-    self.do_mode_test(\"float\", \"{0}\", \"{1}\")""".format(mode, expected)
+        exec("""def test_float_mode_{0}(self):
+    self.do_mode_test(\"float\", \"{0}\", \"{1}\")""".format(mode, expected))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -13,8 +13,8 @@ class TestDatetime(TestCase):
         datetime(2038, 1, 19, 3, 14, 8, 0)]
     for i, t in enumerate(testees):
         for j, name in enumerate(ATTBIUTES):
-            exec """def test_property{index}(self):
-    self._test(\"print(Datetime.new({year}, {month}, {day}, {hour}, {minute}, {second}, {microsecond}).{name})\", \"{expected}\")""".format(index=100 * j + i, year=t.year, month=t.month, day=t.day, hour=t.hour, minute=t.minute, second=t.second, microsecond=t.microsecond, name=name, expected=getattr(t, name))
+            exec("""def test_property{index}(self):
+    self._test(\"print(Datetime.new({year}, {month}, {day}, {hour}, {minute}, {second}, {microsecond}).{name})\", \"{expected}\")""".format(index=100 * j + i, year=t.year, month=t.month, day=t.day, hour=t.hour, minute=t.minute, second=t.second, microsecond=t.microsecond, name=name, expected=getattr(t, name)))
 
     def test_compare0(self):
         self._test("""t0 = Datetime.new(2038, 1, 19, 3, 14, 7, 0)

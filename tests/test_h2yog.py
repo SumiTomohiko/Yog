@@ -117,8 +117,8 @@ print(foo.bar)""".format(**locals())
         self.do_struct_test(name + ".h", "1")
 
     for name in ["test_bit_field{0}".format(10 * n) for n in range(3)]:
-        exec """def {0}(self):
-    self.do_bit_field_test(\"{0}\")""".format(name)
+        exec("""def {0}(self):
+    self.do_bit_field_test(\"{0}\")""".format(name))
 
     do_union_test = do_struct_test
 
@@ -182,8 +182,8 @@ foo.bar.baz = 42
         self.do_simple_print_test("typedef {0} Foo;".format(type), expected, "Foo")
 
     for type, expected in datatypes_typedef:
-        exec """def test_typedef_{0}(self):
-    self.do_typedef_test(\"{1}\", \"{2}\")""".format(type2base(type), type, expected)
+        exec("""def test_typedef_{0}(self):
+    self.do_typedef_test(\"{1}\", \"{2}\")""".format(type2base(type), type, expected))
 
     def do_func_test(self, base, src, expected):
         self.do_test([base + ".h"], get_lib_path(base), src, expected)
@@ -199,9 +199,9 @@ foo.bar.baz = 42
 {0}(42, 26)""".format(base), "42")
 
     for type, _ in datatypes:
-        exec """def {0}(self):
+        exec("""def {0}(self):
     self.do_func_test(\"{0}\", \"\"\"from test_h2yog import {0}
-{0}(42)\"\"\", \"42\")""".format("test_argtype_" + type2base(type))
+{0}(42)\"\"\", \"42\")""".format("test_argtype_" + type2base(type)))
 
     def test_func20(self):
         base = "test_func20"
@@ -218,9 +218,9 @@ foo.bar = 42
 {0}(foo)""".format(base), "42")
 
     for type, _ in datatypes:
-        exec """def {0}(self):
+        exec("""def {0}(self):
     self.do_func_test(\"{0}\", \"\"\"from test_h2yog import {0}
-print({0}())\"\"\", \"42\")""".format("test_rettype_" + type2base(type))
+print({0}())\"\"\", \"42\")""".format("test_rettype_" + type2base(type)))
 
     def test_func40(self):
         base = "test_func40"
@@ -255,8 +255,8 @@ print(foo.bar[0])"""
         self.do_test([base + ".h"], get_lib_path("empty"), src, "42")
 
     for base in ["test_array0", "test_array10", "test_array20"]:
-        exec """def {0}(self):
-    self.do_simple_array_test(\"{0}\")""".format(base)
+        exec("""def {0}(self):
+    self.do_simple_array_test(\"{0}\")""".format(base))
 
     int_modes = [
         ["word", "int16"],
@@ -264,11 +264,11 @@ print(foo.bar[0])"""
         ["byte", "int8"],
         ["__byte__", "int8"]]
     for mode, expected in int_modes:
-        exec """def test_signed_int_mode_{0}(self):
-    self.do_mode_test(\"int\", \"{0}\", \"{1}\")""".format(mode, expected)
+        exec("""def test_signed_int_mode_{0}(self):
+    self.do_mode_test(\"int\", \"{0}\", \"{1}\")""".format(mode, expected))
     for mode, expected in int_modes:
-        exec """def test_unsigned_int_mode_{0}(self):
-    self.do_mode_test(\"unsigned\", \"{0}\", \"{1}\")""".format(mode, "u" + expected)
+        exec("""def test_unsigned_int_mode_{0}(self):
+    self.do_mode_test(\"unsigned\", \"{0}\", \"{1}\")""".format(mode, "u" + expected))
 
     def test_macro_function0(self):
         self.do_test2("#define FOO() 42", """from test_h2yog import FOO

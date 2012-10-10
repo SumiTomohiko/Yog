@@ -23,7 +23,7 @@ end""".format(**locals()), "".join([".", ".."] + expected))
             rmtree(tmp_dir)
 
     for i, testee in enumerate([[], ["foo"], ["foo", "bar"]]):
-        exec """def test_open{index}(self):
-    self.run_open_test({testee})""".format(index=10 * i, testee=testee)
+        exec("""def test_open{index}(self):
+    self.run_open_test({testee})""".format(index=10 * i, testee=testee))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

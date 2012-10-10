@@ -52,7 +52,7 @@ def test_bit_field_{name}_max_gcc(self):
 def test_bit_field_{name}_over_max(self):
     self.do_ng_test(\"{type}\", {width}, {max}, {max} + 1, \"less\")""".format(**locals())
     d = {}
-    exec src in d
+    exec(src, d)
     for key, val in d.iteritems():
         setattr(klass, key, val)
 

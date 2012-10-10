@@ -15,7 +15,7 @@ try:
                 x = conn.recv(1)
                 if len(x) == 0:
                     break
-                print "recv: %s" % (repr(x), )
+                print("recv: %s" % (repr(x), ))
                 conn.send(x)
         finally:
             conn.close()

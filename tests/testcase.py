@@ -109,9 +109,9 @@ class TestCase(object):
             self.wait_proc(proc, timeout)
 
             err = self.remove_gc_warings(self.read(stderr_path))
-            print >> sys.stderr, err
+            print(err, file=sys.stderr)
             out = self.read(stdout_path)
-            print out
+            print(out)
             if stderr is not None:
                 if encoding is not None:
                     err = err.decode("UTF-8")

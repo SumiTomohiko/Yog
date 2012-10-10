@@ -18,8 +18,8 @@ class TestStat(TestCase):
             unlink(path)
 
     for i, mode in enumerate([0644, 0755]):
-        exec """def test_mode{index}(self):
-    self.run_mode_test({mode})""".format(index=10 * i, mode=mode)
+        exec("""def test_mode{index}(self):
+    self.run_mode_test({mode})""".format(index=10 * i, mode=mode))
 
     def run_id_test(self, name):
         # TODO: Why dose not Python have a temporary file class for with
@@ -33,8 +33,8 @@ class TestStat(TestCase):
             unlink(path)
 
     for name in ["uid", "gid"]:
-        exec """def test_{name}0(self):
-    self.run_id_test(\"{name}\")""".format(name=name)
+        exec("""def test_{name}0(self):
+    self.run_id_test(\"{name}\")""".format(name=name))
 
     def get_iso8601(self, timestamp):
         # TODO: timestamp dose not have microsecond?
@@ -51,8 +51,8 @@ class TestStat(TestCase):
             unlink(path)
 
     for name in ["mtime", "ctime"]:
-        exec """def test_{name}0(self):
-    self.run_time_test(\"{name}\")""".format(name=name)
+        exec("""def test_{name}0(self):
+    self.run_time_test(\"{name}\")""".format(name=name))
 
     def test_size0(self):
         filename = "gods.txt"
