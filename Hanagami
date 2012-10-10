@@ -14,7 +14,7 @@ submodules = ["BigDigits", "corgi", "libffi"]
 
 def build():
     make_subdirs(submodules)
-    recurse("src", "tools", "tests")
+    recurse("tools", "src", "tests")
 
 def configure(conf):
     configure_subdirs(submodules)
