@@ -546,51 +546,64 @@ def find_in_includes(path, includes):
             return fullpath
     return None
 
+def append_sources(sources, path):
+    if path in sources:
+        return
+    sources.append(path)
+
+def add_included_sources_of_task(tasks, top_dir, task, sources):
+    for source in sources:
+        if splitext(source)[1] not in (".c", ".h"):
+            continue
+        try:
+            with open(join(task.dirpath, source)) as fp:
+                for line in fp:
+                    regexp = r"#include [\"<](?P<path>.*)[\">]"
+                    m = match(regexp, line.strip())
+                    if m is None:
+                        continue
+                    path = m.group("path")
+                    system_include_dirs = [
+                            "/usr/include",
+                            "/usr/local/include"]
+                    fullpath = find_in_includes(path, system_include_dirs)
+                    if fullpath is not None:
+                        # The header file is found in a system includedirectory.
+                        # Updating such file is rare, so it is ignored.
+                        continue
+                    includes = [task.dirpath] + task.includes
+                    fullpath = find_in_includes(path, includes)
+                    if fullpath is not None:
+                        # The included file is found in a user's include
+                        # directory.
+                        append_sources(task.additional_sources, fullpath)
+                        continue
+                    t = find_task_of_orphan_target(path, tasks, includes)
+                    if t is None:
+                        # In here case:
+                        # 1. The included file is not found in any directories.
+                        # 2. The included file is not a target of any tasks. I
+                        #    don't know how to generate it.
+                        fmt = "WARNING: Cannot find a task for {path}"
+                        print(fmt.format(**locals()))
+                        continue
+                    for target in t.targets:
+                        append_sources(task.additional_sources, target)
+        except FileNotFoundError:
+            # If a source file (.c) will be generated from a parser rules (.y),
+            # the source file may not be in the directory at this time.
+            pass
+
 def add_included_sources(tasks, top_dir):
     for task in tasks:
-        for source in task.sources:
-            if splitext(source)[1] != ".c":
-                continue
-            try:
-                with open(join(task.dirpath, source)) as fp:
-                    for line in fp:
-                        regexp = r"#include [\"<](?P<path>.*)[\">]"
-                        m = match(regexp, line.strip())
-                        if m is None:
-                            continue
-                        path = m.group("path")
-                        system_include_dirs = [
-                                "/usr/include",
-                                "/usr/local/include"]
-                        fullpath = find_in_includes(path, system_include_dirs)
-                        if fullpath is not None:
-                            # The header file is found in a system include
-                            # directory. Updating such file is rare, so it is
-                            # ignored.
-                            continue
-                        includes = [task.dirpath] + task.includes
-                        fullpath = find_in_includes(path, includes)
-                        if fullpath is not None:
-                            # The included file is found in a user's include
-                            # directory.
-                            task.additional_sources.append(fullpath)
-                            continue
-                        t = find_task_of_orphan_target(path, tasks, includes)
-                        if t is None:
-                            # In here case:
-                            # 1. The included file is not found in any
-                            #    directories.
-                            # 2. The included file is not a target of any tasks.
-                            #    I don't know how to generate it.
-                            fmt = "WARNING: Cannot find a task for {path}"
-                            print(fmt.format(**locals()))
-                            continue
-                        task.additional_sources.extend(t.targets)
-            except FileNotFoundError:
-                # If a source file (.c) will be generated from a parser rules
-                # (.y), the source file may not be in the directory at this
-                # time.
-                pass
+        add_included_sources_of_task(tasks, top_dir, task, task.sources)
+        old_size = 0
+        new_size = len(task.additional_sources)
+        while old_size != new_size:
+            sources = task.additional_sources[old_size:]
+            old_size = new_size
+            add_included_sources_of_task(tasks, top_dir, task, sources)
+            new_size = len(task.additional_sources)
 
 def read_build_settings(conf, top_dir, dirpath, config):
     settings = run_path(join(dirpath, DEFAULT_FILENAME))
