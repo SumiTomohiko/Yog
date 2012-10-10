@@ -1,15 +1,20 @@
 
 from os.path import join, splitext
 
+def add_auto_created_sources(sources, files):
+    for f in files:
+        if f not in sources:
+            # FIXME: This is a dirty way.
+            sources.append(f)
+
 def define_rules_for_yog():
     target = "yog"
     sources = glob("*.c") + [
             "gc/generational.c",
             "gc/copying.c",
             "gc/mark-sweep-compact.c"]
-    if "parser.c" not in sources:
-        # FIXME: This is a dirty way.
-        sources += ["parser.c"]
+    add_auto_created_sources(sources, ["inst.c", "parser.c"])
+
     corgi_dir = "{top_dir}/corgi"
     libffi_dir = "{top_dir}/libffi"
     BigDigits_dir = "{top_dir}/BigDigits"
