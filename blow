@@ -491,9 +491,6 @@ def find_task_of_orphan_target(target, tasks, includes):
             return task
     return None
 
-def join_filenames(dirpath, names):
-    return " ".join([join(dirpath, name) for name in names])
-
 def chdir_and_call(ctx, dirpath, command):
     cwd_old = getcwd()
     chdir(dirpath)
@@ -523,8 +520,8 @@ def resolve(ctx, top_dir, task, tasks):
     dirpath = task.dirpath
     for template in task.commands or []:
         d = {
-                "targets": join_filenames(dirpath, task.targets),
-                "sources": join_filenames(dirpath, task.sources) }
+                "targets": " ".join(task.targets),
+                "sources": " ".join(task.sources) }
         d.update(ctx.conf)
         chdir_and_call(ctx, task.dirpath, template.format(**d))
 
