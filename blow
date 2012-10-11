@@ -3,10 +3,12 @@
 from functools import partial
 from glob import glob
 from logging import FileHandler, Formatter, StreamHandler, getLogger
-from os import chdir, close, environ, getcwd, mkdir, stat, unlink, write
+from os import chdir, close, environ, getcwd, mkdir, stat, symlink, unlink, \
+        write
 from os.path import abspath, basename, dirname, exists, join, splitext
 from re import match
 from runpy import run_path
+from shutil import copy
 from subprocess import PIPE, Popen, call
 from sys import argv, exit, stdout
 from time import localtime, strftime
@@ -34,7 +36,7 @@ class Configure:
         self.libraries = []
         self.prefix = ""
         self.config_h_path = None
-        self.definitions = []
+        self.definitions = {}
         self.options = options
         self.subdirs = []
 
@@ -45,7 +47,7 @@ class Configure:
         return self.options.get(key, default)
 
     def define(self, key, value):
-        self.definitions.append((self.prefix + key, value))
+        self.definitions[self.prefix + key] = value
 
     def make_config_h(self, path):
         self.config_h_path = path
@@ -242,16 +244,17 @@ VAR_DIR = ".tissue"
 CONFIG_PY = join(VAR_DIR, "config.py")
 
 def output_conf(fp, key, value):
-    print("{key} = {value}".format(**locals()), file=fp)
+    print("{key} = {value}".format(key=key, value=repr(value)), file=fp)
 
 def output_environ(fp, environ, key, default):
-    output_conf(fp, key, repr(environ.get(key, default)))
+    output_conf(fp, key, environ.get(key, default))
 
 CONF_KEY = "conf"
 
-def make_config_py(conf):
+def make_config_py(prefix, conf):
     with open(CONFIG_PY, "w") as fp:
         output_environ(fp, environ, "CC", "clang")
+        output_conf(fp, "prefix", prefix)
         output_conf(fp, CONF_KEY, conf)
 
 def parse_options(args):
@@ -301,10 +304,10 @@ def configure(ctx):
         check_sizeof(prefix, config_h, sizeof)
     for library in conf.libraries:
         check_lib(prefix, config_h, library)
-    config_h += conf.definitions
+    config_h += conf.definitions.items()
     make_config_h(conf.config_h_path, config_h)
 
-    make_config_py(ctx.conf)
+    make_config_py(conf.definitions[prefix + "PREFIX"], ctx.conf)
 
 def change_ext(filename, ext):
     return splitext(filename)[0] + ext
@@ -344,6 +347,20 @@ class Task:
     def __repr__(self):
         fmt = "<Task targets={targets}>"
         return fmt.format(targets=chain_filenames(self.targets))
+
+class Install:
+
+    def __init__(self):
+        self.bin = []
+        self.subdirs = []
+
+    def recurse(self, *subdirs):
+        if (len(subdirs) == 1) and isinstance(subdirs[0], list):
+            return self.recurse(*subdirs[0])
+        self.subdirs += subdirs
+
+    def install_bin(self, target):
+        self.bin.append(target)
 
 class Build:
 
@@ -719,6 +736,33 @@ task{i}:
   commands: {commands}
   includes: {includes}""".format(**locals()))
 
+def read_install_settings(dirpath):
+    settings = run_path(join(dirpath, DEFAULT_FILENAME))
+    i = Install()
+    g = {
+            "recurse": i.recurse,
+            "install_bin": i.install_bin }
+    update_globals(settings, g)
+    settings["install"]()
+    return i
+
+def install_main(ctx, dirpath, config, f):
+    i = read_install_settings(dirpath)
+    for subdir in i.subdirs:
+        install_main(ctx, join(dirpath, subdir), config, f)
+    bindir = join(config["prefix"], "bin")
+    for bin in i.bin:
+        src = join(dirpath, bin)
+        dest = join(bindir, bin)
+        ctx.log("install: {src} -> {dest}".format(**locals()))
+        f(src, dest)
+
+def install(ctx, dirpath, config):
+    install_main(ctx, dirpath, config, copy)
+
+def install_dev(ctx, dirpath, config):
+    install_main(ctx, dirpath, config, symlink)
+
 def build(ctx, top_dir, dirpath, config):
     b = read_build_settings(ctx.conf, top_dir, dirpath, config)
     make_subdirs(ctx, dirpath, b.subdirs_to_make)
@@ -753,6 +797,8 @@ def main():
         ctx = Context(fp, config.get(CONF_KEY, { "top_dir": top_dir }))
 
         d = {
+                "install-dev": partial(install_dev, ctx, top_dir, config),
+                "install": partial(install, ctx, top_dir, config),
                 "clean": partial(clean, ctx, top_dir, top_dir, config),
                 "build": partial(build, ctx, top_dir, top_dir, config),
                 "configure": partial(configure, ctx) }

@@ -10,3 +10,9 @@ build:
 
 clean:
 	@$(CMD) clean
+
+install:
+	@$(CMD) install
+
+install-dev:
+	@$(CMD) install-dev

@@ -7,8 +7,9 @@ def add_auto_created_sources(sources, files):
             # FIXME: This is a dirty way.
             sources.append(f)
 
+target = "yog"
+
 def define_rules_for_yog():
-    target = "yog"
     sources = glob("*.c") + [
             "gc/generational.c",
             "gc/copying.c",
@@ -31,7 +32,7 @@ def define_rules_for_yog():
             join(corgi_dir, "src/.libs"),
             join(libffi_dir, ".libs"),
             BigDigits_dir]
-    program(**locals())
+    program(target=target, **locals())
 
 def define_rules_for_builtin_script():
     for source in glob("*.yog"):
@@ -123,5 +124,8 @@ def build():
     define_rules_for_shift_jis()
     define_rules_for_euc_jp()
     define_rules_for_keywords()
+
+def install():
+    install_bin(target)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

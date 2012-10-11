@@ -16,6 +16,9 @@ def build():
     make_subdirs(submodules)
     recurse("tools", "src", "tests")
 
+def install():
+    recurse("src")
+
 def configure(conf):
     configure_subdirs(submodules)
 
