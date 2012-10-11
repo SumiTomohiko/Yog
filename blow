@@ -757,7 +757,7 @@ def main():
                 "build": partial(build, ctx, top_dir, top_dir, config),
                 "configure": partial(configure, ctx) }
         d.get(req, lambda: None)()
-        ctx.log("End")
+        ctx.log("Ended gracefully.")
 
 main()
 
