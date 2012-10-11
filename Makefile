@@ -16,3 +16,9 @@ install:
 
 install-dev:
 	@$(CMD) install-dev
+
+deinstall:
+	@$(CMD) deinstall
+
+deinstall-dev:
+	@$(CMD) deinstall-dev

@@ -746,22 +746,25 @@ def read_install_settings(dirpath):
     settings["install"]()
     return i
 
-def install_main(ctx, dirpath, config, f):
+def install_main(ctx, dirpath, config, f, fp):
     i = read_install_settings(dirpath)
     for subdir in i.subdirs:
-        install_main(ctx, join(dirpath, subdir), config, f)
+        install_main(ctx, join(dirpath, subdir), config, f, fp)
     bindir = join(config["prefix"], "bin")
     for bin in i.bin:
         src = join(dirpath, bin)
         dest = join(bindir, bin)
         ctx.log("install: {src} -> {dest}".format(**locals()))
+        print(dest, file=fp)
         f(src, dest)
 
 def install(ctx, dirpath, config):
-    install_main(ctx, dirpath, config, copy)
+    with open(join(VAR_DIR, "install.lst"), "w") as fp:
+        install_main(ctx, dirpath, config, copy, fp)
 
 def install_dev(ctx, dirpath, config):
-    install_main(ctx, dirpath, config, symlink)
+    with open(join(VAR_DIR, "install-dev.lst"), "w") as fp:
+        install_main(ctx, dirpath, config, symlink, fp)
 
 def build(ctx, top_dir, dirpath, config):
     b = read_build_settings(ctx.conf, top_dir, dirpath, config)
@@ -784,6 +787,17 @@ def read_config_py():
     except FileNotFoundError:
         return {}
 
+def deinstall_main(lst):
+    with open(join(VAR_DIR, lst)) as fp:
+        for path in fp:
+            unlink(path.strip())
+
+def deinstall():
+    deinstall_main("install.lst")
+
+def deinstall_dev():
+    deinstall_main("install-dev.lst")
+
 def main():
     try:
         mkdir(VAR_DIR)
@@ -797,6 +811,8 @@ def main():
         ctx = Context(fp, config.get(CONF_KEY, { "top_dir": top_dir }))
 
         d = {
+                "deinstall-dev": partial(deinstall_dev),
+                "deinstall": partial(deinstall),
                 "install-dev": partial(install_dev, ctx, top_dir, config),
                 "install": partial(install, ctx, top_dir, config),
                 "clean": partial(clean, ctx, top_dir, top_dir, config),
