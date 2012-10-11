@@ -342,7 +342,8 @@ class Task:
     sources = property(get_sources)
 
     def __repr__(self):
-        return "<Task targets={targets}>".format(**self.__dict__)
+        fmt = "<Task targets={targets}>"
+        return fmt.format(targets=chain_filenames(self.targets))
 
 class Build:
 
@@ -707,14 +708,16 @@ def clean(ctx, top_dir, dirpath, config):
 def log_tasks(ctx, b):
     log = ctx.log
     for i, task in enumerate(b.tasks):
-        log("task{i}:".format(**locals()))
-        for fmt in [
-                "dirpath: {dirpath}",
-                "targets: {targets}",
-                "additional_sources: {additional_sources}",
-                "commands: {commands}",
-                "includes: {includes}"]:
-            log("  " + fmt.format(dirpath=b.dirpath, **task.__dict__))
+        targets = chain_filenames(task.targets)
+        additional_sources = chain_filenames(task.additional_sources)
+        commands = task.commands
+        includes = task.includes
+        log("""\
+task{i}:
+  targets: {targets}
+  additional_sources: {additional_sources}
+  commands: {commands}
+  includes: {includes}""".format(**locals()))
 
 def build(ctx, top_dir, dirpath, config):
     b = read_build_settings(ctx.conf, top_dir, dirpath, config)
