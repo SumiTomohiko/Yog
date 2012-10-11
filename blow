@@ -309,14 +309,37 @@ def configure(ctx):
 def change_ext(filename, ext):
     return splitext(filename)[0] + ext
 
+class File:
+
+    def __init__(self, name):
+        self.name = name
+        self.sources = []
+        self.additional_sources = []
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return "<File {name}>".format(**self.__dict__)
+
 class Task:
 
     def __init__(self):
-        self.sources = None
         self.targets = None
         self.commands = None
         self.includes = None
-        self.additional_sources = []
+        self.additional_sources = None  # cache
+
+    def get_sources(self):
+        sources = []
+        for target in self.targets:
+            for source in target.sources:
+                if source in sources:
+                    continue
+                sources.append(source)
+        return sources
+
+    sources = property(get_sources)
 
     def __repr__(self):
         return "<Task targets={targets}>".format(**self.__dict__)
@@ -330,16 +353,35 @@ class Build:
         self.subdirs = []
         self.subdirs_to_make = []
         self.tasks = []
+        self.files = {}
 
-    def replace(self, a):
-        return [s.format(**self.config["conf"]) for s in a]
+    def replace(self, s):
+        return s.format(**self.config["conf"])
+
+    def find_or_make_file(self, name):
+        s = self.replace(name)
+        try:
+            return self.files[s]
+        except KeyError:
+            pass
+        f = File(s)
+        self.files[s] = f
+        return f
+
+    def find_or_make_files(self, a):
+        return [self.find_or_make_file(name) for name in a]
 
     def add_task(self, targets, sources, commands, includes=[]):
+        target_files = self.find_or_make_files(targets)
+        source_files = self.find_or_make_files(sources)
+        for target in target_files:
+            target.sources.extend(source_files)
+
         task = Task()
-        task.targets = self.replace(targets)
-        task.sources = self.replace(sources)
+        task.targets = target_files
         task.commands = commands
-        task.includes = self.replace(includes)
+        task.includes = [self.replace(dirpath) for dirpath in includes]
+
         self.tasks.append(task)
 
     def command(self, commands, targets, sources):
@@ -445,9 +487,9 @@ def mtime_of_file(path):
     except FileNotFoundError:
         return None
 
-def mtime_of_files(dirpath, names):
+def mtime_of_files(dirpath, files):
     l = []
-    for name in names:
+    for name in [f.name for f in files]:
         path = join(dirpath, name)
         mtime = mtime_of_file(path)
         if mtime is None:
@@ -482,11 +524,12 @@ def find_task(b, target):
             return task
     return None
 
-def find_task_of_orphan_target(b, target, includes):
-    for path in [join(d, target) for d in includes]:
-        task = find_task(b, path)
-        if task is not None:
-            return task
+def find_target_of_included(b, path):
+    name = basename(path)
+    for task in b.tasks:
+        for target in task.targets:
+            if name == basename(target.name):
+                return target
     return None
 
 def chdir_and_call(ctx, dirpath, command):
@@ -504,6 +547,15 @@ def chdir_and_call(ctx, dirpath, command):
     finally:
         chdir(cwd_old)
 
+def get_all_additional_sources_of_task(task):
+    sources = []
+    for target in task.targets:
+        sources.extend(target.additional_sources)
+    return sources
+
+def chain_filenames(files):
+    return " ".join([f.name for f in files])
+
 def resolve_task(ctx, b, task):
     ctx.log("resolving: {task}".format(**locals()))
     for source in task.sources + task.additional_sources:
@@ -518,24 +570,26 @@ def resolve_task(ctx, b, task):
     dirpath = b.dirpath
     for template in task.commands or []:
         d = {
-                "targets": " ".join(task.targets),
-                "sources": " ".join(task.sources) }
+                "targets": chain_filenames(task.targets),
+                "sources": chain_filenames(task.sources) }
         d.update(ctx.conf)
         chdir_and_call(ctx, dirpath, template.format(**d))
 
+def is_root_target(tasks, target):
+    for task in tasks:
+        for t in task.targets:
+            if target in t.sources + t.additional_sources:
+                return False
+    return True
+
 def find_root_targets(tasks):
-    l = []
+    roots = []
     for task in tasks:
         for target in task.targets:
-            target_is_source = False
-            for t in tasks:
-                if target in t.sources:
-                    target_is_source = True
-                    break
-            if not target_is_source:
-                l.append(task)
+            if is_root_target(tasks, target):
+                roots.append(task)
                 break
-    return l
+    return roots
 
 def find_in_includes(path, includes):
     for include in includes:
@@ -549,59 +603,72 @@ def append_sources(sources, path):
         return
     sources.append(path)
 
-def add_included_sources_of_task(b, task, sources):
-    for source in sources:
-        if splitext(source)[1] not in (".c", ".h"):
-            continue
-        try:
-            with open(join(b.dirpath, source)) as fp:
-                for line in fp:
-                    regexp = r"#include [\"<](?P<path>.*)[\">]"
-                    m = match(regexp, line.strip())
-                    if m is None:
-                        continue
-                    path = m.group("path")
-                    system_include_dirs = [
-                            "/usr/include",
-                            "/usr/local/include"]
-                    fullpath = find_in_includes(path, system_include_dirs)
-                    if fullpath is not None:
-                        # The header file is found in a system includedirectory.
-                        # Updating such file is rare, so it is ignored.
-                        continue
-                    includes = [b.dirpath] + task.includes
-                    fullpath = find_in_includes(path, includes)
-                    if fullpath is not None:
-                        # The included file is found in a user's include
-                        # directory.
-                        append_sources(task.additional_sources, fullpath)
-                        continue
-                    t = find_task_of_orphan_target(b, path, includes)
-                    if t is None:
-                        # In here case:
-                        # 1. The included file is not found in any directories.
-                        # 2. The included file is not a target of any tasks. I
-                        #    don't know how to generate it.
-                        fmt = "WARNING: Cannot find a task for {path}"
-                        print(fmt.format(**locals()))
-                        continue
-                    for target in t.targets:
-                        append_sources(task.additional_sources, target)
-        except FileNotFoundError:
-            # If a source file (.c) will be generated from a parser rules (.y),
-            # the source file may not be in the directory at this time.
-            pass
+def find_additional_sources(b, task, source):
+    if splitext(source.name)[1] not in (".c", ".h"):
+        return []
+    additional_sources = []
+    try:
+        with open(join(b.dirpath, source.name)) as fp:
+            for line in fp:
+                regexp = r"#include [\"<](?P<path>.*)[\">]"
+                m = match(regexp, line.strip())
+                if m is None:
+                    continue
+                path = m.group("path")
+
+                target = find_target_of_included(b, path)
+                if target is not None:
+                    additional_sources.append(target)
+                    continue
+
+                system_include_dirs = ["/usr/include", "/usr/local/include"]
+                fullpath = find_in_includes(path, system_include_dirs)
+                if fullpath is not None:
+                    # The header file is found in a system includedirectory.
+                    # Updating such file is rare, so it is ignored.
+                    continue
+
+                includes = [b.dirpath] + task.includes
+                fullpath = find_in_includes(path, includes)
+                if fullpath is not None:
+                    # The included file is found in a user's include directory.
+                    additional_source = b.find_or_make_file(fullpath)
+                    additional_sources.append(additional_source)
+                    continue
+
+                # At here, one of the followings is satisfied.
+                # 1. The included file is not found in any directories.
+                # 2. The included file is not a target of any tasks. I don't
+                #    know how to generate it.
+                fmt = "WARNING: Cannot find a task for {path}"
+                print(fmt.format(**locals()))
+    except FileNotFoundError:
+        # If a source file (.c) will be generated from a parser rules (.y), the
+        # source file may not be in the directory at this time.
+        pass
+    return additional_sources
 
 def add_included_sources(b):
     for task in b.tasks:
-        add_included_sources_of_task(b, task, task.sources)
-        old_size = 0
-        new_size = len(task.additional_sources)
-        while old_size != new_size:
-            sources = task.additional_sources[old_size:]
-            old_size = new_size
-            add_included_sources_of_task(b, task, sources)
-            new_size = len(task.additional_sources)
+        for target in task.targets:
+            for source in target.sources:
+                additional_sources = find_additional_sources(b, task, source)
+                target.additional_sources += additional_sources
+
+                rest = additional_sources
+                while 0 < len(rest):
+                    source = rest[0]
+                    sources = find_additional_sources(b, task, source)
+                    for src in sources:
+                        if src in target.additional_sources:
+                            continue
+                        target.additional_sources.append(src)
+                        rest.append(src)
+                    rest = rest[1:]
+
+def cache_sources(b):
+    for task in b.tasks:
+        task.additional_sources = get_all_additional_sources_of_task(task)
 
 def read_build_settings(conf, top_dir, dirpath, config):
     settings = run_path(join(dirpath, DEFAULT_FILENAME))
@@ -617,6 +684,7 @@ def read_build_settings(conf, top_dir, dirpath, config):
     update_globals(settings, g)
     settings["build"]()
     add_included_sources(b)
+    cache_sources(b)
     return b
 
 def make_subdirs(ctx, dirpath, subdirs, target="all"):
@@ -630,8 +698,9 @@ def clean(ctx, top_dir, dirpath, config):
         clean(ctx, top_dir, join(dirpath, subdir), config)
     for task in b.tasks:
         for target in task.targets:
+            name = target.name
             try:
-                unlink(join(dirpath, target) if target[0] != "/" else target)
+                unlink(join(dirpath, name) if name[0] != "/" else name)
             except FileNotFoundError:
                 pass
 
@@ -642,10 +711,9 @@ def log_tasks(ctx, b):
         for fmt in [
                 "dirpath: {dirpath}",
                 "targets: {targets}",
-                "sources: {sources}",
+                "additional_sources: {additional_sources}",
                 "commands: {commands}",
-                "includes: {includes}",
-                "additional_sources: {additional_sources}"]:
+                "includes: {includes}"]:
             log("  " + fmt.format(dirpath=b.dirpath, **task.__dict__))
 
 def build(ctx, top_dir, dirpath, config):
