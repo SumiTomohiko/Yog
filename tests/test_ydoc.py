@@ -9,7 +9,7 @@ from testcase import TestCase
 
 class TestYdoc(TestCase):
 
-    options = []
+    options = ["--lib-path={0}".format(dirname(__file__))]
 
     def read(self, path):
         fp = open(path)
