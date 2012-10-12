@@ -1,5 +1,0 @@
-#!/bin/sh
-
-exec $(dirname $0)/blow configure "$@"
-
-# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
