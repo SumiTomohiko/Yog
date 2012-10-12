@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from os.path import splitext
+from platform import machine
 
 def add_shlib_rules():
-    sources = glob("*.c") + glob("arch32/*.c")
+    common_sources = glob("*.c")
+    arch_sources = glob("arch32/*.c") if machine() == "i386" else []
+    sources = common_sources + arch_sources
+
     targets = [splitext(source)[0] + ".so" for source in sources]
     for target, source in zip(targets, sources):
         shlib(
