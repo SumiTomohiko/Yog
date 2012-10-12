@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd tests && make
+exec py.test --showlocals --verbose "${@}"
 
 # py.test in OpenBSD and FreeBSD exits at non zero when any tests fails. This
 # spec disturbs plural tests.
