@@ -21,6 +21,7 @@ def define_rules_for_yog():
     BigDigits_dir = "{top_dir}/BigDigits"
     includes = [
             join("{top_dir}", "include"),
+            join(corgi_dir, "build", "include"),
             join(corgi_dir, "include"),
             join(libffi_dir, "include"),
             BigDigits_dir]
