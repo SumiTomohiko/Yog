@@ -176,7 +176,7 @@ conv_utf32_to_utf8(char* s, CorgiChar* begin, CorgiChar* end)
 static void
 print_error(const char* msg, CorgiStatus status)
 {
-    printf("%s: %s (%u)\n", msg, corgi_strerror(status), status);
+    printf("%s: %s (%zu)\n", msg, corgi_strerror(status), status);
 }
 
 static CorgiStatus

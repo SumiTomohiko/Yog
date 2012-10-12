@@ -1,0 +1,38 @@
+
+def build(ctx):
+    common_opts = {
+            "cflags": ["-Wall", "-Werror", "-g", "-O3"],
+            "includes": ["../include", "."] }
+    corgi = "corgi"
+    lib_name = "libcorgi.a"
+    ctx.program(target=corgi, source="main.c", use=lib_name, **common_opts)
+    lib_opts = common_opts.copy()
+    lib_opts.update({
+            "source": ["corgi.c", "unicode.c"],
+            "target": corgi })
+    ctx.shlib(**lib_opts)
+    ctx.stlib(name=lib_name, **lib_opts)
+
+    top_dir = ctx.top_dir
+    out_dir = ctx.out_dir
+    makeunicodedata_py = "tools/makeunicodedata.py"
+    rule = "python3 {top_dir}/{makeunicodedata_py} {top_dir}/src {out_dir}/src"
+    ctx(
+            rule=rule.format(**locals()),
+            target=[
+                "entries.inc", "indexes.inc", "linebreaks.inc",
+                "whitespaces.inc"],
+            source=[
+                "UnicodeData.txt", "Unihan.txt", "DerivedCoreProperties.txt",
+                "LineBreak.txt", "../{makeunicodedata_py}".format(**locals())])
+    constants_py = "tools/constants.py"
+    constants_h = "include/corgi/constants.h"
+    rule="python3 {top_dir}/{constants_py} {out_dir}/{constants_h}"
+    ctx(
+            rule=rule.format(**locals()),
+            target="../{constants_h}".format(**locals()),
+            source="../{constants_py}".format(**locals()))
+
+    ctx.install_files("${PREFIX}/lib", "libcorgi.a")
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

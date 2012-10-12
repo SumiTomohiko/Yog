@@ -41,14 +41,24 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'corgi'
-copyright = u'2010, Tomohiko Sumi'
+copyright = u'2010-2012, Tomohiko Sumi'
+
+from re import search
+
+def read_version():
+    with open("index.rst") as fp:
+        for line in fp:
+            m = search(r"\d+\.\d+\.\d+$", line)
+            if m is None:
+                continue
+            return m.group()
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '@PACKAGE_VERSION@'
+version = read_version()
 # The full version, including alpha/beta/rc tags.
 release = version
 

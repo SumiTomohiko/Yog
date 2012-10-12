@@ -30,22 +30,26 @@ import sys
 
 SCRIPT = sys.argv[0]
 try:
-    DIR = sys.argv[1]
+    src_dir = sys.argv[1]
 except IndexError:
-    DIR = "src"
+    src_dir = "src"
+try:
+    dest_dir = sys.argv[2]
+except IndexError:
+    dest_dir = src_dir
 
 # The Unicode Database
-UNICODE_DATA = join(DIR, "UnicodeData.txt")
-UNIHAN = join(DIR, "Unihan.txt")
-DERIVED_CORE_PROPERTIES = join(DIR, "DerivedCoreProperties.txt")
-LINE_BREAK = join(DIR, "LineBreak.txt")
+UNICODE_DATA = join(src_dir, "UnicodeData.txt")
+UNIHAN = join(src_dir, "Unihan.txt")
+DERIVED_CORE_PROPERTIES = join(src_dir, "DerivedCoreProperties.txt")
+LINE_BREAK = join(src_dir, "LineBreak.txt")
 
 MANDATORY_LINE_BREAKS = ["BK", "CR", "LF", "NL"]
 
 def parse_hex(s):
     return int(s, 16)
 
-with open(join(DIR, "unicode.c")) as fp:
+with open(join(src_dir, "unicode.c")) as fp:
     for line in [line.strip() for line in fp]:
         if not line.startswith("#define"):
             continue
@@ -71,7 +75,7 @@ def make_tables():
     make_unicodetype(unicode)
 
 def make_cases(filename, chars):
-    with open(join(DIR, filename), "w") as fp:
+    with open(join(dest_dir, filename), "w") as fp:
         for codepoint in sorted(chars):
             print("case 0x%04X:" % (codepoint, ), file=fp)
 
@@ -130,13 +134,13 @@ def make_unicodetype(unicode):
     print(len(spaces), "whitespace code points")
     print(len(linebreaks), "linebreak code points")
 
-    with open(join(DIR, "entries.inc"), "w") as fp:
+    with open(join(dest_dir, "entries.inc"), "w") as fp:
         for item in table:
             print("{ %d, %d }," % item, file=fp)
 
     # split decomposition index table
     index1, index2, shift = splitbins(index)
-    with open(join(DIR, "indexes.inc"), "w") as fp:
+    with open(join(dest_dir, "indexes.inc"), "w") as fp:
         print("#define SHIFT", shift, file=fp)
         Array("index1", index1).dump(fp)
         Array("index2", index2).dump(fp)

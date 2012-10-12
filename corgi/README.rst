@@ -1,5 +1,6 @@
-corgi 0.0.2
-===========
+
+corgi 1.0.0dev1
+===============
 
 corgi is a regular expression library for C.
 
@@ -8,32 +9,38 @@ Features
 
 * corgi accepts UTF-32 strings.
 * Based on Python's regular expression's engine (it seems fast).
-* Open source
+* MIT License
 
 Requirements
 ------------
 
-CPU
-~~~
+* FreeBSD 9.0/amd64
+* FreeBSD 9.0/i386
 
-- Intel x86
+Building and Installing
+-----------------------
 
-OS
-~~
+Prerequirements
+~~~~~~~~~~~~~~~
 
-- Ubuntu Linux 8.04
-- FreeBSD 8.1
-- OpenBSD 4.6
+* `Python 3 <http://www.python.org/>`_
 
-Install
--------
+Building Instruction
+~~~~~~~~~~~~~~~~~~~~
 
 ::
 
   $ ./configure && make
 
-You will get ``src/.libs/libcorgi.so.x.y.z``, ``src/.libs/libcorgi.a`` and
-``src/corgi``.
+You will get ``libcorgi.so``, ``libcorgi.a`` and ``corgi`` in ``build/src``
+directory.
+
+Installing Instruction
+~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+  $ make install
 
 ``corgi`` Utility
 -----------------
@@ -284,21 +291,9 @@ Searching is started from *at*.
 
 Converts a :c:type:`CorgiStatus` value to a string.
 
-Contact
--------
+Author
+------
 
-- Tomohiko Sumi (``SumiTomohiko@neko-daisuki.ddo.jp``)
-
-Copyright and License Information
----------------------------------
-
-::
-
-  Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-  Python Software Foundation.
-  All rights reserved.
-
-  Copyright (c) 2010 Tomohiko Sumi.
-  All rights reserved.
+- `Tomohiko Sumi <http://neko-daisuki.ddo.jp/~SumiTomohiko/index.html>`_
 
 .. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2 filetype=rst

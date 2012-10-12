@@ -235,7 +235,7 @@ data_stack_grow(State* state, CorgiInt size)
         return 0;
     }
     CorgiInt new_size = needed_size + needed_size / 4 + 1024;
-    TRACE(("allocate/grow stack %d\n", new_size));
+    TRACE(("allocate/grow stack %zd\n", new_size));
     void* stack = realloc(state->data_stack, new_size);
     if (stack == NULL) {
         data_stack_dealloc(state);
@@ -535,7 +535,7 @@ sre_count(State* state, CorgiCode* pattern, CorgiInt maxcount)
 
 #define DATA_STACK_ALLOC(state, type, ptr) do { \
     alloc_pos = state->data_stack_base; \
-    TRACE(("allocating %s in %d (%zu)\n", #type, alloc_pos, sizeof(type))); \
+    TRACE(("allocating %s in %zd (%zu)\n", #type, alloc_pos, sizeof(type))); \
     if (state->data_stack_size < alloc_pos + sizeof(type)) { \
         int j = data_stack_grow(state, sizeof(type)); \
         if (j < 0) { \
@@ -550,7 +550,7 @@ sre_count(State* state, CorgiCode* pattern, CorgiInt maxcount)
 } while (0)
 
 #define DATA_STACK_LOOKUP_AT(state, type, ptr, pos) do { \
-    TRACE(("looking up %s at %d\n", #type, pos)); \
+    TRACE(("looking up %s at %zd\n", #type, pos)); \
     ptr = (type*)(state->data_stack + pos); \
 } while (0)
 
@@ -1019,7 +1019,7 @@ entrance:
 
             ctx->count = ctx->u.rep->count + 1;
 
-            TRACE(("|%p|%p|MAX_UNTIL %d\n", ctx->pattern, ctx->ptr, ctx->count));
+            TRACE(("|%p|%p|MAX_UNTIL %zd\n", ctx->pattern, ctx->ptr, ctx->count));
 
             if (ctx->count < ctx->u.rep->pattern[1]) {
                 /* not enough matches */
@@ -1076,7 +1076,7 @@ entrance:
 
             ctx->count = ctx->u.rep->count + 1;
 
-            TRACE(("|%p|%p|MIN_UNTIL %d %p\n", ctx->pattern, ctx->ptr, ctx->count, ctx->u.rep->pattern));
+            TRACE(("|%p|%p|MIN_UNTIL %zd %p\n", ctx->pattern, ctx->ptr, ctx->count, ctx->u.rep->pattern));
 
             if (ctx->count < ctx->u.rep->pattern[1]) {
                 /* not enough matches */
@@ -1275,7 +1275,7 @@ exit:
         TRACE(("|%p|%p|JUMP_ASSERT_NOT\n", ctx->pattern, ctx->ptr));
         goto jump_assert_not;
     case JUMP_NONE:
-        TRACE(("|%p|%p|RETURN %d\n", ctx->pattern, ctx->ptr, ret));
+        TRACE(("|%p|%p|RETURN %zd\n", ctx->pattern, ctx->ptr, ret));
         break;
     }
 
@@ -1324,7 +1324,7 @@ sre_search(State* state, CorgiCode* pattern)
         pattern += 1 + pattern[1];
     }
 
-    TRACE(("prefix = %p %d %d\n", prefix, prefix_len, prefix_skip));
+    TRACE(("prefix = %p %zd %zd\n", prefix, prefix_len, prefix_skip));
     TRACE(("charset = %p\n", charset));
 
     if (1 < prefix_len) {
@@ -2937,7 +2937,7 @@ dump_instruction(Instruction* inst)
         return;
     }
 
-    printf("%04u ", inst->pos);
+    printf("%04zu ", inst->pos);
     CorgiChar c;
     CorgiChar low;
     CorgiChar high;
@@ -2961,10 +2961,10 @@ dump_instruction(Instruction* inst)
         printf("FAILURE");
         break;
     case INST_IN:
-        printf("IN %u", inst->u.in.dest->pos);
+        printf("IN %zu", inst->u.in.dest->pos);
         break;
     case INST_JUMP:
-        printf("JUMP %u", inst->u.jump.dest->pos);
+        printf("JUMP %zu", inst->u.jump.dest->pos);
         break;
     case INST_LABEL:
         assert(FALSE);
@@ -2974,7 +2974,7 @@ dump_instruction(Instruction* inst)
         printf("LITERAL %8u (%c)", c, char2printable(c));
         break;
     case INST_MARK:
-        printf("MARK %u", inst->u.mark.id);
+        printf("MARK %zu", inst->u.mark.id);
         break;
     case INST_MAX_UNTIL:
         printf("MAX_UNTIL");
@@ -2986,7 +2986,7 @@ dump_instruction(Instruction* inst)
         printf("NEGATE");
         break;
     case INST_OFFSET:
-        printf("OFFSET %04u", inst->u.offset.dest->pos);
+        printf("OFFSET %04zu", inst->u.offset.dest->pos);
         break;
     case INST_RANGE:
         low = inst->u.range.low;
@@ -2994,7 +2994,7 @@ dump_instruction(Instruction* inst)
         printf("RANGE %8u (%c) %8u (%c)", low, char2printable(low), high, char2printable(high));
         break;
     case INST_REPEAT:
-        printf("REPEAT %04u %5u %5u", inst->u.repeat.dest->pos, inst->u.repeat.min, inst->u.repeat.max);
+        printf("REPEAT %04zu %5zu %5zu", inst->u.repeat.dest->pos, inst->u.repeat.min, inst->u.repeat.max);
         break;
     case INST_SUCCESS:
         printf("SUCCESS");

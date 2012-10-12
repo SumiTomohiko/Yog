@@ -16,18 +16,18 @@ print_header()
 }
 
 dir=`dirname $0`
-. "${dir}/rc"
+corgi="${dir}/build/src/corgi"
 tests_dir="${dir}/tests"
 find "${tests_dir}" -perm 0755 -name "test_*" | grep -wv py | sort | while read cmd
 do
   print_header "${cmd}"
-  CORGI="${dir}/src/corgi" "${cmd}"
+  CORGI="${corgi}" "${cmd}"
   print_result $? "${cmd}"
 done
 find "${tests_dir}" -perm 0755 -name "test_*.py" | sort | while read py
 do
   print_header "${py}"
-  CORGI="${dir}/src/corgi" "${python}" "${py}"
+  CORGI="${corgi}" python "${py}"
   print_result $? "${py}"
 done
 
