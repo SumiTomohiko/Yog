@@ -14,7 +14,7 @@ def add_shlib_rules():
                 target=target,
                 sources=[source],
                 includes=["{top_dir}/include"],
-                cflags=["-Wall", "-Werror", "-g", "-O3"])
+                cflags=["-Wall", "-Werror", "-g", "-O3", "-fPIC"])
 
 def add_h2yog_rules():
     targets = """
