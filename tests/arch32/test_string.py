@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import pytest
-from testcase import TestCase
-from utils import is_32bit
+from platform import machine
 
-@pytest.mark.skipif("is_32bit() is not True")
+import pytest
+
+from testcase import TestCase
+
+@pytest.mark.skipif("machine() != \"i386\"")
 class TestString(TestCase):
 
     def test_string_multiply0(self):

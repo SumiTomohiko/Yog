@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from os.path import dirname
-import pytest
-from ffi_helper import Base, define_range_test
-from utils import is_32bit
+from platform import machine
 
-@pytest.mark.skipif("is_32bit() is not True")
+import pytest
+
+from ffi_helper import Base, define_range_test
+
+@pytest.mark.skipif("machine() != \"i386\"")
 class TestFFI(Base):
 
     # Tests for ushort

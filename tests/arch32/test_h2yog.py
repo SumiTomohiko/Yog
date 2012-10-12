@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from platform import machine
+
+import pytest
+
 from h2yog_helper import Base
 
+@pytest.mark.skipif("machine() != \"i386\"")
 class TestH2Yog(Base):
 
     def do_datatype_test(self, datatype, expected):

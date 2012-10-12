@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from platform import machine
+
+import pytest
+
 from testcase import TestCase
 
+@pytest.mark.skipif("machine() != \"i386\"")
 class TestFixnum(TestCase):
 
     def test_left_shift0(self):
