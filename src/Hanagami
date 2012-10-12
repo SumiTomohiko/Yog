@@ -30,7 +30,7 @@ def define_rules_for_yog():
     linkflags = "-export-dynamic"
     stlib = ["corgi", "ffi", "BigDigits"]
     stlibpath = [
-            join(corgi_dir, "src/.libs"),
+            join(corgi_dir, "build/src"),
             join(libffi_dir, ".libs"),
             BigDigits_dir]
     program(target=target, **locals())
