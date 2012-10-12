@@ -1,6 +1,12 @@
 #!/bin/sh
 
-exec py.test --showlocals --verbose -r Es "${@}"
+if [ "${#}" != 0 ]; then
+  args="${@}"
+else
+  args="tests"
+fi
+
+exec py.test --showlocals --verbose -r Es ${args}
 
 # py.test in OpenBSD and FreeBSD exits at non zero when any tests fails. This
 # spec disturbs plural tests.
