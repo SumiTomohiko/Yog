@@ -23,7 +23,7 @@ def find_so(name):
     return False
 
 def get_lib_path(name="test_lib"):
-    return join(".", name + (".so" if os.name == "posix" else ".dll")).replace("\\", "\\\\")
+    return join(dirname(__file__), name + ".so")
 
 def get_command():
     try:
