@@ -704,9 +704,9 @@ static void yy_accept(
 static BOOL Parse(
   YogEnv* env, 
   YogVal parser, 
-  int yymajor,                 /* The major token code number */
-  ParseTOKENTYPE yyminor       /* The value for the token */
-  ParseARG_PDECL               /* Optional %extra_argument parameter */
+  int_t yymajor,    /* The major token code number */
+  YogVal yyminor    /* The value for the token */
+  ParseARG_PDECL    /* Optional %extra_argument parameter */
 ){
   YYMINORTYPE yyminorunion;
   yyminorunion.yy0 = YUNDEF;

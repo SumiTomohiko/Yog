@@ -27,7 +27,7 @@
 #define TOKEN_LINENO(token)     TOKEN(token)->lineno
 #define NODE_LINENO(node)       PTR_AS(YogNode, (node))->lineno
 
-static BOOL Parse(struct YogEnv*, YogVal, int_t, YogVal, YogVal*);
+static BOOL Parse(YogEnv*, YogVal, int_t, YogVal, YogVal*);
 static YogVal LemonParser_new(YogEnv*, YogHandle*);
 static void ParseTrace(FILE*, char*);
 
