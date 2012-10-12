@@ -226,12 +226,12 @@ find_exe(YogEnv* env, const char* exe)
     return NULL;
 }
 
-int_t
-main(int_t argc, char* argv[])
+int
+main(int argc, char* argv[])
 {
-    int_t debug_import = 0;
+    int debug_import = 0;
+    int help = 0;
     uint_t gc_stress_level = 0;
-    int_t help = 0;
     size_t young_heap_size = 1 * 1024 * 1024;
     size_t old_heap_size = 1 * 1024 * 1024;
 #if !defined(GC_GENERATIONAL)
@@ -288,7 +288,7 @@ main(int_t argc, char* argv[])
         }
     }
 
-    if (help) {
+    if (help != 0) {
         usage();
         return 0;
     }
