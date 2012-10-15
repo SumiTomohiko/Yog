@@ -93,7 +93,7 @@ ext/zlib/zlib/minigzip
 ext/zlib/zlib/zconf.h
 gmon.out
 html
-include/yog/config.h.in
+include/yog/config.h
 include/yog/inst.h
 include/yog/opcodes.h
 include/yog/token.h
@@ -163,6 +163,7 @@ src/shift_jis2yog_hankaku.inc
 src/shift_jis2yog_zenkaku.inc
 src/string.inc
 src/symbol.inc
+src/yog*
 src/yog2euc_jp1.inc
 src/yog2euc_jp2.inc
 src/yog2euc_jp3.inc
@@ -460,4 +461,3 @@ vim/ftdetect/Makefile
 vim/ftdetect/Makefile.in
 vim/ftplugin/Makefile
 vim/ftplugin/Makefile.in
-yog*
