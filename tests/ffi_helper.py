@@ -53,7 +53,7 @@ def test_bit_field_{name}_over_max(self):
     self.do_ng_test(\"{type}\", {width}, {max}, {max} + 1, \"less\")""".format(**locals())
     d = {}
     exec(src, d)
-    for key, val in d.iteritems():
+    for key, val in d.items():
         setattr(klass, key, val)
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
