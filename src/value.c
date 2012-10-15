@@ -14,7 +14,7 @@ YogVal_print(YogEnv* env, YogVal val)
         printf("<undef>\n");
     }
     else if (IS_FIXNUM(val)) {
-        printf("<int_t: %d>\n", VAL2INT(val));
+        printf("<int_t: %zd>\n", VAL2INT(val));
     }
     else if (IS_PTR(val)) {
         printf("<ptr: %p>\n", VAL2PTR(val));
@@ -31,7 +31,7 @@ YogVal_print(YogEnv* env, YogVal val)
         printf("<nil>\n");
     }
     else if (IS_SYMBOL(val)) {
-        printf("<symbol: %d>\n", VAL2ID(val));
+        printf("<symbol: %zd>\n", VAL2ID(val));
     }
     else {
         YOG_BUG(env, "uknown value type (0x%08x)", val);

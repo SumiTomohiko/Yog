@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -115,13 +116,13 @@ print_int32(int32_t n)
 void
 print_uint64(uint64_t n)
 {
-    printf("%llu", n);
+    printf("%" PRIu64, n);
 }
 
 void
 print_int64(int64_t n)
 {
-    printf("%lld", n);
+    printf("%" PRId64, n);
 }
 
 void

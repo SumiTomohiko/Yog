@@ -599,7 +599,7 @@ YogTable_size(YogEnv* env, YogVal table)
 static void
 print_val(YogEnv* env, YogVal val)
 {
-    printf("%s:%d val=0x%08x\n", __FILE__, __LINE__, val);
+    printf("%s:%d val=0x%08zx\n", __FILE__, __LINE__, val);
     if (IS_UNDEF(val)) {
         printf("undef");
     }
@@ -607,7 +607,7 @@ print_val(YogEnv* env, YogVal val)
         printf("%p", VAL2PTR(val));
     }
     else if (IS_FIXNUM(val)) {
-        printf("%d", VAL2INT(val));
+        printf("%zd", VAL2INT(val));
     }
     else if (IS_BOOL(val)) {
         if (VAL2BOOL(val)) {
@@ -621,7 +621,7 @@ print_val(YogEnv* env, YogVal val)
         printf("nil");
     }
     else if (IS_SYMBOL(val)) {
-        printf(" 0x%08x", VAL2ID(val));
+        printf(" 0x%08zx", VAL2ID(val));
 #if 0
         printf(" :%s", YogVM_id2name(env, env->vm, VAL2ID(val)));
 #endif
@@ -680,7 +680,7 @@ YogTable_dump(YogEnv* env, YogVal table)
 static int_t
 raw_dump_callback(YogEnv* env, YogVal key, YogVal value, YogVal* arg)
 {
-    printf("  0x%08x => 0x%08x, \n", key, value);
+    printf("  0x%08zx => 0x%08zx, \n", key, value);
     return ST_CONTINUE;
 }
 

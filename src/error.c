@@ -29,7 +29,7 @@ YogError_out_of_memory(YogEnv* env, size_t size)
 {
     FILE* out = stderr;
     fprintf(out, "[ERROR]\n");
-    fprintf(out, "Out of memory: requested size=%u\n", size);
+    fprintf(out, "Out of memory: requested size=%zu\n", size);
     fflush(out);
     abort();
 }
@@ -40,7 +40,7 @@ print_error(YogEnv* env, const char* type, const char* filename, uint_t lineno, 
     FILE* stream = stderr;
 
     fprintf(stream, "[%s]\n", type);
-    fprintf(stream, "at %s:%d\n", filename, lineno);
+    fprintf(stream, "at %s:%zd\n", filename, lineno);
     vfprintf(stream, fmt, ap);
     fprintf(stream, "\n");
 }
@@ -101,7 +101,7 @@ print_stacktrace(YogEnv* env, YogVal st)
 
         uint_t lineno = PTR_AS(YogStackTraceEntry, st)->lineno;
         if (0 < lineno) {
-            fprintf(stderr, ", line %d", lineno);
+            fprintf(stderr, ", line %zd", lineno);
         }
 
         fprintf(stderr, ", in ");

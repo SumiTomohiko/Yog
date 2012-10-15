@@ -25,7 +25,7 @@ print_val(YogEnv* env, YogVal val)
         printf("%p", VAL2PTR(val));
     }
     else if (IS_FIXNUM(val)) {
-        printf("%d", VAL2INT(val));
+        printf("%zd", VAL2INT(val));
     }
     else if (IS_BOOL(val)) {
         if (VAL2BOOL(val)) {
@@ -76,8 +76,8 @@ YogCode_dump(YogEnv* env, YogVal code)
     YogVal consts = YUNDEF;
     PUSH_LOCALS2(env, insts, consts);
 
-    printf("stack size: %u\n", PTR_AS(YogCode, code)->stack_size);
-    printf("outer size: %u\n", PTR_AS(YogCode, code)->outer_size);
+    printf("stack size: %zu\n", PTR_AS(YogCode, code)->stack_size);
+    printf("outer size: %zu\n", PTR_AS(YogCode, code)->outer_size);
     printf("=== Constants ===\n");
     printf("index value\n");
 
@@ -88,7 +88,7 @@ YogCode_dump(YogEnv* env, YogVal code)
     }
     uint_t i;
     for (i = 0; i < consts_size; i++) {
-        printf("%05d ", i);
+        printf("%05zd ", i);
 
         YogVal val = PTR_AS(YogValArray, consts)->items[i];
         print_val(env, val);
@@ -102,7 +102,7 @@ YogCode_dump(YogEnv* env, YogVal code)
     uint_t exc_tbl_size = PTR_AS(YogCode, code)->exc_tbl_size;
     for (i = 0; i < exc_tbl_size; i++) {
         YogExceptionTableEntry* entry = &PTR_AS(YogExceptionTable, PTR_AS(YogCode, code)->exc_tbl)->items[i];
-        printf("%04d %04d %04d\n", entry->from, entry->to, entry->target);
+        printf("%04zd %04zd %04zd\n", entry->from, entry->to, entry->target);
     }
 
     printf("=== Code ===\n");
@@ -111,11 +111,11 @@ YogCode_dump(YogEnv* env, YogVal code)
     pc_t pc = 0;
     insts = PTR_AS(YogCode, code)->insts;
     while (pc < PTR_AS(YogByteArray, insts)->size) {
-        printf("%04d", pc);
+        printf("%04zd", pc);
 
         uint_t lineno;
         if (YogCode_get_lineno(env, code, pc, &lineno)) {
-            printf(" %05d", lineno);
+            printf(" %05zd", lineno);
         }
         else {
             printf("      ");
@@ -149,7 +149,7 @@ YogCode_dump(YogEnv* env, YogVal code)
                 uint8_t index = OPERAND(uint8_t, 0);
                 ID id = OPERAND(ID, 1);
                 YogVal bin = YogVM_id2bin(env, env->vm, id);
-                printf(" %u %d ('%s)", index, id, BINARY_CSTR(bin));
+                printf(" %u %zd ('%s)", index, id, BINARY_CSTR(bin));
             }
             break;
         case OP(STORE_LOCAL_NAME):
@@ -157,7 +157,7 @@ YogCode_dump(YogEnv* env, YogVal code)
             {
                 ID id = OPERAND(ID, 0);
                 YogVal bin = YogVM_id2bin(env, env->vm, id);
-                printf(" %d ('%s)", id, BINARY_CSTR(bin));
+                printf(" %zd ('%s)", id, BINARY_CSTR(bin));
             }
             break;
         case OP(PUSH_CONST):
@@ -201,7 +201,7 @@ YogCode_dump(YogEnv* env, YogVal code)
         case OP(JUMP):
             {
                 uint_t to = OPERAND(uint_t, 0);
-                printf(" %d", to);
+                printf(" %zd", to);
             }
             break;
         default:

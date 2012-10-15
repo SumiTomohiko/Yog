@@ -902,7 +902,7 @@ YogBignum_compare_with_unsigned_int(YogEnv* env, YogVal self, uint_t n)
     }
 
     char buf[21];
-    snprintf(buf, array_sizeof(buf), "%u", n);
+    snprintf(buf, array_sizeof(buf), "%zu", n);
     BIGD n2 = bdNew();
     bdConvFromDecimal(n2, buf);
     int retval = bdCompare(BIGNUM_NUM(self), n2);
@@ -949,7 +949,7 @@ YogBignum_compare_with_int(YogEnv* env, YogVal self, int_t n)
     /* FIXME: In case of n == LONG_MIN */
     int_t abs_of_n = sign_of_n * n;
     char buf[21];
-    snprintf(buf, array_sizeof(buf), "%d", abs_of_n);
+    snprintf(buf, array_sizeof(buf), "%zd", abs_of_n);
     BIGD n2 = bdNew();
     bdConvFromDecimal(n2, buf);
     int retval = bdCompare(BIGNUM_NUM(self), n2);

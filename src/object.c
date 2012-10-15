@@ -129,9 +129,9 @@ YogBasicObj_to_s(YogEnv* env, YogVal self)
     YogVal s = YUNDEF;
     PUSH_LOCAL(env, s);
     char id_upper[9];
-    YogSysdeps_snprintf(id_upper, array_sizeof(id_upper), "%08x", BASIC_OBJ(self)->id_upper);
+    YogSysdeps_snprintf(id_upper, array_sizeof(id_upper), "%08zx", BASIC_OBJ(self)->id_upper);
     char id_lower[9];
-    YogSysdeps_snprintf(id_lower, array_sizeof(id_lower), "%08x", BASIC_OBJ(self)->id_lower);
+    YogSysdeps_snprintf(id_lower, array_sizeof(id_lower), "%08zx", BASIC_OBJ(self)->id_lower);
     s = YogSprintf_sprintf(env, "<%C %s%s>", self, id_upper, id_lower);
     RETURN(env, s);
 }

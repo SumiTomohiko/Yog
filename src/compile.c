@@ -200,7 +200,7 @@ raise_error(YogEnv* env, YogVal filename, uint_t lineno, const char* fmt, ...)
 
 #define BUFFER_SIZE     4096
     char head[BUFFER_SIZE];
-    YogSysdeps_snprintf(head, array_sizeof(head), "File \"%s\", line %u: ", BINARY_CSTR(bin), lineno);
+    YogSysdeps_snprintf(head, array_sizeof(head), "File \"%s\", line %zu: ", BINARY_CSTR(bin), lineno);
 
     char s[BUFFER_SIZE];
     va_list ap;

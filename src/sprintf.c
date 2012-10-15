@@ -145,7 +145,7 @@ add_num(YogEnv* env, YogVal s, YogVal o)
 
     if (IS_FIXNUM(o)) {
         char buf[21]; /* 64bit integer with '\0' needs at most 21 bytes */
-        snprintf(buf, array_sizeof(buf), "%d", VAL2INT(o));
+        snprintf(buf, array_sizeof(buf), "%zd", VAL2INT(o));
         YogString_append_string(env, s, buf);
     }
     else if (IS_PTR(o) && (BASIC_OBJ_TYPE(o) == TYPE_BIGNUM)) {
