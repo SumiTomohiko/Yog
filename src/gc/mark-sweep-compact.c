@@ -318,7 +318,7 @@ compute_large_index(YogEnv* env, size_t size)
         return LARGE_NUM - 1;
     }
     uint_t k;
-    __asm__("bsrl\t%1, %0\n\t" : "=r" (k) : "g" (x));
+    __asm__("bsr\t%1, %0\n\t" : "=r" (k) : "g" (x));    /* bit scan reverse */
     return (k << 1) + ((size >> (k + LARGE_SHIFT - 1)) & 1);
 }
 
