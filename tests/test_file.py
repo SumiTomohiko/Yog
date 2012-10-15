@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import unlink
+from os.path import dirname, join
 from testcase import TestCase
 
 class TestFile(TestCase):
@@ -12,8 +13,11 @@ class TestFile(TestCase):
         finally:
             fp.close()
 
+    def get_file_path(self, name="gods.txt"):
+        return join(dirname(__file__), name)
+
     def test_open0(self):
-        filename = "gods.txt"
+        filename = self.get_file_path()
         foo = self.read_file(filename)
 
         self._test("""
@@ -35,7 +39,7 @@ File.open(\"foo\", \"r\")
 """, stderr=test_stderr)
 
     def test_open20(self):
-        filename = "gods.txt"
+        filename = self.get_file_path()
         foo = self.read_file(filename)
 
         self._test("""
@@ -45,7 +49,7 @@ end
 """ % { "filename": filename }, stdout=foo)
 
     def run_read_all_test(self, size):
-        filename = "gods.txt"
+        filename = self.get_file_path()
         expected = self.read_file(filename)
 
         self._test("""file = File.open(\"{filename}\", \"r\")
@@ -59,7 +63,8 @@ file.close()
     def test_read5(self):
         self.run_read_all_test("nil")
 
-    def run_read_test_of_size(self, size, filename="gods.txt"):
+    def run_read_test_of_size(self, size):
+        filename = self.get_file_path()
         expected = self.read_file(filename, size)
         self._test("""file = File.open(\"{filename}\", \"r\")
 print(file.read({size}))
@@ -82,7 +87,7 @@ file.close()
         self.run_read_test_of_size(8193)
 
     def test_read40(self):
-        filename = "gods.txt"
+        filename = self.get_file_path()
         expected = self.read_file(filename)
         size = len(expected) + 1
 
@@ -92,7 +97,7 @@ file.close()
 """.format(**locals()), stdout=expected)
 
     def test_readline0(self):
-        filename = "gods.txt"
+        filename = self.get_file_path()
 
         fp = open(filename)
         try:
@@ -107,7 +112,7 @@ end
 """ % { "filename": filename }, stdout=line)
 
     def test_readline10(self):
-        filename = "gods.txt"
+        filename = self.get_file_path()
         self._test("""
 File.open("%(filename)s", "r") do |f|
   f.readline()
@@ -151,27 +156,27 @@ end""".format(**locals())
         self.run_write_test(make_source)
 
     def test_eof0(self):
-        filename = "gods.txt"
+        filename = self.get_file_path()
         self._test("""File.open(\"{filename}\") do |fp|
   print(fp.eof?)
 end""".format(**locals()), "false")
 
     def test_eof10(self):
-        filename = "gods.txt"
+        filename = self.get_file_path()
         self._test("""File.open(\"{filename}\") do |fp|
   fp.read()
   print(fp.eof?)
 end""".format(**locals()), "true")
 
     def test_lock_shared0(self):
-        filename = "gods.txt"
+        filename = self.get_file_path()
         self._test("""File.open(\"{filename}\") do |fp|
   fp.lock_shared() do |fp|
   end
 end""".format(**locals()))
 
     def test_lock_exclusive0(self):
-        filename = "gods.txt"
+        filename = self.get_file_path()
         self._test("""File.open(\"{filename}\") do |fp|
   fp.lock_exclusive() do |fp|
   end
