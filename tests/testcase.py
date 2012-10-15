@@ -113,16 +113,12 @@ class TestCase(object):
             out = self.read(stdout_path)
             print(out)
             if stderr is not None:
-                if encoding is not None:
-                    err = err.decode("UTF-8")
                 if callable(stderr):
                     stderr(err)
                 else:
                     assert stderr == err, "stderr must be %r, but actual is %r" % (stderr, err)
 
             if stdout is not None:
-                if encoding is not None:
-                    out = out.decode("UTF-8")
                 if callable(stdout):
                     stdout(out)
                 else:
