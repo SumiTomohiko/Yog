@@ -1,5 +1,6 @@
 #include "yog/config.h"
 #include <stdlib.h>
+#include <strings.h>
 #include "yog/array.h"
 #include "yog/callable.h"
 #include "yog/class.h"
@@ -13,10 +14,32 @@
 #include "yog/yog.h"
 
 struct SwitchContext {
+#if defined(__i386__)
     void* eip;
     void* esp;
     void* ebp;
+#else
+    /**
+     * Coroutines must preserve callee-saved registers. Because the code of
+     * restoring them is at the end of coroutine_main(), but it is never
+     * executed.
+     */
+    void* rip;
+    void* rsp;
+    void* rbp;
+    void* rbx;
+    void* r12;
+    void* r13;
+    void* r14;
+    void* r15;
+#endif
 };
+
+#if defined(__i386__)
+#   define CTX_IP(ctx)  (ctx).eip
+#else
+#   define CTX_IP(ctx)  (ctx).rip
+#endif
 
 typedef struct SwitchContext SwitchContext;
 
@@ -24,7 +47,10 @@ struct Coroutine {
     struct YogBasicObj base;
 
     /**
-     * Coroutines' machine stack layout (x86)
+     * Coroutines' machine stack layout
+     *
+     * On i386
+     * =======
      *
      *              stack top (lower address)
      * +----------+ ^
@@ -41,6 +67,30 @@ struct Coroutine {
      * |          | | self
      * +----------+ |
      * |          | |
+     * |          | | YogHandles
+     * |          | |
+     * +----------+ |
+     * |          | |
+     * |          | | YogLocalsAnchor
+     * |          | |
+     * +----------+ v
+     *              stack bottom (higher address)
+     *
+     * On amd64
+     * ========
+     *
+     * The stack is without env and self. Because a caller passes arguments
+     * through registers on amd64.
+     *
+     *              stack top (lower address)
+     * +----------+ ^
+     * |          | | <- Coroutine::machine_stack
+     * +----------+ ^
+     * |          | |
+     * :          : |
+     * |          | |
+     * +----------+ |
+     * |          | | <- initial stack pointer
      * |          | | YogHandles
      * |          | |
      * +----------+ |
@@ -129,14 +179,24 @@ register_locals(YogEnv* env, YogLocalsAnchor* locals)
 static void
 SwitchContext_init(YogEnv* env, SwitchContext* ctx)
 {
-    ctx->eip = NULL;
-    ctx->esp = NULL;
-    ctx->ebp = NULL;
+    bzero(ctx, sizeof(*ctx));
 }
+
+#if defined(__amd64__)
+static void
+coroutine_main_wrapper()
+{
+    __asm__ __volatile__(
+        "movq %r13, %rdi\n\t"
+        "movq %r14, %rsi\n\t"
+        "jmpq *%r12\n");
+}
+#endif
 
 static void __attribute__((noinline))
 switch_context(YogEnv* env, SwitchContext* to, SwitchContext* cont)
 {
+#if defined(__i386__)
     __asm__ __volatile__(
         "movl $1f, (%0)\n\t"
         "movl %%esp, 4(%0)\n\t"
@@ -144,9 +204,48 @@ switch_context(YogEnv* env, SwitchContext* to, SwitchContext* cont)
         "movl 8(%1), %%ebp\n\t"
         "movl 4(%1), %%esp\n\t"
         "jmp *(%1)\n"
-        "1:\n"
-        : : "r" (cont), "r" (to) : "eax", "ebx", "ecx", "edx"
-    );
+        "1:\n" :
+        :
+        "r" (cont), "r" (to) :
+        "eax", "ebx", "ecx", "edx");
+#else
+    /**
+     * The following code came from LuaCoco 1.1.7 (http://coco.luajit.org/).
+     * Coco is Copyright (C) 2005-2012 Mike Pall.
+     *
+     * I changed some parts. Registers were writable in LuaCoco, but I thought
+     * that it is not needed. So I changed;
+     * 1. outputs from ("+S" (cont), "+D" (to)) to nothing.
+     * 2. inputs from nothing to ("S" (cont), "D" (to)).
+     * 3. registers to nothing.
+     */
+    __asm__ __volatile__(
+        "leaq 1f(%%rip), %%rax\n\t"
+        "movq %%rax, (%0)\n\t"
+        "movq %%rsp, 8(%0)\n\t"
+        "movq %%rbp, 16(%0)\n\t"
+        "movq %%rbx, 24(%0)\n\t"
+        "movq %%r12, 32(%0)\n\t"
+        "movq %%r13, 40(%0)\n\t"
+        "movq %%r14, 48(%0)\n\t"
+        "movq %%r15, 56(%0)\n\t"
+        "movq 56(%1), %%r15\n\t"
+        "movq 48(%1), %%r14\n\t"
+        "movq 40(%1), %%r13\n\t"
+        "movq 32(%1), %%r12\n\t"
+        "movq 24(%1), %%rbx\n\t"
+        "movq 16(%1), %%rbp\n\t"
+        "movq 8(%1), %%rsp\n\t"
+        "jmpq *(%1)\n"
+        "1:\n" :
+        :                           /* outputs */
+        "S" (cont), "D" (to) :      /* inputs */
+        /**
+         * registers (empty): LuaCoco's original was
+         * "rax", "rcx", "rdx", "r8", "r9", "r10", "r11", "memory", "cc"
+         */
+        );
+#endif
 }
 
 static void
@@ -336,16 +435,52 @@ resume(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     PTR_AS(Coroutine, self)->status = STATUS_RUNNING;
     YogGC_UPDATE_PTR(env, PTR_AS(Coroutine, self), args, a);
 
-    if (PTR_AS(Coroutine, self)->ctx_to_resume.eip == NULL) {
+    if (CTX_IP(PTR_AS(Coroutine, self)->ctx_to_resume) == NULL) {
         alloc_machine_stack(env, self);
         void* stack = PTR_AS(Coroutine, self)->machine_stack;
         uint_t size = PTR_AS(Coroutine, self)->machine_stack_size;
         void** locals = (void**)machine_stack2handles(env, stack, size);
+        void* ip;
+#if defined(__i386__)
         locals[-1] = (void*)self;
         locals[-2] = (void*)env;
         locals[-3] = (void*)0xdeaddead;
-        PTR_AS(Coroutine, self)->ctx_to_resume.eip = coroutine_main;
         PTR_AS(Coroutine, self)->ctx_to_resume.esp = &locals[-3];
+        ip = (void*)coroutine_main;
+#else
+        SwitchContext* ctx = &PTR_AS(Coroutine, self)->ctx_to_resume;
+        /**
+         * I explain what the next expression for rsp is.
+         *
+         * clang 3.0 with -O2 emits the following code for coroutine_main.
+         *
+         * 000000000043a5b0 <coroutine_main>:
+         *   43a5b0:	55                   	push   %rbp
+         *   43a5b1:	48 89 e5             	mov    %rsp,%rbp
+         *   :
+         *   43a5cb:	66 0f ef c0          	pxor   %xmm0,%xmm0
+         *   43a5cf:	0f 29 45 c0          	movaps %xmm0,-0x40(%rbp)
+         *
+         * clang uses movaps instruction of SSE to make memory zero (this memory
+         * is for coroutine_env). movaps requires that destination address
+         * (-0x40(%rbp)) is 16-byte aligned. Because of this, rbp must be
+         * 16-byte aligned at movaps. rbp is from rsp, and rsp is decreased by
+         * 8 bytes for push at the beginning of coroutine_main. In other words,
+         * rsp must satisfy ((rsp % 16) == 8) at this time. The following
+         * expression arranges rsp for it.
+         */
+        ctx->rsp = (void*)((((uintptr_t)locals - 8) & (~0x0fLU)) + 8);
+        ctx->r12 = (void*)coroutine_main;
+        /**
+         * Be careful. ctx->r13 and ctx->r14 holds a pointer, but GC does not
+         * update it nor its inside. GC is not allowed from here to next
+         * switch_context().
+         */
+        ctx->r13 = (void*)env;
+        ctx->r14 = (void*)self;
+        ip = (void*)coroutine_main_wrapper;
+#endif
+        CTX_IP(PTR_AS(Coroutine, self)->ctx_to_resume) = ip;
     }
 
     SwitchContext* to = &PTR_AS(Coroutine, self)->ctx_to_resume;
