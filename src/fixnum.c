@@ -43,7 +43,7 @@ to_s_internal(YogEnv* env, int_t self, int_t radix)
     char* pend = buffer + array_sizeof(buffer) - 1;
     *pend = '\0';
     char* p = pend - 1;
-    int_t num = abs(self);
+    int_t num = labs(self);
     do {
         int_t mod = num % radix;
         *p = mod < 10 ? '0' + mod : 'a' + mod - 10;
