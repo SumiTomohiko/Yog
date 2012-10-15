@@ -22,6 +22,7 @@ This notice must always be retained in any copy.
 #ifndef BIGDIGITS_H_
 #define BIGDIGITS_H_ 1
 
+#include <stdint.h>
 #include "bigdtypes.h"
 
 /**** USER CONFIGURABLE SECTION ****/
@@ -31,6 +32,7 @@ This notice must always be retained in any copy.
 /* [v2.1] Changed to use C99 exact-width types so it will compile with 64-bit compilers. */
 /* [v2.2] Put macros for exact-width types in separate file "bigdtypes.h" */
 
+#if defined(__i386__)
 typedef uint32_t DIGIT_T;
 typedef uint16_t HALF_DIGIT_T;
 
@@ -39,6 +41,14 @@ typedef uint16_t HALF_DIGIT_T;
 #define MAX_HALF_DIGIT 0xffffUL	/* NB 'L' */
 #define BITS_PER_DIGIT 32
 #define HIBITMASK 0x80000000UL
+#else
+typedef uint64_t DIGIT_T;
+typedef uint32_t HALF_DIGIT_T;
+#define MAX_DIGIT	UINT64_MAX
+#define MAX_HALF_DIGIT	(MAX_DIGIT >> 32)
+#define BITS_PER_DIGIT	64
+#define HIBITMASK	(1LU << 63)
+#endif
 
 /*	[v2.2] added option to avoid allocating temp storage
 	and use fixed automatic arrays instead.

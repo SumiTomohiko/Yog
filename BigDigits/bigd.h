@@ -36,7 +36,7 @@ using memory management and opaque pointers.
 
 /* DIGIT_T type is not exposed by this library so we expose 
    a synonym `bdigit_t' for a single digit */
-typedef uint32_t bdigit_t;
+typedef long bdigit_t;
 
 /**** END OF USER CONFIGURABLE SECTION ****/
 
