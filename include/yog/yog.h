@@ -97,8 +97,8 @@ typedef SIGNED_TYPE int_t;
 
 #define YOG_TEST(v)     (!IS_NIL((v)) && !IS_FALSE((v)))
 
-#define YINT_MAX    VAL2INT(INT_MAX)
-#define YINT_MIN    VAL2INT(INT_MIN)
+#define YINT_MAX    (SIGNED_MAX >> 1)
+#define YINT_MIN    (SIGNED_MIN >> 1)
 #define FIXABLE(n)  ((YINT_MIN <= (n)) && ((n) <= YINT_MAX))
 
 struct YogLocals {
