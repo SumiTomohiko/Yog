@@ -4,7 +4,7 @@ from os import name
 import pytest
 from testcase import TestCase
 
-@pytest.mark.skipif("name == \"nt\"")
+@pytest.mark.xfail
 class TestThread(TestCase):
 
     def test_thread1(self):
