@@ -58,7 +58,14 @@ class TestCase(object):
         cmd = [get_command()] + args
         env = environ.copy()
         env["LANG"] = "ja_JP.UTF-8"
-        return Popen(cmd, stdin=PIPE, stdout=stdout, stderr=stderr, env=env)
+        kw = {
+                "args": [get_command()] + args,
+                "stdin": PIPE,
+                "stdout": stdout,
+                "stderr": stderr,
+                "env": env,
+                "universal_newlines": True }
+        return Popen(**kw)
 
     def run_yog(self, args, stdout_path, stderr_path):
         stdout = open(stdout_path, "w")
