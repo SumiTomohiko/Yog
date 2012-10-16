@@ -103,6 +103,7 @@ lib/Makefile.in
 lib/c/Makefile
 lib/c/Makefile.in
 lib/c/grammar.yog
+lib/c/y.output
 lib/sdl.yog
 lib/sdl/Makefile
 lib/sdl/Makefile.in
