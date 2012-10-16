@@ -18,7 +18,7 @@ headers = [%(headers)s].map() do |h|
   next h.to_path()
 end
 h2yog(\"test_h2yog.yog\", headers, \"%(so)s\") do |path, name|
-  next headers.include?(path.basename)
+  next headers.map(&get_attr(\'basename)).include?(path.basename)
 end""" % { "headers": ", ".join([ "\"%s\"" % (header, ) for header in headers]), "so": so }
         path = "run_h2yog.yog"
         self.unlink(path)

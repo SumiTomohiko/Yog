@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from os.path import dirname, join
+
 from h2yog_helper import Base
 from testcase import get_lib_path
 
@@ -45,6 +47,9 @@ datatypes_typedef = datatypes + [
 
 class TestH2Yog(Base):
 
+    def get_exact_path(self, name):
+        return join(dirname(__file__), name)
+
     def do_test_enum_type(self, header):
         self.do_simple_print_test(header, "int", "Foo")
 
@@ -74,7 +79,7 @@ class TestH2Yog(Base):
 enum { FOO = BAR };""", "0")
 
     def test_undef0(self):
-        headers = ["test_undef0.h"]
+        headers = [self.get_exact_path("test_undef0.h")]
         so = get_lib_path("empty")
         src = """from test_h2yog import FOO
 print(FOO)"""
@@ -111,7 +116,7 @@ print(FOO)"""
 foo = Foo.new()
 foo.bar = {value}
 print(foo.bar)""".format(**locals())
-        self.do_test([header], so, src, value)
+        self.do_test([self.get_exact_path(header)], so, src, value)
 
     def do_bit_field_test(self, name):
         self.do_struct_test(name + ".h", "1")
@@ -144,11 +149,12 @@ typedef union Foo_t Foo;""", "void", "Foo")
 
     def test_union70(self):
         base = "test_union70"
+        header = self.get_exact_path(base + ".h")
         src = """from test_h2yog import Foo, {0}
 foo = Foo.new()
 foo.bar.baz = 42
 {0}(foo)""".format(base)
-        self.do_test([base + ".h"], get_lib_path(base), src, "42")
+        self.do_test([header], get_lib_path(base), src, "42")
 
     def test_struct0(self):
         self.do_struct_test("test_struct0.h")
@@ -172,11 +178,12 @@ typedef struct Foo_t Foo;""", "void", "Foo")
 
     def test_struct70(self):
         base = "test_struct70"
+        header = self.get_exact_path(base + ".h")
         src = """from test_h2yog import Foo, {0}
 foo = Foo.new()
 foo.bar.baz = 42
 {0}(foo)""".format(base)
-        self.do_test([base + ".h"], get_lib_path(base), src, "42")
+        self.do_test([header], get_lib_path(base), src, "42")
 
     def do_typedef_test(self, type, expected):
         self.do_simple_print_test("typedef {0} Foo;".format(type), expected, "Foo")
@@ -186,7 +193,8 @@ foo.bar.baz = 42
     self.do_typedef_test(\"{1}\", \"{2}\")""".format(type2base(type), type, expected))
 
     def do_func_test(self, base, src, expected):
-        self.do_test([base + ".h"], get_lib_path(base), src, expected)
+        header = self.get_exact_path(base + ".h")
+        self.do_test([header], get_lib_path(base), src, expected)
 
     def test_func0(self):
         base = "test_func0"
@@ -248,11 +256,12 @@ foo()""", "42")
 {name}(\"{expected}\")""".format(**locals()), expected)
 
     def do_simple_array_test(self, base):
+        header = self.get_exact_path(base + ".h")
         src = """from test_h2yog import Foo
 foo = Foo.new()
 foo.bar[0] = 42
 print(foo.bar[0])"""
-        self.do_test([base + ".h"], get_lib_path("empty"), src, "42")
+        self.do_test([header], get_lib_path("empty"), src, "42")
 
     for base in ["test_array0", "test_array10", "test_array20"]:
         exec("""def {0}(self):
@@ -288,7 +297,7 @@ print(FOO(42, 26))""", "26")
 
     def test_macro_function30(self):
         name = "test_macro_function30"
-        header = name + ".h"
+        header = self.get_exact_path(name + ".h")
         self.do_test([header], get_lib_path(name), """from test_h2yog import FOO
 FOO()""", "42")
 
