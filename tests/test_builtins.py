@@ -231,7 +231,7 @@ copy_file(\"%(src)s\", \"%(dest)s\")
             unlink(src)
 
     def test_copy_file10(self):
-        src = "test_copy_file10.dat"
+        src = self.get_exact_path("test_copy_file10.dat")
         dest = src + "~"
         try:
             self._test("copy_file(\"{src}\", \"{dest}\")".format(**locals()))
