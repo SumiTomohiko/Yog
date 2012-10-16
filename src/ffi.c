@@ -2076,10 +2076,31 @@ check_Bignum_unsigned_long(YogEnv* env, YogVal val)
 }
 
 static void
-check_Bignum_unsigned_int(YogEnv* env, YogVal val)
+check_Fixnum_int32(YogEnv* env, YogVal val)
 {
-    check_Bignum_is_greater_or_equal_than_int(env, val, 0);
-    check_Bignum_is_less_or_equal_than_unsigned_int(env, val, UINT_MAX);
+    int_t n = VAL2INT(val);
+    if (n < INT32_MIN) {
+        const char* fmt = "Value must be greater or equal %d, not %D";
+        YogError_raise_ValueError(env, fmt, INT32_MIN, val);
+    }
+    if (INT32_MAX < n) {
+        const char* fmt = "Value must be less or equal %d, not %D";
+        YogError_raise_ValueError(env, fmt, INT32_MAX, val);
+    }
+}
+
+static void
+check_Fixnum_uint32(YogEnv* env, YogVal val)
+{
+    int_t n = VAL2INT(val);
+    if (n < 0) {
+        const char* fmt = "Value must be greater or equal 0, not %D";
+        YogError_raise_ValueError(env, fmt, val);
+    }
+    if (UINT32_MAX < n) {
+        const char* fmt = "Value must be less or equal %u, not %D";
+        YogError_raise_ValueError(env, fmt, UINT32_MAX, val);
+    }
 }
 
 static void
@@ -2183,7 +2204,7 @@ write_uint32(YogEnv* env, void* dest, YogVal val)
 
     uint32_t* p = (uint32_t*)dest;
     if (IS_FIXNUM(val)) {
-        check_Fixnum_positive(env, val);
+        check_Fixnum_uint32(env, val);
         *p = VAL2INT(val);
         RETURN_VOID(env);
     }
@@ -2204,6 +2225,7 @@ write_int32(YogEnv* env, void* dest, YogVal val)
 
     int32_t* p = (int32_t*)dest;
     if (IS_FIXNUM(val)) {
+        check_Fixnum_int32(env, val);
         *p = VAL2INT(val);
         RETURN_VOID(env);
     }
@@ -2558,7 +2580,7 @@ write_uint(YogEnv* env, void* dest, YogVal val)
         RETURN_VOID(env);
     }
     if (IS_PTR(val) && (BASIC_OBJ_TYPE(val) == TYPE_BIGNUM)) {
-        check_Bignum_unsigned_int(env, val);
+        check_Bignum_uint32(env, val);
         *p = YogBignum_to_unsigned_type(env, val, "Value");
         RETURN_VOID(env);
     }
