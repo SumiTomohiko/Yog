@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 from re import search
 from os import close, environ, unlink
 from os.path import abspath, basename, dirname, exists, join, splitext

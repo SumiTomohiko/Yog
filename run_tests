@@ -6,7 +6,7 @@ else
   args="tests"
 fi
 
-exec py.test --showlocals --verbose -r Es ${args}
+exec py.test-2.7 --showlocals --verbose -r Es ${args}
 
 # py.test in OpenBSD and FreeBSD exits at non zero when any tests fails. This
 # spec disturbs plural tests.
