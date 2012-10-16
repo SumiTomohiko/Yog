@@ -1,0 +1,11 @@
+# -*- coding: utf-8 -*-
+
+def build():
+    yog = "{top_dir}/src/yog"
+    lalr1gram = "{top_dir}/bin/lalr1gram.yog"
+    target = "grammar.yog"
+    source = "grammar.yogram"
+    cmd = "{yog} {lalr1gram} {target} {source}".format(**locals())
+    command(commands=cmd, targets=target, sources=[yog, lalr1gram, source])
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

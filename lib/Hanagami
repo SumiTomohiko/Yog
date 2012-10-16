@@ -1,0 +1,6 @@
+# -*- coding: utf-8 -*-
+
+def build():
+    recurse("c")
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
