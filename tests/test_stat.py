@@ -55,9 +55,9 @@ class TestStat(TestCase):
     self.run_time_test(\"{name}\")""".format(name=name))
 
     def test_size0(self):
-        filename = "gods.txt"
-        expected = str(lstat(filename).st_size)
-        src = "print(\"{filename}\".to_path().lstat().size)"
+        path = self.get_exact_path("gods.txt")
+        expected = str(lstat(path).st_size)
+        src = "print(\"{path}\".to_path().lstat().size)"
         self._test(src.format(**locals()), expected)
 
     def run_symlink_test(self, f, expected):
