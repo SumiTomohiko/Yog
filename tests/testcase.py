@@ -36,6 +36,9 @@ def get_command():
 
 class TestCase(object):
 
+    def get_exact_path(self, name):
+        return join(dirname(__file__), name)
+
     def kill_proc(self, proc):
         try:
             proc.kill()

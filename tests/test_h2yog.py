@@ -47,9 +47,6 @@ datatypes_typedef = datatypes + [
 
 class TestH2Yog(Base):
 
-    def get_exact_path(self, name):
-        return join(dirname(__file__), name)
-
     def do_test_enum_type(self, header):
         self.do_simple_print_test(header, "int", "Foo")
 

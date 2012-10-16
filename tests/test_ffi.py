@@ -540,33 +540,36 @@ baz = Baz.new()
 baz.foo.bar = 42
 print(baz.foo.bar)""", "42")
 
+    def run_lib_test(self, lib, src, stdout=None, stderr=None):
+        path = self.get_exact_path("{lib}.so".format(**locals()))
+        self._test(src.format(**locals()), stdout=stdout, stderr=stderr)
+
     def test_Struct690(self):
-        path = get_lib_path()
-        self._test("""
+        self.run_lib_test("test_Struct690", """\
 Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
 Baz = StructClass.new(\"Baz\", [[Foo, \'foo]])
-lib = load_lib(\"./test_Struct690.so\")
-f = lib.load_func(\"test_Struct690\", [[\'pointer, Baz]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Baz]])
 baz = Baz.new()
 f(baz)
 print(baz.foo.bar)""", "42")
 
     def test_Struct700(self):
-        self._test("""
+        self.run_lib_test("test_Struct700", """\
 Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
 Baz = StructClass.new(\"Baz\", [[Foo, \'foo], [\'int, \'quux]])
-lib = load_lib(\"./test_Struct700.so\")
-f = lib.load_func(\"test_Struct700\", [[\'pointer, Baz]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Baz]])
 baz = Baz.new()
 f(baz)
 print(baz.quux)""", "42")
 
     def test_Struct705(self):
-        self._test("""
+        self.run_lib_test("test_Struct705", """\
 Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
 Baz = StructClass.new(\"Baz\", [[\'int, \'quux], [Foo, \'foo]])
-lib = load_lib(\"./test_Struct705.so\")
-f = lib.load_func(\"test_Struct705\", [[\'pointer, Baz]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Baz]])
 baz = Baz.new()
 f(baz)
 print(baz.foo.bar)""", "42")
@@ -579,43 +582,44 @@ foo.baz.bar = 42
 print(foo.baz.bar)""", "42")
 
     def test_Struct720(self):
-        self._test("""
+        self.run_lib_test("test_Struct720", """\
 Foo = StructClass.new(\"Foo\", [[[\'struct, [[\'int, \'bar]]], \'baz]])
-lib = load_lib(\"./test_Struct720.so\")
-f = lib.load_func(\"test_Struct720\", [[\'pointer, Foo]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Foo]])
 foo = Foo.new()
 f(foo)
 print(foo.baz.bar)""", "42")
 
     def test_Struct730(self):
-        self._test("""
+        self.run_lib_test("test_Struct730", """\
 Foo = StructClass.new(\"Foo\", [
   [[\'struct, [[\'int, \'bar]]], \'baz],
   [\'int, \'quux]])
-lib = load_lib(\"./test_Struct730.so\")
-f = lib.load_func(\"test_Struct730\", [[\'pointer, Foo]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Foo]])
 foo = Foo.new()
 f(foo)
 print(foo.quux)""", "42")
 
     # Tests for pointers to a struct
     def test_Struct740(self):
-        self._test("""
+        self.run_lib_test("test_Struct740", """\
 Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
 Baz = StructClass.new(\"Baz\", [[[\'pointer, Foo], \'foo]])
 foo = Foo.new()
 baz = Baz.new()
 baz.foo = foo
-lib = load_lib(\"./test_Struct740.so\")
-f = lib.load_func(\"test_Struct740\", [[\'pointer, Baz]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Baz]])
 f(baz)
 print(baz.foo.bar)""", "42")
 
     def test_Struct745(self):
-        self._test("""Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
+        self.run_lib_test("test_Struct745", """\
+Foo = StructClass.new(\"Foo\", [[\'int, \'bar]])
 Baz = StructClass.new(\"Baz\", [[[\'pointer, Foo], \'foo]])
-lib = load_lib(\"./test_Struct745.so\")
-f = lib.load_func(\"test_Struct745\", [], [\'pointer, Baz])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [], [\'pointer, Baz])
 baz = f()
 print(baz.foo.bar)""", "42")
 
@@ -638,10 +642,11 @@ foo.baz = 1
 print(foo.baz)""", "1")
 
     def test_Struct770(self):
-        self._test("""Foo = StructClass.new(\"Foo\")
+        self.run_lib_test("test_Struct770", """\
+Foo = StructClass.new(\"Foo\")
 Foo.define_fields([[[\'ubit, 1], \'bar], [[\'ubit, 1], \'baz]])
-lib = load_lib(\"./test_Struct770.so\")
-f = lib.load_func(\"test_Struct770\", [[\'pointer, Foo]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Foo]])
 foo = Foo.new()
 f(foo)
 print(foo.baz)""", "1")
@@ -673,10 +678,11 @@ foo.baz = 42
 print(foo.baz)""", "42")
 
     def test_Struct810(self):
-        self._test("""Foo = StructClass.new(\"Foo\")
+        self.run_lib_test("test_Struct810", """\
+Foo = StructClass.new(\"Foo\")
 Foo.define_fields([[[\'ubit, 8], \'bar], [\'char, \'baz]])
-lib = load_lib(\"./test_Struct810.so\")
-f = lib.load_func(\"test_Struct810\", [[\'pointer, Foo]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Foo]])
 foo = Foo.new()
 f(foo)
 print(foo.baz)""", "42")
@@ -689,42 +695,46 @@ foo.baz = 42
 print(foo.baz)""", "42")
 
     def test_Struct830(self):
-        self._test("""Foo = StructClass.new(\"Foo\")
+        self.run_lib_test("test_Struct830", """\
+Foo = StructClass.new(\"Foo\")
 Foo.define_fields([[[\'ubit, 9], \'bar], [\'char, \'baz]])
-lib = load_lib(\"./test_Struct830.so\")
-f = lib.load_func(\"test_Struct830\", [[\'pointer, Foo]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Foo]])
 foo = Foo.new()
 f(foo)
 print(foo.baz)""", "42")
 
     # Tests for structs
     def test_Struct840(self):
-        self._test("""Foo = StructClass.new(\"Foo\")
+        self.run_lib_test("test_Struct840", """\
+Foo = StructClass.new(\"Foo\")
 Foo.define_fields([[\'int, \'bar]])
-lib = load_lib(\"./test_Struct840.so\")
-f = lib.load_func(\"test_Struct840\", [Foo])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [Foo])
 foo = Foo.new()
 foo.bar = 42
 f(foo)""", "42")
 
     def test_Struct850(self):
-        self._test("""Foo = StructClass.new(\"Foo\")
+        self.run_lib_test("test_Struct850", """\
+Foo = StructClass.new(\"Foo\")
 Foo.define_fields([[\'int, \'bar]])
 Baz = StructClass.new(\"Baz\")
 Baz.define_fields([[Foo, \'foo]])
-lib = load_lib(\"./test_Struct850.so\")
-f = lib.load_func(\"test_Struct850\", [Baz])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [Baz])
 baz = Baz.new()
 baz.foo.bar = 42
 f(baz)""", "42")
 
     def test_Struct860(self):
-        self._test("""Foo = UnionClass.new(\"Foo\")
+        self.run_lib_test("test_Struct860", """\
+Foo = UnionClass.new(\"Foo\")
 Foo.define_fields([[\'int, \'bar]])
 Baz = StructClass.new(\"Baz\")
 Baz.define_fields([[Foo, \'foo]])
-lib = load_lib(\"./test_Struct860.so\")
-f = lib.load_func(\"test_Struct860\", [Baz])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [Baz])
 baz = Baz.new()
 baz.foo.bar = 42
 f(baz)""", "42")
@@ -733,10 +743,11 @@ f(baz)""", "42")
         def test_stderr(stderr):
             msg = "TypeError: Argument must be Foo, not Fixnum"
             assert 0 < stderr.find(msg)
-        self._test("""Foo = StructClass.new(\"Foo\")
+        self.run_lib_test("test_Struct840", """\
+Foo = StructClass.new(\"Foo\")
 Foo.define_fields([[\'int, \'bar]])
-lib = load_lib(\"./test_Struct840.so\")
-f = lib.load_func(\"test_Struct840\", [Foo])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [Foo])
 f(42)""", stderr=test_stderr)
 
     # Tests for UnionClass
@@ -763,61 +774,64 @@ quux.hoge = 42
 print(quux.foo.bar)""", "42")
 
     def test_Union030(self):
-        self._test("""
+        self.run_lib_test("test_Union030", """\
 Foo = UnionClass.new(\"Foo\", [[\'int, \'bar], [\'int, \'baz]])
-lib = load_lib(\"./test_Union030.so\")
-f = lib.load_func(\"test_Union030\", [[\'pointer, Foo]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Foo]])
 foo = Foo.new()
 f(foo)
 print(foo.baz)""", "42")
 
     def test_Union040(self):
-        self._test("""
+        self.run_lib_test("test_Union040", """\
 Foo = UnionClass.new(\"Foo\", [[\'int, \'bar], [\'int, \'baz]])
-lib = load_lib(\"./test_Union040.so\")
-f = lib.load_func(\"test_Union040\", [[\'pointer, Foo]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Foo]])
 foo = Foo.new()
 f(foo)
 print(foo.bar)""", "42")
 
     def test_Union050(self):
-        self._test("""
+        self.run_lib_test("test_Union050", """\
 Foo = StructClass.new(\"Foo\", [[\'int, \'bar], [\'int, \'baz]])
 Quux = UnionClass.new(\"Quux\", [[\'int, \'hoge], [Foo, \'foo]])
 quux = Quux.new()
-lib = load_lib(\"./test_Union050.so\")
-f = lib.load_func(\"test_Union050\", [[\'pointer, Quux]])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [[\'pointer, Quux]])
 f(quux)
 print(quux.foo.baz)""", "42")
 
     # Tests for unions
     def test_Union060(self):
-        self._test("""Foo = UnionClass.new(\"Foo\")
+        self.run_lib_test("test_Union060", """\
+Foo = UnionClass.new(\"Foo\")
 Foo.define_fields([[\'int, \'bar]])
-lib = load_lib(\"./test_Union060.so\")
-f = lib.load_func(\"test_Union060\", [Foo])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [Foo])
 foo = Foo.new()
 foo.bar = 42
 f(foo)""", "42")
 
     def test_Union070(self):
-        self._test("""Foo = StructClass.new(\"Foo\")
+        self.run_lib_test("test_Union070", """\
+Foo = StructClass.new(\"Foo\")
 Foo.define_fields([[\'int, \'bar]])
 Baz = UnionClass.new(\"Baz\")
 Baz.define_fields([[Foo, \'foo]])
-lib = load_lib(\"./test_Union070.so\")
-f = lib.load_func(\"test_Union070\", [Baz])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [Baz])
 baz = Baz.new()
 baz.foo.bar = 42
 f(baz)""", "42")
 
     def test_Union080(self):
-        self._test("""Foo = UnionClass.new(\"Foo\")
+        self.run_lib_test("test_Union080", """\
+Foo = UnionClass.new(\"Foo\")
 Foo.define_fields([[\'int, \'bar]])
 Baz = UnionClass.new(\"Baz\")
 Baz.define_fields([[Foo, \'foo]])
-lib = load_lib(\"./test_Union080.so\")
-f = lib.load_func(\"test_Union080\", [Baz])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [Baz])
 baz = Baz.new()
 baz.foo.bar = 42
 f(baz)""", "42")
@@ -826,10 +840,11 @@ f(baz)""", "42")
         def test_stderr(stderr):
             msg = "TypeError: Argument must be Foo, not Fixnum"
             assert 0 < stderr.find(msg)
-        self._test("""Foo = UnionClass.new(\"Foo\")
+        self.run_lib_test("test_Union060", """\
+Foo = UnionClass.new(\"Foo\")
 Foo.define_fields([[\'int, \'bar]])
-lib = load_lib(\"./test_Union060.so\")
-f = lib.load_func(\"test_Union060\", [Foo])
+lib = load_lib(\"{path}\")
+f = lib.load_func(\"{lib}\", [Foo])
 f(42)""", stderr=test_stderr)
 
     # Tests for uint8
