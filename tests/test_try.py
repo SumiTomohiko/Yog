@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from os.path import dirname, join
+
 from testcase import TestCase
 
 class TestTry(TestCase):
@@ -146,15 +148,15 @@ except
 end""")
 
     def test_longjmp_from_native_function0(self):
+        filename = join(dirname(__file__), "gods.txt")
         self._test("""
 # http://bitbucket.org/SumiTomohiko/yog/issue/2/
-File.open("gods.txt", "r") do |f|
+File.open("{filename}", "r") do |f|
   try
     raise_exception(Exception.new())
   except
   end
-end
-""", "")
+end""".format(**locals()), "")
 
     def test_except_type0(self):
         self._test("""
