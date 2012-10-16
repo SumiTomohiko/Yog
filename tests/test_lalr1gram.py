@@ -24,7 +24,7 @@ class TestLalr1gram(TestCase):
         try:
             script = join(self.get_bin_dir(), "lalr1gram.yog")
             cmd = [get_command(), script, "gram.yog", path]
-            proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            proc = Popen(cmd, stdout=PIPE, stderr=PIPE, universal_newlines=True)
             proc.wait()
         finally:
             unlink(path)
@@ -115,8 +115,13 @@ foo : <bar> {
     def do_parser_test(self, gram, src, expected):
         self.do_lalr1gram(gram)
         path = self.write_content_to_tmpfile(src, ".yog")
+        kw = {
+                "args": [get_command(), path],
+                "stdout": PIPE,
+                "stderr": PIPE,
+                "universal_newlines": True }
         try:
-            proc = Popen([get_command(), path], stdout=PIPE, stderr=PIPE)
+            proc = Popen(**kw)
             proc.wait()
         finally:
             unlink(path)
