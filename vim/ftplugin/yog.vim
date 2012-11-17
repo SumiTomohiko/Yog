@@ -5,7 +5,7 @@ sy region Comment start="#" end="$"
 sy keyword Boolean true false
 sy keyword Constant nil
 sy match Constant "'[A-Za-z_][A-Za-z_0-9]*\>"
-sy region String start="\"" skip="\\." end="\""
+sy region String start="\"" skip="\\\"" end="\""
 sy match Number "\<[0-9][0-9_]*\>"
 sy match Number "\<0[Xx][A-Fa-f0-9][A-Fa-f0-9_]*\>"
 sy match Number "\<0[Bb][0-1][0-1_]*\>"
