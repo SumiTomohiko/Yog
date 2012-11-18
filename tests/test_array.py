@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from testcase import TestCase
-
-def enumerate_flat_tuples(tuples):
-    for i, t in enumerate(tuples):
-        yield (i, ) + t
+from testcase import TestCase, enumerate_tuples
 
 class TestArray(TestCase):
 
@@ -325,7 +321,7 @@ end)""", "68")
   next y <=> x
 end)""", "[42, 26]")
 
-    for i, src, expr, expected in enumerate_flat_tuples((
+    for i, src, expr, expected in enumerate_tuples((
             ("[]", "true", "[[]]"),
             ("[42]", "elem == 42", "[[], []]"),
             ("[42, 26, \"foo\"]", "elem == 42", "[[], [26, \"foo\"]]"),
@@ -341,7 +337,7 @@ end)""", "[42, 26]")
 end)\"\"\", {expected})
 """.format(i=10 * i, src=src, expr=expr, expected=repr(expected)))
 
-    for i, src, expr, max_, expected in enumerate_flat_tuples((
+    for i, src, expr, max_, expected in enumerate_tuples((
             ("[]", "true", 0, "[[]]"),
             ("[42]", "true", 0, "[[42]]"),
             ("[42]", "true", 1, "[[], []]"),

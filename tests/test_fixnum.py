@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from testcase import TestCase
+from testcase import TestCase, enumerate_tuples
 
 class TestFixnum(TestCase):
 
@@ -100,16 +100,13 @@ TypeError: Comparison of Fixnum with Nil failed
 puts(42 < nil)
 """, stderr=test_stderr)
 
-    for i, testee in enumerate([
-        [42, None, "42"],
-        [42, 2, "101010"],
-        [42, 8, "52"],
-        [42, 10, "42"],
-        [42, 16, "2a"],
-        [42, 36, "16"]]):
-        num = testee[0]
-        radix = testee[1]
-        expected = testee[2]
+    for i, num, radix, expected in enumerate_tuples((
+        (42, None, "42"),
+        (42, 2, "101010"),
+        (42, 8, "52"),
+        (42, 10, "42"),
+        (42, 16, "2a"),
+        (42, 36, "16"))):
         fmt = """def test_to_s{index}(self):
     self._test(\"print({num}.to_s({radix}))\", \"{expected}\")"""
         exec(fmt.format(

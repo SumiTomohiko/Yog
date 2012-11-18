@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from re import sub
-from testcase import TestCase
+from testcase import TestCase, enumerate_tuples
 
 def make_test_name(src):
     return sub(r"[^\w]", "_", src)
-
-def enumerate_flat_tuples(tuples):
-    for i, t in enumerate(tuples):
-        yield i, t[0], t[1], t[2]
 
 class TestEnumerable(TestCase):
 
@@ -29,7 +25,7 @@ class TestEnumerable(TestCase):
     self._test(\"print({src})\", \"{expected}\")
 """.format(src=src, expected=expected, name=make_test_name(src)))
 
-    for i, a, expr, expected in enumerate_flat_tuples((
+    for i, a, expr, expected in enumerate_tuples((
             ("[]", "true", "[]"),
             ("[]", "false", "[]"),
             ("[42]", "true", "[42]"),
@@ -43,7 +39,7 @@ class TestEnumerable(TestCase):
 end)\"\"\", \"{expected}\")
 """.format(i=10 * i, a=a, expr=expr, expected=expected))
 
-    for i, a, expr, expected in enumerate_flat_tuples((
+    for i, a, expr, expected in enumerate_tuples((
             ("[]", "true", "[]"),
             ("[]", "false", "[]"),
             ("[42]", "true", "[]"),
@@ -57,7 +53,7 @@ end)\"\"\", \"{expected}\")
 end)\"\"\", \"{expected}\")
 """.format(i=10 * i, a=a, expr=expr, expected=expected))
 
-    for i, a, expr, expected in enumerate_flat_tuples((
+    for i, a, expr, expected in enumerate_tuples((
             ("[]", "true", "[]"),
             ("[]", "false", "[]"),
             ("[42]", "true", "[]"),
@@ -71,7 +67,7 @@ end)\"\"\", \"{expected}\")
 end)\"\"\", \"{expected}\")
 """.format(i=10 * i, a=a, expr=expr, expected=expected))
 
-    for i, a, expr, expected in enumerate_flat_tuples((
+    for i, a, expr, expected in enumerate_tuples((
             ("[]", "true", "[]"),
             ("[]", "false", "[]"),
             ("[42]", "true", "[42]"),

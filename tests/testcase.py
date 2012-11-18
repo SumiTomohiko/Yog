@@ -12,6 +12,10 @@ import os
 import sys
 import pytest
 
+def enumerate_tuples(tuples):
+    for i, t in enumerate(tuples):
+        yield (i, ) + t
+
 def find_so(name):
     so = "lib%s.so" % (name, )
     try:

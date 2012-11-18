@@ -4,7 +4,7 @@ from os import getpid, lstat, makedirs, readlink, symlink, walk
 from os.path import abspath, join
 from shutil import rmtree
 from tempfile import gettempdir, mkdtemp
-from testcase import TestCase
+from testcase import TestCase, enumerate_tuples
 
 class TestPath(TestCase):
 
@@ -55,17 +55,15 @@ class TestPath(TestCase):
         exec("""def test_abs{index}(self):
     self._test(\"print(\\\"{testee}\\\".to_path().abs())\", abspath(\"{testee}\"))""".format(index=10 * i, testee=testee))
 
-    for i, pattern in enumerate([
-        ["foo", "foo"],
-        ["foo/", "foo"],
-        ["foo/bar", "foo/bar"],
-        ["foo//bar", "foo/bar"],
-        ["/", "/"],
-        ["//", "/"],
-        ["/foo", "/foo"],
-        ["//foo", "/foo"]]):
-        testee = pattern[0]
-        expected = pattern[1]
+    for i, testee, expected in enumerate_tuples((
+        ("foo", "foo"),
+        ("foo/", "foo"),
+        ("foo/bar", "foo/bar"),
+        ("foo//bar", "foo/bar"),
+        ("/", "/"),
+        ("//", "/"),
+        ("/foo", "/foo"),
+        ("//foo", "/foo"))):
         exec("""def test_normalize{index}(self):
     self._test(\"print(\\\"{testee}\\\".to_path().normalize())\", \"{expected}\")""".format(index=10 * i, testee=testee, expected=expected))
 

@@ -5,13 +5,11 @@ from os import makedirs, unlink
 from os.path import abspath, isdir, join
 from re import match
 from shutil import rmtree
-from testcase import TestCase
+from testcase import TestCase, enumerate_tuples
 
 class TestBuiltins(TestCase):
 
-    for i, data in enumerate([[0, 0], [1, 1], [1, -1]]):
-        expected = data[0]
-        arg = data[1]
+    for i, expected, arg in enumerate_tuples(((0, 0), (1, 1), (1, -1))):
         exec("""def test_abs{i}(self):
     self._test(\"print(abs({arg}))\", \"{expected}\")""".format(**locals()))
 
