@@ -1,8 +1,18 @@
 
 def take(n)
+  i = 0
+  return self.take_while() do
+    i += 1
+    next i <= n
+  end
 end
 
 def drop(n)
+  i = 0
+  return self.drop_while() do
+    i += 1
+    next i <= n
+  end
 end
 
 def take_while(&block)
