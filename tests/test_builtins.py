@@ -9,6 +9,27 @@ from testcase import TestCase, enumerate_tuples
 
 class TestBuiltins(TestCase):
 
+    for i, f, x, y, expected in enumerate_tuples((
+            ("eq", 42, 42, "true"),
+            ("eq", 42, 26, "false"),
+            ("neq", 42, 42, "false"),
+            ("neq", 42, 26, "true"),
+            ("lt", 42, 0, "true"),
+            ("lt", 42, 42, "false"),
+            ("lt", 26, 42, "false"),
+            ("eqlt", 42, 0, "true"),
+            ("eqlt", 42, 42, "true"),
+            ("eqlt", 26, 42, "false"),
+            ("gt", 42, 0, "false"),
+            ("gt", 42, 42, "false"),
+            ("gt", 26, 42, "true"),
+            ("eqgt", 42, 0, "false"),
+            ("eqgt", 42, 42, "true"),
+            ("eqgt", 26, 42, "true"))):
+        exec("""def test_{f}{i}(self):
+    self._test(\"print({f}({x})({y}))\", \"{expected}\")
+""".format(f=f, i=10 * i, x=x, y=y, expected=expected))
+
     for i, expected, arg in enumerate_tuples(((0, 0), (1, 1), (1, -1))):
         exec("""def test_abs{i}(self):
     self._test(\"print(abs({arg}))\", \"{expected}\")""".format(**locals()))

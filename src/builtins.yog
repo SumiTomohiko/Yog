@@ -1,4 +1,46 @@
 
+def eq(x)
+  def f(y)
+    return y == x
+  end
+  return f
+end
+
+def neq(x)
+  def f(y)
+    return y != x
+  end
+  return f
+end
+
+def lt(x)
+  def f(y)
+    return y < x
+  end
+  return f
+end
+
+def eqlt(x)
+  def f(y)
+    return y <= x
+  end
+  return f
+end
+
+def gt(x)
+  def f(y)
+    return y > x
+  end
+  return f
+end
+
+def eqgt(x)
+  def f(y)
+    return y >= x
+  end
+  return f
+end
+
 def get_attr(name)
   if !name.kind_of?(Symbol)
     return get_attr(name.to_sym())
