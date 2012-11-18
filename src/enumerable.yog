@@ -6,15 +6,40 @@ def drop(n)
 end
 
 def take_while(&block)
+  retval = []
+  self.each() do |elem|
+    if !block(elem)
+      break
+    end
+    retval << elem
+  end
+  return retval
 end
 
 def take_until(&block)
+  return self.take_while() do |elem|
+    next !block(elem)
+  end
 end
 
 def drop_while(&block)
+  retval = []
+  found? = false
+  self.each() do |elem|
+    if !found? && !block(elem)
+      found? = true
+    end
+    if found?
+      retval << elem
+    end
+  end
+  return retval
 end
 
 def drop_until(&block)
+  return self.drop_while() do |elem|
+    next !block(elem)
+  end
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
