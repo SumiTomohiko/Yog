@@ -13,12 +13,14 @@ syntax match Number "\<0[Oo][0-7][0-7_]*\>"
 syntax match Float "[0-9][0-9]*\.[0-9][0-9]*"
 
 syntax keyword Exception try raise except finally
-syntax keyword Keyword end from import as def do class return
+syntax keyword Keyword class def do end module return
+syntax keyword Include from import as
 syntax keyword Conditional if elif else
 syntax keyword Statement nonlocal
 syntax keyword Repeat while next break
 syntax keyword Special __FILE__ __LINE__ self super
 
 syntax match Type "\<_*[A-Z][A-Za-z_0-9]*\>"
+syntax match Identifier "[A-Za-z_][A-Za-z0-9_]*[\\!\\?]?"
 
 " vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
