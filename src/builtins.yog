@@ -164,4 +164,9 @@ def id(o)
   return o
 end
 
+def tee(o)
+  puts(o)
+  return o
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

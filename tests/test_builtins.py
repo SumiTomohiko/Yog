@@ -262,4 +262,11 @@ foo()""", "4226")
     def test_id0(self):
         self._test("print(id(42))", "42")
 
+    def test_tee0(self):
+        self._test("tee(42)", "42\n")
+
+    def test_tee10(self):
+        self._test("print(tee(42))", """42
+42""")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
