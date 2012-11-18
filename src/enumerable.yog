@@ -1,0 +1,20 @@
+
+def take(n)
+end
+
+def drop(n)
+end
+
+def take_while(&block)
+end
+
+def take_until(&block)
+end
+
+def drop_while(&block)
+end
+
+def drop_until(&block)
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

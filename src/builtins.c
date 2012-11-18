@@ -422,6 +422,7 @@ YogBuiltins_boot(YogEnv* env, YogHandle* builtins)
     YogObj_set_attr_id(env, HDL2VAL(builtins), name, mod); \
 } while (0)
     REGISTER_MODULE(mComparable);
+    REGISTER_MODULE(mEnumerable);
 #undef REGISTER_MODULE
 
     e = YogEnv_new(env);

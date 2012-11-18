@@ -146,6 +146,7 @@ src/code.inc
 src/compile.inc
 src/datetime.inc
 src/dict.inc
+src/enumerable.inc
 src/errno.inc
 src/euc_jp2yog_3bytes.inc
 src/euc_jp2yog_hankaku.inc

@@ -42,6 +42,7 @@
 #include "yog/dict.h"
 #include "yog/dir.h"
 #include "yog/encoding.h"
+#include "yog/enumerable.h"
 #include "yog/env.h"
 #include "yog/error.h"
 #include "yog/eval.h"
@@ -245,6 +246,7 @@ setup_classes(YogEnv* env, YogVM* vm, YogVal builtins)
     YogClass_class_init(env, vm->cClass, builtins);
 
     YogComparable_define_classes(env, builtins);
+    YogEnumerable_define_classes(env, builtins);
     YogString_define_classes(env, builtins);
 
     YogHandle* h_builtins = YogHandle_REGISTER(env, builtins);
@@ -399,6 +401,7 @@ YogVM_boot(YogEnv* env, YogVM* vm)
     YogPath_eval_builtin_script(env, vm->cPath);
     YogSymbol_eval_builtin_script(env, vm->cSymbol);
     YogCallable_eval_builtin_script(env, vm->mCallable);
+    YogEnumerable_eval_builtin_script(env, vm->mEnumerable);
 
     YogHandleScope_close(env);
 }
@@ -590,6 +593,7 @@ YogVM_keep_children(YogEnv* env, void* ptr, ObjectKeeper keeper, void* heap)
 
     KEEP(mCallable);
     KEEP(mComparable);
+    KEEP(mEnumerable);
 
     KEEP(pkgs);
     KEEP(search_path);
@@ -738,6 +742,7 @@ YogVM_init(YogVM* vm)
 
     INIT(mCallable);
     INIT(mComparable);
+    INIT(mEnumerable);
 
     vm->pkgs = YNIL;
     init_read_write_lock(&vm->pkgs_lock);

@@ -95,6 +95,7 @@ struct YogVM {
 
     YogVal mCallable;
     YogVal mComparable;
+    YogVal mEnumerable;
 
     YogVal pkgs;
     pthread_rwlock_t pkgs_lock;
