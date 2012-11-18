@@ -22,5 +22,6 @@ syntax keyword Special __FILE__ __LINE__ self super
 
 syntax match Type "\<_*[A-Z][A-Za-z_0-9]*\>"
 syntax match Identifier "[A-Za-z_][A-Za-z0-9_]*[\\!\\?]?"
+syntax match Function "\(def\s\s*\)\@<=\h\w*"
 
 " vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
