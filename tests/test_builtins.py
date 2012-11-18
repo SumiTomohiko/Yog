@@ -259,4 +259,7 @@ end
 
 foo()""", "4226")
 
+    def test_id0(self):
+        self._test("print(id(42))", "42")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
