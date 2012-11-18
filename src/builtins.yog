@@ -1,4 +1,11 @@
 
+def get(o)
+  def f(*_, **__)
+    return o
+  end
+  return f
+end
+
 def eq(x)
   def f(y)
     return y == x

@@ -9,6 +9,12 @@ from testcase import TestCase, enumerate_tuples
 
 class TestBuiltins(TestCase):
 
+    def test_get0(self):
+        self._test("print(get(42)())", "42")
+
+    def test_get10(self):
+        self._test("print(get(42)(26, *[26], **{ \'foo: 26 }))", "42")
+
     for i, f, x, y, expected in enumerate_tuples((
             ("eq", 42, 42, "true"),
             ("eq", 42, 26, "false"),
