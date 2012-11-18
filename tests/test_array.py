@@ -2,6 +2,10 @@
 
 from testcase import TestCase
 
+def enumerate_flat_tuples(tuples):
+    for i, t in enumerate(tuples):
+        yield (i, ) + t
+
 class TestArray(TestCase):
 
     def test_any0(self):
@@ -320,5 +324,35 @@ end)""", "68")
         self._test("""print([26, 42].sort() do |x, y|
   next y <=> x
 end)""", "[42, 26]")
+
+    for i, src, expr, expected in enumerate_flat_tuples((
+            ("[]", "true", "[]"),
+            ("[42]", "elem == 42", "[[], []]"),
+            ("[42, 26, \"foo\"]", "elem == 42", "[[], [26, \"foo\"]]"),
+            ("[42, 26, \"foo\"]", "elem == 26", "[[42], [\"foo\"]]"),
+            ("[42, 26, \"foo\"]", "elem == \"foo\"", "[[42, 26], []]"),
+            ("[42, 26, \"foo\"]", "true", "[[], [], [], []]"),
+            ("[\"foo\", 42, \"bar\", 26, \"baz\"]",
+                "elem.kind_of?(Fixnum)",
+                "[[\"foo\"], [\"bar\"], [\"baz\"]]"))):
+        exec("""def test_split{i}(self):
+    self._test(\"\"\"print({src}.split() do |elem|
+  next {expr}
+end)\"\"\", {expected})
+""".format(i=10 * i, src=src, expr=expr, expected=repr(expected)))
+
+    for i, src, expr, max_, expected in enumerate_flat_tuples((
+            ("[]", "true", 0, "[]"),
+            ("[42]", "true", 0, "[42]"),
+            ("[42]", "true", 1, "[[], []]"),
+            ("[42]", "true", 2, "[[], []]"),
+            ("[42, 26]", "elem == 26", 1, "[[42], []]"),
+            ("[42, 26, 42]", "elem == 26", 1, "[[42], [42]]"),
+            ("[42, 26, 42, 26]", "elem == 26", 1, "[[42], [42, 26]]"))):
+        exec("""def test_split_max{i}(self):
+    self._test(\"\"\"print({src}.split({max}) do |elem|
+  next {expr}
+end)\"\"\", {expected})
+""".format(i=10 * i, src=src, expr=expr, max=max_, expected=repr(expected)))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
