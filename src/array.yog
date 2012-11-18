@@ -153,4 +153,22 @@ def to_s()
   return __recurse__(self, f, g)
 end
 
+def split(max=nil, &block)
+  if max == nil
+    return self.split(self.size, &block)
+  end
+
+  retval = [[]]
+  n = 0
+  self.each() do |elem|
+    if (n < max) && block(elem)
+      retval << []
+      n += 1
+      next
+    end
+    retval[-1] << elem
+  end
+  return retval
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

@@ -326,14 +326,14 @@ end)""", "68")
 end)""", "[42, 26]")
 
     for i, src, expr, expected in enumerate_flat_tuples((
-            ("[]", "true", "[]"),
+            ("[]", "true", "[[]]"),
             ("[42]", "elem == 42", "[[], []]"),
             ("[42, 26, \"foo\"]", "elem == 42", "[[], [26, \"foo\"]]"),
             ("[42, 26, \"foo\"]", "elem == 26", "[[42], [\"foo\"]]"),
             ("[42, 26, \"foo\"]", "elem == \"foo\"", "[[42, 26], []]"),
             ("[42, 26, \"foo\"]", "true", "[[], [], [], []]"),
-            ("[\"foo\", 42, \"bar\", 26, \"baz\"]",
-                "elem.kind_of?(Fixnum)",
+            ("[\"foo\", \"quux\", \"bar\", \"quux\", \"baz\"]",
+                "elem == \"quux\"",
                 "[[\"foo\"], [\"bar\"], [\"baz\"]]"))):
         exec("""def test_split{i}(self):
     self._test(\"\"\"print({src}.split() do |elem|
@@ -342,8 +342,8 @@ end)\"\"\", {expected})
 """.format(i=10 * i, src=src, expr=expr, expected=repr(expected)))
 
     for i, src, expr, max_, expected in enumerate_flat_tuples((
-            ("[]", "true", 0, "[]"),
-            ("[42]", "true", 0, "[42]"),
+            ("[]", "true", 0, "[[]]"),
+            ("[42]", "true", 0, "[[42]]"),
             ("[42]", "true", 1, "[[], []]"),
             ("[42]", "true", 2, "[[], []]"),
             ("[42, 26]", "elem == 26", 1, "[[42], []]"),
