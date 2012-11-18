@@ -578,6 +578,7 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
 
     cArray = YogClass_new(env, "Array", vm->cObject);
     YogClass_define_allocator(env, cArray, alloc);
+    YogClass_include_module(env, cArray, vm->mEnumerable);
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cArray, pkg, (name), (f)); \
 } while (0)
