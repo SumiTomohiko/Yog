@@ -24,6 +24,13 @@ end
 print(bin.to_a())\"\"\", {expected})
 """.format(i=10 * i, data=data, expected=repr(data)))
 
+    for i, datum in enumerate((-1, 256)):
+        exec("""def test_lshift_number_error{i}(self):
+    src = \"Binary.new() << {datum}\"
+    msg = \"Value must be between 0 and 255, but {datum} given\"
+    self._test_exception(src, \"ValueError\", msg)
+""".format(i=10 * i, datum=datum))
+
     def test_lshift_binary0(self):
         self._test("""bin1 = Binary.new()
 bin2 = Binary.new()
