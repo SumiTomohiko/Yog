@@ -1,0 +1,19 @@
+
+def each(&block)
+  i = 0
+  while i < self.size
+    block(self[i])
+    i += 1
+  end
+  return self
+end
+
+def to_a()
+  a = []
+  self.each() do |elem|
+    a << elem
+  end
+  return a
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

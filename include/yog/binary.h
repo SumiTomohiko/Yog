@@ -35,6 +35,7 @@ typedef struct YogBinary YogBinary;
 /* src/binary.c */
 void YogBinary_add(YogEnv*, YogVal, const char*, uint_t);
 void YogBinary_define_classes(YogEnv*, YogVal);
+void YogBinary_eval_builtin_script(YogEnv*, YogVal);
 YogVal YogBinary_new(YogEnv*);
 YogVal YogBinary_of_size(YogEnv*, uint_t);
 void YogBinary_push_char(YogEnv*, YogVal, char);

@@ -338,6 +338,15 @@ to_s(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* encoding)
 }
 
 void
+YogBinary_eval_builtin_script(YogEnv* env, YogVal klass)
+{
+    const char* src =
+#include "binary.inc"
+    ;
+    YogMisc_eval_source(env, VAL2HDL(env, klass), src);
+}
+
+void
 YogBinary_define_classes(YogEnv* env, YogVal pkg)
 {
     SAVE_ARG(env, pkg);

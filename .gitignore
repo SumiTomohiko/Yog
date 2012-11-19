@@ -139,6 +139,7 @@ pthreads-w32/libpthreadGC2.stamp
 src/Makefile
 src/Makefile.in
 src/array.inc
+src/binary.inc
 src/builtins.inc
 src/builtins_unix.inc
 src/callable.inc
