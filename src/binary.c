@@ -207,6 +207,24 @@ get_size(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bl
     RETURN(env, size);
 }
 
+static void
+lshift_int(YogEnv* env, YogVal self, int_t n)
+{
+    SAVE_ARG(env, self);
+    if ((n < 0) || (UCHAR_MAX < n)) {
+        const char* fmt = "Value must be between 0 and 255, but %d given";
+        YogError_raise_ValueError(env, fmt, n);
+        /* NOTREACHED */
+    }
+    uint_t size = YogBinary_size(env, self);
+
+    ensure_body_size(env, self, size + 1);
+    BINARY_CSTR(self)[size] = n;
+    BINARY_SIZE(self)++;
+
+    RETURN_VOID(env);
+}
+
 static YogVal
 lshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
@@ -216,6 +234,12 @@ lshift(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal bloc
     YogCArg params[] = { { "bin", &bin }, { NULL, NULL } };
     YogGetArgs_parse_args(env, "<<", params, args, kw);
     CHECK_SELF_BINARY;
+
+    if (IS_FIXNUM(bin)) {
+        lshift_int(env, self, VAL2INT(bin));
+        RETURN(env, self);
+    }
+
     CHECK_BINARY(env, bin, "bin");
 
     uint_t size1 = YogBinary_size(env, self);
@@ -331,6 +355,22 @@ inspect(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal blo
 }
 
 static YogVal
+subscript(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* index)
+{
+    YogMisc_check_Fixnum(env, index, "index");
+    int_t n = VAL2INT(HDL2VAL(index));
+    uint_t size = BINARY_SIZE(HDL2VAL(self));
+    int_t pos = n + (n < 0 ? size : 0);
+    if ((pos < 0) || (size <= pos)) {
+        const char* fmt = "Binary index out of range: size is %u, but %d given";
+        YogError_raise_IndexError(env, fmt, size, n);
+        /* NOTREACHED */
+    }
+
+    return INT2VAL(BINARY_CSTR(HDL2VAL(self))[pos]);
+}
+
+static YogVal
 to_s(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* encoding)
 {
     YogMisc_check_Encoding(env, encoding, "encoding");
@@ -367,6 +407,7 @@ YogBinary_define_classes(YogEnv* env, YogVal pkg)
 #define DEFINE_METHOD2(name, ...)  do { \
     YogClass_define_method2(env, cBinary, pkg, (name), __VA_ARGS__); \
 } while (0)
+    DEFINE_METHOD2("[]", subscript, "index", NULL);
     DEFINE_METHOD2("to_s", to_s, "encoding", NULL);
 #undef DEFINE_METHOD2
     YogClass_define_property(env, cBinary, pkg, "size", get_size, NULL);
