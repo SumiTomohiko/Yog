@@ -17,4 +17,9 @@ def quotedprintable_to_bin(s)
   return bin
 end
 
+def quotedprintable_to_s(s, enc)
+  # XXX: Binary#to_s must work with/without trailing '\0'.
+  return (quotedprintable_to_bin(s) << 0).to_s(enc)
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
