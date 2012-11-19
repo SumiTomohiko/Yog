@@ -21,8 +21,8 @@ print(\"foo\".to_bin(enc).to_s(enc))""", "foo")
 {data}.each() do |elem|
   bin << elem
 end
-print(bin.to_a())\"\"\", {expected})
-""".format(i=10 * i, data=data, expected=repr(data)))
+print(bin.to_a())\"\"\", \"{expected}\")
+""".format(i=10 * i, data=data, expected=str(data)))
 
     for i, datum in enumerate((-1, 256)):
         exec("""def test_lshift_number_error{i}(self):
@@ -101,7 +101,7 @@ bin[{index}]\"\"\", \"IndexError\", fmt.format(**locals()))
 end
 bin.each() do |elem|
   print(elem)
-end\"\"\", {expected})
-""".format(i=10 * i, data=data, expected=repr("".join([str(n) for n in data]))))
+end\"\"\", \"{expected}\")
+""".format(i=10 * i, data=data, expected="".join([str(n) for n in data])))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
