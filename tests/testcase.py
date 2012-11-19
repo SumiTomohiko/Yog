@@ -190,6 +190,13 @@ class TestCase(object):
     def _test_interactive(self, stdout, stderr, stdin, status, options, timeout):
         self.do(stdout, stderr, stdin, status, options, timeout)
 
+    def _test_exception(self, src, klass, msg):
+        def test_stderr(stderr):
+            expected = "{klass}: {msg}".format(klass=klass, msg=msg)
+            actual = stderr.rstrip().split("\n")[-1]
+            assert expected == actual
+        self._test(src, stderr=test_stderr)
+
     def _test(self, src=None, stdout="", stderr="", stdin=None, status=0, options=None, timeout=5 * 60, remove_tmpfile=True, tmpfile=None, yog_option=[], encoding="UTF-8"):
         if options is None:
             try:
