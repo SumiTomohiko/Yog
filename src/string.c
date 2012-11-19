@@ -519,11 +519,20 @@ to_sym(YogEnv* env, YogHandle* self, YogHandle* pkg)
 }
 
 static YogVal
-to_bin(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* encoding)
+to_cstr(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* encoding)
 {
     CHECK_SELF_TYPE2(env, self);
     YogMisc_check_Encoding(env, encoding, "encoding");
     return YogEncoding_conv_from_yog(env, encoding, self);
+}
+
+static YogVal
+to_bin(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* encoding)
+{
+    YogVal bin = to_cstr(env, self, pkg, encoding);
+    YOG_ASSERT2(env, 0 < BINARY_SIZE(bin));
+    BINARY_SIZE(bin)--;
+    return bin;
 }
 
 static YogVal
@@ -1164,6 +1173,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     DEFINE_METHOD2("[]", subscript, "index", NULL);
     DEFINE_METHOD2("slice", slice, "pos", "|", "len", NULL);
     DEFINE_METHOD2("to_bin", to_bin, "encoding", NULL);
+    DEFINE_METHOD2("to_cstr", to_cstr, "encoding", NULL);
     DEFINE_METHOD2("to_i", to_i, "|", "radix", NULL);
     DEFINE_METHOD2("to_path", to_path, NULL);
     DEFINE_METHOD2("to_sym", to_sym, NULL);

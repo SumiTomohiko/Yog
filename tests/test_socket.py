@@ -45,7 +45,7 @@ import socket
 enable_gc_stress()
 sock = socket.TcpSocket.new(\"127.0.0.1\", %(port)u)
 try
-  bin = \"foo\".to_bin(ENCODINGS[\"ascii\"])
+  bin = \"foo\".to_cstr(ENCODINGS[\"ascii\"])
   data = bin.slice(0, bin.size - 1)
   sock.send(data)
   print(sock.recv(1))
@@ -64,7 +64,7 @@ import socket
 enable_gc_stress()
 sock = socket.TcpSocket.new(\"localhost\", %(port)u)
 try
-  bin = \"foo\".to_bin(ENCODINGS[\"ascii\"])
+  bin = \"foo\".to_cstr(ENCODINGS[\"ascii\"])
   data = bin.slice(0, bin.size - 1)
   sock.send(data)
   print(sock.recv(1))

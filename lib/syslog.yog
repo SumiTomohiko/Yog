@@ -13,7 +13,7 @@ end
 anchor = Anchor.new()
 
 def openlog(ident, opts, facility, &block=nil)
-  buffer = Buffer.new(ident.to_bin(ENCODINGS["ascii"]))
+  buffer = Buffer.new(ident.to_cstr(ENCODINGS["ascii"]))
   anchor.ident = buffer
   raw.openlog(buffer, opts, facility)
   try

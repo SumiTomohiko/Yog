@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os.path import join
-from testcase import TestCase
+from testcase import TestCase, enumerate_tuples
 
 class TestString(TestCase):
 
@@ -862,5 +862,13 @@ print(\"foo\".rfind(\"o\", -4))
 
     def test_to_i40(self):
         self._test("print(\"101010\".to_i(2))", "42")
+
+    for i, s, expected in enumerate_tuples((
+            ("", []),
+            ("foo", [0x66, 0x6f, 0x6f]))):
+        for meth, additional in (("to_cstr", [0]), ("to_bin", [])):
+            exec("""def test_{meth}{i}(self):
+    self._test(\"print(\\\"{s}\\\".{meth}(ENCODINGS[\\\"ascii\\\"]).to_a())\", \"{expected}\")
+""".format(i=10 * i, s=s, meth=meth, expected=expected + additional))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

@@ -26,7 +26,7 @@ import zlib
         self._test("""
 import zlib
 enable_gc_stress()
-print(zlib.compress(\"foo\".to_bin(ENCODINGS[\"utf-8\"])))
+print(zlib.compress(\"foo\".to_cstr(ENCODINGS[\"utf-8\"])))
 """, self.format_binary("".join(data)))
 
     def test_decompress_file0(self):
@@ -36,7 +36,7 @@ print(zlib.compress(\"foo\".to_bin(ENCODINGS[\"utf-8\"])))
         self._test("""
 import zlib
 enable_gc_stress()
-print(zlib.decompress(zlib.compress(\"foo\".to_bin(ENCODINGS[\"utf-8\"]))))
+print(zlib.decompress(zlib.compress(\"foo\".to_cstr(ENCODINGS[\"utf-8\"]))))
 """, self.format_binary("".join(data)))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
