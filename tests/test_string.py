@@ -185,27 +185,27 @@ puts(s)
 """, """foobarbaz
 """)
 
-    def test_each_char1(self):
+    def test_each1(self):
         self._test("""
-\"foo\".each_char() do |c|
+\"foo\".each() do |c|
   puts(c)
 end""", """f
 o
 o
 """)
 
-    def test_each_char2(self):
+    def test_each2(self):
         self._test(u"""
-\"日本語\".each_char() do |c|
+\"日本語\".each() do |c|
   puts(c)
 end""", u"""日
 本
 語
 """)
 
-    def test_each_char3(self):
+    def test_each3(self):
         self._test("""
-\"\".each_char() do |c|
+\"\".each() do |c|
   print(42)
 end
 """, "")

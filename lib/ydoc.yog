@@ -325,7 +325,7 @@ class HtmlGenerator > Generator
 
   def escape_html(s)
     t = ""
-    s.each_char() do |c|
+    s.each() do |c|
       tbl = { "<": "&lt;", ">": "&gt;", "&": "&amp;", "\"": "&quot;" }
       t << tbl.get(c, c)
     end

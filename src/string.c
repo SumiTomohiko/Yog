@@ -983,7 +983,7 @@ dump(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 }
 
 static YogVal
-each_char(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
+each(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal block)
 {
     SAVE_ARGS5(env, self, pkg, args, kw, block);
     YogVal enc = YUNDEF;
@@ -992,7 +992,7 @@ each_char(YogEnv* env, YogVal self, YogVal pkg, YogVal args, YogVal kw, YogVal b
     PUSH_LOCALSX(env, array_sizeof(a), a);
     CHECK_SELF_TYPE(env, self);
     YogCArg params[] = { { NULL, NULL } };
-    YogGetArgs_parse_args(env, "each_char", params, args, kw);
+    YogGetArgs_parse_args(env, "each", params, args, kw);
 
     uint_t size = STRING_SIZE(self);
     uint_t i;
@@ -1155,7 +1155,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
 } while (0)
     DEFINE_METHOD("[]=", assign_subscript);
     DEFINE_METHOD("dump", dump);
-    DEFINE_METHOD("each_char", each_char);
+    DEFINE_METHOD("each", each);
     DEFINE_METHOD("each_line", each_line);
     DEFINE_METHOD("get", get);
     DEFINE_METHOD("gsub", gsub);
