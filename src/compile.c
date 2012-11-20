@@ -1146,7 +1146,7 @@ scan_var_visit_nonlocal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     for (i = 0; i < size; i++) {
         YogVal val = YogArray_at(env, names, i);
         ID name = VAL2ID(val);
-        register_var(env,  data, name, VAR_FLAG_NONLOCAL);
+        register_var(env, data, name, VAR_FLAG_NONLOCAL);
     }
 
     RETURN_VOID(env);
