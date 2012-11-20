@@ -1074,7 +1074,7 @@ scan_var_visit_except(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal data
     YogVal excepts = NODE(node)->u.except.excepts;
     PUSH_LOCAL(env, excepts);
     uint_t size = YogArray_size(env, excepts);
-    uint_t i = 0;
+    uint_t i;
     for (i = 0; i < size; i++) {
         YogVal node = YogArray_at(env, excepts, i);
         visitor->visit_except_body(env, visitor, node, data);
@@ -1142,7 +1142,7 @@ scan_var_visit_nonlocal(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal da
     PUSH_LOCAL(env, names);
     uint_t size = YogArray_size(env, names);
 
-    uint_t i = 0;
+    uint_t i;
     for (i = 0; i < size; i++) {
         YogVal val = YogArray_at(env, names, i);
         ID name = VAL2ID(val);
@@ -2644,7 +2644,7 @@ setup_params(YogEnv* env, YogVal vars, YogVal params, YogVal code)
 
     uint_t size = YogArray_size(env, params);
     uint_t argc = 0;
-    uint_t i = 0;
+    uint_t i;
     for (i = 0; i < size; i++) {
         YogVal node = YogArray_at(env, params, i);
         if (NODE(node)->type != NODE_PARAM) {
