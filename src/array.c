@@ -71,7 +71,7 @@ YogValArray_new(YogEnv* env, uint_t size)
     YogGC_check_multiply_overflow(env, size, sizeof(YogVal));
     YogVal array = ALLOC_OBJ_ITEM(env, YogValArray_keep_children, NULL, YogValArray, size, YogVal);
     PTR_AS(YogValArray, array)->size = size;
-	uint_t i;
+    uint_t i;
     for (i = 0; i < size; i++) {
         PTR_AS(YogValArray, array)->items[i] = YNIL;
     }
