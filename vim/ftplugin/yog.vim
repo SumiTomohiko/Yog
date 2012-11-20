@@ -5,7 +5,7 @@ syntax region Comment start="#" end="$"
 syntax keyword Boolean true false
 syntax keyword Constant nil
 syntax match Constant "'\h\w*"
-syntax region String start="\"" skip="\\\"" end="\""
+syntax region String start="\"" skip="\(\\\"\|\\\\\)" end="\""
 syntax match Number "\<\d\(\d\|_\)*"
 syntax match Number "\<0[Xx]\x\(\x\|_\)*"
 syntax match Number "\<0[Bb][0-1][0-1_]*"
