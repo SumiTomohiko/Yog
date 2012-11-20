@@ -1149,6 +1149,7 @@ YogString_define_classes(YogEnv* env, YogVal pkg)
     cString = YogClass_new(env, "String", vm->cObject);
     YogClass_define_allocator(env, cString, alloc);
     YogClass_include_module(env, cString, vm->mComparable);
+    YogClass_include_module(env, cString, vm->mEnumerable);
     vm->cString = cString;
 #define DEFINE_METHOD(name, f)  do { \
     YogClass_define_method(env, cString, pkg, (name), (f)); \
