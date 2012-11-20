@@ -52,4 +52,19 @@ def drop_until(&block)
   end
 end
 
+def divide(size)
+  a = [self.class.new()]
+  i = 0
+  self.each() do |elem|
+    if i < size
+      a[-1] << elem
+      i += 1
+      next
+    end
+    a << (self.class.new() << elem)
+    i = 1
+  end
+  return a
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

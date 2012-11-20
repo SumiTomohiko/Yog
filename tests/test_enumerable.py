@@ -81,4 +81,14 @@ end)\"\"\", \"{expected}\")
 end)\"\"\", \"{expected}\")
 """.format(i=10 * i, a=a, expr=expr, expected=expected))
 
+    for i, s, size, expected in enumerate_tuples((
+            ("foo", 1, "[\\\"f\\\", \\\"o\\\", \\\"o\\\"]"),
+            ("foo", 2, "[\\\"fo\\\", \\\"o\\\"]"),
+            ("foo", 3, "[\\\"foo\\\"]"),
+            ("foo", 4, "[\\\"foo\\\"]"),
+            ("foobar", 2, "[\\\"fo\\\", \\\"ob\\\", \\\"ar\\\"]"))):
+        exec("""def test_divide{i}(self):
+    self._test(\"print(\\\"{s}\\\".divide({size}))\", \"{expected}\")
+""".format(i=10 * i, s=s, size=size, expected=expected))
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
