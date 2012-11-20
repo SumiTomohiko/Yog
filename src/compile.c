@@ -358,7 +358,8 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
         (*visitor->visit_##f)(env, visitor, node, arg); \
     } \
 } while (0)
-    switch (NODE(node)->type) {
+    YogNodeType type = NODE(node)->type;
+    switch (type) {
     case NODE_ARRAY:
         VISIT(array);
         break;
@@ -462,7 +463,7 @@ visit_node(YogEnv* env, AstVisitor* visitor, YogVal node, YogVal arg)
         VISIT(while);
         break;
     default:
-        YOG_BUG(env, "Unknown node type (0x%08x)", NODE(node)->type);
+        YOG_BUG(env, "Unknown node type (0x%08x) at %p", type, (void*)node);
         break;
     }
 #undef VISIT
