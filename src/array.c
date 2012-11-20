@@ -99,6 +99,16 @@ get_next_size(uint_t min_size, uint_t cur_size, uint_t ratio)
 }
 
 static void
+copy_body(YogEnv* env, YogVal new, YogVal old, uint_t size)
+{
+    uint_t i;
+    for (i = 0; i < size; i++) {
+        YogVal v = PTR_AS(YogValArray, old)->items[i];
+        YogGC_UPDATE_PTR(env, PTR_AS(YogValArray, new), items[i], v);
+    }
+}
+
+static void
 ensure_body_size(YogEnv* env, YogVal array, uint_t size)
 {
     SAVE_ARG(env, array);
@@ -114,10 +124,7 @@ ensure_body_size(YogEnv* env, YogVal array, uint_t size)
         uint_t new_size = get_next_size(size, old_size, INCREASE_RATIO);
 #undef INCREASE_RATIO
         YogVal new_body = YogValArray_new(env, new_size);
-        size_t cur_size = PTR_AS(YogArray, array)->size;
-        YogVal* to = PTR_AS(YogValArray, new_body)->items;
-        YogVal* from = PTR_AS(YogValArray, old_body)->items;
-        memcpy(to, from, sizeof(YogVal) * cur_size);
+        copy_body(env, new_body, old_body, PTR_AS(YogArray, array)->size);
 
         YogGC_UPDATE_PTR(env, PTR_AS(YogArray, array), body, new_body);
     }
