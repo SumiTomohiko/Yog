@@ -43,7 +43,7 @@ import ydoc
 ydoc.run(\"test\", \"%(destdir)s\", \"%(index)s\", generator: Generator)
 """ % { "destdir": self.escape_special_chars(destdir), "index": self.escape_special_chars(index) })
 
-    def do_test(self, src, expected):
+    def do_test(self, src, expected, remove_tmpdir=True):
         tmpdir = mkdtemp()
         try:
             index = join(tmpdir, "index.ydoc")
@@ -56,7 +56,8 @@ ydoc.run(\"test\", \"%(destdir)s\", \"%(index)s\", generator: Generator)
 
             actual = self.read(join(destdir, "index.html")).rstrip()
         finally:
-            rmtree(tmpdir)
+            if remove_tmpdir:
+                rmtree(tmpdir)
 
         e = expected.rstrip().split("\n")
         a = actual.rstrip().split("\n")
