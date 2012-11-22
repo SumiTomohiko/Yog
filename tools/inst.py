@@ -395,9 +395,13 @@ CompileData_add_%(inst)s(YogEnv* env, YogVal data, uint_t lineno""" % { "inst": 
     PTR_AS(YogInst, inst)->opcode = OP(%(name)s);
 """ % { "name": inst.name.upper(), "s": s, "save_arg_args_num": save_arg_args_num, "save_arg_args":  ", ".join(["env", "data"] + map(lambda op: op.name, pc_operands)), })
             for operand in inst.operands:
-                compile_data.write("""
+                fmt = """
     PTR_AS(YogInst, inst)->u.%(opcode)s.%(operand)s = %(operand)s;
-""" % { "operand": operand.name , "opcode": inst.name })
+""" if operand.type != "pc_t" else """
+    YogGC_UPDATE_PTR(env, PTR_AS(YogInst, inst), u.%(opcode)s.%(operand)s, %(operand)s);
+"""
+                d = { "operand": operand.name, "opcode": inst.name }
+                compile_data.write(fmt % d)
             compile_data.write("""
 
     add_inst(env, data, inst);
