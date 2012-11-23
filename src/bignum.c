@@ -1044,7 +1044,11 @@ int_t
 YogBignum_compare_with_long_long(YogEnv* env, YogVal self, long long n)
 {
     SAVE_ARG(env, self);
-    RETURN_IF_DIFFERENT_SIGN(self, n);
+    int sign_of_self = BIGNUM_SIGN(self);
+    int sign_of_n = 0 < n ? 1 : -1;
+    if (sign_of_self * sign_of_n < 0) {
+        RETURN(env, sign_of_self);
+    }
 
     YogVal n2 = YogBignum_from_long_long(env, n);
     int retval = bdCompare(BIGNUM_NUM(self), BIGNUM_NUM(n2));
