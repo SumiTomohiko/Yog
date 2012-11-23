@@ -4,6 +4,8 @@ from testcase import TestCase, enumerate_tuples
 
 class TestQuotedPrintable(TestCase):
 
+    options = []
+
     for i, qp, expected in enumerate_tuples((
             ("foo", "0x66 0x6f 0x6f"),
             ("foo=3D", "0x66 0x6f 0x6f 0x3d"),
