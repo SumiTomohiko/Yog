@@ -99,7 +99,7 @@ class TestBase64(TestCase):
             ("AA8=", "0x00 0x0f"))):
         exec("""def test_to_bin{i}(self):
     self._test(\"\"\"from base64 import base64_to_bin
-print(base64_to_bin(\\\"{src}\\\").to_a().map(\\\"0x{{0:02}}\\\".format).join(\\\" \\\"))\"\"\", \"{expected}\")
+print(base64_to_bin(\\\"{src}\\\").to_a().map(&get_attr(\\\'to_s) + apply(16) + \\\"0x{{0:02}}\\\".format).join(\\\" \\\"))\"\"\", \"{expected}\")
 """.format(i=10 * i, src=src, expected=expected))
 
     for i, src, expected in enumerate_tuples((("Zm9v", "foo"), )):
