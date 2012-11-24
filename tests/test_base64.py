@@ -6,7 +6,7 @@ class TestBase64(TestCase):
 
     options = []
 
-    for i, base64, expected in enumerate_tuples((
+    for i, src, expected in enumerate_tuples((
             ("AAAA", "0x00 0x00 0x00"),
             ("AAAB", "0x00 0x00 0x01"),
             ("AABA", "0x00 0x00 0x40"),
@@ -97,9 +97,15 @@ class TestBase64(TestCase):
             ("AA0=", "0x00 0x0d"),
             ("AA4=", "0x00 0x0e"),
             ("AA8=", "0x00 0x0f"))):
-        exec("""def test_decode{i}(self):
+        exec("""def test_to_bin{i}(self):
     self._test(\"\"\"from base64 import base64_to_bin
-print(base64_to_bin(\\\"{base64}\\\").to_a().map(\\\"0x{{0:02}}\\\".format).join(\\\" \\\"))\"\"\", \"{expected}\")
-""".format(i=10 * i, base64=base64, expected=expected))
+print(base64_to_bin(\\\"{src}\\\").to_a().map(\\\"0x{{0:02}}\\\".format).join(\\\" \\\"))\"\"\", \"{expected}\")
+""".format(i=10 * i, src=src, expected=expected))
+
+    for i, src, expected in enumerate_tuples((("Zm9v", "foo"), )):
+        exec("""def test_to_s{i}(self):
+    self._test(\"\"\"from base64 import base64_to_s
+print(base64_to_s(\\\"{src}\\\", ENCODINGS[\\\"utf-8\\\"]))\"\"\", \"{expected}\")
+""".format(i=10 * i, src=src, expected=expected))
 
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python
