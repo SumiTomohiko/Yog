@@ -63,6 +63,7 @@ print(bin.size)\"\"\", \"{expected}\")
 
     for i, data, index in enumerate_tuples((
             ([42], 0),
+            ([255], 0),
             ([42], -1),
             ([42, 26], 0),
             ([42, 26], 1),

@@ -367,7 +367,7 @@ subscript(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* index)
         /* NOTREACHED */
     }
 
-    return INT2VAL(BINARY_CSTR(HDL2VAL(self))[pos]);
+    return INT2VAL((unsigned char)BINARY_CSTR(HDL2VAL(self))[pos]);
 }
 
 static YogVal
