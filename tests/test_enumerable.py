@@ -91,4 +91,7 @@ end)\"\"\", \"{expected}\")
     self._test(\"print(\\\"{s}\\\".divide({size}))\", \"{expected}\")
 """.format(i=10 * i, s=s, size=size, expected=expected))
 
+    def test_select0(self):
+        self._test("print(\"foo\".select(&eq(\"o\")))", "oo")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

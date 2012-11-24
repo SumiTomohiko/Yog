@@ -67,4 +67,14 @@ def divide(size)
   return a
 end
 
+def select(&block)
+  a = self.class.new()
+  self.each() do |elem|
+    if block(elem)
+      a << elem
+    end
+  end
+  return a
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
