@@ -94,4 +94,7 @@ end)\"\"\", \"{expected}\")
     def test_select0(self):
         self._test("print(\"foo\".select(&eq(\"o\")))", "oo")
 
+    def test_reject0(self):
+        self._test("print(\"foo\".reject(&eq(\"o\")))", "f")
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

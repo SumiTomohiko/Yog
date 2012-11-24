@@ -77,4 +77,8 @@ def select(&block)
   return a
 end
 
+def reject(&block)
+  return self.select(&block + not)
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
