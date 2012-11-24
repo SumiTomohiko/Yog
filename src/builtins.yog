@@ -20,6 +20,8 @@ def neq(x)
   return f
 end
 
+not = neq(true)
+
 def lt(x)
   def f(y)
     return y < x

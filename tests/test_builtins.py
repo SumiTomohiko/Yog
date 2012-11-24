@@ -9,6 +9,12 @@ from testcase import TestCase, enumerate_tuples
 
 class TestBuiltins(TestCase):
 
+    def test_not0(self):
+        self._test("print(not(true))", "false")
+
+    def test_not10(self):
+        self._test("print(not(false))", "true")
+
     def test_get0(self):
         self._test("print(get(42)())", "42")
 
