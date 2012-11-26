@@ -9,6 +9,10 @@ from testcase import TestCase, enumerate_tuples
 
 class TestBuiltins(TestCase):
 
+    def test_call_method0(self):
+        src = "print(call_method(\'split, \"\\n\")(\"foo\\nbar\"))"
+        self._test(src, "[\"foo\", \"bar\"]")
+
     def test_not0(self):
         self._test("print(not(true))", "false")
 

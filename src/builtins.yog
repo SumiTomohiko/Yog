@@ -220,4 +220,11 @@ def tee(o)
   return o
 end
 
+def call_method(name, *args, **kw)
+  def f(o)
+    return o.get_attr(name)(*args, **kw)
+  end
+  return f
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
