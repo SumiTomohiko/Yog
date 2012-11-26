@@ -37,6 +37,7 @@ void YogMisc_check_Fixnum_optional(YogEnv*, YogHandle*, const char*);
 void YogMisc_check_String(YogEnv*, YogHandle*, const char*);
 void YogMisc_eval_source(YogEnv*, YogHandle*, const char*);
 YogHandle* YogMisc_format_method(YogEnv*, YogHandle*, YogHandle*);
+YogHandle* YogMisc_format_method_id(YogEnv*, ID, ID);
 void* YogMisc_load_lib(YogEnv*, YogHandle*);
 void YogMisc_raise_TypeError(YogEnv*, YogVal, const char*, const char*);
 

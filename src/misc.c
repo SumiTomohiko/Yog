@@ -65,6 +65,16 @@ YogMisc_load_lib(YogEnv* env, YogHandle* filename)
 }
 
 YogHandle*
+YogMisc_format_method_id(YogEnv* env, ID class_name, ID func_name)
+{
+    if (class_name == INVALID_ID) {
+        return VAL2HDL(env, YogSprintf_sprintf(env, "%I", func_name));
+    }
+    const char* fmt = "%I#%I";
+    return VAL2HDL(env, YogSprintf_sprintf(env, fmt, class_name, func_name));
+}
+
+YogHandle*
 YogMisc_format_method(YogEnv* env, YogHandle* class_name, YogHandle* func_name)
 {
     if ((class_name == NULL) || (!IS_PTR(HDL2VAL(class_name)))) {
