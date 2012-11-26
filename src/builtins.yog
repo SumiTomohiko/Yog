@@ -20,7 +20,9 @@ def neq(x)
   return f
 end
 
-not = neq(true)
+def not(x)
+  return !x
+end
 
 def lt(x)
   def f(y)

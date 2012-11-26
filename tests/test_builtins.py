@@ -13,11 +13,14 @@ class TestBuiltins(TestCase):
         src = "print(call_method(\'split, \"\\n\")(\"foo\\nbar\"))"
         self._test(src, "[\"foo\", \"bar\"]")
 
-    def test_not0(self):
-        self._test("print(not(true))", "false")
-
-    def test_not10(self):
-        self._test("print(not(false))", "true")
+    for i, expr, expected in enumerate_tuples((
+            ("true", "false"),
+            ("false", "true"),
+            ("nil", "true"),
+            ("42", "false"))):
+        exec("""def test_not{i}(self):
+    self._test(\"print(not({expr}))\", \"{expected}\")
+""".format(i=10 * i, expr=expr, expected=expected))
 
     def test_get0(self):
         self._test("print(get(42)())", "42")
