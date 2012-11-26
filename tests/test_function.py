@@ -4,6 +4,60 @@ from testcase import TestCase
 
 class TestFunction(TestCase):
 
+    def test_variable_args0(self):
+        self._test("""def foo(*args)
+  print(args)
+end
+foo()""", "[]")
+
+    def test_variable_args10(self):
+        self._test("""def foo(*args)
+  print(args)
+end
+foo(42)""", "[42]")
+
+    def test_variable_args20(self):
+        self._test("""def foo(*args)
+  print(args)
+end
+foo(42, 26)""", "[42, 26]")
+
+    def test_variable_args30(self):
+        self._test("""def foo(x, *args)
+  print(x)
+end
+foo(42)""", "42")
+
+    def test_variable_args40(self):
+        self._test("""def foo(x, *args)
+  print(args)
+end
+foo(42)""", "[]")
+
+    def test_variable_args50(self):
+        self._test("""def foo(x, *args)
+  print(args)
+end
+foo(42, 26)""", "[26]")
+
+    def test_variable_args60(self):
+        self._test("""def foo(x, *args)
+  print(args)
+end
+foo(42, 26, \"foo\")""", "[26, \"foo\"]")
+
+    def test_variable_args70(self):
+        self._test("""def foo(n=42)
+  print(n)
+end
+foo(*[])""", "42")
+
+    def test_variable_args80(self):
+        msg = "foo() requires 1 positional argument(s) (0 given)"
+        self._test_exception("""def foo(x)
+end
+foo(*[])""", "ArgumentError", msg)
+
     def test_func(self):
         self._test("""
 def foo()
