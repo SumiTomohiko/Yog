@@ -67,6 +67,14 @@ check_arg_assigned(YogEnv* env, YogVal self, YogVal arg, uint_t posargc)
 }
 
 static void
+raise_ArgumentError(YogEnv* env, YogHandle* name, uint_t args_num, uint_t posargc)
+{
+    const char* fmt = "%S() requires %u positional argument(s) (%u given)";
+    YogError_raise_ArgumentError(env, fmt, HDL2VAL(name), args_num, posargc);
+    /* NOTREACHED */
+}
+
+static void
 fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, YogHandle* posargs[], YogHandle* blockarg, uint8_t kwargc, YogHandle* kwargs[], YogHandle* vararg, YogHandle* varkwarg, YogHandle* frame)
 {
     YOG_ASSERT(env, IS_PTR(self->val), "invalid self (0x%x)", self);
@@ -93,6 +101,7 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
 
     uint_t i;
     uint_t arg_argc = HDL_AS(YogArgInfo, arg_info)->argc;
+    uint_t required_argc = HDL_AS(YogArgInfo, arg_info)->required_argc;
     if (arg_argc < posargc) {
         uint_t argc = HDL_AS(YogArgInfo, arg_info)->argc;
         for (i = 0; i < argc; i++) {
@@ -126,8 +135,16 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
         else if (!IS_PTR(vararg->val) || (BASIC_OBJ_TYPE(vararg->val) != TYPE_ARRAY)) {
             YogError_raise_TypeError_for_vararg(env, vararg->val);
         }
+        else if (YogArray_size(env, HDL2VAL(vararg)) < required_argc - posargc) {
+            YogVal code = HDL_AS(YogFunction, self)->code;
+            ID cname = PTR_AS(YogCode, code)->class_name;
+            ID fname = PTR_AS(YogCode, code)->func_name;
+            YogHandle* name = YogMisc_format_method_id(env, cname, fname);
+            raise_ArgumentError(env, name, arg_argc, posargc);
+            /* NOTREACHED */
+        }
         else {
-            for (i = posargc; i < arg_argc; i++) {
+            for (i = posargc; i < required_argc; i++) {
                 YogVal val = YogArray_at(env, vararg->val, i - posargc);
                 STORE_LOCAL(env, frame, args_offset + i, val);
             }
@@ -191,7 +208,6 @@ fill_args(YogEnv* env, YogHandle* self, uint_t args_offset, uint8_t posargc, Yog
         STORE_LOCAL(env, frame, args_offset + index, blockarg->val);
     }
 
-    uint_t required_argc = HDL_AS(YogArgInfo, arg_info)->required_argc;
     for (i = 0; i < required_argc; i++) {
         YogVal val = SCRIPT_FRAME_LOCALS(HDL2VAL(frame))[args_offset + i];
         check_arg_assigned(env, self->val, val, posargc);
@@ -419,12 +435,10 @@ YogNativeFunction2_format_method(YogEnv* env, YogHandle* self)
 }
 
 static void
-raise_ArgumentError(YogEnv* env, YogHandle* self, uint_t args_num, uint_t posargc)
+raise_ArgumentError_of_native2(YogEnv* env, YogHandle* self, uint_t args_num, uint_t posargc)
 {
     YogHandle* name = YogNativeFunction2_format_method(env, self);
-    const char* fmt = "%S() requires %u positional argument(s) (%u given)";
-    YogError_raise_ArgumentError(env, fmt, HDL2VAL(name), args_num, posargc);
-    /* NOTREACHED */
+    raise_ArgumentError(env, name, args_num, posargc);
 }
 
 static void
@@ -439,7 +453,7 @@ set_posarg(YogEnv* env, YogHandle* self, uint_t args_num, YogHandle* args[], uin
         return;
     }
 
-    raise_ArgumentError(env, self, args_num, posargc);
+    raise_ArgumentError_of_native2(env, self, args_num, posargc);
 }
 
 static int_t
@@ -585,7 +599,7 @@ raise_ArgumentError_if_not_given(YogEnv* env, YogHandle* self, uint_t i, YogHand
     if (args[i] != NULL) {
         return;
     }
-    raise_ArgumentError(env, self, args_num, posargc);
+    raise_ArgumentError_of_native2(env, self, args_num, posargc);
 }
 
 static YogVal
