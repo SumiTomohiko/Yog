@@ -1,4 +1,25 @@
 
+def lshift(width)
+  def f(x)
+    return x << width
+  end
+  return f
+end
+
+def rshift(width)
+  def f(x)
+    return x >> width
+  end
+  return f
+end
+
+def subscript(index)
+  def f(a)
+    return a[index]
+  end
+  return f
+end
+
 def get(o)
   def f(*_, **__)
     return o

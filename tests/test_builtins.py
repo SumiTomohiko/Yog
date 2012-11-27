@@ -9,6 +9,15 @@ from testcase import TestCase, enumerate_tuples
 
 class TestBuiltins(TestCase):
 
+    def test_subscript0(self):
+        self._test("print(subscript(0)([42]))", "42")
+
+    def test_lshift0(self):
+        self._test("print(lshift(1)(42))", "84")
+
+    def test_rshift0(self):
+        self._test("print(rshift(1)(42))", "21")
+
     def test_call_method0(self):
         src = "print(call_method(\'split, \"\\n\")(\"foo\\nbar\"))"
         self._test(src, "[\"foo\", \"bar\"]")
