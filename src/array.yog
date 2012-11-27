@@ -161,4 +161,12 @@ def split(max=nil, &block)
   return retval
 end
 
+def reverse()
+  a = Array.new(self.size)
+  self.each_with_index() do |index, elem|
+    a[- (index + 1)] = elem
+  end
+  return a
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

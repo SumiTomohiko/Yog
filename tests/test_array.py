@@ -4,6 +4,14 @@ from testcase import TestCase, enumerate_tuples
 
 class TestArray(TestCase):
 
+    for i, a, expected in enumerate_tuples((
+            ("[]", "[]"),
+            ("[42]", "[42]"),
+            ("[42, 26]", "[26, 42]"))):
+        exec("""def test_reverse{i}(self):
+    self._test(\"print({a}.reverse())\", \"{expected}\")
+""".format(i=10 * i, a=a, expected=expected))
+
     def test_any0(self):
         self._test("print([].any?(&nop))", "false")
 
