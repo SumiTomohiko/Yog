@@ -4,6 +4,24 @@ from testcase import TestCase
 
 class TestCallable(TestCase):
 
+    def test_reverse_args0(self):
+        self._test("""def foo(*args)
+  print(*args)
+end
+foo.reverse_args()()""", "")
+
+    def test_reverse_args10(self):
+        self._test("""def foo(*args)
+  print(*args)
+end
+foo.reverse_args()(42)""", "42")
+
+    def test_reverse_args20(self):
+        self._test("""def foo(*args)
+  print(*args)
+end
+foo.reverse_args()(42, 26)""", "2642")
+
     def test_partial0(self):
         self._test("""f = print.partial(42)
 f()""", "42")

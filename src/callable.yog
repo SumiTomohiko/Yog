@@ -1,4 +1,12 @@
 
+def reverse_args()
+  @bind(self)
+  def f(*args, **kw)
+    return self(*args.reverse(), **kw)
+  end
+  return f
+end
+
 def +(f)
   @bind(self)
   def g(*args, **kw)
