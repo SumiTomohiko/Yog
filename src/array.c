@@ -338,14 +338,14 @@ static YogVal
 init(YogEnv* env, YogHandle* self, YogHandle* pkg, YogHandle* size, YogHandle* block)
 {
     CHECK_SELF_TYPE2(env, self);
-    YogMisc_check_Fixnum(env, size, "size");
-    if (VAL2INT(HDL2VAL(size)) < 0) {
-        const char* fmt = "size must be positive, not %d";
-        YogError_raise_ValueError(env, fmt, VAL2INT(HDL2VAL(size)));
+    YogMisc_check_Fixnum_optional(env, size, "size");
+    int_t n = size == NULL ? 0 : VAL2INT(HDL2VAL(size));
+    if (n < 0) {
+        YogError_raise_ValueError(env, "size must be positive, not %d", n);
     }
-    YogVal body = YogValArray_new(env, VAL2INT(HDL2VAL(size)));
+    YogVal body = YogValArray_new(env, n);
     YogGC_UPDATE_PTR(env, HDL_AS(YogArray, self), body, body);
-    HDL_AS(YogArray, self)->size = VAL2INT(HDL2VAL(size));
+    HDL_AS(YogArray, self)->size = n;
     if ((block == NULL) || IS_NIL(HDL2VAL(block))) {
         return HDL2VAL(self);
     }
@@ -601,7 +601,7 @@ YogArray_define_classes(YogEnv* env, YogVal pkg)
     YogClass_define_method2(env, cArray, pkg, (name), __VA_ARGS__); \
 } while (0)
     DEFINE_METHOD2("[]", subscript, "index", NULL);
-    DEFINE_METHOD2("init", init, "size", "|", "&", NULL);
+    DEFINE_METHOD2("init", init, "|", "size", "&", NULL);
 #undef DEFINE_METHOD2
 #define DEFINE_PROP(name, getter, setter)   do { \
     YogClass_define_property(env, cArray, pkg, (name), (getter), (setter)); \
