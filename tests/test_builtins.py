@@ -9,6 +9,30 @@ from testcase import TestCase, enumerate_tuples
 
 class TestBuiltins(TestCase):
 
+    def test_and0(self):
+        self._test("print(and()(42))", "true")
+
+    def test_and10(self):
+        self._test("print(and(get(false))(42))", "false")
+
+    def test_and20(self):
+        self._test("print(and(get(true))(42))", "true")
+
+    def test_and30(self):
+        self._test("print(and(get(true), get(true))(42))", "true")
+
+    def test_and40(self):
+        self._test("print(and(get(true), get(false))(42))", "false")
+
+    def test_and50(self):
+        self._test("print(and(get(false), get(true))(42))", "false")
+
+    def test_and60(self):
+        self._test("print(and(get(true), get(true), get(true))(42))", "true")
+
+    def test_and70(self):
+        self._test("and(print + get(true), print + get(true))(42)", "4242")
+
     def test_or0(self):
         self._test("print(or()(42))", "false")
 
