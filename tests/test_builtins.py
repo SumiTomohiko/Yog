@@ -9,6 +9,12 @@ from testcase import TestCase, enumerate_tuples
 
 class TestBuiltins(TestCase):
 
+    def test_mod0(self):
+        self._test("print(mod(42)(26))", "26")
+
+    def test_mod10(self):
+        self._test("print(mod(42)(42))", "0")
+
     def test_and0(self):
         self._test("print(and()(42))", "true")
 

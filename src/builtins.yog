@@ -1,4 +1,11 @@
 
+def mod(x)
+  def f(y)
+    return y % x
+  end
+  return f
+end
+
 def or(*args)
   def f(x)
     args.each() do |elem|
