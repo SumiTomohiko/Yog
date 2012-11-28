@@ -1,4 +1,16 @@
 
+def or(*args)
+  def f(x)
+    args.each() do |elem|
+      if elem(x)
+        return true
+      end
+    end
+    return false
+  end
+  return f
+end
+
 def lshift(width)
   def f(x)
     return x << width
