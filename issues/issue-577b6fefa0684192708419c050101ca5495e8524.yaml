@@ -3,7 +3,7 @@ title: Make Binary#to_s which accepts an encoding of a String object.
 desc: ""
 type: :task
 component: core
-release: 0.42.0
+release: 1.0.0dev1
 reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed
 disposition: :fixed

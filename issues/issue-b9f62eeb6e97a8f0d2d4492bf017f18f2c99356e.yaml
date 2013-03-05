@@ -3,7 +3,7 @@ title: StructClassClass#new causes aborting
 desc: Foo = StructClass.new("Foo", [['int]])
 type: :bugfix
 component: core
-release: 0.42.0
+release: 1.0.0dev1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed
 disposition: :wontfix

@@ -3,7 +3,7 @@ title: Array#sort's block parameter must be optional.
 desc: Default is "next x <=> y".
 type: :task
 component: core
-release: 0.42.0
+release: 1.0.0dev1
 reporter: Sumi Tomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed
 disposition: :fixed

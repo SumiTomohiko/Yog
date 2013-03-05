@@ -3,7 +3,7 @@ title: Change Binary#to_s to Binary#inspect.
 desc: Current implementation of Binary#to_s is Binary#inspect.
 type: :task
 component: core
-release: 0.42.0
+release: 1.0.0dev1
 reporter: SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>
 status: :closed
 disposition: :fixed

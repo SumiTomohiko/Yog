@@ -93,7 +93,7 @@ releases:
     - released
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
-  name: 0.42.0
+  name: 1.0.0dev1
   status: :unreleased
   release_time: 
   log_events: 
