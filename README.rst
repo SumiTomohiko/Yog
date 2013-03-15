@@ -9,18 +9,14 @@ Features
 ========
 
 * Syntax like Python and Ruby
-* Object Oriented
-  * Class based
-* Garbage Collection
-* The MIT License
+* Class based object oriented
+* Garbage collection
+* under MIT license
 
 Requirements
 ============
 
-* CPU
-  * Intel x86
-* OS
-  * FreeBSD 8.2
+* FreeBSD 9.1/amd64
 
 Previous versions supported Ubuntu Linux and OpenBSD, but this version does not.
 Future version will support again.
@@ -36,12 +32,14 @@ Offline documents are available in the ``doc/html`` directory.
 Download
 ========
 
-See http://neko-daisuki.ddo.jp/~SumiTomohiko/yog/index.html.
+.tar.xz are available at `author's repository <http://neko-daisuki.ddo.jp/~SumiTomohiko/repos/index.html>`_.
 
 Build Instructions
 ==================
 
-See ``INSTALL``.
+::
+
+  $ ./configure && make
 
 Issue Tracking System
 =====================
@@ -52,8 +50,8 @@ Original data are in the ``issues`` dicretory of the source tree.
 Plan
 ====
 
-version 0.42.0
---------------
+version 1.0.0
+-------------
 
 * GPL free
   * `waf <http://code.google.com/p/waf/>`_'ize to remove autotools
@@ -64,6 +62,6 @@ version 0.42.0
 Author
 ======
 
-See ``AUTHORS``.
+The author of Yog is `SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>`_.
 
 .. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
