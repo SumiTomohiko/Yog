@@ -1,7 +1,8 @@
-MIT License
-===========
 
-Copyright (c) 2009-2011 Tomohiko Sumi
+MIT License
+***********
+
+Copyright (c) 2009-2013 Tomohiko Sumi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,3 +21,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+.. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
