@@ -62,6 +62,7 @@ version 1.0.0
 Author
 ======
 
-The author of Yog is `SumiTomohiko <SumiTomohiko@neko-daisuki.ddo.jp>`_.
+The author of Yog is
+`SumiTomohiko <http://neko-daisuki.ddo.jp/~SumiTomohiko/index.html>`_.
 
 .. vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
