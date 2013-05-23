@@ -2,13 +2,7 @@
 from os.path import abspath, join
 from re import search
 
-def read_version():
-    with open("README") as fp:
-        for line in fp:
-            m = search(r"\d+\.\d+\.\d+$", line)
-            if m is None:
-                continue
-            return m.group()
+VERSION = "1.0.0dev1"
 
 submodules = ["BigDigits", "corgi", "libffi"]
 
@@ -54,7 +48,7 @@ def configure(conf):
     check_sizeof(["int", "long", "long long", "void*"])
     check_lib(["pthread", "dl", "syck", "zip"])
 
-    define("PACKAGE_VERSION", read_version())
+    define("PACKAGE_VERSION", VERSION)
     define("PREFIX", get_option("prefix", "/usr/local"))
 
     make_config_h("include/yog/config.h")
