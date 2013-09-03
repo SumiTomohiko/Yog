@@ -864,7 +864,7 @@ do_match_or_search(YogEnv* env, YogHandle* self, YogHandle* regexp, int_t pos, C
 
     YogVal match = YogMatch_new(env, self, regexp);
     CorgiMatch* corgi_match = &PTR_AS(YogMatch, match)->corgi_match;
-    CorgiRegexp* corgi_regexp = &HDL_AS(YogRegexp, regexp)->corgi_regexp;
+    CorgiRegexp* corgi_regexp = HDL_AS(YogRegexp, regexp)->corgi_regexp;
     CorgiChar* begin = STRING_CHARS(HDL2VAL(self));
     CorgiChar* end = begin + STRING_SIZE(HDL2VAL(self));
     CorgiChar* at = begin + pos;

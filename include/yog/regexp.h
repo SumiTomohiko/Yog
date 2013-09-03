@@ -7,7 +7,7 @@
 
 struct YogRegexp {
     YOGBASICOBJ_HEAD;
-    CorgiRegexp corgi_regexp;
+    CorgiRegexp* corgi_regexp;
 };
 
 typedef struct YogRegexp YogRegexp;

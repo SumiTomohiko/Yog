@@ -69,8 +69,9 @@ YogMatch_new(YogEnv* env, YogHandle* str, YogHandle* regexp)
 static void
 YogRegexp_finalize(YogEnv* env, void* ptr)
 {
-    YogRegexp* regexp = PTR_AS(YogRegexp, ptr);
-    corgi_fini_regexp(&regexp->corgi_regexp);
+    CorgiRegexp* corgi_regexp = PTR_AS(YogRegexp, ptr)->corgi_regexp;
+    corgi_fini_regexp(corgi_regexp);
+    YogGC_free(env, corgi_regexp, sizeof(*corgi_regexp));
 }
 
 YogVal
@@ -79,14 +80,17 @@ YogRegexp_new(YogEnv* env, YogVal pattern, BOOL ignore_case)
     YogHandle* h = VAL2HDL(env, pattern);
     YogVal regexp = ALLOC_OBJ(env, YogBasicObj_keep_children, YogRegexp_finalize, YogRegexp);
     YogBasicObj_init(env, regexp, TYPE_REGEXP, 0, env->vm->cRegexp);
-    corgi_init_regexp(&PTR_AS(YogRegexp, regexp)->corgi_regexp);
+    size_t size = sizeof(CorgiRegexp);
+    CorgiRegexp* corgi_regexp = (CorgiRegexp*)YogGC_malloc(env, size);
+    corgi_init_regexp(corgi_regexp);
+    PTR_AS(YogRegexp, regexp)->corgi_regexp = corgi_regexp;
 
     CorgiChar* begin = STRING_CHARS(HDL2VAL(h));
     CorgiOptions opts = 0;
     if (ignore_case) {
         opts |= CORGI_OPT_IGNORE_CASE;
     }
-    CorgiRegexp* reg = &PTR_AS(YogRegexp, regexp)->corgi_regexp;
+    CorgiRegexp* reg = PTR_AS(YogRegexp, regexp)->corgi_regexp;
     CorgiChar* end = begin + STRING_SIZE(HDL2VAL(h));
     CorgiStatus status = corgi_compile(reg, begin, end, opts);
     if (status != CORGI_OK) {
@@ -105,9 +109,10 @@ group_name2id(YogEnv* env, YogVal self, YogVal group)
     YOG_ASSERT(env, BASIC_OBJ_TYPE(group) == TYPE_STRING, "invalid group type (0x%x)", BASIC_OBJ_TYPE(group));
 
     YogVal regexp = PTR_AS(YogMatch, self)->regexp;
-    CorgiRegexp* corgi_regexp = &PTR_AS(YogRegexp, regexp)->corgi_regexp;
+    CorgiRegexp* corgi_regexp = PTR_AS(YogRegexp, regexp)->corgi_regexp;
     YogChar* begin = STRING_CHARS(group);
     YogChar* end = begin + STRING_SIZE(group);
+
     uint_t id;
     CorgiStatus status = corgi_group_name2id(corgi_regexp, begin, end, &id);
     if (status != CORGI_OK) {
