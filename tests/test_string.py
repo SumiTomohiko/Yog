@@ -889,4 +889,21 @@ print(\"foo\".rfind(\"o\", -4))
     self._test(\"print(\\\"{s}\\\".to_lower())\", \"{expected}\")
 """.format(i=10 * i, s=s, expected=expected))
 
+    for i, s, expected in enumerate_tuples((
+            ("", ""),
+            ("foo", "Foo"),
+            ("foo bar", "FooBar"),
+            ("foo_bar", "FooBar"))):
+        exec("""def test_to_upper_camel_case{i}(self):
+    self._test(\"print(\\\"{s}\\\".to_upper_camel_case())\", \"{expected}\")
+""".format(i=10 * i, s=s, expected=expected))
+
+        if expected == "":
+            lower_expected = ""
+        else:
+            lower_expected = expected[0].lower() + expected[1:]
+        exec("""def test_to_lower_camel_case{i}(self):
+    self._test(\"print(\\\"{s}\\\".to_lower_camel_case())\", \"{expected}\")
+""".format(i=10 * i, s=s, expected=lower_expected))
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

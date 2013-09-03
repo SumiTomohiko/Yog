@@ -257,4 +257,27 @@ def to_lower()
   return s
 end
 
+def to_camel_case(first)
+  head = self.get(0, "")
+  s = first ? head.to_upper() : head.to_lower()
+  a = self.split("")
+  SPECIALS = ["_", " "]
+  a.slice(0, a.size - 1).zip(a.slice(1, a.size - 1)).each() do |pair|
+    c = pair[1]
+    if SPECIALS.include?(c)
+      next
+    end
+    s << (SPECIALS.include?(pair[0]) ? c.to_upper() : c.to_lower())
+  end
+  return s
+end
+
+def to_lower_camel_case()
+  return self.to_camel_case(false)
+end
+
+def to_upper_camel_case()
+  return self.to_camel_case(true)
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
