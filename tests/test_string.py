@@ -871,4 +871,22 @@ print(\"foo\".rfind(\"o\", -4))
     self._test(\"print(\\\"{s}\\\".{meth}(ENCODINGS[\\\"ascii\\\"]).to_a())\", \"{expected}\")
 """.format(i=10 * i, s=s, meth=meth, expected=expected + additional))
 
+    for i, s, expected in enumerate_tuples((
+            ("", ""),
+            ("foo", "FOO"),
+            ("Foo", "FOO"),
+            ("foo bar", "FOO BAR"))):
+        exec("""def test_to_upper{i}(self):
+    self._test(\"print(\\\"{s}\\\".to_upper())\", \"{expected}\")
+""".format(i=10 * i, s=s, expected=expected))
+
+    for i, s, expected in enumerate_tuples((
+            ("", ""),
+            ("FOO", "foo"),
+            ("fOO", "foo"),
+            ("FOO BAR", "foo bar"))):
+        exec("""def test_to_lower{i}(self):
+    self._test(\"print(\\\"{s}\\\".to_lower())\", \"{expected}\")
+""".format(i=10 * i, s=s, expected=expected))
+
 # vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4

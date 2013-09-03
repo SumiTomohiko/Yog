@@ -238,4 +238,23 @@ def as_hex()
   return self.to_i(16)
 end
 
+UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+LOWER = "abcdefghijklmnopqrstuvwxyz"
+
+def to_upper()
+  s = ""
+  self.each() do |c|
+    s << ((pos = LOWER.find(c)) != -1 ? UPPER[pos] : c)
+  end
+  return s
+end
+
+def to_lower()
+  s = ""
+  self.each() do |c|
+    s << ((pos = UPPER.find(c)) != -1 ? LOWER[pos] : c)
+  end
+  return s
+end
+
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
