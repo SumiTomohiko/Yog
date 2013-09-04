@@ -2,8 +2,8 @@
 Yog
 ***
 
-Yog is a dynamic programming language designed to have Python's usefully and
-look like Ruby.
+Yog is a dynamic programming language designed to be more useful than Python and
+to look like Ruby.
 
 Features
 ========
@@ -11,15 +11,13 @@ Features
 * Syntax like Python and Ruby
 * Class based object oriented
 * Garbage collection
-* under MIT license
+* Under MIT license
+* GPL free
 
 Requirements
 ============
 
 * FreeBSD 9.1/amd64
-
-Previous versions supported Ubuntu Linux and OpenBSD, but this version does not.
-Future version will support again.
 
 Documentation
 =============
@@ -46,18 +44,6 @@ Issue Tracking System
 
 You can see the issues at http://neko-daisuki.ddo.jp/~SumiTomohiko/yog/issues/index.html.
 Original data are in the ``issues`` dicretory of the source tree.
-
-Plan
-====
-
-version 1.0.0
--------------
-
-* GPL free
-  * `waf <http://code.google.com/p/waf/>`_'ize to remove autotools
-  * Change the compiler to `llvm clang <http://clang.llvm.org/>`_
-  * Change GMP to a non-copyleft library.
-* Supports Linux and OpenBSD.
 
 Author
 ======
